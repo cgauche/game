@@ -10,8 +10,9 @@
 Source/                     Livres WFRP4 en .md (+ all-data.json dormant : la migration build:data est retirée)
 src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans le Compendium) + index.ts (accès typé), pregens.ts
                             EXCEPTIONS manuscrites (tables verbatim sourcées) : criticals.ts, oups.ts,
-                            mutations.ts (Tableaux de Corruption LDB 19), spellspecs/ (specs de sorts
-                            CURÉES par famille — repli regex iso-POC pour les sorts non curés)
+                            mutations.ts (Tableaux de Corruption LDB 19). Les métadonnées de résolution
+                            des sorts vivent dans SpellData (spells.json) — l'ancien registre spellspecs/
+                            et le repli regex sont SUPPRIMÉS (Migration #5)
 src/engine/                 Règles WFRP4, PUR + testé :
   types.ts                    Caractéristiques, Combatant, Weapon, ItemInstance, Difficulty…
   tests.ts                    Tests & Degrés de Réussite (DR), tests opposés
@@ -35,7 +36,9 @@ src/engine/                 Règles WFRP4, PUR + testé :
                               Consommée par : sorts, Imparfaites (miscast), mutations, traits, qualités
                               (`passive`), effets déclenchés (`Flow`/`Trigger`), CONSOMMABLES. Jalon 2.6 :
                               PerSL (échelle par DR), onlyGroups, grantTrait/grantTalent/augmentWeapon/…
-  spellspec.ts                SpellSpec (effets structurés d'un sort) + repli regex (fallbackSpec)
+  spellspec.ts                spellSupport : classification mécanique/partiel/narratif d'un sort depuis
+                              SpellData (duck typing — l'interface SpellSpec, le registre spellspecs/ et
+                              le repli regex fallbackSpec sont supprimés, métadonnées migrées en donnée)
   magic.ts                    incantation/Focalisation/Péché/ZdE/portée/armure (« Repousser les Vents »)
   miscast.ts                  tables d'Imparfaites & Colère des dieux (d100 → GameOps, verbatim)
   corruption.ts               Corruption & mutations (LDB 19 : expositions, seuil, limites → damné)
