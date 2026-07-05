@@ -11,7 +11,7 @@ import type { Effect } from './scene';
 import type { Flow } from './flow';
 import type { GameOp } from '../engine/ops';
 import type { TestResult, OpposedResult } from '../engine/tests';
-import type { AttackResult, DefenseMode } from '../engine/combat';
+import type { AttackResult, DefenseMode, RollBreakdown } from '../engine/combat';
 import type { AttackKind } from '../engine/creatureAttacks';
 import type { CriticalResolved } from '../engine/critical';
 import type { OupsResolved } from '../engine/oups';
@@ -685,8 +685,10 @@ export interface PendingDisengage {
   /** « Fuir » (l.98-109) : coup dans le dos SUBI (montré INLINE). Sur un coup qui touche, le Test de
    *  Calme du fuyard (`calme`) est un jet INFLUENÇABLE (flux `flee`, calqué sur `approach`) résolu DANS
    *  la modale ; le Brisé et la libération/Course sont DIFFÉRÉS au confirm (`fleeConfirm`). `calme: null`
-   *  = pas (encore) de Test (coup manqué → fuite déjà complétée ; ou en attente du « Lancer »). */
-  fuir?: { attackerRoll: number; hit: boolean; woundsLost: number; calme: { success: boolean; roll: number; target?: number; sl: number } | null };
+   *  = pas (encore) de Test (coup manqué → fuite déjà complétée ; ou en attente du « Lancer »). `detail`
+   *  = breakdown COMPLET du coup dans le dos (`AttackResult.attackerDetail`) → rangée témoin `RollRow`
+   *  (portrait + cible/dé/DR), homogène à l'Esquive (fini la ligne compacte `TableRollLine`). */
+  fuir?: { attackerRoll: number; hit: boolean; woundsLost: number; detail?: RollBreakdown; calme: { success: boolean; roll: number; target?: number; sl: number } | null };
   /** Relance par Chance de l'Esquive déjà effectuée (1 max/Test, LDB ch.12 l.56). */
   rerolled?: boolean;
 }

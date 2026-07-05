@@ -385,7 +385,7 @@ export function createCombatSlice(get: Get, set: Set) {
         campGain(get, foe); // touché → +1 Avantage de plus (l.107)
         // Test de Calme DIFFÉRÉ en jet INFLUENÇABLE : on n'applique NI le Brisé NI la libération/Course
         // ici — `fleeConfirm` le fait après le jet. Phase 'fuir' ouverte avec le coup dans le dos SUBI.
-        set({ battle: { ...battle, log }, pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: true, woundsLost: res.woundsLost, calme: null } } });
+        set({ battle: { ...battle, log }, pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: true, woundsLost: res.woundsLost, detail: res.attackerDetail, calme: null } } });
         bus.emit(EVT.SCENE_DIRTY);
         // Aucune modale joueur affichable (fuyard non-héros, combat fini, Destin/révélation en attente)
         // → on auto-résout le Calme par le flux (fleeConfirm complète la fuite et ferme).
@@ -411,7 +411,7 @@ export function createCombatSlice(get: Get, set: Set) {
         return;
       }
       // Pas de Test de Calme (woundsLost 0) → `calme: null` permanent ; la modale montre « Continuer ».
-      set({ pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: res.hit, woundsLost: res.woundsLost ?? 0, calme: null } } });
+      set({ pendingDisengage: { ...pd, phase: 'fuir', fuir: { attackerRoll: res.attackerRoll, hit: res.hit, woundsLost: res.woundsLost ?? 0, detail: res.attackerDetail, calme: null } } });
     },
     disengageFleeAck: () => set({ pendingDisengage: null, pendingCascade: null }), // « Continuer » (coup manqué) : ferme la modale (fuite déjà complétée)
     // ── « Fuir » : Test de Calme du fuyard, INFLUENÇABLE (flux `flee`, calqué sur `approach`). « Lancer »
