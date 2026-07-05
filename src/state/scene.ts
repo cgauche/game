@@ -472,7 +472,7 @@ export interface SceneEffectZone {
   perRound?: import('../engine/ops').GameOp[];
   /** BARRIÈRE infranchissable : aucune créature ne peut PÉNÉTRER dans l'aire (mur magique, cercle de
    *  ward). `blockGroups` vide/absent = bloque TOUT le monde ; sinon ne bloque que les créatures dont
-   *  un Groupe correspond (ex. `['Démon', 'Mort-vivant']` = barrière sacrée, profanes tenus à l'écart —
+   *  un Groupe correspond (ids, ex. `['demon', 'mort-vivant']` = barrière sacrée, profanes tenus à l'écart —
    *  Protection de Phâ / Octogramme). Une créature DÉJÀ à l'intérieur peut sortir, pas re-rentrer. */
   barrier?: { blockGroups?: string[] };
 }

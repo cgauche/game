@@ -36,7 +36,7 @@ const lastIndexOfInstance = (list: TraitInstance[], t: TraitInstance): number =>
   return -1;
 };
 
-/** Accorde le `TraitInstance` (structuré — `{ id:'vol', value:35 }`, `{ id:'haine', arg:'Morts-vivants' }`) :
+/** Accorde le `TraitInstance` (structuré — `{ id:'vol', value:35 }`, `{ id:'haine', arg:'mort-vivant' }`) :
  *  posé tel quel, psychologie re-synchronisée. Mute `c`. */
 export function grantTrait(c: Combatant, t: TraitInstance): void {
   c.traits = [...(c.traits ?? []), t];
