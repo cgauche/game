@@ -21,17 +21,16 @@ const hero = (p: Partial<Combatant> = {}): Combatant =>
   } as Combatant);
 
 describe('Résistance (Menace) — disponibilité de la spec (LDB 10 l.1015-1021)', () => {
-  it('spec couvrant la menace → disponible (comparaison normalisée casse/accents)', () => {
-    // La spec du talent est désormais un id stable ('maladie') — `availableResistance` renvoie CETTE
-    // valeur stockée, quelle que soit la casse du tag `menace` interrogé (norm() reste le pont tolérant).
-    expect(availableResistance(hero(), 'Maladie')).toBe('maladie');
+  it('spec couvrant la menace → disponible (comparaison stricte par id, plus de pont norm)', () => {
+    // La spec du talent ET le tag `menace` sont désormais TOUS DEUX des ids stables ('maladie') —
+    // `availableResistance` exige une égalité stricte (Phase 3 : plus de tag FR capitalisé résiduel).
     expect(availableResistance(hero(), 'maladie')).toBe('maladie');
   });
 
   it('menace non couverte / talent absent / spec absente → indisponible', () => {
-    expect(availableResistance(hero(), 'Poison')).toBeNull();
-    expect(availableResistance(hero({ talents: [] }), 'Maladie')).toBeNull();
-    expect(availableResistance(hero({ talents: [{ talentId: 'resistance', times: 1 }] as never }), 'Maladie')).toBeNull();
+    expect(availableResistance(hero(), 'poison')).toBeNull();
+    expect(availableResistance(hero({ talents: [] }), 'maladie')).toBeNull();
+    expect(availableResistance(hero({ talents: [{ talentId: 'resistance', times: 1 }] as never }), 'maladie')).toBeNull();
   });
 
   it('deux prises du talent (specs différentes) : chaque spec a SON usage', () => {
@@ -39,18 +38,18 @@ describe('Résistance (Menace) — disponibilité de la spec (LDB 10 l.1015-1021
       { talentId: 'resistance', spec: 'maladie', times: 1 },
       { talentId: 'resistance', spec: 'poison', times: 1 },
     ] });
-    markResistanceUsed(h, 'Maladie');
-    expect(availableResistance(h, 'Maladie')).toBeNull(); // consommée
-    expect(availableResistance(h, 'Poison')).toBe('poison'); // l'autre spec reste
+    markResistanceUsed(h, 'maladie');
+    expect(availableResistance(h, 'maladie')).toBeNull(); // consommée
+    expect(availableResistance(h, 'poison')).toBe('poison'); // l'autre spec reste
   });
 
   it('« à chaque séance de jeu » : consommé cette séance → indisponible ; la couture de début de séance ré-arme', () => {
     const h = hero();
-    markResistanceUsed(h, 'Maladie');
-    expect(availableResistance(h, 'Maladie')).toBeNull();
+    markResistanceUsed(h, 'maladie');
+    expect(availableResistance(h, 'maladie')).toBeNull();
     const [fresh] = restoreFortune([h]); // couture UNIQUE : Chance (LDB 17 l.47) + compteurs de séance
     expect(fresh.resistanceUsed).toBeUndefined();
-    expect(availableResistance(fresh, 'Maladie')).toBe('maladie');
+    expect(availableResistance(fresh, 'maladie')).toBe('maladie');
     expect(fresh.fortune).toBe(2); // la Chance est bien restaurée par la MÊME couture
   });
 

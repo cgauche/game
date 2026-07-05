@@ -378,7 +378,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
     // d'artefact) → Test de Savoir (Magie) Intermédiaire (+0). Savoir est AVANCÉE : il faut l'avoir.
     const item = (h.items ?? []).find((i) => i.uid === opts.itemUid);
     if (!item || item.identified !== false) return; // rien à identifier
-    const savoir = h.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'Magie' && k.advances >= 1);
+    const savoir = h.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'magie' && k.advances >= 1);
     if (!savoir) {
       get().log(`${h.name} ne possède pas Savoir (Magie) — impossible d'étudier l'artefact (ADE2 : la voie des sorciers).`);
       return;
@@ -696,7 +696,7 @@ export function confirmActivity(get: Get, set: Set): void {
           rng: battleRng(), label: def.label, now: get().gameTime,
           onCorruption: (n: number, align?: ChaosAlign) => gainCorruption(get, set, h, n, align),
           onCorruptionExposure: (level: ExposureLevel, skill?: 'resistance' | 'calme') => {
-            set({ pendingCorruption: { heroId: h.id, level, skill: skill ?? 'resistance', skillLocked: skill != null, menace: 'Corruption' } });
+            set({ pendingCorruption: { heroId: h.id, level, skill: skill ?? 'resistance', skillLocked: skill != null, menace: 'corruption' } });
             return [`${h.name} — Test d'Exposition ${level} à la Corruption à réaliser.`];
           },
         }));

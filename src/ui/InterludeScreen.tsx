@@ -802,7 +802,7 @@ function IdentifyPane({ hero, disabled }: { hero: Combatant; disabled: boolean }
   const activity = useGame((s) => s.interludeActivity);
   const items = (hero.items ?? []).filter((i) => i.identified === false);
   const [uid, setUid] = useState(items[0]?.uid ?? '');
-  const savoir = hero.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'Magie' && k.advances >= 1);
+  const savoir = hero.skills.find((k) => k.skillId === 'savoir' && (k.spec ?? '') === 'magie' && k.advances >= 1);
   const blocked = !items.length
     ? `Aucun objet non identifié dans le sac de ${hero.name}.`
     : !savoir

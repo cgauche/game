@@ -12,32 +12,28 @@
  *
  * Un Test est ÉLIGIBLE quand son pending/étape porte un tag `menace` (posé par le SITE du Test :
  * Contraction de maladie, Exposition à la Corruption, seuil → Mutation, opposition à un Sort ; ou
- * en DONNÉE via `FlowTest.menace` — Venin/poisons). Comparaison de la spec du talent au tag par
- * `norm` (tolère casse/accents) : la spec du talent est désormais un id stable (`chaos`/`corruption`/
- * `magie`/`maladie`/`mutation`/`poison`, cf. `skills.json` migration Phase 3) et la plupart des
- * appelants passent déjà l'id en minuscules — `norm` reste un PONT tolérant tant qu'un appelant
- * (`interludeFlow.ts`, hors scope de cette migration) passe encore un libellé FR capitalisé.
+ * en DONNÉE via `FlowTest.menace` — Venin/poisons). La spec du talent ET le tag `menace` sont
+ * désormais TOUS DEUX des ids stables (`chaos`/`corruption`/`magie`/`maladie`/`mutation`/`poison`/
+ * `poisons-ingeres`, cf. `skills.json` migration Phase 3) — comparaison stricte par égalité, plus
+ * de pont `norm` (tous les appelants, y compris `interludeFlow.ts`, passent l'id).
  * Talent JOUEUR : l'IA n'ouvre pas de modale → ne l'exploite pas.
  */
 import type { Combatant } from './types';
 import { bonus, effectiveChar } from './characteristics';
-import { norm } from '../lib/normalize';
 
-/** La spec du talent Résistance de `c` couvrant `menace` et NON consommée cette séance — sinon null.
+/** La spec du talent Résistance de `c` couvrant `menaceId` et NON consommée cette séance — sinon null.
  *  (Le talent peut être pris plusieurs fois avec des specs différentes : chacune a SON usage.) */
-export function availableResistance(c: Combatant, menace: string): string | null {
-  const m = norm(menace);
+export function availableResistance(c: Combatant, menaceId: string): string | null {
   const spec = (c.talents ?? []).find(
-    (t) => t.talentId === 'resistance' && t.spec != null && norm(t.spec) === m,
+    (t) => t.talentId === 'resistance' && t.spec === menaceId,
   )?.spec;
   if (spec == null) return null;
-  return (c.resistanceUsed ?? []).includes(norm(spec)) ? null : spec;
+  return (c.resistanceUsed ?? []).includes(spec) ? null : spec;
 }
 
-/** Consomme l'usage de séance de la spec (mute `c.resistanceUsed`, clé normalisée). */
+/** Consomme l'usage de séance de la spec (mute `c.resistanceUsed`). */
 export function markResistanceUsed(c: Combatant, spec: string): void {
-  const key = norm(spec);
-  if (!(c.resistanceUsed ?? []).includes(key)) c.resistanceUsed = [...(c.resistanceUsed ?? []), key];
+  if (!(c.resistanceUsed ?? []).includes(spec)) c.resistanceUsed = [...(c.resistanceUsed ?? []), spec];
 }
 
 /** DR de l'auto-succès : « utilisez votre Bonus d'Endurance comme DR pour le Test » (LDB 10). */

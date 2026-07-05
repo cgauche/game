@@ -533,7 +533,7 @@
       {
         "id": "savoir",
         "value": 53,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "soin-aux-animaux",
@@ -5564,7 +5564,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Politique"
+        "spec": "politique"
       },
       {
         "id": "discretion",
@@ -6825,7 +6825,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Empire"
+        "spec": "empire"
       },
       {
         "id": "soin-aux-animaux",
@@ -7600,7 +7600,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Torture"
+        "spec": "torture"
       },
       {
         "id": "guerison",
@@ -7745,7 +7745,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Torture"
+        "spec": "torture"
       },
       {
         "id": "savoir",
@@ -7906,7 +7906,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Torture"
+        "spec": "torture"
       },
       {
         "id": "savoir",
@@ -8078,7 +8078,7 @@
       {
         "id": "savoir",
         "value": 90,
-        "spec": "Torture"
+        "spec": "torture"
       },
       {
         "id": "savoir",
@@ -8098,12 +8098,12 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Chaos"
+        "spec": "chaos"
       },
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Politique"
+        "spec": "politique"
       },
       {
         "id": "guerison",
@@ -8260,7 +8260,7 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "signes-secrets",
@@ -8329,7 +8329,7 @@
       {
         "id": "art",
         "value": 55,
-        "spec": "Rédaction"
+        "spec": "redaction"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -8394,7 +8394,7 @@
       {
         "id": "savoir",
         "value": 80,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "savoir",
@@ -8521,7 +8521,7 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "signes-secrets",
@@ -8589,7 +8589,7 @@
       {
         "id": "art",
         "value": 55,
-        "spec": "Rédaction"
+        "spec": "redaction"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -8654,7 +8654,7 @@
       {
         "id": "savoir",
         "value": 80,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "savoir",
@@ -10081,7 +10081,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Politique"
+        "spec": "politique"
       },
       {
         "id": "athletisme",
@@ -10188,12 +10188,12 @@
       {
         "id": "metier",
         "value": 50,
-        "spec": "Apothicaire"
+        "spec": "apothicaire"
       },
       {
         "id": "metier",
         "value": 50,
-        "spec": "Poisons"
+        "spec": "poisons"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -10228,7 +10228,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Chimie"
+        "spec": "chimie"
       },
       {
         "id": "savoir",
@@ -10243,7 +10243,7 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Science"
+        "spec": "science"
       },
       {
         "id": "guerison",
@@ -10324,12 +10324,12 @@
       {
         "id": "metier",
         "value": 70,
-        "spec": "Apothicaire"
+        "spec": "apothicaire"
       },
       {
         "id": "metier",
         "value": 70,
-        "spec": "Poisons"
+        "spec": "poisons"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -10376,7 +10376,7 @@
       {
         "id": "savoir",
         "value": 75,
-        "spec": "Chimie"
+        "spec": "chimie"
       },
       {
         "id": "savoir",
@@ -10391,7 +10391,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Science"
+        "spec": "science"
       },
       {
         "id": "signes-secrets",
@@ -10484,7 +10484,7 @@
       {
         "id": "metier",
         "value": 45,
-        "spec": "Barbier"
+        "spec": "barbier"
       },
       {
         "id": "calme",
@@ -10535,7 +10535,7 @@
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "savoir",
@@ -10625,7 +10625,7 @@
       {
         "id": "metier",
         "value": 60,
-        "spec": "Barbier"
+        "spec": "barbier"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -10692,7 +10692,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "savoir",
@@ -10817,7 +10817,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -10886,7 +10886,7 @@
       {
         "id": "art",
         "value": 35,
-        "spec": "Rédaction"
+        "spec": "redaction"
       },
       {
         "id": "athletisme",
@@ -10950,12 +10950,12 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Héraldique"
+        "spec": "heraldique"
       },
       {
         "id": "guerison",
@@ -11683,7 +11683,7 @@
       {
         "id": "art",
         "value": 35,
-        "spec": "Rédaction"
+        "spec": "redaction"
       },
       {
         "id": "metier",
@@ -11803,7 +11803,7 @@
       {
         "id": "art",
         "value": 0,
-        "spec": "Rédaction"
+        "spec": "redaction"
       },
       {
         "id": "metier",
@@ -12231,17 +12231,17 @@
       {
         "id": "metier",
         "value": 45,
-        "spec": "Brasseur"
+        "spec": "brasseur"
       },
       {
         "id": "metier",
         "value": 45,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "metier",
         "value": 45,
-        "spec": "Vigneron"
+        "spec": "vigneron"
       },
       {
         "id": "recherche",
@@ -12280,7 +12280,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -12361,7 +12361,7 @@
       {
         "id": "art",
         "value": 35,
-        "spec": "Rédaction"
+        "spec": "redaction"
       },
       {
         "id": "athletisme",
@@ -12425,12 +12425,12 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Héraldique"
+        "spec": "heraldique"
       },
       {
         "id": "guerison",
@@ -12550,17 +12550,17 @@
       {
         "id": "metier",
         "value": 45,
-        "spec": "Brasseur"
+        "spec": "brasseur"
       },
       {
         "id": "metier",
         "value": 45,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "metier",
         "value": 45,
-        "spec": "Vigneron"
+        "spec": "vigneron"
       },
       {
         "id": "recherche",
@@ -12599,7 +12599,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -12680,7 +12680,7 @@
       {
         "id": "art",
         "value": 35,
-        "spec": "Rédaction"
+        "spec": "redaction"
       },
       {
         "id": "athletisme",
@@ -12744,12 +12744,12 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Héraldique"
+        "spec": "heraldique"
       },
       {
         "id": "guerison",
@@ -12921,7 +12921,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -13002,7 +13002,7 @@
       {
         "id": "art",
         "value": 35,
-        "spec": "Rédaction"
+        "spec": "redaction"
       },
       {
         "id": "athletisme",
@@ -13071,12 +13071,12 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Héraldique"
+        "spec": "heraldique"
       },
       {
         "id": "guerison",
@@ -13485,7 +13485,7 @@
       {
         "id": "savoir",
         "value": 60,
-        "spec": "Art"
+        "spec": "art"
       },
       {
         "id": "savoir",
@@ -14634,7 +14634,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Héraldique"
+        "spec": "heraldique"
       },
       {
         "id": "signes-secrets",
@@ -14916,12 +14916,12 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Art"
+        "spec": "art"
       },
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Héraldique"
+        "spec": "heraldique"
       },
       {
         "id": "signes-secrets",
@@ -15514,7 +15514,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Histoire"
+        "spec": "histoire"
       },
       {
         "id": "athletisme",
@@ -16314,7 +16314,7 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Histoire"
+        "spec": "histoire"
       },
       {
         "id": "soin-aux-animaux",
@@ -17204,7 +17204,7 @@
       {
         "id": "metier",
         "value": 55,
-        "spec": "Charpentier Naval"
+        "spec": "charpentier-naval"
       },
       {
         "id": "athletisme",
@@ -17379,7 +17379,7 @@
       {
         "id": "metier",
         "value": 50,
-        "spec": "Charpentier Naval"
+        "spec": "charpentier-naval"
       },
       {
         "id": "athletisme",
@@ -17545,7 +17545,7 @@
       {
         "id": "metier",
         "value": 70,
-        "spec": "Charpentier Naval"
+        "spec": "charpentier-naval"
       },
       {
         "id": "athletisme",
@@ -17656,7 +17656,7 @@
       {
         "id": "metier",
         "value": 70,
-        "spec": "Charpentier naval"
+        "spec": "charpentier-naval"
       }
     ],
     "talents": [
@@ -17720,7 +17720,7 @@
       {
         "id": "metier",
         "value": 55,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -17761,7 +17761,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Plantes"
+        "spec": "plantes"
       },
       {
         "id": "savoir",
@@ -17879,12 +17879,12 @@
       {
         "id": "metier",
         "value": 75,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "metier",
         "value": 60,
-        "spec": "Poisons"
+        "spec": "poisons"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -17933,7 +17933,7 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Plantes"
+        "spec": "plantes"
       },
       {
         "id": "savoir",
@@ -18059,7 +18059,7 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "calme",
@@ -18098,12 +18098,12 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Folklore"
+        "spec": "folklore"
       },
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Plantes"
+        "spec": "plantes"
       },
       {
         "id": "savoir",
@@ -18250,7 +18250,7 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "calme",
@@ -18293,12 +18293,12 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Folklore"
+        "spec": "folklore"
       },
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Plantes"
+        "spec": "plantes"
       },
       {
         "id": "savoir",
@@ -18308,17 +18308,17 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Généalogie"
+        "spec": "genealogie"
       },
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Esprits"
+        "spec": "esprits"
       },
       {
         "id": "signes-secrets",
@@ -18479,7 +18479,7 @@
       {
         "id": "metier",
         "value": 35,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "calme",
@@ -18649,7 +18649,7 @@
       {
         "id": "metier",
         "value": 40,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "calme",
@@ -18721,7 +18721,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Magie Noire"
+        "spec": "magie-noire"
       },
       {
         "id": "athletisme",
@@ -18903,7 +18903,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -19071,12 +19071,12 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Esprits"
+        "spec": "esprits"
       },
       {
         "id": "guerison",
@@ -19234,7 +19234,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -19342,7 +19342,7 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Vigneron"
+        "spec": "vigneron"
       },
       {
         "id": "recherche",
@@ -19391,7 +19391,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -19534,12 +19534,12 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "savoir",
         "value": 45,
-        "spec": "Plantes"
+        "spec": "plantes"
       },
       {
         "id": "soin-aux-animaux",
@@ -19715,17 +19715,17 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "savoir",
         "value": 60,
-        "spec": "Plantes"
+        "spec": "plantes"
       },
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Esprits"
+        "spec": "esprits"
       },
       {
         "id": "soin-aux-animaux",
@@ -19899,7 +19899,7 @@
       {
         "id": "savoir",
         "value": 40,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -20054,7 +20054,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -20202,7 +20202,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -20391,7 +20391,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "guerison",
@@ -21027,7 +21027,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Empire"
+        "spec": "empire"
       },
       {
         "id": "guerison",
@@ -22774,7 +22774,7 @@
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Bêtes Sauvages"
+        "spec": "betes-sauvages"
       },
       {
         "id": "savoir",
@@ -26040,7 +26040,7 @@
       {
         "id": "savoir",
         "value": 20,
-        "spec": "Bêtes Sauvages"
+        "spec": "betes-sauvages"
       },
       {
         "id": "savoir",
@@ -26192,7 +26192,7 @@
       {
         "id": "savoir",
         "value": 30,
-        "spec": "Bêtes Sauvages"
+        "spec": "betes-sauvages"
       },
       {
         "id": "savoir",
@@ -26352,7 +26352,7 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Bêtes Sauvages"
+        "spec": "betes-sauvages"
       },
       {
         "id": "savoir",
@@ -26529,7 +26529,7 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Bêtes Sauvages"
+        "spec": "betes-sauvages"
       },
       {
         "id": "savoir",
@@ -27210,7 +27210,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Bêtes Sauvages"
+        "spec": "betes-sauvages"
       },
       {
         "id": "survie-en-exterieur",
@@ -28558,12 +28558,12 @@
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Chaos"
+        "spec": "chaos"
       },
       {
         "id": "guerison",
@@ -28778,12 +28778,12 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Chaos"
+        "spec": "chaos"
       },
       {
         "id": "guerison",
@@ -29329,7 +29329,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Chaos"
+        "spec": "chaos"
       },
       {
         "id": "guerison",
@@ -29522,7 +29522,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Héraldique"
+        "spec": "heraldique"
       },
       {
         "id": "survie-en-exterieur",
@@ -29700,7 +29700,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Héraldique"
+        "spec": "heraldique"
       },
       {
         "id": "survie-en-exterieur",
@@ -30217,7 +30217,7 @@
       {
         "id": "langue",
         "value": 70,
-        "spec": "Noir Parler"
+        "spec": "noir-parler"
       },
       {
         "id": "langue",
@@ -36007,7 +36007,7 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Ingénieur"
+        "spec": "ingenieur"
       }
     ],
     "talents": [
@@ -36204,7 +36204,7 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Ingénieur"
+        "spec": "ingenieur"
       }
     ],
     "talents": [
@@ -36424,7 +36424,7 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Ingénieur"
+        "spec": "ingenieur"
       }
     ],
     "talents": [
@@ -36548,7 +36548,17 @@
       {
         "id": "discretion",
         "value": 65,
-        "spec": "Tous"
+        "spec": "rurale"
+      },
+      {
+        "id": "discretion",
+        "value": 65,
+        "spec": "souterrains"
+      },
+      {
+        "id": "discretion",
+        "value": 65,
+        "spec": "urbaine"
       },
       {
         "id": "escalade",
@@ -36709,7 +36719,17 @@
       {
         "id": "discretion",
         "value": 70,
-        "spec": "Tous"
+        "spec": "rurale"
+      },
+      {
+        "id": "discretion",
+        "value": 70,
+        "spec": "souterrains"
+      },
+      {
+        "id": "discretion",
+        "value": 70,
+        "spec": "urbaine"
       },
       {
         "id": "escalade",
@@ -36904,7 +36924,17 @@
       {
         "id": "discretion",
         "value": 80,
-        "spec": "Tous"
+        "spec": "rurale"
+      },
+      {
+        "id": "discretion",
+        "value": 80,
+        "spec": "souterrains"
+      },
+      {
+        "id": "discretion",
+        "value": 80,
+        "spec": "urbaine"
       },
       {
         "id": "escalade",
@@ -37136,7 +37166,17 @@
       {
         "id": "discretion",
         "value": 90,
-        "spec": "Tous"
+        "spec": "rurale"
+      },
+      {
+        "id": "discretion",
+        "value": 90,
+        "spec": "souterrains"
+      },
+      {
+        "id": "discretion",
+        "value": 90,
+        "spec": "urbaine"
       },
       {
         "id": "escalade",
@@ -37516,7 +37556,7 @@
       {
         "id": "metier",
         "value": 35,
-        "spec": "Poisons"
+        "spec": "poisons"
       },
       {
         "id": "athletisme",
@@ -37568,7 +37608,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "guerison",
@@ -37695,7 +37735,7 @@
       {
         "id": "metier",
         "value": 40,
-        "spec": "Poisons"
+        "spec": "poisons"
       },
       {
         "id": "athletisme",
@@ -37759,7 +37799,7 @@
       {
         "id": "savoir",
         "value": 80,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "guerison",
@@ -37897,7 +37937,7 @@
       {
         "id": "metier",
         "value": 50,
-        "spec": "Poisons"
+        "spec": "poisons"
       },
       {
         "id": "athletisme",
@@ -37961,7 +38001,7 @@
       {
         "id": "savoir",
         "value": 100,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "guerison",
@@ -38268,7 +38308,7 @@
       {
         "id": "chevaucher",
         "value": 60,
-        "spec": "Rats"
+        "spec": "rats"
       },
       {
         "id": "corps-a-corps",
@@ -38299,7 +38339,7 @@
       {
         "id": "savoir",
         "value": 35,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "guerison",
@@ -38439,7 +38479,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Rats"
+        "spec": "rats"
       },
       {
         "id": "evaluation",
@@ -38478,7 +38518,7 @@
       {
         "id": "savoir",
         "value": 60,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "savoir",
@@ -38525,7 +38565,7 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Ingénieur"
+        "spec": "ingenieur"
       }
     ],
     "talents": [
@@ -38641,7 +38681,7 @@
       {
         "id": "chevaucher",
         "value": 0,
-        "spec": "Rats"
+        "spec": "rats"
       },
       {
         "id": "evaluation",
@@ -38688,7 +38728,7 @@
       {
         "id": "savoir",
         "value": 115,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "savoir",
@@ -38727,7 +38767,7 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Ingénieur"
+        "spec": "ingenieur"
       }
     ],
     "talents": [
@@ -39486,7 +39526,7 @@
       {
         "id": "chevaucher",
         "value": 60,
-        "spec": "Rat-Ogre"
+        "spec": "rat-ogre"
       },
       {
         "id": "esquive",
@@ -39545,7 +39585,7 @@
       {
         "id": "savoir",
         "value": 100,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
@@ -39731,7 +39771,7 @@
       {
         "id": "chevaucher",
         "value": 75,
-        "spec": "Rat-Ogre"
+        "spec": "rat-ogre"
       },
       {
         "id": "esquive",
@@ -39790,7 +39830,7 @@
       {
         "id": "savoir",
         "value": 120,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
@@ -40560,7 +40600,7 @@
       {
         "id": "metier",
         "value": 35,
-        "spec": "Mineur"
+        "spec": "mineur"
       },
       {
         "id": "athletisme",
@@ -40986,7 +41026,12 @@
       {
         "id": "chevaucher",
         "value": 40,
-        "spec": "Loup ou Squig"
+        "spec": "loup"
+      },
+      {
+        "id": "chevaucher",
+        "value": 40,
+        "spec": "squig"
       },
       {
         "id": "escalade",
@@ -41166,7 +41211,12 @@
       {
         "id": "chevaucher",
         "value": 45,
-        "spec": "Loup ou Squig"
+        "spec": "loup"
+      },
+      {
+        "id": "chevaucher",
+        "value": 45,
+        "spec": "squig"
       },
       {
         "id": "escalade",
@@ -41337,7 +41387,7 @@
       {
         "id": "metier",
         "value": 35,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -41522,7 +41572,7 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -41736,7 +41786,7 @@
       {
         "id": "metier",
         "value": 0,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -42168,7 +42218,7 @@
       {
         "id": "chevaucher",
         "value": 40,
-        "spec": "Sanglier"
+        "spec": "sanglier"
       },
       {
         "id": "corps-a-corps",
@@ -42309,7 +42359,7 @@
       {
         "id": "chevaucher",
         "value": 40,
-        "spec": "Sanglier"
+        "spec": "sanglier"
       },
       {
         "id": "escalade",
@@ -42631,7 +42681,7 @@
       {
         "id": "chevaucher",
         "value": 25,
-        "spec": "Sanglier"
+        "spec": "sanglier"
       },
       {
         "id": "escalade",
@@ -42824,7 +42874,7 @@
       {
         "id": "chevaucher",
         "value": 30,
-        "spec": "Sanglier"
+        "spec": "sanglier"
       },
       {
         "id": "escalade",
@@ -43011,7 +43061,7 @@
       {
         "id": "metier",
         "value": 25,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -43204,7 +43254,7 @@
       {
         "id": "metier",
         "value": 30,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "athletisme",
@@ -43418,7 +43468,7 @@
       {
         "id": "metier",
         "value": 50,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "athletisme",
@@ -43503,7 +43553,7 @@
       {
         "id": "savoir",
         "value": 90,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
@@ -44192,7 +44242,7 @@
       {
         "id": "metier",
         "value": 20,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -44422,7 +44472,7 @@
       {
         "id": "metier",
         "value": 25,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -44682,7 +44732,7 @@
       {
         "id": "metier",
         "value": 35,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "resistance-a-l-alcool",
@@ -44771,7 +44821,7 @@
       {
         "id": "savoir",
         "value": 75,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "athletisme",
@@ -45559,12 +45609,12 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "athletisme",
@@ -45754,12 +45804,12 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
@@ -45956,7 +46006,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Nehekhara"
+        "spec": "nehekhara"
       },
       {
         "id": "corps-a-corps",
@@ -45979,12 +46029,12 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
@@ -47628,17 +47678,17 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Nécromancie"
+        "spec": "necromancie"
       },
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Empire"
+        "spec": "empire"
       },
       {
         "id": "savoir",
         "value": 50,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "commandement",
@@ -47811,17 +47861,17 @@
       {
         "id": "savoir",
         "value": 75,
-        "spec": "Nécromancie"
+        "spec": "necromancie"
       },
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Empire"
+        "spec": "empire"
       },
       {
         "id": "savoir",
         "value": 55,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "discretion",
@@ -48567,7 +48617,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Nehekhara"
+        "spec": "nehekhara"
       },
       {
         "id": "corps-a-corps",
@@ -48603,7 +48653,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
@@ -48879,7 +48929,7 @@
       {
         "id": "langue",
         "value": 0,
-        "spec": "Nehekhara"
+        "spec": "nehekhara"
       },
       {
         "id": "langue",
@@ -48920,7 +48970,7 @@
       {
         "id": "savoir",
         "value": 0,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
@@ -54619,8 +54669,7 @@
       },
       {
         "id": "discretion",
-        "value": 68,
-        "spec": "+6 DR grâce à Furtif"
+        "value": 68
       }
     ],
     "talents": [
@@ -55504,7 +55553,7 @@
       {
         "id": "savoir",
         "value": 30,
-        "spec": "Région"
+        "spec": "region"
       },
       {
         "id": "survie-en-exterieur",
@@ -55778,7 +55827,7 @@
       {
         "id": "metier",
         "value": 42,
-        "spec": "Forgeron"
+        "spec": "forgeron"
       },
       {
         "id": "resistance",
@@ -56304,7 +56353,7 @@
       {
         "id": "savoir",
         "value": 57,
-        "spec": "Magie"
+        "spec": "magie"
       }
     ],
     "talents": [
@@ -56803,7 +56852,7 @@
       {
         "id": "savoir",
         "value": 43,
-        "spec": "Héraldique"
+        "spec": "heraldique"
       },
       {
         "id": "soin-aux-animaux",
@@ -56932,12 +56981,12 @@
       {
         "id": "savoir",
         "value": 66,
-        "spec": "Anatomie"
+        "spec": "anatomie"
       },
       {
         "id": "savoir",
         "value": 68,
-        "spec": "Remèdes"
+        "spec": "remedes"
       },
       {
         "id": "subornation",
@@ -57205,7 +57254,7 @@
       {
         "id": "metier",
         "value": 55,
-        "spec": "Apothicaire"
+        "spec": "apothicaire"
       },
       {
         "id": "perception",
@@ -57222,7 +57271,7 @@
       {
         "id": "savoir",
         "value": 68,
-        "spec": "Chimie"
+        "spec": "chimie"
       },
       {
         "id": "savoir",
@@ -57232,7 +57281,7 @@
       {
         "id": "savoir",
         "value": 53,
-        "spec": "Science"
+        "spec": "science"
       }
     ],
     "talents": [
@@ -57665,7 +57714,7 @@
       {
         "id": "savoir",
         "value": 66,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "soin-aux-animaux",
@@ -57767,7 +57816,7 @@
       {
         "id": "metier",
         "value": 47,
-        "spec": "Apothicaire"
+        "spec": "apothicaire"
       },
       {
         "id": "resistance",
@@ -57776,7 +57825,7 @@
       {
         "id": "savoir",
         "value": 44,
-        "spec": "Magie noire"
+        "spec": "magie-noire"
       }
     ],
     "talents": [
@@ -57894,7 +57943,7 @@
       {
         "id": "savoir",
         "value": 57,
-        "spec": "Théologie"
+        "spec": "theologie"
       }
     ],
     "talents": [
@@ -57995,7 +58044,7 @@
       {
         "id": "langue",
         "value": 99,
-        "spec": "Arabien"
+        "spec": "arabien"
       },
       {
         "id": "langue",
@@ -58010,7 +58059,7 @@
       {
         "id": "metier",
         "value": 52,
-        "spec": "Herboriste"
+        "spec": "herboriste"
       },
       {
         "id": "marchandage",
@@ -58035,17 +58084,17 @@
       {
         "id": "savoir",
         "value": 65,
-        "spec": "Démonologie"
+        "spec": "demonologie"
       },
       {
         "id": "savoir",
         "value": 68,
-        "spec": "Magie noire"
+        "spec": "magie-noire"
       },
       {
         "id": "savoir",
         "value": 75,
-        "spec": "Nécromancie"
+        "spec": "necromancie"
       },
       {
         "id": "savoir",
@@ -58181,7 +58230,7 @@
       {
         "id": "metier",
         "value": 44,
-        "spec": "Charpentier"
+        "spec": "charpentier"
       },
       {
         "id": "langue",
@@ -58204,12 +58253,12 @@
       {
         "id": "savoir",
         "value": 61,
-        "spec": "Magie"
+        "spec": "magie"
       },
       {
         "id": "savoir",
         "value": 51,
-        "spec": "Politique"
+        "spec": "politique"
       }
     ],
     "talents": [
@@ -58320,7 +58369,7 @@
       {
         "id": "metier",
         "value": 38,
-        "spec": "Maçon"
+        "spec": "macon"
       },
       {
         "id": "perception",
@@ -58665,7 +58714,7 @@
       {
         "id": "savoir",
         "value": 54,
-        "spec": "Théologie"
+        "spec": "theologie"
       }
     ],
     "talents": [
@@ -58765,7 +58814,7 @@
       {
         "id": "savoir",
         "value": 58,
-        "spec": "Loi"
+        "spec": "loi"
       },
       {
         "id": "savoir",
@@ -59133,12 +59182,12 @@
       {
         "id": "savoir",
         "value": 51,
-        "spec": "Politique"
+        "spec": "politique"
       },
       {
         "id": "savoir",
         "value": 58,
-        "spec": "Théologie"
+        "spec": "theologie"
       },
       {
         "id": "survie-en-exterieur",
@@ -59287,7 +59336,7 @@
       {
         "id": "savoir",
         "value": 62,
-        "spec": "Politique"
+        "spec": "politique"
       }
     ],
     "talents": [
@@ -59404,7 +59453,7 @@
       {
         "id": "savoir",
         "value": 60,
-        "spec": "Politique"
+        "spec": "politique"
       },
       {
         "id": "subornation",
@@ -61085,12 +61134,12 @@
       {
         "id": "savoir",
         "value": 99,
-        "spec": "Océans"
+        "spec": "oceans"
       },
       {
         "id": "savoir",
         "value": 69,
-        "spec": "Théologie"
+        "spec": "theologie"
       }
     ],
     "talents": [
@@ -61377,7 +61426,7 @@
       {
         "id": "savoir",
         "value": 97,
-        "spec": "Guerre"
+        "spec": "guerre"
       },
       {
         "id": "savoir",
@@ -61387,7 +61436,7 @@
       {
         "id": "savoir",
         "value": 78,
-        "spec": "Politique"
+        "spec": "politique"
       },
       {
         "id": "survie-en-exterieur",
@@ -61676,12 +61725,12 @@
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Guerre"
+        "spec": "guerre"
       },
       {
         "id": "savoir",
         "value": 70,
-        "spec": "Ingénierie"
+        "spec": "ingenierie"
       },
       {
         "id": "savoir",
@@ -61967,12 +62016,12 @@
       {
         "id": "savoir",
         "value": 74,
-        "spec": "Guerre"
+        "spec": "guerre"
       },
       {
         "id": "savoir",
         "value": 54,
-        "spec": "Histoire"
+        "spec": "histoire"
       },
       {
         "id": "savoir",
@@ -62227,7 +62276,7 @@
       {
         "id": "metier",
         "value": 80,
-        "spec": "Charpentier"
+        "spec": "charpentier"
       },
       {
         "id": "natation",
@@ -62265,12 +62314,12 @@
       {
         "id": "savoir",
         "value": 95,
-        "spec": "Guerre"
+        "spec": "guerre"
       },
       {
         "id": "savoir",
         "value": 95,
-        "spec": "Histoire"
+        "spec": "histoire"
       },
       {
         "id": "savoir",
@@ -62280,7 +62329,7 @@
       {
         "id": "savoir",
         "value": 105,
-        "spec": "Politique"
+        "spec": "politique"
       },
       {
         "id": "survie-en-exterieur",
@@ -62515,7 +62564,7 @@
       {
         "id": "metier",
         "value": 62,
-        "spec": "Charpentier"
+        "spec": "charpentier"
       },
       {
         "id": "natation",
@@ -62552,7 +62601,7 @@
       {
         "id": "savoir",
         "value": 46,
-        "spec": "Khorne"
+        "spec": "khorne"
       },
       {
         "id": "voile",

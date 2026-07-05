@@ -33,7 +33,7 @@ function crew(withSavoir = false): Combatant[] {
   const otto = createHero({ speciesId: 'humains-reiklander', careerId: 'garde', name: 'Otto', motivation: 'x', rng: makeRNG(12), id: 'r-otto' });
   const lise = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Lise', motivation: 'x', rng: makeRNG(13), id: 'r-lise' });
   const trio = [gunnar, otto, lise];
-  if (withSavoir) for (const h of trio) skill(h, 'savoir', 40, 'Voies fluviales');
+  if (withSavoir) for (const h of trio) skill(h, 'savoir', 40, 'voies-fluviales');
   return trio;
 }
 

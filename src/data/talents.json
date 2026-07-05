@@ -2946,7 +2946,7 @@
     "combat": {
       "reverseFailed": {
         "skill": "metier",
-        "spec": "Apothicaire"
+        "spec": "apothicaire"
       }
     }
   },
@@ -4168,7 +4168,7 @@
       {
         "op": "grantCareerSkill",
         "skillId": "savoir",
-        "spec": "Région"
+        "spec": "region"
       }
     ]
   },

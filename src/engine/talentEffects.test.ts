@@ -101,7 +101,7 @@ describe('« Ajoutez la Compétence X à n\'importe quelle Carrière que vous en
     expect(adds).toContainEqual({ id: 'metier', spec: 'Forgeron' }); // spec « Au choix » reportée sur celle du talent
     expect(adds).toContainEqual({ id: 'langue', spec: 'magick' });
     expect(adds).toContainEqual({ id: 'divertissement', spec: 'Chant' });
-    expect(adds).toContainEqual({ id: 'savoir', spec: 'Région' });
+    expect(adds).toContainEqual({ id: 'savoir', spec: 'region' });
     expect(adds).toHaveLength(4);
   });
 });

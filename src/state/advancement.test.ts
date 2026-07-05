@@ -143,10 +143,10 @@ describe('buildAdvancementView — match d\'entité possédée par id+spec (Issu
   });
 
   it('Compétence à spec wildcard possédée : ownedAdvances lu par id+spec (Savoir (Empire))', () => {
-    const v = buildAdvancementView(hero({ career: 'erudit', careerLevel: 1, skills: [{ skillId: 'savoir', spec: 'Empire', characteristic: 'Int', advances: 3 }] }));
+    const v = buildAdvancementView(hero({ career: 'erudit', careerLevel: 1, skills: [{ skillId: 'savoir', spec: 'empire', characteristic: 'Int', advances: 3 }] }));
     const open = v.skillSlotsOpen.find((s) => s.group === 'Savoir');
     expect(open).toBeTruthy();
-    const empire = open!.options.find((o) => o.spec === 'Empire');
+    const empire = open!.options.find((o) => o.spec === 'empire');
     expect(empire).toBeTruthy();
     expect(empire!.ownedAdvances).toBe(3);
   });

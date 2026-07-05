@@ -44,7 +44,7 @@ function crew(): Combatant[] {
   const navi = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Navigateur Ansmann', motivation: 'Test', rng: makeRNG(4803), id: 'mar-navi' });
   navi.shipRole = 'navigateur';
   skill(navi, 'orientation', 55);
-  skill(navi, 'savoir', 40, 'Océans'); // bonus d'Orientation au phare (MDG ch.13 l.335)
+  skill(navi, 'savoir', 40, 'oceans'); // bonus d'Orientation au phare (MDG ch.13 l.335)
   navi.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.48 };
 
   const vigie = createHero({ speciesId: 'humains-reiklander', careerId: 'eclaireur', name: 'Vigie Perla', motivation: 'Test', rng: makeRNG(4804), id: 'mar-vigie' });

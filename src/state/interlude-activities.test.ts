@@ -181,7 +181,7 @@ describe('Activités d’interlude (LDB 23)', () => {
   // ── Identifier un artefact magique (ADE2 ch.4 l.46-59) ─────────────────────────────────────
   function armArtefact(withSavoir = true) {
     const h = hero();
-    if (withSavoir) h.skills.push({ skillId: 'savoir', spec: 'Magie', characteristic: 'Int', advances: 10 });
+    if (withSavoir) h.skills.push({ skillId: 'savoir', spec: 'magie', characteristic: 'Int', advances: 10 });
     h.items = [...(h.items ?? []), { uid: 'art1', name: 'Épée ancienne', kind: 'melee', qualities: [{ id: 'de-plaies-atroces' }], enc: 1, equipped: false, identified: false } as never];
     const itl = useGame.getState().interlude!;
     itl.perHero[h.id] = { ...st(), fx: undefined, left: 3 };

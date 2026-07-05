@@ -104,7 +104,7 @@ describe('Phares & clochers (MDG ch.13 l.333-351)', () => {
     const nav = {
       ...hull(30), id: 'nav',
       characteristics: { CC: 0, CT: 0, F: 0, E: 0, I: 0, Ag: 0, Dex: 0, Int: 30, FM: 0, Soc: 0 },
-      skills: [{ skillId: 'savoir', spec: 'Océans', advances: 6 }],
+      skills: [{ skillId: 'savoir', spec: 'oceans', advances: 6 }],
     } as unknown as Combatant;
     expect(savoirOceansBonus(nav)).toBe(3); // Int 30 + 6 avances = 36 → +3
     expect(lighthouseOrientationDR(nav, false)).toBe(3);

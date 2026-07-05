@@ -85,7 +85,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -207,7 +207,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Middenheim"
+          "spec": "middenheim"
         }
       },
       {
@@ -325,7 +325,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Middenland"
+          "spec": "middenland"
         }
       },
       {
@@ -461,7 +461,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Nordland"
+          "spec": "nordland"
         }
       },
       {
@@ -573,7 +573,7 @@
       {
         "ref": {
           "id": "langue",
-          "spec": "Arabyan"
+          "spec": "arabien"
         }
       },
       {
@@ -995,7 +995,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Khorne"
+          "spec": "khorne"
         }
       },
       {
@@ -1153,7 +1153,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -1174,7 +1174,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       }
     ],
@@ -1258,7 +1258,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -1274,7 +1274,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -1395,7 +1395,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -1411,7 +1411,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -1530,7 +1530,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -1546,7 +1546,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -1563,7 +1563,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Herbes"
+          "spec": "herbes"
         }
       },
       {
@@ -1667,7 +1667,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -1683,7 +1683,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -1803,7 +1803,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -1819,7 +1819,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -1938,7 +1938,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -1954,7 +1954,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -2073,7 +2073,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -2089,7 +2089,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -2207,7 +2207,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -2223,7 +2223,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -2346,7 +2346,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -2362,7 +2362,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -2482,7 +2482,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -2498,7 +2498,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -2618,7 +2618,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -2634,7 +2634,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -2656,7 +2656,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       }
     ],
@@ -2758,7 +2758,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cuisinier"
+          "spec": "cuisinier"
         }
       },
       {
@@ -2774,7 +2774,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Reikland"
+          "spec": "reikland"
         }
       },
       {
@@ -2926,19 +2926,19 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Géologie"
+          "spec": "geologie"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Métallurgie"
+          "spec": "metallurgie"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Nains"
+          "spec": "nains"
         }
       }
     ],
@@ -3074,7 +3074,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Nains"
+          "spec": "nains"
         }
       },
       {

@@ -48,6 +48,10 @@
       {
         "id": "boucherie",
         "label": "Boucherie"
+      },
+      {
+        "id": "redaction",
+        "label": "Rédaction"
       }
     ],
     "desc": "Créez des œuvres d'art avec le moyen d'expression de votre choix.\n\nNe pas avoir accès aux Outils de la profession appropriés entraînera une pénalité à vos Tests. Le DR obtenu détermine la qualité de l'œuvre finale. Un Test étendu peut être nécessaire pour la réalisation d'une œuvre d'art complexe ou de grande taille. La Compétence Art est peu utilisée en combat, mais les bustes de marbre peuvent faire de formidables armes improvisées.",
@@ -134,6 +138,18 @@
       {
         "id": "loup",
         "label": "Loup"
+      },
+      {
+        "id": "sanglier",
+        "label": "Sanglier"
+      },
+      {
+        "id": "rat-ogre",
+        "label": "Rat-Ogre"
+      },
+      {
+        "id": "rats",
+        "label": "Rats"
       }
     ],
     "desc": "C'est la façon dont vous maîtrisez le fait de chevaucher un groupe particulier d'animaux ; Chevaucher (Cheval), par exemple, vous permettra de monter des chevaux, des mules, des ânes et autres animaux similaires. Vous aurez besoin de faire un Test uniquement lorsque vous voudrez effectuer quelque chose d'inhabituel, comme une course, du dressage, traverser un terrain dangereux ou charger en combat. Autrement, si vous possédez la Compétence, vous êtes considéré comme capable de chevaucher sans avoir besoin de Test.\n\nSi vous êtes monté sur un destrier, vous vous déplacez en utilisant les statistiques de Mouvement du destrier ; si vous voulez courir, sauter, ou bondir, vous utilisez votre Compétence Chevaucher, et pas Athlétisme. Un Test de Chevaucher étendu peut être nécessaire si vous vous rendez quelque part, le DR cible dépendant de la longueur du voyage, et le nombre de Tests indiquant combien de temps vous mettez à arriver. Un Test de Chevaucher peut être modifié par les conditions environnementales et le tempérament de la monture. Pour plus d'information sur les montures, voir le Chapitre 12 : Bestiaire.\n\nLa Compétence Chevaucher peut être activement utilisée en combat. Voir Chapitre 5 : Règles pour plus d'informations sur le combat monté.",
@@ -496,6 +512,18 @@
       {
         "id": "wastelander",
         "label": "Wastelander"
+      },
+      {
+        "id": "arabien",
+        "label": "Arabien"
+      },
+      {
+        "id": "nehekhara",
+        "label": "Nehekhara"
+      },
+      {
+        "id": "noir-parler",
+        "label": "Noir Parler"
       }
     ],
     "desc": "La Compétence Langue indique votre aisance avec différentes langues. Tous les Personnages sont considérés comme capables de parler le « reikspiel » – la langue de l'Empire – et leur langue maternelle (si votre Personnage en possède une différente du reikspiel), sans avoir besoin de faire de Test. Si votre partie ne se déroule pas dans l'Empire, remplacez le reikspiel par la langue locale.\n\nSi vous possédez l'une de ces Compétences, vous êtes généralement capable de vous faire comprendre dans cette langue, ou de comprendre des concepts simples. Vous serez amené à faire un Test de votre Compétence de Langue quand un concept particulièrement difficile doit être transmis, ou qu'un dialecte ou vocabulaire obscur est utilisé.\n\nRemarque : Langue (Magick) est utilisée pour lancer des Sorts et peut, de temps à autre, nécessiter un Test avec... des conséquences fâcheuses en cas d'échec. Référez-vous au Chapitre 8 : Magie pour plus d'information à ce sujet.",
@@ -522,59 +550,201 @@
     "characteristic": "Dex",
     "type": "avancée",
     "specs": [
-      "Apothicaire",
-      "Armurier",
-      "Barbier",
-      "Batteur d'armure",
-      "Brasseur",
-      "Bricoleur",
-      "Calligraphe",
-      "Cartographe",
-      "Chandelier",
-      "Charpentier",
-      "Charpentier naval",
-      "Cirier",
-      "Colifichets",
-      "Constructeur de navires",
-      "Construction de bateaux",
-      "Cordonnier",
-      "Cuisinier",
-      "Embaumeur",
-      "Empoisonneur",
-      "Explosifs",
-      "Fabricant d'arcs",
-      "Fabriquant de canons",
-      "Ferronnier",
-      "Forgeron",
-      "Graveur",
-      "Herboriste",
-      "Imprimerie",
-      "Ingénieur",
-      "Joallier",
-      "Lapidaire",
-      "Maçon",
-      "Maréchal-ferrant",
-      "Maroquinier",
-      "Matériel artistique",
-      "Mineur",
-      "Orfèvre",
-      "Peintre",
-      "Poisons",
-      "Potier",
-      "Sulpteur sur bois",
-      "Tailleur",
-      "Tailleur de pierre",
-      "Tanneur",
-      "Tisseur",
-      "Tonnelier",
-      "Verrier",
-      "Vigneron"
+      {
+        "id": "apothicaire",
+        "label": "Apothicaire"
+      },
+      {
+        "id": "armurier",
+        "label": "Armurier"
+      },
+      {
+        "id": "barbier",
+        "label": "Barbier"
+      },
+      {
+        "id": "batteur-d-armure",
+        "label": "Batteur d'armure"
+      },
+      {
+        "id": "brasseur",
+        "label": "Brasseur"
+      },
+      {
+        "id": "bricoleur",
+        "label": "Bricoleur"
+      },
+      {
+        "id": "calligraphe",
+        "label": "Calligraphe"
+      },
+      {
+        "id": "cartographe",
+        "label": "Cartographe"
+      },
+      {
+        "id": "chandelier",
+        "label": "Chandelier"
+      },
+      {
+        "id": "charpentier",
+        "label": "Charpentier"
+      },
+      {
+        "id": "charpentier-naval",
+        "label": "Charpentier naval"
+      },
+      {
+        "id": "cirier",
+        "label": "Cirier"
+      },
+      {
+        "id": "colifichets",
+        "label": "Colifichets"
+      },
+      {
+        "id": "constructeur-de-navires",
+        "label": "Constructeur de navires"
+      },
+      {
+        "id": "construction-de-bateaux",
+        "label": "Construction de bateaux"
+      },
+      {
+        "id": "cordonnier",
+        "label": "Cordonnier"
+      },
+      {
+        "id": "cuisinier",
+        "label": "Cuisinier"
+      },
+      {
+        "id": "embaumeur",
+        "label": "Embaumeur"
+      },
+      {
+        "id": "empoisonneur",
+        "label": "Empoisonneur"
+      },
+      {
+        "id": "explosifs",
+        "label": "Explosifs"
+      },
+      {
+        "id": "fabricant-d-arcs",
+        "label": "Fabricant d'arcs"
+      },
+      {
+        "id": "fabriquant-de-canons",
+        "label": "Fabriquant de canons"
+      },
+      {
+        "id": "ferronnier",
+        "label": "Ferronnier"
+      },
+      {
+        "id": "forgeron",
+        "label": "Forgeron"
+      },
+      {
+        "id": "graveur",
+        "label": "Graveur"
+      },
+      {
+        "id": "herboriste",
+        "label": "Herboriste"
+      },
+      {
+        "id": "imprimerie",
+        "label": "Imprimerie"
+      },
+      {
+        "id": "ingenieur",
+        "label": "Ingénieur"
+      },
+      {
+        "id": "joallier",
+        "label": "Joallier"
+      },
+      {
+        "id": "lapidaire",
+        "label": "Lapidaire"
+      },
+      {
+        "id": "macon",
+        "label": "Maçon"
+      },
+      {
+        "id": "marechal-ferrant",
+        "label": "Maréchal-ferrant"
+      },
+      {
+        "id": "maroquinier",
+        "label": "Maroquinier"
+      },
+      {
+        "id": "materiel-artistique",
+        "label": "Matériel artistique"
+      },
+      {
+        "id": "mineur",
+        "label": "Mineur"
+      },
+      {
+        "id": "orfevre",
+        "label": "Orfèvre"
+      },
+      {
+        "id": "peintre",
+        "label": "Peintre"
+      },
+      {
+        "id": "poisons",
+        "label": "Poisons"
+      },
+      {
+        "id": "potier",
+        "label": "Potier"
+      },
+      {
+        "id": "sulpteur-sur-bois",
+        "label": "Sulpteur sur bois"
+      },
+      {
+        "id": "tailleur",
+        "label": "Tailleur"
+      },
+      {
+        "id": "tailleur-de-pierre",
+        "label": "Tailleur de pierre"
+      },
+      {
+        "id": "tanneur",
+        "label": "Tanneur"
+      },
+      {
+        "id": "tisseur",
+        "label": "Tisseur"
+      },
+      {
+        "id": "tonnelier",
+        "label": "Tonnelier"
+      },
+      {
+        "id": "verrier",
+        "label": "Verrier"
+      },
+      {
+        "id": "vigneron",
+        "label": "Vigneron"
+      }
     ],
     "desc": "Beaucoup de gens au Reikland embrassent une profession ; même les aventuriers ont souvent une Carrière plus fiable ou plus respectable sur laquelle compter entre deux épisodes palpitants.\n\nLa Compétence Métier représente votre capacité à créer quelque chose ou à fournir un service, ainsi que votre connaissance du savoir essentiel entourant votre profession.\n\nPosséder la Compétence est suffisant pour effectuer automatiquement les tâches associées à votre profession, en partant du principe que vous possédez les ressources et des outils adaptés. Vous avez besoin d'effectuer un Test de Métier uniquement si vous cherchez à créer quelque chose rapidement, que les conditions sont défavorables ou que vous cherchez à inventer ou créer un objet de grande qualité.\n\nLes Tests de Métier de ce type sont souvent des Tests étendus, dont le DR et le temps nécessaires dépendent de la portée ou de l'ampleur de ce qui est produit ; un repas rapide avec Métier (Cuisinier) pour impressionner un seigneur local prendra bien moins de temps que la construction d'un navire de guerre avec Métier (Charpentier de marine).\n\nVous pouvez aussi effectuer un Test de Métier comme une Compétence Savoir pour déterminer une information importante concernant la profession en question. Dans de telles circonstances, le MJ peut préférer utiliser l'Int plutôt que la Dex comme Caractéristique de base, bien que cela soit souvent ignoré pour simplifier.\n\nBien que beaucoup de Compétences Métier aient peu d'utilité en combat, il y a autant de Compétences Métier que de professions, et certaines peuvent être utilisées en fonction des circonstances. Par exemple, réussir un Test de Métier (Apothicaire) peut être utile si vous combattez dans une échoppe d'Apothicaire, car vous identifiez des substances âcres à jeter sur vos ennemis.\n\nLa Compétence Métier est aussi utilisée pour effectuer une Activité Artisanat (voir page 196).",
     "source": {
       "book": "LDB",
       "page": 126
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "musicien",
@@ -799,69 +969,241 @@
       "cap": "Int"
     },
     "specs": [
-      "Anatomie",
-      "Art",
-      "Artillerie",
-      "Astrologie",
-      "Bêtes sauvages",
-      "Chaos",
-      "Chimie",
-      "Côtes et marées",
-      "Démonologie",
-      "Dragons",
-      "Empire",
-      "Épaves",
-      "Esprits",
-      "Folklore",
-      "Géants",
-      "Généalogie",
-      "Géographie",
-      "Géologie",
-      "Guerre",
-      "Héraldique",
-      "Herbes",
-      "Histoire",
-      "Ingénierie",
-      "Itinéraires",
-      "Khorne",
-      "Le Moot",
-      "Loi",
-      "Magick",
-      "Magie",
-      "Magie noire",
-      "Manann",
-      "Métallurgie",
-      "Middenheim",
-      "Middenland",
-      "Nains",
-      "Nécromancie",
-      "Noble",
-      "Nordland",
-      "Océans",
-      "Plantes",
-      "Poison",
-      "Politique",
-      "Prophétie",
-      "Région",
-      "Reikland",
-      "Remèdes",
-      "Savoir-vivre",
-      "Science",
-      "Sigmar",
-      "Sorcières",
-      "Stromfels",
-      "Taxes",
-      "Théologie",
-      "Torture",
-      "Trolls",
-      "Ulric",
-      "Voies fluviales"
+      {
+        "id": "anatomie",
+        "label": "Anatomie"
+      },
+      {
+        "id": "art",
+        "label": "Art"
+      },
+      {
+        "id": "artillerie",
+        "label": "Artillerie"
+      },
+      {
+        "id": "astrologie",
+        "label": "Astrologie"
+      },
+      {
+        "id": "betes-sauvages",
+        "label": "Bêtes sauvages"
+      },
+      {
+        "id": "chaos",
+        "label": "Chaos"
+      },
+      {
+        "id": "chimie",
+        "label": "Chimie"
+      },
+      {
+        "id": "cotes-et-marees",
+        "label": "Côtes et marées"
+      },
+      {
+        "id": "demonologie",
+        "label": "Démonologie"
+      },
+      {
+        "id": "dragons",
+        "label": "Dragons"
+      },
+      {
+        "id": "empire",
+        "label": "Empire"
+      },
+      {
+        "id": "epaves",
+        "label": "Épaves"
+      },
+      {
+        "id": "esprits",
+        "label": "Esprits"
+      },
+      {
+        "id": "folklore",
+        "label": "Folklore"
+      },
+      {
+        "id": "geants",
+        "label": "Géants"
+      },
+      {
+        "id": "genealogie",
+        "label": "Généalogie"
+      },
+      {
+        "id": "geographie",
+        "label": "Géographie"
+      },
+      {
+        "id": "geologie",
+        "label": "Géologie"
+      },
+      {
+        "id": "guerre",
+        "label": "Guerre"
+      },
+      {
+        "id": "heraldique",
+        "label": "Héraldique"
+      },
+      {
+        "id": "herbes",
+        "label": "Herbes"
+      },
+      {
+        "id": "histoire",
+        "label": "Histoire"
+      },
+      {
+        "id": "ingenierie",
+        "label": "Ingénierie"
+      },
+      {
+        "id": "itineraires",
+        "label": "Itinéraires"
+      },
+      {
+        "id": "khorne",
+        "label": "Khorne"
+      },
+      {
+        "id": "le-moot",
+        "label": "Le Moot"
+      },
+      {
+        "id": "loi",
+        "label": "Loi"
+      },
+      {
+        "id": "magick",
+        "label": "Magick"
+      },
+      {
+        "id": "magie",
+        "label": "Magie"
+      },
+      {
+        "id": "magie-noire",
+        "label": "Magie noire"
+      },
+      {
+        "id": "manann",
+        "label": "Manann"
+      },
+      {
+        "id": "metallurgie",
+        "label": "Métallurgie"
+      },
+      {
+        "id": "middenheim",
+        "label": "Middenheim"
+      },
+      {
+        "id": "middenland",
+        "label": "Middenland"
+      },
+      {
+        "id": "nains",
+        "label": "Nains"
+      },
+      {
+        "id": "necromancie",
+        "label": "Nécromancie"
+      },
+      {
+        "id": "noble",
+        "label": "Noble"
+      },
+      {
+        "id": "nordland",
+        "label": "Nordland"
+      },
+      {
+        "id": "oceans",
+        "label": "Océans"
+      },
+      {
+        "id": "plantes",
+        "label": "Plantes"
+      },
+      {
+        "id": "poison",
+        "label": "Poison"
+      },
+      {
+        "id": "politique",
+        "label": "Politique"
+      },
+      {
+        "id": "prophetie",
+        "label": "Prophétie"
+      },
+      {
+        "id": "region",
+        "label": "Région"
+      },
+      {
+        "id": "reikland",
+        "label": "Reikland"
+      },
+      {
+        "id": "remedes",
+        "label": "Remèdes"
+      },
+      {
+        "id": "savoir-vivre",
+        "label": "Savoir-vivre"
+      },
+      {
+        "id": "science",
+        "label": "Science"
+      },
+      {
+        "id": "sigmar",
+        "label": "Sigmar"
+      },
+      {
+        "id": "sorcieres",
+        "label": "Sorcières"
+      },
+      {
+        "id": "stromfels",
+        "label": "Stromfels"
+      },
+      {
+        "id": "taxes",
+        "label": "Taxes"
+      },
+      {
+        "id": "theologie",
+        "label": "Théologie"
+      },
+      {
+        "id": "torture",
+        "label": "Torture"
+      },
+      {
+        "id": "trolls",
+        "label": "Trolls"
+      },
+      {
+        "id": "ulric",
+        "label": "Ulric"
+      },
+      {
+        "id": "voies-fluviales",
+        "label": "Voies fluviales"
+      }
     ],
     "desc": "Posséder une Compétence Savoir signifie que vous avez officiellement étudié, ou avez appris d'une façon ou d'une autre, une branche de connaissances avancées. Vous possédez des données approfondies dans une spécialisation et n'avez donc pas besoin d'effectuer de Test pour que le MJ vous donne les éléments d'information utiles. Si vous recherchez des informations spécifiques moins connues, vous aurez besoin d'effectuer un Test de Savoir, modifié selon la nature obscure de l'information, où les DR indiqueront de combien de détails vous vous souvenez.\n\nEn combat, un Test de Savoir réussi peut éventuellement vous accorder +1 Avantage (avec l'accord de votre MJ). Par exemple, Savoir (Géologie) peut vous donner un Avantage si vous combattez dans une caverne, ou Savoir (Ingénierie) peut vous aider si vous combattez un ennemi armé d'un appareil mécanique complexe. Vous pouvez continuer à renforcer votre Avantage lors des tours ultérieurs, à condition que les circonstances le permettent (déterminé par le MJ) et que vous ne soyez pas interrompu ; de cette façon, vous pouvez gagner un maximum d'Avantages, égal à votre Bonus d'Intelligence.",
     "source": {
       "book": "LDB",
       "page": 129
-    }
+    },
+    "specsOpen": true
   },
   {
     "id": "signes-secrets",

@@ -23,7 +23,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Imprimerie"
+          "spec": "imprimerie"
         }
       },
       {
@@ -39,7 +39,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       },
       {
@@ -236,7 +236,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       }
     ],
@@ -411,7 +411,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -681,7 +681,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
@@ -754,7 +754,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       }
     ],
@@ -809,7 +809,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       }
     ],
@@ -987,7 +987,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       }
     ],
@@ -1276,7 +1276,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -1633,7 +1633,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
@@ -1852,7 +1852,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -1921,7 +1921,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       }
     ],
@@ -1979,7 +1979,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       }
     ],
@@ -2155,7 +2155,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Poison"
+          "spec": "poison"
         }
       },
       {
@@ -2431,7 +2431,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Matériel artistique"
+          "spec": "materiel-artistique"
         }
       },
       {
@@ -2493,13 +2493,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Art"
+          "spec": "art"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       }
     ],
@@ -2638,7 +2638,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       },
       {
@@ -2714,7 +2714,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -2826,7 +2826,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       }
     ],
@@ -2994,7 +2994,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Armurier"
+          "spec": "armurier"
         }
       },
       {
@@ -3135,7 +3135,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       }
     ],
@@ -3291,7 +3291,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       },
       {
@@ -3807,7 +3807,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -4096,7 +4096,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       },
       {
@@ -4185,7 +4185,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -4262,7 +4262,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       }
     ],
@@ -4548,7 +4548,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -4853,7 +4853,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -4902,7 +4902,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       }
     ],
@@ -4976,13 +4976,13 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Maréchal-ferrant"
+          "spec": "marechal-ferrant"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       },
       {
@@ -5147,7 +5147,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -5443,7 +5443,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Savoir-vivre"
+          "spec": "savoir-vivre"
         }
       }
     ],
@@ -5499,7 +5499,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -5729,7 +5729,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Anatomie"
+          "spec": "anatomie"
         }
       }
     ],
@@ -5951,7 +5951,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -6150,7 +6150,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Théologie"
+          "spec": "theologie"
         }
       }
     ],
@@ -6349,7 +6349,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -6626,7 +6626,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -7313,7 +7313,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Trolls"
+          "spec": "trolls"
         }
       }
     ],
@@ -7391,7 +7391,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Géants"
+          "spec": "geants"
         }
       },
       {
@@ -7463,7 +7463,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Dragons"
+          "spec": "dragons"
         }
       }
     ],
@@ -7515,7 +7515,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Chaos"
+          "spec": "chaos"
         }
       }
     ],
@@ -7804,7 +7804,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       }
     ],
@@ -7871,7 +7871,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Fabricant d'arcs"
+          "spec": "fabricant-d-arcs"
         }
       },
       {
@@ -8277,7 +8277,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -8352,7 +8352,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Itinéraires"
+          "spec": "itineraires"
         }
       }
     ],
@@ -8565,7 +8565,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Bricoleur"
+          "spec": "bricoleur"
         }
       },
       {
@@ -8692,13 +8692,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Géographie"
+          "spec": "geographie"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -8782,7 +8782,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Sigmar"
+          "spec": "sigmar"
         }
       },
       {
@@ -8864,7 +8864,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Empire"
+          "spec": "empire"
         }
       }
     ],
@@ -8930,7 +8930,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Théologie"
+          "spec": "theologie"
         }
       }
     ],
@@ -9069,7 +9069,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Ulric"
+          "spec": "ulric"
         }
       },
       {
@@ -9145,7 +9145,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Herbes"
+          "spec": "herbes"
         }
       }
     ],
@@ -9406,7 +9406,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
@@ -9599,7 +9599,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cartographe"
+          "spec": "cartographe"
         }
       },
       {
@@ -9773,7 +9773,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Ingénierie"
+          "spec": "ingenierie"
         }
       }
     ],
@@ -10137,7 +10137,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Empire"
+          "spec": "empire"
         }
       }
     ],
@@ -10236,7 +10236,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Le Moot"
+          "spec": "le-moot"
         }
       }
     ],
@@ -10394,7 +10394,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Nécromancie"
+          "spec": "necromancie"
         }
       }
     ],
@@ -10446,7 +10446,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -10531,7 +10531,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Torture"
+          "spec": "torture"
         }
       }
     ],
@@ -10607,7 +10607,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Sorcières"
+          "spec": "sorcieres"
         }
       }
     ],
@@ -10679,13 +10679,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -10733,13 +10733,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Chaos"
+          "spec": "chaos"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       }
     ],
@@ -11078,13 +11078,13 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Apothicaire"
+          "spec": "apothicaire"
         }
       },
       {
         "ref": {
           "id": "metier",
-          "spec": "Empoisonneur"
+          "spec": "empoisonneur"
         }
       },
       {
@@ -11095,19 +11095,19 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Chimie"
+          "spec": "chimie"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Remèdes"
+          "spec": "remedes"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Plantes"
+          "spec": "plantes"
         }
       }
     ],
@@ -11190,7 +11190,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Science"
+          "spec": "science"
         }
       }
     ],
@@ -11612,7 +11612,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Magie"
+          "spec": "magie"
         }
       }
     ],
@@ -11948,7 +11948,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Ingénieur"
+          "spec": "ingenieur"
         }
       },
       {
@@ -11975,7 +11975,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Ingénierie"
+          "spec": "ingenierie"
         }
       }
     ],
@@ -12254,13 +12254,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Théologie"
+          "spec": "theologie"
         }
       }
     ],
@@ -12601,19 +12601,19 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Barbier"
+          "spec": "barbier"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Anatomie"
+          "spec": "anatomie"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Remèdes"
+          "spec": "remedes"
         }
       }
     ],
@@ -12733,7 +12733,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Noble"
+          "spec": "noble"
         }
       }
     ],
@@ -12819,7 +12819,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Théologie"
+          "spec": "theologie"
         }
       }
     ],
@@ -12878,19 +12878,19 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Brasseur"
+          "spec": "brasseur"
         }
       },
       {
         "ref": {
           "id": "metier",
-          "spec": "Herboriste"
+          "spec": "herboriste"
         }
       },
       {
         "ref": {
           "id": "metier",
-          "spec": "Vigneron"
+          "spec": "vigneron"
         }
       },
       {
@@ -12956,13 +12956,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -13093,7 +13093,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Théologie"
+          "spec": "theologie"
         }
       }
     ],
@@ -13233,7 +13233,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       }
     ],
@@ -13291,7 +13291,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       }
     ],
@@ -13377,7 +13377,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Magie"
+          "spec": "magie"
         }
       }
     ],
@@ -13507,7 +13507,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       },
       {
@@ -13729,7 +13729,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Voies fluviales"
+          "spec": "voies-fluviales"
         }
       }
     ],
@@ -13808,7 +13808,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Construction de bateaux"
+          "spec": "construction-de-bateaux"
         }
       }
     ],
@@ -14027,7 +14027,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
@@ -14105,7 +14105,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Voies fluviales"
+          "spec": "voies-fluviales"
         }
       }
     ],
@@ -14439,7 +14439,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Taxes"
+          "spec": "taxes"
         }
       }
     ],
@@ -14601,13 +14601,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Voies fluviales"
+          "spec": "voies-fluviales"
         }
       }
     ],
@@ -14733,7 +14733,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Folklore"
+          "spec": "folklore"
         }
       }
     ],
@@ -14949,7 +14949,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Charpentier"
+          "spec": "charpentier"
         }
       },
       {
@@ -15297,7 +15297,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Voies fluviales"
+          "spec": "voies-fluviales"
         }
       }
     ],
@@ -15380,13 +15380,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Voies fluviales"
+          "spec": "voies-fluviales"
         }
       }
     ],
@@ -15525,13 +15525,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Épaves"
+          "spec": "epaves"
         }
       }
     ],
@@ -15741,7 +15741,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Voies fluviales"
+          "spec": "voies-fluviales"
         }
       },
       {
@@ -15875,7 +15875,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       }
     ],
@@ -16116,7 +16116,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       },
       {
@@ -16177,7 +16177,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Généalogie"
+          "spec": "genealogie"
         }
       }
     ],
@@ -16330,7 +16330,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -16393,7 +16393,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       }
     ],
@@ -16442,7 +16442,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       }
     ],
@@ -16606,7 +16606,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -16738,7 +16738,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Empire"
+          "spec": "empire"
         }
       }
     ],
@@ -16896,7 +16896,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Remèdes"
+          "spec": "remedes"
         }
       },
       {
@@ -16973,7 +16973,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Histoire"
+          "spec": "histoire"
         }
       }
     ],
@@ -17020,7 +17020,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Ingénieur"
+          "spec": "ingenieur"
         }
       },
       {
@@ -17119,7 +17119,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -17321,13 +17321,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       }
     ],
@@ -17479,7 +17479,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Graveur"
+          "spec": "graveur"
         }
       },
       {
@@ -17547,13 +17547,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Art"
+          "spec": "art"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
@@ -17607,7 +17607,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       }
     ],
@@ -17769,7 +17769,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Herboriste"
+          "spec": "herboriste"
         }
       },
       {
@@ -17838,7 +17838,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Magie noire"
+          "spec": "magie-noire"
         }
       },
       {
@@ -17893,13 +17893,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Démonologie"
+          "spec": "demonologie"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Magie"
+          "spec": "magie"
         }
       }
     ],
@@ -18053,7 +18053,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
@@ -18330,7 +18330,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
@@ -18396,7 +18396,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       },
       {
@@ -18460,7 +18460,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       }
     ],
@@ -18541,7 +18541,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Bêtes sauvages"
+          "spec": "betes-sauvages"
         }
       },
       {
@@ -18840,7 +18840,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
@@ -19063,7 +19063,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cartographe"
+          "spec": "cartographe"
         }
       }
     ],
@@ -19415,7 +19415,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Herboriste"
+          "spec": "herboriste"
         }
       },
       {
@@ -19436,7 +19436,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Herbes"
+          "spec": "herbes"
         }
       },
       {
@@ -19522,7 +19522,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -19582,13 +19582,13 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Poisons"
+          "spec": "poisons"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Remèdes"
+          "spec": "remedes"
         }
       }
     ],
@@ -19730,7 +19730,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
@@ -19807,7 +19807,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Explosifs"
+          "spec": "explosifs"
         }
       },
       {
@@ -19877,7 +19877,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Ingénieur"
+          "spec": "ingenieur"
         }
       },
       {
@@ -19888,7 +19888,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Géologie"
+          "spec": "geologie"
         }
       }
     ],
@@ -20095,7 +20095,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Astrologie"
+          "spec": "astrologie"
         }
       },
       {
@@ -20210,7 +20210,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Prophétie"
+          "spec": "prophetie"
         }
       }
     ],
@@ -20281,13 +20281,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Folklore"
+          "spec": "folklore"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Herbes"
+          "spec": "herbes"
         }
       },
       {
@@ -20361,13 +20361,13 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Colifichets"
+          "spec": "colifichets"
         }
       },
       {
         "ref": {
           "id": "metier",
-          "spec": "Herboriste"
+          "spec": "herboriste"
         }
       },
       {
@@ -20378,7 +20378,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -20434,19 +20434,19 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Esprits"
+          "spec": "esprits"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Généalogie"
+          "spec": "genealogie"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Magie"
+          "spec": "magie"
         }
       }
     ],
@@ -20576,7 +20576,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       },
       {
@@ -20776,7 +20776,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Histoire"
+          "spec": "histoire"
         }
       }
     ],
@@ -21019,7 +21019,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -21157,7 +21157,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Maréchal-ferrant"
+          "spec": "marechal-ferrant"
         }
       },
       {
@@ -21336,7 +21336,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -21479,7 +21479,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       },
       {
@@ -21781,13 +21781,13 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Maréchal-ferrant"
+          "spec": "marechal-ferrant"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       },
       {
@@ -21954,7 +21954,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -22086,19 +22086,19 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Maréchal-ferrant"
+          "spec": "marechal-ferrant"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Empire"
+          "spec": "empire"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       },
       {
@@ -22269,7 +22269,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -22412,13 +22412,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Théologie"
+          "spec": "theologie"
         }
       }
     ],
@@ -22909,7 +22909,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       },
       {
@@ -23211,7 +23211,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -23374,7 +23374,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Armurier"
+          "spec": "armurier"
         }
       },
       {
@@ -23505,7 +23505,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -23678,7 +23678,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       },
       {
@@ -23801,7 +23801,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -23980,7 +23980,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       },
       {
@@ -24104,7 +24104,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       }
     ],
@@ -24286,7 +24286,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Mineur"
+          "spec": "mineur"
         }
       },
       {
@@ -24302,7 +24302,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Ingénierie"
+          "spec": "ingenierie"
         }
       }
     ],
@@ -24354,7 +24354,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Explosifs"
+          "spec": "explosifs"
         }
       },
       {
@@ -24432,7 +24432,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Loi"
+          "spec": "loi"
         }
       }
     ],
@@ -24785,7 +24785,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Cartographe"
+          "spec": "cartographe"
         }
       },
       {
@@ -24801,7 +24801,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Géographie"
+          "spec": "geographie"
         }
       },
       {
@@ -24886,7 +24886,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Héraldique"
+          "spec": "heraldique"
         }
       }
     ],
@@ -25152,8 +25152,8 @@
           "id": "metier"
         },
         "specOptions": [
-          "Armurier",
-          "Charpentier"
+          "armurier",
+          "charpentier"
         ]
       },
       {
@@ -25254,7 +25254,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Artillerie"
+          "spec": "artillerie"
         }
       }
     ],
@@ -25306,7 +25306,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Guerre"
+          "spec": "guerre"
         }
       }
     ],
@@ -25545,7 +25545,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Fabriquant de canons"
+          "spec": "fabriquant-de-canons"
         }
       },
       {
@@ -25556,7 +25556,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Artillerie"
+          "spec": "artillerie"
         }
       }
     ],
@@ -25608,7 +25608,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Océans"
+          "spec": "oceans"
         }
       }
     ],
@@ -25889,7 +25889,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Océans"
+          "spec": "oceans"
         }
       }
     ],
@@ -25975,7 +25975,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Océans"
+          "spec": "oceans"
         }
       },
       {
@@ -26116,7 +26116,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Charpentier"
+          "spec": "charpentier"
         }
       },
       {
@@ -26472,7 +26472,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Océans"
+          "spec": "oceans"
         }
       }
     ],
@@ -26563,13 +26563,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Océans"
+          "spec": "oceans"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -26707,13 +26707,13 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Épaves"
+          "spec": "epaves"
         }
       },
       {
         "ref": {
           "id": "savoir",
-          "spec": "Région"
+          "spec": "region"
         }
       }
     ],
@@ -26930,7 +26930,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Océans"
+          "spec": "oceans"
         }
       }
     ],
@@ -27131,7 +27131,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Manann"
+          "spec": "manann"
         }
       },
       {
@@ -27279,7 +27279,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Océans"
+          "spec": "oceans"
         }
       }
     ],
@@ -27338,7 +27338,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Politique"
+          "spec": "politique"
         }
       }
     ],
@@ -27430,7 +27430,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Côtes et marées"
+          "spec": "cotes-et-marees"
         }
       },
       {
@@ -27633,7 +27633,7 @@
       {
         "ref": {
           "id": "metier",
-          "spec": "Constructeur de navires"
+          "spec": "constructeur-de-navires"
         }
       }
     ],
@@ -27807,7 +27807,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Stromfels"
+          "spec": "stromfels"
         }
       }
     ],
@@ -27873,7 +27873,7 @@
       {
         "ref": {
           "id": "savoir",
-          "spec": "Océans"
+          "spec": "oceans"
         }
       }
     ],
