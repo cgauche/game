@@ -20,12 +20,12 @@ const scene = buildScene({
   size: [22, 16],
   heroStart: [3, 8],
   startMessage:
-    'Deux armées se font face. Un interlude est ouvert : préparez la bataille depuis l\'écran de Puissance ' +
-    'de Bataille (Discours, Planification, Repérage, Sabotage…) — chaque préparation puise dans vos Activités ' +
-    '« Entre deux aventures » (max 3, budget PARTAGÉ). Puis Round après Round, choisissez vos Scènes de la ' +
-    'situation du moment (plusieurs PJ par Scène, en soutien), résolvez le Test spectaculaire de Puissance et ' +
-    'rassemblez vos forces. Les Scènes « Pluie de flèches », « Charge », « Tuez la bête ! », « Duel » et ' +
-    '« Intrus » vous jettent dans une vraie mêlée.',
+    'Deux armées se font face. Un interlude est ouvert : préparez la bataille DEPUIS le menu d\'Activités de ' +
+    'l\'interlude (Discours, Planification, Repérage, Sabotage… figurent parmi les Activités par-héros) — chaque ' +
+    'préparation puise dans vos Activités « Entre deux aventures » (max 3, budget PARTAGÉ). « Engager la bataille » ' +
+    'clôt l\'interlude et lance les Rounds : choisissez vos Scènes de la situation du moment (plusieurs PJ par Scène, ' +
+    'en soutien), résolvez le Test spectaculaire de Puissance et rassemblez vos forces. Les Scènes « Pluie de ' +
+    'flèches », « Charge », « Tuez la bête ! », « Duel » et « Intrus » vous jettent dans une vraie mêlée.',
   encounters: [
     { id: 'enc-charge', enemies: [
       { ref: 'mutant', pos: { x: 12, y: 6 } },

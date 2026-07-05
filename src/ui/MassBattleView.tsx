@@ -7,20 +7,20 @@ import { StationSheet } from './StationSheet';
 import { AssignRow } from './AssignRow';
 import { battleScenesToStations, type Station } from '../state/stations';
 import {
-  massBattleThreatPenalty, battleActivitiesAvailable, armyMight, armyStartMight,
-  battleSceneById, battleActivityEffectLabel, battleSceneEffectLabel,
+  massBattleThreatPenalty, armyMight, armyStartMight,
+  battleSceneById, battleSceneEffectLabel,
   type MassBattleState, type MassBattleArmy,
 } from '../state/massBattleFlow';
-import { BATTLE_HAZARDS, inspireDifficulty } from '../engine/massBattle';
-import type { ActivityDef } from '../engine/activities';
-import { DIFFICULTY_LABELS, type Combatant } from '../engine/types';
+import { BATTLE_HAZARDS } from '../engine/massBattle';
+import type { Combatant } from '../engine/types';
 
 /**
- * Écran de Combat de masse / Puissance de Bataille (ADE II 08). État des deux armées (Puissance
- * courante vs départ), phase de bataille, Activités pré-combat (Discours + Planification/Sabotage…),
- * SITUATION du Round (sous-ensemble de Scènes du moment + menaces imposées), Scènes cinématiques
- * MULTI-PJ (résolues en Soutien, ADE II ch.8 l.116-118), aléa environnemental, Test spectaculaire,
- * Rassemblement, issue. Responsive.
+ * Écran de Combat de masse / Puissance de Bataille (ADE II 08). Il ne gère QUE les Rounds ('round') et
+ * l'issue ('over') : la PRÉPARATION (Activités 'bataille') se joue dans le menu d'interlude (« Interlude
+ * c'est interlude » — cf. `InterludeScreen`/`interludeCatalog`), pas ici. État des deux armées (Puissance
+ * courante vs départ), SITUATION du Round (sous-ensemble de Scènes du moment + menaces imposées), Scènes
+ * cinématiques MULTI-PJ (résolues en Soutien, ADE II ch.8 l.116-118), aléa environnemental, Test
+ * spectaculaire, Rassemblement, issue. Responsive.
  */
 export function MassBattleView() {
   const mb = useGame((s) => s.massBattle);
@@ -32,13 +32,10 @@ export function MassBattleView() {
         <p className="subtitle">
           {mb.phase === 'over'
             ? 'La bataille est terminée.'
-            : mb.phase === 'prep'
-              ? 'Préparatifs — Activités de bataille'
-              : `Round de bataille ${mb.round} / ${mb.plannedRounds}`}
+            : `Round de bataille ${mb.round} / ${mb.plannedRounds}`}
         </p>
         <RuleDivider />
         <ArmyBars mb={mb} />
-        {mb.phase === 'prep' && <PreBattle mb={mb} />}
         {mb.phase === 'round' && <RoundPanel mb={mb} />}
         {mb.phase === 'over' && <OverPanel mb={mb} />}
         <BattleLog log={mb.log} />
@@ -71,119 +68,6 @@ function ArmyBar({ army, side }: { army: MassBattleArmy; side: 'ally' | 'enemy' 
       </div>
       <div className="mb-army-sub">Puissance de départ {armyStartMight(army)}</div>
     </div>
-  );
-}
-
-function PreBattle({ mb }: { mb: MassBattleState }) {
-  const inspire = useGame((s) => s.massBattleInspire);
-  const activity = useGame((s) => s.massBattleActivity);
-  const begin = useGame((s) => s.massBattleBegin);
-  const setHero = useGame((s) => s.setMassBattleHero);
-  const party = useGame((s) => s.party);
-  const interlude = useGame((s) => s.interlude);
-  const living = party.filter((h) => !h.dead);
-  const diff = inspireDifficulty(armyMight(mb.ally), armyMight(mb.enemy));
-  const activities = battleActivitiesAvailable(mb);
-  // BUDGET UNIQUE (ADE II ch.8 l.65 / LDB 23 l.6) : la prépa de bataille EST une Activité d'interlude.
-  // Sans interlude ouvert → aucune Activité de préparation possible (Round 1 direct, sans bonus).
-  const budget = interlude ? living.reduce((n, h) => n + (interlude.perHero[h.id]?.left ?? 0), 0) : 0;
-  const full = budget <= 0;
-  const [openAct, setOpenAct] = useState<string | null>(null);
-  // Le posté d'une action pré-combat SOLO (Discours l.71 / la plupart des Activités « un Personnage »),
-  // résolu en héros vivant : premier id de la liste d'affectation.
-  const postedOf = (id: string): Combatant[] => {
-    const h = living.find((x) => x.id === mb.assignment[id]?.[0]);
-    return h ? [h] : [];
-  };
-  // Équipage COMPLET posté à une action SOUTENABLE (Planification l.81, plusieurs PJ), résolu en héros
-  // vivants dans l'ordre d'affectation (miroir UI-side de `assignedHeroesFor`, sans filtre `actedHeroes` :
-  // en pré-bataille aucun PJ n'a encore « agi »).
-  const crewOf = (id: string): Combatant[] =>
-    (mb.assignment[id] ?? []).map((hid) => living.find((x) => x.id === hid)).filter((h): h is Combatant => !!h);
-  return (
-    <section className="panel mb-phase">
-      <h3>Avant la bataille</h3>
-      <p className="mb-detail">
-        Les Activités de bataille (Discours, Planification, Repérage, Sabotage…) puisent dans le budget
-        d'Activités <em>Entre deux aventures</em> (max 3, ADE II ch.8). {interlude
-          ? <>Activités d'interlude restantes : <b>{budget}</b>.</>
-          : <><b>Aucun interlude ouvert</b> — la bataille démarrera au Round 1 sans préparation.</>}
-      </p>
-      {mb.allyMod !== 0 && (
-        <p className="mb-detail">Modificateur permanent aux Tests de Puissance alliés : <b>{mb.allyMod > 0 ? '+' : ''}{mb.allyMod}</b>.</p>
-      )}
-      {mb.firstRoundBonus > 0 && (
-        <p className="mb-detail mb-good">Discours réussi : +{mb.firstRoundBonus} au premier Round.</p>
-      )}
-      {(mb.planned || mb.scouted || mb.planningBonus > 0) && (
-        <p className="mb-detail">
-          {mb.scouted && <>Ennemi repéré (Puissance connue). </>}
-          {mb.planned && <>Plan de bataille établi. </>}
-          {mb.planningBonus > 0 && <>Bonus de Planification : +{mb.planningBonus}.</>}
-        </p>
-      )}
-      <div className="mb-scenes">
-        <div className="mb-scene">
-          <div className="bar mb-scene-head">
-            <span className="mb-scene-kind">Discours inspirant</span>
-            <span className="mb-scene-eff">Commandement — {DIFFICULTY_LABELS[diff]}</span>
-          </div>
-          <AssignRow
-            assigned={postedOf('inspire')}
-            candidates={living}
-            onAssign={(id) => setHero('inspire', [id])}
-            onRemove={() => setHero('inspire', [])}
-            max={1}
-            verb="prononce le Discours"
-            canPick={!full}
-          />
-          <div className="bar mb-actions">
-            <button className="btn small btn-primary" disabled={!!mb.inspired || full} onClick={inspire}>
-              {mb.inspired ? 'Discours prononcé' : 'Prononcer'}
-            </button>
-          </div>
-        </div>
-        {activities.map((a) => (
-          <div key={a.id} className="mb-scene">
-            <div className="bar mb-scene-head">
-              <span className="mb-scene-kind">{a.label}</span>
-              <span className="mb-scene-eff">{battleActivityEffectLabel(a)}</span>
-              <button className="btn small ghost" onClick={() => setOpenAct(openAct === a.id ? null : a.id)}>
-                {openAct === a.id ? 'Masquer' : 'Détails'}
-              </button>
-            </div>
-            {openAct === a.id && a.desc && <div className="mb-scene-desc"><Prose md={a.desc} /></div>}
-            <AssignRow
-              assigned={a.assisted ? crewOf(a.id) : postedOf(a.id)}
-              candidates={living}
-              // Soutenable (Planification l.81) : le picker AJOUTE un assistant ; sinon il REMPLACE le posté SOLO.
-              onAssign={(id) => setHero(a.id, a.assisted ? [...(mb.assignment[a.id] ?? []), id] : [id])}
-              onRemove={(id) => setHero(a.id, a.assisted ? (mb.assignment[a.id] ?? []).filter((x) => x !== id) : [])}
-              max={a.assisted ? Infinity : 1}
-              verb={`réalise « ${a.label} »`}
-              canPick={!full}
-            />
-            <div className="bar mb-actions">
-              <button className="btn small btn-primary" disabled={full} onClick={() => activity(a.id)}>Réaliser</button>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="bar mb-actions">
-        {interlude && <BackToInterlude />}
-        <button className="btn btn-primary" onClick={begin}>Engager la bataille</button>
-      </div>
-    </section>
-  );
-}
-
-/** Retour à l'écran d'interlude (coexistence prépa ⇄ interlude, ADE II ch.8) : la préparation puise
- *  dans le budget d'Activités d'interlude — on peut faire l'aller-retour tant que la bataille n'est pas
- *  engagée. */
-function BackToInterlude() {
-  const setScreen = useGame((s) => s.setScreen);
-  return (
-    <button className="btn small" onClick={() => setScreen('interlude')}>Retour à l'interlude</button>
   );
 }
 

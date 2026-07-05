@@ -262,17 +262,6 @@ export function massBattleThreatPenalty(mb: MassBattleState): number {
   return mb.activeThreats.reduce((sum, id) => sum + (battleSceneById(id)?.threat?.penalty ?? 0), 0);
 }
 
-/** Activités pré-combat disponibles (prérequis satisfaits, non déjà faites). Le BUDGET (max 3, l.65)
- *  n'est PAS testé ici : c'est celui, UNIQUE, de l'interlude (`interlude.perHero[id].left`) — vérifié
- *  au moment de l'ouverture/décrément par héros (une prépa de bataille EST une Activité d'interlude). */
-export function battleActivitiesAvailable(mb: MassBattleState): ActivityDef[] {
-  const flags = prepFlags(mb);
-  return PREP_ACTIVITIES().filter((a) => {
-    if (mb.activitiesDone.includes(a.id)) return false;
-    return (a.requires ?? []).every((f) => flags.has(f)); // Infiltration ⇐ planned, Sabotage ⇐ scouted
-  });
-}
-
 /** Flags de préparation acquis (satisfaction des `requires`, octroi des `grantsFlag`). */
 function prepFlags(mb: MassBattleState): ReadonlySet<string> {
   const flags = [...(mb.planned ? ['planned'] : []), ...(mb.scouted ? ['scouted'] : [])];
@@ -319,7 +308,16 @@ export function startMassBattle(get: Get, set: Set, spec: MassBattleSpec): void 
     sceneState: {},
     log: [`Bataille engagée : ${spec.allyName ?? 'les Personnages'} (Puissance ${allyMight}) contre ${spec.enemyName ?? 'l\'ennemi'} (Puissance ${enemyMight}).`],
   };
-  set({ massBattle: mb, screen: 'massBattle' });
+  set({ massBattle: mb });
+  // « Interlude c'est interlude » : la PRÉPARATION (Activités 'bataille') se joue DANS le menu d'interlude,
+  // pas sur un écran à part. Avec un interlude ouvert → on reste sur son écran (les prépas y figurent, budget
+  // UNIQUE). Sans interlude → aucune préparation possible : la bataille démarre directement au Round 1.
+  if (get().interlude) {
+    set({ screen: 'interlude' });
+  } else {
+    massBattleBegin(get, set);
+    set({ screen: 'massBattle' });
+  }
 }
 
 /** Passe de la phase pré-bataille aux Rounds : compose la situation du Round 1. */
@@ -405,11 +403,44 @@ export function openMassBattleInspire(get: Get, set: Set): void {
 }
 
 /** `ActivityDef` synthétique du Discours inspirant (l.69-71) : issue GLOBALE (+10 au 1er Round) portée par
- *  `confirmBattleActivity` (pas de bande `battle` — l'effet est un cas à part du RAW). */
-const INSPIRE_DEF: ActivityDef = {
+ *  `confirmBattleActivity` (pas de bande `battle` — l'effet est un cas à part du RAW). Exporté pour le
+ *  menu d'interlude (le Discours y figure comme toute Activité de préparation, résolu par
+ *  `massBattleInspire`). */
+export const INSPIRE_DEF: ActivityDef = {
   id: 'inspire', label: 'Discours inspirant', icon: 'action/lead', contexts: ['bataille'],
   source: { book: 'ADE II', page: 71 }, skills: [{ skillId: 'commandement' }], difficulty: 'intermediaire',
+  desc: 'Un bon général doit motiver ses troupes avant la bataille. Un discours inspirant réussi (Test de Commandement dont la Difficulté dépend de l\'écart de Puissance entre les armées) octroie un bonus de +10 au Test de Puissance du premier Round.',
 };
+
+/** Entrée d'Activité de préparation pour le menu d'interlude : la définition + son état de blocage
+ *  (`done` = déjà réalisée ; `blocked` = raison d'indisponibilité — prérequis non satisfait). Toutes les
+ *  Activités de préparation sont RETOURNÉES (jamais filtrées) pour être affichées désactivées avec la raison,
+ *  cohérent avec le rendu générique des Activités d'interlude. */
+export interface BattlePrepEntry {
+  def: ActivityDef;
+  done: boolean;
+  /** Raison d'indisponibilité (prérequis manquant) — `null` si praticable. */
+  blocked: string | null;
+}
+
+/** Libellé du prérequis manquant d'une Activité de préparation (l.73/104). */
+const REQUIRES_LABEL: Record<string, string> = {
+  planned: 'Exige une Planification réussie au préalable.',
+  scouted: 'Exige un Repérage réussi au préalable.',
+};
+
+/** Toutes les Activités de PRÉPARATION (Discours + `activitiesFor('bataille')`) avec leur état pour le menu
+ *  d'interlude : déjà réalisées (anti-répétition, l.67) ou verrouillées par un prérequis (Infiltration ⇐
+ *  Planification l.73 ; Sabotage ⇐ Repérage l.104). L'affichage rend l'entrée DÉSACTIVÉE avec la raison. */
+export function battlePrepEntries(mb: MassBattleState): BattlePrepEntry[] {
+  const flags = prepFlags(mb);
+  const defs = [INSPIRE_DEF, ...PREP_ACTIVITIES()];
+  return defs.map((def) => {
+    const done = def.id === 'inspire' ? !!mb.inspired : mb.activitiesDone.includes(def.id);
+    const missing = (def.requires ?? []).find((f) => !flags.has(f));
+    return { def, done, blocked: missing ? (REQUIRES_LABEL[missing] ?? `Prérequis manquant : ${missing}.`) : null };
+  });
+}
 
 /** Résout l'AFFECTATION explicite d'une action (`assignment[actionId]`) en la LISTE des PJ effectivement
  *  DISPONIBLES : membres du groupe, vivants, non encore engagés ce Round (`actedHeroes`). Tableau vide si
@@ -902,18 +933,6 @@ const BATTLE_WHEN_LABEL: Record<string, string> = {
   generalDown: 'général tué', intervention: 'intervention', noIntervention: 'duel solo',
   combatWon: 'victoire', combatLost: 'défaite',
 };
-
-/** Aperçu chiffré des effets d'une Activité de préparation (Succès / bandes conditionnelles). */
-export function battleActivityEffectLabel(def: ActivityDef): string {
-  const parts: string[] = [];
-  for (const b of def.outcomes ?? []) {
-    const eff = (b.battle ?? []).map(shortOutcomeLabel).join(', ');
-    if (!eff) continue;
-    const tier = b.on === 'failure' ? (b.maxSL === -6 ? 'Éch. Stupéfiant' : 'Échec') : b.minSL === 6 ? 'Stupéfiant' : b.maxSL === 5 ? 'Succès' : 'Succès';
-    parts.push(def.outcomes!.length > 1 ? `${eff} (${tier})` : eff);
-  }
-  return parts.join(' ; ') || 'Sans effet chiffré';
-}
 
 /** Aperçu chiffré des effets d'une Scène de Round (base + conditionnels). */
 export function battleSceneEffectLabel(def: ActivityDef): string {

@@ -260,6 +260,10 @@
   border-top: 1px solid var(--border);
 }
 .interlude-close .btn { margin-left: auto; }
+/* Bandeau d'INFO bataille imminente (non-cliquable) : accent rouge pour signaler l'enjeu, sans être
+   une interface à part — la préparation se joue dans les volets d'Activités par-héros. */
+.interlude-battle-banner.panel { padding: 8px 12px; border-left: 4px solid var(--danger, #c0392b); text-align: left; margin: 0 0 10px; }
+.interlude-battle-banner h3 { margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
 .interlude-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 0; align-items: center; }
 .interlude-craft-q { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; font-size: 12px; }
 .interlude-screen .menu-card { max-height: 92vh; overflow-y: auto; }

@@ -4,6 +4,8 @@ import { interludeEventFor } from '../data/interludeEvents';
 import { formatMoney, fromBrass, toBrass, PA_PER_SC, PA_PER_CO, type Money } from '../engine/money';
 import { MINUTES_PER_DAY } from '../engine/clock';
 import { heroStatus, heroClass, incomeSkillOf, interludeCatalog, type InterludeState, type InterludeHeroState, type BankDeposit } from '../state/interludeFlow';
+import { armyMight, battlePrepEntries, type MassBattleState } from '../state/massBattleFlow';
+import { inspireDifficulty } from '../engine/massBattle';
 import {
   craftCatalog, craftTarget, learnableTalents, orderCatalog, metierOf, bankPayout,
   type ActivityDef, type CraftOption, type LearnOption,
@@ -89,6 +91,9 @@ export interface InterludeSeam {
    *  l'état initial, comme les autres lectures). */
   catalog?: ActivityDef[];
   net?: InterludeNet;
+  /** Bataille de masse en attente de préparation (ADE II ch.8) — bandeau d'info + Activités de prépa
+   *  dans les volets par-héros. `null`/absent = pas de bataille pendante. */
+  massBattle?: MassBattleState | null;
 }
 
 /** Volet ouvert d'un héros : outil codé ('revenus'/'craft'/…) OU id d'une Activité du catalogue. */
@@ -124,9 +129,13 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
   // résolu contre le LIEU courant (place de la carte du monde ↔ scène courante).
   const worldMap = useGame((s) => s.worldMap);
   const scene = useGame((s) => s.scene);
+  const storeMassBattle = useGame((s) => s.massBattle);
+  const massBattle = seam?.massBattle ?? storeMassBattle;
+  // Le catalogue inclut les Activités de PRÉPARATION de bataille quand une bataille est en attente de prépa
+  // (`interludeCatalog` lit `massBattle`) — « Interlude c'est interlude » : pas d'écran à part.
   const catalog = useMemo(
-    () => seam?.catalog ?? interludeCatalog({ scene, worldMap }),
-    [seam?.catalog, scene, worldMap],
+    () => seam?.catalog ?? interludeCatalog({ scene, worldMap, massBattle }),
+    [seam?.catalog, scene, worldMap, massBattle],
   );
   const [phase, setPhase] = useState<'events' | 'activities' | 'closing'>(seam?.phase ?? 'events');
   // Volet ouvert (UN seul à la fois, tous héros confondus) — remonté ici pour que la vignette de
@@ -157,6 +166,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
           <EventsIntro heroes={heroes} interlude={interlude} onDone={() => setPhase('activities')} />
         ) : (
           <>
+            {massBattle?.phase === 'prep' && <BattleBanner mb={massBattle} />}
             <div className="interlude-heroes">
               {heroes.map((h) => (
                 <HeroCard
@@ -166,6 +176,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
                   money={money}
                   catalog={catalog}
                   mecenat={mecenat}
+                  massBattle={massBattle ?? null}
                   canDrive={ownsHero(h.id)}
                   ownerName={ownsHero(h.id) ? undefined : ownerName(h.id)}
                   pane={openPane?.heroId === h.id ? openPane.pane : null}
@@ -179,10 +190,6 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
                 <BankList bank={bank} party={party} interlude={interlude} canDrive={ownsHero} />
               </section>
             )}
-            {/* Préparation d'une bataille en attente (ADE II ch.8) : le budget d'Activités est CELUI de
-                l'interlude (l.65) — la préparation se joue sur l'écran de Puissance de Bataille, chaque
-                Activité y décomptant une Activité d'interlude du meneur. */}
-            <BattlePrepEntry />
             {/* Jeux de taverne (NADJ ch.16) — délassement entre deux aventures ; affordance montrée
                 seulement si l'option `tavern-games` est active. Ne consomme pas d'Activité. */}
             {rule('tavern-games') && <TavernGamesEntry />}
@@ -192,7 +199,13 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
               </p>
               {isGuest
                 ? <p className="interlude-warning">{t('interlude.close.guest')}</p>
-                : <button className="btn btn-primary" onClick={() => setPhase('closing')}>{t('interlude.close.btn')}</button>}
+                /* Bataille en attente : la clôture ENGAGE la bataille (interludeEnd → massBattleBegin, C2b) —
+                   le bouton de clôture porte alors ce libellé, une SEULE porte de sortie (pas de 2e écran). */
+                : massBattle?.phase === 'prep'
+                  ? <button className="btn btn-primary" onClick={() => setPhase('closing')} title="Clore l'interlude et engager la bataille (les Activités de préparation restantes sont perdues)">
+                      <Icon id="action/attack" size="sm" /> Engager la bataille
+                    </button>
+                  : <button className="btn btn-primary" onClick={() => setPhase('closing')}>{t('interlude.close.btn')}</button>}
             </div>
           </>
         )}
@@ -258,25 +271,18 @@ function SynthBar({ heroes, interlude, money, activeId, ownsHero, ownerName }: {
   );
 }
 
-/** Entrée « Préparation de bataille » (ADE II ch.8) : si une bataille est en attente de préparation
- *  (`massBattle.phase === 'prep'`), propose de rejoindre l'écran de Puissance de Bataille. Les Activités
- *  de préparation qui s'y jouent DÉCOMPTENT le budget d'Activités d'interlude du meneur (budget UNIQUE,
- *  l.65) — pas de second budget. */
-function BattlePrepEntry() {
-  const mb = useGame((s) => s.massBattle);
-  const setScreen = useGame((s) => s.setScreen);
-  if (!mb || mb.phase !== 'prep') return null;
+/** Bandeau d'INFO bataille (non-cliquable, ADE II ch.8) : une bataille est imminente — les deux camps et
+ *  leur Puissance. Les Activités de préparation (Discours, Planification, Repérage, Sabotage…) figurent DANS
+ *  les volets par-héros, comme toute Activité (budget UNIQUE d'interlude, l.65). Pas d'écran à part. */
+function BattleBanner({ mb }: { mb: MassBattleState }) {
   return (
-    <section className="interlude-hero panel">
-      <h3><Icon id="action/attack" size="sm" /> Préparation de bataille</h3>
+    <section className="interlude-battle-banner panel">
+      <h3><Icon id="action/attack" size="sm" /> Bataille imminente</h3>
       <p className="interlude-detail">
-        Une bataille se prépare : <b>{mb.ally.name}</b> contre <b>{mb.enemy.name}</b>. Les Activités de
-        préparation (Discours, Planification, Repérage, Sabotage…) puisent dans vos Activités
-        <em> Entre deux aventures</em> (max 3, ADE II ch.8).
+        <b>{mb.ally.name}</b> (Puissance {armyMight(mb.ally)}) contre <b>{mb.enemy.name}</b> (Puissance {armyMight(mb.enemy)}).
+        Préparez-la depuis vos Activités <em>Entre deux aventures</em> : Discours, Planification, Repérage,
+        Sabotage… (max 3, ADE II ch.8). « Engager la bataille » clôt l'interlude et lance les Rounds.
       </p>
-      <button className="btn small btn-primary" onClick={() => setScreen('massBattle')}>
-        Rejoindre le conseil de guerre
-      </button>
     </section>
   );
 }
@@ -415,12 +421,15 @@ const PANE_ICON = {
   identify: 'nav/identify',
 } as const;
 
-function HeroCard({ hero, st, money, catalog, mecenat, canDrive, ownerName, pane, onPane }: {
+function HeroCard({ hero, st, money, catalog, mecenat, massBattle, canDrive, ownerName, pane, onPane }: {
   hero: Combatant; st: InterludeHeroState; money: Money;
-  /** Activités du catalogue data-driven proposables ICI (contexte + gate `where`). */
+  /** Activités du catalogue data-driven proposables ICI (contexte + gate `where`) — inclut les Activités de
+   *  PRÉPARATION de bataille (contexte 'bataille') quand une bataille est en attente de prépa. */
   catalog: ActivityDef[];
   /** Activité de Mécénat (variante d'Opération bancaire) si proposable ici. */
   mecenat?: ActivityDef;
+  /** Bataille en attente de préparation (état de blocage/anti-répétition des Activités de prépa). */
+  massBattle: MassBattleState | null;
   /** Possession coop (audit M7) : false = ce héros est mené par un autre joueur (lecture seule). */
   canDrive: boolean;
   ownerName?: string;
@@ -431,6 +440,10 @@ function HeroCard({ hero, st, money, catalog, mecenat, canDrive, ownerName, pane
   const ev = interludeEventFor(st.eventRoll);
   const status = heroStatus(hero);
   const none = st.left <= 0 || !canDrive;
+  // État (bloqué/déjà fait) des Activités de PRÉPARATION de bataille par id — source UNIQUE `battlePrepEntries`.
+  const prepState = massBattle?.phase === 'prep'
+    ? new Map(battlePrepEntries(massBattle).map((e) => [e.def.id, e]))
+    : null;
   const paneBtn = (key: string, label: ReactNode, title: string) => (
     <button
       key={key}
@@ -483,7 +496,9 @@ function HeroCard({ hero, st, money, catalog, mecenat, canDrive, ownerName, pane
       {pane === 'order' && <OrderPane hero={hero} disabled={none} money={money} />}
       {pane === 'bank' && <BankPane hero={hero} disabled={none} bronzeBlocked={status.tier === 'bronze'} money={money} mecenat={mecenat} />}
       {pane === 'identify' && <IdentifyPane hero={hero} disabled={none} />}
-      {def && <CatalogPane hero={hero} def={def} disabled={none} />}
+      {def && (def.contexts.includes('bataille')
+        ? <BattlePrepPane hero={hero} def={def} disabled={none} entry={prepState?.get(def.id)} />
+        : <CatalogPane hero={hero} def={def} disabled={none} />)}
     </section>
   );
 }
@@ -956,6 +971,68 @@ function CatalogPane({ hero, def, disabled }: { hero: Combatant; def: ActivityDe
         </select>
       )}
     </ActivityPane>
+  );
+}
+
+/** Volet d'une Activité de PRÉPARATION de bataille (ADE II ch.8), rendu DANS le menu d'interlude par le
+ *  gabarit `ActivityPane` (comme toute Activité). « Entreprendre » DÉSIGNE ce héros comme meneur puis ouvre
+ *  le jet par le canal de bataille (`massBattleActivity` / `massBattleInspire`) — l'issue porte sur l'ARMÉE,
+ *  le budget d'Activité consommé est celui, UNIQUE, de l'interlude. Le pré-jet montre la compétence du héros ;
+ *  la résolution RAW (Soutien/Test combiné/prérequis) reste dans `openMassBattleActivity`. */
+function BattlePrepPane({ hero, def, disabled, entry }: {
+  hero: Combatant; def: ActivityDef; disabled: boolean;
+  /** État de l'Activité de prépa (bloquée par prérequis / déjà réalisée) — cf. `battlePrepEntries`. */
+  entry?: { done: boolean; blocked: string | null };
+}) {
+  const inspire = useGame((s) => s.massBattleInspire);
+  const battleActivity = useGame((s) => s.massBattleActivity);
+  const setHero = useGame((s) => s.setMassBattleHero);
+  const mb = useGame((s) => s.massBattle);
+  const isInspire = def.id === 'inspire';
+  // Difficulté : Discours = écart de Puissance (l.71) ; sinon la Difficulté de la donnée.
+  const diff: Difficulty = isInspire && mb
+    ? inspireDifficulty(armyMight(mb.ally), armyMight(mb.enemy))
+    : def.difficulty ?? 'intermediaire';
+  // Pré-jet : la MEILLEURE des compétences déclarées pour CE héros (approx. du jet mené par lui).
+  let prejet: PendingRoll | undefined;
+  if (def.skills?.length) {
+    const best = def.skills
+      .map((ref) => ({ ref, v: testValue(hero, ref.skillId, undefined, ref.spec) }))
+      .sort((a, b) => b.v - a.v)[0];
+    const chips = def.skills.map((s, i) => (
+      <Fragment key={`${s.skillId}-${s.spec ?? ''}`}>
+        {i > 0 && (def.combined ? ' + ' : ' ou ')}
+        <SkillChip skillId={s.skillId} show={s.spec ? `${refLabel('skills', { id: s.skillId })} (${s.spec})` : undefined} />
+      </Fragment>
+    ));
+    prejet = testPending(skillNode(<>{chips}</>, diff), best.v, undefined, diff);
+  }
+  const done = entry?.done ?? false;
+  const blocked = done ? 'Déjà réalisée cette bataille (Activité non répétable).' : entry?.blocked ?? null;
+  const undertake = () => {
+    if (isInspire) { inspire(); return; }
+    setHero(def.id, [hero.id]); // désigne CE héros comme meneur de l'Activité de préparation
+    battleActivity(def.id);
+  };
+  return (
+    <ActivityPane
+      icon={def.icon}
+      title={def.label}
+      desc={def.desc}
+      blocked={blocked}
+      prejet={prejet}
+      note={<>1 Activité d'interlude — l'issue porte sur l'armée (ADE II ch.8).{def.assisted ? ' D\'autres PJ peuvent aider au Test.' : ''}</>}
+      actions={
+        <button
+          className="btn small btn-primary"
+          disabled={disabled || done || !!blocked}
+          title={blocked ?? `Entreprendre ${def.label} (consomme une Activité d'interlude)`}
+          onClick={undertake}
+        >
+          Entreprendre
+        </button>
+      }
+    />
   );
 }
 

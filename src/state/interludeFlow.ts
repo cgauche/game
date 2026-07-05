@@ -19,7 +19,7 @@ import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvent
 import { fromBrass, toBrass, formatMoney, PA_PER_CO } from '../engine/money';
 import { itemFromTrappingById, recomputeLoadout, buildWeapon } from '../engine/items';
 import { sleepParty } from './restFlow';
-import { confirmBattleActivity, massBattleBegin } from './massBattleFlow';
+import { confirmBattleActivity, massBattleBegin, battlePrepEntries } from './massBattleFlow';
 import {
   craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
   ACTIVITIES, activitiesFor, activityById, matchOutcomes, activityAvailableAt,
@@ -299,10 +299,17 @@ export function currentPlaceId(s: Pick<GameState, 'scene' | 'worldMap'>): string
   return (sid && s.worldMap?.places.find((p) => p.scene === sid)?.id) || null;
 }
 
-/** Activités du catalogue proposables ICI (contexte 'interlude' + gate géographique `where`). */
-export function interludeCatalog(s: Pick<GameState, 'scene' | 'worldMap'>): ActivityDef[] {
+/** Activités du catalogue proposables ICI (contexte 'interlude' + gate géographique `where`). Quand une
+ *  bataille de masse est en attente de préparation (`massBattle.phase === 'prep'`), les Activités de
+ *  PRÉPARATION (contexte 'bataille' + Discours) sont AJOUTÉES au catalogue : « Interlude c'est interlude »,
+ *  la préparation de bataille se joue DANS le menu d'Activités, pas sur un écran à part (ADE II ch.8 l.65 :
+ *  budget d'Activités UNIQUE). Le rendu gate les prérequis (Infiltration ⇐ Planification, Sabotage ⇐
+ *  Repérage) et l'anti-répétition — cf. `battlePrepEntries`. Sans bataille pendante, catalogue inchangé. */
+export function interludeCatalog(s: Pick<GameState, 'scene' | 'worldMap' | 'massBattle'>): ActivityDef[] {
   const place = currentPlaceId(s);
-  return activitiesFor('interlude').filter((d) => activityAvailableAt(d, place));
+  const base = activitiesFor('interlude').filter((d) => activityAvailableAt(d, place));
+  if (s.massBattle?.phase !== 'prep') return base;
+  return [...base, ...battlePrepEntries(s.massBattle).map((e) => e.def)];
 }
 
 /** Ouvre la modale d'une Activité du CATALOGUE (TOUTES les Activités à jet d'interlude passent ici).

@@ -299,10 +299,11 @@ export function buildApi() {
       if (g().pendingRoundStart) g().confirmRoundStart();
       if (sc.massBattle) {
         // Interlude AVANT la bataille (ADE II ch.8 l.65) : son budget d'Activités (max 3) est celui dans
-        // lequel puise la préparation. `startMassBattle` bascule ensuite sur l'écran de bataille.
+        // lequel puise la préparation. La préparation se joue DANS le menu d'interlude (« Interlude c'est
+        // interlude ») — `startMassBattle` reste donc sur l'écran d'interlude tant qu'un interlude est ouvert.
         if (sc.interludeWeeks) g().startInterlude(sc.interludeWeeks);
         g().startMassBattle(sc.massBattle);
-        return `✅ bataille de masse « ${sc.title} » lancée${sc.interludeWeeks ? ' (interlude ouvert pour la préparation)' : ''}`;
+        return `✅ bataille de masse « ${sc.title} » lancée${sc.interludeWeeks ? ' (préparation dans le menu d\'interlude)' : ''}`;
       }
       s.setScreen('campaign');
       return `✅ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct, prêt à jouer)' : ''}`;

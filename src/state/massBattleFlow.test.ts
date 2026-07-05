@@ -38,15 +38,23 @@ const mbState = (): MassBattleState => useGame.getState().massBattle!;
 const pending = () => useGame.getState().pendingActivity;
 
 describe('startMassBattle / état', () => {
-  it('pose la bataille et bascule sur l\'écran dédié (situation composée à l\'engagement)', () => {
-    start();
+  it('interlude ouvert : la prépa reste DANS l\'interlude (« Interlude c\'est interlude ») — écran interlude, phase prep', () => {
+    start(); // interlude ouvert (budget de préparation)
     const s = useGame.getState();
-    expect(s.screen).toBe('massBattle');
+    expect(s.screen).toBe('interlude'); // pas d'écran de bataille séparé : la prépa se joue dans l'interlude
     expect(armyMight(s.massBattle!.ally)).toBe(50);
     expect(armyMight(s.massBattle!.enemy)).toBe(55);
     expect(s.massBattle?.phase).toBe('prep');
     expect(s.massBattle?.situation).toEqual([]); // composée seulement à `massBattleBegin`
     expect(s.massBattle?.pool.length).toBeGreaterThan(0);
+  });
+
+  it('sans interlude : aucune préparation possible → bataille engagée directement (écran massBattle, phase round)', () => {
+    start({}, pregenParty(PREGEN.soldat, PREGEN.chasseur), { interludeLeft: 0 });
+    const s = useGame.getState();
+    expect(s.screen).toBe('massBattle');
+    expect(s.massBattle?.phase).toBe('round'); // Round 1 direct (pas de prep sans budget)
+    expect(s.massBattle?.situation.length).toBeGreaterThan(0); // situation composée à l'engagement
   });
 
   it('refuse de s\'ouvrir en plein combat tactique', () => {
