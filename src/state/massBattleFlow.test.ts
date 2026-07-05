@@ -199,7 +199,7 @@ describe('Scènes cinématiques — MULTI-PJ en Soutien (l.116-118)', () => {
     expect(second).not.toBe(first);
     resolveBattleTest({ roll: 10, success: true, sl: 2 });
     const mb = mbState();
-    expect(armyMight(mb.enemy)).toBe(55 - 5 - 10); // cumul (−5 Ligne de mire, −10 Compte à rebours)
+    expect(armyMight(mb.enemy)).toBe(55 - 10 - 10); // cumul (−10 Ligne de mire [succès → général tombe], −10 Compte à rebours)
     expect(mb.actedHeroes).toHaveLength(2);
     expect(mb.resolvedScenes).toEqual(expect.arrayContaining(['ligne-de-mire', 'compte-a-rebours']));
   });
@@ -215,12 +215,20 @@ describe('Scènes cinématiques — MULTI-PJ en Soutien (l.116-118)', () => {
     expect(pending()).toBeNull();
   });
 
-  it('Ligne de mire : −10 si le général tombe (Succès Stupéfiant DR ≥ 6)', () => {
+  it('Ligne de mire : le général tombe sur un SUCCÈS (l.208, DR < 6 suffit) → −10', () => {
     start({ situations: [['ligne-de-mire']] });
     useGame.getState().massBattleBegin();
     useGame.getState().massBattleScene('ligne-de-mire');
-    resolveBattleTest({ roll: 5, success: true, sl: 6 });
-    expect(armyMight(mbState().enemy)).toBe(55 - 10);
+    resolveBattleTest({ roll: 10, success: true, sl: 2 }); // succès simple
+    expect(armyMight(mbState().enemy)).toBe(55 - 10); // −5 (succès) −5 (général tombé)
+  });
+
+  it('Survol : le général ne tombe (−15) qu\'au Succès Stupéfiant (DR ≥ 6, l.217)', () => {
+    start({ situations: [['survol'], ['survol']] });
+    useGame.getState().massBattleBegin();
+    useGame.getState().massBattleScene('survol');
+    resolveBattleTest({ roll: 5, success: true, sl: 2 }); // succès simple : pas d'approche au Corps à corps
+    expect(armyMight(mbState().enemy)).toBe(55 - 5); // −5 seulement, général debout
   });
 
   it('Survol : Échec Stupéfiant impose une Charge au Round suivant (l.217)', () => {

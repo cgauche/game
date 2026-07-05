@@ -4,10 +4,10 @@ import {
   type ActivityDef, type BattleResolution,
 } from './activities';
 
-/** Résolution de Test (Scène de Test / Activité de préparation) : Succès Stupéfiant fait tomber le
- *  général (generalDown), comme le flux (`testResolution`). */
-function testRes(success: boolean, sl: number): BattleResolution {
-  return { success, sl, hits: 0, kills: 0, generalDown: success && sl >= 6, intervention: false, combat: false };
+/** Résolution de Test (Scène de Test / Activité de préparation). `generalDown` est EXPLICITE ici (la
+ *  condition — Succès simple vs Stupéfiant — est déclarée par Scène côté flux, `def.generalDownOn`). */
+function testRes(success: boolean, sl: number, generalDown = false): BattleResolution {
+  return { success, sl, hits: 0, kills: 0, generalDown, intervention: false, combat: false };
 }
 /** Résolution de COMBAT victorieuse (touches/kills, général tombé, intervention si > 1 frappeur). */
 function combatWin(hits: number, kills: number, hitters: number): BattleResolution {
@@ -110,16 +110,16 @@ describe('Scènes cinématiques de bataille (ADE II 08 l.137-225) — données R
     expect(total(deltas(charge, combatWin(5, 1, 1)))).toBe(-7);
   });
 
-  it('Ligne de mire (l.208) : −5, et −5 de PLUS si le général tombe (Succès Stupéfiant)', () => {
+  it('Ligne de mire (l.208) : −5, et −5 de PLUS quand le général tombe (bande generalDown)', () => {
     const ldm = activityById('ligne-de-mire')!;
     expect(total(deltas(ldm, testRes(true, 2)))).toBe(-5);
-    expect(total(deltas(ldm, testRes(true, 6)))).toBe(-10); // generalDown
+    expect(total(deltas(ldm, testRes(true, 2, true)))).toBe(-10); // generalDown → −5 de plus
   });
 
-  it('Survol (l.217) : −5, et −15 de PLUS si le général tombe ; Échec Stupéfiant → Charge', () => {
+  it('Survol (l.217) : −5, et −15 de PLUS quand le général tombe ; Échec Stupéfiant → Charge', () => {
     const survol = activityById('survol')!;
     expect(total(deltas(survol, testRes(true, 2)))).toBe(-5);
-    expect(total(deltas(survol, testRes(true, 6)))).toBe(-20); // −5 −15 generalDown
+    expect(total(deltas(survol, testRes(true, 6, true)))).toBe(-20); // −5 −15 generalDown
     expect(chains(survol, testRes(false, -6))).toEqual(['charge']);
     expect(chains(survol, testRes(false, -2))).toEqual([]);
   });
@@ -174,7 +174,7 @@ describe('Scènes cinématiques de bataille (ADE II 08 l.137-225) — données R
 describe('Conditions de bataille (battleCondMet)', () => {
   it('generalDown / intervention / combatWon / combatLost', () => {
     expect(battleCondMet(undefined, testRes(true, 0))).toBe(true);
-    expect(battleCondMet('generalDown', testRes(true, 6))).toBe(true);
+    expect(battleCondMet('generalDown', testRes(true, 6, true))).toBe(true);
     expect(battleCondMet('generalDown', testRes(true, 3))).toBe(false);
     expect(battleCondMet('intervention', combatWin(3, 1, 2))).toBe(true);
     expect(battleCondMet('noIntervention', combatWin(3, 1, 1))).toBe(true);

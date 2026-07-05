@@ -1050,6 +1050,7 @@
     "id": "ligne-de-mire",
     "label": "Ligne de mire",
     "icon": "action/aim",
+    "generalDownOn": "success",
     "contexts": [
       "bataille-round"
     ],
@@ -1126,6 +1127,7 @@
     "id": "survol",
     "label": "Survol",
     "icon": "travel/mount",
+    "generalDownOn": "stupefying",
     "contexts": [
       "bataille-round"
     ],

@@ -248,6 +248,10 @@ export interface ActivityDef extends TestSpec {
   hold?: { breakpoint: number; maxRounds: number; enemyBonusPerHold: number };
   /** Pénalité d'une Scène MENACE (sceneKind 'threat', Intrus l.219) infligée aux Tests des autres Scènes. */
   threat?: { penalty: number };
+  /** Condition de chute du général/capitaine ennemi (`generalDown`) pour CETTE Scène : 'success' = sur un
+   *  simple Succès (Ligne de mire, ADE II ch.08 l.208) ; 'stupefying' = Succès Stupéfiant (DR ≥ 6) requis
+   *  pour se rapprocher au Corps à corps (Survol, l.217). Absent = pas de général à faire tomber. */
+  generalDownOn?: 'success' | 'stupefying';
 }
 
 /** Catalogue app-owned des Activités (data-driven, éditable). */

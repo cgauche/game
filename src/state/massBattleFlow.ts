@@ -614,10 +614,13 @@ function activityTestResult(pa: PendingActivity): { success: boolean; sl: number
   return { success: pa.success, sl: pa.sl };
 }
 
-/** Construit la `BattleResolution` d'un Test (Scène de Test/Activité de préparation) : Succès Stupéfiant
- *  (DR ≥ 6) fait tomber le capitaine/général (`generalDown`, l.208/217). */
-function testResolution(success: boolean, sl: number): BattleResolution {
-  return { success, sl, hits: 0, kills: 0, generalDown: success && sl >= 6, intervention: false, combat: false };
+/** Construit la `BattleResolution` d'un Test (Scène de Test/Activité de préparation). La chute du
+ *  général/capitaine (`generalDown`) suit la condition DÉCLARÉE par la Scène (`def.generalDownOn`,
+ *  ADE II ch.08 l.208/217) : 'success' (Ligne de mire) ou 'stupefying' = DR ≥ 6 (Survol). */
+function testResolution(success: boolean, sl: number, def?: Pick<ActivityDef, 'generalDownOn'>): BattleResolution {
+  const gd = def?.generalDownOn;
+  const generalDown = success && (gd === 'stupefying' ? sl >= 6 : gd === 'success');
+  return { success, sl, hits: 0, kills: 0, generalDown, intervention: false, combat: false };
 }
 
 /** Applique les bandes d'issue de bataille d'une résolution (deltas `battle` + enchaînements `chains`),
@@ -689,9 +692,9 @@ function applyHoldResolution(
   const shown: SceneDelta[] = [];
   if (r.held) {
     // Tenu : issue `on:'success'` de la Scène (−2 Puissance ennemie), gated par la tenue.
-    for (const b of matchBattleOutcomes(scene, testResolution(true, pa.sl))) {
+    for (const b of matchBattleOutcomes(scene, testResolution(true, pa.sl, scene))) {
       for (const o of (b.battle ?? [])) {
-        const amount = battleOutcomeAmount(o, testResolution(true, pa.sl));
+        const amount = battleOutcomeAmount(o, testResolution(true, pa.sl, scene));
         if (amount === 0) continue;
         const ap = applyBattleOutcome(next, o, amount, scene.label);
         next = ap.mb;
@@ -729,7 +732,7 @@ export function confirmBattleActivity(get: Get, set: Set, pa: PendingActivity): 
 
   if (prepDef) {
     const { success, sl } = activityTestResult(pa);
-    const res = testResolution(success, sl);
+    const res = testResolution(success, sl, prepDef);
     const applied = applyBattleBands(next, prepDef, res, [], false);
     next = applied.mb;
     if (success && prepDef.grantsFlag) next = { ...next, [prepDef.grantsFlag]: true } as MassBattleState;
@@ -758,7 +761,7 @@ export function confirmBattleActivity(get: Get, set: Set, pa: PendingActivity): 
 
   } else if (scene) {
     // Scène de Test (l.116-225) : delta de Puissance par l'issue.
-    const applied = applyBattleBands(next, scene, testResolution(pa.success, pa.sl), pa.heroIds ?? [pa.heroId], true);
+    const applied = applyBattleBands(next, scene, testResolution(pa.success, pa.sl, scene), pa.heroIds ?? [pa.heroId], true);
     next = applied.mb;
     lines.push(...applied.lines);
   }
