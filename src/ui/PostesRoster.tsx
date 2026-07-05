@@ -4,6 +4,15 @@ import type { Poste } from '../state/poste';
 import { OptionChooser, type RollOption } from './OptionChooser';
 
 /**
+ * Décision d'épinglage au clic d'un poste (PUR, testable sans DOM) : re-cliquer le poste ÉPINGLÉ le
+ * détache (→ `null`, retour au poste inféré « auto ») ; cliquer un autre poste l'épingle. Source unique
+ * de la sémantique clic→`onSet` du roster.
+ */
+export function nextPinned(pinned: string | undefined, clickedPosteId: string): string | null {
+  return pinned === clickedPosteId ? null : clickedPosteId;
+}
+
+/**
  * ROSTER héros-first UNIQUE (« chaque héros tient un poste ») — surface partagée du Voyage par Étapes
  * (EDOC ch.5) ET des Postes d'équipage (MDG ch.14). Remplace les deux `*View` jumeaux dupliqués
  * (`TravelRolesPanel`/`ShipRolesPanel`) : mêmes primitives, seule la SOURCE (`postes`) et le câblage
@@ -14,7 +23,7 @@ import { OptionChooser, type RollOption } from './OptionChooser';
  * Composition PURE de primitives existantes (`OptionChooser`), aucun nouveau widget d'assignation.
  */
 export function PostesRoster({
-  title, heroes, postes, currentOf, pinnedOf, onSet,
+  title, heroes, postes, currentOf, pinnedOf, onSet, initialOpen = null,
 }: {
   title: string;
   heroes: Combatant[];
@@ -25,8 +34,10 @@ export function PostesRoster({
   pinnedOf: (h: Combatant) => string | undefined;
   /** Épingle (`posteId`) ou détache (`null`) le poste d'un héros. */
   onSet: (heroId: string, posteId: string | null) => void;
+  /** Seam de test (rendu statique) : id du héros dont la grille d'options est DÉPLIÉE d'emblée. */
+  initialOpen?: string | null;
 }) {
-  const [open, setOpen] = useState<string | null>(null);
+  const [open, setOpen] = useState<string | null>(initialOpen);
   if (!heroes.length) return null;
   const posteById = new Map(postes.map((p) => [p.id, p]));
 
@@ -43,8 +54,8 @@ export function PostesRoster({
           label: p.label,
           primary: p.id === current,
           title: p.desc ?? p.label,
-          // Re-cliquer le poste ÉPINGLÉ le détache (retour à « auto ») ; sinon on l'épingle. Puis on replie.
-          onSelect: () => { onSet(h.id, pinned === p.id ? null : p.id); setOpen(null); },
+          // Décision d'épinglage PURE (testée) ; puis on replie.
+          onSelect: () => { onSet(h.id, nextPinned(pinned, p.id)); setOpen(null); },
         }));
         return (
           <div className="wm-role-item" key={h.id}>
