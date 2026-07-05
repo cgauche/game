@@ -28,6 +28,7 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   spells: { ds: 'spells' },
   blessings: { ds: 'spells' },
   miracles: { ds: 'spells' },
+  chaosSpells: { ds: 'spells' },
   qualities: { ds: 'qualities', value: true },
   grantsManeuvers: { ds: 'maneuvers' },
   // Traits conférés par une mutation (Tentacule → Arme) : `{id}` simple (≠ traits de créature qui

@@ -71,7 +71,7 @@ export const isEditableCategory = (categoryKey: string): boolean => !!CATEGORY_D
  *  validation des refs (`validateEntry` : chaque `{id}` du champ doit résoudre dans ce dataset). */
 const REF_LIST_DATASET: Record<string, DatasetKey> = {
   traits: 'traits', optionals: 'traits', skills: 'skills', talents: 'talents',
-  spells: 'spells', trappings: 'trappings', blessings: 'spells', miracles: 'spells',
+  spells: 'spells', trappings: 'trappings', blessings: 'spells', miracles: 'spells', chaosSpells: 'spells',
 };
 
 type Entry = Record<string, unknown>;

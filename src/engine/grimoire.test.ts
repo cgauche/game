@@ -83,6 +83,17 @@ describe('coûts de mémorisation (Talents LDB 10)', () => {
     expect(spellCost(c, ulric)).toBeNull(); // autre culte
   });
 
+  it('Magie du Chaos (Tzeentch) : Sorts du Dieu Sombre choisi à 100 PX ; autre dieu refusé (par id, jamais le libellé)', () => {
+    const c = hero({ talents: [{ talentId: 'magie-du-chaos', spec: 'Tzeentch', times: 1 }] });
+    const tzeentch = spells.filter((s) => s.family === 'chaos' && s.subType === 'Tzeentch');
+    expect(tzeentch.length).toBeGreaterThan(0);
+    expect(spellCost(c, tzeentch[0])).toBe(100); // « chaque sort = 100 PX (+1 Corruption) »
+    const nurgle = spells.find((s) => s.family === 'chaos' && s.subType === 'Nurgle')!;
+    expect(spellCost(c, nurgle)).toBeNull(); // Domaine du Chaos d'un AUTRE dieu → inéligible
+    const wild = hero({ talents: [{ talentId: 'magie-du-chaos', times: 1 }] }); // joker (non spécialisé)
+    expect(spellCost(wild, nurgle)).toBe(100); // tout Sort du Chaos
+  });
+
   it('Béni (Culte) : les SIX Bénédictions du culte à 0 PX, les autres refusées', () => {
     const c = hero({ talents: [{ talentId: 'beni', spec: 'Shallya', times: 1 }] });
     expect(blessingsOf('Shallya')).toContain('benediction-de-guerison'); // ids de sort

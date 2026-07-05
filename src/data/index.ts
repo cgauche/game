@@ -1315,6 +1315,10 @@ export interface GodData {
   title?: string;
   blessings: Ref[];
   miracles: Ref[];
+  /** Sorts du Chaos accordés par ce Dieu Sombre (LDB 10 « Magie du Chaos » : « Domaine du Chaos » de
+   *  Nurgle/Slaanesh/Tzeentch), IDS de sort — l'analogue de `blessings`/`miracles` pour la 3e famille de
+   *  lanceur. SOURCE d'identité (le grimoire compare par id) ; le `subType` du sort ne sert qu'à l'affichage. */
+  chaosSpells?: Ref[];
   desc?: string;
   source?: { book: string; page: number };
   /** VERROU de Péché du culte (MDG 11 l.142, Stromfels : « retire à un suivant la capacité d'utiliser le
@@ -1561,6 +1565,10 @@ export function blessingsOf(cult: string): string[] {
 /** Les Miracles d'un culte, IDS de sort. Culte inconnu → []. */
 export function miraclesOf(cult: string): string[] {
   return (findGodById(cult)?.miracles ?? []).map((r) => r.id);
+}
+/** Les Sorts du Chaos accordés par un Dieu Sombre, IDS de sort (le grimoire compare par id). Dieu inconnu → []. */
+export function chaosSpellsOf(god: string): string[] {
+  return (findGodById(god)?.chaosSpells ?? []).map((r) => r.id);
 }
 
 /** Référence à une Qualité d'objet (`Ref` + Indice éventuel : « Solide 3 » → value 3). */

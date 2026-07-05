@@ -27,7 +27,7 @@
  */
 import { Combatant, CharKey, CHAR_LABELS } from './types';
 import { bonus } from './characteristics';
-import { findTalent, findTalentById, findSkill, spells, advancementLabel, refLabel, specEntryId, CareerLevelData, type AdvancementRef } from '../data';
+import { findTalent, findTalentById, findSkill, advancementLabel, refLabel, specEntryId, CareerLevelData, type AdvancementRef } from '../data';
 import { slugId } from '../data/slug';
 import { CULT_KEYS } from '../data';
 import { splitLabel } from './statEntry';
@@ -107,8 +107,7 @@ export function parseEntry(raw: string): SlotOption[] {
  * (dont l'étape de dépense de PX) ET l'AVANCEMENT (plus de `findTalent(name)?.specs ?? []` dupliqué).
  * Compétence groupée → ses Spécialisations. Talents à domaine/culte, DATA-DRIVEN : « Béni » → cultes
  * du registre ; « Magie des Arcanes »/« Magie du Chaos »/« Invocation » → leurs `specs[]` id-based
- * (ids de domaine ou `gods.key`, `specsSource:'domains'/'cults'`). Repli sur les `subType` distincts des
- * sorts du TYPE homonyme (talent sans specs propres). `[]` si rien.
+ * (ids de domaine ou `gods.key`, `specsSource:'domains'/'cults'`). `[]` si le nom ne porte aucune spec.
  */
 export function wildcardSpecs(name: string): string[] {
   const skill = findSkill(name);
@@ -121,9 +120,10 @@ export function wildcardSpecs(name: string): string[] {
   const talent = findTalent(name);
   if (talent?.combat?.grantsCultBlessings) return CULT_KEYS; // Béni → cultes (signal DONNÉE, plus de registre)
   // Talent à specs id-based (Magie des Arcanes → ids de domaine ; Magie du Chaos/Invocation → gods.key) :
-  // le pool = ses `specs[]` (ids stables), pas les libellés `subType` des sorts (fin de l'incohérence).
+  // le pool = ses `specs[]` (ids stables). Aucune spec enregistrée → [] — JAMAIS de repli sur les libellés
+  // `subType` des sorts, qui rouvrirait une identité par libellé (l'incohérence que ce chantier a fermée).
   if (talent?.specs?.length) return talent.specs.map(specEntryId);
-  return [...new Set(spells.filter((s) => s.type === name && s.subType).map((s) => s.subType as string))].sort();
+  return [];
 }
 
 /** Libellé concret d'un talent/compétence : « Nom » ou « Nom (Spec) ». AFFICHAGE seulement — ne

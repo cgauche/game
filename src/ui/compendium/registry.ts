@@ -676,6 +676,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       sections: sections(
         chips('Bénédictions', 'spells', c.blessings.map((b) => refLabel('spells', b))),
         chips('Miracles', 'spells', c.miracles.map((m) => refLabel('spells', m))),
+        chips('Sorts du Chaos', 'spells', (c.chaosSpells ?? []).map((s) => refLabel('spells', s))),
       ),
     })),
   },

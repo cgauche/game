@@ -20,7 +20,7 @@
  */
 import { Combatant } from './types';
 import { bonus, effectiveChar } from './characteristics';
-import { spells, blessingsOf, findSpellById, type SpellData } from '../data'; // Bénédictions par culte : dataset gods (façade)
+import { spells, blessingsOf, miraclesOf, chaosSpellsOf, findSpellById, type SpellData } from '../data'; // appartenance sort→dieu par IDS (dataset gods)
 import { featuresOf } from './combatFeatures/dispatch';
 import type { CastingKind } from './combatFeatures/types';
 import { itemCapability } from './capabilities';
@@ -69,11 +69,12 @@ export function eligibleTalent(c: Combatant, spell: SpellData): CasterTalent | u
     // Talent du MÊME Domaine (`t.spec` = id de domaine = `spell.domainId`) ou un Talent non spécialisé.
     return talents.find((t) => t.kind === 'arcane' && (spell.domainId == null || t.spec == null || t.spec === spell.domainId));
   }
-  // Invocation/Chaos : la spec est un CULTE/dieu (`gods.key`), comparé au `subType` du sort (nom du dieu,
-  // déjà i18n-safe) — pas un domaine, donc pas de `domainId`. Béni : Bénédiction du culte listée.
-  if (fam === 'invocation') return talents.find((t) => t.kind === 'invocation' && (t.spec == null || t.spec === spell.subType));
+  // Invocation/Béni/Chaos : la spec du Talent est un CULTE/Dieu (`gods.key`, id STABLE) ; l'appartenance
+  // sort→dieu est portée en IDS par `gods.json` (miracles/blessings/chaosSpells) — JAMAIS par le `subType`
+  // (libellé d'affichage). Spec absente (« Au choix » non assigné) = joker → tout sort de la famille.
+  if (fam === 'invocation') return talents.find((t) => t.kind === 'invocation' && (t.spec == null || miraclesOf(t.spec).includes(spell.id)));
   if (fam === 'beni') return talents.find((t) => t.kind === 'beni' && (t.spec == null || blessingsOf(t.spec).includes(spell.id)));
-  if (fam === 'chaos') return talents.find((t) => t.kind === 'chaos' && (t.spec == null || t.spec === spell.subType));
+  if (fam === 'chaos') return talents.find((t) => t.kind === 'chaos' && (t.spec == null || chaosSpellsOf(t.spec).includes(spell.id)));
   return undefined;
 }
 
