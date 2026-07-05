@@ -13,10 +13,10 @@ describe('sceneCombatModifiers — obscurité (horloge) / météo (LDB 14 l.94-1
   it('pluie → aucun mod (flavor, +0 LDB l.94-98)', () => {
     expect(sceneCombatModifiers(sc({ weather: 'pluie' }), DAY)).toMatchObject({ concealed: false, attackMod: 0, dodgeMod: 0 });
   });
-  it('brouillard → cible dissimulée (concealed), -20 au tir', () => {
+  it('brouillard → cible dissimulée (concealed), -10 au tir (Complexe)', () => {
     expect(sceneCombatModifiers(sc({ weather: 'brouillard' }), DAY)).toMatchObject({ concealed: true, attackMod: 0, dodgeMod: 0 });
   });
-  it('extérieur de nuit (horloge) → concealed (obscurité, l.107)', () => {
+  it('extérieur de nuit (horloge) → concealed (obscurité, l.75)', () => {
     expect(sceneCombatModifiers(sc({ ambiance: 'exterieur' }), NIGHT).concealed).toBe(true);
   });
   it('extérieur de jour (horloge) → pas d’obscurité', () => {

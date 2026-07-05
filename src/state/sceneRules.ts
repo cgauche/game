@@ -1,6 +1,6 @@
 /**
  * Modificateurs de combat dérivés de la SCÈNE (obscurité / météo) et empreinte des décors.
- * Source : LDB `14 - _GoBack.md` l.94-116 (météo) / l.107 (obscurité). Vit en `state` (lit la Scène) ;
+ * Source : LDB `14 - _GoBack.md` l.94-116 (météo) / l.75 (obscurité, bande Complexe). Vit en `state` (lit la Scène) ;
  * les valeurs sont injectées dans `attackModifiers`/`defenseModifiers` via `env` (cf. combatFlow).
  */
 import type { Scene, SceneEntity } from './scene';
@@ -9,7 +9,7 @@ import { isNight } from '../engine/clock';
 import { findPropById } from '../data';
 
 export interface SceneCombatMods {
-  /** Cible dissimulée (obscurité de nuit ou brouillard) → −20 au tir (LDB 14 l.107). */
+  /** Cible dissimulée (obscurité de nuit ou brouillard) → −10 au tir, bande Complexe (LDB 14 l.75). */
   concealed: boolean;
   /** Pénalité météo à l'attaque (tempête/neige, l.108-116). */
   attackMod: number;
@@ -29,7 +29,7 @@ export function sceneIsDark(scene: Pick<Scene, 'ambiance'>, gameTime: number): b
 export function sceneCombatModifiers(scene: Pick<Scene, 'ambiance' | 'weather'>, gameTime: number): SceneCombatMods {
   const night = sceneIsDark(scene, gameTime);
   const weather = scene.weather ?? 'clair';
-  const concealed = night || weather === 'brouillard'; // cible dissimulée −20 au tir (l.107)
+  const concealed = night || weather === 'brouillard'; // cible dissimulée : Complexe −10 au tir (l.75)
   let attackMod = 0;
   let dodgeMod = 0;
   let label = '';
