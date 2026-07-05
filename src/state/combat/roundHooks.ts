@@ -240,22 +240,17 @@ registerCombatHook({
   order: 79.5,
   run: ({ battle, sink }) => { purgeExpiredSummons(battle, battle.round + 1).forEach((l) => sink(l)); },
 });
-/**
- * Règle optionnelle « Se fatiguer » (LDB 16 l.99) : un effort physique soutenu finit par épuiser.
- * Approximation assumée (granularité Round) : chaque Round en action = 1 Round d'effort ; à Bonus
- * d'Endurance Rounds cumulés, Test de Résistance — échec → +1 Exténué (compteur remis à zéro) ;
- * réussite → le délai avant le prochain Test est repoussé de 1 + DR Rounds. Inerte tant que la règle
- * `combat-se-fatiguer` est inactive (aucun tirage RNG consommé → franchissement de Round iso-comportement).
- */
-/** Seuil de « se-fatiguer » : Bonus d'Endurance Rounds d'effort cumulés (min 1) avant un Test (LDB 16 l.99). */
+/** Règle optionnelle « Se fatiguer » (LDB 16 l.97). Inerte tant que `combat-se-fatiguer` est inactive
+ *  (aucun tirage RNG consommé → franchissement de Round iso-comportement). */
+/** Seuil de « se-fatiguer » : Bonus d'Endurance Rounds d'effort cumulés (min 1) avant un Test (LDB 16 l.97). */
 function fatigueThreshold(c: Combatant): number {
   return Math.max(1, bonus(effectiveChar(c, 'E')));
 }
-/** Conséquence d'un Test de Résistance « se-fatiguer » : succès → recule le délai (−1−DR Rounds) ;
- *  échec → Exténué + compteur remis à zéro. Partagée par le hook (ENNEMIS) et l'applier (HÉROS). */
+/** Conséquence d'un Test de Résistance « se-fatiguer » (LDB 16 l.97) — partagée par le hook (ENNEMIS)
+ *  et l'applier (HÉROS). */
 function fatigueApply(c: Combatant, success: boolean, sl: number): string | null {
   if (success) {
-    c.effortRounds = Math.max(0, (c.effortRounds ?? 0) - (1 + Math.max(0, sl)));
+    c.effortRounds = Math.max(0, (c.effortRounds ?? 0) - Math.max(0, sl));
     return null;
   }
   addCondition(c, COND.extenue);

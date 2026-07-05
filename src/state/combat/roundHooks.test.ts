@@ -19,11 +19,11 @@ const ctx = (combatants: Combatant[]): CombatHookCtx => {
   // (broken-recovery/fireTriggers lisent get().battle/scene). Combattants nus → les autres hooks no-op
   // sans tirer le RNG (pas de condition/Brisé/zone) → se-fatiguer obtient bien le 1ᵉʳ tirage seedé.
   const battle = { combatants, zones: [], round: 1 } as never;
-  const net = { mode: 'local', mySeat: 0, humanPiloted: {} }; // `humanControlled` (se-fatiguer) lit net.humanPiloted
+  const net = { mode: 'local', mySeat: 0 }; // `humanControlled` (se-fatiguer) lit `pilotedByHuman` (mode local → contrôlé)
   return { get: (() => ({ battle, scene: undefined, net })) as never, set: (() => {}) as never, battle, sink: () => {} };
 };
 
-describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.99)', () => {
+describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.97)', () => {
   beforeEach(() => resetRule('combat-se-fatiguer'));
 
   it('règle OFF (défaut) : aucun effet, le compteur ne bouge pas', () => {
@@ -48,5 +48,14 @@ describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.99)', () => {
     runCombatHooks('onRoundEnd', ctx([c]));
     expect(hasCondition(c, COND.extenue)).toBe(true);
     expect(c.effortRounds).toBe(0);
+  });
+
+  it('au seuil, Test de Résistance réussi (DR obtenu) → délai repoussé de DR Rounds, pas 1+DR (LDB 16 l.97)', () => {
+    setRule('combat-se-fatiguer', true);
+    seedBattleRng(9); // 1ᵉʳ d100 = 20 → cible 40 (E) : réussite, DR = 2
+    const c = combatant({ characteristics: { E: 40 } as never, effortRounds: 3 }); // BE=4 → seuil 4 (atteint après incrément)
+    runCombatHooks('onRoundEnd', ctx([c]));
+    expect(hasCondition(c, COND.extenue)).toBe(false);
+    expect(c.effortRounds).toBe(2); // 4 (seuil atteint) − DR(2) — PAS 4 − (1+2) = 1
   });
 });
