@@ -35,7 +35,7 @@ import { rule } from '../engine/policy';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
 import type { DeferredUpkeepTest } from './upkeep';
-import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, partyHasTent, applyExposureFailure, exposureTarget, type ExposureSeverity } from '../engine/exposure';
+import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, partyHasTent, applyExposureFailure, exposureTarget, sealskinDR, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
@@ -270,12 +270,23 @@ registerCascadeApplier('shelter', (get, _set, step, hero) => {
 
 registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
   if (!hero || !step.result) return;
-  if (step.result.success) return { journal: [`${hero.name} endure le froid sans dommage.`] };
-  // Escalade CUMULATIVE (l.415) : compte les échecs d'Exposition DÉJÀ validés de CE héros.
+  // Volet froid/chaleur (l.330/334) porté par l'étape (`meta.kind`) — défaut froid (nuit de repos). La peau
+  // de phoque (MDG 14 l.277) retient l'échec de justesse AU FROID (+1 DR) : un échec ainsi tenu ne compte
+  // NI comme conséquence NI dans l'escalade — comme le chemin eager `exposureNight`.
+  const kind = (step.meta?.kind as ExposureKind) ?? 'froid';
+  const skin = kind === 'froid' ? sealskinDR(hero) : 0;
+  const genuineFail = (r: CascadeStep['result']) => !!r && !r.success && !(skin > 0 && r.sl + skin >= 1);
+  if (!genuineFail(step.result)) {
+    const held = !step.result.success; // échec de justesse tenu par la peau de phoque
+    return { journal: [held
+      ? `${hero.name} — la peau de phoque retient le froid (échec de justesse tenu, +1 DR).`
+      : `${hero.name} endure ${kind === 'froid' ? 'le froid' : 'la chaleur'} sans dommage.`] };
+  }
+  // Escalade CUMULATIVE (l.330/334) : compte les échecs GENUINE d'Exposition DÉJÀ validés de CE héros pour CE volet.
   const priorFails = ctx.steps.slice(0, ctx.index)
-    .filter((s) => s.kind === 'exposure' && s.actorId === hero.id && s.result && !s.result.success).length;
-  return { journal: applyExposureFailure(hero, priorFails + 1, battleRng()).log };
-}, (ok, n) => (ok ? `${n} endure le froid sans dommage.` : `${n} souffre du froid.`));
+    .filter((s) => s.kind === 'exposure' && s.actorId === hero.id && ((s.meta?.kind as ExposureKind) ?? 'froid') === kind && genuineFail(s.result)).length;
+  return { journal: applyExposureFailure(hero, priorFails + 1, battleRng(), kind).log };
+}, (ok, n) => (ok ? `${n} endure l’exposition sans dommage.` : `${n} souffre de l’exposition.`));
 
 registerCascadeApplier('forcedMarch', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;

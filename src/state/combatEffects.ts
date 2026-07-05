@@ -32,7 +32,7 @@ import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
 import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { feedFromMeal, applyFaimTest } from '../engine/provisions';
-import { exposureNight } from '../engine/exposure';
+import { isWeatherWarded, exposureTarget, type ExposureKind } from '../engine/exposure';
 import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect, setDoorOpen } from './scene';
@@ -873,15 +873,29 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'exposureNight', kind: 'froid', count: 2, target: 'party' }),
     apply: (e, env) => {
       // Exposition (LDB 18 l.326-334) posée par l'auteur (nuit glaciale, désert, tempête) : `count` Tests
-      // de Résistance en cascade, échecs escaladés (froid/chaleur), via le moteur PUR `exposureNight`.
+      // de Résistance PAR HÉROS, chacun une ÉTAPE de cascade INFLUENÇABLE (Chance/Résilience) — jamais de
+      // jet silencieux (calque `waterExposure` / la nuit de repos). L'escalade froid/chaleur (`meta.kind`)
+      // + la peau de phoque vivent dans l'applier partagé `exposure`. La protection magique (`weatherWard`)
+      // court-circuite comme dans le moteur eager `exposureNight`.
       const heroes = env.targets(e.target ?? 'party', e.heroId);
       const count = Math.max(1, e.count ?? 2);
+      const kind: ExposureKind = e.kind ?? 'froid';
+      const steps: CascadeStep[] = [];
       const lines: string[] = [];
       for (const c of heroes) {
-        const res = exposureNight(c, count, testValue(c, 'resistance', 'E'), battleRng(), { kind: e.kind });
-        lines.push(...res.log);
+        if (isWeatherWarded(c)) { lines.push(`${c.name} ignore ${kind === 'froid' ? 'le froid et les intempéries' : 'la chaleur'} (protection magique).`); continue; }
+        const resVal = testValue(c, 'resistance', 'E');
+        const target = kind === 'froid' ? exposureTarget(c, resVal) : Math.max(0, resVal);
+        for (let i = 0; i < count; i++) {
+          steps.push({
+            id: `expo-${c.id}-${i}`, kind: 'exposure', actorId: c.id, icon: '🥶',
+            rollLabel: 'Résistance', label: kind === 'froid' ? 'Exposition (froid)' : 'Exposition (chaleur)',
+            base: resVal, target, result: null, interactive: true, meta: { kind },
+          });
+        }
       }
-      if (heroes.length) { env.set(touchActors(env.get())); lines.forEach((l) => env.log(l)); }
+      if (lines.length) { env.set(touchActors(env.get())); lines.forEach((l) => env.log(l)); }
+      if (steps.length) startCascade(env.get, env.set, { title: kind === 'froid' ? 'Exposition au froid' : 'Exposition à la chaleur', icon: '🥶', purpose: 'test', steps });
     },
   },
   inflictTrauma: {

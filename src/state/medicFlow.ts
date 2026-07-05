@@ -24,10 +24,9 @@ import { bonus, effectiveChar } from '../engine/characteristics';
 import { addCondition, loseWounds } from '../engine/conditions';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, type HealMode } from '../engine/healing';
 import { removeSurgicalTrauma } from '../engine/trauma';
-import { rollContraction } from '../engine/disease';
 import { toMoney, canAfford, subtract as moneySub, add as moneyAdd } from '../engine/money';
 import { touchActors } from './combatOrParty';
-import { finishPlayerAction, pushReveal } from './combatFlow';
+import { finishPlayerAction, openContractionCascade } from './combatFlow';
 import type { GameState } from './store';
 
 export interface MedicCost { gold?: number; silver?: number; brass?: number }
@@ -170,7 +169,8 @@ export function openSurgeryPass(get: Get, set: Set): void {
 /** APPLIQUE la passe de Chirurgie (calque `extendedTestNext`) : prend le jet FIGÉ de `pendingSurgery`
  *  (déjà roulé + influencé en modale), cumule le DR (repart à 0 sous 0, LDB 12 l.200), inflige 1d10 PB +
  *  1 Hémorragie (LDB 10 l.154). Cible atteinte → Blessure Critique réparée + Test d'infection du PATIENT
- *  (LDB 10 l.365) RÉVÉLÉ témoin (jet SUBI, pas influençable — comme toute contraction de maladie). Patient
+ *  (LDB 10 l.365) DIFFÉRÉ en ÉTAPE de cascade INFLUENÇABLE (cascade `combatEndDisease`, jumeau de fin de
+ *  combat : Chance/Résilience + auto-succès Résistance (Menace : Maladie)) — plus de jet silencieux. Patient
  *  à 0 PB → opération interrompue. Sinon → cumule sur `medic.surgery` et RÉOUVRE la passe suivante. */
 export function surgeryNext(get: Get, set: Set): void {
   const ps = get().pendingSurgery;
@@ -192,15 +192,13 @@ export function surgeryNext(get: Get, set: Set): void {
   }
   if (cum >= sg.targetDR) { // cible atteinte : la Blessure Critique est réparée
     log.push(...removeSurgicalTrauma(patient, sg.traumaIdx));
-    // Test d'infection du PATIENT (LDB 10 l.365) : Résistance Accessible (+20), jet SUBI poussé en
-    // RÉVÉLATION témoin (pas un pending influençable) — calque la contraction de maladie révélée.
-    const resVal = effectiveChar(patient, 'E') + (patient.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
-    const infection = rollContraction(patient, 'infection-mineure', resVal, 'accessible', battleRng());
-    const infectionLines = infection.length ? infection : [`${patient.name} résiste à l'infection post-opératoire.`];
-    pushReveal(set, { kind: 'effet', title: 'Suites de l’opération', lines: infectionLines, subjectId: patient.id, severity: infection.length ? 'grave' : 'minor' });
-    log.push(...infectionLines);
     set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
     finishPlayerAction(get, set, log, 'heal');
+    // Test d'infection du PATIENT (LDB 10 l.365) : Résistance Accessible (+20) — plus un jet SILENCIEUX
+    // mais une ÉTAPE INFLUENÇABLE (cascade `combatEndDisease`, jumeau d'`openCombatEndCascade` :
+    // Chance/Résilience + auto-succès Résistance (Menace : Maladie), LDB 17/10). La contraction
+    // (`applyContraction`) est appliquée à la VALIDATION de l'étape, jamais avant l'influence.
+    openContractionCascade(get, set, patient, 'infection-mineure', 'accessible', 'Suites de l’opération');
     return;
   }
   // Passe intermédiaire : cumule (medic.surgery), journalise, et RÉOUVRE la passe suivante (FLOWS.surgery).

@@ -4070,6 +4070,22 @@ registerCascadeApplier('combatEndCorruption', (get, set, step, hero) => {
   return { journal: lines };
 });
 
+/** Ouvre une cascade INFLUENÇABLE à UNE étape de Contraction de maladie pour `patient` (Test de Résistance
+ *  `difficulty` → `applyContraction` à la validation, via l'applier `combatEndDisease`) — HORS combat.
+ *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
+ *  Résistance (Menace : Maladie) offerts, jamais un jet silencieux. `combatEndResistVal` fige la Résistance. */
+export function openContractionCascade(get: Get, set: SetFn, patient: Combatant, disease: string, difficulty: Difficulty, title: string): void {
+  const resVal = combatEndResistVal(patient);
+  startCascade(get, set, {
+    title, icon: '🩸', purpose: 'test',
+    steps: [{
+      id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', actorId: patient.id, icon: '🤢',
+      rollLabel: 'Résistance', base: resVal, target: resVal + DIFFICULTY_MODIFIERS[difficulty],
+      label: title, result: null, interactive: true, meta: { disease }, menace: 'maladie',
+    }],
+  });
+}
+
 /** Fin de combat : réécrit l'état persistant de chaque héros (Blessures, critiques, mort, États
  *  persistants) vers `party`. Idempotent ; les champs non persistants du membre party sont conservés.
  *  Les JETS HÉROS de fin de combat (maladie/Corruption) sont résolus AVANT (cascade `openCombatEndCascade`

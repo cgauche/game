@@ -70,7 +70,7 @@ const JUSTIFIED: Record<string, string> = {
   disengageFlee: 'option « Fuir » de la modale : coup dans le dos SUBI (resolveBackstabAttack) montré INLINE ; le Test de Calme du fuyard passe désormais par la cascade pending* (flux `flee` — fleeRoll/fleeConfirm influençables, suffixe RESOLVER)',
   dismissReveal: 'acquittement de la file de révélation (le jet a DÉJÀ été montré)',
   medicAct: 'infirmerie : ouvre pendingHeal (modale) — l’acte payant ne tire pas lui-même',
-  surgeryNext: 'Chirurgie : APPLIQUE la passe (le Test de Médecine du chirurgien est différé en modale pendingSurgery, influençable). Les 1d10 PB SUBIS et le Test d’infection du patient (Résistance) sont des jets SUBIS poussés en RÉVÉLATION témoin 📜 — pas des jets de héros influençables',
+  surgeryNext: 'Chirurgie : APPLIQUE la passe (le Test de Médecine du chirurgien est différé en modale pendingSurgery, influençable). Le Test d’infection du patient (Résistance +20) est désormais une ÉTAPE de cascade INFLUENÇABLE (`combatEndDisease` — Chance/Résilience + auto-succès Résistance (Menace : Maladie)), sa contraction appliquée à la validation. Le seul RNG restant est le 1d10 PB SUBI de la passe (dégât de l’opération montré dans la ligne de journal, pas un Test de héros)',
   startDisengage: 'OUVRE pendingDisengage : le jet du foe est tiré et FIGÉ pour la modale (pattern Défense — montré dans la ligne adverse)',
   resolveDualSecond: '2ᵉ frappe du Maniement : jet IMPOSÉ (d100 inversé) AFFICHÉ dans la modale d’attaque (dualSecond)',
   applyCounterspell: 'Contre-sort : Test opposé du contre-lanceur, issue affichée dans la modale d’incantation (et déclaré pendant le jet ennemi)',

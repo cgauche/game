@@ -234,6 +234,30 @@ describe('Guérison — infirmerie (hors combat)', () => {
     expect(useGame.getState().pendingSurgery).toBeNull(); // la passe est fermée à la réussite
   });
 
+  it('Chirurgie : à la cible atteinte, le Test d’infection du PATIENT est DIFFÉRÉ en étape cascade INFLUENÇABLE (Résistance +20, Menace : Maladie) — plus de jet silencieux, Infection non contractée avant l’influence', () => {
+    const surgeon = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
+    const patient = hero({ id: 'p', name: 'Patient', skills: [], wounds: { current: 40, max: 40 }, traumas: [tk('fracture', 'majeur', 'jambeG', { be: 4, d10: 5 })] });
+    useGame.setState({ mode: 'exploration', battle: null, party: [surgeon, patient], pendingHeal: null, pendingSurgery: null, medic: null, pendingCascade: null, pendingReveals: [] });
+    useGame.getState().openMedic({ patientId: 'p' });
+    useGame.getState().medicAct('surgery');
+    const sg0 = useGame.getState().medic!.surgery!;
+    useGame.setState({ medic: { ...useGame.getState().medic!, surgery: { ...sg0, targetDR: 1, skill: 99 } } });
+    for (let i = 0; i < 12 && useGame.getState().medic?.surgery; i++) {
+      useGame.getState().openSurgeryPass();
+      useGame.getState().surgeryRoll();
+      useGame.getState().surgeryNext(); // à la cible : ouvre la cascade d'infection (ne roule PLUS inline)
+    }
+    const pc = useGame.getState().pendingCascade;
+    expect(pc).not.toBeNull(); // le Test d'infection est une modale différée, pas un jet subi
+    const step = pc!.participants.find((s) => s.kind === 'combatEndDisease' && s.actorId === 'p')!;
+    expect(step).toBeTruthy();
+    expect(step.result).toBeFalsy(); // Infection DIFFÉRÉE : pas encore roulée (influençable d'abord)
+    expect(step.menace).toBe('maladie'); // Résistance (Menace : Maladie) offerte (LDB 10/17)
+    expect((step.meta as { disease?: string } | undefined)?.disease).toBe('infection-mineure');
+    const p = useGame.getState().party.find((c) => c.id === 'p')!;
+    expect(p.diseases ?? []).toHaveLength(0); // rien contracté en silence AVANT la validation de l'étape
+  });
+
   it('Chirurgie : le joueur choisit QUELLE Blessure Critique opérer (medicSetWound, avant la 1re passe)', () => {
     const surgeon = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }], talents: [{ talentId: 'chirurgie', times: 1 }] });
     const patient = hero({

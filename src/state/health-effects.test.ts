@@ -6,6 +6,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
+import { cascadeAppliers } from './cascade';
 import { makePregens } from '../data/pregens';
 import { setRule, resetRule } from '../engine/policy';
 import { effectiveChar } from '../engine/characteristics';
@@ -46,27 +47,36 @@ describe('Effet inflictHunger (LDB 18 l.417-422)', () => {
   });
 });
 
-describe('Effet exposureNight (LDB 18 l.326-334)', () => {
-  it('froid → Tests de Résistance en cascade, pénalités/Blessures possibles + journal', () => {
+describe('Effet exposureNight (LDB 18 l.326-334) — cascade INFLUENÇABLE (plus de jet silencieux)', () => {
+  it('froid → OUVRE `count` étapes influençables par héros, AUCUN jet résolu (result null), rien encaissé en silence', () => {
     const party = makePregens().slice(0, 1);
-    useGame.setState({ party });
-    useGame.getState().seedRng(3); // graine produisant des échecs
+    useGame.setState({ party, pendingCascade: null, journal: [] });
+    useGame.getState().seedRng(3); // graine qui produisait des échecs à l'ancien (inline)
+    const beforeW = useGame.getState().party[0].wounds.current;
     applyEffects(useGame.getState, useGame.setState, [{ type: 'exposureNight', kind: 'froid', count: 4, target: 'hero', heroId: party[0].id }]);
-    // Le journal porte au moins une ligne d'Exposition (jets/échecs/froid) — le moteur a bien tourné.
-    expect(useGame.getState().journal.some((l) => /froid|Exposition|grelotte|transi|gelé/i.test(l))).toBe(true);
+    const pc = useGame.getState().pendingCascade;
+    expect(pc).not.toBeNull(); // le jet est DIFFÉRÉ en modale, pas roulé en boucle
+    const steps = pc!.participants.filter((s) => s.kind === 'exposure' && s.actorId === party[0].id);
+    expect(steps).toHaveLength(4); // un jet influençable par Test
+    expect(steps.every((s) => s.result == null)).toBe(true); // rien résolu → rien de subi encore
+    expect((steps[0].meta as { kind?: string } | undefined)?.kind).toBe('froid');
+    expect(useGame.getState().party[0].wounds.current).toBe(beforeW); // aucune Blessure encaissée en silence
   });
 
-  it('chaleur → volet chaleur exercé : sur un échec, État Exténué + journal chaleur (l.330)', () => {
+  it('chaleur → étapes taguées kind "chaleur" ; la CONSÉQUENCE d’un échec (applier partagé) pose Exténué + journal chaleur (l.330)', () => {
     const party = makePregens().slice(0, 1);
-    useGame.setState({ party });
-    useGame.getState().seedRng(3); // même graine que le froid : au moins un échec sur 4 Tests
+    useGame.setState({ party, pendingCascade: null, journal: [] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'exposureNight', kind: 'chaleur', count: 4, target: 'party' }]);
+    const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'exposure')!;
+    expect((step.meta as { kind?: string } | undefined)?.kind).toBe('chaleur');
+    // Un échec (via l'applier `exposure` partagé) : 1ᵉʳ échec chaleur = −10 Int/FM + Exténué (l.330).
     const h = useGame.getState().party[0];
-    // Un échec de chaleur pose l'État Exténué (l.330) ET journalise une ligne « chaleur ».
-    const extenue = (h.conditions ?? []).some((c) => c.name === 'extenue');
-    const chaleurLog = useGame.getState().journal.some((l) => /chaleur|accablé/i.test(l));
-    expect(extenue).toBe(true);
-    expect(chaleurLog).toBe(true);
+    const failed = { ...step, result: { roll: 99, target: step.target!, sl: -5, success: false } } as typeof step;
+    const out = cascadeAppliers['exposure'].apply(
+      useGame.getState, useGame.setState, failed, h, { steps: [failed], index: 0 },
+    );
+    expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(true);
+    expect((out?.journal ?? []).some((l) => /chaleur|suffoque|accablé/i.test(l))).toBe(true);
   });
 });
 
