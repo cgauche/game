@@ -17,10 +17,10 @@ describe('weaponFromTrait — armement des monstres dans les Traits (FR)', () =>
     expect(weaponFamily(w)).toBe('epee'); // le rig tient une épée
   });
   it('Arme (Dague) +4 → dague', () => {
-    expect(weaponFamily(weaponFromTrait({ id: 'arme', value: 4, arg: 'Dague' })!)).toBe('dague');
+    expect(weaponFamily(weaponFromTrait({ id: 'arme', value: 4, arg: 'dague' })!)).toBe('dague');
   });
   it('À distance (Arbalète) +9 (60) → arbalète à distance, portée 60', () => {
-    const w = weaponFromTrait({ id: 'a-distance', value: 9, arg: 'Arbalète', range: 60 })!;
+    const w = weaponFromTrait({ id: 'a-distance', value: 9, arg: 'arbalete', range: 60 })!;
     expect(w).toMatchObject({ name: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60 });
     expect(weaponFamily(w)).toBe('arbalete');
   });
