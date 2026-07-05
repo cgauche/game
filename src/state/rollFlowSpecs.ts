@@ -41,7 +41,7 @@ import { reverseRoll } from '../engine/combat';
 import { talentReverseFailed, runMovementBonus } from '../engine/combatFeatures/dispatch';
 import { rollTest, resolveOpposed, bumpSL, isDoubleRoll, type TestResult, evaluateTest, evaluateCombinedTest, maxForcedRoll, bestForcedRoll, forcedTR } from '../engine/tests';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
-import { d100 } from '../engine/dice';
+import { d100, defaultRNG, type RNG } from '../engine/dice';
 import { resolveRun } from '../engine/movement';
 import { rollCrewRole, forceCrewRole } from './shipManeuver';
 import { testValue, effectiveSkillCharKey, skillBaseValue } from '../engine/skills';
@@ -275,35 +275,54 @@ function opposedBinaryFlow<P extends import('./rollFlowFactory').PendingBase & {
 }
 
 /**
- * Résolveur PARTAGÉ du chemin NORMAL d'un Test SIMPLE (jet vs cible unique, LDB 12) — la forme que
- * chaque flux recopiait à la main (`rollTest(valeur, difficulté, battleRng())` → pose du TestResult
- * APLATI `{roll,target,sl,success}`). `value` lit le pending + l'acteur ; `difficulty` est fixe ou
- * fonction du pending (défaut Intermédiaire, +0). Un Test n'a PAS à re-définir sa résolution : il
- * DÉCLARE sa valeur et sa Difficulté. Réservé aux flux qui GARDENT DÉJÀ l'acteur et tirent sur
- * `battleRng()` (sinon la mutualisation ne serait pas byte-identique). Un flux à branche `forced`/
- * `bonus` garde ces branches et ne délègue QUE son chemin normal. Cf. `simpleTestResultResolve` pour
- * la variante dont le jet vit sous `result` (même distinction FLAT vs `result` que `flatRollLens`/
- * `resultRollLens`), et `opposedBinaryFlow` pour les Tests OPPOSÉS.
+ * Cœur PARTAGÉ du jet d'un Test SIMPLE (jet vs cible unique, LDB 12) : `rollTest(valeur, Difficulté, rng)`
+ * → le TestResult à 4 champs `{roll,target,sl,success}` (ou `null` sans acteur). `value` lit le pending +
+ * l'acteur ; `difficulty` fixe ou fonction du pending (défaut Intermédiaire, +0) ; `rng` = le générateur
+ * COURANT du flux (combat → `battleRng` ; hors-combat → `defaultRNG`) — PARAMÉTRÉ, pas imposé, pour que
+ * chaque flux garde SON jet byte-identique (le rng d'un Test est CONTEXTUEL, on ne le normalise pas). Les
+ * 3 poses ci-dessous (FLAT / `result` / `fuir.calme` de `flee`) ne diffèrent QUE par l'ENDROIT où elles
+ * rangent ce résultat : un Test DÉCLARE sa valeur, sa Difficulté et son rng — il n'a PAS à re-coder sa
+ * résolution. Cf. `opposedBinaryFlow` pour les Tests OPPOSÉS.
+ *
+ * `actorless` : le Test roule sur une valeur BAKÉE (`p.skillValue` fixé à l'ouverture) → il n'a PAS besoin
+ * d'un acteur LIVE, car le lanceur peut être HORS du champ d'`actorIn` (Soin/Chirurgie par un Médecin PNJ
+ * de scène : `healerId` absent des combattants). Sans le drapeau, un acteur absent ANNULE le jet (défaut
+ * conservateur des Tests dont la VALEUR vient de l'acteur : Calme/FM/`testValue`). L'INFLUENCE
+ * (Chance/Résilience) reste gérée à part par la fabrique via `spec.actor` (no-op si l'acteur est un PNJ).
  */
+function simpleRoll<P extends PendingBase>(
+  p: P, actor: Combatant | undefined,
+  value: (p: P, actor: Combatant) => number,
+  difficulty: Difficulty | ((p: P) => Difficulty),
+  rng: () => RNG,
+  opts?: { actorless?: boolean },
+): { roll: number; target: number; sl: number; success: boolean } | null {
+  if (!actor && !opts?.actorless) return null; // Test à valeur d'acteur : pas d'acteur live → pas de jet
+  const t = rollTest(value(p, actor as Combatant), typeof difficulty === 'function' ? difficulty(p) : difficulty, rng());
+  return { roll: t.roll, target: t.target, sl: t.sl, success: t.success };
+}
+
+/** Chemin NORMAL d'un Test simple, jet APLATI au niveau du pending. Un flux à branche `forced`/`bonus`
+ *  garde ces branches et ne délègue QUE son chemin normal. Cast large : les pendings portent ces champs
+ *  sous des formes hétérogènes (certains `target`/`sl` optionnels — PendingCorruption) → un `P` étroit les
+ *  exclurait ; la contrainte de forme est portée par le flux. */
 const simpleTestResolve = <P extends PendingBase>(
   value: (p: P, actor: Combatant) => number,
   difficulty: Difficulty | ((p: P) => Difficulty) = 'intermediaire',
-) => (_s: GameState, p: P, actor: Combatant | undefined): Partial<P> | null => {
-  if (!actor) return null;
-  const t = rollTest(value(p, actor), typeof difficulty === 'function' ? difficulty(p) : difficulty, battleRng());
-  // Cast large : les pendings simples portent ces champs sous des formes hétérogènes (certains `target`/`sl`
-  // optionnels — PendingCorruption) → un `P` étroit les exclurait ; la contrainte de forme est portée par le flux.
-  return { roll: t.roll, target: t.target, sl: t.sl, success: t.success } as unknown as Partial<P>;
-};
+  rng: () => RNG = battleRng,
+  opts?: { actorless?: boolean },
+) => (_s: GameState, p: P, actor: Combatant | undefined): Partial<P> | null =>
+  simpleRoll(p, actor, value, difficulty, rng, opts) as unknown as Partial<P> | null;
 
-/** Idem `simpleTestResolve` mais le jet vit sous `result` (`{ result: { roll, target, sl, success } }`). */
+/** Idem mais le jet vit sous `result` (même distinction FLAT vs `result` que `flatRollLens`/`resultRollLens`).
+ *  Pas d'`actorless` : les flux `result` migrés (dispel/shanty/approach/ward) ont TOUS un acteur LIVE. */
 const simpleTestResultResolve = <P extends PendingBase>(
   value: (p: P, actor: Combatant) => number,
   difficulty: Difficulty | ((p: P) => Difficulty) = 'intermediaire',
+  rng: () => RNG = battleRng,
 ) => (_s: GameState, p: P, actor: Combatant | undefined): Partial<P> | null => {
-  if (!actor) return null;
-  const t = rollTest(value(p, actor), typeof difficulty === 'function' ? difficulty(p) : difficulty, battleRng());
-  return { result: { roll: t.roll, target: t.target, sl: t.sl, success: t.success } } as unknown as Partial<P>;
+  const r = simpleRoll(p, actor, value, difficulty, rng);
+  return r ? ({ result: r } as unknown as Partial<P>) : null;
 };
 
 export const FLOWS = {
@@ -812,8 +831,9 @@ export const FLOWS = {
       if (!actor || !p.fuir) return null;
       // RAW LDB 17 l.73 : avant le jet (calme==null → choisit 01) OU après un échec.
       if (forced) { const f = forcedBinarySuccess(p.fuir.calme); return f ? { fuir: { ...p.fuir, calme: f } } : null; }
-      const t = rollTest(calmeValue(actor), 'intermediaire', battleRng());
-      return { fuir: { ...p.fuir, calme: { success: t.success, roll: t.roll, target: t.target, sl: t.sl } } };
+      // Même cœur de jet que les autres Tests simples (`simpleRoll`) — seul l'ENDROIT de rangement diffère (`fuir.calme`).
+      const calme = simpleRoll(p, actor, (_p, a) => calmeValue(a), 'intermediaire', battleRng);
+      return calme ? { fuir: { ...p.fuir, calme } } : null;
     },
     outcome: (p) => testOutcome(p.fuir?.calme),
     bonus: {
@@ -1183,10 +1203,7 @@ export const FLOWS = {
     // Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68) via la lentille (`caps.forced` + verbe
     // `forceSuccess`) ; Chance « +1 DR » par `bumpSL` (success intact). Calque `heal`.
     caps: { forced: true },
-    resolve: (_s, p) => {
-      const res = rollTest(p.skillValue, p.difficulty, battleRng());
-      return { roll: res.roll, target: res.target, sl: res.sl, success: res.success };
-    },
+    resolve: simpleTestResolve((p) => p.skillValue, (p) => p.difficulty, battleRng, { actorless: true }), // Test étendu de Projectiles (battleRng) ; valeur bakée → actorless
     outcome: (p) => rollOutcome(p.roll, p.target, p.sl),
     // Chance « +1 DR » (le Test étendu cumule le DR) + Résilience GLOBALE via la lentille plate ; le garde du
     // forceSuccess (déjà réussi → rien à forcer, LDB 17 l.73) vit dans `dieTarget` (→ null), pas dans `actorTR`.
@@ -1312,10 +1329,7 @@ export const FLOWS = {
     // Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68) via la lentille (`caps.forced` + verbe
     // `forceSuccess`) ; Chance « +1 DR » par `bumpSL` (success intact).
     caps: { forced: true },
-    resolve: (_s, p) => {
-      const res = rollTest(p.skillValue, p.difficulty);
-      return { roll: res.roll, sl: res.sl, success: res.success };
-    },
+    resolve: simpleTestResolve((p) => p.skillValue, (p) => p.difficulty, () => defaultRNG, { actorless: true }), // Évaluation HORS combat → defaultRNG (le rng actuel) ; valeur bakée → actorless
     outcome: (p) => rollOutcome(p.roll, p.target, p.sl),
     lens: flatRollLens((p) => p.target),
   }),
@@ -1366,10 +1380,7 @@ export const FLOWS = {
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.healerId),
     caps: { forced: true },
-    resolve: (_s, p) => {
-      const res = rollTest(p.skillValue, p.difficulty, battleRng());
-      return { roll: res.roll, sl: res.sl, success: res.success };
-    },
+    resolve: simpleTestResolve((p) => p.skillValue, (p) => p.difficulty, battleRng, { actorless: true }), // Médecine bakée : le soigneur peut être un PNJ hors actorIn → actorless (jamais nul faute d'acteur live)
     outcome: (p) => rollOutcome(p.roll, p.target, p.sl),
     // Résilience GLOBALE via la lentille plate ; le garde du forceSuccess (déjà réussi OU mode chirurgie :
     // rien à forcer) vit dans `dieTarget` (→ null), pas dans `actorTR` (qui sert aussi le `bonusSL`).
@@ -1385,10 +1396,7 @@ export const FLOWS = {
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.healerId),
     caps: { forced: true },
-    resolve: (_s, p) => {
-      const res = rollTest(p.skillValue, p.difficulty, battleRng());
-      return { roll: res.roll, sl: res.sl, success: res.success };
-    },
+    resolve: simpleTestResolve((p) => p.skillValue, (p) => p.difficulty, battleRng, { actorless: true }), // Médecine bakée : le soigneur peut être un PNJ hors actorIn → actorless (jamais nul faute d'acteur live)
     outcome: (p) => rollOutcome(p.roll, p.target, p.sl),
     // Résilience GLOBALE via la lentille plate ; le garde du forceSuccess (déjà réussi → rien à forcer)
     // vit dans `dieTarget` (→ null), pas dans `actorTR` (qui sert aussi le `bonusSL`).
