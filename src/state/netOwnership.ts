@@ -13,6 +13,10 @@ export { modalOwnerOf } from './modalArbiter';
 /** Le siège possède-t-il ce combattant ? (héros non attribué → hôte, siège 0). */
 export function seatOwns(s: GameState, seat: number, combatantId: string | undefined): boolean {
   if (!combatantId) return seat === 0;
+  // Bac-à-sable MJ : un combattant NON-héros (ennemi/monde) est conduit par le siège MJ (`gmSeat`), pas
+  // par `ownership` (réservé aux héros) — les intents de son tour/ses modales remontent donc au MJ.
+  const c = s.battle?.combatants.find((x) => x.id === combatantId);
+  if (c && c.kind === 'enemy' && s.net.gmSeat != null) return seat === s.net.gmSeat;
   return (s.net.ownership[combatantId] ?? 0) === seat;
 }
 
@@ -26,31 +30,44 @@ export function ownsLocally(state: GameState, combatantId: string | undefined): 
 
 /**
  * Le combattant `c` est-il piloté À LA MAIN par un humain ? — CADENCE-AGNOSTIQUE (vrai même en Rapide/
- * Auto : décrit QUI possède le contrôle, pas s'il est déféré à un automate). Assigné à un siège humain
- * (`humanPiloted`) → vrai ; sinon un HÉROS non-`aiControlled` contrôlé localement → vrai ; un ennemi non
- * assigné ou un PNJ → faux. SOURCE des décisions de surfaçage RÉACTIF (défense/manœuvre/corruption…).
+ * Auto : décrit QUI possède le contrôle, pas s'il est déféré à un automate). Un HÉROS non-`aiControlled`
+ * contrôlé localement → vrai ; un ENNEMI → vrai ssi un siège porte le rôle MJ (`gmSeat` — bac-à-sable ;
+ * les jets du monde remontent au siège MJ) ; un PNJ neutre → faux. SOURCE des décisions de surfaçage
+ * RÉACTIF (défense/manœuvre/corruption…).
  */
 export function pilotedByHuman(s: GameState, c: Combatant): boolean {
-  if (s.net.humanPiloted[c.id] !== undefined) return true;
   if (c.kind === 'hero') return !c.aiControlled && ownsLocally(s, c.id);
+  if (c.kind === 'enemy') return s.net.gmSeat != null; // conduit par le MJ (bac-à-sable) sinon IA
   return false;
 }
 
 /**
  * Le combattant `c` est-il piloté par l'IA ? — base AGNOSTIQUE AU CAMP de l'orchestrateur de tour.
- * Un ENNEMI l'est SAUF s'il est assigné à un siège humain (`humanPiloted`). Un HÉROS l'est en mode
+ * Un ENNEMI l'est SAUF si un siège porte le rôle MJ (`gmSeat`, bac-à-sable). Un HÉROS l'est en mode
  * Auto-combat ET contrôlé LOCALEMENT (coop : on ne joue jamais le héros d'un autre siège), ou s'il porte
- * le drapeau `aiControlled` (PNJ allié IA). Un PNJ ne l'est jamais. NB : `aiDriven` ne change PAS le
- * `kind` du combattant — les règles indexées sur `kind` (Destin réservé aux héros, Corruption, déviation
- * d'armure, Mort Subite) restent CORRECTES. (Vit ICI, avec les primitives d'« qui pilote quoi » :
- * `controlsActive` en dépend ; `combatGate` le ré-exporte pour ses consommateurs historiques.)
+ * le drapeau `aiControlled` (PNJ allié IA). Un PNJ neutre ne l'est jamais. NB : `aiDriven` ne change PAS
+ * le `kind` du combattant. (Vit ICI, avec les primitives d'« qui pilote quoi » : `controlsActive`/
+ * `controlsCombatant` en dépendent ; `combatGate` le ré-exporte pour ses consommateurs historiques.)
  */
 export function aiDriven(s: GameState, c: Combatant): boolean {
-  if (c.kind === 'enemy') return s.net.humanPiloted[c.id] === undefined;
+  if (c.kind === 'enemy') return s.net.gmSeat == null; // ennemi = IA SAUF si un siège MJ le conduit
   // PNJ allié IA (`Combatant.aiControlled`, ex. défenseur de siège) : agit SEUL même en jeu MANUEL — sans
   // attendre l'Auto-combat global. On ne pilote jamais le combattant d'un AUTRE siège (`ownsLocally`).
   if (c.kind === 'hero' && c.aiControlled) return ownsLocally(s, c.id);
   return c.kind === 'hero' && cadenceAutoCombat() && ownsLocally(s, c.id);
+}
+
+/**
+ * Le siège LOCAL pilote-t-il À LA MAIN ce combattant MAINTENANT ? — prédicat UNIQUE des affordances de TOUR
+ * (grille de déplacement, réticule, barre d'action, hotbar). Héros manuel → vrai ; héros Auto-combat →
+ * faux ; PNJ `aiControlled` → faux ; ennemi sans MJ → faux ; ENNEMI quand le siège LOCAL porte le rôle MJ
+ * → vrai (coop : `gmSeat === mySeat`) ; invocation alliée (`kind:'hero'`) → comme un héros.
+ */
+export function controlsCombatant(s: GameState, c: Combatant): boolean {
+  if (!pilotedByHuman(s, c) || aiDriven(s, c)) return false;
+  if (c.kind === 'hero') return true; // `pilotedByHuman` encode déjà `ownsLocally` (siège-aware)
+  // Ennemi/monde conduit par le MJ : seul le siège MJ LOCAL le pilote (coop : gmSeat === mySeat).
+  return s.net.mode === 'local' || s.net.gmSeat === s.net.mySeat;
 }
 
 /**
@@ -72,7 +89,14 @@ export function controlsActive(state: GameState): boolean {
   if (!b || b.over) return true;
   const activeId = b.order[b.turn];
   const active = b.combatants.find((c) => c.id === activeId);
-  if (!active || active.kind !== 'hero') return true; // tour ennemi → UI déjà inerte par ses propres verrous
+  if (!active) return true;
+  if (active.kind !== 'hero') {
+    // Actif non-héros : conduit par le siège MJ (bac-à-sable) → affordances si le siège LOCAL porte le rôle
+    // MJ (coop : `gmSeat === mySeat`). Sans MJ (`gmSeat` null) → tour IA : vrai (l'UI est déjà inerte par
+    // ses propres verrous — inchangé). NB : le surfaçage FIN des affordances passe par `controlsCombatant`.
+    if (!pilotedByHuman(state, active)) return true;
+    return state.net.mode === 'local' || state.net.gmSeat === state.net.mySeat;
+  }
   if (aiDriven(state, active)) return false; // Auto-combat : l'IA pilote ce héros → pas d'affordance joueur
   if (state.net.mode === 'local') return true;
   return ownsLocally(state, activeId);

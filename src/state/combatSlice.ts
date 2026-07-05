@@ -18,7 +18,7 @@ import { continueRiverDayAfterCascade } from './riverVoyageFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf } from './combatGeometry';
@@ -78,6 +78,7 @@ import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { actorIn } from './combatOrParty';
+import { controlsCombatant, pilotedByHuman } from './netOwnership';
 import { nextCursorTile, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget } from './targeting';
 import { currentTargetingMode, type BattleClickOpts } from './targetingModes';
@@ -238,7 +239,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, scene } = get();
       if (!battle || !scene || battle.over || battle.movementUsed > 0) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || active.mountId) return;
+      if (!active || !controlsCombatant(get(), active) || active.mountId) return;
       const mount = mountableNear(battle, active);
       if (!mount) return;
       mountUp(active, mount);
@@ -259,7 +260,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, scene } = get();
       if (!battle || !scene || battle.over || battle.movementUsed > 0) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !active.mountId) return;
+      if (!active || !controlsCombatant(get(), active) || !active.mountId) return;
       const mount = mountOf(battle, active);
       const mountName = mount?.name ?? 'sa monture';
       const wasControlled = !!mount && isControlledMount(mount); // monture Nerveux exclue de l'ordre tant que montée
@@ -289,7 +290,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over) return; // option A (Sacrifier l'Avantage) reste possible même après avoir agi
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !isEngaged(active)) return;
+      if (!active || !controlsCombatant(get(), active) || !isEngaged(active)) return;
       startDisengage(get, set, active);
     },
     // « Sacrifier l'Avantage » (l.87) → ramener l'Avantage à 0, partir libre. L'Action N'EST PAS consommée.
@@ -393,7 +394,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // Aucune modale joueur affichable (fuyard non-héros, combat fini, Destin/révélation en attente)
         // → on auto-résout le Calme par le flux (fleeConfirm complète la fuite et ferme).
         const st = get();
-        if (mover.kind !== 'hero' || st.battle?.over || st.pendingFateSave || st.pendingReveals.length) {
+        if (!pilotedByHuman(get(), mover) || st.battle?.over || st.pendingFateSave || st.pendingReveals.length) {
           get().fleeRoll();
           get().fleeConfirm();
         }
@@ -409,7 +410,7 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
       checkBattleOver(get, set);
       const st = get();
-      if (mover.kind !== 'hero' || st.battle?.over || st.pendingFateSave || st.pendingReveals.length) {
+      if (!pilotedByHuman(get(), mover) || st.battle?.over || st.pendingFateSave || st.pendingReveals.length) {
         set({ pendingDisengage: null, pendingCascade: null });
         return;
       }
@@ -450,7 +451,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return; // le Test opposé coûte l'Action
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       const foe = battle.combatants.find((c) => c.id === targetId);
       if (!foe || !auContactEligible(active, foe)) return;
       startAuContact(get, set, active, foe);
@@ -499,7 +500,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return; // le Test opposé coûte l'Action
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       const foe = battle.combatants.find((c) => c.id === targetId);
       if (!foe || !areGrappling(active, foe) || isOutOfAction(foe)) return;
       startGrapple(get, set, active, foe);
@@ -560,7 +561,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, scene } = get();
       if (!battle || !scene || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero') return;
+      if (!active || !controlsCombatant(get(), active)) return;
       // Le MODE de ciblage courant peut posséder un commit-CASE (téléportation, pose de zone de sort
       // après jet, pilonnage indirect de siège, ouverture d'un sort de ZdE) — source UNIQUE targetingModes.
       const mode = currentTargetingMode(get);
@@ -678,7 +679,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const active = activeCombatant(battle);
       // Aide PRÉ-Action uniquement : on n'annule que tant qu'aucune Action n'a été prise ce Tour (sinon
       // l'Action aurait été résolue depuis une position désormais effacée). Rien à annuler sans segment.
-      if (!snap || !active || active.kind !== 'hero' || battle.acted || (battle.movementUsed ?? 0) === 0) return;
+      if (!snap || !active || !controlsCombatant(get(), active) || battle.acted || (battle.movementUsed ?? 0) === 0) return;
       for (const c of battle.combatants) {
         const p = snap.pos[c.id];
         if (p) c.pos = { ...p }; // restaure TOUS (un grand a pu en déplacer d'autres sous son empreinte)
@@ -697,7 +698,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, scene, camRot, viewMode, camEdge } = get();
       if (!battle || battle.over || !scene) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !active.pos) return;
+      if (!active || !controlsCombatant(get(), active) || !active.pos) return;
       const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge };
       set({ combatCursor: { tile: nextCursorTile(scene, get().combatCursor, dir, dims, active.pos) } });
     },
@@ -724,7 +725,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero') return;
+      if (!active || !controlsCombatant(get(), active)) return;
       // Le MODE de ciblage courant possède le commit-COMBATTANT (attaque/cast/soin/bordée, ou flux
       // différés : Surincantation +Cible / Frappe Mortelle / 2ᵉ frappe, ou pose de zone sur la case
       // d'un combattant). Source UNIQUE : targetingModes (réticule au survol = ce même mode).
@@ -740,7 +741,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || active.advantage < 1) return; // exige ≥1 Avantage (LDB 85 l.320)
+      if (!active || !controlsCombatant(get(), active) || active.advantage < 1) return; // exige ≥1 Avantage (LDB 85 l.320)
       const target = trampleTarget(battle, active, targetId); // adversaire adjacent plus petit
       if (!target) return;
       // Piétinement = étape 0 d'une cascade de COMBAT (comme l'attaque) : le jet ET son Coup Critique
@@ -756,7 +757,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero') return;
+      if (!active || !controlsCombatant(get(), active)) return;
       // Arme une attaque pour le clic-ennemi (mode neutre : `action===null`). Re-sélectionner revient à l'Arme.
       const next = battle.selectedAttack === id ? 'arme' : id;
       set({ battle: { ...battle, action: null, selectedAttack: next, selectedSpellId: null, preview: null }, pendingSiegeAim: null });
@@ -775,7 +776,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero') return;
+      if (!active || !controlsCombatant(get(), active)) return;
       const a = creatureAttacks(active.traits ?? []).find((x) => x.kind === kind);
       if (!a) return;
       if (active.advantage < a.avantage) return; // Hurlement : ≥ coût RAW (2, dépense tout à l'application)
@@ -790,7 +791,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return; // coûte l'Action du tour (2ᵉ via loseTurn des effets)
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       const def = selfManeuversOf(active).find((m) => m.id === maneuverId);
       if (!def || !selfManeuverApplicable(active, def)) return; // périmée (déjà dans/hors de la forme)
       set({ battle: { ...battle, action: null } }); // referme le menu
@@ -824,7 +825,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return; // l'Action de Battement est indisponible si déjà agi
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !canTakeAction(active) || !hasBattement(active)) return;
+      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active) || !hasBattement(active)) return;
       const foes = battementFoes(active, battle);
       const foe = foeId ? foes.find((c) => c.id === foeId) : foes[0]; // défaut = 1er éligible ; picker via `battementSetFoe`
       if (!foe) return;
@@ -864,7 +865,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, scene } = get();
       if (!battle || !scene || battle.over || battle.movementUsed > 0) return; // le Distraire coûte le Mouvement
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !active.pos || !hasDistraire(active)) return;
+      if (!active || !controlsCombatant(get(), active) || !active.pos || !hasDistraire(active)) return;
       const foes = distraireFoes(active, battle, (c) => losClear(scene, active.pos!, c.pos!, smokeOf(battle)));
       const foe = foeId ? foes.find((c) => c.id === foeId) : foes[0]; // défaut = 1er éligible ; picker via `distraireSetFoe`
       if (!foe) return;
@@ -940,7 +941,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.acted || battle.movementUsed > 0) return; // Course = Marche + Action (exige le plein Mouvement)
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
+      if (!active || !controlsCombatant(get(), active) || isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return; // Engagé/À Terre → pas de Course (LDB 16 l.37)
       set({ pendingRun: { combatantId: active.id, dest, result: null }, battle: { ...battle, action: null, preview: null } });
     },
     runConfirm: () => {
@@ -1246,7 +1247,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.movementUsed > 0) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !hasCondition(active, COND.aTerre) || active.wounds.current <= 0) return;
+      if (!active || !controlsCombatant(get(), active) || !hasCondition(active, COND.aTerre) || active.wounds.current <= 0) return;
       removeCondition(active, COND.aTerre);
       set({ battle: { ...battle, movementUsed: mountMovement(battle, active), action: null, log: [...battle.log, ev('move', t('cs.standUp', { name: active.name }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -1327,7 +1328,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Réordonnancement d'initiative : arme Rapide (LDB 62 l.318-319) → gratuit ; sinon 1 point de Chance
       // (LDB ch.17 l.27). Tir rapide (interruption hors de l'ordre, LDB 10) ne passe PAS par ici (`preemptRangedShot`).
       const free = !!hero && canStrikeFirst(hero.weapons);
-      if (!hero || hero.kind !== 'hero' || (!free && (hero.fortune ?? 0) <= 0)) return;
+      if (!hero || !controlsCombatant(get(), hero) || (!free && (hero.fortune ?? 0) <= 0)) return;
       if (battle.order[0] === heroId) return; // déjà en tête
       if (!free) hero.fortune = (hero.fortune ?? 0) - 1;
       const order = [heroId, ...battle.order.filter((id) => id !== heroId)]; // en tête de l'ordre du Round
@@ -1340,8 +1341,14 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || !pendingRoundStart || get().pendingAttack) return;
       const hero = battle.combatants.find((c) => c.id === heroId);
       const target = battle.combatants.find((c) => c.id === targetId);
-      if (!hero || hero.kind !== 'hero' || !canPreemptRanged(hero) || hero.loseNextAction) return; // 1 interruption / Round (loseNext = déjà tiré)
+      if (!hero || !controlsCombatant(get(), hero) || !canPreemptRanged(hero) || hero.loseNextAction) return; // 1 interruption / Round (loseNext = déjà tiré)
       if (!target || target.kind === hero.kind || isOutOfAction(target)) return;
+      // Cible VALIDE seulement (arme à distance + bande de portée + Ligne de Vue) — sinon on N'OUVRE PAS la
+      // modale (le tir résolu hors-tour heurterait la cascade). Le journal explique le refus.
+      const weapon = firedWeapon(hero, target, undefined, battle.combatants);
+      const scene = get().scene;
+      const blocked = !!(hero.pos && target.pos && scene) && !losClear(scene, hero.pos, target.pos, smokeOf(battle));
+      if (weapon.type !== 'ranged' || !inFiringBand(hero, target, weapon) || blocked) { get().log(t('cf.noLoSMasked')); return; }
       // Le tir se résout par la modale de jet NORMALE (attackRoll/attackConfirm) ; le tireur n'est PAS actif.
       // `pendingAttack.interrupt` → attackConfirm applique le tir sans avancer le tour + épuise son tour normal.
       set({ pendingAttack: { attackerId: hero.id, targetId: target.id, location: null, result: null, interrupt: true } });
@@ -1463,7 +1470,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero') return;
+      if (!active || !controlsCombatant(get(), active)) return;
       if (!canTakeAction(active)) return; // Sonné : pas d'Action (LDB États l.123)
       active.defensiveStance = true;
       active.aiming = false; // une autre action que le tir gâche la visée
@@ -1477,7 +1484,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.loadoutSwapped) return; // plafond maison 1×/tour
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || active.activeLoadoutId === loadoutId) return;
+      if (!active || !controlsCombatant(get(), active) || active.activeLoadoutId === loadoutId) return;
       loadoutSetActive(active, loadoutId);
       recomputeLoadout(active); // re-dérive les armes actives du combattant
       const lo = active.loadouts?.find((l) => l.id === loadoutId);
@@ -1492,7 +1499,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       if (!active.weapons.some((w) => w.type === 'ranged')) return; // viser = pour le tir
       active.aiming = true;
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('aim', t('cs.aim', { name: active.name }), active.id)] } });
@@ -1504,7 +1511,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !active.weapons.some((w) => w.type === 'melee' && canPushback(w))) return;
+      if (!active || !controlsCombatant(get(), active) || !active.weapons.some((w) => w.type === 'melee' && canPushback(w))) return;
       active.pushbackMode = !active.pushbackMode;
       set({ battle: { ...battle } });
     },
@@ -1515,7 +1522,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       const w0 = active.weapons.find((x) => x.type === 'ranged');
       if (!w0 || (w0.reload ?? 0) <= 0 || active.loaded) return; // rien à recharger (Arc = pas de défaut, ou déjà chargé)
       // Pièce SERVIE en sous-effectif : recharge ×2 (MDG ch.12 l.462). Le bake reflète les servants APTES présents
@@ -1624,7 +1631,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       const n = stacks(active, state);
       if (n <= 0) return; // pas porteur de l'État
       // Test de récupération (Empêtré « se libérer »/En flammes « se rouler », LDB 16 l.61/77) lu de la
@@ -1658,7 +1665,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero') return;
+      if (!active || !controlsCombatant(get(), active)) return;
       active.ammoUid = uid;
       set({ battle: { ...battle } });
       bus.emit(EVT.SCENE_DIRTY);
@@ -1669,7 +1676,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
+      if (!active || !controlsCombatant(get(), active) || (active.resolve ?? 0) <= 0) return;
       if (!active.conditions.some((c) => c.name === conditionName)) return;
       active.resolve = (active.resolve ?? 0) - 1;
       removeCondition(active, conditionName, 1); // « Retirez un État » (un pion), LDB ch.17 l.66
@@ -1710,7 +1717,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero') return;
+      if (!active || !controlsCombatant(get(), active)) return;
       const msg = spendResolveForPsychImmunity(active); // SOURCE UNIQUE de l'immunité par Détermination
       if (!msg) return;
       set({ battle: { ...battle, action: null, log: [...battle.log, ev('info', msg, active.id)] } });
@@ -1721,7 +1728,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || (active.resolve ?? 0) <= 0) return;
+      if (!active || !controlsCombatant(get(), active) || (active.resolve ?? 0) <= 0) return;
       active.resolve = (active.resolve ?? 0) - 1;
       // Détermination (LDB 17 l.64) : `ActiveEffect` à durée 1 Round (système de Durée unifié) — ignore les
       // modifs de Critique ce Round, expiré au passage de Round. Plus de flag round-scopé + hook dédié.
@@ -1739,7 +1746,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, scene } = get();
       if (!battle || battle.over || battle.acted || !scene) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return; // ramasser = une Action
+      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return; // ramasser = une Action
       if (get().flags[`__fouille_${entityId}`]) return; // déjà entièrement fouillé en exploration
       const ent = scene.entities.find((e) => e.id === entityId && e.kind === 'prop' && !!e.interact);
       if (!ent || !ent.interact || !active.pos || chebyshev(active.pos, ent.pos) > 1) return; // doit être adjacent/sur la case
@@ -1902,7 +1909,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // si LES DEUX touchent (cf. blocs isDualSecond ci-dessous).
         applyAttackResult(get, set, attacker, victim, weapon, pa.result, undefined, undefined, isDualMain || isDualSecond, pa.grapple); // pa.grapple = Empoignade (LDB 14 l.159) : pose l'Empoignade au lieu des Dégâts
         // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
-        if (attacker.kind === 'hero' && attackerFumbled(pa.result, weapon)) {
+        if (controlsCombatant(get(), attacker) && attackerFumbled(pa.result, weapon)) {
           // Maladresse = étape de la cascade d'attaque (comme le Critique) ; advanceCombatJet l'enchaîne au bout.
           // La donnée (arme/résultat) vit SUR l'étape — source unique, plus de `pendingFumble` à désynchroniser.
           pushCombatStep(set, { id: `cons-fumble-${attacker.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: attacker.id, fumble: { weapon, result: null } });
@@ -2073,7 +2080,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Frénésie de l'attaquant (comme avant le fold).
       const parryWeapon = defender ? (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined) ?? defender.weapons[0] : undefined;
       // Substitution sociale (Intimidation/Dressage) : ce n'est pas un Test d'arme → aucune Maladresse d'arme (LDB 14 l.48-51).
-      if (defender && defender.kind === 'hero' && pd.mode !== 'social' && defenderFumbled(pd.result, parryWeapon) && !isOutOfAction(defender)) {
+      if (defender && pilotedByHuman(get(), defender) && pd.mode !== 'social' && defenderFumbled(pd.result, parryWeapon) && !isOutOfAction(defender)) {
         // L'Oups ! porte sur l'ARME DE PARADE réellement utilisée (dégât d'arme / quelle arme casse), pas weapons[0].
         pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id, fumble: { weapon: parryWeapon!, result: null } });
         // Positionne le curseur défense → Maladresse quand la défense est l'étape courante (sinon
@@ -2275,7 +2282,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, scene } = get();
       if (!battle || !scene) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero') return;
+      if (!active || !controlsCombatant(get(), active)) return;
       // Brisé (LDB 16 l.55) : Mouvement + Action doivent servir à FUIR / se cacher — aucune action
       // offensive. Le déplacement (fuite) passe par le clic-sol implicite (filtre dans computeMoveReach) ;
       // ici seuls « resolve » (Détermination, qui peut retirer le Brisé) et la fermeture (null) passent.
@@ -2308,7 +2315,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle) return;
       const healer = activeCombatant(battle);
-      if (!healer || healer.kind !== 'hero' || !hasHealSkill(healer) || battle.acted || !canTakeAction(healer)) return;
+      if (!healer || !controlsCombatant(get(), healer) || !hasHealSkill(healer) || battle.acted || !canTakeAction(healer)) return;
       const target = battle.combatants.find((c) => c.id === targetId);
       if (!target || !availableHealModes(target).includes(mode)) return;
       const skillValue = testValue(healer, 'guerison');
@@ -2374,7 +2381,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || battle.acted) return;
+      if (!active || !controlsCombatant(get(), active) || battle.acted) return;
       set({ battle: { ...battle, action: 'cast', selectedSpellId: spellId, reachable: new Map() } });
       castZoneSpell(get, set, active, spellId); // no-op si le sort n'est pas une ZdE chiffrable
       bus.emit(EVT.SCENE_DIRTY);
@@ -2385,7 +2392,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero') return;
+      if (!active || !controlsCombatant(get(), active)) return;
       if (battle.acted || !canTakeAction(active)) return; // boire = une Action ; Sonné = pas d'Action
       const it = (active.items ?? []).find((i) => i.uid === uid);
       if (!it) return;
@@ -2675,7 +2682,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const active = activeCombatant(battle);
       // Le héros actif focalise (hotbar) OU l'IA focalise pour ELLE-MÊME (runEnemyAI → case 'focus').
       // On ne laisse PAS le joueur focaliser pendant le tour d'un acteur auto-piloté.
-      if (!active || battle.acted || (active.kind !== 'hero' && !aiDriven(get(), active))) return;
+      if (!active || battle.acted || (!controlsCombatant(get(), active) && !aiDriven(get(), active))) return;
       const spell = findSpellById(spellId);
       if (!spell || !isArcaneSpell(spell)) {
         get().log(t('cs.cannotFocus'));
@@ -2734,7 +2741,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle } = get();
       if (!battle || battle.over) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || battle.acted) return;
+      if (!active || !controlsCombatant(get(), active) || battle.acted) return;
       if (!actorHasSkill(active, 'langue', 'magick')) { get().log(t('cs.cannotDispel')); return; }
       const target = dispellableSpellsOn(battle.combatants).find((d) => d.spellId === spellId && d.casterId === spellCasterId);
       if (!target) return;
@@ -2743,7 +2750,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // `Combatant.spells` = ids STABLES au runtime → résolution par id SEULE (pas de repli libellé : interdit).
       const domainsOf = (h: Combatant) => new Set((h.spells ?? []).map((id) => findSpellById(id)?.subType).filter(Boolean) as string[]);
       const mine = domainsOf(active);
-      const supporters = battle.combatants.filter((c) => c.id !== active.id && c.kind === 'hero' && !isOutOfAction(c)
+      const supporters = battle.combatants.filter((c) => c.id !== active.id && c.kind === active.kind && !isOutOfAction(c)
         && actorHasSkill(c, 'langue', 'magick') && [...domainsOf(c)].some((d) => mine.has(d))).length;
       const cap = bonus(effectiveChar(active, 'Int')); // Langue (Magick) = Intelligence ; plafond du Soutien
       const supBonus = assistBonus(supporters, cap);
@@ -2810,7 +2817,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || isFrenzied(active) || !isFrenzyCapable(active)) return;
+      if (!active || !controlsCombatant(get(), active) || isFrenzied(active) || !isFrenzyCapable(active)) return;
       // OUVRE la modale — le Test de FM se fait au clic « Lancer ».
       set({ pendingFrenzy: { combatantId: active.id, result: null }, battle: { ...battle, action: null } });
     },
@@ -2838,7 +2845,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const battle = get().battle;
       if (!battle || battle.over || battle.acted) return;
       const active = activeCombatant(battle);
-      if (!active || active.kind !== 'hero' || !canTakeAction(active)) return;
+      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
       const cap = skillAdvantageCap(active, skillId);
       if (cap <= 0 || (active.advantage ?? 0) >= cap) return; // pas d'application « Avantage », ou déjà au plafond de la méthode
       const skillLabel = findSkillById(skillId)?.label ?? skillId;

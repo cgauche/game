@@ -3,12 +3,12 @@
  * le combattant concerné — modale ouverte → son concerné seul ('*' = tous) ; sinon le tour actif.
  */
 import { describe, it, expect } from 'vitest';
-import { intentAllowedFor, modalOwnerOf, seatOwns, seatSlotsRemaining, controlsActive } from './netOwnership';
+import { intentAllowedFor, modalOwnerOf, seatOwns, seatSlotsRemaining, controlsActive, controlsCombatant, pilotedByHuman, aiDriven } from './netOwnership';
 import type { GameState } from './store';
 
 const base = (over: Partial<GameState>): GameState =>
   ({
-    net: { mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { h2: 1 }, slots: [0, 0, 0, 0], humanPiloted: {} },
+    net: { mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { h2: 1 }, slots: [0, 0, 0, 0] },
     party: [{ id: 'h1' }, { id: 'h2' }],
     battle: { order: ['h1', 'h2'], turn: 0, combatants: [
       { id: 'h1', kind: 'hero' }, { id: 'h2', kind: 'hero' }, { id: 'e1', kind: 'enemy' },
@@ -68,14 +68,14 @@ describe('possession réseau (netOwnership)', () => {
   it('partyAddHero : permis tant que le siège a des emplacements à remplir, refusé ensuite', () => {
     // 2 slots au siège 1, il possède déjà h2 → 1 restant.
     const s = base({
-      net: { mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { h2: 1 }, slots: [0, 1, 1, 0], humanPiloted: {} },
+      net: { mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { h2: 1 }, slots: [0, 1, 1, 0] },
       battle: null,
     } as unknown as Partial<GameState>);
     expect(seatSlotsRemaining(s, 1)).toBe(1);
     expect(intentAllowedFor(s, 1, 'partyAddHero', [{ id: 'h3' }])).toBe(true);
     // Quota épuisé : h3 ajouté au siège 1 → refus.
     const full = base({
-      net: { mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { h2: 1, h3: 1 }, slots: [0, 1, 1, 0], humanPiloted: {} },
+      net: { mode: 'host', mySeat: 0, seatNames: { 0: 'Hôte', 1: 'Antoine' }, ownership: { h2: 1, h3: 1 }, slots: [0, 1, 1, 0] },
       party: [{ id: 'h1' }, { id: 'h2' }, { id: 'h3' }],
       battle: null,
     } as unknown as Partial<GameState>);
@@ -118,6 +118,50 @@ describe('controlsActive — gating d’affichage : le tour d’un héros distan
     const enemyTurn = base({ battle: { ...base({}).battle!, order: ['e1', 'h1', 'h2'], turn: 0 } });
     expect(controlsActive(enemyTurn)).toBe(true);
     expect(controlsActive(withSeat(enemyTurn, 1))).toBe(true);
+  });
+});
+
+describe('controlsCombatant / rôle MJ (bac-à-sable) — un ennemi conduit par le siège MJ', () => {
+  const enemyTurn = (gmSeat?: number, mySeat = 0): GameState => {
+    const s = base({ battle: { ...base({}).battle!, order: ['e1', 'h1'], turn: 0 } });
+    return { ...s, net: { ...s.net, mySeat, ...(gmSeat != null ? { gmSeat } : {}) } } as GameState;
+  };
+  const cid = (s: GameState, id: string) => s.battle!.combatants.find((c) => c.id === id)!;
+
+  it('sans MJ (gmSeat absent) : ennemi = IA, aucun contrôle joueur', () => {
+    const s = enemyTurn();
+    expect(aiDriven(s, cid(s, 'e1'))).toBe(true);
+    expect(pilotedByHuman(s, cid(s, 'e1'))).toBe(false);
+    expect(controlsCombatant(s, cid(s, 'e1'))).toBe(false);
+    expect(controlsActive(s)).toBe(true); // tour IA → UI inerte par ses propres verrous (inchangé)
+  });
+
+  it('rôle MJ posé sur MON siège : l’ennemi devient contrôlable, son tour est à moi', () => {
+    const s = enemyTurn(0, 0); // le siège 0 (moi) porte le rôle MJ
+    expect(aiDriven(s, cid(s, 'e1'))).toBe(false);
+    expect(pilotedByHuman(s, cid(s, 'e1'))).toBe(true);
+    expect(controlsCombatant(s, cid(s, 'e1'))).toBe(true);
+    expect(controlsActive(s)).toBe(true);
+  });
+
+  it('rôle MJ sur un AUTRE siège (coop) : je ne conduis pas les ennemis', () => {
+    const s = enemyTurn(1, 0); // le MJ = siège 1 ; moi = siège 0
+    expect(pilotedByHuman(s, cid(s, 'e1'))).toBe(true); // les jets du monde remontent au MJ (n'importe quel siège)
+    expect(controlsCombatant(s, cid(s, 'e1'))).toBe(false); // …mais seul le siège MJ le PILOTE
+    expect(controlsActive(s)).toBe(false);
+  });
+
+  it('les héros restent inchangés quel que soit le MJ', () => {
+    const s = enemyTurn(0, 0);
+    expect(controlsCombatant(s, cid(s, 'h1'))).toBe(true); // h1 non attribué → hôte (moi)
+    expect(pilotedByHuman(s, cid(s, 'h1'))).toBe(true);
+  });
+
+  it('seatOwns route les intents d’un ennemi vers le siège MJ (pas ownership)', () => {
+    const s = enemyTurn(1, 0);
+    expect(seatOwns(s, 1, 'e1')).toBe(true);  // le siège MJ possède l’intent du tour ennemi
+    expect(seatOwns(s, 0, 'e1')).toBe(false);
+    expect(seatOwns(s, 0, 'h1')).toBe(true);  // héros : ownership inchangé (non attribué → hôte)
   });
 });
 

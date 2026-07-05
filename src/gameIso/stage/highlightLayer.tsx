@@ -12,6 +12,7 @@ import { Scene } from '../../state/scene';
 import { Combatant } from '../../engine/types';
 import { crowdEligible, eligibleAttackTargetIds, displayedReach, computeRunReach, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { currentTargetingMode } from '../../state/targetingModes';
+import { controlsCombatant } from '../../state/netOwnership';
 import { footprintN, footprintTiles } from '../../state/footprint';
 import { mountOf } from '../../state/mount';
 import { Dims, depth, diamondPath } from '../iso';
@@ -50,7 +51,7 @@ export function combatHighlightObjs(
     // Anneaux d'attaque (R4) : en mode neutre (attaque implicite), tant que l'Action est disponible
     // (ou attaque libre de Frénésie).
     eligibleIds:
-      myTurn && battle.action === null && activeC?.kind === 'hero' && !pendingAttack && (!battle.acted || hasFreeWeaponAttack(activeC))
+      myTurn && battle.action === null && !!activeC && controlsCombatant(get(), activeC) && !pendingAttack && (!battle.acted || hasFreeWeaponAttack(activeC))
         ? eligibleAttackTargetIds(get)
         : null,
     crowdIds: (() => {

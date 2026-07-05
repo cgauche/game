@@ -79,7 +79,7 @@ describe('SIÈGE-B — armes de siège ciblent les structures', () => {
 });
 
 describe('SIÈGE-A — drapeau allié-IA (aiControlled) piloté par aiDriven', () => {
-  const localState = { net: { mode: 'local', mySeat: 0, ownership: {}, slots: [0, 0, 0, 0], humanPiloted: {} } } as unknown as GameState;
+  const localState = { net: { mode: 'local', mySeat: 0, ownership: {}, slots: [0, 0, 0, 0] } } as unknown as GameState;
   const c = (over: Partial<Combatant>): Combatant => ({ id: 'a', kind: 'hero', ...over }) as Combatant;
 
   it('un PNJ allié `aiControlled` est piloté par l\'IA même en jeu manuel', () => {

@@ -38,6 +38,12 @@ export interface InitiativeStripProps {
    *  (réciprocité). Lu depuis store.hovered par CampaignView. */
   hoveredId?: string | null;
   onPromote: (id: string) => void;
+  /** Ids des héros pouvant déclencher Tir rapide pendant la pause (canPreemptRanged + contrôle local). */
+  canPreemptIds?: string[];
+  /** Héros dont le Tir rapide est ARMÉ (en attente d'une cible) — badge surligné. */
+  preemptArmedId?: string | null;
+  /** Clic sur le badge Tir rapide d'un héros : arme/désarme sa visée (LDB 10). */
+  onPreempt?: (id: string) => void;
 }
 
 export function InitiativeStrip(p: InitiativeStripProps) {
@@ -80,6 +86,18 @@ export function InitiativeStrip(p: InitiativeStripProps) {
                     : `Dépense 1 point de Chance pour qu'${c.name} agisse en premier ce Round`}
                 >
                   <Icon id="ui/preempt" size="sm" />{p.freeFirstIds?.includes(id) ? null : c.fortune ?? 0}
+                </button>
+              )}
+              {p.canPreemptIds?.includes(id) && (
+                <button
+                  type="button"
+                  className={`is-preempt${p.preemptArmedId === id ? ' armed' : ''}`}
+                  onClick={() => p.onPreempt?.(id)}
+                  title={p.preemptArmedId === id
+                    ? `${c.name} — choisissez une cible pour son Tir rapide (re-cliquez pour annuler)`
+                    : `Tir rapide : ${c.name} tire hors de son tour (épuise son Action et son Mouvement)`}
+                >
+                  <Icon id="action/shoot" size="sm" />
                 </button>
               )}
             </div>

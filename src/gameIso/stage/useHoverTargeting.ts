@@ -16,6 +16,7 @@ import { effectiveMovement } from '../../engine/encumbrance';
 import { isOutOfAction, canTakeAction, hasCondition } from '../../engine/conditions';
 import { isFrenzied } from '../../engine/psychology';
 import { combatantAtTile } from '../../state/combatGeometry';
+import { controlsCombatant } from '../../state/netOwnership';
 import { outOfSightTargetIds, castOutOfSightTargetIds, movePreviewAt, previewResourceDelta, frenzyTarget, hasFreeWeaponAttack } from '../../state/combatFlow';
 import { hoverTargeting } from '../../state/targeting';
 
@@ -87,7 +88,7 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
       return ht.kind === 'ok' ? { fromId: actor.id, toId: occ.id, line: ht.line, tip: null, reticle: true } : null;
     }
     const activeH = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
-    if (!activeH || activeH.kind !== 'hero' || !activeH.pos) return null;
+    if (!activeH || !controlsCombatant(st(), activeH) || !activeH.pos) return null;
     // Mêmes verrous que battleClickEntity : Action consommée (sauf attaque libre de Frénésie),
     // Sonné/Brisé, cible de Frénésie IMPOSÉE (le plus proche en LdV).
     const freeFrenzy = battle.action === null && hasFreeWeaponAttack(activeH);

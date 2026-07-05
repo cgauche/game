@@ -520,6 +520,8 @@ export interface GameState extends RollFlowActionsMap {
   /** Rejoint une room par code. Résout null si connecté, sinon le message d'erreur à afficher. */
   netJoin: (code: string, name: string) => Promise<string | null>;
   netAssign: (heroId: string, seat: number) => void;
+  /** Pose/retire le rôle MJ (bac-à-sable) : `seat` conduit les ennemis + le monde, `null` = IA. */
+  setGmSeat: (seat: number | null) => void;
   /** Attribue un EMPLACEMENT (0-3) de l'écran d'équipe à un siège (hôte). */
   netAssignSlot: (slot: number, seat: number) => void;
   netLeave: () => void;
@@ -1364,6 +1366,7 @@ export const useGame = create<GameState>((set, get) => ({
   netHostStart: (name) => netFlow.netHostStart(get, set, name),
   netJoin: (code, name) => netFlow.netJoin(get, set, code, name),
   netAssign: (heroId, seat) => netFlow.netAssign(get, set, heroId, seat),
+  setGmSeat: (seat) => netFlow.setGmSeat(get, set, seat),
   netAssignSlot: (slot, seat) => netFlow.netAssignSlot(get, set, slot, seat),
   netLeave: () => netFlow.netLeave(get, set),
   partyAddHero: (hero, wealth, seat) => partyFlow.partyAddHero(get, set, hero, wealth, seat),

@@ -24,8 +24,7 @@ import { quartIndex } from '../state/shipCrew';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { canAidTeam } from '../state/commandTeam';
 import { isVehicle } from '../engine/vehicle';
-import { ownsLocally } from '../state/netOwnership';
-import { aiDriven } from '../state/combatGate';
+import { ownsLocally, controlsCombatant } from '../state/netOwnership';
 import type { Combatant } from '../engine/types';
 import { HERO_RING, ENEMY_RING } from '../gameIso/teamColors';
 import { TeamPortrait } from './TeamPortrait';
@@ -239,7 +238,7 @@ export function ActionBar() {
   // Un héros PILOTÉ PAR L'IA (Auto-combat) n'est pas contrôlable par le joueur → on rend la MÊME barre
   // que pour un ennemi (aucun contrôle : le joueur regarde). En Rapide, le héros reste contrôlable (seuls
   // les jets s'auto-résolvent) ; en Auto, l'IA joue → barre « ennemie ». `isHero` gate TOUS les contrôles.
-  const playerControlled = active.kind === 'hero' && !aiDriven(useGame.getState(), active);
+  const playerControlled = controlsCombatant(useGame.getState(), active);
   // Un NAVIRE-coque contrôlé par le joueur (échelle Mer) n'est PAS un fantassin : il a ses propres Actions
   // (Tests d'équipage : Manœuvrer / Bordée / Éperonner), pas marche/sort/mêlée. On sépare les deux barres.
   const isShip = playerControlled && isVehicle(active);
@@ -298,7 +297,7 @@ export function ActionBar() {
   // `combatDistance` (Z-AWARE + empreinte) : un ennemi en contrebas (z différent) ou non adjacent n'est PAS
   // « au contact » — sur le chemin de ronde (z=1), les assaillants au sol (z=0) ne comptent plus (Δz → distance ≥ 2).
   const assailliN = isHero && active.pos
-    ? battle.combatants.filter((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos && combatDistance(active, c) <= 1).length
+    ? battle.combatants.filter((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos && combatDistance(active, c) <= 1).length
     : 0;
 
   // Consommables utilisables du combattant actif, groupés par nom (plusieurs potions → ×N).
@@ -344,7 +343,7 @@ export function ActionBar() {
 
   // Guérison (LDB 09-Compétences) : soi + alliés (héros) adjacents soignables, si le héros a la Compétence.
   const canHeal = isHero && hasHealSkill(active) && !battle.acted && !stunned && !frenzied;
-  const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === 'hero'), { adjacency: true }) : [];
+  const healTargets = canHeal ? healableTargets(active, battle.combatants.filter((c) => c.kind === active.kind), { adjacency: true }) : [];
   // Dissipation (LDB 46 l.204-207) : le héros actif possède Langue (Magick) ET ≥ 1 sort permanent est actif.
   const canDispel = isHero && actorHasSkill(active, 'langue', 'magick');
   const dispellable = canDispel ? dispellableSpellsOn(battle.combatants) : [];

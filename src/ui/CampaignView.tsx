@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGame } from '../state/store';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
+import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
 import { IsoStage } from '../gameIso/IsoStage';
 import { PovStage } from '../gameIso/pov/PovStage';
 import { PovControls } from './PovControls';
@@ -30,7 +31,7 @@ import { GameMenu } from './GameMenu';
 import { SaveLoadModal } from './SaveLoadModal';
 import { HouseRulesModal } from './HouseRulesModal';
 import { SessionEndModal } from './SessionEndModal';
-import { CoopMenuSection } from './CoopPanels';
+import { CoopMenuSection, GmSoloToggle } from './CoopPanels';
 import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
 import { PortView } from './PortView';
@@ -40,7 +41,7 @@ import { TravelRecapModal } from './TravelRecapModal';
 import { placeOfScene } from '../state/worldMap';
 import { restPlacesHere } from '../state/restFlow';
 import { hoverClickCommits } from './pointerCaps';
-import { controlsActive } from '../state/netOwnership';
+import { controlsActive, controlsCombatant } from '../state/netOwnership';
 import { combatantClickActs } from '../state/combatOrParty';
 import { useGameKeyboard } from './useGameKeyboard';
 import { useGamepad } from './useGamepad';
@@ -61,6 +62,7 @@ export function CampaignView() {
   const toggleInspect = useGame((s) => s.toggleInspectEnabled);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
   const roundStartPromote = useGame((s) => s.roundStartPromote);
+  const preemptRangedShot = useGame((s) => s.preemptRangedShot);
   const gameTime = useGame((s) => s.gameTime);
   const worldMap = useGame((s) => s.worldMap);
   const worldMapOpen = useGame((s) => s.worldMapOpen);
@@ -108,11 +110,12 @@ export function CampaignView() {
     ...(battle?.combatants.filter((c) => (isVehicle(c) || isEngin(c)) && c.kind === 'hero') ?? []),
   ];
   const activeId = battle && !battle.over ? battle.order[battle.turn] : null;
-  // Pré-emption d'initiative (pause de début de Round) : héros éligibles (LDB ch.17 l.27).
+  // Pré-emption d'initiative (pause de début de Round) : combattants éligibles (LDB ch.17 l.27) que le
+  // siège LOCAL CONTRÔLE (héros, ou ennemis conduits par le MJ) — `controlsCombatant` filtre le contrôle.
   const canFirstIds = battle && pendingRoundStart
     ? battle.order.filter((id) => {
         const c = battle.combatants.find((x) => x.id === id);
-        return !!c && canActFirst(c, battle);
+        return !!c && canActFirst(c, battle) && controlsCombatant(useGame.getState(), c);
       })
     : [];
   // Pré-emption GRATUITE (arme Rapide, LDB 62 l.318-319) — badge ⚡ au lieu de 🍀.
@@ -120,14 +123,35 @@ export function CampaignView() {
     const c = battle?.combatants.find((x) => x.id === id);
     return !!c && freeActFirst(c);
   });
+  // Tir rapide (talent, LDB 10) : héros CONTRÔLÉS localement pouvant interrompre à distance pendant la pause
+  // (arme chargée + pas encore tiré ce Round). Le badge arme une visée (`preemptShooter`) ; l'ennemi cliqué = cible.
+  const [preemptShooter, setPreemptShooter] = useState<string | null>(null);
+  const canPreemptIds = battle && pendingRoundStart
+    ? battle.order.filter((id) => {
+        const c = battle.combatants.find((x) => x.id === id);
+        return !!c && controlsCombatant(useGame.getState(), c) && canPreemptRanged(c) && !c.loseNextAction;
+      })
+    : [];
+  // La visée armée retombe dès que la pause se ferme ou que le tireur n'est plus éligible (a tiré / KO).
+  useEffect(() => {
+    if (preemptShooter && !canPreemptIds.includes(preemptShooter)) setPreemptShooter(null);
+  }, [preemptShooter, canPreemptIds]);
   // #21 : pendant une action de CIBLAGE (attaque/incantation/charge/piétinement), cliquer un PORTRAIT
   // (frise ou dock) cible ce combattant — même validation/portée que cliquer son pion sur le champ.
   // COOP : seulement quand le combattant actif est À SOI (le tour d'un autre joueur est inerte).
   const controls = useGame(controlsActive);
   const targetingAction = battle && !battle.over ? battle.action : null;
   const isTargeting = controls && !!targetingAction && ['attack', 'cast', 'charge', 'trample'].includes(targetingAction as string);
+  // Tir rapide (LDB 10) : le badge arme/désarme la visée d'un héros pendant la pause de début de Round.
+  const onPreempt = (id: string) => setPreemptShooter((cur) => (cur === id ? null : id));
   const onStripPortrait = (id: string) => {
     const c = battle?.combatants.find((x) => x.id === id);
+    // Tir rapide armé : cliquer un adversaire le prend pour cible de l'interruption (le store valide portée/LdV).
+    if (preemptShooter && c && c.kind !== 'hero') {
+      preemptRangedShot(preemptShooter, id);
+      setPreemptShooter(null);
+      return;
+    }
     // MÊME comportement que cliquer le token sur la carte (IsoStage) : action de combat si la cible est
     // actionnable ET qu'on contrôle l'actif (coop : ton tour), sinon inspection (read-only, tout joueur).
     // `combatantClickActs` = condition PARTAGÉE carte ⇄ frise — elles ne peuvent plus diverger.
@@ -157,12 +181,15 @@ export function CampaignView() {
               canFirstIds={canFirstIds}
               freeFirstIds={freeFirstIds}
               inspectEnabled={inspectEnabled}
-              targeting={isTargeting}
+              targeting={isTargeting || !!preemptShooter}
               onToggleInspect={toggleInspect}
               onActivate={onStripPortrait}
               onHover={setHoverCombatant}
               hoveredId={hovered}
               onPromote={roundStartPromote}
+              canPreemptIds={canPreemptIds}
+              preemptArmedId={preemptShooter}
+              onPreempt={onPreempt}
             />
             <CombatStartSplash />
           </>
@@ -171,7 +198,7 @@ export function CampaignView() {
         {/* Ciblage par carte (Frappe Mortelle / Deux armes / Surincantation / pose de zone) :
             la BARRE D'ACTION se transforme en bandeau d'interlude (cf. ActionBar). */}
         {/* Sauvegarder : exploration seulement (refusée en combat) et jamais l'invité (la save vit chez l'hôte). */}
-        <GameMenu sceneName={scene?.nom} money={money} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} coop={<><CoopMenuSection /><AudioControls /></>} />
+        <GameMenu sceneName={scene?.nom} money={money} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} coop={<><CoopMenuSection /><GmSoloToggle /><AudioControls /></>} />
         {saveOpen && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {sessionOpen && <SessionEndModal onClose={() => setSessionOpen(false)} />}
         {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}

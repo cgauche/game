@@ -47,13 +47,14 @@ export interface NetState {
   hostAway: boolean;
   ownership: Record<string, number>;
   slots: number[];
-  /** combatantId (héros OU ennemi) → siège HUMAIN qui le pilote. Opt-in ({} par défaut) ; sérialisable
-   *  (voyage dans les snapshots coop). Absence = pilotage par défaut selon le kind (cf. `aiDriven`). */
-  humanPiloted: Record<string, number>;
+  /** Rôle MJ (bac-à-sable) : le siège qui conduit TOUT le camp ennemi + les jets du monde, sur toutes les
+   *  rencontres. `undefined` = IA (défaut, solo ET coop). UNIQUE (zéro ou un siège). Sérialisable (voyage
+   *  dans les snapshots coop). Cf. `pilotedByHuman`/`aiDriven`/`controlsCombatant` (netOwnership). */
+  gmSeat?: number;
 }
 export const initialNet = (): NetState => ({
   mode: 'local', mySeat: 0, roomCode: null, seatNames: {}, presence: {},
-  connection: 'ok', hostAway: false, ownership: {}, slots: [0, 0, 0, 0], humanPiloted: {},
+  connection: 'ok', hostAway: false, ownership: {}, slots: [0, 0, 0, 0],
 });
 
 // ── Singletons réseau (non sérialisables) ──────────────────────────────────────────────────────
@@ -311,6 +312,14 @@ export function netJoin(get: Get, set: Set, codeRaw: string, name: string): Prom
 export function netAssign(get: Get, set: Set, heroId: string, seat: number): void {
   if (get().net.mode !== 'host') return;
   set({ net: { ...get().net, ownership: { ...get().net.ownership, [heroId]: seat } } });
+}
+
+/** Pose/retire le RÔLE MJ (bac-à-sable) : `seat` conduit le camp ennemi + les jets du monde ; `null` = IA.
+ *  UNIQUE (désigner un MJ retire le rôle à tout autre). Hôte-autoritaire en coop (comme `netAssign`) ;
+ *  disponible en solo (mode local) pour le siège unique. `gmSeat` sérialisable → voyage dans les snapshots. */
+export function setGmSeat(get: Get, set: Set, seat: number | null): void {
+  if (get().net.mode === 'guest') return; // hôte-autoritaire (le rôle est décidé côté hôte / en solo)
+  set({ net: { ...get().net, gmSeat: seat ?? undefined } });
 }
 
 /** HÔTE : attribue un EMPLACEMENT de l'écran d'équipe à un siège — le joueur le remplira

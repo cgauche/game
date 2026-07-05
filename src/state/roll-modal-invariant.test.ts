@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
  *      site de surfaçage connu référence le prédicat de contrôleur ;
  *  (b) BEHAVIORAL : un Test de combattant piloté-humain par contexte (défense, manœuvre, upkeep, psy,
  *      maladie/exposition, corruption, test déclenché) OUVRE un `pending*` influençable ;
- *  (c) FLIP LOCAL : assigner un ennemi à un humain (`net.humanPiloted`) fait REMONTER son Test déclenché
+ *  (c) FLIP LOCAL : poser le rôle MJ (`net.gmSeat`) fait REMONTER le Test déclenché d'un ennemi conduit
  *      (`actorId===enemyId`) ; le retirer (ou un héros `aiControlled`) le résout inline ;
  *  (d) GARDE-DU-GARDE : sous un stub qui re-silencie (`humanControlled → false`), le volet (b) DOIT échouer.
  */
@@ -22,7 +22,7 @@ let silence = false;
 
 import { useGame } from './store';
 import './combatFlow'; // effet de bord : installe appliers de cascade + routeur de Test + hook onGainCondition
-import { openRoundEndCascade, openCombatEndCascade, aiCreatureFreeAttacks, maybeOpenDefense } from './combatFlow';
+import { openRoundEndCascade, openCombatEndCascade, aiCreatureFreeAttacks, maybeOpenDefense, resolveAttack, attackerFumbled } from './combatFlow';
 import { gainCorruption } from './corruptionFlow';
 import { createHero } from '../engine/character';
 import { buildWeapon } from '../engine/items';
@@ -110,7 +110,7 @@ function freshCombat() {
   enemies.slice(1).forEach((e) => (e.dead = true)); // une seule source ennemie
   H.pos = { x: 10, y: 10 };
   E.pos = { x: 20, y: 20 };
-  set({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingCorruption: null, pendingDefense: null, pendingLogQueue: [], net: { ...get().net, humanPiloted: {} } });
+  set({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingCorruption: null, pendingDefense: null, pendingLogQueue: [], net: { ...get().net, gmSeat: undefined } });
   return { H, E };
 }
 
@@ -180,7 +180,7 @@ function behavioralFloor(): void {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'C', rng: makeRNG(1) });
     hero.aiControlled = silence; // volet (d) : ré-silençage réel
     hero.characteristics.E = 1; hero.characteristics.FM = 1; hero.corruption = 5; // seuil 0 → dépassé
-    set({ party: [hero], battle: null, pendingCorruption: null, net: { ...get().net, humanPiloted: {} } });
+    set({ party: [hero], battle: null, pendingCorruption: null, net: { ...get().net, gmSeat: undefined } });
     gainCorruption(get, set, hero, 1);
     expect(get().pendingCorruption, 'seuil de Corruption doit REMONTER').toBeTruthy();
   }
@@ -213,7 +213,7 @@ describe('Surfaçage « remonte-à-un-humain » — flip local (c)', () => {
     seedBattleRng(7);
     const { E } = freshCombat();
     E.talents = [...(E.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
-    set({ net: { ...get().net, humanPiloted: { [E.id]: 0 } } }); // assignation LOCALE (bac-à-sable MJ)
+    set({ net: { ...get().net, gmSeat: 0 } }); // rôle MJ posé sur le siège 0 (bac-à-sable) → conduit les ennemis
     addCondition(E, COND.sonne, 2); // onGainCondition → testRouter → resolveFlowTest → humanControlled(E)=true
     const c = get().pendingCascade;
     expect(c, 'l’ennemi assigné doit ouvrir une cascade').toBeTruthy();
@@ -225,9 +225,31 @@ describe('Surfaçage « remonte-à-un-humain » — flip local (c)', () => {
     const { E } = freshCombat();
     E.characteristics.E = 90; // Résistance réussie → retrait inline
     E.talents = [...(E.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
-    set({ net: { ...get().net, humanPiloted: {} } });
+    set({ net: { ...get().net, gmSeat: undefined } });
     addCondition(E, COND.sonne, 2);
     expect(get().pendingCascade, 'ennemi IA → jamais de cascade').toBeNull();
+  });
+
+  it('la Maladresse d’un ENNEMI conduit (MJ) REMONTE en cascade via attackConfirm (pas perdue — risque #2 du plan)', () => {
+    const { H, E } = freshCombat();
+    E.pos = { x: 10, y: 10 }; H.pos = { x: 11, y: 10 }; // adjacents (mêlée)
+    E.weapons = [buildWeapon({ name: 'Épée', attackKind: 'arme', damage: { plusBF: true, flat: 4 } })];
+    E.characteristics.CC = 20; // CC basse → un double ≥ 22 rate = Maladresse (LDB 14 l.48)
+    set({ net: { ...get().net, gmSeat: 0 }, pendingCascade: null }); // rôle MJ → E est CONDUIT (controlsCombatant(E)=vrai)
+    // Graine DÉTERMINISTE produisant une Maladresse de E (double raté) — via le VRAI résolveur d'attaque.
+    let seed = 0;
+    for (let sd = 1; sd <= 500 && !seed; sd++) {
+      seedBattleRng(sd);
+      const r = resolveAttack(get, E, H);
+      if (r && attackerFumbled(r.res, r.weapon)) seed = sd;
+    }
+    expect(seed, 'une graine de Maladresse existe').toBeGreaterThan(0);
+    seedBattleRng(seed);
+    const r = resolveAttack(get, E, H)!; // résultat de Maladresse RÉEL (pas fabriqué)
+    set({ pendingAttack: { attackerId: E.id, targetId: H.id, location: r.res.location ?? null, result: r.res, victimId: r.victim?.id, weaponUid: E.weapons[0].uid } });
+    get().attackConfirm();
+    const c = get().pendingCascade;
+    expect(c?.participants.some((s) => s.jet === 'fumble' && s.actorId === E.id), 'la Maladresse de l’ennemi conduit REMONTE au nom de l’ennemi').toBe(true);
   });
 
   it('un HÉROS `aiControlled` → Test déclenché résolu INLINE (contrôleur ≠ humain)', () => {
@@ -235,7 +257,7 @@ describe('Surfaçage « remonte-à-un-humain » — flip local (c)', () => {
     const { H } = freshCombat();
     H.aiControlled = true; H.characteristics.E = 90;
     H.talents = [...(H.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
-    set({ net: { ...get().net, humanPiloted: {} } });
+    set({ net: { ...get().net, gmSeat: undefined } });
     addCondition(H, COND.sonne, 2);
     expect(get().pendingCascade, 'héros piloté-IA → pas de cascade').toBeNull();
   });

@@ -5,7 +5,8 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload } from './pendings';
+import { describeReload } from './flowOutcomes';
 import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
@@ -56,7 +57,7 @@ import { groupAdvantage } from '../engine/advantagePool';
 import { campGain, campSpend, spendableAdvantage, reversalStealOne, roundEndAdvantageTransfer } from './combat/advantagePool';
 import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
-import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality } from '../engine/qualities/dispatch';
+import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps } from './triggeredEffects';
 import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
@@ -201,7 +202,7 @@ export * from './combatHooks';
 export * from './combatSetup';
 import { runCombatHooks } from './combatHooks';
 import { collectHeroRoundEndUpkeep } from './combat/roundHooks';
-import { pilotedByHuman, humanControlled } from './netOwnership';
+import { pilotedByHuman, humanControlled, controlsCombatant } from './netOwnership';
 import { resolveRecoverTest } from './combat/recover';
 import { fireTurnStartTriggers, fireTurnEndTriggers, resolveActGates } from './combat/turnHooks'; // effets de bord de tour (onTurnStart/onTurnEnd, dont la sortie de Frénésie en données) + gate d'action (Mandragore)
 export { collectHeroRoundEndUpkeep } from './combat/roundHooks'; // baril : enregistre les hooks de franchissement de Round (effet de bord) + ré-export pour la cascade d'upkeep
@@ -680,19 +681,21 @@ export function previewResourceDelta(battle: BattleState | null): { action: numb
 /** L'actif s'il est un héros-ATTAQUANT (arme à brandir + position) — précondition PARTAGÉE des calculs
  *  d'éligibilité de cible. Un navire-coque (sans arme) renvoie null : il agit en UNITÉ (Tests d'équipage), il
  *  n'attaque pas au fusil/à l'épée → `previewAttack` n'est pas appelé sur lui (et planterait faute d'arme). */
-function activeHeroAttacker(battle: BattleState): Combatant | null {
+function activeHeroAttacker(get: Get): Combatant | null {
+  const battle = get().battle;
+  if (!battle) return null;
   const active = activeCombatant(battle);
-  return active && active.kind === 'hero' && !!active.pos && active.weapons.length > 0 ? active : null;
+  return active && controlsCombatant(get(), active) && !!active.pos && active.weapons.length > 0 ? active : null;
 }
 
 export function eligibleAttackTargetIds(get: Get): Set<string> {
   const battle = get().battle;
   const ids = new Set<string>();
   if (!battle) return ids;
-  const active = activeHeroAttacker(battle);
+  const active = activeHeroAttacker(get);
   if (!active) return ids;
   for (const c of battle.combatants) {
-    if (c.kind === 'hero' || isOutOfAction(c) || !c.pos) continue;
+    if (c.kind === active.kind || isOutOfAction(c) || !c.pos) continue; // camp RELATIF (l'actif conduit peut être un ennemi)
     const p = previewAttack(get, active, c);
     if (p.inRange && !p.blocked) ids.add(c.id);
   }
@@ -707,10 +710,10 @@ export function outOfSightTargetIds(get: Get): Set<string> {
   const battle = get().battle;
   const ids = new Set<string>();
   if (!battle) return ids;
-  const active = activeHeroAttacker(battle); // navire-coque (sans arme) → aucune cible « hors de vue » à griser
+  const active = activeHeroAttacker(get); // navire-coque (sans arme) → aucune cible « hors de vue » à griser
   if (!active) return ids;
   for (const c of battle.combatants) {
-    if (c.kind === 'hero' || isOutOfAction(c) || !c.pos) continue;
+    if (c.kind === active.kind || isOutOfAction(c) || !c.pos) continue; // camp RELATIF
     if (previewAttack(get, active, c).blocked) ids.add(c.id);
   }
   return ids;
@@ -735,7 +738,7 @@ export function movePreviewAt(get: Get, pt: Pt): { kind: 'move' | 'run'; path: P
   const scene = get().scene;
   if (!battle || !scene || battle.over || battle.action !== null) return null;
   const active = activeCombatant(battle);
-  if (!active || active.kind !== 'hero' || !active.pos) return null;
+  if (!active || !controlsCombatant(get(), active) || !active.pos) return null;
   if (isEngaged(active) || !canMove(battle, active)) return null; // Engagé : le clic route vers le Désengagement
   const k = tileKey(pt.x, pt.y, pt.z ?? 0); // z-aware : une case de rempart (z1) ne matche plus la clé « x,y » du sol
   const reach = displayedReach(get);
@@ -755,9 +758,9 @@ export function castOutOfSightTargetIds(get: Get): Set<string> {
   const ids = new Set<string>();
   if (!battle) return ids;
   const active = activeCombatant(battle);
-  if (!active || active.kind !== 'hero' || !active.pos) return ids;
+  if (!active || !controlsCombatant(get(), active) || !active.pos) return ids;
   for (const c of battle.combatants) {
-    if (c.kind === 'hero' || isOutOfAction(c) || !c.pos) continue;
+    if (c.kind === active.kind || isOutOfAction(c) || !c.pos) continue; // camp RELATIF
     if (castSightBlocked(get, active.pos, c.pos)) ids.add(c.id);
   }
   return ids;
@@ -905,7 +908,7 @@ export function computeMoveReach(get: Get): Map<string, number> {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over) return new Map();
   const active = activeCombatant(battle);
-  if (!active || active.kind !== 'hero' || !active.pos) return new Map();
+  if (!active || !controlsCombatant(get(), active) || !active.pos) return new Map();
   if (isEngaged(active) || !canMove(battle, active)) return new Map();
   const geom = mountOf(battle, active) ?? active;
   const reach = moveReachFor(geom, scene, active.pos, movementRemaining(battle, active), moveEnv(battle, geom));
@@ -939,7 +942,7 @@ export function computeRunReach(get: Get): Map<string, number> {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over || battle.acted || battle.movementUsed > 0) return new Map();
   const active = activeCombatant(battle);
-  if (!active || active.kind !== 'hero' || !active.pos) return new Map();
+  if (!active || !controlsCombatant(get(), active) || !active.pos) return new Map();
   if (isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return new Map();
   const geom = mountOf(battle, active) ?? active;
   const M = mountMovement(battle, active);
@@ -1083,7 +1086,9 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
  *  `foe` = « l'individu ou l'élément qui l'a presque tué » (coup direct) → Cible d'une éventuelle
  *  Animosité si le Destin est dépensé (ADE II Annexe I, règle facultative) ; absent pour la mort lente. */
 export function finalizeHeroDeath(get: Get, set: SetFn, hero: Combatant, source: 'hit' | 'slow', restoreWounds?: number, foe?: Pick<Combatant, 'name' | 'groups'>): void {
-  if (hero.kind === 'hero' && (hero.fate ?? 0) > 0) {
+  // Le vrai gate est la RESSOURCE (`fate > 0`, présente sur tout kind), pas le `kind` : un combattant à
+  // Destin (héros, ou ennemi conduit doté de Destin) est sauvé ; sinon la mort est finalisée.
+  if ((hero.fate ?? 0) > 0) {
     const foeCible = foe ? (foe.groups?.[0] ?? foe.name) : undefined;
     set({ pendingFateSave: { heroId: hero.id, source, restoreWounds, ...(foeCible ? { foeCible } : {}) } });
   } else {
@@ -1525,7 +1530,7 @@ export function applyAttackResult(
     : (res.location ?? 'corps'); // dépassement (≠ double) : loc de touche, pas de re-tirage
   // Règle optionnelle « Déviation Critique » (LDB 63 l.63) : si désactivée, on N'OFFRE PAS le choix
   // Dévier/Subir au héros → le Critique est subi directement (chemin normal ci-dessous).
-  if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && (res.critical || overkill0 > 0) && target.kind === 'hero' && deviatableArmourAt(target, dloc) > 0) {
+  if (rule('combat-critical-deflect') && deviated === undefined && res.hit && res.woundsLost && (res.critical || overkill0 > 0) && pilotedByHuman(get(), target) && deviatableArmourAt(target, dloc) > 0) {
     // Pré-tire la Blessure Critique (graine figée) pour l'AFFICHER sur la modale de déviation — choix éclairé
     // Dévier/Subir, une seule modale. Aucune mutation de la cible ici ; « Subir » l'appliquera tel quel.
     const cloc = res.critical ? critWoundLocation(battleRng(), target.bodyShape, res.critLocation) : dloc;
@@ -1711,26 +1716,29 @@ export function applyAttackResult(
   for (const c of [target, attacker]) critLog.push(...notifySlain(get, set, c));
   // Taille (arme) : sur une touche réussie, endommage de 1 PA l'armure frappée (LDB 63 l.8).
   if (res.hit && hasQuality(weapon, QUALITY_IDS.Taille)) damageArmour(target, res.location ?? 'corps');
-  // Munition héros : consommée à l'application (stock du poste servi OU inventaire — `consumeAmmo`,
-  // source unique) ; arme à Recharge → déchargée (Test étendu requis pour recharger).
+  // Tir avec une arme à Recharge → DÉCHARGÉE après le coup (LDB 62 l.333) : un Test étendu de Projectiles est
+  // requis avant de retirer. Vaut pour TOUT tireur (héros ET ennemi) — parité du cycle de Rechargement (#126) ;
+  // aucun état ni chemin parallèle pour l'IA.
+  if (weapon.type === 'ranged' && (weapon.reload ?? 0) > 0) {
+    // À Répétition (Indice) (LDB 62 l.264-265) : Indice munitions auto-rechargées entre les coups ;
+    // le rechargement complet (Test étendu) n'est exigé qu'une fois le chargeur vide.
+    const mag = magazineSize(weapon);
+    if (mag != null) attacker.chambered = (attacker.chambered ?? mag) - 1;
+    if (mag == null || (attacker.chambered ?? 0) <= 0) {
+      attacker.chambered = undefined;
+      attacker.loaded = false; // déchargé après le tir
+      attacker.reloadProgress = 0;
+    }
+  }
+  // Munition + Salve : suivi HÉROS-only (les ennemis ne comptabilisent pas de munitions, #126). `consumeAmmo` =
+  // source unique du décrément (stock du poste servi OU inventaire).
   if (weapon.type === 'ranged' && attacker.kind === 'hero') {
     attacker.shotsThisTurn = (attacker.shotsThisTurn ?? 0) + 1; // Salve : compteur de tirs du tour (−10 cumulatif)
     const used = selectedAmmo(attacker, weapon);
     if (used) consumeAmmo(attacker, used);
-    if ((weapon.reload ?? 0) > 0) {
-      // À Répétition (Indice) (LDB 62 l.264-265) : Indice munitions auto-rechargées entre les coups ;
-      // le rechargement complet (Test étendu) n'est exigé qu'une fois le chargeur vide.
-      const mag = magazineSize(weapon);
-      if (mag != null) attacker.chambered = (attacker.chambered ?? mag) - 1;
-      if (mag == null || (attacker.chambered ?? 0) <= 0) {
-        attacker.chambered = undefined;
-        attacker.loaded = false; // déchargé après le tir
-        attacker.reloadProgress = 0;
-      }
-    }
   }
-  // Interruption du rechargement (LDB 63-Armures l.29) : un héros touché en plein rechargement recommence à zéro.
-  if (res.hit && res.woundsLost && target.kind === 'hero' && (target.reloadProgress ?? 0) > 0) target.reloadProgress = 0;
+  // Interruption du rechargement (LDB 62 l.335) : tout tireur touché en plein rechargement recommence à zéro.
+  if (res.hit && res.woundsLost && (target.reloadProgress ?? 0) > 0) target.reloadProgress = 0;
   // Avantage (LDB Déplacement l.30-40) : +1 au vainqueur du Test opposé / sur une
   // Blessure infligée sans Test opposé (tir) ; perte de TOUT l'Avantage en échouant
   // un Test opposé ou en perdant une Blessure.
@@ -5159,11 +5167,25 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       return;
     }
     case 'reload': {
-      // Recharge (Test étendu de Projectiles) : on ouvre la modale comme le joueur ; en Auto le driver
-      // résout reloadRoll→reloadConfirm (qui reprend le tour via aiDriven). Refusée (garde) → on passe.
+      // Recharge (Test étendu de Projectiles, LDB 62 l.333) : résolution INLINE (pas de modale ni de Chance —
+      // l'IA n'en a pas), MÊME cumul de DR vers l'Indice que le flux joueur (reloadConfirm). Interrompu →
+      // recommence à zéro (géré à la prise de Blessure, applyAttackResult). Coûte l'Action ; calque de `recover`.
       if (!canAct) return advanceTurn(get, set);
-      get().battleReload();
-      if (!get().pendingReload) advanceTurn(get, set);
+      const rw = enemy.weapons.find((w) => w.type === 'ranged');
+      if (!rw || (rw.reload ?? 0) <= 0 || enemy.loaded) return advanceTurn(get, set); // rien à recharger
+      const reloadTarget = reloadDRTarget(rw);
+      const progressBefore = enemy.reloadProgress ?? 0;
+      const skillValue = combatValue(enemy, 'ranged', rw); // CT + avances Projectiles
+      const test = rollTest(skillValue, 'intermediaire', battleRng());
+      const drBonus = test.success ? reloadDRBonus(enemy, rw) : 0; // Rechargement rapide / Artilleur (LDB 10)
+      const progress = Math.max(0, progressBefore + test.sl + drBonus); // Test étendu : cumul, plancher 0
+      if (progress >= reloadTarget) { enemy.loaded = true; enemy.reloadProgress = 0; enemy.chambered = magazineSize(rw); }
+      else enemy.reloadProgress = progress;
+      // Issue = source UNIQUE avec le flux joueur (describeReload : popin ↔ journal).
+      const pr: PendingReload = { actorId: enemy.id, actorName: enemy.name, weaponUid: rw.uid ?? '', reload: reloadTarget, progressBefore, skillValue, difficulty: 'intermediaire', roll: test.roll, target: test.target, sl: test.sl, success: test.success };
+      set({ battle: { ...battle, acted: true, log: [...battle.log, ev('reload', describeReload(pr, progress, rw.name), enemy.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      setTimeout(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
       return;
     }
     case 'melee':

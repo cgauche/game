@@ -59,6 +59,43 @@ export function CoopAssignList() {
           </select>
         </label>
       ))}
+      <GmSeatSelect />
+    </div>
+  );
+}
+
+/** Rôle MJ (bac-à-sable) : UN siège conduit tout le camp ennemi + les jets du monde (ou « IA » = aucun MJ).
+ *  UNIQUE (désigner un MJ retire le rôle à tout autre). Hôte-autoritaire → n'apparaît qu'en mode hôte
+ *  (en solo, le siège unique bascule via `GmSoloToggle`). */
+export function GmSeatSelect() {
+  const net = useGame((s) => s.net);
+  const setGmSeat = useGame((s) => s.setGmSeat);
+  if (net.mode !== 'host') return null;
+  const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
+  return (
+    <label className="coop-assign-row gm-seat-row">
+      <span>Maître du Jeu</span>
+      <select value={net.gmSeat ?? ''} onChange={(e) => setGmSeat(e.target.value === '' ? null : Number(e.target.value))}>
+        <option value="">IA (aucun MJ)</option>
+        {seats.map(({ seat, name }) => (
+          <option key={seat} value={seat}>{name}</option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+/** SOLO (mode local) : contrôler aussi les ennemis + les jets du monde (rôle MJ pour le siège unique). */
+export function GmSoloToggle() {
+  const net = useGame((s) => s.net);
+  const setGmSeat = useGame((s) => s.setGmSeat);
+  if (net.mode !== 'local') return null;
+  return (
+    <div className="gm-section gm-solo-toggle">
+      <label>
+        <input type="checkbox" checked={net.gmSeat != null} onChange={(e) => setGmSeat(e.target.checked ? 0 : null)} />
+        <span>Contrôler aussi les ennemis / le monde (MJ)</span>
+      </label>
     </div>
   );
 }

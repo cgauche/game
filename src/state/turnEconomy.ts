@@ -39,12 +39,15 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
  * « Au début du Round, choisissez le moment où vous allez agir, sans tenir compte de l'Ordre
  * d'Initiative ») ? Affiché dans la frise d'initiative (InitiativeStrip) pendant la pause de début de Round.
  *
- * Aujourd'hui : un héros avec ≥1 point de Chance, pas déjà en tête de l'ordre, et toujours en état d'agir.
+ * Aujourd'hui : un combattant avec ≥1 point de Chance (ou une arme Rapide), pas déjà en tête de l'ordre, et
+ * toujours en état d'agir. Le CONTRÔLE (qui peut réordonner) est filtré par l'appelant (`controlsCombatant`).
  * Point d'extension pour les RÉORDONNANCEMENTS d'initiative (Chance, arme Rapide). Tir rapide n'est PAS un
  * réordonnancement (interruption hors de l'ordre, LDB 10) → il ne passe PAS par ici. Pur.
  */
 export function canActFirst(c: Combatant, battle: BattleState): boolean {
-  if (c.kind !== 'hero' || isOutOfAction(c)) return false;
+  // ÉLIGIBILITÉ par RESSOURCE/position (Chance ou arme Rapide) — le `kind` n'est PAS un gate ici : le
+  // CONTRÔLE (qui peut réordonner qui) est appliqué par l'appelant UI (`controlsCombatant`, CampaignView).
+  if (isOutOfAction(c)) return false;
   if (battle.order[0] === c.id) return false; // déjà en tête de l'ordre du Round
   // Réordonnancement d'initiative : Chance (LDB ch.17 l.27) ou arme Rapide (LDB 62 l.318-319).
   return (c.fortune ?? 0) > 0 || canStrikeFirst(c.weapons);

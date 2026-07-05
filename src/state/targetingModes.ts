@@ -260,8 +260,8 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
 /** Mode SOIN (Guérison, LDB 09) : réticule « Soigner » sur soi + alliés adjacents soignables. */
 function healAffordance(get: Get, active: Combatant, target: Combatant): HoverTargeting {
   const battle = get().battle!;
-  const heroes = battle.combatants.filter((c) => c.kind === 'hero');
-  if (!healableTargets(active, heroes, { adjacency: true }).some((c) => c.id === target.id)) return { kind: 'none' };
+  const allies = battle.combatants.filter((c) => c.kind === active.kind); // camp RELATIF : on soigne SON camp
+  if (!healableTargets(active, allies, { adjacency: true }).some((c) => c.id === target.id)) return { kind: 'none' };
   return { kind: 'ok', line: 'solid', title: 'Soigner', skill: 'Guérison', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
@@ -319,7 +319,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   // `selectedAttack`, défaut 'arme' ; les anciens modes maneuver/tentacle/trample mappent sur leur option).
   const option = selectedAttackOption(active, battle, opts?.forceAttackId);
   if (!option || !scene) return;
-  if (target.kind === 'hero') return; // l'attaque ne vise que les ennemis (soin/sort via leurs modes)
+  if (target.kind === active.kind) return; // camp RELATIF : on ne frappe que le camp ADVERSE (soin/sort via leurs modes)
   if (!canTakeAction(active) || hasCondition(active, COND.brise)) return; // Sonné/Brisé : pas d'attaque (parité boutons)
   // Frénésie (LDB 21 l.34) : la cible est IMPOSÉE — l'ennemi le plus proche en Ligne de Vue.
   if (isFrenzied(active)) {
@@ -562,7 +562,7 @@ const BATTERY_MODE: TargetingMode = {
 };
 const HEAL_MODE: TargetingMode = {
   id: 'heal', affordance: healAffordance,
-  candidates: (get, active) => healableTargets(active, (get().battle?.combatants ?? []).filter((c) => c.kind === 'hero'), { adjacency: true }),
+  candidates: (get, active) => healableTargets(active, (get().battle?.combatants ?? []).filter((c) => c.kind === active.kind), { adjacency: true }),
   commitCombatant: (get, _set, _active, id) => {
     const target = get().battle?.combatants.find((c) => c.id === id);
     if (!target) return;

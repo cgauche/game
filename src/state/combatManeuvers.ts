@@ -211,10 +211,11 @@ export function grappleActionEligible(mover: Combatant, foe: Combatant): boolean
  *  zone abordables, Piétinement, mutation Tentacule). Subsume l'attaque d'arme implicite ET la garde de
  *  Frénésie. Source : `active.weapons` (Arme) + `creatureAttacks` (gratuites) + les prédicats existants. */
 export function availableAttacks(active: Combatant, battle: BattleState): AttackOption[] {
-  // Un NAVIRE allié (`kind:'hero'`, MDG ch.13) n'a PAS d'attaque-arme PERSONNELLE (`active.weapons` vide → l'option
-  // 'arme' ferait planter `attackPlan` sur `weapon.type`). Ses « attaques » sont la Manœuvre (HUD navire) et la Bordée
-  // via les postes servis par l'équipage (combattants distincts) — jamais une attaque de mêlée de la coque.
-  if (active.kind !== 'hero' || isVehicle(active)) return [];
+  // KIND-AGNOSTIQUE (un ennemi conduit par le MJ a le MÊME jeu d'attaques qu'un héros — bac-à-sable). Seul un
+  // NAVIRE (`kind:'hero'`/`enemy`, MDG ch.13) est exclu : il n'a PAS d'attaque-arme PERSONNELLE (`active.weapons`
+  // vide → l'option 'arme' planterait `attackPlan`) — ses « attaques » sont la Manœuvre + la Bordée via ses postes.
+  // (Un combattant sans arme reste armé de ses poings/Bagarre : `attackPlan` gère l'arme vide, cf. player-maneuvers.)
+  if (isVehicle(active)) return [];
   const out: AttackOption[] = [];
   // (0) ARME du Set actif — attaque-Action de base ET attaque CC GRATUITE de Frénésie (l.34), tant que
   //     l'Action OU la libre de Frénésie est dispo. `reach` absent → attackPlan lit l'arme tenue (Allonge,
@@ -250,7 +251,7 @@ export function availableAttacks(active: Combatant, battle: BattleState): Attack
   //     toute attaque de mêlée, elle s'APPROCHE (charge/rejoindre) → dispo dès qu'un ennemi existe (adjacence non requise).
   if (
     (active.freeAttacksThisTurn?.['tentacules'] ?? 0) < 1 && active.weapons.some((w) => w.uid === 'nat-tentacule') && !!active.pos &&
-    battle.combatants.some((c) => c.kind !== 'hero' && !isOutOfAction(c) && c.pos)
+    battle.combatants.some((c) => c.kind !== active.kind && !isOutOfAction(c) && c.pos)
   )
     out.push({ id: 'tentacule', kind: 'tentacules', label: 'Tentacule', icon: 'creature/tentacles', targeting: 'melee', reach: 1, forceMelee: true, weaponUid: 'nat-tentacule', freeKind: 'tentacules', cost: { action: false, advantage: 0 } });
   // (4) Poste d'artillerie SERVI (`mannedPoste`, MDG ch.12-13) : « servir la pièce » = attaque DÉDIÉE portant

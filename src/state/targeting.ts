@@ -10,6 +10,7 @@ import { isOutOfAction } from '../engine/conditions';
 import { combatDistance } from './footprint';
 import type { GameState } from './store';
 import { currentTargetingMode, type HoverTargeting } from './targetingModes';
+import { controlsCombatant } from './netOwnership';
 
 // Réexports de compatibilité : le TYPE d'affordance et la dérivation du côté visé d'un sort vivent
 // désormais dans le registre de modes ; les importeurs historiques (IsoStage, tests) restent valides.
@@ -37,7 +38,7 @@ export function validTargets(get: () => GameState): Combatant[] {
   const battle = get().battle;
   if (!battle || battle.over) return [];
   const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
-  if (!active || active.kind !== 'hero' || !active.pos) return [];
+  if (!active || !controlsCombatant(get(), active) || !active.pos) return [];
   const mode = currentTargetingMode(get);
   const cands = mode.candidates
     ? mode.candidates(get, active)

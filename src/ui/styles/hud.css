@@ -313,6 +313,23 @@
   border-color: rgba(159, 216, 255, 0.55);
   background: rgba(159, 216, 255, 0.12);
 }
+/* Badge Tir rapide (LDB 10) : teinte « tir » distincte du badge de pré-emption ; état « armé » = en attente de cible. */
+.is-preempt {
+  font-size: 10px;
+  background: rgba(255, 138, 92, 0.14);
+  border: 1px solid rgba(255, 138, 92, 0.5);
+  border-radius: 6px;
+  color: #ff9b6b;
+  padding: 1px 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.is-preempt .icon { vertical-align: -2px; }
+.is-preempt.armed {
+  background: rgba(255, 138, 92, 0.3);
+  border-color: #ff9b6b;
+  box-shadow: 0 0 0 1px rgba(255, 138, 92, 0.45);
+}
 @media (max-width: 700px) {
   .initiative-strip { left: 4px; }
   .is-tiles { gap: 5px; padding: 5px 4px; }
