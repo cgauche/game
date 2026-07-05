@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { weaponRest, weaponAttackClip, weaponParryClip, mountedAttackClip, mountedParryClip, seatedClip, isRangedFamily } from './weaponClips';
 import { clipDuration, CLIPS } from './clips';
-import { shapeForLabel } from '../../../engine/creatureEquip';
+import { findTrappingByLabel } from '../../../data';
 import type { Weapon } from '../../../engine/types';
 
 // Construit l'arme comme au SPAWN (libellé → shape) ; le maniement est ensuite routé PAR ID STABLE
 // (`shape` manufacturé / `attackKind` naturel), jamais par le libellé.
 const w = (name: string, type: 'melee' | 'ranged' = 'melee', extra: Partial<Weapon> = {}): Weapon =>
-  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [], shape: shapeForLabel(name), ...extra } as Weapon);
+  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [], shape: findTrappingByLabel(name)?.shape, ...extra } as Weapon);
 
 const windUp = (clip: ReturnType<typeof weaponAttackClip>) => clip.steps[0].pose;
 const anyStep = (clip: ReturnType<typeof weaponAttackClip>, pred: (p: Record<string, number>) => boolean) =>

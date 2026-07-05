@@ -14,7 +14,7 @@ import { Flow, FlowTest, EMPTY_FLOW } from '../../state/flow';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
 import { RefField } from '../compendium/RefField';
-import { refLabel, trappings, findTrappingById } from '../../data';
+import { refLabel, trappings, findTrappingById, findTrappingByLabel } from '../../data';
 import {
   EffectFields,
   Ctx,
@@ -29,8 +29,6 @@ import { ConditionEditor, condSummary } from './ConditionEditor';
 
 /** Libellé d'affichage d'un trappingId (objet catalogué) — repli sur l'id brut (objet CUSTOM par nom). */
 const trappingLabelOrId = (id?: string): string => (id ? findTrappingById(id)?.label ?? id : '');
-/** Map LIBELLE (minuscule) → id de catalogue, pour resoudre la saisie du picker d'outil. */
-const TRAPPING_ID_BY_LABEL = new Map(trappings.map((t) => [t.label.toLowerCase(), t.id]));
 
 /** Normalise un Flow en liste de blocs éditables (un `seq` expose ses étapes ; sinon bloc unique). */
 function asSteps(flow: Flow): Flow[] {
@@ -72,7 +70,7 @@ function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: FlowTest
           list="dl-test-tool"
           defaultValue={trappingLabelOrId(test.tool)} key={test.tool}
           placeholder="Outil (catalogue ou nom custom)"
-          onChange={(e) => { const v = e.target.value.trim(); upd({ tool: (TRAPPING_ID_BY_LABEL.get(v.toLowerCase()) ?? v) || undefined }); }}
+          onChange={(e) => { const v = e.target.value.trim(); upd({ tool: (findTrappingByLabel(v)?.id ?? v) || undefined }); }}
         />
         <datalist id="dl-test-tool">{trappings.map((t) => <option key={t.id} value={t.label} />)}</datalist>
       </div>

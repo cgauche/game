@@ -5,6 +5,7 @@
  */
 import type { EntityAppearance } from '../state/scene';
 import { slugId } from './slug';
+import { norm } from '../lib/normalize';
 import characteristicsJson from './characteristics.json';
 import speciesJson from './species.json';
 import classesJson from './classes.json';
@@ -214,8 +215,10 @@ export function specEntryLabel(e: SpecEntry): string {
  *  (Immunité, Peur, Vulnérabilité, Mutation, Souffle…) : `groups` (Groupe d'appartenance — `groups.json`),
  *  `diseases` (Maladie — `maladies.json`), `sizes` (catégorie de Taille — `engine/size`), `mutations`
  *  (Mutation — `mutations.json`), `breathTypes` (Type de Souffle — `breath-types.json`), `damageTypes`
- *  (Immunité aux Dégâts — `damage-types.json`, matché aussi par `unlessImmune` des Flows). Absent = specs
- *  inline (`SpecEntry[]`). */
+ *  (Immunité aux Dégâts — `damage-types.json`, matché aussi par `unlessImmune` des Flows), `weaponsMelee`/
+ *  `weaponsRanged` (Arme / À distance, LDB 85 l.338 — `arg` = une arme PRÉCISE du catalogue `trappings`
+ *  filtrée par `type`, `specsOpen` car ces traits acceptent aussi une attaque naturelle/générique hors
+ *  catalogue). Absent = specs inline (`SpecEntry[]`). */
 export type SpecsSource =
   | 'weaponGroupsMelee'
   | 'weaponGroupsRanged'
@@ -230,7 +233,9 @@ export type SpecsSource =
   | 'sizes'
   | 'mutations'
   | 'breathTypes'
-  | 'damageTypes';
+  | 'damageTypes'
+  | 'weaponsMelee'
+  | 'weaponsRanged';
 export interface SkillData {
   /** Identifiant STABLE (slug du libellé d'origine) — cible des références structurées, robuste au
    *  renommage du `label`. Source unique pour `findSkillById`. */
@@ -1646,6 +1651,13 @@ const TRAPPING_BY_ID = new Map(trappings.map((t) => [t.id, t]));
 export function findTrappingById(id: string): TrappingData | undefined {
   return TRAPPING_BY_ID.get(id);
 }
+const TRAPPING_BY_NORM_LABEL = new Map(trappings.map((t) => [norm(t.label), t] as const));
+/** Résout une Possession par LIBELLÉ normalisé — bord AUTHORING (texte libre saisi par l'auteur : override
+ *  de scène `weapon:'X'`, fixtures de test), JAMAIS au runtime moteur (qui reste sur `findTrappingById`,
+ *  seule la couture label→id à l'authoring/chargement est tolérée, cf. CLAUDE.md règle stricte 7). */
+export function findTrappingByLabel(label: string): TrappingData | undefined {
+  return TRAPPING_BY_NORM_LABEL.get(norm(label));
+}
 /** Résout une Qualité par son `id` STABLE. */
 export function findQualityById(id: string): QualityData | undefined {
   return qualityById.get(id);
@@ -1753,6 +1765,8 @@ export const SPEC_SOURCES: Record<SpecsSource, { pool(): string[]; label(id: str
   mutations:     { pool: () => mutations.map((m) => m.id),    label: (id) => mutationLabel(id),    resolves: (id) => !!findMutationById(id) },
   breathTypes:   { pool: () => breathTypes.map((b) => b.id),  label: (id) => breathTypeLabel(id),  resolves: (id) => !!findBreathTypeById(id) },
   damageTypes:   { pool: () => damageTypes.map((t) => t.id),  label: (id) => damageTypeLabel(id),  resolves: (id) => !!findDamageTypeById(id) },
+  weaponsMelee:  { pool: () => trappings.filter((t) => t.type === 'melee').map((t) => t.id),  label: (id) => findTrappingById(id)?.label ?? id, resolves: (id) => findTrappingById(id)?.type === 'melee' },
+  weaponsRanged: { pool: () => trappings.filter((t) => t.type === 'ranged').map((t) => t.id), label: (id) => findTrappingById(id)?.label ?? id, resolves: (id) => findTrappingById(id)?.type === 'ranged' },
 };
 /** Ids de spéc d'une def (Compétence/Talent) : pool DÉRIVÉ du registre partagé si `specsSource` (SSOT
  *  `SPEC_SOURCES`), sinon les ids de ses `specs[]` inline. SOURCE UNIQUE du pool — consommée par

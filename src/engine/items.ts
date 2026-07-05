@@ -56,6 +56,8 @@ export interface WeaponSpec {
   subType?: string;
   reach?: string | null;
   range?: number | null;
+  /** Recharge (Indice) — LDB 62 l.333 : DR à cumuler (Test étendu de Projectiles). 0/absent = aucun. */
+  reload?: number;
   hands?: 1 | 2;
   uid?: string | { prefix: string };
   skin?: Record<string, string>;
@@ -90,6 +92,7 @@ export function buildWeapon(spec: WeaponSpec): Weapon {
   };
   if (spec.reach !== undefined) w.reach = spec.reach;
   if (spec.range !== undefined) w.range = spec.range;
+  if (spec.reload !== undefined) w.reload = spec.reload;
   if (spec.subType !== undefined) w.subType = spec.subType;
   w.uid = specUid(spec.uid); // TOUJOURS défini (universel : Pendings d'arme par uid)
   if (spec.skin !== undefined) w.skin = spec.skin;

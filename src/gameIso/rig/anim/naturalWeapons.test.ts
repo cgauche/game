@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { handlingClass } from './handling';
 import { weaponAttackClip, weaponParryClip, weaponRest } from './weaponClips';
-import { shapeForLabel } from '../../../engine/creatureEquip';
+import { findTrappingByLabel } from '../../../data';
 import type { Weapon } from '../../../engine/types';
 
 // Arme construite comme au SPAWN : libellé manufacturé → shape ; les attaques naturelles portent
 // leur kind STABLE (`attackKind`) — c'est lui qui route le maniement, jamais le libellé.
 const w = (name: string, extra: Partial<Weapon> = {}): Weapon =>
-  ({ name, type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], shape: shapeForLabel(name), ...extra });
+  ({ name, type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], shape: findTrappingByLabel(name)?.shape, ...extra });
 const tentacule = w('Tentacule', { attackKind: 'tentacules', natural: true });
 const cornes = w('Cornes', { attackKind: 'cornes', natural: true });
 

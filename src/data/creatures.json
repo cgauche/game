@@ -471,7 +471,7 @@
       {
         "id": "arme",
         "value": 7,
-        "arg": "Bâton de combat"
+        "arg": "baton-de-combat"
       }
     ],
     "optionals": [],
@@ -49698,7 +49698,7 @@
       {
         "id": "a-distance",
         "value": 5,
-        "arg": "Arc court",
+        "arg": "arc-court",
         "range": 20
       },
       {
@@ -50503,7 +50503,7 @@
       {
         "id": "a-distance",
         "value": 5,
-        "arg": "Arc court",
+        "arg": "arc-court",
         "range": 20
       },
       {
@@ -51274,7 +51274,7 @@
       {
         "id": "a-distance",
         "value": 6,
-        "arg": "Fouet",
+        "arg": "fouet",
         "range": 6
       },
       {
@@ -53219,13 +53219,13 @@
       {
         "id": "a-distance",
         "value": 10,
-        "arg": "Arc long",
+        "arg": "arc-long",
         "range": 100
       },
       {
         "id": "arme",
         "value": 6,
-        "arg": "Dague"
+        "arg": "dague"
       }
     ],
     "optionals": [],
@@ -55188,7 +55188,7 @@
       {
         "id": "a-distance",
         "value": 11,
-        "arg": "Canon ratling",
+        "arg": "canon-ratling",
         "range": 40
       },
       {
@@ -55586,12 +55586,12 @@
       {
         "id": "arme",
         "value": 9,
-        "arg": "Coup-de-poing"
+        "arg": "coup-de-poing"
       },
       {
         "id": "arme",
         "value": 9,
-        "arg": "Massue"
+        "arg": "massue"
       },
       {
         "id": "armure",
@@ -55753,13 +55753,13 @@
       {
         "id": "a-distance",
         "value": 8,
-        "arg": "Arc",
+        "arg": "arc",
         "range": 50
       },
       {
         "id": "arme",
         "value": 9,
-        "arg": "Massue"
+        "arg": "massue"
       },
       {
         "id": "armure",
@@ -56858,7 +56858,7 @@
       {
         "id": "arme",
         "value": 8,
-        "arg": "Hallebarde"
+        "arg": "hallebarde"
       },
       {
         "id": "armure",
@@ -56962,7 +56962,7 @@
       {
         "id": "arme",
         "value": 9,
-        "arg": "Marteau de guerre"
+        "arg": "marteau-de-guerre"
       },
       {
         "id": "armure",
@@ -57070,7 +57070,7 @@
       {
         "id": "arme",
         "value": 10,
-        "arg": "Lance"
+        "arg": "lance"
       },
       {
         "id": "arme",
@@ -57363,7 +57363,7 @@
       {
         "id": "arme",
         "value": 7,
-        "arg": "Massue"
+        "arg": "massue"
       },
       {
         "id": "armure",
@@ -57976,7 +57976,7 @@
       {
         "id": "arme",
         "value": 7,
-        "arg": "Bâton de combat"
+        "arg": "baton-de-combat"
       }
     ],
     "optionals": [],
@@ -58654,7 +58654,7 @@
       {
         "id": "arme",
         "value": 6,
-        "arg": "Dague"
+        "arg": "dague"
       },
       {
         "id": "haine",
@@ -58782,7 +58782,7 @@
       {
         "id": "arme",
         "value": 7,
-        "arg": "Dague"
+        "arg": "dague"
       },
       {
         "id": "armure",
@@ -58893,12 +58893,12 @@
       {
         "id": "arme",
         "value": 6,
-        "arg": "Coup-de-poing"
+        "arg": "coup-de-poing"
       },
       {
         "id": "arme",
         "value": 6,
-        "arg": "Dague"
+        "arg": "dague"
       },
       {
         "id": "armure",
@@ -61640,7 +61640,7 @@
       {
         "id": "a-distance",
         "value": 8,
-        "arg": "Pistolet",
+        "arg": "pistolet",
         "range": 20
       },
       {
@@ -61651,7 +61651,7 @@
       {
         "id": "arme",
         "value": 8,
-        "arg": "Rapière"
+        "arg": "rapiere"
       },
       {
         "id": "armure",
@@ -62233,12 +62233,12 @@
       {
         "id": "arme",
         "value": 9,
-        "arg": "Bouclier"
+        "arg": "bouclier"
       },
       {
         "id": "arme",
         "value": 12,
-        "arg": "Épée bâtarde"
+        "arg": "epee-batarde"
       },
       {
         "id": "armure",
@@ -62525,7 +62525,7 @@
       {
         "id": "a-distance",
         "value": 7,
-        "arg": "Pistolet",
+        "arg": "pistolet",
         "range": 10
       },
       {
@@ -62536,7 +62536,7 @@
       {
         "id": "arme",
         "value": 12,
-        "arg": "Hallebarde"
+        "arg": "hallebarde"
       },
       {
         "id": "armure",

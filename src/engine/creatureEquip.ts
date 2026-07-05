@@ -9,22 +9,41 @@ import type { TraitInstance, TraitList } from './statEntry';
 import { buildWeapon, emptyArmour } from './items';
 import type { WeaponDamageSpec } from './types';
 import { findResolvedTrait, traitLabelById } from './traits/dispatch';
-import { findTraitById, trappings } from '../data/index';
-import { norm } from '../lib/normalize';
+import { findTraitById, findTrappingById, qualityInstance, SPEC_SOURCES, type TrappingData } from '../data/index';
+import { QUALITY_IDS } from './qualities/ids';
+import { qualityIndice } from './qualities/dispatch';
 
 /**
- * Slug de FORME (routage de l'art rig) d'un libellé d'arme MANUFACTURÉE — résolu AU SPAWN/AUTHORING
- * uniquement (jamais au runtime de rendu) : `norm(libellé)` → trapping de catalogue → son `shape`.
- * Map construite une fois depuis `trappings` (déjà peuplés en `shape` par la migration). `undefined`
- * pour un libellé hors catalogue (« Hache », « Crocs »…) → le rendu retombera sur le Groupe.
+ * Résout l'`arg` d'un trait `arme`/`a-distance` (`specsSource` `weaponsMelee`/`weaponsRanged`, cf.
+ * `data/index.ts`) vers son TRAPPING de catalogue — l'`arg` porte alors un `id` STABLE (validité :
+ * `SPEC_SOURCES[source].resolves`), plus un libellé. `undefined` pour un `arg` NATUREL/libre/absent
+ * (« Griffes », « Crocs »…) : ces traits sont `specsOpen` (RAW : attaques naturelles ou génériques
+ * acceptées hors catalogue) — le rendu retombe alors sur le comportement générique/naturel.
  */
-const SHAPE_BY_LABEL = new Map<string, string>(
-  (trappings as { label: string; shape?: string }[])
-    .filter((t) => t.shape)
-    .map((t) => [norm(t.label), t.shape as string]),
-);
-export const shapeForLabel = (label?: string): string | undefined =>
-  label ? SHAPE_BY_LABEL.get(norm(label)) : undefined;
+function catalogWeapon(arg: string | undefined, source: 'weaponsMelee' | 'weaponsRanged'): TrappingData | undefined {
+  return arg && SPEC_SOURCES[source].resolves(arg) ? findTrappingById(arg) : undefined;
+}
+
+/**
+ * Construit l'arme JOUABLE d'un trait dont l'`arg` a résolu à une arme du CATALOGUE : HÉRITE forme
+ * (`shape`)/qualités/sous-type du trapping (comme les armes de héros, cf. loadout builder d'`items.ts`
+ * `recomputeLoadout`) — Dégâts (`dmg`, Indice de créature) et Portée restent ceux du trait (surcharge
+ * créature), `range` absent retombe sur celle du trapping. `reload` DÉRIVE de la Qualité Recharge
+ * (LDB 62 l.333) — l'armement de créature étant en Traits, sans qualité portée, une arbalète/arquebuse
+ * de bestiaire n'aurait sinon aucun défaut Recharge.
+ */
+function weaponFromTrapping(trapping: TrappingData, type: 'melee' | 'ranged', dmg: WeaponDamageSpec, range: number | undefined): Weapon {
+  return buildWeapon({
+    name: trapping.label,
+    type,
+    damage: dmg,
+    range: range ?? (typeof trapping.range === 'number' ? trapping.range : undefined),
+    reload: qualityIndice(trapping, QUALITY_IDS.Recharge) ?? 0,
+    shape: trapping.shape,
+    subType: trapping.subType ?? undefined,
+    qualities: (trapping.qualities ?? []).map(qualityInstance),
+  });
+}
 
 /**
  * Parse UN trait d'arme WFRP4 (français) en arme jouable, ou null. Gère le TYPE
@@ -40,16 +59,18 @@ export function weaponFromTrait(t: TraitInstance): Weapon | null {
   const dmg: WeaponDamageSpec = t.value != null ? { plusBF: false, flat: t.value } : { plusBF: true, flat: 0, bare: true };
   if (t.id === 'a-distance') {
     if (t.value == null) return null; // « À distance » sans Indice de Dégâts : pas une arme jouable (RAW)
-    // Arme manufacturée nommée (« Arc » → shape `arc`) : résolution libellé→shape AU SPAWN ; hors
-    // catalogue → pas de shape (le rendu retombe sur le Groupe). Pas de flag `natural` sur `a-distance`.
-    return buildWeapon({ name: t.arg || 'Attaque à distance', type: 'ranged', damage: dmg, range: t.range ?? undefined, shape: shapeForLabel(t.arg) });
+    const trapping = catalogWeapon(t.arg, 'weaponsRanged');
+    if (trapping) return weaponFromTrapping(trapping, 'ranged', dmg, t.range);
+    // Arme naturelle/libre (arg hors catalogue, ou absent) : pas de shape (le rendu retombe sur le Groupe).
+    return buildWeapon({ name: t.arg || 'Attaque à distance', type: 'ranged', damage: dmg, range: t.range ?? undefined });
   }
   if (t.id === 'arme') {
     // Attaque naturelle de corps (flag DONNÉE `natural`) → aucune arme dessinée (pas de shape).
     if (t.natural) return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg, natural: true });
-    // Arme manufacturée nommée (« Hallebarde » → shape `hallebarde`) : libellé→shape AU SPAWN ; hors
-    // catalogue → générique (pas de shape, repli par Groupe au rendu). Mêlée par défaut.
-    return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg, shape: shapeForLabel(t.arg) });
+    const trapping = catalogWeapon(t.arg, 'weaponsMelee');
+    if (trapping) return weaponFromTrapping(trapping, 'melee', dmg, t.range);
+    // Arme manufacturée hors catalogue, ou descripteur naturel non flaggé : générique, mêlée par défaut.
+    return buildWeapon({ name: t.arg ?? 'Arme', damage: dmg });
   }
   // Attaque naturelle TYPÉE (Morsure, Cornes, Tentacules…) : reconnue par la CAPACITÉ du trait
   // (`capabilities.naturalWeapon`, donnée). L'arme reste UNE (l'Action d'attaque) ; le compte joue sur

@@ -9,12 +9,10 @@ import type { TemporalCondition } from '../../state/scene';
 import { HIT_LOCATION_LABELS, type HitLocation } from '../../engine/types';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import type { Camp, Relation } from '../../engine/relations';
-import { trappings, findTrappingById } from '../../data';
+import { trappings, findTrappingById, findTrappingByLabel } from '../../data';
 
 /** Libellé d'affichage d'un `trappingId` (objet catalogué) — repli sur l'id brut (objet CUSTOM par nom). */
 const trappingLabelOrId = (id?: string): string => (id ? findTrappingById(id)?.label ?? id : '');
-/** Map LIBELLÉ (minuscule) → id de catalogue, pour résoudre la saisie de l'éditeur de Condition `hasItem`. */
-const TRAPPING_ID_BY_LABEL = new Map(trappings.map((t) => [t.label.toLowerCase(), t.id]));
 
 /** Libellés des valeurs de la Condition `relation` : RELATIF au lanceur (allié/adversaire) + camp ABSOLU. */
 const REL_LABEL: Record<Relation | Camp, string> = {
@@ -186,7 +184,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
             // catalogue (objet CUSTOM) est stocké tel quel → repli `it.name` côté runtime (evalCondition).
             defaultValue={trappingLabelOrId(cond.trappingId)} key={cond.trappingId}
             placeholder="objet (catalogue ou nom custom)"
-            onChange={(e) => { const v = e.target.value.trim(); onChange({ kind: 'hasItem', trappingId: TRAPPING_ID_BY_LABEL.get(v.toLowerCase()) ?? v, count: cond.count }); }}
+            onChange={(e) => { const v = e.target.value.trim(); onChange({ kind: 'hasItem', trappingId: findTrappingByLabel(v)?.id ?? v, count: cond.count }); }}
           />
           <datalist id="dl-cond-trapping">{trappings.map((t) => <option key={t.id} value={t.label} />)}</datalist>
           <label className="dr">×<input type="number" min={1} style={{ width: '3em' }} value={cond.count ?? 1} onChange={(e) => onChange({ kind: 'hasItem', trappingId: cond.trappingId, count: Math.max(1, Number(e.target.value) || 1) })} /></label>

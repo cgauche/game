@@ -7,6 +7,8 @@
       "label": "Indice"
     },
     "range": true,
+    "specsSource": "weaponsRanged",
+    "specsOpen": true,
     "desc": "La créature possède une arme à distance. L'arme cause Indice Dégâts et la distance en mètres est (Portée).",
     "source": {
       "book": "LDB",
@@ -126,6 +128,8 @@
     "indice": {
       "label": "Indice"
     },
+    "specsSource": "weaponsMelee",
+    "specsOpen": true,
     "desc": "La créature porte une arme de Corps à corps, ou utilise ses dents, griffes ou similaires en combat.\n\nL'arme inflige Indice Dégâts qui incluent déjà son bonus de Force. En général, le nombre de Dégâts est égal à 4 + son bonus de Force (représentant une arme simple).",
     "source": {
       "book": "LDB",

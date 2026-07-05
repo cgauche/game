@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { handlingClass, isTwoHanded, isRangedHandling, type Handling } from './handling';
 import { WEAPON_FORMS } from '../parts/weaponForms';
-import { shapeForLabel } from '../../../engine/creatureEquip';
+import { findTrappingByLabel } from '../../../data';
 import type { Weapon } from '../../../engine/types';
 
 // Le maniement est routé PAR ID STABLE (`shape`) — l'arme est construite comme au SPAWN : libellé → shape.
 const w = (name: string, type: 'melee' | 'ranged' = 'melee'): Weapon =>
-  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [], shape: shapeForLabel(name) } as Weapon);
+  ({ name, type, damage: { plusBF: false, flat: 4 }, qualities: [], shape: findTrappingByLabel(name)?.shape } as Weapon);
 /** Arme routée directement par son slug de FORME (pas de libellé). */
 const byShape = (shape: string | undefined, type: 'melee' | 'ranged' = 'melee'): Weapon =>
   ({ name: 'x', type, damage: { plusBF: false, flat: 4 }, qualities: [], shape } as Weapon);

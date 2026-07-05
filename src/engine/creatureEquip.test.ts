@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { weaponFromTrait, renderWeaponsFromTraits, weaponsFromTraits, armourFromTraits } from './creatureEquip';
 import type { TraitInstance } from './statEntry';
 
-const t = (o: { id: string; arg?: string; value?: number; range?: number }): TraitInstance => o as TraitInstance;
+const t = (o: { id: string; arg?: string; value?: number; range?: number; natural?: boolean }): TraitInstance => o as TraitInstance;
 
 describe('creatureEquip — dérivation traits → armes (source unique de l’armement ennemi/PNJ)', () => {
   it('trait « Arme (Épée) +7 » → arme de mêlée nommée', () => {
@@ -26,6 +26,21 @@ describe('creatureEquip — dérivation traits → armes (source unique de l’a
 
   it('trait « À distance » SANS Indice de Dégâts → pas une arme jouable (RAW) → null', () => {
     expect(weaponFromTrait(t({ id: 'a-distance' }))).toBeNull();
+  });
+
+  it('trait « À distance » d\'arg CATALOGUE (id migré `arbalete`, specsSource weaponsRanged) → hérite forme/qualités/Recharge du trapping', () => {
+    const w = weaponFromTrait(t({ id: 'a-distance', arg: 'arbalete', value: 9, range: 60 }));
+    expect(w?.name).toBe('Arbalète'); // libellé du catalogue, jamais l'id brut
+    expect(w?.type).toBe('ranged');
+    expect(w?.shape).toBe('arbalete');
+    expect(w?.reload).toBe(1); // Recharge 1 dérivée de la Qualité du trapping (LDB 62 l.333)
+  });
+
+  it('trait « Arme » d\'arg NATUREL hors catalogue (« Griffes ») → aucun crash, aucune forme de catalogue posée', () => {
+    const w = weaponFromTrait(t({ id: 'arme', arg: 'Griffes', value: 5, natural: true }));
+    expect(w).not.toBeNull();
+    expect(w?.name).toBe('Griffes');
+    expect(w?.shape).toBeUndefined();
   });
 
   it('trait non-armement (ex. Vol) → null', () => {

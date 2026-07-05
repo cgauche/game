@@ -102,6 +102,8 @@ const SPEC_SOURCE_NOUN: Record<SpecsSource, string> = {
   mutations: 'Mutation',
   breathTypes: 'Type de souffle',
   damageTypes: 'Type de dégâts',
+  weaponsMelee: 'Arme',
+  weaponsRanged: 'Arme',
 };
 
 /** Squelette d'ARGUMENT d'un Trait DÉRIVÉ de son schéma (sous-titre du Codex, remplace le champ figé
