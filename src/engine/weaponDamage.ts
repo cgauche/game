@@ -104,7 +104,7 @@ export function isImprovised(w: Weapon): boolean {
 /** Profil d'**Arme improvisée** (LDB 62 l.29/178/185) : Dégâts `+BF+1`, Atout `Inoffensive`, **plus aucun
  *  autre Atout**, Allonge Moyenne. SOURCE UNIQUE — partagé par l'usure (Dégâts à +0) ET la Lance de
  *  cavalerie hors Charge (`effectiveWeapon`), pour ne pas dupliquer le littéral. */
-function improvisedProfile(w: Weapon): Weapon {
+export function improvisedProfile(w: Weapon): Weapon {
   return { ...w, damage: { plusBF: true, flat: 1 }, qualities: [{ id: QUALITY_IDS.Inoffensive }], damageTaken: 0, reach: 'Moyenne' };
 }
 
@@ -127,6 +127,10 @@ export interface WeaponContext {
   /** Combat « au contact » avec la cible (LDB 62 l.176, Option « Longueur d'arme ») : toute arme plus
    *  longue que Courte y est traitée comme une Arme improvisée. Dérivé de `areInContact(attacker, target)`. */
   auContact?: boolean;
+  /** L'arme doit être résolue au profil d'**Arme improvisée** du fait du contexte (cible/situation) que
+   *  `effectiveWeapon` ne peut pas déduire seul. Posé par le funnel (`weaponContextOf`). Source actuelle :
+   *  Bélier (`ram`) hors-porte (ADE II ch.08 l.249, via `ramVsNonDoor`). */
+  improvised?: boolean;
 }
 
 /**
@@ -148,6 +152,8 @@ export function effectiveWeapon(w: Weapon, ctx?: WeaponContext): Weapon {
   // comme une Arme improvisée » (l'adversaire est entré dans la longueur d'arme). Allonge ≤ Courte
   // (mains nues / dague) → inchangée. MÊME branche que la Lance hors Charge (profil improvisé partagé).
   if (ctx?.auContact && w.type === 'melee' && reachRank(w.reach) > reachRank('Courte')) return improvisedProfile(w);
+  if (ctx?.improvised) return improvisedProfile(w); // improvisation dérivée du contexte par le funnel (ex. Bélier hors-porte, ADE II ch.08 l.249)
+
   // Fléau sans la Spécialisation : Défaut Dangereuse + AUCUN autre Atout (l.146-147). Le Test reste sur la
   // Caractéristique brute — déjà assuré par `combatValue` (pas de Spé → pas d'avances), le subType est gardé.
   if (ctx?.hasGroupSkill === false && w.subType === 'fleau') return { ...w, qualities: [{ id: QUALITY_IDS.Dangereuse }] };

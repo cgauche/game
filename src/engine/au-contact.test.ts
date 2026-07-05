@@ -43,6 +43,19 @@ describe('effectiveWeapon — combat au contact (LDB 62 l.176)', () => {
   });
 });
 
+describe('effectiveWeapon — improvisation par CONTEXTE générique (funnel)', () => {
+  it('ctx.improvised (ex. Bélier hors-porte, ADE II ch.08 l.249) → profil improvisé (+BF+1, Inoffensive, Atouts perdus)', () => {
+    const belier = { name: 'Bélier', type: 'melee', reach: 'Moyenne', damage: { plusBF: true, flat: 10 }, qualities: [{ id: 'siege' }, { id: 'belier' }] } as unknown as Weapon;
+    const r = effectiveWeapon(belier, { improvised: true });
+    expect(r.damage).toEqual({ plusBF: true, flat: 1 });
+    expect(r.qualities).toEqual([{ id: 'inoffensive' }]); // Siège + Bélier tombés
+  });
+  it('ctx.improvised absent/false → arme INCHANGÉE (même référence)', () => {
+    const l = w('Longue');
+    expect(effectiveWeapon(l, { improvised: false })).toBe(l);
+  });
+});
+
 const C = (id: string, p?: Partial<Combatant>): Combatant => ({
   id, name: id, kind: 'hero',
   characteristics: { CC: 40, CT: 30, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },

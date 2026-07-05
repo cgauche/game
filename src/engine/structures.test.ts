@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { findStructureById } from '../data';
 import { woundsFromHit } from './woundsCalc';
-import { isStructure, isEngin, structureImmune, siegeMultiplier, structureCombatant } from './structures';
+import { isStructure, isEngin, structureImmune, siegeMultiplier, structureCombatant, ramVsNonDoor } from './structures';
+import { improvisedProfile } from './weaponDamage';
 import type { Weapon, Combatant } from './types';
 
 /**
@@ -78,9 +79,12 @@ describe('woundsFromHit — structures (ADE II ch.08)', () => {
     expect(woundsFromHit(belier, struct('porte'), 'corps', 10)).toBe(18);
   });
 
-  it('Bélier vs Mur → 0 (n\'endommage QUE les portes, ADE II l.249)', () => {
-    expect(woundsFromHit(belier, struct('mur-en-pierre'), 'corps', 50)).toBe(0);
-    expect(woundsFromHit(belier, struct('mur-en-bois'), 'corps', 50)).toBe(0);
+  it('Bélier hors-porte = Arme improvisée : endommage un Mur, plus de Siège (ADE II ch.08 l.249)', () => {
+    // Hors-porte, le funnel transforme le Bélier en improvisée (cf. effectiveWeapon/weaponContextOf) ; c'est
+    // CE profil qui atteint woundsFromHit — ni immune (≠ 0) ni doublé par Siège.
+    expect(woundsFromHit(improvisedProfile(belier), struct('mur-en-bois'), 'corps', 8)).toBe(2); // 8 − BE 6, sans ×2
+    expect(structureImmune(improvisedProfile(belier), struct('mur-en-bois'))).toBe(false); // mêlée passe le Résistant
+    expect(structureImmune(improvisedProfile(belier), struct('mur-en-pierre'))).toBe(true); // improvisée sans Siège vs Impénétrable
   });
 
   it('Bl → 0 : un coup trop faible ne raye PAS la structure (plancher 0, pas 1 comme un personnage)', () => {
@@ -102,17 +106,23 @@ describe('structureImmune (unitaire)', () => {
     expect(structureImmune(canon, struct('mur-en-pierre'))).toBe(false); // Siège outrepasse
   });
 
-  it('Bélier : portes uniquement (mur imparable ; porte — même Impénétrable — passe car il a Siège)', () => {
-    expect(structureImmune(belier, struct('mur-en-bois'))).toBe(true);
-    expect(structureImmune(belier, struct('porte'))).toBe(false);
-    expect(structureImmune(belier, struct('porte-de-ville'))).toBe(false);
+  it('Bélier hors-porte n\'est PAS une immunité — c\'est une Arme improvisée (ADE II ch.08 l.249)', () => {
+    expect(ramVsNonDoor(belier, struct('mur-en-bois'))).toBe(true);
+    expect(ramVsNonDoor(belier, struct('mur-en-pierre'))).toBe(true);
+    expect(ramVsNonDoor(belier, struct('porte'))).toBe(false); // porte = cible légitime
+    expect(ramVsNonDoor(belier, struct('porte-de-ville'))).toBe(false);
+    expect(ramVsNonDoor(hache, struct('mur-en-bois'))).toBe(false); // pas un Bélier
+    // structureImmune ne traite plus le Bélier : une fois transformé en improvisée, seules Impénétrable/Résistant jouent.
+    expect(structureImmune(improvisedProfile(belier), struct('mur-en-pierre'))).toBe(true); // improvisée sans Siège vs Impénétrable
+    expect(structureImmune(improvisedProfile(belier), struct('mur-en-bois'))).toBe(false); // mêlée passe le Résistant
   });
 });
 
 describe('siegeMultiplier (unitaire)', () => {
-  it('×2 seulement pour une arme à Atout Siège frappant une structure', () => {
+  it('×2 pour une arme à Atout Siège ; le Bélier hors-porte (devenu improvisé) ne double plus', () => {
     expect(siegeMultiplier(canon, struct('mur-en-pierre'))).toBe(2);
-    expect(siegeMultiplier(belier, struct('porte'))).toBe(2);
+    expect(siegeMultiplier(belier, struct('porte'))).toBe(2); // porte = cible légitime (Bélier + Siège)
+    expect(siegeMultiplier(improvisedProfile(belier), struct('mur-en-pierre'))).toBe(1); // hors-porte : improvisé, plus de Siège
     expect(siegeMultiplier(epee, struct('porte'))).toBe(1); // pas de Siège
     expect(siegeMultiplier(canon, creature)).toBe(1); // cible non-structure
   });

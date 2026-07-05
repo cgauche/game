@@ -110,7 +110,7 @@ import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, s
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
 import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
 import { endShanty, resolveShipUnits } from './shipCrew';
-import { isInanimate, isStructure, structureAimCell } from '../engine/structures';
+import { isInanimate, isStructure, structureAimCell, ramVsNonDoor } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { actorIn } from './combatOrParty';
 import type { ShipRig } from '../engine/combat';
@@ -271,6 +271,7 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
     mounted: !!attacker.mountId,
     hasGroupSkill: hasWeaponGroupSkill(attacker, w, w.type === 'ranged' ? 'ranged' : 'melee'),
     auContact: !!target && areInContact(attacker, target),
+    improvised: !!target && ramVsNonDoor(w, target), // Bélier hors-porte → improvisée (ADE II ch.08 l.249)
   };
 }
 

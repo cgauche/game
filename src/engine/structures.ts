@@ -58,15 +58,20 @@ function structureKind(target: Combatant): 'porte' | 'mur' | undefined {
   return target.creatureId ? findStructureById(target.creatureId)?.kind : undefined;
 }
 
+/** Le Bélier (cap `ram`) frappe-t-il une cible qui n'est PAS une porte ? (ADE II ch.08 l.249) — hors-porte,
+ *  le résolveur de coup (`applyHit`) le transforme alors en Arme improvisée. */
+export function ramVsNonDoor(weapon: Pick<Weapon, 'qualities'> | undefined, target: Combatant): boolean {
+  return weaponHasCap(weapon, 'ram') && structureKind(target) !== 'porte';
+}
+
 /**
  * La structure `target` est-elle IMPARABLE par cette `weapon` (le coup ne l'abîme pas → 0 Blessure) ?
- *  - **Bélier** (`ram`, ADE II l.249) : n'endommage QUE les portes → toute structure non-porte est imparable.
  *  - **Impénétrable** (`structImpenetrable`, l.300) : imparable par TOUTE arme sans l'Atout Siège.
  *  - **Résistant** (`structResistant`, l.296) : imparable par une Arme À DISTANCE sans Siège (le corps à corps passe).
+ * Le Bélier hors-porte est traité en amont (`applyHit`) comme une Arme improvisée (`ramVsNonDoor`, ADE II l.249).
  */
 export function structureImmune(weapon: Weapon | undefined, target: Combatant): boolean {
   const siege = weaponHasCap(weapon, 'siege');
-  if (weaponHasCap(weapon, 'ram') && structureKind(target) !== 'porte') return true;
   if (!siege && hasCapability(target, 'structImpenetrable')) return true;
   if (!siege && weapon?.type === 'ranged' && hasCapability(target, 'structResistant')) return true;
   return false;

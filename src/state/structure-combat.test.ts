@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
-import { applyAttackResult, applyStructureCriticalToTarget, collapseStructure } from './combatFlow';
+import { applyAttackResult, applyStructureCriticalToTarget, collapseStructure, weaponContextOf } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { itemFromTrappingById, recomputeLoadout } from '../engine/items';
@@ -106,15 +106,15 @@ describe('Structures de siège — Dégâts par le chemin combat', () => {
     expect(s.wounds.current).toBe(40); // intacte
   });
 
-  it('Bélier sur Porte : endommage (×2, porte = cible légitime) ; Bélier sur Mur : 0', () => {
+  it('Bélier sur Porte : ×2 (cible légitime) ; hors-porte le funnel pose ctx.improvised (ADE II ch.08 l.249)', () => {
     // Porte B 8 / BE 2 ; 3 × 2 = 6 − 2 = 4 retirés → 8 − 4 = 4 restants (pas de brèche).
     const door = start('porte');
     applyAttackResult(useGame.getState, useGame.setState, door.H, door.S!, belier, hitRes(belier, door.S!, 3));
     expect(useGame.getState().battle!.combatants.find((c) => c.id === door.S!.id)!.wounds.current).toBe(4);
-    // Bélier sur un MUR : n'endommage QUE les portes → 0.
+    expect(weaponContextOf(door.H, belier, door.S!).improvised).toBe(false); // porte = cible légitime
+    // Hors-porte : ramVsNonDoor → ctx.improvised → effectiveWeapon applique le profil improvisé (plus de Siège, +BF+1).
     const wall = start('mur-en-pierre');
-    applyAttackResult(useGame.getState, useGame.setState, wall.H, wall.S!, belier, hitRes(belier, wall.S!, 50));
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === wall.S!.id)!.wounds.current).toBe(40);
+    expect(weaponContextOf(wall.H, belier, wall.S!).improvised).toBe(true);
   });
 });
 
