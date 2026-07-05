@@ -28,6 +28,12 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 | Ajouter une créature (rig) | `docs/creer-une-creature.md` |
 | Authoring de map | `docs/map-authoring.md` |
 
+> **Politique `docs/`** : ce dossier ne contient que des **références vivantes**, maintenues au fil
+> du code. Les plans de refonte / sorties de brainstorming sont des artefacts **DATÉS** : ils vont
+> dans `docs/plans/`, portent leur date en tête, et sont **supprimés une fois exécutés** (git porte
+> l'historique). Un plan périmé qui traîne à la racine de `docs/` est du poison : ne JAMAIS s'appuyer
+> sur un doc de plan pour décider de l'architecture actuelle — le code et les références vivantes font foi.
+
 ## Règles strictes (NE PAS déroger)
 
 1. **Aucune invention de règles.** Toute règle/valeur vient des livres autorisés (§ Sources VF).
