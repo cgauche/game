@@ -91,7 +91,7 @@ export type EnemyAction =
   | { kind: 'castArea'; spell: string; center: Pt } // sort de ZONE (ZdE) auto-posé sur un point couvrant ≥2 héros
   | { kind: 'focus'; spell: string } // Focalisation (LDB 46) d'un sort offensif infaisable en un seul jet
   | { kind: 'shoot'; targetId: string } // tir depuis la position courante (arme à distance)
-  | { kind: 'reload' } // recharge une arme à Recharge déchargée (Test étendu de Projectiles, LDB 63 l.28-29)
+  | { kind: 'reload' } // recharge une arme à Recharge déchargée (Test étendu de Projectiles, LDB 62 l.333)
   | { kind: 'melee'; targetId: string } // attaque de mêlée (cible adjacente)
   | { kind: 'move'; to: Pt; thenTargetId: string } // approche ; attaque après si adjacent
   | { kind: 'recover'; state: 'empetre' | 'en-flammes' } // se libérer / se rouler au sol (LDB 16 l.61/77)
@@ -513,9 +513,8 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   const hasAnyOffensiveSpell = spells.some((sp) => !sp.active && spellIsOffensive(sp.data));
   const hasRanged = !hasAnyOffensiveSpell && enemy.weapons.some((w) => w.type === 'ranged');
   const hasMeleeWeapon = enemy.weapons.some((w) => w.type === 'melee');
-  // Rechargement (LDB 63 l.28-29) : une arme à Recharge DÉCHARGÉE ne peut pas tirer → il faut recharger
-  // d'abord. `loaded` n'est suivi que pour les acteurs concernés (héros ayant tiré) ; un ennemi reste
-  // chargé (le décompte de Recharge lui est épargné), donc `!enemy.loaded` ne déclenche que pour qui doit.
+  // Rechargement (LDB 62 l.333) : une arme à Recharge DÉCHARGÉE ne peut pas tirer → il faut recharger d'abord
+  // (Test étendu de Projectiles). Cycle `loaded` unifié héros/ennemi (spawn chargé, tir → déchargé).
   const rangedW = enemy.weapons.find((w) => w.type === 'ranged');
   const reloadNeeded = hasRanged && !!rangedW && (rangedW.reload ?? 0) > 0 && !enemy.loaded;
 
@@ -939,7 +938,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
     }
   }
 
-  // Recharger (LDB 63 l.28-29) : arme à Recharge déchargée + cible en vue/portée, sauf attaque de mêlée
+  // Recharger (LDB 62 l.333) : arme à Recharge déchargée + cible en vue/portée, sauf attaque de mêlée
   // justifiée. Utilité neutre (préparation) — préféré seulement faute de tir/mêlée meilleurs. Un
   // frénétique NE recharge PAS (Frénésie LDB 21 l.34 : seule Action = Test de CC/Athlétisme → mêlée).
   if (!frenzied && reloadNeeded && shootPool.length > 0 && !(adjacentFoes.length > 0 && hasMeleeWeapon)) {

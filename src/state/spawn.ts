@@ -378,5 +378,8 @@ export function spawnEnemy(
   if (opts?.weapon) {
     c.weapons = [weaponFromLabel(opts.weapon), ...c.weapons];
   }
+  // Arme à distance CHARGÉE au spawn (miroir du héros dans startCombat) — LDB 62 l.333 : le `loaded` ne gate
+  // que les armes à Recharge, un tireur fraîchement engagé peut donc tirer au 1er Round (pas de recharge à vide).
+  if (c.weapons.some((w) => w.type === 'ranged')) c.loaded = true;
   return c;
 }
