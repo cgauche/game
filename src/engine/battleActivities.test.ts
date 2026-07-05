@@ -52,12 +52,13 @@ describe('Activités de préparation de bataille (ADE II 08 l.79-110) — donné
     expect(matchBattleOutcomes(plan, testRes(true, 6)).flatMap((b) => b.battle!)).toEqual([{ target: 'allyTestMod', scale: 'fixed', amount: 20 }]);
   });
 
-  it('Infiltration (l.73-77) : combiné Discrétion+Perception, requiert la Planification ; Succès +10', () => {
+  it('Infiltration (l.75) : combiné Discrétion+Perception, requiert la Planification ; Succès = +20 à la Planification', () => {
     const inf = activityById('infiltration')!;
     expect(inf.combined).toBe(true);
     expect(inf.skills).toEqual([{ skillId: 'discretion' }, { skillId: 'perception' }]);
     expect(inf.requires).toEqual(['planned']);
-    expect(matchBattleOutcomes(inf, testRes(true, 1)).flatMap((b) => b.battle!)).toEqual([{ target: 'allyTestMod', scale: 'fixed', amount: 10 }]);
+    // RAW ADE II ch.8 l.75 : « En cas de Succès, le Personnage obtient un bonus de +20 à l'Activité Planification. »
+    expect(matchBattleOutcomes(inf, testRes(true, 1)).flatMap((b) => b.battle!)).toEqual([{ target: 'planningBonus', scale: 'fixed', amount: 20 }]);
   });
 
   it('Repérage (l.100-102) : combiné Chevaucher+Perception, octroie scouted ; Succès +10 à la Planification', () => {

@@ -662,7 +662,8 @@ function applyBattleBands(
       resolvedScenes: uniq([...next.resolvedScenes, def.id]),
       actedHeroes: uniq([...next.actedHeroes, ...heroes]),
       imposed: uniq([...next.imposed, ...chains]),
-      activeThreats: def.sceneKind === 'threat' ? next.activeThreats.filter((id) => id !== def.id) : next.activeThreats,
+      // Intrus (l.219) : la menace PERSISTE tant qu'elle n'est pas VAINCUE — ne la retirer que sur succès/victoire.
+      activeThreats: def.sceneKind === 'threat' && res.success ? next.activeThreats.filter((id) => id !== def.id) : next.activeThreats,
       sceneDeltas: [...next.sceneDeltas, ...shown],
     } : {}),
   };

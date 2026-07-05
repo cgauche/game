@@ -674,6 +674,13 @@ export function confirmActivity(get: Get, set: Set): void {
   // Activité d'interlude → elle DÉCRÉMENTE `interlude.perHero[id].left` comme toute Activité. Les Scènes
   // de Round (`battle === 'round'`) sont HORS budget downtime (illimitées par Round) — jamais décomptées.
   if (pa.battle) {
+    // Budget partagé (l.65) : une préparation (`'prep'`) EST une Activité d'interlude → refuser en AMONT
+    // si le héros n'a plus de créneau (comme le chemin interlude via `st.left <= 0` plus bas), sinon l'issue
+    // s'appliquerait « gratuitement » (`consumeActivity` no-op à 0). Les Scènes de Round (`'round'`) hors budget.
+    if (pa.battle === 'prep' && (get().interlude?.perHero[pa.heroId]?.left ?? 0) <= 0) {
+      set({ pendingActivity: null });
+      return;
+    }
     set({ pendingActivity: null });
     confirmBattleActivity(get, set, pa);
     if (pa.battle === 'prep') consumeActivity(get, set, pa.heroId);

@@ -634,9 +634,9 @@
         "on": "success",
         "battle": [
           {
-            "target": "allyTestMod",
+            "target": "planningBonus",
             "scale": "fixed",
-            "amount": 10
+            "amount": 20
           }
         ]
       }
