@@ -111,28 +111,28 @@ describe('Achat un par un (mutation du héros, PX déduits)', () => {
   });
   it('buySkillAdvance : +1 avance, coût selon avances déjà prises ; identité (name, spec)', () => {
     const h = hero(1000);
-    const r = buySkillAdvance(h, 'Discrétion', undefined); // 0 avance → 10 PX
+    const r = buySkillAdvance(h, 'discretion', undefined); // 0 avance → 10 PX
     expect(r).toEqual({ ok: true, cost: 10 });
     expect(h.skills.find((s) => s.skillId === 'discretion')!.advances).toBe(1);
     expect(h.xp).toBe(990);
-    expect(buySkillAdvance(h, 'Inconnue', undefined).ok).toBe(false); // compétence non connue
+    expect(buySkillAdvance(h, 'inconnue', undefined).ok).toBe(false); // compétence non connue
     // Une AUTRE spec du même groupe est une Compétence distincte (LDB 09 l.42).
     h.skills.push({ skillId: 'discretion', spec: 'urbaine', characteristic: 'Ag', advances: 0 });
-    expect(buySkillAdvance(h, 'Discrétion', 'rurale').ok).toBe(false); // (Rurale) non connue
-    expect(buySkillAdvance(h, 'Discrétion', 'urbaine')).toEqual({ ok: true, cost: 10 });
+    expect(buySkillAdvance(h, 'discretion', 'rurale').ok).toBe(false); // (Rurale) non connue
+    expect(buySkillAdvance(h, 'discretion', 'urbaine')).toEqual({ ok: true, cost: 10 });
     expect(h.skills.find((s) => s.spec === 'urbaine')!.advances).toBe(1);
     expect(h.skills.find((s) => !s.spec && s.skillId === 'discretion')!.advances).toBe(1); // inchangée
   });
   it('buySkillAdvance : remise −5 PX (talent Maître artisan…, LDB 10) in-carrière seulement', () => {
     const h = hero(1000);
-    expect(buySkillAdvance(h, 'Discrétion', undefined, true, 5)).toEqual({ ok: true, cost: 5 });
-    expect(buySkillAdvance(h, 'Discrétion', undefined, false, 5).cost).toBe(20); // ×2, pas de remise
+    expect(buySkillAdvance(h, 'discretion', undefined, true, 5)).toEqual({ ok: true, cost: 5 });
+    expect(buySkillAdvance(h, 'discretion', undefined, false, 5).cost).toBe(20); // ×2, pas de remise
   });
   it('buyTalent : crée à times 1 (100 PX), puis +1 (200 PX)', () => {
     const h = hero(1000);
-    expect(buyTalent(h, 'Sang-froid')).toEqual({ ok: true, cost: 100 });
+    expect(buyTalent(h, 'sang-froid')).toEqual({ ok: true, cost: 100 });
     expect(h.talents.find((t) => t.talentId === 'sang-froid')!.times).toBe(1);
-    expect(buyTalent(h, 'Sang-froid')).toEqual({ ok: true, cost: 200 });
+    expect(buyTalent(h, 'sang-froid')).toEqual({ ok: true, cost: 200 });
     expect(h.talents.find((t) => t.talentId === 'sang-froid')!.times).toBe(2);
     expect(h.xp).toBe(1000 - 100 - 200);
   });
