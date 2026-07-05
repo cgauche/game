@@ -7,16 +7,17 @@
  * spectaculaire de Puissance » NON opposé. Les Personnages influent sur l'issue via des Scènes
  * cinématiques (quelques Rounds de Combat OU un Test de Compétence) et un Discours inspirant.
  *
- * Moteur PUR (aucun import `state`, règle 3) + data-driven (`mass-battle.json` : tables verbatim de
- * l'estimation de Puissance, des modificateurs, des machines de guerre, des structures, des facteurs
- * environnementaux et des Scènes cinématiques). Aucune valeur inventée (règle 1).
+ * Moteur PUR (aucun import `state`, règle 3) + data-driven : les TABLES verbatim (estimation de
+ * Puissance, modificateurs, machines de guerre, structures, aléas environnementaux) vivent dans
+ * `mass-battle.json` ; les ACTIVITÉS de préparation et les SCÈNES cinématiques sont des `ActivityDef`
+ * (contextes 'bataille'/'bataille-round') dans `activities.json` — mécanique unifiée avec les Activités
+ * d'interlude/voyage (bandes d'issue `outcomes` + `battle`). Aucune valeur inventée (règle 1).
  */
 import data from '../data/mass-battle.json';
 import { rollTest, type TestResult } from './tests';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from './types';
 import { RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
-import type { TestSpec } from './skills';
 
 // ── Tables verbatim (`mass-battle.json`) ─────────────────────────────────────────────────────────
 
@@ -30,103 +31,12 @@ export interface WarMachineRow { id: string; label: string; price: string; crew:
 export interface StructureRow { id: string; label: string; be: number; wounds: number; traits: string }
 /** Un facteur environnemental d'aléa de bataille (l.311-322, 1d10) — texte verbatim. */
 export interface HazardRow { min: number; max: number; label: string; text: string }
-/** Genre de Scène : `test` (Compétence des PJ), `combat` (rencontre tactique réutilisant `startCombat`),
- *  `threat` (Scène MENACE qui s'IMPOSE, ex. Intrus l.219 : pénalise les autres Scènes tant qu'elle
- *  n'est pas vaincue), `hold` (Tenez votre position l.161 : Test OPPOSÉ récurrent qui accumule un
- *  Point de rupture entre Rounds). */
-export type SceneKind = 'test' | 'combat' | 'threat' | 'hold';
-/** Échelle d'un delta de Puissance : `perDR` × DR du Test (l.151) ; `perHit` × touches (Charge/Pluie
- *  de flèches l.139/145) ; `perKill` × ennemis neutralisés (l.139) ; `fixed` = montant plat. */
-export type SceneScale = 'perDR' | 'perHit' | 'perKill' | 'fixed';
-/** Condition d'application d'un effet/enchaînement, évaluée contre la résolution d'une Scène. Absente
- *  sur un effet = « sur Succès/Victoire ». `generalDown` = le général ennemi est tombé (l.208/217) ;
- *  `intervention`/`noIntervention` = un AUTRE PJ a frappé (Duel l.225) ; `stunningSuccess`/
- *  `stunningFailure` = DR ≥ 6 / DR ≤ −6 (l.217/96) ; `success`/`failure` = issue du Test/Combat ;
- *  `combatWon`/`combatLost` = victoire / DÉFAITE tactique d'une Scène de COMBAT (Percée l.175, Duel
- *  l.223 : le camp vaincu au duel perd −20 — vaut DANS LES DEUX SENS). */
-export type SceneCond =
-  | 'generalDown' | 'intervention' | 'noIntervention'
-  | 'stunningSuccess' | 'stunningFailure' | 'success' | 'failure'
-  | 'combatWon' | 'combatLost';
-
-/** Delta de Puissance appliqué par une Scène résolue : camp visé + échelle. `amount` porte le SIGNE
- *  (gain allié +, réduction ennemie −). `when` gate l'effet (ex. « −15 SI le général est tué »). */
-export interface BattleSceneEffect { side: 'ally' | 'enemy'; scale: SceneScale; amount: number; when?: SceneCond }
-/** Une Scène IMPOSÉE au Round suivant (enchaînement l.169/175/208/217/225). `when` gate le déclenchement. */
-export interface BattleSceneChain { sceneId: string; when?: SceneCond }
-/** Paramètre d'une Scène MENACE (Intrus l.219) : pénalité infligée aux TESTS des autres Scènes du Round
- *  tant que la menace n'est pas vaincue. */
-export interface BattleThreat { penalty: number }
-/** Paramètre d'une Scène « Tenez votre position » (l.161-163) : le seuil du Point de rupture (10 par
- *  RAW), le nombre de Rounds max avant écrasement (5 par RAW), et le bonus cumulatif d'opposition octroyé
- *  à l'ennemi à chaque Round tenu (« un bonus cumulatif de +10 pour les Rounds successifs »). */
-export interface BattleHold { breakpoint: number; maxRounds: number; enemyBonusPerHold: number }
-
-/** Une Scène cinématique (l.133-225) : description VERBATIM + résolution `test`/`combat`/`threat`/`hold`.
- *  Les effets s'appliquent sur succès/victoire (ou selon leur `when`) ; les enchaînements imposent une
- *  Scène au Round suivant. Data-driven : `ref` cite la ligne source. */
-export interface BattleSceneDef extends TestSpec {
-  id: string;
-  label: string;
-  kind: SceneKind;
-  /** Référence canon (ADE II 08 l.NNN). */
-  ref: string;
-  desc: string;
-  /** `skills?` (Scène 'test'/'hold' : AU CHOIX ; en 'hold' l'ennemi oppose la même compétence, l.161),
-   *  `char?`, `difficulty?` viennent de `TestSpec`. */
-  /** Scène 'combat'/'threat' : id de rencontre de la scène à démarrer (`startCombat`). */
-  encounter?: string;
-  /** Durée max en Rounds de Combat (l.139/157/175… — indicatif narratif). */
-  rounds?: number;
-  /** Effets de Puissance appliqués à la résolution (chacun gated par son `when`). */
-  effects: BattleSceneEffect[];
-  /** Scènes imposées au Round suivant (enchaînements). */
-  chains?: BattleSceneChain[];
-  /** Paramètre MENACE (kind 'threat'). */
-  threat?: BattleThreat;
-  /** Paramètre de la Scène « Tenez votre position » (kind 'hold', l.161). */
-  hold?: BattleHold;
-}
-
-/** Cible d'une Activité de bataille pré-combat (l.79-106) : modificateur PERMANENT aux Tests de
- *  Puissance alliés (Planification) ; Puissance alliée/ennemie de DÉPART (Rassembler/Sabotage) ; bonus
- *  au premier Round (Discours) ; bonus au Test de Planification (Repérage/Infiltration). */
-export type ActivityTarget = 'allyTestMod' | 'allyMight' | 'enemyMight' | 'firstRoundBonus' | 'planningBonus';
-export interface ActivityOutcome { target: ActivityTarget; amount: number }
-/** Une Activité de bataille (l.79-106) : Test de Compétence dont l'issue alimente la Puissance/les
- *  modificateurs AVANT la bataille (max 3 Activités, l.65). `requires` = prérequis (Sabotage ⇐ Repérage
- *  réussi, Infiltration ⇐ Planification réussie). `grantsFlag` = débloque une Activité dépendante. */
-export interface BattleActivityDef extends TestSpec {
-  id: string;
-  label: string;
-  ref: string;
-  desc: string;
-  /** De `TestSpec` : `skills?` (au CHOIX par défaut ; en Test COMBINÉ `combined:true`, l.75/102, les DEUX
-   *  PREMIÈRES sont testées ENSEMBLE — un seul jet vs deux valeurs, un Test combiné exige donc DEUX
-   *  compétences), `char?`, `difficulty?`, `combined?` (l.75 Infiltration : Discrétion + Perception ;
-   *  l.102 Repérage : Chevaucher + Perception — un d100 confronté aux deux valeurs, LDB 12 l.229). */
-  requires?: 'planned' | 'scouted';
-  grantsFlag?: 'planned' | 'scouted';
-  /** SEULE Activité pré-combat que le RAW autorise à SOUTENIR (ADE II ch.8 l.81, Planification : « Un
-   *  Personnage avec au moins une Augmentation en Savoir (Guerre) peut aider au Test ») → résolution en
-   *  SOUTIEN (LDB 12 : un assistant capable ajoute +10, plafonné) comme une Scène de Round, plutôt que
-   *  SOLO. Les autres Activités (Repérage/Sabotage/Infiltration/Rassembler des forces…) restent SOLO
-   *  (RAW « un Personnage »). Incompatible avec `combined` (RAW n'accorde d'aide à aucun Test combiné). */
-  assisted?: boolean;
-  onSuccess: ActivityOutcome[];
-  /** Succès Stupéfiant (DR ≥ 6) — REMPLACE `onSuccess`. */
-  onStunning?: ActivityOutcome[];
-  /** Échec Stupéfiant (DR ≤ −6). */
-  onStunningFail?: ActivityOutcome[];
-}
 
 export const POWER_ESTIMATE = data.powerEstimate as PowerEstimateRow[];
 export const MIGHT_MODIFIERS = data.mightModifiers as MightModifierRow[];
 export const WAR_MACHINES = data.warMachines as WarMachineRow[];
 export const STRUCTURES = data.structures as StructureRow[];
 export const BATTLE_HAZARDS = data.hazards as HazardRow[];
-export const BATTLE_SCENES = data.scenes as BattleSceneDef[];
-export const BATTLE_ACTIVITIES = data.activities as BattleActivityDef[];
 
 export const MIGHT_MIN = 0;
 export const MIGHT_MAX = 100;
@@ -134,16 +44,6 @@ export const MIGHT_MAX = 100;
 /** Puissance ARRONDIE et bornée à [0, 100] (l.24 : « une valeur comprise entre 0 et 100 »). */
 export function clampMight(m: number): number {
   return Math.max(MIGHT_MIN, Math.min(MIGHT_MAX, Math.round(m)));
-}
-
-/** Ligne de Scène par id (repli undefined). */
-export function battleSceneById(id: string): BattleSceneDef | undefined {
-  return BATTLE_SCENES.find((s) => s.id === id);
-}
-
-/** Activité de bataille par id (repli undefined). */
-export function battleActivityById(id: string): BattleActivityDef | undefined {
-  return BATTLE_ACTIVITIES.find((a) => a.id === id);
 }
 
 // ── Estimation de la Puissance de départ ─────────────────────────────────────────────────────────
@@ -205,9 +105,7 @@ export function normalizeMights(rawAlly: number, rawEnemy: number): { ally: numb
 // jette sa Puissance courante (d100 ≤ Puissance) et RÉDUIT la Puissance adverse de « 10 + DR (5
 // minimum) ». Les deux attaques sont résolues EN MÊME TEMPS (« Chaque attaque est résolue en même
 // temps sur le score de Puissance actuelle des armées »). Reconstitution confirmée par la boucle du
-// chapitre (l.19 : « La Puissance est utilisée lors de chaque Round … pour infliger des dégâts à
-// l'armée adverse, et est recalculée à la fin de chaque Round ») et par l'issue (l.124 : « l'armée
-// avec la Puissance la plus élevée gagne »). `DR` = le DR du Test de l'armée qui frappe.
+// chapitre (l.19) et par l'issue (l.124 : « l'armée avec la Puissance la plus élevée gagne »).
 
 /** Réduction de Puissance infligée à l'adversaire (l.120) : « 10 + DR (5 minimum) ». Un DR négatif
  *  (Test raté) réduit la casse jusqu'au plancher de 5. */
@@ -283,91 +181,14 @@ export function inspireDifficulty(allyMight: number, enemyMight: number): Diffic
 /** Bonus au Test de Puissance du premier Round de bataille en cas de Discours inspirant réussi (l.71). */
 export const INSPIRE_BONUS = 10;
 
-// ── Scènes cinématiques (l.133-225) ──────────────────────────────────────────────────────────────
-
-/** Résolution d'une Scène : issue du Test/Combat + compteurs qui alimentent les échelles/conditions.
- *  `hits`/`kills` = touches portées / ennemis neutralisés d'une Scène de COMBAT (l.139/145) ;
- *  `generalDown` = le général ennemi est tombé (l.208/217) ; `intervention` = un AUTRE PJ a frappé
- *  le général en Duel (l.225) ; `combat` = la résolution vient d'une Scène de COMBAT tactique (distingue
- *  `combatWon`/`combatLost` d'un simple `success`/`failure` de Test). */
-export interface SceneResolution {
-  success: boolean;
-  sl: number;
-  hits: number;
-  kills: number;
-  generalDown: boolean;
-  intervention: boolean;
-  combat: boolean;
-}
-
-/** Une résolution `test` : succès + DR (compteurs de combat à 0). `generalDown` sur Succès Stupéfiant
- *  (DR ≥ 6) — le coup isolé fait tomber le capitaine/général (l.208/217). */
-export function testResolution(success: boolean, sl: number): SceneResolution {
-  return { success, sl, hits: 0, kills: 0, generalDown: success && sl >= 6, intervention: false, combat: false };
-}
-
-/** Une résolution `combat` GAGNÉE : touches + kills. `intervention` = plus d'un PJ a frappé (rompt
- *  l'accord tacite du Duel, l.225). `generalDown` = victoire (le général est la rencontre). */
-export function combatResolution(hits: number, kills: number, hitterCount: number): SceneResolution {
-  return { success: true, sl: 0, hits, kills, generalDown: true, intervention: hitterCount > 1, combat: true };
-}
-
-/** Une résolution `combat` PERDUE (Scène de combat de bataille où les PJ sont mis hors d'action) : les
- *  touches portées comptent toujours (l.139), mais l'issue est un échec — nourrit `combatLost` (Percée
- *  l.175 : échec→Charge ; Duel l.223 : le camp allié vaincu perd −20). */
-export function combatLossResolution(hits: number, hitterCount: number): SceneResolution {
-  return { success: false, sl: 0, hits, kills: 0, generalDown: false, intervention: hitterCount > 1, combat: true };
-}
-
-/** Une condition `when` est-elle satisfaite par la résolution ? Un effet SANS `when` s'applique sur
- *  Succès/Victoire. */
-export function condMet(cond: SceneCond | undefined, r: SceneResolution): boolean {
-  switch (cond) {
-    case undefined: return r.success;
-    case 'success': return r.success;
-    case 'failure': return !r.success;
-    case 'stunningSuccess': return r.success && r.sl >= 6;
-    case 'stunningFailure': return !r.success && r.sl <= -6;
-    case 'generalDown': return r.generalDown;
-    case 'intervention': return r.success && r.intervention;
-    case 'noIntervention': return r.success && !r.intervention;
-    case 'combatWon': return r.combat && r.success;
-    case 'combatLost': return r.combat && !r.success;
-  }
-}
-
-/** Montant SIGNÉ d'un effet pour une résolution (l'échelle multiplie le compteur adéquat). */
-export function effectAmount(effect: BattleSceneEffect, r: SceneResolution): number {
-  switch (effect.scale) {
-    case 'fixed': return effect.amount;
-    case 'perDR': return effect.amount * Math.max(0, r.sl);
-    case 'perHit': return effect.amount * Math.max(0, r.hits);
-    case 'perKill': return effect.amount * Math.max(0, r.kills);
-  }
-}
-
-/** Deltas de Puissance appliqués par une Scène résolue (chaque effet gated par son `when`). */
-export function sceneDeltas(scene: BattleSceneDef, r: SceneResolution): { side: 'ally' | 'enemy'; amount: number }[] {
-  const out: { side: 'ally' | 'enemy'; amount: number }[] = [];
-  for (const e of scene.effects) {
-    if (!condMet(e.when, r)) continue;
-    const amount = effectAmount(e, r);
-    if (amount !== 0) out.push({ side: e.side, amount });
-  }
-  return out;
-}
-
-/** Ids des Scènes IMPOSÉES au Round suivant par une Scène résolue (enchaînements gated par `when`). */
-export function sceneChains(scene: BattleSceneDef, r: SceneResolution): string[] {
-  return (scene.chains ?? []).filter((c) => condMet(c.when, r)).map((c) => c.sceneId);
-}
-
 // ── « Tenez votre position » — Point de rupture (l.161-163) ──────────────────────────────────────
+
+/** Paramètre d'une Scène « Tenez votre position » (l.161-163) — porté par `ActivityDef.hold` (donnée). */
+export interface BattleHold { breakpoint: number; maxRounds: number; enemyBonusPerHold: number }
 
 /** État PERSISTANT (entre Rounds de bataille) d'une Scène « Tenez votre position » (l.161-163) : le
  *  Point de rupture (`breakpoint`, DR cumulés de l'ennemi), le nombre de Rounds tenus, et si la position
- *  a déjà cédé (déroute — l'ennemi a percé). Générique : porté par `MassBattleState.sceneState`, pas un
- *  champ ad hoc « Tenez ». */
+ *  a déjà cédé (déroute — l'ennemi a percé). Générique : porté par `MassBattleState.sceneState`. */
 export interface HoldState {
   /** Somme cumulée des DR de l'ennemi au Test opposé (« On nomme le nombre cumulé des DR : Point de rupture »). */
   breakpoint: number;
@@ -405,8 +226,8 @@ export function holdEnemyBonus(hold: BattleHold, heldSoFar: number): number {
 /** Résout un Round de « Tenez votre position » (l.161-163) à partir du DR net de l'ENNEMI au Test opposé
  *  de ce Round (positif = l'ennemi l'emporte). Accumule le Point de rupture (jamais sous 0), décide de la
  *  tenue (breakpoint < seuil ET Rounds restants), et calcule le bonus d'opposition du Round suivant. La
- *  réduction −2 de la Puissance ennemie « pour chaque Round tenu » est portée par l'effet `fixed` de la
- *  Scène (gated par la tenue via le flux) — pas ici (le résolveur reste PUR et sans Puissance). */
+ *  réduction −2 de la Puissance ennemie « pour chaque Round tenu » est portée par l'issue `on:'success'`
+ *  de la Scène (gated par la tenue via le flux) — pas ici (le résolveur reste PUR et sans Puissance). */
 export function resolveHoldRound(prev: HoldState, hold: BattleHold, enemySL: number): HoldResolution {
   const breakpoint = Math.max(0, prev.breakpoint + enemySL);
   const roundsElapsed = prev.held + 1;
@@ -430,16 +251,6 @@ export function resolveHoldRound(prev: HoldState, hold: BattleHold, enemySL: num
  *  gate) ; DR négatif borné à 0. */
 export function rallyHealAmount(sl: number, enduranceBonus: number): number {
   return Math.max(0, sl) + Math.max(0, enduranceBonus);
-}
-
-// ── Activités de bataille pré-combat (l.79-110) ──────────────────────────────────────────────────
-
-/** Issue chiffrée d'une Activité de bataille : sur Succès Stupéfiant (DR ≥ 6) → `onStunning` (si
- *  fourni) ; sur Succès → `onSuccess` ; sur Échec Stupéfiant (DR ≤ −6) → `onStunningFail` ; sinon rien. */
-export function activityOutcomes(def: BattleActivityDef, success: boolean, sl: number): ActivityOutcome[] {
-  if (success) return sl >= 6 && def.onStunning ? def.onStunning : def.onSuccess;
-  if (sl <= -6 && def.onStunningFail) return def.onStunningFail;
-  return [];
 }
 
 // ── Issue de la bataille (l.124) ─────────────────────────────────────────────────────────────────

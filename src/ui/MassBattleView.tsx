@@ -2,15 +2,17 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { Prose } from './Prose';
 import { RuleDivider } from './Ornaments';
-import { BattleTestModal } from './BattleTestModal';
+import { ActiveModal } from './ActiveModal';
 import { StationSheet } from './StationSheet';
 import { AssignRow } from './AssignRow';
 import { battleScenesToStations, type Station } from '../state/stations';
 import {
   massBattleThreatPenalty, battleActivitiesAvailable, prepCount, armyMight, armyStartMight,
+  battleSceneById, battleActivityEffectLabel, battleSceneEffectLabel,
   type MassBattleState, type MassBattleArmy,
 } from '../state/massBattleFlow';
-import { battleSceneById, BATTLE_HAZARDS, inspireDifficulty, type BattleSceneDef, type BattleActivityDef } from '../engine/massBattle';
+import { BATTLE_HAZARDS, inspireDifficulty } from '../engine/massBattle';
+import type { ActivityDef } from '../engine/activities';
 import { DIFFICULTY_LABELS, type Combatant } from '../engine/types';
 
 /**
@@ -41,7 +43,8 @@ export function MassBattleView() {
         {mb.phase === 'over' && <OverPanel mb={mb} />}
         <BattleLog log={mb.log} />
       </div>
-      <BattleTestModal />
+      {/* Jets de bataille = Activités : la modale unifiée (RollShell) est rendue par l'arbitre R2. */}
+      <ActiveModal />
     </div>
   );
 }
@@ -139,12 +142,12 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
           <div key={a.id} className="mb-scene">
             <div className="bar mb-scene-head">
               <span className="mb-scene-kind">{a.label}</span>
-              <span className="mb-scene-eff">{activityEffectLabel(a)}</span>
+              <span className="mb-scene-eff">{battleActivityEffectLabel(a)}</span>
               <button className="btn small ghost" onClick={() => setOpenAct(openAct === a.id ? null : a.id)}>
                 {openAct === a.id ? 'Masquer' : 'Détails'}
               </button>
             </div>
-            {openAct === a.id && <div className="mb-scene-desc"><Prose md={a.desc} /></div>}
+            {openAct === a.id && a.desc && <div className="mb-scene-desc"><Prose md={a.desc} /></div>}
             <AssignRow
               assigned={a.assisted ? crewOf(a.id) : postedOf(a.id)}
               candidates={living}
@@ -167,33 +170,6 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
     </section>
   );
 }
-
-/** Aperçu chiffré des effets d'une Activité (Succès / Stupéfiant). */
-function activityEffectLabel(a: BattleActivityDef): string {
-  const fmt = (o: { target: string; amount: number }) => `${o.amount >= 0 ? '+' : ''}${o.amount} ${ACT_TARGET[o.target] ?? o.target}`;
-  const base = a.onSuccess.map(fmt).join(', ');
-  return a.onStunning ? `${base} (Stupéfiant : ${a.onStunning.map(fmt).join(', ')})` : base;
-}
-const ACT_TARGET: Record<string, string> = {
-  allyTestMod: 'Tests alliés', allyMight: 'Puiss. alliée', enemyMight: 'Puiss. ennemie',
-  firstRoundBonus: '1er Round', planningBonus: 'Planification',
-};
-
-/** Aperçu chiffré des effets d'une Scène (base + conditionnels). */
-function sceneEffectLabel(scene: BattleSceneDef): string {
-  if (!scene.effects.length) return scene.threat ? `Menace : ${scene.threat.penalty} aux autres Scènes` : 'Sans effet direct';
-  const fmt = (e: { side: 'ally' | 'enemy'; scale: string; amount: number; when?: string }) => {
-    const who = e.side === 'ally' ? 'Puiss. alliée' : 'Puiss. ennemie';
-    const per = e.scale === 'perDR' ? '/DR' : e.scale === 'perHit' ? '/touche' : e.scale === 'perKill' ? '/vaincu' : '';
-    const cond = e.when ? ` (si ${WHEN_LABEL[e.when] ?? e.when})` : '';
-    return `${who} ${e.amount >= 0 ? '+' : ''}${e.amount}${per}${cond}`;
-  };
-  return scene.effects.map(fmt).join(' ; ');
-}
-const WHEN_LABEL: Record<string, string> = {
-  generalDown: 'général tué', intervention: 'intervention', noIntervention: 'duel solo',
-  stunningSuccess: 'Stupéfiant', stunningFailure: 'échec Stupéfiant', success: 'succès', failure: 'échec',
-};
 
 function RoundPanel({ mb }: { mb: MassBattleState }) {
   const rollHazard = useGame((s) => s.massBattleHazard);
@@ -300,7 +276,7 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
   const sc = battleSceneById(sceneId);
   if (!sc) return null;
   const resolved = mb.resolvedScenes.includes(sceneId);
-  const kindLabel = sc.kind === 'combat' ? 'Combat' : sc.kind === 'threat' ? 'Menace' : sc.kind === 'hold' ? 'Tenue' : 'Compétence';
+  const kindLabel = sc.sceneKind === 'combat' ? 'Combat' : sc.sceneKind === 'threat' ? 'Menace' : sc.sceneKind === 'hold' ? 'Tenue' : 'Compétence';
   const hold = mb.sceneState[sceneId];
   const living = party.filter((h) => !h.dead);
   // PJ encore libres ce Round.
@@ -310,22 +286,22 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
   const postedIds = mb.assignment[sceneId] ?? [];
   const posted = postedIds.map((id) => living.find((h) => h.id === id)).filter((h): h is Combatant => !!h);
   // Un combat (Scène 'combat'/'threat', incl. le Duel) engage tout le groupe → PAS de garde « plus de PJ libre ».
-  const isCombat = sc.kind === 'combat' || sc.kind === 'threat';
+  const isCombat = sc.sceneKind === 'combat' || sc.sceneKind === 'threat';
   const disabled = resolved || mb.awaitingNext
     || (!isCombat && remaining === 0)
-    || (sc.kind === 'hold' && !!hold?.broken);
+    || (sc.sceneKind === 'hold' && !!hold?.broken);
   return (
     <div className={`mb-scene${resolved ? ' mb-scene-done' : ''}`}>
       <div className="bar mb-scene-head">
         <span className="mb-scene-kind">{resolved ? 'Résolue' : kindLabel}</span>
-        <span className="mb-scene-eff">{sceneEffectLabel(sc)}</span>
-        {sc.kind === 'hold' && sc.hold && (
+        <span className="mb-scene-eff">{battleSceneEffectLabel(sc)}</span>
+        {sc.sceneKind === 'hold' && sc.hold && (
           <span className="mb-scene-kind">
             {hold?.broken ? 'Position perdue' : `Point de rupture ${hold?.breakpoint ?? 0}/${sc.hold.breakpoint}`}
           </span>
         )}
       </div>
-      <div className="mb-scene-desc"><Prose md={sc.desc} /></div>
+      {sc.desc && <div className="mb-scene-desc"><Prose md={sc.desc} /></div>}
       {isCombat ? (
         <p className="mb-detail">Tout le groupe engage le combat.</p>
       ) : (
@@ -345,7 +321,7 @@ function SceneStationDetail({ mb, station }: { mb: MassBattleState; station: Sta
           className="btn small btn-primary"
           disabled={disabled}
           onClick={() => chooseScene(sceneId)}
-          title={sc.kind === 'test' ? 'Test de Compétence' : sc.kind === 'hold' ? 'Test opposé — tenez la position (Point de rupture)' : 'Combat tactique — la victoire modifie la Puissance'}
+          title={sc.sceneKind === 'test' ? 'Test de Compétence' : sc.sceneKind === 'hold' ? 'Test opposé — tenez la position (Point de rupture)' : 'Combat tactique — la victoire modifie la Puissance'}
         >
           {resolved ? 'Scène résolue' : isCombat ? 'Engager le combat' : 'Résoudre'}
         </button>

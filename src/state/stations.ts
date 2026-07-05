@@ -5,7 +5,7 @@
  * vérité mécanique reste la coque et ses `postes` (cf. `shipPostes.ts`). Module PUR (moteur + state pur, pas de store).
  */
 import { isPosteManned } from './shipPostes';
-import { battleSceneById } from '../engine/massBattle';
+import { battleSceneById } from './massBattleFlow';
 import type { FireArc } from './fireArc';
 import type { Combatant, ShipPoste } from '../engine/types';
 import type { Scene } from './scene';
@@ -105,7 +105,7 @@ export function battleScenesToStations(
       pos,
       label: def.label,
       icon: 'action/attack',
-      faction: def.kind === 'threat' ? 'enemy' : 'neutral',
+      faction: def.sceneKind === 'threat' ? 'enemy' : 'neutral',
       assignedIds: heroIds,
       manned: heroIds.length > 0,
       ref: { kind: 'battleScene', sceneId },

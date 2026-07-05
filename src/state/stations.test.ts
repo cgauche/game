@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { postesToStations, battleScenesToStations } from './stations';
 import { posteAnchor, applyShipPostes } from './shipPostes';
-import { battleSceneById } from '../engine/massBattle';
+import { battleSceneById } from './massBattleFlow';
 import { itemFromTrappingById } from '../engine/items';
 import type { Combatant, ShipPoste, ShipDeck } from '../engine/types';
 import type { Scene } from './scene';

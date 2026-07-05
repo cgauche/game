@@ -29,8 +29,8 @@ import type { NetState } from './netFlow';
 import type { InterludeState, BankDeposit, PendingActivity } from './interludeFlow';
 export type { PendingActivity } from './interludeFlow';
 import * as massBattleFlow from './massBattleFlow';
-import type { MassBattleState, MassBattleSpec, PendingBattleTest } from './massBattleFlow';
-export type { MassBattleState, MassBattleSpec, PendingBattleTest } from './massBattleFlow';
+import type { MassBattleState, MassBattleSpec } from './massBattleFlow';
+export type { MassBattleState, MassBattleSpec } from './massBattleFlow';
 import { snapshotSave, saveToSlot, readSlot, importSave, AUTO_SLOT, type SaveSlot, type AnySlot, type SaveGame } from './saves';
 import { loadKeyOverrides, saveKeyOverrides } from './keybindingsPrefs';
 import { initialFields, resetFields } from './stateFields';
@@ -476,9 +476,6 @@ export interface GameState extends RollFlowActionsMap {
   /** Combat de masse / Puissance de Bataille (ADE II 08) : état de la bataille abstraite en cours
    *  (Puissance des deux armées, Round, Scènes) — null hors bataille. */
   massBattle: MassBattleState | null;
-  /** Jet de PJ d'une bataille de masse (Discours inspirant / Scène de Compétence) — modale différée.
-   *  Délégués `battleTest{Roll,Reroll,BonusSL,DarkPact,ForceSuccess}` : générés (RollFlowActionsMap). */
-  pendingBattleTest: PendingBattleTest | null;
   /** Amorce une bataille de masse et bascule sur sa vue. */
   startMassBattle: (spec: MassBattleSpec) => void;
   /** Passe de la phase pré-bataille (Discours/Planification) aux Rounds de bataille. */
@@ -503,9 +500,6 @@ export interface GameState extends RollFlowActionsMap {
   massBattleAdvance: () => void;
   /** Ferme la bataille et revient au jeu. */
   endMassBattle: () => void;
-  /** « Appliquer » d'un jet de bataille (Discours/Scène). */
-  battleTestConfirm: () => void;
-  battleTestCancel: () => void;
   /** Activités (LDB 23) : `craftStart` engage l'ouvrage (matériaux ¼ prix + `st.craft`) ; le LANCER
    *  passe par `interludeActivity('craft')`. Passer commande (Exotique) + banque restent dédiés. */
   interludeCraftStart: (heroId: string, trappingId: string, atouts: string[], defauts: string[]) => void;
@@ -1347,7 +1341,6 @@ export const useGame = create<GameState>((set, get) => ({
   activityConfirm: () => interludeFlow.confirmActivity(get, set),
   // Combat de masse / Puissance de Bataille (ADE II 08) — flux d'orchestration + jet de PJ différé.
   massBattle: null,
-  pendingBattleTest: null,
   startMassBattle: (spec) => massBattleFlow.startMassBattle(get, set, spec),
   massBattleBegin: () => massBattleFlow.massBattleBegin(get, set),
   massBattleInspire: () => massBattleFlow.openMassBattleInspire(get, set),
@@ -1359,8 +1352,6 @@ export const useGame = create<GameState>((set, get) => ({
   massBattleClash: () => massBattleFlow.massBattleClash(get, set),
   massBattleAdvance: () => massBattleFlow.massBattleAdvance(get, set),
   endMassBattle: () => massBattleFlow.endMassBattle(get, set),
-  battleTestConfirm: () => massBattleFlow.battleTestConfirm(get, set),
-  battleTestCancel: () => FLOWS.battleTest.cancel(get, set),
   interludeCraftStart: (heroId, trapping, atouts, defauts) => interludeFlow.craftStart(get, set, heroId, trapping, atouts, defauts),
   interludeBank: (heroId, kind, amountBrass, rate) => interludeFlow.bankDeposit(get, set, heroId, kind, amountBrass, rate),
   interludeWithdraw: (index) => interludeFlow.bankWithdraw(get, set, index),

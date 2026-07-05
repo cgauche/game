@@ -19,6 +19,7 @@ import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvent
 import { fromBrass, toBrass, formatMoney, PA_PER_CO } from '../engine/money';
 import { itemFromTrappingById, recomputeLoadout, buildWeapon } from '../engine/items';
 import { sleepParty } from './restFlow';
+import { confirmBattleActivity } from './massBattleFlow';
 import {
   craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
   ACTIVITIES, activitiesFor, activityById, matchOutcomes, activityAvailableAt,
@@ -179,6 +180,34 @@ export interface PendingActivity extends PendingBase {
   spellId?: string;
   /** Retrait de Mécénat (ACE p.220) : index du dépôt `bank` soldé par le Test d'Évaluation. */
   depositIndex?: number;
+  // ── Activité/Scène de BATAILLE de masse (ADE II ch.8 — contextes 'bataille'/'bataille-round') ──
+  /** Activité de bataille : l'issue (delta de Puissance / modificateur de Test) porte sur l'ARMÉE, pas
+   *  sur le héros — routée par `confirmActivity` vers le résolveur de bataille. `prep` = Activité de
+   *  préparation ('bataille') ; `round` = Scène cinématique d'un Round ('bataille-round'). */
+  battle?: 'prep' | 'round';
+  /** Modificateur de SITUATION (fondu dans la cible, en LIGNE de mod pour la modale) : Menace −20 (l.219)
+   *  ou bonus de Planification (l.75/100). */
+  mod?: number;
+  modLabel?: string;
+  /** Détail du SOUTIEN multi-PJ fondu dans `skillValue` (l.153/157, LDB 12) — affiché en LIGNE de mod. */
+  support?: { count: number; bonus: number };
+  /** TOUS les PJ engagés dans une Scène/Activité MULTI-PJ (meneur `heroId` compris, l.116-118) — tous
+   *  marqués « ayant agi » à la résolution. */
+  heroIds?: string[];
+  // ── Test COMBINÉ (Infiltration/Repérage, l.75/102 — un jet vs DEUX compétences, LDB 12 l.229) ──
+  skill2?: string;
+  skillValue2?: number;
+  target2?: number;
+  sl2?: number;
+  success2?: boolean;
+  /** Niveau du Test combiné : `full` = les deux réussies ; `partial` = une seule ; `fail` = aucune. */
+  combinedLevel?: 'full' | 'partial' | 'fail';
+  // ── Test OPPOSÉ de « Tenez votre position » (l.161) : l'ennemi oppose son jet FIGÉ ──
+  enemyValue?: number;
+  enemyRoll?: number;
+  /** DR net de l'ennemi au Test opposé de tenue (positif = l'ennemi l'emporte). */
+  enemySL?: number;
+  forced?: boolean;
 }
 
 /** Statut « Échelon Standing » d'un héros (CareerLevelData.status, ex. « Argent 2 »). */
@@ -622,6 +651,14 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingId: string
 export function confirmActivity(get: Get, set: Set): void {
   const pa = get().pendingActivity;
   if (!pa || pa.roll == null || !pa.activityId) return;
+  // Activité/Scène de BATAILLE de masse (ADE II ch.8) : l'issue porte sur l'ARMÉE, pas sur l'interlude —
+  // route vers le résolveur de bataille (canal de jet identique, application distincte). C2a : ne consomme
+  // PAS encore de budget d'Activité (`interlude.perHero.left` intact — l'unification du budget est en C2b).
+  if (pa.battle) {
+    set({ pendingActivity: null });
+    confirmBattleActivity(get, set, pa);
+    return;
+  }
   const itl = get().interlude;
   const st = itl?.perHero[pa.heroId];
   const h = get().party.find((x) => x.id === pa.heroId);

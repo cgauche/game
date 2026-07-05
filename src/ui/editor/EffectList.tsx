@@ -18,8 +18,9 @@ import { GameOpEditor, opSummary } from './GameOpEditor';
 import { RefField } from '../compendium/RefField';
 import { CHAR_KEYS, CHAR_LABELS, CharKey, DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
-import { BATTLE_SCENES, POWER_ESTIMATE, battleSceneById, clampMight } from '../../engine/massBattle';
-import type { MassBattleSpec } from '../../state/massBattleFlow';
+import { POWER_ESTIMATE, clampMight } from '../../engine/massBattle';
+import { battleSceneById, type MassBattleSpec } from '../../state/massBattleFlow';
+import { activitiesFor } from '../../engine/activities';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
@@ -646,23 +647,32 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
 }
 
 // ── Combat de masse / Puissance de Bataille (ADE II 08) — édition du `MassBattleSpec` authoré ──────
-const MB_KIND_LABEL: Record<string, string> = { test: 'Test', combat: 'Combat', threat: 'Menace' };
+const MB_KIND_LABEL: Record<string, string> = { test: 'Test', combat: 'Combat', threat: 'Menace', hold: 'Tenue', rally: 'Rassemblement' };
+
+/** Catalogue des Scènes de Round (`ActivityDef` contexte 'bataille-round') — source des pickers. */
+const BATTLE_SCENES = (): { id: string; label: string; sceneKind?: string }[] => activitiesFor('bataille-round');
+
+/** Enchaînements (`chains`) d'une Scène, dérivés de ses bandes d'issue. */
+function sceneChainIds(id: string): string[] {
+  return (battleSceneById(id)?.outcomes ?? []).flatMap((b) => b.chains ?? []);
+}
 
 /** Première Scène du catalogue non encore présente dans `used` (repli : la première). */
 function firstUnusedScene(used: string[]): string {
-  return (BATTLE_SCENES.find((s) => !used.includes(s.id)) ?? BATTLE_SCENES[0]).id;
+  const cat = BATTLE_SCENES();
+  return (cat.find((s) => !used.includes(s.id)) ?? cat[0]).id;
 }
 
 /** Scènes de COMBAT/MENACE référencées (catalogue effectif ∪ situations ∪ enchaînements déterministes)
  *  → celles pour lesquelles l'auteur peut mapper une rencontre de la scène courante. */
 function referencedCombatScenes(b: MassBattleSpec): string[] {
-  const pool = b.scenes && b.scenes.length ? b.scenes : BATTLE_SCENES.map((s) => s.id);
+  const pool = b.scenes && b.scenes.length ? b.scenes : BATTLE_SCENES().map((s) => s.id);
   const ids = new Set<string>([...pool, ...((b.situations ?? []).flat())]);
-  for (const id of [...ids]) for (const c of battleSceneById(id)?.chains ?? []) ids.add(c.sceneId);
-  return [...ids].filter((id) => { const k = battleSceneById(id)?.kind; return k === 'combat' || k === 'threat'; });
+  for (const id of [...ids]) for (const c of sceneChainIds(id)) ids.add(c);
+  return [...ids].filter((id) => { const k = battleSceneById(id)?.sceneKind; return k === 'combat' || k === 'threat'; });
 }
 
-/** Multi-sélection de Scènes de bataille (patron de `ListRefField` sur le catalogue `BATTLE_SCENES`) :
+/** Multi-sélection de Scènes de bataille (patron de `ListRefField` sur le catalogue des Scènes de Round) :
  *  une rangée `<select>` par Scène choisie (id STABLE stocké, libellé affiché) + Ajouter / ✕. */
 function SceneMultiSelect({ value, onChange, placeholder }: { value: string[]; onChange: (v: string[]) => void; placeholder?: string }) {
   const list = value ?? [];
@@ -672,8 +682,8 @@ function SceneMultiSelect({ value, onChange, placeholder }: { value: string[]; o
       {list.map((id, i) => (
         <div key={i} className="de-reflrow">
           <select value={id} onChange={(ev) => set(list.map((s, j) => (j === i ? ev.target.value : s)))}>
-            {!BATTLE_SCENES.some((o) => o.id === id) && <option value={id}>{id} (inconnu)</option>}
-            {BATTLE_SCENES.map((o) => <option key={o.id} value={o.id}>{o.label} · {MB_KIND_LABEL[o.kind]}</option>)}
+            {!BATTLE_SCENES().some((o) => o.id === id) && <option value={id}>{id} (inconnu)</option>}
+            {BATTLE_SCENES().map((o) => <option key={o.id} value={o.id}>{o.label} · {MB_KIND_LABEL[o.sceneKind ?? '']}</option>)}
           </select>
           <button className="btn small danger" title="Retirer la Scène" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
         </div>

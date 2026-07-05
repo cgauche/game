@@ -557,5 +557,720 @@
     "difficulty": "difficile",
     "resolver": "crewTraining",
     "desc": "Votre équipage pourrait devenir plus compétent. Choisissez l'une de vos Compétences utiles à la gestion d'un bateau. Vous passez votre temps à former l'équipage à cette Compétence. Effectuez un Test de **Commandement Difficile (–20)** suivi d'un Test **Difficile (–20)** dans la Compétence à entraîner. En cas de succès, augmentez le score de l'équipage dans la Compétence que vous lui avez apprise d'un nombre égal au nombre de DR obtenus sur le Test de Commandement et dépensez 2 pistoles d'argent en frais et en grog de félicitations par membre de l'équipage entraîné. Vous ne pouvez pas augmenter un score de Compétence au-delà de vos propres Augmentations dans cette Compétence. Seuls les PNJ peuvent gagner des Augmentations grâce à cette Activité."
+  },
+  {
+    "id": "planification",
+    "label": "Planification",
+    "icon": "action/lead",
+    "contexts": [
+      "bataille"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 79
+    },
+    "skills": [
+      {
+        "skillId": "savoir",
+        "spec": "Guerre"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "assisted": true,
+    "grantsFlag": "planned",
+    "desc": "Assis dans une pièce autour d'un verre de vin et d'une carte décorée de figurines de bois, les généraux débattent pour mettre au point l'élément le plus important : le plan de bataille. Pour concevoir un bon plan, un Personnage doit réussir un Test de Savoir (Guerre). La Difficulté de ce Test dépend principalement de la différence de Puissance entre les armées, du champ de bataille choisi et du plan lui-même. Un Personnage avec au moins une Augmentation en Savoir (Guerre) peut aider au Test. En cas de Succès, l'armée obtient un bonus de +10 à tous les Tests de Puissance pendant la bataille. En cas de Succès Stupéfiant (+6), ce bonus passe à +20.",
+    "outcomes": [
+      {
+        "on": "success",
+        "minSL": 6,
+        "battle": [
+          {
+            "target": "allyTestMod",
+            "scale": "fixed",
+            "amount": 20
+          }
+        ]
+      },
+      {
+        "on": "success",
+        "maxSL": 5,
+        "battle": [
+          {
+            "target": "allyTestMod",
+            "scale": "fixed",
+            "amount": 10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "infiltration",
+    "label": "Infiltration",
+    "icon": "scenario/ambush",
+    "contexts": [
+      "bataille"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 73
+    },
+    "skills": [
+      {
+        "skillId": "discretion"
+      },
+      {
+        "skillId": "perception"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "combined": true,
+    "requires": [
+      "planned"
+    ],
+    "desc": "Après une Activité Planification réussie, un Personnage peut infiltrer le camp adverse et voler ses plans en réussissant un Test combiné de Discrétion et de Perception dont la Difficulté est déterminée par le MJ. Il peut aussi tenter de se faire passer pour un soldat de l'armée ennemie en réussissant un Test combiné de Divertissement (Interprétation) et de Perception. D'autres options peuvent être disponibles en fonction des résultats de l'Activité Repérage. En cas de Succès, le Personnage obtient un bonus de +20 à l'Activité Planification. En cas d'Échec, le Personnage est obligé de fuir du camp ennemi sous peine d'être capturé.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "target": "allyTestMod",
+            "scale": "fixed",
+            "amount": 10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rassembler-des-forces",
+    "label": "Rassembler des forces",
+    "icon": "char/soc",
+    "contexts": [
+      "bataille"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 94
+    },
+    "skills": [
+      {
+        "skillId": "commandement"
+      },
+      {
+        "skillId": "charme"
+      },
+      {
+        "skillId": "intimidation"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "Un Personnage peut tenter de renforcer son armée avec des troupes supplémentaires avant la bataille. Il existe de nombreuses façons de rassembler des troupes. Des mercenaires, tels que les terrifiantes troupes de choc des ogres, peuvent être engagés ; les paysans du coin peuvent être mobilisés ; et les nobles peuvent être charmés, soudoyés ou intimidés. Certaines de ces actions nécessitent des Tests de Compétences avec une Difficulté déterminée au cas par cas. En cas de Succès, le rassemblement augmente la Puissance de l'armée de +5. En cas de Succès Stupéfiant (+6), la Puissance augmente de +10. En cas d'Échec Stupéfiant (–6), elle est réduite de –10, peut-être à cause d'une mutinerie, ou d'une perte de moral entraînant une désertion.",
+    "outcomes": [
+      {
+        "on": "success",
+        "minSL": 6,
+        "battle": [
+          {
+            "side": "ally",
+            "target": "startMight",
+            "scale": "fixed",
+            "amount": 10
+          }
+        ]
+      },
+      {
+        "on": "success",
+        "maxSL": 5,
+        "battle": [
+          {
+            "side": "ally",
+            "target": "startMight",
+            "scale": "fixed",
+            "amount": 5
+          }
+        ]
+      },
+      {
+        "on": "failure",
+        "maxSL": -6,
+        "battle": [
+          {
+            "side": "ally",
+            "target": "startMight",
+            "scale": "fixed",
+            "amount": -10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "reperage",
+    "label": "Repérage",
+    "icon": "action/aim",
+    "contexts": [
+      "bataille"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 100
+    },
+    "skills": [
+      {
+        "skillId": "chevaucher"
+      },
+      {
+        "skillId": "perception"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "combined": true,
+    "grantsFlag": "scouted",
+    "desc": "Un Personnage peut effectuer un Test combiné de Chevaucher et de Perception Intermédiaire (+0) pour obtenir des informations sur l'armée adverse : ses effectifs, la distance qui les sépare et les troupes dont elle dispose. Toutes ces informations sont précieuses pour un général. Un Test réussi permet de toutes les obtenir, y compris la Puissance de l'armée adverse, en plus d'un bonus de +10 à l'Activité Planification. En cas d'échec, le Personnage récupère de fausses informations ou met trop de temps à revenir, et n'obtient aucun bonus. En cas d'Échec Stupéfiant (–6), il risque même de devoir semer les éclaireurs ennemis ou de se faire capturer.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "target": "planningBonus",
+            "scale": "fixed",
+            "amount": 10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sabotage",
+    "label": "Sabotage",
+    "icon": "scenario/trap",
+    "contexts": [
+      "bataille"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 104
+    },
+    "skills": [
+      {
+        "skillId": "discretion"
+      },
+      {
+        "skillId": "divertissement"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "requires": [
+      "scouted"
+    ],
+    "desc": "Après une Activité Repérage réussie, une Activité Sabotage peut être réalisée. Le Sabotage peut varier de l'explosion de la poudre à canon de l'ennemi à l'empoisonnement de ses vivres. Les options présentées dépendent des résultats de l'Activité Repérage. Cependant, la plupart requièrent un Test de Discrétion ou de Divertissement (Interprétation) et peuvent être réalisées dans le cadre de l'Activité Infiltration. En cas de Succès, l'ennemi perd –5 de Puissance. En cas de Succès Stupéfiant (+6), sa Puissance est réduite de –10. En cas d'Échec, les Personnages doivent s'enfuir ou se battre pour s'échapper du camp adverse.",
+    "outcomes": [
+      {
+        "on": "success",
+        "minSL": 6,
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "startMight",
+            "scale": "fixed",
+            "amount": -10
+          }
+        ]
+      },
+      {
+        "on": "success",
+        "maxSL": 5,
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "startMight",
+            "scale": "fixed",
+            "amount": -5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "motivation",
+    "label": "Motivation",
+    "icon": "char/soc",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 149
+    },
+    "sceneKind": "test",
+    "skills": [
+      {
+        "skillId": "commandement"
+      },
+      {
+        "skillId": "intimidation"
+      },
+      {
+        "skillId": "charme"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "Parfois, la source du problème n'est pas l'ennemi, mais sa propre armée : troupes blessées, moral au plus bas, désertion, etc. Un Personnage peut résoudre ces soucis en utilisant un Test de Compétence au cours d'une Scène de Motivation. En cas de Succès, la Puissance de l'armée augmente de +DR. Il peut s'agir d'une Scène courte et ne durer qu'une tentative, ou d'un Test étendu sur plusieurs Rounds de bataille. Une Scène de Motivation peut également être composée de différents Tests de Compétence accordant un bonus important.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "side": "ally",
+            "target": "might",
+            "scale": "perDR",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "pluie-de-fleches",
+    "label": "Pluie de flèches",
+    "icon": "action/roll-fire",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 143
+    },
+    "sceneKind": "combat",
+    "rounds": 2,
+    "desc": "Si un ou plusieurs Personnages sont équipés d'Armes à distance, ils disposent de 2 Rounds pour attaquer l'ennemi en approche. Les Personnages peuvent ouvrir le feu dès qu'ils sont à portée. Ils peuvent tirer jusqu'à ce que l'ennemi les attaque ou jusqu'à atteindre un lieu sûr. Les ennemis courent et se déplacent à leur vitesse maximum. Chaque attaque réussie réduit la Puissance adverse de 1 pour chaque ennemi touché. Si une cible est neutralisée ou tuée, la Puissance adverse est encore réduite de 2. Les attaques à distance visant une foule ne touchent jamais la même cible deux fois. Au cours de ces Scènes, les Personnages qui en sont capables peuvent également utiliser des armes de siège.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "perHit",
+            "amount": -1
+          },
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "perKill",
+            "amount": -2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "protection",
+    "label": "Protection",
+    "icon": "flag/defensive",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 155
+    },
+    "sceneKind": "combat",
+    "rounds": 3,
+    "desc": "Une arme ou un allié important doit être protégé de l'ennemi pendant quelques Rounds pendant qu'il récupère ou prépare une attaque puissante. Cette situation est résolue en 3 Rounds de Combat, pendant lesquels l'ennemi tente d'attaquer une cible précise. Les Personnages doivent protéger la cible pendant la durée de la Scène. En cas de succès, réduisez la Puissance adverse de –5 ou augmentez celle de votre armée de +5. Un Personnage qui réussit un Test de Compétence en soutien à la cible réduit le nombre de Rounds de 1.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tenez-votre-position",
+    "label": "Tenez votre position",
+    "icon": "scenario/siege",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 161
+    },
+    "sceneKind": "hold",
+    "rounds": 5,
+    "skills": [
+      {
+        "skillId": "corps-a-corps"
+      },
+      {
+        "skillId": "athletisme"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "hold": {
+      "breakpoint": 10,
+      "maxRounds": 5,
+      "enemyBonusPerHold": 10
+    },
+    "desc": "Les Personnages ont pris le contrôle d'une position avantageuse, mais l'ennemi est en train de les submerger. Chaque Round, l'ennemi effectue un Test opposé contre les Personnages en utilisant des Compétences adaptées à la situation. On nomme le nombre cumulé des DR : Point de rupture. Si le Point de rupture atteint 10 ou plus, ou si 5 Rounds se sont écoulés, les Personnages sont écrasés et la Scène se conclut par une déroute. Les Personnages vont devoir lutter pour s'enfuir s'ils ont essuyé une défaite cuisante au cours des Rounds précédents. Pour chaque Round où les Personnages ont tenu leur position avant que le Point de rupture n'atteigne 10, l'armée adverse perd –2 de Puissance, mais obtient un bonus cumulatif de +10 pour les Rounds successifs.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "compte-a-rebours",
+    "label": "Compte à rebours",
+    "icon": "ui/warning",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 167
+    },
+    "sceneKind": "test",
+    "rounds": 3,
+    "skills": [
+      {
+        "skillId": "corps-a-corps"
+      },
+      {
+        "skillId": "athletisme"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "Les Personnages ont 3 Rounds pour empêcher l'ennemi de porter un coup dévastateur à leur armée et réduire sa Puissance de –10. Échouer à une Scène de Compte à rebours entraîne une Scène de Motivation, permettant aux Personnages d'aider à guérir ou motiver les troupes blessées.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -10
+          }
+        ]
+      },
+      {
+        "on": "failure",
+        "chains": [
+          "motivation"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "percee",
+    "label": "Percée",
+    "icon": "scenario/siege",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 173
+    },
+    "sceneKind": "combat",
+    "encounter": "enc-percee",
+    "rounds": 3,
+    "desc": "Qu'il s'agisse d'aborder un navire ennemi, ou charger les remparts d'un château à l'aide d'une tour de siège, une Scène de Percée nécessite qu'un Personnage prenne le contrôle d'une position ennemie en éliminant tous les soldats adverses ou en remplissant un objectif précis. Les Personnages disposent de 3 Rounds pour accomplir leur objectif, ce qui augmentera la Puissance de leur armée de +10. En cas d'échec, les Personnages peuvent décider de battre en retraite ou participer à une Scène de Charge si l'ennemi appelle des renforts.",
+    "outcomes": [
+      {
+        "on": "success",
+        "when": "combatWon",
+        "battle": [
+          {
+            "side": "ally",
+            "target": "might",
+            "scale": "fixed",
+            "amount": 10
+          }
+        ]
+      },
+      {
+        "on": "failure",
+        "when": "combatLost",
+        "chains": [
+          "charge"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "ligne-de-mire",
+    "label": "Ligne de mire",
+    "icon": "action/aim",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 206
+    },
+    "sceneKind": "test",
+    "skills": [
+      {
+        "skillId": "corps-a-corps"
+      },
+      {
+        "skillId": "projectiles"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "Au milieu du chaos de la bataille, un Personnage aperçoit soudain un capitaine ennemi isolé non loin de lui. Il peut le charger ou l'attaquer à une distance de 12 mètres. En cas de Succès, l'ennemi perd –5 de Puissance. Si c'est le général qui est tué ou neutralisé, la Puissance diminue encore de –5. Après cette attaque, les troupes ennemies encerclent le Personnage, qui doit battre en retraite. S'il veut attaquer de nouveau, il est libre de le faire au risque de sa vie, car il est submergé par ses adversaires. S'il choisit d'attaquer, le Personnage est obligé de participer à une Scène de Charge lors du prochain Round de bataille, où seul l'ennemi peut charger et est en supériorité numérique (WFJDR p.162) de 3 contre 1.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -5
+          }
+        ]
+      },
+      {
+        "on": "success",
+        "when": "generalDown",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "tuez-la-bete",
+    "label": "Tuez la bête !",
+    "icon": "scenario/bestiary",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 211
+    },
+    "sceneKind": "combat",
+    "rounds": 3,
+    "desc": "L'ennemi a libéré une créature gigantesque. Elle inflige des dégâts importants aux troupes. Vainquez-la en 3 Rounds pour diminuer la Puissance de l'ennemi de –10. Divisez les Blessures de départ de la créature par deux pour tenir compte des autres troupes qui l'attaquent. Dans le cas d'une créature de Taille Monstrueuse, les Personnages seront peut-être obligés de grimper dessus ou d'utiliser une arme de siège à proximité pour la tuer. Les créatures de Taille Monstrueuse peuvent essayer de se débarrasser de ceux qui lui grimpent dessus dans le cadre d'une action en faisant un Test opposé de Corps à corps (Bagarre) / Escalade. Si la créature échoue, les Personnages peuvent l'attaquer comme si elle était Sans défense.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -10
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "survol",
+    "label": "Survol",
+    "icon": "travel/mount",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 215
+    },
+    "sceneKind": "test",
+    "skills": [
+      {
+        "skillId": "chevaucher"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "Une monture volante accorde aux Personnages une unique tentative pour surprendre le général ennemi à l'arrière des lignes. Réussir un Test de Chevaucher Intermédiaire (+0) permet aux Personnages d'effectuer une attaque à distance, ou toute autre Action réalisable à une distance de 15 moins DR mètres. En cas de succès Stupéfiant (+6), ils peuvent se rapprocher suffisamment pour des attaques au Corps à corps, à Bout portant ou des Actions similaires. Si l'attaque réussit, l'ennemi perd –5 de Puissance. Si le général ennemi est neutralisé ou tué, la Puissance diminue encore de –15. En cas d'Échec Stupéfiant (–6), les Personnages font une chute de 5 mètres et s'écrasent au milieu de la bataille. Au cours du prochain Round de bataille, ils doivent prendre part à une Scène de Charge où seul l'ennemi charge.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -5
+          }
+        ]
+      },
+      {
+        "on": "success",
+        "when": "generalDown",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -15
+          }
+        ]
+      },
+      {
+        "on": "failure",
+        "maxSL": -6,
+        "chains": [
+          "charge"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "charge",
+    "label": "Charge",
+    "icon": "journal/charge",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 137
+    },
+    "sceneKind": "combat",
+    "rounds": 2,
+    "desc": "Si un ou plusieurs Personnages chargent à corps perdu dans la mêlée, ils peuvent se battre pendant un maximum de 2 Rounds. Le camp qui mène une charge commence avec 1 Avantage, puis chacun agit tour à tour par ordre d'Initiative. Pour chaque ennemi touché par les Personnages, la Puissance ennemie diminue de 1. Pour chaque ennemi neutralisé ou tué, la Puissance diminue encore de 2.",
+    "outcomes": [
+      {
+        "on": "success",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "perHit",
+            "amount": -1
+          },
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "perKill",
+            "amount": -2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "duel",
+    "label": "Duel",
+    "icon": "action/attack",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 223
+    },
+    "sceneKind": "combat",
+    "encounter": "enc-duel",
+    "desc": "Le champ de bataille se retrouve soudainement figé lorsque les généraux (dont idéalement l'un des Personnages) de chaque armée se font face. D'un accord tacite, chacun dégaine son arme, tandis que les troupes les encerclent pour les laisser se battre. Le camp vaincu au cours du duel voit sa Puissance réduite de –20 tandis que les troupes assistent à la mort de leur commandant. Si un autre Personnage intervient et tue le général adverse, leur Puissance n'est réduite que de –10 et ils sont impliqués dans une Scène de Charge contre l'ennemi.",
+    "outcomes": [
+      {
+        "on": "success",
+        "when": "noIntervention",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -20
+          }
+        ]
+      },
+      {
+        "on": "success",
+        "when": "intervention",
+        "battle": [
+          {
+            "side": "enemy",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -10
+          }
+        ],
+        "chains": [
+          "charge"
+        ]
+      },
+      {
+        "on": "failure",
+        "when": "combatLost",
+        "battle": [
+          {
+            "side": "ally",
+            "target": "might",
+            "scale": "fixed",
+            "amount": -20
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "intrus",
+    "label": "Intrus",
+    "icon": "flag/fear",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 219
+    },
+    "sceneKind": "threat",
+    "encounter": "enc-intrus",
+    "threat": {
+      "penalty": -20
+    },
+    "desc": "Attirés par le sang et la mort sur le champ de bataille, un groupe de sanguinaires de Khorne s'est infiltré dans le camp des Personnages. Les troupes sont incontrôlables sous l'effet de la peur et de la panique. Tant que les sanguinaires ne sont pas vaincus, tous les Tests qu'impliquent les autres Scènes subissent une pénalité de -20, à cause du désordre occasionné.",
+    "outcomes": []
+  },
+  {
+    "id": "rassemblement",
+    "label": "Rassemblement",
+    "icon": "journal/heal",
+    "contexts": [
+      "bataille-round"
+    ],
+    "source": {
+      "book": "ADE II",
+      "page": 122
+    },
+    "sceneKind": "rally",
+    "skills": [
+      {
+        "skillId": "resistance"
+      }
+    ],
+    "difficulty": "intermediaire",
+    "desc": "Entre deux Rounds de bataille, un Personnage blessé peut se rassembler pour reprendre des forces. En réussissant un Test de Résistance Intermédiaire (+0), il guérit un nombre de Blessures égal au DR obtenu plus son Bonus d'Endurance.",
+    "resolver": "battleRally"
   }
 ]

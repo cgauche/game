@@ -4,11 +4,9 @@ import {
   mightFromRelation, estimateMightFromAspects, warMachineMight, normalizeMights,
   mightReduction, rollMightTest, resolveClash,
   battleOutcome, isDestroyed, inspireDifficulty, difficultyFromModifier, roundToTen,
-  battleHazard, battleSceneById, battleActivityById, clampMight, MIGHT_MODIFIERS, POWER_ESTIMATE,
+  battleHazard, clampMight, MIGHT_MODIFIERS, POWER_ESTIMATE,
   WAR_MACHINES, STRUCTURES, BATTLE_HAZARDS,
-  sceneDeltas, sceneChains, effectAmount, condMet, testResolution, combatResolution, combatLossResolution,
-  rallyHealAmount, activityOutcomes,
-  initHoldState, resolveHoldRound, holdEnemyBonus,
+  rallyHealAmount, initHoldState, resolveHoldRound, holdEnemyBonus, INSPIRE_BONUS,
 } from './massBattle';
 
 /** RNG déterministe : renvoie tour à tour les d100 fournis (bornés à [min,max]). */
@@ -32,29 +30,22 @@ describe('Puissance de Bataille — estimation (ADE II 08 l.24-47)', () => {
     expect(estimateMightFromAspects(['unites-veterans'])).toBe(40);
     // Aucun aspect → base 30 (l.34).
     expect(estimateMightFromAspects([])).toBe(30);
-    // Signe des modificateurs verbatim.
     expect(MIGHT_MODIFIERS.find((m) => m.id === 'taille-monstrueuse')!.mod).toBe(30);
     expect(MIGHT_MODIFIERS.find((m) => m.id === 'mal-equipee')!.mod).toBe(-10);
   });
 
   it('machines de guerre et Puissance (l.302-304)', () => {
-    // +5 par machine.
-    expect(warMachineMight([{}, {}])).toBe(10);
-    // Siège offensif : +10 pour une machine à Atout Siège (mais +5 pour une machine sans Siège).
-    expect(warMachineMight([{ siege: true }, { siege: false }], { siege: true, offensive: true })).toBe(15);
-    // Équipage incomplet → contribution ÷2.
-    expect(warMachineMight([{ fullCrew: false }])).toBe(2.5);
-    // Hors siège : l'Atout Siège n'apporte que +5.
-    expect(warMachineMight([{ siege: true }], { offensive: true })).toBe(5);
+    expect(warMachineMight([{}, {}])).toBe(10); // +5 par machine
+    expect(warMachineMight([{ siege: true }, { siege: false }], { siege: true, offensive: true })).toBe(15); // Siège offensif +10 / +5
+    expect(warMachineMight([{ fullCrew: false }])).toBe(2.5); // équipage incomplet ÷2
+    expect(warMachineMight([{ siege: true }], { offensive: true })).toBe(5); // hors siège : Atout Siège = +5
   });
 
   it('normalisation (l.34) : retirer 10 aux deux jusqu\'à ≤ 100 ; décidé si écart brut > 100', () => {
     expect(normalizeMights(50, 50)).toEqual({ ally: 50, enemy: 50, decided: false });
-    // 120 vs 40 → −80 des deux (retire 20) → 100 vs 20.
-    expect(normalizeMights(120, 40)).toEqual({ ally: 100, enemy: 20, decided: false });
-    // Écart brut > 100 → issue déjà décidée ; l'ennemi tombe à 0 après clamp.
+    expect(normalizeMights(120, 40)).toEqual({ ally: 100, enemy: 20, decided: false }); // −20 des deux
     const r = normalizeMights(150, 30);
-    expect(r.decided).toBe(true);
+    expect(r.decided).toBe(true); // écart brut 120 > 100
     expect(r.ally).toBe(100);
     expect(r.enemy).toBe(0);
   });
@@ -78,7 +69,6 @@ describe('Test spectaculaire de Puissance (l.120)', () => {
 
   it('affrontement simultané : chaque armée réduit l\'adverse de 10 + son DR (min 5)', () => {
     // Allié 60 → jette 34 (DR +3) ; Ennemi 40 → jette 55 (échec, DR −1 : dizaines 4 − 5).
-    // `resolveClash` ne retourne QUE les pertes (les Puissances après sont appliquées en Blessures côté flux).
     const c = resolveClash(60, 40, { rng: seqRNG(34, 55) });
     expect(c.allyTest.sl).toBe(3);
     expect(c.enemyTest.sl).toBe(-1);
@@ -91,12 +81,9 @@ describe('Discours inspirant (l.71)', () => {
   it('Difficulté depuis l\'écart de Puissance, arrondi à la dizaine', () => {
     expect(roundToTen(23)).toBe(20);
     expect(roundToTen(-24)).toBe(-20);
-    // Allié en avance (60 vs 40, écart +20) → Test plus facile (Accessible +20).
-    expect(inspireDifficulty(60, 40)).toBe('accessible');
-    // Allié à égalité → Intermédiaire (+0).
-    expect(inspireDifficulty(50, 50)).toBe('intermediaire');
-    // Allié en retard (30 vs 60, écart −30) → Très difficile (−30).
-    expect(inspireDifficulty(30, 60)).toBe('tresDifficile');
+    expect(inspireDifficulty(60, 40)).toBe('accessible');     // allié +20 → plus facile
+    expect(inspireDifficulty(50, 50)).toBe('intermediaire');  // égalité → +0
+    expect(inspireDifficulty(30, 60)).toBe('tresDifficile');  // allié −30 → plus dur
   });
 
   it('mappe un modificateur sur la bande de Difficulté la plus proche', () => {
@@ -104,104 +91,14 @@ describe('Discours inspirant (l.71)', () => {
     expect(difficultyFromModifier(40)).toBe('facile');
     expect(difficultyFromModifier(-20)).toBe('difficile');
   });
-});
 
-describe('Scènes cinématiques (l.135-225)', () => {
-  it('montant signé d\'un effet : perDR × DR, perHit × touches, perKill × kills, fixed plat', () => {
-    const win = combatResolution(5, 1, 1); // 5 touches, 1 kill
-    // Motivation : ally +DR (l.151).
-    expect(effectAmount({ side: 'ally', scale: 'perDR', amount: 1 }, testResolution(true, 4))).toBe(4);
-    // Charge (l.139) : −1 par touche, −2 par kill.
-    expect(effectAmount({ side: 'enemy', scale: 'perHit', amount: -1 }, win)).toBe(-5);
-    expect(effectAmount({ side: 'enemy', scale: 'perKill', amount: -2 }, win)).toBe(-2);
-    // Duel : enemy −20 plat (l.225).
-    expect(effectAmount({ side: 'enemy', scale: 'fixed', amount: -20 }, win)).toBe(-20);
-  });
-
-  it('Charge (l.139) : deltas = −1/touche ET −2/kill (5 touches + 1 kill = −7)', () => {
-    const charge = battleSceneById('charge')!;
-    const deltas = sceneDeltas(charge, combatResolution(5, 1, 1));
-    const total = deltas.reduce((s, d) => s + d.amount, 0);
-    expect(total).toBe(-7); // 5×−1 + 1×−2 (l.139 : « touché » −1, « neutralisé » −2 de plus)
-  });
-
-  it('Ligne de mire (l.208) : −5 de base, −5 de PLUS si le général tombe (Succès Stupéfiant)', () => {
-    const ldm = battleSceneById('ligne-de-mire')!;
-    expect(sceneDeltas(ldm, testResolution(true, 2)).reduce((s, d) => s + d.amount, 0)).toBe(-5);
-    expect(sceneDeltas(ldm, testResolution(true, 6)).reduce((s, d) => s + d.amount, 0)).toBe(-10);
-  });
-
-  it('Survol (l.217) : −5, et −15 de PLUS si le général tombe ; Échec Stupéfiant → Charge', () => {
-    const survol = battleSceneById('survol')!;
-    expect(sceneDeltas(survol, testResolution(true, 2)).reduce((s, d) => s + d.amount, 0)).toBe(-5);
-    expect(sceneDeltas(survol, testResolution(true, 6)).reduce((s, d) => s + d.amount, 0)).toBe(-20);
-    // Échec Stupéfiant (DR ≤ −6) : chute + Charge imposée au Round suivant.
-    expect(sceneChains(survol, testResolution(false, -6))).toEqual(['charge']);
-    expect(sceneChains(survol, testResolution(false, -2))).toEqual([]);
-  });
-
-  it('Duel (l.223-225) : −20 ennemi en solo, −10 + Charge si intervention, −20 ALLIÉ si le champion PERD', () => {
-    const duel = battleSceneById('duel')!;
-    // Victoire solo (1 frappeur) → ennemi −20, pas de Charge.
-    expect(sceneDeltas(duel, combatResolution(3, 1, 1)).reduce((s, d) => s + d.amount, 0)).toBe(-20);
-    expect(sceneChains(duel, combatResolution(3, 1, 1))).toEqual([]);
-    // Intervention (2 frappeurs) → ennemi −10 + Charge enchaînée.
-    expect(sceneDeltas(duel, combatResolution(4, 1, 2)).reduce((s, d) => s + d.amount, 0)).toBe(-10);
-    expect(sceneChains(duel, combatResolution(4, 1, 2))).toEqual(['charge']);
-    // DÉFAITE du duel (le champion allié perd) → c'est le CAMP ALLIÉ qui perd −20 (l.223, vaut dans les
-    // deux sens) ; aucun effet ennemi, pas de Charge (pas d'intervention). La bataille CONTINUE.
-    const loss = sceneDeltas(duel, combatLossResolution(2, 1));
-    expect(loss).toEqual([{ side: 'ally', amount: -20 }]);
-    expect(sceneChains(duel, combatLossResolution(2, 1))).toEqual([]);
-  });
-
-  it('condMet : un effet sans `when` s\'applique sur Succès ; les `when` gatent le reste', () => {
-    expect(condMet(undefined, testResolution(true, 0))).toBe(true);
-    expect(condMet(undefined, testResolution(false, 0))).toBe(false);
-    expect(condMet('failure', testResolution(false, -2))).toBe(true);
-    expect(condMet('stunningFailure', testResolution(false, -6))).toBe(true);
-    expect(condMet('stunningFailure', testResolution(false, -3))).toBe(false);
-    expect(condMet('generalDown', testResolution(true, 6))).toBe(true);
-    expect(condMet('generalDown', testResolution(true, 3))).toBe(false);
-    // combatWon / combatLost : seulement sur une résolution de COMBAT (pas un simple Test).
-    expect(condMet('combatWon', combatResolution(3, 1, 1))).toBe(true);
-    expect(condMet('combatWon', combatLossResolution(2, 1))).toBe(false);
-    expect(condMet('combatLost', combatLossResolution(2, 1))).toBe(true);
-    expect(condMet('combatLost', combatResolution(3, 1, 1))).toBe(false);
-    expect(condMet('combatLost', testResolution(false, -2))).toBe(false); // un échec de Test n'est PAS un combat perdu
-  });
-
-  it('enchaînements : Compte à rebours (Test) échoué → Motivation ; Percée (COMBAT) perdue → Charge', () => {
-    expect(sceneChains(battleSceneById('compte-a-rebours')!, testResolution(false, -2))).toEqual(['motivation']);
-    // Percée est une Scène de COMBAT (l.173) : l'enchaînement Charge se déclenche sur une DÉFAITE tactique
-    // (`combatLost`), pas sur un simple échec de Test ; la VICTOIRE donne allié +10 (`combatWon`).
-    const percee = battleSceneById('percee')!;
-    expect(percee.kind).toBe('combat');
-    expect(sceneChains(percee, combatLossResolution(2, 1))).toEqual(['charge']);
-    expect(sceneDeltas(percee, combatLossResolution(2, 1))).toEqual([]); // pas de +10 sur défaite
-    expect(sceneChains(percee, combatResolution(4, 2, 1))).toEqual([]); // victoire → pas de Charge
-    expect(sceneDeltas(percee, combatResolution(4, 2, 1))).toEqual([{ side: 'ally', amount: 10 }]);
-  });
-
-  it('catalogue de Scènes data-driven — 12 Scènes + menace Intrus + tenue + percée en combat', () => {
-    expect(battleSceneById('motivation')?.kind).toBe('test');
-    expect(battleSceneById('charge')?.kind).toBe('combat');
-    expect(battleSceneById('intrus')?.kind).toBe('threat');
-    expect(battleSceneById('intrus')?.threat?.penalty).toBe(-20);
-    expect(battleSceneById('percee')?.kind).toBe('combat');
-    // « Tenez votre position » (l.161) : Scène de TENUE data-driven (Point de rupture 10 / 5 Rounds / +10).
-    expect(battleSceneById('tenez-votre-position')?.kind).toBe('hold');
-    expect(battleSceneById('tenez-votre-position')?.hold).toEqual({ breakpoint: 10, maxRounds: 5, enemyBonusPerHold: 10 });
-    expect(battleSceneById('duel')?.effects).toEqual([
-      { side: 'enemy', scale: 'fixed', amount: -20, when: 'noIntervention' },
-      { side: 'enemy', scale: 'fixed', amount: -10, when: 'intervention' },
-      { side: 'ally', scale: 'fixed', amount: -20, when: 'combatLost' },
-    ]);
+  it('bonus +10 au premier Round sur Succès (l.71)', () => {
+    expect(INSPIRE_BONUS).toBe(10);
   });
 });
 
 describe('« Tenez votre position » — Point de rupture (l.161-163)', () => {
-  const hold = battleSceneById('tenez-votre-position')!.hold!;
+  const hold = { breakpoint: 10, maxRounds: 5, enemyBonusPerHold: 10 };
 
   it('bonus d\'opposition cumulatif : +10 par Round DÉJÀ tenu (l.163)', () => {
     expect(holdEnemyBonus(hold, 0)).toBe(0);
@@ -215,15 +112,15 @@ describe('« Tenez votre position » — Point de rupture (l.161-163)', () => {
     expect(r.next.breakpoint).toBe(0); // max(0, 0 + (−2))
     expect(r.next.held).toBe(1);
     expect(r.next.broken).toBe(false);
-    expect(r.nextEnemyBonus).toBe(10); // 1 Round tenu → +10 au suivant
+    expect(r.nextEnemyBonus).toBe(10);
   });
 
   it('le Point de rupture ACCUMULE les DR positifs de l\'ennemi entre Rounds', () => {
     let st = initHoldState();
-    st = resolveHoldRound(st, hold, 3).next; // breakpoint 3, tenu
+    st = resolveHoldRound(st, hold, 3).next;
     expect(st.breakpoint).toBe(3);
     expect(st.held).toBe(1);
-    st = resolveHoldRound(st, hold, 4).next; // breakpoint 7, tenu
+    st = resolveHoldRound(st, hold, 4).next;
     expect(st.breakpoint).toBe(7);
     expect(st.held).toBe(2);
     expect(st.broken).toBe(false);
@@ -233,43 +130,22 @@ describe('« Tenez votre position » — Point de rupture (l.161-163)', () => {
     const st = resolveHoldRound({ breakpoint: 7, held: 2, broken: false }, hold, 4); // 7 + 4 = 11 ≥ 10
     expect(st.next.breakpoint).toBe(11);
     expect(st.held).toBe(false);
-    expect(st.next.held).toBe(2); // pas d'incrément : la position a cédé, pas tenu
+    expect(st.next.held).toBe(2);
     expect(st.next.broken).toBe(true);
   });
 
   it('5 Rounds écoulés → écrasement même si le Point de rupture n\'a pas atteint le seuil (l.163)', () => {
-    // 4 Rounds tenus à DR net 0 (breakpoint reste 0) ; le 5ᵉ Round franchit `maxRounds` → rupture.
     const st = resolveHoldRound({ breakpoint: 0, held: 4, broken: false }, hold, 0);
     expect(st.next.broken).toBe(true); // 5ᵉ Round (held+1 = 5 = maxRounds)
     expect(st.next.breakpoint).toBe(0);
   });
 });
 
-describe('Rassemblement (l.122) & Activités pré-combat (l.79-106)', () => {
-  it('Rassemblement : guérit DR + Bonus d\'Endurance', () => {
+describe('Rassemblement (l.122)', () => {
+  it('guérit DR + Bonus d\'Endurance (DR négatif borné à 0)', () => {
     expect(rallyHealAmount(3, 4)).toBe(7);
     expect(rallyHealAmount(0, 4)).toBe(4);
-    expect(rallyHealAmount(-2, 4)).toBe(4); // DR négatif borné à 0
-  });
-
-  it('Activités : Succès Stupéfiant remplace le Succès ; Échec Stupéfiant applique sa pénalité', () => {
-    const plan = battleActivityById('planification')!;
-    expect(activityOutcomes(plan, true, 2)).toEqual([{ target: 'allyTestMod', amount: 10 }]); // Succès +10 (l.81)
-    expect(activityOutcomes(plan, true, 6)).toEqual([{ target: 'allyTestMod', amount: 20 }]); // Stupéfiant +20
-    const rassembler = battleActivityById('rassembler-des-forces')!;
-    expect(activityOutcomes(rassembler, true, 6)).toEqual([{ target: 'allyMight', amount: 10 }]);
-    expect(activityOutcomes(rassembler, false, -6)).toEqual([{ target: 'allyMight', amount: -10 }]); // mutinerie (l.96)
-    expect(activityOutcomes(rassembler, false, -2)).toEqual([]);
-    // Sabotage : −5 / −10 sur la Puissance ennemie (l.106).
-    const sab = battleActivityById('sabotage')!;
-    expect(activityOutcomes(sab, true, 6)).toEqual([{ target: 'enemyMight', amount: -10 }]);
-  });
-
-  it('prérequis d\'Activités data-driven', () => {
-    expect(battleActivityById('infiltration')?.requires).toBe('planned');
-    expect(battleActivityById('sabotage')?.requires).toBe('scouted');
-    expect(battleActivityById('reperage')?.grantsFlag).toBe('scouted');
-    expect(battleActivityById('planification')?.grantsFlag).toBe('planned');
+    expect(rallyHealAmount(-2, 4)).toBe(4);
   });
 });
 
@@ -282,11 +158,10 @@ describe('Issue de la bataille (l.124) & aléa (l.309)', () => {
     expect(isDestroyed(5)).toBe(false);
   });
 
-  it('facteur environnemental 1d10 (l.311-322)', () => {
+  it('facteur environnemental 1d10 (l.311-322) + tables verbatim', () => {
     expect(BATTLE_HAZARDS).toHaveLength(10);
     expect(battleHazard(1).label).toBe('Tempête');
     expect(battleHazard(10).label).toBe('Peur');
-    // Table verbatim des structures/machines chargée.
     expect(STRUCTURES.find((s) => s.id === 'mur-en-pierre')).toMatchObject({ be: 12, wounds: 40 });
     expect(WAR_MACHINES.find((m) => m.id === 'canon')?.siege).toBe(true);
   });

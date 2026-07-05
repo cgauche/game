@@ -20,7 +20,6 @@ import type {
   PendingCascade, CascadeStep,
 } from './store';
 import type { PendingActivity } from './interludeFlow';
-import type { PendingBattleTest } from './massBattleFlow';
 import type { Combatant, Weapon } from '../engine/types';
 import type { Get, Set } from './flowTypes';
 import { makeRollFlow, type RollFlowHandlers } from './rollFlowFactory';
@@ -1001,24 +1000,57 @@ export const FLOWS = {
     failed: (p) => !p.result?.success,
   }),
 
-  /** Activité d'interlude (LDB 23) : Revenus (Test Accessible de la compétence de carrière,
-   *  LDB 08 l.135) ou lancer d'Artisanat (Test ÉTENDU de Métier — le DR se cumule à l'Appliquer). */
+  /** Activité (LDB 23 interlude / EDOC voyage / MDG mer / ADE II ch.8 BATAILLE) : Test de Compétence
+   *  dont l'issue est appliquée par `confirmActivity`. Cas SIMPLE (la vaste majorité) = un jet vs une
+   *  cible. Cas de BATAILLE : Test COMBINÉ (Infiltration/Repérage, l.75/102 — un jet vs DEUX compétences,
+   *  LDB 12 l.229) ou Test OPPOSÉ de « Tenez votre position » (l.161, l'ennemi a un jet FIGÉ). Le cycle
+   *  Chance/Pacte/Résilience vit ICI ; l'application (Puissance/héros) vit dans `confirmActivity`. */
   activity: makeRollFlow<PendingActivity>({
     key: 'pendingActivity',
     rolled: (p) => p.roll != null,
     actor: (s, p) => actorIn(s, p.heroId),
-    // Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68) via la lentille (`caps.forced` + verbe
-    // `forceSuccess`) ; Chance « +1 DR » par `bumpSL` (success intact).
+    // Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68, `caps.forced` + verbe `forceSuccess`) ; Chance
+    // « +1 DR » (success intact). Cas simple + combiné/opposé unifiés dans `resolve`/`bonus` (pas de lentille :
+    // le combiné/opposé porte deux issues, hors du cadre mono-jet de la lentille).
     caps: { forced: true },
-    resolve: (_s, p) => {
+    resolve: (_s, p, _actor, _get, forced) => {
+      if (forced) {
+        if (p.success) return null; // rien à forcer si déjà réussi
+        // Résilience « vous choisissez le résultat » (LDB 17 l.73) : 01 → DR MAXIMUM. En Test COMBINÉ, le
+        // jet forcé 01 réussit les DEUX cibles → niveau `full` ; en tenue, le PJ l'emporte sur l'opposition.
+        const primary = { roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1), forced: true };
+        if (p.target2 != null) return { ...primary, success2: true, sl2: Math.max(evaluateTest(1, p.target2).sl, 1), combinedLevel: 'full' as const };
+        if (p.battle === 'round' && p.enemyValue != null) return { ...primary, enemySL: Math.min(-1, (p.enemySL ?? 0)) };
+        return primary;
+      }
+      // Test COMBINÉ (Infiltration/Repérage, l.75/102) : UN jet confronté aux DEUX valeurs (LDB 12 l.229).
+      if (p.target2 != null) {
+        const c = evaluateCombinedTest(d100(battleRng()), p.target, p.target2);
+        return { roll: c.roll, sl: c.a.sl, success: c.a.success, sl2: c.b.sl, success2: c.b.success, combinedLevel: c.level };
+      }
+      // Test OPPOSÉ de « Tenez votre position » (l.161) : le PJ jette, l'ennemi a un jet FIGÉ. Le DR net
+      // de l'ennemi (`enemySL`, positif = l'ennemi progresse) alimente le Point de rupture à la résolution.
+      if (p.battle === 'round' && p.enemyValue != null && p.enemyRoll != null) {
+        const pt = evaluateTest(d100(battleRng()), p.target);
+        const et = evaluateTest(p.enemyRoll, p.enemyValue);
+        return { roll: pt.roll, sl: pt.sl, success: pt.sl >= et.sl, enemySL: et.sl - pt.sl };
+      }
       const res = rollTest(p.skillValue, p.difficulty, battleRng());
       return { roll: res.roll, target: res.target, sl: res.sl, success: res.success };
     },
     failed: (p) => (p.roll ?? 0) > p.target,
-    lens: {
-      actorTR: (p) => p.roll != null ? { roll: p.roll, target: p.target, success: p.success, sl: p.sl, isDouble: isDoubleRoll(p.roll) } : null,
-      applyRoll: (_s, _slot, _actor, _get, tr) => ({ roll: tr.roll, target: tr.target, sl: tr.sl, success: tr.success }),
-      dieTarget: (p) => p.target,
+    bonus: {
+      // Chance « +1 DR » (LDB 17 l.26). Combiné : ré-évalue le NIVEAU (+1 DR sur la 1ʳᵉ cible peut faire
+      // basculer partial→full) ; tenue : +1 DR au PJ réduit d'autant le DR net de l'ennemi ; simple : +1 DR.
+      derive: (_s, p) => {
+        const success = (p.roll ?? 0) <= p.target;
+        if (p.target2 != null) {
+          const passed = (success ? 1 : 0) + (p.success2 ? 1 : 0);
+          return { sl: p.sl + 1, success, combinedLevel: passed === 2 ? 'full' as const : passed === 1 ? 'partial' as const : 'fail' as const };
+        }
+        if (p.battle === 'round' && p.enemyValue != null) return { sl: p.sl + 1, success: p.sl + 1 >= 0 && success, enemySL: (p.enemySL ?? 0) - 1 };
+        return { sl: p.sl + 1, success };
+      },
     },
     touch: touchActors,
   }),
@@ -1118,56 +1150,6 @@ export const FLOWS = {
     },
     failed: (p) => (p.roll ?? 0) > p.target, // d100 propre raté (LDB ch.12 l.56 + l.29-31)
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && p.sl + 1 >= p.requireSL }) },
-  }),
-
-  /** Jet de PJ d'une bataille de masse (ADE II 08) : Discours inspirant (Commandement, l.71) ou Scène
-   *  cinématique de Compétence (Motivation/Duel/Ligne de mire…, l.149-225). Même cycle Chance/Pacte/
-   *  Résilience que le Test de scène ; l'application (delta de Puissance) vit dans `battleTestConfirm`. */
-  battleTest: makeRollFlow<PendingBattleTest>({
-    key: 'pendingBattleTest',
-    rolled: (p) => p.roll != null,
-    actor: (s, p) => actorIn(s, p.actorId),
-    touch: touchActors,
-    caps: { forced: true },
-    resolve: (_s, p, _actor, _get, forced) => {
-      if (forced) {
-        if (p.success) return null; // rien à forcer si déjà réussi
-        // Résilience « vous choisissez le résultat » (LDB 17 l.73) : 01 → DR MAXIMUM. En Test COMBINÉ, le
-        // jet forcé 01 réussit les DEUX cibles → niveau `full` ; en tenue, le PJ l'emporte sur l'opposition.
-        const primary = { roll: 1, success: true, sl: Math.max(evaluateTest(1, p.target).sl, 1), forced: true };
-        if (p.target2 != null) return { ...primary, success2: true, sl2: Math.max(evaluateTest(1, p.target2).sl, 1), combinedLevel: 'full' as const };
-        if (p.purpose === 'hold') return { ...primary, enemySL: Math.min(-1, (p.enemySL ?? 0)) };
-        return primary;
-      }
-      // Test COMBINÉ (Infiltration/Repérage, l.75/102) : UN jet confronté aux DEUX valeurs (LDB 12 l.229).
-      if (p.target2 != null) {
-        const c = evaluateCombinedTest(d100(battleRng()), p.target, p.target2);
-        return { roll: c.roll, sl: c.a.sl, success: c.a.success, sl2: c.b.sl, success2: c.b.success, combinedLevel: c.level };
-      }
-      // Test OPPOSÉ de « Tenez votre position » (l.161) : le PJ jette, l'ennemi a un jet FIGÉ. Le DR net
-      // de l'ennemi (`enemySL`, positif = l'ennemi progresse) alimente le Point de rupture à la résolution.
-      if (p.purpose === 'hold' && p.enemyValue != null && p.enemyRoll != null) {
-        const pt = evaluateTest(d100(battleRng()), p.target);
-        const et = evaluateTest(p.enemyRoll, p.enemyValue);
-        return { roll: pt.roll, sl: pt.sl, success: pt.sl >= et.sl, enemySL: et.sl - pt.sl };
-      }
-      const res = rollTest(p.skillValue, p.difficulty, battleRng());
-      return { roll: res.roll, sl: res.sl, success: res.success };
-    },
-    failed: (p) => (p.roll ?? 0) > p.target,
-    bonus: {
-      // Chance « +1 DR » : re-dérive le PRIMAIRE ; en Test combiné, ré-évalue le NIVEAU (+1 DR sur la 1ʳᵉ
-      // cible peut faire basculer partial→full) ; en tenue, +1 DR au PJ réduit d'autant le DR net de l'ennemi.
-      derive: (_s, p) => {
-        const success = (p.roll ?? 0) <= p.target;
-        if (p.target2 != null) {
-          const passed = (success ? 1 : 0) + (p.success2 ? 1 : 0);
-          return { sl: p.sl + 1, success, combinedLevel: passed === 2 ? 'full' as const : passed === 1 ? 'partial' as const : 'fail' as const };
-        }
-        if (p.purpose === 'hold') return { sl: p.sl + 1, success: p.sl + 1 >= 0 && success, enemySL: (p.enemySL ?? 0) - 1 };
-        return { sl: p.sl + 1, success };
-      },
-    },
   }),
 
   /** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance ou de Calme
@@ -1334,7 +1316,6 @@ export const FLOW_VERBS = {
   surgery:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   corruption:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'resist'], coop: true },
   test:         { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'cancel'] },
-  battleTest:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   activity:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   bargain:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact'] },
   appraise:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
@@ -1357,7 +1338,7 @@ const FLOW_HANDLERS = {
   auContact: FLOWS.auContact, grapple: FLOWS.grapple, trample: FLOWS.trample, battement: FLOWS.battement,
   distraire: FLOWS.distraire, maneuver: FLOWS.maneuver, run: FLOWS.run, reload: FLOWS.reload, recover: FLOWS.recover,
   focus: FLOWS.focus, dispel: FLOWS.dispel, frenzy: FLOWS.frenzy, approach: FLOWS.approach, ward: FLOWS.ward,
-  heal: FLOWS.heal, surgery: FLOWS.surgery, corruption: FLOWS.corruption, test: FLOWS.test, battleTest: FLOWS.battleTest,
+  heal: FLOWS.heal, surgery: FLOWS.surgery, corruption: FLOWS.corruption, test: FLOWS.test,
   activity: FLOWS.activity, bargain: FLOWS.bargain, appraise: FLOWS.appraise, shanty: FLOWS.shanty,
   counterspell: FLOWS.counterspell, cascade: FLOWS.cascade, opposition: FLOWS.castOpposition, extendedTest: FLOWS.extendedTest,
   forceDoor: FLOWS.forceDoor, shipManeuver: FLOWS.shipManeuver, shipBattery: FLOWS.battery, crewTest: FLOWS.crewTest,

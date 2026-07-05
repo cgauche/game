@@ -34,8 +34,34 @@ import activitiesJson from '../data/activities.json';
 // « Activités en mer » (MDG ch.15). Remplace l'énumération en dur (union `kind` + `switch`).
 // ─────────────────────────────────────────────────────────────────────────────────────────────
 
-/** Contexte où une Activité est proposable. */
-export type ActivityContext = 'interlude' | 'voyage' | 'mer';
+/** Contexte où une Activité est proposable. `bataille` = Activité de PRÉPARATION avant la bataille de
+ *  masse (ADE II ch.8 l.71-110 : Discours/Planification/Infiltration/Repérage/Sabotage/Rassembler des
+ *  forces) ; `bataille-round` = Scène cinématique d'un Round de bataille (l.137-225 : Charge/Motivation/
+ *  Ligne de mire/Survol/Duel/Tenez votre position/… + Rassemblement l.122). */
+export type ActivityContext = 'interlude' | 'voyage' | 'mer' | 'bataille' | 'bataille-round';
+
+/** Camp visé par une issue de bataille (ADE II ch.8) : `ally` = l'armée des Personnages, `enemy` = l'armée
+ *  adverse. */
+export type BattleSide = 'ally' | 'enemy';
+
+/** Cible d'une issue d'Activité/Scène de bataille (ADE II ch.8) qui porte sur l'ARMÉE, non sur le héros
+ *  acteur : `might` = delta de Puissance COURANTE (heal/wounds sur le Combattant-armée, plafonné au
+ *  départ, l.135) ; `startMight` = delta de Puissance de DÉPART (`wounds.max`, Rassembler l.96 / Sabotage
+ *  l.106 : renfort/affaiblissement avant la bataille) ; `allyTestMod` = modificateur PERMANENT aux Tests
+ *  de Puissance alliés (Planification +10/+20, l.81) ; `firstRoundBonus` = bonus au Test de Puissance du
+ *  1er Round seul (Discours, l.71) ; `planningBonus` = bonus au Test de Planification à venir
+ *  (Repérage/Infiltration, l.75/100). L'échelle suit `scale` : `fixed` (plat) ; `perDR`×DR (Motivation
+ *  l.151) ; `perHit`×touches / `perKill`×ennemis neutralisés (Charge/Pluie de flèches, l.139/145). */
+export type BattleOutcomeTarget = 'might' | 'startMight' | 'allyTestMod' | 'firstRoundBonus' | 'planningBonus';
+export type BattleOutcomeScale = 'fixed' | 'perDR' | 'perHit' | 'perKill';
+export interface BattleOutcome {
+  /** `might`/`startMight` portent un `side` (armée visée) ; les modificateurs de Test sont toujours alliés. */
+  side?: BattleSide;
+  target: BattleOutcomeTarget;
+  scale: BattleOutcomeScale;
+  /** Montant SIGNÉ (gain +, réduction −). Pour `perDR`/`perHit`/`perKill`, multiplié par le compteur. */
+  amount: number;
+}
 
 /** Issue de PORTÉE ÉTAPE (Activité de voyage EDOC ch.5 OU Rencontre EDOC) — effet qui ne porte PAS sur
  *  un seul Combatant (donc pas un `GameOp`) mais sur l'Étape/le groupe : interprété par la boucle de
@@ -69,7 +95,22 @@ export interface OutcomeBand {
   resolver?: string;
   payoutPct?: number;
   note?: string;
+  /** Issue(s) de BATAILLE (ADE II ch.8) portant sur l'ARMÉE (delta de Puissance / modificateur de Test),
+   *  gated par `when` — appliquées par le résolveur `battle` de `runActivityResolver`. */
+  battle?: BattleOutcome[];
+  /** Condition SUPPLÉMENTAIRE (au-delà de `on`/`minSL`/`maxSL`) évaluée sur les compteurs de la résolution
+   *  de bataille : `generalDown` (Succès Stupéfiant → le capitaine/général tombe, l.208/217) ;
+   *  `intervention`/`noIntervention` (Duel l.225 : un AUTRE PJ a frappé, ou non) ; `combatWon`/`combatLost`
+   *  (victoire / DÉFAITE d'une Scène de COMBAT — Percée l.175, Duel l.223). Absente = pas de gate en plus. */
+  when?: BattleCond;
+  /** Scène(s) IMPOSÉE(S) au Round suivant si cette bande matche (enchaînements l.169/175/208/217/225). */
+  chains?: string[];
 }
+
+/** Condition d'issue de bataille évaluée sur la résolution d'une Scène/Activité (compteurs de combat +
+ *  succès/DR). Voir `BattleResolution` (state/massBattleFlow). */
+export type BattleCond =
+  | 'generalDown' | 'intervention' | 'noIntervention' | 'combatWon' | 'combatLost';
 
 /** Bandes d'issue applicables à un jet résolu. Maladresse : les bandes `on:'fumble'` REMPLACENT toute
  *  autre issue (« réalisez un Test sur le Tableau de la Colère des Dieux […] à la place », ACE p.219) ;
@@ -84,6 +125,50 @@ export function matchOutcomes(def: ActivityDef, res: { success: boolean; sl: num
   const on = res.success ? 'success' : 'failure';
   return bands.filter((b) => b.on !== 'fumble' && (b.on == null || b.on === on)
     && (b.minSL == null || res.sl >= b.minSL) && (b.maxSL == null || res.sl <= b.maxSL));
+}
+
+/** Résolution d'une Scène/Activité de BATAILLE (ADE II ch.8) : issue du Test/Combat + compteurs qui
+ *  alimentent les échelles (`perHit`/`perKill`/`perDR`) et les conditions (`when`). `hits`/`kills` =
+ *  touches portées / ennemis neutralisés d'une Scène de COMBAT (l.139/145) ; `generalDown` = le
+ *  capitaine/général ennemi est tombé (l.208/217) ; `intervention` = un AUTRE PJ a frappé (Duel l.225) ;
+ *  `combat` = la résolution vient d'une Scène de COMBAT tactique (distingue `combatWon`/`combatLost`). */
+export interface BattleResolution {
+  success: boolean;
+  sl: number;
+  hits: number;
+  kills: number;
+  generalDown: boolean;
+  intervention: boolean;
+  combat: boolean;
+}
+
+/** Une condition SUPPLÉMENTAIRE `when` est-elle satisfaite par la résolution ? (les gates `on`/`minSL`/
+ *  `maxSL` sont déjà appliqués par `matchOutcomes`). PURE. */
+export function battleCondMet(cond: BattleCond | undefined, r: BattleResolution): boolean {
+  switch (cond) {
+    case undefined: return true;
+    case 'generalDown': return r.generalDown;
+    case 'intervention': return r.intervention;
+    case 'noIntervention': return !r.intervention;
+    case 'combatWon': return r.combat && r.success;
+    case 'combatLost': return r.combat && !r.success;
+  }
+}
+
+/** Montant SIGNÉ d'une issue de bataille pour une résolution (l'échelle multiplie le compteur adéquat). PURE. */
+export function battleOutcomeAmount(o: BattleOutcome, r: BattleResolution): number {
+  switch (o.scale) {
+    case 'fixed': return o.amount;
+    case 'perDR': return o.amount * Math.max(0, r.sl);
+    case 'perHit': return o.amount * Math.max(0, r.hits);
+    case 'perKill': return o.amount * Math.max(0, r.kills);
+  }
+}
+
+/** Bandes d'issue de bataille applicables : `matchOutcomes` (gates `on`/DR) PUIS le gate `when` (compteurs
+ *  de combat). PURE — le résolveur applique ensuite `battle`/`chains` des bandes retenues. */
+export function matchBattleOutcomes(def: ActivityDef, r: BattleResolution): OutcomeBand[] {
+  return matchOutcomes(def, r).filter((b) => battleCondMet(b.when, r));
 }
 
 /** Gate GÉOGRAPHIQUE : l'Activité est-elle proposable au lieu courant (`MapPlace.id`, null = hors carte) ?
@@ -133,6 +218,36 @@ export interface ActivityDef extends TestSpec {
   stageOutcome?: StageOutcome;
   /** Indisponible si le héros porte un État Exténué cette Étape (Récupérer, EDOC l.176). */
   unavailableIfExtenue?: boolean;
+  // ── Activités & Scènes de BATAILLE (ADE II ch.8, contextes 'bataille'/'bataille-round') ──
+  /** Test COMBINÉ (LDB 12 l.229) : UN jet confronté aux DEUX premières `skills` (Infiltration Discrétion+
+   *  Perception l.75 ; Repérage Chevaucher+Perception l.102). RÉUSSIT si les deux cibles sont atteintes. */
+  combined?: boolean;
+  /** Test à SOUTIEN multi-PJ (LDB 12 l.214-225) : le meneur lance, les assistants CAPABLES ajoutent +10
+   *  (plafonné). SEULE Activité de préparation soutenable = Planification (l.81). Les Scènes de Test/Tenue
+   *  d'un Round sont AUSSI multi-PJ (l.116-118). Incompatible avec `combined` (le RAW n'octroie d'aide à
+   *  aucun Test combiné). */
+  assisted?: boolean;
+  /** Prérequis (flags de préparation) à satisfaire pour proposer l'Activité : Infiltration ⇐ 'planned'
+   *  (Planification réussie, l.73) ; Sabotage ⇐ 'scouted' (Repérage réussi, l.104). */
+  requires?: string[];
+  /** Flag de préparation OCTROYÉ sur réussite (débloque une Activité dépendante) : Planification → 'planned' ;
+   *  Repérage → 'scouted'. */
+  grantsFlag?: string;
+  /** Genre d'une Scène de Round ('bataille-round') : `test` (Test de Compétence des PJ, delta de Puissance
+   *  par l'issue) ; `combat` (rencontre tactique — `startCombat` — touches/kills nourrissent le delta) ;
+   *  `threat` (Scène MENACE qui s'IMPOSE et pénalise les autres Scènes tant qu'elle vit, Intrus l.219) ;
+   *  `hold` (Tenez votre position l.161 : Test OPPOSÉ récurrent, Point de rupture entre Rounds) ;
+   *  `rally` (Rassemblement l.122 : Test de Résistance qui soigne les héros). Absent = Activité ordinaire. */
+  sceneKind?: 'test' | 'combat' | 'threat' | 'hold' | 'rally';
+  /** Scène 'combat'/'threat' : id de rencontre de la scène à démarrer (`startCombat`). */
+  encounter?: string;
+  /** Durée max en Rounds de Combat (indicatif narratif, l.139/157/175…). */
+  rounds?: number;
+  /** Paramètre d'une Scène « Tenez votre position » (sceneKind 'hold', l.161) : seuil du Point de rupture
+   *  (10 RAW), Rounds max avant écrasement (5 RAW), bonus cumulatif d'opposition par Round tenu (+10). */
+  hold?: { breakpoint: number; maxRounds: number; enemyBonusPerHold: number };
+  /** Pénalité d'une Scène MENACE (sceneKind 'threat', Intrus l.219) infligée aux Tests des autres Scènes. */
+  threat?: { penalty: number };
 }
 
 /** Catalogue app-owned des Activités (data-driven, éditable). */

@@ -5,26 +5,20 @@
  *
  *   PRÉ-BATAILLE (l.79-110) : jusqu'à 3 Activités (Discours l.71, Planification, Infiltration,
  *     Rassembler des forces, Repérage, Sabotage) dont l'issue alimente la Puissance de départ et les
- *     modificateurs permanents (`allyTestMod`) AVANT le premier Round.
- *   ROUND DE BATAILLE (l.114-124) : (1) configuration du terrain → composition d'une SITUATION (un
- *     SOUS-ENSEMBLE de Scènes du moment : tirage/authorées + Scènes IMPOSÉES par l'ennemi — menaces
- *     l.219 et enchaînements l.169/175/208/217/225), PAS tout le catalogue ; (2) Scènes cinématiques
- *     MULTI-PJ (l.116-118 : « les Personnages peuvent choisir de participer à l'une des Scènes » ; le MJ
- *     « inclut tous les Personnages dans au moins une Scène ») : plusieurs PJ peuvent s'engager dans UNE
- *     Scène de Test/Tenue, résolue en SOUTIEN (LDB 12 ; l.153 « tous les Personnages engagés dans la
- *     Scène », l.157 « en soutien », l.163 « Test opposé contre les Personnages ») — le meneur lance, les
- *     assistants capables ajoutent +10 (plafonné) ; les deltas plafonnés (l.135) se CUMULENT entre Scènes.
- *     Les Scènes de combat/menace engagent tout le groupe ; (3) Test spectaculaire de Puissance NON opposé
- *     (l.120) ; (4) Rassemblement (l.122) : Test de Résistance de guérison entre Rounds.
+ *     modificateurs permanents (`allyMod`) AVANT le premier Round.
+ *   ROUND DE BATAILLE (l.114-124) : (1) composition d'une SITUATION (un SOUS-ENSEMBLE de Scènes du
+ *     moment : tirage/authorées + Scènes IMPOSÉES par l'ennemi — menaces l.219 et enchaînements) ; (2)
+ *     Scènes cinématiques MULTI-PJ (l.116-118) résolues en SOUTIEN (LDB 12) ; (3) Test spectaculaire de
+ *     Puissance NON opposé (l.120) ; (4) Rassemblement (l.122) entre Rounds.
  *
- * Les jets des PJ passent par une modale de jet différée (`pendingBattleTest`, même fabrique
- * `makeRollFlow` que tous les autres flux). Le Test spectaculaire NON opposé est un jet d'ARMÉE (sans
- * Chance/Résilience personnelles) résolu directement. Une Scène `combat`/`threat` réutilise le combat
- * tactique existant (`startCombat`) ; sa victoire nourrit la réduction de Puissance (touches + kills).
+ * TOUS les jets des PJ passent par le CANAL UNIQUE des Activités : `PendingActivity` (marqué `battle`) +
+ * la modale `RollShell` (via la fabrique `activity` de `rollFlowSpecs`). Les Activités de préparation et
+ * les Scènes sont des `ActivityDef` (contextes 'bataille'/'bataille-round') d'`activities.json`, dont
+ * l'issue (bandes `outcomes` + `battle`) est appliquée à l'ARMÉE par `confirmBattleActivity`. Le Test
+ * spectaculaire NON opposé est un jet d'ARMÉE (sans Chance/Résilience personnelles) résolu directement.
+ * Une Scène `combat`/`threat` réutilise le combat tactique existant (`startCombat`).
  */
-import type { GameState } from './store';
 import type { Get, Set } from './flowTypes';
-import type { PendingBase } from './rollFlowFactory';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
 import { d10, d100, type RNG } from '../engine/dice';
@@ -36,12 +30,14 @@ import { bonus, effectiveChar } from '../engine/characteristics';
 import { refLabel } from '../data';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../engine/types';
 import {
-  battleSceneById, battleActivityById, BATTLE_ACTIVITIES, inspireDifficulty, INSPIRE_BONUS, resolveClash,
-  sceneDeltas, sceneChains, testResolution, combatResolution, combatLossResolution, rallyHealAmount,
-  activityOutcomes, battleOutcome, isDestroyed, battleHazard, clampMight,
-  initHoldState, resolveHoldRound, holdEnemyBonus,
-  type BattleSceneDef, type BattleActivityDef, type ClashResult, type BattleOutcome,
-  type ActivityOutcome, type SceneResolution, type HoldState,
+  ACTIVITIES, activityById, activitiesFor, matchBattleOutcomes, battleOutcomeAmount,
+  type ActivityDef, type BattleResolution, type BattleOutcome as BattleOutcomeDelta,
+} from '../engine/activities';
+import type { PendingActivity } from './interludeFlow';
+import {
+  inspireDifficulty, INSPIRE_BONUS, resolveClash, rallyHealAmount, battleOutcome, isDestroyed,
+  battleHazard, clampMight, initHoldState, resolveHoldRound, holdEnemyBonus,
+  type ClashResult, type BattleOutcome, type HoldState, type BattleHold,
 } from '../engine/massBattle';
 
 /** Une armée engagée dans la Puissance de Bataille, modélisée comme un COMBATTANT INANIMÉ à Blessures
@@ -66,9 +62,7 @@ export function armyStartMight(a: MassBattleArmy): number {
 }
 
 /** Construit le Combattant inanimé d'une armée depuis sa Puissance de départ (`wounds.current = wounds.max
- *  = startMight`). `inert:true` : la perte de Blessures ne déclenche AUCUNE conséquence de créature (ni
- *  Avantage perdu, ni À Terre — `applyZeroWounds` sort tôt). Une armée à 0 PB est « détruite » (l.124),
- *  détecté par `isDestroyed` sur `armyMight`. */
+ *  = startMight`). `inert:true` : la perte de Blessures ne déclenche AUCUNE conséquence de créature. */
 function makeArmy(name: string, startMight: number): MassBattleArmy {
   const m = clampMight(startMight);
   return {
@@ -79,7 +73,7 @@ function makeArmy(name: string, startMight: number): MassBattleArmy {
 
 /** Clone une armée en appliquant un delta de Puissance COURANTE par `GameOp` (langue unique des effets) :
  *  gain → `heal` (plafonné NATURELLEMENT à `wounds.max` = départ, l.135) ; perte → `wounds` (mitigation nulle
- *  — E:0, ignoreTB/ignoreAP par défaut → soustraction exacte, plancher 0). Pur : ne mute pas l'entrée. */
+ *  — E:0 → soustraction exacte, plancher 0). Pur : ne mute pas l'entrée. */
 function armyWithMightDelta(a: MassBattleArmy, delta: number): MassBattleArmy {
   if (delta === 0) return a;
   const combatant = cloneArmyCombatant(a.combatant);
@@ -89,7 +83,7 @@ function armyWithMightDelta(a: MassBattleArmy, delta: number): MassBattleArmy {
 
 /** Clone une armée en ajustant sa Puissance de DÉPART (`wounds.max`) du delta — Sabotage/Rassembler des
  *  forces (l.96/106 : renfort/affaiblissement AVANT la bataille). La Puissance courante suit le même delta
- *  (patron `refreshWounds` : on gagne/perd des PB avec le max), bornée [0, nouveau max]. Pur. */
+ *  (patron `refreshWounds`), bornée [0, nouveau max]. Pur. */
 function armyWithStartMightDelta(a: MassBattleArmy, delta: number): MassBattleArmy {
   if (delta === 0) return a;
   const combatant = cloneArmyCombatant(a.combatant);
@@ -137,7 +131,7 @@ export interface MassBattleState {
   /** Discours inspirant déjà tenté (une fois avant la bataille). */
   inspired?: boolean;
   // ── Activités de bataille pré-combat (l.79-110) ──
-  /** Ids des Activités déjà réalisées (max 3 au total avec le Discours, l.65). */
+  /** Ids des Activités de préparation déjà réalisées (max 3 au total avec le Discours, l.65). */
   activitiesDone: string[];
   /** Planification réussie (prérequis de l'Infiltration). */
   planned?: boolean;
@@ -162,16 +156,10 @@ export interface MassBattleState {
   activeThreats: string[];
   /** Scènes résolues CE Round (une résolution par Scène). */
   resolvedScenes: string[];
-  /** PJ ayant agi CE Round : tout PJ engagé dans une Scène résolue (l.116-118). Une Scène de Test/Tenue
-   *  MULTI-PJ consomme TOUT son équipage engagé (Soutien, l.153/157) ; un combat consomme ses frappeurs. */
+  /** PJ ayant agi CE Round : tout PJ engagé dans une Scène résolue (l.116-118). */
   actedHeroes: string[];
   /** AFFECTATION explicite de PJ à une action CE Round — clé = id d'action (Scène OU Activité), valeur =
-   *  liste ordonnée des ids de PJ postés. Une Scène de Test/Tenue accepte PLUSIEURS PJ (ADE II ch.8
-   *  l.116-118 : Scènes MULTI-PJ), résolus en SOUTIEN (LDB 12 : le meneur lance, les assistants capables
-   *  ajoutent +10, plafonné — l.153/157/163). Les Activités pré-combat restent SOLO (un seul id honoré,
-   *  RAW l.71/75/102/106 « un Personnage »). C'est le POSTE choisi par le joueur : la résolution l'HONORE
-   *  (à défaut d'affectation, ou si les PJ postés ne sont plus disponibles, on retombe sur la SUGGESTION
-   *  `bestForSkills`/`bestForCombined`). Réinitialisé à chaque Round (comme `actedHeroes`). */
+   *  liste ordonnée des ids de PJ postés. */
   assignment: Record<string, string[]>;
   /** PJ ayant tenté le Rassemblement CE Round (l.122). */
   ralliedHeroes: string[];
@@ -187,7 +175,7 @@ export interface MassBattleState {
   combatScene?: MassBattleCombatScene;
   /** Rencontres à démarrer pour les Scènes de COMBAT/MENACE (par id de Scène → id d'encounter). */
   sceneEncounters?: Record<string, string>;
-  /** État PERSISTANT par Scène entre Rounds (générique) — ex. Point de rupture d'une Scène « Tenez votre
+  /** État PERSISTANT par Scène entre Rounds (générique) — ex. Point de rupture d'une « Tenez votre
    *  position » (`HoldState`, l.161). Clé = id de Scène. */
   sceneState: Record<string, HoldState>;
   /** Journal de bataille (une ligne par événement marquant). */
@@ -215,59 +203,26 @@ export interface MassBattleSpec {
   allyMod?: number;
 }
 
-/** Jet de PJ d'une bataille de masse — modale différée. */
-export interface PendingBattleTest extends PendingBase {
-  actorId: string;
-  actorName: string;
-  /** Intitulé de la situation (titre de la modale). */
-  label: string;
-  /** Libellé de la Compétence/Caractéristique testée (cadre de jet). */
-  skill: string;
-  skillId?: string;
-  spec?: string;
-  char?: CharKey;
-  skillValue: number;
-  difficulty: Difficulty;
-  /** But du jet : Discours inspirant / Scène cinématique / Activité pré-combat / Rassemblement / Tenue. */
-  purpose: 'inspire' | 'scene' | 'activity' | 'rally' | 'hold';
-  /** Scène concernée (`purpose:'scene'`/`'hold'`). */
-  sceneId?: string;
-  /** Activité concernée (`purpose:'activity'`). */
-  activityId?: string;
-  /** TOUS les PJ engagés dans la Scène MULTI-PJ (Test/Tenue) — meneur `actorId` compris (ADE II ch.8
-   *  l.116-118). Tous sont marqués « ayant agi » à la résolution (l'équipage entier est consommé). */
-  heroIds?: string[];
-  /** Détail du SOUTIEN fondu dans `skillValue` (l.153/157, LDB 12) — la modale l'affiche en LIGNE de mod. */
-  support?: { count: number; bonus: number };
-  /** Modificateur de SITUATION (fondu dans la cible) + son libellé — la modale l'affiche en LIGNE de mod pour
-   *  que le breakdown se réconcilie (Menace −20 l.219 ; bonus de Planification l.75/100). Absent = aucun. */
-  mod?: number;
-  modLabel?: string;
-  // ── Test COMBINÉ (Infiltration/Repérage, l.75/102 — un jet vs DEUX compétences, LDB 12 l.229) ──
-  /** Libellé de la 2ᵈᵉ compétence (Test combiné). */
-  skill2?: string;
-  /** Valeur NUE de la 2ᵈᵉ compétence (Test combiné). */
-  skillValue2?: number;
-  /** Cible EFFECTIVE de la 2ᵈᵉ compétence (base + Difficulté + mod). */
-  target2?: number;
-  /** Résultat vs la 2ᵈᵉ compétence (Test combiné) — mémorisé pour l'affichage/la ré-influence. */
-  sl2?: number;
-  success2?: boolean;
-  /** Niveau du Test combiné : `full` = les deux réussies ; `partial` = une seule ; `fail` = aucune. */
-  combinedLevel?: 'full' | 'partial' | 'fail';
-  // ── Test OPPOSÉ de « Tenez votre position » (l.161) : l'ennemi oppose son jet FIGÉ ──
-  /** Valeur (cible effective) de l'ENNEMI au Test opposé de tenue. */
-  enemyValue?: number;
-  /** Jet FIGÉ de l'ennemi (opposé) — posé à l'ouverture, ré-utilisé à la résolution. */
-  enemyRoll?: number;
-  /** DR net de l'ennemi au Test opposé de tenue (positif = l'ennemi l'emporte). */
-  enemySL?: number;
-  roll: number | null;
-  target: number;
-  sl: number;
-  success: boolean;
-  forced?: boolean;
-  rerolled?: boolean;
+// ── Catalogues data-driven des Activités/Scènes de bataille (`activities.json`) ────────────────────
+
+/** Toutes les Activités de PRÉPARATION (contexte 'bataille'). */
+const PREP_ACTIVITIES = (): ActivityDef[] => activitiesFor('bataille');
+/** Toutes les Scènes de Round (contexte 'bataille-round'). */
+const ROUND_SCENES = (): ActivityDef[] => activitiesFor('bataille-round');
+/** Scène de Round par id (repli undefined). */
+export function battleSceneById(id: string): ActivityDef | undefined {
+  const d = activityById(id);
+  return d?.contexts.includes('bataille-round') ? d : undefined;
+}
+/** Activité de préparation par id (repli undefined). */
+export function battleActivityById(id: string): ActivityDef | undefined {
+  const d = activityById(id);
+  return d?.contexts.includes('bataille') ? d : undefined;
+}
+
+/** Une Scène est-elle un COMBAT tactique (combat/menace) ? (engage tout le groupe, `startCombat`). */
+function isCombatScene(def: ActivityDef): boolean {
+  return def.sceneKind === 'combat' || def.sceneKind === 'threat';
 }
 
 // ── Utilitaires purs de composition ──────────────────────────────────────────────────────────────
@@ -287,8 +242,7 @@ function drawSubset(pool: string[], size: number, rng: RNG): string[] {
 }
 
 /** Compose la SITUATION du Round courant (l.114-116) : base (situation authorée OU tirage du
- *  catalogue) + Scènes IMPOSÉES (enchaînements) + MENACES actives. Retourne aussi les menaces mises à
- *  jour et vide les imposées consommées. */
+ *  catalogue) + Scènes IMPOSÉES (enchaînements) + MENACES actives. */
 function composeSituation(mb: MassBattleState, rng: RNG): { situation: string[]; activeThreats: string[]; imposed: string[] } {
   const idx = mb.round - 1;
   const authored = mb.situations && mb.situations.length
@@ -296,8 +250,7 @@ function composeSituation(mb: MassBattleState, rng: RNG): { situation: string[];
     : null;
   const base = authored ?? drawSubset(mb.pool, mb.situationSize, rng);
   const ids = uniq([...base, ...mb.imposed, ...mb.activeThreats]).filter((id) => !!battleSceneById(id));
-  // Toute Scène MENACE présentée (base/imposée) et non résolue rejoint les menaces actives.
-  const threats = uniq([...mb.activeThreats, ...ids.filter((id) => battleSceneById(id)?.kind === 'threat')]);
+  const threats = uniq([...mb.activeThreats, ...ids.filter((id) => battleSceneById(id)?.sceneKind === 'threat')]);
   return { situation: ids, activeThreats: threats, imposed: [] };
 }
 
@@ -312,14 +265,19 @@ export function prepCount(mb: MassBattleState): number {
 }
 
 /** Activités pré-combat disponibles (prérequis satisfaits, quota de 3 non atteint, non déjà faites). */
-export function battleActivitiesAvailable(mb: MassBattleState): BattleActivityDef[] {
+export function battleActivitiesAvailable(mb: MassBattleState): ActivityDef[] {
   if (prepCount(mb) >= 3) return [];
-  return BATTLE_ACTIVITIES.filter((a) => {
+  const flags = prepFlags(mb);
+  return PREP_ACTIVITIES().filter((a) => {
     if (mb.activitiesDone.includes(a.id)) return false;
-    if (a.requires === 'planned' && !mb.planned) return false;
-    if (a.requires === 'scouted' && !mb.scouted) return false;
-    return true;
+    return (a.requires ?? []).every((f) => flags.has(f)); // Infiltration ⇐ planned, Sabotage ⇐ scouted
   });
+}
+
+/** Flags de préparation acquis (satisfaction des `requires`, octroi des `grantsFlag`). */
+function prepFlags(mb: MassBattleState): ReadonlySet<string> {
+  const flags = [...(mb.planned ? ['planned'] : []), ...(mb.scouted ? ['scouted'] : [])];
+  return new Set(flags);
 }
 
 // ── Amorçage ─────────────────────────────────────────────────────────────────────────────────────
@@ -331,7 +289,11 @@ export function startMassBattle(get: Get, set: Set, spec: MassBattleSpec): void 
   if (get().battle) { get().log('Impossible d\'ouvrir une bataille de masse en plein combat tactique.'); return; }
   const allyMight = clampMight(spec.allyMight);
   const enemyMight = clampMight(spec.enemyMight);
-  const pool = (spec.scenes && spec.scenes.length ? spec.scenes : DEFAULT_POOL).filter((id) => !!battleSceneById(id));
+  // Le Rassemblement (sceneKind 'rally', l.122) n'est PAS une Scène cinématique de la pioche : il s'ouvre
+  // entre les Rounds (`openMassBattleRally`). La pioche par défaut = les Scènes cinématiques (test/combat/
+  // threat/hold, l.137-225).
+  const defaultPool = ROUND_SCENES().filter((d) => d.sceneKind !== 'rally').map((d) => d.id);
+  const pool = (spec.scenes && spec.scenes.length ? spec.scenes : defaultPool).filter((id) => !!battleSceneById(id));
   const mb: MassBattleState = {
     ally: makeArmy(spec.allyName ?? 'Armée des Personnages', allyMight),
     enemy: makeArmy(spec.enemyName ?? 'Armée ennemie', enemyMight),
@@ -354,19 +316,12 @@ export function startMassBattle(get: Get, set: Set, spec: MassBattleSpec): void 
     assignment: {},
     ralliedHeroes: [],
     sceneDeltas: [],
-    // Rencontres des Scènes de combat (par id) — mémorisées pour `startBattleCombat`.
     sceneEncounters: spec.sceneEncounters,
     sceneState: {},
     log: [`Bataille engagée : ${spec.allyName ?? 'les Personnages'} (Puissance ${allyMight}) contre ${spec.enemyName ?? 'l\'ennemi'} (Puissance ${enemyMight}).`],
   };
   set({ massBattle: mb, screen: 'massBattle' });
 }
-
-/** Catalogue par défaut (tout ce qui existe) — la pioche des situations. */
-const DEFAULT_POOL = [
-  'motivation', 'pluie-de-fleches', 'protection', 'tenez-votre-position', 'compte-a-rebours',
-  'percee', 'ligne-de-mire', 'tuez-la-bete', 'survol', 'charge', 'duel', 'intrus',
-];
 
 /** Passe de la phase pré-bataille aux Rounds : compose la situation du Round 1. */
 export function massBattleBegin(get: Get, set: Set): void {
@@ -384,30 +339,68 @@ function describeThreats(threats: string[]): string | null {
   return `Menace sur le champ de bataille : ${names} — les autres Scènes du Round subissent une pénalité tant qu'elle n'est pas vaincue.`;
 }
 
+// ── Construction de la modale de jet (canal UNIQUE : PendingActivity + flux `activity`) ────────────
+
+/** Fabrique une `PendingActivity` de bataille (préparation ou Scène) et l'ouvre. Le flux `activity`
+ *  (RollShell) résout ensuite le jet (combiné/opposé compris) ; `confirmBattleActivity` applique l'issue. */
+function openBattlePending(get: Get, set: Set, o: {
+  actor: Combatant; battle: 'prep' | 'round'; def: ActivityDef;
+  skillValue: number; skillId?: string; spec?: string; char?: CharKey; difficulty: Difficulty;
+  label?: string; mod?: number; modLabel?: string;
+  combined?: { skillId?: string; spec?: string; value: number };
+  enemyValue?: number; enemyRoll?: number;
+  heroIds?: string[]; support?: { count: number; bonus: number };
+}): void {
+  const skillLabel = o.skillId ? refLabel('skills', { id: o.skillId, spec: o.spec }) : o.char ? CHAR_LABELS[o.char] : 'Test';
+  const diffMod = DIFFICULTY_MOD(o.difficulty) + (o.mod ?? 0);
+  const target = Math.max(1, Math.min(99, o.skillValue + diffMod));
+  const combined = o.combined
+    ? { skill2: o.combined.skillId ? refLabel('skills', { id: o.combined.skillId, spec: o.combined.spec }) : CHAR_LABELS[o.char ?? 'Int'], skillValue2: o.combined.value, target2: Math.max(1, Math.min(99, o.combined.value + diffMod)) }
+    : {};
+  const pa: PendingActivity = {
+    heroId: o.actor.id, kind: 'catalog', activityId: o.def.id, battle: o.battle,
+    label: o.label ?? o.def.label, skillLabel, skillValue: o.skillValue, difficulty: o.difficulty,
+    roll: null, target, sl: 0, success: false,
+    ...(o.mod ? { mod: o.mod, modLabel: o.modLabel } : {}),
+    ...(o.support ? { support: o.support } : {}),
+    ...(o.heroIds ? { heroIds: o.heroIds } : {}),
+    ...(o.enemyValue != null ? { enemyValue: o.enemyValue, enemyRoll: o.enemyRoll } : {}),
+    ...combined,
+  };
+  set({ pendingActivity: pa });
+}
+
+const DIFFICULTY_MOD = (d: Difficulty): number => DIFFICULTY_MODIFIERS[d];
+
 // ── Activités pré-combat (l.79-110) ──────────────────────────────────────────────────────────────
 
-/** Ouvre le Test de Commandement du Discours inspirant (l.71). Difficulté = écart de Puissance
- *  arrondi à la dizaine ; en cas de succès → +10 au Test de Puissance du premier Round. */
+/** Ouvre le Test de Commandement du Discours inspirant (l.71). Difficulté = écart de Puissance arrondi
+ *  à la dizaine ; en cas de succès → +10 au Test de Puissance du premier Round. */
 export function openMassBattleInspire(get: Get, set: Set): void {
   const mb = get().massBattle;
   if (!mb || mb.phase !== 'inspire' || mb.inspired || prepCount(mb) >= 3) return;
-  // Acteur = PJ posté au Discours (à défaut, SUGGESTION = meilleur en Commandement). Sans poste, l'acteur EST
-  // la suggestion et `testValue(chosen, 'commandement')` reproduit `partyBest(...).value` → byte-identique.
   const party = get().party.filter((h) => !h.dead);
   const chosen = assignedHeroesFor(mb, party, 'inspire')[0] ?? partyBest(party, 'commandement')?.actor;
   if (!chosen) return;
   const difficulty = inspireDifficulty(armyMight(mb.ally), armyMight(mb.enemy));
-  openBattleTest(get, set, {
-    actor: chosen, skillValue: testValue(chosen, 'commandement'), skillId: 'commandement', difficulty,
-    label: 'Discours inspirant', purpose: 'inspire',
+  // Le Discours est modélisé comme une Activité de préparation SYNTHÉTIQUE : pas d'`ActivityDef` dédié
+  // (issue GLOBALE non data-driven « +10 au 1er Round », gérée par `confirmBattleActivity`).
+  openBattlePending(get, set, {
+    actor: chosen, battle: 'prep', def: INSPIRE_DEF, skillValue: testValue(chosen, 'commandement'),
+    skillId: 'commandement', difficulty, label: 'Discours inspirant', heroIds: [chosen.id],
   });
 }
 
+/** `ActivityDef` synthétique du Discours inspirant (l.69-71) : issue GLOBALE (+10 au 1er Round) portée par
+ *  `confirmBattleActivity` (pas de bande `battle` — l'effet est un cas à part du RAW). */
+const INSPIRE_DEF: ActivityDef = {
+  id: 'inspire', label: 'Discours inspirant', icon: 'action/lead', contexts: ['bataille'],
+  source: { book: 'ADE II', page: 71 }, skills: [{ skillId: 'commandement' }], difficulty: 'intermediaire',
+};
+
 /** Résout l'AFFECTATION explicite d'une action (`assignment[actionId]`) en la LISTE des PJ effectivement
- *  DISPONIBLES : membres du groupe, vivants, non encore engagés ce Round (`actedHeroes`). Ordre des ids
- *  postés préservé, entrées invalides (absent/mort/déjà agi) écartées. Tableau vide si aucun poste valable
- *  — l'appelant retombe alors sur la SUGGESTION (`bestForSkills`/`bestForCombined`). Une Scène MULTI-PJ
- *  (ADE II ch.8 l.116-118) est ainsi résolue en Soutien sur TOUT cet équipage. Pur : lit l'état, ne mute rien. */
+ *  DISPONIBLES : membres du groupe, vivants, non encore engagés ce Round (`actedHeroes`). Tableau vide si
+ *  aucun poste valable — l'appelant retombe sur la SUGGESTION. Pur : lit l'état, ne mute rien. */
 export function assignedHeroesFor(mb: MassBattleState, party: Combatant[], actionId: string): Combatant[] {
   const ids = mb.assignment[actionId] ?? [];
   return ids
@@ -415,10 +408,7 @@ export function assignedHeroesFor(mb: MassBattleState, party: Combatant[], actio
     .filter((h): h is Combatant => !!h && !h.dead && !mb.actedHeroes.includes(h.id));
 }
 
-/** Enregistre l'AFFECTATION de PJ à une action du Round (Scène MULTI-PJ / Activité SOLO) : remplace la
- *  liste postée par `heroIds` (efface la clé si vide). N'agit qu'en présence d'une bataille ; ne valide PAS
- *  la disponibilité ici (la résolution la re-vérifie via `assignedHeroesFor`, retombant sur la suggestion
- *  si les postes sont devenus invalides). Le picker de l'UI compose la liste (ajout/retrait). */
+/** Enregistre l'AFFECTATION de PJ à une action du Round (Scène MULTI-PJ / Activité). */
 export function setMassBattleHero(get: Get, set: Set, actionId: string, heroIds: string[]): void {
   const mb = get().massBattle;
   if (!mb) return;
@@ -428,80 +418,72 @@ export function setMassBattleHero(get: Get, set: Set, actionId: string, heroIds:
 }
 
 /** Ouvre le Test d'une Activité de bataille pré-combat (Planification/Infiltration/… l.79-106). Un Test
- *  COMBINÉ (Infiltration/Repérage, `def.combined`) confronte UN jet aux DEUX compétences de l'acteur. */
+ *  COMBINÉ (Infiltration/Repérage, `def.combined`) confronte UN jet aux DEUX compétences de l'acteur ;
+ *  une Activité SOUTENABLE (`def.assisted`, Planification l.81) est résolue en Soutien multi-PJ. */
 export function openMassBattleActivity(get: Get, set: Set, activityId: string): void {
   const mb = get().massBattle;
   const def = battleActivityById(activityId);
   if (!mb || mb.phase !== 'inspire' || !def) return;
   if (mb.activitiesDone.includes(activityId) || prepCount(mb) >= 3) return;
-  if (def.requires === 'planned' && !mb.planned) return;
-  if (def.requires === 'scouted' && !mb.scouted) return;
+  const flags = prepFlags(mb);
+  if (!(def.requires ?? []).every((f) => flags.has(f))) return;
   const party = get().party.filter((h) => !h.dead);
   // Le Repérage/Infiltration boostent le Test de Planification (`planningBonus`, l.75/100).
   const mod = activityId === 'planification' ? mb.planningBonus : 0;
+  const modLabel = mod ? 'Préparation' : undefined;
   if (def.combined && def.skills && def.skills.length >= 2) {
     // Test COMBINÉ (l.75/102) : l'acteur posté décide (à défaut, SUGGESTION = celui maximisant le PLUS FAIBLE
-    // des deux, le facteur limitant). Les DEUX valeurs de l'acteur RETENU sont dérivées via une passe
-    // SINGLETON (`bestForCombined([chosen], …)`), puis testées par un même jet à la résolution.
+    // des deux). Les DEUX valeurs de l'acteur retenu sont dérivées via une passe SINGLETON.
     const chosen = assignedHeroesFor(mb, party, activityId)[0] ?? bestForCombined(party, def.skills[0], def.skills[1], def.char)?.actor;
     if (!chosen) return;
     const picked = bestForCombined([chosen], def.skills[0], def.skills[1], def.char);
     if (!picked) return;
-    openBattleTest(get, set, {
-      actor: picked.actor, skillValue: picked.value1, skillId: def.skills[0].skillId, spec: def.skills[0].spec, char: def.char,
-      difficulty: def.difficulty ?? 'intermediaire', label: def.label, purpose: 'activity', activityId, mod,
+    openBattlePending(get, set, {
+      actor: picked.actor, battle: 'prep', def, skillValue: picked.value1, skillId: def.skills[0].skillId, spec: def.skills[0].spec, char: def.char,
+      difficulty: def.difficulty ?? 'intermediaire', mod, modLabel,
       combined: { skillId: def.skills[1].skillId, spec: def.skills[1].spec, value: picked.value2 },
     });
     return;
   }
   if (def.assisted) {
-    // Activité SOUTENABLE (Planification l.81 : « un Personnage avec au moins une Augmentation en Savoir
-    // (Guerre) peut aider au Test ») : résolue comme une Scène de Round. Équipe = les PJ POSTÉS disponibles ;
-    // à défaut, la SUGGESTION = le meilleur PJ SEUL (comportement byte-identique au chemin solo sans poste).
-    // La valeur SOUTENUE (`bestAssistedOption` : meneur + Soutien LDB 12, assistants CAPABLES = qui possèdent
-    // la compétence — posséder l'Avancée Savoir (Guerre) équivaut à « ≥1 Augmentation » : règle générale).
+    // Activité SOUTENABLE (Planification l.81) : résolue comme une Scène de Round. Équipe = les PJ POSTÉS ;
+    // à défaut, la SUGGESTION = le meilleur PJ SEUL. Valeur SOUTENUE (`bestAssistedOption`, LDB 12).
     const crew = assignedHeroesFor(mb, party, activityId);
     const solo = bestForSkills(party, def.skills, def.char)?.actor;
     const team = crew.length ? crew : (solo ? [solo] : []);
     if (!team.length) return;
     const picked = bestAssistedOption(team, def.skills, def.char);
     if (!picked) return;
-    openBattleTest(get, set, {
-      actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
-      difficulty: def.difficulty ?? 'intermediaire', label: def.label, purpose: 'activity', activityId, mod, modLabel: 'Préparation',
+    openBattlePending(get, set, {
+      actor: picked.actor, battle: 'prep', def, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
+      difficulty: def.difficulty ?? 'intermediaire', mod, modLabel,
       heroIds: team.map((h) => h.id), support: picked.support,
     });
     return;
   }
-  // Activité SOLO (RAW l.75/102/106 « un Personnage », sans aide) : acteur = PJ posté (à défaut, SUGGESTION =
-  // meilleur du groupe) ; ses valeurs de compétence dérivées par une passe SINGLETON `bestForSkills([chosen], …)`
-  // — sans poste, l'acteur EST la suggestion, byte-identique. PAS de Soutien.
+  // Activité SOLO (RAW l.75/102/106 « un Personnage », sans aide) : acteur = PJ posté (à défaut, SUGGESTION).
   const chosen = assignedHeroesFor(mb, party, activityId)[0] ?? bestForSkills(party, def.skills, def.char)?.actor;
   if (!chosen) return;
   const picked = bestForSkills([chosen], def.skills, def.char);
   if (!picked) return;
-  openBattleTest(get, set, {
-    actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
-    difficulty: def.difficulty ?? 'intermediaire', label: def.label, purpose: 'activity', activityId, mod,
+  openBattlePending(get, set, {
+    actor: picked.actor, battle: 'prep', def, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: def.char,
+    difficulty: def.difficulty ?? 'intermediaire', mod, modLabel,
   });
 }
 
 // ── Scènes cinématiques (l.116-225) ──────────────────────────────────────────────────────────────
 
 /** Choisit une Scène de la SITUATION : 'test' → modale de jet ; 'hold' → Test opposé de tenue ;
- *  'combat'/'threat' → combat tactique. Scène MULTI-PJ (l.116-118) : plusieurs PJ peuvent s'engager dans
- *  une Scène de Test/Tenue, résolue en SOUTIEN (LDB 12 ; l.153/157) — le meneur lance la valeur SOUTENUE ;
- *  à défaut d'affectation, le meilleur PJ DISPONIBLE décide seul. Les combats engagent tous les frappeurs. */
+ *  'combat'/'threat' → combat tactique. Scène MULTI-PJ (l.116-118) résolue en SOUTIEN (LDB 12). */
 export function openMassBattleScene(get: Get, set: Set, sceneId: string): void {
   const mb = get().massBattle;
   const scene = battleSceneById(sceneId);
   if (!mb || mb.phase !== 'round' || mb.awaitingNext || !scene) return;
   if (!mb.situation.includes(sceneId) || mb.resolvedScenes.includes(sceneId)) return;
-  if (scene.kind === 'combat' || scene.kind === 'threat') { startBattleCombat(get, set, scene); return; }
-  if (scene.kind === 'hold') { openHoldScene(get, set, scene); return; }
-  // Scène 'test' MULTI-PJ (l.116-118/151/153) : compétences AU CHOIX. Équipe = les PJ POSTÉS disponibles ;
-  // à défaut, la SUGGESTION = le meilleur PJ disponible SEUL (comportement inchangé sans affectation). La
-  // valeur SOUTENUE (`bestAssistedOption` : meneur + Soutien LDB 12) est jouée par le meneur (`picked.actor`).
+  if (isCombatScene(scene)) { startBattleCombat(get, set, scene); return; }
+  if (scene.sceneKind === 'hold') { openHoldScene(get, set, scene); return; }
+  // Scène 'test' MULTI-PJ (l.116-118/151/153) : compétences AU CHOIX, Soutien LDB 12.
   const party = get().party.filter((h) => !h.dead && !mb.actedHeroes.includes(h.id));
   if (!party.length) { get().log('Tous les Personnages ont déjà agi ce Round.'); return; }
   const crew = assignedHeroesFor(mb, party, scene.id);
@@ -511,165 +493,176 @@ export function openMassBattleScene(get: Get, set: Set, sceneId: string): void {
   const picked = bestAssistedOption(team, scene.skills, scene.char);
   if (!picked) return;
   const mod = massBattleThreatPenalty(mb); // Intrus l.219 : −20 aux Tests des autres Scènes.
-  openBattleTest(get, set, {
-    actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
-    difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'scene', sceneId: scene.id, mod, modLabel: 'Menace',
+  openBattlePending(get, set, {
+    actor: picked.actor, battle: 'round', def: scene, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
+    difficulty: scene.difficulty ?? 'intermediaire', mod, modLabel: mod ? 'Menace' : undefined,
     heroIds: team.map((h) => h.id), support: picked.support,
   });
 }
 
-/** Ouvre le Test OPPOSÉ d'une Scène « Tenez votre position » (l.161-163 : « l'ennemi effectue un Test opposé
- *  contre les Personnages ») : les PJ engagés défendent la position en SOUTIEN (LDB 12 ; le meneur lance la
- *  valeur soutenue) ; l'ennemi oppose un jet FIGÉ (valeur = Puissance ennemie, abstraction de « des
- *  Compétences adaptées à la situation ») augmenté du bonus cumulatif de tenue (`holdEnemyBonus` selon les
- *  Rounds déjà tenus, l.163). Le DR net de l'ennemi alimente le Point de rupture à la résolution. */
-function openHoldScene(get: Get, set: Set, scene: BattleSceneDef): void {
+/** Ouvre le Test OPPOSÉ d'une Scène « Tenez votre position » (l.161-163) : les PJ engagés défendent en
+ *  SOUTIEN ; l'ennemi oppose un jet FIGÉ (Puissance ennemie + bonus cumulatif de tenue). */
+function openHoldScene(get: Get, set: Set, scene: ActivityDef): void {
   const mb = get().massBattle;
   if (!mb || !scene.hold) return;
   const state = mb.sceneState[scene.id] ?? initHoldState();
   if (state.broken) { get().log(`Scène « ${scene.label} » : la position a déjà cédé (déroute).`); return; }
   const party = get().party.filter((h) => !h.dead && !mb.actedHeroes.includes(h.id));
   if (!party.length) { get().log('Tous les Personnages ont déjà agi ce Round.'); return; }
-  // Défenseurs = PJ postés disponibles ; à défaut, le meilleur PJ disponible SEUL. Résolution SOUTENUE
-  // (`bestAssistedOption`) : le meneur lance, les assistants capables ajoutent +10 (plafonné, l.153/157).
   const crew = assignedHeroesFor(mb, party, scene.id);
   const solo = bestForSkills(party, scene.skills, scene.char)?.actor;
   const team = crew.length ? crew : (solo ? [solo] : []);
   if (!team.length) return;
   const picked = bestAssistedOption(team, scene.skills, scene.char);
   if (!picked) return;
-  const held = state.held;
-  const enemyBonus = holdEnemyBonus(scene.hold, held); // +10 cumulatif par Round déjà tenu (l.163).
+  const enemyBonus = holdEnemyBonus(scene.hold, state.held); // +10 cumulatif par Round déjà tenu (l.163).
   const mod = massBattleThreatPenalty(mb);
-  // Jet FIGÉ de l'ennemi (Test opposé, l.161) : Puissance ennemie + bonus cumulatif de tenue, borné [1,99].
   const enemyValue = Math.max(1, Math.min(99, armyMight(mb.enemy) + enemyBonus));
   const enemyRoll = d100(battleRng());
-  openBattleTest(get, set, {
-    actor: picked.actor, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
-    difficulty: scene.difficulty ?? 'intermediaire', label: scene.label, purpose: 'hold', sceneId: scene.id, mod, modLabel: 'Menace',
+  openBattlePending(get, set, {
+    actor: picked.actor, battle: 'round', def: scene, skillValue: picked.value, skillId: picked.skillId, spec: picked.spec, char: scene.char,
+    difficulty: scene.difficulty ?? 'intermediaire', mod, modLabel: mod ? 'Menace' : undefined,
     enemyValue, enemyRoll, heroIds: team.map((h) => h.id), support: picked.support,
   });
 }
 
 // ── Rassemblement (l.122) ────────────────────────────────────────────────────────────────────────
 
-/** Ouvre le Test de Résistance de guérison du Rassemblement (l.122) pour le prochain PJ vivant n'ayant
- *  pas encore récupéré ce Round. Disponible entre les Rounds (post-clash). */
+/** Ouvre le Test de Résistance de guérison du Rassemblement (l.122, `ActivityDef` sceneKind 'rally') pour
+ *  le prochain PJ vivant n'ayant pas récupéré ce Round. Disponible entre les Rounds (post-clash). */
 export function openMassBattleRally(get: Get, set: Set): void {
   const mb = get().massBattle;
   if (!mb || mb.phase !== 'round' || !mb.awaitingNext) return;
+  const def = activityById('rassemblement');
+  if (!def) return;
   const hero = get().party.find((h) => !h.dead && !mb.ralliedHeroes.includes(h.id) && h.wounds.current < h.wounds.max);
   if (!hero) { get().log('Aucun Personnage à soigner au Rassemblement.'); return; }
-  openBattleTest(get, set, {
-    actor: hero, skillValue: testValue(hero, 'resistance'), skillId: 'resistance',
-    difficulty: 'intermediaire', label: 'Rassemblement (Résistance)', purpose: 'rally',
+  openBattlePending(get, set, {
+    actor: hero, battle: 'round', def, skillValue: testValue(hero, 'resistance'), skillId: 'resistance',
+    difficulty: 'intermediaire', label: 'Rassemblement (Résistance)', heroIds: [hero.id],
   });
 }
 
-// ── Fabrique de modale + application des jets ────────────────────────────────────────────────────
+// ── Application des issues (appelée par `confirmActivity` pour une `PendingActivity` de bataille) ───
 
-/** Fabrique commune d'une modale de jet de bataille (Discours/Scène/Activité/Rassemblement/Tenue). Porte
- *  le Test COMBINÉ (`combined` : seconde compétence testée par le MÊME jet, l.75/102) et le Test OPPOSÉ de
- *  tenue (`enemyValue`/`enemyRoll`, l.161 : jet ENNEMI figé). */
-function openBattleTest(get: Get, set: Set, o: {
-  actor: Combatant; skillValue: number; skillId?: string; spec?: string; char?: CharKey;
-  difficulty: Difficulty; label: string; purpose: PendingBattleTest['purpose']; sceneId?: string; activityId?: string; mod?: number; modLabel?: string;
-  combined?: { skillId: string; spec?: string; value: number };
-  enemyValue?: number; enemyRoll?: number;
-  /** PJ engagés dans une Scène MULTI-PJ (meneur compris) — tous consommés à la résolution (l.116-118). */
-  heroIds?: string[];
-  /** Détail du Soutien fondu dans `skillValue` (informatif pour la modale). */
-  support?: { count: number; bonus: number };
-}): void {
-  const skill = o.skillId ? refLabel('skills', { id: o.skillId, spec: o.spec }) : o.char ? CHAR_LABELS[o.char] : 'Test';
-  const diffMod = DIFFICULTY_MODIFIERS[o.difficulty] + (o.mod ?? 0);
-  // Cible EFFECTIVE précalculée (base + Difficulté + modificateur de situation), bornée à [1, 99].
-  const target = Math.max(1, Math.min(99, o.skillValue + diffMod));
-  const combined = o.combined
-    ? { skill2: refLabel('skills', { id: o.combined.skillId, spec: o.combined.spec }), skillValue2: o.combined.value, target2: Math.max(1, Math.min(99, o.combined.value + diffMod)) }
-    : {};
-  set({
-    pendingBattleTest: {
-      actorId: o.actor.id, actorName: o.actor.name, label: o.label, skill,
-      skillId: o.skillId, spec: o.spec, char: o.char, skillValue: o.skillValue, difficulty: o.difficulty,
-      purpose: o.purpose, sceneId: o.sceneId, activityId: o.activityId, roll: null, target, sl: 0, success: false,
-      enemyValue: o.enemyValue, enemyRoll: o.enemyRoll, heroIds: o.heroIds, support: o.support,
-      mod: o.mod, modLabel: o.modLabel, ...combined,
-    },
-  });
-}
-
-/** Applique un delta de Puissance COURANTE à un camp par `GameOp` (`heal`/`wounds`) : le gain est plafonné
- *  NATURELLEMENT à la Puissance de départ (`heal` vers `wounds.max`, l.135), la perte va jusqu'à 0. */
+/** Applique un delta de Puissance COURANTE à un camp par `GameOp` (`heal`/`wounds`). */
 function applyDelta(mb: MassBattleState, side: 'ally' | 'enemy', delta: number): MassBattleState {
   return { ...mb, [side]: armyWithMightDelta(mb[side], delta) };
 }
 
-/** Applique les deltas + enchaînements d'une Scène résolue, met à jour situation/menaces/agissants. */
-function applySceneResolution(
-  mb: MassBattleState, scene: BattleSceneDef, res: SceneResolution, heroes: string[],
+/** Applique une issue de bataille (`BattleOutcome`) à l'état : delta de Puissance courante/départ ou
+ *  modificateur de Test. Retourne l'état muté + le delta AFFICHABLE éventuel. */
+function applyBattleOutcome(mb: MassBattleState, o: BattleOutcomeDelta, amount: number, label: string): { mb: MassBattleState; shown?: SceneDelta } {
+  switch (o.target) {
+    case 'might': {
+      const side = o.side ?? 'enemy';
+      return { mb: applyDelta(mb, side, amount), shown: { side, amount, label } };
+    }
+    case 'startMight': {
+      const side = o.side ?? 'ally';
+      return { mb: { ...mb, [side]: armyWithStartMightDelta(mb[side], amount) }, shown: { side, amount, label } };
+    }
+    case 'allyTestMod': return { mb: { ...mb, allyMod: mb.allyMod + amount } };
+    case 'firstRoundBonus': return { mb: { ...mb, firstRoundBonus: mb.firstRoundBonus + amount } };
+    case 'planningBonus': return { mb: { ...mb, planningBonus: mb.planningBonus + amount } };
+  }
+}
+
+/** Issue effective (Succès + DR de palier) d'une Activité/Scène, Test COMBINÉ compris (l.75/102) : un Test
+ *  combiné RÉUSSIT sur `full` ; son DR de palier = le PLUS FAIBLE des deux DR (facteur limitant). */
+function activityTestResult(pa: PendingActivity): { success: boolean; sl: number } {
+  if (pa.combinedLevel) return { success: pa.combinedLevel === 'full', sl: Math.min(pa.sl, pa.sl2 ?? pa.sl) };
+  return { success: pa.success, sl: pa.sl };
+}
+
+/** Construit la `BattleResolution` d'un Test (Scène de Test/Activité de préparation) : Succès Stupéfiant
+ *  (DR ≥ 6) fait tomber le capitaine/général (`generalDown`, l.208/217). */
+function testResolution(success: boolean, sl: number): BattleResolution {
+  return { success, sl, hits: 0, kills: 0, generalDown: success && sl >= 6, intervention: false, combat: false };
+}
+
+/** Applique les bandes d'issue de bataille d'une résolution (deltas `battle` + enchaînements `chains`),
+ *  met à jour situation/menaces/agissants pour une Scène. */
+function applyBattleBands(
+  mb: MassBattleState, def: ActivityDef, res: BattleResolution, heroes: string[], isScene: boolean,
 ): { mb: MassBattleState; lines: string[] } {
   let next = mb;
-  const deltas = sceneDeltas(scene, res);
+  const bands = matchBattleOutcomes(def, res);
   const shown: SceneDelta[] = [];
-  for (const d of deltas) {
-    next = applyDelta(next, d.side, d.amount);
-    shown.push({ side: d.side, amount: d.amount, label: scene.label });
+  const chains: string[] = [];
+  const deltaLabels: string[] = [];
+  for (const b of bands) {
+    for (const o of (b.battle ?? [])) {
+      const amount = battleOutcomeAmount(o, res);
+      if (amount === 0) continue;
+      const r = applyBattleOutcome(next, o, amount, def.label);
+      next = r.mb;
+      if (r.shown) shown.push(r.shown);
+      deltaLabels.push(outcomeLabel(o, amount));
+    }
+    chains.push(...(b.chains ?? []));
   }
-  const chains = sceneChains(scene, res);
   const lines: string[] = [];
-  if (res.success || deltas.length) lines.push(sceneOutcomeLine(scene, res, deltas));
-  else lines.push(`Scène « ${scene.label} » échouée — aucun effet sur la Puissance.`);
-  for (const cid of chains) {
-    const cname = battleSceneById(cid)?.label ?? cid;
-    lines.push(`Enchaînement : la Scène « ${cname} » s'impose au prochain Round.`);
+  const noun = isScene ? 'Scène' : 'Activité';
+  if (deltaLabels.length) lines.push(`${noun} « ${def.label} » résolue : ${deltaLabels.join(' ; ')}.`);
+  else if (res.success) lines.push(`${noun} « ${def.label} » réussie — aucun effet chiffré.`);
+  else lines.push(`${noun} « ${def.label} » échouée — aucun effet.`);
+  for (const cid of uniq(chains)) {
+    lines.push(`Enchaînement : la Scène « ${battleSceneById(cid)?.label ?? cid} » s'impose au prochain Round.`);
   }
   next = {
     ...next,
-    resolvedScenes: uniq([...next.resolvedScenes, scene.id]),
-    actedHeroes: uniq([...next.actedHeroes, ...heroes]),
-    imposed: uniq([...next.imposed, ...chains]),
-    activeThreats: scene.kind === 'threat' ? next.activeThreats.filter((id) => id !== scene.id) : next.activeThreats,
-    sceneDeltas: [...next.sceneDeltas, ...shown],
+    ...(isScene ? {
+      resolvedScenes: uniq([...next.resolvedScenes, def.id]),
+      actedHeroes: uniq([...next.actedHeroes, ...heroes]),
+      imposed: uniq([...next.imposed, ...chains]),
+      activeThreats: def.sceneKind === 'threat' ? next.activeThreats.filter((id) => id !== def.id) : next.activeThreats,
+      sceneDeltas: [...next.sceneDeltas, ...shown],
+    } : {}),
   };
   return { mb: next, lines };
 }
 
-function sceneOutcomeLine(scene: BattleSceneDef, res: SceneResolution, deltas: { side: 'ally' | 'enemy'; amount: number }[]): string {
-  if (!deltas.length) return `Scène « ${scene.label} » résolue — aucun effet sur la Puissance.`;
-  const parts = deltas.map((d) => `Puissance ${d.side === 'ally' ? 'alliée' : 'ennemie'} ${d.amount >= 0 ? '+' : ''}${d.amount}`);
-  return `Scène « ${scene.label} » résolue : ${parts.join(' ; ')}.`;
+/** Libellé chiffré d'une issue appliquée (journal). */
+function outcomeLabel(o: BattleOutcomeDelta, amount: number): string {
+  const sign = amount >= 0 ? '+' : '';
+  switch (o.target) {
+    case 'might': return `Puissance ${(o.side ?? 'enemy') === 'ally' ? 'alliée' : 'ennemie'} ${sign}${amount}`;
+    case 'startMight': return `Puissance de départ ${(o.side ?? 'ally') === 'ally' ? 'alliée' : 'ennemie'} ${sign}${amount}`;
+    case 'allyTestMod': return `${sign}${amount} aux Tests de Puissance alliés`;
+    case 'firstRoundBonus': return `${sign}${amount} au premier Round`;
+    case 'planningBonus': return `${sign}${amount} à la Planification`;
+  }
 }
 
-/** Applique un Round de « Tenez votre position » (l.161-163) : accumule le Point de rupture depuis le DR
- *  net de l'ennemi (`pt.enemySL`), persiste l'état de tenue dans `sceneState`, et — TANT QUE la position
- *  TIENT — applique la réduction −2 de la Puissance ennemie (effet `success` de la Scène) et RÉIMPOSE la
- *  Scène au Round suivant (elle recommence chaque Round). Rupture (Point de rupture ≥ seuil OU Rounds max)
- *  → déroute : la Scène n'est plus réimposée. Les PJ engagés (`heroes`) sont consommés ce Round (Scène
- *  MULTI-PJ résolue en Soutien, ADE II ch.8 l.116-118/153/157/163). */
+/** Applique un Round de « Tenez votre position » (l.161-163) : accumule le Point de rupture, persiste la
+ *  tenue, et — TANT QUE la position TIENT — applique l'issue `on:'success'` de la Scène (−2 Puissance
+ *  ennemie) et RÉIMPOSE la Scène au Round suivant. Rupture → déroute. */
 function applyHoldResolution(
-  mb: MassBattleState, scene: BattleSceneDef, pt: PendingBattleTest, heroes: string[],
+  mb: MassBattleState, scene: ActivityDef, pa: PendingActivity, heroes: string[],
 ): { mb: MassBattleState; lines: string[] } {
-  const hold = scene.hold!;
+  const hold = scene.hold as BattleHold;
   const prev = mb.sceneState[scene.id] ?? initHoldState();
-  const r = resolveHoldRound(prev, hold, pt.enemySL ?? 0);
+  const r = resolveHoldRound(prev, hold, pa.enemySL ?? 0);
   const lines: string[] = [];
   let next: MassBattleState = { ...mb, sceneState: { ...mb.sceneState, [scene.id]: r.next } };
   const shown: SceneDelta[] = [];
   if (r.held) {
-    // Tenu : −2 de Puissance ennemie (effet `success` de la Scène, gaté par la tenue), et la Scène se
-    // représente au Round suivant avec un bonus d'opposition accru (l.163).
-    const res = testResolution(true, pt.sl);
-    for (const d of sceneDeltas(scene, res)) {
-      next = applyDelta(next, d.side, d.amount);
-      shown.push({ side: d.side, amount: d.amount, label: scene.label });
+    // Tenu : issue `on:'success'` de la Scène (−2 Puissance ennemie), gated par la tenue.
+    for (const b of matchBattleOutcomes(scene, testResolution(true, pa.sl))) {
+      for (const o of (b.battle ?? [])) {
+        const amount = battleOutcomeAmount(o, testResolution(true, pa.sl));
+        if (amount === 0) continue;
+        const ap = applyBattleOutcome(next, o, amount, scene.label);
+        next = ap.mb;
+        if (ap.shown) shown.push(ap.shown);
+      }
     }
     lines.push(`Tenez votre position : la position tient (Point de rupture ${r.next.breakpoint}/${hold.breakpoint}) — Puissance ennemie −2. L'ennemi redoublera d'efforts (opposition +${holdEnemyBonus(hold, r.next.held)} au prochain Round).`);
   }
   if (r.next.broken) {
     lines.push(`Tenez votre position : la position CÈDE (Point de rupture ${r.next.breakpoint}/${hold.breakpoint}) — les Personnages sont submergés, déroute.`);
   } else {
-    // Non rompue : la Scène RECOMMENCE au Round suivant (réimposée), le Point de rupture PERSISTE.
     next = { ...next, imposed: uniq([...next.imposed, scene.id]) };
     if (!r.held) lines.push(`Tenez votre position : l'ennemi gagne du terrain (Point de rupture ${r.next.breakpoint}/${hold.breakpoint}).`);
   }
@@ -682,128 +675,76 @@ function applyHoldResolution(
   return { mb: next, lines };
 }
 
-/** « Appliquer » d'un jet de bataille : consomme le résultat et applique l'effet selon le `purpose`. */
-export function battleTestConfirm(get: Get, set: Set): void {
-  const pt = get().pendingBattleTest;
+/** Applique l'issue d'une `PendingActivity` de BATAILLE (appelé par `confirmActivity`). Route selon le
+ *  contexte (préparation / Scène de Round) et le genre. NE consomme PAS de budget d'interlude (C2a). */
+export function confirmBattleActivity(get: Get, set: Set, pa: PendingActivity): void {
   const mb = get().massBattle;
-  set({ pendingBattleTest: null });
-  if (!pt || pt.roll == null || !mb) return;
+  if (!mb || pa.roll == null || !pa.activityId) return;
   const lines: string[] = [];
   let next = mb;
 
-  if (pt.purpose === 'inspire') {
-    if (pt.success) {
+  // Discours inspirant (l.71) : issue GLOBALE (+10 au 1er Round), pas de bande `battle`.
+  if (pa.activityId === 'inspire') {
+    if (pa.success) {
       next = { ...next, firstRoundBonus: next.firstRoundBonus + INSPIRE_BONUS };
-      lines.push(`${pt.actorName} galvanise les troupes (Discours inspirant réussi) : +${INSPIRE_BONUS} au Test de Puissance du premier Round.`);
+      const name = get().party.find((h) => h.id === pa.heroId)?.name ?? 'Le meneur';
+      lines.push(`${name} galvanise les troupes (Discours inspirant réussi) : +${INSPIRE_BONUS} au Test de Puissance du premier Round.`);
     } else {
-      lines.push(`${pt.actorName} ne parvient pas à galvaniser les troupes (Discours inspirant raté).`);
+      lines.push('Le discours ne parvient pas à galvaniser les troupes (Discours inspirant raté).');
     }
     next = { ...next, inspired: true };
+    set({ massBattle: { ...next, log: [...next.log, ...lines] } });
+    for (const l of lines) get().log(l);
+    return;
+  }
 
-  } else if (pt.purpose === 'activity' && pt.activityId) {
-    const def = battleActivityById(pt.activityId);
-    if (def) {
-      // Test COMBINÉ (l.75/102) : l'Activité RÉUSSIT sur `full` (les deux compétences réussies) ; le DR qui
-      // décide du palier (Stupéfiant/normal/Échec Stupéfiant) est le PLUS FAIBLE des deux (facteur limitant).
-      const { success, sl } = activityTestResult(pt);
-      const outcomes = activityOutcomes(def, success, sl);
-      next = applyActivityOutcomes(next, outcomes);
-      if (success && def.grantsFlag) next = { ...next, [def.grantsFlag]: true } as MassBattleState;
-      next = { ...next, activitiesDone: uniq([...next.activitiesDone, pt.activityId]) };
-      lines.push(activityOutcomeLine(pt.actorName, def, success, sl, outcomes, pt.combinedLevel));
-    }
+  const prepDef = pa.battle === 'prep' ? battleActivityById(pa.activityId) : undefined;
+  const scene = pa.battle === 'round' ? battleSceneById(pa.activityId) : undefined;
 
-  } else if (pt.purpose === 'hold' && pt.sceneId) {
-    const scene = battleSceneById(pt.sceneId);
-    if (scene?.hold) {
-      // Scène MULTI-PJ : TOUS les défenseurs engagés sont consommés ce Round (l.116-118), pas seulement le meneur.
-      const applied = applyHoldResolution(next, scene, pt, pt.heroIds ?? [pt.actorId]);
-      next = applied.mb;
-      lines.push(...applied.lines);
-    }
+  if (prepDef) {
+    const { success, sl } = activityTestResult(pa);
+    const res = testResolution(success, sl);
+    const applied = applyBattleBands(next, prepDef, res, [], false);
+    next = applied.mb;
+    if (success && prepDef.grantsFlag) next = { ...next, [prepDef.grantsFlag]: true } as MassBattleState;
+    next = { ...next, activitiesDone: uniq([...next.activitiesDone, pa.activityId]) };
+    lines.push(...applied.lines);
 
-  } else if (pt.purpose === 'rally') {
-    const hero = get().party.find((h) => h.id === pt.actorId);
+  } else if (scene?.sceneKind === 'rally') {
+    // Rassemblement (l.122) : Test de Résistance de guérison sur le héros acteur (pas l'armée).
+    const hero = get().party.find((h) => h.id === pa.heroId);
     if (hero) {
       const be = bonus(effectiveChar(hero, 'E'));
-      const heal = pt.success ? rallyHealAmount(pt.sl, be) : 0;
+      const heal = pa.success ? rallyHealAmount(pa.sl, be) : 0;
       if (heal > 0) {
         set({ party: get().party.map((h) => h.id === hero.id ? { ...h, wounds: { ...h.wounds, current: Math.min(h.wounds.max, h.wounds.current + heal) } } : h) });
-        lines.push(`${pt.actorName} récupère au Rassemblement : +${heal} Blessures soignées (DR ${pt.sl} + BE ${be}).`);
+        lines.push(`${hero.name} récupère au Rassemblement : +${heal} Blessures soignées (DR ${pa.sl} + BE ${be}).`);
       } else {
-        lines.push(`${pt.actorName} ne parvient pas à récupérer au Rassemblement.`);
+        lines.push(`${hero.name} ne parvient pas à récupérer au Rassemblement.`);
       }
       next = { ...next, ralliedHeroes: uniq([...next.ralliedHeroes, hero.id]) };
     }
 
-  } else if (pt.purpose === 'scene' && pt.sceneId) {
-    const scene = battleSceneById(pt.sceneId);
-    if (scene) {
-      const res = testResolution(pt.success, pt.sl);
-      // Scène MULTI-PJ : TOUT l'équipage engagé est consommé ce Round (l.116-118), pas seulement le meneur.
-      const applied = applySceneResolution(next, scene, res, pt.heroIds ?? [pt.actorId]);
-      next = applied.mb;
-      lines.push(...applied.lines);
-    }
+  } else if (scene?.sceneKind === 'hold') {
+    const applied = applyHoldResolution(next, scene, pa, pa.heroIds ?? [pa.heroId]);
+    next = applied.mb;
+    lines.push(...applied.lines);
+
+  } else if (scene) {
+    // Scène de Test (l.116-225) : delta de Puissance par l'issue.
+    const applied = applyBattleBands(next, scene, testResolution(pa.success, pa.sl), pa.heroIds ?? [pa.heroId], true);
+    next = applied.mb;
+    lines.push(...applied.lines);
   }
 
   set({ massBattle: { ...next, log: [...next.log, ...lines] } });
   for (const l of lines) get().log(l);
 }
 
-/** Applique les issues chiffrées d'une Activité pré-combat à la Puissance/aux modificateurs. */
-function applyActivityOutcomes(mb: MassBattleState, outcomes: ActivityOutcome[]): MassBattleState {
-  let next = mb;
-  for (const o of outcomes) {
-    switch (o.target) {
-      case 'allyTestMod': next = { ...next, allyMod: next.allyMod + o.amount }; break;
-      case 'firstRoundBonus': next = { ...next, firstRoundBonus: next.firstRoundBonus + o.amount }; break;
-      case 'planningBonus': next = { ...next, planningBonus: next.planningBonus + o.amount }; break;
-      // Pré-bataille : Rassembler des forces (l.96) / Sabotage (l.106) ajustent la Puissance de DÉPART
-      // (`wounds.max`), la courante suivant le même delta (patron `refreshWounds`).
-      case 'allyMight': next = { ...next, ally: armyWithStartMightDelta(next.ally, o.amount) }; break;
-      case 'enemyMight': next = { ...next, enemy: armyWithStartMightDelta(next.enemy, o.amount) }; break;
-    }
-  }
-  return next;
-}
-
-/** Issue effective (Succès + DR de palier) d'une Activité, Test COMBINÉ compris (l.75/102) : un Test
- *  combiné RÉUSSIT sur `full` (les deux compétences réussies) ; son DR de palier (Stupéfiant/Échec
- *  Stupéfiant) = le PLUS FAIBLE des deux DR (facteur limitant). Un Test simple retourne son propre couple. */
-function activityTestResult(pt: PendingBattleTest): { success: boolean; sl: number } {
-  if (pt.combinedLevel) {
-    const sl = Math.min(pt.sl, pt.sl2 ?? pt.sl);
-    return { success: pt.combinedLevel === 'full', sl };
-  }
-  return { success: pt.success, sl: pt.sl };
-}
-
-function activityOutcomeLine(actor: string, def: BattleActivityDef, success: boolean, sl: number, outcomes: ActivityOutcome[], combinedLevel?: 'full' | 'partial' | 'fail'): string {
-  const combinedNote = combinedLevel === 'partial' ? ' (Test combiné : une seule Compétence réussie)' : '';
-  if (!success && !outcomes.length) return `${actor} échoue à l'Activité « ${def.label} »${combinedNote} — sans effet.`;
-  if (!success) return `${actor} rate l'Activité « ${def.label} » (Échec Stupéfiant) : ${describeOutcomes(outcomes)}.`;
-  const kind = sl >= 6 ? 'Succès Stupéfiant' : 'Succès';
-  return `${actor} réussit l'Activité « ${def.label} » (${kind}) : ${describeOutcomes(outcomes)}.`;
-}
-
-function describeOutcomes(outcomes: ActivityOutcome[]): string {
-  if (!outcomes.length) return 'aucun effet';
-  const label: Record<ActivityOutcome['target'], string> = {
-    allyTestMod: 'modificateur aux Tests de Puissance alliés',
-    allyMight: 'Puissance alliée',
-    enemyMight: 'Puissance ennemie',
-    firstRoundBonus: 'bonus au premier Round',
-    planningBonus: 'bonus à la Planification',
-  };
-  return outcomes.map((o) => `${o.amount >= 0 ? '+' : ''}${o.amount} ${label[o.target]}`).join(' ; ');
-}
-
 // ── Scène de COMBAT tactique (l.137-145/211-225) ─────────────────────────────────────────────────
 
-/** Démarre une Scène de COMBAT/MENACE : réutilise le combat existant. La victoire nourrit la réduction
- *  de Puissance (touches + kills, l.139/145 ; issue de Duel −20/−10+Charge, l.225). */
-function startBattleCombat(get: Get, set: Set, scene: BattleSceneDef): void {
+/** Démarre une Scène de COMBAT/MENACE : réutilise le combat existant. */
+function startBattleCombat(get: Get, set: Set, scene: ActivityDef): void {
   const mb = get().massBattle;
   if (!mb) return;
   const encId = mb.sceneEncounters?.[scene.id] ?? scene.encounter;
@@ -817,8 +758,7 @@ function startBattleCombat(get: Get, set: Set, scene: BattleSceneDef): void {
   get().startCombat(encId);
 }
 
-/** Comptage EN DIRECT des touches d'une Scène de COMBAT (l.139/145) — appelé par `applyAttackResult`
- *  à chaque touche. Ne compte QUE les touches d'un HÉROS sur un ENNEMI (hors structure de siège). */
+/** Comptage EN DIRECT des touches d'une Scène de COMBAT (l.139/145) — appelé par `applyAttackResult`. */
 export function massBattleTrackHit(get: Get, set: Set, attacker: Combatant, target: Combatant): void {
   const mb = get().massBattle;
   if (!mb?.combatScene) return;
@@ -829,10 +769,7 @@ export function massBattleTrackHit(get: Get, set: Set, attacker: Combatant, targ
 }
 
 /** Reprise après une Scène de COMBAT (appelée par `dismissVictory`/`dismissDefeat`) : applique la
- *  réduction/malus de Puissance selon l'issue, puis revient à la vue de bataille. VICTOIRE (`won`) :
- *  touches + kills (l.139), effets `combatWon`. DÉFAITE (`lost`) : effets `combatLost` (Duel l.223 : le
- *  camp allié vaincu perd −20 ; Percée l.175 : échec→Charge) — la bataille CONTINUE (pas d'écran de
- *  défaite). Les héros sont soignés (le combat de scène ne tue pas définitivement le groupe). */
+ *  réduction/malus de Puissance selon l'issue, puis revient à la vue de bataille. */
 export function massBattleResumeCombat(get: Get, set: Set, kills: number, outcome: 'won' | 'lost' = 'won'): void {
   const mb = get().massBattle;
   if (!mb?.combatScene) return;
@@ -841,10 +778,11 @@ export function massBattleResumeCombat(get: Get, set: Set, kills: number, outcom
   let next: MassBattleState = { ...mb, combatScene: undefined };
   const lines: string[] = [];
   if (scene) {
-    const res = outcome === 'won'
-      ? combatResolution(cs.hits, kills, cs.hitters.length)
-      : combatLossResolution(cs.hits, cs.hitters.length);
-    const applied = applySceneResolution(next, scene, res, cs.hitters);
+    const res: BattleResolution = outcome === 'won'
+      // Victoire : le général (la rencontre) est neutralisé ; intervention si > 1 frappeur (Duel l.225).
+      ? { success: true, sl: 0, hits: cs.hits, kills, generalDown: true, intervention: cs.hitters.length > 1, combat: true }
+      : { success: false, sl: 0, hits: cs.hits, kills: 0, generalDown: false, intervention: cs.hitters.length > 1, combat: true };
+    const applied = applyBattleBands(next, scene, res, cs.hitters, true);
     next = applied.mb;
     lines.push(outcome === 'won'
       ? `Combat « ${scene.label} » remporté : ${cs.hits} touche(s), ${kills} ennemi(s) neutralisé(s).`
@@ -872,9 +810,6 @@ export function massBattleClash(get: Get, set: Set): void {
   const mb = get().massBattle;
   if (!mb || mb.phase !== 'round' || mb.awaitingNext) return;
   const allyMod = mb.allyMod + (mb.round === 1 ? mb.firstRoundBonus : 0);
-  // Test spectaculaire NON opposé (l.120) : chaque armée jette sa Puissance courante et réduit l'adverse de
-  // 10 + DR (min 5), SIMULTANÉMENT — les deux DR figés AVANT réduction. Les pertes sont appliquées aux
-  // Combattants-armées par l'op `wounds` (langue unique), pas par un recalcul numérique de champ.
   const clash = resolveClash(armyMight(mb.ally), armyMight(mb.enemy), { allyMod, enemyMod: 0, rng: battleRng() });
   const ally = armyWithMightDelta(mb.ally, -clash.allyLoss);
   const enemy = armyWithMightDelta(mb.enemy, -clash.enemyLoss);
@@ -895,8 +830,7 @@ export function massBattleClash(get: Get, set: Set): void {
   for (const l of lines) get().log(l);
 }
 
-/** Passe au Round suivant (l.124) : compose la nouvelle SITUATION et réinitialise l'état par-Round.
- *  Les MENACES actives et les Scènes IMPOSÉES (enchaînements) sont conservées puis intégrées. */
+/** Passe au Round suivant (l.124) : compose la nouvelle SITUATION et réinitialise l'état par-Round. */
 export function massBattleAdvance(get: Get, set: Set): void {
   const mb = get().massBattle;
   if (!mb || mb.phase !== 'round' || !mb.awaitingNext) return;
@@ -931,8 +865,49 @@ export function endMassBattle(get: Get, set: Set): void {
 // ── Sélecteurs pour la vue ───────────────────────────────────────────────────────────────────────
 
 /** Scènes PRÉSENTÉES ce Round (la situation du moment) — défs complètes, non encore résolues. */
-export function massBattleScenes(mb: MassBattleState): BattleSceneDef[] {
+export function massBattleScenes(mb: MassBattleState): ActivityDef[] {
   return mb.situation
     .map((id) => battleSceneById(id))
-    .filter((s): s is BattleSceneDef => !!s);
+    .filter((s): s is ActivityDef => !!s);
+}
+
+/** Libellé COURT d'une issue de bataille chiffrée (aperçu de la vue). */
+function shortOutcomeLabel(o: BattleOutcomeDelta): string {
+  const target: Record<BattleOutcomeDelta['target'], string> = {
+    might: (o.side ?? 'enemy') === 'ally' ? 'Puiss. alliée' : 'Puiss. ennemie',
+    startMight: (o.side ?? 'ally') === 'ally' ? 'Puiss. alliée' : 'Puiss. ennemie',
+    allyTestMod: 'Tests alliés', firstRoundBonus: '1er Round', planningBonus: 'Planification',
+  };
+  const per = o.scale === 'perDR' ? '/DR' : o.scale === 'perHit' ? '/touche' : o.scale === 'perKill' ? '/vaincu' : '';
+  return `${o.amount >= 0 ? '+' : ''}${o.amount}${per} ${target[o.target]}`;
+}
+
+const BATTLE_WHEN_LABEL: Record<string, string> = {
+  generalDown: 'général tué', intervention: 'intervention', noIntervention: 'duel solo',
+  combatWon: 'victoire', combatLost: 'défaite',
+};
+
+/** Aperçu chiffré des effets d'une Activité de préparation (Succès / bandes conditionnelles). */
+export function battleActivityEffectLabel(def: ActivityDef): string {
+  const parts: string[] = [];
+  for (const b of def.outcomes ?? []) {
+    const eff = (b.battle ?? []).map(shortOutcomeLabel).join(', ');
+    if (!eff) continue;
+    const tier = b.on === 'failure' ? (b.maxSL === -6 ? 'Éch. Stupéfiant' : 'Échec') : b.minSL === 6 ? 'Stupéfiant' : b.maxSL === 5 ? 'Succès' : 'Succès';
+    parts.push(def.outcomes!.length > 1 ? `${eff} (${tier})` : eff);
+  }
+  return parts.join(' ; ') || 'Sans effet chiffré';
+}
+
+/** Aperçu chiffré des effets d'une Scène de Round (base + conditionnels). */
+export function battleSceneEffectLabel(def: ActivityDef): string {
+  if (def.threat) return `Menace : ${def.threat.penalty} aux autres Scènes`;
+  const parts: string[] = [];
+  for (const b of def.outcomes ?? []) {
+    for (const o of (b.battle ?? [])) {
+      const cond = b.when ? ` (si ${BATTLE_WHEN_LABEL[b.when] ?? b.when})` : b.minSL === 6 ? ' (si Stupéfiant)' : '';
+      parts.push(`${shortOutcomeLabel(o)}${cond}`);
+    }
+  }
+  return parts.join(' ; ') || 'Sans effet direct';
 }

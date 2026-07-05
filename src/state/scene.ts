@@ -547,7 +547,8 @@ export interface Scene {
 }
 
 /** Ancre AUTHORÉE d'une Scène de bataille sur le plan (S2) : `sceneId` (une entrée de
- *  `MassBattleState.pool` = un `BattleSceneDef.id`) posée sur une case de la carte. La Puissance des
+ *  `MassBattleState.pool` = l'id d'une Scène de bataille, `ActivityDef` contexte 'bataille-round') posée
+ *  sur une case de la carte. La Puissance des
  *  armées reste une abstraction NON rendue — seul l'emplacement de l'ACTION est posé. Consommé par
  *  `battleScenesToStations` (state/stations.ts) ; absence d'ancre → repli déterministe côté consommateur. */
 export interface SceneStationAnchor {
