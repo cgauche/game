@@ -7,7 +7,7 @@ import { StationSheet } from './StationSheet';
 import { AssignRow } from './AssignRow';
 import { battleScenesToStations, type Station } from '../state/stations';
 import {
-  massBattleThreatPenalty, battleActivitiesAvailable, prepCount, armyMight, armyStartMight,
+  massBattleThreatPenalty, battleActivitiesAvailable, armyMight, armyStartMight,
   battleSceneById, battleActivityEffectLabel, battleSceneEffectLabel,
   type MassBattleState, type MassBattleArmy,
 } from '../state/massBattleFlow';
@@ -32,13 +32,13 @@ export function MassBattleView() {
         <p className="subtitle">
           {mb.phase === 'over'
             ? 'La bataille est terminée.'
-            : mb.phase === 'inspire'
+            : mb.phase === 'prep'
               ? 'Préparatifs — Activités de bataille'
               : `Round de bataille ${mb.round} / ${mb.plannedRounds}`}
         </p>
         <RuleDivider />
         <ArmyBars mb={mb} />
-        {mb.phase === 'inspire' && <PreBattle mb={mb} />}
+        {mb.phase === 'prep' && <PreBattle mb={mb} />}
         {mb.phase === 'round' && <RoundPanel mb={mb} />}
         {mb.phase === 'over' && <OverPanel mb={mb} />}
         <BattleLog log={mb.log} />
@@ -80,11 +80,14 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
   const begin = useGame((s) => s.massBattleBegin);
   const setHero = useGame((s) => s.setMassBattleHero);
   const party = useGame((s) => s.party);
+  const interlude = useGame((s) => s.interlude);
   const living = party.filter((h) => !h.dead);
   const diff = inspireDifficulty(armyMight(mb.ally), armyMight(mb.enemy));
   const activities = battleActivitiesAvailable(mb);
-  const count = prepCount(mb);
-  const full = count >= 3;
+  // BUDGET UNIQUE (ADE II ch.8 l.65 / LDB 23 l.6) : la prépa de bataille EST une Activité d'interlude.
+  // Sans interlude ouvert → aucune Activité de préparation possible (Round 1 direct, sans bonus).
+  const budget = interlude ? living.reduce((n, h) => n + (interlude.perHero[h.id]?.left ?? 0), 0) : 0;
+  const full = budget <= 0;
   const [openAct, setOpenAct] = useState<string | null>(null);
   // Le posté d'une action pré-combat SOLO (Discours l.71 / la plupart des Activités « un Personnage »),
   // résolu en héros vivant : premier id de la liste d'affectation.
@@ -101,8 +104,10 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
     <section className="panel mb-phase">
       <h3>Avant la bataille</h3>
       <p className="mb-detail">
-        Jusqu'à 3 Activités de bataille peuvent influer sur l'affrontement (Discours, Planification,
-        Repérage, Sabotage…). <b>{count} / 3</b> réalisée{count > 1 ? 's' : ''}.
+        Les Activités de bataille (Discours, Planification, Repérage, Sabotage…) puisent dans le budget
+        d'Activités <em>Entre deux aventures</em> (max 3, ADE II ch.8). {interlude
+          ? <>Activités d'interlude restantes : <b>{budget}</b>.</>
+          : <><b>Aucun interlude ouvert</b> — la bataille démarrera au Round 1 sans préparation.</>}
       </p>
       {mb.allyMod !== 0 && (
         <p className="mb-detail">Modificateur permanent aux Tests de Puissance alliés : <b>{mb.allyMod > 0 ? '+' : ''}{mb.allyMod}</b>.</p>
@@ -165,9 +170,20 @@ function PreBattle({ mb }: { mb: MassBattleState }) {
         ))}
       </div>
       <div className="bar mb-actions">
+        {interlude && <BackToInterlude />}
         <button className="btn btn-primary" onClick={begin}>Engager la bataille</button>
       </div>
     </section>
+  );
+}
+
+/** Retour à l'écran d'interlude (coexistence prépa ⇄ interlude, ADE II ch.8) : la préparation puise
+ *  dans le budget d'Activités d'interlude — on peut faire l'aller-retour tant que la bataille n'est pas
+ *  engagée. */
+function BackToInterlude() {
+  const setScreen = useGame((s) => s.setScreen);
+  return (
+    <button className="btn small" onClick={() => setScreen('interlude')}>Retour à l'interlude</button>
   );
 }
 

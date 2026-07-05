@@ -179,6 +179,10 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
                 <BankList bank={bank} party={party} interlude={interlude} canDrive={ownsHero} />
               </section>
             )}
+            {/* Préparation d'une bataille en attente (ADE II ch.8) : le budget d'Activités est CELUI de
+                l'interlude (l.65) — la préparation se joue sur l'écran de Puissance de Bataille, chaque
+                Activité y décomptant une Activité d'interlude du meneur. */}
+            <BattlePrepEntry />
             {/* Jeux de taverne (NADJ ch.16) — délassement entre deux aventures ; affordance montrée
                 seulement si l'option `tavern-games` est active. Ne consomme pas d'Activité. */}
             {rule('tavern-games') && <TavernGamesEntry />}
@@ -251,6 +255,29 @@ function SynthBar({ heroes, interlude, money, activeId, ownsHero, ownerName }: {
         <Coins money={money} />
       </div>
     </div>
+  );
+}
+
+/** Entrée « Préparation de bataille » (ADE II ch.8) : si une bataille est en attente de préparation
+ *  (`massBattle.phase === 'prep'`), propose de rejoindre l'écran de Puissance de Bataille. Les Activités
+ *  de préparation qui s'y jouent DÉCOMPTENT le budget d'Activités d'interlude du meneur (budget UNIQUE,
+ *  l.65) — pas de second budget. */
+function BattlePrepEntry() {
+  const mb = useGame((s) => s.massBattle);
+  const setScreen = useGame((s) => s.setScreen);
+  if (!mb || mb.phase !== 'prep') return null;
+  return (
+    <section className="interlude-hero panel">
+      <h3><Icon id="action/attack" size="sm" /> Préparation de bataille</h3>
+      <p className="interlude-detail">
+        Une bataille se prépare : <b>{mb.ally.name}</b> contre <b>{mb.enemy.name}</b>. Les Activités de
+        préparation (Discours, Planification, Repérage, Sabotage…) puisent dans vos Activités
+        <em> Entre deux aventures</em> (max 3, ADE II ch.8).
+      </p>
+      <button className="btn small btn-primary" onClick={() => setScreen('massBattle')}>
+        Rejoindre le conseil de guerre
+      </button>
+    </section>
   );
 }
 

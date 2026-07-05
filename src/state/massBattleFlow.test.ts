@@ -5,12 +5,27 @@ import { pregenParty, PREGEN } from '../data/pregens';
 import { massBattleTrackHit, armyMight, armyStartMight, type MassBattleSpec, type MassBattleState } from './massBattleFlow';
 import type { Combatant } from '../engine/types';
 
-/** Amorce une bataille avec un vrai groupe (pré-tirés) et le RNG seedé. */
-function start(spec: Partial<MassBattleSpec> = {}, party = pregenParty(PREGEN.soldat, PREGEN.chasseur)) {
+/** Amorce une bataille avec un vrai groupe (pré-tirés) et le RNG seedé. Par défaut ouvre AUSSI un
+ *  interlude doté du budget d'Activités (3 par héros) : c'est le budget UNIQUE dans lequel puise la
+ *  préparation de bataille (ADE II ch.8 l.65 / LDB 23 l.6). `interludeLeft: 0` (ou absence) simule une
+ *  bataille SANS interlude (aucune préparation possible → Round 1 direct). */
+function start(
+  spec: Partial<MassBattleSpec> = {},
+  party = pregenParty(PREGEN.soldat, PREGEN.chasseur),
+  opts: { interludeLeft?: number } = {},
+) {
   seedBattleRng(1234);
-  useGame.setState({ party, battle: null, interlude: null });
+  const left = opts.interludeLeft ?? 3;
+  const perHero = Object.fromEntries(party.map((h) => [h.id, { eventRoll: 1, left, revenueBrass: 0 }]));
+  useGame.setState({
+    party, battle: null,
+    interlude: left > 0 ? { weeks: 3, phase: 'activities', perHero } as any : null,
+  });
   useGame.getState().startMassBattle({ allyMight: 50, enemyMight: 55, plannedRounds: 3, ...spec });
 }
+
+/** Budget d'Activités d'interlude restant d'un héros. */
+const leftOf = (heroId: string) => useGame.getState().interlude?.perHero[heroId]?.left ?? 0;
 
 /** Injecte un résultat de jet connu dans la modale d'Activité (canal UNIFIÉ) puis l'applique. */
 function resolveBattleTest(over: { roll: number; success: boolean; sl: number } & Record<string, unknown>) {
@@ -29,7 +44,7 @@ describe('startMassBattle / état', () => {
     expect(s.screen).toBe('massBattle');
     expect(armyMight(s.massBattle!.ally)).toBe(50);
     expect(armyMight(s.massBattle!.enemy)).toBe(55);
-    expect(s.massBattle?.phase).toBe('inspire');
+    expect(s.massBattle?.phase).toBe('prep');
     expect(s.massBattle?.situation).toEqual([]); // composée seulement à `massBattleBegin`
     expect(s.massBattle?.pool.length).toBeGreaterThan(0);
   });
@@ -127,18 +142,12 @@ describe('Activités de bataille pré-combat (l.79-106)', () => {
     expect(armyMight(mbState().ally)).toBe(60);
   });
 
-  it('max 3 Activités (Discours compris, l.65)', () => {
-    start();
-    useGame.getState().massBattleActivity('planification');
-    resolveBattleTest({ roll: 10, success: true, sl: 2 });
-    useGame.getState().massBattleActivity('reperage');
-    resolveBattleTest({ roll: 10, success: true, sl: 2, success2: true, sl2: 2, combinedLevel: 'full' });
-    useGame.getState().massBattleActivity('rassembler-des-forces');
-    resolveBattleTest({ roll: 10, success: true, sl: 2 });
-    // 3 faites → Discours et toute autre Activité bloqués.
+  it('budget UNIQUE : sans interlude ouvert, AUCUNE préparation possible (Round 1 direct)', () => {
+    start({}, pregenParty(PREGEN.soldat, PREGEN.chasseur), { interludeLeft: 0 });
+    expect(useGame.getState().interlude).toBeNull();
     useGame.getState().massBattleInspire();
     expect(pending()).toBeNull();
-    useGame.getState().massBattleActivity('sabotage');
+    useGame.getState().massBattleActivity('planification');
     expect(pending()).toBeNull();
   });
 });
@@ -550,15 +559,62 @@ describe('Rassemblement (l.122)', () => {
   });
 });
 
-describe('Budget d\'interlude INTACT (C2a — le budget partagé viendra en C2b)', () => {
-  it('une Activité de bataille ne décrémente PAS `interlude.perHero.left`', () => {
+describe('Budget PARTAGÉ (C2b) — ADE II ch.8 l.65 : « comme à l\'accoutumée, ils ne peuvent participer qu\'à un maximum de trois Activités »', () => {
+  it('une préparation de bataille DÉCRÉMENTE `interlude.perHero.left` (budget UNIQUE)', () => {
     start();
-    // Simule un interlude ouvert en parallèle avec un budget.
-    const hero = useGame.getState().party[0];
-    useGame.setState({ interlude: { weeks: 1, phase: 'activities', perHero: { [hero.id]: { eventRoll: 1, left: 3, revenueBrass: 0 } } } as any });
+    const hero = useGame.getState().party[0].id;
+    useGame.getState().setMassBattleHero('planification', [hero]);
+    expect(leftOf(hero)).toBe(3);
     useGame.getState().massBattleActivity('planification');
     resolveBattleTest({ roll: 10, success: true, sl: 2 });
-    expect(useGame.getState().interlude!.perHero[hero.id].left).toBe(3); // inchangé
+    expect(leftOf(hero)).toBe(2); // une Activité de préparation = une Activité d'interlude
+  });
+
+  it('un héros ne peut faire que 3 Activités AU TOTAL (mix prépa bataille + interlude normale) — la 4ᵉ est REFUSÉE', () => {
+    // GROUPE À UN SEUL HÉROS : son budget d'interlude (3) est le SEUL budget de préparation → l'épuiser
+    // épuise toute la préparation (le budget est UNIQUE, l.65). Repérage réussi débloque le Sabotage.
+    start({}, pregenParty(PREGEN.soldat));
+    const [hero] = useGame.getState().party.map((h) => h.id);
+    expect(leftOf(hero)).toBe(3);
+
+    // Activité #1 : préparation de bataille (Planification) → left 3→2.
+    useGame.getState().massBattleActivity('planification');
+    resolveBattleTest({ roll: 10, success: true, sl: 2 });
+    expect(leftOf(hero)).toBe(2);
+
+    // Activité #2 : préparation de bataille (Repérage) → left 2→1, débloque le Sabotage.
+    useGame.getState().massBattleActivity('reperage');
+    resolveBattleTest({ roll: 10, success: true, sl: 2, success2: true, sl2: 2, combinedLevel: 'full' });
+    expect(leftOf(hero)).toBe(1);
+    expect(mbState().scouted).toBe(true);
+
+    // Activité #3 : Activité d'interlude NORMALE (Revenus) → left 1→0.
+    useGame.getState().interludeActivity(hero, 'revenus');
+    const pa = pending()!;
+    expect(pa.battle).toBeUndefined(); // Activité d'interlude ordinaire (pas de bataille)
+    useGame.setState({ pendingActivity: { ...pa, roll: 50, success: true, sl: 1 } });
+    useGame.getState().activityConfirm();
+    expect(leftOf(hero)).toBe(0);
+
+    // 4ᵉ Activité : budget épuisé → la préparation de bataille (Sabotage) est REFUSÉE (l.65).
+    useGame.getState().massBattleActivity('sabotage');
+    expect(pending()).toBeNull();
+    // …et une Activité d'interlude normale l'est aussi (source de budget UNIQUE).
+    useGame.getState().interludeActivity(hero, 'revenus');
+    expect(pending()).toBeNull();
+  });
+
+  it('les Scènes de Round (`battle === \'round\'`) ne consomment PAS le budget d\'interlude', () => {
+    start({ situations: [['ligne-de-mire']] });
+    const hero = useGame.getState().party[0].id;
+    useGame.getState().setMassBattleHero('ligne-de-mire', [hero]);
+    useGame.getState().massBattleBegin();
+    useGame.getState().massBattleScene('ligne-de-mire');
+    const pa = pending()!;
+    expect(pa.battle).toBe('round');
+    const before = leftOf(pa.heroId);
+    resolveBattleTest({ roll: 10, success: true, sl: 2 });
+    expect(leftOf(pa.heroId)).toBe(before); // Scène de Round hors budget downtime (illimitée par Round)
   });
 });
 

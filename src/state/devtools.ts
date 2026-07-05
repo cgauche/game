@@ -297,7 +297,13 @@ export function buildApi() {
       if (sc.vessel) useGame.setState({ vessel: sc.vessel }); // navire de campagne (voyage/combat maritime)
       if (sc.autoCombat) g().startCombat(sc.autoCombat);
       if (g().pendingRoundStart) g().confirmRoundStart();
-      if (sc.massBattle) { g().startMassBattle(sc.massBattle); return `✅ bataille de masse « ${sc.title} » lancée`; }
+      if (sc.massBattle) {
+        // Interlude AVANT la bataille (ADE II ch.8 l.65) : son budget d'Activités (max 3) est celui dans
+        // lequel puise la préparation. `startMassBattle` bascule ensuite sur l'écran de bataille.
+        if (sc.interludeWeeks) g().startInterlude(sc.interludeWeeks);
+        g().startMassBattle(sc.massBattle);
+        return `✅ bataille de masse « ${sc.title} » lancée${sc.interludeWeeks ? ' (interlude ouvert pour la préparation)' : ''}`;
+      }
       s.setScreen('campaign');
       return `✅ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct, prêt à jouer)' : ''}`;
     },

@@ -53,6 +53,10 @@ export interface TestScenario {
   /** Bataille de masse (ADE II 08) : amorce le sous-système de Puissance de Bataille après le chargement
    *  de la scène (les Scènes de combat démarrent les rencontres de cette scène). */
   massBattle?: import('../../state/massBattleFlow').MassBattleSpec;
+  /** Ouvre un interlude (« Entre deux aventures », LDB 23) AVANT la bataille de masse — le budget
+   *  d'Activités (max 3) qu'il alloue est CELUI dans lequel puise la préparation (ADE II ch.8 l.65).
+   *  Sans lui, une `massBattle` démarre au Round 1 sans préparation. Valeur = nombre de semaines. */
+  interludeWeeks?: number;
   /** Navire de campagne (MDG ch.13-15) posé au lancement, APRÈS le reset de scène (comme `money`) — pour
    *  un scénario de voyage/combat maritime (appareillage sur `state.vessel`). */
   vessel?: import('../../state/store').CampaignVessel;

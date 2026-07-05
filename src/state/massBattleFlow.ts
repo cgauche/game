@@ -120,18 +120,21 @@ export interface MassBattleState {
   plannedRounds: number;
   /** Round de bataille courant (1-based). */
   round: number;
-  /** 'inspire' = pré-bataille (Activités) ; 'round' = Round actif ; 'over' = terminée. */
-  phase: 'inspire' | 'round' | 'over';
+  /** 'prep' = pré-bataille (Activités de préparation, via l'interlude) ; 'round' = Round actif ;
+   *  'over' = terminée. */
+  phase: 'prep' | 'round' | 'over';
   /** Description narrative de la configuration du terrain du Round (l.126). */
   terrain?: string;
   /** Modificateur PERMANENT au Test de Puissance allié (Planification +10/+20, l.81). */
   allyMod: number;
   /** Bonus au Test de Puissance allié du PREMIER Round seul (Discours inspirant réussi, l.71). */
   firstRoundBonus: number;
-  /** Discours inspirant déjà tenté (une fois avant la bataille). */
+  /** Discours inspirant déjà tenté (une fois avant la bataille) — anti-répétition, PAS un budget. */
   inspired?: boolean;
   // ── Activités de bataille pré-combat (l.79-110) ──
-  /** Ids des Activités de préparation déjà réalisées (max 3 au total avec le Discours, l.65). */
+  /** Ids des Activités de préparation déjà réalisées — set ANTI-RÉPÉTITION seul (« Les Activités ratées ne
+   *  peuvent être réessayées », l.67). Le BUDGET des 3 Activités est celui, UNIQUE, de l'interlude
+   *  (`interlude.perHero[id].left`, LDB 23 l.6 / ADE II ch.8 l.65). */
   activitiesDone: string[];
   /** Planification réussie (prérequis de l'Infiltration). */
   planned?: boolean;
@@ -259,14 +262,10 @@ export function massBattleThreatPenalty(mb: MassBattleState): number {
   return mb.activeThreats.reduce((sum, id) => sum + (battleSceneById(id)?.threat?.penalty ?? 0), 0);
 }
 
-/** Nombre d'Activités de préparation déjà réalisées (Discours compris, l.65 : max 3). */
-export function prepCount(mb: MassBattleState): number {
-  return mb.activitiesDone.length + (mb.inspired ? 1 : 0);
-}
-
-/** Activités pré-combat disponibles (prérequis satisfaits, quota de 3 non atteint, non déjà faites). */
+/** Activités pré-combat disponibles (prérequis satisfaits, non déjà faites). Le BUDGET (max 3, l.65)
+ *  n'est PAS testé ici : c'est celui, UNIQUE, de l'interlude (`interlude.perHero[id].left`) — vérifié
+ *  au moment de l'ouverture/décrément par héros (une prépa de bataille EST une Activité d'interlude). */
 export function battleActivitiesAvailable(mb: MassBattleState): ActivityDef[] {
-  if (prepCount(mb) >= 3) return [];
   const flags = prepFlags(mb);
   return PREP_ACTIVITIES().filter((a) => {
     if (mb.activitiesDone.includes(a.id)) return false;
@@ -299,7 +298,7 @@ export function startMassBattle(get: Get, set: Set, spec: MassBattleSpec): void 
     enemy: makeArmy(spec.enemyName ?? 'Armée ennemie', enemyMight),
     plannedRounds: Math.max(1, Math.floor(spec.plannedRounds ?? 1)),
     round: 1,
-    phase: 'inspire',
+    phase: 'prep',
     terrain: spec.terrain,
     allyMod: spec.allyMod ?? 0,
     firstRoundBonus: 0,
@@ -326,7 +325,7 @@ export function startMassBattle(get: Get, set: Set, spec: MassBattleSpec): void 
 /** Passe de la phase pré-bataille aux Rounds : compose la situation du Round 1. */
 export function massBattleBegin(get: Get, set: Set): void {
   const mb = get().massBattle;
-  if (!mb || mb.phase !== 'inspire') return;
+  if (!mb || mb.phase !== 'prep') return;
   const { situation, activeThreats, imposed } = composeSituation(mb, battleRng());
   const threatLine = describeThreats(activeThreats);
   set({ massBattle: { ...mb, phase: 'round', situation, activeThreats, imposed, log: threatLine ? [...mb.log, threatLine] : mb.log } });
@@ -372,14 +371,28 @@ function openBattlePending(get: Get, set: Set, o: {
 
 const DIFFICULTY_MOD = (d: Difficulty): number => DIFFICULTY_MODIFIERS[d];
 
+/** Budget d'Activités restant d'un héros — le budget UNIQUE de l'interlude (LDB 23 l.6 / ADE II ch.8
+ *  l.65). Une prépa de bataille EST une Activité d'interlude : sans interlude ouvert, aucun budget. */
+function heroBudget(get: Get, heroId: string): number {
+  return get().interlude?.perHero[heroId]?.left ?? 0;
+}
+
+/** Héros MENEURS éligibles d'une Activité de préparation : vivants ET disposant du budget d'interlude
+ *  (`left > 0`). Sans interlude ouvert, personne — une bataille sans préparation démarre au Round 1. */
+function budgetedParty(get: Get): Combatant[] {
+  return get().party.filter((h) => !h.dead && heroBudget(get, h.id) > 0);
+}
+
 // ── Activités pré-combat (l.79-110) ──────────────────────────────────────────────────────────────
 
 /** Ouvre le Test de Commandement du Discours inspirant (l.71). Difficulté = écart de Puissance arrondi
- *  à la dizaine ; en cas de succès → +10 au Test de Puissance du premier Round. */
+ *  à la dizaine ; en cas de succès → +10 au Test de Puissance du premier Round. Consomme une Activité
+ *  d'interlude du meneur (budget UNIQUE, décrémenté par `confirmActivity`). */
 export function openMassBattleInspire(get: Get, set: Set): void {
   const mb = get().massBattle;
-  if (!mb || mb.phase !== 'inspire' || mb.inspired || prepCount(mb) >= 3) return;
-  const party = get().party.filter((h) => !h.dead);
+  if (!mb || mb.phase !== 'prep' || mb.inspired) return;
+  const party = budgetedParty(get);
+  if (!party.length) return;
   const chosen = assignedHeroesFor(mb, party, 'inspire')[0] ?? partyBest(party, 'commandement')?.actor;
   if (!chosen) return;
   const difficulty = inspireDifficulty(armyMight(mb.ally), armyMight(mb.enemy));
@@ -423,11 +436,13 @@ export function setMassBattleHero(get: Get, set: Set, actionId: string, heroIds:
 export function openMassBattleActivity(get: Get, set: Set, activityId: string): void {
   const mb = get().massBattle;
   const def = battleActivityById(activityId);
-  if (!mb || mb.phase !== 'inspire' || !def) return;
-  if (mb.activitiesDone.includes(activityId) || prepCount(mb) >= 3) return;
+  if (!mb || mb.phase !== 'prep' || !def) return;
+  if (mb.activitiesDone.includes(activityId)) return; // anti-répétition (l.67)
   const flags = prepFlags(mb);
   if (!(def.requires ?? []).every((f) => flags.has(f))) return;
-  const party = get().party.filter((h) => !h.dead);
+  // Budget UNIQUE (l.65) : seuls les meneurs disposant d'une Activité d'interlude peuvent préparer.
+  const party = budgetedParty(get);
+  if (!party.length) return;
   // Le Repérage/Infiltration boostent le Test de Planification (`planningBonus`, l.75/100).
   const mod = activityId === 'planification' ? mb.planningBonus : 0;
   const modLabel = mod ? 'Préparation' : undefined;
@@ -675,8 +690,9 @@ function applyHoldResolution(
   return { mb: next, lines };
 }
 
-/** Applique l'issue d'une `PendingActivity` de BATAILLE (appelé par `confirmActivity`). Route selon le
- *  contexte (préparation / Scène de Round) et le genre. NE consomme PAS de budget d'interlude (C2a). */
+/** Applique l'issue d'une `PendingActivity` de BATAILLE à `MassBattleState` (appelé par `confirmActivity`).
+ *  Route selon le contexte (préparation / Scène de Round) et le genre. Le budget d'Activité (une prépa =
+ *  une Activité d'interlude, l.65) est décrémenté par `confirmActivity`, PAS ici (application ⊥ budget). */
 export function confirmBattleActivity(get: Get, set: Set, pa: PendingActivity): void {
   const mb = get().massBattle;
   if (!mb || pa.roll == null || !pa.activityId) return;

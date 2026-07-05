@@ -20,10 +20,12 @@ const scene = buildScene({
   size: [22, 16],
   heroStart: [3, 8],
   startMessage:
-    'Deux armées se font face. Menez la bataille via l\'écran de Puissance de Bataille : préparez-vous ' +
-    '(Activités), puis Round après Round choisissez vos Scènes de la situation du moment (plusieurs PJ par Scène, en soutien), ' +
-    'résolvez le Test spectaculaire de Puissance et rassemblez vos forces. Les Scènes « Pluie de flèches », ' +
-    '« Charge », « Tuez la bête ! », « Duel » et « Intrus » vous jettent dans une vraie mêlée.',
+    'Deux armées se font face. Un interlude est ouvert : préparez la bataille depuis l\'écran de Puissance ' +
+    'de Bataille (Discours, Planification, Repérage, Sabotage…) — chaque préparation puise dans vos Activités ' +
+    '« Entre deux aventures » (max 3, budget PARTAGÉ). Puis Round après Round, choisissez vos Scènes de la ' +
+    'situation du moment (plusieurs PJ par Scène, en soutien), résolvez le Test spectaculaire de Puissance et ' +
+    'rassemblez vos forces. Les Scènes « Pluie de flèches », « Charge », « Tuez la bête ! », « Duel » et ' +
+    '« Intrus » vous jettent dans une vraie mêlée.',
   encounters: [
     { id: 'enc-charge', enemies: [
       { ref: 'mutant', pos: { x: 12, y: 6 } },
@@ -88,6 +90,9 @@ export const scenario: TestScenario = {
   partyNote: '4 pré-tirés (soldat, chasseur, sorcier, tueur)',
   makeParty: () => pregenParty(PREGEN.soldat, PREGEN.chasseur, PREGEN.sorcier, PREGEN.tueur),
   scene,
+  // Interlude de 3 semaines AVANT la bataille : ses Activités (max 3 par héros, LDB 23) sont le budget
+  // UNIQUE dans lequel puise la préparation de bataille (ADE II ch.8 l.65). Sans lui : Round 1 direct.
+  interludeWeeks: 3,
   massBattle: {
     allyName: 'Armée des Personnages',
     enemyName: 'Horde ennemie',

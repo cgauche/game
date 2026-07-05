@@ -19,7 +19,7 @@ import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvent
 import { fromBrass, toBrass, formatMoney, PA_PER_CO } from '../engine/money';
 import { itemFromTrappingById, recomputeLoadout, buildWeapon } from '../engine/items';
 import { sleepParty } from './restFlow';
-import { confirmBattleActivity } from './massBattleFlow';
+import { confirmBattleActivity, massBattleBegin } from './massBattleFlow';
 import {
   craftTarget, craftSpecOf, metierOf, statusIncome, bankWithdrawOutcome, bankPayout, apprenticeshipTutorCost,
   ACTIVITIES, activitiesFor, activityById, matchOutcomes, activityAvailableAt,
@@ -236,6 +236,16 @@ export function incomeSkillOf(h: Combatant): string {
 }
 
 const heroState = (s: GameState, heroId: string) => s.interlude?.perHero[heroId];
+
+/** Décrémente le budget d'Activités d'un héros (`interlude.perHero[id].left`) — SOURCE UNIQUE du budget
+ *  de downtime (LDB 23 l.6 / ADE II ch.8 l.65). No-op si aucun interlude / budget épuisé. */
+export function consumeActivity(get: Get, set: Set, heroId: string): void {
+  const itl = get().interlude;
+  const st = itl?.perHero[heroId];
+  if (!itl || !st || st.left <= 0) return;
+  itl.perHero[heroId] = { ...st, left: st.left - 1 };
+  set({ interlude: { ...itl } });
+}
 
 /** Engage un Artisanat (ch.23 l.66) : exige une Compétence Métier (≥1 avance) ; les matériaux
  *  coûtent ¼ du prix listé, payés AVANT (« devront être achetées avant le début de l'Activité »). */
@@ -651,12 +661,15 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingId: string
 export function confirmActivity(get: Get, set: Set): void {
   const pa = get().pendingActivity;
   if (!pa || pa.roll == null || !pa.activityId) return;
-  // Activité/Scène de BATAILLE de masse (ADE II ch.8) : l'issue porte sur l'ARMÉE, pas sur l'interlude —
-  // route vers le résolveur de bataille (canal de jet identique, application distincte). C2a : ne consomme
-  // PAS encore de budget d'Activité (`interlude.perHero.left` intact — l'unification du budget est en C2b).
+  // Activité/Scène de BATAILLE de masse (ADE II ch.8) : l'issue porte sur l'ARMÉE (application distincte
+  // par `confirmBattleActivity`, canal de jet identique). BUDGET UNIQUE (l.65 : « comme à l'accoutumée,
+  // ils ne peuvent participer qu'à un maximum de trois Activités ») : une prépa de bataille EST une
+  // Activité d'interlude → elle DÉCRÉMENTE `interlude.perHero[id].left` comme toute Activité. Les Scènes
+  // de Round (`battle === 'round'`) sont HORS budget downtime (illimitées par Round) — jamais décomptées.
   if (pa.battle) {
     set({ pendingActivity: null });
     confirmBattleActivity(get, set, pa);
+    if (pa.battle === 'prep') consumeActivity(get, set, pa.heroId);
     return;
   }
   const itl = get().interlude;
@@ -851,5 +864,12 @@ export function interludeEnd(get: Get, set: Set): void {
     for (const { h, ops } of deferred) after.push(...applyOps(h, ops, { rng: battleRng(), now: get().gameTime }));
     set({ party: [...get().party] });
     for (const l of after) get().log(l);
+  }
+  // Bataille en attente de préparation à la clôture de l'interlude (ADE II ch.8) : la fin de l'interlude
+  // ENGAGE la bataille (transition vers les Rounds avec les bonus de prépa acquis). `massBattleBegin`
+  // rebascule sur l'écran de bataille. Une bataille sans prépa faite démarre au Round 1 sans bonus.
+  if (get().massBattle?.phase === 'prep') {
+    massBattleBegin(get, set);
+    set({ screen: 'massBattle' });
   }
 }
