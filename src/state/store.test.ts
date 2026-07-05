@@ -2101,6 +2101,29 @@ describe('Chance — 3e usage : pré-emption d’initiative en début de Round (
     expect(st.battle!.log.some((l) => /Tir rapide/.test(l.text))).toBe(true); // interruption journalisée
   });
 
+  it('Tir rapide au CLAVIER : armer (armPreempt) → curseur (snapCursorToTarget) → Entrée (commitCursor) → tir', () => {
+    const { H, E } = endOfRoundBattle(0);
+    H.talents = [{ talentId: 'tir-rapide', times: 1 }];
+    H.weapons = [{ name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] }] as never;
+    H.loaded = true; H.pos = { x: 0, y: 0 };
+    E.pos = { x: 2, y: 0 }; // à portée + LdV (scène vide)
+    useGame.getState().battleEndTurn(); // → Round 2, pendingRoundStart
+    seedBattleRng(1);
+    // Touche T : arme la visée du tireur (source unique preemptShooterIds → armPreempt).
+    useGame.getState().armPreempt(H.id);
+    expect(useGame.getState().preemptAiming).toBe(H.id);
+    // Tab/flèches : le curseur trouve la cible valide du TIREUR (aucun actif à turn:-1 — cursorActor renvoie le tireur).
+    useGame.getState().snapCursorToTarget(1);
+    expect(useGame.getState().combatCursor?.snappedId).toBe(E.id);
+    // Entrée (commitCursor) : tire l'interruption via battleClickEntity (armé) → preemptRangedShot.
+    useGame.getState().commitCursor();
+    const st = useGame.getState();
+    expect(st.pendingAttack?.interrupt).toBe(true);    // modale de tir ouverte pour le tireur
+    expect(st.pendingAttack?.attackerId).toBe(H.id);
+    expect(st.preemptAiming).toBeNull();               // désarmé au tir
+    expect(st.combatCursor).toBeNull();                // curseur retiré
+  });
+
 });
 
 describe('cancelMove — annuler un déplacement décomposé tant qu’aucune Action (R6/LOT 6)', () => {

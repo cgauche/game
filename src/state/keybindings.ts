@@ -12,7 +12,7 @@ import { useGame } from './store';
 import { controlsActive } from './netOwnership';
 import { pickActiveModalKey } from './modalArbiter';
 import { hotbar } from './hotbarBridge';
-import { validTargets } from './targeting';
+import { validTargets, preemptShooterIds } from './targeting';
 import type { ScreenDir } from './combatCursor';
 
 export interface KeyBinding {
@@ -34,6 +34,11 @@ const inBattle = (s: GameState) => s.mode === 'battle' && !!s.battle && !s.battl
 const noModal = (s: GameState) => pickActiveModalKey(s as Parameters<typeof pickActiveModalKey>[0]) == null;
 /** Contexte de PILOTAGE du combat (carte) : en combat, c'est bien ton tour (coop), aucune modale ouverte. */
 const cur = (s: GameState) => inBattle(s) && controlsActive(s) && noModal(s);
+/** Contexte de VISÉE Tir rapide (pause de début de Round, LDB 10) : une visée est ARMÉE (`preemptAiming`),
+ *  aucune modale — le curseur/Tab/Entrée pilotent le tir d'interruption HORS TOUR comme un ciblage normal. */
+const preemptCur = (s: GameState) => inBattle(s) && !!s.preemptAiming && noModal(s);
+/** Curseur de combat actif : tour normal OU visée Tir rapide armée (le même curseur pilote les deux). */
+const curOrPreempt = (s: GameState) => cur(s) || preemptCur(s);
 /** Contexte d'EXPLORATION (carte hors combat) : écran de jeu, mode exploration, hors dialogue. */
 const exploring = (s: GameState) => s.screen === 'campaign' && s.mode === 'exploration' && !s.dialogue;
 /** Contexte d'exploration en vue SUBJECTIVE (POV) : les ZQSD deviennent cap-relatifs et A/E pivotent le
@@ -68,42 +73,56 @@ export const KEYBINDINGS: KeyBinding[] = [
   // focalisé, son activation native suffit (pas de double appel). Solo = confirmRoundStart ; coop = ready du siège.
   {
     id: 'round-start', codes: ['Space', 'Enter', 'NumpadEnter'], label: 'Commencer le round', notWhenControlFocused: true,
-    when: (s) => inBattle(s) && !!s.pendingRoundStart,
+    when: (s) => inBattle(s) && !!s.pendingRoundStart && !s.preemptAiming, // visée Tir rapide armée → Entrée TIRE (curseur), pas « commencer »
     run: (g) => {
       const s = g();
       if (s.net.mode === 'local') { s.confirmRoundStart(); return; }
       if (!s.pendingRoundStart?.readyBySeat?.[s.net.mySeat]) s.roundStartReady(s.net.mySeat);
     },
   },
+  // Tir rapide (talent, LDB 10) au CLAVIER : pendant la pause, `T` arme la visée d'interruption du 1ᵉʳ tireur
+  // éligible (puis cycle les suivants, puis désarme) et pose le curseur sur la cible la plus proche → flèches/Tab
+  // visent, Entrée TIRE, Échap annule. Réutilise le curseur de combat existant (aucun chemin parallèle).
+  {
+    id: 'preempt-arm', codes: ['KeyT'], label: 'Tir rapide : viser (interruption de début de Round)',
+    when: (s) => inBattle(s) && !!s.pendingRoundStart && preemptShooterIds(() => s).length > 0,
+    run: (g) => {
+      const shooters = preemptShooterIds(g);
+      const i = g().preemptAiming ? shooters.indexOf(g().preemptAiming!) : -1;
+      const next = i + 1 < shooters.length ? shooters[i + 1] : null; // tireur suivant, puis désarme après le dernier
+      g().armPreempt(next);
+      if (next) g().snapCursorToTarget(1); else g().clearCursor(); // pose le curseur sur la cible la plus proche
+    },
+  },
   // ── Curseur de combat (flèches) — la MANETTE réutilise ces mêmes ids via runBindingById. Le curseur
   //    « suit les yeux » (direction écran). Le 1er appui le pose sur le combattant actif. ──
-  { id: 'cursor-up', codes: ['ArrowUp'], label: 'Curseur : haut', when: cur, run: (g) => g().moveCursor('up') },
-  { id: 'cursor-down', codes: ['ArrowDown'], label: 'Curseur : bas', when: cur, run: (g) => g().moveCursor('down') },
-  { id: 'cursor-left', codes: ['ArrowLeft'], label: 'Curseur : gauche', when: cur, run: (g) => g().moveCursor('left') },
-  { id: 'cursor-right', codes: ['ArrowRight'], label: 'Curseur : droite', when: cur, run: (g) => g().moveCursor('right') },
+  { id: 'cursor-up', codes: ['ArrowUp'], label: 'Curseur : haut', when: curOrPreempt, run: (g) => g().moveCursor('up') },
+  { id: 'cursor-down', codes: ['ArrowDown'], label: 'Curseur : bas', when: curOrPreempt, run: (g) => g().moveCursor('down') },
+  { id: 'cursor-left', codes: ['ArrowLeft'], label: 'Curseur : gauche', when: curOrPreempt, run: (g) => g().moveCursor('left') },
+  { id: 'cursor-right', codes: ['ArrowRight'], label: 'Curseur : droite', when: curOrPreempt, run: (g) => g().moveCursor('right') },
   // Tab : aimante le curseur sur la cible valide suivante (cycle proche→loin) ; gardé sur ≥1 cible
   // (sinon Tab garde sa nav normale). `²/~` = cible précédente (le registre ignore les modificateurs).
   {
     id: 'target-next', codes: ['Tab'], label: 'Cibler la cible valide suivante',
-    when: (s) => cur(s) && validTargets(() => s).length > 0,
+    when: (s) => curOrPreempt(s) && validTargets(() => s).length > 0,
     run: (g) => g().snapCursorToTarget(1),
   },
   {
     id: 'target-prev', codes: ['Backquote'], label: 'Cibler la cible valide précédente',
-    when: (s) => cur(s) && validTargets(() => s).length > 0,
+    when: (s) => curOrPreempt(s) && validTargets(() => s).length > 0,
     run: (g) => g().snapCursorToTarget(-1),
   },
   // Valider/annuler le curseur — AVANT end-turn/clear-preview : avec un curseur posé, Entrée commet
   // et Échap désélectionne ; sans curseur, Entrée finit le tour et Échap purge l'aperçu (1er match).
   {
     id: 'cursor-commit', codes: ['Enter', 'NumpadEnter'], label: 'Curseur : valider', notWhenControlFocused: true,
-    when: (s) => cur(s) && !!s.combatCursor,
+    when: (s) => curOrPreempt(s) && !!s.combatCursor,
     run: (g) => g().commitCursor(),
   },
   {
     id: 'cursor-cancel', codes: ['Escape'], label: 'Curseur : annuler',
-    when: (s) => !!s.combatCursor,
-    run: (g) => { g().clearCursor(); const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
+    when: (s) => !!s.combatCursor || preemptCur(s), // armé sans cible en vue : Échap désarme quand même le Tir rapide
+    run: (g) => { if (g().preemptAiming) g().armPreempt(null); g().clearCursor(); const s = g(); if (s.battle?.preview) useGame.setState({ battle: { ...s.battle, preview: null } }); },
   },
   {
     id: 'end-turn', codes: ['Space', 'Enter', 'NumpadEnter'], label: 'Fin du tour', notWhenControlFocused: true,

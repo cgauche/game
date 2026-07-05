@@ -42,4 +42,12 @@ describe('binding round-start', () => {
     runBindingById('round-start', get);
     expect(called).toBe(0);
   });
+
+  it('INACTIF quand une visée Tir rapide est armée (Entrée doit TIRER via le curseur, pas « commencer »)', () => {
+    expect(binding().when(fake({ pendingRoundStart: { round: 2 } as never, preemptAiming: 'h1' }))).toBe(false);
+  });
+
+  it('le binding clavier de Tir rapide (`preempt-arm`, touche T) existe', () => {
+    expect(KEYBINDINGS.find((k) => k.id === 'preempt-arm')).toBeTruthy();
+  });
 });

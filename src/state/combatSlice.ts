@@ -80,7 +80,7 @@ import { resetFields } from './stateFields';
 import { actorIn } from './combatOrParty';
 import { controlsCombatant, pilotedByHuman } from './netOwnership';
 import { nextCursorTile, cursorCommitIntent, type ScreenDir } from './combatCursor';
-import { cycleTarget, cyclePrevTarget } from './targeting';
+import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
 import { currentTargetingMode, type BattleClickOpts } from './targetingModes';
 import { resolveRecoverTest } from './combat/recover';
 import { resolveRenounce } from './corruptionFlow';
@@ -697,10 +697,10 @@ export function createCombatSlice(get: Get, set: Set) {
     moveCursor: (dir: ScreenDir) => {
       const { battle, scene, camRot, viewMode, camEdge } = get();
       if (!battle || battle.over || !scene) return;
-      const active = activeCombatant(battle);
-      if (!active || !controlsCombatant(get(), active) || !active.pos) return;
+      const owner = cursorActor(get); // l'ACTIF, ou le tireur Tir rapide ARMÉ pendant la pause (le curseur suit ses yeux)
+      if (!owner?.pos) return;
       const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge };
-      set({ combatCursor: { tile: nextCursorTile(scene, get().combatCursor, dir, dims, active.pos) } });
+      set({ combatCursor: { tile: nextCursorTile(scene, get().combatCursor, dir, dims, owner.pos) } });
     },
     snapCursorToTarget: (step: 1 | -1) => {
       const cur = get().combatCursor?.snappedId ?? null;
@@ -728,7 +728,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // de frise, tous deux passent ICI — déclenche l'interruption hors du tour (le tireur n'est pas l'actif).
       const aiming = get().preemptAiming;
       if (aiming) {
-        set({ preemptAiming: null });
+        set({ preemptAiming: null, combatCursor: null }); // désarme + retire le curseur clavier avant d'ouvrir la modale de tir
         get().preemptRangedShot(aiming, id);
         return;
       }

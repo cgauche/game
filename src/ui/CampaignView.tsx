@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useGame } from '../state/store';
 import { canActFirst, freeActFirst } from '../state/turnEconomy';
-import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
+import { preemptShooterIds } from '../state/targeting';
 import { IsoStage } from '../gameIso/IsoStage';
 import { PovStage } from '../gameIso/pov/PovStage';
 import { PovControls } from './PovControls';
@@ -127,12 +127,7 @@ export function CampaignView() {
   // adversaire route par `battleClickEntity` (source unique carte ⇄ frise), comme toute action de ciblage.
   const preemptAiming = useGame((s) => s.preemptAiming);
   const armPreempt = useGame((s) => s.armPreempt);
-  const canPreemptIds = battle && pendingRoundStart
-    ? battle.order.filter((id) => {
-        const c = battle.combatants.find((x) => x.id === id);
-        return !!c && controlsCombatant(useGame.getState(), c) && canPreemptRanged(c) && !c.loseNextAction;
-      })
-    : [];
+  const canPreemptIds = preemptShooterIds(useGame.getState); // source UNIQUE (partagée avec le ciblage clavier)
   // #21 : pendant une action de CIBLAGE (attaque/incantation/charge/piétinement), cliquer un PORTRAIT
   // (frise ou dock) cible ce combattant — même validation/portée que cliquer son pion sur le champ.
   // COOP : seulement quand le combattant actif est À SOI (le tour d'un autre joueur est inerte).

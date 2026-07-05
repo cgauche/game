@@ -11,6 +11,7 @@ import { combatDistance } from './footprint';
 import type { GameState } from './store';
 import { currentTargetingMode, type HoverTargeting } from './targetingModes';
 import { controlsCombatant } from './netOwnership';
+import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
 
 // Réexports de compatibilité : le TYPE d'affordance et la dérivation du côté visé d'un sort vivent
 // désormais dans le registre de modes ; les importeurs historiques (IsoStage, tests) restent valides.
@@ -31,14 +32,40 @@ export function hoverTargeting(get: () => GameState, active: Combatant, target: 
   return currentTargetingMode(get).affordance?.(get, active, target) ?? { kind: 'none' };
 }
 
-/** Combattants que le héros ACTIF peut cibler au survol selon le mode courant — `candidates` du mode
- *  s'il en fournit (soin/surincantation/cleave/dual), sinon ceux dont l'affordance ≠ 'none' — triés du
- *  PLUS PROCHE au plus loin. Base du ciblage clavier (Tab). */
+/** Le combattant qui PILOTE le curseur/ciblage : l'ACTIF si le siège local le contrôle, sinon — pendant la
+ *  pause de début de Round — le TIREUR dont le Tir rapide est ARMÉ (`preemptAiming`, LDB 10). Source UNIQUE
+ *  du ciblage clavier/manette/souris hors tour (il n'y a AUCUN actif à `turn:-1`). */
+export function cursorActor(get: () => GameState): Combatant | undefined {
+  const s = get();
+  const battle = s.battle;
+  if (!battle || battle.over) return undefined;
+  const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+  if (active && controlsCombatant(s, active) && active.pos) return active;
+  if (s.preemptAiming) { const sh = battle.combatants.find((c) => c.id === s.preemptAiming); if (sh?.pos) return sh; }
+  return undefined;
+}
+
+/** Héros que le siège LOCAL contrôle et qui peuvent DÉCLENCHER Tir rapide pendant la pause (LDB 10) : arme à
+ *  distance chargée + pas encore tiré ce Round. Source UNIQUE de l'éligibilité (frise/badge, clavier, manette).
+ *  Vide hors pause. */
+export function preemptShooterIds(get: () => GameState): string[] {
+  const s = get();
+  const battle = s.battle;
+  if (!battle || battle.over || !s.pendingRoundStart) return [];
+  return battle.order.filter((id) => {
+    const c = battle.combatants.find((x) => x.id === id);
+    return !!c && controlsCombatant(s, c) && canPreemptRanged(c) && !c.loseNextAction;
+  });
+}
+
+/** Combattants que le TIREUR courant (actif OU visée Tir rapide armée) peut cibler au survol selon le mode
+ *  courant — `candidates` du mode s'il en fournit (soin/surincantation/cleave/dual), sinon ceux dont
+ *  l'affordance ≠ 'none' — triés du PLUS PROCHE au plus loin. Base du ciblage clavier (Tab). */
 export function validTargets(get: () => GameState): Combatant[] {
   const battle = get().battle;
   if (!battle || battle.over) return [];
-  const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
-  if (!active || !controlsCombatant(get(), active) || !active.pos) return [];
+  const active = cursorActor(get);
+  if (!active?.pos) return [];
   const mode = currentTargetingMode(get);
   const cands = mode.candidates
     ? mode.candidates(get, active)
