@@ -91,7 +91,7 @@ export interface MapRoute {
 export interface WorldMapParams {
   /** Heures de voyage par jour sans Test (RAW l.224, défaut 6). */
   hoursPerDay?: number;
-  /** Plafond de marche forcée (heures/jour, canon muet — défaut 10). */
+  /** Plafond de marche forcée (heures/jour) — LDB 51 l.195 : silence, valeur maison (défaut 10). */
   forcedMaxHours?: number;
   /** Seuil d10 de péripétie par défaut des routes (défaut 8, l.237 ; 0 = désactivé). */
   perilDie?: number;

@@ -728,10 +728,10 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         env.log(`${target.name} est Béni — il prie directement (les Petites Prières sont la voie des non-Bénis).`);
         return;
       }
-      // Seuil : « exaucé sur 01 » ; « Si vous avez la Compétence Prière, le MJ peut augmenter ce
-      // pourcentage » → +1 % par avance de Prière (arbitrage jeu-sans-MJ, modeste et documenté).
+      // Seuil : « exaucé sur 01 » ; LDB 25 l.22-24 — silence, valeur maison (règle
+      // `prayer-petites-bonus-per-advance`) pour le « le MJ peut augmenter ce pourcentage ».
       const priereAdv = target.skills.find((sk) => sk.skillId === 'priere')?.advances ?? 0;
-      const threshold = 1 + Math.max(0, priereAdv);
+      const threshold = 1 + Math.max(0, priereAdv) * Number(rule('prayer-petites-bonus-per-advance'));
       const roll = d100(battleRng());
       if (petitePriereAnswered(roll, threshold)) {
         env.log(`🙏 ${target.name} prie sur le site sacré (🎲 ${roll} ≤ ${threshold}) — et les dieux l'entendent !`);

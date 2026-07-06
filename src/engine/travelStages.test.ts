@@ -138,6 +138,35 @@ describe('stageCount (EDOC ch.5 l.34) — distance → Étapes ± bonus', () => 
   });
 });
 
+describe('stageCount — modificateur de Mouvement du groupe (EDOC ch.5 l.25)', () => {
+  it('sans Mouvement de groupe fourni : aucun modificateur (comportement inchangé)', () => {
+    expect(stageCount(75)).toBe(3);
+  });
+  it('Mouvement le plus faible ≤ 3 : +N Étapes (règle `travel-etapes-low-move-bonus`, défaut 1)', () => {
+    expect(stageCount(75, 0, 3)).toBe(4); // 3 (base) + 1 (défaut de la règle)
+    expect(stageCount(10, 0, 1)).toBe(2); // 1 (base) + 1
+  });
+  it('règle `travel-etapes-low-move-bonus` = 2 : +2 Étapes', () => {
+    setRule('travel-etapes-low-move-bonus', 2);
+    expect(stageCount(75, 0, 3)).toBe(5); // 3 + 2
+    resetRule('travel-etapes-low-move-bonus');
+  });
+  it('Mouvement le plus faible entre 4 et 5 : aucun modificateur (ni bonus ni division)', () => {
+    expect(stageCount(75, 0, 4)).toBe(3);
+    expect(stageCount(75, 0, 5)).toBe(3);
+  });
+  it('TOUS les Personnages ont Mouvement ≥ 6 : nombre d’Étapes divisé par deux', () => {
+    expect(stageCount(200, 0, 6)).toBe(2); // base 5 → 2 (floor)
+    expect(stageCount(76, 0, 8)).toBe(1);  // base 3 → 1 (floor)
+  });
+  it('division par deux : minimum 1 (l.25 « résultat minimum de 1 »)', () => {
+    expect(stageCount(10, 0, 6)).toBe(1); // base 1 → floor(0.5) = 0 → plancher 1
+  });
+  it('bonus d’Étapes (l.34) appliqué AVANT le modificateur de Mouvement (l.25)', () => {
+    expect(stageCount(10, 2, 6)).toBe(1); // (1 + 2) = 3 → ÷2 = 1 (floor 1.5)
+  });
+});
+
 describe('stageExposureDifficulty (EDOC ch.5 l.73) — difficulté du Test selon équipement', () => {
   it('beau temps / sec : aucun Test', () => {
     expect(stageExposureDifficulty('beau', false, false)).toBeNull();

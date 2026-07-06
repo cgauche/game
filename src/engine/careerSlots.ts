@@ -9,15 +9,17 @@
  *  - Disponibilité (LDB 07) : Compétences cumulatives sur les niveaux ≤ courant (l.78),
  *    Talents du niveau courant uniquement (l.100).
  *
- * Modèle des emplacements « (Au choix) » (RAW + arbitrage table là où le livre est muet) :
- * chaque entrée de liste d'un Niveau de Carrière est un EMPLACEMENT (slot). Un slot à choix se
- * « désigne » sur une spec concrète — gratuitement (la désignation ne donne rien, elle déclare
- * ce que le slot couvre, éventuellement un talent déjà possédé via l'espèce) ; acheter via un
- * slot libre le désigne automatiquement. Au sein d'une MÊME carrière, deux slots ne peuvent pas
- * désigner le même libellé concret ; les désignations sont PAR carrière (un changement de
- * carrière rouvre tous les choix). Cas réels en données : Érudit a « Savoir (Au choix) » aux
- * 4 niveaux ; jokers RESTREINTS « Corps à corps (Fléau ou À deux mains) » ; entrée talent
- * « Guide fluvial ou Bonnes jambes ».
+ * Modèle des emplacements « (Au choix) » : chaque entrée de liste d'un Niveau de Carrière est un
+ * EMPLACEMENT (slot). Le livre fixe QUOI est disponible (Compétences/Talents ci-dessus) mais reste
+ * muet sur COMMENT un slot à choix se résout en jeu — le modèle ci-dessous est maison (LDB 07/09/10
+ * — silence, valeur maison) :
+ *  - un slot se « désigne » sur une spec concrète gratuitement (la désignation ne donne rien, elle
+ *    déclare ce que le slot couvre, éventuellement un talent déjà possédé via l'espèce) ; acheter
+ *    via un slot libre le désigne automatiquement ;
+ *  - au sein d'une MÊME carrière, deux slots ne peuvent pas désigner le même libellé concret ;
+ *  - les désignations sont PAR carrière (un changement de carrière rouvre tous les choix).
+ * Cas réels en données : Érudit a « Savoir (Au choix) » aux 4 niveaux ; jokers RESTREINTS
+ * « Corps à corps (Fléau ou À deux mains) » ; entrée talent « Guide fluvial ou Bonnes jambes ».
  *
  * MOTEUR : `slotsOfLevel` construit ses `SlotOption[]` DIRECTEMENT depuis l'`AdvancementRef` structuré
  * (`slotOptionsFromRef`). `parseAdvancement`

@@ -70,7 +70,7 @@ export function travelModeIcon(mode: TravelMode): string {
 export const TRAVEL_DEFAULTS = {
   /** Heures de voyage par jour sans Test de Résistance (RAW l.224). */
   hoursPerDay: 6,
-  /** Plafond de marche forcée (heures/jour) — canon muet, paramétrable. */
+  /** Plafond de marche forcée (heures/jour) — LDB 51 l.195 : silence, valeur maison, paramétrable. */
   forcedMaxHours: 10,
   /** Seuil du d10 quotidien de péripétie : « événement sur un résultat de 8 » (l.237). 0 = désactivé. */
   perilDie: 8,

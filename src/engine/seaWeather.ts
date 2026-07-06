@@ -30,6 +30,7 @@ import { d10, type RNG, defaultRNG } from './dice';
 import { WORK_PERIOD_HOURS } from './seaNavigation';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
+import { rule } from './policy';
 
 export type SeaPrecipitationId = 'aucune' | 'legeres' | 'abondantes' | 'tres-abondantes';
 export type SeaTemperatureId = 'caniculaire' | 'chaude' | 'mediane' | 'froide' | 'glaciale';
@@ -165,10 +166,10 @@ export function precipitationSkillMod(precip: SeaPrecipitationId, skillId: strin
 }
 
 /** Litres d'eau à boire PAR JOUR et par membre d'équipage : la bande de Température (Caniculaire 4 L,
- *  Chaude 3 L — l.209/213), sinon le régime de bord « 2 à 3 litres d'eau par jour » (MDG ch.14 l.242,
- *  borne haute retenue : choix documenté). PUR. */
+ *  Chaude 3 L — l.209/213), sinon le régime de bord « 2 à 3 litres d'eau par jour » (MDG ch.14 l.242 —
+ *  fourchette, valeur maison, règle `sea-water-litres-mediane`). PUR. */
 export function dailyWaterLitres(temp: SeaTemperatureId): number {
-  return temperatureDef(temp).litresParJour ?? 3;
+  return temperatureDef(temp).litresParJour ?? Number(rule('sea-water-litres-mediane'));
 }
 
 /** Tests d'Exposition d'une JOURNÉE en mer pour la bande de Température (l.203-225 : « Toutes les

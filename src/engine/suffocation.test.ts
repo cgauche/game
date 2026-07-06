@@ -12,6 +12,7 @@ import { inDeathCondition, hasCondition } from './conditions';
 import { applyOps } from './ops';
 import { findSpell } from '../data';
 import { spellOps } from '../state/flow';
+import { setRule, resetRule } from './policy';
 
 /** Ops `on:'target'` d'un sort par label (les EFFETS vivent sur `SpellData.effects`, plus sur la spec). */
 const opsOf = (label: string) => spellOps(findSpell(label)?.effects, 'target');
@@ -94,6 +95,14 @@ describe('Rétention de souffle (LDB 18 l.345) : BE×10 s avant suffocation si p
     c.activeEffects = []; // remonte à la surface
     suffocationTick(c);
     expect(c.breathHoldSeconds).toBeUndefined();
+  });
+  it('règle `combat-round-seconds` surchargée (LDB 13 l.13 — MJ décide) : décompte selon la surcharge', () => {
+    setRule('combat-round-seconds', 5);
+    const c = mk();
+    prepareBreathHold(c); // 30 s
+    suffocationTick(c); // 25 s (5 s/Round au lieu de 10)
+    expect(c.breathHoldSeconds).toBe(25);
+    resetRule('combat-round-seconds');
   });
 });
 

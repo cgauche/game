@@ -23,12 +23,15 @@ export const METRES_PER_LEVEL = 4;
 export const metricToLift = (metres: number): number => metres / METRES_PER_LEVEL;
 
 /**
- * Seuil DESIGN (AUCUNE valeur RAW ne le définit) : dénivelé maximal d'un PAS marchable entre deux
- * cases voisines. ≤ STEP_MAX_M ⇒ on franchit à pied (palier / rampe douce ~1:2 sur une case de 2 m) ;
- * au-delà ⇒ FALAISE (on descend en chutant, on monte par Escalade). Ancré sur l'idée « une marche se
- * franchit, une dénivellation se grimpe ». Un pont à 2 m se rejoint donc par 2 cases de rampe, et le
- * malus −10 « en contrebas » se déclenche dès qu'une cible domine de plus de ce seuil. Ajustable ici
- * (foyer unique) ; documenté comme assumé, pas canon — à confirmer au rendu/jeu.
+ * Seuil DESIGN — maison, aucune règle RAW ne le chiffre (ni LDB ni EDOC ne parlent de dénivelé de
+ * case) : dénivelé maximal d'un PAS marchable entre deux cases voisines. ≤ STEP_MAX_M ⇒ on franchit
+ * à pied (palier / rampe douce ~1:2 sur une case de 2 m) ; au-delà ⇒ FALAISE (on descend en chutant,
+ * on monte par Escalade). Ancré sur l'idée « une marche se franchit, une dénivellation se grimpe ».
+ * Un pont à 2 m se rejoint donc par 2 cases de rampe, et le malus −10 « en contrebas » (`combatFlow.ts`,
+ * lu directement sur cette constante) se déclenche dès qu'une cible domine de plus de ce seuil.
+ * Foyer unique de la valeur — NON exposé au registre `OPTIONAL_RULES` : `combatFlow.ts` importe cette
+ * constante en dur (module hors périmètre de ce chantier), donc une surcharge runtime désynchroniserait
+ * le malus de combat de la marchabilité ci-dessous. Retoucher les deux ensemble si besoin d'éditer.
  */
 export const STEP_MAX_M = 1.0;
 

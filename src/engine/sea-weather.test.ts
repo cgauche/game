@@ -5,6 +5,7 @@ import {
   seaExposureTestsPerDay,
 } from './seaWeather';
 import type { RNG } from './dice';
+import { setRule, resetRule } from './policy';
 
 /** RNG scripté : rend la file de valeurs (clampée au domaine demandé). */
 const seq = (...vals: number[]): RNG => {
@@ -116,6 +117,13 @@ describe('effets d’ambiance — Précipitations / Température / Visibilité (
     expect(dailyWaterLitres('caniculaire')).toBe(4);
     expect(dailyWaterLitres('chaude')).toBe(3);
     expect(dailyWaterLitres('mediane')).toBe(3); // régime de bord « 2 à 3 litres » (MDG ch.14 l.242)
+  });
+  it('règle `sea-water-litres-mediane` surchargée (borne basse 2 L) : suit la surcharge', () => {
+    setRule('sea-water-litres-mediane', 2);
+    expect(dailyWaterLitres('mediane')).toBe(2);
+    expect(dailyWaterLitres('caniculaire')).toBe(4); // bandes déjà chiffrées : jamais affectées
+    resetRule('sea-water-litres-mediane');
+    expect(dailyWaterLitres('mediane')).toBe(3);
   });
 
   it('seaExposureTestsPerDay : 8 h de pont / cadence de bande (4 h → 2 Tests, 2 h → 4) ; Médiane → 0', () => {

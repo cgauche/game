@@ -168,7 +168,8 @@ export function baseHoursPerDay(map: WorldMap | null): number {
   return map?.params?.hoursPerDay ?? TRAVEL_DEFAULTS.hoursPerDay;
 }
 
-/** Plafond de marche forcée (heures/jour, canon muet — défaut 10) — paramétrable au niveau carte. */
+/** Plafond de marche forcée (heures/jour) — LDB 51 l.195 : silence, valeur maison (défaut 10),
+ *  paramétrable au niveau carte. */
 export function maxHoursPerDay(map: WorldMap | null): number {
   return map?.params?.forcedMaxHours ?? TRAVEL_DEFAULTS.forcedMaxHours;
 }
@@ -246,7 +247,7 @@ export function startTravel(
     ? Math.min(Math.max(opts.hoursPerDay ?? base, 1), maxHoursPerDay(worldMap))
     : mode === 'monture'
       ? Math.min(Math.max(opts.hoursPerDay ?? base, 1), 12) // « au pas jusqu'à 12 heures sans repos » (EDOC 07 l.142)
-      : base; // transport : cadence du véhicule (RAW muet) = heures de route standard
+      : base; // transport : cadence quotidienne du véhicule — LDB 51 silence, valeur maison (heures de route standard)
   // Coque transitoire du véhicule du trajet (`Combatant` à PV depuis `vehicles.json` hull) — encaisse les
   // Dégâts des Problèmes de véhicule (`applyVehicleProblem`). Créée sous les Étapes EDOC, ou dès que
   // l'allure est FORCÉE (EDOC 07 l.253 : Échec Stupéfiant de Conduite d'attelage → Problème de véhicule).
@@ -789,9 +790,9 @@ function applyVehicleProblemToTravel(get: Get, set: Set, out: Pick<ForcedPaceDay
 
 /**
  * Soins de l'ARRIVÉE au relais : le maréchal-ferrant remplace le fer (EDOC 07 l.166), la sellerie est
- * réparée (l.174), la bête boiteuse est laissée aux bons soins de l'étape. Choix documenté : le RAW ne
- * chiffre ni coût ni durée pour ces remises en état — on les résout à l'arrivée (Patte brisée, elle,
- * a coûté la bête en route).
+ * réparée (l.174), la bête boiteuse est laissée aux bons soins de l'étape. EDOC 07 l.166/174 — silence
+ * sur coût/durée, valeur maison : on les résout gratuitement à l'arrivée (Patte brisée, elle, a coûté
+ * la bête en route).
  */
 function travelArrivalCare(get: Get, set: Set): string[] {
   const lines: string[] = [];

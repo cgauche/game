@@ -98,8 +98,21 @@ export function rollStageWeather(rng: RNG, season: Season): { roll: number; weat
  * 1, ville à ville = 2-4) PUIS on applique le « bonus d'Étapes » d'auteur (l.34 : « augmentez le
  * nombre d'Étapes de 2 ou plus ») — lu PAR DÉFAUT sur la règle optionnelle `travel-etapes-count-bonus`
  * (point de lecture UNIQUE ; les tests purs passent le paramètre). Minimum 1 (l.19/22).
+ *
+ * Modificateur de MOUVEMENT du groupe (EDOC ch.5 l.25) : « Une fois le nombre d'Étapes déterminé, il
+ * est modifié par le score de Mouvement le plus faible des Personnages, qu'ils soient à pied, à
+ * cheval ou dans un véhicule. Si ce chiffre est inférieur ou égal à 3, le voyage doit être augmenté
+ * de 1 ou 2 Étapes. Si tous les Personnages ont [...] un Mouvement de 6 ou plus, le nombre total
+ * d'Étapes est réduit de moitié pour atteindre un résultat minimum de 1. » `groupMinMovement` (absent
+ * par défaut = comportement inchangé) porte ce score ; le choix « 1 ou 2 » est lu sur la règle
+ * optionnelle `travel-etapes-low-move-bonus` (EDOC ch.5 l.25 — MJ décide, valeur maison). La division
+ * par deux arrondit à l'inférieur (RAW ne précise pas l'arrondi ; plancher à 1 dans tous les cas).
  */
-export function stageCount(distanceKm: number, countBonus = Number(rule('travel-etapes-count-bonus'))): number {
+export function stageCount(
+  distanceKm: number,
+  countBonus = Number(rule('travel-etapes-count-bonus')),
+  groupMinMovement?: number,
+): number {
   const km = Math.max(0, distanceKm);
   // Paliers : ≤ ~25 km (village proche) = 1 ; jusqu'à ~150 km (ville à ville) = 2-4 ; au-delà, +1
   // par tranche de 50 km. Choix documenté — le canon ne chiffre pas la distance (l.32 « les cartes
@@ -108,7 +121,12 @@ export function stageCount(distanceKm: number, countBonus = Number(rule('travel-
   if (km <= 25) base = 1;
   else if (km <= 150) base = Math.min(4, 2 + Math.floor((km - 25) / 50)); // 26-75=2, 76-125=3, 126-150=4
   else base = 4 + Math.ceil((km - 150) / 50);
-  return Math.max(1, base + Math.max(0, Math.floor(countBonus)));
+  let stages = base + Math.max(0, Math.floor(countBonus));
+  if (groupMinMovement != null) {
+    if (groupMinMovement <= 3) stages += Math.max(0, Math.floor(Number(rule('travel-etapes-low-move-bonus'))));
+    else if (groupMinMovement >= 6) stages = Math.floor(stages / 2);
+  }
+  return Math.max(1, stages);
 }
 
 /**

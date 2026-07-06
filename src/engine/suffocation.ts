@@ -16,18 +16,20 @@
  * effectuer un Test. À l'inverse, si vous n'avez pas eu le temps de vous préparer et que vous vous
  * retrouvez brutalement privé d'air, vous suffoquez immédiatement. » Une plongée ANTICIPÉE appelle
  * `prepareBreathHold` (pose `breathHoldSeconds = BE×10`) : tant que ce crédit dure, la suffocation ne
- * fait perdre aucune Blessure. Le crédit est décompté par Round via `SECONDS_PER_ROUND` — la borne du
- * canon lui-même (BE×10 s de souffle ↔ BE Rounds de survie une fois inconscient, l.425) fixe 1 Round
- * ≈ 10 s, aucun chiffre inventé. Privé d'air brutalement (`breathHoldSeconds` absent) = suffocation immédiate.
+ * fait perdre aucune Blessure. Le crédit est décompté par Round via la règle `combat-round-seconds`
+ * (LDB 13 l.13 — « c'est le MJ qui décide » de la durée d'un Round ; hypothèse de calibrage 10 s,
+ * non RAW). Privé d'air brutalement (`breathHoldSeconds` absent) = suffocation immédiate.
  */
 import type { Combatant } from './types';
 import { hasActiveFlag } from './activeFlags';
 import { addCondition, hasCondition, loseWounds } from './conditions';
 import { bonus, effectiveChar } from './characteristics';
+import { rule } from './policy';
 
-/** Durée d'un Round de combat en secondes, DÉRIVÉE du canon (LDB 18 : BE×10 s de souffle ↔ BE Rounds
- *  de survie inconscient) → 1 Round ≈ 10 s. Utilisée pour décompter la rétention de souffle. */
-export const SECONDS_PER_ROUND = 10;
+/** Durée d'un Round de combat en secondes — LDB 13 l.13 : « c'est le MJ qui décide » ; hypothèse de
+ *  calibrage maison (règle `combat-round-seconds`), PAS une certitude canon. Utilisée pour décompter
+ *  la rétention de souffle. */
+const secondsPerRound = (): number => Number(rule('combat-round-seconds'));
 
 /** Souffle retenable sans Test (LDB 18 l.345) : Bonus d'Endurance × 10 secondes. Pur. */
 export function breathHoldSeconds(c: Combatant): number {
@@ -52,7 +54,7 @@ export function suffocationTick(c: Combatant): string[] {
   }
   // Rétention de souffle (l.345) : tant que le crédit dure, aucune Blessure perdue — on l'entame.
   if ((c.breathHoldSeconds ?? 0) > 0) {
-    c.breathHoldSeconds = Math.max(0, c.breathHoldSeconds! - SECONDS_PER_ROUND);
+    c.breathHoldSeconds = Math.max(0, c.breathHoldSeconds! - secondsPerRound());
     return [c.breathHoldSeconds > 0
       ? `${c.name} retient son souffle (${c.breathHoldSeconds} s d'air).`
       : `${c.name} n'a plus d'air — la suffocation commence.`];

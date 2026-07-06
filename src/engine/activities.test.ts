@@ -91,6 +91,7 @@ import { craftSpecOf, craftCatalog, learnableTalents, orderCatalog, tutorCostRan
 import { createHero } from './character';
 import { makeRNG } from './dice';
 import { findTrappingById, skillInstanceLabel, talentConcrete } from '../data';
+import { setRule, resetRule } from './policy';
 
 describe('craftSpecOf — dérivation partagée flux/catalogue', () => {
   it('matériaux = ¼ du prix (ch.23 l.66), gamme par pièce dominante', () => {
@@ -99,9 +100,15 @@ describe('craftSpecOf — dérivation partagée flux/catalogue', () => {
     expect(spec.materialsBrass).toBe(Math.max(1, Math.floor(spec.priceBrass / 4)));
     expect(['bronze', 'argent', 'or']).toContain(spec.tier);
   });
-  it('Disponibilité ND/absente → Rare prudent (arbitrage documenté)', () => {
+  it('Disponibilité ND/absente → Rare par défaut (règle `craft-nd-availability`)', () => {
     expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: 'ND' }).avail).toBe('Rare');
     expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: null }).avail).toBe('Rare');
+  });
+  it('règle `craft-nd-availability` surchargée : suit la surcharge (LDB 23 l.75-103 — silence)', () => {
+    setRule('craft-nd-availability', 'Exotique');
+    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: 'ND' }).avail).toBe('Exotique');
+    resetRule('craft-nd-availability');
+    expect(craftSpecOf({ price: { gold: 0, silver: 5, bronze: 0 }, availability: 'ND' }).avail).toBe('Rare');
   });
 });
 

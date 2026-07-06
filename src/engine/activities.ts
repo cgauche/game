@@ -26,6 +26,7 @@ import { DIFFICULTY_MODIFIERS } from './types';
 import { trappings, talents, levelsForCareer, type TrappingData } from '../data';
 import { talentSlotsUpTo, designationsFor, inCareerStatus, talentMaxReached } from './careerSlots';
 import { talentCost } from './advancement';
+import { rule } from './policy';
 import activitiesJson from '../data/activities.json';
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -533,9 +534,16 @@ export function metierOf(c: Combatant): SkillInstance | undefined {
 
 /** Dérivation Artisanat d'un équipement : gamme de prix, Disponibilité jouable et matériaux.
  *  - matériaux = « un quart du prix de l'équipement » (ch.23 l.66) ;
- *  - Disponibilité ND/absente (objet jamais en vente) → Rare prudent (arbitrage documenté). */
+ *  - Disponibilité ND/absente : LDB 23 l.75-103 — silence, valeur maison (règle `craft-nd-availability`). */
 /** Champ de prix de la donnée brute : nombre, ou texte non chiffré (« ND », « Variable », ''). */
 const numPrice = (v: unknown): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+
+const AVAILABILITIES: readonly Availability[] = ['Commune', 'Limitée', 'Rare', 'Exotique'];
+/** Disponibilité de repli pour un objet ND/absent (règle `craft-nd-availability`, défaut Rare). */
+function ndAvailability(): Availability {
+  const v = rule('craft-nd-availability');
+  return (AVAILABILITIES as readonly string[]).includes(v as string) ? (v as Availability) : 'Rare';
+}
 
 export function craftSpecOf(t: Pick<TrappingData, 'price' | 'availability'>): {
   tier: PriceTier; avail: Availability; priceBrass: number; materialsBrass: number;
@@ -543,7 +551,7 @@ export function craftSpecOf(t: Pick<TrappingData, 'price' | 'availability'>): {
   const price = { gold: numPrice(t.price?.gold), silver: numPrice(t.price?.silver), brass: numPrice(t.price?.bronze) };
   const priceBrass = toBrass(price);
   const a = t.availability;
-  const avail: Availability = a === 'Commune' || a === 'Limitée' || a === 'Rare' || a === 'Exotique' ? a : 'Rare';
+  const avail: Availability = a === 'Commune' || a === 'Limitée' || a === 'Rare' || a === 'Exotique' ? a : ndAvailability();
   return {
     tier: price.gold > 0 ? 'or' : price.silver > 0 ? 'argent' : 'bronze',
     avail,
