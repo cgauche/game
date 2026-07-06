@@ -457,6 +457,7 @@ export const fr = {
   'cs.manPoste': '{name} prend en main {weapon}.',
   'cs.joinPoste': '{name} rejoint l’équipe de {weapon}.',
   'cs.leavePoste': '{name} quitte {weapon}.',
+  'cs.pushEngine': '{name} pousse {weapon} ({n} case{s}).',
   'cs.actFirst': "{name} choisit d'agir en premier ({reason}).",
   'cs.reasonFast': 'arme Rapide',
   'cs.reasonLuck': 'Chance',

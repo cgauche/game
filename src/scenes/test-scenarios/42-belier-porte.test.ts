@@ -6,6 +6,8 @@ import { placeCombatant } from '../../state/spawn';
 import { seedBattleRng } from '../../state/battleRng';
 import { combatValue } from '../../engine/combat';
 import { effectiveChar } from '../../engine/characteristics';
+import { rule } from '../../engine/policy';
+import { pushSlot } from '../../state/siegePush';
 import type { Combatant } from '../../engine/types';
 
 /**
@@ -13,8 +15,9 @@ import type { Combatant } from '../../engine/types';
  * l.233) sur la Scène PRODUITE par le scénario réel (`42-belier-porte.ts`) — le Soldat SERT le bélier
  * (chef de pièce), 5 servants PNJ complètent l'Équipe de 6. `war-machine-crew.test.ts` couvre déjà la
  * mécanique PURE (`warMachineCrewPenalty`) ; ici on prouve qu'elle est bien CÂBLÉE au scénario : poste
- * authoré, `crewIds` réels (dont un HÉROS chef), résolution par Force contre une vraie porte, et les 3
- * courbes d'effectif d'Équipe (complet / 3-6 / sous la moitié).
+ * authoré, `crewIds` réels (dont un HÉROS chef), résolution par Force contre une vraie porte, les 3
+ * courbes d'effectif d'Équipe (complet / 3-6 / sous la moitié) — LOT 1 — et la MOBILITÉ « Pousser »
+ * (ADE II ch.08 l.258, Lot 2 #156) : mouvement simple plafonné, formation rigide, seuil de pousseurs.
  */
 function startBelier(): { soldat: Combatant; crew: Combatant[]; ram: Combatant; porte: Combatant } {
   useGame.setState({ party: scenario.makeParty() });
@@ -30,13 +33,19 @@ function startBelier(): { soldat: Combatant; crew: Combatant[]; ram: Combatant; 
   return { soldat, crew, ram, porte };
 }
 
+/** Force le tour de `id` (le Soldat, chef de pièce) — la poussée exige que l'ACTIF soit le chef. */
+function setActive(id: string): void {
+  const b = useGame.getState().battle!;
+  useGame.setState({ battle: { ...b, turn: b.order.indexOf(id), acted: false, action: null } });
+}
+
 describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une arme portée', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
-  it("scène : une porte-de-ville brèchable sur l'arête N de (5,4)", () => {
+  it("scène : une porte-de-ville brèchable sur l'arête N de (5,4), formation à 5 cases de la porte", () => {
     const s = scenario.scene;
-    expect(s.dimensions).toEqual({ w: 10, h: 8 });
+    expect(s.dimensions).toEqual({ w: 10, h: 15 });
     const gate = s.walls!.find((w) => w.structure === 'porte-de-ville');
     expect(gate).toMatchObject({ x: 5, y: 4, side: 'N' });
   });
@@ -102,5 +111,123 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
     const block = firedAttackBlock(() => useGame.getState(), soldat, porte, belier.uid);
     expect(block).toMatchObject({ reason: 'sous-effectif' });
+  });
+
+  // ── Lot 2 (#156) : MOBILITÉ — « Pousser » l'engin (ADE II ch.08 l.258, mouvement simple, aucun jet) ──
+
+  it("gate du bouton « Pousser » (ActionBar via `pushSlot`, GAP intégration UI) : visible pour le CHEF, absent pour un héros sans poste, désactivé sous-effectif", () => {
+    const { soldat, crew } = startBelier();
+    const combatants = useGame.getState().battle!.combatants;
+    // CHEF d'un engin mobile → bouton VISIBLE et actif (Équipe complète 6/6).
+    expect(pushSlot(soldat, combatants)).toEqual({ show: true, undercrew: false });
+    // Un autre héros du groupe (ne sert AUCUN poste) → aucun bouton.
+    const other = combatants.find((c) => c.kind === 'hero' && !c.mannedPoste)!;
+    expect(other).toBeTruthy();
+    expect(pushSlot(other, combatants)).toEqual({ show: false, undercrew: false });
+    // Sous la moitié de l'Équipe (2/6) → bouton VISIBLE mais DÉSACTIVÉ (parité tir sous-effectif).
+    for (const c of crew.filter((x) => x.id !== soldat.id).slice(0, 4)) c.wounds = { current: 0, max: c.wounds.max };
+    expect(pushSlot(soldat, combatants)).toEqual({ show: true, undercrew: true });
+  });
+
+  it("battlePushEngine peuple `battle.reachable` de cases VALIDES (aperçu de portée non vide) — pas seulement le commit", () => {
+    const { soldat } = startBelier();
+    setActive(soldat.id);
+    const start = { ...soldat.pos! };
+    useGame.getState().battlePushEngine();
+    const reach = useGame.getState().battle!.reachable;
+    // Non vide ET porte des DESTINATIONS réelles (pas seulement la case de départ) : le joueur voit où pousser.
+    expect(reach.size).toBeGreaterThan(1);
+    const destinations = [...reach.keys()].filter((k) => k !== `${start.x},${start.y}`);
+    expect(destinations.length).toBeGreaterThan(0);
+    // Toutes dans le plafond maison (chebyshev ≤ vitesse de poussée) depuis la case du chef.
+    const cap = Number(rule('siege-engine-push-speed'));
+    for (const k of reach.keys()) {
+      const [x, y] = k.split(',').map(Number);
+      expect(Math.max(Math.abs(x - start.x), Math.abs(y - start.y))).toBeLessThanOrEqual(cap);
+    }
+    // La case juste au nord (vers la porte) EST une destination proposée.
+    expect(reach.has(`${start.x},${start.y - 1}`)).toBe(true);
+    // Toggle (parité cast/heal) : re-cliquer « Pousser » ferme le mode sans consommer l'Action.
+    useGame.getState().battlePushEngine();
+    expect(useGame.getState().battle!.action).toBeNull();
+    expect(useGame.getState().battle!.reachable.size).toBe(0);
+    expect(useGame.getState().battle!.acted).toBe(false);
+  });
+
+  it("le CHEF pousse → l'engin ET tous les servants translatent du MÊME delta (formation rigide, comme shipAdvance)", () => {
+    const { soldat, crew, ram } = startBelier();
+    setActive(soldat.id);
+    const movers = [ram, ...crew];
+    const before = new Map(movers.map((c) => [c.id, { ...c.pos! }]));
+    useGame.getState().battlePushEngine();
+    expect(useGame.getState().battle!.action).toBe('push');
+    const dest = { x: soldat.pos!.x, y: soldat.pos!.y - 2 };
+    useGame.getState().battleClickTile(dest);
+    const delta = { x: dest.x - before.get(soldat.id)!.x, y: dest.y - before.get(soldat.id)!.y };
+    expect(delta).toEqual({ x: 0, y: -2 });
+    for (const c of movers) {
+      const b = before.get(c.id)!;
+      expect(c.pos).toEqual({ x: b.x + delta.x, y: b.y + delta.y }); // MÊME delta pour l'engin ET chaque servant
+    }
+    // Consomme l'Action du chef ; l'engin reste SANS tour (inert, jamais dans battle.order).
+    expect(useGame.getState().battle!.action).toBeNull();
+    expect(useGame.getState().battle!.acted).toBe(true);
+    expect(useGame.getState().battle!.order).not.toContain(ram.id);
+  });
+
+  it('portée de poussée PLAFONNÉE à la vitesse maison (`siege-engine-push-speed`, défaut 2 cases) — RAW muet, ADE II ch.08 l.258', () => {
+    const { soldat, ram } = startBelier();
+    setActive(soldat.id);
+    const cap = Number(rule('siege-engine-push-speed'));
+    expect(cap).toBe(2);
+    const start = { ...soldat.pos! };
+    useGame.getState().battlePushEngine();
+    // Hors de portée (cap+1) : la case n'est même pas dans `battle.reachable` → le clic est ignoré, personne ne bouge.
+    const tooFar = { x: start.x, y: start.y - (cap + 1) };
+    expect(useGame.getState().battle!.reachable.has(`${tooFar.x},${tooFar.y}`)).toBe(false);
+    useGame.getState().battleClickTile(tooFar);
+    expect(soldat.pos).toEqual(start);
+    expect(useGame.getState().battle!.action).toBe('push'); // toujours ouvert : ce n'était pas un commit
+    // Dans la portée (exactement le plafond) : le clic commet.
+    const atCap = { x: start.x, y: start.y - cap };
+    useGame.getState().battleClickTile(atCap);
+    expect(soldat.pos).toEqual(atCap);
+    expect(ram.pos).toEqual({ x: atCap.x + 1, y: atCap.y }); // offset relatif chef↔engin préservé
+  });
+
+  it('seuil de pousseurs (ADE II ch.08 l.233, MÊME seuil que le tir) : 3/6 (≥ moitié) autorise, 2/6 (sous la moitié) refuse', () => {
+    const { soldat: soldatA, crew: crewA } = startBelier();
+    setActive(soldatA.id);
+    for (const c of crewA.filter((x) => x.id !== soldatA.id).slice(0, 3)) c.wounds = { current: 0, max: c.wounds.max }; // 3/6 restants
+    useGame.getState().battlePushEngine();
+    expect(useGame.getState().battle!.action).toBe('push'); // effectif suffisant → poussée ouverte
+
+    useGame.setState({ battle: null });
+    const { soldat: soldatB, crew: crewB } = startBelier();
+    setActive(soldatB.id);
+    for (const c of crewB.filter((x) => x.id !== soldatB.id).slice(0, 4)) c.wounds = { current: 0, max: c.wounds.max }; // 2/6 restants
+    useGame.getState().battlePushEngine();
+    expect(useGame.getState().battle!.action).toBeNull(); // sous la moitié → poussée IMPOSSIBLE (comme un tir sous-effectif)
+  });
+
+  it("après avoir POUSSÉ la formation jusqu'à la porte (3 poussées, cap 2), le bélier l'assène (Force + Blessures)", () => {
+    const { soldat, ram, porte } = startBelier();
+    soldat.characteristics.F = 90; // Test quasi-garanti (indépendant de la mobilité testée ici)
+    const pushBy = (dy: number) => {
+      setActive(soldat.id);
+      useGame.getState().battlePushEngine();
+      useGame.getState().battleClickTile({ x: soldat.pos!.x, y: soldat.pos!.y - dy });
+    };
+    pushBy(2); // (5,10) → (5,8)
+    pushBy(2); // (5,8) → (5,6)
+    pushBy(1); // (5,6) → (5,5) : adjacent à la porte (arête N de (5,4)), comme l'ancienne position figée du Lot 1
+    expect(soldat.pos).toEqual({ x: 5, y: 5 });
+    expect(ram.pos).toEqual({ x: 6, y: 5 }); // formation rigide : offset chef↔engin inchangé après 3 poussées cumulées
+    seedBattleRng(1);
+    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const r = resolveAttack(() => useGame.getState(), soldat, porte, undefined, false, false, false, belier.uid);
+    expect(r).not.toBeNull();
+    expect(r!.res.hit).toBe(true); // Force 90 → Test quasi-garanti
+    expect(r!.res.woundsLost ?? 0).toBeGreaterThan(0); // la porte encaisse RÉELLEMENT, après le trajet poussé
   });
 });

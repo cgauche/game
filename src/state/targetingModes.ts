@@ -30,7 +30,9 @@ import { combatDistance } from './footprint';
 import { targetArc } from './fireArc';
 import { bearingPostes } from './shipBattery';
 import { serveTargetPoste, isPosteManned } from './shipPostes';
+import { posteHullOf } from './siegePush';
 import { spellOps } from './flow';
+import { placeCombatant } from './spawn';
 import { mountOf, mountMovement, mountedCombatDistance } from './mount';
 import { pilotedByHuman } from './netOwnership';
 import { afterApproach } from './combatDirector';
@@ -548,6 +550,42 @@ function teleportCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void
   bus.emit(EVT.SCENE_DIRTY);
 }
 
+/** POUSSÉE d'un engin de siège CREWÉ (ADE II ch.08 l.258, Lot 2 #156) : le CHEF choisit sa case
+ *  d'arrivée parmi les cases en surbrillance (`battle.reachable`, posé par `battlePushEngine` — plafonné
+ *  à `rule('siege-engine-push-speed')`) — mouvement SIMPLE, aucun jet. Le delta (case cliquée − position
+ *  du chef) est appliqué à l'ENGIN et à TOUS les servants du poste (`ShipPoste.crewIds`, chef inclus) :
+ *  formation RIGIDE, MÊME patron que `shipAdvance` (store.ts) qui translate une coque + son équipage du
+ *  MÊME delta. Consomme l'Action du chef (comme `battleManPoste`) ; l'engin reste SANS tour (`inert`,
+ *  jamais ajouté à `battle.order`) — seul le rendu de la pièce suit (`posteAnchor` lit `hull.pos`).
+ *
+ *  v1 : la case d'arrivée de chaque SERVANT translaté n'est PAS revalidée individuellement (formation
+ *  authorée souple, MÊME simplification que `shipAdvance` qui ne valide que la case de la coque) — un
+ *  servant peut atterrir sur une case occupée/hors-scène si la formation initiale était irrégulière.
+ *  Sans incidence pour l'engin ADE II en donnée aujourd'hui (empreinte 1×1, servants alignés en scénario). */
+function pushCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void {
+  const battle = get().battle;
+  const scene = get().scene;
+  if (!battle || !scene || !active.pos) return;
+  const k = `${pt.x},${pt.y}`;
+  if (!battle.reachable.has(k)) return;
+  const poste = active.mannedPoste;
+  const hull = poste && posteHullOf(poste, battle.combatants);
+  if (!poste || !hull?.pos) return;
+  const delta = { x: pt.x - active.pos.x, y: pt.y - active.pos.y };
+  const movers = [hull, ...(poste.crewIds ?? [])
+    .map((id) => battle.combatants.find((c) => c.id === id))
+    .filter((c): c is Combatant => !!c?.pos)];
+  for (const m of movers) {
+    const from = { ...m.pos! };
+    placeCombatant(m, scene, { x: from.x + delta.x, y: from.y + delta.y });
+    bus.emit(EVT.ANIM_MOVE, { id: m.id, path: [from, { ...m.pos }] });
+  }
+  const dist = Math.max(Math.abs(delta.x), Math.abs(delta.y));
+  const log = [...battle.log, ev('move', t('cs.pushEngine', { name: active.name, weapon: hull.name, n: dist, s: dist > 1 ? 's' : '' }), active.id)];
+  set({ battle: { ...get().battle!, acted: true, action: null, reachable: new Map(), preview: null, log } });
+  bus.emit(EVT.SCENE_DIRTY);
+}
+
 /** Sort de ZONE sélectionné : le clic-case OUVRE la modale — le centre se choisit APRÈS le jet.
  *  Sort non-zone : clic-sol sans effet en mode cast. Corps DÉPLACÉ verbatim de battleClickTile. */
 function castCommitTile(get: Get, set: Set, active: Combatant, _pt: Pt): void {
@@ -626,6 +664,13 @@ const TELEPORT_MODE: TargetingMode = {
   tileValidAt: (get, _active, pt) => !!get().battle?.reachable.has(`${pt.x},${pt.y}`),
   commitTile: teleportCommitTile,
 };
+/** POUSSÉE d'un engin de siège (ADE II ch.08 l.258, Lot 2 #156) : case-cible parmi `battle.reachable`
+ *  (posé par `battlePushEngine`), MÊME gabarit que TELEPORT_MODE. */
+const PUSH_MODE: TargetingMode = {
+  id: 'push',
+  tileValidAt: (get, _active, pt) => !!get().battle?.reachable.has(`${pt.x},${pt.y}`),
+  commitTile: pushCommitTile,
+};
 /** Pose libre d'un gabarit de zone (sort de ZdE après jet OU pilonnage indirect de siège). */
 const PLACING_MODE: TargetingMode = {
   id: 'placing-zone',
@@ -652,5 +697,6 @@ export function currentTargetingMode(get: Get): TargetingMode {
   if (action === 'heal') return HEAL_MODE;
   if (action === 'battery') return BATTERY_MODE;
   if (action === 'teleport') return TELEPORT_MODE;
+  if (action === 'push') return PUSH_MODE;
   return ATTACK_MODE;
 }

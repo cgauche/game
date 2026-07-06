@@ -636,6 +636,17 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'LDB 65 l.44 dit seulement « des pénalités » sans les chiffrer : valeur maison retirée au Test de Résistance contre le froid sans Manteau/Cape porté(e).',
   },
   {
+    id: 'siege-engine-push-speed',
+    label: 'Vitesse de poussée d’un engin de siège',
+    ref: 'ADE II ch.08 l.258 — roues, vitesse non chiffrée, valeur maison',
+    group: 'Combat',
+    kind: 'param',
+    default: 2,
+    min: 1,
+    max: 6,
+    hint: '« [le bélier/la baliste sont] dotés de roues pour se déplacer sur le champ de bataille » (ADE II ch.08 l.256/258) sans chiffrer de vitesse : plafond MAISON (en cases) d’une poussée d’équipage — mouvement SIMPLE, aucun Test.',
+  },
+  {
     id: 'sea-chart-orientation-dr',
     label: 'Carte marine : bonus d’Orientation',
     ref: 'MDG 15 l.290 — 2 ports désignés : toute route = maison',

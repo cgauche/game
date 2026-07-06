@@ -60,6 +60,7 @@ import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy, placeCombatant } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef, isPosteManned } from './shipPostes';
+import { posteHullOf, pushEligible, pushCrewOk, pushMovement, pushMoveEnv } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
 import { resolveVoyageCrewTest } from './seaVoyageFlow';
@@ -1298,6 +1299,30 @@ export function createCombatSlice(get: Get, set: Set) {
       leaveChef(active, poste, battle.combatants);
       recomputeLoadout(active);
       set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', t('cs.leavePoste', { name: active.name, weapon }), active.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+    },
+    // « Pousser » un engin de siège CREWÉ à roues (ADE II ch.08 l.258, Lot 2 #156) : ouvre le mode de
+    // ciblage-CASE 'push' — le clic-sol suivant (PUSH_MODE.commitTile, targetingModes.ts) commet la
+    // translation de la formation. Gate : chef d'un poste MOBILE (`pushEligible`), Action dispo, Équipe ≥
+    // moitié requise (`pushCrewOk`, sinon no-op — comme un tir sous-effectif refusé, `firedAttackBlock`).
+    // Ne consomme RIEN ici (la dépense de l'Action a lieu au COMMIT, comme `battleClickTile`/`battleManPoste`).
+    battlePushEngine: () => {
+      if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
+      const battle = get().battle;
+      const scene = get().scene;
+      if (!battle || battle.over || !scene) return;
+      // Toggle (parité cast/heal) : re-cliquer « Pousser » alors qu'on est déjà en mode 'push' ferme le mode
+      // (retour neutre, reachable purgé) sans consommer l'Action.
+      if (battle.action === 'push') { set({ battle: { ...battle, action: null, reachable: new Map(), preview: null } }); bus.emit(EVT.SCENE_DIRTY); return; }
+      const active = activeCombatant(battle);
+      if (!active || !controlsCombatant(get(), active) || battle.acted || !canTakeAction(active) || !pushEligible(active)) return;
+      const poste = active.mannedPoste!;
+      const hull = posteHullOf(poste, battle.combatants);
+      const w = mannedPosteWeapon(active, poste);
+      if (!hull || !hull.pos || !active.pos || !w || !pushCrewOk(poste, w, battle.combatants)) return;
+      const env = pushMoveEnv(battle, active, hull);
+      const reach = reachable(scene, active.pos, pushMovement(), env);
+      set({ battle: { ...battle, action: 'push', reachable: reach, preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
     },
     // « Diriger l'équipe » (Commandant d'équipe, AA l.4373-4379) : le Personnage doté du Talent aide une équipe

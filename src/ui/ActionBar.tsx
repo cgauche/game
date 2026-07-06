@@ -20,6 +20,7 @@ import { findSkillById } from '../data/index';
 import { mountableNear } from '../state/mount';
 import { combatDistance } from '../state/footprint';
 import { shipOfCrew, servablePostes } from '../state/shipPostes';
+import { pushSlot } from '../state/siegePush';
 import { quartIndex } from '../state/shipCrew';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { canAidTeam } from '../state/commandTeam';
@@ -80,6 +81,7 @@ export function ActionBar() {
   const gameTime = useGame((s) => s.gameTime);
   const manPoste = useGame((s) => s.battleManPoste);
   const leavePoste = useGame((s) => s.battleLeavePoste);
+  const pushEngine = useGame((s) => s.battlePushEngine);
   const aidTeam = useGame((s) => s.battleAidTeam);
   const recoverState = useGame((s) => s.battleRecoverState);
   const selectAmmo = useGame((s) => s.battleSelectAmmo);
@@ -361,6 +363,10 @@ export function ActionBar() {
   // « Servir cette pièce » (MDG ch.12) : pièce de siège adjacente que le héros peut REJOINDRE — chef si non servie,
   // sinon support d'équipe (KIND-AGNOSTIQUE — même source que l'IA). On n'offre « Servir » que s'il ne sert pas DÉJÀ.
   const canServePoste = isHero && !active.mannedPoste && servablePostes(active, battle.combatants).length > 0;
+  // « Pousser » (ADE II ch.08 l.258) : chef d'un engin de siège MOBILE à roues → il peut le déplacer (mouvement
+  // simple, aucun jet). Gate d'affordance = SOURCE UNIQUE `pushSlot` (visible/sous-effectif) ; DÉSACTIVÉ si
+  // l'Équipe présente est sous la moitié requise, MÊME seuil que le tir sous-effectif (parité bouton de tir).
+  const push = isHero ? pushSlot(active, battle.combatants) : { show: false, undercrew: false };
   // « Diriger l'équipe » (Commandant d'équipe, AA) : le héros porte le Talent ET ≥ 1 équipe d'Arme d'équipe est à portée de voix.
   const canAid = isHero && canAidTeam(active, battle.combatants);
   // Battement (LDB 10 l.103 / AA l.4361) : Action, Test de CC non opposé. Dispo si le héros porte le
@@ -390,6 +396,7 @@ export function ActionBar() {
     if (shipSupport) slots.push({ id: 'maneuver-ship', disabled: battle.acted || stunned || broken, icon: <Icon id="action/steer-ship" />, label: 'Manœuvrer', done: battle.acted, title: `Prendre la barre de ${shipSupport.name} : virer le cap (Test de Navigation — coûte l'Action)`, run: () => battleShipManeuver(active.id) });
     if (canServePoste) slots.push({ id: 'man-poste', disabled: battle.acted || stunned || broken, icon: <Icon id="action/serve-engine" />, label: 'Servir cette pièce', done: battle.acted, title: "Rejoindre une pièce de siège adjacente : chef si elle n'est pas servie (l'arme vous est octroyée), sinon renfort d'équipe — coûte l'Action", run: () => manPoste() });
     if (active.mannedPoste) slots.push({ id: 'leave-poste', disabled: battle.acted || stunned || broken, icon: <Icon id="action/leave-post" />, label: 'Quitter la pièce', done: battle.acted, title: "Quitter la pièce servie (la libère pour un autre) — coûte l'Action", run: leavePoste });
+    if (push.show) slots.push({ id: 'push-engine', cls: battle.action === 'push' ? 'on' : '', disabled: battle.acted || stunned || broken || push.undercrew, icon: <Icon id="action/serve-engine" />, label: 'Pousser', done: battle.acted, title: push.undercrew ? "Équipe trop réduite pour pousser l'engin (moins de la moitié requise)" : "Pousser l'engin de siège vers une case (roues, ADE II) : l'engin et l'équipage avancent ensemble — mouvement simple, coûte l'Action", run: () => pushEngine() });
     if (canAid) slots.push({ id: 'aid-team', disabled: battle.acted || stunned || broken, icon: <Icon id="action/lead" />, label: "Diriger l'équipe", done: battle.acted, title: "Aider une équipe d'artillerie à portée de voix (Test de Commandement) : elle tire ensuite à votre score de Projectiles — coûte l'Action", run: aidTeam });
     if (rangedW && !frenzied) slots.push({ id: 'aim', disabled: battle.acted || stunned || active.aiming, icon: <Icon id="action/aim" />, label: active.aiming ? 'En joue' : 'Viser', done: active.aiming, title: "Viser : +20 (Accessible) au prochain tir — coûte l'Action", run: aim });
     if (canPush) slots.push({ id: 'pushback', icon: <Icon id="ui/undo" />, label: 'Repousser', done: active.pushbackMode, title: "Perturbante : la prochaine attaque réussie repousse d'1 m par DR au lieu de causer des Dégâts", run: togglePushback });

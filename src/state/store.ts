@@ -133,7 +133,7 @@ export interface BattleState {
    *  'cast' = ciblage d'un sort · 'teleport' = case d'arrivée d'une Téléportation · 'resolve'/'ammo'/'heal'
    *  = panneaux (Détermination / munition / soin). La Focalisation / l'usage d'objet / le ramassage NE sont
    *  PAS des modes : ils passent par `battleFocusSpell`→`pendingFocus`, `battleUseItem`, `battlePickup`. */
-  action: 'cast' | 'resolve' | 'ammo' | 'heal' | 'teleport' | 'dispel' | 'battery' | 'advantage' | null;
+  action: 'cast' | 'resolve' | 'ammo' | 'heal' | 'teleport' | 'dispel' | 'battery' | 'advantage' | 'push' | null;
   /** Sort sélectionné pour l'action d'incantation en cours (id STABLE — le libellé se résout à l'affichage). */
   selectedSpellId: string | null;
   /** Attaque ARMÉE pour le clic-ennemi (id d'`AttackOption` : 'arme' | 'morsure' | … — cf. `availableAttacks`).
@@ -961,6 +961,11 @@ export interface GameState extends RollFlowActionsMap {
   battleManPoste: (target?: { hullId: string; posteUid: string }) => void;
   /** « Quitter la pièce » (release) : libère le poste servi pour un autre — coûte l'Action. */
   battleLeavePoste: () => void;
+  /** « Pousser » un engin de siège CREWÉ à roues (ADE II ch.08 l.258, Lot 2 #156) : ouvre le mode de
+   *  ciblage-CASE 'push' (le clic-sol suivant commet la translation de formation, `targetingModes.ts`).
+   *  Chef d'un poste d'engin MOBILE, Action dispo, Équipe ≥ moitié requise (sinon no-op, comme un tir
+   *  sous-effectif refusé). Mouvement SIMPLE, aucun jet ; plafonné à `rule('siege-engine-push-speed')`. */
+  battlePushEngine: () => void;
   /** « Diriger l'équipe » (Commandant d'équipe, AA) : Test de Commandement (+0) pour aider une équipe d'Arme
    *  d'équipe à portée de voix — sur réussite, elle tire au score de Projectiles du commandant. Coûte l'Action. */
   battleAidTeam: () => void;
