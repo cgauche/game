@@ -9,7 +9,7 @@
  *
  * Échapper à l'agonie par Hémorragie hors combat : Test de Guérison réussi retire l'État (LDB 09-Compétences
  * l.261, 16-États l.107-109) — infirmerie hors combat (`openMedic`/`medicAct('bleed')`, `state/medicFlow.ts`,
- * bouton « 🩺 Soins » de `CharacterSheet.tsx`), n'avance pas le temps. Sans soigneur au Talent ni Destin,
+ * bouton « Soins » de `CharacterSheet.tsx`), n'avance pas le temps. Sans soigneur au Talent ni Destin,
  * l'agonie ci-dessus va à son terme.
  */
 import { Combatant } from '../engine/types';
