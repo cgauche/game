@@ -192,20 +192,17 @@ export interface CareerLevelData {
   characteristics: CharKey[];
   status: string;
 }
-/** Entrée `specs[]` d'une Compétence/Talent — Phase 3 (i18n-safety, migration domaine par domaine) :
- *  `{id,label}` pour un domaine MIGRÉ (id STABLE résolu par `specLabel`, cf. `langue`/`chevaucher`/
- *  `discretion`/`art`/talent `resistance`) ; `string` LEGACY pour un domaine PAS ENCORE migré (texte FR
- *  verbatim, affiché tel quel — `savoir`/`metier`/`musicien`/…). Un domaine `specsSource` n'a PAS de
- *  `specs[]` (le pool DÉRIVE du registre partagé, cf. `specIdsOf`). Élargi domaine par domaine — jamais
- *  une conversion globale d'un coup (zéro dette PAR INCRÉMENT traçable). */
-export type SpecEntry = string | { id: string; label: string };
-/** id d'une entrée `specs[]` — le legacy `string` EST son propre id (verbatim). */
+/** Entrée `specs[]` d'une Compétence/Talent — id STABLE (résolu par `specLabel`, cf. `langue`/
+ *  `chevaucher`/`discretion`/`art`/talent `resistance`) + libellé d'affichage FR. Un domaine
+ *  `specsSource` n'a PAS de `specs[]` (le pool DÉRIVE du registre partagé, cf. `specIdsOf`). */
+export type SpecEntry = { id: string; label: string };
+/** id d'une entrée `specs[]`. */
 export function specEntryId(e: SpecEntry): string {
-  return typeof e === 'string' ? e : e.id;
+  return e.id;
 }
-/** Libellé d'affichage d'une entrée `specs[]` — le legacy `string` EST son propre libellé. */
+/** Libellé d'affichage d'une entrée `specs[]`. */
 export function specEntryLabel(e: SpecEntry): string {
-  return typeof e === 'string' ? e : e.label;
+  return e.label;
 }
 /** Registre partagé qui DÉRIVE le pool d'ids d'une `specs[]` (résolu en libellé par `specLabel`, énuméré
  *  par `wildcardSpecs`) — chaque valeur pointe UNE entrée du catalogue `SPEC_SOURCES` (SSOT, fin des
@@ -253,7 +250,7 @@ export interface SkillData {
    *  des instances de cette Compétence sont des ids résolus via ce registre partagé — `weaponGroupsMelee`/
    *  `weaponGroupsRanged` (Corps à corps / Projectiles → ids de `weaponGroups.json` filtrés par `combat`)
    *  ou `winds` (Focalisation → Domaines à Vent de `domains.json`, AFFICHE le Vent) — et `specs[]` est
-   *  ABSENT. Sans `specsSource` = specs inline (`SpecEntry[]` — id-based si migré, texte libre sinon). */
+   *  ABSENT. Sans `specsSource` = specs inline (`SpecEntry[]`). */
   specsSource?: SpecsSource;
   /** Le domaine accepte-t-il un TEXTE LIBRE hors `specs[]` (Métier, Savoir-région) ? `true` = OUVERT —
    *  `specs[]` n'est qu'un historique/suggestions, pas une liste fermée. Absent/`false` = FERMÉ — la
@@ -1821,9 +1818,8 @@ export function specIdsOf(def: { specsSource?: SpecsSource; specs?: SpecEntry[] 
 }
 /** Libellé d'affichage d'une spéc (`Ref.spec`) : si la def désigne une `specsSource`, résout via le
  *  catalogue `SPEC_SOURCES` (registre partagé d'ids : Groupe d'arme → libellé, Vent, Lore, dieu, chanson) ;
- *  sinon cherche l'id dans `def.specs` (`SpecEntry[]` — un domaine MIGRÉ le résout en label FR, un domaine
- *  legacy `string[]` le retrouve verbatim) ; sinon verbatim (texte libre / id inconnu — jamais d'erreur
- *  d'affichage). SOURCE UNIQUE de résolution de spéc. */
+ *  sinon cherche l'id dans `def.specs` (`SpecEntry[]`, résolu en label FR) ; sinon verbatim (texte
+ *  libre / id inconnu — jamais d'erreur d'affichage). SOURCE UNIQUE de résolution de spéc. */
 export function specLabel(category: string, refId: string, specId: string): string {
   const def = category === 'skills' ? findSkillById(refId) : category === 'talents' ? findTalentById(refId) : undefined;
   if (def?.specsSource) return SPEC_SOURCES[def.specsSource].label(specId);

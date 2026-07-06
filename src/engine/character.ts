@@ -54,15 +54,15 @@ export function skillCharacteristicById(id: string): CharKey {
 }
 
 /** Ramène une valeur de spec issue d'un ROUND-TRIP par libellé d'affichage (`advancementLabel`/
- *  `refLabel` → texte → `splitLabel`) à son id STABLE (domaine MIGRÉ, `SpecEntry` {id,label} OU
- *  `specsSource` — Groupe d'arme/Vent/Domaine/Culte/Chanson MIROIRÉS d'un registre partagé) — sans
- *  ça, la création de personnage stockerait le LABEL FR (« Base », « Magick ») au lieu de l'id
- *  (« base », « magick ») dès qu'une entrée de carrière/espèce FIXE (non « Au choix ») traverse ce
- *  round-trip. Compare via `specLabel` (résolveur UNIQUE, gère `specsSource` — `specEntryLabel` seul
- *  ne suffit PAS pour ces domaines : l'entrée `specs[]` y est un id nu, PAS le libellé d'affichage réel,
- *  cf. bug « Corps à corps (Base) » stocké « Base » au lieu de « base »). Une valeur DÉJÀ un id
- *  (résolution par choix via `wildcardSpecs`, ou domaine non migré où id===label) matche direct ;
- *  une spec libre (domaine ouvert, hors catalogue) ne matche rien → renvoyée verbatim (inchangé). */
+ *  `refLabel` → texte → `splitLabel`) à son id STABLE (`SpecEntry` {id,label} OU `specsSource` —
+ *  Groupe d'arme/Vent/Domaine/Culte/Chanson MIROIRÉS d'un registre partagé) — sans ça, la création
+ *  de personnage stockerait le LABEL FR (« Base », « Magick ») au lieu de l'id (« base », « magick »)
+ *  dès qu'une entrée de carrière/espèce FIXE (non « Au choix ») traverse ce round-trip. Compare via
+ *  `specLabel` (résolveur UNIQUE, gère `specsSource` — `specEntryLabel` seul ne suffit PAS pour ces
+ *  domaines : l'entrée `specs[]` y est un id nu, PAS le libellé d'affichage réel, cf. bug « Corps à
+ *  corps (Base) » stocké « Base » au lieu de « base »). Une valeur DÉJÀ un id (résolution par choix
+ *  via `wildcardSpecs`) matche direct ; une spec libre (domaine ouvert, hors catalogue) ne matche
+ *  rien → renvoyée verbatim (inchangé). */
 function resolveSpecId(category: 'skills' | 'talents', defId: string, raw: string): string {
   const def = category === 'skills' ? findSkillById(defId) : findTalentById(defId);
   if (!def) return raw;
