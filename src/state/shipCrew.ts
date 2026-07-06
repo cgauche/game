@@ -241,11 +241,11 @@ export function applyShipMoraleDelta(get: Get, set: SetFn, ship: Combatant, delt
 }
 
 /**
- * Perte d'effectif PNJ CUMULÉE du navire de CAMPAGNE (Embrigadement — MDG 15 l.245 : « Vous perdez 2d10
- * membres d'équipage ») : PERSISTE sur `CampaignVessel.crewLost`, plafonnée au complément NOMINAL du type
- * (`vehicles.json` ship.crew — même source que `shipUndercrew`) : on ne peut pas perdre plus de marins
- * qu'il n'y en a à bord. `delta` positif = perte (négatif = recouvrement, non utilisé pour l'instant — la
- * sous-intrigue Ragot/Discrétion/rançon de l'événement reste au récit, #150). Renvoie le journal.
+ * Applique un DELTA d'effectif PNJ CUMULÉ du navire de CAMPAGNE (Embrigadement — MDG 15 l.245 : perte de
+ * 2d10 membres d'équipage, recouvrable par Ragot puis rançon/Discrétion) : PERSISTE sur
+ * `CampaignVessel.crewLost`, plafonné à `[0, nominal]` (`vehicles.json` ship.crew — même source que
+ * `shipUndercrew`) dans les deux sens. `delta` positif = perte, négatif = recouvrement (séquence
+ * Ragot/rançon/Discrétion non câblée côté appelant : #164). Renvoie le journal.
  */
 export function applyVesselCrewLoss(get: Get, set: SetFn, delta: number): string[] {
   const vessel = get().vessel;

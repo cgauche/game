@@ -1024,9 +1024,8 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
       break;
     case 'embrigadement': {
       // « Vous perdez 2d10 membres d'équipage » (MDG 15 l.245) — règle stricte 7 : la perte est PERSISTÉE
-      // (`applyVesselCrewLoss` → `CampaignVessel.crewLost`, plafonnée au nominal). Sa consommation par
-      // `shipUndercrew`/Manque de bras en combat naval reste à câbler → #155. Recouvrement (Ragot puis
-      // rançon OU Discrétion, échec → 1d10 de PLUS) hors périmètre #150, tracé.
+      // (`applyVesselCrewLoss` → `CampaignVessel.crewLost`, plafonnée au nominal). Recouvrement (Ragot
+      // puis rançon OU Discrétion, échec → 1d10 de PLUS) : #164, non câblé ici.
       const lost = eventParam(event, 'lostCrew', rng, 0);
       for (const l of applyVesselCrewLoss(get, set, lost)) log(get, set, [l]);
       break;
