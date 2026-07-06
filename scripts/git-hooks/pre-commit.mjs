@@ -47,6 +47,16 @@ if (dataStaged.length) {
   }
 }
 
+// Tag [entériné] NOUVELLEMENT introduit dans le diff stagé : visibilité systématique (la validation
+// utilisateur vit au stylo — dialogue du hook enterine-guard ; ici on rend tout ajout VISIBLE).
+try {
+  const addedTags = execFileSync('git', ['diff', '--cached', '-U0'], { cwd: ROOT, encoding: 'utf8' })
+    .split('\n').filter((l) => l.startsWith('+') && !l.startsWith('+++') && /\[entériné[^\]]*\]/i.test(l));
+  if (addedTags.length) {
+    process.stderr.write(`pre-commit — tag(s) [entériné] AJOUTÉ(s) par ce commit (mot réservé à l'utilisateur — vérifier que CHAQUE site a reçu sa validation) :\n${addedTags.map((l) => `  ${l.slice(0, 160)}`).join('\n')}\n`);
+  }
+} catch { /* diff illisible → pas de scan */ }
+
 const docsStaged = staged.some((f) => /^docs\/[^/]+\.md$/.test(f.replace(/\\/g, '/')));
 if (docsStaged) {
   try {
