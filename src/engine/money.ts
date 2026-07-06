@@ -32,8 +32,8 @@ export function subtract(a: Money, b: Money): Money | null {
 export function canAfford(purse: Money, cost: Money): boolean {
   return toBrass(purse) >= toBrass(cost);
 }
-export function priceToMoney(p: { gold?: number; silver?: number; bronze?: number }): Money {
-  return { gold: p.gold ?? 0, silver: p.silver ?? 0, brass: p.bronze ?? 0 };
+export function priceToMoney(p: { gold?: number; silver?: number; bronze?: number } | null): Money {
+  return { gold: p?.gold ?? 0, silver: p?.silver ?? 0, brass: p?.bronze ?? 0 };
 }
 /** Normalise un montant partiel `{gold?,silver?,brass?}` en `Money` plein (champs manquants = 0).
  *  `toBrass`/`canAfford` n'admettent pas les champs undefined → passer par ici pour un coût authored. */

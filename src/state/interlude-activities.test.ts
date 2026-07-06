@@ -73,7 +73,7 @@ describe('Activités d’interlude (LDB 23)', () => {
     const itl0 = useGame.getState().interlude!;
     itl0.perHero[h.id] = { ...st(), fx: undefined, left: 3 };
     useGame.setState({ interlude: { ...itl0 } });
-    const price = findTrappingById('dague')!.price;
+    const price = findTrappingById('dague')!.price!;
     const quarter = Math.max(1, Math.floor(toBrass({ gold: price.gold, silver: price.silver, brass: price.bronze }) / 4));
     const before = toBrass(useGame.getState().money);
     useGame.getState().interludeCraftStart(h.id, 'dague', ['solide'], []);

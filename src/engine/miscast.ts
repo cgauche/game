@@ -20,7 +20,7 @@
  */
 import { RNG, defaultRNG, d100, type DiceSpec } from './dice';
 import { findTableEntry } from './tables';
-import { GameOp } from './ops';
+import { GameOp, Formula } from './ops';
 import { Difficulty } from './types';
 // Type-only (effacé à la compilation, comme `domainAttributes`/`ops` importent déjà `TriggeredEffect`) :
 // le nœud de Test imbriqué d'une entrée de table EST un nœud de Flow `test` — la STRUCTURE de logique
@@ -98,6 +98,9 @@ type JsonOp = {
   durationRounds?: JsonFormula;
   /** When true the condition `value` is `1 + sinPoints` (cannot be expressed as a plain Formula). */
   sinPlus1Value?: boolean;
+  /** `GameOp['condition'].escapeStrength` (Empêtré : force de désengagement, ex. Tenue indisciplinée
+   *  LDB 46) — déjà une `Formula` runtime valide, jamais sin-paramétrée : copiée telle quelle. */
+  escapeStrength?: Formula;
   // wounds / corruption
   amount?: JsonFormula;
   // castPenalty
@@ -159,6 +162,9 @@ function expandOp(op: JsonOp, sin: number): GameOp {
       }
       if (op.durationRounds !== undefined) {
         base.durationRounds = resolveJsonFormula(op.durationRounds, sin);
+      }
+      if (op.escapeStrength !== undefined) {
+        base.escapeStrength = op.escapeStrength;
       }
       return base as unknown as GameOp;
     }

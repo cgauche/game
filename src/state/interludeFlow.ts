@@ -16,7 +16,7 @@ import { battleRng } from './battleRng';
 import { d100 } from '../engine/dice';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure } from '../engine/tests';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
-import { fromBrass, toBrass, formatMoney, PA_PER_CO } from '../engine/money';
+import { fromBrass, toBrass, formatMoney, priceToMoney, PA_PER_CO } from '../engine/money';
 import { itemFromTrappingById, recomputeLoadout, buildWeapon } from '../engine/items';
 import { sleepParty } from './restFlow';
 import { confirmBattleActivity, massBattleBegin, battlePrepEntries } from './massBattleFlow';
@@ -656,7 +656,7 @@ export function orderItem(get: Get, set: Set, heroId: string, trappingId: string
     get().log(`${t.label} (${t.availability ?? '?'}) s'achète chez un marchand — Passer commande sert aux objets Exotiques.`);
     return;
   }
-  const price = toBrass({ gold: t.price.gold, silver: t.price.silver, brass: t.price.bronze });
+  const price = toBrass(priceToMoney(t.price));
   if (toBrass(get().money) < price) {
     get().log(`Commande trop chère (${formatMoney(fromBrass(price))}).`);
     return;

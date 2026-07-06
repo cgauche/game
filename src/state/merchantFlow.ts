@@ -66,7 +66,7 @@ export type MerchantStocks = Record<string, { stock: { id: string; qty: number }
 
 /** Prix listé d'un objet en sous de cuivre (catalogue × qualité d'artisanat) — la référence du seuil
  *  « Tenir les comptes » ET du Troc (avant majoration/Marchandage). null (0) si prix non chiffré. */
-function listedBrassOf(t: { price: { gold?: number; silver?: number; bronze?: number }; qualities?: unknown[] }): number {
+function listedBrassOf(t: { price: { gold?: number; silver?: number; bronze?: number } | null; qualities?: unknown[] }): number {
   const b = toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities as never });
   return Number.isFinite(b) ? Math.round(b) : 0;
 }

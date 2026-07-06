@@ -149,6 +149,28 @@ describe('tables migrées — sweep d\'application', () => {
     }
   });
 
+  it('« Tenue indisciplinée » (LDB 46) : escapeStrength (1d10×5) SURVIT à expandOp → GameOp résolu', () => {
+    // Preuve TDD de la propagation `JsonOp.escapeStrength` → `GameOp.escapeStrength` par `expandOp`
+    // (`engine/miscast.ts`) : sans elle, l'Empêtré de cette entrée perd sa Force d'évasion à la
+    // résolution (silencieusement, un Test opposé simple au lieu du 1d10×5 RAW).
+    let found = false;
+    for (let seed = 0; seed < 400 && !found; seed++) {
+      const r = rollMiscast('mineure', makeRNG(seed), 0);
+      if (r.name !== 'Tenue indisciplinée') continue;
+      found = true;
+      const op = r.ops.find((o) => o.op === 'condition' && o.name === 'empetre')!;
+      expect(op).toBeTruthy();
+      expect((op as { escapeStrength?: unknown }).escapeStrength).toBeTruthy();
+      const c = hero();
+      applyOps(c, r.ops, { rng: makeRNG(1), label: r.name });
+      const inst = c.conditions.find((x) => x.name === 'empetre')!;
+      expect(inst.escapeStrength! % 5).toBe(0);
+      expect(inst.escapeStrength).toBeGreaterThanOrEqual(5);
+      expect(inst.escapeStrength).toBeLessThanOrEqual(50);
+    }
+    expect(found).toBe(true);
+  });
+
   it('« Tenez compte de mes enseignements » porte la durée 1d10 + Péchés (formule plus)', () => {
     // Force l'entrée 11-15 : on échantillonne jusqu'à la trouver.
     let found = false;
