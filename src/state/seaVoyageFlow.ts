@@ -34,7 +34,7 @@ import { dayIndex } from './upkeep';
 import { placeById, type WorldMap } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { PendingCrewTest, ShipManeuverParticipant } from './pendings';
-import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta } from './shipCrew';
+import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, applyVesselCrewLoss } from './shipCrew';
 import { maneuverCrewTotal } from './shipManeuver';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait } from '../data';
@@ -711,13 +711,18 @@ function applyVesselCritical(get: Get, set: Set, logLine: string, note: string):
 
 // ── Événements de bord (ch.15 l.132-236) — application MÉCANIQUE par `kind` ─────────────────────
 
+/** Lit un paramètre de `SeaEventDef.params` : nombre direct, ou dé « NdM » roulé (ex. "2d10") — PARTAGÉ
+ *  par les événements de BORD (`resolveBoardEvent`) et de PORT (`resolvePortArrival`), même format de
+ *  donnée (`sea-events.json`). PUR (hors le jet lui-même, via `rng` injecté). */
+function eventParam(event: SeaEventDef, k: string, rng: RNG, dflt = 0): number {
+  const v = (event.params ?? {})[k];
+  if (typeof v === 'number') return v;
+  if (typeof v === 'string') { const d = /(\d+)d10/.exec(v); if (d) return rollDice(parseInt(d[1], 10), 10, rng); const n = parseInt(v, 10); if (!isNaN(n)) return n; }
+  return dflt;
+}
+
 function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): void {
-  const num = (k: string, dflt = 0): number => {
-    const v = (event.params ?? {})[k];
-    if (typeof v === 'number') return v;
-    if (typeof v === 'string') { const d = /(\d+)d10/.exec(v); if (d) return rollDice(parseInt(d[1], 10), 10, rng); const n = parseInt(v, 10); if (!isNaN(n)) return n; }
-    return dflt;
-  };
+  const num = (k: string, dflt = 0): number => eventParam(event, k, rng, dflt);
   tell(get, set, [event.desc]);
   const vessel = get().vessel;
   const ship = get().travelPlan?.vehicle;
@@ -984,7 +989,10 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
   const mood = vesselManann(vessel);
   const { roll, hours, event } = rollPortEvent(mood.score, rng);
   log(get, set, [`🎲 Événement de port (2d10 ${roll}) — ${event.label} (dans les ${hours} heures)`, event.desc]);
-  const ship = get().travelPlan?.vehicle;
+  // #150 : `travelPlan` est déjà remis à `null` par `finishSeaDay` avant cet appel (l'arrivée l'annule) —
+  // le lire ici renverrait TOUJOURS `undefined`. La coque se reconstruit depuis l'état PERSISTANT
+  // (`get().vessel`, comme `buildSeaPlan`/`effectiveSeaM` le font via `voyageShip`).
+  const ship = voyageShip(get)?.hull;
   switch (event.kind) {
     case 'fete-manann':
       if (vessel) set({ vessel: { ...vessel, manann: addManann(mood, rollDice(2, 10, rng)) } });
@@ -1001,6 +1009,15 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
     case 'port-desert':
       if (ship) for (const l of applyShipMoraleDelta(get, set, ship, -rollDice(1, 10, rng))) log(get, set, [l]);
       break;
+    case 'embrigadement': {
+      // « Vous perdez 2d10 membres d'équipage » (MDG 15 l.245) — règle stricte 7 : la perte est PERSISTÉE
+      // (`applyVesselCrewLoss` → `CampaignVessel.crewLost`, plafonnée au nominal). Sa consommation par
+      // `shipUndercrew`/Manque de bras en combat naval reste à câbler → #155. Recouvrement (Ragot puis
+      // rançon OU Discrétion, échec → 1d10 de PLUS) hors périmètre #150, tracé.
+      const lost = eventParam(event, 'lostCrew', rng, 0);
+      for (const l of applyVesselCrewLoss(get, set, lost)) log(get, set, [l]);
+      break;
+    }
     case 'controle-a-quai': {
       // « Les droits de douane sont évalués à 10 % de la valeur de toute la cargaison … Si vous ne payez
       // pas, votre cargaison est saisie. »

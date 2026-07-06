@@ -233,3 +233,21 @@ export function applyShipMoraleDelta(get: Get, set: SetFn, ship: Combatant, delt
   if (bandAfter.id !== moraleBand(before).id) lines.push(`« ${bandAfter.desc.split('.')[0]}. »`);
   return lines;
 }
+
+/**
+ * Perte d'effectif PNJ CUMULÉE du navire de CAMPAGNE (Embrigadement — MDG 15 l.245 : « Vous perdez 2d10
+ * membres d'équipage ») : PERSISTE sur `CampaignVessel.crewLost`, plafonnée au complément NOMINAL du type
+ * (`vehicles.json` ship.crew — même source que `shipUndercrew`) : on ne peut pas perdre plus de marins
+ * qu'il n'y en a à bord. `delta` positif = perte (négatif = recouvrement, non utilisé pour l'instant — la
+ * sous-intrigue Ragot/Discrétion/rançon de l'événement reste au récit, #150). Renvoie le journal.
+ */
+export function applyVesselCrewLoss(get: Get, set: SetFn, delta: number): string[] {
+  const vessel = get().vessel;
+  if (!delta || !vessel) return [];
+  const nominal = findVehicleById(vessel.vehicleId)?.ship?.crew ?? 0;
+  const before = vessel.crewLost ?? 0;
+  const after = Math.max(0, Math.min(nominal, before + delta));
+  if (after === before) return [];
+  set({ vessel: { ...vessel, crewLost: after } });
+  return [`Équipage : ${after > before ? '−' : '+'}${Math.abs(after - before)} membre(s) (reste ${Math.max(0, nominal - after)}/${nominal}).`];
+}

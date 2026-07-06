@@ -1155,6 +1155,10 @@ export interface CampaignVessel {
   /** Milles de la DERNIÈRE traversée accomplie — vente à un port PRODUCTEUR : « Si le bateau a
    *  parcouru plus de 100 milles » (MDG 15 l.366). Absent = navire à quai depuis sa mise à l'eau. */
   lastVoyageMilles?: number;
+  /** Effectif PNJ perdu CUMULÉ (Embrigadement, MDG 15 l.245 : « Vous perdez 2d10 membres d'équipage »),
+   *  plafonné au complément nominal du type (`vehicles.json` ship.crew — `applyVesselCrewLoss`). Absent
+   *  = aucune perte. #150. */
+  crewLost?: number;
 }
 
 export const useGame = create<GameState>((set, get) => ({

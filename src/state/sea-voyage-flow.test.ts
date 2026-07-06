@@ -232,3 +232,36 @@ describe('Prêtre de Manann — CHOIX joueur, pas paiement automatique (#132, MD
     expect(get().vessel!.manann?.score ?? 0).toBe(0);
   });
 });
+
+describe('Port désert & Embrigadement — #150 (resolvePortArrival appelé APRÈS purge de travelPlan)', () => {
+  beforeEach(freshState);
+
+  const seq = (...vals: number[]): RNG => {
+    let i = 0;
+    return { int: (min, max) => Math.min(max, Math.max(min, vals[i++ % vals.length])) };
+  };
+
+  it('Port désert (min 5 max 5, sea-events.json) applique bien son delta d’Humeur — ship résolu depuis `vessel`, PAS `travelPlan` (déjà `null` ici, cf. `finishSeaDay`)', () => {
+    expect(get().travelPlan).toBeNull(); // reproduit exactement le contexte du bug : plan déjà purgé
+    // Humeur de Manann neutre (mod 0) : 2d10 = 2+3 = 5 → « Port désert ». Puis 2d10 = 1+1 (heures, sans
+    // effet ici). Puis 1d10 = 6 → delta d'Humeur −6 (MDG 15 l.249 : « le Moral diminue d'1d10 »).
+    resolvePortArrival(get, set, undefined, seq(2, 3, 1, 1, 6));
+    expect(get().vessel!.morale.score).toBe(75 - 6);
+    expect(get().journal.some((l) => l.includes('Moral de l’équipage') || l.includes("Moral de l'équipage"))).toBe(true);
+  });
+
+  it('Embrigadement (min 1 max 1) réduit l’effectif d’équipage de 2d10 (MDG 15 l.245)', () => {
+    set({ vessel: { ...get().vessel!, manann: { score: -1, applied: [] } } }); // Humeur < 0 → mod −1 (nécessaire : min 1 est hors de portée à mod 0, cf. Prêtre de Manann ci-dessus)
+    // roll = d10+d10 + mod(−1) = 1+1−1 = 1 → « Embrigadement ». Hours = 1+1 = 2 (sans effet ici).
+    // lostCrew "2d10" = 3+4 = 7 marins perdus (cogue : effectif nominal 15, vehicles.json).
+    resolvePortArrival(get, set, undefined, seq(1, 1, 1, 1, 3, 4));
+    expect(get().vessel!.crewLost).toBe(7);
+    expect(get().journal.some((l) => l.includes('Équipage'))).toBe(true);
+  });
+
+  it('Embrigadement : la perte est PLAFONNÉE au complément nominal du type (on ne peut pas perdre plus de marins qu’il n’y en a)', () => {
+    set({ vessel: { ...get().vessel!, crewLost: 12, manann: { score: -1, applied: [] } } }); // déjà 12/15 perdus
+    resolvePortArrival(get, set, undefined, seq(1, 1, 1, 1, 9, 9)); // lostCrew roulé à 18 → 12+18=30, plafonné à 15
+    expect(get().vessel!.crewLost).toBe(15);
+  });
+});
