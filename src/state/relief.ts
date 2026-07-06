@@ -29,9 +29,10 @@ export const metricToLift = (metres: number): number => metres / METRES_PER_LEVE
  * on monte par Escalade). Ancré sur l'idée « une marche se franchit, une dénivellation se grimpe ».
  * Un pont à 2 m se rejoint donc par 2 cases de rampe, et le malus −10 « en contrebas » (`combatFlow.ts`,
  * lu directement sur cette constante) se déclenche dès qu'une cible domine de plus de ce seuil.
- * Foyer unique de la valeur — NON exposé au registre `OPTIONAL_RULES` : `combatFlow.ts` importe cette
- * constante en dur (module hors périmètre de ce chantier), donc une surcharge runtime désynchroniserait
- * le malus de combat de la marchabilité ci-dessous. Retoucher les deux ensemble si besoin d'éditer.
+ * Foyer unique de la valeur, importée telle quelle par `combatFlow.ts` (malus « en contrebas ») : c'est
+ * un INVARIANT de géométrie (le RAW est muet sur le dénivelé de case — même nature que le seuil de
+ * dead-ground de `lineOfSight.ts`), PAS une house-rule de JEU. Sa place n'est donc pas au registre
+ * `OPTIONAL_RULES` (réservé aux règles de JEU éditables) ; source unique ICI, retoucher = un seul geste.
  */
 export const STEP_MAX_M = 1.0;
 
