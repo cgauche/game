@@ -11,9 +11,10 @@ import { gainAdvantage } from '../../engine/advantage';
 import { isOutOfAction } from '../../engine/conditions';
 import {
   groupAdvantage, advantageCampOf, emptyPools, addToPool, mirrorPools, dominationTransfer,
-  initialAdvantagePools, type AdvantagePools, type InitialAdvantageCircumstances,
+  initialAdvantagePools, type AdvantageCamp, type AdvantagePools, type InitialAdvantageCircumstances,
 } from '../../engine/advantagePool';
 import { advantageTransferWeight } from '../../engine/combatFeatures/dispatch';
+import type { EncounterDef } from '../scene';
 
 /** Réserve courante de la bataille (créée à la volée si absente). */
 function poolsOf(battle: { advantagePools?: AdvantagePools }): AdvantagePools {
@@ -118,15 +119,28 @@ export function roundEndAdvantageTransfer(battle: { advantagePools?: AdvantagePo
   mirrorPools(pools, battle.combatants);
 }
 
-/** Réserves de départ (AA l.4149-4167). AUTO-dérivé de ce que le moteur connaît au lancement : Surnombre
- *  (ratio de combattants actifs) et Surprise (embuscade). Menace / Manœuvrabilité / Terrain restent à
- *  l'appréciation du MJ (entrée d'éditeur future) → 0 par défaut. */
-export function startAdvantagePools(all: Combatant[], doSurprise: boolean): AdvantagePools {
+/** Marqueurs de rencontre (AA l.4149-4167) qui dérivent une circonstance d'Avantage initial — `EncounterDef`
+ *  les porte en camp 'party'/'enemies' (comme `surprise`) ; `startAdvantagePools` les convertit en `AdvantageCamp`. */
+type EncounterAdvantageMarkers = Pick<EncounterDef, 'maneuverability' | 'threat' | 'terrain'>;
+
+/** 'party'/'enemies' (naming éditeur, cf. `EncounterDef.surprise`) → `AdvantageCamp` du moteur. */
+function markerCamp(side: 'party' | 'enemies'): AdvantageCamp {
+  return side === 'party' ? 'allies' : 'foes';
+}
+
+/** Réserves de départ (AA l.4149-4167). AUTO-dérivé de ce que le moteur/la rencontre connaissent au
+ *  lancement : Surnombre (ratio de combattants actifs), Surprise (embuscade), et — via les marqueurs
+ *  éditables de la rencontre (`EncounterDef.maneuverability`/`.threat`/`.terrain`) — Manœuvrabilité /
+ *  Menace / Terrain. Marqueur absent → circonstance non applicable pour cette rencontre. */
+export function startAdvantagePools(all: Combatant[], doSurprise: boolean, markers?: EncounterAdvantageMarkers): AdvantagePools {
   const allies = all.filter((c) => c.kind === 'hero' && !isOutOfAction(c)).length;
   const foes = all.filter((c) => c.kind !== 'hero' && !isOutOfAction(c)).length;
   const circ: InitialAdvantageCircumstances = {};
   if (allies > foes && foes > 0) circ.outnumber = { camp: 'allies', ratio: allies / foes };
   else if (foes > allies && allies > 0) circ.outnumber = { camp: 'foes', ratio: foes / allies };
   if (doSurprise) circ.surprise = 'foes'; // l'embuscade de rencontre surprend le groupe (camp adverse)
+  if (markers?.maneuverability) circ.maneuverability = markerCamp(markers.maneuverability);
+  if (markers?.threat) circ.threat = { camp: markerCamp(markers.threat.camp), tier: markers.threat.tier };
+  if (markers?.terrain) circ.terrain = { camp: markerCamp(markers.terrain.camp), heavy: !!markers.terrain.heavy };
   return initialAdvantagePools(circ);
 }

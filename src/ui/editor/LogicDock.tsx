@@ -6,6 +6,7 @@
  */
 import { useRef } from 'react';
 import { Scene, Trigger, EncounterDef, Dialogue, Effect } from '../../state/scene';
+import type { ThreatTier } from '../../engine/advantagePool';
 import { EMPTY_FLOW } from '../../state/flow';
 import type { Warning } from '../../state/validateScene';
 import { nextEntityId } from '../../state/entityId';
@@ -425,6 +426,68 @@ function EncountersTab({
             <option value="enemies">Les ennemis sont surpris (le groupe embusque)</option>
             <option value="party">Le groupe est surpris (les ennemis embusquent)</option>
           </select>
+          <div className="mini-title">Avantage initial — Manœuvrabilité / Menace / Terrain (AA l.4149-4167)</div>
+          <div className="enemy-mount">
+            <label title="Un camp possède un avantage de mouvement (monté, terrain arboricole/aérien favorable…) : +2 à sa réserve d'Avantage.">
+              Manœuvrabilité{' '}
+              <select
+                value={enc.maneuverability ?? ''}
+                onChange={(e) => upd({ maneuverability: (e.target.value || undefined) as 'party' | 'enemies' | undefined })}
+              >
+                <option value="">Aucune</option>
+                <option value="party">Le groupe</option>
+                <option value="enemies">Les ennemis</option>
+              </select>
+            </label>
+          </div>
+          <div className="enemy-mount">
+            <label title="Un camp affronte une menace notoire (ogre, manticore, dragon…) : +1/+3/+5 à sa réserve selon le palier.">
+              Menace{' '}
+              <select
+                value={enc.threat?.camp ?? ''}
+                onChange={(e) => {
+                  const camp = e.target.value as 'party' | 'enemies' | '';
+                  upd({ threat: camp ? { camp, tier: enc.threat?.tier ?? 'dangereuse' } : undefined });
+                }}
+              >
+                <option value="">Aucune</option>
+                <option value="party">Le groupe</option>
+                <option value="enemies">Les ennemis</option>
+              </select>
+            </label>
+            {enc.threat && (
+              <label>
+                Palier{' '}
+                <select value={enc.threat.tier} onChange={(e) => upd({ threat: { ...enc.threat!, tier: e.target.value as ThreatTier } })}>
+                  <option value="dangereuse">Dangereuse (+1)</option>
+                  <option value="tresDangereuse">Très dangereuse (+3)</option>
+                  <option value="extreme">Extrême (+5)</option>
+                </select>
+              </label>
+            )}
+          </div>
+          <div className="enemy-mount">
+            <label title="Un camp tient une position avantageuse (fortifications, couvert, hauteur, pont…) : +1 (léger) ou +2 (lourd) à sa réserve.">
+              Terrain{' '}
+              <select
+                value={enc.terrain?.camp ?? ''}
+                onChange={(e) => {
+                  const camp = e.target.value as 'party' | 'enemies' | '';
+                  upd({ terrain: camp ? { camp, heavy: enc.terrain?.heavy } : undefined });
+                }}
+              >
+                <option value="">Aucun</option>
+                <option value="party">Le groupe</option>
+                <option value="enemies">Les ennemis</option>
+              </select>
+            </label>
+            {enc.terrain && (
+              <label>
+                <input type="checkbox" checked={!!enc.terrain.heavy} onChange={(e) => upd({ terrain: { ...enc.terrain!, heavy: e.target.checked || undefined } })} />{' '}
+                Couvert lourd / position décisive (+2 au lieu de +1)
+              </label>
+            )}
+          </div>
           <div className="mini-title">À la victoire (récompenses : PX, butin, flag…)</div>
           <FlowEditor flow={enc.onVictory ?? EMPTY_FLOW} onChange={(flow) => upd({ onVictory: flow })} ctx={ctx} />
         </div>

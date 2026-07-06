@@ -186,3 +186,35 @@ describe('startAdvantagePools — positionnement initial auto-dérivé', () => {
     expect(startAdvantagePools(all, true)).toEqual({ allies: 0, foes: 2 });
   });
 });
+
+describe('startAdvantagePools — marqueurs de rencontre (Menace/Manœuvrabilité/Terrain, AA l.4149-4167)', () => {
+  it('Manœuvrabilité (+2, l.4158) crédite le camp marqué', () => {
+    const all = [mk('h1', 'hero'), mk('e1', 'enemy')];
+    expect(startAdvantagePools(all, false, { maneuverability: 'party' })).toEqual({ allies: 2, foes: 0 });
+  });
+
+  it('Menace « très dangereuse » (+3, l.4160) crédite le camp qui EST la menace', () => {
+    const all = [mk('h1', 'hero'), mk('e1', 'enemy')];
+    expect(startAdvantagePools(all, false, { threat: { camp: 'enemies', tier: 'tresDangereuse' } })).toEqual({ allies: 0, foes: 3 });
+  });
+
+  it('Menace « extrême » (+5, l.4161) côté alliés (ex. Trait de créature allié)', () => {
+    const all = [mk('h1', 'hero'), mk('e1', 'enemy')];
+    expect(startAdvantagePools(all, false, { threat: { camp: 'party', tier: 'extreme' } })).toEqual({ allies: 5, foes: 0 });
+  });
+
+  it('Terrain léger (+1, l.4166, heavy absent)', () => {
+    const all = [mk('h1', 'hero'), mk('e1', 'enemy')];
+    expect(startAdvantagePools(all, false, { terrain: { camp: 'enemies' } })).toEqual({ allies: 0, foes: 1 });
+  });
+
+  it('Terrain lourd (+2, l.4167)', () => {
+    const all = [mk('h1', 'hero'), mk('e1', 'enemy')];
+    expect(startAdvantagePools(all, false, { terrain: { camp: 'party', heavy: true } })).toEqual({ allies: 2, foes: 0 });
+  });
+
+  it('se cumule avec le Surnombre auto-dérivé (circonstances distinctes, AA l.4153)', () => {
+    const all = [mk('h1', 'hero'), mk('h2', 'hero'), mk('h3', 'hero'), mk('e1', 'enemy')]; // Surnombre ×3 → +3 alliés
+    expect(startAdvantagePools(all, false, { threat: { camp: 'enemies', tier: 'dangereuse' } })).toEqual({ allies: 3, foes: 1 });
+  });
+});

@@ -2273,8 +2273,9 @@ export function createCombatSlice(get: Get, set: Set) {
         // Pièges/hasards authorés de la scène → zones de bataille PERMANENTES (même runtime que les sorts).
         zones: sceneZonesToBattle(scene.effectZones),
         // Réserves d'Avantage par camp (AA l.4149-4167) : seulement en mode « Avantage de groupe ».
-        // Positionnement initial AUTO-dérivé (Surnombre + Surprise) ; le reste reste à l'appréciation du MJ.
-        advantagePools: groupAdvantage() ? startAdvantagePools(all, doSurprise) : undefined,
+        // Positionnement initial AUTO-dérivé : Surnombre + Surprise (calculés) + Manœuvrabilité/Menace/
+        // Terrain (marqueurs éditables de la rencontre, AA l.4149-4167).
+        advantagePools: groupAdvantage() ? startAdvantagePools(all, doSurprise, enc) : undefined,
       };
       if (battle.advantagePools) mirrorPools(battle.advantagePools, all); // projette la réserve de départ sur chaque combattant
       // Repart d'aucune modale de jet héritée d'un combat/contexte précédent.

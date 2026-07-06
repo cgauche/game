@@ -10,6 +10,7 @@ import { CharKey, Difficulty } from '../engine/types';
 import type { ShipPoste, NavalTraitRef } from '../engine/types';
 import type { Flow, Condition, EffectOp } from './flow';
 import { type DayPhaseKey } from '../engine/clock';
+import type { ThreatTier } from '../engine/advantagePool';
 import type { Dir8 } from './dir8';
 import { terrainWalkable } from './terrain';
 import { entityBlockedAt } from './sceneRules';
@@ -440,6 +441,18 @@ export interface EncounterDef {
    *  font un Test opposé de Perception vs la meilleure Discrétion des embusqueurs ; les vaincus gagnent
    *  l'État `Surpris`. Absent = personne n'est surpris. */
   surprise?: 'party' | 'enemies';
+  /** Avantage initial — Manœuvrabilité (AA l.4149-4167) : le camp indiqué possède un avantage de
+   *  mouvement au début du combat (monté, terrain arboricole/aérien favorable…) → +2 à sa réserve
+   *  d'Avantage en mode « Avantage de groupe » (`startAdvantagePools`). Absent = pas de circonstance. */
+  maneuverability?: 'party' | 'enemies';
+  /** Avantage initial — Menace (AA l.4149-4167) : le camp `camp` représente une menace notoire pour
+   *  l'autre camp (`tier` : dangereuse +1, très dangereuse +3, extrême +5) → crédite sa réserve
+   *  d'Avantage en mode groupe. Absent = pas de circonstance. */
+  threat?: { camp: 'party' | 'enemies'; tier: ThreatTier };
+  /** Avantage initial — Terrain (AA l.4149-4167) : le camp `camp` tient une position avantageuse
+   *  (fortification/couvert léger/hauteur → +1 ; `heavy` : couvert lourd/position décisive type pont
+   *  → +2) → crédite sa réserve d'Avantage en mode groupe. Absent = pas de circonstance. */
+  terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
 }
 
 /** Une COUCHE d'empilement de la scène : son index discret `z` (0 = couche de base) — identité
