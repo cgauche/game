@@ -16,7 +16,24 @@ import {
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
   isNamed, specIdsOf, specLabel,
+  vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures,
 } from '../../data';
+// #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
+// façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
+// importés directement d'`engine/massBattle`).
+import { MOUNT_PROFILES } from '../../engine/mountTravel';
+import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS } from '../../engine/travelTables';
+import { TAVERN_GAMES } from '../../engine/tavernGame';
+import { OBSESSIONS } from '../../data/obsessions';
+import { STRUCTURE_CRITICALS } from '../../data/structureCriticals';
+import { LAND_CARGOES } from '../../engine/landCargo';
+import { CARGOES } from '../../engine/seaVoyage';
+import { RIVER_PERILS } from '../../engine/riverNavigation';
+import { MORALE_FACTORS, MORALE_BANDS } from '../../engine/crewMorale';
+import { STEAM_BREAKDOWNS } from '../../engine/shipBuild';
+import { traumaFicheById } from '../../engine/trauma';
+import { datasetArray } from '../../data/overrides';
+import type { CritTableEntry } from '../../data/overrides';
 import { groupAdvantage } from '../../engine/advantagePool';
 import { statName } from '../../engine/statEntry';
 import { damageString } from '../../engine/items';
@@ -418,6 +435,36 @@ function makeCategory(spec: CodexCategorySpec): CodexCategory {
     group: spec.group,
     get items() { return fresh(); },
     get facets() { fresh(); return facets; },
+  };
+}
+
+/** Libellé d'une fiche de Traumatisme par id, SANS crasher si la réf est cassée (contrairement à
+ *  `traumaFicheById`, qui lève — le Codex reste défensif comme `codexLookup`). */
+const traumaLabelOf = (id: string): string => { try { return traumaFicheById(id).label; } catch { return id; } };
+
+/** Item Codex d'une entrée de table de Blessures Critiques par Localisation (LDB 18 « Traumatisme » ET
+ *  AA « approche alternative », #157) — 8 catégories (4 familles LDB + 4 AA), MÊME projection : plage
+ *  d100 → nom, effet immédiat (`ops`, même vocabulaire GameOp que passifs/sorts) + Traumatismes engendrés
+ *  en cross-réf (résolus par id → libellé, comme les Tables de Corruption pour les mutations). */
+function critEntryItem(e: CritTableEntry): CodexItem {
+  return {
+    label: e.name,
+    sub: `d100 ${e.min}–${e.max}`,
+    desc: e.desc,
+    meta: facts(
+      typeof e.blessures === 'number' ? fact('Blessures', e.blessures) : null,
+      e.trivial ? fact('Type', 'Triviale (« T »)') : null,
+      e.lethal ? fact('Létal', 'oui') : null,
+    ),
+    sections: sections(
+      passiveSection(e.ops, 'Effet immédiat'),
+      e.traumas?.length
+        ? {
+            title: 'Traumatismes engendrés', layout: 'chips',
+            rows: e.traumas.map((id) => { const label = traumaLabelOf(id); return { t: 'ref', category: 'traumas', label, show: label } as CodexRow; }),
+          }
+        : null,
+    ),
   };
 }
 
@@ -910,6 +957,199 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         pool.femaleFirstNames.length ? { title: 'Prénoms féminins', layout: 'chips', rows: [{ t: 'text', text: pool.femaleFirstNames.join(', ') }] } : null,
         pool.lastNames.length ? { title: 'Noms de famille', layout: 'chips', rows: [{ t: 'text', text: pool.lastNames.join(', ') }] } : null,
       ),
+    })),
+  },
+  // ── #157 (audit d'exposition Codex) : catalogues de CONTENU app-owned qui existaient déjà dans le
+  // code (chargés par la façade ou un module dédié) mais n'étaient pas encore éditables au Codex. ──
+  {
+    key: 'structures', label: 'Structures (siège)', group: 'Monde',
+    build: () => structures.map((s) => ({
+      label: s.label, sub: s.kind === 'porte' ? 'Porte' : 'Mur', desc: s.desc ?? undefined,
+      meta: facts(
+        fact('BE', s.char.BE), fact('Blessures', s.char.B), fact('Fortifiée', s.fortified ? 'oui' : null),
+        fact('Source', s.source ? `${bookAbr(s.source.book)} ch.${s.source.chapter}` : null),
+      ),
+      sections: sections(chips('Atouts', 'traits', traitLabels(s.traits as unknown as import('../../engine/statEntry').TraitList))),
+    })),
+  },
+  {
+    key: 'vehicles', label: 'Véhicules', group: 'Monde',
+    build: () => vehicles.map((v) => ({
+      label: v.label, desc: v.desc ?? undefined, source: src(v.source),
+      meta: facts(
+        fact('Prix', priceLabel(v.purchase?.price)), fact('Disponibilité', v.purchase?.availability ?? null),
+        fact('Enc', v.enc), fact('Mouvement (voyage)', v.travel?.movement),
+        fact('Endurance', v.hull?.char.E), fact('Blessures', v.hull?.char.B),
+      ),
+    })),
+  },
+  {
+    key: 'celestialHouses', label: 'Demeures astrologiques', group: 'Personnage',
+    build: () => celestialHouses.map((h) => ({ label: h.label, sub: `2d10 ≤ ${h.rand}`, desc: h.desc, source: src(h.source) })),
+  },
+  {
+    key: 'groups', label: 'Groupes (Cible)', group: 'Monde',
+    build: () => groups.map((g) => ({ label: g.label })),
+  },
+  {
+    key: 'psychologies', label: 'États psychologiques', group: 'Effets',
+    build: () => psychologies.map((p) => ({
+      label: p.label, desc: p.desc, source: src(p.source),
+      sections: sections(passiveSection(p.passive), effectsSection(p.effects), ...reverseSections('psychologies', p.id)),
+    })),
+  },
+  {
+    key: 'seaShanties', label: 'Chants de marins', group: 'Monde',
+    build: () => seaShanties.map((s) => ({
+      label: s.label, desc: s.desc, source: src(s.source),
+      meta: facts(fact('Note', s.note ?? null)),
+      sections: sections(passiveSection(s.crewOps, 'Effet (équipage)'), passiveSection(s.captainOps, 'Effet (capitaine)')),
+    })),
+  },
+  {
+    key: 'crewRoles', label: 'Rôles d’équipage', group: 'Monde',
+    build: () => crewRoles.map((r) => ({
+      label: r.label, desc: r.desc,
+      sections: sections(chips('Compétences', 'skills', r.skills.map((sk) => refLabel('skills', { id: sk.skillId, spec: sk.spec })))),
+    })),
+  },
+  {
+    key: 'crewTestTypes', label: 'Tests d’équipage (types)', group: 'Monde',
+    build: () => crewTestTypes.map((t) => ({
+      label: t.label,
+      meta: facts(fact('Rôle essentiel', crewRoles.find((r) => r.id === t.essential)?.label ?? t.essential)),
+      sections: sections(chips('Rôles contributeurs', 'crewRoles', t.roles.map((id) => crewRoles.find((r) => r.id === id)?.label ?? id))),
+    })),
+  },
+  {
+    key: 'navalTraits', label: 'Traits & améliorations navales', group: 'Équipement',
+    build: () => NAVAL_TRAITS.map((t) => ({
+      label: t.label, sub: t.kind === 'trait' ? 'Trait (construction)' : 'Amélioration', desc: t.desc, source: src(t.source),
+      sections: sections(passiveSection(t.passive)),
+    })),
+  },
+  {
+    key: 'traumas', label: 'Traumatismes (séquelles)', group: 'Effets',
+    build: () => datasetArray('traumas').map((f) => ({
+      label: f.label,
+      sub: f.kind ? `${f.kind === 'dechirure' ? 'Déchirure' : 'Fracture'}${f.severity ? ` (${f.severity})` : ''}` : undefined,
+      desc: f.desc,
+      sections: sections(passiveSection(f.ops, 'Effet permanent')),
+    })),
+  },
+  {
+    key: 'criticalsTete', label: 'Critiques — Tête (Traumatisme, LDB 18)', group: 'Effets',
+    build: () => datasetArray('criticalsTete').map(critEntryItem),
+  },
+  {
+    key: 'criticalsBras', label: 'Critiques — Bras (Traumatisme, LDB 18)', group: 'Effets',
+    build: () => datasetArray('criticalsBras').map(critEntryItem),
+  },
+  {
+    key: 'criticalsCorps', label: 'Critiques — Corps (Traumatisme, LDB 18)', group: 'Effets',
+    build: () => datasetArray('criticalsCorps').map(critEntryItem),
+  },
+  {
+    key: 'criticalsJambe', label: 'Critiques — Jambe (Traumatisme, LDB 18)', group: 'Effets',
+    build: () => datasetArray('criticalsJambe').map(critEntryItem),
+  },
+  {
+    key: 'aaCriticalsTete', label: 'Critiques AA — Tête (approche alternative)', group: 'Effets',
+    build: () => datasetArray('aaCriticalsTete').map(critEntryItem),
+  },
+  {
+    key: 'aaCriticalsBras', label: 'Critiques AA — Bras (approche alternative)', group: 'Effets',
+    build: () => datasetArray('aaCriticalsBras').map(critEntryItem),
+  },
+  {
+    key: 'aaCriticalsCorps', label: 'Critiques AA — Corps (approche alternative)', group: 'Effets',
+    build: () => datasetArray('aaCriticalsCorps').map(critEntryItem),
+  },
+  {
+    key: 'aaCriticalsJambe', label: 'Critiques AA — Jambe (approche alternative)', group: 'Effets',
+    build: () => datasetArray('aaCriticalsJambe').map(critEntryItem),
+  },
+  {
+    key: 'incidentsMonture', label: 'Incidents de monte', group: 'Tables',
+    build: () => MOUNT_INCIDENTS.map((e) => ({
+      label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text,
+      sections: sections(passiveSection(e.occupantOps, 'Effet sur le cavalier')),
+    })),
+  },
+  {
+    key: 'problemesVehicule', label: 'Problèmes de véhicule', group: 'Tables',
+    build: () => VEHICLE_PROBLEMS.map((e) => ({
+      label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text,
+      meta: facts(fact('Dégâts véhicule', e.vehicleWounds ?? null)),
+      sections: sections(passiveSection(e.occupantOps, 'Effet sur les occupants')),
+    })),
+  },
+  {
+    key: 'montures', label: 'Montures (profils de voyage)', group: 'Monde',
+    build: () => MOUNT_PROFILES.map((p) => ({
+      label: p.label,
+      meta: facts(fact('Mouvement', p.m), fact('Endurance', p.e), fact('Trotte', p.trot ? 'oui' : 'non')),
+      sections: sections(chips('Possessions liées', 'trappings', p.trappingIds.map((id) => findTrappingById(id)?.label ?? id))),
+    })),
+  },
+  {
+    key: 'tavernGames', label: 'Jeux de taverne', group: 'Monde',
+    build: () => TAVERN_GAMES.map((g) => ({
+      label: g.label, desc: g.desc, source: src(g.source),
+      meta: facts(
+        fact('Compétence', g.skill ? refLabel('skills', { id: g.skill, spec: g.spec }) : 'Pari (aucune Compétence)'),
+        fact('Caractéristique', g.characteristic ? CHAR_LABELS[g.characteristic] : null),
+        fact('Mode', g.mode === 'extended' ? `Étendu (${g.target ?? '?'} DR)` : 'Opposé simple'),
+        fact('Plafond de DR', g.drCap ?? null), fact('Mise', g.stake ?? null),
+      ),
+    })),
+  },
+  {
+    key: 'obsessions', label: 'Obsessions (table)', group: 'Tables',
+    build: () => OBSESSIONS.map((o) => ({ label: o.label, sub: `2d10 ${o.min}–${o.max}` })),
+  },
+  {
+    key: 'structureCriticals', label: 'Critiques de structure', group: 'Effets',
+    build: () => STRUCTURE_CRITICALS.map((c) => ({
+      label: c.name, sub: `d100 ${c.min}–${c.max}`, desc: c.note,
+      meta: facts(
+        c.wounds != null ? fact('Blessures', c.wounds) : null,
+        c.trivial ? fact('Type', 'Triviale (« T »)') : null,
+        c.destroyed ? fact('Effondrement', 'oui') : null,
+      ),
+    })),
+  },
+  {
+    key: 'landCargo', label: 'Cargaison terrestre', group: 'Monde',
+    build: () => LAND_CARGOES.map((c) => ({ label: c.label, meta: facts(fact('Vin', c.wine ? 'oui' : null)) })),
+  },
+  {
+    key: 'seaCargo', label: 'Cargaison maritime', group: 'Monde',
+    build: () => CARGOES.map((c) => ({ label: c.label })),
+  },
+  {
+    key: 'riverPerils', label: 'Périls fluviaux', group: 'Monde',
+    build: () => RIVER_PERILS.map((p) => ({ label: p.label, sub: p.kind })),
+  },
+  {
+    key: 'crewMoraleFactors', label: 'Moral d’équipage — Facteurs', group: 'Tables',
+    build: () => MORALE_FACTORS.map((f) => ({ label: f.label, desc: f.effect })),
+  },
+  {
+    key: 'crewMoraleBands', label: 'Moral d’équipage — Effets', group: 'Tables',
+    build: () => MORALE_BANDS.map((b) => ({
+      label: b.id, sub: `d100 ${b.min}–${b.max}`,
+      meta: facts(
+        fact('DR Commandement (capitaine)', b.captainCmdDR), fact('DR Tests équipage', b.crewTestDR),
+        fact('Désertion (seuil d100)', b.desertionRoll ?? null),
+      ),
+    })),
+  },
+  {
+    key: 'steamBreakdowns', label: 'Pannes de navire à vapeur', group: 'Tables',
+    build: () => STEAM_BREAKDOWNS.map((e) => ({
+      label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.desc,
+      meta: facts(fact('Moteur détruit', e.engineDestroyed ? 'oui' : null)),
     })),
   },
 ];

@@ -36,7 +36,7 @@ import { SymptomsField, SymptomTickField, TalentTestField, CombatField, Advancem
 import type { TraitInstance } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
 import type { CharKey, Difficulty } from '../../engine/types';
-import { CHAR_KEYS, CHAR_LABELS } from '../../engine/types';
+import { CHAR_KEYS, CHAR_LABELS, DIFFICULTY_LABELS } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry } from '../../data';
@@ -61,6 +61,16 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   massBattleWarMachines: 'massBattleWarMachines', massBattleStructures: 'massBattleStructures',
   massBattleHazards: 'massBattleHazards', massBattleMightModifiers: 'massBattleMightModifiers',
   massBattlePowerEstimate: 'massBattlePowerEstimate',
+  // #157 (audit d'exposition Codex) : catalogues de CONTENU app-owned qui existaient déjà dans le code
+  // (façade ou module dédié) mais n'étaient pas encore éditables au Codex — clé catégorie = clé dataset.
+  structures: 'structures', vehicles: 'vehicles', celestialHouses: 'celestialHouses', groups: 'groups',
+  psychologies: 'psychologies', seaShanties: 'seaShanties', crewRoles: 'crewRoles', crewTestTypes: 'crewTestTypes',
+  navalTraits: 'navalTraits', montures: 'montures', incidentsMonture: 'incidentsMonture', problemesVehicule: 'problemesVehicule',
+  tavernGames: 'tavernGames', obsessions: 'obsessions', structureCriticals: 'structureCriticals', traumas: 'traumas',
+  landCargo: 'landCargo', seaCargo: 'seaCargo', riverPerils: 'riverPerils',
+  crewMoraleFactors: 'crewMoraleFactors', crewMoraleBands: 'crewMoraleBands', steamBreakdowns: 'steamBreakdowns',
+  criticalsTete: 'criticalsTete', criticalsBras: 'criticalsBras', criticalsCorps: 'criticalsCorps', criticalsJambe: 'criticalsJambe',
+  aaCriticalsTete: 'aaCriticalsTete', aaCriticalsBras: 'aaCriticalsBras', aaCriticalsCorps: 'aaCriticalsCorps', aaCriticalsJambe: 'aaCriticalsJambe',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
@@ -80,7 +90,22 @@ export const isEditableCategory = (categoryKey: string): boolean => !!CATEGORY_D
 const REF_LIST_DATASET: Record<string, DatasetKey> = {
   traits: 'traits', optionals: 'traits', skills: 'skills', talents: 'talents',
   spells: 'spells', trappings: 'trappings', blessings: 'spells', miracles: 'spells', chaosSpells: 'spells',
+  traumas: 'traumas',
 };
+
+/** Catégories/CHAMPS portant un `GameOp[]` NOMMÉ autre que `passive` (#157) — MÊME éditeur
+ *  (`GameOpEditor`), juste un champ différent : `ops` (effet immédiat d'un Critique/Traumatisme),
+ *  `occupantOps` (subi par un tiers — cavalier/passager), `crewOps`/`captainOps` (Chant de marin).
+ *  Généralise l'idée d'`isPassive` (qui ne couvre QUE `passive`) sans dupliquer l'éditeur : ajouter une
+ *  source = ajouter SA/SES clé(s) ici (lu par `dedicatedFieldKeys` ET le rendu). */
+const OPS_FIELDS: Record<string, string[]> = {
+  traumas: ['ops'],
+  criticalsTete: ['ops'], criticalsBras: ['ops'], criticalsCorps: ['ops'], criticalsJambe: ['ops'],
+  aaCriticalsTete: ['ops'], aaCriticalsBras: ['ops'], aaCriticalsCorps: ['ops'], aaCriticalsJambe: ['ops'],
+  incidentsMonture: ['occupantOps'], problemesVehicule: ['occupantOps'],
+  seaShanties: ['crewOps', 'captainOps'],
+};
+const opsFieldsOf = (categoryKey: string): string[] => OPS_FIELDS[categoryKey] ?? [];
 
 type Entry = Record<string, unknown>;
 
@@ -135,9 +160,14 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   const k = new Set<string>();
   const add = (...keys: string[]) => keys.forEach((x) => k.add(x));
   if (['creatures', 'traits', 'mutations'].includes(categoryKey)) add('appearance');
-  if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers', 'etats'].includes(categoryKey)) add('effects');
+  if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers', 'etats', 'psychologies'].includes(categoryKey)) add('effects');
   if (categoryKey === 'maneuvers') add(...MANEUVER_PROFILE_KEYS);
-  if (['traits', 'qualities', 'mutations', 'talents', 'etats', 'trappings'].includes(categoryKey)) add('passive');
+  if (['traits', 'qualities', 'mutations', 'talents', 'etats', 'trappings', 'psychologies', 'navalTraits'].includes(categoryKey)) add('passive');
+  if (categoryKey === 'structures') add('traits'); // {id,value?}[] → réutilise TraitListField (comme creatures)
+  if (categoryKey === 'crewRoles') add('skills'); // {skillId,spec?}[] → éditeur dédié (SkillSpecListField)
+  if (categoryKey === 'traumas') add('prosthesis'); // {trappingId,cancels}[] → éditeur dédié (ProsthesisField)
+  if (categoryKey === 'steamBreakdowns') add('restart'); // {skillId,spec?,difficulty,extendedDR?}[] → éditeur dédié
+  add(...opsFieldsOf(categoryKey)); // ops/occupantOps/crewOps/captainOps → GameOpEditor (#157)
   if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick'); // GameOp[] + test de cycle → éditeurs dédiés (capabilities = sous-form générique)
   if (categoryKey === 'stars') add('effect', 'sub');
   if (categoryKey === 'mutationTables' || categoryKey === 'weather') add('ranges');
@@ -233,12 +263,26 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const isSpell = categoryKey === 'spells';
   // Porteurs d'effets DÉCLENCHÉS (mêmes `TriggeredEffect` éditables) : Traits, Atouts d'arme, Domaines
   // (riders « à la touche »…) ET Talents (Assaut féroce onHit, Frappe réactive onCharged…).
-  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'domains' || categoryKey === 'talents' || categoryKey === 'etats';
+  // États psychologiques (`psychologies`, LDB 21, #157) ÉTENDENT le même `StatusData` que les États
+  // (`passive`/`effects` mutualisés) — même patron de rendu.
+  const isTriggered = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'domains' || categoryKey === 'talents' || categoryKey === 'etats' || categoryKey === 'psychologies';
   // Manœuvre = ENTITÉ de 1ʳᵉ classe : profil dédié + ses effets AUTHORÉS (Dégâts + États) en GameOp.
   const isManeuver = categoryKey === 'maneuvers';
   // Porteurs de modificateurs PASSIFS continus (`GameOp[]`) édités par ops (GameOpEditor), comme un sort.
   // Talents inclus (Coup puissant, Dur à cuire… ou Frénésie → grantFreeAttack, tous en `passive`).
-  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations' || categoryKey === 'talents' || categoryKey === 'etats' || categoryKey === 'symptoms' || categoryKey === 'trappings';
+  // `psychologies` (États psy) et `navalTraits` (Trait/Amélioration de navire, #157) rejoignent le lot.
+  const isPassive = categoryKey === 'traits' || categoryKey === 'qualities' || categoryKey === 'mutations' || categoryKey === 'talents' || categoryKey === 'etats' || categoryKey === 'symptoms' || categoryKey === 'trappings' || categoryKey === 'psychologies' || categoryKey === 'navalTraits';
+  // Structure de siège (`structures`, #157) : `traits` = {id,value?}[] → réutilise TraitListField (comme
+  // les Traits/Traits optionnels d'une créature).
+  const isStructure = categoryKey === 'structures';
+  // Rôle d'équipage (`crewRoles`, #157) : `skills` = {skillId,spec?}[] → éditeur dédié.
+  const hasCrewSkills = categoryKey === 'crewRoles';
+  // Traumatisme (`traumas`, #157) : `prosthesis` (prothèses annulatrices, LDB 73) = {trappingId,cancels}[].
+  const hasProsthesis = categoryKey === 'traumas';
+  // Panne de Vapeur (`steamBreakdowns`, #157) : `restart` (Test de redémarrage) = {skillId,spec?,difficulty,extendedDR?}[].
+  const hasRestartTest = categoryKey === 'steamBreakdowns';
+  // Champs `GameOp[]` autres que `passive` (ops/occupantOps/crewOps/captainOps, #157) — même GameOpEditor.
+  const opsFields = opsFieldsOf(categoryKey);
   // Symptôme de maladie : pénalité aggravée `severePassive` (Modérée/Grave) + Test de cycle `onTick`
   // (difficulté + conséquence GameOp `onFail`) — éditeurs dédiés au-dessus du formulaire générique.
   const isSymptom = categoryKey === 'symptoms';
@@ -393,6 +437,16 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         )}
         {isDetails && <DetailsTextsField value={entry.texts as DetailsTexts | undefined} onChange={(v) => edit('texts', v)} />}
         {isTrait && <TraitSchemaField entry={entry} edit={edit} />}
+        {isStructure && <TraitListField label="Atouts" hint="(Résistant/Impénétrable — ADE II ch.08)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />}
+        {hasCrewSkills && <SkillSpecListField value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
+        {hasProsthesis && <ProsthesisField value={entry.prosthesis as { trappingId: string; cancels: 'all' | 'movement' }[] | undefined} onChange={(v) => edit('prosthesis', v.length ? v : undefined)} />}
+        {hasRestartTest && <RestartTestField value={entry.restart as { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[] | undefined} onChange={(v) => edit('restart', v.length ? v : undefined)} />}
+        {opsFields.map((fieldKey) => (
+          <div className="ed-field" key={fieldKey}>
+            <span>{fieldKey} — effet (GameOp[], même éditeur que les modificateurs passifs)</span>
+            <GameOpEditor ops={(entry[fieldKey] as GameOp[] | undefined) ?? []} onChange={(ops) => edit(fieldKey, ops)} />
+          </div>
+        ))}
         {fields.map((f) => {
           const cfg = refFieldCfg(categoryKey, f.key);
           return cfg
@@ -658,6 +712,85 @@ function TraitSchemaField({ entry, edit }: { entry: Entry; edit: (key: string, v
         <label className="dr"><input type="checkbox" checked={!!entry.specsOpen} onChange={(e) => edit('specsOpen', e.target.checked || undefined)} /> argument en texte libre (ouvert)</label>
         <label className="dr"><input type="checkbox" checked={!!entry.specsMulti} onChange={(e) => edit('specsMulti', e.target.checked || undefined)} /> liste d’ids (séparés par virgules)</label>
       </div>
+    </div>
+  );
+}
+
+/** Compétences d'un Rôle d'équipage (`crewRoles.skills`, MDG ch.14, #157) : `{skillId,spec?}[]` — un
+ *  rôle peut mapper plusieurs Compétences candidates (Mousse = Voile OU Ramer, la meilleure retenue). */
+function SkillSpecListField({ value, onChange }: { value: { skillId: string; spec?: string }[] | undefined; onChange: (v: { skillId: string; spec?: string }[]) => void }) {
+  const list = value ?? [];
+  const skillOpts = datasetArray('skills') as { id: string; label: string }[];
+  const set = (next: typeof list) => onChange(next);
+  return (
+    <div className="ed-field">
+      <span>compétences du rôle (au moins une ; « au choix » si plusieurs — la meilleure est retenue)</span>
+      {list.map((s, i) => (
+        <div className="tf-row" key={i}>
+          <select value={s.skillId} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, skillId: e.target.value } : x)))}>
+            {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+          </select>
+          <input placeholder="spécialisation (facultatif)" value={s.spec ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, spec: e.target.value || undefined } : x)))} />
+          <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => set([...list, { skillId: skillOpts[0]?.id ?? '' }])}>+ Compétence</button>
+    </div>
+  );
+}
+
+/** Prothèses ANNULATRICES d'un Traumatisme (`traumas.prosthesis`, LDB 73, #157) : `{trappingId,cancels}[]`
+ *  — un objet porté (jambe de bois, crochet…) qui annule tout ou partie de la séquelle. */
+function ProsthesisField({ value, onChange }: { value: { trappingId: string; cancels: 'all' | 'movement' }[] | undefined; onChange: (v: { trappingId: string; cancels: 'all' | 'movement' }[]) => void }) {
+  const list = value ?? [];
+  const trappingOpts = datasetArray('trappings') as { id: string; label: string }[];
+  const set = (next: typeof list) => onChange(next);
+  return (
+    <div className="ed-field">
+      <span>prothèses annulatrices (LDB 73) — objet porté qui annule cette séquelle</span>
+      {list.map((p, i) => (
+        <div className="tf-row" key={i}>
+          <select value={p.trappingId} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, trappingId: e.target.value } : x)))}>
+            <option value="">— (choisir une possession) —</option>
+            {trappingOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+          </select>
+          <select value={p.cancels} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, cancels: e.target.value as 'all' | 'movement' } : x)))}>
+            <option value="all">annule tout</option>
+            <option value="movement">annule le Mouvement seul</option>
+          </select>
+          <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => set([...list, { trappingId: trappingOpts[0]?.id ?? '', cancels: 'all' }])}>+ Prothèse</button>
+    </div>
+  );
+}
+
+const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
+
+/** Test de REDÉMARRAGE d'un moteur à vapeur (`steamBreakdowns.restart`, MDG ch.12, #157) :
+ *  `{skillId,spec?,difficulty,extendedDR?}[]` — Compétence + Difficulté (+ DR cumulés si Test étendu). */
+function RestartTestField({ value, onChange }: { value: { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[] | undefined; onChange: (v: { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[]) => void }) {
+  const list = value ?? [];
+  const skillOpts = datasetArray('skills') as { id: string; label: string }[];
+  const set = (next: typeof list) => onChange(next);
+  return (
+    <div className="ed-field">
+      <span>Test de redémarrage du moteur — Compétence + Difficulté (DR cumulés si Test étendu)</span>
+      {list.map((r, i) => (
+        <div className="tf-row" key={i}>
+          <select value={r.skillId} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, skillId: e.target.value } : x)))}>
+            {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+          </select>
+          <input placeholder="spécialisation (facultatif)" value={r.spec ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, spec: e.target.value || undefined } : x)))} />
+          <select value={r.difficulty} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, difficulty: e.target.value as Difficulty } : x)))}>
+            {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
+          </select>
+          <input type="number" min={1} placeholder="DR cumulés (étendu)" style={{ width: 64 }} value={r.extendedDR ?? ''} onChange={(e) => set(list.map((x, j) => (j === i ? { ...x, extendedDR: e.target.value === '' ? undefined : Number(e.target.value) } : x)))} />
+          <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => set([...list, { skillId: skillOpts[0]?.id ?? '', difficulty: DIFFICULTIES[0] }])}>+ Test</button>
     </div>
   );
 }

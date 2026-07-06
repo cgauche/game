@@ -196,6 +196,40 @@ describe('Codex registry — Bataille de masse (ADE II ch.8, #148)', () => {
   });
 });
 
+describe('Codex registry — #157 (audit d’exposition : datasets de contenu manquants au Codex)', () => {
+  it('les nouveaux catalogues de contenu sont exposés, peuplés et ÉDITABLES au Codex', () => {
+    const keys = [
+      'structures', 'vehicles', 'celestialHouses', 'groups', 'psychologies', 'seaShanties', 'crewRoles', 'crewTestTypes', 'navalTraits',
+      'traumas', 'criticalsTete', 'criticalsBras', 'criticalsCorps', 'criticalsJambe',
+      'aaCriticalsTete', 'aaCriticalsBras', 'aaCriticalsCorps', 'aaCriticalsJambe',
+      'incidentsMonture', 'problemesVehicule', 'montures', 'tavernGames', 'obsessions', 'structureCriticals',
+      'landCargo', 'seaCargo', 'riverPerils', 'crewMoraleFactors', 'crewMoraleBands', 'steamBreakdowns',
+    ];
+    for (const key of keys) {
+      const cat = categoryByKey(key);
+      expect(cat, key).toBeTruthy();
+      expect(cat!.items.length, key).toBeGreaterThan(0);
+      expect(isEditableCategory(key), key).toBe(true);
+    }
+  });
+
+  it('un Critique LDB (Tête) porte son effet immédiat (ops) en section + ses Traumatismes engendrés en cross-réf', () => {
+    const items = categoryByKey('criticalsTete')!.items;
+    const withOps = items.find((i) => i.sections?.some((s) => s.title === 'Effet immédiat'));
+    expect(withOps, 'au moins un Critique Tête porte un effet immédiat').toBeTruthy();
+    const withTrauma = items.find((i) => i.sections?.some((s) => s.title === 'Traumatismes engendrés'));
+    expect(withTrauma, 'au moins un Critique Tête engendre un Traumatisme référencé').toBeTruthy();
+    const traumaSec = withTrauma!.sections!.find((s) => s.title === 'Traumatismes engendrés')!;
+    expect(traumaSec.rows.every((r) => r.t === 'ref' && r.category === 'traumas')).toBe(true);
+  });
+
+  it('un dataset SANS `label` (Moral d’équipage — Effets, keyé par `id`) reste identifiable (entryKey = label projeté)', () => {
+    const items = categoryByKey('crewMoraleBands')!.items;
+    expect(items.length).toBeGreaterThan(0);
+    for (const it of items) expect(it.label).toBeTruthy();
+  });
+});
+
 describe('Codex — facettes', () => {
   it('filterItems : ET entre facettes, OU à l’intérieur, item sans valeur écarté par une facette active', () => {
     const items: CodexItem[] = [
