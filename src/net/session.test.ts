@@ -79,6 +79,36 @@ describe('session coop (net/session)', () => {
     expect(closed).toHaveBeenCalled();
   });
 
+  it('version de protocole différente → l’hôte envoie un motif typé AVANT de fermer, l’invité le distingue', () => {
+    const { host } = mkHost();
+    const [a, b] = FakeTransport.pair();
+    const onProtocolMismatch = vi.fn();
+    const onClosed = vi.fn();
+    const order: string[] = [];
+    const guest = new GuestSession({
+      build: 'x',
+      name: 'Invité',
+      applySnapshot: vi.fn(),
+      onProtocolMismatch: (expected, got) => {
+        order.push('error');
+        onProtocolMismatch(expected, got);
+      },
+      onClosed: () => {
+        order.push('closed');
+        onClosed();
+      },
+    });
+    host.addGuest(a, 1);
+    guest.connect(b); // handshake normal (même PROTOCOL_VERSION) → joined
+    expect(guest.joined).toBe(true);
+    // Rejoue un hello DÉCALÉ sur le même fil (ex. l'hôte redémarre sur une build incompatible) :
+    // l'hôte doit émettre `error` AVANT de fermer, l'invité doit le recevoir avant le onClose générique.
+    b.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION + 1, build: 'y', name: 'Invité' }));
+    expect(onProtocolMismatch).toHaveBeenCalledWith(PROTOCOL_VERSION, PROTOCOL_VERSION + 1);
+    expect(onClosed).toHaveBeenCalled();
+    expect(order).toEqual(['error', 'closed']); // motif typé avant la fermeture générique
+  });
+
   it('déconnexion d’un invité → onSeatClosed(seat)', () => {
     const { host, onSeatClosed } = mkHost();
     const { guest, seat } = wire(host);

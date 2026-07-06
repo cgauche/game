@@ -201,8 +201,10 @@ export function declutterPositions(
 }
 
 // ── Format de PROJET (export/import éditeur) ────────────────────────────────────────────────
-// Format unique : `{ schema: 2, scenes, worldMap? }`.
+// Format courant : `{ schema: 2, scenes, worldMap? }`. Chaîné par la primitive générique
+// `migrateDoc` (même mécanique que les saves, `saves.ts`) — `schema` joue le rôle de `version`.
 import type { Scene } from './scene';
+import { migrateDoc, type MigrationMap } from './migrateDoc';
 
 export interface ProjectDoc {
   schema: 2;
@@ -210,12 +212,31 @@ export interface ProjectDoc {
   worldMap?: WorldMap;
 }
 
-/** Parse un document de projet (format `{ schema: 2, scenes, worldMap? }`). Lève si le format est
- *  invalide — les anciens formats (tableau de scènes, scène unique) ne sont plus supportés. */
+const CURRENT_PROJECT_SCHEMA = 2;
+
+/** Migrations SÉQUENTIELLES de ProjectDoc : la clé N met à niveau un schema N → N+1. VIDE pour
+ *  l'instant — schema 2 est l'unique format qui ait jamais existé. La mécanique est branchée pour
+ *  tout futur bump : ajouter ici la migration N→N+1 le jour où schema 3 apparaît (cf. `MIGRATIONS`
+ *  de `saves.ts`), plutôt que de refuser en silence des projets antérieurs valides. */
+export const PROJECT_MIGRATIONS: MigrationMap = {};
+
+/** Parse un document de projet, migrant au besoin via `migrateDoc`. Refus EXPLICITE (jamais un
+ *  throw sec sans espoir de migration) si : document mal formé, `schema` absent/non numérique,
+ *  `schema` FUTUR (plus récent que l'app — on ne devine pas une structure inconnue), trou dans la
+ *  chaîne de migration (pas de migrateur défini pour ce schema), ou forme finale invalide
+ *  (`scenes` absent/non-tableau). Les anciens formats (tableau de scènes nu, scène unique) restent
+ *  refusés : ils n'ont jamais porté de `schema`. */
 export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: WorldMap } {
   const obj = data as Record<string, unknown> | null;
-  if (!obj || typeof obj !== 'object' || obj.schema !== 2 || !Array.isArray(obj.scenes)) {
-    throw new Error('Projet invalide : format attendu { schema: 2, scenes: [...] }.');
+  if (!obj || typeof obj !== 'object') {
+    throw new Error('Projet invalide : document absent ou mal formé.');
   }
-  return { scenes: obj.scenes as Scene[], worldMap: (obj.worldMap as WorldMap) ?? undefined };
+  const migrated = migrateDoc({ ...obj, version: obj.schema }, CURRENT_PROJECT_SCHEMA, PROJECT_MIGRATIONS);
+  if (!migrated || !Array.isArray(migrated.scenes)) {
+    throw new Error(
+      `Projet invalide ou version non supportée (schema=${JSON.stringify(obj.schema)}) — attendu ` +
+      `{ schema: ${CURRENT_PROJECT_SCHEMA}, scenes: [...] }, et aucune migration n'est disponible vers ce format.`,
+    );
+  }
+  return { scenes: migrated.scenes as Scene[], worldMap: (migrated.worldMap as WorldMap) ?? undefined };
 }

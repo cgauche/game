@@ -14,8 +14,9 @@
  * une save reste portable d'une machine à l'autre AVEC ses règles (le localStorage ne suffit pas).
  */
 import type { RuleValue } from '../engine/policy';
+import { migrateDoc, type MigrationMap } from './migrateDoc';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 export interface SaveMeta {
   version: number;
@@ -102,29 +103,28 @@ export function isValidSave(s: unknown): s is SaveGame {
 
 /** Migrations SÉQUENTIELLES : la clé N met à niveau une save vN → v(N+1). À CHAQUE bump de
  *  `SAVE_VERSION`, ajouter ici l'entrée correspondante — sinon les saves antérieures seront refusées
- *  (jamais corrompues en silence). Vide tant qu'on est en v1 (aucune version antérieure n'existe). */
-const MIGRATIONS: Record<number, (data: Record<string, unknown>) => Record<string, unknown>> = {
-  // 1: (d) => ({ ...d, version: 2, /* champ ajouté en v2 avec son défaut */ }),
+ *  (jamais corrompues en silence). Chaînée par `migrateDoc` (primitive générique, `migrateDoc.ts`). */
+export const MIGRATIONS: MigrationMap = {
+  // v1 → v2 : les saves d'avant la carte de campagne (#T2 / Arène 2.0) portaient une carte VIDE
+  // (places: []) — la restaurer écraserait celle du projet courant et ferait DISPARAÎTRE le bouton
+  // de carte (recette : « la map n'apparaît pas »). Une carte sans lieux = pas de carte : on laisse
+  // la base (état initial = campagne intégrée) la fournir, en supprimant la clé de la save.
+  1: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    const wm = data.worldMap as { places?: unknown[] } | null | undefined;
+    if (!wm || !wm.places?.length) delete data.worldMap;
+    return { ...doc, version: 2, data };
+  },
 };
 
-/** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE). Un bump de
- *  version ne jette donc plus les anciennes saves en silence : elles passent par la chaîne `MIGRATIONS`.
- *  Renvoie null si : pas un objet, version absente/non numérique, version FUTURE (on ne devine pas une
- *  structure plus récente), trou dans la chaîne, ou forme finale invalide. */
+/** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la
+ *  primitive générique `migrateDoc`). Un bump de version ne jette donc plus les anciennes saves en
+ *  silence : elles passent par la chaîne `MIGRATIONS`. Renvoie null si : pas un objet, version
+ *  absente/non numérique, version FUTURE (on ne devine pas une structure plus récente), trou dans la
+ *  chaîne, ou forme finale invalide. */
 export function migrateSave(parsed: unknown): SaveGame | null {
-  if (!parsed || typeof parsed !== 'object') return null;
-  let save = parsed as Record<string, unknown>;
-  let v = typeof save.version === 'number' ? save.version : NaN;
-  if (!Number.isFinite(v) || v > SAVE_VERSION) return null; // version inconnue ou plus récente que l'app
-  while (v < SAVE_VERSION) {
-    const up = MIGRATIONS[v];
-    if (!up) return null; // pas de migrateur pour cette version → on refuse (plutôt que corrompre)
-    save = up(save);
-    const next = typeof save.version === 'number' ? save.version : NaN;
-    if (!Number.isFinite(next) || next <= v) return null; // un migrateur DOIT faire progresser la version
-    v = next;
-  }
-  return isValidSave(save) ? save : null;
+  const save = migrateDoc(parsed, SAVE_VERSION, MIGRATIONS);
+  return save && isValidSave(save) ? (save as unknown as SaveGame) : null;
 }
 
 export function saveToSlot(slot: AnySlot, save: SaveGame): boolean {

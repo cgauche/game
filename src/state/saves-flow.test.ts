@@ -3,8 +3,10 @@
  * getInitialState), localStorage 3 slots, export/import JSON, refus en combat.
  */
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { readdirSync, readFileSync } from 'node:fs';
 import { useGame } from './store';
-import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, migrateSave, SAVE_VERSION } from './saves';
+import { readSlot, deleteSlot, exportSave, importSave, listSaves, saveToSlot, migrateSave, MIGRATIONS, SAVE_VERSION, type SaveGame } from './saves';
+import { migrateDoc } from './migrateDoc';
 import { rule, setRule, loadRuleOverrides } from '../engine/policy';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -68,19 +70,21 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
     expect(j[j.length - 1]).toBe('le store répond');
   });
 
-  it('MIGRATION : une save d’AVANT la carte de campagne (worldMap vide) ne l’écrase pas au chargement', () => {
+  it('MIGRATION v1→v2 : une save d’AVANT la carte de campagne (worldMap vide) ne l’écrase pas au chargement', () => {
     // Recette « la map n’apparaît pas » : l’ancienne campagne sauvait worldMap {places: []} ;
     // au chargement, cette carte vide écrasait celle du projet courant → plus de bouton 🗺️.
+    // Écrit une save v1 BRUTE (avant migration) dans le slot — simule une vraie relecture localStorage.
     expect(useGame.getState().saveGame(2)).toBe(true);
-    const slot = readSlot(2)!;
-    slot.data.worldMap = { id: 'campagne-carte', nom: 'Carte du monde', places: [], routes: [] }; // save legacy
-    saveToSlot(2, slot);
+    const v2 = readSlot(2)!;
+    const v1 = { ...v2, version: 1, data: { ...v2.data, worldMap: { id: 'campagne-carte', nom: 'Carte du monde', places: [], routes: [] } } };
+    saveToSlot(2, v1 as unknown as SaveGame); // save v1 BRUTE (avant migration), telle qu'écrite en localStorage
     expect(useGame.getState().loadGame(2)).toBe(true);
     const wm = useGame.getState().worldMap!;
     expect(wm.places.length).toBeGreaterThan(0); // la carte de CAMPAGNE est conservée
-    // … et une save SANS worldMap du tout (clé absente) garde aussi la carte de base.
-    delete slot.data.worldMap;
-    saveToSlot(2, slot);
+    // … et une save v1 SANS worldMap du tout (clé absente) garde aussi la carte de base.
+    const v1NoMap = { ...v1, data: { ...v1.data } };
+    delete (v1NoMap.data as Record<string, unknown>).worldMap;
+    saveToSlot(2, v1NoMap as unknown as SaveGame);
     expect(useGame.getState().loadGame(2)).toBe(true);
     expect(useGame.getState().worldMap?.places.length).toBeGreaterThan(0);
   });
@@ -121,19 +125,61 @@ describe('Sauvegarde / chargement (Jalon 5)', () => {
 });
 
 describe('migrateSave — point d’upgrade unique (un bump de version ne jette plus les saves)', () => {
-  const v1 = { version: SAVE_VERSION, savedAt: '2026', sceneLabel: 's', gameTime: 0, data: {} };
-  it('save à la version courante : passe telle quelle (aucune migration en v1)', () => {
-    expect(migrateSave(v1)).toEqual(v1);
+  const cur = { version: SAVE_VERSION, savedAt: '2026', sceneLabel: 's', gameTime: 0, data: {} };
+  it('save à la version courante : passe telle quelle (aucune migration à appliquer)', () => {
+    expect(migrateSave(cur)).toEqual(cur);
   });
   it('version FUTURE (plus récente que l’app) → null : on ne devine pas une structure inconnue', () => {
-    expect(migrateSave({ ...v1, version: SAVE_VERSION + 1 })).toBeNull();
+    expect(migrateSave({ ...cur, version: SAVE_VERSION + 1 })).toBeNull();
   });
   it('version antérieure sans migrateur → null (refus net plutôt que corruption silencieuse)', () => {
-    expect(migrateSave({ ...v1, version: 0 })).toBeNull();
+    expect(migrateSave({ ...cur, version: 0 })).toBeNull();
   });
   it('objet malformé / version absente → null', () => {
     expect(migrateSave(null)).toBeNull();
     expect(migrateSave('pas un objet')).toBeNull();
     expect(migrateSave({ savedAt: 'x', data: {} })).toBeNull(); // version absente
+  });
+});
+
+describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de migration', () => {
+  const FIXTURES_DIR = new URL('./__fixtures__/saves/', import.meta.url);
+  const fixtureFiles = readdirSync(FIXTURES_DIR).filter((f) => f.endsWith('.json'));
+
+  it('au moins une fixture existe (le cliquet ne peut pas passer trivialement)', () => {
+    expect(fixtureFiles.length).toBeGreaterThan(0);
+  });
+
+  for (const file of fixtureFiles) {
+    it(`fixture ${file} : migre via migrateDoc puis charge (applyLoadedSave) sans erreur`, () => {
+      const raw = JSON.parse(readFileSync(new URL(file, FIXTURES_DIR), 'utf-8')) as unknown;
+      const migrated = migrateSave(raw);
+      expect(migrated).not.toBeNull();
+      expect(migrated!.version).toBe(SAVE_VERSION);
+      useGame.setState({ party: [], flags: {}, gameTime: 0, journal: [], scene: null, screen: 'menu' });
+      expect(useGame.getState().loadGame instanceof Function).toBe(true);
+      // Charge la save déjà migrée directement dans le slot (contourne l'écriture disque, exerce
+      // le MÊME chemin `readSlot` → `migrateSave` → `applyLoadedSave` que loadGame(slot)).
+      expect(saveToSlot(1, migrated!)).toBe(true);
+      expect(useGame.getState().loadGame(1)).toBe(true);
+      // La preuve motivant la migration v1→v2 : le worldMap LEGACY vide (fixture v1) ne subsiste pas —
+      // la carte de campagne (non vide) de la base est restaurée.
+      expect(useGame.getState().worldMap?.places.length).toBeGreaterThan(0);
+    });
+  }
+
+  it('CLIQUET : chaque version 1..SAVE_VERSION-1 a AU MOINS une fixture ET une entrée MIGRATIONS — bump sans les deux = suite rouge', () => {
+    for (let v = 1; v < SAVE_VERSION; v++) {
+      expect(MIGRATIONS[v], `MIGRATIONS[${v}] manquante — un bump de SAVE_VERSION exige son migrateur`).toBeTypeOf('function');
+      const hasFixture = fixtureFiles.some((f) => f.startsWith(`v${v}-`));
+      expect(hasFixture, `aucune fixture v${v}-*.json — un bump de SAVE_VERSION exige sa fixture golden`).toBe(true);
+    }
+  });
+
+  it('migrateDoc (primitive générique) réexpose EXACTEMENT la sémantique de migrateSave sur une fixture', () => {
+    const raw = JSON.parse(readFileSync(new URL(fixtureFiles[0], FIXTURES_DIR), 'utf-8')) as unknown;
+    const viaPrimitive = migrateDoc(raw, SAVE_VERSION, MIGRATIONS);
+    const viaSaves = migrateSave(raw);
+    expect(viaPrimitive).toEqual(viaSaves);
   });
 });

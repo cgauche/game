@@ -234,9 +234,17 @@ export function Editor() {
     setOpenOpen(false);
   }
   function loadSaved(p: SavedProject) {
-    const scenes = p.project.scenes;
+    let scenes: Scene[];
+    let wm: WorldMap | undefined;
+    try {
+      ({ scenes, worldMap: wm } = parseProject(p.project)); // même validation/migration que l'import JSON
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Projet invalide');
+      return;
+    }
+    if (!scenes.length) return;
     setOtherScenes(scenes.slice(1).map(clone));
-    setWorldMap(p.project.worldMap ? JSON.parse(JSON.stringify(p.project.worldMap)) : null);
+    setWorldMap(wm ? JSON.parse(JSON.stringify(wm)) : null);
     setProjectId(p.id);
     setProjectName(p.name);
     setPublished(p.published);

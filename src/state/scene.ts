@@ -585,8 +585,6 @@ export function isMerScene(scene: { metresPerTile?: number } | null | undefined)
   return sceneMetresPerTile(scene) >= 4;
 }
 
-export const SCHEMA_VERSION = 3;
-
 /** Grille de tuiles d'une couche (défaut z=0 = base). Repli sur la 1ʳᵉ couche si `z` absent. */
 export function layerTiles(scene: Scene, z = 0): Terrain[] {
   return (scene.layers.find((l) => l.z === z) ?? scene.layers[0]).tiles;

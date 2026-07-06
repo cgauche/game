@@ -4,6 +4,13 @@
  * données JSON-sûres que la sauvegarde) et transfère la campagne custom UNE fois au join
  * (`campaign`). `parseMessage` valide la FORME de chaque message : le réseau est une entrée
  * non fiable → null, jamais d'exception.
+ *
+ * `error` : envoyé par l'hôte AVANT de fermer le transport (ex. mismatch de protocole au hello)
+ * pour distinguer une fermeture VOLONTAIRE d'une coupure réseau banale côté invité. N'entraîne
+ * PAS un bump de PROTOCOL_VERSION : c'est un AJOUT de type de message, les formes existantes
+ * (`hello`/`intent`/`snapshot`/…) sont inchangées — un invité plus ANCIEN qui ne connaît pas
+ * encore `error` le voit juste rejeté par `parseMessage` (→ null) et retombe sur la fermeture
+ * silencieuse préexistante ; un invité à jour affiche le motif précis.
  */
 export const PROTOCOL_VERSION = 1;
 
@@ -13,6 +20,7 @@ export type NetMessage =
   | { kind: 'snapshot'; data: Record<string, unknown> }
   | { kind: 'campaign'; name: string; scenes: unknown[]; startSceneId: string; worldMap: unknown }
   | { kind: 'assign'; heroId: string; seat: number }
+  | { kind: 'error'; reason: 'protocol-mismatch'; expected: number; got: number }
   | { kind: 'bye' };
 
 export function serializeMessage(m: NetMessage): string {
@@ -48,6 +56,10 @@ export function parseMessage(raw: string): NetMessage | null {
     case 'assign':
       return typeof m.heroId === 'string' && typeof m.seat === 'number'
         ? { kind: 'assign', heroId: m.heroId, seat: m.seat }
+        : null;
+    case 'error':
+      return m.reason === 'protocol-mismatch' && typeof m.expected === 'number' && typeof m.got === 'number'
+        ? { kind: 'error', reason: 'protocol-mismatch', expected: m.expected, got: m.got }
         : null;
     case 'bye':
       return { kind: 'bye' };

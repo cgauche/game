@@ -298,6 +298,11 @@ export function netJoin(get: Get, set: Set, codeRaw: string, name: string): Prom
         onCampaign: (m) => {
           for (const s of m.scenes) registerScene(s as Scene);
         },
+        // Motif typé de l'hôte (mismatch de protocole) : canal réutilisé du journal réseau
+        // (déjà utilisé pour « Un joueur a quitté »/« Connexion perdue ») — distinct du
+        // onClose générique qui suit juste après (silencieux, cf. session.ts).
+        onProtocolMismatch: (expected, got) =>
+          get().log(`Version du jeu différente de l'hôte (protocole ${got} ≠ ${expected}) — mettez à jour.`),
         onClosed: () => netLeave(get, set),
       });
       set({ net: { ...initialNet(), mode: 'guest', mySeat: seat, roomCode: code, seatNames: { [seat]: name } } });

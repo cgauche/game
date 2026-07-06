@@ -41,12 +41,8 @@ import { initialFields, resetFields } from './stateFields';
 function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): void {
   const base = JSON.parse(JSON.stringify(useGame.getInitialState())) as Partial<GameState>;
   const data = { ...(save.data as Partial<GameState>) };
-  // MIGRATION : les saves d'avant la carte de campagne (#T2 / Arène 2.0) portent une carte VIDE
-  // (places: []) — la restaurer écraserait celle du projet courant et ferait DISPARAÎTRE le
-  // bouton de carte (recette : « la map n'apparaît pas »). Une carte sans lieux = pas de carte : on
-  // garde celle de la base (l'état initial = campagne intégrée).
-  const wm = data.worldMap as import('./worldMap').WorldMap | null | undefined;
-  if (!wm || !wm.places?.length) delete data.worldMap;
+  // Le drop du worldMap vide (saves d'avant la carte de campagne) est désormais une MIGRATION
+  // officielle (v1→v2, `saves.ts` MIGRATIONS[1]) — `save.data` en sort déjà nettoyé.
   // `net` : la SESSION coop courante prime sur celle figée dans la save (ne pas ressusciter un
   // salon mort, ne pas dissoudre un salon vivant — l'hôte peut charger une save en ligne).
   set({ ...base, ...data, screen: 'campaign', net: useGame.getState().net });

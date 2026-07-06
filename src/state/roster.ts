@@ -1,6 +1,8 @@
 import { Combatant } from '../engine/types';
 import { Money } from '../engine/money';
 import type { CreatorDraft } from '../ui/creator/draft';
+import { migrateDoc, type MigrationMap } from './migrateDoc';
+import { t } from '../i18n';
 
 /** Roster persistant (localStorage) des personnages créés via le créateur.
  *  Snapshot À LA CRÉATION : le héros tel que sorti de `buildHero`, plus sa
@@ -66,7 +68,13 @@ export function rosterUpdate(hero: Combatant): void {
 }
 
 const EXPORT_KIND = 'wfrp4-hero';
-const EXPORT_VERSION = 1;
+export const EXPORT_VERSION = 1;
+
+/** Migrations SÉQUENTIELLES de l'export roster (vide : v1 = version courante, aucune montée en
+ *  version encore nécessaire). À CHAQUE bump d'`EXPORT_VERSION`, ajouter ici l'entrée `vN → vN+1`
+ *  — sinon les exports antérieurs sont refusés (jamais acceptés en silence avec des champs
+ *  manquants). Chaînée par `migrateDoc` (primitive générique, `migrateDoc.ts`). */
+export const ROSTER_MIGRATIONS: MigrationMap = {};
 
 /** Sérialise un héros (avec sa Richesse) en chaîne portable — sauvegarde, transfert d'appareil,
  *  ou partage pour rejoindre la coop d'un ami. Format taggé pour une réimportation robuste. */
@@ -74,20 +82,34 @@ export function rosterExport(entry: RosterEntry): string {
   return JSON.stringify({ kind: EXPORT_KIND, v: EXPORT_VERSION, hero: entry.hero, wealth: entry.wealth }, null, 2);
 }
 
-/** Lit une chaîne `rosterExport` (ou un `RosterEntry` nu) → `RosterEntry`, ou null si invalide.
- *  Réutilise la même garde que `rosterLoad` (hero.id chaîne) ; Richesse par défaut si absente. */
-export function rosterImport(str: string): RosterEntry | null {
+/** Résultat de `rosterImport` : soit l'entrée reconstruite, soit un message d'erreur EXPLICITE
+ *  (jamais un `null` muet) — l'appelant UI l'affiche tel quel. */
+export type RosterImportResult = { entry: RosterEntry; error?: undefined } | { entry?: undefined; error: string };
+
+/** Lit une chaîne `rosterExport` (ou un `RosterEntry` nu antérieur au tag `kind`/`v`) → `RosterEntry`,
+ *  ou une erreur EXPLICITE si invalide. Passe par `migrateDoc` (chaîne `ROSTER_MIGRATIONS`) : un
+ *  export `kind` différent, ou de version future/inconnue, est REFUSÉ avec un message dédié —
+ *  jamais accepté en silence avec des champs manquants (le format `{ v }` du fil est normalisé en
+ *  `version` pour la primitive générique). Richesse par défaut (0) si absente. */
+export function rosterImport(str: string): RosterImportResult {
+  let parsed: unknown;
   try {
-    const p = JSON.parse(str) as Partial<RosterEntry> & { hero?: { id?: unknown } };
-    const hero = p?.hero;
-    if (!hero || typeof hero !== 'object' || typeof hero.id !== 'string') return null;
-    const w = (p as { wealth?: unknown }).wealth;
-    const wealth: Money =
-      w && typeof w === 'object' ? (w as Money) : { gold: 0, silver: 0, brass: 0 };
-    return { hero: hero as unknown as Combatant, wealth };
+    parsed = JSON.parse(str);
   } catch {
-    return null;
+    return { error: t('picker.import.error') };
   }
+  if (!parsed || typeof parsed !== 'object') return { error: t('picker.import.error') };
+  const raw = parsed as { kind?: unknown; v?: unknown; version?: unknown };
+  if (raw.kind !== undefined && raw.kind !== EXPORT_KIND) return { error: t('picker.import.error.version') };
+  const normalized = { ...raw, version: typeof raw.v === 'number' ? raw.v : raw.version };
+  const doc = migrateDoc(normalized, EXPORT_VERSION, ROSTER_MIGRATIONS);
+  if (!doc) return { error: t('picker.import.error.version') };
+  const hero = (doc as { hero?: { id?: unknown } }).hero;
+  if (!hero || typeof hero !== 'object' || typeof hero.id !== 'string') return { error: t('picker.import.error') };
+  const w = (doc as { wealth?: unknown }).wealth;
+  const wealth: Money =
+    w && typeof w === 'object' ? (w as Money) : { gold: 0, silver: 0, brass: 0 };
+  return { entry: { hero: hero as unknown as Combatant, wealth } };
 }
 
 function save(list: RosterEntry[]): void {

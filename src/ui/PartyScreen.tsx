@@ -440,12 +440,12 @@ export function PartyPicker({
     downloadText(`wfrp4-perso-${fileSlug(entry.hero.name)}.json`, rosterExport(entry));
   const onImportFile = async (file: File | undefined) => {
     if (!file) return;
-    const entry = rosterImport(await file.text());
-    if (!entry) {
-      setImportErr(t('picker.import.error'));
+    const result = rosterImport(await file.text());
+    if (!result.entry) {
+      setImportErr(result.error);
       return;
     }
-    rosterAdd(entry);
+    rosterAdd(result.entry);
     setRoster(rosterLoad());
     setImportErr(null);
     setTab('roster');

@@ -105,26 +105,41 @@ describe('roster — persistance des personnages créés', () => {
   });
 });
 
-describe('roster — export / import (portabilité)', () => {
-  it('round-trip préserve héros + richesse', () => {
+describe('roster — export / import (portabilité, versionné via migrateDoc)', () => {
+  it('round-trip v1 valide → entry restituée', () => {
     const back = rosterImport(rosterExport(entry('h1')));
-    expect(back).not.toBeNull();
-    expect(back!.hero.id).toBe('h1');
-    expect(back!.wealth).toEqual({ gold: 1, silver: 2, brass: 3 });
+    expect(back.entry).toBeDefined();
+    expect(back.entry!.hero.id).toBe('h1');
+    expect(back.entry!.wealth).toEqual({ gold: 1, silver: 2, brass: 3 });
   });
 
-  it('accepte un RosterEntry nu (sans tag kind/v)', () => {
-    expect(rosterImport(JSON.stringify(entry('h2')))?.hero.id).toBe('h2');
+  it('richesse par défaut (0) si absente (mais kind/v présents)', () => {
+    const str = JSON.stringify({ kind: 'wfrp4-hero', v: 1, hero: { id: 'h3', name: 'X' } });
+    expect(rosterImport(str).entry?.wealth).toEqual({ gold: 0, silver: 0, brass: 0 });
   });
 
-  it('richesse par défaut (0) si absente', () => {
-    expect(rosterImport(JSON.stringify({ hero: { id: 'h3', name: 'X' } }))?.wealth).toEqual({ gold: 0, silver: 0, brass: 0 });
+  it('sans version/kind (RosterEntry nu) → message explicite, jamais un import silencieux', () => {
+    const res = rosterImport(JSON.stringify(entry('h2')));
+    expect(res.entry).toBeUndefined();
+    expect(res.error).toBeTruthy();
   });
 
-  it('null sur JSON invalide ou hero.id manquant/non-chaîne', () => {
-    expect(rosterImport('pas du json')).toBeNull();
-    expect(rosterImport('{}')).toBeNull();
-    expect(rosterImport(JSON.stringify({ hero: {} }))).toBeNull();
-    expect(rosterImport(JSON.stringify({ hero: { id: 42 } }))).toBeNull();
+  it('version future/inconnue (v99) → message explicite', () => {
+    const res = rosterImport(JSON.stringify({ kind: 'wfrp4-hero', v: 99, hero: { id: 'h4' } }));
+    expect(res.entry).toBeUndefined();
+    expect(res.error).toBeTruthy();
+  });
+
+  it('kind différent → message explicite', () => {
+    const res = rosterImport(JSON.stringify({ kind: 'autre-chose', v: 1, hero: { id: 'h5' } }));
+    expect(res.entry).toBeUndefined();
+    expect(res.error).toBeTruthy();
+  });
+
+  it('erreur (JSON invalide ou hero.id manquant/non-chaîne) → message explicite, jamais null muet', () => {
+    expect(rosterImport('pas du json').error).toBeTruthy();
+    expect(rosterImport('{}').error).toBeTruthy();
+    expect(rosterImport(JSON.stringify({ kind: 'wfrp4-hero', v: 1, hero: {} })).error).toBeTruthy();
+    expect(rosterImport(JSON.stringify({ kind: 'wfrp4-hero', v: 1, hero: { id: 42 } })).error).toBeTruthy();
   });
 });

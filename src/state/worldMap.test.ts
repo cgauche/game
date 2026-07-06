@@ -21,8 +21,14 @@ describe('parseProject — validation du format projet v2', () => {
     expect(parseProject({ schema: 2, scenes: [scene('s1')] }).worldMap).toBeUndefined();
   });
 
-  it('mauvais schéma (1) → lève (plus de parsing silencieux d’un format incompatible)', () => {
-    expect(() => parseProject({ schema: 1, scenes: [scene('s1')] })).toThrow(/Projet invalide/);
+  it('schéma 1 (aucune migration 1→2 définie) → refus EXPLICITE, pas un throw sec muet', () => {
+    expect(() => parseProject({ schema: 1, scenes: [scene('s1')] }))
+      .toThrow(/Projet invalide ou version non supportée.*schema=1/);
+  });
+
+  it('schéma futur inconnu (99) → refus EXPLICITE (on ne devine pas une structure future)', () => {
+    expect(() => parseProject({ schema: 99, scenes: [scene('s1')] }))
+      .toThrow(/Projet invalide ou version non supportée.*schema=99/);
   });
 
   it('schéma absent → lève', () => {

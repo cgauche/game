@@ -42,6 +42,9 @@ export class HostSession {
       if (!m) return;
       if (m.kind === 'hello') {
         if (m.protocol !== PROTOCOL_VERSION) {
+          // Motif typé AVANT la fermeture (cf. protocol.ts) : l'invité distingue « versions
+          // incompatibles » d'une coupure réseau banale au lieu du chemin onClose générique.
+          transport.send(serializeMessage({ kind: 'error', reason: 'protocol-mismatch', expected: PROTOCOL_VERSION, got: m.protocol }));
           transport.close();
           return;
         }
@@ -99,6 +102,9 @@ export class GuestSession {
       /** Projet de campagne custom reçu au join (enregistré localement pour le rendu). */
       onCampaign?: (m: Extract<NetMessage, { kind: 'campaign' }>) => void;
       onAssign?: (heroId: string, seat: number) => void;
+      /** Fermeture VOLONTAIRE de l'hôte pour incompatibilité de protocole (message `error` reçu
+       *  AVANT le `onClose` du transport) — distinct d'une coupure réseau banale. */
+      onProtocolMismatch?: (expected: number, got: number) => void;
       onClosed?: () => void;
     },
   ) {}
@@ -121,6 +127,7 @@ export class GuestSession {
         return;
       }
       if (m.kind === 'assign') this.opts.onAssign?.(m.heroId, m.seat);
+      if (m.kind === 'error' && m.reason === 'protocol-mismatch') this.opts.onProtocolMismatch?.(m.expected, m.got);
     });
     transport.onClose(() => {
       this.joined = false;

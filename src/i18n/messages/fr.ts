@@ -120,6 +120,7 @@ export const fr = {
   'picker.import.btn': '📥 Importer un personnage…',
   'picker.import.btn.title': 'Importer un personnage depuis un fichier JSON exporté',
   'picker.import.error': 'Fichier de personnage invalide.',
+  'picker.import.error.version': "Version de fichier non reconnue — ré-exportez ce personnage depuis une version à jour du jeu.",
   'picker.done': 'Terminé',
   // Sauvegarde / chargement (SaveLoadModal) — Phase D.
   'saveload.title.save': '💾 Sauvegarder',
