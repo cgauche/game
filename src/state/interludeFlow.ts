@@ -834,7 +834,8 @@ function bankWithdrawInner(get: Get, set: Set, index: number, crashCheckOnly: bo
   const rest = (get().bank ?? []).filter((_, i) => i !== index);
   if (outcome === 'lost') {
     set({ bank: rest });
-    return [`${h?.name ?? '?'} — 🎲 ${roll} ≤ ${dep.kind === 'invest' ? dep.rate : 10} : ${dep.kind === 'invest' ? 'la banque a fait faillite' : 'la planque a été découverte'} — ${formatMoney(fromBrass(dep.brass))} perdus !`];
+    const threshold = dep.kind === 'invest' ? dep.rate : (dep.rate > 0 ? dep.rate : 10);
+    return [`${h?.name ?? '?'} — 🎲 ${roll} ≤ ${threshold} : ${dep.kind === 'invest' ? 'la banque a fait faillite' : 'la planque a été découverte'} — ${formatMoney(fromBrass(dep.brass))} perdus !`];
   }
   if (crashCheckOnly) return [`Vérification de faillite (émeutes) — 🎲 ${roll} > ${dep.rate} : la banque tient bon.`];
   const payout = bankPayout(dep.kind, dep.brass, dep.rate);

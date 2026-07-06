@@ -1063,7 +1063,7 @@ function BankList({ bank, party, interlude, canDrive }: {
                   ? `Retirer (1 Activité) : ${fmt(bankPayout('invest', b.brass, b.rate))} si la banque tient (faillite sur d100 ≤ ${b.rate})`
                   : b.kind === 'mecenat'
                     ? 'Retirer (1 Activité) : Test d’Évaluation Intermédiaire (+0) — rendu de 120 % à la perte totale (Mécénat, ACE p.220)'
-                    : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur d100 ≤ 10`}
+                    : `Retirer la planque (libre) : ${fmt(b.brass)} — découverte sur d100 ≤ ${b.rate > 0 ? b.rate : 10}`}
           >
             <Icon id={b.kind === 'invest' ? 'resource/gold-purse' : b.kind === 'mecenat' ? 'scenario/opera' : 'item/misc'} size="sm" />
             {' '}{owner?.name} : <CoinsB brass={b.brass} />

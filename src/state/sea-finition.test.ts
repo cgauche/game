@@ -5,6 +5,7 @@ import { seedBattleRng } from './battleRng';
 import { buildSeaPlan } from './seaVoyageFlow';
 import { seaActivityBlocked } from './seaActivities';
 import { activityById } from '../engine/activities';
+import { toBrass, PA_PER_CO } from '../engine/money';
 import type { WorldMap } from './worldMap';
 import type { Combatant } from '../engine/types';
 
@@ -129,6 +130,33 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
   it('Entraînement d’équipage est BLOQUÉ (équipage PNJ abstrait, MDG 14 l.39)', () => {
     const def = activityById('entrainement-equipage')!;
     expect(seaActivityBlocked(get, def)).toMatch(/équipage/i);
+  });
+
+  it('Cartographie réussie + stashGold → Planque gratuite (MDG 15 l.292, découverte ≤ 50)', () => {
+    seedBattleRng(3);
+    const heroes = get().party;
+    // Même cartographe hors pair que le test précédent, jet déterministe (roll 73 ≤ cible 99).
+    (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as never];
+    (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, Dex: 60 };
+    set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
+    const before = toBrass(get().money);
+    get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie', stashGold: 50 } });
+    const dep = get().bank.find((b) => b.heroId === heroes[0].id && b.kind === 'stash');
+    expect(dep).toBeTruthy();
+    expect(dep!.brass).toBe(50 * PA_PER_CO);
+    expect(dep!.rate).toBe(50); // seuil de découverte MDG (au lieu de 10, ch.23 l.170)
+    expect(toBrass(get().money)).toBe(before - 50 * PA_PER_CO);
+    expect(get().journal.join('\n')).toMatch(/Planque.*MDG 15 l\.292/);
+  });
+
+  it('Cartographie sans mise de Planque (stashGold absent) → aucun dépôt créé', () => {
+    seedBattleRng(3);
+    const heroes = get().party;
+    (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as never];
+    (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, Dex: 60 };
+    set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
+    get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie' } });
+    expect(get().bank.find((b) => b.heroId === heroes[0].id && b.kind === 'stash')).toBeUndefined();
   });
 });
 

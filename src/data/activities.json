@@ -536,7 +536,7 @@
     ],
     "difficulty": "complexe",
     "resolver": "seaChart",
-    "desc": "Vous dessinez une carte qui peut être reproduite et vendue pour faire un bénéfice, mais aussi servir d'outil pour s'orienter. Effectuez un Test de **Métier (Cartographe) Complexe (–10)** et désignez deux ports. En cas de succès, vous produisez une carte ayant une valeur en CO égale au nombre de DR obtenus sur le Test. Quand vous voyagez entre les deux ports désignés, la carte fournit +2 DR sur les Tests d'Orientation."
+    "desc": "Vous dessinez une carte qui peut être reproduite et vendue pour faire un bénéfice, mais aussi servir d'outil pour s'orienter. Effectuez un Test de **Métier (Cartographe) Complexe (–10)** et désignez deux ports. En cas de succès, vous produisez une carte ayant une valeur en CO égale au nombre de DR obtenus sur le Test. Quand vous voyagez entre les deux ports désignés, la carte fournit +2 DR sur les Tests d'Orientation.\n\nLors de la confection de la carte, vous pouvez aussi tenter gratuitement l'Activité *Opérations bancaires : Planque* (voir page 199 de **WFJDR**) quand vous fabriquez la carte pour cacher votre butin dans un endroit indiqué sur cette carte. Votre trésor est en sécurité tant que vous gardez la carte, mais si quelqu'un met la main dessus, il est découvert sur un 50 ou moins plutôt que le 10 ou moins habituel sur le lancer d'1d100."
   },
   {
     "id": "entrainement-equipage",

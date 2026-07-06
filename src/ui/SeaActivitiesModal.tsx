@@ -16,8 +16,9 @@ import { Coins } from './Coins';
  * ACTIVITÉS EN MER (MDG 15 l.266-306) — modale hebdomadaire (semaine de 8 jours, l.268) : chaque
  * héros vivant choisit AU PLUS une Activité du catalogue 'mer' (source UNIQUE `activities.json`, rail
  * réutilisé de l'interlude). Le Commerce d'opportunité (l.276) expose une mise en CO plafonnée par
- * l'Encombrement libre du navire et la bourse. « Entretien du navire » n'est PAS ici (déjà câblé au
- * Test d'équipage nocturne). Responsive : une carte par héros (`panel-grid` → 1 colonne ≤700px).
+ * l'Encombrement libre du navire et la bourse ; la Cartographie (l.292) expose une Planque gratuite
+ * plafonnée par la bourse. « Entretien du navire » n'est PAS ici (déjà câblé au Test d'équipage
+ * nocturne). Responsive : une carte par héros (`panel-grid` → 1 colonne ≤700px).
  */
 export function SeaActivitiesModal() {
   const pending = useGame((s) => s.pendingSeaActivities);
@@ -33,6 +34,7 @@ export function SeaActivitiesModal() {
   if (!pending) return null;
   const heroes = party.filter((h) => !h.dead && !h.outOfRencontre);
   const investCap = Math.min(freeEnc, Math.floor(toBrass(money) / PA_PER_CO));
+  const stashCap = Math.floor(toBrass(money) / PA_PER_CO);
   const set = (id: string, pick: SeaActivityPick | null) => setPicks((p) => ({ ...p, [id]: pick }));
 
   return (
@@ -81,6 +83,18 @@ export function SeaActivitiesModal() {
                         max={investCap}
                         value={pick?.investGold ?? 0}
                         onChange={(e) => set(h.id, { activityId: chosen, investGold: Math.max(0, Math.min(investCap, Number(e.target.value) || 0)) })}
+                      />
+                    </label>
+                  )}
+                  {catalog.find((d) => d.id === chosen)?.resolver === 'seaChart' && (
+                    <label className="sea-act-invest">
+                      Planque gratuite (CO, max {stashCap})
+                      <input
+                        type="number"
+                        min={0}
+                        max={stashCap}
+                        value={pick?.stashGold ?? 0}
+                        onChange={(e) => set(h.id, { activityId: chosen, stashGold: Math.max(0, Math.min(stashCap, Number(e.target.value) || 0)) })}
                       />
                     </label>
                   )}

@@ -10,13 +10,12 @@
  *    Test étendu de Marchandage Complexe (−10), 10 DR en ≤ 3 tentatives → % récupéré
  *    (`opportunityTradePct`, table verbatim `sea-cargo.json`).
  *  - Cartographie (l.288-290) : Métier (Cartographe) Complexe (−10) → une Carte marine (trapping
- *    `carte-marine`, passif +2 DR d'Orientation) d'une valeur de DR CO (prix d'instance). Les « deux
- *    ports désignés » ne sont pas modélisés : la carte sert la ligne maritime courante (abstraction
- *    documentée — même lecture que la Boussole, passif inconditionnel). Le volet « Opérations
- *    bancaires : Planque » gratuit (l.292) n'est pas offert en mer (la banque vit à l'interlude).
- *  - Entraînement d'équipage (l.294-300) : GATE — l'équipage du navire de campagne est ABSTRAIT,
- *    tenu par les PJ (MDG 14 l.39) : aucun équipage PNJ à entraîner (l'UI l'explique, le résolveur
- *    le raconte). « Seuls les PNJ peuvent gagner des Augmentations » (l.296).
+ *    `carte-marine`, passif +2 DR d'Orientation) d'une valeur de DR CO (prix d'instance). Deux ports
+ *    désignés (l.290) : non modélisé (#147).
+ *  - Planque gratuite lors de la Cartographie (l.292) : dépôt optionnel (`pick.stashGold`) dans
+ *    `bank` (kind `stash`), seuil de découverte fixe à 50 ; sécurité liée à la possession de la carte
+ *    non trackée (#147).
+ *  - Entraînement d'équipage (l.294-300) : GATE (MDG 14 l.39, l.296) — voir `seaActivityBlocked`.
  *  - Whitelist d'Activités TERRESTRES (l.270 : Apprentissage particulier, Artisanat, Entraînement,
  *    Entraînement au combat, Invention !, Recherche de savoir, Semer la dissension + entraînements
  *    d'Aux Armes !) : « à condition que des installations et des instructeurs adaptés soient
@@ -51,6 +50,8 @@ export interface SeaActivityPick {
   activityId: string;
   /** Commerce d'opportunité (l.276) : couronnes d'or investies. */
   investGold?: number;
+  /** Planque gratuite lors de la Cartographie (l.292) : couronnes d'or cachées. */
+  stashGold?: number;
 }
 
 /** Modale hebdomadaire (8 jours en mer, l.268) — la halte de nuit attend la confirmation. */
@@ -132,6 +133,14 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
           recomputeLoadout(hero);
         }
         lines.push(`🗺 ${hero.name} — Cartographie : 🎲 ${t.roll}/${t.target} → une Carte marine d'une valeur de ${Math.max(0, t.sl)} CO (+2 DR d'Orientation, MDG 15).`);
+        // Planque gratuite lors de la Cartographie (l.292) : dépôt optionnel, retrait libre,
+        // découverte sur 🎲 ≤ 50 (bankWithdrawOutcome, rate=50).
+        const stashCO = Math.max(0, Math.min(Math.floor(pick.stashGold ?? 0), Math.floor(toBrass(get().money) / PA_PER_CO)));
+        if (stashCO > 0) {
+          const stashBrass = stashCO * PA_PER_CO;
+          set({ money: fromBrass(toBrass(get().money) - stashBrass), bank: [...get().bank, { heroId: hero.id, kind: 'stash', brass: stashBrass, rate: 50 }] });
+          lines.push(`🗺 ${hero.name} — Planque (MDG 15 l.292) : ${formatMoney(fromBrass(stashBrass))} cachés sur la carte — retrait libre, découverte sur 🎲 ≤ 50.`);
+        }
       } else {
         lines.push(`🗺 ${hero.name} — Cartographie : 🎲 ${t.roll}/${t.target} → les relevés sont inutilisables.`);
       }

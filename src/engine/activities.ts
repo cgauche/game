@@ -507,10 +507,12 @@ export function apprenticeshipTutorCost(talentXpCost: number, rng: RNG = default
   return fromBrass(pa * PA_PER_SC);
 }
 
-/** Retrait bancaire (ch.23 l.157-159) : `roll` = le 1d100 du retrait. */
+/** Retrait bancaire (ch.23 l.157-159) : `roll` = le 1d100 du retrait. Planque : seuil de découverte
+ *  fixe à 10 (ch.23 l.170), sauf `rate` positionné (MDG 15 l.292 : 50 pour la Planque liée à une
+ *  Carte marine). */
 export function bankWithdrawOutcome(kind: 'invest' | 'stash', rate: number, roll: number): 'ok' | 'lost' {
   if (kind === 'invest') return roll <= Math.max(1, Math.min(10, rate)) ? 'lost' : 'ok';
-  return roll <= 10 ? 'lost' : 'ok';
+  return roll <= (rate > 0 ? rate : 10) ? 'lost' : 'ok';
 }
 
 /** Somme d'un dépôt récupéré avec intérêts (« les fonds de départ, plus les intérêts générés »,

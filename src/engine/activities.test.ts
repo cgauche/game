@@ -65,6 +65,10 @@ describe('bankWithdrawOutcome — Opérations bancaires (LDB 23 l.157-159)', () 
     expect(bankWithdrawOutcome('stash', 0, 10)).toBe('lost');
     expect(bankWithdrawOutcome('stash', 0, 11)).toBe('ok');
   });
+  it('planque liée à une Carte marine (MDG 15 l.292) : seuil de découverte 50 au lieu de 10', () => {
+    expect(bankWithdrawOutcome('stash', 50, 50)).toBe('lost');
+    expect(bankWithdrawOutcome('stash', 50, 51)).toBe('ok');
+  });
 });
 
 describe('statusIncome — « Gagner de l’argent grâce au Statut » (LDB 08 l.135-144)', () => {
