@@ -152,7 +152,7 @@ function openCrewTestPending(get: Get, ship: Combatant, testTypeId: string): {
   return {
     participants, essentialRoleId,
     moraleScore: shipMoraleScore(get, ship),
-    undercrew: shipUndercrew(ship, battle.combatants),
+    undercrew: shipUndercrew(get, ship, battle.combatants),
     ...(saboteur ? { extraDR: saboteur } : {}),
   };
 }

@@ -111,14 +111,17 @@ export function shipMoraleScore(get: Get, ship: Combatant): number {
 }
 
 /**
- * Manque de bras GLOBAL d'un navire (MDG ch.14 l.55) : compare l'équipage NOMINAL du type (`ship.crew` de
- * `vehicles.json`) aux membres encore EN ÉTAT (`exposedCrew` des `crewIds`) → −2 DR par tranche de 10 % manquant
- * + plafond Succès Minime. Les morts/inconscients (Éclats, critiques « Équipage ») alimentent le déficit. Dérivé
- * à l'usage. PUR (lit la donnée du type, pas le store). */
-export function shipUndercrew(ship: Combatant, combatants: Combatant[]): UndercrewPenalty {
+ * Manque de bras GLOBAL d'un navire (MDG ch.14 l.55) : `undercrewPenalty(nominal, présent)` où le NOMINAL vient
+ * du type (`vehicles.json` ship.crew) et le PRÉSENT = les `crewIds` encore EN ÉTAT (`exposedCrew`), MOINS les
+ * marins déjà retirés de la campagne par Embrigadement (MDG 15 l.245, `CampaignVessel.crewLost`). Les
+ * morts/inconscients de combat (Éclats, critiques « Équipage ») alimentent aussi le déficit. Lit l'état persistant
+ * du vaisseau de campagne comme `shipMoraleScore` (keyé `creatureId === vehicleId`). */
+export function shipUndercrew(get: Get, ship: Combatant, combatants: Combatant[]): UndercrewPenalty {
   const nominal = findVehicleById(ship.creatureId ?? '')?.ship?.crew ?? 0;
-  const present = exposedCrew((ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c)).length;
-  return undercrewPenalty(nominal, present);
+  const exposed = exposedCrew((ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c)).length;
+  const vessel = get().vessel;
+  const lost = vessel && ship.creatureId === vessel.vehicleId ? (vessel.crewLost ?? 0) : 0;
+  return undercrewPenalty(nominal, Math.max(0, exposed - lost));
 }
 
 /** SABOTAGE des Tests d'équipage d'une coque (MDG ch.14 l.45-47 : « de -1 à -5 DR sur le Test d'équipage »)
