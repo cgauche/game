@@ -112,9 +112,10 @@ export interface CombatFeature {
   //  talents.json `effects` + brique `state/combat/triggeredTest` — résolu cadence-aware.)
   /** Cœur vaillant : tente de retirer le Brisé même Engagé (Calme en fin de Round). */
   braveheart?: boolean;
-  /** Sans peur (LDB 10 l.859) : ignore Peur/Terreur de l'Ennemi spécifié (`ctx.spec` ; sans
-   *  spec — talent ACCORDÉ par Flambeau de Vertu/Cœurs ardents — toutes sources). Le Test de
-   *  Calme Accessible (+20) d'activation est supposé réussi (simplification documentée). */
+  /** Sans peur (LDB 10 l.1051) : PAS une immunité — détecte que le porteur a le Talent contre
+   *  l'Ennemi spécifié (`ctx.spec` ; sans spec — talent ACCORDÉ par Flambeau de Vertu/Cœurs
+   *  ardents — toutes sources). L'effet réel (un seul Test de Calme Accessible (+20), qui PEUT
+   *  échouer) est résolu par `sansPeurVs`/`resolvePeurTest`/`resolveTerreurTest` (psychology.ts). */
   fearImmune?: boolean;
   /** Endurci : ignore niveau Points de Blessure perdus par l'État Hémorragique. */
   bleedIgnore?: boolean;
