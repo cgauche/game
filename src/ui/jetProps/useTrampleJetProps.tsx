@@ -8,6 +8,7 @@ import { RollShell, type RollAction, type RollRowData } from '../RollShell';
 import { testPending } from '../breakdown';
 import { JournalLine } from '../NarratedLine';
 import { ev } from '../../state/combatLog';
+import { Icon } from '../Icon';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET de Piétinement (LDB 85 - Traits de
@@ -66,7 +67,7 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
   ];
 
   return {
-    title: '🦶 Piétinement',
+    title: <><Icon id="resource/movement" size="sm" /> Piétinement</>,
     subtitle: (
       <>
         <strong>{attacker.name}</strong> écrase <strong>{target.name}</strong> (coûte 1 Avantage)

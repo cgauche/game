@@ -1,7 +1,8 @@
 import type { IconFamily } from '../types';
 
 /* Famille « ressources de personnage » (fiches, CreatorSummary : Destin/Chance/Résilience/
-   Détermination/Blessures/Mouvement/Bourse — remplace ❤️🦶💫🍀✊👛).
+   Détermination/Blessures/Mouvement/Bourse — remplace les anciens emoji cœur/pied/tourbillon/
+   trèfle/poing/bourse).
    Charte de dessin : voir defs/action.ts. */
 
 const K = 'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';

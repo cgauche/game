@@ -18,6 +18,7 @@ import { bonus } from '../../engine/characteristics';
 import { sizeFromTraits } from '../../state/spawn';
 import { SpellsField } from './OptionalTraitsPicker';
 import { TraitListField } from '../compendium/StructFields';
+import { Icon } from '../Icon';
 
 /** Parse une saisie « Compétence (Spéc) Valeur » → `SkillRef` (id stable + spec + valeur de Test). */
 function parseSkillRef(text: string): SkillRef {
@@ -171,7 +172,7 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
           checked={stat.randomChars ?? false}
           onChange={(e) => onChange({ ...stat, randomChars: e.target.checked || undefined })}
         />{' '}
-        🎲 Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
+        <Icon id="nav/dice" size="sm" /> Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
       </label>
       <label className="ed-field" title="#143 : un PNJ humain hostile MODÉLISÉ (ex. sorcier ennemi nommé) suit les mécaniques de Personnage — Corruption (LDB 19), composant d'incantation (LDB 46), Tests de fin de combat Maladie/Corruption (LDB 18/20). Une créature générique ne le coche pas.">
         <input

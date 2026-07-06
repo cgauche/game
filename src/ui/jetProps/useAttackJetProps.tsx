@@ -17,6 +17,7 @@ import { RollShell, type RollRowData, type RollAction } from '../RollShell';
 import { VsHeader } from '../VsHeader';
 import { JournalLine } from '../NarratedLine';
 import { ev } from '../../state/combatLog';
+import { Icon } from '../Icon';
 
 const LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
 
@@ -161,7 +162,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
               title="Frapper des deux armes : 2ᵉ frappe de la main secondaire si la 1ʳᵉ touche ; -10 à TOUTES vos défenses jusqu'à votre prochain Tour ; Avantage seulement si les deux touchent."
             >
               <input type="checkbox" checked={!!pa.dualMode} onChange={(e) => setDualMode(e.target.checked)} />
-              <span className="mini-title">⚔️ Des deux armes</span>
+              <span className="mini-title"><Icon id="action/attack" size="sm" /> Des deux armes</span>
             </label>
           )}
           {/* Choix d'arme (dual-wield) : la main secondaire affiche son -20 ; le panneau reflète le mod.
@@ -193,7 +194,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 onChange={(e) => setLocation((e.target.value as HitLocation) || null)}
                 title="Où frapper ? « Au hasard » par défaut ; viser une localisation précise rend le Test Complexe (-10)."
               >
-                <option value="">🎯 Au hasard</option>
+                <option value="">Au hasard</option>
                 {LOCS.map((l) => (
                   <option key={l} value={l}>{locationLabel(l, target.bodyShape)} (-10)</option>
                 ))}
@@ -207,7 +208,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 onClick={() => setIntoCrowd(!pa.intoCrowd)}
                 title="Tu ne choisis pas ta cible : un combattant au contact de la cible (les DEUX camps — tir fratricide possible) est touché au hasard, mais tu gagnes le bonus, et un succès dû au seul bonus est à 0 DR."
               >
-                🎯 Tirer dans le tas (+{cm.value})
+                <Icon id="action/aim" size="sm" /> Tirer dans le tas (+{cm.value})
               </button>
               {pa.intoCrowd && <span className="rm-crowd-note">{crowd.length} au contact — touche au hasard, 0 DR si sauvé par le bonus.</span>}
             </div>
@@ -252,7 +253,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
           )}
         </div>
         {blocked && (
-          <div className="rm-blocked">⛔ {preview!.blocked ? 'Pas de ligne de vue' : 'Hors de portée'}</div>
+          <div className="rm-blocked"><Icon id="ui/warning" size="sm" /> {preview!.blocked ? 'Pas de ligne de vue' : 'Hors de portée'}</div>
         )}
         <DeterminationButton combatant={attacker} onSpend={(name) => spendResolve(attacker.id, name)} />
       </>

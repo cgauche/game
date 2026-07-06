@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
 import { RollShell } from '../RollShell';
 import { TableRollLine } from '../RollLine';
+import { Icon } from '../Icon';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET de Maladresse (Tableau des Oups !,
@@ -25,7 +26,7 @@ export function useFumbleJetProps(): ComponentProps<typeof RollShell> | null {
   const rolled = !!r;
   return {
     variant: 'test',
-    title: '🎲 Maladresse',
+    title: <><Icon id="nav/dice" size="sm" /> Maladresse</>,
     subtitle: `${combatant.name} — Test de combat raté sur un double (Tableau des Oups !).`,
     rolled,
     // Rangée UNIQUE : un tirage de table sans influence — seulement « Lancer » (le cycle reste vide).
@@ -33,7 +34,7 @@ export function useFumbleJetProps(): ComponentProps<typeof RollShell> | null {
       {
         row: { note: r ? <TableRollLine table="Tableau des Oups !" roll={r.roll} result={r.label} /> : undefined },
         rolled,
-        rollLabel: '🎲 Lancer sur le Tableau des Oups !',
+        rollLabel: <><Icon id="nav/dice" size="sm" /> Lancer sur le Tableau des Oups !</>,
         onRoll: roll,
         rollFrisson: true,
         // Aucune influence : la Chance agit AVANT qu'un Test ne devienne une Maladresse ; une fois actée, on subit.

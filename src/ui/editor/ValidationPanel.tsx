@@ -1,4 +1,5 @@
 import type { Warning } from '../../state/validateScene';
+import { Icon } from '../Icon';
 
 /**
  * Liste des avertissements de validation d'une scène (réfs cassées, hors-carte, ids dupliqués).
@@ -15,7 +16,7 @@ export function ValidationPanel({ warnings, onSelect }: { warnings: Warning[]; o
       <ul>
         {warnings.map((w, i) => (
           <li key={i} className={w.level} onClick={() => onSelect(w)}>
-            <span className="badge">{w.level === 'error' ? '⛔' : '⚠️'}</span> [{w.scope}] {w.message}
+            <span className="badge"><Icon id="ui/warning" size="sm" /></span> [{w.scope}] {w.message}
           </li>
         ))}
       </ul>

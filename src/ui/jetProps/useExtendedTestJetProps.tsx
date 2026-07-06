@@ -5,6 +5,7 @@ import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell } from '../RollShell';
 import { DrBar } from '../DrBar';
 import { testBreakdown, testPending } from '../breakdown';
+import { Icon } from '../Icon';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET d'un Test ÉTENDU (LDB 12 l.197-211).
@@ -74,7 +75,7 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
        « Renoncer » disponible aussi APRÈS le jet (when:'always'). */
     actions: [
       { key: 'cancel', label: 'Renoncer', kind: 'ghost', onClick: cancel, when: 'always' },
-      { key: 'confirm', label: willSucceed ? '✅ Réussir !' : 'Round suivant →', kind: 'primary', onClick: () => next(), when: 'post' },
+      { key: 'confirm', label: willSucceed ? <><Icon id="ui/done" size="sm" /> Réussir !</> : 'Round suivant →', kind: 'primary', onClick: () => next(), when: 'post' },
     ],
     onCancel: cancel,
   };

@@ -63,7 +63,7 @@ function MusicSelect({ label, value, onChange }: { label: string; value: string 
 
 const ENT_ICON: Record<string, string> = { heroStart: '🏁', personnage: '🙂', prop: '🌳' };
 /** Icône d'entité — un emplacement de siège (entité portant un poste) prime sur l'icône de kind. */
-const entIcon = (ent: SceneEntity): string => (ent.postes?.length ? '💥' : ENT_ICON[ent.kind] ?? '•');
+const entIcon = (ent: SceneEntity): string | JSX.Element => (ent.postes?.length ? <Icon id="scenario/siege" size="sm" /> : ENT_ICON[ent.kind] ?? '•');
 
 /** Arcs de tir d'un créneau directionnel (FireArc), libellés terrestres (relatifs au facing du chef de pièce). */
 const FIRE_ARCS: { side: FireArc; label: string }[] = [
@@ -125,7 +125,7 @@ export function Inspector({
   };
 
   const title = ent
-    ? `${entIcon(ent)} ${ent.label ?? ent.ref ?? KIND_LABEL[ent.kind]}`
+    ? <>{entIcon(ent)} {ent.label ?? ent.ref ?? KIND_LABEL[ent.kind]}</>
     : selR
       ? `🏠 ${selR.label ?? selR.style}`
       : selT
@@ -133,7 +133,7 @@ export function Inspector({
         : zone
           ? '⛺ Zone de repos'
           : efz
-            ? `⚠️ ${efz.label || 'Piège'}`
+            ? <><Icon id="ui/warning" size="sm" /> {efz.label || 'Piège'}</>
             : selW
               ? (selW.door ? '🚪 Porte' : '🧱 Cloison')
               : entry
@@ -154,7 +154,7 @@ export function Inspector({
           {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} updateSel={updateSel} removeSel={removeSel} />}
 
           {ent && ent.kind === 'personnage' && (
-            <Fold title="⚔️ Combat">
+            <Fold title={<><Icon id="action/attack" size="sm" /> Combat</>}>
               <p className="hint">Donne à ce personnage un rôle de COMBAT : profil, traits, et rattachement à une ou plusieurs rencontres. Un embusqué reste invisible jusqu'au combat.</p>
               <label className="ed-check">
                 <input
@@ -194,7 +194,7 @@ export function Inspector({
                             checked={ent.combat?.randomChars ?? false}
                             onChange={(e) => updateSel({ combat: { ...ent.combat, randomChars: e.target.checked || undefined } })}
                           />{' '}
-                          🎲 Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
+                          <Icon id="nav/dice" size="sm" /> Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
                         </label>
                       </>
                     );
@@ -203,7 +203,7 @@ export function Inspector({
                 </>
               )}
               <div className="mini-title">Rencontres</div>
-              {scene.encounters.length === 0 && <p className="hint">Aucune rencontre — l'outil ⚔️ en crée une, ou utilisez le dock Logique.</p>}
+              {scene.encounters.length === 0 && <p className="hint">Aucune rencontre — l'outil <Icon id="action/attack" size="sm" /> en crée une, ou utilisez le dock Logique.</p>}
               {scene.encounters.map((enc) => {
                 const m = (enc.members ?? []).find((mm) => mm.entityId === ent.id);
                 return (
@@ -368,7 +368,7 @@ export function Inspector({
                       </label>
                     ))}
                   </div>
-                  <div className="mini-title">🚶 À la traversée (effets mécaniques)</div>
+                  <div className="mini-title"><Icon id="resource/movement" size="sm" /> À la traversée (effets mécaniques)</div>
                   <p className="hint">Dégâts mitigés BE+PA : op « Blessures », forme Dés, puis cocher « déduit BE / PA ». État entretenu : op « Poser un État » + paramètre <code>unlessCondition</code> (= le même État).</p>
                   <GameOpEditor ops={efz.onCross ?? []} onChange={(onCross) => setEfz({ ...efz, onCross: onCross.length ? onCross : undefined })} />
                   <div className="mini-title">⏱ Au stationnement (chaque round)</div>
@@ -602,7 +602,7 @@ function EntityPanel({
                 className="btn small"
                 onClick={() => updateSel({ appearance: { ...ent.appearance, seed: hashSeed(ent.id + ':' + Math.floor(performance.now())) } })}
               >
-                🎲 Relancer
+                <Icon id="nav/dice" size="sm" /> Relancer
               </button>
             </div>
             <MonsterPartsFields
@@ -784,8 +784,8 @@ function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Sc
   const poste = ent.postes![0];
   const directional = !!poste.side;
   return (
-    <Fold title="💥 Emplacement de siège" open>
-      <p className="hint">Pièce d'artillerie servie par un équipage. Enrôlez l'emplacement ET ses servants dans une rencontre (fold ⚔️ Combat) ; au combat, le chef (1ᵉʳ servant) sert la pièce et tire.</p>
+    <Fold title={<><Icon id="scenario/siege" size="sm" /> Emplacement de siège</>} open>
+      <p className="hint">Pièce d'artillerie servie par un équipage. Enrôlez l'emplacement ET ses servants dans une rencontre (fold <Icon id="action/attack" size="sm" /> Combat) ; au combat, le chef (1ᵉʳ servant) sert la pièce et tire.</p>
       <label className="ed-field">
         Engin
         <select value={poste.item.trappingId ?? ''} onChange={(e) => setScene(setPosteEngine(scene, ent.id, e.target.value))}>

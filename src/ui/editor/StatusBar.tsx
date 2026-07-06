@@ -31,8 +31,8 @@ export function toolLabel(tool: Tool): ReactNode {
     case 'roof': return `🏠 ${BUILDINGS_META[tool.style]?.label ?? tool.style}`;
     case 'zone': return tool.zone === 'trigger' ? '🟦 Zone trigger' : '⛺ Zone de repos';
     case 'entry': return <><Icon id="nav/entry-point" size="sm" /> Point d’entrée</>;
-    case 'encounter': return '⚔️ Placer des ennemis';
-    case 'emplacement': return `💥 ${SIEGE_ENGINES.find((t) => t.id === tool.trappingId)?.label ?? 'Emplacement'}`;
+    case 'encounter': return <><Icon id="action/attack" size="sm" /> Placer des ennemis</>;
+    case 'emplacement': return <><Icon id="scenario/siege" size="sm" /> {SIEGE_ENGINES.find((t) => t.id === tool.trappingId)?.label ?? 'Emplacement'}</>;
     case 'wall': return tool.paint === 'door' ? '🧱 Porte' : tool.paint === 'diagBack' || tool.paint === 'diagFwd' ? '🧱 Diagonale' : '🧱 Cloison';
     case 'height': return `⛰ Hauteur ${tool.metres} m`;
     case 'erase': return '🧽 Gomme';

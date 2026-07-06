@@ -7,6 +7,7 @@
  * effets se réordonnent (l'ordre d'application compte — `applyEffects`).
  */
 import { Effect, EncounterDef, Dialogue, Scene } from '../../state/scene';
+import { Icon } from '../Icon';
 import { EMPTY_FLOW } from '../../state/flow';
 import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
@@ -576,9 +577,9 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         ))}
         {effect.type === 'medicalAid' && (() => {
           // Schéma : une LISTE d'actes tarifés (le débit a lieu à l'acte, dans l'infirmerie).
-          const ACTS: { key: 'wounds' | 'bleed' | 'trauma' | 'surgery'; label: string }[] = [
-            { key: 'wounds', label: '🩹 Soin de Blessures' },
-            { key: 'bleed', label: '🩸 Arrêt d’hémorragie' },
+          const ACTS: { key: 'wounds' | 'bleed' | 'trauma' | 'surgery'; label: string | JSX.Element }[] = [
+            { key: 'wounds', label: <><Icon id="journal/heal" size="sm" /> Soin de Blessures</> },
+            { key: 'bleed', label: <><Icon id="condition/bleeding" size="sm" /> Arrêt d’hémorragie</> },
             { key: 'trauma', label: '🦵 Soin de déchirure' },
             { key: 'surgery', label: '🔪 Chirurgie' },
           ];

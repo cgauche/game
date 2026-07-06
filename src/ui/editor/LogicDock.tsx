@@ -17,6 +17,7 @@ import { FlowEditor } from './FlowEditor';
 import { WhenEditor, condSummary } from './ConditionEditor';
 import { DialogueDetail } from './DialogueDetail';
 import { ValidationPanel } from './ValidationPanel';
+import { Icon } from '../Icon';
 
 export type LogicTab = 'triggers' | 'dialogues' | 'encounters' | 'validation';
 
@@ -67,11 +68,11 @@ export function LogicDock({
   const dragRef = useRef<{ sy: number; sh: number } | null>(null);
 
   const errors = warnings.filter((w) => w.level === 'error').length;
-  const tabs: { key: LogicTab; label: string; count: number; alert?: boolean }[] = [
+  const tabs: { key: LogicTab; label: string | JSX.Element; count: number; alert?: boolean }[] = [
     { key: 'triggers', label: '🟦 Triggers', count: scene.triggers.length },
     { key: 'dialogues', label: '💬 Dialogues', count: scene.dialogues.length },
-    { key: 'encounters', label: '⚔️ Rencontres', count: scene.encounters.length },
-    { key: 'validation', label: '⚠ Validation', count: warnings.length, alert: errors > 0 },
+    { key: 'encounters', label: <><Icon id="action/attack" size="sm" /> Rencontres</>, count: scene.encounters.length },
+    { key: 'validation', label: <><Icon id="ui/warning" size="sm" /> Validation</>, count: warnings.length, alert: errors > 0 },
   ];
   const clickTab = (t: LogicTab) => {
     if (open && t === tab) setOpen(false);
@@ -335,7 +336,7 @@ function EncountersTab({
         >
           + Nouvelle rencontre
         </button>
-        <p className="hint">Astuce : outil ⚔️ pour poser les combattants directement sur la carte.</p>
+        <p className="hint">Astuce : outil <Icon id="action/attack" size="sm" /> pour poser les combattants directement sur la carte.</p>
       </div>
       {enc ? (
         <div className="logic-detail">
@@ -373,7 +374,7 @@ function EncountersTab({
                       onClick={() => onSelectEntity(m.entityId)}
                       title="Sélectionner sur la carte → éditer le profil/apparence dans l'inspecteur"
                     >
-                      {e ? `${e.label ?? e.ref ?? m.entityId} · (${e.pos.x},${e.pos.y})` : `⚠ ${m.entityId} (entité manquante)`}
+                      {e ? `${e.label ?? e.ref ?? m.entityId} · (${e.pos.x},${e.pos.y})` : <><Icon id="ui/warning" size="sm" /> {m.entityId} (entité manquante)</>}
                     </button>
                     <button className="btn small danger" onClick={() => setScene(removeMember(scene, enc.id, m.entityId))} title="Retirer de la rencontre (l'entité reste sur la carte)">
                       ✕
@@ -381,7 +382,7 @@ function EncountersTab({
                   </div>
                   <div className="enemy-mount">
                     <label title="Cette créature est une monture rideable (peut être enfourchée — LDB 14).">
-                      <input type="checkbox" checked={!!m.mount} onChange={(e2) => setScene(patchMember(scene, enc.id, m.entityId, { mount: e2.target.checked || undefined }))} /> 🐎 Monture
+                      <input type="checkbox" checked={!!m.mount} onChange={(e2) => setScene(patchMember(scene, enc.id, m.entityId, { mount: e2.target.checked || undefined }))} /> <Icon id="travel/mount" size="sm" /> Monture
                     </label>
                     <label title="Monture (de cette rencontre) que cet acteur chevauche au spawn (référence stable par entité).">
                       Chevauche{' '}

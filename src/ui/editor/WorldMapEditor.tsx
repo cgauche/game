@@ -122,7 +122,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
   return (
     <div className="wme-overlay">
       <header className="bar">
-        <h3>🗺️ Carte du monde — {m.nom}</h3>
+        <h3><Icon id="nav/campaign" size="sm" /> Carte du monde — {m.nom}</h3>
         <div className="editor-toolbar">
           <button className="btn small" onClick={() => addPlace({ x: 50, y: 50 })}>+ Lieu</button>
           <button
@@ -309,7 +309,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                   checked={!!selPlace.port}
                   onChange={(e) => updPlace(selPlace.id, { port: e.target.checked ? { ...DEFAULT_PORT } : undefined })}
                 />
-                ⚓ Port maritime (accostage, commerce, chantier)
+                <Icon id="travel/anchor" size="sm" /> Port maritime (accostage, commerce, chantier)
               </label>
               {selPlace.port && (() => {
                 const pt = selPlace.port;
@@ -447,7 +447,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                     ? { sea: true, modes: ['mer'] }
                     : { sea: undefined, seaHeading: undefined, modes: selRoute.modes.filter((x) => x !== 'mer').length ? selRoute.modes.filter((x) => x !== 'mer') : ['pied'] })}
                 />
-                ⚓ Route maritime (navire de campagne ; distance en milles)
+                <Icon id="travel/anchor" size="sm" /> Route maritime (navire de campagne ; distance en milles)
               </label>
               {selRoute.sea && (
                 <label className="ed-field">Cap dominant (aspect du vent, MDG ch.13 l.262-270)

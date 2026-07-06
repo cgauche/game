@@ -29,8 +29,8 @@ const RAIL: { key: Family; icon: ReactNode; label: string }[] = [
   { key: 'roof', icon: '🏠', label: 'Toit — bâtiment composé : glisser pour couvrir l’empreinte (les murs se tracent à l’outil 🧱)' },
   { key: 'zone', icon: '🟦', label: 'Dessiner une zone — trigger ou zone de repos' },
   { key: 'entry', icon: <Icon id="nav/entry-point" />, label: 'Poser un point d’entrée (cible des transitions)' },
-  { key: 'encounter', icon: '⚔️', label: 'Placer des ennemis (rencontre de combat)' },
-  { key: 'emplacement', icon: '💥', label: 'Emplacement de siège — poser une pièce d’artillerie (baliste, catapulte, canon…) servie par un équipage' },
+  { key: 'encounter', icon: <Icon id="action/attack" size="sm" />, label: 'Placer des ennemis (rencontre de combat)' },
+  { key: 'emplacement', icon: <Icon id="scenario/siege" size="sm" />, label: 'Emplacement de siège — poser une pièce d’artillerie (baliste, catapulte, canon…) servie par un équipage' },
   { key: 'erase', icon: '🧽', label: 'Gomme — efface les entités cliquées' },
 ];
 
@@ -299,7 +299,7 @@ export function Palette({
                 ⛺ Zone de repos — offre de repos locale (auberge/maison/camp)
               </button>
               <button className={`pal-item${tool.zone === 'effect' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'effect' })}>
-                ⚠️ Piège / hasard — Dégâts ou États à la traversée / au stationnement
+                <Icon id="ui/warning" size="sm" /> Piège / hasard — Dégâts ou États à la traversée / au stationnement
               </button>
             </div>
             <p className="hint">Glissez sur la carte pour dessiner le rectangle. Effets / lieux de repos s'éditent ensuite ({tool.zone === 'trigger' ? 'panneau Logique' : 'inspecteur'}).</p>
@@ -352,7 +352,7 @@ export function Palette({
                 </button>
               ))}
             </div>
-            <p className="hint">Cliquez la carte pour poser l'emplacement. Orientation du créneau et équipage s'éditent dans l'inspecteur ; enrôlez-le dans une rencontre (fold ⚔️ Combat) pour qu'il entre en jeu.</p>
+            <p className="hint">Cliquez la carte pour poser l'emplacement. Orientation du créneau et équipage s'éditent dans l'inspecteur ; enrôlez-le dans une rencontre (fold <Icon id="action/attack" size="sm" /> Combat) pour qu'il entre en jeu.</p>
           </>
         )}
 
