@@ -260,7 +260,7 @@ export function emptyArmour(ap = 0): ArmourPoints {
  *  La donnée canonique porte la latéralité TYPÉE : `TrappingData.hands` (LDB 62), propagée par
  *  `itemFromTrapping` sur l'ItemInstance. Repli pour les armes BRUTES sans `hands` typé (statblocs
  *  d'ennemis, armes synthétiques) : Groupe « Deux-mains » typé (`subType==='deux-mains'`). Aucun parse
- *  de chaîne d'affichage — l'ancien marqueur `(2M)` re-parsé par regex a été supprimé. */
+ *  de chaîne d'affichage. */
 export function weaponHands(it: { hands?: 1 | 2; subType?: string }, ctx?: { mounted?: boolean }): 1 | 2 {
   // Cavalerie « (2M) » (LDB 62 l.142-143) : MONTÉE, l'arme est maniée à UNE main (l'autre tient les rênes) ;
   // utilisée À PIED, « toutes les armes à deux mains du Groupe Cavalerie sont aussi considérées comme des

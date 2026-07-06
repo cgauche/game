@@ -4,8 +4,8 @@ import { pathTo } from '../../state/path';
 import { addLayer, fillTerrainRect, paintHeight } from './editorState';
 
 /**
- * Multi-couche à l'éditeur SANS escalier (l'outil/`addStair` a été supprimé). La NOUVELLE façon de relier
- * deux couches : `addLayer` pose la surface supérieure (tablier/passerelle), `fillTerrainRect` la rend
+ * Multi-couche à l'éditeur SANS escalier. La façon de relier deux couches : `addLayer` pose la surface
+ * supérieure (tablier/passerelle), `fillTerrainRect` la rend
  * marchable, et `paintHeight` sculpte une RAMPE (montée ≤ STEP_MAX par case) dont la traversée verticale
  * s'AUTO-DÉRIVE du delta de hauteur — `surfaceLink` (flat/ramp/cliff) et `pathTo` (BFS multi-couches) la
  * franchissent à pied. Aucune donnée `stairs` : la connexion EST le relief.

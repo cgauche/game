@@ -34,6 +34,9 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 > dans `docs/plans/`, portent leur date en tête, et sont **supprimés une fois exécutés** (git porte
 > l'historique). Un plan périmé qui traîne à la racine de `docs/` est du poison : ne JAMAIS s'appuyer
 > sur un doc de plan pour décider de l'architecture actuelle — le code et les références vivantes font foi.
+> Garde `npm run docs:check` (`scripts/docs/check-doc-refs.mjs`) : chaque chemin `src/…`/`scripts/…` et
+> chaque symbole backtiqué cités par `docs/*.md` (hors `docs/plans/` et `docs/raw/`) doivent exister —
+> exit 1 avec la liste `fichier:ligne` sinon. Une référence vivante qui ment ne se tague pas, elle se corrige.
 
 ## Règles strictes (NE PAS déroger)
 
@@ -67,6 +70,12 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
    pour l'instant », « exception assumée ») : sans validation utilisateur traçable, c'est de la
    dette signalée, pas une autorisation ni un précédent. (c) La *pierre tombale* (« déplacé vers
    X », rappel de l'ancien état) : à supprimer à vue, git porte l'historique.
+   Garde `src/comment-poison-guard.test.ts` (#136) : scanne les COMMENTAIRES de `src/**/*.ts(x)`
+   (jamais les chaînes) pour ces familles (b) et (c). (c) tolérance ZÉRO, sans liste d'exception —
+   un cas légitime se reformule. (b) sans tag `[entériné AAAA-MM-JJ]` porté par le MÊME commentaire =
+   échec ; ce volet reste désactivé (`EXCUSE_GUARD_ACTIVE`) tant que le tri des excuses existantes
+   n'est pas fait (beaucoup de faux positifs de vocabulaire RAW/mécanique — « pas encore lancé »
+   pour un jet, « épargné » pour une cible hors zone — à distinguer d'une vraie dette de code).
 7. **Pas de MJ — tout se modélise.** Le jeu tourne sans arbitre humain : tout point que le RAW
    laisse « au MJ » reçoit un arbitrage EXPLICITE (donnée éditable taguée maison, ou choix
    joueur) — jamais un contournement silencieux. Si une règle/table EST dans la source (Blessures
@@ -111,7 +120,7 @@ donnée AA/ZI/MDG/ACE est curée à la main, taguée à sa `source`.
 ## Commandes
 
 ```bash
-npm install
+npm install           # active le hook post-commit : "corrige #N" (ou fixes/closes/ferme #N) dans le message de commit ferme l'issue #N automatiquement
 npm run dev          # serveur de dev (http://localhost:5173) — src/data/*.json est la SOURCE app-owned (commitée)
 npm test             # tests Vitest du moteur
 npm run typecheck    # tsc --noEmit

@@ -209,7 +209,7 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   });
 
   it('AUBERGE : dormir au Trophée (dialogue tavernière DANS le Bourg) ouvre la modale de Repos en contexte auberge (chambres/repas PAR HÉROS, prix RAW dans la modale)', () => {
-    // TOUT-EN-SCÈNE : le dialogue de la Tavernière (`dlg-taverne`) vit désormais dans `arene-hub`.
+    // TOUT-EN-SCÈNE : le dialogue de la Tavernière (`dlg-taverne`) vit dans `arene-hub`.
     const hub = project.find((s) => s.id === 'arene-hub')!;
     const choices = hub.dialogues.find((d) => d.id === 'dlg-taverne')!.nodes.flatMap((n) => n.choices);
     const sleeps = choices.filter((c) => c.flow && flowEffects(c.flow).some((e) => e.type === 'rest'));

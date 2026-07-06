@@ -37,7 +37,7 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
   let base = c.characteristics[key];
   // Mutations de Corruption (LDB 19) : modifs PERMANENTES de la caractéristique (« +5 Force », « -10
   // Sociabilité »…) — s'ajoutent à la BASE (hors pool non-cumul : un corps transformé n'est pas un bonus
-  // magique), désormais via le collecteur passif unifié (kind `intrinsèque`, sommé).
+  // magique), via le collecteur passif unifié (kind `intrinsèque`, sommé).
   base += passiveCharSum(c, key);
   const mods = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => e.bonus);
   // Pénalités PASSIVES non-cumul (pool « pire pénalité », LDB l.168) du collecteur unifié : traumatisme

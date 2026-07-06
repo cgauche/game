@@ -92,7 +92,6 @@ describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () =
     expect(opSummary(ops[0])).toContain('Le sol tremble.');
   });
 
-  // (L'ancien test « une op test (à sous-ops) a un éditeur DÉDIÉ » a été RETIRÉ : l'op `test` n'existe
-  //  plus — un Test imbriqué est un nœud de la STRUCTURE Flow `{kind:'test'}` (édité par le FlowEditor,
-  //  pas le GameOpEditor), résolu cadence-aware.)
+  // (Un Test imbriqué est un nœud de la STRUCTURE Flow `{kind:'test'}` (édité par le FlowEditor, pas
+  //  le GameOpEditor), résolu cadence-aware.)
 });

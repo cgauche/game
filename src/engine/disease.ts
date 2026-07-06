@@ -115,7 +115,7 @@ export interface Disease {
 
 
 // Registre des maladies CÂBLÉES — DÉRIVÉ de `maladies.json` (data app-owned, éditable au Codex), keyé
-// par `id`. Les valeurs verbatim (LDB 20) vivent désormais dans la donnée ; le COMPORTEMENT (cycle,
+// par `id`. Les valeurs verbatim (LDB 20) vivent dans la donnée ; le COMPORTEMENT (cycle,
 // symptômes) reste ici. Ajouter une maladie = une entrée dans `maladies.json`.
 export const DISEASE_DEFS: Record<string, DiseaseDef> = Object.fromEntries(
   (maladies as DiseaseDef[]).map((m) => [m.id, m]),

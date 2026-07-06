@@ -2,8 +2,8 @@
  * Golden master de la RÉSOLUTION nom → apparence (plan / espèce / def / échelle) — filet
  * anti-régression de la refonte « tuer le match-par-nom POC » (plan P1). On fige ici ce que la
  * résolution actuelle (regex + priorité) produit pour CHAQUE def du registre ET chaque entrée du
- * bestiaire. Après le passage aux références explicites, la résolution (désormais par clé) DOIT
- * reproduire ces snapshots à l'identique : sinon une créature changerait d'apparence.
+ * bestiaire. La résolution par clé DOIT reproduire ces snapshots à l'identique : sinon une créature
+ * changerait d'apparence.
  *
  * Capture le mapping exact de `enemyProfile`/`pickBackend` :
  *   classifyEnemy = creaturePlanMatch(name) ? 'creature' : 'rig'

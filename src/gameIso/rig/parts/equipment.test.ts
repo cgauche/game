@@ -20,9 +20,9 @@ describe('weaponPart', () => {
   });
 });
 
-// Contrat « 1 forme par arme » routé PAR SHAPE (id stable) : des armes jadis confondues gardent des
-// silhouettes (slugs) distinctes. Le routage par LIBELLÉ a été retiré (« lookup par libellé = bug
-// multilingue ») — une arme sans shape retombe sur le défaut de son Groupe.
+// Contrat « 1 forme par arme » routé PAR SHAPE (id stable), jamais par LIBELLÉ (lookup par libellé =
+// bug multilingue) : chaque arme garde une silhouette (slug) distincte ; une arme sans shape retombe
+// sur le défaut de son Groupe.
 describe('weaponFamily — 1 forme par arme, routée par shape (anti-collapse)', () => {
   it('chaque shape catalogué résout vers lui-même (formes distinctes préservées)', () => {
     expect(famShape('arc_court', 'ranged')).toBe('arc_court');

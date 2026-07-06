@@ -236,7 +236,7 @@ function neck(p: QuadProps): string {
   // Encolure SCULPTÉE : large à la base (fond dans le poitrail), gorge incurvée — plus un tube.
   // La base PLONGE profondément dans le corps (jusqu'à +18, évasée) ; le CONTOUR n'est tracé que
   // sur les bords HAUTS (crête de l'encolure + gorge) — le bas FOND dans le corps SANS trait
-  // (avant : un liseré sur tout le pourtour faisait « plaque rapportée » sur l'épaule).
+  // (un liseré sur tout le pourtour ferait « plaque rapportée » sur l'épaule).
   const base = `<path d="M-14 18 Q-13 6 -9 0 Q-11 ${-L * 0.5} -5 ${-L} L6 ${-L} Q10 ${-L * 0.55} 10 0 Q12 9 15 18 Q0 21 -14 18 Z" fill="@corps"/>` +
     // crête (dessus de l'encolure) tracée du milieu du corps vers la nuque
     `<path d="M-12.5 9 Q-11 ${-L * 0.5} -5 ${-L}" fill="none" stroke="@corpsO" stroke-width="0.7"/>` +

@@ -153,7 +153,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
     // NOUVELLE RÉFÉRENCE (op-driven) : il n'y a PLUS de poids `aoePerExtraHero` par doctrine. La valeur d'une
     // ZdE = Σ de la sortie de ses GameOp sur les héros couverts (`spellActionValue`), identique pour TOUTE
     // doctrine. Une ZdE qui couvre 2 héros (16 Blessures-équiv.) bat un missile mono (~10) → castArea, que le
-    // lanceur soit classé `standard` OU `artillerie`. La distinction d'artillerie vit désormais dans ses poids
+    // lanceur soit classé `standard` OU `artillerie`. La distinction d'artillerie vit dans ses poids
     // de POSITIONNEMENT (dangerAvoid/preferredRange/coverGain), pas dans la valeur des sorts.
     const h1 = mk('h1', 'hero', { x: 10, y: 16 }, { weapons: [MELEE] });
     const h2 = mk('h2', 'hero', { x: 11, y: 16 }, { weapons: [MELEE] }); // collés (un centre couvre les 2)

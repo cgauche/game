@@ -14,7 +14,7 @@ import { controlsCombatant } from './netOwnership';
 import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
 
 // Réexports de compatibilité : le TYPE d'affordance et la dérivation du côté visé d'un sort vivent
-// désormais dans le registre de modes ; les importeurs historiques (IsoStage, tests) restent valides.
+// dans le registre de modes ; les importeurs historiques (IsoStage, tests) restent valides.
 export type { HoverTargeting, SpellAffinity } from './targetingModes';
 export { spellAffinity } from './targetingModes';
 

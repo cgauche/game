@@ -353,7 +353,7 @@ export function createHero(opts: CreateHeroOptions): Combatant {
 
   // 5) Possessions : classe + carrière → inventaire à stats, armes/armures équipées. Les refs `{id}`
   //    (catalogue) deviennent des objets ; les refs `{text}` (« Arme (Base) », flavor) n'ont pas de
-  //    stats → ignorées par buildInventory (comme avant : un libellé non catalogué n'était pas trouvé).
+  //    stats → ignorées par buildInventory (un libellé non catalogué n'est pas trouvé).
   const items = buildInventory([
     ...(classForCareer(opts.careerId)?.trappings ?? []),
     ...(level?.trappings ?? []),

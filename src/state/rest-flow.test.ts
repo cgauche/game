@@ -1,7 +1,7 @@
 /**
  * Modale de REPOS (state/restFlow) : offre par lieu/zone, choix PAR HÉROS (couchage + pitance,
  * orthogonaux), coût RAW (LDB ch.66), Exposition d'un campement (LDB 18 l.408-415). Une NUIT UNIQUE
- * passe désormais par la CASCADE séquentielle influençable (chaque jet = une étape, verrouillée à
+ * passe par la CASCADE séquentielle influençable (chaque jet = une étape, verrouillée à
  * « Valider » avant le suivant) ; le moteur de nuit `sleepParty` (multi-jours/eager) reste testé par
  * rest.test / upkeep-cascade.
  */

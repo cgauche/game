@@ -3,9 +3,8 @@ import { buildEncounter } from '../state/encounterAuthoring';
 
 /**
  * Scène de FIXTURE pour les tests de combat (neutre, sans contenu de campagne). Grille d'herbe
- * praticable + un point de départ héros. Remplace l'ancien usage de `tome1Intro` comme simple décor
- * de test (le Tome 1 a été retiré). Dimensions et `heroStart` calqués sur l'ancienne scène pour
- * rester un drop-in (les tests qui se déplacent relativement à (6,10) restent valides).
+ * praticable + un point de départ héros. Dimensions et `heroStart` fixés pour rester un drop-in
+ * (les tests qui se déplacent relativement à (6,10) restent valides).
  */
 const W = 22;
 const H = 16;

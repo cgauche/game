@@ -54,8 +54,8 @@ describe('couverture de curation', () => {
     expect(sup(lumiere, false)).toBe('partiel');
     // Cautériser : mécanique (heal/removeCondition/preventInfection/Inconscient sur −6 DR) + un volet
     // « arbitrage MJ » (le hurlement de douleur). Le Test interne a migré en nœud Flow `test` (Lot 4b) :
-    // sa narration vit désormais dans la branche `fail`, où `spellEffectOps` la voit (avant, elle était
-    // enfouie dans l'op `test` et invisible) → la classification reflète maintenant ce volet → « partiel ».
+    // sa narration vit dans la branche `fail`, visible par `spellEffectOps` → la classification reflète
+    // ce volet → « partiel ».
     const cauteriser = findSpell('Cautériser')!;
     expect(sup(cauteriser, false)).toBe('partiel');
     const couronne = findSpell('Couronne de Flammes')!;

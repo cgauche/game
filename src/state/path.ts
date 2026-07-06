@@ -214,7 +214,7 @@ export function flyReachable(scene: Scene, start: Pt, range: number, env: MoveEn
 /**
  * Portée de déplacement d'un combattant : VOL (trait « Vol » — natif OU accordé par un sort,
  * Envol Jalon 2.6) → `flyReachable` (survole murs/obstacles, l'atterrissage doit tenir) ; sinon
- * BFS au sol. C'était réservé à l'IA (ai.ts) — les HÉROS volants passent désormais par ici.
+ * BFS au sol. Utilisé aussi bien par l'IA (ai.ts) que par les HÉROS volants.
  */
 export function moveReachFor(
   mover: Pick<Combatant, 'traits'>,

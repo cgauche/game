@@ -1,8 +1,8 @@
 /**
  * engine/spellspec + SpellData — métadonnées de résolution curées.
- * Migration #5 : les specs curées vivent désormais dans SpellData (spells.json) — plus de registre
- * src/data/spellspecs/. Ces tests vérifient que la résolution applique bien les effets curés et que
- * la désambiguïsation par type fonctionne directement sur les données JSON.
+ * Les specs curées vivent dans SpellData (spells.json). Ces tests vérifient que la résolution
+ * applique bien les effets curés et que la désambiguïsation par type fonctionne directement sur les
+ * données JSON.
  */
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';

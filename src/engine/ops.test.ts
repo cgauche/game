@@ -221,9 +221,8 @@ describe('applyOps — opérations unitaires', () => {
     expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 1 });
   });
 
-  // (L'ancien test « test imbriqué : échec → onFail / réussite → onSuccess » a été RETIRÉ : l'op `test`
-  //  n'existe plus — un Test imbriqué est un nœud Flow `{kind:'test'}` résolu cadence-aware (héros manuel
-  //  = jet influençable, ennemi = inline). Sa résolution + branches + gates sont couvertes par
+  // (Un Test imbriqué est un nœud Flow `{kind:'test'}` résolu cadence-aware (héros manuel = jet
+  //  influençable, ennemi = inline). Sa résolution + branches + gates sont couvertes par
   //  `state/combat/run-combat-flow.test.ts` et `state/combat/venin-test.test.ts`.)
 
   it('reduceToZero seul : PB à 0, SANS Inconscient automatique (LDB 40)', () => {

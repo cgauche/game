@@ -48,8 +48,8 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   const riderBones = resolveRig(appearance, equip, riderPose, tenue, view, overlays, mountA.mirror);
   // k (échelle relative dans la boîte monture) : DÉRIVÉ de la chaîne d'échelles monde — le
   // cavalier garde SA taille de rendu en selle (échelle cavalier ÷ échelle monture, art × Taille).
-  // Fin de l'ex-RIDE_SCALE 0.78 codé en dur : un cheval recalibré ou une autre monture (loup
-  // funeste…) garde un couple proportionné gratuitement.
+  // Un cheval recalibré ou une autre monture (loup funeste…) garde ainsi un couple proportionné
+  // gratuitement, sans constante fixe à ajuster.
   const k = resolveRender(rider.species, rider.traits, rider.name).scale / (mr.scale * sizeTokenScale(mount.size));
   // Monture montée = monture HARNACHÉE (selle/sangle/rênes — os synthétiques z-calés).
   const merged = seatRiderOnMount([...mountBones, ...mountTackBones(mountBones, view)], riderBones, { view, mountScale: 1, riderScale: k });

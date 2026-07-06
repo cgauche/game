@@ -9,10 +9,10 @@ import type { Dir8 } from '../state/dir8';
 import { TERRAIN_DEFS } from '../state/terrain';
 import { rigFxGradients } from './rig/fxGradients';
 
-// Le DÉCOR en billboard (arbre du terrain `bois`, tonneaux…) passe désormais par `propSvg` (catalogue),
-// et le MUR PLEIN par le relief data-driven de `buildFloors` (`TerrainDef.solidHeightM`) — plus aucun
-// overlay codé en dur ici. Ce module ne fournit que les sprites de props/décor et les DEFS de dégradés.
-// (Le sprite « villageois » du jeton de groupe a été retiré : ce jeton affiche le RIG réel du meneur.)
+// Le DÉCOR en billboard (arbre du terrain `bois`, tonneaux…) passe par `propSvg` (catalogue), et le
+// MUR PLEIN par le relief data-driven de `buildFloors` (`TerrainDef.solidHeightM`) — aucun overlay codé
+// en dur ici. Ce module ne fournit que les sprites de props/décor et les DEFS de dégradés.
+// (Le jeton de groupe affiche le RIG réel du meneur, jamais un sprite « villageois » générique.)
 
 /** Vue minimale d'une entité pour le rendu (type structurel : pas d'import scene). */
 export interface EntityViz {

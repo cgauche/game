@@ -53,7 +53,7 @@ export interface QuadProps {
   stored: StoredPalette; // robe/pelage par défaut (corps/cheveux/cuir…)
 }
 
-// La DATA des espèces (props + alias) vit désormais dans `creatures/defs/<Nom>.ts` (un fichier
+// La DATA des espèces (props + alias) vit dans `creatures/defs/<Nom>.ts` (un fichier
 // par créature, auto-collectés). `quadSkeleton` ne garde que les TYPES + la mécanique de rendu.
 // On RE-EXPORTE les tables dérivées pour que les consommateurs existants ne changent pas.
 export { QUAD_SPECIES, quadSpeciesNames } from '../creatures';

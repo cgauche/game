@@ -74,8 +74,8 @@ function charsFrom(src: Partial<Record<string, number | null>>, fallback = 30): 
   return chars;
 }
 
-// Dérivation traits → armes/armure : SOURCE UNIQUE déplacée dans `engine/creatureEquip` (pure), pour
-// être partagée avec le RENDU d'exploration sans cycle de couches. Re-exportée pour les importeurs.
+// Dérivation traits → armes/armure : SOURCE UNIQUE dans `engine/creatureEquip` (pure), partagée avec
+// le RENDU d'exploration sans cycle de couches. Re-exportée pour les importeurs.
 export { weaponFromTrait } from '../engine/creatureEquip';
 
 /** Catégorie de Taille depuis le trait « Taille (X) » (LDB 85) — lue par le REGISTRE des Traits

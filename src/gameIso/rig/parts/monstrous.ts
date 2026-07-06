@@ -73,7 +73,7 @@ export function monsterInjection(m: MonsterParts, view: 'front' | 'back' | 'prof
   if (m.griffes) { overlays.push({ bone: 'mainG', svg: GRIFFES_ART }); overlays.push({ bone: 'mainD', svg: GRIFFES_ART }); }
   if (m.plaie) overlays.push({ bone: 'torse', svg: PLAIE_ART });
   if (m.verrues) overlays.push({ bone: 'torse', svg: VERRUES_ART });
-  // Cape : le col haut est désormais dans la TENUE Vampire (réutilisable) ; ici on ne garde que
+  // Cape : le col haut est dans la TENUE Vampire (réutilisable) ; ici on ne garde que
   // les CROCS, détail de visage propre au vampire, en vue de FACE seulement (sinon ils flottaient
   // sur la nuque de dos / hors du museau de profil).
   if (m.cape && view === 'front') overlays.push({ bone: 'tete', svg: CROCS_ART });

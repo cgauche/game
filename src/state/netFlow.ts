@@ -354,6 +354,6 @@ export function netLeave(get: Get, set: Set): void {
   set({ net: initialNet() });
 }
 
-// Gating d'affichage (P2) : prédicats PURS déplacés dans netOwnership (pas de cycle store↔netFlow) —
+// Gating d'affichage (P2) : prédicats PURS vivant dans netOwnership (pas de cycle store↔netFlow) —
 // ré-exportés ici pour les sites d'import existants.
 export { ownsLocally, controlsActive } from './netOwnership';

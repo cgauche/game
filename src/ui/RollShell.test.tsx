@@ -72,7 +72,7 @@ describe('RollShell — coquille de jet unifiée', () => {
     expect(html).toContain('Un jet');
     expect(html).toContain('45'); // cible pré-jet
     expect(html).not.toContain('Appliquer'); // action 'post' masquée pré-jet
-    // Le « Lancer » vit désormais dans `.modal-actions` (même niveau qu'Annuler), plus dans la rangée.
+    // Le « Lancer » vit dans `.modal-actions` (même niveau qu'Annuler), jamais dans la rangée.
     const bar = actionsBar(html);
     expect(bar).toContain('Lancer'); // Lancer hissé DANS la barre
     expect(bar).toContain('Annuler'); // à côté d'Annuler (pré-jet)

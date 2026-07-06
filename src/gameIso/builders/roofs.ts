@@ -16,7 +16,7 @@ import { roofMaterial } from '../catalog/roofs';
 import { WALL_H_M, isoPxToM } from '../iso';
 import type { CellSide, Face, GP, RoofEl, RoofLine, RoofLineKind } from './types';
 
-/** Montée de la nappe par CRAN de profondeur d'avant-toit (ex-SLOPE 17 px-iso), en mètres — une seule
+/** Montée de la nappe par CRAN de profondeur d'avant-toit (17 px-iso), en mètres — une seule
  *  vérité px⇔m (`isoPxToM`). Les rangs de tuiles se comptent PAR cran. */
 export const ROOF_SLOPE_M = isoPxToM(17);
 

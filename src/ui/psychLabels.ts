@@ -2,7 +2,7 @@ import type { RollBreakdown } from '../engine/combat';
 import { testBreakdown, testPending } from './breakdown';
 import type { PendingRoll } from './RollLine';
 
-// CIBLE_LABEL vit désormais dans engine/psychology (accessible state + ui) ; re-exporté ici pour les
+// CIBLE_LABEL vit dans engine/psychology (accessible state + ui) ; re-exporté ici pour les
 // imports existants des modales.
 export { CIBLE_LABEL } from '../engine/psychology';
 

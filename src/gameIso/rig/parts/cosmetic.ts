@@ -24,8 +24,8 @@ const DEFAULT_VISAGE: string[] = [
 // crâne ovale (x±9, y -9..16), yeux à y≈6.6, bouche à y≈12.6. Le profil regarde vers +x.
 // =========================================================================================
 
-// Vue de DOS générique : crâne COUVERT de cheveux (@cheveux) — corrige « cheveux invisibles
-// de dos » (avant : ovale de peau). La nuque/cou minimale (@peau) vient du visage de dos.
+// Vue de DOS générique : crâne COUVERT de cheveux (@cheveux) — évite les « cheveux invisibles
+// de dos ». La nuque/cou minimale (@peau) vient du visage de dos.
 const BACK_HAIR =
   // calotte qui épouse le crâne, descend bas sur la nuque (couvre les oreilles)
   '<path d="M-9.6 6 Q-10.6 -9.5 0 -10 Q10.6 -9.5 9.6 6 Q9.4 11.5 6.4 14 Q0 16 -6.4 14 Q-9.4 11.5 -9.6 6Z" fill="@cheveux"/>' +

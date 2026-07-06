@@ -82,7 +82,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'surgeryForceSuccess', 'surgeryNext', 'surgeryCancel',
   // Repos (nuit) : chacun règle SES héros (restSet vise un héros, 1er argument) + ready-check.
   'restSet', 'restReady',
-  // (Psychologie à la rencontre : passe désormais par les intents `cascade*` ci-dessus.)
+  // (Psychologie à la rencontre : passe par les intents `cascade*` ci-dessus.)
   'dismissReveal', 'fateNegate', 'fateSurvive', 'fateAccept', 'fumbleRoll', 'fumbleConfirm',
   'cleaveAttack', 'cleaveEnd', 'dualStrikeAttack', 'dualStrikeSkip',
   'roundStartPromote', 'confirmRoundStart', 'roundStartReady', 'renounceResolve', 'corruptionRoll',

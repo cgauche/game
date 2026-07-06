@@ -28,8 +28,8 @@ describe('weaponFromTrait — armement des monstres dans les Traits (FR)', () =>
     expect(weaponFromTrait({ id: 'a-distance', value: 8, range: 50 })).toMatchObject({ type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 50 });
   });
   it('Arme (griffes) marquée natural (donnée) → attaque NATURELLE, aucune arme dessinée', () => {
-    // La détection naturelle vit désormais dans la DONNÉE (flag `natural`, posé à la migration),
-    // plus dans une regex au runtime → le trait porte `natural: true`.
+    // La détection naturelle vit dans la DONNÉE (flag `natural`), pas dans une regex au runtime →
+    // le trait porte `natural: true`.
     const w = weaponFromTrait({ id: 'arme', arg: 'griffes', natural: true })!;
     expect(w.type).toBe('melee');
     expect(w.natural).toBe(true);

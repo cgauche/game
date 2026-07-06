@@ -29,8 +29,8 @@ export interface RaceDef {
   armD?: string;                // id de bras monstrueux (ARMS) remplaçant l'épaule droite (ex. griffe)
   dropHeadgear?: boolean;       // saute le couvre-chef de tenue (ex. vampire : pas de chapeau de cour)
   features?: RaceFeature[];     // traits de corps (gut, barbe, queue, cornes…)
-  pose?: Record<string, number>;// posture de repos (ex-SPECIES_POSE), front + profil
-  // Défauts d'espèce (ex-BipedConfig des defs créature) :
+  pose?: Record<string, number>;// posture de repos, front + profil
+  // Défauts d'espèce :
   tenue?: string;              // tenue par défaut
   colors?: Palette;             // surcharges de palette
   sex?: 'M' | 'F';              // sexe forcé

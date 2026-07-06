@@ -1265,7 +1265,7 @@ describe('Boucle de jeu (store)', () => {
     H.pos = { x: E.pos!.x - 1, y: E.pos!.y - 1 }; // DIAGONALE : Chebyshev 1, mais manhattan 2
     const turn = st.battle!.order.indexOf(H.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, movementUsed: 99, movedPreAction: false, acted: false } });
-    useGame.getState().battleClickEntity(E.id, { confirm: true }); // doit ouvrir la modale (avant : « hors de portée »)
+    useGame.getState().battleClickEntity(E.id, { confirm: true }); // doit ouvrir la modale (Chebyshev, pas Manhattan)
     st = useGame.getState();
     expect(st.pendingAttack).not.toBeNull(); // attaque en diagonale autorisée
     expect(st.pendingAttack!.targetId).toBe(E.id);
