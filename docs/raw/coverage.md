@@ -21,11 +21,11 @@
 | 07 | Carrières | ✅ | 69 (avancement.md ×45) |
 | 08 | Statut | ✅ | 42 (carrieres.md ×22) |
 | 09 | Compétences | ✅ | 146 (competences.md ×139) |
-| 10 | Talents | ✅ | 62 (tests.md ×36) |
+| 10 | Talents | ✅ | 63 (tests.md ×36) |
 | 11 | *(artefact OCR)* | 🟡 | 4 (reconciliation.md ×2) |
 | 12 | Tests | ✅ | 46 (tests.md ×41) |
 | 13 | Combat | ✅ | 146 (combat.md ×130) |
-| 14 | *(artefact OCR)* | ✅ | 140 (combat.md ×123) |
+| 14 | *(artefact OCR)* | ✅ | 142 (combat.md ×123) |
 | 15 | Déplacement | ✅ | 95 (combat.md ×77) |
 | 16 | États | ✅ | 54 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 53 (destin.md ×27) |
