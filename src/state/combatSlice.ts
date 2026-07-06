@@ -2484,8 +2484,9 @@ export function createCombatSlice(get: Get, set: Set) {
       // SORT d'un héros — opposé au Test d'Incantation (déclaré pendant l'incantation : l'IA n'attend
       // pas l'issue du jet — il module les DR, donc le budget de Surincantation AVANT la pose), un
       // seul par Round. Un jet CRITIQUE n'est pas contré (« Force inéluctable », LDB 46 l.59).
-      // Zone non posée : « vise un point que vous pouvez voir » n'a pas encore de point — ancre la
-      // moins inventive : le LANCEUR (même clause de distance FM mètres ; le RAW est muet).
+      // Zone non posée : le Contre-sort oppose le Test d'Incantation, AVANT la pose du point de zone —
+      // la recherche de candidats s'ancre donc sur le LANCEUR, seul point disponible à ce stade
+      // (même clause de distance FM mètres, LDB 46 l.201-202).
       if (caster.kind === 'hero' && isDispellableSpell(spell) && !res.isCritical) {
         const best = counterspellCandidates(get().battle, get().scene, caster, unplacedZone ? caster : target)
           .sort((a, b) => castingValue(b, 'langue', 'magick') - castingValue(a, 'langue', 'magick'))[0];
@@ -2534,8 +2535,8 @@ export function createCombatSlice(get: Get, set: Set) {
         .map((id) => actorIn(get(), id))
         .filter((x): x is NonNullable<typeof x> => !!x)
         .slice(0, pc.zone ? undefined : pc.overcast?.targets ?? 0);
-      // OPPOSITION (`spec.opposed`) : un Sort réussi dont la/les cible(s) opposent leur Test (FM/Int)
-      // ne s'applique PAS encore — on ouvre le multijet d'opposition DANS la modale (GARDE pendingCast).
+      // OPPOSITION (`spec.opposed`) : un Sort réussi dont la/les cible(s) opposent leur Test (FM/Int) voit
+      // son application DIFFÉRÉE — on ouvre d'abord le multijet d'opposition DANS la modale (GARDE pendingCast).
       // `oppositionConfirm` repose `opposedOutcome` puis rappelle castConfirm (ce bloc est alors sauté).
       if (caster && target && spell && pc.result.cast && !pc.opposedOutcome && get().battle
           && openCastOpposition(get, set, pc, [target, ...extras])) {
