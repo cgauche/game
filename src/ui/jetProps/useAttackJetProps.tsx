@@ -5,6 +5,7 @@ import { HitLocation } from '../../engine/types';
 import { combatValue, crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers, locationLabel, weaponInflictsFlames } from '../../engine/combat';
 import { isUnarmed } from '../../engine/items';
 import { isInanimate } from '../../engine/structures';
+import { hasCondition, COND } from '../../engine/conditions';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { combatDistance } from '../../state/footprint';
@@ -90,7 +91,11 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
     : weapon?.type === 'ranged'
       ? (rangedDef ? { label: DEFENSE_LABEL[rangedDef.mode], mods: defenseModifiers(target, rangedDef.mode, 0, rangedDef.parryWeapon) } : undefined)
       : isInanimate(target) ? undefined : previewDefense(target); // OBJET INANIMÉ (structure/véhicule/affût) : aucune Parade/Esquive → pas de ligne de défense
-  const forcedDie = FLOWS.attack.picker?.(pa, attacker); // dé choisi (source unique : caps.picker)
+  // Cible Inconsciente (LDB États l.113) : le dé est DÉJÀ le meilleur choisi par le moteur (helplessTest,
+  // succès + Critique forcés) — seule la Localisation reste un choix (LDB 17 l.68, CritLocationPicker
+  // plus bas) ; pas de re-choix du dé lui-même (réservé à la Résilience volontaire, `pa.forced` manuel).
+  const helplessForced = hasCondition(target, COND.inconscient);
+  const forcedDie = helplessForced ? null : FLOWS.attack.picker?.(pa, attacker); // dé choisi (source unique : caps.picker)
 
   // Bloqué (pas de ligne de vue / hors de portée) : pas de jet possible → rangée sans ligne, message seul.
   const blocked = preview && (preview.blocked || !preview.inRange);

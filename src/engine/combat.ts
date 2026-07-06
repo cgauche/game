@@ -692,8 +692,8 @@ function combineOpposed(
  * (LDB 17 l.73) sans dépenser de Résilience — il *choisit* le résultat, donc on prend le
  * meilleur : une réussite **critique** (double choisi). À distance, les Dégâts sont ceux
  * d'un tir **à bout portant** (+6 DR ≈ le +60 au toucher de la bande de portée). Le jet
- * brut est conservé pour la Localisation et l'Atout Empaleuse (le tireur peut la choisir,
- * non modélisé).
+ * brut n'est qu'un TOUCHÉ provisoire : la Localisation du Critique (garanti) est choisissable
+ * par l'attaquant qui pilote (LDB 17 l.68, `pa.forced` → CritLocationPicker, cf. targetingModes.ts).
  */
 function helplessTest(atk: TestResult, kind: 'melee' | 'ranged'): TestResult {
   const dr = Math.max(atk.sl, 0) + (kind === 'ranged' ? 6 : 0);

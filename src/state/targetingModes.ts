@@ -32,6 +32,7 @@ import { bearingPostes } from './shipBattery';
 import { serveTargetPoste, isPosteManned } from './shipPostes';
 import { spellOps } from './flow';
 import { mountOf, mountMovement, mountedCombatDistance } from './mount';
+import { pilotedByHuman } from './netOwnership';
 import { afterApproach } from './combatDirector';
 import { startCascade } from './cascade';
 import { ev } from './combatLog';
@@ -494,6 +495,11 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
       pa = { attackerId: active.id, targetId: target.id, location: null, result: null, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
     }
   }
+  // Cible Inconsciente (LDB États l.113) : l'attaquant gagne « Je ne faillirai pas ! » SANS dépenser de
+  // Résilience → réutilise le MÊME picker de Localisation (`pa.forced`/CritLocationPicker, LDB 17 l.68)
+  // que le Critique forcé par Résilience. Réservé au joueur qui PILOTE ; l'IA (doAttack) résout hors de
+  // ce chemin (pendingAttack), donc ne voit jamais ce choix.
+  if (hasCondition(target, COND.inconscient) && pilotedByHuman(get(), active)) pa = { ...pa, forced: true };
   // (2) FRAPPE — après le glissé d'approche : ouvre la SÉQUENCE de combat (jet d'attaque = ÉTAPE 0,
   // CascadeModal via useAttackJetProps ; ses conséquences s'empilent APRÈS dans la MÊME fenêtre). Garde
   // dans le différé : encore le tour de l'acteur et aucune autre cascade ouverte (anti double-ouverture).
