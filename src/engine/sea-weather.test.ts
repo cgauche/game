@@ -110,6 +110,16 @@ describe('effets d’ambiance — Précipitations / Température / Visibilité (
     expect(precipitationSkillMod('aucune', 'voile')).toBe(0);
   });
 
+  it('Précipitations : Projectiles ne subit le malus QUE pour Poudre noire (#162)', () => {
+    expect(precipitationSkillMod('legeres', 'projectiles', 'arc')).toBe(0);
+    expect(precipitationSkillMod('legeres', 'projectiles', 'poudre-noire')).toBe(-10);
+    expect(precipitationSkillMod('legeres', 'projectiles')).toBe(0);
+    expect(precipitationSkillMod('abondantes', 'projectiles', 'arc')).toBe(0);
+    expect(precipitationSkillMod('abondantes', 'projectiles', 'poudre-noire')).toBe(-20);
+    expect(precipitationSkillMod('tres-abondantes', 'projectiles', 'arc')).toBe(-10);
+    expect(precipitationSkillMod('tres-abondantes', 'projectiles', 'poudre-noire')).toBe(-30);
+  });
+
   it('Température : Caniculaire = Test toutes les 2 h Intermédiaire (+0), 4 L/jour ; Glaciale = 2 h, froid', () => {
     expect(temperatureDef('caniculaire')).toMatchObject({ testEveryHours: 2, difficulty: 'intermediaire', exposure: 'chaleur' });
     expect(temperatureDef('glaciale')).toMatchObject({ testEveryHours: 2, exposure: 'froid' });

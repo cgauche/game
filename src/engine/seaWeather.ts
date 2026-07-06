@@ -49,7 +49,7 @@ export interface SeaWeather {
 }
 
 interface WeatherRow { min: number; max: number; precipitations: string; temperature: string; visibilite: string; vent: string }
-interface PrecipitationDef { id: string; label: string; desc?: string; skillMods?: { skills: string[]; mod: number }[]; otherMod?: number }
+interface PrecipitationDef { id: string; label: string; desc?: string; skillMods?: { skills: string[]; spec?: Record<string, string>; mod: number }[]; otherMod?: number }
 interface TemperatureDef { id: string; label: string; testEveryHours?: number; difficulty?: Difficulty; exposure?: 'chaleur' | 'froid'; litresParJour?: number }
 interface VisibilityDef { id: string; label: string; drPenalty?: number; beyondM?: number }
 /** Cellule du tableau EFFET DU VENT : % voiles / % autres, ou Encalminé / Affaler / Virement de bord. */
@@ -158,10 +158,18 @@ export function visibilityDRPenalty(vis: SeaVisibilityId, distanceM: number): nu
 }
 
 /** Modificateur de Précipitations sur un Test de compétence `skillId` (l.187-201) — 0 si non listé
- *  (le « −10 sur tous les autres Tests » des Très abondantes passe par `otherMod`). PUR. */
-export function precipitationSkillMod(precip: SeaPrecipitationId, skillId: string): number {
+ *  (le « −10 sur tous les autres Tests » des Très abondantes passe par `otherMod`). `spec` = Groupe
+ *  d'arme du Test (ex. `poudre-noire`) : quand `skillMods[].spec[skillId]` exige une spécialisation
+ *  (Projectiles (Poudre noire) seul, pas Projectiles (Arc)), le mod ne s'applique que si `spec` matche —
+ *  sinon le Test tombe dans `otherMod` comme n'importe quel Test non listé. PUR. */
+export function precipitationSkillMod(precip: SeaPrecipitationId, skillId: string, spec?: string): number {
   const def = precipitationDef(precip);
-  for (const m of def.skillMods ?? []) if (m.skills.includes(skillId)) return m.mod;
+  for (const m of def.skillMods ?? []) {
+    if (!m.skills.includes(skillId)) continue;
+    const requiredSpec = m.spec?.[skillId];
+    if (requiredSpec != null && requiredSpec !== spec) continue;
+    return m.mod;
+  }
   return def.otherMod ?? 0;
 }
 

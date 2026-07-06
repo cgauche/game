@@ -5,12 +5,10 @@
  * Température / Visibilité / Vents), rose des vents, effet du vent (standard + Clinfoc), Affaler les
  * voiles, Encalminé.
  *
- * ANOMALIE DE DONNÉE constatée : `precipitations[].skillMods[].spec` (ex. `{ "projectiles":
- * "poudre-noire" }`) existe dans le JSON mais N'EST PAS lu par le consommateur (`PrecipitationDef` /
- * `precipitationSkillMod` dans `src/engine/seaWeather.ts` n'ont pas de champ `spec` — seul `skillId`
- * générique "projectiles" est testé). Le malus s'applique donc à TOUT Test de Projectiles, pas
- * seulement Poudre noire comme le `desc` verbatim l'indique. Champ modélisé ici (fidèle au JSON réel)
- * mais le décalage donnée/moteur reste à trancher par un agent de mécanique (hors périmètre schéma).
+ * `precipitations[].skillMods[].spec` (ex. `{ "projectiles": "poudre-noire" }`) gate le mod sur la
+ * spécialisation d'arme quand le `skillId` seul est ambigu (Projectiles (Poudre noire) uniquement,
+ * pas Projectiles (Arc)) — lu par `precipitationSkillMod(precip, skillId, spec)` dans
+ * `src/engine/seaWeather.ts` (#162).
  */
 import { z } from 'zod';
 import { difficultySchema } from '../common';
@@ -57,7 +55,7 @@ export const schema = z.strictObject({
         .array(
           z.strictObject({
             skills: z.array(z.string()),
-            /** Présent en donnée mais IGNORÉ par le consommateur — cf. anomalie en tête de fichier. */
+            /** Spécialisation requise par `skillId` (ex. `{ projectiles: 'poudre-noire' }`) — cf. tête de fichier. */
             spec: z.record(z.string(), z.string()).optional(),
             mod: z.number(),
           }),
