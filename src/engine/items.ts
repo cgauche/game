@@ -390,6 +390,14 @@ function warMachineResolveChar(it: Pick<ItemInstance, 'kind' | 'weaponGroup'>): 
   return it.weaponGroup === 'machine-de-guerre' && it.kind === 'melee' ? 'F' : undefined;
 }
 
+/** Machine de guerre nécessitant une ÉQUIPE (ADE II ch.08 l.233, Qualité `equipe` ; catégorie `armes-de-siege`) :
+ *  ne se manie JAMAIS en loadout solo — elle doit être SERVIE en poste (`mannedPosteWeapon`/`serveAtPoste`, qui
+ *  dérivent la même arme SANS passer par `toWeapon`). Même famille de veto que `cannotWieldTwoHanded`
+ *  (amputation) : un item qui ne devient PAS une arme de loadout normal. */
+function requiresCrewedPoste(it: Pick<ItemInstance, 'subType' | 'qualities'>): boolean {
+  return it.subType === 'armes-de-siege' || hasQuality(it, 'equipe');
+}
+
 /** Recalcule armes/armure actives + encombrement. Les ARMES viennent du loadout actif (contrainte 2 mains,
  *  tag `hand`) ; si aucun loadout, ensureDefaultLoadout en crée un automatiquement — UN SEUL modèle. */
 export function recomputeLoadout(c: Combatant): void {
@@ -404,6 +412,7 @@ export function recomputeLoadout(c: Combatant): void {
   }
   const toWeapon = (it: ItemInstance, hand: 'main' | 'off'): Weapon | null => {
     if (it.destroyed) return null; // arme détruite : inutilisable (LDB 14 — Incident de Tir)
+    if (requiresCrewedPoste(it)) return null; // machine de guerre à Équipe (ADE II ch.08 l.233) : pas de loadout solo, doit être SERVIE en poste
     const hands = weaponHands(it, { mounted: !!c.mountId }); // Cavalerie (2M) à pied → vraies 2 mains (LDB 62 l.142-143)
     if (hands === 2 && cannotWieldTwoHanded(c)) return null; // amputation : pas d'arme à 2 mains (LDB 18 l.352)
     const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;

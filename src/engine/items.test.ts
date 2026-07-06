@@ -252,6 +252,35 @@ describe('warMachineResolveChar (DÉRIVÉ, via recomputeLoadout) — bélier →
   });
 });
 
+describe('machine de guerre (Qualité `equipe` — ADE II ch.08 l.233) : jamais en loadout SOLO', () => {
+  const heroWith = (items: ItemInstance[], lo?: { loadouts: any[]; activeLoadoutId: string }): Combatant =>
+    ({ id: 'h', name: 'H', kind: 'hero', characteristics: { F: 30, E: 30 } as any, items,
+       talents: [], skills: [], conditions: [], wounds: { current: 10, max: 10 }, advantage: 0, ...lo } as unknown as Combatant);
+
+  it('belier-ade2 (subType armes-de-siege) en `items` équipé : PAS d’arme dérivée — Mains nues seulement', () => {
+    const belier = itemFromTrappingById('belier-ade2')!;
+    belier.equipped = true;
+    const c = heroWith([belier]);
+    recomputeLoadout(c);
+    expect(c.weapons.map((w) => w.name)).not.toContain('Bélier');
+    expect(c.weapons.map((w) => w.name)).toEqual(['Mains nues']); // repli seul, aucune arme de siège tenue
+  });
+
+  it('item hors `armes-de-siege` mais portant la Qualité `equipe` : même veto (non-régression sur les armes ordinaires)', () => {
+    const engin = { uid: 'x', name: 'Engin', kind: 'melee', qualities: [{ id: 'equipe', value: 4 }], enc: 1, equipped: true, hands: 1 } as unknown as ItemInstance;
+    const c = heroWith([engin], { loadouts: [{ id: 'l', main: 'x' }], activeLoadoutId: 'l' });
+    recomputeLoadout(c);
+    expect(c.weapons.map((w) => w.name)).not.toContain('Engin');
+  });
+
+  it('arme ORDINAIRE (ni armes-de-siege, ni Qualité equipe) : non-régression, dérivée normalement', () => {
+    const epee = { uid: 'e', name: 'Epee', kind: 'melee', subType: 'base', qualities: [], enc: 1, equipped: true, hands: 1, damage: { plusBF: true, flat: 4 } } as unknown as ItemInstance;
+    const c = heroWith([epee], { loadouts: [{ id: 'l', main: 'e' }], activeLoadoutId: 'l' });
+    recomputeLoadout(c);
+    expect(c.weapons.map((w) => w.name)).toContain('Epee');
+  });
+});
+
 describe('ensureDefaultLoadout', () => {
   const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
     ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, damage: { plusBF: true, flat: 4 }, ...p } as ItemInstance);

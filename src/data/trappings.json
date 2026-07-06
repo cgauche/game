@@ -12100,6 +12100,7 @@
     "label": "Bélier",
     "type": "melee",
     "subType": "armes-de-siege",
+    "siegeRig": "baliste",
     "weaponGroup": "machine-de-guerre",
     "availability": "Limitée",
     "reach": "Moyenne",
