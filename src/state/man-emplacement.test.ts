@@ -168,7 +168,7 @@ describe('(D) Affordance joueur — store `battleManPoste` / `battleLeavePoste`'
     return { poste, hero };
   };
 
-  it('le héros ACTIF prend la pièce adjacente : mannedPoste, crewIds[0], baliste, Action dépensée', () => {
+  it('le héros ACTIF prend la pièce adjacente : mannedPoste, crewIds[0], baliste, SANS coûter l’Action', () => {
     const { poste } = setup();
     useGame.getState().battleManPoste();
     const st = useGame.getState();
@@ -176,7 +176,7 @@ describe('(D) Affordance joueur — store `battleManPoste` / `battleLeavePoste`'
     expect(hero.mannedPoste!.item.uid).toBe(poste.item.uid);
     expect(poste.crewIds![0]).toBe('hero');
     expect(hero.weapons.some((w) => w.uid === poste.item.uid)).toBe(true);
-    expect(st.battle!.acted).toBe(true); // servir coûte l'Action
+    expect(st.battle!.acted).toBe(false); // servir est GRATUIT : on s'installe puis on tire/pousse le même Round
   });
 
   it('Quitter libère la pièce : mannedPoste retiré, arme retirée, Action dépensée', () => {

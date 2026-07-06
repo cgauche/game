@@ -1266,11 +1266,13 @@ export function createCombatSlice(get: Get, set: Set) {
     // non servi (arme octroyée, taguée mountSide ; tire au tour suivant via l'option 'poste'), sinon SUPPORT (Arme
     // d'équipe : occupe la pièce, compte dans l'Indice contre le sous-effectif, mais ne tire pas). MÊME mutation
     // KIND-AGNOSTIQUE (`serveAtPoste`) que l'IA et l'author-time ; `recomputeLoadout` canonicalise l'arme du chef.
-    // Coûte l'Action. « Tout le monde peut servir une arme de siège » (cf. l'IA `manPoste`).
+    // GRATUIT (ne consomme PAS l'Action) : on s'approche au Mouvement, on sert, et on tire/pousse le MÊME
+    // Round — servir une pièce n'est pas un usage, juste s'y installer. « Tout le monde peut servir une arme
+    // de siège » (cf. l'IA `manPoste`).
     battleManPoste: (target?: { hullId: string; posteUid: string }) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const battle = get().battle;
-      if (!battle || battle.over || battle.acted) return;
+      if (!battle || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || aiDriven(get(), active) || isOutOfAction(active) || !canTakeAction(active)) return;
       const servable = servablePostes(active, battle.combatants);
@@ -1282,7 +1284,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const joining = isPosteManned(chosen.poste, battle.combatants); // pièce déjà servie → on REJOINT en renfort
       serveAtPoste(active, chosen.poste, battle.combatants);
       recomputeLoadout(active);
-      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', t(joining ? 'cs.joinPoste' : 'cs.manPoste', { name: active.name, weapon: chosen.poste.item.name }), active.id)] } });
+      set({ battle: { ...battle, action: null, log: [...battle.log, ev('detail', t(joining ? 'cs.joinPoste' : 'cs.manPoste', { name: active.name, weapon: chosen.poste.item.name }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
     // « Quitter la pièce » (release) : le héros actif lâche le poste qu'il sert → il redevient servable par un autre.
