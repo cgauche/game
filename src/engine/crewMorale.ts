@@ -23,6 +23,7 @@ import { talentTestSLBonus } from './magic';
 import { skillDRBonus } from './ops';
 import { crewRoles, findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
 import type { Combatant, Difficulty } from './types';
+import type { PairedSense } from './ops';
 
 /** Facteur de Moral (MODIFICATEURS DE MORAL, MDG ch.14) — `effect` = dés signés (« +2d10 », « -3d10 »). */
 export interface MoraleFactor {
@@ -210,9 +211,12 @@ export function crewTestModOf(c: Combatant): number {
 
 /** Valeur de Compétence d'un membre pour un rôle : la MEILLEURE de ses compétences (Mousse = Voile/Ramer),
  *  PLUS le modificateur « Test d'équipage » de ses effets actifs (`crewTestModOf` — chansons de marin).
- *  SEUL point de valeur des Tests d'équipage (manœuvre, bordée, générique, fiche du navire). PUR. */
-export function crewRoleValue(crew: Combatant, role: CrewRoleData): { value: number; used?: { skillId: string; spec?: string } } {
-  const b = bestForSkills([crew], role.skills ?? [], undefined);
+ *  SEUL point de valeur des Tests d'équipage (manœuvre, bordée, générique, fiche du navire). `sense`
+ *  (optionnel) : sens NARRATIVEMENT sollicité par CE Test précis (ex. Vigie qui « voit la lumière d'un
+ *  phare », MDG ch.13 l.337 — visuel, transmis par l'appelant) ; restreint les `skillMod` sense-scopés
+ *  (Surdité, LDB 18) via `testValue`. Absent = comportement historique. PUR. */
+export function crewRoleValue(crew: Combatant, role: CrewRoleData, sense?: PairedSense): { value: number; used?: { skillId: string; spec?: string } } {
+  const b = bestForSkills([crew], role.skills ?? [], undefined, sense);
   return { value: (b?.value ?? 0) + crewTestModOf(crew), used: b?.skillId ? { skillId: b.skillId, spec: b.spec } : undefined };
 }
 

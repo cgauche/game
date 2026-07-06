@@ -206,30 +206,34 @@ export function resolveSkillBest(
 }
 
 /** Meilleur membre du groupe pour un test donné. `extraMod` ajoute un modificateur PAR acteur (ex. malus
- *  psy de Sociabilité, qui dépend du personnage) — la valeur effective sert au choix ET au résultat. */
+ *  psy de Sociabilité, qui dépend du personnage) — la valeur effective sert au choix ET au résultat.
+ *  `sense` (optionnel) : transmis tel quel à `testValue` (sens NARRATIVEMENT sollicité par CE Test précis). */
 export function partyBest(
   party: Combatant[],
   skill?: string,
   characteristic?: CharKey,
   extraMod?: (c: Combatant) => number,
   spec?: string, // spécialisation ciblée (Métier (Serrurier)…) — transmise à `testValue` pour la bonne instance
+  sense?: PairedSense,
 ): { actor: Combatant; value: number } | null {
-  const r = maxBy(party, (c) => testValue(c, skill, characteristic, spec) + (extraMod?.(c) ?? 0));
+  const r = maxBy(party, (c) => testValue(c, skill, characteristic, spec, sense) + (extraMod?.(c) ?? 0));
   return r ? { actor: r.item, value: r.value } : null;
 }
 
 /** Meilleur PJ pour une liste de compétences AU CHOIX (celle qui donne la plus haute valeur décide).
- *  `skills` vide/absent ⇒ une unique option de PURE Caractéristique (`skillId`/`spec` indéfinis). */
+ *  `skills` vide/absent ⇒ une unique option de PURE Caractéristique (`skillId`/`spec` indéfinis).
+ *  `sense` (optionnel) : transmis tel quel à `partyBest`/`testValue`. */
 export function bestForSkills(
   party: Combatant[],
   skills: SkillRef[] | undefined,
   char: CharKey | undefined,
+  sense?: PairedSense,
 ): { actor: Combatant; value: number; skillId?: string; spec?: string } | null {
   const choices: SkillRef[] = skills?.length ? skills : [{ skillId: undefined as unknown as string, spec: undefined }];
   // Le meilleur ACTEUR par option, puis argmax sur les options (first-max via `maxBy`). Une option
   // ne concourt que si le groupe fournit un porteur (`partyBest` null ⇒ groupe vide ⇒ résultat null).
   const perChoice = choices
-    .map((sk) => ({ sk, best: partyBest(party, sk.skillId, char, undefined, sk.spec) }))
+    .map((sk) => ({ sk, best: partyBest(party, sk.skillId, char, undefined, sk.spec, sense) }))
     .filter((x): x is { sk: SkillRef; best: { actor: Combatant; value: number } } => x.best !== null);
   const r = maxBy(perChoice, (x) => x.best.value);
   return r ? { actor: r.item.best.actor, value: r.item.best.value, skillId: r.item.sk.skillId, spec: r.item.sk.spec } : null;

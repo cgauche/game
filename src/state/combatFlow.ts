@@ -380,6 +380,11 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
   const sneakDR = skillDRBonus(sneak, 'discretion'); // Furtif : +Bonus d'Agilité au DR (donnée : passive skillDRBonus)
   // Conséquence d'une défaite du guetteur : l'État Surpris. Vigilance (talent `vigilance`) interpose AVANT un
   // Test de Perception (+0) cadence-aware — réussite = pas de Surprise, échec = Surpris.
+  // `sense` NON posé sur les deux Tests ci-dessous (Surprise ET Vigilance) — DÉCISION, pas un oubli : LDB 13
+  // l.53-59 mélange des déclencheurs visuels ET auditifs (dans le noir/sous un épais brouillard = la vue est
+  // spécifiquement défaite, l'ouïe reste le dernier recours ; détonations/rixe = indices sonores). Un guetteur
+  // Sourd reste donc VULNÉRABLE par défaut (`senseMatches`, trauma.ts : sens du Test inconnu → pénalité
+  // appliquée, conservateur) plutôt qu'exempté en bloc — cohérent avec les scénarios d'embuscade cités.
   const surprise: Flow = { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'condition', name: COND.surpris, value: 1 }] } };
   const onLose: Flow = {
     kind: 'if', cond: { kind: 'has', who: 'target', what: 'talent', value: 'vigilance' },

@@ -72,8 +72,14 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
     expect(traumaMovementHalved(c)).toBe(true);
     expect(traumaDodgePenalty(c)).toBe(-20);
   });
-  it('Fausse jambe portée (non entraînée) : rétablit le déplacement, l’Esquive reste pénalisée tant que les 200 PX ne sont pas dépensés (LDB 73)', () => {
+  it('Fausse jambe portée (non entraînée) : le ÷2 SURVIT — le port de base ignore seulement 1 PM (l.23), pas tout le ÷2 ; l’Esquive reste pénalisée (LDB 73)', () => {
     const c = fullCombatant({ traumas: [legSequela], items: [item('fausse-jambe')] });
+    expect(traumaMovementHalved(c)).toBe(true);
+    expect(traumaDodgePenalty(c)).toBe(-20);
+  });
+  it('Fausse jambe entraînée au Mouvement (100 PX, LDB 73) : lève le ÷2 ; l’Esquive reste pénalisée tant que les 200 PX ne sont pas dépensés', () => {
+    const moveTrained: ItemInstance = { ...item('fausse-jambe'), prosthesisMoveTrained: true };
+    const c = fullCombatant({ traumas: [legSequela], items: [moveTrained] });
     expect(traumaMovementHalved(c)).toBe(false);
     expect(traumaDodgePenalty(c)).toBe(-20);
   });
@@ -95,6 +101,25 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
   it('prothèse POSSÉDÉE mais non portée (au sac) : le malus reste — il faut l’ÉQUIPER (LDB 73)', () => {
     const c = fullCombatant({ traumas: [legSequela], items: [item('fausse-jambe', false)] }); // equipped:false
     expect(traumaMovementHalved(c)).toBe(true);
+  });
+
+  describe('effectiveMovement — les 4 paliers de la fausse jambe (LDB 73 l.23, M=4)', () => {
+    it('sans prothèse : ÷2 (M4 → 2)', () => {
+      expect(effectiveMovement(fullCombatant({ traumas: [legSequela], items: [] }))).toBe(2);
+    });
+    it('portée non entraînée : ÷2 puis +1 PM ignoré (port de base, M4 → 3)', () => {
+      expect(effectiveMovement(fullCombatant({ traumas: [legSequela], items: [item('fausse-jambe')] }))).toBe(3);
+    });
+    it('entraînée au Mouvement (100 PX) : ÷2 levé (M4 → 4)', () => {
+      const moveTrained: ItemInstance = { ...item('fausse-jambe'), prosthesisMoveTrained: true };
+      expect(effectiveMovement(fullCombatant({ traumas: [legSequela], items: [moveTrained] }))).toBe(4);
+    });
+    it('entraînée à l’Esquive (200 PX) : Mouvement plein + Esquive rendue', () => {
+      const trained: ItemInstance = { ...item('fausse-jambe'), prosthesisTrained: true };
+      const c = fullCombatant({ traumas: [legSequela], items: [trained] });
+      expect(effectiveMovement(c)).toBe(4);
+      expect(traumaDodgePenalty(c)).toBe(0);
+    });
   });
 
   it('Nez doré annule le −20 Sociabilité de l’amputation du nez (charPenalty, LDB 73)', () => {

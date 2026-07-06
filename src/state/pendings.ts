@@ -9,7 +9,7 @@ import type { Pt } from './path';
 import type { Dir8 } from './dir8';
 import type { Effect } from './scene';
 import type { Flow } from './flow';
-import type { GameOp } from '../engine/ops';
+import type { GameOp, PairedSense } from '../engine/ops';
 import type { TestResult, OpposedResult } from '../engine/tests';
 import type { AttackResult, DefenseMode, RollBreakdown } from '../engine/combat';
 import type { AttackKind } from '../engine/creatureAttacks';
@@ -396,6 +396,11 @@ export interface ShipManeuverParticipant extends RollParticipant {
   essential: boolean;
   /** Marin déjà engagé dans un AUTRE Test d'équipage ce Round → cumul à +2 crans de Difficulté (Manque de bras, l.53). */
   cumul?: boolean;
+  /** Sens NARRATIVEMENT sollicité par CE Test précis (ex. Vigie du phare, MDG ch.13 l.337 — visuel), posé
+   *  à l'OUVERTURE du pending par l'appelant qui connaît le contexte (`openVoyageCrewTest`, kind `'phare'`).
+   *  Restreint les `skillMod` sense-scopés (Surdité, LDB 18) via `crewRoleValue`/`testValue`. Absent pour
+   *  les Tests d'équipage sans sens narratif dédié (manœuvre, bordée…) = comportement historique. */
+  sense?: PairedSense;
   result: CrewRoleRoll | null;
 }
 /** Contributeur ARTILLEUR d'un Tir de batterie (MDG ch.14) — MÊME forme qu'un rôle de manœuvre (un rôle,

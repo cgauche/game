@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { resolveCrewTestByRoles, crewRoleValue, undercrewPenalty } from './crewMorale';
 import { crewRoles, crewTestTypes, findCrewRoleById } from '../data';
+import { traumaById } from './trauma';
 import type { Combatant, SkillInstance } from './types';
 import type { RNG } from './dice';
 
@@ -44,6 +45,16 @@ describe('crewRoleValue — lit la VRAIE valeur de Compétence du membre (meille
     expect(crewRoleValue(artilleur, findCrewRoleById('artilleur')!).value).toBe(80);
     const mousse = mk({ Dex: 30 }, [{ skillId: 'voile', advances: 25 }]); // Voile 55 > Ramer (repli 30)
     expect(crewRoleValue(mousse, findCrewRoleById('mousse')!).value).toBe(55);
+  });
+});
+
+describe('crewRoleValue — sens transmis au Test (Surdité, LDB 18 : « Tests de Perception basés sur l’ouïe » seulement)', () => {
+  it('sense "vue" (voir la lumière d’un phare, MDG 13 l.337) : la Surdité NE pénalise PAS la Vigie', () => {
+    const deaf = { ...mk({ Dex: 40 }, [{ skillId: 'perception', advances: 0 }]), traumas: [traumaById('surdite', undefined, 'tete')] } as Combatant;
+    const vigie = findCrewRoleById('vigie')!;
+    expect(crewRoleValue(deaf, vigie).value).toBe(20); // sans sens précisé : pénalité par défaut (conservateur)
+    expect(crewRoleValue(deaf, vigie, 'ouie').value).toBe(20); // sens auditif explicite : pénalisé
+    expect(crewRoleValue(deaf, vigie, 'vue').value).toBe(40); // sens visuel : la Surdité ne vise QUE l’ouïe
   });
 });
 

@@ -637,20 +637,36 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       ✨
                     </button>
                   )}
-                  {isProsthesis && it.equipped && !it.prosthesisTrained && (it.trappingId === 'fausse-jambe' || it.trappingId === 'crochet') && (() => {
-                    const isCrochet = it.trappingId === 'crochet';
-                    const px = isCrochet ? 400 : 200;
-                    return (
-                      <button
-                        className="btn small"
-                        title={isCrochet ? 'Maîtriser le crochet : armes à deux mains de nouveau possibles (400 PX)' : 'Réapprendre l’Esquive avec la fausse jambe (200 PX)'}
-                        disabled={(hero.xp ?? 0) < px}
-                        onClick={() => trainProsthesis(hero.id, it.uid)}
-                      >
-                        {isCrochet ? `2 mains (${px} PX)` : `Esquive (${px} PX)`}
-                      </button>
-                    );
-                  })()}
+                  {isProsthesis && it.equipped && it.trappingId === 'crochet' && !it.prosthesisTrained && (
+                    <button
+                      className="btn small"
+                      title="Maîtriser le crochet : armes à deux mains de nouveau possibles (400 PX)"
+                      disabled={(hero.xp ?? 0) < 400}
+                      onClick={() => trainProsthesis(hero.id, it.uid)}
+                    >
+                      2 mains (400 PX)
+                    </button>
+                  )}
+                  {isProsthesis && it.equipped && it.trappingId === 'fausse-jambe' && !it.prosthesisMoveTrained && (
+                    <button
+                      className="btn small"
+                      title="S’entraîner à la fausse jambe : Mouvement plein retrouvé (100 PX, LDB 73)"
+                      disabled={(hero.xp ?? 0) < 100}
+                      onClick={() => trainProsthesis(hero.id, it.uid)}
+                    >
+                      Mouvement (100 PX)
+                    </button>
+                  )}
+                  {isProsthesis && it.equipped && it.trappingId === 'fausse-jambe' && it.prosthesisMoveTrained && !it.prosthesisTrained && (
+                    <button
+                      className="btn small"
+                      title="Réapprendre l’Esquive avec la fausse jambe (200 PX)"
+                      disabled={(hero.xp ?? 0) < 200}
+                      onClick={() => trainProsthesis(hero.id, it.uid)}
+                    >
+                      Esquive (200 PX)
+                    </button>
+                  )}
                   {isWeaponItem && !inBattleNow && <FormPicker hero={hero} it={it} />}
                   {isWeaponItem && (
                     inBattleNow ? (

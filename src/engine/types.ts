@@ -719,9 +719,15 @@ export interface ItemInstance {
    *  réellement »). Affichées « soupçonné : … » tant que l'objet n'est pas identifié ; purgées
    *  par une vraie révélation. AUCUN effet mécanique. */
   suspectedQualities?: string[];
-  /** Prothèse ENTRAÎNÉE par dépense de PX (LDB 73) : une Fausse jambe « réapprise » (200 PX) annule AUSSI
-   *  l'Esquive (sa séquelle passe de `'movement'` à `'all'`), pas seulement le déplacement. */
+  /** Prothèse ENTRAÎNÉE par dépense de PX (LDB 73) : une Fausse jambe « réapprise » (200 PX, second palier
+   *  après `prosthesisMoveTrained`) annule AUSSI l'Esquive (sa séquelle passe de `'movement'` à `'all'`),
+   *  pas seulement le déplacement. */
   prosthesisTrained?: boolean;
+  /** Fausse jambe entraînée au MOUVEMENT (100 PX, LDB 73 : « pour 100 PX, vous pouvez récupérer le dernier
+   *  Point de Mouvement perdu ») — premier palier, lève le ÷2 de la séquelle de jambe (`prosthesisCancels`,
+   *  trauma.ts) SANS lever l'Esquive (second palier, `prosthesisTrained`). Le simple PORT (gratuit, sans
+   *  aucun des deux paliers) n'ignore que 1 PM, restauré POST-halving par `effectiveMovement`. */
+  prosthesisMoveTrained?: boolean;
   /** Arme INVOQUÉE temporaire (op `grantWeapon`) : objet ordinaire mais TENU d'office (injecté en
    *  tête de `c.weapons` par recomputeLoadout) et retiré à l'expiration du Sort. */
   conjured?: boolean;

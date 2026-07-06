@@ -47,7 +47,7 @@ export function CrewTestModal() {
     if (!actor) return [];
     const res = part.result;
     const role = findCrewRoleById(part.roleId);
-    const val = role ? crewRoleValue(actor, role).value : 0;
+    const val = role ? crewRoleValue(actor, role, part.sense).value : 0;
     const label = `${role?.label ?? part.roleId}${part.essential ? ' ★' : ''}`;
     // Manque de bras (MDG ch.14 l.53) : marin déjà engagé ce Round → +2 crans de Difficulté (−20), itemisé.
     const difficulty = part.cumul ? easeDifficulty('intermediaire', -2) : undefined;

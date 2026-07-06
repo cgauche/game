@@ -9,8 +9,10 @@ import { seedBattleRng } from './battleRng';
 import { subtract, toBrass, fromBrass } from '../engine/money';
 import { itemFromTrappingById } from '../engine/items';
 import { bankWithdraw } from './interludeFlow';
+import { traumaById } from '../engine/trauma';
 import type { WorldMap } from './worldMap';
 import type { RNG } from '../engine/dice';
+import type { PendingCrewTest } from './pendings';
 
 /**
  * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15) :
@@ -134,6 +136,62 @@ describe('Carte marine (MDG 15) — Orientation & Planque (#147)', () => {
     bankWithdraw(get, set, 0);
     expect(get().bank).toHaveLength(0);
     expect(toBrass(get().money)).toBe(0);
+  });
+});
+
+describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG ch.13 l.337) : la Surdité ne pénalise pas', () => {
+  const lighthouseMap: WorldMap = {
+    id: 'm2', nom: 'Mer des Griffes',
+    places: [
+      { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
+      { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: [], lighthouse: true } as never },
+    ],
+    routes: [{ id: 'r1', a: 'A', b: 'B', km: 1, modes: ['mer'], sea: true, seaHeading: 'est' }],
+  };
+
+  function freshLighthouseState() {
+    seedBattleRng(1);
+    const [a, b] = makePregens();
+    const vigie = { ...a, skills: [{ skillId: 'perception', characteristic: 'I', advances: 0 }], traumas: [traumaById('surdite', undefined, 'tete')] };
+    const timonier = { ...b, skills: [{ skillId: 'voile', characteristic: 'Dex', advances: 30 }], traumas: [] };
+    useGame.setState({
+      party: [vigie, timonier],
+      scene: { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+      battle: null,
+      worldMap: lighthouseMap,
+      travelPlan: null,
+      travelRecap: null,
+      pendingCrewTest: null,
+      pendingRest: null,
+      gameTime: 8 * 60,
+      lastUpkeepDay: 0,
+      vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } },
+      journal: [],
+    } as never);
+  }
+
+  it('la Vigie SOURDE n’est PAS pénalisée au Test de Perception du phare (sense "vue" posé par kind "phare")', () => {
+    freshLighthouseState();
+    useGame.getState().startTravel('r1', 'mer');
+    let phare: PendingCrewTest | undefined;
+    let progression: PendingCrewTest | undefined;
+    for (let i = 0; i < 30 && !phare; i++) {
+      const p = useGame.getState().pendingCrewTest;
+      if (!p) break;
+      if (p.voyage?.kind === 'phare') { phare = p; break; }
+      if (p.voyage?.kind === 'progression') progression = p;
+      for (const part of p.participants) if (!part.result) useGame.getState().crewTestRoll(part.id);
+      useGame.getState().crewTestConfirm();
+    }
+    expect(phare).toBeTruthy(); // la modale du phare a bien été atteinte (port à phare, km 1 → dans la portée dès le jour 1)
+    // Le sens est posé pour TOUT le Test (kind 'phare' = Perception visuelle), pas juste pour la Vigie —
+    // n'importe quel contributeur (Timonier compris) « voit » la lumière.
+    for (const part of phare!.participants) expect(part.sense).toBe('vue');
+    const vigiePart = phare!.participants.find((x) => x.roleId === 'vigie');
+    expect(vigiePart).toBeTruthy();
+    // Autre Test d'équipage (Progression, sans sens narratif dédié) : PAS de sens posé — comportement historique.
+    expect(progression).toBeTruthy();
+    for (const part of progression!.participants) expect(part.sense).toBeUndefined();
   });
 });
 

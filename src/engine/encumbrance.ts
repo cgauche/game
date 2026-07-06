@@ -19,7 +19,7 @@
 import { Combatant } from './types';
 import { maxEncumbrance, totalEncumbrance } from './items';
 import { conditionGating } from './conditions';
-import { traumaMovementHalved, passiveMoveMod } from './trauma';
+import { traumaMovementHalved, passiveMoveMod, prosthesisMoveRestore } from './trauma';
 import { offTerrainMoveCap } from './ops';
 import encumbranceTiersJson from '../data/encumbranceTiers.json';
 
@@ -75,8 +75,10 @@ export function effectiveMovement(c: Combatant): number {
   // `movePenalty` n'est null que sur le palier immobilisé (déjà court-circuité ci-dessus) → `?? 0` sûr.
   const base = p.tier === 0 ? mv : Math.min(mv, Math.max(mv - (p.movePenalty ?? 0), p.moveFloor));
   // Demi-Mouvement : `gating.movement:'half'` (Sonné/À Terre) OU traumatisme de jambe/torse (LDB 18 :
-  // Déchirure/Fracture). Un seul halving (pas de cumul inventé).
-  return (gate === 'half' || traumaMovementHalved(c)) ? Math.floor(base / 2) : base;
+  // Déchirure/Fracture). Un seul halving (pas de cumul inventé). Fausse jambe PORTÉE mais pas encore
+  // entraînée au Mouvement (100 PX, LDB 73 l.23) : +1 PM ignoré POST-halving (`prosthesisMoveRestore`) —
+  // 0 hors ce cas précis (pas de trauma de jambe concerné, ou ÷2 déjà levé par l'entraînement).
+  return (gate === 'half' || traumaMovementHalved(c)) ? Math.floor(base / 2) + prosthesisMoveRestore(c) : base;
 }
 
 /** Modificateur signé aux tests d'Agilité dû à l'Encombrement (0 / −10 / −20). */

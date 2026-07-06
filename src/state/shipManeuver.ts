@@ -25,6 +25,7 @@ import { placementPenalty } from './shipPostes';
 import { findVehicleById, findCrewRoleById } from '../data';
 import type { RNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
+import type { PairedSense } from '../engine/ops';
 import type { Get } from './flowTypes';
 
 /** Résultat du jet d'UN contributeur à un Test d'équipage de manœuvre (MDG ch.14). */
@@ -32,25 +33,26 @@ export interface CrewRoleRoll { roll: number; target: number; sl: number }
 
 /** Jet d'UN contributeur à son rôle : Test de la compétence du rôle (MDG ch.14). PUR (RNG injecté). `null` si le
  *  rôle est inconnu. La valeur suit `crewRoleValue` (meilleure compétence du rôle pour ce marin) ; sur un jet
- *  RÉUSSI s'ajoute le +DR de Talent en contexte Test d'équipage (`crewTalentDR` — Commandant émérite, MDG 09 l.54). */
-export function rollCrewRole(crew: Combatant, roleId: string, rng: RNG, cumul = false): CrewRoleRoll | null {
+ *  RÉUSSI s'ajoute le +DR de Talent en contexte Test d'équipage (`crewTalentDR` — Commandant émérite, MDG 09 l.54).
+ *  `sense` (optionnel) : sens narratif du Test précis (Vigie du phare, MDG ch.13 l.337) — transmis à `crewRoleValue`. */
+export function rollCrewRole(crew: Combatant, roleId: string, rng: RNG, cumul = false, sense?: PairedSense): CrewRoleRoll | null {
   const role = findCrewRoleById(roleId);
   if (!role) return null;
   // Cumul de 2 rôles (un marin déjà engagé dans un autre Test d'équipage ce Round) → +2 crans de Difficulté
   // (Manque de bras, MDG ch.14 l.53).
-  const t = rollTest(crewRoleValue(crew, role).value, cumul ? easeDifficulty('intermediaire', -2) : 'intermediaire', rng);
+  const t = rollTest(crewRoleValue(crew, role, sense).value, cumul ? easeDifficulty('intermediaire', -2) : 'intermediaire', rng);
   return { roll: t.roll, target: t.target, sl: t.sl + (t.success ? crewTalentDR(crew, role) : 0) };
 }
 
 /** Résilience « Je ne faillirai pas ! » pour UN contributeur (PJ) : DR MAXIMAL à son rôle (LDB 17 l.73). PUR. */
-export function forceCrewRole(crew: Combatant, roleId: string, cumul = false): CrewRoleRoll | null {
+export function forceCrewRole(crew: Combatant, roleId: string, cumul = false, sense?: PairedSense): CrewRoleRoll | null {
   const role = findCrewRoleById(roleId);
   if (!role) return null;
   // Résilience à DR max ; cible abaissée de +2 crans si cumul (Manque de bras, l.53). Le dé forcé est
   // POLICY-AWARE (`bestForcedRoll` : standard → 01 = DR max ; Fast DR → dé le plus haut, LDB 12 l.128) —
   // un 01 en dur DONNERAIT DR 0 en Fast DR (dizaines du jet). `crewTalentDR` (Commandant émérite, MDG 09 l.54)
   // PRÉSERVÉ, ajouté au DR (jamais double-compté).
-  const target = crewRoleValue(crew, role).value + (cumul ? DIFFICULTY_MODIFIERS[easeDifficulty('intermediaire', -2)] : 0);
+  const target = crewRoleValue(crew, role, sense).value + (cumul ? DIFFICULTY_MODIFIERS[easeDifficulty('intermediaire', -2)] : 0);
   const die = bestForcedRoll(target);
   return { roll: die, target, sl: evaluateTest(die, target).sl + crewTalentDR(crew, role) };
 }

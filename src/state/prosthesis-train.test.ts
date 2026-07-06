@@ -15,27 +15,67 @@ const hero = (p: Partial<Combatant>): Combatant =>
     traumas: [legSequela], items: [fausseJambe()], ...p,
   } as Combatant);
 
-describe('trainProsthesis — rachat PX de l’Esquive (Fausse jambe, LDB 73)', () => {
+describe('trainProsthesis — rachat PX en 2 paliers de la Fausse jambe (LDB 73 l.23)', () => {
   beforeEach(() => { useGame.setState({ battle: null, mode: 'exploration' }); });
 
-  it('200 PX : marque la prothèse entraînée et rétablit l’Esquive', () => {
+  it('100 PX (1er palier, Mouvement) : marque prosthesisMoveTrained, l’Esquive reste pénalisée', () => {
     const h = hero({ id: 'a', xp: 300 });
     useGame.setState({ party: [h] });
-    expect(traumaDodgePenalty(useGame.getState().party[0])).toBe(-20); // avant : Esquive pénalisée
     useGame.getState().trainProsthesis('a', 'fj');
     const p = useGame.getState().party[0];
-    expect(p.xp).toBe(100); // 300 − 200
-    expect(p.items!.find((i) => i.uid === 'fj')!.prosthesisTrained).toBe(true);
-    expect(traumaDodgePenalty(p)).toBe(0); // Esquive réapprise
+    expect(p.xp).toBe(200); // 300 − 100
+    const it = p.items!.find((i) => i.uid === 'fj')!;
+    expect(it.prosthesisMoveTrained).toBe(true);
+    expect(it.prosthesisTrained).toBeFalsy();
+    expect(traumaDodgePenalty(p)).toBe(-20); // Esquive pas encore réapprise
   });
 
-  it('PX insuffisants : aucun changement', () => {
-    const h = hero({ id: 'a', xp: 150 });
+  it('200 PX (2e palier, Esquive) : une fois le Mouvement déjà entraîné, rétablit AUSSI l’Esquive', () => {
+    const h = hero({ id: 'a', xp: 250, items: [fausseJambe({ prosthesisMoveTrained: true })] });
+    useGame.setState({ party: [h] });
+    useGame.getState().trainProsthesis('a', 'fj');
+    const p = useGame.getState().party[0];
+    expect(p.xp).toBe(50); // 250 − 200
+    expect(p.items!.find((i) => i.uid === 'fj')!.prosthesisTrained).toBe(true);
+    expect(traumaDodgePenalty(p)).toBe(0);
+  });
+
+  it('achats séquentiels : deux appels (100 PX puis 200 PX) mènent au plein entraînement', () => {
+    const h = hero({ id: 'a', xp: 300 });
+    useGame.setState({ party: [h] });
+    useGame.getState().trainProsthesis('a', 'fj'); // 1er palier : 100 PX
+    useGame.getState().trainProsthesis('a', 'fj'); // 2e palier : 200 PX
+    const p = useGame.getState().party[0];
+    expect(p.xp).toBe(0); // 300 − 100 − 200
+    const it = p.items!.find((i) => i.uid === 'fj')!;
+    expect(it.prosthesisMoveTrained).toBe(true);
+    expect(it.prosthesisTrained).toBe(true);
+    expect(traumaDodgePenalty(p)).toBe(0);
+  });
+
+  it('PX insuffisants pour le 1er palier (100 PX) : aucun changement', () => {
+    const h = hero({ id: 'a', xp: 50 });
+    useGame.setState({ party: [h] });
+    useGame.getState().trainProsthesis('a', 'fj');
+    const p = useGame.getState().party[0];
+    expect(p.xp).toBe(50);
+    expect(p.items!.find((i) => i.uid === 'fj')!.prosthesisMoveTrained).toBeFalsy();
+  });
+
+  it('PX insuffisants pour le 2e palier (200 PX) une fois le Mouvement acquis : aucun changement', () => {
+    const h = hero({ id: 'a', xp: 150, items: [fausseJambe({ prosthesisMoveTrained: true })] });
     useGame.setState({ party: [h] });
     useGame.getState().trainProsthesis('a', 'fj');
     const p = useGame.getState().party[0];
     expect(p.xp).toBe(150);
     expect(p.items!.find((i) => i.uid === 'fj')!.prosthesisTrained).toBeFalsy();
+  });
+
+  it('déjà pleinement entraînée (200 PX) : nouvel appel ne fait rien', () => {
+    const h = hero({ id: 'a', xp: 300, items: [fausseJambe({ prosthesisMoveTrained: true, prosthesisTrained: true })] });
+    useGame.setState({ party: [h] });
+    useGame.getState().trainProsthesis('a', 'fj');
+    expect(useGame.getState().party[0].xp).toBe(300);
   });
 
   it('prothèse non portée : refus', () => {
@@ -47,7 +87,7 @@ describe('trainProsthesis — rachat PX de l’Esquive (Fausse jambe, LDB 73)', 
 
   it('Crochet entraîné (400 PX) rétablit le port d’armes à deux mains (LDB 73)', () => {
     const crochet: ItemInstance = { uid: 'cr', trappingId: 'crochet', name: 'Crochet', kind: 'misc', subType: 'Prothèses', qualities: [], enc: 1, equipped: true } as ItemInstance;
-    const h = hero({ id: 'a', xp: 500, traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] }], items: [crochet] });
+    const h = hero({ id: 'a', xp: 500, traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands' as const, hands: 1 }] }], items: [crochet] });
     useGame.setState({ party: [h] });
     expect(cannotWieldTwoHanded(useGame.getState().party[0])).toBe(true); // avant : pas d'arme à 2 mains
     useGame.getState().trainProsthesis('a', 'cr');

@@ -424,16 +424,36 @@ export function treatTrauma(c: Combatant, dr: number, success = true): string[] 
 }
 
 /** Une prothèse ÉQUIPÉE (portée — `items` avec `equipped`, LDB 73 « Enc 0 quand portées ») annule-t-elle
- *  l'`aspect` de la séquelle `t` ? `'movement'` est couvert par une prothèse `'movement'` OU `'all'` ; `'all'`
- *  exige une prothèse `'all'`. La simple POSSESSION (objet au sac, non porté) ne suffit pas. */
+ *  l'`aspect` de la séquelle `t` ? Une prothèse `cancels:'all'` (Merveille d'ingénierie, Nez doré…) annule
+ *  tout dès le PORT, sans entraînement (LDB 73 : « ignorer complètement »). Une prothèse `cancels:'movement'`
+ *  (Fausse jambe) est PALIÈRE (l.23) : le simple port ne lève RIEN ici (il n'ignore que 1 PM, restauré
+ *  POST-halving par `prosthesisMoveRestore`/`effectiveMovement`) ; il faut l'entraînement 100 PX
+ *  (`prosthesisMoveTrained`) pour lever le ÷2, et 200 PX (`prosthesisTrained`) pour lever AUSSI l'Esquive.
+ *  La simple POSSESSION (objet au sac, non porté) ne suffit jamais. */
 function prosthesisCancels(c: Combatant, t: Trauma, aspect: 'movement' | 'all'): boolean {
   if (!t.prosthesis?.length) return false;
   return t.prosthesis.some((p) => {
     const worn = (c.items ?? []).find((i) => i.trappingId === p.trappingId && i.equipped);
     if (!worn) return false;
-    const eff = worn.prosthesisTrained ? 'all' : p.cancels; // 200 PX → Esquive réapprise (Fausse jambe, LDB 73)
-    return aspect === 'movement' ? true : eff === 'all';
+    if (p.cancels === 'all') return true;
+    if (worn.prosthesisTrained) return true; // 200 PX : mouvement + Esquive (Fausse jambe, LDB 73)
+    return aspect === 'movement' && !!worn.prosthesisMoveTrained; // 100 PX : mouvement seul
   });
+}
+
+/** Fausse jambe (ou faux pied) PORTÉE mais PAS entraînée au Mouvement (100 PX) : le port de BASE (gratuit)
+ *  « permet d'ignorer 1 Point de Mouvement perdu par la perte de votre membre » (LDB 73 l.23) — restauré
+ *  POST-halving par `effectiveMovement`, puisque le ÷2 de la séquelle SURVIT tant que les 100 PX ne sont
+ *  pas dépensés (`prosthesisCancels`). +1 par trauma de jambe concerné (une prothèse par membre perdu). */
+export function prosthesisMoveRestore(c: Combatant): number {
+  let n = 0;
+  for (const t of c.traumas ?? []) {
+    if (!t.prosthesis?.length || !traumaOps(t).some((o) => o.op === 'moveScale')) continue;
+    if (prosthesisCancels(c, t, 'movement')) continue; // ÷2 déjà levé (100/200 PX) : rien à restaurer en plus
+    const worn = t.prosthesis.some((p) => (c.items ?? []).find((i) => i.trappingId === p.trappingId && i.equipped));
+    if (worn) n += 1;
+  }
+  return n;
 }
 
 

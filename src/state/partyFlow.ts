@@ -516,27 +516,53 @@ export function removeSpellComponent(_get: Get, set: Set, heroId: string, spellI
   }));
 }
 
+/** Fausse jambe (LDB 73 l.23) : 2 paliers DISTINCTS, achetés dans l'ordre — 100 PX (Mouvement,
+ *  `prosthesisMoveTrained`) PUIS 200 PX (Esquive, `prosthesisTrained`). Crochet : 400 PX en un seul
+ *  palier (`prosthesisTrained`, rachat entier de la pénalité « deux mains »). */
+const LEG_MOVE_COST = 100;
+const LEG_DODGE_COST = 200;
+const HOOK_COST = 400;
+
 export function trainProsthesis(get: Get, set: Set, heroId: string, uid: string): void {
-  // Rachat PX d'une prothèse (LDB 73) : Fausse jambe → réapprendre l'Esquive (200 PX) ; Crochet → racheter
-  // la pénalité « deux mains » entière (400 PX) pour manier de nouveau les armes à deux mains. Keyé par
-  // `trappingId` STABLE (≠ libellé).
-  const COSTS: Record<string, number> = { 'fausse-jambe': 200, crochet: 400 };
+  // Rachat PX d'une prothèse (LDB 73). Keyé par `trappingId` STABLE (≠ libellé).
   let msg = '';
   set((s) => ({
     party: s.party.map((h) => {
       if (h.id !== heroId) return h;
       const clone: Combatant = structuredClone(h);
       const it = (clone.items ?? []).find((i) => i.uid === uid);
-      const cost = it?.trappingId ? COSTS[it.trappingId] : undefined;
-      if (!it || cost == null || !it.equipped) { msg = `${clone.name} : prothèse non portée / non entraînable.`; return h; }
-      if (it.prosthesisTrained) { msg = `${clone.name} : ${it.name} déjà entraînée.`; return h; }
-      if ((clone.xp ?? 0) < cost) { msg = `${clone.name} : PX insuffisants (${cost}).`; return h; }
-      clone.xp = (clone.xp ?? 0) - cost;
-      it.prosthesisTrained = true;
-      msg = it.trappingId === 'crochet'
-        ? `${clone.name} maîtrise son crochet : armes à deux mains de nouveau possibles (−${cost} PX).`
-        : `${clone.name} réapprend l'Esquive avec sa fausse jambe (−${cost} PX).`;
-      return clone;
+      if (!it || !it.equipped || !it.trappingId) { msg = `${clone.name} : prothèse non portée / non entraînable.`; return h; }
+
+      if (it.trappingId === 'fausse-jambe') {
+        if (!it.prosthesisMoveTrained) { // 1er palier : 100 PX (récupérer le dernier PM perdu)
+          if ((clone.xp ?? 0) < LEG_MOVE_COST) { msg = `${clone.name} : PX insuffisants (${LEG_MOVE_COST}).`; return h; }
+          clone.xp = (clone.xp ?? 0) - LEG_MOVE_COST;
+          it.prosthesisMoveTrained = true;
+          msg = `${clone.name} s'entraîne à sa fausse jambe : Mouvement plein retrouvé (−${LEG_MOVE_COST} PX).`;
+          return clone;
+        }
+        if (!it.prosthesisTrained) { // 2e palier : 200 PX (réapprendre l'Esquive)
+          if ((clone.xp ?? 0) < LEG_DODGE_COST) { msg = `${clone.name} : PX insuffisants (${LEG_DODGE_COST}).`; return h; }
+          clone.xp = (clone.xp ?? 0) - LEG_DODGE_COST;
+          it.prosthesisTrained = true;
+          msg = `${clone.name} réapprend l'Esquive avec sa fausse jambe (−${LEG_DODGE_COST} PX).`;
+          return clone;
+        }
+        msg = `${clone.name} : ${it.name} déjà entraînée.`;
+        return h;
+      }
+
+      if (it.trappingId === 'crochet') {
+        if (it.prosthesisTrained) { msg = `${clone.name} : ${it.name} déjà entraînée.`; return h; }
+        if ((clone.xp ?? 0) < HOOK_COST) { msg = `${clone.name} : PX insuffisants (${HOOK_COST}).`; return h; }
+        clone.xp = (clone.xp ?? 0) - HOOK_COST;
+        it.prosthesisTrained = true;
+        msg = `${clone.name} maîtrise son crochet : armes à deux mains de nouveau possibles (−${HOOK_COST} PX).`;
+        return clone;
+      }
+
+      msg = `${clone.name} : prothèse non portée / non entraînable.`;
+      return h;
     }),
   }));
   if (msg) get().log(msg);
