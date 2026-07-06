@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
-import { gainCorruption } from './corruptionFlow';
+import { gainCorruption, corruptionTarget } from './corruptionFlow';
 import { makePregens } from '../data/pregens';
 import mutationTables from '../data/mutationTables.json';
 import type { Combatant } from '../engine/types';
@@ -253,5 +253,44 @@ describe('Effet ops { op: corruption } (gain direct via ops generiques)', () => 
         .filter((t) => t.id.includes('nurgle')).flatMap((t) => t.ranges.map((r) => r.mutation)),
     );
     expect(nurgleRefs.has(after.mutations![0].id)).toBe(true);
+  });
+});
+
+// #152 (suite #143) : `corruptionTarget` (utilisé par `resolveRenounce` / « Je te renie ! ») filtrait
+// encore `kind === 'hero'` — reconditionné sur `followsCharacterRules` (engine/relations.ts), le MÊME
+// prédicat que le reste de la boucle de fin de combat/Corruption (#143).
+describe('corruptionTarget — #152 : reconditionné sur followsCharacterRules (pas kind===\'hero\')', () => {
+  const e30 = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  const npcPersonnage = (p: Partial<Combatant>): Combatant =>
+    ({
+      id: 'npc', name: 'PNJ', kind: 'enemy', followsCharacterRules: true,
+      characteristics: e30,
+      wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
+      weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      ...p,
+    } as Combatant);
+
+  it('trouve un PNJ ENNEMI flagué `followsCharacterRules` par id (pas seulement un héros)', () => {
+    const npc = npcPersonnage({});
+    useGame.setState({ party: [], battle: { combatants: [npc], log: [] } as never });
+    expect(corruptionTarget(useGame.getState(), npc.id)).toBe(npc);
+  });
+
+  it('une créature GÉNÉRIQUE (sans le flag) n’est jamais résolue par corruptionTarget, même par id', () => {
+    const monster = { ...npcPersonnage({}), followsCharacterRules: undefined };
+    useGame.setState({ party: [], battle: { combatants: [monster], log: [] } as never });
+    expect(corruptionTarget(useGame.getState(), monster.id)).toBeUndefined();
+  });
+
+  it('« Je te renie ! » (resolveRenounce) résout sur un PNJ ennemi flagué : la Résilience est bien décomptée', () => {
+    const npc = npcPersonnage({ resilience: 1 });
+    useGame.setState({
+      party: [],
+      battle: { combatants: [npc], log: [] } as never,
+      pendingRenounce: { heroId: npc.id, testRoll: 99, testTarget: 30 },
+    });
+    useGame.getState().renounceResolve(true);
+    expect(useGame.getState().pendingRenounce).toBeNull();
+    expect(npc.resilience).toBe(0); // trouvé via followsCharacterRules → « Je te renie ! » a pu s'appliquer
   });
 });

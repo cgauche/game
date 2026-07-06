@@ -15,6 +15,8 @@ import { setRule, resetRule } from '../engine/policy';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
+import { creatureToCombatant } from './spawn';
+import { findCreatureById } from '../data';
 
 const SPELL = 'mur-de-feu'; // un id de Sort de Domaine réel (Feu) — couvert par un composant
 
@@ -112,10 +114,13 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
     expect(out.some((l) => /aucun effet/.test(l))).toBe(false);
   });
 
-  it('un ENNEMI (non-héros) n’a jamais de composant', () => {
+  it('un ENNEMI GÉNÉRIQUE (sans `followsCharacterRules`) n’a jamais de composant', () => {
     setRule('magic-composant', true);
     const hero = mageInBattle();
     const enemy = useGame.getState().battle!.combatants.find((c) => c.kind === 'enemy')!;
+    // #152 : la rencontre `enc-mutants` spawne le Mutant du bestiaire, désormais flagué
+    // `followsCharacterRules` (PNJ humain) — ce cas isole le défaut « créature générique ».
+    delete enemy.followsCharacterRules;
     enemy.componentSpells = [SPELL];
     const used = useSpellComponent(enemy, SPELL, []);
     expect(used).toBe(false);
@@ -136,6 +141,27 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
     expect(used).toBe(true);
     expect(enemy.componentSpells).toEqual([]); // consommé
     expect(lines.some((l) => /consumé/.test(l))).toBe(true);
+  });
+
+  // #152 (suite #143) : le flag doit aussi profiter aux ennemis spawnés depuis le BESTIAIRE
+  // (creatureToCombatant, réf de scène), pas seulement aux statblocs d'éditeur.
+  it('#152 : un ennemi du BESTIAIRE flagué (CreatureData.followsCharacterRules, Cultiste) consume un composant', () => {
+    setRule('magic-composant', true);
+    const npc = creatureToCombatant(findCreatureById('cultiste')!, 'e1', { x: 0, y: 0 });
+    npc.componentSpells = [SPELL];
+    const lines: string[] = [];
+    const used = useSpellComponent(npc, SPELL, lines);
+    expect(used).toBe(true);
+    expect(npc.componentSpells).toEqual([]); // consommé
+  });
+
+  it('#152 : une créature GÉNÉRIQUE du bestiaire (Orc, non flaguée) n’a jamais de composant', () => {
+    setRule('magic-composant', true);
+    const npc = creatureToCombatant(findCreatureById('orc')!, 'e1', { x: 0, y: 0 });
+    npc.componentSpells = [SPELL];
+    const used = useSpellComponent(npc, SPELL, []);
+    expect(used).toBe(false);
+    expect(npc.componentSpells).toEqual([SPELL]); // intact
   });
 
   it('la Colère des dieux n’est jamais dégradée (composants = Sorts, pas Prières — l.163)', () => {

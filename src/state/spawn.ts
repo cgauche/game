@@ -243,6 +243,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
     armour: armourFromTraits(traits),
     size,
     bodyShape: bodyShapeOf(creature.id), // Tableau de Localisation par forme du corps (LDB p.312)
+    ...(creature.followsCharacterRules ? { followsCharacterRules: true } : {}), // #152 : bestiaire HUMAIN rétro-flagué (CreatureData) — même prédicat unique que statblockToCombatant (#143)
     ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
     ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)

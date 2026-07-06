@@ -53,7 +53,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "villageois"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "nain",
@@ -383,7 +384,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "hors-la-loi"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pol-dankels",
@@ -441,7 +443,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "eusapia-balacanon",
@@ -630,7 +633,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "araignee-geante",
@@ -4107,7 +4111,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "cultiste"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "mutant",
@@ -4162,7 +4167,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "mendiant"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "guerrier-du-chaos",
@@ -4236,7 +4242,8 @@
     "appearance": {
       "species": "guerrier-du-chaos",
       "tenue": "guerrier-du-chaos"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "sanguinaire-de-khorne",
@@ -5354,7 +5361,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "garde"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "homme-du-guet",
@@ -5492,7 +5500,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "garde"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "sergent-du-guet",
@@ -5651,7 +5660,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "garde"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "capitaine-du-guet",
@@ -5833,7 +5843,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "garde"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-recrue-de-la-garde-du-village",
@@ -5964,7 +5975,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "milicien"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "garde-du-village",
@@ -6111,7 +6123,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "milicien"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "chef-de-la-garde-du-village",
@@ -6288,7 +6301,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "milicien"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "chef-veteran-de-la-garde-du-village",
@@ -6482,7 +6496,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "milicien"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-recrue-patrouilleurs-ruraux",
@@ -6621,7 +6636,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "patrouilleur-routier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "patrouilleur-rural",
@@ -6771,7 +6787,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "patrouilleur-routier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "sergent-patrouilleurs-ruraux",
@@ -6936,7 +6953,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "patrouilleur-routier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "capitaine-patrouilleurs-ruraux",
@@ -7119,7 +7137,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "patrouilleur-routier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-recrue-patrouilleurs-fluviaux",
@@ -7249,7 +7268,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "patrouilleur-fluvial"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "patrouilleur-fluvial",
@@ -7392,7 +7412,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "patrouilleur-fluvial"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "sergent-patrouilleurs-fluviaux",
@@ -7561,7 +7582,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "patrouilleur-fluvial"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "capitaine-patrouilleurs-fluviaux",
@@ -7748,7 +7770,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "patrouilleur-fluvial"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-interrogateur",
@@ -7871,7 +7894,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "repurgateur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "repurgateur",
@@ -8024,7 +8048,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "repurgateur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "inquisiteur",
@@ -8196,7 +8221,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "repurgateur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "grand-inquisiteur",
@@ -8387,7 +8413,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "repurgateur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "juge",
@@ -8507,7 +8534,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "juriste"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "haut-juge",
@@ -8648,7 +8676,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "juriste"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "avocat",
@@ -8767,7 +8796,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "juriste"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "batonnier",
@@ -8907,7 +8937,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "juriste"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-recrue-soldats-mercenaires",
@@ -9057,7 +9088,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "soldat"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "soldat-mercenaire-aguerri",
@@ -9223,7 +9255,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "soldat"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "sous-officier",
@@ -9398,7 +9431,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "soldat"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "officier",
@@ -9590,7 +9624,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "soldat"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-citadin-i-b-habitants-des-villes",
@@ -9717,7 +9752,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "bourgeois"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-citadin-citadins",
@@ -9844,7 +9880,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "bourgeois"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "citadin",
@@ -9996,7 +10033,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "bourgeois"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "notable",
@@ -10170,7 +10208,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "bourgeois"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "bourgmestre",
@@ -10361,7 +10400,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "noble"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "apothicaire",
@@ -10497,7 +10537,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "apothicaire"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "maistre-apothicaire",
@@ -10657,7 +10698,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "apothicaire"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "medecin",
@@ -10798,7 +10840,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "medecin"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "doktor",
@@ -10956,7 +10999,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "medecin"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "religieuse-de-shallya",
@@ -11064,7 +11108,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "nonne"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pretresse-de-shallya",
@@ -11233,7 +11278,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "artisan-services-urbains-frequents-usuels",
@@ -11381,7 +11427,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "artisan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "maistre-artisan-services-urbains-frequents-usuels",
@@ -11547,7 +11594,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "artisan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "marchand-services-urbains-frequents-usuels",
@@ -11697,7 +11745,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "marchand"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "maistre-marchand-services-urbains-frequents-usuels",
@@ -11861,7 +11910,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "marchand"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "erudit",
@@ -11981,7 +12031,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "erudit"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "erudit-de-renom",
@@ -12117,7 +12168,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "erudit"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "detective",
@@ -12247,7 +12299,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "enqueteur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "enqueteur-chevronne",
@@ -12399,7 +12452,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "enqueteur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "moine-de-sigmar",
@@ -12530,7 +12584,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pretre-de-sigmar",
@@ -12718,7 +12773,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "moine-d-ulric",
@@ -12849,7 +12905,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pretre-d-ulric",
@@ -13040,7 +13097,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "religieuse-de-verena",
@@ -13171,7 +13229,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "nonne"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pretresse-de-verena",
@@ -13363,7 +13422,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-delinquant",
@@ -13469,7 +13529,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "hors-la-loi"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "fourgue",
@@ -13595,7 +13656,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "receleur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "receleur",
@@ -13746,7 +13808,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "receleur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "racoleur",
@@ -13876,7 +13939,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "entremetteur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "guide-racoleur",
@@ -14030,7 +14094,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "entremetteur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "protagoniste",
@@ -14165,7 +14230,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "spadassin"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "tueur-a-gages",
@@ -14318,7 +14384,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "chasseur-de-primes"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "voyou",
@@ -14455,7 +14522,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "hors-la-loi"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "racketteur",
@@ -14610,7 +14678,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "hors-la-loi"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "charlatan",
@@ -14736,7 +14805,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "charlatan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "escroc",
@@ -14890,7 +14960,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "charlatan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "faussaire",
@@ -15030,7 +15101,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "charlatan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "maistre-faussaire",
@@ -15193,7 +15265,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "charlatan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "voleur",
@@ -15331,7 +15404,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "voleur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "voleur-aguerri",
@@ -15484,7 +15558,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "voleur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pilleur-de-tombes",
@@ -15613,7 +15688,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pilleur-de-tombes"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pilleur-de-cryptes",
@@ -15768,7 +15844,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pilleur-de-tombes"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pretre-voleur-de-ranald-i-c-criminalite-urbaine",
@@ -15932,7 +16009,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "voleur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-villageois",
@@ -16073,7 +16151,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "villageois"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "villageois",
@@ -16230,7 +16309,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "villageois"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "ancien",
@@ -16405,7 +16485,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "villageois"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "venerable",
@@ -16598,7 +16679,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "villageois"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "artisan-services-ruraux-frequents-usuels",
@@ -16746,7 +16828,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "artisan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "maistre-artisan-services-ruraux-frequents-usuels",
@@ -16912,7 +16995,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "artisan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "marchand-services-ruraux-frequents-usuels",
@@ -17066,7 +17150,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "marchand"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "maistre-marchand-services-ruraux-frequents-usuels",
@@ -17234,7 +17319,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "marchand"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "batelier",
@@ -17376,7 +17462,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "batelier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "nautonier",
@@ -17546,7 +17633,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "nautonier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "riverain",
@@ -17712,7 +17800,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "batelier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "riverain-respecte",
@@ -17891,7 +17980,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "batelier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "herboriste",
@@ -18050,7 +18140,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "herboriste"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "maistre-herboriste",
@@ -18226,7 +18317,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "herboriste"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "rebouteux",
@@ -18417,7 +18509,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "herboriste"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "maitre-des-taillis",
@@ -18650,7 +18743,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "chasseur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "sorciere",
@@ -18812,7 +18906,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier-de-village"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "envouteuse",
@@ -19018,7 +19113,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier-de-village"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "druide-de-la-foi-antique",
@@ -19181,7 +19277,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "mystique"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "haut-druide-de-la-foi-antique",
@@ -19374,7 +19471,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "mystique"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "religieuse-novice-de-rhya",
@@ -19503,7 +19601,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "nonne"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "religieuse-de-rhya",
@@ -19659,7 +19758,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "nonne"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pretresse-de-rhya",
@@ -19826,7 +19926,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "grande-pretresse-de-rhya",
@@ -20035,7 +20136,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "moine-novice-de-taal",
@@ -20169,7 +20271,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "moine-de-taal",
@@ -20319,7 +20422,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pretre-rodeur-de-taal",
@@ -20491,7 +20595,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "haut-pretre-rodeur-de-taal",
@@ -20704,7 +20809,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-brigand",
@@ -20822,7 +20928,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "hors-la-loi"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "brigand",
@@ -20965,7 +21072,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "hors-la-loi"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "chef-de-bande",
@@ -21126,7 +21234,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "hors-la-loi"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "seigneur-brigand",
@@ -21305,7 +21414,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "hors-la-loi"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-contrebandier",
@@ -21427,7 +21537,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "contrebandier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "contrebandier",
@@ -21574,7 +21685,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "contrebandier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "chef-contrebandier",
@@ -21739,7 +21851,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "contrebandier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "roi-du-trafic",
@@ -21927,7 +22040,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "contrebandier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-naufrageur",
@@ -22049,7 +22163,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "naufrageur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "pirate-fluvial",
@@ -22189,7 +22304,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "naufrageur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "chef-pirate",
@@ -22348,7 +22464,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "naufrageur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "seigneur-pirate",
@@ -22524,7 +22641,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "naufrageur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "chien-de-compagnie-ii-a-animaux-domestiques",
@@ -29253,7 +29371,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "guerrier-du-chaos"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "maraudeur-du-chaos-chef-de-bande",
@@ -29410,7 +29529,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "guerrier-du-chaos"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "maraudeur-du-chaos-chef-de-guerre",
@@ -29592,7 +29712,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "guerrier-du-chaos"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "guerrier-du-chaos-chef-de-bande",
@@ -29765,7 +29886,8 @@
     },
     "appearance": {
       "species": "guerrier-du-chaos"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "guerrier-du-chaos-chef-de-guerre",
@@ -29955,7 +30077,8 @@
     },
     "appearance": {
       "species": "guerrier-du-chaos"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "sorcier-du-chaos",
@@ -30133,7 +30256,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "sorcier-du-chaos-terrifiant",
@@ -30326,7 +30450,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "sorcier-du-chaos-effroyable",
@@ -30546,7 +30671,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "furie-exaltee-du-chaos",
@@ -45896,7 +46022,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "necromancien-puissant",
@@ -46108,7 +46235,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "magister-mortis",
@@ -46371,7 +46499,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jeune-goule",
@@ -53330,7 +53459,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "cultiste"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "peau-de-loup",
@@ -55385,7 +55515,8 @@
       "features": [
         "pelage-massif"
       ]
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "enfant-d-ulric-humain",
@@ -55423,7 +55554,8 @@
     },
     "appearance": {
       "species": "humain"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "spectre-middenheim",
@@ -56927,7 +57059,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "garde"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "wereburga-krotpreffer",
@@ -57039,7 +57172,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "garde"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "moritz-valgeir",
@@ -57218,7 +57352,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "chevalier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "stefan-hochen",
@@ -57337,7 +57472,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "medecin"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "marta-gerbenshreiber",
@@ -57457,7 +57593,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "bailli"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "wulfric-tore",
@@ -57532,7 +57669,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "marchand"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "waldtraud-blass",
@@ -57639,7 +57777,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "apothicaire"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "ritta",
@@ -57741,7 +57880,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "charlatan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "wulfrum-viert",
@@ -57870,7 +58010,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "intendant"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "emmille-munzstatter",
@@ -57950,7 +58091,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "artisan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "yanni-weber",
@@ -58078,7 +58220,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "johen",
@@ -58188,7 +58331,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier-dissident"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "frere-bengt",
@@ -58285,7 +58429,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "grand-vizir-bhar",
@@ -58504,7 +58649,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "sorcier"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "hugo-vallonvert",
@@ -58993,7 +59139,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "ranconneur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "walpurga-wurklich",
@@ -59068,7 +59215,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "agitateur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "andrea-bruhn",
@@ -59194,7 +59342,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "conseiller"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "jacopo-schmidt",
@@ -59311,7 +59460,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "entremetteur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "traudl-bauer",
@@ -59414,7 +59564,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "flagellant"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "beate-moser",
@@ -59566,7 +59717,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "pretre"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "le-vieil-otto",
@@ -59701,7 +59853,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "artisan"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "brigitte-schleigel",
@@ -59807,7 +59960,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "agitateur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "brute",
@@ -59862,7 +60016,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "milicien"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "athlete",
@@ -59917,7 +60072,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "spadassin"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "gerdon-salzwed",
@@ -60034,7 +60190,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "receleur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "hasso-schroeter",
@@ -60155,7 +60312,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "saltimbanque"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "kat-sperber",
@@ -60273,7 +60431,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "colporteur"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "theresia-kleist",
@@ -60394,7 +60553,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "marin"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "baudroye",
@@ -61906,7 +62066,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "marin"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "long-drong-silver",
@@ -62499,7 +62660,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "guerrier-du-chaos"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "vrisk-gratte-le-fer",
@@ -63017,7 +63179,8 @@
     "appearance": {
       "species": "humain",
       "tenue": "marin"
-    }
+    },
+    "followsCharacterRules": true
   },
   {
     "id": "anguille-du-reik",

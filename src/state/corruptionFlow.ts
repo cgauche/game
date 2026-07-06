@@ -37,6 +37,7 @@ import { testValue } from '../engine/skills';
 import { pushReveal } from './combatFlow';
 import { evLines } from './combatLog';
 import { pilotedByHuman } from './netOwnership';
+import { followsCharacterRules } from '../engine/relations';
 
 /**
  * Ajoute `n` Points de Corruption à `hero`, applique seuil → mutation → limites.
@@ -145,8 +146,10 @@ export function resolveRenounce(get: Get, set: Set, renounce: boolean): void {
   else set({ journal: [...get().journal.slice(-40), ...lines] });
 }
 
-/** Cible d'un effet de Corruption : héros désigné, sinon le premier vivant. */
+/** Cible d'un effet de Corruption : héros désigné, sinon le premier vivant. #152 (suite #143) : le pool
+ *  en combat est celui des PERSONNAGES (`followsCharacterRules`, PAS un proxy `kind==='hero'`) — un PNJ
+ *  humain hostile MODÉLISÉ (statbloc d'éditeur ou bestiaire rétro-flagué) y est éligible comme un héros. */
 export function corruptionTarget(s: GameState, heroId?: string): Combatant | undefined {
-  const pool = s.battle?.combatants.filter((c) => c.kind === 'hero') ?? s.party;
+  const pool = s.battle?.combatants.filter((c) => followsCharacterRules(c)) ?? s.party;
   return (heroId ? pool.find((h) => h.id === heroId) : undefined) ?? pool.find((h) => !h.dead && !h.outOfRencontre);
 }

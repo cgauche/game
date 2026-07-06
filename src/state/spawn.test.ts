@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { weaponFromTrait, creatureToCombatant, statblockToCombatant, skillsFromBook, spawnEnemy } from './spawn';
 import { enemyRigProfile } from '../gameIso/rig/enemyProfile';
 import { weaponFamily } from '../gameIso/rig/parts/equipment';
-import { findCreature, talentConcrete } from '../data';
+import { findCreature, findCreatureById, talentConcrete } from '../data';
 import { CHAR_KEYS } from '../engine/types';
 import { knowsCastingSkill, castingValue } from '../engine/magic';
 
@@ -132,6 +132,22 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
       const bf = Math.floor(c.characteristics.F / 10), be = Math.floor(c.characteristics.E / 10), bfm = Math.floor(c.characteristics.FM / 10);
       expect(c.wounds.max).toBe(bf + 2 * be + bfm); // Mutant : Taille Moyenne
     });
+  });
+});
+
+// #152 (suite #143) : `CreatureData.followsCharacterRules` — bestiaire humain rétro-flagué (Cultiste,
+// Brigand, Voleur…) — un ennemi spawné depuis une réf (`creatureToCombatant`, pas un statbloc d'éditeur)
+// doit porter le MÊME flag que `statblockToCombatant` (#143) pour suivre les règles de Personnage
+// (Corruption LDB 19, composant LDB 46, maladie/Corruption de fin de combat LDB 18/20).
+describe('creatureToCombatant — #152 : CreatureData.followsCharacterRules propagé au Combatant', () => {
+  const at = { x: 0, y: 0 };
+  it('créature du bestiaire FLAGUÉE (Cultiste, humain) → Combatant.followsCharacterRules', () => {
+    const c = creatureToCombatant(findCreatureById('cultiste')!, 'e1', at);
+    expect(c.followsCharacterRules).toBe(true);
+  });
+  it('créature GÉNÉRIQUE du bestiaire non flaguée (Orc) → pas de followsCharacterRules', () => {
+    const c = creatureToCombatant(findCreatureById('orc')!, 'e1', at);
+    expect(c.followsCharacterRules).toBeUndefined();
   });
 });
 
