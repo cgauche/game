@@ -26,6 +26,7 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 | Toucher un passif / la corruption | `docs/systeme-passifs.md` |
 | Toucher les triggers / événements de combat | `docs/combat-events-coherence.md` |
 | Ajouter une créature (rig) | `docs/creer-une-creature.md` |
+| Ajouter/curer une donnée dans `src/data/*.json` (hors sort/créature/effet/icône) | `docs/donnees.md` (carte + conventions) + skill `ajouter-une-donnee` |
 | Authoring de map | `docs/map-authoring.md` |
 | Créer ou retoucher un écran UI (CSS, densité, responsive) | `docs/charte-ui.md` + règle stricte 4 |
 

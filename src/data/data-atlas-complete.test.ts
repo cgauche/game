@@ -1,0 +1,24 @@
+/**
+ * Garde de COMPLÉTUDE de l'atlas des données : tout `src/data/*.json` doit être cartographié dans
+ * `docs/donnees.md` (§A). Empêche la carte de pourrir quand un fichier data est ajouté sans être
+ * cartographié. Scan de `src/data` SEUL (jamais les worktrees). Frontière de nom pour éviter qu'un nom
+ * plus long ne satisfasse un plus court (`aa-criticals.json` ne compte pas pour `criticals.json`).
+ */
+import { describe, it, expect } from 'vitest';
+import { readFileSync, readdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
+const ATLAS = readFileSync(fileURLToPath(new URL('../../docs/donnees.md', import.meta.url)), 'utf8');
+
+const mentioned = (file: string): boolean =>
+  new RegExp(`(?<![A-Za-z0-9_-])${file.replace(/\./g, '\\.')}`).test(ATLAS);
+
+describe('atlas des données (docs/donnees.md) — complétude', () => {
+  const files = readdirSync(DATA_DIR).filter((f) => f.endsWith('.json'));
+  for (const f of files) {
+    it(`${f} est cartographié dans docs/donnees.md`, () => {
+      expect(mentioned(f)).toBe(true);
+    });
+  }
+});
