@@ -114,7 +114,7 @@ uniquement).
 
 - Chaque entrée mécanique tagge sa provenance avec un champ `source: { book: "<ABRÉV>", page: N }`
   (vu tel quel dans `src/data/traits.json`, `naval-traits.json`, `creatures.json`, `activities.json`,
-  `mutations.json`, `careers.json`, etc. — 19 fichiers portent ce champ). Certaines données de
+  `mutations.json`, `careers.json`, etc. — 38 fichiers portent ce champ). Certaines données de
   périmètre (activités, véhicules) portent en plus un `where: [...]` qui gate par lieu/contexte
   (ex. `activities.json` avec `"source":{"book":"ACE"}, "where":["altdorf"]`).
 - Coller le texte **verbatim** (règle 5 de `CLAUDE.md`) : aucune reformulation, formatage Markdown

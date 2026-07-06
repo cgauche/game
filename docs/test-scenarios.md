@@ -1,12 +1,13 @@
 # Scénarios de test
 
-Le menu **« 🧪 Tests — scénarios »** (écran `'test'`) liste des scénarios de vérification : chacun
+Le menu **« Scénarios de test »** (`<Icon id="nav/test-scenarios">`, écran `'test'`) liste des
+scénarios de vérification : chacun
 fixe un **groupe** et une **scène adaptée** à ce qu'on veut tester, avec combat direct (`autoCombat`)
 quand c'est utile.
 
 ## Vérifier une feature au navigateur
 
-1. Lance `npm run dev`, ouvre le menu → **Tests — scénarios**.
+1. Lance `npm run dev`, ouvre le menu → **Scénarios de test**.
 2. **Passe par le scénario adapté.** S'il n'en existe pas pour ce que tu vérifies, **crée-en un**.
 
 ## Ajouter un scénario = un fichier
@@ -16,17 +17,22 @@ Dépose un fichier `src/scenes/test-scenarios/<NN>-<slug>.ts` exportant `scenari
 ```ts
 import { arena } from './_shared';
 import type { TestScenario } from './_shared';
-// (+ createHero / makePregens / itemFromTrapping selon le groupe voulu)
+// (+ createHero / makePregens / itemFromTrappingById selon le groupe voulu)
 
 const scene = arena({ id: 'test-xxx', nom: '…', heroStart: { x: 2, y: 4 } });
 scene.encounters = [{ id: 'enc-xxx', enemies: [{ ref: 'Gobelin', pos: { x: 9, y: 4 } }] }];
 
 export const scenario: TestScenario = {
-  id: 'xxx', order: 7, category: '⚔️ Combat', icon: '🧪', title: '…',
+  id: 'xxx', order: 7, category: 'combat', icon: 'scenario/ambush', title: '…',
   tests: 'ce que ça vérifie', partyNote: 'le groupe',
   makeParty: () => [/* … */], scene, autoCombat: 'enc-xxx',
 };
 ```
+
+`category` est une clé SANS emoji (`'combat' | 'magie' | 'creatures' | 'survie' | 'marche' |
+'scenarios' | 'naval' | 'rendu'`, `SCENARIO_SECTIONS` dans `_shared.ts`) — le libellé/icône de
+section sont portés par la donnée, pas par le scénario. `icon` est un `IconId` du registre SVG
+(`src/ui/icons`, famille `scenario/*`), jamais un emoji.
 
 `index.ts` le ramasse via le **registre généré** (`scripts/gen-registry.mjs` → `_registry.generated.ts`,
 auto en dev ; après ajout/suppression d'un fichier, lance `npm run gen`). Les scénarios sont triés par
@@ -35,7 +41,7 @@ et les fichiers `_*` sont exclus.
 
 ## Conventions
 
-- **Équipement à la main** : `createHero(...)` puis réassigner `items` (`itemFromTrapping` +
+- **Équipement à la main** : `createHero(...)` puis réassigner `items` (`itemFromTrappingById` +
   `recomputeLoadout`). Ex. arbalétrier = Arbalète + Carreaux équipés (`recomputeLoadout` dérive
   `reload`/`subType`).
 - **Ennemis** : vraies créatures du bestiaire via `ref` (`creatures.json`, LDB/ADE) ; fixture

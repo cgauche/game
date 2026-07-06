@@ -8,7 +8,7 @@ choix du canal, l'édition au Codex, et le dispatcher unique des effets déclenc
 
 | Canal | Porte | Édité par | Lu par |
 |---|---|---|---|
-| `passive: GameOp[]` | modificateur CONTINU (sans déclencheur) | `<GameOpEditor>` | `passiveMods(c)` (`src/engine/trauma.ts:454`) |
+| `passive: GameOp[]` | modificateur CONTINU (sans déclencheur) | `<GameOpEditor>` | `passiveMods(c)` (`src/engine/trauma.ts:504`) |
 | `effects: TriggeredEffect[]` | effet sur ÉVÉNEMENT (onHit/onCrit/onRoundEnd…) | `<TriggeredEffectsField>` | `fireTriggers(get, actor, trigger, ctx)` (`src/state/triggeredEffects.ts:379`) |
 | `capabilities: XCapabilities` | drapeau IRRÉDUCTIBLE, interrogé par le moteur (pas de valeur numérique/formule) | formulaire générique inféré (pas de widget dédié) | `traitCapability`/`hasCapability`/dispatch par domaine |
 
@@ -37,7 +37,7 @@ Une fois qu'on sait que c'est de la donnée :
 
 « Difficile à exprimer en `GameOp`/`Condition` » n'autorise **jamais** un repli en machinerie ou
 en champ ad hoc — c'est un signal pour étendre le vocabulaire (`docs/combat-events-coherence.md`
-l.66 : « difficile à exprimer n'est JAMAIS une raison de mettre en machinerie »).
+§3 : « difficile à exprimer n'est JAMAIS une raison de mettre en machinerie »).
 
 ## 2. Canal `passive: GameOp[]` — le continu
 
@@ -51,18 +51,18 @@ Champ donnée par entité (`src/data/index.ts`) :
 
 | Entité | Champ | Fichier |
 |---|---|---|
-| Trait | `TraitData.passive: GameOp[]` (l.812) | `src/data/traits.json` |
-| Qualité | `QualityData.passive: GameOp[]` (l.885) | `src/data/qualities.json` |
+| Trait | `TraitData.passive: GameOp[]` (l.823) | `src/data/traits.json` |
+| Qualité | `QualityData.passive: GameOp[]` (l.896) | `src/data/qualities.json` |
 | Mutation | `Mutation.passive: GameOp[]` | `src/data/mutations.json` |
 | Talent/État/Symptôme | `passive`/`severePassive: GameOp[]` | `talents.json`/`etats.json`/`symptoms.json` |
 
-**Collecteur unique** : `passiveMods(c: Combatant): PassiveMod[]` (`src/engine/trauma.ts:454`)
+**Collecteur unique** : `passiveMods(c: Combatant): PassiveMod[]` (`src/engine/trauma.ts:504`)
 concatène toutes les sources (traumatismes, `c.mutations[].passive`, traits de profil via
-`traitPassiveMods(c.liveTraits)` — `src/engine/traits/dispatch.ts:176` —, qualités d'objet
+`traitPassiveMods(c.liveTraits)` — `src/engine/traits/dispatch.ts:178` —, qualités d'objet
 équipées, maladies/faim, sorts actifs) et emballe chaque op en `PassiveMod{op, kind}`. Le `kind`
 (`PassiveKind`, `src/engine/ops.ts`) porte annulation + combinaison (`intrinsèque` = Σ dans la
 base pour trait/mutation/qualité ; le reste = pool non-cumul « meilleur bonus + pire malus », table
-`PASSIVE_CANCELLERS` dans `trauma.ts:398`). **Ne JAMAIS lire un champ typé d'origine** dans un
+`PASSIVE_CANCELLERS` dans `trauma.ts:448`). **Ne JAMAIS lire un champ typé d'origine** dans un
 consommateur (`effectiveChar`/`testValue`/`defenseValue`/`effectiveMovement`/`recomputeLoadout`) —
 toujours passer par les helpers d'extraction de `trauma.ts` (`passiveCharSum`, `passiveSkillSum`,
 `passiveTestMod`, `passiveMoveMod`…).
@@ -74,7 +74,7 @@ double-compte.
 
 ## 3. Canal `effects: TriggeredEffect[]` — le déclenché
 
-`TriggeredEffect` (`src/engine/flowCore.ts:465`) :
+`TriggeredEffect` (`src/engine/flowCore.ts:472`) :
 
 ```ts
 interface TriggeredEffect<E = EffectOp> {
@@ -89,7 +89,7 @@ interface TriggeredEffect<E = EffectOp> {
 }
 ```
 
-(`EffectTrigger` défini `src/engine/flowCore.ts:443`.)
+(`EffectTrigger` défini `src/engine/flowCore.ts:450`.)
 
 Champ `effects` sur `TraitData`, `QualityData`, `talents.json`, `etats.json`, `weapon.onHitEffects`
 (atout d'arme). Le Flow est le vocabulaire des sorts (`GameOp` via `applyOps`) — jamais un handler
@@ -124,19 +124,19 @@ Réservé aux drapeaux que le moteur **interroge** (résolution de combat, IA, p
 build/déplacement, artisanat), SANS valeur formule ni déclencheur — un booléen (ou un petit champ
 scalaire comme `encDelta`) qui pilote une branche de code, pas un chiffre qui s'additionne.
 
-- **Trait** : `TraitData.capabilities?: TraitCapabilities` (`src/data/index.ts:819`), lu PAR ID par
-  `traitCapability(traits, cap)` (`src/engine/traits/dispatch.ts:201`, ex. `bestial`, `mindless`,
+- **Trait** : `TraitData.capabilities?: TraitCapabilities` (`src/data/index.ts:830`), lu PAR ID par
+  `traitCapability(traits, cap)` (`src/engine/traits/dispatch.ts:203`, ex. `bestial`, `mindless`,
   `stupid`, `swarm`, `coldBlooded`…). `suppressesCapabilities` permet à un trait d'ANNULER une
   capacité d'un autre trait porté par le même combattant (Dressé ignore Bestial).
 - **Qualité d'arme/armure/objet** : `QualityData.capabilities?: QualityCapabilities`
-  (`src/data/index.ts:838-871` — `fastStrike`, `slowStrike`, `magazine`, `salvo`, `magic`,
+  (`src/data/index.ts:849-882` — `fastStrike`, `slowStrike`, `magazine`, `salvo`, `magic`,
   `unbreakable`…). Les **Indices** numériques (Salve N, Protectrice N…) restent lus du RUNTIME
   string via `parseQuality().indice` — la capability n'est qu'un marqueur de PRÉSENCE.
-- **Objet** : `TrappingData.capabilities?: ItemCapabilities` (`src/data/index.ts:461-466`), lu par
+- **Objet** : `TrappingData.capabilities?: ItemCapabilities` (`src/data/index.ts:471`), lu par
   `itemCapability(it, cap)` (par-objet, non gaté sur le port — une ration se mange sans être
   « portée », `src/engine/capabilities.ts:25`).
 - **Symptôme de maladie** : `SymptomData.capabilities?: SymptomCapabilities`
-  (`src/data/index.ts:892-899` — `blocksHealing`, `amputation`, `contagious`…).
+  (`src/data/index.ts:903-910` — `blocksHealing`, `amputation`, `contagious`…).
 
 **Agrégat cross-source par personnage** : `hasCapability(c, cap)` (`src/engine/capabilities.ts:45`)
 réunit objets portés/tenus, traits, qualités des objets portés/tenus, et maladies actives — un seul

@@ -120,10 +120,11 @@ typographiques flèches/formes géométriques) **hors** :
 - glyphes texte tolérés partout (`ALLOWED_CHARS` : `✓ ✗ ✔ ✘ ✕ ★ ⚜ ☰ ♂ ♀ ✦ ✸` — coches/croix,
   fermeture, ornement, burger de menu, symboles de sexe, particules FX en `<text>` SVG) ;
 - fichiers exclus par nature (`*.test.*`, `_registry.generated.ts`) ;
-- la liste `EXCEPTIONS` (fichiers pas encore migrés — ~100 entrées au 2026-07-05, groupées par
-  domaine : donnée JSON en cours de migration parallèle, outillage DEV console, journaux/state
-  de combat, rendu iso, écrans/modales de l'éditeur et de campagne non migrés, commentaires
-  documentant une correspondance emoji→icône dans `defs/resource.ts`).
+- la liste `EXCEPTIONS` (fichiers pas encore migrés, groupés par domaine : donnée JSON en cours de
+  migration parallèle, outillage DEV console, journaux/state de combat, rendu iso, écrans/modales
+  de l'éditeur et de campagne non migrés, commentaires documentant une correspondance emoji→icône
+  dans `defs/resource.ts` — voir le tableau `EXCEPTIONS` du fichier pour le compte et l'état à jour,
+  ne pas le figer ici).
 
 **Migrer un fichier = le retirer de `EXCEPTIONS`.** Un second test — `CLIQUET` — fait exprès
 échouer toute entrée de `EXCEPTIONS` dont le fichier n'a PLUS d'emoji (ou a disparu) : la liste

@@ -34,10 +34,9 @@ Plan × Gabarit (carrure) × Race (peau/tête/traits) × Perso (surcharges du de
 ```ts
 // creatures/defs/Ma-creature.ts
 export const creature: CreatureDef = {
-  name: 'Ma créature',          // clé d'espèce canonique
+  name: 'Ma créature',          // clé d'espèce canonique (le slug dérivé sert de clé de rig)
   plan: 'biped',
-  match: 'ma.?creature|alias',  // regex sur le nom normalisé (accents retirés)
-  matchPriority: 12,            // plus BAS = testé AVANT (désambiguïse « rat ogre » vs « rat »)
+  id: 'ma-creature-alt',        // optionnel — SEULEMENT pour désambiguïser une collision de slug
   race: 'Skaven',               // race d'apparence imposée (sinon heuristique baseSpeciesOf)
   perso: { … },                 // surcharges propres à CETTE créature (voir §3)
 };

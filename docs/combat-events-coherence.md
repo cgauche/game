@@ -1,8 +1,8 @@
-# Cohérence du système d'événements de combat — constat & cible (à traiter)
+# Cohérence du système d'événements de combat — doctrine & état
 
-> Note de session (2026-06-22). **Aucune correction faite ici** — c'est un état des lieux + la cible
-> décidée + des bugs concrets relevés en exemple, à corriger dans un chantier dédié plus tard.
-> Boussole : data-driven (GameOp/Trigger) · zéro doublon/legacy/dette · respect du RAW.
+> Référence vivante : doctrine de frontière donnée/machinerie (§3/§3bis, socle du dispatcher unique
+> `fireTriggers`) + état d'avancement de l'unification des événements de combat. Boussole :
+> data-driven (GameOp/Trigger) · zéro doublon/legacy/dette · respect du RAW.
 
 ## 1. Constat : trois strates d'une migration jamais finie
 
@@ -134,35 +134,37 @@ inchangée) ; `talent-free-attack.test` + `unified-dispatch.test` verts.
 
 ### 4a. Confirmé : acharnement sur un héros à 0 PB pendant plusieurs rounds
 Modèle de mort (RAW LDB 18, `engine/conditions.ts`) :
-- 0 PB → À Terre, **conscient**, `isOutOfAction = FAUX` (`:376-377`).
-- Passage Inconscient seulement quand `roundsAtZero > BE`, compteur avancé **1×/round** dans `tickDeath`
-  (`:426-428`).
-- Mort finalisée seulement si **Inconscient + 0 PB + `criticalWounds > BE`** (`inDeathCondition`
-  `:384-388`), vérifiée au franchissement de round (`combatFlow.ts:resolveRoundBoundary:3548-3554`).
+- 0 PB → À Terre, **conscient**, `isOutOfAction` FAUX.
+- Passage Inconscient seulement quand `roundsAtZero > BE`, compteur avancé **1×/round** dans `tickDeath`.
+- Mort finalisée seulement si **Inconscient + 0 PB + `criticalWounds > BE`** (`inDeathCondition`),
+  vérifiée au franchissement de round (`resolveRoundBoundary`, `state/combatFlow.ts`).
 
 Côté IA (`state/ai.ts`, `state/combatFlow.ts`) :
-- `heroes` n'exclut que `!isOutOfAction` (`combatFlow.ts:3915`) → un héros à 0 PB **conscient y reste**.
-- L'IA **vise le plus faible** (`weakestNearest`, tri PB croissant, `ai.ts:62-67`) → à 0 PB il est
-  **cible n°1 de chaque ennemi**, sans répartition.
+- Le filtre `heroes` (plusieurs sites de `combatFlow.ts`) n'exclut que `!isOutOfAction` → un héros à
+  0 PB **conscient y reste** une cible valide.
+- L'IA cible par **menace composite** (`targetThreat`, `state/ai.ts` : atteignabilité × fragilité ×
+  danger — PAS un tri simple par PB). La fragilité (`1 + (PBmax−PBcourant)/PBmax`) double le score
+  d'un héros déjà entamé, ce qui le remet en tête de cible **sans mécanisme de répartition explicite**
+  entre ennemis.
 
 ⇒ Un héros tombé à 0 reste conscient ~**BE rounds** (3-4), focalisé par **tous** les ennemis, chacun
-ajoutant `criticalWounds++` (`combatFlow.ts:937`), **sans mourir** tant que la porte (Inconscient ET
-`crit > BE`) n'est pas franchie. = « 3 IA, 3 rounds, enchaînement de critiques, on se demande s'il va
-mourir un jour ».
+incrémentant `target.criticalWounds` (`state/combatFlow.ts`), **sans mourir** tant que la porte
+(Inconscient ET `crit > BE`) n'est pas franchie. = « 3 IA, 3 rounds, enchaînement de critiques, on se
+demande s'il va mourir un jour ».
 
 **Correctifs visés** : politique de ciblage IA (ne pas focaliser une cible à 0 PB / À Terre ; répartir) ;
 prédicat unique « neutralisé » lu par l'IA.
 
 ### 4b. Suspecté (non clos par lecture statique) : « X est hors combat » puis ils continuent
-- `cf.outOfAction` n'est émis que si `isOutOfAction(target)` est vrai (`combatFlow.ts:1115,2774`).
-- Un héros à Destin : `finalizeHeroDeath` pose `pendingFateSave` et **suspend** sans tuer (`:904-908`).
+- La ligne de journal `cf.outOfAction` n'est émise que si `isOutOfAction(target)` est vrai (plusieurs
+  sites de `state/combatFlow.ts`).
+- Un héros à Destin : `finalizeHeroDeath` pose `pendingFateSave` et **suspend** sans tuer.
 - Or Inconscient ⇒ `isOutOfAction` ⇒ devrait être filtré du ciblage. **S'ils continuent**, un invariant
   casse (gate IA vs `pendingFateSave` vs désync d'objet combattant).
 - **À pin par repro déterministe** (`__wfrp.scenario`/`fight` seedé + `__wfrp.battle()`/`log()` round par
   round) avant tout correctif — ne pas deviner la ligne.
 
 ## 5. Liens
-- Plan de chantier (séquencé) : `~/.claude/plans/` (session) — à reporter ici si on le matérialise.
 - Voir aussi : `docs/plans/audit-systemes.md` (archivé), `docs/systeme-passifs.md`, `docs/i18n-seam.md`.
 
 ## 6. Recensement Lot 0 (la liste « tout migrer » — baseline gelée)
@@ -171,17 +173,17 @@ prédicat unique « neutralisé » lu par l'IA.
 > abaissées à chaque lot, → 0 au Lot 8). Baseline mesurée sur `chore/audit-cleanup` après suite verte
 > (typecheck + 5352 tests). Chaque entrée = une branche réactive codée par-nom à porter en données.
 
-### Lot 4 — `engine/conditions.ts` (30 sites)
-- **Pénalités de Test** : `combatTestPenalty` L118-122 (aveugle/brise/empoisonne/sonne −10 ; extenue
-  −10/stack) ; `testStatePenalty` L148-156 (empoisonne/sonne/extenue/brise ; aTerre −20 / empetre −10
-  mouvement) → `passive: [{op:'testMod'|'skillMod'}]`.
-- **Bonus à l'attaquant** L168-170 (aTerre +20 / surpris +20 / aveugle +10) → `incomingAttackMod` sur le
-  `passive` de l'État victime.
-- **Par-round** `endOfRound` L199-269 (empoisonne/hemorragique `wounds 1`×stacks ; en-flammes `1d10+…` ;
-  sonne récup. ; auto-dissipation aveugle/assourdi/surpris) + jet de mort hémorragique L349 →
-  `effects:[{trigger:'onRoundEnd', …}]`.
-- **Restent machinerie** (prédicats génériques, hors compte) : `isOutOfAction` L377, `inDeathCondition`
-  L388, gating L177/183, `applyZeroWounds` L408, `tickDeath` L427.
+### Lot 4 — `engine/conditions.ts` — FAIT (baseline 0, garde `combat-hardcode-guard.test.ts`)
+- **Pénalités de Test** : `combatTestPenalty` (aveugle/brisé/empoisonné/sonné −10 ; exténué −10/stack)
+  et `testStatePenalty` (empoisonné/sonné/exténué/brisé ; à terre −20 / empêtré −10 mouvement) →
+  MIGRÉES en `passive: [{op:'testMod'|'skillMod'}]` sur les États (`etats.json`).
+- **Bonus à l'attaquant** (à terre +20 / surpris +20 / aveugle +10) → MIGRÉ en `incomingAttackMod` sur
+  le `passive` de l'État victime.
+- **Par-round** `endOfRound` (empoisonné/hémorragique `wounds 1`×stacks ; en-flammes `1d10+…` ; sonné
+  récupère ; auto-dissipation aveugle/assourdi/surpris) + jet de mort hémorragique (`bleedDeathRoll`)
+  → MIGRÉS en `effects:[{trigger:'onRoundEnd', …}]` sur les États.
+- **Restent machinerie** (prédicats génériques de mort/gating, hors compte — cf. garde) :
+  `isOutOfAction`, `inDeathCondition`, `applyZeroWounds`, `tickDeath`.
 
 ### Lot 4bis — `state/combat/roundHooks.ts` — FAIT (baseline 0, garde `combat-hardcode-guard.test.ts`)
 - `unstable` → MIGRÉ : trait `instable` `effects:onRoundEnd` (perte de la différence d'Avantage puis
@@ -202,13 +204,14 @@ prédicat unique « neutralisé » lu par l'IA.
   dispatchers `fire-round-start/end-triggers`.
 - NB `broken-recovery`/`poison-resist` (Brisé/Empoisonné) = États → relevaient déjà du Lot 4 (fait).
 
-### Lot 6 — `state/combatFlow.ts` — réactions hardcodées (partiellement migré, vérifié 2026-07-05)
-- MIGRÉS (0 occurrence dans combatFlow) : `applySonneMeleeAdvantage`, `banishedAtZero`, et la Riposte/Défense
-  du champion — désormais capacité `canCounterOnDefenseWin` déclarée en donnée (`engine/combatFeatures/dispatch.ts`),
-  plus de prédicat par-nom.
-- RESTENT (vérifié par grep) : infection (`hasTraitKey 'infecte'/'rongeur'`), atouts `Bacle` & `Salve`,
-  `autoCleave`/`maybeHeroCleave`, `nerveux`.
-- Cibles + extensions de vocabulaire requises : cf. plan « Table de migration des réactions (Lot 6) ».
+### Lot 6 — `state/combatFlow.ts` — FAIT (baseline 0, garde `combat-hardcode-guard.test.ts`)
+- MIGRÉS : `applySonneMeleeAdvantage`, `banishedAtZero` (`banish` en DONNÉE du trait, déclenché par
+  `onWoundLoss`+`if woundsCurrent<=0`), Riposte/Défense du champion (capacité `canCounterOnDefenseWin`,
+  `engine/combatFeatures/dispatch.ts`), Nerveux (`isSkittishMount`) — plus de prédicat par-nom.
+- **Restent machinerie légitime** (hors compte du garde, ne nomment aucune entité) :
+  `autoCleave`/`maybeHeroCleave` (balayage géométrique des surdimensionnés/Nuées) et les qualités lues
+  PAR ID (`QUALITY_IDS.Bacle`/`QUALITY_IDS.Salve` — bris d'armure Bâclée, suivi de tirs Salve).
+  L'exposition aux Maladies (Infecté/Rongeur) est déjà en données (op `exposeDisease`).
 
 ### Bug différé (cf. §4) — bénéficiaire du Lot 1+IA
 - Acharnement IA sur héros à 0 PB + intégrité hors-combat : à traiter une fois l'état « neutralisé »

@@ -146,7 +146,7 @@ art-ref/                    Illustrations extraites des PDFs + mapping.json (GIT
   ACTIFS dérivés via `recomputeLoadout` (équiper change le combat). Fiche = `CharacterSheet.tsx`.
 - **Rendu des entités** : tout passe par `pickBackend` → le **rig** (`src/gameIso/rig/`) : humanoïdes
   bipèdes (carrière + arme + armure + mutations visibles) et créatures non-bipèdes via gabarit corporel
-  animé (quadrupède/ailé/serpentin/…). `sprites.ts` ne fournit plus que le décor (props) et le villageois.
+  animé (quadrupède/ailé/serpentin/…). `sprites.ts` ne fournit plus que le décor (props).
   Le sprite monolithique (`creatureSprites.json` + `enemySprite`/`creatureView`) a été retiré (juin 2026).
 - **Éditeur v2** (juin 2026, interface refaite de 0) : iso WYSIWYG, rail d'outils + contenu
   contextuel (pose directe depuis les catalogues), inspecteur DOCKÉ (plus aucune modale d'édition),
