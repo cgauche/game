@@ -360,7 +360,8 @@
       {
         "op": "skillMod",
         "skill": "perception",
-        "mod": -20
+        "mod": -20,
+        "sense": "ouie"
       }
     ],
     "desc": "Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l’ouïe."

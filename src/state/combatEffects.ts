@@ -348,7 +348,9 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     // Soutien (LDB 12 l.214-225) : si CET acteur mène, les AUTRES membres capables l'assistent (+10, plafond
     // Bonus de Carac). Calculé par candidat car le sélecteur laisse le joueur choisir qui lance.
     const sout = soutienBonus(living, actor, spec.skill, spec.characteristic, spec.spec);
-    const value = testValue(actor, spec.skill, spec.characteristic, spec.spec) + (socialMod ? socialMod(actor) : 0) + sout;
+    // `spec.sense` (vue/ouïe, LDB 18) restreint le malus de Surdité au seul Test de Perception auditif — le
+    // Soutien (`sout`, plafonné au Bonus de Carac du meneur) et le mod social ne dépendent pas du sens.
+    const value = testValue(actor, spec.skill, spec.characteristic, spec.spec, spec.sense) + (socialMod ? socialMod(actor) : 0) + sout;
     // Objet catalogué → match par `trappingId` stable ; objet CUSTOM (sans trappingId) → repli nom.
     const tool = spec.tool ? actor.items?.find((i) => (i.trappingId === spec.tool || i.name === spec.tool) && !i.destroyed) : undefined;
     return {

@@ -26,7 +26,7 @@ import { toDate } from './clock';
 import type { CharKey, Difficulty, HitLocation } from './types';
 import { relationBetween, type Camp, type Relation } from './relations';
 import { groupMatch } from './groups';
-import type { GameOp } from './ops';
+import type { GameOp, PairedSense } from './ops';
 
 /** Fenêtre horaire d'un trigger/Condition (heure-du-jour, `before` EXCLUSIF). Champs absents = borne
  *  ouverte ; objet vide = toujours vrai. Aucune dépendance — type structurel pur. */
@@ -337,6 +337,13 @@ export interface FlowTest {
   /** Spécialisation ciblée (Métier (Serrurier), Savoir (Magie)…) — précise QUELLE instance de `skill`
    *  est testée quand le héros en possède plusieurs ; sinon la première suffit. */
   spec?: string;
+  /** Sens SOLLICITÉ par ce Test de Perception (LDB 18) — authoré sur le nœud de test d'une scène/dialogue :
+   *  `'vue'` (repérer un mouvement, lire, guetter l'horizon) ou `'ouie'` (écouter à une porte, entendre une
+   *  approche). Restreint le malus de Surdité (`skillMod{sense:'ouie'}`) au seul Test auditif, symétrique à
+   *  la Cécité (qui nomme ses compétences en donnée). Absent = Test générique/ambigu → malus appliqué par
+   *  défaut (conservateur : un sourd rate les indices sonores d'une vigilance générale). Lu par `openSkillTest`
+   *  → `testValue`. */
+  sense?: PairedSense;
   characteristic?: CharKey;
   difficulty?: Difficulty;
   /** DR minimum requis (défaut 0 = simple réussite). */

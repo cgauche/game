@@ -47,6 +47,15 @@ describe('skills — testValue / partyBest / skillCharKeyById', () => {
   });
   // (escamotage : compétence avancée Dex SANS gate d'outil — le −10 « sans outils de crochetage »
   //  de Crochetage (SkillData.tool, LDB 09 l.168) est testé à part dans item-skill-bonus.test.)
+  it('testValue transmet `sense` à traumaSkillPenalty — Surdité restreinte aux Tests auditifs (LDB 18)', () => {
+    const deaf = (): Combatant => ({
+      ...mk({ I: 40 }),
+      traumas: [{ label: 'Surdité', traumaId: 'surdite', location: 'tete', ops: [{ op: 'skillMod', skill: 'perception', mod: -20, sense: 'ouie' }] }],
+    } as Combatant);
+    expect(testValue(deaf(), 'perception')).toBe(20); // sens inconnu : pénalité appliquée par défaut
+    expect(testValue(deaf(), 'perception', undefined, undefined, 'ouie')).toBe(20); // Test auditif : pénalisé
+    expect(testValue(deaf(), 'perception', undefined, undefined, 'vue')).toBe(40); // Test visuel : exempté
+  });
   it('partyAssisted — compétence : seuls les membres QUI LA POSSÈDENT soutiennent', () => {
     const a = { ...mk({ Dex: 50 }, [{ skillId: 'escamotage', advances: 20 }]), id: 'a' }; // 70, possède
     const b = { ...mk({ Dex: 30 }), id: 'b' }; // ne possède pas → ne soutient pas

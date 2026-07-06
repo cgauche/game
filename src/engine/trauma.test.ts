@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { traumaById, dechirureFractureFicheId, traumaMovementHalved, traumaDodgePenalty, traumaCharPenalties, escalateSensoryLoss, consolidateAmputations } from './trauma';
+import { traumaById, dechirureFractureFicheId, traumaMovementHalved, traumaDodgePenalty, traumaCharPenalties, traumaSkillPenalty, escalateSensoryLoss, consolidateAmputations, treatTrauma } from './trauma';
 import { effectiveChar } from './characteristics';
 import { effectiveMovement } from './encumbrance';
 import { defenseValue } from './combat';
@@ -72,7 +72,7 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
     expect(traumaMovementHalved(c)).toBe(true);
     expect(traumaDodgePenalty(c)).toBe(-20);
   });
-  it('Fausse jambe portée : rétablit le déplacement, l’Esquive reste pénalisée (200 PX non modélisés)', () => {
+  it('Fausse jambe portée (non entraînée) : rétablit le déplacement, l’Esquive reste pénalisée tant que les 200 PX ne sont pas dépensés (LDB 73)', () => {
     const c = fullCombatant({ traumas: [legSequela], items: [item('fausse-jambe')] });
     expect(traumaMovementHalved(c)).toBe(false);
     expect(traumaDodgePenalty(c)).toBe(-20);
@@ -164,10 +164,10 @@ describe('escalateSensoryLoss — cumul deux yeux/oreilles (LDB 18 l.360/363)', 
     expect(escalateSensoryLoss(c)).toHaveLength(0); // pas de doublon
     expect((c.traumas ?? []).filter((t) => t.label === 'Cécité')).toHaveLength(1);
   });
-  it('deux oreilles : Surdité (−20 Perception)', () => {
+  it('deux oreilles : Surdité (−20 Perception, restreint aux Tests basés sur l’ouïe)', () => {
     const c = fullCombatant({ traumas: [ear(), ear()] });
     escalateSensoryLoss(c);
-    expect((c.traumas ?? []).find((t) => t.label === 'Surdité')!.ops).toContainEqual({ op: 'skillMod', skill: 'perception', mod: -20 });
+    expect((c.traumas ?? []).find((t) => t.label === 'Surdité')!.ops).toContainEqual({ op: 'skillMod', skill: 'perception', mod: -20, sense: 'ouie' });
   });
 });
 
@@ -203,5 +203,44 @@ describe('traumas — câblage moteur', () => {
   it('Déchirure de jambe Mineure réduit l’Esquive de 10', () => {
     const c = fullCombatant({ traumas: [tk('dechirure', 'mineur', 'jambeD')] });
     expect(defenseValue(c, 'esquive')).toBe(30); // 40 − 10
+  });
+});
+
+describe('traumaSkillPenalty — Surdité restreinte aux Tests auditifs (LDB 18 : "Tests de Perception basés sur l’ouïe")', () => {
+  const deaf = (): Combatant => fullCombatant({ traumas: [traumaById('surdite', undefined, 'tete')] });
+
+  it('sens du Test INCONNU (aucun appelant ne le précise encore) : la pénalité s’applique par défaut', () => {
+    expect(traumaSkillPenalty(deaf(), 'perception')).toBe(-20);
+  });
+  it('Test de Perception basé sur l’OUÏE : pénalisé', () => {
+    expect(traumaSkillPenalty(deaf(), 'perception', 'ouie')).toBe(-20);
+  });
+  it('Test de Perception basé sur la VUE : exempté — le RAW ne vise QUE les Tests basés sur l’ouïe', () => {
+    expect(traumaSkillPenalty(deaf(), 'perception', 'vue')).toBe(0);
+  });
+  it('Cécité reste inconditionnelle (compétences nommées CC/CT/Esquive/Chevaucher, pas de restriction de sens)', () => {
+    const c = fullCombatant({ traumas: [traumaById('cecite', undefined, 'tete')] });
+    expect(traumaCharPenalties(c, 'CC')).toEqual([-30]);
+    expect(traumaDodgePenalty(c)).toBe(-30);
+  });
+});
+
+describe('treatTrauma — rôle d’INFORMATION de la Guérison sur la déchirure MAJEURE (LDB 18)', () => {
+  function tornMajor(recoveryDays = 40): Trauma {
+    return { ...tk('dechirure', 'majeur', 'jambeD'), recoveryDays, recoveryTotal: recoveryDays };
+  }
+  it('ne raccourcit PAS la convalescence (aucune accélération), mais diagnostique le délai restant', () => {
+    const cc = fullCombatant({ traumas: [tornMajor(40)] });
+    const log = treatTrauma(cc, 3, true);
+    const t = cc.traumas![0];
+    expect(t.recoveryDays).toBe(40); // inchangé : la Guérison n'accélère rien sur une déchirure majeure
+    expect(t.healAccelerated).toBe(true); // le jet est tout de même consommé (une seule fois, l.317)
+    expect(log[0]).toContain('40'); // diagnostic concret : jours restants avant de pouvoir réutiliser le membre
+  });
+  it('le jet ÉCHOUÉ consomme aussi le jet unique, sans diagnostic', () => {
+    const cc = fullCombatant({ traumas: [tornMajor(40)] });
+    treatTrauma(cc, 0, false);
+    expect(cc.traumas![0].healAccelerated).toBe(true);
+    expect(cc.traumas![0].recoveryDays).toBe(40);
   });
 });

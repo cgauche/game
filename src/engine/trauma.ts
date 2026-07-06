@@ -21,7 +21,7 @@ import { hungerCharPenalties, thirstCharPenalties } from './provisions';
 import { drunkCharPenalties } from './drunkenness';
 import { hasActiveFlag } from './activeFlags';
 import { wornSocialMod, qualityWearMods } from './wearPenalty';
-import type { GameOp, PassiveKind, PassiveMod } from './ops';
+import type { GameOp, PairedSense, PassiveKind, PassiveMod } from './ops';
 import traumasJson from '../data/traumas.json';
 
 export type TraumaKind = 'dechirure' | 'fracture';
@@ -304,9 +304,11 @@ export function consolidateAmputations(c: Combatant): string[] {
 
 /**
  * Cumul de pertes sensorielles (LDB 18 l.360/363) : perdre le SECOND œil/oreille agrège une séquelle —
- * Cécité (−30 aux Tests liés à la vue : Arme, Esquive, Chevaucher) ou Surdité (−20 Perception auditive,
- * approximée à toute la Perception). Mute `c.traumas`, renvoie le journal ; idempotent. Appelé après l'ajout
- * d'une séquelle d'amputation (combat). Non annulable par prothèse (yeux/oreilles de remplacement = cosmétiques).
+ * Cécité (−30 aux Tests liés à la vue : Arme, Esquive, Chevaucher, compétences NOMMÉES) ou Surdité (−20 aux
+ * Tests de Perception basés sur l'ouïe UNIQUEMENT — le `skillMod` de la fiche `surdite` porte `sense:'ouie'`,
+ * gaté par `traumaSkillPenalty`/`testValue` contre le sens SOLLICITÉ par le Test, pas toute Perception).
+ * Mute `c.traumas`, renvoie le journal ; idempotent. Appelé après l'ajout d'une séquelle d'amputation
+ * (combat). Non annulable par prothèse (yeux/oreilles de remplacement = cosmétiques).
  */
 export function escalateSensoryLoss(c: Combatant): string[] {
   const log: string[] = [];
@@ -319,7 +321,7 @@ export function escalateSensoryLoss(c: Combatant): string[] {
   }
   if (ears >= 2 && !(c.traumas ?? []).some((t) => t.traumaId === 'surdite')) {
     c.traumas = [...(c.traumas ?? []), traumaById('surdite', undefined, 'tete')];
-    log.push(`${c.name} perd l'ouïe (surdité) — −20 Perception auditive.`);
+    log.push(`${c.name} perd l'ouïe (surdité) — −20 aux Tests de Perception basés sur l'ouïe.`);
   }
   return log;
 }
@@ -380,9 +382,11 @@ function eligibleForHeal(t: Trauma): boolean {
  * Soin assisté d'un trauma par la Compétence Guérison (LDB 18). Le JET est consommé, réussi ou
  * non (l.317 : « vous ne pouvez obtenir cet avantage qu'une seule fois ») — sans quoi, sans MJ,
  * on relancerait gratuitement jusqu'au succès. Sur un succès :
- *  - déchirure (l.317) → raccourcit la convalescence de **1 jour + 1 par DR** ;
+ *  - déchirure MINEURE (l.317) → raccourcit la convalescence de **1 jour + 1 par DR** ;
+ *  - déchirure MAJEURE (l.326 : « n'aura d'autre intérêt que de vous informer que vous ne pourrez pas
+ *    utiliser la Localisation touchée tant que la rémission ne sera pas complète ») → AUCUNE accélération ;
+ *    la Guérison ne fait que DIAGNOSTIQUER le délai restant (jours avant réutilisation du membre) ;
  *  - fracture dans la semaine (l.302) → « réduite » (bandée) ⟹ pas de Test de Résistance de fin.
- * La déchirure majeure n'est PAS accélérée (l.326 : la Guérison ne fait qu'informer — laissé en dette).
  */
 export function treatTrauma(c: Combatant, dr: number, success = true): string[] {
   const t = (c.traumas ?? []).find(eligibleForHeal);
@@ -393,8 +397,8 @@ export function treatTrauma(c: Combatant, dr: number, success = true): string[] 
     t.fractureSet = true;
     return [`${c.name} : la fracture (${t.location}) est réduite et bandée — elle ressoudera proprement.`];
   }
-  if (t.severity === 'majeur') { // déchirure majeure : Guérison sans effet d'accélération (l.326)
-    return [`${c.name} : la Guérison ne peut qu'accompagner la déchirure majeure (rémission en deux temps, l.326).`];
+  if (t.severity === 'majeur') { // déchirure majeure : la Guérison n'accélère rien, elle DIAGNOSTIQUE (l.326)
+    return [`${c.name} : la Guérison diagnostique la déchirure (${t.location}) — ${t.recoveryDays ?? 0} jour(s) avant de pouvoir réutiliser ce membre.`];
   }
   const cut = 1 + Math.max(0, dr);
   t.recoveryDays = Math.max(0, (t.recoveryDays ?? 0) - cut);
@@ -610,8 +614,9 @@ export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
 }
 
 /** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). Une prothèse
- *  qui annule TOUT (Merveille d'ingénierie, LDB 73) lève aussi l'Esquive (la Fausse jambe ne rend PAS l'Esquive
- *  sans 200 PX, non modélisé → son −20 subsiste). */
+ *  qui annule TOUT (Merveille d'ingénierie, LDB 73) lève aussi l'Esquive ; la Fausse jambe SEULE laisse le
+ *  −20 subsister tant qu'elle n'est pas ENTRAÎNÉE (200 PX, `ItemInstance.prosthesisTrained` — `trainProsthesis`,
+ *  state/partyFlow.ts) : entraînée, `prosthesisCancels` l'élève à `'all'` et lève aussi l'Esquive. */
 export function traumaDodgePenalty(c: Combatant): number {
   const pens = pmods(c, 'skillMod', false)
     .filter((o) => o.skill.toLowerCase() === 'esquive' && o.mod < 0)
@@ -619,13 +624,25 @@ export function traumaDodgePenalty(c: Combatant): number {
   return pens.length ? Math.min(...pens) : 0;
 }
 
+/** Un `skillMod` restreint à un `sense` (Surdité : « Tests de Perception basés sur l'ouïe », LDB 18)
+ *  s'applique-t-il à un Test qui sollicite `testSense` ? Sans restriction (`opSense` absent, ex. Cécité —
+ *  déjà scopée par compétence nommée) → toujours. Restreint mais le sens du Test COURANT est INCONNU
+ *  (`testSense` absent — cas de tout appelant qui ne le précise pas encore) → s'applique (le RAW n'est pas
+ *  levé faute d'info, le sens précis d'un Test de Perception étant une donnée NARRATIVE que seul l'appelant
+ *  connaît, cf. Talent Sens aiguisé `manual:true`). Restreint et CONNU mais différent → exempté. */
+function senseMatches(opSense: PairedSense | undefined, testSense: PairedSense | undefined): boolean {
+  return opSense == null || testSense == null || opSense === testSense;
+}
+
 /** Pire pénalité permanente à une Compétence nommée due aux traumatismes (séquelle de fracture, LDB 18
- *  l.300/309 — ex. −5/−10 « Langue » après une fracture à la Tête). Non-cumul (l.20) ; ≤ 0. */
-export function traumaSkillPenalty(c: Combatant, skill?: string): number {
+ *  l.300/309 — ex. −5/−10 « Langue » après une fracture à la Tête). `testSense` restreint les `skillMod`
+ *  qui portent un `sense` (Surdité, LDB 18 : Perception auditive seulement — `senseMatches`) au Test COURANT ;
+ *  transmis par `testValue`. Non-cumul (l.20) ; ≤ 0. */
+export function traumaSkillPenalty(c: Combatant, skill?: string, testSense?: PairedSense): number {
   if (!skill) return 0;
   // Esquive est porté par traumaDodgePenalty (defenseValue) → EXCLU ici pour préserver la séparation historique.
   const pens = pmods(c, 'skillMod', false)
-    .filter((o) => o.skill !== 'esquive' && o.skill === skill && o.mod < 0)
+    .filter((o) => o.skill !== 'esquive' && o.skill === skill && o.mod < 0 && senseMatches(o.sense, testSense))
     .map((o) => o.mod);
   return pens.length ? Math.min(...pens) : 0;
 }

@@ -11,6 +11,7 @@ import { assistBonus } from './tests';
 import { testStatePenalty } from './conditions';
 import { agilityTestPenalty } from './encumbrance';
 import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
+import type { PairedSense } from './ops';
 import { rule } from './policy';
 import { rollTest } from './tests';
 import { RNG, defaultRNG } from './dice';
@@ -62,8 +63,12 @@ export function effectiveSkillCharKey(
 /** Valeur de test d'un personnage pour une compétence ou une caractéristique. Mêmes modulations qu'en
  *  combat (le canon ne distingue pas) : Caractéristique EFFECTIVE (buffs magiques + pénalités de
  *  Traumatisme, LDB 18, via `effectiveChar`), pénalités d'États (LDB 16, `testStatePenalty`), pénalité
- *  d'Encombrement sur l'Agilité (LDB 61), port d'armure (LDB 63) et objet Laid sur la Sociabilité (LDB 60). */
-export function testValue(c: Combatant, skill?: string, characteristic?: CharKey, spec?: string): number {
+ *  d'Encombrement sur l'Agilité (LDB 61), port d'armure (LDB 63) et objet Laid sur la Sociabilité (LDB 60).
+ *  `sense` (optionnel) : sens NARRATIVEMENT sollicité par CE Test de Perception (vue/ouïe — déterminé par
+ *  l'appelant/la scène, cf. Talent Sens aiguisé `manual:true`) ; restreint les `skillMod` sense-scopés
+ *  (Surdité, LDB 18 — `traumaSkillPenalty`). Absent = comportement historique (le RAW n'est pas levé
+ *  faute d'info sur le Test précis). */
+export function testValue(c: Combatant, skill?: string, characteristic?: CharKey, spec?: string, sense?: PairedSense): number {
   if (!skill && !characteristic) return 0;
   // `skill` = skillId STABLE (multilingue : jamais un libellé). La compétence possédée est trouvée par id ;
   // `spec` cible une spécialisation précise (Savoir (Magie), Métier (Forgeron)…) quand le héros en possède
@@ -74,7 +79,7 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   const base = effectiveChar(c, ck);
   const states = testStatePenalty(c, skill);
   const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0; // charge : couche d'ÉTAT orthogonale (≠ passif d'élément)
-  const traumaSkill = traumaSkillPenalty(c, skill); // séquelle permanente de fracture (Langue, LDB 18 l.300)
+  const traumaSkill = traumaSkillPenalty(c, skill, sense); // séquelle permanente (fracture Langue l.300 ; Surdité l.363)
   // Passifs INTRINSÈQUES d'élément (Σ), tous via le collecteur unifié : compétence nommée + port d'armure
   // (`passiveSkillSum` : Groin poilu +10 Pistage, −N% en X du port d'armure) + mods de Test char-qualifiés
   // (`passiveTestMod` : mutation Visage inversé −20 Soc, objet Laid −Soc).

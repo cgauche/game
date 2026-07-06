@@ -531,6 +531,13 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
           <>
             <RefField cfg={{ ds: 'skills', single: true }} fieldKey="Compétence" value={o.skill} onChange={(v) => upd({ skill: (v as string) ?? '' })} />
             <label className="dr">Modif.<input type="number" value={o.mod ?? 0} onChange={(e) => upd({ mod: Number(e.target.value) || 0 })} /></label>
+            <label className="dr">Sens{/* Surdité, LDB 18 : restreint au Test de Perception basé sur ce sens */}
+              <select value={o.sense ?? ''} onChange={(e) => upd({ sense: (e.target.value || undefined) as 'vue' | 'ouie' | undefined })}>
+                <option value="">— tous les Tests —</option>
+                <option value="vue">Vue</option>
+                <option value="ouie">Ouïe</option>
+              </select>
+            </label>
           </>
         )}
         {op.op === 'moveMod' && (

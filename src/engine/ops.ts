@@ -279,6 +279,11 @@ export function incomingDamageNullified(defender: Combatant, attacker: Combatant
 // Ops
 // ---------------------------------------------------------------------------
 
+/** Sens PAIRÉ (œil/oreille, LDB 18) — vocabulaire PARTAGÉ par `senseLoss` (perte de l'organe) et la
+ *  restriction `skillMod.sense` (le Test SOLLICITE ce sens : Surdité ne pénalise que les Tests de
+ *  Perception basés sur l'ouïe, pas ceux basés sur la vue/l'odorat — LDB 18). */
+export type PairedSense = 'vue' | 'ouie';
+
 export type GameOp =
   /** Blessures subies DIRECTEMENT. Par DÉFAUT ignore BE ET PA (tables de contrecoup LDB 46/40 ;
    *  sorts « ignorant BE et PA » comme la Comète à Deux Queues). `ignoreTB:false` → le Bonus
@@ -646,8 +651,12 @@ export type GameOp =
   /** Modificateur (pénalité/bonus) à UNE Compétence nommée — GÉNÉRALISE les pénalités de séquelle
    *  `skillPenalty` (Langue −100 « auto-échec parole ») ET `dodgePenalty` (Esquive −20, mobilité). Lu en
    *  PASSIF par les helpers de trauma depuis `t.ops` (annulable par prothèse), et — si posé par un sort
-   *  via `applyOps` — par `ActiveEffect.skillMods` (testValue/defenseValue). Une op, n'importe quelle compétence. */
-  | { op: 'skillMod'; skill: string; mod: number }
+   *  via `applyOps` — par `ActiveEffect.skillMods` (testValue/defenseValue). Une op, n'importe quelle compétence.
+   *  `sense` (optionnel) RESTREINT l'application aux Tests qui SOLLICITENT ce sens (Surdité, LDB 18 : « Tests
+   *  de Perception basés sur l'ouïe » — PAS toute Perception) : gaté par le `sense` du CONTEXTE de Test
+   *  (`testValue`), pas une liste de compétences codée en dur. Absent = inconditionnel (Cécité : compétences
+   *  nommément listées CC/CT/Esquive/Chevaucher, `sense` inutile car déjà scopé par `skill`). */
+  | { op: 'skillMod'; skill: string; mod: number; sense?: PairedSense }
   /** +N DR à un Test de Compétence nommé (Furtif : +Bonus d'Agilité au DR de Discrétion, LDB 85 p.339 ;
    *  chanson « Jacques Bret » : +1 DR sur tout Test de Corps à corps réussi, MDG 09 l.228).
    *  Lu par `skillDRBonus` — PASSIF depuis les `TraitData.passive` du porteur (par id), ET, quand
@@ -713,7 +722,7 @@ export type GameOp =
   | { op: 'maxWeaponHands'; hands: number }
   /** Perte d'un organe sensoriel PAIRÉ (œil/oreille). Porté par une séquelle ; `escalateSensoryLoss`
    *  compte les `senseLoss` par sens (2 du même → Cécité/Surdité). */
-  | { op: 'senseLoss'; sense: 'vue' | 'ouie' }
+  | { op: 'senseLoss'; sense: PairedSense }
   /** Perd sa prochaine Action ET/OU son prochain Mouvement (Affamé : « festoie » ; échec du gate de la
    *  Racine de mandragore : « une Action ou un Mouvement (un au choix) », LDB 71 l.35 → l'issue du choix
    *  pose `what:'action'` ou `'movement'`). `what` absent = les deux (comportement historique). Pose les
