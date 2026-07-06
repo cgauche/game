@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scanTombstones, scanExcuses, scanRawClaims, EXCUSE_GUARD_ACTIVE } from '../guards/lib/commentPoison.mjs';
+import { scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_GUARD_ACTIVE } from '../guards/lib/commentPoison.mjs';
 import { scanLabelLogic } from '../guards/lib/labelLogic.mjs';
 
 let raw = '';
@@ -31,6 +31,8 @@ if (isSrcTs) {
       lines.push(`${EXCUSE_GUARD_ACTIVE ? 'POISON' : 'ALERTE'} commentaire-excuse sans tag [entériné AAAA-MM-JJ] (règle 6b) — ${rel}:${f.line} ${f.detail}`);
     for (const f of scanRawClaims(rel, text))
       lines.push(`ALERTE affirmation sur le RAW SANS réf de livre (règle 6a — classe « bélier ») — ${rel}:${f.line} ${f.detail} → ouvre le Source : cite la réf dans CE commentaire, ou reformule en réf nue. Une thèse RAW non sourcée d'agent est du poison présumé.`);
+    for (const f of scanDecisionClaims(rel, text))
+      lines.push(`ALERTE revendication d'autorité SANS trace (credo : une excuse n'est pas une autorisation) — ${rel}:${f.line} ${f.detail} → un arbitrage se TRACE ([entériné], issue #N, date + origine, valeur maison éditable) ou n'existe pas. « Notre arbitrage » sans trace = justification fallacieuse présumée.`);
     if (/(^|\/)src\/(engine|state)\//.test(norm))
       for (const f of scanLabelLogic(rel, text))
         lines.push(`POISON logique par label (#142, id STABLE seulement) — ${rel}:${f.line} ${f.detail}`);

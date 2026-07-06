@@ -241,6 +241,46 @@ export const RAW_CLAIM_FAMILIES = [
 /** Réf de livre ancrant la thèse au Source (n'importe où dans le MÊME commentaire logique). */
 export const BOOK_REF_RX = /\b(LDB|ADE\s*I{1,2}|EDOC?|MDG|AA|ZI|ACE|NADAJ|T2C?|Middenheim)\b\s*(\d+|ch\.?\s*\d+|l\.\s*\d+|p\.?\s*\d+|§)/i;
 
+// ---------------------------------------------------------------------------------------------
+// Famille 4 — REVENDICATION D'AUTORITÉ non tracée (credo : « un commentaire-excuse n'est pas une
+// autorisation », house-rule = paramétrable/taguée). « Notre arbitrage », « choix de modèle »,
+// « décision assumée » : sans TRACE de validation, c'est la justification fallacieuse qui habille
+// une implémentation (classe « servir coûte l'Action » 2026-07-06, sœur de la classe « bélier »).
+// SEULE trace reconnue (décision utilisateur 2026-07-07 : « je n'accepte aucune justification sans
+// la mention explicite [entériné] ») : le tag [entériné AAAA-MM-JJ] — dont l'écriture est elle-même
+// gardée par enterine-guard.mjs (dialogue de validation utilisateur). Date, citation, ancrage canon
+// ne suffisent PAS : ils datent ou attribuent la décision, ils ne prouvent pas sa validation.
+// ---------------------------------------------------------------------------------------------
+
+/** @type {{ rx: RegExp, label: string }[]} */
+export const DECISION_CLAIM_FAMILIES = [
+  { rx: /\barbitrages?\s+(maison|de design|de modèle|assumée?s?|explicite|utilisateur)/i, label: 'arbitrage X' },
+  { rx: /\b(notre|mon)\s+arbitrage/i, label: 'notre arbitrage' },
+  { rx: /\bchoix\s+(maison|de design|de modèle|assumée?s?)/i, label: 'choix X' },
+  { rx: /\b(décision|parti[- ]pris)\s+(assumée?s?|maison|de design)/i, label: 'décision/parti-pris' },
+  { rx: /\bon\s+(a|avait)\s+(choisi|décidé|tranché)/i, label: 'on a décidé' },
+];
+export const DECISION_TRACE_RX = ENTERINE_TAG_RX;
+
+/**
+ * Scan complet d'un fichier : revendications d'autorité SANS trace de validation adjacente.
+ * @param {string} relPath @param {string} contenu
+ * @returns {{ line: number, detail: string }[]}
+ */
+export function scanDecisionClaims(relPath, contenu) {
+  const findings = [];
+  for (const c of extractComments(contenu)) {
+    for (const fam of DECISION_CLAIM_FAMILIES) {
+      const m = fam.rx.exec(c.text);
+      if (!m) continue;
+      const window = c.text.slice(Math.max(0, m.index - 150), m.index + m[0].length + 150);
+      if (DECISION_TRACE_RX.test(window)) continue;
+      findings.push({ line: matchLine(c, m.index), detail: `[${fam.label}] ${excerptAt(c, m.index)}` });
+    }
+  }
+  return findings;
+}
+
 /**
  * Scan complet d'un fichier : affirmations sur le RAW SANS réf de livre dans le même commentaire.
  * @param {string} relPath @param {string} contenu

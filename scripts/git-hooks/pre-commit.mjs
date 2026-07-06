@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scanTombstones, scanExcuses, scanRawClaims, EXCUSE_GUARD_ACTIVE } from '../guards/lib/commentPoison.mjs';
+import { scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_GUARD_ACTIVE } from '../guards/lib/commentPoison.mjs';
 import { scanLabelLogic } from '../guards/lib/labelLogic.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -36,6 +36,8 @@ for (const f of staged) {
     (EXCUSE_GUARD_ACTIVE ? offenders : warnings).push(`${rel}:${x.line} [excuse sans tag] ${x.detail}`);
   for (const x of scanRawClaims(rel, text))
     warnings.push(`${rel}:${x.line} [affirmation RAW non ancrée] ${x.detail}`);
+  for (const x of scanDecisionClaims(rel, text))
+    warnings.push(`${rel}:${x.line} [revendication d'autorité sans trace] ${x.detail}`);
   if (/^src\/(engine|state)\//.test(rel))
     for (const x of scanLabelLogic(rel, text)) offenders.push(`${rel}:${x.line} [logique par label] ${x.detail}`);
 }

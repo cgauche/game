@@ -8,6 +8,7 @@ import {
   tombstonesIn,
   untaggedExcuseMatch,
   scanRawClaims,
+  scanDecisionClaims,
   extractComments,
   matchLine,
   excerptAt,
@@ -154,6 +155,19 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
     expect(scanRawClaims('x.ts', '// AFFICHAGE (couche UI, hors RAW LDB 16) : icône du registre')).toHaveLength(0);
     expect(scanRawClaims('x.ts', '// cadence laissée au MJ, LDB 13 l.106 — reset au tour')).toHaveLength(0);
     expect(scanRawClaims('x.ts', '// Calcule le total des dégâts appliqués à la cible.')).toHaveLength(0);
+  });
+
+  it('revendication d\'autorité SANS trace détectée (classe « servir coûte l\'Action », preuve TDD)', () => {
+    expect(scanDecisionClaims('x.ts', '// notre arbitrage : servir la pièce consomme l\'Action')).toHaveLength(1);
+    expect(scanDecisionClaims('x.ts', '// choix de modèle assumé pour simplifier la démo')).toHaveLength(1);
+  });
+
+  it('SEUL le tag [entériné] trace une revendication (décision utilisateur 2026-07-07) — date/citation/canon/#N ne suffisent PAS', () => {
+    expect(scanDecisionClaims('x.ts', '// choix de modèle assumé [entériné 2026-07-07]')).toHaveLength(0);
+    expect(scanDecisionClaims('x.ts', '// Décision de design (2026-06-10, retour playtest) : la Peur reste combat-only.')).toHaveLength(1);
+    expect(scanDecisionClaims('x.ts', '// arbitrage utilisateur V1 : « pour le moment on ne gère que le combat »')).toHaveLength(1);
+    expect(scanDecisionClaims('x.ts', '// choix de design ANCRÉ sur le texte canon : Grande = 2×2')).toHaveLength(1);
+    expect(scanDecisionClaims('x.ts', '// arbitrage maison tracé #133, valeur éditable')).toHaveLength(1);
   });
 
   it('vraies excuses TOUJOURS détectées après affinage (preuve TDD)', () => {
