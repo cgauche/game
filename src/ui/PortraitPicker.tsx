@@ -6,7 +6,7 @@ import type { Combatant } from '../engine/types';
 /** Un choix du picker : le combattant + une légende optionnelle (valeur/rôle) + infobulle. */
 export interface PortraitChoice {
   c: Combatant;
-  /** Légende sous le portrait (ex. « cible 46 », « 🐎 Monture »). */
+  /** Légende sous le portrait (ex. « cible 46 », « Monture »). */
   caption?: ReactNode;
   title?: string;
   disabled?: boolean;

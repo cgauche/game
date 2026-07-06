@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { ModLine, RollBreakdown } from '../engine/combat';
 import { Dice } from './Dice';
+import { Icon } from './Icon';
 
 /** Chips des modificateurs étiquetés (« Courte portée +40 », « Sonné −10 »…). */
 function ModChips({ mods }: { mods: ModLine[] }) {
@@ -42,7 +43,7 @@ export function RollLine({ d }: { d: RollBreakdown }) {
         {/* Valeur CACHÉE (adversaire opaque, ex. Marchandage du marchand) : on ne montre que dé + DR. */}
         <RollCalc base={d.base} modifier={d.modifier} target={d.target} hidden={d.hideValue} />
         <span className="rm-roll-dice">
-          🎲 <b><Dice roll={d.roll} /></b>
+          <Icon id="nav/dice" size="sm" /> <b><Dice roll={d.roll} /></b>
         </span>
         <span className="rm-roll-sl">
           {d.success ? '✓' : '✗'} {d.sl >= 0 ? '+' : '−'}
@@ -81,7 +82,7 @@ export function PendingRollLine({ p }: { p: PendingRoll }) {
         <span className="rm-roll-label">{p.label}</span>
         <RollCalc base={p.base} modifier={diff} target={target} hidden={!showValue} />
         <span className="rm-roll-dice">
-          🎲 <b className="rm-roll-empty">--</b>
+          <Icon id="nav/dice" size="sm" /> <b className="rm-roll-empty">--</b>
         </span>
         <span className="rm-roll-sl">-- DR</span>
       </div>
@@ -91,7 +92,7 @@ export function PendingRollLine({ p }: { p: PendingRoll }) {
 }
 
 /** Présentation canonique d'un d100 SUR TABLE à conséquences (Oups !, Critiques, Imparfaites,
- *  mutations…) : rangée compacte NEUTRE `nom de la table · 🎲 dé · résultat` — remplace les
+ *  mutations…) : rangée compacte NEUTRE `nom de la table · dé · résultat` — remplace les
  *  anciens verdicts plein écran rouge/vert (`.test-result`). `roll` absent : libellé seul. */
 export function TableRollLine({ table, roll, result }: { table: string; roll?: number | null; result?: string }) {
   return (
@@ -102,7 +103,7 @@ export function TableRollLine({ table, roll, result }: { table: string; roll?: n
         <span className="rm-roll-dice">
           {roll != null && (
             <>
-              🎲 <b><Dice roll={roll} /></b>
+              <Icon id="nav/dice" size="sm" /> <b><Dice roll={roll} /></b>
             </>
           )}
         </span>

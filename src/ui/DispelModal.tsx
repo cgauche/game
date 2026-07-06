@@ -4,6 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { JournalLine } from './NarratedLine';
+import { Icon } from './Icon';
 import { ev } from '../state/combatLog';
 import { DrBar } from './DrBar';
 
@@ -60,7 +61,7 @@ export function DispelModal() {
 
   return (
     <RollShell
-      title="🌀 Dissipation"
+      title={<><Icon id="action/dispel" size="sm" /> Dissipation</>}
       subtitle={
         <>
           <strong>{caster.name}</strong> dissipe <strong>{pd.label}</strong> ({prev}/{pd.ni} DR)

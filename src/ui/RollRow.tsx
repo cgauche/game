@@ -6,6 +6,10 @@ import { ResilienceButton } from './ResilienceButton';
 import { ResistButton } from './ResistButton';
 import { ForcedRollPicker } from './ForcedRollPicker';
 import { useRollFrisson } from './useRollFrisson';
+import { Icon } from './Icon';
+
+/** Libellé par défaut du bouton « Lancer » (rangée seule ET coquille `RollShell` hissée). */
+export const DEFAULT_ROLL_LABEL = <><Icon id="nav/dice" size="sm" /> Lancer</>;
 
 /**
  * Une RANGÉE de jet (mono OU participant d'un flux MULTI), pendant UI de la fabrique `makeRollFlow`
@@ -24,7 +28,7 @@ export function RollRow({
   row,
   rolled,
   interactive = true,
-  rollLabel = '🎲 Lancer',
+  rollLabel = DEFAULT_ROLL_LABEL,
   onRoll,
   rerollable = false,
   onReroll,
@@ -51,7 +55,7 @@ export function RollRow({
       onClick={determination.onResolve}
       title="Dépense 1 Détermination : immunité à la Psychologie jusqu'à la fin du prochain Round"
     >
-      ✊ Détermination ×{determination.resolve}
+      <Icon id="resource/resolve" size="sm" /> Détermination ×{determination.resolve}
     </button>
   );
   return (
@@ -64,7 +68,7 @@ export function RollRow({
         // `rollInBar` : la coquille (RollShell) rend le « Lancer » ET son spinner dans `.modal-actions`
         // (cas mono, une seule rangée à lancer) → la rangée n'affiche plus que ses contrôles pré-jet.
         rolling && !rollInBar ? (
-          <div className="rm-rolling"><span className="rm-die">🎲</span></div>
+          <div className="rm-rolling"><span className="rm-die"><Icon id="nav/dice" /></span></div>
         ) : (
           <div className="prow-act">
             {/* Résilience PRÉ-jet (LDB 17 l.73 « au lieu de lancer les dés ») — disponible AVANT de lancer, pas
@@ -113,7 +117,7 @@ export interface RollRowProps {
   row: PanelRowData;
   rolled: boolean;
   interactive?: boolean;
-  rollLabel?: string;
+  rollLabel?: ReactNode;
   onRoll?: () => void;
   rerollable?: boolean;
   onReroll?: () => void;

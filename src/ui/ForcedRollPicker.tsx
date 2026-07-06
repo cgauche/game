@@ -2,6 +2,7 @@ import type { HitLocation, BodyShape } from '../engine/types';
 import { locationLabel } from '../engine/combat';
 import { maxForcedRoll } from '../engine/tests';
 import { OptionChooser, type RollOption } from './OptionChooser';
+import { Icon } from './Icon';
 
 /** Les 6 localisations d'un Coup Critique (ordre du tableau LDB). */
 const CRIT_LOCS: HitLocation[] = ['tete', 'corps', 'brasD', 'brasG', 'jambeD', 'jambeG'];
@@ -47,7 +48,7 @@ export function ForcedRollPicker({ roll, target, onSet, critable = true }: {
   const maxRoll = maxForcedRoll(target); // ≤ cible ET hors bande d'échec auto (dérivé de la policy)
   return (
     <div className="rm-options">
-      <span className="mini-title">🎲 Dé choisi (Je ne faillirai pas !)</span>
+      <span className="mini-title"><Icon id="nav/dice" size="sm" /> Dé choisi (Je ne faillirai pas !)</span>
       <div className="rm-loc-grid">
         <button className={`btn small ${roll === 1 ? 'btn-primary' : ''}`} title="Le score le plus bas → DR maximum" onClick={() => onSet(1)}>
           01 · DR max

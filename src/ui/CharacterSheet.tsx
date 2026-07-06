@@ -39,6 +39,7 @@ import { PortraitTile } from './PortraitTile';
 import { ItemIcon } from './ItemIcon';
 import { MediaSelect } from './MediaSelect';
 import { BackgroundPanel } from './BackgroundPanel';
+import { Icon } from './Icon';
 import type { Palette } from '../gameIso/rig/palette';
 
 /** Emplacements de couleur d'un SKIN d'OBJET légendaire (`metal/cuir/accent` = slots de palette). */
@@ -162,7 +163,7 @@ export function CharacterSheet({ heroId, onClose }: { heroId: string; onClose: (
                 const label = s?.label ?? hero.star;
                 return (
                   <span className="char-sub star-sub">
-                    🌟 <CodexRef category="stars" label={label}>{label}</CodexRef>
+                    ★ <CodexRef category="stars" label={label}>{label}</CodexRef>
                     {s?.signe ? ` — ${s.signe}` : ''}
                   </span>
                 );
@@ -247,11 +248,11 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
           const offensive = isMagicMissile(sp);
           const support = spellSupport(spellEffectOps(sp.effects), sp, offensive);
           return (
-            <div className="spell-row" key={sp.label} title={support !== 'mecanique' ? '📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : undefined}>
+            <div className="spell-row" key={sp.label} title={support !== 'mecanique' ? 'Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé (cf. docs/sorts-implementation.md).' : undefined}>
               <span className="spell-name">
                 <CodexRef category="spells" label={sp.label}>{sp.label}</CodexRef>
                 {sp.cn != null ? ` · NI ${sp.cn}` : ''}
-                {support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
+                {support === 'narratif' ? (<> <Icon id="nav/rules" size="sm" /></>) : support === 'partiel' ? ' 🟡' : ''}
               </span>
               {offensive ? (
                 <span className="muted" title="Projectile magique : nécessite une cible ennemie (en combat)">
@@ -265,11 +266,11 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
                       title="Test étendu de Focalisation : accumule du DR pour lancer au NI 0"
                       onClick={() => oocFocusSpell(hero.id, sp.id)}
                     >
-                      ✨ Focaliser
+                      <Icon id="flag/focus" size="sm" /> Focaliser
                     </button>
                   )}
                   <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.id, targetId)}>
-                    🎲 Lancer
+                    <Icon id="nav/dice" size="sm" /> Lancer
                   </button>
                 </span>
               )}
@@ -279,7 +280,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
         {grimoireSpells.map((sp) => (
           <div className="spell-row" key={`g-${sp.label}`} title="Lecture au grimoire : sort non mémorisé de votre Domaine — NI doublé, deux mains.">
             <span className="spell-name">
-              📖 <CodexRef category="spells" label={sp.label}>{sp.label}</CodexRef>
+              <Icon id="nav/compendium" size="sm" /> <CodexRef category="spells" label={sp.label}>{sp.label}</CodexRef>
               {sp.cn != null ? ` · NI ${sp.cn}→${sp.cn * 2}` : ''}
             </span>
             {isMagicMissile(sp) ? (
@@ -287,7 +288,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
             ) : (
               <span className="spell-actions">
                 <button className="btn small" onClick={() => oocCastSpell(hero.id, sp.id, targetId, true)}>
-                  📖 Lancer (grimoire)
+                  <Icon id="nav/compendium" size="sm" /> Lancer (grimoire)
                 </button>
               </span>
             )}
@@ -471,14 +472,14 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           </div>
           <div className={`stat-chip ${over ? 'enc-over' : ''}`}>
             <span className="sc-label">Encombrement</span>
-            <span className="sc-value">{enc}/{maxEnc}{over ? ' ⚠' : ''}</span>
+            <span className="sc-value">{enc}/{maxEnc}{over ? (<> <Icon id="ui/warning" size="sm" /></>) : ''}</span>
           </div>
         </div>
         {canSoigner && (
           <div className="row-flex">
             <button className="btn small" onClick={() => openMedic({ patientId: hero.id })}
               title="Soins du groupe (Tests de Guérison) — ouvre l'infirmerie sur ce héros">
-              🩺 Soins
+              <Icon id="journal/heal" size="sm" /> Soins
             </button>
           </div>
         )}
@@ -536,7 +537,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
           <div className="inv-rows">
             {(hero.corruption ?? 0) > 0 && (
               <div className="inv-row" style={{ alignItems: 'center' }} title="Points de Corruption : au-delà de BFM + BE, chaque gain impose un Test de Résistance ou MUTATION.">
-                <span className="ir-name">🕯️ Corruption</span>
+                <span className="ir-name"><Icon id="nav/mutation" size="sm" /> Corruption</span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   {hero.corruption} point{(hero.corruption ?? 0) > 1 ? 's' : ''}{hero.damned ? ' — DAMNÉ' : ''}
                 </span>
@@ -544,7 +545,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             )}
             {(hero.mutations ?? []).map((m, i) => (
               <div key={`m${i}`} className="inv-row" title={m.note} style={{ alignItems: 'center' }}>
-                <span className="ir-name">🧬 {m.label}</span>
+                <span className="ir-name"><Icon id="nav/mutation" size="sm" /> {m.label}</span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   mutation {m.kind === 'physique' ? 'physique' : 'mentale'}
                 </span>
@@ -608,7 +609,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       <CodexRef category="trappings" label={it.name}>{it.name}</CodexRef>{skinned && ' ✨'}
                       {it.identified === false && (
                         <span className="ir-unid" title="Objet non identifié — Évaluer (ou Détecter l'artefact) pour révéler ses qualités" style={{ marginLeft: 6, fontSize: '0.78em', color: '#b388ff' }}>
-                          {it.magicKnown ? '✨ Magique — non identifié' : '🔮 Non identifié'}
+                          {it.magicKnown ? '✨ Magique — non identifié' : (<><Icon id="nav/identify" size="sm" /> Non identifié</>)}
                         </span>
                       )}
                     </span>
@@ -975,9 +976,9 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
               {learnable.map(({ spell, cost }) => {
                 const support = spellSupport(spellEffectOps(spell.effects), spell, isMagicMissile(spell));
                 return (
-                <div className="adv-row acquire" key={spell.label} title={support !== 'mecanique' ? '📜 Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : undefined}>
+                <div className="adv-row acquire" key={spell.label} title={support !== 'mecanique' ? 'Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : undefined}>
                   <span className="adv-name">
-                    <CodexRef category="spells" label={spell.label}>{spell.label}</CodexRef>{support === 'narratif' ? ' 📜' : support === 'partiel' ? ' 🟡' : ''}
+                    <CodexRef category="spells" label={spell.label}>{spell.label}</CodexRef>{support === 'narratif' ? (<> <Icon id="nav/rules" size="sm" /></>) : support === 'partiel' ? ' 🟡' : ''}
                     <span className="muted"> · {spell.type}{spell.subType ? ` (${spell.subType})` : ''}{spell.cn != null ? ` · NI ${spell.cn}` : ''}</span>
                   </span>
                   <span className="adv-meta" />

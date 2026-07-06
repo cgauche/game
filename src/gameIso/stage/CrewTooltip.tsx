@@ -37,16 +37,16 @@ export function CrewTooltip({ battle, hoveredId, myTurn, anchor }: {
     lines.push({ text: `Chef : ${manned ? chef?.name ?? 'aucun' : 'aucun'}`, color: 'var(--tooltip-fg)' });
     if (renforts.length) lines.push({ text: `Renforts : ${renforts.join(', ')}`, color: 'var(--tooltip-muted)' });
     if (aideNames.length) lines.push({ text: `Aides (non qual.) : ${aideNames.join(', ')}`, color: 'var(--tooltip-dim)' });
-    if (indice > 0 && present != null) lines.push({ text: `Effectif (qualifié) : ${present}/${indice}${present < indice ? ' ⚠ sous-effectif' : ''}`, color: present < indice ? 'var(--combat-enemy)' : 'var(--combat-ally)' });
+    if (indice > 0 && present != null) lines.push({ text: `Effectif (qualifié) : ${present}/${indice}${present < indice ? ' sous-effectif' : ''}`, color: present < indice ? 'var(--combat-enemy)' : 'var(--combat-ally)' });
     // Carte d'ACTION du héros actif : SA qualification pour CETTE pièce (même check RAW que l'effectif),
     // affichée DÈS le survol (même non adjacent) → on sait d'un coup d'œil si ce héros peut l'armer.
     if (active && active.kind === 'hero' && myTurn) {
       const canServeNow = !!(servePoste && servePoste.item.uid === p.item.uid); // adjacent + servable maintenant
       if (isCrewQualified(active, p)) {
-        lines.push({ text: `✅ Qualifié${groupLabel ? ` (Projectiles ${groupLabel})` : ''}`, color: 'var(--combat-ally)', bold: true });
+        lines.push({ text: `✓ Qualifié${groupLabel ? ` (Projectiles ${groupLabel})` : ''}`, color: 'var(--combat-ally)', bold: true });
         lines.push({ text: !canServeNow ? '↳ approchez-vous pour servir' : manned ? '↳ compte pour l’effectif' : '↳ chef : peut tirer (pièce libre)', color: 'var(--tooltip-ok)' });
       } else {
-        lines.push({ text: `⚠ NON qualifié (Projectiles ${groupLabel})`, color: 'var(--tooltip-warn)', bold: true });
+        lines.push({ text: `✗ NON qualifié (Projectiles ${groupLabel})`, color: 'var(--tooltip-warn)', bold: true });
         lines.push({ text: '↳ AIDE : ne compte pas, ne tire pas', color: 'var(--tooltip-aid)' });
       }
     }

@@ -7,6 +7,7 @@ import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeWard } from '../state/flowOutcomes';
+import { Icon } from './Icon';
 
 /**
  * Modale de la Bénédiction de Protection (LDB 41 l.105) : « Les ennemis doivent effectuer un Test de
@@ -55,7 +56,7 @@ export function WardModal() {
 
   return (
     <RollShell
-      title="🛡️ Bénédiction de Protection"
+      title={<><Icon id="action/defend" size="sm" /> Bénédiction de Protection</>}
       subtitle={
         <>
           <strong>{attacker.name}</strong> ose frapper {target?.name ?? 'la cible bénie'} (Test de FM +20)

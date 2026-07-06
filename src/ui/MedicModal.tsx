@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
@@ -14,10 +15,11 @@ import { hasTreatableTrauma, hasSurgeryTrauma, surgeryTraumas } from '../engine/
 import { bestHealerFor } from '../state/medicFlow';
 import { toMoney } from '../engine/money';
 import type { Combatant } from '../engine/types';
+import { Icon } from './Icon';
 
-const ACT_META: Record<HealMode, { icon: string; label: string }> = {
-  wounds: { icon: '🩹', label: 'Soigner les Blessures' },
-  bleed: { icon: '🩸', label: 'Arrêter l’Hémorragie' },
+const ACT_META: Record<HealMode, { icon: ReactNode; label: string }> = {
+  wounds: { icon: <Icon id="journal/heal" size="sm" />, label: 'Soigner les Blessures' },
+  bleed: { icon: <Icon id="condition/bleeding" size="sm" />, label: 'Arrêter l’Hémorragie' },
   trauma: { icon: '🦵', label: 'Soigner la déchirure' },
   surgery: { icon: '🔪', label: 'Opérer' },
 };
@@ -136,7 +138,7 @@ export function MedicModal() {
     npc ? npc.acts : (['wounds', 'bleed', 'trauma', 'surgery'] as HealMode[]).map((a) => ({ act: a }));
 
   return (
-    <Modal title={npc ? `🩺 Soins — ${npc.name}` : '🩺 Soins'} variant="plain" className="medic-modal" onClose={busy ? undefined : close}>
+    <Modal title={npc ? <><Icon id="journal/heal" size="sm" /> Soins — {npc.name}</> : <><Icon id="journal/heal" size="sm" /> Soins</>} variant="plain" className="medic-modal" onClose={busy ? undefined : close}>
       {paid && <span className="purse medic-purse">Bourse <Coins money={money} /></span>}
 
       {/* Bandeau PATIENTS : tuile full (jauge + États = le diagnostic), sélection or. */}

@@ -3,6 +3,7 @@ import { Modal } from './Modal';
 import { ChoiceButtons } from './OptionChooser';
 import { Coins } from './Coins';
 import { canAfford } from '../engine/money';
+import { Icon } from './Icon';
 
 /**
  * Prêtre de Manann (MDG ch.15 l.246, événement de port) : « Vous pouvez soit payer 1d10 CO plus la
@@ -24,7 +25,7 @@ export function ManannPriestModal() {
       </p>
       <ChoiceButtons
         options={[
-          { key: 'payer', label: <>⚓ Payer (<Coins money={p.cost} />)</>, primary: true, disabled: !affordable, onSelect: () => resolve(true), title: affordable ? 'Payer la bénédiction' : 'La bourse ne suit pas' },
+          { key: 'payer', label: <><Icon id="travel/anchor" size="sm" /> Payer (<Coins money={p.cost} />)</>, primary: true, disabled: !affordable, onSelect: () => resolve(true), title: affordable ? 'Payer la bénédiction' : 'La bourse ne suit pas' },
           { key: 'refuser', label: '🔱 Refuser (−4d10 Humeur de Manann)', onSelect: () => resolve(false), title: 'Refuser la bénédiction — Manann reste courroucé' },
         ]}
       />

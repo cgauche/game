@@ -67,7 +67,7 @@ export function EditorCanvas({
   terrainRect: boolean;
   encTarget: string;
   setEncTarget: (id: string) => void;
-  /** Créature à placer (outil ⚔️) — déjà résolue (défaut bestiaire inclus). */
+  /** Créature à placer (outil de placement d'ennemis) — déjà résolue (défaut bestiaire inclus). */
   encRef: string;
   layers: Layers;
   sel: Sel;
@@ -536,9 +536,13 @@ export function EditorCanvas({
                         />
                       );
                     })}
-                    <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="12" pointerEvents="none">
-                      {bar ? '🧱' : '⚠️'}
-                    </text>
+                    {bar ? (
+                      <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="12" pointerEvents="none">
+                        🧱
+                      </text>
+                    ) : (
+                      <IconG id="ui/warning" x={cx - 6} y={cy - 6} size={12} />
+                    )}
                   </g>
                 );
               })}

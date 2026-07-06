@@ -12,6 +12,7 @@ import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeDisengage, describeDisengageFlee } from '../state/flowOutcomes';
 import { Modal } from './Modal';
+import { Icon } from './Icon';
 import { testBreakdown } from './breakdown';
 
 /**
@@ -115,7 +116,7 @@ export function DisengageModal() {
       actor: mover,
       row: { combatant: mover, d: calme ? testBreakdown('Calme', calmeValue(mover), calme, 'intermediaire') : undefined },
       rolled: !!calme,
-      rollLabel: '🎲 Lancer le Test de Calme',
+      rollLabel: <><Icon id="nav/dice" size="sm" /> Lancer le Test de Calme</>,
       onRoll: fleeRoll,
       rerollable: calmeRerollable,
       onReroll: fleeReroll,

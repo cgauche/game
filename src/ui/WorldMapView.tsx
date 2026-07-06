@@ -304,7 +304,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   return (
     <div className="worldmap-overlay">
       <div className="worldmap-head">
-        <h2>🗺️ {map.nom}</h2>
+        <h2><Icon id="nav/campaign" size="sm" /> {map.nom}</h2>
         <button type="button" className="btn small" onClick={close}>✕ Fermer</button>
       </div>
 

@@ -11,7 +11,7 @@ export const tenue: TenueDef = {
   palette: { vet1: '#2a2230', vet2: '#6a5420', cuir: '#140f12', metal: '#3a3a46' },
   set: {
     torse: {
-      // ⚠ PAS d'épaulière dans le torse : elle vit sur l'os du BRAS (slot bras).
+      // PAS d'épaulière dans le torse : elle vit sur l'os du BRAS (slot bras).
       front: `<g stroke-linejoin="round">`
         // gorgerin MONTANT (couvre le cou jusque sous le heaume) + cuirasse bombée
         + `<path d="M-7 -38 Q0 -41 7 -38 L8 -30 Q8 -26 7 -25 Q0 -27 -7 -25 Q-8 -26 -8 -30 Z" fill="@metalO" stroke="#0c0c12" stroke-width="0.7"/>`

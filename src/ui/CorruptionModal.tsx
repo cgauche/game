@@ -7,6 +7,7 @@ import { testValue } from '../engine/skills';
 import { refLabel } from '../data';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
+import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -71,7 +72,7 @@ export function CorruptionModal() {
   return (
     <RollShell
       variant="test"
-      title={seuil ? <>🧬 Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <>🕯️ Influence corruptrice ({EXPOSURE_LABELS[pc.level ?? 'mineure']})</>}
+      title={seuil ? <><Icon id="nav/mutation" size="sm" /> Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <><Icon id="nav/mutation" size="sm" /> Influence corruptrice ({EXPOSURE_LABELS[pc.level ?? 'mineure']})</>}
       subtitle={
         <>
           <strong>{hero?.name ?? '?'}</strong> — Test de {skillLabel} Intermédiaire (+0)

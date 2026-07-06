@@ -8,7 +8,7 @@
 import type { AttackKind } from '../../../engine/creatureAttacks';
 
 // Pics de pose (deltas d'angle d'os) par type d'attaque — gabarit quad/ailé.
-// ⚠ Re-tunés pour le FLANC CONTINU (2026-06-11) : en profil natif, encolure NÉGATIF redresse
+// Re-tunés pour le FLANC CONTINU (2026-06-11) : en profil natif, encolure NÉGATIF redresse
 // le cou (haut-arrière), POSITIF le plonge en avant ; la queue `reptile` TRAÎNE désormais
 // derrière (art miroité) → l'arc de caudale est réduit pour rester lisible (queue z derrière
 // le corps : un grand arc la cachait DERRIÈRE la silhouette).

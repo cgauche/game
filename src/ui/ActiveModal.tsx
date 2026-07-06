@@ -3,6 +3,7 @@ import { ownsLocally } from '../state/netFlow';
 import { modalOwnerOf } from '../state/modalArbiter';
 import { willAutoResolve } from '../state/combatAuto';
 import type { JSX } from 'react';
+import { Icon } from './Icon';
 import { ReloadModal } from './ReloadModal';
 import { StateRecoveryModal } from './StateRecoveryModal';
 import { RenounceModal } from './RenounceModal';
@@ -48,7 +49,7 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
 
 /** Indicateur discret pour les NON-concernés : qui joue la modale en cours. */
 function SpectatorChip({ name }: { name: string }) {
-  return <div className="spectator-chip">⏳ {name} joue…</div>;
+  return <div className="spectator-chip"><Icon id="ui/wait" size="sm" /> {name} joue…</div>;
 }
 
 /**
@@ -69,7 +70,7 @@ export function ActiveModal(): JSX.Element | null {
     const ownerId = modalOwnerOf(s);
     if (ownerId !== '*' && ownerId !== null && !ownsLocally(s, ownerId)) {
       // Anti-doublon : pendant le TOUR d'un héros distant, la barre d'action affiche déjà
-      // « ⏳ X joue Héros… » — la puce ne sert que si la modale concerne un AUTRE combattant
+      // « X joue Héros… » — la puce ne sert que si la modale concerne un AUTRE combattant
       // (ex. défense réactive d'un héros distant pendant un tour ennemi).
       const activeId = s.battle && !s.battle.over ? s.battle.order[s.battle.turn] : undefined;
       if (ownerId !== undefined && ownerId === activeId) return null;

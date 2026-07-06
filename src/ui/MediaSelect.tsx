@@ -14,7 +14,7 @@ export interface MediaOption {
   key: string;
   media?: ReactNode;
   label: ReactNode;
-  /** Détail secondaire à droite du libellé (ex. « PA 2 », « 🔗 Bras+Corps »). */
+  /** Détail secondaire à droite du libellé (ex. « PA 2 », « Bras+Corps »). */
   sub?: ReactNode;
   disabled?: boolean;
 }
@@ -26,7 +26,7 @@ export interface MediaSelectProps {
   onSelect: (key: string) => void;
   /** Contenu du déclencheur quand aucune option n'est sélectionnée (et pas de `trigger` custom). */
   placeholder?: ReactNode;
-  /** Déclencheur custom (ex. 🎁) — remplace le contenu « média + libellé » par défaut. */
+  /** Déclencheur custom (ex. icône cadeau) — remplace le contenu « média + libellé » par défaut. */
   trigger?: ReactNode;
   /** Classe du bouton déclencheur (défaut : aspect « select » `.ms-trigger`). */
   triggerClassName?: string;

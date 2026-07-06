@@ -3,6 +3,7 @@ import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { calmeValue } from '../engine/psychology';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
+import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
@@ -56,7 +57,7 @@ export function ApproachModal() {
 
   return (
     <RollShell
-      title="😨 Affronter sa Peur"
+      title={<><Icon id="flag/fear" size="sm" /> Affronter sa Peur</>}
       subtitle={
         <>
           <strong>{c.name}</strong> ose approcher {src?.name ?? 'la source de sa Peur'} (Test de Calme +0)

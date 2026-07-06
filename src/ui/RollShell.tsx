@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { Modal } from './Modal';
-import { RollRow, type RollRowProps } from './RollRow';
+import { RollRow, type RollRowProps, DEFAULT_ROLL_LABEL } from './RollRow';
 import { useRollFrisson } from './useRollFrisson';
+import { Icon } from './Icon';
 
 /**
  * RollShell — LA coquille UNIQUE des modales de jet différé (mono, opposé, ou N contributeurs).
@@ -152,10 +153,10 @@ export function RollShell({
             spinner remplace le bouton (même markup qu'en rangée, juste déplacé). */}
         {hoistIdx >= 0 && !rolled && (
           hoist.rolling ? (
-            <div className="rm-rolling"><span className="rm-die">🎲</span></div>
+            <div className="rm-rolling"><span className="rm-die"><Icon id="nav/dice" /></span></div>
           ) : (
             <button key="roll" className="btn btn-primary" onClick={() => hoist.trigger()}>
-              {hoistRow?.rollLabel ?? '🎲 Lancer'}
+              {hoistRow?.rollLabel ?? DEFAULT_ROLL_LABEL}
             </button>
           )
         )}

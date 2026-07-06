@@ -14,6 +14,7 @@ import { posteAnchor } from '../state/shipPostes';
 import { isVehicle } from '../engine/vehicle';
 import type { Combatant } from '../engine/types';
 import type { Dir8 } from '../state/dir8';
+import { Icon } from './Icon';
 
 const DIR_LABEL: Record<Dir8, string> = { N: 'Nord', NE: 'Nord-Est', E: 'Est', SE: 'Sud-Est', S: 'Sud', SO: 'Sud-Ouest', O: 'Ouest', NO: 'Nord-Ouest' };
 const SIDE_LABEL: Record<string, string> = { proue: 'Proue', tribord: 'Tribord', poupe: 'Poupe', babord: 'Bâbord' };
@@ -46,7 +47,7 @@ export function PosteDetail({ hull, poste, combatants }: { hull: Combatant; post
   const stock = (poste.ammo ?? []).filter((a) => (a.qty ?? 0) > 0);
   return (
     <div className="ship-poste selected">
-      <span className="ship-poste-name">🎯 {poste.side ? SIDE_LABEL[poste.side] ?? poste.side : 'Omni'} · {poste.item.name}</span>
+      <span className="ship-poste-name"><Icon id="action/aim" size="sm" /> {poste.side ? SIDE_LABEL[poste.side] ?? poste.side : 'Omni'} · {poste.item.name}</span>
       {stock.length > 0 && (
         <label className="ship-poste-ammo">
           <span aria-hidden>🧨</span>

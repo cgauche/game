@@ -40,7 +40,7 @@ export function Editor() {
   const [brush, setBrush] = useState(1); // taille de pinceau terrain (1/3/5)
   const [currentLayer, setCurrentLayer] = useState(0); // couche (z) en cours d'édition (multi-niveaux)
   const [terrainRect, setTerrainRect] = useState(false); // pinceau terrain en mode Rectangle
-  const [encTarget, setEncTarget] = useState(''); // rencontre cible de l'outil ⚔️
+  const [encTarget, setEncTarget] = useState(''); // rencontre cible de l'outil de placement d'ennemis
   const [encRef, setEncRef] = useState(''); // créature à placer
   const [clip, setClip] = useState<Scene['entities'][number] | null>(null); // presse-papier (Ctrl+C/V)
   const hoverRef = useRef<Pt>({ x: 0, y: 0 }); // dernière case survolée (cible de Ctrl+V)

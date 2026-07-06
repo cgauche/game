@@ -6,6 +6,7 @@ import { Coins } from './Coins';
 import { TeamPortrait } from './TeamPortrait';
 import { GearAssignList } from './GearAssignList';
 import { RuleDivider } from './Ornaments';
+import { Icon } from './Icon';
 
 /** Beat de lisibilité avant l'écran plein écran : on laisse voir le COUP FATAL et la chute du dernier
  *  ennemi (le champ de bataille reste rendu sous l'overlay) avant de recouvrir la scène — sinon la victoire
@@ -67,7 +68,7 @@ export function VictoryScreen() {
 
         <div className="victory-rewards">
           <div className="victory-stat"><span className="vs-ico">✨</span> <b>{xp}</b> <span className="vs-unit">PX</span></div>
-          <div className="victory-stat"><span className="vs-ico">💰</span> <Coins money={gold} /></div>
+          <div className="victory-stat"><span className="vs-ico"><Icon id="resource/gold-purse" size="sm" /></span> <Coins money={gold} /></div>
         </div>
 
         {defeated.length > 0 && (
@@ -116,14 +117,14 @@ export function VictoryScreen() {
                 const h = party.find((x) => !x.dead && (net.ownership[x.id] ?? 0) === seat);
                 return (
                   <span key={seat} className={`ready-chip${ready[seat] ? ' ok' : ''}`} title={name}>
-                    {h ? <TeamPortrait combatant={h} size={28} /> : <span className="ready-noportrait">👤</span>}
+                    {h ? <TeamPortrait combatant={h} size={28} /> : <span className="ready-noportrait"><Icon id="nav/seat-owner" size="sm" /></span>}
                     {ready[seat] ? '✓' : '…'}
                   </span>
                 );
               })}
             </div>
             <button className="btn btn-primary victory-continue" disabled={!!ready[net.mySeat]} onClick={() => victoryReady(net.mySeat)}>
-              {ready[net.mySeat] ? '⏳ En attente des autres…' : 'Continuer'}
+              {ready[net.mySeat] ? <><Icon id="ui/wait" size="sm" /> En attente des autres…</> : 'Continuer'}
             </button>
           </>
         ) : (

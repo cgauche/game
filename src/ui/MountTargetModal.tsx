@@ -2,6 +2,7 @@ import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { PortraitPicker } from './PortraitPicker';
 import { ChoiceButtons } from './OptionChooser';
+import { Icon } from './Icon';
 
 /**
  * Combat monté (Livre de base p.14 l.219) : « Si vous tentez de toucher un Personnage qui est sur une
@@ -30,7 +31,7 @@ export function MountTargetModal() {
       <div className="rm-options">
         <PortraitPicker
           choices={[
-            { c: mount, caption: '🐎 Monture', title: `${mount.name} — l'abattre désarçonne le cavalier` },
+            { c: mount, caption: <><Icon id="travel/mount" size="sm" /> Monture</>, title: `${mount.name} — l'abattre désarçonne le cavalier` },
             { c: rider, caption: '🗡️ Cavalier', title: `${rider.name} — −10 si vous êtes plus petit que la monture` },
           ]}
           onPick={(id) => select(id)}

@@ -4,6 +4,7 @@ import { MultiRollList } from './MultiRollList';
 import { TRAVEL_MODE_LABEL } from '../engine/travel';
 import type { TravelRecap } from '../state/travelFlow';
 import { GameDate } from './GameDate';
+import { Icon } from './Icon';
 
 /** Corps PARTAGÉ du rapport d'une journée de route : péripéties/entretien en clair + JETS en
  *  multijet (MÊME brique que le bilan de nuit) — utilisé par la halte du soir (RestModal) et le
@@ -39,12 +40,12 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
   if (!recap) return null;
   const ambush = !!recap.then; // une embuscade ATTEND : l'acquittement déclenche le combat
   const title = ambush
-    ? '⚔️ Embuscade en chemin !'
+    ? <><Icon id="action/attack" size="sm" /> Embuscade en chemin !</>
     : recap.status === 'arrived'
-      ? `🧭 Arrivée à ${recap.toLabel}`
+      ? <><Icon id="scenario/travel" size="sm" /> Arrivée à {recap.toLabel}</>
       : recap.status === 'interrupted'
-        ? '🧭 Voyage interrompu !'
-        : '🧭 Le convoi s\'arrête';
+        ? <><Icon id="scenario/travel" size="sm" /> Voyage interrompu !</>
+        : <><Icon id="scenario/travel" size="sm" /> Le convoi s'arrête</>;
   const kmLeft = Math.max(0, Math.round(recap.km - recap.kmDone));
   const onContinue = () => { dismiss(); openWorldMap(); };
   return (
@@ -69,19 +70,19 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
         </p>
       )}
       {ambush ? (
-        <p className="travel-recap-foot">Impossible de poursuivre : il faut faire face. (Le voyage pourra reprendre ensuite depuis la carte 🗺️.)</p>
+        <p className="travel-recap-foot">Impossible de poursuivre : il faut faire face. (Le voyage pourra reprendre ensuite depuis la carte <Icon id="nav/campaign" size="sm" />.)</p>
       ) : recap.status === 'interrupted' ? (
-        <p className="travel-recap-foot">Le voyage pourra reprendre depuis la carte du monde (🗺️).</p>
+        <p className="travel-recap-foot">Le voyage pourra reprendre depuis la carte du monde (<Icon id="nav/campaign" size="sm" />).</p>
       ) : recap.status === 'stalled' ? (
         <p className="travel-recap-foot">Le groupe est trop chargé pour avancer — allégez les sacs, puis reprenez depuis la carte.</p>
       ) : null}
       <div className="modal-actions">
         {!ambush && <button className="btn" onClick={dismiss}>Fermer</button>}
         {ambush
-          ? <button className="btn btn-primary" onClick={() => dismiss()}>⚔️ Faire face</button>
+          ? <button className="btn btn-primary" onClick={() => dismiss()}><Icon id="action/attack" size="sm" /> Faire face</button>
           : recap.status === 'arrived'
-            ? <button className="btn btn-primary" onClick={onContinue}>🗺️ Continuer le voyage</button>
-            : <button className="btn btn-primary" onClick={onContinue}>🗺️ Ouvrir la carte</button>}
+            ? <button className="btn btn-primary" onClick={onContinue}><Icon id="nav/campaign" size="sm" /> Continuer le voyage</button>
+            : <button className="btn btn-primary" onClick={onContinue}><Icon id="nav/campaign" size="sm" /> Ouvrir la carte</button>}
       </div>
     </Modal>
   );

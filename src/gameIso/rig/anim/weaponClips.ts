@@ -235,7 +235,7 @@ const seatedPose = (p: Pose): Pose => Object.fromEntries(Object.entries(p).filte
 /** Variante ASSISE d'un clip : purge les deltas bassin/jambes (le cavalier reste en selle). */
 export const seatedClip = (cl: Clip): Clip => ({ ...cl, steps: cl.steps.map((s) => ({ ...s, pose: seatedPose(s.pose) })) });
 
-// ⚠ CALIBRAGE MONTÉ (vérifié à la sonde FK, profil natif non-miroité) :
+// CALIBRAGE MONTÉ (vérifié à la sonde FK, profil natif non-miroité) :
 //  - angle MONDE de l'arme = tenue + (arme + epauleD + avantBrasD + torse), additif strict ;
 //    repères : 90 ≈ pointe AVANT horizontale, 0 ≈ pointe haut, > 180 = pointe ARRIÈRE.
 //  - le POING : epauleD POSITIF le tire en ARRIÈRE-haut, NÉGATIF le projette en AVANT

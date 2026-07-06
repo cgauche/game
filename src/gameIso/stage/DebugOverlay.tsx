@@ -63,7 +63,7 @@ export function DebugLegend() {
   return (
     <g pointerEvents="none">
       <rect x={x0} y={y0} width={w} height={h} rx={6} fill="var(--dbg-ink)" opacity={0.82} stroke="var(--dbg-border)" strokeWidth={1} />
-      <text x={x0 + 10} y={y0 + 18} fill="var(--dbg-fg)" fontSize={11} fontWeight={700}>🏷️ Debug carte (labels)</text>
+      <text x={x0 + 10} y={y0 + 18} fill="var(--dbg-fg)" fontSize={11} fontWeight={700}>Debug carte (labels)</text>
       {items.map(([label, col], i) => {
         const ly = y0 + 28 + i * rowH;
         return (

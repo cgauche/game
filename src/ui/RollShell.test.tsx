@@ -170,7 +170,8 @@ describe('RollShell — coquille de jet unifiée', () => {
     expect(post).toContain('Appliquer'); // when:'post'
     expect(post).not.toContain('Annuler'); // when:'pre' masqué
     // Le « Lancer » hissé (mono) suit la même phase : présent pré-jet, absent post-jet.
-    expect(pre).toContain('🎲 Lancer');
-    expect(post).not.toContain('🎲 Lancer');
+    // (Le préfixe 🎲 est désormais l'icône <Icon id="nav/dice"> — on vérifie le libellé texte.)
+    expect(pre).toContain('Lancer');
+    expect(post).not.toContain('Lancer');
   });
 });

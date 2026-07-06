@@ -3,6 +3,7 @@ import { Modal } from './Modal';
 import { OPTIONAL_RULES, rule, type OptionalRule, type RuleValue } from '../engine/policy';
 import { setHouseRule, resetHouseRule } from '../state/houseRules';
 import { useGame } from '../state/store';
+import { Icon } from './Icon';
 
 /**
  * Panneau « Règles maison » — GÉNÉRÉ depuis le registre `OPTIONAL_RULES`. Il ne connaît aucune règle
@@ -24,7 +25,7 @@ export function HouseRulesModal({ onClose }: { onClose: () => void }) {
   const groups = [...new Set(OPTIONAL_RULES.map((r) => r.group))];
 
   return (
-    <Modal title="📜 Règles maison" variant="plain" className="house-rules" onClose={onClose} backdropClose>
+    <Modal title={<><Icon id="nav/rules" size="sm" /> Règles maison</>} variant="plain" className="house-rules" onClose={onClose} backdropClose>
       {groups.map((g) => (
         <section key={g} className="hr-group">
           <h4 className="mini-title">{g}</h4>
@@ -82,7 +83,7 @@ function HouseRuleRow({
       {def.id === 'fortune-mid-session' && val === 'manual' && (
         <div className="hr-action">
           <button className="btn btn-resource" onClick={restoreFortuneNow}>
-            🍀 Regagner la Chance maintenant
+            <Icon id="resource/fortune" size="sm" /> Regagner la Chance maintenant
           </button>
         </div>
       )}

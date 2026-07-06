@@ -4,6 +4,7 @@ import { canReroll } from '../engine/fortune';
 import { OptionChooser } from './OptionChooser';
 import { RollShell, type RollAction } from './RollShell';
 import { VsHeader } from './VsHeader';
+import { Icon } from './Icon';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { testBreakdown } from './breakdown';
@@ -96,7 +97,7 @@ export function AuContactModal() {
               layout="actions"
               options={[
                 { key: 'contact', label: '🤜 Au contact', primary: true, onSelect: () => choose('contact'), title: 'Entrer dans la longueur d’arme : toute arme plus longue que Courte est traitée comme une Arme improvisée (les deux camps)' },
-                { key: 'normal', label: '⚔️ Combat normal', onSelect: () => choose('normal'), title: 'Le combat se poursuit à distance d’arme normale' },
+                { key: 'normal', label: <><Icon id="action/attack" size="sm" /> Combat normal</>, onSelect: () => choose('normal'), title: 'Le combat se poursuit à distance d’arme normale' },
               ]}
             />
           </>

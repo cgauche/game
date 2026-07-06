@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { ChoiceButtons } from './OptionChooser';
+import { Icon } from './Icon';
 
 /**
  * « Je te renie ! » (LDB 17 l.71) : le héros a échoué au Test de Résistance du seuil de Corruption —
@@ -18,9 +19,9 @@ export function RenounceModal() {
   if (!hero) return null;
   const resilience = hero.resilience ?? 0;
   return (
-    <Modal title="🧬 La Corruption gagne du terrain" variant="test">
+    <Modal title={<><Icon id="nav/mutation" size="sm" /> La Corruption gagne du terrain</>} variant="test">
       <p className="rm-log">
-        <b>{hero.name}</b> échoue à contenir sa Corruption (Résistance 🎲 {pr.testRoll}/{pr.testTarget}) — une{' '}
+        <b>{hero.name}</b> échoue à contenir sa Corruption (Résistance <Icon id="nav/dice" size="sm" /> {pr.testRoll}/{pr.testTarget}) — une{' '}
         <b>mutation</b> menace de se développer.
       </p>
       <p className="rm-log">
@@ -29,8 +30,8 @@ export function RenounceModal() {
       </p>
       <ChoiceButtons
         options={[
-          { key: 'subir', label: '🎲 Subir la mutation', onSelect: () => resolve(false), title: 'Laisser la mutation se développer (tirage sur le Tableau des Corruptions)' },
-          { key: 'renier', label: '✊ Je te renie ! (−1 Résilience)', primary: true, disabled: resilience <= 0, onSelect: () => resolve(true), title: 'Refuser la mutation — 1 Point de Résilience' },
+          { key: 'subir', label: <><Icon id="nav/dice" size="sm" /> Subir la mutation</>, onSelect: () => resolve(false), title: 'Laisser la mutation se développer (tirage sur le Tableau des Corruptions)' },
+          { key: 'renier', label: <><Icon id="resource/resolve" size="sm" /> Je te renie ! (−1 Résilience)</>, primary: true, disabled: resilience <= 0, onSelect: () => resolve(true), title: 'Refuser la mutation — 1 Point de Résilience' },
         ]}
       />
     </Modal>

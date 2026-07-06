@@ -1,13 +1,14 @@
 /**
  * Détail d'UN dialogue (panneau Logique) en MASTER-DÉTAIL : liste des nœuds (▶ départ,
  * résumé des choix « → n2, n3 ») → édition d'UN nœud à la fois — fini les cartes imbriquées
- * toutes dépliées du POC. Les choix sont repliés avec résumé (texte + cible + 💰), dépliables
+ * toutes dépliées du POC. Les choix sont repliés avec résumé (texte + cible + coût), dépliables
  * pour condition/coût/effets.
  */
 import { useState } from 'react';
 import { Dialogue, DialogueNode, DialogueChoice } from '../../state/scene';
 import { EMPTY_FLOW, type Flow } from '../../state/flow';
 import { Ctx } from './EffectList';
+import { Icon } from '../Icon';
 import { FlowEditor } from './FlowEditor';
 import { WhenEditor, condSummary } from './ConditionEditor';
 
@@ -108,7 +109,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                     <span className="eff-summary">
                       {c.text ? `« ${c.text.slice(0, 38)}${c.text.length > 38 ? '…' : ''} »` : '(choix sans texte)'}
                       {c.next ? ` → ${c.next}` : ' → fin'}
-                      {c.cost?.gold || c.cost?.silver || c.cost?.brass ? ' · 💰' : ''}
+                      {c.cost?.gold || c.cost?.silver || c.cost?.brass ? <> · <Icon id="resource/gold-purse" size="sm" /></> : ''}
                       {condSummary(c.when) ? ' · si ' + condSummary(c.when) : ''}
                       {flowLen(c.flow) ? ` · ${flowLen(c.flow)} bloc(s)` : ''}
                     </span>
@@ -133,7 +134,7 @@ export function DialogueDetail({ dialogue, onChange, ctx }: { dialogue: Dialogue
                         </select>
                       </label>
                       <span className="choice-cost" title="Coût de l’option (service payant : auberge, péage, pot-de-vin) — CO / pa / sc">
-                        💰
+                        <Icon id="resource/gold-purse" size="sm" />
                         {(['gold', 'silver', 'brass'] as const).map((k) => (
                           <input
                             key={k}

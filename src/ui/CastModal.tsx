@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { FLOWS } from '../state/rollFlowSpecs';
@@ -20,6 +21,7 @@ import { RollRow } from './RollRow';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { testBreakdown, testPending } from './breakdown';
+import { Icon } from './Icon';
 
 /**
  * Modale d'incantation — paramétrage de la coquille PARTAGÉE `RollShell` (comme Attaque/Défense) :
@@ -174,7 +176,7 @@ export function CastModal() {
                 {!isPrayer ? ` · NI ${ni}` : ''}
               </>
             }
-            verb="✨"
+            verb={<Icon id="action/cast" size="sm" />}
           />
           {(selfTarget || pc.zone) && (
             <p className="rm-vs">
@@ -213,7 +215,7 @@ export function CastModal() {
           {conjureForms.length > 0 && (
             <div className="rm-crit-choice rm-options">
               {/* Arme invoquée à forme libre (LDB 47) : le lanceur choisit sa Compétence de Corps à corps. */}
-              <span className="mini-title">🗡️ Forme de l'arme invoquée</span>
+              <span className="mini-title"><Icon id="item/weapon" size="sm" /> Forme de l'arme invoquée</span>
               <div className="rm-loc-grid">
                 {conjureForms.map((f) => (
                   <button
@@ -253,8 +255,8 @@ export function CastModal() {
             };
             const rows = overcastAxes(source).filter((a) => can[a]);
             if (!rows.length) return null;
-            const META: Record<OvercastAxis, [string, string]> = {
-              range: ['📏', 'Portée'], zone: ['🌀', 'Zone'], duration: ['⏳', 'Durée'], targets: ['🎯', 'Cibles'],
+            const META: Record<OvercastAxis, [ReactNode, string]> = {
+              range: ['📏', 'Portée'], zone: ['🌀', 'Zone'], duration: [<Icon id="ui/wait" size="sm" />, 'Durée'], targets: [<Icon id="action/aim" size="sm" />, 'Cibles'],
             };
             const cap = extraTargetCapacity(source, oc.targets, spellTargetCount(spell, caster));
             const designated = pc.extraTargetIds?.length ?? 0;
@@ -298,10 +300,10 @@ export function CastModal() {
               <span className="mini-title">⚡ Incantation Critique — choisir l'effet</span>
               <div className="rm-loc-grid">
                 {([
-                  ...(pc.missile ? [['critique', '💥 Blessure Critique', 'Si le Sort inflige des Dégâts, il inflige aussi une Blessure Critique.']] : []),
+                  ...(pc.missile ? [['critique', <><Icon id="journal/critical" size="sm" /> Blessure Critique</>, 'Si le Sort inflige des Dégâts, il inflige aussi une Blessure Critique.']] : []),
                   ['puissance', '🌀 Puissance totale', 'Le Sort est lancé quels que soient son NI et votre DR, mais il peut être Dissipé.'],
-                  ['ineluctable', '🛡️ Force inéluctable', 'Si vous avez assez de DR pour lancer le Sort, il ne peut pas être Dissipé.'],
-                ] as [('critique' | 'puissance' | 'ineluctable'), string, string][]).map(([val, label, tip]) => {
+                  ['ineluctable', <><Icon id="action/defend" size="sm" /> Force inéluctable</>, 'Si vous avez assez de DR pour lancer le Sort, il ne peut pas être Dissipé.'],
+                ] as [('critique' | 'puissance' | 'ineluctable'), ReactNode, string][]).map(([val, label, tip]) => {
                   const def = !res.cast ? 'puissance' : pc.missile ? 'critique' : 'ineluctable';
                   const selected = (pc.critChoice ?? def) === val;
                   return (
@@ -317,7 +319,7 @@ export function CastModal() {
               modale d'incantation (cible IA = témoin auto-roulée, cible héros = interactive). */}
           {pcs && (
             <div className="cs-rows">
-              <span className="mini-title">🛡️ Opposition — la cible oppose son {pcs.kind === 'contact' ? 'Corps à corps (Bagarre)' : (pcs.char ?? pcs.skill)}</span>
+              <span className="mini-title"><Icon id="action/defend" size="sm" /> Opposition — la cible oppose son {pcs.kind === 'contact' ? 'Corps à corps (Bagarre)' : (pcs.char ?? pcs.skill)}</span>
               {pcs.participants.map((part) => {
                 const actor = pool.find((c) => c.id === part.id);
                 if (!actor) return null;
@@ -333,7 +335,7 @@ export function CastModal() {
                     row={row}
                     rolled={!!r}
                     interactive={!!part.interactive}
-                    rollLabel="🛡️ Résister"
+                    rollLabel={<><Icon id="action/defend" size="sm" /> Résister</>}
                     onRoll={() => oppRoll(part.id)}
                     rerollable={!!r && canReroll(!r.resisted, !!part.rerolled)}
                     onReroll={() => oppReroll(part.id)}
@@ -345,7 +347,7 @@ export function CastModal() {
                     /* Résistance (Menace : Magie), LDB 10 : auto-succès du Test qui résiste au Sort. */
                     resist={pcs.menace != null && availableResistance(actor, pcs.menace) != null && (!r || !r.resisted)
                       ? { menace: pcs.menace, onResist: () => oppResist(part.id) } : undefined}
-                    extra={r && <div className={`cs-outcome ${r.resisted ? 'ok-text' : 'muted'}`}>{r.resisted ? '✅ Résiste !' : `subit · marge DR ${r.margin}`}</div>}
+                    extra={r && <div className={`cs-outcome ${r.resisted ? 'ok-text' : 'muted'}`}>{r.resisted ? <><Icon id="ui/done" size="sm" /> Résiste !</> : `subit · marge DR ${r.margin}`}</div>}
                   />
                 );
               })}
@@ -357,7 +359,7 @@ export function CastModal() {
               COOP : on ne pilote QUE ses propres héros (rangées distantes en lecture seule). */}
           {csp && (
             <div className="cs-rows">
-              <span className="mini-title">🛡️ Contre-sort — chaque lanceur oppose son Langue (Magick)</span>
+              <span className="mini-title"><Icon id="action/defend" size="sm" /> Contre-sort — chaque lanceur oppose son Langue (Magick)</span>
               {csp.participants.map((part) => {
                 const actor = pool.find((c) => c.id === part.id);
                 if (!actor) return null;
@@ -373,7 +375,7 @@ export function CastModal() {
                     row={row}
                     rolled={!!r}
                     interactive={net.mode === 'local' || ownsLocally(useGame.getState(), part.id)}
-                    rollLabel="🛡️ Contre-sort"
+                    rollLabel={<><Icon id="action/defend" size="sm" /> Contre-sort</>}
                     onRoll={() => cspRoll(part.id)}
                     rerollable={!!r && canReroll(!r.counter.success, !!part.rerolled)}
                     onReroll={() => cspReroll(part.id)}
@@ -382,7 +384,7 @@ export function CastModal() {
                     onDarkPact={() => cspDarkPact(part.id)}
                     onForce={() => cspForce(part.id)}
                     forceShow={!!r && !r.dispelled}
-                    extra={r && <div className={`cs-outcome ${r.dispelled ? 'ok-text' : 'muted'}`}>{r.dispelled ? '✅ Dissipé !' : `DR net ${r.casterNetSL >= 0 ? '+' : ''}${r.casterNetSL}`}</div>}
+                    extra={r && <div className={`cs-outcome ${r.dispelled ? 'ok-text' : 'muted'}`}>{r.dispelled ? <><Icon id="ui/done" size="sm" /> Dissipé !</> : `DR net ${r.casterNetSL >= 0 ? '+' : ''}${r.casterNetSL}`}</div>}
                   />
                 );
               })}

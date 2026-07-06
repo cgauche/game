@@ -3,6 +3,7 @@ import { ownsLocally } from '../state/netFlow';
 import { Modal } from './Modal';
 import { Coins } from './Coins';
 import { GearAssignList } from './GearAssignList';
+import { Icon } from './Icon';
 
 /**
  * Fenêtre de BUTIN hors combat (fouille d'un décor, branche de Test, dialogue, trigger) — même
@@ -33,7 +34,7 @@ export function LootModal() {
       )}
       {pl.gold && (
         <div className="victory-rewards">
-          <div className="victory-stat"><span className="vs-ico">💰</span> <Coins money={pl.gold} /></div>
+          <div className="victory-stat"><span className="vs-ico"><Icon id="resource/gold-purse" size="sm" /></span> <Coins money={pl.gold} /></div>
         </div>
       )}
       {pl.gear.length > 0 && (

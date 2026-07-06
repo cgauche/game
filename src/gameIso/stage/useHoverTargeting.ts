@@ -26,20 +26,21 @@ export interface HoverAim {
   line: 'dashed' | 'solid' | null;
   /** Chemin RÉEL d'un déplacement combiné (Charge / rejoindre) — tracé à la place de la ligne droite. */
   path?: { x: number; y: number }[];
-  /** Carte d'infobulle : nom / compétence + valeur / dégâts / manœuvre — ou erreur ⛔ courte. */
+  /** Carte d'infobulle : nom / compétence + valeur / dégâts / manœuvre — ou erreur courte. */
   tip: { kind: 'info'; title: string; skill: string; base: number; mod: number; dmg: number | null; note?: string } | { kind: 'err'; text: string } | null;
   /** Aperçu synthétisé (forme battle.preview) pour le clignotant des jauges (previewResourceDelta). */
   preview?: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
   reticle: boolean;
 }
 
-/** Libellé d'erreur ⛔ d'un survol de cible INVALIDE (source UNIQUE : ciblage normal ET Tir rapide). */
+/** Libellé d'erreur d'un survol de cible INVALIDE (source UNIQUE : ciblage normal ET Tir rapide) —
+ *  rendu avec l'icône `ui/warning` par l'appelant (carte SVG `AimOverlay`). */
 function hoverErrText(reason: string): string {
-  return reason === 'los' ? '⛔ pas de ligne de vue'
-    : reason === 'engaged' ? '⛔ Engagé — se désengager'
-    : reason === 'unloaded' ? '⛔ Arme déchargée — recharger'
-    : reason === 'noammo' ? '⛔ Plus de munitions'
-    : '⛔ hors de portée';
+  return reason === 'los' ? 'pas de ligne de vue'
+    : reason === 'engaged' ? 'Engagé — se désengager'
+    : reason === 'unloaded' ? 'Arme déchargée — recharger'
+    : reason === 'noammo' ? 'Plus de munitions'
+    : 'hors de portée';
 }
 
 export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn: boolean) {

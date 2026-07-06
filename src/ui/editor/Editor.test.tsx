@@ -11,7 +11,7 @@ describe('Editor v2 (rendu)', () => {
     expect(html).toContain('↶');
     expect(html).toContain('↷');
     expect(html).toContain('Scène active'); // aria-label du sélecteur de scènes
-    expect(html).toContain('🗺️ Monde');
+    expect(html).toContain('Monde'); // bouton « <Icon nav/campaign> Monde » (préfixe 🗺️ migré en icône)
     expect(html).toContain('▶ Tester');
   });
 
@@ -34,9 +34,9 @@ describe('Editor v2 (rendu)', () => {
 
   it('rend la barre de statut (calques) et le dock Logique (onglets + compteurs)', () => {
     expect(html).toContain('Calques');
-    expect(html).toContain('🟦 Triggers');
-    expect(html).toContain('💬 Dialogues');
-    expect(html).toContain('⚔️ Rencontres');
+    expect(html).toContain('🟦 Triggers'); // pas d'icône au registre → emoji conservé (exception)
+    expect(html).toContain('💬 Dialogues'); // idem
+    expect(html).toContain('Rencontres'); // onglet « <Icon action/attack> Rencontres » (préfixe ⚔️ migré)
     expect(html).toContain('Validation');
   });
 

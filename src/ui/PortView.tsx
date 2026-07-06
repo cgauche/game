@@ -8,6 +8,7 @@ import { foulingEffects } from '../engine/seaNavigation';
 import { canAfford, toMoney } from '../engine/money';
 import { Coins } from './Coins';
 import { Prose } from './Prose';
+import { Icon } from './Icon';
 
 /**
  * ÉCRAN PORT (MDG 15) — services au navire de campagne à quai : Réparer (MDG 13 l.643) / Caréner
@@ -57,7 +58,7 @@ export function PortView() {
   return (
     <div className="worldmap-overlay port-overlay">
       <div className="worldmap-head">
-        <h2>⚓ Port de {port.label} — {vd.label}</h2>
+        <h2><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vd.label}</h2>
         <button type="button" className="btn small" onClick={close}>✕ Fermer</button>
       </div>
       <div className="port-tabs">

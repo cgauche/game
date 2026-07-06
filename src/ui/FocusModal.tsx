@@ -9,6 +9,7 @@ import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeFocus } from '../state/flowOutcomes';
 import { DrBar } from './DrBar';
+import { Icon } from './Icon';
 
 /**
  * Modale de Focalisation (LDB — Test étendu de Focalisation) : « Lancer » accumule du DR vers le NI,
@@ -60,7 +61,7 @@ export function FocusModal() {
 
   return (
     <RollShell
-      title="✨ Focalisation"
+      title={<><Icon id="flag/focus" size="sm" /> Focalisation</>}
       subtitle={
         <>
           <strong>{caster.name}</strong> focalise <strong>{spell?.label ?? pf.spellId}</strong> ({prev}/{ni} DR)

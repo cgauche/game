@@ -5,6 +5,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import type { Scene } from '../../state/scene';
+import { Icon } from '../Icon';
 
 export function EditorToolbar({
   onBack,
@@ -152,7 +153,7 @@ export function EditorToolbar({
 
       <div className="editor-toolbar">
         <button className="btn small" onClick={onWorld} title="Carte du monde du projet : lieux, routes, voyage">
-          🗺️ Monde{worldCount !== null ? ` (${worldCount})` : ''}
+          <Icon id="nav/campaign" size="sm" /> Monde{worldCount !== null ? ` (${worldCount})` : ''}
         </button>
         <button className="btn small btn-primary" onClick={onTest}>
           ▶ Tester

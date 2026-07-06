@@ -6,6 +6,7 @@ import { findCrewRoleById, findCrewTestTypeById } from '../data';
 import { crewRoleValue, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { maneuverCrewTotal } from '../state/shipManeuver';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
+import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
 
 /**
@@ -74,17 +75,17 @@ export function CrewTestModal() {
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
-    ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: '🎲 Tout lancer', kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
+    ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
     { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'always', disabled: !allRolled },
   ];
 
   return (
     <RollShell
-      title={`⚓ ${testType.label} — Test d’équipage`}
+      title={<><Icon id="travel/anchor" size="sm" /> {testType.label} — Test d’équipage</>}
       variant="test"
       subtitle={<><strong>{ship.name}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''} (MDG ch.14)</>}
       extra={p.extraDR
-        ? <div className="rm-threat">⚠ Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage, MDG ch.14).</div>
+        ? <div className="rm-threat"><Icon id="ui/warning" size="sm" /> Le Test d’équipage est perturbé : {sign(p.extraDR)} DR (sabotage, MDG ch.14).</div>
         : undefined}
       rows={rows}
       rolled={allRolled}

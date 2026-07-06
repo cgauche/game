@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { OptionChooser, ChoiceButtons } from './OptionChooser';
+import { Icon } from './Icon';
 
 /**
  * Sauvetage par le Destin (LDB « Destin et Résistance » ch.17 l.31-35) : quand un héros à Destin
@@ -20,7 +21,7 @@ export function FateSaveModal() {
   const fate = hero.fate ?? 0;
 
   return (
-    <Modal title="☄️ Le Destin" subject={hero} variant="test">
+    <Modal title={<><Icon id="resource/fate" size="sm" /> Le Destin</>} subject={hero} variant="test">
       <p className="rm-log">
         {p.source === 'hit' ? 'Un coup fatal le frappe !' : 'Ses blessures l’emportent…'} Sacrifier un Point de Destin ?
         (il en reste {fate})
@@ -29,12 +30,12 @@ export function FateSaveModal() {
         <OptionChooser
           layout="grid"
           options={[
-            { key: 'negate', label: '🍀 Comment ça a pu rater ?', hidden: p.source !== 'hit', onSelect: negate, title: 'Évite tout le coup et reste en combat (Destin −1)' },
+            { key: 'negate', label: <><Icon id="resource/fortune" size="sm" /> Comment ça a pu rater ?</>, hidden: p.source !== 'hit', onSelect: negate, title: 'Évite tout le coup et reste en combat (Destin −1)' },
             { key: 'survive', label: '🛟 Meurs un autre jour', onSelect: survive, title: 'Survit mais quitte le combat (Destin −1)' },
           ]}
         />
       </div>
-      <ChoiceButtons options={[{ key: 'accept', label: '☠️ Accepter le sort', primary: true, onSelect: accept, title: 'Le héros meurt' }]} />
+      <ChoiceButtons options={[{ key: 'accept', label: <><Icon id="journal/death" size="sm" /> Accepter le sort</>, primary: true, onSelect: accept, title: 'Le héros meurt' }]} />
     </Modal>
   );
 }

@@ -7,6 +7,7 @@ import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeFrenzy } from '../state/flowOutcomes';
+import { Icon } from './Icon';
 
 /**
  * Modale d'entrée en Frénésie (LDB 21 l.32) : « Lancer » jette le Test de Force Mentale,
@@ -55,7 +56,7 @@ export function FrenzyModal() {
 
   return (
     <RollShell
-      title="🐗 Frénésie"
+      title={<><Icon id="flag/frenzy" size="sm" /> Frénésie</>}
       subtitle={
         <>
           <strong>{c.name}</strong> tente d'entrer en Frénésie (Test de Force Mentale)

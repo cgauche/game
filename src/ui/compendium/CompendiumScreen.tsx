@@ -12,6 +12,7 @@ import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, useCodexVersion, type
 import { filterItems, facetValues, type FacetSelection } from './search';
 import { CodexEntry } from './CodexEntry';
 import { CodexEdit, isEditableCategory } from './CodexEdit';
+import { Icon } from '../Icon';
 
 export interface CodexFocus { category: string; label: string; instance?: string }
 
@@ -122,7 +123,7 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
       <header className="codex-top">
         {/* Plein écran : « ← Retour » (navigation). En modale, la fermeture est le ✕ en haut à droite. */}
         {!onClose && <button className="btn small" onClick={close}>← Retour</button>}
-        <h1 className="codex-h1">📖 Compendium</h1>
+        <h1 className="codex-h1"><Icon id="nav/compendium" size="sm" /> Compendium</h1>
         <div className="seg codex-groups">
           {CODEX_GROUPS.map((g) => (
             <button key={g} className={g === group ? 'on' : ''} onClick={() => pickGroup(g)}>{g}</button>

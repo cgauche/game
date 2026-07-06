@@ -132,7 +132,7 @@ export function usePlanAnim(id: string, planId: BodyPlanId, species: string, dea
     : dead || prone
       ? (m.kind === 'dying'
           ? lerpPose(plan.restPose(), downPose(), easeOutCubic(Math.min(1, (now - m.start) / DYING_MS)))
-          : downPose()) // l'anneau de vie + l'icône 🔻 disent « vivant »
+          : downPose()) // l'anneau de vie + l'icône « vivant » le confirment
       : m.kind === 'walk'
           ? (m.leap && plan.leapPose ? plan.leapPose : plan.walkPose)(((now / STEP_MS) % 2) / 2)
           : m.kind === 'attack'

@@ -1,7 +1,7 @@
 /**
  * Ciblage du JOUEUR — réticule persistant des jets à cible en cours (modale ouverte), sinon survol
  * (hoverAim) : réticule sur cible VALIDE + infobulle unifiée mêlée/tir/sort « arme ou sort · compétence
- * base ±mod · Dégâts N » (états ⛔ LdV / portée / Engagé). INTERACTION → overlay du stage, hors builders.
+ * base ±mod · Dégâts N » (états bloquants : LdV / portée / Engagé). INTERACTION → overlay du stage, hors builders.
  */
 import type { BattleState, PendingAttack, PendingDefense, PendingTrample, PendingHeal, PendingCast } from '../../state/store';
 import { Combatant } from '../../engine/types';
@@ -9,6 +9,7 @@ import { firedWeapon } from '../../state/combatFlow';
 import { Dims, tileCenter } from '../iso';
 import { TargetReticle } from '../TargetReticle';
 import { relationColor } from '../teamColors';
+import { IconG } from '../../ui/Icon';
 import type { HoverAim } from './useHoverTargeting';
 
 export function AimOverlay({ battle, hoverAim, anchor, dims, pendingAttack, pendingDefense, pendingTrample, pendingHeal, pendingCast }: {
@@ -69,11 +70,12 @@ export function AimOverlay({ battle, hoverAim, anchor, dims, pendingAttack, pend
       {pathPts && <polyline points={pathPts} fill="none" stroke={relCol} strokeWidth={3} opacity={0.9} />}
       {hoverAim.reticle && <TargetReticle from={pathPts ? null : a ? anchor(a) : null} to={to} line={pathPts ? null : hoverAim.line} lineColor={relCol} />}
       {tip?.kind === 'err' && (() => {
-        const w = tip.text.length * 6.4 + 14;
+        const w = tip.text.length * 6.4 + 40;
         return (
           <g transform={`translate(${to.cx},${to.cy - 64})`}>
             <rect x={-w / 2} y={-13} width={w} height={20} rx={5} fill="var(--tooltip-bg)" opacity={0.94} stroke="var(--tooltip-border)" strokeWidth={1} />
-            <text x={0} y={1} textAnchor="middle" dominantBaseline="middle" fill="var(--tooltip-fg)" fontSize={11} fontWeight={600}>
+            <IconG id="ui/warning" x={-w / 2 + 8} y={-10} size={14} />
+            <text x={-w / 2 + 28} y={1} dominantBaseline="middle" fill="var(--tooltip-fg)" fontSize={11} fontWeight={600}>
               {tip.text}
             </text>
           </g>

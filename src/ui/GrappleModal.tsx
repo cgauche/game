@@ -7,6 +7,7 @@ import { VsHeader } from './VsHeader';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { testBreakdown } from './breakdown';
+import { Icon } from './Icon';
 
 /**
  * Modale « Empoignade » (LDB 14 l.161) — Test OPPOSÉ de FORCE sur `RollShell` (opposé = 2 rangées) :
@@ -90,8 +91,8 @@ export function GrappleModal() {
             <OptionChooser
               layout="actions"
               options={[
-                { key: 'damage', label: '💥 Dégâts', primary: true, onSelect: () => choose('damage'), title: 'BF + DR Dégâts, en IGNORANT tous les Points d’Armure (Localisation au lancer de Force).' },
-                { key: 'entangle', label: '🪢 Empêtrer', onSelect: () => choose('entangle'), title: 'Conférer l’État Empêtré à l’adversaire.' },
+                { key: 'damage', label: <><Icon id="journal/damage" size="sm" /> Dégâts</>, primary: true, onSelect: () => choose('damage'), title: 'BF + DR Dégâts, en IGNORANT tous les Points d’Armure (Localisation au lancer de Force).' },
+                { key: 'entangle', label: <><Icon id="condition/entangled" size="sm" /> Empêtrer</>, onSelect: () => choose('entangle'), title: 'Conférer l’État Empêtré à l’adversaire.' },
                 { key: 'free', label: '🤸 Se libérer', onSelect: () => choose('free'), title: 'Te défaire de ton État Empêtré, et en retirer 1 de plus par DR obtenu.' },
               ]}
             />

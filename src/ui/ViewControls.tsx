@@ -1,3 +1,5 @@
+import { Icon } from './Icon';
+
 /**
  * Boutons de vue PARTAGÉS entre le jeu (CampaignView) et l'éditeur : zoom (+ / − / 1×)
  * et rotation caméra (⟲ / ⟳). Composant purement présentationnel — chaque écran câble
@@ -58,7 +60,7 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
           ⟳
         </button>
       </div>
-      {/* Grille 2 colonnes : GAUCHE = vue (projection ▦/◇, puis subjective 👁) ; DROITE = zoom (+, −).
+      {/* Grille 2 colonnes : GAUCHE = vue (projection ▦/◇, puis subjective) ; DROITE = zoom (+, −).
           → le toggle POV est SOUS la vue du dessus et À GAUCHE du −. */}
       <div style={{ display: 'flex', gap: 8 }}>
         <button
@@ -81,7 +83,7 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
             style={{ ...BTN, fontSize: 20, borderColor: pov ? 'var(--gold)' : 'var(--border)' }}
             onPointerDown={stop(onTogglePov)}
           >
-            {pov ? '🗺' : '👁'}
+            {pov ? <Icon id="nav/campaign" size="sm" /> : '👁'}
           </button>
         )}
         <button type="button" title="Zoom arrière" style={{ ...BTN, fontSize: 30 }} onPointerDown={stop(onZoomOut)}>

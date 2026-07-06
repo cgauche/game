@@ -11,6 +11,7 @@ import { MediaSelect, type MediaOption } from './MediaSelect';
 import { charBonus } from '../engine/characteristics';
 import { refLabel, qualityRefLabel } from '../data';
 import { weaponStatParts } from './weaponStats';
+import { Icon } from './Icon';
 
 /**
  * Écran d'EMPLACEMENTS d'équipement (onglet Combat de la fiche) — façon jeu vidéo : colonne
@@ -295,7 +296,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                     <CodexRef category="trappings" label={w.name}>{w.name}</CodexRef>{' '}
                     <em>{weaponStatParts(w, strBonus).join(' · ')}</em>
                     {quals && <span className="weap-quals"> · {quals}</span>}
-                    {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · 🏹 {ammo}</span>}
+                    {ammo != null && <span className="eq-ammo" title="Munitions compatibles dans le sac"> · <Icon id="item/ammo" size="sm" /> {ammo}</span>}
                   </span>
                 </div>
               );

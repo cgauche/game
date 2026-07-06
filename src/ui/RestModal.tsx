@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
@@ -11,6 +12,7 @@ import { hasCondition } from '../engine/conditions';
 import { toBrass } from '../engine/money';
 import { GameDate } from './GameDate';
 import { ownsLocally } from '../state/netFlow';
+import { Icon } from './Icon';
 import type { Combatant } from '../engine/types';
 
 const LODGING_META: Record<RestLodging, { icon: string; label: string }> = {
@@ -27,12 +29,12 @@ const FOOD_META: Record<RestFood, { icon: string; label: string }> = {
 };
 
 /** Avertissements de la ligne d'un héros (info de DÉCISION, pas de texte tuto). */
-function heroWarnings(h: Combatant, lodging: RestLodging, food: RestFood, exposureTests: number): string[] {
-  const out: string[] = [];
+function heroWarnings(h: Combatant, lodging: RestLodging, food: RestFood, exposureTests: number): ReactNode[] {
+  const out: ReactNode[] = [];
   if (hasCondition(h, 'hemorragique') || hasCondition(h, 'en-flammes') || hasCondition(h, 'empoisonne')) {
-    out.push('⚠ à stabiliser (pas de repos réparateur)');
+    out.push(<><Icon id="ui/warning" size="sm" /> à stabiliser (pas de repos réparateur)</>);
   }
-  if (food === 'rien') out.push('⚠ ventre vide');
+  if (food === 'rien') out.push(<><Icon id="ui/warning" size="sm" /> ventre vide</>);
   if (lodging === 'dehors' && exposureTests > 0) out.push(`🥶 Exposition ×${exposureTests}`);
   return out;
 }
@@ -96,7 +98,7 @@ export function RestModal() {
       {p.travelDay && (
         <div className="rest-travel-day">
           <p className="rest-time">
-            🧭 Journée de route — {Math.round(p.travelDay.kmTo - p.travelDay.kmFrom)} km en {Math.round(p.travelDay.hours)} h
+            <Icon id="scenario/travel" size="sm" /> Journée de route — {Math.round(p.travelDay.kmTo - p.travelDay.kmFrom)} km en {Math.round(p.travelDay.hours)} h
           </p>
           <TravelDayBody day={p.travelDay} />
         </div>
@@ -123,7 +125,11 @@ export function RestModal() {
                   groupLabel="Nourriture"
                   options={foodOptions(p.places, h).map((f) => ({ key: f, label: <>{FOOD_META[f].icon} {FOOD_META[f].label}</>, selected: cfg.food === f, disabled: !mine, onSelect: () => restSet(h.id, { food: f }) }))}
                 />
-                {warns.length > 0 && <span className="rest-warn">{warns.join(' · ')}</span>}
+                {warns.length > 0 && (
+                  <span className="rest-warn">
+                    {warns.map((w, i) => <span key={i}>{i > 0 && ' · '}{w}</span>)}
+                  </span>
+                )}
               </div>
             </div>
           );
@@ -142,7 +148,7 @@ export function RestModal() {
             const h = party.find((x) => !x.dead && (net.ownership[x.id] ?? 0) === seat);
             return (
               <span key={seat} className={`ready-chip${ready[seat] ? ' ok' : ''}`} title={name}>
-                {h ? <CharFrame c={h} variant="identity" size="xs" /> : '👤'}
+                {h ? <CharFrame c={h} variant="identity" size="xs" /> : <Icon id="nav/seat-owner" size="sm" />}
                 {ready[seat] ? '✓' : '…'}
               </span>
             );
@@ -152,7 +158,7 @@ export function RestModal() {
       <div className="modal-actions">
         {!p.travelHalt && <button className="btn btn-ghost" onClick={() => restCancel()}>Annuler</button>}
         {online && !ready[net.mySeat] && (
-          <button className="btn" onClick={() => restReady(net.mySeat)}>⚔️ Prêt</button>
+          <button className="btn" onClick={() => restReady(net.mySeat)}><Icon id="action/attack" size="sm" /> Prêt</button>
         )}
         {(!online || net.mode === 'host') && (
           <button className="btn btn-primary" disabled={!canPay || !allReady} onClick={() => restSleep()} title={!canPay ? 'Pas assez d’argent — choisissez des couchages plus modestes' : undefined}>

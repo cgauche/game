@@ -1,7 +1,7 @@
 /**
  * CLASSE DE MANIEMENT — l'axe d'ANIMATION (port/idle, attaque, parade, prise des mains).
  *
- * ⚠️ Distinct du GROUPE de règles (`weaponGroup.ts`, subType WFRP). Le Groupe sert aux
+ * Distinct du GROUPE de règles (`weaponGroup.ts`, subType WFRP). Le Groupe sert aux
  * RÈGLES (entraînement) et conflate des armes maniées différemment : « Base » mêle dague
  * 1-main et trucs improvisés, « Cavalerie » mêle lance et bec-de-corbin (un pic 1-main).
  * Pour ANIMER, ce qui compte c'est la PRISE physique (1 main / 2 mains, lame / hampe /

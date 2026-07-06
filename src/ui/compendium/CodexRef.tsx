@@ -66,7 +66,7 @@ export function CodexRef({
   /** Texte affiché si différent du libellé d'entrée (ex. libellé avec spécialisation). */
   children?: ReactNode;
   className?: string;
-  /** Pour un déclencheur-icône (ℹ️) : ne rien rendre si l'entrée est inconnue (pas d'icône morte). */
+  /** Pour un déclencheur-icône (info) : ne rien rendre si l'entrée est inconnue (pas d'icône morte). */
   hideIfUnknown?: boolean;
   /** Ref en PLEINE PROSE (hors cadre) : réintroduit l'indice pointillé. Par défaut (libellé déjà
    *  encadré : chip/tag/stat-chip/titre) aucun soulignement — cf. `.codex-ref.codex-inline`. */

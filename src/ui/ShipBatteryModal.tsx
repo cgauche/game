@@ -6,6 +6,7 @@ import { findCrewRoleById } from '../data';
 import { crewRoleValue } from '../engine/crewMorale';
 import { maneuverCrewTotal } from '../state/shipManeuver';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
+import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
 
 /**
@@ -70,18 +71,18 @@ export function ShipBatteryModal() {
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
-    ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: '🎲 Tout lancer', kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
+    ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
     { key: 'confirm', label: '🔥 Feu !', kind: 'primary', onClick: confirm, when: 'always', disabled: !allRolled },
   ];
 
   return (
     <RollShell
-      title="🎯 Tir de batterie — Test d’équipage"
+      title={<><Icon id="action/aim" size="sm" /> Tir de batterie — Test d’équipage</>}
       variant="test"
       subtitle={<><strong>{ship.name}</strong> — bordée {p.side} sur <strong>{target.name}</strong> ({postes.length} pièce{plural(postes.length)}, MDG ch.14)</>}
       extra={
         <div className="rm-threat">
-          🎯 {target.name} — Coque {target.wounds.current}/{target.wounds.max}. {postes.length} pièce{plural(postes.length)} : {postes.map((pp) => pp.item.name).join(' · ')}.
+          <Icon id="action/aim" size="sm" /> {target.name} — Coque {target.wounds.current}/{target.wounds.max}. {postes.length} pièce{plural(postes.length)} : {postes.map((pp) => pp.item.name).join(' · ')}.
         </div>
       }
       rows={rows}

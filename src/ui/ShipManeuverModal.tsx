@@ -8,6 +8,7 @@ import { maneuverCrewTotal, deriveManeuverFromCrew } from '../state/shipManeuver
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { OptionChooser, type RollOption } from './OptionChooser';
+import { Icon } from './Icon';
 
 /** Virages proposés (MDG ch.13 — angle abstrait, choix d'UX) : crans d'octant signés (±1 = 45°, ±2 = 90°). */
 const TURN_OPTIONS: { key: string; label: string; steps: number }[] = [
@@ -83,13 +84,13 @@ export function ShipManeuverModal() {
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
-    ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: '🎲 Tout lancer', kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
+    ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
     { key: 'confirm', label: 'Manœuvrer', kind: 'primary', onClick: confirm, when: 'always', disabled: !allRolled },
   ];
 
   return (
     <RollShell
-      title="🧭 Manœuvre — Test d’équipage"
+      title={<><Icon id="action/steer-ship" size="sm" /> Manœuvre — Test d’équipage</>}
       variant="test"
       subtitle={<><strong>{ship.name}</strong> — {p.participants.length} rôle{plural(p.participants.length)} à la manœuvre (DR sommés, MDG ch.14)</>}
       extra={<OptionChooser layout="grid" groupLabel="Virage" options={turnOptions} />}

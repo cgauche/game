@@ -11,6 +11,7 @@ import { findVehicleById } from '../data';
 import { cargoTotalEnc } from '../engine/seaVoyage';
 import { toBrass, PA_PER_CO } from '../engine/money';
 import { Coins } from './Coins';
+import { Icon } from './Icon';
 
 /**
  * ACTIVITÉS EN MER (MDG 15 l.266-306) — modale hebdomadaire (semaine de 8 jours, l.268) : chaque
@@ -38,7 +39,7 @@ export function SeaActivitiesModal() {
   const set = (id: string, pick: SeaActivityPick | null) => setPicks((p) => ({ ...p, [id]: pick }));
 
   return (
-    <Modal title="⚓ Activités en mer — semaine écoulée" variant="plain" className="sea-activities">
+    <Modal title={<><Icon id="travel/anchor" size="sm" /> Activités en mer — semaine écoulée</>} variant="plain" className="sea-activities">
       <div className="sea-act-intro"><Prose md={SEA_ACTIVITIES_INTRO} /></div>
       <div className="panel-grid">
         {heroes.map((h) => {

@@ -16,6 +16,7 @@ import { Coins } from './Coins';
 import { Prose, mdToText } from './Prose';
 import { CharFrame } from './CharFrame';
 import { TeamPortrait } from './TeamPortrait';
+import { Icon } from './Icon';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
@@ -548,7 +549,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
     <div className="merchant-panel modal-overlay">
       <div className="merchant-box">
         <div className="merchant-head">
-          <h2 className="merchant-title">🪙 Marchand</h2>
+          <h2 className="merchant-title"><Icon id="resource/gold-purse" size="sm" /> Marchand</h2>
           <span className="purse">Bourse <Coins money={money} /></span>
           <button className="btn small" onClick={onClose} aria-label="Fermer">✕</button>
         </div>

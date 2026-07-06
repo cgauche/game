@@ -119,7 +119,7 @@ export function CampaignView() {
         return !!c && canActFirst(c, battle) && controlsCombatant(useGame.getState(), c);
       })
     : [];
-  // Pré-emption GRATUITE (arme Rapide, LDB 62 l.318-319) — badge ⚡ au lieu de 🍀.
+  // Pré-emption GRATUITE (arme Rapide, LDB 62 l.318-319) — badge dédié au lieu de Chance.
   const freeFirstIds = canFirstIds.filter((id) => {
     const c = battle?.combatants.find((x) => x.id === id);
     return !!c && freeActFirst(c);

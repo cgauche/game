@@ -9,6 +9,7 @@ import { ev } from '../state/combatLog';
 import { describeHeal } from '../state/flowOutcomes';
 import { ModalSubject } from './ModalSubject';
 import { combatHealModes } from '../engine/healing';
+import { Icon } from './Icon';
 
 /**
  * Flux de jet d'un SOIN (Guérison, LDB 09-Compétences) : « Lancer » → Chance (relance / +1 DR) →
@@ -78,7 +79,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   return (
     <RollShell
       embedded={embedded}
-      title={wounds ? '🩹 Soigner les Blessures' : trauma ? '🦵 Soigner une déchirure' : '🩸 Arrêter l’Hémorragie'}
+      title={wounds ? <><Icon id="journal/heal" size="sm" /> Soigner les Blessures</> : trauma ? '🦵 Soigner une déchirure' : <><Icon id="condition/bleeding" size="sm" /> Arrêter l’Hémorragie</>}
       subtitle={
         <>
           <strong>{ph.healerName}</strong> soigne <strong>{ph.targetName}</strong>{' '}
@@ -92,7 +93,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
           groupLabel="Soin"
           options={combatModes.map((m) => ({
             key: m,
-            label: m === 'wounds' ? '🩹 Blessures' : `🩸 Hémorragie ×${bleed}`,
+            label: m === 'wounds' ? <><Icon id="journal/heal" size="sm" /> Blessures</> : <><Icon id="condition/bleeding" size="sm" /> Hémorragie ×{bleed}</>,
             selected: ph.mode === m,
             onSelect: () => setMode(m),
           }))}
