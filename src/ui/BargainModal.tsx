@@ -93,7 +93,7 @@ export function BargainModalView({
 }
 
 /**
- * Marchandage (LDB 60 l.12 : « réduire le prix de 10 % … 20 % avec un Succès Stupéfiant ou Négociateur »).
+ * Marchandage (LDB 59 l.43 : « réduire le prix de 10 % … 20 % avec un Succès Stupéfiant ou Négociateur »).
  * Test OPPOSÉ Marchandage (le meilleur négociateur du groupe) contre le Marchandage du marchand. « Lancer »
  * fait les deux jets, une Chance est possible avant de conclure (relance/+1 DR côté joueur). Le résultat est
  * verrouillé pour la visite (1 marchandage) et module les prix d'achat (−10/−20 %) et de vente (½ ou ¼).

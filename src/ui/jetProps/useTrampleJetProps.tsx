@@ -11,8 +11,8 @@ import { ev } from '../../state/combatLog';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET de Piétinement (LDB 85 - Traits de
- * créature.md l.320-321 : action gratuite à 1 Avantage, attaque de Bagarre — BF) — extrait de l'ancienne
- * `TrampleModal` pour être rendu À L'IDENTIQUE par la séquence de combat (`CascadeModal` rend l'étape-jet
+ * créature.md l.320-321 : action gratuite à 1 Avantage, attaque de Bagarre — BF). Rendu par la séquence
+ * de combat (`CascadeModal` rend l'étape-jet
  * via ce hook, sans démonter la coquille → une seule fenêtre : le jet ET son Coup Critique). Renvoie les
  * props de `RollShell`, ou `null` si aucun Piétinement en attente. AUCUNE mécanique générique réécrite :
  * que le métier du Piétinement.

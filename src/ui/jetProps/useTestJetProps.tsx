@@ -94,8 +94,8 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
       },
     ],
     outcome: rolled ? <JournalLine className="rm-journal" event={ev('info', describeTest(pt), pt.actorId)} combatants={party} /> : undefined,
-    /* Option « Succès / échec stupéfiants » (LDB 12 l.151) : un Test résolu sur un DOUBLE devient un
-       Succès / Échec Stupéfiant (libellé seul — aucune mécanique nouvelle). Badge gated par la règle. */
+    /* Option « Succès / échec stupéfiants » (LDB 12 l.151) : badge du double (libellé seul, aucune
+       mécanique nouvelle), gaté par la règle. */
     postRollExtra: amazing ? (
       <div className="amazing-row">
         <span

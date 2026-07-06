@@ -10,7 +10,7 @@ import { Icon } from './Icon';
  * pleine/tirets du cadre vient de RigPortrait, R9 daltonisme), actif = or + marqueur, KO grisé.
  * Badge de score d'Initiative (LDB 13) en coin de chaque tuile (héros + ennemis), sablier si arme
  * Lente. Pendant la pause de début de Round (LDB ch.17 l.27), badge de pré-emption (Icon ui/preempt)
- * sous les héros éligibles (l'ancien « Agir en premier » de BattlePanel) — gratuit (arme Rapide) =
+ * sous les héros éligibles — gratuit (arme Rapide) =
  * classe `.free`, sinon coût en Chance affiché. Toggle d'inspection au bout. Pur à props — câblé
  * par CampaignView.
  */

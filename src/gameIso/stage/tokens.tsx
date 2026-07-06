@@ -132,8 +132,7 @@ export function interactHaloObjs(propEls: PropEl[], ctx: TokenCtx, flags: Record
  *  En combat : estompés + non interactifs (wrap), plus de spectateurs qui « dépop » à l'Initiative. */
 /** Décalage de couche d'un FIGURANT : > offset de MUR (0.45), comme le combattant (+0.5) → une unité
  *  posée sur une case n'est JAMAIS masquée par une cloison/crête de SES arêtes (invariant « jeton > mur »).
- *  Un mur DEVANT (arête sud/est → base voisine plus grande) la couvre toujours correctement. Avant, le
- *  figurant était à +0.1 (< mur) → la crête du rempart passait par-dessus les défenseurs qu'elle borde. */
+ *  Un mur DEVANT (arête sud/est → base voisine plus grande) la couvre toujours correctement. */
 export const FIGURANT_LIFT = 0.5;
 
 export function figurantLayerObjs(tokenEls: TokenEl[], ctx: TokenCtx): StageObj[] {
@@ -251,7 +250,7 @@ export function partyLeaderObj(ctx: TokenCtx, partyPos: Pt, partyLeader: Combata
   const wp = partyLeader ? walkPosOf(partyLeader.id, partyPos.x, partyPos.y, partyPos.z ?? 0) : { x: partyPos.x, y: partyPos.y, walking: false, sortPt: { x: partyPos.x, y: partyPos.y } };
   const pZ = partyPos.z ?? 0; // le groupe se rend à son étage (loge) — token soulevé + trié au bon niveau
   // Le jeton de groupe rend TOUJOURS le rig (AnimatedRigToken du meneur, ou jeton vide si groupe vide) :
-  // pickBackend('partyLeader') ne renvoie plus de backend 'sprite'.
+  // pickBackend('partyLeader') renvoie toujours un rig, jamais 'sprite'.
   const r = pickBackend({ kind: 'partyLeader', leader: partyLeader }, ctx.view);
   const el = tokenNode(ctx, r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: ctx.view === 'top', portraitBox: r.portraitBox, discR: discR(1) }, pZ);
   return { d: depth(wp.sortPt.x, wp.sortPt.y, ctx.dims, pZ) + 0.5, z: pZ, vis: true, el }; // le groupe est toujours en vue → au-dessus du voile

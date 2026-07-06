@@ -13,7 +13,7 @@ import { Icon } from './Icon';
 
 /**
  * Modale de Battement (LDB 10 l.103 / AA l.4361) : Action, Test de Corps à corps NON opposé retirant
- * de l'Avantage adverse. Calquée sur `TrampleModal` (jet MONO d'attaquant influençable) — la seule
+ * de l'Avantage adverse. Même patron de jet MONO d'attaquant influençable que le Piétinement — la seule
  * différence métier est l'issue (`battementConfirm` → `resolveBattement`). Le picker de cible
  * (`OptionChooser`) n'apparaît que si plusieurs adversaires sont éligibles (avant le jet).
  */

@@ -81,7 +81,7 @@ export function AppraiseModalView({
 }
 
 /**
- * Évaluation (LDB 60 l.10 : « estimer les prix des objets Rares ou Exotiques à ±10 % »). Test d'Évaluation
+ * Évaluation (LDB 59 l.41 : « estimer les prix des objets Rares ou Exotiques à ±10 % »). Test d'Évaluation
  * (Int) ; un succès RÉVÈLE un objet non identifié (ses qualités cachées deviennent visibles) et en donne
  * une estimation de prix. « Lancer » fait le jet, une Chance est possible avant d'acquitter (révélation).
  */
