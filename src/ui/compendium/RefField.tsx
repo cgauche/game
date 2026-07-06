@@ -42,8 +42,8 @@ export const REF_FIELD: Record<string, RefFieldCfg> = {
   'pregens.species': { ds: 'species', single: true },
   'pregens.career': { ds: 'careers', single: true },
   // Caractéristique d'une compétence : SÉLECTEUR (pas d'input libre) — le dataset `characteristics` n'a
-  // pas d'`id`, il est keyé par `label` ; la valeur STOCKÉE lue par l'engine (CHAR_BY_LABEL) est le label
-  // complet (« Dextérité ») → single-ref keyé `label`, format inchangé.
+  // pas d'`id`, il est keyé par `label` ; la valeur STOCKÉE lue par l'engine (couture `charKeyByLabel`,
+  // src/data/index.ts) est le label complet (« Dextérité ») → single-ref keyé `label`, format inchangé.
   'skills.characteristic': { ds: 'characteristics', single: true, valueKey: 'abr' },
   // ── vocab (valeurs distinctes d'un champ) ───────────────────────────────────
   // refChar/refCareer n'existent QUE sur les espèces → repli global par nom (la catégorie Codex

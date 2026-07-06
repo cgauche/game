@@ -9,7 +9,7 @@
  * (saisie en prose → structure) ; le moteur lit la structure directement.
  */
 import type { Formula } from './ops';
-import { CHAR_BY_LABEL, type CharKey } from './types';
+import { charKeyByLabel } from '../data/index';
 
 /** Portée d'un sort — d'OÙ il peut être lancé. */
 export type SpellRange =
@@ -39,9 +39,10 @@ function normalize(raw: string): string {
     .trim();
 }
 
-/** Caractéristique depuis un libellé FR complet (« Force Mentale » → 'FM'), ou undefined. */
-function charKey(label: string): CharKey | undefined {
-  return CHAR_BY_LABEL[label.trim()];
+/** Caractéristique depuis un libellé FR complet (« Force Mentale » → 'FM'), ou undefined — couture
+ *  label→id (`charKeyByLabel`, src/data/index.ts), pas de carte locale au moteur. */
+function charKey(label: string) {
+  return charKeyByLabel(label.trim());
 }
 
 /** Mesure (Formula) depuis une chaîne : « (Bonus de X) » → {bonusOf}, « (X) » (carac) → {charOf},

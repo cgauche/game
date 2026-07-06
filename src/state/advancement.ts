@@ -8,7 +8,7 @@
  * courant (l.67/78), Talents du niveau courant uniquement (l.100). Les emplacements
  * « (Au choix) » suivent le modèle de désignation de careerSlots (identité (id, spec)).
  */
-import { Combatant, CharKey, CHAR_KEYS, CHAR_LABELS, CHAR_BY_LABEL } from '../engine/types';
+import { Combatant, CharKey, CHAR_KEYS, CHAR_LABELS } from '../engine/types';
 import {
   advanceCost,
   talentCost,
@@ -82,9 +82,9 @@ export interface TalentSlotRow {
   times: number;
   nextCost: number;
   maxReached: boolean;
-  /** Slot à choix non désigné : options proposées — `label` = clé de câblage OPAQUE (`refKey`),
-   *  `display` = texte montré (résolu via `refLabel`). */
-  options?: { label: string; display: string; owned: boolean }[];
+  /** Slot à choix non désigné : options proposées — `refKey` = clé de câblage OPAQUE id+spec (produite
+   *  par `careerSlots.refKey`, jamais un libellé), `display` = texte montré (résolu via `refLabel`). */
+  options?: { refKey: string; display: string; owned: boolean }[];
 }
 export interface CareerTarget {
   career: string;
@@ -207,7 +207,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
       return { slotKey: slot.key, entry: slot.entry, talentId: ref.id, spec: ref.spec, label, times, nextCost: talentCost(times), maxReached: talentMaxReached(hero, ref.id, ref.spec) };
     }
     // Slot à choix non désigné : proposer les options concrètes non prises par la carrière.
-    const options: { label: string; display: string; owned: boolean }[] = [];
+    const options: { refKey: string; display: string; owned: boolean }[] = [];
     for (const o of slot.options) {
       if (!o.optionId) continue;
       const specs = o.specOptions ?? wildcardSpecs(o.name);
@@ -216,7 +216,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
         const rk = refKey(o.optionId, spec);
         if (taken.has(rk)) continue;
         options.push({
-          label: rk,
+          refKey: rk,
           display: refLabel('talents', { id: o.optionId, spec }),
           owned: (hero.talents.find((t) => t.talentId === o.optionId && (t.spec ?? '') === (spec ?? ''))?.times ?? 0) > 0,
         });
@@ -228,7 +228,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
   // en carrière même hors emplacement de niveau. Dédupe contre les slots déjà projetés (par id+spec).
   for (const add of careerTalentAdditions(hero)) {
     const rk = refKey(add.id, add.spec);
-    if (talents.some((r) => (r.talentId === add.id && (r.spec ?? '') === (add.spec ?? '')) || r.options?.some((o) => o.label === rk))) continue;
+    if (talents.some((r) => (r.talentId === add.id && (r.spec ?? '') === (add.spec ?? '')) || r.options?.some((o) => o.refKey === rk))) continue;
     const label = refLabel('talents', add);
     const times = hero.talents.find((t) => t.talentId === add.id && (t.spec ?? '') === (add.spec ?? ''))?.times ?? 0;
     talents.push({ slotKey: `add:${rk}`, entry: label, talentId: add.id, spec: add.spec, label, times, nextCost: talentCost(times), maxReached: talentMaxReached(hero, add.id, add.spec) });

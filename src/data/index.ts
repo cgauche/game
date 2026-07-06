@@ -65,7 +65,7 @@ import interludeEventsJson from './interludeEvents.json';
 import peripetiesJson from './peripeties.json';
 import grappleJson from './grapple.json';
 import waterExposureJson from './water-exposure.json';
-import { CharKey, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
+import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
 import { type DiceSpec, formatDice } from '../engine/dice';
@@ -1435,6 +1435,13 @@ const ETAT_ID_BY_LABEL = new Map(etats.map((e) => [e.label.toLowerCase(), e.id])
 /** Résout un `id` d'État depuis un LIBELLÉ (authoring : parsing de desc/texte) — insensible à la casse. */
 export function conditionIdByLabel(label: string): string | undefined {
   return ETAT_ID_BY_LABEL.get(label.toLowerCase());
+}
+/** Inverse de `CHAR_LABELS` (engine/types) : nom FR complet (« Force Mentale ») → `CharKey` (« FM »).
+ *  Couture UNIQUE label→id des Caractéristiques — consommée par `engine/spellRange.ts` pour parser
+ *  la prose des Portées/ZdE de sort (« (Bonus de Force Mentale) mètres »), jamais recopiée ailleurs. */
+const CHAR_KEY_BY_LABEL = new Map<string, CharKey>((Object.entries(CHAR_LABELS) as [CharKey, string][]).map(([k, v]) => [v, k]));
+export function charKeyByLabel(label: string): CharKey | undefined {
+  return CHAR_KEY_BY_LABEL.get(label);
 }
 const SPECIES_BY_ID = new Map(species.map((s) => [s.id, s]));
 /** Résout une Espèce par son `id` STABLE (slug du libellé) — réf runtime/données (Combatant.species,

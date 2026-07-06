@@ -935,7 +935,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
               entry={t.entry}
               acquireCost={t.nextCost}
               afford={afford}
-              options={t.options ?? []}
+              options={(t.options ?? []).map((o) => ({ label: o.refKey, display: o.display, owned: o.owned }))}
               onPick={(key, owned) => {
                 const { id, spec } = parseRefKey(key);
                 if (owned) designateCareerSlot(hero.id, t.slotKey, id, spec);
