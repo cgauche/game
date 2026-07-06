@@ -16,27 +16,33 @@ import {
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate, massBattleData,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS,
+  WATER_EXPOSURE,
 } from './index';
 // #157 : catalogues de CONTENU déjà chargés par un module dédié (`src/data/*.ts` ou `src/engine/*.ts`,
 // pas la façade `index.ts`) — importés DIRECTEMENT ici (même patron que `massBattle*` ci-dessus, qui
 // vient déjà d'`engine/massBattle.ts`). Le module JSON est un singleton ESM : cette référence EST la
 // même que celle lue par le moteur → l'édition Codex (splice en place) reste visible en jeu.
 import { MOUNT_PROFILES } from '../engine/mountTravel';
-import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS } from '../engine/travelTables';
+import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS, encounterTable } from '../engine/travelTables';
 import { TAVERN_GAMES } from '../engine/tavernGame';
 import { OBSESSIONS } from './obsessions';
 import { STRUCTURE_CRITICALS } from './structureCriticals';
 import { LAND_CARGOES } from '../engine/landCargo';
-import { CARGOES } from '../engine/seaVoyage';
+import { CARGOES, MANANN_FACTORS, BOARD_EVENTS, PORT_EVENTS } from '../engine/seaVoyage';
 import { RIVER_PERILS } from '../engine/riverNavigation';
 import { MORALE_FACTORS, MORALE_BANDS } from '../engine/crewMorale';
 import { STEAM_BREAKDOWNS } from '../engine/shipBuild';
 import { CRITICAL_TABLES } from './criticals';
+import { SHIP_CRITICAL_TABLES, RIVER_CRIT_SET } from './shipCriticals';
 import type { GameOp } from '../engine/ops';
 import type { Difficulty } from '../engine/types';
 import criticalsRawJson from './criticals.json';
 import aaCriticalsRawJson from './aa-criticals.json';
 import traumasRawJson from './traumas.json';
+import shipCriticalsRawJson from './ship-criticals.json';
+import riverCriticalsRawJson from './river-criticals.json';
+import rencontresRawJson from './rencontres-edoc.json';
+import seaEventsRawJson from './sea-events.json';
 
 /** Fiche de Traumatisme (`traumas.json`, #157) — MÊME schéma que `engine/trauma.ts::TraumaFiche`
  *  (module-privé là-bas, redéclaré ici a minima pour le seam d'édition ; `traumaFicheById` reste la
@@ -70,6 +76,12 @@ const aaCriticalsBras = aaCriticalsRoot.bras;
 const aaCriticalsCorps = aaCriticalsRoot.corps;
 const aaCriticalsJambe = aaCriticalsRoot.jambe;
 
+/** 3 catégories de Rencontres de voyage (EDOC ch.5, `rencontres-edoc.json`) — `encounterTable` retourne
+ *  la table LIVE (accès de propriété sur le JSON importé par `engine/travelTables.ts`, jamais une copie). */
+const rencontresPositives = encounterTable('positives');
+const rencontresFortuites = encounterTable('fortuites');
+const rencontresDangereuses = encounterTable('dangereuses');
+
 /** Datasets-tableaux mutables (clé éditeur → MÊME référence d'array que l'export de la façade). */
 const ARRAYS = {
   characteristics, species, classes, careers, careerLevels, skills, talents, etats, maladies, traits,
@@ -86,15 +98,34 @@ const ARRAYS = {
   crewMoraleFactors: MORALE_FACTORS, crewMoraleBands: MORALE_BANDS, steamBreakdowns: STEAM_BREAKDOWNS,
   criticalsTete, criticalsBras, criticalsCorps, criticalsJambe,
   aaCriticalsTete, aaCriticalsBras, aaCriticalsCorps, aaCriticalsJambe,
+  // #157 (suite) : jeux de Critiques de coque — MDG ch.13 (navire) / T2C ch.5 (fluvial) — nichés PAR
+  // Localisation dans LEUR fichier (même patron que criticals.json/aa-criticals.json ci-dessus).
+  shipCriticalsCargaison: SHIP_CRITICAL_TABLES.cargaison,
+  shipCriticalsGreement: SHIP_CRITICAL_TABLES.greement,
+  shipCriticalsCoque: SHIP_CRITICAL_TABLES.coque,
+  shipCriticalsAvirons: SHIP_CRITICAL_TABLES.avirons,
+  shipCriticalsEquipements: SHIP_CRITICAL_TABLES.equipements,
+  riverCriticalsGreement: RIVER_CRIT_SET.tables.greement!,
+  riverCriticalsAvirons: RIVER_CRIT_SET.tables.avirons!,
+  riverCriticalsGouvernail: RIVER_CRIT_SET.tables.gouvernail!,
+  riverCriticalsCoque: RIVER_CRIT_SET.tables.coque!,
+  riverCriticalsSuperstructure: RIVER_CRIT_SET.tables.superstructure!,
+  // Rencontres de voyage (EDOC ch.5) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
+  rencontresPositives, rencontresFortuites, rencontresDangereuses,
+  // Longs voyages en mer (MDG ch.15) : Humeur de Manann (facteurs) + Événements de bord/de port —
+  // 3 tableaux frères NICHÉS dans `sea-events.json`.
+  seaManannFactors: MANANN_FACTORS, seaBoardEvents: BOARD_EVENTS, seaPortEvents: PORT_EVENTS,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;
 export const DATASET_KEYS = Object.keys(ARRAYS) as DatasetKey[];
 
-/** Datasets-OBJETS uniques (E3b) : pas un tableau d'entités mais UN objet de config (`details`) ou un
- *  Record keyé (`names`). Mutés EN PLACE (mêmes garanties que les tableaux) → preview live + écriture
- *  disque par l'éditeur du Codex. Le fichier disque est `<clé>.json` (`details.json`, `names.json`). */
-const OBJECTS = { details, names } as const;
+/** Datasets-OBJETS uniques (E3b) : pas un tableau d'entités mais UN objet de config (`details`), un
+ *  Record keyé (`names`), ou une fiche de règle UNIQUE (`waterExposure`, T2C ch.14 — #157 suite). Mutés
+ *  EN PLACE (mêmes garanties que les tableaux) → preview live + écriture disque par l'éditeur du Codex.
+ *  Le fichier disque est `<clé>.json` par défaut (`details.json`, `names.json`) ou l'override
+ *  `OBJECT_FILE` pour une clé dont le nom diverge du fichier (`waterExposure` → `water-exposure.json`). */
+const OBJECTS = { details, names, waterExposure: WATER_EXPOSURE } as const;
 export type ObjectDatasetKey = keyof typeof OBJECTS;
 export const OBJECT_DATASET_KEYS = Object.keys(OBJECTS) as ObjectDatasetKey[];
 
@@ -106,6 +137,17 @@ export function datasetArray<K extends DatasetKey>(key: K): (typeof ARRAYS)[K] {
 /** Objet live d'un dataset-objet (même référence que l'export façade → vue live des consommateurs). */
 export function datasetObject<K extends ObjectDatasetKey>(key: K): (typeof OBJECTS)[K] {
   return OBJECTS[key];
+}
+
+/** Fichier disque d'un dataset-OBJET dont la clé JS diverge du nom de fichier (tout fichier de
+ *  `src/data` est kebab-case) — même idée que `NESTED_ARRAY_FILE` côté tableaux, mais pour `OBJECTS`.
+ *  Absente d'ici → `<clé>.json` (défaut historique, zéro changement pour `details`/`names`). */
+const OBJECT_FILE: Partial<Record<ObjectDatasetKey, string>> = {
+  waterExposure: 'water-exposure.json',
+};
+/** Fichier disque d'un dataset-objet (`<clé>.json` par défaut, ou l'override `OBJECT_FILE`). */
+export function datasetObjectFile(key: ObjectDatasetKey): string {
+  return OBJECT_FILE[key] ?? `${key}.json`;
 }
 
 /** Seeds immuables (clone du JSON d'origine), capturés à l'init du module — pour `resetData()`. */
@@ -147,6 +189,26 @@ const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => 
   aaCriticalsBras: { file: 'aa-criticals.json', root: () => aaCriticalsRawJson },
   aaCriticalsCorps: { file: 'aa-criticals.json', root: () => aaCriticalsRawJson },
   aaCriticalsJambe: { file: 'aa-criticals.json', root: () => aaCriticalsRawJson },
+  // Critiques de coque (MDG ch.13, navire) : 5 Localisations NICHÉES dans `ship-criticals.json`.
+  shipCriticalsCargaison: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
+  shipCriticalsGreement: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
+  shipCriticalsCoque: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
+  shipCriticalsAvirons: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
+  shipCriticalsEquipements: { file: 'ship-criticals.json', root: () => shipCriticalsRawJson },
+  // Critiques de coque (T2C ch.5, fluvial) : 5 Localisations NICHÉES dans `river-criticals.json`.
+  riverCriticalsGreement: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
+  riverCriticalsAvirons: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
+  riverCriticalsGouvernail: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
+  riverCriticalsCoque: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
+  riverCriticalsSuperstructure: { file: 'river-criticals.json', root: () => riverCriticalsRawJson },
+  // Rencontres de voyage (EDOC ch.5) : 3 catégories NICHÉES dans `rencontres-edoc.json`.
+  rencontresPositives: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
+  rencontresFortuites: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
+  rencontresDangereuses: { file: 'rencontres-edoc.json', root: () => rencontresRawJson },
+  // Longs voyages en mer (MDG ch.15) : 3 tableaux frères NICHÉS dans `sea-events.json`.
+  seaManannFactors: { file: 'sea-events.json', root: () => seaEventsRawJson },
+  seaBoardEvents: { file: 'sea-events.json', root: () => seaEventsRawJson },
+  seaPortEvents: { file: 'sea-events.json', root: () => seaEventsRawJson },
 };
 /** Fichier disque d'un dataset-tableau (`<clé>.json` par défaut ; le fichier PARENT pour un tableau niché). */
 export function datasetFile(key: DatasetKey): string {

@@ -23,16 +23,19 @@ import {
 // importés directement d'`engine/massBattle`).
 import { MOUNT_PROFILES } from '../../engine/mountTravel';
 import { MOUNT_INCIDENTS, VEHICLE_PROBLEMS } from '../../engine/travelTables';
+import type { TravelTableEntry } from '../../engine/travelTables';
 import { TAVERN_GAMES } from '../../engine/tavernGame';
 import { OBSESSIONS } from '../../data/obsessions';
 import { STRUCTURE_CRITICALS } from '../../data/structureCriticals';
 import { LAND_CARGOES } from '../../engine/landCargo';
 import { CARGOES } from '../../engine/seaVoyage';
+import type { SeaEventDef, ManannFactor } from '../../engine/seaVoyage';
 import { RIVER_PERILS } from '../../engine/riverNavigation';
 import { MORALE_FACTORS, MORALE_BANDS } from '../../engine/crewMorale';
 import { STEAM_BREAKDOWNS } from '../../engine/shipBuild';
 import { traumaFicheById } from '../../engine/trauma';
-import { datasetArray } from '../../data/overrides';
+import type { ShipCritEntry } from '../../data/shipCriticals';
+import { datasetArray, datasetObject } from '../../data/overrides';
 import type { CritTableEntry } from '../../data/overrides';
 import { groupAdvantage } from '../../engine/advantagePool';
 import { statName } from '../../engine/statEntry';
@@ -40,7 +43,7 @@ import { damageString } from '../../engine/items';
 import { rangeSpecLabel, ammoRangeModLabel, conditionalDamageNote } from '../weaponStats';
 import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../../engine/spellRangeFormat';
 import { talentMaxLabel } from '../../engine/careerSlots';
-import type { AdvancementRef } from '../../data';
+import type { AdvancementRef, WaterExposureModifier } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { POWER_ESTIMATE, MIGHT_MODIFIERS, WAR_MACHINES, STRUCTURES as MASS_BATTLE_STRUCTURES, BATTLE_HAZARDS } from '../../engine/massBattle';
 import { traitLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
@@ -466,6 +469,83 @@ function critEntryItem(e: CritTableEntry): CodexItem {
         : null,
     ),
   };
+}
+
+/** Item Codex d'une entrée de table de voyage d100 (`TravelTableEntry` — Incidents de monte EDOC ch.4,
+ *  Problèmes de véhicule EDOC ch.4, Rencontres EDOC ch.5, #157 suite) — MÊME projection pour les 3
+ *  familles : plage d100 → texte + Dégâts véhicule éventuels + effet GameOp sur les occupants. */
+function travelEntryItem(e: TravelTableEntry, occupantsTitle: string): CodexItem {
+  return {
+    label: e.label,
+    sub: `d100 ${e.min}–${e.max}`,
+    desc: e.text,
+    meta: facts(fact('Dégâts véhicule', e.vehicleWounds ?? null)),
+    sections: sections(passiveSection(e.occupantOps, occupantsTitle)),
+  };
+}
+
+/** Item Codex d'une entrée de Critique de coque (`ShipCritEntry` — MDG ch.13 navire, T2C ch.5 fluvial,
+ *  #157 suite) : plage d10 → effet immédiat (`ops`) + Test d'équipage (échec) authoré en `GameOp`, MÊME
+ *  vocabulaire que les autres Critiques (`critEntryItem`). */
+function shipCritEntryItem(e: ShipCritEntry): CodexItem {
+  const ct = e.crewTest;
+  return {
+    label: e.name,
+    sub: `d10 ${e.min}–${e.max}`,
+    desc: e.note,
+    meta: facts(
+      typeof e.shrapnel === 'number' ? fact('Éclats (Indice)', e.shrapnel) : null,
+      e.hullCrits ? fact('Critiques Coque suppl.', e.hullCrits) : null,
+    ),
+    sections: sections(
+      passiveSection(e.ops, 'Effet immédiat'),
+      ct
+        ? {
+            title: 'Test d’équipage',
+            layout: 'list',
+            rows: [
+              { t: 'kv', k: 'Jet', v: ct.skillId ? `${refLabel('skills', { id: ct.skillId })}${ct.difficulty ? ` ${DIFFICULTY_LABELS[ct.difficulty]}` : ''}` : 'Automatique (aucun Test)' } as CodexRow,
+              { t: 'kv', k: 'Cible', v: ct.crewTarget === 'deck' ? 'Toute personne sur le pont' : 'Équipage du poste tiré au sort' } as CodexRow,
+            ],
+          }
+        : null,
+      ct ? passiveSection(ct.onFail, 'Conséquence (échec du Test)') : null,
+    ),
+  };
+}
+
+/** Item Codex d'un Événement de bord/de port (`SeaEventDef` — MDG ch.15, #157 suite) : plage de jet
+ *  (d100 modifié par l'Humeur de Manann, ou 2d10) → texte verbatim. */
+function seaEventItem(e: SeaEventDef): CodexItem {
+  return { label: e.label, sub: `${e.min}–${e.max}`, desc: e.desc };
+}
+
+/** Item Codex d'un Facteur d'Humeur de Manann (`ManannFactor` — MDG ch.15, #157 suite) : effet signé
+ *  (Nd10 + constante) appliqué UNE fois par navire. */
+function manannFactorItem(f: ManannFactor): CodexItem {
+  const eff = f.effect;
+  const magnitude = eff.d10 > 0 ? diceLabel({ n: eff.d10, sides: 10, plus: eff.flat || undefined }) : String(eff.flat);
+  return {
+    label: f.label,
+    meta: facts(fact('Effet sur l’Humeur de Manann', `${eff.sign > 0 ? '+' : '−'}${magnitude}`)),
+  };
+}
+
+/** Libellé d'une TABLE de modificateur d'Exposition hydrique (T2C ch.14 p.91, #157 suite). */
+const WATER_TABLE_LABEL: Record<string, string> = { 'source-d-eau': 'Source d’eau', 'blessures-et-etats': 'Blessures et États' };
+
+/** Section « Modificateurs » d'Exposition hydrique — groupée par table (Source d'eau / Blessures et
+ *  États), chaque ligne portant son contexte d'application (Ingestion/Immersion). */
+function waterModifiersSection(mods: WaterExposureModifier[]): CodexSection | null {
+  if (!mods.length) return null;
+  const groups = [...new Set(mods.map((m) => m.table))];
+  const rows: CodexRow[] = [];
+  for (const g of groups) {
+    rows.push({ t: 'sub', label: WATER_TABLE_LABEL[g] ?? g });
+    for (const m of mods.filter((x) => x.table === g))
+      rows.push({ t: 'kv', k: m.label, v: `${m.mod > 0 ? '+' : ''}${m.mod} (${m.appliesTo.join(', ')})` });
+  }
+  return { title: 'Modificateurs', layout: 'list', rows };
 }
 
 const CODEX_SPECS: CodexCategorySpec[] = [
@@ -1070,18 +1150,98 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'incidentsMonture', label: 'Incidents de monte', group: 'Tables',
-    build: () => MOUNT_INCIDENTS.map((e) => ({
-      label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text,
-      sections: sections(passiveSection(e.occupantOps, 'Effet sur le cavalier')),
-    })),
+    build: () => MOUNT_INCIDENTS.map((e) => travelEntryItem(e, 'Effet sur le cavalier')),
   },
   {
     key: 'problemesVehicule', label: 'Problèmes de véhicule', group: 'Tables',
-    build: () => VEHICLE_PROBLEMS.map((e) => ({
-      label: e.label, sub: `d100 ${e.min}–${e.max}`, desc: e.text,
-      meta: facts(fact('Dégâts véhicule', e.vehicleWounds ?? null)),
-      sections: sections(passiveSection(e.occupantOps, 'Effet sur les occupants')),
-    })),
+    build: () => VEHICLE_PROBLEMS.map((e) => travelEntryItem(e, 'Effet sur les occupants')),
+  },
+  {
+    key: 'rencontresPositives', label: 'Rencontres — Positives', group: 'Tables',
+    build: () => datasetArray('rencontresPositives').map((e) => travelEntryItem(e, 'Effet sur les occupants')),
+  },
+  {
+    key: 'rencontresFortuites', label: 'Rencontres — Fortuites', group: 'Tables',
+    build: () => datasetArray('rencontresFortuites').map((e) => travelEntryItem(e, 'Effet sur les occupants')),
+  },
+  {
+    key: 'rencontresDangereuses', label: 'Rencontres — Dangereuses', group: 'Tables',
+    build: () => datasetArray('rencontresDangereuses').map((e) => travelEntryItem(e, 'Effet sur les occupants')),
+  },
+  {
+    key: 'shipCriticalsCargaison', label: 'Critiques de navire — Cargaison (MDG ch.13)', group: 'Effets',
+    build: () => datasetArray('shipCriticalsCargaison').map(shipCritEntryItem),
+  },
+  {
+    key: 'shipCriticalsGreement', label: 'Critiques de navire — Gréement (MDG ch.13)', group: 'Effets',
+    build: () => datasetArray('shipCriticalsGreement').map(shipCritEntryItem),
+  },
+  {
+    key: 'shipCriticalsCoque', label: 'Critiques de navire — Coque (MDG ch.13)', group: 'Effets',
+    build: () => datasetArray('shipCriticalsCoque').map(shipCritEntryItem),
+  },
+  {
+    key: 'shipCriticalsAvirons', label: 'Critiques de navire — Avirons (MDG ch.13)', group: 'Effets',
+    build: () => datasetArray('shipCriticalsAvirons').map(shipCritEntryItem),
+  },
+  {
+    key: 'shipCriticalsEquipements', label: 'Critiques de navire — Équipements (MDG ch.13)', group: 'Effets',
+    build: () => datasetArray('shipCriticalsEquipements').map(shipCritEntryItem),
+  },
+  {
+    key: 'riverCriticalsGreement', label: 'Critiques fluviaux — Gréement (T2C ch.5)', group: 'Effets',
+    build: () => datasetArray('riverCriticalsGreement').map(shipCritEntryItem),
+  },
+  {
+    key: 'riverCriticalsAvirons', label: 'Critiques fluviaux — Rames (T2C ch.5)', group: 'Effets',
+    build: () => datasetArray('riverCriticalsAvirons').map(shipCritEntryItem),
+  },
+  {
+    key: 'riverCriticalsGouvernail', label: 'Critiques fluviaux — Gouvernail (T2C ch.5)', group: 'Effets',
+    build: () => datasetArray('riverCriticalsGouvernail').map(shipCritEntryItem),
+  },
+  {
+    key: 'riverCriticalsCoque', label: 'Critiques fluviaux — Coque (T2C ch.5)', group: 'Effets',
+    build: () => datasetArray('riverCriticalsCoque').map(shipCritEntryItem),
+  },
+  {
+    key: 'riverCriticalsSuperstructure', label: 'Critiques fluviaux — Superstructure (T2C ch.5)', group: 'Effets',
+    build: () => datasetArray('riverCriticalsSuperstructure').map(shipCritEntryItem),
+  },
+  {
+    key: 'seaManannFactors', label: 'Humeur de Manann — Facteurs (MDG ch.15)', group: 'Tables',
+    build: () => datasetArray('seaManannFactors').map(manannFactorItem),
+  },
+  {
+    key: 'seaBoardEvents', label: 'Événements de bord (mer, MDG ch.15)', group: 'Tables',
+    build: () => datasetArray('seaBoardEvents').map(seaEventItem),
+  },
+  {
+    key: 'seaPortEvents', label: 'Événements de port (mer, MDG ch.15)', group: 'Tables',
+    build: () => datasetArray('seaPortEvents').map(seaEventItem),
+  },
+  {
+    key: 'waterExposure', label: 'Exposition à l’eau (maladies hydriques, T2C ch.14)', group: 'Tables',
+    build: () => {
+      const w = datasetObject('waterExposure');
+      return [{
+        label: w.label, desc: w.desc, source: src(w.source),
+        meta: facts(
+          fact('Test', `${refLabel('skills', { id: w.test.skillId })} ${DIFFICULTY_LABELS[w.test.difficulty]}`),
+          fact('Malus par DR négatif (jet de maladie)', `+${w.rollModPerNegativeSL}`),
+        ),
+        sections: sections(
+          waterModifiersSection(w.modifiers),
+          {
+            title: 'Maladies (jet d100 après échec du Test)', layout: 'list',
+            rows: w.diseases.map((d) => {
+              const label = maladies.find((m) => m.id === d.disease)?.label ?? d.disease;
+              return { t: 'ref', category: 'maladies', label, show: label, badge: `${d.min}–${d.max}${d.rerollUnlessWounded ? ' · relance si indemne' : ''}` } as CodexRow;
+            }),
+          },
+        ),
+      }];
+    },
   },
   {
     key: 'montures', label: 'Montures (profils de voyage)', group: 'Monde',

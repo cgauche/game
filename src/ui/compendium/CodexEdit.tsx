@@ -6,7 +6,8 @@
  * System Access (`fsPersist`) + preview mémoire (`setDataset`).
  */
 import { useEffect, useMemo, useState } from 'react';
-import { datasetArray, setDataset, datasetObject, setObjectDataset, datasetFile, datasetSerializeRoot, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
+import { datasetArray, setDataset, datasetObject, setObjectDataset, datasetFile, datasetSerializeRoot, datasetObjectFile, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
+import type { ShipCrewTest } from '../../data/shipCriticals';
 import { serializeDataset } from '../../data/serialize';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
@@ -39,7 +40,7 @@ import type { CharKey, Difficulty } from '../../engine/types';
 import { CHAR_KEYS, CHAR_LABELS, DIFFICULTY_LABELS } from '../../engine/types';
 import type { DiseaseSymptom } from '../../engine/disease';
 import type { CombatFeature } from '../../engine/combatFeatures/types';
-import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry } from '../../data';
+import type { AdvancementRef, TrappingRef, TalentTest, SpecEntry, WaterExposureData, WaterExposureModifier } from '../../data';
 import { SPEC_SOURCES, type SpecsSource } from '../../data';
 
 /** Catégorie Codex → dataset éditable (source app-owned `src/data/*.json`). */
@@ -70,6 +71,14 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   crewMoraleFactors: 'crewMoraleFactors', crewMoraleBands: 'crewMoraleBands', steamBreakdowns: 'steamBreakdowns',
   criticalsTete: 'criticalsTete', criticalsBras: 'criticalsBras', criticalsCorps: 'criticalsCorps', criticalsJambe: 'criticalsJambe',
   aaCriticalsTete: 'aaCriticalsTete', aaCriticalsBras: 'aaCriticalsBras', aaCriticalsCorps: 'aaCriticalsCorps', aaCriticalsJambe: 'aaCriticalsJambe',
+  // #157 (suite) : Critiques de coque (MDG ch.13 navire / T2C ch.5 fluvial), Rencontres de voyage
+  // (EDOC ch.5) et Longs voyages en mer (MDG ch.15) — mêmes patrons (nichés) que ci-dessus.
+  shipCriticalsCargaison: 'shipCriticalsCargaison', shipCriticalsGreement: 'shipCriticalsGreement',
+  shipCriticalsCoque: 'shipCriticalsCoque', shipCriticalsAvirons: 'shipCriticalsAvirons', shipCriticalsEquipements: 'shipCriticalsEquipements',
+  riverCriticalsGreement: 'riverCriticalsGreement', riverCriticalsAvirons: 'riverCriticalsAvirons',
+  riverCriticalsGouvernail: 'riverCriticalsGouvernail', riverCriticalsCoque: 'riverCriticalsCoque', riverCriticalsSuperstructure: 'riverCriticalsSuperstructure',
+  rencontresPositives: 'rencontresPositives', rencontresFortuites: 'rencontresFortuites', rencontresDangereuses: 'rencontresDangereuses',
+  seaManannFactors: 'seaManannFactors', seaBoardEvents: 'seaBoardEvents', seaPortEvents: 'seaPortEvents',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
@@ -78,6 +87,9 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
 const OBJECT_CATEGORY: Record<string, { ds: ObjectDatasetKey; mode: 'single' | 'record' }> = {
   details: { ds: 'details', mode: 'single' },
   names: { ds: 'names', mode: 'record' },
+  // Exposition à l'eau (T2C ch.14, #157 suite) : UNE seule fiche de règle (fichier `water-exposure.json`,
+  // clé JS `waterExposure` — `datasetObjectFile` gère la divergence de nom).
+  waterExposure: { ds: 'waterExposure', mode: 'single' },
 };
 export const editableObjectDataset = (categoryKey: string): { ds: ObjectDatasetKey; mode: 'single' | 'record' } | undefined => OBJECT_CATEGORY[categoryKey];
 /** Une catégorie est éditable au Codex ssi elle a un dataset tableau OU un dataset-objet. */
@@ -97,12 +109,20 @@ const REF_LIST_DATASET: Record<string, DatasetKey> = {
  *  `occupantOps` (subi par un tiers — cavalier/passager), `crewOps`/`captainOps` (Chant de marin).
  *  Généralise l'idée d'`isPassive` (qui ne couvre QUE `passive`) sans dupliquer l'éditeur : ajouter une
  *  source = ajouter SA/SES clé(s) ici (lu par `dedicatedFieldKeys` ET le rendu). */
+/** Les 10 catégories de Critiques de coque (MDG ch.13 navire + T2C ch.5 fluvial, #157 suite) —
+ *  MÊME forme `ShipCritEntry` (`ops` + `crewTest` structuré), partagée par `OPS_FIELDS` et le rendu. */
+const SHIP_CRIT_CATEGORIES = [
+  'shipCriticalsCargaison', 'shipCriticalsGreement', 'shipCriticalsCoque', 'shipCriticalsAvirons', 'shipCriticalsEquipements',
+  'riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure',
+];
+
 const OPS_FIELDS: Record<string, string[]> = {
   traumas: ['ops'],
   criticalsTete: ['ops'], criticalsBras: ['ops'], criticalsCorps: ['ops'], criticalsJambe: ['ops'],
   aaCriticalsTete: ['ops'], aaCriticalsBras: ['ops'], aaCriticalsCorps: ['ops'], aaCriticalsJambe: ['ops'],
   incidentsMonture: ['occupantOps'], problemesVehicule: ['occupantOps'],
   seaShanties: ['crewOps', 'captainOps'],
+  ...Object.fromEntries(SHIP_CRIT_CATEGORIES.map((k) => [k, ['ops']])),
 };
 const opsFieldsOf = (categoryKey: string): string[] => OPS_FIELDS[categoryKey] ?? [];
 
@@ -184,6 +204,8 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'domains') add('castBonus', 'missile', 'casterOps');
   if (categoryKey === 'creatures') add('traits', 'optionals', 'harvest');
   if (categoryKey === 'details') add('texts');
+  if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skillId?,difficulty?,crewTarget?,onFail}
+  if (categoryKey === 'waterExposure') add('test', 'modifiers', 'diseases'); // #157 suite (T2C ch.14)
   return k;
 }
 
@@ -213,7 +235,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
     const entries = editableEntries(categoryKey);
     if (obj) {
       const data = datasetObject(obj.ds) as Record<string, unknown>;
-      const file = `${obj.ds}.json`;
+      const file = datasetObjectFile(obj.ds);
       if (obj.mode === 'single')
         return { entries, initial: data as Entry, index: -1, file, recordMode: false, initialKey: '', persist: (e) => setObjectDataset(obj.ds, e as never) };
       // record : une entrée par clé (le `label` du navigateur = la clé, ex. la race) ; inférence sur
@@ -322,6 +344,12 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Trait : SCHÉMA de son argument (indice/range/specsSource/specsOpen/specsMulti) → éditeur dédié
   // (select des sources DÉRIVÉ de SPEC_SOURCES + booléens + libellé d'indice), sorti du repli générique.
   const isTrait = categoryKey === 'traits';
+  // Critique de coque (10 catégories navire/fluvial, #157 suite) : `crewTest` (skillId?/difficulty?/
+  // crewTarget?/onFail) → éditeur dédié (ShipCrewTestField) ; `ops` reste sur le lot GameOpEditor commun.
+  const isShipCrit = SHIP_CRIT_CATEGORIES.includes(categoryKey);
+  // Exposition à l'eau (`waterExposure`, #157 suite, T2C ch.14) : `test` (Compétence+Difficulté),
+  // `modifiers` (WaterExposureModifier[]) et `diseases` (plages d100 → maladie) ont chacun leur éditeur.
+  const isWaterExposure = categoryKey === 'waterExposure';
   // Champs au formulaire GÉNÉRIQUE = tous les champs inférés SAUF ceux couverts par un éditeur dédié
   // (`dedicatedFieldKeys`, source unique partagée avec le garde-fou no-json-fields.test).
   const fields = useMemo(() => {
@@ -440,6 +468,10 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {hasCrewSkills && <SkillSpecListField value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasProsthesis && <ProsthesisField value={entry.prosthesis as { trappingId: string; cancels: 'all' | 'movement' }[] | undefined} onChange={(v) => edit('prosthesis', v.length ? v : undefined)} />}
         {hasRestartTest && <RestartTestField value={entry.restart as { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[] | undefined} onChange={(v) => edit('restart', v.length ? v : undefined)} />}
+        {isShipCrit && <ShipCrewTestField value={entry.crewTest as ShipCrewTest | undefined} onChange={(v) => edit('crewTest', v)} />}
+        {isWaterExposure && <WaterTestField value={entry.test as { skillId: string; difficulty: Difficulty } | undefined} onChange={(v) => edit('test', v)} />}
+        {isWaterExposure && <WaterModifiersField value={entry.modifiers as WaterExposureModifier[] | undefined} onChange={(v) => edit('modifiers', v)} />}
+        {isWaterExposure && <WaterDiseasesField value={entry.diseases as WaterExposureData['diseases'] | undefined} onChange={(v) => edit('diseases', v)} />}
         {opsFields.map((fieldKey) => (
           <div className="ed-field" key={fieldKey}>
             <span>{fieldKey} — effet (GameOp[], même éditeur que les modificateurs passifs)</span>
@@ -790,6 +822,139 @@ function RestartTestField({ value, onChange }: { value: { skillId: string; spec?
         </div>
       ))}
       <button className="btn small" onClick={() => set([...list, { skillId: skillOpts[0]?.id ?? '', difficulty: DIFFICULTIES[0] }])}>+ Test</button>
+    </div>
+  );
+}
+
+/** Test d'ÉQUIPAGE (échec) d'un Critique de coque (`ShipCritEntry.crewTest`, MDG ch.13 / T2C ch.5,
+ *  #157 suite) : Compétence + Difficulté (vide = dégâts AUTOMATIQUES, aucun Test) + cible (poste tiré
+ *  au sort ou tout le pont) + conséquence en `GameOp[]` (même éditeur que les modificateurs passifs). */
+function ShipCrewTestField({ value, onChange }: { value: ShipCrewTest | undefined; onChange: (v: ShipCrewTest | undefined) => void }) {
+  const skillOpts = datasetArray('skills') as { id: string; label: string }[];
+  const v = value;
+  return (
+    <div className="ed-field">
+      <span>Test d’équipage (échec) — Compétence (vide = dégâts automatiques) + cible + conséquence</span>
+      <div className="tf-row">
+        <label className="dr"><input type="checkbox" checked={!!v} onChange={(e) => onChange(e.target.checked ? { crewTarget: 'poste', onFail: [] } : undefined)} /> Test requis</label>
+        {v && (
+          <>
+            <select value={v.skillId ?? ''} onChange={(e) => onChange({ ...v, skillId: e.target.value || undefined })}>
+              <option value="">— (aucune, dégâts automatiques) —</option>
+              {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+            </select>
+            {v.skillId && (
+              <select value={v.difficulty ?? DIFFICULTIES[0]} onChange={(e) => onChange({ ...v, difficulty: e.target.value as Difficulty })}>
+                {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
+              </select>
+            )}
+            <select value={v.crewTarget ?? 'poste'} onChange={(e) => onChange({ ...v, crewTarget: e.target.value as 'poste' | 'deck' })}>
+              <option value="poste">Équipage du poste (tiré au sort)</option>
+              <option value="deck">Toute personne sur le pont</option>
+            </select>
+          </>
+        )}
+      </div>
+      {v && (
+        <div className="ed-subfield">
+          <span>conséquence (GameOp[]) — en cas d’échec (ou dégâts directs si aucune Compétence)</span>
+          <GameOpEditor ops={v.onFail ?? []} onChange={(ops) => onChange({ ...v, onFail: ops })} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Test de Résistance d'Exposition hydrique (`waterExposure.test`, T2C ch.14 p.91, #157 suite) :
+ *  Compétence + Difficulté — sorti du repli générique (le repli traiterait ce couple {skillId,difficulty}
+ *  en `recordText` renommable, ce qui autoriserait de corrompre les clés d'un objet à forme FIXE). */
+function WaterTestField({ value, onChange }: { value: { skillId: string; difficulty: Difficulty } | undefined; onChange: (v: { skillId: string; difficulty: Difficulty }) => void }) {
+  const skillOpts = datasetArray('skills') as { id: string; label: string }[];
+  const v = value ?? { skillId: skillOpts[0]?.id ?? '', difficulty: DIFFICULTIES[0] };
+  return (
+    <div className="ed-field">
+      <span>Test de Résistance (T2C ch.14 p.91) — Compétence + Difficulté</span>
+      <div className="tf-row">
+        <select value={v.skillId} onChange={(e) => onChange({ ...v, skillId: e.target.value })}>
+          {skillOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+        </select>
+        <select value={v.difficulty} onChange={(e) => onChange({ ...v, difficulty: e.target.value as Difficulty })}>
+          {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
+        </select>
+      </div>
+    </div>
+  );
+}
+
+/** Contextes d'application d'un modificateur d'Exposition hydrique (T2C ch.14 p.91). */
+const WATER_APPLIES_TO: { id: 'ingestion' | 'immersion'; label: string }[] = [
+  { id: 'ingestion', label: 'Ingestion' }, { id: 'immersion', label: 'Immersion' },
+];
+const WATER_TABLE_OPTS: { id: 'source-d-eau' | 'blessures-et-etats'; label: string }[] = [
+  { id: 'source-d-eau', label: 'Source d’eau' }, { id: 'blessures-et-etats', label: 'Blessures et États' },
+];
+
+/** Modificateurs du Test de Résistance d'Exposition hydrique (`waterExposure.modifiers`, T2C ch.14 p.91) :
+ *  id/libellé/valeur + contexte (Ingestion/Immersion, cumulables) + table d'origine. `auto` (dérivation
+ *  automatique depuis le Combatant — PB restants/perdus, État) reste en JSON : union à 5 formes, rare
+ *  (6/12 entrées), pas assez structurante pour justifier un 2ᵉ éditeur dédié. */
+function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier[] | undefined; onChange: (v: WaterExposureModifier[]) => void }) {
+  const list = value ?? [];
+  const set = (i: number, patch: Partial<WaterExposureModifier>) => onChange(list.map((m, j) => (j === i ? { ...m, ...patch } : m)));
+  const toggleAppliesTo = (i: number, ctx: 'ingestion' | 'immersion') => {
+    const cur = list[i].appliesTo;
+    set(i, { appliesTo: cur.includes(ctx) ? cur.filter((c) => c !== ctx) : [...cur, ctx] });
+  };
+  return (
+    <div className="ed-field">
+      <span>modificateurs du Test de Résistance (T2C ch.14 p.91) — cumulables</span>
+      {list.map((m, i) => (
+        <div className="ed-subfield" key={i}>
+          <div className="tf-row">
+            <input placeholder="id" style={{ width: 140 }} value={m.id} onChange={(e) => set(i, { id: e.target.value })} />
+            <input placeholder="libellé" value={m.label} onChange={(e) => set(i, { label: e.target.value })} />
+            <input type="number" style={{ width: 64 }} value={m.mod} onChange={(e) => set(i, { mod: Number(e.target.value) || 0 })} />
+            <select value={m.table} onChange={(e) => set(i, { table: e.target.value as WaterExposureModifier['table'] })}>
+              {WATER_TABLE_OPTS.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+            </select>
+            <button className="btn small danger" title="Retirer" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
+          </div>
+          <div className="tf-row">
+            {WATER_APPLIES_TO.map((ctx) => (
+              <label className="dr" key={ctx.id}><input type="checkbox" checked={m.appliesTo.includes(ctx.id)} onChange={() => toggleAppliesTo(i, ctx.id)} /> {ctx.label}</label>
+            ))}
+          </div>
+          <JsonField label="condition automatique (auto — facultatif, dérivée du Combatant)" value={m.auto} onChange={(v) => set(i, { auto: v as WaterExposureModifier['auto'] })} />
+        </div>
+      ))}
+      <button className="btn small" onClick={() => onChange([...list, { id: '', label: '', mod: 0, appliesTo: [], table: 'source-d-eau' }])}>+ Modificateur</button>
+    </div>
+  );
+}
+
+/** Maladies contractées sur Exposition hydrique (`waterExposure.diseases`, T2C ch.14 p.91) : plage d100
+ *  (jet APRÈS échec du Test) → maladie référencée par ID (sélecteur, comme `SkillSpecListField`/
+ *  `ProsthesisField` — pas le label-datalist de `MutationTableField`, la donnée est un id, pas un label). */
+function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['diseases'] | undefined; onChange: (v: WaterExposureData['diseases']) => void }) {
+  const list = value ?? [];
+  const maladieOpts = datasetArray('maladies') as { id: string; label: string }[];
+  const set = (i: number, patch: Partial<WaterExposureData['diseases'][number]>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  const clampD100 = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
+  return (
+    <div className="ed-field">
+      <span>maladies contractées — jet d100 après échec du Test de Résistance (T2C ch.14 p.91)</span>
+      {list.map((r, i) => (
+        <div className="tf-row" key={i}>
+          <label className="dr">d100&nbsp;<input type="number" min={1} max={100} value={r.min} onChange={(e) => set(i, { min: clampD100(e.target.value) })} />–<input type="number" min={1} max={100} value={r.max} onChange={(e) => set(i, { max: clampD100(e.target.value) })} /></label>
+          <select value={r.disease} onChange={(e) => set(i, { disease: e.target.value })}>
+            <option value="">— (choisir une maladie) —</option>
+            {maladieOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+          </select>
+          <label className="dr"><input type="checkbox" checked={!!r.rerollUnlessWounded} onChange={(e) => set(i, { rerollUnlessWounded: e.target.checked || undefined })} /> relance si indemne</label>
+          <button className="btn small danger" title="Retirer" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => onChange([...list, { min: 1, max: 1, disease: maladieOpts[0]?.id ?? '' }])}>+ Maladie</button>
     </div>
   );
 }

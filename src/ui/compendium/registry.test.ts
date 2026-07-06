@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, codexLookup, codexLookupVersion, invalidateCodexLookup, type CodexItem, type CodexFacet } from './registry';
 import { codexMatch, deburr, filterItems, facetValues } from './search';
 import { isEditableCategory } from './CodexEdit';
-import { creatures, etats, trappings, findTraitById } from '../../data';
+import { creatures, etats, trappings, findTraitById, WATER_EXPOSURE } from '../../data';
 import { setDataset } from '../../data/overrides';
 import { CHAR_KEYS } from '../../engine/types';
 
@@ -227,6 +227,88 @@ describe('Codex registry — #157 (audit d’exposition : datasets de contenu ma
     const items = categoryByKey('crewMoraleBands')!.items;
     expect(items.length).toBeGreaterThan(0);
     for (const it of items) expect(it.label).toBeTruthy();
+  });
+});
+
+describe('Codex registry — #157 (suite) : 5 derniers catalogues de CONTENU (Critiques de coque, Rencontres, Longs voyages en mer, Exposition hydrique)', () => {
+  it('les 16 nouvelles catégories tableaux sont exposées, peuplées et ÉDITABLES au Codex', () => {
+    const keys = [
+      'shipCriticalsCargaison', 'shipCriticalsGreement', 'shipCriticalsCoque', 'shipCriticalsAvirons', 'shipCriticalsEquipements',
+      'riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure',
+      'rencontresPositives', 'rencontresFortuites', 'rencontresDangereuses',
+      'seaManannFactors', 'seaBoardEvents', 'seaPortEvents',
+    ];
+    for (const key of keys) {
+      const cat = categoryByKey(key);
+      expect(cat, key).toBeTruthy();
+      expect(cat!.items.length, key).toBeGreaterThan(0);
+      expect(isEditableCategory(key), key).toBe(true);
+    }
+  });
+
+  it('un Critique de navire (Coque) porte son effet immédiat (ops) ET son Test d’équipage (échec) en sections', () => {
+    const items = categoryByKey('shipCriticalsCoque')!.items;
+    const barreAbimee = items.find((i) => i.label === 'Barre abîmée');
+    expect(barreAbimee, 'Barre abîmée (coque, MDG ch.13)').toBeTruthy();
+    expect(barreAbimee!.sub).toBe('d10 2–2');
+    const coqueDegradee = items.find((i) => i.label === 'Coque dégradée')!;
+    expect(coqueDegradee.meta?.find((f) => f.label === 'Éclats (Indice)')?.value).toBe('4');
+  });
+
+  it('un Critique fluvial (Gréement) porte son effet immédiat + son Test d’équipage (Compétence/Difficulté/Cible/Conséquence)', () => {
+    const items = categoryByKey('riverCriticalsGreement')!.items;
+    const g = items.find((i) => i.label === 'Gréement')!;
+    expect(g, 'Gréement (fluvial, T2C ch.5)').toBeTruthy();
+    expect(g.sections?.some((s) => s.title === 'Effet immédiat')).toBe(true);
+    const testSec = g.sections?.find((s) => s.title === 'Test d’équipage');
+    expect(testSec, 'section Test d’équipage').toBeTruthy();
+    expect(testSec!.rows.some((r) => r.t === 'kv' && r.k === 'Cible' && r.v === 'Toute personne sur le pont')).toBe(true);
+    expect(g.sections?.some((s) => s.title === 'Conséquence (échec du Test)')).toBe(true);
+  });
+
+  it('un Critique SANS Test d’équipage (Coque fluviale, dégâts purement automatiques) omet la section Test', () => {
+    const items = categoryByKey('riverCriticalsCoque')!.items;
+    const coque = items.find((i) => i.label === 'Coque')!;
+    expect(coque.sections?.some((s) => s.title === 'Test d’équipage')).toBe(false);
+    expect(coque.sections?.some((s) => s.title === 'Effet immédiat')).toBe(true);
+  });
+
+  it('une Rencontre de voyage (EDOC ch.5) porte sa plage d100 + son texte verbatim', () => {
+    const items = categoryByKey('rencontresPositives')!.items;
+    expect(items.length).toBeGreaterThan(0);
+    for (const it of items) { expect(it.sub).toMatch(/^d100 \d+–\d+$/); expect(it.desc).toBeTruthy(); }
+  });
+
+  it('un Facteur d’Humeur de Manann (MDG ch.15) affiche son effet signé (Nd10 + constante)', () => {
+    const items = categoryByKey('seaManannFactors')!.items;
+    const f = items.find((i) => i.label === 'Vaincre ou contrer des suivants de Stromfels')!;
+    expect(f, 'facteur Stromfels').toBeTruthy();
+    expect(f.meta?.find((x) => x.label === 'Effet sur l’Humeur de Manann')?.value).toBe('+3d10');
+  });
+
+  it('un Événement de bord (MDG ch.15) porte sa plage de jet + son texte verbatim', () => {
+    const items = categoryByKey('seaBoardEvents')!.items;
+    const triton = items.find((i) => i.label === 'Triton !')!;
+    expect(triton, 'événement Triton').toBeTruthy();
+    expect(triton.sub).toBe('-9999–-65');
+    expect(triton.desc).toMatch(/Manann ne supporte plus/);
+  });
+
+  it('la fiche « Exposition à l’eau » (dataset-OBJET, T2C ch.14) est éditable et projette Test + Modificateurs + Maladies (cross-réf)', () => {
+    const cat = categoryByKey('waterExposure')!;
+    expect(isEditableCategory('waterExposure')).toBe(true);
+    expect(cat.items).toHaveLength(1); // dataset-objet UNIQUE (mode 'single', comme `details`)
+    const item = cat.items[0];
+    expect(item.label).toBe(WATER_EXPOSURE.label);
+    expect(item.source?.book).toBeTruthy();
+    expect(item.meta?.find((f) => f.label === 'Test')?.value).toMatch(/Résistance/);
+    const modSec = item.sections?.find((s) => s.title === 'Modificateurs');
+    expect(modSec, 'section Modificateurs').toBeTruthy();
+    expect(modSec!.rows.some((r) => r.t === 'sub')).toBe(true); // groupé par table (Source d’eau / Blessures et États)
+    const diseaseSec = item.sections?.find((s) => /Maladies/.test(s.title));
+    expect(diseaseSec, 'section Maladies').toBeTruthy();
+    expect(diseaseSec!.rows.every((r) => r.t === 'ref' && r.category === 'maladies')).toBe(true);
+    expect(diseaseSec!.rows.some((r) => r.t === 'ref' && r.label !== undefined && r.label.length > 0)).toBe(true);
   });
 });
 
