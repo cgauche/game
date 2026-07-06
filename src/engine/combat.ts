@@ -124,6 +124,9 @@ function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): string[] {
  * affichage générique) → comportement historique : meilleure Spé disponible.
  */
 export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Weapon): number {
+  // Résolution ALTERNATIVE déclarée par l'arme (bélier → Force, ADE II ch.08 l.233) : Caractéristique BRUTE,
+  // aucune Compétence associée (comme l'Empoignade, `rollGrappleForce`) — court-circuite CC/CT et la Spé du Groupe.
+  if (weapon?.resolveChar) return effectiveChar(c, weapon.resolveChar);
   const charKey = kind === 'melee' ? 'CC' : 'CT';
   const base = effectiveChar(c, charKey);
   if (weapon && weaponUnmastered(c, weapon)) return base; // arme inhabituelle non maîtrisée : carac brute (ACE p.219)
@@ -405,6 +408,9 @@ export function attackModifiers(
   // Arme d'équipe en sous-effectif re-recevant un Défaut déjà porté → −10 plat (MDG ch.12 l.460), baké sur
   // l'arme tirée par `crewedFireWeapon` (≠ le −1 DR d'Imprécise, qui reste sur la qualité).
   if (weapon.crewedTohitPenalty) out.push({ label: 'Sous-effectif (Défaut redoublé)', value: weapon.crewedTohitPenalty });
+  // Machine de guerre en Équipe incomplète (ADE II ch.08 l.233) : −20 plat, baké par `warMachineFireWeapon`
+  // (3ᵉ courbe de sous-effectif, DISTINCTE de celle d'AA ci-dessus).
+  if (weapon.crewTeamPenalty) out.push({ label: 'Équipe incomplète', value: weapon.crewTeamPenalty });
   // Localisation visée = Complexe −10 (l.104) — SAUF contre une créature de Taille ≥ 2 catégories
   // supérieure : on choisit GRATUITEMENT la zone la plus proche / en Ligne de Vue (LDB « Point
   // d'Impact des Créatures » p.312 / `76` l.39).

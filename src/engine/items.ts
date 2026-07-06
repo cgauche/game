@@ -382,6 +382,14 @@ export function isWeaponActive(c: Combatant, uid?: string): boolean {
   return uid != null && (c.weapons ?? []).some((w) => w.uid === uid);
 }
 
+/** Résolution ALTERNATIVE d'attaque DÉRIVÉE (ADE II ch.08 l.233 : « Toutes les machines de guerre...
+ *  utilisent... Projectiles [Machine de guerre], à l'exception du bélier, qui utilise Force ») — la SEULE
+ *  arme de MÊLÉE du Groupe `machine-de-guerre` est le bélier : aucun id en dur, dérivé du Groupe + du type
+ *  (comme le décompte d'équipage dérive du Groupe). Lu par `combatValue` (`Weapon.resolveChar`). */
+function warMachineResolveChar(it: Pick<ItemInstance, 'kind' | 'weaponGroup'>): 'F' | undefined {
+  return it.weaponGroup === 'machine-de-guerre' && it.kind === 'melee' ? 'F' : undefined;
+}
+
 /** Recalcule armes/armure actives + encombrement. Les ARMES viennent du loadout actif (contrainte 2 mains,
  *  tag `hand`) ; si aucun loadout, ensureDefaultLoadout en crée un automatiquement — UN SEUL modèle. */
 export function recomputeLoadout(c: Combatant): void {
@@ -403,7 +411,7 @@ export function recomputeLoadout(c: Combatant): void {
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
     return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
       range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, soloSimple: it.soloSimple, indirect: it.indirect, reload, damageTaken: it.damageTaken,
-      skin: it.skin, form: it.form, shape: it.shape, hands, hand, uid: it.uid, mountSide: it.mountSide }, it.enchants ?? []);
+      skin: it.skin, form: it.form, shape: it.shape, hands, hand, uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it) }, it.enchants ?? []);
   };
 
   // UN SEUL modèle : tout combattant porteur d'armes passe par un loadout (auto-généré si absent — plus de
@@ -499,7 +507,7 @@ export function mannedPosteWeapon(c: Combatant, poste: ShipPoste): Weapon | unde
   const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
   return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
     range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, soloSimple: it.soloSimple, indirect: it.indirect, reload, damageTaken: it.damageTaken,
-    skin: it.skin, form: it.form, shape: it.shape, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide }, it.enchants ?? []);
+    skin: it.skin, form: it.form, shape: it.shape, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it) }, it.enchants ?? []);
 }
 
 let loadoutCounter = 0;

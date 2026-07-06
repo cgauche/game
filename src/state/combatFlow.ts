@@ -157,6 +157,7 @@ import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovem
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste } from './shipPostes';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
+import { warMachineFireWeapon, warMachineCrewRequired, warMachineCrewPenalty } from '../engine/warMachineCrew';
 import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
@@ -253,6 +254,15 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
   if (combatants && attacker.mannedPoste) {
     const present = servingCrewPresent(attacker, combatants);
     if (present != null) w = crewedFireWeapon(w, present);
+    // Machine de guerre ADE II (Qualité `equipe`, ch.08 l.233) : effectif BRUT du poste — le RAW ne pose
+    // ICI aucune exigence de Compétence pour compter dans l'Équipe (≠ AA/MDG l.3900 ci-dessus) — 3ᵉ courbe,
+    // jamais mêlée à celle d'AA (`warMachineFireWeapon` ne touche QUE `crewTeamPenalty`, pas la Recharge).
+    if (warMachineCrewRequired(w) > 0) {
+      const crew = (attacker.mannedPoste.crewIds ?? [])
+        .map((id) => combatants.find((c) => c.id === id))
+        .filter((c): c is Combatant => !!c);
+      w = warMachineFireWeapon(w, exposedCrew(crew).length);
+    }
   }
   // Règles d'arme CONTEXTUELLES de Groupe (LDB 62) repliées sur le profil : Lance de cavalerie hors Charge
   // → improvisée (l.59) ; Fléau sans la Spécialisation → Dangereuse + aucun Atout (l.146-147). Liées ICI —
@@ -283,13 +293,21 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
  *  l'affordance ne mente jamais : un réticule de tir sur une arbalète vide DOIT dire « recharger », pas
  *  proposer une attaque qui se solderait par un log silencieux. Mêlée / pas d'arme à distance → `null`
  *  (la Recharge ne concerne que l'arme effectivement tirée, `firedWeapon`). */
-export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc'; detail: string } | null {
+export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc' | 'sous-effectif'; detail: string } | null {
   if (active.kind !== 'hero') return null;
   const b = get().battle;
   const adj = (b ? mountedCombatDistance(b, active, target) : combatDistance(active, target)) <= meleeReachTiles(active.weapons); // même arbitrage d'arme que firedWeapon (géométrie monture)
   // Arme effectivement testée : choix EXPLICITE (poste servi → `weaponUid`) sinon auto selon la distance —
   // MÊME arbitrage que `firedWeapon` (le gate ne doit pas mentir sur une AUTRE arme que celle qui tirera).
   const w = (weaponUid ? active.weapons.find((x) => x.uid === weaponUid) : undefined) ?? attackWeapon(active.weapons, adj);
+  // Machine de guerre ADE II (Qualité `equipe`, ch.08 l.233) sous LA MOITIÉ de l'Équipe requise : INUTILISABLE
+  // — mêlée (bélier, Force) ET distance, donc AVANT le early-return ranged-only ci-dessous.
+  const required = warMachineCrewRequired(w);
+  if (required > 0 && active.mannedPoste) {
+    const crew = (active.mannedPoste.crewIds ?? []).map((id) => b?.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+    if (warMachineCrewPenalty(exposedCrew(crew).length, required).unusable)
+      return { reason: 'sous-effectif', detail: `${active.name} : Équipe trop réduite pour servir ${w.name}.` };
+  }
   if (w.type !== 'ranged') return null;
   if ((w.reload ?? 0) > 0 && !active.loaded) return { reason: 'unloaded', detail: `${active.name} doit recharger ${w.name}.` };
   // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie

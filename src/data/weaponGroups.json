@@ -199,5 +199,11 @@
     "id": "munition-de-siege",
     "label": "Munitions de siège",
     "kind": "weapon"
+  },
+  {
+    "id": "machine-de-guerre",
+    "label": "Machine de guerre",
+    "kind": "weapon",
+    "combat": "ranged"
   }
 ]

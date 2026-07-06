@@ -40,6 +40,7 @@ function hoverErrText(reason: string): string {
     : reason === 'engaged' ? 'Engagé — se désengager'
     : reason === 'unloaded' ? 'Arme déchargée — recharger'
     : reason === 'noammo' ? 'Plus de munitions'
+    : reason === 'sous-effectif' ? 'Équipe trop réduite'
     : 'hors de portée';
 }
 

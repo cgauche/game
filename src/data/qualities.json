@@ -139,7 +139,7 @@
     "desc": "Une arme avec l'Atout Siège inflige le double des dégâts aux structures physiques telles que les murs, les tours et les portes.",
     "source": {
       "book": "archives-de-l-empire-2",
-      "page": 8
+      "page": 88
     },
     "capabilities": {
       "siege": true
@@ -153,7 +153,7 @@
     "desc": "Les béliers n'infligent des dégâts qu'aux portes. Sinon, ils sont considérés comme une Arme improvisée.",
     "source": {
       "book": "archives-de-l-empire-2",
-      "page": 8
+      "page": 88
     },
     "capabilities": {
       "ram": true
@@ -927,6 +927,17 @@
     "source": {
       "book": "mer-des-griffes",
       "page": 48
+    }
+  },
+  {
+    "id": "equipe",
+    "label": "Équipe",
+    "type": "defaut",
+    "subType": "arme",
+    "desc": "Une Équipe est un groupe d'individus entraînés requis pour faire fonctionner une machine de guerre correctement. Les armes sans Équipe complète peuvent être utilisées avec une pénalité de –20. Elles ne peuvent être utilisées avec moins de la moitié de l'Équipe nécessaire.",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
     }
   }
 ]

@@ -341,6 +341,16 @@ export interface Weapon {
    *  Tant que `round ≤ gauntletSavedRound + 1` (période de « 1 Round min »), un SECOND lâcher forcé fait
    *  tomber l'arme ; au-delà, la protection se réarme. Marqueur transitoire posé/lu par `applyBladeTrap`. */
   gauntletSavedRound?: number;
+  /** Caractéristique de résolution ALTERNATIVE du Test d'attaque, à la place de CC (mêlée)/CT (distance)
+   *  par défaut (ADE II ch.08 l.233 : « Toutes les machines de guerre... utilisent... Projectiles [Machine
+   *  de guerre], à l'exception du bélier, qui utilise Force »). DÉRIVÉ (jamais un id en dur) de la SEULE arme
+   *  de mêlée du Groupe `machine-de-guerre` (`warMachineResolveChar`, engine/items.ts) — absent = résolution
+   *  normale par `kind` (`combatValue`). Runtime-only : aucun champ JSON correspondant (schéma figé). */
+  resolveChar?: CharKey;
+  /** Pénalité PLATE au Test de tir/manœuvre d'une machine de guerre ADE II en Équipe INCOMPLÈTE (−20,
+   *  ch.08 l.233) — 3ᵉ courbe de sous-effectif, DISTINCTE de `crewedTohitPenalty` (AA, Défaut redoublé).
+   *  Bakée par `warMachineFireWeapon` (engine/warMachineCrew.ts), lue par `attackModifiers`. */
+  crewTeamPenalty?: number;
 }
 
 /** Enchantement d'ARME (op `augmentWeapon` — B. de Droiture, Marteau ardent, Épée de justice ;

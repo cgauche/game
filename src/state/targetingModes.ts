@@ -50,8 +50,9 @@ import {
 export type HoverTargeting =
   | { kind: 'none' }
   /** Cible refusée au clic — `engaged` = mêlée verrouillée par l'Engagement (Désengagement requis) ;
-   *  `unloaded` = arme à Recharge non chargée (recharger d'abord) ; `noammo` = plus de munition. */
-  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' }
+   *  `unloaded` = arme à Recharge non chargée (recharger d'abord) ; `noammo` = plus de munition ;
+   *  `sous-effectif` = machine de guerre ADE II sous la moitié de l'Équipe requise (ch.08 l.233). */
+  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' }
   | {
       kind: 'ok';
       /** Style de la ligne de visée : pointillée (tir/sort) ou pleine (mêlée, déplacement compris). */

@@ -88,6 +88,20 @@ describe('combatValue — Spécialisation de Projectiles (LDB 62 l.225/234)', ()
   });
 });
 
+describe('combatValue — résolution ALTERNATIVE déclarée par l\'arme (bélier → Force, ADE II ch.08 l.233)', () => {
+  it('weapon.resolveChar court-circuite CC (mêlée) et ignore toute Spé de Corps à corps', () => {
+    const c = hero({ skills: [{ skillId: 'corps-a-corps', spec: 'base', characteristic: 'CC', advances: 30 }], characteristics: { ...hero().characteristics, CC: 40, F: 55 } });
+    const belier: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [], resolveChar: 'F' };
+    expect(combatValue(c, 'melee', belier)).toBe(55); // Force brute (55), PAS CC+Spé (40+30=70)
+  });
+
+  it('sans resolveChar, une arme de mêlée résout normalement sur CC (non-régression)', () => {
+    const c = hero({ characteristics: { ...hero().characteristics, CC: 40, F: 55 } });
+    const epee: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
+    expect(combatValue(c, 'melee', epee)).toBe(40);
+  });
+});
+
 describe('Arme inhabituelle — maîtrise requise (ACE Annexe I p.219 « Entraînement avec une arme inhabituelle »)', () => {
   const sk = (spec: string, advances: number) =>
     ({ skillId: 'corps-a-corps', spec, characteristic: 'CC', advances } as Combatant['skills'][number]);

@@ -223,6 +223,35 @@ describe('recomputeLoadout piloté par loadout', () => {
   });
 });
 
+describe('warMachineResolveChar (DÉRIVÉ, via recomputeLoadout) — bélier → Force (ADE II ch.08 l.233)', () => {
+  const heroWith = (items: ItemInstance[], lo?: { loadouts: any[]; activeLoadoutId: string }): Combatant =>
+    ({ id: 'h', name: 'H', kind: 'hero', characteristics: { F: 30, E: 30 } as any, items,
+       talents: [], skills: [], conditions: [], wounds: { current: 10, max: 10 }, advantage: 0, ...lo } as unknown as Combatant);
+  const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
+    ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, ...p } as ItemInstance);
+
+  it('arme de MÊLÉE du Groupe machine-de-guerre (le bélier) → resolveChar Force', () => {
+    const belier = w('bel', 'Bélier', { kind: 'melee', weaponGroup: 'machine-de-guerre', hands: 2 });
+    const c = heroWith([belier], { loadouts: [{ id: 'l', name: 'B', main: 'bel' }], activeLoadoutId: 'l' });
+    recomputeLoadout(c);
+    expect(c.weapons.find((x) => x.name === 'Bélier')?.resolveChar).toBe('F');
+  });
+
+  it('arme à DISTANCE du même Groupe (Baliste ADE II) → PAS de resolveChar (Projectiles normal)', () => {
+    const baliste = w('bal', 'Baliste', { kind: 'ranged', weaponGroup: 'machine-de-guerre', hands: 2 });
+    const c = heroWith([baliste], { loadouts: [{ id: 'l', name: 'BA', main: 'bal' }], activeLoadoutId: 'l' });
+    recomputeLoadout(c);
+    expect(c.weapons.find((x) => x.name === 'Baliste')?.resolveChar).toBeUndefined();
+  });
+
+  it('arme de mêlée HORS Groupe machine-de-guerre → jamais de resolveChar (non-régression)', () => {
+    const epee = w('e', 'Epee', { kind: 'melee', subType: 'base', hands: 1 });
+    const c = heroWith([epee], { loadouts: [{ id: 'l', name: 'E', main: 'e' }], activeLoadoutId: 'l' });
+    recomputeLoadout(c);
+    expect(c.weapons.find((x) => x.name === 'Epee')?.resolveChar).toBeUndefined();
+  });
+});
+
 describe('ensureDefaultLoadout', () => {
   const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
     ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, damage: { plusBF: true, flat: 4 }, ...p } as ItemInstance);
