@@ -89,3 +89,327 @@ export const difficultySchema = z.enum([
   'presqueImpossible',
   'impossible',
 ]);
+
+/**
+ * `CharKey` (`src/engine/types.ts`) — les 10 Caractéristiques. Réf récurrente (Conditions `compare`,
+ * `Formula.bonusOf`/`charOf`, `FlowTest.characteristic`, `AdvancementRef`…) — dupliquée à l'identique
+ * dans ~10 defs (`domains`/`maneuvers`/`qualities`/`talents`/`etats`/`spells`/`species`/`careerLevels`…)
+ * avant cette promotion.
+ */
+export const charKeySchema = z.enum(['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Int', 'FM', 'Soc']);
+
+/** `DiceSpec` (`src/engine/dice.ts`) — jet `{n, sides, plus?}`, partagé par `CountSpec.roll` et `Formula.dice`. */
+export const diceSpecSchema = z.strictObject({ n: z.number(), sides: z.number(), plus: z.number().optional() });
+
+/**
+ * `Ref` (`src/data/index.ts`) — réf structurée par id + spec optionnelle (talent/sort/manœuvre/dieu
+ * ciblé). Dupliqué à l'identique dans `careerLevels`/`classes`/`creatures`/`gods`/`species`/`traits`.
+ */
+export const refSchema = z.strictObject({ id: z.string(), spec: z.string().optional() });
+
+/** `CountSpec` (`src/data/index.ts`) — quantité fixe ou tirage de dés. Dupliqué dans `careerLevels`/
+ *  `classes`/`creatures`. */
+export const countSpecSchema = z.union([
+  z.strictObject({ fixed: z.number() }),
+  z.strictObject({ roll: diceSpecSchema }),
+]);
+
+/** `TrappingRef` (`src/data/index.ts`) — par id de catalogue (+ quantité), ou texte narratif hors
+ *  catalogue (+ quantité). Dupliqué dans `careerLevels`/`classes`/`creatures`. */
+export const trappingRefSchema = z.union([
+  refSchema.extend({ count: countSpecSchema.optional() }),
+  z.strictObject({ text: z.string(), count: countSpecSchema.optional() }),
+]);
+
+/** `AdvancementRef` (`src/data/index.ts`) — emplacement d'avancement : réf simple, joker « (Au choix) »
+ *  (+ `specOptions`), choix « A ou B » (récursif), ou tirage aléatoire. Dupliqué dans `careerLevels`/`species`. */
+export const advancementRefSchema: z.ZodType<
+  | { ref: { id: string; spec?: string } }
+  | { wildcard: { id: string; spec?: string }; specOptions?: string[] }
+  | { choice: unknown[] }
+  | { random: number }
+> = z.union([
+  z.strictObject({ ref: refSchema }),
+  z.strictObject({ wildcard: refSchema, specOptions: z.array(z.string()).optional() }),
+  z.strictObject({ choice: z.array(z.lazy(() => advancementRefSchema)) }),
+  z.strictObject({ random: z.number() }),
+]);
+
+/** `EntityAppearance` (`src/state/scene.ts:87-110`) — apparence d'entité (créature/trait/mutation).
+ *  Dupliqué à l'identique dans `creatures`/`traits` ; `mutations` l'étend d'un `legs` anomalique
+ *  (cf. `mutations.ts`, non repris ici — anomalie propre à ce seul dataset). */
+export const entityAppearanceSchema = z.strictObject({
+  seed: z.number().optional(),
+  monster: z
+    .strictObject({
+      tete: z.string().optional(),
+      brasG: z.string().optional(),
+      brasD: z.string().optional(),
+      jambes: z.string().optional(),
+      cornes: z.boolean().optional(),
+      queue: z.boolean().optional(),
+      ailes: z.boolean().optional(),
+    })
+    .optional(),
+  colors: z
+    .strictObject({
+      peau: z.string().optional(),
+      cheveux: z.string().optional(),
+      yeux: z.string().optional(),
+      vet1: z.string().optional(),
+      vet2: z.string().optional(),
+      cuir: z.string().optional(),
+      metal: z.string().optional(),
+      corps: z.string().optional(),
+      accent: z.string().optional(),
+    })
+    .optional(),
+  parts: z.strictObject({ cheveux: z.number().optional(), visage: z.number().optional() }).optional(),
+  sex: z.enum(['M', 'F']).optional(),
+  build: z.number().optional(),
+  species: z.string().optional(),
+  tenue: z.string().optional(),
+  eyes: z.strictObject({ G: z.string().optional(), D: z.string().optional() }).optional(),
+  features: z.array(z.string()).optional(),
+});
+
+// ============================================================================
+// FLOW CORE (`src/engine/flowCore.ts`) — Condition / FlowTest / Flow / TriggeredEffect. SOURCE UNIQUE
+// pour `domains`/`maneuvers`/`qualities`/`talents`/`etats`/`spells`/`traits`/`trappings`/`psychology`,
+// qui redéclaraient CHACUN cette algèbre (à l'identique ou avec des libertés locales — cf. écarts
+// absorbés ci-dessous, chaque dataset re-testé au parse après rewire).
+// ============================================================================
+
+export const compareOpSchema = z.enum(['>=', '<=', '==', '<', '>']);
+export const actorRefSchema = z.enum(['target', 'caster']);
+/** `HitLocation` (`src/engine/types.ts`) — 6 zones de touche (dé inversé, LDB). Resserré depuis
+ *  `z.string()` (variantes `domains`/`talents`/`etats`/`spells`) sur l'enum SOURCE : aucune des 9 JSON
+ *  ne porte de valeur hors de ces 6 (vérifié au parse). */
+export const hitLocationSchema = z.enum(['tete', 'brasG', 'brasD', 'corps', 'jambeG', 'jambeD']);
+/** `Relation | Camp` (`src/engine/relations.ts`) — union complète lue par la Condition `relation`.
+ *  Resserré depuis `z.string()` (variantes `domains`/`talents`/`etats`/`spells`) : les 9 JSON ne
+ *  portent que `'opponent'` aujourd'hui, sans-risque vis-à-vis de l'enum SOURCE (vérifié au parse). */
+export const relationOrCampSchema = z.enum(['self', 'ally', 'opponent', 'party', 'neutral', 'hostile']);
+
+const charRefSchema = z.strictObject({ who: actorRefSchema, char: charKeySchema, bonus: z.boolean().optional() });
+const compareSubjectSchema = z.union([
+  z.strictObject({ who: actorRefSchema, field: z.enum(['woundsCurrent', 'woundsMax', 'size', 'advantage']) }),
+  z.strictObject({ who: actorRefSchema, condition: z.string() }),
+  charRefSchema,
+]);
+/** `CompareSubject & { factor?: number }` (`engine/flowCore.ts:131`) — un `z.intersection` d'un
+ *  `z.union` de `strictObject` NE FONCTIONNE PAS avec zod (chaque branche strict rejette les clés des
+ *  autres, cf. `domains.ts` avant ce rewire : `z.intersection(compareSubjectSchema, …)` échouait sur
+ *  `etats.json` #14 « inondation » — `{who,char:'E',factor:0.5}` — vérifié en isolation). Reflet FIDÈLE
+ *  à la donnée réelle : un SEUL `strictObject` fusionnant les 3 formes (`field`/`condition`/`char`+`bonus`)
+ *  + `factor`, tous optionnels sauf `who` — forme déjà éprouvée par talents/etats/spells/qualities/maneuvers. */
+const compareValueSchema = z.union([
+  z.number(),
+  z.strictObject({
+    who: actorRefSchema,
+    field: z.enum(['woundsCurrent', 'woundsMax', 'size', 'advantage']).optional(),
+    condition: z.string().optional(),
+    char: charKeySchema.optional(),
+    bonus: z.boolean().optional(),
+    factor: z.number().optional(),
+  }),
+]);
+
+/** `Condition` (`engine/flowCore.ts:112`) — algèbre CLOSE, récursive via `all`/`any`/`not`. */
+export const conditionSchema: z.ZodType<unknown> = z.lazy(() =>
+  z.discriminatedUnion('kind', [
+    z.strictObject({ kind: z.literal('always') }),
+    z.strictObject({ kind: z.literal('flag'), expr: z.string() }),
+    z.strictObject({
+      kind: z.literal('time'),
+      window: z.strictObject({
+        afterHour: z.number().optional(),
+        afterMinute: z.number().optional(),
+        beforeHour: z.number().optional(),
+        beforeMinute: z.number().optional(),
+      }),
+    }),
+    z.strictObject({ kind: z.literal('hasItem'), trappingId: z.string(), count: z.number().optional() }),
+    z.strictObject({
+      kind: z.literal('money'),
+      atLeast: z.strictObject({ gold: z.number().optional(), silver: z.number().optional(), brass: z.number().optional() }),
+    }),
+    z.strictObject({ kind: z.literal('partyDead'), who: z.enum(['any', 'all']) }),
+    z.strictObject({ kind: z.literal('compare'), subject: compareSubjectSchema, op: compareOpSchema, value: compareValueSchema }),
+    z.strictObject({ kind: z.literal('slThreshold'), op: compareOpSchema, value: z.number() }),
+    z.strictObject({ kind: z.literal('location'), is: hitLocationSchema }),
+    z.strictObject({ kind: z.literal('attackKind'), is: z.string() }),
+    z.strictObject({ kind: z.literal('startleCause'), is: z.enum(['noise', 'magic']) }),
+    z.strictObject({ kind: z.literal('woundsDealt'), op: compareOpSchema, value: z.number() }),
+    z.strictObject({ kind: z.literal('engagedAdvantageGap'), op: compareOpSchema, value: z.number() }),
+    z.strictObject({ kind: z.literal('engagedAdvantageLead'), op: compareOpSchema, value: z.number() }),
+    z.strictObject({ kind: z.literal('foeInLoS') }),
+    z.strictObject({ kind: z.literal('hiddenFromFoes') }),
+    z.strictObject({ kind: z.literal('engaged') }),
+    z.strictObject({ kind: z.literal('crewTest') }),
+    z.strictObject({ kind: z.literal('nearestFoe'), op: compareOpSchema, value: z.number() }),
+    z.strictObject({ kind: z.literal('capability'), who: actorRefSchema, id: z.string(), op: compareOpSchema.optional(), value: z.number().optional() }),
+    z.strictObject({ kind: z.literal('relation'), who: actorRefSchema, is: relationOrCampSchema }),
+    z.strictObject({ kind: z.literal('has'), who: actorRefSchema, what: z.enum(['group', 'talent', 'trait', 'psych']), value: z.string(), spec: z.string().optional() }),
+    z.strictObject({ kind: z.literal('all'), of: z.array(conditionSchema) }),
+    z.strictObject({ kind: z.literal('any'), of: z.array(conditionSchema) }),
+    z.strictObject({ kind: z.literal('not'), of: conditionSchema }),
+  ]),
+);
+
+/** `FlowTest` (`engine/flowCore.ts:335`) — jet différé (→ modale), tout le métier hors branches. */
+export const flowTestSchema = z.strictObject({
+  skill: z.string().optional(),
+  spec: z.string().optional(),
+  sense: z.enum(['vue', 'ouie']).optional(),
+  characteristic: charKeySchema.optional(),
+  difficulty: difficultySchema.optional(),
+  requireSL: z.number().optional(),
+  label: z.string().optional(),
+  tool: z.string().optional(),
+  vsGroups: z.array(z.string()).optional(),
+  vsStatus: z.string().optional(),
+  begging: z.boolean().optional(),
+  vsCapricieux: z.boolean().optional(),
+  easierIf: z
+    .strictObject({
+      hasSkill: z.strictObject({ id: z.string(), spec: z.string().optional() }).optional(),
+      hasTalent: z.string().optional(),
+      steps: z.number().optional(),
+    })
+    .optional(),
+  argDifficulty: z.boolean().optional(),
+  unlessImmune: z.string().optional(),
+  onlyGroups: z.array(z.string()).optional(),
+  exceptGroups: z.array(z.string()).optional(),
+  gate: conditionSchema.optional(),
+  menace: z.string().optional(),
+  difficultyBy: z.array(z.strictObject({ cond: conditionSchema, difficulty: difficultySchema })).optional(),
+  opposed: z
+    .strictObject({
+      attacker: charKeySchema,
+      attackerSkill: z.string().optional(),
+      attackerLabel: z.string().optional(),
+      bonusSL: z.number().optional(),
+      attackerBonusSL: z.number().optional(),
+    })
+    .optional(),
+});
+
+/** `EffectOp` (`engine/flowCore.ts:45`) — feuille `do` par défaut de `Flow<E>`. `on` ÉLARGI aux valeurs
+ *  ANOMALIES constatées en donnée réelle (`'victim'` — domains/maneuvers/qualities/spells/traits/
+ *  trappings ; `'self'` — talents/traits) en plus des 4 valeurs déclarées par l'interface TS
+ *  (`'party'|'hero'|'caster'|'target'`) : sans conséquence à l'exécution (tout ce qui n'est pas
+ *  `'caster'` retombe sur la cible, `combatEffects.ts:443`), mais l'interface `engine/flowCore.ts`
+ *  devrait le déclarer — signalé, pas corrigé ici (hors périmètre de ce lot : `src/engine`). */
+export const effectOpSchema = z.strictObject({
+  type: z.literal('ops'),
+  ops: z.array(gameOpSchema),
+  on: z.enum(['party', 'hero', 'caster', 'target', 'victim', 'self']).optional(),
+  heroId: z.string().optional(),
+  untilTime: z.number().optional(),
+  label: z.string().optional(),
+});
+
+/** `Flow<EffectOp>` (`engine/flowCore.ts:426`) — arbre récursif ACYCLIQUE (seq/do/if/test/choice). */
+export const flowSchema: z.ZodType<unknown> = z.lazy(() =>
+  z.discriminatedUnion('kind', [
+    z.strictObject({ kind: z.literal('seq'), steps: z.array(flowSchema) }),
+    z.strictObject({ kind: z.literal('do'), effect: effectOpSchema }),
+    z.strictObject({ kind: z.literal('if'), cond: conditionSchema, then: flowSchema, else: flowSchema.optional() }),
+    z.strictObject({ kind: z.literal('test'), test: flowTestSchema, success: flowSchema, fail: flowSchema }),
+    z.strictObject({
+      kind: z.literal('choice'),
+      prompt: z.string(),
+      cost: z.strictObject({ advantage: z.number() }).optional(),
+      icon: z.string().optional(),
+      yes: flowSchema,
+      no: flowSchema.optional(),
+    }),
+  ]),
+);
+
+/** `EffectTargeting` (`engine/flowCore.ts:469`). */
+export const effectTargetingSchema = z.union([
+  z.enum(['self', 'victim', 'engaged', 'grappled']),
+  z.strictObject({ near: z.enum(['victim', 'self']), radiusMeters: z.number() }),
+  z.strictObject({ pick: z.literal('engaged'), sizeAtMost: z.literal('self').optional(), max: z.number() }),
+]);
+
+/** `TriggeredEffect<EffectOp>` (`engine/flowCore.ts:472`). `optional` (Contrôle de la Frénésie…)
+ *  seule 1/9 des JSON le peuple (`talents.json`) — laissé optionnel, sans risque pour les autres. */
+export const triggeredEffectSchema = z.strictObject({
+  trigger: z.enum([
+    'onHit', 'onCrit', 'onWoundLoss', 'onSlain', 'onRoundStart', 'onStartled', 'onKill', 'onCharged', 'onGainCondition',
+    'onCombatStart', 'onCombatEnd', 'onRoundEnd', 'onTurnStart', 'onTurnEnd',
+    'onAttackResolved', 'onCastResolved', 'onMiscast',
+  ]),
+  on: effectTargetingSchema,
+  flow: flowSchema,
+  condition: z.string().optional(),
+  attackType: z.enum(['melee', 'ranged']).optional(),
+  optional: z.boolean().optional(),
+});
+
+/** `Formula` (`src/engine/ops.ts:65`) — quantité résolue à l'application (littéral/dés/bonus/Indice/
+ *  jet-associé/pions/écart d'Avantage/Blessures/somme/facteur). Dupliqué (avec `bonusOf`/`charOf` en
+ *  `z.string()` plutôt que `charKeySchema`) dans `trappings.ts` — resserré ici sur `CharKey` (fidèle
+ *  à `src/engine/ops.ts:65`), sans risque pour `trappings.json` (vérifié au parse). */
+export const formulaSchema: z.ZodType<unknown> = z.lazy(() =>
+  z.union([
+    z.number(),
+    z.strictObject({ bonusOf: charKeySchema }),
+    z.strictObject({ charOf: charKeySchema }),
+    z.strictObject({ dice: diceSpecSchema }),
+    z.strictObject({ rolled: z.literal(true) }),
+    z.strictObject({ indiceOf: z.literal(true) }),
+    z.strictObject({ stacks: z.literal('self') }),
+    z.strictObject({ engagedAdvantageGap: z.literal(true) }),
+    z.strictObject({ woundsDealt: z.literal(true) }),
+    z.strictObject({ sum: z.array(formulaSchema) }),
+    z.strictObject({ times: z.strictObject({ of: formulaSchema, factor: z.number() }) }),
+  ]),
+);
+
+/** `StageOutcome` (`src/engine/activities.ts:82-84`) — effet de portée Étape (Activités + Rencontres
+ *  de voyage). Dupliqué à l'identique dans `activities`/`incidents-monture`/`problemes-vehicule`/
+ *  `rencontres-edoc`. */
+export const stageOutcomeSchema = z.enum([
+  'suppressExposure', 'gatherInfo', 'noSurprise', 'mapMade', 'rerollToken', 'countsAsRest', 'campCare',
+  'extraActivity', 'skipStage', 'fullRecovery', 'worsenWeather',
+]);
+
+/** `TravelTableEntry` (`src/engine/travelTables.ts:15-26`) — entrée d100 de l'enveloppe `TravelTable`,
+ *  partagée par `rencontres-edoc`/`incidents-monture`/`problemes-vehicule`. */
+export const travelTableEntrySchema = z.strictObject({
+  min: z.number(),
+  max: z.number(),
+  id: z.string(),
+  label: z.string(),
+  text: z.string(),
+  stageOutcome: stageOutcomeSchema.optional(),
+  vehicleWounds: z.string().nullable().optional(),
+  occupantOps: z.array(gameOpSchema).optional(),
+});
+
+/** `ShipCrewTest` (`src/data/shipCriticals.ts`) — Test d'équipage déclenché par un Critique de coque. */
+export const shipCrewTestSchema = z.strictObject({
+  skillId: z.string().optional(),
+  difficulty: difficultySchema.optional(),
+  crewTarget: z.enum(['poste', 'deck']).optional(),
+  onFail: z.array(gameOpSchema),
+});
+
+/** `ShipCritEntry` (`src/data/shipCriticals.ts`) — entrée d100 de Critique de coque, partagée par
+ *  `ship-criticals` (navale) et `river-criticals` (fluviale). */
+export const shipCritEntrySchema = z.strictObject({
+  min: z.number(),
+  max: z.number(),
+  id: z.string(),
+  name: z.string(),
+  ops: z.array(gameOpSchema).optional(),
+  shrapnel: z.number().optional(),
+  hullCrits: z.string().optional(),
+  crewTest: shipCrewTestSchema.optional(),
+  note: z.string(),
+});

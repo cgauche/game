@@ -1,0 +1,28 @@
+/**
+ * Schéma de `careers.json` — dérivé du contenu RÉEL (96 entrées, script d'inventaire) et de
+ * `CareerData` (`src/data/index.ts:168`). `rand` = Tableau des Classes et Carrières aléatoires
+ * (LDB 05 l.197+) : borne haute d100 par colonne d'espèce, `null` = carrière indisponible pour
+ * cette espèce (l.360). Deux jeux de clés distincts observés (96 entrées → 2 key-sets, cohérent
+ * avec les colonnes d'espèce qui varient selon que la carrière est ouverte aux races additionnelles).
+ */
+import { z } from 'zod';
+import { sourceRefSchema } from '../common';
+
+export const file = 'careers.json';
+
+export const schema = z.array(
+  z.strictObject({
+    /** id STABLE (slug du libellé) — cible de `Combatant.career`, `CareerLevelData.career`, pregens. */
+    id: z.string(),
+    label: z.string(),
+    /** `id` de la Classe (`ClassData.id`). */
+    class: z.string(),
+    /** Clé = libellé d'espèce (`SpeciesData.label`, ex. « Humain », « Haut Elfe »…) → borne haute
+     *  d100, ou `null` = carrière indisponible pour cette espèce. */
+    rand: z.record(z.string(), z.number().nullable()),
+    desc: z.string(),
+    source: sourceRefSchema,
+  }),
+);
+
+export type CareersData = z.infer<typeof schema>;

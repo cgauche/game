@@ -19,71 +19,11 @@ import { schema as characteristicsSchema } from './schemas/defs/characteristics'
 const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 /**
- * Datasets `src/data/*.json` PAS ENCORE migrés au contrat de schéma — liste GELÉE à l'état initial
- * de la migration (tous les `.json` de l'époque, SAUF `characteristics.json`, le premier migré).
- * Retirer une entrée ICI dès que son schéma existe (`src/data/schemas/defs/<nom>.ts` + `npm run gen`)
- * — jamais l'inverse : un nouveau `.json` sans schéma NI entrée ici fait échouer le volet (b).
+ * Datasets `src/data/*.json` sans schéma — VIDE depuis la fin de la migration (94/94 sous contrat) :
+ * tout nouveau `.json` doit NAÎTRE avec son def (`src/data/schemas/defs/<nom>.ts` + `npm run gen`),
+ * sinon le volet (b) échoue. Une entrée ne s'ajoute ici qu'à titre transitoire assumé, jamais durable.
  */
-const PENDING = new Set<string>([
-  'aa-criticals.json',
-  'activities.json',
-  'astrology.json',
-  'books.json',
-  'breath-types.json',
-  'careerLevels.json',
-  'careers.json',
-  'classes.json',
-  'creatures.json',
-  'criticals.json',
-  'details.json',
-  'domains.json',
-  'driving-mishap.json',
-  'etats.json',
-  'gods.json',
-  'grapple.json',
-  'groups.json',
-  'incidents-monture.json',
-  'interludeEvents.json',
-  'locations.json',
-  'maladies.json',
-  'maneuvers.json',
-  'mass-battle.json',
-  'miscast.json',
-  'montures.json',
-  'mutations.json',
-  'mutationTables.json',
-  'naval-traits.json',
-  'obsessions.json',
-  'oups.json',
-  'peripeties.json',
-  'pregens.json',
-  'problemes-vehicule.json',
-  'props.json',
-  'psychology.json',
-  'qualities.json',
-  'rencontres-edoc.json',
-  'river-criticals.json',
-  'river-navigation.json',
-  'river-perils.json',
-  'sea-events.json',
-  'sea-perils.json',
-  'sea-shanties.json',
-  'ship-criticals.json',
-  'skills.json',
-  'species.json',
-  'spells.json',
-  'stars.json',
-  'steam-breakdown.json',
-  'structure-criticals.json',
-  'structures.json',
-  'symptoms.json',
-  'talents.json',
-  'traits.json',
-  'trappings.json',
-  'traumas.json',
-  'vehicles.json',
-  'water-exposure.json',
-]);
+const PENDING = new Set<string>([]);
 
 /** Formate un `ZodError` en message ACTIONNABLE : `<fichier> → <chemin.du.champ>: <erreur>`. */
 function formatZodError(file: string, error: z.ZodError): string {

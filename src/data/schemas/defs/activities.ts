@@ -1,0 +1,87 @@
+/**
+ * Schéma de `activities.json` — catalogue UNIQUE des Activités (LDB ch.23, EDOC ch.5, MDG ch.15,
+ * ADE II ch.8 Bataille de masse), miroir strict de `ActivityDef` (`src/engine/activities.ts:189-256`,
+ * étend `TestSpec` de `src/engine/skills.ts:173`) + `OutcomeBand`/`BattleOutcome`/`BattleCond`
+ * (`.../activities.ts:56-114`). Inventaire réel (40 entrées, script node) : tous les champs déclarés
+ * ci-dessous sont observés au moins une fois ; aucun champ de l'interface n'est ABSENT du JSON.
+ */
+import { z } from 'zod';
+import { gameOpSchema, sourceRefSchema, difficultySchema, stageOutcomeSchema } from '../common';
+
+export const file = 'activities.json';
+
+const skillRefSchema = z.strictObject({
+  skillId: z.string(),
+  spec: z.string().optional(),
+});
+
+const activityContextSchema = z.enum(['interlude', 'voyage', 'mer', 'bataille', 'bataille-round']);
+
+const battleSideSchema = z.enum(['ally', 'enemy']);
+const battleOutcomeTargetSchema = z.enum(['might', 'startMight', 'allyTestMod', 'firstRoundBonus', 'planningBonus']);
+const battleOutcomeScaleSchema = z.enum(['fixed', 'perDR', 'perHit', 'perKill']);
+
+const battleOutcomeSchema = z.strictObject({
+  side: battleSideSchema.optional(),
+  target: battleOutcomeTargetSchema,
+  scale: battleOutcomeScaleSchema,
+  amount: z.number(),
+});
+
+const battleCondSchema = z.enum(['generalDown', 'intervention', 'noIntervention', 'combatWon', 'combatLost']);
+
+const outcomeBandSchema = z.strictObject({
+  on: z.enum(['success', 'failure', 'fumble']).optional(),
+  minSL: z.number().optional(),
+  maxSL: z.number().optional(),
+  ops: z.array(gameOpSchema).optional(),
+  resolver: z.string().optional(),
+  payoutPct: z.number().optional(),
+  note: z.string().optional(),
+  battle: z.array(battleOutcomeSchema).optional(),
+  when: battleCondSchema.optional(),
+  chains: z.array(z.string()).optional(),
+});
+
+export const schema = z.array(
+  z.strictObject({
+    id: z.string(),
+    label: z.string(),
+    icon: z.string(),
+    contexts: z.array(activityContextSchema),
+    source: sourceRefSchema,
+    // ── TestSpec (src/engine/skills.ts:173) ──
+    skills: z.array(skillRefSchema).optional(),
+    char: z.string().optional(),
+    difficulty: difficultySchema.optional(),
+    combined: z.boolean().optional(),
+    // ── ActivityDef propre ──
+    freeSkill: z.boolean().optional(),
+    extended: z.strictObject({ drPerStage: z.number() }).optional(),
+    failExtenue: z.boolean().optional(),
+    resolver: z.string().optional(),
+    onSuccess: z.array(gameOpSchema).optional(),
+    desc: z.string().optional(),
+    outcomes: z.array(outcomeBandSchema).optional(),
+    where: z.array(z.string()).optional(),
+    minInvest: z.strictObject({ gold: z.number() }).optional(),
+    stageOutcome: stageOutcomeSchema.optional(),
+    unavailableIfExtenue: z.boolean().optional(),
+    // ── Bataille de masse (ADE II ch.8) ──
+    assisted: z.boolean().optional(),
+    requires: z.array(z.string()).optional(),
+    grantsFlag: z.string().optional(),
+    sceneKind: z.enum(['test', 'combat', 'threat', 'hold', 'rally']).optional(),
+    encounter: z.string().optional(),
+    rounds: z.number().optional(),
+    hold: z.strictObject({
+      breakpoint: z.number(),
+      maxRounds: z.number(),
+      enemyBonusPerHold: z.number(),
+    }).optional(),
+    threat: z.strictObject({ penalty: z.number() }).optional(),
+    generalDownOn: z.enum(['success', 'stupefying']).optional(),
+  }),
+);
+
+export type ActivitiesData = z.infer<typeof schema>;

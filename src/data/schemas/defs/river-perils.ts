@@ -1,0 +1,32 @@
+/**
+ * Schéma de `river-perils.json` — Dangers fluviaux (T2C ch.5 l.119-166 : Débris/Barrage/Rochers/Eaux
+ * peu profondes). Dérivé de `RiverPerilDef` (`src/engine/riverNavigation.ts:258-269`), seul
+ * consommateur. `_source` = note de traçabilité libre (non lue par le moteur).
+ */
+import { z } from 'zod';
+
+export const file = 'river-perils.json';
+
+export const schema = z.strictObject({
+  _source: z.string().optional(),
+  perils: z.array(
+    z.strictObject({
+      id: z.string(),
+      label: z.string(),
+      kind: z.enum(['navTest', 'obstacle', 'detect']),
+      /** Débris (l.125) : Test de Navigation raté → `hullHits` coups à la coque. */
+      onFail: z.strictObject({ hullHits: z.number(), damagePerHit: z.number() }).optional(),
+      /** Barrage (l.128) : Endurance/Blessures d'expression dé (`1d10`…), bélier +`ramDamage`. */
+      obstacle: z
+        .strictObject({ endurance: z.string(), enduranceMult: z.number(), wounds: z.string(), ramDamage: z.number() })
+        .optional(),
+      /** Rochers/eaux peu profondes (l.138-144) : Dégâts + chances de percée/échouage. */
+      onHit: z
+        .strictObject({ hullDamage: z.number(), holeChancePct: z.number().optional(), echouageChancePct: z.number().optional() })
+        .optional(),
+      ref: z.string(),
+    }),
+  ),
+});
+
+export type RiverPerilsData = z.infer<typeof schema>;
