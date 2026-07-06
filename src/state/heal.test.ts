@@ -134,6 +134,23 @@ describe('Guérison — infirmerie (hors combat)', () => {
     expect(useGame.getState().medic).toBeNull();
   });
 
+  it('medicAct(bleed) hors combat : panse l’Hémorragie via l’infirmerie — Test de Guérison réussi retire l’État (LDB 09-Compétences l.261 / 16-États l.107-109), sans consommer le soin de Blessures de la rencontre', () => {
+    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }] });
+    const al = hero({ id: 'al', name: 'Saigné', conditions: [{ name: 'hemorragique', value: 2 }], skills: [] });
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, al], pendingHeal: null, medic: null });
+    useGame.getState().openMedic({ patientId: 'al' });
+    useGame.getState().medicAct('bleed');
+    const ph = useGame.getState().pendingHeal!;
+    expect(useGame.getState().battle).toBeNull(); // résolu hors combat, via la party
+    expect(ph.mode).toBe('bleed');
+    useGame.getState().healRoll();
+    useGame.setState({ pendingHeal: { ...useGame.getState().pendingHeal!, success: true, sl: 1 } });
+    useGame.getState().healConfirm();
+    const patient = useGame.getState().party.find((c) => c.id === 'al')!;
+    expect(patient.conditions.find((c) => c.name === 'hemorragique')).toBeUndefined(); // 2 pions − (1+1 DR)
+    expect(patient.soinRencontreUtilise).toBeUndefined(); // l'arrêt d'Hémorragie ne consomme pas la limite
+  });
+
   it('patients/sortie verrouillés pendant un jet posé', () => {
     const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }] });
     const al = hero({ id: 'al', wounds: { current: 4, max: 12 }, skills: [] });

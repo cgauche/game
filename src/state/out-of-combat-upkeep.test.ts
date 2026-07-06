@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { hasCondition } from '../engine/conditions';
+import { applyStopBleed } from '../engine/healing';
 import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
 
@@ -60,5 +61,14 @@ describe('outOfCombatUpkeep — États qui tickent HORS COMBAT (couture A, LDB 1
     const c = mk({ current: 3, conditions: [{ name: 'hemorragique', value: 3 }], fate: 0 });
     outOfCombatUpkeep([c], 1, fixed(5));
     expect(c.dead).toBe(true);
+  });
+
+  it('Premiers Secours hors combat (infirmerie, Test de Guérison réussi retire l’État, LDB 09-Compétences l.261 / 16-États l.107-109) évite la mort SANS consommer de Destin', () => {
+    const c = mk({ current: 3, conditions: [{ name: 'hemorragique', value: 3 }], fate: 0 });
+    applyStopBleed(c, 2); // panse : Test de Guérison réussi, DR 2 → retire 1+2 = 3 pions (tous)
+    expect(hasCondition(c, 'hemorragique')).toBe(false);
+    outOfCombatUpkeep([c], 1, fixed(5)); // même jet qui, non traité, tue le cas précédent
+    expect(c.dead).toBeFalsy();
+    expect(c.fate).toBe(0); // aucun Destin consommé : le soin a suffi
   });
 });

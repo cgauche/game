@@ -7,9 +7,10 @@
  * Rounds, LDB 18 l.28) ne doivent pas geler dès qu'on sort du combat : on les fait progresser au fil de
  * l'horloge (1 Round ≈ TIME_COST.combatRound minute). En combat, c'est la frontière de Round qui s'en charge.
  *
- * Limite assumée : tant que l'action « Premiers Secours / panser » (retrait d'Hémorragique, couture C de
- * récupération) n'existe pas, un héros qui s'attarde en saignant peut mourir — un Point de Destin le sauve
- * (consommé, l'hémorragie est jugulée). Se déplacer ne coûte pas de temps : on peut fuir sans saigner.
+ * Échapper à l'agonie par Hémorragie hors combat : Test de Guérison réussi retire l'État (LDB 09-Compétences
+ * l.261, 16-États l.107-109) — infirmerie hors combat (`openMedic`/`medicAct('bleed')`, `state/medicFlow.ts`,
+ * bouton « 🩺 Soins » de `CharacterSheet.tsx`), n'avance pas le temps. Sans soigneur au Talent ni Destin,
+ * l'agonie ci-dessus va à son terme.
  */
 import { Combatant } from '../engine/types';
 import { RNG } from '../engine/dice';
