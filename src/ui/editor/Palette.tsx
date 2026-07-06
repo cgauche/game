@@ -20,24 +20,24 @@ type Family = 'select' | 'tile' | 'wall' | 'height' | 'personnage' | 'prop' | 'h
 
 const RAIL: { key: Family; icon: ReactNode; label: string }[] = [
   { key: 'select', icon: '↖', label: 'Sélection / déplacer — clic = sélectionner, glisser = déplacer' },
-  { key: 'tile', icon: '🖌', label: 'Peindre le terrain' },
-  { key: 'wall', icon: '🧱', label: 'Murs — cloison ou porte sur une arête, diagonale au centre de la case' },
-  { key: 'height', icon: '⛰', label: 'Hauteur — surface surélevée / fosse (peindre une hauteur en mètres ; la traversée verticale s’auto-dérive)' },
-  { key: 'personnage', icon: '🙂', label: 'Poser un personnage' },
-  { key: 'prop', icon: '🌳', label: 'Poser un décor' },
-  { key: 'heroStart', icon: '🏁', label: 'Départ des héros (case d’arrivée du groupe)' },
-  { key: 'roof', icon: '🏠', label: 'Toit — bâtiment composé : glisser pour couvrir l’empreinte (les murs se tracent à l’outil 🧱)' },
-  { key: 'zone', icon: '🟦', label: 'Dessiner une zone — trigger ou zone de repos' },
+  { key: 'tile', icon: <Icon id="map-tool/paint" />, label: 'Peindre le terrain' },
+  { key: 'wall', icon: <Icon id="map-tool/wall" />, label: 'Murs — cloison ou porte sur une arête, diagonale au centre de la case' },
+  { key: 'height', icon: <Icon id="map-tool/height" />, label: 'Hauteur — surface surélevée / fosse (peindre une hauteur en mètres ; la traversée verticale s’auto-dérive)' },
+  { key: 'personnage', icon: <Icon id="map-tool/npc" />, label: 'Poser un personnage' },
+  { key: 'prop', icon: <Icon id="map-tool/prop" />, label: 'Poser un décor' },
+  { key: 'heroStart', icon: <Icon id="map-tool/start-flag" />, label: 'Départ des héros (case d’arrivée du groupe)' },
+  { key: 'roof', icon: <Icon id="rest/home" />, label: 'Toit — bâtiment composé : glisser pour couvrir l’empreinte (les murs se tracent à l’outil mur)' },
+  { key: 'zone', icon: <Icon id="map-tool/zone" />, label: 'Dessiner une zone — trigger ou zone de repos' },
   { key: 'entry', icon: <Icon id="nav/entry-point" />, label: 'Poser un point d’entrée (cible des transitions)' },
   { key: 'encounter', icon: <Icon id="action/attack" size="sm" />, label: 'Placer des ennemis (rencontre de combat)' },
   { key: 'emplacement', icon: <Icon id="scenario/siege" size="sm" />, label: 'Emplacement de siège — poser une pièce d’artillerie (baliste, catapulte, canon…) servie par un équipage' },
-  { key: 'erase', icon: '🧽', label: 'Gomme — efface les entités cliquées' },
+  { key: 'erase', icon: <Icon id="map-tool/erase" />, label: 'Gomme — efface les entités cliquées' },
 ];
 
 /** Sous-modes de l'outil murs (rail contextuel). */
-const WALL_PAINTS: { paint: import('./editorState').WallPaint; icon: string; label: string }[] = [
+const WALL_PAINTS: { paint: import('./editorState').WallPaint; icon: ReactNode; label: string }[] = [
   { paint: 'wall', icon: '▮', label: 'Cloison' },
-  { paint: 'door', icon: '🚪', label: 'Porte' },
+  { paint: 'door', icon: <Icon id="map-tool/door" />, label: 'Porte' },
   { paint: 'diagBack', icon: '◣', label: 'Diagonale ＼' },
   { paint: 'diagFwd', icon: '◢', label: 'Diagonale ／' },
 ];
@@ -113,7 +113,10 @@ export function Palette({
 
   const match = (label: string) => label.toLowerCase().includes(search.toLowerCase());
   const searchBox = (placeholder: string) => (
-    <input className="pal-search" placeholder={`🔎 ${placeholder}`} value={search} onChange={(e) => setSearch(e.target.value)} />
+    <div className="pal-search-row">
+      <Icon id="ui/search" size="sm" />
+      <input className="pal-search" placeholder={placeholder} value={search} onChange={(e) => setSearch(e.target.value)} />
+    </div>
   );
 
   return (
@@ -284,7 +287,7 @@ export function Palette({
                 </button>
               ))}
             </div>
-            <p className="hint">Glissez sur la carte pour couvrir l'empreinte (le toit suit le geste). Tracez les MURS du bâtiment à l'outil 🧱 ; matériau, étages et couleurs s'éditent dans l'inspecteur.</p>
+            <p className="hint">Glissez sur la carte pour couvrir l'empreinte (le toit suit le geste). Tracez les MURS du bâtiment à l'outil <Icon id="map-tool/wall" size="sm" /> ; matériau, étages et couleurs s'éditent dans l'inspecteur.</p>
           </>
         )}
 
@@ -293,10 +296,10 @@ export function Palette({
             <div className="mini-title">Type de zone</div>
             <div className="stack">
               <button className={`pal-item${tool.zone === 'trigger' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'trigger' })}>
-                🟦 Trigger — déclenche des effets quand le groupe y entre
+                <Icon id="map-tool/zone" size="sm" /> Trigger — déclenche des effets quand le groupe y entre
               </button>
               <button className={`pal-item${tool.zone === 'rest' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'rest' })}>
-                ⛺ Zone de repos — offre de repos locale (auberge/maison/camp)
+                <Icon id="rest/camp" size="sm" /> Zone de repos — offre de repos locale (auberge/maison/camp)
               </button>
               <button className={`pal-item${tool.zone === 'effect' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'effect' })}>
                 <Icon id="ui/warning" size="sm" /> Piège / hasard — Dégâts ou États à la traversée / au stationnement

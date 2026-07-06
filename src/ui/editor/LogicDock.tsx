@@ -69,8 +69,8 @@ export function LogicDock({
 
   const errors = warnings.filter((w) => w.level === 'error').length;
   const tabs: { key: LogicTab; label: string | JSX.Element; count: number; alert?: boolean }[] = [
-    { key: 'triggers', label: '🟦 Triggers', count: scene.triggers.length },
-    { key: 'dialogues', label: '💬 Dialogues', count: scene.dialogues.length },
+    { key: 'triggers', label: <><Icon id="map-tool/zone" size="sm" /> Triggers</>, count: scene.triggers.length },
+    { key: 'dialogues', label: <><Icon id="merchant/haggle" size="sm" /> Dialogues</>, count: scene.dialogues.length },
     { key: 'encounters', label: <><Icon id="action/attack" size="sm" /> Rencontres</>, count: scene.encounters.length },
     { key: 'validation', label: <><Icon id="ui/warning" size="sm" /> Validation</>, count: warnings.length, alert: errors > 0 },
   ];
@@ -174,7 +174,7 @@ function TriggersTab({
         >
           + Nouveau trigger
         </button>
-        <p className="hint">Astuce : outil 🟦 → glisser sur la carte pour dessiner la zone directement.</p>
+        <p className="hint">Astuce : outil <Icon id="map-tool/zone" size="sm" /> → glisser sur la carte pour dessiner la zone directement.</p>
       </div>
       {t ? (
         <div className="logic-detail">

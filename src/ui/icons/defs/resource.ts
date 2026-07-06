@@ -77,4 +77,16 @@ export const icons: IconFamily = [
       `<path ${K} d="M9.2 8.9 C10.7 8.1 13.3 8.1 14.8 8.9"/>` +
       `<circle fill="var(--gold)" stroke="none" cx="12" cy="3.6" r="1.5"/>`,
   },
+  {
+    id: 'resource/lifeline',
+    label: 'Survivre',
+    // Bouée de sauvetage : anneau à quatre bandes.
+    svg:
+      `<circle ${K} cx="12" cy="12" r="8.1"/>` +
+      `<circle ${K} cx="12" cy="12" r="4"/>` +
+      `<path ${F} d="M12 3.9 C13.4 3.9 14.7 4.2 15.9 4.8 L13.6 8.7 C13.1 8.5 12.6 8.4 12 8.4 Z"/>` +
+      `<path ${F} d="M12 20.1 C10.6 20.1 9.3 19.8 8.1 19.2 L10.4 15.3 C10.9 15.5 11.4 15.6 12 15.6 Z"/>` +
+      `<path ${F} d="M4.4 8.5 C5.1 7.3 6.1 6.3 7.3 5.6 L9.6 9.5 C9.1 9.9 8.6 10.4 8.3 10.9 Z"/>` +
+      `<path ${F} d="M19.6 15.5 C18.9 16.7 17.9 17.7 16.7 18.4 L14.4 14.5 C14.9 14.1 15.4 13.6 15.7 13.1 Z"/>`,
+  },
 ];

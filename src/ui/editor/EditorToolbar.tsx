@@ -3,7 +3,7 @@
  * annuler/rétablir, SÉLECTEUR DE SCÈNE du projet (+ nouvelle / dupliquer / retirer — remplace
  * la liste de l'ancien onglet « Scène »), carte du monde et ▶ Tester.
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Scene } from '../../state/scene';
 import { Icon } from '../Icon';
 
@@ -71,7 +71,7 @@ export function EditorToolbar({
       document.removeEventListener('keydown', onKey);
     };
   }, [fileOpen]);
-  const item = (label: string, fn: () => void) => (
+  const item = (label: ReactNode, fn: () => void) => (
     <button
       className="menu-item"
       onClick={() => {
@@ -96,12 +96,12 @@ export function EditorToolbar({
         </button>
         {fileOpen && (
           <div className="editor-menu panel" role="menu">
-            {item('🗋 Nouveau projet', onNew)}
-            {item('📂 Ouvrir…', onOpen)}
-            {item('💾 Enregistrer…', onSave)}
+            {item(<><Icon id="file/new" size="sm" /> Nouveau projet</>, onNew)}
+            {item(<><Icon id="file/open" size="sm" /> Ouvrir…</>, onOpen)}
+            {item(<><Icon id="file/save" size="sm" /> Enregistrer…</>, onSave)}
             <hr />
             <label className="menu-item">
-              ⬆ Importer JSON…
+              <Icon id="file/import" size="sm" /> Importer JSON…
               <input
                 type="file"
                 accept="application/json"
@@ -116,9 +116,9 @@ export function EditorToolbar({
                 }}
               />
             </label>
-            {item('⬇ Exporter JSON', onExport)}
+            {item(<><Icon id="file/export" size="sm" /> Exporter JSON</>, onExport)}
             <hr />
-            {item('⚙ Avancé (JSON de la scène)', onAdvanced)}
+            {item(<><Icon id="ui/settings" size="sm" /> Avancé (JSON de la scène)</>, onAdvanced)}
           </div>
         )}
       </div>

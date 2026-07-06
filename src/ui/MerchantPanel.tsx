@@ -217,9 +217,9 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
 
   // Contrôle de Marchandage du panier (clair : ce qu'il fait + son effet).
   const buyHaggleControl = () => {
-    if (merchant.soured) return <span className="bargain-tag soured" title="Le marchand se méfie de votre monnaie">🚫 Marchand méfiant — fini de marchander</span>;
-    if (merchant.bargainLocked) return <span className="bargain-tag locked" title="Vous avez déjà négocié puis quitté sans conclure ; revenez après son réassort">🔒 Marchandage indisponible jusqu’au réassort</span>;
-    if (merchant.bargainBuy == null) return <button className="btn small" onClick={() => onBargain('buy')} title="Test de Marchandage : en cas de réussite, le marchand baisse ses prix de 10 à 20 %">💬 Marchander le panier</button>;
+    if (merchant.soured) return <span className="bargain-tag soured" title="Le marchand se méfie de votre monnaie"><Icon id="ui/forbidden" size="sm" /> Marchand méfiant — fini de marchander</span>;
+    if (merchant.bargainLocked) return <span className="bargain-tag locked" title="Vous avez déjà négocié puis quitté sans conclure ; revenez après son réassort"><Icon id="ui/lock" size="sm" /> Marchandage indisponible jusqu’au réassort</span>;
+    if (merchant.bargainBuy == null) return <button className="btn small" onClick={() => onBargain('buy')} title="Test de Marchandage : en cas de réussite, le marchand baisse ses prix de 10 à 20 %"><Icon id="merchant/haggle" size="sm" /> Marchander le panier</button>;
     return merchant.bargainBuy.won
       ? <span className="bargain-tag won">✔ Prix réduits de {buyDiscount} %</span>
       : <span className="bargain-tag">✘ Marchandage raté — prix plein</span>;
@@ -252,7 +252,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
     <div className="merch-tab">
       <div className="cart-head">
         <button className="btn small" disabled={sealed} title={sealed ? 'Marché négocié : réglez ou refusez le marché' : undefined} onClick={() => setBuyView('browse')}>← Continuer les achats</button>
-        <strong>🛒 Panier</strong>
+        <strong><Icon id="merchant/cart" size="sm" /> Panier</strong>
       </div>
       {!cart.length ? (
         <p className="empty">— panier vide —</p>
@@ -282,7 +282,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
           </table>
           <div className="cart-haggle">{buyHaggleControl()}</div>
           {sealed && (
-            <p className="cart-sealed" title="Refuser ou partir sans payer : le marchand ne marchandera plus avant son réassort.">🤝 Prix arrêté — vous pouvez retirer des articles, puis régler ou refuser.</p>
+            <p className="cart-sealed" title="Refuser ou partir sans payer : le marchand ne marchandera plus avant son réassort."><Icon id="merchant/deal" size="sm" /> Prix arrêté — vous pouvez retirer des articles, puis régler ou refuser.</p>
           )}
           <div className="cart-total">Total : <strong><Coins money={cartTotal} /></strong>{buyDiscount > 0 && <span className="cart-disc"> (marchandé −{buyDiscount} %)</span>}</div>
           <div className="cart-actions">
@@ -306,11 +306,11 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
       <div className="merch-tab">
         <div className="cart-bar">
           {cartCount > 0
-            ? <><span className="cart-info">🛒 {cartCount} article{cartCount > 1 ? 's' : ''} · <Coins money={cartTotal} /></span><button className="btn small btn-primary" onClick={() => setBuyView('cart')}>Voir le panier →</button></>
-            : <span className="cart-info empty">🛒 Panier vide</span>}
+            ? <><span className="cart-info"><Icon id="merchant/cart" size="sm" /> {cartCount} article{cartCount > 1 ? 's' : ''} · <Coins money={cartTotal} /></span><button className="btn small btn-primary" onClick={() => setBuyView('cart')}>Voir le panier →</button></>
+            : <span className="cart-info empty"><Icon id="merchant/cart" size="sm" /> Panier vide</span>}
           {onSearchAvailability && (
             <button className="btn small" onClick={onSearchAvailability} title="Passer une journée entière à écumer les étals (Test de Ragot) : réassort frais, Disponibilité +10 % si le Ragot réussit (LDB 59 l.50)">
-              🔎 Chercher activement (1 journée)
+              <Icon id="ui/search" size="sm" /> Chercher activement (1 journée)
             </button>
           )}
         </div>
@@ -415,8 +415,8 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
       <>
         <div className="cart-bar">
           {sellCart.length > 0
-            ? <><span className="cart-info">🛒 {sellCart.length} à vendre · +<Coins money={sellCartTotal} /></span><button className="btn small btn-primary" onClick={() => setSellView('cart')}>Voir le panier →</button></>
-            : <span className="cart-info empty">🛒 Rien à vendre sélectionné</span>}
+            ? <><span className="cart-info"><Icon id="merchant/cart" size="sm" /> {sellCart.length} à vendre · +<Coins money={sellCartTotal} /></span><button className="btn small btn-primary" onClick={() => setSellView('cart')}>Voir le panier →</button></>
+            : <span className="cart-info empty"><Icon id="merchant/cart" size="sm" /> Rien à vendre sélectionné</span>}
         </div>
         <div className="merch-subtabs" role="tablist">
           {sellHeroes.map((h) => (
@@ -464,7 +464,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
     <>
       <div className="cart-head">
         <button className="btn small" onClick={() => setSellView('browse')}>← Continuer</button>
-        <strong>🛒 Vente</strong>
+        <strong><Icon id="merchant/cart" size="sm" /> Vente</strong>
       </div>
       {!sellCartItems.length ? (
         <p className="empty">— panier de vente vide —</p>
@@ -566,9 +566,9 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
           {tab === 'sell' && (
             <div className="merch-tab">
               <div className="haggle-bar">
-                {merchant.soured ? <span className="bargain-tag soured">🚫 Marchand méfiant — fini de marchander</span>
-                  : merchant.bargainLocked ? <span className="bargain-tag locked" title="Vous avez refusé/renié un marché ; revenez après son réassort">🔒 Marchandage indisponible jusqu’au réassort</span>
-                  : merchant.bargainSell == null ? <button className="btn small" onClick={() => onBargain('sell')} title="Test de Marchandage : en cas de réussite, il rachète à ½ du prix au lieu de ¼">💬 Marchander la vente</button>
+                {merchant.soured ? <span className="bargain-tag soured"><Icon id="ui/forbidden" size="sm" /> Marchand méfiant — fini de marchander</span>
+                  : merchant.bargainLocked ? <span className="bargain-tag locked" title="Vous avez refusé/renié un marché ; revenez après son réassort"><Icon id="ui/lock" size="sm" /> Marchandage indisponible jusqu’au réassort</span>
+                  : merchant.bargainSell == null ? <button className="btn small" onClick={() => onBargain('sell')} title="Test de Marchandage : en cas de réussite, il rachète à ½ du prix au lieu de ¼"><Icon id="merchant/haggle" size="sm" /> Marchander la vente</button>
                   : <>
                       <span className={`bargain-tag ${merchant.bargainSell.won ? 'won' : ''}`}>{merchant.bargainSell.won ? '✔ Rachat à ½ du prix' : '✘ Rachat à ¼ du prix'}</span>
                       <button className="btn small danger" onClick={() => onRefuse('sell')} title="Décliner l’offre — le marchand ne marchandera plus (achat ni vente) jusqu’au réassort">Refuser l’offre</button>

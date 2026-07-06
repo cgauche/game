@@ -220,7 +220,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 onClick={() => setHeldGround(!pa.heldGround)}
                 title="Tire sans bouger : annule la pénalité -10 « Tir en bougeant », mais consomme ton Mouvement du Tour (tu ne pourras plus te déplacer)."
               >
-                🦿 Je ne bouge pas (annule le -10)
+                <Icon id="travel/anchor" size="sm" /> Je ne bouge pas (annule le -10)
               </button>
               {pa.heldGround
                 ? <span className="rm-crowd-note">Immobile : pas de -10, mais Mouvement du Tour consommé.</span>
@@ -234,7 +234,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 onClick={() => setWithhold(!pa.withhold)}
                 title="Maîtriser sans tuer : tu infliges des Blessures normales, mais aucune Blessure Critique tant que l'adversaire n'est pas à 0. Tu perds les Atouts Empaleuse, Percutante, Perforante et Taille. (Aux Armes)"
               >
-                ✊ Retenir ses coups
+                <Icon id="melee/pulled-punch" size="sm" /> Retenir ses coups
               </button>
               {pa.withhold && <span className="rm-crowd-note">Non létal : Critique seulement si la cible tombe à 0 ; sans Empaleuse/Percutante/Perforante/Taille.</span>}
             </div>
@@ -246,7 +246,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
                 onClick={() => setGrapple(!pa.grapple)}
                 title="Empoigner au lieu de blesser : sur une touche, tu n'infliges AUCUN Dégât — vous êtes tous deux Empoignés et l'adversaire gagne l'État Empêtré. (LDB 14)"
               >
-                🤼 Empoigner
+                <Icon id="melee/grapple" size="sm" /> Empoigner
               </button>
               {pa.grapple && <span className="rm-crowd-note">Sur une touche : aucun Dégât ; Empoignade + Empêtré (cible).</span>}
             </div>

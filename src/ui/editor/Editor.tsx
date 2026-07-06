@@ -20,6 +20,7 @@ import type { TestScenario } from '../../scenes/test-scenarios';
 import { WorldMap, parseProject } from '../../state/worldMap';
 import { nextEntityId } from '../../state/entityId';
 import { Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer } from './editorState';
+import { Icon } from '../Icon';
 
 /**
  * Éditeur de niveau v2 — SHELL d'orchestration : toolbar (Fichier/scènes/Tester), Palette
@@ -455,10 +456,10 @@ export function Editor() {
 
       <div className="editor-mobile-bar">
         <button className={`btn${drawer === 'palette' ? ' btn-primary' : ''}`} onClick={() => setDrawer(drawer === 'palette' ? null : 'palette')}>
-          🖌 Outils
+          <Icon id="map-tool/paint" size="sm" /> Outils
         </button>
         <button className={`btn${drawer === 'inspector' ? ' btn-primary' : ''}`} onClick={() => setDrawer(drawer === 'inspector' ? null : 'inspector')}>
-          🔍 Inspecteur
+          <Icon id="ui/search" size="sm" /> Inspecteur
         </button>
       </div>
 

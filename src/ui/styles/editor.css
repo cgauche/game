@@ -140,6 +140,15 @@ button.insp-row,
 .pal-search {
   width: 100%;
 }
+.pal-search-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.pal-search-row .pal-search {
+  flex: 1;
+}
 .pal-list {
   display: flex;
   flex-direction: column;

@@ -580,8 +580,8 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
           const ACTS: { key: 'wounds' | 'bleed' | 'trauma' | 'surgery'; label: string | JSX.Element }[] = [
             { key: 'wounds', label: <><Icon id="journal/heal" size="sm" /> Soin de Blessures</> },
             { key: 'bleed', label: <><Icon id="condition/bleeding" size="sm" /> Arrêt d’hémorragie</> },
-            { key: 'trauma', label: '🦵 Soin de déchirure' },
-            { key: 'surgery', label: '🔪 Chirurgie' },
+            { key: 'trauma', label: <><Icon id="medical/tear" size="sm" /> Soin de déchirure</> },
+            { key: 'surgery', label: <><Icon id="medical/scalpel" size="sm" /> Chirurgie</> },
           ];
           const acts: { act: string; cost?: { gold?: number; silver?: number; brass?: number } }[] =
             e.acts ?? [];

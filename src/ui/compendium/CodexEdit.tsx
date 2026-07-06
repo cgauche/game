@@ -13,6 +13,7 @@ import { inferFields, type FieldDesc } from './editFields';
 import { entryKey, invalidateCodexLookup } from './registry';
 import { WEATHER_LABEL } from '../../engine/travelStages';
 import { RefField, refFieldCfg } from './RefField';
+import { Icon } from '../Icon';
 import { MonsterPartsFields } from '../editor/MonsterPartsFields';
 import { FlowEditor } from '../editor/FlowEditor';
 import { GameOpEditor, FormulaField } from '../editor/GameOpEditor';
@@ -307,9 +308,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
     <div className="codex-edit">
       <div className="codex-edit-bar">
         {!fs.FS_API && <span className="de-warn">FS Access indisponible — sauvegarde par téléchargement</span>}
-        {fs.FS_API && !dir && <button className="btn small" onClick={() => fs.connectDataDir().then((h) => { setDir(h); setNeedsGrant(false); }).catch(() => {})}>📁 Connecter src/data…</button>}
+        {fs.FS_API && !dir && <button className="btn small" onClick={() => fs.connectDataDir().then((h) => { setDir(h); setNeedsGrant(false); }).catch(() => {})}><Icon id="file/folder" size="sm" /> Connecter src/data…</button>}
         {fs.FS_API && dir && needsGrant && <button className="btn small" onClick={() => dir && fs.grantPermission(dir).then((ok) => ok && setNeedsGrant(false))}>Autoriser l'écriture</button>}
-        {fs.FS_API && dir && !needsGrant && <span className="de-ok">📁 connecté</span>}
+        {fs.FS_API && dir && !needsGrant && <span className="de-ok"><Icon id="file/folder" size="sm" /> connecté</span>}
         <span className="de-spacer" />
         {msg && <span className="de-msg">{msg}</span>}
         <button className="btn small" onClick={onClose}>Fermer</button>

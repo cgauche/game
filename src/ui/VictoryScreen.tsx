@@ -67,7 +67,7 @@ export function VictoryScreen() {
         )}
 
         <div className="victory-rewards">
-          <div className="victory-stat"><span className="vs-ico">✨</span> <b>{xp}</b> <span className="vs-unit">PX</span></div>
+          <div className="victory-stat"><span className="vs-ico"><Icon id="action/cast" size="sm" /></span> <b>{xp}</b> <span className="vs-unit">PX</span></div>
           <div className="victory-stat"><span className="vs-ico"><Icon id="resource/gold-purse" size="sm" /></span> <Coins money={gold} /></div>
         </div>
 
@@ -88,7 +88,7 @@ export function VictoryScreen() {
                         onClick={() => harvest(d.creatureId!)}
                         title="Récolter les pièces de monstre (Test de Savoir (Bêtes))"
                       >
-                        {done ? '✓ récolté' : '🔪 Récolter'}
+                        {done ? '✓ récolté' : <><Icon id="medical/scalpel" size="sm" /> Récolter</>}
                       </button>
                     )}
                   </span>

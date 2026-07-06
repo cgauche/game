@@ -195,7 +195,7 @@ export function CascadeModal() {
     return (
       <RollShell
         title={<>{p.icon ?? <Icon id="nav/dice" size="sm" />} {p.title}</>}
-        subtitle={<><strong>{cur.icon ?? '🤔'} {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        subtitle={<><strong>{cur.icon ?? <Icon id="journal/info" size="sm" />} {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         rolled
         rows={witnessRows(doneRows)}
         postRollExtra={

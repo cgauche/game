@@ -79,7 +79,7 @@ export function HealRollFlow({ embedded = false }: { embedded?: boolean }) {
   return (
     <RollShell
       embedded={embedded}
-      title={wounds ? <><Icon id="journal/heal" size="sm" /> Soigner les Blessures</> : trauma ? '🦵 Soigner une déchirure' : <><Icon id="condition/bleeding" size="sm" /> Arrêter l’Hémorragie</>}
+      title={wounds ? <><Icon id="journal/heal" size="sm" /> Soigner les Blessures</> : trauma ? <><Icon id="medical/tear" size="sm" /> Soigner une déchirure</> : <><Icon id="condition/bleeding" size="sm" /> Arrêter l’Hémorragie</>}
       subtitle={
         <>
           <strong>{ph.healerName}</strong> soigne <strong>{ph.targetName}</strong>{' '}

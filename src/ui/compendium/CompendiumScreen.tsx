@@ -187,10 +187,10 @@ export function CompendiumScreen({ focus: focusProp, onClose }: { focus?: CodexF
             <div className="codex-detail-actions">
               {selected && (
                 <button className="btn small" onClick={() => setEditing((v) => !v)}>
-                  {editing ? '↩︎ Voir la fiche' : '✏️ Éditer (DEV)'}
+                  {editing ? '↩︎ Voir la fiche' : <><Icon id="ui/edit" size="sm" /> Éditer (DEV)</>}
                 </button>
               )}
-              <button className="btn small" onClick={() => { setEditing(false); setCreating(true); }}>➕ Nouveau (DEV)</button>
+              <button className="btn small" onClick={() => { setEditing(false); setCreating(true); }}><Icon id="ui/add" size="sm" /> Nouveau (DEV)</button>
             </div>
           )}
           {creating && import.meta.env.DEV && cat && isEditableCategory(cat.key)

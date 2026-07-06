@@ -39,15 +39,13 @@ const ALLOWED_CHARS = new Set(['✓', '✗', '✔', '✘', '✕', '★', '⚜', 
  *  - `_registry.generated.ts` : en-tête « ⚠ généré » émis par scripts/gen-registry.mjs. */
 const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel.endsWith('_registry.generated.ts');
 
-/** EXCEPTIONS — fichiers pas encore migrés (état #139, passe 2026-07-06).
- *  La passe #139 a vidé 40 fichiers d'AFFORDANCE (boutons/labels/jetons dont l'emoji avait un
- *  équivalent clair au registre). Ce qui RESTE ici tombe dans deux familles à traiter séparément :
- *   (A) emoji SANS icône au registre — chaque affordance attend une def dessinée (ex. cadenas,
- *       panier, feu de bataille, mobilier de gîte, outils de l'éditeur de carte). C'est le vrai
- *       chantier restant : dessiner l'icône PUIS migrer, jamais forcer une réutilisation abusive.
- *   (B) emoji hors affordance (préfixes de LOG/journal côté state, `desc`/prose de donnée JSON,
- *       commentaires) — autre chantier, hors périmètre du garde d'affordance.
- *  Chaque groupe est justifié ; retirer les entrées au fil des migrations. */
+/** EXCEPTIONS — fichiers hors périmètre du garde d'AFFORDANCE (état #139, passe 2026-07-06 : la
+ *  famille A — 47 fichiers UI/éditeur, ~90 emoji, ~17 familles d'icônes créées — est ENTIÈREMENT
+ *  migrée). Ce qui reste ici est la famille (B) : emoji hors affordance — préfixes de LOG/journal
+ *  côté `src/state`, `desc`/prose de donnée `src/data/*.json`, descriptions narratives de scénarios
+ *  de test — jamais rendus comme icône UI, donc jamais migrés vers `<Icon>`. Un emoji de LOG n'est
+ *  PAS une affordance (bouton/badge/pastille) : c'est du texte de journal, au même titre qu'une
+ *  description JSON. Chaque entrée reste justifiée ; retirer si un fichier devient propre. */
 const EXCEPTIONS = new Set<string>([
   // Donnée JSON — emoji dans des `desc`/prose (famille B), pas des affordances.
   'src/data/etats.json',
@@ -87,57 +85,6 @@ const EXCEPTIONS = new Set<string>([
   'src/scenes/test-scenarios/bestiaire.ts',
   'src/scenes/test-scenarios/magie.ts',
   'src/scenes/test-scenarios/voyage.ts',
-  // Modales/écrans : emoji d'affordance SANS icône au registre (famille A) — dessiner la def
-  // manquante AVANT de migrer (audio, réglages, marchand, gîte/repas, météo, coop/présence…).
-  'src/ui/AppearancePanel.tsx',
-  'src/ui/AuContactModal.tsx',
-  'src/ui/AudioControls.tsx',
-  'src/ui/BackgroundPanel.tsx',
-  'src/ui/CascadeModal.tsx',
-  'src/ui/CastModal.tsx',
-  'src/ui/ChanceButtons.tsx',
-  'src/ui/CharacterSheet.tsx',
-  'src/ui/CoopPanels.tsx',
-  'src/ui/DisengageModal.tsx',
-  'src/ui/EquipmentPanel.tsx',
-  'src/ui/FateSaveModal.tsx',
-  'src/ui/ForceDoorModal.tsx',
-  'src/ui/ForcedRollPicker.tsx',
-  'src/ui/GameMenu.tsx',
-  'src/ui/GearAssignList.tsx',
-  'src/ui/GrappleModal.tsx',
-  'src/ui/HealModal.tsx',
-  'src/ui/ManannPriestModal.tsx',
-  'src/ui/MedicModal.tsx',
-  'src/ui/MerchantPanel.tsx',
-  'src/ui/MountTargetModal.tsx',
-  'src/ui/PortView.tsx',
-  'src/ui/ResilienceButton.tsx',
-  'src/ui/RestModal.tsx',
-  'src/ui/RunModal.tsx',
-  'src/ui/ShantyModal.tsx',
-  'src/ui/ShipBatteryModal.tsx',
-  'src/ui/ShipManeuverModal.tsx',
-  'src/ui/ShipSheet.tsx',
-  'src/ui/VictoryScreen.tsx',
-  'src/ui/ViewControls.tsx',
-  'src/ui/compendium/CodexEdit.tsx',
-  'src/ui/compendium/CompendiumScreen.tsx',
-  'src/ui/jetProps/useAttackJetProps.tsx',
-  'src/ui/jetProps/useExtendedTestJetProps.tsx',
-  // Éditeur de carte : glyphes d'outils (mur/porte/tente/maison/arbre/zone/gomme…) SANS icône
-  // au registre (famille A) — dessiner ces defs avant de migrer les rails/labels.
-  'src/ui/editor/Editor.tsx',
-  'src/ui/editor/EditorCanvas.tsx',
-  'src/ui/editor/EditorToolbar.tsx',
-  'src/ui/editor/EffectList.tsx',
-  'src/ui/editor/FlowEditor.tsx',
-  'src/ui/editor/GameOpEditor.tsx',
-  'src/ui/editor/Inspector.tsx',
-  'src/ui/editor/LogicDock.tsx',
-  'src/ui/editor/Palette.tsx',
-  'src/ui/editor/StatusBar.tsx',
-  'src/ui/editor/WorldMapEditor.tsx',
 ]);
 
 const isEmoji = (cp: number) => EMOJI_RANGES.some(([a, b]) => cp >= a && cp <= b);

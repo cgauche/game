@@ -4,6 +4,7 @@ import { testValue } from '../engine/skills';
 import { canReroll } from '../engine/fortune';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
+import { Icon } from './Icon';
 
 /**
  * Modale « Enfoncer une porte à PLUSIEURS » (EDO Appendice 2) — flux MULTI PARALLÈLE, pendant exact
@@ -45,7 +46,7 @@ export function ForceDoorModal() {
       row,
       rolled: !!res,
       interactive: owns(part.id),
-      rollLabel: '🔨 Frapper',
+      rollLabel: <><Icon id="action/attack" size="sm" /> Frapper</>,
       onRoll: () => roll(part.id),
       rerollable: !!res && canReroll(res.roll > res.target, !!part.rerolled),
       onReroll: () => reroll(part.id),
@@ -65,7 +66,7 @@ export function ForceDoorModal() {
 
   return (
     <RollShell
-      title="🚪 Enfoncer la porte"
+      title={<><Icon id="map-tool/door" size="sm" /> Enfoncer la porte</>}
       variant="roll"
       subtitle={<><strong>{p.label}</strong> — Endurance {p.doorBE} · Blessures {p.doorB}/{p.doorBmax}</>}
       instruction="Chacun frappe — Corps à corps (Bagarre), dégâts = DR + Bonus de Force − BE"

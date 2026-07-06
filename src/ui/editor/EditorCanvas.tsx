@@ -505,9 +505,7 @@ export function EditorCanvas({
                         />
                       );
                     })}
-                    <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="12" pointerEvents="none">
-                      ⛺
-                    </text>
+                    <IconG id="rest/camp" x={cx - 6} y={cy - 6} size={12} />
                   </g>
                 );
               })}
@@ -537,9 +535,7 @@ export function EditorCanvas({
                       );
                     })}
                     {bar ? (
-                      <text x={cx} y={cy + TH / 4} textAnchor="middle" fontSize="12" pointerEvents="none">
-                        🧱
-                      </text>
+                      <IconG id="map-tool/wall" x={cx - 6} y={cy - 6} size={12} />
                     ) : (
                       <IconG id="ui/warning" x={cx - 6} y={cy - 6} size={12} />
                     )}

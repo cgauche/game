@@ -48,7 +48,7 @@ export function ChanceButtons({
         ? 'Bénédiction de Chance : relance gratuite du Test raté — sans dépenser de Chance'
         : 'Dépense un point de Chance pour relancer le jet'}
     >
-      {freeReroll ? '🙏 Relancer' : <><Icon id="resource/fortune" size="sm" /> Relancer ×{fortune}</>}
+      {freeReroll ? <><Icon id="faith/prayer" size="sm" /> Relancer</> : <><Icon id="resource/fortune" size="sm" /> Relancer ×{fortune}</>}
     </button>
   );
   return (
@@ -56,7 +56,7 @@ export function ChanceButtons({
       {rerollBtn}
       {fortune > 0 && onBonusSL && (
         <button className="btn btn-resource" onClick={onBonusSL} title="Dépense un point de Chance pour ajouter +1 DR">
-          ➕ +1 DR ×{fortune}
+          <Icon id="ui/add" size="sm" /> +1 DR ×{fortune}
         </button>
       )}
       {pactBtn}

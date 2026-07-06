@@ -224,7 +224,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
           className="muted"
           title="Points de Péché : si le dé des unités d'un Test de Prière leur est inférieur ou égal, la Colère des dieux frappe — même sur un Test réussi. Chaque jet de Colère en expie 1."
         >
-          ⚖️ Péché : {hero.sinPoints}
+          <Icon id="ui/balance" size="sm" /> Péché : {hero.sinPoints}
         </span>
       )}
       <div className="spell-target">
@@ -252,7 +252,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
               <span className="spell-name">
                 <CodexRef category="spells" label={sp.label}>{sp.label}</CodexRef>
                 {sp.cn != null ? ` · NI ${sp.cn}` : ''}
-                {support === 'narratif' ? (<> <Icon id="nav/rules" size="sm" /></>) : support === 'partiel' ? ' 🟡' : ''}
+                {support === 'narratif' ? (<> <Icon id="nav/rules" size="sm" /></>) : support === 'partiel' ? (<> <Icon id="ui/partial" size="sm" /></>) : ''}
               </span>
               {offensive ? (
                 <span className="muted" title="Projectile magique : nécessite une cible ennemie (en combat)">
@@ -306,7 +306,7 @@ function SpellbookSection({ hero }: { hero: Combatant }) {
         return (
           <div className="spell-components">
             <span className="mini-title" title="Sacrifié à l'incantation pour dégrader une Incantation Imparfaite (Majeure → Mineure, Mineure → aucun effet) — LDB 46 l.158-163. Coût = NI pistoles d'argent.">
-              🜂 Composants d'incantation
+              <Icon id="magic/component" size="sm" /> Composants d'incantation
             </span>
             <div className="spell-list">
               {arcane.map((sp) => {
@@ -553,7 +553,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             ))}
             {(hero.traumas ?? []).map((t, i) => (
               <div key={`t${i}`} className="inv-row" title={t.desc} style={{ alignItems: 'center' }}>
-                <span className="ir-name">🩼 {t.label}{t.location ? ` (${locationLabel(t.location, hero.bodyShape)})` : ''}{t.count != null && t.count > 1 ? ` ×${t.count}` : ''}</span>
+                <span className="ir-name"><Icon id="medical/crutch" size="sm" /> {t.label}{t.location ? ` (${locationLabel(t.location, hero.bodyShape)})` : ''}{t.count != null && t.count > 1 ? ` ×${t.count}` : ''}</span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   {t.recoveryDays != null
                     ? `convalescence ${t.recoveryDays} j`
@@ -565,7 +565,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             ))}
             {(hero.diseases ?? []).map((d, i) => (
               <div key={`d${i}`} className="inv-row" title={d.symptoms.map((s) => `${symptomLabel(s.symptomId)}${s.spec ? ` (${s.spec})` : ''}`).join(' · ')} style={{ alignItems: 'center' }}>
-                <span className="ir-name">🦠 {d.name}</span>
+                <span className="ir-name"><Icon id="medical/infection" size="sm" /> {d.name}</span>
                 <span className="ir-stats" style={{ marginLeft: 'auto', opacity: 0.85 }}>
                   {d.phase === 'incubation' ? `incubation : ${formatRemaining(d.minutesLeft)}` : `${formatRemaining(d.minutesLeft)} restants`}
                 </span>
@@ -606,10 +606,10 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                   <ItemIcon item={it} size="sm" />
                   <div className="ir-main">
                     <span className="ir-name">
-                      <CodexRef category="trappings" label={it.name}>{it.name}</CodexRef>{skinned && ' ✨'}
+                      <CodexRef category="trappings" label={it.name}>{it.name}</CodexRef>{skinned && (<> <Icon id="action/cast" size="sm" /></>)}
                       {it.identified === false && (
                         <span className="ir-unid" title="Objet non identifié — Évaluer (ou Détecter l'artefact) pour révéler ses qualités" style={{ marginLeft: 6, fontSize: '0.78em', color: '#b388ff' }}>
-                          {it.magicKnown ? '✨ Magique — non identifié' : (<><Icon id="nav/identify" size="sm" /> Non identifié</>)}
+                          {it.magicKnown ? (<><Icon id="action/cast" size="sm" /> Magique — non identifié</>) : (<><Icon id="nav/identify" size="sm" /> Non identifié</>)}
                         </span>
                       )}
                     </span>
@@ -617,7 +617,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                   </div>
                   <span className="ir-enc">Enc {it.enc}</span>
                   {it.container && (
-                    <span className="ir-enc" title="Contenu rangé / capacité (Enc) — LDB 64">📦 {containerFillEnc(hero, it.uid)}/{it.container.capacity}</span>
+                    <span className="ir-enc" title="Contenu rangé / capacité (Enc) — LDB 64"><Icon id="item/misc" size="sm" /> {containerFillEnc(hero, it.uid)}/{it.container.capacity}</span>
                   )}
                   {it.identified === false && !inBattleNow && (
                     <>
@@ -635,7 +635,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       title="Skin légendaire (recoloriser cet objet)"
                       onClick={() => setSkinFor(open ? null : it.uid)}
                     >
-                      ✨
+                      <Icon id="action/cast" size="sm" />
                     </button>
                   )}
                   {isProsthesis && it.equipped && it.trappingId === 'crochet' && !it.prosthesisTrained && (
@@ -673,7 +673,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                     inBattleNow ? (
                       handLabel && (
                         <span className="ir-loadout on" title="Arme en main (verrouillé en combat — changez de set depuis la barre d’action)">
-                          ✋ {handLabel}
+                          <Icon id="item/weapon" size="sm" /> {handLabel}
                         </span>
                       )
                     ) : (
@@ -706,7 +706,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       align="right"
                       triggerClassName="btn small"
                       title="Ranger dans un contenant (LDB 64)"
-                      trigger="🎒"
+                      trigger={<Icon id="item/misc" size="sm" />}
                       options={containers.map((bag) => ({
                         key: bag.uid,
                         media: <ItemIcon item={bag} size="sm" />,
@@ -721,7 +721,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
                       align="right"
                       triggerClassName="btn small"
                       title="Donner cet objet à un autre héros"
-                      trigger="🎁"
+                      trigger={<Icon id="action/pick-up" size="sm" />}
                       options={party.filter((p) => p.id !== hero.id).map((p) => ({
                         key: p.id,
                         media: <CharFrame c={p} variant="identity" size="xs" />,
@@ -978,7 +978,7 @@ export function AdvancementPanel({ hero }: { hero: Combatant }) {
                 return (
                 <div className="adv-row acquire" key={spell.label} title={support !== 'mecanique' ? 'Tout ou partie de l’effet est journalisé (« arbitrage MJ ») — pas encore mécanisé.' : undefined}>
                   <span className="adv-name">
-                    <CodexRef category="spells" label={spell.label}>{spell.label}</CodexRef>{support === 'narratif' ? (<> <Icon id="nav/rules" size="sm" /></>) : support === 'partiel' ? ' 🟡' : ''}
+                    <CodexRef category="spells" label={spell.label}>{spell.label}</CodexRef>{support === 'narratif' ? (<> <Icon id="nav/rules" size="sm" /></>) : support === 'partiel' ? (<> <Icon id="ui/partial" size="sm" /></>) : ''}
                     <span className="muted"> · {spell.type}{spell.subType ? ` (${spell.subType})` : ''}{spell.cn != null ? ` · NI ${spell.cn}` : ''}</span>
                   </span>
                   <span className="adv-meta" />

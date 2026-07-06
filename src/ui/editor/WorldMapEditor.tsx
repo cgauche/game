@@ -5,7 +5,7 @@ import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travel
 import { LAND_CARGOES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
 import { CARGOES, type PortProfile } from '../../engine/seaVoyage';
 import { EffectList } from './EffectList';
-import { Icon } from '../Icon';
+import { Icon, IconG } from '../Icon';
 
 /** Libellés des Tailles de communauté (T2C ch.11 l.44-50, indices 1-4). */
 const TAILLE_LABELS = ['Hameau', 'Village', 'Ville', 'Grande ville'];
@@ -131,9 +131,9 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
             disabled={m.places.length < 2}
             title="Cliquez un 1ᵉʳ lieu (sélection), activez, puis cliquez le 2ᵉ lieu"
           >
-            {linkFrom ? `Lier depuis « ${placeById(m, linkFrom)?.label} »… (cliquer le 2ᵉ lieu)` : '🔗 Lier deux lieux'}
+            {linkFrom ? `Lier depuis « ${placeById(m, linkFrom)?.label} »… (cliquer le 2ᵉ lieu)` : <><Icon id="coop/invite" size="sm" /> Lier deux lieux</>}
           </button>
-          <button className="btn small" onClick={deleteSelected} disabled={!sel}>🗑 Supprimer la sélection</button>
+          <button className="btn small" onClick={deleteSelected} disabled={!sel}><Icon id="ui/delete" size="sm" /> Supprimer la sélection</button>
           <button className="btn small" onClick={() => { setMap(null); onClose(); }} title="Le projet n'offrira plus de voyage">
             Retirer la carte du projet
           </button>
@@ -183,7 +183,9 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
               >
                 {sel?.kind === 'place' && sel.id === p.id && <circle r="3.6" fill="none" stroke="#1d6fb8" strokeWidth="0.5" />}
                 {linkFrom === p.id && <circle r="3.6" fill="none" stroke="#8a2f1d" strokeWidth="0.5" strokeDasharray="1 0.7" />}
-                <text y="1.3" textAnchor="middle" fontSize="3.8">{p.icon ?? '📍'}</text>
+                {/* Icône LIBRE saisie par l'auteur (champ « Icône » ci-dessous, DONNÉE runtime — pas
+                    un emoji en dur ici) ; à défaut, l'épingle du registre. */}
+                {p.icon ? <text y="1.3" textAnchor="middle" fontSize="3.8">{p.icon}</text> : <IconG id="map-tool/pin" x={-2} y={-1.6} size={4} />}
                 <text y="5.6" textAnchor="middle" fontSize="2.6" fill="#3c2d14">{p.label}</text>
               </g>
             ))}
@@ -240,8 +242,8 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
               <label className="ed-field">Nom
                 <input value={selPlace.label} onChange={(e) => updPlace(selPlace.id, { label: e.target.value })} />
               </label>
-              <label className="ed-field">Icône (emoji)
-                <input value={selPlace.icon ?? ''} placeholder="📍" onChange={(e) => updPlace(selPlace.id, { icon: e.target.value || undefined })} />
+              <label className="ed-field">Icône (emoji libre — vide = épingle par défaut)
+                <input value={selPlace.icon ?? ''} placeholder="vide = épingle par défaut" onChange={(e) => updPlace(selPlace.id, { icon: e.target.value || undefined })} />
               </label>
               <label className="ed-field">Scène liée
                 <select value={selPlace.scene} onChange={(e) => updPlace(selPlace.id, { scene: e.target.value })}>
@@ -260,7 +262,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                   checked={!!selPlace.market}
                   onChange={(e) => updPlace(selPlace.id, { market: e.target.checked ? { taille: 2, richesse: 2, produits: [] } : undefined })}
                 />
-                🛒 Lieu de commerce (achat/vente de cargaison)
+                <Icon id="merchant/cart" size="sm" /> Lieu de commerce (achat/vente de cargaison)
               </label>
               {selPlace.market && (() => {
                 const mk = selPlace.market;
@@ -338,11 +340,11 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                     </label>
                     <label className="ed-check">
                       <input type="checkbox" checked={!!pt.cosmopolite} onChange={(e) => updPort({ cosmopolite: e.target.checked || undefined })} />
-                      🌍 Grand port cosmopolite (Marienburg/Lothern, l.343 — marchands supérieurs)
+                      <Icon id="travel/world" size="sm" /> Grand port cosmopolite (Marienburg/Lothern, l.343 — marchands supérieurs)
                     </label>
                     <label className="ed-check">
                       <input type="checkbox" checked={!!pt.lighthouse} onChange={(e) => updPort({ lighthouse: e.target.checked || undefined })} />
-                      🗼 Phare à l'approche (Test de Perception de vigie à l'atterrage, MDG ch.13 l.333-351)
+                      <Icon id="travel/lighthouse" size="sm" /> Phare à l'approche (Test de Perception de vigie à l'atterrage, MDG ch.13 l.333-351)
                     </label>
                     <div className="mini-title">Production (colonne Produits de l'Index)</div>
                     {PORT_PRODUITS.map((p) => (
@@ -436,7 +438,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                   checked={selRoute.inns ?? false}
                   onChange={(e) => updRoute(selRoute.id, { inns: e.target.checked || undefined })}
                 />
-                🛏 Relais d'auberges (la halte de nuit propose l'auberge)
+                <Icon id="rest/bed" size="sm" /> Relais d'auberges (la halte de nuit propose l'auberge)
               </label>
               {/* ── Route MARITIME (MDG ch.13-15) : se voyage sur le navire de campagne (mode « mer »), km en milles ── */}
               <label className="ed-check">
@@ -513,7 +515,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                     onChange={(effects) => updRoute(selRoute.id, { perils: selRoute.perils!.map((x, j) => (j === i ? { ...x, effects } : x)) })}
                   />
                   <button className="btn small" onClick={() => updRoute(selRoute.id, { perils: selRoute.perils!.filter((_, j) => j !== i) })}>
-                    🗑 Retirer cette péripétie
+                    <Icon id="ui/delete" size="sm" /> Retirer cette péripétie
                   </button>
                 </div>
               ))}

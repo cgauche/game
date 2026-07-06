@@ -95,4 +95,39 @@ export const icons: IconFamily = [
       `<path ${K} d="M5 12.4 C5 16.2 8.1 18.9 12 18.9 C15.9 18.9 19 16.2 19 12.4"/>` +
       `<path ${K} d="M5 12.4 L3.3 13.6 M5 12.4 L6.9 13.3 M19 12.4 L20.7 13.6 M19 12.4 L17.1 13.3"/>`,
   },
+  {
+    id: 'travel/repair',
+    label: 'Réparer',
+    // Clé plate posée en diagonale (chantier naval).
+    svg:
+      `<path ${K} d="M7.3 16.7 C5.4 16.7 3.9 15.1 3.9 13.3 C3.9 12.7 4.1 12.1 4.4 11.6 L8 15.1 L9.4 13.7 L5.9 10.2 C6.4 9.9 7 9.7 7.6 9.7 C9.4 9.7 11 11.2 11 13.1 C11 13.5 10.9 13.9 10.8 14.3 L16.9 20.4 L19.7 17.6 L13.6 11.5 C13.8 11.1 13.9 10.7 13.9 10.3 C13.9 8.4 12.3 6.9 10.4 6.9 C10.1 6.9 9.8 6.9 9.6 7 L12.4 9.7 L11 11.1 L8.2 8.3 C8 8.6 7.9 8.9 7.9 9.3"/>`,
+  },
+  {
+    id: 'travel/careen',
+    label: 'Caréner',
+    // Coquillage de salissure gratté (racloir).
+    svg:
+      `<path ${K} d="M8.6 15.3 C6.4 13.8 5.6 11.4 6.6 8.9 C7.6 6.4 10.3 5.1 12.9 5.9 C15.5 6.7 17 9.3 16.4 11.9"/>` +
+      `<path ${KF} d="M9.6 12.3 C9.1 11.1 9.3 9.9 10.1 9 M12.6 13.1 C12 11.7 12.1 10.2 13.1 9"/>` +
+      `<path ${K} d="M16 15.3 L19.6 18.9 M19.6 15.3 L16 18.9"/>`,
+  },
+  {
+    id: 'travel/world',
+    label: 'Port cosmopolite',
+    // Globe : méridien et parallèle sur un disque.
+    svg:
+      `<circle ${K} cx="12" cy="12" r="8.1"/>` +
+      `<path ${K} d="M3.9 12 H20.1"/>` +
+      `<path ${KF} d="M12 3.9 C14.7 6.4 16.1 9.1 16.1 12 C16.1 14.9 14.7 17.6 12 20.1 C9.3 17.6 7.9 14.9 7.9 12 C7.9 9.1 9.3 6.4 12 3.9 Z"/>`,
+  },
+  {
+    id: 'travel/lighthouse',
+    label: 'Phare',
+    // Tour de phare rayée, faisceau de lumière.
+    svg:
+      `<path ${K} d="M9.7 21.1 L10.6 6.3 H13.4 L14.3 21.1 Z"/>` +
+      `<path ${F} d="M10.3 10.6 H13.7 V13 H10.3 Z M9.9 16.6 H14.1 V19 H9.9 Z"/>` +
+      `<path ${F} d="M9.4 4.4 H14.6 L13.7 6.3 H10.3 Z"/>` +
+      `<path ${KF} d="M15.3 8.4 L19.3 6.6 M15.6 12 H20.1"/>`,
+  },
 ];

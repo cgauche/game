@@ -62,8 +62,8 @@ export function PortView() {
         <button type="button" className="btn small" onClick={close}>✕ Fermer</button>
       </div>
       <div className="port-tabs">
-        <button type="button" className={`btn small ${tab === 'coque' ? 'btn-primary' : ''}`} onClick={() => setTab('coque')}>🔧 Chantier</button>
-        <button type="button" className={`btn small ${tab === 'cargaison' ? 'btn-primary' : ''}`} onClick={() => setTab('cargaison')}>📦 Cargaison</button>
+        <button type="button" className={`btn small ${tab === 'coque' ? 'btn-primary' : ''}`} onClick={() => setTab('coque')}><Icon id="travel/repair" size="sm" /> Chantier</button>
+        <button type="button" className={`btn small ${tab === 'cargaison' ? 'btn-primary' : ''}`} onClick={() => setTab('cargaison')}><Icon id="item/misc" size="sm" /> Cargaison</button>
         <span className="port-purse">Bourse : <b><Coins money={money} /></b></span>
       </div>
 
@@ -80,7 +80,7 @@ export function PortView() {
                 title={missing <= 0 && !(vessel.criticals?.length) ? 'La coque est intacte.' : `1 CO par Blessure restaurée (MDG 13 l.643)${lissage ? ' · +50 % coque lissée' : ''}`}
                 onClick={repair}
               >
-                🔧 Réparer{missing > 0 ? ` — ${missing} Blessure(s), ${repairCost} CO` : ''}
+                <Icon id="travel/repair" size="sm" /> Réparer{missing > 0 ? ` — ${missing} Blessure(s), ${repairCost} CO` : ''}
               </button>
               <p className="port-hint">Salissures : niveau <b>{foulLevel}</b>{vessel.crabs ? ' · crabes boxeurs' : ''}{foulLevel > 0 ? ` — ${foulingEffects(foulLevel).desc}` : ''}</p>
               <button
@@ -90,7 +90,7 @@ export function PortView() {
                 title={foulLevel <= 0 && !vessel.crabs ? 'La coque est propre.' : `Cale sèche — ${careenPct} % du coût de base (MDG 13 l.152)`}
                 onClick={careen}
               >
-                🦪 Caréner{careenCost > 0 ? ` — ${careenCost} CO` : ''}
+                <Icon id="travel/careen" size="sm" /> Caréner{careenCost > 0 ? ` — ${careenCost} CO` : ''}
               </button>
             </section>
             <section className="panel port-section">

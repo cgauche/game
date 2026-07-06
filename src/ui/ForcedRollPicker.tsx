@@ -24,7 +24,7 @@ export function CritLocationPicker({ current, onSet, shape = 'humanoide' }: {
   }));
   return (
     <div className="rm-options">
-      <span className="mini-title">🔥 Localisation du Coup Critique (Je ne faillirai pas !)</span>
+      <span className="mini-title"><Icon id="fire/flame" size="sm" /> Localisation du Coup Critique (Je ne faillirai pas !)</span>
       <OptionChooser options={options} layout="grid" />
     </div>
   );

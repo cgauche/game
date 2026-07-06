@@ -193,7 +193,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
         <div className="eq-loc-row eq-loc-cape">
           <span className="eq-loc-head">
             <span className="eq-loc-name">Cape</span>
-            <span className="eq-loc-pa" title="Purement cosmétique — aucun effet de règles">✨</span>
+            <span className="eq-loc-pa" title="Purement cosmétique — aucun effet de règles"><Icon id="action/cast" size="sm" /></span>
           </span>
           <SlotCell
             item={wornCape}
@@ -267,7 +267,7 @@ export function EquipmentPanel({ hero }: { hero: Combatant }) {
                     {setActive ? '● Actif' : 'Activer'}
                   </button>
                   {canDelete && (
-                    <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}>🗑</button>
+                    <button className="btn small" disabled={inBattle} title={lockTitle ?? 'Supprimer ce set'} onClick={() => deleteLoadout(hero.id, lo.id)}><Icon id="ui/delete" size="sm" /></button>
                   )}
                 </span>
               </div>

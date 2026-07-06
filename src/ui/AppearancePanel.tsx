@@ -3,6 +3,7 @@ import type { Appearance } from '../gameIso/rig/appearance';
 import type { EquipCtx } from '../gameIso/rig/parts/equipment';
 import { ColorPalettePickers } from './ColorPalettePickers';
 import { hairstylesForSex } from '../gameIso/rig/parts/hairstyles';
+import { Icon } from './Icon';
 
 /**
  * Panneau d'apparence réutilisable (créateur de personnage). GRAND aperçu live du rig (c'est la
@@ -65,7 +66,7 @@ export function AppearancePanel({
           <label>
             Visage
             <button type="button" className="btn small" onClick={() => set({ seed: (value.seed ?? 0) + 1 })}>
-              🎲 Variante
+              <Icon id="nav/dice" size="sm" /> Variante
             </button>
           </label>
         </div>

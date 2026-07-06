@@ -13,19 +13,20 @@ import { toBrass } from '../engine/money';
 import { GameDate } from './GameDate';
 import { ownsLocally } from '../state/netFlow';
 import { Icon } from './Icon';
+import type { IconIdInput } from './icons';
 import type { Combatant } from '../engine/types';
 
-const LODGING_META: Record<RestLodging, { icon: string; label: string }> = {
-  privee: { icon: '🛏', label: 'Privée' },
-  commune: { icon: '🛋', label: 'Commune' },
-  maison: { icon: '🏠', label: 'Chez soi' },
-  dehors: { icon: '⛺', label: 'Dehors' },
+const LODGING_META: Record<RestLodging, { icon: IconIdInput; label: string }> = {
+  privee: { icon: 'rest/bed', label: 'Privée' },
+  commune: { icon: 'rest/couch', label: 'Commune' },
+  maison: { icon: 'rest/home', label: 'Chez soi' },
+  dehors: { icon: 'rest/camp', label: 'Dehors' },
 };
-const FOOD_META: Record<RestFood, { icon: string; label: string }> = {
-  repas: { icon: '🍲', label: 'Repas' },
-  maison: { icon: '🥘', label: 'Maison' },
-  ration: { icon: '🎒', label: 'Ration' },
-  rien: { icon: '🚫', label: 'Rien' },
+const FOOD_META: Record<RestFood, { icon: IconIdInput; label: string }> = {
+  repas: { icon: 'rest/stew', label: 'Repas' },
+  maison: { icon: 'rest/feast', label: 'Maison' },
+  ration: { icon: 'item/misc', label: 'Ration' },
+  rien: { icon: 'ui/forbidden', label: 'Rien' },
 };
 
 /** Avertissements de la ligne d'un héros (info de DÉCISION, pas de texte tuto). */
@@ -35,7 +36,7 @@ function heroWarnings(h: Combatant, lodging: RestLodging, food: RestFood, exposu
     out.push(<><Icon id="ui/warning" size="sm" /> à stabiliser (pas de repos réparateur)</>);
   }
   if (food === 'rien') out.push(<><Icon id="ui/warning" size="sm" /> ventre vide</>);
-  if (lodging === 'dehors' && exposureTests > 0) out.push(`🥶 Exposition ×${exposureTests}`);
+  if (lodging === 'dehors' && exposureTests > 0) out.push(<><Icon id="rest/cold" size="sm" /> Exposition ×{exposureTests}</>);
   return out;
 }
 
@@ -60,7 +61,7 @@ export function RestModal() {
   const state = useGame();
   if (!p) return null;
 
-  const title = p.places.auberge ? '🛏 Nuit à l’auberge' : p.places.maison ? '🌙 Nuit chez soi' : '⛺ Campement';
+  const title = p.places.auberge ? <><Icon id="rest/bed" size="sm" /> Nuit à l’auberge</> : p.places.maison ? <><Icon id="time/night" size="sm" /> Nuit chez soi</> : <><Icon id="rest/camp" size="sm" /> Campement</>;
 
   // ── Phase BILAN : le temps écoulé + tous les jets de la nuit sur UN écran ──
   if (p.phase === 'bilan') {
@@ -92,7 +93,7 @@ export function RestModal() {
   const canPay = toBrass(cost) === 0 || toBrass(money) >= toBrass(cost);
 
   return (
-    <Modal title={`${title}${p.days > 1 ? ` — ${p.days} nuits` : ''}${p.quality === 'pietre' ? ' (piètre)' : ''}`} variant="plain" className="rest-modal" onClose={p.travelHalt ? undefined : () => restCancel()}>
+    <Modal title={<>{title}{p.days > 1 ? ` — ${p.days} nuits` : ''}{p.quality === 'pietre' ? ' (piètre)' : ''}</>} variant="plain" className="rest-modal" onClose={p.travelHalt ? undefined : () => restCancel()}>
       {/* HALTE de voyage : le RAPPORT DU JOUR se lit le soir même (km, péripéties, jets en
           lignes multijet) — avant de régler la nuit. Même corps que le recap (TravelDayBody). */}
       {p.travelDay && (
@@ -104,7 +105,7 @@ export function RestModal() {
         </div>
       )}
       {severity !== 'clement' && (
-        <p className="rest-weather">{severity === 'extreme' ? '🌩 Temps de chien' : '🌧 Mauvais temps'}{sheltered ? ' — la tente abritera le camp' : ''}</p>
+        <p className="rest-weather">{severity === 'extreme' ? <><Icon id="rest/storm" size="sm" /> Temps de chien</> : <><Icon id="rest/rain" size="sm" /> Mauvais temps</>}{sheltered ? ' — la tente abritera le camp' : ''}</p>
       )}
       <div className="rest-rows">
         {party.filter((h) => !h.dead && p.perHero[h.id]).map((h) => {
@@ -118,12 +119,12 @@ export function RestModal() {
                 <OptionChooser
                   layout="seg"
                   groupLabel="Couchage"
-                  options={lodgingOptions(p.places).map((l) => ({ key: l, label: <>{LODGING_META[l].icon} {LODGING_META[l].label}</>, selected: cfg.lodging === l, disabled: !mine, onSelect: () => restSet(h.id, { lodging: l }) }))}
+                  options={lodgingOptions(p.places).map((l) => ({ key: l, label: <><Icon id={LODGING_META[l].icon} size="sm" /> {LODGING_META[l].label}</>, selected: cfg.lodging === l, disabled: !mine, onSelect: () => restSet(h.id, { lodging: l }) }))}
                 />
                 <OptionChooser
                   layout="seg"
                   groupLabel="Nourriture"
-                  options={foodOptions(p.places, h).map((f) => ({ key: f, label: <>{FOOD_META[f].icon} {FOOD_META[f].label}</>, selected: cfg.food === f, disabled: !mine, onSelect: () => restSet(h.id, { food: f }) }))}
+                  options={foodOptions(p.places, h).map((f) => ({ key: f, label: <><Icon id={FOOD_META[f].icon} size="sm" /> {FOOD_META[f].label}</>, selected: cfg.food === f, disabled: !mine, onSelect: () => restSet(h.id, { food: f }) }))}
                 />
                 {warns.length > 0 && (
                   <span className="rest-warn">
@@ -162,7 +163,7 @@ export function RestModal() {
         )}
         {(!online || net.mode === 'host') && (
           <button className="btn btn-primary" disabled={!canPay || !allReady} onClick={() => restSleep()} title={!canPay ? 'Pas assez d’argent — choisissez des couchages plus modestes' : undefined}>
-            🌙 Dormir jusqu’à l’aube
+            <Icon id="time/night" size="sm" /> Dormir jusqu’à l’aube
           </button>
         )}
       </div>

@@ -23,19 +23,19 @@ const LAYER_LABEL: Record<keyof Layers, string> = {
 export function toolLabel(tool: Tool): ReactNode {
   switch (tool.mode) {
     case 'select': return '↖ Sélection';
-    case 'tile': return `🖌 ${TERRAINS[tool.terrain]?.label ?? tool.terrain}`;
+    case 'tile': return <><Icon id="map-tool/paint" size="sm" /> {TERRAINS[tool.terrain]?.label ?? tool.terrain}</>;
     case 'entity':
-      if (tool.kind === 'prop') return `🌳 ${PROPS[tool.ref ?? '']?.label ?? 'Décor'}`;
-      if (tool.kind === 'personnage') return `🙂 ${tool.ref ?? 'Villageois'}`;
-      return `🏁 ${KIND_LABEL[tool.kind]}`;
-    case 'roof': return `🏠 ${BUILDINGS_META[tool.style]?.label ?? tool.style}`;
-    case 'zone': return tool.zone === 'trigger' ? '🟦 Zone trigger' : '⛺ Zone de repos';
+      if (tool.kind === 'prop') return <><Icon id="map-tool/prop" size="sm" /> {PROPS[tool.ref ?? '']?.label ?? 'Décor'}</>;
+      if (tool.kind === 'personnage') return <><Icon id="map-tool/npc" size="sm" /> {tool.ref ?? 'Villageois'}</>;
+      return <><Icon id="map-tool/start-flag" size="sm" /> {KIND_LABEL[tool.kind]}</>;
+    case 'roof': return <><Icon id="rest/home" size="sm" /> {BUILDINGS_META[tool.style]?.label ?? tool.style}</>;
+    case 'zone': return tool.zone === 'trigger' ? <><Icon id="map-tool/zone" size="sm" /> Zone trigger</> : <><Icon id="rest/camp" size="sm" /> Zone de repos</>;
     case 'entry': return <><Icon id="nav/entry-point" size="sm" /> Point d’entrée</>;
     case 'encounter': return <><Icon id="action/attack" size="sm" /> Placer des ennemis</>;
     case 'emplacement': return <><Icon id="scenario/siege" size="sm" /> {SIEGE_ENGINES.find((t) => t.id === tool.trappingId)?.label ?? 'Emplacement'}</>;
-    case 'wall': return tool.paint === 'door' ? '🧱 Porte' : tool.paint === 'diagBack' || tool.paint === 'diagFwd' ? '🧱 Diagonale' : '🧱 Cloison';
-    case 'height': return `⛰ Hauteur ${tool.metres} m`;
-    case 'erase': return '🧽 Gomme';
+    case 'wall': return tool.paint === 'door' ? <><Icon id="map-tool/door" size="sm" /> Porte</> : tool.paint === 'diagBack' || tool.paint === 'diagFwd' ? <><Icon id="map-tool/wall" size="sm" /> Diagonale</> : <><Icon id="map-tool/wall" size="sm" /> Cloison</>;
+    case 'height': return <><Icon id="map-tool/height" size="sm" /> Hauteur {tool.metres} m</>;
+    case 'erase': return <><Icon id="map-tool/erase" size="sm" /> Gomme</>;
   }
 }
 

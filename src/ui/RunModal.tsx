@@ -8,6 +8,7 @@ import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeRun } from '../state/flowOutcomes';
+import { Icon } from './Icon';
 
 /**
  * Modale de Course (LDB 15-Déplacement l.79-82) : « Lancer » jette le Test d'Athlétisme (+20),
@@ -60,7 +61,7 @@ export function RunModal() {
 
   return (
     <RollShell
-      title="🏃 Course"
+      title={<><Icon id="melee/flee" size="sm" /> Course</>}
       subtitle={
         <>
           <strong>{c.name}</strong> s'élance (Test {c.mountId ? 'de Chevaucher' : "d'Athlétisme"} +20)

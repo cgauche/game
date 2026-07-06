@@ -1,5 +1,6 @@
 import { useGame } from '../state/store';
 import { CharFrame } from './CharFrame';
+import { Icon } from './Icon';
 
 /**
  * Briques coop PARTAGÉES (lobby « Jouer en ligne » ET menu ☰ en partie) : code de room à
@@ -15,14 +16,14 @@ export function CoopRoomPanel() {
     <div className="coop-invite">
       <div className="coop-code" title="Copier le code" onClick={() => copy(net.roomCode!)}>{net.roomCode}</div>
       <div className="bar">
-        <button className="btn small" onClick={() => copy(net.roomCode!)}>📋 Code</button>
-        <button className="btn small" onClick={() => copy(link)}>🔗 Lien d'invitation</button>
+        <button className="btn small" onClick={() => copy(net.roomCode!)}><Icon id="coop/code" size="sm" /> Code</button>
+        <button className="btn small" onClick={() => copy(link)}><Icon id="coop/invite" size="sm" /> Lien d'invitation</button>
       </div>
     </div>
   );
 }
 
-/** Sièges + présence (🟢 connecté / 🟠 reconnexion) — partagé lobby et menu ☰. */
+/** Sièges + présence (connecté / reconnexion) — partagé lobby et menu ☰. */
 export function CoopSeatList() {
   const net = useGame((s) => s.net);
   const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
@@ -30,7 +31,7 @@ export function CoopSeatList() {
     <ul className="coop-seats">
       {seats.map(({ seat, name }) => (
         <li key={seat} className={net.presence[seat] === 'away' ? 'away' : undefined}>
-          {seat === 0 ? '👑' : net.presence[seat] === 'away' ? '🟠' : '🟢'} {name}
+          <Icon id={seat === 0 ? 'coop/host' : net.presence[seat] === 'away' ? 'coop/away' : 'coop/online'} size="sm" /> {name}
           {seat === net.mySeat ? ' (vous)' : ''}
           {net.presence[seat] === 'away' ? ' — reconnexion…' : ''}
         </li>
@@ -106,7 +107,7 @@ export function CoopMenuSection() {
   if (net.mode !== 'host') return null;
   return (
     <div className="gm-section">
-      <span className="mini-title">🌐 Coop — joueurs</span>
+      <span className="mini-title"><Icon id="nav/online" size="sm" /> Coop — joueurs</span>
       <CoopSeatList />
       <CoopRoomPanel />
       <CoopAssignList />

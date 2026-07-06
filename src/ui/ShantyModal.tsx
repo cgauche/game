@@ -7,6 +7,7 @@ import { findSeaShantyById } from '../data';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { OptionChooser } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
+import { Icon } from './Icon';
 
 /**
  * Modale de CHANSON DE MARIN (Talent, MDG 09 l.32-40) : le pré-jet est un MENU (OptionChooser) des
@@ -59,7 +60,7 @@ export function ShantyModal() {
 
   return (
     <RollShell
-      title="🎶 Chanson de marin"
+      title={<><Icon id="audio/music" size="sm" /> Chanson de marin</>}
       subtitle={<><strong>{singer.name}</strong> entonne pour l'équipage (Test de Divertissement (Chant), MDG 09)</>}
       setup={
         <OptionChooser
@@ -79,7 +80,7 @@ export function ShantyModal() {
       outcome={r && chosen && (
         <div className="rm-journal">
           {r.success
-            ? <>🎶 « {chosen.label} » porte {3 + Math.max(0, r.sl)} minute(s) : {chosen.desc}{chosen.note && <em className="muted"> — {chosen.note}</em>}</>
+            ? <><Icon id="audio/music" size="sm" /> « {chosen.label} » porte {3 + Math.max(0, r.sl)} minute(s) : {chosen.desc}{chosen.note && <em className="muted"> — {chosen.note}</em>}</>
             : <>La chanson tombe à plat — aucun effet (le quart est consommé).</>}
         </div>
       )}

@@ -50,7 +50,7 @@ export function PosteDetail({ hull, poste, combatants }: { hull: Combatant; post
       <span className="ship-poste-name"><Icon id="action/aim" size="sm" /> {poste.side ? SIDE_LABEL[poste.side] ?? poste.side : 'Omni'} · {poste.item.name}</span>
       {stock.length > 0 && (
         <label className="ship-poste-ammo">
-          <span aria-hidden>🧨</span>
+          <span aria-hidden><Icon id="fire/blast" size="sm" /></span>
           <select
             value={poste.ammoUid ?? stock[0].uid}
             onChange={(e) => setPosteAmmo(hull.id, poste.item.uid, e.target.value)}

@@ -14,7 +14,7 @@ import { Icon } from './Icon';
 const TURN_OPTIONS: { key: string; label: string; steps: number }[] = [
   { key: 'b90', label: '⟲ Bâbord 90°', steps: -2 },
   { key: 'b45', label: '↰ Bâbord 45°', steps: -1 },
-  { key: 'straight', label: '⬆ Tout droit', steps: 0 },
+  { key: 'straight', label: '↑ Tout droit', steps: 0 },
   { key: 't45', label: '↱ Tribord 45°', steps: 1 },
   { key: 't90', label: '⟳ Tribord 90°', steps: 2 },
 ];

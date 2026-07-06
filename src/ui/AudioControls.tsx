@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { getVolume, getMusicVolume, isMuted, setMuted, setVolume, setMusicVolume, playSfx } from '../audio/engine';
+import { Icon } from './Icon';
 
 /** Contrôles audio du menu ☰ (Jalon 8 — sons CC0) : sourdine globale + volumes effets/musique,
  *  persistants. Bouger le volume d'effets joue un échantillon ; la musique s'ajuste en direct. */
@@ -21,7 +22,7 @@ export function AudioControls() {
             setMute(!muted);
           }}
         >
-          {muted ? '🔇' : '🔊'}
+          <Icon id={muted ? 'audio/mute' : 'audio/volume'} size="sm" />
         </button>
         <input
           type="range"
@@ -41,7 +42,7 @@ export function AudioControls() {
         />
       </div>
       <div className="audio-controls">
-        <span className="audio-icon" aria-hidden>🎵</span>
+        <span className="audio-icon" aria-hidden><Icon id="audio/music" size="sm" /></span>
         <input
           type="range"
           min={0}

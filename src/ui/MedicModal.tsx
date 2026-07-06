@@ -20,8 +20,8 @@ import { Icon } from './Icon';
 const ACT_META: Record<HealMode, { icon: ReactNode; label: string }> = {
   wounds: { icon: <Icon id="journal/heal" size="sm" />, label: 'Soigner les Blessures' },
   bleed: { icon: <Icon id="condition/bleeding" size="sm" />, label: 'Arrêter l’Hémorragie' },
-  trauma: { icon: '🦵', label: 'Soigner la déchirure' },
-  surgery: { icon: '🔪', label: 'Opérer' },
+  trauma: { icon: <Icon id="medical/tear" size="sm" />, label: 'Soigner la déchirure' },
+  surgery: { icon: <Icon id="medical/scalpel" size="sm" />, label: 'Opérer' },
 };
 
 /** Pourquoi un acte est grisé — affiché en title (info de décision, pas de texte tuto). */
@@ -90,7 +90,7 @@ function SurgeryRollFlow() {
   return (
     <RollShell
       embedded
-      title="🔪 Opérer (une passe)"
+      title={<><Icon id="medical/scalpel" size="sm" /> Opérer (une passe)</>}
       subtitle={
         <>
           <strong>{ps.healerName}</strong> opère <strong>{ps.targetName}</strong>{' '}
@@ -189,7 +189,7 @@ export function MedicModal() {
                   <button className="btn btn-ghost" onClick={cancelSurgery} title={sg.last ? 'Le cumul de DR est perdu' : 'Renoncer (acte remboursé)'}>
                     Arrêter l’opération
                   </button>
-                  <button className="btn btn-primary" onClick={openPass}>🔪 Opérer (une passe)</button>
+                  <button className="btn btn-primary" onClick={openPass}><Icon id="medical/scalpel" size="sm" /> Opérer (une passe)</button>
                 </div>
               )}
             </div>

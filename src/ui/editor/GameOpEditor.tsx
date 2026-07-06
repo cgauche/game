@@ -20,6 +20,8 @@ import { giveTrappingLabel } from '../../engine/items';
 import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
 import { closeDetails } from './EffectList';
 import { JsonField } from './JsonField';
+import { Icon } from '../Icon';
+import type { IconIdInput } from '../icons';
 
 const SIZES = Object.keys(SIZE_LABEL) as SizeCategory[];
 
@@ -31,121 +33,156 @@ const csv = (s: string): string[] => s.split(',').map((x) => x.trim()).filter(Bo
 // Vocabulaire COMPLET — libellé + menu groupé par intention
 // ---------------------------------------------------------------------------
 
-/** Libellé court (avec icône) de CHAQUE op du vocabulaire `GameOp`. */
+/** Libellé court (texte SEUL, sert aussi de `<option>` natif) de CHAQUE op du vocabulaire `GameOp`. */
 const OP_LABEL: Record<GameOp['op'], string> = {
-  wounds: '💥 Blessures (ignore BE/PA)',
-  heal: '❤️ Soin (Blessures rendues)',
-  healCaster: '❤️ Soin au lanceur',
-  condition: '🌀 Poser un État',
-  removeCondition: '🌬️ Retirer un État',
-  charMod: '📊 Modif. de caractéristique',
-  ap: '🛡️ +PA (Localisation ou toutes)',
-  testMod: '📉 Modif. à tous les Tests',
-  skillDRBonus: '🥷 +DR à une Compétence',
-  charDRBonus: '🎖️ +DR aux Tests d’une Caractéristique',
-  offTerrainMod: '🌊 Hors de son terrain (M imposé, ±DR)',
-  crewTestMod: '⚓ Modif. aux Tests individuels d’un Test d’équipage',
-  incomingAttackMod: '🛡️ Modif. au toucher de l’attaquant',
-  incomingAdvantage: '⚔️ Avantage donné à l’attaquant (mêlée)',
-  sbBonus: '💪 +Bonus de Force aux Dégâts',
-  endPsych: '🧠 Fin d’un état psychologique',
-  exposeDisease: '🦠 Exposer à une Maladie (Test post-combat)',
-  contractDisease: '🦠 Contracter une Maladie (immédiat)',
-  removeShipPoste: '⚓ Retirer un poste de navire (Canon perdu)',
-  teamCommander: '🎖️ Diriger l’équipe (score de Projectiles du commandant)', // posé par l'action « Diriger l'équipe » ; hors palette d'auteur (commanderId interne)
-  attackKeyword: '✨ Mot-clé d’attaque (ex. magique)',
-  mitigateIncoming: '🌫️ Mitige les Dégâts entrants (Éthéré)',
-  ignoreStatePenalties: '🚫 Ignore les pénalités d’État',
-  freeReroll: '🔁 Relance gratuite (prochain échec)',
-  critTwice: '🎯 Deux lancers de Critique (meilleur)',
-  gainResource: '🍀 Points de Chance / Destin',
-  gainAdvantage: '⚔️ Porter l’Avantage à (min)',
-  attrMod: '🎲 Modif. d’attribut secondaire',
-  corruption: '🧬 Points de Corruption',
-  sinMod: '⚖️ Points de Péché (±)',
-  corruptionExposure: '🧿 Exposition corruptrice (Test différé)',
-  castPenalty: '🔮 Contrecoup d’incantation',
-  castWard: '🔮 Aura anti-Sort (−20 Langue)',
-  arrowWard: '🏹 Bouclier anti-projectiles',
-  domeWard: '🛡️ Dôme protecteur',
-  attackWardFM: '🛡️ Attaquer exige un Test de FM',
-  grantWeapon: '🐾 Invoquer une arme magique',
-  grantNaturalWeapon: '🐾 Accorder une arme naturelle',
-  grantFreeAttack: '⚔️ Accorder une attaque gratuite',
-  interruptFocus: '🔮 Interrompre la Focalisation', // marqueur combat-interne (branche d’échec du Test de Calme) — non author-pickable
-  breakBlade: '🗡️ Désarmer / briser la lame', // marqueur combat-interne (victoire du Test de Piège-lame) — non author-pickable
-  push: '➡️ Poussée (repousser de N m)',
-  teleport: '✨ Téléportation du lanceur',
-  chain: '⚡ Attaques en chaîne (rebond)',
+  wounds: 'Blessures (ignore BE/PA)',
+  heal: 'Soin (Blessures rendues)',
+  healCaster: 'Soin au lanceur',
+  condition: 'Poser un État',
+  removeCondition: 'Retirer un État',
+  charMod: 'Modif. de caractéristique',
+  ap: '+PA (Localisation ou toutes)',
+  testMod: 'Modif. à tous les Tests',
+  skillDRBonus: '+DR à une Compétence',
+  charDRBonus: '+DR aux Tests d’une Caractéristique',
+  offTerrainMod: 'Hors de son terrain (M imposé, ±DR)',
+  crewTestMod: 'Modif. aux Tests individuels d’un Test d’équipage',
+  incomingAttackMod: 'Modif. au toucher de l’attaquant',
+  incomingAdvantage: 'Avantage donné à l’attaquant (mêlée)',
+  sbBonus: '+Bonus de Force aux Dégâts',
+  endPsych: 'Fin d’un état psychologique',
+  exposeDisease: 'Exposer à une Maladie (Test post-combat)',
+  contractDisease: 'Contracter une Maladie (immédiat)',
+  removeShipPoste: 'Retirer un poste de navire (Canon perdu)',
+  teamCommander: 'Diriger l’équipe (score de Projectiles du commandant)', // posé par l'action « Diriger l'équipe » ; hors palette d'auteur (commanderId interne)
+  attackKeyword: 'Mot-clé d’attaque (ex. magique)',
+  mitigateIncoming: 'Mitige les Dégâts entrants (Éthéré)',
+  ignoreStatePenalties: 'Ignore les pénalités d’État',
+  freeReroll: 'Relance gratuite (prochain échec)',
+  critTwice: 'Deux lancers de Critique (meilleur)',
+  gainResource: 'Points de Chance / Destin',
+  gainAdvantage: 'Porter l’Avantage à (min)',
+  attrMod: 'Modif. d’attribut secondaire',
+  corruption: 'Points de Corruption',
+  sinMod: 'Points de Péché (±)',
+  corruptionExposure: 'Exposition corruptrice (Test différé)',
+  castPenalty: 'Contrecoup d’incantation',
+  castWard: 'Aura anti-Sort (−20 Langue)',
+  arrowWard: 'Bouclier anti-projectiles',
+  domeWard: 'Dôme protecteur',
+  attackWardFM: 'Attaquer exige un Test de FM',
+  grantWeapon: 'Invoquer une arme magique',
+  grantNaturalWeapon: 'Accorder une arme naturelle',
+  grantFreeAttack: 'Accorder une attaque gratuite',
+  interruptFocus: 'Interrompre la Focalisation', // marqueur combat-interne (branche d’échec du Test de Calme) — non author-pickable
+  breakBlade: 'Désarmer / briser la lame', // marqueur combat-interne (victoire du Test de Piège-lame) — non author-pickable
+  push: 'Poussée (repousser de N m)',
+  teleport: 'Téléportation du lanceur',
+  chain: 'Attaques en chaîne (rebond)',
 
-  grantTrait: '🐾 Accorder un Trait',
-  grantPsychTrait: '🧠 Accorder un Trait psychologique',
-  removePsychTrait: '🧠 Retirer un Trait psychologique',
-  grantTalent: '🐾 Accorder un Talent',
-  grantCareerSkill: '🎓 Compétence ajoutée aux carrières',
-  grantCareerTalent: '🎓 Talent ajouté aux carrières',
-  augmentWeapon: '🗡️ Enchanter l’arme',
-  cureDisease: '🩹 Guérir des maladies',
-  reduceDiseaseDays: '🩹 Raccourcir une maladie',
-  preventInfection: '🩹 Empêcher l’infection',
-  cureCriticalWound: '🩹 Guérir une Blessure critique',
-  diseaseTestMod: '🩹 Modif. aux Tests d’une maladie',
-  suppressSymptom: '🩹 Suspendre un symptôme',
-  actGate: '🌿 Test par Round pour agir (drogue)',
-  delayed: '⏳ Ops différées (échéance d’horloge)',
-  suppressPsych: '🌫️ Apaiser les Traits psychologiques',
-  suffocate: '🌫️ Suffocation',
-  noBreath: '🌫️ Plus besoin de respirer',
-  noHunger: '🌫️ Plus besoin de manger',
-  weatherWard: '🌫️ Immunité aux intempéries',
-  damageArmour: '🌫️ Pourrir le cuir (−1 PA)',
-  reduceToZero: '🌫️ Réduire les Blessures à 0',
-  banish: '🌀 Bannir (retirer du jeu)',
-  martyr: '🌫️ Martyr (recevoir les Dégâts)',
-  giveTrapping: '🎒 Donner un objet',
-  perRound: '🔄 Effet récurrent (chaque Round)',
-  summon: '🐺 Invoquer une créature',
-  scheduleRespawn: '⏳ Reconstitution différée (à la mort)', // marqueur de DONNÉE (op onSlain, non author-pickable)
-  zone: '🌐 Zone persistante (mur / disque)',
-  polymorph: '🦌 Métamorphose en créature',
-  transform: '🐺 Transformation durable (réversible)',
-  endTransform: '🔙 Fin de transformation',
-  lifeSteal: '🩸 Vol de vie (drain de Blessures)',
-  light: '💡 Émettre de la lumière (rayon)',
-  skillMod: '🎯 Modif. d’une Compétence',
-  moveScale: '🦵 Échelle de Mouvement (×n/d)',
-  moveMod: '🦵 Modif. de Mouvement (±N)',
-  maxWeaponHands: '✋ Plafond de mains d’arme',
-  disarm: '✋ Lâcher l’objet tenu (main)',
-  senseLoss: '👁️ Perte sensorielle (œil/oreille)',
-  loseTurn: '⏭️ Perdre Action + Mouvement',
-  weaponRollMod: '⚔️ Atout d’arme — modif. de jet (passif)',
-  weaponDamageMod: '💥 Atout d’arme — modif. de Dégâts (passif)',
-  armourPierce: '🗡️ Atout d’arme — Perforante (passif)',
-  critOnRoll: '🎯 Atout d’arme — Critique sur jet (passif)',
-  spendAdvantage: '⬇️ Dépenser de l’Avantage',
-  rollThreshold: '🎲 Jet à paliers (un dé → ops par seuil)',
-  intoxicate: '🍺 Boisson alcoolisée (échec de Résistance à l’alcool)',
-  narrative: '📝 Effet narratif (texte libre)',
+  grantTrait: 'Accorder un Trait',
+  grantPsychTrait: 'Accorder un Trait psychologique',
+  removePsychTrait: 'Retirer un Trait psychologique',
+  grantTalent: 'Accorder un Talent',
+  grantCareerSkill: 'Compétence ajoutée aux carrières',
+  grantCareerTalent: 'Talent ajouté aux carrières',
+  augmentWeapon: 'Enchanter l’arme',
+  cureDisease: 'Guérir des maladies',
+  reduceDiseaseDays: 'Raccourcir une maladie',
+  preventInfection: 'Empêcher l’infection',
+  cureCriticalWound: 'Guérir une Blessure critique',
+  diseaseTestMod: 'Modif. aux Tests d’une maladie',
+  suppressSymptom: 'Suspendre un symptôme',
+  actGate: 'Test par Round pour agir (drogue)',
+  delayed: 'Ops différées (échéance d’horloge)',
+  suppressPsych: 'Apaiser les Traits psychologiques',
+  suffocate: 'Suffocation',
+  noBreath: 'Plus besoin de respirer',
+  noHunger: 'Plus besoin de manger',
+  weatherWard: 'Immunité aux intempéries',
+  damageArmour: 'Pourrir le cuir (−1 PA)',
+  reduceToZero: 'Réduire les Blessures à 0',
+  banish: 'Bannir (retirer du jeu)',
+  martyr: 'Martyr (recevoir les Dégâts)',
+  giveTrapping: 'Donner un objet',
+  perRound: 'Effet récurrent (chaque Round)',
+  summon: 'Invoquer une créature',
+  scheduleRespawn: 'Reconstitution différée (à la mort)', // marqueur de DONNÉE (op onSlain, non author-pickable)
+  zone: 'Zone persistante (mur / disque)',
+  polymorph: 'Métamorphose en créature',
+  transform: 'Transformation durable (réversible)',
+  endTransform: 'Fin de transformation',
+  lifeSteal: 'Vol de vie (drain de Blessures)',
+  light: 'Émettre de la lumière (rayon)',
+  skillMod: 'Modif. d’une Compétence',
+  moveScale: 'Échelle de Mouvement (×n/d)',
+  moveMod: 'Modif. de Mouvement (±N)',
+  maxWeaponHands: 'Plafond de mains d’arme',
+  disarm: 'Lâcher l’objet tenu (main)',
+  senseLoss: 'Perte sensorielle (œil/oreille)',
+  loseTurn: 'Perdre Action + Mouvement',
+  weaponRollMod: 'Atout d’arme — modif. de jet (passif)',
+  weaponDamageMod: 'Atout d’arme — modif. de Dégâts (passif)',
+  armourPierce: 'Atout d’arme — Perforante (passif)',
+  critOnRoll: 'Atout d’arme — Critique sur jet (passif)',
+  spendAdvantage: 'Dépenser de l’Avantage',
+  rollThreshold: 'Jet à paliers (un dé → ops par seuil)',
+  intoxicate: 'Boisson alcoolisée (échec de Résistance à l’alcool)',
+  narrative: 'Effet narratif (texte libre)',
 };
 
-/** Menu « + op » : TOUTES les op du vocabulaire, groupées par intention d'auteur. */
+/** Icône de CHAQUE op (rendue à côté du libellé partout SAUF dans le `<select>`/`<optgroup>` natif,
+ *  qui ne peut afficher que du texte) — vocabulaire LARGE : plusieurs ops apparentées partagent
+ *  la même icône (cf. defs/mechanic.ts, « pas une métaphore par op individuelle »). */
+const OP_ICON: Record<GameOp['op'], IconIdInput> = {
+  wounds: 'journal/damage', heal: 'journal/heal', healCaster: 'journal/heal',
+  condition: 'magic/area', removeCondition: 'magic/gust',
+  charMod: 'mechanic/stat-mod', ap: 'mechanic/ward', testMod: 'mechanic/stat-mod',
+  skillDRBonus: 'mechanic/stat-mod', charDRBonus: 'mechanic/stat-mod', offTerrainMod: 'mechanic/stat-mod',
+  crewTestMod: 'travel/anchor', incomingAttackMod: 'mechanic/ward', incomingAdvantage: 'flag/focus',
+  sbBonus: 'char/f', endPsych: 'mechanic/mind', exposeDisease: 'medical/infection', contractDisease: 'medical/infection',
+  removeShipPoste: 'travel/anchor', teamCommander: 'action/lead', attackKeyword: 'item/weapon',
+  mitigateIncoming: 'mechanic/ward', ignoreStatePenalties: 'ui/done', freeReroll: 'resource/fortune',
+  critTwice: 'journal/critical', gainResource: 'resource/fortune', gainAdvantage: 'flag/focus',
+  attrMod: 'resource/fortune', corruption: 'nav/mutation', sinMod: 'ui/balance', corruptionExposure: 'nav/mutation',
+  castPenalty: 'mechanic/ward', castWard: 'mechanic/ward', arrowWard: 'mechanic/ward', domeWard: 'mechanic/ward',
+  attackWardFM: 'mechanic/ward', grantWeapon: 'mechanic/invoke', grantNaturalWeapon: 'mechanic/invoke',
+  grantFreeAttack: 'action/free-attack', interruptFocus: 'mechanic/mind', breakBlade: 'item/weapon',
+  push: 'mechanic/chain', teleport: 'mechanic/chain', chain: 'mechanic/chain',
+  grantTrait: 'mechanic/invoke', grantPsychTrait: 'mechanic/mind', removePsychTrait: 'mechanic/mind',
+  grantTalent: 'mechanic/invoke', grantCareerSkill: 'mechanic/invoke', grantCareerTalent: 'mechanic/invoke',
+  augmentWeapon: 'item/weapon', cureDisease: 'medical/infection', reduceDiseaseDays: 'medical/infection',
+  preventInfection: 'medical/infection', cureCriticalWound: 'medical/crutch', diseaseTestMod: 'medical/infection',
+  suppressSymptom: 'medical/infection', actGate: 'ui/wait', delayed: 'ui/wait', suppressPsych: 'mechanic/mind',
+  suffocate: 'mechanic/ward', noBreath: 'mechanic/ward', noHunger: 'mechanic/ward', weatherWard: 'mechanic/ward',
+  damageArmour: 'item/armour', reduceToZero: 'journal/damage', banish: 'magic/area', martyr: 'action/defend',
+  giveTrapping: 'item/misc', perRound: 'ui/wait', summon: 'mechanic/invoke', scheduleRespawn: 'ui/wait',
+  zone: 'scenario/trap', polymorph: 'mechanic/invoke', transform: 'mechanic/invoke', endTransform: 'ui/wait',
+  lifeSteal: 'condition/bleeding', light: 'fire/flame', skillMod: 'mechanic/stat-mod',
+  moveScale: 'resource/movement', moveMod: 'resource/movement', maxWeaponHands: 'item/weapon', disarm: 'item/weapon',
+  senseLoss: 'ui/eye', loseTurn: 'ui/wait', weaponRollMod: 'item/weapon', weaponDamageMod: 'item/weapon',
+  armourPierce: 'item/weapon', critOnRoll: 'journal/critical', spendAdvantage: 'flag/focus', rollThreshold: 'nav/dice',
+  intoxicate: 'item/consumable', narrative: 'journal/detail',
+};
+
+/** Menu « + op » : TOUTES les op du vocabulaire, groupées par intention d'auteur. Libellé de groupe =
+ *  texte SEUL (sert aussi d'`<optgroup label>` natif, qui ne peut afficher que du texte). */
 const OP_GROUPS: [string, GameOp['op'][]][] = [
-  ['💥 Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish']],
-  ['🌀 États', ['condition', 'removeCondition']],
-  ['📊 Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'skillDRBonus', 'charDRBonus', 'crewTestMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
-  ['✨ Ressources', ['gainResource', 'corruption', 'sinMod', 'corruptionExposure']],
-  ['🔮 Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
-  ['🐾 Invocation & armes', ['summon', 'polymorph', 'transform', 'endTransform', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'grantTalent', 'augmentWeapon']],
-  ['🌐 Zones', ['zone']],
-  ['🪄 Projection & téléportation', ['push', 'teleport', 'chain']],
-  ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom']],
-  ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
-  ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'senseLoss']],
-  ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
-  ['🎲 Contrôle', ['rollThreshold', 'spendAdvantage']],
-  ['🎓 Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
-  ['📝 Narration', ['narrative']],
+  ['Dégâts & soin', ['wounds', 'heal', 'healCaster', 'lifeSteal', 'reduceToZero', 'banish']],
+  ['États', ['condition', 'removeCondition']],
+  ['Buffs & caractéristiques', ['charMod', 'ap', 'testMod', 'skillDRBonus', 'charDRBonus', 'crewTestMod', 'ignoreStatePenalties', 'freeReroll', 'critTwice']],
+  ['Ressources', ['gainResource', 'corruption', 'sinMod', 'corruptionExposure']],
+  ['Incantation & contrecoup', ['castPenalty', 'castWard', 'arrowWard', 'domeWard', 'attackWardFM']],
+  ['Invocation & armes', ['summon', 'polymorph', 'transform', 'endTransform', 'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'grantTrait', 'grantPsychTrait', 'removePsychTrait', 'grantTalent', 'augmentWeapon']],
+  ['Zones', ['zone']],
+  ['Projection & téléportation', ['push', 'teleport', 'chain']],
+  ['Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom']],
+  ['Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
+  ['Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'senseLoss']],
+  ['Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
+  ['Contrôle', ['rollThreshold', 'spendAdvantage']],
+  ['Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
+  ['Narration', ['narrative']],
 ];
 
 // ---------------------------------------------------------------------------
@@ -350,79 +387,78 @@ export function newOp(op: GameOp['op'] | string): GameOp {
 // ---------------------------------------------------------------------------
 
 export function opSummary(o: GameOp): string {
-  const L = OP_LABEL[o.op]?.split(' ')[0] ?? '⚙️';
   switch (o.op) {
-    case 'wounds': return `${L} ${formulaSummary(o.amount)} Blessure(s)`;
-    case 'heal': return `${L} +${formulaSummary(o.amount)} PB`;
-    case 'healCaster': return `${L} +${formulaSummary(o.amount)} PB au lanceur`;
-    case 'condition': return `${L} ${o.name}${o.value && o.value !== 1 ? ` ×${formulaSummary(o.value)}` : ''}${o.perRound ? '/Round' : ''}`;
-    case 'removeCondition': return `${L} ${o.name ?? '(au choix)'}`;
-    case 'endPsych': return `${L} ${o.type}`;
-    case 'sbBonus': return `${L} +${o.amount} BF aux Dégâts`;
-    case 'charMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
-    case 'skillMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
-    case 'skillDRBonus': return `${L} +${formulaSummary(o.bonus)} DR ${refLabel('skills', { id: o.skill })}${o.spec ? ` (${o.spec})` : ''}`;
-    case 'charDRBonus': return `${L} +${formulaSummary(o.bonus)} DR ${CHAR_LABELS[o.char] ?? o.char}`;
-    case 'crewTestMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} (Tests d’équipage)`;
-    case 'moveMod': return `${L} ${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
-    case 'offTerrainMod': return `${L} hors ${o.terrain}${o.mSet != null ? ` : M ${o.mSet}` : ''}${o.testDR ? `, ${o.testDR} DR aux Tests` : ''}`;
-    case 'attrMod': return `${L} +${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;
-    case 'ap': return `${L} +${formulaSummary(o.amount)} PA${o.loc ? ` (${o.loc})` : ''}`;
-    case 'testMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char] ?? o.char}` : ''}`;
-    case 'ignoreStatePenalties': return `${L} ignore les pénalités d’État`;
-    case 'freeReroll': return `${L} relance gratuite`;
-    case 'critTwice': return `${L} deux lancers de Critique`;
-    case 'gainResource': return `${L} +${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
-    case 'corruption': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}${o.align ? ` (${CHAOS_ALIGN_LABELS[o.align as ChaosAlign]})` : ''}`;
-    case 'sinMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount}`;
-    case 'corruptionExposure': return `${L} ${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', { id: o.skill })})` : ''}`;
-    case 'castPenalty': return `${L} ${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
-    case 'castWard': return `${L} −20 Langue, rayon ${formulaSummary(o.radius)} m`;
-    case 'arrowWard': return `${L} rayon ${formulaSummary(o.radius)} m`;
-    case 'domeWard': return `${L} rayon ${formulaSummary(o.radius)} m`;
-    case 'attackWardFM': return `${L} l’attaquer exige un Test de FM`;
-    case 'grantWeapon': return `${L} ${o.name} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
-    case 'grantNaturalWeapon': return `${L} ${o.name} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
-    case 'grantTrait': return `${L} ${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
-    case 'grantPsychTrait': return `${L} ${o.psychType}${o.cible ? ` (${o.cible})` : ''}`;
-    case 'grantTalent': return `${L} ${talentConcrete(o)}`;
-    case 'grantCareerSkill': return `${L} ${refLabel('skills', { id: o.skillId, spec: o.spec })}`;
-    case 'grantCareerTalent': return `${L} ${refLabel('talents', { id: o.talentId, spec: o.spec })}`;
-    case 'augmentWeapon': return `${L} ${[...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
-    case 'cureDisease': return `${L} ${o.count ?? 1} maladie(s)`;
-    case 'reduceDiseaseDays': return `${L} −${o.dice ? `${o.dice.n}d${o.dice.sides}` : (o.days ?? 1)} jour(s)${o.disease ? ` (${refLabel('maladies', { id: o.disease })})` : ''}`;
-    case 'diseaseTestMod': return `${L} ${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie${o.diseases?.length ? ` (${o.diseases.map((d) => refLabel('maladies', { id: d })).join(', ')})` : ''}`;
-    case 'suppressSymptom': return `${L} ${refLabel('symptoms', { id: o.symptomId })} suspendu`;
-    case 'actGate': return `${L} Test de ${CHAR_LABELS[o.char] ?? o.char} chaque Round pour agir`;
-    case 'delayed': return `${L} ${o.ops.length} op(s) différée(s)${o.afterDuration ? ' (à la dissipation)' : ''}`;
-    case 'preventInfection': return `${L} pas d’infection`;
-    case 'cureCriticalWound': return `${L} ${o.count ?? 1} critique(s)`;
-    case 'suppressPsych': return `${L} Traits psy. apaisés`;
-    case 'suffocate': return `${L} suffocation`;
-    case 'noBreath': return `${L} plus besoin de respirer`;
-    case 'noHunger': return `${L} plus besoin de manger`;
-    case 'weatherWard': return `${L} immunité aux intempéries`;
-    case 'damageArmour': return `${L} cuir −1 PA`;
-    case 'reduceToZero': return `${L} Blessures à 0`;
-    case 'banish': return `${L} retirée du jeu`;
-    case 'martyr': return `${L} reçoit les Dégâts`;
-    case 'giveTrapping': return `${L} ${o.count && o.count > 1 ? `${o.count}× ` : ''}${giveTrappingLabel(o)}`;
-    case 'perRound': return `${L} ${o.ops.length} op(s) chaque Round`;
-    case 'summon': return `${L} ${formulaSummary(o.count)}× ${o.ref}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
-    case 'scheduleRespawn': return `${L} ${o.ref} dans ${formulaSummary(o.delayDays)} j${o.cancelFlag ? ` (sauf « ${o.cancelFlag} »)` : ''}`;
-    case 'zone': return `${L} ${o.shape === 'wall' ? `mur ${formulaSummary(o.lengthMeters ?? 2)} m` : `disque ${formulaSummary(o.radiusMeters ?? 2)} m`}`;
-    case 'push': return `${L} ${formulaSummary(o.meters)} m`;
-    case 'teleport': return `${L} ${formulaSummary(o.meters)} m${o.perSL ? ` (+${formulaSummary(o.perSL.metersFormula)}/${o.perSL.every} DR)` : ''}`;
-    case 'chain': return `${L} ${formulaSummary(o.maxBounces)} rebond(s), saut ${formulaSummary(o.hopMeters)} m`;
-    case 'polymorph': return `${L} ${o.ref}`;
-    case 'transform': return `${L} « ${o.tag} » (${o.ops.length} effet(s)${o.morphRef ? `, apparence ${o.morphRef}` : ''})`;
-    case 'endTransform': return `${L} « ${o.tag} »`;
-    case 'lifeSteal': return `${L} ${o.num}/${o.den} des Dégâts`;
-    case 'loseTurn': return `${L} saute le tour`;
-    case 'removeShipPoste': return `${L} retire un poste de navire`;
-    case 'rollThreshold': return `${L} 1d${o.sides} → ${o.thresholds.length} palier(s)`;
-    case 'narrative': return `${L} ${o.text ? `« ${o.text.length > 40 ? `${o.text.slice(0, 39)}…` : o.text}` + ' »' : '(vide)'}`;
-    default: return `⚙️ ${(o as GameOp).op}`;
+    case 'wounds': return `${formulaSummary(o.amount)} Blessure(s)`;
+    case 'heal': return `+${formulaSummary(o.amount)} PB`;
+    case 'healCaster': return `+${formulaSummary(o.amount)} PB au lanceur`;
+    case 'condition': return `${o.name}${o.value && o.value !== 1 ? ` ×${formulaSummary(o.value)}` : ''}${o.perRound ? '/Round' : ''}`;
+    case 'removeCondition': return `${o.name ?? '(au choix)'}`;
+    case 'endPsych': return `${o.type}`;
+    case 'sbBonus': return `+${o.amount} BF aux Dégâts`;
+    case 'charMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
+    case 'skillMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
+    case 'skillDRBonus': return `+${formulaSummary(o.bonus)} DR ${refLabel('skills', { id: o.skill })}${o.spec ? ` (${o.spec})` : ''}`;
+    case 'charDRBonus': return `+${formulaSummary(o.bonus)} DR ${CHAR_LABELS[o.char] ?? o.char}`;
+    case 'crewTestMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} (Tests d’équipage)`;
+    case 'moveMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
+    case 'offTerrainMod': return `hors ${o.terrain}${o.mSet != null ? ` : M ${o.mSet}` : ''}${o.testDR ? `, ${o.testDR} DR aux Tests` : ''}`;
+    case 'attrMod': return `+${formulaSummary(o.mod)} ${({ wounds: 'Blessures', fortune: 'Chance', resolve: 'Détermination', fate: 'Destin', resilience: 'Résilience' } as const)[o.attr]}`;
+    case 'ap': return `+${formulaSummary(o.amount)} PA${o.loc ? ` (${o.loc})` : ''}`;
+    case 'testMod': return `${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests${o.char ? ` de ${CHAR_LABELS[o.char] ?? o.char}` : ''}`;
+    case 'ignoreStatePenalties': return 'ignore les pénalités d’État';
+    case 'freeReroll': return 'relance gratuite';
+    case 'critTwice': return 'deux lancers de Critique';
+    case 'gainResource': return `+${o.amount} ${o.resource === 'fate' ? 'Destin' : 'Chance'}${o.temporary ? ' (temp.)' : ''}`;
+    case 'corruption': return `${o.amount >= 0 ? '+' : ''}${o.amount}${o.align ? ` (${CHAOS_ALIGN_LABELS[o.align as ChaosAlign]})` : ''}`;
+    case 'sinMod': return `${o.amount >= 0 ? '+' : ''}${o.amount}`;
+    case 'corruptionExposure': return `${EXPOSURE_LABELS[o.level as ExposureLevel] ?? o.level}${o.skill ? ` (${refLabel('skills', { id: o.skill })})` : ''}`;
+    case 'castPenalty': return `${o.blocked ? 'magie interdite' : o.maxZeroDR ? 'Prière plafonnée' : `${o.mod ?? 0} ${o.skill}`}`;
+    case 'castWard': return `−20 Langue, rayon ${formulaSummary(o.radius)} m`;
+    case 'arrowWard': return `rayon ${formulaSummary(o.radius)} m`;
+    case 'domeWard': return `rayon ${formulaSummary(o.radius)} m`;
+    case 'attackWardFM': return 'l’attaquer exige un Test de FM';
+    case 'grantWeapon': return `${o.name} (Dégâts ${o.plusBF ? 'BF+' : ''}${formulaSummary(o.damage)})`;
+    case 'grantNaturalWeapon': return `${o.name} (${o.plusBF !== false ? 'BF+' : ''}${formulaSummary(o.damage)})`;
+    case 'grantTrait': return `${formatTrait({ id: o.traitId, arg: o.arg })}${o.indice != null ? ` ${formulaSummary(o.indice)}` : ''}`;
+    case 'grantPsychTrait': return `${o.psychType}${o.cible ? ` (${o.cible})` : ''}`;
+    case 'grantTalent': return `${talentConcrete(o)}`;
+    case 'grantCareerSkill': return `${refLabel('skills', { id: o.skillId, spec: o.spec })}`;
+    case 'grantCareerTalent': return `${refLabel('talents', { id: o.talentId, spec: o.spec })}`;
+    case 'augmentWeapon': return `${[...(o.addQualities ?? []).map((id) => qualityRefLabel({ id })), o.damageBonus != null ? `+${formulaSummary(o.damageBonus)} Dégâts` : ''].filter(Boolean).join(', ') || '(vide)'}`;
+    case 'cureDisease': return `${o.count ?? 1} maladie(s)`;
+    case 'reduceDiseaseDays': return `−${o.dice ? `${o.dice.n}d${o.dice.sides}` : (o.days ?? 1)} jour(s)${o.disease ? ` (${refLabel('maladies', { id: o.disease })})` : ''}`;
+    case 'diseaseTestMod': return `${o.amount >= 0 ? '+' : ''}${o.amount} aux Tests de maladie${o.diseases?.length ? ` (${o.diseases.map((d) => refLabel('maladies', { id: d })).join(', ')})` : ''}`;
+    case 'suppressSymptom': return `${refLabel('symptoms', { id: o.symptomId })} suspendu`;
+    case 'actGate': return `Test de ${CHAR_LABELS[o.char] ?? o.char} chaque Round pour agir`;
+    case 'delayed': return `${o.ops.length} op(s) différée(s)${o.afterDuration ? ' (à la dissipation)' : ''}`;
+    case 'preventInfection': return 'pas d’infection';
+    case 'cureCriticalWound': return `${o.count ?? 1} critique(s)`;
+    case 'suppressPsych': return 'Traits psy. apaisés';
+    case 'suffocate': return 'suffocation';
+    case 'noBreath': return 'plus besoin de respirer';
+    case 'noHunger': return 'plus besoin de manger';
+    case 'weatherWard': return 'immunité aux intempéries';
+    case 'damageArmour': return 'cuir −1 PA';
+    case 'reduceToZero': return 'Blessures à 0';
+    case 'banish': return 'retirée du jeu';
+    case 'martyr': return 'reçoit les Dégâts';
+    case 'giveTrapping': return `${o.count && o.count > 1 ? `${o.count}× ` : ''}${giveTrappingLabel(o)}`;
+    case 'perRound': return `${o.ops.length} op(s) chaque Round`;
+    case 'summon': return `${formulaSummary(o.count)}× ${o.ref}${o.allyOfCaster === false ? ' (hostile)' : ''}`;
+    case 'scheduleRespawn': return `${o.ref} dans ${formulaSummary(o.delayDays)} j${o.cancelFlag ? ` (sauf « ${o.cancelFlag} »)` : ''}`;
+    case 'zone': return `${o.shape === 'wall' ? `mur ${formulaSummary(o.lengthMeters ?? 2)} m` : `disque ${formulaSummary(o.radiusMeters ?? 2)} m`}`;
+    case 'push': return `${formulaSummary(o.meters)} m`;
+    case 'teleport': return `${formulaSummary(o.meters)} m${o.perSL ? ` (+${formulaSummary(o.perSL.metersFormula)}/${o.perSL.every} DR)` : ''}`;
+    case 'chain': return `${formulaSummary(o.maxBounces)} rebond(s), saut ${formulaSummary(o.hopMeters)} m`;
+    case 'polymorph': return `${o.ref}`;
+    case 'transform': return `« ${o.tag} » (${o.ops.length} effet(s)${o.morphRef ? `, apparence ${o.morphRef}` : ''})`;
+    case 'endTransform': return `« ${o.tag} »`;
+    case 'lifeSteal': return `${o.num}/${o.den} des Dégâts`;
+    case 'loseTurn': return 'saute le tour';
+    case 'removeShipPoste': return 'retire un poste de navire';
+    case 'rollThreshold': return `1d${o.sides} → ${o.thresholds.length} palier(s)`;
+    case 'narrative': return `${o.text ? `« ${o.text.length > 40 ? `${o.text.slice(0, 39)}…` : o.text}` + ' »' : '(vide)'}`;
+    default: return `${(o as GameOp).op}`;
   }
 }
 
@@ -653,7 +689,7 @@ export function GameOpEditor({ ops, onChange }: { ops: GameOp[]; onChange: (ops:
       {ops.map((o, i) => (
         <details className="eff-row" key={i}>
           <summary>
-            <span className="eff-summary">{opSummary(o)}</span>
+            <span className="eff-summary"><Icon id={OP_ICON[o.op] ?? 'journal/detail'} size="sm" /> {opSummary(o)}</span>
             <span className="eff-actions" onClick={(e) => e.preventDefault()}>
               <button className="btn small" title="Monter" disabled={i === 0} onClick={() => swap(i, i - 1)}>↑</button>
               <button className="btn small" title="Descendre" disabled={i === ops.length - 1} onClick={() => swap(i, i + 1)}>↓</button>
@@ -671,7 +707,7 @@ export function GameOpEditor({ ops, onChange }: { ops: GameOp[]; onChange: (ops:
               <div className="mini-title">{g}</div>
               {keys.map((k) => (
                 <button key={k} className="eff-add-item" onClick={(e) => { onChange([...ops, newOp(k)]); closeDetails(e.currentTarget); }}>
-                  {OP_LABEL[k]}
+                  <Icon id={OP_ICON[k]} size="sm" /> {OP_LABEL[k]}
                 </button>
               ))}
             </div>

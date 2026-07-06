@@ -41,9 +41,9 @@ const seqOf = (steps: Flow[]): Flow => ({ kind: 'seq', steps });
 function nodeSummary(node: Flow, ctx: Ctx): string | JSX.Element {
   switch (node.kind) {
     case 'do': return effectSummary(node.effect, ctx);
-    case 'if': return `🔀 Si ${condSummary(node.cond)}${node.else != null ? ' · sinon…' : ''}`;
+    case 'if': return <><Icon id="ui/branch" size="sm" /> Si {condSummary(node.cond)}{node.else != null ? ' · sinon…' : ''}</>;
     case 'test': return <><Icon id="nav/dice" size="sm" /> Test {node.test.skill ? refLabel('skills', { id: node.test.skill, spec: node.test.spec }) : (node.test.characteristic || '?')} → ✓ / ✗</>;
-    case 'choice': return `⚖️ Choix${node.cost ? ` (${node.cost.advantage} Av)` : ''} « ${node.prompt} » → ✓ / ✗`;
+    case 'choice': return <><Icon id="ui/balance" size="sm" /> Choix{node.cost ? ` (${node.cost.advantage} Av)` : ''} « {node.prompt} » → ✓ / ✗</>;
     case 'seq': return `▸ ${node.steps.length} bloc(s)`;
   }
 }
@@ -116,8 +116,8 @@ function FlowAddMenu({ onAdd }: { onAdd: (node: Flow) => void }) {
       <summary className="btn small">+ Bloc</summary>
       <div className="eff-add-menu panel">
         <div className="eff-add-group">
-          <div className="mini-title">🔀 Logique</div>
-          <button className="eff-add-item" onClick={pick({ kind: 'if', cond: { kind: 'flag', expr: '' }, then: EMPTY_FLOW })}>🔀 Condition (si…)</button>
+          <div className="mini-title"><Icon id="ui/branch" size="sm" /> Logique</div>
+          <button className="eff-add-item" onClick={pick({ kind: 'if', cond: { kind: 'flag', expr: '' }, then: EMPTY_FLOW })}><Icon id="ui/branch" size="sm" /> Condition (si…)</button>
           <button className="eff-add-item" onClick={pick({ kind: 'test', test: { skill: '', difficulty: 'intermediaire', requireSL: 0 }, success: EMPTY_FLOW, fail: EMPTY_FLOW })}><Icon id="nav/dice" size="sm" /> Test de compétence</button>
         </div>
         {EFFECT_GROUPS.map(([g, types]) => (

@@ -31,7 +31,7 @@ export function FateSaveModal() {
           layout="grid"
           options={[
             { key: 'negate', label: <><Icon id="resource/fortune" size="sm" /> Comment ça a pu rater ?</>, hidden: p.source !== 'hit', onSelect: negate, title: 'Évite tout le coup et reste en combat (Destin −1)' },
-            { key: 'survive', label: '🛟 Meurs un autre jour', onSelect: survive, title: 'Survit mais quitte le combat (Destin −1)' },
+            { key: 'survive', label: <><Icon id="resource/lifeline" size="sm" /> Meurs un autre jour</>, onSelect: survive, title: 'Survit mais quitte le combat (Destin −1)' },
           ]}
         />
       </div>

@@ -2,6 +2,7 @@ import { useGame } from '../state/store';
 import { Combatant } from '../engine/types';
 import { findStarById } from '../data';
 import { BackgroundFields } from './BackgroundFields';
+import { Icon } from './Icon';
 
 /** Onglet « Background » de la fiche : bio en LECTURE SEULE (détails physiques + astrologie, LDB 05
  *  étape 6 — cosmétique) et les champs ÉDITABLES hors combat (Motivation + Ambitions court/long,
@@ -42,7 +43,7 @@ export function BackgroundPanel({ hero }: { hero: Combatant }) {
       )}
 
       <div className="mini-title">
-        Background <span className="bg-hint">✎ Modifiable hors combat</span>
+        Background <span className="bg-hint"><Icon id="ui/edit" size="sm" /> Modifiable hors combat</span>
       </div>
       <BackgroundFields
         values={{ motivation: hero.motivation ?? '', ambitionShort: d?.ambitionShort ?? '', ambitionLong: d?.ambitionLong ?? '' }}

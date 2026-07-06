@@ -29,6 +29,7 @@ import type { FireArc } from '../../engine/types';
 import { WhenEditor } from './ConditionEditor';
 import { RefField } from '../compendium/RefField';
 import { Icon } from '../Icon';
+import type { IconIdInput } from '../icons';
 
 /** Section repliable de l'inspecteur (primitive .fold). */
 function Fold({ title, open, children }: { title: ReactNode; open?: boolean; children: ReactNode }) {
@@ -61,9 +62,11 @@ function MusicSelect({ label, value, onChange }: { label: string; value: string 
   );
 }
 
-const ENT_ICON: Record<string, string> = { heroStart: '🏁', personnage: '🙂', prop: '🌳' };
+const ENT_ICON: Record<string, IconIdInput> = { heroStart: 'map-tool/start-flag', personnage: 'map-tool/npc', prop: 'map-tool/prop' };
 /** Icône d'entité — un emplacement de siège (entité portant un poste) prime sur l'icône de kind. */
-const entIcon = (ent: SceneEntity): string | JSX.Element => (ent.postes?.length ? <Icon id="scenario/siege" size="sm" /> : ENT_ICON[ent.kind] ?? '•');
+const entIcon = (ent: SceneEntity): JSX.Element => (
+  ent.postes?.length ? <Icon id="scenario/siege" size="sm" /> : ENT_ICON[ent.kind] ? <Icon id={ENT_ICON[ent.kind]} size="sm" /> : <>•</>
+);
 
 /** Arcs de tir d'un créneau directionnel (FireArc), libellés terrestres (relatifs au facing du chef de pièce). */
 const FIRE_ARCS: { side: FireArc; label: string }[] = [
@@ -127,15 +130,15 @@ export function Inspector({
   const title = ent
     ? <>{entIcon(ent)} {ent.label ?? ent.ref ?? KIND_LABEL[ent.kind]}</>
     : selR
-      ? `🏠 ${selR.label ?? selR.style}`
+      ? <><Icon id="rest/home" size="sm" /> {selR.label ?? selR.style}</>
       : selT
-        ? `🟦 ${selT.id}`
+        ? <><Icon id="map-tool/zone" size="sm" /> {selT.id}</>
         : zone
-          ? '⛺ Zone de repos'
+          ? <><Icon id="rest/camp" size="sm" /> Zone de repos</>
           : efz
             ? <><Icon id="ui/warning" size="sm" /> {efz.label || 'Piège'}</>
             : selW
-              ? (selW.door ? '🚪 Porte' : '🧱 Cloison')
+              ? (selW.door ? <><Icon id="map-tool/door" size="sm" /> Porte</> : <><Icon id="map-tool/wall" size="sm" /> Cloison</>)
               : entry
                 ? <><Icon id="nav/entry-point" size="sm" /> {sel?.type === 'entry' ? sel.id : ''}</>
                 : null;
@@ -162,7 +165,7 @@ export function Inspector({
                   checked={!!ent.combat?.hiddenUntilCombat}
                   onChange={(e) => updateSel({ combat: { ...ent.combat, hiddenUntilCombat: e.target.checked || undefined } })}
                 />{' '}
-                🥷 Embusqué (invisible hors combat)
+                <Icon id="flag/hidden" size="sm" /> Embusqué (invisible hors combat)
               </label>
               {ent.statblock ? (
                 <>
@@ -199,7 +202,7 @@ export function Inspector({
                       </>
                     );
                   })()}
-                  <button className="btn small" onClick={() => updateSel({ statblock: emptyStatblock(ent.ref || ent.label || 'Ennemi') })}>⚙️ Profil personnalisé…</button>
+                  <button className="btn small" onClick={() => updateSel({ statblock: emptyStatblock(ent.ref || ent.label || 'Ennemi') })}><Icon id="ui/settings" size="sm" /> Profil personnalisé…</button>
                 </>
               )}
               <div className="mini-title">Rencontres</div>
@@ -233,7 +236,7 @@ export function Inspector({
           {selR && (
             <>
               <Fold title="Toit (bâtiment composé)" open>
-                <p className="hint">Couverture d'un bâtiment composé. Ses MURS se tracent à l'outil 🧱 (cloison/porte/structure) : « bâtiment détruit » = ses murs abattus. L'intérieur est tout-en-scène (le toit se lève quand un allié entre dans l'empreinte).</p>
+                <p className="hint">Couverture d'un bâtiment composé. Ses MURS se tracent à l'outil <Icon id="map-tool/wall" size="sm" /> (cloison/porte/structure) : « bâtiment détruit » = ses murs abattus. L'intérieur est tout-en-scène (le toit se lève quand un allié entre dans l'empreinte).</p>
                 <label className="ed-field">
                   Libellé
                   <input value={selR.label ?? ''} onChange={(e) => updateSelR({ label: e.target.value || undefined })} />
@@ -298,7 +301,7 @@ export function Inspector({
               </Fold>
               <div className="insp-actions">
                 <button className="btn small btn-primary" onClick={() => openLogic('triggers', selT.id)}>
-                  ⚙ Effets ({flowEffects(selT.flow).length})…
+                  <Icon id="ui/settings" size="sm" /> Effets ({flowEffects(selT.flow).length})…
                 </button>
                 <button className="btn small danger" onClick={removeSel}>
                   Supprimer
@@ -325,7 +328,7 @@ export function Inspector({
                   ))}
                 </div>
                 <div className="ed-rest-places">
-                  {([['auberge', '🛏 Auberge'], ['maison', '🏠 Chez soi'], ['camp', '⛺ Camper']] as const).map(([k, label]) => (
+                  {([['auberge', <><Icon id="rest/bed" size="sm" /> Auberge</>], ['maison', <><Icon id="rest/home" size="sm" /> Chez soi</>], ['camp', <><Icon id="rest/camp" size="sm" /> Camper</>]] as const).map(([k, label]) => (
                     <label key={k} className="ed-check">
                       <input type="checkbox" checked={zone.places[k] ?? false} onChange={(e) => updateZone({ places: { ...zone.places, [k]: e.target.checked } })} />
                       {label}
@@ -333,7 +336,7 @@ export function Inspector({
                   ))}
                   <label className="ed-check">
                     <input type="checkbox" checked={zone.quality === 'pietre'} onChange={(e) => updateZone({ quality: e.target.checked ? 'pietre' : undefined })} />
-                    💸 Piètre (½ prix, tambouille à risque)
+                    <Icon id="resource/gold-purse" size="sm" /> Piètre (½ prix, tambouille à risque)
                   </label>
                 </div>
               </Fold>
@@ -371,15 +374,15 @@ export function Inspector({
                   <div className="mini-title"><Icon id="resource/movement" size="sm" /> À la traversée (effets mécaniques)</div>
                   <p className="hint">Dégâts mitigés BE+PA : op « Blessures », forme Dés, puis cocher « déduit BE / PA ». État entretenu : op « Poser un État » + paramètre <code>unlessCondition</code> (= le même État).</p>
                   <GameOpEditor ops={efz.onCross ?? []} onChange={(onCross) => setEfz({ ...efz, onCross: onCross.length ? onCross : undefined })} />
-                  <div className="mini-title">⏱ Au stationnement (chaque round)</div>
+                  <div className="mini-title"><Icon id="ui/wait" size="sm" /> Au stationnement (chaque round)</div>
                   <GameOpEditor ops={efz.perRound ?? []} onChange={(perRound) => setEfz({ ...efz, perRound: perRound.length ? perRound : undefined })} />
                   <label className="ed-check">
                     <input type="checkbox" checked={!!efz.blocksLoS} onChange={(e) => setEfz({ ...efz, blocksLoS: e.target.checked || undefined })} />
-                    🌫 Masque la ligne de vue (fumée, ténèbres)
+                    <Icon id="ui/eye" size="sm" /> Masque la ligne de vue (fumée, ténèbres)
                   </label>
                   <label className="ed-check">
                     <input type="checkbox" checked={!!efz.barrier} onChange={(e) => setEfz({ ...efz, barrier: e.target.checked ? { blockGroups: efz.barrier?.blockGroups } : undefined })} />
-                    🧱 Barrière infranchissable (mur magique, cercle de ward)
+                    <Icon id="mechanic/ward" size="sm" /> Barrière infranchissable (mur magique, cercle de ward)
                   </label>
                   {efz.barrier && (
                     <label className="ed-field">
@@ -406,7 +409,7 @@ export function Inspector({
 
           {selW && sel?.type === 'wall' && (
             <>
-              <Fold title={selW.door ? '🚪 Porte' : '🧱 Cloison'} open>
+              <Fold title={selW.door ? <><Icon id="map-tool/door" size="sm" /> Porte</> : <><Icon id="map-tool/wall" size="sm" /> Cloison</>} open>
                 <p className="hint">Arête @ ({sel.x},{sel.y}) {sel.side}{sel.z ? ` · étage ${sel.z}` : ''}.</p>
                 <div className="ed-field">
                   <span>Type</span>
@@ -415,14 +418,14 @@ export function Inspector({
                       ▮ Cloison
                     </button>
                     <button className={`btn small ${selW.door ? 'btn-primary' : ''}`} title="Arête franchissable (porte)" onClick={() => patchSelW({ door: true })}>
-                      🚪 Porte
+                      <Icon id="map-tool/door" size="sm" /> Porte
                     </button>
                   </div>
                 </div>
                 {selW.door && (
                   <label className="ed-check">
                     <input type="checkbox" checked={!!selW.closed} onChange={(e) => patchSelW({ closed: e.target.checked || undefined })} />
-                    🔒 Fermée au départ
+                    <Icon id="ui/lock" size="sm" /> Fermée au départ
                   </label>
                 )}
                 <RefField
@@ -432,7 +435,7 @@ export function Inspector({
                   onChange={(v) => patchSelW({ structure: (v as string | null) || undefined })}
                   nullable
                 />
-                <p className="hint">Posée, l'arête tient (bloque vue + passage) jusqu'à être abattue en combat ; elle devient alors une brèche franchissable. « — (aucun) — » = pas de structure. La HAUTEUR d'un rempart se peint désormais à l'outil ⛰ (hauteur des cases qu'il borde), plus de réglage par segment.</p>
+                <p className="hint">Posée, l'arête tient (bloque vue + passage) jusqu'à être abattue en combat ; elle devient alors une brèche franchissable. « — (aucun) — » = pas de structure. La HAUTEUR d'un rempart se peint désormais à l'outil <Icon id="map-tool/height" size="sm" /> (hauteur des cases qu'il borde), plus de réglage par segment.</p>
               </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>
@@ -801,7 +804,7 @@ function EmplacementFold({ ent, scene, setScene }: { ent: SceneEntity; scene: Sc
             ↻ Omni
           </button>
           <button className={`btn small ${directional ? 'btn-primary' : ''}`} title="Arc fixe, relatif à l'orientation-monde du chef de pièce" onClick={() => setScene(setPosteSide(scene, ent.id, poste.side ?? 'proue'))}>
-            ➤ Directionnel
+            → Directionnel
           </button>
         </div>
       </div>
@@ -882,7 +885,7 @@ function SceneProps({
   return (
     <>
       <div className="insp-head">
-        <span className="insp-title">📄 {scene.nom || scene.id}</span>
+        <span className="insp-title"><Icon id="file/document" size="sm" /> {scene.nom || scene.id}</span>
       </div>
       <Fold title="Identité" open>
         <label className="ed-field">
@@ -948,9 +951,9 @@ function SceneProps({
         </label>
       </Fold>
       <Fold title="Repos sur place">
-        <p className="hint">Offre du bouton 🌙 d'exploration. Affinable PAR ZONE : outil 🟦 → Zone de repos (dessinée sur la carte).</p>
+        <p className="hint">Offre du bouton <Icon id="time/night" size="sm" /> d'exploration. Affinable PAR ZONE : outil <Icon id="map-tool/zone" size="sm" /> → Zone de repos (dessinée sur la carte).</p>
         <div className="ed-rest-places">
-          {([['auberge', '🛏 Auberge'], ['maison', '🏠 Chez soi'], ['camp', '⛺ Camper']] as const).map(([k, label]) => (
+          {([['auberge', <><Icon id="rest/bed" size="sm" /> Auberge</>], ['maison', <><Icon id="rest/home" size="sm" /> Chez soi</>], ['camp', <><Icon id="rest/camp" size="sm" /> Camper</>]] as const).map(([k, label]) => (
             <label key={k} className="ed-check">
               <input
                 type="checkbox"
@@ -966,14 +969,14 @@ function SceneProps({
               checked={scene.rest?.quality === 'pietre'}
               onChange={(e) => setScene({ ...scene, rest: { ...(scene.rest ?? { camp: true }), quality: e.target.checked ? 'pietre' : undefined } })}
             />
-            💸 Piètre (½ prix, tambouille à risque)
+            <Icon id="resource/gold-purse" size="sm" /> Piètre (½ prix, tambouille à risque)
           </label>
         </div>
         {(scene.restZones ?? []).length > 0 && (
           <div className="stack">
             {(scene.restZones ?? []).map((z, i) => (
               <button key={i} className="listrow insp-row" onClick={() => setSel({ type: 'restZone', idx: i })}>
-                <span className="lr-name">⛺ Zone ({z.rect.x},{z.rect.y}) {z.rect.w}×{z.rect.h}</span>
+                <span className="lr-name"><Icon id="rest/camp" size="sm" /> Zone ({z.rect.x},{z.rect.y}) {z.rect.w}×{z.rect.h}</span>
               </button>
             ))}
           </div>
@@ -993,11 +996,14 @@ function SceneProps({
         </div>
       </Fold>
       <Fold title={`Contenu (${scene.entities.length + (scene.roofs ?? []).length})`}>
-        <input className="pal-search" placeholder="🔎 filtrer…" value={filter} onChange={(e) => setFilter(e.target.value)} />
+        <div className="pal-search-row">
+          <Icon id="ui/search" size="sm" />
+          <input className="pal-search" placeholder="filtrer…" value={filter} onChange={(e) => setFilter(e.target.value)} />
+        </div>
         <div className="stack insp-content">
           {roofs.map((r) => (
             <button key={r.id} className="listrow insp-row" onClick={() => setSel({ type: 'roof', id: r.id })}>
-              <span className="lr-name">🏠 {r.label ?? r.style}</span>
+              <span className="lr-name"><Icon id="rest/home" size="sm" /> {r.label ?? r.style}</span>
               <span className="chip">
                 ({r.foot.x},{r.foot.y})
               </span>

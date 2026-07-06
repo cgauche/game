@@ -72,7 +72,7 @@ export function ShipBatteryModal() {
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
     ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
-    { key: 'confirm', label: '🔥 Feu !', kind: 'primary', onClick: confirm, when: 'always', disabled: !allRolled },
+    { key: 'confirm', label: <><Icon id="fire/flame" size="sm" /> Feu !</>, kind: 'primary', onClick: confirm, when: 'always', disabled: !allRolled },
   ];
 
   return (

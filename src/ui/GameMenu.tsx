@@ -3,6 +3,7 @@ import { type Money } from '../engine/money';
 import { Coins } from './Coins';
 import { GameDate } from './GameDate';
 import { t } from '../i18n';
+import { Icon } from './Icon';
 
 /**
  * Menu ☰ du jeu (haut-gauche, COMBAT et EXPLORATION — mobile-first). Regroupe ce qui a quitté
@@ -60,7 +61,7 @@ export function GameMenu({ sceneName, money, time, onQuit, onSaveLoad, onEndSess
           )}
           {onOptions && (
             <button type="button" className="btn small" onClick={() => { setOpen(false); onOptions(); }}>
-              ⚙️ Options
+              <Icon id="ui/settings" size="sm" /> Options
             </button>
           )}
           <button type="button" className="btn small gm-quit" onClick={onQuit}>{t('gameMenu.quit')}</button>

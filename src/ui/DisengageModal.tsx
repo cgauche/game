@@ -69,8 +69,8 @@ export function DisengageModal() {
             layout="grid"
             options={[
               { key: 'sacrifice', label: sacrificeLabel, hidden: !pd.canSacrifice, onSelect: sacrifice, title: sacrificeTitle },
-              { key: 'esquive', label: '🤸 Esquiver', value: defenseValue(mover, 'esquive'), hidden: pd.canEsquive === false, primary: true, onSelect: esquiver, title: "Test opposé d'Esquive — coûte ton Action" },
-              { key: 'fuir', label: '🏃 Fuir (coup dans le dos)', hidden: pd.canEsquive === false, onSelect: flee, title: 'Tu tournes le dos : attaque gratuite contre toi (+20), puis tu cours' },
+              { key: 'esquive', label: <><Icon id="melee/tumble" size="sm" /> Esquiver</>, value: defenseValue(mover, 'esquive'), hidden: pd.canEsquive === false, primary: true, onSelect: esquiver, title: "Test opposé d'Esquive — coûte ton Action" },
+              { key: 'fuir', label: <><Icon id="melee/flee" size="sm" /> Fuir (coup dans le dos)</>, hidden: pd.canEsquive === false, onSelect: flee, title: 'Tu tournes le dos : attaque gratuite contre toi (+20), puis tu cours' },
             ]}
           />
           {pd.canEsquive === false && (

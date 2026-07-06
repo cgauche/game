@@ -56,4 +56,12 @@ export const icons: IconFamily = [
       `<circle fill="var(--gold)" stroke="none" cx="12" cy="10.4" r="1.6"/>` +
       `<path ${KF} d="M2.4 9.9 L4.9 11 M2.9 14.4 L5.2 14"/>`,
   },
+  {
+    id: 'flag/hidden',
+    label: 'Embusqué',
+    // Capuche d'embuscade : yeux plissés seuls visibles.
+    svg:
+      `<path ${F} d="M12 3.6 C16.6 3.6 20.1 7.4 20.1 12.3 C20.1 16 18.1 19.1 15.1 20.6 C15.6 19.3 15.4 18.1 14.4 17.3 C13.4 18.4 12.6 18.4 11.6 17.3 C10.6 18.1 10.4 19.3 10.9 20.6 C7.9 19.1 5.9 16 5.9 12.3 C5.9 7.4 9.4 3.6 12 3.6 Z"/>` +
+      `<path ${KF} d="M9.1 11.3 C9.7 10.7 10.6 10.7 11.1 11.3 M12.9 11.3 C13.4 10.7 14.3 10.7 14.9 11.3"/>`,
+  },
 ];

@@ -154,7 +154,7 @@ export function CastModal() {
         : []),
     {
       key: 'confirm',
-      label: csp ? (csp.participants.some((p) => p.result?.dispelled) ? 'Appliquer (dissipé)' : 'Appliquer') : placeable ? '📍 Poser la zone' : 'Appliquer',
+      label: csp ? (csp.participants.some((p) => p.result?.dispelled) ? 'Appliquer (dissipé)' : 'Appliquer') : placeable ? <><Icon id="map-tool/pin" size="sm" /> Poser la zone</> : 'Appliquer',
       title: placeable && !csp ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined,
       kind: 'primary',
       onClick: csp ? cspConfirm : pcs ? oppConfirm : placeable ? () => placeZone(true) : confirm,
@@ -205,7 +205,7 @@ export function CastModal() {
           {isPrayer && !res && rule('prayer-conviction') && (
             <OptionChooser
               layout="seg"
-              groupLabel="🙏 Ton de la Prière"
+              groupLabel={<><Icon id="faith/prayer" size="sm" /> Ton de la Prière</>}
               options={[
                 { key: 'aloud', label: 'À voix haute', selected: !pc.discreet, onSelect: () => setDiscreet(false), title: 'Prière entonnée fermement (Intermédiaire +0, RAW)' },
                 { key: 'discreet', label: 'Discrètement', selected: !!pc.discreet, onSelect: () => setDiscreet(true), title: 'Prière murmurée / sans conviction : Difficulté d’un cran plus dure (LDB 40 l.42)' },
@@ -256,14 +256,14 @@ export function CastModal() {
             const rows = overcastAxes(source).filter((a) => can[a]);
             if (!rows.length) return null;
             const META: Record<OvercastAxis, [ReactNode, string]> = {
-              range: ['📏', 'Portée'], zone: ['🌀', 'Zone'], duration: [<Icon id="ui/wait" size="sm" />, 'Durée'], targets: [<Icon id="action/aim" size="sm" />, 'Cibles'],
+              range: [<Icon id="magic/range" size="sm" />, 'Portée'], zone: [<Icon id="magic/area" size="sm" />, 'Zone'], duration: [<Icon id="ui/wait" size="sm" />, 'Durée'], targets: [<Icon id="action/aim" size="sm" />, 'Cibles'],
             };
             const cap = extraTargetCapacity(source, oc.targets, spellTargetCount(spell, caster));
             const designated = pc.extraTargetIds?.length ?? 0;
             const candidates = overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, source, oc.range);
             return (
               <div className="rm-overcast rm-options">
-                <span className="mini-title">🌬️ Surincantation — {left} pas (+2 DR) restant(s)</span>
+                <span className="mini-title"><Icon id="magic/gust" size="sm" /> Surincantation — {left} pas (+2 DR) restant(s)</span>
                 <div className="rm-stepper-list">
                   {rows.map((a) => (
                     <div key={a} className="rm-stepper">
@@ -281,7 +281,7 @@ export function CastModal() {
                 {/* Désignation des cibles supplémentaires — SÉPARÉE de l'allocation (plus de bouton carte redondant). */}
                 {can.targets && cap > 0 && (battle ? (
                   <button className="btn small rm-overcast-pick" onClick={() => pickTargets(true)} title="Choisir les cibles supplémentaires sur le champ de bataille">
-                    🗺️ Désigner les cibles ({designated}/{cap})
+                    <Icon id="nav/campaign" size="sm" /> Désigner les cibles ({designated}/{cap})
                   </button>
                 ) : (
                   <div className="rm-loc-grid">
@@ -297,11 +297,11 @@ export function CastModal() {
             <div className="rm-crit-choice rm-options">
               {/* Incantation CRITIQUE (LDB 46 l.52-59) : puissance supplémentaire au choix
                   (le contrecoup — Imparfaite Mineure sauf Diction instinctive — est automatique). */}
-              <span className="mini-title">⚡ Incantation Critique — choisir l'effet</span>
+              <span className="mini-title"><Icon id="magic/power" size="sm" /> Incantation Critique — choisir l'effet</span>
               <div className="rm-loc-grid">
                 {([
                   ...(pc.missile ? [['critique', <><Icon id="journal/critical" size="sm" /> Blessure Critique</>, 'Si le Sort inflige des Dégâts, il inflige aussi une Blessure Critique.']] : []),
-                  ['puissance', '🌀 Puissance totale', 'Le Sort est lancé quels que soient son NI et votre DR, mais il peut être Dissipé.'],
+                  ['puissance', <><Icon id="magic/area" size="sm" /> Puissance totale</>, 'Le Sort est lancé quels que soient son NI et votre DR, mais il peut être Dissipé.'],
                   ['ineluctable', <><Icon id="action/defend" size="sm" /> Force inéluctable</>, 'Si vous avez assez de DR pour lancer le Sort, il ne peut pas être Dissipé.'],
                 ] as [('critique' | 'puissance' | 'ineluctable'), ReactNode, string][]).map(([val, label, tip]) => {
                   const def = !res.cast ? 'puissance' : pc.missile ? 'critique' : 'ineluctable';

@@ -85,7 +85,7 @@ export function AuContactModal() {
     return (
       <RollShell
         title="Au contact"
-        extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb="🤜" />}
+        extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb={<Icon id="melee/close-in" size="sm" />} />}
         rows={[foeRow, actorRow]}
         rolled
         winnerIndex={winnerIndex}
@@ -96,7 +96,7 @@ export function AuContactModal() {
             <OptionChooser
               layout="actions"
               options={[
-                { key: 'contact', label: '🤜 Au contact', primary: true, onSelect: () => choose('contact'), title: 'Entrer dans la longueur d’arme : toute arme plus longue que Courte est traitée comme une Arme improvisée (les deux camps)' },
+                { key: 'contact', label: <><Icon id="melee/close-in" size="sm" /> Au contact</>, primary: true, onSelect: () => choose('contact'), title: 'Entrer dans la longueur d’arme : toute arme plus longue que Courte est traitée comme une Arme improvisée (les deux camps)' },
                 { key: 'normal', label: <><Icon id="action/attack" size="sm" /> Combat normal</>, onSelect: () => choose('normal'), title: 'Le combat se poursuit à distance d’arme normale' },
               ]}
             />
@@ -110,7 +110,7 @@ export function AuContactModal() {
   return (
     <RollShell
       title="Au contact"
-      extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb="🤜" />}
+      extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb={<Icon id="melee/close-in" size="sm" />} />}
       rows={[foeRow, actorRow]}
       rolled={rolled}
       winnerIndex={winnerIndex}

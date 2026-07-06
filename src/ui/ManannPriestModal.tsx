@@ -17,7 +17,7 @@ export function ManannPriestModal() {
   if (!p) return null;
   const affordable = canAfford(money, p.cost);
   return (
-    <Modal title="⛪ Un Prêtre de Manann s'avance…" variant="test">
+    <Modal title={<><Icon id="faith/church" size="sm" /> Un Prêtre de Manann s'avance…</>} variant="test">
       <p className="rm-log">
         Il s'exclame que vous avez courroucé Manann par votre impiété et que votre bateau doit être
         purifié. Payez <Coins money={p.cost} /> pour une bénédiction, ou refusez et laissez l'Humeur
@@ -26,7 +26,7 @@ export function ManannPriestModal() {
       <ChoiceButtons
         options={[
           { key: 'payer', label: <><Icon id="travel/anchor" size="sm" /> Payer (<Coins money={p.cost} />)</>, primary: true, disabled: !affordable, onSelect: () => resolve(true), title: affordable ? 'Payer la bénédiction' : 'La bourse ne suit pas' },
-          { key: 'refuser', label: '🔱 Refuser (−4d10 Humeur de Manann)', onSelect: () => resolve(false), title: 'Refuser la bénédiction — Manann reste courroucé' },
+          { key: 'refuser', label: <><Icon id="faith/trident" size="sm" /> Refuser (−4d10 Humeur de Manann)</>, onSelect: () => resolve(false), title: 'Refuser la bénédiction — Manann reste courroucé' },
         ]}
       />
     </Modal>

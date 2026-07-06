@@ -5,6 +5,8 @@ import type { IconFamily } from '../types';
 const K = 'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"';
 const KF = 'fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"';
 const F = 'fill="currentColor" stroke="none"';
+/** Silhouette pleine à trou (evenodd) — le trou reste transparent, jamais de couleur en dur. */
+const FE = 'fill="currentColor" fill-rule="evenodd" stroke="none"';
 
 export const icons: IconFamily = [
   {
@@ -59,5 +61,108 @@ export const icons: IconFamily = [
     id: 'ui/preempt',
     label: 'Interruption',
     svg: `<path ${F} d="M13.8 2.4 L5.8 13.4 L10.5 13.4 L8.9 21.6 L18.2 10.1 L13.4 10.1 Z"/>`,
+  },
+  {
+    id: 'ui/settings',
+    label: 'Réglages',
+    // Engrenage à 6 dents, moyeu évidé.
+    svg:
+      `<path ${FE} d="M12 2.6 L13.4 5 L15.9 4 L16.4 6.7 L19.1 6.7 L18.7 9.4 L21.1 10.7 L19.6 12.9 L21.1 15.1 L18.7 16.4 L19.1 19.1 L16.4 19.1 L15.9 21.8 L13.4 20.8 L12 23.2 L10.6 20.8 L8.1 21.8 L7.6 19.1 L4.9 19.1 L5.3 16.4 L2.9 15.1 L4.4 12.9 L2.9 10.7 L5.3 9.4 L4.9 6.7 L7.6 6.7 L8.1 4 L10.6 5 Z M12 9.3 C10.2 9.3 8.7 10.7 8.7 12.6 C8.7 14.4 10.2 15.9 12 15.9 C13.8 15.9 15.3 14.4 15.3 12.6 C15.3 10.7 13.8 9.3 12 9.3 Z"/>`,
+  },
+  {
+    id: 'ui/search',
+    label: 'Rechercher',
+    // Loupe simple — filtre/recherche générique.
+    svg:
+      `<circle ${K} cx="10.4" cy="10.4" r="6"/>` +
+      `<path ${K} d="M14.8 14.8 L19.9 19.9"/>`,
+  },
+  {
+    id: 'ui/lock',
+    label: 'Verrouillé',
+    // Cadenas fermé, anse, corps et trou de serrure évidé (evenodd).
+    svg:
+      `<path ${K} d="M7.4 10.4 V7.6 C7.4 5.2 9.4 3.4 12 3.4 C14.6 3.4 16.6 5.2 16.6 7.6 V10.4"/>` +
+      `<path ${FE} d="M5.6 10.4 H18.4 V19.6 C18.4 20.4 17.7 20.9 17 20.9 H7 C6.3 20.9 5.6 20.4 5.6 19.6 Z M11.1 14 C11.1 13.5 11.5 13.1 12 13.1 C12.5 13.1 12.9 13.5 12.9 14 C12.9 14.3 12.7 14.6 12.5 14.8 L12.8 16.6 H11.2 L11.5 14.8 C11.3 14.6 11.1 14.3 11.1 14 Z"/>`,
+  },
+  {
+    id: 'ui/edit',
+    label: 'Éditer',
+    // Crayon incliné, pointe et gomme.
+    svg:
+      `<path ${F} d="M14.9 3.9 L17.4 6.4 L8.3 15.6 L5.3 16.4 L6.1 13.4 Z"/>` +
+      `<path ${K} d="M16.3 2.4 L19.6 5.7 L17.4 6.4 L14.9 3.9 Z"/>` +
+      `<path ${KF} d="M4.6 19.6 H19.4"/>`,
+  },
+  {
+    id: 'ui/add',
+    label: 'Ajouter',
+    // Croix simple dans un cercle.
+    svg:
+      `<circle ${K} cx="12" cy="12" r="8.1"/>` +
+      `<path ${K} d="M12 7.4 V16.6 M7.4 12 H16.6"/>`,
+  },
+  {
+    id: 'ui/delete',
+    label: 'Supprimer',
+    // Corbeille, couvercle et deux nervures.
+    svg:
+      `<path ${K} d="M5.6 7.4 H18.4 L17.4 20.1 C17.3 20.7 16.8 21.1 16.3 21.1 H7.7 C7.2 21.1 6.7 20.7 6.6 20.1 Z"/>` +
+      `<path ${K} d="M3.9 7.4 H20.1"/>` +
+      `<path ${K} d="M9.4 7.4 L9.9 4.1 H14.1 L14.6 7.4"/>` +
+      `<path ${KF} d="M10.3 10.6 V17.9 M13.7 10.6 V17.9"/>`,
+  },
+  {
+    id: 'ui/eye',
+    label: 'Vision',
+    // Œil ouvert, iris central.
+    svg:
+      `<path ${K} d="M2.6 12 C4.9 7.6 8.2 5.4 12 5.4 C15.8 5.4 19.1 7.6 21.4 12 C19.1 16.4 15.8 18.6 12 18.6 C8.2 18.6 4.9 16.4 2.6 12 Z"/>` +
+      `<circle ${F} cx="12" cy="12" r="3.1"/>`,
+  },
+  {
+    id: 'ui/forbidden',
+    label: 'Interdit',
+    // Cercle barré.
+    svg:
+      `<circle ${K} cx="12" cy="12" r="8.1"/>` +
+      `<path ${K} d="M6.3 6.3 L17.7 17.7"/>`,
+  },
+  {
+    id: 'ui/key',
+    label: 'Clé',
+    // Panneton simple, tige et dents.
+    svg:
+      `<circle ${K} cx="7.3" cy="7.3" r="3.9"/>` +
+      `<path ${K} d="M10 10 L19.4 19.4 M16.3 16.1 L18.4 14 M13.7 13.4 L15.7 11.4"/>`,
+  },
+  {
+    id: 'ui/balance',
+    label: 'Balance / choix pesé',
+    // Balance à deux plateaux, fléau et pied.
+    svg:
+      `<path ${K} d="M12 3.6 V20.4 M8 20.4 H16"/>` +
+      `<path ${K} d="M4.6 6.6 H19.4"/>` +
+      `<path ${K} d="M4.6 6.6 L2.6 11.6 C3.6 12.6 5.6 12.6 6.6 11.6 Z"/>` +
+      `<path ${K} d="M19.4 6.6 L17.4 11.6 C18.4 12.6 20.4 12.6 21.4 11.6 Z"/>`,
+  },
+  {
+    id: 'ui/partial',
+    label: 'Partiellement mécanisé',
+    // Point à demi rempli.
+    svg:
+      `<circle ${K} cx="12" cy="12" r="6.4"/>` +
+      `<path ${F} d="M12 5.6 C15.5 5.6 18.4 8.5 18.4 12 C18.4 15.5 15.5 18.4 12 18.4 Z"/>`,
+  },
+  {
+    id: 'ui/branch',
+    label: 'Branchement conditionnel',
+    // Chemin qui se scinde en deux issues.
+    svg:
+      `<circle ${F} cx="5.3" cy="12" r="1.7"/>` +
+      `<path ${K} d="M6.6 12 H10"/>` +
+      `<path ${K} d="M10 12 C12 12 12 6.4 15.1 6.4 M10 12 C12 12 12 17.6 15.1 17.6"/>` +
+      `<circle ${F} cx="17.1" cy="6.4" r="1.7"/>` +
+      `<circle ${F} cx="17.1" cy="17.6" r="1.7"/>`,
   },
 ];

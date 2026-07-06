@@ -83,7 +83,7 @@ export function ViewControls({ zoom, onZoomIn, onZoomOut, onZoomReset, onRotateL
             style={{ ...BTN, fontSize: 20, borderColor: pov ? 'var(--gold)' : 'var(--border)' }}
             onPointerDown={stop(onTogglePov)}
           >
-            {pov ? <Icon id="nav/campaign" size="sm" /> : '👁'}
+            {pov ? <Icon id="nav/campaign" size="sm" /> : <Icon id="ui/eye" size="sm" />}
           </button>
         )}
         <button type="button" title="Zoom arrière" style={{ ...BTN, fontSize: 30 }} onPointerDown={stop(onZoomOut)}>

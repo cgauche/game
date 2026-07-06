@@ -3,6 +3,7 @@ import { bestDetector } from '../state/merchantFlow';
 import { PortraitPicker } from './PortraitPicker';
 import type { Combatant } from '../engine/types';
 import { MINUTES_PER_DAY } from '../engine/clock';
+import { Icon } from './Icon';
 
 /**
  * Liste de butin ATTRIBUABLE — brique partagée écran de victoire / fenêtre de loot : chaque ligne
@@ -31,7 +32,7 @@ export function GearAssignList({ gear, assignable, onAssign, onAppraise }: {
             <span className="vl-name">
               {g.label}
               {(g.magic || aura) && (
-                <span className="vl-magic" title={unidentified ? (aura ? 'Aura magique sentie — règles non identifiées' : 'Objet magique — qualités à révéler') : 'Objet magique'}> ✨</span>
+                <span className="vl-magic" title={unidentified ? (aura ? 'Aura magique sentie — règles non identifiées' : 'Objet magique — qualités à révéler') : 'Objet magique'}> <Icon id="action/cast" size="sm" /></span>
               )}
               {unidentified
                 ? <span className="vl-unid">{aura ? 'magique, non identifié' : 'non identifié'}</span>
