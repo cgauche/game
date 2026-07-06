@@ -959,8 +959,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       ),
     })),
   },
-  // ── #157 (audit d'exposition Codex) : catalogues de CONTENU app-owned qui existaient déjà dans le
-  // code (chargés par la façade ou un module dédié) mais n'étaient pas encore éditables au Codex. ──
+  // ── #157 : catalogues de CONTENU app-owned (façade ou module dédié) exposés au Codex. ──
   {
     key: 'structures', label: 'Structures (siège)', group: 'Monde',
     build: () => structures.map((s) => ({

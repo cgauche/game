@@ -61,8 +61,7 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   massBattleWarMachines: 'massBattleWarMachines', massBattleStructures: 'massBattleStructures',
   massBattleHazards: 'massBattleHazards', massBattleMightModifiers: 'massBattleMightModifiers',
   massBattlePowerEstimate: 'massBattlePowerEstimate',
-  // #157 (audit d'exposition Codex) : catalogues de CONTENU app-owned qui existaient déjà dans le code
-  // (façade ou module dédié) mais n'étaient pas encore éditables au Codex — clé catégorie = clé dataset.
+  // #157 : catalogues de CONTENU app-owned exposés au Codex — clé catégorie = clé dataset.
   structures: 'structures', vehicles: 'vehicles', celestialHouses: 'celestialHouses', groups: 'groups',
   psychologies: 'psychologies', seaShanties: 'seaShanties', crewRoles: 'crewRoles', crewTestTypes: 'crewTestTypes',
   navalTraits: 'navalTraits', montures: 'montures', incidentsMonture: 'incidentsMonture', problemesVehicule: 'problemesVehicule',

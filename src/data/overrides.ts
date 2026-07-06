@@ -77,8 +77,7 @@ const ARRAYS = {
   pregens, oups, interludeEvents, peripeties,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
   massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate,
-  // #157 (audit d'exposition Codex) : catalogues de CONTENU app-owned qui existaient déjà dans le code
-  // (facade `index.ts` ou module dédié) mais n'étaient PAS encore éditables au Codex.
+  // #157 : catalogues de CONTENU app-owned (façade `index.ts` ou module dédié), exposés au Codex.
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, navalTraits: NAVAL_TRAITS,
   montures: MOUNT_PROFILES, incidentsMonture: MOUNT_INCIDENTS, problemesVehicule: VEHICLE_PROBLEMS,
   tavernGames: TAVERN_GAMES, obsessions: OBSESSIONS as unknown as { min: number; max: number; label: string }[],
