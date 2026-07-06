@@ -1,115 +1,96 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { scanHardcode } from '../../scripts/guards/lib/hardcode.mjs';
 
 /**
  * Garde-fou « tout migrer » — chantier d'unification des événements/réactions de combat.
  * (cf. docs/combat-events-coherence.md — Recensement Lot 0.)
  *
- * Compte les SITES RÉACTIFS codés PAR-NOM (État/trait/talent/atout d'arme) dans les fichiers-cibles :
- * une réaction de combat (pénalité d'État, dégâts par round, bonus à l'attaquant, Riposte, Cleave,
- * infection, contenu de trait/talent caché dans un hook…) doit devenir de la DONNÉE
- * (`TriggeredEffect`/`passive`), pas une branche impérative nommant l'entité.
+ * Compte les SITES RÉACTIFS codés PAR-NOM (trait/talent) dans TOUT `src/engine` + `src/state`
+ * (récursif, `.ts`/`.tsx`, HORS `*.test.*`) : une réaction de combat (pénalité, dégâts par round,
+ * bonus, Riposte, Cleave, infection, contenu de trait/talent caché dans un hook…) doit devenir de
+ * la DONNÉE (`TriggeredEffect`/`passive`), pas une branche impérative nommant l'entité.
  *
- * MODE Lot 0 = REPORT-ONLY / CLIQUET : la baseline est GELÉE au recensement initial ; le test échoue
- * seulement si un fichier DÉPASSE sa baseline (= nouveau hardcode = régression). À CHAQUE lot de
- * migration, on ABAISSE la baseline du fichier concerné (Lot 4 → conditions.ts ; Lot 4bis → roundHooks ;
- * Lot 6 → combatFlow). **Au Lot 8** : baselines à 0 (sauf prédicats GÉNÉRIQUES de machinerie, hors regex)
- * et bascule en scan strict élargi à tout `engine`/`state`.
+ * MODE CLIQUET (Lot 8 — généralisation du report-only Lot 0/4bis/6, qui ne portait que sur 3
+ * fichiers nommés) : `BASELINES` gèle, PAR FICHIER, le nombre de sites tolérés au recensement.
+ * Le test échoue si un fichier DÉPASSE sa baseline (= nouveau hardcode = régression) OU si une
+ * baseline est devenue trop haute (fichier assaini sans qu'elle soit abaissée — patron repris de
+ * `no-emoji-affordance.test.ts` CLIQUET, lignes 100-111). Un fichier absent de `BASELINES` a une
+ * baseline 0 implicite : `engine/conditions.ts`, `state/combat/roundHooks.ts`,
+ * `state/combatFlow.ts` (les 3 cibles historiques du Lot 0, migrées aux Lots 4/4bis/6) y restent.
  *
- * NB : les regex ne ciblent QUE des marqueurs réactifs (`hasRiposte`, `hasTraitKey(`, `isUnstable`,
- * `stacks(c, COND.`…). Les PRÉDICATS GÉNÉRIQUES de machinerie qui lisent un État sans produire son
- * effet propre (`isOutOfAction`, `inDeathCondition`, `canTakeAction`, `tickDeath`…) ne sont PAS comptés :
- * ils restent légitimes (règle universelle de l'arène, ne nomment pas un effet d'entité éditable).
+ * Mécanique de détection (marqueurs réactifs par-nom, exclusion des imports) :
+ * `scripts/guards/lib/hardcode.mjs` (module .mjs pur, partagé avec un futur hook pre-commit).
  */
-const here = (f: string) => fileURLToPath(new URL(f, import.meta.url));
-const read = (f: string) => readFileSync(here(f), 'utf8');
 
-/** Retire commentaires ET imports (les ids/noms en commentaire ou en `import {…}` — y compris
- *  multi-lignes — ne sont PAS du code réactif : seuls les SITES d'appel comptent). */
-function stripComments(src: string): string {
-  return src
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/import\s+(?:type\s+)?\{[\s\S]*?\}\s+from\s+['"][^'"]*['"];?/g, '') // imports nommés (multi-lignes)
-    .split('\n')
-    .map((l) => {
-      const i = l.indexOf('//');
-      return i >= 0 ? l.slice(0, i) : l;
-    })
-    .join('\n');
+const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
+const SCAN_DIRS = ['src/engine', 'src/state'];
+const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
+
+/** Baseline gelée par fichier (recensement Lot 8, 2026-07-06 — total 12 sites sur 7 fichiers).
+ *  Chaque abaissement = une vraie migration vers la donnée ; chaque hausse = une régression. */
+const BASELINES: Record<string, number> = {
+  'src/engine/items.ts': 1,
+  'src/engine/magic.ts': 1,
+  'src/engine/psychology.ts': 1,
+  'src/engine/traits/dispatch.ts': 3,
+  'src/state/ai.ts': 3,
+  'src/state/combatManeuvers.ts': 2,
+  'src/state/mount.ts': 1,
+};
+
+function scanFiles(): string[] {
+  const files: string[] = [];
+  const walk = (dir: string) => {
+    for (const e of readdirSync(dir)) {
+      const p = join(dir, e);
+      if (statSync(p).isDirectory()) walk(p);
+      else if (/\.tsx?$/.test(e)) files.push(p);
+    }
+  };
+  for (const d of SCAN_DIRS) walk(join(ROOT, d));
+  return files;
 }
 
-interface Target {
-  name: string;
-  src: string;
-  /** Marqueurs réactifs par-nom (code). */
-  reactive: RegExp;
-  /** Lignes à EXCLURE (prédicats génériques de machinerie / déclarations / imports). */
-  exclude?: RegExp;
-  /** Baseline GELÉE (Lot 0). À abaisser au lot de migration ; 0 au Lot 8. */
-  baseline: number;
-  /** Lot qui résorbe ce fichier. */
-  lot: string;
-}
-
-const TARGETS: Target[] = [
-  {
-    name: 'engine/conditions.ts',
-    src: read('../engine/conditions.ts'),
-    reactive: /hasCondition\(c, COND\.|hasCondition\(target, COND\.|stacks\(c, COND\./,
-    // Prédicats/RÈGLES de machinerie de MORT & GATING universels — lisent un État en ENTRÉE d'une règle de
-    // l'arène (ne PRODUISENT pas l'effet propre d'une entité éditable) : `isOutOfAction`/`inDeathCondition`
-    // (prédicats de mort, dont le corps `criticalWounds`), `tickDeath` (0 PB→Inconscient), `bleedDeathRoll`
-    // (mort par Hémorragique 10 %/pion + coagulation — règle de mort, comme tickDeath), `applyZeroWounds`
-    // (0 PB→À Terre, `COND.aTerre`). NB : les EFFETS propres des États (pénalités/dégâts/récupération) sont
-    // tous en DONNÉES (etats.json) ; seules ces règles de mort/gating restent moteur.
-    exclude: /isOutOfAction|inDeathCondition|criticalWounds|COND\.hemorragique|COND\.aTerre|c\.dead|roundsAtZero|return !hasCondition|return hasCondition\(c, COND\.surpris\)/,
-    // 30 → … → 8 (dégâts Hémorragique→données) → 6 (résist Empoisonné→données) → 4 (résist Sonné→données)
-    // → 0 : tous les EFFETS d'État sont en données ; il ne reste QUE de la machinerie de mort/gating (exclue).
-    baseline: 0,
-    lot: 'Lot 4',
-  },
-  {
-    name: 'state/combat/roundHooks.ts',
-    src: read('./combat/roundHooks.ts'),
-    // `suffocationTick` RETIRÉ : MACHINERIE environnementale universelle (règle de mort par manque d'air,
-    // LDB 18) pilotée par le drapeau d'effet `suffocates` (DONNÉE posée par les sorts) — ne nomme aucune
-    // entité éditable, comme `tick-death`/`tick-durations`. Les hooks `determination-*` sont des décréments
-    // de DURÉE (flags RNG-free) = machinerie ; comptés tant qu'ils nomment le talent (id), résorbés en
-    // basculant leurs flags sur le système de Durée unifié (Lot 4bis).
-    reactive: /isBestial|id: '(bestial-fire-fear|determination)/,
-    baseline: 0, // …→2 (Perturbant → aura de données) →0 (Détermination → système de Durée UNIFIÉ : ActiveEffect `psychImmune`/`ignoreCritMods` expirés par tickDurations). roundHooks PURGÉ de toute réaction par-nom.
-    lot: 'Lot 4bis',
-  },
-  {
-    name: 'state/combatFlow.ts',
-    src: read('./combatFlow.ts'),
-    // `autoCleave`/`maybeHeroCleave` RETIRÉS de la regex : ce sont des FONCTIONS de machinerie géométrique
-    // (balayage des surdimensionnés/Nuée, LDB 85 l.299 + Frappe Mortelle optionnelle), déclenchées par un
-    // flag GÉNÉRIQUE (`res.cleave` = swarm ∨ sizeGap≥1) et l'adjacence pure — elles ne nomment AUCUNE entité.
-    reactive: /hasTraitKey\(|isUnstable|isBestial|hasPerturbingAura|suffocationTick/,
-    exclude: /^\s*import/,
-    baseline: 0, // …→4 (Riposte→counterOnDefenseWin)→2 (Nerveux→skittishMount)→0 (banish→op `banish` en DONNÉE du trait, déclenché par `onWoundLoss`+`if woundsCurrent<=0` ; Cleave = machinerie géométrique). combatFlow PURGÉ de toute réaction par-nom.
-    lot: 'Lot 6',
-  },
-];
-
-function countReactive(t: Target): number {
-  return stripComments(t.src)
-    .split('\n')
-    .filter((l) => t.reactive.test(l) && !(t.exclude && t.exclude.test(l)))
-    .length;
-}
-
-describe('garde-fou « tout migrer » — réactions de combat hardcodées (cliquet, report-only Lot 0)', () => {
-  for (const t of TARGETS) {
-    it(`${t.name} (${t.lot}) : sites réactifs par-nom ≤ baseline (${t.baseline})`, () => {
-      const n = countReactive(t);
-      expect(
-        n,
-        `${t.name} : ${n} sites réactifs par-nom (baseline gelée ${t.baseline}). ` +
-          `Si > baseline → nouveau hardcode (régression). Si migration faite → ABAISSER la baseline.`,
-      ).toBeLessThanOrEqual(t.baseline);
-    });
+/** Nombre de sites réactifs par-nom, par fichier relatif (uniquement les fichiers non-vides). */
+function countsByFile(): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const f of scanFiles()) {
+    const rel = relative(ROOT, f).split('\\').join('/');
+    if (EXCLUDED(rel)) continue;
+    const n = scanHardcode(rel, readFileSync(f, 'utf8')).length;
+    if (n > 0) counts[rel] = n;
   }
+  return counts;
+}
+
+describe('garde-fou « tout migrer » — réactions de combat hardcodées (cliquet généralisé, Lot 8)', () => {
+  it('aucun fichier de src/engine + src/state ne dépasse sa baseline gelée', () => {
+    const counts = countsByFile();
+    const offenders: string[] = [];
+    for (const [rel, n] of Object.entries(counts)) {
+      const baseline = BASELINES[rel] ?? 0;
+      if (n > baseline) offenders.push(`${rel} : ${n} sites réactifs par-nom (baseline gelée ${baseline})`);
+    }
+    expect(
+      offenders,
+      'Nouveau(x) hardcode(s) réactif(s) par-nom — migrer vers la DONNÉE (TriggeredEffect/passive), ' +
+        `ou si migration déjà faite ABAISSER la baseline du fichier :\n${offenders.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('CLIQUET : toute baseline devenue trop haute (fichier assaini) doit être ABAISSÉE', () => {
+    // Sans ce resserrage, la baseline ne fond jamais : un fichier nettoyé par un lot suivant
+    // resterait toléré à son ancien niveau. Ici elle devient rouge → la dette se rembourse
+    // mécaniquement au fil des migrations (même patron que no-emoji-affordance.test.ts).
+    const counts = countsByFile();
+    const stale: string[] = [];
+    for (const [rel, baseline] of Object.entries(BASELINES)) {
+      const n = counts[rel] ?? 0;
+      if (n < baseline) stale.push(`${rel} : baseline ${baseline}, réel ${n} — ABAISSER la baseline`);
+    }
+    expect(stale, 'Baseline(s) PÉRIMÉE(s) — abaisser ces entrées de BASELINES').toEqual([]);
+  });
 });

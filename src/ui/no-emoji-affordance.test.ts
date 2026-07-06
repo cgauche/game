@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { emojisIn } from '../../scripts/guards/lib/emojiAffordance.mjs';
 
 /**
  * Garde-fou anti-emoji (LOT 4) : les AFFORDANCES de l'UI passent par le registre d'icônes
@@ -9,29 +10,12 @@ import { fileURLToPath } from 'node:url';
  * donnée. Ce test de BUILD scanne les sources (fs) : tout emoji hors de la liste d'exceptions
  * ci-dessous fait échouer la suite. MIGRER un fichier = le retirer des exceptions (une exception
  * devenue propre est inoffensive — elle ne force rien).
+ * Mécanique de détection (plages Unicode, glyphes tolérés, `emojisIn`) :
+ * `scripts/guards/lib/emojiAffordance.mjs` (module .mjs pur, partagé avec un futur hook pre-commit).
  */
 
 const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // racine du projet (src/ui/ → ../../)
 const SCAN_DIRS = ['src/ui', 'src/state', 'src/gameIso', 'src/scenes'];
-
-/** Plages Unicode d'emoji (présentation emoji) — volontairement SANS les blocs typographiques
- *  (flèches 2190-21FF, formes géométriques 25xx, ⌊⌋⌈⌉ math du bloc technique). */
-const EMOJI_RANGES: [number, number][] = [
-  [0x1f000, 0x1faff], // Mahjong → Symbols & Pictographs Extended (émoticônes, transport, suppléments…)
-  [0x2600, 0x27bf], // Miscellaneous Symbols + Dingbats
-  [0x2b00, 0x2bff], // Misc Symbols and Arrows (⬆ ⭐ …)
-  [0x231a, 0x231b], // ⌚ ⌛
-  [0x23e9, 0x23f3], // ⏩ … ⏳ (timers/lecteur)
-  [0x23f8, 0x23fa], // ⏸ ⏹ ⏺
-  [0x2139, 0x2139], // ℹ
-  [0xfe0f, 0xfe0f], // sélecteur de variation emoji
-];
-
-/** Glyphes TEXTE tolérés partout (typographie monochrome, pas des affordances emoji) :
- *  coches/croix de résultat (✓ ✗ ✔ ✘), fermeture ✕, marqueur essentiel ★ (ShipSheet/équipages),
- *  ornement ⚜ (Ornaments), burger ☰ (GameMenu), sexes ♂ ♀ (compendium), étoiles FX ✦ ✸
- *  (particules dessinées en <text> SVG). */
-const ALLOWED_CHARS = new Set(['✓', '✗', '✔', '✘', '✕', '★', '⚜', '☰', '♂', '♀', '✦', '✸']);
 
 /** Fichiers exclus par NATURE (pas par état de migration) :
  *  - `*.test.*` : les tests portent les emojis de leurs composants non migrés et sont réécrits
@@ -86,21 +70,6 @@ const EXCEPTIONS = new Set<string>([
   'src/scenes/test-scenarios/magie.ts',
   'src/scenes/test-scenarios/voyage.ts',
 ]);
-
-const isEmoji = (cp: number) => EMOJI_RANGES.some(([a, b]) => cp >= a && cp <= b);
-
-function emojisIn(text: string): string[] {
-  const found = new Set<string>();
-  let prev = '';
-  for (const ch of text) {
-    const cp = ch.codePointAt(0)!;
-    // FE0F collé à un glyphe toléré (✔️ …) : fait partie de la séquence tolérée.
-    if (cp === 0xfe0f && ALLOWED_CHARS.has(prev)) { prev = ch; continue; }
-    if (isEmoji(cp) && !ALLOWED_CHARS.has(ch)) found.add(ch);
-    prev = ch;
-  }
-  return [...found];
-}
 
 function scanFiles(): string[] {
   const files: string[] = [];

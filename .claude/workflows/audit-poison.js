@@ -1,7 +1,7 @@
 export const meta = {
   name: 'audit-poison',
   description: "Audit anti-poison rejouable : commentaires RAW mensongers, excuses, pierres tombales, docs périmées — chaque trouvaille vérifiée adversarialement. args optionnel : { paths: ['src/ui', ...] } pour restreindre le périmètre.",
-  whenToUse: "Relancer périodiquement (après un gros chantier, avant une migration) ou sur un sous-arbre jamais audité. Le rapport précédent : docs/plans/2026-07-05-audit-poison.md.",
+  whenToUse: "Relancer périodiquement (après un gros chantier, avant une migration) ou sur un sous-arbre jamais audité. Le rapport précédent : docs/plans/2026-07-05-audit-poison.md. Clôture : chaque CLASSE nouvelle reçoit son garde-de-porte (scripts/guards/lib) dans le même chantier, et le rapport daté porte le compte de confirmées — il doit décroître d'audit en audit.",
   phases: [
     { title: 'Scout', detail: 'découverte des fichiers à réfs RAW + docs vivants' },
     { title: 'Find', detail: 'lots de fichiers, 4 familles de poison' },
@@ -114,5 +114,5 @@ const all = results.filter(Boolean).flat().filter(Boolean)
 const confirmed = all.filter(f => f.verdict && f.verdict.isReal)
 const order = { haute: 0, moyenne: 1, basse: 2 }
 confirmed.sort((a, b) => (order[a.severity] ?? 3) - (order[b.severity] ?? 3))
-log(`${all.length} brutes → ${confirmed.length} confirmées. Suite : rapport daté dans docs/plans/, bugs → issues gabarit #101+, excuses → arbitrage utilisateur, tombstones → purge.`)
+log(`${all.length} brutes → ${confirmed.length} confirmées. Suite : rapport daté dans docs/plans/ (avec le COMPTE — il doit décroître d'audit en audit), bugs → issues gabarit #101+, excuses → arbitrage utilisateur, tombstones → purge, et chaque CLASSE nouvelle → garde-de-porte (scripts/guards/lib) dans le même chantier.`)
 return { confirmed, stats: { lots: items.length, brutes: all.length, confirmees: confirmed.length, refutees: all.length - confirmed.length } }

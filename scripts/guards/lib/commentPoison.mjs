@@ -1,0 +1,209 @@
+// Mécanique de scan du garde-fou commentaires (#136, CLAUDE.md règle 6b/6c).
+// Module ESM pur, exécutable par `node` nu (pas de tsx/TS) — consommé par
+// src/comment-poison-guard.test.ts ET par un futur hook pre-commit.
+// Les listes d'exceptions/baselines restent DONNÉES DE POLICY dans le test (ex. EXCUSE_GUARD_ACTIVE) ;
+// ici ne vit QUE la mécanique de détection (extraction de commentaires, familles de regex, matching).
+
+/**
+ * @typedef {{ text: string, line: number }} Comment
+ * Commentaire extrait, délimiteurs inclus. Les lignes `//` consécutives sur des lignes sources
+ * adjacentes sont FUSIONNÉES en un seul commentaire logique (un tag porté sur la ligne suivante
+ * neutralise l'excuse de la ligne précédente, comme le lirait un humain).
+ */
+
+/**
+ * Extrait tous les commentaires (lignes `//` et blocs) d'un source TS/TSX, en ignorant le contenu
+ * des chaînes ('…', "…", `…`) — une occurrence dans une chaîne ou un littéral de scénario n'est
+ * PAS un commentaire. Heuristique volontairement simple : suffisante pour du TypeScript/TSX
+ * standard, pas un vrai lexer.
+ * @param {string} src
+ * @returns {Comment[]}
+ */
+export function extractComments(src) {
+  const raw = [];
+  let i = 0;
+  let line = 1;
+  const n = src.length;
+  while (i < n) {
+    const ch = src[i];
+    if (ch === '\n') {
+      line++;
+      i++;
+      continue;
+    }
+    if (ch === '/' && src[i + 1] === '/') {
+      const startLine = line;
+      let j = i + 2;
+      while (j < n && src[j] !== '\n') j++;
+      raw.push({ kind: 'line', text: src.slice(i, j), line: startLine });
+      i = j;
+      continue;
+    }
+    if (ch === '/' && src[i + 1] === '*') {
+      const startLine = line;
+      let j = i + 2;
+      while (j < n && !(src[j] === '*' && src[j + 1] === '/')) {
+        if (src[j] === '\n') line++;
+        j++;
+      }
+      j = Math.min(j + 2, n);
+      raw.push({ kind: 'block', text: src.slice(i, j), line: startLine });
+      i = j;
+      continue;
+    }
+    if (ch === '"' || ch === "'" || ch === '`') {
+      const quote = ch;
+      let j = i + 1;
+      while (j < n && src[j] !== quote) {
+        if (src[j] === '\\') {
+          j++;
+          if (src[j] === '\n') line++;
+          j++;
+          continue;
+        }
+        if (src[j] === '\n') line++;
+        j++;
+      }
+      i = Math.min(j + 1, n);
+      continue;
+    }
+    i++;
+  }
+
+  // Fusion des `//` consécutifs (lignes sources adjacentes, sans code entre eux) : un seul
+  // commentaire logique — sinon un tag `[entériné …]` posé sur la ligne suivante ne « couvrirait »
+  // jamais l'excuse énoncée sur la ligne précédente.
+  const merged = [];
+  let k = 0;
+  while (k < raw.length) {
+    const cur = raw[k];
+    if (cur.kind === 'line') {
+      let text = cur.text;
+      let endLine = cur.line;
+      let m = k + 1;
+      while (m < raw.length && raw[m].kind === 'line' && raw[m].line === endLine + 1) {
+        text += '\n' + raw[m].text;
+        endLine = raw[m].line;
+        m++;
+      }
+      merged.push({ text, line: cur.line });
+      k = m;
+    } else {
+      merged.push({ text: cur.text, line: cur.line });
+      k++;
+    }
+  }
+  return merged;
+}
+
+/** Ligne absolue (1-based) d'un index de match DANS `comment.text`.
+ * @param {Comment} comment @param {number} matchIndex @returns {number} */
+export function matchLine(comment, matchIndex) {
+  return comment.line + comment.text.slice(0, matchIndex).split('\n').length - 1;
+}
+
+/** Extrait de contexte lisible autour d'un match (une ligne, tronquée).
+ * @param {Comment} comment @param {number} matchIndex @returns {string} */
+export function excerptAt(comment, matchIndex) {
+  const lineStart = comment.text.lastIndexOf('\n', matchIndex) + 1;
+  let lineEnd = comment.text.indexOf('\n', matchIndex);
+  if (lineEnd < 0) lineEnd = comment.text.length;
+  return comment.text.slice(lineStart, lineEnd).trim().slice(0, 140);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Famille 1 — PIERRE TOMBALE (CLAUDE.md règle 6c). Tolérance ZÉRO, pas d'exception.
+// ---------------------------------------------------------------------------------------------
+
+// Bâti via String.fromCharCode (pas un caractère back-tick littéral dans CE fichier) : un back-tick
+// littéral serait lu par les outils qui parsent ce module comme un template string et désynchroniserait
+// le reste du fichier.
+const BT = String.fromCharCode(96);
+const CODE_TOMBSTONE_RETIRE_RX = new RegExp(
+  '(ancien\\w*|' + BT + '[^' + BT + ']+' + BT + '|«[^»]+»)[\\s\\S]{0,200}?a été (retiré|supprimé|renommé)',
+  'i',
+);
+
+/** @type {{ rx: RegExp, label: string }[]} */
+export const TOMBSTONE_FAMILIES = [
+  // NB : l'accord féminin/pluriel du participe passé est couvert par les suffixes optionnels
+  // (« e »/« s »), sinon la famille ne matcherait jamais la forme la plus courante.
+  //
+  // Affinage #136 (post-scan agent, 51 offenders triés à la main) : la famille brute matchait aussi un
+  // déplacement PHYSIQUE en jeu/UI, jamais suivi d'un article en vrai tombstone de code (qui cible
+  // toujours un module ou un chemin, jamais précédé d'un déterminant). Le lookahead négatif écarte
+  // l'article.
+  { rx: /déplacée?s? (vers|dans) (?!la\b|le\b|un\b|une\b|les\b)/i, label: 'déplacé(e)(s) vers/dans (code)' },
+  { rx: /anciennement/i, label: 'anciennement' },
+  { rx: /\bex-[A-Z]/, label: 'ex-Nom' },
+  { rx: /désormais (dans|via|par)/i, label: 'désormais dans/via/par' },
+  // Affinage #136 : la famille brute matchait aussi le vocabulaire de JEU (un pion d'armure ou une
+  // provision quittant l'inventaire EN JEU, pas du code quittant le dépôt). Une vraie pierre tombale de
+  // code NOMME l'artefact : le mot "ancien", un identifiant entre back-ticks, ou un nom entre
+  // guillemets — on exige l'un des trois à proximité.
+  {
+    rx: CODE_TOMBSTONE_RETIRE_RX,
+    label: 'a été retiré/supprimé/renommé (code)',
+  },
+  // Affinage #136 : « avant : » nu matchait aussi le vocabulaire de RENDU/JEU (façade, direction, ou un
+  // état de PERSONNAGE antérieur à un entraînement). Une vraie pierre tombale de code compare
+  // EXPLICITEMENT à l'ancien comportement via une locution dédiée, ou cite la valeur/le message
+  // d'avant entre guillemets.
+  { rx: /(comme avant\s*:|avant\s*:\s*«)/i, label: 'avant : (comparaison au code)' },
+];
+
+/** @param {string} text @returns {string[]} labels des familles matchées */
+export function tombstonesIn(text) {
+  return TOMBSTONE_FAMILIES.filter((f) => f.rx.test(text)).map((f) => f.label);
+}
+
+/**
+ * Scan complet d'un fichier source : toutes les pierres tombales trouvées dans ses commentaires.
+ * @param {string} relPath chemin relatif (pour le libellé de la trouvaille)
+ * @param {string} contenu source complet du fichier
+ * @returns {{ line: number, detail: string }[]}
+ */
+export function scanTombstones(relPath, contenu) {
+  const findings = [];
+  for (const c of extractComments(contenu)) {
+    for (const fam of TOMBSTONE_FAMILIES) {
+      const m = fam.rx.exec(c.text);
+      if (m) findings.push({ line: matchLine(c, m.index), detail: `[${fam.label}] ${excerptAt(c, m.index)}` });
+    }
+  }
+  return findings;
+}
+
+// ---------------------------------------------------------------------------------------------
+// Famille 2 — commentaire-EXCUSE (CLAUDE.md règle 6b). Un tag `[entériné AAAA-MM-JJ]` dans le MÊME
+// commentaire neutralise la détection (décision utilisateur traçable).
+// ---------------------------------------------------------------------------------------------
+
+/** Policy PARTAGÉE (test Vitest + hook pre-commit + hook au stylo — une seule source de vérité) :
+ *  le volet excuses ne BLOQUE que lorsque le tri utilisateur du stock existant est fait
+ *  (tag `[entériné AAAA-MM-JJ]` ou reformulation de chaque occurrence), cf. #136. Tant que `false`,
+ *  les hooks signalent sans bloquer et le test Vitest skippe le scan. */
+export const EXCUSE_GUARD_ACTIVE = false;
+
+export const EXCUSE_RX = /(assume|épargn[ée]|pour l'instant|pas encore|temporairement)/i;
+export const ENTERINE_TAG_RX = /\[entériné \d{4}-\d{2}-\d{2}\]/;
+
+/** @param {string} text @returns {RegExpExecArray | null} */
+export function untaggedExcuseMatch(text) {
+  if (ENTERINE_TAG_RX.test(text)) return null;
+  return EXCUSE_RX.exec(text);
+}
+
+/**
+ * Scan complet d'un fichier source : toutes les excuses non taguées trouvées dans ses commentaires.
+ * @param {string} relPath @param {string} contenu
+ * @returns {{ line: number, detail: string }[]}
+ */
+export function scanExcuses(relPath, contenu) {
+  const findings = [];
+  for (const c of extractComments(contenu)) {
+    const m = untaggedExcuseMatch(c.text);
+    if (m) findings.push({ line: matchLine(c, m.index), detail: excerptAt(c, m.index) });
+  }
+  return findings;
+}
