@@ -47,3 +47,6 @@ wrangler-*.err
 
 # Bundles git transitoires (transfert de sessions cloud) : intégrés par merge puis supprimés
 *.bundle
+
+# Bytecode Python (scripts d'extraction)
+__pycache__/
