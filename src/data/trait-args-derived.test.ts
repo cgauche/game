@@ -6,29 +6,37 @@
  * l'instance porte. Trois INVARIANTS stricts, sans tolérance ad hoc ni baseline de dette (aucun élément
  * différé) — même esprit que la GARDE EXHAUSTIVE de `refs-migrated.test.ts` (walk + offenders + `expect([])`) :
  *   1. `value` numérique ⟹ le trait déclare `indice` (le sens de la valeur).            → « missing-indice »
- *   2. `arg` d'une source FERMÉE (`specsSource` sans `specsOpen`) RÉSOUT dans son registre. → « label-as-id »
+ *   2. `arg` RÉSOUT dans le registre de sa source — sur une source FERMÉE c'est la seule issue ; sur une
+ *      source OUVERTE (`specsOpen`), un `arg` qui NE résout PAS comme id mais reproduit EXACTEMENT le
+ *      LIBELLÉ d'un id du même registre est encore un libellé pris pour un id (#145) → « label-as-id ».
+ *      Un descripteur NATUREL/libre qui ne matche NI id NI libellé reste légitime (« Griffes », « Crocs »).
  *   3. Toute instance porteuse d'un `id` RÉSOUT dans `traits.json` (id de trait connu).    → « id fantôme »
- * Un `arg` sur un trait SANS `specsSource` est un descripteur TEXTE LIBRE (« Arme (Épée) », « Armure
+ * Un `arg` sur un trait SANS `specsSource` est un descripteur TEXTE LIBRE (« Corruption (Mineure) », « Armure
  * (Cuir 2) ») — légitime, non contraint (même convention que `refs-migrated` : hors catalogue = verbatim).
  *
  * ── PÉRIMÈTRE ─────────────────────────────────────────────────────────────────────────────────────
- * Les instances vivent dans `creatures.json`, sous `traits[]` (profil imprimé) et `optionals[]` (LDB 76,
- * menu facultatif). TOUTES sont désormais id-based `{ id, value?, arg?, range?, count? }` — la liste
- * `optionals[]` a été migrée du format legacy label-`key` vers les id (args des sources FERMÉES résolus
- * en id, comme `traits[]`). Restent 3 entrées `optionals` en `key` (libellé) : des NOTES de profil
- * GENUINEMENT PROSE, irréductibles à un id de trait — « Tous les traits » (Mutant), et deux
+ * Les instances vivent dans `creatures.json` (`traits[]` profil imprimé + `optionals[]`, LDB 76) ET dans
+ * les STATBLOCS D'AUTEUR des scénarios de test (`src/scenes/test-scenarios/**`, registre `testScenarios`,
+ * + la fixture partagée `ambush-test.ts`, hors registre) — un statbloc de scène est une SOURCE de données
+ * comme le bestiaire, la même dérive (libellé tapé à la main au lieu de l'id) s'y produit (#145). TOUTES
+ * sont id-based `{ id, value?, arg?, range?, count? }` — la liste `optionals[]` du bestiaire a été migrée
+ * du format legacy label-`key` vers les id. Restent 3 entrées `optionals` en `key` (libellé) : des NOTES de
+ * profil GENUINEMENT PROSE, irréductibles à un id de trait — « Tous les traits » (Mutant), et deux
  * transformations « remplacer Bestial/Dressé/Territorial par un bonus de Soc » (Grand Loup, Griffon ZI).
  * Laissées telles quelles (non forcées), donc naturellement hors des invariants #2/#3 (pas d'`id`) ;
  * l'invariant #1 les couvre si leur `key` résout à un trait.
  *
  * Les instances CONSTRUITES par op (`grantTrait { traitId, arg? }`, dans mutations/sorts/traits/États/
- * maladies) sont balayées par l'invariant #4 (même résolution que #2). Toute dérive FUTURE (un `value`
- * sans `indice`, un `arg` fermé pris pour un libellé, un `id` de trait fantôme, un `grantTrait` à arg
- * libellé) fait échouer la garde en LISTANT les fautifs.
+ * maladies) sont balayées par l'invariant #4 (même résolution, fermée ET ouverte, que #2). Toute dérive
+ * FUTURE (un `value` sans `indice`, un `arg` pris pour un libellé, un `id` de trait fantôme, un
+ * `grantTrait` à arg libellé) fait échouer la garde en LISTANT les fautifs.
  *   4. `grantTrait { traitId, arg }` (ops) : l'arg RÉSOUT dans le registre du trait ciblé.  → « op label-as-id »
  */
 import { describe, it, expect } from 'vitest';
 import { traits, creatures, mutations, spells, etats, maladies, SPEC_SOURCES, type SpecsSource, type TraitData } from './index';
+import { testScenarios } from '../scenes/test-scenarios';
+import { ambushTest } from '../scenes/ambush-test';
+import type { Scene } from '../state/scene';
 
 /** Forme BRUTE d'une instance. Typage local : le type `TraitInstance` public n'a que `id` ; les 33
  *  entrées `optionals` non migrées portent encore `key` (libellé) → accès via ce shape. */
@@ -40,10 +48,37 @@ const byLabel = new Map(traits.map((t) => [t.label, t] as const));
 /** Sentinelle joker d'un statbloc RAW (« Animosité (un au choix) », « Peur (Au choix) ») — tolérée. */
 const WILDCARD = /^(un |une |deux )?au choix$/i;
 
+/** Résout un texte comme LIBELLÉ (pas id) d'une source de spéc partagée : l'id du POOL (choisissable,
+ *  cf. doctrine `SPEC_SOURCES`) dont `.label()` reproduit EXACTEMENT ce texte. Sert l'invariant #2/#4 sur
+ *  une source OUVERTE — un descripteur naturel/libre (« Griffes ») ne matche NI id NI libellé et reste
+ *  légitime ; seul un texte qui EST le libellé d'un id réel est un libellé pris pour un id. */
+function labelAsId(src: SpecsSource, text: string): string | undefined {
+  return SPEC_SOURCES[src].pool().find((id) => SPEC_SOURCES[src].label(id) === text);
+}
+
 interface Row { inst: RawTraitInstance; def: TraitData | undefined; where: string; hasId: boolean; }
-/** Toutes les instances de trait (`traits[]` + `optionals[]`), def résolue par `id` (byId) puis, à
- *  défaut, par libellé `key` (byLabel — les 33 entrées prose non migrées). `hasId` = l'instance porte
- *  un vrai `id` (⇒ soumise à la résolution fermée #2 et à la résolution d'id #3). */
+
+/** Scènes balayées par la garde : le registre des scénarios de test (menu « 🧪 Tests ») + la fixture
+ *  `ambush-test` (partagée par plusieurs tests de combat, hors registre). L'Arène (`arene-projet.json`,
+ *  campagne de lancement) est un PROJET d'ÉDITEUR — hors périmètre de cette garde anti-dérive TS. */
+const scenesToScan: Scene[] = [...testScenarios.map((s) => s.scene), ambushTest];
+
+/** Statblocs D'AUTEUR des scénarios de test — même schéma d'instance que le bestiaire (déjà id-based,
+ *  jamais de `key` legacy), soumis aux mêmes invariants #1/#2/#3. */
+function* eachSceneInstance(): Generator<Row> {
+  for (const scene of scenesToScan) {
+    for (const ent of scene.entities) {
+      for (const inst of (ent.statblock?.traits ?? []) as unknown as RawTraitInstance[]) {
+        const def = typeof inst.id === 'string' ? byId.get(inst.id) : undefined;
+        yield { inst, def, where: `scene:${scene.id}.${ent.id}.traits[${String(inst.id)}]`, hasId: typeof inst.id === 'string' };
+      }
+    }
+  }
+}
+
+/** Toutes les instances de trait (`creatures.json` `traits[]`/`optionals[]` + statblocs de scène), def
+ *  résolue par `id` (byId) puis, à défaut, par libellé `key` (byLabel — les 33 entrées prose non migrées
+ *  du bestiaire). `hasId` = l'instance porte un vrai `id` (⇒ soumise à la résolution #2 et à #3). */
 function* eachInstance(): Generator<Row> {
   for (const c of creatures) {
     for (const list of ['traits', 'optionals'] as const) {
@@ -53,6 +88,7 @@ function* eachInstance(): Generator<Row> {
       }
     }
   }
+  yield* eachSceneInstance();
 }
 
 /** Parts d'un `arg` : liste séparée par virgules si `specsMulti`, sinon l'arg entier. */
@@ -69,19 +105,23 @@ describe('schéma d\'argument des traits — chaque instance est COUVERTE par la
     expect(offenders, `value numérique sans \`indice\` déclaré :\n${offenders.join('\n')}`).toEqual([]);
   });
 
-  it('arg d\'une source FERMÉE (specsSource sans specsOpen) RÉSOUT dans le registre — jamais un libellé/id fantôme', () => {
+  it('arg RÉSOUT dans le registre de sa source — jamais un libellé de catalogue pris pour un id (source FERMÉE ou OUVERTE)', () => {
     const offenders: string[] = [];
     for (const { inst, def, where, hasId } of eachInstance()) {
       if (!hasId || !def || typeof inst.arg !== 'string') continue;
       const src: SpecsSource | undefined = def.specsSource;
-      if (!src || def.specsOpen) continue; // ouvert / sans source = descripteur texte libre (légitime, non contraint)
+      if (!src) continue; // sans source = descripteur texte libre (légitime, non contraint)
       if (WILDCARD.test(inst.arg.trim())) continue; // sentinelle « au choix » sur l'arg entier
       for (const part of argParts(inst.arg, !!def.specsMulti)) {
         if (WILDCARD.test(part)) continue; // part joker « un au choix »
-        if (!SPEC_SOURCES[src].resolves(part)) offenders.push(`${where} → ${src}: ${JSON.stringify(part)} (id inconnu du registre)`);
+        if (SPEC_SOURCES[src].resolves(part)) continue; // id valide
+        if (!def.specsOpen) { offenders.push(`${where} → ${src}: ${JSON.stringify(part)} (id inconnu du registre)`); continue; }
+        // Source OUVERTE : légitime SAUF si le texte EST le libellé d'un id du même registre (#145).
+        const asId = labelAsId(src, part);
+        if (asId) offenders.push(`${where} → ${src}: ${JSON.stringify(part)} est le libellé de « ${asId} » — utiliser l'id`);
       }
     }
-    expect(offenders, `arg fermé non résolu (libellé pris pour un id ?) :\n${offenders.join('\n')}`).toEqual([]);
+    expect(offenders, `arg non résolu (libellé pris pour un id ?) :\n${offenders.join('\n')}`).toEqual([]);
   });
 
   it('toute instance porteuse d\'un `id` RÉSOUT dans traits.json — jamais un id de trait fantôme (les entrées prose portent `key`, pas `id`)', () => {
@@ -96,7 +136,7 @@ describe('schéma d\'argument des traits — chaque instance est COUVERTE par la
     expect(offenders, `id de trait fantôme :\n${offenders.join('\n')}`).toEqual([]);
   });
 
-  it('grantTrait { traitId, arg } (mutations/sorts/traits/États/maladies) : l\'arg RÉSOUT dans le registre du trait', () => {
+  it('grantTrait { traitId, arg } (mutations/sorts/traits/États/maladies) : l\'arg RÉSOUT dans le registre du trait (fermé ou ouvert)', () => {
     const offenders: string[] = [];
     const walk = (node: unknown, where: string): void => {
       if (Array.isArray(node)) { for (const n of node) walk(n, where); return; }
@@ -105,10 +145,13 @@ describe('schéma d\'argument des traits — chaque instance est COUVERTE par la
       if (o.op === 'grantTrait' && typeof o.traitId === 'string' && typeof o.arg === 'string') {
         const def = byId.get(o.traitId);
         const src: SpecsSource | undefined = def?.specsSource;
-        if (def && src && !def.specsOpen && !WILDCARD.test(o.arg.trim())) {
+        if (def && src && !WILDCARD.test(o.arg.trim())) {
           for (const part of argParts(o.arg, !!def.specsMulti)) {
             if (WILDCARD.test(part)) continue;
-            if (!SPEC_SOURCES[src].resolves(part)) offenders.push(`${where} grantTrait ${o.traitId} → ${src}: ${JSON.stringify(part)}`);
+            if (SPEC_SOURCES[src].resolves(part)) continue;
+            if (!def.specsOpen) { offenders.push(`${where} grantTrait ${o.traitId} → ${src}: ${JSON.stringify(part)}`); continue; }
+            const asId = labelAsId(src, part);
+            if (asId) offenders.push(`${where} grantTrait ${o.traitId} → ${src}: ${JSON.stringify(part)} est le libellé de « ${asId} » — utiliser l'id`);
           }
         }
       }

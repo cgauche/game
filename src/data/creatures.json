@@ -418,7 +418,7 @@
       },
       {
         "id": "lanceur-de-sorts",
-        "arg": "Sorcellerie"
+        "arg": "sorcellerie"
       },
       {
         "id": "prejuge",
@@ -1828,7 +1828,7 @@
       },
       {
         "id": "lanceur-de-sorts",
-        "arg": "Démonologie"
+        "arg": "demonologie"
       }
     ],
     "skills": [],
@@ -2759,7 +2759,7 @@
       },
       {
         "id": "souffle",
-        "arg": "Poison"
+        "arg": "poison"
       }
     ],
     "skills": [],
@@ -50690,7 +50690,7 @@
       },
       {
         "id": "lanceur-de-sorts",
-        "arg": "Feu"
+        "arg": "feu"
       },
       {
         "id": "magique"
@@ -51628,7 +51628,7 @@
       {
         "id": "souffle",
         "value": 9,
-        "arg": "Poison"
+        "arg": "poison"
       },
       {
         "id": "taille",
@@ -52089,7 +52089,7 @@
       },
       {
         "id": "lanceur-de-sorts",
-        "arg": "Sorcellerie"
+        "arg": "sorcellerie"
       },
       {
         "id": "limicole"
@@ -52128,7 +52128,7 @@
       },
       {
         "id": "lanceur-de-sorts",
-        "arg": "Mort"
+        "arg": "mort"
       }
     ],
     "skills": [
@@ -54444,7 +54444,7 @@
       {
         "id": "souffle",
         "value": 10,
-        "arg": "Poison"
+        "arg": "poison"
       }
     ],
     "skills": [],

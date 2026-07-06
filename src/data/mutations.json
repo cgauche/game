@@ -1393,7 +1393,7 @@
         "op": "grantTrait",
         "traitId": "souffle",
         "indice": 5,
-        "arg": "Feu"
+        "arg": "feu"
       }
     ],
     "nonVisual": true,

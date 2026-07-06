@@ -204,12 +204,18 @@ export function entityRigProfile(
   // reste mains libres même si son record porte un trait « Arme ». Armes EXPLICITES seulement
   // (`renderWeaponsFromTraits` — pas de repli « Arme » générique qui serait dessiné en épée).
   const traits = opts?.traits ?? (opts?.enrolled ? rec?.traits ?? [] : []);
-  const labelWeapon = opts?.weapon ? [weaponFromLabel(opts.weapon)] : [];
+  // `opts.weapon` (libellé d'authoring) ne s'ajoute QUE si les Traits n'ont PAS déjà produit une arme du
+  // MÊME type (melee/ranged) — même règle que le spawn de combat (`spawn.ts` spawnEnemy), sinon
+  // DUPLICATION du rendu (#126/#145). Un type ABSENT des Traits reste additif (Garde du Village posté
+  // « archer » : trait Arme mêlée générique + `weapon:'Arc'`).
+  const traitWeapons = renderWeaponsFromTraits(traits);
+  const labelWeaponInst = opts?.weapon ? weaponFromLabel(opts.weapon) : undefined;
+  const labelWeapon = labelWeaponInst && !traitWeapons.some((w) => w.type === labelWeaponInst.type) ? [labelWeaponInst] : [];
   const armourPA: ArmourPoints = opts?.armour != null ? emptyArmour(opts.armour) : armourFromTraits(traits);
   return {
     appearance: rigAppearance(seed, base, cd, override),
     tenue: bipedTenue(opts?.tenue, cd, base.perso, base.race),
-    equip: { weapons: [...labelWeapon, ...renderWeaponsFromTraits(traits)], armour: synthArmour(armourPA) },
+    equip: { weapons: [...labelWeapon, ...traitWeapons], armour: synthArmour(armourPA) },
   };
 }
 

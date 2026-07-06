@@ -19,7 +19,7 @@ import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwar
 import { rollMutation, mutationById } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
-import { weaponsFromTraits, armourFromTraits } from '../engine/creatureEquip';
+import { weaponsFromTraits, armourFromTraits, renderWeaponsFromTraits } from '../engine/creatureEquip';
 import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
 import { hashSeed } from '../gameIso/appearance';
 import { bodyPlanById } from '../gameIso/rig/bodyPlan';
@@ -375,8 +375,17 @@ export function spawnEnemy(
   // Tenue éditée (libellé) → portée par le rig (via Combatant.career, qui sert de tenue) en
   // combat comme en exploration.
   if (a?.tenue) c.career = a.tenue;
+  // `opts.weapon` est une arme d'AUTHORING/RENDU (libellé, sans Recharge dérivée) — elle n'alimente le
+  // COMBAT que si les Traits n'ont PAS déjà produit une arme explicite du MÊME type (melee/ranged) ;
+  // sinon DUPLICATION (l'arme de rendu, sans reload, passe en tête de `c.weapons` et masque celle du
+  // Trait qui porte la Recharge, LDB 62 l.333 — #126/#145). Un `weapon:` d'un type ABSENT des Traits
+  // (ex. Garde du Village posté « archer » : trait Arme mêlée générique + `weapon:'Arc'`) reste additif,
+  // légitime (ne duplique rien). `renderWeaponsFromTraits` = armes EXPLICITES sans repli générique.
   if (opts?.weapon) {
-    c.weapons = [weaponFromLabel(opts.weapon), ...c.weapons];
+    const labelWeapon = weaponFromLabel(opts.weapon);
+    if (!renderWeaponsFromTraits(c.traits ?? []).some((w) => w.type === labelWeapon.type)) {
+      c.weapons = [labelWeapon, ...c.weapons];
+    }
   }
   // Arme à distance CHARGÉE au spawn (miroir du héros dans startCombat) — LDB 62 l.333 : le `loaded` ne gate
   // que les armes à Recharge, un tireur fraîchement engagé peut donc tirer au 1er Round (pas de recharge à vide).
