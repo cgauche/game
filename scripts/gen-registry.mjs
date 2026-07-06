@@ -308,13 +308,17 @@ function genOne(r) {
   // `fields` (option PAR registre) : un module de def exporte PLUSIEURS noms (ex. `file`+`schema`,
   // cf. src/data/schemas/defs/) → une entrée `{ champ1, champ2, … }` par fichier, au lieu du
   // tableau plat d'un seul export (`exportName`) des registres « 1 def = 1 valeur ».
-  const fields = r.fields ?? [r.exportName];
-  const imports = files.map(
-    (f, i) => `import { ${fields.map((fn) => `${fn} as e${i}_${fn}`).join(', ')} } from '${importDir}/${f.replace(/\.ts$/, '')}';`,
-  );
+  // Alias suffixé (`e0_champ`) UNIQUEMENT pour les registres multi-champs : les registres
+  // « 1 def = 1 valeur » gardent `e0` — leur sortie générée reste byte-identique.
+  const imports = files.map((f, i) => {
+    const names = r.fields
+      ? r.fields.map((fn) => `${fn} as e${i}_${fn}`).join(', ')
+      : `${r.exportName} as e${i}`;
+    return `import { ${names} } from '${importDir}/${f.replace(/\.ts$/, '')}';`;
+  });
   const arr = r.fields
-    ? files.map((_, i) => `{ ${fields.map((fn) => `${fn}: e${i}_${fn}`).join(', ')} }`)
-    : files.map((_, i) => `e${i}_${r.exportName}`);
+    ? files.map((_, i) => `{ ${r.fields.map((fn) => `${fn}: e${i}_${fn}`).join(', ')} }`)
+    : files.map((_, i) => `e${i}`);
   // Union de littéraux des ids déclarés dans les defs (option `idUnion`) — triée, dédupliquée.
   let unionDecl = '';
   if (r.idUnion) {
