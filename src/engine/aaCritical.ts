@@ -14,10 +14,17 @@
  * RÉCURRENTS/chiffrés y sont désormais AUSSI structurés en `ops` (#125) : durées « Nd10[-BE] Rounds »
  * (membre inutilisable, l.2557/2562/2588) via `maxWeaponHands.durationRounds` ; pénalités de Test à
  * durée Rounds (l.2610/2614) via `charMod.durationRounds` ; Tests conditionnels hors-Résistance
- * (l.2608/2609) via `resist.skill`. Ce qui reste TEXTE (blocage/gap distinct, non ré-arbitré ici) :
- * durées en JOURS (l.2545/2587 — ctx sans horloge au site de résolution, `state/combatFlow.ts`),
- * amputations PERMANENTES en desc non converties en séquelles structurelles, et l'action de lâcher
- * l'objet tenu (spatial/inventaire, hors du moteur pur).
+ * (l.2608/2609) via `resist.skill`. #153 poursuit : durées en JOURS (charMod/condition
+ * `durationHours`, ctx.now câblé côté `state/combatFlow.ts`), Amputation DÉCLARÉE STRUCTURELLEMENT
+ * (`entry.amputation`, même patron que `data/criticals.ts` LDB — Test de Résistance → séquelle
+ * permanente via `permanentAmputations`), et lâcher l'objet tenu (op `disarm`, ci-dessous). Ce qui
+ * reste TEXTE (gap distinct, non modélisé ici — cf. #153 rapport) : la cascade Aide Médicale + Test
+ * étendu de Guérison (bras 96-109/jambe 96-105 : « bras/jambe considéré comme perdu » PENDANT
+ * l'attente de soins, PUIS pénalité −10 Nd10 jours après récupération), l'escalade « 1 doigt de plus
+ * par Round sans Aide Médicale » (bras 116-120) et « perte du pied si pas de Chirurgie sous 1d10
+ * jours » (jambe 106-115) — mêmes simplifications que leurs analogues LDB (`data/criticals.json`),
+ * et le Test PAR ACTION impliquant la main (bras 46-50, « Main ensanglantée » — pas de hook d'Action
+ * dans le moteur, cf. `actGate` qui ne couvre que le Round).
  */
 import aaJson from '../data/aa-criticals.json';
 import { d100, d10, RNG, defaultRNG } from './dice';
@@ -30,6 +37,7 @@ import { Combatant, HitLocation } from './types';
 import { traumaById, traumaFicheById } from './trauma';
 import type { GameOp } from './ops';
 import type { CriticalResolved } from './critical';
+import { permanentAmputations } from './critical';
 
 interface AAEntry {
   id: string;
@@ -46,6 +54,11 @@ interface AAEntry {
    *  déjà les compétences de base non entraînées. Absent (défaut historique) = Test de Résistance. */
   resist?: { difficulty: import('./types').Difficulty; onFail: GameOp[]; skill?: string };
   traumas?: string[];
+  /** Amputation (AA « voir Amputation en page 180 de WFJDR ») DÉCLARÉE STRUCTURELLEMENT — même forme
+   *  que `data/criticals.ts` (LDB) : `difficulty` = Test de Résistance (échec → À Terre, +Sonné si
+   *  DR≤−2, +Inconscient si DR≤−4, comme LDB 18 l.328-333), `sequels` = ids de fiches de séquelle
+   *  PERMANENTE (`traumas.json`), instanciées par `permanentAmputations` (SOURCE UNIQUE, réutilisée). */
+  amputation?: { difficulty: import('./types').Difficulty; sequels: string[] };
   lethal?: boolean;
   desc: string;
 }
@@ -86,6 +99,25 @@ export function resolveAACritical(
   }
   const traumas = (entry.traumas ?? []).map((id) =>
     traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
+  // Amputation (« voir Amputation en page 180 de WFJDR ») DÉCLARÉE STRUCTURELLEMENT — même cascade que
+  // `rollCritical` (LDB 18 l.328-333) : Test de Résistance indépendant du `resist` de la ligne (les deux
+  // coexistent déjà côté LDB, ex. « Coup défigurant »/« Tendons coupés » — cf. `data/criticals.json`).
+  // Roll placé en DERNIER (ne décale que les critiques d'amputation).
+  if (!entry.lethal && entry.amputation) {
+    const res = rollTest(resistVal, entry.amputation.difficulty, rng);
+    if (!res.success) {
+      ops.push({ op: 'condition', name: 'a-terre', value: 1 });
+      if (res.sl <= -2) ops.push({ op: 'condition', name: 'sonne', value: 1 });
+      if (res.sl <= -4) ops.push({ op: 'condition', name: 'inconscient', value: 1 });
+    }
+    // Plaie chirurgicale (LDB 18 l.333/401) : bloque la guérison jusqu'à l'opération.
+    traumas.push({
+      label: 'Amputation', location, needsSurgery: true,
+      desc: 'Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.',
+    });
+    // Séquelle(s) PERMANENTE(S) (membre absent) : SOURCE UNIQUE partagée avec le chemin LDB.
+    traumas.push(...permanentAmputations(entry.amputation.sequels, location, rng));
+  }
   return {
     location,
     name: entry.name,

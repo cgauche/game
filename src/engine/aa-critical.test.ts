@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { resolveAACritical, aaCriticalOffset, aaCriticalIsTrivial, aaDeathByCriticalCount } from './aaCritical';
 import { rollCritical } from './critical';
 import { setRule, resetRule } from './policy';
+import aaJson from '../data/aa-criticals.json';
 import type { Combatant } from './types';
 import type { RNG } from './dice';
 
@@ -59,25 +60,29 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
   });
 
   // #125 — sous-effets RÉCURRENTS/chiffrés désormais STRUCTURÉS (GameOp à durée), plus un texte arbitré.
-  it('« Choc au bras » (AA bras 11-20, l.2557) : main inutilisable 1d10−BE Rounds (min 1) — STRUCTURÉ', () => {
+  // #153 — « Vous lâchez ce que vous teniez dans cette main » désormais STRUCTURÉ (op `disarm`).
+  it('« Choc au bras » (AA bras 11-20, l.2557) : lâche l’objet tenu + main inutilisable 1d10−BE Rounds (min 1) — STRUCTURÉ', () => {
     const r = resolveAACritical(target(), 'brasG', seq(15), 0);
     expect(r.name).toBe('Choc au bras');
-    expect(r.ops).toEqual([{
-      op: 'maxWeaponHands', hands: 1,
-      durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'E' }, factor: -1 } }] },
-    }]);
+    expect(r.ops).toEqual([
+      { op: 'disarm' },
+      {
+        op: 'maxWeaponHands', hands: 1,
+        durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'E' }, factor: -1 } }] },
+      },
+    ]);
   });
 
-  it('« Clef de bras » (AA bras 51-55, l.2562) : bras inutilisable 1d10 Rounds — STRUCTURÉ', () => {
+  it('« Clef de bras » (AA bras 51-55, l.2562) : lâche l’objet tenu + bras inutilisable 1d10 Rounds — STRUCTURÉ', () => {
     const r = resolveAACritical(target(), 'brasG', seq(53), 0);
     expect(r.name).toBe('Clef de bras');
-    expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'maxWeaponHands', hands: 1, durationRounds: { dice: { n: 1, sides: 10 } } }]);
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'disarm' }, { op: 'maxWeaponHands', hands: 1, durationRounds: { dice: { n: 1, sides: 10 } } }]);
   });
 
-  it('« Clavicule tordue » (AA corps 41-45, l.2588) : bras (au hasard) inutilisable 1d10 Rounds — STRUCTURÉ', () => {
+  it('« Clavicule tordue » (AA corps 41-45, l.2588) : lâche l’objet tenu + bras (au hasard) inutilisable 1d10 Rounds — STRUCTURÉ', () => {
     const r = resolveAACritical(target(), 'corps', seq(43), 0);
     expect(r.name).toBe('Clavicule tordue');
-    expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'maxWeaponHands', hands: 1, durationRounds: { dice: { n: 1, sides: 10 } } }]);
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'disarm' }, { op: 'maxWeaponHands', hands: 1, durationRounds: { dice: { n: 1, sides: 10 } } }]);
   });
 
   it('« Cheville tordue » (AA jambe 21-25, l.2610) : -10 Ag pendant 1d10 Rounds — STRUCTURÉ (charMod)', () => {
@@ -110,5 +115,55 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
     resetRule('combat-aa-blessures');
     const ldb = rollCritical(target(), 'corps', seq(15), 0);
     expect(ldb.name).not.toBe("Rien qu'une égratignure !"); // table LDB (nom différent)
+  });
+
+  // #153 — Amputation AA DÉSORMAIS DÉCLARÉE STRUCTURELLEMENT (`entry.amputation`), même cascade que
+  // `rollCritical` LDB (Test de Résistance → séquelle permanente via `permanentAmputations`, SOURCE UNIQUE).
+  describe('#153 — Amputation AA structurée (l.328-333, même patron que data/criticals.ts)', () => {
+    it('« Oreille mutilée » (AA tête 61-65, Amputation Accessible) : Résistance échouée → À Terre + séquelle permanente (needsSurgery + oreille-perdue)', () => {
+      // E30 → cible Accessible 50 ; jet de résistance 60 > 50 → échec (DR −1, pas de Sonné/Inconscient).
+      const r = resolveAACritical(target(), 'tete', seq(63, 60), 0);
+      expect(r.name).toBe('Oreille mutilée');
+      expect(r.traumas.some((t) => t.needsSurgery && t.label.startsWith('Amputation'))).toBe(true);
+      expect(r.traumas.some((t) => t.traumaId === 'oreille-perdue')).toBe(true);
+      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(true);
+      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'sonne')).toBe(false);
+    });
+
+    it('« Oreille mutilée » : Résistance RÉUSSIE → séquelle quand même (le membre reste perdu), sans À Terre du choc', () => {
+      const r = resolveAACritical(target(), 'tete', seq(63, 5), 0); // 5 ≤ 50 → réussite
+      expect(r.traumas.some((t) => t.traumaId === 'oreille-perdue')).toBe(true);
+      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
+    });
+
+    it('échec catastrophique (DR ≤ −4) ajoute Sonné ET Inconscient (même cascade que LDB 18 l.328-333)', () => {
+      const r = resolveAACritical(target(), 'tete', seq(63, 99), 0); // cible 50 ; 99 → DR −4
+      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'sonne')).toBe(true);
+      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'inconscient')).toBe(true);
+    });
+
+    it('« Coup défigurant » (AA tête 86-94, Amputation Difficile) cumule 2 séquelles (œil + nez)', () => {
+      // Cible Difficile = E30−20 = 10 ; jet de résistance 5 ≤ 10 → réussite (séquelles quand même, sans à-terre).
+      const r = resolveAACritical(target(), 'tete', seq(90, 5), 0);
+      expect(r.name).toBe('Coup défigurant');
+      expect(r.traumas.some((t) => t.traumaId === 'oeil-perdu')).toBe(true);
+      expect(r.traumas.some((t) => t.traumaId === 'nez-ampute')).toBe(true);
+      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
+    });
+
+    it('toutes les entrées AA `amputation` portent `{difficulty,sequels}` non vide (garde de cohérence, cf. critical.test.ts)', () => {
+      let count = 0;
+      for (const table of [aaJson.tete, aaJson.bras, aaJson.corps, aaJson.jambe]) {
+        for (const e of table as { amputation?: { difficulty: string; sequels: string[] } }[]) {
+          if (e.amputation) {
+            count += 1;
+            expect(e.amputation.difficulty).toBeTruthy();
+            expect(Array.isArray(e.amputation.sequels)).toBe(true);
+            expect(e.amputation.sequels.length).toBeGreaterThan(0);
+          }
+        }
+      }
+      expect(count).toBeGreaterThan(0);
+    });
   });
 });

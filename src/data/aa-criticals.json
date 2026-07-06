@@ -1,5 +1,5 @@
 {
-  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y COMPRIS les sous-effets récurrents à durée Rounds (#125 : `maxWeaponHands.durationRounds`/`charMod.durationRounds`, `resist.skill` hors-Résistance) ; `desc` = « Effets supplémentaires » VERBATIM (reste l'affichage long terme — durées en JOURS et amputations permanentes non structurées y restent, arbitrage).",
+  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y COMPRIS les sous-effets récurrents à durée Rounds (#125 : `maxWeaponHands.durationRounds`/`charMod.durationRounds`, `resist.skill` hors-Résistance), les durées en JOURS (#153 : `condition`/`charMod` `durationHours` = jours×24, ctx.now câblé côté combatFlow), l'objet lâché (#153 : op `disarm`) et l'Amputation structurée (#153 : `amputation.{difficulty,sequels}`, même patron que `data/criticals.ts` LDB). `desc` = « Effets supplémentaires » VERBATIM (reste l'affichage long terme). aa-jambe-81 (Tendon rompu, l.2620) : RAW ne donne AUCUNE Difficulté pour l'Amputation référencée (« voir p.180 », contrairement à toutes ses voisines qui en citent une) — arbitrage maison NON entériné : réutilise la Difficulté Difficile du Test de Résistance de la MÊME ligne (seule valeur que la ligne fournit) ; à valider. Restent TEXTE (non modélisés, cf. aaCritical.ts en-tête) : la cascade Aide Médicale + Test étendu de Guérison (bras 96-109/jambe 96-105), l'escalade doigt/pied par Round ou par jour sans soin (bras 116-120/jambe 106-115), et le Test PAR ACTION de « Main ensanglantée » (bras 46-50).",
   "tete": [
     {
       "id": "aa-tete-01",
@@ -249,6 +249,12 @@
           "value": 2
         }
       ],
+      "amputation": {
+        "difficulty": "accessible",
+        "sequels": [
+          "oreille-perdue"
+        ]
+      },
       "desc": "Un coup vous déchire l'oreille. Vous recevez 3 États Assourdi et 2 États Hémorragique. Vous perdez votre oreille – Amputation (Accessible)."
     },
     {
@@ -264,6 +270,12 @@
           "value": 2
         }
       ],
+      "amputation": {
+        "difficulty": "facile",
+        "sequels": [
+          "dents-perdues"
+        ]
+      },
       "desc": "Le coup vous déchausse plusieurs dents. Vous recevez 2 États Hémorragique. Vous perdez 1d10 dents – Amputation (Facile)."
     },
     {
@@ -282,6 +294,22 @@
           "op": "condition",
           "name": "hemorragique",
           "value": 2
+        },
+        {
+          "op": "condition",
+          "name": "extenue",
+          "value": 1,
+          "durationHours": {
+            "times": {
+              "of": {
+                "dice": {
+                  "n": 1,
+                  "sides": 10
+                }
+              },
+              "factor": 24
+            }
+          }
         }
       ],
       "desc": "Un coup très puissant résonne contre votre crâne. Vous recevez 1 État Assourdi, 2 États Hémorragique et 1d10 États Sonné. Vous recevez également 1 État Exténué qui dure 1d10 jours."
@@ -309,6 +337,12 @@
           "value": 1
         }
       ],
+      "amputation": {
+        "difficulty": "complexe",
+        "sequels": [
+          "oeil-perdu"
+        ]
+      },
       "desc": "Un coup porté à votre œil le crève. Vous recevez 3 États Aveuglé, 2 États Hémorragique et 1 État Sonné. Vous perdez votre œil – Amputation (Complexe)."
     },
     {
@@ -334,6 +368,13 @@
           "value": 2
         }
       ],
+      "amputation": {
+        "difficulty": "difficile",
+        "sequels": [
+          "oeil-perdu",
+          "nez-ampute"
+        ]
+      },
       "desc": "Le coup détruit votre œil et votre nez. Vous recevez 3 États Hémorragique, 3 États Aveuglé et 2 États Sonné. Vous perdez votre œil et votre nez – Amputation (Difficile)."
     },
     {
@@ -357,6 +398,13 @@
       "traumas": [
         "fracture-tete-majeure"
       ],
+      "amputation": {
+        "difficulty": "difficile",
+        "sequels": [
+          "langue-amputee",
+          "dents-perdues"
+        ]
+      },
       "desc": "Le coup vous fracasse totalement la mâchoire : il vous détruit la langue et fait voler vos dents. Vous recevez 4 États Hémorragique et 3 États Sonné. Vous subissez le Traumatisme Fracture (Majeure) et vous perdez votre langue et 1d10 dents – Amputation (Difficile)."
     },
     {
@@ -376,6 +424,11 @@
       "name": "Choc au poignet",
       "blessures": 0,
       "trivial": true,
+      "ops": [
+        {
+          "op": "disarm"
+        }
+      ],
       "desc": "Vous lâchez ce que vous teniez dans cette main."
     },
     {
@@ -386,6 +439,9 @@
       "blessures": 0,
       "trivial": true,
       "ops": [
+        {
+          "op": "disarm"
+        },
         {
           "op": "maxWeaponHands",
           "hands": 1,
@@ -478,6 +534,9 @@
       "blessures": 2,
       "ops": [
         {
+          "op": "disarm"
+        },
+        {
           "op": "maxWeaponHands",
           "hands": 1,
           "durationRounds": {
@@ -511,6 +570,11 @@
       "max": 75,
       "name": "Cassure nette",
       "blessures": 2,
+      "ops": [
+        {
+          "op": "disarm"
+        }
+      ],
       "resist": {
         "difficulty": "complexe",
         "onFail": [
@@ -532,6 +596,11 @@
       "max": 80,
       "name": "Ligament rompu",
       "blessures": 2,
+      "ops": [
+        {
+          "op": "disarm"
+        }
+      ],
       "traumas": [
         "dechirure-autre-majeure"
       ],
@@ -576,6 +645,11 @@
       "max": 90,
       "name": "Coude fracassé",
       "blessures": 3,
+      "ops": [
+        {
+          "op": "disarm"
+        }
+      ],
       "traumas": [
         "fracture-bras-majeure"
       ],
@@ -624,6 +698,12 @@
           "value": 1
         }
       ],
+      "amputation": {
+        "difficulty": "accessible",
+        "sequels": [
+          "doigt-ampute"
+        ]
+      },
       "desc": "Vous perdez un doigt – Amputation (Accessible). Vous subissez 1 État Hémorragique."
     },
     {
@@ -644,6 +724,12 @@
           "value": 1
         }
       ],
+      "amputation": {
+        "difficulty": "complexe",
+        "sequels": [
+          "doigt-ampute"
+        ]
+      },
       "desc": "Votre main s'ouvre. Perdez 1 doigt – Amputation (Complexe). Gagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous vos doigts, vous perdez votre main – Amputation (Complexe)."
     },
     {
@@ -653,6 +739,9 @@
       "name": "Biceps déchiqueté",
       "blessures": 5,
       "ops": [
+        {
+          "op": "disarm"
+        },
         {
           "op": "condition",
           "name": "hemorragique",
@@ -697,6 +786,12 @@
           }
         ]
       },
+      "amputation": {
+        "difficulty": "difficile",
+        "sequels": [
+          "main-bras-ampute"
+        ]
+      },
       "desc": "Vous perdez votre main – Amputation (Difficile). Vous recevez 2 États Hémorragique et vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 1 État Sonné et 1 État À Terre."
     },
     {
@@ -725,6 +820,12 @@
             "name": "inconscient",
             "value": 1
           }
+        ]
+      },
+      "amputation": {
+        "difficulty": "tresDifficile",
+        "sequels": [
+          "main-bras-ampute"
         ]
       },
       "desc": "Le coup rend votre bras inutilisable de manière permanente – Amputation (Très Difficile). Vous recevez 3 États Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir l'État Inconscient."
@@ -840,6 +941,24 @@
       "max": 40,
       "name": "Bleus aux côtes",
       "blessures": 2,
+      "ops": [
+        {
+          "op": "charMod",
+          "char": "Ag",
+          "mod": -10,
+          "durationHours": {
+            "times": {
+              "of": {
+                "dice": {
+                  "n": 1,
+                  "sides": 10
+                }
+              },
+              "factor": 24
+            }
+          }
+        }
+      ],
       "desc": "Vous subissez une pénalité de –10 sur tous vos Tests basés sur l'Agilité pendant 1d10 jours."
     },
     {
@@ -849,6 +968,9 @@
       "name": "Clavicule tordue",
       "blessures": 2,
       "ops": [
+        {
+          "op": "disarm"
+        },
         {
           "op": "maxWeaponHands",
           "hands": 1,
@@ -1231,6 +1353,12 @@
           "value": 1
         }
       ],
+      "amputation": {
+        "difficulty": "accessible",
+        "sequels": [
+          "orteil-ampute"
+        ]
+      },
       "desc": "Vous recevez 1 État Hémorragique. Une fois la rencontre terminée, effectuez un Test de Résistance Intermédiaire (+0). Sur un Échec, vous perdez un orteil – Amputation (Accessible)."
     },
     {
@@ -1430,6 +1558,12 @@
           "value": 2
         }
       ],
+      "amputation": {
+        "difficulty": "accessible",
+        "sequels": [
+          "orteil-ampute"
+        ]
+      },
       "desc": "Effectuez un Test de Résistance Accessible (+20) ; sur un Échec, vous gagnez l'État À Terre et perdez un orteil, plus un orteil par DR en dessous de 0 – Amputation (Accessible). Gagnez 2 États Hémorragique. Si vous n'êtes pas soigné par Chirurgie au cours des 1d10 jours suivants, vous perdez votre pied."
     },
     {
@@ -1455,6 +1589,12 @@
           "value": 1
         }
       ],
+      "amputation": {
+        "difficulty": "difficile",
+        "sequels": [
+          "membre-inferieur-ampute"
+        ]
+      },
       "desc": "Votre pied est sectionné – Amputation (Difficile). Vous gagnez les États suivants : 3 États Hémorragique, 2 États Sonné et 1 État À Terre."
     },
     {
@@ -1480,6 +1620,12 @@
           "value": 1
         }
       ],
+      "amputation": {
+        "difficulty": "tresDifficile",
+        "sequels": [
+          "membre-inferieur-ampute"
+        ]
+      },
       "desc": "Votre jambe cède sous le poids de votre corps. Vous gagnez 2 États Hémorragique, 2 États Sonné et 1 État À Terre et vous perdez l'usage de votre jambe – Amputation (Très Difficile)."
     },
     {

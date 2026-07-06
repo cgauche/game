@@ -83,6 +83,41 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
     expect(target.criticalWounds ?? 0).toBe(1); // compté (le garde-fou trivial ne s’active qu’en mode AA)
   });
+
+  // #153 — `applyCriticalToTarget` passe désormais `now: get().gameTime` à `applyOps` : sans ce fil, un
+  // effet d'HORLOGE (durationHours, ex. « Exténué 1d10 jours ») calculait son échéance depuis 0 → expirait
+  // IMMÉDIATEMENT dès que `purgeClockEffects` comparait à la VRAIE horloge (non nulle en cours de partie).
+  it("#153 — Critique posant un effet d'HORLOGE (« Commotion cérébrale », Exténué 1d10 jours) : l'échéance est calculée depuis la VRAIE horloge de jeu, pas 0", () => {
+    seedBattleRng(1);
+    setRule('combat-aa-blessures', 'aa');
+    const target = mk();
+    const crit = resolveAACritical(target, 'tete', seq(78), 0); // 76-80 → Commotion cérébrale
+    expect(crit.name).toBe('Commotion cérébrale');
+    const NOW = 5000; // horloge de jeu à un instant NON NUL (mid-partie) — le bug : ctx.now absent → 0
+    const get = (() => ({ gameTime: NOW })) as never;
+    applyCriticalToTarget(target, 'tete', true, 0, [], noop, { prerolled: crit, get });
+    const extenue = target.conditions.find((c) => c.name === 'extenue');
+    expect(extenue).toBeTruthy();
+    // Durée = 1d10 jours (24-240h) → échéance toujours strictement postérieure à l'instant de pose,
+    // JAMAIS antérieure à NOW (ce que produirait `ctx.now` resté à 0/undefined).
+    expect(extenue!.untilTime).toBeGreaterThan(NOW);
+  });
+
+  // #153 — `applyCriticalToTarget` passe désormais `location: loc` à `applyOps` : l'op `disarm` (« Vous
+  // lâchez ce que vous teniez dans cette main ») résout la MAIN affectée depuis cette localisation
+  // (convention DROITIER partagée avec `handAmputated` : brasD → main, brasG → off).
+  it("#153 — Critique bras (« Choc au poignet », op disarm) : la main affectée est résolue depuis la Localisation RÉELLE du coup, pas au hasard", () => {
+    seedBattleRng(1);
+    setRule('combat-aa-blessures', 'aa');
+    const target = mk({
+      items: [{ uid: 'w1', name: 'Épée', kind: 'melee', equipped: true, qualities: [], enc: 1 } as never],
+      loadouts: [{ id: 'l1', main: 'w1' }] as never,
+      activeLoadoutId: 'l1',
+    });
+    const crit = resolveAACritical(target, 'brasD', seq(5), 0); // 01-10 → Choc au poignet (trivial, op disarm)
+    applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
+    expect(target.loadouts![0].main).toBeUndefined(); // brasD → main → l'Épée est lâchée
+  });
 });
 
 describe('#38 — mort par accumulation de Blessures Critiques (inDeathCondition, l.2517)', () => {

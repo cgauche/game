@@ -1189,7 +1189,10 @@ export function applyCriticalToTarget(
     }
   }
   if (!crit.lethal) {
-    applyOps(target, crit.ops, { rng: battleRng() }); // effet immédiat (PB ignorant BE+PA + États) — langue GameOp
+    // `now` : horloge de jeu — sans elle, un effet d'HORLOGE (durée en jours, #153) calculerait son
+    // échéance depuis 0 → expirerait immédiatement au tick suivant (`purgeClockEffects` compare à `get().gameTime`
+    // réel). `location` : main affectée par l'op `disarm` (#153, convention DROITIER `brasD`→main/`brasG`→off).
+    applyOps(target, crit.ops, { rng: battleRng(), now: get?.().gameTime, location: loc }); // effet immédiat (PB ignorant BE+PA + États) — langue GameOp
     if (crit.desc) {
       log.push(`  ↳ ${crit.desc}`); // effet long terme journalisé, non simulé
       revealLines.push(`  ↳ ${crit.desc}`);

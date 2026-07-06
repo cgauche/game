@@ -251,6 +251,8 @@ export const fr = {
   'op.moveScale': '{name} : Mouvement ×{num}/{den} ({src}).',
   'op.moveMod': '{name} : {mod} Mouvement ({src}).',
   'op.maxWeaponHands': '{name} : armes limitées à {hands} main(s) ({src}).',
+  'op.disarm': '{name} lâche {item}.',
+  'op.disarmNothing': '{name} ne tenait rien dans cette main.',
   'op.senseLoss': '{name} perd {sense} ({src}).',
   'op.loseTurn': '{name} perd sa prochaine Action et son prochain Mouvement.',
   'op.loseAction': '{name} perd sa prochaine Action.',

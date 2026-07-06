@@ -116,6 +116,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   moveScale: '🦵 Échelle de Mouvement (×n/d)',
   moveMod: '🦵 Modif. de Mouvement (±N)',
   maxWeaponHands: '✋ Plafond de mains d’arme',
+  disarm: '✋ Lâcher l’objet tenu (main)',
   senseLoss: '👁️ Perte sensorielle (œil/oreille)',
   loseTurn: '⏭️ Perdre Action + Mouvement',
   weaponRollMod: '⚔️ Atout d’arme — modif. de jet (passif)',
@@ -140,7 +141,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['🪄 Projection & téléportation', ['push', 'teleport', 'chain']],
   ['🩹 Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom']],
   ['🌫️ Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
-  ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'senseLoss']],
+  ['🩼 Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'senseLoss']],
   ['⚔️ Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
   ['🎲 Contrôle', ['rollThreshold', 'spendAdvantage']],
   ['🎓 Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
@@ -329,6 +330,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'offTerrainMod': return { op: 'offTerrainMod', terrain: 'eau', mSet: 1, testDR: -2 };
     case 'attrMod': return { op: 'attrMod', attr: 'fortune', mod: 1 };
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
+    case 'disarm': return { op: 'disarm' };
     case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
     case 'loseTurn': return { op: 'loseTurn' };
     case 'removeShipPoste': return { op: 'removeShipPoste' };

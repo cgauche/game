@@ -352,8 +352,11 @@ export type GameOp =
   | { op: 'endPsych'; type: string }
   /** Modificateur de caractéristique temporisé (ActiveEffect — meilleur bonus +
    *  pire pénalité sans cumul, LDB l.168). `durationRounds` absent = durée du
-   *  contexte (sort : Rounds, horloge, ou permanent — cf. `durationFromCtx`). */
-  | { op: 'charMod'; char: CharKey; mod: number; durationRounds?: Formula }
+   *  contexte (sort : Rounds, horloge, ou permanent — cf. `durationFromCtx`).
+   *  `durationHours`/`durationMinutes` : durée d'HORLOGE intrinsèque (Aux Armes « −10 Agilité pendant
+   *  1d10 jours », `durationHours` = jours×24) — même patron que `condition.durationHours`, résolue
+   *  MAINTENANT depuis `ctx.now`, purgée par `purgeClockEffects`. Exclusif de `durationRounds`. */
+  | { op: 'charMod'; char: CharKey; mod: number; durationRounds?: Formula; durationMinutes?: Formula; durationHours?: Formula }
   /** PA à une Localisation (`loc`) ou à TOUTES (`loc` absent — Armure Aethyrique « +1 PA à toutes les
    *  Localisations »). Flow de sort → `ActiveEffect` temporisé (apAll/apAt) lu par effectiveArmourAt ;
    *  `passive` de mutation/trait → armure naturelle permanente lue par mutationArmourBonus.
@@ -724,6 +727,14 @@ export type GameOp =
    *  (`durationFromCtx`, sort). Lu par `cannotWieldTwoHanded`/`recomputeLoadout` (via `passiveMods`,
    *  channel `activeEffects` — même collecteur que la séquelle permanente). */
   | { op: 'maxWeaponHands'; hands: number; durationRounds?: Formula }
+  /** Lâche l'objet tenu dans UNE main (Aux Armes, bras/corps « Vous lâchez ce que vous teniez dans
+   *  cette main ») — vide le slot de loadout (`main`/`off`) et `recomputeLoadout` (même patron que
+   *  `breakBacleArmour` : mutation de l'ItemInstance/loadout puis re-dérivation, PAS un ground-item —
+   *  aucun tel concept dans le moteur). Main RÉSOLUE depuis `ctx.location` (convention DROITIER
+   *  partagée avec `handAmputated` : `brasD`→`main`, `brasG`→`off`) ; localisation `corps` ou absente
+   *  (« Choisissez au hasard l'un de vos deux bras ») → tirage aléatoire (`ctx.rng`). Sans objet tenu
+   *  dans cette main : inerte (journalisé). */
+  | { op: 'disarm' }
   /** Perte d'un organe sensoriel PAIRÉ (œil/oreille). Porté par une séquelle ; `escalateSensoryLoss`
    *  compte les `senseLoss` par sens (2 du même → Cécité/Surdité). */
   | { op: 'senseLoss'; sense: PairedSense }
@@ -966,9 +977,12 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
   // Agrégation des charMod (une ligne par source, façon « Écorce (-10 Ag, -10 Dex, 6 rounds) »).
   const charParts: string[] = [];
   let charRounds: number | null = null;
+  let charClockMin: number | null = null;
   const flushCharMods = () => {
     if (!charParts.length) return;
-    const dur = charRounds != null ? t('op.frag.rounds', { n: charRounds }) : t('op.frag.outOfCombat');
+    const dur = charRounds != null ? t('op.frag.rounds', { n: charRounds })
+      : charClockMin != null ? (charClockMin >= 60 ? t('op.frag.hours', { n: Math.round(charClockMin / 60), s: charClockMin >= 120 ? 's' : '' }) : t('op.frag.min', { n: charClockMin }))
+      : t('op.frag.outOfCombat');
     lines.push(t('op.charModLine', { name: target.name, label: ctx.label ?? 'Effet', parts: charParts.join(', '), dur }));
     charParts.length = 0;
   };
@@ -1106,15 +1120,23 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'charMod': {
-        // Le charMod peut porter SA propre durée en Rounds (sinon il suit la durée du sort, ctx).
+        // Le charMod peut porter SA propre durée en Rounds OU en horloge (sinon il suit la durée du sort, ctx).
+        let clockMin: number | null = null;
         const dur: Duration = o.durationRounds != null
           ? { scale: 'rounds', left: resolveFormula(o.durationRounds, ref, rng) }
-          : durationFromCtx(ctx);
+          : o.durationMinutes != null || o.durationHours != null
+            ? (() => {
+                const min = Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60);
+                clockMin = min;
+                return { scale: 'clock' as const, until: (ctx.now ?? 0) + min };
+              })()
+            : durationFromCtx(ctx);
         applyActiveEffect(target, {
           label: ctx.label ?? 'Effet', char: o.char, bonus: o.mod, duration: dur,
         });
         charParts.push(`${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char]}`);
         charRounds = dur.scale === 'rounds' ? dur.left : null;
+        charClockMin = dur.scale === 'clock' ? clockMin : null;
         break;
       }
       case 'ap': {
@@ -1789,6 +1811,22 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           maxWeaponHands: o.hands,
         });
         lines.push(t('op.maxWeaponHands', { name: target.name, hands: o.hands, src: ctx.label ?? 'sort' }));
+        break;
+      }
+      case 'disarm': {
+        // Main RÉSOLUE depuis la localisation du coup courant (convention DROITIER, `handAmputated`) ;
+        // `corps`/absente (« au hasard l'un de vos deux bras ») → tirage aléatoire.
+        const hand: 'main' | 'off' = ctx.location === 'brasG' ? 'off' : ctx.location === 'brasD' ? 'main' : rng.int(0, 1) === 0 ? 'main' : 'off';
+        const lo = activeLoadout(target);
+        const uid = hand === 'main' ? lo?.main : lo?.off;
+        const held = uid ? (target.items ?? []).find((i) => i.uid === uid) : undefined;
+        if (held && lo) {
+          if (hand === 'main') lo.main = undefined; else lo.off = undefined;
+          recomputeLoadout(target);
+          lines.push(t('op.disarm', { name: target.name, item: held.name }));
+        } else {
+          lines.push(t('op.disarmNothing', { name: target.name }));
+        }
         break;
       }
       case 'senseLoss': {

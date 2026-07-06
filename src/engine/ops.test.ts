@@ -225,6 +225,66 @@ describe('applyOps — opérations unitaires', () => {
   //  influençable, ennemi = inline). Sa résolution + branches + gates sont couvertes par
   //  `state/combat/run-combat-flow.test.ts` et `state/combat/venin-test.test.ts`.)
 
+  // #153 — Aux Armes « −10 Agilité pendant 1d10 jours » (corps « Bleus aux côtes ») : durée d'HORLOGE
+  // intrinsèque au charMod (même patron que `condition.durationHours`), résolue depuis `ctx.now`.
+  describe('charMod : durationHours/durationMinutes (#153)', () => {
+    it('durationHours → ActiveEffect à durée CLOCK (until = ctx.now + heures×60), indépendant de defaultDurationRounds', () => {
+      const c = hero();
+      applyOps(c, [{ op: 'charMod', char: 'Ag', mod: -10, durationHours: 240 }], { now: 1000, defaultDurationRounds: 3 });
+      expect(c.activeEffects).toHaveLength(1);
+      expect(c.activeEffects![0].duration).toEqual({ scale: 'clock', until: 1000 + 240 * 60 });
+    });
+
+    it('durationHours en Formula (1d10 × 24, « 1d10 jours ») résolue au seed', () => {
+      const c = hero();
+      const rng: RNG = { int: () => 1 }; // 1d10 au plus bas → 1 jour = 24 h = 1440 min
+      applyOps(c, [{ op: 'charMod', char: 'Ag', mod: -10, durationHours: { times: { of: { dice: { n: 1, sides: 10 } }, factor: 24 } } }], { now: 0, rng });
+      expect(c.activeEffects![0].duration).toEqual({ scale: 'clock', until: 1440 });
+    });
+
+    it('sans durationRounds/durationHours → comportement INCHANGÉ (durée du ctx)', () => {
+      const c = hero();
+      applyOps(c, [{ op: 'charMod', char: 'Ag', mod: -10 }], { defaultDurationRounds: 5 });
+      expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 5 });
+    });
+  });
+
+  // #153 — Aux Armes « Vous lâchez ce que vous teniez dans cette main » (bras/corps) : op `disarm`.
+  describe("op disarm (#153 — « lâche l'objet tenu »)", () => {
+    const withWeapon = (): Combatant => {
+      const c = hero({ items: [{ uid: 'w1', name: 'Épée', kind: 'melee', equipped: true, qualities: [], enc: 1 } as never] });
+      c.loadouts = [{ id: 'l1', main: 'w1' }];
+      c.activeLoadoutId = 'l1';
+      return c;
+    };
+
+    it("ctx.location='brasD' (convention DROITIER) → lâche l'arme tenue en MAIN (loadout.main vidé)", () => {
+      const c = withWeapon();
+      const lines = applyOps(c, [{ op: 'disarm' }], { location: 'brasD' });
+      expect(c.loadouts![0].main).toBeUndefined();
+      expect(lines[0]).toMatch(/Épée/);
+    });
+
+    it("ctx.location='brasG' → cible la main SECONDAIRE (off), la MAIN n'est pas touchée", () => {
+      const c = withWeapon();
+      applyOps(c, [{ op: 'disarm' }], { location: 'brasG' });
+      expect(c.loadouts![0].main).toBe('w1'); // rien tenu en `off` → inerte, l'arme MAIN reste
+    });
+
+    it('aucun objet tenu dans cette main → inerte, journalisé (ne plante pas)', () => {
+      const c = hero();
+      const lines = applyOps(c, [{ op: 'disarm' }], { location: 'brasD' });
+      expect(lines[0]).toMatch(/ne tenait rien/);
+    });
+
+    it("localisation 'corps' (« au hasard l'un de vos deux bras ») → tirage aléatoire via ctx.rng", () => {
+      const c = withWeapon();
+      const rngMain: RNG = { int: () => 0 }; // pioche 'main'
+      applyOps(c, [{ op: 'disarm' }], { location: 'corps', rng: rngMain });
+      expect(c.loadouts![0].main).toBeUndefined();
+    });
+  });
+
   it('reduceToZero seul : PB à 0, SANS Inconscient automatique (LDB 40)', () => {
     const c = hero();
     applyOps(c, [{ op: 'reduceToZero' }]);
