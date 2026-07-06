@@ -1,0 +1,175 @@
+# Index des issues (généré — voir issues.json pour le détail)
+
+## Ouvertes
+
+- #82 [] Escalade — câbler le moteur de grimper (RAW complet mais dangling) à la géométrie z
+- #83 [] Méta-flux comme Effets de scène (création perso / fin de séance / avancement)
+- #84 [] Filets (ZI) — extraction complète + Empêtrement à la touche
+- #85 [] Équipage / mercenaires / désertion (unités recrutables + moral)
+- #87 [audit:contenu-manquant, domaine:moteur-pur, livre:T2C, sev:mineur] [moteur/Flow] perDegreeOfFailure sur le nœud test — débloque hallucinogène (Sonné par niveau d'échec)
+- #88 [audit:non-branché, domaine:combat, livre:AA, sev:mineur] [combat/AA] Battement & Distraire — affordance HÉROS interactive
+- #89 [domaine:combat, livre:AA, sev:mineur, type:système] [combat/AA] Réaction défensive « dépenser N Avantages de la réserve » — débloque Porte-bouclier variante AA
+- #90 [audit:non-branché, domaine:naval, livre:T2C, sev:mineur] [naval/T2C] Champ de domaine pour Améliorations navales à effet non-plat
+- #91 [domaine:naval, livre:T2C, sev:mineur] [naval/T2C] Descente fluviale — résidus : modale par jet + Enc cargaison + choix bélier-vs-déblayage
+- #92 [audit:non-branché, livre:AA, sev:mineur] [éditeur/AA] Table d'Avantage initial — Menace / Manœuvrabilité / Terrain (entrée éditeur)
+- #93 [audit:non-branché, domaine:économie, livre:LDB, sev:mineur] [éditeur/éco] Exposer les flags marchand (Disponibilité, Marchandage/Évaluation/Réparation) + Effet openPort
+- #94 [audit:non-branché, domaine:maladie, livre:LDB, sev:mineur] [éditeur/santé] Compléter les Effets santé éditables (ambitionLost, mealParty, inflictPsychology, inflictThirst)
+- #95 [audit:non-branché, livre:LDB, sev:mineur] [voyage] Poursuites terrestres jouables (pursuit) — flux travelFlow + scénario + Effet startPursuit
+- #96 [audit:non-branché, sev:mineur] [scénarios] Vague 1 — exercer EN JEU les moteurs testés (inflictTrauma, medicalAid, fall, Activités d'Altdorf)
+- #97 [domaine:magie, domaine:religion, livre:LDB, livre:MDG, sev:mineur] [magie] Reliquats narrow : Magie des Mers en mer · Petites Prières · Retrait de Péché (Absolution)
+- #98 [domaine:combat, policy-à-trancher, question] [design] Effet castSpell/forceCast — scripter un lancer de sort depuis dialogue/trigger
+- #99 [domaine:économie, livre:T2C, sev:mineur, type:système] [éco/T2C] Rumeur commerciale cross-Lieu — index géographique du Reikland + board de rumeurs persistant
+- #100 [audit:principe, sev:smell] [dette-code] Trier & purger les branches legacy / rétro-compat (rest legacy, LEGACY sans lodging, occupied(string), save legacy)
+- #156 [] [RAW/combat] Machines de guerre : résolution tactique (Projectiles (Machine de guerre) / Force pour le bélier) + pénalité d'Équipe non modélisées (ADE II 08 l.233)
+- #160 [] [Garde] Cliquet hardcode : généraliser le motif par-État (hasCondition/stacks) hors engine/conditions.ts
+- #161 [] [Architecture] state→gameIso : 11 fichiers d'imports runtime — trancher, puis garder le segment
+- #162 [] [RAW/naval] Météo — malus de Précipitations appliqué à TOUS les Tests de Projectiles au lieu de Projectiles (Poudre noire) seul
+- #163 [] [donnée] names.json ⇄ speciesRace.json : clés de race quasi-identiques mais divergentes (« Haut Elfe » vs « Haut-Elfe ») — famille de clés à unifier ou découpler explicitement
+- #164 [] [RAW/naval] Embrigadement — recouvrement d'équipage (Ragot/rançon/Discrétion) non mécanisé, MDG 15 l.245
+- #165 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — Test de Dextérité par-Action (Main ensanglantée, aa-bras-46) : pas de point d'interception propre
+- #166 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — durées gatées par Aide Médicale + Test étendu de Guérison (Épaule luxée/Genou démis, aa-bras-96/aa-jambe-96)
+- #167 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — escalades non gatées (Main ouverte aa-bras-116, Pied écrasé aa-jambe-106)
+- #168 [] [Codex] activities.json éditable au Codex — éditeur ActivityDef + OutcomeBand dédié
+- #169 [] [vocabulaire] EffectOp.on : 'victim' (79+ entrées) et 'self' (4 talents) hors de l'union TS — trancher ET vérifier la sémantique réelle de chaque 'self'
+- #170 [] [RAW/naval] steam-breakdown.json : champ engineerTest jamais lu — Test de l'ingénieur de « Fuite de vapeur » non modélisé
+- #171 [] [donnée] traits.json : champ suffix (124× null, tentacules '#') absent de TraitData et sans consommateur trouvé
+- #172 [] [types] mutations longues-jambes : appearance.legs consommé par le rig mais absent d'EntityAppearance
+- #174 [bug] [donnée] creatures.json : 3 optionals composés (« remplacer X par bonus Y en Z ») retirés — TraitInstance ne les exprime pas
+- #175 [bug] [ADE II ch.08] Machines de guerre : 3 règles non modélisées (Canon à flammes nain Spéciaux, restrictions de portée)
+
+## Fermées
+
+- #8 [audit:principe, domaine:moteur-pur, sev:smell] Moteur pur: 4 imports type-only de state/flow dans src/engine (TriggeredEffect/Flow)
+- #9 [audit:principe, sev:majeur] Traits résolus par libellé FR (def.key) au lieu de l'id stable
+- #10 [audit:principe, sev:smell] Entités possédées appariées par libellé (talent de carrière, outil de Test)
+- #11 [audit:principe, sev:smell] Crinière quadrupède: champ `mane` et dérivation `tail==='crin'` coexistent
+- #12 [audit:principe, domaine:magie, sev:smell] Effets de sort positionnels/missiles en champs ad hoc hors GameOp (push/teleport/chainOnKill)
+- #13 [audit:principe, domaine:magie, sev:mineur] Attributs de Domaine en champs ad hoc (afterCast / castBonus) hors GameOp
+- #14 [audit:principe, sev:smell] GameOp `corruption` sans champ `align` → Effet giveCorruption parallèle
+- #15 [audit:principe, domaine:primitives-UI, sev:smell] actorIn() dupliqué inline (combatSlice spendResolveCondition, devtools ×3)
+- #16 [audit:principe, domaine:primitives-UI, sev:smell] RestModal: 2 segmented controls réécrits au lieu d'OptionChooser
+- #17 [audit:principe, domaine:combat, sev:mineur] RAW: op reduceToZero ajoute toujours Inconscient (Tonnerre et foudre miscast non-RAW)
+- #18 [audit:principe, sev:smell] Commentaires menteurs 'legacy / toutes armes équipées' (loadouts)
+- #19 [audit:principe, domaine:combat, sev:mineur] Résolution Psychologie IA hardcodée par-nom (hors dispatcher data-driven)
+- #20 [audit:principe, domaine:combat, sev:mineur] Jets de héros résolus inline hors cascade d'influence (chirurgie, Fuir) + whitelist de garde
+- #21 [audit:principe, livre:AA, sev:majeur] Trait Dressé (Cavalerie de choc): paraphrase + source mal attribuée (LDB au lieu d'AA)
+- #22 [audit:principe, sev:smell] depth(): paramètre dims optionnel + branche fallback morte
+- #23 [audit:principe, sev:smell] .sheet-layout: breakpoint 760px hors canon (900/700/560)
+- #24 [audit:principe, sev:smell] Deux formats pour une liste d'effets: onVictory Effect[] vs triggers/dialogues Flow
+- #25 [audit:contenu-manquant, domaine:naval, livre:MDG, type:règle-optionnelle] Naval coque — corps-à-corps vs coque, incident d'artillerie « Dangereuse », picker munition/stock (MDG ch.12-13)
+- #26 [audit:contenu-manquant, domaine:naval, livre:MDG, type:système] Naval — Moral d'équipage & mutinerie en combat (saboteur)
+- #27 [audit:contenu-manquant, domaine:naval, livre:MDG, type:système] Naval — Navigation: vent, surrégime, salissures, orientation
+- #28 [audit:contenu-manquant, domaine:naval, livre:MDG, type:système] Naval — Météo maritime & périls de mer
+- #29 [audit:contenu-manquant, domaine:naval, livre:MDG, type:système] Naval — longs voyages, commerce & vie en mer (maladies marines déjà faites)
+- #30 [audit:contenu-manquant, domaine:naval, livre:MDG, type:donnée] Naval — Réparer / construire / améliorer un navire + données navire
+- #31 [audit:contenu-manquant, domaine:naval, livre:MDG, type:donnée] Bestiaire marin MDG (créatures, capitaines nommés, traits Créature marine/Marque de Khorne)
+- #32 [audit:contenu-manquant, domaine:naval, livre:MDG, type:système] Classe Côtier (9e Classe) + tables de tirage Race/Norses
+- #33 [audit:contenu-manquant, domaine:naval, livre:MDG, type:donnée] Carrières de la Classe Côtier (MDG ch.9) — 8 carrières
+- #34 [audit:contenu-manquant, domaine:naval, livre:MDG, type:donnée] Talents & Chansons de marin (MDG)
+- #35 [audit:contenu-manquant, domaine:religion, livre:MDG, type:donnée] Religion navale MDG — cultes & miracles de Stromfels/Manann + effets navals de Prière
+- #36 [audit:contenu-manquant, domaine:magie, livre:MDG, type:donnée] Magie des mers MDG — modificateurs des Vents + 6 sorts
+- #37 [audit:contenu-manquant, domaine:combat, livre:EDO-EDOC, type:donnée] Paliers de Difficulté extrêmes EDO (Presque Impossible −40 / Impossible −50) + plafond −50
+- #38 [audit:contenu-manquant, domaine:combat, livre:AA, type:règle-optionnelle] Système alternatif de Blessures & Critiques d'Aux Armes
+- #39 [audit:contenu-manquant, domaine:combat, livre:AA, type:règle-optionnelle] Variantes AA des talents de combat (set d'Avantage alternatif)
+- #40 [audit:contenu-manquant, livre:AA, type:donnée] Données d'armes & équipement AA (armes de base, gantelet verrouillé, Griffes de Tigre)
+- #41 [audit:contenu-manquant, domaine:combat, livre:LDB, type:système] États — Assourdi, verrous lockedUntil, Empêtré (escapeStrength 1d10×5), filets ZI (Brisé fait)
+- #42 [audit:contenu-manquant, domaine:combat, livre:LDB, type:règle-optionnelle] Actions & règles de combat LDB manquantes (Empoignade, Retenir ses coups, lancer, tir en mêlée, Au Contact, Initiative)
+- #43 [audit:contenu-manquant, domaine:combat, livre:LDB, type:règle-optionnelle] Règles d'arme contextuelles (Cavalerie/Fléau/lance, Écailles épineuses vs Déviation)
+- #44 [audit:contenu-manquant, livre:LDB, type:système] Mouvement hors-combat manquant (Escalade, chute volontaire, Poursuites terrestres)
+- #45 [audit:contenu-manquant, livre:LDB, type:système] Exposition à la Chaleur, Soif & rétention de souffle (LDB 18)
+- #46 [audit:contenu-manquant, domaine:maladie, livre:EDO-EDOC, livre:T2C, type:donnée] Maladies — tableaux d'exposition aux maladies hydriques (T2C ch.14)
+- #47 [audit:contenu-manquant, livre:LDB, livre:T3, type:système] Compétences — usages manquants (Hypnotisme, applications de combat, substitution sociale, accidents d'attelage)
+- #48 [audit:contenu-manquant, livre:LDB, type:système] Sous-système d'Ivresse / Résistance à l'alcool (LDB 09)
+- #49 [audit:contenu-manquant, livre:NADAJ, type:règle-optionnelle] Mécaniques DR des jeux de taverne (NADAJ)
+- #50 [audit:contenu-manquant, livre:LDB, type:donnée] Consommables — drogues & herbes encore sans champ consumable (canal + poisons faits)
+- #51 [audit:contenu-manquant, livre:LDB, type:donnée] Objets — canal « objet équipé → bonus de compétence » (objets déjà en donnée)
+- #52 [audit:contenu-manquant, domaine:magie, livre:LDB, type:règle-optionnelle] Magie — règle du 8, +10 environnemental (Ghyran), Sorcellerie-Domaine, Haute Magie (composants faits)
+- #53 [audit:contenu-manquant, domaine:religion, livre:LDB, type:règle-optionnelle] Règles optionnelles de Prière (Petites Prières, retrait de Péché, Prêchez ma sœur)
+- #54 [audit:contenu-manquant, domaine:religion, livre:LDB, policy-à-trancher, type:donnée] Panthéon — entrées de dieux de saveur (nains, elfes, halflings, Reikland, Handrich, Chaos)
+- #55 [audit:contenu-manquant, livre:LDB, type:règle-optionnelle] Avancement — changement de Carrière (saut de Niveau, même Niveau autre Carrière, mentor)
+- #56 [audit:contenu-manquant, livre:LDB, type:système] Progression narrative — PX d'Ambition & regain de Détermination par Motivation
+- #57 [audit:contenu-manquant, domaine:économie, livre:LDB, type:règle-optionnelle] Économie — Troc, acheteur à la vente, recherche active Disponibilité, comptes, pièce du Noble, réparation d'ARME
+- #58 [audit:contenu-manquant, domaine:économie, livre:T2C, type:système] Commerce de cargaison (T2C Compagnon ch.11)
+- #59 [audit:contenu-manquant, livre:EDO-EDOC, type:règle-optionnelle] Montures en voyage — endurance des allures & vitesse km/h (EDOC)
+- #60 [audit:contenu-manquant, livre:Middenheim, type:donnée] Bestiaire de Middenheim (ch.4) — 4 entrées
+- #61 [audit:contenu-manquant, livre:ADE, type:donnée] Ogres ADE II — Golgfag & Hrothyogg + armes/armures ogres (4/6 PNJ faits)
+- #62 [audit:contenu-manquant, livre:ADE, livre:EDO-EDOC, type:règle-optionnelle] Traits psy — acquisition ADE II câblée + activité Convalescence jouable (Obsessions/retrait faits)
+- #63 [audit:contenu-manquant, livre:Altdorf, policy-à-trancher, type:donnée] Activités entre-aventures d'Altdorf (5 activités d'interlude)
+- #64 [audit:contenu-manquant, livre:ADE, type:donnée] Talent Sang Neuf (ADE I, lignage Harioth éonir)
+- #65 [audit:non-branché, domaine:naval, livre:MDG, type:système] Tests d'équipage navals — 8/10 types jamais déclenchés
+- #66 [audit:non-branché, domaine:combat, livre:AA, livre:LDB, type:système] Capacités en donnée jamais consommées par le moteur (Résistance, Contrôle Frénésie, Rage→Haine, Commandant d'équipe, Contagieux)
+- #67 [audit:non-branché, livre:LDB, type:donnée] Tables/données chargées jamais consommées (structure-criticals, incidents-monture, problemes-vehicule, _index, toggle Étapes)
+- #68 [audit:non-branché, sev:smell] relationOf — export orphelin + doc-comment mensonger (logique réimplémentée inline)
+- #69 [audit:contenu-manquant, domaine:combat, livre:ADE, type:système] Combat de masse / Puissance de Bataille (ADE II)
+- #70 [bug, domaine:combat, playtest:jinashi, sev:mineur] [BUG] Localisation des Coups Critiques sur créature — libellé humanoïde
+- #71 [bug, domaine:UX, domaine:primitives-UI, playtest:jinashi, sev:mineur] [BUG] « 55 = 55 » dans le résumé de jet quand aucun modificateur
+- #72 [bug, domaine:UX, domaine:primitives-UI, playtest:jinashi, sev:mineur] [BUG] Infobulle CodexRef qui déborde (metaLine non borné + POP_H deviné)
+- #73 [bug, domaine:UX, domaine:primitives-UI, playtest:jinashi, sev:majeur] [BUG] Clic sur une réf Codex en jeu coupe la musique + ferme la fiche → détail Codex en MODALE
+- #74 [bug, domaine:UX, domaine:primitives-UI, playtest:jinashi, sev:mineur] [BUG] Libellés de cartouche qui débordent (« Encombrement », « Détermination »…)
+- #75 [domaine:UX, domaine:combat, enhancement, playtest:jinashi, sev:smell] [LOT] Weapon sets auto-étiquetés (refonte loadout) + nettoyage code mort
+- #76 [bug, domaine:UX, playtest:jinashi, sev:majeur, sev:smell] [LOT] Stats d'arme : composeur unique + 4 bugs [object Object] shippés + normalisation reach/range
+- #77 [domaine:UX, domaine:primitives-UI, enhancement, playtest:jinashi] [LOT] Highlight de survol d'entité unifié (explo props/portes/PNJ + piste d'initiative)
+- #78 [domaine:UX, domaine:combat, enhancement, playtest:jinashi] [LOT] Ouverture de combat : splash COMBAT + scores d'initiative + clignotement barre de mouvement
+- #79 [domaine:UX, domaine:primitives-UI, enhancement, playtest:jinashi] [LOT] Fiche & sélection : carac-popover, Background (Ambitions éditables), iso-hauteur, remplacer-slot, équipement carte
+- #80 [bug, domaine:combat, livre:LDB, playtest:jinashi, policy-à-trancher, sev:majeur] [RAW] Dégâts non-critiques + PA de déviation à la localisation FRAÎCHE du Coup Critique (LDB 18 l.55 / 63)
+- #81 [audit:contenu-manquant, livre:Middenheim, type:donnée] Profils manquants de Middenheim — Babrakkos (Liche) + 35 PNJ/Skavens (audit complet du livre)
+- #86 [] Métamorphose — finitions (Amphibie Natation, fourrure corps, playtest navigateur)
+- #101 [raw-audit] [RAW/haute] Amputations : pénalités −5/doigt et −20/main ABSENTES pour la main non-directrice (critical.ts + trauma.ts)
+- #102 [raw-audit] [RAW/haute] Bélier hors-porte : 0 Blessure au lieu d'« Arme improvisée » (woundsCalc.ts + structures.ts)
+- #103 [raw-audit] [RAW/haute] Mains nues : dégâts de référence non conformes dans la comparaison d'équipement (equipCompare.ts)
+- #104 [raw-audit] [RAW/haute] Initiative : « 1d10 + Initiative » présenté comme LE défaut RAW (combatSetup.ts)
+- #105 [raw-audit] [RAW/haute] Tir sur cible dissimulée (brouillard/nuit) : malus −20 non conforme au RAW cité (sceneRules.ts)
+- #106 [raw-audit] [RAW/haute] Tir rapide : pré-emption d'initiative traitée comme totalement gratuite (turnEconomy.ts)
+- #107 [raw-audit] [RAW/moyenne] Allonge de l'Arme improvisée : valeur présentée comme RAW, à vérifier au Tableau LDB 62 (weaponDamage.ts)
+- #108 [raw-audit] [RAW/moyenne] Cauchemars : Test de Calme nocturne généralisé attribué à LDB 21 (rest.ts)
+- #109 [raw-audit] [RAW/moyenne] Bataille de masse : mort du général/capitaine décorrélée des DR prévus par ADE II ch.08 (massBattleFlow.ts)
+- #110 [raw-audit] [RAW/moyenne] Changement de set d'armes : « 1× gratuit par Tour » attribué à LDB 13 (store.ts)
+- #111 [raw-audit] [RAW/moyenne] Contagion de promiscuité : cadence de Test (jour vs nuit) non conforme (restFlow.ts)
+- #112 [raw-audit] [RAW/lot] 20 références de chapitre/ligne FAUSSES en commentaire (LDB 62≠63, 59≠60, etc.) — correction en lot
+- #113 [raw-audit] [RAW/dette] Repos : le Test de Guérison prolongé est SUPPOSÉ réussi pendant tout le repos (restFlow.ts)
+- #114 [raw-audit] [RAW/dette] Sans Peur : immunité inconditionnelle au lieu du Test de Calme Accessible (+20) du RAW (combatFeatures/types.ts)
+- #115 [raw-audit] [RAW/dette] Avantage initial : 3 des 5 circonstances RAW (AA) non implémentées (combat/advantagePool.ts)
+- #116 [raw-audit] [RAW/dette] Voyage maritime : Manque de bras jamais appliqué hors combat + pénalité de nuit ÷2 contournée (seaVoyageFlow.ts)
+- #117 [raw-audit] [RAW/dette] Activités en mer : 3 règles RAW neutralisées/omises (carte deux-ports, Planque, Entraînement d'équipage) (seaActivities.ts)
+- #118 [raw-audit] [RAW/dette] Exposition au froid : annulation par possession jetée (LDB 18) omise + cadences nuit/Tente non sourcées (exposure.ts)
+- #119 [raw-audit] [RAW/dette] Amputation : l'arme directrice reste tenue par la main restante — « adaptation » à re-trancher au RAW (items.ts)
+- #120 [raw-audit] [RAW/dette] Drogues : le concept RAW de « Dose » (empilement) n'est pas modélisé (combat/turnHooks.ts)
+- #121 [raw-audit] [RAW/dette] Maladies : suivi « une fois par maladie » en approximation de la règle RAW (disease.ts)
+- #122 [raw-audit] [RAW/dette] Marché : la rumeur commerciale pointe le lieu courant au lieu d'un AUTRE lieu (T2C ch.11) (landMarketFlow.ts)
+- #123 [raw-audit] [RAW/dette] Rounds d'effort (LDB 16) : liberté de granularité à re-vérifier/documenter (combat/roundHooks.ts)
+- #124 [raw-audit] [RAW/dette] « Je ne faillirai pas ! » : cas attaquant vs cible Inconsciente non conforme (combat.ts)
+- #125 [raw-audit] [RAW/dette] Variante AA : sous-effets conditionnels/durées des Critiques non mécanisés (aaCritical.ts + policy.ts)
+- #126 [raw-audit] [IA/dette] PRIORITAIRE — Les tireurs ennemis ne suivent JAMAIS leur Recharge (toujours chargés) (ai.ts)
+- #127 [raw-audit] [IA/dette] IA : la doctrine « embuscade » n'est jamais sélectionnée automatiquement (ai.ts)
+- #128 [raw-audit] [IA/dette] Ligne de vue : angle mort vertical sous un rempart non géré (lineOfSight.ts)
+- #129 [raw-audit] [IA/dette] Pas d'action de premiers secours hors combat — lacune justifiée en commentaire (outOfCombatUpkeep.ts)
+- #130 [raw-audit] [IA/dette] Combat naval : dégâts de bordée par pièce non câblés côté UI (shipBattery.ts)
+- #131 [raw-audit] [IA/dette] Ciblage : HELPFUL_TARGET_OPS volontairement incomplète — compléter depuis le catalogue d'ops (targetingModes.ts)
+- #132 [raw-audit] [UX] Événement « prêtre de Manann » : paiement AUTOMATIQUE → doit être un choix joueur (seaVoyageFlow.ts)
+- #133 [raw-audit] [Chantier] House-rules → donnée éditable : 12 valeurs maison sortent des commentaires (verdict utilisateur 2026-07-05)
+- #134 [raw-audit] [RAW/dette] Trauma : 3 lacunes — Esquive post-prothèse (200 PX, LDB 73), Surdité approximée à toute la Perception, rôle d'information de la Guérison (trauma.ts + types.ts)
+- #135 [raw-audit] [Codex/UX] Armes à dégâts CONDITIONNELS (onHit) : le Codex n'affiche pas les vrais dégâts (ex. Bélier)
+- #136 [raw-audit] [Garde] L'application DÉTECTE le poison elle-même : garde Vitest tombstones/excuses + docs:check
+- #137 [raw-audit] [Garde] Hook git post-commit : fermeture AUTOMATIQUE des issues (fixes/closes/corrige/ferme #N)
+- #138 [raw-audit] [Docs] Refresh PROFOND des références vivantes anciennes — chaque claim vérifié au code
+- #139 [raw-audit] [Chantier] Purge emoji : vider les 362+ occurrences hors Icon.tsx ET la liste d'exceptions du garde
+- #140 [raw-audit] [Audit] Passes anti-poison restantes : tests, src/ui, src/data, src/scenes, src/gameIso + ex-fichiers cascade
+- #141 [raw-audit] [Produit] Vérification EN JEU des fixes RAW — dérouler une vraie partie
+- #142 [raw-audit] [Garde] Logique par LABEL interdite : corriger creatureEquip (SHAPE/RELOAD_BY_LABEL) + garde zéro-tolérance engine/state
+- #143 [] Gates de règle proxy-`kind` (Corruption / composant magique / maladie de fin de combat) à re-conditionner — vérifier RAW personnage-vs-créature
+- #144 [] [RAW] Doigts amputés : escalade de Maladresse par doigt perdu (LDB 18 l.251) non modélisée
+- #145 [raw-audit] [RAW/dette] Args de trait NON migrés dans les statblocks de scénario + garde aveugle (tous domaines) — bloque #126
+- #146 [bug] [RAW/dette] arene-projet.json : args de trait en LIBELLÉS sur sources fermées (taille/domaine) — hors garde trait-args-derived
+- #147 [] [RAW/naval] Carte marine (MDG 15) : « deux ports désignés » + sécurité liée à la possession de la carte non modélisés
+- #148 [bug] [Contenu] Curer une arme « Bélier » au catalogue tactique (qualité belier dormante)
+- #149 [bug] [RAW/trauma] Suites de #134 : sens sur les Tests de Perception hors scène + palier prothèse 100 PX
+- #150 [bug] [RAW/naval] resolvePortArrival : « Port désert » inerte (travelPlan null) + « Embrigadement » non mécanisé
+- #151 [bug] [dette-code] relief.ts STEP_MAX_M : externaliser en règle + faire lire combatFlow (source unique)
+- #152 [bug] [RAW] followsCharacterRules : rétro-flag bestiaire humain + CreatureData + corruptionTarget (suites de #143)
+- #153 [bug] [RAW/combat] Critiques AA : sous-effets restants (durées en JOURS, lâcher-objet, cascade d'amputation, gates par-action)
+- #154 [bug] [éditeur] Avantage initial : exposer Menace/Manœuvrabilité/Terrain à l'authoring scripté (AuthoredEncounter/mapSpec)
+- #155 [bug] [naval] crewLost (Embrigadement) persisté mais non consommé par shipUndercrew (Manque de bras)
+- #157 [] [Codex] Toute donnée doit être éditable au Codex — auditer + exposer les datasets manquants (structures.json…)
+- #158 [] [trauma] Sens non propage a crewTestContributors (marin PNJ representant un role) — latent, sans impact actuel
+- #159 [] [RAW/combat] Critiques AA — sous-effets a infra dediee : gate par-Action, durees gatees par soin, escalades
+- #173 [] [Codex/bug] RefDatalist émet des LABELS → champs keyés-id corrompus à l'édition (MutationTableField confirmé)

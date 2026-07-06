@@ -43,6 +43,10 @@ function pathExists(tok) {
 const problems = [] // { file, line, kind, tok }
 const lineAt = (text, index) => text.slice(0, index).split('\n').length
 
+// readdirSync(DOCS_DIR) est NON récursif : ne liste que les fichiers .md à plat dans docs/. Les
+// sous-dossiers (docs/plans/, docs/raw/, docs/decisions/…) sont donc déjà hors périmètre par
+// construction — docs/plans/ (snapshots datés) et docs/decisions/ (export d'issues GitHub, corps
+// citant des chemins historiques ayant le droit d'être morts) n'ont pas besoin d'exclusion explicite.
 for (const file of readdirSync(DOCS_DIR).filter((f) => f.endsWith('.md'))) {
   const rel = `${DOCS_DIR}/${file}`
   const text = readFileSync(join(DOCS_DIR, file), 'utf8')

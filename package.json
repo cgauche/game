@@ -17,6 +17,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "docs:check": "node scripts/docs/check-doc-refs.mjs",
+    "issues:export": "node scripts/ops/export-issues.mjs",
     "raw:coverage": "node scripts/raw/coverage.mjs",
     "raw:reconcile": "node scripts/raw/reconcile.mjs",
     "lint": "eslint .",

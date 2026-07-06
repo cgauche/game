@@ -2,7 +2,7 @@
 # Ré-extrait les 13 suppléments à Marker (--disable_ocr, paginé) puis découpe en chapitres NN-Titre.md
 # vers un STAGING (Source/_marker/split/<dir>/). NE promeut PAS (revue manuelle avant d'écraser Source/).
 # Le LDB est déjà fait. Lancer en arrière-plan : bash scripts/raw/reextract-all.sh
-cd "C:/Users/gauch/PhpstormProjects/Foundry/Game" || exit 1
+cd "$(dirname "$0")/../.." || exit 1
 CFG="scripts/raw/marker-paginate.json"
 PDFS=(
 "WH - V4 - Aux Armes.pdf"

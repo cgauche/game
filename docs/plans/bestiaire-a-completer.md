@@ -11,8 +11,9 @@ si elle ne déclare ni espèce mappée à un gabarit non-bipède (`appearance.sp
 OU un def homonyme de son label), ni trait `Nuée`.
 
 > **Réfs d'art** : illustrations officielles du Zoo Impérial extraites dans `art-ref/zi/` (gitignoré,
-> droits Cubicle 7). Script : `python art-ref/_extract_zi.py`. QC d'un rendu :
-> `npx tsx scripts/_qc-zoo.mts <id,id,…>` → `public/qc/zoo.png`.
+> droits Cubicle 7). Script : `python scripts/art-ref/extract.py --pdf "Source/WH - V4 - Le zoo
+> impérial.pdf" --out art-ref/zi --targets-json <cibles.json>` (doc complète en tête du script).
+> QC d'un rendu : `npx tsx scripts/_qc-zoo.mts <id,id,…>` → `public/qc/zoo.png`.
 
 ## ✅ File d'attente VIDÉE (passe « images » juin 2026)
 

@@ -10,8 +10,10 @@ dist/
 # TS build info
 tsconfig.tsbuildinfo
 
-# Images extraites des PDF (droits Cubicle 7) — réf. art locale uniquement
-art-ref/
+# Images extraites des PDF (droits Cubicle 7) — réf. art locale uniquement.
+# Ancré à la racine (/) : les scripts d'extraction eux-mêmes vivent en clair sous
+# scripts/art-ref/ (tracké) et ne doivent PAS matcher ce motif.
+/art-ref/
 
 # Artefacts de test (captures, playwright)
 .playwright-mcp/
