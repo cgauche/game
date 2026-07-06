@@ -7,7 +7,7 @@
  * adversaires, quitte à les manquer sur un Test de Perception opposé via `surprise`).
  *
  * Utilisé par les scènes de test (`src/scenes/**`). Le générateur d'arène (`scripts/arene/lib.mjs`,
- * Node pur) en porte un miroir JS — garder les deux alignés.
+ * Node pur) délègue à `buildScene` (`tsx`, MÊME compilateur) — pas de mirroir JS séparé à maintenir.
  */
 import type { CustomStatblock, EncounterDef, EncounterMember, EntityAppearance, SceneEntity } from './scene';
 import type { Flow } from './flow';
@@ -15,6 +15,7 @@ import type { TraitInstance } from '../engine/statEntry';
 import type { ShipPoste, NavalTraitRef } from '../engine/types';
 import type { SkillRef } from '../data';
 import type { Dir8 } from './dir8';
+import type { ThreatTier } from '../engine/advantagePool';
 
 export interface AuthoredEnemy {
   ref?: string;
@@ -62,6 +63,12 @@ export interface AuthoredEncounter {
   onVictory?: Flow;
   /** Invisibles en exploration jusqu'au combat (embuscade visuelle). Défaut : false (visibles). */
   hidden?: boolean;
+  /** Avantage initial — Manœuvrabilité (AA l.4149-4167), cf. `EncounterDef.maneuverability`. */
+  maneuverability?: 'party' | 'enemies';
+  /** Avantage initial — Menace (AA l.4149-4167), cf. `EncounterDef.threat`. */
+  threat?: { camp: 'party' | 'enemies'; tier: ThreatTier };
+  /** Avantage initial — Terrain (AA l.4149-4167), cf. `EncounterDef.terrain`. */
+  terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
 }
 
 export interface BuiltEncounter {
@@ -107,6 +114,9 @@ export function buildEncounter(a: AuthoredEncounter): BuiltEncounter {
   const encounter: EncounterDef = { id: a.id, members };
   if (a.surprise) encounter.surprise = a.surprise;
   if (a.onVictory) encounter.onVictory = a.onVictory;
+  if (a.maneuverability) encounter.maneuverability = a.maneuverability;
+  if (a.threat) encounter.threat = a.threat;
+  if (a.terrain) encounter.terrain = a.terrain;
   return { entities, encounter };
 }
 

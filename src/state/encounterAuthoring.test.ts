@@ -49,6 +49,26 @@ describe('buildEncounter — authoring terse → entités + members canoniques',
     expect(encounter.onVictory).toEqual(onV);
   });
 
+  it('maneuverability/threat/terrain (Avantage initial, AA l.4149-4167) passent sur la rencontre — parité avec surprise', () => {
+    const { encounter } = buildEncounter({
+      id: 'e',
+      maneuverability: 'party',
+      threat: { camp: 'enemies', tier: 'tresDangereuse' },
+      terrain: { camp: 'party', heavy: true },
+      enemies: [{ ref: 'Orc', pos: { x: 1, y: 1 } }],
+    });
+    expect(encounter.maneuverability).toBe('party');
+    expect(encounter.threat).toEqual({ camp: 'enemies', tier: 'tresDangereuse' });
+    expect(encounter.terrain).toEqual({ camp: 'party', heavy: true });
+  });
+
+  it('maneuverability/threat/terrain absents → absents sur la rencontre (comme surprise)', () => {
+    const { encounter } = buildEncounter({ id: 'e', enemies: [{ ref: 'Orc', pos: { x: 1, y: 1 } }] });
+    expect(encounter.maneuverability).toBeUndefined();
+    expect(encounter.threat).toBeUndefined();
+    expect(encounter.terrain).toBeUndefined();
+  });
+
   it('buildEncounters agrège entités et rencontres de plusieurs rencontres', () => {
     const { entities, encounters } = buildEncounters([
       { id: 'a', enemies: [{ ref: 'Gobelin', pos: { x: 1, y: 1 } }] },

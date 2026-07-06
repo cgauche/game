@@ -32,6 +32,7 @@ import type {
 import { emptyScene } from './scene';
 import type { Flow } from './flow';
 import type { FireArc } from '../engine/types';
+import type { ThreatTier } from '../engine/advantagePool';
 import type { Dir8 } from './dir8';
 import { parseAsciiRows, parseWalledAscii, scanMarkers } from './asciiMap';
 import { buildEncounter, type AuthoredEnemy } from './encounterAuthoring';
@@ -131,6 +132,12 @@ export interface EncounterSpec {
   /** Rencontre invisible en exploration jusqu'au combat (embuscade visuelle) — pose `combat.hiddenUntilCombat`
    *  sur les entités enrôlées via `enemies`. Défaut false (visibles, RAW). */
   hidden?: boolean;
+  /** Avantage initial — Manœuvrabilité (AA l.4149-4167), cf. `EncounterDef.maneuverability`. */
+  maneuverability?: 'party' | 'enemies';
+  /** Avantage initial — Menace (AA l.4149-4167), cf. `EncounterDef.threat`. */
+  threat?: { camp: 'party' | 'enemies'; tier: ThreatTier };
+  /** Avantage initial — Terrain (AA l.4149-4167), cf. `EncounterDef.terrain`. */
+  terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
 }
 
 /** RECETTE par LETTRE d'une CASE COMPLÈTE (sol + AU PLUS un rôle/structure dessus) — l'authoring unifié
@@ -488,7 +495,10 @@ export function buildScene(spec: MapSpec): Scene {
   const encEntities: SceneEntity[] = [];
   const encDefs: EncounterDef[] = [];
   for (const e of spec.encounters ?? []) {
-    const built = buildEncounter({ id: e.id, enemies: e.enemies ?? [], surprise: e.surprise, onVictory: e.onVictory, hidden: e.hidden });
+    const built = buildEncounter({
+      id: e.id, enemies: e.enemies ?? [], surprise: e.surprise, onVictory: e.onVictory, hidden: e.hidden,
+      maneuverability: e.maneuverability, threat: e.threat, terrain: e.terrain,
+    });
     encEntities.push(...built.entities);
     const bound = boundMembers.filter((b) => b.enc === e.id).map((b) => b.member);
     encDefs.push({ ...built.encounter, members: [...(built.encounter.members ?? []), ...(e.members ?? []), ...bound] });

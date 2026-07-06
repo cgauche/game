@@ -248,6 +248,35 @@ describe('buildScene — encounters `hidden` (embuscade : entités invisibles ju
   });
 });
 
+describe('buildScene — encounters : marqueurs d’Avantage initial (Manœuvrabilité/Menace/Terrain, AA l.4149-4167)', () => {
+  const s = buildScene({
+    id: 'adv', nom: 'ADV', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
+    encounters: [{
+      id: 'enc-menace',
+      maneuverability: 'party',
+      threat: { camp: 'enemies', tier: 'dangereuse' },
+      terrain: { camp: 'party', heavy: true },
+      enemies: [{ ref: 'gobelin', pos: { x: 8, y: 3 } }],
+    }],
+  });
+  it('la rencontre buildée porte maneuverability/threat/terrain — parité avec surprise', () => {
+    const enc = s.encounters[0];
+    expect(enc.maneuverability).toBe('party');
+    expect(enc.threat).toEqual({ camp: 'enemies', tier: 'dangereuse' });
+    expect(enc.terrain).toEqual({ camp: 'party', heavy: true });
+  });
+
+  it('startAdvantagePools dérive l’Avantage initial depuis la rencontre buildée (bout en bout authoring → moteur)', async () => {
+    const { startAdvantagePools } = await import('./combat/advantagePool');
+    const mk = (id: string, kind: 'hero' | 'enemy') =>
+      ({ id, kind, advantage: 0, conditions: [], talents: [], activeEffects: [], wounds: { current: 10, max: 10, base: 10 } }) as unknown as Parameters<typeof startAdvantagePools>[0][number];
+    const hero = mk('h1', 'hero');
+    const foe = mk('e1', 'enemy');
+    // Manœuvrabilité 'party' (+2) + Terrain 'party' heavy (+2) côté alliés ; Menace 'enemies' dangereuse (+1) côté adverses.
+    expect(startAdvantagePools([hero, foe], false, s.encounters[0])).toEqual({ allies: 4, foes: 1 });
+  });
+});
+
 describe('buildScene — markerFill + emplacement hérite du z du marqueur', () => {
   const s = buildScene({
     id: 'mz', nom: 'MZ', size: [4, 2],
