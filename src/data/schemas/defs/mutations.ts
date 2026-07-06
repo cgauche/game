@@ -3,27 +3,11 @@
  * `MutationData = Omit<Mutation, 'roll'>` (`src/data/mutations.ts:21`, `Mutation` définie
  * `src/engine/corruption.ts:51-82`). `roll` (jet d100, traçabilité de tirage) n'appartient PAS à
  * l'entité éditable — porté seulement par l'INSTANCE tirée à l'exécution (hors dataset).
- *
- * ANOMALIE relevée (à rapporter, PAS corrigée ici) : l'entrée `longues-jambes` porte
- * `appearance: { legs: 1.3 }` — `legs` n'existe PAS sur `EntityAppearance`
- * (`src/state/scene.ts:87-110` : seed/monster/colors/parts/sex/build/species/tenue/eyes/features).
- * Le champ `legs` (facteur d'échelle des jambes) est bien un mécanisme RÉEL du rig (lu par
- * `combatantVisuals.ts` sur le type `Appearance`, PAS `EntityAppearance`), mais l'interface de donnée
- * ne le déclare pas : soit `EntityAppearance` doit gagner un `legs?: number`, soit cette entrée est
- * une fuite d'un type voisin. Modélisé ici tel quel (preuve JSON) pour ne pas faire échouer le contrat
- * sur une donnée réellement consommée par le rig — la correction de l'interface reste à faire ailleurs.
  */
 import { z } from 'zod';
-import { sourceRefSchema, gameOpSchema, entityAppearanceSchema as entityAppearanceSchemaBase } from '../common';
+import { sourceRefSchema, gameOpSchema, entityAppearanceSchema } from '../common';
 
 export const file = 'mutations.json';
-
-/** `EntityAppearance` (`common.ts`, miroir `src/state/scene.ts:87-110`) + `legs` (anomalie ci-dessus,
- *  cf. commentaire de tête) — SEULE ce dataset porte cette extension, non remontée au commun. */
-const entityAppearanceSchema = entityAppearanceSchemaBase.extend({
-  /** ANOMALIE — absent de `EntityAppearance` (cf. commentaire de tête). Vu sur `longues-jambes` seul. */
-  legs: z.number().optional(),
-});
 
 export const schema = z.array(
   z.strictObject({

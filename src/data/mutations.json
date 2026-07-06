@@ -1719,7 +1719,9 @@
       }
     ],
     "appearance": {
-      "legs": 1.3
+      "features": [
+        "longues-jambes"
+      ]
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
