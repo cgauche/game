@@ -6,7 +6,7 @@ import { MultiRollList } from './MultiRollList';
 import { TravelDayBody } from './TravelRecapModal';
 import { OptionChooser } from './OptionChooser';
 import { lodgingOptions, foodOptions, restCost, type RestLodging, type RestFood } from '../state/restFlow';
-import { weatherExposure, exposureTestCount, partyHasTent } from '../engine/exposure';
+import { weatherExposure, exposureTestCount, exposureShelterFromTent } from '../engine/exposure';
 import { hasCondition } from '../engine/conditions';
 import { toBrass } from '../engine/money';
 import { GameDate } from './GameDate';
@@ -81,7 +81,7 @@ export function RestModal() {
   // ── Phase RÉGLAGES ──
   const cost = restCost(p, party);
   const severity = weatherExposure(scene?.weather);
-  const sheltered = partyHasTent(party);
+  const sheltered = exposureShelterFromTent(party);
   const exposureTests = exposureTestCount(severity, sheltered);
   const online = net.mode !== 'local';
   const ready = p.readyBySeat ?? {};

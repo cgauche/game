@@ -63,20 +63,84 @@ describe('Effet exposureNight (LDB 18 l.326-334) — cascade INFLUENÇABLE (plus
     expect(useGame.getState().party[0].wounds.current).toBe(beforeW); // aucune Blessure encaissée en silence
   });
 
-  it('chaleur → étapes taguées kind "chaleur" ; la CONSÉQUENCE d’un échec (applier partagé) pose Exténué + journal chaleur (l.330)', () => {
+  it('chaleur → étapes taguées kind "chaleur" ; SANS Possession lourde, la CONSÉQUENCE d’un échec (applier partagé) pose Exténué + journal chaleur (l.330)', () => {
     const party = makePregens().slice(0, 1);
     useGame.setState({ party, pendingCascade: null, journal: [] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'exposureNight', kind: 'chaleur', count: 4, target: 'party' }]);
     const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'exposure')!;
     expect((step.meta as { kind?: string } | undefined)?.kind).toBe('chaleur');
     // Un échec (via l'applier `exposure` partagé) : 1ᵉʳ échec chaleur = −10 Int/FM + Exténué (l.330).
+    // Aucune Possession lourde (items vidés) → conséquence IMMÉDIATE, comme avant l'implémentation du choix.
     const h = useGame.getState().party[0];
+    h.items = [];
     const failed = { ...step, result: { roll: 99, target: step.target!, sl: -5, success: false } } as typeof step;
     const out = cascadeAppliers['exposure'].apply(
       useGame.getState, useGame.setState, failed, h, { steps: [failed], index: 0 },
     );
     expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(true);
     expect((out?.journal ?? []).some((l) => /chaleur|suffoque|accablé/i.test(l))).toBe(true);
+    expect(out?.insert).toBeUndefined();
+  });
+});
+
+describe('Exposition CHALEUR — annulation par délestage d’une Possession lourde (LDB 18 l.332)', () => {
+  const heavyItem = { uid: 'sac-1', trappingId: 'grand-sac', name: 'Grand sac à dos', kind: 'misc', qualities: [], equipped: true, enc: 3 } as never;
+
+  it('avec une Possession lourde : AUCUNE conséquence immédiate, un CHOIX est inséré (rien encaissé en silence)', () => {
+    const party = makePregens().slice(0, 1);
+    useGame.setState({ party, pendingCascade: null, journal: [] });
+    const h = useGame.getState().party[0];
+    h.items = [heavyItem];
+    const step = { id: 'e0', kind: 'exposure', actorId: h.id, target: 50, meta: { kind: 'chaleur' },
+      result: { roll: 99, target: 50, sl: -5, success: false } } as unknown as import('./pendings').CascadeStep;
+    const out = cascadeAppliers['exposure'].apply(useGame.getState, useGame.setState, step, h, { steps: [step], index: 0 });
+    expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(false); // pas encore tranché
+    expect(h.items).toHaveLength(1); // pas encore jeté
+    expect(out?.insert).toHaveLength(1);
+    expect(out!.insert![0].kind).toBe('exposure-heat-drop');
+    expect(out!.insert![0].options?.map((o) => o.key).sort()).toEqual(['garder', 'jeter']);
+  });
+
+  it('« jeter » : retire l’objet, ANNULE le Test (aucune escalade)', () => {
+    const party = makePregens().slice(0, 1);
+    useGame.setState({ party, pendingCascade: null, journal: [] });
+    const h = useGame.getState().party[0];
+    h.items = [heavyItem];
+    const choice = { id: 'e0-drop', kind: 'exposure-heat-drop', actorId: h.id, chosen: 'jeter', meta: { failNumber: 1 } } as unknown as import('./pendings').CascadeStep;
+    const out = cascadeAppliers['exposure-heat-drop'].apply(useGame.getState, useGame.setState, choice, h, { steps: [choice], index: 0 });
+    expect(h.items).toHaveLength(0); // délestée
+    expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(false); // Test ANNULÉ, pas subi
+    expect((out?.journal ?? []).some((l) => /annulé/i.test(l))).toBe(true);
+  });
+
+  it('« garder » : conserve l’objet, la conséquence de l’échec s’applique normalement', () => {
+    const party = makePregens().slice(0, 1);
+    useGame.setState({ party, pendingCascade: null, journal: [] });
+    const h = useGame.getState().party[0];
+    h.items = [heavyItem];
+    const choice = { id: 'e0-drop', kind: 'exposure-heat-drop', actorId: h.id, chosen: 'garder', meta: { failNumber: 1 } } as unknown as import('./pendings').CascadeStep;
+    const out = cascadeAppliers['exposure-heat-drop'].apply(useGame.getState, useGame.setState, choice, h, { steps: [choice], index: 0 });
+    expect(h.items).toHaveLength(1); // conservé
+    expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(true); // 1ᵉʳ échec chaleur (l.330)
+    expect((out?.journal ?? []).some((l) => /chaleur|suffoque|accablé/i.test(l))).toBe(true);
+  });
+
+  it('escalade : un échec ANNULÉ (jeté) ne compte PAS dans le rang du prochain échec GENUINE', () => {
+    const party = makePregens().slice(0, 1);
+    useGame.setState({ party, pendingCascade: null, journal: [] });
+    const h = useGame.getState().party[0];
+    h.items = []; // la Possession lourde a déjà été jetée avant ce 2ᵉ Test (plus rien à jeter)
+    const cancelled = { id: 'e0', kind: 'exposure', actorId: h.id, target: 50, meta: { kind: 'chaleur' },
+      result: { roll: 99, target: 50, sl: -5, success: false } } as unknown as import('./pendings').CascadeStep;
+    const drop = { id: 'e0-drop', kind: 'exposure-heat-drop', actorId: h.id, chosen: 'jeter' } as unknown as import('./pendings').CascadeStep;
+    const second = { id: 'e1', kind: 'exposure', actorId: h.id, target: 50, meta: { kind: 'chaleur' },
+      result: { roll: 88, target: 50, sl: -4, success: false } } as unknown as import('./pendings').CascadeStep;
+    const steps = [cancelled, drop, second];
+    const out = cascadeAppliers['exposure'].apply(useGame.getState, useGame.setState, second, h, { steps, index: 2 });
+    // Sans le 1er échec annulé, ce 2ᵉ Test GENUINE est le 1ᵉʳ échec RÉEL (l.330 : −10 Int/FM + Exténué),
+    // PAS le 2ᵉ (qui infligerait −10 aux autres caractéristiques en plus).
+    expect((out?.journal ?? []).join(' ')).toMatch(/suffoque/);
+    expect((out?.journal ?? []).join(' ')).not.toMatch(/accablé/);
   });
 });
 

@@ -35,7 +35,7 @@ import { rule } from '../engine/policy';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from '../engine/types';
 import { applyFractureEnd } from '../engine/trauma';
 import type { DeferredUpkeepTest } from './upkeep';
-import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, partyHasTent, applyExposureFailure, exposureTarget, sealskinDR, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
+import { weatherExposure, exposureTestCount, exposureNight, expireExposureEffects, exposureShelterFromTent, applyExposureFailure, exposureTarget, sealskinDR, heaviestPossession, dropHeaviestPossession, type ExposureSeverity, type ExposureKind } from '../engine/exposure';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { forcedMarchTarget, applyForcedMarch } from '../engine/travel';
 import { registerCascadeApplier, startCascade } from './cascade';
@@ -267,6 +267,14 @@ registerCascadeApplier('shelter', (get, _set, step, hero) => {
   };
 }, (ok) => (ok ? `L'abri tient la nuit.` : `Aucun abri ne protège du temps.`));
 
+/** Un échec GENUINE d'Exposition à l'index `idx` a-t-il été ANNULÉ par le délestage d'une Possession
+ *  lourde (LDB 18 l.332, chaleur) ? L'étape 'exposure-heat-drop' est TOUJOURS insérée juste après
+ *  l'étape d'échec qu'elle tranche (cf. `insert` ci-dessous) — jamais de mutation rétroactive. */
+function exposureFailCancelledByDrop(steps: CascadeStep[], idx: number): boolean {
+  const next = steps[idx + 1];
+  return next?.kind === 'exposure-heat-drop' && next.chosen === 'jeter';
+}
+
 registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
   if (!hero || !step.result) return;
   // Volet froid/chaleur (l.330/334) porté par l'étape (`meta.kind`) — défaut froid (nuit de repos). La peau
@@ -281,11 +289,39 @@ registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
       ? `${hero.name} — la peau de phoque retient le froid (échec de justesse tenu, +1 DR).`
       : `${hero.name} endure ${kind === 'froid' ? 'le froid' : 'la chaleur'} sans dommage.`] };
   }
-  // Escalade CUMULATIVE (l.330/334) : compte les échecs GENUINE d'Exposition DÉJÀ validés de CE héros pour CE volet.
+  // Escalade CUMULATIVE (l.330/334) : compte les échecs GENUINE d'Exposition DÉJÀ validés de CE héros pour CE
+  // volet, hors ceux ANNULÉS par un délestage de Possession lourde (LDB 18 l.332).
   const priorFails = ctx.steps.slice(0, ctx.index)
-    .filter((s) => s.kind === 'exposure' && s.actorId === hero.id && ((s.meta?.kind as ExposureKind) ?? 'froid') === kind && genuineFail(s.result)).length;
+    .filter((s, i) => s.kind === 'exposure' && s.actorId === hero.id && ((s.meta?.kind as ExposureKind) ?? 'froid') === kind
+      && genuineFail(s.result) && !exposureFailCancelledByDrop(ctx.steps, i)).length;
+  // CHALEUR (LDB 18 l.332) : « Vous débarrasser d'une Possession lourde annule 1 Test échoué » — choix
+  // du JOUEUR, offert seulement s'il reste une Possession lourde à jeter (aucun seuil inventé, cf.
+  // `heaviestPossession`). Sans Possession lourde (ou au FROID, silence du RAW sur ce point) : conséquence
+  // immédiate, comportement inchangé.
+  const heavy = kind === 'chaleur' ? heaviestPossession(hero) : undefined;
+  if (heavy) {
+    return {
+      journal: [`${hero.name} rate son Test d'Exposition (chaleur) — ${heavy.name} pourrait être jeté pour l'annuler.`],
+      insert: [{
+        id: `${step.id}-drop`, kind: 'exposure-heat-drop', actorId: hero.id, icon: '🎒',
+        label: 'Possession lourde', interactive: true,
+        options: [{ key: 'jeter', label: `Jeter ${heavy.name}` }, { key: 'garder', label: 'Garder son paquetage' }],
+        defaultChoice: 'garder', // résolution immédiate (repos multi-jours, « Tout lancer ») : comportement inchangé
+        meta: { failNumber: priorFails + 1 },
+      }],
+    };
+  }
   return { journal: applyExposureFailure(hero, priorFails + 1, battleRng(), kind).log };
 }, (ok, n) => (ok ? `${n} endure l’exposition sans dommage.` : `${n} souffre de l’exposition.`));
+
+registerCascadeApplier('exposure-heat-drop', (_get, _set, step, hero) => {
+  if (!hero || step.chosen == null) return;
+  if (step.chosen === 'jeter') {
+    const name = dropHeaviestPossession(hero);
+    return { journal: [`${hero.name} se débarrasse de ${name ?? 'sa possession la plus lourde'} — le Test échoué est annulé (LDB 18 l.332).`] };
+  }
+  return { journal: applyExposureFailure(hero, Number(step.meta?.failNumber ?? 1), battleRng(), 'chaleur').log };
+}, (ok, n) => (ok ? `${n} se déleste — le Test échoué est annulé.` : `${n} souffre de l'Exposition (chaleur).`));
 
 registerCascadeApplier('forcedMarch', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
@@ -401,9 +437,9 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   const severity = weatherExposure(get().scene?.weather);
   if (campers.length && severity !== 'clement') {
     const camperIds = campers.map((h) => h.id);
-    if (partyHasTent(party)) {
+    if (exposureShelterFromTent(party)) {
       log.push('La tente est montée — le groupe dort à l’abri.');
-      const count = exposureTestCount(severity, true); // tente : extrême = 2 Tests, difficile = 0
+      const count = exposureTestCount(severity, true); // tente : extrême → rythme difficile, difficile → 0
       if (count > 0) steps.push(...buildExposureSteps(party, camperIds, count));
     } else {
       const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
@@ -416,7 +452,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
         if (count > 0) steps.push(...buildExposureSteps(party, camperIds, count));
       }
     }
-    for (const h of campers) expireExposureEffects(h, get().gameTime + MINUTES_PER_DAY); // dissipation après 24 h au chaud
+    for (const h of campers) expireExposureEffects(h, get().gameTime + Number(rule('exposure-expire-hours')) * 60); // dissipation maison
   }
 
   // Récupération + cauchemars : un jet = une étape ; sans jet (PB plein/affamé/instable) → eager.
@@ -602,7 +638,7 @@ export function restSleep(get: Get, set: Set): void {
       const campers = party.filter((h) => !h.dead && p.perHero[h.id]?.lodging === 'dehors');
       if (!campers.length) return;
       const severity: ExposureSeverity = weatherExposure(get().scene?.weather);
-      let sheltered = partyHasTent(party);
+      let sheltered = exposureShelterFromTent(party);
       if (sheltered) {
         out.push({ icon: '⛺', label: 'Campement', text: 'La tente est montée — le groupe dort à l’abri.', tone: 'info' });
       } else if (severity !== 'clement') {
@@ -630,7 +666,7 @@ export function restSleep(get: Get, set: Set): void {
           });
         }
         if (r.log.length) out.push({ actorId: h.id, icon: '🥶', label: 'Exposition', text: r.log.join(' '), tone: 'bad' });
-        expireExposureEffects(h, get().gameTime + MINUTES_PER_DAY); // dissipation après 24 h au chaud
+        expireExposureEffects(h, get().gameTime + Number(rule('exposure-expire-hours')) * 60); // dissipation maison
       }
     },
   });

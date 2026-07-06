@@ -7,27 +7,29 @@
  * FROID (l.334) : 1ᵉʳ échec → −10 CT/Agilité/Dextérité ; 2ᵉ → −10 toutes les autres ; 3ᵉ+ →
  * 1d10 Dégâts ignorant les PA (min 1) ; à 0 PB → Inconscient. « Certaines Possessions accordent
  * des bonus et des pénalités pour ces Tests » : sans bon Manteau, pénalité au Test de Froid
- * (ch.65 l.44 — non chiffrée dans le canon : application déclarée −10). La PEAU DE PHOQUE (MDG 14
+ * (LDB 65 — silence, valeur maison `exposure-no-coat-penalty`). La PEAU DE PHOQUE (MDG 14
  * l.277-279 : « +1 DR sur les Tests de Résistance effectués pour supporter l'exposition au froid »)
  * est consommée par `sealskinDR` : sur un Test BINAIRE, le +1 DR retient l'échec de justesse
  * (échec dont le DR remonte à ≥ +1) — lecture déclarée, aucun ±10 inventé.
  * CHALEUR (l.330) : 1ᵉʳ échec → −10 Int/FM + 1 Exténué ; 2ᵉ → −10 toutes les autres + 1 Exténué ;
- * 3ᵉ+ → 1d10 Dégâts ignorant les PA (min 1). (« Vous débarrasser d'une Possession lourde annule
- * 1 Test échoué » : choix interactif non simulé au niveau agrégé — décision documentée.)
+ * 3ᵉ+ → 1d10 Dégâts ignorant les PA (min 1). « Vous débarrasser d'une Possession lourde annule
+ * 1 Test échoué » (LDB 18 l.332) : IMPLÉMENTÉ où l'architecture le permet (choix du joueur, cf.
+ * `heaviestPossession`/`dropHeaviestPossession` — la CONSÉQUENCE vit dans l'applier de cascade
+ * partagé `state/restFlow.ts`, seul point où l'Exposition se résout Test par Test).
  *
- * Applications déclarées (le canon ne chiffre pas le sommeil dehors) :
- *  - une NUIT (~8 h) en environnement difficile = 2 Tests (1/4 h) ; extrême = 4 Tests (1/2 h) ;
- *  - un ABRI (Tente, ch.74 — ou abri construit, Survie en extérieur ch.09 l.559) ANNULE
- *    l'Exposition d'une nuit difficile, et ramène une nuit extrême au rythme difficile (2 Tests) ;
- *  - les pénalités d'Exposition se dissipent après 24 h (purge d'horloge #T3) ;
- *  - la météo de scène donne la sévérité : pluie/neige = difficile, tempête = extrême (froid).
- * Pur : mute `c`, renvoie jets + journal.
+ * La cadence (2h/4h ci-dessus) est LE SEUL chiffre du RAW ; son application à une NUIT dehors (un
+ * nombre de Tests), l'annulation par une Tente (LDB 74 — silence) et la dissipation des pénalités
+ * sont maison, réglées par le registre `policy.ts` (`exposure-night-difficile-count` /
+ * `exposure-night-extreme-count` / `exposure-tent-cancels` / `exposure-expire-hours`) — cf.
+ * `exposureTestCount`/`exposureShelterFromTent`. La météo de scène donne la sévérité : pluie/neige
+ * = difficile, tempête = extrême (froid). Pur : mute `c`, renvoie jets + journal.
  */
-import type { Combatant, CharKey, Difficulty } from './types';
+import type { Combatant, CharKey, Difficulty, ItemInstance } from './types';
 import type { RNG } from './dice';
 import { rollTest } from './tests';
 import { addCondition, hasCondition, loseWounds } from './conditions';
 import { hasCapability, itemCapability } from './capabilities';
+import { rule } from './policy';
 
 export type ExposureSeverity = 'clement' | 'difficile' | 'extreme';
 
@@ -50,6 +52,14 @@ export function hasCoat(c: Combatant): boolean {
  *  camp) — lue PAR ID dans le catalogue (≠ nom de l'objet). */
 export function partyHasTent(party: Combatant[]): boolean {
   return party.some((h) => (h.items ?? []).some((it) => itemCapability(it, 'isShelter')));
+}
+
+/** La Tente ANNULE-t-elle l'Exposition du camp (nuit difficile → 0 Test, extrême → rythme difficile) ?
+ *  Règle optionnelle `exposure-tent-cancels` (LDB 74 — silence, valeur maison : le RAW ne prête à la
+ *  Tente AUCUN effet sur l'Exposition, seul le Sac de couchage a un bonus chiffré au Froid, LDB 74
+ *  l.60). Désactivée, une Tente ne compte plus comme abri automatique (repli sur l'abri de fortune). */
+export function exposureShelterFromTent(party: Combatant[]): boolean {
+  return rule('exposure-tent-cancels') !== false && partyHasTent(party);
 }
 
 /** Peau de phoque (MDG 14 l.277-279) : « +1 DR sur les Tests de Résistance effectués pour supporter
@@ -78,11 +88,15 @@ const SECOND_FAIL: Record<ExposureKind, CharKey[]> = {
   chaleur: ['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Soc'],
 };
 
-/** Nombre de Tests d'une nuit dehors selon sévérité et abri. */
+/** Nombre de Tests d'une nuit dehors selon sévérité et abri — cadence RAW (LDB 18 l.328 : 4h/2h),
+ *  application « nuit ~8h » maison via `exposure-night-difficile-count`/`exposure-night-extreme-count`
+ *  (policy.ts). Un abri (Tente) ramène une nuit extrême au rythme difficile. */
 export function exposureTestCount(severity: ExposureSeverity, sheltered: boolean): number {
   if (severity === 'clement') return 0;
-  if (severity === 'extreme') return sheltered ? 2 : 4;
-  return sheltered ? 0 : 2;
+  const difficile = Number(rule('exposure-night-difficile-count'));
+  const extreme = Number(rule('exposure-night-extreme-count'));
+  if (severity === 'extreme') return sheltered ? difficile : extreme;
+  return sheltered ? 0 : difficile;
 }
 
 /** Protection magique contre les intempéries (op `weatherWard`) : aucun Test de froid tant qu'elle dure. */
@@ -90,9 +104,30 @@ export function isWeatherWarded(c: Combatant): boolean {
   return (c.activeEffects ?? []).some((e) => e.weatherImmune);
 }
 
-/** Cible (et base) d'UN Test d'Exposition au froid : Résistance +0, −10 sans manteau ni cape (ch.65 l.44). */
+/** Cible (et base) d'UN Test d'Exposition au froid : Résistance +0, pénalité maison sans manteau ni
+ *  cape (LDB 65 l.44 — « des pénalités », non chiffrées ; valeur `exposure-no-coat-penalty`). */
 export function exposureTarget(c: Combatant, resVal: number): number {
-  return Math.max(0, resVal + (hasCoat(c) ? 0 : -10));
+  return Math.max(0, resVal - (hasCoat(c) ? 0 : Number(rule('exposure-no-coat-penalty'))));
+}
+
+/** Objet le plus lourd porté par `c` (Encombrement le plus élevé, strictement positif) — LA
+ *  Possession lourde à jeter pour annuler 1 Test échoué d'Exposition (LDB 18 l.332, CHALEUR
+ *  seulement). Aucun seuil inventé : le plus lourd objet porté EST par construction la Possession
+ *  la plus lourde disponible ; `undefined` si rien n'a d'Encombrement. */
+export function heaviestPossession(c: Combatant): ItemInstance | undefined {
+  return (c.items ?? []).reduce<ItemInstance | undefined>(
+    (best, it) => (it.enc > 0 && (!best || it.enc > best.enc) ? it : best),
+    undefined,
+  );
+}
+
+/** Se débarrasser de la Possession la plus lourde (LDB 18 l.332) : retire l'objet de l'inventaire de
+ *  `c`. Renvoie son nom si un objet a bien été jeté (`undefined` si rien à jeter). Mute `c`. */
+export function dropHeaviestPossession(c: Combatant): string | undefined {
+  const it = heaviestPossession(c);
+  if (!it) return undefined;
+  c.items = (c.items ?? []).filter((x) => x.uid !== it.uid);
+  return it.name;
 }
 
 /**
@@ -129,8 +164,8 @@ export function applyExposureFailure(c: Combatant, failures: number, rng: RNG, k
 
 /**
  * Une PÉRIODE d'Exposition pour `c` : `count` Tests de Résistance à `difficulty` (défaut +0) — au
- * froid : −10 sans manteau (ch.65 l.44), la peau de phoque (+1 DR, MDG 14 l.277) retient l'échec
- * de justesse. Applique les échecs en cascade (RAW l.330/334, via `applyExposureFailure`).
+ * froid : pénalité maison sans manteau (`exposureTarget`), la peau de phoque (+1 DR, MDG 14 l.277)
+ * retient l'échec de justesse. Applique les échecs en cascade (RAW l.330/334, via `applyExposureFailure`).
  * Renvoie les jets et le journal. Nommée « night » pour la nuit dehors historique — sert aussi la
  * journée en mer (MDG 13 l.203-225).
  */
@@ -161,7 +196,7 @@ export function exposureNight(
     log.push(...f.log);
     wounds += f.wounds;
   }
-  if (kind === 'froid' && !hasCoat(c) && count > 0) log.push(`${c.name} n'a ni manteau ni cape — le froid mord (−10 aux Tests d'Exposition).`);
+  if (kind === 'froid' && !hasCoat(c) && count > 0) log.push(`${c.name} n'a ni manteau ni cape — le froid mord (−${Number(rule('exposure-no-coat-penalty'))} aux Tests d'Exposition).`);
   return { rolls, log, failures, wounds };
 }
 
