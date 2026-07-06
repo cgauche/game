@@ -718,8 +718,12 @@ export type GameOp =
    *  à cuire). Lu par heroMaxWounds/fortuneMax/resolveMax — data-driven, jamais par libellé. */
   | { op: 'attrMod'; attr: 'wounds' | 'fortune' | 'resolve' | 'fate' | 'resilience'; mod: Formula }
   /** Plafond de mains d'arme maniables — GÉNÉRALISE `noTwoHanded` (hands:1 = pas d'arme à deux mains).
-   *  Une amputation de main/bras pose `maxWeaponHands:1`. Lu par `cannotWieldTwoHanded`/`recomputeLoadout`. */
-  | { op: 'maxWeaponHands'; hands: number }
+   *  Une amputation de main/bras pose `maxWeaponHands:1` (PERMANENT, via Trauma.ops). `durationRounds` :
+   *  effet TEMPORAIRE à durée intrinsèque (Aux Armes « main/bras inutilisable Nd10 [−BE] Rounds », l.2557/
+   *  2562/2588) — résolu indépendamment du ctx, comme `condition`/`charMod` ; absent = durée du ctx
+   *  (`durationFromCtx`, sort). Lu par `cannotWieldTwoHanded`/`recomputeLoadout` (via `passiveMods`,
+   *  channel `activeEffects` — même collecteur que la séquelle permanente). */
+  | { op: 'maxWeaponHands'; hands: number; durationRounds?: Formula }
   /** Perte d'un organe sensoriel PAIRÉ (œil/oreille). Porté par une séquelle ; `escalateSensoryLoss`
    *  compte les `senseLoss` par sens (2 du même → Cécité/Surdité). */
   | { op: 'senseLoss'; sense: PairedSense }
@@ -1774,9 +1778,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'maxWeaponHands': {
         target.activeEffects = target.activeEffects ?? [];
+        // Durée INTRINSÈQUE (Aux Armes : « main/bras inutilisable Nd10[-BE] Rounds », minimum 1) résolue
+        // MAINTENANT, indépendamment du ctx — même patron que `charMod`/`condition`.
+        const dur: Duration = o.durationRounds != null
+          ? { scale: 'rounds', left: Math.max(1, resolveFormula(o.durationRounds, ref, rng)) }
+          : durationFromCtx(ctx);
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: durationFromCtx(ctx),
+          duration: dur,
           maxWeaponHands: o.hands,
         });
         lines.push(t('op.maxWeaponHands', { name: target.name, hands: o.hands, src: ctx.label ?? 'sort' }));

@@ -1,5 +1,5 @@
 {
-  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat ; `desc` = « Effets supplémentaires » VERBATIM (durées, conditions et amputations non structurées y restent, arbitrage).",
+  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y COMPRIS les sous-effets récurrents à durée Rounds (#125 : `maxWeaponHands.durationRounds`/`charMod.durationRounds`, `resist.skill` hors-Résistance) ; `desc` = « Effets supplémentaires » VERBATIM (reste l'affichage long terme — durées en JOURS et amputations permanentes non structurées y restent, arbitrage).",
   "tete": [
     {
       "id": "aa-tete-01",
@@ -385,6 +385,30 @@
       "name": "Choc au bras",
       "blessures": 0,
       "trivial": true,
+      "ops": [
+        {
+          "op": "maxWeaponHands",
+          "hands": 1,
+          "durationRounds": {
+            "sum": [
+              {
+                "dice": {
+                  "n": 1,
+                  "sides": 10
+                }
+              },
+              {
+                "times": {
+                  "of": {
+                    "bonusOf": "E"
+                  },
+                  "factor": -1
+                }
+              }
+            ]
+          }
+        }
+      ],
       "desc": "Vous lâchez ce que vous teniez dans cette main et cette dernière devient inutilisable pour 1d10 – (Bonus d'Endurance) Rounds (minimum de 1). Pendant ce temps, considérez votre main comme perdue (voir Amputation en page 180 de WFJDR)."
     },
     {
@@ -452,6 +476,18 @@
       "max": 55,
       "name": "Clef de bras",
       "blessures": 2,
+      "ops": [
+        {
+          "op": "maxWeaponHands",
+          "hands": 1,
+          "durationRounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ],
       "desc": "Vous lâchez ce que vous teniez dans cette main. Le bras est inutilisable pendant 1d10 Rounds (voir Amputation en page 180 de WFJDR)."
     },
     {
@@ -812,6 +848,18 @@
       "max": 45,
       "name": "Clavicule tordue",
       "blessures": 2,
+      "ops": [
+        {
+          "op": "maxWeaponHands",
+          "hands": 1,
+          "durationRounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ],
       "desc": "Choisissez au hasard l'un de vos deux bras. Vous lâchez ce que vous teniez dans cette main et le bras est inutilisable pendant 1d10 Rounds (voir Amputation en page 180 de WFJDR)."
     },
     {
@@ -1044,6 +1092,17 @@
       "name": "Orteil contusionné",
       "blessures": 0,
       "trivial": true,
+      "resist": {
+        "difficulty": "accessible",
+        "onFail": [
+          {
+            "op": "charMod",
+            "char": "Ag",
+            "mod": -10,
+            "durationRounds": 1
+          }
+        ]
+      },
       "desc": "Vous devez réussir un Test de Résistance Accessible (+20) sous peine de subir une pénalité de -10 sur tous vos Tests d'Agilité jusqu'à la fin du prochain Round."
     },
     {
@@ -1053,6 +1112,17 @@
       "name": "Perte d'équilibre",
       "blessures": 0,
       "trivial": true,
+      "resist": {
+        "difficulty": "intermediaire",
+        "skill": "athletisme",
+        "onFail": [
+          {
+            "op": "condition",
+            "name": "a-terre",
+            "value": 1
+          }
+        ]
+      },
       "desc": "Vous devez réussir un Test d'Athlétisme Intermédiaire (+0) sous peine de subir l'État À Terre."
     },
     {
@@ -1061,6 +1131,19 @@
       "max": 25,
       "name": "Cheville tordue",
       "blessures": 1,
+      "ops": [
+        {
+          "op": "charMod",
+          "char": "Ag",
+          "mod": -10,
+          "durationRounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ],
       "desc": "Vous subissez une pénalité de -10 sur tous vos Tests d'Agilité pendant 1d10 Rounds."
     },
     {
@@ -1120,6 +1203,19 @@
       "max": 55,
       "name": "Genou tordu",
       "blessures": 2,
+      "ops": [
+        {
+          "op": "charMod",
+          "char": "Ag",
+          "mod": -20,
+          "durationRounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
+        }
+      ],
       "desc": "Votre genou pivote un peu trop. Vous subissez une pénalité de -20 sur tous vos Tests d'Agilité pendant 1d10 Rounds."
     },
     {

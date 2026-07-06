@@ -3,6 +3,7 @@ import { applyCriticalToTarget } from './combatFlow';
 import { resolveAACritical } from '../engine/aaCritical';
 import { inDeathCondition } from '../engine/conditions';
 import { setRule, resetRule } from '../engine/policy';
+import { cannotWieldTwoHanded } from '../engine/trauma';
 import { seedBattleRng } from './battleRng';
 import type { Combatant } from '../engine/types';
 import type { RNG } from '../engine/dice';
@@ -59,6 +60,19 @@ describe('#38 — branchements AA au site de résolution (applyCriticalToTarget)
     applyCriticalToTarget(target, 'brasD', true, 0, [], noop, { prerolled: crit });
     expect(target.criticalWounds ?? 0).toBe(1);          // Critique bien infligé
     expect(target.wounds.current).toBeGreaterThan(0);    // … alors qu’il RESTE des Blessures (PB > 0)
+  });
+
+  it("#125 — « Choc au bras » (l.2557) appliqué de bout en bout : main inutilisable N Rounds → cannotWieldTwoHanded VRAI, PAS permanent", () => {
+    seedBattleRng(3);
+    setRule('combat-aa-blessures', 'aa');
+    const target = mk();
+    const crit = resolveAACritical(target, 'brasG', seq(15), 0); // 11-20 → Choc au bras
+    expect(target.activeEffects ?? []).toHaveLength(0); // rien avant application (l'ops n'est encore que DONNÉE)
+    applyCriticalToTarget(target, 'brasG', true, 0, [], noop, { prerolled: crit });
+    expect(cannotWieldTwoHanded(target)).toBe(true); // effet RÉEL, pas du texte arbitré
+    const eff = target.activeEffects?.find((e) => e.maxWeaponHands != null);
+    expect(eff?.duration.scale).toBe('rounds'); // TEMPORAIRE (≠ séquelle permanente 'permanent')
+    if (eff?.duration.scale === 'rounds') expect(eff.duration.left).toBeGreaterThanOrEqual(1);
   });
 
   it('mode LDB (défaut) : un Critique trivial de la table AA n’existe pas → tout Critique compte', () => {

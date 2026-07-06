@@ -58,6 +58,52 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
     expect(aaDeathByCriticalCount(true, 0, 2, 2)).toBe(false);  // 2 n'est pas > 2
   });
 
+  // #125 — sous-effets RÉCURRENTS/chiffrés désormais STRUCTURÉS (GameOp à durée), plus un texte arbitré.
+  it('« Choc au bras » (AA bras 11-20, l.2557) : main inutilisable 1d10−BE Rounds (min 1) — STRUCTURÉ', () => {
+    const r = resolveAACritical(target(), 'brasG', seq(15), 0);
+    expect(r.name).toBe('Choc au bras');
+    expect(r.ops).toEqual([{
+      op: 'maxWeaponHands', hands: 1,
+      durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'E' }, factor: -1 } }] },
+    }]);
+  });
+
+  it('« Clef de bras » (AA bras 51-55, l.2562) : bras inutilisable 1d10 Rounds — STRUCTURÉ', () => {
+    const r = resolveAACritical(target(), 'brasG', seq(53), 0);
+    expect(r.name).toBe('Clef de bras');
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'maxWeaponHands', hands: 1, durationRounds: { dice: { n: 1, sides: 10 } } }]);
+  });
+
+  it('« Clavicule tordue » (AA corps 41-45, l.2588) : bras (au hasard) inutilisable 1d10 Rounds — STRUCTURÉ', () => {
+    const r = resolveAACritical(target(), 'corps', seq(43), 0);
+    expect(r.name).toBe('Clavicule tordue');
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'maxWeaponHands', hands: 1, durationRounds: { dice: { n: 1, sides: 10 } } }]);
+  });
+
+  it('« Cheville tordue » (AA jambe 21-25, l.2610) : -10 Ag pendant 1d10 Rounds — STRUCTURÉ (charMod)', () => {
+    const r = resolveAACritical(target(), 'jambeG', seq(23), 0);
+    expect(r.name).toBe('Cheville tordue');
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 1 }, { op: 'charMod', char: 'Ag', mod: -10, durationRounds: { dice: { n: 1, sides: 10 } } }]);
+  });
+
+  it('« Genou tordu » (AA jambe 51-55, l.2614) : -20 Ag pendant 1d10 Rounds — STRUCTURÉ (charMod)', () => {
+    const r = resolveAACritical(target(), 'jambeG', seq(53), 0);
+    expect(r.name).toBe('Genou tordu');
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'charMod', char: 'Ag', mod: -20, durationRounds: { dice: { n: 1, sides: 10 } } }]);
+  });
+
+  it("« Orteil contusionné » (AA jambe 01-10, l.2608) : Résistance échouée → -10 Ag 1 Round (« jusqu'à la fin du prochain Round », convention drunkIgnore) — STRUCTURÉ", () => {
+    const r = resolveAACritical(target(), 'jambeG', seq(5, 90), 0); // loc 5 → ligne ; test 90 > cible 50 (E30+20) → échec
+    expect(r.name).toBe('Orteil contusionné');
+    expect(r.ops).toEqual([{ op: 'charMod', char: 'Ag', mod: -10, durationRounds: 1 }]);
+  });
+
+  it("« Perte d'équilibre » (AA jambe 11-20, l.2609) : Test d'ATHLÉTISME (pas Résistance) — resist.skill", () => {
+    const r = resolveAACritical(target(), 'jambeG', seq(15, 90), 0); // loc 15 → ligne ; Athlétisme (Ag30+0) 90 > 30 → échec
+    expect(r.name).toBe("Perte d'équilibre");
+    expect(r.ops).toEqual([{ op: 'condition', name: 'a-terre', value: 1 }]);
+  });
+
   it('le toggle bifurque rollCritical : ldb (défaut) ≠ aa', () => {
     const aa = (() => { setRule('combat-aa-blessures', 'aa'); return rollCritical(target(), 'corps', seq(15), 0); })();
     expect(aa.name).toBe("Rien qu'une égratignure !"); // table AA

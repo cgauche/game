@@ -206,7 +206,7 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     kind: 'mode',
     default: 'ldb',
     options: ['ldb', 'aa'],
-    hint: 'Système ALTERNATIF de Blessures/Blessures Critiques/mort d’Aux Armes (remplace WFJDR p.172-178). ldb = Livre de base (RAW, défaut). aa = tables de Critiques PAR LOCALISATION d’Aux Armes + Critique sur un double (même s’il reste des Blessures) + décalage +10/Blessure au-delà de 0 + mort si (Inconscient & 0 PB & Blessures critiques > Bonus d’Endurance). Les sous-effets conditionnels/durées des lignes AA restent en texte (arbitrage), le corps mécanique (Blessures + États immédiats + Mort) est appliqué.',
+    hint: 'Système ALTERNATIF de Blessures/Blessures Critiques/mort d’Aux Armes (remplace WFJDR p.172-178). ldb = Livre de base (RAW, défaut). aa = tables de Critiques PAR LOCALISATION d’Aux Armes + Critique sur un double (même s’il reste des Blessures) + décalage +10/Blessure au-delà de 0 + mort si (Inconscient & 0 PB & Blessures critiques > Bonus d’Endurance). Le corps mécanique (Blessures + États immédiats + Mort) est appliqué ; les sous-effets récurrents à durée Rounds (membre inutilisable, pénalité de Test) le sont AUSSI (#125, `aaCritical.ts`) — restent en texte : durées en jours (ctx sans horloge au site de résolution) et amputations permanentes non converties en séquelles.',
   },
   {
     id: 'combat-aa-avantage-groupe',

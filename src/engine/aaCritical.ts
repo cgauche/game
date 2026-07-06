@@ -10,14 +10,21 @@
  *    Critique (`{op:'wounds'}` brut) ; « T » (triviale, l.2521) ne compte pas pour la mort ; « Mort » = létal.
  *  - Mort (l.2517) : si Inconscient ET 0 PB ET nombre de Blessures Critiques > Bonus d'Endurance → meurt
  *    en fin de Round (`aaDeathByCriticalCount`).
- * `desc` = « Effets supplémentaires » VERBATIM : les sous-effets conditionnels (durées, « membre
- * inutilisable 1d10 Rounds », amputations page 180) y restent, arbitrés — rien n'est inventé.
+ * `desc` = « Effets supplémentaires » VERBATIM (règle 5) — reste l'affichage long terme. Les sous-effets
+ * RÉCURRENTS/chiffrés y sont désormais AUSSI structurés en `ops` (#125) : durées « Nd10[-BE] Rounds »
+ * (membre inutilisable, l.2557/2562/2588) via `maxWeaponHands.durationRounds` ; pénalités de Test à
+ * durée Rounds (l.2610/2614) via `charMod.durationRounds` ; Tests conditionnels hors-Résistance
+ * (l.2608/2609) via `resist.skill`. Ce qui reste TEXTE (blocage/gap distinct, non ré-arbitré ici) :
+ * durées en JOURS (l.2545/2587 — ctx sans horloge au site de résolution, `state/combatFlow.ts`),
+ * amputations PERMANENTES en desc non converties en séquelles structurelles, et l'action de lâcher
+ * l'objet tenu (spatial/inventaire, hors du moteur pur).
  */
 import aaJson from '../data/aa-criticals.json';
 import { d100, d10, RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
 import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
+import { testValue } from './skills';
 import { locationLabel } from './combat';
 import { Combatant, HitLocation } from './types';
 import { traumaById, traumaFicheById } from './trauma';
@@ -34,7 +41,10 @@ interface AAEntry {
   /** « T » : n'est PAS comptée dans le nombre de Blessures Critiques nécessaires pour tuer (l.2521-2523). */
   trivial?: boolean;
   ops?: GameOp[];
-  resist?: { difficulty: import('./types').Difficulty; onFail: GameOp[] };
+  /** Test conditionnel de la ligne (« sous peine de… »). `skill` (optionnel, id STABLE `skills.json`) =
+   *  compétence testée QUAND CE N'EST PAS de la Résistance (ex. Athlétisme, l.2609) — `testValue` gère
+   *  déjà les compétences de base non entraînées. Absent (défaut historique) = Test de Résistance. */
+  resist?: { difficulty: import('./types').Difficulty; onFail: GameOp[]; skill?: string };
   traumas?: string[];
   lethal?: boolean;
   desc: string;
@@ -68,7 +78,10 @@ export function resolveAACritical(
   if (typeof entry.blessures === 'number' && entry.blessures > 0) ops.push({ op: 'wounds', amount: entry.blessures });
   ops.push(...(entry.ops ?? []));
   if (entry.resist) {
-    const res = rollTest(resistVal, entry.resist.difficulty, rng);
+    // `skill` (l.2609 : Test d'Athlétisme, pas de Résistance) — `testValue` couvre déjà les compétences
+    // de base non entraînées (Athlétisme = « base », LDB) ; absent = Test de Résistance (comportement historique).
+    const testVal = entry.resist.skill ? testValue(target, entry.resist.skill) : resistVal;
+    const res = rollTest(testVal, entry.resist.difficulty, rng);
     if (!res.success) ops.push(...entry.resist.onFail);
   }
   const traumas = (entry.traumas ?? []).map((id) =>

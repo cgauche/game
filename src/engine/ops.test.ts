@@ -4,7 +4,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import type { Combatant } from './types';
-import { makeRNG } from './dice';
+import { makeRNG, type RNG } from './dice';
 import { resolveFormula, applyOps, applyActiveEffect } from './ops';
 import { hasTraitKey } from './traits/dispatch';
 import { woundsFromHit } from './combat';
@@ -187,6 +187,38 @@ describe('applyOps — opérations unitaires', () => {
     const lines = applyOps(c, [{ op: 'charMod', char: 'E', mod: 20 }], { label: 'Armure' });
     expect(c.activeEffects![0].duration).toEqual({ scale: "permanent" });
     expect(lines[0]).toMatch(/durée hors combat/);
+  });
+
+  // #125 — Aux Armes « main/bras inutilisable Nd10[-BE] Rounds » (l.2557/2562/2588) : effet TEMPORAIRE,
+  // durée intrinsèque à l'entrée de Critique (pas du ctx — la résolution AA n'en porte pas).
+  it("maxWeaponHands : durationRounds INLINE → ActiveEffect à durée ROUNDS, indépendant du ctx", () => {
+    const c = hero();
+    const rng = makeRNG(7);
+    applyOps(c, [{ op: 'maxWeaponHands', hands: 1, durationRounds: { dice: { n: 1, sides: 10 } } }], { rng });
+    expect(c.activeEffects).toHaveLength(1);
+    const eff = c.activeEffects![0];
+    expect(eff.maxWeaponHands).toBe(1);
+    expect(eff.duration.scale).toBe('rounds');
+    if (eff.duration.scale === 'rounds') {
+      expect(eff.duration.left).toBeGreaterThanOrEqual(1);
+      expect(eff.duration.left).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it('maxWeaponHands : sans durationRounds → comportement INCHANGÉ (durée du ctx, rétro-compatible)', () => {
+    const c = hero();
+    applyOps(c, [{ op: 'maxWeaponHands', hands: 1 }], { defaultDurationRounds: 3 });
+    expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 3 });
+  });
+
+  it('maxWeaponHands : formule « 1d10 − BE » plancher à 1 (minimum de 1, « Choc au bras » l.2557)', () => {
+    const c = hero({ characteristics: { ...hero().characteristics, E: 45 } }); // BE 4
+    const rng: RNG = { int: () => 1 }; // 1d10 tiré au plus bas (1) − BE 4 → négatif → plancher 1
+    applyOps(c, [{
+      op: 'maxWeaponHands', hands: 1,
+      durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'E' }, factor: -1 } }] },
+    }], { rng });
+    expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 1 });
   });
 
   // (L'ancien test « test imbriqué : échec → onFail / réussite → onSuccess » a été RETIRÉ : l'op `test`
