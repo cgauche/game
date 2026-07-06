@@ -102,14 +102,22 @@ const HARMFUL_TARGET_OPS = new Set<string>([
   'condition', 'wounds', 'corruption', 'lifeSteal', 'suffocate', 'senseLoss', 'loseTurn',
   'breakBlade', 'damageArmour', 'armourPierce', 'reduceToZero', 'castPenalty',
 ]);
-/** Ops « cible » BÉNÉFIQUES → buff sur allié/soi. Liste partielle ASSUMÉE : un buff non listé retombe
- *  en 'any' (réticule des deux côtés, jamais caché) — pire cas anodin (buff montrable sur un ennemi). */
+/** Ops « cible » BÉNÉFIQUES-SANS-AMBIGUÏTÉ → buff sur allié/soi. Liste tenue EXHAUSTIVE au même titre
+ *  que HARMFUL_TARGET_OPS (recensement du catalogue `GameOp`, engine/ops.ts) POUR LES OPS DONT LE SIGNE
+ *  EST FIXE (soin, purge d'État/maladie/psy, octroi, protection…) : asymétrie ASSUMÉE avec HARMFUL —
+ *  un offensif oublié rend un sort injouable sur l'ennemi (bug réel, HARMFUL doit rester complète) ;
+ *  un bénéfique-clair oublié ici ne fait que retomber en 'any' (réticule des deux côtés, jamais caché).
+ *  Les ops DUAL-SIGNE (`testMod`/`skillMod`/`attrMod`/`charDRBonus`/`sinMod`/`maxWeaponHands`… — la
+ *  MÊME op est un buff OU un malus selon `amount`/`mod`/`hands`) sont VOLONTAIREMENT absentes : 'any'
+ *  est le comportement voulu, jamais 'ally' pour un malus déguisé (Malédiction de malchance, testMod
+ *  amount:-10, LDB 42 p.255 — verrouillé par le test dual-signe de targetingModes.test.ts). */
 const HELPFUL_TARGET_OPS = new Set<string>([
   'ap', 'heal', 'cureCriticalWound', 'cureDisease', 'removeCondition', 'grantTrait', 'grantTalent',
   'grantWeapon', 'grantNaturalWeapon', 'grantFreeAttack', 'augmentWeapon', 'giveTrapping', 'freeReroll',
   'gainResource', 'arrowWard', 'attackWardFM', 'castWard', 'domeWard', 'weatherWard', 'mitigateIncoming',
   'ignoreStatePenalties', 'noBreath', 'noHunger', 'preventInfection', 'reduceDiseaseDays', 'diseaseTestMod', 'suppressSymptom', 'skillDRBonus',
-  'martyr', 'maxWeaponHands',
+  'martyr', 'endPsych', 'removePsychTrait', 'suppressPsych', 'gainAdvantage', 'critTwice',
+  'grantCareerSkill', 'grantCareerTalent',
 ]);
 
 export type SpellAffinity = 'enemy' | 'ally' | 'any';

@@ -4,10 +4,11 @@
  * overcastTargetCandidates ; attaque = ennemis via l'affordance par défaut).
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { currentTargetingMode } from './targetingModes';
+import { currentTargetingMode, spellAffinity } from './targetingModes';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { spawnEnemy } from './spawn';
+import { findSpellById } from '../data';
 
 const arena = () => {
   const w = 16, h = 12;
@@ -102,5 +103,22 @@ describe('candidates des modes à liste', () => {
     const mode = currentTargetingMode(useGame.getState);
     expect(mode.affordance!(useGame.getState, hero, e1).kind).toBe('ok'); // ennemi adjacent → frappe
     expect(mode.affordance!(useGame.getState, hero, ally).kind).toBe('none'); // allié → pas une cible d'attaque
+  });
+});
+
+describe('spellAffinity — HELPFUL_TARGET_OPS (#131)', () => {
+  it("Bénédiction de Sauvagerie (op cible unique critTwice, LDB 41 p.221) → 'ally'", () => {
+    const spell = findSpellById('benediction-de-sauvagerie')!;
+    expect(spellAffinity(spell)).toBe('ally');
+  });
+
+  it("Baume pour un esprit blessé (op cible unique suppressPsych, LDB 41 p.225) → 'ally'", () => {
+    const spell = findSpellById('baume-pour-un-esprit-blesse')!;
+    expect(spellAffinity(spell)).toBe('ally');
+  });
+
+  it("Malédiction de malchance (op cible unique testMod AMBIGU, amount:-10, LDB 42 p.255) reste 'any' — un malus ne doit jamais retomber en 'ally'", () => {
+    const spell = findSpellById('malediction-de-malchance')!;
+    expect(spellAffinity(spell)).toBe('any');
   });
 });
