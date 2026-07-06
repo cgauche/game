@@ -7,7 +7,7 @@ describe('Jeux de taverne — moteur générique (NADJ ch.16)', () => {
     expect(TAVERN_GAMES.length).toBe(11);
     for (const g of TAVERN_GAMES) {
       expect(g.desc.length).toBeGreaterThan(30); // règle recopiée
-      expect(g.source.book).toBe('NADJ');
+      expect(g.source.book).toBe('nuits-agitees-et-dures-journees');
       expect(['opposed', 'extended']).toContain(g.mode);
     }
   });

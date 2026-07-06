@@ -322,7 +322,7 @@ describe('Convalescence — Activité d’interlude (ADE II Annexe I « Les chos
     expect(conv!.skills).toEqual([{ skillId: 'calme' }]);
     expect(conv!.difficulty).toBe('tresDifficile'); // « Calme Très Difficile (–30) »
     expect(conv!.onSuccess).toEqual([{ op: 'removePsychTrait' }]); // « éliminer un Trait Psychologique de votre choix »
-    expect(conv!.source.book).toBe('ADE2');
+    expect(conv!.source.book).toBe('archives-de-l-empire-2');
   });
   it("apparaît dans le catalogue des Activités d'interlude", () => {
     expect(activitiesFor('interlude').some((a) => a.id === 'convalescence')).toBe(true);
@@ -386,7 +386,7 @@ describe('activityAvailableAt — gate géographique `where` (ACE = « à Altdor
       const def = activityById(id)!;
       expect(def.contexts, id).toContain('interlude');
       expect(def.where, id).toEqual(['altdorf']);
-      expect(def.source.book, id).toBe('ACE');
+      expect(def.source.book, id).toBe('altdorf-couronne-de-l-empire');
       expect(def.desc, id).toBeTruthy(); // description VERBATIM (règle 5)
       expect(activityAvailableAt(def, 'altdorf'), id).toBe(true);
       expect(activityAvailableAt(def, 'ubersreik'), id).toBe(false);

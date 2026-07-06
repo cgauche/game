@@ -127,7 +127,7 @@ const STEP_META: Record<StepId, { label: string; zone: (p: StepProps) => { rail:
 
 /** Espèces mises en avant : celles du Livre de base — dérivé des données, les suppléments
  *  apparaissent automatiquement à la suite. */
-const CORE = allSpecies.filter((s) => s.source.book === 'LDB').map((s) => s.label);
+const CORE = allSpecies.filter((s) => s.source.book === 'livre-de-base').map((s) => s.label);
 
 /** Choix proposés pour le trapping « Arme (Au choix) » : toutes les ARMES des données ({id, label}). */
 const WEAPON_CHOICES = allTrappings
@@ -341,7 +341,7 @@ function SpeciesZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNod
   const gnomeOn = !!rule('creation-gnome-jouable');
   const families: { family: string; list: SpeciesData[] }[] = [];
   for (const s of allSpecies) {
-    if (s.source.book === 'NADJ' && !gnomeOn) continue;
+    if (s.source.book === 'nuits-agitees-et-dures-journees' && !gnomeOn) continue;
     const g = families.find((f) => f.family === s.family);
     if (g) g.list.push(s);
     else families.push({ family: s.family, list: [s] });

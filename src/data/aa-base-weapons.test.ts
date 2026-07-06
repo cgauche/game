@@ -28,7 +28,7 @@ describe("#40 — Armes de base AA (Aux Armes, folio 91)", () => {
       expect(t!.damage).toEqual({ plusBF: true, flat: c.flat });
       expect(t!.qualities).toEqual(c.qualities);
       expect(t!.price).toEqual(c.price);
-      expect(t!.source).toEqual({ book: 'AA', page: 91 });
+      expect(t!.source).toEqual({ book: 'aux-armes', page: 91 });
       expect(typeof t!.desc).toBe('string'); // paragraphe de saveur verbatim présent
     });
     it(`${c.label} : toutes ses Atouts/Défauts résolvent dans qualities.json`, () => {
@@ -42,6 +42,6 @@ describe("#40 — Armes de base AA (Aux Armes, folio 91)", () => {
     expect(t!.type).toBe('melee');
     expect(t!.subType).toBe('bagarre'); // « utilisation se base sur Corps à corps (Bagarre) »
     expect(t!.damage).toEqual({ plusBF: true, flat: 2 }); // « mêmes caractéristiques qu'une Dague »
-    expect(t!.source).toEqual({ book: 'NADJ', page: 67 });
+    expect(t!.source).toEqual({ book: 'nuits-agitees-et-dures-journees', page: 67 });
   });
 });

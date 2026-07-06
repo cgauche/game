@@ -119,7 +119,7 @@
       }
     ],
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 25
     }
   },
@@ -241,7 +241,7 @@
       }
     ],
     "source": {
-      "book": "Middenheim",
+      "book": "middenheim",
       "page": 151
     }
   },
@@ -371,7 +371,7 @@
       }
     ],
     "source": {
-      "book": "Middenheim",
+      "book": "middenheim",
       "page": 152
     }
   },
@@ -516,7 +516,7 @@
       }
     ],
     "source": {
-      "book": "Middenheim",
+      "book": "middenheim",
       "page": 153
     }
   },
@@ -647,7 +647,7 @@
       }
     ],
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 55
     }
   },
@@ -791,7 +791,7 @@
       }
     ],
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 54
     }
   },
@@ -936,7 +936,7 @@
       }
     ],
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 54
     }
   },
@@ -1082,7 +1082,7 @@
       }
     ],
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 54
     }
   },
@@ -1206,7 +1206,7 @@
       }
     ],
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 26
     },
     "mutationBodyMax": 10
@@ -1343,7 +1343,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 23
     },
     "mutationBodyMax": 10
@@ -1478,7 +1478,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 24
     },
     "mutationBodyMax": 10
@@ -1615,7 +1615,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 25
     },
     "mutationBodyMax": 10
@@ -1751,7 +1751,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 25
     },
     "mutationBodyMax": 10
@@ -1886,7 +1886,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 26
     },
     "mutationBodyMax": 10
@@ -2021,7 +2021,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 26
     },
     "mutationBodyMax": 10
@@ -2155,7 +2155,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 27
     },
     "mutationBodyMax": 10
@@ -2294,7 +2294,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 28
     },
     "mutationBodyMax": 10
@@ -2430,7 +2430,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 29
     },
     "mutationBodyMax": 10
@@ -2566,7 +2566,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 30
     },
     "mutationBodyMax": 10
@@ -2706,7 +2706,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 31
     },
     "mutationBodyMax": 10
@@ -2842,7 +2842,7 @@
       }
     ],
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 32
     },
     "mutationBodyMax": 10
@@ -2988,7 +2988,7 @@
       }
     ],
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 25
     },
     "mutationBodyMax": 5
@@ -3134,7 +3134,7 @@
       }
     ],
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 54
     },
     "mutationBodyMax": 5
@@ -3301,7 +3301,7 @@
       }
     ],
     "source": {
-      "book": "NADJ",
+      "book": "nuits-agitees-et-dures-journees",
       "page": 86
     }
   },
@@ -3449,7 +3449,7 @@
       }
     ],
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 15
     },
     "mutationBodyMax": 10
@@ -3594,7 +3594,7 @@
       }
     ],
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 27
     },
     "mutationBodyMax": 0
@@ -3740,7 +3740,7 @@
       }
     ],
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 28
     },
     "mutationBodyMax": 0

@@ -25,10 +25,10 @@ beforeEach(() => {
 
 describe('couverture de curation', () => {
   it('TOUS les sorts OFFICIELS sont curés — champ `curated:true` dans SpellData (JSON)', () => {
-    // Les sorts homebrew fan (source.book = frenchy.bzh) sont EXEMPTS.
+    // Les sorts homebrew fan (source.book = frenchy-bzh) sont EXEMPTS.
     // La curation ne couvre que l'officiel.
     for (const s of spells) {
-      if (s.source?.book === 'frenchy.bzh') continue;
+      if (s.source?.book === 'frenchy-bzh') continue;
       expect(s.curated, `${s.label} (${s.type} / ${s.subType ?? '—'})`).toBe(true);
     }
   });

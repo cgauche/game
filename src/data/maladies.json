@@ -413,7 +413,7 @@
       }
     ],
     "source": {
-      "book": "T2C",
+      "book": "mort-sur-le-reik-compagnon",
       "page": 92
     }
   },
@@ -440,7 +440,7 @@
     },
     "symptoms": [],
     "source": {
-      "book": "T2C",
+      "book": "mort-sur-le-reik-compagnon",
       "page": 91
     }
   },
@@ -467,7 +467,7 @@
     },
     "symptoms": [],
     "source": {
-      "book": "T2C",
+      "book": "mort-sur-le-reik-compagnon",
       "page": 92
     }
   },
@@ -514,7 +514,7 @@
       }
     ],
     "source": {
-      "book": "EDO",
+      "book": "ennemi-dans-l-ombre",
       "page": 145
     }
   },
@@ -558,7 +558,7 @@
       }
     ],
     "source": {
-      "book": "Middenheim",
+      "book": "middenheim",
       "page": 131
     }
   }

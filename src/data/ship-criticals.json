@@ -3,7 +3,7 @@
   "label": "Blessures critiques sur un navire",
   "die": "d10",
   "source": {
-    "book": "MDG",
+    "book": "mer-des-griffes",
     "page": 124
   },
   "shrapnelHit": [

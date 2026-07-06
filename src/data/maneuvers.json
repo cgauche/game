@@ -11,7 +11,7 @@
     "effects": [],
     "desc": "Arme de Corps à corps (dents/griffes). Action normale. Dégâts = Indice (= 4 + Bonus de Force). LDB 85 l.338.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     }
   },
@@ -27,7 +27,7 @@
     "effects": [],
     "desc": "Attaque gratuite en dépensant 1 Avantage. Dégâts = arme naturelle (Indice). LDB 85 l.171.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     }
   },
@@ -77,7 +77,7 @@
     ],
     "desc": "Attaque gratuite (1 Avantage). Une cible plus petite qui perd des PB subit À Terre. LDB 85 l.38.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     }
   },
@@ -93,7 +93,7 @@
     "effects": [],
     "desc": "Attaque gratuite gagnée en CHARGEANT (pas de coût d’Avantage). Dégâts = Indice. LDB 85 l.65.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     }
   },
@@ -132,7 +132,7 @@
     ],
     "desc": "Une Attaque gratuite par tentacule (coût 0). Sur Dégâts → Empêtré (Force d’évasion = Force). LDB 85 l.355.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     }
   },
@@ -195,7 +195,7 @@
     ],
     "desc": "Attaque gratuite à distance (1 Avantage). Dégâts Indice + Empêtré. LDB 85 l.186/188.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     }
   },
@@ -241,7 +241,7 @@
     ],
     "desc": "2 Avantages + l’Action. Succès → 1d10 + DR Blessures ignorant BE et PA. Magique. LDB 85 l.112.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     }
   },
@@ -327,7 +327,7 @@
     ],
     "desc": "Action, +1 DR par Avantage. Marge ≥ 6 DR → Pétrifié (0 PB) ; ≥ 2 DR → Sonné (1 par 2 DR). LDB 85 l.238.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     }
   },
@@ -349,7 +349,7 @@
     },
     "magic": true,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     },
     "effects": [
@@ -413,7 +413,7 @@
     },
     "magic": true,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     },
     "effects": [
@@ -477,7 +477,7 @@
     },
     "magic": true,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     },
     "effects": [
@@ -554,7 +554,7 @@
     },
     "magic": true,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     },
     "effects": [
@@ -618,7 +618,7 @@
     },
     "magic": true,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     },
     "effects": [
@@ -682,7 +682,7 @@
     },
     "magic": true,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     },
     "effects": [],
@@ -774,7 +774,7 @@
     ],
     "desc": "Zone (3 Avantages). Dégâts BE+4 + Sonné + corrosion (cuir). LDB 85 l.374-378.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     }
   },
@@ -858,7 +858,7 @@
     ],
     "desc": "Tous les ennemis vivants à Initiative mètres : 1d10 (ignore BE+PA) + Test de Résistance ou Brisé + 3 Assourdi. LDB 85 l.136.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 85
     }
   },
@@ -922,7 +922,7 @@
     ],
     "desc": "Lors de son tour, le prédateur peut dépenser 1 Avantage pour effectuer une attaque gratuite de hurlement : toute cible vivante à un nombre de mètres égal à son Initiative gagne 3 États Assourdi, puis effectue un Test de Calme Difficile (-10) et gagne 3 États Brisé en cas d'échec. Middenheim p.115.",
     "source": {
-      "book": "Middenheim",
+      "book": "middenheim",
       "page": 115
     }
   },
@@ -961,7 +961,7 @@
     ],
     "desc": "En combat, le spectre n'inflige jamais de dégâts. À la place, s'il touche sa cible, il lui inflige 1 État Sonné par DR. Middenheim p.117.",
     "source": {
-      "book": "Middenheim",
+      "book": "middenheim",
       "page": 117
     }
   },
@@ -1072,7 +1072,7 @@
     ],
     "desc": "un Enfant d'Ulric peut passer d'une forme à l'autre pour le prix de deux actions.",
     "source": {
-      "book": "Middenheim",
+      "book": "middenheim",
       "page": 116
     }
   },
@@ -1108,7 +1108,7 @@
     ],
     "desc": "un Enfant d'Ulric peut passer d'une forme à l'autre pour le prix de deux actions.",
     "source": {
-      "book": "Middenheim",
+      "book": "middenheim",
       "page": 116
     }
   }

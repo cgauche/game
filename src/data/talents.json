@@ -8,7 +8,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 132
     }
   },
@@ -35,7 +35,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 132
     }
   },
@@ -48,7 +48,7 @@
     "specs": [],
     "rand": 3,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 132
     },
     "passive": [
@@ -77,7 +77,7 @@
     "specs": [],
     "rand": 6,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 132
     }
   },
@@ -90,7 +90,7 @@
     "specs": [],
     "rand": 9,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 132
     },
     "combat": {
@@ -111,7 +111,7 @@
     "specs": [],
     "rand": 13,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 132
     },
     "combat": {
@@ -130,7 +130,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 132
     },
     "combat": {
@@ -200,7 +200,7 @@
     ],
     "rand": 16,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 132
     },
     "passive": [
@@ -230,7 +230,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 132
     },
     "effects": [
@@ -276,7 +276,7 @@
     "specs": [],
     "rand": 19,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 132
     }
   },
@@ -299,7 +299,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 133
     }
   },
@@ -326,7 +326,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 133
     }
   },
@@ -339,7 +339,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 75
     }
   },
@@ -352,7 +352,7 @@
     "specsSource": "cultBlessings",
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 133
     },
     "combat": {
@@ -403,7 +403,7 @@
     ],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 133
     },
     "specsOpen": true
@@ -427,7 +427,7 @@
     "specs": [],
     "rand": 22,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 133
     }
   },
@@ -450,7 +450,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 133
     }
   },
@@ -473,7 +473,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 133
     }
   },
@@ -486,7 +486,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     }
   },
@@ -513,7 +513,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     },
     "combat": {
@@ -533,7 +533,7 @@
     "specs": [],
     "rand": 26,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     },
     "passive": [
@@ -563,7 +563,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     },
     "combat": {
@@ -584,7 +584,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     },
     "combat": {
@@ -613,7 +613,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     },
     "combat": {
@@ -639,7 +639,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     }
   },
@@ -662,7 +662,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     },
     "combat": {
@@ -688,7 +688,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     },
     "combat": {
@@ -706,7 +706,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     },
     "combat": {
@@ -732,7 +732,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 134
     }
   },
@@ -755,7 +755,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 135
     }
   },
@@ -778,7 +778,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 135
     }
   },
@@ -805,7 +805,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 135
     }
   },
@@ -828,7 +828,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 135
     },
     "effects": [
@@ -888,7 +888,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 135
     }
   },
@@ -914,7 +914,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 140
     }
   },
@@ -937,7 +937,7 @@
     "specs": [],
     "rand": 29,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 135
     },
     "combat": {
@@ -964,7 +964,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 135
     },
     "combat": {
@@ -984,7 +984,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 135
     },
     "combat": {
@@ -1000,7 +1000,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 135
     }
   },
@@ -1023,7 +1023,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 135
     }
   },
@@ -1036,7 +1036,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     }
   },
@@ -1059,7 +1059,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     }
   },
@@ -1074,7 +1074,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     },
     "combat": {
@@ -1100,7 +1100,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     }
   },
@@ -1118,7 +1118,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     }
   },
@@ -1145,7 +1145,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     }
   },
@@ -1158,7 +1158,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 75
     }
   },
@@ -1171,7 +1171,7 @@
     "specs": [],
     "rand": 32,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     },
     "passive": [
@@ -1191,7 +1191,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 75
     }
   },
@@ -1216,7 +1216,7 @@
     "specs": [],
     "rand": 36,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     }
   },
@@ -1231,7 +1231,7 @@
     "specs": [],
     "rand": 40,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     },
     "passive": [
@@ -1263,7 +1263,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     }
   },
@@ -1278,7 +1278,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     },
     "combat": {
@@ -1296,7 +1296,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 136
     },
     "combat": {
@@ -1319,7 +1319,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "NADJ",
+      "book": "nuits-agitees-et-dures-journees",
       "page": 90
     }
   },
@@ -1332,7 +1332,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 79
     }
   },
@@ -1355,7 +1355,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 137
     }
   },
@@ -1378,7 +1378,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 137
     }
   },
@@ -1401,7 +1401,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 137
     }
   },
@@ -1424,7 +1424,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 137
     }
   },
@@ -1448,7 +1448,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 137
     }
   },
@@ -1471,7 +1471,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 137
     }
   },
@@ -1489,7 +1489,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 137
     },
     "passive": [
@@ -1513,7 +1513,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 137
     }
   },
@@ -1536,7 +1536,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 137
     },
     "combat": {
@@ -1554,7 +1554,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     },
     "combat": {
@@ -1572,7 +1572,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     }
   },
@@ -1595,7 +1595,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     },
     "effects": [
@@ -1650,7 +1650,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     }
   },
@@ -1673,7 +1673,7 @@
     "specs": [],
     "rand": 43,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     },
     "combat": {
@@ -1699,7 +1699,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     }
   },
@@ -1721,7 +1721,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     }
   },
@@ -1734,7 +1734,7 @@
     "specs": [],
     "rand": 46,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     },
     "passive": [
@@ -1764,7 +1764,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     }
   },
@@ -1832,7 +1832,7 @@
     ],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     },
     "specsOpen": true
@@ -1848,7 +1848,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     }
   },
@@ -1870,7 +1870,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     },
     "combat": {
@@ -1897,7 +1897,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 138
     }
   },
@@ -1921,7 +1921,7 @@
     "specs": [],
     "rand": 49,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 139
     }
   },
@@ -1934,7 +1934,7 @@
     "specs": [],
     "rand": 52,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 139
     },
     "passive": [
@@ -1966,7 +1966,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 139
     }
   },
@@ -1989,7 +1989,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 139
     }
   },
@@ -2014,7 +2014,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 139
     }
   },
@@ -2037,7 +2037,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 139
     }
   },
@@ -2060,7 +2060,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 139
     }
   },
@@ -2073,7 +2073,7 @@
     "specsSource": "cultMiracles",
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 139
     },
     "combat": {
@@ -2094,7 +2094,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 139
     },
     "combat": {
@@ -2122,7 +2122,7 @@
     "specs": [],
     "rand": 55,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 140
     }
   },
@@ -2135,7 +2135,7 @@
     "specs": [],
     "rand": 58,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 140
     }
   },
@@ -2158,7 +2158,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 140
     }
   },
@@ -2181,7 +2181,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 140
     }
   },
@@ -2204,7 +2204,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 140
     },
     "effects": [
@@ -2253,7 +2253,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 140
     }
   },
@@ -2266,7 +2266,7 @@
     "desc": "Vous connaissez l'un des huit Domaines de Magie – Bête, Cieux, Mort, Feu, Métal, Ombres, Lumière ou Vie –, ou pratiquez un Savoir moins connu, comme la Magie naturelle ou la Nécromancie. Vous pouvez à présent mémoriser des Sorts du Domaine choisi pour le prix en PX suivant.\n\n| Nbre de Sorts actuellement connus | Coût en PX pour un nouveau sort |\n| --- | --- |\n| Bonus d'Intelligence x 1 | 100 PX |\n| Bonus d'Intelligence x 2 | 200 PX |\n| Bonus d'Intelligence x 3 | 300 PX |\n| Bonus d'Intelligence x 4 | 400 PX |\n| ... et ainsi de suite. |  |\n\nDonc, si votre Bonus d'Intelligence est de 4, les 4 premiers Sorts vous coûteront 100 PX chacun, puis 200 PX pour les 4 suivants, et ainsi de suite. Les règles complètes sur l'apprentissage de nouveaux Sorts se trouvent dans le Chapitre 8 : Magie. Dans des conditions normales, vous ne pouvez pas apprendre plus d'un Talent Magie des Arcanes (Domaine). De plus, vous ne pouvez pas apprendre les Talents Béni ou Invocation quand vous possédez le Talent Magie des Arcanes. Vous pouvez désapprendre ce Talent pour 100 PX, mais si vous le faites, vous perdez immédiatement tous vos Sorts.",
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 140
     },
     "combat": {
@@ -2282,7 +2282,7 @@
     "desc": "Par accident ou à dessein, vous avez cédé une partie de votre âme à l'un des Dieux Sombres, et pouvez à présent pratiquer les infâmes magies du Chaos. Votre chef de la Ruine vous confère immédiatement l'accès à un seul Sort du Domaine choisi (le plus souvent les Domaines de Nurgle, Slaanesh ou Tzeentch) et vous gagnez un Point de Corruption lorsque le Sort s'insinue dans votre esprit, pour ne plus jamais en sortir.\n\nLorsque vous prenez ce Talent, qui coûte à chaque fois 100 PX, vous apprenez un autre Sort du Domaine choisi et gagnez un Point de Corruption. Pour plus d'informations sur les Sorts disponibles, voir le Chapitre 8 : Magie. Dans des conditions normales, vous ne pouvez connaître qu'un seul Savoir de Magie chaotique.\n\nLes Personnages avec un Talent Magie du Chaos peuvent choisir n'importe quelle combinaison de Sorts d'Arcane, de Sorts du Chaos, et de Sorts de leur propre Domaine du Chaos. Un Personnage ayant Magie du Chaos (Tzeentch) peut sélectionner des Sorts dans la liste des Sorts d'Arcanes, la liste des Sorts d'Arcanes du Chaos et la liste des Sorts du Domaine de Tzeentch. Un Personnage avec le Talent Magie du Chaos (Indivisible) peut sélectionner des Sorts dans la liste des Arcanes et dans celle des Arcanes du Chaos.",
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 140
     },
     "combat": {
@@ -2298,7 +2298,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 140
     },
     "combat": {
@@ -2314,7 +2314,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 141
     }
   },
@@ -2341,7 +2341,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 141
     }
   },
@@ -2541,7 +2541,7 @@
     ],
     "rand": 61,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 141
     },
     "passive": [
@@ -2573,7 +2573,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 141
     }
   },
@@ -2600,7 +2600,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 141
     }
   },
@@ -2615,7 +2615,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 141
     },
     "combat": {
@@ -2645,7 +2645,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 141
     },
     "combat": {
@@ -2673,7 +2673,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 141
     }
   },
@@ -2695,7 +2695,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 141
     }
   },
@@ -2718,7 +2718,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     }
   },
@@ -2740,7 +2740,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     }
   },
@@ -2753,7 +2753,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     }
   },
@@ -2775,7 +2775,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     },
     "combat": {
@@ -2794,7 +2794,7 @@
     "specs": [],
     "rand": 63,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     }
   },
@@ -2812,7 +2812,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     },
     "combat": {
@@ -2840,7 +2840,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     }
   },
@@ -2863,7 +2863,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     }
   },
@@ -2878,7 +2878,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     },
     "passive": [
@@ -2903,7 +2903,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     }
   },
@@ -2918,7 +2918,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 142
     }
   },
@@ -2945,7 +2945,7 @@
     "specs": [],
     "rand": 66,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 143
     },
     "passive": [
@@ -2970,7 +2970,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 143
     },
     "combat": {
@@ -2999,7 +2999,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 143
     }
   },
@@ -3017,7 +3017,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 143
     }
   },
@@ -3040,7 +3040,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 143
     }
   },
@@ -3063,7 +3063,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 143
     }
   },
@@ -3076,7 +3076,7 @@
     "specs": [],
     "rand": 69,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 143
     },
     "passive": [
@@ -3096,7 +3096,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 143
     }
   },
@@ -3114,7 +3114,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     },
     "combat": {
@@ -3138,7 +3138,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     }
   },
@@ -3165,7 +3165,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     }
   },
@@ -3184,7 +3184,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     },
     "combat": {
@@ -3212,7 +3212,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     }
   },
@@ -3227,7 +3227,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     }
   },
@@ -3250,7 +3250,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     }
   },
@@ -3266,7 +3266,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     },
     "combat": {
@@ -3285,7 +3285,7 @@
     "specs": [],
     "rand": 72,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     },
     "passive": [
@@ -3316,7 +3316,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     },
     "combat": {
@@ -3370,7 +3370,7 @@
     ],
     "rand": 75,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     }
   },
@@ -3385,7 +3385,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     },
     "combat": {
@@ -3411,7 +3411,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 144
     },
     "combat": {
@@ -3430,7 +3430,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 145
     },
     "combat": {
@@ -3537,7 +3537,7 @@
     ],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 145
     },
     "combat": {
@@ -3554,7 +3554,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 145
     }
   },
@@ -3786,7 +3786,7 @@
     ],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 145
     },
     "specsOpen": true
@@ -3851,7 +3851,7 @@
     ],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 145
     },
     "specsOpen": true
@@ -3870,7 +3870,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 145
     }
   },
@@ -3893,7 +3893,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 145
     }
   },
@@ -3937,7 +3937,7 @@
     ],
     "rand": 78,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 145
     }
   },
@@ -3959,7 +3959,7 @@
     "specs": [],
     "rand": 81,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     }
   },
@@ -3982,7 +3982,7 @@
     "specs": [],
     "rand": 85,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     }
   },
@@ -4000,7 +4000,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "combat": {
@@ -4020,7 +4020,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "passive": [
@@ -4050,7 +4050,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     }
   },
@@ -4073,7 +4073,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "combat": {
@@ -4094,7 +4094,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "combat": {
@@ -4121,7 +4121,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     }
   },
@@ -4134,7 +4134,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "combat": {
@@ -4150,7 +4150,7 @@
     "specs": [],
     "rand": 88,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "passive": [
@@ -4173,7 +4173,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "combat": {
@@ -4189,7 +4189,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "combat": {
@@ -4207,7 +4207,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "combat": {
@@ -4233,7 +4233,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "combat": {
@@ -4251,7 +4251,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     },
     "combat": {
@@ -4269,7 +4269,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 146
     }
   },
@@ -4295,7 +4295,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     }
   },
@@ -4495,7 +4495,7 @@
     ],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     },
     "specsOpen": true
@@ -4509,7 +4509,7 @@
     "specs": [],
     "rand": 91,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     },
     "passive": [
@@ -4529,7 +4529,7 @@
     "specs": [],
     "rand": 94,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     },
     "passive": [
@@ -4559,7 +4559,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     }
   },
@@ -4572,7 +4572,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     },
     "combat": {
@@ -4588,7 +4588,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     },
     "passive": [
@@ -4619,7 +4619,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     },
     "combat": {
@@ -4645,7 +4645,7 @@
     "specs": [],
     "rand": 97,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     }
   },
@@ -4668,7 +4668,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     }
   },
@@ -4681,7 +4681,7 @@
     "specs": [],
     "rand": 100,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     },
     "passive": [
@@ -4711,7 +4711,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     }
   },
@@ -4729,7 +4729,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 147
     },
     "passive": [
@@ -4749,7 +4749,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 20
     }
   },
@@ -4789,7 +4789,7 @@
     ],
     "rand": null,
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 20
     },
     "specsOpen": true
@@ -4803,7 +4803,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "ADE1",
+      "book": "archives-de-l-empire-1",
       "page": 78
     }
   },
@@ -4829,7 +4829,7 @@
     },
     "rand": null,
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 63
     }
   },
@@ -4854,7 +4854,7 @@
     "specs": [],
     "rand": null,
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 63
     }
   }

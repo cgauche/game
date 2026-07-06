@@ -14,7 +14,7 @@
       "Ogre": 20
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 33
     }
   },
@@ -33,7 +33,7 @@
       "Ogre": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 33
     }
   },
@@ -52,7 +52,7 @@
       "Ogre": 35
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -71,7 +71,7 @@
       "Ogre": 35
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -90,7 +90,7 @@
       "Ogre": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -109,7 +109,7 @@
       "Ogre": 15
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -128,7 +128,7 @@
       "Ogre": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -147,7 +147,7 @@
       "Ogre": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -166,7 +166,7 @@
       "Ogre": 20
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -185,7 +185,7 @@
       "Ogre": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -204,7 +204,7 @@
       "Ogre": "(BF+(2×BE)+BFM)×2"
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -223,7 +223,7 @@
       "Ogre": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -242,7 +242,7 @@
       "Ogre": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -261,7 +261,7 @@
       "Ogre": 3
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -280,7 +280,7 @@
       "Ogre": 3
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -299,7 +299,7 @@
       "Ogre": 1
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 34
     }
   },
@@ -318,7 +318,7 @@
       "Ogre": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 35
     }
   },
@@ -337,7 +337,7 @@
       "Ogre": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 182
     }
   }

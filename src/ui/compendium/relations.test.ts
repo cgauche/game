@@ -79,8 +79,8 @@ describe('relations — graphe inverse id-based', () => {
     expect(groups.find((g) => g.category === 'creatures')?.title).toBe('Créatures');
   });
 
-  it('bookContents(LDB) groupe le contenu par catégorie', () => {
-    const contents = bookContents('LDB');
+  it('bookContents(livre-de-base) groupe le contenu par catégorie', () => {
+    const contents = bookContents('livre-de-base');
     expect(contents.length).toBeGreaterThan(0);
     // Les talents du LDB doivent apparaître.
     const tCat = contents.find((c) => c.category === 'talents');

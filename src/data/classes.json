@@ -27,7 +27,7 @@
     ],
     "desc": "Il s'agit communément de citoyens respectueux des lois qui vivent et travaillent dans les nombreuses villes et cités de l'Empire. Beaucoup de Citadins appartiennent à la classe moyenne et gagnent convenablement leur vie.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 31
     }
   },
@@ -59,7 +59,7 @@
     ],
     "desc": "La Classe Côtier est une nouvelle Classe à utiliser dans **Warhammer Fantasy le Jeu de Rôle**, qui représente les Carrières suivies par les gens vivant près des littoraux du Vieux Monde. La Classe Côtier et celle des Riverains ont beaucoup en commun et certaines Carrières appartiennent aux deux Classes, par exemple Nautonier, Marin et Naufrageur.",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 63
     }
   },
@@ -88,7 +88,7 @@
     ],
     "desc": "Ceux qui dirigent ou qui leur fournissent des services spécialisés. Même les Courtisans les plus humbles de naissance possèdent un statut plus élevè que la plupart des gens, et ont tous la possibilité d'accéder à des posts d'influence.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 31
     }
   },
@@ -111,7 +111,7 @@
     ],
     "desc": "S'appuyant sur leurs prouesses physiques, ce sont tous des combattants qualifiés, bien qu'ils ne soient pas nécessairement issus de l'armée. Les Guerriers viennent de différents milieux, aussi bien de statut élevé qu'inférieur, et tous peuvent s'imposer à des postes influents, s'ils vivent assez longtemps.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 31
     }
   },
@@ -146,7 +146,7 @@
     ],
     "desc": "Personnes qui gagnent leur vie sur les routes, voyageant loin de leurs villes et villages. La plupart des Itinérants appartiennent à la classe inférieure, mais certains peuvent accéder à des posts de haut statut s'ils persévèrent.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 31
     }
   },
@@ -181,7 +181,7 @@
     ],
     "desc": "Ce sont des érudits qui utilisent leur éducation pour gagner leur vie. Souvent, les Lettrés sont les seuls Personnages à savoir lire et écrire. Ils commencent avec un statut inférieur mais peuvent accéder à des positions importantes s'ils progressent en grimpant les échelons.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 31
     }
   },
@@ -210,7 +210,7 @@
     ],
     "desc": "Personnes qui vivivent et travaillent sur les rivières et voies navigables à travers le Reikland et au-delà. Les Riverains commencent tous avec un statut inférieur, mais certains ont des opportunités qui peuvent mener à une vie confortable.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 31
     }
   },
@@ -251,7 +251,7 @@
     ],
     "desc": "Principalement habitants de villes et de cités, ces personnes gagnent leur vie grâce à des actes considérés comme illégaux, ou du moins peu recommandables, sur le dos de la plupart des citoyens respectueux de la Loi. Les Roublards appartiennent tous à la classe inférieure, mais certains peuvent gagner beaucoup d'argent, bien qu'ils ne soient pas en mesure d'accéder à un statur élevé.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 31
     }
   },
@@ -280,7 +280,7 @@
     ],
     "desc": "Personnes qui vivent et travaillent dans les fermes, les villages et les campagnes. Les Ruraux appartiennent tous à la classe inférieure, bien qu'il soit possible qu'ils obtiennent une influence significative localement.",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 31
     }
   }

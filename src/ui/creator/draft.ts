@@ -133,7 +133,7 @@ export interface CreatorDraft {
 /** Défauts DÉRIVÉS des données (rien en dur) : première espèce du Livre de base, et la
  *  première carrière qui lui est accessible. */
 function defaultSpecies(): SpeciesData {
-  return allSpecies.find((s) => s.source.book === 'LDB') ?? allSpecies[0];
+  return allSpecies.find((s) => s.source.book === 'livre-de-base') ?? allSpecies[0];
 }
 
 export function newDraft(seed = (Date.now() & 0xffff) ^ ((Math.random() * 0xffff) | 0)): CreatorDraft {

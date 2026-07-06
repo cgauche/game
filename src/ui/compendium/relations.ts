@@ -283,10 +283,10 @@ const catalog = versionCached<CatalogEntry[]>(() => {
 });
 
 /** Contenu d'un livre, GROUPÉ par catégorie (« par type ») — pour la fiche Livre. Les entités portent
- *  leur livre dans `source.book` (ABRÉVIATION, ex. « LDB ») ; on accepte plusieurs clés d'identité
- *  (abr ET libellé) pour tolérer les deux conventions. Trié par catégorie (`orderOf`) puis alpha. */
-export function bookContents(...bookKeys: (string | undefined)[]): { category: string; labels: string[] }[] {
-  const keys = new Set(bookKeys.filter((k): k is string => !!k));
+ *  leur livre dans `source.book` = l'`id` STABLE du livre (jamais un libellé) ; on matche par cet id
+ *  (relation id-pure, i18n-safe). Trié par catégorie (`orderOf`) puis alpha. */
+export function bookContents(bookId: string | undefined): { category: string; labels: string[] }[] {
+  const keys = new Set(bookId ? [bookId] : []);
   const byCat = new Map<string, string[]>();
   for (const e of catalog()) {
     if (!e.book || !keys.has(e.book)) continue;

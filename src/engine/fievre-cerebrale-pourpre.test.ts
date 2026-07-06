@@ -90,7 +90,7 @@ describe('Symptôme Délire — EDO App.2 p.145', () => {
     expect(s).toBeTruthy();
     expect(s!.id).toBe('delire');
     expect(s!.label).toBe('Délire');
-    expect(s!.source).toEqual({ book: 'EDO', page: 145 });
+    expect(s!.source).toEqual({ book: 'ennemi-dans-l-ombre', page: 145 });
   });
 
   it("purely descriptif : pas de passive ni onTick ni capabilities (test FM toutes les heures = non exprimable dans le moteur actuel)", () => {
@@ -118,7 +118,7 @@ describe('Symptôme Gonflement — EDO App.2 p.145', () => {
     expect(s).toBeTruthy();
     expect(s!.id).toBe('gonflement');
     expect(s!.label).toBe('Gonflement');
-    expect(s!.source).toEqual({ book: 'EDO', page: 145 });
+    expect(s!.source).toEqual({ book: 'ennemi-dans-l-ombre', page: 145 });
   });
 
   it("purely descriptif : pas de passive ni onTick (effets dépendent de la localisation)", () => {

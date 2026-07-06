@@ -1095,6 +1095,7 @@ export interface LocationData {
 }
 /** Ouvrage WFRP4 référencé (bibliographie). `desc` = HTML de présentation. */
 export interface BookData {
+  id: string;
   label: string;
   abr: string | null;
   language: string | null;
@@ -1398,6 +1399,16 @@ export function findLocationById(id: string | null | undefined): LocationData | 
   return id ? LOCATION_BY_ID.get(id) : undefined;
 }
 export const books = booksJson as BookData[];
+const BOOK_BY_ID = new Map<string, BookData>(books.map((b) => [b.id, b]));
+/** Résout un Livre par son `id` STABLE (cible de `source.book`) — `abr`/`label` ne servent qu'à l'affichage. */
+export function findBookById(id: string | null | undefined): BookData | undefined {
+  return id ? BOOK_BY_ID.get(id) : undefined;
+}
+/** Abréviation d'AFFICHAGE d'un livre depuis l'`id` porté par `source.book` (fallback = l'id si inconnu). */
+export function bookAbr(id: string | null | undefined): string {
+  if (!id) return '';
+  return BOOK_BY_ID.get(id)?.abr ?? id;
+}
 /** Culte/Dieu (LDB 41) : `id` = slug STABLE (« sigmar »), `label` = nom affiché (« Sigmar »), Bénédictions/
  *  Miracles en `Ref[]` (sorts par id), desc = lore HTML (Codex). Dataset éditable (Compendium) — remplace
  *  les `cults/defs/*.ts` (codegen retiré). */

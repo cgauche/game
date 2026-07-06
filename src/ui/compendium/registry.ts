@@ -11,7 +11,7 @@ import { useSyncExternalStore } from 'react';
 import {
   species, careers, characteristics, classes, skills, talents,
   qualities, trappings, siegeEngines, weaponGroups, etats, maladies, creatures, traits, spells, maneuvers, domains, mutations, mutationTables, gods,
-  stars, locations, findLocationById, books, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
+  stars, locations, findLocationById, books, bookAbr, careerLevels, raceAppearance, levelsForCareer, skillRefLabel, talentRefLabel, refLabel, trappingRefLabel, qualityRefLabel, advancementLabel, weaponGroupLabel, qualitySubtypeLabel, qualityTypeLabel,
   skillInstanceLabel, talentConcrete, careersForSpecies, findCareerById, findClassById, findSpeciesById, eyes, hairs, details, names,
   pregens, oups, interludeEvents, peripeties, psychologyLabel,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
@@ -133,7 +133,7 @@ export interface CodexCategory {
 }
 
 const src = (s: { book?: string; page?: number } | null | undefined): CodexSource | null =>
-  s && s.book ? { book: s.book, page: s.page ?? 0 } : null;
+  s && s.book ? { book: bookAbr(s.book), page: s.page ?? 0 } : null;
 
 const fact = (label: string, value: unknown): CodexFact | null =>
   value == null || value === '' || value === '–' ? null : { label, value: String(value) };
@@ -752,7 +752,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
     // aucun cycle de projection).
     build: () => books.map((b) => ({
       label: b.label, sub: b.abr ?? b.folder ?? undefined, group: b.folder ?? undefined, desc: b.desc ?? undefined,
-      sections: bookContents(b.abr ?? undefined, b.label).map((g) => ({
+      sections: bookContents(b.id).map((g) => ({
         title: categoryByKey(g.category)?.label ?? g.category,
         layout: 'chips' as const,
         rows: g.labels.map((label) => ({ t: 'ref', category: g.category, label, show: label } as CodexRow)),

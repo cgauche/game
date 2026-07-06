@@ -13,7 +13,7 @@ describe('Artillerie navale — munitions MDG ch.12 (verbatim) + qualité Brise-
       const m = byId(id);
       expect(m, id).toBeTruthy();
       expect(m.subType).toBe('munition-de-siege'); // famille d'ammo « artillerie » → chargeable par une arme de siège
-      expect(m.source.book).toBe('MDG');
+      expect(m.source.book).toBe('mer-des-griffes');
       for (const q of m.qualities) expect(qIds.has(q.id), `${id}/${q.id}`).toBe(true);
     }
   });
@@ -42,7 +42,7 @@ describe('Artillerie navale — munitions MDG ch.12 (verbatim) + qualité Brise-
     const bc = (qualities as any[]).find((q) => q.id === 'brise-coque');
     expect(bc).toBeTruthy();
     expect(bc.type).toBe('atout');
-    expect(bc.source.book).toBe('MDG');
+    expect(bc.source.book).toBe('mer-des-griffes');
     expect(bc.desc).toContain('structures en bois');
     expect(bc.desc).toContain("gagne l'atout Dévastatrice");
   });

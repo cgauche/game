@@ -45,7 +45,7 @@ export function randomSpeciesTable(): { max: number; ids: string[] }[] {
   const byBound = new Map<number, string[]>();
   for (const s of allSpecies) {
     if (typeof s.rand !== 'number') continue;
-    if (s.source.book === 'NADJ' && !gnomeOn) continue; // gating d'éligibilité (pas de priorité)
+    if (s.source.book === 'nuits-agitees-et-dures-journees' && !gnomeOn) continue; // gating d'éligibilité (pas de priorité)
     byBound.set(s.rand, [...(byBound.get(s.rand) ?? []), s.id]);
   }
   return [...byBound.entries()]

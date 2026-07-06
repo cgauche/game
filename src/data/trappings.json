@@ -29,7 +29,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "baton"
@@ -67,7 +67,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "hallebarde"
@@ -99,7 +99,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "lance"
@@ -131,7 +131,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "pique"
@@ -162,7 +162,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     }
   },
@@ -188,7 +188,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "poing"
@@ -219,7 +219,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "improvisee"
@@ -246,7 +246,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "epee",
@@ -291,7 +291,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "rond"
@@ -329,7 +329,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "grand"
@@ -367,7 +367,7 @@
       "bronze": 2
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "targe"
@@ -398,7 +398,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "couteau"
@@ -425,7 +425,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "dague"
@@ -457,7 +457,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 91
     },
     "shape": "cimeterre"
@@ -494,7 +494,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 91
     },
     "shape": "dague_ballock"
@@ -528,7 +528,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 91
     },
     "shape": "massue"
@@ -562,7 +562,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 91
     },
     "shape": "pique_armes"
@@ -596,7 +596,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "lance_cavalerie"
@@ -628,7 +628,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "bec_de_corbin"
@@ -663,7 +663,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "epee_batarde"
@@ -701,7 +701,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "grande_hache"
@@ -739,7 +739,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "marteau_guerre"
@@ -777,7 +777,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "pioche_2m"
@@ -812,7 +812,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "zweihander"
@@ -852,7 +852,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "fleuret"
@@ -886,7 +886,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "rapiere"
@@ -920,7 +920,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "fleau"
@@ -957,7 +957,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "fleau_grain"
@@ -998,7 +998,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "fleau_armes"
@@ -1032,7 +1032,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "brise_epee"
@@ -1063,7 +1063,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 294
     },
     "shape": "main_gauche"
@@ -1097,7 +1097,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "arbalete"
@@ -1129,7 +1129,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "arbalete_poing"
@@ -1166,7 +1166,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "arbalete_lourde"
@@ -1195,7 +1195,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "arc"
@@ -1224,7 +1224,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "arc_court"
@@ -1260,7 +1260,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "arc_elfique"
@@ -1293,7 +1293,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "arc_long"
@@ -1325,7 +1325,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "fouet"
@@ -1356,7 +1356,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "lasso"
@@ -1383,7 +1383,7 @@
     "desc": "Certains gobelins de la nuit se servent de filets pour capturer leurs ennemis afin que leurs congénères les passent à tabac et les torturent plus tard. Ceux-là ont le Trait d'attaque À distance (Filet 3) +0 (6).",
     "price": null,
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 31
     },
     "shape": "filet_leste"
@@ -1424,7 +1424,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "bombe"
@@ -1461,7 +1461,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "bombe_incendiaire"
@@ -1489,7 +1489,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "fronde"
@@ -1518,7 +1518,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "fustibale"
@@ -1553,7 +1553,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "bolas"
@@ -1583,7 +1583,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "couteau_lancer"
@@ -1617,7 +1617,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "flechette"
@@ -1651,7 +1651,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "hache_lancer"
@@ -1685,7 +1685,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "javelot"
@@ -1716,7 +1716,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "rocher"
@@ -1763,7 +1763,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "arquebus_rep"
@@ -1812,7 +1812,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "pistolet_rep"
@@ -1855,7 +1855,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "arquebuse"
@@ -1901,7 +1901,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "hochland"
@@ -1943,7 +1943,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "pistolet"
@@ -1990,7 +1990,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 295
     },
     "shape": "tromblon"
@@ -2019,7 +2019,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 296
     }
   },
@@ -2047,7 +2047,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 296
     }
   },
@@ -2086,7 +2086,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 296
     }
   },
@@ -2120,7 +2120,7 @@
       "bronze": 4
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 296
     }
   },
@@ -2148,7 +2148,7 @@
       "bronze": 2
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 296
     }
   },
@@ -2182,7 +2182,7 @@
       "bronze": 3
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 296
     }
   },
@@ -2208,7 +2208,7 @@
       "bronze": 3
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 296
     }
   },
@@ -2235,7 +2235,7 @@
       "bronze": 3
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 296
     }
   },
@@ -2262,7 +2262,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2285,7 +2285,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2308,7 +2308,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2331,7 +2331,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2358,7 +2358,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2389,7 +2389,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2420,7 +2420,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2458,7 +2458,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2489,7 +2489,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2523,7 +2523,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2561,7 +2561,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2596,7 +2596,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2630,7 +2630,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2664,7 +2664,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 300
     }
   },
@@ -2690,7 +2690,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2716,7 +2716,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2742,7 +2742,7 @@
       "bronze": 4
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2765,7 +2765,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2791,7 +2791,7 @@
       "bronze": 2
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2814,7 +2814,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2837,7 +2837,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2863,7 +2863,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2889,7 +2889,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2915,7 +2915,7 @@
       "bronze": 8
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2941,7 +2941,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2967,7 +2967,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -2993,7 +2993,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 301
     }
   },
@@ -3016,7 +3016,7 @@
       "bronze": 2
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3039,7 +3039,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3062,7 +3062,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3085,7 +3085,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3111,7 +3111,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3134,7 +3134,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3157,7 +3157,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3180,7 +3180,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3203,7 +3203,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3226,7 +3226,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3249,7 +3249,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3273,7 +3273,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3296,7 +3296,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3319,7 +3319,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3342,7 +3342,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3368,7 +3368,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3391,7 +3391,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3414,7 +3414,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3437,7 +3437,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3460,7 +3460,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3483,7 +3483,7 @@
       "bronze": 8
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3506,7 +3506,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3529,7 +3529,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3552,7 +3552,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3575,7 +3575,7 @@
       "bronze": 3
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     },
     "consumable": {
@@ -3620,7 +3620,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3643,7 +3643,7 @@
       "bronze": 9
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3666,7 +3666,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3689,7 +3689,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3712,7 +3712,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3735,7 +3735,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3758,7 +3758,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3781,7 +3781,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3804,7 +3804,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3827,7 +3827,7 @@
       "bronze": 4
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     },
     "consumable": {
@@ -3876,7 +3876,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 302
     }
   },
@@ -3899,7 +3899,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -3922,7 +3922,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -3945,7 +3945,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -3980,7 +3980,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4003,7 +4003,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4026,7 +4026,7 @@
       "bronze": 4
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4049,7 +4049,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4072,7 +4072,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4095,7 +4095,7 @@
       "bronze": 2
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4118,7 +4118,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4142,7 +4142,7 @@
       "bronze": 2
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4165,7 +4165,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4188,7 +4188,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4211,7 +4211,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4234,7 +4234,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4258,7 +4258,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4281,7 +4281,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4304,7 +4304,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4327,7 +4327,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4350,7 +4350,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4373,7 +4373,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     },
     "consumable": {
@@ -4420,7 +4420,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4443,7 +4443,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4466,7 +4466,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     },
     "capabilities": {
@@ -4492,7 +4492,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4515,7 +4515,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4538,7 +4538,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4561,7 +4561,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4584,7 +4584,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4607,7 +4607,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4630,7 +4630,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4653,7 +4653,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4676,7 +4676,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4699,7 +4699,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4722,7 +4722,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4745,7 +4745,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4768,7 +4768,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4791,7 +4791,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4814,7 +4814,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4837,7 +4837,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 303
     }
   },
@@ -4860,7 +4860,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -4883,7 +4883,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -4906,7 +4906,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -4929,7 +4929,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -4952,7 +4952,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -4975,7 +4975,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -4998,7 +4998,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -5021,7 +5021,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -5044,7 +5044,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -5067,7 +5067,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -5090,7 +5090,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -5116,7 +5116,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -5139,7 +5139,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -5162,7 +5162,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -5185,7 +5185,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 304
     }
   },
@@ -5208,7 +5208,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5231,7 +5231,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5254,7 +5254,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5277,7 +5277,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5300,7 +5300,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5323,7 +5323,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5346,7 +5346,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5369,7 +5369,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5392,7 +5392,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5415,7 +5415,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5438,7 +5438,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5461,7 +5461,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5484,7 +5484,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5507,7 +5507,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5530,7 +5530,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5553,7 +5553,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5576,7 +5576,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5599,7 +5599,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5622,7 +5622,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 305
     }
   },
@@ -5645,7 +5645,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5668,7 +5668,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5691,7 +5691,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5714,7 +5714,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5737,7 +5737,7 @@
       "bronze": 7
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5760,7 +5760,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5783,7 +5783,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5806,7 +5806,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5829,7 +5829,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5852,7 +5852,7 @@
       "bronze": 5
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5875,7 +5875,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5898,7 +5898,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5922,7 +5922,7 @@
       "bronze": 1
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     }
   },
@@ -5945,7 +5945,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "consumable": {
@@ -5992,7 +5992,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "consumable": {
@@ -6092,7 +6092,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "consumable": {
@@ -6143,7 +6143,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "consumable": {
@@ -6232,7 +6232,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "consumable": {
@@ -6333,7 +6333,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "consumable": {
@@ -6426,7 +6426,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "consumable": {
@@ -6495,7 +6495,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "consumable": {
@@ -6553,7 +6553,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 307
     },
     "consumable": {
@@ -6612,7 +6612,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 307
     },
     "consumable": {
@@ -6646,7 +6646,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 307
     },
     "consumable": {
@@ -6682,7 +6682,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 307
     },
     "consumable": {
@@ -6731,7 +6731,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 307
     },
     "consumable": {
@@ -6767,7 +6767,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 307
     },
     "consumable": {
@@ -6812,7 +6812,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 307
     },
     "consumable": {
@@ -6848,7 +6848,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 307
     },
     "consumable": {
@@ -6890,7 +6890,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "T2C",
+      "book": "mort-sur-le-reik-compagnon",
       "page": 13
     },
     "consumable": {
@@ -6926,7 +6926,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "T2C",
+      "book": "mort-sur-le-reik-compagnon",
       "page": 14
     },
     "consumable": {
@@ -7025,7 +7025,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "T2C",
+      "book": "mort-sur-le-reik-compagnon",
       "page": 14
     },
     "consumable": {
@@ -7064,7 +7064,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7099,7 +7099,7 @@
       "bronze": 4
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7122,7 +7122,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7145,7 +7145,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7168,7 +7168,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7191,7 +7191,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7214,7 +7214,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7237,7 +7237,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7260,7 +7260,7 @@
       "bronze": 1
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7283,7 +7283,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7306,7 +7306,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7329,7 +7329,7 @@
       "bronze": 5
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7352,7 +7352,7 @@
       "bronze": 4
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     },
     "consumable": {
@@ -7391,7 +7391,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7414,7 +7414,7 @@
       "bronze": 2
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7437,7 +7437,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7466,7 +7466,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7489,7 +7489,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7512,7 +7512,7 @@
       "bronze": 1
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7535,7 +7535,7 @@
       "bronze": 4
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7558,7 +7558,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7581,7 +7581,7 @@
       "bronze": 8
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7604,7 +7604,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7627,7 +7627,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7650,7 +7650,7 @@
       "bronze": 10
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7673,7 +7673,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7696,7 +7696,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7719,7 +7719,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     },
     "passive": [
@@ -7754,7 +7754,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7783,7 +7783,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7806,7 +7806,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7829,7 +7829,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7852,7 +7852,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7875,7 +7875,7 @@
       "bronze": 4
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7898,7 +7898,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7921,7 +7921,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7944,7 +7944,7 @@
       "bronze": 8
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7970,7 +7970,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 308
     }
   },
@@ -7993,7 +7993,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 27
     }
   },
@@ -8016,7 +8016,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 27
     }
   },
@@ -8039,7 +8039,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 27
     }
   },
@@ -8062,7 +8062,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 27
     }
   },
@@ -8085,7 +8085,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 27
     }
   },
@@ -8108,7 +8108,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 27
     }
   },
@@ -8131,7 +8131,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 27
     }
   },
@@ -8154,7 +8154,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 27
     }
   },
@@ -8177,7 +8177,7 @@
       "bronze": ""
     },
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 27
     }
   },
@@ -8211,7 +8211,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 92
     },
     "shape": "pavois"
@@ -8259,7 +8259,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 95
     },
     "shape": "filet_leste"
@@ -8302,7 +8302,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 122
     }
   },
@@ -8347,7 +8347,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 122
     }
   },
@@ -8392,7 +8392,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 122
     }
   },
@@ -8437,7 +8437,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 122
     }
   },
@@ -8489,7 +8489,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 123
     }
   },
@@ -8530,7 +8530,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 123
     }
   },
@@ -8575,7 +8575,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 123
     }
   },
@@ -8619,7 +8619,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 123
     }
   },
@@ -8663,7 +8663,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 123
     }
   },
@@ -8707,7 +8707,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 123
     }
   },
@@ -8746,7 +8746,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 123
     }
   },
@@ -8783,7 +8783,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 123
     }
   },
@@ -8816,7 +8816,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 90
     },
     "shape": "demi_lance"
@@ -8848,7 +8848,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 90
     },
     "shape": "sabre"
@@ -8885,7 +8885,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 90
     },
     "shape": "epee_cour"
@@ -8919,7 +8919,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 90
     },
     "shape": "gaffe"
@@ -8953,7 +8953,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 90
     },
     "shape": "gantelet_pointes"
@@ -8980,7 +8980,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "NADJ",
+      "book": "nuits-agitees-et-dures-journees",
       "page": 67
     },
     "shape": "griffe_tigre"
@@ -9014,7 +9014,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 94
     },
     "shape": "gantelet_verrouille"
@@ -9055,7 +9055,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 90
     },
     "shape": "lacet_etrangleur"
@@ -9092,7 +9092,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 95
     },
     "shape": "cape"
@@ -9127,7 +9127,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 96
     },
     "shape": "ahlspiess"
@@ -9162,7 +9162,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 96
     },
     "shape": "attrape_coquin"
@@ -9203,7 +9203,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 96
     },
     "shape": "hache_armes"
@@ -9242,7 +9242,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 96
     },
     "shape": "pertuisane"
@@ -9280,7 +9280,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 96
     },
     "shape": "serpe_guerre"
@@ -9319,7 +9319,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 96
     },
     "shape": "zweihander_flamberge"
@@ -9359,7 +9359,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 97
     }
   },
@@ -9390,7 +9390,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 97
     }
   },
@@ -9420,7 +9420,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 97
     }
   },
@@ -9453,7 +9453,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 97
     }
   },
@@ -9489,7 +9489,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 97
     }
   },
@@ -9529,7 +9529,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 100
     },
     "shape": "arquebuse_double"
@@ -9566,7 +9566,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 100
     },
     "shape": "arquebuse_meche"
@@ -9606,7 +9606,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 100
     },
     "shape": "hache_arquebuse"
@@ -9646,7 +9646,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 100
     },
     "shape": "hallebarde_arquebuse"
@@ -9686,7 +9686,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 100
     },
     "shape": "haquebute"
@@ -9726,7 +9726,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 100
     },
     "shape": "pistolet_griffon"
@@ -9767,7 +9767,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 100
     },
     "shape": "tromblon_meche"
@@ -9806,7 +9806,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 100
     },
     "shape": "canne_pistolet"
@@ -9846,7 +9846,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 100
     },
     "shape": "mortier_main"
@@ -9889,7 +9889,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 100
     },
     "shape": "poivriere"
@@ -9926,7 +9926,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 102
     }
   },
@@ -9963,7 +9963,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 102
     }
   },
@@ -9996,7 +9996,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 102
     }
   },
@@ -10032,7 +10032,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 102
     }
   },
@@ -10068,7 +10068,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 102
     }
   },
@@ -10104,7 +10104,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 102
     }
   },
@@ -10140,7 +10140,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "AA",
+      "book": "aux-armes",
       "page": 102
     }
   },
@@ -10156,7 +10156,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 45
     },
     "desc": "La contrefaçon skaven du long fusil du Hochland. Utilisez le profil du long fusil, mais ajoutez-y le Défaut Dangereuse. De plus, les cibles qu'elle blesse doivent effectuer un Test de Corruption (Mineure), car ses balles sont incrustées de malepierre.",
@@ -10198,7 +10198,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 45
     },
     "desc": "Machine à tuer skaven à plusieurs canons. Il faut deux skavens pour s'en servir : un pour charger, l'autre pour la maintenir tant bien que mal. Arme à distance : +10 Dégâts, portée 40 mètres, Atouts À Poudre noire, Empaleuse, Explosion 3 et Perforante, Défauts Dangereuse et Imprécise. Ses balles étant incrustées de malepierre, les cibles blessées doivent effectuer un Test de Corruption (Mineure) Accessible (+20).",
@@ -10246,7 +10246,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 45
     },
     "desc": "La version skaven des pistolets humains, « améliorée » selon leurs standards. Atouts À Poudre noire, Dévastatrice, Empaleuse, Perforante ; Défauts Dangereuse et Recharge 1. Ses balles étant incrustées de malepierre, les cibles qu'il blesse doivent effectuer un Test de Corruption (Mineure).",
@@ -10298,7 +10298,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 105
     },
     "desc": "Puissant poison de contact extrait du dard d'une vouivre. Les personnes qui subissent une Blessure à cause d'une lame, flèche ou carreau recouvert de baiser de la vouivre doivent réussir un Test de Résistance, sous peine de recevoir immédiatement 5 Blessures supplémentaires qui ignorent l'Endurance et l'Armure. Une arme traitée doit être utilisée dans un délai de 2+1d10 Rounds avant que le poison ne s'évapore.",
@@ -10317,7 +10317,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 105
     },
     "desc": "Poison dérivé du venin d'arachnarok. Un simple contact provoque des boursouflures et fait fondre la chair. Une arme traitée doit être utilisée dans l'heure ; les lames recouvertes sont tachetées de vert, souvent de façon permanente. Quand une arme recouverte de boursoufleur inflige au moins 1 Blessure, elle applique automatiquement 1d10 Blessures supplémentaires. Quiconque en ingère doit faire un Test de Résistance Difficile (-20) ou subir immédiatement une Blessure Critique au torse.",
@@ -10336,7 +10336,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 105
     },
     "desc": "Venin distillé de mangeuse d'hommes de la Drakwald, presque impossible à détecter (-40 à toute tentative). Si une dose complète est ingérée, la victime doit réussir un Test de Résistance Difficile (-20). En cas d'échec, elle ressent juste une fatigue précoce, puis s'endort ; une fois endormie, il est presque impossible de la sauver et elle ne se réveillera jamais.",
@@ -10355,7 +10355,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 105
     },
     "desc": "Poison difficile à détecter. Pendant six heures après l'ingestion, la victime se fatigue très facilement : toute tâche impliquant la moindre stimulation physique inflige l'État Exténué, et les activités qui en causent normalement un en appliquent deux. À la fin de chaque heure, un Test de Résistance Intermédiaire (+0) réussi stoppe l'aggravation.",
@@ -10374,7 +10374,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 106
     },
     "desc": "Préparée à partir du sang d'amphisbaena (dont chaque tête mord l'autre, rendant son sang un puissant antidote). Une préparation de sang d'amphisbaena confère un bonus de +40 pour résister aux effets de n'importe quel poison.",
@@ -10393,7 +10393,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 106
     },
     "desc": "Boisson immonde préparée à base de plantes des marais et de parties de créatures (sang de rhinox ou de loup), qui force l'organisme à évacuer l'alcool. Dans la minute, elle annule les pénalités de Caractéristique dues à des Tests de Résistance à l'alcool échoués ou à l'État Ivre. Le buveur subit alors un État Exténué pendant (10 − Bonus d'Endurance) heures.",
@@ -10412,7 +10412,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 106
     },
     "desc": "Mélange d'alcool conservé une nuit dans un estomac de chèvre. Inutile en l'état, mais il suffit d'y verser une goutte de n'importe quel poison pour en faire un antidote à cette substance précise. L'antidote n'est efficace que contre exactement le même poison issu de la même préparation.",
@@ -10431,7 +10431,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 107
     },
     "desc": "Sécrétions caustiques du système digestif d'un troll (bile pure), vendues en fioles renforcées. Une seule flasque suffit pour traverser 8 points d'Encombrement d'Équipement et inflige +9 Dégâts de base. Utilisé comme arme de fortune, il possède l'Atout Perforante et le Défaut Dangereuse.",
@@ -10450,7 +10450,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 107
     },
     "desc": "Onguent dérivé de la bave de gueule d'effroi, utilisé par les nains pour manipuler des matériaux brûlants. Un flacon confère 4 PA contre les Dégâts de feu de toutes sortes (y compris magiques) et immunise contre l'État En flammes, mais inflige -20 à l'Agilité et l'Initiative. Agit une heure (ou éliminé avant en frottant avec de l'alcool).",
@@ -10469,7 +10469,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 107
     },
     "desc": "Onguent des elfes sylvains à base de chair de sangsue caméléon : étalé sur la peau, il prend lentement l'aspect de l'environnement. Recouvert entièrement, l'utilisateur bénéficie d'un bonus de +40 à tous les Tests de Discrétion basés sur la vue (+10 pour visage et mains seuls, un quart de dose). Son odeur nauséabonde le réserve aux proies à l'odorat peu développé.",
@@ -10488,7 +10488,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 107
     },
     "desc": "Potion à base d'os de revenant, versée dans la gorge d'un cadavre frais (moins d'un jour) pour le ramener brièvement à la vie. Il peut répondre à trois questions sans pouvoir mentir (comme le sort Dernières paroles), puis retrouve le repos. Si on lui pose une quatrième question, le cadavre se transforme en une chose du Bois mort et attaque tout le monde.",
@@ -10507,7 +10507,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 107
     },
     "desc": "Potion rare à base de sang de cornu qui renforce l'esprit. Le consommateur gagne le Trait À sang-froid et peut inverser les Tests échoués basés sur la Force Mentale. S'il reçoit un État Surpris, il n'est pas perdu lors de la première occasion.",
@@ -10526,7 +10526,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 108
     },
     "desc": "Potion à base de gelée d'amibe permettant de cracher du feu. L'utilisateur gagne le Trait Souffle +10 (Feu) qu'il peut activer une fois sans dépenser d'Avantage, après quoi les effets se dissipent. Immédiatement après, il doit faire un Test de Résistance Difficile (-20) ou subir un État En flammes.",
@@ -10545,7 +10545,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 108
     },
     "desc": "Sang de grand taurus traité, mis en fioles. Déversé, il prend feu et brûle sur n'importe quelle surface (même gelée ou marécageuse). Utilisé comme arme, il compte comme une bombe incendiaire, mais les États En flammes qui en résultent ne peuvent pas être annulés pendant 3 Rounds, même immergé.",
@@ -10564,7 +10564,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 108
     },
     "desc": "Potion de dents de gueule d'effroi broyées. L'utilisateur gagne le Trait Résistance à la Magie 3 (réduit de 3 le DR de tout sort l'affectant) pendant une heure. Chaque dose supplémentaire augmente de 1 la valeur et prolonge d'une heure, mais exige un Test de Résistance Intermédiaire (+0) ; un échec fait sécréter une bave toxique (1 État Empoisonné par Round, et à quiconque le touche) pendant dix Rounds.",
@@ -10583,7 +10583,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 108
     },
     "desc": "Potion de bile de preyton. Quand une personne la boit, elle entre immédiatement dans un État de Frénésie qui dure 1d10 Rounds et ne peut pas être calmé avant ce délai.",
@@ -10602,7 +10602,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 109
     },
     "desc": "Breuvage distillé avec un peu de venin d'amphisbaena, donnant des visions de passé et de futur (à la discrétion du MJ). L'utilisateur fait un Test de Résistance à l'alcool ; en cas de succès, il peut dépenser un point de Chance dans l'heure pour inverser les dés de n'importe quel Test échoué.",
@@ -10621,7 +10621,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 109
     },
     "desc": "Sang de chimère mélangé d'ingrédients exotiques et de bière naine. Le buveur fait un Test de Résistance Complexe (-10) : en cas de succès, il obtient le Trait Sang corrosif pendant 3+DR Rounds ; en cas d'échec, il subit deux États Empoisonné. Toute créature Bestiale qui le mord et reçoit des Dégâts ne le mordra plus de ce combat.",
@@ -10640,7 +10640,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 109
     },
     "desc": "Mélange à base de serre de noctecorbe. En onguent, étalé sur une plaie, dissipe tous les États Hémorragique sans Test de Guérison. En potion, permet d'annuler un État Hémorragique à la fin de chaque Round pendant une heure. Une seconde dose pendant l'effet exige un Test de Résistance (+0) ou 1d10 Blessures + État Exténué. Empêche aussi les vampires de se nourrir du sang de l'utilisateur.",
@@ -10659,7 +10659,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 110
     },
     "desc": "Potion préparée à partir des organes (rein ou foie) d'un grand cerf. Bue AVANT toute exposition à un poison, elle immunise pendant une heure contre tous les États Empoisonné et tout autre effet d'un poison naturel ou surnaturel. Inutile contre un poison déjà ingéré. Sa préparation est punie de mort par les elfes sylvains.",
@@ -10678,7 +10678,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 110
     },
     "desc": "Naphte corrompu produit à partir de bile de razorgor. Les bombes incendiaires créées avec produisent des flammes surnaturelles qui consument l'esprit comme la chair et comptent comme une attaque Magique. En onguent étalé sur une arme puis enflammé, l'arme inflige un État En flammes à chaque coup et compte comme Magique pendant 1d10 Rounds. Possession passible du bûcher dans certaines provinces.",
@@ -10697,7 +10697,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 110
     },
     "desc": "Préparation crue de bile de squig. Confère le Trait Insensible à la douleur et permet d'ignorer les effets de la plupart des Blessures Critiques (sauf amputation) pendant une heure. Passé ce délai, toutes les blessures subies se font soudain sentir. N'empêche pas de subir une Blessure Critique ou d'en mourir, seulement d'en ignorer les effets.",
@@ -10716,7 +10716,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 110
     },
     "desc": "« Remède » tristement célèbre à base de sang extrait du foie d'un wyrm des mers. L'utilisateur subit immédiatement 3 États Empoisonné irrésistibles, récupère autant de Blessures que son Bonus d'Endurance et obtient le Trait Régénération. Le MJ choisit si la régénération agit plus vite que le poison ; quand tous les États Empoisonné sont dissipés, la Régénération disparaît.",
@@ -10734,7 +10734,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 112
     },
     "desc": "Dague fabriquée à partir d'une serre de cockatrice, fragile mais suintant un poison mortel. Une victime qui subit au moins 1 Blessure reçoit immédiatement un État Empoisonné (Test de Résistance Complexe (-10) pour résister). À chaque utilisation, le MJ lance un d10 en secret : sur un 1, le poison s'épuise et la dague se brisera à la prochaine utilisation. Illégale dans toutes les provinces de l'Empire.",
@@ -10761,7 +10761,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 112
     },
     "desc": "Armure de plates forgée à partir des écailles ou de la carapace d'un léviathan. Très volumineuse mais étonnamment légère : elle pèse 1 point d'Encombrement de moins que l'armure de plates en métal classique. Fonctionne comme une armure de plates pour le reste.",
@@ -10795,7 +10795,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 113
     },
     "desc": "Arme simple montée sur une poignée en ramure de grand cerf. Une telle épée ne se brisera jamais pendant la bataille tant que son utilisateur la manie. Si la ramure a été obtenue par la violence, l'épée inflige toujours un État Hémorragique à la fois à son utilisateur et à sa victime chaque fois qu'elle inflige une Blessure Critique.",
@@ -10822,7 +10822,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 113
     },
     "desc": "Non une arme, mais du sang de dragon (1 Enc par point d'Enc de l'arme ; 20 CO/Enc) utilisé pour tremper une arme en métal pendant sa fabrication. L'arme gagne alors l'Atout Solide sans nécessiter de DR additionnel pendant sa création, car sa lame ne perdra jamais son tranchant.",
@@ -10840,7 +10840,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 113
     },
     "desc": "Dague façonnée par les forgerons nains à partir de la serre d'un grand aigle majestueux. Ces lames sont exceptionnelles ; leur principal intérêt secondaire est de contrarier les elfes sylvains d'Athel Loren.",
@@ -10868,7 +10868,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 114
     },
     "desc": "Munitions (6 par 1 Enc de composant). La sève durcissante d'un trégara couvre jusqu'à 6 carreaux ou flèches, qui doivent être tirés dans la journée. Les projectiles ainsi traités gagnent l'Atout Perforante.",
@@ -10899,7 +10899,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 114
     },
     "desc": "Munitions (12 par 1 Enc de composant). Flèches ou carreaux empennés de plumes de griffon par les maîtres-fléchiers d'Ostermark ; ils agissent comme des flèches elfiques.",
@@ -10939,7 +10939,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 114
     },
     "desc": "Munitions (12 par 1 Enc de composant). Pointes faites d'écailles de dragon barbelé, incroyablement aiguisées (le tranchant se renouvelle quand il s'émousse). Les attaques avec ces munitions qui infligent au moins une Blessure appliquent également un État Hémorragique.",
@@ -10967,7 +10967,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 115
     },
     "desc": "Marteau de guerre magique dont la tête a été forgée avec des os de stégadon réduits en poudre, et dont le cri se fait entendre à chaque coup. S'il tue un ennemi, le son devient assourdissant : les créatures vivantes dans un rayon de 10 mètres (sauf l'utilisateur) doivent réussir un Test de Résistance Intermédiaire (+0) ou subir un État Assourdi et 1d10 Blessures qui ignorent l'armure (mais pas le Bonus d'Endurance).",
@@ -11004,7 +11004,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 115
     },
     "desc": "Arme simple (épée) ou dague magique dont la poignée creuse contient une mèche de cheveux de sirène. La lame gagne l'Atout Dévastatrice, mais l'utilisateur est incapable de parler ou de produire le moindre son tant qu'il la manie ; cela vaut aussi pour quiconque est blessé par cette arme. Si la mèche a été prise par la force, l'utilisateur ne peut pas utiliser le Talent Chanceux tant qu'il tient ou porte Silence.",
@@ -11035,7 +11035,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 116
     },
     "desc": "Bouclier magique créé à partir de poudre de cadavres de revenant. Il confère à son porteur la capacité de voir les créatures mort-vivantes telles qu'elles étaient avant leur trépas, ce qui neutralise le Trait Peur du mort-vivant (sauf s'il le possédait déjà de son vivant). Ne permet ni de communiquer avec, ni de contrôler les morts-vivants.",
@@ -11073,7 +11073,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 116
     },
     "desc": "Cape magique cousue dans la dépouille d'une chimère, d'apparence de peau de loup avec des écailles nacrées sous la fourrure. Son porteur provoque Peur 2 chez les loups, les lions, les chèvres et les chimères. Si d'autres exemplaires sont créés, l'effet porte sur les animaux composant la chimère en question.",
@@ -11091,7 +11091,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 116
     },
     "desc": "Gants magiques cousus à partir des ligaments d'un géant. Pour les Tests opposés de Force et jets similaires uniquement, la Taille du porteur est supérieure d'une catégorie à sa Taille réelle. En contrepartie, ils compliquent l'identification des alliés dans le feu de l'action.",
@@ -11109,7 +11109,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 117
     },
     "desc": "Tasse magique créée en liant Shyish au crâne d'une chose du Bois mort. En y buvant n'importe quel liquide, l'utilisateur perçoit, entend et peut communiquer avec les esprits et entités éthérées (qui le prennent pour un esprit) pendant une minute, prolongeable par d'autres gorgées. Risque : être hanté par des esprits de plus en plus malveillants.",
@@ -11127,7 +11127,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ZI",
+      "book": "zoo-imperial",
       "page": 117
     },
     "desc": "Rubis magique (souvent enchâssé dans une bague ou amulette) prélevé sur un grand dragon barbelé, qui absorbe le sang versé dessus. En échange, il confère le Trait Protection 9+ pendant 1d10 Tours. Mais s'il est insatiable : si le porteur subit un État Hémorragique, un Test de Résistance (+0) raté fait s'agripper le rubis à sa peau comme une sangsue (l'État Hémorragique ne se lève qu'en arrachant la pierre par un Test de Force (+20)).",
@@ -11159,7 +11159,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 106
     }
   },
@@ -11192,7 +11192,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 106
     }
   },
@@ -11223,7 +11223,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 106
     }
   },
@@ -11257,7 +11257,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 106
     }
   },
@@ -11294,7 +11294,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 106
     }
   },
@@ -11328,7 +11328,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 106
     }
   },
@@ -11365,7 +11365,7 @@
       "bronze": 2
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 106
     }
   },
@@ -11393,7 +11393,7 @@
       "bronze": 2
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 106
     }
   },
@@ -11419,7 +11419,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     },
     "shape": "massue"
@@ -11454,7 +11454,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     },
     "shape": "gantelet_pointes"
@@ -11486,7 +11486,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     },
     "shape": "massue"
@@ -11523,7 +11523,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     },
     "shape": "arbalete_lourde"
@@ -11557,7 +11557,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     },
     "shape": "filet_leste"
@@ -11591,7 +11591,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     },
     "shape": "javelot"
@@ -11628,7 +11628,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     },
     "shape": "tromblon"
@@ -11664,7 +11664,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     },
     "shape": "pistolet"
@@ -11693,7 +11693,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     }
   },
@@ -11725,7 +11725,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     }
   },
@@ -11762,7 +11762,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     }
   },
@@ -11789,7 +11789,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 29
     }
   },
@@ -11812,7 +11812,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 83
     },
     "consumable": {
@@ -11847,7 +11847,7 @@
       "bronze": 6
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 127
     }
   },
@@ -11870,7 +11870,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 127
     }
   },
@@ -11896,7 +11896,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 127
     }
   },
@@ -11922,7 +11922,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 127
     }
   },
@@ -11949,7 +11949,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 127
     }
   },
@@ -11979,7 +11979,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 127
     }
   },
@@ -12009,7 +12009,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 130
     }
   },
@@ -12035,7 +12035,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 127
     }
   },
@@ -12061,7 +12061,7 @@
       "bronze": 0
     },
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 127
     }
   }

@@ -127,13 +127,13 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 
 ## §B — Conventions de champs (à respecter à l'ajout)
 
-- **`source.book`** = l'`abr` **EXACT** de `src/data/books.json` (registre canonique). Rules VF usuelles :
-  `LDB`, `ADE1`, `ADE2`, `Middenheim`, `ACE`, `ZI`, `MDG`, `EDO`, `EDOC` (+ campagne `MSR`/`PDT`…). Vérifier
-  par `grep '"book"' <fichier>` sur les entrées voisines AVANT d'écrire.
-  > ⚠ **Drift connu à réconcilier** (ne pas l'imiter) : `activities.json` et `qualities.json` portent la
-  > variante NON canonique `ADE II` en plus de `ADE2` ; des réfs portent des abréviations **hors registre**
-  > `books.json` (`T2C`, `T3`, `frenchy.bzh`). À terme : aligner sur `books.json` (ou ajouter le livre au
-  > registre). Pour un AJOUT neuf : toujours l'`abr` canonique.
+- **`source.book`** = l'`id` STABLE d'un livre de `src/data/books.json` (slug neutre, ex.
+  `livre-de-base`, `archives-de-l-empire-2`, `mer-des-griffes`) — **jamais** l'abréviation d'affichage ni
+  le libellé. Relation **id-pure** (i18n-safe) : `books.json` est la source de vérité, **enforced** par
+  `src/data/book-source-integrity.test.ts` (tout `source.book` ∈ ids de livres). L'affichage résout
+  id→`abr` via `bookAbr` (choke-point `registry.ts` `src()`). Pour un ajout : copier l'`id` d'une entrée
+  voisine du même livre (`grep '"book"' <fichier>`), ou le lire dans `books.json`. Contenu fan
+  communautaire = livre `frenchy-bzh`.
 - **`source.page`** = une **vraie page** (format des voisins), **jamais** le n° de chapitre. ⚠ Les ancres
   Marker `<span id="page-N">` du dump source **ne sont PAS fiables** — n'en déduire aucune page.
 - **`desc`** et tout champ de prose (effet, règles) = **copié/collé VERBATIM** de la source, en **Markdown**

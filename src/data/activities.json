@@ -7,7 +7,7 @@
       "voyage"
     ],
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 35
     },
     "skills": [
@@ -27,7 +27,7 @@
       "voyage"
     ],
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 35
     },
     "skills": [
@@ -47,7 +47,7 @@
       "voyage"
     ],
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 35
     },
     "skills": [
@@ -67,7 +67,7 @@
       "voyage"
     ],
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 35
     },
     "skills": [
@@ -87,7 +87,7 @@
       "voyage"
     ],
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 35
     },
     "skills": [
@@ -115,7 +115,7 @@
       "voyage"
     ],
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 35
     },
     "freeSkill": true,
@@ -131,7 +131,7 @@
       "voyage"
     ],
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 35
     },
     "unavailableIfExtenue": true,
@@ -145,7 +145,7 @@
       "voyage"
     ],
     "source": {
-      "book": "EDOC",
+      "book": "ennemi-dans-l-ombre-compagnon",
       "page": 35
     },
     "skills": [
@@ -168,7 +168,7 @@
       "interlude"
     ],
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 199
     },
     "difficulty": "accessible",
@@ -183,7 +183,7 @@
       "interlude"
     ],
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 196
     },
     "difficulty": "intermediaire",
@@ -198,7 +198,7 @@
       "interlude"
     ],
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 196
     },
     "difficulty": "difficile",
@@ -213,7 +213,7 @@
       "interlude"
     ],
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 53
     },
     "skills": [
@@ -234,7 +234,7 @@
       "interlude"
     ],
     "source": {
-      "book": "ADE2",
+      "book": "archives-de-l-empire-2",
       "page": 92
     },
     "skills": [
@@ -257,7 +257,7 @@
       "interlude"
     ],
     "source": {
-      "book": "ACE",
+      "book": "altdorf-couronne-de-l-empire",
       "page": 219
     },
     "skills": [
@@ -318,7 +318,7 @@
       "interlude"
     ],
     "source": {
-      "book": "ACE",
+      "book": "altdorf-couronne-de-l-empire",
       "page": 219
     },
     "skills": [
@@ -355,7 +355,7 @@
       "interlude"
     ],
     "source": {
-      "book": "ACE",
+      "book": "altdorf-couronne-de-l-empire",
       "page": 219
     },
     "skills": [
@@ -408,7 +408,7 @@
       "interlude"
     ],
     "source": {
-      "book": "ACE",
+      "book": "altdorf-couronne-de-l-empire",
       "page": 220
     },
     "skills": [
@@ -475,7 +475,7 @@
       "interlude"
     ],
     "source": {
-      "book": "ACE",
+      "book": "altdorf-couronne-de-l-empire",
       "page": 220
     },
     "skills": [
@@ -505,7 +505,7 @@
       "mer"
     ],
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 130
     },
     "skills": [
@@ -525,7 +525,7 @@
       "mer"
     ],
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 130
     },
     "skills": [
@@ -546,7 +546,7 @@
       "mer"
     ],
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 130
     },
     "skills": [
@@ -566,7 +566,7 @@
       "bataille"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 71
     },
     "skills": [
@@ -597,7 +597,7 @@
       "bataille"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 79
     },
     "skills": [
@@ -643,7 +643,7 @@
       "bataille"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 73
     },
     "skills": [
@@ -681,7 +681,7 @@
       "bataille"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 94
     },
     "skills": [
@@ -744,7 +744,7 @@
       "bataille"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 100
     },
     "skills": [
@@ -780,7 +780,7 @@
       "bataille"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 104
     },
     "skills": [
@@ -831,7 +831,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 149
     },
     "sceneKind": "test",
@@ -870,7 +870,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 143
     },
     "sceneKind": "combat",
@@ -904,7 +904,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 155
     },
     "sceneKind": "combat",
@@ -932,7 +932,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 161
     },
     "sceneKind": "hold",
@@ -974,7 +974,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 167
     },
     "sceneKind": "test",
@@ -1017,7 +1017,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 173
     },
     "sceneKind": "combat",
@@ -1055,7 +1055,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 206
     },
     "sceneKind": "test",
@@ -1103,7 +1103,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 211
     },
     "sceneKind": "combat",
@@ -1132,7 +1132,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 215
     },
     "sceneKind": "test",
@@ -1184,7 +1184,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 137
     },
     "sceneKind": "combat",
@@ -1218,7 +1218,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 223
     },
     "sceneKind": "combat",
@@ -1274,7 +1274,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 219
     },
     "sceneKind": "threat",
@@ -1293,7 +1293,7 @@
       "bataille-round"
     ],
     "source": {
-      "book": "ADE II",
+      "book": "archives-de-l-empire-2",
       "page": 122
     },
     "sceneKind": "rally",

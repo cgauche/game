@@ -3,7 +3,7 @@
   "label": "Blessures critiques sur une Structure",
   "die": "d100",
   "source": {
-    "book": "AA",
+    "book": "aux-armes",
     "page": 120
   },
   "entries": [

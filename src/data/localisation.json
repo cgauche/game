@@ -1,7 +1,7 @@
 {
   "personnage": {
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 159
     },
     "shapes": {
@@ -70,7 +70,7 @@
   },
   "navire": {
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 123
     },
     "rigs": [
@@ -125,7 +125,7 @@
   },
   "navire-fluvial": {
     "source": {
-      "book": "T2C",
+      "book": "mort-sur-le-reik-compagnon",
       "page": 28
     },
     "rigs": [

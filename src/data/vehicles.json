@@ -4,7 +4,7 @@
     "label": "Diligence",
     "icon": "travel/coach",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "enc": null,
@@ -50,7 +50,7 @@
     "label": "Barge",
     "icon": "travel/barge",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "travel": {
@@ -106,7 +106,7 @@
     "label": "Barge fluviale",
     "icon": "travel/barge",
     "source": {
-      "book": "T2C",
+      "book": "mort-sur-le-reik-compagnon",
       "page": 33
     },
     "travel": {
@@ -165,7 +165,7 @@
     "label": "Barque",
     "icon": "travel/rowboat",
     "source": {
-      "book": "T2C",
+      "book": "mort-sur-le-reik-compagnon",
       "page": 33
     },
     "hull": {
@@ -205,7 +205,7 @@
     "label": "Charrette",
     "icon": "travel/cart",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "enc": null,
@@ -232,7 +232,7 @@
     "label": "Chariot",
     "icon": "travel/cart",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "enc": null,
@@ -251,7 +251,7 @@
     "label": "Barque",
     "icon": "travel/rowboat",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "enc": null,
@@ -270,7 +270,7 @@
     "label": "Chaland",
     "icon": "travel/barge",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "enc": null,
@@ -289,7 +289,7 @@
     "label": "Coracle",
     "icon": "travel/rowboat",
     "source": {
-      "book": "LDB",
+      "book": "livre-de-base",
       "page": 306
     },
     "enc": 6,
@@ -329,7 +329,7 @@
     "label": "Chaloupe",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -366,7 +366,7 @@
     "label": "Esquif",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -407,7 +407,7 @@
     "label": "Grande barge",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -448,7 +448,7 @@
     "label": "Bateau de patrouille",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -501,7 +501,7 @@
     "label": "Knarr",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -546,7 +546,7 @@
     "label": "Langskip",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -587,7 +587,7 @@
     "label": "Cogue",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -677,7 +677,7 @@
     "label": "Caraque",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -718,7 +718,7 @@
     "label": "Galère de guerre",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -769,7 +769,7 @@
     "label": "Loup impérial",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -820,7 +820,7 @@
     "label": "Croiseur",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -864,7 +864,7 @@
     "label": "Galion bretonnien",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -908,7 +908,7 @@
     "label": "Caravelle tiléenne",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -949,7 +949,7 @@
     "label": "Chébec arabien",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -994,7 +994,7 @@
     "label": "Boutre d'Inja",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
@@ -1031,7 +1031,7 @@
     "label": "Bateau-trésor cathayen",
     "icon": "travel/sail-ship",
     "source": {
-      "book": "MDG",
+      "book": "mer-des-griffes",
       "page": 113
     },
     "purchase": {
