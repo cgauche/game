@@ -4,6 +4,9 @@
   "private": true,
   "description": "RPG tactique au tour par tour Warhammer Fantasy v4 (web, type Neverwinter Nights) — en français",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "postinstall": "git config core.hooksPath scripts/git-hooks",
     "gen": "node scripts/gen-registry.mjs",
@@ -14,6 +17,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "docs:check": "node scripts/docs/check-doc-refs.mjs",
+    "raw:coverage": "node scripts/raw/coverage.mjs",
+    "raw:reconcile": "node scripts/raw/reconcile.mjs",
     "lint": "eslint .",
     "relay:dev": "npm --prefix server run dev",
     "relay:deploy": "npm --prefix server run deploy",

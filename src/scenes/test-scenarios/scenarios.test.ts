@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { testScenarios } from './index';
+import { validateScene } from '../../state/validateScene';
 
 describe('Batterie de scénarios de test', () => {
   it('couvre au moins 6 scénarios', () => {
@@ -20,4 +21,14 @@ describe('Batterie de scénarios de test', () => {
     expect(testScenarios.find((s) => s.id === 'embuscade')).toBeTruthy();
     expect(testScenarios.find((s) => s.id === 'magie')).toBeTruthy();
   });
+  // Chaque scénario doit rester une scène VALIDE (réfs, transitions, dialogues, ids) contre le
+  // moteur courant — pas seulement « non vide ».
+  it.each(testScenarios.map((s) => [s.id, s] as const))(
+    'le scénario %s passe validateScene sans erreur',
+    (id, s) => {
+      const project = [s.scene, ...(s.extraScenes ?? [])];
+      const errors = validateScene(project, s.worldMap).filter((w) => w.level === 'error');
+      expect(errors, `scénario « ${id} » : ${errors.map((e) => `[${e.scope}${e.refId ? `:${e.refId}` : ''}] ${e.message}`).join(' | ')}`).toEqual([]);
+    },
+  );
 });

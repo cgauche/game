@@ -1,9 +1,13 @@
-name: CI
+name: Canari
 
 on:
-  push:
-    branches: [main, 'feat/**']
-  pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   build:
@@ -27,3 +31,15 @@ jobs:
       - run: npm run raw:reconcile
       - run: npm --prefix server ci
       - run: npm --prefix server run typecheck
+      - name: Ouvrir une issue si le canari est rouge
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue create \
+            --title "Canari rouge — environnement ou suite cassés" \
+            --body "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --label canari \
+          || gh issue create \
+            --title "Canari rouge — environnement ou suite cassés" \
+            --body "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
