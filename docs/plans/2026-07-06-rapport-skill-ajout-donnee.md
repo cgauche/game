@@ -86,5 +86,9 @@ est « dormante » au sens où **aucun trapping PORTÉ** ne l'utilise — ce qui
 pas un objet d'inventaire : c'est une machine de guerre crewée). Le vrai besoin de #148 (« voir les dégâts
 conditionnels du Bélier au Codex ») n'est donc PAS « ajouter un trapping » (doublon) mais soit **exposer les
 machines de guerre de `mass-battle.json` au Codex** (feature d'affichage), soit **acter la non-exposition**.
-→ #148 à re-scoper en conséquence (voir le commentaire de l'issue). Le mécanisme conditionnel lui-même
-(`capabilities.ram` hors-porte = Arme improvisée) était déjà correct depuis **#102**.
+→ #148 re-scopé (décision utilisateur : **le Codex doit afficher mass-battle, et toute donnée doit y être
+éditable**) → exposer les machines de guerre de `mass-battle.json` au Codex (feature d'affichage/édition, en
+cours). Le mécanisme conditionnel lui-même (`capabilities.ram` hors-porte = Arme improvisée) était déjà
+correct depuis **#102**. La **déviation RAW auto-admise** de l'agent (bélier via Force, ADE II l.233, non
+modélisé) n'est PAS restée une note : elle est tracée en **#156** (résolution tactique des machines de guerre
+— Projectiles (Machine de guerre) / Force pour le bélier + pénalité d'Équipe).
