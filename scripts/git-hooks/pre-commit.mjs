@@ -34,6 +34,19 @@ for (const f of staged) {
     for (const x of scanLabelLogic(rel, text)) offenders.push(`${rel}:${x.line} [logique par label] ${x.detail}`);
 }
 
+const dataStaged = staged.filter((f) => /^src\/data\/[^/]+\.json$/.test(f.replace(/\\/g, '/')));
+if (dataStaged.length) {
+  try {
+    execFileSync(
+      process.execPath,
+      [join(ROOT, 'node_modules', 'tsx', 'dist', 'cli.mjs'), join(ROOT, 'scripts', 'guards', 'validate-data.mts'), ...dataStaged],
+      { cwd: ROOT, stdio: 'inherit' },
+    );
+  } catch {
+    offenders.push('contrat de donnée VIOLÉ (schéma zod, rapport ci-dessus) — corriger la donnée, jamais le contourner');
+  }
+}
+
 const docsStaged = staged.some((f) => /^docs\/[^/]+\.md$/.test(f.replace(/\\/g, '/')));
 if (docsStaged) {
   try {

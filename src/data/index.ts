@@ -76,6 +76,7 @@ import type { PregenDef } from './pregens'; // type-only (pregens.ts importe la 
 import type { OupsEntry } from './oups';
 import type { InterludeEvent } from './interludeEvents';
 import type { Peripetie } from './peripeties';
+import type { CharacteristicsData } from './schemas/defs/characteristics';
 
 /** Règle d'EMPOIGNADE en DONNÉE (LDB 14 l.155-169) : `init` = ops à la touche d'une Empoignade déclarée
  *  (Empêtré + relation via le flag `grapple`) ; `win` = les 3 options du Test opposé GAGNÉ (l.161), appliquées
@@ -1140,7 +1141,7 @@ export interface NamePool {
   lastNameSuffixes?: { M: string[]; F: string[] };
 }
 
-export const characteristics = characteristicsJson as any[];
+export const characteristics = characteristicsJson as CharacteristicsData;
 export const species = speciesJson as SpeciesData[];
 export const classes = classesJson as ClassData[];
 export const careers = careersJson as CareerData[];

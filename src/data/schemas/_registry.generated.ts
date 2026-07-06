@@ -1,0 +1,41 @@
+// ⚠️ GÉNÉRÉ par scripts/gen-registry.mjs — NE PAS ÉDITER À LA MAIN.
+// Ajouter une entrée = déposer un fichier dans defs/ puis `npm run gen`.
+import type { SchemaDef } from './types';
+import { file as e0_file, schema as e0_schema } from './defs/advancementCosts';
+import { file as e1_file, schema as e1_schema } from './defs/ambiance';
+import { file as e2_file, schema as e2_schema } from './defs/calendarIntercalary';
+import { file as e3_file, schema as e3_schema } from './defs/calendarMonths';
+import { file as e4_file, schema as e4_schema } from './defs/calendarPhases';
+import { file as e5_file, schema as e5_schema } from './defs/calendarWeekdays';
+import { file as e6_file, schema as e6_schema } from './defs/characteristics';
+import { file as e7_file, schema as e7_schema } from './defs/crew-morale';
+import { file as e8_file, schema as e8_schema } from './defs/crew-roles';
+import { file as e9_file, schema as e9_schema } from './defs/crew-test-types';
+import { file as e10_file, schema as e10_schema } from './defs/damage-types';
+import { file as e11_file, schema as e11_schema } from './defs/decorPalette';
+import { file as e12_file, schema as e12_schema } from './defs/drunkenness';
+import { file as e13_file, schema as e13_schema } from './defs/encumbranceTiers';
+import { file as e14_file, schema as e14_schema } from './defs/eyes';
+import { file as e15_file, schema as e15_schema } from './defs/hairs';
+import { file as e16_file, schema as e16_schema } from './defs/land-cargo';
+import { file as e17_file, schema as e17_schema } from './defs/lightLevels';
+import { file as e18_file, schema as e18_schema } from './defs/localisation';
+import { file as e19_file, schema as e19_schema } from './defs/names';
+import { file as e20_file, schema as e20_schema } from './defs/naval-progression';
+import { file as e21_file, schema as e21_schema } from './defs/qualitySubtypes';
+import { file as e22_file, schema as e22_schema } from './defs/qualityTypes';
+import { file as e23_file, schema as e23_schema } from './defs/raceAppearance';
+import { file as e24_file, schema as e24_schema } from './defs/reliefMaterials';
+import { file as e25_file, schema as e25_schema } from './defs/roofMaterials';
+import { file as e26_file, schema as e26_schema } from './defs/sea-cargo';
+import { file as e27_file, schema as e27_schema } from './defs/sea-navigation';
+import { file as e28_file, schema as e28_schema } from './defs/sea-weather';
+import { file as e29_file, schema as e29_schema } from './defs/ship-construction';
+import { file as e30_file, schema as e30_schema } from './defs/sizes';
+import { file as e31_file, schema as e31_schema } from './defs/speciesRace';
+import { file as e32_file, schema as e32_schema } from './defs/structureAppearance';
+import { file as e33_file, schema as e33_schema } from './defs/tavernGames';
+import { file as e34_file, schema as e34_schema } from './defs/weaponGroups';
+import { file as e35_file, schema as e35_schema } from './defs/weather';
+
+export const SCHEMA_DEFS: SchemaDef[] = [{ file: e0_file, schema: e0_schema }, { file: e1_file, schema: e1_schema }, { file: e2_file, schema: e2_schema }, { file: e3_file, schema: e3_schema }, { file: e4_file, schema: e4_schema }, { file: e5_file, schema: e5_schema }, { file: e6_file, schema: e6_schema }, { file: e7_file, schema: e7_schema }, { file: e8_file, schema: e8_schema }, { file: e9_file, schema: e9_schema }, { file: e10_file, schema: e10_schema }, { file: e11_file, schema: e11_schema }, { file: e12_file, schema: e12_schema }, { file: e13_file, schema: e13_schema }, { file: e14_file, schema: e14_schema }, { file: e15_file, schema: e15_schema }, { file: e16_file, schema: e16_schema }, { file: e17_file, schema: e17_schema }, { file: e18_file, schema: e18_schema }, { file: e19_file, schema: e19_schema }, { file: e20_file, schema: e20_schema }, { file: e21_file, schema: e21_schema }, { file: e22_file, schema: e22_schema }, { file: e23_file, schema: e23_schema }, { file: e24_file, schema: e24_schema }, { file: e25_file, schema: e25_schema }, { file: e26_file, schema: e26_schema }, { file: e27_file, schema: e27_schema }, { file: e28_file, schema: e28_schema }, { file: e29_file, schema: e29_schema }, { file: e30_file, schema: e30_schema }, { file: e31_file, schema: e31_schema }, { file: e32_file, schema: e32_schema }, { file: e33_file, schema: e33_schema }, { file: e34_file, schema: e34_schema }, { file: e35_file, schema: e35_schema }];

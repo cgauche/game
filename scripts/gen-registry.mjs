@@ -18,7 +18,10 @@ import { join } from 'node:path';
  * dans le même dossier que l'index (cas des scénarios).
  * `idUnion` (option PAR registre) : émet AUSSI une union de littéraux `export type <typeName> =`
  * extraite des champs `<field>: '…'` des defs — typage RÉEL des ids côté consommateurs TS.
- * @type {{ dir:string, out:string, exportName:string, arrayName:string, type:string, typeFrom:string, importDir?:string, idUnion?:{ typeName:string, field:string } }[]}
+ * `fields` (option PAR registre) : quand un module de def exporte PLUSIEURS noms (pas 1 seul via
+ * `exportName`), liste ces noms → chaque entrée du tableau généré devient `{ champ1, champ2, … }`
+ * (ex. `src/data/schemas/defs/` : `file` + `schema`).
+ * @type {{ dir:string, out:string, exportName?:string, arrayName:string, type:string, typeFrom:string, importDir?:string, idUnion?:{ typeName:string, field:string }, fields?:string[] }[]}
  */
 export const REGISTRIES = [
   {
@@ -277,6 +280,17 @@ export const REGISTRIES = [
     type: 'SoundDef',
     typeFrom: './types',
   },
+  {
+    // Schémas zod du contrat de donnée (Lot 1) : 1 dataset `src/data/*.json` = 1 fichier defs/,
+    // exportant `file` (nom du .json) + `schema` (zod). `fields` (2 exports par module, pas 1
+    // seul) → entrées `{ file, schema }` plutôt qu'un tableau plat d'un seul type.
+    dir: 'src/data/schemas/defs',
+    out: 'src/data/schemas/_registry.generated.ts',
+    arrayName: 'SCHEMA_DEFS',
+    type: 'SchemaDef',
+    typeFrom: './types',
+    fields: ['file', 'schema'],
+  },
 ];
 
 function genOne(r) {
@@ -291,8 +305,16 @@ function genOne(r) {
   const files = entries
     .filter((f) => f.endsWith('.ts') && !f.startsWith('_') && !f.endsWith('.test.ts') && !f.endsWith('.ascii.ts') && f !== 'index.ts')
     .sort();
-  const imports = files.map((f, i) => `import { ${r.exportName} as e${i} } from '${importDir}/${f.replace(/\.ts$/, '')}';`);
-  const arr = files.map((_, i) => `e${i}`);
+  // `fields` (option PAR registre) : un module de def exporte PLUSIEURS noms (ex. `file`+`schema`,
+  // cf. src/data/schemas/defs/) → une entrée `{ champ1, champ2, … }` par fichier, au lieu du
+  // tableau plat d'un seul export (`exportName`) des registres « 1 def = 1 valeur ».
+  const fields = r.fields ?? [r.exportName];
+  const imports = files.map(
+    (f, i) => `import { ${fields.map((fn) => `${fn} as e${i}_${fn}`).join(', ')} } from '${importDir}/${f.replace(/\.ts$/, '')}';`,
+  );
+  const arr = r.fields
+    ? files.map((_, i) => `{ ${fields.map((fn) => `${fn}: e${i}_${fn}`).join(', ')} }`)
+    : files.map((_, i) => `e${i}_${r.exportName}`);
   // Union de littéraux des ids déclarés dans les defs (option `idUnion`) — triée, dédupliquée.
   let unionDecl = '';
   if (r.idUnion) {

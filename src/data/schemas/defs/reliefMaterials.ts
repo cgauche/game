@@ -1,0 +1,21 @@
+/**
+ * Schéma de `reliefMaterials.json` — apparence de RENDU du relief (falaise/rampe/tablier/pilier iso,
+ * plafond/riser/sol-repli POV), consommée comme `ReliefMaterialDef[]` (`src/gameIso/catalog/relief/types.ts`).
+ */
+import { z } from 'zod';
+import { detailRecipeSchema } from '../common';
+
+export const file = 'reliefMaterials.json';
+
+export const schema = z.array(
+  z.strictObject({
+    id: z.string(),
+    detail: detailRecipeSchema.optional(),
+    face: z.string(),
+    foot: z.string().optional(),
+    slopeTop: z.string().optional(),
+    shadeDark: z.number().optional(),
+  }),
+);
+
+export type ReliefMaterialsData = z.infer<typeof schema>;
