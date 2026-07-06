@@ -14,9 +14,6 @@
     "id": "fuite-de-vapeur",
     "label": "Fuite de vapeur",
     "desc": "Fuite de vapeur : un jet de vapeur jaillit de la chaudière. La personne qui s'occupe du moteur doit réussir un Test d'Initiative sous peine d'être ébouillantée et de subir 1d10–5 Dégâts (1 minimum), qui ignorent l'Armure.",
-    "engineerTest": {
-      "char": "I"
-    },
     "failDamage": "1d10-5"
   },
   {
