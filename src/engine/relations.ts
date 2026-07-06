@@ -17,3 +17,12 @@ export const campOf = (c: Pick<Combatant, 'kind'>): Camp =>
 export type Relation = 'self' | 'ally' | 'opponent';
 export const relationBetween = (a: { id: string; camp: Camp }, b: { id: string; camp: Camp }): Relation =>
   a.id === b.id ? 'self' : a.camp === b.camp ? 'ally' : 'opponent';
+
+/** Ce combattant suit-il les règles de PERSONNAGE (#143) ? — prédicat UNIQUE, DISTINCT du camp
+ *  (`campOf`, ci-dessus) et du contrôle (`pilotedByHuman`/`controlsCombatant`, netOwnership.ts).
+ *  Gouverne des mécaniques écrites au Personnage dans la source, jamais étendues aux créatures
+ *  génériques : Corruption (LDB 19), composant d'incantation (LDB 46 l.107-111), Tests de fin de
+ *  combat Maladie/Corruption (LDB 18 l.5, LDB 20 l.14/206). Un héros l'est TOUJOURS ; tout autre
+ *  combattant seulement si explicitement flagué en donnée (cf. `Combatant.followsCharacterRules`). */
+export const followsCharacterRules = (c: Pick<Combatant, 'kind' | 'followsCharacterRules'>): boolean =>
+  c.kind === 'hero' || c.followsCharacterRules === true;

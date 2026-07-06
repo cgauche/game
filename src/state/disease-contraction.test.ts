@@ -115,6 +115,64 @@ describe('Fin de combat — règle « Utilisation des Maladies » (disease-mode,
   });
 });
 
+// #143 : le vrai prédicat RAW de la boucle de fin de combat est « suit les règles de Personnage »
+// (LDB 18 l.5 « la plupart des Personnages » ; LDB 20 l.14/206 « Personnage »), pas `kind === 'hero'` —
+// un ennemi MODÉLISÉ comme personnage (PNJ humain hostile, `followsCharacterRules`) fait ses Tests de
+// fin de combat (maladie/Corruption) comme un héros ; une créature générique en reste exemptée.
+describe('Fin de combat — prédicat personnage-vs-créature (#143, followsCharacterRules)', () => {
+  beforeEach(() => { useGame.setState({ mode: 'exploration', journal: [], pendingCascade: null }); });
+
+  const e30 = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  const enemy = (p: Partial<Combatant>): Combatant =>
+    ({
+      id: 'e', name: 'E', kind: 'enemy',
+      characteristics: e30,
+      wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
+      weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+      ...p,
+    } as Combatant);
+
+  it("un ennemi GÉNÉRIQUE (sans `followsCharacterRules`) n'a AUCUN Test de maladie de fin de combat, même après un critique", () => {
+    seedBattleRng(4); // roll garanti raté si jamais testé (93 > toute cible raisonnable)
+    const monster = enemy({ id: 'e', tookCriticalThisFight: true });
+    setBattle([monster]);
+    useGame.setState({ party: [] });
+    resolveCombatEnd();
+    expect(monster.diseases ?? []).toHaveLength(0);
+    expect(monster.tookCriticalThisFight).toBe(true); // jamais décidé → marqueur NON consommé (créature exemptée)
+  });
+
+  it('un ennemi PERSONNAGE (`followsCharacterRules: true`) contracte une Infection Mineure post-critique comme un héros (LDB 20 l.72)', () => {
+    seedBattleRng(4); // 1er d100 = 93 > cible 90 (E 30 + 60) → échec garanti
+    const npc = enemy({ id: 'e', followsCharacterRules: true, tookCriticalThisFight: true });
+    setBattle([npc]);
+    useGame.setState({ party: [] });
+    resolveCombatEnd();
+    expect(npc.diseases?.some((d) => d.name === 'infection-mineure')).toBe(true);
+    expect(npc.tookCriticalThisFight).toBe(false); // consommé (idempotent), comme un héros
+  });
+
+  it("un ennemi GÉNÉRIQUE exposé à la Corruption (créature affrontée corrompue) n'a AUCUN Test d'Exposition de fin de combat", () => {
+    seedBattleRng(4);
+    const corruptSource = enemy({ id: 'src', traits: [{ id: 'corruption', arg: 'mineure' }] });
+    const monster = enemy({ id: 'e' });
+    setBattle([corruptSource, monster]);
+    useGame.setState({ party: [] });
+    resolveCombatEnd();
+    expect(monster.corruption ?? 0).toBe(0);
+  });
+
+  it("un ennemi PERSONNAGE (`followsCharacterRules: true`) EST exposé à la Corruption de fin de combat comme un héros (LDB 19/85 p.338)", () => {
+    seedBattleRng(4); // roll 93 > cible ~30 (Résistance Intermédiaire, E 30) → échec garanti → gain de Corruption
+    const corruptSource = enemy({ id: 'src', traits: [{ id: 'corruption', arg: 'mineure' }] });
+    const npc = enemy({ id: 'e', followsCharacterRules: true });
+    setBattle([corruptSource, npc]);
+    useGame.setState({ party: [] });
+    resolveCombatEnd();
+    expect(npc.corruption ?? 0).toBeGreaterThan(0);
+  });
+});
+
 describe('Effet d’éditeur inflictDisease (LDB 20)', () => {
   beforeEach(() => { seedBattleRng(1); useGame.setState({ battle: null, mode: 'exploration', journal: [] }); });
 

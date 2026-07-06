@@ -50,6 +50,11 @@ export interface CustomStatblock {
   /** Objet INERTE servi (affût d'artillerie d'un emplacement, AA/MDG ch.12) : ciblable mais sans réaction de
    *  combat (`isInanimate`) ni tour propre — son arme se sert via `postes`. Se rend par son espèce (engin). */
   inert?: boolean;
+  /** Ce PNJ suit-il les règles de PERSONNAGE (#143 — Corruption LDB 19, composant d'incantation LDB 46,
+   *  Tests de fin de combat Maladie/Corruption LDB 18/20) — un PNJ humain hostile MODÉLISÉ (ex. sorcier
+   *  ennemi nommé) le peut ; une créature générique ne l'est pas. Propagé au spawn (`Combatant.followsCharacterRules`,
+   *  prédicat unique `engine/relations.ts`). Absent/`false` = créature (défaut RAW-défendable). */
+  followsCharacterRules?: boolean;
 }
 
 /** Parts monstrueuses par slot (mutant modulaire : tête/bras choisis comme un PJ).

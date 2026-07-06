@@ -173,6 +173,14 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
         />{' '}
         🎲 Caractéristiques aléatoires (LDB 78 : −10 + 2d10)
       </label>
+      <label className="ed-field" title="#143 : un PNJ humain hostile MODÉLISÉ (ex. sorcier ennemi nommé) suit les mécaniques de Personnage — Corruption (LDB 19), composant d'incantation (LDB 46), Tests de fin de combat Maladie/Corruption (LDB 18/20). Une créature générique ne le coche pas.">
+        <input
+          type="checkbox"
+          checked={stat.followsCharacterRules ?? false}
+          onChange={(e) => onChange({ ...stat, followsCharacterRules: e.target.checked || undefined })}
+        />{' '}
+        Suit les règles de Personnage (Corruption/composant/maladie)
+      </label>
       <label className="ed-field">
         Dégâts d'arme de secours (si aucun trait d'arme, ex. +BF+4)
         <input value={stat.weaponDamage ?? ''} onChange={(e) => onChange({ ...stat, weaponDamage: e.target.value || undefined })} />

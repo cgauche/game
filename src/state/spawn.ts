@@ -302,6 +302,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
     size,
     bodyShape: bodyShapeOf(sb.name), // Tableau de Localisation par forme du corps (LDB p.312)
     ...(sb.inert ? { inert: true } : {}), // affût inerte servi (AA/MDG ch.12) : ciblable, sans réaction de combat ni tour
+    ...(sb.followsCharacterRules ? { followsCharacterRules: true } : {}), // #143 : PNJ humain hostile MODÉLISÉ (Corruption/composant/maladie de personnage)
     ...parsePsychTraits(traits), // Peur/Terreur/Immunité + traits ciblés depuis les traits (LDB 21+85)
     ...(swarm ? { swarm: true, psychImmune: true } : {}), // Nuée : ignore la Psychologie (l.200)
     ...(isMindless(traits) ? { psychImmune: true } : {}), // Fabriqué : Tests d'Int/FM/Soc auto-réussis (LDB 85 p.339)

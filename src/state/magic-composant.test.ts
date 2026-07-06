@@ -122,6 +122,22 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
     expect(enemy.componentSpells).toEqual([SPELL]); // intact
   });
 
+  // #143 : le vrai prédicat RAW est « suit les règles de Personnage » (LDB 46 l.107-111), pas `kind === 'hero'`
+  // — un ennemi MODÉLISÉ comme personnage (PNJ humain hostile, `followsCharacterRules`) achète/consume un
+  // composant comme un héros ; une créature générique (le test ci-dessus) n'en a jamais.
+  it('un ENNEMI PERSONNAGE (`followsCharacterRules`) consume un composant comme un héros', () => {
+    setRule('magic-composant', true);
+    const hero = mageInBattle();
+    const enemy = useGame.getState().battle!.combatants.find((c) => c.kind === 'enemy')!;
+    enemy.followsCharacterRules = true;
+    enemy.componentSpells = [SPELL];
+    const lines: string[] = [];
+    const used = useSpellComponent(enemy, SPELL, lines);
+    expect(used).toBe(true);
+    expect(enemy.componentSpells).toEqual([]); // consommé
+    expect(lines.some((l) => /consumé/.test(l))).toBe(true);
+  });
+
   it('la Colère des dieux n’est jamais dégradée (composants = Sorts, pas Prières — l.163)', () => {
     setRule('magic-composant', true);
     const hero = mageInBattle();

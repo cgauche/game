@@ -114,6 +114,7 @@ import { endShanty, resolveShipUnits } from './shipCrew';
 import { isInanimate, isStructure, structureAimCell, ramVsNonDoor } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { actorIn } from './combatOrParty';
+import { followsCharacterRules } from '../engine/relations';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, damageArmour, deviatableArmourAt, buildWeapon } from '../engine/items';
@@ -2743,15 +2744,16 @@ export function resumeManeuverDefense(get: Get, set: SetFn, resume: { attackerId
 
 /**
  * Composant d'incantation (LDB 46 l.158-163, règle optionnelle `magic-composant`) — appelé UNE fois
- * au point d'incantation d'un Sort d'Arcane/Domaine par un HÉROS. Si un composant pour ce Sort est
- * possédé : il est CONSUMÉ « même si aucune Incantation Imparfaite n'a été obtenue » (l.161), une
- * ligne est journalisée, et `true` est renvoyé → toute Imparfaite de ce lancement sera dégradée
- * (passé en `componentDowngrade` à `applyMiscast`). Mute `caster.componentSpells`. Renvoie `false`
- * (sans effet) si la règle est éteinte, le lanceur n'est pas un héros, ou aucun composant ne couvre
- * le Sort. `lines` reçoit la ligne « composant consumé » le cas échéant.
+ * au point d'incantation d'un Sort d'Arcane/Domaine par un lanceur qui suit les règles de PERSONNAGE
+ * (#143 — `followsCharacterRules`, PAS un proxy `kind`). Si un composant pour ce Sort est possédé :
+ * il est CONSUMÉ « même si aucune Incantation Imparfaite n'a été obtenue » (l.161), une ligne est
+ * journalisée, et `true` est renvoyé → toute Imparfaite de ce lancement sera dégradée (passé en
+ * `componentDowngrade` à `applyMiscast`). Mute `caster.componentSpells`. Renvoie `false` (sans effet)
+ * si la règle est éteinte, le lanceur ne suit pas les règles de Personnage, ou aucun composant ne
+ * couvre le Sort. `lines` reçoit la ligne « composant consumé » le cas échéant.
  */
 export function useSpellComponent(caster: Combatant, spellId: string, lines: string[]): boolean {
-  if (caster.kind !== 'hero' || rule('magic-composant') !== true) return false;
+  if (!followsCharacterRules(caster) || rule('magic-composant') !== true) return false;
   const owned = caster.componentSpells ?? [];
   if (!owned.includes(spellId)) return false;
   const i = owned.indexOf(spellId);
@@ -2801,12 +2803,12 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
     rng: battleRng(),
     label: m.name,
     now: get().gameTime,
-    onCorruption: caster.kind === 'hero' ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined,
+    onCorruption: followsCharacterRules(caster) ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined,
   };
   lines.push(...applyOps(caster, m.ops, opsCtx));
   // Sorcellerie (LDB 49) : « À chaque fois qu'un pratiquant de la Sorcellerie fait un jet sur le Tableau
-  // des Incantations Imparfaites, il gagne 1 Point de Corruption. »
-  if (opts?.sorceryCorruption && caster.kind === 'hero') lines.push(...gainCorruption(get, set, caster, 1));
+  // des Incantations Imparfaites, il gagne 1 Point de Corruption. » — #143 : personnage (`followsCharacterRules`), pas un proxy `kind`.
+  if (opts?.sorceryCorruption && followsCharacterRules(caster)) lines.push(...gainCorruption(get, set, caster, 1));
   // « Un jet = une modale » : le héros voit la conséquence (Colère/Imparfaite) INLINE dans la séquence
   // partagée (étape d'affichage) — plus de RevealModal séparée. `suppressReveal` : la Focalisation
   // interrompue (qui pousse déjà sa propre révélation « Calme » portant ces lignes) n'ouvre rien.
@@ -3572,7 +3574,7 @@ export function applyCast(
           ...(rounds != null ? { defaultDurationRounds: rounds } : {}),
           ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
           ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
-          onCorruption: t.kind === 'hero' ? (n, align) => gainCorruption(get, set, t, n, align) : undefined,
+          onCorruption: followsCharacterRules(t) ? (n, align) => gainCorruption(get, set, t, n, align) : undefined, // #143 : personnage, pas un proxy `kind`
         }));
       }
       // Vol de vie (LDB 48 — Mort : Caresse de Laniph, Vol de vie) : op `lifeSteal` du Flow (on:'caster')
@@ -3678,7 +3680,7 @@ export function applyCast(
             ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
             ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
             ...(extras?.conjureForm ? { conjureForm: extras.conjureForm } : {}),
-            onCorruption: t.kind === 'hero' ? (n, align) => gainCorruption(get, set, t, n, align) : undefined,
+            onCorruption: followsCharacterRules(t) ? (n, align) => gainCorruption(get, set, t, n, align) : undefined, // #143 : personnage, pas un proxy `kind`
           }),
         );
         // Métamorphose (Forme bestiale, LDB 48) : op `polymorph` du Flow (on:'target') — appliquée
@@ -3799,7 +3801,7 @@ export function applyCast(
         ...(baseRounds != null ? { defaultDurationRounds: baseRounds } : {}),
         ...(clockMin != null ? { defaultUntilTime: get().gameTime + clockMin } : {}),
         ...(sourceSpell ? { sourceSpell } : {}), sourceSpellId,
-        onCorruption: caster.kind === 'hero' ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined,
+        onCorruption: followsCharacterRules(caster) ? (n, align) => gainCorruption(get, set, caster, n, align) : undefined, // #143 : personnage, pas un proxy `kind`
       }));
     }
   }
@@ -3973,12 +3975,12 @@ function combatEndResistVal(c: Combatant): number {
 }
 
 /**
- * DÉCIDE et CONSOMME les Tests de fin de combat DUS pour le héros `c` (LDB 18 l.382/20 l.72/20 l.32-49 +
- * LDB 19 Corruption) — SOURCE UNIQUE de la décision : les marqueurs (`tookCriticalThisFight`/`woundDressed`/
- * `diseaseExposure`) sont purgés ICI (idempotent). Retourne la LISTE
- * des Tests de Contraction de maladie dus + le NIVEAU d'exposition à la Corruption (worst des créatures
- * affrontées), ou `null` pour la Corruption si aucune. PUR de RNG (aucun jet) : le jet vit dans l'étape de
- * cascade (héros manuel) OU dans la résolution inline (non-interactif).
+ * DÉCIDE et CONSOMME les Tests de fin de combat DUS pour le PERSONNAGE `c` (héros, ou combattant flagué
+ * #143 `followsCharacterRules` — LDB 18 l.382/20 l.72/20 l.32-49 + LDB 19 Corruption) — SOURCE UNIQUE de
+ * la décision : les marqueurs (`tookCriticalThisFight`/`woundDressed`/`diseaseExposure`) sont purgés ICI
+ * (idempotent). Retourne la LISTE des Tests de Contraction de maladie dus + le NIVEAU d'exposition à la
+ * Corruption (worst des créatures affrontées), ou `null` pour la Corruption si aucune. PUR de RNG (aucun
+ * jet) : le jet vit dans l'étape de cascade (manuel) OU dans la résolution inline (non-interactif).
  */
 function decideCombatEndHeroTests(
   c: Combatant, worstCorruption: import('../engine/corruption').ExposureLevel | null,
@@ -4027,9 +4029,9 @@ function worstCorruptionExposure(battle: BattleState): { level: import('../engin
   return { level, label: worst };
 }
 
-/** Résout INLINE (jet silencieux + conséquence) les Tests de fin de combat d'un héros NON-INTERACTIF
- *  (monstre/héros auto, ou cible hors d'action / défaite) — même conséquence que les appliers de cascade,
- *  lignes au journal. Le worst d'exposition à la Corruption est passé (figé). */
+/** Résout INLINE (jet silencieux + conséquence) les Tests de fin de combat d'un PERSONNAGE NON-INTERACTIF
+ *  (héros auto, ou PNJ #143 flagué `followsCharacterRules`, ou cible hors d'action / défaite) — même
+ *  conséquence que les appliers de cascade, lignes au journal. Le worst d'exposition à la Corruption est passé (figé). */
 function resolveCombatEndHeroTestsInline(
   get: Get, set: SetFn, c: Combatant,
   corr: { level: import('../engine/corruption').ExposureLevel; label: string } | null,
@@ -4051,14 +4053,15 @@ function resolveCombatEndHeroTestsInline(
 }
 
 /**
- * CASCADE de fin de combat (LDB 18/19/20) — extrait les JETS HÉROS de fin de combat de `finalizeBattle`
- * pour les rendre cadence-aware AVANT l'écran de victoire. Pour chaque héros vivant :
- *  - INTERACTIF (héros en cadence MANUELLE, conscient) → étapes INFLUENÇABLES (`combatEndDisease` par
+ * CASCADE de fin de combat (LDB 18/19/20) — extrait les JETS de PERSONNAGE de fin de combat de
+ * `finalizeBattle` pour les rendre cadence-aware AVANT l'écran de victoire. Pour chaque PERSONNAGE
+ * vivant (héros, ou combattant flagué #143 `followsCharacterRules` — PAS un proxy `kind`) :
+ *  - INTERACTIF (cadence MANUELLE, conscient) → étapes INFLUENÇABLES (`combatEndDisease` par
  *    maladie, `combatEndCorruption` si exposition) — Chance/Résilience offertes, conséquence à la validation.
  *  - sinon (auto/rapide, ou hors d'action — défaite) → jet SILENCIEUX inline (journal), comme avant.
  * Les marqueurs sont CONSOMMÉS ici (source unique). La cascade ouverte porte `combatEndBoundary:true` :
  * à sa fermeture, le store enchaîne sur `finishCombatEnd` (writeback + écran de victoire). RNG-free pour
- * les héros interactifs (le jet vit dans l'étape) ; les non-interactifs consomment `battleRng` inline.
+ * les personnages interactifs (le jet vit dans l'étape) ; les non-interactifs consomment `battleRng` inline.
  */
 export function openCombatEndCascade(get: Get, set: SetFn): void {
   const battle = get().battle;
@@ -4067,7 +4070,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   const steps: import('./pendings').CascadeStep[] = [];
   const inlineLines: string[] = [];
   for (const c of battle.combatants) {
-    if (c.kind !== 'hero' || c.dead) continue; // RAW : les créatures/défaits n'ont pas de jet de maladie/Corruption de fin de combat
+    if (!followsCharacterRules(c) || c.dead) continue; // #143 : RAW « Personnage » (LDB 18 l.5, LDB 20 l.14/206) — les créatures génériques et les défaits n'ont pas de jet de maladie/Corruption de fin de combat
     // Pas piloté-humain-manuel (auto/rapide) OU hors d'action (Inconscient — défaite) → jet inline silencieux.
     if (!humanControlled(get(), c) || isOutOfAction(c)) { inlineLines.push(...resolveCombatEndHeroTestsInline(get, set, c, corr)); continue; }
     const decided = decideCombatEndHeroTests(c, corr?.level ?? null);

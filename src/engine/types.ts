@@ -835,6 +835,17 @@ export interface Combatant {
   id: string;
   name: string;
   kind: 'hero' | 'enemy' | 'npc';
+  /** Ce combattant suit-il les règles de PERSONNAGE (#143) — axe DISTINCT du camp (`kind`, ci-dessus)
+   *  ET du contrôle (`pilotedByHuman`/`controlsCombatant`, netOwnership.ts) : gouverne des mécaniques
+   *  écrites au Personnage dans la source (jamais étendues aux créatures génériques) — Corruption
+   *  (LDB 19, tout le chapitre s'adresse à « vous » ; damné → « devient un PNJ », l.89), composant
+   *  d'incantation (LDB 46 l.107-111, une possession/dépense de personnage), Tests de fin de combat
+   *  Maladie/Corruption (LDB 18 l.5 « la plupart des Personnages » ; LDB 20 l.14/206 « Personnage »).
+   *  Un HÉROS (`kind:'hero'`) l'est TOUJOURS implicitement (ne pas le redéclarer) ; une créature
+   *  générique du bestiaire ne l'est PAS par défaut ; un PNJ humain hostile MODÉLISÉ (statbloc d'auteur)
+   *  peut l'être explicitement — data-driven, éditable (`CustomStatblock.followsCharacterRules`,
+   *  propagé au spawn par `statblockToCombatant`). Prédicat unique : `followsCharacterRules` (engine/relations.ts). */
+  followsCharacterRules?: boolean;
   /** `id` STABLE de la créature du bestiaire dont ce combattant est une instance (posé au spawn) —
    *  clé de résolution du rig/apparence (« plus de label » : on ne re-résout plus par `name`). */
   creatureId?: string;
@@ -912,9 +923,10 @@ export interface Combatant {
   /** DOCTRINE TACTIQUE forcée en DONNÉE (id de `DOCTRINES` dans `state/ai.ts` : `meute`/`soldats`/
    *  `tirailleurs`/`artillerie`/`horde`/`racaille`/`embuscade`/`standard`). Si présent et valide, l'IA
    *  l'utilise TELLE QUELLE (la sélection automatique par signaux est court-circuitée) — c'est le levier
-   *  « forcer une doctrine » du Codex/éditeur (ex. tendre une EMBUSCADE, qui n'a pas de signal auto). Absent
-   *  ⇒ doctrine déduite des traits/Intelligence/groups/sorts (cf. `pickDoctrine`). Ne touche QUE les poids
-   *  du cœur discrétionnaire de l'IA : aucune garde RAW (fuite Bestial, Frénésie, Brisé…) n'en dépend. */
+   *  « forcer une doctrine » du Codex/éditeur. Absent ⇒ doctrine déduite des traits/Intelligence/groups/
+   *  sorts/État Surpris du camp adverse (cf. `pickDoctrine`, ce dernier signal sélectionne `embuscade`
+   *  quand l'ennemi ouvre le combat depuis une embuscade réussie). Ne touche QUE les poids du cœur
+   *  discrétionnaire de l'IA : aucune garde RAW (fuite Bestial, Frénésie, Brisé…) n'en dépend. */
   aiDoctrine?: string;
   psychTraits?: import('./psychology').PsychTrait[];
   /** Phobie du noir (ADE II Annexe I, règle facultative `psych-acquisition-optional`) : total cumulé
