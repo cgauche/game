@@ -42,7 +42,7 @@ import { spellEffectOps } from '../engine/flowCore';
  *  (>1 → l'IA ne nuke jamais son camp pour un gain marginal). Ressenti, latitude IA. */
 const FRIENDLY_FIRE_AVERSION = 2;
 import type { SpellData } from '../data';
-import { hasCondition, canTakeAction, isActionLocked, restrictingConditions } from '../engine/conditions';
+import { hasCondition, canTakeAction, isActionLocked, restrictingConditions, COND } from '../engine/conditions';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { isFlankOrRear } from './combatGeometry';
@@ -258,31 +258,42 @@ const DOCTRINES: Record<DoctrineId, Doctrine> = {
   // se soucie pas de rester groupée ; le surnombre brut reste émergent via `outnumberMod`. Pas de repli (un
   // Insensible/Sans Peur ne fuit pas — et n'étant pas Bestial, aucune garde de fuite ne s'applique).
   horde: { dangerAvoid: 0, cohesion: 0 },
-  // EMBUSCADE : « attaque-surprise sur l'isolé, pas de repli ». AUCUN signal auto fiable (furtivité/flag de
-  // scène / charge initiale d'embuscade) n'existe proprement → SÉLECTIONNABLE UNIQUEMENT par l'override
-  // `aiDoctrine` (donnée). DISTINCTE de la meute (≠ identité nominale, cf. relecture L5) : l'embusqué a
-  // l'INITIATIVE et frappe pour TUER la cible isolée d'entrée, prise à revers depuis sa cachette. ↑↑flankRear
-  // (frappe de dos depuis l'embuscade, plus marqué que la meute) ; ↑↑killSecure (le coup d'ouverture cherche
-  // l'élimination — pas un harcèlement de meute) ; ↑threat (priorise l'isolé fragile). Et SURTOUT : AUCUN
-  // `macro.retreatBelow` (l'embusqué a choisi son moment, il ne recule pas — contraste avec la racaille).
-  // DIFFÉRENCE MINIMALE DÉFENDABLE (faute d'un signal de charge initiale d'embuscade) — signalée au rapport.
+  // EMBUSCADE : « attaque-surprise sur l'isolé, pas de repli ». SÉLECTIONNÉE AUTO par `pickDoctrine` sur le
+  // signal RÉEL de charge d'embuscade (État Surpris du camp adverse, LDB 16 l.130-136 — cf. `pickDoctrine`
+  // ci-dessous), ou par l'override `aiDoctrine` (donnée) en secours/forçage manuel. DISTINCTE de la meute
+  // (≠ identité nominale, cf. relecture L5) : l'embusqué a l'INITIATIVE et frappe pour TUER la cible isolée
+  // d'entrée, prise à revers depuis sa cachette. ↑↑flankRear (frappe de dos depuis l'embuscade, plus marqué
+  // que la meute) ; ↑↑killSecure (le coup d'ouverture cherche l'élimination — pas un harcèlement de meute) ;
+  // ↑threat (priorise l'isolé fragile). Et SURTOUT : AUCUN `macro.retreatBelow` (l'embusqué a choisi son
+  // moment, il ne recule pas — contraste avec la racaille).
   embuscade: { threat: 1.8, flankRear: 12, killSecure: 18 },
 };
 
 /**
  * Choisit la DOCTRINE d'un ennemi à partir de signaux ROBUSTES & data-driven (PURE, déterministe — aucun
  * dé, aucun store). Priorité : (1) OVERRIDE `enemy.aiDoctrine` (donnée Codex/éditeur) s'il est VALIDE →
- * renvoyé tel quel ; (2) sinon classification par traits/Intelligence/groups/équipement. DÉFAUT NEUTRE
- * `standard` dès qu'aucun signal n'est franc (garantit l'inchangé des tests/golden). AUCUN nom de créature/
- * carrière en dur : on lit des capacités (`isBestial`…), une Caractéristique (`Int`) et des `groups`.
+ * renvoyé tel quel ; (2) SIGNAL D'EMBUSCADE (État Surpris du camp adverse, cf. ci-dessous) ; (3) sinon
+ * classification par traits/Intelligence/groups/équipement. DÉFAUT NEUTRE `standard` dès qu'aucun signal
+ * n'est franc (garantit l'inchangé des tests/golden). AUCUN nom de créature/carrière en dur : on lit des
+ * capacités (`isBestial`…), une Caractéristique (`Int`), des `groups` et un État (`Surpris`).
  *
- * @param enemy l'ennemi qui agit (traits/characteristics/groups/spells/weapons).
+ * @param enemy l'ennemi qui agit (traits/characteristics/groups/spells/weapons/conditions).
  * @param squad ses alliés (réservé à de futurs signaux d'escouade — non requis par les règles actuelles).
+ * @param heroes les héros de la rencontre (non filtrés par perception — `chooseEnemyAction` passe
+ *  `input.heroes`) : sert UNIQUEMENT au signal d'embuscade ci-dessous. ABSENT ⇒ aucun signal (comportement
+ *  historique des appels directs à `pickDoctrine` sans 3ᵉ argument, ex. la majorité d'`ai-doctrine.test.ts`).
  */
-export function pickDoctrine(enemy: Combatant, _squad: Combatant[] = []): DoctrineId {
+export function pickDoctrine(enemy: Combatant, _squad: Combatant[] = [], heroes: Combatant[] = []): DoctrineId {
   // (1) OVERRIDE EN DONNÉE prioritaire : si l'auteur a figé une doctrine valide, on la respecte TELLE QUELLE.
   const forced = enemy.aiDoctrine;
   if (forced && forced in DOCTRINES) return forced as DoctrineId;
+
+  // (2) SIGNAL RÉEL DE CHARGE D'EMBUSCADE (#127) : `applySurprise` (LDB 13 l.52-81) pose l'État Surpris
+  // (LDB 16 l.130-136) SEULEMENT sur le camp PRIS en embuscade, JAMAIS sur l'embusqueur, et l'État est
+  // retiré en fin de Round (etats.json `surpris.effects[0]` onRoundEnd) — le signal est donc borné au(x)
+  // Round(s) où l'embuscade est encore active. Un héros Surpris ET cet ennemi lui-même NON Surpris (il subit
+  // sinon, il ne mène pas l'embuscade) ⇒ CET ennemi a l'initiative de la frappe d'ouverture.
+  if (heroes.some((h) => hasCondition(h, COND.surpris)) && !hasCondition(enemy, COND.surpris)) return 'embuscade';
 
   const traits = enemy.traits;
   const bestial = isBestial(traits);
@@ -639,7 +650,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // forcées (fin de combat, En flammes, Brisé, Bestial, anti-immobilisme) — qu'elle ne touche JAMAIS — et
   // AVANT le scoring. Un éventuel REPLI « doctrine » (`macro.retreatBelow`, latitude hors RAW) ne s'applique
   // qu'à un combattant SANS garde de fuite RAW (Bestial déjà géré en amont) et non Engagé.
-  const doctrine = pickDoctrine(enemy, squad);
+  const doctrine = pickDoctrine(enemy, squad, input.heroes);
   const Weff = doctrineWeights(doctrine);
   const macro = DOCTRINES[doctrine].macro;
   // GARDE Empêtré (LDB 16 l.61/85) : un Empêtré a un Mouvement NUL → `fleeMove` ne trouverait aucune

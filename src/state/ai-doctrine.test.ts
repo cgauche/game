@@ -114,6 +114,27 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
     const mage = mk('mage', 'enemy', { x: 0, y: 0 }, { spells: ['carreau'], weapons: [], characteristics: { ...CHARS, Int: 40 }, aiDoctrine: 'inexistant' });
     expect(pickDoctrine(mage, [])).toBe('artillerie');
   });
+
+  // #127 — signal RÉEL de charge d'embuscade : l'État Surpris (LDB 16 l.130-136), posé par `applySurprise`
+  // (LDB 13 l.52-81) SEULEMENT sur le camp pris en embuscade et JAMAIS sur l'embusqueur, retiré en fin de
+  // Round (etats.json `surpris.effects[0]` onRoundEnd). Remplace l'ex-override-only.
+  it('un ennemi qui ouvre le combat depuis l’embuscade (héros Surpris) → embuscade AUTO (sans override)', () => {
+    const enemy = mk('e', 'enemy', { x: 0, y: 0 }, { weapons: [MELEE] }); // fixture générique (→ standard SANS le signal)
+    const surprisedHero = mk('h', 'hero', { x: 1, y: 0 }, { conditions: [{ name: 'surpris', value: 1 } as never] });
+    expect(pickDoctrine(enemy, [], [surprisedHero])).toBe('embuscade');
+  });
+
+  it('un ennemi VISIBLE (aucun héros Surpris) → PAS d’embuscade auto (reste standard)', () => {
+    const enemy = mk('e', 'enemy', { x: 0, y: 0 }, { weapons: [MELEE] });
+    const hero = mk('h', 'hero', { x: 1, y: 0 });
+    expect(pickDoctrine(enemy, [], [hero])).toBe('standard');
+  });
+
+  it('un ennemi lui-même Surpris (victime, pas embusqueur) → PAS embuscade même si un héros l’est aussi', () => {
+    const enemy = mk('e', 'enemy', { x: 0, y: 0 }, { weapons: [MELEE], conditions: [{ name: 'surpris', value: 1 } as never] });
+    const hero = mk('h', 'hero', { x: 1, y: 0 });
+    expect(pickDoctrine(enemy, [], [hero])).not.toBe('embuscade');
+  });
 });
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
@@ -216,6 +237,20 @@ describe('Doctrines — comportements distincts vs standard', () => {
     if (aRab.kind === 'move' && aAmb.kind === 'move') {
       expect(dist(aRab.to)).toBeGreaterThan(d0); // racaille S'ÉLOIGNE (repli)
       expect(dist(aAmb.to)).toBeLessThan(d0); // embuscade SE RAPPROCHE (charge l'isolé)
+    }
+  });
+
+  it('EMBUSCADE auto (signal Surpris, sans override) route bien via `chooseEnemyAction` — flankRear renforcé', () => {
+    // Même géométrie que le test MEUTE (proie orientée NORD, ennemi venant du SUD) : le signal d'embuscade
+    // (héros Surpris) doit router `chooseEnemyAction` → doctrine `embuscade` (Weff.flankRear=12) SANS override.
+    const e = mk('e', 'enemy', { x: 10, y: 14 }, { weapons: [MELEE], movement: 6 });
+    const h = mk('h', 'hero', { x: 10, y: 10 }, { conditions: [{ name: 'surpris', value: 1 } as never] });
+    expect(pickDoctrine(e, [], [h])).toBe('embuscade');
+    const a = chooseEnemyAction(input(e, [h], { facing: { h: 'N' } }));
+    expect(a.kind).toBe('move');
+    if (a.kind === 'move') {
+      expect(Math.max(Math.abs(a.to.x - 10), Math.abs(a.to.y - 10))).toBe(1); // au contact
+      expect(`${a.to.x},${a.to.y}`).not.toBe('10,9'); // pas plein front (nord)
     }
   });
 
