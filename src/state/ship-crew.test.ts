@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { shipCrewAssignments, shipMoraleScore, shipDefaultRoles } from './shipCrew';
+import { shipCrewAssignments, shipMoraleScore, shipDefaultRoles, crewTestContributors } from './shipCrew';
 import { defaultCrewRole } from '../engine/crewMorale';
+import { traumaById } from '../engine/trauma';
 import type { Combatant, SkillInstance } from '../engine/types';
 import type { Get } from './flowTypes';
 
@@ -99,5 +100,20 @@ describe('shipMoraleScore — pont campagne → combat', () => {
     expect(shipMoraleScore(getWith({ vehicleId: 'cogue', morale: { score: 60 } }), ship)).toBe(60);
     expect(shipMoraleScore(getWith({ vehicleId: 'knarr', morale: { score: 60 } }), ship)).toBe(75);
     expect(shipMoraleScore(getWith(null), ship)).toBe(75);
+  });
+});
+
+describe('crewTestContributors — sens transmis au RANKING du marin représentant (#158)', () => {
+  it('Test VISUEL (phare, sense "vue") : ne pénalise pas un marin sourd dans le choix du représentant', () => {
+    // Deux marins « vigie », aucun PJ → UN représentant choisi par crewRoleValue (l.39/41).
+    const deaf = { ...mk('deaf', 40, [{ skillId: 'perception', advances: 0 }], 'vigie'), traumas: [traumaById('surdite', undefined, 'tete')] } as Combatant;
+    const hearing = mk('hearing', 30, [{ skillId: 'perception', advances: 0 }], 'vigie');
+    const ship = hull([deaf.id, hearing.id]);
+    const crew = [deaf, hearing];
+    const noPJ = new Set<string>();
+    // Sans sens : la Surdité pénalise (conservateur) → deaf 20 < hearing 30 → le NON-sourd représente.
+    expect(crewTestContributors(ship, crew, 'perception', noPJ).find((a) => a.roleId === 'vigie')!.crew.id).toBe('hearing');
+    // Sens 'vue' : la Surdité ne vise QUE l'ouïe → deaf 40 > hearing 30 → le SOURD (meilleur) représente.
+    expect(crewTestContributors(ship, crew, 'perception', noPJ, 'vue').find((a) => a.roleId === 'vigie')!.crew.id).toBe('deaf');
   });
 });

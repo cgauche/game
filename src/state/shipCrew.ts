@@ -6,6 +6,7 @@
  */
 import type { Combatant } from '../engine/types';
 import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
+import type { PairedSense } from '../engine/ops';
 import { findCrewRoleById, findCrewTestTypeById, findVehicleById, findSeaShantyById } from '../data';
 import { exposedCrew } from '../engine/shipCritical';
 import { partyBest } from '../engine/skills';
@@ -80,9 +81,11 @@ export function shipCrewAssignments(ship: Combatant, combatants: Combatant[], te
  * Contributeurs d'un Test d'équipage (MDG ch.14) — UN jet par POSTE, pas par marin. Par rôle tenu : TOUS les PJ du
  * poste lancent (l.9 « plusieurs Personnages peuvent contribuer ») ; sinon UN seul marin REPRÉSENTANT (le meilleur),
  * car « la performance des Personnages représente celle de tout l'équipage » (l.39) — les PNJ ne testent que pour un
- * rôle qu'AUCUN PJ n'occupe (l.41). PARTAGÉ par la manœuvre ET la bordée (`testTypeId`). `partyIds` = les PJ. PUR. */
-export function crewTestContributors(ship: Combatant, combatants: Combatant[], testTypeId: string, partyIds: Set<string>): CrewAssignment[] {
-  const roleVal = (a: CrewAssignment) => { const r = findCrewRoleById(a.roleId); return r ? crewRoleValue(a.crew, r).value : 0; };
+ * rôle qu'AUCUN PJ n'occupe (l.41). PARTAGÉ par la manœuvre ET la bordée (`testTypeId`). `partyIds` = les PJ.
+ * `sense` (Test à sens dominant, ex. Vigie visuelle, #149) écarte la pénalité sensorielle hors-sujet du RANKING
+ * du marin représentant — parité avec la valeur de Test (#158). PUR. */
+export function crewTestContributors(ship: Combatant, combatants: Combatant[], testTypeId: string, partyIds: Set<string>, sense?: PairedSense): CrewAssignment[] {
+  const roleVal = (a: CrewAssignment) => { const r = findCrewRoleById(a.roleId); return r ? crewRoleValue(a.crew, r, sense).value : 0; };
   const byRole = new Map<string, CrewAssignment[]>();
   for (const a of shipCrewAssignments(ship, combatants, testTypeId)) (byRole.get(a.roleId) ?? byRole.set(a.roleId, []).get(a.roleId)!).push(a);
   const out: CrewAssignment[] = [];

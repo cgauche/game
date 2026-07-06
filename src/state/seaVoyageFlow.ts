@@ -205,13 +205,14 @@ function openVoyageCrewTest(get: Get, set: Set, testTypeId: string, kind: string
   const party = get().party.filter((h) => !h.dead && !h.outOfRencontre);
   if (!party.length) return false;
   ship.crewIds = party.map((h) => h.id); // les PJ tiennent les rôles (MDG 14 l.39)
-  const contributors = crewTestContributors(ship, party, testTypeId, new Set(party.map((h) => h.id)));
-  if (!contributors.length) return false;
-  const essentialRoleId = findCrewTestTypeById(testTypeId)?.essential;
   // Phare du port d'arrivée (kind 'phare') : « voir la lumière d'un phare » (MDG ch.13 l.337) est un Test
   // de Perception VISUEL — sens narratif posé ICI (ce call site précis, pas la donnée `perception` partagée
   // avec d'autres Tests d'équipage aussi remplaçables, MDG 14 l.82 : péril/terre/phare, pas tous visuels).
+  // Le sens gate aussi le RANKING du marin représentant (#158), pas seulement la valeur de chaque participant.
   const sense = kind === 'phare' ? 'vue' : undefined;
+  const contributors = crewTestContributors(ship, party, testTypeId, new Set(party.map((h) => h.id)), sense);
+  if (!contributors.length) return false;
+  const essentialRoleId = findCrewTestTypeById(testTypeId)?.essential;
   const participants: ShipManeuverParticipant[] = contributors.map((a) => ({
     id: a.crew.id,
     label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}`,
