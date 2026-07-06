@@ -133,7 +133,7 @@ import { openRest, placesOfKind } from './restFlow';
 import { rollCritical, critWoundLocation, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
 import { aaCriticalIsTrivial } from '../engine/aaCritical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
-import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations } from '../engine/trauma';
+import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations, maxFingersLostForWeapon } from '../engine/trauma';
 import { effectiveWeaponDamage, effectiveWeaponRange, isThrownWeapon, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, effectiveWeapon, type WeaponContext } from '../engine/weaponDamage';
 import { scatter } from '../engine/scatter';
 import { TIME_COST } from '../engine/timeCost';
@@ -1841,7 +1841,7 @@ export function applyAttackResult(
   checkBattleOver(get, set);
   resolveEnemyFumble(get, set, attacker, weapon, res); // Maladresse d'un ENNEMI attaquant → résolue instantanément
   // Maladresse d'un ENNEMI défenseur (Test opposé, LDB 14 l.48-51) : sa Parade/Esquive ratée sur un double.
-  if (target.kind === 'enemy' && defenderFumbled(res, target.weapons[0]) && !isOutOfAction(target) && target.weapons[0]) {
+  if (target.kind === 'enemy' && defenderFumbled(res, target.weapons[0], target) && !isOutOfAction(target) && target.weapons[0]) {
     applyOups(get, set, target, target.weapons[0], rollOups(target.weapons[0], battleRng()));
   }
   return false; // non suspendu : application complète terminée
@@ -1893,19 +1893,23 @@ export function applyFocusInterruption(get: Get, set: SetFn, focuser: Combatant)
 }
 
 /** Une Maladresse de l'attaquant dans un résultat d'attaque ? (jet propre raté + double, LDB 14 l.53 ;
- *  arme Dangereuse : aussi tout jet raté incluant un 9, LDB 62 l.315). */
-export function attackerFumbled(res: AttackResult, weapon?: Weapon): boolean {
+ *  arme Dangereuse : aussi tout jet raté incluant un 9, LDB 62 l.315 ; Doigts amputés : escalade par
+ *  chiffre des unités si `attacker` fourni, LDB 18 l.251 — réutilise `maxFingersLostForWeapon`, #144). */
+export function attackerFumbled(res: AttackResult, weapon?: Weapon, attacker?: Combatant): boolean {
   if (!res.attackerDetail) return false;
   const { roll, success } = res.attackerDetail;
-  return isFumble(roll, success) || dangerousNine(weapon, roll, success);
+  const fingers = attacker && weapon ? maxFingersLostForWeapon(attacker, weapon) : 0;
+  return isFumble(roll, success, fingers) || dangerousNine(weapon, roll, success);
 }
 
 /** Une Maladresse du DÉFENSEUR (Test opposé) : sa défense propre ratée sur un double (LDB 14 l.48-51 ;
- *  parade avec une arme Dangereuse : aussi tout jet raté incluant un 9, LDB 62 l.315). */
-export function defenderFumbled(res: AttackResult, parryWeapon?: Weapon): boolean {
+ *  parade avec une arme Dangereuse : aussi tout jet raté incluant un 9, LDB 62 l.315 ; Doigts amputés :
+ *  escalade par chiffre des unités si `defender` fourni, LDB 18 l.251, #144). */
+export function defenderFumbled(res: AttackResult, parryWeapon?: Weapon, defender?: Combatant): boolean {
   if (!res.defenderDetail) return false;
   const { roll, success } = res.defenderDetail;
-  return isFumble(roll, success) || dangerousNine(parryWeapon, roll, success);
+  const fingers = defender && parryWeapon ? maxFingersLostForWeapon(defender, parryWeapon) : 0;
+  return isFumble(roll, success, fingers) || dangerousNine(parryWeapon, roll, success);
 }
 
 /** La cible est-elle dans une bande de tir/portée VALIDE de `weapon` pour `shooter` (LDB 14 l.42-46) ?
@@ -2076,7 +2080,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
 
 /** Maladresse d'un attaquant PILOTÉ PAR L'IA : résolue instantanément (IA abstraite). No-op si piloté humain/pas de fumble. */
 export function resolveEnemyFumble(get: Get, set: SetFn, enemy: Combatant, weapon: Weapon, res: AttackResult): void {
-  if (!aiDriven(get(), enemy) || !attackerFumbled(res, weapon)) return;
+  if (!aiDriven(get(), enemy) || !attackerFumbled(res, weapon, enemy)) return;
   applyOups(get, set, enemy, weapon, rollOups(weapon, battleRng()));
 }
 
@@ -2602,7 +2606,7 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
       applyAttackResult(get, set, attacker, target, dev.weapon, dev.res, deviate, deviate ? undefined : dev.crit);
       autoCleave(get, set, attacker, target, dev.res); // balayage de l'ennemi plus grand sur les AUTRES héros
       // Maladresse du défenseur héros (parade/esquive active ratée sur un double, LDB 14 l.48-51).
-      if (target.kind === 'hero' && defenderFumbled(dev.res, target.weapons[0]) && !isOutOfAction(target)) {
+      if (target.kind === 'hero' && defenderFumbled(dev.res, target.weapons[0], target) && !isOutOfAction(target)) {
         // Maladresse = étape APPENDUE à la cascade (donnée SUR l'étape — source unique, plus de `pendingFumble`) ;
         // la séquence avance déviation → Maladresse, et la reprise IA suit la fermeture (fumbleConfirm → cascadeNext).
         pushCombatStep(set, { id: `cons-fumble-${target.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: target.id, fumble: { weapon: target.weapons[0], result: null } });

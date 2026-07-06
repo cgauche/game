@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { firedWeapon, attackerFumbled } from './combatFlow';
+import { firedWeapon, attackerFumbled, defenderFumbled } from './combatFlow';
 import { hasQuality } from '../engine/qualities/dispatch';
-import type { Combatant, Weapon } from '../engine/types';
+import type { Combatant, Weapon, Trauma } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
 
 // Funnel UNIQUE des règles d'arme contextuelles (LDB 62) : `firedWeapon` lie attaquant ⊕ arme ⊕ contexte.
@@ -20,6 +20,9 @@ const mk = (p: Partial<Combatant>): Combatant => ({
   ...p,
 } as unknown as Combatant);
 const target = mk({ id: 't', kind: 'enemy', pos: { x: 1, y: 0 } });
+const fingers = (loc: 'brasG' | 'brasD', count: number): Trauma => ({ label: '', traumaId: 'doigt-ampute', location: loc, count });
+// Arme à 1 main tenue à DROITE par défaut (hand indéfini ≠ 'off') → n'implique QUE brasD (weaponUsesHand, LDB 18).
+const weaponRight: Weapon = { name: 'Dague', type: 'melee', hands: 1, qualities: [], damage: { plusBF: true, flat: 3 } };
 
 describe('firedWeapon — règles d’arme contextuelles repliées sur le profil (LDB 62)', () => {
   it('Fléau SANS la Spé → Dangereuse + Atouts retirés ; un RATÉ avec 9 fumble', () => {
@@ -44,5 +47,33 @@ describe('firedWeapon — règles d’arme contextuelles repliées sur le profil
     const charged = firedWeapon(mk({ weapons: [lance], chargedThisTurn: true }), target, 'la');
     expect(charged.damage).toEqual({ plusBF: true, flat: 6 });
     expect(hasQuality(charged, 'empaleuse')).toBe(true);
+  });
+});
+
+describe('attackerFumbled/defenderFumbled — escalade de Maladresse par Doigts amputés (LDB 18 l.251, #144)', () => {
+  it('N doigts perdus sur la main IMPLIQUÉE + jet raté (non-double) d’unité ≤ N → Maladresse', () => {
+    const atk = mk({ traumas: [fingers('brasD', 2)] });
+    const miss = { attackerDetail: { roll: 42, success: false } } as unknown as AttackResult; // unité 2 ≤ N=2, pas un double
+    expect(attackerFumbled(miss, weaponRight, atk)).toBe(true);
+  });
+  it('chiffre des unités du jet > N doigts perdus → PAS de Maladresse', () => {
+    const atk = mk({ traumas: [fingers('brasD', 2)] });
+    const miss = { attackerDetail: { roll: 43, success: false } } as unknown as AttackResult; // unité 3 > N=2
+    expect(attackerFumbled(miss, weaponRight, atk)).toBe(false);
+  });
+  it('main NON impliquée par l’arme (doigts perdus à GAUCHE, arme tenue à DROITE) → PAS de Maladresse', () => {
+    const atk = mk({ traumas: [fingers('brasG', 2)] });
+    const miss = { attackerDetail: { roll: 42, success: false } } as unknown as AttackResult;
+    expect(attackerFumbled(miss, weaponRight, atk)).toBe(false);
+  });
+  it('0 doigt perdu (aucun trauma) → comportement inchangé (pas de Maladresse hors double)', () => {
+    const atk = mk({ traumas: [] });
+    const miss = { attackerDetail: { roll: 41, success: false } } as unknown as AttackResult;
+    expect(attackerFumbled(miss, weaponRight, atk)).toBe(false);
+  });
+  it('même escalade côté DÉFENSEUR (parade ratée, Test opposé, LDB 14 l.48-51)', () => {
+    const def = mk({ traumas: [fingers('brasD', 3)] });
+    const miss = { defenderDetail: { roll: 53, success: false } } as unknown as AttackResult; // unité 3 ≤ N=3, pas un double
+    expect(defenderFumbled(miss, weaponRight, def)).toBe(true);
   });
 });

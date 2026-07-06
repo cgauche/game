@@ -17,6 +17,23 @@ describe('isFumble (LDB 14 l.53)', () => {
   });
 });
 
+describe('isFumble — escalade Doigts amputés (LDB 18 l.251, #144)', () => {
+  it('N doigts perdus + échec + chiffre des unités ∈ [1..N] (non-double) → Maladresse', () => {
+    expect(isFumble(42, false, 2)).toBe(true); // unité 2 ≤ N=2
+    expect(isFumble(21, false, 2)).toBe(true); // unité 1 ≤ N=2
+  });
+  it('chiffre des unités > N → PAS de Maladresse par escalade', () => {
+    expect(isFumble(43, false, 2)).toBe(false); // unité 3 > N=2
+  });
+  it('0 doigt perdu (fingersLost omis/0) → comportement inchangé (pas de Maladresse hors double)', () => {
+    expect(isFumble(41, false)).toBe(false);
+    expect(isFumble(41, false, 0)).toBe(false);
+  });
+  it('réussite → jamais de Maladresse même dans la fenêtre de doigts perdus', () => {
+    expect(isFumble(42, true, 2)).toBe(false);
+  });
+});
+
 describe('rollOups (Tableau des Oups !)', () => {
   it('le kind correspond toujours à la bande du jet (arme de mêlée, pas de misfire)', () => {
     for (let s = 1; s <= 300; s++) {

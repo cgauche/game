@@ -1930,7 +1930,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // si LES DEUX touchent (cf. blocs isDualSecond ci-dessous).
         applyAttackResult(get, set, attacker, victim, weapon, pa.result, undefined, undefined, isDualMain || isDualSecond, pa.grapple); // pa.grapple = Empoignade (LDB 14 l.159) : pose l'Empoignade au lieu des Dégâts
         // Maladresse d'un HÉROS (jet propre raté + double) → modale Tableau des Oups ! (LDB 14 l.53) ; elle interrompt le balayage.
-        if (controlsCombatant(get(), attacker) && attackerFumbled(pa.result, weapon)) {
+        if (controlsCombatant(get(), attacker) && attackerFumbled(pa.result, weapon, attacker)) {
           // Maladresse = étape de la cascade d'attaque (comme le Critique) ; advanceCombatJet l'enchaîne au bout.
           // La donnée (arme/résultat) vit SUR l'étape — source unique, plus de `pendingFumble` à désynchroniser.
           pushCombatStep(set, { id: `cons-fumble-${attacker.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: attacker.id, fumble: { weapon, result: null } });
@@ -2101,7 +2101,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Frénésie de l'attaquant (comme avant le fold).
       const parryWeapon = defender ? (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : undefined) ?? defender.weapons[0] : undefined;
       // Substitution sociale (Intimidation/Dressage) : ce n'est pas un Test d'arme → aucune Maladresse d'arme (LDB 14 l.48-51).
-      if (defender && pilotedByHuman(get(), defender) && pd.mode !== 'social' && defenderFumbled(pd.result, parryWeapon) && !isOutOfAction(defender)) {
+      if (defender && pilotedByHuman(get(), defender) && pd.mode !== 'social' && defenderFumbled(pd.result, parryWeapon, defender) && !isOutOfAction(defender)) {
         // L'Oups ! porte sur l'ARME DE PARADE réellement utilisée (dégât d'arme / quelle arme casse), pas weapons[0].
         pushCombatStep(set, { id: `cons-fumble-${defender.id}`, kind: 'fumbleJet', jet: 'fumble', actorId: defender.id, fumble: { weapon: parryWeapon!, result: null } });
         // Positionne le curseur défense → Maladresse quand la défense est l'étape courante (sinon

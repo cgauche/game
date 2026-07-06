@@ -8,7 +8,7 @@
  * charMod global, qui pénalisait tout ou rien selon la seule dominance).
  */
 import { describe, it, expect } from 'vitest';
-import { amputationCombatPenalty, weaponUsesHand } from './trauma';
+import { amputationCombatPenalty, weaponUsesHand, fingersLost, maxFingersLostForWeapon } from './trauma';
 import { attackModifiers } from './combat';
 import type { Combatant, Weapon, Trauma } from './types';
 
@@ -54,6 +54,23 @@ describe('amputationCombatPenalty (LDB 18 l.251/263) — contextuel à l\'arme',
   });
   it('aucune amputation → 0', () => {
     expect(amputationCombatPenalty(withTraumas([]), w1main)).toBe(0);
+  });
+});
+
+describe('fingersLost / maxFingersLostForWeapon (#144 — source unique, réutilisée par l\'escalade de Maladresse)', () => {
+  it('fingersLost compte les doigts perdus À la Localisation demandée', () => {
+    expect(fingersLost(withTraumas([fingers('brasD', 3)]), 'brasD')).toBe(3);
+    expect(fingersLost(withTraumas([fingers('brasD', 3)]), 'brasG')).toBe(0);
+    expect(fingersLost(withTraumas([]), 'brasD')).toBe(0);
+  });
+  it('maxFingersLostForWeapon : main GAUCHE non impliquée par une arme à 1 main DROITE → 0', () => {
+    expect(maxFingersLostForWeapon(withTraumas([fingers('brasG', 2)]), w1main)).toBe(0);
+  });
+  it('maxFingersLostForWeapon : main DROITE impliquée par w1main → le compte de cette main', () => {
+    expect(maxFingersLostForWeapon(withTraumas([fingers('brasD', 2)]), w1main)).toBe(2);
+  });
+  it('maxFingersLostForWeapon : arme à 2 mains → le MAX entre les deux mains impliquées', () => {
+    expect(maxFingersLostForWeapon(withTraumas([fingers('brasG', 1), fingers('brasD', 3)]), w2)).toBe(3);
   });
 });
 

@@ -16,9 +16,15 @@ export interface OupsResolved {
   label: string;
 }
 
-/** Une Maladresse = jet d100 raté ET double (11,22,…,99,00). LDB 14 l.53. */
-export function isFumble(roll: number, success: boolean): boolean {
-  return !success && isDoubleRoll(roll);
+/** Une Maladresse = jet d100 raté ET (double (11,22,…,99,00), OU — Doigts amputés, LDB 18 l.251 — chiffre
+ *  des unités du jet ∈ [1..fingersLost] si le Test implique une main où `fingersLost` doigts ont été
+ *  perdus). `fingersLost` omis/0 = comportement d'origine (LDB 14 l.53). */
+export function isFumble(roll: number, success: boolean, fingersLost = 0): boolean {
+  if (success) return false;
+  if (isDoubleRoll(roll)) return true;
+  if (fingersLost <= 0) return false;
+  const unit = roll % 10;
+  return unit >= 1 && unit <= fingersLost;
 }
 
 /** Arme à Poudre noire / explosive (Incident de Tir, l.56-57). On détecte la famille « Poudre noire ». */
