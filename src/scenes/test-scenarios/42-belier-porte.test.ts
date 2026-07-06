@@ -36,7 +36,8 @@ function startBelier(): { soldat: Combatant; crew: Combatant[]; ram: Combatant; 
 /** Force le tour de `id` (le Soldat, chef de pièce) — la poussée exige que l'ACTIF soit le chef. */
 function setActive(id: string): void {
   const b = useGame.getState().battle!;
-  useGame.setState({ battle: { ...b, turn: b.order.indexOf(id), acted: false, action: null } });
+  // Tour NEUF : réinitialise l'Action ET le Mouvement (pousser consomme le Mouvement → une poussée par tour).
+  useGame.setState({ battle: { ...b, turn: b.order.indexOf(id), acted: false, action: null, movementUsed: 0 } });
 }
 
 describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une arme portée', () => {
@@ -169,9 +170,12 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
       const b = before.get(c.id)!;
       expect(c.pos).toEqual({ x: b.x + delta.x, y: b.y + delta.y }); // MÊME delta pour l'engin ET chaque servant
     }
-    // Consomme l'Action du chef ; l'engin reste SANS tour (inert, jamais dans battle.order).
+    // Consomme le MOUVEMENT du chef (pas l'Action, LDB 13 l.106) ; chaque servant paiera le sien à son tour
+    // (loseNextMovement) ; l'engin reste SANS tour (inert, jamais dans battle.order).
     expect(useGame.getState().battle!.action).toBeNull();
-    expect(useGame.getState().battle!.acted).toBe(true);
+    expect(useGame.getState().battle!.acted).toBe(false); // pousser = Mouvement, l'Action reste libre
+    expect(useGame.getState().battle!.movementUsed).toBeGreaterThan(0); // le Mouvement du chef est dépensé
+    for (const c of crew.filter((x) => x.id !== soldat.id)) expect(c.loseNextMovement).toBe(true); // servants : Mouvement à leur tour
     expect(useGame.getState().battle!.order).not.toContain(ram.id);
   });
 

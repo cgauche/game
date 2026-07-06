@@ -1289,10 +1289,12 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     // « Quitter la pièce » (release) : le héros actif lâche le poste qu'il sert → il redevient servable par un autre.
     // `leaveChef` retire le lien + l'équipage + l'arme ; `recomputeLoadout` re-dérive sans la pièce. Coûte l'Action.
+    // GRATUIT (ne consomme PAS l'Action, LDB 13 l.106 « Actions gratuites » : quitter un poste ne nécessite
+    // aucun Test → action gratuite comme rengainer). Symétrique de `battleManPoste`.
     battleLeavePoste: () => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const battle = get().battle;
-      if (!battle || battle.over || battle.acted) return;
+      if (!battle || battle.over) return;
       const active = activeCombatant(battle);
       if (!active || aiDriven(get(), active)) return;
       const poste = active.mannedPoste;
@@ -1300,7 +1302,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const weapon = poste.item.name;
       leaveChef(active, poste, battle.combatants);
       recomputeLoadout(active);
-      set({ battle: { ...battle, acted: true, action: null, log: [...battle.log, ev('detail', t('cs.leavePoste', { name: active.name, weapon }), active.id)] } });
+      set({ battle: { ...battle, action: null, log: [...battle.log, ev('detail', t('cs.leavePoste', { name: active.name, weapon }), active.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
     },
     // « Pousser » un engin de siège CREWÉ à roues (ADE II ch.08 l.258, Lot 2 #156) : ouvre le mode de
@@ -1317,7 +1319,9 @@ export function createCombatSlice(get: Get, set: Set) {
       // (retour neutre, reachable purgé) sans consommer l'Action.
       if (battle.action === 'push') { set({ battle: { ...battle, action: null, reachable: new Map(), preview: null } }); bus.emit(EVT.SCENE_DIRTY); return; }
       const active = activeCombatant(battle);
-      if (!active || !controlsCombatant(get(), active) || battle.acted || !canTakeAction(active) || !pushEligible(active)) return;
+      // Pousser = le MOUVEMENT (pas l'Action) : bloqué si le Mouvement du chef est déjà dépensé, PAS si l'Action
+      // a été prise (on peut pousser puis assener, ou l'inverse — ordre libre, LDB 13 l.79).
+      if (!active || !controlsCombatant(get(), active) || !canTakeAction(active) || !pushEligible(active) || (battle.movementUsed ?? 0) >= mountMovement(battle, active)) return;
       const poste = active.mannedPoste!;
       const hull = posteHullOf(poste, battle.combatants);
       const w = mannedPosteWeapon(active, poste);
@@ -1967,7 +1971,7 @@ export function createCombatSlice(get: Get, set: Set) {
           // (jamais en mode dual ni sur une Attaque gratuite de manœuvre).
           maybeHeroCleave(get, set, attacker, victim, pa.result, wasChain);
         }
-        // Action « des deux armes » (LDB 10 l.638) : on a CHOISI d'attaquer des deux → −10 à toutes ses défenses
+        // Action « des deux armes » (LDB 10 l.638) : attaquer des deux armes impose −10 à toutes ses défenses
         // jusqu'à son prochain Tour ; si la main directrice TOUCHE, on ouvre la sélection de la 2ᵉ cible.
         if (isDualMain) {
           attacker.dualStrikeDefensePenalty = true;

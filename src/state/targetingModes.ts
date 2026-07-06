@@ -581,8 +581,17 @@ function pushCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void {
     bus.emit(EVT.ANIM_MOVE, { id: m.id, path: [from, { ...m.pos }] });
   }
   const dist = Math.max(Math.abs(delta.x), Math.abs(delta.y));
+  // Pousser = le MOUVEMENT de TOUT l'équipage (LDB 13 l.106 : locomotion, aucun Test → le Mouvement, pas
+  // l'Action). Le chef dépense son Mouvement MAINTENANT ; chaque autre servant dépensera le sien à son tour
+  // (`loseNextMovement`) — tous poussent, tous en paient le Mouvement. L'Action du chef reste libre (il peut
+  // assener la porte le même Round une fois au contact).
+  for (const id of poste.crewIds ?? []) {
+    if (id === active.id) continue;
+    const c = get().battle!.combatants.find((x) => x.id === id);
+    if (c) c.loseNextMovement = true;
+  }
   const log = [...battle.log, ev('move', t('cs.pushEngine', { name: active.name, weapon: hull.name, n: dist, s: dist > 1 ? 's' : '' }), active.id)];
-  set({ battle: { ...get().battle!, acted: true, action: null, reachable: new Map(), preview: null, log } });
+  set({ battle: { ...get().battle!, movementUsed: mountMovement(get().battle!, active), action: null, reachable: new Map(), preview: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
 }
 
