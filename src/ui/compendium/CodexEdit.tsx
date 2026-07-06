@@ -116,6 +116,16 @@ const SHIP_CRIT_CATEGORIES = [
   'riverCriticalsGreement', 'riverCriticalsAvirons', 'riverCriticalsGouvernail', 'riverCriticalsCoque', 'riverCriticalsSuperstructure',
 ];
 
+/** Les 8 catégories de Critiques localisés (LDB ch.6 + AA, #173) partageant `traumas: string[]` — DES
+ *  IDS de fiches de traumatisme (`traumas.json`), résolus PAR ID (`traumaFicheById`/`traumaById`,
+ *  `engine/critical.ts:120`/`engine/aaCritical.ts`). Éditeur dédié (`TraumaListField`, sélecteurs
+ *  id→label) plutôt que le datalist générique : les fiches partagent des labels NON uniques (deux
+ *  fiches « Fracture » à sévérité différente) — un datalist par label ne pourrait même pas les distinguer. */
+const CRITICAL_CATEGORIES = [
+  'criticalsTete', 'criticalsBras', 'criticalsCorps', 'criticalsJambe',
+  'aaCriticalsTete', 'aaCriticalsBras', 'aaCriticalsCorps', 'aaCriticalsJambe',
+];
+
 const OPS_FIELDS: Record<string, string[]> = {
   traumas: ['ops'],
   criticalsTete: ['ops'], criticalsBras: ['ops'], criticalsCorps: ['ops'], criticalsJambe: ['ops'],
@@ -128,12 +138,16 @@ const opsFieldsOf = (categoryKey: string): string[] => OPS_FIELDS[categoryKey] ?
 
 type Entry = Record<string, unknown>;
 
-/** ids STRUCTURÉS (`{id}`) d'un champ-liste de refs — descend dans les branches `choice` des
- *  `AdvancementRef` et les enveloppes `{ref:{id}}` ; ignore les `{text}` narratifs et jokers. */
+/** ids d'un champ-liste de refs — descend dans les branches `choice` des `AdvancementRef` et les
+ *  enveloppes `{ref:{id}}` ; ignore les `{text}` narratifs et jokers. Une CHAÎNE BRUTE (ex.
+ *  `criticalsTete.traumas: string[]`) est traitée comme un id DIRECT (#173 : ces listes référencent
+ *  leur dataset par id, jamais par libellé — cf. `STRING_LIST_LABEL_EXCEPTIONS` pour l'unique
+ *  contre-exemple documenté). */
 function refIdsIn(v: unknown): string[] {
   if (!Array.isArray(v)) return [];
   const out: string[] = [];
   for (const x of v) {
+    if (typeof x === 'string') { out.push(x); continue; }
     if (!x || typeof x !== 'object') continue;
     const o = x as { choice?: unknown; ref?: { id?: unknown }; id?: unknown };
     if (o.choice) out.push(...refIdsIn(o.choice));
@@ -143,11 +157,31 @@ function refIdsIn(v: unknown): string[] {
   return out;
 }
 
+/** (categorie.champ) où un champ-liste de CHAÎNES de `REF_LIST_DATASET` porte légitimement des
+ *  LIBELLÉS et non des ids — SEULE exception connue : `pregens.spells` (libellés d'AUTHORING résolus
+ *  en id AU CHARGEMENT par `findSpell(l)`, `src/data/pregens.ts:60` ; jamais relu par id depuis le
+ *  JSON). Toute autre liste de chaînes d'un champ-réf DOIT contenir des ids qui résolvent (#173 :
+ *  un éditeur par datalist-de-labels y écrivait un libellé, cassant `traumaFicheById` au runtime —
+ *  cf. `criticalsTete.traumas`). */
+const STRING_LIST_LABEL_EXCEPTIONS = new Set(['pregens.spells']);
+
+/** Champs-réf NICHÉS (une valeur ou une liste, sous un sous-objet/sous-tableau — hors de portée de
+ *  `REF_LIST_DATASET`, qui ne regarde QUE les champs top-level de `entry`) : même garantie de
+ *  résolvabilité, décrite par un accesseur PUR `entry → (id|undefined)[]`. #173 : `mutationTables.
+ *  ranges[].mutation` et `domains.castBonus.perCondition` en sont les 2 sites CONFIRMÉS (un éditeur par
+ *  datalist-de-labels y écrivait un libellé, cassant `mutations.ts::rollMutation`/`state/combatFlow.ts::
+ *  domainCastBonus` au runtime) — ajouter une réf nichée = ajouter SON accesseur ici. `weather.json`
+ *  partage la forme `ranges[]` mais sa clé est `.weather` (union fermée, pas une réf de dataset) :
+ *  l'accesseur `mutation` y est simplement `undefined`, filtré plus bas — aucun faux positif. */
+const NESTED_REF_FIELDS: { key: string; ds: DatasetKey; get: (entry: Entry) => (string | undefined)[] }[] = [
+  { key: 'ranges[].mutation', ds: 'mutations', get: (e) => ((e.ranges as { mutation?: string }[] | undefined) ?? []).map((r) => r.mutation) },
+  { key: 'castBonus.perCondition', ds: 'etats', get: (e) => [(e.castBonus as { perCondition?: string } | undefined)?.perCondition] },
+];
+
 /** Valide une entrée AVANT persist (bouton Enregistrer bloqué tant que non vide) : identité
- *  (id non vide + unique, libellé non vide) + refs `{id}` résolvables dans leur dataset. PUR.
- *  `selfIndex` = position de l'entrée éditée dans `entries` (−1 pour une création). */
+ *  (id non vide + unique, libellé non vide) + refs (`{id}` ou chaîne directe) résolvables dans leur
+ *  dataset. PUR. `selfIndex` = position de l'entrée éditée dans `entries` (−1 pour une création). */
 export function validateEntry(categoryKey: string, entry: Entry, entries: Entry[], selfIndex: number): string[] {
-  void categoryKey; // les champs-réfs sont détectés par nom de champ (table unique), pas par catégorie
   const errors: string[] = [];
   // id : requis + unique là où le dataset est id-based (toutes les entités migrées par-id).
   if (entries.some((e) => typeof e.id === 'string')) {
@@ -158,11 +192,18 @@ export function validateEntry(categoryKey: string, entry: Entry, entries: Entry[
   // Libellé : la clé d'identité générique (label/name/key/id) ne peut pas être vide — c'est elle
   // que le navigateur du Codex et l'éditeur utilisent pour retrouver l'entrée.
   if (!entryKey(entry).trim()) errors.push('libellé vide');
-  // Refs résolvables : chaque `{id}` d'un champ-réf doit exister dans son dataset.
+  // Refs résolvables : chaque `{id}` (ou chaîne directe) d'un champ-réf doit exister dans son dataset —
+  // détecté par nom de champ (table unique), sauf la contre-exception déclarée ci-dessus.
   for (const [field, ds] of Object.entries(REF_LIST_DATASET)) {
     if (!(field in entry)) continue;
+    if (STRING_LIST_LABEL_EXCEPTIONS.has(`${categoryKey}.${field}`)) continue;
     const known = new Set((datasetArray(ds) as { id?: string }[]).map((e) => e.id).filter(Boolean));
     for (const id of refIdsIn(entry[field])) if (!known.has(id)) errors.push(`${field} : réf « ${id} » introuvable (${ds})`);
+  }
+  // Refs NICHÉES (#173) : même garantie, pour les champs-réf sous un sous-objet/sous-tableau.
+  for (const { key, ds, get } of NESTED_REF_FIELDS) {
+    const known = new Set((datasetArray(ds) as { id?: string }[]).map((e) => e.id).filter(Boolean));
+    for (const id of get(entry)) if (id != null && !known.has(id)) errors.push(`${key} : réf « ${id} » introuvable (${ds})`);
   }
   return errors;
 }
@@ -185,6 +226,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'structures') add('traits'); // {id,value?}[] → réutilise TraitListField (comme creatures)
   if (categoryKey === 'crewRoles') add('skills'); // {skillId,spec?}[] → éditeur dédié (SkillSpecListField)
   if (categoryKey === 'traumas') add('prosthesis'); // {trappingId,cancels}[] → éditeur dédié (ProsthesisField)
+  if (CRITICAL_CATEGORIES.includes(categoryKey)) add('traumas'); // string[] d'ids → éditeur dédié (TraumaListField, #173)
   if (categoryKey === 'steamBreakdowns') add('restart'); // {skillId,spec?,difficulty,extendedDR?}[] → éditeur dédié
   add(...opsFieldsOf(categoryKey)); // ops/occupantOps/crewOps/captainOps → GameOpEditor (#157)
   if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick'); // GameOp[] + test de cycle → éditeurs dédiés (capabilities = sous-form générique)
@@ -300,6 +342,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const hasCrewSkills = categoryKey === 'crewRoles';
   // Traumatisme (`traumas`, #157) : `prosthesis` (prothèses annulatrices, LDB 73) = {trappingId,cancels}[].
   const hasProsthesis = categoryKey === 'traumas';
+  // Critique localisé (LDB ch.6/AA, #173) : `traumas` = string[] d'ids de fiche (`traumas.json`) →
+  // éditeur dédié (TraumaListField, sélecteurs id→label) au lieu du datalist générique par-label.
+  const hasTraumaList = CRITICAL_CATEGORIES.includes(categoryKey);
   // Panne de Vapeur (`steamBreakdowns`, #157) : `restart` (Test de redémarrage) = {skillId,spec?,difficulty,extendedDR?}[].
   const hasRestartTest = categoryKey === 'steamBreakdowns';
   // Champs `GameOp[]` autres que `passive` (ops/occupantOps/crewOps/captainOps, #157) — même GameOpEditor.
@@ -443,17 +488,14 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {hasCharKeys && <CharKeysField value={entry.characteristics as CharKey[] | undefined} onChange={(v) => edit('characteristics', v)} />}
         {hasStarSub && <StarSubField value={entry.sub as [number, number] | undefined} onChange={(v) => edit('sub', v)} />}
         {hasDomainEffects && (
-          <>
-            <DomainEffectsField
-              castBonus={entry.castBonus as DomainData['castBonus']}
-              missile={entry.missile as DomainData['missile']}
-              casterOps={entry.casterOps as DomainData['casterOps']}
-              onCastBonus={(v) => edit('castBonus', v)}
-              onMissile={(v) => edit('missile', v)}
-              onCasterOps={(v) => edit('casterOps', v)}
-            />
-            <RefDatalist ds="etats" /* alimente l'autocomplétion « par État » de castBonus */ />
-          </>
+          <DomainEffectsField
+            castBonus={entry.castBonus as DomainData['castBonus']}
+            missile={entry.missile as DomainData['missile']}
+            casterOps={entry.casterOps as DomainData['casterOps']}
+            onCastBonus={(v) => edit('castBonus', v)}
+            onMissile={(v) => edit('missile', v)}
+            onCasterOps={(v) => edit('casterOps', v)}
+          />
         )}
         {isCreature && (
           <>
@@ -467,6 +509,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isStructure && <TraitListField label="Atouts" hint="(Résistant/Impénétrable — ADE II ch.08)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />}
         {hasCrewSkills && <SkillSpecListField value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v)} />}
         {hasProsthesis && <ProsthesisField value={entry.prosthesis as { trappingId: string; cancels: 'all' | 'movement' }[] | undefined} onChange={(v) => edit('prosthesis', v.length ? v : undefined)} />}
+        {hasTraumaList && <TraumaListField value={entry.traumas as string[] | undefined} onChange={(v) => edit('traumas', v.length ? v : undefined)} />}
         {hasRestartTest && <RestartTestField value={entry.restart as { skillId: string; spec?: string; difficulty: Difficulty; extendedDR?: number }[] | undefined} onChange={(v) => edit('restart', v.length ? v : undefined)} />}
         {isShipCrit && <ShipCrewTestField value={entry.crewTest as ShipCrewTest | undefined} onChange={(v) => edit('crewTest', v)} />}
         {isWaterExposure && <WaterTestField value={entry.test as { skillId: string; difficulty: Difficulty } | undefined} onChange={(v) => edit('test', v)} />}
@@ -797,6 +840,33 @@ function ProsthesisField({ value, onChange }: { value: { trappingId: string; can
   );
 }
 
+/** Traumatismes STRUCTURELS infligés par un Critique localisé (`criticals[Tete|Bras|Corps|Jambe].traumas`,
+ *  `aaCriticals*`, LDB ch.6/AA, #173) : `string[]` d'ids de fiche (`traumas.json`), lus PAR ID
+ *  (`traumaFicheById`/`traumaById`). Sélecteurs id→label (comme `SkillSpecListField`/`ProsthesisField`),
+ *  PAS le motif `<datalist>` par label : plusieurs fiches partagent le même libellé (« Fracture » mineure
+ *  ET majeure) — un datalist par label ne pourrait même pas les distinguer, et écrirait un libellé au lieu
+ *  de l'id attendu par le lecteur. */
+function TraumaListField({ value, onChange }: { value: string[] | undefined; onChange: (v: string[]) => void }) {
+  const list = value ?? [];
+  const traumaOpts = datasetArray('traumas') as { id: string; label: string }[];
+  const set = (next: string[]) => onChange(next);
+  return (
+    <div className="ed-field">
+      <span>traumatismes (LDB 73) — séquelle(s) structurelle(s) infligée(s) par ce critique</span>
+      {list.map((id, i) => (
+        <div className="tf-row" key={i}>
+          <select value={id} onChange={(e) => set(list.map((x, j) => (j === i ? e.target.value : x)))}>
+            <option value="">— (choisir un traumatisme) —</option>
+            {traumaOpts.map((o) => <option key={o.id} value={o.id}>{o.label} — {o.id}</option>)}
+          </select>
+          <button className="btn small danger" title="Retirer" onClick={() => set(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => set([...list, traumaOpts[0]?.id ?? ''])}>+ Traumatisme</button>
+    </div>
+  );
+}
+
 const DIFFICULTIES = Object.keys(DIFFICULTY_LABELS) as Difficulty[];
 
 /** Test de REDÉMARRAGE d'un moteur à vapeur (`steamBreakdowns.restart`, MDG ch.12, #157) :
@@ -934,7 +1004,7 @@ function WaterModifiersField({ value, onChange }: { value: WaterExposureModifier
 
 /** Maladies contractées sur Exposition hydrique (`waterExposure.diseases`, T2C ch.14 p.91) : plage d100
  *  (jet APRÈS échec du Test) → maladie référencée par ID (sélecteur, comme `SkillSpecListField`/
- *  `ProsthesisField` — pas le label-datalist de `MutationTableField`, la donnée est un id, pas un label). */
+ *  `ProsthesisField`/`MutationTableField` — la donnée est un id, jamais un label). */
 function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['diseases'] | undefined; onChange: (v: WaterExposureData['diseases']) => void }) {
   const list = value ?? [];
   const maladieOpts = datasetArray('maladies') as { id: string; label: string }[];
@@ -959,14 +1029,15 @@ function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['dis
   );
 }
 
-/** Une plage d100 d'une Table de Corruption : [min,max] → mutation référencée par label. */
+/** Une plage d100 d'une Table de Corruption : [min,max] → mutation référencée PAR ID (`mutations.ts` :
+ *  `BY_ID.get(range.mutation)`). */
 interface MutationRange { min: number; max: number; mutation: string; }
 
 /** Éditeur des PLAGES d'une Table de Corruption (`mutationTables.json`) : chaque rangée = un intervalle d100
- *  → une mutation (réf par label, autocomplétée depuis le dataset `mutations`). La table renvoie la mutation
- *  dont l'intervalle contient le jet (`findTableEntry`). DÉCOUPLÉ de la mutation : plusieurs tables (une par
- *  dieu du Chaos, Compagnon T1) peuvent pointer la même mutation à des plages différentes. Réutilise
- *  `RefDatalist` (autocomplétion des labels de mutation). */
+ *  → une mutation (sélecteur id→label, #173 — PAS le datalist par label : la donnée est un id). La table
+ *  renvoie la mutation dont l'intervalle contient le jet (`findTableEntry`). DÉCOUPLÉ de la mutation :
+ *  plusieurs tables (une par dieu du Chaos, Compagnon T1) peuvent pointer la même mutation à des plages
+ *  différentes. */
 /** Éditeur des PLAGES de Météo d'une saison (`weather.json`) : chaque rangée = un intervalle d100
  *  (jusqu'à `max` inclus, ordonné, la dernière finit à 100) → une Météo (parmi les types connus). */
 function WeatherRangesField({ value, onChange }: { value: { max: number; weather: string }[] | undefined; onChange: (v: { max: number; weather: string }[]) => void }) {
@@ -994,6 +1065,7 @@ function WeatherRangesField({ value, onChange }: { value: { max: number; weather
 
 function MutationTableField({ value, onChange }: { value: MutationRange[] | undefined; onChange: (v: MutationRange[]) => void }) {
   const list = value ?? [];
+  const mutationOpts = datasetArray('mutations') as { id: string; label: string }[];
   const set = (i: number, patch: Partial<MutationRange>) => onChange(list.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   const clampD100 = (s: string) => Math.max(1, Math.min(100, Number(s) || 1));
   return (
@@ -1003,13 +1075,15 @@ function MutationTableField({ value, onChange }: { value: MutationRange[] | unde
         <div className="ed-subfield" key={i}>
           <div className="tf-row">
             <label className="dr">d100&nbsp;<input type="number" min={1} max={100} value={r.min} onChange={(e) => set(i, { min: clampD100(e.target.value) })} />–<input type="number" min={1} max={100} value={r.max} onChange={(e) => set(i, { max: clampD100(e.target.value) })} /></label>
-            <input list="dl-mutations" value={r.mutation} placeholder="mutation (label)" onChange={(e) => set(i, { mutation: e.target.value })} />
+            <select value={r.mutation} onChange={(e) => set(i, { mutation: e.target.value })}>
+              <option value="">— (choisir une mutation) —</option>
+              {mutationOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+            </select>
             <button className="btn small danger" title="Supprimer la plage" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
           </div>
         </div>
       ))}
-      <RefDatalist ds="mutations" />
-      <button className="btn small" onClick={() => onChange([...list, { min: 1, max: 1, mutation: '' }])}>+ Plage d100</button>
+      <button className="btn small" onClick={() => onChange([...list, { min: 1, max: 1, mutation: mutationOpts[0]?.id ?? '' }])}>+ Plage d100</button>
     </div>
   );
 }

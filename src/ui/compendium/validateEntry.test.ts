@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { validateEntry } from './CodexEdit';
 import { traits, creatures } from '../../data';
+import { datasetArray, DATASET_KEYS } from '../../data/overrides';
+import { entryKey } from './registry';
 
 type Entry = Record<string, unknown>;
 
@@ -46,5 +48,76 @@ describe('validateEntry — garde du persist de CodexEdit (Enregistrer bloqué t
     // AdvancementRef en branche choice : l'id invalide est vu au fond de la branche.
     const badChoice: Entry = { ...good, skills: [{ choice: [{ ref: { id: '___inconnu___' } }] }] };
     expect(validateEntry('creatures', badChoice, creatureEntries, -1).some((e) => /___inconnu___/.test(e))).toBe(true);
+  });
+});
+
+/**
+ * #173 — garde de CLASSE : un éditeur de ref (datalist ou sélecteur) ne doit JAMAIS écrire un LIBELLÉ
+ * dans un champ que le lecteur résout par ID. `validateEntry` est le gate PRE-PERSIST unique ; ces cas
+ * couvrent (a) un champ-liste de CHAÎNES top-level (`REF_LIST_DATASET`, ex. `criticalsTete.traumas`),
+ * (b) une réf NICHÉE sous un sous-objet/sous-tableau (`NESTED_REF_FIELDS`, ex. `mutationTables.
+ * ranges[].mutation`, `domains.castBonus.perCondition`) — les deux mécanismes déclarés dans
+ * `CodexEdit.tsx`. Le dernier test balaie TOUTE la donnée committée : round-trip = déjà résolvable.
+ */
+describe('validateEntry — #173 : réf par ID écrasée par un LIBELLÉ (datalist/sélecteur) → bloquant', () => {
+  it('criticalsTete.traumas (string[] top-level, REF_LIST_DATASET) : id résolvable → OK ; libellé → bloquant', () => {
+    const criticalsTete = datasetArray('criticalsTete') as unknown as Entry[];
+    const goodId = (datasetArray('traumas') as { id: string }[])[0].id;
+    const base = criticalsTete[0];
+    expect(validateEntry('criticalsTete', { ...base, traumas: [goodId] }, criticalsTete, 0)).toEqual([]);
+    // Reproduit EXACTEMENT le bug #173 : l'ancien datalist écrivait le LIBELLÉ choisi, pas l'id.
+    const errs = validateEntry('criticalsTete', { ...base, traumas: ['Fracture'] }, criticalsTete, 0);
+    expect(errs.some((e) => /traumas.*Fracture.*introuvable/.test(e))).toBe(true);
+  });
+
+  it('mutationTables.ranges[].mutation (réf NICHÉE) : id résolvable → OK ; libellé → bloquant', () => {
+    const tables = datasetArray('mutationTables') as unknown as Entry[];
+    const goodId = (datasetArray('mutations') as { id: string }[]).find((m) => m.id === 'pattes-d-animaux')!.id;
+    const base = tables[0];
+    expect(validateEntry('mutationTables', { ...base, ranges: [{ min: 1, max: 100, mutation: goodId }] }, tables, 0)).toEqual([]);
+    const errs = validateEntry('mutationTables', { ...base, ranges: [{ min: 1, max: 100, mutation: 'Pattes d’animaux' }] }, tables, 0);
+    expect(errs.some((e) => /ranges\[\]\.mutation.*introuvable/.test(e))).toBe(true);
+  });
+
+  it('domains.castBonus.perCondition (réf NICHÉE) : id d’État résolvable → OK ; libellé → bloquant', () => {
+    const domains = datasetArray('domains') as unknown as Entry[];
+    const base = domains[0];
+    expect(validateEntry('domains', { ...base, castBonus: { perCondition: 'en-flammes', radiusStat: 'FM', bonus: 10 } }, domains, 0)).toEqual([]);
+    const errs = validateEntry('domains', { ...base, castBonus: { perCondition: 'En flammes', radiusStat: 'FM', bonus: 10 } }, domains, 0);
+    expect(errs.some((e) => /castBonus\.perCondition.*introuvable/.test(e))).toBe(true);
+  });
+
+  it('pregens.spells reste l’exception DOCUMENTÉE (libellés résolus au CHARGEMENT, pregens.ts:60) — jamais flaggé', () => {
+    const pregens = datasetArray('pregens') as unknown as Entry[];
+    const withSpells = pregens.find((p) => Array.isArray(p.spells) && (p.spells as string[]).length > 0)!;
+    expect(validateEntry('pregens', withSpells, pregens, pregens.indexOf(withSpells))).toEqual([]);
+  });
+
+  it('sweep GÉNÉRAL — TOUTE la donnée committée (tous les datasets éditables) résout déjà : round-trip = préserve la résolvabilité', () => {
+    // 9 défauts PRÉ-EXISTANTS connus (audit exhaustif #173), HORS PÉRIMÈTRE (pas la classe « éditeur
+    // écrit un libellé » — des ids ORPHELINS de `careerLevels.trappings` survivant d'un renommage/retrait
+    // ailleurs dans `trappings.json` : « diligence »→« diligence-2 », « charrette »→« charrette-2 »,
+    // « barque » introuvable même sous suffixe — probablement déplacé vers un autre catalogue). Data JSON
+    // hors périmètre de ce ticket (sessions concurrentes actives) → exclus ICI, PAR NOM (pas par index,
+    // résilient à un réordonnancement) ; à corriger séparément dans `careerLevels.json`.
+    const KNOWN_PRE_EXISTING_ORPHANS = new Set([
+      'careerLevels::Bourgeois · N3 Conseiller municipal',
+      'careerLevels::Bourgeois · N4 Bourgmestre',
+      'careerLevels::Contrebandier · N2 Contrebandier',
+      'careerLevels::Femme du fleuve · N3 Sage des rives',
+      'careerLevels::Naufrageur · N2 Naufrageur',
+      'careerLevels::Nautonier · N2 Nautonier',
+      'careerLevels::Pilleur de tombes · N3 Pilleur de tombeaux',
+      'careerLevels::Herboriste · N4 Herboriste de renom',
+      'careerLevels::Nautonier (Côtier) · N2 Nautonier',
+    ]);
+    for (const key of DATASET_KEYS) {
+      const arr = datasetArray(key) as unknown as Entry[];
+      arr.forEach((entry, i) => {
+        if (KNOWN_PRE_EXISTING_ORPHANS.has(`${key}::${entryKey(entry)}`)) return;
+        const errs = validateEntry(key, entry, arr, i);
+        expect(errs, `${key}[${i}] (${entryKey(entry)}) : ${errs.join('; ')}`).toEqual([]);
+      });
+    }
   });
 });

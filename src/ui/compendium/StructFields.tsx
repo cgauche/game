@@ -424,7 +424,7 @@ export function SpecsField({ value, onChange }: { value: SpecEntry[] | undefined
 
 /* ─────────────────────────────────────────────────────────────────────────────
  * 7) domains.castBonus / missile / casterOps — attributs de Domaine (LDB 48).
- *    `castBonus` { perCondition (label État), radiusStat (CharKey fermé), bonus }
+ *    `castBonus` { perCondition (id d'État — résolu par id, jamais un libellé, #173), radiusStat (CharKey fermé), bonus }
  *      → CAPABILITY irréductible (modif du JET d'incantation via géométrie arène, hors GameOp).
  *    `missile`   { bypass ('metal'|'nonMagic'), bonusFromBypass? }
  *    `casterOps` GameOp[] — ops appliquées AU LANCEUR après incantation réussie (ex. Bête → Peur 1).
@@ -442,6 +442,7 @@ export function DomainEffectsField(
     onCastBonus: (v: DomainData['castBonus']) => void; onMissile: (v: DomainData['missile']) => void; onCasterOps: (v: DomainData['casterOps']) => void;
   },
 ) {
+  const etatOpts = datasetArray('etats') as { id: string; label: string }[];
   return (
     <div className="ed-field">
       <span>attributs du domaine (LDB 48 — bonus d'incantation conditionnel / mitigation de Projectile / ops au lanceur)</span>
@@ -450,7 +451,13 @@ export function DomainEffectsField(
         {castBonus && (
           <div className="tf-row">
             <label className="dr">par État
-              <input list="dl-etats" placeholder="ex. En flammes" value={castBonus.perCondition} onChange={(e) => onCastBonus({ ...castBonus, perCondition: e.target.value })} />
+              {/* #173 : `perCondition` est l'id de l'État (résolu par `stacks(c, cb.perCondition)`,
+                  state/combatFlow.ts — cf. ConditionInstance.name), pas son libellé → sélecteur id→label,
+                  pas de datalist par label. */}
+              <select value={castBonus.perCondition} onChange={(e) => onCastBonus({ ...castBonus, perCondition: e.target.value })}>
+                <option value="">— (choisir un État) —</option>
+                {etatOpts.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
+              </select>
             </label>
             <label className="dr">rayon B-carac.
               <select value={castBonus.radiusStat} onChange={(e) => onCastBonus({ ...castBonus, radiusStat: e.target.value as CharKey })}>
