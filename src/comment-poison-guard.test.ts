@@ -128,6 +128,26 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
     expect(untaggedExcuseMatch('// Calcule le total des dégâts appliqués à la cible.')).toBeNull();
   });
 
+  it('faux positifs écartés : « pas encore <participe de mécanique> » = état de partie (affinage 2026-07-06)', () => {
+    expect(untaggedExcuseMatch('// null = pas encore lancé (rien à re-dériver).')).toBeNull();
+    expect(untaggedExcuseMatch('// Round 1 pas encore commencé (sujet HORS-TOUR).')).toBeNull();
+    expect(untaggedExcuseMatch('// chargée + pas encore tiré ce Round (Tir rapide).')).toBeNull();
+    expect(untaggedExcuseMatch('// pas encore de Contre-sort ce Round.')).toBeNull();
+    expect(untaggedExcuseMatch('// Test étendu de Calme pas encore au niveau.')).toBeNull();
+  });
+
+  it('faux positifs écartés : « temporairement <durée d\'effet> » et « épargné par <règle> » (affinage 2026-07-06)', () => {
+    expect(untaggedExcuseMatch('// Chance accordée temporairement, retirée à expiration.')).toBeNull();
+    expect(untaggedExcuseMatch('// temporairement insensible (Détermination, LDB 17).')).toBeNull();
+    expect(untaggedExcuseMatch('// les PA magiques sont épargnés par Ulgu.')).toBeNull();
+  });
+
+  it('vraies excuses TOUJOURS détectées après affinage (preuve TDD)', () => {
+    expect(untaggedExcuseMatch('// pas encore migré vers le registre canonique')).not.toBeNull();
+    expect(untaggedExcuseMatch('// paramètre non utilisé pour l\'instant par les appelants')).not.toBeNull();
+    expect(untaggedExcuseMatch('// on assume cette exception ici')).not.toBeNull();
+  });
+
   (EXCUSE_GUARD_ACTIVE ? it : it.skip)(
     'aucune excuse de src/**/*.ts(x) sans tag [entériné AAAA-MM-JJ] (désactivée — cf. rapport agent)',
     () => {

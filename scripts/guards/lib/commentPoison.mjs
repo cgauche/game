@@ -185,7 +185,20 @@ export function scanTombstones(relPath, contenu) {
  *  les hooks signalent sans bloquer et le test Vitest skippe le scan. */
 export const EXCUSE_GUARD_ACTIVE = false;
 
-export const EXCUSE_RX = /(assume|épargn[ée]|pour l'instant|pas encore|temporairement)/i;
+// Affinage 2026-07-06 (recensement : 41 faux positifs sur 44 occurrences, même méthode que les
+// familles tombstone ci-dessus) : une vraie excuse nomme un artefact de CODE (paramètre, appelant,
+// migration) ; le faux positif nomme un artefact de RÈGLE (Round, Test, Action, Sort — capitalisé
+// dans les commentaires du repo) ou documente la sémantique null/false d'un champ d'état de partie.
+// « pas encore <participe de mécanique de jeu> » et « temporairement <durée d'effet> » sont écartés
+// structurellement ; « pour l'instant » reste détecté nu (les vraies excuses du stock l'utilisent).
+const GAME_STATE_PARTICIPLE =
+  '(lanc|tir[ée]|boug|dépens|défend|résol|jou|commenc|ouvert|agi\\b|explor|entraîn|connu|désign|roul|au niveau|à la mi|de [A-ZÀ-Ý])';
+export const EXCUSE_RX = new RegExp(
+  "(assume|épargn[ée]\\w*(?!\\w)(?!\\s+(par|pour)\\s)|pour l'instant|pas encore (?!" +
+    GAME_STATE_PARTICIPLE +
+    ')|(?<!\\b(accordée?s?|prime|insensible)\\s)temporairement(?!\\s+(insensible|accordé|accordée|accordées|prime)))',
+  'i',
+);
 export const ENTERINE_TAG_RX = /\[entériné \d{4}-\d{2}-\d{2}\]/;
 
 /** @param {string} text @returns {RegExpExecArray | null} */
