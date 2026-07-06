@@ -52,8 +52,9 @@ export interface LandMarketState {
   label: string;
   market: LandMarketProfile;
   offers: LandOffer[];
-  /** Rumeur commerciale entendue à l'arrivée (Test de Ragot réussi, l.176-180) : signale les biens très
-   *  recherchés — ils se vendent au DOUBLE de leur prix de base à ce Lieu. `null`/absent = pas de rumeur. */
+  /** Rumeur commerciale entendue à l'arrivée (Test de Ragot réussi, T2C ch.11 l.176-180) : signale les biens
+   *  très recherchés — ils se vendent au DOUBLE de leur prix de base à ce Lieu (MAISON, cf. #99). `null`/absent
+   *  = pas de rumeur. */
   rumour?: RumourRow | null;
 }
 
@@ -96,11 +97,12 @@ export function openLandMarket(get: Get, set: Set): void {
   if (find.localFound) for (const id of market.produits.filter((p) => p !== 'commerce' && p !== 'subsistance')) addOffer(id);
   // « Commerce » (l.32-34) : une cargaison ALÉATOIRE de la table saisonnière en plus.
   if (find.randomFound) addOffer(rollRandomLandCargo(season, rng).id);
-  // Rumeurs commerciales (l.176-180) : en tendant l'oreille au marché, un Test de Ragot Complexe (−10) ; sur
-  // un succès, une rumeur signale les biens très recherchés → ils s'y vendent le DOUBLE (l.180). Roulé APRÈS
-  // les offres pour ne pas déplacer leur flux RNG. ADAPTATION assumée : le RAW fait entendre la rumeur dans une
-  // AUBERGE, pointant un AUTRE Lieu via l'index géographique du Reikland (absent de la carte de l'arène) ; ici la
-  // rumeur vaut pour le Lieu COURANT (modèle minimal endossé par la conception — cf. rapport #58).
+  // Rumeurs commerciales (T2C ch.11 l.176-180) : Test de Ragot Complexe (−10) au marché ; sur un succès, une
+  // rumeur signale les biens très recherchés → ils s'y vendent le DOUBLE (T2C ch.11 l.180). Roulé APRÈS les
+  // offres pour ne pas déplacer leur flux RNG. MAISON (T2C ch.11 l.180) : le RAW pointe un AUTRE Lieu, tiré au
+  // d100 via l'index géographique du Reikland — l'arène n'a ni index géographique multi-lieux ni board de
+  // rumeurs persistant (mécanisme complet tracé par #99, ne pas dupliquer ici) ; ici la rumeur vaut pour le
+  // Lieu COURANT.
   let rumour: RumourRow | null = null;
   const gossip = partyBest(get().party, 'ragot');
   if (gossip) {
