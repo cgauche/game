@@ -25,6 +25,17 @@
         ]
       },
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/enterine-guard.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Tag [entériné] = validation utilisateur"
+          }
+        ]
+      },
+      {
         "matcher": "Bash|PowerShell",
         "hooks": [
           {
@@ -32,6 +43,19 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/git-destructive-guard.mjs\"",
             "timeout": 10,
             "statusMessage": "Garde git destructif (arbre partagé)"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/scripts/hooks/poison-postcheck.mjs\"",
+            "timeout": 10,
+            "statusMessage": "Garde anti-poison au stylo (tombstone/excuse/label)"
           }
         ]
       }
