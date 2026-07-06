@@ -457,7 +457,9 @@ export interface TrappingData {
   consumableDuration?: import('../engine/consumables').ConsumableDuration;
   /** Contenant (LDB 64) : capacité de rangement (« Contenu », en Enc). Sacs/sacoches/sac à dos. */
   container?: { capacity: number };
-  price: { gold: number; silver: number; bronze: number };
+  /** `null` = objet sans prix numérique fixe (RAW « ND »/« Variable »/« – » : Mains nues, Arme
+   *  improvisée, Rocher, Bijoux, Licence de Guilde, Filet…). */
+  price: { gold: number; silver: number; bronze: number } | null;
   source: { book: string; page: number };
   /** Arme DÉRIVÉE conférée tant que l'objet est ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est
    *  considéré comme une Dague » en mêlée). Lue par recomputeLoadout : ajouter une prothèse-arme =
@@ -1092,7 +1094,7 @@ export interface LocationData {
   desc: string | null;
   source: { book: string; page: number };
 }
-/** Ouvrage WFRP4 référencé (bibliographie). `desc` = HTML de présentation. */
+/** Ouvrage WFRP4 référencé (bibliographie). `desc` = présentation en texte/Markdown (règle 5). */
 export interface BookData {
   id: string;
   label: string;

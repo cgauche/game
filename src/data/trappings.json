@@ -156,11 +156,7 @@
       }
     ],
     "desc": null,
-    "price": {
-      "gold": "ND",
-      "silver": "",
-      "bronze": ""
-    },
+    "price": null,
     "source": {
       "book": "livre-de-base",
       "page": 294
@@ -213,11 +209,7 @@
       }
     ],
     "desc": null,
-    "price": {
-      "gold": "ND",
-      "silver": "",
-      "bronze": ""
-    },
+    "price": null,
     "source": {
       "book": "livre-de-base",
       "page": 294
@@ -1373,6 +1365,7 @@
     "loc": null,
     "pa": null,
     "damage": {
+      "plusBF": false,
       "flat": 0
     },
     "qualities": [
@@ -1710,11 +1703,7 @@
     },
     "qualities": [],
     "desc": null,
-    "price": {
-      "gold": "",
-      "silver": "",
-      "bronze": ""
-    },
+    "price": null,
     "source": {
       "book": "livre-de-base",
       "page": 295
@@ -3033,11 +3022,7 @@
     "damage": null,
     "qualities": [],
     "desc": "Le prix varie en fonction de la fabrication, du type de métal et de la valeur des gemmes. En règle générale, des bagues communes sans gemme coûtent 10 pièces du métal correspondant (par exemple, cuivre, argent ou or) alors que les colliers coûtent 20 pièces du métal correspondant.",
-    "price": {
-      "gold": "Variable",
-      "silver": "",
-      "bronze": ""
-    },
+    "price": null,
     "source": {
       "book": "livre-de-base",
       "page": 302
@@ -4900,11 +4885,7 @@
     "damage": null,
     "qualities": [],
     "desc": "Les licences de Guilde sont généralement imprimées sur de simples feuilles de parchemin, cachetées avec un sceau officiel et signées par le maître de Guilde local. Les licences de Guilde ne s'achètent pas ; elles sont accordées aux membres des Guildes selon les traditions et les lois de chacune.",
-    "price": {
-      "gold": "ND",
-      "silver": "",
-      "bronze": ""
-    },
+    "price": null,
     "source": {
       "book": "livre-de-base",
       "page": 304
@@ -7989,8 +7970,8 @@
     "desc": "Les charrettes sont de petits véhicules à deux roues de toutes sortes, y compris les charrettes à âne, les chars et les cabriolets. Les charrettes de passagers comprennent une banquette pouvant accueillir jusqu'à deux personnes, tandis que celles qui transportent des marchandises ont un siège plus petit avec un côté ouvert pour le chargement. Les charrettes sont tirées par un seul animal. Des bras dépassent de chaque côté du châssis, auxquels est attaché un harnais, ou un collier.",
     "price": {
       "gold": 20,
-      "silver": "",
-      "bronze": ""
+      "silver": 0,
+      "bronze": 0
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
@@ -8012,8 +7993,8 @@
     "desc": "Parfois appelés « chaises de Bordeleaux », du nom de la ville de Bretonnie où elles ont été utilisées pour la première fois, il est rare d'en croiser sur les routes. Elles sont constituées d'une cabine lambrissée, semblable à une petite armoire, renfermant une chaise rembourrée, et munie de brancards. La chaise est soulevée par deux porteurs, un à l’avant et un à l’arrière. Les citadins aisés en sont friands, surtout lorsqu’ils rentrent chez eux après une longue nuit en ville. Certains ménages possèdent leurs propres chaises, tandis que d’autres louent des services. Un tarif typique dans une ville est de 3 /- par quartier.\n\nLes chaises et les litières n’ont pas de roues, mais sont portées. Les porteurs sont chargés de la totalité de leur valeur d’Encombrement.",
     "price": {
       "gold": 25,
-      "silver": "",
-      "bronze": ""
+      "silver": 0,
+      "bronze": 0
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
@@ -8035,8 +8016,8 @@
     "desc": "Une diligence est un véhicule fermé, à quatre roues, tiré par deux à six chevaux. Elles constituent le moyen de locomotion favori des riches pour les voyages de longue distance. L'Empire compte plusieurs compagnies de diligences qui assurent des services réguliers entre les grandes villes. Un véhicule noble, souvent appelé carrosse ou calèche, peut transporter jusqu'à six passagers et possède normalement un plateau à l’arrière pour transporter les bagages. Il est impensable de les attacher sur le toit, car cela gâcherait l’apparence du véhicule. De nombreux véhicules de nobles portent des ornements décoratifs et héraldiques sur le toit, ce qui rend impossible le stockage des bagages. Un carrosse n’a qu’un seul conducteur, avec deux valets de pied qui se tiennent sur des marches à l’arrière, de part et d’autre des bagages, suffisamment haut pour voir par-dessus le toit. D’autres serviteurs suivent généralement dans des charrettes ou des carrosses de moindre importance, et des éclaireurs (ou courriers en ville) vont au devant pour dégager le chemin et derrière pour assurer la sécurité. \n\nLes diligences commerciales peuvent transporter six passagers à l’intérieur, et leurs bagages sont arrimés au toit. Quatre autres passagers peuvent voyager avec les bagages s’ils sont prêts à braver les éléments. L’équipage se compose d’un cocher et d’un assistant. Ce dernier est généralement armé d’une arbalète ou d’un tromblon et pare aux éventuels problèmes. \n\nAvec la peinture, les dorures, les belles sculptures et autres frivolités, il n’y a pas de limite à ce que vous pouvez dépenser pour une diligence. En effet, en la matière, le moindre sou dépensé ne l’est que pour souligner le statut de son propriétaire ou même le rehausser. L’ostentation et l’auto-promotion sont des fins en soi, et seul un pingre se contenterait d’une diligence ordinaire.",
     "price": {
       "gold": 150,
-      "silver": "",
-      "bronze": ""
+      "silver": 0,
+      "bronze": 0
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
@@ -8058,8 +8039,8 @@
     "desc": "Les charrettes à bras sont des versions plus petites des charrettes à deux roues, poussées par un homme. À la place du siège se trouve un côté ouvert, bien que des rapports indiquent que le pousse-pousse cathayen comporte un siège rembourré pour deux personnes. Comme les charrettes à chevaux, celles à bras possèdent deux arçons en saillie, normalement reliés par une barre transversale afin qu'une ou deux personnes puissent les déplacer.",
     "price": {
       "gold": 10,
-      "silver": "",
-      "bronze": ""
+      "silver": 0,
+      "bronze": 0
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
@@ -8081,8 +8062,8 @@
     "desc": "Une litière, ou palanquin, est une version plus grande d'une chaise de Bordeleaux, ou plutôt, une chaise est une version plus petite d’une litière. Cet ancien moyen de transport est peu utilisé dans le Vieux Monde, mais les dignitaires en visite de Cathay ou d’Arabie, où il est toujours à la mode, l’utilisent occasionnellement. Comme la chaise, la litière est fermée et munie de perches pour être soulevée par des porteurs, mais les voyageurs s’y allongent au lieu de s’asseoir. \n\nLa plupart des litières sont destinées à une personne et soulevées par deux porteurs. Les plus grandes peuvent accueillir deux passagers et nécessitent un équipage d’au moins quatre porteurs. Le nombre de serviteurs transportant une litière est un message explicite concernant le statut du passager. Des rumeurs, certainement exagérées, persistent à propos de des palanquins cathayens assez grands pour transporter toute la cour d’un noble, portés par une vingtaine d’ogres.\n\nLes chaises et les litières n’ont pas de roues, mais sont portées. Les porteurs sont chargés de la totalité de leur valeur d’Encombrement.",
     "price": {
       "gold": 30,
-      "silver": "",
-      "bronze": ""
+      "silver": 0,
+      "bronze": 0
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
@@ -8104,8 +8085,8 @@
     "desc": "Une litière, ou palanquin, est une version plus grande d'une chaise de Bordeleaux, ou plutôt, une chaise est une version plus petite d’une litière. Cet ancien moyen de transport est peu utilisé dans le Vieux Monde, mais les dignitaires en visite de Cathay ou d’Arabie, où il est toujours à la mode, l’utilisent occasionnellement. Comme la chaise, la litière est fermée et munie de perches pour être soulevée par des porteurs, mais les voyageurs s’y allongent au lieu de s’asseoir. \n\nLa plupart des litières sont destinées à une personne et soulevées par deux porteurs. Les plus grandes peuvent accueillir deux passagers et nécessitent un équipage d’au moins quatre porteurs. Le nombre de serviteurs transportant une litière est un message explicite concernant le statut du passager. Des rumeurs, certainement exagérées, persistent à propos de des palanquins cathayens assez grands pour transporter toute la cour d’un noble, portés par une vingtaine d’ogres.\n\nLes chaises et les litières n’ont pas de roues, mais sont portées. Les porteurs sont chargés de la totalité de leur valeur d’Encombrement.",
     "price": {
       "gold": 45,
-      "silver": "",
-      "bronze": ""
+      "silver": 0,
+      "bronze": 0
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
@@ -8127,8 +8108,8 @@
     "desc": "Les chariots sont de grands véhicules ouverts destinés à transporter tout type de marchandises, y compris, dans certains cas, des personnes. Selon leur taille, ils sont tirés par plusieurs chevaux ou bœufs. À l'avant se trouve une banquette assez large pour trois personnes, bien qu’ils ne nécessitent qu’un seul conducteur. Certains chariots sont équipés de toiles amovibles en forme de tente pour protéger la cargaison des intempéries et des regards indiscrets. Certains voyageurs, notamment les Strigany, utilisent de grands wagons appelés « roulottes » avec des toits en bois permanents. L’intérieur de ces caravanes est souvent somptueux, renfermant tout ce dont une famille nombreuse pourrait avoir besoin.",
     "price": {
       "gold": 75,
-      "silver": "",
-      "bronze": ""
+      "silver": 0,
+      "bronze": 0
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
@@ -8150,8 +8131,8 @@
     "desc": "Les chariots sont de grands véhicules ouverts destinés à transporter tout type de marchandises, y compris, dans certains cas, des personnes. Selon leur taille, ils sont tirés par plusieurs chevaux ou bœufs. À l'avant se trouve une banquette assez large pour trois personnes, bien qu’ils ne nécessitent qu’un seul conducteur. Certains chariots sont équipés de toiles amovibles en forme de tente pour protéger la cargaison des intempéries et des regards indiscrets. Certains voyageurs, notamment les Strigany, utilisent de grands wagons appelés « roulottes » avec des toits en bois permanents. L’intérieur de ces caravanes est souvent somptueux, renfermant tout ce dont une famille nombreuse pourrait avoir besoin.",
     "price": {
       "gold": 100,
-      "silver": "",
-      "bronze": ""
+      "silver": 0,
+      "bronze": 0
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
@@ -8173,8 +8154,8 @@
     "desc": "Les chariots sont de grands véhicules ouverts destinés à transporter tout type de marchandises, y compris, dans certains cas, des personnes. Selon leur taille, ils sont tirés par plusieurs chevaux ou bœufs. À l'avant se trouve une banquette assez large pour trois personnes, bien qu’ils ne nécessitent qu’un seul conducteur. Certains chariots sont équipés de toiles amovibles en forme de tente pour protéger la cargaison des intempéries et des regards indiscrets. Certains voyageurs, notamment les Strigany, utilisent de grands wagons appelés « roulottes » avec des toits en bois permanents. L’intérieur de ces caravanes est souvent somptueux, renfermant tout ce dont une famille nombreuse pourrait avoir besoin.",
     "price": {
       "gold": 125,
-      "silver": "",
-      "bronze": ""
+      "silver": 0,
+      "bronze": 0
     },
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
@@ -12063,6 +12044,528 @@
     "source": {
       "book": "mer-des-griffes",
       "page": 127
+    }
+  },
+  {
+    "id": "baliste-ade2",
+    "label": "Baliste",
+    "type": "ranged",
+    "subType": "armes-de-siege",
+    "siegeRig": "baliste",
+    "weaponGroup": "machine-de-guerre",
+    "availability": "Rare",
+    "reach": null,
+    "range": 150,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 14
+    },
+    "qualities": [
+      {
+        "id": "empaleuse"
+      },
+      {
+        "id": "perforante"
+      },
+      {
+        "id": "recharge",
+        "value": 2
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "equipe",
+        "value": 4
+      }
+    ],
+    "desc": "Similaire à une arbalète, mais bien plus grande, une baliste peut tirer de grands carreaux sur de longues distances. Elle est bien trop lourde pour être transportée, et est donc attachée à une surface fixe ou est dotée de roues pour se déplacer sur le champ de bataille.\n\n*Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant.*",
+    "price": {
+      "gold": 75,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
+    }
+  },
+  {
+    "id": "belier-ade2",
+    "label": "Bélier",
+    "type": "melee",
+    "subType": "armes-de-siege",
+    "weaponGroup": "machine-de-guerre",
+    "availability": "Limitée",
+    "reach": "Moyenne",
+    "range": null,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": true,
+      "flat": 10
+    },
+    "qualities": [
+      {
+        "id": "siege"
+      },
+      {
+        "id": "belier"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "equipe",
+        "value": 6
+      }
+    ],
+    "desc": "Utilisé pour enfoncer les portes, le bélier est constitué d'un tronc d'arbre massif suspendu par des chaînes ou des cordes à une structure en bois avec des roues. Certains ont un bout métallique pointu ou sont forgés pour ressembler à une tête de bélier.\n\n*Les béliers n'infligent des dégâts qu'aux portes. Sinon, ils sont considérés comme une Arme improvisée.*",
+    "price": {
+      "gold": 10,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
+    }
+  },
+  {
+    "id": "batterie-tonnerre-de-feu-ade2",
+    "label": "Batterie tonnerre de feu",
+    "type": "ranged",
+    "subType": "armes-de-siege",
+    "siegeRig": "canon-petit",
+    "weaponGroup": "machine-de-guerre",
+    "availability": "Exotique",
+    "reach": null,
+    "range": 200,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 12
+    },
+    "qualities": [
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "a-explosion",
+        "value": 15
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 5
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "equipe",
+        "value": 4
+      }
+    ],
+    "desc": "L'école impériale des ingénieurs a créé ces projectiles incroyablement dangereux et imprécis en s'inspirant des feux d'artifice. Ils sont réputés pour le bruit aigu qu'ils produisent en virevoltant dans les airs, et les conséquences dévastatrices de leurs explosions.\n\n*Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant.*",
+    "price": {
+      "gold": 200,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
+    }
+  },
+  {
+    "id": "canon-a-repetition-feu-d-enfer-ade2",
+    "label": "Canon à répétition feu d'enfer",
+    "type": "ranged",
+    "subType": "armes-de-siege",
+    "siegeRig": "canon-petit",
+    "weaponGroup": "machine-de-guerre",
+    "availability": "Exotique",
+    "reach": null,
+    "range": 100,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 14
+    },
+    "qualities": [
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "a-repetition",
+        "value": 3
+      },
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "a-explosion",
+        "value": 5
+      },
+      {
+        "id": "recharge",
+        "value": 5
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "equipe",
+        "value": 4
+      }
+    ],
+    "desc": "Cette arme possède neuf canons divisés par groupes de trois et rattachés à un axe. Chaque groupe de canons peut tirer séparément, ou en succession rapide, ce qui permet de décimer facilement la plupart des troupes ennemies.\n\n*Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant.*",
+    "price": {
+      "gold": 300,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
+    }
+  },
+  {
+    "id": "canon-ade2",
+    "label": "Canon",
+    "type": "ranged",
+    "subType": "armes-de-siege",
+    "siegeRig": "canon-petit",
+    "weaponGroup": "machine-de-guerre",
+    "availability": "Exotique",
+    "reach": null,
+    "range": 120,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 20
+    },
+    "qualities": [
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "a-explosion",
+        "value": 3
+      },
+      {
+        "id": "recharge",
+        "value": 3
+      },
+      {
+        "id": "siege"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "equipe",
+        "value": 4
+      }
+    ],
+    "desc": "Selon les mêmes principes appliqués aux armes à Poudre noire, les canons sont chargés avec de la poudre et un grand boulet de canon à l'avant, et tirés depuis l'arrière. La force de frappe d'un boulet de canon suffit à abattre la plupart des murs et à anéantir les troupes sur un champ de bataille.\n\n*Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant.*",
+    "price": {
+      "gold": 120,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
+    }
+  },
+  {
+    "id": "canon-a-flammes-nain-ade2",
+    "label": "Canon à flammes nain",
+    "type": "ranged",
+    "subType": "armes-de-siege",
+    "siegeRig": "canon-petit",
+    "weaponGroup": "machine-de-guerre",
+    "availability": "Exotique",
+    "reach": null,
+    "range": 60,
+    "loc": null,
+    "pa": null,
+    "damage": null,
+    "qualities": [
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "a-explosion",
+        "value": 5
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 3
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "equipe",
+        "value": 4
+      }
+    ],
+    "desc": "Équipée d'une concoction alchimique à l'intérieur du canon, cette arme utilise la pression pour libérer une gerbe d'huile bouillante qui se répand dans les rangs ennemis. Les canons à flammes nain infligent 2 + DR États *En flammes* à chaque cible affectée.\n\n*Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant.*",
+    "price": {
+      "gold": 200,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
+    }
+  },
+  {
+    "id": "mangonneau-ade2",
+    "label": "Mangonneau",
+    "type": "ranged",
+    "subType": "armes-de-siege",
+    "siegeRig": "canon-petit",
+    "weaponGroup": "machine-de-guerre",
+    "indirect": true,
+    "availability": "Rare",
+    "reach": null,
+    "range": 60,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 10
+    },
+    "qualities": [
+      {
+        "id": "a-explosion",
+        "value": 5
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      },
+      {
+        "id": "siege"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "equipe",
+        "value": 6
+      }
+    ],
+    "desc": "Un mangonneau emploie de gros projectiles comme des rochers ou des débris rassemblés dans une grande poche. Il les lance en ramenant le bras tenant la poche en arrière, puis en la relâchant.\n\n*Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant.*",
+    "price": {
+      "gold": 60,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
+    }
+  },
+  {
+    "id": "onagre-ade2",
+    "label": "Onagre",
+    "type": "ranged",
+    "subType": "armes-de-siege",
+    "siegeRig": "canon-petit",
+    "weaponGroup": "machine-de-guerre",
+    "indirect": true,
+    "availability": "Rare",
+    "reach": null,
+    "range": 100,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 12
+    },
+    "qualities": [
+      {
+        "id": "a-explosion",
+        "value": 5
+      },
+      {
+        "id": "recharge",
+        "value": 4
+      },
+      {
+        "id": "siege"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "equipe",
+        "value": 6
+      }
+    ],
+    "desc": "Similaire au mangonneau, cette arme de siège utilise une fronde pour augmenter sa portée effective.\n\n*Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant.*",
+    "price": {
+      "gold": 80,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
+    }
+  },
+  {
+    "id": "trebuchet-ade2",
+    "label": "Trébuchet",
+    "type": "ranged",
+    "subType": "armes-de-siege",
+    "siegeRig": "canon-petit",
+    "weaponGroup": "machine-de-guerre",
+    "indirect": true,
+    "availability": "Limitée",
+    "reach": null,
+    "range": 150,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 14
+    },
+    "qualities": [
+      {
+        "id": "a-explosion",
+        "value": 5
+      },
+      {
+        "id": "recharge",
+        "value": 5
+      },
+      {
+        "id": "siege"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "equipe",
+        "value": 8
+      }
+    ],
+    "desc": "Le trébuchet bretonnien est une version améliorée de l'onagre et utilise un contrepoids au lieu d'une torsion pour relâcher sa fronde, ce qui augmente grandement sa portée.\n\n*Les trébuchets et les mortiers ne peuvent pas être utilisés si la distance jusqu'à la cible est inférieure à leur Portée Courte.*\n\n*Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant.*",
+    "price": {
+      "gold": 40,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
+    }
+  },
+  {
+    "id": "mortier-ade2",
+    "label": "Mortier",
+    "type": "ranged",
+    "subType": "armes-de-siege",
+    "siegeRig": "canon-petit",
+    "weaponGroup": "machine-de-guerre",
+    "indirect": true,
+    "availability": "Exotique",
+    "reach": null,
+    "range": 200,
+    "loc": null,
+    "pa": null,
+    "damage": {
+      "plusBF": false,
+      "flat": 20
+    },
+    "qualities": [
+      {
+        "id": "a-poudre-noire"
+      },
+      {
+        "id": "dangereuse"
+      },
+      {
+        "id": "a-explosion",
+        "value": 5
+      },
+      {
+        "id": "imprecise"
+      },
+      {
+        "id": "recharge",
+        "value": 2
+      },
+      {
+        "id": "siege"
+      },
+      {
+        "id": "devastatrice"
+      },
+      {
+        "id": "percutante"
+      },
+      {
+        "id": "equipe",
+        "value": 6
+      }
+    ],
+    "desc": "Conçus spécifiquement pour le tir indirect, les mortiers sont utilisés pour les tirs en cloche qui passent au-dessus des murs de châteaux et touchent les troupes à l'intérieur dans une explosion de mitraille.\n\n*Les trébuchets et les mortiers ne peuvent pas être utilisés si la distance jusqu'à la cible est inférieure à leur Portée Courte.*\n\n*Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant.*",
+    "price": {
+      "gold": 100,
+      "silver": 0,
+      "bronze": 0
+    },
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88
     }
   }
 ]

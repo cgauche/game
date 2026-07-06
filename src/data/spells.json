@@ -13564,7 +13564,7 @@
     "label": "Alarme",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 1,
@@ -13593,7 +13593,7 @@
     "label": "Algues Cruelles",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "5",
+    "cn": 5,
     "range": {
       "kind": "distance",
       "value": 90,
@@ -13624,7 +13624,7 @@
     "label": "Âme Dévoilée",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "2",
+    "cn": 2,
     "range": {
       "kind": "special",
       "text": "Démon"
@@ -13673,7 +13673,7 @@
     "label": "Appel de Vanhel",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
-    "cn": "5",
+    "cn": 5,
     "range": {
       "kind": "distance",
       "value": 55,
@@ -13702,7 +13702,7 @@
     "label": "Arme Souillée",
     "type": "Sort",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "touch"
     },
@@ -13731,7 +13731,7 @@
     "label": "Armure d’AEthyr",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "special",
       "text": "Sorcier"
@@ -13760,7 +13760,7 @@
     "label": "Armure d’Obscurité",
     "type": "du Domaine des Ombres",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "special",
       "text": "Skaven"
@@ -13831,7 +13831,7 @@
     "label": "Avatar du Rat Cornu",
     "type": "Magie des Arcanes Skaven",
     "subType": null,
-    "cn": "4",
+    "cn": 4,
     "range": {
       "kind": "special",
       "text": "Mage"
@@ -13880,7 +13880,7 @@
     "label": "Bélier",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "3",
+    "cn": 3,
     "range": {
       "kind": "special",
       "text": "Shaman"
@@ -13928,7 +13928,7 @@
     "label": "Berceuse Soporifique UA II",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "distance",
       "value": 85,
@@ -13958,7 +13958,7 @@
     "label": "Bienveillance",
     "type": "Magie des Arcanes & des Taillis",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "special",
       "text": "Rebouteux"
@@ -14028,7 +14028,7 @@
     "label": "Bond Furtif",
     "type": "du Domaine des Ombres",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "touch"
     },
@@ -14056,7 +14056,7 @@
     "label": "Bouclier",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "2",
+    "cn": 2,
     "range": {
       "kind": "special",
       "text": "Shaman"
@@ -14086,7 +14086,7 @@
     "label": "Bouillon Revigorant",
     "type": "Magie des Arcanes & des Taillis",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "touch"
     },
@@ -14115,7 +14115,7 @@
     "label": "Bruit",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 75,
@@ -14145,7 +14145,7 @@
     "label": "Brume Acide",
     "type": "du Domaine de la Peste",
     "subType": null,
-    "cn": "10",
+    "cn": 10,
     "range": {
       "kind": "distance",
       "value": 70,
@@ -14177,7 +14177,7 @@
     "label": "Brume Mystique",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 9,
@@ -14209,7 +14209,7 @@
     "label": "Cacophonie Scabreuse",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "special",
       "text": "Démon"
@@ -14278,7 +14278,7 @@
     "label": "Chuchotis",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 30,
@@ -14308,7 +14308,7 @@
     "label": "Cogne-Fort",
     "type": "Sort",
     "subType": null,
-    "cn": "5",
+    "cn": 5,
     "range": {
       "kind": "distance",
       "value": 5,
@@ -14337,7 +14337,7 @@
     "label": "Conserve",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 1,
@@ -14368,7 +14368,7 @@
     "label": "Contamination",
     "type": "du Domaine de la Peste",
     "subType": null,
-    "cn": "4",
+    "cn": 4,
     "range": {
       "kind": "touch"
     },
@@ -14398,7 +14398,7 @@
     "label": "Coup d’Boule !",
     "type": "Sort",
     "subType": null,
-    "cn": "5",
+    "cn": 5,
     "range": {
       "kind": "distance",
       "value": 5,
@@ -14448,7 +14448,7 @@
     "label": "Courant d’Air",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 80,
@@ -14477,7 +14477,7 @@
     "label": "Crépitement Funeste",
     "type": "du Domaine de la Ruine",
     "subType": null,
-    "cn": "5",
+    "cn": 5,
     "range": {
       "kind": "distance",
       "value": 2,
@@ -14553,7 +14553,7 @@
     "label": "Crépitements Vengeurs",
     "type": "Sort",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "distance",
       "value": 30,
@@ -14584,7 +14584,7 @@
     "label": "Crevasse",
     "type": "du Domaine de la Ruine",
     "subType": null,
-    "cn": "11",
+    "cn": 11,
     "range": {
       "kind": "special",
       "text": "Skaven"
@@ -14614,7 +14614,7 @@
     "label": "Crue Mortelle",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "13",
+    "cn": 13,
     "range": {
       "kind": "distance",
       "value": 9,
@@ -14665,7 +14665,7 @@
     "label": "Décharge Cérébrale",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "8",
+    "cn": 8,
     "range": {
       "kind": "touch"
     },
@@ -14692,7 +14692,7 @@
     "label": "Démangeaison Agaçante",
     "type": "Sort",
     "subType": null,
-    "cn": "3",
+    "cn": 3,
     "range": {
       "kind": "distance",
       "value": 30,
@@ -14722,7 +14722,7 @@
     "label": "Dépeçage",
     "type": "du Domaine de la Ruine",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "distance",
       "value": 2,
@@ -14753,7 +14753,7 @@
     "label": "Désarroi",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "12",
+    "cn": 12,
     "range": {
       "kind": "special",
       "text": "Mage"
@@ -14783,7 +14783,7 @@
     "label": "Disparition",
     "type": "du Domaine des Ombres",
     "subType": null,
-    "cn": "11",
+    "cn": 11,
     "range": {
       "kind": "distance",
       "value": 7,
@@ -14815,7 +14815,7 @@
     "label": "Douces Paroles",
     "type": "Sort",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 30,
@@ -14865,7 +14865,7 @@
     "label": "Duplicité de Tzeentch",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "distance",
       "value": 85,
@@ -14895,7 +14895,7 @@
     "label": "Eau Pure",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 1,
@@ -14924,7 +14924,7 @@
     "label": "Éclat",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "touch"
     },
@@ -14952,7 +14952,7 @@
     "label": "Effigie Maudite",
     "type": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
-    "cn": "9",
+    "cn": 9,
     "range": {
       "kind": "distance",
       "value": 30,
@@ -14982,7 +14982,7 @@
     "label": "Entrave",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
-    "cn": "3",
+    "cn": 3,
     "range": {
       "kind": "distance",
       "value": 80,
@@ -15012,7 +15012,7 @@
     "label": "Espionnage",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 40,
@@ -15043,7 +15043,7 @@
     "label": "Esprit Enfiévré",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "5",
+    "cn": 5,
     "range": {
       "kind": "distance",
       "value": 90,
@@ -15072,7 +15072,7 @@
     "label": "Explosion de Dhar",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "distance",
       "value": 80,
@@ -15103,7 +15103,7 @@
     "label": "Fatigue",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "touch"
     },
@@ -15130,7 +15130,7 @@
     "label": "Faux- Semblant",
     "type": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
-    "cn": "3",
+    "cn": 3,
     "range": {
       "kind": "special",
       "text": "Sorcière"
@@ -15160,7 +15160,7 @@
     "label": "Faveur du Rat Cornu",
     "type": "Magie Mineure Skaven",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "special",
       "text": "Mage"
@@ -15190,7 +15190,7 @@
     "label": "Fêlure AEthyrique",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "3",
+    "cn": 3,
     "range": {
       "kind": "distance",
       "value": 70,
@@ -15241,7 +15241,7 @@
     "label": "Fertilisation",
     "type": "Magie des Arcanes & des Taillis",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "touch"
     },
@@ -15268,7 +15268,7 @@
     "label": "Feu Follet",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 30,
@@ -15299,7 +15299,7 @@
     "label": "Flamme",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "special",
       "text": "Shaman"
@@ -15328,7 +15328,7 @@
     "label": "Flamme Verdâtre",
     "type": "du Domaine de la Ruine",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 20,
@@ -15360,7 +15360,7 @@
     "label": "Flammes Bleues de Tzeentch",
     "type": "Sort",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "distance",
       "value": 30,
@@ -15391,7 +15391,7 @@
     "label": "Flammes Roses de Tzeentch",
     "type": "Sort",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "distance",
       "value": 50,
@@ -15421,7 +15421,7 @@
     "label": "Forme Spectrale",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
-    "cn": "4",
+    "cn": 4,
     "range": {
       "kind": "special",
       "text": "Sorcier"
@@ -15450,7 +15450,7 @@
     "label": "Frénésie Artificielle",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
-    "cn": "1",
+    "cn": 1,
     "range": {
       "kind": "distance",
       "value": 4,
@@ -15532,7 +15532,7 @@
     "label": "Furoncle Infecté",
     "type": "Sort",
     "subType": null,
-    "cn": "5",
+    "cn": 5,
     "range": {
       "kind": "special",
       "text": "Démon"
@@ -15582,7 +15582,7 @@
     "label": "Haleine Fétide",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "8",
+    "cn": 8,
     "range": {
       "kind": "distance",
       "value": 8,
@@ -15612,7 +15612,7 @@
     "label": "Hébètement",
     "type": "du Domaine de la Ruine",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 2,
@@ -15642,7 +15642,7 @@
     "label": "Immuno - Déficience",
     "type": "du Domaine de la Peste",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 4,
@@ -15694,7 +15694,7 @@
     "label": "Introspection",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "distance",
       "value": 85,
@@ -15764,7 +15764,7 @@
     "label": "Langue Acérée",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "distance",
       "value": 8,
@@ -15810,7 +15810,7 @@
     "label": "Langue des Gors",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "special",
       "text": "Sorcier"
@@ -15840,7 +15840,7 @@
     "label": "Langue des Pestigors",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "special",
       "text": "Démon"
@@ -15870,7 +15870,7 @@
     "label": "Langue des Slaangors",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "special",
       "text": "Mage"
@@ -15900,7 +15900,7 @@
     "label": "Langue des Tzaangors",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "special",
       "text": "démon"
@@ -15950,7 +15950,7 @@
     "label": "Lune de Malheur",
     "type": "Sort",
     "subType": null,
-    "cn": "8",
+    "cn": 8,
     "range": {
       "kind": "distance",
       "value": 6,
@@ -16001,7 +16001,7 @@
     "label": "Maîtrise du Destin",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "8",
+    "cn": 8,
     "range": {
       "kind": "special",
       "text": "Démon"
@@ -16031,7 +16031,7 @@
     "label": "Malveillance Absolue",
     "type": "Sort",
     "subType": null,
-    "cn": "19",
+    "cn": 19,
     "range": {
       "kind": "distance",
       "value": 6,
@@ -16062,7 +16062,7 @@
     "label": "Marque du Rat Cornu",
     "type": "Magie Mineure Skaven",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 5,
@@ -16153,7 +16153,7 @@
     "label": "Mouchard",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
-    "cn": "2",
+    "cn": 2,
     "range": {
       "kind": "touch"
     },
@@ -16182,7 +16182,7 @@
     "label": "Nostrum",
     "type": "Magie des Arcanes & des Taillis",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "touch"
     },
@@ -16210,7 +16210,7 @@
     "label": "Nuée",
     "type": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
-    "cn": "5",
+    "cn": 5,
     "range": {
       "kind": "distance",
       "value": 30,
@@ -16240,7 +16240,7 @@
     "label": "Nuée de Mouches",
     "type": "Sort",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "special",
       "text": "Démon"
@@ -16290,7 +16290,7 @@
     "label": "Ouverture",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "touch"
     },
@@ -16317,7 +16317,7 @@
     "label": "Pattes Gluantes",
     "type": "du Domaine des Ombres",
     "subType": null,
-    "cn": "8",
+    "cn": 8,
     "range": {
       "kind": "special",
       "text": "Skaven"
@@ -16348,7 +16348,7 @@
     "label": "Pied Léger",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "special",
       "text": "Rebouteux"
@@ -16378,7 +16378,7 @@
     "label": "Pierre de Souffrance",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "5",
+    "cn": 5,
     "range": {
       "kind": "distance",
       "value": 5,
@@ -16428,7 +16428,7 @@
     "label": "Poids Plume",
     "type": "du Domaine des Ombres",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "special",
       "text": "Skaven"
@@ -16459,7 +16459,7 @@
     "label": "Position",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "special",
       "text": "Rebouteux"
@@ -16487,7 +16487,7 @@
     "label": "Poudre d’Escampette",
     "type": "du Domaine des Ombres",
     "subType": null,
-    "cn": "4",
+    "cn": 4,
     "range": {
       "kind": "special",
       "text": "Skaven"
@@ -16517,7 +16517,7 @@
     "label": "Pourriture",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 1,
@@ -16546,7 +16546,7 @@
     "label": "Prise de Tête",
     "type": "Sort",
     "subType": null,
-    "cn": "4",
+    "cn": 4,
     "range": {
       "kind": "distance",
       "value": 5,
@@ -16575,7 +16575,7 @@
     "label": "Projectile",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "3",
+    "cn": 3,
     "range": {
       "kind": "distance",
       "value": 60,
@@ -16605,7 +16605,7 @@
     "label": "Projectile de Dhar",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "7",
+    "cn": 7,
     "range": {
       "kind": "distance",
       "value": 40,
@@ -16635,7 +16635,7 @@
     "label": "Projectile Mineur",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 30,
@@ -16680,7 +16680,7 @@
     "label": "Rafale Hurlante",
     "type": "du Domaine de la Ruine",
     "subType": null,
-    "cn": "7",
+    "cn": 7,
     "range": {
       "kind": "special",
       "text": "Skaven"
@@ -16711,7 +16711,7 @@
     "label": "Rage Meurtrière",
     "type": "du Domaine des Ombres",
     "subType": null,
-    "cn": "5",
+    "cn": 5,
     "range": {
       "kind": "touch"
     },
@@ -16740,7 +16740,7 @@
     "label": "Ramanchage",
     "type": "Magie des Arcanes & des Taillis",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "touch"
     },
@@ -16787,7 +16787,7 @@
     "label": "Rat Esclave",
     "type": "du Domaine des Ombres",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 40,
@@ -16819,7 +16819,7 @@
     "label": "Regard Lubrique",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 8,
@@ -16849,7 +16849,7 @@
     "label": "Rejeton de Slaanesh",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "10",
+    "cn": 10,
     "range": {
       "kind": "distance",
       "value": 10,
@@ -16918,7 +16918,7 @@
     "label": "Ruine",
     "type": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
-    "cn": "13",
+    "cn": 13,
     "range": {
       "kind": "distance",
       "value": 3,
@@ -16948,7 +16948,7 @@
     "label": "Saccade",
     "type": "Magie Mineure",
     "subType": null,
-    "cn": "0",
+    "cn": 0,
     "range": {
       "kind": "distance",
       "value": 10,
@@ -17037,7 +17037,7 @@
     "label": "Secousse Tellurique",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "6",
+    "cn": 6,
     "range": {
       "kind": "special",
       "text": "Mage"
@@ -17066,7 +17066,7 @@
     "label": "Shurikens Enchantés",
     "type": "du Domaine des Ombres",
     "subType": null,
-    "cn": "8",
+    "cn": 8,
     "range": {
       "kind": "special",
       "text": "Skaven"
@@ -17116,7 +17116,7 @@
     "label": "Soleil Noir",
     "type": "Sort",
     "subType": null,
-    "cn": "11",
+    "cn": 11,
     "range": {
       "kind": "distance",
       "value": 8,
@@ -17167,7 +17167,7 @@
     "label": "Télékinésie",
     "type": "Magie des Arcanes & de Nécromancie",
     "subType": null,
-    "cn": "4",
+    "cn": 4,
     "range": {
       "kind": "distance",
       "value": 80,
@@ -17197,7 +17197,7 @@
     "label": "Terreur Nocturne",
     "type": "Magie des Arcanes & de Sorcellerie",
     "subType": null,
-    "cn": "7",
+    "cn": 7,
     "range": {
       "kind": "touch"
     },
@@ -17246,7 +17246,7 @@
     "label": "Trouble",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "3",
+    "cn": 3,
     "range": {
       "kind": "special",
       "text": "Shaman"
@@ -17275,7 +17275,7 @@
     "label": "Vague Scélérate",
     "type": "Magie des Arcanes",
     "subType": null,
-    "cn": "11",
+    "cn": 11,
     "range": {
       "kind": "special",
       "text": "Spécial"
@@ -17355,7 +17355,7 @@
     "label": "WAAAGH !",
     "type": "Sort",
     "subType": null,
-    "cn": "11",
+    "cn": 11,
     "range": {
       "kind": "special",
       "text": "Mage"
@@ -17385,7 +17385,7 @@
     "label": "Z’Oeils de Mork",
     "type": "Sort",
     "subType": null,
-    "cn": "4",
+    "cn": 4,
     "range": {
       "kind": "distance",
       "value": 55,

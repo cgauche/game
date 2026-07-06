@@ -782,7 +782,7 @@
     ],
     "trappings": [
       {
-        "id": "diligence"
+        "id": "diligence-2"
       },
       {
         "text": "Cocher"
@@ -840,7 +840,7 @@
         "text": "Chaîne officielle"
       },
       {
-        "id": "diligence"
+        "id": "diligence-2"
       },
       {
         "text": "Valet de pied"
@@ -14073,7 +14073,7 @@
         "id": "veste-de-cuir"
       },
       {
-        "id": "barque"
+        "text": "Barque"
       }
     ],
     "characteristics": [
@@ -14704,7 +14704,7 @@
     ],
     "trappings": [
       {
-        "id": "barque"
+        "text": "Barque"
       },
       {
         "id": "lampe-tempete"
@@ -15196,7 +15196,7 @@
     ],
     "trappings": [
       {
-        "id": "barque"
+        "text": "Barque"
       },
       {
         "id": "lampe-tempete"
@@ -15498,13 +15498,13 @@
         "id": "corde"
       },
       {
-        "id": "barque"
+        "text": "Barque"
       }
     ],
     "characteristics": [
       "FM"
     ],
-    "status": "Agent 1"
+    "status": "Argent 1"
   },
   {
     "label": "Pilote",
@@ -17003,7 +17003,7 @@
         "id": "corde"
       },
       {
-        "id": "barque"
+        "text": "Barque"
       }
     ],
     "characteristics": [
@@ -19682,7 +19682,7 @@
         "id": "poney"
       },
       {
-        "id": "charrette"
+        "id": "charrette-2"
       }
     ],
     "characteristics": [
@@ -26674,7 +26674,7 @@
     ],
     "trappings": [
       {
-        "id": "barque"
+        "text": "Barque"
       },
       {
         "id": "corde"

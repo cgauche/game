@@ -4150,11 +4150,7 @@
         "arg": "cornes-asymetriques"
       }
     ],
-    "optionals": [
-      {
-        "key": "Tous les traits"
-      }
-    ],
+    "optionals": [],
     "skills": [],
     "talents": [],
     "trappings": [],
@@ -32190,12 +32186,11 @@
       "E": 20,
       "I": 20,
       "Ag": 25,
-      "Dex": null,
-      "Int": 35,
-      "FM": 20,
-      "Soc": 30,
-      "B": 20,
-      "undefined": 35
+      "Dex": 35,
+      "Int": 20,
+      "FM": 30,
+      "Soc": 20,
+      "B": 35
     },
     "traits": [
       {
@@ -49974,13 +49969,7 @@
         "id": "vision-nocturne"
       }
     ],
-    "optionals": [
-      {
-        "key": "Taille ; remplacer Bestial, Dressé et Territorial par un bonus de en Soc",
-        "value": 15,
-        "arg": "Grande"
-      }
-    ],
+    "optionals": [],
     "skills": [],
     "talents": [],
     "trappings": [],
@@ -54476,10 +54465,6 @@
       },
       {
         "id": "immunite-psychologique"
-      },
-      {
-        "key": "Remplacer Bestial par un bonus de en Soc",
-        "value": 20
       },
       {
         "id": "territorial"
@@ -62041,8 +62026,7 @@
         "text": "carte punaisée sur une carapace de tortue"
       },
       {
-        "id": "crochet",
-        "text": "crochet de main"
+        "id": "crochet"
       },
       {
         "text": "outils de cartographe"
