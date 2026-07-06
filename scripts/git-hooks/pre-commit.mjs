@@ -26,7 +26,11 @@ for (const f of staged) {
   const rel = f.replace(/\\/g, '/');
   if (!/^src\/.*\.(ts|tsx)$/.test(rel) || /\.test\.[tj]sx?$/.test(rel)) continue;
   let text;
-  try { text = readFileSync(join(ROOT, rel), 'utf8'); } catch { continue; }
+  try {
+    // Mode stagé : scanner le BLOB DE L'INDEX (`:<chemin>`), pas le working tree — sur l'arbre
+    // partagé, le fichier disque peut porter le WIP d'une AUTRE session que ce commit n'embarque pas.
+    text = argFiles.length ? readFileSync(join(ROOT, rel), 'utf8') : execFileSync('git', ['show', `:${rel}`], { cwd: ROOT, encoding: 'utf8' });
+  } catch { continue; }
   for (const x of scanTombstones(rel, text)) offenders.push(`${rel}:${x.line} [pierre tombale] ${x.detail}`);
   for (const x of scanExcuses(rel, text))
     (EXCUSE_GUARD_ACTIVE ? offenders : warnings).push(`${rel}:${x.line} [excuse sans tag] ${x.detail}`);
