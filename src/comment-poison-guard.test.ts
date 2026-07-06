@@ -18,7 +18,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url)); // racine du projet 
 const SRC_DIR = join(ROOT, 'src');
 
 interface Comment {
-  /** Texte du commentaire, délimiteurs inclus (`// …` ou `/* … *​/`). Les lignes `//` consécutives sur
+  /** Texte du commentaire, délimiteurs inclus (ligne `//` ou bloc). Les lignes `//` consécutives sur
    *  des lignes sources adjacentes sont FUSIONNÉES en un seul commentaire logique (un tag porté sur la
    *  ligne suivante neutralise l'excuse de la ligne précédente, comme le lirait un humain). */
   text: string;
@@ -26,7 +26,7 @@ interface Comment {
   line: number;
 }
 
-/** Extrait tous les commentaires `//` et `/* *​/` d'un source TS/TSX, en ignorant le contenu des
+/** Extrait tous les commentaires (lignes `//` et blocs) d'un source TS/TSX, en ignorant le contenu des
  *  chaînes ('…', "…", `…`) — une occurrence dans une chaîne ou un littéral de scénario n'est PAS un
  *  commentaire. Heuristique volontairement simple (comme les gardes voisines) : suffisante pour du
  *  TypeScript/TSX standard, pas un vrai lexer. */

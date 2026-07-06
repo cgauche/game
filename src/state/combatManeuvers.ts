@@ -402,7 +402,7 @@ export function resolveManeuver(
   }
 
   // Cibles AFFECTÉES + émissions propres à la géométrie (identiques à avant).
-  let affected: Combatant[] = [];
+  let affected: Combatant[];
   if (def.targeting === 'zone') {
     const rangeTiles = tilesOf(measureMeters(def.range, attacker)) ?? Math.max(1, Math.ceil(bonus(effectiveChar(attacker, 'E')) / 2));
     const foes = combatantsWithinRadius(attacker.pos!, rangeTiles, battle.combatants, alive);

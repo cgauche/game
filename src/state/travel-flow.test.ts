@@ -212,7 +212,5 @@ describe('enchaînement JOUR → halte de nuit → reprise → arrivée', () => 
 
 /** Nettoyage des règles optionnelles après chaque test (helper local pour éviter la répétition). */
 function afterEachRule(): void {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { afterEach } = require('vitest');
   afterEach(() => { resetRule('travel-etapes'); resetRule('travel-attraper-froid'); });
 }

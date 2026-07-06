@@ -9,7 +9,7 @@ import globals from 'globals';
  * établir une base sans bloquer le développement en cours. À durcir au fil de l'eau.
  */
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', 'public/**', '_site/**', 'src/data/**', '**/*.json', '*.config.*'] },
+  { ignores: ['dist/**', 'node_modules/**', 'public/**', '_site/**', 'src/data/**', '**/*.json', '*.config.*', '.claude/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
