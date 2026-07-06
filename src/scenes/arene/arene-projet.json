@@ -7664,7 +7664,7 @@
        },
        {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
        }
       ]
      }
@@ -7692,7 +7692,7 @@
        },
        {
         "id": "taille",
-        "arg": "Petite"
+        "arg": "petite"
        }
       ]
      }
@@ -19060,7 +19060,7 @@
       "traits": [
        {
         "id": "taille",
-        "arg": "Monstrueuse"
+        "arg": "monstrueuse"
        },
        {
         "id": "souffle",

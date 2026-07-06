@@ -17,11 +17,13 @@
  * ── PÉRIMÈTRE ─────────────────────────────────────────────────────────────────────────────────────
  * Les instances vivent dans `creatures.json` (`traits[]` profil imprimé + `optionals[]`, LDB 76) ET dans
  * les STATBLOCS D'AUTEUR des scénarios de test (`src/scenes/test-scenarios/**`, registre `testScenarios`,
- * + la fixture partagée `ambush-test.ts`, hors registre) — un statbloc de scène est une SOURCE de données
- * comme le bestiaire, la même dérive (libellé tapé à la main au lieu de l'id) s'y produit (#145). TOUTES
- * sont id-based `{ id, value?, arg?, range?, count? }` — la liste `optionals[]` du bestiaire a été migrée
- * du format legacy label-`key` vers les id. Restent 3 entrées `optionals` en `key` (libellé) : des NOTES de
- * profil GENUINEMENT PROSE, irréductibles à un id de trait — « Tous les traits » (Mutant), et deux
+ * + la fixture partagée `ambush-test.ts`, hors registre) ET le PROJET d'éditeur de la campagne Arène
+ * (`src/scenes/arene/arene-projet.json`, compilé via `parseProject`, #146) — un statbloc/projet de scène
+ * est une SOURCE de données comme le bestiaire, la même dérive (libellé tapé à la main au lieu de l'id)
+ * s'y produit (#145, #146). TOUTES sont id-based `{ id, value?, arg?, range?, count? }` — la liste
+ * `optionals[]` du bestiaire a été migrée du format legacy label-`key` vers les id. Restent 3 entrées
+ * `optionals` en `key` (libellé) : des NOTES de profil GENUINEMENT PROSE, irréductibles à un id de
+ * trait — « Tous les traits » (Mutant), et deux
  * transformations « remplacer Bestial/Dressé/Territorial par un bonus de Soc » (Grand Loup, Griffon ZI).
  * Laissées telles quelles (non forcées), donc naturellement hors des invariants #2/#3 (pas d'`id`) ;
  * l'invariant #1 les couvre si leur `key` résout à un trait.
@@ -36,6 +38,8 @@ import { describe, it, expect } from 'vitest';
 import { traits, creatures, mutations, spells, etats, maladies, SPEC_SOURCES, type SpecsSource, type TraitData } from './index';
 import { testScenarios } from '../scenes/test-scenarios';
 import { ambushTest } from '../scenes/ambush-test';
+import { parseProject } from '../state/worldMap';
+import areneProjetJson from '../scenes/arene/arene-projet.json';
 import type { Scene } from '../state/scene';
 
 /** Forme BRUTE d'une instance. Typage local : le type `TraitInstance` public n'a que `id` ; les 33
@@ -59,18 +63,30 @@ function labelAsId(src: SpecsSource, text: string): string | undefined {
 interface Row { inst: RawTraitInstance; def: TraitData | undefined; where: string; hasId: boolean; }
 
 /** Scènes balayées par la garde : le registre des scénarios de test (menu « 🧪 Tests ») + la fixture
- *  `ambush-test` (partagée par plusieurs tests de combat, hors registre). L'Arène (`arene-projet.json`,
- *  campagne de lancement) est un PROJET d'ÉDITEUR — hors périmètre de cette garde anti-dérive TS. */
-const scenesToScan: Scene[] = [...testScenarios.map((s) => s.scene), ambushTest];
+ *  `ambush-test` (partagée par plusieurs tests de combat, hors registre) + le PROJET d'éditeur de la
+ *  campagne Arène (`arene-projet.json`, compilé via `parseProject`/`buildScene` — MÊME schéma
+ *  d'instance qu'un scénario de test). Un projet d'éditeur reste une SOURCE de données comme un
+ *  scénario ou le bestiaire : la même dérive (libellé tapé à la main au lieu de l'id) s'y produit
+ *  (#146, même classe que #145/#142) — plus d'exclusion par nature de fichier. */
+const scenesToScan: Scene[] = [...testScenarios.map((s) => s.scene), ambushTest, ...parseProject(areneProjetJson).scenes];
 
-/** Statblocs D'AUTEUR des scénarios de test — même schéma d'instance que le bestiaire (déjà id-based,
- *  jamais de `key` legacy), soumis aux mêmes invariants #1/#2/#3. */
+/** Statblocs D'AUTEUR des scénarios de test/projets d'éditeur — même schéma d'instance que le
+ *  bestiaire (déjà id-based, jamais de `key` legacy), soumis aux mêmes invariants #1/#2/#3. Balaie
+ *  `statblock.traits` (profil d'auteur, ex. un statbloc de Nuée/Dragon) ET `combat.optionals` (Traits
+ *  FACULTATIFS choisis sur une entité `ref`, LDB 76 l.49, ex. « Lanceur de Sorts » d'un cultiste) —
+ *  même schéma `TraitInstance`, même dérive possible dans les deux. */
 function* eachSceneInstance(): Generator<Row> {
   for (const scene of scenesToScan) {
     for (const ent of scene.entities) {
-      for (const inst of (ent.statblock?.traits ?? []) as unknown as RawTraitInstance[]) {
-        const def = typeof inst.id === 'string' ? byId.get(inst.id) : undefined;
-        yield { inst, def, where: `scene:${scene.id}.${ent.id}.traits[${String(inst.id)}]`, hasId: typeof inst.id === 'string' };
+      const lists: [RawTraitInstance[], string][] = [
+        [(ent.statblock?.traits ?? []) as unknown as RawTraitInstance[], 'traits'],
+        [(ent.combat?.optionals ?? []) as unknown as RawTraitInstance[], 'optionals'],
+      ];
+      for (const [list, key] of lists) {
+        for (const inst of list) {
+          const def = typeof inst.id === 'string' ? byId.get(inst.id) : undefined;
+          yield { inst, def, where: `scene:${scene.id}.${ent.id}.${key}[${String(inst.id)}]`, hasId: typeof inst.id === 'string' };
+        }
       }
     }
   }

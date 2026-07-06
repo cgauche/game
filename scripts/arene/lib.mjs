@@ -15,11 +15,16 @@ import { findCreature, findCreatureById, findSkill, findSkillById, findSpellById
 import { parseTraitInstance } from '../../src/engine/traits/dispatch.ts';
 
 // ── Normalisation LIBELLÉ → id STABLE, à l'AUTHORING ────────────────────────────────────────
-// L'auteur écrit des LIBELLÉS lisibles (« Snotling », « Taille (Petite) », « Résistance ») ; le JSON
-// canonique, lui, ne porte QUE des ids stables (`snotling`, `{id:'taille',arg:'Petite'}`, `resistance`)
-// — un libellé qui se faufile fait un mannequin de repli / un trait mort / une compétence introuvable
-// au runtime. Chaque résolveur est IDEMPOTENT (un id déjà résolu passe tel quel) et FAIL-FAST (libellé
-// inconnu → throw, jamais un id deviné). Cf. [[game-ids-internes-libelles-display-multilangue]].
+// L'auteur écrit des LIBELLÉS lisibles (« Snotling », « Résistance ») ; le JSON canonique, lui, ne
+// porte QUE des ids stables (`snotling`, `resistance`) — un libellé qui se faufile fait un mannequin
+// de repli / un trait mort / une compétence introuvable au runtime. Chaque résolveur est IDEMPOTENT
+// (un id déjà résolu passe tel quel) et FAIL-FAST (libellé inconnu → throw, jamais un id deviné).
+// Cf. [[game-ids-internes-libelles-display-multilangue]].
+// ⚠ `traitInstance`/`parseTraitInstance` (LIGNE suivante) ne normalise QUE la clé du trait (« Taille »
+// → `taille`) — son `arg` (« Taille (Petite) » → `arg:'Petite'`) reste VERBATIM, jamais résolu vers
+// l'id du registre (`sizes`/`arcaneDomains`/…) : sur un trait à source FERMÉE (ex. `taille`), écrire
+// directement l'id en minuscule dans la parenthèse (« Taille (petite) »), pas le libellé du livre
+// (#146 : `arene-projet.json` portait `arg:'Petite'` — un libellé pris pour un id, source fermée).
 
 /** Apostrophe typographique (U+2019/U+2018/U+02BC) → droite, pour matcher un libellé de catalogue. */
 const APOS = (s) => s.normalize('NFC').replace(/[‘’ʼ]/g, "'");
@@ -204,11 +209,17 @@ export function fouille(effectsOrFlow, consume = false) {
 export const NUEE_DE_RATS = {
   name: 'Nuée de rats',
   char: { M: 4, CC: 30, F: 25, E: 30, Ag: 40, B: 5 },
-  traits: ['Nuée', 'Taille (Petite)'],
+  // `Taille` a `specsSource: sizes` (registre FERMÉ, ids en camelCase) : `parseTraitInstance` ne
+  // normalise QUE le nom du trait, jamais son `arg` (#146) — on écrit donc directement l'id ('petite'),
+  // pas le libellé du livre ('Petite'), pour ne pas régénérer la dérive libellé-pris-pour-un-id.
+  traits: ['Nuée', 'Taille (petite)'],
 };
 export const DRAGON_DES_TENEBRES = {
   name: 'Dragon des ténèbres',
   char: { M: 6, CC: 55, CT: 45, F: 55, E: 55, I: 50, Ag: 35, Dex: 30, Int: 40, FM: 60, Soc: 40, B: 104 },
-  traits: ['Taille (Monstrueuse)', 'Souffle +15 (Ténèbres)', 'Terreur 2', 'Armure 5', 'Arme +10', 'Morsure +10', 'Vol'],
+  // Taille : id du registre FERMÉ ('monstrueuse'), cf. commentaire NUEE_DE_RATS. Souffle (Ténèbres) reste
+  // un descripteur LIBRE (registre `breath-types.json` : Feu/Froid/Corrosif/Électrique/Poison/Fumée
+  // seulement — « Ténèbres » n'y figure pas, trait ouvert `specsOpen`, texte verbatim légitime).
+  traits: ['Taille (monstrueuse)', 'Souffle +15 (Ténèbres)', 'Terreur 2', 'Armure 5', 'Arme +10', 'Morsure +10', 'Vol'],
   size: 'monstrueuse',
 };
