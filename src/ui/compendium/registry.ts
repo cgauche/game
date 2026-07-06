@@ -25,6 +25,7 @@ import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../../
 import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
+import { POWER_ESTIMATE, MIGHT_MODIFIERS, WAR_MACHINES, STRUCTURES as MASS_BATTLE_STRUCTURES, BATTLE_HAZARDS } from '../../engine/massBattle';
 import { traitLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize, woundsForSize } from '../../engine/size';
@@ -838,6 +839,50 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'peripeties', label: 'Péripéties de voyage', group: 'Tables',
     build: () => peripeties.map((p) => ({ label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.text })),
+  },
+  // ── Combat de masse / Puissance de Bataille (ADE II ch.8, #148) — 5 tables verbatim NICHÉES dans
+  // UN seul fichier (`mass-battle.json`, moteur `engine/massBattle.ts`). Champs déjà imprimés en
+  // STRINGS par la source (prix/portée/dégâts/atouts) → faits bruts (`fact`), pas de cross-réf chips :
+  // les libellés d'Atouts imprimés ici (« Explosion 15 », « Impénétrable »…) ne correspondent PAS
+  // toujours tels quels aux libellés canoniques de `qualities`/`traits` (ex. qualité « À Explosion » vs
+  // « Explosion » ici, trait « Impénétrable (structure) » vs « Impénétrable » ici) — une décomposition
+  // par id resterait à faire côté donnée (hors périmètre #148, ne pas inventer un rapprochement flou). ──
+  {
+    key: 'massBattlePowerEstimate', label: 'Bataille de masse — Estimation de Puissance', group: 'Tables',
+    build: () => POWER_ESTIMATE.map((p) => ({
+      label: p.label,
+      meta: facts(fact('Puissance alliée', p.ally), fact('Puissance ennemie', p.enemy)),
+      desc: p.example,
+    })),
+  },
+  {
+    key: 'massBattleMightModifiers', label: 'Bataille de masse — Modificateurs de Puissance', group: 'Tables',
+    build: () => MIGHT_MODIFIERS.map((m) => ({
+      label: m.label,
+      meta: facts(fact('Modificateur', m.mod > 0 ? `+${m.mod}` : String(m.mod))),
+      desc: m.example,
+    })),
+  },
+  {
+    key: 'massBattleWarMachines', label: 'Bataille de masse — Machines de guerre', group: 'Tables',
+    build: () => WAR_MACHINES.map((w) => ({
+      label: w.label,
+      meta: facts(
+        fact('Prix', w.price), fact('Équipe', w.crew), fact('Disponibilité', w.availability),
+        fact('Portée', w.range), fact('Dégâts', w.damage), fact('Atouts', w.traits),
+      ),
+    })),
+  },
+  {
+    key: 'massBattleStructures', label: 'Bataille de masse — Structures', group: 'Tables',
+    build: () => MASS_BATTLE_STRUCTURES.map((s) => ({
+      label: s.label,
+      meta: facts(fact('BE', s.be), fact('Blessures', s.wounds), fact('Atouts', s.traits)),
+    })),
+  },
+  {
+    key: 'massBattleHazards', label: 'Bataille de masse — Aléas de bataille', group: 'Tables',
+    build: () => BATTLE_HAZARDS.map((h) => ({ label: h.label, sub: `1d10 = ${h.min}`, desc: h.text })),
   },
   // ── Datasets-OBJETS uniques (E3b) : config de création (objet) + banque de noms (Record par race) ──
   {

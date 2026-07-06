@@ -63,11 +63,13 @@ import pregensJson from './pregens.json';
 import oupsJson from './oups.json';
 import interludeEventsJson from './interludeEvents.json';
 import peripetiesJson from './peripeties.json';
+import massBattleJson from './mass-battle.json';
 import grappleJson from './grapple.json';
 import waterExposureJson from './water-exposure.json';
 import { CharKey, CHAR_LABELS, Weapon, VehicleData, StructureData, Availability } from '../engine/types';
 import type { MutationData, MutationTable } from './mutations'; // type-only (évite le cycle data→mutations→engine→data)
 import type { DiseaseDef } from '../engine/disease'; // type-only (le runtime de disease.ts importe `maladies` d'ici)
+import type { PowerEstimateRow, MightModifierRow, WarMachineRow, StructureRow as MassBattleStructureRow, HazardRow } from '../engine/massBattle'; // type-only (le runtime de massBattle.ts importe ces tableaux d'ici)
 import { type DiceSpec, formatDice } from '../engine/dice';
 import { SIZE_LABEL } from '../engine/size'; // runtime : registre feuille (data/sizes.json + engine/qualities/ids), sans cycle vers data/index
 import type { PregenDef } from './pregens'; // type-only (pregens.ts importe la donnée d'ici)
@@ -1209,6 +1211,23 @@ export const structureById: Map<string, StructureData> = new Map(structures.map(
 export const findStructureById = (id: string): StructureData | undefined => structureById.get(id);
 /** Apparence de RENDU des structures (murs/portes) — donnée pure, découplée des règles ci-dessus. */
 export const structureAppearances = structureAppearanceJson as import('../gameIso/catalog/structures/types').StructureAppearanceDef[];
+
+/** Combat de masse / Puissance de Bataille (ADE II ch.8, l.13-321) — 5 tables verbatim NICHÉES dans
+ *  UN seul fichier (`mass-battle.json`, pas un tableau plat par table) : exposées ICI (facade) pour que
+ *  le Codex/l'éditeur DEV les édite comme n'importe quel autre dataset (seam `overrides.ts`) ; le moteur
+ *  pur (`engine/massBattle.ts`) les relit d'ICI (types définis là-bas, réimportés en `import type` —
+ *  même patron que `maladies`/`DiseaseDef`). Noms préfixés `massBattle*` : `structures` est déjà pris par
+ *  le catalogue de structures de siège JOUABLES ci-dessus (schéma différent : BE/B structuré + traits
+ *  `{id}[]`, quand mass-battle.json reste `be`/`wounds`/`traits` en chaîne verbatim imprimée). */
+export const massBattlePowerEstimate = massBattleJson.powerEstimate as PowerEstimateRow[];
+export const massBattleMightModifiers = massBattleJson.mightModifiers as MightModifierRow[];
+export const massBattleWarMachines = massBattleJson.warMachines as WarMachineRow[];
+export const massBattleStructures = massBattleJson.structures as MassBattleStructureRow[];
+export const massBattleHazards = massBattleJson.hazards as HazardRow[];
+/** Objet racine (mêmes références vivantes que les 5 tableaux ci-dessus) — cible de sérialisation PLEINE
+ *  au save d'une entrée d'un sous-tableau (l'éditeur ne doit PAS écrire QUE le tableau touché, sous peine
+ *  de perdre les 4 autres sections du fichier). Cf. `data/overrides.ts::NESTED_ARRAY_FILE`. */
+export const massBattleData = massBattleJson;
 
 /** Apparence de RENDU du relief (falaises/rampes/tabliers/piliers/POV) — donnée pure. */
 export const reliefMaterials = reliefMaterialsJson as import('../gameIso/catalog/relief/types').ReliefMaterialDef[];

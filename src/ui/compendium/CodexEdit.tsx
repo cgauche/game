@@ -6,7 +6,7 @@
  * System Access (`fsPersist`) + preview mémoire (`setDataset`).
  */
 import { useEffect, useMemo, useState } from 'react';
-import { datasetArray, setDataset, datasetObject, setObjectDataset, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
+import { datasetArray, setDataset, datasetObject, setObjectDataset, datasetFile, datasetSerializeRoot, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
 import { serializeDataset } from '../../data/serialize';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
@@ -54,6 +54,12 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   calendarMonths: 'calendarMonths', calendarIntercalary: 'calendarIntercalary',
   calendarWeekdays: 'calendarWeekdays', calendarPhases: 'calendarPhases', weather: 'weather',
   symptoms: 'symptoms',
+  // Combat de masse (ADE II ch.8, #148) — 5 tableaux NICHÉS dans UN fichier (`mass-battle.json`) :
+  // `datasetFile`/`datasetSerializeRoot` (overrides.ts) réécrivent le fichier PARENT entier au save,
+  // pas juste le tableau touché (sinon les 4 autres sections seraient perdues).
+  massBattleWarMachines: 'massBattleWarMachines', massBattleStructures: 'massBattleStructures',
+  massBattleHazards: 'massBattleHazards', massBattleMightModifiers: 'massBattleMightModifiers',
+  massBattlePowerEstimate: 'massBattlePowerEstimate',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
@@ -203,7 +209,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
       entries: arr,
       initial: arr[index] ?? {},
       index,
-      file: `${dsKey}.json`, recordMode: false, initialKey: '',
+      file: datasetFile(dsKey), recordMode: false, initialKey: '',
       persist: (e) => setDataset(dsKey, (index < 0 ? [...arr, e] : arr.map((x, i) => (i === index ? e : x))) as never),
     };
   }, [obj, categoryKey, label, isNew]);
@@ -289,7 +295,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
     src.persist(entry, recordKey.trim()); // preview mémoire (live) — mutation en place (tableau ou objet)
     invalidateCodexLookup(); // l'index de `codexLookup` repart de la donnée persistée
     // Le texte écrit = la SOURCE entière (tableau ou objet-dataset), re-sérialisée byte-fidèle.
-    const text = serializeDataset(obj ? datasetObject(obj.ds) : datasetArray(editableDataset(categoryKey)!));
+    const text = serializeDataset(obj ? datasetObject(obj.ds) : datasetSerializeRoot(editableDataset(categoryKey)!));
     try {
       if (fs.FS_API && dir && !needsGrant) { await fs.writeFile(dir, src.file, text); setMsg(`Enregistré ${src.file} — Vite recharge…`); }
       else { fs.downloadFallback(src.file, text); setMsg(`Téléchargé ${src.file} — reposez-le dans src/data/`); }

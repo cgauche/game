@@ -14,6 +14,7 @@ import {
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
   pregens, oups, interludeEvents, peripeties, details, names,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
+  massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate, massBattleData,
 } from './index';
 
 /** Datasets-tableaux mutables (clé éditeur → MÊME référence d'array que l'export de la façade). */
@@ -22,6 +23,7 @@ const ARRAYS = {
   qualities, qualitySubtypes, qualityTypes, mutations, mutationTables, trappings, weaponGroups, breathTypes, damageTypes, creatures, spells, maneuvers, domains, lightLevels, props, eyes, hairs, stars, locations, books, raceAppearance, gods, structures,
   pregens, oups, interludeEvents, peripeties,
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms,
+  massBattleWarMachines, massBattleStructures, massBattleHazards, massBattleMightModifiers, massBattlePowerEstimate,
 } as const;
 
 export type DatasetKey = keyof typeof ARRAYS;
@@ -56,6 +58,31 @@ const OBJECT_SEED = Object.fromEntries(
 export function setDataset<K extends DatasetKey>(key: K, next: readonly (typeof ARRAYS)[K][number][]): void {
   const arr = ARRAYS[key] as unknown[];
   arr.splice(0, arr.length, ...(next as readonly unknown[]));
+}
+
+/** Datasets-tableaux NICHÉS dans un fichier-objet PARTAGÉ : `mass-battle.json` porte 5 tableaux frères
+ *  dans UN seul fichier (pas un fichier par tableau, contrairement à tous les autres `ARRAYS`). Mêmes
+ *  garanties de mutation en place que `ARRAYS` (`setDataset` continue de fonctionner tel quel sur ces
+ *  clés), mais le FICHIER à réécrire et le CONTENU à sérialiser au save divergent : il faut réécrire le
+ *  PARENT ENTIER (`massBattleData`), sous peine d'écraser les 4 tableaux frères avec un tableau nu.
+ *  `datasetFile`/`datasetSerializeRoot` (lues par `CodexEdit.save`) retombent sur le défaut historique
+ *  (`<clé>.json` / le tableau lui-même) pour toute clé absente d'ici — zéro changement de comportement
+ *  pour les ~40 datasets existants. */
+const NESTED_ARRAY_FILE: Partial<Record<DatasetKey, { file: string; root: () => unknown }>> = {
+  massBattleWarMachines: { file: 'mass-battle.json', root: () => massBattleData },
+  massBattleStructures: { file: 'mass-battle.json', root: () => massBattleData },
+  massBattleHazards: { file: 'mass-battle.json', root: () => massBattleData },
+  massBattleMightModifiers: { file: 'mass-battle.json', root: () => massBattleData },
+  massBattlePowerEstimate: { file: 'mass-battle.json', root: () => massBattleData },
+};
+/** Fichier disque d'un dataset-tableau (`<clé>.json` par défaut ; le fichier PARENT pour un tableau niché). */
+export function datasetFile(key: DatasetKey): string {
+  return NESTED_ARRAY_FILE[key]?.file ?? `${key}.json`;
+}
+/** Racine à SÉRIALISER au save (le tableau lui-même par défaut ; l'objet PARENT entier pour un tableau
+ *  niché — ses tableaux frères doivent survivre à l'édition d'un seul). */
+export function datasetSerializeRoot(key: DatasetKey): unknown {
+  return NESTED_ARRAY_FILE[key]?.root() ?? datasetArray(key);
 }
 
 /** Remplace EN PLACE le contenu d'un dataset-objet : purge ses clés puis ré-assigne (réf stable). */

@@ -164,6 +164,38 @@ describe('Codex registry — statbloc bestiaire compact', () => {
   });
 });
 
+describe('Codex registry — Bataille de masse (ADE II ch.8, #148)', () => {
+  it('les 5 sections de mass-battle.json sont exposées, peuplées et ÉDITABLES au Codex', () => {
+    const keys = ['massBattlePowerEstimate', 'massBattleMightModifiers', 'massBattleWarMachines', 'massBattleStructures', 'massBattleHazards'];
+    for (const key of keys) {
+      const cat = categoryByKey(key);
+      expect(cat, key).toBeTruthy();
+      expect(cat!.items.length, key).toBeGreaterThan(0);
+      expect(isEditableCategory(key), key).toBe(true);
+    }
+  });
+
+  it('les machines de guerre (dont le Bélier, déjà présent en donnée — pas dupliqué) apparaissent au catalogue', () => {
+    const items = categoryByKey('massBattleWarMachines')!.items;
+    expect(items.map((i) => i.label)).toContain('Bélier');
+    const belier = items.find((i) => i.label === 'Bélier')!;
+    expect(belier.meta?.find((f) => f.label === 'Équipe')?.value).toBe('6');
+    expect(belier.meta?.find((f) => f.label === 'Atouts')?.value).toBe('Siège');
+    // Une seule occurrence (pas de doublon introduit ailleurs, ex. trappings.json — cf. incident #148).
+    expect(items.filter((i) => i.label === 'Bélier')).toHaveLength(1);
+  });
+
+  it('les structures (cibles de siège) et les aléas de bataille sont peuplés avec leurs faits', () => {
+    const structures = categoryByKey('massBattleStructures')!.items;
+    const porte = structures.find((i) => i.label === 'Porte de ville')!;
+    expect(porte.meta?.find((f) => f.label === 'BE')?.value).toBe('10');
+    expect(porte.meta?.find((f) => f.label === 'Blessures')?.value).toBe('30');
+    const hazards = categoryByKey('massBattleHazards')!.items;
+    expect(hazards.map((i) => i.label)).toContain('Tempête');
+    expect(hazards.find((i) => i.label === 'Tempête')!.desc).toMatch(/tempête se lève/);
+  });
+});
+
 describe('Codex — facettes', () => {
   it('filterItems : ET entre facettes, OU à l’intérieur, item sans valeur écarté par une facette active', () => {
     const items: CodexItem[] = [

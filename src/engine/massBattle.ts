@@ -13,7 +13,9 @@
  * (contextes 'bataille'/'bataille-round') dans `activities.json` — mécanique unifiée avec les Activités
  * d'interlude/voyage (bandes d'issue `outcomes` + `battle`). Aucune valeur inventée (règle 1).
  */
-import data from '../data/mass-battle.json';
+import {
+  massBattlePowerEstimate, massBattleMightModifiers, massBattleWarMachines, massBattleStructures, massBattleHazards,
+} from '../data';
 import { rollTest, type TestResult } from './tests';
 import { DIFFICULTY_MODIFIERS, type Difficulty } from './types';
 import { RNG, defaultRNG } from './dice';
@@ -32,11 +34,15 @@ export interface StructureRow { id: string; label: string; be: number; wounds: n
 /** Un facteur environnemental d'aléa de bataille (l.311-322, 1d10) — texte verbatim. */
 export interface HazardRow { min: number; max: number; label: string; text: string }
 
-export const POWER_ESTIMATE = data.powerEstimate as PowerEstimateRow[];
-export const MIGHT_MODIFIERS = data.mightModifiers as MightModifierRow[];
-export const WAR_MACHINES = data.warMachines as WarMachineRow[];
-export const STRUCTURES = data.structures as StructureRow[];
-export const BATTLE_HAZARDS = data.hazards as HazardRow[];
+// Les 5 tableaux sont maintenant portés par la facade `data/index.ts` (seam `overrides.ts` — édition
+// Codex) ; ce module en reste le PROPRIÉTAIRE des types (import type ré-emprunté par la facade, comme
+// `maladies`/`DiseaseDef`) et de la logique PURE ci-dessous. Mêmes références vivantes (pas de copie) :
+// une édition Codex persistée ici se reflète immédiatement dans ces constantes.
+export const POWER_ESTIMATE: PowerEstimateRow[] = massBattlePowerEstimate;
+export const MIGHT_MODIFIERS: MightModifierRow[] = massBattleMightModifiers;
+export const WAR_MACHINES: WarMachineRow[] = massBattleWarMachines;
+export const STRUCTURES: StructureRow[] = massBattleStructures;
+export const BATTLE_HAZARDS: HazardRow[] = massBattleHazards;
 
 export const MIGHT_MIN = 0;
 export const MIGHT_MAX = 100;
