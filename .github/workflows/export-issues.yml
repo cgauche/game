@@ -20,6 +20,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run issues:export
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Commit et push si diff
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
