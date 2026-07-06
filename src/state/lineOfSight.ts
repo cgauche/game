@@ -5,7 +5,7 @@
  * (cf. combatFlow). La table de couvert n'est pas exhaustive (LDB l.75 : « servez-vous de ces exemples
  * comme guide ») — la classification des décors/créatures est une extrapolation des exemplaires canon.
  */
-import { Scene, SceneEntity, tileAt, wallBetween } from './scene';
+import { Scene, SceneEntity, tileAt, wallBetween, heightAt, sceneMetresPerTile } from './scene';
 import { TERRAINS } from './terrain';
 import { findPropById } from '../data';
 import { Pt } from './path';
@@ -138,12 +138,21 @@ export function lineOfSightCover(
     if (smoky(from) || smoky(to) || tilesBetween(from, to).some(smoky)) return { blocked: true, cover: 'totale' };
   }
   // Murs d'arête (Scene.walls) : barrière pleine entre deux cases → vue entièrement bloquée.
-  // MÊME étage seulement. Cross-niveau (`from.z` ≠ `to.z`, modèle Phase 1) : un défenseur sur le rempart
-  // (z=1) voit/tire l'assaillant au sol (z=0) PAR-DESSUS les arêtes fines (créneaux/parapet) → on ignore
-  // les murs d'arête ; seules les TUILES opaques (bâtiment/terrain, boucle ci-dessous) coupent la LdV.
-  // (Le « dead ground » au pied du mur — angle mort vertical — est un raffinement ultérieur, non requis.)
+  // MÊME étage seulement. Cross-niveau (`from.z` ≠ `to.z`) : un défenseur sur le rempart (z=1) voit/tire
+  // l'assaillant au sol (z=0) PAR-DESSUS les arêtes fines (créneaux/parapet) → on ignore les murs
+  // d'arête ; seules les TUILES opaques (bâtiment/terrain, boucle ci-dessous) coupent la LdV.
   const sameFloor = (from.z ?? 0) === (to.z ?? 0);
   if (sameFloor && wallOnSight(scene, from, to, from.z ?? 0)) return { blocked: true, cover: 'totale' };
+  // Angle mort VERTICAL (dead ground) : le parapet masque la vue trop plongeante sur ce qui est COLLÉ
+  // au pied du perchoir — symétrique (la cible en contrebas ne voit pas non plus le tireur en hauteur).
+  // Seuil DESIGN (comme `STEP_MAX_M`, relief.ts — aucune règle RAW ne chiffre cette géométrie) : bloqué
+  // quand l'écart de hauteur (m, `heightAt`) dépasse la distance horizontale parcourue (m) — angle de
+  // dépression > 45°. Au-delà de ce seuil, la vue par-dessus le parapet redevient dégagée (tests cross-z).
+  if (!sameFloor) {
+    const dzM = Math.abs(heightAt(scene, from.x, from.y, from.z ?? 0) - heightAt(scene, to.x, to.y, to.z ?? 0));
+    const horizM = Math.max(Math.abs(from.x - to.x), Math.abs(from.y - to.y)) * sceneMetresPerTile(scene);
+    if (dzM > horizM) return { blocked: true, cover: 'totale' };
+  }
   let cover: CoverClass = 'none';
   for (const t of tilesBetween(from, to)) {
     const terr = tileAt(scene, t.x, t.y);

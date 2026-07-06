@@ -140,3 +140,32 @@ describe('computeStateVisible — INTÉGRATION : le viewer porte sa COUCHE (z-de
     expect(vis.has('3,0,0')).toBe(true); // case au SOL en contrebas RÉVÉLÉE — le viewer porte z: c.pos.z
   });
 });
+
+describe('lineOfSightCover — angle mort VERTICAL (dead ground) au pied du rempart', () => {
+  // Rempart 4 m (WALL_H=LEVEL_H, relief.ts METRES_PER_LEVEL) : bloc plein `mur` au sol (0,0), chemin de
+  // ronde `plancher` par-dessus à 4 m (z1, même case) — patron identique à l'INTÉGRATION ci-dessus.
+  const rampartScene = (w: number): Scene => {
+    const z0 = new Array(w).fill('sol') as Terrain[]; z0[0] = 'mur';
+    const z1 = new Array(w).fill('vide') as Terrain[]; z1[0] = 'plancher';
+    const height1 = new Array(w).fill(0); height1[0] = 4;
+    return {
+      id: 's', nom: 's', description: '', dimensions: { w, h: 1 }, ambiance: 'exterieur', ambientLight: 'jour',
+      layers: [{ z: 0, tiles: z0 }, { z: 1, tiles: z1, height: height1 }],
+      entities: [], dialogues: [], triggers: [], encounters: [], flags: {},
+    } as unknown as Scene;
+  };
+  const def = { x: 0, y: 0, z: 1 }; // défenseur au sommet du rempart (4 m)
+
+  it('cible COLLÉE au pied du rempart (adjacente, en contrebas) → angle mort, HORS de vue (et réciproquement)', () => {
+    const s = rampartScene(6);
+    const foot = { x: 1, y: 0 }; // z=0, adjacente à la base du rempart
+    expect(lineOfSightCover(s, def, foot, []).blocked).toBe(true);
+    expect(lineOfSightCover(s, foot, def, []).blocked).toBe(true); // réciproque : le pied ne voit pas non plus le sommet
+  });
+
+  it('cible plus ÉLOIGNÉE au sol → LdV dégagée (par-dessus le parapet, inchangé)', () => {
+    const s = rampartScene(6);
+    const far = { x: 4, y: 0 };
+    expect(lineOfSightCover(s, def, far, []).blocked).toBe(false);
+  });
+});
