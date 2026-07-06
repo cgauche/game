@@ -1,6 +1,6 @@
 *Pages PDF 47-60*
 
-# <span id="page-46-0"></span>CHAPITRE 4 ENQUÊTES PRÉLIMINAIRES
+# <span id="page-46-0" data-folio="44"></span>CHAPITRE 4 ENQUÊTES PRÉLIMINAIRES
 
 Étant donné l'ampleur du complot exposé dans le *Chapitre 3 : Le plan machiavélique*, les Personnages les plus curieux devraient s'apercevoir assez rapidement que quelque chose de sinistre se prépare dans la Cité du Loup Blanc. À présent qu'ils sont arrivés à Middenheim, qu'ils ont déjoué l'embuscade de la Main Pourpre et qu'ils ont fait un pas dans la sombre toile tissée par Wasmeier, les Personnages cherchent sans doute à en apprendre davantage sur la secte et à la détruire. Peut-être qu'ils souhaitent également retrouver Gotthard von Wittgenstein et révéler l'existence du culte de Slaanesh auquel il appartient. Après avoir affronté les skavens (voir *Le Chaos frappe la nuit* p. 89), ils voudront probablement les traquer eux aussi : leur dernière rencontre avec les hommes-rats, au château von Wittgenstein, ne s'étant en effet soldée que par de la frustration. Ce à quoi ils ne s'attendront pas, c'est de devoir affronter une nouvelle conspiration, dont l'objectif est de manipuler les citoyens les plus puissants de Middenheim afin de provoquer la chute de la cité.
 
@@ -60,7 +60,7 @@ Si les Personnages décident de se servir des agents de la Main Pourpre, n'oubli
 
 ### À LA POINTE DE LA MODE
 
-<span id="page-48-0"></span>Tandis que les Personnages se fraient un chemin à travers les différentes strates de la société de Middenheim, ils devront être à l'affût d'un certain choix vestimentaire qui caractérise les agents de la Main Pourpre : un unique vêtement ou accessoire violet. Ce signe distinctif permet aux cultistes de se reconnaître en public. Bien sûr, toutes les personnes portant un chapeau violet, une bourse indigo ou une ceinture lie de vin ne sont pas des cultistes ; voici donc une excellente opportunité de jouer avec la paranoïa de vos Personnages. Chaque fois que vous décrivez l'apparence d'un PNJ, utilisez le tableau ci-dessous pour générer aléatoirement un vêtement ou accessoire de couleur violette, afin d'ajouter un soupçon de malaise à la situation.
+<span id="page-48-0" data-folio="46"></span>Tandis que les Personnages se fraient un chemin à travers les différentes strates de la société de Middenheim, ils devront être à l'affût d'un certain choix vestimentaire qui caractérise les agents de la Main Pourpre : un unique vêtement ou accessoire violet. Ce signe distinctif permet aux cultistes de se reconnaître en public. Bien sûr, toutes les personnes portant un chapeau violet, une bourse indigo ou une ceinture lie de vin ne sont pas des cultistes ; voici donc une excellente opportunité de jouer avec la paranoïa de vos Personnages. Chaque fois que vous décrivez l'apparence d'un PNJ, utilisez le tableau ci-dessous pour générer aléatoirement un vêtement ou accessoire de couleur violette, afin d'ajouter un soupçon de malaise à la situation.
 
 | d100  | Vêtement ou accessoire                                                          |
 |-------|---------------------------------------------------------------------------------|
@@ -96,7 +96,7 @@ Après avoir appris que « Wallenstein », en plus d'être le président d'une g
 Puisqu'il prend publiquement fait et cause pour les nouvelles taxes, les Personnages feraient bien de commencer à enquêter sur lui en partant de ce fait, surtout s'ils savent déjà ou soupçonnent que la Main Pourpre s'intéresse de près à ces taxes (voir ci-dessus). Cette stratégie leur permettra ainsi de rassembler assez de preuves avant de porter une accusation, tout en leur donnant l'opportunité de rencontrer d'autres PNJ influents, et les amènera en fin de compte à découvrir le complot pour remplacer le graf Boris.
 
 
-### <span id="page-49-0"></span>UN SOUPÇON DE PARANOÏA
+### <span id="page-49-0" data-folio="47"></span>UN SOUPÇON DE PARANOÏA
 
 Bien que le Sceptre de Jade ne partage pas le goût de la Main Pourpre pour les codes couleurs, vos Joueurs, eux, ne le savent pas forcément. N'hésitez pas à ajouter de temps à autre un gilet vert foncé à la tenue d'un PNJ suspect. Plus les Joueurs se demanderont en qui ils peuvent avoir confiance, meilleure sera l'intrigue.
 
@@ -123,7 +123,7 @@ Les ratiers sont réticents à aborder de tels sujets avec quiconque ne faisant 
 Suite aux Guerres skavens, Middenheim intégra des égoutiers à la Garde de la ville en tant que forces armées spéciales chargées de patrouiller la Cité souterraine et de repousser toutes les menaces qui viendraient d'en bas. Si les Personnages cherchent à se renseigner sur les égoutiers, il leur sera conseillé de se rendre au bureau de la Garde, sur la Place des parades. Un Personnage ayant suivi au moins une Carrière de guerrier ou de ratier peut, là encore, se faire passer pour une nouvelle recrue potentielle et rencontrer le responsable des égoutiers, un halfling à l'air coriace nommé Jacko Chantrille.
 
 
-#### <span id="page-50-0"></span>**Les nains**
+#### <span id="page-50-0" data-folio="48"></span>**Les nains**
 
 La communauté naine de Middenheim connaît la Cité souterraine mieux que quiconque Les Brise-fer, des spécialistes du combat souterrain, accompagnent souvent les patrouilles d'égoutiers. En se rendant à la Kommission pour les Intérêts des elfes, des nains et des halflings, les Personnages pourront entrer en contact avec les dirigeants nains locaux, et si un Personnage nain se renseigne auprès de la Guilde des Ingénieurs nains, du Temple de Grungni ou de n'importe quel autre endroit associé à la communauté naine, on lui dira d'aller trouver Modi Zargul à la taverne La Hache et le Tonneau, dans le secteur de Wynd. Ce lieu est adapté à la clientèle naine : les plafonds ont une hauteur de 1,7 mètre, ce qui fait de la taverne un espace clos pour les humains et les elfes ; tous les non nains souffrent d'une pénalité de –10 à leurs Tests de **Sociabilité** ; et il y a 75 % de chances pour qu'un PNJ nain rencontré en ce lieu possède le Trait Animosité envers les elfes.
 
@@ -197,7 +197,7 @@ Bien que la plupart des Middenheimers estiment que le nombre de réfugiés sigma
 Pendant ce temps, chaque Sigmarite de Middenheim a au moins une histoire à raconter. Certains d'entre eux, surtout ceux qui ne 
 
 
-<span id="page-52-0"></span>sont en ville que pour le Carnaval, ne parlent que d'impolitesses ou de bousculades occasionnelles. Mais les Sigmarites vivant à Middenheim ne sont pas du tout d'accord avec ce point de vue. Soit ils ont eux-mêmes fait l'expérience d'actes de discrimination ou de violence, soit ils connaissent quelqu'un dont c'est le cas. Les bagarres dans les tavernes et les passages à tabac dans les ruelles ont très vite été accompagnés de briques lancées par les fenêtres et de slogans barbouillés sur les murs ; quelques incendies d'origine suspecte se sont déclarés dans des habitations ou des commerces appartenant à des Sigmarites ; et tout le monde connaît au moins une famille qui a fait ses valises pour le sud.
+<span id="page-52-0" data-folio="50"></span>sont en ville que pour le Carnaval, ne parlent que d'impolitesses ou de bousculades occasionnelles. Mais les Sigmarites vivant à Middenheim ne sont pas du tout d'accord avec ce point de vue. Soit ils ont eux-mêmes fait l'expérience d'actes de discrimination ou de violence, soit ils connaissent quelqu'un dont c'est le cas. Les bagarres dans les tavernes et les passages à tabac dans les ruelles ont très vite été accompagnés de briques lancées par les fenêtres et de slogans barbouillés sur les murs ; quelques incendies d'origine suspecte se sont déclarés dans des habitations ou des commerces appartenant à des Sigmarites ; et tout le monde connaît au moins une famille qui a fait ses valises pour le sud.
 
 ### **Un sombre dessein**
 

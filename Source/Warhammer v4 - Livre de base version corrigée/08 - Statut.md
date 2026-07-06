@@ -17,7 +17,7 @@ La distinction la plus importante d'un Statut apparaît au travers de ses Échel
 **Échelon Or :** il est réservé aux dirigeants de la société, à ceux qui leur servent de conseillers directs, de protecteurs et de garants de l'ordre ; auxquels il faut ajouter les riches. Atteindre une telle position demande de la persévérance, de la réussite et plus qu'un peu de chance. Tous ceux qui appartiennent à l'Échelon Or sont riches, respectés, et d'un Statut bien supérieur à ceux appartenant aux Échelons Argent et Bronze.
 
 
-<span id="page-51-0"></span>**Échelon Argent :** ce sont des personnes parmi les plus aisées et celles qui exercent des professions demandant des compétences bien précises et une excellente expertise. Les commerçants, les artisans et les marchands forment le haut de cet Échelon alors que le reste est occupé par les prestataires de service. Ces personnes mènent des vies plutôt humbles, mais restent tout à fait respectables. Les personnes appartenant à l'Échelon Argent ont un Statut supérieur à celles de l'Échelon Bronze.
+<span id="page-51-0" data-folio="50"></span>**Échelon Argent :** ce sont des personnes parmi les plus aisées et celles qui exercent des professions demandant des compétences bien précises et une excellente expertise. Les commerçants, les artisans et les marchands forment le haut de cet Échelon alors que le reste est occupé par les prestataires de service. Ces personnes mènent des vies plutôt humbles, mais restent tout à fait respectables. Les personnes appartenant à l'Échelon Argent ont un Statut supérieur à celles de l'Échelon Bronze.
 
 **Échelon Bronze :** c'est à cet Échelon que se retrouvent les paysans et ceux qui exercent les professions les plus modestes ne nécessitant aucune compétence particulière. Les criminels, les bons à rien et ceux dont la vie est réduite à pas grand-chose font également partie de l'Échelon Bronze.
 
@@ -54,7 +54,7 @@ Le Statut va influencer nombre de situations qui auront un impact sur votre Pers
 Le Statut possède un impact important sur le Charme dans le sens où ceux qui disposent d'un Statut élevé obtiennent ce qu'ils veulent, alors que ceux qui ont un Statut inférieur éprouvent des difficultés à asseoir leur influence. Dans la plupart des
 
 
-<span id="page-52-0"></span>circonstances, ceux de l'Échelon supérieur obtiennent un bonus de +10 à leur Test de Charme lorsque ce dernier a pour cible des personnes appartenant à un Échelon inférieur. De la même façon, les personnes appartenant à un Échelon inférieur subissent une pénalité de -10 lorsqu'ils doivent influencer des personnes d'Échelon supérieur. Le MJ peut décider, plus rarement, d'appliquer ces modificateurs à ceux qui sont de Standing différent au sein d'un même Échelon.
+<span id="page-52-0" data-folio="51"></span>circonstances, ceux de l'Échelon supérieur obtiennent un bonus de +10 à leur Test de Charme lorsque ce dernier a pour cible des personnes appartenant à un Échelon inférieur. De la même façon, les personnes appartenant à un Échelon inférieur subissent une pénalité de -10 lorsqu'ils doivent influencer des personnes d'Échelon supérieur. Le MJ peut décider, plus rarement, d'appliquer ces modificateurs à ceux qui sont de Standing différent au sein d'un même Échelon.
 
 Si la cible d'une tentative de Charme est atypique, tout risque de se dérouler de manière totalement différente. Un individu qui « Brave le Statut » n'applique aucun modificateur, alors que celui qui a des « Opinions extrêmes » inverse les modificateurs (-10 à la place de +10, par exemple).
 
@@ -142,7 +142,7 @@ Voici la façon dont les différentes informations sur chaque Carrière sont pr�
 - **Aventure :** quelques trucs et astuces pour permettre à ceux qui embrassent cette Carrière de partir sur les chemins de l'aventure.
 
 
-<span id="page-54-0"></span>*Charismatique et beau parleur, vous défendez votre cause face à l'ordre établi.*
+<span id="page-54-0" data-folio="53"></span>*Charismatique et beau parleur, vous défendez votre cause face à l'ordre établi.*
 
 Les Agitateurs font pression pour diverses causes politiques, en utilisant des affiches, en manifestant et en prenant la parole en public. Ils gagnent la sympathie et le soutien des populations les plus pauvres, mais doivent faire attention à ne pas attirer l'attention des Sigmarites ou des nains, très conservateurs. Les Agitateurs les plus dangereux parviennent à mettre à mal l'autorité de nobles, de villes, et même quelquefois de provinces entières. Les Pamphlétaires placardent des tracts sur les panneaux d'affichage ou les distribuent sur les places de marché.
 
@@ -199,7 +199,7 @@ Intimidation, Perception **Talents :** Combat déloyal, Fuite !, Menteur, Pas de
 **Compétences :** Chevaucher (Cheval), Savoir (Héraldique) **Talents :** Affable, Grand orateur, Intrigant, Savoir-vivre (au choix) **Possessions :** 3 Pamphlétaires, mécène, presse à imprimer, chapeau impressionnant
 
 
-<span id="page-55-0"></span>
+<span id="page-55-0" data-folio="54"></span>
 
 # **ARTISAN**
 
@@ -262,7 +262,7 @@ Perception, Savoir (Région), Ragot **Talents :** Costaud, Doigts de fée, Négo
 **Possessions :** guilde, vêtement de qualité
 
 
-<span id="page-56-0"></span>*Ambitieux et socialement mobile, vous êtes le ciment qui unit la société urbaine.*
+<span id="page-56-0" data-folio="55"></span>*Ambitieux et socialement mobile, vous êtes le ciment qui unit la société urbaine.*
 
 Les Bourgeois satisfont les florissants centres de commerce et la demande de travailleurs. Ils remplissent divers rôles pour les artisans privés ou les conseils municipaux : banquiers, employés, camelots, aubergistes, vendeurs de journaux, valets d'écurie, tenanciers d'échoppe, garde-barrières, nettoyeurs, et bien d'autres. Leurs taux de rémunération varient : certains peuvent marchander pour une commission supplémentaire, tandis que les employés civils comme les lampistes et les gardebarrières reçoivent des salaires fixes. Ils ont peu d'opportunités de promotion, mais ceux qui ont de la détermination, du bon sens et de la chance peuvent éventuellement être propriétaires ou tenir leur propre affaire.
 
@@ -313,7 +313,7 @@ Sociable
 **Talents :** Affable, Grand orateur, Intrigant, Présence imposante **Possessions :** chaîne officielle, diligence et valet de pied, vêtements de qualité, grand hôtel particulier avec jardins et serviteurs
 
 
-<span id="page-57-0"></span>*Astucieux autant que méfiant, vous enquêtez au cœur des crimes afin d'y trouver des réponses.*
+<span id="page-57-0" data-folio="56"></span>*Astucieux autant que méfiant, vous enquêtez au cœur des crimes afin d'y trouver des réponses.*
 
 La plupart des Enquêteurs interviennent dans des affaires de vol de propriété privée, de personnes disparues ou de meurtres, même si certains enquêtent sur les gros titres des journaux ou encore sur les cas de chantage pour se faire un peu de « bonus ». Parmi les techniques d'enquête, on trouve le pistage des empreintes de pied, les recoupements, les déductions logiques, et, si nécessaire, les fouilles illégales. Alors que les Enquêteurs laïcs agissent à la limite de la loi pour des institutions comme les chambres de commerce, les enquêteurs religieux, pour la plupart au service de Sigmar et de Verena, suivent un code éthique très strict.
 
@@ -384,7 +384,7 @@ crochetage, veste en cuir
 **Possessions :** longue vue, réseau d'informateurs
 
 
-# <span id="page-58-0"></span>**MARCHAND** Halfling, Haut elfe, Humain, Nain
+# <span id="page-58-0" data-folio="57"></span>**MARCHAND** Halfling, Haut elfe, Humain, Nain
 
 *Vous êtes malin, vous savez parfaitement compter, vous achetez à bas prix et revendez au plus fort, et vous gagnez plus d'argent que la plupart n'en verront jamais.*
 
@@ -445,7 +445,7 @@ Vivacité
 domaine, 2 entrepôts, 1000 CO, vêtements de qualité
 
 
-<span id="page-59-0"></span>*Vous vivez dans la rue et vous subsistez grâce à la charité des autres, vous servant de votre charisme et de votre force de persuasion.*
+<span id="page-59-0" data-folio="58"></span>*Vous vivez dans la rue et vous subsistez grâce à la charité des autres, vous servant de votre charisme et de votre force de persuasion.*
 
 La rumeur, que l'on entend principalement dans les campagnes, prétendant que les rues d'Altdorf sont pavées d'or n'est qu'une moquerie cruelle envers ses Mendiants. Ils ne peuvent que se reposer sur la générosité des étrangers, et récupèrent les détritus issus de la fange de la ville, alors que certains dandys fanfarons n'hésitent pas à leur donner, sourire aux lèvres, quelques piécettes pour les faire déguerpir. Les lois ne leur accordent que peu de protection, et la garde n'a pas beaucoup de sympathie pour les vagabonds.
 
@@ -502,7 +502,7 @@ vivre (Criminels)
 Ceux qui vivent dans la rue ne peuvent changer qu'en la quittant. Certains Mendiants n'hésiteront pas à abandonner les caniveaux derrière eux dès qu'une opportunité de partir à l'aventure se présentera à eux, tant qu'ils ne sont pas utilisés comme chair à canon. Ceux qui n'ont pas les moyens d'engager un porteur peuvent employer un autre mendiant, sachant que la débrouillardise de ces derniers est d'un grand secours lorsqu'on se retrouve affamé et sans le sou. Et, si jamais les choses tournent mal, il n'est pas bien compliqué de retourner à une vie de mendicité.
 
 
-<span id="page-60-0"></span>*Vous êtes les garants de la paix et vous maintenez l'ordre parmi la populace pour que votre ville ne sombre pas dans l'anarchie.*
+<span id="page-60-0" data-folio="59"></span>*Vous êtes les garants de la paix et vous maintenez l'ordre parmi la populace pour que votre ville ne sombre pas dans l'anarchie.*
 
 Les Miliciens sont employés par les autorités locales afin de patrouiller les rues de l'Empire. La plupart ne sont autres que des gardiens de la paix engagés volontaires et bien peu connaissent les lois qu'ils sont censés faire appliquer. La corruption est endémique, et de nombreux Miliciens s'engagent auprès des autorités dans le seul but de blesser les autres ou encore de venir en aide aux gangs de criminels du coin. Certains arrivent à tripler leurs soldes en fermant ainsi les yeux.
 
@@ -2766,7 +2766,7 @@ tempête et huile
 **Possessions :** flottille de bateaux de transport fluvial avec un équipage de Naufrageurs, tonnelet de bière, menottes
 
 
-<span id="page-100-0"></span>*Vous pilotez des navires sur les eaux parmi les plus traîtres du Vieux Monde.*
+<span id="page-100-0" data-folio="99"></span>*Vous pilotez des navires sur les eaux parmi les plus traîtres du Vieux Monde.*
 
 Les Nautoniers sont des guides de rivières spécialisés qui connaissent sur le bout des doigts les rivières de la région. Ils sont très nombreux près des portions de rivières les plus dangereuses de l'Empire et n'hésitent pas à demander de fortes sommes pour accomplir une mission, même si certains pensent que la tâche est plutôt facile. D'autres estiment que ce n'est pas cher payé comparé à une cargaison perdue.
 
@@ -2817,7 +2817,7 @@ Savoir (Épaves) **Talents :** Pied marin, Pilote, Sens aiguisé (Vue), Très fo
 **Talents :** Nageur endurant, Persévérant, Sixième sens, Vivacité **Possessions :** canotier, petit bateau de transport fluvial
 
 
-<span id="page-101-0"></span>*Infatigable et sûr de vous, vous patrouillez les rivières sans relâche, pourchassant les hors-la-loi et les fauteurs de troubles.*
+<span id="page-101-0" data-folio="100"></span>*Infatigable et sûr de vous, vous patrouillez les rivières sans relâche, pourchassant les hors-la-loi et les fauteurs de troubles.*
 
 Le son d'un clairon sur une rivière annonce l'arrivée de la Patrouille fluviale impériale, groupe d'intervention armé aussi réputé pour les brutes qui la composent que pour son efficacité. La plupart des auberges et villages riverains leur gardent précieusement une place au mouillage, car, sans leur présence, les eaux resteraient sous la coupe de dangereux criminels. Ces patrouilles, surchargées de travail, se concentrent sur les crimes les plus horribles, et se contentent de résoudre les délits mineurs avec des amendes ponctuelles. Sur les principales routes de commerce, elles possèdent des navires plus importants dirigés par des Abordeurs entraînés à repousser des menaces plus importantes, comme les peaux-vertes ou les trolls.
 
@@ -2876,7 +2876,7 @@ l'orientation
 grade
 
 
-<span id="page-102-0"></span>*Peu scrupuleux et charmant, vous séparez les imbéciles de leur argent ; et Dieu merci, les imbéciles ne manquent pas…*
+<span id="page-102-0" data-folio="101"></span>*Peu scrupuleux et charmant, vous séparez les imbéciles de leur argent ; et Dieu merci, les imbéciles ne manquent pas…*
 
 Un Charlatan opère dans la confiance, mais fait son beurre de la trahison. En s'attaquant aux faiblesses émotionnelles et psychologiques, les Charlatans proposent à leur « cible » un prix trop beau pour être vrai. Les privilèges sociaux ne fournissent pas de protection, et même les citoyens les plus nobles peuvent tomber dans les filets d'un Charlatan talentueux. Le manque de scrupule, allié à un don pour le mensonge, profite aussi aux Charlatans.
 
@@ -2937,7 +2937,7 @@ Sociable
 **Possessions :** nécessaire d'écriture, sceau falsifié
 
 
-<span id="page-103-0"></span>*Débrouillard et intéressé, vous gagnez votre vie en vendant des marchandises illicites dans les bas-fonds de la ville.*
+<span id="page-103-0" data-folio="102"></span>*Débrouillard et intéressé, vous gagnez votre vie en vendant des marchandises illicites dans les bas-fonds de la ville.*
 
 Les Entremetteurs guident les gens vers les établissements offrant une variété de services illégaux et immoraux. Bien que beaucoup d'humains et de nains s'opposent à ce genre d'activités, la plupart des halflings et hauts elfes sont parfaitement neutres en ce qui concerne les repaires de drogués, les bordels et autres maisons du vice.
 
@@ -3000,7 +3000,7 @@ Savoir (Loi) **Talents :** Affable, Escroquer, Négociateur, Savoir-vivre
 réseau d'Entremetteurs
 
 
-# <span id="page-104-0"></span>**HORS-LA-LOI**
+# <span id="page-104-0" data-folio="103"></span>**HORS-LA-LOI**
 
 Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
 
@@ -3063,7 +3063,7 @@ mortel, Volonté de fer
 **Possessions :** « fief » de Chefs de bande, antre
 
 
-<span id="page-105-0"></span>*Vous bravez la menace de la nécromancie, volant les morts pour remplir vos propres poches.*
+<span id="page-105-0" data-folio="104"></span>*Vous bravez la menace de la nécromancie, volant les morts pour remplir vos propres poches.*
 
 Le trafic de corps et de membres est lucratif, avec une forte demande des universités et médecins pour des cadavres frais. Outre le marché scientifique, des corps sont parfois enterrés avec toutes sortes d'objets de valeur sous les stèles funéraires des tombeaux des Jardins de Morr. Parce que leur travail est évidemment illégal et sacrilège, les Pilleurs de tombes opèrent généralement sous le couvert des ténèbres. Les Trafiquants de cadavres sont réputés supprimer l'intermédiaire et choisir les mendiants et autres infortunés directement dans les rues. Les Pilleurs de tombes évitent les risques juridiques du pillage des morts récents, et se rendent à la place dans les ruines et antiques tumulus, risquant d'y croiser les morts sans repos et les brigands. Étrangement, certains Chasseurs de trésors victorieux se voient acclamés en héros, leurs trésors vendus à l'aristocratie qui les exhibe ensuite. On raconte même que la grande fortune de l'un des ordres de chevalerie provenait de plusieurs de ses membres qui avaient pillé une tombe étrangère.
 
@@ -3122,7 +3122,7 @@ Trappeur
 **Possessions :** sac de couchage, cartes, tente, outils de la profession (Ingénieur), nécessaire d'écriture
 
 
-<span id="page-106-0"></span>*Vous êtes membre d'un gang criminel organisé, collectant les dettes et extorquant de l'argent aux plus faibles.*
+<span id="page-106-0" data-folio="105"></span>*Vous êtes membre d'un gang criminel organisé, collectant les dettes et extorquant de l'argent aux plus faibles.*
 
 Les Rançonneurs extorquent de l'argent aux citoyens et aux marchands respectueux de la loi, fournissant une « protection » ou tout autre « service » frauduleux similaire. Si les « honoraires » ne sont pas payés dans les temps, les victimes, leurs familles et leur gagne-pain courent un risque considérable. Des gangs importants soudoient ou intimident les autorités locales pour qu'elles ignorent leurs activités – leurs Coupe-jarret sont toujours prêts à tuer – ou pire – pour que leurs affaires continuent de bien fonctionner. Les Coupe-jarret sont employés pour collecter des dettes de toutes sortes, en particulier celles résultant de paris perdus ou de prêts à taux élevés. Dans un monde gangréné par la pauvreté, la promesse de richesse facile est un attrait que de nombreux imbéciles sont incapables d'ignorer. Plus la corruption est organisée, plus les organisations qui les dirigent sont vastes et complexes. Alors que les plus petits trafics sont gérés par de petits gangs dont le territoire se limite à un immeuble ou deux, les plus grands peuvent comprendre des cités et même des régions entières, et les Barons du crime qui les dirigent peuvent exercer un pouvoir extraordinaire.
 
@@ -3179,7 +3179,7 @@ Les Coupe-jarret et les Rançonneurs sont toujours prêts à recourir aux menace
 **Possessions :** chefs de gangs subalternes, réseau d'Informateurs, vêtements et chapeau de qualité
 
 
-<span id="page-107-0"></span>*Expert avisé en objets de valeur, vous achèterez tout, légal ou non, et inverserez la situation pour ramasser un joli profit.*
+<span id="page-107-0" data-folio="106"></span>*Expert avisé en objets de valeur, vous achèterez tout, légal ou non, et inverserez la situation pour ramasser un joli profit.*
 
 Un Receleur achète les butins des Voleurs et les revend pour faire du profit, souvent à ceux qui ignorent que les biens sont volés. Les Receleurs brillants travaillent parfois comme prêteurs sur gages, importateurs et autres marchands. D'autres préfèrent rester itinérants, trafiquant uniquement des objets transportables. Bien que le Receleur moyen revende des marchandises et des objets de valeur, on trouve aussi des spécialistes bien informés qui se concentrent sur les informations et savoirs interdits. Certains Receleurs déplacent les objets volés à travers l'Empire. Une peinture volée à Altdorf est plus facile à vendre à Talabheim à une clientèle ignorant le cambriolage. Quand des objets prestigieux disparaissent, les Receleurs sont aussi les premiers à être consultés par ceux qui cherchent à les acquérir. Certains Receleurs prennent même des commissions à leurs clients, pour les mettre en contact avec ceux qui peuvent voler sur demande.
 
@@ -3234,7 +3234,7 @@ assommante
 fer **Possessions :** gros bras, réseau d'Informateurs, entrepôt
 
 
-# <span id="page-108-0"></span>**SORCIER DISSIDENT** Humain
+# <span id="page-108-0" data-folio="107"></span>**SORCIER DISSIDENT** Humain
 
 *Volontaire et ambitieux, vous vous évertuez à maîtriser la magie sans licence officielle.*
 
@@ -3279,7 +3279,7 @@ h **Ensorceleur – Bronze 1**
 résistant **Possessions :** robes, crâne
 
 
-<span id="page-109-0"></span>*Vous volez les autres dans le but de remplir vos propres poches, et vous êtes plutôt doué pour ça.*
+<span id="page-109-0" data-folio="108"></span>*Vous volez les autres dans le but de remplir vos propres poches, et vous êtes plutôt doué pour ça.*
 
 Les Voleurs dérobent toutes sortes de richesses et de biens à leurs prochains. Du plus humble tire-laine au plus rusé des cambrioleurs, l'idée d'une journée de travail honnête en échange d'un salaire respectable n'est rien de plus qu'une mauvaise blague. Les Voleurs s'organisent souvent en gangs avec des Charlatans, des Rançonneurs et des Receleurs pour s'enrichir. Les querelles acharnées entre ces organisations illicites sont réputées durer des années, ou même des décennies. Les Voleurs les plus humbles ciblent des individus, leur faisant les poches ou guettant leurs victimes dans des ruelles infestées de rats. Les Cambrioleurs évitent la confrontation en entrant par effraction dans les entreprises et les résidences, emportant des objets transportables de valeur. Les Voleurs les plus ambitieux étudient leurs cibles pendant des jours voire des semaines, allant même jusqu'à infiltrer les établissements cibles pour avoir une meilleure connaissance de la configuration des lieux. Travaillant avec d'autres Cambrioleurs professionnels, de tels experts peuvent organiser des braquages auxquels leurs pairs inférieurs ne peuvent que rêver.
 
@@ -3340,7 +3340,7 @@ Souplesse féline
 **Possessions :** vêtements sombres, grappin, masque *ou* écharpes
 
 
-<span id="page-110-0"></span>*Vous êtes un fonctionnaire local jouissant de la confiance des dirigeants de la région pour administrer efficacement et fermement leurs terres.*
+<span id="page-110-0" data-folio="109"></span>*Vous êtes un fonctionnaire local jouissant de la confiance des dirigeants de la région pour administrer efficacement et fermement leurs terres.*
 
 Les Nobles confient aux Baillis le soin de collecter les taxes issues de leurs terres. Certains Baillis sont respectés et honnêtes, et il ne se passe pas une semaine sans qu'ils se rendent dans un temple de Sigmar. D'autres sont des tyrans qui jouissent du pouvoir conféré par leur seigneur sur leurs propriétés et possessions pour faire usage de menaces et de violences lors de l'exercice de leur profession. Les Baillis en exercice depuis longtemps deviennent souvent de fidèles serviteurs de la famille dirigeante et disposent d'avantages en nature conséquents. Les Préfets bénéficient d'un champ d'action plus important et ont de plus grandes responsabilités. Ils assurent le maintien de l'ordre au niveau des frontières du territoire de leur seigneur et résolvent les conflits, qu'ils aient pour origine des histoires de bétail ou des limites de propriétés agricoles.
 
@@ -3397,7 +3397,7 @@ de fer
 d'office
 
 
-<span id="page-111-0"></span>
+<span id="page-111-0" data-folio="110"></span>
 
 # **CHASSEUR**
 
@@ -3456,7 +3456,7 @@ L'amputation de deux doigts est l'une des peines les plus répandues appliquée 
 **Possessions :** cheval de selle avec selle et harnais, chenil avec chiens de chasse
 
 
-<span id="page-112-0"></span>*Intrépide et plein de ressources, vous guidez les autres à travers les dangereuses contrées sauvages du Vieux Monde*
+<span id="page-112-0" data-folio="111"></span>*Intrépide et plein de ressources, vous guidez les autres à travers les dangereuses contrées sauvages du Vieux Monde*
 
 Dans une population ou l'illettrisme est très répandu et où les cartes sont très rares, connaître la région dans laquelle on se trouve peut, pour les voyageurs, faire la différence entre la vie et la mort. Les Éclaireurs sont des experts dans l'art de trouver des trajets sécurisés au travers des coins les plus reculés et des routes boueuses de l'Empire. Les guides locaux vont accompagner leurs clients, les prévenant des dangers éventuels, partageant avec eux les ragots des villages et leur montrant les meilleurs endroits permettant de trouver de la nourriture. Les Éclaireurs les plus expérimentés resteront le plus souvent invisibles aux yeux de leurs employeurs, car ils seront toujours en amont à explorer les pistes à venir, et à tenter de repérer les éventuels dangers. Alors que la plupart des Éclaireurs demeurent sur des terres avec lesquelles ils sont familiers, certains se spécialisent dans l'escorte sur des terres non encore cartographiées. Certains Explorateurs vont quelquefois même jusqu'à s'aventurer sur des territoires dangereux et hostiles afin de compléter les blancs de leurs cartes. La majorité des Éclaireurs n'affronteront pas eux-mêmes les dangers, préférant se replier en toute discrétion pour prévenir leurs compagnons et faire en sorte que leur employeur ne se retrouve pas démuni face à la menace approchante.
 
@@ -3501,7 +3501,7 @@ Voyageur aguerri **Possessions :** arc et dix flèches, chemise de mailles
 **Compétences :** Langue (au choix), Métier (Cartographe) **Talents :** Dur à cuire, Linguistique, Persévérant, Savant (Région) **Possessions :** sélection de cartes, outils de la profession (Cartographe)
 
 
-<span id="page-113-0"></span>*Botanistes de grand talent qui bénéficient de la munificence de Rhya afin de créer des remèdes soignant de nombreuses affections.*
+<span id="page-113-0" data-folio="112"></span>*Botanistes de grand talent qui bénéficient de la munificence de Rhya afin de créer des remèdes soignant de nombreuses affections.*
 
 Les médicaments concoctés par les Apothicaires sont hors de prix et rarement disponibles dans l'arrière-pays reiklander. C'est pourquoi les paysans se tournent régulièrement vers le pouvoir de guérison des plantes, ramassées, traitées et administrées par les Herboristes. La transmission du savoir des Herboristes s'opère en grande majorité de façon orale, ce qui fait que, bien souvent, les dénominations des maladies vont varier d'un village à l'autre. Les Herbalistes de renom, parmi les plus expérimentés, sont dépêchés en cas de maladies mystérieuses ou particulièrement résistantes. Les Herboristes passent une grande partie de leur temps à rendre visite à ceux qui sont malades, cherchant à diagnostiquer l'affection dont ils sont atteints avant d'aller quérir les herbes nécessaires à l'élaboration du traitement. Certains Herboristes exercent leur profession moins honorablement et sont recherchés par ceux qui ne peuvent pas s'offrir certaines substances illicites onéreuses. Même s'il s'agit d'un stéréotype erroné, il existe une blague récurrente dans la profession qui dit que les Herboristes halflings ne s'intéressent qu'à l'herbe à pipe et à la racine du Destin.
 
@@ -3552,7 +3552,7 @@ l'alcool, Ragot, Savoir (Région)
 Travailleur qualifié (Herboriste) **Possessions :** poney et charrette
 
 
-<span id="page-114-0"></span>*C'est dans les profondeurs les plus sombres de la terre que, jour après jour, vous cassez de la pierre, un travail éreintant s'il en est.*
+<span id="page-114-0" data-folio="113"></span>*C'est dans les profondeurs les plus sombres de la terre que, jour après jour, vous cassez de la pierre, un travail éreintant s'il en est.*
 
 De nombreux Prospecteurs ont entendu des histoires sur la présence d'or dans les collines de Skaag, mais la pratique du minage dans ces tunnels sombres et dangereux est un travail très éprouvant. Les Mineurs, experts dans la fabrication de soutènements et dans l'extraction des filons de minerai qu'ils récupèrent pour revente, sont très vigilants quant aux dangers inattendus qui pourraient survenir à cause des gaz générés par les peaux-vertes. Ils sont très endurants, aussi bien physiquement que mentalement. Les Prospecteurs travaillent généralement sur commande, et possèdent une licence d'exploitation qui leur permet de partager leurs découvertes avec le seigneur local. Certaines fortunes de la noblesse se sont construites sur les richesses tirées des mines de leurs terres, et, bien souvent, les Mineurs qui travaillent dans ces exploitations sont des criminels ou des débiteurs forcés d'y travailler. Les carriers qui taillent dans la pierre à ciel ouvert ont un travail moins dangereux que ceux qui exercent sous terre, mais les accidents restent fréquents et les hommes-bêtes, susceptibles d'attaquer depuis la lisière des forêts proches, représentent un danger de tous les instants.
 
@@ -3597,7 +3597,7 @@ h **Prospecteur – Bronze 2**
 **Compétences :** Charme, Commandement **Talents :** Ergoteur, Escroquer, Lire/Écrire, Obstiné **Possessions :** équipe de mineurs, nécessaire d'écriture
 
 
-<span id="page-115-0"></span>*Vous possédez un certain talent pour voir le futur, ou pour convaincre les autres que c'est le cas…*
+<span id="page-115-0" data-folio="114"></span>*Vous possédez un certain talent pour voir le futur, ou pour convaincre les autres que c'est le cas…*
 
 Les gens, qui cherchent des réponses dans ce monde dangereux, se tournent vers les Mystiques lorsqu'ils souhaitent avoir un aperçu de leur futur. Les caravanes itinérantes de Strigany sont monnaie courante dans le Reikland, et de nombreux habitants vont rassembler le maximum de piécettes possibles afin de se faire prédire la bonne fortune, mais également acheter des charmes et des philtres d'amour. Les Mystiques sont généralement astucieux et intuitifs, ce qui leur permet de deviner les envies et les peurs de ceux qui viennent les voir et de leur donner juste assez de réponses pour être crédibles. Les Mystiques doivent être prudents, car ils marchent sur une ligne bien ténue entre supercherie et sorcellerie hérétique. Les Mystiques font preuve de leurs capacités de bien des façons différentes : les chiromanciens et les voyants sont très nombreux chez les Strigany, mais un elfe sylvain aura plutôt tendance à interpréter les différents signes et symboles qu'il trouvera dans la nature environnante ou à s'inspirer de ses rêves et autres visions. De nombreux cultes disposent de leurs propres Prophètes et Sages, chacun prédisant le futur au travers des paradigmes de leurs croyances respectives.
 
@@ -3658,7 +3658,7 @@ Obstiné, Perception de la magie
 **Possessions :** outils de la profession (Astrologie)
 
 
-<span id="page-116-0"></span>*D'une grande sagesse et nimbé d'une aura de mystère, vous guidez votre communauté grâce à une antique magie transmise de génération en génération*.
+<span id="page-116-0" data-folio="115"></span>*D'une grande sagesse et nimbé d'une aura de mystère, vous guidez votre communauté grâce à une antique magie transmise de génération en génération*.
 
 Les Répurgateurs utilisent le terme « Sorcier de village » pour désigner toute personne utilisant illégalement la magie, mais cela n'a pas toujours été le cas. Autrefois, les Sorciers de village étaient des membres très respectés des communautés rurales et pratiquaient une magie plus ancienne encore que les forêts. Mais des décennies de persécution, engendrées par l'émergence des Collèges de Magie, ont réduit leur nombre à quelques survivants, dispersés à travers le monde et totalement brisés. Ils se terrent désormais dans les endroits les plus calmes du Vieux Monde, dans leurs huttes fumantes et leurs masures grinçantes sises à la frontière entre les zones civilisées et les étendues sauvages. La plupart des Sorciers de village ont décidé de vivre en solitaires afin de se protéger des visiteurs indésirables. Mais leurs talents sont connus de tous les habitants du coin. Ils gardent pour eux les secrets leur permettant de se protéger du mal, mais, très souvent, on les sollicite pour bénéficier de leur savoir en herboristerie, ou pour aider à un accouchement, ou encore pour se voir administrer des soins.
 
@@ -3717,7 +3717,7 @@ Outils de la profession (Herboriste)
 cérémonie et couronne de fleurs
 
 
-<span id="page-117-0"></span>*Vous constituez le cœur de la vie rurale et travaillez les terres pour nourrir les populations.*
+<span id="page-117-0" data-folio="116"></span>*Vous constituez le cœur de la vie rurale et travaillez les terres pour nourrir les populations.*
 
 Le très fertile Empire de Sigmar regorge de cultures, de bétail et de tout un tas d'autres biens facilement commercialisables. C'est pourquoi il y a toujours beaucoup de travail à effectuer sur ces terres. Les Villageois représentent la grande majorité de la population de l'Empire et occupent beaucoup de rôles importants, dont ceux de fermiers, charbonniers, bûcherons, meuniers, bergers et bien d'autres encore. La plupart des Villageois dépendent du domaine d'une noble famille, où l'administration des tâches quotidiennes est assurée par un Bailli. Les affaires du village sont le plus souvent gérées par un conseil, composé à parts égales de fermiers et de commerçants et dirigé par un Doyen. Un Échevin ou un Doyen peuvent exercer une influence considérable au niveau local en supervisant les nombreuses décisions concernant les terres environnantes.
 

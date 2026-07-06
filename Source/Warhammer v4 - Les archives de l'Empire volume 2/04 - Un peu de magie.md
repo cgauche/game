@@ -1,6 +1,6 @@
 *Pages PDF 53-69*
 
-## <span id="page-52-0"></span>UN PEU DE MAGIE OBJETS MAGIQUES ET ENCHANTEMENTS • •
+## <span id="page-52-0" data-folio="51"></span>UN PEU DE MAGIE OBJETS MAGIQUES ET ENCHANTEMENTS • •
 
 Les Vents de Magie sont des éléments dangereux à manipuler, mais aussi des sources d'énergie puissantes pour ceux qui sont capables de les maîtriser. Les sorciers utilisent les Vents lors de l'incantation. Toutefois, il est également possible d'incorporer les Vents de Magie dans la création de certains artefacts, afin de les imprégner de puissantes capacités.
 
@@ -38,7 +38,7 @@ Le MJ peut décider du type d'objets magiques découverts par les Personnages, m
 
 ### IDENTIFIER UN ARTEFACT MAGIQUE
 
-<span id="page-53-0"></span>La plupart des Personnages ne savent rien des capacités d'un artefact avant de procéder à des recherches ou des expérimentations. Pour les Personnages dotés du Talent Détection d'artefact, c'est plutôt simple : en touchant l'objet, ils peuvent effectuer un Test d'**Intuition** et étudier l'artefact (**WFJDR** page 136). Pour d'autres sorciers, la tâche est plus ardue et nécessite généralement une semaine par tentative, souvent dans un laboratoire, une bibliothèque bien fournie ou un autre espace approprié. C'est un processus décourageant, car les objets magiques sont dangereux lorsqu'ils sont manipulés dans l'ignorance. Pour identifier un artefact magique, un Personnage doit effectuer un Test de **Savoir (Magie) Intermédiaire (+0)** et consulter le tableau suivant.
+<span id="page-53-0" data-folio="52"></span>La plupart des Personnages ne savent rien des capacités d'un artefact avant de procéder à des recherches ou des expérimentations. Pour les Personnages dotés du Talent Détection d'artefact, c'est plutôt simple : en touchant l'objet, ils peuvent effectuer un Test d'**Intuition** et étudier l'artefact (**WFJDR** page 136). Pour d'autres sorciers, la tâche est plus ardue et nécessite généralement une semaine par tentative, souvent dans un laboratoire, une bibliothèque bien fournie ou un autre espace approprié. C'est un processus décourageant, car les objets magiques sont dangereux lorsqu'ils sont manipulés dans l'ignorance. Pour identifier un artefact magique, un Personnage doit effectuer un Test de **Savoir (Magie) Intermédiaire (+0)** et consulter le tableau suivant.
 
 | DR          | Résultat              | Conséquences                                                                                                                                                                                                             |
 |-------------|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -172,7 +172,7 @@ Des sorciers sont connus pour avoir délibérément fabriqué des artefacts maud
 | 98–99 | L'objet est vampirique. Tous les matins, il doit être enduit du sang de l'utilisateur jusqu'à satiété (équivalent à une Blessure)<br>pour que ses effets magiques persistent. Si l'objet devient inactif, l'équivalent en sang de trois Blessures de l'utilisateur est<br>nécessaire pour le réactiver.                                                                                                                                                                                   |  |  |
 
 
-<span id="page-58-0"></span>
+<span id="page-58-0" data-folio="57"></span>
 
 | d100    | Effet                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 |---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -251,7 +251,7 @@ Certaines capacités magiques accordent des Atouts supplémentaires à l'arme. C
 | 00    | Arme légendaire : faites deux jets sur ce tableau. Si vous obtenez ce résultat plusieurs fois, une arme magique possède un<br>maximum de cinq capacités. Les capacités en double ne peuvent pas être cumulées.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |  |
 
 
-## <span id="page-61-0"></span>**L'histoire des armes magiques**
+## <span id="page-61-0" data-folio="60"></span>**L'histoire des armes magiques**
 
 Les armes magiques ont souvent une histoire riche, avec leurs propres nom et influence. Si les Personnages trouvent une arme magique, le MJ doit effectuer un lancer sur le tableau suivant pour voir si elle a une réputation. Le Personnage qui est en possession de la lame n'en saura rien à moins de réussir un Test de **Savoir (Histoire) Difficile (–20)** ou consacrer du temps à faire des recherches sur son histoire. Certains effets psychologiques peuvent découler de ce tableau. Ces effets ne s'appliquent qu'à ceux qui reconnaissent l'arme, mais ne connaissent pas le porteur, ou s'en méfient déjà.
 
@@ -273,7 +273,7 @@ Les armes magiques ont souvent une histoire riche, avec leurs propres nom et inf
 | 97–00 | Chargée d'histoire : faites deux jets sur ce tableau.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |  |  |
 
 
-## <span id="page-62-0"></span>**Flèches et carreaux magiques**
+## <span id="page-62-0" data-folio="61"></span>**Flèches et carreaux magiques**
 
 La fabrication d'armes magiques est extrêmement rare, mais la création de munitions magiques l'est encore plus. Enchanter des pointes de flèche est délicat, et les flèches se cassent ou se perdent facilement. Une flèche magique est détruite si elle touche sa cible. Les flèches qui manquent leurs cibles peuvent généralement être récupérées intactes. Il y a 90 % de chances que cela se produise dans des conditions propices, mais cette probabilité est réduite à 50 % ou moins si le terrain est rocheux ou marécageux.
 
@@ -299,7 +299,7 @@ Le MJ doit choisir les situations pouvant entraîner un enchantement temporaire 
 *C'est bien beau les objets magiques, encore faut-il pouvoir les garder à l'abri. J'ai évidemment introduit le mien clandestinement quand je suis arrivée, jusqu'à ce que je puisse le mettre en sécurité. Alors oui, je suis un peu paranoïaque, mais je sais qu'Inga est au courant que je possède un artefact magique. Dernièrement, ses questions sont de plus en plus précises. Qu'est-ce qu'elle va en faire, si elle le trouve ? Quand je pense à tous les objets magiques que j'ai vus au fil des ans… même Ghal-Maraz… C'était tellement décevant que je me suis demandé si je les avais rêvés. Je ne comprends pas pourquoi on en fait tout un plat.*
 
 
-#### <span id="page-63-0"></span>**Armures m agiques**
+#### <span id="page-63-0" data-folio="62"></span>**Armures m agiques**
 
 Une armure magique est encore plus difficile à fabriquer que les armes et a l'inconvénient de devoir être forgée sur mesure pour son porteur. Les pièces d'armure magique sont généralement en plates, car la durabilité de ce matériau justifie l'effort demandé par la fabrication d'un tel artefact, mais les artisans enchantent occasionnellement du cuir ou des mailles. Si les Personnages trouvent une pièce d'armure magique, effectuez un lancer sur le tableau suivant pour découvrir de quelle pièce il s'agit.
 
@@ -371,7 +371,7 @@ Une armure en cuir ne peut pas être en gromril ou en ithilmar. Effectuez un nou
 | 00    | Armure légendaire : effectuez deux autres lancers sur ce tableau. Si vous obtenez ce résultat plusieurs fois, une pièce d'armure<br>magique possède un maximum de cinq capacités, et les capacités en double ne peuvent pas être cumulées. Il est impossible<br>pour une armure d'être à la fois en gromril et en ithilmar.                                                                                                                                                            |
 
 
-## <span id="page-65-0"></span>**Boucliers magiques**
+## <span id="page-65-0" data-folio="64"></span>**Boucliers magiques**
 
 Les boucliers magiques fonctionnement généralement de la même façon que l'armure magique, mais la surface étendue du bouclier permet aux artisans d'y incorporer des effets plus complexes. Si les Personnages trouvent un bouclier magique, effectuez un lancer sur le tableau suivant pour déterminer son type.
 
@@ -415,7 +415,7 @@ Si les Personnages trouvent un parchemin, effectuez deux lancer sur le tableau s
 | 66–73 | Vie           | 6         |       |                                            |           |
 
 
-<span id="page-66-0"></span>Les parchemins contenant de la magie noire peuvent corrompre ceux qui s'en servent. Utiliser un parchemin qui produit un sort du Domaine de la Magie naturelle compte comme une source de Corruption mineure. Utiliser un parchemin qui produit un sort des Domaines de la Démonologie, Nécromancie, Sorcellerie ou Chaos compte comme une source de Corruption modérée.
+<span id="page-66-0" data-folio="65"></span>Les parchemins contenant de la magie noire peuvent corrompre ceux qui s'en servent. Utiliser un parchemin qui produit un sort du Domaine de la Magie naturelle compte comme une source de Corruption mineure. Utiliser un parchemin qui produit un sort des Domaines de la Démonologie, Nécromancie, Sorcellerie ou Chaos compte comme une source de Corruption modérée.
 
 Pour se servir d'un parchemin, son utilisateur doit lire les mots de commande écrits dessus. Ils sont généralement rédigés dans l'une des différentes langues arcaniques employées pour l'incantation, mais peuvent occasionnellement être épelés phonétiquement dans une langue plus commune. Pour lancer le sort, l'utilisateur doit brandir le parchemin et lire les mots de commande, puis réussir un Test de **Langue (Magick) Intermédiaire (+0)**. Si le parchemin est destiné à un nonsorcier, l'utilisateur doit réussir un Test de **Langue Difficile (–20)** dans la langue employée sur le parchemin.
 
@@ -452,7 +452,7 @@ Les baguettes sont des bâtons courts d'environ 30 centimètres de long. Tout co
 | 96–00 | Bâton interdit : cet artefact magique dangereux aide<br>à focaliser les Vents de Magie en aspirant la vitalité<br>du porteur. Si un lanceur de sorts tente de lancer un<br>sort et échoue, il peut décider de perdre jusqu'à trois<br>Blessures, en ajoutant +1 DR au Test d'Incantation<br>pour chaque Blessure. Après avoir utilisé cette<br>capacité, le Bâton interdit ne peut plus être utilisé<br>pendant 24 heures.                                                                           |
 
 
-#### <span id="page-67-0"></span>**Anne aux m agiques**
+#### <span id="page-67-0" data-folio="66"></span>**Anne aux m agiques**
 
 **d100 Capacité**
 
@@ -509,7 +509,7 @@ Les objets insolites sont des artefacts magiques plus rares fabriqués dans un b
 
 ## **DES HAVRES DE REPOS**
 
-<span id="page-69-0"></span>V
+<span id="page-69-0" data-folio="68"></span>V
 
 L'Ordre de la Guérison des Sœurs de Shallya est un des ordres les plus importants du culte de Shallya. Ses membres soignent les pauvres et les malades, souvent au sein de leurs hospices servant à la fois de monastères et d'hôpitaux. Certains hospices s'occupent des soins généraux et accueillent tous les souffrants dans le besoin ; d'autres sont spécialisés dans le traitement de certains troubles et maladies, et leurs patients viennent de partout dans le Vieux Monde.
 

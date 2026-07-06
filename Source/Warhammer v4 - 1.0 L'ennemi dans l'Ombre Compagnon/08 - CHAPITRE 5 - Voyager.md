@@ -2,7 +2,7 @@
 
 ## CHAPITRE 5 : VOYAGER
 
-<span id="page-31-0"></span>L'immensité de l'Empire, et du monde qui l'entoure, les voyages constituent une partie prépondérante de la vie des Personnages. L'une des principales différences entre eux et les citoyens ordinaires de l'Empire est qu'ils n'ont pas de racines les obligeant à demeurer au même endroit. Cette liberté s'accompagne de terribles problèmes : les routes de l'Empire, bien qu'étant les artères principales du commerce, sont infestées de bandits ; les forêts sont sombres, pleines de cris d'hommesbêtes et de gobelins ; les montagnes au loin grouillent d'orques et bien pire encore...
+<span id="page-31-0" data-folio="31"></span>L'immensité de l'Empire, et du monde qui l'entoure, les voyages constituent une partie prépondérante de la vie des Personnages. L'une des principales différences entre eux et les citoyens ordinaires de l'Empire est qu'ils n'ont pas de racines les obligeant à demeurer au même endroit. Cette liberté s'accompagne de terribles problèmes : les routes de l'Empire, bien qu'étant les artères principales du commerce, sont infestées de bandits ; les forêts sont sombres, pleines de cris d'hommesbêtes et de gobelins ; les montagnes au loin grouillent d'orques et bien pire encore...
 
 Les voyages comblent souvent les temps morts entre les aventures, et peuvent constituer une occasion de s'engager dans d'autres Activités similaires à celles du chapitre *Entre deux aventures* de la page 192 du **Livre de Règles WFJDR**. Parfois, le voyage constitue l'aventure elle-même. Quel que soit le moment où il se produit, ce chapitre fournit des outils pour faire d'un voyage une histoire intéressante.
 
@@ -33,7 +33,7 @@ Les Personnages peuvent tenter de réduire encore ce nombre avec un Test d'**Ori
 Tout comme le chapitre Entre deux aventures, tous ces outils sont optionnels et voués à enrichir les règles présentées à la page 261 de **WFJDR**. Vous pouvez choisir de faire jouer les détails de vos voyages, tout en utilisant ces règles pour étoffer ces scènes. Mais c'est vous qui décidez !
 
 
-### <span id="page-32-0"></span>LA DISTANCE JUSQU'À… ?
+### <span id="page-32-0" data-folio="32"></span>LA DISTANCE JUSQU'À… ?
 
 Comme nous l'avons mentionné précédemment, les cartes de l'Empire sont notoirement imprécises, peu d'entre elles comportent des indications d'échelle, et de nombreux cartographes se sont aperçus que leurs efforts pour améliorer la situation étaient très mal accueillis. Naturellement, aucun noble n'aime s'entendre dire que ses possessions ancestrales sont plus petites de cent kilomètres carrés que ce qu'il avait supposé.
 
@@ -122,7 +122,7 @@ Saisonnier, comme l'embrasement coloré des feuilles en automne, le rhume est n�
 Les Personnages atteints du rhume qui sont à nouveau exposés à la pluie ou à la neige voient la durée de la maladie prolongée de 1d10 jours. Si un Personnage souffre d'un rhume pendant plus de 14 jours, la maladie se transforme en pneumonie.
 
 
-#### <span id="page-34-0"></span>**Blizzard**
+#### <span id="page-34-0" data-folio="34"></span>**Blizzard**
 
 La neige transforme tout en un enfer blanc sans aucune visibilité. La route disparaît sous un manteau immaculé qui s'épaissit rapidement, ne laissant que les arbres pour se diriger. La visibilité est proche de zéro. Les mouvements plus rapides que la marche sont impossibles. Les armes à distance sont inutiles dans ces conditions. Les Personnages voyageant dans un blizzard doivent faire un Test de **Résistance Intermédiaire (+0)** gagner un État *Exténué.*
 
@@ -167,7 +167,7 @@ Une carte appropriée d'une région rend les Tests de **Savoir** ou d'**Orientat
 L'Activité *Revenus* de la page 199 dans le **Livre de Règles** n'est pas adaptée à un périple pour la plupart des Carrières, mais un voyage est le moment idéal d'exercer leurs métiers pour certains, tels que les juges, huissiers et nonnes itinérants ou encore pour les chasseurs, éclaireurs et cochers !
 
 
-#### <span id="page-35-0"></span>**Pratiquer une Compétence**
+#### <span id="page-35-0" data-folio="35"></span>**Pratiquer une Compétence**
 
 La monotonie du voyage représente pour de nombreux Personnages le moment idéal pour pratiquer leurs Compétences en vue des épreuves à venir. Un Personnage peut effectuer un Test **Intermédiaire (+0)** d'une seule Compétence qu'il est possible de pratiquer en voyageant : Orientation, Métier (Herboristerie), Langue (Wastelander), etc. Une Réussite signifie que le Personnage peut inverser le résultat d'un Test en utilisant cette Compétence au cours de l'aventure suivante, ou de toute étape ultérieure du voyage.
 

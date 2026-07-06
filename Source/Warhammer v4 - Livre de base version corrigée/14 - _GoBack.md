@@ -1,6 +1,6 @@
 *Pages PDF 162-165*
 
-<span id="page-161-0"></span>Si vous obtenez un Critique, votre adversaire reçoit immédiatement une Blessure critique, votre arme faisant mouche. Voir à la page 172 pour plus de détails à ce sujet. Audelà de cela, le DR est calculé comme d'habitude, tout comme la détermination du vainqueur du Test opposé.
+<span id="page-161-0" data-folio="160"></span>Si vous obtenez un Critique, votre adversaire reçoit immédiatement une Blessure critique, votre arme faisant mouche. Voir à la page 172 pour plus de détails à ce sujet. Audelà de cela, le DR est calculé comme d'habitude, tout comme la détermination du vainqueur du Test opposé.
 
 # OPTION : FRAPPE MORTELLE
 
@@ -41,7 +41,7 @@ Certains détails supplémentaires sont à prendre en considération pour une at
 - Il est impossible d'effectuer une attaque à distance alors qu'on est *Engagé*, à moins que vous ne disposiez d'une arme à distance qui possède le trait d'arme Pistolet (voir **Chapitre 11 : Guide de l'équipement**).
 
 
-<span id="page-162-0"></span>• Si vous utilisez votre Compétence Projectiles quand vous êtes *Engagé* avec votre cible, cette dernière peut s'opposer à votre Attaque avec n'importe quelle Compétence Corps à corps.
+<span id="page-162-0" data-folio="161"></span>• Si vous utilisez votre Compétence Projectiles quand vous êtes *Engagé* avec votre cible, cette dernière peut s'opposer à votre Attaque avec n'importe quelle Compétence Corps à corps.
 
 # **Difficultés de Combat**
 
@@ -86,7 +86,7 @@ Les Tests de Combat peuvent être modifiés de la même façon que les autres Te
 |                |              | Cible en couverture totale (derrière un mur de pierre, par exemple).                                                            |
 
 
-<span id="page-163-0"></span>
+<span id="page-163-0" data-folio="162"></span>
 
 # COMBINER LES DIFFICULTÉS
 
@@ -131,7 +131,7 @@ La taille est un facteur important lorsqu'on tire sur une cible : il est bien pl
 | Monstrueuse | + de 6m                | Dragon, géant,<br>Prince démon        | +60  |  |  |  |
 
 
-# <span id="page-164-0"></span>**Combat <sup>à</sup> deux armes**
+# <span id="page-164-0" data-folio="163"></span>**Combat <sup>à</sup> deux armes**
 
 Certains guerriers préfèrent se battre avec une arme dans chaque main – comme utiliser une épée et un brise-épée, ou une épée et un bouclier. Les règles suivantes s'appliquent lorsque vous combattez avec deux armes.
 
@@ -184,7 +184,7 @@ Chevaucher en combat, l'épée fauchant l'air ou faisant feu de toute part n'est
 - Lorsque vous chevauchez, vous subissez une pénalité de -20 pour toute tentative d'utiliser la Compétence Esquive, sauf si vous possédez le Talent Acrobaties équestres.
 
 
-<span id="page-165-0"></span>**Note :** la plupart des montures possèdent un Trait de Taille différent de celui des PJ, ce qui signifie qu'elles peuvent susciter la *Peur* ou la *Terreur*, tout comme gagner d'autres avantages en combat comme c'est expliqué à la page 338.
+<span id="page-165-0" data-folio="164"></span>**Note :** la plupart des montures possèdent un Trait de Taille différent de celui des PJ, ce qui signifie qu'elles peuvent susciter la *Peur* ou la *Terreur*, tout comme gagner d'autres avantages en combat comme c'est expliqué à la page 338.
 
 # **Avantage**
 

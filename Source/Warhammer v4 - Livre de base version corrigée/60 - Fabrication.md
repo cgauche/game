@@ -11,7 +11,7 @@ Une Possession sans aucun Défaut, et avec plus d'Atouts que d'Encombrement est 
 Une Possession est appelée Possession de Qualité si elle possède plus d'Atouts que de Défauts. Pour chaque Atout d'objet de la Possession, doublez son prix et baissez sa disponibilité d'un cran.
 
 
-<span id="page-293-0"></span>**Exemple :** *une pelle qui possède les Atouts Raffiné et Solide coûte quatre fois le prix listé, et voit sa disponibilité passer de Commune à Rare.*
+<span id="page-293-0" data-folio="292"></span>**Exemple :** *une pelle qui possède les Atouts Raffiné et Solide coûte quatre fois le prix listé, et voit sa disponibilité passer de Commune à Rare.*
 
 ### **Léger**
 

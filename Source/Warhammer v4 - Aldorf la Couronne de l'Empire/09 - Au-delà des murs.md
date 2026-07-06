@@ -1,6 +1,6 @@
 *Pages PDF 209-211*
 
-# <span id="page-208-0"></span>• AU-DELÀ DES MURS •
+# <span id="page-208-0" data-folio="206"></span>• AU-DELÀ DES MURS •
 
 Comme n'importe quelle grande ville d'envergure, Altdorf ne s'arrête pas à son enceinte. Des forteresses, des monuments historiques, et bien sûr, le puissant Reik portent l'influence d'Altdorf bien au-delà de ses murs.
 
@@ -25,7 +25,7 @@ Le donjon emploie un petit nombre de vrais gardiens. Le gouverneur van Zandt fai
 0 Des chaînes d'argent ornent les murs d'une pièce spéciale. Elle est utilisée pour les prisonniers soupçonnés d'être plus qu'humains : des sorciers, des Enfants d'Ulric, et des vampires. Si un Personnage découvre cette cellule, il pourrait se faire des amis hétéroclites et puissants : avec tous les dangers et les opportunités que cela implique.
 
 
-# <span id="page-209-0"></span>**Le Tombeau de Brustellin**
+# <span id="page-209-0" data-folio="207"></span>**Le Tombeau de Brustellin**
 
 Le professeur séditieux Brustellin a été tué pendant les Grandes Émeutes du Brouillard, dont il était l'un des instigateurs. Après les émeutes, ses disciples ont récupéré son corps et l'ont enterré dans un sanctuaire de fortune caché dans les bois, au sud de la ville. Les révolutionnaires ont coutume de faire des pèlerinages secrets jusqu'au sanctuaire pour s'y recueillir. Ils veillent à se déplacer en petits groupes pour ne pas attirer l'attention des autorités.
 
@@ -54,7 +54,7 @@ Le gouvernement ne le nie pas : des interrogations et des assassinats sont organ
 - 0 Les agents du clan Skryre de Sous-Altdorf cherchent à rétroconcevoir de la technologie humaine. Les agents du clan Eshin prétendent être les seuls à pouvoir acquérir des prototypes sans se faire prendre. Les agents du clan Skryre, qui n'ont pas envie de payer le prix exorbitant qu'ils demandent pour leurs services, se rendent la nuit sur le champ d'artillerie pour récupérer des fusées et autres projectiles. Les agents du clan Eshin, qui n'apprécient pas d'être ainsi écartés, ont l'intention de les suivre pour leur donner une leçon.
 
 
-# <span id="page-210-0"></span>**L'Argilière**
+# <span id="page-210-0" data-folio="208"></span>**L'Argilière**
 
 On trouve de grandes fosses le long du Reik, en amont et en aval de sa confluence avec le Talabec. C'est là que sont extraites les grandes quantités d'argile vendues sous forme de blocs aux potiers d'Altdorf. L'argile récoltée au sud d'Altdorf est rouge et haut de gamme. Les dépôts de limon au nord de la confluence rendent l'argile plus sombre et plus grossière.
 

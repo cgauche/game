@@ -1,6 +1,6 @@
 *Pages PDF 118-121*
 
-### <span id="page-117-0"></span>MIDDENHEIM • BESTIAIRE •
+### <span id="page-117-0" data-folio="115"></span>MIDDENHEIM • BESTIAIRE •
 
 ### **PRÉDATEUR SANGLANT**
 
@@ -11,7 +11,7 @@ Le dernier élémentaire ainsi formé est une créature humanoïde gigantesque, 
 corrompant la Source). **Hurlement de la Bête indomptable :** le hurlement du prédateur sanglant effraie tous ceux qui l'entendent. Lors de son tour, le prédateur peut dépenser 1 Avantage pour effectuer une attaque gratuite de hurlement contre ses ennemis. Toute cible vivante qui se trouve à un nombre de mètres égal à l'Initiative de la créature (45) gagne immédiatement 3 États *Assourdi*. De plus, chaque cible doit effectuer un Test de **Calme Difficile (-10)**, et gagne 3 États *Brisé* en cas d'échec. Un Personnage qui réussit ce test une fois est immunisé contre cette capacité jusqu'à la fin de la rencontre.
 
 
-### <span id="page-118-0"></span>**ENFANT D'ULRIC**
+### <span id="page-118-0" data-folio="116"></span>**ENFANT D'ULRIC**
 
 « Enfant d'Ulric » est un terme utilisé dans tout l'Empire pour désigner les humains capables de se transformer entièrement ou partiellement en loup. La plupart peuvent prendre la forme d'un hybride terrifiant : une puissante créature à tête de loup et couverte de fourrure, pourtant toujours capable de se tenir debout.
 
@@ -41,7 +41,7 @@ Pour ajouter à la confusion, il existe de nombreux synonymes pour les Enfants d
 Et pour couronner le tout, une minorité notable des Fils d'Ulric manifestent les capacités d'Enfants d'Ulric. Certains supputent que les descendants d'Ulric ont sans doute hérité des pouvoirs de métamorphose de leur père divin. Pour d'autres, il est simplement plus rassurant de se dire béni d'un dieu que d'admettre être un monstre mutant.
 
 
-<span id="page-119-0"></span>
+<span id="page-119-0" data-folio="117"></span>
 
 ### **SPECTRE**
 

@@ -1,6 +1,6 @@
 *Pages PDF 209*
 
-# <span id="page-208-0"></span>**LE CULTE DE MYRMIDIA, DÉESSE DE LA STRATÉGIE**
+# <span id="page-208-0" data-folio="207"></span>**LE CULTE DE MYRMIDIA, DÉESSE DE LA STRATÉGIE**
 
 **Siège du Pouvoir :** Magritta, Estalie
 

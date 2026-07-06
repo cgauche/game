@@ -201,7 +201,7 @@ Les elfes sylvains de la Laurelorn s'engagent activement dans la politique pour 
 En comparaison, les groupes de guerriers d'Athel Loren préfèrent se dissimuler dans les ombres, rejetant tout contact avec les autres, portant des coups mortels destinés à semer la peur et la terreur dans le cœur de quiconque considérerait la forêt avec avidité.
 
 
-# <span id="page-31-0"></span>**2) CLASSES ET CARRIÈRES**
+# <span id="page-31-0" data-folio="30"></span>**2) CLASSES ET CARRIÈRES**
 
 Votre Classe détermine votre place dans la société. Votre Carrière décrit votre travail actuel et détermine votre Statut, qui influence également l'importance de vos revenus.
 
@@ -316,7 +316,7 @@ Une fois que votre Classe est définie, choisissez l'une des Carrières associé
 Vous avez peut-être une idée géniale pour un Personnage exclu par les règles, car la race en question ne pratique pas, en principe, une telle Carrière pour des raisons culturelles, religieuses ou philosophiques. Pas de problème ! Présentez juste votre concept de Personnage à votre MJ et, si vous êtes tous les deux d'accord avec cette combinaison unique, vous avez le feu vert.
 
 
-# <span id="page-34-0"></span>**3) ATTRIBUTS**
+# <span id="page-34-0" data-folio="33"></span>**3) ATTRIBUTS**
 
 **En résumé :** *déterminez chacun de vos Attributs en vous référant au Tableau des Attributs.*
 
@@ -438,7 +438,7 @@ Tous les Personnages choisissent une Motivation qui représente leur essence mê
 **Exemple :** *Clotilda, un Chevalier de la Reiksguard, possède la Motivation « Protéger les faibles ». Elle est déterminée à faire face aux brutes et aux fanfarons, et risquera sa vie et son intégrité physique pour sauver la population du Reikland des ennemis de l'humanité. Clotilda regagnera de la Détermination chaque fois qu'elle sauvera d'autres personnes, ou qu'elle mettra sa propre vie en danger pour en protéger une autre.*
 
 
-<span id="page-36-0"></span>**Exemple :** *Ebba est une apprentie sorcière « Rebelle » étudiant au Collège Lumineux. Elle adore en enfreindre les règles, aller à l'encontre de l'autorité de son maître, et mettre son nez dans des livres qu'il vaudrait mieux ne jamais consulter. Elle regagne de la Détermination chaque fois qu'elle enfreint les règles établies par ses supérieurs.* 
+<span id="page-36-0" data-folio="35"></span>**Exemple :** *Ebba est une apprentie sorcière « Rebelle » étudiant au Collège Lumineux. Elle adore en enfreindre les règles, aller à l'encontre de l'autorité de son maître, et mettre son nez dans des livres qu'il vaudrait mieux ne jamais consulter. Elle regagne de la Détermination chaque fois qu'elle enfreint les règles établies par ses supérieurs.* 
 
 Voici d'autres exemples de possibles motivations : un « Perfectionniste », qui aime planifier méticuleusement et puiser son énergie dans l'exécution sans faille des projets ; une « Protectrice », qui prend soin des autres, ou les sauve de situations difficiles ; un « Homme de paix », qui s'efforce de désamorcer et résoudre les conflits ; un « Martyr pénitent », qui éprouve des difficultés à expier les méfaits du passé ; ou un « Esprit brillant », qui s'implique toujours dans des badinages spirituels ou des plaisanteries pour détendre l'atmosphère.
 
@@ -539,7 +539,7 @@ Chaque Race possède différents Talents et Compétences à choisir. Vous pouvez
 *Remarque : Lindsay peut le faire même si elle a déjà alloué des Augmentations à Commandement parce que son Personnage est humain, car la limite de 10 Augmentations par Compétence s'applique uniquement durant cette répartition de 40 Augmentations.*
 
 
-# <span id="page-38-0"></span>**5) POSSESSIONS**
+# <span id="page-38-0" data-folio="37"></span>**5) POSSESSIONS**
 
 **En résumé :** *déterminez vos Possessions de départ selon votre Classe et votre Carrière.*
 
@@ -770,7 +770,7 @@ Les Ambitions à court terme représentent vos objectifs immédiats. Ceux que vo
 
 II
 
-<span id="page-42-0"></span>Voici des exemples d'Ambitions à court terme :
+<span id="page-42-0" data-folio="41"></span>Voici des exemples d'Ambitions à court terme :
 
 - Ruiner la réputation d'un rival amoureux.
 - Venger un camarade tombé au combat.
@@ -816,7 +816,7 @@ Tous les Joueurs du groupe doivent également discuter des objectifs communs, et
 Les Ambitions de groupe à court terme ont la même portée que vos Ambitions à court terme personnelles, mais elles concernent le groupe tout entier. Vos Ambitions personnelles ne devraient jamais être les mêmes que celles du groupe, mais il n'y a aucune raison pour qu'elles ne puissent pas se compléter.
 
 
-<span id="page-43-0"></span>Voici des exemples d'Ambitions de groupe à court terme :
+<span id="page-43-0" data-folio="42"></span>Voici des exemples d'Ambitions de groupe à court terme :
 
 - Damer le pion à un groupe rival en lui soufflant un emploi.
 - Pourchasser l'assassin d'un membre du groupe disparu.
@@ -878,7 +878,7 @@ Quelle est cette étincelle qui brûle en vous ? Vos Ambitions sont peut-être v
 Nous sommes la somme de nos expériences ; elles nous façonnent, nous forgent en quelqu'un de nouveau. Quels sont vos souvenirs les plus précieux ? Un après-midi radieux sous 
 
 
-<span id="page-44-0"></span>le soleil d'été ? Un baiser passionné, blottis sous la feuillée et protégés de la pluie par les branches d'un arbre ? Une victoire remportée dans une joute verbale ou une bagarre ? Et quels sont vos souvenirs les moins plaisants ? Une douloureuse humiliation ? La fin d'une relation de longue date, amoureuse ou professionnelle ? La haine, le dédain ou, pire, l'indifférence de vos pairs ?
+<span id="page-44-0" data-folio="43"></span>le soleil d'été ? Un baiser passionné, blottis sous la feuillée et protégés de la pluie par les branches d'un arbre ? Une victoire remportée dans une joute verbale ou une bagarre ? Et quels sont vos souvenirs les moins plaisants ? Une douloureuse humiliation ? La fin d'une relation de longue date, amoureuse ou professionnelle ? La haine, le dédain ou, pire, l'indifférence de vos pairs ?
 
 # **Quelles sont vos croyances religieuses ?**
 

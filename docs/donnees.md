@@ -134,8 +134,14 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
   id→`abr` via `bookAbr` (choke-point `registry.ts` `src()`). Pour un ajout : copier l'`id` d'une entrée
   voisine du même livre (`grep '"book"' <fichier>`), ou le lire dans `books.json`. Contenu fan
   communautaire = livre `frenchy-bzh`.
-- **`source.page`** = une **vraie page** (format des voisins), **jamais** le n° de chapitre. ⚠ Les ancres
-  Marker `<span id="page-N">` du dump source **ne sont PAS fiables** — n'en déduire aucune page.
+- **`source.page`** = la **page IMPRIMÉE du livre** (le folio), comme la donnée existante (ex. LDB « À
+  Enroulement » = folio 297, AA « Cimeterre » = folio 91). Pour l'obtenir : trouve ton contenu dans le
+  `.md` du livre (`docs/sources-vf.md` → dossier `Source/`), puis lis le **`data-folio="N"`** de l'ancre
+  `<span id="page-… data-folio="N">` la plus proche AU-DESSUS de ton contenu — **`N` = la valeur de
+  `source.page`**. ⚠ Le NUMÉRO du span-id seul (`page-89`) est l'**index PDF**, PAS le folio (c'est le
+  piège de #148) — toujours lire `data-folio`. Livres étiquetés (LDB, ADE I/II, EDOC, Middenheim, NADJ,
+  ACE, PDT) : `data-folio` baké. Scans (AA, ZI, MDG, EDO, MSR, MSRC) : pas encore de `data-folio` → lire le
+  folio dans l'**en-tête de page** du PDF (baking à venir).
 - **`desc`** et tout champ de prose (effet, règles) = **copié/collé VERBATIM** de la source, en **Markdown**
   (`**gras**`, `*ital*`, listes `-`), jamais en HTML, jamais reformulé (règle stricte 5 ; garde
   `src/data/no-html-in-prose.test.ts`).

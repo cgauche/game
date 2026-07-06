@@ -2,7 +2,7 @@
 
 # • BESTIAIRE •
 
-<span id="page-311-0"></span>*« L'adversité face au monstre fait l'homme. La prospérité de l'homme fait le monstre. »*
+<span id="page-311-0" data-folio="310"></span>*« L'adversité face au monstre fait l'homme. La prospérité de l'homme fait le monstre. »*
 
 – Albertus Zweistein, Professeur middenlander
 

@@ -4,7 +4,7 @@
 
 *Une nuit agitée aux Trois Plumes* est une aventure qui a été écrite pour la 1re édition de **WFJDR**, et qui fut publiée dans le 94e numéro du magazine de Games Workshop, *White Dwarf*, en novembre 1987. Je l'ai écrite avant tout comme une expérience, pour voir si une aventure à intrigues multiples pouvait fonctionner. Cela n'avait jamais été fait en jeu de rôle auparavant, mais il y avait de solides précédents dans d'autres médias. Au théâtre, les intrigues croisées constituaient un élément vital des farces depuis l'époque romaine et je voulais retranscrire l'action frénétique que l'on y trouve dans un jeu de rôles. Je souhaitais également faire en sorte que les aventuriers n'aient pas le lieu pour eux seuls une fois que tout le monde était parti se coucher. Les comédies policières des années 60 et 70 ont été une autre source d'inspiration, en confrontant leurs protagonistes à toutes sortes de problèmes inattendus qui faisaient appel à plus que leurs talents de voyous.
 
-<span id="page-5-0"></span>I
+<span id="page-5-0" data-folio="4"></span>I
 
 Aujourd'hui, les fans de **WFJDR** comptent *Une nuit agitée aux Trois Plumes* parmi les meilleures aventures du jeu. Elle a été rééditée dans deux compilations de la 1re édition de **WFJDR** : **Repose Sans Paix** qui a été publié par Games Workshop en 1989; et **Le Nouvel Apocryphe** publié quant à lui par Hogshead Publishing en 1995. En 2005, dix-huit ans après sa première parution, l'aventure a été adaptée pour la seconde édition de **WFJDR** par Black Industries dans **La crypte des secrets**.
 

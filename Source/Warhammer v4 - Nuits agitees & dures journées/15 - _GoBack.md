@@ -2,7 +2,7 @@
 
 ### LE PEUPLE DES LANDES
 
-<span id="page-89-0"></span>Dans les duchés qui bordent les Landes miroitantes et les Marais Midden, les gnomes sont relativement bien connus car on les trouve souvent hors de leurs domaines, en tant qu'artistes, colporteurs ou marchands. Ils sont connus localement sous le nom de « Peuple des Landes », une communauté secrète à la nature méfiante, qui pêche dans les Marais Midden. De nombreuses rumeurs sur le Peuple des Landes font état de pratiques magiques interdites, ce qui attire un grand nombre de répurgateurs dans cette région. Néanmoins, peu sont ceux qui y trouvent autre chose qu'un paysage sauvage et une faune locale dangereuse (dont les trolls de rivière, les vers des marais et les pieuvres des tourbières).
+<span id="page-89-0" data-folio="88"></span>Dans les duchés qui bordent les Landes miroitantes et les Marais Midden, les gnomes sont relativement bien connus car on les trouve souvent hors de leurs domaines, en tant qu'artistes, colporteurs ou marchands. Ils sont connus localement sous le nom de « Peuple des Landes », une communauté secrète à la nature méfiante, qui pêche dans les Marais Midden. De nombreuses rumeurs sur le Peuple des Landes font état de pratiques magiques interdites, ce qui attire un grand nombre de répurgateurs dans cette région. Néanmoins, peu sont ceux qui y trouvent autre chose qu'un paysage sauvage et une faune locale dangereuse (dont les trolls de rivière, les vers des marais et les pieuvres des tourbières).
 
 ### SORCIERS GNOMES
 
@@ -63,7 +63,7 @@ Les gnomes nomment généralement leurs enfants selon un modèle traditionnel. L
 **Exemple de noms de familles matrilinéaires :** Elowen, Ia, Kerra, Ladoca, Metheven, Morwen, Steren, Tryfena
 
 
-<span id="page-90-0"></span>**Exemple de noms patronymiques :** Breward, Daveth, Gwinear, Mawnan, Meriasek, Nivet, Talan, Ythel
+<span id="page-90-0" data-folio="89"></span>**Exemple de noms patronymiques :** Breward, Daveth, Gwinear, Mawnan, Meriasek, Nivet, Talan, Ythel
 
 ### **Noms de clan gnomes**
 
@@ -118,7 +118,7 @@ Les gnomes croient que leurs dieux ont créé leur race à une époque de grand 
 
 ### DIEUX DES GNOMES
 
-<span id="page-91-0"></span>
+<span id="page-91-0" data-folio="90"></span>
 
 | Dieu   | Sphères                                     | Adorateurs                                      | Offrandes                                                 | Bénédictions                                                     | Miracles                                                                         |
 |--------|---------------------------------------------|-------------------------------------------------|-----------------------------------------------------------|------------------------------------------------------------------|----------------------------------------------------------------------------------|

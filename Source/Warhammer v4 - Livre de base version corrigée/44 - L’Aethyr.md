@@ -17,7 +17,7 @@ Les elfes ont décrété (et c'est une condition préalable à tout enseignement
 De nombreux débats passionnés sur la nature de la magie agitent les « experts ». Les salles de conférence des institutions les plus érudites de l'Empire voient souvent les intellectuels les plus ambitieux exposer leurs dernières théories en la matière. Certains comparent la magie aux coulisses d'un théâtre, avec sa foule de mécanismes, d'accessoires et de poulies qui régissent le spectacle présenté au public. D'autres ont recours à des métaphores mathématiques et s'appuient sur des diagrammes ésotériques totalement incompréhensibles. Même si ces exposés se terminent le plus souvent sur des affirmations péremptoires, on assiste aussi à des raclements de gorge polis ainsi qu'à de nombreuses mains levées précédées d'une litanie d'objections et de remarques.
 
 
-<span id="page-231-0"></span>Certains Sorciers, hors du système de Collèges, considèrent que ces restrictions sont ridicules, et qu'elles ont été instaurées par les elfes dans le but de se réserver l'accès aux magies les plus puissantes. Puiser dans plusieurs Vents permet d'avoir rapidement accès à un pouvoir considérable, mais c'est aussi le chemin le plus rapide vers la damnation.
+<span id="page-231-0" data-folio="230"></span>Certains Sorciers, hors du système de Collèges, considèrent que ces restrictions sont ridicules, et qu'elles ont été instaurées par les elfes dans le but de se réserver l'accès aux magies les plus puissantes. Puiser dans plusieurs Vents permet d'avoir rapidement accès à un pouvoir considérable, mais c'est aussi le chemin le plus rapide vers la damnation.
 
 Plus d'un sorcier renégat s'est montré incapable de résister à cette tentation, pratique communément appelée Magie noire, avant d'être réduit au silence par les Répurgateurs.
 
@@ -98,7 +98,7 @@ possèdent la Seconde vue, *Ghyran* ressemble beaucoup à une pluie légère, to
 Les Sorts du Domaine de la Vie impliquent souvent la guérison et le rajeunissement, allant du soin des blessures à l'éclosion de la vie dans un désert stérile. Ils peuvent également avoir des applications défensives. Les ennemis d'un Druide peuvent se retrouver soudain enchevêtrés dans des ronces et des plantes grimpantes acérées.
 
 
-# <span id="page-234-0"></span>**La Magie elfique**
+# <span id="page-234-0" data-folio="233"></span>**La Magie elfique**
 
 Les elfes sont des êtres d'une grande longévité dont l'esprit est plus attentif aux mécanismes de la magie que celui des humains. Les mages hauts elfes expérimentent plusieurs des huit vents, parfois tous, dans le cadre de leur apprentissage, avant que les plus prometteurs ne passent à l'étude de la Haute Magie : *Qhaysh*. C'est le mélange de plusieurs Vents de Magie réunis en une énergie étincelante et aveuglante. Cette magie est impressionnante et difficile, et les elfes affirment qu'elle dépasse les capacités du genre humain.
 

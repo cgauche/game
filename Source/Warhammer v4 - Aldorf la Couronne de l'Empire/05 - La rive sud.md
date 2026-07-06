@@ -1,13 +1,13 @@
 *Pages PDF 57-130*
 
-# <span id="page-56-0"></span>• LA RIVE SUD •
+# <span id="page-56-0" data-folio="54"></span>• LA RIVE SUD •
 
 # **LE QUARTIER HUPPÉ**
 
 Ce quartier accueille l'élite d'Altdorf et abrite certains des sites les plus célèbres de l'Empire. Des pans entiers de la Rive Sud sont occupés par des parcs verdoyants, de vastes demeures, des salles capitulaires de l'un ou l'autre des ordres chevaleresques de l'Empire ainsi que des casernes abritant les meilleurs régiments impériaux. C'est là que se trouvent le Palais Impérial et la Grande Cathédrale de Sigmar. À l'extrémité est de cette zone, les habitations sont plus pauvres. Le quartier d'Ogasse est d'ailleurs particulièrement dégradé par rapport à ses voisins.
 
 
-<span id="page-57-0"></span>
+<span id="page-57-0" data-folio="55"></span>
 
 # **Jardin de Morr**
 
@@ -75,7 +75,7 @@ Bien qu'Altdorf ait la réputation de mettre en place un système judiciaire rel
 Peu de personnes cherchent à imiter la chute du prince Oswald, mais il arrive que des individus fortunés paient des dettes, versent des cautions ou libèrent des prisonniers pour s'en servir dans une combine ou une autre. Utilisée avec soin, cette méthode constitue un moyen raisonnable de rassembler un groupe de Personnages. Par exemple, une marchande wastelander nommée Ermine von Kluck cherche à recruter plusieurs personnes compétentes et ayant peu à perdre dans le cadre d'un projet, probablement voué à l'échec, consistant à transférer l'un des Collèges de Magie à Marienburg.
 
 
-<span id="page-60-0"></span>Des logements de qualité sont disponibles à la location à la Karnevalsplatz pour des prix très raisonnables. Il y a peu de maisons dans ce quartier, car la place du carnaval, le fort de Verena et les jardins en occupent la majeure partie. Pendant les festivités, des groupes de fêtards traînent dans les jardins et rôdent devant les fenêtres des habitants. Les odeurs prédominantes sont alors celles de la tourte à la viande, des pommes cuites, de la bière renversée et de l'urine. Les résidents qui s'abstiennent de participer aux festivités de la place du carnaval n'ont qu'à se boucher les oreilles et essayer de dormir en faisant abstraction.
+<span id="page-60-0" data-folio="58"></span>Des logements de qualité sont disponibles à la location à la Karnevalsplatz pour des prix très raisonnables. Il y a peu de maisons dans ce quartier, car la place du carnaval, le fort de Verena et les jardins en occupent la majeure partie. Pendant les festivités, des groupes de fêtards traînent dans les jardins et rôdent devant les fenêtres des habitants. Les odeurs prédominantes sont alors celles de la tourte à la viande, des pommes cuites, de la bière renversée et de l'urine. Les résidents qui s'abstiennent de participer aux festivités de la place du carnaval n'ont qu'à se boucher les oreilles et essayer de dormir en faisant abstraction.
 
 En dehors des festivités, lorsque la place est vide, ce quartier est d'un calme plat. De temps à autre, des groupes de juristes et de juges vont et viennent depuis l'ancien temple de Verena, la plupart se dirigeant vers la Citadelle du Châtiment, à quelques rues au nord. À l'heure du dîner, les sorciers des Collèges de Magie convergent vers le Festin de Mezzo pour déguster une délicieuse cuisine tiléenne dont les effluves se sentent à des kilomètres à la ronde. Près des ponts, deux bâtiments louches sont connus pour abriter des voleurs.
 
@@ -218,7 +218,7 @@ Elle apprécie la compagnie des aventuriers, en particulier ceux qui ont visité
 **Traits :** Arme (Marteau) +8, Armure (Bras, Corps) 1 **Possessions :** veste de cuir, arme simple (marteau de charpentier), 1d10 pistoles d'argent
 
 
-<span id="page-65-0"></span>
+<span id="page-65-0" data-folio="63"></span>
 
 # **MAUERBLUMCHEN**
 
@@ -359,7 +359,7 @@ Cependant, très récemment, un cambriolage a été signalé. Une boucle d'oreil
 **Possessions :** crochets de serrures de très bonne qualité, clés de plusieurs dizaines de maisons, cartes de la ville montrant les passages secrets et les maisons mal gardées, objets précieux tels que des bijoux et pièces d'une valeur de 10 CO, une douzaine de cartes de visite montrant la silhouette d'un chat
 
 
-<span id="page-70-0"></span>**QUARTIER DU PALAST**
+<span id="page-70-0" data-folio="68"></span>**QUARTIER DU PALAST**
 
 Où que l'on se trouve à Altdorf, on peut apercevoir les flèches du Palais Impérial. Les différents bâtiments qui le composent s'étendent sur un quartier fortifié de la taille d'un village et adoptent différents styles d'architectures et de fortifications. Entre les murs de pierre blanche se trouvent des cours et des jardins, où les courtisans conspirent et les serviteurs s'affairent.
 
@@ -515,7 +515,7 @@ Le Quartier du Palast est unique. Les Personnages qui entrent en son sein peuven
 - 0 Sur les marches de la Résidence de l'Empereur, des serviteurs portent un palanquin dans lequel est assis un lecteur de Sigmar d'un âge avancé. Concentrés sur leur tâche, ils ne remarquent pas que le lecteur s'est endormi et qu'il peut basculer à tout moment !
 
 
-# <span id="page-76-0"></span>**SIX CÉLÈBRES ORDRES DE CHEVALIERS D'ALTDORF**
+# <span id="page-76-0" data-folio="74"></span>**SIX CÉLÈBRES ORDRES DE CHEVALIERS D'ALTDORF**
 
 # **La Reiksguard**
 
@@ -619,7 +619,7 @@ L'armée personnelle et les gardes du corps du Grand Théogoniste. Pour rejoindr
 apocryphes
 
 
-# <span id="page-78-0"></span>**SALLE CAPITULAIRE DE LA REIKSGUARD**
+# <span id="page-78-0" data-folio="76"></span>**SALLE CAPITULAIRE DE LA REIKSGUARD**
 
 Le Grand Ordre des chevaliers de la Reiksguard est l'armée personnelle des Empereurs du Reikland depuis que Wilhelm III l'a créé en 2429 CI. Dans les années qui ont suivi, la Reiksguard a gagné en force et en influence dans tout l'Empire. Son haut commandement siège à Altdorf, aux côtés de l'Empereur et du Reikmarshall.
 
@@ -708,7 +708,7 @@ Le Croc runique du Solland est une épée avec l'Atout d'Arme Incassable et l'At
 L'épée porte la rune maîtresse d'Alaric le Fou. Ne soustrayez pas le Bonus d'Endurance ou les Points d'Armure (y compris les armures magiques et le Trait de créature Armure) des dégâts infligés par le Croc runique du Solland. Le Trait de créature Protection s'applique normalement.
 
 
-<span id="page-81-0"></span>
+<span id="page-81-0" data-folio="79"></span>
 
 # **PARC KARL FRANZ**
 
@@ -772,7 +772,7 @@ Le soir, les nobles invitent des ménestrels à venir jouer sous le pavillon pou
 | Triomphe sur les hommes-bêtes  | Comte Mandred<br>« le Tueur de Rats » | Les hommes-bêtes vaincus sont de la race la plus répandue<br>des hommes-chèvres et sont représentés avec un degré de<br>précision étonnant.                                                                                    |
 
 
-<span id="page-83-0"></span>
+<span id="page-83-0" data-folio="81"></span>
 
 # **FLOTTENLIEGEPLATZ**
 
@@ -919,7 +919,7 @@ Les navires de guerre de la Première flotte sont décorés de sculptures en boi
 ### BRÛLER LE QUAI PAR LES DEUX BOUTS
 
 
-<span id="page-89-0"></span>
+<span id="page-89-0" data-folio="87"></span>
 
 # **HAMMERPFAD**
 
@@ -1029,7 +1029,7 @@ Von Liebnitz profite pleinement de sa nouvelle réputation et s'entoure de jeune
 **Possessions :** arme simple (épée), pistolet et 12 munitions, armure complète de plate sur maille et cuir, 3/7
 
 
-<span id="page-93-0"></span>
+<span id="page-93-0" data-folio="91"></span>
 
 # **FUNDGRUBE**
 
@@ -1147,7 +1147,7 @@ Son prix et sa disponibilité indiquent qu'une telle arme est le fruit de l'amou
 | Couteau de lancer Magnin | –    | 0    | –             | BFx2   | +BF+3  | Percutante |
 
 
-<span id="page-97-0"></span>
+<span id="page-97-0" data-folio="95"></span>
 
 # **DOMPLATZ**
 
@@ -1372,7 +1372,7 @@ Dans une ville comme Altdorf, les intrigues et les meurtres à élucider sont mo
 - 0 Après la découverte d'un vagabond égorgé flottant en aval d'Altdorf, même la Kommission des Atrocités est sur le point d'abandonner l'enquête. Le seul indice est un tatouage de tête de mort rouge réalisé sur le cadavre post mortem. Il s'agit certainement d'un rituel : un culte tenterait-il d'en faire accuser un autre ?
 
 
-<span id="page-105-0"></span>
+<span id="page-105-0" data-folio="103"></span>
 
 # **ZOOGARTEN**
 
@@ -1459,7 +1459,7 @@ En réalité, la bête ne raconte pas que des sottises, mais offre des visions p
 **Sorts :** Bonne Volonté, Malédiction de malchance, Mauvais œil
 
 
-<span id="page-108-0"></span>**MARKT AN DER WAND**
+<span id="page-108-0" data-folio="106"></span>**MARKT AN DER WAND**
 
 Quartier commercial haut de gamme, Markt an der Wand se trouve près du mur sud qui protège Altdorf. Il est principalement composé de petits magasins et de boutiques proposant des articles de qualité supérieure. Des étals d'épicerie bien entretenus vendent des légumes frais, des fruits, des baies et même de belles fleurs importées des prairies du Haut Gris Mere. Les traiteurs qui déambulent dans les rues proposent des steaks et des saucisses provenant du bétail d'Averland. Chaque week-end, un marché aux puces animé, spécialisé dans les meubles et les vêtements anciens, attire des visiteurs de toute la Rive Sud.
 
@@ -1570,7 +1570,7 @@ Fahber fait de son mieux pour faire bonne impression, dépensant son argent pour
 **Possessions :** vêtements de qualité, amulette de Cathay (un cadeau récent, l'amulette est imprégnée d'*Aqshy* ce qui a affecté l'humeur de Thomas), 12 CO
 
 
-<span id="page-112-0"></span>
+<span id="page-112-0" data-folio="110"></span>
 
 # **SÜDKÜSTE**
 
@@ -1675,7 +1675,7 @@ pas commencé avec son
 Ici, au Corps, nous faisons de notre mieux pour vérifier toutes les sources en leur demandant de but en blanc <sup>s</sup>'ils racontent des bobards, mais il
 
 
-<span id="page-115-0"></span>
+<span id="page-115-0" data-folio="113"></span>
 
 # **GROßGRUNDBESITZ**
 
@@ -1741,7 +1741,7 @@ L'addition n'est ni proposée ni réglée à table : le plus souvent, il s'agit 
 Philomena Balourd, la cuisinière en chef bretonnienne, est dans une impasse. Karl Franz lui-même vient dîner à l'improviste au restaurant ce soir et la plupart des ingrédients servant à confectionner un repas digne d'un Empereur sont introuvables. Philomena a besoin de quelqu'un pour parcourir la ville à la recherche de poudre d'or, de colombes nourries exclusivement aux perles et à l'orge, de betteraves fraîches issues de la terre noire du bois des Pins sanglants... des ingrédients qui font un repas convenable pour le souverain de l'Empire.
 
 
-<span id="page-118-0"></span>Plus les visiteurs se déplacent vers l'ouest en longeant la Rive Sud, plus les habitations deviennent modestes. Zwillingsgrab est un quartier de classe moyenne au sud de la cathédrale de Sigmar, où vivent de nombreux artisans et marchands prospères. Deux grands cimetières confèrent à cette zone une atmosphère sinistre. Les rues de Zwillingsgrab semblent plus calmes que le reste de la ville. Les artisans locaux ont tendance à se spécialiser dans des métiers qui demandent de la patience et de la minutie, à l'image de la bijouterie, de la broderie et de la reliure.
+<span id="page-118-0" data-folio="116"></span>Plus les visiteurs se déplacent vers l'ouest en longeant la Rive Sud, plus les habitations deviennent modestes. Zwillingsgrab est un quartier de classe moyenne au sud de la cathédrale de Sigmar, où vivent de nombreux artisans et marchands prospères. Deux grands cimetières confèrent à cette zone une atmosphère sinistre. Les rues de Zwillingsgrab semblent plus calmes que le reste de la ville. Les artisans locaux ont tendance à se spécialiser dans des métiers qui demandent de la patience et de la minutie, à l'image de la bijouterie, de la broderie et de la reliure.
 
 Hormis une prépondérance de petites gargouilles, les bâtiments de Zwillingsgrab sont plutôt discrets. Même s'ils sont bien entretenus, ils conservent un aspect vieilli. Les habitants, qui ont tendance à être plus âgés et plus prospères que la moyenne des Altdorfers, sont enclins à la nostalgie et à l'introversion. De plus, on ne trouve que peu d'auberges et de tavernes à Zwillingsgrab.
 
@@ -1812,7 +1812,7 @@ L'intérieur du magasin est exigu. Amalie est assise à sa table de travail, scu
 Amalie sculpte des jouets directement tirés de ses rêves, qui sont bien plus évocateurs pour elle que n'importe quelle expérience de la réalité. La plupart sont des créations fantaisistes, mais plusieurs dizaines de ses « cauchemars », des monstruosités abominables qu'elle se doit de cacher et de ne jamais montrer au public, sont enfermés dans une arrière-salle. À présent, ils semblent vouloir se libérer...
 
 
-<span id="page-121-0"></span>
+<span id="page-121-0" data-folio="119"></span>
 
 # **KRANKENFELD**
 
@@ -1898,7 +1898,7 @@ Lorsque les sœurs de Shallya leur rendent visite, elles trouvent des enfants ca
 Horven est un garçon vif aux cheveux roux foncé et aux yeux verts perçants. Il a été trouvé seul sur un bateau flottant sur le Reik et a rapidement trouvé le chemin de l'orphelinat. Par une influence surnaturelle, il parvient à soumettre les autres à sa volonté. Depuis son arrivée, les enfants se prélassent et dégustent des mets raffinés pendant que les adultes font tout le travail.
 
 
-<span id="page-124-0"></span>
+<span id="page-124-0" data-folio="122"></span>
 
 # **OGASSE**
 

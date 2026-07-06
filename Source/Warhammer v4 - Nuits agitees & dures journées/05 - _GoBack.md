@@ -121,7 +121,7 @@ Si les Personnages s'empressent d'investiguer ou donnent toute autre indication 
 Si l'agent est arrêté, les gardes l'attachent et la bâillonnent pour attendre le bon plaisir de la Gravin au matin.
 
 
-#### <span id="page-17-0"></span>**04h30**
+#### <span id="page-17-0" data-folio="16"></span>**04h30**
 
 L'aube se lève. La Gravin appelle tout le monde dans la salle du bar, mais il n'y a aucune réponse dans la chambre des contrebandiers. La porte est forcée et révèle une scène de carnage. Les trois «Morriens » sont décédés, le cercueil qu'ils transportaient a été éventré et contient un corps encore chaud, récemment décapité. Il n'a pas de caractéristiques distinctives, rendant l'identification du mystérieux cadavre presque impossible, mais il a des feuillets imprimés dans une poche intérieure dénonçant la Comtesse de Nuln comme «une DÉGÉNÉRÉE LUBRIQUE qui doit être SUPPRIMÉE pour le bien de TOUT l'EMPIRE! ». Ursula Kopfgeld et son cheval ont également disparu.
 
@@ -217,7 +217,7 @@ Homme vaniteux avec un accent raffiné, Gustaf est sur la fin de la cinquantaine
 **Possessions :** robes d'avocat, perruque poudrée, estime de soi démesurée
 
 
-#### <span id="page-19-0"></span>**Le personnel de la Gravin**
+#### <span id="page-19-0" data-folio="18"></span>**Le personnel de la Gravin**
 
 La Gravin a beaucoup de serviteurs, femmes de chambres, hommes d'armes, gardes du corps et d'autres divers serviteurs, tous revêtus de leurs livrées magenta et jaune. Dans son personnel se trouvent Hans Erpresser, un serviteur avec un petit penchant pour le chantage (utilisez les caractéristiques Femmes de chambre et Serviteurs pour lui) et Éliza, une nouvelle employée qui n'est pas tout à fait ce qu'elle parait être.
 
@@ -277,7 +277,7 @@ Gunni, Bart et Hans-Frederick se font passer pour des Morriens transportant un c
 Morriens
 
 
-<span id="page-20-0"></span>
+<span id="page-20-0" data-folio="19"></span>
 
 #### **Le corps**
 
@@ -315,7 +315,7 @@ Ursula fut élevée loin à l'est sur les abords de Kislev, surplombant l'Olbast
 Les «Schmidt » sont épris l'un de l'autre. Pour le baron Freidrich, c'est la neuvième fois qu'il tombe amoureux d'une femme non libre, donc il sait que c'est réel. Fräulein Lastkahn, quant à elle, est amoureuse pour la première fois et c'est un amour comme personne n'a jamais vécu auparavant. Il est clair pour quiconque fait attention que les belles manières de Freidrich, ses beaux vêtements et son accent cultivé ne collent pas avec le nom « Johann Schmidt » ou même avec «Frau Schmidt » clairement de classe inférieure.
 
 
-<span id="page-21-0"></span>
+<span id="page-21-0" data-folio="20"></span>
 
 |   | FREIDRICH VON PFEIFRAUCHER - MAGNAT (OR 5) |    |    |    |    |    |     |     |    |     |   |  |  |  |  |
 |---|--------------------------------------------|----|----|----|----|----|-----|-----|----|-----|---|--|--|--|--|
@@ -367,7 +367,7 @@ Les cultistes de l'*Ordo Ultima* sont loin de leur terrain de jeu habituel de Nu
 
 #### ALLRELLA, ELPHOISE ET HELGA - CULTISTES DE SLAANESH (ARGENT 1)
 
-<span id="page-22-0"></span>
+<span id="page-22-0" data-folio="21"></span>
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -413,7 +413,7 @@ Glimbrin apparaît dans quatre des aventures de la campagne **Nuits Agitées & D
 **Possessions :** 2 CO 17 pistoles et 45 sous, outils de crochetage, sourire toujours prêt, sac, biens volés cachés dans ses quartiers
 
 
-<span id="page-23-0"></span>Plantule est une halfling du distingué clan Pavéderonce d'Altdorf. Elle fuit actuellement ses responsabilités et cherche à gagner quelques pièces en jouant ou avec des ragots. Comme la plupart des Pavéderonce, elle a une diction impeccable et un accent de la haute bourgeoisie qui surprend ceux qui sont habitués à rencontrer des halflings du terroir.
+<span id="page-23-0" data-folio="22"></span>Plantule est une halfling du distingué clan Pavéderonce d'Altdorf. Elle fuit actuellement ses responsabilités et cherche à gagner quelques pièces en jouant ou avec des ragots. Comme la plupart des Pavéderonce, elle a une diction impeccable et un accent de la haute bourgeoisie qui surprend ceux qui sont habitués à rencontrer des halflings du terroir.
 
 |   | HANS ORF - BOURGEOIS (ARGENT 2) |    |    |    |    |    |     |     |    |     |    |  |  |  |
 |---|---------------------------------|----|----|----|----|----|-----|-----|----|-----|----|--|--|--|

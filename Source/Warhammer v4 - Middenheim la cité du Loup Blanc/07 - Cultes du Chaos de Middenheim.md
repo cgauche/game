@@ -2,7 +2,7 @@
 
 ### MIDDENHEIM CULTES DU CHAOS • •
 
-<span id="page-136-0"></span>Malgré sa taille et son activité, et quelles que soient les rumeurs selon lesquelles ses dirigeants sont trop indulgents envers la magie noire, Middenheim accueille plusieurs cultes interdits. Les répurgateurs sigmarites peinent à y mener leurs affaires et sont ostracisés par les citoyens. D'un autre côté, l'attitude traditionnellement généreuse de Middenheim envers la sorcellerie aide la ville à se protéger du Chaos. Les sorciers locaux sont tellement reconnaissants de cette tolérance qu'ils s'efforcent d'éradiquer eux-mêmes les sorciers noirs.
+<span id="page-136-0" data-folio="134"></span>Malgré sa taille et son activité, et quelles que soient les rumeurs selon lesquelles ses dirigeants sont trop indulgents envers la magie noire, Middenheim accueille plusieurs cultes interdits. Les répurgateurs sigmarites peinent à y mener leurs affaires et sont ostracisés par les citoyens. D'un autre côté, l'attitude traditionnellement généreuse de Middenheim envers la sorcellerie aide la ville à se protéger du Chaos. Les sorciers locaux sont tellement reconnaissants de cette tolérance qu'ils s'efforcent d'éradiquer eux-mêmes les sorciers noirs.
 
 Une autre raison pour expliquer le manque de sectes du Chaos dans la ville est, ironiquement, le succès fulgurant de la Main Pourpre de Tzeentch. Ce culte puissant s'est immiscé si profondément dans la haute société de Middenheim qu'il craint que des cultes moins importants n'attirent l'attention sur ses activités. Les membres de la Main Pourpre de Middenheim guettent les signes de rivaux et s'efforcent de les exposer.
 
@@ -25,7 +25,7 @@ Chaque domaine a son propre groupe d'agents et est installé dans un tiers de la
 Ces cultistes hauts placés, qu'on appelle des *Magistri*, contrôlent les ordres. Il s'agit de spécialistes (tels que des sorciers, des lettrés ou des assassins) ou des membres de longue date qui ont obtenu des positions d'autorité et d'influence dans la ville (comme des membres de guilde ou des échevins pour l'une des nombreuses Komissionen de Middenheim).
 
 
-### <span id="page-137-0"></span>**Le Cercle intérieur**
+### <span id="page-137-0" data-folio="135"></span>**Le Cercle intérieur**
 
 Trois personnages louches du Cercle intérieur, généralement appelé le Triumvirat, supervisent tous les faits et gestes du culte. En partie pour des raisons de sécurité, et en partie parce que les cultistes sont obsédés par la discrétion, les communications entre les trois *Ordo* et le Cercle intérieur sont limitées au strict minimum. Le M*agistri* utilise des pigeons voyageurs pour envoyer des messages brefs et codés entre les *Ordo*, mais aucun des trois conseillers intérieurs ne connaît l'identité des deux autres.
 
@@ -80,7 +80,7 @@ Les dirigeants sont choisis selon des concepts vagues comme le volontariat et la
 Le meneur du culte reçoit le titre de Maître du Changement. De nombreux individus ont dirigé le culte au fil des ans, mais ils ont tous porté ce titre. Le Maître du Changement organise les activités du culte dans sa sphère d'influence.
 
 
-### <span id="page-138-0"></span>**Le plan de la Couronne Rouge**
+### <span id="page-138-0" data-folio="136"></span>**Le plan de la Couronne Rouge**
 
 Pour la Couronne Rouge, Middenheim est un point stratégique idéal. Les forêts alentour abritent de nombreux hommes-bêtes. Même si ces hardes sont dispersées, elles seraient redoutables si elles étaient unies par un meneur puissant.
 
@@ -105,7 +105,7 @@ La structure du culte est semblable à celle d'une religion révélée, et ses i
 > Un sorcier accompli de Tzeentch est responsable des livres dans l'auberge. Il passe la majorité de son temps à méditer, et n'émerge de ses transes que pour vérifier les notes dans ses livres ou informer ses subalternes d'une nouvelle opportunité. Ses projets à long terme sont un secret entre lui et les entités qui communient avec lui lors de ses transes.
 
 
-### <span id="page-139-0"></span>**KHORNE**
+### <span id="page-139-0" data-folio="137"></span>**KHORNE**
 
 Khorne le Dieu du Sang est communément vénéré par les guerriers du Chaos et les hommes-bêtes. Il s'agit d'un dieu du massacre arbitraire, mais également de l'honneur martial et du talent personnel. Peu de cultes sont dévoués à Khorne : c'est un maître sévère et son adoration se résume au type de carnage erratique que la civilisation ne tolère pas. Malgré tout, certains individus de l'Empire s'intéressent aux cultes de Khorne. Pour certaines communautés de la campagne du Middenland, Khorne est un dieu de la guerre plus honnête qu'Ulric, et il a même des adeptes dans Middenheim.
 
@@ -138,7 +138,7 @@ Les agents de la Communauté œuvrent dans le Morrspark tandis que de petits gro
 0 Herr Doktor Sesselweiss veut partir. Après avoir grandement profité de son association avec la Communauté, il suspecte leur cercle intérieur de commettre des actes sinistres. Le problème est que le culte lui a envoyé plusieurs cadavres pour ses recherches. S'il entendait parler de courageux aventuriers dans Middenheim, il pourrait leur donner des indices sur les actes sinistres de la Communauté, du moment qu'il ne se retrouve pas impliqué.
 
 
-### <span id="page-140-0"></span>**SLANEESH**
+### <span id="page-140-0" data-folio="138"></span>**SLANEESH**
 
 Sans compter les villes de Bretonnie célèbres pour leurs débauches, aucun endroit du Vieux Monde ne comprend un culte de Slaanesh avec autant d'influence politique que Middenheim. Habituellement, le pouvoir et la politique importent peu aux adeptes du Prince du Chaos. Après tout, d'après les cultistes, si au final tout doit être englouti par le Chaos, l'important c'est de s'amuser en attendant.
 
@@ -169,7 +169,7 @@ Pour le culte d'Ulric, les Fils sont une opposition radicale et dangereuse, et i
 Les Fils sont principalement populaires dans le Middenland, où leur existence est formellement interdite, mais on peut les trouver ailleurs. Ceux qui déclarent avoir du sang ulricain à l'extérieur du Middenland prétendent descendre d'une tribu Teutogen connue ou avoir rencontré le dieu en personne. Cependant, les Fils d'Ulric originaires du Middenland ne respectent pas ces allégations, et les considèrent même comme des hérésies à punir.
 
 
-<span id="page-141-0"></span>
+<span id="page-141-0" data-folio="139"></span>
 
 ### **Porteurs du Sang**
 
@@ -192,7 +192,7 @@ Après sa deuxième mort, la malédiction de Babrakkos semblait levée. Pourtant
 De nos jours, les fidèles de Babrakkos se montrent plus subtils : ils attisent lentement la volonté de la chose-liche en répandant son iconographie et ses pratiques sous une forme déguisée. Ils fabriquent des icônes consacrées à leur seigneur sous la forme d'inoffensifs croissants de lune qu'ils offrent à des porteurs involontaires.
 
 
-<span id="page-142-0"></span>Les cultistes enseignent des incantations à la chose-liche à leurs enfants ou à leurs disciples ou protégés. Ils souhaitent également collecter plusieurs artefacts considérés comme typiques de la vie dans la ville, car la croyance veut que la volonté de Babrakkos soit attirée par ce genre de totems. Ils ont obtenu le Voile Déchiré du Temple de Shallya, et prévoient de récupérer les Mâchoires du loup blanc vaincu par Artur, une peau de panthère de la *Magnum Odenhaus Pantera* et la Coupe des Mets.
+<span id="page-142-0" data-folio="140"></span>Les cultistes enseignent des incantations à la chose-liche à leurs enfants ou à leurs disciples ou protégés. Ils souhaitent également collecter plusieurs artefacts considérés comme typiques de la vie dans la ville, car la croyance veut que la volonté de Babrakkos soit attirée par ce genre de totems. Ils ont obtenu le Voile Déchiré du Temple de Shallya, et prévoient de récupérer les Mâchoires du loup blanc vaincu par Artur, une peau de panthère de la *Magnum Odenhaus Pantera* et la Coupe des Mets.
 
 Il est peu probable que les efforts des Mangeurs du Monde suffisent à aider à la réincarnation de la Première Menace, mais les signes d'activités de morts-vivants sont de plus en plus courants dans et aux alentours de Middenheim, probablement à cause d'eux.
 
@@ -217,7 +217,7 @@ Le groupe se réunit souvent dans la taverne du Voile Déchiré dans le Neumarkt
 Cependant, la société a des projets secrets. Les membres qui prouvent leur loyauté sont prudemment exposés à d'autres mystères qui entretiennent des magies plus sombres. Pour les membres éminents de la société, il n'est pas inapproprié pour un sorcier de pratiquer la nécromancie ou d'invoquer des démons s'ils le souhaitent. Même si le Serment de Volans n'est pas un groupe de cultistes du Chaos au sens traditionnel, ils ne répugnent pas à marchander avec des pouvoirs sombres si cela leur permet d'acquérir davantage de savoir magique.
 
 
-<span id="page-143-0"></span>
+<span id="page-143-0" data-folio="141"></span>
 
 ### **« Magister » Hugo Vallonvert**
 
@@ -260,7 +260,7 @@ Si elle parvient à faire en sorte que ses lieutenants écoutent ses idées, les
 **Talents** : Baratiner, Béni (Ulric), Chat de gouttière, Destinée (*Morr deviendra ton ami lorsque tu seras abandonné et seul*), Dur à cuire (+4 points de Blessure déjà ajoutés au profil), Ergoteur, Ferveur ardente, Lire/Écrire, Nomade, Orateur, Sociable, Visions sacrées
 
 
-<span id="page-144-0"></span>
+<span id="page-144-0" data-folio="142"></span>
 
 ### **Le vieil Otto**
 

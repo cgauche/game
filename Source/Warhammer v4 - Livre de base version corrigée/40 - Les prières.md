@@ -31,7 +31,7 @@ Les prêtres Bienheureux peuvent tout de même faire annuler les infractions aux
 Les MJ peuvent avertir les Joueurs avant qu'ils ne commettent des infractions, en particulier s'ils sont nouveaux à Warhammer Fantasy.
 
 
-### <span id="page-219-0"></span>**Péché et Colère divine**
+### <span id="page-219-0" data-folio="218"></span>**Péché et Colère divine**
 
 Il est risqué de faire appel à votre divinité quand vous avez agi de façon contraire à sa volonté. Chaque fois que vous effectuez un Test de Prière, si le dé des unités est inférieur ou égal à votre total actuel de Points de Péché, vous subirez la Colère des dieux, même si le Test de Prière est réussi.
 
@@ -89,7 +89,7 @@ Si un Personnage se comporte de façon particulièrement pieuse, en achevant par
 | 151+    | Appelé à rendre des comptes : vous êtes convoqué devant votre dieu pour affronter le jugement dernier. À moins<br>que vous n'ayez des Points de Destin, vous ne reviendrez jamais. Si vous dépensez un Point de Destin, vous êtes<br>renvoyé à un moment choisi par le MJ, et vous subissez également les effets de Je te chasse (ci-dessus).                                                            |  |  |  |
 
 
-<span id="page-221-0"></span>
+<span id="page-221-0" data-folio="220"></span>
 
 # SERVITEURS DIVINS
 

@@ -11,7 +11,7 @@ Ces créatures reptiliennes à huit pattes sont solitaires et insaisissables. Co
 Rarement rencontrés aujourd'hui, les basilics sont des ennemis des plus dangereux. Leurs glandes et leurs organes sont très prisés des Sorciers et Alchimistes. Des chasseurs opportunistes écoutent donc souvent les rumeurs sur la présence de basilics dans les espaces sauvages du Vorbergland, et bien peu en reviennent.
 
 
-# <span id="page-319-0"></span>**Bête des marais**
+# <span id="page-319-0" data-folio="318"></span>**Bête des marais**
 
 Animées par des lanceurs de Sorts à partir d'immondices des marais et des tourbières, les Bêtes des marais ne sont que des automates parfaitement stupides créés par magie. Vaguement humanoïdes, ils sont constitués de boue, d'os, de branches et de mucus, et nécessitent d'importantes quantités de magie pour conserver leur intégrité. Parfois, ils sont animés par des Sorciers spécialisés dans la Magie de Jade pour servir de gardes du corps ou pour accomplir une tâche spécifique nécessitant de la force brute ou un meurtre aveugle. Ils s'animent parfois de façon autonome, engendrés dans des bassins d'eau stagnante où le flux de Magie a été corrompu. Le Collège de Jade d'Altdorf conserve une vingtaine de ces créatures comme bêtes de somme, qui effectuent des corvées pour les Magisters supérieurs, maintenues par la focalisation incessante de douzaines d'apprentis.
 
@@ -38,7 +38,7 @@ Avec leur tête d'aigle et leur corps de lion, les demigriffons sont de puissant
 **Facultatif :** Dressé (Dompté, Garde, Guerre, Monture, Trait)
 
 
-# <span id="page-320-0"></span>**Dragon**
+# <span id="page-320-0" data-folio="319"></span>**Dragon**
 
 Les dragons régnaient sur les cieux bien avant que les anciennes races n'arpentent le monde connu. Même si les dragons d'aujourd'hui ne sont plus que l'ombre de leurs frères, ils demeurent parmi les créatures connues les plus puissantes de l'Empire.
 
@@ -71,7 +71,7 @@ Les Fimirs sont des créatures reptiliennes discrètes, pourvues d'un seul œil.
 – Oleg Grauhof, Marchand reiklander, avant d'être pendu pour le meurtre de sa femme
 
 
-# <span id="page-321-0"></span>**Géant**
+# <span id="page-321-0" data-folio="320"></span>**Géant**
 
 Les géants sont des créatures solitaires qui évitent généralement la civilisation. La plupart chassent dans les endroits éloignés et montagneux entourant l'Empire ou se cachent dans des grottes et des ruines oubliées, loin des peuples plus petits, bien qu'ils migrent parfois dans les contreforts à la recherche de nourriture. Ils ont la réputation d'être belliqueux et féroces, à cause de leur taille impressionnante, de leur régime alimentaire à base de bétail et de leur association avec des armées peaux-vertes en maraude qui les asservissent. En réalité, beaucoup de géants ont un bon fond, sont en proie à des crises de colère et défendent farouchement leur vie privée, mais ne sont pas nécessairement hostiles aux autres.
 
@@ -100,7 +100,7 @@ nocturne, Vol 80
 **Facultatif :** Dressé (Dompté, Garde, Guerre, Magie, Monture)
 
 
-# <span id="page-322-0"></span>**Hippogriffe**
+# <span id="page-322-0" data-folio="321"></span>**Hippogriffe**
 
 Particulièrement féroces et territoriaux, les hippogriffes possèdent une tête et des ailes d'aigle, le buste d'un lion et l'arrière-train d'un cheval. Issus le plus souvent des Montagnes Grises, ils attaquent sans provocation, presque imprudents dans leur fureur, déchirant la chair en lambeaux pour la dévorer plus tard. Leur rage est telle que des troupeaux entiers de bétails peuvent être anéantis par un seul hippogriffe, qui s'enfuit ensuite avec ses proies préférées, abandonnant les restes aux charognards.
 
@@ -131,7 +131,7 @@ Régénération, Taille (Énorme), Souffle +10 (Feu), Vision nocturne
 **Facultatif :** Belliqueux, Territorial, Venin
 
 
-# <span id="page-323-0"></span>**Jabberslythe**
+# <span id="page-323-0" data-folio="322"></span>**Jabberslythe**
 
 Le Jabberslythe est une ancienne créature du Chaos qui se cache dans les profondeurs des forêts les plus sombres. Créature démente, le Jabberslythe est un ignoble mélange de crapaud, de dragon de vase et d'insecte, le tout irrigué par un sang noir corrosif qui jaillit à la moindre blessure. Pire encore, tous ceux qui regardent cette horreur perdent l'esprit, baragouinant, se griffant les yeux et riant hystériquement, faisant d'eux des proies faciles pour le Jabberslythe. De plus, il dispose d'une langue collante capable de fouetter et de ramener son prochain repas dans sa gueule béante. En accord avec son apparence, la créature se déplace de façon gauche et balourde, et possède même des ailes, bien trop petites pour réussir à soulever son impressionnant gabarit.
 
@@ -164,7 +164,7 @@ Heureusement assez rares, les manticores sont féroces à l'extrême, animées p
 – Adhemar Fitztancred, Gardien Gris, conteur et menteur
 
 
-# <span id="page-324-0"></span>**Pégase**
+# <span id="page-324-0" data-folio="323"></span>**Pégase**
 
 Les pégases sont de magnifiques chevaux blancs pourvus d'ailes de cygne. Ce sont des voltigeurs acharnés et inépuisables qui se déplacent en grandes hordes dans les hautes montagnes, semblant prendre beaucoup de plaisir à virevolter dans les courants d'air chaud tourbillonnants. Les pégases font de parfaits destriers et beaucoup de guerriers ou d'éclaireurs ont tenté d'en capturer un. Ils sont très intelligents, et certains pensent qu'ils ne se laissent capturer que s'ils le veulent bien, ce qui a fait naître toutes sortes de légendes romantiques fantaisistes insistant sur le fait que seuls les plus dignes ou les plus vertueux pouvaient être choisis.
 
@@ -209,7 +209,7 @@ Les squigs sont de grandes créatures fongoïdes, en général de forme ronde, q
 gaz), Taille (Minuscule-Énorme)
 
 
-# <span id="page-325-0"></span>**Troll**
+# <span id="page-325-0" data-folio="324"></span>**Troll**
 
 Les trolls sont des créatures sales et immondes qui infestent tous les coins du Vieux Monde. Prompts à s'adapter à leur environnement, quel que soit leur type, ils sont tous énormes et imposants. Sombres et mus par leurs pulsions alimentaires, ils aiment tout de même amasser des biens et leur repaire peut renfermer des trésors composés d'objets utiles et de valeur… et des restes macabres de leurs repas.
 

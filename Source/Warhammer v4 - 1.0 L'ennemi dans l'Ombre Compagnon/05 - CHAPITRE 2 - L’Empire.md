@@ -2,7 +2,7 @@
 
 ## CHAPITRE 2 : L'EMPIRE
 
-<span id="page-9-0"></span>*Le Chapitre 10 : Glorieux Reikland* du **Livre de Règles** de **WFJDR** comprend une description détaillée du Reikland, où se déroulent les événements de cette partie de la campagne **L'Ennemi Intérieur**. Si le glorieux Reikland est le foyer par défaut des Personnages Joueurs, ils peuvent aussi avoir une certaine connaissance de l'Empire au sens large. Au cours de leurs déplacements, ils entendront également des nouvelles et des rumeurs concernant des lieux et des personnes au-delà du Reikland. Ce chapitre offre un bref aperçu de l'Empire, du « gratin », et du fonctionnement du système impérial.
+<span id="page-9-0" data-folio="9"></span>*Le Chapitre 10 : Glorieux Reikland* du **Livre de Règles** de **WFJDR** comprend une description détaillée du Reikland, où se déroulent les événements de cette partie de la campagne **L'Ennemi Intérieur**. Si le glorieux Reikland est le foyer par défaut des Personnages Joueurs, ils peuvent aussi avoir une certaine connaissance de l'Empire au sens large. Au cours de leurs déplacements, ils entendront également des nouvelles et des rumeurs concernant des lieux et des personnes au-delà du Reikland. Ce chapitre offre un bref aperçu de l'Empire, du « gratin », et du fonctionnement du système impérial.
 
 ### **LE ROYAUME DE SIGMAR**
 
@@ -23,7 +23,7 @@ Le style de gouvernement varie également selon les Provinces Électrices. Le Ta
 Toutes les Provinces Électrices sont dirigées par des Comtes électeurs ou des Électeurs.
 
 
-#### <span id="page-10-0"></span>**Les Comtes électeurs**
+#### <span id="page-10-0" data-folio="10"></span>**Les Comtes électeurs**
 
 Les Comtes électeurs détiennent les plus hauts et puissants titres de l'Empire. Chacun d'entre eux dirige une vaste « Grande Province » et est chargé d'élire un nouvel Empereur lorsque le titulaire décède ou abdique. Leurs titres sont incroyablement anciens, remontant même à l'époque de Sigmar, il y a plus de deux millénaires. Tous les Comtes électeurs et leurs descendants directs sur trois générations sont considérés comme étant de sang royal, ce qui place leur maison noble au-dessus de toutes les autres, en tant que maison royale. Ce titre ancien leur confère également le droit de manier un Croc runique, l'une des épées magiques forgées pour les plus grands chefs de tribus à l'époque de Sigmar. Historiquement, surtout pendant l'Âge des Ténèbres, lorsque l'Empire s'effondra, on prétendait qu'une Maison noble ne pouvait prétendre être une Maison royale sans un Croc runique, ce qui signifie que les guerres pour leur possession étaient fréquentes et implacables.
 
@@ -62,7 +62,7 @@ Si un Croc runique devait être perdu, un tel scandale serait gardé secret. L'�
 Ce « *Croc runique* » possède une lame courte, étrangement ondulée, et une pierre légèrement lumineuse, ressemblant presque à un œil, sertie dans la garde. Le charlatan qui a vendu la lame à Roberta a estimé qu'il devait s'en débarrasser rapidement après l'avoir dérobée à un homme calme portant des chausses violettes, et à juste titre ; la Main Pourpre est déjà à la recherche de la lame et a l'intention d'abattre quiconque la connaît. Roberta pourrait bien avoir besoin d'aide.
 
 
-### <span id="page-11-0"></span>**Les Domaines**
+### <span id="page-11-0" data-folio="11"></span>**Les Domaines**
 
 Les Domaines sont dirigés par les vassaux des Provinces Électrices et des Provinces. Qu'il s'agisse d'un duché, d'une marche, d'une ligue, d'un comté, d'un palatinat, d'une baronnie ou autre, son dirigeant est considéré comme l'un des nobles les plus importants de l'Empire et peut voter à la Diète des Domaines. La plupart des Domaines sont divisés en de nombreux fiefs plus petits.
 
@@ -103,7 +103,7 @@ Le duc Lumpo Hohenheim, dit « Le Débraillé », a succombé à la peste noire 
 En apprenant l'existence des Personnages, le jeune Duc élabore un plan : engager ces bons à rien pour semer le désordre à Beckol jusqu'à ce que les marchands trop dépendants casquent pour une charte leur permettant de devenir une Freistadt. Il donne l'ordre à ses gardes de laisser les Personnages agir à leur guise, espérant qu'une véritable vague de crimes incitera les marchands irascibles à en faire la demande. Bien sûr, Roricus n'a pas l'intention de payer les Personnages, et se soucie peu des activités sectaires qu'ils pourraient découvrir au cours de leurs pérégrinations dans les maisons de commerce.
 
 
-### <span id="page-12-0"></span>**Seigneurs et Freistadts**
+### <span id="page-12-0" data-folio="12"></span>**Seigneurs et Freistadts**
 
 La plupart des villes sont dirigées par un Seigneur, qui est soit le souverain de la Province, soit un petit noble assermenté au service de ce souverain. Certaines sont des Freistadts ou des « villes libres » qui détiennent une charte octroyée par un Comte électeur ou l'Empereur en personne et ne répondent plus qu'à eux.
 
@@ -140,7 +140,7 @@ L'infâme Gottfried, baron de Ranachfels, a placé une prime inouïe de 40 couro
 La plupart des gens ignorent que le hors-la-loi est en réalité la baronne Mélusine Hedwig Strockblitz, et qu'elle veut simplement collecter les impôts qu'elle pense devoir lui revenir, car Gottfried réclame continuellement des impôts à la ville de Moerfort, sise à la frontière entre leurs deux baronnies. Aucun des deux nobles n'hésite à utiliser des tactiques sournoises pour arriver à ses fins, y compris engager une bande de Personnages étrangers à la ville, habitués à avoir du sang sur les mains.
 
 
-<span id="page-13-0"></span>L'empereur Mattheus II, grand-père de Karl Franz Ier et fervent partisan des principes démocratiques, a tenté d'élaborer une Constitution impériale autour du Conseil. Ce qui a suscité la méfiance des Comtes électeurs et du Conseil d'État. L'idée a donc été discrètement abandonnée. Il faut en effet un Empereur fort pour affronter un Conseil d'État uni.
+<span id="page-13-0" data-folio="13"></span>L'empereur Mattheus II, grand-père de Karl Franz Ier et fervent partisan des principes démocratiques, a tenté d'élaborer une Constitution impériale autour du Conseil. Ce qui a suscité la méfiance des Comtes électeurs et du Conseil d'État. L'idée a donc été discrètement abandonnée. Il faut en effet un Empereur fort pour affronter un Conseil d'État uni.
 
 Le Conseil se réunit au moins une fois par mois dans la salle Mattheus-Ferrand du Volkshall d'Altdorf, bien qu'il soit rare que plus de trois membres siègent simultanément. Lorsqu'ils sont plus nombreux, c'est presque toujours pour faire face à un événement capital.
 
@@ -171,7 +171,7 @@ Voici les Électeurs en 2512 CI, l'époque de **L'Ennemi dans l'Ombre**. À la f
 - 7. Gustav XI de la Maison Krieglitz, vingt-deux ans, Grand Duc du Talabecland, Comte électeur, Comte de Krieglitz et « Grátaal », « Bien-aimé de Taal », est installé au château Schloss, juste à l'extérieur de la ville de Herzig. Il n'a pas d'héritier désigné publiquement en raison d'une « dispute successorale » concernant son jeune frère, Gunter, initiée par leur oncle, le comte Ottlin de Gehrandt.
 
 
-- <span id="page-14-0"></span>8. Ételka III de la Maison Toppenheimer, cinquante et un ans, Grande Baronne du Sudenland, Comte Électeur, Baronne de Pfeildorf, et Baronne de Geschberg, est basée à Pfeildorf. Son héritier officiel est son fils adoptif, le baron Olaf Sektliebe, ce qui consterne ses douze enfants.
+- <span id="page-14-0" data-folio="14"></span>8. Ételka III de la Maison Toppenheimer, cinquante et un ans, Grande Baronne du Sudenland, Comte Électeur, Baronne de Pfeildorf, et Baronne de Geschberg, est basée à Pfeildorf. Son héritier officiel est son fils adoptif, le baron Olaf Sektliebe, ce qui consterne ses douze enfants.
 - 9. Alberich V de la Maison Haupt-Anderssen, quinze ans, Grand Duc du Stirland, Comte Électeur, et Prince de Wurtbad, vit à Wurtbad. Il n'a pas d'héritier officiel après que son frère cadet, Rudolph, a été déshérité en 2511 CI par le régent d'Alberich, Stirmarshal Haygich.
 - 10. Ludmila I de la Maison Alptraum, soixante-dixsept ans, Grande Comtesse de l'Averland, Comtesse électrice, Princesse d'Averheim, Comtesse de Gaital, vit à Averheim. Son héritière officielle est sa fille aînée, la baronne Marlene, âgée de 51 ans.
 - 11. L'Ancien, Hisme Fiercœur, du Grand Comté du Mootland est installé à Eicheschatten. Âgé de cent-vingtquatre ans, il représente non seulement le Mootland, mais aussi tous les halflings de l'Empire.
@@ -204,7 +204,7 @@ Les guildes de travailleurs (par exemple, les manœuvres, les cochers et les dé
 - 0 La comtesse Talène Feuerbach est Haut Chambellan du Palais. Son portefeuille concerne les Affaires impériales. Cela signifie qu'elle gère toutes les propriétés impériales.
 
 
-<span id="page-15-0"></span>La guilde des marchands fonctionne à peu près de la même manière, en supervisant les apprentissages, mais ses membres sont libres de faire des affaires comme bon leur semble. La majorité des opérations commerciales sont basées sur la famille, et en dehors de ces familles, les nouveaux membres de la guilde ne sont pas soutenus. De temps en temps, la guilde peut intervenir lorsque la concurrence ou les conflits entre les membres menacent son unité ou sa réputation, mais, dans l'ensemble, elle se contente de laisser ses membres mener leurs affaires comme ils l'entendent.
+<span id="page-15-0" data-folio="15"></span>La guilde des marchands fonctionne à peu près de la même manière, en supervisant les apprentissages, mais ses membres sont libres de faire des affaires comme bon leur semble. La majorité des opérations commerciales sont basées sur la famille, et en dehors de ces familles, les nouveaux membres de la guilde ne sont pas soutenus. De temps en temps, la guilde peut intervenir lorsque la concurrence ou les conflits entre les membres menacent son unité ou sa réputation, mais, dans l'ensemble, elle se contente de laisser ses membres mener leurs affaires comme ils l'entendent.
 
 Tous les membres des guildes paient une cotisation annuelle, permettant d'entretenir ses locaux. Il peut s'agir de somptueuses maisons de ville, de cachettes bien dissimulées, ou de petites pièces à l'arrière de la boutique d'un artisan. Les apprentis doivent payer une cotisation pour devenir membre à part entière et être autorisés à exercer leur métier dans une ville. Dans certains endroits, les membres des guildes d'artisans sont également tenus d'effectuer gratuitement une journée de travail par an pour la guilde.
 
@@ -227,7 +227,7 @@ L'*Ordo Septenarius* a un besoin urgent de mettre fin à la grève (en particuli
 La guilde des dockers pourrait aussi faire grève à cause de la puanteur de la Bögen, le cadavre de Gottri a bouché une conduite d'égout, et un groupe de Personnages entreprenants pourrait être payé pour l'enlever - ou une toute autre guilde pourrait faire grève. Une guilde puissante peut rassembler une petite armée de manifestants, alors n'hésitez pas à jouer sur les perturbations que cela peut causer dans la vie quotidienne de Bögenhafen.
 
 
-<span id="page-16-0"></span>lois de l'organisation. Les places vacantes au Conseil sont très rares, et ne sont disponibles qu'après le décès d'un conseiller. Les membres survivants se réunissent à huis clos pour pourvoir le siège libre sur invitation.
+<span id="page-16-0" data-folio="16"></span>lois de l'organisation. Les places vacantes au Conseil sont très rares, et ne sont disponibles qu'après le décès d'un conseiller. Les membres survivants se réunissent à huis clos pour pourvoir le siège libre sur invitation.
 
 Dans les petites villes et les villages, il se peut qu'il n'y ait pas assez de membres pour justifier une structure aussi formelle, et dans de nombreux cas, la guilde étendra son contrôle aux villages voisins.
 
@@ -248,7 +248,7 @@ Les différents organismes chargés de l'application de la loi ont bien assez à
 Les Personnages réellement coupables doivent donc faire preuve d'encore plus de prudence. Si le crime est insignifiant, la subornation est une possibilité. Elle est souvent présentée comme le paiement sur-le-champ d'une « amende ». Toutefois, si la tentative de corruption échoue, les choses se corsent. Des délits plus graves, tels que le vol, l'effraction, etc, se terminent souvent (mais pas toujours) par un procès dans le tribunal le plus proche.
 
 
-<span id="page-17-0"></span>Si un Personnage résiste à son arrestation, il est fort probable que les forces de l'ordre se sentent autorisées à rendre la justice sur place, ce qui se termine généralement par un enterrement dans une tombe anonyme. Les crimes tels que le meurtre, l'attaque à main armée et le vol de chevaux sont considérés comme tellement odieux que l'on s'attend à ce que l'intervenant qui procède à l'arrestation s'occupe du criminel sur place.
+<span id="page-17-0" data-folio="17"></span>Si un Personnage résiste à son arrestation, il est fort probable que les forces de l'ordre se sentent autorisées à rendre la justice sur place, ce qui se termine généralement par un enterrement dans une tombe anonyme. Les crimes tels que le meurtre, l'attaque à main armée et le vol de chevaux sont considérés comme tellement odieux que l'on s'attend à ce que l'intervenant qui procède à l'arrestation s'occupe du criminel sur place.
 
 Les Personnages arrêtés peuvent être jugés, ou non, en fonction de leur position sociale apparente et des preuves contre eux. À moins qu'il n'existe des preuves irréfutables contre un noble ou un riche marchand, ces derniers sont rarement jugés, car quelques couronnes bien attribuées suffisent à faire abandonner les poursuites. Les très pauvres ne vont généralement pas non plus au tribunal : ils dépérissent en prison pendant des années ou finissent dans une colonie pénitentiaire à casser des pierres pour réparer les routes. Il arrive parfois qu'un pauvre soit jugé pour porter le chapeau à la place d'un noble qui a pu user de pots-devin. En outre, la noblesse ne peut être jugée que par ses seigneurs liges directs, quels qu'ils soient, sous réserve des lois spécifiques de leur Province respective. La violation de cette disposition est susceptible de se solder par, au mieux, de l'embarras, au pire, par une guerre. Il est donc rare que les membres de la noblesse soient tenus de rendre compte de leurs actes.
 
@@ -282,7 +282,7 @@ Cependant, les coutumes locales font qu'il n'y a pas de normes identiques dans d
 En général, le préfixe « Grand » signifie que le détenteur du titre est également un électeur ; ainsi, l'Empereur Karl Franz est également le Grand Prince du Reikland. Mais tous les souverains ne choisissent pas de l'utiliser. Le graf Boris Todbringer de Middenheim, par exemple, n'est pas appelé « Grand Graf » ou « Grand Duc », surtout parce qu'il n'aime pas la façon dont sonnent ces titres. Il est donc connu partout comme « le Graf ».
 
 
-## <span id="page-19-0"></span>CHAPITRE 3 : CHEMINS ET GRANDES ROUTES DE L'EMPIRE
+## <span id="page-19-0" data-folio="19"></span>CHAPITRE 3 : CHEMINS ET GRANDES ROUTES DE L'EMPIRE
 
 « *Deux routes se présentaient à moi dans la Drakwald. J'ai pris la moins fréquentée, ce qui m'a coûté un œil et dix sous.* » - Robrecht Fraücht, poète itinérant
 

@@ -23,7 +23,7 @@ Les chamanes-brays sont nés avec la capacité de manier les pouvoirs du Chaos, 
 **Facultatif :** Infecté, Maladie (Vérole du Tanneur), Mutation, Parasité, Taille (Grande)
 
 
-# <span id="page-333-0"></span>**Gor**
+# <span id="page-333-0" data-folio="332"></span>**Gor**
 
 Les gors, les hommes-bêtes les plus courants, hantent presque chaque forêt du Vieux Monde. Leur apparence varie considérablement, mais tous allient des traits bestiaux et humains, souvent avec la tête et les jambes d'un bouc et le torse et les bras d'un humain. La seule caractéristique commune à tous les Gors est une grande paire de cornes – les plus grandes sont les meilleures, car elles indiquent le statut parmi les hommes-bêtes –, un trait qui les différencie des ungors et des changepeaux.
 
@@ -56,7 +56,7 @@ Les ungors possèdent des cornes vestigiales ou très courtes, et ils sont donc 
 **Facultatif :** À distance +7 (25), Armure 1, Corruption (Mineure), Infecté, Maladie (Vérole du Tanneur), Mutation, Parasité, Taille (Petite)
 
 
-# <span id="page-334-0"></span>**Cultistes, les égarés et les damnés**
+# <span id="page-334-0" data-folio="333"></span>**Cultistes, les égarés et les damnés**
 
 Comme une poutre pourrie dissimulée derrière un mur blanchi à la chaux, un terrible ennemi se cache au cœur de l'Empire. Dans chaque province, dans chaque ville, des hommes et des femmes se laissent dévoyer par les leurres subtils du Chaos, attirés par la promesse du pouvoir, de la connaissance, de la force ou de la liberté.
 

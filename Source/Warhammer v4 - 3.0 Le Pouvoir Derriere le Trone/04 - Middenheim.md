@@ -2,7 +2,7 @@
 
 # CHAPITRE 2 MIDDENHEIM
 
-<span id="page-31-0"></span>Après avoir déjoué l'embuscade des agents de la Main Pourpre et compris que le travail de livraison qu'ils ont effectué pour Blucher était en réalité un piège, les Personnages sont libres d'explorer Middenheim, de suivre diverses pistes et de profiter du célèbre Carnaval de la ville. Ce faisant, ils découvrent l'existence d'un complot insidieux à la cour du Graf, et se retrouvent à poursuivre la trace du Pouvoir derrière le Trône.
+<span id="page-31-0" data-folio="29"></span>Après avoir déjoué l'embuscade des agents de la Main Pourpre et compris que le travail de livraison qu'ils ont effectué pour Blucher était en réalité un piège, les Personnages sont libres d'explorer Middenheim, de suivre diverses pistes et de profiter du célèbre Carnaval de la ville. Ce faisant, ils découvrent l'existence d'un complot insidieux à la cour du Graf, et se retrouvent à poursuivre la trace du Pouvoir derrière le Trône.
 
 *La Cité* fournit quelques informations essentielles sur l'histoire, la géographie et la politique de Middenheim, que les Personnages sont susceptibles d'obtenir en posant des questions, en entendant les conversations des habitants, et en découvrant la ville par euxmêmes. Bien que ces informations soient strictement suffisantes au bon déroulement de l'aventure, **Middenheim : La Cité du Loup Blanc** offre une description de la ville beaucoup plus détaillée et explore davantage son potentiel quasi illimité en termes d'intrigues.
 
@@ -266,4 +266,4 @@ Ces secteurs résidentiels sont populaires auprès des prêtres : en effet, on n
 Ces trois secteurs forment la plaque tournante du commerce de Middenheim. La plupart des marchands vivent dans le secteur résidentiel de Geldmund et se rendent à pied à leur lieu de travail, non loin de là. L'une des plus grandes maisons de ce secteur est la propriété de Gotthard Wallenstein (p. 138), qui est à la fois le président de la Guilde des Marchands et de la Kommission pour le Commerce, les Métiers et les Impôts ; cependant, il ne s'y trouve guère souvent.
 
 
-<span id="page-39-0"></span>
+<span id="page-39-0" data-folio="37"></span>

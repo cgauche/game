@@ -88,7 +88,7 @@ Peu après, le Chancelier mourra dans un « accident » impliquant une dose impr
 Il est possible, bien que peu recommandable, que les événements ayant pris place pendant la campagne de *L'ennemi Intérieur* continuent à avoir cours si Wasmeier mène à bien son plan, détaillé ci-dessus. *Le Rat Cornu*, la quatrième partie de la campagne, restera jouable en l'état, mais *L'Empire en Ruines*, la cinquième partie, demandera un effort d'ingéniosité de la part du MJ. Bien que les Joueurs ne puissent s'estimer victorieux sans avoir eu des chances d'échouer, soyez conscient que la chute de Middenheim aux mains du Chaos représentera un challenge conséquent pour l'Empire, mais aussi pour le MJ.
 
 
-### <span id="page-41-0"></span>**LES POUVOIRS EN PLACE**
+### <span id="page-41-0" data-folio="39"></span>**LES POUVOIRS EN PLACE**
 
 Le plan machiavélique se déploie loin dans les rangs de la cour du Graf : bon nombre des résidents les plus éminents de la ville sont impliqués d'une manière ou d'une autre. De brèves descriptions de chacun de ces PNJ majeurs sont fournies cidessous. Des fiches détaillées de ces PNJ se trouvent à la fin de ce livre, avec les cartes et les documents.
 

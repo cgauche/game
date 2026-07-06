@@ -2,7 +2,7 @@
 
 # INTRODUCTION
 
-<span id="page-3-0"></span>Bienvenue dans le « Director's cut » de **L'Ennemi dans l'Ombre**, le premier d'une série de volumes complémentaires à **L'Ennemi Intérieur**, qui présente divers éléments pour améliorer vos parties.
+<span id="page-3-0" data-folio="3"></span>Bienvenue dans le « Director's cut » de **L'Ennemi dans l'Ombre**, le premier d'une série de volumes complémentaires à **L'Ennemi Intérieur**, qui présente divers éléments pour améliorer vos parties.
 
 Pour perpétuer la métaphore du « Director's Cut », on pourrait les considérer comme les « bonus » ou « extras » que l'on trouvait sur les éditions spéciales des DVD et disques Blu-Ray en édition spéciale, avant l'ère du streaming. Les grognards et les vidéophiles s'en souviennent sûrement : ils comprenaient généralement des commentaires du réalisateur et d'autres personnages clés, des scènes prolongées et coupées au montage, des documentaires sur les « coulisses », et d'autres informations pour les vrais fans et les
 

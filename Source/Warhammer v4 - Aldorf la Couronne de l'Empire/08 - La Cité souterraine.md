@@ -1,6 +1,6 @@
 *Pages PDF 203-208*
 
-# <span id="page-202-0"></span>• LA CITÉ SOUTERRAINE •
+# <span id="page-202-0" data-folio="200"></span>• LA CITÉ SOUTERRAINE •
 
 Altdorf a connu tant de sièges et d'émeutes au cours de son histoire qu'elle est aujourd'hui constellée d'abris et de cachettes secrètes. La Cité souterraine n'est pas un endroit comme les autres. Les altdorfers du passé et les catastrophes naturelles ont creusé des cavernes dans la roche, sous le palais et les zones surélevées de la Ville Nord. Le reste de la ville repose sur des gisements d'argile instables, mais même là, on trouve des cavernes, rendues viables grâce à des merveilles d'ingénierie naine, ou au travail constant des esclaves des skavens.
 
@@ -98,7 +98,7 @@ Par la nature même de ces tunnels, le vent pourpre y souffle fortement. Les sor
 0 Voilà une génération qu'aucun contrebandier n'a utilisé le lagon, encore inoccupé à ce jour. Il ferait un repaire souterrain idéal, soit pour un gang de criminels ou pour une opération secrète du gouvernement. Les chanceux qui découvriront cette propriété pourraient toucher une généreuse commission en lui trouvant le bon acheteur.
 
 
-# <span id="page-205-0"></span>**LE REPAIRE SKAVEN DE SOUS-ALTDORF**
+# <span id="page-205-0" data-folio="203"></span>**LE REPAIRE SKAVEN DE SOUS-ALTDORF**
 
 Des rumeurs concernant d'importantes colonies de skavens installées sous Altdorf sont répandues par ceux qui croient en de telles choses. La vérité, c'est que le repaire skaven de Sous-Altdorf est à peine plus qu'un point relais muni d'enclos à esclaves, dont le problème principal est l'argile instable dans laquelle il est creusé.
 

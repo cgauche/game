@@ -17,7 +17,7 @@ Les cultes entretiennent des sites sacrés à travers le Vieux Monde, et beaucou
 Les sanctuaires et chapelles sont des affaires plus modestes, de la taille d'une maison d'une seule pièce ou encore plus petites. Il n'y a en principe pas de religieux à temps plein, bien qu'elles puissent être sous la responsabilité d'un temple voisin ou – en particulier dans les zones rurales – d'un prêtre itinérant qui voyage de village et d'un sanctuaire à l'autre. En l'absence d'un prêtre, les villageois du coin prient de façon autonome, laissent de petites offrandes et maintiennent le sanctuaire en bon état.
 
 
-<span id="page-205-0"></span>
+<span id="page-205-0" data-folio="204"></span>
 
 # OPTION : PETITES PRIÈRES
 

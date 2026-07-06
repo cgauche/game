@@ -1,6 +1,6 @@
 *Pages PDF 336-339*
 
-# <span id="page-335-0"></span>**Guerrier du Chaos**
+# <span id="page-335-0" data-folio="334"></span>**Guerrier du Chaos**
 
 Énormes brutes lourdement cuirassées, affublées de pointes et d'impressionnants symboles de leurs dieux, les guerriers du Chaos ne sont clairement plus des humains. Plus rien ne subsiste de leur existence passée, et ils n'existent que pour servir leur sombre maître, et rien d'autre.
 
@@ -11,7 +11,7 @@ Alors que la plupart des guerriers du Chaos sont des maraudeurs couverts de gloi
 — Phitzer, Sorcière wissenlander
 
 
-# <span id="page-336-0"></span>**Démons, les armées baragouinantes**
+# <span id="page-336-0" data-folio="335"></span>**Démons, les armées baragouinantes**
 
 Les démons sont des horreurs blasphématoires issues des Royaumes du Chaos, la volonté impie incarnée de leurs dieux. Dans le Reikland, les démons n'apparaissent que s'ils sont convoqués par les cultistes des Puissances de la Ruine. Même si leur présence demeure éphémère, tant le royaume matériel abhorre leur existence, les ravages qu'ils causent sont si profonds qu'aucun de ceux qui rencontrent des démons n'oublient jamais le traumatisme engendré par cette expérience.
 
@@ -38,7 +38,7 @@ Comme toutes les créatures du Prince de la Souffrance et du Plaisir, les démon
 **Traits :** Arme +9, Champion, Corruption (Modérée), Démoniaque 8+, Instable, Perturbant, Peur 2, Vision nocturne
 
 
-# <span id="page-337-0"></span>**Princes démons**
+# <span id="page-337-0" data-folio="336"></span>**Princes démons**
 
 Le but ultime de tous les champions du Chaos est l'apothéose : accéder au rang de Prince démon à part entière et servir leur maître pour l'éternité dans les Royaumes du Chaos. Personnalités imposantes et de grande puissance, les Princes démons sont de terribles ennemis que même les plus grands héros de l'Empire rechignent à affronter.
 
@@ -71,7 +71,7 @@ Conscients de la position délicate qu'ils occupent, se régalant dans les entra
 – Kristiana Fellger, Égoutier à la retraite
 
 
-# <span id="page-338-0"></span>**Guerrier des clans**
+# <span id="page-338-0" data-folio="337"></span>**Guerrier des clans**
 
 La plupart des skavens sont originaires de l'un de leurs nombreux et obscurs clans qui se chamaillent constamment pour des raisons diplomatiques, se poignardent dans le dos, ou encore déclarent la guerre aux autres. Ils agissent généralement sous les ordres de skavens de statuts supérieurs, mais cherchent toujours un moyen d'obtenir une meilleure position, le plus souvent par trahison. Ils revêtent habituellement du cuir moisi ou des vêtements sales, avec des bouts de métal rouillé et terni leur servant d'armure. Les guerriers des clans sont souvent envoyés comme éclaireurs ou pillards pour récupérer des denrées, chercher des malepierres ou rafler des esclaves.
 

@@ -1,6 +1,6 @@
 *Pages PDF 184-187*
 
-# <span id="page-183-0"></span>**CORRUPTION**
+# <span id="page-183-0" data-folio="182"></span>**CORRUPTION**
 
 Chaque Festag, les prêtres de Sigmar, perchés sur leurs chaires surélevées, enchaînent les sermons sur les risques que représentent les Puissances de la Ruine et comment les fidèles doivent éviter toute tentation chuchotée par les démons dans les ombres. Ils clament que chaque âme est en danger, à quelques pas de basculer dans la corruption et la mutation. Il se peut qu'ils aient raison.
 
@@ -45,7 +45,7 @@ Ces Influences corruptrices, même si elles s'avèrent assez insignifiantes, peu
 Les Influences corruptives modérées représentent un danger pour n'importe quelle âme et devraient être évitées en toutes 
 
 
-<span id="page-184-0"></span>circonstances. Si un Test se conclut par un échec, vous gagnez 2 Points de Corruption. Sur un Succès Minime (0-1 DR), gagnez 1 Point de Corruption. Sur un Succès (2+ DR), vous ne gagnez aucun Point de Corruption.
+<span id="page-184-0" data-folio="183"></span>circonstances. Si un Test se conclut par un échec, vous gagnez 2 Points de Corruption. Sur un Succès Minime (0-1 DR), gagnez 1 Point de Corruption. Sur un Succès (2+ DR), vous ne gagnez aucun Point de Corruption.
 
 - Se retrouver en présence de plusieurs Démons
 - Être en contact avec un Démon, une malepierre ou un artefact profané.

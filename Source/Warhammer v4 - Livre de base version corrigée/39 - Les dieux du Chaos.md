@@ -1,6 +1,6 @@
 *Pages PDF 219*
 
-# <span id="page-218-0"></span>**LES DIEUX DU CHAOS**
+# <span id="page-218-0" data-folio="217"></span>**LES DIEUX DU CHAOS**
 
 Les Puissances de la Ruine du Chaos constituent la principale menace existentielle du Vieux Monde, mais demeurent en grande partie un mystère. Le simple fait de rechercher de telles connaissances sans l'autorisation du Culte de Sigmar est passible de la peine de mort. Réclamer une telle permission rarement accordée entraîne un examen minutieux de votre personne et de vos motivations.
 

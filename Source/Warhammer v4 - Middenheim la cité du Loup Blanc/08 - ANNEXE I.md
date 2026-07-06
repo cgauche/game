@@ -2,7 +2,7 @@
 
 ### ANNEXE I • MIDDENBALL •
 
-<span id="page-145-0"></span>Le Middenball est un sport en équipes populaire dans le nord de l'Empire, et qui gagne constamment de nouveaux adeptes dans le Vieux Monde. Ses origines remontent aux exercices d'entraînement au combat des Teutogens anciens, appelés « *Muddibal* » dans les documents datant de l'époque de Sigmar. Le jeu est parfois appelé Snotball, car une pratique courante consiste à utiliser des snotlings au lieu d'une balle après des attaques de peaux-vertes. Bien que les puristes soutiennent qu'il s'agit là de la seule manière correcte de pratiquer ce jeu, il est difficile de se procurer des snotlings et l'on utilise donc plus couramment une balle en cuir.
+<span id="page-145-0" data-folio="143"></span>Le Middenball est un sport en équipes populaire dans le nord de l'Empire, et qui gagne constamment de nouveaux adeptes dans le Vieux Monde. Ses origines remontent aux exercices d'entraînement au combat des Teutogens anciens, appelés « *Muddibal* » dans les documents datant de l'époque de Sigmar. Le jeu est parfois appelé Snotball, car une pratique courante consiste à utiliser des snotlings au lieu d'une balle après des attaques de peaux-vertes. Bien que les puristes soutiennent qu'il s'agit là de la seule manière correcte de pratiquer ce jeu, il est difficile de se procurer des snotlings et l'on utilise donc plus couramment une balle en cuir.
 
 La popularité du jeu a explosé à la suite du Carnaval de 2412 CI. Le graf Dieter en était un grand amateur, mais il estima que des règles devaient être mises en place pour le rendre plus compétitif. Le jeu continue de susciter un énorme engouement à Middenheim. Malheureusement, les matches tendent à attirer des hooligans, qui les considèrent comme un prétexte pour se défouler.
 
@@ -64,7 +64,7 @@ Le simple fait de mentionner des règles irrite les puristes, qui se souviennent
 - 0 S'il s'avère nécessaire d'enterrer un joueur décédé en cours de jeu, cela doit se faire sans entraver le bon déroulement de la partie.
 
 
-### <span id="page-146-0"></span>**Règles de base pour les matches rapides**
+### <span id="page-146-0" data-folio="144"></span>**Règles de base pour les matches rapides**
 
 Pour les matches rapides, par exemple ceux qui n'impliquent pas de personnages importants, utilisez les règles suivantes.
 

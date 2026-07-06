@@ -1,6 +1,6 @@
 *Pages PDF 119-133*
 
-# <span id="page-118-0"></span>•COMPÉTENCES ET TALENTS •
+# <span id="page-118-0" data-folio="117"></span>•COMPÉTENCES ET TALENTS •
 
 *« Bien sûr, interpréter l'Impératrice Rouge c'est 90 % de chance et 10 % de Compétence. Mais essayer de jouer sans ces 10 %, et vous perdrez à chaque fois. »*
 
@@ -27,7 +27,7 @@ Les Compétences de Base représentent les capacités innées ou communes que vo
 **Exemple :** *Sigrid ne possède aucune Augmentation en Athlétisme. Cependant, comme l'Athlétisme est une Compétence de Base, elle peut quand même effectuer des Tests d'Athlétisme en utilisant la Caractéristique associée : l'Agilité.*
 
 
-<span id="page-119-0"></span>Les Compétences Avancées nécessitent des connaissances poussées, un entraînement ou une bonne expérience pour ne serait-ce que tenter de les utiliser. Vous ne pouvez effectuer de Test de Compétence Avancée que si vous y avez ajouté au moins une Augmentation. Si ce n'est pas le cas, vous ne pouvez pas tenter le Test de Compétence. Donc, peu importe votre intelligence, vous ne comprendrez pas les subtilités des points juridiques sans Savoir (Loi).
+<span id="page-119-0" data-folio="118"></span>Les Compétences Avancées nécessitent des connaissances poussées, un entraînement ou une bonne expérience pour ne serait-ce que tenter de les utiliser. Vous ne pouvez effectuer de Test de Compétence Avancée que si vous y avez ajouté au moins une Augmentation. Si ce n'est pas le cas, vous ne pouvez pas tenter le Test de Compétence. Donc, peu importe votre intelligence, vous ne comprendrez pas les subtilités des points juridiques sans Savoir (Loi).
 
 **Exemple :** *Adhémar a une Intelligence de 36 et aucune Augmentation dans la Compétence de Base Pari ou la Compétence Avancée Guérison, toutes deux basées sur l'Intelligence. Il peut effectuer un Test de Compétence Pari à 36 % puisqu'elle est de Base, et que n'importe qui peut effectuer des Tests de Compétence de Base. La Compétence Guérison est une Compétence Avancée, et Adhémar n'a donc aucune idée sur la façon de soigner des blessures, sinon appeler un docteur à grands cris !*
 

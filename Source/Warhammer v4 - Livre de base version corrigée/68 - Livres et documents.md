@@ -37,7 +37,7 @@ La presse à imprimer est une invention récente de l'Empire, donc la plupart de
 **Livre, Magie :** les grimoires de Sorts sont en général rédigés par des Sorciers, et leurs couvertures sont souvent fermées par des serrures. Parfois, les grimoires sont même protégés par des 
 
 
-<span id="page-306-0"></span>alarmes ou des protections magiques. Transporter un grimoire de Sorts peut être taxé d'hérésie à moins que le propriétaire Sorcier ne soit diplômé de l'un des Collèges de Magie.
+<span id="page-306-0" data-folio="305"></span>alarmes ou des protections magiques. Transporter un grimoire de Sorts peut être taxé d'hérésie à moins que le propriétaire Sorcier ne soit diplômé de l'un des Collèges de Magie.
 
 **Livre, Médecine :** les textes médicaux peuvent aussi bien être manuscrits qu'imprimés, en fonction du prestige de l'auteur médecin. Les illustrations sont courantes, et incluent généralement des dessins d'autopsies détaillés et des procédures expliquées.
 

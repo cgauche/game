@@ -1,6 +1,6 @@
 *Pages PDF 33-44*
 
-# <span id="page-32-0"></span>• LES GANGS D'ALTDORF •
+# <span id="page-32-0" data-folio="30"></span>• LES GANGS D'ALTDORF •
 
 Beaucoup d'individus se sentent perdus dans la foule d'Altdorf. Les gangs de la ville leur offrent un sentiment de sécurité et une identité propre ; ils veillent sur leurs membres, leur trouvent du travail, et surtout une communauté dans laquelle ils se sentent chez eux.
 
@@ -19,7 +19,7 @@ Les Poissons ont des relations avec des criminels et des révolutionnaires. Ce s
 Le lien qu'entretiennent les Poissons avec les anarchistes nuit davantage à leur réputation que leur travail de contrebandier. Pendant les Grandes Émeutes du Brouillard, les Poissons ont suivi le cracheur de feu Yevgeny Yefimovich, alors que les Crochets se sont alliés aux autorités de la ville. Quand on a découvert que Yefimovich était un fidèle de Tzeentch, les Poissons se sont rendu compte qu'ils avaient soutenu un adepte du Chaos à leur insu, et ont cessé les émeutes.
 
 
-<span id="page-33-0"></span>Les Poissons ont une structure de pouvoir assez horizontale. Leurs meneurs arborent des tatouages de poisson à la bouche ouverte sur la joue. Cette marque se mérite. Quiconque arborant un tatouage semblable sans avoir obtenu le respect des Poissons risque de se retrouver nez à nez avec des personnages
+<span id="page-33-0" data-folio="31"></span>Les Poissons ont une structure de pouvoir assez horizontale. Leurs meneurs arborent des tatouages de poisson à la bouche ouverte sur la joue. Cette marque se mérite. Quiconque arborant un tatouage semblable sans avoir obtenu le respect des Poissons risque de se retrouver nez à nez avec des personnages
 
 # peu commodes.
 
@@ -82,7 +82,7 @@ Mais les ambitions d'Andreas ne s'arrêtent pas à la sorcellerie. Il a entendu 
 15/5
 
 
-# <span id="page-35-0"></span>**Le Comité de vigilance des citoyens**
+# <span id="page-35-0" data-folio="33"></span>**Le Comité de vigilance des citoyens**
 
 Le Comité de vigilance des citoyens est constitué de volontaires qui assistent la Garde en période de tension et de crise. Chaque membre du Comité possède un brassard aux initiales du groupe. Quand la Garde sonne l'alarme, les membres du Comité enfilent ce symbole de leur statut et de leur autorité sur leurs concitoyens, et frappent allègrement ceux qui ne les écoutent pas.
 
@@ -150,7 +150,7 @@ Les Kloszowskistes affichent souvent un style de dandy pauvrement vêtu, mais à
 Les Yefimovistes sont des radicaux violents qui ont peu d'égards pour les mœurs de la société, au point de rester loyaux envers un adorateur de Tzeentch. Ils sont anarchistes au sens le plus extrême du terme ; ils sont opposés à toute forme de gouvernement et de convention sociale. Beaucoup sont des individualistes convaincus, et s'ils doivent parfois coopérer entre eux pour la cause, ils ne le considèrent que comme un désagrément temporaire.
 
 
-<span id="page-37-0"></span>Méprisés pour leurs liens avec les adorateurs du Chaos, les Yefimovistes sont des parias, même au sein du mouvement. Ils sont en fait peu nombreux à vénérer Tzeentch. Les vrais Yefimovistes méprisent toute forme d'autorité, même celle des dieux du Chaos. Ce n'est pas qu'ils admirent Yefimovich pour avoir servi le Seigneur du Changement, c'est simplement qu'ils s'en fichent.
+<span id="page-37-0" data-folio="35"></span>Méprisés pour leurs liens avec les adorateurs du Chaos, les Yefimovistes sont des parias, même au sein du mouvement. Ils sont en fait peu nombreux à vénérer Tzeentch. Les vrais Yefimovistes méprisent toute forme d'autorité, même celle des dieux du Chaos. Ce n'est pas qu'ils admirent Yefimovich pour avoir servi le Seigneur du Changement, c'est simplement qu'ils s'en fichent.
 
 Les Yefimovistes meurent souvent jeunes. Ils risquent à tout moment d'être démasqués par la Garde (qui se charge de les torturer et de les pendre) ou de se confronter à leurs pairs (qui les battent avant de les jeter dans le Reik). Ceux qui survivent assez longtemps sont généralement ceux qui trouvent une place dans les cultes du Chaos d'Altdorf.
 

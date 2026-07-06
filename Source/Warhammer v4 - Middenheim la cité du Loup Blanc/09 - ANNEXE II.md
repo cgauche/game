@@ -1,6 +1,6 @@
 *Pages PDF 151-157*
 
-### <span id="page-150-0"></span>ANNEXE II • CRÉATION DE PERSONNAGE •
+### <span id="page-150-0" data-folio="148"></span>ANNEXE II • CRÉATION DE PERSONNAGE •
 
 Les règles de création de Personnage du Livre de Règles de **Warhammer Fantasy le Jeu de Rôle** sont pensées pour des personnages originaires du Reikland. Même si les habitants des provinces du nord de l'Empire ont beaucoup en commun avec leurs voisins du sud, leur culture est très différente. Afin de représenter cette différence, les personnages nordiques n'ont pas accès aux mêmes Talents et Compétences lors de leur création. Lorsque vous créez un personnage du nord de l'Empire, vous pouvez choisir 3 Compétences qui recevront chacune 5 Augmentations, et 3 Compétences qui recevront chacune 3 Augmentations. Si votre Carrière ou votre origine vous demande de choisir entre plusieurs Talents ou spécialisations, sélectionnez-en un seul. Les Talents aléatoires sont déterminés grâce au tableau des Talents aléatoires (voir **WFJDR**, p. 36). Si vous tombez sur un Talent que vous aviez déjà, vous pouvez relancer.
 
@@ -46,7 +46,7 @@ Dans cette section, vous trouverez des règles pour créer un Personnage de Midd
 |            | Villageois         | 50-54        | 46-50        | 44-48      |
 
 
-### <span id="page-151-0"></span>**Classe et Carrière**
+### <span id="page-151-0" data-folio="149"></span>**Classe et Carrière**
 
 Globalement, les Middenlanders ont le même type d'occupation que les Reiklanders, mais la vie des nordlanders est un peu plus liée à la mer. Les Middenheimers ont très peu de chances d'entreprendre une Carrière liée à un cours d'eau, mais ils peuvent quand même devenir Contrebandiers ou Débardeurs. Ces métiers profitent souvent des opportunités apportées par les routes commerciales qui passent par la cité.
 
@@ -98,7 +98,7 @@ Certaines Carrières, comme Frère Loup, peuvent proposer plus de 8 Compétences
 |            | Prêtre guerrier      | 100          | 100          | 100        |
 
 
-<span id="page-152-0"></span>*J'aurais pas cru qu'y fallait savoir compter pour réussir dans le milieu. Moi, j'ai pas commencé à filouter pour compter des thunes ! Mais si t'oublies de payer une toute petite miette de la part de l'Homme, d'un coup, t'existes plus aux yeux de personne à Middenheim. Tiens, d'ailleurs… tu recrutes ?*
+<span id="page-152-0" data-folio="150"></span>*J'aurais pas cru qu'y fallait savoir compter pour réussir dans le milieu. Moi, j'ai pas commencé à filouter pour compter des thunes ! Mais si t'oublies de payer une toute petite miette de la part de l'Homme, d'un coup, t'existes plus aux yeux de personne à Middenheim. Tiens, d'ailleurs… tu recrutes ?*
 
 *— Gerdon Salzwed, receleur sans emploi*
 
@@ -125,7 +125,7 @@ Les Petits Rois sont toujours à la recherche d'enfants solitaires et persécut�
 Au Middenland et au Nordland, comme dans beaucoup des Provinces du sud de l'Empire, la venue d'un Augure de Morr le jour du dixième anniversaire d'un enfant pour prédire la nature de sa mort relève de la tradition. Cependant, cette tradition n'y est pas autant prise au sérieux : aux yeux des résidents, Morr est encore un nouveau venu au panthéon, et les Augures ne passent que rarement dans les communautés isolées. Ainsi, pour représenter le fait qu'il n'a jamais été auguré ou que cette expérience n'a aucune importance à ses yeux, tout Personnage du nord de l'Empire peut remplacer son Talent Destinée par un Talent Aléatoire. Les Middenheimers, qui ont facilement accès à un oratoire de Morr dans le Morrspark, ont toujours le Talent Destinée.
 
 
-### <span id="page-153-0"></span>**HASSO SCHROETER**
+### <span id="page-153-0" data-folio="151"></span>**HASSO SCHROETER**
 
 Hasso est né dans une famille d'artisans, pauvre mais respectable du quartier de la Venelle. Chanteur de talent depuis sa plus tendre enfance, il a vite commencé à s'accompagner d'un vieux luth qui traînait dans la maison de sa famille. Une très bonne décision, puisqu'il était mauvais dans tout le reste à l'école.
 
@@ -158,7 +158,7 @@ Les Personnages originaires de Middenheim ont grandi dans une cité gigantesque 
 *— Hasso Schroeter, saltimbanque mésestimé*
 
 
-<span id="page-154-0"></span>*Je m'ai acheté des épingles à linge à un batelier à Carroburg. C'était pas donné, mais j'savais que les gens à Norderingen allaient me les racheter plus cher. Et v'là-t'y pas qu'à peine sortis de la Drakwald, mes potes se font descendre par des gobelins ! J'ai jamais de chance. Je m'en suis sortie, mais j'ai passé trois jours dans le Schadensumpf, j'ai perdu la moitié de mes épingles et je m'ai faite bouffer par les moustiques. Et tout ça pour qu'on me dise que Norderingen était fermée à cause de quelques cas de vérole cérébrale ! Du coup je suis viendue à la cité, j'ai payé de l'argent que j'avais pas pour entrer, et bien sûr, ici, tout le monde a déjà des épingles à linge.*
+<span id="page-154-0" data-folio="152"></span>*Je m'ai acheté des épingles à linge à un batelier à Carroburg. C'était pas donné, mais j'savais que les gens à Norderingen allaient me les racheter plus cher. Et v'là-t'y pas qu'à peine sortis de la Drakwald, mes potes se font descendre par des gobelins ! J'ai jamais de chance. Je m'en suis sortie, mais j'ai passé trois jours dans le Schadensumpf, j'ai perdu la moitié de mes épingles et je m'ai faite bouffer par les moustiques. Et tout ça pour qu'on me dise que Norderingen était fermée à cause de quelques cas de vérole cérébrale ! Du coup je suis viendue à la cité, j'ai payé de l'argent que j'avais pas pour entrer, et bien sûr, ici, tout le monde a déjà des épingles à linge.*
 
 *— Kat Sperber, colporteur en colère*
 
@@ -187,7 +187,7 @@ Les habitants du Middenland ont bien plus en commun avec leurs ancêtres Teutoge
 **Talents** : Destinée ou Talent aléatoire supplémentaire, Menaçant ou Guerrier né, 3 Talents aléatoires
 
 
-### <span id="page-155-0"></span>**THERESIA KLEIST**
+### <span id="page-155-0" data-folio="153"></span>**THERESIA KLEIST**
 
 La famille de Theresia s'est mise à naviguer les eaux froides de la Mer des Griffes il y a de nombreuses générations. Ils ont fait du troc et du commerce avec les hommes sauvages de la Norsca, mais toujours en gardant une main libre pour se battre : ils savaient que le peuple des étendues glaciales et escarpées du Nord pouvait sombrer dans une rage traîtresse et sanguinaire à la moindre occasion. Ainsi, depuis son plus jeune âge, Theresia a appris les arts de la nage, de la voile, du commerce et du combat.
 
@@ -218,7 +218,7 @@ Aux yeux de la plupart des étrangers, l'archétype du nordlander est un vieux l
 *— Theresia Kleist, marin à court de patience*
 
 
-<span id="page-156-0"></span>*Ulric est votre unique source d'inspiration : vous avez décidé de surmonter les difficultés de la vie par la pratique d'une forme d'extrême autonomie.*
+<span id="page-156-0" data-folio="154"></span>*Ulric est votre unique source d'inspiration : vous avez décidé de surmonter les difficultés de la vie par la pratique d'une forme d'extrême autonomie.*
 
 On ne croise que peu de Flagellants dans le nord de l'Empire. Les zélotes qui suivent Sigmar ne s'y plaisent pas : personne ne les prend au sérieux, et ils ont du mal à trouver des compagnons de route. Le peu de Flagellants qui arpentent les routes des provinces du nord sont souvent raillés, et pas admirés comme ailleurs dans l'Empire.
 

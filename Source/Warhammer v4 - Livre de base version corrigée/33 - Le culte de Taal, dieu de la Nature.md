@@ -2,7 +2,7 @@
 
 # **LE CULTE DE TAAL, DIEU DE LA NATURE**
 
-<span id="page-213-0"></span>**Siège du Pouvoir :** Talabheim, Talabecland
+<span id="page-213-0" data-folio="212"></span>**Siège du Pouvoir :** Talabheim, Talabecland
 
 **Chef du Culte :** le Hiérarque
 

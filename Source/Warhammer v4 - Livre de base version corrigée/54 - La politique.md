@@ -1,6 +1,6 @@
 *Pages PDF 278-279*
 
-# <span id="page-277-0"></span>**LA POLITIQUE**
+# <span id="page-277-0" data-folio="276"></span>**LA POLITIQUE**
 
 Le Reikland se considère comme un royaume civilisé et progressiste, se tenant à l'écart de la barbarie rétrograde des autres provinces. Il est dirigé par un Comte Électeur portant le titre de « Grand Prince du Reikland » – l'appellation « grand » indique que le prince fait partie de ceux qui élisent le prochain empereur au décès de celui en fonction. Le territoire du Grand Prince est divisé en fiefs gouvernés par des ducs, des comtes, des marquis, des grands prêtres, des abbés et autres dirigeants. Ces provinces, dont les seigneurs prêtent directement serment au Grand Prince, sont appelées les « Domaines du Reikland ». La plupart ont été dirigés par les mêmes familles ou institutions durant un nombre incalculable de générations, ce qui leur confère une influence significative. Les décrets du Grand Prince sont ratifiés par la Diète du Reikland, une assemblée composée des seigneurs des Domaines du Reikland. Cependant, certains pouvoirs ont été réservés à la Couronne pendant les Réformes impériales de Magnus le Pieux, deux cents ans plus tôt, y compris : le droit d'invoquer et de commander l'Armée d'État du Reikland, la levée de taxes d'urgence en temps de crise, le droit d'autoriser une nouvelle monnaie et le droit de faire appel à la Cour du Grand Seigneur Intendant si un noble puissant était accusé d'un crime.
 
@@ -31,7 +31,7 @@ Le Grand Seigneur Trésorier est responsable de la trésorerie du Reikland et de
 L'actuel Grand Seigneur Trésorier est la Gravin vieillissante de génie Elena von Midwald, une chère amie du précédent Grand Prince, connue pour son franc-parler concernant le vin et les séduisants hommes.
 
 
-### <span id="page-278-0"></span>**Grand Seigneur Ambassadeur**
+### <span id="page-278-0" data-folio="277"></span>**Grand Seigneur Ambassadeur**
 
 Le Grand Seigneur Ambassadeur organise les relations étrangères du Reikland et dirige la Chambre noire d'Altdorf : les si tristement célèbres espions du Reikland.
 

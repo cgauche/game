@@ -1,6 +1,6 @@
 *Pages PDF 310*
 
-# <span id="page-309-0"></span>**PROTHÈSES**
+# <span id="page-309-0" data-folio="308"></span>**PROTHÈSES**
 
 Que ce soit à cause d'une maladie, de la guerre ou de la malchance, il est assez courant dans l'Empire de perdre une partie de son corps. Pour ces malheureux, toute une variété d'alternatives est proposée. Toutes les prothèses ont un Encombrement de 0 quand elles sont portées.
 

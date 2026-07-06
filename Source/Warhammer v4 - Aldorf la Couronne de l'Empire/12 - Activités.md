@@ -2,7 +2,7 @@
 
 # ANNEXE I ACTIVITÉS • •
 
-# <span id="page-221-0"></span>**ACTIVITÉS À ALTDORF**
+# <span id="page-221-0" data-folio="219"></span>**ACTIVITÉS À ALTDORF**
 
 La cité d'Altdorf est surnommée « Couronne de l'Empire » pour une bonne raison. C'est un centre de foi, de culture, de commerce et de puissance militaire. Elle offre donc aux Personnages tout le loisir de s'adonner à différentes activités entre deux aventures. Dans la section suivante se trouve une liste d'Activités potentielles pour les Personnages. Elles fonctionnent avec les règles de **WFJDR**, p. 195.
 

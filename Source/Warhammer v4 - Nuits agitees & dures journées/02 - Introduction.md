@@ -1,6 +1,6 @@
 *Pages PDF 7-8*
 
-# <span id="page-6-0"></span>• INTRODUCTION •
+# <span id="page-6-0" data-folio="5"></span>• INTRODUCTION •
 
 Bienvenue à **Nuits Agitées & Dures Journées**, une campagne et un supplément d'aventures pour **WFJDR**.
 
@@ -19,7 +19,7 @@ Les cinq aventures qui suivent sont liées par une intrigue se dévoilant petit 
 Si vous jouez la campagne de **L**'**ennemi intérieur**, certaines aventures de ce livre peuvent être incorporées naturellement dans tout volet se déroulant près d'une rivière durant **L**'**Ennemi dans l**'**Ombre** ou **Mort sur le Reik**. Si vous souhaitez jouer ces aventures dans l'ordre présenté, comme une campagne dans la campagne, il est préférable d'attendre que **Mort sur le Reik** soit bien entamée avant de commencer *Une nuit agitée aux Trois Plumes*, pour que le groupe ait déjà sa propre péniche. Autrement, vous pourriez commencer par *Le mariage de Nastassia,* qui peut prendre place durant le trajet du groupe entre Altdorf et Bögenhafen.
 
 
-### <span id="page-7-0"></span>**3) Cinq aventures distinctes**
+### <span id="page-7-0" data-folio="6"></span>**3) Cinq aventures distinctes**
 
 Les lieux où se déroulent ces cinq aventures : une auberge au bord de l'eau, un palais de justice, un opéra, un château isolé et un petit hôtel particulier, sont des bâtiments communs et peuvent être retrouvés dans de nombreuses régions de l'Empire.
 

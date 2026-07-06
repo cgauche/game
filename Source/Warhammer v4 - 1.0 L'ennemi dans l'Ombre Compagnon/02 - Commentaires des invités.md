@@ -1,6 +1,6 @@
 *Pages PDF 7*
 
-<span id="page-6-0"></span>
+<span id="page-6-0" data-folio="6"></span>
 
 # COMMENTAIRES DES AUTEURS
 
@@ -27,4 +27,4 @@ Ces trente dernières années, énormément de personnes ont joué la campagne d
 Ces encarts suggèrent des utilisations alternatives pour les PNJ de ce livre tout au long de **L'Ennemi dans l'Ombre**, que ce soit pour aider les Personnages, les frustrer ou simplement rendre leur vie un peu plus intéressante.
 
 
-<span id="page-7-0"></span>
+<span id="page-7-0" data-folio="7"></span>

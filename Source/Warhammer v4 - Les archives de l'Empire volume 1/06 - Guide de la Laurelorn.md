@@ -1,6 +1,6 @@
 *Pages PDF 73-87*
 
-## <span id="page-72-0"></span>GUIDE DE LA LAURELORN • •
+## <span id="page-72-0" data-folio="72"></span>GUIDE DE LA LAURELORN • •
 
 *« Notre forêt se meurt. L'heure est grave. Le peuple éonir ne doit pas devenir complice de l'agonie de la nature. En appeler aux nobles humains ne réglera en rien notre situation. Mais si cela peut pousser leurs chasseurs et leurs bûcherons à se rendre compte du problème, alors je pense que toute communication n'est pas vaine. »*
 
@@ -11,7 +11,7 @@ La forêt de Laurelorn est un royaume elfique indépendant situé au nord-ouest 
 La plupart des citoyens de l'Empire qui habitent à l'orée de la Laurelorn ont appris à respecter les Éonirs et à craindre les esprits de la forêt. Cependant, les Éonirs ne leur sont pas aussi énigmatiques que peuvent l'être les Asraïs, qui sont perçus comme des esprits féériques en Bretonnie. Cette entente entre les deux peuples a permis à la Laurelorn de forger des relations plus cordiales avec l'Empire qu'avec Ulthuan ou l'Athel Loren. Ainsi, il n'est pas rare de croiser des éclaireurs, espions ou diplomates de la Laurelorn sur les routes du Nordland, du Middenland ou du Wasteland. La noblesse du Nordland a négocié de nombreux accords avec la Reine de la Laurelorn, et deux Éonirs ont même rejoint la cour du graf Boris du Middenland.
 
 
-## <span id="page-73-0"></span>ÉTYMOLOGIE DES NOMS
+## <span id="page-73-0" data-folio="73"></span>ÉTYMOLOGIE DES NOMS
 
 Depuis l'arrivée des premiers colons elfes, la Laurelorn est restée un endroit plein de joie, de rires et d'espoir. Les elfes organisaient des fêtes estivales et autres cérémonies à l'ombre de ses branches, et son nom en est d'ailleurs dérivé : les colons l'ont appelée *Loren Lauroi* (« le Bois Doré ») en référence à la rune majeure *Ladroi*, qui signifie « saison du soleil » ou « apogée de la joie ». Ils ont ensuite eux-mêmes pris le nom de Éonir en référence à la rune majeure *Daroir*, qui représente la mémoire, les souvenirs et la puissance de la pierre. Selon eux, leurs cousins asur ont abandonné la voie des elfes d'antan, à savoir ceux qui ont aidé les Anciens à ériger le réseau des Pierres Gardiennes.
 
@@ -34,7 +34,7 @@ Les esprits de la forêt de Laurelorn semblaient moins hostiles que ceux de l'At
 Lorsqu'Ulthuan a finalement repris contact avec la Laurelorn, le Grand Conseil s'est plié à contrecœur à l'autorité du Roi Phénix. Plusieurs seigneurs elfes d'Ulthuan, qui s'étaient livrés à des expériences illicites, ont été bannis de l'île et se sont exilés dans la Laurelorn pour poursuivre leurs recherches. Ces « seigneurs gris » tombés en disgrâce ont construit d'immenses demeures et laboratoires magiques cachés au plus profond de la forêt.
 
 
-## <span id="page-74-0"></span>**De nouveaux alliés**
+## <span id="page-74-0" data-folio="74"></span>**De nouveaux alliés**
 
 Au cours des siècles de paix qui ont succédé à la Guerre de la Barbe, les Éonirs ont vécu relativement isolés. Les nains ont peu à peu abandonné leurs forts des Collines d'Argent, ce qui a permis aux Éonirs de s'installer à nouveau dans certaines clairières jusqu'ici contestées. Des frictions occasionnelles avec la tribu des Teutogens ont défini les frontières entre les terres des humains et celles des elfes. Puis, après la formation de l'Empire, les citoyens de la nouvelle nation ont appris à craindre et à respecter les elfes.
 
@@ -59,7 +59,7 @@ Malgré la sécurité relative de la Laurelorn ces dernières années, de sombre
 
 ## **Chronologie de la Laurelorn**
 
-#### <span id="page-75-0"></span>v. -4119 CI
+#### <span id="page-75-0" data-folio="75"></span>v. -4119 CI
 
 Les elfes fondent des colonies sur les côtes du Vieux Monde et entament un commerce florissant avec les nains. Ils créent de petits avant-postes à l'intérieur des terres, y compris dans la Laurelorn.
 
@@ -124,7 +124,7 @@ Des frictions frontalières avec le Nordland poussent les Éonirs à marcher sur
 Des rôdeurs fantômes de la Laurelorn aident l'armée impériale à repousser une incursion du Chaos. Téclis sollicite le soutien des Éonirs pour surveiller la montée en puissance des Collèges de Magie impériaux.
 
 
-## <span id="page-76-0"></span>**LES ÉONIRS**
+## <span id="page-76-0" data-folio="76"></span>**LES ÉONIRS**
 
 ## **Culture**
 
@@ -145,7 +145,7 @@ Les Éonirs sont répartis en trois classes sociales (appelées « lignages ») 
 Ces lignages sont les seuls regroupements sociaux conséquents de la société éonir. Contrairement aux Asraïs, qui peuvent tisser des liens avec d'autres elfes de toute l'Athel Loren grâce à leurs intérêts communs, les elfes du Bois Doré ne se sentent vraiment proches que des autres membres de leur troupe. Une troupe est un petit groupe qui se rassemble dans un intérêt ou un but commun, qu'il s'agisse de jouer de la musique ou de faire la guerre. Par exemple, une elfe du lignage des Enfants de la ville peut avoir rejoint une troupe de ménestrels qui compte aussi quelques forestiers parmi ses membres. Cependant, elle ne ressentirait aucune affinité avec un forestier ne faisant pas partie de sa troupe, même s'il s'agit aussi d'un ménestrel.
 
 
-## <span id="page-77-0"></span>**Gouvernement**
+## <span id="page-77-0" data-folio="77"></span>**Gouvernement**
 
 La Laurelorn est une monarchie indépendante fondée lors de la Guerre de la Barbe, après la décision du Roi Phénix d'Ulthuan d'abandonner les colonies d'Elthin-Arvan. Avant le couronnement de la première Reine, la colonie était gouvernée par un Grand Conseil et régie par le Roi Phénix. Lorsque Tor Lithanel a fait sécession d'Ulthuan, un Triumvirat a été créé pour superviser le Grand Conseil, et un Sénat de conseillers a été mis en place. Comme les décisions sont prises par vote du conseil plutôt que par décret royal, les Éonirs considèrent leur pays comme le plus démocratique des royaumes des elfes.
 
@@ -170,7 +170,7 @@ Le Triumvirat observe silencieusement les délibérations du Grand Conseil jusqu
 Une fois par saison, le Sénat s'assemble à Tor Lithanel pour débattre des affaires diplomatiques qui impliquent les voisins des Éonirs ou la défense générale de la Laurelorn. En temps de crise, le Sénat peut être appelé à se réunir en urgence. Les Sénateurs sont des doyens, des guerriers et des éclaireurs de renom qui viennent des quatre domaines qui composent la grande Laurelorn. Les Sénateurs n'ont aucune autorité politique : ils ne font que s'appuyer sur leurs expériences de première ligne pour proposer des procédures ou des plans d'action au Grand Conseil. Il est rare qu'un elfe du lignage *Faniour* (forestier) atteigne un poste plus élevé que Sénateur.
 
 
-## <span id="page-78-0"></span>**L'aventure dans la Laurelorn**
+## <span id="page-78-0" data-folio="78"></span>**L'aventure dans la Laurelorn**
 
 La Laurelorn est un endroit parfait pour l'exploration et l'aventure, comme le prouvent les accroches et intrigues présentées dans ce chapitre. La plupart de ces intrigues tentent d'expliquer ce qui pourrait pousser un groupe de Personnages impériaux à décider de braver à la fois les dangers de la forêt et de ses gardiens pour s'y rendre. La société éonir est assez éloignée de celle de l'Empire, mais est néanmoins assez familière pour que les Personnages humains, halflings, et parfois même nains ne s'y retrouvent pas complètement perdus.
 
@@ -193,7 +193,7 @@ Les Éonirs de la classe inférieure du jeune lignage (*Harioth*) partent rareme
 Votre famille est vue comme une nouvelle venue dans la Laurelorn, et est traitée avec condescendance par les Éonirs des autres lignages. Votre Statut est toujours considéré comme plus bas que celui des autres Éonirs, à moins qu'ils aient, eux aussi, le Talent Sang neuf. Un membre du jeune lignage de deuxième génération peut perdre ce Talent s'il réussit une série d'épreuves pour rejoindre l lignée des Enfants de la forêt.
 
 
-## <span id="page-79-0"></span>**LA FORÊT DE LAURELORN : GUIDE DU VISITEUR**
+## <span id="page-79-0" data-folio="79"></span>**LA FORÊT DE LAURELORN : GUIDE DU VISITEUR**
 
 La Laurelorn est la mère patrie des Éonirs*.* Cette forêt du nord est de type tempérée mixte à prédominance de conifères. La Laurelorn est moins saturée de magie que l'Athel Loren, ce qui rend ses esprits moins nombreux, mais aussi plus faibles et souvent affamés. Les relations entre elfes et humains sont généralement bonnes, mais le cœur de la Laurelorn est une terre sacrée pour les Éonirs. Tout humain qui y pénètre sans autorisation le fait à ses risques et périls.
 
@@ -229,7 +229,7 @@ Les farfadets sont de petits esprits naturels qui vivent dans les forêts les pl
 Un farfadet bien traité sera malicieux, mais amical. Mais manquez-lui de respect, et sa malice prendra vite une tournure meurtrière. Les farfadets sont les esclaves de leurs propres caprices, et semblent changer d'humeur aussi brutalement que le vent tourne. Même les Éonirs, avec qui ils ont une certaine affinité, les trouvent parfois peu fiables, voire traîtres. Ce n'est d'ailleurs pas pour rien qu'une nuée de farfadets peut aussi s'appeler une clique, et les elfes font bien attention à ne pas les froisser.
 
 
-<span id="page-80-0"></span>
+<span id="page-80-0" data-folio="80"></span>
 
 - 0 **Dirigeant :** le Grand Conseil de Tor Lithanel, pour le compte de la reine Marrisith de la Laurelorn ; ainsi que dame Delynna de la Maison Malforric, Intendante du Domaine du Soleil et Députée au Grand Conseil
 - 0 **Politique :** officiellement, la dirigeante du domaine est la reine Marrisith, mais elle délègue les affaires du quotidien au Grand Conseil. Dame Delynna en supervise la défense. Les relations diplomatiques avec Ulthuan sont cordiales, mais peu productives. Les émissaires de l'Athel Loren sont vus avec suspicion. La Reine a passé des accords avec le baron Werner Nikse du Nordland, mais les relations entre les deux peuples demeurent tendues.
@@ -295,7 +295,7 @@ Les Éonirs se servent de la magie relâchée ici pour leurs rituels. Les prêtr
 *Isabella*
 
 
-<span id="page-83-0"></span>
+<span id="page-83-0" data-folio="83"></span>
 
 ## **LE DOMAINE DE LA PLUIE**
 
@@ -317,7 +317,7 @@ Dans les Collines Brumeuses se trouve une forteresse asur en ruines qui surveill
 Plus profondément dans la Laurelorn se trouve le Vallon de Khaine, une forêt luxuriante de feuillus. Le climat y est chauffé de façon peu naturelle par *Aqshy*, le Vent de Magie rouge, attiré par un obélisque antique du nom de Rocher Sanglant. Autrefois, le vallon était consacré à Khaine, et certains guerriers éonirs font encore le pèlerinage jusqu'au site. En été, le Rocher Sanglant suinte l'*Aqshy* liquéfié, récolté par les elfes, puis utilisé comme un puissant onguent.
 
 
-<span id="page-84-0"></span>**LE DOMAINE DES ORAGES**
+<span id="page-84-0" data-folio="84"></span>**LE DOMAINE DES ORAGES**
 
 - 0 **Capitale :** Tour de Se-Athil
 - 0 **Dirigeant :** Kaïa « la Sorcière des Orages » Fanmaris de la Maison de la Clairière Éternelle, Intendante du Domaine des Orages et Députée au Grand Conseil
@@ -337,7 +337,7 @@ Le Domaine des Orages est gouverné depuis Se-Athil, une vieille tour de guet de
 - 0 En aval du Vallon du Désespoir se trouve la Fontaine Magique de Lébin, une énorme cuvette en pierre d'origine inconnue qui purifie les eaux contaminées par la souillure. Le folklore du Nordland la décrit comme une fontaine de jouvence. Les légendes éonirs mentionnent une lame antique enchantée par cette eau pour défaire un mal aujourd'hui oublié.
 
 
-<span id="page-85-0"></span>
+<span id="page-85-0" data-folio="85"></span>
 
 ## **LE DOMAINE DU GIVRE**
 
@@ -371,4 +371,4 @@ Les villages, forts et auberges-relais aux abords de la Laurelorn peuvent servir
 **L'Orc Entravé :** cette auberge est tenue par un nain, Gudbru, qui finance une petite troupe de mercenaires qui l'aident à se débarrasser des monstres de la Drakwald. Il reste en permanence aux aguets dans l'espoir d'entendre des rumeurs de trésors elfiques perdus, et souhaite lancer une expédition dans la Laurelorn.
 
 
-<span id="page-86-0"></span>Yanick Bedard - pumpkinhead83@hotmail.fr
+<span id="page-86-0" data-folio="86"></span>Yanick Bedard - pumpkinhead83@hotmail.fr

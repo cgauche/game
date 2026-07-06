@@ -23,7 +23,7 @@ Reliant la Bögen et le Reik – en contournant les taxes de Carroburg du Midden
 Les bateliers locaux n'en discutent pas facilement avec les étrangers, mais il circule beaucoup d'histoires insolites au sujet du canal. Il paraîtrait que les ingénieurs nains ont déterré des artefacts pré-Unberogen quand ils ont creusé la voie navigable pour la première fois, et que, depuis, les choses ne se sont plus jamais passées correctement dans la région. Certains jurent même que si Morrslieb – la plus petite des deux lunes – est pleine, on peut naviguer sur le canal vers un autre endroit que le Reik…
 
 
-# <span id="page-272-0"></span>**Les marais maudits et fétides**
+# <span id="page-272-0" data-folio="271"></span>**Les marais maudits et fétides**
 
 Bien que le Middenland au nord revendique beaucoup de marais célèbres – tels que le Furdienst, les marais Midden, et le Shadensumpf –, les berges des rivières du Reikland ne sont pas moins gorgées d'eau, cédant souvent la place à des tourbières, des bourbiers et de dangereuses plaines boueuses, en particulier le long du puissant fleuve Reik. Le plus grand d'entre eux est le marais Grootscher à la frontière avec le Wasteland, mais beaucoup d'autres exemples existent, comme les plaines d'Altdorf, les marais Reiker et les tourbières d'Uhland.
 

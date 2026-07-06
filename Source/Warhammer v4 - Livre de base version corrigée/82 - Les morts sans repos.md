@@ -1,6 +1,6 @@
 *Pages PDF 329-332*
 
-# <span id="page-328-0"></span>**LES MORTS SANS REPOS**
+# <span id="page-328-0" data-folio="327"></span>**LES MORTS SANS REPOS**
 
 Ni vivants ni vraiment morts, les morts-vivants sont des cadavres animés d'êtres autrefois vivants, qui se sont vus accorder une parodie de vie impie par le biais de la cruelle et obscure discipline de la nécromancie.
 
@@ -31,7 +31,7 @@ La plupart des vampires dissimulent leur besoin de sang sous une apparence de ci
 **Facultatif :** Corruption (Mineure), Frénésie, Pisteur, Rage, Territorial, Vol
 
 
-# <span id="page-329-0"></span>**Fantôme**
+# <span id="page-329-0" data-folio="328"></span>**Fantôme**
 
 Les fantômes sont les esprits d'âmes tourmentées, mortes alors que leurs affaires terrestres n'étaient pas réglées. Tout comme les squelettes et les zombies, les fantômes peuvent être invoqués par des vampires ou des nécromanciens, ou peuvent hanter des régions imprégnées de *Dhar*. Dans des cas exceptionnels, des esprits particulièrement déterminés peuvent se frayer un chemin depuis le Royaume de Morr pour poursuivre leurs propres affaires, bien que de tels événements attirent rapidement l'attention du Culte de Morr ou des Magisters de l'Ordre d'Améthyste.
 
@@ -66,7 +66,7 @@ Quand la terre restitue les morts, il n'y a pas que les humains qui se relèvent
 **Facultatif :** Corruption (Mineure), Infecté, Insensible à la douleur, Perturbant, Territorial
 
 
-# <span id="page-330-0"></span>**Spectre de cairn**
+# <span id="page-330-0" data-folio="329"></span>**Spectre de cairn**
 
 Les spectres de cairn sont des esprits particulièrement puissants, les restes spectraux d'aspirants nécromanciens qui ont cherché à prolonger leur existence grâce à la magie sombre. De leur vivant, ils étaient obstinés ; dans la mort, leur volonté malveillante les pousse à exercer une terrible vengeance sur les âmes ardentes des vivants. Beaucoup de ces spectres hantent les cairns couverts de brume qui parsèment le paysage de l'Empire, tels que les Hägercrybs déchues.
 
@@ -107,7 +107,7 @@ Pour refléter la nature osseuse des Squelettes, vous pouvez imposer une pénali
 – Hubert Karter, Pilleur de tombes
 
 
-# <span id="page-331-0"></span>**Vampire**
+# <span id="page-331-0" data-folio="330"></span>**Vampire**
 
 Les vampires se considèrent comme les rois de la nuit. Beaucoup peuvent passer pour des humains, certains opérant même durant de longues périodes parmi les vivants. Malgré leur apparence extérieure humaine, aucun cœur ne bat sous leur peau pâle, et *au lieu* des faims de mortels, ils souffrent d'une soif incessante de sang. Les vampires du Vieux Monde sont en fin de compte tous issus de lignées anciennes, apparues il y a des millénaires dans le Sud. Beaucoup sont extrêmement fiers de leur héritage, des traits et traditions qui les différencient des autres. Les vampires de lignées différentes sont souvent de grands rivaux, mais ils sont assez intelligents pour se rassembler quand cela devient nécessaire pour faire face aux ennemis les plus importants.
 
@@ -134,7 +134,7 @@ Comme les squelettes, les zombies sont des créatures mortes-vivantes réanimée
 Perturbant, Territorial
 
 
-<span id="page-332-0"></span>
+<span id="page-332-0" data-folio="331"></span>
 
 # MORTS TOURMENTÉS
 

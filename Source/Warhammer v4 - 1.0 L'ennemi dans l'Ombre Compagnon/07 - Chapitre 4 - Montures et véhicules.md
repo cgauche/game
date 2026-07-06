@@ -1,6 +1,6 @@
 *Pages PDF 23-31*
 
-## <span id="page-22-0"></span>CHAPITRE 4 : MONTURES ET VÉHICULES
+## <span id="page-22-0" data-folio="22"></span>CHAPITRE 4 : MONTURES ET VÉHICULES
 
 Étant donné la nature précaire des routes et la distance à parcourir pour se déplacer entre les grandes villes et les villages de l'Empire, il n'est pas surprenant que peu de voyageurs choisissent de se déplacer à pied. Les chevaux, les animaux de trait, les charrettes et les diligences bruyantes sont monnaie courante le long des routes et des chemins de traverse entre les îlots de civilisation.
 
@@ -116,7 +116,7 @@ Les plus grands chevaux de guerre, parfois appelés « destriers », sont monté
 |--|--|-----------------------------|--|
 |--|--|-----------------------------|--|
 
-<span id="page-25-0"></span>
+<span id="page-25-0" data-folio="25"></span>
 
 | Animal                            | Mouvement | Pas (mètres) | Trot (mètres) | Petit galop (mètres) |
 |-----------------------------------|-----------|--------------|---------------|----------------------|
@@ -171,7 +171,7 @@ L'animal perd un fer. Le cavalier doit réussir un Test de **Chevaucher Complexe
 Une sangle de selle arrachée, un harnais en morceaux ou un étrier perdu, une partie de la sellerie de votre monture a été endommagée, ce qui rend le voyage plus difficile.
 
 
-<span id="page-26-0"></span>Le cavalier doit effectuer un Test de **Chevaucher Complexe (-10)** ou tomber (d'une hauteur de 2 mètres). Jusqu'à ce que la partie abîmée soit réparée, tous les futurs Tests de **Chevaucher** subissent une pénalité de -20.
+<span id="page-26-0" data-folio="26"></span>Le cavalier doit effectuer un Test de **Chevaucher Complexe (-10)** ou tomber (d'une hauteur de 2 mètres). Jusqu'à ce que la partie abîmée soit réparée, tous les futurs Tests de **Chevaucher** subissent une pénalité de -20.
 
 ### TRAÎNÉ AU SOL
 
@@ -250,7 +250,7 @@ Un animal peut être forcé à se déplacer au pas de course lorsqu'il tire un v
 - 4. Avec la peinture, les dorures, les belles sculptures et autres frivolités, il n'y a pas de limite à ce que vous pouvez dépenser pour une diligence. En effet, en la matière, le moindre sou dépensé ne l'est que pour souligner le statut de son propriétaire ou même le rehausser. L'ostentation et l'auto-promotion sont des fins en soi, et seul un pingre se contenterait d'une diligence ordinaire.
 
 
-<span id="page-28-0"></span>Un Échec Stupéfiant (-6 DR) du conducteur au Test de **Conduite d'attelage** nécessite un jet sur le tableau des Problèmes de véhicules. Un Échec Impressionnant ou pire sur n'importe quel Test de Résistance d'un animal impose un État *Exténué* supplémentaire, et un Échec Stupéfiant coûte à la bête 1d10 Blessures en plus (modifié par le Bonus d'Endurance, avec un minimum de 1).
+<span id="page-28-0" data-folio="28"></span>Un Échec Stupéfiant (-6 DR) du conducteur au Test de **Conduite d'attelage** nécessite un jet sur le tableau des Problèmes de véhicules. Un Échec Impressionnant ou pire sur n'importe quel Test de Résistance d'un animal impose un État *Exténué* supplémentaire, et un Échec Stupéfiant coûte à la bête 1d10 Blessures en plus (modifié par le Bonus d'Endurance, avec un minimum de 1).
 
 La plupart de ces mésaventures entraînent un accident si le véhicule se déplace à une vitesse supérieure à celle de la marche. Les occupants d'un véhicule qui subit un accident, prennent 2d10 Blessures modifiées par le Bonus d'Endurance et les Points d'Armure, avec un minimum de 1. Les véhicules accidentés doivent être réparés par quelqu'un possédant une Compétence appropriée, telle que Métier (Charpentier) ou Métier (Charron) (voir page 30.) Les roues de secours peuvent être installées par toute personne avec un Test de **Conduite d'attelage** ou de **Métier** approprié.
 
@@ -307,7 +307,7 @@ Bien que le Tableau des localisations des coups dans le **Livre de Règles** fon
 Certains résultats de ce tableau peuvent s'avérer peu pratiques ou bizarres en raison de l'orientation de l'animal ou de la différence de taille entre l'animal et l'attaquant. Dans ces cas, traitez tout résultat peu concluant comme un coup au corps à la place.
 
 
-<span id="page-29-0"></span>*Exemple : Harbull fixe un terrifiant Chevalier du Chaos monté sur un destrier cauchemardesque, qui fonce sur lui. Il tente d'arrêter la course de la bête avec sa fronde, mais obtient un 84 pour la localisation : jambe arrière gauche. Bien qu'il soit possible que le coup de Harbull touche un endroit aussi improbable, le MJ décide qu'un tel tir n'est pas logique, et décide que le corps a été touché à la place.*
+<span id="page-29-0" data-folio="29"></span>*Exemple : Harbull fixe un terrifiant Chevalier du Chaos monté sur un destrier cauchemardesque, qui fonce sur lui. Il tente d'arrêter la course de la bête avec sa fronde, mais obtient un 84 pour la localisation : jambe arrière gauche. Bien qu'il soit possible que le coup de Harbull touche un endroit aussi improbable, le MJ décide qu'un tel tir n'est pas logique, et décide que le corps a été touché à la place.*
 
 ### **Attaques sur les Véhicules**
 

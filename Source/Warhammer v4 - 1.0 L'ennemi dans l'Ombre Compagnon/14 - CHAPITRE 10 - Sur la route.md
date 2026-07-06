@@ -6,7 +6,7 @@ Ces deux courtes rencontres peuvent être utilisées lorsque les Personnages voy
 
 ### **EMMARETTA**
 
-<span id="page-86-0"></span>X
+<span id="page-86-0" data-folio="86"></span>X
 
 Emmaretta peut être croisée sur n'importe quelle route de l'Empire. Alors que les Personnages progressent sur cette voie, ils aperçoivent une jeune femme humaine d'une vingtaine d'années, qui voyage dans la même direction, seule, ce qui est inhabituel dans des forêts aussi dangereuses. Ses seules possessions comportent un ensemble de vêtements d'extérieur, un petit sac de viande séchée, un arc court avec un carquois de flèches en bandoulière, et une paire de poignards accrochés à sa ceinture.
 
@@ -67,7 +67,7 @@ Cette rencontre peut être utilisée pour enrichir l'aventure de plusieurs faço
 Cette rencontre, comme l'ensemble de **L'Ennemi Intérieur**, est étroitement liée à l'histoire de **WFJDR**. Nous l'avons présentée ici telle qu'elle a été écrite dans les années 80, mais depuis, l'identité du Vieux Monde et de ses habitants a été considérablement affinée. Pour le meilleur ou pour le pire, les félins-garous n'ont pas été conservés. Si vous souhaitez mettre à jour cette rencontre pour la rendre conforme au Vieux Monde tel que nous le connaissons aujourd'hui, pensez à faire d'Emerretta et de son partenaire des loups-garous, peut-être accompagnée par deux grands loups, plutôt que par de grands chats sauvages. Vous pourriez également conserver les félins, mais faire en sorte que Emerretta et Klaus souffrent des effets d'une terrible malédiction lancée par un sorcier maléfique, ce qui serait en accord avec les thèmes de la mutation et du changement qui imprègnent **L'Ennemi Intérieur**.
 
 
-### <span id="page-88-0"></span>**UN AMI DANS LE BESOIN**
+### <span id="page-88-0" data-folio="88"></span>**UN AMI DANS LE BESOIN**
 
 Cette rencontre se produit la nuit sur une route déserte et isolée, peut-être sur celle de Helmgart, voir page 139 de **L'Ennemi dans l'Ombre**. Pour une raison à déterminer, les Personnages doivent voyager de nuit, malgré les recommandations des employés de la dernière auberge. La route devant eux est un endroit terrible, grouillant de brigands et pire encore. On dit même qu'elle est hantée. Les Personnages peuvent conclure qu'une partie de ces dires pourraient bien être vrais, mais l'aubergiste, qui préfèrerait qu'ils restent parce qu'ils paieront le gîte et le couvert, n'est peut-être pas étranger à tous ces avertissements. Néanmoins, les Personnages décident de continuer : peut-être est-il vital qu'ils atteignent la prochaine ville avant le lever du jour, ou peut-être un groupe de patrouilleurs routiers s'approche-t-il de l'auberge, et les Personnages veulent les éviter.
 

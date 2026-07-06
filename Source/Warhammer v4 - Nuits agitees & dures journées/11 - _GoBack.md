@@ -1,6 +1,6 @@
 *Pages PDF 69*
 
-### <span id="page-68-0"></span>**Le joyau volé**
+### <span id="page-68-0" data-folio="67"></span>**Le joyau volé**
 
 ### **La duchesse douairière du Telland**
 

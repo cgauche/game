@@ -1,6 +1,6 @@
 *Pages PDF 39*
 
-<span id="page-38-0"></span>Les pages 35-37 proposent trois tableaux permettant de générer des Rencontres. Leur usage est entièrement facultatif, et les résultats constituent plutôt des conseils. Ils devraient être utilisés pour ajouter un peu d'imprévisibilité à un voyage, mais si, en tant que MJ, vous êtes mal à l'aise ou n'êtes pas sûr de la façon de procéder, n'hésitez pas à choisir une autre Rencontre, voire aucune.
+<span id="page-38-0" data-folio="38"></span>Les pages 35-37 proposent trois tableaux permettant de générer des Rencontres. Leur usage est entièrement facultatif, et les résultats constituent plutôt des conseils. Ils devraient être utilisés pour ajouter un peu d'imprévisibilité à un voyage, mais si, en tant que MJ, vous êtes mal à l'aise ou n'êtes pas sûr de la façon de procéder, n'hésitez pas à choisir une autre Rencontre, voire aucune.
 
 Bien que chaque groupe soit différent, il est rarement conseillé d'utiliser plus d'une Rencontre au cours d'une Étape d'un voyage.
 
@@ -29,4 +29,4 @@ Atteindre leur destination devrait être un moment de satisfaction pour les Pers
 Quoi qu'il en soit, les Personnages sont maintenant prêts à reprendre leurs aventures ou, après un court repos, à rejoindre la prochaine étape de leur voyage.
 
 
-# <span id="page-39-0"></span>CHAPITRE 6 :
+# <span id="page-39-0" data-folio="39"></span>CHAPITRE 6 :

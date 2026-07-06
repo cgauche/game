@@ -2,7 +2,7 @@
 
 Certains noms sont juste des blagues. Gustav Fondleburger l'aubergiste qui « mignote les hamburgers », Dame Isolde von Strudeldorf (un endroit sûrement célèbre pour ses pâtisseries, les *strudels*) et le cabinet d'avocats « *Lock, Stock, and Barl* » figurant sur la lettre qui envoie les Personnages à Bögenhafen, fait allusion aux trois étapes du chargement d'une arme. Ce qui n'est guère mieux que « *Sue, Grabbit, and Runne* » (une firme fictive : « Poursuis en justice, prend l'oseille et tire-toi »). Et le nom de la barge de Josef, le *Bérébéli* se prononçait *beer-belly* (bedaine de buveur de bière).
 
-<span id="page-8-0"></span>I
+<span id="page-8-0" data-folio="8"></span>I
 
 ### **ORGANISATIONS ET LIEUX**
 

@@ -1,6 +1,6 @@
 *Pages PDF 313-315*
 
-# <span id="page-312-0"></span>**LES PEUPLES DU REIKLAND**
+# <span id="page-312-0" data-folio="311"></span>**LES PEUPLES DU REIKLAND**
 
 **Le Chapitre 2 : Personnage** présente les principales populations du Reikland. Cette section explique comment créer rapidement des PNJ équivalents, et introduit également les ogres.
 
@@ -51,7 +51,7 @@ nocturne **Facultatif :** À distance +9 (150), Arboricole, Furtif, Lanceur de S
 Magique, Pisteur, Résistance magique
 
 
-# <span id="page-313-0"></span>**Ogre**
+# <span id="page-313-0" data-folio="312"></span>**Ogre**
 
 Grands, bruyants, brutaux et extrêmement violents, les ogres sont animés par le besoin de remplir leur énorme ventre musclé. Ils manquent d'astuce ou d'intelligence pour le faire avec subtilité, optant d'emblée pour la force dans la plupart des situations.
 
@@ -80,7 +80,7 @@ Personne ne sait pourquoi, mais les halflings et les ogres s'entendent bien. Bea
 Cependant, cette relation ne fonctionne pas toujours. Golgfag Mange'homme, le capitaine d'un groupe de mercenaires du très inventif nom de Mange'hommes de Golgfag, employait notoirement un petit clan de halflings aux cuisines, pour lui et ses hommes après les grandes victoires. Jusqu'à ce que Golgfag réalise que les cuisiniers avaient meilleur goût que la nourriture qu'ils préparaient…
 
 
-# <span id="page-314-0"></span>**Exemples**
+# <span id="page-314-0" data-folio="313"></span>**Exemples**
 
 Voici deux exemples de PNJ humains créés en utilisant juste les Traits de créature et les Caractéristiques aléatoires.
 
@@ -105,6 +105,6 @@ Pol pensait qu'il suivrait les traces de ses parents, dirigeant la boulangerie B
 **Traits :** Arme +5, Coriace, Intelligent, Lanceur de Sorts (Sorcellerie), Préjugé (sigmarites), Rusé
 
 
-<span id="page-315-0"></span>Le Bestiaire présente les Caractéristiques sous forme d'un nombre rond, comme 20, 25 ou 30. En pratique, bien entendu, les nombres varient considérablement d'un individu à un autre. Si vous souhaitez créer des Caractéristiques aléatoires, soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. Si une Caractéristique vaut 5, lancez juste 1d10 pour la rendre aléatoire.
+<span id="page-315-0" data-folio="314"></span>Le Bestiaire présente les Caractéristiques sous forme d'un nombre rond, comme 20, 25 ou 30. En pratique, bien entendu, les nombres varient considérablement d'un individu à un autre. Si vous souhaitez créer des Caractéristiques aléatoires, soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. Si une Caractéristique vaut 5, lancez juste 1d10 pour la rendre aléatoire.
 
 Cette méthode peut aussi être utilisée pour créer des PJ à partir de races généralement réservées aux PNJ, en utilisant les Caractéristiques aléatoires et en ajoutant une Carrière appropriée, créant, par exemple, un Soldat ogre, un Ingénieur skaven ou un Noble vampire. Cela demandera bien sûr une petite adaptation des règles pour fonctionner, mais si vous désirez jouer avec ce genre de personnages, ce n'est pas bien difficile à faire.

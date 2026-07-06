@@ -2,7 +2,7 @@
 
 # CHAPITRE 7 LE TRAÎTRE DÉMASQUÉ
 
-<span id="page-98-0"></span>Ce chapitre commence quand les Personnages trouvent le repaire de Brunhilde Klaglich, l'agent de Wasmeier. Ils y trouvent Reya, la nièce du seigneur des lois Ehrlich qui a été kidnappée. Ils la ramènent saine et sauve jusqu'à son oncle, mettent fin à l'emprise que Wasmeier a sur lui, et entrent dans la dernière ligne droite de cette aventure. Tout ce que les Personnages n'ont pas réussi à découvrir jusqu'ici est enfin révélé. Le résultat : une course poursuite infernale entre les aventuriers et un Wasmeier qui tente de fuir.
+<span id="page-98-0" data-folio="96"></span>Ce chapitre commence quand les Personnages trouvent le repaire de Brunhilde Klaglich, l'agent de Wasmeier. Ils y trouvent Reya, la nièce du seigneur des lois Ehrlich qui a été kidnappée. Ils la ramènent saine et sauve jusqu'à son oncle, mettent fin à l'emprise que Wasmeier a sur lui, et entrent dans la dernière ligne droite de cette aventure. Tout ce que les Personnages n'ont pas réussi à découvrir jusqu'ici est enfin révélé. Le résultat : une course poursuite infernale entre les aventuriers et un Wasmeier qui tente de fuir.
 
 ### **PIONS DU SORCIER DÉMONIAQUE**
 
@@ -94,7 +94,7 @@ Brunhilde Klaglich est le bras droit de Wasmeier. Elle est la seule à connaîtr
 Wasmeier la contacte en lui envoyant des instructions codées par pigeon voyageur. Klaglich brûle toujours les messages après les avoir décryptés, mais si les aventuriers en interceptent un, ils pourront le déchiffrer grâce à un Test d'**Intelligence Difficile (–20)**, un Test de **Savoir (Mathématiques) Intermédiaire (+0)**, ou un Test étendu de **Recherche Intermédiaire (+0)** pour un total de 10 DR. Klaglich a mémorisé la clé du code, elle n'a donc pas sur elle de livre de déchiffrement qui pourrait aider les Personnages, mais en a gardé un caché dans la chambre de Brunhilde. Le code emploie des symboles non alphabétiques, il est donc impossible d'en identifier l'auteur par son écriture. Si Klaglich doit contacter le Seigneur des Lois en urgence, elle se déguise et lui rend visite chez lui, en utilisant sa Compétence Discrétion pour ne pas être suivie.
 
 
-<span id="page-100-0"></span>Klaglich n'a pas chômé, ces derniers temps, et les aventuriers ont pu découvrir certaines de ses activités. Sous l'identité de « Charlotte », elle a hypnotisé le Champion du Graf pour qu'il soutienne la réforme des impôts. Sous l'identité d'« Elise Kaltblutig », elle a volé les lettres d'amour qu'Ar-Ulric a envoyées à la favorite du Graf, et les a utilisées pour le faire chanter, et le forcer à soutenir la réforme des impôts. Enfin, sous l'identité de « Frau Kenner », elle continue à fournir du Délice de Ranald au Chancelier pour conserver sa loyauté, et s'assurer qu'il applique la réforme. Ce dernier rôle est particulièrement important : ses rendez-vous réguliers avec le Chancelier donnent au groupe de nombreuses occasions de la suivre jusqu'à son repaire.
+<span id="page-100-0" data-folio="98"></span>Klaglich n'a pas chômé, ces derniers temps, et les aventuriers ont pu découvrir certaines de ses activités. Sous l'identité de « Charlotte », elle a hypnotisé le Champion du Graf pour qu'il soutienne la réforme des impôts. Sous l'identité d'« Elise Kaltblutig », elle a volé les lettres d'amour qu'Ar-Ulric a envoyées à la favorite du Graf, et les a utilisées pour le faire chanter, et le forcer à soutenir la réforme des impôts. Enfin, sous l'identité de « Frau Kenner », elle continue à fournir du Délice de Ranald au Chancelier pour conserver sa loyauté, et s'assurer qu'il applique la réforme. Ce dernier rôle est particulièrement important : ses rendez-vous réguliers avec le Chancelier donnent au groupe de nombreuses occasions de la suivre jusqu'à son repaire.
 
 ### **« Frau Kenner »**
 
@@ -166,7 +166,7 @@ Entre les fientes d'oiseaux et le papier humide brûlé, l'odeur dans la pièce 
 Un petit compartiment secret est dissimulé sous le lit. Dedans se trouvent deux sacs : le premier contient 45 couronnes d'or et le deuxième un lingot d'or massif (d'une valeur de 35 CO) et deux colliers en argent avec bagues assorties. Le premier lot est incrusté de chrysobéryl et le deuxième de lapis-lazuli (chaque lot vaut 20 CO). Les bijoux ont été volés, et si les Personnages essaient de les vendre en ville, ils pourraient avoir des problèmes.
 
 
-<span id="page-102-0"></span>C'est aussi dans ce compartiment que se trouvent les lettres d'amour que le grand prêtre Ar-Ulric a envoyées à la favorite du Graf, Emmanuelle Schlagen. Elles sont adressées à « Em », et portent toutes la signature « Le Grand Méchant Loup ». Les Personnages lettrés ne manqueront pas de remarquer la très grande qualité du parchemin et de l'encre utilisés. Ces lettres sont des déclarations d'amour, des promesses d'affection éternelle, des poèmes, etc. Enfin, le carnet de codes permettant de déchiffrer les messages de Wasmeier est aussi caché ici.
+<span id="page-102-0" data-folio="100"></span>C'est aussi dans ce compartiment que se trouvent les lettres d'amour que le grand prêtre Ar-Ulric a envoyées à la favorite du Graf, Emmanuelle Schlagen. Elles sont adressées à « Em », et portent toutes la signature « Le Grand Méchant Loup ». Les Personnages lettrés ne manqueront pas de remarquer la très grande qualité du parchemin et de l'encre utilisés. Ces lettres sont des déclarations d'amour, des promesses d'affection éternelle, des poèmes, etc. Enfin, le carnet de codes permettant de déchiffrer les messages de Wasmeier est aussi caché ici.
 
 ### **Salle de bain**
 
@@ -337,7 +337,7 @@ Le Graf s'adresse au groupe, d'abord avec une pointe de sarcasme :
 D'un geste faible de la main, il congédie tous ses visiteurs à l'exception de sa fille. Tous les PNJ majeurs féliciteront les Personnages : c'est grâce à eux que le Graf a surmonté cette crise. Il a l'air d'être redevenu lui-même. Bien sûr, il faut encore partir à la recherche de Wasmeier…
 
 
-# <span id="page-107-0"></span>**LE TRAÎTRE S'ENFUIT**
+# <span id="page-107-0" data-folio="105"></span>**LE TRAÎTRE S'ENFUIT**
 
 Le seigneur des lois Karl Heinz Wasmeier, Magister Magistri du Culte de la Main Pourpre, a décidé de fuir.
 
@@ -475,7 +475,7 @@ Dans un coin, une petite volière accueille les pigeons qu'il utilise pour commu
 Le travail de Lurk consiste à s'occuper des pigeons et à défendre cette pièce. Si quelqu'un essaie d'entrer dans la chambre forte depuis la maison, un baril d'huile se déversera sur lui. Lurk y mettra le feu grâce à une lanterne qu'il laisse brûler jour et nuit pour cet usage. Enfin, il verrouillera la porte et jettera la clé par la fenêtre.
 
 
-### <span id="page-111-0"></span>**LES SBIRES DE WASMEIER**
+### <span id="page-111-0" data-folio="109"></span>**LES SBIRES DE WASMEIER**
 
 Les PNJ portent sur eux les clés des parties de la maison où ils travaillent, et quelques pièces pour un total de 2 à 12 pistoles d'argent. Vous devriez ajuster leur force en fonction du niveau du groupe.
 
@@ -604,7 +604,7 @@ Le chariot de bataille est conçu pour être facile à défendre, et la stratég
 Les Personnages n'auront probablement pas de chevaux avec eux, mais par un heureux hasard, quatre membres de la Garde montés approchent de la maison juste après le départ du chariot. Grâce au sceau de la ville, le groupe peut réquisitionner leurs montures et poursuivre Wasmeier. Idéalement, ils arriveront à la porte sud juste après l'explosion.
 
 
-### <span id="page-113-0"></span>**Wasmeier prend la fuite**
+### <span id="page-113-0" data-folio="111"></span>**Wasmeier prend la fuite**
 
 Alors que le groupe se fraye un chemin à travers la fumée et les débris, ils voient Wasmeier sur la route, environ 50 m devant eux, accompagné des sbires qui ont réussi à le suivre. Alors que le groupe approche, Wasmeier lèvera les bras vers les cieux et articulera un mot de commande magique : en tant que Seigneur des Lois, il connaît la formule qui permet de détruire le viaduc.
 

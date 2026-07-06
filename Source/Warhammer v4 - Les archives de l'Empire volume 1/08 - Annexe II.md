@@ -2,7 +2,7 @@
 
 ## ANNEXE II • ARMES •
 
-<span id="page-92-0"></span>Les pages qui suivent présentent de nouvelles armes typiques des elfes sylvains, des nains et des halflings. Bien que ces armes se trouvent majoritairement entre les mains de membres de leur espèce d'origine, rien n'empêche un autre Personnage bien entraîné de les utiliser. Remarque : la Disponibilité dans les tables ci-dessous indique la facilité de se procurer chaque arme dans une région où son peuple d'origine est fortement représenté. De plus, certaines armes ne sont presque jamais proposées aux étrangers, qui doivent donc se les procurer d'une autre manière.
+<span id="page-92-0" data-folio="92"></span>Les pages qui suivent présentent de nouvelles armes typiques des elfes sylvains, des nains et des halflings. Bien que ces armes se trouvent majoritairement entre les mains de membres de leur espèce d'origine, rien n'empêche un autre Personnage bien entraîné de les utiliser. Remarque : la Disponibilité dans les tables ci-dessous indique la facilité de se procurer chaque arme dans une région où son peuple d'origine est fortement représenté. De plus, certaines armes ne sont presque jamais proposées aux étrangers, qui doivent donc se les procurer d'une autre manière.
 
 #### ARMES DE CORPS À CORPS DES ÉONIRS
 

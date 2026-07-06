@@ -1,6 +1,6 @@
 *Pages PDF 290-291*
 
-# <span id="page-289-0"></span>•GUIDE DE L'ÉQUIPEMENT •
+# <span id="page-289-0" data-folio="288"></span>•GUIDE DE L'ÉQUIPEMENT •
 
 *« Après soixante ans de métier, voici les trois leçons les plus importantes que j'ai apprises. Un : l'amitié ne veut rien dire. Deux : sans ambition, vous n'êtes rien. Trois : quelle que soit la stérilité de la perspective, vous pouvez toujours plus pressurer une pierre. »*
 

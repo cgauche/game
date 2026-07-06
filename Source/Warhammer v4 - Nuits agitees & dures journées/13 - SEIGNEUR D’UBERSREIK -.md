@@ -1,6 +1,6 @@
 *Pages PDF 70-87*
 
-# <span id="page-69-0"></span>• SEIGNEUR D'UBERSREIK •
+# <span id="page-69-0" data-folio="68"></span>• SEIGNEUR D'UBERSREIK •
 
 Ubersreik n'a plus de famille régnante depuis que l'Empereur a, de manière controversée, écarté la Maison Jungfreud du pouvoir. Ainsi, les nobles affluent dans la ville fortifiée, espérant tous devenir le prochain seigneur ou la prochaine dame d'Ubersreik. Un noble décide d'organiser un bal pour la haute société dans le but de promouvoir sa Maison, mais cela se change rapidement en champ de bataille politique, mais pas seulement, et nos héros y sont impliqués.
 
@@ -19,7 +19,7 @@ La gravin Maria Ulrike et sa suite, y compris les Personnages, arrivent par la r
 
 ### GUIDE D'UBERSREIK
 
-<span id="page-70-0"></span>*Seigneur d'Ubersreik* est une aventure indépendante, mais si vous souhaitez en savoir plus sur la ville où elle se déroule et sur les troubles politiques qui l'agitent, la Boîte d'Initiation de **WFJDR** comprend un livre détaillant Ubersreik.
+<span id="page-70-0" data-folio="69"></span>*Seigneur d'Ubersreik* est une aventure indépendante, mais si vous souhaitez en savoir plus sur la ville où elle se déroule et sur les troubles politiques qui l'agitent, la Boîte d'Initiation de **WFJDR** comprend un livre détaillant Ubersreik.
 
 ### **Une aventure indépendante**
 
@@ -40,7 +40,7 @@ De l'extérieur, la Niederstadt Haus est un impressionnant bâtiment de trois é
 Devant les portes principales se trouve un portique couvert, suffisamment large pour abriter une calèche des intempéries. Des gardes en livrées vert et noir immaculées aux couleurs de la maison Holzenauer se tiennent au garde-à-vous de chaque côté de la porte, armés de hallebardes. Juste après les portes principales se trouve un vestibule. Cette petite pièce au sol en dalles comprend des portes menant à un vestiaire et au bureau du portier. Un héraut s'y tient debout, vérifiant les invitations et annonçant les visiteurs à leur arrivée. Sa voix peut être entendue au-dessus du niveau des conversations normales dans les trois salles publiques.
 
 
-<span id="page-71-0"></span>En quittant le vestibule, les invités se retrouvent dans une grande galerie au sol de marbre et au plafond haut. À côté, une petite salle d'eau (commodités) est destinée aux dames en visite. Au pied du grand escalier un énorme sanglier empaillé est posé sur un socle de marbre dans une pose agressive. Il a été capturé et empaillé par le propriétaire du manoir, mais Hozenauer est ravi que ses invités pensent que ce trophée lui appartient. De l'autre côté de la galerie, une grande horloge en bois travaillé sonne tous les quarts d'heure ; vous pouvez utiliser son carillon pour indiquer qu'un quart d'heure supplémentaire s'est écoulé.
+<span id="page-71-0" data-folio="70"></span>En quittant le vestibule, les invités se retrouvent dans une grande galerie au sol de marbre et au plafond haut. À côté, une petite salle d'eau (commodités) est destinée aux dames en visite. Au pied du grand escalier un énorme sanglier empaillé est posé sur un socle de marbre dans une pose agressive. Il a été capturé et empaillé par le propriétaire du manoir, mais Hozenauer est ravi que ses invités pensent que ce trophée lui appartient. De l'autre côté de la galerie, une grande horloge en bois travaillé sonne tous les quarts d'heure ; vous pouvez utiliser son carillon pour indiquer qu'un quart d'heure supplémentaire s'est écoulé.
 
 Les portes de la salle de réception principale sont ouvertes, et tous les tapis et moquettes ont été ôtés pour exposer des sols en marbre d'une conception exquise à la mode tiléenne. L'arrière de la salle de réception donne sur un jardin bien entretenu.
 
@@ -76,7 +76,7 @@ La gravin Maria Ulrike assiste au bal pour l'une des raisons suivantes, selon le
 
 
 
-### <span id="page-73-0"></span>**Les invités**
+### <span id="page-73-0" data-folio="72"></span>**Les invités**
 
 Au cours de l'aventure, les PNJ clés se promènent d'une pièce à l'autre au gré des événements, mais ont tendance à graviter autour de certains endroits. Si vous ne savez pas où se trouve un PNJ en particulier, consultez la liste suivante.
 
@@ -137,7 +137,7 @@ Un Prophète gris skaven se cache sous Ubersreik, espionnant les affaires humain
 La Maison Aschaffenberg se considère comme un choix naturel pour l'attribution du titre de seigneur d'Ubersreik. Mais elle s'est récemment alliée à la Maison Bruner par un mariage doublé d'un soutien militaire.
 
 
-<span id="page-74-0"></span>Malheureusement, depuis l'éviction de la Maison Jungfreud d'Ubersreik, les Bruner se sont un peu laissés aller, et de sombres rumeurs circulent à propos de leurs membres les plus éminents, certains suggérant même qu'il pourrait y avoir une tare issue du Chaos dans la famille (pour en savoir plus, voir le **Guide d'Ubersreik** dans la **Boîte d'Initiation de WFJDR**).
+<span id="page-74-0" data-folio="73"></span>Malheureusement, depuis l'éviction de la Maison Jungfreud d'Ubersreik, les Bruner se sont un peu laissés aller, et de sombres rumeurs circulent à propos de leurs membres les plus éminents, certains suggérant même qu'il pourrait y avoir une tare issue du Chaos dans la famille (pour en savoir plus, voir le **Guide d'Ubersreik** dans la **Boîte d'Initiation de WFJDR**).
 
 Ainsi, le baron Rickard Aschaffenberg fait tout son possible pour prendre ses distances vis à vis de tout scandale et remettre sa famille dans la course. De son côté, le richissime seigneur Heinrich von Bruner tente de reconstruire la réputation de sa Maison et n'apprécie pas le manque de soutien des Aschaffenberg. La situation ne fait qu'empirer d'autant que Maximilien, le neveu du baron Rickard, ne manque aucune occasion de faire une blague aux dépens de la maison Bruner. Dans cet environnement politique très tendu, les esprits sont surchauffés.
 
@@ -304,7 +304,7 @@ Les Personnages qui fouillent le jardin pourront trouver le cadavre de l'invité
 Si le Coureur d'égouts est arrêté à l'intérieur du manoir, il fait tout ce qu'il peut pour s'échapper. Acculé, il se battra jusqu'à la mort, tuant autant de monde que possible.
 
 
-#### <span id="page-79-0"></span>**23h45**
+#### <span id="page-79-0" data-folio="78"></span>**23h45**
 
 Le bruit d'une bagarre se fait entendre à l'étage. Volker Volkmann, le mari de Netta, l'a surprise avec le Doktor Krupp. Les mains du mari enserrent la gorge du médecin alors qu'elle lui hurle d'arrêter.
 
@@ -353,7 +353,7 @@ La gravin Maria Ulrike est en position de force, car elle a déjà probablement 
 Traquer les skavens est un défi difficile mais pas impossible. Le tunnel effondré du puits mène aux égouts, et des traces pourraient également être relevées aux endroits où les nains ont défendu leur chargement de bière (19h30), où un skaven a escaladé le mur pour bloquer la cheminée de la cuisine (22h15), ou bien là où un skaven a tendu une embuscade à un invité dans le jardin (23h30).
 
 
-<span id="page-80-0"></span>La piste mène à un petit repaire souterrain avec suffisamment de skavens pour représenter un défi raisonnable (un par Personnage suffira) soutenu par un Coureur d'égouts et un redoutable rat ogre (**WFJDR**, page 337) avec les Traits et Compétences optionnels que vous jugerez appropriés pour tester votre groupe. Le Prophète Gris qui les commandait, Rasknitt, a disparu depuis longtemps (voir la page 41 du **Guide d'Ubersreik** pour en savoir plus sur un groupe très intéressé par la traque de cet homme-rat).
+<span id="page-80-0" data-folio="79"></span>La piste mène à un petit repaire souterrain avec suffisamment de skavens pour représenter un défi raisonnable (un par Personnage suffira) soutenu par un Coureur d'égouts et un redoutable rat ogre (**WFJDR**, page 337) avec les Traits et Compétences optionnels que vous jugerez appropriés pour tester votre groupe. Le Prophète Gris qui les commandait, Rasknitt, a disparu depuis longtemps (voir la page 41 du **Guide d'Ubersreik** pour en savoir plus sur un groupe très intéressé par la traque de cet homme-rat).
 
 Le repaire des skavens dissimule le laboratoire désormais abandonné du Prophète gris, Rasknitt. Une paire d'établis piqués et pourris sont encombrés de tuyaux tordus, de chambres de verre et de pots qui crépitent, utilisés autrefois par le Prophète gris pour ses expériences sur la malepierre. Tout Personnage doté d'une Compétence Focalisation ressent le caractère anormal de l'endroit, et tout Personnage doté du Talent Seconde vue sait que le laboratoire est irrévocablement contaminé et qu'il doit être brûlé. Tout Personnage qui traîne dans la zone pendant plus de Rounds que son Bonus d'Endurance est exposé à une influence corruptrice mineure ; tout Personnage assez fou pour toucher l'équipement du laboratoire est exposé à une influence corruptrice modérée pour chaque minute (ou même moins) de contact.
 
@@ -378,7 +378,7 @@ Nacht ne possède pas de statistiques dans cette aventure car elle n'interagit p
 Au début de 2512 CI, l'Empereur a secrètement fait passer un édit par la Diète du Reikland (**WFJDR**, page 277) pour ôter le contrôle d'Ubersreik à la Maison Jungfreud, la famille noble qui y régnait depuis des siècles. En quelques heures, des troupes sous le commandement du général von Dabernick ont envahi la ville-forteresse, tuant tous ceux qui osaient se mettre sur leur chemin. Cette décision brutale a provoqué une vague de troubles qui s'est propagée à partir d'Ubersreik. Après tout, si l'Empereur peut bannir les Jungfreud, l'une des lignées les plus puissantes de l'Empire, aussi facilement, qui sont les prochains ? Dans tout le Reikland, les grandes Maisons nobles débattent de cette question en public tout en rassemblant leurs armées en privé. Pour en savoir plus sur cet événement de mauvais augure, consultez la **Boîte d'Initiation de WFJDR**.
 
 
-### <span id="page-81-0"></span>**Maison Ambosstein**
+### <span id="page-81-0" data-folio="80"></span>**Maison Ambosstein**
 
 #### **La gravin Maria Ulrike**
 
@@ -425,7 +425,7 @@ Noblesse, Suborneur
 **Traits :** Arme (Fleuret) +6, Préjugé (Rivaux politiques)
 
 
-### <span id="page-82-0"></span>**Maison Aschaffenberg**
+### <span id="page-82-0" data-folio="81"></span>**Maison Aschaffenberg**
 
 #### **Le baron Rickard Aschaffenberg et le seigneur Maximilien Aschaffenberg**
 
@@ -524,7 +524,7 @@ Résistance à l'alcool 37
 **Talents :** Noblesse, Noctambule 2 **Traits :** Arme (Poings) +3
 
 
-### <span id="page-84-0"></span>**Éminents citadins**
+### <span id="page-84-0" data-folio="83"></span>**Éminents citadins**
 
 #### **Le brasseur**
 
@@ -574,7 +574,7 @@ Sous les Jungfreud, le poste d'Ernst Maler était uniquement administratif. Mais
 **Traits :** Arme (Poings) +2
 
 
-### <span id="page-85-0"></span>**L'Émissaire haut-elfe**
+### <span id="page-85-0" data-folio="84"></span>**L'Émissaire haut-elfe**
 
 Lorith Feuilledargent assiste à la soirée par curiosité, considérant ce drame social comme un scientifique examine un nouveau spécimen. Même si elle est sans aucun doute arrogante et trouve que les autres espèces sont difformes, elle discutera si on l'approche, faisant de l'humour sur les sujets les plus inattendus. Elle parle doucement et fait des gestes avec ses mains pour appuyer son discours.
 
@@ -629,7 +629,7 @@ Le bal compte des représentants de trois des cultes de la ville : le père Gunt
 Savant (Théologie), Savoir-vivre (Médecin) **Traits :** Arme (Poings) +3, Préjugé (Bellicistes)
 
 
-### <span id="page-86-0"></span>**Armée régulière**
+### <span id="page-86-0" data-folio="85"></span>**Armée régulière**
 
 ### **Les deux capitaines**
 

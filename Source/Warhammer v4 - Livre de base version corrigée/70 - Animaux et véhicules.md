@@ -1,6 +1,6 @@
 *Pages PDF 308*
 
-# <span id="page-307-0"></span>**ANIMAUX ET VÉHICULES**
+# <span id="page-307-0" data-folio="306"></span>**ANIMAUX ET VÉHICULES**
 
 Les animaux sont utilisés à tous les niveaux de la société dans l'Empire. Voir le Chapitre 12 : Bestiaire pour des exemples de profils d'animaux. Comme pour les Sacs et contenants (voir page 301), tous les véhicules indiquent le nombre de Points d'Encombrement qu'ils peuvent transporter (Contenu).
 

@@ -45,7 +45,7 @@ Tant que vous ressentez de la *Haine*, vous devez faire tout ce qui est en votre
 Vous ressentez une profonde aversion pour la *Cible*, en général un groupe de personnes ou de créatures, comme les 
 
 
-<span id="page-192-0"></span>« ostlanders », les « elfes » ou les « Sorciers ». Vous devez effectuer un Test de Psychologie chaque fois que vous rencontrez l'un de ces groupes. Sur un succès, il est possible que vous fronciez les sourcils, mais cela ne vous empêchera pas de vous comporter normalement. Vous ne subirez qu'une pénalité de -10 à vos Tests de Sociabilité avec ce groupe. Sur un échec, vous devenez sensible aux *Préjugés*. À partir du Round qui suivra, vous pourrez effectuer un autre Test de Psychologie de façon à mettre fin aux *Préjugés*. Si vous ne le faites pas, les effets de *Préjugé* s'arrêteront d'eux-mêmes lorsque tous les membres du groupe qui étaient dans votre Ligne de Vue auront disparu, que vous gagniez l'État *Sonné* ou *Inconscient*, ou que vous soyez sujet à un autre Trait Psychologique.
+<span id="page-192-0" data-folio="191"></span>« ostlanders », les « elfes » ou les « Sorciers ». Vous devez effectuer un Test de Psychologie chaque fois que vous rencontrez l'un de ces groupes. Sur un succès, il est possible que vous fronciez les sourcils, mais cela ne vous empêchera pas de vous comporter normalement. Vous ne subirez qu'une pénalité de -10 à vos Tests de Sociabilité avec ce groupe. Sur un échec, vous devenez sensible aux *Préjugés*. À partir du Round qui suivra, vous pourrez effectuer un autre Test de Psychologie de façon à mettre fin aux *Préjugés*. Si vous ne le faites pas, les effets de *Préjugé* s'arrêteront d'eux-mêmes lorsque tous les membres du groupe qui étaient dans votre Ligne de Vue auront disparu, que vous gagniez l'État *Sonné* ou *Inconscient*, ou que vous soyez sujet à un autre Trait Psychologique.
 
 Lorsque vous êtes sujet aux *Préjugés*, vous devez copieusement insulter votre *Cible* à haute et intelligible voix.
 
@@ -95,7 +95,7 @@ La vie de la grande majorité des Reiklanders est désagréable, brutale et cour
 **Exemple :** *Le village de Horst a été ravagé par un terrible incendie – il entend d'ailleurs encore certains cris dans ses cauchemars. Si Horst tombe sur un Personnage (ami ou ennemi) qui est Enflammé, il doit effectuer un Test de Calme Intermédiaire (+0). Sur un échec, il gagne un État Sonné, plus un État Sonné par DR négatif. De plus, chaque nuit, Horst effectue un Test de Calme Facile (+40). Sur un échec, il est en proie à de terribles cauchemars et gagne l'État Exténué.*
 
 
-# <span id="page-193-0"></span>•ENTRE DEUX AVENTURES •
+# <span id="page-193-0" data-folio="192"></span>•ENTRE DEUX AVENTURES •
 
 *« Bien sûr qu'il y a quelque chose qui cloche chez nous. Ce monde a son lot de chagrins et de douleurs à gérer. Alors que faisons-nous ? Nous recherchons ce que même les plus courageux craignent et nous l'affrontons dans l'obscurité. En fin de compte, nous sommes les pions préférés des dieux. Alors, qu'est-ce que je fais de mon temps quand je ne suis pas embarquée dans une quête insensée ? Je bois. »*
 

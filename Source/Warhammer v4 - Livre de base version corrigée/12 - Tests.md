@@ -21,7 +21,7 @@ Quelle que soit l'issue du Test, le MJ va décrire ce qui se produit alors, de f
 Certains Talents peuvent augmenter les chances de succès d'un Test, ou vous donner accès à des Tests uniques offrant la possibilité de tenter des prouesses extraordinaires. Pour plus de détails à ce sujet, référez-vous à la partie **Talents** page 132.
 
 
-# <span id="page-151-0"></span>**Échec et succès automatique**
+# <span id="page-151-0" data-folio="150"></span>**Échec et succès automatique**
 
 Peu importe le niveau de Compétence ou de Talent d'un Personnage, il existe toujours une possibilité d'échec. De même, il y a toujours une chance de succès dans **WFJDR**, et ce, quelles que soient les probabilités.
 
@@ -79,7 +79,7 @@ Un Test réussi gagne un bonus de +1 DR pour chaque tranche de 10 % au-delà de 
 **Exemple :** la comtesse Emmanuelle von Liebwitz possède une Compétence de Charme de 115 % : sa Caractéristique de Sociabilité de 80 % plus ses Augmentations de Charme de +35 % (voir Augmentation page 47 pour plus d'informations à ce sujet) ; donc, si elle réussit un Test de Charme, elle gagne un bonus de +1 DR.
 
 
-# <span id="page-153-0"></span>**Tests spectaculaires**
+# <span id="page-153-0" data-folio="152"></span>**Tests spectaculaires**
 
 Il n'est pas toujours suffisant de savoir si l'on réussit ou si l'on échoue ; parfois, il est pratique de connaître la mesure de cette réussite ou de cet échec. C'est particulièrement vrai lorsque vous testez vos Compétences contre celles d'autres Personnages (voir Tests opposés), ce qui est souvent le cas au cours de combats et pour la magie. Donc, lorsque vous souhaitez savoir à quel point vous avez réussi ou raté un Test, utilisez un Test spectaculaire.
 
@@ -114,7 +114,7 @@ Déterminer votre DR n'exige qu'un petit calcul, mais cela peut ralentir le jeu 
 | -6 ou moins | Échec Stupéfiant      | Rien à faire ! – tout est allé de travers, de la pire des manières possible. Le MJ devrait ajouter<br>à votre infortune certaines nouvelles conséquences à vos actions. Personne ne peut être aussi<br>malchanceux, vous avez dû offenser un dieu |  |
 
 
-<span id="page-154-0"></span>Le niveau de succès ou d'échec est indiqué dans le Tableau des Résultats, dont l'utilisation peut vous aider à donner vie aux descriptions de ce qu'entraîne le résultat du Test. Alors que les Tests simples n'offrent que oui ou non comme réponse à la question « ai-je réussi ce Test ? », les Tests spectaculaires fournissent aussi des réponses, mais bien plus conséquentes.
+<span id="page-154-0" data-folio="153"></span>Le niveau de succès ou d'échec est indiqué dans le Tableau des Résultats, dont l'utilisation peut vous aider à donner vie aux descriptions de ce qu'entraîne le résultat du Test. Alors que les Tests simples n'offrent que oui ou non comme réponse à la question « ai-je réussi ce Test ? », les Tests spectaculaires fournissent aussi des réponses, mais bien plus conséquentes.
 
 Si vous obtenez un succès automatique grâce à un 01-05 (voir page 150), vous obtenez un DR de 1, ou le DR du lancer, en fonction du meilleur.
 
@@ -157,7 +157,7 @@ Parfois, vous allez devoir confronter vos capacités à celles d'un adversaire. 
 **Exemple :** *Tollich se retrouve à un endroit où il ne devrait pas être et tente de se dissimuler aux yeux d'un Garde. Le MJ décide qu'il faut effectuer un Test opposé, Tollich utilisant sa Compétence de Discrétion, alors que la Garde utilise sa Compétence de Perception. Si le MJ fait jouer une aventure officielle, il y sera indiqué Test opposé de Discrétion/Perception.*
 
 
-<span id="page-155-0"></span>Un Test opposé est géré comme un Test spectaculaire, mais, ici, les deux groupes effectuent un Test. C'est le groupe avec le DR le plus élevé qui remporte le Test. Si les deux participants obtiennent le même DR, c'est le groupe avec la Compétence ou la Caractéristique la plus élevée qui l'emporte. Dans le cas improbable où il y ait une égalité, le MJ choisit l'une de ces deux solutions : 1) statu quo, rien ne se passe ; 2) les deux groupes refont le Test, jusqu'à ce qu'un vainqueur soit désigné.
+<span id="page-155-0" data-folio="154"></span>Un Test opposé est géré comme un Test spectaculaire, mais, ici, les deux groupes effectuent un Test. C'est le groupe avec le DR le plus élevé qui remporte le Test. Si les deux participants obtiennent le même DR, c'est le groupe avec la Compétence ou la Caractéristique la plus élevée qui l'emporte. Dans le cas improbable où il y ait une égalité, le MJ choisit l'une de ces deux solutions : 1) statu quo, rien ne se passe ; 2) les deux groupes refont le Test, jusqu'à ce qu'un vainqueur soit désigné.
 
 **Exemple :** *ayant mis à terre un important baron du Reikland au cours d'une fête, Salundra s'apprête à quitter la salle de bal ; cependant, des gardes peu avenants lui bloquent le passage, conscients de devoir impérativement retenir le noble capitaine. Salundra leur jette un regard noir tout en s'approchant. Le MJ lui demande de faire un Test d'Intimidation et l'oppose à un Test de Commandement effectué par l'officier. Le Joueur et le MJ effectuent leur lancer. La Compétence Intimidation de Salundra est de 47. L'officier a un score de Commandement de 46. Salundra obtient un 04, ce qui lui donne un DR 4 (4-0=4), alors que le MJ obtient 16 pour un DR 3 (4-1=3). Le DR de Salundra est le plus haut (4 contre 3 pour l'officier), et elle parvient à intimider les gardes qui la laissent passer en maugréant.*
 
@@ -176,7 +176,7 @@ Les Tests étendus sont gérés de la même façon que les Tests spectaculaires,
 **Exemple :** *toujours en fuite, Molli tente d'ouvrir une serrure particulièrement complexe pour éviter de se faire repérer. Le MJ décide qu'elle a besoin de cumuler 5 Degrés de Réussite lors de Tests de Crochetage Intermédiaire pour y parvenir, et qu'elle ne dispose que de trois Rounds avant que les gardes n'arrivent. La Compétence de Crochetage de Molli est de 58, ce qui lui offre des chances raisonnables de réussite, mais le temps n'est pas de son côté. Malheureusement, le résultat de son premier Test est de 63 : DR -1, et un début catastrophique. Elle n'a fait aucun progrès et doit recommencer depuis le début au cours du prochain Round. Se maudissant dans un souffle alors qu'elle entend les bruits de pas se rapprocher, Molli effectue une nouvelle tentative et obtient cette fois un 11, et donc DR 4 ! Elle sent une tension dans ses outils alors que la serrure est sur le point de céder, mais elle sait que les gardes sont encore plus près. Le MJ lui indique que le Test à venir sera le dernier avant que les gardes ne soient sur elle. Molli peut, soit abandonner pour éviter ses poursuivants, soit faire un effort supplémentaire afin d'obtenir le dernier DR nécessaire* 
 
 
-<span id="page-156-0"></span>*pour ouvrir la serrure. Molli sait qu'elle doit parvenir à s'échapper, et tente donc le dernier Test, obtenant… 42 ! Cela donne DR 1, ce qui monte le total à 5. Un clic indique que la serrure s'ouvre ! Victorieuse, Molli se glisse par la porte et la referme derrière elle, juste avant que les gardes n'arrivent.*
+<span id="page-156-0" data-folio="155"></span>*pour ouvrir la serrure. Molli sait qu'elle doit parvenir à s'échapper, et tente donc le dernier Test, obtenant… 42 ! Cela donne DR 1, ce qui monte le total à 5. Un clic indique que la serrure s'ouvre ! Victorieuse, Molli se glisse par la porte et la referme derrière elle, juste avant que les gardes n'arrivent.*
 
 # OPTIONS : TESTS ÉTENDUS ET DR 0
 

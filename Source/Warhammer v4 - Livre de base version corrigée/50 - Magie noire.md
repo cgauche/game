@@ -81,7 +81,7 @@ Vous hurlez les paroles du Sort. Un crâne énorme, noir et entouré de flammes 
 Vous envoyez les flux complexes de *Dhar* vers vos cibles, leur insufflant une irrésistible énergie. Un nombre de cibles équivalent à votre Bonus d'Intelligence qui possèdent le Trait de créature Mort-vivant gagnent une Action ou un Mouvement gratuits – vous choisissez l'un ou l'autre, qui sera appliqué à *toutes* les cibles – au moment de lancer le Sort. Pour chaque DR+2 obtenu, vous pouvez affecter un nombre de cibles supplémentaires équivalent à votre Bonus d'Intelligence.
 
 
-### <span id="page-258-0"></span>**Réanimation**
+### <span id="page-258-0" data-folio="257"></span>**Réanimation**
 
 **NI :** 8
 

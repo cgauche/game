@@ -57,7 +57,7 @@ Votre cible se retrouve immédiatement trempée d'eau salée, et titube comme su
 Les voiles du vaisseau ciblé s'emplissent de vents favorables, l'entraînant rapidement en toute sécurité vers sa destination.
 
 
-<span id="page-224-0"></span>Tant que ce Miracle est actif, le voilier se déplace à sa vitesse maximale, peu importe le vent, la marée ou le courant. Tous les Tests effectués pour diriger le vaisseau gagnent un bonus de +10.
+<span id="page-224-0" data-folio="223"></span>Tant que ce Miracle est actif, le voilier se déplace à sa vitesse maximale, peu importe le vent, la marée ou le courant. Tous les Tests effectués pour diriger le vaisseau gagnent un bonus de +10.
 
 # **Visage de l'homme noyé**
 
@@ -136,7 +136,7 @@ Vos Prières passionnées incitent Myrmidia à protéger vos alliés avec des fi
 Vos Prières exaltantes inspirent la discipline et la coordination à l'intérieur de vos rangs. Les cibles affectées gagnent +1 Talent Coude-à-coude.
 
 
-### <span id="page-225-0"></span>**Lance de Myrmidia**
+### <span id="page-225-0" data-folio="224"></span>**Lance de Myrmidia**
 
 **Portée :** Vous **Cible :** Vous
 
@@ -225,4 +225,4 @@ Vous énoncez une énigme complexe concernant la réalité de ce qui ne peut êt
 Existe-t-il quelque chose qui ne peut être vu ? Vous posez l'énigme à Ranald, qui envoie en réponse un Serviteur divin sous la forme d'un chat. Cet envoyé ressemble à un chat normal et en possède les capacités, mais ne peut être blessé en aucune façon. Pendant que le Miracle est actif, vous percevez tout ce que le chat perçoit – ce qu'il voit, entend, touche – et
 
 
-<span id="page-226-0"></span>vous contrôlez son Mouvement. Vos sens sont aiguisés comme ceux d'un chat, mais vous n'avez accès à aucun de vos propres Talents, tels que Vision nocturne. Pendant que le Miracle est actif, vous ne pouvez rien percevoir à travers vos propres sens, ce qui vous rend vulnérable.
+<span id="page-226-0" data-folio="225"></span>vous contrôlez son Mouvement. Vos sens sont aiguisés comme ceux d'un chat, mais vous n'avez accès à aucun de vos propres Talents, tels que Vision nocturne. Pendant que le Miracle est actif, vous ne pouvez rien percevoir à travers vos propres sens, ce qui vous rend vulnérable.

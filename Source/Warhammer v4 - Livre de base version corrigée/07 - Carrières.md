@@ -1,6 +1,6 @@
 *Pages PDF 48-50*
 
-# <span id="page-47-0"></span>• CLASSES ET CARRIÈRES •
+# <span id="page-47-0" data-folio="46"></span>• CLASSES ET CARRIÈRES •
 
 *« Eh bien, je joue un Personnage sans aucune classe et qui vendrait sa grand-mère pour progresser dans sa carrière, tu vois, exactement le type de gars que je croise régulièrement dans mon boulot. »*
 
@@ -21,7 +21,7 @@ Votre Carrière correspond à votre travail lorsque vous n'êtes pas en expédit
 Les résumés et illustrations correspondant aux huit Carrières de la Classe que vous avez choisie devraient vous donner une bonne idée de celle qui vous convient. On peut considérer que les Carrières sont interprétables et vous êtes encouragé à les utiliser au mieux afin qu'elles fassent partie intégrante de ce qui définit votre Personnage.
 
 
-# <span id="page-48-0"></span>**Niveaux de Carrière**
+# <span id="page-48-0" data-folio="47"></span>**Niveaux de Carrière**
 
 Chaque Carrière possède quatre Niveaux, chacun étant meilleur que le précédent. Si vous jetez un œil à Apothicaire, vous pouvez voir que les quatre Niveaux sont :
 
@@ -84,7 +84,7 @@ Chaque Augmentation de Compétence ajoute +1 à votre niveau de Compétences. Ai
 Les règles complètes régissant l'utilisation de vos Compétences sont détaillées dans le **Chapitre 4 : Compétences et Talents**. Comme pour les Augmentations de Caractéristique, il n'y a pas de limite maximum au nombre d'Augmentations de Compétence qui peut être acheté.
 
 
-# <span id="page-49-0"></span>AUGMENTATIONS HORS CARRIÈRE
+# <span id="page-49-0" data-folio="48"></span>AUGMENTATIONS HORS CARRIÈRE
 
 Il est probable qu'à un moment ou un autre, les Personnages vont souhaiter Augmenter des Caractéristiques et des Compétences qui ne sont pas indiquées dans leur Carrière. Si le MJ est d'accord, cela ne pose aucun problème, mais, dans ce cas, le coût en est doublé. De plus, le MJ peut exiger que vous trouviez un mentor qui puisse vous enseigner cette formation inhabituelle.
 
@@ -137,7 +137,7 @@ Pour compléter une Carrière, vous devez avoir acquis le nombre d'Augmentations
 Si vous avez achevé votre Niveau de Carrière actuel, vous pouvez passer au Niveau de Carrière suivant, ou à n'importe quel Niveau de Carrière inférieur pour 100 PX. Donc, si vous achevé Chasseur (Chasseur Niveau 2), vous pouvez passer à Pisteur (Chasseur Niveau 3) ou à Traqueur (Chasseur Niveau 1) pour 100 PX, mais pas à Maître de la Chasse (Chasseur Niveau 4).
 
 
-<span id="page-50-0"></span>Avec l'accord du MJ, vous pouvez également sauter des Niveaux de Carrière, fait normalement expliqué par des événements dans le jeu. Par exemple : un Héritier (Noble niveau 1) hérite d'une importante propriété pendant la partie. De ce fait, le MJ lui offre Noble seigneur (Noble niveau 4) comme potentiel changement de Niveau de Carrière. Comme d'habitude, changer pour ce Niveau de Carrière coûte 100 PX si vous avez achevé votre Niveau de Carrière actuel, ou 200 PX si ce n'est pas le cas.
+<span id="page-50-0" data-folio="49"></span>Avec l'accord du MJ, vous pouvez également sauter des Niveaux de Carrière, fait normalement expliqué par des événements dans le jeu. Par exemple : un Héritier (Noble niveau 1) hérite d'une importante propriété pendant la partie. De ce fait, le MJ lui offre Noble seigneur (Noble niveau 4) comme potentiel changement de Niveau de Carrière. Comme d'habitude, changer pour ce Niveau de Carrière coûte 100 PX si vous avez achevé votre Niveau de Carrière actuel, ou 200 PX si ce n'est pas le cas.
 
 ### **Changer pour une nouvelle Carrière**
 

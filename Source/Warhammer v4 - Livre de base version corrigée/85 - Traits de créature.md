@@ -1,6 +1,6 @@
 *Pages PDF 340-355*
 
-# <span id="page-339-0"></span>**TRAITS DE CRÉATURE**
+# <span id="page-339-0" data-folio="338"></span>**TRAITS DE CRÉATURE**
 
 Voici les Traits de créature. Utilisez-les pour créer des PNJ personnalisés.
 

@@ -23,7 +23,7 @@ Pour ceux qui découvrent Warhammer Fantasy, souvenezvous qu'il y a 12 sous dans
 Ne vous souciez pas de tout comprendre des pièces au départ. Un moyen facile de tout garder en tête est de transposer tous les montants en sous et d'y penser dans votre devise locale réelle pour vous faire une idée des chiffres. Donc, vous pouvez penser qu'un sou de cuivre correspond à 1 €, qu'une pistole d'argent vaut aux alentours de 12 € et qu'une couronne vaut 240 €. Ce n'est pas tout à fait exact, mais cela vous aide à comprendre la monnaie, jusqu'à ce que vous y soyez habitué. Donc, si quelqu'un vous offre un travail pour 10 pistoles, pensez à 120 €, qui n'est pas négligeable. Mais si quelqu'un vous offre un travail pour 10 CO, 2400 € est bien plus tentant !
 
 
-# <span id="page-290-0"></span>**Le coût de la vie**
+# <span id="page-290-0" data-folio="289"></span>**Le coût de la vie**
 
 En arpentant l'Empire, les aventuriers remplissent probablement leurs bourses de pièces de ces trois valeurs, pauvres un jour, et incroyablement riches le lendemain. Cependant, en dehors des aventures, la plupart des vies sont centrées sur un seul type de pièces déterminé par le Statut social (voir page 49).
 

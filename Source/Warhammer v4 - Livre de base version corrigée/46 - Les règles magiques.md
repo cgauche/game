@@ -9,7 +9,7 @@ Le Talent Seconde vue (voir page 145) vous permet de percevoir les Vents de la M
 Si vous possédez la Seconde vue, vous pouvez utiliser toutes les Compétences appropriées avec vos sens aethyriques, le plus souvent vos Compétences Intuition, Perception et Pistage. Par exemple, un Magister suivant la piste d'un sorcier en fuite pourrait effectuer un Test de Pistage, en suivant les traces pâles de *Dhar*  sur le chemin du sorcier, plutôt que ses empreintes physiques à proprement parler. De même, un sorcier qui cherche à savoir quelle sorte de Magie s'est accumulée localement pourrait utiliser Perception pour examiner les Vents les plus proches. Tout comme les sens ordinaires, la Seconde vue ne se désactive pas simplement, ce qui peut être source de grand inconfort pour ceux qui ne veulent rien avoir à faire avec les Vents de Magie, mais ne peuvent pas changer ce qu'ils perçoivent. Cela signifie que le MJ peut demander des Tests, ou en effectuer à votre place, pour voir si vous remarquez les subtils détails magiques dans votre environnement immédiat, même si vous ne les recherchez pas.
 
 
-# <span id="page-235-0"></span>**Les Sorts**
+# <span id="page-235-0" data-folio="234"></span>**Les Sorts**
 
 Il y a quatre types de Sorts : les Sorts mineurs, les Sorts d'Arcane, de Domaine et du Chaos. Les Sorts mineurs sont de simples tours qui utilisent des quantités négligeables de Magie. Les Sorts d'Arcane sont des Sorts génériques accessibles à ceux qui étudient n'importe quel Domaine de Magie ou de Magie du Chaos. Les Sorts de Domaine sont ceux que vous pouvez apprendre seulement si vous connaissez ce Domaine ; par exemple, pour apprendre les Sorts du Domaine du Feu, vous avez besoin du Talent Magie des Arcanes (Feu). Les Sorts du Chaos sont ceux pratiqués par ceux qui lui ont vendu leur âme.
 
@@ -125,7 +125,7 @@ Enfin, sauf indication contraire, vous devez toujours être capable de voir – 
 Les Avantages en combat s'appliquent aux Tests d'Incantation, pas aux Tests de Focalisation. Quand vous incantez la magie, vous pouvez aussi gagner un Avantage de la façon suivante : si la cible a déjà été visée par un Sort du même Domaine durant ce Round, gagnez +1 Avantage pendant que vous incantez, car le renforcement de votre Vent aide à focaliser la magie. Voir page 164 pour les règles sur les Avantages.
 
 
-# <span id="page-238-0"></span>**Test de Focalisation**
+# <span id="page-238-0" data-folio="237"></span>**Test de Focalisation**
 
 Certains Sorts magiques nécessitent beaucoup plus de magie que ce que l'on peut normalement trouver à travers le monde. Pour alimenter de tels Sorts, il est possible d'attirer les Vents de la Magie et de les concentrer en une forme beaucoup plus puissante en utilisant la Compétence Focalisation. Concentrer les Vents de la Magie peut s'avérer être une procédure dangereuse, mais c'est le seul moyen sûr de lancer certains Sorts puissants. Pour focaliser la magie pour un Sort, effectuez un Test étendu de Focalisation.
 
@@ -168,7 +168,7 @@ Plusieurs lanceurs de Sorts tentant de dissiper le même Sort effectuent leur la
 – Wilhelm Holswig-Schliestein, Gardien Gris, Conteur et Menteur 
 
 
-<span id="page-239-0"></span>Les malepierres sont si riches en énergie que même un petit fragment de ce matériau offrirait suffisamment de Magie pour alimenter n'importe quel Sort en un rien de temps. Évidemment, le bien-fondé de cet usage, et de la possession d'une malepierre sur vous est discutable.
+<span id="page-239-0" data-folio="238"></span>Les malepierres sont si riches en énergie que même un petit fragment de ce matériau offrirait suffisamment de Magie pour alimenter n'importe quel Sort en un rien de temps. Évidemment, le bien-fondé de cet usage, et de la possession d'une malepierre sur vous est discutable.
 
 Un Sorcier utilisant une malepierre pour Incanter ou Focaliser double son DR pour les Tests appropriés. En plus, Incanter ou Focaliser à l'aide d'une malepierre entraîne une influence corruptrice. Voire page 182 pour plus de détails sur la Corruption, et page 236 pour l'incantation à proximité d'Influences Malfaisantes.
 

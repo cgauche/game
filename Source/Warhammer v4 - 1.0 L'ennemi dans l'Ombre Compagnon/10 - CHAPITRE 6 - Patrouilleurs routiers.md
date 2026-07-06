@@ -17,7 +17,7 @@ Les patrouilleurs routiers ne sont pas tous égaux. Certains sont plus favorisé
 l'effectif doublé, parfois sous le commandement d'un capitaine, mais généralement ils restent plutôt à proximité des routes principales, et des villes et villages. De nombreuses routes, en particulier celles menant au cœur des forêts ou loin des principales voies commerciales, n'ont besoin que d'un patrouilleur routier ou deux, rarement à l'œuvre. À l'inverse, en période de grands troubles, ces patrouilles peuvent être renforcées et tripler, voire quadrupler, leurs effectifs, ce qui fait que certaines ressemblent véritablement à des détachements de l'armée domaniale.
 
 
-### <span id="page-40-0"></span>**Baraquements**
+### <span id="page-40-0" data-folio="40"></span>**Baraquements**
 
 Chaque grande ville de l'Empire possède sa propre garnison permanente de patrouilleurs routiers. Certaines voies particulièrement dangereuses peuvent avoir des patrouilleurs routiers postés dans quelques uns des plus grands villages pour maintenir l'ordre. Dans certains endroits, les patrouilleurs routiers disposent de leurs propres casernes, généralement près des portes de la ville ; dans d'autres, ils partagent des installations avec d'autres soldats de l'armée domaniale, y compris ceux qui sont déployés en tant que gardes ou miliciens. Les casernes comprennent généralement un dortoir, des écuries, une forge et une prison.
 

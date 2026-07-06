@@ -36,7 +36,7 @@ Les Sorts mineurs, ou tours de magie comme les Collèges préfèrent souvent les
 Même si les Collèges de Magie ferment généralement les yeux sur leur utilisation, vu leur peu de puissance, les Répurgateurs ne se montrent pas toujours aussi compréhensifs.
 
 
-# <span id="page-241-0"></span>**Les Sorts mineurs**
+# <span id="page-241-0" data-folio="240"></span>**Les Sorts mineurs**
 
 Pour les rares humains bénis – ou maudits, selon votre point de vue – l'étincelle de la magie se manifeste généralement autour de la puberté, et presque toujours avant vingt-cinq ans. Les premiers signes sont souvent de petits effets, des dons, des tours de magie, ou similaires, indiquant que le Sorcier en herbe devrait probablement être entraîné pour le bien de tous.
 
@@ -238,7 +238,7 @@ Vous purifiez toute l'eau à l'intérieur d'un réceptacle, un flacon d'eau, une
 Vous faites pourrir un volume de matières organiques de la taille approximative d'un poing. Les denrées alimentaires périssent, les vêtements se désagrègent, le cuir se racornit (perdant 1 PA à 1 Localisation), etc. Comme le MJ le décide.
 
 
-### <span id="page-243-0"></span>**Repères**
+### <span id="page-243-0" data-folio="242"></span>**Repères**
 
 **NI :** 0 **Portée :** Vous **Cible :** Vous
 

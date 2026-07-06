@@ -1,6 +1,6 @@
 *Pages PDF 131-154*
 
-# <span id="page-130-0"></span>• LE QUARTIER EST •
+# <span id="page-130-0" data-folio="128"></span>• LE QUARTIER EST •
 
 # **BRUIT ET FUREUR**
 
@@ -17,7 +17,7 @@ Le Quartier Est d'Altdorf est réputé malfamé. La pauvreté, l'insécurité, l
 - E7 Dampfplatz
 
 
-<span id="page-131-0"></span>Une île basse et boueuse est reliée aux Vieux Quais par un seul pont. C'est l'Île aux anguilles, un lieu à la précarité aussi bien géographique qu'économique. Les Poissons y ont une grande autorité, et la LAPIN y est très active. Les agitateurs tentent de convaincre les chefs Poissons de déclarer l'indépendance de l'île. Le pont est facile à bloquer, et les Poissons seraient capables de repousser des bateaux de patrouille avec des missiles. Cet état de siège pourrait être maintenu assez longtemps pour que la LAPIN convainque la foule de soutenir le mouvement. Pour l'instant, les Poissons sont d'accord avec les agitateurs en théorie, mais rechignent à faire une annonce publique.
+<span id="page-131-0" data-folio="129"></span>Une île basse et boueuse est reliée aux Vieux Quais par un seul pont. C'est l'Île aux anguilles, un lieu à la précarité aussi bien géographique qu'économique. Les Poissons y ont une grande autorité, et la LAPIN y est très active. Les agitateurs tentent de convaincre les chefs Poissons de déclarer l'indépendance de l'île. Le pont est facile à bloquer, et les Poissons seraient capables de repousser des bateaux de patrouille avec des missiles. Cet état de siège pourrait être maintenu assez longtemps pour que la LAPIN convainque la foule de soutenir le mouvement. Pour l'instant, les Poissons sont d'accord avec les agitateurs en théorie, mais rechignent à faire une annonce publique.
 
 Pour la Garde, l'île est déjà quasiment un territoire perdu : ils ne s'y rendent jamais. D'après les collecteurs d'accises, l'île est si pauvre que les taxes qu'elle rapporte valent à peine qu'on les collecte. Les autorités de la ville et de l'état débattent sur la marche à suivre. La plupart pensent que l'Empereur devrait traiter les insulaires séditieux avec clémence : leur île est trop pauvre et trop petite pour justifier une réponse armée violente. D'autres, notamment le maréchal Braun, ont très envie de remettre les révolutionnaires à leur place aussi vite et aussi violemment que possible.
 
@@ -122,7 +122,7 @@ Rapide, Vision nocturne
 **Mutations mentales :** Morale douteuse
 
 
-<span id="page-135-0"></span>
+<span id="page-135-0" data-folio="133"></span>
 
 # **REIKERBAHN**
 
@@ -251,7 +251,7 @@ Kohle est vraiment une personne détestable. Si l'une de ses victimes demande au
 **Sorcellerie :** Dégradation, Malédiction de malchance, Menace rampante, Toxine
 
 
-<span id="page-140-0"></span>
+<span id="page-140-0" data-folio="138"></span>
 
 # **SCHLECHT LADEN**
 
@@ -343,7 +343,7 @@ L'intérieur est encore pire. L'air semble saturé de désespoir, et les pièces
 - 0 Le mois dernier, un agent secret du Untersuchung à l'article de la mort s'est caché dans son grenier pour échapper aux adeptes de la Main Pourpre à sa poursuite. Il a caché son rapport derrière une poutre moisie avant de mourir. Son corps pourrit à même le sol, oublié de tous. Ses rapports contiennent des noms très intéressants. La Main Pourpre et le Untersuchung les cherchent désespérément.
 
 
-<span id="page-143-0"></span>**DAMPFPLATZ**
+<span id="page-143-0" data-folio="141"></span>**DAMPFPLATZ**
 
 L'École impériale d'ingénierie est située sur un lieu autrefois appelé Nebelplatz, un terrain bas plongé dans la brume matinale. Maintenant, cet endroit est connu pour ses tas fumants, ses explosions de vapeur et ses tests d'inventions par les étudiants.
 
@@ -389,7 +389,7 @@ Les colombophiles d'Altdorf n'ont pas une relation facile avec l'École impéria
 - 0 Une caisse d'oiseaux était destinée à Akendorf, au sud du col du Feu noir. Les pigeons ont disparu avant d'avoir atteint Averheim. Les responsables du club récompenseront la personne qui les retrouvera. La récompense est étrangement généreuse, et pour cause : les pigeons étaient porteurs d'informations cruciales pour les organisateurs de la LAPIN.
 
 
-<span id="page-145-0"></span>
+<span id="page-145-0" data-folio="143"></span>
 
 # **FLEISCHMARKT**
 
@@ -462,7 +462,7 @@ Si le commerce de Gorrum est profitable, ce n'est pas seulement parce que c'est 
 - 0 L'accès au plus gros abattoir à l'extérieur des royaumes ogres est ce qui pousse Gorrum à rester, mais un jour, son envie de voyager le reprendra et il partira. Avant cela, il compte bien se lancer dans une dernière expédition culinaire, qui implique une visite peu conventionnelle au Zoo d'Altdorf. Il aura peut-être besoin d'aventuriers pour l'aider dans cette entreprise.
 
 
-<span id="page-148-0"></span>
+<span id="page-148-0" data-folio="146"></span>
 
 # **METALLSCHLACKE**
 
@@ -579,7 +579,7 @@ Kazran n'accepte de nouveaux clients que s'ils sont parrainés par un de ses cli
 **Possessions :** arquebuse naine et 24 munitions, veste de cuir, licence de guilde, outils professionnels, armes à feu diverses, 30/5
 
 
-<span id="page-152-0"></span>**SUDWAND**
+<span id="page-152-0" data-folio="150"></span>**SUDWAND**
 
 Le district de Sudwand est exigu, surpeuplé, et en constante agitation. Coincés entre le mur du sud et le Nulnerweg, ses habitants doivent en permanence reconstruire et remodeler leurs habitations pour accommoder la population grandissante. Ils sont peu à quitter le district, et préfèrent généralement agrandir leurs masures par des extensions en bois grossières, ou en ajoutant des étages instables sur leur toit. Le résultat est un bricà-brac de constructions temporaires et de cabanes branlantes. De nouvelles allées exiguës apparaissent et disparaissent chaque mois.
 

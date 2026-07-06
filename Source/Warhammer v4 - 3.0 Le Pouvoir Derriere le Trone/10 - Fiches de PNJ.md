@@ -2,7 +2,7 @@
 
 # ANNEXE I FICHES DE PNJ
 
-<span id="page-116-0"></span>
+<span id="page-116-0" data-folio="114"></span>
 
 ## **LE CHANCELIER : JOSEF SPARSAM**
 
@@ -92,7 +92,7 @@ Tout ce que Sparsam sait de Frau Kenner, c'est qu'elle vient le voir une fois pa
 La majorité de ces PNJ sont incroyablement riches et appartiennent à la haute société. Ils sont aussi suffisamment intelligents pour savoir qu'il vaut mieux éviter de se promener dans Middenheim couverts de bijoux ou avec une bourse bien remplie à la ceinture, si l'on ne veut pas attirer sur soi des attentions malveillantes. Les possessions listées dans ces fiches représentent ce que les PNJ portent généralement sur leur personne à la cour ou lors de leurs apparitions en public (où leur sécurité est assurée), comme au moment du Carnaval, par exemple.
 
 
-<span id="page-118-0"></span>
+<span id="page-118-0" data-folio="116"></span>
 
 ### **LE CHAMPION DU GRAF : DIETER SCHMIEDEHAMMER**
 
@@ -190,7 +190,7 @@ Peu importe le nombre de fois qu'il répète ces phrases, le ton de Dieter ne va
 Si les Personnages peuvent guérir Dieter de cet état d'hypnose (voir *Vos paupières sont lourdes...* p. 87), ils gagneront un allié exerçant une certaine influence. L'un d'entre eux pourrait également vaincre Dieter en combat pour prendre sa place en tant que Champion du Graf (voir p. 38).
 
 
-<span id="page-120-0"></span>
+<span id="page-120-0" data-folio="118"></span>
 
 ### **LE MÉNESTREL DE LA COUR : RALLANE LAFAREL**
 
@@ -277,7 +277,7 @@ Il n'a pas d'objectif purement personnel (à part garder son travail, qu'il aime
 **Les Seigneurs des Lois :** Rallane ne les connaît pas, mais pense qu'il doit s'agir d'hommes compétents ; il n'aimerait probablement pas leur formalisme. Il croit qu'ils sont trop ennuyeux pour être malhonnêtes.
 
 
-<span id="page-122-0"></span>
+<span id="page-122-0" data-folio="120"></span>
 
 | LA «<br>PRINCESSE   | » | : |
 |---------------------|---|---|
@@ -365,7 +365,7 @@ La plupart de ces PNJ ne possèdent pas de Traits de combat dans leurs profils. 
 Vous pouvez cependant, si vous le souhaitez, ajouter aux profils des PNJ toute arme ou armure, ou tout Trait que vous jugez approprié. La plupart des PNJ possèdent des Compétences de combat ; ainsi, si vous souhaitez voir des personnages de la cour tailler en pièces une bande de cultistes ou une horde de skavens, cela est parfaitement faisable.
 
 
-<span id="page-124-0"></span>
+<span id="page-124-0" data-folio="122"></span>
 
 | LE CHAPERON           | : |
 |-----------------------|---|
@@ -413,7 +413,7 @@ Hildegarde est presque toujours avec la Princesse, et leurs appartements dans le
 La fonction principale d'Hildegarde est de compliquer la tâche aux Personnages qui voudraient rencontrer la Princesse, en particulier s'ils désirent s'entretenir seul à seul avec elle. Il faudra faire preuve d'une ingéniosité considérable pour réussir à se débarrasser d'elle pendant un moment : une distraction irrésistible (des grenouilles chanteuses, par exemple), ou la promesse d'une telle distraction pourrait la convaincre de s'éloigner de sa protégée (qui *déteste* les créatures gluantes) pendant une heure.
 
 
-<span id="page-125-0"></span>Hildegarde connaît très bien Middenheim et la famille du Graf, mais son savoir se résume à une accumulation d'anecdotes personnelles. La majorité de ce qu'elle croit savoir repose en réalité sur des ragots peu fiables. Selon la progression des Personnages dans l'aventure, le MJ peut se servir des commérages d'Hildegarde afin d'éveiller chez les Personnages des soupçons utiles ou nuisibles à leur enquête.
+<span id="page-125-0" data-folio="123"></span>Hildegarde connaît très bien Middenheim et la famille du Graf, mais son savoir se résume à une accumulation d'anecdotes personnelles. La majorité de ce qu'elle croit savoir repose en réalité sur des ragots peu fiables. Selon la progression des Personnages dans l'aventure, le MJ peut se servir des commérages d'Hildegarde afin d'éveiller chez les Personnages des soupçons utiles ou nuisibles à leur enquête.
 
 Hildegarde est très protectrice envers la famille Todbringer, et face à une argumentation plausible démontrant que le Graf est en danger, elle pourrait accepter d'aider les Personnages.
 
@@ -464,7 +464,7 @@ Si les Personnages découvrent le secret d'Hildegarde, ils peuvent essayer d'en 
 
 ### **LES MIDDENMARSHALLS**
 
-<span id="page-126-0"></span>Les trois Middenmarshalls forment le haut commandement militaire de la ville, et chacun est responsable d'un aspect particulier de cette charge. Bien que les forces militaires de Middenheim soient placées sous le contrôle direct du graf Boris, les Marshalls se chargent des affaires militaires courantes et ne consultent le Graf que lorsqu'une décision importante doit être prise ou qu'une affaire sort de l'ordinaire.
+<span id="page-126-0" data-folio="124"></span>Les trois Middenmarshalls forment le haut commandement militaire de la ville, et chacun est responsable d'un aspect particulier de cette charge. Bien que les forces militaires de Middenheim soient placées sous le contrôle direct du graf Boris, les Marshalls se chargent des affaires militaires courantes et ne consultent le Graf que lorsqu'une décision importante doit être prise ou qu'une affaire sort de l'ordinaire.
 
 ### **Le Commandant de la Garde Ulrich Schutzmann**
 
@@ -562,7 +562,7 @@ Le devoir des Marshalls est de protéger la ville des menaces militaires. Les me
 
 ### **LES SORCIERS**
 
-<span id="page-129-0"></span>Les sorciers les plus influents de Middenheim sont Albrecht Helseher, le Grand Sorcier de la Grande Guilde des Sorciers de Middenheim, et Janna Eberhauer, sa Suppléante. Ils sont consultés par le graf Boris et par ses autres conseillers sur des sujets pour lesquels la connaissance de la magie peut être importante, en particulier pour tout ce qui concerne la sécurité de la cité.
+<span id="page-129-0" data-folio="127"></span>Les sorciers les plus influents de Middenheim sont Albrecht Helseher, le Grand Sorcier de la Grande Guilde des Sorciers de Middenheim, et Janna Eberhauer, sa Suppléante. Ils sont consultés par le graf Boris et par ses autres conseillers sur des sujets pour lesquels la connaissance de la magie peut être importante, en particulier pour tout ce qui concerne la sécurité de la cité.
 
 #### ALBRECHT HELSEHER - SEIGNEUR SORCIER (OR 2)
 
@@ -589,7 +589,7 @@ Le devoir des Marshalls est de protéger la ville des menaces militaires. Les me
 Helseher est un Seigneur sorcier de l'Ordre Doré. C'est un jeune sexagénaire, grand, émacié et ascétique à la longue et épaisse crinière noire et lustrée, sans aucune touche de gris malgré son âge, et aux yeux perçants d'un bleu incroyablement vif. Ses yeux, et ses longs doigts délicats, mais puissants, sont ses traits les plus distinctifs. Il fait toujours forte impression auprès des gens qu'il rencontre. Quand il ne porte pas la tenue de cérémonie de son ordre, Helseher s'habille humblement, préférant des vêtements fluides, soit noirs, soit gris, qui lui permettent une grande liberté de mouvement. Ses recherches se concentrent davantage sur le domaine de l'abstrait que sur la « *vraie vie* », et il quitte rarement son logement ou ses bureaux au sein de la guilde. Il est donc rarement aperçu par les habitants de la cité, qui voient en lui un homme mystérieux à redouter plutôt qu'à aimer.
 
 
-<span id="page-130-0"></span>
+<span id="page-130-0" data-folio="128"></span>
 
 ### **JANNA EBERHAUER, SUPPLÉANTE DU GRAND SORCIER**
 
@@ -675,7 +675,7 @@ Même si les Personnages deviennent amis avec les sorciers, ceux-ci ne mettront 
 **Les Seigneurs des Lois :** ils apprécient Wasmeier, qui est un confrère, mais ne connaissent ni Ehrlich ni Hoflich. Ils les jugent toutefois responsables de l'impôt-parchemin. Wasmeier leur a dit qu'il s'y était opposé, mais que le vote des deux autres l'avait emporté et qu'il n'osait pas rompre les rangs et protester publiquement.
 
 
-<span id="page-132-0"></span>
+<span id="page-132-0" data-folio="130"></span>
 
 ### **LE GRAND PRÊTRE AR-ULRIC JARRICK VALGEIR**
 
@@ -774,7 +774,7 @@ Les gardes du Palais n'ont aucun souvenir des visiteurs s'étant présentés il 
 Si les Personnages récupèrent les lettres, Ar-Ulric les aidera au cours de leur audience avec le graf Boris, si elle a lieu. D'ici là, il les aidera du mieux qu'il pourra et d'une autre manière : en les soignant et en les faisant rencontrer d'autres PNJ principaux, par exemple. Sa position et ses devoirs ne lui permettent pas de les accompagner en public, et il leur fera jurer de ne rien divulguer en leur faisant prêter un serment sacré dans le Temple d'Ulric.
 
 
-<span id="page-134-0"></span>
+<span id="page-134-0" data-folio="132"></span>
 
 ### **LA FAVORITE : EMMANUELLE SCHLAGEN**
 
@@ -857,7 +857,7 @@ Si Emmanuelle s'enfuit, Ar-Ulric risque de paniquer, le graf Boris ouvrira une e
 **Les Seigneurs des Lois :** elle en a entendu parler par Ar-Ulric, mais ne les connaît pas personnellement. Elle les considère comme des hommes compétents qui font leur travail correctement.
 
 
-<span id="page-136-0"></span>
+<span id="page-136-0" data-folio="134"></span>
 
 ### **LE CHEVALIER ÉTERNEL : SIEGFRIED PRUNKVOLL**
 
@@ -937,7 +937,7 @@ Siegfried n'est absolument pas conscient que la plupart des autres PNJ le trouve
 **Les Seigneurs des Lois :** aucun contact, mais ce sont sûrement des personnes érudites et dignes, bien que livresques et ennuyeuses.
 
 
-<span id="page-138-0"></span>
+<span id="page-138-0" data-folio="136"></span>
 
 #### ALLAVANDREL FANMARIS - MAÎTRE DE LA CHASSE (ARGENT 3)
 
@@ -1023,7 +1023,7 @@ Pendant la semaine du Carnaval, le principal objectif d'Allavandrel est de conse
 **Les Seigneurs des Lois :** il ne les fréquente pas. Il ne les connaît que de réputation, mais imagine qu'ils doivent être plutôt guindés.
 
 
-<span id="page-140-0"></span>
+<span id="page-140-0" data-folio="138"></span>
 
 ### **LE KOMMISSION CONVENOR : GOTTHARD WALLENSTEIN**
 
@@ -1104,7 +1104,7 @@ Comme la plupart des cultes du Chaos, le Sceptre de Jade opère en secret. Il re
 S'il est confronté à la preuve de l'un ou l'autre de ces secrets, Gotthard n'hésitera pas à soudoyer, supplier, flatter, offrir des « faveurs » indicibles et faire tout ce qui est en son pouvoir pour s'en sortir, ou du moins, pour gagner du temps afin d'organiser le meurtre des Personnages. Ces derniers peuvent le mettre à contribution en le sauvant de divers ennemis : cultistes rivaux de Slaanesh, agents de la Main Pourpre, répurgateurs, et même un groupe de skavens à la recherche d'autres malepierres des von Wittgenstein. Il dispose de ressources et de contacts considérables en ville, mais les Personnages feraient mieux d'y réfléchir à deux fois avant de former une alliance avec lui : dès qu'il découvrira que quelqu'un connaît ses secrets, il essaiera invariablement de le faire tuer.
 
 
-<span id="page-142-0"></span>
+<span id="page-142-0" data-folio="140"></span>
 
 |   | LUIGI PAVAROTTI - ARNAQUEUR (ARGENT 2) |    |    |    |    |    |     |     |    |     |    |  |  |  |  |
 |---|----------------------------------------|----|----|----|----|----|-----|-----|----|-----|----|--|--|--|--|
@@ -1193,7 +1193,7 @@ Bien que cette tactique ne les débarrasse pas complètement d'Hildegarde, elle 
 
 ### **LES DAMES DE LA COUR**
 
-<span id="page-144-0"></span>Les Dames de la cour forment un tout, bien qu'elles soient différentes les unes des autres dans leur caractère et leur personnalité. Elles assistent aux audiences de la cour, en apportant une touche d'élégance et de beauté où qu'elles aillent. Elles peuvent également escorter les diplomates en visite à Middenheim et ont mené des missions diplomatiques par le passé. On les voit souvent à la cour et lors de cérémonies officielles, mais il est impossible de s'approcher d'elles en temps normal.
+<span id="page-144-0" data-folio="142"></span>Les Dames de la cour forment un tout, bien qu'elles soient différentes les unes des autres dans leur caractère et leur personnalité. Elles assistent aux audiences de la cour, en apportant une touche d'élégance et de beauté où qu'elles aillent. Elles peuvent également escorter les diplomates en visite à Middenheim et ont mené des missions diplomatiques par le passé. On les voit souvent à la cour et lors de cérémonies officielles, mais il est impossible de s'approcher d'elles en temps normal.
 
 Natasha est une courtisane ambitieuse et de talent. Elle mesure près d'1 m 80, a des cheveux blond platine et des yeux d'un bleu polaire. Elle est d'une beauté glaciale, avec une préférence pour les tons noirs, bleu foncé et argentés dans ses tenues, ce qui contraste énormément avec la couleur de ses cheveux. Elle se comporte de manière très formelle et respectueuse. Natasha voue un culte amoral au pouvoir dans lequel l'argent n'a d'importance qu'en tant que moyen de contrôler les autres. Elle aimerait avoir plus d'influence à la cour que ce qu'elle n'a actuellement, et quitte rarement le Palais.
 
@@ -1316,7 +1316,7 @@ Natasha rêve d'étendre son influence, et pourrait faire semblant d'être plus 
 
 ### **LES SEIGNEURS DES LOIS**
 
-<span id="page-147-0"></span>Les trois Seigneurs des Lois sont nommés par le graf Boris et ont pour responsabilité de traiter toutes les affaires législatives à Middenheim. Ils font attention à rester à l'écart des autres sur le plan personnel, afin de préserver leur impartialité et de désamorcer les accusations d'influence et de corruption. On les croise parfois lors de cérémonies officielles, mais ils sont généralement inapprochables par la majorité de la population. Il est possible d'envoyer à leur bureau des requêtes par écrit concernant des propositions de loi, mais aucune audience ne sera accordée. Ils s'habillent tous de vêtements de qualité, bien que sombres, et portent des broches en filigrane d'or en forme de balances, tout comme leur insigne.
+<span id="page-147-0" data-folio="145"></span>Les trois Seigneurs des Lois sont nommés par le graf Boris et ont pour responsabilité de traiter toutes les affaires législatives à Middenheim. Ils font attention à rester à l'écart des autres sur le plan personnel, afin de préserver leur impartialité et de désamorcer les accusations d'influence et de corruption. On les croise parfois lors de cérémonies officielles, mais ils sont généralement inapprochables par la majorité de la population. Il est possible d'envoyer à leur bureau des requêtes par écrit concernant des propositions de loi, mais aucune audience ne sera accordée. Ils s'habillent tous de vêtements de qualité, bien que sombres, et portent des broches en filigrane d'or en forme de balances, tout comme leur insigne.
 
 ### **Reiner Ehrlich**
 

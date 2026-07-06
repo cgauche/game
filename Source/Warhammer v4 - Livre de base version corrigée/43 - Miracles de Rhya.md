@@ -88,7 +88,7 @@ Vos Prières sincères à Shallya accordent à la cible la force de résister. L
 En posant vos mains sur l'affligé, vous implorez Shallya de le débarrasser d'une corruption récemment contractée. La cible perd 1 Point de Corruption, et peut perdre un Point supplémentaire pour chaque +2 DR obtenue. Cependant, les dieux du Chaos n'aiment pas être ainsi rejetés. Si une tentative pour invoquer le Miracle se traduit par une Maladresse, vous 
 
 
-<span id="page-227-0"></span>et votre cible gagnez 1d10 Points de Corruption, en plus des autres effets. Ce Miracle doit être déclenché dans l'heure qui suit le moment où la cible a gagné un Point de Corruption.
+<span id="page-227-0" data-folio="226"></span>et votre cible gagnez 1d10 Points de Corruption, en plus des autres effets. Ce Miracle doit être déclenché dans l'heure qui suit le moment où la cible a gagné un Point de Corruption.
 
 ### **Larmes de Shallya**
 
@@ -151,7 +151,7 @@ Vous faites appel à Sigmar pour protéger de l'influence du Chaos tous ceux qui
 Vos Prières emplissent vos alliés désignés d'un féroce mépris pour les ennemis de Sigmar. Tous les alliés affectés reçoivent le Trait Psychologique *Haine* à l'égard des peaux-vertes, des morts-vivants et de tout ce qui est associé au Chaos.
 
 
-# <span id="page-228-0"></span>**Miracles de Taal**
+# <span id="page-228-0" data-folio="227"></span>**Miracles de Taal**
 
 # **Bondissant comme un cerf**
 
@@ -252,7 +252,7 @@ Vous faites appel à Ulric pour qu'il manifeste son mépris pour les faibles, le
 Vous rugissez des Prières en hommage à Blitzbeil, la hache assoiffée d'Ulric. Si vous portez une hache, elle est considérée comme Magique, cause + DR Dégâts supplémentaires et toutes les cibles vivantes frappées doivent réussir un Test de **Résistance Intermédiaire (+0)** ou gagner un État *Sonné*. De plus, les cibles frappées perdent tous les États *Hémorragique* alors que leur sang gèle ; de même, les attaques de votre hache ne peuvent pas causer d'État *Hémorragique*.
 
 
-### <span id="page-229-0"></span>**Peau de loup d'hiver**
+### <span id="page-229-0" data-folio="228"></span>**Peau de loup d'hiver**
 
 **Portée :** Contact **Cible :** 1
 

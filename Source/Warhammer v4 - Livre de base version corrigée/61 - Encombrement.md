@@ -1,6 +1,6 @@
 *Pages PDF 295*
 
-# <span id="page-294-0"></span>**ENCOMBREMENT**
+# <span id="page-294-0" data-folio="293"></span>**ENCOMBREMENT**
 
 Même le plus vaillant des nains ne peut porter qu'un nombre limité de Possessions. Pour vous aider à tenir les comptes de ce que vous portez, tous les objets sont indiqués comme pesant un certain nombre de Points d'Encombrement (parfois abrégé en « Enc »), en général entre 0-3, où 0 indique un objet insignifiant facilement transportable, et 3 représente quelque chose de difficile à soulever. Le nombre de Points d'Encombrement que vous pouvez gérer sans pénalité est déterminé par votre Bonus de Force + votre Bonus d'Endurance. Ainsi, les humains moyens commencent à jouer en étant capables de gérer environ 6 Points d'Encombrement.
 

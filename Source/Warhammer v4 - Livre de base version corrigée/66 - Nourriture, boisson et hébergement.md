@@ -28,4 +28,4 @@ Les chambres et les repas de piètre qualité coûtent la moitié des prix list�
 **Chambre d'auberge :** convient à 2 invités. Les grandes chambres coûtent le double du prix et conviennent à 4 invités.
 
 
-<span id="page-304-0"></span>
+<span id="page-304-0" data-folio="303"></span>

@@ -1,6 +1,6 @@
 *Pages PDF 153*
 
-# <span id="page-152-0"></span>ANNEXE IV POINTS D'EXPÉRIENCE • •
+# <span id="page-152-0" data-folio="150"></span>ANNEXE IV POINTS D'EXPÉRIENCE • •
 
 Dans **Le Pouvoir derrière le Trône**, les Personnages sont confrontés à un nombre considérable d'intrigues politiques, de machinations, d'escroqueries et de fourberies en tout genre. Ils auront donc l'occasion, en tant que groupe ou individuellement, de gagner de nombreux Points d'Expérience en déjouant ou en participant à ces manigances. Les Points d'Expérience suivants peuvent être octroyés pendant l'aventure, en général à la fin de chaque session de jeu. Ces récompenses permettent aussi aux Joueurs d'avoir une idée de la progression du scénario. N'hésitez pas à attribuer des Points d'Expérience supplémentaires aux Personnages qui font preuve d'un grand sens de l'observation, proposent de bonnes idées, ou de façon générale, rendent le jeu plus agréable pour tout le monde.
 

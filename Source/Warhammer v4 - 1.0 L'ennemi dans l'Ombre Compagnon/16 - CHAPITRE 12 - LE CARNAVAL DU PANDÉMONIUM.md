@@ -1,6 +1,6 @@
 *Pages PDF 102-129*
 
-## <span id="page-101-0"></span>CHAPITRE 12 : LE CARNAVAL DU PANDÉMONIUM
+## <span id="page-101-0" data-folio="101"></span>CHAPITRE 12 : LE CARNAVAL DU PANDÉMONIUM
 
 Cette courte rencontre sur la route peut être insérée au milieu d'une aventure. La section Accroches d'aventures (page 106) indique comment elle peut être liée à d'autres événements de votre campagne. Vous pourriez simplement l'utiliser comme une rencontre étrange de plus pour inquiéter vos joueurs, ou mettre ici en place certains des PNJ en tant qu'alliés ou ennemis potentiels pour les Personnages. Après tout, un MJ avisé crée autant d'histoires à long terme que d'aventures rapides.
 
@@ -33,7 +33,7 @@ Wolfgang est assisté d'une équipe de huit humains et d'un nain. Benbow est son
 *Le Carnaval du Pandémonium*, précédemment publié dans l'anthologie *Apocrypha 2* (uniquement en anglais) de **WFJDR**, détaille un cirque itinérant qui va intriguer, enthousiasmer et perturber les personnages connaissant peu les routes de l'Empire. Il offre un grand potentiel d'aventures dérivées, et vous pourriez même l'utiliser comme substitut ou extension de la Zoocopée du Docteur Malthusius à Bögenhafen.
 
 
-<span id="page-102-0"></span>Les hommes-bêtes sont très différents, comme on peut s'y attendre. Et l'un d'entre eux n'en est même pas un véritable ! Il y a douze spécimens enfermés dans les chariots sécurisés de Wolfgang. Leur taille varie de l'énorme Urzo, qui fait deux fois la taille d'un homme grand, jusqu'aux minuscules jumeaux : des « hommes-bêtes de poche » identiques qui mesurent à peine 30 cm. La « *Bête impériale* » est la pièce maîtresse de la collection, un homme-bête doté d'une véritable peau dorée ! L'autre spécimen de prix n'est pas un homme-bête à proprement parler : Rassarak est un skaven aveugle au pelage blanc.
+<span id="page-102-0" data-folio="102"></span>Les hommes-bêtes sont très différents, comme on peut s'y attendre. Et l'un d'entre eux n'en est même pas un véritable ! Il y a douze spécimens enfermés dans les chariots sécurisés de Wolfgang. Leur taille varie de l'énorme Urzo, qui fait deux fois la taille d'un homme grand, jusqu'aux minuscules jumeaux : des « hommes-bêtes de poche » identiques qui mesurent à peine 30 cm. La « *Bête impériale* » est la pièce maîtresse de la collection, un homme-bête doté d'une véritable peau dorée ! L'autre spécimen de prix n'est pas un homme-bête à proprement parler : Rassarak est un skaven aveugle au pelage blanc.
 
 Le bon Doktor et son équipe font preuve d'une grande habileté, et d'une grande bravoure, pour contrôler ces spécimens. Ils ont accumulé beaucoup de connaissances pratiques sur les hommesbêtes du Vieux Monde, principalement sur le sujet délicat de leur maintien en vie. Ces données pourraient également constituer une précieuse source d'information lorsqu'il s'agit de tuer des hommes-bêtes.
 
@@ -50,7 +50,7 @@ En déplacement, de minces panneaux de bois et des auvents en toile dissimulent 
 Le véhicule de Wolfgang, tiré par des bœufs, est en tête de la caravane et reste généralement fermé à clé. Lors d'une représentation, il sert de guichet. La voiture renferme son lit et ses possessions, notamment des livres et d'autres objets détaillés ci-dessous. C'est celle à la peinture la plus fraîche, et de loin la plus colorée, avec des lettres rouge vif et vertes. Un coffre en fer, qui contient les fonds du carnaval, une collection hétéroclite de pièces de monnaie de tous les coins du Vieux Monde, est intégré au plancher au-dessus de l'essieu arrière. Habituellement, il n'y a pas plus de 30 CO dans ce coffrefort : une petite fortune, il est vrai, pour beaucoup de ceux qui visitent la Ménagerie.
 
 
-#### <span id="page-103-0"></span>AU NOM DE SIGMAR ! COMMENT CELA-T-IL PU SE PRODUIRE ?
+#### <span id="page-103-0" data-folio="103"></span>AU NOM DE SIGMAR ! COMMENT CELA-T-IL PU SE PRODUIRE ?
 
 Vous vous demandez peut-être, à juste titre, comment un cirque ambulant rempli d'hommes-bêtes peut être toléré dans l'Empire ? Et pourquoi le doktor Hollseher n'a pas été brûlé par les répurgateurs ? La réponse est double.
 
@@ -85,7 +85,7 @@ Le deuxième livre est le *Journal et Notes de Wolfgang sur les hommes-bêtes, l
 Il comprend des dessins anatomiques, des listes d'habitudes alimentaires, et bien d'autres choses encore qui pourraient intéresser n'importe quel érudit ou maître de savoir du Vieux Monde, étudiant non seulement les hommes-bêtes, mais également les effets du Chaos en général. Ce livre peut être acheté environ 40 CO par le bon client.
 
 
-<span id="page-104-0"></span>Le dernier volume est le traité de Wolfgang sur la nature de la malepierre et ses utilisations dans les arts alchimiques et médicaux. Le livre a été imprimé à Parravon en Bretonnie et les nombreuses notes de Wolfgang indiquent qu'il travaille sur une seconde édition. Cette édition annotée pourrait valoir 50 CO auprès d'un averti (et presque certainement hérétique). Tout répurgateur aurait de bonnes raisons de considérer son possesseur comme un très dangereux serviteur du Chaos, car le livre requiert l'utilisation de malepierre dans toutes ses recettes, et renferme des traitements pour chaque maladie commune, réduisant la Difficulté de tout Test nécessaire pour se remettre d'une infection : un Test **Intermédiaire** devient **Facile**, **Facile** devient **Très Facile** et un Test **Très Facile** est automatiquement réussi. Cependant, étant donné l'utilisation de malepierre dans ces remèdes, chaque dose constitue une Exposition mineure à la Corruption. Les notes de Wolfgang soulignent les dangers, mais il n'a jamais trouvé de solution à ces effets secondaires. Un apothicaire ayant ce livre en sa possession peut substituer la malepierre à tout autre ingrédient dans une préparation, mais le processus constitue une Exposition modérée à la Corruption pour l'apothicaire, et toute personne utilisant une dose souffre d'une Exposition mineure. Malgré tout son travail, Wolfgang a été très chanceux jusqu'à présent, car il n'a aucune mutation visible !
+<span id="page-104-0" data-folio="104"></span>Le dernier volume est le traité de Wolfgang sur la nature de la malepierre et ses utilisations dans les arts alchimiques et médicaux. Le livre a été imprimé à Parravon en Bretonnie et les nombreuses notes de Wolfgang indiquent qu'il travaille sur une seconde édition. Cette édition annotée pourrait valoir 50 CO auprès d'un averti (et presque certainement hérétique). Tout répurgateur aurait de bonnes raisons de considérer son possesseur comme un très dangereux serviteur du Chaos, car le livre requiert l'utilisation de malepierre dans toutes ses recettes, et renferme des traitements pour chaque maladie commune, réduisant la Difficulté de tout Test nécessaire pour se remettre d'une infection : un Test **Intermédiaire** devient **Facile**, **Facile** devient **Très Facile** et un Test **Très Facile** est automatiquement réussi. Cependant, étant donné l'utilisation de malepierre dans ces remèdes, chaque dose constitue une Exposition mineure à la Corruption. Les notes de Wolfgang soulignent les dangers, mais il n'a jamais trouvé de solution à ces effets secondaires. Un apothicaire ayant ce livre en sa possession peut substituer la malepierre à tout autre ingrédient dans une préparation, mais le processus constitue une Exposition modérée à la Corruption pour l'apothicaire, et toute personne utilisant une dose souffre d'une Exposition mineure. Malgré tout son travail, Wolfgang a été très chanceux jusqu'à présent, car il n'a aucune mutation visible !
 
 Wolfgang possède de nombreuses licences pour sa ménagerie, accordées par les nobles et les autorités des temples du Vieux Monde. Au fil des ans, il a toujours veillé à respecter la loi à la lettre, et il a conservé tous les documents qui lui permettent de montrer ses hommes-bêtes. En conséquence, il a rarement du mal à persuader une autorité locale de le laisser mettre en place son carnaval.
 
@@ -111,7 +111,7 @@ Bien qu'il puisse être dangereux s'il est réveillé, Urzo est avec Wolfgang de
 **Traits :** Arme (griffes) +4, Armure 3, Cornes +9, Frénésie, Pattes (Chèvre), Taille (Grande)
 
 
-### <span id="page-105-0"></span>**Rassarak (Cage 2)**
+### <span id="page-105-0" data-folio="105"></span>**Rassarak (Cage 2)**
 
 Rassarak est un skaven d'un blanc pur, un rat de clan aveugle depuis sa naissance. Son ouïe, son odorat et ses moustaches sont devenus incroyablement sensibles pour compenser sa cécité. Il peut « observer » les spectateurs avec une précision étrange et alarmante. Son emprisonnement l'irrite, mais il attend patiemment une bonne occasion pour s'échapper.
 
@@ -154,7 +154,7 @@ Les jumeaux occupent environ un tiers de la cage 4, la Bête impériale prend la
 **Traits :** Arme +4, Endurant, Frénésie, Griffe +3, Morsure +2, Rage, Taille (Très petit), Vision nocturne
 
 
-### <span id="page-106-0"></span>**La Bête impériale (Cage 4)**
+### <span id="page-106-0" data-folio="106"></span>**La Bête impériale (Cage 4)**
 
 La Bête impériale est de la taille d'un halfling et arbore une multitude de caractéristiques animales. Mais la plus remarquable est sa fourrure d'or pur ! Wolfgang plaisante de temps en temps en disant que la Bête impériale paiera enfin sa part quand elle sera morte. Il sait que cette créature est une véritable merveille et une attraction trop précieuse pour qu'on la tue pour sa peau. La fourrure elle-même confère une immunité contre certaines formes de menaces telles que l'acide, l'électricité et le feu.
 
@@ -193,7 +193,7 @@ Grâce à ses nombreux voyages, Wolfgang est un excellent coursier pour certains
 Les personnages peuvent être amenés à essayer de mettre la main sur les lettres transportées par Wolfgang. Dans ce cas, une missive particulière désigne tous les officiels de la Guilde de Nuln qui ont reçu des pots-de-vin de l'agent d'un marchand tiléen. Une telle liste pourrait très bien être considérée comme utile aux maîtres de la guilde pour éradiquer la corruption (mondaine), à la surveillance de la ville pour faire de même, et aux autorités impériales pour expulser les étrangers (et surtout les Tiléens) de l'Empire. Bien sûr, certains rivaux commerciaux du marchand veulent aussi la lettre pour atteindre leurs objectifs. Le seul problème est de trouver la lettre à l'insu de Wolfgang.
 
 
-### <span id="page-107-0"></span>**Tout le plaisir de la foire**
+### <span id="page-107-0" data-folio="107"></span>**Tout le plaisir de la foire**
 
 Lors d'une foire, un des hommes-bêtes s'échappe et disparaît dans les caves d'un manoir, entraînant avec lui une jeune femme. Les villageois sont désemparés, et Wolfgang est plutôt contrarié lorsque les habitants décident que cette histoire est de sa faute, et encore plus lorsqu'ils commencent à parler de lyncher ceux qui fréquentent les puissances des ténèbres.
 
@@ -232,7 +232,7 @@ Son spectacle n'est rien de plus qu'un piège. Les noms de ceux qui montrent tro
 Wolfgang n'est jamais à plus d'une demi-journée d'un inquisiteur, et envoie régulièrement des rapports à son « maître » sur les visiteurs de la fête foraine, en particulier ceux qui semblent trop intéressés ou pas assez dégoûtés par sa collection. Wolfgang prend également note de toute personne sortant de l'ordinaire qui visite son exposition, comme un aventurier, un noble ou un maître de guilde. Ces personnes ont un accès ou une influence qui les rend doublement dangereuses en tant qu'agents du Chaos.
 
 
-<span id="page-108-0"></span>Wolfgang, Mamie Haller et Benbow sont tous au courant du véritable objectif du Carnaval du Pandémonium, et tous surveillent leur public pour déceler la souillure du Chaos. La plupart du temps, ils ne voient rien mais, de temps en temps, quelqu'un trahit sa Corruption intérieure. Ils ont tous appris que Rassarak est particulièrement doué pour flairer toute sympathie pour le Chaos. Si le skaven semble fixer quelqu'un dans l'assistance (même s'il est aveugle), il y a de fortes chances que cet individu soit déjà vulnérable et probablement corrompu.
+<span id="page-108-0" data-folio="108"></span>Wolfgang, Mamie Haller et Benbow sont tous au courant du véritable objectif du Carnaval du Pandémonium, et tous surveillent leur public pour déceler la souillure du Chaos. La plupart du temps, ils ne voient rien mais, de temps en temps, quelqu'un trahit sa Corruption intérieure. Ils ont tous appris que Rassarak est particulièrement doué pour flairer toute sympathie pour le Chaos. Si le skaven semble fixer quelqu'un dans l'assistance (même s'il est aveugle), il y a de fortes chances que cet individu soit déjà vulnérable et probablement corrompu.
 
 Il se pourrait bien, alors, que les Personnages soient secrètement dénoncés pour leur intérêt trop vif en ce qui concerne les affaires de Wolfgang, et qu'ils découvrent soudain qu'un répurgateur (ou quelqu'un de plus expérimenté) aimerait bien les plonger dans les flammes purificatrices. Même s'ils ont été très discrets dans leurs rapports avec Wolfgang, celui-ci les aura quand même dénoncés. La raison pour laquelle ils sont soudainement harcelés par des répurgateurs peut être un mystère pour eux, à moins qu'ils ne comprennent que Wolfgang est à blâmer. Indépendamment de toute Corruption réelle, la poursuite par un ennemi implacable peut être un bon moyen de motiver les joueurs à agir.
 

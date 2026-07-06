@@ -1,6 +1,6 @@
 *Pages PDF 292*
 
-# <span id="page-291-0"></span>**FAIRE SON MARCHÉ**
+# <span id="page-291-0" data-folio="290"></span>**FAIRE SON MARCHÉ**
 
 Une fois que vous commencez à jouer, la disponibilité de certaines marchandises les plus rares est limitée. Après tout, il est dur de trouver un clavecin dans un hameau composé de cinq maisons, mais pas si compliqué dans les échoppes et marchés de la capitale impériale, Altdorf.
 
@@ -34,7 +34,7 @@ Si vous échouez à un Test de Disponibilité pour des objets Limités ou Rares,
 Si un objet est en stock, il revient au MJ de déterminer combien de pièces sont disponibles. En règle générale, les villages possèdent un seul objet en stock, les villes possèdent 1d10 objets, et les cités en possèdent autant que le MJ le juge approprié. Ces quantités sont généralement doublées pour les objets communs, et divisées par deux pour les Rares (arrondi à l'entier supérieur).
 
 
-# <span id="page-292-0"></span>**Marchandage**
+# <span id="page-292-0" data-folio="291"></span>**Marchandage**
 
 Les habitants de l'Empire aiment les bonnes affaires, et des foules d'acheteurs enthousiastes se pressent chaque jour sur les places de la ville à la recherche des meilleures offres. Quand vous achetez des biens, il y a deux Compétences principales pour le Test : Évaluation et Marchandage.
 

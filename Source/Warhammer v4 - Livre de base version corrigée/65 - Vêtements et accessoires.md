@@ -1,6 +1,6 @@
 *Pages PDF 304*
 
-# <span id="page-303-0"></span>**VÊTEMENTS ET ACCESSOIRES**
+# <span id="page-303-0" data-folio="302"></span>**VÊTEMENTS ET ACCESSOIRES**
 
 Les styles de vêtements varient beaucoup dans l'Empire. En règle générale, les petites gens portent des tuniques simples avec des braies ou des blouses. Les citoyens de classe moyenne préfèrent les manches bouffantes et les crevés, accompagnés de chapeaux, de bas et de robes. Les élites affichent des capes, des fourrures et des chapeaux tape-à-l'œil, surmontés d'énormes plumes extravagantes – ce n'est jamais trop !
 

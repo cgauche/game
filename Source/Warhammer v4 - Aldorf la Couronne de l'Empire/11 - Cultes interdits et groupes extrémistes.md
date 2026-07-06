@@ -1,6 +1,6 @@
 *Pages PDF 217-221*
 
-# <span id="page-216-0"></span>CULTES INTERDITS ET GROUPES EXTRÉMISTES • •
+# <span id="page-216-0" data-folio="214"></span>CULTES INTERDITS ET GROUPES EXTRÉMISTES • •
 
 Il y a beaucoup de cultes profanes et d'organisations extrémistes à Altdorf. La plupart sont des groupes fractionnés et éphémères : vendus aux répurgateurs aussitôt formés. Cependant, un certain nombre d'entre eux arrivent à échapper à l'attention de ceux qui voudraient les persécuter.
 
@@ -26,7 +26,7 @@ Le Magister Magistri de la Main Pourpre d'Altdorf est un espion accompli de la C
 
 ### UN TIENS VAUT MIEUX QUE DEUX TU L'AURAS
 
-- <span id="page-217-0"></span>0 Une femme mystérieuse approche les Personnages et leur demande s'ils peuvent assister à une réunion brustelliste pour y débusquer d'éventuels cultistes du Chaos. Elle leur promet une généreuse récompense pour tous les hérétiques qu'ils démasqueront. Bien qu'elle prétende vouloir débarrasser la ville de la corruption, elle est en réalité à la recherche de nouvelles recrues.
+- <span id="page-217-0" data-folio="215"></span>0 Une femme mystérieuse approche les Personnages et leur demande s'ils peuvent assister à une réunion brustelliste pour y débusquer d'éventuels cultistes du Chaos. Elle leur promet une généreuse récompense pour tous les hérétiques qu'ils démasqueront. Bien qu'elle prétende vouloir débarrasser la ville de la corruption, elle est en réalité à la recherche de nouvelles recrues.
 - 0 Le chef de l'Ordo Impedimentae d'Altdorf est un Ostlander très décontracté appelé Gustav Proll. Il a élaboré un plan cynique pour lever des fonds à travers une nouvelle cause charitable : L'Équipe d'Altdorfers Patriotes pour Vêtir les Moches et les Mal Habillés. Tout l'argent collecté sert à financer la Main Pourpre.
 
 # **La Couronne Rouge**
@@ -65,7 +65,7 @@ Depuis, c'est comme ça qu'il prend toutes ses décisions, et il trouve l'expér
 - 10. Allez vous recueillir sur la tombe de la Domplatz
 
 
-# <span id="page-218-0"></span>**Le Culte du Cadavre Exquis**
+# <span id="page-218-0" data-folio="216"></span>**Le Culte du Cadavre Exquis**
 
 Ce culte de Slaanesh tire profit de la faiblesse de personnes à la recherche de perfection physique. Il était jadis basé à Bögenhafen, mais le Magus Marlene l'a déplacé à Altdorf quand les Répurgateurs ont commencé à s'approcher dangereusement.
 
@@ -100,7 +100,7 @@ Mais Katarina sent un vent de rébellion monter en elle : elle cherche à suppla
 Le porteur de ce bouton argenté peut infliger +1 État *En flammes* à sa cible rien qu'en la touchant. Si le porteur est en combat, ou si la cible résiste, il doit faire un Test opposé de **Corps à corps (Bagarre)** (généralement opposé à la Compétence Corps à corps ou Esquive de la cible). Le bouton est une source de Corruption Mineure.
 
 
-# <span id="page-219-0"></span>**La Communauté Tinéenne**
+# <span id="page-219-0" data-folio="217"></span>**La Communauté Tinéenne**
 
 La Communauté Tinéenne est un réseau de médecins dont l'objectif affiché est de partager le savoir médical et mettre au jour de nouvelles connaissances. Mais à l'insu de la plupart de ses membres, le Cercle intérieur de la communauté est dédié au culte de Nurgle. Sous la direction d'un Nordlander mystérieux qui signe ses lettres par « Docteur Festus », la Communauté pratique des expériences médicales immorales. Ses membres sont capables de créer des maladies pour pouvoir les guérir plus tard.
 
@@ -132,7 +132,7 @@ Mais le culte se déchire petit à petit. Une faction, appelée la Propension L�
 - 0 Les Personnages intransigeants dans leur combat contre le Chaos et autres forces du mal peuvent se faire courtiser par le Culte du Brasier vengeur. Comment réagiront-ils quand ils découvriront que l'obsession pour la pureté exigée par le culte est beaucoup plus austère (pour ne pas dire tyrannique) qu'ailleurs ?
 
 
-# <span id="page-220-0"></span>**Le Culte de l'Illumination**
+# <span id="page-220-0" data-folio="218"></span>**Le Culte de l'Illumination**
 
 La Grande Union d'Altdorf pour la Promotion de l'Art, de la Réthorique, de la Science, et de l'Entreprise est un club très exclusif pour les personnes de talent. Ses membres comprennent certains des meilleurs artistes, ingénieurs et entrepreneurs de la ville.
 

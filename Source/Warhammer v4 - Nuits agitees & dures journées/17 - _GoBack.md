@@ -1,6 +1,6 @@
 *Pages PDF 97-98*
 
-### <span id="page-96-0"></span>**LES MOULINS**
+### <span id="page-96-0" data-folio="95"></span>**LES MOULINS**
 
 Ce jeu pour deux joueurs, particulièrement apprécié dans le Reikland et dans le Middenland, se joue sur un plateau quadrillé avec 24 intersections appelées « oghams ». Les neuf pièces de chaque joueur se déplacent d'un ogham à l'autre pour former des « moulins » de trois pièces d'affilée, ce qui vous permet de retirer une pièce adverse du jeu. Le jeu continue jusqu'à ce qu'un joueur n'ait plus que deux pièces. De nombreuses variantes de ce jeu existent avec des plateaux plus ou moins grands, et plus ou moins de pièces.
 

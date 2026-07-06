@@ -26,7 +26,7 @@ Les drogues récréatives, bien qu'elles ne soient pas illégales dans la majeur
 **Fleur de lune :** ce tranquillisant est une mousse séchée qui pousse seulement sur les feuilles de la forêt Laurelorn. Les elfes utilisent la Fleur de lune pour traiter la Peste noire, octroyant un bonus de +30 à tous les Tests associés pour résister à la maladie, mais elle n'a aucun effet sur les autres races. Les autres peuvent inhaler les vapeurs en faisant 
 
 
-<span id="page-308-0"></span>bouillir la mousse et s'ils ratent un Test de **Force Mentale Très difficile (-30)** gagnent un État *Inconscient*. Sur un succès, ils reçoivent un bonus de +20 aux Tests de Calme et gagnent 1 État *Exténué*. La Fleur de lune est utilisée comme anesthésique par les médecins réputés et onéreux. Durée : 1d10 + 5 heures.
+<span id="page-308-0" data-folio="307"></span>bouillir la mousse et s'ils ratent un Test de **Force Mentale Très difficile (-30)** gagnent un État *Inconscient*. Sur un succès, ils reçoivent un bonus de +20 aux Tests de Calme et gagnent 1 État *Exténué*. La Fleur de lune est utilisée comme anesthésique par les médecins réputés et onéreux. Durée : 1d10 + 5 heures.
 
 **Lotus noir :** cette plante mortelle pousse dans les jungles des Terres du Sud, et elle est utilisée pour empoisonner les lames. Les victimes qui subissent au moins 1 Point de Blessure d'une lame recouverte de sa sève subissent immédiatement 2 États *Empoisonné*s. Combattu avec un Test de **Résistance Complexe (-10)**.
 

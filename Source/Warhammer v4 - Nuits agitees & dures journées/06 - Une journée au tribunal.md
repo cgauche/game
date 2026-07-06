@@ -1,6 +1,6 @@
 *Pages PDF 25-36*
 
-# <span id="page-24-0"></span>•UNE JOURNÉE AU TRIBUNAL •
+# <span id="page-24-0" data-folio="23"></span>•UNE JOURNÉE AU TRIBUNAL •
 
 Nos héros arrivent à Kemperbad pour le procès de la Gravin. Une journée qu'ils ne sont pas près d'oublier.
 
@@ -18,7 +18,7 @@ La gravin Maria Ulrike et sa suite, qui inclut maintenant les Personnages, ont q
 
 
 
-### <span id="page-26-0"></span>**Une aventure indépendante**
+### <span id="page-26-0" data-folio="25"></span>**Une aventure indépendante**
 
 Si ce scénario est joué seul, les aventuriers peuvent se rendre au tribunal pour diverses raisons. Ils ont peut-être eu des problèmes juridiques à Kemperbad, ou dans l'un des villages ou des villes qui en dépendent, et ils doivent répondre aux accusations ou intenter une action en justice contre un PNJ. Ils peuvent avoir été engagés pour payer la caution d'un prisonnier, par exemple un extravagant jeune noble qui a contrarié le conseil de la ville, bien connu pour son manque d'humour, et doivent l'escorter sain et sauf jusqu'au domaine familial. Ils pourraient être chargés d'une mission moins respectable, comme faire évader un condamné à mort. La loi impériale est complexe, puissante et vaste, et offre d'innombrables façons de rendre difficile la vie d'un groupe d'aventuriers. Une fois que les Personnages sont là, tout ce dont vous avez besoin est de trouver une raison pour que la Gravin, un peu désespérée, décide d'embaucher l'un d'entre eux comme champion.
 
@@ -61,7 +61,7 @@ Le duel judiciaire imminent est le sujet de discussion en ville. Le baron Eberha
 L'affaire devrait normalement être jugée à Nuln, où la fête en question a eu lieu, mais le baron von Dammenblatz est parvenu à faire appel pour déplacer le procès vers un lieu neutre : après tout, Nuln est sous la juridiction de la Grande comtesse Emmanuelle, qui est aussi nommée dans la plainte. Après quelques querelles juridiques, les avocats du plaignant ont réussi à persuader les magistrats de la cité libre de Kemperbad de traiter le cas. En théorie, au moins, ils devraient être impartiaux.
 
 
-<span id="page-27-0"></span>De son côté, la gravin Maria Ulrike a fait appel avec succès pour qu'on autorise son droit historique à un duel judiciaire, contrariant ainsi von Dammenblatz qui espérait convaincre un jury avec des histoires affreuses et de vils ragots sur les évènements s'étant déroulés au cours des célèbres soirées de la comtesse Emmanuelle à Nuln. Les deux nobles et leurs champions sont arrivés à Kemperbad et les préparatifs du procès sont en cours.
+<span id="page-27-0" data-folio="26"></span>De son côté, la gravin Maria Ulrike a fait appel avec succès pour qu'on autorise son droit historique à un duel judiciaire, contrariant ainsi von Dammenblatz qui espérait convaincre un jury avec des histoires affreuses et de vils ragots sur les évènements s'étant déroulés au cours des célèbres soirées de la comtesse Emmanuelle à Nuln. Les deux nobles et leurs champions sont arrivés à Kemperbad et les préparatifs du procès sont en cours.
 
 ### **Résumé des intrigues**
 
@@ -84,7 +84,7 @@ Pendant ses années d'étudiant à l'université de Nuln, Rechtshandler a fait p
 Parmi ceux qui assistent au procès se trouve un répurgateur nommé Matthias Hubkind, qui a entendu de dérangeantes rumeurs sur la Gravin de la part de plusieurs agents de Dammenblatz. D'après le Baron, la Gravin et sa tante, la comtesse électrice Emmanuelle von Liebwitz, ont causé la mort de son père en l'empoisonnant ou par sorcellerie et l'une d'elles, à moins qu'il ne s'agisse des deux, sont certainement de mèche avec les Puissances de la Ruine. Les rumeurs des excès de la Comtesse inquiètent Hubkind depuis longtemps. Il a donc décidé d'observer le procès et de se faire sa propre idée sur la question. S'il trouve l'une des deux suspecte, il enquêtera de près sur elles, ainsi que sur leurs serviteurs.
 
 
-<span id="page-28-0"></span>La dernière fois que Hubkind est venu à Kemperbad, il a fait brûler un présumé cultiste, Samrich Weizen, sur la même place où le jugement par combat va avoir lieu. L'accusation était fausse et l'âme torturée est liée à l'endroit de sa mort, jusqu'à ce que la réapparition de celui qui en est responsable lui donne l'occasion d'obtenir justice…
+<span id="page-28-0" data-folio="27"></span>La dernière fois que Hubkind est venu à Kemperbad, il a fait brûler un présumé cultiste, Samrich Weizen, sur la même place où le jugement par combat va avoir lieu. L'accusation était fausse et l'âme torturée est liée à l'endroit de sa mort, jusqu'à ce que la réapparition de celui qui en est responsable lui donne l'occasion d'obtenir justice…
 
 #### **Intrigue n° 5 – Et pour quelques couronnes de plus**
 
@@ -265,7 +265,7 @@ Une fois de plus, les champions prennent place et le mouchoir blanc est levé. E
 Utilisez les règles normales de combat, mais rappelez-vous que l'affrontement est un spectacle dans ce cas et que beaucoup de temps devrait être consacré à en savourer le déroulement et la réaction de la foule à celui-ci. Finalement, l'un des champions faiblit et s'écroule sur le sol sanglant recouvert de sciure, incapable de se relever : le duel est terminé et le jugement est rendu. Un énorme hourra explose dans le public. Puis quelque chose de terrifiant se produit.
 
 
-<span id="page-33-0"></span>Huit membres du Guet entrent dans l'arène. À moins qu'ils ne soient arrêtés, trois d'entre eux saisissent le champion tombé couvert de sang, pendant qu'un quatrième lui coupe la tête ; quatre autres essayent de faire de même avec le vainqueur. Alors que le sang se répand sur le sol, les agresseurs hurlent «Du sang pour le Dieu du Sang ! ». Les Personnages réussissant un Test de **Savoir (Théologie) Intermédiaire (+0)** reconnaissent cela comme le cri de guerre impie de Khorne, le dieu du sang. Un succès **Impressionnant (+4)** ou mieux permet également aux PJ de savoir que huit est le nombre sacré de Khorne.
+<span id="page-33-0" data-folio="32"></span>Huit membres du Guet entrent dans l'arène. À moins qu'ils ne soient arrêtés, trois d'entre eux saisissent le champion tombé couvert de sang, pendant qu'un quatrième lui coupe la tête ; quatre autres essayent de faire de même avec le vainqueur. Alors que le sang se répand sur le sol, les agresseurs hurlent «Du sang pour le Dieu du Sang ! ». Les Personnages réussissant un Test de **Savoir (Théologie) Intermédiaire (+0)** reconnaissent cela comme le cri de guerre impie de Khorne, le dieu du sang. Un succès **Impressionnant (+4)** ou mieux permet également aux PJ de savoir que huit est le nombre sacré de Khorne.
 
 Puis ceux des gardes qui ne sont pas engagés en combat tirent une dague et se tranchent la gorge, projetant du sang partout. Pendant que la foule regarde, bouche bée d'horreur, le sang semble se rassembler, ondule puis se dresse vers le ciel en formant des silhouettes lisses. Les soldats du Guet sont les survivants d'un culte du chaos récemment éliminé par les autorités (*Intrigue n° 6*) et leur sacrifice est un acte de vengeance qui invoque des Sanguinaires, de féroces démons de Khorne. Leur nombre exact est à votre convenance : il devrait y en avoir suffisamment pour que les Personnages puissent les vaincre après un combat difficile (avec l'aide de tous ceux qu'ils pourront rallier à leurs côtés). Les démons attaquent tous ceux qui sont proches, car ils se moquent de savoir d'où coule le sang, tant qu'il coule.
 
@@ -324,7 +324,7 @@ Utilisez les statistiques des pages 16-18 pour la Gravin et sa suite.
 Proche de la quarantaine, Eberhardt a été en colère toute sa vie. Bien que les années dans l'armée régulière l'aient laissé relativement en forme, il n'a jamais réellement été un combattant, préférant les polémiques féroces aux solutions physiques. D'ailleurs, il débat souvent. Comme la majorité de la noblesse du Wissenland, son accent est urbain, mais un peu monotone.
 
 
-#### <span id="page-34-0"></span>EBERHARDT VON DAMMENBLATZ, NOBLE SEIGNEUR (OR 7)
+#### <span id="page-34-0" data-folio="33"></span>EBERHARDT VON DAMMENBLATZ, NOBLE SEIGNEUR (OR 7)
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -379,7 +379,7 @@ Un groupe de rançonneurs employés par Alfonzo Kappan planifie une évasion exp
 Les statistiques pour les cultistes secrets de l'*Ordo Ultima* se trouvent à la page 20.
 
 
-### <span id="page-35-0"></span>**Le répurgateur et sa victime**
+### <span id="page-35-0" data-folio="34"></span>**Le répurgateur et sa victime**
 
 ### **Matthias Hubkind**
 

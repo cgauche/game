@@ -19,7 +19,7 @@ Les ogres finissent souvent par être attirés par la carrière de mercenaire, c
 Ceux qui deviennent des bandits ou des pillards, s'en tenant à un mode de vie qui prévaut sur leurs terres, finissent par s'attirer les foudres des autorités des différents pays du Vieux Monde qui les pourchassent dans le seul but de les éliminer. Des bandes de mercenaires ogres se spécialisent même dans la traque (et la consommation) de leurs propres congénères. Cela étant, certains ogres mercenaires n'hésitent pas à se lancer dans des pillages s'ils pensent pouvoir s'en tirer. Bénéficier d'« *un combat contre un repas* » est une tentation à laquelle peu d'entre eux résistent si la mission semble faisable. Cependant, ils sont assez perspicaces quant à la manière dont les autorités locales sont susceptibles de réagir, c'est pourquoi ils planifient leurs activités en conséquence.
 
 
-<span id="page-8-0"></span>Les contrats des mercenaires sont négociés et leur durée est généralement limitée, ce qui permet aux ogres de passer à autre chose s'ils en ressentent le besoin. Les mercenaires itinérants trouveront presque toujours un nouveau combat à mener, alors que les sédentaires n'auront pas l'occasion de se battre aussi souvent. L'une des principales raisons pour lesquelles les ogres sont prêts à travailler pour les peaux-vertes est leur propension à se battre constamment. Mais ils s'en méfient tout de même, car ils ne respectent pas toujours leur part du marché. Dans le langage des ogres, les orcs et les gobelins ne *« savent pas toujours bien servir à table »*.
+<span id="page-8-0" data-folio="7"></span>Les contrats des mercenaires sont négociés et leur durée est généralement limitée, ce qui permet aux ogres de passer à autre chose s'ils en ressentent le besoin. Les mercenaires itinérants trouveront presque toujours un nouveau combat à mener, alors que les sédentaires n'auront pas l'occasion de se battre aussi souvent. L'une des principales raisons pour lesquelles les ogres sont prêts à travailler pour les peaux-vertes est leur propension à se battre constamment. Mais ils s'en méfient tout de même, car ils ne respectent pas toujours leur part du marché. Dans le langage des ogres, les orcs et les gobelins ne *« savent pas toujours bien servir à table »*.
 
 Dans l'Empire, les mercenaires ogres sont souvent connus sous le nom de Mangeurs d'hommes, d'après un mercenaire tristement célèbre du même nom. Les Mangeurs d'hommes voyagent généralement seuls ou en petits groupes. Il leur est ainsi possible de subvenir à leurs besoins plus facilement, car trouver de la nourriture pour une « poignée de gaillards » s'avère plus simple que pour une grande tribu. De plus, ils ont appris il y a fort longtemps que les minus deviennent terriblement nerveux lorsque trop d'ogres se rassemblent au même endroit. Et qui dit clients craintifs dit pas de travail, ce qui n'arrange pas leurs affaires et mène à des assiettes vides : un vrai désastre pour un ogre digne de ce nom.
 
@@ -32,7 +32,7 @@ Cette capacité d'adaptation s'avère très utile lorsqu'il s'agit de trouver du
 Les autres espèces du Vieux Monde ne comprennent pas à quel point l'obsession des ogres pour la nourriture est intense. Elle régit leur vie et détermine leur rythme de sommeil. Alors même qu'un ogre est en train de finir son repas, il pense déjà au prochain et peut devenir anxieux quant aux détails de son acquisition. Les ogres ne naissent pas seulement avec une petite fringale : ils sont littéralement affamés. Ce n'est pas un hasard si le dieu ogre, la Gueule, est un estomac sans fond. Les mercenaires ogres les plus malins apprennent rapidement à minimiser l'expression de leur faim en présence de minus, car ils se rendent bien compte que cette attitude rend tout le monde nerveux. Ils précisent alors qu'ils ont juste *« un petit creux »*. Bien sûr, il leur arrive de vouloir mettre délibérément les minus mal à l'aise, une tactique de négociation que de nombreux ogres utilisent à leur avantage.
 
 
-## <span id="page-9-0"></span>**UNE INDEMNISATION SAVOUREUSE**
+## <span id="page-9-0" data-folio="8"></span>**UNE INDEMNISATION SAVOUREUSE**
 
 Ce n'est un secret pour personne : entretenir des mercenaires ogres coûte cher. Ces derniers demandent souvent des salaires élevés et des repas réguliers, ainsi que le droit d'obtenir des « rations de combat » après la bataille. Mais il arrive que certaines de ces « rations » ne soient pas tout à fait mortes lorsque les ogres commencent leur moisson. Les soldats expérimentés savent qu'il vaut mieux achever leurs amis avant que les ogres ne viennent les chercher.
 
@@ -57,7 +57,7 @@ Les prix indiqués ne comprennent pas la nourriture, qui représente un supplém
 | Garde du corps | 8/–          | 1 CO 6/–        | 8 CO              | Peut détecter la nourriture empoisonnée, mais a<br>tendance à finir le plat          |  |
 
 
-## <span id="page-10-0"></span>**S'en mettre plein les joues**
+## <span id="page-10-0" data-folio="9"></span>**S'en mettre plein les joues**
 
 Les commandants inexpérimentés trouvent que les mercenaires ogres sont, au mieux, très difficiles à gérer. Ces derniers ont tendance à se quereller, se montrent particulièrement paresseux, aiment s'attirer des ennuis, menacer les autres et déclencher des bagarres, entre autres. Aussi grand et menaçant que puisse être un minus, il lui est pratiquement impossible d'intimider un ogre pour le forcer à faire quelque chose qui ne l'intéresse pas. À moins qu'ils ne viennent de vivre une ou plusieurs batailles sanglantes et qu'ils ne soient (temporairement) en train de se délecter de leurs « rations de combat », les ogres n'hésitent pas à demander des provisions supplémentaires. Pour y remédier, de nombreux commandants engagent un capitaine ogre accompagné de ses troupes : de cette manière, ils ne traitent qu'avec un seul ogre à la fois, en espérant pouvoir préserver leurs propres soldats. Les officiers les plus avisés apprennent également à tourner les « priorités » de leurs mercenaires ogres à leur avantage. Par exemple, les stratèges myrmidiens emploient des ruses qui consistent à suggérer qu'un régiment ennemi pourrait se préparer à attaquer les chariots de ravitaillement. Ainsi, les ogres font presque invariablement tout leur possible pour chercher l'ennemi en question dans le but de l'anéantir.
 
@@ -135,7 +135,7 @@ Un mercenaire à la retraite convainc un Graissus Dents d'Or, sceptique, que l'o
 Des nuées de skavens font irruption depuis les égouts de Nuln. Des héros improbables et plusieurs mercenaires, dont la bande du célèbre capitaine ogre Hrothyogg, protègent la ville d'une ruine totale. Faisant fi des exigences habituelles, Hrothyogg accepte une bonne quantité de poudre noire de Nuln en guise de paiement.
 
 
-## <span id="page-12-0"></span>**De couteaux et d'épées**
+## <span id="page-12-0" data-folio="11"></span>**De couteaux et d'épées**
 
 L'équipement des ogres est généralement aussi démesuré qu'eux. Une épée humaine ressemble davantage à une dague entre leurs mains de géants et ils sont presque incapables de manier une lame taillée pour un halfling. Les mercenaires ogres sont fréquemment très bien armés et beaucoup portent un véritable un arsenal létal. Ils ont tendance à mettre leur équipement à rude épreuve, s'attachant rarement à une pièce en particulier. En raison de leur manque d'intérêt pour l'artisanat, ils ont tendance à négliger l'entretien de leur matériel. Ils utilisent une arme jusqu'à ce qu'elle se brise, puis s'en débarrassent sans y accorder la moindre importance.
 
@@ -154,7 +154,7 @@ I
 
 ## **L'art sacré du combat de gladiateurs**
 
-<span id="page-13-0"></span>I
+<span id="page-13-0" data-folio="12"></span>I
 
 Seule une coutume ogre est parvenue au-delà des Montagnes des Larmes : le combat de gladiateurs. Avant la naissance de l'Empire, lorsque les humains sont entrés en contact avec les ogres, ils pratiquaient déjà des sports violents, mais il s'agissait seulement de combats impliquant des animaux ou de l'appâtage des ours. Les ogres avaient alors développé le combat de gladiateurs comme un moyen de décider qui était le plus fort des deux opposants destinés au commandement d'une tribu. Cette activité leur permettait également de vénérer leur divinité des gladiateurs, la Gueule.
 
@@ -185,7 +185,7 @@ La vallée d'Osséine est ouverte à tous les ogres de passage, pour autant qu'i
 Les commandants, ou toute autre personne ayant de l'argent à dépenser, qui souhaitent faire parvenir une offre aux habitants de la vallée d'Osséine peuvent s'adresser à Edelard Bénibière (dit « Ed »), le halfling qui gère le Sanglier de Cuivre, une taverne fréquentée par les mercenaires ogres à Nuln.
 
 
-#### <span id="page-14-0"></span>**La Taverne des Dents Rouges**
+#### <span id="page-14-0" data-folio="13"></span>**La Taverne des Dents Rouges**
 
 Les villes de l'Empire ne manquent pas de tavernes, mais peu de ces établissements exigus sont en mesure d'accueillir des ogres, et encore moins de les sustenter. La taverne des Dents Rouges a été construite par son propriétaire, Ruggero Oeildacier, dans un style tiléen, avec plusieurs grandes salles ouvertes contenant des boxes massifs, mais relativement peu de tables. Cet ancien mercenaire était jadis un gladiateur prospère. Au cours de ses deux premières carrières, il a combattu aux côtés des ogres et, à quelques occasions mémorables, contre eux. Il sait donc à quel point ils peuvent se montrer généreux lorsqu'il s'agit d'acheter à boire et à manger.
 
@@ -245,4 +245,4 @@ Ogresse tout à fait quelconque, Ugrik s'est fait connaître après avoir attaqu
 **Traits :** À Distance (Arc +8), Arme (Massue +9), Armure 3 **Possessions :** arme simple (massue à tête de boulet de canon), pansière, arme simple (massue), arc avec 12 flèches, 2d10 sous de cuivre
 
 
-## <span id="page-16-0"></span>VOUS REPRENDREZ BIEN UN MORCEAU ? PERSONNAGES JOUEURS OGRES • •
+## <span id="page-16-0" data-folio="15"></span>VOUS REPRENDREZ BIEN UN MORCEAU ? PERSONNAGES JOUEURS OGRES • •

@@ -60,7 +60,7 @@ Milieu, *Ban-Ulric* (« Aimé d'Ulric »)
 
 bureaucratie
 
-<span id="page-8-0"></span>I
+<span id="page-8-0" data-folio="8"></span>I
 
 **Capitale :** Middenheim
 
@@ -106,7 +106,7 @@ Puis, par une nuit d'été il y a cinq ans de cela, la population de Schlaghüge
 
 ## **MIDDENLAND**
 
-<span id="page-10-0"></span>I
+<span id="page-10-0" data-folio="10"></span>I
 
 **Nom officiel :** le Grand duché du Middenland
 
@@ -149,7 +149,7 @@ Deux palais se dressent au sommet de la cité : le Drakschloss et le Palais de V
 Le Palais de Verre appartient au grand duc Leopold von Bildhofen, le prince de Carroburg. Il s'agit d'une famille ancienne, dont les origines remontent à la noblesse de la Drakwald, et dont l'empereur Magnus lui-même est un parent. Bien que le Grand duc laisse Carroburg à son jeune frère et héritier, Siegfried, et vive dans le domaine familial à Bildhofen, il y revient souvent lors de grandes occasions. Leopold offre des cérémonies au palais pour rappeler à tous la prétention au trône impérial de sa famille, une bravade que l'on n'ignore pas à Altdorf.
 
 
-## <span id="page-11-0"></span>**NULN**
+## <span id="page-11-0" data-folio="11"></span>**NULN**
 
 **Nom officiel :** le Grand comté de Nuln
 
@@ -225,7 +225,7 @@ Le Collège d'Ingénierie est moins prestigieux, ce qui ne va pas sans causer un
 Après les événements de *Mort sur le Reik*, et en supposant qu'elle ait survécu, la naine ingénieur Aynjulls Isembart (**Mort sur le Reik - Campagne** p. 36) a pris ses fonctions en tant que professeur au Collège d'Ingénierie. Souhaitant laisser derrière elle les événements de la tour à signaux, elle s'est mise en tête de prouver la valeur du Collège, et a défié l'École impériale d'Artillerie dans une course de chars à vapeur de Nuln à Altdorf. Elle cherche l'aide d'un groupe de mercenaires pour protéger le nouveau char à vapeur expérimental du Collège, surnommé le Vieux Rouge par ses concepteurs, de tout sabotage pendant la course. Bien que l'École impériale d'Artillerie ne prenne clairement pas la course aussi au sérieux qu'Aynjulls et n'ait aucunement l'intention de saboter le Vieux Rouge, cela ne signifie pas pour autant que personne d'autre n'envisage de le dérober pendant la course.
 
 
-## <span id="page-13-0"></span>**OSTLAND**
+## <span id="page-13-0" data-folio="13"></span>**OSTLAND**
 
 **Nom officiel :** la Grande Principauté de l'Ostland
 
@@ -270,7 +270,7 @@ La Marche du Nord, que l'on appelle souvent simplement « La Marche », est situ
 
 ## **REIKLAND**
 
-<span id="page-14-0"></span>I
+<span id="page-14-0" data-folio="14"></span>I
 
 **Nom officiel :** la Grande Principauté du Reikland
 
@@ -317,7 +317,7 @@ Les sourires amicaux des Reiklanders cachent toutefois une certaine inquiétude 
 Couvent et temple shallyen installé dans les collines du Vorbergland à l'ouest de Bögenhafen, Sainte Ulrika a été nommée en l'honneur d'une grande guerrière qui a renoncé à la violence pour défaire un Prince démon de Nurgle, et elle a été fondée sur le site de sa victoire légendaire. C'est aujourd'hui un lieu de pèlerinage où des visiteurs du monde entier, des puissants aux plus modestes, se rendent pour prier et implorer une guérison miraculeuse. Les jours saints, les sœurs font défiler les ossements et les armes émoussées de la sainte devant les fidèles, une cérémonie généralement suivie de guérisons publiques. Kohlkopf, un village local, fournit la nourriture et d'autres services à l'abbaye, de même que l'auberge des Trois Colombes, une grande auberge-relais pour diligences destinée aux pèlerins nantis.
 
 
-## <span id="page-15-0"></span>**STIRLAND**
+## <span id="page-15-0" data-folio="15"></span>**STIRLAND**
 
 **Nom officiel :** le Grand Comté du Stirland
 
@@ -362,7 +362,7 @@ C'est dans l'est du Stirland, dans le redouté comté de la Sylvanie, que se tro
 Le représentant de la Sylvanie possède un domaine, la « Maison Noire », dans la capitale de la province, Wurtbad. Le représentant de l'est est rarement présent à la cour, et beaucoup murmurent que la malédiction du vampirisme afflige le domaine.
 
 
-## <span id="page-16-0"></span>**SUDENLAND**
+## <span id="page-16-0" data-folio="16"></span>**SUDENLAND**
 
 **Nom officiel :** la Grande Baronnie du Sudenland
 
@@ -424,7 +424,7 @@ Loin à l'ouest du Sudenland, dans les profondeurs des contreforts, à l'endroit
 L'autre est le tunnel Alimento, une grande caverne et un système fluvial à la source de la rivière Söll dans l'Empire et de la rivière Cristallo en Tilée, qui mène à Miragliano. Sur plus de 150 milles, les marchands voyagent par bateau d'un pays à l'autre sous les montagnes, s'arrêtant pour se reposer et se réapprovisionner dans la ville caverne miraglianaise d'« Alimento ». Les deux itinéraires ont fait la prospérité de Kreutzhofen et génèrent des profits pour la Grande Baronne, en lui permettant de courtcircuiter les maisons marchandes de Marienburg et de Nuln. Cet état de fait a suscité le mécontentement de plusieurs de ces maisons, et elles ne seraient pas opposées à ce que quelque chose vienne perturber, ou annihiler, le commerce le long de ces routes.
 
 
-## <span id="page-18-0"></span>**TALABECLAND**
+## <span id="page-18-0" data-folio="18"></span>**TALABECLAND**
 
 **Nom officiel :** le Grand duché du Talabecland
 
@@ -470,7 +470,7 @@ Les habitants d'Ostermark sont généralement robustes, avec des cheveux bruns e
 Yanick Bedard - pumpkinhead83@hotmail.fr
 
 
-## <span id="page-20-0"></span>**TALABHEIM**
+## <span id="page-20-0" data-folio="20"></span>**TALABHEIM**
 
 **Nom officiel :** le Grand duché de Talabheim
 

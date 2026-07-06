@@ -1,6 +1,6 @@
 *Pages PDF 93-96*
 
-# <span id="page-92-0"></span>• JEUX DE TAVERNE •
+# <span id="page-92-0" data-folio="91"></span>• JEUX DE TAVERNE •
 
 Pour la plupart des gens de l'Empire, les tavernes, auberges et brasseries sont au centre de la vie sociale. Ces établissements ne sont pas seulement des lieux où l'on trouve à manger et à boire : ils représentent le cœur battant d'une localité, où le peuple se rassemble pour chanter, danser, se rencontrer, jouer, pratiquer des sports d'équipe, ou tout simplement, souffler un peu. Cette annexe passe en revue certains des jeux de taverne les plus populaires (et d'autres plus obscurs) parmi ceux pratiqués dans le Vieux Monde, accompagnés de règles pour que vous puissiez, si vous le désirez, les ajouter à vos parties de **WFJDR**.
 
@@ -25,7 +25,7 @@ L'*Alvatafl* est un jeu de plateau nordique joué sur une grille carrée de 15×
 **Jeu :** à chaque tour, faites un Test d'**Intelligence** ou de **Savoir (Art de la Guerre) Intermédiaire (+0)** ; ajoutez ensuite votre Bonus d'Intelligence au nombre de DR. Le total obtenu par le joueur elfe indique combien de pièces naines sont prises ce tour. Le total obtenu par le joueur nain est divisé par quatre (arrondi au supérieur) pour indiquer combien de pièces elfes sont prises ce tour. Si vous obtenez un Critique, vous remportez automatiquement la partie, pour peu qu'une des conditions suivantes soit remplie : vous êtes le joueur nain et le nombre obtenu sur le dé des unités est égal ou inférieur au nombre de pièces elfes que vous avez prises ; vous êtes le joueur elfe et le nombre obtenu sur le dé des unités, multiplié 
 
 
-<span id="page-93-0"></span>par quatre (c'est-à-dire qu'un jet réussi de 33 compterait pour 12, puisque 4 × 3 = 12) est égal ou inférieur au nombre de pièces naines que vous avez prises. Sinon, le premier camp à prendre plus de la moitié des pièces de son adversaire l'emporte. Si les deux équipes atteignent la condition gagnante dans le même tour, la partie se solde par un match nul.
+<span id="page-93-0" data-folio="92"></span>par quatre (c'est-à-dire qu'un jet réussi de 33 compterait pour 12, puisque 4 × 3 = 12) est égal ou inférieur au nombre de pièces naines que vous avez prises. Sinon, le premier camp à prendre plus de la moitié des pièces de son adversaire l'emporte. Si les deux équipes atteignent la condition gagnante dans le même tour, la partie se solde par un match nul.
 
 ### **LE BRAS DE FER**
 
@@ -63,7 +63,7 @@ La composition des jeux de cartes varie d'un endroit à l'autre du Vieux Monde. 
 Comparez ce jeu au *Trionki* de Wissen, lequel compte 42 cartes, et que l'on ne trouve pratiquement qu'à Nuln et dans ses environs immédiats. Il présente lui aussi quatre enseignes (griffons, cœurs, hiboux et épées), mais ne comporte que cinq cartes à points, numérotées de 6 à 10, et trois figures : Chevalier, Baronne et Comtesse. La suite d'atouts ne compte que huit cartes numérotées, portant chacune un nom : 1 : Söll, 2 : Dyrath, 3 : Sigmar, 4 : Shallya, 5 : Morr, 6 : Taal, 7 : Verena, 8 : Ulric. Ce jeu contient également « les Jumeaux », deux cartes sans valeur, l'une montrant Ranald sous les traits d'un homme, l'autre montrant Ranald sous les traits d'une femme.
 
 
-## <span id="page-94-0"></span>**L'ARÈNE**
+## <span id="page-94-0" data-folio="93"></span>**L'ARÈNE**
 
 Habituellement pratiqué en extérieur, où il y a plus de place pour les longs lancers, l'Arène est un jeu qui consiste à lancer des anneaux à une certaine distance pour encercler des bâtons enfoncés dans la tête d'un taureau, ou sur ses cornes. L'Arène est très populaire en Ostland, en Ostermark, et jusqu'au Stirland et au Mootland, même si on la pratique communément dans les tavernes de tout l'Empire. Au Nordland, il est courant de voir des populations rurales jouant à l'Arène avec une tête d'homme-bête coupée, tradition considérée comme quelque peu hérétique dans la plupart des provinces de l'Empire.
 
@@ -90,7 +90,7 @@ Ajoutant à la confusion générale, tout dans le jeu porte un nom différent : 
 **Jeu :** à chaque tour de Cerevis, chaque joueur effectue un Test combiné d'**Initiative** et de **Pari Accessible (+20)**. Le joueur qui a obtenu le moins de DR à son Test de **Pari** perd le tour, et doit marquer une chouette. En cas d'échec du Test d'Initiative, le joueur utilise accidentellement le nom correct d'une des cartes et doit prendre une grosse gorgée. Pour chaque 3 Tests d'Initiative auxquels vous échouez et pour chaque 2 chouettes que vous effacez, faites un Test de **Résistance à l'alcool Intermédiaire (+0)**. Les résultats de ce Test et son impact se trouvent sur le Tableau Ivre dans le Livre de Règles page 129.
 
 
-### <span id="page-95-0"></span>**LES FLÉCHETTES**
+### <span id="page-95-0" data-folio="94"></span>**LES FLÉCHETTES**
 
 L'éternel favori des tavernes au bord de l'eau et des soldats, le jeu de fléchettes consiste à lancer de petits projectiles sur une cible appelée butte, généralement taillée dans la section transversale d'un arbre, et divisée en segments, chacun d'eux valant un nombre de points différent. Bien que cela soit vivement mis en cause par la plupart des gens de l'Empire, les historiens pensent que ce jeu a été inventé par les paysans de Bretonnie.
 

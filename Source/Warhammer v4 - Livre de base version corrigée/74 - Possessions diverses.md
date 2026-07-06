@@ -47,7 +47,7 @@ Si les Joueurs souhaitent acheter quelque chose qui n'est pas inclus dans cette 
 **Instrument :** divers instruments sont inclus dans cette catégorie. Le prix et l'encombrement standard correspondent aux instruments de taille moyenne (exemple, mandoline, corne de cocher, petit tambour). Les petits instruments coûtent la moitié du prix et compte pour 0 Point d'Encombrement (par exemple, pipeau, flûte à bec, tambourin). Les plus grands 
 
 
-<span id="page-310-0"></span>instruments coûtent le double du prix et comptent pour 2 Points d'Encombrement (par exemple harpe, luth, grand tambour).
+<span id="page-310-0" data-folio="309"></span>instruments coûtent le double du prix et comptent pour 2 Points d'Encombrement (par exemple harpe, luth, grand tambour).
 
 **Lampe à huile :** contient assez de combustible pour 4 heures d'utilisation standard, ou 8 heures avec une petite flamme équivalente à une bougie.
 

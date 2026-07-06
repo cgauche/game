@@ -1,6 +1,6 @@
 *Pages PDF 212-216*
 
-# <span id="page-211-0"></span>• L'ESPIONNAGE À ALTDORF •
+# <span id="page-211-0" data-folio="209"></span>• L'ESPIONNAGE À ALTDORF •
 
 À Altdorf, des personnes puissantes prennent des décisions qui peuvent mettre à genoux des provinces entières, rompre de très anciennes alliances, et vaincre des armées du jour au lendemain. Il n'est pas étonnant que la cité soit un nid d'espions : on y pratique des activités clandestines, allant du sabotage au trafic d'intérêt, en passant par l'espionnage industriel.
 
@@ -179,7 +179,7 @@ Les religions de l'Empire gardent un œil sur ce qu'il se passe à Altdorf. Cert
 Les autres cultes s'intéressent à ces secrets, mais ne sont pas très actifs en espionnage. Les fidèles de Ranald adorent les secrets et fréquentent parfois des espions. Les prêtres de Morr reçoivent des renseignements de la Chambre noire et du Untersuchung sur la nécromancie.
 
 
-# <span id="page-214-0"></span>**ESPIONS ÉTRANGERS À ALTDORF**
+# <span id="page-214-0" data-folio="212"></span>**ESPIONS ÉTRANGERS À ALTDORF**
 
 L'Empire est bien évidemment la nation la plus puissante du Vieux Monde. Pour défendre leurs intérêts et tirer profit des forces de l'Empire, les autres nations envoient leurs agents à Altdorf.
 

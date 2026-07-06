@@ -1,6 +1,6 @@
 *Pages PDF 45-56*
 
-# <span id="page-44-0"></span>• LA GRANDE PUANTEUR •
+# <span id="page-44-0" data-folio="42"></span>• LA GRANDE PUANTEUR •
 
 # **FESTIVITÉS D'ALTDORF**
 
@@ -87,7 +87,7 @@ La dernière fête naine de l'année a pour but de s'assurer que la bière entam
 La veille de l'Hexenstag, une parade de flambeaux traverse les rues calcinées autour du Collège de la Lumière. Cette tradition est relativement récente et secrètement orchestrée par les pyromanciens. Le défilé attire de grandes quantités d'*Aqshy*, dans lesquelles les sorciers puisent pour accomplir un grand rituel lors de l'Hexenstag.
 
 
-# <span id="page-47-0"></span>**DIVERTISSEMENTS AU QUOTIDIEN À ALTDORF**
+# <span id="page-47-0" data-folio="45"></span>**DIVERTISSEMENTS AU QUOTIDIEN À ALTDORF**
 
 Altdorf étant la plus grande ville de l'Empire, de nombreux divertissements et distractions sont proposés aux personnes de toutes classes et de tous horizons.
 

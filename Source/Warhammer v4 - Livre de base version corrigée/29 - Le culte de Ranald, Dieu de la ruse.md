@@ -2,7 +2,7 @@
 
 # **LE CULTE DE RANALD, DIEU DE LA RUSE**
 
-<span id="page-209-0"></span>**Siège du Pouvoir :** Aucun officiel
+<span id="page-209-0" data-folio="208"></span>**Siège du Pouvoir :** Aucun officiel
 
 **Chef du Culte :** Aucun officiel, bien que courent des rumeurs
 

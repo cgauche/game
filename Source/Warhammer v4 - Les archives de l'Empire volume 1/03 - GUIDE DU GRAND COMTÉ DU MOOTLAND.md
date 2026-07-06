@@ -1,6 +1,6 @@
 *Pages PDF 34-48*
 
-## <span id="page-33-0"></span>GUIDE DU GRAND COMTÉ DU MOOTLAND • •
+## <span id="page-33-0" data-folio="33"></span>GUIDE DU GRAND COMTÉ DU MOOTLAND • •
 
 *« Le paysage est beau et verdoyant, et ses habitants chaleureux et accueillants. Plutôt suspect, non ? »*
 
@@ -15,7 +15,7 @@
 Les halflings croient en l'histoire, mais d'une façon différente des humains. La leur ne s'écrit pas dans les livres ou pire, dans la pierre comme celle des nains. C'est une histoire de sang. De famille. Un halfling a bien plus de chances de savoir ce que son arrière-arrière-cousin au troisième degré a fait à la fête de sa grand-tante (et qui a dû nettoyer derrière) que de connaître l'année précise où un certain roi a participé à une certaine bataille pour un drapeau avec d'étranges couleurs. Ceci étant dit, ils retiennent tout de même certaines dates : ils sont constamment à la recherche de prétextes pour organiser des fêtes, des festivals ou des événements.
 
 
-#### <span id="page-34-0"></span>**Comment les halflings sont arrivés dans le Vieux Monde**
+#### <span id="page-34-0" data-folio="34"></span>**Comment les halflings sont arrivés dans le Vieux Monde**
 
 L'histoire halfling décrit précisément comment ils sont venus dans le Vieux Monde depuis des terres à l'est : c'était un bezahltag, juste à temps pour le thé du matin. Les érudits ont trouvé des traces remontant au deuxième siècle du calendrier impérial. Certains halflings prétendent avoir des ancêtres qui ont rencontré Sigmar et lui ont serré la main, mais cela est peu probable. Plusieurs vagues d'immigration ont eu lieu, pendant lesquelles les halflings ont établi de petites communautés le long des Principautés Frontalières avant de passer plusieurs siècles dans un état d'esprit semi-nomade qui les a emmenés en Tilée, en Estalie et en Bretonnie, pour finalement s'installer en majorité dans l'Empire. Ils y sont restés de bon gré depuis, mais la pérennité a peu de valeur pour les halflings. Un jour viendra peut-être où ils repartiront à la découverte du monde.
 
@@ -48,7 +48,7 @@ Le compte électeur actuel, Hisme Fiercœur, est une exception à la règle : c'
 
 ## **HALFLINGS DANS LE VIEUX MONDE**
 
-#### <span id="page-35-0"></span>**<sup>v</sup>. 200 CI**
+#### <span id="page-35-0" data-folio="35"></span>**<sup>v</sup>. 200 CI**
 
 Les halflings et les ogres migrent dans le Vieux Monde en passant par les Montagnes du Bord du Monde depuis l'est.
 
@@ -145,7 +145,7 @@ Après le Grand Feu d'Altdorf, les tourtes halflings sont l'un des rares aliment
 Lorsque le Moot a appris qu'Ubersreik était devenu autonome, il y a envoyé un comité exploratoire semi-officiel comme première étape éventuelle d'une sécession du Mootland.
 
 
-#### <span id="page-36-0"></span>**Le Grand comté du Mootland et ses frontières**
+#### <span id="page-36-0" data-folio="36"></span>**Le Grand comté du Mootland et ses frontières**
 
 *« T'appelles ça l'Empire ? N'importe quoi. En Nordland, on est pas contents tant qu'il fait pas froid, humide et moche, et que le sol est recouvert de cailloux. Ces halflings sont des molassons. »*
 
@@ -166,7 +166,7 @@ Les collines abruptes qu'on appelle les Feuillevertes sont à l'est. Cette zone 
 À l'est du Mootland se trouve un voisin bien différent : le pays arriéré de Sylvanie. La corruption suinte de ce pays comme de l'eau à travers du tissu. Le Stirland et l'Averland doivent gérer ses sombres intrusions. Chaque comté a ses propres solutions. L'assiduité et le courage typiques des halflings sont sans doute les plus efficaces.
 
 
-## <span id="page-37-0"></span>**Politique halfling**
+## <span id="page-37-0" data-folio="37"></span>**Politique halfling**
 
 La quasi-totalité des sujets politiques des halflings est résolue par un Conseil des Anciens, un processus incroyablement informel et officieux aux yeux de l'Empire. Chaque village a un groupe d'halflings qui rendent des jugements sur la loi et la politique, tandis que les problèmes plus importants ou les appels sont gérés par des villes plus grandes ou par le Grand Conseil de la capitale, Eicheschatten. Les membres des conseils sont souvent en nombre impair afin d'éviter les égalités lors des votes. Une fois nommé, un membre l'est généralement à vie. Malgré le nom, il n'y a aucune restriction d'âge (ou de genre) pour rejoindre un conseil. Mais comme la nomination est à vie, ils sont souvent composés d'halflings plus âgés. Les halflings ambitieux doivent être choisis par un membre reconnu du Conseil.
 
@@ -251,7 +251,7 @@ Cependant, la conséquence fâcheuse de ce système est que le coupable et la vi
 - 0 Les choses se compliquent lorsque les preuves indiquent qu'il y a un autre suspect, et les Anciens de la ville commencent à enquêter : la loi halfling est assez sévère envers les perturbateurs étrangers qui viennent rendre des jugements comme s'ils étaient chez eux. Cela pourrait être considéré comme de la trahison et, dans l'Empire, c'est une raison suffisante pour pendre les gens.
 
 
-## <span id="page-40-0"></span>**Direction le Moot**
+## <span id="page-40-0" data-folio="40"></span>**Direction le Moot**
 
 *« Le symbole du Moot est le coquelet, alors pour vous remercier de votre générosité, on vous en a dessiné un de coq sur le mur de votre taverne, fier, droit, rose, et en majesté ! »*
 
@@ -287,7 +287,7 @@ Le code utilisé par les habitants du Moot est « *Le Grand tour* ». Si un half
 - 0 La Forêt d'Altern est le plus gros canular du Moot. Le même clan possède les auberges qui le bordent. Lorsque des voyageurs arrivent, le clan leur raconte une histoire d'étranges fantômes qui hantent les arbres. Lorsque la caravane repart le lendemain, les aubergistes prennent les paris pour deviner qui des voyageurs criera le plus fort et courra le plus loin, tandis que des complices se cachent sous des draps et harcèlent la diligence. Cependant, récemment, d'autres clans aimeraient participer, et ont divulgué de petites bribes de la vérité pour prouver leur sérieux. Les « fantômes » ont besoin de frapper un grand coup pour redonner vigueur à la légende. On raconte aussi que d'anciens fantômes errent dans la forêt, mais est-ce un autre mensonge ?
 
 
-## <span id="page-42-0"></span>**LIEUX IMPORTANTS**
+## <span id="page-42-0" data-folio="42"></span>**LIEUX IMPORTANTS**
 
 *« Le Moot est un autre pays. Ils font les choses différemment là-bas. »*
 
@@ -327,7 +327,7 @@ La zone au nord de l'Aver faisait autrefois partie du territoire du Stirland. C'
 Yanick Bedard - pumpkinhead83@hotmail.fr
 
 
-## <span id="page-44-0"></span>**Les Feuillevertes**
+## <span id="page-44-0" data-folio="44"></span>**Les Feuillevertes**
 
 En raison d'une erreur de cartographie lors de la création du Moot, une minuscule partie de l'Empire n'était possédée par aucun comté. Le Duché des Collines en Jachère était la plus petite province. Lorsque le noble qui la possédait l'a finalement vendue au Moot, ses nouveaux propriétaires en ont tiré un grand profit avec le tabac. Même s'ils n'ont aucun scrupule à s'enrichir grâce à la demande étrangère pour leur produit, les habitants des Feuillevertes sont les Mootlanders les moins susceptibles d'accepter les visiteurs de la mauvaise taille. Ils entretiennent également un important commerce avec les nains dans les montagnes et les habitants des Principautés frontalières. Avec la prospérité, cette région s'urbanise et s'éloigne de la ruralité propre au reste du Moot. Certains habitants des Feuillevertes prétendent ne pas avoir besoin du reste du Moot ou même de l'Empire, de toute façon Altdorf est loin et le sud sait s'occuper de ses voisins halflings.
 
@@ -349,7 +349,7 @@ Eicheschatten est remplie de paisibles boutiques. Des forgerons, des tanneurs et
 - 0 Une farce populaire aux nouveaux venus est de leur vendre de *« petits cochons à localisation magique »* qui, si on les poursuit à travers les rues sinueuses, mènent le propriétaire au halfling ou au fonctionnaire qu'il cherche. Cette variante d'un vieux jeu pour enfants entraîne l'hilarité des badauds, tandis que les baillis courent après des cochons plus rapides qu'eux. Mais, étrangement, un cochon en particulier s'est avéré fiable à de nombreuses reprises, car son odorat aiguisé est attiré par la douce odeur de chair pourrie qui accompagne les fonctionnaires faisant partie du même culte de Nurgle.
 
 
-<span id="page-45-0"></span>
+<span id="page-45-0" data-folio="45"></span>
 
 #### HAFFENNAFF
 
@@ -379,7 +379,7 @@ Sauerapfel tient son nom de la variété de pommes rouges acidulées des vergers
 - 0 Sauerapfel était autrefois en Averland, un fait pratiquement oublié de tous, à l'exception d'un esprit ancien. Ce spectre est le dernier vestige du chevalier Elias Holson-Haesteler, qui avait promis à sa dame qu'il ne trouverait pas le repos tant qu'il ne serait pas revenu en Averland. Lorsque les frontières ont été déplacées, il s'est retrouvé maudit et a été ramené à la vie. Chaque nuit, il essaie de parcourir les huit kilomètres qui séparent Sauerapfel et Halstedt à cheval, sans succès. Maintenant, les touristes le croisent, ce qui le rend furieux et violent.
 
 
-## <span id="page-46-0"></span>**Pfungzig**
+## <span id="page-46-0" data-folio="46"></span>**Pfungzig**
 
 Pfungzig est en Averland, mais on l'appelle les Villes jumelles parce que sa partie nord est de taille halfling. Il faut s'habituer à passer de « long à court » en traversant la rivière, mais les habitants sont généralement fiers de la particularité de leur ville. Du moins, les humains le sont. Même en grand nombre, les halflings reçoivent moins de protection et de considération en vertu de la loi, et doivent se battre pour faire marcher leur commerce, trouver un bon emploi ou acheter à prix raisonnable. La différence est telle qu'elle est pire que dans les grandes villes humaines. Les halflings pourraient repartir vivre au Moot, mais c'est une question de principe.
 
@@ -414,7 +414,7 @@ La terre de Sylvanie, où les morts se réveillent et marchent à nouveau à une
 - 0 Les Gardechamps ont reçu des messages codés de villages en Sylvanie les suppliant d'apporter leur aide contre un vampire. Ils soupçonnent qu'il s'agit d'un piège. Ils refusent d'envoyer une escouade de leurs meilleurs hommes et risquer de les condamner. Ce travail conviendrait mieux à des mercenaires de passage, du moins au début.
 
 
-## <span id="page-47-0"></span>**La menace verte**
+## <span id="page-47-0" data-folio="47"></span>**La menace verte**
 
 Des tribus d'orcs rôdent dans les montagnes et les terres inhospitalières du sud, mais leurs plus petits camarades, les gobelins, se faufilent plus facilement au nord. Comme les gobelins sont naturellement couards, les halflings sont leur proie de choix, car ils ont souvent l'avantage de la taille comme du nombre. Les araignées géantes qui leur servent de montures et les squigs peuvent dépasser en vitesse et surpasser en nombre même la plus rigoureuse des milices halflings. La fameuse réputation du courage des halflings provient de batailles avec les forces de l'Empire contre les peaux-vertes. La férocité des halflings n'est jamais autant aiguisée que face à cet ennemi.
 

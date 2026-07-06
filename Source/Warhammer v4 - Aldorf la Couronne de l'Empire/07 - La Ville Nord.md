@@ -1,6 +1,6 @@
 *Pages PDF 155-202*
 
-# <span id="page-154-0"></span>• LA VILLE NORD •
+# <span id="page-154-0" data-folio="152"></span>• LA VILLE NORD •
 
 # **UNE PLAQUE TOURNANTE**
 
@@ -14,7 +14,7 @@ Le nord d'Altdorf est la partie de la ville que connaissent le mieux les visiteu
 | N5 | Fischemarkt        | N10 | Toteninsel |
 
 
-<span id="page-155-0"></span>
+<span id="page-155-0" data-folio="153"></span>
 
 # **HEXXERBEZRIK**
 
@@ -189,7 +189,7 @@ L'intérieur des bâtiments est entièrement fait de pierre, et des braseros enf
 Les chambres des sorciers sont décorées avec plus de variété, et celles du côté intérieur ont des fenêtres vitrées donnant sur la cour. Cependant, l'éclairage à la flamme nue est omniprésent, et au cœur du collège, un gigantesque brasier brûle jour et nuit. En raison du nombre de feux constamment allumés, il règne en ces lieux une chaleur accablante.
 
 
-<span id="page-161-0"></span>
+<span id="page-161-0" data-folio="159"></span>
 
 # **SCHULERGEGEND**
 
@@ -284,7 +284,7 @@ Le professeur Weirde est sceptique à l'égard de toutes les études préexistan
 **Possessions :** matériel d'écriture, étude, bibliothèque de recherche, correspondants dans des contrées exotiques
 
 
-<span id="page-165-0"></span>
+<span id="page-165-0" data-folio="163"></span>
 
 ### **Eberhardt von Festschrift, Chancelier de l'université d'Altdorf**
 
@@ -318,7 +318,7 @@ Dans l'intérêt de la sécurité de l'Empire, il est interdit aux citoyens de f
 - 0 Un coffre-fort spécial contient les rapports de la Garde sur les observations de skavens dans la cité, organisés chronologiquement par horodatage. La divulgation publique de l'étendue de ces rapports risquerait de provoquer une panique générale.
 
 
-<span id="page-166-0"></span>La population elfe d'Altdorf réside principalement dans un quartier tranquille situé près de l'université d'Altdorf et des Collèges de Magie. Moins de la moitié des habitants de Turmgarten sont des elfes, et même ces derniers résident en général à Altdorf pendant de courtes périodes seulement. Les autres habitants du quartier sont des professeurs, des docteurs et des sorciers humains exerçant dans d'autres quartiers. Les fêtes estudiantines débordent rarement dans Turmgarten, car la magie elfique peut endormir instantanément une foule d'ivrognes tapageurs. Le quartier doit son nom de « jardin de la tour » au mystérieux parc arboré d'ormes situé près de l'Hexxerbezrik.
+<span id="page-166-0" data-folio="164"></span>La population elfe d'Altdorf réside principalement dans un quartier tranquille situé près de l'université d'Altdorf et des Collèges de Magie. Moins de la moitié des habitants de Turmgarten sont des elfes, et même ces derniers résident en général à Altdorf pendant de courtes périodes seulement. Les autres habitants du quartier sont des professeurs, des docteurs et des sorciers humains exerçant dans d'autres quartiers. Les fêtes estudiantines débordent rarement dans Turmgarten, car la magie elfique peut endormir instantanément une foule d'ivrognes tapageurs. Le quartier doit son nom de « jardin de la tour » au mystérieux parc arboré d'ormes situé près de l'Hexxerbezrik.
 
 La plupart des bâtiments de Turmgarten sont des maisons de ville à colombages appartenant à des propriétaires humains. Les elfes louent généralement un étage ou deux de ces maisons pour la durée de leur séjour en ville. Au milieu des constructions humaines se trouvent quelques maisons en pierre blanche, dont l'architecture rappelle le style gracieux d'Ulthuan. Ces habitations ont été construites au 24e siècle par les érudits et les sorciers elfes alors engagés à long terme en tant qu'émissaires diplomatiques ou « missionnaires de la connaissance ».
 
@@ -445,7 +445,7 @@ Malgré le rôle évident que les sorciers ont joué pendant la Grande Guerre co
 La présence des Collèges de Magie à Altdorf est assez déconcertante pour les nains. En effet, bien que les nains ne soient normalement pas sensibles à la magie, ils se sentent mal à l'aise lorsqu'ils sont à proximité des bâtiments des collèges. Pour cette raison, il est rare de rencontrer des nains dans les rues de l'Hexxerbezrik.
 
 
-<span id="page-170-0"></span>Sur cette île nappée de brouillard, un donjon imposant, aux fortifications solides, domine les eaux environnantes, sombre et inquiétant comme une ombre. Si Altdorf devait être envahie par des ennemis plus forts qu'elle, par la peste ou par un incendie, c'est ici qu'irait se réfugier l'Empereur. Mais le donjon renferme bien des secrets, et le vent gris d'*Ulgu* souffle sur l'île brumeuse. Dans les cachots, au milieu des premières fondations du donjon, se trouvent des gravures bizarres et des artefacts mystérieux. Ils semblent suggérer que l'île abritait autrefois d'étranges habitants.
+<span id="page-170-0" data-folio="168"></span>Sur cette île nappée de brouillard, un donjon imposant, aux fortifications solides, domine les eaux environnantes, sombre et inquiétant comme une ombre. Si Altdorf devait être envahie par des ennemis plus forts qu'elle, par la peste ou par un incendie, c'est ici qu'irait se réfugier l'Empereur. Mais le donjon renferme bien des secrets, et le vent gris d'*Ulgu* souffle sur l'île brumeuse. Dans les cachots, au milieu des premières fondations du donjon, se trouvent des gravures bizarres et des artefacts mystérieux. Ils semblent suggérer que l'île abritait autrefois d'étranges habitants.
 
 Un sentiment de malaise et d'influence maléfique pèse sur l'atmosphère. Être en poste à la Großvaters Zuhause est considéré comme une punition. Les superstitions sont monnaie courante parmi ceux qui ont eu la malchance de servir un jour dans cet endroit. Les troupes qui y sont affectées deviennent souvent folles et se mettent à délirer à propos d'apparitions bestiales et de visions inexplicables d'obscurs rituels. Dans le pire des cas, les soldats se jettent dans les bras de Morr depuis les plus hauts remparts du donjon. L'Empereur est parfaitement conscient de la réputation de l'île, et ne s'y rend jamais. Il ignore comment gérer au mieux cette situation.
 
@@ -484,7 +484,7 @@ Au sommet de la tour se trouve un énorme brasero de fer, dans lequel on allume 
 - 0 Quelle est la malédiction qui s'est abattue sur la Großvaters Zuhause, et comment peut-elle être levée ? Le gouverneur est à la recherche de héros qui n'ont pas peur de mourir, afin de mener l'enquête dans les cachots du donjon. Dans les ténèbres, ils trouvent des restes de créatures qu'on pensait disparues, et pire encore... Des indices suggèrent que ce donjon pourrait avoir été construit non pas pour protéger Altdorf de quelque sorte d'envahisseur, mais pour garder prisonnière une chose bien plus terrifiante encore.
 
 
-<span id="page-172-0"></span>
+<span id="page-172-0" data-folio="170"></span>
 
 # **WOLFTOR**
 
@@ -591,7 +591,7 @@ Il est possible que les Personnages décident de partir à la recherche du Comte
 - 0 Un aristocrate en visite a entendu parler du comte Jäger, et il veut absolument rencontrer cet étrange personnage. Mais il n'est en ville que pour quelques jours. Ses riches amis ont donc besoin d'une doublure convaincante : l'un des Personnages pourrait bien avoir l'air assez fringant pour jouer ce rôle.
 
 
-<span id="page-176-0"></span>La grande place de la Königplatz est le cœur d'Altdorf. La place est noire de monde tout au long de la journée : beaucoup de gens viennent pour s'ébahir devant les spectacles de rue et la splendeur des statues des Empereurs. Les parades militaires, les proclamations officielles, les jours de foires et de fêtes, et même les exécutions publiques attirent toujours une foule nombreuse, et avec elle, les vendeurs de tartes, les charlatans, les pickpockets et les ivrognes.
+<span id="page-176-0" data-folio="174"></span>La grande place de la Königplatz est le cœur d'Altdorf. La place est noire de monde tout au long de la journée : beaucoup de gens viennent pour s'ébahir devant les spectacles de rue et la splendeur des statues des Empereurs. Les parades militaires, les proclamations officielles, les jours de foires et de fêtes, et même les exécutions publiques attirent toujours une foule nombreuse, et avec elle, les vendeurs de tartes, les charlatans, les pickpockets et les ivrognes.
 
 # **Le feu de brouillard**
 
@@ -681,7 +681,7 @@ accordés à la presse à Altdorf (lesquels dépendent purement de la volonté d
 Ludovic Paulet - ludovicmad@wanadoo.fr
 
 
-<span id="page-179-0"></span>
+<span id="page-179-0" data-folio="177"></span>
 
 # **QUARTIER DES QUAIS**
 
@@ -802,7 +802,7 @@ Le plus haut responsable de la compagnie à Altdorf est Beorgor Zucker, un homme
 - 0 Zucker a promis d'investir beaucoup d'argent dans le dernier projet que les Personnages ont élaboré pour faire fortune (ou plus simplement, pour rembourser leurs dettes). Cependant, pour lui prouver leur valeur, ils doivent démontrer leur sens des affaires et leur esprit d'entreprise en se soumettant à divers tests en lien avec le petit commerce, et ce pendant plusieurs semaines.
 
 
-<span id="page-183-0"></span>
+<span id="page-183-0" data-folio="181"></span>
 
 # **RUE AUX CENT TAVERNES**
 
@@ -938,7 +938,7 @@ Consommer un verre de liqueur de rêve nécessite un Test de **Résistance à l'
 Consommer un verre de liqueur de rêve expose le buveur à une Corruption mineure. Vous devez également réussir un Test de **Force Mentale Accessible (+20)** ou « entendre l'appel ». Vous pouvez entendre l'appel un nombre de fois équivalent à votre bonus de Force Mentale tout en restant maître de vous-même. Si vous l'entendez une fois de trop, vous devez choisir entre dépenser un point de Destin ou tout laisser derrière vous et prendre la route des vignobles corrompus des Montagnes Grises.
 
 
-<span id="page-188-0"></span>Lorsque la récolte a été bonne, les rues de Fischemarkt sont pleines à craquer de l'abondant produit des fermes et des rivières du Reikland. On y trouve des paniers débordants de pommes mûres, des charrettes remplies de choux, des étals de poissonniers croulant sous le poisson frais et des miches de pains, généreuses et encore chaudes, empilées devant les boulangeries. Mais lorsque la guerre, la sécheresse ou le gel entraînent une mauvaise récolte, Fischemarkt devient un lieu désolé, avec des rues vides que ne côtoient plus que quelques mendiants. Les mauvaises années, le marché n'a plus guère à offrir que de la farine moisie, des légumes marinés et des rixes entre citoyens affamés.
+<span id="page-188-0" data-folio="186"></span>Lorsque la récolte a été bonne, les rues de Fischemarkt sont pleines à craquer de l'abondant produit des fermes et des rivières du Reikland. On y trouve des paniers débordants de pommes mûres, des charrettes remplies de choux, des étals de poissonniers croulant sous le poisson frais et des miches de pains, généreuses et encore chaudes, empilées devant les boulangeries. Mais lorsque la guerre, la sécheresse ou le gel entraînent une mauvaise récolte, Fischemarkt devient un lieu désolé, avec des rues vides que ne côtoient plus que quelques mendiants. Les mauvaises années, le marché n'a plus guère à offrir que de la farine moisie, des légumes marinés et des rixes entre citoyens affamés.
 
 **FISCHEMARKT**
 
@@ -1022,7 +1022,7 @@ Ces femmes vendent une bonne partie de leurs produits dans les rues autour de la
 0 Les vendeuses de fruits travaillent pour les Crochets en tant que guetteuses. Pendant qu'elles vendent leurs fruits, elles observent les alentours et rapportent aux chefs de guerre tout ce qu'elles ont vu les Poissons faire à Fischemarkt ou sur la Königplatz.
 
 
-<span id="page-191-0"></span>
+<span id="page-191-0" data-folio="189"></span>
 
 # **NEUESGELDT**
 
@@ -1071,7 +1071,7 @@ Gustav Jaeger est le père du tristement célèbre aventurier et poète Félix J
 Le courtage de la vente de laine brute aux ateliers de tissage n'est pas la plus lucrative des activités, mais il a permis à Gustav de contrôler le marché local de la laine. En vérité, il réalise ses principaux bénéfices en sous-traitant des confectionneurs pour produire des vêtements en laine de qualité pour la classe supérieure d'Altdorf. Il fut un temps où Gustav lui-même aspirait à la noblesse. Il a même inscrit ses fils à l'université d'Altdorf, payant au passage leurs exorbitants frais de scolarité. Cependant, alors qu'il était un jeune étudiant, Félix a fait honte à sa famille en se battant en duel et en devenant un agitateur. Malgré cela, Gustav se réjouit toujours des visites sporadiques de son fils rebelle.
 
 
-<span id="page-193-0"></span>
+<span id="page-193-0" data-folio="191"></span>
 
 # **GRANDMARKT**
 
@@ -1148,7 +1148,7 @@ vitrine de la maison de commerce n'est qu'un gadget pour attirer le chaland. Des
 0 En temps de paix, le bastion a peu d'utilité, sauf pour les ogres : ils préfèrent la grotte spacieuse aux auberges exiguës de la ville. Un énorme tas d'ossements d'animaux sert d'autel à la Grande Gueule. La proximité de Grandmarkt et de Haffenstadt offre aux ogres un accès facile à la nourriture. Les mercenaires ogres qui arrivent par le Talabec sont souvent assez peu cultivés. Récemment, un Boucher ogre (c'est ainsi que sont désignés leurs chefs religieux) a élu domicile dans la grotte.
 
 
-<span id="page-196-0"></span>Bien que l'on trouve des halflings partout dans Altdorf, se mêlant aux « grands » et travaillant dans de nombreuses industries, ils possèdent leur propre quartier dans un coin de la ville : Haffenstadt. Ce quartier n'abrite pratiquement pas de non-halflings. La plupart des bâtiments sont adaptés à la taille des halflings, et ont l'air à la fois rustiques et douillets. Les constructions récentes sont bâties dans ce style, tandis que les plus anciennes, qui appartenaient autrefois à des grands, sont simplement dotées d'étages supplémentaires en scindant les niveaux d'origine en deux. Des pots de fleurs omniprésents, des jardins petits mais florissants, des bâtiments peints de couleurs vives, des auvents colorés, des petits poneys à la place des chevaux, l'odeur des herbes aromatiques, sont autant d'éléments qui indiquent indéniablement au visiteur qu'il ne se trouve plus dans la ville des grands, mais à Haffenstadt.
+<span id="page-196-0" data-folio="194"></span>Bien que l'on trouve des halflings partout dans Altdorf, se mêlant aux « grands » et travaillant dans de nombreuses industries, ils possèdent leur propre quartier dans un coin de la ville : Haffenstadt. Ce quartier n'abrite pratiquement pas de non-halflings. La plupart des bâtiments sont adaptés à la taille des halflings, et ont l'air à la fois rustiques et douillets. Les constructions récentes sont bâties dans ce style, tandis que les plus anciennes, qui appartenaient autrefois à des grands, sont simplement dotées d'étages supplémentaires en scindant les niveaux d'origine en deux. Des pots de fleurs omniprésents, des jardins petits mais florissants, des bâtiments peints de couleurs vives, des auvents colorés, des petits poneys à la place des chevaux, l'odeur des herbes aromatiques, sont autant d'éléments qui indiquent indéniablement au visiteur qu'il ne se trouve plus dans la ville des grands, mais à Haffenstadt.
 
 De même que tout Reiklander en visite à Altdorf peut trouver la capitale inconfortablement surpeuplée, Haffenstadt peut sembler anormalement exigu aux yeux des Altdorfers. Cette impression est à la fois due aux remparts de la ville qui l'entourent de trois côtés, à ses nombreux bâtiments hauts et étroits et à sa population grouillante. Les halflings sont, par nature, sociables et grégaires, c'est pourquoi ils se sentent tout à fait à l'aise lorsqu'ils sont ainsi entassés les uns sur les autres. Une poterne percée dans le rempart permet d'accéder directement au cœur de Haffenstadt, ce qui peut donner une étrange impression à ceux qui visitent Altdorf pour la première fois en entrant par cette porte.
 
@@ -1239,7 +1239,7 @@ Carde tient à être perçu comme étant du côté des « halflings du peuple »
 ### LE PETIT PÈRE DU PETIT PEUPLE
 
 
-<span id="page-200-0"></span>L'île de la mort est un endroit lugubre, à la réputation funeste. De nombreux édifices en granit sombre y sont dédiés à Morr : sanctuaires, tombeaux, ossuaires et presbytères. Quelques bâtiments abritent des avocats, des croque-morts et des maçons, mais en dehors des membres du culte de Morr, très peu de gens résident ici.
+<span id="page-200-0" data-folio="198"></span>L'île de la mort est un endroit lugubre, à la réputation funeste. De nombreux édifices en granit sombre y sont dédiés à Morr : sanctuaires, tombeaux, ossuaires et presbytères. Quelques bâtiments abritent des avocats, des croque-morts et des maçons, mais en dehors des membres du culte de Morr, très peu de gens résident ici.
 
 L'Ordre de la Garde noire exerce à Toteninsel une vigilance constante, protégeant l'île contre les morts-vivants et les pilleurs de tombes. Les initiés de la Guilde des Pleureurs s'occupent des tombes et assistent les personnes en deuil. Les roses noires de Morr poussent partout sur l'île. Leur parfum douceâtre imprègne l'air, se mêlant à la légère puanteur des cadavres en décomposition. De lointaines lamentations flottent dans la brise, accompagnées par les croassements des corbeaux et le clapotis de l'eau.
 

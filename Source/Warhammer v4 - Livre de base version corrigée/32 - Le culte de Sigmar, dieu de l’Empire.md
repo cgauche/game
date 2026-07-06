@@ -2,7 +2,7 @@
 
 # **LE CULTE DE SIGMAR, DIEU DE L'EMPIRE**
 
-<span id="page-212-0"></span>**Siège du Pouvoir :** Altdorf, Reikland **Chef du Culte :** le Grand Théogoniste
+<span id="page-212-0" data-folio="211"></span>**Siège du Pouvoir :** Altdorf, Reikland **Chef du Culte :** le Grand Théogoniste
 
 **Principaux ordres :** Ordre de l'Enclume, Ordre de la Flamme purificatrice, Ordre du Marteau d'argent, Ordre de la Torche **Festivités majeures :** le Jour de Sigmar (28e Sigmarzeit) **Livres sacrés populaires :** *Le Livre de Sigmar, Deus Sigmar, Le Geistbuch*
 

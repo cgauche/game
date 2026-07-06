@@ -1,6 +1,6 @@
 *Pages PDF 9-10*
 
-# <span id="page-8-0"></span>UNE NUIT AGITÉE AUX TROIS PLUMES • •
+# <span id="page-8-0" data-folio="7"></span>UNE NUIT AGITÉE AUX TROIS PLUMES • •
 
 Nos héros arrivent dans une auberge située en bord de l'eau. Ils s'attendent à y passer une nuit tranquille avant de reprendre la route le lendemain matin. Mais les événements vont vite leur échapper et tout le monde va passer une nuit agitée…
 
@@ -31,7 +31,7 @@ Un mur de pierre de trois mètres de haut court du bâtiment principal jusqu'au 
 À l'intérieur de l'enceinte se trouvent le bâtiment principal, des écuries rattachées à une forge, ainsi que des toilettes extérieures. Un petit débarcadère a été construit sur la berge.
 
 
-### <span id="page-9-0"></span>**Le bâtiment principal**
+### <span id="page-9-0" data-folio="8"></span>**Le bâtiment principal**
 
 Le bâtiment principal des Trois Plumes se dresse sur deux niveaux. Ses murs de brique et de bois font 75 centimètres d'épaisseur et sont blanchis à la chaux.
 

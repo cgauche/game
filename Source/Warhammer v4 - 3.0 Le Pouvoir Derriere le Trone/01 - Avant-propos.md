@@ -2,7 +2,7 @@
 
 # AVANT-PROPOS
 
-<span id="page-5-0"></span>Dès lors que l'on cherche à élire la meilleure aventure de **WFJDR**, on peut être certain que *Le Pouvoir derrière le Trône* figure toujours parmi les préférées des Joueurs. Son atmosphère et son intrigue complexe lui ont valu une place de choix dans de nombreux cœurs. Ses multiples éléments amovibles représentent un véritable défi de gestion pour le MJ, mais presque tout le monde est d'accord pour dire que le jeu en vaut la chandelle.
+<span id="page-5-0" data-folio="3"></span>Dès lors que l'on cherche à élire la meilleure aventure de **WFJDR**, on peut être certain que *Le Pouvoir derrière le Trône* figure toujours parmi les préférées des Joueurs. Son atmosphère et son intrigue complexe lui ont valu une place de choix dans de nombreux cœurs. Ses multiples éléments amovibles représentent un véritable défi de gestion pour le MJ, mais presque tout le monde est d'accord pour dire que le jeu en vaut la chandelle.
 
 *Le Pouvoir derrière le Trône* fut la première aventure écrite par Carl Sargent pour *L'Ennemi Intérieur*, et ce fut aussi sa première publication majeure chez Games Workshop. Dans les années 80, Carl était chercheur à l'Université de Cambridge : il y fit la connaissance de Jim Bambra, de Phil Gallagher et du reste de l'équipe de TSR UK, qui étaient également installés à Cambridge, et commença à écrire pour des jeux de rôle en tant qu'indépendant.
 
@@ -31,4 +31,4 @@ Un grand merci à Games Workshop et Cubicle 7
 Traduction française Khaos Project © 2023 Tous droits réservés, © copyright Games Workshop. La reproduction de cet ouvrage même partielle est formellement interdite, sous toutes ses formes. Publié par Khaos Project SAS - 4 allée de la cotonnière - 76570 PAVILLY
 
 
-<span id="page-6-0"></span>
+<span id="page-6-0" data-folio="4"></span>

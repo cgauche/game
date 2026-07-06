@@ -27,7 +27,7 @@ Les chevaux sont élevés pour différents usages, servant de montures rapides a
 **Facultatif :** Armure, Dressé (Divertir, Dompté, Guerre, Magie, Monture, Trait)
 
 
-# <span id="page-316-0"></span>**Chien**
+# <span id="page-316-0" data-folio="315"></span>**Chien**
 
 Les chiens sont élevés pour une myriade de raisons à travers le Vieux Monde. Alors que les toutous choyés des courtisans d'Altdorf ne sont une menace que pour la dignité d'un Joueur, les espèces plus grandes, y compris celles élevées pour la guerre ou les combats de chiens, peuvent représenter une menace considérable.
 
@@ -60,7 +60,7 @@ Arpentant les étendues sauvages du Reikland, les Ours sont solitaires et géné
 **Facultatif :** Affamé, Dressé (Divertir, Dompté, Guerre), Infecté, Parasité, Taille (Énorme), Territorial
 
 
-# <span id="page-317-0"></span>**Pigeon**
+# <span id="page-317-0" data-folio="316"></span>**Pigeon**
 
 Les pigeons sont élevés dans tout le Reikland pour transporter des messages de toutes sortes. Récemment, ils ont gagné en renommée pour le transport de chargements plus mortels, car l'oiseau facilement accessible est devenu populaire parmi les Ingénieurs, qui les utilisent pour déployer leurs « bombes-pigeons » à des degrés divers de réussite.
 
@@ -93,7 +93,7 @@ Les rats s'infiltrent partout et sont particulièrement répandus dans les cité
 **Facultatif :** Belliqueux, Dressé (Dompté, Guerre, Magie, Monture), Frénésie, Infecté, Parasité, Taille (Grande), Territorial
 
 
-# <span id="page-318-0"></span>**Serpent**
+# <span id="page-318-0" data-folio="317"></span>**Serpent**
 
 On trouve des serpents dans tout l'Empire, en particulier dans les forêts profondes. La plupart sont inoffensifs, mais certains utilisent un venin mortel ou enserrent leurs victimes jusqu'à ce qu'elles meurent par suffocation. Comme beaucoup de créatures du Vieux Monde, ils peuvent atteindre des proportions gigantesques, représentant un réel danger même pour le plus fort des mercenaires.
 

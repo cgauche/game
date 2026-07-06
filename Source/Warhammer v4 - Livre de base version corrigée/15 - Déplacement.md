@@ -5,7 +5,7 @@
 Les détails nécessaires concernant les déplacements dépendent de la façon dont vous repérez où chacun se trouve. De nombreux MJ aiment utiliser « le théâtre de l'esprit », où vous décrivez les positions relatives de chacun et les distances qui séparent les protagonistes, jugeant de la possibilité d'entreprendre le Mouvement ou l'Action que le Joueur décrit.
 
 
-<span id="page-166-0"></span>Même lors de Rounds de combat contrôlés au millimètre, c'est bien souvent suffisant pour vous permettre de décrire la façon dont votre Personnage se comporte au milieu de cette action frénétique, sautant par-dessus des tonneaux, se précipitant pour se mettre à couvert, ou dansant autour de son adversaire, en fonction.
+<span id="page-166-0" data-folio="165"></span>Même lors de Rounds de combat contrôlés au millimètre, c'est bien souvent suffisant pour vous permettre de décrire la façon dont votre Personnage se comporte au milieu de cette action frénétique, sautant par-dessus des tonneaux, se précipitant pour se mettre à couvert, ou dansant autour de son adversaire, en fonction.
 
 D'autres groupes utilisent des plans, des grilles, des jetons et des figurines pour représenter l'endroit où les combattants se trouvent, et cette méthode requiert des informations un peu plus précises quant à la distance et le déplacement.
 
@@ -63,7 +63,7 @@ S'il n'y a pas d'autre solution, vous pouvez faire demi-tour et utiliser votre M
 Si vous fuyez, votre adversaire gagne immédiatement +1 Avantage et une Attaque gratuite. Cette attaque est un Test de Corps à corps non opposé, et le DR est utilisé pour vous infliger des Dégâts, comme d'habitude. Comme vous lui 
 
 
-<span id="page-167-0"></span>tournez le dos, votre adversaire bénéficie de +20 au toucher. Si vous êtes touché, votre adversaire gagne +1 Avantage, et vous devez effectuer un Test de **Calme Intermédiaire (+0)** : sur un échec, vous obtenez l'État *Brisé*, ainsi que +1 *Brisé* par DR inférieur à 0.
+<span id="page-167-0" data-folio="166"></span>tournez le dos, votre adversaire bénéficie de +20 au toucher. Si vous êtes touché, votre adversaire gagne +1 Avantage, et vous devez effectuer un Test de **Calme Intermédiaire (+0)** : sur un échec, vous obtenez l'État *Brisé*, ainsi que +1 *Brisé* par DR inférieur à 0.
 
 Une fois que ce coup gratuit est résolu, vous pouvez vous déplacer jusqu'à la limite de votre Mouvement de Course (voir le Tableau des Mouvements) dans la direction opposée à celle de votre adversaire, en partant du principe que vous en êtes encore capable.
 
@@ -108,7 +108,7 @@ Si certains des Personnages participant à la poursuite possèdent un Mouvement 
 **Exemple :** *Perdita pousse son cheval dans l'espoir de rattraper deux Bandits. Son cheval possède Mouvement 8, alors que les montures des Bandits ont Mouvement 7 et Mouvement 9. Ainsi, le premier Bandit effectue un Test sans modificateurs, Perdita obtient DR +1, et le deuxième Bandit gagne DR +2 une fois leurs Tests de Chevaucher (Cheval) effectués.*
 
 
-<span id="page-168-0"></span>
+<span id="page-168-0" data-folio="167"></span>
 
 ### OPTION : COMPLICATIONS DE POURSUITE
 

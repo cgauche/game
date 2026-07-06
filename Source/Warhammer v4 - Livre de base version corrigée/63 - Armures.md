@@ -34,7 +34,7 @@ Vous subissez toujours les Blessures normales (et étant donné que vos PA sont 
 
 # ARMURES
 
-<span id="page-301-0"></span>
+<span id="page-301-0" data-folio="300"></span>
 
 | Armure              | Prix | Enc | Disponibilité | Pénalité            | Emplacements | PA | Atouts et Défauts            |
 |---------------------|------|-----|---------------|---------------------|--------------|----|------------------------------|
@@ -94,7 +94,7 @@ L'armure possèdent de petits Points faibles où une lame peut facilement se gli
 
 # OPTION : ARMURE, RÈGLES RAPIDES
 
-<span id="page-302-0"></span>Pour ceux qui souhaitent des règles rapides et simples pour les armures, utiliser ce qui suit. Les Armures sont séparées en trois groupes : Légères, Moyennes et Lourdes. Les Légères sont principalement en cuir, les Moyennes en maille et les Lourdes en plate.
+<span id="page-302-0" data-folio="301"></span>Pour ceux qui souhaitent des règles rapides et simples pour les armures, utiliser ce qui suit. Les Armures sont séparées en trois groupes : Légères, Moyennes et Lourdes. Les Légères sont principalement en cuir, les Moyennes en maille et les Lourdes en plate.
 
 | Armure         | Prix | Enc | Disponibilité | Pénalité                                  | Emplacements | PA | Atouts et Défauts            |
 |----------------|------|-----|---------------|-------------------------------------------|--------------|----|------------------------------|

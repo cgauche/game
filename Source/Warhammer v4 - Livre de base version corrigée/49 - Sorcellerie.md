@@ -72,7 +72,7 @@ L'ingrédient de ce Sort doit être quelque chose appartenant à la cible, une P
 Vous fixez votre regard sur une unique cible, qui doit également vous regarder. Effectuez un Test opposé d'**Intimidation/ Calme**, en ajoutant à votre résultat le DR obtenu à votre Test d'Incantation. Votre adversaire subit 1 État *Exténué* par DR+2 d'écart avec vous. Si vous l'emportez de plus de DR+6, votre adversaire subit un État *Brisé*.
 
 
-#### <span id="page-257-0"></span>**Menace rampante**
+#### <span id="page-257-0" data-folio="256"></span>**Menace rampante**
 
 **NI :** 6
 

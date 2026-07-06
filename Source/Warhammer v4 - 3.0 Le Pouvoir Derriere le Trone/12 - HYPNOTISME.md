@@ -1,6 +1,6 @@
 *Pages PDF 152*
 
-# <span id="page-151-0"></span>ANNEXE III HYPNOTISME • •
+# <span id="page-151-0" data-folio="149"></span>ANNEXE III HYPNOTISME • •
 
 L'hypnotisme est une Compétence Avancée utilisée par certains Saltimbanques et autres Mystiques. Certains pensent qu'elle a des applications médicales.
 

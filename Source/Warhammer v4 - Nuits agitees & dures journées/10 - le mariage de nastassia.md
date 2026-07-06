@@ -1,6 +1,6 @@
 *Pages PDF 56-68*
 
-# <span id="page-55-0"></span>• LE MARIAGE DE NASTASSIA •
+# <span id="page-55-0" data-folio="54"></span>• LE MARIAGE DE NASTASSIA •
 
 Un mariage mondain au château de la Maison Saponatheim offre une pause bienvenue après le stress du procès, mais l'heureux événement, comme le découvriront nos héros, s'avère tout sauf reposant.
 
@@ -17,7 +17,7 @@ Les von Saponatheim sont peut-être une famille ancienne, mais ils ont connu des
 Dans le cadre de la campagne **Nuits Agitées & Dures Journées**, le mariage entre le baron Karl Heinz von Liebwitz d'Ambosstein et la baronne Nastassia von Saponatheim a été arrangé à une époque moins compliquée, bien avant la mort du baron Otto von Dammenblatz causée par une soupe, et le procès de la gravin Maria Ulrike. Les deux jeunes gens se sont fiancés alors qu'ils étaient enfants, et les premières dispositions pour le mariage ont été prises il y a de nombreuses années, à la même époque. Des choses aussi insignifiantes qu'un procès et un combat judiciaire n'auraient jamais dû perturber des affaires aussi cruciales, même si on reconnaît que ce procès tombe au mauvais moment. Cependant, une fois les questions juridiques résolues, d'une manière ou d'une autre, la Gravin et sa suite, y compris les Personnages, peuvent assister au mariage sans craindre une convocation provenant des tribunaux de Kemperbad.
 
 
-<span id="page-56-0"></span>La Gravin et sa suite se rendent au château de Grauenberg en passant par Nuln, Altdorf, Carroburg, puis par la Bögen, en remontant la rivière jusqu'au château. La Grande comtesse Emmanuelle use de son influence pour réserver le luxueux navire « Empereur Wilhelm » pour le voyage, si le procès est gagné ; sinon, le bateau personnel de la Gravin accoste au débarcadère du château, pendant que ceux qui transportent ses bagages, les gardes et les serviteurs déchargent leur cargaison et leurs passagers, avant d'être amarrés à des pieux, en aval.
+<span id="page-56-0" data-folio="55"></span>La Gravin et sa suite se rendent au château de Grauenberg en passant par Nuln, Altdorf, Carroburg, puis par la Bögen, en remontant la rivière jusqu'au château. La Grande comtesse Emmanuelle use de son influence pour réserver le luxueux navire « Empereur Wilhelm » pour le voyage, si le procès est gagné ; sinon, le bateau personnel de la Gravin accoste au débarcadère du château, pendant que ceux qui transportent ses bagages, les gardes et les serviteurs déchargent leur cargaison et leurs passagers, avant d'être amarrés à des pieux, en aval.
 
 ### **Une aventure indépendante**
 
@@ -45,7 +45,7 @@ Les écuries et une petite forge se dressent contre les murs intérieurs. Un mem
 
 
 
-<span id="page-58-0"></span>La remise à calèche se trouve à côté des écuries. Étant donné le nombre de visiteurs qui ont besoin d'une écurie pour leurs chevaux, une zone a été délimitée entre les écuries et les jardins à la mode ; plusieurs carrosses y sont garés et leurs chevaux sont attachés en ligne, occupés à manger des bottes de foin.
+<span id="page-58-0" data-folio="57"></span>La remise à calèche se trouve à côté des écuries. Étant donné le nombre de visiteurs qui ont besoin d'une écurie pour leurs chevaux, une zone a été délimitée entre les écuries et les jardins à la mode ; plusieurs carrosses y sont garés et leurs chevaux sont attachés en ligne, occupés à manger des bottes de foin.
 
 En face de l'écurie se trouve un bâtiment en pierre dédié aux plus grands plaisirs du Graf : la chasse et la fauconnerie. L'agitation actuelle a perturbé les faucons et les chiens, qui sont beaucoup plus bruyants que d'habitude.
 
@@ -96,7 +96,7 @@ En ce qui concerne les problèmes juridiques, les accusations de von Dammenblatz
 Bien qu'il n'ait pas été invité au mariage, ses agents sont à l'œuvre pour discréditer la famille von Liebwitz et saboter le mariage. Si elle est encore en vie, c'est Dominique Herveaux qui est envoyée pour gérer la situation.
 
 
-#### <span id="page-59-0"></span>**Intrigue n° 2 - Amours contrariées**
+#### <span id="page-59-0" data-folio="58"></span>**Intrigue n° 2 - Amours contrariées**
 
 Comme beaucoup de mariages nobles, cette union est davantage liée à la position, aux terres et à l'influence de la famille qu'à l'amour. Nastassia et Karl Heinz ne se sont rencontrés que bien peu de fois, depuis les fiançailles dans leur enfance. Malheureusement, Nastassia a fréquenté beaucoup plus souvent un autre homme. Elle est aujourd'hui follement amoureuse de Joachim Bitterfeld, un apprenti bijoutier d'Altdorf. Les deux jeunes gens entretiennent depuis quelque temps une liaison ardente, mais non consommée. Incapable de persuader son père de s'opposer à l'union programmée, Nastassia a décidé de s'enfuir avec son amoureux la nuit précédant le mariage.
 
@@ -275,7 +275,7 @@ Même si la fuite de Manfred a été empêchée et que son existence demeure un 
 Le voyage peut être aussi compliqué ou simple selon ce que vous souhaitez. Manfred est doté d'une très robuste constitution, et la drogue peut ne pas permettre de le garder sous contrôle. Certains rivaux des von Saponatheim, ou pire, un agent travaillant pour le baron von Dammenblatz, ou peut
 
 
-<span id="page-64-0"></span>être les Toppenheimer, pourraient faire circuler la rumeur selon laquelle le véritable héritier de Saponatheim serait déplacé en secret, et compliquer encore plus la vie des aventuriers. Même si tout se passe bien, tout long voyage dans l'Empire comporte de grands et de petits périls, surtout lorsque l'on transporte un humain non coopératif.
+<span id="page-64-0" data-folio="63"></span>être les Toppenheimer, pourraient faire circuler la rumeur selon laquelle le véritable héritier de Saponatheim serait déplacé en secret, et compliquer encore plus la vie des aventuriers. Même si tout se passe bien, tout long voyage dans l'Empire comporte de grands et de petits périls, surtout lorsque l'on transporte un humain non coopératif.
 
 #### **L'assassin**
 
@@ -328,7 +328,7 @@ Le lendemain, le mariage aura lieu, ou non. Tout dépend des événements de la 
 Si les mariés sont encore au château et que l'existence de Manfred von Saponatheim a été dissimulée avec succès, le mariage a lieu comme prévu. Les observateurs peuvent commenter l'air abattu de Nastassia, mais ce n'est pas inhabituel dans les mariages nobles arrangés. Son père, en revanche, jubile, tout comme le marié et sa famille.
 
 
-<span id="page-65-0"></span>S'ensuit une autre journée de fête et de célébration, qui peut se dérouler comme vous le préférez. Cependant, si l'épée maudite est livrée au baron Karl Heinz, le spectre à intérieur se matérialise une fois de plus et provoque une agitation qui pourrait facilement détruire la nouvelle alliance, à moins que les Personnages n'interviennent.
+<span id="page-65-0" data-folio="64"></span>S'ensuit une autre journée de fête et de célébration, qui peut se dérouler comme vous le préférez. Cependant, si l'épée maudite est livrée au baron Karl Heinz, le spectre à intérieur se matérialise une fois de plus et provoque une agitation qui pourrait facilement détruire la nouvelle alliance, à moins que les Personnages n'interviennent.
 
 Si tout ne se passe pas comme prévu, les invités partiront le matin du Festag, en commençant par les von Liebwitz. L'échec du mariage est source d'embarras pour les deux maisons, et on convient d'une version officielle pour éviter le scandale et le dissimuler. Manfred est emmené sous un faux nom dans un hospice éloigné, accompagné d'un don généreux aux Soeurs de Shallya. À moins qu'elle ne se soit échappée avec son amoureux, Nastassia est confinée dans ses appartements à cause d'une maladie fictive jusqu'à ce que ses parents puissent organiser une autre alliance. Pour protéger le secret, les serviteurs sont soudoyés ou menacés pour qu'ils se taisent, et les nobles invités acceptent tacitement, à la manière des grands de ce monde, de ne jamais parler de cette nuit, du moins, tant qu'ils n'ont rien à gagner à raviver le scandale contre les von Saponatheim lors de la prochaine Semaine de la Poudre noire à Nuln !
 
@@ -363,7 +363,7 @@ Mais c'est son propre père qui avait manigancé cette union et un père doit ê
 Utilisez les statistiques de la page 17 pour les membres de la suite de la Gravin assistant au mariage. Si des statistiques sont nécessaires pour le jeune baron Karl Heinz von Liebwitz d'Ambosstein, utilisez celles d'un jeune noble page 53.
 
 
-### <span id="page-66-0"></span>**L'agent des Dammenblatz**
+### <span id="page-66-0" data-folio="65"></span>**L'agent des Dammenblatz**
 
 Utilisez les caractéristiques des agents des Dammenblatz figurant page 49, à moins que Dominique soit toujours en vie. Dans ce cas, mieux vaut l'utiliser (voir page 18). Cette foisci, avec sa perruque brune et bouclée et un accent reiklander appuyé, elle est déterminée à mettre un point final à cette lamentable affaire.
 
@@ -405,7 +405,7 @@ L'âme d'Inta-Dapesht est liée à la lame qu'il portait durant sa vie. À prés
 **\*Note :** si Inta-Dapesht « meurt » à cause du Trait Instable, il se reforme au bout de huit heures avec toutes ses Blessures.
 
 
-### <span id="page-67-0"></span>**La dette impayée**
+### <span id="page-67-0" data-folio="66"></span>**La dette impayée**
 
 #### **Les voyous d'Albrecht le Poisson**
 

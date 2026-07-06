@@ -19,7 +19,7 @@ La Grande Prêtresse est une femme âgée, mince, aux yeux bleus perçants, à l
 **Possessions :** robe, fibule en argent en forme de colombe
 
 
-## <span id="page-76-0"></span>**Sœur Marie Duvallier**
+## <span id="page-76-0" data-folio="75"></span>**Sœur Marie Duvallier**
 
 Sœur Marie est médecin de formation et responsable de l'infirmerie. D'âge mûr, petite et corpulente, elle a les cheveux gris foncé et les yeux bleu pâle. Originaire de Quenelles, elle conserve un très léger accent bretonnien. De nature patiente et déterminée, lorsqu'elle n'est pas occupée à soigner les malades et les blessés à l'infirmerie, elle passe son temps à lire des livres de médecine et à mener des recherches sur de potentiels traitements physiques aux maladies mentales.
 
@@ -66,7 +66,7 @@ L'apothicaire de l'hospice, sœur Anna-Lise, est âgée d'une trentaine d'année
 **Talents :** Béni (Shallya), Brouet, Concocter, Lire/Écrire, Maître artisan (Apothicaire), Pansement de fortune, Pharmacologie, Savoir-vivre (Érudits, Guilde, Shalléens) **Possessions :** équipement pharmaceutique, robe, fibule en argent en forme de colombe
 
 
-## <span id="page-77-0"></span>**Sœur type**
+## <span id="page-77-0" data-folio="76"></span>**Sœur type**
 
 Le Grand Hospice dispose d'un personnel comprenant une douzaine de sœurs au total. Le profil suivant suffira pour les PNJ mineurs, mais le MJ peut aussi s'en servir comme base pour développer des PNJ plus détaillés.
 

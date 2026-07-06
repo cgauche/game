@@ -1,6 +1,6 @@
 *Pages PDF 197-203*
 
-# <span id="page-196-0"></span>**ACTIVITÉS**
+# <span id="page-196-0" data-folio="195"></span>**ACTIVITÉS**
 
 Entre deux aventures, votre Personnage peut choisir de passer son temps à des occupations productives appelées Activités. Vous pouvez entreprendre un maximum d'une Activité par semaine, et vous pouvez tenter un *maximum de trois Activités* au total, et ce, quelle que soit la durée de la période entre deux aventures. Le reste du temps, que ce soient des semaines, des mois ou des ans, est consacré à vivre dans un calme relatif – quel que soit votre Personnage.
 
@@ -47,7 +47,7 @@ Les elfes, même ceux habitant à l'intérieur des frontières de l'Empire, ne s
 Les elfes sylvains de la forêt de Loren sont encore plus distants ; presque mythiques, rarement aperçus, et lorsqu'ils apparaissent, les Asrai ont toujours leurs propres préoccupations qu'ils ne partagent pas avec les autres.
 
 
-<span id="page-197-0"></span>
+<span id="page-197-0" data-folio="196"></span>
 
 # PRESTIGE ELFIQUE
 
@@ -188,7 +188,7 @@ Si vous ne connaissez pas de fournisseur approprié pour ce type d'objet, vous d
 Cette Activité englobe les différentes façons de vous faire de l'argent entre vos aventures. La plupart travailleront sûrement dans une profession reconnue – les Chasseurs de primes chassent les primes, les Patrouilleurs fluviaux surveillent les rivières, les Tueurs de trolls tuent des trolls – d'autres peuvent compter sur une compétence lucrative. Les Personnages les plus fortunés, comme les Nobles et les Marchands, pourraient recevoir une rente en satisfaisant (brièvement) leur famille, ou toucher les intérêts de leurs investissements et entreprises commerciales. Les Voleurs ont une foule de moyens pour obtenir des fonds, bien qu'il vaille mieux ne pas leur demander trop de précisions à ce sujet.
 
 
-<span id="page-201-0"></span>Vous devriez décrire brièvement la façon dont votre Personnage gagne de l'argent. Il s'agit plus d'obtenir des détails amusants que des conséquences directes, même si les MJ peuvent rassembler des idées utiles ou sinistres pour les utiliser plus tard en fonction de ce que vous décrivez. Vous obtenez alors les revenus avec lesquels vous commencerez votre prochaine aventure, qui correspond à votre revenu standard déterminé par votre Statut (voir **Chapitre 3 : Classes et Carrières** pour plus de détails). Certains résultats du Tableau des Événements page 193 peuvent directement affecter vos revenus. L'argent que vous obtenez grâce à une Activité *Revenus* vous est seulement remis une fois que vous avez disposé de l'argent de votre dernière aventure (voir *Argent à gaspiller*).
+<span id="page-201-0" data-folio="200"></span>Vous devriez décrire brièvement la façon dont votre Personnage gagne de l'argent. Il s'agit plus d'obtenir des détails amusants que des conséquences directes, même si les MJ peuvent rassembler des idées utiles ou sinistres pour les utiliser plus tard en fonction de ce que vous décrivez. Vous obtenez alors les revenus avec lesquels vous commencerez votre prochaine aventure, qui correspond à votre revenu standard déterminé par votre Statut (voir **Chapitre 3 : Classes et Carrières** pour plus de détails). Certains résultats du Tableau des Événements page 193 peuvent directement affecter vos revenus. L'argent que vous obtenez grâce à une Activité *Revenus* vous est seulement remis une fois que vous avez disposé de l'argent de votre dernière aventure (voir *Argent à gaspiller*).
 
 En plus de vous permettre d'obtenir des fonds pour une utilisation ultérieure, si vous êtes au troisième ou quatrième échelon de votre Carrière et que vous entreprenez cette Activité, vous maintenez automatiquement votre Statut de Carrière. Voir *Avec le pouvoir…* page 195 pour plus de détails.
 
@@ -248,7 +248,7 @@ Un seul succès signifie que vous rassemblez suffisamment de citadins en colère
 Une fois que vous avez l'oreille d'une foule (entreprenant avec succès cette Activité), vous pouvez tenter de mobiliser la foule contre une cible différente pendant une aventure, bien que cela soit plus difficile, et que la Difficulté du Test de **Charme** soit plus élevée de deux niveaux.
 
 
-# <span id="page-203-0"></span>•RELIGIONS ET CROYANCES •
+# <span id="page-203-0" data-folio="202"></span>•RELIGIONS ET CROYANCES •
 
 Des monuments religieux se retrouvent partout à travers le Vieux Monde, qu'il s'agisse des magnifiques temples des grandes cités, d'humbles sanctuaires situés le long des routes ou encore d'autels domestiques. Les habitants du Vieux Monde font de leur mieux pour rester dans les bonnes grâces de leurs dieux.
 

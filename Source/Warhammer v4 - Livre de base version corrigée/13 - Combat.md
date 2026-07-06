@@ -1,6 +1,6 @@
 *Pages PDF 158-161*
 
-# <span id="page-157-0"></span>**COMBAT**
+# <span id="page-157-0" data-folio="156"></span>**COMBAT**
 
 Tôt ou tard, vous devrez empêcher quelqu'un de faire quelque chose, ou quelqu'un tentera de vous arrêter. Lorsque la diplomatie n'a rien donné, ou n'a pas été tentée, ou n'a pas été comprise, le Combat débute !
 
@@ -53,7 +53,7 @@ Le fait de prendre votre ennemi par surprise vous confère un énorme avantage. 
 **• Se cacher** : réussir un Test de Discrétion afin de trouver un abri. Les Personnages peuvent faire un Test opposé de Perception s'ils sont sur leurs gardes, ou si le MJ est d'humeur généreuse.
 
 
-- <span id="page-158-0"></span>**• Tactiques furtives** : attaquer par derrière, dans le noir, sous couvert d'un épais brouillard, ou d'en haut ! Le MJ peut, le cas échéant, accorder un Test de Perception pour repérer les éventuels attaquants.
+- <span id="page-158-0" data-folio="157"></span>**• Tactiques furtives** : attaquer par derrière, dans le noir, sous couvert d'un épais brouillard, ou d'en haut ! Le MJ peut, le cas échéant, accorder un Test de Perception pour repérer les éventuels attaquants.
 - **• Distractions** : de fortes détonations, une rixe ou un sermon captivant ne sont que quelques exemples de distractions qui peuvent vous donner un avantage lors d'une attaque-surprise !
 - **• Défenseurs pris au dépourvu :** si l'ennemi n'est pas du tout méfiant, les attaquants le surprennent automatiquement.
 - **• Autres :** d'autres moyens ingénieux et sournois auxquels nous n'avons pas pensé – c'est le MJ qui a le dernier mot quant à la possibilité de la surprise.
@@ -118,7 +118,7 @@ L'une des Actions les plus fréquentes consiste à attaquer un adversaire. Pour 
 Lors d'un Combat, les Difficultés sont supposées être au niveau **Intermédiaire (+0).** Donc, si rien n'est précisé, utilisez Intermédiaire.
 
 
-# <span id="page-160-0"></span>**1 : Lancer pour Toucher**
+# <span id="page-160-0" data-folio="159"></span>**1 : Lancer pour Toucher**
 
 **Corps à corps :** pour attaquer, effectuez un Test opposé de **Corps à corps** avec votre adversaire (vous et votre adversaire utilisez tous les deux votre Compétence Corps à corps, voir page 121). Celui qui obtient le DR le plus élevé l'emporte. Si vous remportez le Test, vous touchez votre adversaire et gagnez +1 Avantage. Si vous perdez le Test opposé, votre adversaire gagne +1 Avantage et votre Action est terminée.
 

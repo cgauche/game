@@ -2,7 +2,7 @@
 
 ## CHAPITRE 8 :
 
-<span id="page-64-0"></span>
+<span id="page-64-0" data-folio="64"></span>
 
 # LES MUTANTS DANS L'EMPIRE
 
@@ -37,7 +37,7 @@ Certains mutants déclarent la guerre à la société, comprenant que le monde e
 Les mutants qui peuvent passer pour normaux restent actifs dans la vie quotidienne, même s'ils organisent des rituels secrets et mettent à exécution leurs plans pour saper l'Empire et le Vieux Monde. Ceux qui ne peuvent plus montrer leur visage ont tendance à vivre dans les temples de culte cachés, jouant le rôle de gardiens, et comptant sur leurs collègues cultistes pour la nourriture et les autres nécessités.
 
 
-### <span id="page-65-0"></span>**Mutants Bandits et Sauvages**
+### <span id="page-65-0" data-folio="65"></span>**Mutants Bandits et Sauvages**
 
 Pour de nombreux mutants malchanceux, en particulier ceux des zones rurales, le seul espoir de survie est de se perdre dans les forêts dès les premiers signes de mutation. Ceux qui vivent assez longtemps rencontrent souvent d'autres mutants, subsistant grâce à la récupération et au banditisme. On estime que les trois quarts des « attaques d'hommes-bêtes» le long des routes de l'Empire et autour des villages et des fermes isolés sont en réalité le fait de mutants. La vérité est impossible à déterminer.
 

@@ -2,7 +2,7 @@
 
 # **LE CULTE DE VERENA, DÉESSE DE LA SAGESSE**
 
-<span id="page-215-0"></span>**Siège du Pouvoir :** aucun **Chef du Culte :** aucun
+<span id="page-215-0" data-folio="214"></span>**Siège du Pouvoir :** aucun **Chef du Culte :** aucun
 
 **Principaux ordres :** l'Ordre des Porteurs de la Balance, l'Ordre des Gardiens du Savoir, L'Ordre des Mystères, l'Ordre de la Lumière éternelle
 

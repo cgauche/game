@@ -1,6 +1,6 @@
 *Pages PDF 49-58*
 
-# <span id="page-48-0"></span>• LES NAINS IMPÉRIAUX •
+# <span id="page-48-0" data-folio="48"></span>• LES NAINS IMPÉRIAUX •
 
 Les nains vivent aux côtés des hommes depuis la nuit des temps. Pour certains clans, cette coexistence remonte à plus d'un millénaire avant la fondation de l'Empire. Appelés « nains impériaux », ces clans étaient autrefois des alliés de confiance pour plusieurs tribus humaines. Leur histoire est marquée par les mêmes grands succès et terribles tragédies que celle de leurs voisins humains. Les nains sont connus pour leur obstination à respecter les traditions ancestrales et les usages d'antan, et même le plus réfractaire ne peut résister à l'influence de la communauté avec laquelle on évolue au quotidien. Les nains impériaux sont en apparence similaires à leurs cousins des montagnes, les « nains des karak », mais il existe en réalité de nombreuses différences subtiles entre ces deux groupes. La cohabitation avec les humains pendant plus de quatre millénaires a profondément transformé les nains impériaux.
 
@@ -17,7 +17,7 @@ Au fil du temps, des humains de plus en plus belliqueux s'installèrent dans la 
 Après avoir été couronné Empereur, Sigmar invita les nains des montagnes à descendre vivre avec son peuple, car il avait besoin de leur aide pour bâtir les villes et les cités de son nouvel Empire. De nombreux nains répondirent à son appel, et leurs descendants sont aujourd'hui encore de loyaux citoyens de l'Empire.
 
 
-## <span id="page-49-0"></span>**HISTOIRE**
+## <span id="page-49-0" data-folio="49"></span>**HISTOIRE**
 
 Les relations entre les nains et les hommes qui vivaient dans le futur territoire de l'Empire remontent à bien longtemps. Les premières tribus humaines arrivèrent pendant l'Âge d'or, avant que la guerre n'éclate entre les nains et les elfes. C'est pendant la Guerre de la Vengeance que les nains prirent conscience de l'intérêt du commerce avec les tribus humaines des Belthani, même s'ils ne les considéraient pas encore comme de véritables alliés.
 
@@ -52,7 +52,7 @@ Pendant le règne de l'empereur Ludwig I, l'influence et la richesse des nains f
 Les persécutions continuèrent lorsque l'empereur Boris l'Avide prit le pouvoir. Son désir d'accaparer leurs richesses provoqua la ruine de nombreux nains. Pourtant, les nains impériaux ne se rebellèrent pas, car ils n'avaient pas oublié que leurs ancêtres avaient fait le serment de soutenir l'Empire de Sigmar. Ce climat de persécution prit fin quand la Peste noire emporta l'empereur Boris.
 
 
-## <span id="page-50-0"></span>JAMAIS OUBLIÉ, JAMAIS PARDONNÉ
+## <span id="page-50-0" data-folio="50"></span>JAMAIS OUBLIÉ, JAMAIS PARDONNÉ
 
 La Peste noire entraîna la mort de neuf personnes sur dix, et la noblesse ne fut pas épargnée. Grâce à leur endurance naturelle, les nains impériaux furent moins touchés que les autres citoyens impériaux.
 
@@ -77,7 +77,7 @@ Plusieurs bataillons de nains impériaux venus de Nuln, du Reikland et du Wissen
 Après sa victoire sur le Chaos, Magnus von Bildhofen fut unanimement élu Empereur. Il réunifia toutes les provinces de l'Empire et ratifia de nouvelles lois pour empêcher que les corruptions du passé ne puissent se reproduire. Les nains impériaux soutenaient ardemment les nouvelles lois de l'empereur Magnus, mais ils restèrent vigilants. Ils savaient qu'un futur empereur risquerait de détourner ces lois avec autant de facilité que Ludwig et Boris à la suite de Sigmar.
 
 
-## <span id="page-51-0"></span>**LA SOCIÉTÉ NAINE IMPÉRIALE**
+## <span id="page-51-0" data-folio="51"></span>**LA SOCIÉTÉ NAINE IMPÉRIALE**
 
 Malgré plusieurs millénaires de vie commune avec les humains, la société naine impériale a conservé certains aspects de la structure sociale héritée de leurs cousins des montagnes, les nains des karak. Dans l'Empire, les nains sont encore aujourd'hui un peuple très fier et à la mémoire très longue, aussi bien pour les actions accomplies en leur nom que pour les méfaits commis à leur encontre. Ils respectent surtout l'âge, la richesse, le talent et la réputation.
 
@@ -108,7 +108,7 @@ Les conseils des nains des karak, quant à eux, ne servent que de conseillers po
 Les prêtres nains impériaux des dieux ancestraux sont rarement issus des clans nobles des karak. De plus, de nombreuses communautés de nains impériaux ne comptent aucun prêtre ordonné. Dans les grandes villes et cités où de tels prêtres résident (principalement des prêtres de Grungni), ils ont un rôle de conseiller dans le conseil des anciens, mais ils n'ont pas de droit de vote (sauf si ledit prêtre est aussi un ancien du clan).
 
 
-## <span id="page-52-0"></span>**Le clan**
+## <span id="page-52-0" data-folio="52"></span>**Le clan**
 
 Dans les villes, les membres du clan vivent dans les quartiers nains avec leurs proches. À la campagne, les clans de nains impériaux ont tendance à se disperser dans plusieurs villages relativement proches les uns des autres. Quelle que soit la distance, les membres des clans nains entrent régulièrement en contact les uns avec les autres et se rassemblent souvent à l'occasion de dates spéciales pour leur clan.
 
@@ -139,7 +139,7 @@ Les clans de nains impériaux sont très solidaires et proches les uns des autre
 Certains clans nains ont particulièrement assimilé la culture humaine, allant parfois jusqu'à tourner le dos à leurs propres semblables. Ils n'ont cependant jamais vraiment réussi à se faire des amis parmi les hommes, malgré leurs efforts dans ce sens.
 
 
-## <span id="page-53-0"></span>**Citoyens impériaux**
+## <span id="page-53-0" data-folio="53"></span>**Citoyens impériaux**
 
 Les nains impériaux s'entendent généralement bien avec leurs concitoyens humains et sont souvent parmi les premiers à se mobiliser pour une cause commune. Cependant, les clans ne sont pas naïfs. Ils restent à l'affût de la corruption des fonctionnaires et démagogues de l'Empire ; ces derniers, en particulier, dénoncent systématiquement la richesse et l'influence des nains pendant les crises économiques de l'Empire. Les guildes et l'aristocratie exploitent aussi ces périodes de troubles pour retourner l'opinion publique contre les clans. Les nains connaissent bien leurs droits en tant que citoyens de l'Empire, et ils acceptent mal qu'ils soient bafoués. Les noms de fonctionnaires, de citoyens et d'organisations de l'Empire sont souvent cités dans le Livre des rancunes des clans nains.
 
@@ -158,7 +158,7 @@ Les nains de l'Empire, quant à eux, estiment que leurs cousins des montagnes de
 Cependant, la plupart des nains impériaux considèrent Karaz Ankor comme leur foyer ancestral et contribuent financièrement et physiquement à la restauration de la gloire d'antan de l'empire nain. Certains, parmi la dernière génération de nains impériaux, rêvent de retourner dans les karak et de combattre pour l'honneur de Karaz Ankor. S'ils sont ravis d'accueillir des troupes supplémentaires, les nains des karak ont des doutes sur leur motivation et voient ces volontaires des plaines comme de vulgaires mercenaires.
 
 
-## <span id="page-54-0"></span>**COMMUNAUTÉS NAINES**
+## <span id="page-54-0" data-folio="54"></span>**COMMUNAUTÉS NAINES**
 
 Dans les régions rurales de l'Empire, les clans de nains impériaux sont dispersés dans les villages humains et il arrive fréquemment de croiser un nain solitaire ou une famille isolée parmi les villageois. Par exemple, la branche du clan Forgeron qui occupe la baronnie de Grautal siège dans la petite ville de Wiedle, avec des membres répartis dans les villages environnants de Begeln, Schlarz, Lengdorf, Lierz et Eilsbeck.
 
@@ -191,7 +191,7 @@ Les jeux d'argent sont particulièrement appréciés des nains impériaux. Ils s
 De nombreuses tavernes naines brassent leur propre bière, mais les grandes communautés possèdent toujours au moins une brasserie dans laquelle ils produisent la bière locale qui sera vendue aux établissements du coin. Les brasseries sont également l'occasion pour les maîtres-brasseurs nains de montrer toute l'étendue de leur talent, en particulier le 33 brauzeit, date du festival de brassage annuel de Grungni connu sous le nom de « Deuxième chopine » (ou *Brodag*). La bière naine est si forte que les humains et les halflings ne sont autorisés à prendre part aux festivités qu'en de très rares circonstances. En effet, ces deux espèces ne possèdent pas la constitution nécessaire pour bien assimiler la bière naine, et les brasseurs n'ont pas envie que le fruit de leur travail soit gâché ainsi (ce qui vaudrait en outre l'inscription d'une nouvelle entrée dans le Livre des rancunes).
 
 
-<span id="page-55-0"></span>Les brasseurs nains vendent également de la bière plus faible aux tavernes et auberges humaines dans la ville et les alentours. Pour un nain, une telle bière « douce » reste marginalement préférable à la boisson fade produite par les « brasseries » humaines.
+<span id="page-55-0" data-folio="55"></span>Les brasseurs nains vendent également de la bière plus faible aux tavernes et auberges humaines dans la ville et les alentours. Pour un nain, une telle bière « douce » reste marginalement préférable à la boisson fade produite par les « brasseries » humaines.
 
 ## **Forge**
 
@@ -218,7 +218,7 @@ Pour les cérémonies religieuses, les communautés naines impériales accueille
 Ceux qui vivent dans des villages érigent traditionnellement un sanctuaire dédié à Grungni et aux ancêtres du clan dans un coin de leur cave.
 
 
-<span id="page-56-0"></span>
+<span id="page-56-0" data-folio="56"></span>
 
 ## **Karstin Largsdottir**
 
@@ -259,7 +259,7 @@ voyageurs, plume et encre
 **Possessions :** deux pistolets et 12 munitions, chemise de mailles, vêtements de qualité, arme simple (épée argentée), interrogateurs adjoints
 
 
-<span id="page-57-0"></span>
+<span id="page-57-0" data-folio="57"></span>
 
 ## **Thyk Hurgarsson**
 

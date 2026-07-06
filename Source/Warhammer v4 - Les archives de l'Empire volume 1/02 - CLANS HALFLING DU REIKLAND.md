@@ -1,6 +1,6 @@
 *Pages PDF 23-33*
 
-## <span id="page-22-0"></span>CLANS HALFLING DU REIKLAND • •
+## <span id="page-22-0" data-folio="22"></span>CLANS HALFLING DU REIKLAND • •
 
  *« Et là, Clémence Havrebas regarde le grand gaillard, tout sourire, et lui dit : "Si t'as peur de la Vengeance des Rumster, attend un peu de voir la mienne !" Il souriait beaucoup moins, c'est moi qui te le dis ! »*
 
@@ -21,7 +21,7 @@ La nature polygame désinvolte des halflings et leur utilisation approximative d
 Cependant, la nature peu conventionnelle des groupes familiaux des halflings, ainsi que leur attitude souple vis-à-vis de la notion de propriété personnelle, leur vaut un manque de confiance des humains dans tout l'Empire. Heureusement, ce genre de préjugés est moins présent dans le Reikland « éclairé » que dans les grandes provinces à proximité du Mootland.
 
 
-## <span id="page-23-0"></span>**LES GRANDS CLANS DU REIKLAND**
+## <span id="page-23-0" data-folio="23"></span>**LES GRANDS CLANS DU REIKLAND**
 
 Même si les représentants de presque tous les clans halfling du Mootland se trouvent au Reikland, douze d'entre eux sont très répandus. La majorité d'entre eux ont migré dans la région il y a plusieurs siècles et, dans la plupart des cas, ils se sont parfaitement intégrés dans ces communautés.
 
@@ -52,7 +52,7 @@ Cendreplaine pur jus, Doc a grandi à Grissenwald et a appris avec ses pères à
 **Possessions :** arc (et 10 flèches), dague, plastron, veste de cuir, casque avec une plume impressionnante, uniforme
 
 
-## <span id="page-24-0"></span>**Basseronce**
+## <span id="page-24-0" data-folio="24"></span>**Basseronce**
 
 Les halflings du clan Basseronce sont ceux que l'on rencontre le plus fréquemment dans le Reikland, surtout parmi les riverains de la province. Même si les halflings vivent une vie sédentaire et s'installent quelque part avec quelques douzaines de leurs proches, d'autres sont plus enclins à partir à la recherche de travail (ou d'aventure). Uniques parmi les clans halflings du Reikland, les Basseronce apprécient un style de vie nomade et s'aventurent souvent assez loin, juste pour le plaisir du voyage. Les Basseronce rejoignent souvent des mercenaires ogres en tant que cuisiniers et brocanteurs. Leur nature itinérante convient naturellement à l'envie de voyager des ogres.
 
@@ -81,7 +81,7 @@ Au cours de ses soixante ans de vie, Tina Basseronce a voyagé sur le Reik, des 
 (commerçant Auftrager)
 
 
-## <span id="page-25-0"></span>**Tuilecaramel**
+## <span id="page-25-0" data-folio="25"></span>**Tuilecaramel**
 
 La lignée des Tuilecaramel remonte à la plus ancienne famille fermière du Mootland. Ils entretiennent une profonde affinité avec la terre riche et fertile, et les cultures. À l'instar des habitants typiques du Stirland (voir p. 15), les Tuilecaramel parlent généralement lentement, réfléchissent intensément, et ont la réputation d'être terriblement feignants. En vérité, ils sont plus adaptés au train de vie tranquille et bucolique d'une vie à la ferme, rythmée non par les minutes et les heures, mais par le lever du soleil et les saisons, là où chacun coopère pour le bien commun sans se soucier d'abstractions idéalistes comme l'espace personnel et la propriété privée. À bien des égards, les Tuilecaramel enjoués et indolents, avec leur visage ouvert et leurs tendances chapardeuses, sont l'archétype des halflings souvent caricaturé dans les journaux d'Altdorf.
 
@@ -98,7 +98,7 @@ Les Piedfoin (ou « Piedsfoin », les deux graphies sont utilisées par le clan)
 importante du Reikland, mais même s i elles partagent leur nom, les entreprises du clan sont loin d'être unies. Des Piedfoin individuels, ou de petits consortiums, passent leurs propres accords commerciaux, et vont parfois jusqu'à faire concurrence à leurs proches ou à les discréditer.
 
 
-## <span id="page-26-0"></span>**Piedpaille**
+## <span id="page-26-0" data-folio="26"></span>**Piedpaille**
 
 Le clan Piedpaille adore fabriquer de beaux objets. Les origines de leur famille remontent au commerce du tissage, même si elles se sont diversifiées au fil des ans. De nos jours, les halflings Piedpaille vivent dans la plupart des villes et cités du Reikland et travaillent dans plusieurs domaines artisanaux. La créativité est inculquée aux Piedpaille dès leur plus jeune âge. Avec un tel engagement pour la qualité, certains ateliers Piedpaille ont même gagné le respect des artisans nains (même si ces derniers ne l'admettent pas ouvertement). De nouvelles inventions dans le traitement industriel, comme les grands métiers à tisser à vapeur d'Altdorf et de Nuln, inquiètent beaucoup les experts tisserands Piedpaille. Ils aimeraient beaucoup empêcher la propagation de ces machines.
 
@@ -115,7 +115,7 @@ Le clan Piedfoin-Piedpaille s'est formé assez récemment (d'un point de vue d'h
 Par conséquent, ils travaillent souvent comme marchands pingres et sans scrupules, ou propriétaires d'ateliers produisant des marchandises bon marché et de mauvaise qualité pour sous-coter le travail soigné des Piedpaille. Ils sont rarement impliqués dans des crimes plus graves ; pas par scrupules moraux, mais par crainte des Havrebas, qui ne tolèrent aucune concurrence.
 
 
-## <span id="page-27-0"></span>**Pochégarée**
+## <span id="page-27-0" data-folio="27"></span>**Pochégarée**
 
 Les Pochégarée vivent une vie de misère et d'isolement. Pochégarée est le nom donné à un halfling sans clan. Même si, à de rares occasions, il peut s'agir d'une punition officielle infligée par les anciens des clans pour de graves transgressions, les Pochégarée sont généralement des enfants abandonnés ou des orphelins dépossédés dont aucune famille n'a voulu. Les raisons qui pousseraient une créature aussi compatissante qu'un halfling à abandonner son enfant font l'objet de nombreuses spéculations : le scandale, la peur de représailles ou la mort sont les plus probables. L'isolement imposé des Pochégarée produit souvent de jeunes halflings endurcis et indépendants, même si leur apparence confiante cache un désir douloureux pour la chaleur, l'intimité et la sécurité d'une famille qui leur sont à jamais refusées.
 
@@ -142,7 +142,7 @@ Très résistant, Vision nocturne **Traits :** Arme (Dague) +4
 **Possessions :** couverture de mauvaise qualité, bol, béquille, tasse, dague moche (surin), cachette avec 6 sous de cuivre
 
 
-## <span id="page-28-0"></span>**Havrebas (dit Basfond)**
+## <span id="page-28-0" data-folio="28"></span>**Havrebas (dit Basfond)**
 
 Le clan Havrebas est le plus important de Nuln, et vient tout juste d'arriver à la capitale impériale par le Reik. Cependant, même si cela ne fait que quelques décennies que le clan s'est installé dans le Reikland, il s'est rapidement développé dans la province, et a étendu son influence dans le secteur d'Haffenstadt et la plupart des grandes villes du Reikland. Les Havrebas sont la conséquence logique du mépris naturel des halflings pour le caractère sacré de la propriété privé. Cette famille de criminels forme un réseau étroit d'intérêts qui se soutiennent mutuellement, un groupe bien plus organisé et solidaire que n'importe quel autre clan. Comme un halfling perd de façon quasi systématique face à un adversaire humain, les Havrebas font en sorte de se déplacer en masse. En cas de recours à la violence, ils attaquent toujours en groupe. Maintenant qu'ils se sont fait une place dans la pègre du Reikland, une rivalité tendue est apparue entre le clan et les autres organisations criminelles, comme le Poisson et les Crochets (les gangs des docks d'Altdorf ) ou les familles criminelles Selblich et Barbieri.
 
@@ -167,7 +167,7 @@ Bella a emménagé à Ubersreik il y a quelques années afin de travailler avec 
 **Possessions :** rancœur, coup-de-poing, calotte de cuir, veste de cuir, chemise de mailles, bourse avec 16 pistoles d'argent
 
 
-## <span id="page-29-0"></span>**Rumster**
+## <span id="page-29-0" data-folio="29"></span>**Rumster**
 
 Rumster est probablement le clan de halflings le plus connu du Reikland. Les Rumster (et leurs fameuses tourtes et pâtisseries) sont répandus dans l'ensemble de la province et de l'Empire. Les humains, les halflings et les nains consomment régulièrement leurs marchandises auprès de vendeurs de rue et de petites boulangeries, même si leur tendance à préparer des pâtisseries épaisses est moins adaptée aux papilles gustatives elfiques. Les humains pensent que toutes les tourtes portant le nom « Rumster » proviennent du même endroit, mais en réalité, il existe des centaines d'entreprises Rumster distinctes actives rien qu'à Altdorf. Comme la plupart des tourtes Rumster sont de bonne qualité, cela peut endormir la méfiance des humains (dont la robustesse intestinale ne vaut pas celle des halflings) face à une tourte Rumster de qualité douteuse, ce qui peut provoquer une « Vengeance des Rumster » (voir *Courante galopante* **WFJDR**, p. 186).
 
@@ -192,7 +192,7 @@ LASPIRATOURTE « LASPY » RUMSTER LVI – APPRENTI ARTISAN (BRONZE 2)
 **Possessions :** aspirations inatteignables, dague, justaucorps de cuir, bourse avec 16 sous de cuivre, plateau de tourtes
 
 
-## <span id="page-30-0"></span>**Bordécharde**
+## <span id="page-30-0" data-folio="30"></span>**Bordécharde**
 
 Les Bordécharde forment un clan pauvre. Ils n'ont aucune compétence et aucun talent spécifiques et vivent en marge des sociétés humaine et halfling. Ils acceptent toutes les tâches qu'on leur propose et partout où ils peuvent, si répugnantes soientelles. Ils se retrouvent entraînés dans des activités criminelles par nécessité, mais ne font pas preuve du même enthousiasme que les Havrebas. Ils sont également moins solidaires et bien moins organisés en réseau que les rançonneurs. La plupart des grandes villes et cités accueillent un ou plusieurs « terriers » (presque un minuscule bas-fond) de Bordécharde, où des douzaines d'entre eux survivent péniblement, tassés dans des logements sordides et insalubres.
 
@@ -217,7 +217,7 @@ Pousse n'a jamais eu l'intention de tomber dans l'illégalité en travaillant da
 lampe tempête et huile, bâche
 
 
-## <span id="page-31-0"></span>**Pavéderonces**
+## <span id="page-31-0" data-folio="31"></span>**Pavéderonces**
 
 Les halflings n'ont pas de nobles au même sens que les humains ou les autres races. En règle générale, ils obtiennent un statut en fonction de leurs accomplissements, pas de l'identité de leurs parents, et même si leurs origines sont importantes (et remontent souvent jusqu'à l'époque de Ludwig le Gros), elles ne garantissent ni le respect ni le privilège. Ceci dit, le clan Pavéderonces est ce qui se rapproche le plus de la noblesse dans la société halfling. Leur lignée est aussi ancienne que celle des Fiercœur (les anciens du Mootland), les Pavéderonces se considèrent comme supérieurs aux autres clans : plus anciens, plus sages, plus instruits. Ce clan nanti, qui s'est développé grâce au commerce et à l'exploitation d'autres clans halflings inférieurs, s'est installé il y a plus d'un millénaire à Altdorf. Ils sont bien intégrés à la Cour impériale d'Altdorf, et parlent avec un accent de la haute société qui choque ceux qui les rencontrent pour la première fois.
 
@@ -246,7 +246,7 @@ Le premier souvenir de Thélonius est d'avoir été emmené à la Cour impérial
 **Possessions :** habit de cour, petit fleuret (compte comme une dague, peut être utilisé avec Corps à corps [Base] ou Corps à corps [Escrime]), 4 bagues d'une valeur de 3 CO chacune, Lolli Bordécharde (Serviteur)
 
 
-## <span id="page-32-0"></span>**Fraisedébois**
+## <span id="page-32-0" data-folio="32"></span>**Fraisedébois**
 
 Les Fraisedébois sont probablement le clan halfling le mieux intégré de l'Empire. Ils se mêlent aisément à la classe moyenne florissante, et exercent une influence raisonnable, mais sans les airs pincés et les aspirations des Pavéderonces pour la noblesse. Ils ont toutes les caractéristiques des halflings amicaux : charmants, sympathiques et plaisants, et ne tolèrent pas les mauvaises manières. Ils font grand cas de l'art de la conversation et sont facilement offensés si les mondanités du discours civilisé sont ignorées. Les Fraisedébois sont également plus studieux que la plupart des autres halflings, leur intérêt pour l'apprentissage et l'érudition les amène à se faire une place dans les écoles et université du Reikland, ou à apporter leur aide dans les temples dédiés à Verena (où leur manque de foi personnelle est moins important que leur intérêt pour la connaissance).
 

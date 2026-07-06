@@ -1,6 +1,6 @@
 *Pages PDF 80-98*
 
-# <span id="page-79-0"></span>CHAPITRE 6 LES POUVOIRS EN PLACE
+# <span id="page-79-0" data-folio="77"></span>CHAPITRE 6 LES POUVOIRS EN PLACE
 
 Dans cette aventure, les Personnages doivent faire la connaissance de diverses personnalités issues de la haute société de Middenheim, découvrir le complot maléfique qui est à l'origine des nouvelles taxes et exercer leur influence sur le Graf, à la fois pour abroger ces taxes et pour s'occuper de l'architecte de ce complot.
 
@@ -58,7 +58,7 @@ Chez eux, les PNJ sont protégés par des gardes et des serviteurs, comme des ma
 Le lancer doit également être ajusté en fonction de ce que demandent les Personnages. Il est difficile de demander à voir un PNJ important chez lui sans invitation ou rendez-vous, mais si les Personnages veulent simplement savoir si ce PNJ assistera à un événement (ce qui est déjà de notoriété publique, ou presque, et que le PNJ pourra nier par la suite s'il le souhaite) les chances sont bien meilleures. Gardez en tête que, quel que soit le résultat du lancer, aucun PNJ n'est susceptible de faire quoi que ce soit de trop stupide ou ridicule, surtout si cela pourrait nuire à sa réputation.
 
 
-#### <span id="page-81-0"></span>**Bluff**
+#### <span id="page-81-0" data-folio="79"></span>**Bluff**
 
 Une façon moins risquée de se débarrasser des serviteurs est de recourir au bluff. Le serviteur ne sait pas forcément quand quelqu'un lui ment, et si le mensonge semble suffisamment convaincant, il pourrait risquer de perdre son travail en refusant l'entrée au Personnage. Et s'il s'agissait vraiment de l'empereur Padichah de toute l'Arabie ?
 
@@ -91,7 +91,7 @@ Rencontrer Sparsam peut également se faire par le biais de son intérêt pour l
 **Présentations :** si les Personnages se lient d'amitié avec Sparsam, il sera peut-être disposé à les présenter au Chevalier Éternel ou à l'un des Seigneurs des Lois. Cependant, une présentation avec Wasmeier sera sûrement difficile à organiser : non seulement le Seigneur des Lois renégat est trop occupé à jongler entre ses engagements officiels et son plan maléfique, mais toute l'aventure pourrait être compromise si les Personnages le suspectent au premier abord. Sparsam peut également les présenter à Gotthard Wallenstein, qu'il considère comme une « *bonne connaissance* » (Sparsam n'est pas du genre à avoir des amis) et un homme d'affaires intelligent.
 
 
-<span id="page-82-0"></span>La meilleure façon de rencontrer Dieter est de faire bonne impression lors des défis (p. 73). Une autre option, presque aussi efficace, serait de le croiser à la foire aux chevaux (p. 65). Si le Personnage s'y connaît bien en chevaux, il apprendra que Dieter est fin connaisseur des chevaux et qu'il espère devenir maréchal-ferrant et marchand de chevaux une fois qu'il aura pris sa retraite en tant que Champion du Graf.
+<span id="page-82-0" data-folio="80"></span>La meilleure façon de rencontrer Dieter est de faire bonne impression lors des défis (p. 73). Une autre option, presque aussi efficace, serait de le croiser à la foire aux chevaux (p. 65). Si le Personnage s'y connaît bien en chevaux, il apprendra que Dieter est fin connaisseur des chevaux et qu'il espère devenir maréchal-ferrant et marchand de chevaux une fois qu'il aura pris sa retraite en tant que Champion du Graf.
 
 Dieter assistera également à d'autres événements du Carnaval, comme indiqué sur son agenda de PNJ. Les événements les plus propices à une rencontre fortuite sont le festival des bières (p. 65) et la fête du Carnaval (p. 72 et **Le Pouvoir derrière le Trône - Compagnon**). Dans les deux cas, Dieter sera légèrement ivre, accompagné de ses amis et éventuellement en train de débattre des taxes avec d'autres PNJ, qui trouvent son attitude déconcertante. Il se peut même qu'il soit en train de se disputer avec un ou plusieurs nains, sorciers, prêtres ou autres personnes affectées par les taxes. Alors que les esprits s'échauffent, les Personnages ont la possibilité de calmer la situation, ce qui leur vaut la gratitude de Dieter et de ses amis les plus proches, en particulier Kirsten.
 
@@ -112,7 +112,7 @@ Certains Joueurs pourraient penser que le meilleur endroit pour approcher Katari
 **Présentations :** Katarina refuse de présenter qui que ce soit à son père, car il est malade et ne doit pas être dérangé. De même, les Personnages ne peuvent pas se servir d'elle pour voir Stefan, car Pavarotti a donné des instructions strictes afin qu'il évite d'être surexcité. Si les Personnages arrivent à la convaincre qu'ils peuvent aider son frère, elle les présente à Pavarotti et le laisse seul maître de la décision. Elle peut présenter les Personnages aux autres elfes, en particulier à Rallane Lafarel, ainsi qu'à Ar-Ulric. La présentation avec Hildegarde Zimperlich est délicate : Katarina a une affection considérable pour son chaperon (doublée d'une bonne dose de frustration, bien entendu) et, en temps normal, elle serait plus que ravie d'aider toute personne respectable à faire sa connaissance. Cependant, Katarina est inquiète à l'idée d'emmener des personnages jeunes, beaux, et surtout masculins, voir son chaperon, car cette situation pourrait conduire à des questions embarrassantes sur la façon dont ils se sont rencontrés. De plus, Hildegarde se demanderait pourquoi elle apprend leur rencontre aussi tardivement.
 
 
-<span id="page-83-0"></span>Hildegarde passe la plupart de son temps avec sa jeune protégée, mais les Personnages peuvent apprendre que son intérêt pour l'étrange (depuis toujours) l'amènera à aller voir les cracheurs de feu le Backertag ( Jour 4). Elle peut décider d'assister au spectacle d'éléphants le Backertag après que Katarina est revenue du temple de Shallya. Surius est la coqueluche du Carnaval, et bien qu'elle soit considérée comme un peu rabat-joie, surtout par sa jeune « protégée », Hildegarde ne manquerait ce spectacle pour rien au monde.
+<span id="page-83-0" data-folio="81"></span>Hildegarde passe la plupart de son temps avec sa jeune protégée, mais les Personnages peuvent apprendre que son intérêt pour l'étrange (depuis toujours) l'amènera à aller voir les cracheurs de feu le Backertag ( Jour 4). Elle peut décider d'assister au spectacle d'éléphants le Backertag après que Katarina est revenue du temple de Shallya. Surius est la coqueluche du Carnaval, et bien qu'elle soit considérée comme un peu rabat-joie, surtout par sa jeune « protégée », Hildegarde ne manquerait ce spectacle pour rien au monde.
 
 Tout comme sa protégée, la « princesse » Katarina, Hildegarde est difficile à rencontrer et la croiser par hasard est quasiment impossible. Les rares fois où elle se retrouve seule en public, elle est accompagnée de deux gardes du Palais. Au spectacle des cracheurs de feu, ils font office de porteurs et de gardes du corps : ils transportent une couverture, une petite chaise pliante ainsi qu'un panier de pique-nique et l'aident à s'installer confortablement avant le début de la représentation.
 
@@ -129,7 +129,7 @@ Les Personnages peuvent tenter d'impressionner Schutzmann en aidant à rétablir
 **Présentations :** les Middenmarshalls n'interagissent que rarement avec les autres PNJ importants et leurs relations avec eux sont de nature formelle. Ils peuvent se porter garants des Personnages afin de leur obtenir un entretien avec Sparsam et les présenter à Dieter, mais ils ne peuvent rien faire de plus. Le Graf ne doit pas être dérangé à cause de son infirmité actuelle, les présentations avec la « Princesse », les Dames de la cour et les autres personnages de la Cour ne sont donc pas de mise. Les Seigneurs des Lois, bien que respectés, sont trop impliqués dans la politique pour que les Middenmarshalls les connaissent vraiment bien, et il en va de même pour Gotthard Wallenstein.
 
 
-<span id="page-84-0"></span>Albrecht Helseher est un homme difficile à rencontrer. Il a peu d'engagements au Carnaval et passe la plupart de son temps isolé dans sa maison de guilde, préparant des arguments contre la taxe sur les parchemins et certains aspects des autres taxes qui touchent les sorciers de Middenheim. Il peut être intéressé par tout élément prouvant que ces taxes font partie d'un plan visant à affaiblir la ville, mais il a besoin de preuves convaincantes avant d'agir.
+<span id="page-84-0" data-folio="82"></span>Albrecht Helseher est un homme difficile à rencontrer. Il a peu d'engagements au Carnaval et passe la plupart de son temps isolé dans sa maison de guilde, préparant des arguments contre la taxe sur les parchemins et certains aspects des autres taxes qui touchent les sorciers de Middenheim. Il peut être intéressé par tout élément prouvant que ces taxes font partie d'un plan visant à affaiblir la ville, mais il a besoin de preuves convaincantes avant d'agir.
 
 Janna Eberhauer est plus active socialement et peut être aperçue lors de divers événements artistiques en ville. Elle est assez accessible, surtout si un ou plusieurs Personnages ont pris la peine de rejoindre sa guilde depuis leur arrivée à Middenheim. Elle n'est pas intéressée par les avances romantiques, mais écoute volontiers tout Personnage qui la considère comme une sorcière digne de ce nom. Elle accorde également le bénéfice du doute à toute personne que lui présente sa sœur Erina, qui séjourne aux Armes du Templier lors de l'événement prévu *Le Chaos frappe la nuit* (voir p. 89). Si les Personnages arrivent à convaincre Janna qu'un complot sinistre se cache derrière les nouvelles taxes, elle examine attentivement leurs preuves. Elle les apporte à Helseher si elle pense qu'elles suffiront à le convaincre d'agir. Dans le cas contraire, elle conseille les Personnages sur la manière de procéder, sur les personnes à interroger et sur les informations nécessaires. Cependant, veillez à ne pas la laisser guider le groupe à distance : elle doit être une source d'informations utile plutôt qu'un passe-partout permettant de débloquer toute l'aventure.
 
@@ -146,7 +146,7 @@ Le meilleur moyen, et peut-être le seul, de rencontrer Ar-Ulric en des circonst
 **Présentations :** Ar-Ulric peut présenter relativement peu de personnes et devra être mis totalement en confiance par les Personnages avant de le faire. La « Princesse » et son Chaperon répondraient favorablement à une lettre d'introduction fournie par le Grand Prêtre, tout comme n'importe quel Middenmarshall. Les présentations à d'autres PNJ importants peuvent être traitées comme vous le souhaitez, en fonction des circonstances et de la relation entre Ar-Ulric et le PNJ en question. Des précisions sur les opinions et les attitudes des PNJ les uns envers les autres sont apportées dans les fiches de PNJ à la fin de ce livre.
 
 
-<span id="page-85-0"></span>Comme les autres Dames de la cour, Emmanuelle peut être rencontrée lors d'un certain nombre d'événements du Carnaval, bien qu'elle soit occupée à escorter les dignitaires en visite et ne soit généralement pas disponible pour discuter. Les Personnages peuvent lui faire une bonne impression en passant, peut-être en s'occupant d'un élément perturbateur qui menace sa sécurité ou celle de sa charge, ou simplement la réputation de la ville aux yeux d'un visiteur de marque.
+<span id="page-85-0" data-folio="83"></span>Comme les autres Dames de la cour, Emmanuelle peut être rencontrée lors d'un certain nombre d'événements du Carnaval, bien qu'elle soit occupée à escorter les dignitaires en visite et ne soit généralement pas disponible pour discuter. Les Personnages peuvent lui faire une bonne impression en passant, peut-être en s'occupant d'un élément perturbateur qui menace sa sécurité ou celle de sa charge, ou simplement la réputation de la ville aux yeux d'un visiteur de marque.
 
 Si les Personnages ont déjà fait bonne impression sur Kirsten Jung ou Petra Liebkosen, et se sont montrés discrets et dignes de confiance, ils pourraient être présentés à Emmanuelle comme des personnes susceptibles de l'aider à résoudre ce qui la préoccupe tant ces derniers temps. Aucune des deux n'est au courant pour Ar-Ulric ou le chantage, et toutes deux seraient choquées de découvrir cette situation, mais très enclines à l'aider.
 
@@ -167,7 +167,7 @@ Pour être dans les bonnes grâces de Siegfried, il suffit de profiter de son or
 **Présentations :** s'il est suffisamment flatté et manipulé, Siegfried démontre volontiers sa position et son influence (ou plutôt, celles qui n'existent que dans sa propre imagination) en fournissant aux Personnages des lettres d'introduction tarabiscotées et joliment rédigées auprès de n'importe qui dans la ville. Comme pour souligner sa vanité et son manque de jugement spectaculaires, cela inclut le Graf lui-même. Cependant, toute personne qui présente de telles lettres à un autre PNJ important se voit infliger une pénalité de -20 à tous les Tests de **Sociabilité** lors de la première entrevue, étant donné qu'elles sont entachées par une association avec ce dandy surcoté. Zimperlich le Chaperon est la seule exception. Selon elle, Siegfried compense son manque de bon sens par ses bonnes manières.
 
 
-<span id="page-86-0"></span>Allavandrel est un individu très sociable et il est relativement facile de l'approcher, surtout pour les autres elfes et les Personnages séduisants. N'étant pas intéressé par la politique, il sera difficile pour les Personnages de lui faire comprendre la gravité du complot qui pèse contre le Graf, et encore plus de le convaincre qu'il peut leur venir en aide.
+<span id="page-86-0" data-folio="84"></span>Allavandrel est un individu très sociable et il est relativement facile de l'approcher, surtout pour les autres elfes et les Personnages séduisants. N'étant pas intéressé par la politique, il sera difficile pour les Personnages de lui faire comprendre la gravité du complot qui pèse contre le Graf, et encore plus de le convaincre qu'il peut leur venir en aide.
 
 Bien qu'il ne soit pas aussi susceptible que Rallane le ménestrel d'être la cible de l'indignation des nains face aux nouvelles taxes, les Personnages peuvent avoir l'opportunité de sauver Allavandrel de quelques nains ivres et en colère qui sont déterminés à donner « *une bonne raclée* » à tout elfe qu'ils croisent. Ce risque est encore plus grand à l'écart des manifestations publiques du Carnaval et dans les auberges populaires où Allavandrel aime parfois se rendre pour boire. Une bonne performance au tournoi de tir à l'arc est un moyen un peu plus sûr de lui faire bonne impression.
 
@@ -190,7 +190,7 @@ Pavarotti est heureux d'échanger sur des sujets médicaux avec n'importe quel P
 En dehors des manifestations du Carnaval, une bonne façon pour les Personnages de rencontrer Pavarotti est de se rendre 
 
 
-<span id="page-87-0"></span>dans une rue sombre et déserte, très tard dans la nuit. Le Doktor les dépasse en courant, en riant et en tenant d'une main son pantalon et ses bottes, tandis qu'une épouse indignée le poursuit, vêtue d'une chemise de nuit, d'un bonnet de nuit et de pantoufles, brandissant un tromblon. Le Doktor peut trébucher ou se cogner un orteil nu, ce qui le laisse momentanément à la merci de sa poursuivante. Si les Personnages peuvent intervenir, détourner le canon de l'arme avant qu'elle ne fasse feu ou faire quoi que ce soit d'autre pour l'aider, Pavarotti insiste pour les inviter à une séance de beuverie mémorable qui durera au moins jusqu'à l'aube et probablement jusqu'au lendemain midi. Par la suite, si les Personnages se sont révélés être de bons compagnons, Pavarotti devient un ami fidèle, ce qui peut s'avérer tout aussi utile qu'épuisant, car il insiste pour aller boire avec eux toute la nuit, et ce, soir après soir.
+<span id="page-87-0" data-folio="85"></span>dans une rue sombre et déserte, très tard dans la nuit. Le Doktor les dépasse en courant, en riant et en tenant d'une main son pantalon et ses bottes, tandis qu'une épouse indignée le poursuit, vêtue d'une chemise de nuit, d'un bonnet de nuit et de pantoufles, brandissant un tromblon. Le Doktor peut trébucher ou se cogner un orteil nu, ce qui le laisse momentanément à la merci de sa poursuivante. Si les Personnages peuvent intervenir, détourner le canon de l'arme avant qu'elle ne fasse feu ou faire quoi que ce soit d'autre pour l'aider, Pavarotti insiste pour les inviter à une séance de beuverie mémorable qui durera au moins jusqu'à l'aube et probablement jusqu'au lendemain midi. Par la suite, si les Personnages se sont révélés être de bons compagnons, Pavarotti devient un ami fidèle, ce qui peut s'avérer tout aussi utile qu'épuisant, car il insiste pour aller boire avec eux toute la nuit, et ce, soir après soir.
 
 **Présentations :** Pavarotti ne connaît pas bien la plupart des autres PNJ importants et ne les considère pas comme des amis. Cependant, il peut permettre aux Personnages d'entrer dans toutes sortes d'auberges et de tavernes, d'identifier La Fosse comme un bon endroit pour acheter des substances illicites et, bien sûr, pour détourner Dieter de sa suggestion posthypnotique.
 
@@ -209,7 +209,7 @@ Si vous le souhaitez, et s'ils se sentent tout à fait confiants, il peut être 
 La meilleure présentation pour Wasmeier est celle qu'il montre déjà aux habitants de Middenheim : celle d'un arbitre de la loi quelque peu distant, mais dévoué et juste, et d'un conseiller neutre du Graf. Envisagez de le faire nier toute implication dans les nouvelles taxes en maugréant : si les Seigneurs des Lois présentaient une opinion unique au Graf, il est certain qu'il ne l'accepterait pas. Si les Personnages lui demandent de l'aide, il leur répond qu'ils doivent rassembler un nombre arbitraire de signatures de la part de la population qu'il promet de présenter au Graf en leur nom. Au moins, ils lui ficheront la paix. Wasmeier est satisfait que des Personnages trop curieux soient occupés à une telle tâche, mais il est certain qu'il gardera un œil attentif sur toute personne qui semble trop dévouée à leurs investigations et qu'il enverra quelques hommes pour s'occuper de ceux qu'il considère comme une menace.
 
 
-### <span id="page-88-0"></span>**NASTASSIA, L'ESPIONNE**
+### <span id="page-88-0" data-folio="86"></span>**NASTASSIA, L'ESPIONNE**
 
 Nastassia, dont les Personnages n'apprennent jamais le véritable nom de famille, est l'espionne favorite du baron Heinrich Todbringer, le fils illégitime du graf Boris. Il a assumé la responsabilité de nombreuses missions diplomatiques depuis que la santé de son père a commencé à décliner. À l'heure actuelle, il est à Wolfenburg pour une mission diplomatique. En son absence, c'est Nastassia qui surveille la ville.
 
@@ -240,7 +240,7 @@ Cette section détaille ce qui pourrait se passer si les Personnages découvrent
 
 #### NASTASSIA - AGENT (OR 4)
 
-<span id="page-89-0"></span>
+<span id="page-89-0" data-folio="87"></span>
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -332,7 +332,7 @@ L'hypnose originale se dissipe d'ores et déjà, toute tentative de l'annuler se
 Après avoir posé toutes ces questions ou lorsque Dieter ne répond pas, Luigi suggère d'annuler l'hypnose précédente et implante de fortes suggestions dans son esprit afin qu'il ne soit plus hypnotisé par cette personne. Kirsten accepte si elle est présente.
 
 
-### <span id="page-91-0"></span>**Après l'hypnose**
+### <span id="page-91-0" data-folio="89"></span>**Après l'hypnose**
 
 Dieter ne se souvient de rien après cette séance, mais il a le vague souvenir d'avoir été hypnotisé auparavant.
 
@@ -456,7 +456,7 @@ Elle est arrivée à Middenheim la veille au soi et avait prévu de faire la sur
 **Sorts d'Arcane et de Domaine :** Chute, Envol, Grands feux d'U'Zhul, L'Épée ardente de Rhuin
 
 
-### <span id="page-94-0"></span>**Le combat**
+### <span id="page-94-0" data-folio="92"></span>**Le combat**
 
 Le groupe peut choisir de rester et se battre, ou il peut fuir. Dans les deux cas, ses membres devraient survivre. Peut-être qu'ils seront blessés et perdront un ou deux points de Destin, mais au moins ils seront en vie.
 
@@ -518,7 +518,7 @@ Le bar est dégoûtant. Les murs et les plafonds sont couverts de crasse et le s
 La clientèle est du même acabit. À tout moment, 2d10 clients viennent pour y noyer leur chagrin, toujours prêts à s'offusquer des étrangers. Les Personnages sensés éviteront la bagarre si possible, car ils ont besoin que leurs informateurs soient à la fois conscients et coopératifs. Qu'ils connaissent déjà son nom ou pas, ils seront orientés vers Bruno Kohl s'ils cherchent des remèdes à base de plantes, ou quoi que ce soit du même genre. Ce dernier passe environ 80 % de son temps sur place.
 
 
-### <span id="page-96-0"></span>**LE PERSONNEL DE LA FOSSE**
+### <span id="page-96-0" data-folio="94"></span>**LE PERSONNEL DE LA FOSSE**
 
 ### **Fritz Dreckig, Propriétaire**
 

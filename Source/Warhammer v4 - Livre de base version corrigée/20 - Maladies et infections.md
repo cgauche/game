@@ -1,6 +1,6 @@
 *Pages PDF 188-191*
 
-# <span id="page-187-0"></span>**MALADIES ET INFECTIONS**
+# <span id="page-187-0" data-folio="186"></span>**MALADIES ET INFECTIONS**
 
 Les épidémies et les fléaux, domaines de prédilection de Nurgle, le dieu du Chaos de la Maladie et du Désespoir, font partie de la vie quotidienne de ceux du Vieux Monde. Tous les ans, des épidémies affectent toutes les classes sociales de la société, même si bien souvent ce sont les petites gens qui en souffrent le plus. Afin de se prévaloir des ces terribles infections, la plupart se tournent vers Shallya, l'ennemie juré de Nurgle, déesse de la Guérison et de la Compassion, mais les malades vont chercher à trouver un remède, garantissant aux prophétesses, aux herboristes et aux doktors itinérants de tout poil du travail en conséquence, même si ces derniers fournissent le plus souvent des remèdes de charlatan plus que de véritables soins.
 
@@ -118,7 +118,7 @@ C'est une maladie très répandue parmi les chasseurs, les fourreurs et les marc
 Tous les ans, la plupart des villes et des cités de l'Empire subissent une épidémie de *Vérole urticante*. La maladie, qui fait apparaître des boursouflures qui démangent sur la quasi-totalité du corps, reste relativement bénigne et ne provoque que très rarement des complications, et n'est donc un réel souci que pour certains patients qui vont s'inquiéter et les nobliaux oisifs. La maladie est tellement répandue qu'on trouve dans la plupart des temples de Shallya des ampoules remplies de pâte blanche qui permettent de soulager les démangeaisons des malades.
 
 
-<span id="page-189-0"></span>**Contraction :** sur un échec d'un Test de **Résistance Accessible (+20)** lorsque vous touchez une personne infectée ou que vous échouez à ce même Test après qu'un patient contagieux a toussé ou éternué juste à côté de vous (effectuez un Test par heure).
+<span id="page-189-0" data-folio="188"></span>**Contraction :** sur un échec d'un Test de **Résistance Accessible (+20)** lorsque vous touchez une personne infectée ou que vous échouez à ce même Test après qu'un patient contagieux a toussé ou éternué juste à côté de vous (effectuez un Test par heure).
 
 **Incubation :** 1d10 jours **Durée :** 1d10+7 jours
 
@@ -212,6 +212,6 @@ Vous toussez et éternuez régulièrement, propageant ainsi votre maladie tout a
 Vous êtes gravement malade et sans doute plus très loin des Portes de Morr car un poison mortel se répand dans votre corps. Effectuez un Test de **Résistance Très Facile (+60)** tous les jours 
 
 
-<span id="page-191-0"></span>(en général pendant votre sommeil) ou vous mourrez, peut-être dans votre sommeil, ou en délirant de fièvre, ou encore dans la pire agonie. Si *Toxine* est indiqué (*Modéré*), le Test est **Facile (+40)**. Si elle est indiquée (*Grave*), le Test est **Accessible (+20)**.
+<span id="page-191-0" data-folio="190"></span>(en général pendant votre sommeil) ou vous mourrez, peut-être dans votre sommeil, ou en délirant de fièvre, ou encore dans la pire agonie. Si *Toxine* est indiqué (*Modéré*), le Test est **Facile (+40)**. Si elle est indiquée (*Grave*), le Test est **Accessible (+20)**.
 
 **Traitement :** rien ne fonctionne.

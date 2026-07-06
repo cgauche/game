@@ -1,6 +1,6 @@
 *Pages PDF 231-234*
 
-# <span id="page-230-0"></span>• MAGIE •
+# <span id="page-230-0" data-folio="229"></span>• MAGIE •
 
 *« Gardez donc vos canons, idiots de Nuln ! Nous n'en avons nul(n) besoin. »*
 

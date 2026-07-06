@@ -2,7 +2,7 @@
 
 # **LE CULTE DE MANANN, DIEU DE LA MER**
 
-<span id="page-206-0"></span>**Siège du pouvoir :** Marienburg, le Wasteland **Chef du Culte :** Matriarche de la Mer
+<span id="page-206-0" data-folio="205"></span>**Siège du pouvoir :** Marienburg, le Wasteland **Chef du Culte :** Matriarche de la Mer
 
 **Principaux ordres :** Ordre de l'Albatros, Ordre du Marinier **Festivités majeures :** équinoxe de printemps, équinoxe
 

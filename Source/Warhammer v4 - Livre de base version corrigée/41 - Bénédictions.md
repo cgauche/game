@@ -210,7 +210,7 @@ Votre cible gagne +10 en Endurance.
 Votre cible gagne +10 en Initiative
 
 
-<span id="page-223-0"></span>
+<span id="page-223-0" data-folio="222"></span>
 
 # DÉNOMINATION
 

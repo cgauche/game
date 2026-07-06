@@ -1,6 +1,6 @@
 *Pages PDF 9-19*
 
-# <span id="page-8-0"></span>• LA COURONNE DE L'EMPIRE •
+# <span id="page-8-0" data-folio="6"></span>• LA COURONNE DE L'EMPIRE •
 
 # **UNE VILLE IMPÉRIALE ET SAINTE**
 
@@ -54,7 +54,7 @@ Les discussions dans les tavernes tournent souvent autour de la politique. Depui
 En l'an 2506 CI, le controversé professeur Brustellin a été tué lors des violentes émeutes dont il était l'instigateur. Si l'opposition l'a ensuite dénoncé comme un agent du Chaos, il est tout de même devenu un martyr aux yeux des aspirants révolutionnaires. Son credo, consistant à renverser tous les vestiges de l'aristocratie, a su trouver son public.
 
 
-# <span id="page-10-0"></span>**GÉOGRAPHIE ET CLIMAT**
+# <span id="page-10-0" data-folio="8"></span>**GÉOGRAPHIE ET CLIMAT**
 
 Altdorf se situe au confluent de deux puissants cours d'eau, le Talabec et le Reik. La ville, constituée de ponts et d'îlots, s'étend largement sur les rives du fleuve et de la rivière. Le mélange des eaux a donné naissance à un labyrinthe de bancs de boue, de canaux et de petites îles. Grâce aux travaux miraculeux des ingénieurs nains et humains, et aux enchantements des sorciers, la terre occupée aujourd'hui par la ville est en grande partie ferme et stable.
 
@@ -94,7 +94,7 @@ Pour déterminer la rigueur du brouillard, effectuez un lancer selon le tableau 
 | 00    | Ragoût de miasmes  | Les Tests de Capacité de Tir et les Tests de Perception basés sur la vue subissent une pénalité<br>de -30 si la cible se trouve à plus de 1,5 mètres.<br>Si un Personnage se trouve dans un Ragoût de miasmes et effectue un Test pour éviter de<br>contracter une maladie, appliquez-y une pénalité de –10. |
 
 
-# <span id="page-11-0"></span>**L'HISTOIRE D'ALTDORF**
+# <span id="page-11-0" data-folio="9"></span>**L'HISTOIRE D'ALTDORF**
 
 L'histoire intense d'Altdorf commence bien avant qu'elle ait été ainsi nommée. En effet, elle remonte à une époque précédant la fondation de l'Empire. Son histoire est indissociable de celle de Sigmar et de l'Empire qu'il a fondé.
 
@@ -237,7 +237,7 @@ Quelques années plus tard, Tybalt institua un nouvel impôt très mal vu : une 
 
 Résumé des principaux événements de l'histoire consignée d'Altdorf et de ses environs.
 
-## <span id="page-16-0"></span>C. –3000 CI
+## <span id="page-16-0" data-folio="14"></span>C. –3000 CI
 
 Des preuves archéologiques montrent qu'à cette époque, la région était occupée à la fois par les elfes et les nains. Les archives des hauts elfes et des nains parlent de Kor Vanaeth, une colonie elfique d'une certaine importance présente sur ce site.
 
@@ -442,7 +442,7 @@ L'Électeur d'Ostland, Oswald von Königswald, charge Detlef Sierck d'écrire et
 Egrimm van Horstmann, patriarche de l'Ordre de la Lumière, est démasqué comme adorateur de Tzeentch. Il parvient à libérer le dragon du Chaos à deux têtes Baudros de sa prison sous la Pyramide de Lumière. Il s'enfuit dans les Désolations du Chaos et entreprend de créer une citadelle fortifiée à la lisière des Collines des hurlements. Dans ces tours d'argent étincelantes, il convoque de nombreuses âmes corrompues, dont un certain nombre de sorciers d'Altdorf que ses machinations ont pervertis.
 
 
-# <span id="page-19-0"></span>• LA GOUVERNANCE D'ALTDORF •
+# <span id="page-19-0" data-folio="17"></span>• LA GOUVERNANCE D'ALTDORF •
 
 Aux yeux des Reiklanders patriotes, l'Empire a atteint un tel niveau de prospérité, de puissance et de stabilité sous le règne de la maison Holswig Schliestein, que tous les gouvernements étrangers paraissent, en comparaison, bien temporaires, voire ridicules. Leur Empereur incarne l'exemple même de Sigmar : sa parole est loi et ses désirs sont des ordres. Estimer que la parole de l'Empereur ne doit pas avoir force de loi, ce serait trahir tous les principes qui ont fait la cohésion de l'Empire depuis des années.
 
@@ -494,7 +494,7 @@ Dernièrement, Bruni a trouvé des excuses pour s'absenter de la cour. La rumeur
 Depuis l'époque de Magnus le Pieux, la tradition exige que le Conseil privé de l'Empereur compte parmi ses membres un elfe d'Ulthuan. Actuellement, cet envoyé est Daendra Eaucalme, une princesse-sage de Lothern. Elle a la réputation de ne jamais rien laisser transparaître, et ne fait guère plus à la cour qu'écouter attentivement tout ce qui s'y dit. Eaucalme prend soin de se montrer parfaitement aimable avec Bruni, d'une manière que certains pourraient qualifier de condescendante, mais qui ne donne pas au nain le droit de se plaindre pour autant. Lorsqu'on lui demande son avis sur une question quelconque, elle défend avec une fermeté discrète, la position qu'elle juge la plus avantageuse pour le Roi Phénix d'Ulthuan.
 
 
-# <span id="page-21-0"></span>**Les nains <sup>à</sup> la cour**
+# <span id="page-21-0" data-folio="19"></span>**Les nains <sup>à</sup> la cour**
 
 Kazadar Durginsson, du clan Mur-de-pierre, est l'un des deux seuls nains impériaux à occuper une position importante à la cour de l'Empereur. L'autre est Bruni Gromsson, le doyen du secteur de Metallschlacke. En tant que ministre de la Défense d'Altdorf, Kazadar inspecte régulièrement l'état des remparts et de la garnison. Il publie chaque mois des rapports méticuleux et hautement respectés, qui sont ensuite examinés et diffusés par le Grand Seigneur Reikmarshall.
 
@@ -519,7 +519,7 @@ Chaque jour, des dizaines de sujets requièrent l'attention de l'Empereur, qu'il
 Trois conseils en particulier se rassemblent régulièrement dans les salles de réunion publiques du palais, que l'on appelle collectivement la Volkshalle. Les conseillers sont des individus puissants chargés par l'Empereur de lui faire des recommandations sur la meilleure politique à suivre dans leur domaine d'expertise ; il leur arrive même de lui servir de représentants en cas d'absence ou d'indisposition. Le rôle des différents conseils est d'assister l'Empereur en lui faisant les bonnes suggestions et en lui fournissant des plans constructifs afin de mettre concrètement en œuvre ses aspirations. Il peut relever de la fonction d'un conseiller d'émettre des critiques polies, mais seulement s'il poursuit son raisonnement en proposant des solutions et des améliorations.
 
 
-# <span id="page-22-0"></span>**Le Conseil d'État**
+# <span id="page-22-0" data-folio="20"></span>**Le Conseil d'État**
 
 Le Conseil d'État est le plus influent des trois conseils. Son rôle consiste à conseiller l'Empereur sur l'état de la nation, à négocier des accords entre l'Empereur et les Comtes Électeurs, et à prendre la température de l'humeur nationale. Il n'a aucun pouvoir officiel. Mattheus II, le grand-père de Karl Franz, a un jour essayé de rédiger une constitution autour du Conseil, mais les Électeurs y ont vu une menace pour leur autorité et s'y sont opposés.
 
@@ -556,7 +556,7 @@ Le portefeuille de la duchesse Ullana couvre les affaires diplomatiques, c'est-�
 Le portefeuille du Reikmarshall couvre les affaires militaires. Le Reikmarshall est le commandant en chef des forces armées de l'Empire. Il a participé à d'innombrables batailles et est un des généraux les plus expérimentés du Vieux Monde. Ses prouesses sont telles que l'Empereur lui a accordé l'usage du Croc Runique du Solland ; il est donc la seule personne, à l'exception des Électeurs, à avoir le droit de manier une telle arme. Kurt Helborg est un guerrier sinistre, réputé comme étant le meilleur épéiste de l'Empire, à l'exception peut-être de Ludwig Schwarzhelm.
 
 
-<span id="page-23-0"></span>
+<span id="page-23-0" data-folio="21"></span>
 
 | THYRUS GORMANN - SEIGNEUR SORCIER (OR 2) |    |    |    |    |    |    |     |     |    |     |    |
 |------------------------------------------|----|----|----|----|----|----|-----|-----|----|-----|----|
@@ -600,7 +600,7 @@ Cette broche est empreinte d'*Aqshy*. Elle est sertie d'une pierre polie orange,
 Une amulette en forme de clef d'*Aqshy* sertie d'une petite gemme. Thyrus la porte autour du cou. Elle s'active grâce à une courte commande vocale que Thyrus est le seul à connaître. (Quiconque se trouvant à proximité de Thyrus lorsqu'il active le rubis et ayant réussi un Test de **Perception Difficile (–20)** l'entendra murmurer « *Ignis Extra* ».) Lorsque cette commande est prononcée, des flammes magiques enveloppent le porteur de l'amulette et lui confèrent le Trait de créature Protection (+7) pendant 8 rounds. Il faut ensuite attendre 1d10 jours pour pouvoir utiliser le rubis à nouveau (cependant, cette durée est réduite de moitié si le rubis reste à proximité d'un objet ou d'une personne empreint d'*Aqshy*).
 
 
-### <span id="page-24-0"></span>**Lectrice Agatha von Böhrn, Suprême Seigneur des Lois**
+### <span id="page-24-0" data-folio="22"></span>**Lectrice Agatha von Böhrn, Suprême Seigneur des Lois**
 
 Agatha est l'une des plus vénérables prêtresses de Verena dans l'Empire ; c'est une dame d'une érudition exceptionnelle et possédant une expertise inégalée dans le domaine de la loi. En tant que Suprême Seigneur des Lois de l'Empire, elle joue un rôle avant tout consultatif : c'est rarement elle qui est à l'origine des nouvelles lois. De plus, bien qu'elle ait une connaissance approfondie de toutes les traditions juridiques et de tous les précédents qui existent dans l'Empire et au-delà, la mise en place d'une nouvelle législation nécessite le soutien de l'aristocratie.
 
@@ -670,7 +670,7 @@ La gravin Matrella est une intrigante de talent qui organise de nombreuses fête
 Adalmann est censé être le responsable de l'amirauté du Reik, et donc de la marine du Reikland... Si seulement il était compétent. Au cours de ces quinze dernières années, le Seigneur des Mers n'a assisté à aucune réunion du Conseil, et les capitaines de la marine du Reikland n'ont jamais tenu compte d'un seul de ses ordres. Il a été envoyé au Grand Hospice, près de Frederheim, pour y prendre un peu de repos.
 
 
-<span id="page-26-0"></span>**Chancelier Mornan Tybalt**
+<span id="page-26-0" data-folio="24"></span>**Chancelier Mornan Tybalt**
 
 Le chancelier est un homme chauve, au visage grêlé, aux lèvres fines, et totalement dépourvu d'humour. Il porte des vêtements gris et ternes afin de se démarquer des aristocrates aux fanfreluches colorées qu'il considère comme des parasites. En effet, Tybalt est le fils d'un épicier, et non le rejeton de quelque noble courtisan. Cependant, ses ambitions étaient toutes autres que de se contenter de tenir un étal au Grandmarkt, c'est pourquoi il emprunta rapidement la route que suivent la plupart des petites gens qui cherchent à gagner le respect des classes sociales supérieures.
 
@@ -693,7 +693,7 @@ Aux juges qu'il a recommandés et qui ont été nommés à la Citadelle du Chât
 Tybalt a récemment eu vent du plan de Chao. Loin d'être outré par cette découverte, le Chancelier considère qu'une guerre contre les ogres pourrait au contraire servir sa cause. Il se demande comment soutenir l'entreprise de Chao sans dévoiler son implication.
 
 
-# <span id="page-27-0"></span>**Dame de la Commanderie Yabo Chao, Vénérable Ambassadrice de Weijin**
+# <span id="page-27-0" data-folio="25"></span>**Dame de la Commanderie Yabo Chao, Vénérable Ambassadrice de Weijin**
 
 Tout fier habitant d'Altdorf vous dira que l'Empire est la plus grande nation du Vieux Monde, avec une histoire qui remonte à plus de deux mille cinq cents ans. Les citoyens d'Altdorf ont peut-être du mal à imaginer qu'il puisse exister une civilisation plus pérenne et à l'histoire plus riche que la leur, mais dans l'est lointain se trouve une nation bien plus vaste que l'Empire, qui était déjà dotée d'un gouvernement sophistiqué et d'une grande puissance militaire avant même que les Unberogens aient foulé le Reikland : le céleste et impérial grand Cathay.
 
@@ -712,7 +712,7 @@ Chao nourrit un objectif à long terme, un projet secret auquel elle se consacre
 Nombre de ses mandarins sont d'avis que le seul moyen de parvenir à ses fins serait d'asservir les royaumes ogres. Il s'agit d'une proposition controversée, car même si les ogres pillent les villages cathayens sans défense, ils font aussi du commerce avec Cathay et lui fournissent un service non négligeable de gardes du corps et de mercenaires.
 
 
-# <span id="page-28-0"></span>**Le Conseil d'Altdorf**
+# <span id="page-28-0" data-folio="26"></span>**Le Conseil d'Altdorf**
 
 Le troisième Grand Conseil est aussi celui qui a le plus de sièges et qui est le plus fluctuant. Le Conseil d'Altdorf est composé de Kommissionen Convenors (qui rendent compte des travaux des quelques Kommissionen d'Altdorf), de maîtres de guildes (qui défendent les intérêts des métiers qu'ils cherchent à représenter et à réguler), de capitaines de la Garde (qui rendent compte des menaces à l'ordre et à la sécurité publics), de prêtres (qui parlent au nom de leurs cultes respectifs) et de bourgmestres (qui sont les principaux représentants politiques de chaque secteur de la ville).
 
@@ -743,7 +743,7 @@ Des Kommissionen sont parfois créées à Altdorf, bien qu'elles soient considé
 Les guildes obéissent le plus souvent à leurs propres règles ; elles surveillent leurs membres, protègent leurs intérêts et tentent d'obtenir des concessions de la part des divers groupes politiques de la cité. De nombreuses guildes diverses et variées à Altdorf proposent à leurs membres apprentissages et évolutions de carrières, moyennant des frais et faveurs importants. Être admis dans une guilde donne à un individu la possibilité d'obtenir le statut de citoyen d'Altdorf, sans lequel il est impossible de posséder une propriété privée dans l'enceinte des murs de la ville, et la chance de rejoindre, peut-être, l'un des nombreux conseils de quartier. Certaines guildes sont suffisamment puissantes pour contourner des aspects de la loi, ayant obtenu le droit de soumettre leurs membres à leur justice privée s'ils venaient à être accusés de malversations professionnelles. Les guildes offrent de multiples avantages à leurs membres, allant des pensions et autres bourses d'études à la recherche de partenaires commerciaux et aux fonds d'aide pour les veuves. Un homme peut passer toute sa vie au sein d'une même guilde, et les changements de loyauté sont rarement sans conséquence.
 
 
-# <span id="page-29-0"></span>**HISTOIRES DE CULTES**
+# <span id="page-29-0" data-folio="27"></span>**HISTOIRES DE CULTES**
 
 Altdorf est peut-être la ville sainte de Sigmar, mais ses habitants reconnaissent et adorent bien d'autres dieux. La plupart des Altdorfers ont la même considération pour les dieux que les autres habitants du Reikland ou de l'Empire en général (voir **WFJDR Chapitre 7 : Religions et croyances**). Cependant, certains cultes connaissent une expérience particulière au sein de la cité.
 

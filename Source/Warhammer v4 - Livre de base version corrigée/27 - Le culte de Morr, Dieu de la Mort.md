@@ -2,7 +2,7 @@
 
 # **LE CULTE DE MORR, DIEU DE LA MORT**
 
-<span id="page-207-0"></span>**Siège du Pouvoir :** Luccini, Tilée
+<span id="page-207-0" data-folio="206"></span>**Siège du Pouvoir :** Luccini, Tilée
 
 **Chef du Culte :** *Custode del Portale* (Gardien du portail)
 

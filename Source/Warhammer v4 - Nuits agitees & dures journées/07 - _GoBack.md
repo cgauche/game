@@ -1,6 +1,6 @@
 *Pages PDF 37*
 
-### <span id="page-36-0"></span>**Les dignitaires du tribunal**
+### <span id="page-36-0" data-folio="35"></span>**Les dignitaires du tribunal**
 
 #### **Les magistrats**
 

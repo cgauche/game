@@ -1,6 +1,6 @@
 *Pages PDF 327-328*
 
-# <span id="page-326-0"></span>**Vouivre**
+# <span id="page-326-0" data-folio="325"></span>**Vouivre**
 
 Bien que les incultes les confondent souvent à tort avec des dragons, au-delà de quelques similitudes superficielles, les vouivres nauséabondes n'ont rien de commun avec ces dignes créatures. Charognards lâches et malvoyants, elles ont tendance à assouvir leur énorme appétit en choisissant des créatures sans défense – principalement des moutons et des chèvres –, évitant autant que possible le combat direct. Contrairement aux autres monstres des Montagnes, les vouivres ne sont pas particulièrement territoriales, et se déplacent généralement lorsque leurs zone de chasse sont envahis.
 

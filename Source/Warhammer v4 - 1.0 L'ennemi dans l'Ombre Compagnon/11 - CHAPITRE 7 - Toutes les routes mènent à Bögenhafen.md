@@ -1,6 +1,6 @@
 *Pages PDF 44-64*
 
-## <span id="page-43-0"></span>CHAPITRE 7 : TOUTES LES ROUTES MÈNENT À BÖGENHAFEN
+## <span id="page-43-0" data-folio="43"></span>CHAPITRE 7 : TOUTES LES ROUTES MÈNENT À BÖGENHAFEN
 
 Que vous débutiez la campagne de **L'Ennemi Intérieur** par les événements qui sont exposés dans **L'Ennemi dans l'Ombre**, que vous vous lanciez dans un voyage anarchique à bord d'une diligence volée ou que vous mettiez au point votre propre version, deux points essentiels de l'intrigue doivent être abordés :
 
@@ -28,7 +28,7 @@ Le groupe découvre bientôt qu'il est poursuivi par les survivants de l'astucie
 C'est un début alternatif particulièrement amusant pour les groupes déjà familiarisés avec la campagne **L'Ennemi Intérieur**. Après tout, ils savent plus ou moins que le groupe se dirige vers Bögenhafen. C'est également une variante utile si vous pensez que vos joueurs hésiteront tous à prendre volontairement la place de Kastor Lieberung. Si c'est le cas, choisissez un joueur bon perdant ; il va s'attirer pas mal d'ennuis.
 
 
-### <span id="page-44-0"></span>**Personnages secondaires**
+### <span id="page-44-0" data-folio="44"></span>**Personnages secondaires**
 
 Cette section présente 16 PNJ originaux, et offre des suggestions pour leur utilisation tout au long de la route vers Bögenhafen, ou une fois que les Personnages auront atteint la ville. Certains fonctionnent mieux comme des alternatives aux 17 autres PNJ pittoresques déjà présents dans **L'Ennemi dans l'Ombre**. D'autres permettent de mettre en valeur des aspects intéressants de l'Empire, renforçant le sentiment que l'aventure des Personnages n'est qu'une parmi d'autres dans un monde varié et surpeuplé. Certains sont destinés à aider les groupes à résoudre les divers problèmes qu'ils peuvent rencontrer en raison de lacunes résultant de leur composition, ou à les ramener sur le chemin difficile de **L'Ennemi dans l'Ombre**. D'autres ne servent qu'à causer plus d'ennuis aux groupes qui le méritent (franchement, le cas de tous). Ils sont divisés en deux groupes, les canailles de la route et les perturbateurs des villes ; cependant, n'hésitez pas à utiliser ceux de la route en ville, ou vice versa, comme bon vous semble.
 
@@ -65,7 +65,7 @@ Extrêmement charismatique pour une chasseuse de primes, Anke Dorflinger a souve
 Dorflinger aborde les Personnages dans une auberge relais. Elle dit qu'elle est à la poursuite d'un hors-la-loi dont la tête est mise à prix pour une petite fortune. Celui qu'elle appelle « Mordeur » est notoirement difficile à dénicher, mais pourrait mordre à un hameçon. Dorflinger choisit l'un des Personnages qui correspond au genre de proie auquel Mordeur s'en prend souvent, et propose de partager la prime si les Personnages lui donnent un coup de main. L'appât doit venir seul avec elle pour amorcer le piège, et les autres doivent se cacher sur la route en embuscade, attendant son signal. Sauf que le véritable but de Dorflinger est de capturer la personne servant d'appât, et elle a inventé tout le reste ! Si les Personnages suivent son plan, ils découvriront bientôt l'un de leurs compagnons ligoté et enlevé par la chasseuse de primes futée.
 
 
-### <span id="page-45-0"></span>LES PNJ DE L'OMBRE LA CHASSE NE CONNAÎT PAS DE FIN
+### <span id="page-45-0" data-folio="45"></span>LES PNJ DE L'OMBRE LA CHASSE NE CONNAÎT PAS DE FIN
 
 La mort brutale d'Adolphus Kuftsos, que ce soit à cause des Personnages à Weissbruck, ou dans les griffes de Gideon à Bögenhafen, écarte le chasseur de primes du terrain bien avant les événements principaux de **L'Ennemi dans l'Ombre**. Mais dame Emmanuelle Nacht n'est pas du genre à laisser les choses au hasard. Vous pouvez utiliser Dorflinger comme un agent suppléant dès lors que Kuftsos n'envoie pas son rapport à Nacht depuis Bögenhafen. Dorflinger reprend immédiatement là où Kuftsos s'est arrêté, surtout si son cadavre déchiqueté est découvert. Elle ne tardera pas à rendre difficile la tâche des Personnages, et finira par essayer d'enlever ou de tuer « Kastor » ; cependant, vous n'êtes pas obligé de la laisser demeurer un antagoniste. Si votre groupe a besoin d'un peu de renforts au combat, après les avoir suivis pendant un certain temps, la rusée Dorflinger se rend compte qu'ils ne sont pas avec la Main Pourpre et peut soudain dévoiler
 
@@ -86,7 +86,7 @@ une prise à partie concernant leur « intégrité artistique » ou une offre fi
 Étrangers où qu'ils aillent, les saltimbanques sont généralement considérés avec méfiance : vagabonds, voleurs, séducteurs, et pire encore. Cette réputation est souvent bien méritée. Les Personnages, eux-mêmes des étrangers par nature du fait de devenir des aventuriers itinérants, peuvent compatir et, peutêtre, se retrouver à sauver les saltimbanques d'une foule de villageois en colère.
 
 
-#### <span id="page-46-0"></span>**Pandora 'Pois' Pochégarée**
+#### <span id="page-46-0" data-folio="46"></span>**Pandora 'Pois' Pochégarée**
 
 L'histoire de Pandora ressemble à celle de tous les membres de sa « famille » : les Pochégarée. Orpheline, la petite Pois a appris à survivre par ses propres moyens... Mais la dureté de la vie dans les rues n'a jamais gâché son esprit ni altéré sa vision du monde. La nuit, elle dormait sur les toits, près des cheminées, à profiter de leur chaleur et à écouter la musique et la clameur de la taverne en dessous. La journée, elle se faufilait dans les opéras et les champs de foire de la ville dans laquelle elle se trouvait, après avoir réussi à monter dans un chariot de bagages ou une caravane. Et quand elle fut finalement trouvée à l'arrière d'un véhicule appartenant à un cirque itinérant, ils furent impressionnés par son esprit vif et son rire contagieux. Pois a trouvé un foyer tout aussi étrange que son éducation.
 
@@ -145,7 +145,7 @@ Si les Personnages apprécient Pois, ils pourraient même la faire participer à
 Certaines personnes sont simplement nées chanceuses, bénies par Ranald. D'autres tirent leur chance de forces bien plus sombres. Cependant, elles ne savent pas toujours d'où elle provient, et pour un escroc, être dupé est de loin la plus grande honte. Rotte ne se souvient pas quand cela s'est produit, ni même comment cela a commencé à emprunter cette voie, mais maintenant il a un démon sur le dos, avec d'étranges exigences et un appétit prononcé pour les âmes. Le démon veut que ses demandes soient satisfaites et, de temps en temps, il réclame une âme à consommer. Il ne se soucie pas de sa provenance, du moment qu'il est nourri... Puis les Personnages entrent dans le repaire actuel de Rotte et posent des questions. Il ne faudra pas grand chose : une victoire, une défaite, un match nul, et une goutte de sang sur l'As de Marteau...
 
 
-### <span id="page-48-0"></span>**Bandits de grand chemin**
+### <span id="page-48-0" data-folio="48"></span>**Bandits de grand chemin**
 
 *« Alors, on t'a volé ? C'était un bandit de grand chemin ? Un bandit de grand chemin ? Jamais de la vie ! Je ne peux me permettre d'être volé que par des brigands. »*
 
@@ -206,7 +206,7 @@ Alors que les Personnages sont assis devant un repas et un verre dans une auberg
 
 #### LES PNJ DE L'OMBRE DOIGTS TACHÉS
 
-<span id="page-50-0"></span>Rotte peut remplacer Phillipe Descartes dans l'auberge la Diligence, surtout si votre groupe connaît déjà le joueur bretonnien. Contrairement à Descartes, Rotte n'est pas un bon combattant. Il est cependant bien plus impitoyable et plus dangereux qu'il n'y paraît, car Wolmar est un agent du Chaos. La Main Pourpre réapparaîtra certainement à la fin de la campagne **L'Ennemi Intérieur**, mais vous avez sans doute remarqué qu'elle n'est pas présente à Bögenhafen (à part l'infortuné « Kastor »). Vous pouvez changer cela en ajoutant Rotte, comme leur agent en ville, chargé d'enquêter sur la « trahison » du *magister impedimentae*.
+<span id="page-50-0" data-folio="50"></span>Rotte peut remplacer Phillipe Descartes dans l'auberge la Diligence, surtout si votre groupe connaît déjà le joueur bretonnien. Contrairement à Descartes, Rotte n'est pas un bon combattant. Il est cependant bien plus impitoyable et plus dangereux qu'il n'y paraît, car Wolmar est un agent du Chaos. La Main Pourpre réapparaîtra certainement à la fin de la campagne **L'Ennemi Intérieur**, mais vous avez sans doute remarqué qu'elle n'est pas présente à Bögenhafen (à part l'infortuné « Kastor »). Vous pouvez changer cela en ajoutant Rotte, comme leur agent en ville, chargé d'enquêter sur la « trahison » du *magister impedimentae*.
 
 Il pourrait aussi éventuellement être un agent de l'Œil Attentif (voir page 142 de **L'Ennemi dans l'Ombre**) ou d'un autre culte, comme la Poigne Changeante ou les Sansvisage (voir le **Guide d'Ubersreik** dans la **Boîte d'Initiation de WFJDR**, pages 62 et 64). Si c'est le cas, il se peut qu'il cherche lui aussi à perturber le rituel, mais certainement pas pour des raisons altruistes. Il essaiera sans doute de duper les Personnages pour atteindre ses objectifs, les rejetant dès qu'ils cesseront d'être utiles.
 
@@ -230,7 +230,7 @@ Comme on peut s'y attendre, ni les hors-la-loi ni les bandits n'annoncent leur p
 Les deux groupes entretiennent des relations avec des contacts locaux, bien que les gens coopèrent avec les bandits plus par peur que par amitié, et sont plus susceptibles de les trahir au profit d'un parti paraissant assez fort et ingénieux pour les éliminer. Les contacts des hors-la-loi sont plus loyaux, et s'ils sentent que les Personnages peuvent être favorables à leur cause ou utiles d'une manière ou d'une autre, ils feront de leur mieux pour organiser une rencontre. Il peut s'agir d'un enlèvement dans la forêt ou d'une petite bande de hors-la-loi qui pénètre par surprise dans la chambre des Personnages pendant leur sommeil. Les nobles locaux offrent souvent des récompenses pour ces deux types de délinquants, et il est de notoriété publique qu'ils emploient des groupes d'aventuriers errants pour détruire les bandes de hors-la-loi trop populaires ou trop vertueuses.
 
 
-#### <span id="page-51-0"></span>**Rembrandt Haube**
+#### <span id="page-51-0" data-folio="51"></span>**Rembrandt Haube**
 
 Pas très finaud, Haube n'a jamais vraiment compris les idéaux romantiques du hors-la-loi. À un moment donné, le concept « voler les riches, donner aux pauvres » a été inversé, et personne n'a eu le courage de discuter avec lui sur ce sujet. Dans la région où opère Haube, la noblesse locale, croulant sous les dons de biens volés, a curieusement limité les lois sur le banditisme à une légère amende. Ce conflit d'intérêts est bien compris par les marchands et les paysans, mais échappe certainement à Haube.
 
@@ -296,7 +296,7 @@ Que ce soit par malchance, suite à un malheureux concours de circonstances, à 
 Convaincre Haube que les nobles sont en danger imminent à cause du sinistre complot qu'ils ont découvert (ce qui est vrai, d'une certaine façon) pourrait bien leur valoir son aide si les Personnages ont besoin de muscles supplémentaires pour affronter l'*Ordo Septenarius*. Sinon, il est peu malin et très amusant à jouer.
 
 
-### <span id="page-53-0"></span>**Voleurs de bétail**
+### <span id="page-53-0" data-folio="53"></span>**Voleurs de bétail**
 
 Certains criminels ruraux se spécialisent dans le vol de bétail dans les fermes et leur revente sur un marché où personne ne saura d'où proviennent les marchandises. Rencontrés sur la route, ces voleurs ressemblent à n'importe quel autre fermier conduisant son bétail au marché. Ce qui peut mettre la puce à l'oreille des Personnages, c'est la présence d'un taureau de concours, d'une bête rarement vendue, ou d'un autre article suspect en vente. Ces détails ne seront probablement remarqués que par les Personnages Ruraux.
 
@@ -335,7 +335,7 @@ Si vous voulez d'autres problèmes sur la route de Bögenhafen, vous pouvez fair
 d'être accusés de vol de bétail.
 
 
-### <span id="page-54-0"></span>**PERTURBATEURS EN VILLE**
+### <span id="page-54-0" data-folio="54"></span>**PERTURBATEURS EN VILLE**
 
 ### **Artisans**
 
@@ -370,7 +370,7 @@ Les Personnages perspicaces se rendront rapidement compte que toutes ses marchan
 le monde où ils les ont dénichées.
 
 
-#### <span id="page-55-0"></span>**Ce n'est pas ce que je voulais**
+#### <span id="page-55-0" data-folio="55"></span>**Ce n'est pas ce que je voulais**
 
 Bien qu'il soit, aux dires de tous, un nain parfaitement intègre, Zindrisson est néanmoins en fuite. Déshonoré avant sa naissance par un père qu'il n'a jamais rencontré, Brokur, fils de Zindri, est la cible héréditaire d'une Rancune qui lui promet une mort certaine, et probablement, et fera probablement de son héritage un déshonneur. Mais Zindrisson ne reste pas là à attendre ceux qui vont lui régler son compte, et n'est pas davantage prêt à se raser la tête, à prendre les armes et à perdre la vie dans une quête futile. Il a besoin de conspirateurs, des agents indépendants, doués pour la tromperie afin de simuler sa mort et le libérer de ses dettes d'honneur familiales.
 
@@ -407,7 +407,7 @@ sous de cuivre.
 
 ## LES PNJ DE L'OMBRE PAR ICI !
 
-<span id="page-56-0"></span>Les foires comme la Schaffenfest accueillent invariablement quelques entremetteurs, et vous pouvez utiliser Ricolma pour mettre en évidence les différentes parties de la foire sur lesquelles vous souhaitez attirer l'attention du groupe. Les joueurs qui ne savent pas exactement ce que leurs Personnages vont faire trouveront Ricolma très utile, car elle leur indique gaiement les différents endroits qui les intéressent tout en les traînant entre deux estaminets. Faites-lui présenter aux Personnages chaque « fiancé » des différents établissements de la foire, comme un gag récurrent. S'ils commencent à évoquer ce fait devant l'un d'entre eux, elle détourne immédiatement l'attention de son « chéri » avec un baiser ou de manière encore plus directe, en tapant sur le pied du Personnage ou en lui expédiant un coup de coude dans les côtes.
+<span id="page-56-0" data-folio="56"></span>Les foires comme la Schaffenfest accueillent invariablement quelques entremetteurs, et vous pouvez utiliser Ricolma pour mettre en évidence les différentes parties de la foire sur lesquelles vous souhaitez attirer l'attention du groupe. Les joueurs qui ne savent pas exactement ce que leurs Personnages vont faire trouveront Ricolma très utile, car elle leur indique gaiement les différents endroits qui les intéressent tout en les traînant entre deux estaminets. Faites-lui présenter aux Personnages chaque « fiancé » des différents établissements de la foire, comme un gag récurrent. S'ils commencent à évoquer ce fait devant l'un d'entre eux, elle détourne immédiatement l'attention de son « chéri » avec un baiser ou de manière encore plus directe, en tapant sur le pied du Personnage ou en lui expédiant un coup de coude dans les côtes.
 
 ### **Mendiants**
 
@@ -441,7 +441,7 @@ Sonny n'est qu'ambition. Bien que lui et sa bande d'orphelins soient actuellemen
 mauvaise qualité, tasse, 4d10 sous de cuivre.
 
 
-# <span id="page-57-0"></span>LES PNJ DE L'OMBRE SANS SE FAIRE REMARQUER
+# <span id="page-57-0" data-folio="57"></span>LES PNJ DE L'OMBRE SANS SE FAIRE REMARQUER
 
 Les mendiants sont si communs que si vous mentionnez continuellement leur présence, bientôt, même les Personnages les ignoreront, ce qui les rend utiles non seulement aux organisations criminelles, mais aussi à des groupes bien plus sombres. Sonny fait un excellent agent, car vous pouvez l'utiliser pour un grand nombre de cultes différents, bien qu'il soit particulièrement efficace comme guetteur pour l'Œil Attentif (voir page 11 de **L'Ennemi dans l'Ombre**). Faites en sorte que Sonny suive les Personnages lorsqu'ils se déplacent dans Bögenhafen, et qu'il rapporte leurs faits et gestes au groupe qu'il sert, ce qui peut justifier une aide inattendue ou d'étranges obstacles à certains moments, lorsque le culte auquel Sonny fait son rapport fait jouer son influence. Bien que Sonny essaie d'être difficile à repérer, les Personnages perspicaces finiront par se rendre compte que des individus portant les signes distinctifs du groupe auquel Sonny est associé parlent à ce qui semble n'être que des tas de haillons.
 
@@ -476,7 +476,7 @@ Les Marken sont venus chercher leur frère disparu. Ils ne reculeront devant rie
 
 # LES PNJ DE L'OMBRE JAMAIS MEMBRE
 
-<span id="page-58-0"></span>Vous pouvez utiliser Le Grincheux juste pour ajouter un peu de pittoresque à la Schaffenfest, mais son histoire est bien plus complexe si vous souhaitez y mêler les Personnages, car il a déjà rencontré le vrai « Kastor Lieberung ». À l'origine, Marken n'était pas un solitaire : avec ses nombreux frères, il vivait de diverses escroqueries. Ses frères se sont impliqués dans un « groupe intéressant » et Heinrich a rapidement découvert qu'il était bien plus sinistre que son nom, la Main Pourpre. Marken s'est enfui en clamant : « *Jamais je ne voudrais faire partie d'une secte qui accepterait de m'avoir pour membre* », mais il en sait bien plus sur ce culte du Chaos que les Personnages, bien qu'il n'en sache pas beaucoup sur leurs plans à long terme, après s'en être éloigné très tôt. Vous pouvez l'utiliser pour qu'il dise dans quoi les Personnages se sont embarqués, car le charlatan perspicace se rendra vite compte que le sosie n'est pas Lieberung. Si le groupe a l'air fréquentable, il s'approchera d'eux pour « *boire un coup et discuter tranquillement.* »
+<span id="page-58-0" data-folio="58"></span>Vous pouvez utiliser Le Grincheux juste pour ajouter un peu de pittoresque à la Schaffenfest, mais son histoire est bien plus complexe si vous souhaitez y mêler les Personnages, car il a déjà rencontré le vrai « Kastor Lieberung ». À l'origine, Marken n'était pas un solitaire : avec ses nombreux frères, il vivait de diverses escroqueries. Ses frères se sont impliqués dans un « groupe intéressant » et Heinrich a rapidement découvert qu'il était bien plus sinistre que son nom, la Main Pourpre. Marken s'est enfui en clamant : « *Jamais je ne voudrais faire partie d'une secte qui accepterait de m'avoir pour membre* », mais il en sait bien plus sur ce culte du Chaos que les Personnages, bien qu'il n'en sache pas beaucoup sur leurs plans à long terme, après s'en être éloigné très tôt. Vous pouvez l'utiliser pour qu'il dise dans quoi les Personnages se sont embarqués, car le charlatan perspicace se rendra vite compte que le sosie n'est pas Lieberung. Si le groupe a l'air fréquentable, il s'approchera d'eux pour « *boire un coup et discuter tranquillement.* »
 
 Toute ville a un besoin constant de main-d'œuvre non qualifiée. Il y a toujours des briques et des pierres de construction à déplacer, des cargaisons à charger et à décharger, etc. Sans grandes compétences commerciales ou artisanales, les manœuvres font généralement partie des travailleurs les moins bien payés d'une ville, mais leur travail les mène partout. Tant qu'ils ont une excuse valable, ils peuvent circuler sans souci parmi les maisons de la noblesse aussi facilement qu'entre les masures des ruelles.
 
@@ -509,7 +509,7 @@ croiser et réputé être un homme « qui fera ce qu'il faut si vous payez ce qu
 Un petit coffre noir verrouillé et doublé de plomb est récemment « tombé d'une péniche » et s'est retrouvé en possession de Pförtner. Cependant, quel que soit l'endroit où Pförtner le dépose, y compris les endroits où il a été payé pour le laisser, le coffre revient toujours chez lui : il est caché sous les escaliers, coincé dans une poche de manteau, sous son lit, etc. De plus, des décès « accidentels » surviennent partout où la boîte a été déposée : noyades, crânes brisés, empalements, etc. Pförtner commence à s'inquiéter, notamment parce que, du moins en ce qui concerne ses employeurs, il ne cesse de « manquer » ces livraisons. Il a besoin d'aide pour se débarrasser de cette chose, surtout avant que le doux et erratique cliquetis à l'intérieur ne le rende fou.
 
 
-#### <span id="page-59-0"></span>LES PNJ DE L'OMBRE DONNEZ-LUI UN NOM !
+#### <span id="page-59-0" data-folio="59"></span>LES PNJ DE L'OMBRE DONNEZ-LUI UN NOM !
 
 Au cours du deuxième jour de leur enquête, et à d'autres moments selon les actions qu'ils entreprennent, les Personnages seront confrontés à des voyous anonymes dans les rues de Bögenhafen. La majorité d'entre eux sont des employés de Gurney Dumkopf (voir pages 94 et 124 de **L'Ennemi dans l'Ombre**), embauchés par Teugen pour faire fuir les Personnages. Si vous voulez donner un visage à l'ennemi, surtout si les Personnages comptent parmi eux d'habiles combattants, ou si vous avez d'autres raisons de penser qu'ils ne se laisseront pas intimider par des voyous lambda, considérez alors que Dumkopf a confié à Pförtner la responsabilité des brutes chargées de se débarrasser des Personnages. Pförtner est très vif pour un voyou,
 
@@ -540,7 +540,7 @@ Effraction, Fuite !, Vision nocturne **Possessions :** corde, outils du Métier 
 Depuis des décennies, Zimmermann prétend qu'elle n'a rien fait, mais cette fois, elle dit la vérité. Prise en flagrant délit avec une icône de Stromfels, Zimmermann a été condamnée à la mort par noyade, une punition traditionnelle pour hérésie contre le culte de Manann. Les Personnages sont pourtant bien placés pour le savoir : alors qu'ils passaient par là vaquant à leurs propres « affaires », ils l'ont vue dérober l'icône, ainsi que quelques autres marchandises, à un autre individu. Ils savent aussi que Zimmermann en sait beaucoup plus qu'elle ne le dit, car il semble qu'un complot se prépare, qui pourrait bouleverser l'économie du Reik, ruiner la vie d'innombrables personnes, et pire, les intérêts des Personnages ! Il est temps de préparer une évasion.
 
 
-### <span id="page-60-0"></span>**Marchands**
+### <span id="page-60-0" data-folio="60"></span>**Marchands**
 
 La plupart des marchands en ville sont de petits commerçants indépendants, exploitant des étals de marché, ou des commis travaillant pour une plus grande maison de commerce. Ces commerçants quittent rarement leurs étals, sauf pour prendre un verre dans une taverne proche du marché en rentrant chez eux le soir. Mais les commis peuvent être rencontrés dans les rues à presque tout moment de la journée, portant des messages et effectuant d'autres courses. Ils se retrouvent dans les tavernes des marchands le soir et, tout comme les artisans (voir page 54), on peut facilement les pousser à boire pour obtenir des informations utiles sur la ville.
 
@@ -571,7 +571,7 @@ Même si les interactions des Personnages avec Baumann se passent bien dans le c
 **Talents :** Affable, Lire/écrire, Négociateur, Perspicace **Possessions :** bijoux d'une valeur de 20 CO, boulier, 4 épées courtes, gardes, licence de guilde, chariots remplis de fourrures étranges, d'épices exotiques et de métaux rares, 5d10 pistoles d'argent.
 
 
-#### <span id="page-61-0"></span>**Depuis les Royaumes des Cieux**
+#### <span id="page-61-0" data-folio="61"></span>**Depuis les Royaumes des Cieux**
 
 Depuis des mois maintenant, Ouala transporte une petite tablette de pierre enveloppée de soie et de toile, qu'on lui a vendue à Lothern et qu'elle a transportée dans tout le Vieux Monde. Elle n'a aucune idée de la raison pour laquelle elle a acheté cette pièce, ni pourquoi elle l'a transportée jusqu'ici. Elle est lourde, peu esthétique, et couverte d'écritures indéchiffrables qui ont perdu toute beauté. Et pourtant, elle ne semble pas pouvoir s'en séparer. Elle n'a pas trouvé un seul client à qui elle soit prête à la céder... jusqu'à ce qu'elle aperçoive l'un des Personnages, et qu'elle ressente cette obligation : ils sont destinés à acheter la tablette et elle doit la leur vendre.
 
@@ -588,7 +588,7 @@ Peu importe qui est le dirigeant d'une ville, c'est souvent le baron du crime lo
 Selon la taille de la ville, le chef local sera un chef de gang ou un baron du crime. On rencontre plus fréquemment des rançonneurs de moindre importance : ils peuvent décider de dépouiller les Personnages de leurs objets de valeur, ou le groupe peut tomber sur eux en train de voler un ami ou une connaissance. Le propriétaire de l'auberge où séjournent les Personnages peut avoir du mal à payer la protection exigée par un chef du crime local. Pire encore, le tenancier peut être pris entre deux gangs, faisant face aux demandes des deux parce que l'auberge se trouve entre deux territoires. L'objet de valeur de la quête actuelle des Personnages peut avoir également attiré l'attention d'une bande criminelle locale : lorsque les Personnages trouvent la cachette de l'objet, il a disparu.
 
 
-#### <span id="page-62-0"></span>**Konrad Brecht**
+#### <span id="page-62-0" data-folio="62"></span>**Konrad Brecht**
 
 Connu dans ses repaires habituels sous le nom de « Konrad la matraque », Brecht est un rançonneur notoire et terrifiant. Adepte des bonnes manières et des menaces douces, mesurant un peu moins d'un mètre quatre-vingt, avec un crâne chauve et un corps quelque peu empâté, Brecht n'a pas l'air, à première vue, d'être fait pour la vie criminelle. Cependant, l'apparence et les expressions de l'homme cachent mal son caractère impitoyable. Ses yeux et son sourire font plus penser à ceux d'un requin qu'à ceux d'un homme d'affaires, et c'est grâce à ces atouts qu'il garde le contrôle.
 

@@ -1,6 +1,6 @@
 *Pages PDF 158-163*
 
-### <span id="page-157-0"></span>ANNEXE III MIDDENHEIM ET LES ÉVÉNEMENTS FUTURS • •
+### <span id="page-157-0" data-folio="155"></span>ANNEXE III MIDDENHEIM ET LES ÉVÉNEMENTS FUTURS • •
 
 ### ATTENTION SPOILER !
 
@@ -37,7 +37,7 @@ La révélation de Wasmeier a laissé un énorme vide, et les membres du culte s
 Si le groupe a joué **Mort sur le Reik**, il est probable qu'il soit venu à Middenheim dans l'espoir de retrouver le noble renégat Gotthard von Wittgenstein. Il joue également un rôle dans les dernières phases de la campagne de **L'Ennemi Intérieur**. S'il est en cavale dans la ville et mijote quelque chose, il vaudrait 
 
 
-<span id="page-158-0"></span>mieux que les Personnages perdent complètement sa trace. Si Gotthard échappe aux Personnages, vous pouvez le réintroduire comme antagoniste plus tard.
+<span id="page-158-0" data-folio="156"></span>mieux que les Personnages perdent complètement sa trace. Si Gotthard échappe aux Personnages, vous pouvez le réintroduire comme antagoniste plus tard.
 
 En tant que président de la Guilde des Marchands et Convenor de la Komission pour les Métiers et le Commerce, Gotthard se fait plusieurs ennemis en ville, cible de choix pour les saynètes satiriques tels que celles de l'Âne Rieur. Vous pouvez les utiliser pour suggérer que Gotthard Wallenstein est un méchant, sans pour autant révéler aux Personnages qu'il s'agit de Wittgenstein incognito.
 

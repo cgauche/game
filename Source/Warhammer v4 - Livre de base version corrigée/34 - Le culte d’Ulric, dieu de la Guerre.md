@@ -2,7 +2,7 @@
 
 # **LE CULTE D'ULRIC, DIEU DE LA GUERRE**
 
-<span id="page-214-0"></span>**Siège du Pouvoir :** Middenheim, Middenland
+<span id="page-214-0" data-folio="213"></span>**Siège du Pouvoir :** Middenheim, Middenland
 
 **Chef du Culte :** Ar-Ulric
 

@@ -1,6 +1,6 @@
 *Pages PDF 122-132*
 
-### <span id="page-121-0"></span>MIDDENHEIM • LE GRAND-DUCHÉ •
+### <span id="page-121-0" data-folio="119"></span>MIDDENHEIM • LE GRAND-DUCHÉ •
 
 Plusieurs petits duchés et baronnies constituent le Grand-Duché de Middenheim, les terres qui entourent le Fauschlag. Ce territoire n'est pas particulièrement riche, bien que trois routes importantes proposent d'excellentes opportunités pour le commerce, et les voies fluviales étroites issues des marais du Grand-Duché offrent un accès au réseau de grandes rivières de l'Empire.
 
@@ -24,7 +24,7 @@ Les elfes sont souvent consultés au sujet de l'exploitation forestière. On sup
 - 0 Les elfes refusent catégoriquement tout projet d'abattage dans les bosquets de lornalims, situés dans les profondeurs de la Drakwald. Jusqu'à présent, personne n'a trahi cette confiance, et ces bosquets demeurent difficiles d'accès.
 
 
-### <span id="page-122-0"></span>**L'agriculture dans le Grand-Duché**
+### <span id="page-122-0" data-folio="120"></span>**L'agriculture dans le Grand-Duché**
 
 Les bûcherons ont taillé la Drakwald autour de la base du Fauschlag et des villes les plus importantes du Grand-Duché. Les sols acides de la Drakwald ne se prêtent pas facilement à l'horticulture, mais le Grand-Duché parvient tout de même à une autosuffisance alimentaire, et peut même mettre de côté un surplus de céréales la plupart des années. La production laitière est assez limitée dans la province, les troupeaux sont une cible bien trop tentante pour les attaques d'hommesbêtes et de peaux-vertes, mais des expéditions de chasse dans la Drakwald ont lieu tout au long de l'année, et la viande de cerf et de sanglier se retrouve régulièrement sur les étals de l'Altmarkt.
 
@@ -47,7 +47,7 @@ La majeure partie du sol de la région environnante est constitué d'une glaise 
 Malgré le caractère sauvage de la Drakwald, les routes qui partent du Fauschlag sont généralement en bon état. Des équipes de travailleurs, souvent aidées par la Compagnie minière du Middenland, s'assurent que les routes restent planes et pavées. La Vieille Route de la forêt commence au viaduc sud, traverse les baronnies d'Immelscheid et d'Holzbek avant de poursuivre jusqu'à Hergig, puis plus au sud vers Talabheim et Wurtbad. La Grande Route du Nord part du viaduc ouest, suit une longue courbe à travers la Drakwald jusqu'à atteindre Marienburg. La route de Salzenmund est également une route principale, bien que moins fréquentée. Elle connecte Middenheim au Nordland. Le viaduc est traverse les contreforts des Monts du Milieu, établissant la connexion avec le duché de Sohk et les domaines Kärzburdger.
 
 
-### <span id="page-123-0"></span>**Anciennes fortifications**
+### <span id="page-123-0" data-folio="121"></span>**Anciennes fortifications**
 
 On trouve plusieurs forts et châteaux en ruine autour de Middenheim. La plupart sont des vestiges de guerres pratiquement oubliées. Solzheimschloss est un sinistre souvenir du conflit de 1812 CI avec Middenheim, et marquait jadis l'étendue des terres que le Graf pouvait contrôler qui étaient sous la menace de ses ennemis ici. Le château en ruines sans nom situé à proximité est encore plus ancien ; il s'agit de l'un des nombreux forts de taille plus réduite placés aux abords de la frontière qui furent construits au cours des premières années des Guerres des Trois Empereurs. Au sud, les restes calcinés du palais Fahndorf datent également de cette époque.
 
@@ -81,7 +81,7 @@ Consultez les **Archives de l'Empire Volume I** pour plus d'informations sur la 
 
 ### **Les nains dans le Grand-Duché**
 
-<span id="page-124-0"></span>V
+<span id="page-124-0" data-folio="122"></span>V
 
 La plupart des nains qui vivent dans le Grand-Duché sont des descendants de ceux qui ont fui la destruction de Karak Khazarak à l'époque qui a précédé l'avènement de Sigmar. Ces nains sont relativement acculturés à la vie auprès des humains, et bien qu'ils présentent encore les personnalités caractéristiques et les manières bourrues des autres nains, ils sont sensiblement plus ouverts d'esprit que ceux qui vivent dans les Montagnes du Bord du Monde.
 
@@ -112,7 +112,7 @@ Le caractère des hommes-bêtes dans la région peut être scindé en deux caté
 Le second groupe est plus sauvage et plus assoiffé de sang. Les rares fois où des agents de la Couronne Rouge ont essayé de recruter ces hommes-bêtes, ils ont pu s'estimer heureux de s'en tirer vivants. Ils se rassemblent au sud de la province et vénèrent Khorne, le dieu du Sang. Ces hommes-bêtes sont attirés dans la zone par les énergies maléfiques émises par le tombeau de Kazron Crachesang (voir p. 125).
 
 
-### <span id="page-125-0"></span>**Remblais et tumulus**
+### <span id="page-125-0" data-folio="123"></span>**Remblais et tumulus**
 
 Le Grand-Duché contient remarquablement peu de sites liés à des habitations humaines datant d'avant Sigmar. Les Teutogen affirment que cela est dû au fait qu'aucun humain ne s'était établi dans la région avant l'arrivée d'Artur. Cependant, les érudits considèrent cette affirmation comme douteuse, dans la mesure où il n'y a pas de véritable raison expliquant qu'aucune tribu humaine ancienne n'aurait vécu dans la région. Quoi qu'il en soit, le fait est que l'on trouve peu de sites druidiques anciens ou d'oghams en pierre dans le Grand-Duché.
 
@@ -135,7 +135,7 @@ Les érudits supposent que les terres ont jadis été occupées par les monstrue
 
 ### **Les temples de la Griffe Rouge**
 
-<span id="page-126-0"></span>V
+<span id="page-126-0" data-folio="124"></span>V
 
 La Griffe Rouge est une étrange secte d'ulricains, tolérée, mais pas encouragée, par le culte officiel d'Ulric. La secte est ésotérique et mystérieuse, acceptant les nonnes et les moines qui souhaitent se consacrer à une guerre sans fin contre les ennemis du dieu de l'Hiver. Ceux qui ont été intronisés dans l'ordre reçoivent un ensemble de robes décorées de manches rouge vif.
 
@@ -165,7 +165,7 @@ Les Chevaliers du Loup Blanc sont organisés en différentes compagnies de batai
 Cela signifie que les véritables Loups Blancs locaux ne sont pas eux-mêmes centrés sur Middenheim. Ils constituent la Compagnie Bleue, et leurs terrains sont situés sur la route de Salzenmund, au nord de la cité. Les membres de la Compagnie Bleue se considèrent comme les véritables Chevaliers du Loup Blanc, car les tribus Teutogen vivaient sur leurs terrains dans la zone avant l'avènement de Sigmar.
 
 
-### <span id="page-127-0"></span>**Baronnie d'Holzbek**
+### <span id="page-127-0" data-folio="125"></span>**Baronnie d'Holzbek**
 
 La baronnie d'Holzbek est une région pauvre et sauvage située au sud-ouest des Monts du Milieu. Middenheim exerce sur elle un contrôle symbolique suite à des machinations politiques datant de plusieurs siècles. Le baron d'Holzbek était autrefois lié au Grand baron du Hochland, mais au cours du 19e siècle, la baronnie s'est retrouvée associée plus étroitement à Middenheim.
 
@@ -202,7 +202,7 @@ Les nains se rappellent encore avec amertume la perte de la forteresse, et l'ont
 Les Défenses rouges se montrent de plus en plus agités ces dernières années, et ils ont érigé une grande idole en pierre représentant l'un de leurs dieux monstrueux, qui surmonte les cimes des arbres et est visible depuis la mine Oberholzbek. On ignore s'il s'agit d'une marque de frontière territoriale ou d'un présage menaçant d'événements à venir.
 
 
-### <span id="page-128-0"></span>**Duché d'Immelscheid**
+### <span id="page-128-0" data-folio="126"></span>**Duché d'Immelscheid**
 
 La ville-carrière d'Immelscheid est un atout important de la région. En raison d'une particularité géographique, l'ardoise que l'on trouve ici est lisse et fine, mais également résistante. La quasi-totalité des bâtiments en pierre de Middenheim ont un toit en ardoise d'Immelscheid. Bien que l'on en exporte vers d'autres cités de l'Empire, les difficultés liées au transport font que la majeure partie de cette ardoise est utilisée localement.
 
@@ -231,7 +231,7 @@ Les dirigeants des Crocs sombres conseillent d'éviter ces provocations. Ils sav
 Coiffe-de-Sang craint que Grout ne plonge les Toilenoire dans une guerre inévitable. Il est malin, et espère manipuler une bande de voyageurs humains pour les amener à trouver et à tuer Grout avant que le chamane ne puisse mener à bien ses plans.
 
 
-### <span id="page-129-0"></span>**Domaine Kärzburdger**
+### <span id="page-129-0" data-folio="127"></span>**Domaine Kärzburdger**
 
 Le domaine Kärzburdger est tout ce qu'il reste de leurs terres autrefois vastes, qui incluaient le duché de Sohk et des portions de terre autour de Middenheim même. Depuis que les Todbringer ont commencé à régner sur Middenheim à leur place, la puissance des Kärzburdger s'est réduite. La famille a dû vendre ou concéder une grande partie de ses terres afin de pouvoir conserver cette portion de leur ancien domaine, de taille réduite mais extrêmement rentable.
 
@@ -264,7 +264,7 @@ Le Fort d'Airain demeure un lieu inquiétant et hanté. Les soldats envoyés là
 
 ### **Marche de Linz**
 
-<span id="page-130-0"></span>V
+<span id="page-130-0" data-folio="128"></span>V
 
 La ville frontière de Linz est un marché important de bétail situé au bord de la Drakwald. Les producteurs laitiers du Grand-Duché n'ont pas la vie facile, dans la mesure où le bétail ne s'épanouit guère sur les sols nordiques, et où les bêtes qui parviennent à survivre jusqu'à l'âge adulte constituent des cibles de choix pour les pillards. Cependant, autour de la Marche de Linz se trouvent plusieurs clairières plus étendues qui font office de pâturages.
 
@@ -305,7 +305,7 @@ Vous êtes empli de furie et d'un désir de vous en prendre à tous ceux que vou
 Si vous réussissez le Test de Psychologie pour éviter les effets de la *Haine*, vous êtes suffisamment lucide pour pouvoir interagir de manière rudimentaire avec d'autres êtres vivants. Cette interaction se limite à les fuir, ou à les avertir qu'ils doivent s'écarter de votre chemin.
 
 
-### <span id="page-131-0"></span>**Duché de Sohk**
+### <span id="page-131-0" data-folio="129"></span>**Duché de Sohk**
 
 Le duché de Sohk est une petite province au nord de Middenheim. La lignée des Kärzburdger régnait jadis sur ces terres, mais leur fortune s'étant amoindrie, les Todbringer ont acquis le duché. Les Todbringer ont accordé l'intendance de la province à la famille aristocratique Eisenhal.
 

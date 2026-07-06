@@ -43,7 +43,7 @@ Centre d'intrigues politiques, de ferveur religieuse, de violence des gangs et d
 - 0 Le royaume des hauts elfes de Saphery dispose d'une ambassade à Altdorf, ce qui constitue une source de jalousie et de suspicion. Les nains cherchent à savoir ce que les hauts elfes préparent et exigent des réparations pour de vieilles rancunes remontant à la Guerre de la Barbe. Les autres royaumes elfiques ne souhaitent pas que Saphery soit avantagé à leur détriment, c'est pourquoi ils mandatent des émissaires ou des espions pour trouver des informations compromettantes sur leurs rivaux. Les elfes noirs, aussi distants soient-ils, sont curieux des intrigues elfiques qui se déroulent à Altdorf.
 
 
-# <span id="page-51-0"></span>**LE GÎTE ET LE COUVERT**
+# <span id="page-51-0" data-folio="49"></span>**LE GÎTE ET LE COUVERT**
 
 Il n'est pas difficile de trouver un endroit où loger à Altdorf, mais pour s'offrir confort et sécurité, il faut parfois dépenser beaucoup d'argent. Tous les quartiers résidentiels disposent de pensions de famille, de pensions, d'auberges ou d'asiles de nuit où passer la nuit.
 
@@ -72,7 +72,7 @@ Adred Gebhardt, le propriétaire, a les mimiques d'un vieux loup de mer d'Hagend
 **Prix :** chambre, privée (2 lits) 8/- par nuit ; repas, auberge 10 sc ; bière, pinte (à consommer avec le repas) 3 sc.
 
 
-# <span id="page-52-0"></span>**HÔTELS HAUT DE GAMME**
+# <span id="page-52-0" data-folio="50"></span>**HÔTELS HAUT DE GAMME**
 
 Dans les quartiers plus aisés de la Rive Sud, les visiteurs peuvent trouver un certain nombre de grands hôtels. Ce sont des établissements haut de gamme où les membres du personnel prennent grand soin de ceux qui paient leur salaire. Si les hôtels peuvent être sélectifs et exclusifs, beaucoup d'entre eux acceptent toutefois une clientèle diversifiée. Les princes elfes se retrouvent à côtoyer les ingénieurs nains des lointaines karaks, les marchands halflings des clans Piedpaille ou Fraisedébois, ou encore les jeunes nobles rustres de la Ligue de Karl Franz.
 
@@ -105,7 +105,7 @@ Les murs d'Altdorf sont célèbres pour leur construction robuste et l'impact vi
 Des tours bastionnées parsèment les murs et plusieurs d'entre elles ont une fonction ou une réputation particulière.
 
 
-# <span id="page-53-0"></span>**La Tour grise**
+# <span id="page-53-0" data-folio="51"></span>**La Tour grise**
 
 La Tour grise s'élève au-dessus du quartier de Zwillingsgrab, au sud de la ville. Elle a été construite pendant les Âges Sombres pour surveiller les Montagnes Grises afin de détecter les premiers signes d'invasion. Les fenêtres de la tourelle laissent entrevoir d'étranges dispositifs qui permettent à leurs opérateurs de voir et même d'entendre ce qui se passe dans des pays lointains. Les généraux d'Altdorf jurent que la tour sert uniquement à avertir des attaques potentielles des peaux-vertes, ou des menaces provenant du château Drachenfels et du Fort du Sang, mais les ducs de Montfort et de Bastonne en doutent fortement. Dans toute la Bretonnie, des rumeurs se répandent selon lesquelles les souverains d'Altdorf les espionnent depuis cette tour. L'ambassadeur bretonnien a demandé la permission d'examiner l'endroit pour mettre fin à ces soupçons, mais jusqu'à présent l'Empereur a ignoré ses requêtes.
 
@@ -124,7 +124,7 @@ Les étrangers sont examinés de plus près. Ceux qui arrivent à bord d'une dil
 En période de peste ou de conflit, les gardes présentent souvent des médailles des dieux sur lesquelles les nouveaux arrivants doivent déposer un baiser. La croyance populaire veut qu'un tel acte permette de démasquer les sorciers et de guérir les personnes atteintes de maladies.
 
 
-# <span id="page-54-0"></span>**La Porte Nord**
+# <span id="page-54-0" data-folio="52"></span>**La Porte Nord**
 
 Cette porte est également connue sous le nom de porte de l'Empereur, ou porte de l'Empire, car la tradition veut que Sigmar soit passé par là lorsqu'il a embarqué pour son dernier voyage. Deux immenses statues flanquent cette porte : l'une de Sigmar brandissant Ghal-Maraz et l'autre d'Ulric brandissant Blitzbeil.
 

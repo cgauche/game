@@ -50,7 +50,7 @@ Magister Alanna Graumann
 Votre servante et gardienne.
 
 
-# <span id="page-25-0"></span>• PERSONNAGE •
+# <span id="page-25-0" data-folio="24"></span>• PERSONNAGE •
 
 Les Joueurs explorent le Vieux Monde grâce à leurs Personnages. Ce chapitre explique comment créer le vôtre. La plupart débutent la partie en tant que résidents lambda de l'Empire, peut-être promis à un glorieux destin. Ce que personne ne soupçonne, mais cela ne veut pas dire que vous ne pouvez pas vous soustraire à vos humbles origines, juste qu'un long voyage vous attend, et que vous aurez certainement besoin d'une meilleure paire de bottes.
 

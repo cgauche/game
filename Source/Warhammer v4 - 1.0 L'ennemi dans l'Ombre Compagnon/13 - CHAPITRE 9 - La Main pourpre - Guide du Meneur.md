@@ -2,14 +2,14 @@
 
 ## CHAPITRE 9 : LA MAIN POURPRE : GUIDE DU MENEUR
 
-<span id="page-72-0"></span>Au cours de la campagne, le groupe rencontre un certain nombre de cultes du Chaos, mais aucun n'est aussi répandu ni aussi odieux que celui de la Main Pourpre.
+<span id="page-72-0" data-folio="72"></span>Au cours de la campagne, le groupe rencontre un certain nombre de cultes du Chaos, mais aucun n'est aussi répandu ni aussi odieux que celui de la Main Pourpre.
 
 Cette vaste organisation interconnectée possède des cellules dans tout l'Empire. Elle a passé des décennies à installer ses agents à des postes de pouvoir. Aujourd'hui, alors que d'autres forces se préparent à attaquer l'Empire de l'extérieur, la Main Pourpre complote pour le faire s'effondrer de l'intérieur.
 
 Leur plan est vaste, avec un entrelac d'objectifs et de possibilités si complexe que même les *Magisters Magistri*, comme se surnomment les chefs de la secte, n'en saisissent pas toute la portée. Chaque cultiste ne connaît qu'une poignée de ses semblables et une fraction infinitésimale du plan. Cela offre au culte une grande sécurité, car un répurgateur qui capture et interroge une douzaine de cultistes aura du mal à en apprendre suffisamment pour nuire à l'organisation dans son ensemble.
 
 
-### <span id="page-73-0"></span>**TZEENTCH LE CHANGEUR DE VOIES**
+### <span id="page-73-0" data-folio="73"></span>**TZEENTCH LE CHANGEUR DE VOIES**
 
 Tzeentch est la plus énigmatique des quatre Puissances de la Ruine. Il symbolise le potentiel du Chaos à provoquer des changements au mépris des lois naturelles et mortelles, de la mutation corporelle à la révolution politique.
 
@@ -36,7 +36,7 @@ Une cellule de la Main Pourpre se compose normalement de neuf membres, et une vi
 Dans les grandes villes comme Altdorf, Nuln et Middenheim, le culte est mieux organisé. Les groupes de cellules sont structurés sous les auspices de trois Ordres dirigeants : l'*Ordo Impedimentae*, l'*Ordo Novitiae* et l'*Ordo Terribilis*.
 
 
-### <span id="page-74-0"></span>**Les Grades de l'Ordre**
+### <span id="page-74-0" data-folio="74"></span>**Les Grades de l'Ordre**
 
 L'*Ordo Impedimentae* est chargé d'assurer les fonds et les ressources du culte. Ses membres remplissent les rôles de trésorier et d'intendant, et se trouvent au sommet d'un plus vaste réseau de cambriolage et de racket. Bien que l'*Ordo Impedimentae* fonctionne comme une bande criminelle organisée, il doit demeurer extrêmement prudent. Les criminels ordinaires bénéficient d'un code de conduite souple mais solidaire, mais seul le baron du crime le plus dépravé envisagerait d'étendre ces politesses aux cultistes du Chaos. Les criminels doivent éviter d'alerter les gardes municipaux, mais ils n'ont normalement pas à s'inquiéter des enquêtes plus méticuleuses des répurgateurs.
 
@@ -66,7 +66,7 @@ La manipulation, la corruption, l'extorsion, le chantage et le meurtre figurent 
 L'obtention du pouvoir est le but ultime du culte : politique, militaire ou magique. Il y parvient en plaçant des agents à des postes élevés, ou en corrompant ceux qui y sont déjà.
 
 
-<span id="page-75-0"></span>La secte mène une enquête minutieuse sur les recrues et les cibles potentielles. Lorsqu'une approche est faite ou qu'une opération est mise en place, la secte connaît tout de la personne, y compris ses faiblesses, ses préférences, ses proches et autres points de pression.
+<span id="page-75-0" data-folio="75"></span>La secte mène une enquête minutieuse sur les recrues et les cibles potentielles. Lorsqu'une approche est faite ou qu'une opération est mise en place, la secte connaît tout de la personne, y compris ses faiblesses, ses préférences, ses proches et autres points de pression.
 
 Bien qu'elle paraisse désorganisée et inefficace, la Main Pourpre est impitoyable dans la poursuite de ceux qui contrecarrent ses plans ou en apprennent trop sur la secte. Par « trop », on entend « quoi que ce soit ». Comme le découvriront les Personnages de la campagne **L'Ennemi Intérieur**, les cultistes sont partout, et tenaces dans leur quête.
 
@@ -107,7 +107,7 @@ La Main Pourpre a le bras long, influençant la vie des grands et des plus humbl
 Une fois que le cultiste est infiltré au sein du groupe, toutes les actions des Personnages sont soumises à l'examen de la Main Pourpre. La taupe fait des rapports à des maîtres éloignés chaque fois que le groupe traverse une ville ou un village. Les plans de la Main Pourpre sont nombreux et subtils. Parfois, la secte veut s'assurer que les Personnages réussissent, d'autres fois, elle peut s'y opposer. Dans les deux cas, les Personnages ont le sentiment désagréable que chacun de leurs mouvements est surveillé et chacune de leurs décisions anticipée. Et c'est bien le cas !
 
 
-- <span id="page-76-0"></span>0 Les Personnages sur la piste d'un culte du Chaos peuvent se rendre compte qu'on leur laisse des indices évidents sur la façon de passer à l'action contre leur ennemi. Leur informateur peut être un membre de la Main Pourpre, qui souhaite donner au groupe la fausse impression qu'ils ont traqué et démasqué tous les adorateurs du Chaos dans leur zone d'opération.
+- <span id="page-76-0" data-folio="76"></span>0 Les Personnages sur la piste d'un culte du Chaos peuvent se rendre compte qu'on leur laisse des indices évidents sur la façon de passer à l'action contre leur ennemi. Leur informateur peut être un membre de la Main Pourpre, qui souhaite donner au groupe la fausse impression qu'ils ont traqué et démasqué tous les adorateurs du Chaos dans leur zone d'opération.
 - 0 Certains groupes peuvent constater qu'un endroit particulier est si profondément corrompu par le Chaos que les autorités de la ville ne prennent pas leurs plaintes au sérieux. Dans une telle situation, ils peuvent même être approchés par des agents de la Main Pourpre, qui souhaitent que le culte existant dans la ville soit éliminé, afin de pouvoir s'installer à sa place. Ces cultistes peuvent s'avérer des alliés précieux pour le groupe lorsqu'ils entreprennent des actions contre le culte local, pour ensuite se transformer en ennemis acharnés une fois le travail terminé.
 
 ### **CULTISTES DE LA MAIN POURPRE**
@@ -147,7 +147,7 @@ Un Magus du culte a 50% de chances de subir une mutation (**WFJDR**, page 183-18
 Les Personnages possédant le Talent Magie du Chaos sont généralement décrits comme des sorciers. Lorsque le Talent est pris, un Domaine doit être choisi, comme pour le Talent Magie des Arcanes. Dans le cas des sorciers de Tzeentch, cela signifie choisir Magie du Chaos (Tzeentch).
 
 
-<span id="page-77-0"></span>
+<span id="page-77-0" data-folio="77"></span>
 
 #### **Magus du Culte de Tzeentch** Humain
 
@@ -210,7 +210,7 @@ Savant (Tzeentch)
 
 ### SOURCES DE *DHAR*
 
-<span id="page-78-0"></span>*Dhar,* la Magie noire, nauséabonde et perverse, se rassemble là où stagnent les Vents de Magie car ils ne peuvent circuler librement, mais aussi là où Magie noire et Magie du Chaos sont fréquemment utilisées, là où les cultistes des Puissances de la Ruine se réunissent, et autour des sources de Corruption, comme la malepierre.
+<span id="page-78-0" data-folio="78"></span>*Dhar,* la Magie noire, nauséabonde et perverse, se rassemble là où stagnent les Vents de Magie car ils ne peuvent circuler librement, mais aussi là où Magie noire et Magie du Chaos sont fréquemment utilisées, là où les cultistes des Puissances de la Ruine se réunissent, et autour des sources de Corruption, comme la malepierre.
 
 Voici une brève liste d'exemples de sources de *Dhar*, qui offrent généralement un Bonus de +1 à +3 DR (déterminé par le MJ) à tous les Tests de **Focalisation (***Dhar***)** à proximité, selon la puissance de la source.
 
@@ -245,7 +245,7 @@ De plus, tout résultat de Test de **Focalisation** ou de **Langue (Magick)** co
 | 10 | Vomissement                                         | Venin                              | Lanceur de sorts<br>(au choix)    | Attaque caudale (+10) |
 
 
-### <span id="page-79-0"></span>**Influence Maléfique de Tzeentch**
+### <span id="page-79-0" data-folio="79"></span>**Influence Maléfique de Tzeentch**
 
 Dans les zones où l'influence des dieux du Chaos est forte, comme, par exemple, dans leurs temples, où leurs démons se manifestent, où leurs sorts font effet, où les cultistes exécutent des rituels en leur honneur, le pouvoir des Puissances de la Ruine peut se manifester. Chaque fois qu'un Test réalisé dans de tels endroits fournit comme résultat le nombre sacré du dieu en question, la marée de la corruption monte et cette divinité du Chaos se rapproche.
 
@@ -363,7 +363,7 @@ Vous canalisez la Magie profane en un souffle explosif de Corruption. Il s'agit 
 Vous devez posséder un objet chéri ou précieux appartenant à la Cible. Vous instillez magiquement de la matière brute du Chaos dans l'objet qui, à son tour, affecte la Cible. Elle devient obsédée par quelque chose : la nature précise de l'obsession dépend de l'individu en question, et de votre Domaine. Par exemple, lorsqu'il s'agit de Nurgle, *Obsession* peut pousser la 
 
 
-<span id="page-81-0"></span>Cible récemment blessée à gratter frénétiquement ses croûtes. Le Domaine de Slaanesh peut pousser un épicurien ou un gourmand à se goinfrer.
+<span id="page-81-0" data-folio="81"></span>Cible récemment blessée à gratter frénétiquement ses croûtes. Le Domaine de Slaanesh peut pousser un épicurien ou un gourmand à se goinfrer.
 
 La Cible doit réussir un Test de **Résistance Accessible (+20)**  toutes les heures, ou succomber à son obsession. En cas d'échec, les Tests suivants deviennent **Intermédiaire (+0),** puis si les échecs s'enchaînent, les Tests sont de plus en plus difficiles, jusqu'à ce qu'ils deviennent **Très difficiles (-30)**. Si la Cible obtient une Maladresse à l'un d'entre eux (en lançant un double), elle devient complètement obsédée. Elle ne peut rien faire d'autre que céder à cette obsession, quels qu'en soient le coût et les conséquences, pendant un nombre d'heures égal à 1d10 - Bonus de Force Mentale (minimum 1 heure). À la fin de la durée du Sort, en plus de toutes les autres implications physiques, sociales ou financières, la Cible doit réussir un Test de **Résistance Intermédiaire (+0)** ou gagner +1 Point de Corruption.
 
@@ -578,7 +578,7 @@ Sur votre ordre, des liens de feu aethyrique s'élèvent de la terre, puis s'enr
 Bien sûr, étant des créatures de changement pur, les horreurs ne sont pas identiques. Vous pouvez, si vous en avez le temps et l'envie, faire un jet aléatoire pour toutes les statistiques des horreurs. Pour ce faire, réduisez toutes les Caractéristiques listées de 10, puis ajoutez +2d10 à chacune.
 
 
-### <span id="page-84-0"></span>**Furies du Chaos**
+### <span id="page-84-0" data-folio="84"></span>**Furies du Chaos**
 
 À bien des égards, les furies du Chaos sont considérées comme des démons sans importance. Elles ne servent aucun dieu en particulier, et ne sont que des manifestations ataviques du Chaos dans sa forme indivisible, primitive et sans personnalité distincte. Leur faiblesse relative, ainsi que le fait qu'aucune puissance du Chaos ne chercherait à se venger si elles étaient maltraitées, font qu'elles sont souvent invoquées par des démonologues novices à la recherche d'un serviteur malléable et utile.
 
@@ -606,7 +606,7 @@ La créature est enveloppée du feu de Tzeentch qui s'échappe fréquemment du b
 **Traits optionnels :** Brutal, Effrayé (Démons et/ou Démonologues), Intelligent, Mutation, Rapide, Taille (Minuscule, Petit ou Grand)
 
 
-### <span id="page-85-0"></span>**Horreurs de Tzeentch**
+### <span id="page-85-0" data-folio="85"></span>**Horreurs de Tzeentch**
 
 Les horreurs de Tzeentch sont les rejetons mutants et baragouinant du Changeur de Voies. Monstruosités aux membres multiples, leur forme semble se tordre et se modifier selon les bras, les jambes et les tentacules qui surgissent, serpentant dans l'air à la recherche de proies à emporter dans leurs gueules béantes. Créatures de pure magie, l'air qui les entoure crépite et se déforme avec des énergies arcaniques impies.
 

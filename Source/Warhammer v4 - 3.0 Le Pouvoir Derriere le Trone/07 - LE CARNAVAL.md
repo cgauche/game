@@ -2,7 +2,7 @@
 
 # CHAPITRE 5 LE CARNAVAL
 
-<span id="page-60-0"></span>Une fois que les Personnages auront passé deux ou trois jours à explorer les environs, à se familiariser avec la Cité du Loup Blanc et qu'ils auront commencé à enquêter, la semaine du Carnaval pourra enfin démarrer. Souvent considéré comme le temps fort de l'année, le Carnaval attire à Middenheim des spectateurs venus des quatre coins de l'Empire. Les visiteurs venus de terres plus lointaines ne sont pas si rares. Parmi eux : des aristocrates aux vêtements tapageurs venus de Bretonnie, des marchands basanés d'Estalie, des Norsques laconiques et grands buveurs, ainsi que des Wastelanders au sens des affaires inégalé. Pendant la semaine du Carnaval, la population de Middenheim s'agrandit de 5 000 âmes, voire plus encore.
+<span id="page-60-0" data-folio="58"></span>Une fois que les Personnages auront passé deux ou trois jours à explorer les environs, à se familiariser avec la Cité du Loup Blanc et qu'ils auront commencé à enquêter, la semaine du Carnaval pourra enfin démarrer. Souvent considéré comme le temps fort de l'année, le Carnaval attire à Middenheim des spectateurs venus des quatre coins de l'Empire. Les visiteurs venus de terres plus lointaines ne sont pas si rares. Parmi eux : des aristocrates aux vêtements tapageurs venus de Bretonnie, des marchands basanés d'Estalie, des Norsques laconiques et grands buveurs, ainsi que des Wastelanders au sens des affaires inégalé. Pendant la semaine du Carnaval, la population de Middenheim s'agrandit de 5 000 âmes, voire plus encore.
 
 Le Carnaval sera la toile de fond de cette aventure, gardez-le toujours dans un coin de votre tête. Les tavernes sont pleines à craquer, les rues sont bondées de visiteurs venus de loin, et une certaine effervescence presque tangible s'empare de la ville.
 
@@ -17,7 +17,7 @@ Bon nombre de Middenheimers disent que le Carnaval est aussi vieux que la ville 
 Comme la plupart des légendes sur lesquelles tout le monde s'accorde, elle raconte n'importe quoi. Le premier Carnaval s'est tenu en 1812 CI pour célébrer la fin d'un siège par les Middenlanders. Middenheim avait été isolée de tout pendant plus de neuf mois, et a été sauvée grâce aux nains de la ville, qui ont repoussé les attaques des assaillants jusqu'à l'arrivée de l'hiver. Lorsque le froid s'est installé, l'armée assiégeante a été forcée de battre en retraite, et les Middenheimers ont pu célébrer leur victoire. Malheureusement, les denrées alimentaires manquaient, et on cuisinait surtout des rats et d'autres bestioles peu ragoutantes. Toutes les viandes étaient fumées ou salées à l'excès pour masquer leur goût, et on commémore encore aujourd'hui « la grande saumure de 1812 ».
 
 
-<span id="page-61-0"></span>Dans les années qui ont suivi, les fêtes n'ont pas attiré grand monde, puisque voyager dans la neige hivernale en a rebuté plus d'un. Mais puisqu'un afflux de visiteurs s'accompagne toujours d'une grande rentrée d'argent, la ville a décidé de repousser le Carnaval au printemps, et comme on pouvait s'y attendre, davantage de visiteurs firent le trajet. L'année suivante, on proposa (peut-être de manière sarcastique) de déplacer le Carnaval à l'été.
+<span id="page-61-0" data-folio="59"></span>Dans les années qui ont suivi, les fêtes n'ont pas attiré grand monde, puisque voyager dans la neige hivernale en a rebuté plus d'un. Mais puisqu'un afflux de visiteurs s'accompagne toujours d'une grande rentrée d'argent, la ville a décidé de repousser le Carnaval au printemps, et comme on pouvait s'y attendre, davantage de visiteurs firent le trajet. L'année suivante, on proposa (peut-être de manière sarcastique) de déplacer le Carnaval à l'été.
 
 On jugea cette idée encore plus brillante. Une grande tradition fut alors entérinée : le Carnaval de Middenheim changerait de saison tous les ans, et tournerait donc sur un cycle de quatre ans. Une fois tous les quatre ans, au Carnaval d'Hiver, la ville organise, en principe, des fêtes réservées à ses citoyens, qui admettent peu de visiteurs. Le reste du temps, en revanche, la ville ouvre grand ses portes pour que quiconque le souhaite puisse se joindre aux festivités.
 
@@ -64,7 +64,7 @@ Si les Personnages réussissent d'une façon ou d'une autre à ne pas se faire a
 
 ### **Ça ne nous plaît guère**
 
-<span id="page-62-0"></span>V
+<span id="page-62-0" data-folio="60"></span>V
 
 En plus des fruits pourris, un spectacle particulièrement mal reçu (par exemple, un échec Impressionnant ou pire) pourrait être rapporté aux Juges de spectacles, un groupe de représentants officiels contrôlant la qualité des spectacles de rue. Ces juges peuvent être appelés dans le cas où un artiste de rue est si mauvais qu'il en devient « *un affront à la profession ou à la compétence qu'il ou elle essaye de mettre en avant, au point de causer la gêne chez les spectateurs témoins de son échec.* » La foule peut également retenir un individu jusqu'à l'arrivée des Juges de spectacles, auquel cas il doit rejouer son spectacle. Un échec de même acabit lui vaudra 6 heures au pilori pour une première condamnation et une nuit entière en cas de récidive. Une troisième condamnation lui vaudra d'être jeté hors de la ville.
 
@@ -124,7 +124,7 @@ Pister quelqu'un à travers la foule n'est pas chose aisée. Utilisez la procéd
 | 9-10 | Peu bondée       | -5                                      | —   |
 
 
-<span id="page-63-0"></span>Un « effort collectif » réduit les chances de perdre la piste, ce qui arrive uniquement si tous les Personnages qui pistent ratent leur Test de **Perception** ; en revanche, la cible peut repérer tout Personnage qui rate son Test de **Discrétion.** Un Personnage qui perd la cible de vue est autorisé à refaire un Test pour retrouver un complice (un Test par complice) et reprendre la piste avec lui.
+<span id="page-63-0" data-folio="61"></span>Un « effort collectif » réduit les chances de perdre la piste, ce qui arrive uniquement si tous les Personnages qui pistent ratent leur Test de **Perception** ; en revanche, la cible peut repérer tout Personnage qui rate son Test de **Discrétion.** Un Personnage qui perd la cible de vue est autorisé à refaire un Test pour retrouver un complice (un Test par complice) et reprendre la piste avec lui.
 
 ### **RENCONTRES MINEURES AU CARNAVAL**
 
@@ -309,7 +309,7 @@ Leurs services sont abordables, ils ne demanderont que 3 sous de cuivre par jour
 Si les Personnages embauchent Karl et ses amis, vous devrez déterminer quelle information ils pourraient leur fournir qui les ferait avancer dans leur quête. Si le groupe livre tout simplement Karl au halfling, quelques pierres de fronde pourraient leur tomber dessus plus tard dans l'aventure.
 
 
-### <span id="page-67-0"></span>**LES GRANDS SPECTACLES DU CARNAVAL**
+### <span id="page-67-0" data-folio="65"></span>**LES GRANDS SPECTACLES DU CARNAVAL**
 
 En plus des nombreux négociants, artistes de rue et spectacles improvisés, le Carnaval propose plusieurs gros événements à des endroits variés de la ville. C'est lors de ces événements-là que les Personnages auront l'opportunité de côtoyer les grands décideurs de la ville, et plus important encore, de rencontrer et d'influencer les PNJ principaux.
 

@@ -1,6 +1,6 @@
 *Pages PDF 84-93*
 
-<span id="page-83-0"></span>
+<span id="page-83-0" data-folio="82"></span>
 
 ## THÉÂTRE DE GUERRE • •
 
@@ -56,7 +56,7 @@ Avant une bataille, le MJ doit décider de la Puissance de chaque armée. Il s'a
 L'entretien d'une armée peut se révéler coûteux. Il faut nourrir les soldats et les chevaux, et payer les mercenaires. Le coût d'entretien d'une armée est le Statut de chaque soldat additionné. Donc 100 chevaliers, avec un Statut Argent 5, requièrent un entretien quotidien de 500 pistoles d'argent. Les Personnages peuvent choisir de payer la moitié du coût normal, mais en conséquence l'armée sera moins performante et subira une pénalité de –10 à tous les Tests de Puissance. Si la somme pour l'entretien n'est pas du tout réglée, l'armée se disperse et part au bout de 2 jours. Réussir un Test de **Commandement Intermédiaire (+0)** permet de leur remonter le moral et de tenir DR jours plus, mais avec une pénalité de –20 à tous les Tests de Puissance.
 
 
-## <span id="page-85-0"></span>**ACTIVITÉS DE BATAILLE**
+## <span id="page-85-0" data-folio="84"></span>**ACTIVITÉS DE BATAILLE**
 
 *« Maître nain, même si je conçois qu'affronter les peaux-vertes sur un champ de bataille serait honorable, cela entraînerait de lourdes pertes. La faiblesse des orcs, c'est qu'ils aiment trop se battre entre eux. Confiez-moi une dizaine de nos meilleurs éclaireurs et je me charge de les faire transformer leur camp en bain de sang d'euxmêmes. »*
 
@@ -91,7 +91,7 @@ Lors de la préparation d'un plan de bataille, les Personnages doivent décider 
 Afin de ne pas entraîner de longs débats entre les Personnages, le MJ est encouragé à être bref en jouant les conseillers et en agissant comme intermédiaire. À moins, bien sûr, que les Joueurs aiment débattre ! Les meilleurs plans sont les plus simples, et cette étape n'est qu'un moyen de mettre en scène la bataille à venir.
 
 
-## <span id="page-86-0"></span>**Rassembler des forces**
+## <span id="page-86-0" data-folio="85"></span>**Rassembler des forces**
 
 Un Personnage peut tenter de renforcer son armée avec des troupes supplémentaires avant la bataille. Il existe de nombreuses façons de rassembler des troupes. Des mercenaires, tels que les terrifiantes troupes de choc des ogres, peuvent être engagés ; les paysans du coin peuvent être mobilisés ; et les nobles peuvent être charmés, soudoyés ou intimidés. Certaines de ces actions nécessitent des Tests de Compétences avec une Difficulté déterminée au cas par cas. En cas de Succès, le rassemblement augmente la Puissance de l'armée de +5. En cas de Succès Stupéfiant (+6), la Puissance augmente de +10. En cas d'Échec Stupéfiant (–6), elle est réduite de –10, peut-être à cause d'une mutinerie, ou d'une perte de moral entraînant une désertion.
 
@@ -130,7 +130,7 @@ L'objectif principal de cette étape est d'expliquer leurs options aux Personnag
 *Exemple : « Les orcs poursuivent leur assaut contre les barricades, qui risquent de céder à tout moment (Scène Tenez votre position). De nombreux orcs se sont mis à traverser la rivière à la nage, et atteindront bientôt vos archers (Scène Pluie de flèches) ! Plusieurs de vos troupes (fatiguées et démoralisées) semblent sur le point de craquer (Scène de Motivation). Que faites-vous ? »*
 
 
-## <span id="page-87-0"></span>**Scènes cinématiques**
+## <span id="page-87-0" data-folio="86"></span>**Scènes cinématiques**
 
 Avant une bataille, le MJ doit préparer plusieurs Scènes cinématiques susceptibles de se produire. Celles-ci doivent être imaginées en gardant le plan des Personnages à l'esprit. Cette section comprend des Scènes génériques pouvant être utilisées dans plusieurs situations avec des directives pour concevoir vos propres Scènes, et quelques exemples de Scènes uniques. Souvenez-vous que les Scènes cinématiques ne peuvent pas augmenter votre Puissance au-delà de sa valeur de départ.
 
@@ -175,7 +175,7 @@ Les Personnages ont 3 Rounds pour empêcher l'ennemi de porter un coup dévastat
 Qu'il s'agisse d'aborder un navire ennemi, ou charger les remparts d'un château à l'aide d'une tour de siège, une Scène de Percée nécessite qu'un Personnage prenne le contrôle d'une position ennemie en éliminant tous les soldats adverses ou en remplissant un objectif précis. Les Personnages disposent de 3 Rounds pour accomplir leur objectif, ce qui augmentera la Puissance de leur armée de +10. En cas d'échec, les Personnages peuvent décider de battre en retraite ou participer à une Scène de Charge si l'ennemi appelle des renforts.
 
 
-<span id="page-88-0"></span>*Exemple : les Personnages ont escaladé les remparts d'un château ennemi avec des grappins et doivent maintenant abaisser le pontlevis pour permettre au reste de l'armée de rentrer. Plusieurs gardes armés leur barrent la route et des renforts arrivent.*
+<span id="page-88-0" data-folio="87"></span>*Exemple : les Personnages ont escaladé les remparts d'un château ennemi avec des grappins et doivent maintenant abaisser le pontlevis pour permettre au reste de l'armée de rentrer. Plusieurs gardes armés leur barrent la route et des renforts arrivent.*
 
 #### OPTION : LES HORREURS DE LA GUERRE
 
@@ -208,7 +208,7 @@ Voici quelques de Scènes uniques pouvant être créées par un MJ.
 Au milieu du chaos de la bataille, un Personnage aperçoit soudain un capitaine ennemi isolé non loin de lui. Il peut le charger ou l'attaquer à une distance de 12 mètres. En cas de Succès, l'ennemi perd –5 de Puissance. Si c'est le général qui est tué ou neutralisé, la Puissance diminue encore de –5. Après cette attaque, les troupes ennemies encerclent le Personnage, qui doit battre en retraite. S'il veut attaquer de nouveau, il est libre de le faire au risque de sa vie, car il est submergé par ses adversaires. S'il choisit d'attaquer, le Personnage est obligé de participer à une Scène de Charge lors du prochain Round de bataille, où seul l'ennemi peut charger et est en supériorité numérique (**WFJDR** p.162) de 3 contre 1.
 
 
-#### <span id="page-89-0"></span>**Tuez la bête !**
+#### <span id="page-89-0" data-folio="88"></span>**Tuez la bête !**
 
 L'ennemi a libéré une créature gigantesque. Elle inflige des dégâts importants aux troupes. Vainquez-la en 3 Rounds pour diminuer la Puissance de l'ennemi de –10. Divisez les Blessures de départ de la créature par deux pour tenir compte des autres troupes qui l'attaquent. Dans le cas d'une créature de Taille Monstrueuse, les Personnages seront peut-être obligés de grimper dessus ou d'utiliser une arme de siège à proximité pour la tuer. Les créatures de Taille Monstrueuse peuvent essayer de se débarrasser de ceux qui lui grimpent dessus dans le cadre d'une action en faisant un Test opposé de **Corps à corps (Bagarre) / Escalade**. Si la créature échoue, les Personnages peuvent l'attaquer comme si elle était *Sans défense*.
 

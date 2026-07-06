@@ -37,7 +37,7 @@ Les différents pays et races du Vieux Monde ont tous leurs propres divinités. 
 
 # LES DIEUX DU REIKLAND
 
-<span id="page-204-0"></span>Comme toutes les grandes provinces, le Reikland offre tout un panel de dieux provinciaux, certains bénéficiant même de petits cultes raffinés. Le tableau suivant donne un exemple pour certains d'entre eux.
+<span id="page-204-0" data-folio="203"></span>Comme toutes les grandes provinces, le Reikland offre tout un panel de dieux provinciaux, certains bénéficiant même de petits cultes raffinés. Le tableau suivant donne un exemple pour certains d'entre eux.
 
 | Dieu                        | Sphère            | Adorateurs                               | Offrandes                                       | Remarques                                                                                                                        |
 |-----------------------------|-------------------|------------------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|

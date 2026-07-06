@@ -1,6 +1,6 @@
 *Pages PDF 59-72*
 
-## <span id="page-58-0"></span>GUIDE DE • KARAK AZGARAZ •
+## <span id="page-58-0" data-folio="58"></span>GUIDE DE • KARAK AZGARAZ •
 
 *« Karak Azgaraz ? La vieille forteresse naine ? Mais qu'estce que vous voulez y faire ? Il est presque impossible d'aller audelà du comptoir commercial, sauf si vous possédez quelque chose qui intéresse vraiment les nains. En plus, la région est infestée de peaux-vertes. On dit que les nains les ont repoussés, mais ça ne va certainement pas durer. »*
 
@@ -15,7 +15,7 @@ L'histoire de Karak Azgaraz n'est pas aussi longue ou glorieuse que celle des fo
 Personne ne se doutait alors que malgré sa défaite, l'influence vicieuse et corruptrice du Chaos pouvait encore mettre un terme à l'Âge d'or.
 
 
-#### <span id="page-59-0"></span>**La Guerre de la Vengeance et la chute de Kazad Azgaraz**
+#### <span id="page-59-0" data-folio="59"></span>**La Guerre de la Vengeance et la chute de Kazad Azgaraz**
 
 Les raids menés par Malékith, roi sorcier des elfes noirs, à l'encontre des communautés et marchands nains semèrent la discorde entre les nains et les elfes. Les émissaires du haut roi nain Gotrek Brise-étoile furent mal reçus (et le second d'entre eux fut même déshonoré) par l'arrogant roi phénix Caledor II.
 
@@ -58,7 +58,7 @@ Peu après, la tribu des Unberogen s'installa dans la région abandonnée par le
 Un rapprochement avec Karaz Ankor eut ensuite lieu, mais le destin de Karak Azgaraz changea véritablement grâce à un homme, Sigmar Heldenhammer, et à la fondation de l'Empire.
 
 
-#### <span id="page-60-0"></span>DES VISITEURS D'UBERSREIK
+#### <span id="page-60-0" data-folio="60"></span>DES VISITEURS D'UBERSREIK
 
 Ubersreik se trouve à environ 60 milles au nord de Karak Azgaraz, et il est possible de s'y rendre en quatre jours environ, en empruntant une route commerciale bien entretenue. Aucune diligence ne voyage régulièrement sur cet itinéraire, il faudrait donc en affréter une spécialement pour ce trajet. Cette solution risque de coûter très cher, de l'ordre de 15 à 20 couronnes d'or, car la région est connue pour ses dangers. Il peut être plus intéressant d'attendre qu'une caravane marchande parte pour la forteresse et d'offrir ses services en tant que garde le temps du périple.
 
@@ -89,7 +89,7 @@ Comme les autres forteresses naines, Karak Azgaraz est dirigée par un monarque 
 
 Résumé des événements majeurs de Karak Azgaraz (années basées sur le calendrier impérial) :
 
-#### <span id="page-61-0"></span>-2200
+#### <span id="page-61-0" data-folio="61"></span>-2200
 
 Fondation du comptoir commercial de Khazid Azgaraz dans les Montagnes Grises.
 
@@ -182,7 +182,7 @@ Thuringar respecte l'influence des ancêtres, et il tient compte de leurs consei
 
 ## **Conseil des anciens**
 
-<span id="page-62-0"></span>V
+<span id="page-62-0" data-folio="62"></span>V
 
 Le conseil des anciens, dont tous les membres sont plus âgés que Thuringar, offre ses préconisations au jeune roi sur différents sujets. Bien qu'il soit généralement plus prudent que Thuringar, le conseil n'est pas unanime sur tous les thèmes et chaque membre a son propre point de vue.
 
@@ -213,7 +213,7 @@ Volund Balafre-d'argent ressemble au parfait cliché de l'ingénieur à moitié 
 **Possessions :** médaillon d'office de guilde (maître de guilde de karak), bibliothèque (ingénieur), outils professionnels de qualité (ingénieur), grand atelier (ingénieur), arme simple (clé de combat), heaume, chemise de mailles
 
 
-## <span id="page-63-0"></span>**Gurniksson Percuteur**
+## <span id="page-63-0" data-folio="63"></span>**Gurniksson Percuteur**
 
 Gurniksson Percuteur sait bien que les mines sous le Pic du Nid d'aigle sont presque épuisées. Des études ont révélé que de nouveaux filons se trouvaient sûrement dans les zones contrôlées par les tribus peaux-vertes. C'est pourquoi Gurniksson soutient vivement la stratégie agressive du roi Thuringar. Il s'attendait à ce que le maître ingénieur soit aussi d'avis d'éradiquer les peauxvertes, mais cet imbécile ne cesse de radoter sur une quelconque insulte dont Gurniksson n'a aucun souvenir.
 
@@ -256,7 +256,7 @@ Capitaine patrouilleur talentueux et stratège né, Ragni a attiré l'attention 
 **Possessions :** insigne d'office, compagnie de marteleurs, symbole de rang, marteau de guerre à deux mains, heaume, chemise de mailles
 
 
-<span id="page-64-0"></span>
+<span id="page-64-0" data-folio="64"></span>
 
 ## **CLANS**
 
@@ -290,7 +290,7 @@ Voici quelques-uns des clans qui résident à Karak Azgaraz :
 - 0 Vieille-pioche (*Gormhak*) Mineurs
 
 
-## <span id="page-65-0"></span>**KARAK AZGARAZ : GUIDE DU VISITEUR**
+## <span id="page-65-0" data-folio="65"></span>**KARAK AZGARAZ : GUIDE DU VISITEUR**
 
 Les visiteurs sont rares à Karak Azgaraz. Les nains contrôlent strictement les points d'entrée à la Grand-route du roi (*Riksdrin* en khazalid), tandis que des patrouilles traquent les ennemis et les intrus. Les personnes qui requièrent l'accès à la forteresse naine doivent d'abord obtenir un droit de passage.
 
@@ -322,7 +322,7 @@ Détenue et exploitée par le clan de brasseurs Gertunmalz, l'auberge des Six pi
 
 #### ACCÈS AU ROYAUME DE KARAK AZGARAZ
 
-<span id="page-66-0"></span>La route principale à partir du comptoir commercial d'Azgaraz passe entre le Lac de Cuivre et le Pic du Nid d'aigle avant de s'enfoncer dans les montagnes, jusqu'en Bretonnie. Une route latérale, reconnaissable aux statues de sentinelles naines installées au croisement, monte jusque dans les hauteurs de la montagne. Des tours de guet en blocs de granit sont disposées de façon à ce que la route et les voyageurs qui s'y trouvent puissent toujours être surveillés. Le sentier serpente jusqu'à atteindre une gigantesque porte en bronze de 15 mètres de hauteur, aux deux tiers du chemin vers le sommet sur le flanc ouest de la montagne. Deux immenses statues de nains aux airs redoutables montent la garde de chaque côté de la grande porte : Grungni et Grimnir. Cette structure, appelée la Porte des Ancêtres, est actionnée par tout un système d'engrenages et ne s'ouvre que lorsque le roi ou une autre figure de la royauté entre ou sort du royaume nain. Une porte secondaire permet aux personnes moins importantes de circuler. Cette voie commune est protégée par des mâchicoulis et une garnison de gardes d'élite armés d'arbalètes.
+<span id="page-66-0" data-folio="66"></span>La route principale à partir du comptoir commercial d'Azgaraz passe entre le Lac de Cuivre et le Pic du Nid d'aigle avant de s'enfoncer dans les montagnes, jusqu'en Bretonnie. Une route latérale, reconnaissable aux statues de sentinelles naines installées au croisement, monte jusque dans les hauteurs de la montagne. Des tours de guet en blocs de granit sont disposées de façon à ce que la route et les voyageurs qui s'y trouvent puissent toujours être surveillés. Le sentier serpente jusqu'à atteindre une gigantesque porte en bronze de 15 mètres de hauteur, aux deux tiers du chemin vers le sommet sur le flanc ouest de la montagne. Deux immenses statues de nains aux airs redoutables montent la garde de chaque côté de la grande porte : Grungni et Grimnir. Cette structure, appelée la Porte des Ancêtres, est actionnée par tout un système d'engrenages et ne s'ouvre que lorsque le roi ou une autre figure de la royauté entre ou sort du royaume nain. Une porte secondaire permet aux personnes moins importantes de circuler. Cette voie commune est protégée par des mâchicoulis et une garnison de gardes d'élite armés d'arbalètes.
 
 ## **Pont du ciel Unzaled et Migdhal Skarrenruf**
 
@@ -381,7 +381,7 @@ Les humains, les halflings et les elfes particulièrement téméraires qui pén�
 - 0 Un concours de boisson a été lancé à la brasserie. Des nains en manque de divertissement invitent les Personnages à y participer, en sachant que seuls des nains ont une chance de réussir. Des paris sont faits, et certains perdants sont d'humeur revancharde. Les Personnages qui ont sombré dans un coma éthylique pourraient être dépouillés de leurs possessions, ou pire encore. Qui sera le premier à finir sa chope ?
 
 
-## <span id="page-68-0"></span>**Niveaux intermédiaires**
+## <span id="page-68-0" data-folio="68"></span>**Niveaux intermédiaires**
 
 Les niveaux intermédiaires regroupent en réalité les deux premiers des « plans inférieurs » situés sous le Hall des Ancêtres. On y retrouve le cœur de la forteresse naine.
 
@@ -420,7 +420,7 @@ L'En-dessous désigne les niveaux les plus bas d'une forteresse naine. Cette zon
 De temps à autre, ils ouvrent une porte condamnée pour mener des opérations de guérilla contre ces créatures qui rôdent aux alentours. Les Tueurs sont souvent autorisés à franchir ces points de passage pour y trouver des défis plus glorieux que de fourbes peaux-vertes et de viles vermines.
 
 
-## <span id="page-69-0"></span>PATROUILLEURS NAINS
+## <span id="page-69-0" data-folio="69"></span>PATROUILLEURS NAINS
 
 Des escouades de patrouilleurs nains, qui rassemblent entre huit et vingt individus, parcourent les montagnes sur le territoire de Karak Azgaraz, à la recherche d'intrus. Les patrouilleurs sont des spécialistes du combat et de la survie en montagne, et ils s'assurent toujours le bénéfice d'une position en hauteur en cas de conflit. Ils ont pour mission de vérifier les droits de passage des étrangers et de contrôler leurs possessions. Les runes en khazalid inscrites sur les droits de passage indiquent aux patrouilleurs si le groupe en question risque de poser problème.
 
@@ -443,7 +443,7 @@ Une des plus grandes tours de guet était nommée Arkund. Avec sa jumelle moins 
 La plus grande tour de guet accueillant encore une garnison est Garkarund, sur la rive orientale du Gargrimvarn.
 
 
-## <span id="page-70-0"></span>**Gimbringrungaz**
+## <span id="page-70-0" data-folio="70"></span>**Gimbringrungaz**
 
 De nombreux petits camps de mine sont dispersés dans tout le royaume nain. La plupart d'entre eux ont été vidés de tout équipement et abandonnés, tandis que d'autres sont devenus infestés par des skavens ou bien pire encore. De nouveaux camps de mine continuent d'être érigés malgré la présence d'ennemis dans les montagnes susceptibles de les détruire, comme l'exige l'obstination légendaire des nains.
 

@@ -21,7 +21,7 @@ Les orcs sont mauvais, brutaux, belliqueux et presque immunisés contre la doule
 – Gurkk Chop'crâne, Chef orc
 
 
-# <span id="page-327-0"></span>**Gobelin**
+# <span id="page-327-0" data-folio="326"></span>**Gobelin**
 
 L'instinct de conservation d'un gobelin, rachitique, malveillant, mais également agile et intelligent, ne doit jamais être sous-estimé. Ces créatures sont néanmoins lâches, et se regroupent donc facilement si le nombre leur procure un avantage écrasant. Les gobelins rejoignent souvent les armées d'orcs – pas toujours par choix – s'appropriant opportunément une partie du butin de guerre pendant que les autres prennent part au plus gros du combat.
 

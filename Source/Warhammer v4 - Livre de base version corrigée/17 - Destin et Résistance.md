@@ -1,6 +1,6 @@
 *Pages PDF 172-173*
 
-# <span id="page-171-0"></span>**DESTIN ET RÉSILIENCE**
+# <span id="page-171-0" data-folio="170"></span>**DESTIN ET RÉSILIENCE**
 
 Que ce soit à cause de votre cran, de la chance ou d'une faveur divine, vous avez quelque chose de spécial. Le Destin et la Résilience représentent la façon dont vous sortez du lot.
 
@@ -32,7 +32,7 @@ Vous pouvez sacrifier un Point de Destin pour éviter la mort et survivre même 
 - **Comment ça a pu rater ? :** votre Personnage parvient à éviter complètement les Dégâts grâce à un coup de chance extraordinaire, comme glisser juste au moment où le coup allait porter, ou que l'arme s'enraye mystérieusement, ou qu'une source de lumière, venue de nulle part, aveugle un adversaire ; votre Personnage peut donc poursuivre ce qu'il faisait sans subir aucune pénalité, mais il n'a aucune certitude quant à sa survie au cours des prochains Rounds.
 
 
-<span id="page-172-0"></span>La première option vous place hors-jeu, mais vous permet de vous battre à nouveau à un moment ultérieur, même si, au cours de ce processus, votre Personnage peut se faire rouer de coups, être couvert de bleus ou même se retrouver capturé ! La deuxième option permet de poursuivre le combat aux côtés de vos compagnons, mais vous laisse en plein danger, ce qui implique que vous aurez peut-être à sacrifier d'autres Points de Destin dans les Rounds qui suivront afin d'assurer votre survie. Chaque option possède ses avantages et ses inconvénients, en fonction du contexte, et c'est à vous de décider du choix à prendre.
+<span id="page-172-0" data-folio="171"></span>La première option vous place hors-jeu, mais vous permet de vous battre à nouveau à un moment ultérieur, même si, au cours de ce processus, votre Personnage peut se faire rouer de coups, être couvert de bleus ou même se retrouver capturé ! La deuxième option permet de poursuivre le combat aux côtés de vos compagnons, mais vous laisse en plein danger, ce qui implique que vous aurez peut-être à sacrifier d'autres Points de Destin dans les Rounds qui suivront afin d'assurer votre survie. Chaque option possède ses avantages et ses inconvénients, en fonction du contexte, et c'est à vous de décider du choix à prendre.
 
 Le MJ vous décrit la façon dont vous survivez à une situation donnée après que vous avez sacrifié un Point de Destin permanent. Vous trouverez des trucs et astuces sur la façon de procéder, comme la façon d'impliquer les Joueurs, dans le **Chapitre 9 : le Meneur de Jeu**.
 
@@ -72,7 +72,7 @@ Vous pouvez également choisir de sacrifier un Point de Résilience afin de vous
 Garder de la Résilience afin de contrer l'influence du Chaos est une bonne chose, mais cela ne retire en aucun cas vos Points de Corruption, ce qui signifie que la mutation est toujours 
 
 
-<span id="page-173-0"></span>très proche. En comparaison, sacrifier de la Résilience afin de réussir un Test peut vous permettre de porter un coup à une cible, qui, sans ça, aurait été totalement impossible à atteindre, ou de créer un artefact qui va estomaquer tous ceux qui le verront grâce à une Compétence Métier, ou encore vous permettre de réaliser à la perfection un Sort que vous auriez été dans l'incapacité de lancer.
+<span id="page-173-0" data-folio="172"></span>très proche. En comparaison, sacrifier de la Résilience afin de réussir un Test peut vous permettre de porter un coup à une cible, qui, sans ça, aurait été totalement impossible à atteindre, ou de créer un artefact qui va estomaquer tous ceux qui le verront grâce à une Compétence Métier, ou encore vous permettre de réaliser à la perfection un Sort que vous auriez été dans l'incapacité de lancer.
 
 Lorsque vous dépensez un Point de Résilience, prenez le temps de décrire l'extraordinaire exploit de volonté que votre Personnage effectue, et comment il se manifeste en jeu.
 

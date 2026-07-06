@@ -1,6 +1,6 @@
 *Pages PDF 94-98*
 
-## <span id="page-93-0"></span>ANNEXE I TROUBLES PSYCHOLOGIQUES • •
+## <span id="page-93-0" data-folio="92"></span>ANNEXE I TROUBLES PSYCHOLOGIQUES • •
 
 Le quotidien dans le Vieux Monde est éprouvant et les aventures sinistres et périlleuses que vivent les Personnages peuvent laisser des traces. Les règles suivantes peuvent permettre aux Personnages d'obtenir de nouveaux Traits Psychologiques (**WFJDR**, page 190) au cours de la partie. Ces règles comprennent également des options pour rendre la vie des Personnages plus dramatique à l'apparition de ces Traits Psychologiques. Comme il s'agit d'un sujet sensible, assurez-vous de discuter de ces règles avec votre groupe avant de les utiliser, et souvenez-vous des *Règles du jeu* (**WFJDR**, page 151). Lorsqu'un Trait Psychologique est joué de sorte à rendre encore plus tragique la vie du Personnage, accordez-lui la même valeur qu'à la poursuite de sa Motivation (**WFJDR**, page 34).
 

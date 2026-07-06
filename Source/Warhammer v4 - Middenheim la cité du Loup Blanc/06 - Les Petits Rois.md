@@ -1,6 +1,6 @@
 *Pages PDF 133-136*
 
-### <span id="page-132-0"></span>MIDDENHEIM • LES PETITS ROIS •
+### <span id="page-132-0" data-folio="130"></span>MIDDENHEIM • LES PETITS ROIS •
 
 Les Petits Rois sont les souverains de la pègre de Middenheim, et les monarques absolus de la rue. Ce sont eux qui dirigent toutes les organisations criminelles de la cité, et le moindre trafiquant de drogue, voleur à la tire, usurier, escroc et tenancier de maison close ou de tripot leur doit une part de ses bénéfices. Ils ne tolèrent aucun rival, à l'exception, peut-être, les autres Petits Rois.
 
@@ -52,7 +52,7 @@ Il y a peu, Herla a déplacé une partie de ses opérations dans le secteur de c
 - 0 La générosité croissante des trafiquants de mystracine de Herla n'est pas donnée, et le bruit court que cette dernière serait soutenue par un parrain sorcier : un sorcier immoral qui souhaiterait, lui aussi, comprendre la puissance magique de la mystracine. Les opérations de Herla seraient apparemment financées par ce sorcier ; bien que celui-ci souhaite garder l'anonymat, il serait probablement obligé d'agir si Herla était en difficulté.
 
 
-### <span id="page-134-0"></span>**Bleyden, le plus Petit des Rois**
+### <span id="page-134-0" data-folio="132"></span>**Bleyden, le plus Petit des Rois**
 
 Le Petit Roi connu uniquement comme Bleyden est affublé de l'humble titre de « plus Petit des Rois ». C'est un vieil homme d'environ 80 ans, rabougri et voûté au crépuscule de sa vie. Il a la peau ridée et cireuse, et les cheveux qui lui restent sont d'un gris argenté. Pourtant, malgré ses airs humbles et sa maigre silhouette, sous-estimer Bleyden serait une grave erreur. Il a su maintenir son territoire, qui couvre quelques blocs au nord des secteurs de l'Altquartier et de l'Altmarkt, malgré l'annexion agressive des rues avoisinantes par Edam Gouda. Les opérations de Bleyden se concentrent principalement sur le financement de maisons closes et le recel d'objets volés, ainsi que sur les opportunités d'extorsion et de chantage que présentent ces activités. Il exige aussi un quota des pickpockets et des petits délinquants qui opèrent sur son territoire. Bien qu'il ne soit pas assez vigoureux pour organiser une guerre de gangs ou pour étendre son territoire, il défend néanmoins son royaume bec et ongles.
 
@@ -69,7 +69,7 @@ Il est de notoriété publique que n'importe quelle activité criminelle qui a l
 Tout d'abord, les agents des Petits Rois ont des yeux partout, des enfants de rue aux miliciens corrompus. Chacun espère s'attirer les faveurs de son Petit Roi en lui rapportant toute activité criminelle non autorisée. À moins qu'un Personnage prenne toutes les précautions du monde pour ne pas se faire remarquer au cours de ses opérations, il doit effectuer un Test opposé **Discrétion/Perception** de l'informateur le plus proche (partez du principe que la plupart des espions ordinaires ont une Perception de 40). Si le Personnage échoue, il s'est fait repérer par l'agent d'un Petit Roi, et ce n'est plus qu'une question de temps avant qu'il ne soit rattrapé.
 
 
-<span id="page-135-0"></span>Cependant, même s'il ne se fait pas remarquer, le Personnage n'est pas pour autant tiré d'affaire. Les Petits Rois exigent de fortes sommes des résidents de leur territoire, mais leur promettent en contrepartie qu'ils seront ensuite protégés de tout acte criminel. Si un Personnage cambriole une boutique ou un étal de marché sur le territoire de l'un des Petits Rois, le propriétaire risque bien de se plaindre à la prochaine visite des rançonneurs. Les Petits Rois n'aiment pas que l'on se joue d'eux, et ils seront aux aguets pour découvrir quiconque essaie de tirer profit de leur source de revenus.
+<span id="page-135-0" data-folio="133"></span>Cependant, même s'il ne se fait pas remarquer, le Personnage n'est pas pour autant tiré d'affaire. Les Petits Rois exigent de fortes sommes des résidents de leur territoire, mais leur promettent en contrepartie qu'ils seront ensuite protégés de tout acte criminel. Si un Personnage cambriole une boutique ou un étal de marché sur le territoire de l'un des Petits Rois, le propriétaire risque bien de se plaindre à la prochaine visite des rançonneurs. Les Petits Rois n'aiment pas que l'on se joue d'eux, et ils seront aux aguets pour découvrir quiconque essaie de tirer profit de leur source de revenus.
 
 Et dans le cas de « l'Homme », les pickpockets et les bandits qui opèrent dans d'autres zones de Middenheim doivent quand même s'attendre à ce qu'il leur demande son dû. Même les criminels qui travaillent dans les quartiers riches de la cité, loin de son territoire, peuvent très bien se voir passer à tabac ou pire si ses agents remarquent la moindre activité criminelle non approuvée.
 

@@ -1,6 +1,6 @@
 *Pages PDF 88-89*
 
-# <span id="page-87-0"></span>• APPENDICE I : GNOMES •
+# <span id="page-87-0" data-folio="86"></span>• APPENDICE I : GNOMES •
 
 **Nuits Agitées & Dures Journées** ajoute les gnomes des Landes miroitantes à l'éventail de personnages jouables, disponibles dans **WFJDR**.
 
@@ -25,7 +25,7 @@ Glimdwarrow est la plus grande cité gnome de l'Empire. D'après certaines rumeu
 – Aelyn Thorne, négociant de Glimdwarrow
 
 
-### <span id="page-88-0"></span>**Sur les elfes sylvains…**
+### <span id="page-88-0" data-folio="87"></span>**Sur les elfes sylvains…**
 
 *« J'en ai jamais rencontré, et je ne pense pas que j'en verrai un jour. Mais ils ne valent sans doute guère mieux que ces autres elfes arrogants qui viennent de l'autre côté de l'eau. »*
 

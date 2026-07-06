@@ -219,7 +219,7 @@ Les Tests, des lancers de dés effectués pour déterminer les conséquences, en
 Tests simples – page 149 Tests spectaculaires – page 152 Tests opposés – page 153 Tests étendus – page 154 Combat – page 156 États – page 167 Destin et Résilience – page 170 Traumatismes – page 172 Corruption – page 182 Maladies et infections – page 186 Psychologie – page 190
 
 
-<span id="page-150-0"></span>
+<span id="page-150-0" data-folio="149"></span>
 
 # LA RÈGLE D'OR
 

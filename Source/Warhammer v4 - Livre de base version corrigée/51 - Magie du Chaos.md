@@ -64,7 +64,7 @@ La responsabilité la plus importante d'un MJ est de s'assurer que tout le monde
 **Vous êtes le dirigeant.** Encouragez l'intérêt pour le jeu en vous assurant que tout le monde a une chance de participer, et que la partie se déroule sans heurts. Rappelez aux Joueurs que les discussions au sujet des règles ont lieu en dehors de
 
 
-<span id="page-260-0"></span>la partie, et rappelez-vous que vous devez être capable de continuer à mener la partie pour atteindre un amusement optimal ! Soyez réfléchi et respectueux de vos Joueurs. Tenez compte du contenu des scénarios qui pourrait être désagréable pour certaines personnes, par exemple la violence explicite, le sexe ou l'horreur. Vérifiez qu'il n'y a pas de souci avant que ces sujets ne débarquent durant la partie. Légitimez votre autorité en étant juste avec tout le monde, cohérent dans la façon dont vous appliquez les règles, et menez la meilleure partie Bénie de Sigmar de ce côté-ci des Montagnes du Bord du Monde.
+<span id="page-260-0" data-folio="259"></span>la partie, et rappelez-vous que vous devez être capable de continuer à mener la partie pour atteindre un amusement optimal ! Soyez réfléchi et respectueux de vos Joueurs. Tenez compte du contenu des scénarios qui pourrait être désagréable pour certaines personnes, par exemple la violence explicite, le sexe ou l'horreur. Vérifiez qu'il n'y a pas de souci avant que ces sujets ne débarquent durant la partie. Légitimez votre autorité en étant juste avec tout le monde, cohérent dans la façon dont vous appliquez les règles, et menez la meilleure partie Bénie de Sigmar de ce côté-ci des Montagnes du Bord du Monde.
 
 # **Conseils généraux**
 
@@ -105,7 +105,7 @@ Plus vous jouerez de parties de Warhammer Fantasy, plus les règles deviendront 
 Avant de commencer votre première partie de Warhammer Fantasy, les Joueurs auront besoin de créer des Personnages, ou de choisir l'un des prétirés fournis dans la **Boîte d'Initiation Warhammer Fantasy**. Les Personnages prêts à l'emploi constituent déjà un groupe sur le départ, mais si vos Joueurs veulent créer les leurs, vous devrez les guider pendant le processus.
 
 
-<span id="page-261-0"></span>La création de Personnage peut prendre un certain temps ; il peut donc être utile d'y consacrer la première séance de jeu, alors informez vos Joueurs à l'avance pour gérer leurs attentes. Vous pouvez les guider à travers chaque étape de la création de leur Personnage, mais les Joueurs possédant leur propre livre de règles peuvent considérablement accélérer les choses. Guidez les nouveaux sur la façon dont les différentes parties de leur Personnage seront utilisées en jeu, et encouragez les Joueurs à coordonner leurs choix afin qu'ils puissent former un groupe aux Compétences plus étendues. Une bonne répartition des Classes vous offre, à vous et aux Joueurs, beaucoup plus d'options pendant la partie. Si le groupe ne possède pas de lanceurs de Sorts, par exemple, vous ne pouvez pas mener d'aventures qui nécessitent que les Joueurs interprètent des indices magiques.
+<span id="page-261-0" data-folio="260"></span>La création de Personnage peut prendre un certain temps ; il peut donc être utile d'y consacrer la première séance de jeu, alors informez vos Joueurs à l'avance pour gérer leurs attentes. Vous pouvez les guider à travers chaque étape de la création de leur Personnage, mais les Joueurs possédant leur propre livre de règles peuvent considérablement accélérer les choses. Guidez les nouveaux sur la façon dont les différentes parties de leur Personnage seront utilisées en jeu, et encouragez les Joueurs à coordonner leurs choix afin qu'ils puissent former un groupe aux Compétences plus étendues. Une bonne répartition des Classes vous offre, à vous et aux Joueurs, beaucoup plus d'options pendant la partie. Si le groupe ne possède pas de lanceurs de Sorts, par exemple, vous ne pouvez pas mener d'aventures qui nécessitent que les Joueurs interprètent des indices magiques.
 
 Encouragez les Joueurs à impliquer d'autres Personnages dans le passé du leur et émettez des suggestions pour les aider. Cela contribue à lier le groupe et il sera plus facile pour eux de choisir une Ambition de groupe. Évitez de créer une bande de desperados disparates qui refuseront de travailler ensemble et ne coopéreront jamais. Cela devient vite pénible et peut conduire à des expériences de jeu insatisfaisantes.
 
@@ -132,7 +132,7 @@ Ensuite, vous décrivez où se trouvent les Personnages et ce qui se passe autou
 Les Joueurs réagiront à la scène d'ouverture et interprèteront ce qui se passe, souvent d'une manière que nous, MJ, pourrions qualifier « d'intéressante ». En tant que MJ, vous connaissez déjà l'intrigue de l'aventure, mais les Joueurs devront la découvrir, avec peut-être un faux départ ou deux. Ne paniquez pas s'ils partent dans la mauvaise direction – ils arriveront à la fin et vous vous amuserez beaucoup en cours de route.
 
 
-<span id="page-262-0"></span>Résolvez donc leurs actions immédiates en écoutant attentivement comment ils réagissent à l'intrigue générale pour vous donner le temps de réfléchir à la prochaine partie. Assurez-vous que chaque Joueur ait la possibilité de participer – demander à tous les Joueurs n'ayant pas encore participé ce que leur Personnage va faire.
+<span id="page-262-0" data-folio="261"></span>Résolvez donc leurs actions immédiates en écoutant attentivement comment ils réagissent à l'intrigue générale pour vous donner le temps de réfléchir à la prochaine partie. Assurez-vous que chaque Joueur ait la possibilité de participer – demander à tous les Joueurs n'ayant pas encore participé ce que leur Personnage va faire.
 
 #### **3. Décrivez les conséquences des actions des Joueurs**
 
@@ -221,7 +221,7 @@ C'est à vous de décider à quel point vous voulez qu'elles représentent un pr
 | 10   | Attaqués ! : les Personnages sont attaqués pendant leur voyage. Il peut s'agir d'une rencontre malheureuse dans<br>la zone qu'ils traversent (des hommes-bêtes dans la forêt profonde, par exemple) ou de quelque chose prévu par<br>leurs adversaires (des voyous Engagés pour empêcher les Personnages d'atteindre leur destination). S'ils ratent un<br>Test de Perception Accessible (+20), ils peuvent même tomber dans une embuscade !                                                         |  |  |  |
 
 
-<span id="page-265-0"></span>Vous pouvez aussi donner aux Joueurs l'opportunité d'éviter les événements désagréables grâce à un Test réussi de Perception ou de Survie en extérieur, ou n'importe quel autre Test justifié. S'ils voyagent dans des transports payants, vous pouvez décider que cela leur permet d'éviter les difficultés.
+<span id="page-265-0" data-folio="264"></span>Vous pouvez aussi donner aux Joueurs l'opportunité d'éviter les événements désagréables grâce à un Test réussi de Perception ou de Survie en extérieur, ou n'importe quel autre Test justifié. S'ils voyagent dans des transports payants, vous pouvez décider que cela leur permet d'éviter les difficultés.
 
 # **Après la partie**
 

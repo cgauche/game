@@ -1,6 +1,6 @@
 *Pages PDF 91-101*
 
-## <span id="page-90-0"></span>CHAPITRE 11 : L'AFFAIRE DU JOYAU CACHÉ : UN MÉLODRAME À L'INTRIGUE COMPLEXE
+## <span id="page-90-0" data-folio="90"></span>CHAPITRE 11 : L'AFFAIRE DU JOYAU CACHÉ : UN MÉLODRAME À L'INTRIGUE COMPLEXE
 
 *L'Affaire du joyau cach*é peut se dérouler à n'importe quel moment durant un long voyage routier, y compris ceux de **L'Ennemi dans l'Ombre**. Elle peut constituer un interlude de quelques jours dans une auberge en bord de route, ou toute l'action peut être incluse en une seule nuit mouvementée.
 
@@ -31,7 +31,7 @@ Tout Personnage ayant réussi un Test de **Savoir (Empire) Accessible (+20)** se
 Le lecteur avisé de cette aventure remarquera que tous les Personnages sont des stéréotypes. C'est le but de ce mélodrame. Faites-vous plaisir !
 
 
-<span id="page-91-0"></span>Le deuxième avis est tout aussi intéressant.
+<span id="page-91-0" data-folio="91"></span>Le deuxième avis est tout aussi intéressant.
 
 Cherchons des héros pour partir à la recherche d'un trésor caché. Un peu de danger, beaucoup de récompenses. Contactez Wolfgang Kellerman à l'enseigne des Lances croisées.
 
@@ -56,7 +56,7 @@ Lauengram ferme la porte après le passage des Personnages et se tient derrière
 « *Le travail consiste à trouver et à m'apporter une certaine pierre précieuse, un diamant, appelé la Flamme bleue. Il a été volé il y a plus de vingt ans et n'a pas été revu depuis, mais j'ai des informations qui devraient vous permettre de le retrouver. Je vous paierai grassement, disons 20 couronnes chacun, pour sa récupération. Voulez-vous ce travail ?* »
 
 
-<span id="page-92-0"></span>Cela représente une énorme somme d'argent, donc les Personnages sont susceptibles de dire oui. S'ils acceptent, Kellerman continue : « *Très bien. Je vais vous dire comment trouver la pierre, mais d'abord il me faut vous conter une petite histoire. L'homme qui a volé la Flamme bleue était un voleur appelé Otto Kessler. Il est mort à présent. Il a caché le bijou après le vol, et n'a soi-disant jamais dit à personne où. Mais Bruno, ici présent,* » dit-il en indiquant le gros homme barbu, « *a tout remis en question.*
+<span id="page-92-0" data-folio="92"></span>Cela représente une énorme somme d'argent, donc les Personnages sont susceptibles de dire oui. S'ils acceptent, Kellerman continue : « *Très bien. Je vais vous dire comment trouver la pierre, mais d'abord il me faut vous conter une petite histoire. L'homme qui a volé la Flamme bleue était un voleur appelé Otto Kessler. Il est mort à présent. Il a caché le bijou après le vol, et n'a soi-disant jamais dit à personne où. Mais Bruno, ici présent,* » dit-il en indiquant le gros homme barbu, « *a tout remis en question.*
 
 *Jusqu'à récemment, Bruno était le tortionnaire en chef d'un certain comte von Drakensberg, dont les hommes ont capturé l'un des plus vieux compagnons d'Otto Kessler. Bruno l'a interrogé, mais il n'a pas transmis les informations qu'il a récupérées au bon Comte. Il semblerait qu'Otto Kessler ait eu une fille nommée Annalisa, et qu'il lui ait indiqué l'emplacement de la Flamme bleue. Mais aujourd'hui elle est plus connue sous le nom de... la Flèche Noire.* 
 
@@ -121,7 +121,7 @@ BRUNO - ROI DES BANDITS HUMAIN (ARGENT 2)
 **Possessions :** coup-de-poing, gourdin, dague, justaucorps en cuir, 4 pistoles d'argent et 19 sous de cuivre.
 
 
-### <span id="page-94-0"></span>**Le Complot s'épaissit**
+### <span id="page-94-0" data-folio="94"></span>**Le Complot s'épaissit**
 
 Ce que Kellerman ne sait pas, c'est que Bruno n'a pas trahi son maître. Il a été envoyé en mission. Von Drakensberg a obtenu toutes les informations de l'ancien compagnon d'Otto Kessler, y compris la méthode un peu bizarre utilisée par Otto pour transmettre la localisation de la Flamme bleue. L'information a été tatouée sur le cuir chevelu de sa fille lorsqu'elle était bébé, et elle n'en a jamais été informée. Otto lui disait simplement d'utiliser sa tête lorsqu'elle posait des questions sur la Flamme bleue.
 
@@ -156,7 +156,7 @@ Le fait qu'il réclame sa tête peut être de l'esbroufe ou de la mauvaise humeu
 En somme, il existe de nombreuses façons de confondre, d'égarer et de désorienter les joueurs qui se croient intelligents. Certaines pourraient les hanter longtemps après la fin de cette aventure. Ils pourraient même envisager de changer de nom pour Kastor Lieberung et ses amis, par exemple.
 
 
-<span id="page-95-0"></span>L'entretien est fini et les gardes du corps montrent la sortie aux Personnages. Le plateau est en argent massif et vaut 2 couronnes, avec un encombrement de 1.
+<span id="page-95-0" data-folio="95"></span>L'entretien est fini et les gardes du corps montrent la sortie aux Personnages. Le plateau est en argent massif et vaut 2 couronnes, avec un encombrement de 1.
 
 #### AMADEUS VON DRAKENSBERG - MAGNAT HUMAIN (OR 5)
 
@@ -193,7 +193,7 @@ Après avoir perdu son pied, Kellerman s'est retiré des affaires du groupe et a
 Ils ont envoyé Lauengram pour s'infiltrer dans la maison de Kellerman en tant que chien de garde. Le fait qu'il puisse aussi être un espion pour les informer des horaires des diligences était une heureuse coïncidence. Lauengram, après avoir entendu les instructions de Kellerman aux Personnages, a décidé de rencontrer les Flèches Noires dès que possible et partira deux heures avant le lever du soleil. Il a également décidé d'éliminer les PJ en premier, ou du moins de les ralentir un peu.
 
 
-<span id="page-96-0"></span>
+<span id="page-96-0" data-folio="96"></span>
 
 #### GARDES DU CORPS À GOGO - SENTINELLE HUMAIN (ARGENT 1)
 
@@ -232,7 +232,7 @@ Le pont peut supporter le poids de trois personnes à pied, avec 50% de chances 
 Il y a suffisamment de place pour qu'une personne tente de sauter le gouffre à cheval : cela nécessite un Test de **Chevaucher (Cheval) Spectaculaire**. Ceux qui échouent tombent dans la rivière en contrebas.
 
 
-<span id="page-97-0"></span>Il est possible de contourner le gouffre de chaque côté, en parcourant environ 10 kilomètres supplémentaires. Ce que fait Lauengram, à moins que les Personnages ne soient à sa poursuite. S'ils le poursuivent, il galope sur le pont, en lâchant une bombe au passage. Cela détruit le pont, sauf si la bombe fonctionne mal.
+<span id="page-97-0" data-folio="97"></span>Il est possible de contourner le gouffre de chaque côté, en parcourant environ 10 kilomètres supplémentaires. Ce que fait Lauengram, à moins que les Personnages ne soient à sa poursuite. S'ils le poursuivent, il galope sur le pont, en lâchant une bombe au passage. Cela détruit le pont, sauf si la bombe fonctionne mal.
 
 ## **AU CHÂTEAU**
 
@@ -255,7 +255,7 @@ De retour à l'auberge, les choses ont évolué. Le comte von Drakensberg a déc
 S'ils viennent dans sa chambre avec la tête, il leur demande d'attendre dehors pendant qu'il l'inspecte. Après un bref rasage et, si la tête porte des indications tatouées, il les laisse entrer, les paie et les renvoie chez eux. Si, en revanche, les Personnages se rendent dans la chambre de Kellerman, ils trouvent la porte déverrouillée et son cadavre étendu sur le sol. Quelques instants plus tard, le Comte et ses gros bras apparaissent. Évidemment, le comte von Drakensberg ne tardera pas à accuser les Personnages de ce meurtre abject.
 
 
-<span id="page-98-0"></span>Si les Personnages tentent d'aller chercher la gemme pour eux (là où vous décidez qu'elle a été cachée), le Comte et ses hommes de main apparaissent de façon assez spectaculaire. Ils sortent de l'ombre sur un commentaire théâtral approprié au moment où les Personnages découvrent le trésor.
+<span id="page-98-0" data-folio="98"></span>Si les Personnages tentent d'aller chercher la gemme pour eux (là où vous décidez qu'elle a été cachée), le Comte et ses hommes de main apparaissent de façon assez spectaculaire. Ils sortent de l'ombre sur un commentaire théâtral approprié au moment où les Personnages découvrent le trésor.
 
 ### **Le Château**
 
@@ -346,7 +346,7 @@ Les hors-la-loi ont capturé cette créature dans la forêt il y a quelques sema
 **Traits :** Affamé, Arme (Griffes) +4, Armure 2 (Tête et corps uniquement), À sang-froid, Attaque caudale +5, Endurant 3, Morsure +9, Taille (Grande)
 
 
-#### <span id="page-100-0"></span>**8. Les tourelles de guet**
+#### <span id="page-100-0" data-folio="100"></span>**8. Les tourelles de guet**
 
 Elles sont occupées par des archers en cas d'attaque. Normalement, la plupart de ces petites tours dotées de meurtrières sont désertes. Les quatre tours supérieures comptent toujours chacune une sentinelle solitaire.
 

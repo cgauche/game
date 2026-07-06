@@ -61,7 +61,7 @@ La majorité des outils sont considérés comme des armes Improvisées quand ils
 | Télescope                 | 5CO  | 0   | Rare          |
 
 
-<span id="page-305-0"></span>**Nécessaire de déguisement :** comprend suffisamment d'accessoires pour quatre déguisements (par exemple des perruques et du maquillage) ainsi que des éléments pour changer votre apparence, utilisés par ceux qui possèdent la Compétence Divertissement (Interprétation) (par exemple de la cire, du faux sang et des prothèses).
+<span id="page-305-0" data-folio="304"></span>**Nécessaire de déguisement :** comprend suffisamment d'accessoires pour quatre déguisements (par exemple des perruques et du maquillage) ainsi que des éléments pour changer votre apparence, utilisés par ceux qui possèdent la Compétence Divertissement (Interprétation) (par exemple de la cire, du faux sang et des prothèses).
 
 **Outils de crochetage :** un assortiment de petits outils aux formes variées nécessaire pour utiliser la Compétence Crochetage sans pénalité.
 

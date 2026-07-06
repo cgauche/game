@@ -34,7 +34,7 @@ On compte notamment parmi ces compagnies à travers l'Empire comprennent :
 - 0 Les Diligences du Tunnel de Talabheim
 
 
-<span id="page-20-0"></span>Des centaines de petites lignes de diligences et d'opérateurs indépendants assurent également la liaison entre les villes et les villages de l'Empire.
+<span id="page-20-0" data-folio="20"></span>Des centaines de petites lignes de diligences et d'opérateurs indépendants assurent également la liaison entre les villes et les villages de l'Empire.
 
 ## **Les Diligences des Quatre Saisons**
 

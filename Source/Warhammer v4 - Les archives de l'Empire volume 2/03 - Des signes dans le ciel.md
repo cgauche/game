@@ -1,6 +1,6 @@
 *Pages PDF 40-52*
 
-## <span id="page-39-0"></span>DES SIGNES DANS LE CIEL SIGNES ASTRAUX ET ASTROLOGIE • •
+## <span id="page-39-0" data-folio="38"></span>DES SIGNES DANS LE CIEL SIGNES ASTRAUX ET ASTROLOGIE • •
 
 Les peuples du Vieux Monde ont toujours été fascinés par le ciel nocturne. Bien avant l'histoire écrite, on murmurait déjà que les êtres qui avaient refait le monde étaient descendus des étoiles. Il n'était donc pas si difficile d'en conclure que si les étoiles avaient eu une telle importance par le passé, elles devaient sûrement influencer le futur aussi. Ainsi les premières tribus d'humains scrutaient-elles le ciel alors que les érudits nains et les sorciers elfes faisaient de même depuis longtemps (chaque peuple à sa manière, bien sûr).
 
@@ -27,7 +27,7 @@ Les astromanciens du Collège Céleste savent observer le ciel et, à travers la
 Certaines personnes croient dur comme fer à l'astrologie et s'en remettent aux étoiles pour les guider dans toutes leurs décisions. D'autres pensent que la disposition des corps célestes ne peut avoir aucun impact sur leur destin. Mais dans l'Empire, même le sceptique le plus entêté connaît son signe astrologique, sa signification et certains des traits qui lui sont communément associés. Ainsi, alors que pour certains, il ne s'agit que d'un simple sujet de conversation, pour d'autres, les signes astraux décident de leur vie tout entière.
 
 
-## <span id="page-40-0"></span>**SIGNES ASTROLOGIQUES ET CRÉATION DE PERSONNAGE**
+## <span id="page-40-0" data-folio="39"></span>**SIGNES ASTROLOGIQUES ET CRÉATION DE PERSONNAGE**
 
 Cette section est un système optionnel pour déterminer le thème astral d'un Personnage à sa création. Si vous le préférez, vous êtes donc libres d'ignorer complètement cette étape : certaines personnes façonnent leur propre destin ou, plus exactement, voient celui-ci influencé par des forces autres que les astres. Pour d'autres, en revanche, la position des étoiles au moment de leur naissance laisse une empreinte durable.
 
@@ -65,7 +65,7 @@ Si vous avez l'intention d'utiliser ce système, vous pouvez le faire après l'�
 \*NdT : nous avons respecté la traduction de la version anglaise qui parle de « Bonesaw ». Néanmoins, les vétérans de Warhammer pourront l'identifier au « Grimoire » qui est l'interprétation de Bonesaw de la V2, et utiliser le terme qu'ils préfèrent.
 
 
-<span id="page-41-0"></span>
+<span id="page-41-0" data-folio="40"></span>
 
 ## **LES SIGNES**
 
@@ -390,7 +390,7 @@ Les natifs de Cackelfax le Coq ont de grandes ambitions et le regard tourné ver
 La Scie à Os est le signe des philosophes : ce qu'ils recherchent par-dessus tout est le savoir. Ils consacrent leur vie à explorer et à expérimenter. Cependant, contrairement à d'autres signes tout aussi curieux, les natifs de la Scie à Os ne veulent pas garder les connaissances qu'ils amassent, et ne sont pas repliés sur eux-mêmes non plus. Les personnes nées sous le signe de la Scie à Os souhaitent diffuser leur savoir le plus possible. Cela peut toutefois les faire passer pour des je-sais-tout autoritaires, plutôt que pour des érudits passionnés par les secrets de l'univers.
 
 
-## <span id="page-48-0"></span>**L'Étoile du Sorcier**
+## <span id="page-48-0" data-folio="47"></span>**L'Étoile du Sorcier**
 
 **Signe de la Magie Nom classique :** Solkios **Ascendant :** hiver
 
@@ -427,7 +427,7 @@ Les maîtres astrologues peuvent gagner leur vie de différentes manières. Cert
 Le degré de croyance en tout cela varie d'une personne à l'autre. Les gens très riches et superstitieux peuvent avoir un astrologue à portée de main pour calculer le thème astral de leur enfant quelques heures après sa naissance. Les plus pauvres paient des mystiques et des astrologues itinérants (ou des arnaqueurs qui prétendent l'être) pour qu'ils leur prédisent le moment le plus propice pour planter leurs semis ou partir à la pêche.
 
 
-## <span id="page-49-0"></span>**Dans l'art**
+## <span id="page-49-0" data-folio="48"></span>**Dans l'art**
 
 L'importance culturelle de l'astrologie fait que son imagerie est omniprésente dans la vie de tous les jours des habitants de l'Empire, quelle que soit leur classe sociale. Dans les campagnes, les sanctuaires de Rhya sont décorés de représentations du Chaudron de Rhya, ainsi que des traditionnelles fleurs, spirales et gerbes de blé. Il n'est pas rare que les proches des soldats humains et nains leur offrent un pendentif ayant la forme du Fourreau de Grungni lorsqu'ils partent au combat, pour les protéger.
 
@@ -487,7 +487,7 @@ Dans les villes franches, loin du pouvoir impérial, il existe une classe émerg
 D'autres individus parmi cette classe moyenne émergente, en particulier ceux qui souhaitent échapper à leurs origines rurales et à leur basse naissance, rejettent toute forme de superstition comme relevant d'absurdités de manants ou des vices aristocratiques coûteux. Ils sont modernes, avant-gardistes et ne s'intéressent pas à la magie. Au-delà des murs de leurs villes, les mutants et les forces du Chaos peuvent bien menacer l'Empire : à l'abri derrière leurs remparts, l'argent leur offre le luxe de l'empirisme.
 
 
-## <span id="page-51-0"></span>**Étapes facultatives**
+## <span id="page-51-0" data-folio="50"></span>**Étapes facultatives**
 
 Si, pour la plupart des Joueurs, choisir un signe astrologique à la création d'un Personnage peut suffire, d'autres pourraient vouloir aller plus loin. Cela peut également aider à déterminer certains aspects d'un Personnage qui ne sont pas directement liés aux mécaniques de jeu, comme sa personnalité, sa place dans le monde et sa vision des choses. Si vous cherchez de l'inspiration, vous pouvez donc choisir un ascendant et jusqu'à cinq demeures célestes.
 

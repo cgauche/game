@@ -2,7 +2,7 @@
 
 # EXEMPLE DE DOMAINE DU REIKLAND
 
-<span id="page-279-0"></span>La Baronnie de Böhrn est un Domaine du Reikland du Vorbergland dirigé par la Maison Böhrn depuis plus de quatre siècles. La baronne Agetta siège dans la ville de Siedlung et dirige actuellement six vassaux : trois avec des titres héréditaires – le baron Markham de Siebbach, la comtesse Osterhild de Kaltenwald et le baron Baltzer d'Ettlindal – et trois sans titres héréditaires, qui ont tous été nommés par Agetta en personne – le préfet Fabian d'Ort, le préfet Luethold de Koff et la châtelaine Fronika de Neumarkt. Les trois vassaux héréditaires ont, à leur tour, un total de sept vassaux.
+<span id="page-279-0" data-folio="278"></span>La Baronnie de Böhrn est un Domaine du Reikland du Vorbergland dirigé par la Maison Böhrn depuis plus de quatre siècles. La baronne Agetta siège dans la ville de Siedlung et dirige actuellement six vassaux : trois avec des titres héréditaires – le baron Markham de Siebbach, la comtesse Osterhild de Kaltenwald et le baron Baltzer d'Ettlindal – et trois sans titres héréditaires, qui ont tous été nommés par Agetta en personne – le préfet Fabian d'Ort, le préfet Luethold de Koff et la châtelaine Fronika de Neumarkt. Les trois vassaux héréditaires ont, à leur tour, un total de sept vassaux.
 
 La Baronne n'assiste pas à la Diète du Reikland ; au lieu de cela, elle compte sur sa jeune sœur influente, la Lectrice Agatha von Böhrn, pour y veiller à sa place. Agatha réside à Altdorf en tant que membre du Conseil Impérial d'État et du Conseil du Reikland, tout en s'occupant de ses devoirs de Lectrice de Verena.
 
@@ -137,7 +137,7 @@ La ville d'Ubersreik est située près de la passe de la Dame Grise, l'une des d
 Pour plus de détails sur Ubersreik, voir la **Boîte d'Initiation de Warhammer Fantasy**.
 
 
-# <span id="page-284-0"></span>**Weissbruck**
+# <span id="page-284-0" data-folio="283"></span>**Weissbruck**
 
 À l'origine, l'un des nombreux et minuscules villages bordant la rivière Bögen, Weissbruck s'est rapidement développé au cours du siècle dernier pour devenir un port animé pour les marchandises et les voyageurs circulant entre Bögenhafen et Altdorf. Le changement de fortune de Weissbruck est dû à ses dirigeants astucieux, les Grubers, qui ont décidé d'exploiter les riches gisements de charbon et de fer situés dans les collines de Skaag. Cet approvisionnement en ressources nécessaires a permis aux Grubers, avec la permission et le partenariat du Prince d'Altdorf, de commander la construction d'un canal à leurs ingénieurs nains en 2462 CI, ce qui a rapidement accéléré la croissance de la ville, grâce à l'apport de toutes sortes de citoyens.
 
@@ -181,7 +181,7 @@ Certes, le séduisant et ténébreux Graf est toujours à la recherche de cœurs
 Située haut dans les Montagnes Grises, la ville-forteresse d'Helmgart garde la frontière avec la Bretonnie du côté Est du Défilé de la Hache. Les relations entre l'Empire et la Bretonnie n'ont pas toujours été courtoises, et bien que les remparts d'Helmgart ne soient pas ornés d'anciens crânes dans des heaumes ciselés, il en reste très probablement dans les cellules du château. Ces derniers temps, les soldats d'Helmgart sont plus souvent appelés à patrouiller la passe, protégeant les voyageurs et les marchands contre les peaux-vertes, les bandits et autres menaces.
 
 
-<span id="page-286-0"></span>Le donjon d'Helmgart a été directement creusé dans le flanc de la montagne par les nains il y a bien longtemps. Trois niveaux de robustes murs de pierre s'appuient sur une grande montagne de granit, dominant la région environnante et offrant un excellent point de vue sur la route en contrebas. Helmgart, à proprement dit, est un mur imposant uniquement interrompu par un unique long tunnel se faufilant entre les deux versants escarpés : la seule route qui mène à la Bretonnie. Les troupes en garnison dans la forteresse comptent plusieurs régiments légendaires. Le plus célèbre, les artilleurs des Maraudeurs de Mackensen – un régiment d'État reiklander –, est bien connu pour sa précision meurtrière, une réputation effrayante sans doute facilitée par le manque de couverture sur la route située sous des hauts murs. La forteresse siège à l'une des extrémités de la grande route menant directement à Bögenhafen, et de là à Altdorf.
+<span id="page-286-0" data-folio="285"></span>Le donjon d'Helmgart a été directement creusé dans le flanc de la montagne par les nains il y a bien longtemps. Trois niveaux de robustes murs de pierre s'appuient sur une grande montagne de granit, dominant la région environnante et offrant un excellent point de vue sur la route en contrebas. Helmgart, à proprement dit, est un mur imposant uniquement interrompu par un unique long tunnel se faufilant entre les deux versants escarpés : la seule route qui mène à la Bretonnie. Les troupes en garnison dans la forteresse comptent plusieurs régiments légendaires. Le plus célèbre, les artilleurs des Maraudeurs de Mackensen – un régiment d'État reiklander –, est bien connu pour sa précision meurtrière, une réputation effrayante sans doute facilitée par le manque de couverture sur la route située sous des hauts murs. La forteresse siège à l'une des extrémités de la grande route menant directement à Bögenhafen, et de là à Altdorf.
 
 Gardienne de la principale route de commerce de l'Empire depuis la Bretonnie, Helmgart est à la fois une imposante citadelle et une ville commerçante animée. Ici, les marchands bretonniens commercent du brandevin, du vin, des tissus fins, des armes et des armures, tandis que leurs homologues reiklanders acheminent des marchandises de leur province vers le sud. Les clans nains locaux échangent également des lingots d'argent, de plomb et de fer, ainsi que des précieuses pièces de métal forgées par leurs soins. Avec autant de marchands, le Marketplatz d'Helmgart est un endroit animé, offrant des opportunités infinies et fréquenté par d'innombrables voleurs.
 
@@ -214,7 +214,7 @@ Des dizaines de colonies sans grand intérêt bordent la Teufel, et sont même i
 Grâce à cela, les moutons à la toison épaisse et pâle de Rottfurt font la fierté du village et permettent tout ce confort. Ils se nourrissent de l'herbe abondante des Hauts d'Hammastrat 
 
 
-<span id="page-287-0"></span>avoisinants et sont généralement autorisés à errer comme ils le souhaitent pendant la journée. Les bergers contribuent à une milice tournante, chargée de protéger le précieux cheptel coûte que coûte.
+<span id="page-287-0" data-folio="286"></span>avoisinants et sont généralement autorisés à errer comme ils le souhaitent pendant la journée. Les bergers contribuent à une milice tournante, chargée de protéger le précieux cheptel coûte que coûte.
 
 Mais, dernièrement, du bétail a disparu ; malgré tous leurs efforts, curieusement les personnes de garde se sont toujours endormies. À leur réveil, un autre mouton avait disparu. Ce qui a débuté comme une frustration mineure est devenu une obsession pour les gens du coin, faisant naître autant de théories farfelues et spectaculaires qu'il y a d'étoiles dans le ciel.
 

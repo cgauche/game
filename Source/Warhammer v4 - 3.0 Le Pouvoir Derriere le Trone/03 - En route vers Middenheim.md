@@ -103,7 +103,7 @@ En revanche, un problème plus grave pourrait survenir si les Personnages se heu
 S'ils se retrouvent « impressionnés », comme ils appellent le processus, les Personnages ont des chances de s'échapper, mais les patrouilleurs routiers connaissent déjà leurs noms et leurs villes d'origine et ces informations peuvent circuler au sein de l'armée sur la liste des déserteurs.
 
 
-## <span id="page-19-0"></span>**L'ARRIVÉE**
+## <span id="page-19-0" data-folio="17"></span>**L'ARRIVÉE**
 
 En sortant de la forêt, les Personnages aperçoivent pour la première fois l'imposant Fauschlag ainsi que l'impressionnante ville fortifiée de Middenheim, perchée à son sommet. Les préparatifs du Carnaval vont bon train et des ouvriers, qui se balancent de façon précaire au bout de longues cordes, attachent des bannières aux couleurs vives à la pierre gris foncé.
 
@@ -240,7 +240,7 @@ I
 - 0 Si vous savez lire et écrire, trouvez un emploi à la Kommission pour les Impôts. Ils ont besoin de scribes avec toutes ces nouvelles taxes. Bien sûr, le salaire de base est misérable, mais avec toutes les heures supplémentaires, on peut se faire beaucoup d'argent. Attention, je n'en parlerais pas aux nains si j'étais vous, ils pendraient n'importe qui associé aux impôts !
 
 
-## <span id="page-24-0"></span>**LIEU DE SÉJOUR**
+## <span id="page-24-0" data-folio="22"></span>**LIEU DE SÉJOUR**
 
 Middenheim abrite un certain nombre d'auberges de luxe (qui coûtent cher !), mais les nombreux visiteurs du Carnaval les ont toutes prises d'assaut. Les Armes du Templier est l'une des rares auberges décentes à avoir encore de la place ; toutes les autres sont des taudis. Avec le Carnaval, les tarifs pratiqués sont plus élevés qu'à l'accoutumée pour l'Empire, mais ils ne sont pas démesurés pour autant.
 
@@ -274,7 +274,7 @@ l'arrière-salle, un petit bar d'appoint où Uli se délecte lui-même de quelqu
 | Bonne eau-de-vie (bouteille)     | 1 CO 6/-                      |
 
 
-### <span id="page-25-0"></span>**PERSONNEL DES ARMES DU TEMPLIER**
+### <span id="page-25-0" data-folio="23"></span>**PERSONNEL DES ARMES DU TEMPLIER**
 
 ### **Uli Breitner, Propriétaire**
 
@@ -363,7 +363,7 @@ En années humaines, Tiasmara semble avoir la trentaine, mais elle a en réalit�
 
 ### LA MAIN POURPRE : RÉSUMÉ
 
-<span id="page-28-0"></span>I
+<span id="page-28-0" data-folio="26"></span>I
 
 Depuis leur arrivée à Altdorf dans *L'Ennemi dans l'Ombre*, les Personnages sont surveillés par des agents de la Main Pourpre. Les dirigeants de cette secte sont convaincus que l'un des Personnages est un membre de la Main Pourpre de haut rang, Kastor Lieberung, qui a récemment reçu un héritage conséquent. Malgré plusieurs tentatives de contact, « Lieberung » ne s'est pas montré enclin à remettre sa fortune aux dirigeants du culte, comme cela lui a été ordonné. En réalité, il n'y a aucun héritage, il s'agissait d'un mensonge raconté par un chasseur de primes pour tendre un piège aux cultistes, mais les dirigeants de la Main Pourpre ne le savent pas. Les Personnages eux-mêmes l'ont appris à leurs dépens lors de leur visite à Bögenhafen.
 
@@ -415,7 +415,7 @@ Il est possible que les Personnages parviennent à éviter d'être abattus sur p
 
 # **LE COMITÉ D'ACCUEIL**
 
-### <span id="page-30-0"></span>**Cultistes de la Main Pourpre**
+### <span id="page-30-0" data-folio="28"></span>**Cultistes de la Main Pourpre**
 
 Tous les cultistes portent un vêtement violet et un tatouage de main violette caché sous leurs vêtements (voir l'encadré p. 46 pour d'autres suggestions). Quatre d'entre eux (face au groupe) ont des arbalètes chargées et des gourdins ou des haches accrochées à leurs ceintures. Parmi les trois autres, deux sont armés de haches et un autre est équipé d'une massue et d'un filet barbelé destiné au Magister égaré. Aucun des cultistes ne porte d'armure.
 

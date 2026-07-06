@@ -24,7 +24,7 @@ Les objectifs et les méthodes des asiles privés varient considérablement d'un
 - 0 Le conseil municipal d'une ville ou d'un village engage le groupe pour enquêter sur une série d'attaques de mutants. La piste mène les aventuriers à un asile privé, où est testé un traitement expérimental à base de malepierre qui a eu des effets secondaires inattendus. Les propriétaires de l'asile tentent d'étouffer l'affaire, mais n'ont pas pu empêcher l'évasion de certains mutants violents susceptibles d'être reconnus par les habitants.
 
 
-## <span id="page-71-0"></span>**Visiter le Grand Hospice**
+## <span id="page-71-0" data-folio="70"></span>**Visiter le Grand Hospice**
 
 Le Statut d'un Personnage en visite au Grand Hospice détermine le type d'accueil que les sœurs lui réservent. Les visiteurs d'Échelon Argent et Or sont traités avec toute la courtoisie possible ; ils peuvent loger dans les pavillons et sont invités à dîner avec la Grande Prêtresse. Ils sont également considérés comme des donateurs potentiels, et les sœurs ne manquent pas une occasion d'y faire allusion. Si le Statut de la Grande Prêtresse est supérieur à celui du Personnage de plus haut Statut, les allusions feront rapidement place à des demandes plus directes.
 
@@ -80,7 +80,7 @@ Les deux salles de réception servent à accueillir les invités de marque. Elle
 Les murs de la trésorerie sont couverts d'étagères accueillant des coffres fermés à clé qui contiennent les effets personnels des résidents actuels. Il y a aussi bien des malles de voyage de bonne facture, sur lesquelles sont peints le nom ou les armoiries de leurs propriétaires, que des vieux coffres abîmés ou de simples caisses en bois marqués d'un nom à la craie. À l'intérieur de la chambre forte se trouvent trois coffres. Le premier contient l'argent des patients : il est rangé dans des pochettes en toile, chacune fermée par une ficelle et étiquetée au nom de son propriétaire. Le deuxième abrite la réserve pécuniaire de l'hospice et des lettres de crédit provenant de diverses banques du Vieux Monde. Le troisième coffre renferme des documents importants, notamment des actes de propriété et des concessions foncières, ainsi que des lettres des grands de ce monde (portant la signature d'anciens résidents ou de patients actuels, ou de ceux qui les ont fait interner ici) qui pourraient causer quelque embarras, surtout si elles tombaient entre de mauvaises mains.
 
 
-# <span id="page-73-0"></span>V
+# <span id="page-73-0" data-folio="72"></span>V
 
 ## PARTENAIRE PARTICULIER
 
@@ -127,7 +127,7 @@ La bibliothèque contient principalement des ouvrages de théologie et de médec
 0 Alors qu'ils visitent le Grand Hospice, les aventuriers remarquent qu'un autre étranger semble porter un grand intérêt à la bibliothèque. Plus précisément, le visiteur est penché sur un volume qui s'avère être l'histoire d'une famille noble du Talabecland. Plus tard, ils surprennent ce même individu en train de consulter sans autorisation les archives de l'hospice, à la recherche du nom de la famille en question. Qu'il soit un maître chanteur ou un agent d'une famille rivale, le visiteur pourrait gagner gros en découvrant que la famille avait, ou a placé l'un de ses membres au Grand Hospice. Si le résident en question est réellement malade, la famille sera couverte d'embarras devant ses rivaux politiques et sociaux ; s'il s'agit plutôt d'un ennemi ou d'un parent gênant dont elle s'est « débarrassée » par des moyens peu éthiques, la révélation d'une telle information pourrait entraîner un terrible scandale.
 
 
-<span id="page-74-0"></span>
+<span id="page-74-0" data-folio="73"></span>
 
 ## **Le sanatorium**
 
@@ -160,7 +160,7 @@ Les cellules du rez-de-chaussée sont des cellules individuelles destinées à a
 Selon les moyens et la situation du résident, sa chambrette peut être humblement équipée, semblable alors à celle d'une prison, ou au contraire richement meublée, comme les chambres individuelles que l'on trouve dans les auberges ou les hôtels réputés.
 
 
-### <span id="page-75-0"></span>**S : Cellules sécurisées**
+### <span id="page-75-0" data-folio="74"></span>**S : Cellules sécurisées**
 
 Un escalier de pierre descend dans une petite pièce carrée. Elle n'est éclairée que par des torches accrochées aux murs. La pièce est vide, à l'exception de cinq solides portes en fer noires, avec des fenêtres à barreaux étroites situées à hauteur des yeux (pour un humain).
 

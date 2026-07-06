@@ -105,7 +105,7 @@ Le Bonus de Force est abrégé en BF dans les Tableaux des armes.
 
 # MUNITIONS
 
-<span id="page-297-0"></span>
+<span id="page-297-0" data-folio="296"></span>
 
 | Arme                            | Prix | Enc | Disponibilité              | Allonge / Portée | Dégâts | Atouts et Défauts              |
 |---------------------------------|------|-----|----------------------------|------------------|--------|--------------------------------|
@@ -151,7 +151,7 @@ Les Personnages sans compétence ajoutent le Défaut d'Arme Dangereuse à leurs 
 N'importe quelle Arme à une Main avec l'Atout Défensive peut être utilisée avec Corps à corps (Parade). Quand vous utilisez Corps à corps (Parade), une arme peut être utilisée pour opposer une attaque sans la pénalité de main gauche normale de -20 (voir page 161).
 
 
-# <span id="page-298-0"></span>**Allonge d'arme**
+# <span id="page-298-0" data-folio="297"></span>**Allonge d'arme**
 
 Les longueurs des armes sont progressivement plus grandes, comme suit.
 
@@ -302,7 +302,7 @@ Les armes Rapides sont conçues pour frapper avec une telle rapidité que parer 
 De plus, tous les Tests de Corps à corps pour se défendre contre des armes Rapides subissent une pénalité de -10 si votre adversaire utilise une arme sans l'Atout Rapide ; les autres Compétences défendent normalement. Deux adversaires avec des armes Rapides combattent dans l'ordre d'Initiative (l'un par rapport à l'autre) normalement. Une arme Rapide ne peut jamais être aussi Lente (Lente prend le dessus).
 
 
-### <span id="page-300-0"></span>**Taille**
+### <span id="page-300-0" data-folio="299"></span>**Taille**
 
 Les armes de Taille possèdent de lourdes lames qui peuvent entamer les armures avec une horrifiante facilité. Si vous touchez un adversaire, vous Endommagez de 1 Point une pièce d'armure ou un Bouclier frappé tout en blessant la cible.
 

@@ -1,6 +1,6 @@
 *Pages PDF 247-255*
 
-# <span id="page-246-0"></span>**MAGIE DES COULEURS**
+# <span id="page-246-0" data-folio="245"></span>**MAGIE DES COULEURS**
 
 Vous trouverez ci-après huit listes de huit Sorts, chacune appartenant à une Couleur de Magie.
 
@@ -65,7 +65,7 @@ Vous gagnez +20 aux Tests d'Emprise sur les animaux et Dressage. Tant que ce Sor
 **Durée :** (Bonus de Force Mentale) jours
 
 
-<span id="page-247-0"></span>Votre souffle s'embrase et vos yeux prennent une lueur ambre alors que *Ghur* s'instille en vous. Votre regard et vos mots persuadent 1 créature possédant le trait Bestial que vous êtes le chef de sa meute, et elle combattra jusqu'à la mort pour vous protéger. Tant qu'elle sera sous votre contrôle, elle suivra vos instructions, comprenant instinctivement des instructions simples. Si la créature est libérée du Sort – parce que la durée est écoulée ou parce que le Sort a été dissipé – elle conservera suffisamment de respect et de crainte résiduels pour ne pas vous attaquer, à moins d'y être contrainte. Vos alliés pourraient ne pas avoir cette chance.
+<span id="page-247-0" data-folio="246"></span>Votre souffle s'embrase et vos yeux prennent une lueur ambre alors que *Ghur* s'instille en vous. Votre regard et vos mots persuadent 1 créature possédant le trait Bestial que vous êtes le chef de sa meute, et elle combattra jusqu'à la mort pour vous protéger. Tant qu'elle sera sous votre contrôle, elle suivra vos instructions, comprenant instinctivement des instructions simples. Si la créature est libérée du Sort – parce que la durée est écoulée ou parce que le Sort a été dissipé – elle conservera suffisamment de respect et de crainte résiduels pour ne pas vous attaquer, à moins d'y être contrainte. Vos alliés pourraient ne pas avoir cette chance.
 
 ### **Peau de chasseur**
 
@@ -134,7 +134,7 @@ Un éclair crépitant jaillit du bout de vos doigts, frappant votre cible. Il s'
 Vous vous enfermez dans une cage crépitante d'étincelles d'électricité et d'*Azyr*. Pour la durée du Sort, gagnez + DR PA à toutes les Localisations contre les Attaques de Corps à corps. Si vous êtes attaqué par une arme en métal –dagues, épées ou lances avec une pointe métal – votre attaquant subit un nombre de Dégâts égal à votre Bonus de Force Mentale.
 
 
-### <span id="page-248-0"></span>**Comète de Cassandora**
+### <span id="page-248-0" data-folio="247"></span>**Comète de Cassandora**
 
 **NI :** 10
 
@@ -241,7 +241,7 @@ Vous focalisez *Aqshy* en une majestueuse couronne de feu inspirant autour de vo
 Pour chaque +2 DR, vous pouvez augmenter la valeur de Peur de +1, ou prendre de nouveau le Talent Seigneur de guerre. De plus, gagnez un bonus de +10 à toutes les tentatives pour Focaliser et Incanter avec *Aqshy* tant que le Sort est actif.
 
 
-### <span id="page-249-0"></span>**Grands feux d'***U'Zhul*
+### <span id="page-249-0" data-folio="248"></span>**Grands feux d'***U'Zhul*
 
 **NI :** 10
 
@@ -318,7 +318,7 @@ Si une cible possède les Traits de créature Démoniaque ou Mort-vivant, les So
 Vous envoyez depuis vos mains un halo purificateur de *Hysh*, affectant toutes les créatures à l'intérieur de la Zone d'Effet dont l'Endurance est inférieure à votre Force Mentale. Les cibles possédant les Traits de créature Mort-vivant ou Démoniaque gagnent le Trait de créature Instable (voir page 340). Si elles possèdent déjà le Trait Instable, elles sont réduites à 0 Point de Blessures.
 
 
-#### <span id="page-250-0"></span>**Clarté d'esprit**
+#### <span id="page-250-0" data-folio="249"></span>**Clarté d'esprit**
 
 **NI :** 6
 
@@ -423,7 +423,7 @@ Vous enveloppez une arme non magique de lourdes bandes de *Chamon*, ce qui amél
 Vous focalisez *Chamon* dans un objet métallique non magique, tel qu'une arme ou une pièce d'armure. L'objet se 
 
 
-<span id="page-251-0"></span>répand sur le sol sous forme de métal fondu, refroidissant presque instantanément. S'il est tenu, l'objet est lâché. S'il est porté, le porteur subit une frappe équivalente à celle d'un *Projectile magique*, avec un nombre de Dégâts égal à votre Bonus de Force Mentale qui ignore le Bonus d'Endurance. Bien que l'objet soit détruit, le métal conserve sa valeur de base, et peut être utilisé ensuite par un forgeron comme matière première.
+<span id="page-251-0" data-folio="250"></span>répand sur le sol sous forme de métal fondu, refroidissant presque instantanément. S'il est tenu, l'objet est lâché. S'il est porté, le porteur subit une frappe équivalente à celle d'un *Projectile magique*, avec un nombre de Dégâts égal à votre Bonus de Force Mentale qui ignore le Bonus d'Endurance. Bien que l'objet soit détruit, le métal conserve sa valeur de base, et peut être utilisé ensuite par un forgeron comme matière première.
 
 # **Écaille d'acier**
 
@@ -501,7 +501,7 @@ Le Vent améthyste de *Shyish* transporte la poussière et le bruissement incess
 affectées par des Sorts du Domaine de la Mort sont drainées de leur force vitale, et demeurent affaiblies et léthargiques. Vous pouvez assigner +1 État *Exténué* à chaque cible vivante affectée par un Sort de ce Domaine. Une cible peut n'avoir qu'un seul État *Exténué* gagné de cette façon à la fois.
 
 
-<span id="page-252-0"></span>**Composants :** les os des créatures conscientes sont très répandus dans la magie d'Améthyste, ainsi que les symboles de mort, y compris le bois ou les clous provenant d'un cercueil, les fluides d'embaumement, les sabliers, les pièces en argent et la poussière de cimetière, le tout soigneusement présenté ou gravé. Les pierres précieuses, matériaux et fleurs de couleur violette (en particulier les roses) sont aussi fréquents.
+<span id="page-252-0" data-folio="251"></span>**Composants :** les os des créatures conscientes sont très répandus dans la magie d'Améthyste, ainsi que les symboles de mort, y compris le bois ou les clous provenant d'un cercueil, les fluides d'embaumement, les sabliers, les pièces en argent et la poussière de cimetière, le tout soigneusement présenté ou gravé. Les pierres précieuses, matériaux et fleurs de couleur violette (en particulier les roses) sont aussi fréquents.
 
 # **Caresse de** *Laniph*
 
@@ -679,7 +679,7 @@ Vous invoquez de délicats brins d'*Ulgu* dans l'esprit de votre cible, faisant 
 Vous créez un Portail d'Ombre d'*Ulgu* à travers l'Aethyr. Vous disparaissez de votre emplacement actuel et apparaissez immédiatement à une distance en mètres pouvant être égale jusqu'à votre Force Mentale. Tous les ennemis *Engagés* avec vous au moment de votre disparition ou réapparition gagnent l'État *Surpris*.
 
 
-<span id="page-254-0"></span>
+<span id="page-254-0" data-folio="253"></span>
 
 # **Le Domaine de la Vie**
 
@@ -749,7 +749,7 @@ Ce Sort peut uniquement cibler un carré de terre (même très petit). Vous fait
 Tant que le Sort est actif, quiconque tente de traverser la zone à pied sans posséder le Talent Magie des Arcanes (Vie) doit réussir un Test d'**Agilité Difficile (-20)**. Un échec signifie qu'il gagne 1 État *Hémorragique* et un État *Empêtré*, qui utilise votre Force Mentale pour sa Force. Une fois le Sort terminé, la végétation persiste mais perd ses propriétés surnaturelles.
 
 
-#### <span id="page-255-0"></span>**Graisse de la terre**
+#### <span id="page-255-0" data-folio="254"></span>**Graisse de la terre**
 
 **NI :** 4
 
@@ -848,7 +848,7 @@ Vous marmonnez des mots de pouvoir au-dessus d'une potion d'herbe spécialement 
 Vous lancez un Sort sur une décoction déjà prête, lui conférant des propriétés magiques. Si cette dernière est bue alors que le Sort est actif, la cible est guérie d'un nombre de Points de Blessure équivalent à votre Bonus de Force Mentale, ainsi que d'une maladie. Pour chaque DR+2 que vous obtenez, vous pouvez guérir une Maladie supplémentaire.
 
 
-### <span id="page-256-0"></span>**Séparer les branches**
+### <span id="page-256-0" data-folio="255"></span>**Séparer les branches**
 
 **NI :** 0
 

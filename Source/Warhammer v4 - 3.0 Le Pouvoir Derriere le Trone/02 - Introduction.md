@@ -58,7 +58,7 @@ L'intrigue de ce scénario est extrêmement complexe, et implique un grand nombr
 
 
 
-# <span id="page-8-0"></span>CHAPITRE 1
+# <span id="page-8-0" data-folio="6"></span>CHAPITRE 1
 
 À la fin de *Mort sur le Reik*, les Personnages viennent d'arriver à Altdorf et ont été engagés pour transporter une caisse vers Middenheim. La capitale, vaste et animée, offre de nombreuses tentations, mais ils doivent se dépêcher s'ils veulent livrer leur cargaison à temps et obtenir leur paiement.
 
@@ -116,7 +116,7 @@ Alex est très enthousiaste à l'idée de se rendre à Middenheim pour le Carnav
 
 # **ÉVÉNEMENTS OPTIONNELS**
 
-<span id="page-10-0"></span>I
+<span id="page-10-0" data-folio="8"></span>I
 
 Les Personnages ont un emploi du temps à respecter et ne doivent pas se laisser distraire ou ralentir par les événements de la capitale : si nécessaire, vous devriez faire apparaître un agent de Blucher pour les aider (voir *Livraison urgente* ci-dessous). Cependant, quelques événements mineurs, mais intrigants, ne devraient pas faire de mal, et pourraient même faire avancer un peu l'intrigue.
 
@@ -182,7 +182,7 @@ Comme les Personnages le découvriront plus tard, les skavens ayant pris la mét
 
 ### **ALTDORF**
 
-<span id="page-12-0"></span>I
+<span id="page-12-0" data-folio="10"></span>I
 
 Chargés d'une caisse lourde et volumineuse dont la date de livraison approche à grands pas, les Personnages doivent trouver un moyen de transport vers Middenheim. Le choix le plus évident est de s'y rendre en diligence : la caisse s'installe sur le toit avec les autres bagages, moyennant un peu d'huile de coude et quelques pistoles aux cochers, mais ce n'est pas la seule option.
 
@@ -233,7 +233,7 @@ Certains Joueurs aguerris reconnaîtront peut-être ces deux dames et leur garde
 **Trône - Compagnon**.
 
 
-<span id="page-13-0"></span>Gunder est un géant qui n'est pas vraiment intelligent. Son front est épais et incliné, et sa mâchoire massive semble s'avancer plus loin que son nez tordu et aplati. Il est vêtu d'un justaucorps de cuir et armé d'une énorme hache. Ce garde et ancien soldat possède de multiples Talents, dont Menaçant, et des Traits incluant Belliqueux et Grand. Son Intelligence n'est que de 22, mais étant donné sa force et sa stature imposante, il n'a jamais trouvé que c'était un problème.
+<span id="page-13-0" data-folio="11"></span>Gunder est un géant qui n'est pas vraiment intelligent. Son front est épais et incliné, et sa mâchoire massive semble s'avancer plus loin que son nez tordu et aplati. Il est vêtu d'un justaucorps de cuir et armé d'une énorme hache. Ce garde et ancien soldat possède de multiples Talents, dont Menaçant, et des Traits incluant Belliqueux et Grand. Son Intelligence n'est que de 22, mais étant donné sa force et sa stature imposante, il n'a jamais trouvé que c'était un problème.
 
 Les jeunes femmes seront heureuses d'engager une conversation polie pendant le voyage, mais malheur à tout Personnage qui ne leur témoigne pas le respect qui leur est dû. Si les Personnages leur ont fait bonne impression au moment où la diligence atteint Middenheim, elles pourront les présenter à leur sœur Kirsten. Elles sont logées dans des chambres d'amis au sein du Palais extérieur pendant leur séjour en ville.
 

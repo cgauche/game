@@ -183,7 +183,7 @@ BLESSURES CRITIQUES AU BRAS
 | 00    | Bassin fracassé        | Mort | Le coup fracasse votre bassin, coupant une jambe et atteignant la seconde. Vous<br>mourez instantanément à cause du choc traumatique.                                                                                                                                                                                                                                                                                                                                                                               |  |
 
 
-<span id="page-180-0"></span>
+<span id="page-180-0" data-folio="179"></span>
 
 # MAINS GUÉRISSEUSES
 
@@ -222,7 +222,7 @@ Un de vos muscles est déchiré, ce qui vous handicape grandement en plus d'êtr
 **Guérison :** les muscles vont guérir en partie après un nombre de jours égal à 30 – votre Bonus d'Endurance. L'utilisation de la Compétence Guérison réduira cette durée d'un jour, ainsi que d'un jour supplémentaire par DR (vous ne pouvez obtenir cet avantage qu'une seule fois).
 
 
-#### <span id="page-181-0"></span>**Majeure**
+#### <span id="page-181-0" data-folio="180"></span>**Majeure**
 
 L'un de vos muscles, ou un tendon important, a été gravement endommagé, causant une douleur extrême et une sérieuse perte de potentiel du membre en question.
 
@@ -285,7 +285,7 @@ La perte d'orteils a un effet sur votre équilibre. Pour chaque orteil perdu, vo
 Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Si vous perdez vos deux pieds, il devient très compliqué de marcher. Peut-être pourriez-vous engager un homme de main afin de vous porter ?
 
 
-# <span id="page-182-0"></span>**Guérison**
+# <span id="page-182-0" data-folio="181"></span>**Guérison**
 
 La plupart des blessures guérissent avec le temps. Mais certaines sont plus graves que d'autres. Vous trouverez ci-après les différentes manières de guérir les Blessures et les Blessures critiques.
 

@@ -103,7 +103,7 @@ et heaume) 2
 **Possessions :** attitude sévère, épée, marteau de guerre, regard perçant, unité de gardes mal à l'aise
 
 
-<span id="page-35-0"></span>
+<span id="page-35-0" data-folio="33"></span>
 
 ### **ALTMARKT**
 
@@ -208,7 +208,7 @@ L'événement ne donne pas lieu à un comptage officiel du score. Cependant, cel
 - 0 Un jouteur humilié pourrait faire appel à un Personnage réputé pour sa vivacité d'esprit. Si les mauvais perdants ne sont guère respectés par la communauté des jouteurs, il arrive parfois qu'un participant peu doué embauche secrètement quelqu'un pour se venger. C'est une entreprise risquée, étant donné que les amateurs de joutes verbales condamnent sévèrement ce genre de manque d'esprit sportif.
 
 
-### <span id="page-39-0"></span>**L'HonorableGuildedes Législateurs**
+### <span id="page-39-0" data-folio="37"></span>**L'HonorableGuildedes Législateurs**
 
 L'Honorable Guilde des Législateurs est un bâtiment à deux étages qui donne sur l'Ostweg. Le bâtiment est construit en pierre et décoré de bas-reliefs minutieusement sculptés qui constituent des représentations supposées de Grafs historiques recevant la bénédiction d'Ulric et de Verena. Les bureaux sont ouverts au public de 10h00 à 16h00. Dans le bureau général situé derrière le comptoir de l'accueil, on peut apercevoir plusieurs employés le regard perdu dans le vide, mais on fait toujours attendre les visiteurs pendant au moins une demiheure.
 
@@ -297,7 +297,7 @@ ALFRIC « DEMI-NEZ » BRISENCLUME - RECELEUR NAIN (ARGENT 2)
 **Possessions et particularités :** bonnes oreilles, dague, nécessaire d'écriture
 
 
-### <span id="page-42-0"></span>**La Dernière Goutte**
+### <span id="page-42-0" data-folio="40"></span>**La Dernière Goutte**
 
 L'enseigne de La Dernière Goutte représente une petite potence avec une corde de pendu. Les visiteurs ont tout intérêt à prendre ce signe comme un véritable avertissement de l'atmosphère qui y règne. Cette taverne est un antre d'immoralité : des Personnages avec des contacts dans la pègre en entendent parler comme d'un parfait endroit pour acheter toutes sortes de biens illicites. Le propriétaire, Werner Wutend, est un homme d'une trentaine d'années, facilement reconnaissable à la balafre remarquable qui court de son front à sa gorge sur la gauche de son visage. Il chique du tabac en permanence, et arrondit ses fins de mois en vendant du Délice de Ranald pour le compte d'Edam Gouda.
 
@@ -374,7 +374,7 @@ La sélection éclectique de bières de Jurgen est uniformément de bonne qualit
 Chaque année, Jurgen ferme son établissement pendant les deux semaines qui précèdent le Carnaval de Middenheim. Durant ce temps, il fait des réserves de bières en affinage pour les présenter au Festival des Bières de qualité tenu au Grand Parc. Jurgen s'entend relativement bien avec Dieter Schmeidehammer (le Champion du Graf ), Petra Liebkosen (l'une des dames de la Cour) et Rallane Lafarel (le ménestrel de la Cour), qui profitent toujours du Carnaval pour goûter ses breuvages.
 
 
-<span id="page-45-0"></span>0 Hettie Vertebutte essaie de recruter Jurgen depuis un moment. À son avis, une sélection de bières variées, mais de qualité, ajouterait une touche de classe aux plats sinon prétentieux de L'Oiseau Insolite. Cependant, Jurgen est très heureux de la manière dont il s'organise chez lui. Hettie s'est donc mis en tête que si elle lui mettait suffisamment la pression, Jurgen pourrait changer d'avis. Elle est peut-être même prête à employer des Personnages violents pour le convaincre.
+<span id="page-45-0" data-folio="43"></span>0 Hettie Vertebutte essaie de recruter Jurgen depuis un moment. À son avis, une sélection de bières variées, mais de qualité, ajouterait une touche de classe aux plats sinon prétentieux de L'Oiseau Insolite. Cependant, Jurgen est très heureux de la manière dont il s'organise chez lui. Hettie s'est donc mis en tête que si elle lui mettait suffisamment la pression, Jurgen pourrait changer d'avis. Elle est peut-être même prête à employer des Personnages violents pour le convaincre.
 
 ### **Les Diligences du Loup coureur**
 
@@ -562,7 +562,7 @@ Les pratiquants de la magie noire pourraient acheter des composants pour leurs s
 - 0 Le personnel connaît suffisamment les composants pour savoir lesquels adapter à la sorcellerie et la magie noire. Un Personnage qui vient acheter de tels composants ici doit réussir un Test de **Charme Intermédiaire (+0)**. S'il rate le Test, le membre du personnel le suspecte de pratiquer la magie noire et fait part de ses observations à la Grande Guilde des Sorciers ou aux Frères du Livre au Grand Temple d'Ulric.
 
 
-<span id="page-51-0"></span>
+<span id="page-51-0" data-folio="49"></span>
 
 ### **GELDMUND**
 
@@ -698,7 +698,7 @@ Depuis qu'il a rejoint les Loups Blancs, Moritz a du temps libre, puisque les ch
 **Traits :** Arme (Épée) +8, Arme (Lance) +10, Arme (Marteau de cavalier) +9, Armure (Heaume) 2, (Plates) 3 **Possessions et particularités :** armure de plates antique, épée usée, lance de cavalerie, marteau de cavalier, voix imposante
 
 
-<span id="page-55-0"></span>
+<span id="page-55-0" data-folio="53"></span>
 
 ### **GRAFPLATZ**
 
@@ -749,7 +749,7 @@ Artur est représenté comme un héros Teutogen colossal arborant de longues mou
 La statue est célèbre pour avoir donné son nom à un conflit entre Middenheim et le Middenland en 1812 CI. La Guerre des Attitudes a été baptisée ainsi en raison du contraste entre la statue à l'apparence guerrière d'Artur et la pose modeste de la statue du grand-duc Karl Heinz à Carroburg.
 
 
-# <span id="page-57-0"></span>**GRAFSMUND**
+# <span id="page-57-0" data-folio="55"></span>**GRAFSMUND**
 
 Le Grafsmund est peuplé de familles d'aristocrates excessivement riches. Beaucoup d'entre elles se sont vu octroyer des titres par des Grafs actuels ou antérieurs, ou par l'Empereur lui-même (bien que cela soit beaucoup plus rare) et disposent de maisonnées remplies de serviteurs. La noblesse bénéficie de certains privilèges, mais n'assume que de rares responsabilités. Les nobles peuvent occuper des postes d'officiers au sein de la garnison de la Cité, ou être à la tête de Komissionen, mais beaucoup vivent simplement des revenus de leurs domaines ruraux, déléguant la gestion quotidienne de leurs affaires à des régisseurs de confiance.
 
@@ -812,7 +812,7 @@ Récemment, le graf Boris a semblé se lasser quelque peu de l'activité stressa
 0 Les terres des Helstein bordent la Drakwald, et si le comte Wolfgang venait à concrétiser son ambition de disposer d'une force de soldats plus importante, il entrerait immédiatement en guerre avec les hordes d'hommes-bêtes qui habitent ici, déclenchant une série de conflits d'ampleur croissante. Le comte aurait certainement besoin de recruter des mercenaires brutaux comme les Personnages pour soutenir son effort de guerre.
 
 
-### <span id="page-59-0"></span>**Le Haut Bollwerk**
+### <span id="page-59-0" data-folio="57"></span>**Le Haut Bollwerk**
 
 Les murs de Middenheim constituent à eux seuls des fortifications impressionnantes : même si la cité n'était pas construite sur un immense rocher, ils suffiraient à intimider quiconque serait assez fou pour tenter d'assiéger la cité. Cela étant, il est toujours bon de montrer aux résidents plus fortunés à quel point ils sont bien protégés. Le Haut Bollwerk est l'un des bastions érigés depuis les murs de la cité au nord et à l'ouest de Middenheim, surplombant comme une sentinelle les secteurs les plus aisés de la ville. Il est parfois possible d'apercevoir le Chevalier éternel en personne patrouiller sur les murs à proximité.
 
@@ -889,7 +889,7 @@ La Tête du Gladiateur est une petite taverne privée située sous la tribune pr
 0 La taverne est sponsorisée par un consortium de guildes qui ont chargé Bernhardt Gotheimer de gérer l'endroit. Bernhardt a commis l'imprudence de s'endetter auprès du Petit Roi Bleyden, et se retrouve donc tenu d'informer le chef criminel de tout pari assuré à venir ou de toute possibilité d'arranger des matches. Honnête mais imprudent, Bernhardt apprécierait grandement qu'on l'aide à se tirer de ce mauvais pas.
 
 
-### <span id="page-62-0"></span>**Le Bateau-théâtre**
+### <span id="page-62-0" data-folio="60"></span>**Le Bateau-théâtre**
 
 Situé sur le bord du Sombre Bassin, le Bateau-théâtre est un restaurant et un bar-cabaret apprécié des érudits et des classes supérieures. Il n'y a pas de droit d'entrée, mais il est impossible d'y obtenir une table sans verser quelques pièces à Otto, le maître d'hôtel de 1,80 m et chanteur à la voix grave.
 
@@ -991,7 +991,7 @@ Depuis le règne de Magnus, la Mission de la Miséricorde a perdu en puissance e
 - 0 Des filous sous les ordres de « l'Homme » collectent régulièrement de l'argent soi-disant pour la Mission, et prédisent des conséquences malheureuses à quiconque ne fait pas preuve de générosité. Ils se donnent un faux air d'honnêteté en donnant réellement leurs recettes à la Mission de temps en temps, mais la plupart des fonds récoltés partent financer leurs entreprises criminelles.
 
 
-<span id="page-65-0"></span>
+<span id="page-65-0" data-folio="63"></span>
 
 ### **KLEINMOOT**
 
@@ -1047,7 +1047,7 @@ Le prix des services de Hob s'élève à 15 % de la valeur de l'objet, s'il réu
 0 Le clan halfling des Stilburg est entièrement composé de criminels, et trouve en Hob un obstacle particulièrement gênant. Cependant, les Stilburg sont trop prudents pour tenter quoi que ce soit qui risquerait d'attirer l'attention de la famille Gazouillis, qui compte de nombreux enquêteurs de talent. Si un Personnage est réputé pour ses compétences d'assassin, les Stilburg pourraient essayer de le contacter pour s'assurer qu'il arrive quelque chose à Hob.
 
 
-<span id="page-67-0"></span>
+<span id="page-67-0" data-folio="65"></span>
 
 ### **KÖNIGSGARTEN**
 
@@ -1150,7 +1150,7 @@ Son ennui et ses caprices l'ont poussé à la malveillance, et Grain d'achillée
 **Talents :** Bon marcheur (Régions boisées), Diction instinctive, Harmonisation aethyrique, Insignifiant, Lire/Écrire, Magie des Arcanes (Bête, Magie naturelle, Vie, Sorcellerie), Magie mineure, Menaçant, Obstiné 2, Perception de la magie, Seconde vue, Sens aiguisé (Vue, Odorat, Ouïe), Sixième sens, Sorcier ! 2, Vision nocturne **Traits :** Éthéré, Préjugé (Créatures mortelles), Taille (Très petit)
 
 
-<span id="page-70-0"></span>Middenheim possède deux zones commerciales principales. Le Neumarkt est la seconde. Tandis que l'Altmarkt concerne principalement les denrées alimentaires, le Neumarkt propose toutes sortes d'autres marchandises. Le secteur du Neumarkt comporte plusieurs marchés entrecoupés d'ateliers d'artisan et d'habitations diverses. Outre les ateliers, les sièges de plusieurs Guildes mineures d'artisanat sont situées dans cette zone.
+<span id="page-70-0" data-folio="68"></span>Middenheim possède deux zones commerciales principales. Le Neumarkt est la seconde. Tandis que l'Altmarkt concerne principalement les denrées alimentaires, le Neumarkt propose toutes sortes d'autres marchandises. Le secteur du Neumarkt comporte plusieurs marchés entrecoupés d'ateliers d'artisan et d'habitations diverses. Outre les ateliers, les sièges de plusieurs Guildes mineures d'artisanat sont situées dans cette zone.
 
 ### **La Sainte Guilde des Porteurs d'eau**
 
@@ -1328,7 +1328,7 @@ Marta est tellement désarmante qu'elle trompe même Herla, et détourne réguli
 **Possessions et particularités :** massue, grandes ambitions, veste de cuir
 
 
-<span id="page-75-0"></span>
+<span id="page-75-0" data-folio="73"></span>
 
 ### **NORDGARTEN**
 
@@ -1402,7 +1402,7 @@ Au cours de la journée, les marchands qui passent à côté du sanctuaire jette
 0 Quelques fois, un mendiant ou un gamin des rues particulièrement culotté entre dans le quartier et tente de voler quelques pistoles lorsque tout le monde a le dos tourné. Tant qu'il n'y a pas de témoin, ces crimes ne sont pas pris au sérieux. La Garde est trop occupée pour s'intéresser à des pièces qu'on a laissées traîner en public, et les marchands sont plus que ravis de suggérer que ces chapardages comptent comme les dons charitables qu'ils sont censés faire. Toutefois, si un voleur était pris à piller le sanctuaire en flagrant délit, la Garde n'hésiterait pas à lui imposer un châtiment exemplaire sévère.
 
 
-<span id="page-78-0"></span>considèrent généralement que les habitants du nord de la cité sont plutôt aisés. Il y a moins d'un siècle, le Nordtor était l'un des quartiers les plus prisés. Aujourd'hui, il tombe en ruine et semble négligé ; les rangées de maisons mitoyennes jadis si fières ont été découpées en appartements plus petits qui hébergent de nombreuses familles. Si l'endroit ne donne pas une impression de zone de nondroit et de pauvreté comme l'Altquartier ou Ostwald, certainement pas respectable pour autant. D'année en année, son délabrement s'accroît et sa réputation s'effondre.
+<span id="page-78-0" data-folio="76"></span>considèrent généralement que les habitants du nord de la cité sont plutôt aisés. Il y a moins d'un siècle, le Nordtor était l'un des quartiers les plus prisés. Aujourd'hui, il tombe en ruine et semble négligé ; les rangées de maisons mitoyennes jadis si fières ont été découpées en appartements plus petits qui hébergent de nombreuses familles. Si l'endroit ne donne pas une impression de zone de nondroit et de pauvreté comme l'Altquartier ou Ostwald, certainement pas respectable pour autant. D'année en année, son délabrement s'accroît et sa réputation s'effondre.
 
 ### **Geist Haus**
 
@@ -1502,7 +1502,7 @@ Johen a quelques talents d'apothicaire, mais il apprend beaucoup de Waldtraud, p
 **Talents :** Criminel, Destinée (*Lorsque le joueur de pipeau jouera son air, ton cœur se brisera*), Diction instinctive, Mains agiles, Magie arcanique (Sorcellerie), Magie mineure, Menaçant, Sixième sens, Sorcier !
 
 
-<span id="page-81-0"></span>
+<span id="page-81-0" data-folio="79"></span>
 
 ### **OSTTOR**
 
@@ -1586,7 +1586,7 @@ Le Trou du Loup est le nom donné à un petit autel de rue consacré à Ulric. I
 Un pilori public se trouve également de l'autre côté de la route par rapport à l'autel. Il est utilisé pour punir les auteurs de blasphèmes mineurs. Ceux qui sont jugés coupables d'offenses mineures par la cour religieuse du Temple d'Ulric sont assis à l'envers sur une charrette tirée par un âne, emmenés ici et placés dans le carcan pendant un jour ou deux. Des sigmarites amers se retrouvent parfois assis à côté d'initiés d'Ulric qui ont oublié les restrictions de leur culte, tandis que des habitants du coin les bombardent joyeusement de légumes pourris récupérés à l'Altmarkt.
 
 
-<span id="page-84-0"></span>**OSTWALD**
+<span id="page-84-0" data-folio="82"></span>**OSTWALD**
 
 Ostwald est une zone immense et surpeuplée, dans laquelle vivent beaucoup des citoyens les plus pauvres et les plus désespérés de Middenheim. Bien que le secteur ne soit pas aussi dangereux que les taudis de l'Altquartier, il est tout aussi possible de se faire tuer, tabasser ou voler dans l'une de ses ruelles. Les tavernes du quartier sont au mieux de qualité médiocre, et la majorité d'entre elles est bien pire que cela.
 
@@ -1721,7 +1721,7 @@ Elle escroque régulièrement les nouveaux arrivants dans la cité avec la même
 **Possessions et particularités :** larmes à la demande, nécessaire de déguisement, 3d10 pistoles dérobées
 
 
-<span id="page-88-0"></span>plus les maisons qui le composent sont étincelantes, si elles n'ont pas laissé la place à d'opulents manoirs et propriétés. Et c'est au point le plus nord et à l'ouest de la cité que se trouve Palast. Le secteur ne comporte que quelques bâtiments, et tous font partie du Middenpalaz. Ils sont tous somptueux et bien entretenus, conformément à ce que l'on pourrait attendre du palais d'une cité impériale imposante et florissante.
+<span id="page-88-0" data-folio="86"></span>plus les maisons qui le composent sont étincelantes, si elles n'ont pas laissé la place à d'opulents manoirs et propriétés. Et c'est au point le plus nord et à l'ouest de la cité que se trouve Palast. Le secteur ne comporte que quelques bâtiments, et tous font partie du Middenpalaz. Ils sont tous somptueux et bien entretenus, conformément à ce que l'on pourrait attendre du palais d'une cité impériale imposante et florissante.
 
 Le Middenpalaz lui-même siège au milieu d'un domaine vaste et extravagant, même selon les standards des Middenheimers. Le palais extérieur comprend plusieurs bâtiments différents, dont la Haute Cour (ou Cour martiale), les appartements de divers membres de la cour, officiers de la garde et consultants, et les bureaux des bureaucrates choisis par le Graf pour l'aider à gouverner efficacement son territoire.
 
@@ -1848,7 +1848,7 @@ Depuis ce jour, Emmille est incapable de se concentrer sur son travail, et rumin
 **Traits :** Préjugé (Sigmarites)
 
 
-<span id="page-92-0"></span>Le secteur de Sudgarten s'étend de la Sudgarten Allee et du Morrspark à l'ouest au Grunpark au sud. Également connu comme le « Coin de Verdure » auprès des riverains, ce secteur abrite deux des quatre parcs publics de la cité. C'est aussi l'un des quatre secteurs résidentiels de la classe moyenne de Middenheim, et sa population compte toutes sortes d'artisans, de propriétaires de boutiques, de clercs des différents temples, et d'employés de marchands ou de diverses administrations de la cité.
+<span id="page-92-0" data-folio="90"></span>Le secteur de Sudgarten s'étend de la Sudgarten Allee et du Morrspark à l'ouest au Grunpark au sud. Également connu comme le « Coin de Verdure » auprès des riverains, ce secteur abrite deux des quatre parcs publics de la cité. C'est aussi l'un des quatre secteurs résidentiels de la classe moyenne de Middenheim, et sa population compte toutes sortes d'artisans, de propriétaires de boutiques, de clercs des différents temples, et d'employés de marchands ou de diverses administrations de la cité.
 
 Le quartier résidentiel du secteur est divisé en trois zones, la plus opulente étant à l'ouest et la moins nantie à l'est. Les rues sont étroites mais globalement propres, et les maisons sont mitoyennes, de qualité moyenne, et parsemées de boutiques et d'ateliers.
 
@@ -1925,7 +1925,7 @@ L'horloge hydraulique est une merveille mécanique construite par la Guilde des 
 La partie basse de la tour est accessible par une petite porte en bois renforcée. La porte est fermée à clé en permanence, et sa clé est gardée par la Guilde des Ingénieurs nains. Si qui que ce soit parvenait à entrer à l'intérieur, il pourrait observer les mécanismes complexes qui permettent à l'horloge de fonctionner. L'horloge est hydraulique, et fonctionne grâce à des flux d'eau, qui sont pompés jusqu'en haut du mécanisme pour y couler d'une manière contrôlée et faire tourner ses engrenages.
 
 
-<span id="page-95-0"></span>Cette combinaison de mécanismes hydrauliques et d'horlogerie demeure très expérimentale, et prouve une fois de plus que les ingénieurs nains de Middenheim sont loin d'être aussi bornés que leurs cousins plus traditionalistes qui habitent les forteresses des Montagnes du Bord du Monde.
+<span id="page-95-0" data-folio="93"></span>Cette combinaison de mécanismes hydrauliques et d'horlogerie demeure très expérimentale, et prouve une fois de plus que les ingénieurs nains de Middenheim sont loin d'être aussi bornés que leurs cousins plus traditionalistes qui habitent les forteresses des Montagnes du Bord du Monde.
 
 ### HORLOGE MÉCANIQUE
 
@@ -2034,7 +2034,7 @@ Outre ses activités criminelles, Beckenbauer est aussi un grand joueur de Midde
 **Traits :** Arme (Coup-de-poing) +6, Arme (Dague) +6, Armure (Chemise de mailles) 2, Préjugé (Ceux qui ne savent pas apprécier un bon match de Middenball)
 
 
-<span id="page-98-0"></span>
+<span id="page-98-0" data-folio="96"></span>
 
 ### **ULRICSMUND**
 
@@ -2198,7 +2198,7 @@ Bengt est toujours intéressé par les histoires des aventuriers (à condition q
 Lire/Écrire, Studieux **Traits :** Préjugés (Mauvais auditeurs)
 
 
-<span id="page-103-0"></span>
+<span id="page-103-0" data-folio="101"></span>
 
 ### **WESTOR**
 
@@ -2264,7 +2264,7 @@ Cependant, les mentalités ont évolué, et un sanctuaire, petit et dénué de m
 Les adeptes de Manann ont pour principe de déposer une pistole et un poisson à chaque sanctuaire auquel ils se rendent. Cela a poussé un habitant ambitieux du secteur de Westor à développer une activité qui serait condamnée pour bassesse dans n'importe quelle autre ville. Franz Tietz tient un petit étal en bois près du sanctuaire, où il vend des vairons qui ont été attrapés dans les étangs du Grunpark. Son tarif de 2/– par vairon relève de l'extorsion pure et simple, mais il constitue le seul moyen réaliste de se procurer du poisson frais dans les environs.
 
 
-<span id="page-105-0"></span>
+<span id="page-105-0" data-folio="103"></span>
 
 ### **LA VENELLE**
 
@@ -2428,7 +2428,7 @@ Le vizir Bhar est un atout important du culte, malgré son refus de raser son bo
 **Talents :** Affinité avec les animaux, Attirant, Chanceux, Criminel, Détection d'artefact, Diction instinctive, Effrayant, Harmonisation aethyrique, Magie des Arcanes (Démonologie, Nécromancie, Tzeentch, Sorcellerie), Magie mineure, Mains agiles, Menaçant, Obstiné, Perception de la magie, Savant (Nécromancie), Savoirvivre (Criminels, Cultistes), Studieux, Sixième sens, Sorcier !,Tour des souvenirs 4
 
 
-### <span id="page-109-0"></span>**LA CITÉ SOUTERRAINE**
+### <span id="page-109-0" data-folio="107"></span>**LA CITÉ SOUTERRAINE**
 
 Le Fauschlag est creusé de tunnels et de renfoncement sinueux qui s'enchevêtrent. La complexité de cette ville souterraine est stupéfiante, et les tentatives de la cartographier se sont soldées par des échecs. Même les nains de Middenheim, responsables de la majorité des fouilles, ne peuvent s'orienter que dans une fraction de la Cité souterraine.
 

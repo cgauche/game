@@ -1,6 +1,6 @@
 *Pages PDF 212*
 
-# <span id="page-211-0"></span>**LE CULTE DE SHALLYA, DÉESSE DE LA MISÉRICORDE**
+# <span id="page-211-0" data-folio="210"></span>**LE CULTE DE SHALLYA, DÉESSE DE LA MISÉRICORDE**
 
 **Siège du Pouvoir :** Couronne, Bretonnie **Chef du Culte :** la Grande Matriarche
 

@@ -1,6 +1,6 @@
 *Pages PDF 38-54*
 
-# <span id="page-37-0"></span>• UNE NUIT À L'OPÉRA •
+# <span id="page-37-0" data-folio="36"></span>• UNE NUIT À L'OPÉRA •
 
 Pour célébrer sa victoire au procès, la gravin Maria Ulrike von Liebwitz d'Ambosstein est invitée à l'Opéra par son illustre tante, la Grande comtesse Emmanuelle von Liebwitz de Nuln. Malheureusement pour nos héros et leur employeur, le baron Eberhardt von Dammenblatz, débouté, a soif de vengeance, et bien d'autres groupes également mal intentionnés assistent à la première d'*Otenno*.
 
@@ -19,7 +19,7 @@ Si vous avez l'intention de jouer **Nuits Agitées & Dures Journées** en campag
 Le voyage remonte simplement le cours du Reik. Il ne devrait pas prendre plus de quelques jours si la météo est favorable.
 
 
-### <span id="page-38-0"></span>**Une aventure indépendante**
+### <span id="page-38-0" data-folio="37"></span>**Une aventure indépendante**
 
 Si cette aventure se joue hors campagne, l'Opéra pourrait se trouver à Altdorf ou dans n'importe quelle autre grande ville de l'Empire. Les Personnages peuvent s'y rendre dans le cadre d'une enquête, ou simplement profiter de l'occasion pour côtoyer des personnes riches et bien nées, et établir des contacts dans la société.
 
@@ -48,7 +48,7 @@ Les trois suivantes sont destinées à la noblesse, et chacune bénéficie d'une
 
 
 
-### <span id="page-41-0"></span>**L'AVENTURE**
+### <span id="page-41-0" data-folio="40"></span>**L'AVENTURE**
 
 L'aventure commence en début de soirée, lorsque les Personnages arrivent à l'Opéra.
 
@@ -89,7 +89,7 @@ Le conseiller Albrecht Oldenhaller, un commerçant reconnu et politicien de Nuln
 Le répurgateur Matthias Hubkind n'a pas pu enquêter de façon approfondie sur la Gravin durant le procès de Kemperbad, car le fantôme d'une de ses précédentes victimes est apparu et l'a attaqué. Il a suivi la Gravin jusqu'à Nuln et il les observe de très près, elle et sa tante. Il n'hésitera pas à kidnapper et à interroger l'un des serviteurs de l'une ou l'autre dame, sous la torture si nécessaire, afin d'obtenir des preuves contre elles.
 
 
-### <span id="page-42-0"></span>**Événements**
+### <span id="page-42-0" data-folio="41"></span>**Événements**
 
 Ces événements peuvent être influencés par ce que font les aventuriers et où ils se trouvent à un moment donné. Vous ne devez pas hésiter à modifier les événements et les horaires selon les besoins.
 
@@ -283,7 +283,7 @@ Pour aggraver les choses, une foule de curieux se rassemble, composée de retard
 Si les Personnages ne font rien, la Garde arrivera en force pour escorter la Comtesse et sa suite jusqu'au palais, balayant le répurgateur et ses accusations. Cependant, le lendemain matin, Hubkind a rassemblé une foule en colère parmi les mécontents de la ville et les fidèles sigmarites qui désapprouvent leur licencieuse dirigeante. Des manifestations bruyantes à l'extérieur du palais peuvent dégénérer en violences contre des passants, et parlent même de renverser la famille Liebwitz. Ce qui, bien sûr, réjouit les maisons Dammenblatz et Toppenheimer et reçoit leur soutien enthousiaste.
 
 
-### <span id="page-48-0"></span>**CONCLUSION**
+### <span id="page-48-0" data-folio="47"></span>**CONCLUSION**
 
 ### **Récompenses**
 
@@ -377,7 +377,7 @@ Contrairement à de nombreux Comtes électeurs, la Comtesse choisit de ne pas s'
 **Traits :** Arme (Poings) +3, Rusé
 
 
-<span id="page-50-0"></span>
+<span id="page-50-0" data-folio="49"></span>
 
 |   | GARDES DU PALAIS (OR 2) |    |    |    |    |    |     |     |    |     |    |  |  |
 |---|-------------------------|----|----|----|----|----|-----|-----|----|-----|----|--|--|
@@ -448,7 +448,7 @@ Escamotage 46
 (Dague) +5
 
 
-### <span id="page-51-0"></span>**L'École d'Artillerie**
+### <span id="page-51-0" data-folio="50"></span>**L'École d'Artillerie**
 
 #### **Le professeur Erwin Pakker et ses étudiants**
 
@@ -494,7 +494,7 @@ ERWIN PAKKER - PROFESSEUR (OR 1) **M CC CT F E I Ag Dex Int FM Soc B** 4 27 47 2
 (Ingénieur) 82
 
 
-### <span id="page-52-0"></span>**Detlef Sierck**
+### <span id="page-52-0" data-folio="51"></span>**Detlef Sierck**
 
 Sierck est un génie, il ne peut le nier. Acteur, dramaturge et poète incomparable, même ses plus grands critiques ne doutent pas de son talent. De près et sans maquillage de scène, il est clair que Detlef a bien profité de la vie, un an ou deux de trop. Sur scène, il soutient son ventre mou avec un corset et a clairement dépassé, certainement de beaucoup, les trente-six ans qu'il prétend avoir. Il porte des moustaches démodées, pour mieux cacher ses dents brunies, et il a l'air hagard quand il est seul. Cependant, lorsqu'il fait appel à son charme, le fringant meneur d'hommes, ce rôle qu'il a perfectionné tout au long de nombreuses années d'extraordinaires interprétations, reprend vie, et laisse peu de gens indifférents.
 
@@ -531,7 +531,7 @@ Utilisez les mêmes statistiques pour les trois assassins avec les modifications
 - L'assassin des Huydermans a également le Trait *Élite*, plusieurs dagues supplémentaires avec l'Atout Empaleuse, un anneau à compartiment contenant une dose de Brise-cœur, et le Talent *Attirant 4*.
 
 
-### <span id="page-53-0"></span>**Le Culte de la Larve sacrée**
+### <span id="page-53-0" data-folio="52"></span>**Le Culte de la Larve sacrée**
 
 L'œil de Martyn Ruchen affiche un reflet fiévreux lorsqu'il frotte ses mains verruqueuses avec jubilation. Un joyau sacré pour Nurgle, le dieu du Chaos de la maladie et du désespoir, sera bientôt entre ses mains, et il contient à peine son excitation. Tout ce qu'il doit faire, c'est capturer Albrecht Oldenhaller !
 

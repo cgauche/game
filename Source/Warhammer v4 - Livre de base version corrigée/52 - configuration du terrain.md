@@ -1,6 +1,6 @@
 *Pages PDF 268-271*
 
-# <span id="page-267-0"></span>• GLORIEUX REIKLAND •
+# <span id="page-267-0" data-folio="266"></span>• GLORIEUX REIKLAND •
 
 *À sa Majesté impériale, l'Empereur Karl Franz Ier le Premier, par la Grâce des dieux, Comte Électeur et Grand Prince du Reikland, Prince d'Altdorf, Comte de la Marche de l'Ouest, Défenseur de la Foi de Sigmar, je recommande ce texte, une analyse de son royaume le plus illustre, la Grande Principauté du Reikland, le cœur de notre Saint Empire. Puisse-t-il longtemps régner !*
 
@@ -19,7 +19,7 @@ Le Reikland s'étend dans l'ombre des inhospitalières Montagnes Grises. Ses pla
 Une grande partie des terres bordant le Reik est inondée et marécageuse, avec de vastes étendues de tourbières, de marais et de plaines boueuses et dangereuses, dont la plus grande
 
 
-<span id="page-268-0"></span>est le marais Grootscher, à la frontière entre le Wasteland et l'Ouest. Plus à l'intérieur des terres, le Reikland s'élève vers les collines escarpées de Skaag et les Hägercrybs hantées, deux hautes terres boisées qui dissimulent des régions isolées presque épargnées par la main de l'homme. Les forêts finissent par s'évanouir tandis que la terre s'élève vers les Montagnes Grises, la frontière naturelle du Reikland avec la Bretonnie au sud, et s'ouvre sur une vaste étendue de collines fertiles et de prairies connues sous le nom de Vorbergland.
+<span id="page-268-0" data-folio="267"></span>est le marais Grootscher, à la frontière entre le Wasteland et l'Ouest. Plus à l'intérieur des terres, le Reikland s'élève vers les collines escarpées de Skaag et les Hägercrybs hantées, deux hautes terres boisées qui dissimulent des régions isolées presque épargnées par la main de l'homme. Les forêts finissent par s'évanouir tandis que la terre s'élève vers les Montagnes Grises, la frontière naturelle du Reikland avec la Bretonnie au sud, et s'ouvre sur une vaste étendue de collines fertiles et de prairies connues sous le nom de Vorbergland.
 
 # **Les montagnes, les collines et le Vorbergland**
 
@@ -56,7 +56,7 @@ Entre les pics menaçants des Montagnes Grises et les forêts profondes du Reikw
 Les provinces productives du Sud-Est autour de Böhrn, Ubersreik, Stimmigen et Dunkelberg sont connues localement sous le nom de Vorbergland Sud, et sont les régions les plus 
 
 
-<span id="page-269-0"></span>cultivées du Reikland. Elles comptent de nombreuses villes, villages, fermes et maints vignobles fleurissants, et sont souvent qualifiées de « Jardin de Ranald » à cause des grandes quantités de vin qu'elles produisent pour l'exportation.
+<span id="page-269-0" data-folio="268"></span>cultivées du Reikland. Elles comptent de nombreuses villes, villages, fermes et maints vignobles fleurissants, et sont souvent qualifiées de « Jardin de Ranald » à cause des grandes quantités de vin qu'elles produisent pour l'exportation.
 
 Plus à l'ouest, le Vorbergland est tourmenté par des attaques fréquentes d'orcs et de gobelins descendant des montagnes, ce qui signifie qu'une grande partie de la région est faiblement peuplée, à peine plus qu'un terrain de chasse pour les animaux sauvages et les monstres provenant des pics. Cela fait des baronnies et duchés locaux des destinations populaires pour les chasseurs et les historiens naturels du Zoo Impérial cherchant à capturer des spécimens rares, bien que seuls les imprudents voyagent dans cette région sans une bonne escorte et un guide compétent.
 
@@ -79,7 +79,7 @@ La forêt de Reikwald recouvre presque entièrement le Reikland à l'extérieur 
 Dans la plupart des cas, les frondaisons de la forêt de Reikwald ne sont pas assez épaisses pour bloquer les rayons du soleil, mais les profondeurs des bois sont souvent lugubres, parcourues de lourdes brumes, en particulier le long des rives marécageuses du fleuve Reik. Les Érudits prétendent qu'avant la fondation de l'Empire, la tribu des humains Unberogen arpentait cette
 
 
-<span id="page-270-0"></span>forêt brumeuse aux côtés d'anciens autres groupements dont les noms se sont perdus dans l'histoire. Des cercles concentriques de menhirs gravés appelés « oghams » datant de cette époque existent encore, bien que beaucoup soient recouverts de végétation et presque impossibles à dénicher sans un guide. Les communautés isolées qui continuent à suivre d'anciens préceptes – d'anciennes croyances considérées comme précédant l'arrivée de Sigmar – gardent de tels sites sacrés. Les intellectuels issus des Collèges de Magie prétendent que de terribles batailles ont eu lieu autrefois pour conserver ces anciens sites mégalithiques, et il n'est pas rare de voir les Magisters les plus riches financer des explorations dans les profondeurs de la forêt de Reikwald pour en apprendre plus sur les pierres magiques.
+<span id="page-270-0" data-folio="269"></span>forêt brumeuse aux côtés d'anciens autres groupements dont les noms se sont perdus dans l'histoire. Des cercles concentriques de menhirs gravés appelés « oghams » datant de cette époque existent encore, bien que beaucoup soient recouverts de végétation et presque impossibles à dénicher sans un guide. Les communautés isolées qui continuent à suivre d'anciens préceptes – d'anciennes croyances considérées comme précédant l'arrivée de Sigmar – gardent de tels sites sacrés. Les intellectuels issus des Collèges de Magie prétendent que de terribles batailles ont eu lieu autrefois pour conserver ces anciens sites mégalithiques, et il n'est pas rare de voir les Magisters les plus riches financer des explorations dans les profondeurs de la forêt de Reikwald pour en apprendre plus sur les pierres magiques.
 
 # **Les bois des Pins sanglants**
 

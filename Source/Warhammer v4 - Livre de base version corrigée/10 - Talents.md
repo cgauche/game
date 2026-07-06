@@ -1,6 +1,6 @@
 *Pages PDF 134-147*
 
-# <span id="page-133-0"></span>**TALENTS**
+# <span id="page-133-0" data-folio="132"></span>**TALENTS**
 
 Alors que les Caractéristiques représentent votre potentiel brut, et les Compétences votre entraînement et votre expérience, les Talents regroupent toutes les astuces, particularités et capacités spéciales apprises au cours de votre vie.
 
