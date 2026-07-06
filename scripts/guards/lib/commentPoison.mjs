@@ -220,3 +220,45 @@ export function scanExcuses(relPath, contenu) {
   }
   return findings;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Famille 3 — AFFIRMATION-RAW non ancrée (CLAUDE.md règle 6a). Un commentaire qui AFFIRME ce que
+// le RAW exige/n'exige pas, sans réf de livre dans le MÊME commentaire, est du poison présumé :
+// c'est la classe « bélier » 2026-07-06 (« RAW ne l'exige pas » — faux, ADE II ch.8 exige l'Équipe)
+// — la vérité d'une thèse n'est pas machine-vérifiable, son ANCRAGE l'est. Canal ALERTE (jamais
+// bloquant) : la session qui l'écrit doit ouvrir le Source et citer, ou reformuler en réf nue.
+// ---------------------------------------------------------------------------------------------
+
+/** @type {{ rx: RegExp, label: string }[]} */
+export const RAW_CLAIM_FAMILIES = [
+  { rx: /\bRAW\s+ne\s+(?:l['']\s?)?\w*\s?\w*(exige|demande|impose|précise|prévoit|couvre|définit|mentionne|chiffre|tranche|marque)\w*\s+(pas|rien|jamais)/i, label: 'RAW ne … pas' },
+  { rx: /\b(pas|non|jamais)\s+(exigée?s?|demandée?s?|imposée?s?|prévue?s?|définie?s?|couverte?s?)\s+par\s+le\s+RAW/i, label: 'pas … par le RAW' },
+  { rx: /\ble\s+(RAW|livre|Source)\s+n[e'']\s?\w*\s?\w*\s+(pas|rien|jamais)/i, label: 'le RAW/livre ne … pas' },
+  { rx: /\bRAW\s+(est\s+)?(muet|silencieux)/i, label: 'RAW muet' },
+  { rx: /\b(hors[- ]RAW|non[- ]RAW|pas\s+RAW)\b/i, label: 'hors-RAW nu' },
+  { rx: /(laissée?s? au MJ|au choix du MJ|le MJ (décide|tranche|arbitre))/i, label: 'renvoi au MJ' },
+];
+/** Réf de livre ancrant la thèse au Source (n'importe où dans le MÊME commentaire logique). */
+export const BOOK_REF_RX = /\b(LDB|ADE\s*I{1,2}|EDOC?|MDG|AA|ZI|ACE|NADAJ|T2C?|Middenheim)\b\s*(\d+|ch\.?\s*\d+|l\.\s*\d+|p\.?\s*\d+|§)/i;
+
+/**
+ * Scan complet d'un fichier : affirmations sur le RAW SANS réf de livre dans le même commentaire.
+ * @param {string} relPath @param {string} contenu
+ * @returns {{ line: number, detail: string }[]}
+ */
+export function scanRawClaims(relPath, contenu) {
+  const findings = [];
+  for (const c of extractComments(contenu)) {
+    for (const fam of RAW_CLAIM_FAMILIES) {
+      const m = fam.rx.exec(c.text);
+      if (!m) continue;
+      // Ancrage de PROXIMITÉ : une réf de livre ADJACENTE à la thèse (±120 caractères) la rend
+      // matériellement vérifiable. Le bloc ENTIER ne suffit pas — l'en-tête du scénario bélier
+      // citait ADE II ailleurs, la fausse claim restait non sourcée (angle mort constaté 2026-07-06).
+      const window = c.text.slice(Math.max(0, m.index - 120), m.index + m[0].length + 120);
+      if (BOOK_REF_RX.test(window)) continue;
+      findings.push({ line: matchLine(c, m.index), detail: `[${fam.label}] ${excerptAt(c, m.index)}` });
+    }
+  }
+  return findings;
+}

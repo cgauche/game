@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scanTombstones, scanExcuses, EXCUSE_GUARD_ACTIVE } from '../guards/lib/commentPoison.mjs';
+import { scanTombstones, scanExcuses, scanRawClaims, EXCUSE_GUARD_ACTIVE } from '../guards/lib/commentPoison.mjs';
 import { scanLabelLogic } from '../guards/lib/labelLogic.mjs';
 
 let raw = '';
@@ -29,6 +29,8 @@ if (isSrcTs) {
       lines.push(`POISON pierre tombale (règle 6c, tolérance zéro) — ${rel}:${f.line} ${f.detail}`);
     for (const f of scanExcuses(rel, text))
       lines.push(`${EXCUSE_GUARD_ACTIVE ? 'POISON' : 'ALERTE'} commentaire-excuse sans tag [entériné AAAA-MM-JJ] (règle 6b) — ${rel}:${f.line} ${f.detail}`);
+    for (const f of scanRawClaims(rel, text))
+      lines.push(`ALERTE affirmation sur le RAW SANS réf de livre (règle 6a — classe « bélier ») — ${rel}:${f.line} ${f.detail} → ouvre le Source : cite la réf dans CE commentaire, ou reformule en réf nue. Une thèse RAW non sourcée d'agent est du poison présumé.`);
     if (/(^|\/)src\/(engine|state)\//.test(norm))
       for (const f of scanLabelLogic(rel, text))
         lines.push(`POISON logique par label (#142, id STABLE seulement) — ${rel}:${f.line} ${f.detail}`);

@@ -18,6 +18,9 @@ export function scanTombstones(relPath: string, contenu: string): Finding[];
 
 export const EXCUSE_GUARD_ACTIVE: boolean;
 export const EXCUSE_RX: RegExp;
+export const RAW_CLAIM_FAMILIES: { rx: RegExp; label: string }[];
+export const BOOK_REF_RX: RegExp;
+export function scanRawClaims(relPath: string, contenu: string): Finding[];
 export const ENTERINE_TAG_RX: RegExp;
 export function untaggedExcuseMatch(text: string): RegExpExecArray | null;
 export function scanExcuses(relPath: string, contenu: string): Finding[];

@@ -7,6 +7,7 @@ import {
   TOMBSTONE_FAMILIES,
   tombstonesIn,
   untaggedExcuseMatch,
+  scanRawClaims,
   extractComments,
   matchLine,
   excerptAt,
@@ -140,6 +141,19 @@ describe('garde-fou commentaires — excuses non tracées (#136, CLAUDE.md règl
     expect(untaggedExcuseMatch('// Chance accordée temporairement, retirée à expiration.')).toBeNull();
     expect(untaggedExcuseMatch('// temporairement insensible (Détermination, LDB 17).')).toBeNull();
     expect(untaggedExcuseMatch('// les PA magiques sont épargnés par Ulgu.')).toBeNull();
+  });
+
+  it('affirmation-RAW non ancrée détectée (règle 6a — classe « bélier » 2026-07-06, preuve TDD)', () => {
+    // Le verbatim qui a contourné toutes les gardes : thèse sur le RAW, zéro réf, et FAUSSE (ADE II ch.8 exige l'Équipe).
+    expect(scanRawClaims('x.ts', "// mains, via son inventaire/loadout — RAW ne l'exige PAS « servi » en poste pour être manié")).toHaveLength(1);
+    expect(scanRawClaims('x.ts', '// arbitrage : laissé au MJ')).toHaveLength(1);
+    expect(scanRawClaims('x.ts', '// le RAW est muet sur ce cas')).toHaveLength(1);
+  });
+
+  it('affirmation-RAW ANCRÉE à une réf de livre = matériellement vérifiable, pas d\'alerte (preuve TDD)', () => {
+    expect(scanRawClaims('x.ts', '// AFFICHAGE (couche UI, hors RAW LDB 16) : icône du registre')).toHaveLength(0);
+    expect(scanRawClaims('x.ts', '// cadence laissée au MJ, LDB 13 l.106 — reset au tour')).toHaveLength(0);
+    expect(scanRawClaims('x.ts', '// Calcule le total des dégâts appliqués à la cible.')).toHaveLength(0);
   });
 
   it('vraies excuses TOUJOURS détectées après affinage (preuve TDD)', () => {
