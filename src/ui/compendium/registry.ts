@@ -20,7 +20,7 @@ import {
 import { groupAdvantage } from '../../engine/advantagePool';
 import { statName } from '../../engine/statEntry';
 import { damageString } from '../../engine/items';
-import { rangeSpecLabel, ammoRangeModLabel } from '../weaponStats';
+import { rangeSpecLabel, ammoRangeModLabel, conditionalDamageNote } from '../weaponStats';
 import { formatSpellRange, formatSpellTarget, formatSpellDuration } from '../../engine/spellRangeFormat';
 import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef } from '../../data';
@@ -154,6 +154,13 @@ const specsFact = (cat: 'skills' | 'talents', def: { id: string; specsSource?: i
 /** Prix d'une possession (`{gold,silver,bronze}`) → libellé monnaie canon, ou null si gratuit/absent. */
 const priceLabel = (p: { gold: number; silver: number; bronze: number } | null | undefined): string | null =>
   p && (p.gold || p.silver || p.bronze) ? formatMoney(priceToMoney(p)) : null;
+
+/** Fait « Dégâts » d'une arme/pièce : chaîne imprimée + note CONDITIONNELLE dérivée des capacités de qualité
+ *  (Bélier `ram` / Siège `siege`, #135) — jamais un total qui suggère un dégât inconditionnel quand la
+ *  donnée dit le contraire. `conditionalDamageNote` = SOURCE UNIQUE (`weaponStats.ts`), la MÊME que
+ *  `weaponStatParts` pour les armes EN MAIN (Sac/popover/fiche personnage). */
+const damageFact = (t: { damage: import('../../engine/types').WeaponDamageSpec | null; qualities: { id: string; value?: number }[]; onHitEffects?: import('../../engine/flowCore').TriggeredEffect[] }): string | undefined =>
+  join(t.damage ? damageString(t.damage) : null, conditionalDamageNote(t));
 
 /** Famille d'une race/variante : « Humains (Reiklander) » → « Humains ». */
 const family = (label: string): string => label.split(' (')[0].trim();
@@ -513,7 +520,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
         : fact('Allonge', t.reach);
       return {
         label: t.label, sub: join(t.type, weaponGroupLabel(t.subType) || undefined), desc: t.desc ?? undefined, source: src(t.source),
-        meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', t.damage ? damageString(t.damage) : null), fact('PA', t.pa), reachFact),
+        meta: facts(fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability), fact('Emplacement', t.loc), fact('Dégâts', damageFact(t)), fact('PA', t.pa), reachFact),
         sections: sections(
           chips('Qualités', 'qualities', t.qualities.map(qualityRefLabel)),
           props.length ? { title: 'Propriétés', layout: 'list', rows: [{ t: 'text', text: props.join(' · ') }] } : null,
@@ -534,7 +541,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       appearance: { species: t.siegeRig! }, previewRef: t.siegeRig!,
       meta: facts(
         fact('Prix', priceLabel(t.price)), fact('Enc', t.enc), fact('Disponibilité', t.availability),
-        fact('Dégâts', t.damage ? damageString(t.damage) : null), fact('PA', t.pa),
+        fact('Dégâts', damageFact(t)), fact('PA', t.pa),
         fact('Portée', rangeSpecLabel(t.range) ?? ammoRangeModLabel(t.ammoRangeMod)),
       ),
       sections: sections(

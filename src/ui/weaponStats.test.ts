@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { ItemInstance, Weapon } from '../engine/types';
-import { weaponStatParts, rangeSpecLabel, ammoRangeModLabel } from './weaponStats';
+import { weaponStatParts, rangeSpecLabel, ammoRangeModLabel, conditionalDamageNote } from './weaponStats';
 
 const item = (o: Partial<ItemInstance>): ItemInstance =>
   ({ uid: 'u', name: 'x', kind: 'melee', qualities: [], enc: 0, equipped: false, ...o }) as ItemInstance;
@@ -41,6 +41,41 @@ describe('weaponStatParts (composeur partagé des stats d’arme)', () => {
     expect(parts.join(' · ')).not.toContain('[object Object]');
     // Dynamique : un BF différent change la Portée.
     expect(weaponStatParts(item({ kind: 'ranged', damage: { literal: 'Spécial' }, range: { bf: 3 } }), 2)).toContain('Portée 6 m');
+  });
+});
+
+describe('conditionalDamageNote — #135 : dégâts CONDITIONNELS dérivés des capacités de qualité (ram/siège)', () => {
+  it('Bélier (qualities siege+belier, ADE II ch.08 l.249/292) : porte-uniquement + ×2 structure, repli Arme improvisée DÉRIVÉ (pas un littéral)', () => {
+    const belier = { qualities: [{ id: 'siege' }, { id: 'belier' }], damage: { plusBF: true, flat: 10 } };
+    expect(conditionalDamageNote(belier)).toBe('contre une porte uniquement — sinon Arme improvisée (+BF+1) · ×2 contre une structure');
+  });
+
+  it('Atout Siège seul (canon, ADE II l.292) : uniquement la note ×2 — dégâts imprimés valent pour toute autre cible', () => {
+    const canon = { qualities: [{ id: 'siege' }], damage: { plusBF: false, flat: 20 } };
+    expect(conditionalDamageNote(canon)).toBe('×2 contre une structure');
+  });
+
+  it('arme normale (aucune capacité conditionnelle) : aucune note — les dégâts imprimés sont déjà la vérité', () => {
+    expect(conditionalDamageNote({ qualities: [{ id: 'pointue' }], damage: { plusBF: true, flat: 4 } })).toBeNull();
+  });
+
+  it('sans dégâts imprimés mais effet À LA TOUCHE déclenché, sans formule dérivable : badge générique', () => {
+    expect(conditionalDamageNote({ qualities: [], damage: null, onHitEffects: [{ trigger: 'onHit' } as never] })).toBe('Dégâts conditionnels — voir Effets');
+  });
+
+  it('sans dégâts ET sans effet à la touche (ex. armure/munition) : aucune note à ajouter', () => {
+    expect(conditionalDamageNote({ qualities: [], damage: null })).toBeNull();
+  });
+});
+
+describe('weaponStatParts — reporte la note conditionnelle EN PARTIE SUPPLÉMENTAIRE (#135)', () => {
+  it('Bélier tenu en main : « Dégâts…·Allonge…·note conditionnelle » (armes normales inchangées)', () => {
+    const w: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [{ id: 'siege' }, { id: 'belier' }] };
+    expect(weaponStatParts(w, 4)).toEqual([
+      'Dégâts +BF+10 (14)',
+      'Allonge Moyenne',
+      'contre une porte uniquement — sinon Arme improvisée (+BF+1) · ×2 contre une structure',
+    ]);
   });
 });
 

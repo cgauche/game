@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { CODEX, CODEX_GROUPS, categoriesIn, categoryByKey, codexLookup, codexLookupVersion, invalidateCodexLookup, type CodexItem, type CodexFacet } from './registry';
 import { codexMatch, deburr, filterItems, facetValues } from './search';
 import { isEditableCategory } from './CodexEdit';
-import { creatures, etats, findTraitById } from '../../data';
+import { creatures, etats, trappings, findTraitById } from '../../data';
 import { setDataset } from '../../data/overrides';
 import { CHAR_KEYS } from '../../engine/types';
 
@@ -126,6 +126,28 @@ describe('Codex registry — références INVERSES (relations.ts → fiches)', (
     expect(peur!.group).toBe('Peur');
     // C'est un VIEW de traits (pas un dataset) → l'édition DEV passe par « Traits », pas ici.
     expect(isEditableCategory('psychologie')).toBe(false);
+  });
+});
+
+describe('Codex registry — dégâts CONDITIONNELS d’une arme à capacité de qualité (#135)', () => {
+  it('une pièce à Atout Siège (RÉELLE, ex. Catapulte) affiche le fait « Dégâts » + la note ×2 structure — pas juste le total imprimé', () => {
+    // Requête sur la DONNÉE (zéro id en dur) : toute Possession du catalogue portant la qualité `siege`
+    // fait foi — dégâts effectifs contre une structure = double du total imprimé (ADE II ch.08 l.292),
+    // le Codex ne doit plus l'occulter.
+    const siegeTrapping = trappings.find((t) => t.qualities.some((q) => q.id === 'siege'))!;
+    expect(siegeTrapping, 'aucune pièce à Atout Siège dans le catalogue').toBeTruthy();
+    const item = categoryByKey('trappings')!.items.find((i) => i.label === siegeTrapping.label)!;
+    const damageFact = item.meta?.find((f) => f.label === 'Dégâts');
+    expect(damageFact, `${siegeTrapping.label} : fait Dégâts`).toBeTruthy();
+    expect(damageFact!.value).toContain('×2 contre une structure');
+  });
+
+  it('une arme normale (sans ram/siège) garde son fait « Dégâts » INCHANGÉ — juste le total imprimé', () => {
+    const sword = trappings.find((t) => t.id === 'arme-simple')!;
+    const item = categoryByKey('trappings')!.items.find((i) => i.label === sword.label)!;
+    const damageFact = item.meta?.find((f) => f.label === 'Dégâts');
+    expect(damageFact!.value).toBe('+BF+4');
+    expect(damageFact!.value).not.toMatch(/structure|porte|Effets/);
   });
 });
 
