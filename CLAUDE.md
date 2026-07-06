@@ -13,7 +13,8 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 > ⚠️ **Ce dossier `Foundry/Game` EST un vrai projet logiciel** (dépôt GitHub `cgauche/game`).
 > Le `Foundry/CLAUDE.md` parent (« ceci n'est pas un projet logiciel, ne pas committer »)
 > **ne s'applique PAS ici**. Ici : commits + push attendus (remote `origin` = cgauche/game).
-> Branche de travail : `feat/wfrp4-rpg-foundation`.
+> Branche de travail : `main` (trunk-based — le tronc reçoit tout ; une branche ne se crée que
+> pour du travail risqué et isolable, et fusionne le JOUR MÊME en fast-forward).
 
 ## Table de routage — lire le bon doc AU MOMENT du déclencheur
 
