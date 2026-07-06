@@ -120,6 +120,7 @@ const EXCEPTIONS = new Set<string>([
   'src/ui/HealModal.tsx',
   'src/ui/HouseRulesModal.tsx',
   'src/ui/LootModal.tsx',
+  'src/ui/ManannPriestModal.tsx',
   'src/ui/MediaSelect.tsx',
   'src/ui/MedicModal.tsx',
   'src/ui/MerchantPanel.tsx',

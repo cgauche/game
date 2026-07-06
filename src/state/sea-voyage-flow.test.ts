@@ -1,9 +1,14 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
-import { buildSeaPlan, resolveVoyageCrewTest, portRepairVessel, portInstallUpgrade, runSeaDays } from './seaVoyageFlow';
+import {
+  buildSeaPlan, resolveVoyageCrewTest, portRepairVessel, portInstallUpgrade, runSeaDays,
+  resolvePortArrival, resolveManannPriest,
+} from './seaVoyageFlow';
 import { seedBattleRng } from './battleRng';
+import { subtract } from '../engine/money';
 import type { WorldMap } from './worldMap';
+import type { RNG } from '../engine/dice';
 
 /**
  * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15) :
@@ -169,5 +174,61 @@ describe('services portuaires (#30)', () => {
     expect(get().vessel!.upgrades).toEqual([{ id: 'nid-de-pie' }]);
     // Un Trait de CONSTRUCTION ne se pose pas après coup (ch.12 l.169).
     expect(portInstallUpgrade(get, set, 'renforce')[0]).toContain('Trait de construction');
+  });
+});
+
+describe('Prêtre de Manann — CHOIX joueur, pas paiement automatique (#132, MDG 15 l.246)', () => {
+  beforeEach(freshState);
+
+  const seq = (...vals: number[]): RNG => {
+    let i = 0;
+    return { int: (min, max) => Math.min(max, Math.max(min, vals[i++ % vals.length])) };
+  };
+
+  // Humeur de Manann neutre (mod 0) + 2d10 = 1+1 = 2 → « Prêtre de Manann » (min 2 max 2, sea-events.json).
+  // Puis 2d10 = 3+4 (heures, sans effet ici), puis 1d10 = 7 (coût en CO).
+  function triggerPriest() {
+    resolvePortArrival(get, set, undefined, seq(1, 1, 3, 4, 7));
+  }
+
+  it('ouvre un CHOIX (pendingManannPriest) au lieu de payer automatiquement', () => {
+    set({ money: { gold: 100, silver: 0, brass: 0 } });
+    triggerPriest();
+    expect(get().pendingManannPriest).toEqual({ cost: { gold: 7, silver: 25, brass: 0 } }); // 1d10=7 CO + 25 m (cogue) en pistoles
+    expect(get().money).toEqual({ gold: 100, silver: 0, brass: 0 }); // pas débité tant que non résolu
+    expect(get().vessel!.manann?.score ?? 0).toBe(0); // Humeur inchangée tant que non résolu
+  });
+
+  it('choix PAYER : débite le coût déjà tiré, Humeur INCHANGÉE', () => {
+    const before = { gold: 100, silver: 0, brass: 0 };
+    set({ money: before });
+    triggerPriest();
+    const cost = get().pendingManannPriest!.cost;
+    resolveManannPriest(get, set, true);
+    expect(get().pendingManannPriest).toBeNull();
+    expect(get().money).toEqual(subtract(before, cost));
+    expect(get().vessel!.manann?.score ?? 0).toBe(0);
+  });
+
+  it('choix REFUSER : Humeur de Manann réduite de 4d10, bourse INCHANGÉE', () => {
+    const before = { gold: 100, silver: 0, brass: 0 };
+    set({ money: before });
+    triggerPriest();
+    seedBattleRng(7); // détermine le 4d10 de resolveManannPriest (battleRng interne)
+    resolveManannPriest(get, set, false);
+    expect(get().pendingManannPriest).toBeNull();
+    expect(get().money).toEqual(before); // pas débité
+    const score = get().vessel!.manann!.score;
+    expect(score).toBeLessThanOrEqual(-4); // 4d10 : 4 à 40
+    expect(score).toBeGreaterThanOrEqual(-40);
+  });
+
+  it('choix PAYER avec bourse insuffisante : garde défensive — aucune mutation (l’UI désactive le bouton)', () => {
+    set({ money: { gold: 0, silver: 0, brass: 0 } });
+    triggerPriest();
+    resolveManannPriest(get, set, true);
+    expect(get().pendingManannPriest).toBeNull();
+    expect(get().money).toEqual({ gold: 0, silver: 0, brass: 0 });
+    expect(get().vessel!.manann?.score ?? 0).toBe(0);
   });
 });

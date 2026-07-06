@@ -86,6 +86,9 @@ const STATE_FIELDS = {
   // transient de voyage (ne survit à rien d'autre que la confirmation → halte de nuit).
   port: { init: null, resetOn: ['scene'] },
   pendingSeaActivities: { init: null, resetOn: [] },
+  // Survit à `transitionTo` : posé JUSTE avant la transition vers la scène de port (resolvePortArrival),
+  // il doit rester actif dans la nouvelle scène (comme pendingSeaActivities ci-dessus).
+  pendingManannPriest: { init: null, resetOn: [] },
 } satisfies { [K in keyof GameState]?: { readonly init: GameState[K]; readonly resetOn: readonly ResetScope[] } };
 
 /** Clés du manifeste — SOURCE des champs transitoires, dérivée de `STATE_FIELDS` (plus de double-liste). */

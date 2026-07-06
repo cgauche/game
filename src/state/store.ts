@@ -101,6 +101,7 @@ import * as travelFlow from './travelFlow';
 import * as portFlow from './portFlow';
 import * as landMarketFlow from './landMarketFlow';
 import * as seaActivities from './seaActivities';
+import * as seaVoyageFlow from './seaVoyageFlow';
 import { startCascade } from './cascade';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
@@ -1119,6 +1120,10 @@ export interface GameState extends RollFlowActionsMap {
   pendingSeaActivities: import('./seaActivities').PendingSeaActivities | null;
   /** Résout les Activités choisies puis rend la main à la halte de nuit. */
   seaActivitiesConfirm: (picks: Record<string, import('./seaActivities').SeaActivityPick | null>) => void;
+  /** ÉVÉNEMENT DE PORT « Prêtre de Manann » en attente de CHOIX (MDG 15 l.246). */
+  pendingManannPriest: import('./seaVoyageFlow').PendingManannPriest | null;
+  /** Résout le choix : `true` = payer la bénédiction, `false` = réduire l'Humeur de Manann de 4d10. */
+  resolveManannPriest: (pay: boolean) => void;
 }
 
 /** Navire que le groupe possède/commande en campagne — survit aux jours et aux combats (≠ la coque
@@ -1986,6 +1991,7 @@ export const useGame = create<GameState>((set, get) => ({
   landDumpCargo: (cargoIndex) => landMarketFlow.landDumpCargo(get, set, cargoIndex),
   landEvalWine: (cargoId) => landMarketFlow.landEvalWine(get, set, cargoId),
   seaActivitiesConfirm: (picks) => seaActivities.seaActivitiesConfirm(get, set, picks),
+  resolveManannPriest: (pay) => seaVoyageFlow.resolveManannPriest(get, set, pay),
   setTravelRole: (heroId, role) => set({
     party: get().party.map((h) => h.id === heroId ? { ...h, ...(role ? { travelRole: role } : { travelRole: undefined }) } : h),
   }),

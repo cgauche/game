@@ -24,9 +24,8 @@
  *     hebdomadaires (l.148) ; eau/scorbut (ch.14 l.224-242) ; halte de repos (machinerie existante).
  *  À l'accostage : ÉVÉNEMENT DE PORT (2d10 ± Humeur, ch.15 l.127).
  *
- * ÉQUIPAGE : hors combat, l'équipage PNJ du navire est ABSTRAIT — « la performance des Personnages
- * représente celle de tout l'équipage » (MDG 14 l.39) → les PJ tiennent les rôles, PAS de Manque de
- * bras au long cours (choix documenté ; en combat, l'équipage est réel et le Manque de bras s'applique).
+ * ÉQUIPAGE hors combat : ABSTRAIT, tenu par les PJ (MDG 14 l.39) — pas de Manque de bras (l.53-55).
+ * En combat, l'équipage est réel (`battle.combatants`) et le Manque de bras s'applique (`shipCrew.ts`).
  */
 import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
@@ -67,7 +66,7 @@ import {
   removeCargo, cargoTotalEnc, type SeaEventDef, type ManannMood, type PortProfile,
 } from '../engine/seaVoyage';
 import { navalMoveMod, shipHasNavalTrait } from '../engine/navalTraits';
-import { subtract, toMoney } from '../engine/money';
+import { subtract, toMoney, type Money } from '../engine/money';
 import { rollShipCritical } from '../engine/shipCritical';
 import type { ShipCritKey } from '../data/shipCriticals';
 import { contractDisease } from '../engine/disease';
@@ -400,8 +399,7 @@ function applySeaProgress(get: Get, set: Set, progressionDR: number): void {
   const plan = get().travelPlan!;
   const eff = effectiveSeaM(get);
   if (eff.m == null || plan.sea!.sailsDown) { patchSea(get, set, { milesToday: 0 }); return; }
-  // « voguer de nuit » : il faut l'équipage nominal — l'équipage PNJ abstrait du navire de campagne
-  // le permet (choix documenté, MDG 14 l.39) ; ch.15 l.76 sinon ÷2.
+  // Nuit : équipage nominal requis, sinon ÷2 (MDG 15 l.76) — équipage abstrait (MDG 14 l.39, cf. l.27).
   const miles = Math.round(seaMilesPerDay(eff.m, true, progressionDR));
   patchSea(get, set, { milesToday: miles, eventMMod: undefined }); // « Vents favorables » : +1 M consommé sur UNE journée de route
   tell(get, set, [`🧭 Progression du jour : ${miles} milles (DR d'équipage ${progressionDR >= 0 ? '+' : ''}${progressionDR}).`]);
@@ -975,6 +973,12 @@ export function portInstallUpgrade(get: Get, set: Set, traitId: string, units = 
 
 // ── Événements de PORT (ch.15 l.127-129 + l.239-263) ─────────────────────────────────────────────
 
+/** Prêtre de Manann en attente de CHOIX joueur (MDG 15 l.246) : payer la bénédiction (coût déjà
+ *  tiré) OU réduire l'Humeur de Manann de 4d10 — tranché par `resolveManannPriest`. */
+export interface PendingManannPriest {
+  cost: Money;
+}
+
 export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undefined, rng: RNG): void {
   const vessel = get().vessel;
   const mood = vesselManann(vessel);
@@ -986,17 +990,11 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
       if (vessel) set({ vessel: { ...vessel, manann: addManann(mood, rollDice(2, 10, rng)) } });
       break;
     case 'pretre-manann': {
-      // « payer 1d10 CO plus la Taille du navire en pistoles … soit réduire l'Humeur de Manann de 4d10 »
-      // — on paie si la bourse le permet (choix automatique documenté ; la Taille en pistoles suit lengthM).
-      const lengthM = findVehicleById(vessel?.vehicleId ?? '')?.ship?.lengthM ?? 0;
-      const cost = toMoney({ gold: rollDice(1, 10, rng), silver: lengthM });
-      const rest = subtract(get().money, cost);
-      if (rest) {
-        set({ money: rest });
-        log(get, set, [`⛪ La purification est payée (${cost.gold} CO ${cost.silver}/–).`]);
-      } else if (vessel) {
-        set({ vessel: { ...vessel, manann: addManann(mood, -rollDice(4, 10, rng)) } });
-        log(get, set, ['⛪ Faute de bourse, Manann reste courroucé (−4d10 Humeur).']);
+      // MDG 15 l.246 : choix du joueur entre payer et réduire l'Humeur — `resolveManannPriest`.
+      if (vessel) {
+        const lengthM = findVehicleById(vessel.vehicleId)?.ship?.lengthM ?? 0;
+        const cost = toMoney({ gold: rollDice(1, 10, rng), silver: lengthM });
+        set({ pendingManannPriest: { cost } });
       }
       break;
     }
@@ -1022,4 +1020,20 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
       break; // narratif / à jouer en scène — le verbatim au journal
   }
   void port;
+}
+
+/** Résout le choix « Prêtre de Manann » (MDG 15 l.246) : `pay` payé → débite le coût déjà tiré ;
+ *  refusé → réduit l'Humeur de Manann de 4d10 (`tellManann`, réutilise le facteur libre existant). */
+export function resolveManannPriest(get: Get, set: Set, pay: boolean): void {
+  const p = get().pendingManannPriest;
+  if (!p) return;
+  set({ pendingManannPriest: null });
+  if (pay) {
+    const rest = subtract(get().money, p.cost);
+    if (!rest) return; // garde défensive — l'UI désactive « Payer » si la bourse ne suit pas
+    set({ money: rest });
+    log(get, set, [`⛪ La purification est payée (${p.cost.gold} CO ${p.cost.silver}/–).`]);
+    return;
+  }
+  tellManann(get, set, -4);
 }
