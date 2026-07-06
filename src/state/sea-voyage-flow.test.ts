@@ -6,7 +6,9 @@ import {
   resolvePortArrival, resolveManannPriest,
 } from './seaVoyageFlow';
 import { seedBattleRng } from './battleRng';
-import { subtract } from '../engine/money';
+import { subtract, toBrass, fromBrass } from '../engine/money';
+import { itemFromTrappingById } from '../engine/items';
+import { bankWithdraw } from './interludeFlow';
 import type { WorldMap } from './worldMap';
 import type { RNG } from '../engine/dice';
 
@@ -85,6 +87,53 @@ describe('journée en mer — Tests d’équipage de VOYAGE en modales (#65)', (
     // La journée de mer s'arrête au CRÉPUSCULE (18:00) : la nuit de sommeil (halte) enjambe minuit —
     // un seul franchissement de jour par cycle jour+nuit (l'entretien s'y résout, après le repas).
     expect(get().gameTime).toBe(18 * 60); // départ 08:00 jour 0 → crépuscule du même jour
+  });
+});
+
+describe('Carte marine (MDG 15) — Orientation & Planque (#147)', () => {
+  beforeEach(freshState);
+
+  function driveDayCaptureOrientation(): number | undefined {
+    let extra: number | undefined;
+    for (let i = 0; i < 30 && !get().pendingRest; i++) {
+      const p = get().pendingCrewTest;
+      if (!p) break;
+      if (p.voyage?.kind === 'orientation') extra = p.extraDR;
+      for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
+      get().crewTestConfirm();
+    }
+    return extra;
+  }
+
+  it('un héros portant une Carte marine → +2 DR au Test d’Orientation quotidien (règle maison sea-chart-orientation-dr)', () => {
+    const chart = itemFromTrappingById('carte-marine')!;
+    set({ party: get().party.map((h, i) => (i === 0 ? { ...h, items: [...(h.items ?? []), chart] } : h)) } as never);
+    get().startTravel('r1', 'mer');
+    expect(driveDayCaptureOrientation()).toBe(2); // +2 DR de la carte (défaut de la règle éditable)
+  });
+
+  it('sans Carte marine → aucun bonus d’Orientation (extraDR absent)', () => {
+    get().startTravel('r1', 'mer');
+    expect(driveDayCaptureOrientation()).toBeUndefined();
+  });
+
+  it('Planque (l.292) : sûre tant que le dépositaire GARDE la carte, à découvert si elle est perdue', () => {
+    const hero = get().party[0];
+    // Stash chartSecured à rate 100 = découverte GARANTIE sans la carte → isole l'effet de la possession.
+    const deposit = { heroId: hero.id, kind: 'stash' as const, brass: 1000, rate: 100, chartSecured: true };
+
+    // (a) le héros GARDE la carte → EN SÛRETÉ : le trésor est récupéré malgré rate 100.
+    const chart = itemFromTrappingById('carte-marine')!;
+    set({ party: get().party.map((h, i) => (i === 0 ? { ...h, items: [chart] } : h)), bank: [deposit], money: fromBrass(0) } as never);
+    bankWithdraw(get, set, 0);
+    expect(get().bank).toHaveLength(0);
+    expect(toBrass(get().money)).toBe(1000); // récupéré
+
+    // (b) la carte est PERDUE (héros sans carte) → même stash → DÉCOUVERT (rien récupéré).
+    set({ party: get().party.map((h, i) => (i === 0 ? { ...h, items: [] } : h)), bank: [deposit], money: fromBrass(0) } as never);
+    bankWithdraw(get, set, 0);
+    expect(get().bank).toHaveLength(0);
+    expect(toBrass(get().money)).toBe(0);
   });
 });
 

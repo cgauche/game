@@ -10,11 +10,12 @@
  *    Test étendu de Marchandage Complexe (−10), 10 DR en ≤ 3 tentatives → % récupéré
  *    (`opportunityTradePct`, table verbatim `sea-cargo.json`).
  *  - Cartographie (l.288-290) : Métier (Cartographe) Complexe (−10) → une Carte marine (trapping
- *    `carte-marine`, passif +2 DR d'Orientation) d'une valeur de DR CO (prix d'instance). Deux ports
- *    désignés (l.290) : non modélisé (#147).
+ *    `carte-marine`, +2 DR d'Orientation via la règle `sea-chart-orientation-dr`) d'une valeur de DR CO
+ *    (prix d'instance). Les deux ports désignés (l.290) exigeraient un graphe de ports : simplifiés en
+ *    « toute route » par cette règle maison éditable.
  *  - Planque gratuite lors de la Cartographie (l.292) : dépôt optionnel (`pick.stashGold`) dans
- *    `bank` (kind `stash`), seuil de découverte fixe à 50 ; sécurité liée à la possession de la carte
- *    non trackée (#147).
+ *    `bank` (kind `stash`, `chartSecured`), en sûreté tant que le dépositaire garde la carte-marine —
+ *    sinon découverte sur un jet ≤ 50 (`bankWithdrawInner`).
  *  - Entraînement d'équipage (l.294-300) : GATE (MDG 14 l.39, l.296) — voir `seaActivityBlocked`.
  *  - Whitelist d'Activités TERRESTRES (l.270 : Apprentissage particulier, Artisanat, Entraînement,
  *    Entraînement au combat, Invention !, Recherche de savoir, Semer la dissension + entraînements
@@ -133,12 +134,12 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
           recomputeLoadout(hero);
         }
         lines.push(`🗺 ${hero.name} — Cartographie : 🎲 ${t.roll}/${t.target} → une Carte marine d'une valeur de ${Math.max(0, t.sl)} CO (+2 DR d'Orientation, MDG 15).`);
-        // Planque gratuite lors de la Cartographie (l.292) : dépôt optionnel, retrait libre,
-        // découverte sur 🎲 ≤ 50 (bankWithdrawOutcome, rate=50).
+        // Planque gratuite lors de la Cartographie (l.292) : dépôt optionnel, retrait libre, en sûreté
+        // tant que le héros garde la carte-marine (sinon découverte sur un jet ≤ 50, bankWithdrawInner).
         const stashCO = Math.max(0, Math.min(Math.floor(pick.stashGold ?? 0), Math.floor(toBrass(get().money) / PA_PER_CO)));
         if (stashCO > 0) {
           const stashBrass = stashCO * PA_PER_CO;
-          set({ money: fromBrass(toBrass(get().money) - stashBrass), bank: [...get().bank, { heroId: hero.id, kind: 'stash', brass: stashBrass, rate: 50 }] });
+          set({ money: fromBrass(toBrass(get().money) - stashBrass), bank: [...get().bank, { heroId: hero.id, kind: 'stash', brass: stashBrass, rate: 50, chartSecured: true }] });
           lines.push(`🗺 ${hero.name} — Planque (MDG 15 l.292) : ${formatMoney(fromBrass(stashBrass))} cachés sur la carte — retrait libre, découverte sur 🎲 ≤ 50.`);
         }
       } else {

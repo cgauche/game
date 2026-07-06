@@ -635,6 +635,18 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     step: 5,
     hint: 'LDB 65 l.44 dit seulement « des pénalités » sans les chiffrer : valeur maison retirée au Test de Résistance contre le froid sans Manteau/Cape porté(e).',
   },
+  {
+    id: 'sea-chart-orientation-dr',
+    label: 'Carte marine : bonus d’Orientation',
+    ref: 'MDG 15 l.290 — 2 ports désignés : toute route = maison',
+    group: 'Voyage',
+    kind: 'param',
+    default: 2,
+    min: 0,
+    max: 5,
+    step: 1,
+    hint: 'Une Carte marine donne +2 DR au Test d’Orientation quotidien (MDG 15 l.290), en principe UNIQUEMENT entre les deux ports désignés à sa création. Faute d’un graphe de ports navigables (chantier de la carte du monde), la carte aide ici sur TOUTE route maritime — simplification maison, éditable (0 = la carte n’aide plus).',
+  },
 ];
 
 const RULES_BY_ID = new Map<string, OptionalRule>(OPTIONAL_RULES.map((r) => [r.id, r]));

@@ -84,6 +84,9 @@ export interface BankDeposit {
   brass: number;
   /** Indice d'intérêts (1-10) — taux % ET risque de faillite (invest seulement). */
   rate: number;
+  /** Planque liée à une Carte marine (MDG 15 l.292) : sûre tant que le dépositaire GARDE la carte
+   *  (sinon découverte sur un jet ≤ `rate`). Absent = planque ordinaire (LDB 23 l.170). */
+  chartSecured?: boolean;
 }
 
 /** Ouvre l'interlude : événements tirés et appliqués, commandes livrées, écran dédié. */
@@ -830,7 +833,11 @@ function bankWithdrawInner(get: Get, set: Set, index: number, crashCheckOnly: bo
   if (!dep || dep.kind === 'mecenat') return []; // Mécénat : soldé par le Test d'Évaluation (bande payoutPct)
   const h = get().party.find((x) => x.id === dep.heroId);
   const roll = d100(battleRng());
-  const outcome = bankWithdrawOutcome(dep.kind, dep.rate, roll);
+  // Planque de Carte marine (MDG 15 l.292) : « en sûreté tant que vous gardez la carte » → tant que le
+  // dépositaire PORTE encore une carte-marine, le trésor n'est pas à découvert ; il ne l'est (jet ≤ rate)
+  // que si la carte est perdue/volée.
+  const chartHeld = !!h?.items?.some((it) => it.trappingId === 'carte-marine');
+  const outcome = dep.chartSecured && chartHeld ? 'ok' : bankWithdrawOutcome(dep.kind, dep.rate, roll);
   const rest = (get().bank ?? []).filter((_, i) => i !== index);
   if (outcome === 'lost') {
     set({ bank: rest });

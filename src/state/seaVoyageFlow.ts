@@ -66,6 +66,7 @@ import {
   removeCargo, cargoTotalEnc, type SeaEventDef, type ManannMood, type PortProfile,
 } from '../engine/seaVoyage';
 import { navalMoveMod, shipHasNavalTrait } from '../engine/navalTraits';
+import { rule } from '../engine/policy';
 import { subtract, toMoney, type Money } from '../engine/money';
 import { rollShipCritical } from '../engine/shipCritical';
 import type { ShipCritKey } from '../data/shipCriticals';
@@ -352,8 +353,15 @@ export function runSeaDays(get: Get, set: Set): void {
       }
       case 'orientation': {
         // 5. Orientation quotidienne (« un Test par jour de voyage », ch.13 l.311) → Repères (#65).
+        // Carte marine (MDG 15 l.290) : +2 DR si un héros la porte — règle éditable `sea-chart-orientation-dr`
+        // (simplification maison « toute route », faute d'un graphe de ports pour les 2 ports désignés).
         patchSea(get, set, { step: 'extermination' });
-        if (openVoyageCrewTest(get, set, 'orientation', 'orientation')) return;
+        const chartDR = get().party.some((h) => h.items?.some((it) => it.trappingId === 'carte-marine'))
+          ? Number(rule('sea-chart-orientation-dr')) : 0;
+        const opened = chartDR > 0
+          ? openVoyageCrewTestWithExtra(get, set, 'orientation', 'orientation', chartDR)
+          : openVoyageCrewTest(get, set, 'orientation', 'orientation');
+        if (opened) return;
         break;
       }
       case 'extermination': {
