@@ -5,6 +5,7 @@
   "description": "RPG tactique au tour par tour Warhammer Fantasy v4 (web, type Neverwinter Nights) — en français",
   "type": "module",
   "scripts": {
+    "postinstall": "git config core.hooksPath scripts/git-hooks",
     "gen": "node scripts/gen-registry.mjs",
     "dev": "vite",
     "build": "npm run gen && tsc -b && vite build",
