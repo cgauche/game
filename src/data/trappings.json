@@ -6369,7 +6369,7 @@
                       "kind": "do",
                       "effect": {
                         "type": "ops",
-                        "on": "victim",
+                        "on": "target",
                         "ops": [
                           {
                             "op": "condition",
@@ -6965,7 +6965,7 @@
                       "kind": "do",
                       "effect": {
                         "type": "ops",
-                        "on": "victim",
+                        "on": "target",
                         "ops": [
                           {
                             "op": "condition",

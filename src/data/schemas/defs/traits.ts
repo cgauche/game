@@ -1,12 +1,6 @@
 /**
  * Schéma de `traits.json` — Traits de créature (LDB 85 + suppléments/frenchy.bzh), miroir de
  * `TraitData` (`src/data/index.ts:792-844`) + `TraitCapabilities` (`:730-790`).
- *
- * ANOMALIE relevée (à rapporter, PAS corrigée ici) : un champ `suffix` (string|null) est présent sur
- * 124/125 entrées (`null` sauf `tentacules` → `"#"`) et n'existe PAS sur `TraitData`
- * (`src/data/index.ts:792-844`). Modélisé ici tel quel (preuve JSON), candidat soit à documenter sur
- * l'interface, soit à retirer du JSON s'il s'agit d'un reliquat de migration (aucun consommateur trouvé
- * par grep `.suffix` côté traits dans `src/`).
  */
 import { z } from 'zod';
 import { sourceRefSchema, gameOpSchema, refSchema, entityAppearanceSchema, triggeredEffectSchema, charKeySchema } from '../common';
@@ -75,8 +69,6 @@ export const schema = z.array(
   z.strictObject({
     id: z.string(),
     label: z.string(),
-    /** ANOMALIE — absent de `TraitData` (cf. commentaire de tête). */
-    suffix: z.string().nullable().optional(),
     indice: z.strictObject({ label: z.string() }).optional(),
     range: z.boolean().optional(),
     specsSource: specsSourceSchema.optional(),

@@ -296,16 +296,14 @@ export const flowTestSchema = z.strictObject({
     .optional(),
 });
 
-/** `EffectOp` (`engine/flowCore.ts:45`) — feuille `do` par défaut de `Flow<E>`. `on` ÉLARGI aux valeurs
- *  ANOMALIES constatées en donnée réelle (`'victim'` — domains/maneuvers/qualities/spells/traits/
- *  trappings ; `'self'` — talents/traits) en plus des 4 valeurs déclarées par l'interface TS
- *  (`'party'|'hero'|'caster'|'target'`) : sans conséquence à l'exécution (tout ce qui n'est pas
- *  `'caster'` retombe sur la cible, `combatEffects.ts:443`), mais l'interface `engine/flowCore.ts`
- *  devrait le déclarer — signalé, pas corrigé ici (hors périmètre de ce lot : `src/engine`). */
+/** `EffectOp` (`engine/flowCore.ts:45`) — feuille `do` par défaut de `Flow<E>`. `on` = les 4 valeurs de
+ *  l'interface TS : `'party'`/`'hero'` (scène) ou `'caster'`/`'target'` (contexte d'incantation). Le
+ *  ciblage `'self'`/`'victim'` est le vocabulaire du NIVEAU TRIGGER (`effectTargetingSchema`), pas de la
+ *  feuille : sur la feuille, `'caster'` = porteur, `'target'` = cible résolue par le trigger. */
 export const effectOpSchema = z.strictObject({
   type: z.literal('ops'),
   ops: z.array(gameOpSchema),
-  on: z.enum(['party', 'hero', 'caster', 'target', 'victim', 'self']).optional(),
+  on: z.enum(['party', 'hero', 'caster', 'target']).optional(),
   heroId: z.string().optional(),
   untilTime: z.number().optional(),
   label: z.string().optional(),

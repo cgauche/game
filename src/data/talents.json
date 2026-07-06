@@ -241,7 +241,7 @@
           "kind": "do",
           "effect": {
             "type": "ops",
-            "on": "self",
+            "on": "caster",
             "ops": [
               {
                 "op": "grantFreeAttack",
@@ -1617,7 +1617,7 @@
               "kind": "do",
               "effect": {
                 "type": "ops",
-                "on": "self",
+                "on": "caster",
                 "ops": [
                   {
                     "op": "grantFreeAttack",
@@ -2222,7 +2222,7 @@
             "kind": "do",
             "effect": {
               "type": "ops",
-              "on": "self",
+              "on": "caster",
               "ops": [
                 {
                   "op": "removeCondition",
