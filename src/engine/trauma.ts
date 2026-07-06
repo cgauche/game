@@ -665,7 +665,7 @@ export function traumaDodgePenalty(c: Combatant): number {
 /** Un `skillMod` restreint à un `sense` (Surdité : « Tests de Perception basés sur l'ouïe », LDB 18)
  *  s'applique-t-il à un Test qui sollicite `testSense` ? Sans restriction (`opSense` absent, ex. Cécité —
  *  déjà scopée par compétence nommée) → toujours. Restreint mais le sens du Test COURANT est INCONNU
- *  (`testSense` absent — cas de tout appelant qui ne le précise pas encore) → s'applique (le RAW n'est pas
+ *  (`testSense` absent — cas d'un appelant qui ne le précise pas) → s'applique (le RAW n'est pas
  *  levé faute d'info, le sens précis d'un Test de Perception étant une donnée NARRATIVE que seul l'appelant
  *  connaît, cf. Talent Sens aiguisé `manual:true`). Restreint et CONNU mais différent → exempté. */
 function senseMatches(opSense: PairedSense | undefined, testSense: PairedSense | undefined): boolean {

@@ -61,16 +61,6 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   massBattleWarMachines: 'massBattleWarMachines', massBattleStructures: 'massBattleStructures',
   massBattleHazards: 'massBattleHazards', massBattleMightModifiers: 'massBattleMightModifiers',
   massBattlePowerEstimate: 'massBattlePowerEstimate',
-  // #157 (audit d'exposition Codex) : catalogues de CONTENU app-owned qui existaient déjà dans le code
-  // (façade ou module dédié) mais n'étaient pas encore éditables au Codex — clé catégorie = clé dataset.
-  structures: 'structures', vehicles: 'vehicles', celestialHouses: 'celestialHouses', groups: 'groups',
-  psychologies: 'psychologies', seaShanties: 'seaShanties', crewRoles: 'crewRoles', crewTestTypes: 'crewTestTypes',
-  navalTraits: 'navalTraits', montures: 'montures', incidentsMonture: 'incidentsMonture', problemesVehicule: 'problemesVehicule',
-  tavernGames: 'tavernGames', obsessions: 'obsessions', structureCriticals: 'structureCriticals', traumas: 'traumas',
-  landCargo: 'landCargo', seaCargo: 'seaCargo', riverPerils: 'riverPerils',
-  crewMoraleFactors: 'crewMoraleFactors', crewMoraleBands: 'crewMoraleBands', steamBreakdowns: 'steamBreakdowns',
-  criticalsTete: 'criticalsTete', criticalsBras: 'criticalsBras', criticalsCorps: 'criticalsCorps', criticalsJambe: 'criticalsJambe',
-  aaCriticalsTete: 'aaCriticalsTete', aaCriticalsBras: 'aaCriticalsBras', aaCriticalsCorps: 'aaCriticalsCorps', aaCriticalsJambe: 'aaCriticalsJambe',
 };
 /** Catégorie Codex → dataset-OBJET éditable (E3b) : pas un tableau d'entités mais UN objet de config
  *  unique (`details`) ou un Record keyé par entrée (`names`, une entrée par race). Le `mode` dit comment
@@ -90,22 +80,7 @@ export const isEditableCategory = (categoryKey: string): boolean => !!CATEGORY_D
 const REF_LIST_DATASET: Record<string, DatasetKey> = {
   traits: 'traits', optionals: 'traits', skills: 'skills', talents: 'talents',
   spells: 'spells', trappings: 'trappings', blessings: 'spells', miracles: 'spells', chaosSpells: 'spells',
-  traumas: 'traumas',
 };
-
-/** Catégories/CHAMPS portant un `GameOp[]` NOMMÉ autre que `passive` (#157) — MÊME éditeur
- *  (`GameOpEditor`), juste un champ différent : `ops` (effet immédiat d'un Critique/Traumatisme),
- *  `occupantOps` (subi par un tiers — cavalier/passager), `crewOps`/`captainOps` (Chant de marin).
- *  Généralise l'idée d'`isPassive` (qui ne couvre QUE `passive`) sans dupliquer l'éditeur : ajouter une
- *  source = ajouter SA/SES clé(s) ici (lu par `dedicatedFieldKeys` ET le rendu). */
-const OPS_FIELDS: Record<string, string[]> = {
-  traumas: ['ops'],
-  criticalsTete: ['ops'], criticalsBras: ['ops'], criticalsCorps: ['ops'], criticalsJambe: ['ops'],
-  aaCriticalsTete: ['ops'], aaCriticalsBras: ['ops'], aaCriticalsCorps: ['ops'], aaCriticalsJambe: ['ops'],
-  incidentsMonture: ['occupantOps'], problemesVehicule: ['occupantOps'],
-  seaShanties: ['crewOps', 'captainOps'],
-};
-const opsFieldsOf = (categoryKey: string): string[] => OPS_FIELDS[categoryKey] ?? [];
 
 type Entry = Record<string, unknown>;
 
@@ -160,13 +135,9 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   const k = new Set<string>();
   const add = (...keys: string[]) => keys.forEach((x) => k.add(x));
   if (['creatures', 'traits', 'mutations'].includes(categoryKey)) add('appearance');
-  if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers', 'etats', 'psychologies'].includes(categoryKey)) add('effects');
+  if (['spells', 'traits', 'qualities', 'domains', 'talents', 'maneuvers', 'etats'].includes(categoryKey)) add('effects');
   if (categoryKey === 'maneuvers') add(...MANEUVER_PROFILE_KEYS);
-  if (['traits', 'qualities', 'mutations', 'talents', 'etats', 'trappings', 'psychologies', 'navalTraits'].includes(categoryKey)) add('passive');
-  if (categoryKey === 'structures') add('traits'); // {id,value?}[] → réutilise TraitListField (comme creatures)
-  if (categoryKey === 'crewRoles') add('skills'); // {skillId,spec?}[] → éditeur dédié (SkillSpecListField)
-  if (categoryKey === 'traumas') add('prosthesis'); // {trappingId,cancels}[] → éditeur dédié (ProsthesisField)
-  add(...opsFieldsOf(categoryKey)); // ops/occupantOps/crewOps/captainOps → GameOpEditor (#157)
+  if (['traits', 'qualities', 'mutations', 'talents', 'etats', 'trappings'].includes(categoryKey)) add('passive');
   if (categoryKey === 'symptoms') add('passive', 'severePassive', 'onTick'); // GameOp[] + test de cycle → éditeurs dédiés (capabilities = sous-form générique)
   if (categoryKey === 'stars') add('effect', 'sub');
   if (categoryKey === 'mutationTables' || categoryKey === 'weather') add('ranges');
