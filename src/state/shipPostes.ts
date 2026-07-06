@@ -61,7 +61,7 @@ export function shipOfCrew(combatants: Combatant[], crewId: string): Combatant |
  *  l'équipage n'a pas de slot d'initiative. Le passager RESTE dans `battle.combatants` (cible d'Éclats / Critiques
  *  d'équipage, futur combattant de Pont à l'abordage) ; seul son SLOT d'`order` est retiré. PUR.
  *
- *  ⚠ NE COUVRE PAS les MONTURES : RAW « Combat monté » (LDB 14 l.182) — « une monture sans le Trait Nerveux est un
+ *  NE COUVRE PAS les MONTURES : RAW « Combat monté » (LDB 14 l.182) — « une monture sans le Trait Nerveux est un
  *  autre combattant à part entière, et peut effectuer sa propre Action » → une monture GARDE son tour. (La désynchro
  *  monture/cavalier est un bug de SYNCHRO DE POSITION — le cavalier utilise le Mouvement de sa monture, l.179 —, pas
  *  un bug de tour : à corriger côté mouvement, pas ici.) */
@@ -78,7 +78,7 @@ export function isPassengerInBattle(c: Combatant, combatants: Combatant[], merSc
  *  (stub/générique) → aucune exigence de compétence (tous les aptes comptent). Le chef est lui-même un `crewIds`
  *  du poste, donc compté s'il est qualifié. `undefined` si `chef` ne sert aucun poste (tir normal). PUR.
  *
- *  ⚠ La VALIDATION de compétence ne pèse QUE sur ce décompte d'équipage : l'ACTION « Servir cette pièce »
+ *  La VALIDATION de compétence ne pèse QUE sur ce décompte d'équipage : l'ACTION « Servir cette pièce »
  *  (`servablePostes`/`serveAtPoste`) reste, elle, kind- et compétence-AGNOSTIQUE (décision produit). */
 export function servingCrewPresent(chef: Combatant, combatants: Combatant[]): number | undefined {
   const poste = chef.mannedPoste;

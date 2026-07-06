@@ -64,4 +64,20 @@ export const icons: IconFamily = [
       `<path ${F} d="M12 3.6 C16.6 3.6 20.1 7.4 20.1 12.3 C20.1 16 18.1 19.1 15.1 20.6 C15.6 19.3 15.4 18.1 14.4 17.3 C13.4 18.4 12.6 18.4 11.6 17.3 C10.6 18.1 10.4 19.3 10.9 20.6 C7.9 19.1 5.9 16 5.9 12.3 C5.9 7.4 9.4 3.6 12 3.6 Z"/>` +
       `<path ${KF} d="M9.1 11.3 C9.7 10.7 10.6 10.7 11.1 11.3 M12.9 11.3 C13.4 10.7 14.3 10.7 14.9 11.3"/>`,
   },
+  {
+    id: 'flag/anger',
+    label: 'Hostilité / colère',
+    // Poing serré, jointures marquées, deux traits de vapeur rageuse.
+    svg:
+      `<path ${F} d="M8.6 12 C8.6 10 9.4 8.6 11 8.2 C11 7.4 11.6 6.8 12.4 6.8 C13.2 6.8 13.8 7.4 13.8 8.2 C15.2 8.7 15.9 10 15.9 12 C15.9 14.4 15.9 17 15.9 19.6 H8.6 C8.6 17 8.6 14.4 8.6 12 Z"/>` +
+      `<path ${KF} d="M10.6 8.4 V11.6 M13.2 8.4 V11.6"/>` +
+      `<path ${K} d="M9.4 4.6 L10.3 6.4 M14.6 4.6 L13.7 6.4"/>`,
+  },
+  {
+    id: 'flag/bond',
+    label: 'Attachement (amour / camaraderie)',
+    // Cœur plein, non fendu — attachement positif (distinct des cœurs fendus de Blessures/Ambition).
+    svg:
+      `<path ${F} d="M12 19.6 C6.8 15.8 3.8 12.2 3.8 8.9 C3.8 6.2 5.9 4.2 8.4 4.2 C10 4.2 11.4 5 12 6.4 C12.6 5 14 4.2 15.6 4.2 C18.1 4.2 20.2 6.2 20.2 8.9 C20.2 12.2 17.2 15.8 12 19.6 Z"/>`,
+  },
 ];

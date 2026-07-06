@@ -1,6 +1,7 @@
 import { useGame } from '../state/store';
 import { CharFrame } from './CharFrame';
 import { RollLine } from './RollLine';
+import { Icon } from './Icon';
 import type { NightEntry } from '../state/restFlow';
 
 /**
@@ -20,7 +21,7 @@ export function MultiRollList({ entries }: { entries: NightEntry[] }) {
             <span className="mrl-port">{actor && <CharFrame c={actor} variant="identity" size="xs" />}</span>
             <div className="mrl-roll">
               {/* Libellé AU-DESSUS de la ligne de jet (plus de texte coincé à gauche du jet). */}
-              <span className="mrl-label">{e.icon ? `${e.icon} ` : ''}{e.label}</span>
+              <span className="mrl-label">{e.icon && <Icon id={e.icon} size="sm" />} {e.label}</span>
               {e.d ? <RollLine d={e.d} /> : (e.text ? <span className="mrl-text">{e.text}</span> : null)}
             </div>
           </div>

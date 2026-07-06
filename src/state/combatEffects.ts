@@ -56,7 +56,7 @@ import { t } from '../i18n';
  *  Coup Critique (panneau riche), Assommante, Coup dans le dos. Les autres révélations (fin de Round,
  *  mutation, Calme, effet d'auteur) restent en file témoin. */
 const COMBAT_SEQ_KINDS: ReadonlySet<RevealEntry['kind']> = new Set(['critical', 'assommante', 'backstab']);
-const SEQ_ICON: Partial<Record<RevealEntry['kind'], string>> = { critical: '💥', assommante: '🌟', backstab: '🗡️' };
+const SEQ_ICON: Partial<Record<RevealEntry['kind'], string>> = { critical: 'journal/critical', assommante: 'condition/unconscious', backstab: 'journal/backstab' };
 
 /** Une révélation de conséquence d'attaque → étape d'AFFICHAGE de la séquence. Le Critique garde son
  *  panneau DÉTAILLÉ via la charge riche `reveal` ; les autres montrent leurs lignes. `actorId` = le
@@ -67,7 +67,7 @@ function revealToStep(entry: RevealEntry, index: number): CascadeStep {
     id: `cons-${entry.kind}-${index}`,
     kind: entry.kind,
     actorId: entry.subjectId,
-    icon: SEQ_ICON[entry.kind] ?? '⚔️',
+    icon: SEQ_ICON[entry.kind] ?? 'action/attack',
     label: entry.title,
     outcome: entry.lines,
     reveal: isCrit ? entry : undefined,
@@ -85,7 +85,7 @@ export function pushReveal(set: SetFn, entry: RevealEntry): void {
       const step = revealToStep(entry, active ? active.participants.length : 0);
       return active
         ? { pendingCascade: { ...active, participants: [...active.participants, step] } }
-        : { pendingCascade: { title: 'Conséquences', icon: '⚔️', purpose: 'combat', cursor: 0, log: [], participants: [step] } };
+        : { pendingCascade: { title: 'Conséquences', icon: 'action/attack', purpose: 'combat', cursor: 0, log: [], participants: [step] } };
     });
     return;
   }
@@ -115,7 +115,7 @@ export function pushCombatStep(set: SetFn, step: CascadeStep): void {
     const active = c && c.purpose === 'combat' && c.cursor < c.participants.length ? c : null;
     return active
       ? { pendingCascade: { ...active, participants: [...active.participants, step] } }
-      : { pendingCascade: { title: step.label ?? 'Conséquences', icon: step.icon ?? '⚔️', purpose: 'combat', cursor: 0, log: [], participants: [step] } };
+      : { pendingCascade: { title: step.label ?? 'Conséquences', icon: step.icon ?? 'action/attack', purpose: 'combat', cursor: 0, log: [], participants: [step] } };
   });
 }
 
@@ -380,7 +380,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
   // `CascadeModal` (via `useTestJetProps`). `pendingTest` coexiste comme porteur de données (comme
   // `pendingAttack` pour l'attaque) ; `resolveTest` ferme les deux. Pas d'applier : la conséquence
   // (branche onSuccess/onFailure + continuation) est lancée par `resolveTest`.
-  startCascade(get, set, { title: label, icon: '🎲', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: def.id }] });
+  startCascade(get, set, { title: label, icon: 'nav/dice', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: def.id }] });
   return true;
 }
 
@@ -560,13 +560,13 @@ const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
 /** Ordre des groupes d'intention dans le picker « + Effet » (l'ordre des handlers ci-dessous donne
  *  l'ordre INTRA-groupe — la déclaration suit l'ancien `EFFECT_GROUPS` aplati). */
 export const EFFECT_GROUP_ORDER = [
-  '📜 Narration',
-  '🎁 Récompenses',
-  '☠️ Afflictions',
-  '🕰 Temps & repos',
-  '🚪 Navigation',
-  '⚔️ Combat & social',
-  '🎲 Tests',
+  'Narration',
+  'Récompenses',
+  'Afflictions',
+  'Temps & repos',
+  'Navigation',
+  'Combat & social',
+  'Tests',
 ] as const;
 
 /** Mappe chaque `type` d'Effet à son handler narrowé — garantit l'EXHAUSTIVITÉ (tsc échoue si un type
@@ -594,19 +594,19 @@ export function applyFall(c: Combatant, metres: number, rng: RNG): void {
  * l'ordre du picker (groupes de `EFFECT_GROUP_ORDER`, ordre intra-groupe = ordre de déclaration).
  */
 export const EFFECT_HANDLERS: EffectHandlerMap = {
-  // ── 📜 Narration ──────────────────────────────────────────────────────────
+  // ── Narration ──────────────────────────────────────────────────────────
   journal: {
-    group: '📜 Narration', label: 'Journal', icon: '📜',
+    group: 'Narration', label: 'Journal', icon: 'journal/detail',
     make: () => ({ type: 'journal', text: '' }),
     apply: (e, env) => { env.log(e.text); },
   },
   document: {
-    group: '📜 Narration', label: 'Document (handout)', icon: '📄',
+    group: 'Narration', label: 'Document (handout)', icon: 'file/document',
     make: () => ({ type: 'document', title: '', text: '' }),
     apply: (e, env) => { env.set({ document: { title: e.title, text: e.text } }); },
   },
   startDialogue: {
-    group: '📜 Narration', label: 'Ouvrir un dialogue', icon: '💬',
+    group: 'Narration', label: 'Ouvrir un dialogue', icon: 'journal/dialogue',
     make: () => ({ type: 'startDialogue', dialogue: '' }),
     apply: (e, env) => {
       const dlg = env.get().scene?.dialogues.find((d) => d.id === e.dialogue);
@@ -615,7 +615,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     refs: (e, ctx) => ctx.dialogueIds.has(e.dialogue) ? [] : [{ level: 'error', message: `Effet → dialogue inexistant « ${e.dialogue} »` }],
   },
   endDialogue: {
-    group: '📜 Narration', label: 'Fermer le dialogue', icon: '✖️',
+    group: 'Narration', label: 'Fermer le dialogue', icon: 'ui/close',
     make: () => ({ type: 'endDialogue' }),
     apply: (_e, env) => {
       if (env.get().dialogue) env.get().advanceTime(TIME_COST.dialogue); // clôture d'une conversation ≈ dialogue min
@@ -623,24 +623,24 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   setFlag: {
-    group: '📜 Narration', label: 'Définir un flag', icon: '🚩',
+    group: 'Narration', label: 'Définir un flag', icon: 'map-tool/start-flag',
     make: () => ({ type: 'setFlag', flag: '', value: true }),
     apply: (e, env) => { env.set((s: GameState) => ({ flags: { ...s.flags, [e.flag]: e.value ?? true } })); },
   },
   setLight: {
-    group: '📜 Narration', label: 'Lumière de scène (les lumières baissent / se rallument)', icon: '💡',
+    group: 'Narration', label: 'Lumière de scène (les lumières baissent / se rallument)', icon: 'scene/light',
     make: () => ({ type: 'setLight', level: 0.3 }),
     apply: (e, env) => { env.set({ lightLevel: Math.max(0, Math.min(1, e.level)) }); }, // mise en scène (Lot L) : niveau borné [0,1]
   },
   setDoor: {
-    group: '📜 Narration', label: 'Porte (ouvrir / fermer — bloque vue et passage)', icon: '🚪',
+    group: 'Narration', label: 'Porte (ouvrir / fermer — bloque vue et passage)', icon: 'map-tool/door',
     make: () => ({ type: 'setDoor', x: 0, y: 0, side: 'N', open: true }),
     apply: (e, env) => { env.set((s: GameState) => (s.scene ? { scene: setDoorOpen(s.scene, e.x, e.y, e.side, e.z ?? 0, e.open) } : {})); },
   },
 
-  // ── 🎁 Récompenses ────────────────────────────────────────────────────────
+  // ── Récompenses ────────────────────────────────────────────────────────
   giveTrapping: {
-    group: '🎁 Récompenses', label: 'Donner un objet (équipement/potion/babiole — réel ou custom)', icon: '🎒',
+    group: 'Récompenses', label: 'Donner un objet (équipement/potion/babiole — réel ou custom)', icon: 'item/misc',
     make: () => ({ type: 'giveTrapping', custom: '' }),
     apply: (e, env) => {
       // Objet de CATALOGUE (`trappingId`) sinon objet CUSTOM (`custom`, misc) — source unique itemFromGive.
@@ -664,7 +664,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   giveMoney: {
-    group: '🎁 Récompenses', label: 'Donner/retirer de l’argent', icon: '🪙',
+    group: 'Récompenses', label: 'Donner/retirer de l’argent', icon: 'resource/gold-purse',
     make: () => ({ type: 'giveMoney', gold: 0, silver: 0, brass: 0 }),
     apply: (e, env) => {
       env.set((s: GameState) => ({
@@ -679,7 +679,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   giveXp: {
-    group: '🎁 Récompenses', label: 'Donner des PX (groupe)', icon: '✨',
+    group: 'Récompenses', label: 'Donner des PX (groupe)', icon: 'resource/xp',
     make: () => ({ type: 'giveXp', amount: 50 }),
     apply: (e, env) => {
       env.set((s: GameState) => ({
@@ -693,7 +693,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   learnSpell: {
-    group: '🎁 Récompenses', label: 'Apprendre un sort (trouvaille, sans PX)', icon: '🪄',
+    group: 'Récompenses', label: 'Apprendre un sort (trouvaille, sans PX)', icon: 'magic/power',
     make: () => ({ type: 'learnSpell', spell: '', heroId: '' }),
     apply: (e, env) => {
       // Trouvaille de campagne : le sort est appris SANS PX (l'auteur l'octroie — le coût
@@ -711,7 +711,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   petitePriere: {
-    group: '🎁 Récompenses', label: 'Petites Prières (site sacré — non-Béni, LDB 25)', icon: '🙏',
+    group: 'Récompenses', label: 'Petites Prières (site sacré — non-Béni, LDB 25)', icon: 'faith/prayer',
     make: () => ({ type: 'petitePriere', reward: EMPTY_FLOW }),
     apply: (e, env) => {
       // « Petites Prières » (LDB 25 l.22-24, option `prayer-petites`) : un NON-Béni prie dans un site
@@ -734,15 +734,15 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const threshold = 1 + Math.max(0, priereAdv) * Number(rule('prayer-petites-bonus-per-advance'));
       const roll = d100(battleRng());
       if (petitePriereAnswered(roll, threshold)) {
-        env.log(`🙏 ${target.name} prie sur le site sacré (🎲 ${roll} ≤ ${threshold}) — et les dieux l'entendent !`);
+        env.log(`${target.name} prie sur le site sacré (${roll} ≤ ${threshold}) — et les dieux l'entendent !`);
         runFlow(env.get, env.set, e.reward, 'Petite Prière exaucée'); // récompense authorée (bonus/don/flag)
       } else {
-        env.log(`${target.name} prie sur le site sacré (🎲 ${roll}) — sans réponse divine.`);
+        env.log(`${target.name} prie sur le site sacré (${roll}) — sans réponse divine.`);
       }
     },
   },
   restoreFortune: {
-    group: '🎁 Récompenses', label: 'Regagner la Chance (début de session, max = Destin)', icon: '🍀',
+    group: 'Récompenses', label: 'Regagner la Chance (début de session, max = Destin)', icon: 'resource/fortune',
     make: () => ({ type: 'restoreFortune' }),
     apply: (_e, env) => {
       // Début de session (LDB 17 l.47) : Chance regagnée jusqu'au maximum = Destin actuel.
@@ -751,9 +751,9 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
 
-  // ── ☠️ Afflictions ────────────────────────────────────────────────────────
+  // ── Afflictions ────────────────────────────────────────────────────────
   ops: {
-    group: '☠️ Afflictions', label: 'Effets mécaniques (Blessures / État / buffs… — vocabulaire des sorts)', icon: '✨',
+    group: 'Afflictions', label: 'Effets mécaniques (Blessures / État / buffs… — vocabulaire des sorts)', icon: 'mechanic/stat-mod',
     make: () => ({ type: 'ops', on: 'party', ops: [{ op: 'wounds', amount: 5 }] }),
     apply: (e, env) => {
       // EffectOp : applique les GameOps (vocabulaire mécanique des sorts) à la cible de SCÈNE
@@ -770,7 +770,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   zoneBlast: {
-    group: '☠️ Afflictions', label: 'Souffle de zone (effets mécaniques, rayon)', icon: '🧨',
+    group: 'Afflictions', label: 'Souffle de zone (effets mécaniques, rayon)', icon: 'magic/area',
     make: () => ({ type: 'zoneBlast', center: { x: 0, y: 0 }, radius: 2, ops: [{ op: 'wounds', amount: { dice: { n: 1, sides: 10, plus: 15 } } }] }),
     apply: (e, env) => {
       // Cibles dans le disque (Chebyshev, `combatantsWithinRadius`) : en combat par position de chaque
@@ -801,7 +801,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   fall: {
-    group: '☠️ Afflictions', label: 'Chute (dégâts/m + 1d10, À Terre, repositionne le groupe)', icon: '🪂',
+    group: 'Afflictions', label: 'Chute (dégâts/m + 1d10, À Terre, repositionne le groupe)', icon: 'journal/fall',
     make: () => ({ type: 'fall', target: 'party', metres: 4 }),
     apply: (e, env) => {
       // Chute (LDB 15 l.117-122) : 3 Dégâts/mètre + 1d10, réduits par le Bonus d'Endurance mais
@@ -824,7 +824,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   inflictDisease: {
-    group: '☠️ Afflictions', label: 'Infliger une maladie (LDB 20)', icon: '🤢',
+    group: 'Afflictions', label: 'Infliger une maladie (LDB 20)', icon: 'medical/infection',
     make: () => ({ type: 'inflictDisease', disease: DISEASE_NAMES[0] ?? '', heroId: '' }),
     apply: (e, env) => {
       // Maladie (LDB 20) infligée par l'auteur (nourriture avariée, contact infecté…). Incubation/durée
@@ -846,7 +846,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   inflictHunger: {
-    group: '☠️ Afflictions', label: 'Imposer la Faim (LDB 18 — groupe affamé)', icon: '🍖',
+    group: 'Afflictions', label: 'Imposer la Faim (LDB 18 — groupe affamé)', icon: 'flag/hungry',
     make: () => ({ type: 'inflictHunger', days: 1, target: 'party' }),
     apply: (e, env) => {
       // Faim (LDB 18 l.417-422) posée par l'auteur (siège, cachot, traversée sans vivres) : `days`
@@ -871,7 +871,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   exposureNight: {
-    group: '☠️ Afflictions', label: 'Exposition froid / chaleur (LDB 18)', icon: '🥶',
+    group: 'Afflictions', label: 'Exposition froid / chaleur (LDB 18)', icon: 'rest/cold',
     make: () => ({ type: 'exposureNight', kind: 'froid', count: 2, target: 'party' }),
     apply: (e, env) => {
       // Exposition (LDB 18 l.326-334) posée par l'auteur (nuit glaciale, désert, tempête) : `count` Tests
@@ -890,18 +890,18 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         const target = kind === 'froid' ? exposureTarget(c, resVal) : Math.max(0, resVal);
         for (let i = 0; i < count; i++) {
           steps.push({
-            id: `expo-${c.id}-${i}`, kind: 'exposure', actorId: c.id, icon: '🥶',
+            id: `expo-${c.id}-${i}`, kind: 'exposure', actorId: c.id, icon: 'rest/cold',
             rollLabel: 'Résistance', label: kind === 'froid' ? 'Exposition (froid)' : 'Exposition (chaleur)',
             base: resVal, target, result: null, interactive: true, meta: { kind },
           });
         }
       }
       if (lines.length) { env.set(touchActors(env.get())); lines.forEach((l) => env.log(l)); }
-      if (steps.length) startCascade(env.get, env.set, { title: kind === 'froid' ? 'Exposition au froid' : 'Exposition à la chaleur', icon: '🥶', purpose: 'test', steps });
+      if (steps.length) startCascade(env.get, env.set, { title: kind === 'froid' ? 'Exposition au froid' : 'Exposition à la chaleur', icon: 'rest/cold', purpose: 'test', steps });
     },
   },
   inflictTrauma: {
-    group: '☠️ Afflictions', label: 'Infliger une Blessure Critique (LDB 18)', icon: '🦴',
+    group: 'Afflictions', label: 'Infliger une Blessure Critique (LDB 18)', icon: 'journal/critical',
     make: () => ({ type: 'inflictTrauma', kind: 'fracture', severity: 'mineur', location: 'brasD', heroId: '' }),
     apply: (e, env) => {
       // Blessure Critique posée rétroactivement par l'éditeur (LDB 18) : déchirure/fracture via `traumaById`
@@ -930,7 +930,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   inflictNightmares: {
-    group: '☠️ Afflictions', label: 'Infliger des cauchemars (trauma nocturne)', icon: '😱',
+    group: 'Afflictions', label: 'Infliger des cauchemars (trauma nocturne)', icon: 'flag/fear',
     make: () => ({ type: 'inflictNightmares', heroId: '' }),
     apply: (e, env) => {
       // Trauma « Cauchemars » (LDB 21 l.92) posé sur un héros (défaut : le premier).
@@ -939,7 +939,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   ambitionLost: {
-    group: '☠️ Afflictions', label: 'Ambition anéantie → Trauma (ADE II Annexe I)', icon: '💔',
+    group: 'Afflictions', label: 'Ambition anéantie → Trauma (ADE II Annexe I)', icon: 'journal/heartbreak',
     make: () => ({ type: 'ambitionLost', heroId: '' }),
     apply: (e, env) => {
       // Trauma (ADE II Annexe I) : « témoin d'un événement qui rend une Ambition complètement irréalisable
@@ -963,7 +963,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   corruptionExposure: {
-    group: '☠️ Afflictions', label: 'Influence corruptrice (Test, LDB 19)', icon: '🧿',
+    group: 'Afflictions', label: 'Influence corruptrice (Test, LDB 19)', icon: 'nav/mutation',
     make: () => ({ type: 'corruptionExposure', level: 'mineure', skill: 'resistance', heroId: '' }),
     apply: (e, env) => {
       // Influence corruptrice (LDB 19 l.23-75) : ouvre le Test différé par modale
@@ -976,7 +976,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   giveSin: {
-    group: '☠️ Afflictions', label: 'Points de Péché (prêtre fautif, LDB 40)', icon: '⚖️',
+    group: 'Afflictions', label: 'Points de Péché (prêtre fautif, LDB 40)', icon: 'ui/balance',
     make: () => ({ type: 'giveSin', amount: 1, heroId: '' }),
     apply: (e, env) => {
       // Points de Péché (LDB 40 l.36) : sanction d'auteur, 1 à 3 selon la gravité — appliquée par
@@ -1000,7 +1000,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   waterExposure: {
-    group: '☠️ Afflictions', label: 'Exposition hydrique (eau souillée — T2C ch.14)', icon: '🌊',
+    group: 'Afflictions', label: 'Exposition hydrique (eau souillée — T2C ch.14)', icon: 'travel/wave',
     make: () => ({ type: 'waterExposure', mode: 'ingestion', target: 'hero' }),
     apply: (e, env) => {
       // « Maladies transmises par l'eau » (T2C p.91) : UN Test de Résistance Intermédiaire (+0) modifié
@@ -1018,19 +1018,19 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         const base = testValue(h, WATER_EXPOSURE.test.skillId) + mods;
         const detail = parts.map((m) => `${m.label} ${m.mod > 0 ? '+' : ''}${m.mod}`).join(' · ');
         return {
-          id: `waterExposure-${h.id}`, kind: 'waterExposure', actorId: h.id, icon: '🌊',
+          id: `waterExposure-${h.id}`, kind: 'waterExposure', actorId: h.id, icon: 'travel/wave',
           rollLabel: refLabel('skills', { id: WATER_EXPOSURE.test.skillId }),
           label: t('eff.waterExposure', { mode: e.mode === 'immersion' ? 'immersion' : 'ingestion', detail: detail ? ` (${detail})` : '' }),
           base, target: Math.max(1, Math.min(99, base + DIFFICULTY_MODIFIERS[WATER_EXPOSURE.test.difficulty])),
         };
       });
-      startCascade(env.get, env.set, { title: t('eff.waterTitle'), icon: '🌊', purpose: 'test', steps });
+      startCascade(env.get, env.set, { title: t('eff.waterTitle'), icon: 'travel/wave', purpose: 'test', steps });
     },
   },
 
-  // ── 🕰 Temps & repos ──────────────────────────────────────────────────────
+  // ── Temps & repos ──────────────────────────────────────────────────────
   rest: {
-    group: '🕰 Temps & repos', label: 'Repos (Dormir / Se reposer N jours)', icon: '🌙',
+    group: 'Temps & repos', label: 'Repos (Dormir / Se reposer N jours)', icon: 'rest/bed',
     make: () => ({ type: 'rest', days: 1 }),
     apply: (e, env) => {
       // Repos déclenché par l'éditeur (trigger/dialogue) : ouvre la MODALE DE NUIT (couchage +
@@ -1039,7 +1039,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   mealParty: {
-    group: '🕰 Temps & repos', label: 'Repas (nourrit le groupe sans ration — faim à zéro)', icon: '🍲',
+    group: 'Temps & repos', label: 'Repas (nourrit le groupe sans ration — faim à zéro)', icon: 'rest/stew',
     make: () => ({ type: 'mealParty' }),
     apply: (_e, env) => {
       // Repas (#T2) : tout le groupe est nourri pour la journée sans consommer de ration —
@@ -1051,7 +1051,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   interlude: {
-    group: '🕰 Temps & repos', label: 'Entre deux aventures (Événements + Activités, N semaines)', icon: '📆',
+    group: 'Temps & repos', label: 'Entre deux aventures (Événements + Activités, N semaines)', icon: 'time/calendar',
     make: () => ({ type: 'interlude', weeks: 1 }),
     apply: (e, env) => {
       // « Entre deux aventures » (LDB 22-23) — via l'action store (pas d'import direct : cycle).
@@ -1060,7 +1060,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   setTime: {
-    group: '🕰 Temps & repos', label: 'Régler l’heure (jour/nuit)', icon: '🕰',
+    group: 'Temps & repos', label: 'Régler l’heure (jour/nuit)', icon: 'time/clock',
     make: () => ({ type: 'setTime', phase: 'nuit' }),
     apply: (e, env) => {
       // Saut EN AVANT jusqu'à la prochaine occurrence de la phase/heure visée (le temps ne recule jamais).
@@ -1071,7 +1071,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   delayedEffect: {
-    group: '🕰 Temps & repos', label: 'Effet différé (minuterie / heure)', icon: '⏳',
+    group: 'Temps & repos', label: 'Effet différé (minuterie / heure)', icon: 'ui/wait',
     make: () => ({ type: 'delayedEffect', afterMinutes: 60, flow: EMPTY_FLOW, cancelFlag: '' }),
     apply: (e, env) => {
       // Échéance absolue (minute `gameTime`) : compte à rebours relatif `afterMinutes`, sinon la
@@ -1084,9 +1084,9 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
 
-  // ── 🚪 Navigation ─────────────────────────────────────────────────────────
+  // ── Navigation ─────────────────────────────────────────────────────────
   transition: {
-    group: '🚪 Navigation', label: 'Transition de scène', icon: '🚪',
+    group: 'Navigation', label: 'Transition de scène', icon: 'nav/entry-point',
     make: () => ({ type: 'transition', scene: '', entry: '' }),
     apply: (e, env) => {
       const cur = env.get();
@@ -1096,7 +1096,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     refs: (e, ctx) => ctx.sceneIds.has(e.scene) ? [] : [{ level: 'error', message: `Effet → scène inexistante « ${e.scene} »` }],
   },
   transitionBack: {
-    group: '🚪 Navigation', label: 'Retour scène précédente', icon: '↩️',
+    group: 'Navigation', label: 'Retour scène précédente', icon: 'ui/undo',
     make: () => ({ type: 'transitionBack' }),
     apply: (_e, env) => {
       const prev = env.get().previousScene;
@@ -1107,7 +1107,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   openWorldMap: {
-    group: '🚪 Navigation', label: 'Ouvrir la carte du monde (partir en voyage)', icon: '🗺️',
+    group: 'Navigation', label: 'Ouvrir la carte du monde (partir en voyage)', icon: 'travel/world',
     make: () => ({ type: 'openWorldMap' }),
     apply: (_e, env) => {
       // « Partir en voyage » depuis une porte/route de la scène (#T2) — l'action est déjà gardée
@@ -1116,7 +1116,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   setVessel: {
-    group: '🚪 Navigation', label: 'Doter le groupe d\'un navire (MDG ch.13-15)', icon: '⚓',
+    group: 'Navigation', label: 'Doter le groupe d\'un navire (MDG ch.13-15)', icon: 'travel/anchor',
     make: () => ({ type: 'setVessel', vehicleId: '', morale: MORALE_BASE }),
     apply: (e, env) => {
       // Pose le NAVIRE DE CAMPAGNE (`state.vessel`) — comme le champ de scénario `TestScenario.vessel`,
@@ -1140,15 +1140,15 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
 
-  // ── ⚔️ Combat & social ────────────────────────────────────────────────────
+  // ── Combat & social ────────────────────────────────────────────────────
   startCombat: {
-    group: '⚔️ Combat & social', label: 'Démarrer un combat', icon: '⚔️',
+    group: 'Combat & social', label: 'Démarrer un combat', icon: 'action/attack',
     make: () => ({ type: 'startCombat', encounter: '' }),
     apply: (e, env) => { env.get().startCombat(e.encounter); },
     refs: (e, ctx) => ctx.encounterIds.has(e.encounter) ? [] : [{ level: 'error', message: `Effet → rencontre inexistante « ${e.encounter} »` }],
   },
   startMassBattle: {
-    group: '⚔️ Combat & social', label: 'Combat de masse (Puissance de Bataille)', icon: '🚩',
+    group: 'Combat & social', label: 'Combat de masse (Puissance de Bataille)', icon: 'map-tool/start-flag',
     make: () => ({ type: 'startMassBattle', battle: { allyName: 'Armée des Personnages', enemyName: 'Armée ennemie', allyMight: 50, enemyMight: 50, plannedRounds: 3 } }),
     apply: (e, env) => { env.get().startMassBattle(e.battle); }, // ouvre l'écran de bataille sur le spec authoré (ADE II 08)
     // Les rencontres mappées aux Scènes de combat/menace doivent exister dans la scène courante.
@@ -1156,25 +1156,25 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       ctx.encounterIds.has(encId) ? [] : [{ level: 'error' as const, message: `Combat de masse → rencontre inexistante « ${encId} » (Scène ${sceneId})` }]),
   },
   openMerchant: {
-    group: '⚔️ Combat & social', label: 'Ouvrir une boutique (marchand)', icon: '🛒',
+    group: 'Combat & social', label: 'Ouvrir une boutique (marchand)', icon: 'merchant/cart',
     make: () => ({ type: 'openMerchant', entityId: '' }),
     apply: (e, env) => { env.get().openMerchant(e.entityId); }, // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
   },
   openTavernGames: {
-    group: '⚔️ Combat & social', label: 'Jeux de taverne (NADJ ch.16)', icon: '🎲',
+    group: 'Combat & social', label: 'Jeux de taverne (NADJ ch.16)', icon: 'nav/dice',
     make: () => ({ type: 'openTavernGames' }),
     apply: (_e, env) => { if (rule('tavern-games')) env.get().openTavernGames(); }, // option facultative : sans effet si éteinte (comme interlude)
   },
   medicalAid: {
-    group: '⚔️ Combat & social', label: 'Acte de soin payant (PNJ médecin/guérisseur)', icon: '🩺',
+    group: 'Combat & social', label: 'Acte de soin payant (PNJ médecin/guérisseur)', icon: 'medical/aid',
     // tarif par défaut : « aide médicale 4-6 pistoles » (LDB 75) → 5 pa
     make: () => ({ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 50, intBonus: 4 }),
     apply: (e, env) => { openMedicalAidEffect(env.get, env.set, e); }, // soins payants d'un PNJ : ouvre son infirmerie (actes tarifés)
   },
 
-  // ── 🎲 Tests ──────────────────────────────────────────────────────────────
+  // ── Tests ──────────────────────────────────────────────────────────────
   extendedTest: {
-    group: '🎲 Tests', label: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)', icon: '🗝️',
+    group: 'Tests', label: 'Test Étendu (DR cumulé : crocheter/forcer un mécanisme)', icon: 'ui/key',
     make: () => ({ type: 'extendedTest', skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter la serrure', targetDR: 5, flag: '' }),
     apply: (e, env) => {
       // Test ÉTENDU (LDB 12) : le meilleur du groupe enchaîne les Rounds, SOUTENU par les autres membres
@@ -1188,7 +1188,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     },
   },
   forceDoor: {
-    group: '🎲 Tests', label: 'Enfoncer une porte à plusieurs (objet BE/B)', icon: '🔨',
+    group: 'Tests', label: 'Enfoncer une porte à plusieurs (objet BE/B)', icon: 'action/force',
     make: () => ({ type: 'forceDoor', label: 'Porte', doorBE: 3, doorB: 10, flag: '' }),
     apply: (e, env) => {
       // Enfoncer une PORTE/objet à plusieurs (EDO Append. 2) : tout le groupe vivant frappe.

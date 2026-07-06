@@ -159,7 +159,7 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
   if (vessel) {
     const mt = tickShipMorale(vessel.morale, today, battleRng());
     if (mt.recalced) {
-      lines.push(`⚓ Moral de l'équipage recalculé : ${mt.state.score} (${moraleBand(mt.state.score).desc.split('.')[0]}).`, ...mt.lines);
+      lines.push(`Moral de l'équipage recalculé : ${mt.state.score} (${moraleBand(mt.state.score).desc.split('.')[0]}).`, ...mt.lines);
       set({ vessel: { ...vessel, morale: mt.state } });
     }
   }

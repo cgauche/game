@@ -70,16 +70,16 @@ export function openEncounterPsych(get: Get, set: Set): void {
       id: `psych-${hero.id}`,
       kind: 'encounterPsych',
       actorId: hero.id,
-      icon: cl?.emoji ?? (t.kind === 'terreur' ? '😱' : '😨'),
+      icon: cl?.icon ?? (t.kind === 'terreur' ? 'creature/scream' : 'flag/fear'),
       rollLabel: refLabel('skills', { id: skill }),
       base,
       target, // Test (Calme par défaut) à la difficulté déclarée (défaut Intermédiaire +0)
-      label: cl ? `${cl.emoji} ${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? '😱 Terreur' : '😨 Peur'} ${t.indice} — ${src?.name ?? '?'}`,
+      label: cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice} — ${src?.name ?? '?'}`,
       encounterPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: src?.name ?? '?', indice: t.indice, cible: t.cible },
     });
   }
   if (!steps.length) return;
-  startCascade(get, set, { title: 'Sang-froid', icon: '😨', purpose: 'test', steps });
+  startCascade(get, set, { title: 'Sang-froid', icon: 'flag/fear', purpose: 'test', steps });
 }
 
 /** Conséquence d'un Test de Calme de rencontre : pose le `psychState` (Brisé de Terreur dérivé du DR).

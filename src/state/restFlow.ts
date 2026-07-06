@@ -135,7 +135,7 @@ export function sleepParty(
   // Le bilan de nuit LISTE l'entretien quotidien (rations/faim, maladies, convalescence) — le
   // journal seul ne suffit pas. Portrait attribué par préfixe « Nom… » quand la ligne le porte.
   for (const text of runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily })) {
-    entries.push({ actorId: get().party.find((h) => text.startsWith(h.name))?.id, icon: '📆', label: 'Entretien quotidien', text, tone: 'info' });
+    entries.push({ actorId: get().party.find((h) => text.startsWith(h.name))?.id, icon: 'time/calendar', label: 'Entretien quotidien', text, tone: 'info' });
   }
 
   // Campement (modale) : abri + Exposition AVANT la récupération.
@@ -150,20 +150,20 @@ export function sleepParty(
     for (const r of rolls) {
       entries.push({
         actorId: h.id,
-        icon: r.kind === 'recovery' ? '🛌' : '😱',
+        icon: r.kind === 'recovery' ? 'rest/bed' : 'creature/scream',
         label: r.kind === 'recovery' ? 'Récupération' : 'Cauchemars (Calme)',
         d: { label: r.kind === 'recovery' ? 'Résistance' : 'Calme', base: r.base, modifier: r.target - r.base, target: r.target, roll: r.roll, success: r.success, sl: r.sl },
         tone: r.success ? 'ok' : 'bad',
       });
     }
-    for (const line of log) entries.push({ actorId: h.id, icon: '🛌', label: 'Nuit', text: line.replace(`${h.name} `, ''), tone: 'info' });
+    for (const line of log) entries.push({ actorId: h.id, icon: 'rest/bed', label: 'Nuit', text: line.replace(`${h.name} `, ''), tone: 'info' });
     journal.push(...log);
   }
 
   // Contagion de promiscuité (chambrée/campement — Toux et éternuements, LDB 20 l.206) : 1 Test de Contraction par nuit de repos.
   // Règle optionnelle « Utilisation des Maladies » : désactivée si disease-mode = off.
   for (const c of rule('disease-mode') === 'off' ? [] : runContagion(party, n, rng)) {
-    entries.push({ actorId: c.actorId, icon: '🤒', label: `Contagion (${c.dz})`, text: c.log.join(' '), tone: 'bad' });
+    entries.push({ actorId: c.actorId, icon: 'medical/infection', label: `Contagion (${c.dz})`, text: c.log.join(' '), tone: 'bad' });
     journal.push(...c.log);
   }
 
@@ -228,7 +228,7 @@ function buildExposureSteps(party: Combatant[], camperIds: string[], count: numb
     if (!h) continue;
     const resVal = restResistVal(h);
     for (let i = 0; i < count; i++) {
-      steps.push({ id: `expo-${id}-${i}`, kind: 'exposure', actorId: id, label: 'Exposition', icon: '🥶',
+      steps.push({ id: `expo-${id}-${i}`, kind: 'exposure', actorId: id, label: 'Exposition', icon: 'rest/cold',
         rollLabel: 'Résistance', base: resVal, target: exposureTarget(h, resVal), result: null, interactive: true });
     }
   }
@@ -303,7 +303,7 @@ registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
     return {
       journal: [`${hero.name} rate son Test d'Exposition (chaleur) — ${heavy.name} pourrait être jeté pour l'annuler.`],
       insert: [{
-        id: `${step.id}-drop`, kind: 'exposure-heat-drop', actorId: hero.id, icon: '🎒',
+        id: `${step.id}-drop`, kind: 'exposure-heat-drop', actorId: hero.id, icon: 'item/misc',
         label: 'Possession lourde', interactive: true,
         options: [{ key: 'jeter', label: `Jeter ${heavy.name}` }, { key: 'garder', label: 'Garder son paquetage' }],
         defaultChoice: 'garder', // résolution immédiate (repos multi-jours, « Tout lancer ») : comportement inchangé
@@ -384,7 +384,8 @@ function calmeVal(c: Combatant): number {
 
 /** Icône d'étape de cascade par `kind` de Test d'entretien différé. */
 const UPKEEP_STEP_ICON: Record<string, string> = {
-  faim: '🍽️', diseaseTick: '🦠', diseaseGangrene: '🦠', diseasePersist: '🦠', traumaFracture: '🦴', contagion: '🤒',
+  faim: 'rest/feast', diseaseTick: 'medical/infection', diseaseGangrene: 'medical/infection', diseasePersist: 'medical/infection',
+  traumaFracture: 'medical/crutch', contagion: 'medical/infection',
 };
 
 /**
@@ -414,21 +415,21 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   for (const id of p.travelMarch ?? []) {
     const h = party.find((x) => x.id === id);
     if (!h || h.dead) continue;
-    steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: 'Marche forcée', icon: '🥾',
+    steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: 'Marche forcée', icon: 'travel/foot',
       rollLabel: 'Résistance', base: forcedMarchTarget(h), target: forcedMarchTarget(h), result: null, interactive: true });
   }
   // Tests d'entretien DIFFÉRÉS (faim, maladie, convalescence) → étapes influençables, dans l'ordre collecté.
   for (const t of deferred) {
     const h = party.find((x) => x.id === t.heroId);
     if (!h || h.dead) continue;
-    steps.push({ id: `${t.kind}-${t.heroId}-${steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label, icon: UPKEEP_STEP_ICON[t.kind] ?? '🎲',
+    steps.push({ id: `${t.kind}-${t.heroId}-${steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label, icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice',
       rollLabel: 'Résistance', base: t.base, target: t.target, result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined });
   }
   // CONTAGION (promiscuité — Toux et éternuements, LDB 20 l.206 + tambouille piètre) → un jet de Résistance influençable par héros exposé.
   for (const c of [...collectContagion(party), ...(opts.extraContagion ?? [])]) {
     const h = party.find((x) => x.id === c.heroId);
     if (!h || h.dead) continue;
-    steps.push({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actorId: c.heroId, label: `Contagion (${c.diseaseName})`, icon: '🤒',
+    steps.push({ id: `contagion-${c.heroId}-${steps.length}`, kind: 'contagion', actorId: c.heroId, label: `Contagion (${c.diseaseName})`, icon: 'medical/infection',
       rollLabel: 'Résistance', base: c.resVal, target: c.resVal + DIFFICULTY_MODIFIERS[c.difficulty], result: null, interactive: true, meta: { diseaseName: c.diseaseName },
       menace: 'maladie' }); // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
   }
@@ -444,7 +445,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     } else {
       const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) {
-        steps.push({ id: 'abri', kind: 'shelter', actorId: best.actor.id, label: 'Abri de fortune', icon: '⛺',
+        steps.push({ id: 'abri', kind: 'shelter', actorId: best.actor.id, label: 'Abri de fortune', icon: 'rest/camp',
           rollLabel: 'Survie en extérieur', base: best.value, target: best.value, result: null, interactive: true,
           meta: { severity, campers: camperIds.join(',') } });
       } else {
@@ -459,7 +460,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   for (const h of party) {
     if (h.dead) continue;
     if (needsRecoveryRoll(h)) {
-      steps.push({ id: `recov-${h.id}`, kind: 'recovery', actorId: h.id, label: 'Récupération', icon: '🛌',
+      steps.push({ id: `recov-${h.id}`, kind: 'recovery', actorId: h.id, label: 'Récupération', icon: 'rest/bed',
         rollLabel: 'Résistance', base: restResistVal(h), target: recoveryTarget(h), result: null, interactive: true });
     } else {
       const before = h.wounds.current;
@@ -468,7 +469,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
       if (wokeUp) log.push(`${h.name} reprend connaissance.`);
     }
     if (h.nightmares) {
-      steps.push({ id: `nm-${h.id}`, kind: 'nightmare', actorId: h.id, label: 'Cauchemars', icon: '😱',
+      steps.push({ id: `nm-${h.id}`, kind: 'nightmare', actorId: h.id, label: 'Cauchemars', icon: 'creature/scream',
         rollLabel: 'Calme', base: calmeVal(h), target: calmeVal(h) + 40, result: null, interactive: true });
     }
   }
@@ -529,7 +530,7 @@ export function restPlacesHere(st: GameState): { places: RestPlaces; quality: 'n
   return { places, quality: zone?.quality ?? sc.rest?.quality ?? 'normale' };
 }
 
-/** Ouvre la modale de Repos avec une OFFRE de lieux (effet, halte de voyage, bouton 🌙). */
+/** Ouvre la modale de Repos avec une OFFRE de lieux (effet, halte de voyage, bouton de Repos). */
 export function openRest(get: Get, set: Set, opts?: { places?: RestPlaces; quality?: 'normale' | 'pietre'; days?: number; travelHalt?: boolean; travelDay?: import('./travelFlow').TravelRecapDay; travelMarch?: string[] }): void {
   const st = get();
   if (st.battle || st.pendingRest) return;
@@ -572,7 +573,7 @@ export function restContinue(get: Get, set: Set): void {
   if (p.travelHalt) continueTravelAfterNight(get, set);
 }
 
-/** 🌙 Dormir : paie (RAW ch.66), nourrit, dort (`sleepParty`) avec l'Exposition du campement,
+/** Dormir : paie (RAW ch.66), nourrit, dort (`sleepParty`) avec l'Exposition du campement,
  *  puis bascule la modale en BILAN (multi-jets + horloge avant/après). */
 export function restSleep(get: Get, set: Set): void {
   const p = get().pendingRest;
@@ -616,7 +617,7 @@ export function restSleep(get: Get, set: Set): void {
       const title = lodgings.some((l) => l === 'privee' || l === 'commune') ? 'Nuit à l’auberge'
         : lodgings.some((l) => l === 'maison') ? 'Nuit chez soi'
         : 'Campement';
-      startCascade(get, set, { title, icon: '🌙', purpose: p.travelHalt ? 'travel' : 'night', travelHalt: p.travelHalt, steps, log });
+      startCascade(get, set, { title, icon: 'time/night', purpose: p.travelHalt ? 'travel' : 'night', travelHalt: p.travelHalt, steps, log });
     } else {
       for (const l of log) get().log(l); // rien à influencer (PB pleins, pas de campement) — déjà dormi
       if (p.travelHalt) continueTravelAfterNight(get, set);
@@ -630,7 +631,7 @@ export function restSleep(get: Get, set: Set): void {
     const h = party.find((x) => x.id === c.heroId);
     if (!h) continue;
     const cl = applyContraction(h, c.diseaseName, rollTest(c.resVal, c.difficulty, rng).success, rng);
-    pre.push({ actorId: c.heroId, icon: '🤢', label: 'Tambouille douteuse', text: cl.join(' ') || 'Le repas passe mal…', tone: 'bad' });
+    pre.push({ actorId: c.heroId, icon: 'medical/infection', label: 'Tambouille douteuse', text: cl.join(' ') || 'Le repas passe mal…', tone: 'bad' });
   }
   const from = get().gameTime;
   const entries = sleepParty(get, set, p.days, {
@@ -640,7 +641,7 @@ export function restSleep(get: Get, set: Set): void {
       const severity: ExposureSeverity = weatherExposure(get().scene?.weather);
       let sheltered = exposureShelterFromTent(party);
       if (sheltered) {
-        out.push({ icon: '⛺', label: 'Campement', text: 'La tente est montée — le groupe dort à l’abri.', tone: 'info' });
+        out.push({ icon: 'rest/camp', label: 'Campement', text: 'La tente est montée — le groupe dort à l’abri.', tone: 'info' });
       } else if (severity !== 'clement') {
         // Abri de fortune : Survie en extérieur (« construire un abri », ch.09 l.559).
         const best = partyAssisted(party.filter((h) => !h.dead), 'survie-en-exterieur'); // Soutien (LDB 12)
@@ -648,7 +649,7 @@ export function restSleep(get: Get, set: Set): void {
           const res = rollTest(best.value, 'intermediaire', rng);
           sheltered = res.success;
           out.push({
-            actorId: best.actor.id, icon: '⛺', label: 'Abri de fortune',
+            actorId: best.actor.id, icon: 'rest/camp', label: 'Abri de fortune',
             d: { label: 'Survie en extérieur', base: best.value, modifier: res.target - best.value, target: res.target, roll: res.roll, success: res.success, sl: res.sl },
             text: res.success ? 'Un abri tient la nuit.' : 'Rien ne protège du temps.', tone: res.success ? 'ok' : 'bad',
           });
@@ -660,12 +661,12 @@ export function restSleep(get: Get, set: Set): void {
         const r = exposureNight(h, count, restResistVal(h), rng);
         for (const roll of r.rolls) {
           out.push({
-            actorId: h.id, icon: '🥶', label: 'Exposition (froid)',
+            actorId: h.id, icon: 'rest/cold', label: 'Exposition (froid)',
             d: { label: 'Résistance', base: roll.base, modifier: roll.target - roll.base, target: roll.target, roll: roll.roll, success: roll.success, sl: roll.sl },
             tone: roll.success ? 'ok' : 'bad',
           });
         }
-        if (r.log.length) out.push({ actorId: h.id, icon: '🥶', label: 'Exposition', text: r.log.join(' '), tone: 'bad' });
+        if (r.log.length) out.push({ actorId: h.id, icon: 'rest/cold', label: 'Exposition', text: r.log.join(' '), tone: 'bad' });
         expireExposureEffects(h, get().gameTime + Number(rule('exposure-expire-hours')) * 60); // dissipation maison
       }
     },

@@ -96,7 +96,7 @@ export type BattleClickOpts = { confirm?: boolean; skipMountChoice?: boolean; fo
 const weaponSkillLabel = (kind: 'melee' | 'ranged', subType?: string): string =>
   `${kind === 'ranged' ? 'Projectiles' : 'Corps à corps'}${subType ? ` (${subType})` : ''}`;
 
-/** Ops « cible » qui rendent un sort OFFENSIF → ciblable sur un ennemi (réticule + ⛔ hors portée,
+/** Ops « cible » qui rendent un sort OFFENSIF → ciblable sur un ennemi (réticule + interdit hors portée,
  *  comme le tir). Tous les États WFRP sont négatifs (`condition`) ; `wounds` = Dégâts. Liste tenue
  *  COMPLÈTE côté offensif : un offensif oublié = sort injouable sur l'ennemi (le bug d'origine). */
 const HARMFUL_TARGET_OPS = new Set<string>([
@@ -125,7 +125,7 @@ export type SpellAffinity = 'enemy' | 'ally' | 'any';
 
 /** Côté qu'un sort VISE, DÉRIVÉ de ses effets modélisés (aucun champ manuel sur les 243 sorts) :
  *  Projectile / Test opposé / Souffle / Poussée, ou un op « cible » NOCIF → 'enemy' (ciblable sur
- *  l'ennemi, réticule + ⛔ hors portée comme le tir) ; un op « cible » BÉNÉFIQUE seul → 'ally' ; sinon
+ *  l'ennemi, réticule + interdit hors portée comme le tir) ; un op « cible » BÉNÉFIQUE seul → 'ally' ; sinon
  *  (narratif, mixte, sans op de cible) → 'any' (réticule permissif des deux côtés). La SOURCE est
  *  l'effet canon du sort (spells.json), pas une heuristique de mots-clés sur la description. */
 export function spellAffinity(spell: NonNullable<ReturnType<typeof findSpellById>>): SpellAffinity {
@@ -144,7 +144,7 @@ export function spellAffinity(spell: NonNullable<ReturnType<typeof findSpellById
 // ───────────────────────────────────────────────────────────────────────────
 
 /** Mode BORDÉE (navire) : le bord qui porte est dérivé de la cible (`targetArc`) ; réticule si une pièce
- *  du bord porte ET la cible est à portée. ⛔ 'arc' = aucune pièce sur ce bord ; 'range' = hors de portée. */
+ *  du bord porte ET la cible est à portée. 'arc' = aucune pièce sur ce bord ; 'range' = hors de portée. */
 function batteryAffordance(get: Get, active: Combatant, target: Combatant): HoverTargeting {
   if (target.kind === active.kind || isOutOfAction(target)) return { kind: 'none' };
   const side = targetArc(get().facing[active.id] ?? 'N', active.pos!, target.pos!);
@@ -507,7 +507,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
     const b = get().battle;
     if (!b || b.over || b.order[b.turn] !== active.id || get().pendingCascade) return;
     set({ pendingAttack: pa });
-    startCascade(get, set, { title: 'Attaque', icon: '⚔️', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: active.id }] });
+    startCascade(get, set, { title: 'Attaque', icon: 'action/attack', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: active.id }] });
   });
 }
 

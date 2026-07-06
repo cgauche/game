@@ -107,4 +107,39 @@ export const icons: IconFamily = [
     label: 'Détail',
     svg: `<path ${F} d="M12 9.6 L14.4 12 L12 14.4 L9.6 12 Z"/>`,
   },
+  {
+    id: 'journal/dialogue',
+    label: 'Dialogue',
+    // Bulle de parole rectangulaire, pointe vers l'interlocuteur.
+    svg:
+      `<path ${F} d="M4 5.6 H20 C20.9 5.6 21.6 6.3 21.6 7.2 V14.4 C21.6 15.3 20.9 16 20 16 H10.4 L6.4 19.6 V16 H4 C3.1 16 2.4 15.3 2.4 14.4 V7.2 C2.4 6.3 3.1 5.6 4 5.6 Z"/>`,
+  },
+  {
+    id: 'journal/fall',
+    label: 'Chute',
+    // Silhouette qui bascule, lignes de mouvement et impact au sol.
+    svg:
+      `<circle ${F} cx="15.4" cy="5.4" r="2"/>` +
+      `<path ${K} d="M14 7.4 C11.6 9.3 9 11.6 6.4 14.4"/>` +
+      `<path ${KF} d="M13.4 9.4 L10.4 8.6 M12 11.7 L9.2 13.6"/>` +
+      `<path ${KF} d="M3.2 17 H8 M2.8 19.4 H6.4"/>`,
+  },
+  {
+    id: 'journal/heartbreak',
+    label: 'Ambition brisée',
+    // Cœur fendu par une cassure en éclair.
+    svg:
+      `<path ${F} d="M12 19.4 C6.6 15.6 3.6 12 3.6 8.7 C3.6 6.1 5.6 4.2 8 4.2 C9.6 4.2 11 5 12 6.4 L10.6 10 L13 12.8 L11 16.4 Z"/>` +
+      `<path ${F} d="M12 6.4 C13 5 14.4 4.2 16 4.2 C18.4 4.2 20.4 6.1 20.4 8.7 C20.4 12 17.4 15.6 12 19.4 L13 16.4 L11 12.8 L13.4 10 Z"/>`,
+  },
+  {
+    id: 'journal/backstab',
+    label: 'Coup dans le dos',
+    // Dague inclinée, garde en tête, pointe vers la cible.
+    svg:
+      `<path ${F} d="M6 18.4 L15.6 8.8 L18 11.2 L8.4 20.8 Z"/>` +
+      `<path ${K} d="M15.6 8.8 L19.6 4.8"/>` +
+      `<path ${K} d="M17.8 3.4 L21 6.6"/>` +
+      `<circle ${F} cx="5.2" cy="19.6" r="1.1"/>`,
+  },
 ];

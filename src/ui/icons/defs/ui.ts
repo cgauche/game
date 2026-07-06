@@ -165,4 +165,27 @@ export const icons: IconFamily = [
       `<circle ${F} cx="17.1" cy="6.4" r="1.7"/>` +
       `<circle ${F} cx="17.1" cy="17.6" r="1.7"/>`,
   },
+  {
+    id: 'ui/close',
+    label: 'Fermer',
+    // Croix simple (fermer un panneau/dialogue).
+    svg: `<path ${K} d="M6.5 6.5 L17.5 17.5 M17.5 6.5 L6.5 17.5"/>`,
+  },
+  {
+    id: 'ui/think',
+    label: 'Réflexion',
+    // Bulle de pensée, petits ronds en traîne.
+    svg:
+      `<circle ${K} cx="12" cy="10" r="6"/>` +
+      `<circle ${F} cx="7.6" cy="17.4" r="1.3"/>` +
+      `<circle ${F} cx="5.4" cy="20.2" r="0.8"/>`,
+  },
+  {
+    id: 'ui/tally',
+    label: 'Bilan / comptage',
+    // Bâtons de comptage : quatre traits verticaux barrés d'un cinquième diagonal.
+    svg:
+      `<path ${K} d="M5.4 5 V19 M9.1 5 V19 M12.8 5 V19 M16.5 5 V19"/>` +
+      `<path ${K} d="M4 8.6 L18 15.4"/>`,
+  },
 ];

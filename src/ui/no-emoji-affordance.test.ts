@@ -23,53 +23,12 @@ const SCAN_DIRS = ['src/ui', 'src/state', 'src/gameIso', 'src/scenes'];
  *  - `_registry.generated.ts` : en-tête « ⚠ généré » émis par scripts/gen-registry.mjs. */
 const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel.endsWith('_registry.generated.ts');
 
-/** EXCEPTIONS — fichiers hors périmètre du garde d'AFFORDANCE (état #139, passe 2026-07-06 : la
- *  famille A — 47 fichiers UI/éditeur, ~90 emoji, ~17 familles d'icônes créées — est ENTIÈREMENT
- *  migrée). Ce qui reste ici est la famille (B) : emoji hors affordance — préfixes de LOG/journal
- *  côté `src/state`, `desc`/prose de donnée `src/data/*.json`, descriptions narratives de scénarios
- *  de test — jamais rendus comme icône UI, donc jamais migrés vers `<Icon>`. Un emoji de LOG n'est
- *  PAS une affordance (bouton/badge/pastille) : c'est du texte de journal, au même titre qu'une
- *  description JSON. Chaque entrée reste justifiée ; retirer si un fichier devient propre. */
-const EXCEPTIONS = new Set<string>([
-  // Donnée JSON — emoji dans des `desc`/prose (famille B), pas des affordances.
-  'src/data/etats.json',
-  'src/data/psychology.json',
-  'src/data/qualities.json',
-  'src/data/talents.json',
-  // Outillage console DEV (sortie texte de recette Playwright, jamais rendue dans l'UI).
-  'src/state/devtools.ts',
-  // Journaux/narration côté state : préfixes d'événements de log (famille B, autre chantier).
-  'src/state/combat/roundHooks.ts',
-  'src/state/combat/triggeredTest.ts',
-  'src/state/combat/turnHooks.ts',
-  'src/state/combatEffects.ts',
-  'src/state/combatFlow.ts',
-  'src/state/combatSlice.ts',
-  'src/state/encounterPsychFlow.ts',
-  'src/state/interludeFlow.ts',
-  'src/state/netOwnership.ts',
-  'src/state/pendings.ts',
-  'src/state/portFlow.ts',
-  'src/state/restFlow.ts',
-  'src/state/riverVoyageFlow.ts',
-  'src/state/rollFlowSpecs.ts',
-  'src/state/scene.ts',
-  'src/state/sceneEdit.ts',
-  'src/state/seaActivities.ts',
-  'src/state/seaVoyageFlow.ts',
-  'src/state/shipCrew.ts',
-  'src/state/shipPostes.ts',
-  'src/state/store.ts',
-  'src/state/targeting.ts',
-  'src/state/targetingModes.ts',
-  'src/state/travelFlow.ts',
-  'src/state/travelPostes.ts',
-  'src/state/upkeep.ts',
-  // Scénarios de test : descriptions narratives (famille B).
-  'src/scenes/test-scenarios/bestiaire.ts',
-  'src/scenes/test-scenarios/magie.ts',
-  'src/scenes/test-scenarios/voyage.ts',
-]);
+/** EXCEPTIONS — fichiers hors périmètre du garde d'AFFORDANCE. #139 CLOS (2026-07-06) : familles A
+ *  (47 fichiers UI/éditeur, ~90 emoji) ET B (préfixes de LOG/journal `src/state`, `desc`/prose de
+ *  donnée, descriptions de scénarios de test) sont ENTIÈREMENT migrées — liste VIDE. Rester vide :
+ *  toute nouvelle affordance passe par `<Icon id>`/`<IconG id>` (jamais un emoji, même « juste pour
+ *  l'instant ») ; un emoji de LOG/journal se retire tout autant (texte affiché à l'utilisateur). */
+const EXCEPTIONS = new Set<string>([]);
 
 function scanFiles(): string[] {
   const files: string[] = [];

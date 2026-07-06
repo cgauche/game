@@ -43,7 +43,7 @@ function applyLoadedSave(set: (s: Partial<GameState>) => void, save: SaveGame): 
   const data = { ...(save.data as Partial<GameState>) };
   // MIGRATION : les saves d'avant la carte de campagne (#T2 / Arène 2.0) portent une carte VIDE
   // (places: []) — la restaurer écraserait celle du projet courant et ferait DISPARAÎTRE le
-  // bouton 🗺️ (recette : « la map n'apparaît pas »). Une carte sans lieux = pas de carte : on
+  // bouton de carte (recette : « la map n'apparaît pas »). Une carte sans lieux = pas de carte : on
   // garde celle de la base (l'état initial = campagne intégrée).
   const wm = data.worldMap as import('./worldMap').WorldMap | null | undefined;
   if (!wm || !wm.places?.length) delete data.worldMap;
@@ -187,7 +187,7 @@ export interface BattleState {
   /** Test de Calme d'APPROCHE d'une source de Peur (LDB 21 l.29) — une tentative par Tour :
    *  'passed' = approches libres ce Tour ; 'failed' = aucune approche ce Tour. Purgé au Tour/Round. */
   fearGate?: 'passed' | 'failed' | null;
-  /** COOP : ✋ un joueur demande la PAUSE du prochain début de Round (fenêtre Chance « agir en
+  /** COOP : un joueur demande la PAUSE du prochain début de Round (fenêtre Chance « agir en
    *  premier ») — sinon les rounds s'enchaînent sans gate (arbitrage). Purgé à la pause. */
   handRaised?: boolean;
   /** Aperçu « tap 1 » du modèle de clic implicite (tap aperçu → tap confirme). Purgé au commit,
@@ -443,11 +443,11 @@ export interface GameState extends RollFlowActionsMap {
   /** Ferme la fenêtre de loot ; l'équipement non attribué va au 1er héros (comme la victoire). */
   dismissLoot: () => void;
   /** Évaluation (LDB 60 l.10) ou Détection d'artefact (LDB 10) d'une ligne de butin ENCORE en
-   *  fenêtre (loot ou victoire) : révéler un objet ✨ AVANT de choisir qui l'emporte. */
+   *  fenêtre (loot ou victoire) : révéler un objet AVANT de choisir qui l'emporte. */
   appraiseGear: (scope: 'loot' | 'victory', index: number, mode?: 'evaluate' | 'detect') => void;
   /** Coop : ✓ d'un siège sur l'écran de victoire — l'hôte ferme quand tous les requis ont validé. */
   victoryReady: (seat: number) => void;
-  /** Coop : ✋ demande la pause du prochain début de Round (fenêtre Chance). */
+  /** Coop : demande la pause du prochain début de Round (fenêtre Chance). */
   raiseHand: () => void;
   document: { title: string; text: string } | null;
   /** Scène d'où l'on vient (pour `transitionBack` : sortie d'intérieur). */
@@ -1745,7 +1745,7 @@ export const useGame = create<GameState>((set, get) => ({
   raiseHand: () => {
     const b = get().battle;
     if (!b || b.handRaised) return;
-    set({ battle: { ...b, handRaised: true, log: [...b.log, ev('info', 'Un joueur demande la pause au prochain Round (✋).')] } });
+    set({ battle: { ...b, handRaised: true, log: [...b.log, ev('info', 'Un joueur demande la pause au prochain Round.')] } });
   },
   victoryReady: (seat) => {
     const pv = get().pendingVictory;
@@ -1784,7 +1784,7 @@ export const useGame = create<GameState>((set, get) => ({
 
   startExtendedTest: (opts) => {
     set({ pendingExtendedTest: { ...opts, total: 0, rounds: [{ id: 'round-1', interactive: true, result: null }] } });
-    startCascade(get, set, { title: opts.label, icon: '🗝️', purpose: 'test', steps: [{ id: 'ext-jet', kind: 'extendedJet', jet: 'extended', actorId: opts.actorId }] });
+    startCascade(get, set, { title: opts.label, icon: 'ui/key', purpose: 'test', steps: [{ id: 'ext-jet', kind: 'extendedJet', jet: 'extended', actorId: opts.actorId }] });
   },
   extendedTestNext: () => {
     const p = get().pendingExtendedTest;
@@ -1802,7 +1802,7 @@ export const useGame = create<GameState>((set, get) => ({
         const b = get().battle;
         const n = b ? dissipateSpell(b.combatants, p.dispel.spellId, p.dispel.casterId) : 0;
         if (b) set({ battle: { ...b, combatants: [...b.combatants] } });
-        get().log(`✨ ${p.dispel.label} est dissipé${n > 1 ? ` (${n} cibles libérées)` : ''}.`);
+        get().log(`${p.dispel.label} est dissipé${n > 1 ? ` (${n} cibles libérées)` : ''}.`);
       }
       if (p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // gate la suite (porte/serrure d'éditeur)
       return;
@@ -1819,7 +1819,7 @@ export const useGame = create<GameState>((set, get) => ({
     // via l'étape `jet:'forceDoor'`). `pendingForceDoor` reste le porteur des données/participants ;
     // ses résolveurs ferment LES DEUX quand la porte cède. `groupOwner` → l'arbitre coop met l'owner à
     // '*' (action de GROUPE : chacun pilote ses héros), faute d'acteur unique sur l'étape.
-    startCascade(get, set, { title: 'Enfoncer la porte', icon: '🔨', purpose: 'combat', steps: [{ id: 'forceDoor', kind: 'forceDoorStep', jet: 'forceDoor', groupOwner: true }] });
+    startCascade(get, set, { title: 'Enfoncer la porte', icon: 'action/force', purpose: 'combat', steps: [{ id: 'forceDoor', kind: 'forceDoorStep', jet: 'forceDoor', groupOwner: true }] });
   },
   forceDoorConfirm: () => {
     const p = get().pendingForceDoor;
@@ -1881,7 +1881,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   /** Acquitte l'exposition (Points selon niveau + DR, puis seuil) OU le Test du SEUIL
    *  (kind 'seuil', LDB 19 l.80) : succès = Corruption contenue « pour cette fois » ;
-   *  échec = « Je te renie ! » (Résilience) ou mutation (révélation 🧬). */
+   *  échec = « Je te renie ! » (Résilience) ou mutation (révélation). */
   resolveCorruption: () => {
     const pc = get().pendingCorruption;
     if (!pc || pc.roll == null) return;

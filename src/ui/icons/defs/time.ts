@@ -70,4 +70,24 @@ export const icons: IconFamily = [
       `<path ${F} d="M18.6 5.1 C18.8 6.3 19.3 6.8 20.5 7 C19.3 7.2 18.8 7.7 18.6 8.9 C18.4 7.7 17.9 7.2 16.7 7 C17.9 6.8 18.4 6.3 18.6 5.1 Z"/>` +
       `<circle ${F} cx="17.4" cy="11.9" r="0.8"/>`,
   },
+  {
+    id: 'time/clock',
+    label: 'Heure',
+    // Cadran d'horloge, aiguilles pointant une heure précise (réglage manuel, distinct des phases du jour).
+    svg:
+      `<circle ${K} cx="12" cy="12" r="8.1"/>` +
+      `<path ${K} d="M12 7.4 V12.3 L15.6 14.5"/>`,
+  },
+  {
+    id: 'time/calendar',
+    label: 'Calendrier',
+    // Page de calendrier à anneaux, jours pointés.
+    svg:
+      `<path ${K} d="M5.4 5.6 H18.6 C19.4 5.6 20 6.2 20 7 V19 C20 19.8 19.4 20.4 18.6 20.4 H5.4 C4.6 20.4 4 19.8 4 19 V7 C4 6.2 4.6 5.6 5.4 5.6 Z"/>` +
+      `<path ${K} d="M8 3.6 V7.6 M16 3.6 V7.6"/>` +
+      `<path ${KF} d="M4 10.2 H20"/>` +
+      `<circle ${F} cx="8.6" cy="14.4" r="1"/>` +
+      `<circle ${F} cx="12" cy="14.4" r="1"/>` +
+      `<circle ${F} cx="15.4" cy="14.4" r="1"/>`,
+  },
 ];

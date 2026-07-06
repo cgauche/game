@@ -64,9 +64,8 @@ export function CascadeModal() {
   const actorOf = (s: CascadeStep) => (s.actorId ? pool.find((c) => c.id === s.actorId) : undefined);
 
   // Libellé de rangée = la COMPÉTENCE lancée (« Résistance », « Calme »…), comme Défense affiche
-  // « Attaque »/« Parade » — pas le texte de l'étape (le but vit dans le sous-titre). L'icône
-  // distingue deux « Résistance » dans la pile figée (Exposition vs Marche forcée vs Contagion).
-  const rowLabel = (s: CascadeStep) => `${s.icon ?? ''} ${s.rollLabel ?? 'Jet'}`.trim();
+  // « Attaque »/« Parade » — pas le texte de l'étape (le but vit dans le sous-titre).
+  const rowLabel = (s: CascadeStep) => s.rollLabel ?? 'Jet';
   const breakdown = (s: CascadeStep, r: CascadeRoll) => {
     const b = s.base ?? s.target ?? 0;
     return { label: rowLabel(s), base: b, modifier: (s.target ?? b) - b, target: s.target ?? b, roll: r.roll, success: r.success, sl: r.sl };
@@ -109,7 +108,7 @@ export function CascadeModal() {
     const allRows = p.participants.map(rowOf).filter((r): r is PanelRow => r !== null);
     return (
       <RollShell
-        title={<>{p.icon ?? <Icon id="nav/dice" size="sm" />} {p.title}</>}
+        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
         subtitle={<>Bilan · {p.participants.length} jet{p.participants.length > 1 ? 's' : ''}</>}
         rolled
         rows={witnessRows(allRows)}
@@ -157,7 +156,7 @@ export function CascadeModal() {
       const revSubject = rev.subjectId ? pool.find((c) => c.id === rev.subjectId) : undefined;
       return (
         <RollShell
-          title={<>{p.icon ?? <Icon id="nav/dice" size="sm" />} {p.title}</>}
+          title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
           subtitle={null}
           rolled
           rows={witnessRows(doneRows)}
@@ -169,8 +168,8 @@ export function CascadeModal() {
     }
     return (
       <RollShell
-        title={<>{p.icon ?? <Icon id="nav/dice" size="sm" />} {p.title}</>}
-        subtitle={<><strong>{cur.icon ?? <Icon id="journal/info" size="sm" />} {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
+        subtitle={<><strong><Icon id={cur.icon || 'journal/info'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         rolled
         rows={witnessRows([...doneRows, { combatant: actorOf(cur), note: noteFor(cur) }])}
         actions={[continueAction]}
@@ -194,8 +193,8 @@ export function CascadeModal() {
     const revSubject = rev?.subjectId ? pool.find((c) => c.id === rev.subjectId) : undefined;
     return (
       <RollShell
-        title={<>{p.icon ?? <Icon id="nav/dice" size="sm" />} {p.title}</>}
-        subtitle={<><strong>{cur.icon ?? <Icon id="journal/info" size="sm" />} {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
+        subtitle={<><strong><Icon id={cur.icon || 'journal/info'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
         rolled
         rows={witnessRows(doneRows)}
         postRollExtra={
@@ -275,8 +274,8 @@ export function CascadeModal() {
 
   return (
     <RollShell
-      title={<>{p.icon ?? <Icon id="nav/dice" size="sm" />} {p.title}</>}
-      subtitle={<><strong>{cur.icon ?? <Icon id="nav/dice" size="sm" />} {cur.label}</strong>{p.participants.length > 1 ? ` · jet ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+      title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
+      subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · jet ${p.cursor + 1}/${p.participants.length}` : ''}</>}
       /* Test ÉTENDU = barre de DR cumulé (prevDR + DR du jet après coup) : Peur de COMBAT (vers l'Indice)
          OU cartographie de voyage (Établir des cartes, vers `drTarget` = 2 × Étapes — porté par le poste). */
       extra={peur ? <DrBar cum={peur.prevDR + (res?.success ? Math.max(0, res.sl) : 0)} target={peur.indice} />

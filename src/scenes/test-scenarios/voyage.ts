@@ -68,7 +68,7 @@ const village = buildScene({
   weather: 'pluie', // nuit dehors = Exposition (la météo de la scène de départ suit le voyage)
   rest: { auberge: true },
   startMessage:
-    'Ouvrez la carte (🗺️) pour voyager : le hameau (24 km, route peu sûre), le bourg (30 km, diligence, relais) — ' +
+    'Ouvrez la carte du monde pour voyager : le hameau (24 km, route peu sûre), le bourg (30 km, diligence, relais) — ' +
     'et depuis le hameau, la LONGUE route d’Eichenfeld (96 km, 3 nuits). Chacun tient son POSTE (Bjorn au plein air, ' +
     'Mira aux aguets, Aldric cartographie, Greta fourrage) — le mode Étapes (EDOC) est activé, coupable au panneau ' +
     'Règles maison. Le groupe part blessé : chaque nuit, le bilan montre récupération, faim, Vérole et cauchemars. ' +
@@ -86,7 +86,7 @@ const village = buildScene({
           speaker: 'Aubergiste',
           text: 'Une table, une chope, un lit ? Tout se paie, mais tout est bon.',
           choices: [
-            { text: '🛏️ Prendre des chambres pour la nuit.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge' }]) },
+            { text: 'Prendre des chambres pour la nuit.', flow: flowFromEffects([{ type: 'rest', lodging: 'auberge' }]) },
             { text: 'Juste un repas (4 sous).', cost: { brass: 4 }, flow: flowFromEffects([{ type: 'mealParty' }]) },
             { text: 'Une autre fois. (Partir)' },
           ],

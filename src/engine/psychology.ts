@@ -62,10 +62,11 @@ export interface PsychAffliction {
  *  DÉRIVÉ de `psychology.json` (`targeted:true`), plus de Set codé en dur. */
 export const CIBLE_TYPES = new Set<PsychType>(psychologies.filter((p) => p.targeted).map((p) => p.id as PsychType));
 
-/** Libellés (emoji + nom) des Traits psy ciblés — DÉRIVÉS de `psychology.json` (SOURCE UNIQUE, comme
- *  `etats.json` pour les États). Partagé par les modales psy (combat + rencontre) et la narration. */
-export const CIBLE_LABEL: Record<string, { emoji: string; label: string }> = Object.fromEntries(
-  psychologies.filter((p) => p.targeted).map((p) => [p.id, { emoji: p.emoji ?? '', label: p.label }]),
+/** Libellés (icône + nom) des Traits psy ciblés — DÉRIVÉS de `psychology.json` (SOURCE UNIQUE, comme
+ *  `etats.json` pour les États — même champ `icon` du registre `<Icon>`, id `famille/nom`). Partagé
+ *  par les modales psy (combat + rencontre) et la narration. */
+export const CIBLE_LABEL: Record<string, { icon: string; label: string }> = Object.fromEntries(
+  psychologies.filter((p) => p.targeted).map((p) => [p.id, { icon: p.icon ?? '', label: p.label }]),
 );
 
 /** Source de Peur/Terreur que `foe` représente pour `self` : combine la Taille (LDB 85) et l'Indice

@@ -89,4 +89,13 @@ export const icons: IconFamily = [
       `<path ${F} d="M4.4 8.5 C5.1 7.3 6.1 6.3 7.3 5.6 L9.6 9.5 C9.1 9.9 8.6 10.4 8.3 10.9 Z"/>` +
       `<path ${F} d="M19.6 15.5 C18.9 16.7 17.9 17.7 16.7 18.4 L14.4 14.5 C14.9 14.1 15.4 13.6 15.7 13.1 Z"/>`,
   },
+  {
+    id: 'resource/xp',
+    label: 'Points d’Expérience',
+    // Double chevron montant, étoile en tête (progression / gain de PX).
+    svg:
+      `<path ${K} d="M6 14.4 L12 8.4 L18 14.4"/>` +
+      `<path ${K} d="M6 19.2 L12 13.2 L18 19.2"/>` +
+      `<circle ${F} cx="12" cy="5.2" r="1.6"/>`,
+  },
 ];

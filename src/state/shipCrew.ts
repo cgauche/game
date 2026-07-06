@@ -152,7 +152,7 @@ export function applyShantyToCrew(get: Get, ship: Combatant, singer: Combatant, 
   const until = get().gameTime + 3 + Math.max(0, sl); // 3 min + DR (l.38)
   const combatants = get().battle?.combatants ?? get().party;
   const crew = exposedCrew((ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c));
-  const lines: string[] = [`🎶 ${singer.name} entonne « ${shanty.label} » (${3 + Math.max(0, sl)} min).`];
+  const lines: string[] = [`${singer.name} entonne « ${shanty.label} » (${3 + Math.max(0, sl)} min).`];
   for (const c of crew) if (shanty.crewOps?.length) lines.push(...applyOps(c, shanty.crewOps, { label, effectId: shantyId, rng: battleRng(), defaultUntilTime: until }));
   if (shanty.captainOps?.length) {
     const roles = shipDefaultRoles(crew, 'manoeuvre');
@@ -175,7 +175,7 @@ export function endShanty(get: Get, singer: Combatant): string[] {
   delete singer.singingShanty;
   const combatants = get().battle?.combatants ?? get().party;
   for (const c of combatants) removeActiveEffects(c, (e) => e.effectId === song.shantyId);
-  return [`🎶 La chanson de ${singer.name} s'interrompt.`];
+  return [`La chanson de ${singer.name} s'interrompt.`];
 }
 
 /**

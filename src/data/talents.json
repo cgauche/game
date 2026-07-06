@@ -841,7 +841,7 @@
           "test": {
             "skill": "calme",
             "difficulty": "intermediaire",
-            "label": "🐗 Contrôle de la Frénésie",
+            "label": "Contrôle de la Frénésie",
             "gate": {
               "kind": "has",
               "who": "target",
@@ -1605,7 +1605,7 @@
         "flow": {
           "kind": "choice",
           "prompt": "Frappe réactive",
-          "icon": "⚔️",
+          "icon": "action/free-attack",
           "yes": {
             "kind": "test",
             "test": {

@@ -74,12 +74,12 @@
         }
       }
     ],
-    "emoji": "🐗"
+    "icon": "flag/frenzy"
   },
   {
     "id": "peur",
     "label": "Peur",
-    "emoji": "😨",
+    "icon": "flag/fear",
     "desc": "La Peur représente une aversion extrême. Une créature qui cause la Peur possède un Indice de Peur : le DR à atteindre en Test ÉTENDU de Calme (un Test à la fin de chaque Round) pour la vaincre. Tant que votre DR cumulé reste inférieur à l'Indice, vous êtes sujet à la Peur : -1 DR à tous les Tests en rapport avec la source, vous ne pouvez vous en rapprocher sans réussir un Test de Calme Intermédiaire (+0), et si elle se rapproche de vous, réussissez un Test de Calme Intermédiaire (+0) ou gagnez un État Brisé.",
     "source": {
       "book": "livre-de-base",
@@ -98,7 +98,7 @@
   {
     "id": "terreur",
     "label": "Terreur",
-    "emoji": "😱",
+    "icon": "creature/scream",
     "desc": "Certaines créatures inspirent une terreur glaçante. À la PREMIÈRE rencontre d'une créature qui cause la Terreur, effectuez un Test de Psychologie : sur un échec, vous gagnez autant d'États Brisé que l'Indice de Terreur, plus les DR inférieurs à 0. Une fois ce Test effectué, la créature cause la Peur, avec un Indice de Peur égal à son Indice de Terreur.",
     "source": {
       "book": "livre-de-base",
@@ -119,7 +119,7 @@
   {
     "id": "animosite",
     "label": "Animosité",
-    "emoji": "😤",
+    "icon": "flag/anger",
     "targeted": true,
     "desc": "Vous nourrissez une hostilité envers la Cible (un groupe). Test de Psychologie à chaque rencontre : sur un succès, -20 aux Tests de Sociabilité envers ce groupe ; sur un échec, vous subissez Animosité et devez immédiatement vous en prendre aux créatures (verbalement ou physiquement), avec +1 DR contre le groupe. À la fin de chaque Round suivant, un nouveau Test de Psychologie peut y mettre fin ; sinon l'effet cesse quand le groupe en Ligne de Vue se calme/disparaît, ou si vous gagnez Sonné/Inconscient. Annulé par Peur et Terreur.",
     "source": {
@@ -140,7 +140,7 @@
   {
     "id": "haine",
     "label": "Haine",
-    "emoji": "😡",
+    "icon": "flag/anger",
     "targeted": true,
     "desc": "Vous ressentez une profonde haine pour la Cible (un groupe). Test de Psychologie à la rencontre ; sur un échec, vous ressentez la Haine et devez tout faire pour détruire le groupe haï, le plus rapidement et violemment possible, avec +1 DR à tous les Tests de Combat contre lui, et immunité à Peur/Intimidation (mais pas Terreur) de ce groupe. À la fin de chaque Round, un Test de Psychologie peut y mettre fin ; sinon l'effet se dissipe quand le groupe en Ligne de Vue meurt/disparaît, ou si vous gagnez Inconscient.",
     "source": {
@@ -163,7 +163,7 @@
   {
     "id": "prejuge",
     "label": "Préjugé",
-    "emoji": "🙄",
+    "icon": "flag/anger",
     "targeted": true,
     "desc": "Vous ressentez une aversion pour la Cible (un groupe). Test de Psychologie à chaque rencontre : sur un succès, -10 aux Tests de Sociabilité avec ce groupe ; sur un échec, vous devenez sensible aux Préjugés et devez copieusement insulter la Cible à voix haute. À partir du Round suivant, un Test de Psychologie peut y mettre fin ; sinon l'effet cesse quand le groupe en Ligne de Vue disparaît, ou si vous gagnez Sonné/Inconscient.",
     "source": {
@@ -180,7 +180,7 @@
   {
     "id": "amour",
     "label": "Amour",
-    "emoji": "❤️",
+    "icon": "flag/bond",
     "targeted": true,
     "desc": "Une très forte relation émotionnelle envers un ou plusieurs individus. Vous devez venir en aide à un être aimé menacé (physiquement ou verbalement). Tant que vous défendez les êtres aimés, vous êtes immunisé à la Peur et à l'Intimidation, et gagnez +1 DR à tous les Tests en rapport.",
     "source": {
@@ -201,7 +201,7 @@
   {
     "id": "camaraderie",
     "label": "Camaraderie",
-    "emoji": "🤝",
+    "icon": "flag/bond",
     "targeted": true,
     "desc": "Des sentiments positifs envers un groupe d'individus. Vous devez leur venir en aide si le groupe est menacé (verbalement ou physiquement), et vous gagnez +1 DR aux Tests effectués pour le défendre.",
     "source": {
@@ -221,7 +221,7 @@
   {
     "id": "phobie",
     "label": "Phobie",
-    "emoji": "🕷️",
+    "icon": "flag/fear",
     "targeted": true,
     "desc": "Une peur irrationnelle et incontrôlable d'une Cible précise (un groupe ou un type de créature). Traitée comme un Trait Psychologique ciblé : Test de Psychologie à la rencontre, résolution binaire de Calme.",
     "source": {

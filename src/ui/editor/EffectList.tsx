@@ -81,75 +81,75 @@ export const EFFECT_GROUPS: [string, Effect['type'][]][] = EFFECT_GROUP_ORDER.ma
 
 const cut = (s: string, n = 46) => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
-/** Résumé HUMAIN d'un effet (rangée repliée) — PUR, testé. */
+/** Résumé HUMAIN d'un effet (rangée repliée) — texte SEUL, PUR, testé. L'icône (`EFFECT_ICON`) est
+ *  rendue séparément par l'appelant via `<Icon>` (même patron que `opSummary`/`OP_ICON`). */
 export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string {
   const e = effect as any;
-  const icon = EFFECT_ICON[effect.type] ?? '•';
   switch (effect.type) {
-    case 'journal': return `${icon} Journal : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}`;
-    case 'setFlag': return `${icon} Flag ${e.flag || '?'} = ${e.value === false ? 'faux' : 'vrai'}`;
-    case 'document': return `${icon} Document : ${e.title || '(sans titre)'}`;
-    case 'giveTrapping': return `${icon} Objet : ${giveTrappingLabel(e) || '?'}${e.qualities?.length ? ` (+${e.qualities.length} qualité(s))` : ''}`;
+    case 'journal': return `Journal : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}`;
+    case 'setFlag': return `Flag ${e.flag || '?'} = ${e.value === false ? 'faux' : 'vrai'}`;
+    case 'document': return `Document : ${e.title || '(sans titre)'}`;
+    case 'giveTrapping': return `Objet : ${giveTrappingLabel(e) || '?'}${e.qualities?.length ? ` (+${e.qualities.length} qualité(s))` : ''}`;
     case 'giveMoney': {
       const parts = [e.gold ? `${e.gold} CO` : '', e.silver ? `${e.silver} pa` : '', e.brass ? `${e.brass} sc` : ''].filter(Boolean);
-      return `${icon} Argent : ${parts.join(' ') || '0'}`;
+      return `Argent : ${parts.join(' ') || '0'}`;
     }
-    case 'giveXp': return `${icon} ${e.amount ?? 0} PX (groupe)`;
-    case 'restoreFortune': return `${icon} Regagner la Chance`;
-    case 'inflictNightmares': return `${icon} Cauchemars${e.heroId ? ` → ${e.heroId}` : ''}`;
-    case 'inflictDisease': return `${icon} Maladie : ${e.disease || '?'}`;
-    case 'inflictHunger': return `${icon} Faim ×${e.days ?? 1} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
-    case 'exposureNight': return `${icon} Exposition ${e.kind === 'chaleur' ? 'chaleur' : 'froid'} ×${e.count ?? 2} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
-    case 'inflictTrauma': return `${icon} Critique : ${e.kind ?? 'fracture'} (${e.location ?? '?'})`;
-    case 'ambitionLost': return `${icon} Ambition anéantie → Trauma${e.heroId ? ` → ${e.heroId}` : ''}`;
+    case 'giveXp': return `${e.amount ?? 0} PX (groupe)`;
+    case 'restoreFortune': return `Regagner la Chance`;
+    case 'inflictNightmares': return `Cauchemars${e.heroId ? ` → ${e.heroId}` : ''}`;
+    case 'inflictDisease': return `Maladie : ${e.disease || '?'}`;
+    case 'inflictHunger': return `Faim ×${e.days ?? 1} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
+    case 'exposureNight': return `Exposition ${e.kind === 'chaleur' ? 'chaleur' : 'froid'} ×${e.count ?? 2} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
+    case 'inflictTrauma': return `Critique : ${e.kind ?? 'fracture'} (${e.location ?? '?'})`;
+    case 'ambitionLost': return `Ambition anéantie → Trauma${e.heroId ? ` → ${e.heroId}` : ''}`;
     case 'ops': {
       const who = e.on === 'hero' ? '1ᵉʳ héros' : e.on === 'caster' ? 'lanceur' : e.on === 'target' ? 'cible' : 'groupe';
-      return `${icon} ${who} : ${(e.ops ?? []).map(opSummary).join(', ') || '(aucune op)'}`;
+      return `${who} : ${(e.ops ?? []).map(opSummary).join(', ') || '(aucune op)'}`;
     }
-    case 'zoneBlast': return `${icon} Souffle ${(e.ops ?? []).length} op(s) rayon ${e.radius ?? 0} @(${e.center?.x ?? 0},${e.center?.y ?? 0})`;
-    case 'fall': return `${icon} Chute ${e.metres ?? 0} m → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}${e.to ? ` ⤓(${e.to.x},${e.to.y}${e.to.z ? `,z${e.to.z}` : ''})` : ''}`;
-    case 'setLight': return `${icon} Lumière ${Math.round((e.level ?? 1) * 100)} %`;
-    case 'setDoor': return `${icon} Porte (${e.x ?? 0},${e.y ?? 0},${e.side ?? 'N'}) ${e.open ? 'ouverte' : 'fermée'}`;
-    case 'giveSin': return `${icon} ${e.amount ?? 1} point(s) de Péché`;
-    case 'corruptionExposure': return `${icon} Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
-    case 'waterExposure': return `${icon} Eau souillée (${e.mode === 'immersion' ? 'immersion' : 'ingestion'}${e.source ? ` · ${e.source}` : ''}) → ${e.target === 'party' ? 'groupe' : (e.heroId || '1ᵉʳ héros')}`;
-    case 'learnSpell': return `${icon} Apprendre : ${e.spell ? refLabel('spells', { id: e.spell }) : '?'}`;
+    case 'zoneBlast': return `Souffle ${(e.ops ?? []).length} op(s) rayon ${e.radius ?? 0} @(${e.center?.x ?? 0},${e.center?.y ?? 0})`;
+    case 'fall': return `Chute ${e.metres ?? 0} m → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}${e.to ? ` ⤓(${e.to.x},${e.to.y}${e.to.z ? `,z${e.to.z}` : ''})` : ''}`;
+    case 'setLight': return `Lumière ${Math.round((e.level ?? 1) * 100)} %`;
+    case 'setDoor': return `Porte (${e.x ?? 0},${e.y ?? 0},${e.side ?? 'N'}) ${e.open ? 'ouverte' : 'fermée'}`;
+    case 'giveSin': return `${e.amount ?? 1} point(s) de Péché`;
+    case 'corruptionExposure': return `Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
+    case 'waterExposure': return `Eau souillée (${e.mode === 'immersion' ? 'immersion' : 'ingestion'}${e.source ? ` · ${e.source}` : ''}) → ${e.target === 'party' ? 'groupe' : (e.heroId || '1ᵉʳ héros')}`;
+    case 'learnSpell': return `Apprendre : ${e.spell ? refLabel('spells', { id: e.spell }) : '?'}`;
     case 'petitePriere': {
       const n = e.reward ? (e.reward.kind === 'seq' ? e.reward.steps.length : 1) : 0;
-      return `${icon} Petites Prières (site sacré)${e.heroId ? ` → ${e.heroId}` : ''} · ${n} bloc(s) si exaucée`;
+      return `Petites Prières (site sacré)${e.heroId ? ` → ${e.heroId}` : ''} · ${n} bloc(s) si exaucée`;
     }
-    case 'rest': return `${icon} Repos ${e.days ?? 1} nuit(s) (${e.lodging ?? 'maison'}${e.quality === 'pietre' ? ', piètre' : ''})`;
-    case 'mealParty': return `${icon} Repas du groupe`;
-    case 'interlude': return `${icon} Interlude : ${e.weeks ?? 1} semaine(s)`;
-    case 'startCombat': return `${icon} Combat : ${e.encounter || '?'}`;
+    case 'rest': return `Repos ${e.days ?? 1} nuit(s) (${e.lodging ?? 'maison'}${e.quality === 'pietre' ? ', piètre' : ''})`;
+    case 'mealParty': return `Repas du groupe`;
+    case 'interlude': return `Interlude : ${e.weeks ?? 1} semaine(s)`;
+    case 'startCombat': return `Combat : ${e.encounter || '?'}`;
     case 'startMassBattle': {
       const b: MassBattleSpec = e.battle ?? {};
       const rounds = b.plannedRounds ?? 1;
       const sit = b.situations?.length ? `, ${b.situations.length} situation(s)` : '';
-      return `${icon} Combat de masse : ${b.allyName || 'Alliés'} (${b.allyMight ?? 0}) vs ${b.enemyName || 'Ennemis'} (${b.enemyMight ?? 0}) — ${rounds} Round${rounds > 1 ? 's' : ''}${sit}`;
+      return `Combat de masse : ${b.allyName || 'Alliés'} (${b.allyMight ?? 0}) vs ${b.enemyName || 'Ennemis'} (${b.enemyMight ?? 0}) — ${rounds} Round${rounds > 1 ? 's' : ''}${sit}`;
     }
     case 'transition': {
       const sc = ctx?.scenes?.find((s) => s.id === e.scene);
-      return `${icon} Vers ${sc?.nom ?? e.scene ?? '?'}${e.entry ? ` @ ${e.entry}` : ''}`;
+      return `Vers ${sc?.nom ?? e.scene ?? '?'}${e.entry ? ` @ ${e.entry}` : ''}`;
     }
-    case 'transitionBack': return `${icon} Retour scène précédente`;
-    case 'openWorldMap': return `${icon} Carte du monde (voyage)`;
-    case 'setVessel': return `${icon} Navire : ${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}`;
-    case 'startDialogue': return `${icon} Dialogue : ${e.dialogue || '?'}`;
-    case 'openMerchant': return `${icon} Boutique : ${e.entityId || '?'}`;
-    case 'openTavernGames': return `${icon} Jeux de taverne`;
-    case 'medicalAid': return `${icon} Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
-    case 'extendedTest': return `${icon} Test Étendu ${e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic || '?')} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
-    case 'forceDoor': return `${icon} Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
-    case 'setTime': return `${icon} Heure → ${DAY_PHASES.find((p) => p.key === e.phase)?.label ?? e.phase}`;
+    case 'transitionBack': return `Retour scène précédente`;
+    case 'openWorldMap': return `Carte du monde (voyage)`;
+    case 'setVessel': return `Navire : ${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}`;
+    case 'startDialogue': return `Dialogue : ${e.dialogue || '?'}`;
+    case 'openMerchant': return `Boutique : ${e.entityId || '?'}`;
+    case 'openTavernGames': return `Jeux de taverne`;
+    case 'medicalAid': return `Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
+    case 'extendedTest': return `Test Étendu ${e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic || '?')} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
+    case 'forceDoor': return `Enfoncer « ${e.label || '?'} » (BE ${e.doorBE ?? 0}, B ${e.doorB ?? 0})${e.flag ? ` → flag ${e.flag}` : ''}`;
+    case 'setTime': return `Heure → ${DAY_PHASES.find((p) => p.key === e.phase)?.label ?? e.phase}`;
     case 'delayedEffect': {
       const when = e.afterMinutes != null
         ? `dans ${e.afterMinutes} min`
         : `à ${String(e.atHour ?? 0).padStart(2, '0')}:${String(e.atMinute ?? 0).padStart(2, '0')}`;
       const n = e.flow ? (e.flow.kind === 'seq' ? e.flow.steps.length : 1) : 0;
-      return `${icon} Différé ${when} → ${n} bloc(s)${e.cancelFlag ? ` · annulé si ${e.cancelFlag}` : ''}`;
+      return `Différé ${when} → ${n} bloc(s)${e.cancelFlag ? ` · annulé si ${e.cancelFlag}` : ''}`;
     }
-    case 'endDialogue': return `${icon} Fermer le dialogue`;
+    case 'endDialogue': return `Fermer le dialogue`;
   }
 }
 
@@ -781,7 +781,7 @@ export function EffectList({ effects, onChange, ctx }: { effects: Effect[]; onCh
       {effects.map((eff, i) => (
         <details className="eff-row" key={i}>
           <summary>
-            <span className="eff-summary">{effectSummary(eff, ctx)}</span>
+            <span className="eff-summary"><Icon id={EFFECT_ICON[eff.type]} size="sm" /> {effectSummary(eff, ctx)}</span>
             <span className="eff-actions" onClick={(e) => e.preventDefault()}>
               <button className="btn small" title="Monter (l'ordre d'application compte)" disabled={i === 0} onClick={() => swap(i, i - 1)}>↑</button>
               <button className="btn small" title="Descendre" disabled={i === effects.length - 1} onClick={() => swap(i, i + 1)}>↓</button>
@@ -810,7 +810,7 @@ export function EffectList({ effects, onChange, ctx }: { effects: Effect[]; onCh
                     closeDetails(e.currentTarget);
                   }}
                 >
-                  {EFFECT_ICON[t]} {EFFECT_LABEL[t]}
+                  <Icon id={EFFECT_ICON[t]} size="sm" /> {EFFECT_LABEL[t]}
                 </button>
               ))}
             </div>

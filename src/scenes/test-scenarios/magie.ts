@@ -25,7 +25,7 @@ const scene = buildScene({
     'corruptrice → mutation possible, Aelindra est proche du seuil) ; PUIS franchissez la ligne à l’est pour ' +
     'engager. En combat : enchantez/bénissez/invoquez/drainez, Explosion au clic-case (ZdE), surincantez, ' +
     'Contre-sort & dissipation des deux camps ; le Prêtre a 3 Péchés (Colère possible même sur Prière réussie) ; ' +
-    '⚠ l’Envoûteuse cause Peur 2 + Terreur 2 à l’ouverture (Test de Psychologie).',
+    'l’Envoûteuse cause Peur 2 + Terreur 2 à l’ouverture (Test de Psychologie).',
   // Influence corruptrice (LDB 19) puis ligne d'engagement : deux bandes verticales que le groupe traverse
   // en avançant vers l'est (réfs ennemies par ID STABLE — un libellé retomberait sur un mannequin B:10).
   triggers: [

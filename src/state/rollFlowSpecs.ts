@@ -6,7 +6,7 @@
  * câble les handlers générés sous les noms canoniques (`trampleRoll`, `trampleReroll`…) et garde
  * la main sur « Appliquer » (`xConfirm`) et « Annuler ».
  *
- * ⚠️ Fidélité : chaque `resolve`/`derive` reprend À L'IDENTIQUE le code historique du store
+ * Fidélité : chaque `resolve`/`derive` reprend À L'IDENTIQUE le code historique du store
  * (références RAW en place). Ne rien y « simplifier » sans citer la source.
  */
 import type {

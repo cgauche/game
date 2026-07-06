@@ -400,7 +400,7 @@ function runTravelDays(get: Get, set: Set): void {
     // locaux ne survivent pas — `continueTravelDayAfterCascade` les relit depuis `plan.recap`.
     if (recap) set({ travelPlan: { ...get().travelPlan!, recap } });
     if (daySteps.length) {
-      startCascade(get, set, { title: '🧭 Journée de route', icon: '🧭', purpose: 'travelDay', steps: daySteps });
+      startCascade(get, set, { title: 'Journée de route', icon: 'travel/compass', purpose: 'travelDay', steps: daySteps });
       return; // la clôture de la cascade (continueTravelDayAfterCascade) finalise le jour
     }
     // Aucun jet influençable : finalisation immédiate (arrivée / halte de nuit) — comme la cascade le
@@ -447,7 +447,7 @@ function buildTravelDayCascade(
   if (rule('travel-etapes')) {
     const season = currentSeason(get);
     const w = rollStageWeather(battleRng(), season);
-    log(get, set, [`Météo de l'Étape (🎲 ${w.roll}) : ${WEATHER_LABEL[w.weather]}.`]);
+    log(get, set, [`Météo de l'Étape (${w.roll}) : ${WEATHER_LABEL[w.weather]}.`]);
     steps.push(...buildStageSteps(get, set, w.weather, season));
   }
 
@@ -458,7 +458,7 @@ function buildTravelDayCascade(
   // chemin de base sans péripétie reste sans cascade quand la règle Étapes est éteinte).
   const perilDie = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
   if ((route.perils ?? []).length > 0 || perilDie >= 1) {
-    steps.push({ id: 'land-peril', kind: 'landPeril', icon: '⚠️', label: 'Péripéties de la route', interactive: true,
+    steps.push({ id: 'land-peril', kind: 'landPeril', icon: 'ui/warning', label: 'Péripéties de la route', interactive: true,
       meta: { destLabel: dest.destLabel } });
   }
 
@@ -505,7 +505,7 @@ export function continueTravelDayAfterCascade(get: Get, set: Set): boolean {
       const h = get().party.find((x) => x.id === id);
       if (!h) continue;
       const r = forcedMarchTest(h, battleRng());
-      if (r) { log(get, set, [r.line]); recapDay?.entries?.push({ actorId: id, icon: '🥾', label: 'Marche forcée', d: r.d, text: r.gained ? `+${r.gained} Exténué` : 'tient l’allure', tone: r.gained ? 'bad' : 'ok' }); }
+      if (r) { log(get, set, [r.line]); recapDay?.entries?.push({ actorId: id, icon: 'travel/foot', label: 'Marche forcée', d: r.d, text: r.gained ? `+${r.gained} Exténué` : 'tient l’allure', tone: r.gained ? 'bad' : 'ok' }); }
     }
     set({ party: [...get().party] });
   };
@@ -575,7 +575,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
   const die = route.perilDie ?? get().worldMap?.params?.perilDie ?? TRAVEL_DEFAULTS.perilDie;
   if (die >= 1 && d10(battleRng()) === die) {
     const entry = PERIPETIES[d10(battleRng()) - 1];
-    j.push(`Péripétie de voyage (🎲 ${entry.roll}) — ${entry.label} : ${entry.text}`);
+    j.push(`Péripétie de voyage (${entry.roll}) — ${entry.label} : ${entry.text}`);
     const party = get().party;
     if (entry.kind === 'reposant') {
       for (const h of party) {
@@ -589,7 +589,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       // Survie en extérieur Accessible (+20) INFLUENÇABLE → étape-jet insérée (échec = retard + Exténué).
       const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12)
       if (best) return { journal: j, insert: [{
-        id: 'peril-survie', kind: 'landPerilSurvie', actorId: best.actor.id, icon: '🧭', label: 'Survie en extérieur',
+        id: 'peril-survie', kind: 'landPerilSurvie', actorId: best.actor.id, icon: 'travel/compass', label: 'Survie en extérieur',
         rollLabel: 'Survie en extérieur', base: best.value, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
       }] };
       j.push(...applyEreintant(get, set)); // personne pour tester : retard direct
@@ -599,7 +599,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       const configured = !!(route.ambush?.scene && route.ambush.encounter);
       const best = partyAssisted(party, 'perception'); // Soutien (LDB 12)
       if (best) return { journal: j, insert: [{
-        id: 'peril-perception', kind: 'landPerilPerception', actorId: best.actor.id, icon: '👁️', label: 'Perception',
+        id: 'peril-perception', kind: 'landPerilPerception', actorId: best.actor.id, icon: 'ui/eye', label: 'Perception',
         rollLabel: 'Perception', base: best.value, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
         meta: { destLabel, configured, ambushScene: route.ambush?.scene ?? '', ambushEntry: route.ambush?.entry ?? '', ambushEnc: route.ambush?.encounter ?? '' } }] };
       if (configured) { j.push(...markLandInterrupt(get, set, { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: false }, destLabel)); return { journal: j }; }
@@ -614,7 +614,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
  *  +1 Exténué chacun (`applyEreintant`). */
 registerCascadeApplier('landPerilSurvie', (get, set, step, hero) => {
   if (!step.result) return;
-  const j = [`${hero?.name ?? 'Le groupe'} — Survie en extérieur (+20) : 🎲 ${step.result.roll}/${step.result.target} → ${step.result.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`];
+  const j = [`${hero?.name ?? 'Le groupe'} — Survie en extérieur (+20) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`];
   if (!step.result.success) j.push(...applyEreintant(get, set));
   return { journal: j };
 });
@@ -625,7 +625,7 @@ registerCascadeApplier('landPerilPerception', (get, set, step, hero) => {
   if (!step.result) return;
   const configured = !!step.meta?.configured;
   const destLabel = String(step.meta?.destLabel ?? '');
-  const j = [`${hero?.name ?? 'Le groupe'} — Perception (+20) : 🎲 ${step.result.roll}/${step.result.target} → ${step.result.success ? 'le groupe les voit venir !' : configured ? 'ÉCHEC — embuscade !' : 'ÉCHEC.'}`];
+  const j = [`${hero?.name ?? 'Le groupe'} — Perception (+20) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'le groupe les voit venir !' : configured ? 'ÉCHEC — embuscade !' : 'ÉCHEC.'}`];
   if (configured) j.push(...markLandInterrupt(get, set, {
     kind: 'ambush', scene: String(step.meta?.ambushScene ?? ''), entry: String(step.meta?.ambushEntry ?? '') || undefined,
     encounter: String(step.meta?.ambushEnc ?? ''), noSurprise: step.result.success,
@@ -645,12 +645,12 @@ function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure:
   for (const o of outcomes) {
     lines.push(...o.lines);
     for (const t of o.tests) {
-      day.entries!.push({ actorId: o.mount.hero.id, icon: '🐎', label: t.label, d: t, text: t.success ? 'tient l’allure' : 'flanche', tone: t.success ? 'ok' : 'bad' });
+      day.entries!.push({ actorId: o.mount.hero.id, icon: 'travel/mount', label: t.label, d: t, text: t.success ? 'tient l’allure' : 'flanche', tone: t.success ? 'ok' : 'bad' });
     }
     for (const inc of o.incidents) {
       if (inc.riderTest) {
         day.entries!.push({
-          actorId: o.mount.hero.id, icon: '🐎', label: `${inc.entry.label} — Chevaucher`, d: inc.riderTest,
+          actorId: o.mount.hero.id, icon: 'travel/mount', label: `${inc.entry.label} — Chevaucher`, d: inc.riderTest,
           text: inc.riderTest.success ? 'se maintient en selle' : 'chute (2 m)', tone: inc.riderTest.success ? 'ok' : 'bad',
         });
       }
@@ -718,16 +718,16 @@ function forcedPaceDay(get: Get, set: Set, kmLeft: number): ForcedPaceDayResult 
     }
     const stupefiant = roll.sl <= -6; // Échec Stupéfiant (EDOC 07 l.253)
     out.entries.push({
-      actorId: driver?.actor.id ?? '', icon: '🐎', label: 'Conduite d’attelage (allure forcée)',
+      actorId: driver?.actor.id ?? '', icon: 'travel/cart', label: 'Conduite d’attelage (allure forcée)',
       d: testDetail('Conduite d’attelage', base, roll),
       text: stupefiant ? 'Échec Stupéfiant — Problème de véhicule !' : 'les bêtes repassent au pas', tone: 'bad',
     });
-    out.lines.push(`${driver?.actor.name ?? 'Le conducteur'} — Conduite d'attelage (allure forcée) : 🎲 ${roll.roll}/${roll.target} → ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`);
+    out.lines.push(`${driver?.actor.name ?? 'Le conducteur'} — Conduite d'attelage (allure forcée) : ${roll.roll}/${roll.target} → ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`);
     // « chacun doit réussir un Test de Résistance Intermédiaire (+0) ou acquérir un État Exténué » (l.229)
     // — les bêtes de l'attelage (transport), leur fatigue est journalisée.
     for (let i = 0; i < t.draft!.count; i++) {
       const rt = rollTest(draft.e, 'intermediaire', battleRng());
-      if (!rt.success) out.lines.push(`Une bête de l'attelage est Exténuée (Résistance 🎲 ${rt.roll}/${rt.target}).`);
+      if (!rt.success) out.lines.push(`Une bête de l'attelage est Exténuée (Résistance ${rt.roll}/${rt.target}).`);
     }
     if (stupefiant) {
       const pb = applyVehicleProblemToTravel(get, set, out);
@@ -763,7 +763,7 @@ function applyVehicleProblemToTravel(get: Get, set: Set, out: Pick<ForcedPaceDay
     // maîtrise = Test de Conduite d'attelage Intermédiaire (+0) du conducteur.
     const driver = partyAssisted(get().party, 'conduite-d-attelage');
     const rt = rollTest(driver?.value ?? 0, 'intermediaire', battleRng());
-    out.lines.push(`Problème de véhicule — ${entry.label}.`, `${driver?.actor.name ?? 'Le conducteur'} tente de reprendre le contrôle : 🎲 ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
+    out.lines.push(`Problème de véhicule — ${entry.label}.`, `${driver?.actor.name ?? 'Le conducteur'} tente de reprendre le contrôle : ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
     if (rt.success) return { vehicleOut: false, vehicleLame: false };
     entry = rollVehicleProblem(96); // 96-00 = Accident (table verbatim)
   } else if (entry.id === 'casse') {

@@ -1387,9 +1387,9 @@ function enemyAutoDeviate(
  *  Critique pré-tiré dans la MÊME modale). Builder UNIQUE des 3 chemins. */
 function pushDeviationStep(set: SetFn, dev: PendingDeviation): void {
   pushCombatStep(set, {
-    id: `cons-deviation-${dev.targetId}`, kind: 'deviation', actorId: dev.targetId, icon: '💥',
+    id: `cons-deviation-${dev.targetId}`, kind: 'deviation', actorId: dev.targetId, icon: 'fire/blast',
     label: 'Coup Critique — dévier ?',
-    options: [{ key: 'devier', label: '🛡️ Dévier (−1 PA)' }, { key: 'subir', label: 'Subir' }],
+    options: [{ key: 'devier', label: 'Dévier (−1 PA)' }, { key: 'subir', label: 'Subir' }],
     defaultChoice: 'devier', deviation: dev, reveal: dev.reveal, interactive: true,
   });
 }
@@ -1659,9 +1659,9 @@ export function applyAttackResult(
         // au lieu d'une modale `pendingBladeTrap` séparée. L'applier 'bladeTrap' appelle resolveBladeTrap.
         const pbt: PendingBladeTrap = { defenderId: target.id, attackerId: attacker.id, weapon, parryWeaponUid: res.parryWeapon.uid!, defSL: dd.sl, roll: dd.roll };
         pushCombatStep(set, {
-          id: `cons-bladetrap-${target.id}`, kind: 'bladeTrap', actorId: target.id, icon: '🗡️',
+          id: `cons-bladetrap-${target.id}`, kind: 'bladeTrap', actorId: target.id, icon: 'item/weapon',
           label: 'Parade — piéger la lame ?',
-          options: [{ key: 'trap', label: '🗡️ Piéger la lame' }, { key: 'crit', label: '💥 Coup Critique' }],
+          options: [{ key: 'trap', label: 'Piéger la lame' }, { key: 'crit', label: 'Coup Critique' }],
           defaultChoice: 'crit', bladeTrap: pbt,
           outcome: [
             `${target.name} place un Critique en parant avec ${res.parryWeapon.name} — la lame de ${attacker.name} (${weapon.name}) est à portée.`,
@@ -2122,7 +2122,7 @@ export function maybeOpenDefense(
         ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
       },
     });
-    startCascade(get, set, { title: 'Défense', icon: '🛡️', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });
+    startCascade(get, set, { title: 'Défense', icon: 'action/defend', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });
     return true;
   }
   if (weapon?.type !== 'melee') return false;
@@ -2148,7 +2148,7 @@ export function maybeOpenDefense(
       ...(free ? { free: true, freeKind: free.kind, prevActed: free.prevActed } : {}),
     },
   });
-  startCascade(get, set, { title: 'Défense', icon: '🛡️', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });
+  startCascade(get, set, { title: 'Défense', icon: 'action/defend', purpose: 'combat', steps: [{ id: 'defense-jet', kind: 'defenseJet', jet: 'defense', actorId: target.id }] });
   return true;
 }
 
@@ -2823,7 +2823,7 @@ export function applyMiscast(get: Get, set: SetFn, caster: Combatant, severity: 
   if (caster.kind === 'hero' && !opts?.suppressReveal) {
     const colere = severity === 'colere';
     const title = colere ? 'Colère des dieux' : 'Incantation Imparfaite';
-    const icon = colere ? '⚡' : '💥';
+    const icon = colere ? 'magic/power' : 'fire/blast';
     // Charge riche `reveal` (table : dé + lignes) — comme le Critique ; le dé reste observable (Péché +10).
     const reveal: RevealEntry = { kind: 'miscast', title, dice: m.rolls[0], lines, subjectId: caster.id, severity: 'grave' };
     // FOLD : l'Imparfaite/Colère est une ÉTAPE de la cascade d'incantation ACTIVE (parité avec le
@@ -3043,7 +3043,7 @@ export function castZoneSpell(get: Get, set: SetFn, caster: Combatant, label: st
  *  et les résolveurs de cast ferment le pending directement (jamais `cascadeFinish` → pas de reprise IA). */
 export function openCastCascade(get: Get, set: SetFn, caster: Combatant): void {
   startCascade(get, set, {
-    title: 'Incantation', icon: '🔮', purpose: 'combat',
+    title: 'Incantation', icon: 'action/cast', purpose: 'combat',
     steps: [{ id: `cast-${caster.id}`, kind: 'cast', actorId: caster.id, jet: 'cast', ...(caster.kind === 'enemy' ? { groupOwner: true } : {}) }],
   });
 }
@@ -4085,24 +4085,24 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
     const resVal = combatEndResistVal(c);
     for (const d of decided.diseases) {
       steps.push({
-        id: `combatEndDisease-${c.id}-${d.disease}`, kind: 'combatEndDisease', actorId: c.id, icon: '🤢',
+        id: `combatEndDisease-${c.id}-${d.disease}`, kind: 'combatEndDisease', actorId: c.id, icon: 'medical/infection',
         rollLabel: 'Résistance', base: resVal, target: resVal + DIFFICULTY_MODIFIERS[d.difficulty] + combatTestPenalty(c),
-        label: `🤢 ${d.label}`, meta: { disease: d.disease, ...(d.instant ? { instant: true } : {}) },
+        label: d.label, meta: { disease: d.disease, ...(d.instant ? { instant: true } : {}) },
         menace: 'maladie', // Test de Contraction = « résister à la Maladie » (Résistance (Menace), LDB 10)
       });
     }
     if (decided.corruption && corr) {
       const res = testValue(c, 'resistance');
       steps.push({
-        id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actorId: c.id, icon: '🧬',
+        id: `combatEndCorruption-${c.id}`, kind: 'combatEndCorruption', actorId: c.id, icon: 'nav/mutation',
         rollLabel: 'Résistance', base: res, target: res + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c),
-        label: `🧬 Exposition à la Corruption (${corr.label})`, meta: { level: corr.level, exposureLabel: corr.label },
+        label: `Exposition à la Corruption (${corr.label})`, meta: { level: corr.level, exposureLabel: corr.label },
         menace: 'corruption', // Test d'Exposition = « résister à la Corruption » (Résistance (Menace), LDB 10)
       });
     }
   }
   if (inlineLines.length) set({ journal: [...get().journal.slice(-40), ...inlineLines] });
-  if (steps.length) startCascade(get, set, { title: 'Conséquences du combat', icon: '🩸', purpose: 'combat', steps, combatEndBoundary: true });
+  if (steps.length) startCascade(get, set, { title: 'Conséquences du combat', icon: 'condition/bleeding', purpose: 'combat', steps, combatEndBoundary: true });
 }
 
 /** Applier d'une étape `combatEndDisease` (LDB 18/20) : Test de Résistance RÉSOLU → échec = contracte la
@@ -4139,9 +4139,9 @@ registerCascadeApplier('combatEndCorruption', (get, set, step, hero) => {
 export function openContractionCascade(get: Get, set: SetFn, patient: Combatant, disease: string, difficulty: Difficulty, title: string): void {
   const resVal = combatEndResistVal(patient);
   startCascade(get, set, {
-    title, icon: '🩸', purpose: 'test',
+    title, icon: 'condition/bleeding', purpose: 'test',
     steps: [{
-      id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', actorId: patient.id, icon: '🤢',
+      id: `infection-${patient.id}-${disease}`, kind: 'combatEndDisease', actorId: patient.id, icon: 'medical/infection',
       rollLabel: 'Résistance', base: resVal, target: resVal + DIFFICULTY_MODIFIERS[difficulty],
       label: title, result: null, interactive: true, meta: { disease }, menace: 'maladie',
     }],
@@ -4340,7 +4340,7 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
   // ne sauve pas une arme brisée). Sinon, la 1re fois dans la période le porteur GARDE l'arme (−20/1 Round) ;
   // le 2e évènement de lâcher la fait tomber. Capacité lue en DONNÉE (`preventForcedDrop`), jamais par nom.
   if (!drop.destroyed && lockedGauntletHolds(attacker, drop, battle.round)) {
-    pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: '🛡️', label: tr('cf.bladeTrapLabel'), outcome: [tr('cf.lockedGauntletHold', { name: attacker.name, weapon: drop.name })], interactive: true });
+    pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'action/defend', label: tr('cf.bladeTrapLabel'), outcome: [tr('cf.lockedGauntletHold', { name: attacker.name, weapon: drop.name })], interactive: true });
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
     return;
@@ -4348,7 +4348,7 @@ export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: Bl
   attacker.weapons = attacker.weapons.filter((w) => w !== drop);
   // Étape d'AFFICHAGE empilée (comme un Coup Critique) : visible « l'un sous l'autre », acquittée par le
   // joueur. `actorId` = le défenseur piégeur (propriétaire de la modale en coop). Applier muet (préserve `outcome`).
-  pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: '🗡️', label: tr('cf.bladeTrapLabel'), outcome: [line], interactive: true });
+  pushCombatStep(set, { id: `cons-bladetrap-result-${defender.id}`, kind: 'bladeTrapResult', actorId: defender.id, icon: 'item/weapon', label: tr('cf.bladeTrapLabel'), outcome: [line], interactive: true });
   bus.emit(EVT.SCENE_DIRTY);
   checkBattleOver(get, set);
 }
@@ -4740,11 +4740,11 @@ function psychStepFor(get: Get, set: SetFn, c: Combatant, collect: (get: Get, c:
     id: `psych-${c.id}`,
     kind: 'combatPsych',
     actorId: c.id,
-    icon: cl?.emoji ?? (t.kind === 'terreur' ? '😱' : '😨'),
+    icon: cl?.icon ?? (t.kind === 'terreur' ? 'creature/scream' : 'flag/fear'),
     rollLabel: refLabel('skills', { id: skill }),
     base,
     target, // Test (Calme par défaut) à la difficulté déclarée, ou Accessible (+20) avec Sans Peur
-    label: `${cl ? `${cl.emoji} ${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? '😱 Terreur' : '😨 Peur'} ${t.indice}`}${sansPeur ? ' · Sans Peur (+20)' : ''}`,
+    label: `${cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice}`}${sansPeur ? ' · Sans Peur (+20)' : ''}`,
     combatPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: t.sourceName, indice: t.indice, cible: t.cible, prevDR: t.prevDR, sansPeur },
   };
 }
@@ -4780,7 +4780,7 @@ function openCombatPsychCascade(
 /** Cascade de Psychologie de DÉBUT de Round (Traits ciblés + nouvelles Terreurs, LDB 21 l.14) — un héros
  *  par étape. Appelée APRÈS `confirmRoundStart` (acteur posé) ; suspend l'IA jusqu'à résolution. */
 export function openRoundStartPsych(get: Get, set: SetFn): void {
-  openCombatPsychCascade(get, set, collectHeroRoundStartPsych, 'Sang-froid', '😤');
+  openCombatPsychCascade(get, set, collectHeroRoundStartPsych, 'Sang-froid', 'resource/resolve');
 }
 
 /**
@@ -4815,7 +4815,7 @@ export function openRoundEndCascade(get: Get, set: SetFn): void {
     set({ battle: { ...b, log: [...b.log, ...upkeepLines.map((u) => ev('condition', u.line, u.id))] } });
   }
   if (!steps.length) return;
-  startCascade(get, set, { title: 'Fin de Round', icon: '⏳', purpose: 'combat', steps, roundBoundary: true });
+  startCascade(get, set, { title: 'Fin de Round', icon: 'time/clock', purpose: 'combat', steps, roundBoundary: true });
 }
 
 /** Conséquence d'un Test de Calme de COMBAT (étape de cascade) : pose/mets à jour le `psychState`.
@@ -4858,7 +4858,7 @@ registerCascadeApplier(
         if (gained) {
           hero.psychTraits = [...(hero.psychTraits ?? []), gained.phobie];
           hero.briseFromTerreur = 0;
-          phobieLine = `😨 ${hero.name} développe une Phobie durable : ${gained.phobie.cible}.`;
+          phobieLine = `${hero.name} développe une Phobie durable : ${gained.phobie.cible}.`;
         }
       }
     } else if (CIBLE_TYPES.has(cp.kind)) {

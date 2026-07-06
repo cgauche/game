@@ -398,7 +398,7 @@
         "flow": {
           "kind": "choice",
           "prompt": "Renverser",
-          "icon": "🤜",
+          "icon": "condition/prone",
           "cost": {
             "advantage": 2
           },

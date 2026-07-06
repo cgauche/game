@@ -315,7 +315,7 @@ export function patchMember(scene: Scene, encId: string, entityId: string, patch
   };
 }
 
-/** Outil ⚔️ : POSE une entité-personnage de combat (cachée par défaut) à p ET l'enrôle dans la
+/** Outil « combat » : POSE une entité-personnage de combat (cachée par défaut) à p ET l'enrôle dans la
  *  rencontre `encId` (créée si absente). `ref` = créature du bestiaire (profil). */
 export function addEnemyMember(scene: Scene, encId: string, ref: string, p: Pt): { scene: Scene; encId: string; entityId: string } {
   const id = nextEntityId('personnage', scene.entities.map((e) => e.id));

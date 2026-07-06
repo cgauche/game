@@ -38,6 +38,6 @@ describe('i18n — primitive t() + catalogue FR (seam, docs/i18n-seam.md)', () =
     expect(BODY_SHAPE_LOC_LABELS.oiseau.brasG).toBe(t('hitloc.oiseau.brasG'));
     // CIBLE_LABEL DÉRIVE désormais de psychology.json (donnée app-owned, comme etats.json), pas du catalogue t().
     expect(CIBLE_LABEL.animosite.label).toBe(psychologyLabel('animosite'));
-    expect(CIBLE_LABEL.haine.emoji).toBe('😡'); // emoji porté par la donnée
+    expect(CIBLE_LABEL.haine.icon).toBe('flag/anger'); // icône du registre <Icon>, portée par la donnée
   });
 });

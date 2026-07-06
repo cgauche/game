@@ -18,7 +18,7 @@ describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, vict
   });
 
   it('hors combat : refus explicite', () => {
-    expect(buildApi().killEnemies()).toContain('❌');
+    expect(buildApi().killEnemies()).toContain('✗');
   });
 
   it('en combat : tous les ennemis hors de combat + victoire par le flux normal (pendingVictory)', () => {
@@ -31,7 +31,7 @@ describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, vict
 
     const out = buildApi().killEnemies();
 
-    expect(out).toContain('✅');
+    expect(out).toContain('✓');
     const b = useGame.getState().battle!;
     expect(b.over).toBe('victory');
     expect(b.combatants.filter((c) => c.kind === 'enemy').every((c) => isOutOfAction(c))).toBe(true);
@@ -84,15 +84,15 @@ describe('__wfrp — autres commandes de recette', () => {
 
   it('fight : sans argument liste les rencontres de la scène, avec id lance le combat', () => {
     expect(buildApi().fight()).toContain('enc-mutants');
-    expect(buildApi().fight('enc-inconnue')).toContain('❌');
+    expect(buildApi().fight('enc-inconnue')).toContain('✗');
     const out = buildApi().fight('enc-mutants');
-    expect(out).toContain('✅');
+    expect(out).toContain('✓');
     expect(useGame.getState().battle).toBeTruthy();
   });
 
   it('go : id de scène inconnu → message d’erreur, scène inchangée', () => {
     const before = useGame.getState().scene?.id;
-    expect(buildApi().go('scene-qui-n-existe-pas')).toContain('❌');
+    expect(buildApi().go('scene-qui-n-existe-pas')).toContain('✗');
     expect(useGame.getState().scene?.id).toBe(before);
   });
 

@@ -138,7 +138,7 @@ export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
     const netSL = Math.abs(buyerSL - npcSL);
     if (buyerWins) pct = -bargainPct(hasBargainBonus(best.actor), netSL); // remise à l'acheteur
     else if (npcSL > buyerSL) pct = bargainPct(merchant.negotiator, netSL); // le vendeur monte le prix
-    bargainLine = `${best.actor.name} — Marchandage (🎲 ${opp.attacker.roll} vs 🎲 ${opp.defender.roll}${sellerDR ? `, vendeur +${sellerDR} DR` : ''}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
+    bargainLine = `${best.actor.name} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}${sellerDR ? `, vendeur +${sellerDR} DR` : ''}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
   }
   const price = Math.max(0, Math.round(want * offer.basePrice * (1 + pct / 100)));
   const cost = toMoney({ gold: price });
@@ -149,7 +149,7 @@ export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
     vessel: { ...vessel, cargo: [...(vessel.cargo ?? []), cargo] },
     port: { ...st, freeEnc: st.freeEnc - want, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, enc: o.enc - want } : o).filter((o) => o.enc > 0) },
   });
-  log(get, set, [`📦 ${want} Enc de ${offer.label} embarqués — ${bargainLine} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`]);
+  log(get, set, [`${want} Enc de ${offer.label} embarqués — ${bargainLine} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`]);
 }
 
 /** VENTE d'un lot de cargaison (l.351-397) : trouver un acheteur (relation du port au bien),
@@ -172,10 +172,10 @@ export function portSellCargo(get: Get, set: Set, cargoIndex: number): void {
     const best = partyAssisted(get().party, 'ragot');
     const t = best ? rollTest(best.value, chance.gossip.difficulty, rng) : null;
     if (!t?.success) {
-      log(get, set, [`🗣 ${label} — ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'} : le Test de Ragot ${best ? `échoue (🎲 ${t!.roll}/${t!.target})` : 'ne trouve pas de camelot'} — aucun acheteur trouvé.`]);
+      log(get, set, [`${label} — ce port ${sellRelation(st.port, lot.cargoId) === 'surplus' ? 'en regorge' : 'en produit'} : le Test de Ragot ${best ? `échoue (${t!.roll}/${t!.target})` : 'ne trouve pas de camelot'} — aucun acheteur trouvé.`]);
       return;
     }
-    log(get, set, [`🗣 ${best!.actor.name} — Ragot : 🎲 ${t.roll}/${t.target} → un acheteur potentiel est approché.`]);
+    log(get, set, [`${best!.actor.name} — Ragot : ${t.roll}/${t.target} → un acheteur potentiel est approché.`]);
   }
 
   // 2. Trouver un acheteur (d100 ≤ nombre visé, l.362). Échec → proposer la moitié une fois.
@@ -186,7 +186,7 @@ export function portSellCargo(get: Get, set: Set, cargoIndex: number): void {
     found = d100(rng) <= chance.target;
     if (found) log(get, set, [`↔ ${label} : personne pour tout le lot — la moitié (${sellEnc} Enc) trouve preneur.`]);
   }
-  if (!found) { log(get, set, [`🚫 ${label} : aucun marchand intéressé à ${st.label} (nombre visé ${chance.target}).`]); return; }
+  if (!found) { log(get, set, [`${label} : aucun marchand intéressé à ${st.label} (nombre visé ${chance.target}).`]); return; }
 
   // 3. Prix d'offre (% du prix de base, l.376-383) puis Marchandage opposé (vendeur PJ +DR, l.387-397).
   const offerPct = offerPricePct(st.port, lot.cargoId);
@@ -202,14 +202,14 @@ export function portSellCargo(get: Get, set: Set, cargoIndex: number): void {
     const netSL = Math.abs(sellerSL - buyerSL);
     if (sellerWins) bargainPctVal = bargainPct(hasBargainBonus(best.actor), netSL); // le PJ monte le prix
     else if (buyerSL > sellerSL) bargainPctVal = -bargainPct(merchant.negotiator, netSL); // l'acheteur le baisse
-    bargainLine = `${best.actor.name} — Marchandage (🎲 ${opp.attacker.roll} vs 🎲 ${opp.defender.roll}${chance.sellerDR ? `, vendeur ${chance.sellerDR > 0 ? '+' : ''}${chance.sellerDR} DR` : ''}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
+    bargainLine = `${best.actor.name} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}${chance.sellerDR ? `, vendeur ${chance.sellerDR > 0 ? '+' : ''}${chance.sellerDR} DR` : ''}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
   }
   const gross = Math.max(0, Math.round(sellEnc * lot.basePriceGold * (offerPct / 100) * (1 + bargainPctVal / 100)));
   set({
     money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
     vessel: { ...vessel, cargo: sellEnc >= lot.enc ? (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex) : (vessel.cargo ?? []).map((l, i) => i === cargoIndex ? { ...l, enc: l.enc - sellEnc } : l) },
   });
-  log(get, set, [`💰 ${sellEnc} Enc de ${label} vendus (prix d’offre ${offerPct} % du base — ${bargainLine}) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
+  log(get, set, [`${sellEnc} Enc de ${label} vendus (prix d’offre ${offerPct} % du base — ${bargainLine}) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
 }
 
 /** BRADER un lot (l.399) : ¼ du prix de base dans un port « commerce » ou en Demande — sinon refus. */
@@ -227,7 +227,7 @@ export function portDumpCargo(get: Get, set: Set, cargoIndex: number): void {
     money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
     vessel: { ...vessel, cargo: (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex) },
   });
-  log(get, set, [`🏷 ${lot.enc} Enc de ${label} bradés (${pct} % du prix de base) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
+  log(get, set, [`${lot.enc} Enc de ${label} bradés (${pct} % du prix de base) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
 }
 
 // Ré-exports des services de coque (déjà dans seaVoyageFlow) — l'écran Port les appelle par le store.

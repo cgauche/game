@@ -282,7 +282,7 @@ export function runSeaDays(get: Get, set: Set): void {
         let reversed = sea.reversedWinds;
         if (reversed && reversed > 0) { windFrom = 'est'; reversed -= 1; } // dominants d'ouest inversés (ch.15)
         patchSea(get, set, { weather, windFrom, weatherLock: lock, reversedWinds: reversed, milesToday: 0, sailsDown: false, lighthouseDR: 0, eventMMod: sea.eventMMod, paceToday: undefined, step: 'affaler' });
-        tell(get, set, [`🌊 Météo du jour : ${seaWeatherLabel(weather)} — vent de ${windFrom} (cap ${sea.heading}).`]);
+        tell(get, set, [`Météo du jour : ${seaWeatherLabel(weather)} — vent de ${windFrom} (cap ${sea.heading}).`]);
         break;
       }
       case 'affaler': {
@@ -290,7 +290,7 @@ export function runSeaDays(get: Get, set: Set): void {
         const eff = effectiveSeaM(get);
         if (eff.sail && eff.m === null && eff.label.startsWith('Affaler')) {
           patchSea(get, set, { step: 'progression', sailsDown: true });
-          tell(get, set, ['💨 Les vents forcissent dangereusement : il faut affaler les voiles (MDG ch.13) !']);
+          tell(get, set, ['Les vents forcissent dangereusement : il faut affaler les voiles (MDG ch.13) !']);
           if (openVoyageCrewTest(get, set, 'affaler', 'affaler')) return; // suspension modale
           break;
         }
@@ -305,8 +305,8 @@ export function runSeaDays(get: Get, set: Set): void {
           const anchored = shipHasNavalTrait(hullTraits(plan.vehicle!), 'ancre');
           const drift = anchored ? 0 : Math.round(seaMilesPerDay(4, true) * (AFFALER_RULES.driftPctOfSpeed / 100));
           tell(get, set, [!sea.sailsDown
-            ? `⛵ Encalminé — le bateau ne peut pas se déplacer grâce à ses voiles (MDG ch.13 l.296).${anchored ? ' L\'ancre est jetée.' : ` Le courant l'entraîne (${drift} milles).`}`
-            : `⛵ Voiles affalées — ${anchored ? 'ancre jetée en attendant l\'accalmie.' : `le vent pousse le navire (${drift} milles, 25 % de la vitesse — l.294).`}`]);
+            ? `Encalminé — le bateau ne peut pas se déplacer grâce à ses voiles (MDG ch.13 l.296).${anchored ? ' L\'ancre est jetée.' : ` Le courant l'entraîne (${drift} milles).`}`
+            : `Voiles affalées — ${anchored ? 'ancre jetée en attendant l\'accalmie.' : `le vent pousse le navire (${drift} milles, 25 % de la vitesse — l.294).`}`]);
           patchSea(get, set, { milesToday: 0, step: 'crise' });
           break;
         }
@@ -323,12 +323,12 @@ export function runSeaDays(get: Get, set: Set): void {
           if (diff && best) {
             const t = rollTest(best.value, diff, rng);
             patchSea(get, set, { paceToday: t.success ? 'won' : 'lost' });
-            tell(get, set, [`💪 ${best.actor.name} — Forcer le rythme (${rig === 'voile' ? 'Voile' : 'Ramer'} ${DIFFICULTY_LABELS[diff]}) : 🎲 ${t.roll}/${t.target} → ${t.success ? `+${sea.forcePace} M aujourd'hui.` : 'le navire garde son allure.'}`]);
+            tell(get, set, [`${best.actor.name} — Forcer le rythme (${rig === 'voile' ? 'Voile' : 'Ramer'} ${DIFFICULTY_LABELS[diff]}) : ${t.roll}/${t.target} → ${t.success ? `+${sea.forcePace} M aujourd'hui.` : 'le navire garde son allure.'}`]);
             eff = effectiveSeaM(get); // le +M du jour entre dans le M effectif
           }
         }
         patchSea(get, set, { step: 'crise' });
-        tell(get, set, [`⛵ ${plan.vehicle!.name} fait route (${eff.label}, M effectif ${eff.m}).`]);
+        tell(get, set, [`${plan.vehicle!.name} fait route (${eff.label}, M effectif ${eff.m}).`]);
         if (openVoyageCrewTest(get, set, 'progression', 'progression')) return;
         // Sans équipage apte au Test : progression sans DR.
         applySeaProgress(get, set, 0);
@@ -351,7 +351,7 @@ export function runSeaDays(get: Get, set: Set): void {
         const lighthouse = dest?.port?.lighthouse;
         patchSea(get, set, { step: 'orientation' });
         if (lighthouse && milesLeft <= 15 && lighthouseSpotDifficulty(Math.max(1, Math.round(milesLeft))) != null) {
-          tell(get, set, [`🗼 ${dest!.label} : un phare veille sur l'approche — la vigie scrute l'horizon (MDG ch.13 l.337).`]);
+          tell(get, set, [`${dest!.label} : un phare veille sur l'approche — la vigie scrute l'horizon (MDG ch.13 l.337).`]);
           if (openVoyageCrewTest(get, set, 'perception', 'phare')) return;
         }
         break;
@@ -381,7 +381,7 @@ export function runSeaDays(get: Get, set: Set): void {
         if (days <= 0) {
           const mood = vesselManann(get().vessel);
           const { roll, event } = rollBoardEvent(mood.score, rng);
-          tell(get, set, [`🎲 Événement de bord (d100 ${roll} · Humeur de Manann ${mood.score >= 0 ? '+' : ''}${mood.score}) — ${event.label}`]);
+          tell(get, set, [`Événement de bord (d100 ${roll} · Humeur de Manann ${mood.score >= 0 ? '+' : ''}${mood.score}) — ${event.label}`]);
           resolveBoardEvent(get, set, event, rng);
           days = rollDaysToNextEvent(rng);
         }
@@ -394,7 +394,7 @@ export function runSeaDays(get: Get, set: Set): void {
         patchSea(get, set, { step: 'nuit' });
         const hull = plan.vehicle!;
         if (hull.wounds.current < hull.wounds.max) {
-          tell(get, set, [`🔧 ${hull.name} accuse ${hull.wounds.max - hull.wounds.current} Blessure(s) — l'équipage s'affaire aux réparations du soir (MDG 14 l.116).`]);
+          tell(get, set, [`${hull.name} accuse ${hull.wounds.max - hull.wounds.current} Blessure(s) — l'équipage s'affaire aux réparations du soir (MDG 14 l.116).`]);
           if (openVoyageCrewTest(get, set, 'entretien', 'entretien')) return;
         }
         break;
@@ -415,7 +415,7 @@ function applySeaProgress(get: Get, set: Set, progressionDR: number): void {
   // Nuit : équipage nominal requis, sinon ÷2 (MDG 15 l.76) — équipage abstrait (MDG 14 l.39, cf. l.27).
   const miles = Math.round(seaMilesPerDay(eff.m, true, progressionDR));
   patchSea(get, set, { milesToday: miles, eventMMod: undefined }); // « Vents favorables » : +1 M consommé sur UNE journée de route
-  tell(get, set, [`🧭 Progression du jour : ${miles} milles (DR d'équipage ${progressionDR >= 0 ? '+' : ''}${progressionDR}).`]);
+  tell(get, set, [`Progression du jour : ${miles} milles (DR d'équipage ${progressionDR >= 0 ? '+' : ''}${progressionDR}).`]);
 }
 
 /** Fin de journée : eau & scorbut (ch.14), Salissures hebdo (ch.13 l.148), horloge +24 h, entretien
@@ -433,8 +433,8 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
       const first = vessel.cargo[0];
       const r = removeCargo(vessel.cargo, first.cargoId, spoil);
       set({ vessel: { ...vessel, cargo: r.lots } });
-      if (r.removed) lines.push(`🐀 Les rats gâtent ${r.removed} Enc de cargaison pendant la nuit.`);
-    } else lines.push('🐀 Les rats rôdent dans la cale (rien à gâter — pour l\'instant).');
+      if (r.removed) lines.push(`Les rats gâtent ${r.removed} Enc de cargaison pendant la nuit.`);
+    } else lines.push('Les rats rôdent dans la cale (rien à gâter — pour l\'instant).');
   }
 
   // Eau douce (ch.13 l.209-213 + ch.14 l.242) : consommation par bande de Température, si le navire
@@ -446,7 +446,7 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
     const need = crew * dailyWaterLitres(sea.weather.temperature);
     const left = Math.max(0, vessel0.waterLitres - need);
     set({ vessel: { ...vessel0, waterLitres: left } });
-    lines.push(left > 0 ? `🛢 Eau douce : −${need} L (reste ${left} L).` : '🛢 Les tonneaux d\'eau douce sont À SEC — trouvez de l\'eau (MDG ch.14).');
+    lines.push(left > 0 ? `Eau douce : −${need} L (reste ${left} L).` : 'Les tonneaux d\'eau douce sont À SEC — trouvez de l\'eau (MDG ch.14).');
   }
 
   // Scorbut (MDG 14 l.230) : « pour chaque mois passé sans nourriture correcte » — Test de Résistance
@@ -458,7 +458,7 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
       if (h.dead || (h.diseases ?? []).some((d) => d.name === 'scorbut')) continue;
       const soup = (h.items ?? []).some((it) => itemCapability(it, 'scurvyGuard'));
       const t = rollTest(testValue(h, 'resistance', 'E'), soup ? 'facile' : 'intermediaire', rng);
-      lines.push(`🍋 ${h.name} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'tient bon.' : 'CONTRACTÉ.'}`);
+      lines.push(`${h.name} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : ${t.roll}/${t.target} → ${t.success ? 'tient bon.' : 'CONTRACTÉ.'}`);
       if (!t.success) {
         const d = contractDisease('scorbut', rng); // maladies.json — cycle/symptômes par la machinerie EXISTANTE
         if (d) h.diseases = [...(h.diseases ?? []), d];
@@ -475,7 +475,7 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
     const hullE = findVehicleById(vessel1.vehicleId)?.hull?.char.E ?? 40;
     const r = rollWeeklyFouling(hullE, vessel1.fouling?.level ?? 0, rng);
     set({ vessel: { ...get().vessel!, fouling: { level: r.level, lastWeek: week } } });
-    if (r.gained) lines.push(`🦪 Salissures : la coque s'encrasse (niveau ${r.level} — ${foulingEffects(r.level).desc})`);
+    if (r.gained) lines.push(`Salissures : la coque s'encrasse (niveau ${r.level} — ${foulingEffects(r.level).desc})`);
   }
 
   // Horloge : à l'ARRIVÉE au port, la journée entière passe (+24 h) — l'entretien du jour est rattrapé
@@ -502,8 +502,7 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
     for (const h of get().party) {
       if (h.dead) continue;
       const r = exposureNight(h, expCount, testValue(h, 'resistance', 'E'), rng, { kind: tdef.exposure, difficulty: tdef.difficulty });
-      const icon = tdef.exposure === 'froid' ? '🥶' : '🥵';
-      evening.push(`${icon} ${h.name} — Exposition (${tdef.label}, ${expCount} Test${expCount > 1 ? 's' : ''} de Résistance ${DIFFICULTY_LABELS[tdef.difficulty ?? 'intermediaire']}) : ${r.rolls.map((x) => `🎲 ${x.roll}/${x.target}`).join(' · ')}${r.failures ? '' : ' — tient le coup.'}`);
+      evening.push(`${h.name} — Exposition (${tdef.label}, ${expCount} Test${expCount > 1 ? 's' : ''} de Résistance ${DIFFICULTY_LABELS[tdef.difficulty ?? 'intermediaire']}) : ${r.rolls.map((x) => `${x.roll}/${x.target}`).join(' · ')}${r.failures ? '' : ' — tient le coup.'}`);
       evening.push(...r.log);
       expireExposureEffects(h, get().gameTime + MINUTES_PER_DAY); // dissipation après 24 h (purge #T3)
     }
@@ -519,7 +518,7 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
     for (const h of get().party) {
       if (h.dead) continue;
       const t = rollTest(testValue(h, 'resistance', 'E'), diff, rng);
-      evening.push(`😮‍💨 ${h.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[diff]}) : 🎲 ${t.roll}/${t.target} → ${t.success ? 'tient bon.' : '+1 Exténué.'}`);
+      evening.push(`${h.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[diff]}) : ${t.roll}/${t.target} → ${t.success ? 'tient bon.' : '+1 Exténué.'}`);
       if (!t.success) addCondition(h, 'extenue');
     }
     set({ party: [...get().party] });
@@ -540,7 +539,7 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
     // ARRIVÉE : événement de port (2d10 ± Humeur, ch.15 l.127-129) puis transition. La distance de la
     // traversée est NOTÉE sur le navire (vente à un port producteur : « plus de 100 milles », l.366).
     set({ travelPlan: null, ...(get().vessel ? { vessel: { ...get().vessel!, lastVoyageMilles: plan.km } } : {}) });
-    log(get, set, [`⚓ — Accostage à ${to.label} —`]);
+    log(get, set, [`— Accostage à ${to.label} —`]);
     resolvePortArrival(get, set, to.port, battleRng());
     get().transitionTo(to.scene, to.entry);
     return;
@@ -579,7 +578,7 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
           && steamBreakdownTriggered({ success: x.result.roll <= x.result.target, sl: x.result.sl, isDouble: isDoubleRoll(x.result.roll) }));
         if (triggered) {
           const b = rollSteamBreakdown(rng);
-          tell(get, set, [`⚙ PANNE DE VAPEUR — ${b.label} (MDG ch.12 l.313).`, b.desc]);
+          tell(get, set, [`PANNE DE VAPEUR — ${b.label} (MDG ch.12 l.313).`, b.desc]);
           if (b.mSet != null || b.mMod) patchSea(get, set, { milesToday: b.mSet === 0 ? 0 : Math.max(0, Math.round((get().travelPlan?.sea?.milesToday ?? 0) * (1 + (b.mMod ?? 0) / 4))) });
           if (b.hullCritical) { const c = rollShipCritical('coque', rng); applyVesselCritical(get, set, c.log, c.note); }
           if (b.engineDestroyed && get().vessel) {
@@ -591,7 +590,7 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       break;
     }
     case 'affaler': {
-      if (success) tell(get, set, ['✅ Les voiles sont affalées à temps (MDG ch.13 l.292).']);
+      if (success) tell(get, set, ['Les voiles sont affalées à temps (MDG ch.13 l.292).']);
       else {
         // « En cas d'échec, le bateau subit immédiatement un Critique sur ses voiles » (l.292).
         const crit = rollShipCritical(AFFALER_RULES.failCritLocation as ShipCritKey, rng);
@@ -602,11 +601,11 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
     case 'orientation': {
       const dr = total + (sea.lighthouseDR ?? 0);
       const out = orientationOutcome(dr, !!sea.minorDrift);
-      tell(get, set, [`🧭 Orientation (DR ${dr >= 0 ? '+' : ''}${dr}${sea.lighthouseDR ? `, phare +${sea.lighthouseDR}` : ''}) : ${out.desc}`]);
+      tell(get, set, [`Orientation (DR ${dr >= 0 ? '+' : ''}${dr}${sea.lighthouseDR ? `, phare +${sea.lighthouseDR}` : ''}) : ${out.desc}`]);
       if (out.outcome === 'drift-minor') patchSea(get, set, { minorDrift: true });
       if (out.rollCourseChange) {
         const cc = rollCourseChange(rng, out.courseChangeBonus);
-        tell(get, set, [`🌀 Changement de cap (d10 ${cc.roll}, dérive ${cc.side}) : ${cc.desc}`]);
+        tell(get, set, [`Changement de cap (d10 ${cc.roll}, dérive ${cc.side}) : ${cc.desc}`]);
         const plan2 = get().travelPlan!;
         const remaining = plan2.km - plan2.kmDone;
         if (cc.effect === 'retard') set({ travelPlan: { ...plan2, km: plan2.km + remaining * (cc.delayPct / 100) } });
@@ -624,7 +623,7 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       const best = partyAssisted(get().party, 'orientation');
       const dr = success && best ? Math.max(1, lighthouseOrientationDR(best.actor, false), savoirOceansBonus(best.actor)) : 0;
       patchSea(get, set, { lighthouseDR: dr });
-      tell(get, set, [success ? `🗼 La lumière du phare est en vue — l'atterrage se précise (+${dr} DR d'Orientation, MDG ch.13 l.335).` : '🗼 Aucune lumière à l\'horizon — brume ou distance.']);
+      tell(get, set, [success ? `La lumière du phare est en vue — l'atterrage se précise (+${dr} DR d'Orientation, MDG ch.13 l.335).` : 'Aucune lumière à l\'horizon — brume ou distance.']);
       break;
     }
     case 'poursuite': {
@@ -635,15 +634,15 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       const foe = rollTest(c.foeSkill, 'intermediaire', rng);
       const gain = pursuitDistanceGain(myM, total + pursuitLowMPenalty(myM)) - pursuitDistanceGain(c.foeM, foe.sl + pursuitLowMPenalty(c.foeM));
       const distance = c.distance + gain;
-      tell(get, set, [`🏴 Poursuite — ${c.label} : ${gain >= 0 ? 'le navire creuse l\'écart' : 'le poursuivant gagne du terrain'} (${gain >= 0 ? '+' : ''}${gain} → Distance ${distance}/${c.escapeAt}).`]);
+      tell(get, set, [`Poursuite — ${c.label} : ${gain >= 0 ? 'le navire creuse l\'écart' : 'le poursuivant gagne du terrain'} (${gain >= 0 ? '+' : ''}${gain} → Distance ${distance}/${c.escapeAt}).`]);
       // Issue = primitive PARTAGÉE avec la poursuite terrestre (engine/pursuit) : seuils identiques, calcul de gain propre au naval (mètres, MDG ch.13).
       const outcome = pursuitOutcome(distance, c.escapeAt);
       if (outcome === 'escaped') {
         patchSea(get, set, { crisis: undefined });
-        tell(get, set, ['🏴 Le poursuivant abandonne : le navire s\'est échappé (MDG ch.13 l.362).']);
+        tell(get, set, ['Le poursuivant abandonne : le navire s\'est échappé (MDG ch.13 l.362).']);
       } else if (outcome === 'caught') {
         patchSea(get, set, { crisis: undefined });
-        tell(get, set, ['🏴 Rattrapés ! « une collision, suivie d\'un abordage déterminé, est malheureusement inévitable » (MDG ch.13 l.420).']);
+        tell(get, set, ['Rattrapés ! « une collision, suivie d\'un abordage déterminé, est malheureusement inévitable » (MDG ch.13 l.420).']);
         startChaseBoarding(get, set);
       } else {
         patchSea(get, set, { crisis: { ...c, distance } });
@@ -660,10 +659,10 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       const dmg = Math.max(0, w.ic - Math.floor((hull.characteristics?.E ?? 0) / 10));
       hull.wounds.current = Math.max(0, hull.wounds.current - dmg);
       persistHullWounds(get, set);
-      tell(get, set, [`🌀 ${w.label} : l'eau tournoyante broie la coque (${dmg} Blessures) — évasion ${progress}/${c.need} DR.`]);
+      tell(get, set, [`${w.label} : l'eau tournoyante broie la coque (${dmg} Blessures) — évasion ${progress}/${c.need} DR.`]);
       if (progress >= c.need) {
         patchSea(get, set, { crisis: undefined });
-        tell(get, set, ['🌀 Le navire s\'arrache du Tourbillon (Test étendu d\'Évasion accompli, MDG ch.13 l.528).']);
+        tell(get, set, ['Le navire s\'arrache du Tourbillon (Test étendu d\'Évasion accompli, MDG ch.13 l.528).']);
       } else patchSea(get, set, { crisis: { ...c, progress } });
       break;
     }
@@ -674,10 +673,10 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       set({ gameTime: get().gameTime + rollDice(1, 10, rng) * 60 }); // « Chaque Test nécessite … 1d10 heures » (MDG 14 l.100)
       if (progress >= inf.need) {
         patchSea(get, set, { infestation: undefined });
-        tell(get, set, [`🐀 ${inf.label} : la vermine est exterminée (${progress}/${inf.need} DR).`]);
+        tell(get, set, [`${inf.label} : la vermine est exterminée (${progress}/${inf.need} DR).`]);
       } else {
         patchSea(get, set, { infestation: { ...inf, progress } });
-        tell(get, set, [`🐀 ${inf.label} : la purge avance (${progress}/${inf.need} DR).`]);
+        tell(get, set, [`${inf.label} : la purge avance (${progress}/${inf.need} DR).`]);
       }
       break;
     }
@@ -689,8 +688,8 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
         const healed = Math.min(hull.wounds.max - hull.wounds.current, rollDice(1, 10, rng));
         hull.wounds.current += healed;
         persistHullWounds(get, set);
-        tell(get, set, [`🔧 Réparations de fortune : +${healed} Blessures de coque (Entretien ${adj >= 0 ? '+' : ''}${adj} DR après −2, MDG 14 l.122).`]);
-      } else tell(get, set, [`🔧 Les réparations n'aboutissent pas cette nuit (Entretien ${adj} DR après −2).`]);
+        tell(get, set, [`Réparations de fortune : +${healed} Blessures de coque (Entretien ${adj >= 0 ? '+' : ''}${adj} DR après −2, MDG 14 l.122).`]);
+      } else tell(get, set, [`Les réparations n'aboutissent pas cette nuit (Entretien ${adj} DR après −2).`]);
       break;
     }
   }
@@ -719,7 +718,7 @@ function startChaseBoarding(get: Get, set: Set): void {
 function applyVesselCritical(get: Get, set: Set, logLine: string, note: string): void {
   const vessel = get().vessel;
   if (vessel) set({ vessel: { ...vessel, criticals: [...(vessel.criticals ?? []), note] } });
-  tell(get, set, [`💥 ${logLine}`, `→ ${note}`]);
+  tell(get, set, [`${logLine}`, `→ ${note}`]);
 }
 
 // ── Événements de bord (ch.15 l.132-236) — application MÉCANIQUE par `kind` ─────────────────────
@@ -745,7 +744,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       const w = num('wounds', rollDice(1, 10, rng)) || rollDice(1, 10, rng);
       ship.wounds.current = Math.max(0, ship.wounds.current - w);
       persistHullWounds(get, set);
-      tell(get, set, [`⚙ ${ship.name} perd ${w} Blessures (usure).`]);
+      tell(get, set, [`${ship.name} perd ${w} Blessures (usure).`]);
       break;
     }
     case 'coup-critique': {
@@ -780,7 +779,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
         for (let i = 0; i < toSpoil; i++) { const idx = h.items!.findIndex(isRation); if (idx >= 0) { h.items!.splice(idx, 1); spoiled++; } }
       }
       set({ party: [...get().party] });
-      tell(get, set, [`🥖 ${spoiled} ration(s) moisie(s) jetée(s) par-dessus bord.`]);
+      tell(get, set, [`${spoiled} ration(s) moisie(s) jetée(s) par-dessus bord.`]);
       break;
     }
     case 'presage': {
@@ -794,7 +793,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
         const priest = partyAssisted(get().party, 'priere');
         if (priest) {
           const t = rollTest(priest.value, pd, rng);
-          tell(get, set, [`🙏 ${priest.actor.name} — Prière : 🎲 ${t.roll}/${t.target} → ${t.success ? 'Manann est apaisé/honoré.' : 'la prière se perd dans les embruns.'}`]);
+          tell(get, set, [`${priest.actor.name} — Prière : ${t.roll}/${t.target} → ${t.success ? 'Manann est apaisé/honoré.' : 'la prière se perd dans les embruns.'}`]);
           apply = manannD >= 0 ? t.success : !t.success; // bon présage : il faut réussir ; mauvais : réussir l'évite
         }
       }
@@ -839,11 +838,11 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       const dmg = Math.max(0, 47 + (eff.m ?? 1) - Math.floor((ship.characteristics?.E ?? 0) / 10));
       ship.wounds.current = Math.max(0, ship.wounds.current - dmg);
       persistHullWounds(get, set);
-      tell(get, set, [`💥 Collision : la coque encaisse ${dmg} Blessures (Rocher IC 47, MDG ch.13 l.446/497).`]);
+      tell(get, set, [`Collision : la coque encaisse ${dmg} Blessures (Rocher IC 47, MDG ch.13 l.446/497).`]);
       if (d100(rng) <= 20) { // 20 % d'Échouage (l.497)
         const plan2 = get().travelPlan!;
         set({ travelPlan: { ...plan2, km: plan2.km + 0 }, gameTime: get().gameTime + 24 * 60 });
-        tell(get, set, ['⛵ Le navire s\'ÉCHOUE sur le rocher — une journée de manœuvres pour le dégager (Test de Force, ch.13 l.473).']);
+        tell(get, set, ['Le navire s\'ÉCHOUE sur le rocher — une journée de manœuvres pour le dégager (Test de Force, ch.13 l.473).']);
       }
       break;
     }
@@ -851,7 +850,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
     case 'vortex': {
       const w = findWhirlpool(event.kind === 'maelstrom' ? 'maelstrom' : 'puissant-vortex')!;
       patchSea(get, set, { crisis: { kind: 'tourbillon', label: event.label, whirlpoolId: w.id, need: w.evasion.totalDR, progress: 0 } });
-      tell(get, set, [`🌀 ${w.label} : Évasion = Test étendu de Manœuvre pour ${w.evasion.totalDR} DR (MDG ch.13 l.528).`]);
+      tell(get, set, [`${w.label} : Évasion = Test étendu de Manœuvre pour ${w.evasion.totalDR} DR (MDG ch.13 l.528).`]);
       break;
     }
     case 'navire-hostile':
@@ -863,7 +862,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       patchSea(get, set, {
         crisis: { kind: 'poursuite', label: event.label, distance: Math.floor(escapeAt / 2), escapeAt, foeM, foeSkill: 50, desc: event.desc },
       });
-      tell(get, set, [`🏴 Le navire prend la fuite — Poursuite (Distance de départ ${Math.floor(escapeAt / 2)}, évasion à ${escapeAt} — MDG ch.13 l.362-370).`]);
+      tell(get, set, [`Le navire prend la fuite — Poursuite (Distance de départ ${Math.floor(escapeAt / 2)}, évasion à ${escapeAt} — MDG ch.13 l.362-370).`]);
       break;
     }
     case 'debris-cargaison':
@@ -871,7 +870,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       if (!vessel) break;
       const enc = rollDice(event.kind === 'epave-cargaison' ? 2 : 1, 100, rng);
       set({ vessel: { ...vessel, cargo: [...(vessel.cargo ?? []), { cargoId: 'bois', enc, basePriceGold: 0 }] } });
-      tell(get, set, [`📦 ${enc} Enc de cargaison repêchée (à faire évaluer au port).`]);
+      tell(get, set, [`${enc} Enc de cargaison repêchée (à faire évaluer au port).`]);
       break;
     }
     case 'chance-navigateur': {
@@ -895,7 +894,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
         ], { label: event.label, rng, defaultUntilTime: until });
       }
       set({ party: [...get().party] });
-      tell(get, set, ['💚 +2 DR aux Tests de Focalisation (Ghyran), Guérison et Résistance (1d10 jours).']);
+      tell(get, set, ['+2 DR aux Tests de Focalisation (Ghyran), Guérison et Résistance (1d10 jours).']);
       break;
     }
     default:
@@ -909,7 +908,7 @@ function tellManann(get: Get, set: Set, deltaD10: number): void {
   if (!vessel) return;
   const delta = Math.sign(deltaD10) * rollDice(Math.abs(deltaD10), 10, rng);
   set({ vessel: { ...vessel, manann: addManann(vesselManann(vessel), delta) } });
-  tell(get, set, [`🔱 Humeur de Manann : ${delta >= 0 ? '+' : ''}${delta} (→ ${vesselManann(get().vessel).score}).`]);
+  tell(get, set, [`Humeur de Manann : ${delta >= 0 ? '+' : ''}${delta} (→ ${vesselManann(get().vessel).score}).`]);
 }
 
 /** Variante d'ouverture avec un extraDR RAW (Ouragan : Affaler Difficile −20 → −2 DR plats). */
@@ -949,7 +948,7 @@ export function portRepairVessel(get: Get, set: Set): string[] {
     vessel: { ...get().vessel!, wounds: { current: max, max }, criticals: [] },
     gameTime: get().gameTime + Math.max(1, hours) * 60,
   });
-  return [`🔧 ${v.label} remis à neuf : ${missing} Blessure(s), ${cost} CO${lissage ? ' (coque lissée : +50 %)' : ''}, ${Math.max(1, hours)} h de chantier.`];
+  return [`${v.label} remis à neuf : ${missing} Blessure(s), ${cost} CO${lissage ? ' (coque lissée : +50 %)' : ''}, ${Math.max(1, hours)} h de chantier.`];
 }
 
 /** CARÉNAGE en cale sèche (Salissures, ch.13 l.150-159) : « pour récurer un bateau de Taille Moyenne ou
@@ -968,7 +967,7 @@ export function portCareenVessel(get: Get, set: Set): string[] {
   const rest = cost > 0 ? subtract(get().money, toMoney({ gold: cost })) : get().money;
   if (!rest) return [`Le carénage coûte ${cost} CO (${pct} % du coût de base) — la bourse ne suit pas.`];
   set({ money: rest, vessel: { ...vessel, fouling: { level: 0, lastWeek: vessel.fouling?.lastWeek ?? 0 }, crabs: undefined } });
-  return [`🦪 Coque raclée en cale sèche${cost ? ` (${cost} CO — ${pct} % du coût de base, ch.13 l.152)` : ''}.`];
+  return [`Coque raclée en cale sèche${cost ? ` (${cost} CO — ${pct} % du coût de base, ch.13 l.152)` : ''}.`];
 }
 
 /** POSE d'une Amélioration navale (MDG ch.12 l.195-364) : coût par bande de Taille (`installCost` —
@@ -986,7 +985,7 @@ export function portInstallUpgrade(get: Get, set: Set, traitId: string, units = 
   const rest = subtract(get().money, toMoney({ gold }));
   if (!rest) return [`${entry.label} coûte ${gold} CO — la bourse ne suit pas.`];
   set({ money: rest, vessel: { ...vessel, upgrades: [...(vessel.upgrades ?? []), { id: traitId, ...(units > 1 ? { value: units } : {}) }] } });
-  return [`⚓ ${entry.label} installé (${gold} CO${enc ? `, ${enc} Enc` : ''}, MDG ch.12).`];
+  return [`${entry.label} installé (${gold} CO${enc ? `, ${enc} Enc` : ''}, MDG ch.12).`];
 }
 
 // ── Événements de PORT (ch.15 l.127-129 + l.239-263) ─────────────────────────────────────────────
@@ -1001,7 +1000,7 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
   const vessel = get().vessel;
   const mood = vesselManann(vessel);
   const { roll, hours, event } = rollPortEvent(mood.score, rng);
-  log(get, set, [`🎲 Événement de port (2d10 ${roll}) — ${event.label} (dans les ${hours} heures)`, event.desc]);
+  log(get, set, [`Événement de port (2d10 ${roll}) — ${event.label} (dans les ${hours} heures)`, event.desc]);
   // #150 : `travelPlan` est déjà remis à `null` par `finishSeaDay` avant cet appel (l'arrivée l'annule) —
   // le lire ici renverrait TOUJOURS `undefined`. La coque se reconstruit depuis l'état PERSISTANT
   // (`get().vessel`, comme `buildSeaPlan`/`effectiveSeaM` le font via `voyageShip`).
@@ -1039,10 +1038,10 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
       const rest = tax > 0 ? subtract(get().money, toMoney({ gold: tax })) : null;
       if (tax > 0 && rest) {
         set({ money: rest });
-        log(get, set, [`🧾 Droits de douane payés : ${tax} CO (10 % de la cargaison).`]);
+        log(get, set, [`Droits de douane payés : ${tax} CO (10 % de la cargaison).`]);
       } else if (tax > 0 && vessel) {
         set({ vessel: { ...vessel, cargo: [] } });
-        log(get, set, ['🧾 Cargaison SAISIE par la douane (droits impayés).']);
+        log(get, set, ['Cargaison SAISIE par la douane (droits impayés).']);
       }
       break;
     }
@@ -1062,7 +1061,7 @@ export function resolveManannPriest(get: Get, set: Set, pay: boolean): void {
     const rest = subtract(get().money, p.cost);
     if (!rest) return; // garde défensive — l'UI désactive « Payer » si la bourse ne suit pas
     set({ money: rest });
-    log(get, set, [`⛪ La purification est payée (${p.cost.gold} CO ${p.cost.silver}/–).`]);
+    log(get, set, [`La purification est payée (${p.cost.gold} CO ${p.cost.silver}/–).`]);
     return;
   }
   tellManann(get, set, -4);

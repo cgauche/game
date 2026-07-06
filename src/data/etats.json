@@ -194,7 +194,7 @@
           "kind": "test",
           "test": {
             "skill": "calme",
-            "label": "😱 Récupération du Brisé",
+            "label": "Récupération du Brisé",
             "gate": {
               "kind": "all",
               "of": [
@@ -368,7 +368,7 @@
           "test": {
             "skill": "resistance",
             "difficulty": "intermediaire",
-            "label": "☠️ Résistance à l’Empoisonné"
+            "label": "Résistance à l’Empoisonné"
           },
           "success": {
             "kind": "seq",
@@ -577,7 +577,7 @@
           "test": {
             "skill": "resistance",
             "difficulty": "intermediaire",
-            "label": "💫 Résistance au Sonné"
+            "label": "Résistance au Sonné"
           },
           "success": {
             "kind": "seq",

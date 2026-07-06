@@ -111,8 +111,8 @@ export function seatSlotsRemaining(s: GameState, seat: number): number {
 }
 
 /** L'HÔTE accepte-t-il cet intent de `seat` ? Modale ouverte → seul son concerné agit ('*' = tous) ;
- *  sinon → seul le propriétaire du combattant ACTIF agit. Cas à part : les ready-checks et ✋
- *  marquent leur propre siège ; `assignVictoryGear` n'attribue le butin qu'à SES héros. */
+ *  sinon → seul le propriétaire du combattant ACTIF agit. Cas à part : les ready-checks et la levée
+ *  de main marquent leur propre siège ; `assignVictoryGear` n'attribue le butin qu'à SES héros. */
 export function intentAllowedFor(s: GameState, seat: number, action: string, args: unknown[] = []): boolean {
   if (action === 'roundStartReady' || action === 'victoryReady' || action === 'raiseHand') return true;
   if (action === 'assignVictoryGear') return seatOwns(s, seat, typeof args[1] === 'string' ? args[1] : undefined);

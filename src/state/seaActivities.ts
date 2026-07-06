@@ -104,14 +104,14 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
       // de Marchandage Complexe (−10), 10 DR, ≤ 3 tentatives — % récupéré par la table verbatim.
       const capGold = Math.min(vesselFreeEnc(get), Math.floor(toBrass(get().money) / PA_PER_CO));
       const invest = Math.max(0, Math.min(Math.floor(pick.investGold ?? 0), capGold));
-      if (invest <= 0) { lines.push(`💱 ${hero.name} — Commerce d'opportunité : aucune mise engagée.`); continue; }
+      if (invest <= 0) { lines.push(`${hero.name} — Commerce d'opportunité : aucune mise engagée.`); continue; }
       set({ money: fromBrass(toBrass(get().money) - invest * PA_PER_CO) });
       const value = testValue(hero, OPPORTUNITE.test.skillId);
       let total = 0;
       const rolls: string[] = [];
       for (let i = 0; i < OPPORTUNITE.test.maxAttempts; i++) {
         const t = rollTest(value, OPPORTUNITE.test.difficulty, rng);
-        rolls.push(`🎲 ${t.roll}/${t.target}`);
+        rolls.push(`${t.roll}/${t.target}`);
         const step = extendedTestStep(total, t, OPPORTUNITE.test.totalDR);
         total = step.total;
         if (step.done) break;
@@ -119,7 +119,7 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
       const pct = opportunityTradePct(total);
       const back = Math.floor((invest * PA_PER_CO * pct) / 100);
       set({ money: fromBrass(toBrass(get().money) + back) });
-      lines.push(`💱 ${hero.name} — Commerce d'opportunité (Marchandage ${DIFFICULTY_LABELS[OPPORTUNITE.test.difficulty]}, ${OPPORTUNITE.test.totalDR} DR visés) : ${rolls.join(' · ')} → ${total} DR — mise ${invest} CO, retour ${formatMoney(fromBrass(back))} (${pct} %).`);
+      lines.push(`${hero.name} — Commerce d'opportunité (Marchandage ${DIFFICULTY_LABELS[OPPORTUNITE.test.difficulty]}, ${OPPORTUNITE.test.totalDR} DR visés) : ${rolls.join(' · ')} → ${total} DR — mise ${invest} CO, retour ${formatMoney(fromBrass(back))} (${pct} %).`);
       continue;
     }
     if (def.resolver === 'seaChart') {
@@ -133,24 +133,24 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
           hero.items = [...(hero.items ?? []), it];
           recomputeLoadout(hero);
         }
-        lines.push(`🗺 ${hero.name} — Cartographie : 🎲 ${t.roll}/${t.target} → une Carte marine d'une valeur de ${Math.max(0, t.sl)} CO (+2 DR d'Orientation, MDG 15).`);
+        lines.push(`${hero.name} — Cartographie : ${t.roll}/${t.target} → une Carte marine d'une valeur de ${Math.max(0, t.sl)} CO (+2 DR d'Orientation, MDG 15).`);
         // Planque gratuite lors de la Cartographie (l.292) : dépôt optionnel, retrait libre, en sûreté
         // tant que le héros garde la carte-marine (sinon découverte sur un jet ≤ 50, bankWithdrawInner).
         const stashCO = Math.max(0, Math.min(Math.floor(pick.stashGold ?? 0), Math.floor(toBrass(get().money) / PA_PER_CO)));
         if (stashCO > 0) {
           const stashBrass = stashCO * PA_PER_CO;
           set({ money: fromBrass(toBrass(get().money) - stashBrass), bank: [...get().bank, { heroId: hero.id, kind: 'stash', brass: stashBrass, rate: 50, chartSecured: true }] });
-          lines.push(`🗺 ${hero.name} — Planque (MDG 15 l.292) : ${formatMoney(fromBrass(stashBrass))} cachés sur la carte — retrait libre, découverte sur 🎲 ≤ 50.`);
+          lines.push(`${hero.name} — Planque (MDG 15 l.292) : ${formatMoney(fromBrass(stashBrass))} cachés sur la carte — retrait libre, découverte sur ≤ 50.`);
         }
       } else {
-        lines.push(`🗺 ${hero.name} — Cartographie : 🎲 ${t.roll}/${t.target} → les relevés sont inutilisables.`);
+        lines.push(`${hero.name} — Cartographie : ${t.roll}/${t.target} → les relevés sont inutilisables.`);
       }
       continue;
     }
     // Chemin GÉNÉRIQUE data-driven (défs futures sans résolveur bespoke) : même machinerie que les
     // Activités de voyage (Test « au choix », `onSuccess` en GameOp).
     const r = resolveTravelActivity(hero, def, rng);
-    if (r.roll != null) lines.push(`📜 ${hero.name} — ${def.label} : 🎲 ${r.roll}/${r.target} → ${r.success ? 'réussite.' : 'échec.'}`);
+    if (r.roll != null) lines.push(`${hero.name} — ${def.label} : ${r.roll}/${r.target} → ${r.success ? 'réussite.' : 'échec.'}`);
     if (r.success && r.ops.length) lines.push(...applyOps(hero, r.ops, { label: def.label, rng, now: get().gameTime }));
   }
   set({ party: [...get().party], pendingSeaActivities: null });

@@ -94,7 +94,7 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
     if (humanControlled(get(), c)) {
       const base = rawCombatTestBase(c, undefined, char);
       pushCombatStep(set, {
-        id: `actGate-${c.id}-${char}`, kind: 'actGate', actorId: c.id, icon: '🌿', rollLabel: CHAR_LABELS[char],
+        id: `actGate-${c.id}-${char}`, kind: 'actGate', actorId: c.id, icon: 'item/consumable', rollLabel: CHAR_LABELS[char],
         base, target: base + DIFFICULTY_MODIFIERS.intermediaire + combatTestPenalty(c),
         label: t('turn.actGate', { label }),
       });
@@ -114,7 +114,7 @@ registerCascadeApplier('actGate', (_get, _set, step, hero) => {
   return {
     journal: [t('turn.actGateFail', { name: hero.name })],
     insert: [{
-      id: `actGateChoice-${hero.id}`, kind: 'actGateChoice', actorId: hero.id, icon: '🌿',
+      id: `actGateChoice-${hero.id}`, kind: 'actGateChoice', actorId: hero.id, icon: 'item/consumable',
       label: t('turn.actGateChoice'),
       options: [
         { key: 'action', label: t('turn.actGateOptAction') },

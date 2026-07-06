@@ -518,7 +518,7 @@ export interface Scene {
   /** Niveau de lumière ambiante (brouillard de guerre) : `id` d'un `lightLevels` (jour/nuit/ténèbres…)
    *  ou `'auto'`/absent = suit l'horloge via `ambiance` (extérieur de nuit = sombre). Lu par `ambientScalar`. */
   ambientLight?: string;
-  /** OFFRE DE REPOS de la scène (bouton 🌙 d'exploration → modale de Repos) : lieux disponibles
+  /** OFFRE DE REPOS de la scène (bouton de Repos en exploration → modale de Repos) : lieux disponibles
    *  (auberge/chez soi/camp, combinables) + qualité (piètre = ½ prix, nourriture à risque).
    *  Absent = camp seulement ; tout à false = repos interdit ici. La météo ci-dessus donne la
    *  sévérité d'Exposition d'une nuit dehors (engine/exposure). */

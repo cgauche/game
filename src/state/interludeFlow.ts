@@ -118,7 +118,7 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
   for (const h of party) {
     const roll = d100(battleRng());
     const ev = interludeEventFor(roll);
-    lines.push(`${h.name} — Événement (🎲 ${roll}) : ${ev.label}. ${ev.text}`);
+    lines.push(`${h.name} — Événement (${roll}) : ${ev.label}. ${ev.text}`);
     let left = baseLeft;
     if (ev.fx?.loseActivity) left -= 1;
     // « les elfes ne perdent une Activité que si la durée est d'au moins trois semaines » (ch.23 l.50).
@@ -716,7 +716,7 @@ export function confirmActivity(get: Get, set: Set): void {
     const bands = def.outcomes?.length
       ? matchOutcomes(def, { success: pa.success, sl: pa.sl, fumble })
       : pa.success && def.onSuccess?.length ? [{ ops: def.onSuccess }] : [];
-    if (fumble && def.outcomes?.some((b) => b.on === 'fumble')) lines.push(`${h.name} — MALADRESSE (🎲 ${pa.roll}) !`);
+    if (fumble && def.outcomes?.some((b) => b.on === 'fumble')) lines.push(`${h.name} — MALADRESSE (${pa.roll}) !`);
     for (const band of bands) {
       if (band.note) lines.push(band.note); // résultat VERBATIM de la table source
       // Les ÉTATS d'issue tombent à la CLÔTURE de l'interlude (règle de CLASSE du contexte : les
@@ -792,10 +792,10 @@ export function bankDeposit(get: Get, set: Set, heroId: string, kind: 'invest' |
   itl.perHero[heroId] = { ...st, left: st.left - 1 };
   set({ interlude: { ...itl } });
   lines.push(kind === 'invest'
-    ? `${h.name} investit ${formatMoney(fromBrass(deposited))} (Indice d'intérêts ${r} — ${r} % de gains, faillite sur 🎲 ≤ ${r}).`
+    ? `${h.name} investit ${formatMoney(fromBrass(deposited))} (Indice d'intérêts ${r} — ${r} % de gains, faillite sur ≤ ${r}).`
     : kind === 'mecenat'
       ? `${h.name} sponsorise un dramaturge prometteur : ${formatMoney(fromBrass(deposited))} (retrait par Test d'Évaluation Intermédiaire — Mécénat, ACE p.220).`
-      : `${h.name} planque ${formatMoney(fromBrass(deposited))} (retrait libre — découverte sur 🎲 ≤ 10).`);
+      : `${h.name} planque ${formatMoney(fromBrass(deposited))} (retrait libre — découverte sur ≤ 10).`);
   // Émeutes (LDB 22) : « les dépôts des banques réputées doivent vérifier immédiatement la faillite ».
   if (kind === 'invest' && st.fx?.bankCrashCheck) {
     lines.push(...bankWithdrawInner(get, set, get().bank.length - 1, true));
@@ -842,12 +842,12 @@ function bankWithdrawInner(get: Get, set: Set, index: number, crashCheckOnly: bo
   if (outcome === 'lost') {
     set({ bank: rest });
     const threshold = dep.kind === 'invest' ? dep.rate : (dep.rate > 0 ? dep.rate : 10);
-    return [`${h?.name ?? '?'} — 🎲 ${roll} ≤ ${threshold} : ${dep.kind === 'invest' ? 'la banque a fait faillite' : 'la planque a été découverte'} — ${formatMoney(fromBrass(dep.brass))} perdus !`];
+    return [`${h?.name ?? '?'} — ${roll} ≤ ${threshold} : ${dep.kind === 'invest' ? 'la banque a fait faillite' : 'la planque a été découverte'} — ${formatMoney(fromBrass(dep.brass))} perdus !`];
   }
-  if (crashCheckOnly) return [`Vérification de faillite (émeutes) — 🎲 ${roll} > ${dep.rate} : la banque tient bon.`];
+  if (crashCheckOnly) return [`Vérification de faillite (émeutes) — ${roll} > ${dep.rate} : la banque tient bon.`];
   const payout = bankPayout(dep.kind, dep.brass, dep.rate);
   set({ bank: rest, money: fromBrass(toBrass(get().money) + payout) });
-  return [`${h?.name ?? '?'} récupère ${formatMoney(fromBrass(payout))} (🎲 ${roll}${dep.kind === 'invest' ? ` > ${dep.rate}, intérêts ${dep.rate} %` : ''}).`];
+  return [`${h?.name ?? '?'} récupère ${formatMoney(fromBrass(payout))} (${roll}${dep.kind === 'invest' ? ` > ${dep.rate}, intérêts ${dep.rate} %` : ''}).`];
 }
 
 /** Clôture : « Avec le pouvoir » (Niveaux 3-4 sans Revenus → −1 Niveau, ch.23 l.30), Argent à

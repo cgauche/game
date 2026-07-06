@@ -118,8 +118,8 @@ function acquireAnimositeOnFate(hero: Combatant, foeCible: string | undefined): 
   if (res.replacesAnimosite) hero.psychTraits = (hero.psychTraits ?? []).filter((p) => !(p.type === 'animosite' && p.cible === foeCible));
   hero.psychTraits = [...(hero.psychTraits ?? []), res.trait];
   return res.trait.type === 'haine'
-    ? `💢 ${hero.name} voue désormais une Haine à ${foeCible} (frôler la mort a durci son cœur).`
-    : `💢 ${hero.name} développe une Animosité envers ${foeCible} (frôler la mort a laissé une marque).`;
+    ? `${hero.name} voue désormais une Haine à ${foeCible} (frôler la mort a durci son cœur).`
+    : `${hero.name} développe une Animosité envers ${foeCible} (frôler la mort a laissé une marque).`;
 }
 
 /** OUVERTURE partagée d'un Test d'équipage MULTI (MDG ch.14) : contributeurs par rôle (`crewTestContributors` —
@@ -141,7 +141,7 @@ function openCrewTestPending(get: Get, ship: Combatant, testTypeId: string): {
   const essentialRoleId = findCrewTestTypeById(testTypeId)?.essential;
   const participants: ShipManeuverParticipant[] = contributors.map((a) => ({
     id: a.crew.id,
-    label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}${(battle.crewActed?.[ship.id] ?? []).includes(a.crew.id) ? ' ⚠ −2 (cumul)' : ''}`,
+    label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}${(battle.crewActed?.[ship.id] ?? []).includes(a.crew.id) ? ' −2 (cumul)' : ''}`,
     interactive: partyIds.has(a.crew.id),
     roleId: a.roleId,
     essential: a.roleId === essentialRoleId,
@@ -756,7 +756,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // vivent dans UNE fenêtre. `pendingTrample` coexiste comme porteur de données (résolu par
       // trampleConfirm) ; le jet se fait au clic « Lancer ».
       set({ pendingTrample: { attackerId: active.id, targetId: target.id, result: null }, battle: { ...battle, action: null } });
-      startCascade(get, set, { title: 'Piétinement', icon: '🦶', purpose: 'combat', steps: [{ id: 'trample-jet', kind: 'trampleJet', jet: 'trample', actorId: active.id }] });
+      startCascade(get, set, { title: 'Piétinement', icon: 'melee/trample', purpose: 'combat', steps: [{ id: 'trample-jet', kind: 'trampleJet', jet: 'trample', actorId: active.id }] });
     },
     // ── Sélection d'ATTAQUE (« Attaque ▾ ») : arme une `AttackOption` (Arme + gratuites/zone/Piétinement/
     // Tentacule). Source des entrées : `availableAttacks` (combatFlow). Le clic-ennemi résout l'armée. ──
@@ -1137,7 +1137,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (p.voyage) {
         const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
         set({ pendingCrewTest: null });
-        get().log(`⚓ ${findCrewTestTypeById(p.testTypeId)?.label ?? p.testTypeId} — ${p.voyage.shipName} : DR ${total >= 0 ? `+${total}` : total} → ${total >= 1 ? 'succès' : 'échec'} (MDG 14 l.13).`);
+        get().log(`${findCrewTestTypeById(p.testTypeId)?.label ?? p.testTypeId} — ${p.voyage.shipName} : DR ${total >= 0 ? `+${total}` : total} → ${total >= 1 ? 'succès' : 'échec'} (MDG 14 l.13).`);
         resolveVoyageCrewTest(get, set, p, total);
         return;
       }
@@ -1364,7 +1364,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // `heldGround: true` : l'interruption est un tir IMMOBILE d'office (elle coûte le Mouvement du tour) → pas
       // de pénalité « Tir en bougeant » (LDB 14), qui n'aurait aucun sens hors du tour du tireur.
       set({ pendingAttack: { attackerId: hero.id, targetId: target.id, location: null, result: null, interrupt: true, heldGround: true } });
-      startCascade(get, set, { title: 'Tir rapide', icon: '⚔️', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: hero.id }] });
+      startCascade(get, set, { title: 'Tir rapide', icon: 'action/shoot', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: hero.id }] });
     },
     // ── Tir rapide : ARMER/DÉSARMER la visée d'un héros pendant la pause (badge de la frise → clic adversaire) ──
     armPreempt: (heroId: string | null) => {
@@ -2012,7 +2012,7 @@ export function createCombatSlice(get: Get, set: Set) {
         .sort((a, b) => chebyshev(pt, a.pos!) - chebyshev(pt, b.pos!))[0];
       if (!aim) { get().log(t('cf.siegeNoTarget', { name: gunner.name })); return; }
       set({ pendingAttack: { attackerId: gunner.id, targetId: aim.id, location: null, result: null, weaponUid: sa.weaponUid, center: { ...pt }, siege: true } });
-      startCascade(get, set, { title: 'Pilonnage', icon: '💥', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: gunner.id }] });
+      startCascade(get, set, { title: 'Pilonnage', icon: 'fire/blast', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: gunner.id }] });
     },
     cleaveAttack: (targetId: string) => {
       const { battle, pendingCleave: pc } = get();
@@ -2884,7 +2884,7 @@ export function createCombatSlice(get: Get, set: Set) {
         },
         battle: { ...battle, action: null },
       });
-      startCascade(get, set, { title: `Avantage — ${skillLabel}`, icon: '🎲', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: active.id }] });
+      startCascade(get, set, { title: `Avantage — ${skillLabel}`, icon: 'nav/dice', purpose: 'test', steps: [{ id: 'test-jet', kind: 'sceneTestJet', jet: 'test', actorId: active.id }] });
     },
 
     // Résilience « Je ne faillirai pas ! » (LDB ch.17 l.73) du flux `cast` (forceSuccess/dé choisi) —

@@ -605,11 +605,12 @@ export interface EtatData extends StatusData {
 /** État PSYCHOLOGIQUE en DONNÉES (LDB 21) — `id` = `PsychType` (`frenesie`, à terme `peur`/`terreur`/…).
  *  Étend `StatusData` (passive/effects mutualisés) ; n'ajoute que la capacité propre à la psychologie. */
 export interface PsychologyData extends StatusData {
+  /** AFFICHAGE (couche UI, hors RAW LDB 21) : icône du registre `<Icon>` (id `famille/nom`), à l'égal
+   *  d'`EtatData.icon`. Lu par `CIBLE_LABEL` (engine/psychology.ts). */
+  icon?: string;
   /** Porter cet état psy IMMUNISE à la Psychologie (Frénésie, LDB 21 l.34) — lu GÉNÉRIQUEMENT par
    *  `isPsychImmune` (jamais codé par-nom), à l'égal du drapeau de trait « Immunité (Psychologie) ». */
   psychImmune?: boolean;
-  /** Emoji d'affichage (HUD/modales/Codex) — SOURCE UNIQUE, remplace les maps `CIBLE_LABEL`/`PSYCH_LABEL`. */
-  emoji?: string;
   /** Trait psychologique CIBLÉ (Animosité/Haine/Préjugé/Amour/Camaraderie/Phobie, LDB 21) : résolution
    *  binaire de Calme pilotée par un Groupe-Cible. Dérive `CIBLE_TYPES` de la donnée (plus de Set codé). */
   targeted?: boolean;

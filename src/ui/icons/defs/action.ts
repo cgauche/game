@@ -181,4 +181,13 @@ export const icons: IconFamily = [
       `<path ${K} d="M12 5.5 C11.9 8.3 12 10.4 12 12.3"/>` +
       `<path ${K} d="M16.7 6.6 C17.1 9.5 15.9 11.7 14 13"/>`,
   },
+  {
+    id: 'action/force',
+    label: 'Enfoncer / forcer',
+    // Maillet levé, manche en diagonale (enfoncer une porte à plusieurs).
+    svg:
+      `<path ${F} d="M15.5 3.3 L20.7 8.5 L16.9 12.3 L11.7 7.1 Z"/>` +
+      `<path ${K} d="M12.7 10.1 L4.6 18.2"/>` +
+      `<path ${KF} d="M6.3 15.4 L8.4 17.5 M8.1 13.6 L10.2 15.7"/>`,
+  },
 ];

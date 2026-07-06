@@ -70,18 +70,18 @@ function devFluxOf(open: string[]): string | null {
 function devDriveModal(verb: 'Roll' | 'Confirm' | 'Cancel'): string {
   const s = useGame.getState() as unknown as Record<string, unknown>;
   const open = Object.keys(s).filter((k) => /^pending/.test(k) && (Array.isArray(s[k]) ? (s[k] as unknown[]).length > 0 : s[k] != null));
-  if (!open.length) return '❌ aucune modale ouverte';
+  if (!open.length) return '✗ aucune modale ouverte';
   // Files à verbe propre d'abord : révélation témoin, pause d'ouverture de Round.
   if (verb === 'Confirm') {
-    if (open.includes('pendingReveals')) { (s.dismissReveal as () => void)(); return '✅ révélation acquittée'; }
-    if (open.includes('pendingRoundStart')) { (s.confirmRoundStart as () => void)(); return '✅ Round lancé'; }
+    if (open.includes('pendingReveals')) { (s.dismissReveal as () => void)(); return '✓ révélation acquittée'; }
+    if (open.includes('pendingRoundStart')) { (s.confirmRoundStart as () => void)(); return '✓ Round lancé'; }
   }
   const flux = devFluxOf(open);
-  if (!flux) return `❌ pas de flux pilotable parmi : ${open.join(', ')}`;
+  if (!flux) return `✗ pas de flux pilotable parmi : ${open.join(', ')}`;
   const fn = s[flux + verb];
-  if (typeof fn !== 'function') return `❌ action ${flux}${verb} introuvable (modales ouvertes : ${open.join(', ')})`;
+  if (typeof fn !== 'function') return `✗ action ${flux}${verb} introuvable (modales ouvertes : ${open.join(', ')})`;
   (fn as () => void)();
-  return `✅ ${flux}${verb}()`;
+  return `✓ ${flux}${verb}()`;
 }
 
 export function buildApi() {
@@ -121,13 +121,13 @@ export function buildApi() {
     /** ACCÈS DIRECT : ouvre le dialogue/marchand d'une entité (téléporte le groupe à côté puis interagit). */
     talk: (id: string) => {
       const ent = find(id);
-      if (!ent) return `❌ « ${id} » introuvable — voir __wfrp.entities()`;
+      if (!ent) return `✗ « ${id} » introuvable — voir __wfrp.entities()`;
       useGame.setState({ partyPos: { ...ent.pos } });
       g().interactEntity(id);
       const s = g();
-      if (s.dialogue) return `✅ dialogue ouvert (${id})`;
-      if (s.merchant) return `✅ marchand ouvert (${id})`;
-      return `⚠️ rien déclenché (${id}) — l'entité n'a ni dialogue ni marchand`;
+      if (s.dialogue) return `✓ dialogue ouvert (${id})`;
+      if (s.merchant) return `✓ marchand ouvert (${id})`;
+      return `rien déclenché (${id}) — l'entité n'a ni dialogue ni marchand`;
     },
 
     /** Place le groupe sur la case d'une entité/coord (déclenche portes, triggers, fouilles au pas). */
@@ -135,9 +135,9 @@ export function buildApi() {
       // Cible une entité (sa case ET son étage z) ou des coordonnées brutes {x,y,z?}.
       const ent = typeof idOrXY === 'string' ? find(idOrXY) : null;
       const pt = typeof idOrXY === 'string' ? (ent ? { x: ent.pos.x, y: ent.pos.y, z: ent.z } : undefined) : idOrXY;
-      if (!pt) return `❌ cible introuvable`;
+      if (!pt) return `✗ cible introuvable`;
       g().moveParty({ ...pt });
-      return `✅ groupe → (${pt.x},${pt.y}${pt.z ? `,z${pt.z}` : ''})`;
+      return `✓ groupe → (${pt.x},${pt.y}${pt.z ? `,z${pt.z}` : ''})`;
     },
 
     /** VISUALISER LE MULTI-NIVEAUX — décompose le rendu couche par couche (tuiles pleines/vides, murs,
@@ -146,7 +146,7 @@ export function buildApi() {
     levels: () => {
       const s = g();
       const sc = s.scene;
-      if (!sc) return '❌ aucune scène';
+      if (!sc) return '✗ aucune scène';
       const wallsByZ: Record<number, number> = {};
       for (const wl of sc.walls ?? []) wallsByZ[wl.z ?? 0] = (wallsByZ[wl.z ?? 0] ?? 0) + 1;
       return {
@@ -173,7 +173,7 @@ export function buildApi() {
     viewLevel: (z?: number | null) => {
       if (z === undefined) return { override: getViewZ(), note: 'null = auto (suit le groupe)' };
       setViewZ(z);
-      return `✅ étage affiché : ${z === null ? 'auto (suit le groupe)' : z}`;
+      return `✓ étage affiché : ${z === null ? 'auto (suit le groupe)' : z}`;
     },
 
     /** PLAN ASCII de la couche (défaut = celle AFFICHÉE) — la DONNÉE rendue en box-drawing, à comparer
@@ -183,7 +183,7 @@ export function buildApi() {
     ascii: (z?: number) => {
       const s = g();
       const sc = s.scene;
-      if (!sc) return '❌ aucune scène';
+      if (!sc) return '✗ aucune scène';
       const zz = z ?? getViewZ() ?? (s.partyPos.z ?? 0);
       const W = sc.dimensions.w, H = sc.dimensions.h;
       const lvl = sc.layers.find((l) => l.z === zz) ?? sc.layers[0];
@@ -227,7 +227,7 @@ export function buildApi() {
     fog: (on = false) => {
       setRevealAll(!on);
       useGame.setState((s) => ({ partyPos: { ...s.partyPos } }));
-      return on ? '🌫️ brouillard ON' : '👁️ brouillard OFF — toute la carte révélée';
+      return on ? 'brouillard ON' : 'brouillard OFF — toute la carte révélée';
     },
 
     /** DEBUG carte (recette) : overlay d'annotation partagé sur IsoStage — coordonnées `x,y` (+`z{n}`)
@@ -238,7 +238,7 @@ export function buildApi() {
     labels: (on?: boolean) => {
       const v = on ?? !g().debugLabels;
       useGame.setState({ debugLabels: v });
-      return v ? '🏷️ labels ON' : 'labels OFF';
+      return v ? 'labels ON' : 'labels OFF';
     },
 
     /** Survol PROGRAMMATIQUE (combat) : pose la tuile survolée d'IsoStage comme si la souris y
@@ -246,17 +246,17 @@ export function buildApi() {
      *  de combattant, un id d'entité de scène, ou {x,y}. */
     hover: (idOrXY: string | { x: number; y: number } | null) => {
       const hook = (window as unknown as { __wfrpSetHover?: (t: { x: number; y: number } | null) => void }).__wfrpSetHover;
-      if (!hook) return '❌ IsoStage non monté';
+      if (!hook) return '✗ IsoStage non monté';
       if (idOrXY == null) {
         hook(null);
-        return '✅ survol effacé';
+        return '✓ survol effacé';
       }
       const pt = typeof idOrXY === 'string'
         ? g().battle?.combatants.find((c) => c.id === idOrXY)?.pos ?? find(idOrXY)?.pos
         : idOrXY;
-      if (!pt) return '❌ cible introuvable (combattant ou entité)';
+      if (!pt) return '✗ cible introuvable (combattant ou entité)';
       hook({ ...pt });
-      return `✅ survol (${pt.x},${pt.y})`;
+      return `✓ survol (${pt.x},${pt.y})`;
     },
 
     /** Simule un BOUTON de manette (combat) en passant par le shim DEV installé par `useGamepad`
@@ -272,10 +272,10 @@ export function buildApi() {
      *  {kind:'ok'|'invalid'|'none', line, title, skill, base, mod, dmg | reason}. */
     aim: (id: string) => {
       const b = g().battle;
-      if (!b) return '❌ pas de combat';
+      if (!b) return '✗ pas de combat';
       const active = b.combatants.find((c) => c.id === b.order[b.turn]);
       const target = b.combatants.find((c) => c.id === id);
-      if (!active || !target) return '❌ actif ou cible introuvable';
+      if (!active || !target) return '✗ actif ou cible introuvable';
       return hoverTargeting(() => useGame.getState(), active, target);
     },
 
@@ -285,7 +285,7 @@ export function buildApi() {
     scenario: (id?: string, seed?: number) => {
       if (!id) return testScenarios.map((sc) => `${sc.id} — ${sc.title}`);
       const sc = testScenarios.find((t) => t.id === id);
-      if (!sc) return `❌ « ${id} » introuvable — ids : ${testScenarios.map((t) => t.id).join(', ')}`;
+      if (!sc) return `✗ « ${id} » introuvable — ids : ${testScenarios.map((t) => t.id).join(', ')}`;
       clearAiTurnLog(); // trace IA vierge pour ce scénario
       const s = g();
       if (seed != null) s.seedRng(seed);
@@ -303,24 +303,24 @@ export function buildApi() {
         // interlude ») — `startMassBattle` reste donc sur l'écran d'interlude tant qu'un interlude est ouvert.
         if (sc.interludeWeeks) g().startInterlude(sc.interludeWeeks);
         g().startMassBattle(sc.massBattle);
-        return `✅ bataille de masse « ${sc.title} » lancée${sc.interludeWeeks ? ' (préparation dans le menu d\'interlude)' : ''}`;
+        return `✓ bataille de masse « ${sc.title} » lancée${sc.interludeWeeks ? ' (préparation dans le menu d\'interlude)' : ''}`;
       }
       s.setScreen('campaign');
-      return `✅ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct, prêt à jouer)' : ''}`;
+      return `✓ scénario « ${sc.title} » lancé${sc.autoCombat ? ' (combat direct, prêt à jouer)' : ''}`;
     },
 
     /** Lance une bataille de masse de démonstration (ADE II 08) sans scénario : __wfrp.massBattle(60, 40, 3).
      *  Les Scènes de COMBAT ne s'amorcent que si la scène courante porte les rencontres attendues. */
     massBattle: (ally = 50, enemy = 55, rounds = 3) => {
       g().startMassBattle({ allyMight: ally, enemyMight: enemy, plannedRounds: rounds, terrain: 'Les deux armées se font face dans la plaine.' });
-      return `✅ bataille de masse lancée — Puissance ${ally} contre ${enemy}, ${rounds} Round(s)`;
+      return `✓ bataille de masse lancée — Puissance ${ally} contre ${enemy}, ${rounds} Round(s)`;
     },
 
     /** Snapshot COMBAT compact : round, actif, modales ouvertes, et chaque combattant en une ligne. */
     battle: () => {
       const s = g();
       const b = s.battle;
-      if (!b) return '❌ pas de combat en cours';
+      if (!b) return '✗ pas de combat en cours';
       const pendings = Object.keys(s).filter((k) => {
         if (!/^pending/.test(k)) return false;
         const v = (s as unknown as Record<string, unknown>)[k];
@@ -343,27 +343,27 @@ export function buildApi() {
      *  situation, pas pour simuler une partie. */
     turn: (id: string) => {
       const b = g().battle;
-      if (!b || b.over) return '❌ pas de combat en cours';
+      if (!b || b.over) return '✗ pas de combat en cours';
       const idx = b.order.indexOf(id);
       const c = b.combatants.find((x) => x.id === id);
-      if (idx < 0 || !c) return `❌ « ${id} » absent de l'ordre d'initiative`;
-      if (isOutOfAction(c)) return `❌ ${c.name} est hors de combat`;
+      if (idx < 0 || !c) return `✗ « ${id} » absent de l'ordre d'initiative`;
+      if (isOutOfAction(c)) return `✗ ${c.name} est hors de combat`;
       useGame.setState({
         battle: { ...b, turn: idx, acted: false, movementUsed: 0, movedPreAction: false, action: null, selectedSpellId: null, preview: null, reachable: new Map(), moveSnapshot: null },
       });
       bus.emit(EVT.SCENE_DIRTY);
-      return `✅ au tour de ${c.name}`;
+      return `✓ au tour de ${c.name}`;
     },
 
     /** TRICHE de recette : téléporte un COMBATTANT (mise en place de situations LdV/portée). */
     place: (id: string, pt: { x: number; y: number }) => {
       const b = g().battle;
       const c = b?.combatants.find((x) => x.id === id);
-      if (!b || !c) return '❌ combattant introuvable (combat uniquement — hors combat : goto)';
+      if (!b || !c) return '✗ combattant introuvable (combat uniquement — hors combat : goto)';
       c.pos = { ...pt };
       useGame.setState({ battle: { ...b } });
       bus.emit(EVT.SCENE_DIRTY);
-      return `✅ ${c.name} → (${pt.x},${pt.y})`;
+      return `✓ ${c.name} → (${pt.x},${pt.y})`;
     },
 
     /** TRICHE de recette : VIRE le cap d'un NAVIRE (manœuvre, MDG ch.13) → re-mappe ses arcs de bordée.
@@ -372,11 +372,11 @@ export function buildApi() {
     turnShip: (shipId: string, side: 'tribord' | 'babord' | number = 'tribord') => {
       const b = g().battle;
       const ship = b?.combatants.find((x) => x.id === shipId);
-      if (!b || !ship) return '❌ navire introuvable (combat uniquement)';
+      if (!b || !ship) return '✗ navire introuvable (combat uniquement)';
       const before = g().facing[shipId];
-      if (!before) return `❌ ${ship.name} n'a pas de cap (facing) — pas un navire orienté ?`;
+      if (!before) return `✗ ${ship.name} n'a pas de cap (facing) — pas un navire orienté ?`;
       g().shipTurn(shipId, typeof side === 'number' ? side : side === 'tribord' ? 2 : -2);
-      return `✅ ${ship.name} : cap ${before} → ${g().facing[shipId]}`;
+      return `✓ ${ship.name} : cap ${before} → ${g().facing[shipId]}`;
     },
 
     /** Recette : MANŒUVRE un navire (MDG ch.13) — le barreur (meilleur en Voile/Ramer de l'équipage, ou
@@ -385,13 +385,13 @@ export function buildApi() {
     maneuver: (shipId: string, side: 'tribord' | 'babord' | number = 'tribord', helmsmanId?: string) => {
       const b = g().battle;
       const ship = b?.combatants.find((x) => x.id === shipId);
-      if (!b || !ship) return '❌ navire introuvable (combat uniquement)';
+      if (!b || !ship) return '✗ navire introuvable (combat uniquement)';
       const before = g().facing[shipId];
       const r = maneuverShip(() => useGame.getState(), shipId, typeof side === 'number' ? side : side === 'tribord' ? 2 : -2, helmsmanId);
-      if (!r) return '❌ manœuvre impossible';
+      if (!r) return '✗ manœuvre impossible';
       return r.success
-        ? `✅ ${ship.name} vire (DR ${r.dr}, barreur ${r.helmsman ?? '—'}) : ${before} → ${g().facing[shipId]}`
-        : `❌ ${ship.name} rate la manœuvre (DR ${r.dr}) — cap ${before} inchangé`;
+        ? `✓ ${ship.name} vire (DR ${r.dr}, barreur ${r.helmsman ?? '—'}) : ${before} → ${g().facing[shipId]}`
+        : `✗ ${ship.name} rate la manœuvre (DR ${r.dr}) — cap ${before} inchangé`;
     },
 
     /** Queue LISIBLE des journaux : les `n` dernières lignes du journal d'exploration ET du
@@ -433,9 +433,9 @@ export function buildApi() {
      *  `dead` couvre aussi les ennemis « importants » que la Mort Subite à 0 PB ne sort pas. */
     killEnemies: () => {
       const s = g();
-      if (!s.battle || s.battle.over) return '❌ pas de combat en cours';
+      if (!s.battle || s.battle.over) return '✗ pas de combat en cours';
       const slain = s.battle.combatants.filter((c) => c.kind === 'enemy' && !isOutOfAction(c));
-      if (!slain.length) return '⚠️ aucun ennemi encore debout';
+      if (!slain.length) return 'aucun ennemi encore debout';
       const combatants = s.battle.combatants.map((c) =>
         c.kind === 'enemy' && !isOutOfAction(c)
           ? { ...c, dead: true, wounds: { ...c.wounds, current: 0 } }
@@ -445,7 +445,7 @@ export function buildApi() {
         battle: {
           ...s.battle,
           combatants,
-          log: [...s.battle.log, ev('info', `💀 Recette : ${slain.length} ennemi(s) éliminé(s).`)],
+          log: [...s.battle.log, ev('info', `Recette : ${slain.length} ennemi(s) éliminé(s).`)],
         },
       });
       checkBattleOver(() => useGame.getState(), useGame.setState);
@@ -455,7 +455,7 @@ export function buildApi() {
         useGame.getState().cascadeResolveAll();
         useGame.getState().cascadeFinish();
       }
-      return `✅ ${slain.length} ennemi(s) éliminé(s) — ${useGame.getState().battle?.over ?? 'combat en cours'}`;
+      return `✓ ${slain.length} ennemi(s) éliminé(s) — ${useGame.getState().battle?.over ?? 'combat en cours'}`;
     },
 
     /** RECETTE : ARME les conséquences de fin de combat (LDB 18/19/20) puis termine le combat par le
@@ -471,12 +471,12 @@ export function buildApi() {
      *  Résilience), sa fermeture enchaîne sur l'écran de victoire. `level` ∈ Mineure|Modérée|Majeure. */
     combatEnd: (opts?: { heroId?: string; critical?: boolean; corruption?: string | false }) => {
       const s = g();
-      if (!s.battle || s.battle.over) return '❌ pas de combat en cours';
+      if (!s.battle || s.battle.over) return '✗ pas de combat en cours';
       const level = opts?.corruption === undefined ? 'Modérée' : opts.corruption;
       const hero = (opts?.heroId
         ? s.battle.combatants.find((c) => c.id === opts.heroId && c.kind === 'hero')
         : s.battle.combatants.find((c) => c.kind === 'hero' && !isOutOfAction(c)));
-      if (!hero) return '❌ aucun héros survivant ciblable';
+      if (!hero) return '✗ aucun héros survivant ciblable';
       if (opts?.critical !== false) hero.tookCriticalThisFight = true; // Infection post-critique (LDB 20 l.72)
       hero.woundDressed = false; // pas de pansement → l'Infection s'applique
       hero.fortune = Math.max(1, hero.fortune ?? 0); // Chance visible (relance)
@@ -490,15 +490,15 @@ export function buildApi() {
         c.kind === 'enemy' && !isOutOfAction(c) ? { ...c, dead: true, wounds: { ...c.wounds, current: 0 } } : c,
       );
       useGame.setState({
-        battle: { ...s.battle, combatants, log: [...s.battle.log, ev('info', '🩸 Recette : conséquences de fin de combat armées.')] },
+        battle: { ...s.battle, combatants, log: [...s.battle.log, ev('info', 'Recette : conséquences de fin de combat armées.')] },
       });
       // Flux NORMAL : ouvre la cascade de fin de combat ; si elle s'ouvre (héros manuel), la victoire est
       // DIFFÉRÉE à sa fermeture (on NE la résout PAS ici — c'est tout l'intérêt de la recette).
       checkBattleOver(() => useGame.getState(), useGame.setState);
       const pc = useGame.getState().pendingCascade;
       return pc?.combatEndBoundary
-        ? `✅ cascade de fin de combat OUVERTE (${pc.participants.length} jet(s)) AVANT la victoire — conduire à la main`
-        : `⚠️ pas de cascade ouverte (over=${useGame.getState().battle?.over ?? '—'}) — héros non-interactif ?`;
+        ? `✓ cascade de fin de combat OUVERTE (${pc.participants.length} jet(s)) AVANT la victoire — conduire à la main`
+        : `pas de cascade ouverte (over=${useGame.getState().battle?.over ?? '—'}) — héros non-interactif ?`;
     },
 
     /** RECETTE : remet le groupe à neuf — PB max, états purgés, critiques/maladies effacés,
@@ -519,7 +519,7 @@ export function buildApi() {
           ? { ...s.battle, combatants: s.battle.combatants.map((c) => (c.kind === 'hero' ? fix(c) : c)) }
           : s.battle,
       }));
-      return `✅ groupe soigné (${g().party.length} héros)`;
+      return `✓ groupe soigné (${g().party.length} héros)`;
     },
 
     /** RECETTE : crédite la bourse du groupe (en couronnes d'or). */
@@ -549,7 +549,7 @@ export function buildApi() {
         party: s.party.map(grant),
         battle: s.battle ? { ...s.battle, combatants: s.battle.combatants.map(grant) } : s.battle,
       }));
-      return `✅ ${id} → ${talentId}`;
+      return `✓ ${id} → ${talentId}`;
     },
 
     /** RECETTE : simule une CHARGE de `enemyId` sur un héros (défaut : le plus proche) — déclenche le
@@ -558,9 +558,9 @@ export function buildApi() {
     charge: (enemyId: string, heroId?: string) => {
       const s = g();
       const b = s.battle;
-      if (!b || b.over) return '❌ pas de combat en cours';
+      if (!b || b.over) return '✗ pas de combat en cours';
       const enemy = b.combatants.find((c) => c.id === enemyId);
-      if (!enemy) return `❌ ennemi « ${enemyId} » introuvable`;
+      if (!enemy) return `✗ ennemi « ${enemyId} » introuvable`;
       const heroes = b.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
       const target = heroId
         ? heroes.find((c) => c.id === heroId)
@@ -570,10 +570,10 @@ export function buildApi() {
                 return d(a) - d(c);
               })[0]
             : heroes[0]);
-      if (!target) return '❌ aucun héros chargeable';
+      if (!target) return '✗ aucun héros chargeable';
       resolveFreeAttacks(() => useGame.getState(), useGame.setState, target, 'onCharged', enemy);
       bus.emit(EVT.SCENE_DIRTY);
-      return `✅ ${enemy.name} charge ${target.name} (onCharged)`;
+      return `✓ ${enemy.name} charge ${target.name} (onCharged)`;
     },
 
     /** RECETTE : ajoute un Atout/Défaut (par libellé OU id de qualité) à l'arme ACTIVE d'un combattant
@@ -590,7 +590,7 @@ export function buildApi() {
         battle: s.battle ? { ...s.battle, combatants: s.battle.combatants.map(tweak) } : s.battle,
       }));
       const c = actorIn(g(), id);
-      return c ? `✅ ${c.name} : arme « ${c.weapons?.[0]?.name} » + ${label}${advantage != null ? ` · ${advantage} Av` : ''}` : `❌ ${id} introuvable`;
+      return c ? `✓ ${c.name} : arme « ${c.weapons?.[0]?.name} » + ${label}${advantage != null ? ` · ${advantage} Av` : ''}` : `✗ ${id} introuvable`;
     },
 
     /** RECETTE : applique un État à un combattant (par id) via le VRAI addCondition → déclenche les
@@ -598,13 +598,13 @@ export function buildApi() {
     condition: (id: string, name = 'sonne', n = 1) => {
       const s = g();
       const c = actorIn(s, id);
-      if (!c) return `❌ combattant ${id} introuvable`;
+      if (!c) return `✗ combattant ${id} introuvable`;
       addCondition(c, name, n);
       useGame.setState((st) => ({
         party: [...st.party],
         battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
       }));
-      return `✅ ${c.name} : +${n} ${name}`;
+      return `✓ ${c.name} : +${n} ${name}`;
     },
 
     /** RECETTE : ouvre l'étape de CHOIX « Piège-lame » (LDB 62 l.292-295) — `bladeTrap('hero-1','enemy-1', 2)`.
@@ -614,22 +614,22 @@ export function buildApi() {
      *  brise sauf Incassable). Reproduit l'entrée de production sans avoir à forcer un Critique défensif. */
     bladeTrap: (defenderId: string, attackerId: string, defSL = 4) => {
       const b = g().battle;
-      if (!b) return '❌ pas en combat';
+      if (!b) return '✗ pas en combat';
       const defender = b.combatants.find((c) => c.id === defenderId);
       const attacker = b.combatants.find((c) => c.id === attackerId);
-      if (!defender || !attacker) return `❌ défenseur/attaquant introuvable (${defenderId}/${attackerId})`;
+      if (!defender || !attacker) return `✗ défenseur/attaquant introuvable (${defenderId}/${attackerId})`;
       const weapon = attacker.weapons?.[0];
-      if (!weapon) return `❌ ${attacker.name} n'a pas d'arme active`;
+      if (!weapon) return `✗ ${attacker.name} n'a pas d'arme active`;
       if (!weapon.uid) weapon.uid = `dev-blade-${attackerId}`; // uid universel requis pour cibler la lame
       const pbt: PendingBladeTrap = { defenderId, attackerId, weapon, parryWeaponUid: defender.weapons?.[0]?.uid ?? 'parry', defSL, roll: 33 };
       pushCombatStep(useGame.setState, {
-        id: `cons-bladetrap-${defenderId}`, kind: 'bladeTrap', actorId: defenderId, icon: '🗡️',
+        id: `cons-bladetrap-${defenderId}`, kind: 'bladeTrap', actorId: defenderId, icon: 'journal/backstab',
         label: 'Parade — piéger la lame ?',
-        options: [{ key: 'trap', label: '🗡️ Piéger la lame' }, { key: 'crit', label: '💥 Coup Critique' }],
+        options: [{ key: 'trap', label: 'Piéger la lame' }, { key: 'crit', label: 'Coup Critique' }],
         defaultChoice: 'crit', bladeTrap: pbt, interactive: true,
       });
       useGame.setState((s) => ({ battle: s.battle ? { ...s.battle, combatants: [...s.battle.combatants] } : s.battle }));
-      return `✅ Piège-lame : ${defender.name} pare ${attacker.name} (${weapon.name}, +${defSL} DR) → choix Piéger/Critique`;
+      return `✓ Piège-lame : ${defender.name} pare ${attacker.name} (${weapon.name}, +${defSL} DR) → choix Piéger/Critique`;
     },
 
     /** RECETTE : met un combattant en FOCALISATION (DR cumulé sur un sort) — `focus('hero-1')` →
@@ -638,13 +638,13 @@ export function buildApi() {
     focus: (id: string, spell = 'armure-aethyrique', dr = 3) => {
       const s = g();
       const c = actorIn(s, id);
-      if (!c) return `❌ combattant ${id} introuvable`;
+      if (!c) return `✗ combattant ${id} introuvable`;
       c.focus = { spell, dr };
       useGame.setState((st) => ({
         party: [...st.party],
         battle: st.battle ? { ...st.battle, combatants: [...st.battle.combatants] } : st.battle,
       }));
-      return `✅ ${c.name} : Focalisation ${spell} (DR ${dr})`;
+      return `✓ ${c.name} : Focalisation ${spell} (DR ${dr})`;
     },
 
     /** RECETTE : pose une Peur active de `heroId` envers `enemyId` (Indice) puis simule l'APPROCHE de la
@@ -653,11 +653,11 @@ export function buildApi() {
      *  Intermédiaire (héros manuel → étape de cascade INFLUENÇABLE) ou gagner un État Brisé. */
     fear: (heroId: string, enemyId: string, indice = 2) => {
       const b = g().battle;
-      if (!b || b.over) return '❌ pas de combat en cours';
+      if (!b || b.over) return '✗ pas de combat en cours';
       const hero = b.combatants.find((c) => c.id === heroId);
       const enemy = b.combatants.find((c) => c.id === enemyId);
-      if (!hero || !enemy) return `❌ héros/source introuvable (${heroId}/${enemyId})`;
-      if (!hero.pos || !enemy.pos) return '❌ positions inconnues';
+      if (!hero || !enemy) return `✗ héros/source introuvable (${heroId}/${enemyId})`;
+      if (!hero.pos || !enemy.pos) return '✗ positions inconnues';
       hero.psychState = [
         ...(hero.psychState ?? []).filter((p) => !(p.type === 'peur' && p.sourceId === enemyId)),
         { type: 'peur', sourceId: enemyId, indice, calmeDR: 0 }, // Peur active (non vaincue) envers la source
@@ -667,14 +667,14 @@ export function buildApi() {
       useGame.setState((s) => ({ battle: s.battle ? { ...s.battle, combatants: [...s.battle.combatants] } : s.battle }));
       approachFearTrigger(() => useGame.getState(), useGame.setState, enemy, fromPos);
       bus.emit(EVT.SCENE_DIRTY);
-      return `✅ ${enemy.name} (Peur ${indice}) s'approche de ${hero.name} → Test de Calme ou Brisé`;
+      return `✓ ${enemy.name} (Peur ${indice}) s'approche de ${hero.name} → Test de Calme ou Brisé`;
     },
 
     /** RECETTE : saute vers une scène du projet/de la campagne par id (machinerie de transition). */
     go: (sceneId: string, entry?: string) => {
       g().transitionTo(sceneId, entry);
       const after = g().scene?.id;
-      return after === sceneId ? `✅ scène → ${sceneId}` : `❌ « ${sceneId} » inconnue (scène : ${after ?? '—'})`;
+      return after === sceneId ? `✓ scène → ${sceneId}` : `✗ « ${sceneId} » inconnue (scène : ${after ?? '—'})`;
     },
 
     /** RECETTE : liste les rencontres de la scène (sans argument) ou en lance une. */
@@ -682,9 +682,9 @@ export function buildApi() {
       const encs = g().scene?.encounters ?? [];
       if (!encounterId) return encs.map((e) => e.id);
       if (!encs.some((e) => e.id === encounterId))
-        return `❌ rencontre inconnue — dispo : ${encs.map((e) => e.id).join(', ') || 'aucune'}`;
+        return `✗ rencontre inconnue — dispo : ${encs.map((e) => e.id).join(', ') || 'aucune'}`;
       g().startCombat(encounterId);
-      return g().battle ? `✅ combat lancé (${encounterId})` : `⚠️ rien lancé (rencontre vide ?)`;
+      return g().battle ? `✓ combat lancé (${encounterId})` : `rien lancé (rencontre vide ?)`;
     },
 
     /** RECETTE #30 : services du chantier naval au port — réparation (1 CO/Blessure, MDG ch.13
@@ -701,14 +701,14 @@ export function buildApi() {
     /** RECETTE : avance l'horloge (purge les effets à durée d'horloge). */
     time: (minutes = 60) => {
       g().advanceTime(minutes);
-      return `🕐 ${formatImperial(g().gameTime)}`;
+      return `${formatImperial(g().gameTime)}`;
     },
 
     /** RECETTE : le groupe dort N jours — déroule la cascade quotidienne #T3 (rations/faim,
      *  maladies, convalescence des critiques). */
     rest: (days = 1) => {
       g().restParty(days);
-      return `🛏️ +${days} j → ${formatImperial(g().gameTime)}`;
+      return `+${days} j → ${formatImperial(g().gameTime)}`;
     },
 
     /** RECETTE : RÈGLES OPTIONNELLES (policy.ts / « règles maison »). `rules()` liste toutes les règles
@@ -721,16 +721,16 @@ export function buildApi() {
         r.kind === 'mode' ? `{${r.options?.join('|')}}` : r.kind === 'param' ? `[${r.min}…${r.max}]` : '(true|false)';
       if (id == null) return OPTIONAL_RULES.map((r) => `${r.group} · ${r.id} = ${JSON.stringify(rule(r.id))}  ${shape(r)}`);
       const def = ruleDef(id);
-      if (!def) return `⚠️ règle inconnue : ${id} — voir __wfrp.rules()`;
+      if (!def) return `règle inconnue : ${id} — voir __wfrp.rules()`;
       if (value === undefined) return `${def.id} = ${JSON.stringify(rule(id))} · ${def.label} (défaut ${JSON.stringify(def.default)} · ${shape(def)}) — ${def.ref}`;
-      if (value === null) { resetRule(id); useGame.getState().resumeCadence(); return `↩️ ${id} → défaut ${JSON.stringify(def.default)}`; }
+      if (value === null) { resetRule(id); useGame.getState().resumeCadence(); return `${id} → défaut ${JSON.stringify(def.default)}`; }
       let v: RuleValue = value;
       if (def.kind === 'flag') v = value === true || value === 'true' || value === 'on';
       else if (def.kind === 'param') v = Number(value);
-      else if (def.kind === 'mode' && !def.options?.includes(String(value))) return `⚠️ ${id} : valeur invalide « ${value} » — options : ${def.options?.join(' | ')}`;
+      else if (def.kind === 'mode' && !def.options?.includes(String(value))) return `${id} : valeur invalide « ${value} » — options : ${def.options?.join(' | ')}`;
       setRule(id, v);
       useGame.getState().resumeCadence(); // cadence : ré-entre la boucle si on bascule auto/rapide en plein tour
-      return `✅ ${id} → ${JSON.stringify(v)}`;
+      return `✓ ${id} → ${JSON.stringify(v)}`;
     },
 
     /** RECETTE : diagnostic d'AUTO-CADENCE — « pourquoi ça avance / ça se fige ? ». Montre le mode, la

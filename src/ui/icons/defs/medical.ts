@@ -45,4 +45,12 @@ export const icons: IconFamily = [
       `<circle ${F} cx="10" cy="10.7" r="0.9"/>` +
       `<circle ${F} cx="13.6" cy="13.1" r="0.7"/>`,
   },
+  {
+    id: 'medical/aid',
+    label: 'Soins payants',
+    // Croix de secours cerclée (PNJ soigneur/guérisseur).
+    svg:
+      `<circle ${K} cx="12" cy="12" r="8.1"/>` +
+      `<path ${K} d="M12 8 V16 M8 12 H16"/>`,
+  },
 ];

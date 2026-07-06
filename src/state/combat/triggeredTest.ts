@@ -169,7 +169,7 @@ export function simpleTriggeredTestStep(
   const skillLabel = ft.skill ? refLabel('skills', { id: ft.skill, spec: ft.spec }) : (ft.characteristic ? CHAR_LABELS[ft.characteristic] : 'Test');
   return {
     id: `triggeredTest-${c.id}-${skillLabel}`,
-    kind: 'triggeredTest', actorId: c.id, icon: '🎲', rollLabel: skillLabel,
+    kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
     base, target: base + DIFFICULTY_MODIFIERS[difficulty] + combatTestPenalty(c), label: ft.label ?? skillLabel,
     meta: { onSuccess: branches.onSuccess, onFail: branches.onFail, after, ...extraMeta },
     // Tag de DONNÉE (`FlowTest.menace` — Venin/lames empoisonnées : 'Poison') → l'étape offre
@@ -204,7 +204,7 @@ export function collectRoundEndTestSteps(get: Get, c: Combatant): CascadeStep[] 
         const prompt = ft.label ?? src.label;
         optional.push({
           id: `triggeredChoice-${c.id}-${prompt}`, kind: 'triggeredChoice', actorId: c.id,
-          icon: '🤔', label: prompt,
+          icon: 'ui/think', label: prompt,
           options: [{ key: 'yes', label: prompt }, { key: 'no', label: 'Renoncer' }],
           defaultChoice: 'no', interactive: true,
           meta: { choiceYes: eff.flow, choiceNo: EMPTY_FLOW, after: EMPTY_FLOW },
@@ -339,7 +339,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     const extraMeta = { ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}) };
     pushCombatStep(ctx.set, aT && attacker
       ? {
-          id: `triggeredTest-${c.id}-${skillLabel}`, kind: 'triggeredTest', actorId: c.id, icon: '🎲', rollLabel: skillLabel,
+          id: `triggeredTest-${c.id}-${skillLabel}`, kind: 'triggeredTest', actorId: c.id, icon: 'nav/dice', rollLabel: skillLabel,
           base, target: base + DIFFICULTY_MODIFIERS[difficulty] + penalty, label,
           meta: { onSuccess: node.success, onFail: node.fail, after, opposed: { aT, attackerName: attacker.name, attackerLabel: opp!.attackerLabel ?? CHAR_LABELS[opp!.attacker], ...(opp!.bonusSL ? { bonusSL: opp!.bonusSL } : {}) }, ...extraMeta },
           ...(ft.menace ? { menace: ft.menace } : {}),
@@ -364,7 +364,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     const o = resolveOpposed(aT, { ...t, sl: t.sl + bonusSL });
     const defenderResists = o.winner !== 'attacker';
     queueLines(ctx.get, ctx.set, [
-      `${attacker.name} (${opp.attackerLabel ?? CHAR_LABELS[opp.attacker]}) 🎲 ${aT.roll}/${aT.target} (DR ${aT.sl}) vs ${c.name} (${skillLabel}) 🎲 ${t.roll}/${t.target} (DR ${t.sl}${bonusSL ? `+${bonusSL}` : ''}) — ${defenderResists ? 'résiste' : 'l’emporte'}.`,
+      `${attacker.name} (${opp.attackerLabel ?? CHAR_LABELS[opp.attacker]}) ${aT.roll}/${aT.target} (DR ${aT.sl}) vs ${c.name} (${skillLabel}) ${t.roll}/${t.target} (DR ${t.sl}${bonusSL ? `+${bonusSL}` : ''}) — ${defenderResists ? 'résiste' : 'l’emporte'}.`,
     ], c.id);
     const lines = applyTriggeredTestBranch(c, { success: defenderResists, sl: t.sl }, { onSuccess: node.success, onFail: node.fail }, exec);
     syncCombatant(ctx.get, ctx.set);
@@ -438,7 +438,7 @@ export function resolveFlowChoice(ctx: ExecCtx, node: Extract<Flow, { kind: 'cho
     const branchTargetId = ctx.target && ctx.target.id !== decider.id ? ctx.target.id : undefined;
     pushCombatStep(ctx.set, {
       id: `triggeredChoice-${decider.id}-${node.prompt}`,
-      kind: 'triggeredChoice', actorId: decider.id, icon: node.icon ?? '🤔', label: node.prompt,
+      kind: 'triggeredChoice', actorId: decider.id, icon: node.icon ?? 'ui/think', label: node.prompt,
       options: [{ key: 'yes', label: yesLabel }, { key: 'no', label: 'Renoncer' }],
       defaultChoice: 'no', interactive: true,
       meta: {

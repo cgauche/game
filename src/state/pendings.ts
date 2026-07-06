@@ -25,7 +25,7 @@ import type { CrewRoleRoll } from './shipManeuver';
 export type { Money };
 /** Une ligne de butin d'équipement (giveTrapping) ATTRIBUABLE par portrait — partagée entre
  *  l'écran de victoire et la fenêtre de loot (fouille/Test/dialogue). `magic` = qualités cachées
- *  ou ajoutées (✨, révélables par Évaluation). L'Effet d'origine est conservé tel quel. */
+ *  ou ajoutées, révélables par Évaluation. L'Effet d'origine est conservé tel quel. */
 export interface LootGear {
   label: string;
   magic: boolean;

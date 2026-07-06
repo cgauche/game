@@ -40,7 +40,7 @@ const seqOf = (steps: Flow[]): Flow => ({ kind: 'seq', steps });
 /** Résumé HUMAIN d'un nœud Flow (rangée repliée). */
 function nodeSummary(node: Flow, ctx: Ctx): string | JSX.Element {
   switch (node.kind) {
-    case 'do': return effectSummary(node.effect, ctx);
+    case 'do': return <><Icon id={EFFECT_ICON[node.effect.type]} size="sm" /> {effectSummary(node.effect, ctx)}</>;
     case 'if': return <><Icon id="ui/branch" size="sm" /> Si {condSummary(node.cond)}{node.else != null ? ' · sinon…' : ''}</>;
     case 'test': return <><Icon id="nav/dice" size="sm" /> Test {node.test.skill ? refLabel('skills', { id: node.test.skill, spec: node.test.spec }) : (node.test.characteristic || '?')} → ✓ / ✗</>;
     case 'choice': return <><Icon id="ui/balance" size="sm" /> Choix{node.cost ? ` (${node.cost.advantage} Av)` : ''} « {node.prompt} » → ✓ / ✗</>;
@@ -125,7 +125,7 @@ function FlowAddMenu({ onAdd }: { onAdd: (node: Flow) => void }) {
             <div className="mini-title">{g}</div>
             {types.map((t) => (
               <button key={t} className="eff-add-item" onClick={pick({ kind: 'do', effect: newEffect(t) })}>
-                {EFFECT_ICON[t]} {EFFECT_LABEL[t]}
+                <Icon id={EFFECT_ICON[t]} size="sm" /> {EFFECT_LABEL[t]}
               </button>
             ))}
           </div>

@@ -309,7 +309,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: s
   //    le héros manuel). Le résolveur générique de cascade tire le Test sur `target` ; l'applier applique.
   if (rule('combat-aa-blessures') === 'aa' && aaBleedUnconsciousDue(c)) {
     const res = testValue(c, 'resistance');
-    steps.push({ id: `aaBleed-${c.id}`, kind: 'aaBleedUnconscious', actorId: c.id, icon: '🩸', rollLabel: 'Résistance', base: res, target: res, label: '🩸 Perte de sang' });
+    steps.push({ id: `aaBleed-${c.id}`, kind: 'aaBleedUnconscious', actorId: c.id, icon: 'condition/bleeding', rollLabel: 'Résistance', base: res, target: res, label: 'Perte de sang' });
   }
   // (Mâchoires d'acier n'est PLUS un Test de fin de Round : c'est un effet `onGainCondition` data-driven,
   //  déclenché à l'acquisition du Sonné — cf. talents.json + brique `combat/triggeredTest`.)
@@ -319,7 +319,7 @@ export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: s
   //    n'émet l'étape que si le seuil est atteint (Test de Résistance différé).
   if (rule('combat-se-fatiguer') && (c.effortRounds ?? 0) >= fatigueThreshold(c)) {
     const res = testValue(c, 'resistance');
-    steps.push({ id: `fatigue-${c.id}`, kind: 'fatigue', actorId: c.id, icon: '💢', rollLabel: 'Résistance', base: res, target: res, label: '💢 Effort soutenu' });
+    steps.push({ id: `fatigue-${c.id}`, kind: 'fatigue', actorId: c.id, icon: 'condition/fatigued', rollLabel: 'Résistance', base: res, target: res, label: 'Effort soutenu' });
   }
   return steps;
 }

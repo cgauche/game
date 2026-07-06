@@ -32,7 +32,7 @@ describe('Effet startMassBattle — enregistrement dans le registre', () => {
   it('est exposé dans le registre d\'effets (picker + fabrique) du groupe Combat', () => {
     const h = EFFECT_HANDLERS.startMassBattle;
     expect(h).toBeTruthy();
-    expect(h.group).toBe('⚔️ Combat & social');
+    expect(h.group).toBe('Combat & social');
     const def = h.make();
     expect(def.type).toBe('startMassBattle');
     expect(def.battle.allyMight).toBeTypeOf('number');

@@ -42,7 +42,7 @@ const scene = buildScene({
     '(−20 à 4 m) et expose à la Corruption en fin de combat ; le Troll régénère (Stupide) ; l’Araignée emmaillote ' +
     '(Toile→Empêtré, Venin) ; la Cockatrice pétrifie du regard (Redoutable) ; le Griffon est Énorme (Piétinement) ; ' +
     'la Pieuvre frappe de ses 8 tentacules (gratuites, Empêtré) ; le Sorcier mutant lance Fléchette ; le Squelette ' +
-    'est un facultatif « Élite » aux Caractéristiques aléatoires ; l’Envoûteuse débuffe (⚠ Peur 2 + Terreur 2).',
+    'est un facultatif « Élite » aux Caractéristiques aléatoires ; l’Envoûteuse débuffe (Peur 2 + Terreur 2).',
   encounters: [
     {
       id: 'enc-bestiaire',

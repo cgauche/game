@@ -130,4 +130,31 @@ export const icons: IconFamily = [
       `<path ${F} d="M9.4 4.4 H14.6 L13.7 6.3 H10.3 Z"/>` +
       `<path ${KF} d="M15.3 8.4 L19.3 6.6 M15.6 12 H20.1"/>`,
   },
+  {
+    id: 'travel/wave',
+    label: 'Eau / immersion',
+    // Deux lignes de houle superposées.
+    svg:
+      `<path ${K} d="M2.6 10 C4.8 7.8 7.2 7.8 9.4 10 C11.6 12.2 14 12.2 16.2 10 C18.4 7.8 20.8 7.8 21.4 8.4"/>` +
+      `<path ${K} d="M2.6 15.4 C4.8 13.2 7.2 13.2 9.4 15.4 C11.6 17.6 14 17.6 16.2 15.4 C18.4 13.2 20.8 13.2 21.4 13.8"/>`,
+  },
+  {
+    id: 'travel/compass',
+    label: 'Survie en extérieur',
+    // Rose des vents : cercle, aiguille losange, graduations cardinales.
+    svg:
+      `<circle ${K} cx="12" cy="12" r="8.1"/>` +
+      `<path ${F} d="M12 6 L14.2 12 L12 18 L9.8 12 Z"/>` +
+      `<path ${K} d="M12 3.6 V5.4 M12 18.6 V20.4 M3.6 12 H5.4 M18.6 12 H20.4"/>`,
+  },
+  {
+    id: 'travel/encounter',
+    label: 'Rencontre fortuite',
+    // Deux masques de théâtre superposés.
+    svg:
+      `<circle ${K} cx="9" cy="12" r="5.4"/>` +
+      `<circle ${K} cx="15" cy="12" r="5.4"/>` +
+      `<path ${KF} d="M7 10.4 C7.6 9.8 8.4 9.8 9 10.4 M11.6 13.6 C10.6 14.6 8.4 14.6 7.4 13.6"/>` +
+      `<path ${KF} d="M13.2 10.8 L14.4 9.6 M16.6 10.8 L15.4 9.6 M13.4 14 C14.4 13.2 15.6 13.2 16.6 14"/>`,
+  },
 ];

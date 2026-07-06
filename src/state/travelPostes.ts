@@ -44,15 +44,15 @@ import type { CascadeStep, CascadeStepMeta } from './pendings';
 import type { Get, Set } from './flowTypes';
 
 const POSTE_ICON: Record<string, string> = {
-  'plein-air': '⛅', approvisionnement: '🍖', 'recueillir-informations': '💬', 'rester-aux-aguets': '👁️',
-  'etablir-cartes': '🗺️', 'pratiquer-competence': '🎯', recuperer: '😴', 'monter-camp': '⛺',
+  'plein-air': 'expedition/outdoors', approvisionnement: 'item/consumable', 'recueillir-informations': 'expedition/rumor', 'rester-aux-aguets': 'ui/eye',
+  'etablir-cartes': 'expedition/cartography', 'pratiquer-competence': 'expedition/practice', recuperer: 'rest/bed', 'monter-camp': 'rest/camp',
 };
 
 /** Présentation d'une catégorie de Rencontre (EDOC ch.5) — icône + libellé + ton du bilan. */
 const ENCOUNTER_PRESENTATION: Record<EncounterCategory, { icon: string; label: string; tone: 'ok' | 'bad' | 'info' }> = {
-  positives: { icon: '🍀', label: 'Rencontre positive', tone: 'ok' },
-  fortuites: { icon: '🎭', label: 'Rencontre fortuite', tone: 'info' },
-  dangereuses: { icon: '⚠️', label: 'Rencontre dangereuse', tone: 'bad' },
+  positives: { icon: 'expedition/clover', label: 'Rencontre positive', tone: 'ok' },
+  fortuites: { icon: 'travel/encounter', label: 'Rencontre fortuite', tone: 'info' },
+  dangereuses: { icon: 'ui/warning', label: 'Rencontre dangereuse', tone: 'bad' },
 };
 
 /** CONTEXTE TRANSITOIRE de l'Étape en cours (posé par `buildStageSteps`, lu par les appliers, effacé à
@@ -125,17 +125,17 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
     if (spec.drTarget != null) { meta.extendedDrDone = plan.extendedProgress ?? 0; meta.extendedDrTarget = spec.drTarget; }
     if (spec.target == null) {
       // Activité SANS Test (Récupérer) : pas d'étape-jet — un pas d'affichage dont l'applier applique l'issue.
-      steps.push({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? '🧭', label: def.label, interactive: true, meta });
+      steps.push({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass', label: def.label, interactive: true, meta });
     } else {
       // rollLabel = la Compétence RÉELLEMENT utilisée, LABEL résolu AVEC sa spec (« Métier (Cartographe) »)
       // via `refLabel` comme tous les flux — plus jamais l'id brut ni `def.skills[0]` (qui perdait la spec).
-      steps.push({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? '🧭', label: def.label,
+      steps.push({ id: `poste-${hero.id}`, kind: 'stagePoste', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass', label: def.label,
         rollLabel: spec.used ? refLabel('skills', { id: spec.used.skillId, spec: spec.used.spec }) : def.label,
         base: spec.value, target: spec.target, result: null, interactive: true, meta });
     }
   }
   // Pas d'agrégation de fin d'Étape (fourrage cumulé, camp, cartes, Rencontre) + insertion des Expositions.
-  steps.push({ id: 'stage-agg', kind: 'stageAggregate', icon: '🧮', label: 'Bilan de l’Étape', interactive: true,
+  steps.push({ id: 'stage-agg', kind: 'stageAggregate', icon: 'ui/tally', label: 'Bilan de l’Étape', interactive: true,
     meta: { weatherLabel: WEATHER_LABEL[weather], stages } });
   return steps;
 }
@@ -155,7 +155,7 @@ registerCascadeApplier('stagePoste', (get, set, step, hero) => {
 
   const j: string[] = [];
   j.push(r.roll != null
-    ? `${hero.name} — ${def.label} : 🎲 ${r.roll}/${r.target} → ${r.success ? `réussi (DR ${r.sl})` : r.extenue ? 'échec (Exténué)' : 'échec'}`
+    ? `${hero.name} — ${def.label} : ${r.roll}/${r.target} → ${r.success ? `réussi (DR ${r.sl})` : r.extenue ? 'échec (Exténué)' : 'échec'}`
     : `${hero.name} — ${def.label} (effectué).`);
   if (r.ops.length) j.push(...applyOps(hero, r.ops));
   if (r.extenue) addCondition(hero, 'extenue', 1);
@@ -251,7 +251,7 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
     const diff = stageExposureDifficulty(stage.weather, hasCoat(h), tent);
     if (!diff) continue; // bien équipé sous pluie/neige normale, ou beau temps → aucun Test
     const resVal = testValue(h, 'resistance', 'E');
-    out.push({ id: `expo-${id}`, kind: 'stageExposure', actorId: id, icon: '🥶', label: 'Exposition',
+    out.push({ id: `expo-${id}`, kind: 'stageExposure', actorId: id, icon: 'rest/cold', label: 'Exposition',
       rollLabel: 'Résistance', base: resVal, target: Math.max(1, Math.min(99, resVal + DIFFICULTY_MODIFIERS[diff as Difficulty])),
       result: null, interactive: true, menace: 'Exposition',
       meta: { weatherLabel: WEATHER_LABEL[stage.weather], warded: isWeatherWarded(h), coldSeason: isColdSeason(stage.season) } });
@@ -267,7 +267,7 @@ registerCascadeApplier('stageExposure', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   const weatherLabel = String(step.meta?.weatherLabel ?? '');
   if (step.meta?.warded) return { journal: [`${hero.name} ignore le froid et les intempéries (protection magique).`] };
-  const j = [`${hero.name} — Exposition de fin d'Étape (${weatherLabel}) : 🎲 ${step.result.roll}/${step.result.target} → ${step.result.success ? 'tient le coup.' : 'transi par le froid.'}`];
+  const j = [`${hero.name} — Exposition de fin d'Étape (${weatherLabel}) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'tient le coup.' : 'transi par le froid.'}`];
   if (!step.result.success) {
     const prior = (hero.activeEffects ?? []).filter((e) => e.effectId === 'exposition-froid').length;
     const rank = prior >= 10 ? 3 : prior >= 3 ? 2 : 1;

@@ -7,27 +7,30 @@ import { icons as e2 } from './defs/char';
 import { icons as e3 } from './defs/condition';
 import { icons as e4 } from './defs/coop';
 import { icons as e5 } from './defs/creature';
-import { icons as e6 } from './defs/faith';
-import { icons as e7 } from './defs/file';
-import { icons as e8 } from './defs/fire';
-import { icons as e9 } from './defs/flag';
-import { icons as e10 } from './defs/item';
-import { icons as e11 } from './defs/journal';
-import { icons as e12 } from './defs/magic';
-import { icons as e13 } from './defs/map-tool';
-import { icons as e14 } from './defs/mechanic';
-import { icons as e15 } from './defs/medical';
-import { icons as e16 } from './defs/melee';
-import { icons as e17 } from './defs/merchant';
-import { icons as e18 } from './defs/nav';
-import { icons as e19 } from './defs/resource';
-import { icons as e20 } from './defs/rest';
-import { icons as e21 } from './defs/scenario';
-import { icons as e22 } from './defs/time';
-import { icons as e23 } from './defs/travel';
-import { icons as e24 } from './defs/ui';
+import { icons as e6 } from './defs/expedition';
+import { icons as e7 } from './defs/faith';
+import { icons as e8 } from './defs/file';
+import { icons as e9 } from './defs/fire';
+import { icons as e10 } from './defs/flag';
+import { icons as e11 } from './defs/item';
+import { icons as e12 } from './defs/journal';
+import { icons as e13 } from './defs/magic';
+import { icons as e14 } from './defs/map-tool';
+import { icons as e15 } from './defs/mechanic';
+import { icons as e16 } from './defs/medical';
+import { icons as e17 } from './defs/melee';
+import { icons as e18 } from './defs/merchant';
+import { icons as e19 } from './defs/nautical';
+import { icons as e20 } from './defs/nav';
+import { icons as e21 } from './defs/resource';
+import { icons as e22 } from './defs/rest';
+import { icons as e23 } from './defs/scenario';
+import { icons as e24 } from './defs/scene';
+import { icons as e25 } from './defs/time';
+import { icons as e26 } from './defs/travel';
+import { icons as e27 } from './defs/ui';
 
-export const ICON_FAMILIES: IconFamily[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24];
+export const ICON_FAMILIES: IconFamily[] = [e0, e1, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15, e16, e17, e18, e19, e20, e21, e22, e23, e24, e25, e26, e27];
 
 /** Union GÉNÉRÉE des `id` déclarés dans les defs — le typage réel des consommateurs. */
 export type IconIdGenerated =
@@ -40,6 +43,7 @@ export type IconIdGenerated =
   | 'action/disengage'
   | 'action/dismount'
   | 'action/dispel'
+  | 'action/force'
   | 'action/free-attack'
   | 'action/lead'
   | 'action/leave-post'
@@ -89,6 +93,11 @@ export type IconIdGenerated =
   | 'creature/tentacles'
   | 'creature/tongue'
   | 'creature/vomit'
+  | 'expedition/cartography'
+  | 'expedition/clover'
+  | 'expedition/outdoors'
+  | 'expedition/practice'
+  | 'expedition/rumor'
   | 'faith/church'
   | 'faith/prayer'
   | 'faith/trident'
@@ -101,6 +110,8 @@ export type IconIdGenerated =
   | 'file/save'
   | 'fire/blast'
   | 'fire/flame'
+  | 'flag/anger'
+  | 'flag/bond'
   | 'flag/defensive'
   | 'flag/fear'
   | 'flag/focus'
@@ -113,14 +124,18 @@ export type IconIdGenerated =
   | 'item/consumable'
   | 'item/misc'
   | 'item/weapon'
+  | 'journal/backstab'
   | 'journal/charge'
   | 'journal/critical'
   | 'journal/damage'
   | 'journal/death'
   | 'journal/detail'
+  | 'journal/dialogue'
   | 'journal/dodge'
+  | 'journal/fall'
   | 'journal/flee'
   | 'journal/heal'
+  | 'journal/heartbreak'
   | 'journal/info'
   | 'journal/move'
   | 'journal/reload'
@@ -145,6 +160,7 @@ export type IconIdGenerated =
   | 'mechanic/mind'
   | 'mechanic/stat-mod'
   | 'mechanic/ward'
+  | 'medical/aid'
   | 'medical/crutch'
   | 'medical/infection'
   | 'medical/scalpel'
@@ -153,10 +169,16 @@ export type IconIdGenerated =
   | 'melee/flee'
   | 'melee/grapple'
   | 'melee/pulled-punch'
+  | 'melee/trample'
   | 'melee/tumble'
   | 'merchant/cart'
   | 'merchant/deal'
   | 'merchant/haggle'
+  | 'nautical/rock'
+  | 'nautical/snag'
+  | 'nautical/tack'
+  | 'nautical/whirlpool'
+  | 'nautical/wind'
   | 'nav/activity'
   | 'nav/art-gallery'
   | 'nav/campaign'
@@ -182,6 +204,7 @@ export type IconIdGenerated =
   | 'resource/resilience'
   | 'resource/resolve'
   | 'resource/wounds'
+  | 'resource/xp'
   | 'rest/bed'
   | 'rest/camp'
   | 'rest/cold'
@@ -208,7 +231,10 @@ export type IconIdGenerated =
   | 'scenario/trap'
   | 'scenario/travel'
   | 'scenario/village'
+  | 'scene/light'
   | 'time/afternoon'
+  | 'time/calendar'
+  | 'time/clock'
   | 'time/dawn'
   | 'time/dusk'
   | 'time/evening'
@@ -220,16 +246,20 @@ export type IconIdGenerated =
   | 'travel/careen'
   | 'travel/cart'
   | 'travel/coach'
+  | 'travel/compass'
+  | 'travel/encounter'
   | 'travel/foot'
   | 'travel/lighthouse'
   | 'travel/mount'
   | 'travel/repair'
   | 'travel/rowboat'
   | 'travel/sail-ship'
+  | 'travel/wave'
   | 'travel/world'
   | 'ui/add'
   | 'ui/balance'
   | 'ui/branch'
+  | 'ui/close'
   | 'ui/delete'
   | 'ui/done'
   | 'ui/edit'
@@ -242,6 +272,8 @@ export type IconIdGenerated =
   | 'ui/round-start'
   | 'ui/search'
   | 'ui/settings'
+  | 'ui/tally'
+  | 'ui/think'
   | 'ui/turn-end'
   | 'ui/undo'
   | 'ui/wait'
