@@ -3,9 +3,8 @@
 
 # Dette technique, réductions de fidélité & lacunes de jouabilité/éditabilité
 
-> Document VIVANT — registre unique et durable de ce qui n'est PAS conforme à notre standard
-> (« suivre le RAW à 100 % **et** rendre tout scénarisable dans l'éditeur »). Tenu à jour au fil des
-> corrections. Avant de déclarer un système « fini », vérifier qu'il n'a pas d'entrée ouverte ici.
+> Registre d'époque de ce qui n'était PAS conforme au standard (« suivre le RAW à 100 % **et**
+> rendre tout scénarisable dans l'éditeur »). Le backlog actif vit dans les issues GitHub.
 >
 > Deux axes :
 > - **A. Réductions de fidélité** — systèmes IMPLÉMENTÉS mais SIMPLIFIÉS vs le livre (le moteur ne suit
