@@ -60,7 +60,7 @@ function mortarWithBomb(chef: Combatant): Weapon {
 }
 
 // (a) CASE VIDE entourée d'un groupe : Explosion centrée sur la CASE (pas un combattant), tout le rayon
-//     subit DR+Dégâts, hors rayon épargné. AUCUNE cible primaire (le centre n'est pas un combattant).
+//     subit DR+Dégâts, hors rayon indemne. AUCUNE cible primaire (le centre n'est pas un combattant).
 describe('(a) Viser une CASE VIDE entourée — toutes les cibles du rayon subissent DR+Dégâts', () => {
   it('Explosion centrée sur la case : rayon touché, hors rayon épargné, sans primaire', () => {
     seedBattleRng(7);
@@ -72,7 +72,7 @@ describe('(a) Viser une CASE VIDE entourée — toutes les cibles du rayon subis
     const e1 = mkEnemy('e1', 9, 0); // 1 case du centre (≤ ceil(5/2)=3)
     const e2 = mkEnemy('e2', 11, 0); // 1 case
     const e3 = mkEnemy('e3', 12, 0); // 2 cases
-    const far = mkEnemy('far', 14, 0); // 4 cases > rayon → épargné
+    const far = mkEnemy('far', 14, 0); // 4 cases > rayon → indemne
     const combatants = [chef, e1, e2, e3, far];
     useGame.setState({ battle: { combatants, order: combatants.map((c) => c.id), turn: 0, round: 1, acted: false, log: [], zones: [] } as never, scene: groundScene() as never, party: [], facing: {}, pendingShipBattery: null });
     const get = () => useGame.getState();
@@ -85,7 +85,7 @@ describe('(a) Viser une CASE VIDE entourée — toutes les cibles du rayon subis
     expect(e1.wounds.current).toBeLessThan(w1);
     expect(e2.wounds.current).toBeLessThan(w2);
     expect(e3.wounds.current).toBeLessThan(w3);
-    expect(far.wounds.current).toBe(wf); // hors rayon → épargné
+    expect(far.wounds.current).toBe(wf); // hors rayon → indemne
   });
 });
 
@@ -201,7 +201,7 @@ describe('(e) Routage live — placeur de case + pilonnage via la modale de tir 
     expect(pa!.center).toEqual({ x: 10, y: 0 });
     expect(useGame.getState().pendingSiegeAim).toBeNull(); // placeur refermé
 
-    // 3) RÉSOLUTION : le jet de tir (normal) puis l'Appliquer DÉTONENT sur la case → rayon blessé, hors rayon épargné.
+    // 3) RÉSOLUTION : le jet de tir (normal) puis l'Appliquer DÉTONENT sur la case → rayon blessé, hors rayon indemne.
     const w1 = e1.wounds.current, w2 = e2.wounds.current, wf = far.wounds.current;
     useGame.getState().attackRoll();
     useGame.getState().attackConfirm();

@@ -181,9 +181,10 @@ export function scanTombstones(relPath, contenu) {
 
 /** Policy PARTAGÉE (test Vitest + hook pre-commit + hook au stylo — une seule source de vérité) :
  *  le volet excuses ne BLOQUE que lorsque le tri utilisateur du stock existant est fait
- *  (tag `[entériné AAAA-MM-JJ]` ou reformulation de chaque occurrence), cf. #136. Tant que `false`,
- *  les hooks signalent sans bloquer et le test Vitest skippe le scan. */
-export const EXCUSE_GUARD_ACTIVE = false;
+ *  (tag `[entériné AAAA-MM-JJ]` ou reformulation de chaque occurrence), cf. #136/#177. Le tri est
+ *  FAIT (stock reformulé) → `true` : les hooks bloquent l'excuse sans tag et le test Vitest scanne
+ *  tout src/**. Une nouvelle excuse sans tag `[entériné]` échoue désormais la CI et le commit. */
+export const EXCUSE_GUARD_ACTIVE = true;
 
 // Affinage 2026-07-06 (recensement : 41 faux positifs sur 44 occurrences, même méthode que les
 // familles tombstone ci-dessus) : une vraie excuse nomme un artefact de CODE (paramètre, appelant,

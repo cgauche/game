@@ -115,7 +115,7 @@ describe('Carrières norses (MDG 07 l.269-303) — colonne Norse + refCareer des
     expect(bounds[bounds.length - 1]).toBe(100);
     for (const c of table.filter((x) => x.class === 'cotiers'))
       expect(['marin-cotier', 'naufrageur-cotier', 'nautonier-cotier', 'ratisseur-de-plages']).toContain(c.id);
-    // aucune carrière Riverains dans la table norse (le livre n'en imprime pas)
+    // aucune carrière Riverains dans la table norse (classe absente du tableau MDG 07)
     expect(table.some((c) => c.class === 'riverains')).toBe(false);
   });
 });

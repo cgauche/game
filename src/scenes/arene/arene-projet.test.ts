@@ -307,8 +307,9 @@ describe('Arène — projet de données (zéro code applicatif)', () => {
   });
 
   it('VITRINE du bestiaire & des Traits (même non codés) : Champion, Corruption, Démoniaque, Venin, Taille', () => {
-    // L'arène fait découvrir un large bestiaire et des Traits canoniques pas encore tous codés mais déjà
-    // présents en DONNÉES (« ça reste des systèmes qu'on veut tester »). On vérifie qu'ils sont référencés.
+    // L'arène fait découvrir un large bestiaire et des Traits canoniques dont certains restent non
+    // mécanisés mais déjà présents en DONNÉES (« ça reste des systèmes qu'on veut tester »). On vérifie
+    // qu'ils sont référencés.
     const refs = new Set(ALL_ENEMIES.map((en) => en.ref).filter(Boolean));
     expect(refs.size).toBeGreaterThanOrEqual(30); // large vitrine (≥30 créatures distinctes)
     // Traits canoniques (LDB 85) portés par les créatures référencées.

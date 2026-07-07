@@ -1,6 +1,6 @@
 /**
  * IA — auto-transformation (Métamorphose, op `transform`) : un ennemi Enfant d'Ulric adopte sa FORME DE
- * COMBAT (hybride) quand il ne l'a pas encore prise. La décision est data-driven : `chooseEnemyAction`
+ * COMBAT (hybride) s'il n'y est pas déjà. La décision est data-driven : `chooseEnemyAction`
  * énumère les manœuvres `targeting:'self'` octroyées par ses traits, les score via `opValue` (le `transform`
  * mesure le gain de combat réel), et le gate d'applicabilité (déjà dans la forme) empêche le spam. AUCUN
  * nom d'entité en dur dans l'IA. La résolution (store) reprend le chemin joueur (`resolveManeuver` sur soi).

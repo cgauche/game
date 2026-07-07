@@ -28,7 +28,7 @@ describe('Ivresse — Résistance à l’alcool (LDB 09 l.471-487)', () => {
 
   it('−10 aux CC/CT/Ag/Dex/Int par Test raté, plafond −30', () => {
     const c = hero();
-    applyAlcoholTest(c, false, 5, makeRNG(1)); // 1 échec → −10 (BE 3, pas encore ivre car BE=3? E30→BE3)
+    applyAlcoholTest(c, false, 5, makeRNG(1)); // 1 échec → −10 (BE 3, toujours sobre à ce stade car BE=3? E30→BE3)
     expect(drunkPenalty(c)).toBe(-10);
     for (const k of DRUNK_CARACS) expect(drunkCharPenalties(c, k)).toEqual([-10]);
     expect(drunkCharPenalties(c, 'F')).toEqual([]); // F non touchée

@@ -69,7 +69,7 @@ describe('resolveWeaponArea — Tir de zone (bandes RAW)', () => {
     const wa = a.wounds.current, wb = b.wounds.current;
     resolveWeaponArea(get, set, mkHit(atk, tgt, w, 12, 10), areaTargets([atk, tgt, a, b], 2), battleRng());
     expect(a.wounds.current).toBeLessThan(wa); // a (1 case) pris dans la gerbe
-    expect(b.wounds.current).toBe(wb); // b (3 cases > rayon) épargné
+    expect(b.wounds.current).toBe(wb); // b (3 cases > rayon) hors de la gerbe, indemne
   });
 
   it('Extrême → comme Courte-Longue mais −Indice aux Dégâts (cible secondaire encaisse moins)', () => {

@@ -702,7 +702,7 @@ export interface PendingDefense {
   attackerId: string; // ennemi
   defenderId: string; // héros
   weapon: Weapon; // arme active de l'attaquant, figée
-  location: HitLocation | null; // visée par l'IA (aucune pour l'instant → null)
+  location: HitLocation | null; // visée par l'IA (absente tant qu'aucune localisation choisie → null)
   atk: TestResult; // jet d'attaque figé (rollMeleeAttacker)
   mode: DefenseMode; // réaction choisie (défaut = bestDefenseMode) ; 'social' = substitution sociale (mêlée)
   /** Arme de parade choisie (uid d'ItemInstance) ; absent = main principale (weapons[0]). */

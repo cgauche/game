@@ -60,7 +60,7 @@ describe('Frénésie IA — ORDRE (report tant qu’un sort prime, Couche 3)', (
   // frénétique (le peek tourne AVANT l'entrée), une invocation jouable + héros loin → l'IA PRÉPARE le sort
   // (cast), donc la Frénésie est différée. Sans sort → mêlée/approche (pas de report).
   it('un sort jouable (invocation, héros loin) → la meilleure action est `cast` (→ report de Frénésie)', () => {
-    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] }); // pas encore frénétique
+    const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [] }); // état non frénétique à ce stade
     const h = mk('h', 'hero', { x: 5, y: 11 }); // loin → ni mêlée ni bonne approche
     expect(chooseEnemyAction(input(e, [h], { spells: [summonSpell()] })).kind).toBe('cast');
   });

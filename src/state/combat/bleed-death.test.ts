@@ -96,7 +96,7 @@ describe('Mort par Hémorragique en combat (LDB 16 l.105) — hook bleed-death +
     expect(fs).toBeTruthy();
     expect(fs!.heroId).toBe(H.id);
     const h = useGame.getState().battle!.combatants.find((x) => x.id === H.id)!;
-    expect(h.dead).toBeFalsy(); // suspendu, pas encore mort (le joueur peut dépenser un Point de Destin)
+    expect(h.dead).toBeFalsy(); // suspendu, mort non encore finalisée (le joueur peut dépenser un Point de Destin)
   });
 
   it('héros SANS Destin : mort par Hémorragie finalisée (pas de suspension)', () => {

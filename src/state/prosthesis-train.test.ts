@@ -27,7 +27,7 @@ describe('trainProsthesis — rachat PX en 2 paliers de la Fausse jambe (LDB 73 
     const it = p.items!.find((i) => i.uid === 'fj')!;
     expect(it.prosthesisMoveTrained).toBe(true);
     expect(it.prosthesisTrained).toBeFalsy();
-    expect(traumaDodgePenalty(p)).toBe(-20); // Esquive pas encore réapprise
+    expect(traumaDodgePenalty(p)).toBe(-20); // Esquive toujours pénalisée : palier Esquive non franchi
   });
 
   it('200 PX (2e palier, Esquive) : une fois le Mouvement déjà entraîné, rétablit AUSSI l’Esquive', () => {

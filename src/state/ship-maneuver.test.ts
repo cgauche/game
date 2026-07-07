@@ -235,7 +235,7 @@ describe('shipAdvance (action store) — avance coque + équipage le long du cap
     seedBattleRng(7);
     useGame.setState({ battle: { combatants: [ship2(), helm2()], order: ['ship', 'helm'], turn: 0 } as never, facing: { ship: 'N' }, scene: null as never });
     const res = rollShipManeuver(() => useGame.getState(), 'ship', 'helm')!;
-    expect(res.advanced).toBe(0); // pas encore appliqué
+    expect(res.advanced).toBe(0); // non appliqué à ce stade (résolution du Test seule)
     expect(useGame.getState().facing.ship).toBe('N'); // cap INCHANGÉ par le jet
     expect(useGame.getState().battle!.combatants.find((c) => c.id === 'ship')!.pos).toEqual({ x: 5, y: 5 }); // position INCHANGÉE
   });
@@ -329,7 +329,7 @@ describe('flux shipManeuver (store) — bouton HUD → modale → confirm (MDG c
     expect(useGame.getState().pendingShipManeuver!.turnSteps).toBe(2);
     useGame.getState().shipManeuverRoll('helm'); // le PJ lance SON rôle (interactif)
     expect(useGame.getState().pendingShipManeuver!.participants.every((x) => x.result)).toBe(true);
-    expect(useGame.getState().facing.ship).toBe('N'); // PAS encore appliqué (cap intact tant que pas confirmé)
+    expect(useGame.getState().facing.ship).toBe('N'); // cap encore intact : application différée à la confirmation
     useGame.getState().shipManeuverConfirm();
     const st = useGame.getState();
     expect(st.pendingShipManeuver).toBeNull();

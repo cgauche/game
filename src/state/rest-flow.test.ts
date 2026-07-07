@@ -123,7 +123,7 @@ describe('openRest / choix par héros', () => {
     useGame.getState().restSleep();
     const cas = useGame.getState().pendingCascade!;
     expect(cas.participants[0].kind).toBe('shelter'); // l'abri de fortune ouvre la séquence
-    // L'Exposition n'existe PAS encore : elle est INSÉRÉE quand l'abri est validé (dépendance).
+    // L'Exposition n'est insérée qu'à la validation de l'abri (dépendance) — absente avant.
     expect(cas.participants.some((s) => s.kind === 'exposure')).toBe(false);
     const kinds = walkCascadeAbriFails(); // abri raté → campement exposé
     expect(kinds.filter((k) => k === 'exposure').length).toBe(2 * 2); // 2 héros × 2 Tests

@@ -75,9 +75,10 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
    Garde `src/comment-poison-guard.test.ts` (#136) : scanne les COMMENTAIRES de `src/**/*.ts(x)`
    (jamais les chaînes) pour ces familles (b) et (c). (c) tolérance ZÉRO, sans liste d'exception —
    un cas légitime se reformule. (b) sans tag `[entériné AAAA-MM-JJ]` porté par le MÊME commentaire =
-   échec ; ce volet reste désactivé (`EXCUSE_GUARD_ACTIVE`) tant que le tri des excuses existantes
-   n'est pas fait (beaucoup de faux positifs de vocabulaire RAW/mécanique — « pas encore lancé »
-   pour un jet, « épargné » pour une cible hors zone — à distinguer d'une vraie dette de code).
+   échec ; ce volet est désormais ACTIF (`EXCUSE_GUARD_ACTIVE = true`, #177) — le tri du stock
+   existant est fait (reformulé après affinage des faux positifs de vocabulaire RAW/mécanique —
+   « pas encore lancé » pour un jet, « épargné » pour une cible hors zone, écartés structurellement).
+   Toute NOUVELLE excuse sans tag `[entériné]` échoue la CI et bloque le commit.
 7. **Pas de MJ — tout se modélise.** Le jeu tourne sans arbitre humain : tout point que le RAW
    laisse « au MJ » reçoit un arbitrage EXPLICITE (donnée éditable taguée maison, ou choix
    joueur) — jamais un contournement silencieux. Si une règle/table EST dans la source (Blessures

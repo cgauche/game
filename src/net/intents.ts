@@ -1,6 +1,6 @@
 /**
  * Allowlist des actions de store qu'un INVITÉ peut demander (intents) — périmètre : LE COMBAT
- * (arbitrage utilisateur V1 : « pour le moment on ne gère que la partie combat » ;
+ * (portée V1 : seule la partie combat est jouée côté invité ;
  * l'exploration est un miroir de l'hôte) + la COMPOSITION DU GROUPE (chaque joueur remplit
  * les emplacements que l'hôte lui a attribués) + les ACTIVITÉS D'INTERLUDE de SES héros
  * (audit POC→produit M7 : « Entre deux aventures » est par nature individuel — chaque joueur

@@ -86,6 +86,6 @@ describe('#43.2 Critique de défense opposée — HÉROS blindé : étape de dé
     applyOpposedCritical(useGame.getState, useGame.setState, h, 11, {}, []);
     const dev = useGame.getState().pendingCascade?.participants.find((s) => s.kind === 'deviation')?.deviation;
     expect(dev?.mode).toBe('self'); // suspendu : choix Dévier/Subir
-    expect(h.criticalWounds ?? 0).toBe(0); // Critique PAS encore appliqué (différé à la résolution)
+    expect(h.criticalWounds ?? 0).toBe(0); // Critique toujours différé à la résolution (non appliqué à ce stade)
   });
 });

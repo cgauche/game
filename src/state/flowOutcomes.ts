@@ -273,7 +273,7 @@ export function describeDisengage(pd: PendingDisengage): string {
 
 /** Désengagement — phase 'fuir' : issue du coup dans le dos (SUBI) + Test de Calme, montrée INLINE
  *  (popin). Le Test de Calme est INFLUENÇABLE (`fuir.calme`) ; l'État Brisé en découle (1 + DR négatif)
- *  — calculé ici pour la narration, appliqué par `fleeConfirm`. `calme` non joué → pas encore d'issue. */
+ *  — calculé ici pour la narration, appliqué par `fleeConfirm`. `calme` non joué → issue indéterminée à ce stade. */
 export function describeDisengageFlee(pd: PendingDisengage): string {
   const f = pd.fuir;
   if (!f) return '';

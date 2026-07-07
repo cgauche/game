@@ -16,8 +16,9 @@
  *    l'ivresse jusqu'à la fin du prochain Round. » → flag `drunkIgnore` (ActiveEffect 1 Round) lu par
  *    le collecteur `passiveMods` (kind `ivresse` non émis tant qu'il dure).
  *
- * Le RAW ne marque PAS l'Ivresse comme optionnelle : elle n'a d'effet que si un personnage BOIT de
- * l'alcool (consommable Flow d'une boisson alcoolisée → op `intoxicate` sur un Test raté). PUR : mute
+ * L'Ivresse n'est pas un système optionnel (elle ne vit pas au registre `OPTIONAL_RULES`) : elle
+ * n'a d'effet que si un personnage BOIT de l'alcool (consommable Flow d'une boisson alcoolisée →
+ * op `intoxicate` sur un Test raté). PUR : mute
  * `c`, renvoie journaux ; le RNG est injecté ; la valeur du Test de Résistance à l'alcool et le Bonus
  * d'Endurance sont passés par l'appelant (comme `provisions.ts`, pour éviter le cycle d'import).
  */
@@ -72,7 +73,7 @@ export function drunkCharPenalties(c: Combatant, key: CharKey): number[] {
 /**
  * Applique le résultat d'UN Test de Résistance à l'alcool consécutif à une boisson (l.475). Sur un
  * échec : +1 échec (donc −10 supplémentaire aux DRUNK_CARACS, plafond géré par `drunkPenalty`). Si le
- * nombre d'échecs atteint le Bonus d'Endurance `be` et que le personnage n'était pas encore Ivre : il
+ * nombre d'échecs atteint le Bonus d'Endurance `be` et que le personnage n'était pas déjà Ivre : il
  * devient Ivre → tirage 1d10 sur le Tableau d'Ivresse (effet appliqué par `applyDrunkResult`). Mute `c`.
  */
 export function applyAlcoholTest(c: Combatant, success: boolean, be: number, rng: RNG = defaultRNG): { log: string[]; becameDrunk?: DrunkEntry } {

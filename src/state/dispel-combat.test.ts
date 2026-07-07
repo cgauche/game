@@ -46,7 +46,7 @@ describe('Dissipation permanente — Action de combat', () => {
     const { cible } = setup();
     useGame.getState().battleDispelSpell('malefice', 'ennemi');
     const pd = useGame.getState().pendingDispel!;
-    // Round 1 : DR +1 (cumul 1/2) → pas encore dissipé, progression persistée.
+    // Round 1 : DR +1 (cumul 1/2) → sort toujours actif, progression persistée.
     useGame.setState({ pendingDispel: { ...pd, result: { roll: 10, target: pd.value, sl: 1, success: true } } });
     useGame.getState().dispelConfirm();
     const mage1 = useGame.getState().battle!.combatants.find((c) => c.id === 'mage')!;
