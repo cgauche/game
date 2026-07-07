@@ -46,8 +46,7 @@ import { hasCondition, canTakeAction, isActionLocked, restrictingConditions, CON
 import { effectiveMovement } from '../engine/encumbrance';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { isFlankOrRear } from './combatGeometry';
-import { facingToward } from '../gameIso/rig/facing';
-import type { Dir8 } from './dir8';
+import { facingToward, type Dir8 } from './dir8';
 import { groupMatch } from '../engine/groups';
 import { isBestial, isTerritorial, isMindless, isStupid } from '../engine/traits/dispatch';
 import { creatureAttacks } from '../engine/creatureAttacks';

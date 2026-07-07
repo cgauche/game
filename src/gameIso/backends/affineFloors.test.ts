@@ -3,7 +3,7 @@ import { buildFloors } from '../builders/floors';
 import type { FloorEl } from '../builders/types';
 import { emptyScene, type Scene } from '../../state/scene';
 import { floorSvg, floorAccentsSvg, floorDepth } from './affineFloors';
-import { depth, diamondPath, tileCenter, type Dims } from '../iso';
+import { depth, diamondPath, tileCenter, type Dims } from '../../geometry/iso';
 
 /**
  * Backend écran-affine des sols : projette les éléments `floor` du pivot (builders/floors) via la

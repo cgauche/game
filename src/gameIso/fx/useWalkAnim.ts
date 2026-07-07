@@ -5,7 +5,7 @@
  */
 import { useEffect, useRef, useState } from 'react';
 import { bus, EVT } from '../../state/bus';
-import { walkDuration, STEP_MS } from '../walkPath';
+import { walkDuration, STEP_MS } from '../../geometry/walk';
 
 export function useWalkAnim() {
   const [, setWalkTick] = useState(0);

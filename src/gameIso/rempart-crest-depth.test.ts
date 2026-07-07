@@ -3,7 +3,7 @@ import { scenario } from '../scenes/test-scenarios/siege-explore';
 import { buildWalls } from './builders/walls';
 import { wallDepth } from './backends/affineWalls';
 import { FIGURANT_LIFT } from './stage/tokens';
-import { depth } from './iso';
+import { depth } from '../geometry/iso';
 
 // Les crêtes sont sur des arêtes CARDINALES canonisées N/E (WallSide) → voisin de l'arête.
 const NB: Record<string, [number, number]> = { N: [0, -1], E: [1, 0] };

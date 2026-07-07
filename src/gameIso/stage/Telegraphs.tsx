@@ -5,7 +5,7 @@
  * INTERACTION/mise en scène → overlays du stage, hors builders.
  */
 import { Combatant } from '../../engine/types';
-import { Dims, diamondPath } from '../iso';
+import { Dims, diamondPath } from '../../geometry/iso';
 import { TargetReticle } from '../TargetReticle';
 import { movePreviewEls } from './movePreview';
 import type { Pt } from '../../state/path';

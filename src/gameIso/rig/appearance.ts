@@ -1,6 +1,6 @@
 import type { Slot } from './bones';
 import type { Combatant } from '../../engine/types';
-import { hashSeed } from '../appearance';
+import { hashSeed } from '../../engine/dice';
 import { rigSpeciesId } from '../../data';
 import type { MonsterParts } from './parts/monstrous';
 import type { Palette } from './palette';

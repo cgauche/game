@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { facingView, screenDir, project, facingToward, type Dir8 } from './facing';
+import { facingView, screenDir, project, type Dir8 } from './facing';
 
 describe('facingView', () => {
   it('vers le bas → front, vers le haut → back', () => {
@@ -31,18 +31,6 @@ describe('screenDir', () => {
     expect(screenDir({ x: 0, y: 0 }, { x: 1, y: 0 })).toEqual({ dx: 1, dy: 1 });
     // rot 1 sur grille 3×3 : (0,0)->(0,2), (1,0)->(0,1) → dx=1, dy=-1
     expect(screenDir({ x: 0, y: 0 }, { x: 1, y: 0 }, { w: 3, h: 3, rot: 1 })).toEqual({ dx: 1, dy: -1 });
-  });
-});
-
-describe('facingToward (delta grille → Dir8)', () => {
-  it('cardinaux, diagonaux, nul', () => {
-    expect(facingToward({ x: 2, y: 2 }, { x: 2, y: 0 })).toBe('N');
-    expect(facingToward({ x: 2, y: 2 }, { x: 4, y: 2 })).toBe('E');
-    expect(facingToward({ x: 2, y: 2 }, { x: 2, y: 5 })).toBe('S');
-    expect(facingToward({ x: 2, y: 2 }, { x: 0, y: 2 })).toBe('O');
-    expect(facingToward({ x: 0, y: 0 }, { x: 3, y: 3 })).toBe('SE');
-    expect(facingToward({ x: 3, y: 3 }, { x: 0, y: 0 })).toBe('NO');
-    expect(facingToward({ x: 1, y: 1 }, { x: 1, y: 1 })).toBe('S'); // nul → défaut S
   });
 });
 

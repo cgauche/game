@@ -1,9 +1,8 @@
 import { type Scene, isWalkable } from './scene';
 import { pathTo, walkNeighbors, type Pt } from './path';
 import { screenStepDot, type ScreenDir } from './combatCursor';
-import { type Dims } from '../gameIso/iso';
-import { DIR8_ORDER, type Dir8 } from './dir8';
-import { DIR8_DELTA } from '../gameIso/rig/facing';
+import { type Dims } from '../geometry/iso';
+import { DIR8_ORDER, DIR8_DELTA, type Dir8 } from './dir8';
 
 const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 

@@ -11,7 +11,7 @@ import { useGame, type BattleState } from '../../state/store';
 import { Scene, structureIsDown } from '../../state/scene';
 import { controlsActive } from '../../state/netOwnership';
 import { hoverClickCommits } from '../../ui/pointerCaps';
-import { Dims, tileEdge } from '../iso';
+import { Dims, tileEdge } from '../../geometry/iso';
 
 export function SiegeHitAreas({ scene, battle, dims, activeZ, visible }: { scene: Scene; battle: BattleState; dims: Dims; activeZ: number; visible: ReadonlySet<string> }) {
   return (

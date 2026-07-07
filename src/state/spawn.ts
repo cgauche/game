@@ -21,7 +21,7 @@ import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
 import { weaponsFromTraits, armourFromTraits, renderWeaponsFromTraits } from '../engine/creatureEquip';
 import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
-import { hashSeed } from '../gameIso/appearance';
+import { hashSeed } from '../engine/dice';
 import { bodyPlanById } from '../gameIso/rig/bodyPlan';
 
 /**

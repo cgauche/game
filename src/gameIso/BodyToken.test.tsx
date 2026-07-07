@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { BodyToken } from './BodyToken';
-import { tileCenter, LEVEL_H, type Dims } from './iso';
+import { tileCenter, LEVEL_H, type Dims } from '../geometry/iso';
 
 const dims: Dims = { w: 5, h: 5, view: 'top' };
 

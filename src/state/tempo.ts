@@ -7,7 +7,7 @@
  * lecture humaine (un combat doit être lisible : chaque beat visible et annoncé).
  *
  * NB : le déplacement animé NE se cale PAS sur un délai fixe mais sur la durée RÉELLE de marche
- * (`walkMs(path)` de gameIso/walkPath) — c'est ce qui supprime la « téléportation » perçue
+ * (`walkMs(path)` de `geometry/walk`) — c'est ce qui supprime la « téléportation » perçue
  * (la modale de défense ne s'ouvre qu'une fois l'ennemi arrivé).
  */
 export const TEMPO = {

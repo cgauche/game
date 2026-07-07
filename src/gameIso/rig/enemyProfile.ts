@@ -16,7 +16,7 @@ import type { TraitList } from '../../engine/statEntry';
 import { weaponGroupKey } from './parts/weaponGroup';
 import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
-import { hashSeed } from '../appearance';
+import { hashSeed } from '../../engine/dice';
 import type { SceneEntity } from '../../state/scene';
 import { bipedDef } from './creatures';
 import { resolveRender } from './bodyPlan';

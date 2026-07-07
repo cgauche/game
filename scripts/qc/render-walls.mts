@@ -9,7 +9,7 @@ import { floorSvg, floorDepth } from '../../src/gameIso/backends/affineFloors';
 import { buildWalls } from '../../src/gameIso/builders/walls';
 import { wallDepth, wallSvg } from '../../src/gameIso/backends/affineWalls';
 import { DEFS } from '../../src/gameIso/sprites';
-import { stageSize, depth, type Dims } from '../../src/gameIso/iso';
+import { stageSize, depth, type Dims } from '../../src/geometry/iso';
 import type { Scene, Terrain, WallSeg } from '../../src/state/scene';
 
 const W = 7, H = 7;
@@ -30,7 +30,7 @@ const objs: { d: number; svg: string }[] = [];
 for (const el of buildFloors(scene, undefined, { viewZ: 0 })) objs.push({ d: floorDepth(el, d), svg: floorSvg(el, d) });
 for (const el of buildWalls(scene)) objs.push({ d: wallDepth(el, d), svg: wallSvg(el, d) });
 // un jeton DANS la salle pour juger l'occlusion (le mur du fond passe derrière lui, le mur avant devant)
-const { cx, cy } = (await import('../../src/gameIso/iso')).tileCenter(2, 2, d);
+const { cx, cy } = (await import('../../src/geometry/iso')).tileCenter(2, 2, d);
 objs.push({ d: depth(2, 2, d) + 0.5, svg: `<g><ellipse cx="${cx}" cy="${cy}" rx="9" ry="4" fill="#000" opacity="0.3"/><rect x="${cx - 6}" y="${cy - 40}" width="12" height="40" rx="4" fill="#c44"/></g>` });
 objs.sort((a, b) => a.d - b.d);
 

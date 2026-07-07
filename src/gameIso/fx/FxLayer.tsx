@@ -3,8 +3,8 @@
  * flashes de zone d'effet, halos d'incantation — dans cet ordre de superposition (z-order SVG).
  * Extrait d'IsoStage tel quel (rendu inchangé).
  */
-import type { Dims } from '../iso';
-import { tileCenter, diamondPath } from '../iso';
+import type { Dims } from '../../geometry/iso';
+import { tileCenter, diamondPath } from '../../geometry/iso';
 import { IconG } from '../../ui/Icon';
 import { FLOAT_COLOR, type Float, type Proj, type Aura, type AoeFlash } from './useCombatFx';
 

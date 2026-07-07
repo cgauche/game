@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { rotateDir8 } from './dir8';
-import { DIR8_DELTA } from '../gameIso/rig/facing';
+import { rotateDir8, DIR8_DELTA } from './dir8';
 import { inFireArc, targetArc } from './fireArc';
 import { resolveShipManeuver } from '../engine/shipNavigation';
 import { useGame } from './store';

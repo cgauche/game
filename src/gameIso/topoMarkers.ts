@@ -4,7 +4,7 @@
  * d'équipage et wedge d'arc d'orientation. AUCUN React ici — la composition SVG/JSX vit dans TopoScene ;
  * ces primitives restent unit-testables sans rendu. PUR.
  */
-import { tileCenter, type Dims } from './iso';
+import { tileCenter, type Dims } from '../geometry/iso';
 import { ALLY_TINT, ENEMY_TINT, NEUTRAL_TINT } from './teamColors';
 import type { Station } from '../state/stations';
 import type { FireArc } from '../engine/types';

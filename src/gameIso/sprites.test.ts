@@ -1,21 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { hashSeed } from './appearance';
 import { entitySprite, propSprite } from './sprites';
 import { creatureSpeciesOptions } from './rig/creatures';
-
-describe('hashSeed', () => {
-  it('est déterministe pour une même chaîne', () => {
-    expect(hashSeed('ent-1')).toBe(hashSeed('ent-1'));
-  });
-  it('diffère pour des chaînes différentes', () => {
-    expect(hashSeed('ent-1')).not.toBe(hashSeed('ent-2'));
-  });
-  it('renvoie un entier non signé', () => {
-    const h = hashSeed('xyz');
-    expect(Number.isInteger(h)).toBe(true);
-    expect(h).toBeGreaterThanOrEqual(0);
-  });
-});
 
 // Le bestiaire ET les PNJ passent par le RIG (pickBackend) ; le backend sprite (entitySprite) ne sert
 // que le DÉCOR (props). Tout kind non-prop est routé vers le rig EN AMONT et n'atteint pas entitySprite

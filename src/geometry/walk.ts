@@ -1,4 +1,8 @@
-/** Interpolation visuelle d'un déplacement le long d'un chemin de tuiles. PUR. */
+/**
+ * Interpolation temporelle d'un déplacement le long d'un chemin de tuiles — géométrie/simulation PURE
+ * (#161 : ex-`gameIso/walkPath.ts`, hors du foyer `gameIso` car `state/combatDirector` en a besoin pour
+ * CADENCER la résolution du combat, pas seulement pour l'afficher — cf. `docs/architecture.md`).
+ */
 export interface Pt { x: number; y: number }
 
 /**
@@ -23,7 +27,7 @@ export function walkDuration(path: Pt[], stepMs: number): number {
 }
 
 /** Durée d'un pas de marche (ms) — SOURCE UNIQUE partagée par le rendu (IsoStage) ET le
- *  séquencement du combat (combatFlow), pour que la résolution attende la fin réelle du déplacement. */
+ *  séquencement du combat (combatFlow/combatDirector), pour que la résolution attende la fin réelle du déplacement. */
 export const STEP_MS = 160;
 
 /** Durée totale d'un déplacement avec le pas standard. */

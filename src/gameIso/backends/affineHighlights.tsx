@@ -4,7 +4,7 @@
  * d'équipe) vivent ici. Profondeur = sa case (+0.25 : juste au-dessus du sol −0.5, sous les jetons
  * +0.5), interclassée par sa vraie position écran, jamais en bande par étage.
  */
-import { depth, diamondPath, type Dims } from '../iso';
+import { depth, diamondPath, type Dims } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import { tileTint } from '../teamColors';
 import type { HighlightEl } from '../builders/highlights';

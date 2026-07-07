@@ -1,4 +1,4 @@
-import type { Dims } from '../iso';
+import type { Dims } from '../../geometry/iso';
 import type { Facing } from '../../state/scene';
 import type { Dir8 } from '../../state/dir8';
 

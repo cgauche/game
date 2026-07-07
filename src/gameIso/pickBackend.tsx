@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { ViewMode } from './iso';
+import type { ViewMode } from '../geometry/iso';
 import type { Combatant } from '../engine/types';
 import type { SceneEntity } from '../state/scene';
 import { isOutOfAction } from '../engine/conditions';
@@ -13,7 +13,7 @@ import { isStructure } from '../engine/structures';
 import { findCreatureById, findCareerById, findTrappingById } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite } from './sprites';
-import { hashSeed } from './appearance';
+import { hashSeed } from '../engine/dice';
 import { resolveRig, RigSprite } from './rig/composeRig';
 import { defaultAppearance, type Appearance } from './rig/appearance';
 import { equipFromCombatant, type EquipCtx } from './rig/parts/equipment';

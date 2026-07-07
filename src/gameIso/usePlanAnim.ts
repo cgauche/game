@@ -6,7 +6,7 @@ import { planById, type BodyPlanId, type BodyPlan, type WingState } from './rig/
 import { quadAttackPose, hasQuadAttackPose } from './rig/anim/creatureAttackPoses';
 import { project, type View } from './rig/facing';
 import type { Dir8 } from '../state/dir8';
-import { STEP_MS, walkMs } from './walkPath';
+import { STEP_MS, walkMs } from '../geometry/walk';
 import { isTileVisible } from './viewport';
 
 const IDLE_MS = 1600; // période de l'anim de repos (battement/ondulation/dodelinement)

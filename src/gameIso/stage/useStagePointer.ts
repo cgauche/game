@@ -26,7 +26,7 @@ import { controlsActive } from '../../state/netOwnership';
 import { combatantClickActs } from '../../state/combatOrParty';
 import { hoverClickCommits } from '../../ui/pointerCaps';
 import { bestAttack } from '../../state/attackRelevance';
-import { Dims, screenToTileAtZ } from '../iso';
+import { Dims, screenToTileAtZ } from '../../geometry/iso';
 import { VW, VH } from './useStageCamera';
 
 const PAN_THRESHOLD = 6; // px de glissement avant de passer en panoramique (sinon = clic)

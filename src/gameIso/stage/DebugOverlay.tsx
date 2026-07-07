@@ -8,7 +8,7 @@
 import { Scene, type WallSeg } from '../../state/scene';
 import { structureById } from '../../data';
 import { wallEnds } from '../builders/walls';
-import { Dims, tileCenter, diamondPath } from '../iso';
+import { Dims, tileCenter, diamondPath } from '../../geometry/iso';
 
 export function DebugMapLabels({ scene, dims, liftAt }: { scene: Scene; dims: Dims; liftAt: (x: number, y: number, z?: number) => number }) {
   const W = scene.dimensions.w, H = scene.dimensions.h;

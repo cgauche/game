@@ -11,7 +11,7 @@
 import { WALL_H_M } from '../iso';
 import { mix, parseHex } from '../shade';
 import { heightAt, sceneMetresPerTile, type Scene } from '../../state/scene';
-import { DIR8_DELTA, type Dir8 } from '../rig/facing';
+import { DIR8_DELTA, type Dir8 } from '../../state/dir8';
 import { AMBIANCE } from '../catalog/ambiance';
 
 // — Constantes de caméra/projection — (hauteur de cloison : `WALL_H_M`, vérité partagée dans iso.ts)

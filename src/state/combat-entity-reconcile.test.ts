@@ -8,7 +8,7 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import type { Scene, SceneEntity } from './scene';
 import { enemyRigProfile, entityRigProfile } from '../gameIso/rig/enemyProfile';
-import { hashSeed } from '../gameIso/appearance';
+import { hashSeed } from '../engine/dice';
 
 /**
  * Identité UNIFIÉE SceneEntity ↔ Combatant : le combattant spawné GARDE l'id de l'entité de scène

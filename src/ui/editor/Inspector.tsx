@@ -8,7 +8,7 @@
 import { useState, type ReactNode } from 'react';
 import { Scene, SceneEntity, Roof, RoofParams, Trigger, SceneEffectZone, WallSeg } from '../../state/scene';
 import type { Settlement } from '../../engine/disponibilite';
-import { hashSeed } from '../../gameIso/appearance';
+import { hashSeed } from '../../engine/dice';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
 import { pickBackend } from '../../gameIso/pickBackend';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';

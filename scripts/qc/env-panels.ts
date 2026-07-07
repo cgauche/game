@@ -17,14 +17,14 @@ import { buildProps } from '../../src/gameIso/builders/props';
 import { propDepth } from '../../src/gameIso/backends/affineProps';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { edgeDepthVeil } from '../../src/gameIso/catalog/ambiance';
-import { stageSize, tileCenter, billboardScale, TH, type Dims } from '../../src/gameIso/iso';
+import { stageSize, tileCenter, billboardScale, TH, type Dims } from '../../src/geometry/iso';
 import { makeCamera, VW, VH } from '../../src/gameIso/pov/camera';
 import { buildPovDrawList } from '../../src/gameIso/pov/geometry';
 import { buildPropBillboards } from '../../src/gameIso/pov/billboardCore';
 import { AMBIANCE } from '../../src/gameIso/catalog/ambiance';
 import { heightAt, isIndoor, sceneMetresPerTile, type Scene } from '../../src/state/scene';
 import { metricToLift } from '../../src/state/relief';
-import { DIR8_DELTA, type Dir8 } from '../../src/gameIso/rig/facing';
+import { DIR8_DELTA, type Dir8 } from '../../src/state/dir8';
 
 export interface Panel { w: number; h: number; svg: string }
 

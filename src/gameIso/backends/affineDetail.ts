@@ -18,7 +18,7 @@ import { hash32, seedStream } from '../detail/hash';
 import { expandRecipe, ACCENT_FRAC, BLOCK_INSET_M, BLOCK_SHADE_K } from '../detail/expand';
 import type { DetailRecipe } from '../detail/types';
 import { shade, ao, spec } from '../shade';
-import { LEVEL_H, isSquareView, type Dims } from '../iso';
+import { LEVEL_H, isSquareView, type Dims } from '../../geometry/iso';
 import { METRES_PER_LEVEL } from '../../state/relief';
 import { TERRAIN_DEFS } from '../../state/terrain';
 import { structureAppearances, reliefMaterials } from '../../data';

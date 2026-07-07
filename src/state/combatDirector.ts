@@ -7,12 +7,12 @@
  * C'est la SOURCE UNIQUE du couplage cadence × importance : les sites d'IA (`combatFlow`) et
  * d'auto-cadence (`combatAuto`) l'appellent au lieu d'un délai `TEMPO` brut.
  *
- * Pas d'état nouveau : le ton est dérivé de `battle.log` (source unique des résultats) via `combatFeed`.
+ * Pas d'état nouveau : le ton est dérivé de `battle.log` (source unique des résultats) via `lastEventTone`.
  */
 import type { Get } from './flowTypes';
 import { TEMPO } from './tempo';
-import { walkMs } from '../gameIso/walkPath';
-import { combatFeed, type CombatTone } from '../gameIso/combatNarration';
+import { walkMs } from '../geometry/walk';
+import { lastEventTone, type CombatTone } from './combatLog';
 
 type Pt = { x: number; y: number };
 
@@ -22,7 +22,7 @@ const TONE_HOLD: Record<CombatTone, number> = { normal: 1, strong: 1.25, grave: 
 /** Tenue (ms) d'un beat : base `TEMPO[base]` × facteur de ton de la dernière ligne importante du combat. */
 export function beatHold(get: Get, base: keyof typeof TEMPO): number {
   const b = get().battle;
-  const tone: CombatTone = b ? combatFeed(b.log, b.combatants, 1)[0]?.tone ?? 'normal' : 'normal';
+  const tone: CombatTone = b ? lastEventTone(b.log) : 'normal';
   return Math.round(TEMPO[base] * TONE_HOLD[tone]);
 }
 

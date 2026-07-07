@@ -6,6 +6,7 @@ import { Combatant, ActiveEffect, ConditionInstance } from './types';
 import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
 import { tickRound } from './duration';
 import { conditionLabel, findConditionById, findPsychologyById, skills } from '../data';
+import { slugId } from '../data/slug';
 import { t } from '../i18n';
 import { rule } from './policy';
 import { groupAdvantage } from './advantagePool';
@@ -34,6 +35,19 @@ export const COND = {
 
 /** Nombre de pions (cumul) d'un État donné. */
 export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
+
+/** Marqueurs NARRATIFS hors LDB 16 (PAS des États `etats.json`, cf. `data-wellformed.test`) : Pétrifié
+ *  (LDB 85), sans entrée catalogue — sévérité portée ICI, unique exception. */
+const NARRATIVE_MARKER_SEVERITY: Record<string, number> = { petrifie: 95 };
+
+/** Sévérité d'un État (`etats.json` : `severity`, sinon marqueur narratif, sinon défaut 10) — PUR, clé
+ *  slugifiée (tolère un libellé : 'Pétrifié' → 'petrifie'). SOURCE UNIQUE partagée par l'icône
+ *  (`gameIso/effectIcons.conditionMeta`, `important` = sévérité ≥ 50) ET l'importance d'un évènement de
+ *  combat pour le bandeau/la cadence (`state/combatLog.isImportantEvent`). */
+export function conditionSeverity(name: string): number {
+  const id = slugId(name);
+  return findConditionById(id)?.severity ?? NARRATIVE_MARKER_SEVERITY[id] ?? 10;
+}
 
 /**
  * Hook injecté (inversion de dépendance) appelé quand `c` GAGNE un État (nouveau ou empilé) — le

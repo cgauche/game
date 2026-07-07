@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { walkXY, walkDuration } from './walkPath';
+import { walkXY, walkDuration } from './walk';
 
 const path = [{ x: 2, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 2 }]; // 2 segments
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { tileCenter, billboardScale, type Dims } from './iso';
+import { tileCenter, billboardScale, type Dims } from '../geometry/iso';
 import { hpColor, ACTIVE_RING } from './teamColors';
 import { IconG } from '../ui/Icon';
 import type { IconId } from '../ui/icons';

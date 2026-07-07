@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useGame, type BattleState } from '../../state/store';
 import { Combatant } from '../../engine/types';
 import { isOutOfAction } from '../../engine/conditions';
-import { Dims, screenToTile } from '../iso';
+import { Dims, screenToTile } from '../../geometry/iso';
 import type { WalkPos } from './tokens';
 
 // Viewport virtuel : le SVG remplit tout l'espace dispo (preserveAspectRatio slice) et la caméra

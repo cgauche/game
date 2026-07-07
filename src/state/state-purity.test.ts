@@ -11,9 +11,9 @@ import { fileURLToPath } from 'node:url';
  * Les fichiers de TEST sont exclus du scan : ils exercent légitimement des helpers `ui`
  * (`editorState`…) pour préparer leurs fixtures — ce sont des consommateurs, pas la couche `state`.
  *
- * Portée volontairement LIMITÉE à `state → ui` : `state → gameIso` a des usages RUNTIME réels et
- * nombreux (facing/iso/appearance/sprites…) — cette inversion-là reste un choix d'architecture non
- * tranché, rapportée à l'orchestrateur plutôt que gardée ici (cf. rendu de l'audit #139bis).
+ * Portée LIMITÉE à `state → ui` : le pendant `state → gameIso` est gardé séparément par
+ * `gameiso-purity.test.ts` (#161 — la géométrie/simulation réellement partagée a été extraite vers
+ * `src/geometry/`, `state/dir8.ts`, `state/viewLevel.ts`, `state/combatLog.ts`, `engine/dice.ts`).
  */
 
 const STATE_DIR = fileURLToPath(new URL('.', import.meta.url));

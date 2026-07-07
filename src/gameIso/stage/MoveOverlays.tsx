@@ -4,7 +4,7 @@
  * pas de badge). Tous sur la MÊME source de tracé (movePreviewEls) et la même géométrie (diamondPath +
  * lift métrique) que les autres surbrillances.
  */
-import { Dims, diamondPath } from '../iso';
+import { Dims, diamondPath } from '../../geometry/iso';
 import { footprintTiles } from '../../state/footprint';
 import { movePreviewEls } from './movePreview';
 import type { Pt } from '../../state/path';

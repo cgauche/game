@@ -14,8 +14,7 @@ import { ev, evLines, type CombatEventKind } from './combatLog';
 import { t as tr } from '../i18n'; // alias : `t` est un identifiant local très fréquent ici (cibles/jets)
 import { TEMPO } from './tempo';
 import { beatHold, approachMs, afterApproach } from './combatDirector';
-import { facingToward } from '../gameIso/rig/facing';
-import type { Dir8 } from './dir8';
+import { facingToward, type Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
 import {
   resolveMelee,

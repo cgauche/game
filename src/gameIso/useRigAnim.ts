@@ -10,7 +10,7 @@ import { project, type View } from './rig/facing';
 import type { Dir8 } from '../state/dir8';
 import type { Clip } from './rig/anim/clips';
 import type { Pose } from './rig/poses';
-import { walkMs } from './walkPath';
+import { walkMs } from '../geometry/walk';
 
 /**
  * Pilote l'ANIMATION d'un rig bipède (clips de repos/marche/attaque/parade/esquive/touché via

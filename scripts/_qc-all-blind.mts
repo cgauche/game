@@ -9,7 +9,7 @@ import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
 import { resolveQuad } from '../src/gameIso/rig/quadruped/composeQuad';
 import { QUAD_SPECIES } from '../src/gameIso/rig/quadruped/quadSkeleton';
 import { resolveWing, WINGED_SPECIES } from '../src/gameIso/rig/winged/composeWing';
-import { hashSeed } from '../src/gameIso/appearance';
+import { hashSeed } from '../src/engine/dice';
 import type { View } from '../src/gameIso/rig/facing';
 
 type Entry = { plan: 'biped' | 'quad' | 'winged'; name: string; weapon?: string };

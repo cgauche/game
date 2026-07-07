@@ -6,7 +6,7 @@
 import type { BattleState, PendingAttack, PendingDefense, PendingTrample, PendingHeal, PendingCast } from '../../state/store';
 import { Combatant } from '../../engine/types';
 import { firedWeapon } from '../../state/combatFlow';
-import { Dims, tileCenter } from '../iso';
+import { Dims, tileCenter } from '../../geometry/iso';
 import { TargetReticle } from '../TargetReticle';
 import { relationColor } from '../teamColors';
 import { IconG } from '../../ui/Icon';

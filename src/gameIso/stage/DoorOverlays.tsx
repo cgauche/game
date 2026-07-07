@@ -6,7 +6,7 @@
 import { useGame } from '../../state/store';
 import { Scene, doorIsOpen, toggleDoorIn } from '../../state/scene';
 import { bus, EVT } from '../../state/bus';
-import { Dims, tileEdge } from '../iso';
+import { Dims, tileEdge } from '../../geometry/iso';
 import type { Pt } from '../../state/path';
 
 export function DoorOverlays({ scene, dims, activeZ, visible, ctrls }: { scene: Scene; dims: Dims; activeZ: number; visible: ReadonlySet<string>; ctrls: Pt[] }) {

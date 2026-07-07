@@ -13,7 +13,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { DEFS } from '../../src/gameIso/sprites';
 import { povAmbianceDefs } from '../../src/gameIso/catalog/ambiance';
-import { tileCenter, type Dims } from '../../src/gameIso/iso';
+import { tileCenter, type Dims } from '../../src/geometry/iso';
 import { envPanel, type Panel } from './env-panels';
 import { scenario as arene } from '../../src/scenes/test-scenarios/arene';
 
