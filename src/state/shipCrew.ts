@@ -245,7 +245,7 @@ export function applyShipMoraleDelta(get: Get, set: SetFn, ship: Combatant, delt
  * 2d10 membres d'équipage, recouvrable par Ragot puis rançon/Discrétion) : PERSISTE sur
  * `CampaignVessel.crewLost`, plafonné à `[0, nominal]` (`vehicles.json` ship.crew — même source que
  * `shipUndercrew`) dans les deux sens. `delta` positif = perte, négatif = recouvrement (séquence
- * Ragot/rançon/Discrétion non câblée côté appelant : #164). Renvoie le journal.
+ * Ragot/rançon/Discrétion : `openEmbrigadementRecovery`, `embrigadementFlow`). Renvoie le journal.
  */
 export function applyVesselCrewLoss(get: Get, set: SetFn, delta: number): string[] {
   const vessel = get().vessel;

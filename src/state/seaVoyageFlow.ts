@@ -34,7 +34,8 @@ import { dayIndex } from './upkeep';
 import { placeById, type WorldMap } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { PendingCrewTest, ShipManeuverParticipant } from './pendings';
-import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, applyVesselCrewLoss } from './shipCrew';
+import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta } from './shipCrew';
+import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { maneuverCrewTotal } from './shipManeuver';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait } from '../data';
@@ -1023,11 +1024,16 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
       if (ship) for (const l of applyShipMoraleDelta(get, set, ship, -rollDice(1, 10, rng))) log(get, set, [l]);
       break;
     case 'embrigadement': {
-      // « Vous perdez 2d10 membres d'équipage » (MDG 15 l.245) — règle stricte 7 : la perte est PERSISTÉE
-      // (`applyVesselCrewLoss` → `CampaignVessel.crewLost`, plafonnée au nominal). Recouvrement (Ragot
-      // puis rançon OU Discrétion, échec → 1d10 de PLUS) : #164, non câblé ici.
-      const lost = eventParam(event, 'lostCrew', rng, 0);
-      for (const l of applyVesselCrewLoss(get, set, lost)) log(get, set, [l]);
+      // « Vous perdez 2d10 membres d'équipage » (MDG 15 l.245) : perte PERSISTÉE puis SÉQUENCE de
+      // recouvrement (Ragot Intermédiaire → rançon 2d10 CO OU Discrétion Complexe ; échec → 1d10 de
+      // plus) — cascade influençable dans `embrigadementFlow`. Difficultés en donnée (`sea-events.json`).
+      openEmbrigadementRecovery(get, set, {
+        lost: eventParam(event, 'lostCrew', rng, 0),
+        ransomCO: eventParam(event, 'ransomCO', rng, 0),
+        extraLoss: eventParam(event, 'failExtraLostCrew', rng, 0),
+        gossipDiff: (event.params?.gossipDifficulty as Difficulty | undefined) ?? 'intermediaire',
+        stealthDiff: (event.params?.stealthDifficulty as Difficulty | undefined) ?? 'complexe',
+      });
       break;
     }
     case 'controle-a-quai': {
