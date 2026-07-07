@@ -12,7 +12,7 @@ import { rule } from './policy';
 import { groupAdvantage } from './advantagePool';
 import { bonus, effectiveChar } from './characteristics';
 import { d100, RNG, defaultRNG } from './dice';
-import { passiveMods } from './trauma';
+import { passiveMods, settleHealedCriticals } from './trauma';
 import type { GameOp } from './ops';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
@@ -184,6 +184,9 @@ export function removeCondition(c: Combatant, name: string, value = 1): void {
   // l'effet de cet État » → l'Hémorragique épuisé (instance retirée) lève TOUS les gates de main (op
   // `handGate`). LEVER machinerie UNIQUE de la durée du marqueur (l'Hémorragique ne s'empile qu'en 1 instance).
   if (name === COND.hemorragique && existing.value <= 0) delete c.handGates;
+  // POINT UNIQUE de retrait d'État → une Blessure critique dont tous les États associés sont désormais tombés
+  // est GUÉRIE (LDB 18 l.304) : octroie la cicatrice post-guérison (Blessure spectaculaire / Nez cassé, l.61/72).
+  settleHealedCriticals(c);
 }
 
 export function hasCondition(c: Combatant, name: string): boolean {

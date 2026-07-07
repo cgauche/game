@@ -18,6 +18,14 @@
           "value": 1
         }
       ],
+      "escalation": {
+        "onHealGrant": {
+          "scar": "cicatrice-spectaculaire",
+          "whenClear": [
+            "hemorragique"
+          ]
+        }
+      },
       "desc": "Une fine entaille qui va du front jusqu'à la joue. Gagnez 1 État Hémorragique. Une\nfois que la blessure est guérie, l'impressionnante cicatrice vous permet d'obtenir DR\n+1 à certains Tests sociaux."
     },
     {
@@ -280,6 +288,15 @@
             "value": 1
           }
         ]
+      },
+      "escalation": {
+        "onHealGrant": {
+          "scar": "cicatrice-nez-casse",
+          "whenClear": [
+            "hemorragique",
+            "sonne"
+          ]
+        }
       },
       "desc": "Un coup violent porté au centre de votre visage déverse des flots de sang. Gagnez 2\nÉtats Hémorragique. Réussissez un Test de Résistance Intermédiaire (+0), ou gagnez 1'État\nSonné. Une fois cette blessure guérie, gagnez DR +1/-1 aux Tests sociaux, en fonction\ndu contexte, jusqu'à ce que Chirurgie soit utilisée sur le nez pour le réparer."
     },

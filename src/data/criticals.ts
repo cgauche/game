@@ -101,6 +101,13 @@ export interface CritEscalation {
     whileCondition: string;
     resist: { difficulty: Difficulty; onFail: GameOp[] };
   };
+  /** Séquelle POST-guérison (LDB 18 l.61 « Blessure spectaculaire » / l.72 « Nez cassé » : « Une fois que la
+   *  blessure est guérie… ») : `stampCriticalEscalation` pose un marqueur `Trauma.onHealGrant` ; la Blessure
+   *  critique est réputée GUÉRIE quand tous les États `whenClear` sont retirés (LDB 18 « Guérir les Blessures
+   *  critiques » : « pas guéries tant que tous les États associés n'ont pas été retirés ») — `settleHealedCriticals`
+   *  (déclenché au retrait d'État, `removeCondition`) octroie alors la cicatrice `scar` (fiche `traumas.json`,
+   *  éditable). `scar` = id de fiche de séquelle ; `whenClear` = États dont le retrait signale la guérison. */
+  onHealGrant?: { scar: string; whenClear: string[] };
 }
 export type CritTable = CritEntry[];
 

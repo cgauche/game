@@ -48,6 +48,10 @@ export const critEscalationSchema = z.strictObject({
       resist: z.strictObject({ difficulty: difficultySchema, onFail: z.array(gameOpSchema) }),
     })
     .optional(),
+  // « Une fois que la blessure est guérie… » (Blessure spectaculaire l.61 / Nez cassé l.72) : marqueur de
+  // guérison (`Trauma.onHealGrant`) → cicatrice `scar` (fiche traumas.json) une fois tous les États `whenClear`
+  // retirés (LDB 18 l.304). Octroyée par `settleHealedCriticals` au retrait d'État.
+  onHealGrant: z.strictObject({ scar: z.string(), whenClear: z.array(z.string()) }).optional(),
 });
 
 /** Amputation (LDB 18 l.328-333) — reflet de `Amputation` (`src/data/criticals.ts`), SOURCE UNIQUE de forme

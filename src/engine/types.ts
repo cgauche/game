@@ -714,6 +714,20 @@ export interface Trauma {
    *  rencontre terminée… ») : marqueur posé par `rollCritical` pour un `amputation.timing === 'postEncounter'`,
    *  résolu par `resolvePostEncounterAmputations` au foyer de fin de combat (jet + séquelle/plaie/États). */
   pendingAmputation?: import('../data/criticals').Amputation;
+  /** Séquelle POST-guérison (LDB 18 l.61/72 : « Une fois que la blessure est guérie… ») : marqueur de la
+   *  Blessure critique EN COURS DE GUÉRISON. Le critique est GUÉRI quand tous les États `whenClear` sont
+   *  retirés (LDB 18 « Guérir les Blessures critiques » : « pas guéries tant que tous les États associés
+   *  n'ont pas été retirés ») → `settleHealedCriticals` retire ce marqueur, décompte la Blessure critique et
+   *  octroie la cicatrice `scar` (fiche `traumas.json`). Stampé par `stampCriticalEscalation`. */
+  onHealGrant?: { scar: string; whenClear: string[] };
+  /** Séquelle COSMÉTIQUE (cicatrice) : sequelle permanente qui n'EST PAS une Blessure critique comptée — la
+   *  Blessure d'origine est déjà guérie (`criticalWounds` décompté à l'octroi). La Chirurgie qui la retire
+   *  (`needsSurgery`, nez cassé LDB 18 l.72) ne re-décompte donc AUCUNE Blessure critique. */
+  cosmetic?: boolean;
+  /** Surcharge du `kind` passif de la séquelle (défaut : dérivé du type d'op par `traumaOpKind`). Une cicatrice
+   *  est un TRAIT DE CORPS permanent (`intrinsèque` : additif, non annulable) et non une douleur — c'est ce qui
+   *  fait sommer son `skillMod` social (+/−) par `passiveSkillSum`, hors du pool non-cumul des pénalités de crit. */
+  passiveKind?: import('./ops').PassiveKind;
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';

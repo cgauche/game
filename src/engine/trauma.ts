@@ -50,6 +50,13 @@ export interface TraumaFiche {
   severity?: TraumaSeverity;
   prosthesis?: { trappingId: string; cancels: 'all' | 'movement' }[];
   needsSurgery?: boolean;
+  /** Séquelle COSMÉTIQUE (cicatrice) : n'est PAS une Blessure critique comptée (`criticalWounds`) — cf. `Trauma.cosmetic`. */
+  cosmetic?: boolean;
+  /** Surcharge du `kind` passif (défaut : `traumaOpKind`) — cf. `Trauma.passiveKind`. */
+  passiveKind?: import('./ops').PassiveKind;
+  /** Note MAISON (règle stricte 7) — trace éditable d'un arbitrage d'un point que le RAW laisse au contexte
+   *  (« certains Tests sociaux » / « en fonction du contexte »). DISPLAY/DOC only, jamais lu pour la mécanique. */
+  maison?: string;
 }
 
 const FICHES = traumasJson as TraumaFiche[];
@@ -121,6 +128,8 @@ export function traumaById(id: string, opts?: { be?: number; d10?: number }, loc
     if (f.kind === 'fracture' && sev === 'majeur') out.needsSurgery = true;
   }
   if (f.needsSurgery) out.needsSurgery = true;
+  if (f.cosmetic) out.cosmetic = true;
+  if (f.passiveKind) out.passiveKind = f.passiveKind;
   return out;
 }
 
@@ -428,6 +437,12 @@ export function stampCriticalEscalation(
     // déclencheur `reinjuryBleed` la lit au point d'application des Dégâts localisés.
     traumas.push({ label: esc.bleedOnReinjury.label, location, bleedOnReinjury: esc.bleedOnReinjury.amount, needsSurgery: true });
   }
+  if (esc.onHealGrant) {
+    // « Une fois que la blessure est guérie… » (LDB 18 l.61/72) : marqueur de la Blessure critique EN COURS de
+    // guérison, porteur de la cicatrice à octroyer. La guérison (retrait des États `whenClear`) est détectée par
+    // `settleHealedCriticals` au point unique de retrait d'État (`removeCondition`).
+    traumas.push({ label: `${traumaFicheById(esc.onHealGrant.scar).label} (en cours de guérison)`, location, onHealGrant: { scar: esc.onHealGrant.scar, whenClear: [...esc.onHealGrant.whenClear] } });
+  }
   if (esc.onNextCritWhileCondition) {
     // « Commotion cérébrale » (LDB 18 l.74) : séquelle porteuse d'un `critTrigger` — tant que le personnage
     // porte `whileCondition`, un critique subséquent à `location` impose le Test `resist`. Dédupliquée (une
@@ -442,6 +457,31 @@ export function stampCriticalEscalation(
       });
     }
   }
+}
+
+/**
+ * Séquelles POST-guérison (LDB 18 l.61 « Blessure spectaculaire » / l.72 « Nez cassé ») : « Une fois que la
+ * blessure est guérie… ». La guérison d'une Blessure critique est définie par le RAW (« Guérir les Blessures
+ * critiques », l.304 : « pas guéries tant que tous les États associés n'ont pas été retirés et que tous les
+ * modificateurs non permanents n'ont pas été supprimés ») → pour chaque marqueur `onHealGrant` dont AUCUN des
+ * États `whenClear` n'est plus porté : retire le marqueur, décompte la Blessure critique (`criticalWounds`) et
+ * octroie la cicatrice (fiche `scar`, séquelle PERMANENTE visible/éditable). Appelé au POINT UNIQUE de retrait
+ * d'État (`removeCondition`) — l'instant où le dernier État associé tombe. Idempotent (le marqueur retiré ne
+ * refait pas feu). Mute `c`, renvoie le journal. */
+export function settleHealedCriticals(c: Combatant): string[] {
+  const carriers = (c.traumas ?? []).filter((t) => t.onHealGrant);
+  if (!carriers.length) return [];
+  const log: string[] = [];
+  for (const t of carriers) {
+    const g = t.onHealGrant!;
+    if (g.whenClear.some((name) => (c.conditions ?? []).some((x) => x.name === name))) continue; // LDB 18 l.304 : un État associé encore porté ⇒ Blessure critique non guérie
+    c.traumas = (c.traumas ?? []).filter((x) => x !== t);
+    if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1); // la Blessure critique est guérie (l.304)
+    const scar = traumaById(g.scar, undefined, t.location);
+    c.traumas.push(scar);
+    log.push(`${c.name} : la blessure est guérie — il reste une cicatrice (${scar.label}).`);
+  }
+  return log;
 }
 
 /** Déclencheurs d'escalade (« Commotion cérébrale » : autre critique à la tête pendant Exténué → Test de
@@ -570,7 +610,7 @@ export function removeSurgicalTrauma(c: Combatant, idx = 0): string[] {
   const t = surg[idx] ?? surg[0];
   if (!t) return [`${c.name} : aucune blessure ne relève de la chirurgie.`];
   c.traumas = (c.traumas ?? []).filter((x) => x !== t);
-  if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
+  if (!t.cosmetic && c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1); // une cicatrice n'est pas une Blessure critique comptée (déjà décomptée à la guérison)
   return [`${c.name} : ${t.label} (${t.location}) réparée par chirurgie.`];
 }
 
@@ -716,7 +756,7 @@ function scaleEtatOp(op: GameOp, mult: number): GameOp {
 export function passiveMods(c: Combatant): PassiveMod[] {
   const out: PassiveMod[] = [];
   for (const t of c.traumas ?? []) {
-    for (const o of traumaOps(t)) { const kind = traumaOpKind(o); if (modSurvives(c, kind, t)) out.push({ op: o, kind }); }
+    for (const o of traumaOps(t)) { const kind = t.passiveKind ?? traumaOpKind(o); if (modSurvives(c, kind, t)) out.push({ op: o, kind }); }
   }
   // Maladies (kind `maladie`, annulée par Détermination ; passifs des symptômes via `diseasePassiveOps`) +
   // Faim (kind `faim`, non annulée : `noHunger` purge l'état à l'entretien, pas ici). Pénalités de

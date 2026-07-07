@@ -1,0 +1,102 @@
+import { describe, it, expect } from 'vitest';
+import { stampCriticalEscalation, settleHealedCriticals, removeSurgicalTrauma, passiveSkillSum, surgeryTraumas } from './trauma';
+import { rollCritical } from './critical';
+import { addCondition, removeCondition } from './conditions';
+import { applyOps } from './ops';
+import type { Combatant, HitLocation } from './types';
+import type { RNG } from './dice';
+import type { CritEscalation } from '../data/criticals';
+
+const C = (over: Partial<Combatant>): Combatant =>
+  ({
+    id: 'c', name: 'C', kind: 'hero', conditions: [], skills: [],
+    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    wounds: { current: 10, max: 10 }, advantage: 0,
+    armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
+    ...over,
+  } as Combatant);
+
+/** RNG qui débite une séquence fixe (int() ignore min/max — tests ciblés). */
+const seq = (vals: number[]): RNG => { let i = 0; return { int: () => vals[i++ % vals.length] }; };
+
+const stamp = (loc: HitLocation, esc: CritEscalation) => {
+  const traumas: Combatant['traumas'] = [];
+  stampCriticalEscalation(traumas!, esc, loc, seq([5]), []);
+  return traumas!;
+};
+
+describe('#192 — séquelles POST-guérison (cicatrices) : marqueur onHealGrant', () => {
+  it('stampCriticalEscalation pose un marqueur de guérison (aucune cicatrice tant que la blessure n\'est pas guérie)', () => {
+    const traumas = stamp('tete', { onHealGrant: { scar: 'cicatrice-spectaculaire', whenClear: ['hemorragique'] } });
+    expect(traumas).toHaveLength(1);
+    expect(traumas[0].onHealGrant?.scar).toBe('cicatrice-spectaculaire');
+    // le marqueur de guérison ne porte aucune op passive (la cicatrice n'est octroyée qu'à la guérison)
+    expect(traumas[0].ops).toBeUndefined();
+  });
+
+  it('settleHealedCriticals : rien tant qu\'un État associé est porté ; octroi une fois tous retirés', () => {
+    const c = C({ criticalWounds: 1, conditions: [{ name: 'hemorragique', value: 2 }],
+      traumas: [{ label: 'x (en cours de guérison)', location: 'tete', onHealGrant: { scar: 'cicatrice-spectaculaire', whenClear: ['hemorragique'] } }] });
+    expect(settleHealedCriticals(c)).toEqual([]); // Hémorragique encore porté
+    expect(c.traumas!.some((t) => t.onHealGrant)).toBe(true);
+    c.conditions = []; // tous les États associés retirés
+    const log = settleHealedCriticals(c);
+    expect(log.join(' ')).toMatch(/cicatrice/i);
+    expect(c.criticalWounds).toBe(0); // Blessure critique guérie ⇒ décomptée (LDB 18 l.304)
+    expect(c.traumas!.some((t) => t.onHealGrant)).toBe(false); // marqueur retiré
+    const scar = c.traumas!.find((t) => t.traumaId === 'cicatrice-spectaculaire');
+    expect(scar).toBeTruthy();
+    expect(scar!.cosmetic).toBe(true);
+    // arbitrage maison : la cicatrice impressionnante sert l'Intimidation (+10), pas un blanket +Soc
+    expect(passiveSkillSum(c, 'intimidation')).toBe(10);
+    expect(passiveSkillSum(c, 'charme')).toBe(0);
+  });
+
+  it('déclenchement au POINT UNIQUE de retrait d\'État (removeCondition)', () => {
+    const c = C({ criticalWounds: 1,
+      traumas: [{ label: 'x', location: 'tete', onHealGrant: { scar: 'cicatrice-spectaculaire', whenClear: ['hemorragique'] } }] });
+    addCondition(c, 'hemorragique', 1);
+    expect(c.traumas!.some((t) => t.onHealGrant)).toBe(true); // l'ajout d'État ne guérit pas
+    removeCondition(c, 'hemorragique', 1); // dernier État associé tombe → guérison
+    expect(c.traumas!.some((t) => t.traumaId === 'cicatrice-spectaculaire')).toBe(true);
+    expect(c.traumas!.some((t) => t.onHealGrant)).toBe(false);
+  });
+
+  it('nez cassé : cicatrice ±contexte (Intimidation +10 / Charme -10), retirée par Chirurgie sans re-décompter', () => {
+    const c = C({ criticalWounds: 2, // 1 nez cassé (en cours) + 1 autre Blessure critique
+      conditions: [{ name: 'hemorragique', value: 2 }, { name: 'sonne', value: 1 }],
+      traumas: [{ label: 'x', location: 'tete', onHealGrant: { scar: 'cicatrice-nez-casse', whenClear: ['hemorragique', 'sonne'] } }] });
+    removeCondition(c, 'hemorragique', 2);
+    expect(c.traumas!.some((t) => t.onHealGrant)).toBe(true); // Sonné encore porté
+    removeCondition(c, 'sonne', 1);
+    const scar = c.traumas!.find((t) => t.traumaId === 'cicatrice-nez-casse');
+    expect(scar).toBeTruthy();
+    expect(scar!.needsSurgery).toBe(true);
+    expect(c.criticalWounds).toBe(1); // la Blessure du nez est guérie (2→1), l'autre reste
+    expect(passiveSkillSum(c, 'intimidation')).toBe(10);
+    expect(passiveSkillSum(c, 'charme')).toBe(-10);
+    // Chirurgie sur le nez : retire la cicatrice SANS re-décompter une Blessure critique (cosmetic)
+    expect(surgeryTraumas(c).some((t) => t.traumaId === 'cicatrice-nez-casse')).toBe(true);
+    const idx = surgeryTraumas(c).findIndex((t) => t.traumaId === 'cicatrice-nez-casse');
+    removeSurgicalTrauma(c, idx);
+    expect(c.traumas!.some((t) => t.traumaId === 'cicatrice-nez-casse')).toBe(false);
+    expect(c.criticalWounds).toBe(1); // inchangé : une cicatrice n'est pas une Blessure critique
+    expect(passiveSkillSum(c, 'intimidation')).toBe(0);
+  });
+
+  it('flux complet via rollCritical + applyOps + retrait d\'État (Blessure spectaculaire, tête 01-10)', () => {
+    const c = C({ conditions: [], criticalWounds: 0 });
+    const res = rollCritical(c, 'tete', seq([5])); // d100=5 → Blessure spectaculaire
+    expect(res.name).toBe('Blessure spectaculaire');
+    c.criticalWounds = 1;
+    c.traumas = res.traumas;
+    applyOps(c, res.ops, {}); // applique l'Hémorragique immédiat
+    expect(c.conditions.some((x) => x.name === 'hemorragique')).toBe(true);
+    expect(c.traumas.some((t) => t.onHealGrant)).toBe(true);
+    // guérison : on retire l'Hémorragique → cicatrice octroyée automatiquement
+    const hemo = c.conditions.find((x) => x.name === 'hemorragique')!;
+    removeCondition(c, 'hemorragique', hemo.value);
+    expect(c.traumas.some((t) => t.traumaId === 'cicatrice-spectaculaire')).toBe(true);
+    expect(c.criticalWounds).toBe(0);
+  });
+});
