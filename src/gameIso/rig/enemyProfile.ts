@@ -142,6 +142,18 @@ function rigAppearance(seed: number, base: ReturnType<typeof bipedBase>, cd: Ent
 }
 
 /**
+ * Un combattant rendu depuis SON PROPRE inventaire (personnage-joueur du groupe : apparence dans
+ * `c.appearance`, tenue du `career`, armure en `ItemInstance`) — vs par PROFIL SYNTHÉTISÉ du bestiaire/
+ * statbloc (`enemyRigProfile` : armure des PA/Traits, tenue du record). Un allié PNJ passe `side:'ally'`
+ * → `kind:'hero'` (camp) au combat, mais reste une instance de bestiaire (`creatureId`) ou de statbloc
+ * pilotée par l'IA (`aiControlled`) : son armure vit en PA/Traits, jamais en items → il DOIT passer par
+ * `enemyRigProfile` pour rendre IDENTIQUEMENT au hors-combat (`entityRigProfile`). Router le rendu sur le
+ * camp (`kind`) au lieu de l'ORIGINE écraserait la couche armure des alliés de bestiaire (#181/#182). */
+export function rendersFromOwnInventory(c: Combatant): boolean {
+  return c.kind === 'hero' && !c.aiControlled && !c.creatureId;
+}
+
+/**
  * Profil rig d'un combattant, ou null si non-humanoïde (→ rendu par son gabarit corporel
  * via AnimatedPlanToken, plus aucun sprite monolithique). PURE et déterministe (seed dérivé de l'id).
  */

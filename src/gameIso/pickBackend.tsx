@@ -6,7 +6,7 @@ import { isOutOfAction } from '../engine/conditions';
 import { AnimatedRigToken } from './AnimatedRigToken';
 import { RigToken } from './RigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
-import { enemyRigProfile, entityRigProfileFor } from './rig/enemyProfile';
+import { enemyRigProfile, entityRigProfileFor, rendersFromOwnInventory } from './rig/enemyProfile';
 import { resolveRender, planById } from './rig/bodyPlan';
 import { structureAppearance } from './catalog/structures';
 import { isStructure } from '../engine/structures';
@@ -116,7 +116,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
     // surchargé (PJ bipède OU acteur allié — cheval libre compris) → on route par le PLAN CORPOREL.
     const r = resolveRender(c.species, c.traits, c.name);
     if (r.kind === 'rig') {
-      const prof = c.kind === 'hero' ? null : enemyRigProfile(c);
+      const prof = rendersFromOwnInventory(c) ? null : enemyRigProfile(c);
       if (top) {
         const appearance = combatantAppearance(prof?.appearance ?? c.appearance ?? defaultAppearance(c), c);
         const equip = prof?.equip ?? equipFromCombatant(c);

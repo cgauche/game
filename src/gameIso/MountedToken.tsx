@@ -4,7 +4,7 @@ import { resolveRig } from './rig/composeRig';
 import { bonesToSvg } from './rig/renderBones';
 import { seatRiderOnMount, mountedRest, mountTackBones } from './rig/mountedRig';
 import { addPose } from './rig/poses';
-import { enemyRigProfile } from './rig/enemyProfile';
+import { enemyRigProfile, rendersFromOwnInventory } from './rig/enemyProfile';
 import { defaultAppearance } from './rig/appearance';
 import { equipFromCombatant, isShield } from './rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from './rig/parts/combatantVisuals';
@@ -27,7 +27,7 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   const mr = resolveRender(mount.species, mount.traits, mount.name);
   const mountA = usePlanAnim(mount.id, mr.plan, mr.species, isOutOfAction(mount), undefined, mount.pos);
   // Cavalier : apparence/équipement dérivés (héros = du Combatant ; ennemi/PNJ = profil rig).
-  const prof = rider.kind === 'hero' ? null : enemyRigProfile(rider);
+  const prof = rendersFromOwnInventory(rider) ? null : enemyRigProfile(rider);
   const appearance = combatantAppearance(prof?.appearance ?? rider.appearance ?? defaultAppearance(rider), rider);
   const equip = prof?.equip ?? equipFromCombatant(rider);
   const tenue = prof?.tenue ?? findCareerById(rider.career)?.label ?? rider.career;
