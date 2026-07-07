@@ -34,5 +34,7 @@ export function highlightJsx(el: HighlightEl, dims: Dims): JSX.Element {
       ) : (
         <path key={el.key} d={d} fill="none" stroke={el.tone === 'ally' ? 'var(--combat-ally)' : 'var(--combat-target)'} strokeWidth={2.5} opacity={0.9} pointerEvents="none" />
       );
+    case 'rangeBand':
+      return <path key={el.key} d={d} fill={`var(--combat-range-${el.tone})`} opacity={0.26} pointerEvents="none" />;
   }
 }

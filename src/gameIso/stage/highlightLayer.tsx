@@ -15,6 +15,10 @@ import { currentTargetingMode } from '../../state/targetingModes';
 import { controlsCombatant } from '../../state/netOwnership';
 import { footprintN, footprintTiles } from '../../state/footprint';
 import { mountOf } from '../../state/mount';
+import { attackWeapon } from '../../engine/combat';
+import { effectiveWeaponRange } from '../../engine/weaponDamage';
+import { selectedAmmo } from '../../engine/items';
+import { bonus, effectiveChar } from '../../engine/characteristics';
 import { Dims, depth, diamondPath } from '../../geometry/iso';
 import { buildHighlights, type HighlightsView } from '../builders/highlights';
 import { highlightDepth, highlightJsx } from '../backends/affineHighlights';
@@ -72,6 +76,16 @@ export function combatHighlightObjs(
         friendly: tmode.id === 'heal', // soin = anneau ami (vert)
         checkedIds: pendingCast?.pickingTargets ? new Set(pendingCast.extraTargetIds ?? []) : null, // surincantation : déjà coché
       };
+    })(),
+    // Bandes de portée du tireur SURVOLÉ (frise ou token, `store.hovered` — même source que le halo de
+    // survol) : arme à DISTANCE équipée en main → cases à colorer autour de sa position.
+    rangeBandSource: (() => {
+      const c = battle.combatants.find((x) => x.id === get().hovered);
+      if (!c?.pos) return null;
+      const weapon = attackWeapon(c.weapons, false);
+      if (weapon.type !== 'ranged') return null;
+      const rangeM = effectiveWeaponRange(weapon, selectedAmmo(c, weapon)?.ammoRangeMod, () => bonus(effectiveChar(c, 'F')));
+      return rangeM != null ? { pos: c.pos, rangeM } : null;
     })(),
   };
   const els = buildHighlights(scene, battle, view);

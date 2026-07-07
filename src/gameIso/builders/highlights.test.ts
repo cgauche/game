@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { emptyScene } from '../../state/scene';
 import type { BattleState } from '../../state/store';
 import { Combatant } from '../../engine/types';
-import { buildHighlights, type HighlightsView } from './highlights';
+import { buildHighlights, rangeBandTone, type HighlightsView } from './highlights';
 
 function cbt(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number; z?: number }, extra: Partial<Combatant> = {}): Combatant {
   return { id, name: id, kind, pos, size: 'moyenne', conditions: [], wounds: { current: 10, max: 10 }, ...extra } as unknown as Combatant;
@@ -16,6 +16,7 @@ const VIEW: HighlightsView = {
   eligibleIds: null,
   crowdIds: null,
   candidates: null,
+  rangeBandSource: null,
 };
 
 describe('buildHighlights — surbrillances sémantiques (clés historiques stables)', () => {
@@ -74,5 +75,39 @@ describe('buildHighlights — surbrillances sémantiques (clés historiques stab
     expect(els.find((e) => e.key === 'crowd-e2')).toMatchObject({ kind: 'ring', tone: 'crowd' });
     expect(els.find((e) => e.key === 'cand-a1')).toMatchObject({ kind: 'ring', tone: 'ally' }); // déjà coché → vert
     expect(els.find((e) => e.key === 'cand-e2')).toMatchObject({ kind: 'ring', tone: 'target' });
+  });
+});
+
+describe('rangeBandTone — teinte dérivée du SIGNE de rangeBandModifier', () => {
+  it('bonus (Bout Portant/Courte, mod > 0), neutre (Moyenne, mod = 0), malus (Longue/Extrême, mod < 0), null au-delà', () => {
+    const rangeM = 20;
+    expect(rangeBandTone(1, rangeM)).toBe('bonus');
+    expect(rangeBandTone(5, rangeM)).toBe('bonus');
+    expect(rangeBandTone(10, rangeM)).toBe('neutre');
+    expect(rangeBandTone(25, rangeM)).toBe('malus');
+    expect(rangeBandTone(30, rangeM)).toBe('malus'); // borne Extrême (Portée×3 = 60 m = 30 cases)
+    expect(rangeBandTone(31, rangeM)).toBeNull(); // au-delà : hors de portée
+  });
+});
+
+describe('buildHighlights — bandes de portée du tireur survolé (rangeBandSource)', () => {
+  const scene = () => emptyScene(6, 6);
+
+  it('colore les cases autour du tireur selon la bande de portée (bonus/neutre/malus), rien au-delà de la portée max', () => {
+    const b = { combatants: [], zones: [] } as unknown as BattleState;
+    const rangeM = 20;
+    const els = buildHighlights(scene(), b, { ...VIEW, rangeBandSource: { pos: { x: 5, y: 5 }, rangeM } });
+    const rb = els.filter((e) => e.kind === 'rangeBand');
+    const at = (dx: number, dy: number) => rb.find((e) => e.cell.x === 5 + dx && e.cell.y === 5 + dy);
+    expect(at(1, 0)).toMatchObject({ tone: 'bonus' });
+    expect(at(10, 0)).toMatchObject({ tone: 'neutre' });
+    expect(at(25, 0)).toMatchObject({ tone: 'malus' });
+    expect(at(50, 0)).toBeUndefined(); // hors de portée : aucun élément
+  });
+
+  it('rangeBandSource absent : aucun élément rangeBand', () => {
+    const b = { combatants: [], zones: [] } as unknown as BattleState;
+    const els = buildHighlights(scene(), b, VIEW);
+    expect(els.some((e) => e.kind === 'rangeBand')).toBe(false);
   });
 });

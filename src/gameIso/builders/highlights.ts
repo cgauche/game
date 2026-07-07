@@ -11,7 +11,9 @@ import { heightAt, type Scene } from '../../state/scene';
 import { isOutOfAction } from '../../engine/conditions';
 import { isRider } from '../../state/mount';
 import { footprintN } from '../../state/footprint';
+import { rangeBandModifier } from '../../engine/combat';
 import type { BattleState } from '../../state/store';
+import type { Pt } from '../../state/path';
 
 /** Élément sémantique de surbrillance : case + hauteur métrique + nature. Les clés reprennent les clés
  *  React historiques (stables entre frames). */
@@ -20,7 +22,18 @@ export type HighlightEl = { key: string; cell: { x: number; y: number; z: number
   | { kind: 'team'; hero: boolean; active: boolean }
   | { kind: 'zone'; smoke: boolean }
   | { kind: 'ring'; tone: 'target' | 'ally' | 'crowd' }
+  | { kind: 'rangeBand'; tone: 'bonus' | 'neutre' | 'malus' }
 );
+
+/** Teinte d'une bande de portée (LDB « Les armes », modificateur `rangeBandModifier`) : dérivée de son
+ *  SIGNE — > 0 (Bout Portant/Courte) → `bonus`, = 0 (Moyenne) → `neutre`, < 0 (Longue/Extrême) → `malus` ;
+ *  hors de portée (au-delà de Portée×3) → `null`. Répond directement à « dois-je bouger pour améliorer
+ *  mon jet ? », affiché au survol d'un tireur (`combatHighlightObjs`). */
+export function rangeBandTone(distanceTiles: number, rangeMeters: number): 'bonus' | 'neutre' | 'malus' | null {
+  const mod = rangeBandModifier(distanceTiles, rangeMeters);
+  if (mod == null) return null;
+  return mod > 0 ? 'bonus' : mod < 0 ? 'malus' : 'neutre';
+}
 
 /** Vérités dérivées du STORE, préparées par le stage (le builder reste pur et testable) :
  *  portée de Marche affichée, zone de Course, anneaux d'attaque du mode neutre, cibles éligibles de
@@ -37,6 +50,9 @@ export interface HighlightsView {
   crowdIds: ReadonlySet<string> | null;
   /** Candidats du mode de ciblage courant + teinte amie (soin) + déjà cochés (surincantation). */
   candidates: { ids: readonly string[]; friendly: boolean; checkedIds: ReadonlySet<string> | null } | null;
+  /** Tireur SURVOLÉ armé d'une arme à distance : bandes de portée à colorer autour de sa position
+   *  (`pos`) jusqu'à sa Portée max (Portée×3, LDB « Les armes ») — null hors survol d'un tireur. */
+  rangeBandSource: { pos: Pt; rangeM: number } | null;
 }
 
 export function buildHighlights(scene: Scene, battle: BattleState, view: HighlightsView): HighlightEl[] {
@@ -101,5 +117,20 @@ export function buildHighlights(scene: Scene, battle: BattleState, view: Highlig
       const tone = view.candidates.friendly || view.candidates.checkedIds?.has(id) ? 'ally' : 'target';
       out.push({ key: `cand-${id}`, cell: { x: t.pos.x, y: t.pos.y, z: tz }, h: hAt(t.pos.x, t.pos.y, tz), kind: 'ring', tone });
     }
+  // Bandes de portée (Bout Portant→Extrême) du tireur SURVOLÉ, au sol autour de sa position — distance
+  // de Chebyshev en cases (même métrique que `combatDistance`, 1x1). Rayon = Portée×3 (hors de portée).
+  if (view.rangeBandSource) {
+    const { pos, rangeM } = view.rangeBandSource;
+    const maxTiles = Math.ceil((rangeM * 3) / 2); // 1 case = 2 m (LDB Déplacement l.55)
+    for (let dx = -maxTiles; dx <= maxTiles; dx++)
+      for (let dy = -maxTiles; dy <= maxTiles; dy++) {
+        const distanceTiles = Math.max(Math.abs(dx), Math.abs(dy));
+        const tone = rangeBandTone(distanceTiles, rangeM);
+        if (!tone) continue;
+        const x = pos.x + dx, y = pos.y + dy;
+        const z = pos.z ?? 0;
+        out.push({ key: `rb-${x}-${y}`, cell: { x, y, z }, h: hAt(x, y, z), kind: 'rangeBand', tone });
+      }
+  }
   return out;
 }

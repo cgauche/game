@@ -31,6 +31,9 @@
   --combat-enemy: #e0533a; /* combat : réticule/indicateur ennemi (et delta négatif) */
   --combat-crowd: #ff7a3c; /* combat : cibles éligibles à la Foule */
   --combat-ally: #5db87a; /* combat : cible alliée / soin (et delta positif) */
+  --combat-range-bonus: #5db87a; /* combat : bande de portée avantageuse (Bout Portant/Courte) */
+  --combat-range-neutre: #d9b23c; /* combat : bande de portée Moyenne (mod +0) */
+  --combat-range-malus: #e0533a; /* combat : bande de portée pénalisante (Longue/Extrême) */
   --combat-gold: #ffd75e; /* combat : surbrillance or (trajet, réticule héros, infobulle) */
   --combat-gold-dk: #7a5b16; /* combat : contour sombre du glyphe or */
   --combat-halo: #ffe27a; /* combat : halo d'interaction (survol PNJ/objet) */
