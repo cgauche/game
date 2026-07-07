@@ -12,9 +12,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { z } from 'zod';
 import { SCHEMA_DEFS } from './schemas/_registry.generated';
 import { schema as characteristicsSchema } from './schemas/defs/characteristics';
+import { formatZodError } from './schemas/validate';
 
 const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
 
@@ -24,12 +24,6 @@ const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
  * sinon le volet (b) échoue. Une entrée ne s'ajoute ici qu'à titre transitoire assumé, jamais durable.
  */
 const PENDING = new Set<string>([]);
-
-/** Formate un `ZodError` en message ACTIONNABLE : `<fichier> → <chemin.du.champ>: <erreur>`. */
-function formatZodError(file: string, error: z.ZodError): string {
-  const lines = error.issues.map((iss) => `  - ${iss.path.join('.') || '(racine)'}: ${iss.message}`);
-  return `${file} — JSON invalide contre son schéma :\n${lines.join('\n')}`;
-}
 
 describe('contrat de donnée — src/data/*.json valide son schéma zod (SCHEMA_DEFS)', () => {
   for (const def of SCHEMA_DEFS) {

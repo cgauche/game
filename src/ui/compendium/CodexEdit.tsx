@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { datasetArray, setDataset, datasetObject, setObjectDataset, datasetFile, datasetSerializeRoot, datasetObjectFile, type DatasetKey, type ObjectDatasetKey } from '../../data/overrides';
 import type { ShipCrewTest } from '../../data/shipCriticals';
 import { serializeDataset } from '../../data/serialize';
+import { validateDataset } from '../../data/schemas/validate';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
 import { entryKey, invalidateCodexLookup } from './registry';
@@ -314,9 +315,12 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   const [needsGrant, setNeedsGrant] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [msg, setMsg] = useState('');
+  // Refus de SCHÉMA (contrat de donnée #176) : message champ-par-champ (formatZodError) quand la donnée
+  // sérialisée ne parse pas son schéma zod — l'écriture disque est bloquée. Effacé à toute ré-édition.
+  const [schemaError, setSchemaError] = useState<string | null>(null);
 
   useEffect(() => { fs.restoreDataDir().then((r) => { if (r) { setDir(r.handle); setNeedsGrant(!r.granted); } }); }, []);
-  useEffect(() => { setEntry(structuredClone(src.initial)); setRecordKey(src.initialKey); setDirty(false); setMsg(''); }, [src]);
+  useEffect(() => { setEntry(structuredClone(src.initial)); setRecordKey(src.initialKey); setDirty(false); setMsg(''); setSchemaError(null); }, [src]);
 
   // L'apparence (MonsterPartsFields) ET les EFFETS d'un sort (FlowEditor) ont leur éditeur dédié — on les
   // sort du formulaire générique (sinon rendus en JSON brut). Les autres champs gardent le formulaire
@@ -401,7 +405,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
     const handled = dedicatedFieldKeys(categoryKey);
     return inferFields(src.entries as Record<string, unknown>[]).filter((f) => !handled.has(f.key));
   }, [src.entries, categoryKey]);
-  const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); };
+  const edit = (key: string, v: unknown) => { setEntry((e) => ({ ...e, [key]: v })); setDirty(true); setSchemaError(null); };
   // Erreurs BLOQUANTES avant persist (identité + refs résolvables) — pas de validation des
   // datasets-objet (details/names : pas d'identité par entrée ; la clé du mode Record a sa garde).
   const errors = useMemo(() => (obj ? [] : validateEntry(categoryKey, entry, src.entries, src.index)), [obj, categoryKey, entry, src]);
@@ -412,7 +416,13 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
     src.persist(entry, recordKey.trim()); // preview mémoire (live) — mutation en place (tableau ou objet)
     invalidateCodexLookup(); // l'index de `codexLookup` repart de la donnée persistée
     // Le texte écrit = la SOURCE entière (tableau ou objet-dataset), re-sérialisée byte-fidèle.
-    const text = serializeDataset(obj ? datasetObject(obj.ds) : datasetSerializeRoot(editableDataset(categoryKey)!));
+    const root = obj ? datasetObject(obj.ds) : datasetSerializeRoot(editableDataset(categoryKey)!);
+    // Contrat de donnée (#176) : la source entière doit parser son schéma zod (SCHEMA_DEFS) AVANT toute
+    // écriture disque — refus champ-par-champ sinon (rien n'est écrit ; la preview mémoire reste éditable).
+    const schemaErr = validateDataset(src.file, root);
+    if (schemaErr) { setSchemaError(schemaErr); setMsg(''); return; }
+    setSchemaError(null);
+    const text = serializeDataset(root);
     try {
       if (fs.FS_API && dir && !needsGrant) { await fs.writeFile(dir, src.file, text); setMsg(`Enregistré ${src.file} — Vite recharge…`); }
       else { fs.downloadFallback(src.file, text); setMsg(`Téléchargé ${src.file} — reposez-le dans src/data/`); }
@@ -435,6 +445,11 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
       {dirty && errors.length > 0 && (
         <ul className="codex-edit-errors">
           {errors.map((e) => <li key={e}>{e}</li>)}
+        </ul>
+      )}
+      {schemaError && (
+        <ul className="codex-edit-errors">
+          {schemaError.split('\n').map((line, i) => <li key={i}>{line}</li>)}
         </ul>
       )}
       <div className="codex-edit-form">
