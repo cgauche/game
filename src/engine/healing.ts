@@ -6,7 +6,7 @@
 import { Combatant } from './types';
 import { hasSurgery } from './combatFeatures/dispatch';
 import { loseWounds, addCondition, removeCondition, hasCondition, recoveredStacks } from './conditions';
-import { hasTreatableTrauma, hasSurgeryTrauma } from './trauma';
+import { hasTreatableTrauma, hasSurgeryTrauma, hasRecoverableTrauma, hasLimbAwaitingAid } from './trauma';
 import { contractDisease } from './disease';
 import { isAstoundingFailure } from './tests';
 import type { RNG } from './dice';
@@ -30,10 +30,13 @@ export function hasSurgerySkill(c: Combatant): boolean {
  *  ni morte ni éjectée. Les cibles Inconscientes/À Terre sont valides (1 PB lève l'inconscience, LDB 18 l.28). */
 export function isHealable(c: Combatant): boolean {
   if (c.dead || c.outOfRencontre) return false;
-  return c.wounds.current < c.wounds.max || condStacks(c, 'hemorragique') > 0 || hasTreatableTrauma(c) || hasSurgeryTrauma(c);
+  return c.wounds.current < c.wounds.max || condStacks(c, 'hemorragique') > 0 || hasTreatableTrauma(c)
+    || hasSurgeryTrauma(c) || hasRecoverableTrauma(c) || hasLimbAwaitingAid(c);
 }
 
-export type HealMode = 'wounds' | 'bleed' | 'trauma' | 'surgery';
+/** `recovery` = Test ÉTENDU de Guérison qui rend l'usage d'un membre désactivé (« Épaule luxée »/« Genou
+ *  démis », LDB l.120/179), après Aide Médicale — hors combat, cf. `medicFlow`. */
+export type HealMode = 'wounds' | 'bleed' | 'trauma' | 'surgery' | 'recovery';
 
 /** Modes disponibles pour soigner `target`, compte tenu de la limite « 1 soin de Blessures / rencontre ».
  *  Le mode `trauma` (accélérer la convalescence d'une déchirure, LDB 18 l.317) est hors-combat — les
@@ -44,6 +47,9 @@ export function availableHealModes(target: Combatant): HealMode[] {
   if (condStacks(target, 'hemorragique') > 0) modes.push('bleed');
   if (hasTreatableTrauma(target)) modes.push('trauma');
   if (hasSurgeryTrauma(target)) modes.push('surgery'); // gate Talent Chirurgie côté action
+  // Récupération d'usage : proposée dès qu'un membre est désactivé (Test étendu de Guérison), MAIS bloquée tant
+  // que l'Aide Médicale n'a pas été reçue (`actBlockReason` : « Aide Médicale d'abord », LDB l.120/179).
+  if (hasRecoverableTrauma(target) || hasLimbAwaitingAid(target)) modes.push('recovery');
   return modes;
 }
 

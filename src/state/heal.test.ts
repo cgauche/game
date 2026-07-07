@@ -288,6 +288,47 @@ describe('Guérison — infirmerie (hors combat)', () => {
     expect(useGame.getState().medic!.surgery!.traumaIdx).toBe(1);
   });
 
+  it('Récupération d’usage (« Épaule luxée », #166) : acte Guérison ARMÉ = Test ÉTENDU DR 6 (Accessible), retire le membre désactivé + pose −10 / 1d10 j, SANS dégât', () => {
+    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }] });
+    const patient = hero({
+      id: 'p', name: 'Patient', skills: [], wounds: { current: 40, max: 40 },
+      // Aide Médicale DÉJÀ reçue (awaitingMedicalAid absent) → la récupération est ouvrable (LDB l.120).
+      traumas: [{ label: 'Épaule luxée (bras perdu)', location: 'brasD', restoreDR: 6, ops: [{ op: 'maxWeaponHands', hands: 1 }], recoveryPenalty: [{ op: 'charMod', char: 'CC', mod: -10 }] }],
+    });
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, pendingSurgery: null, medic: null, pendingReveals: [] });
+    useGame.getState().openMedic({ patientId: 'p' });
+    useGame.getState().medicAct('recovery'); // ARME la rééducation (pas de jet)
+    const sg0 = useGame.getState().medic!.surgery!;
+    expect(sg0.kind).toBe('recovery');
+    expect(sg0.difficulty).toBe('accessible'); // Test étendu de Guérison Accessible (+20), LDB l.120/179
+    expect(sg0.targetDR).toBe(6);
+    // compétence très haute → converge en quelques passes ; on garde la vraie cible DR 6.
+    useGame.setState({ medic: { ...useGame.getState().medic!, surgery: { ...sg0, skill: 99 } } });
+    for (let i = 0; i < 20 && useGame.getState().medic?.surgery; i++) {
+      useGame.getState().openSurgeryPass();
+      useGame.getState().surgeryRoll();
+      useGame.getState().surgeryNext();
+    }
+    const p = useGame.getState().party.find((c) => c.id === 'p')!;
+    expect(p.traumas!.some((t) => t.restoreDR != null)).toBe(false); // membre désactivé retiré (usage récupéré)
+    expect(p.wounds.current).toBe(40); // récupération = Guérison pure : AUCUN dégât (≠ Chirurgie)
+    expect(p.conditions.some((c) => c.name === 'hemorragique')).toBe(false);
+    expect(p.activeEffects?.some((e) => e.char === 'CC' && e.bonus === -10)).toBe(true); // pénalité −10 / 1d10 j posée
+    expect(useGame.getState().medic).not.toBeNull();
+  });
+
+  it('Récupération BLOQUÉE tant que l’Aide Médicale n’a pas été reçue (LDB l.120/179 : « Après application de cette Aide… »)', () => {
+    const doc = hero({ id: 'doc', skills: [{ skillId: 'guerison', advances: 30, characteristic: 'Int' }] });
+    const patient = hero({
+      id: 'p', name: 'Patient', skills: [], wounds: { current: 40, max: 40 },
+      traumas: [{ label: 'Épaule luxée (bras perdu)', location: 'brasD', restoreDR: 6, awaitingMedicalAid: true, ops: [{ op: 'maxWeaponHands', hands: 1 }], recoveryPenalty: [{ op: 'charMod', char: 'CC', mod: -10 }] }],
+    });
+    useGame.setState({ mode: 'exploration', battle: null, party: [doc, patient], pendingHeal: null, pendingSurgery: null, medic: null });
+    useGame.getState().openMedic({ patientId: 'p' });
+    useGame.getState().medicAct('recovery');
+    expect(useGame.getState().medic!.surgery).toBeUndefined(); // ne s’arme pas : Aide Médicale requise d’abord
+  });
+
   it('PNJ payant : débit à l’acte, remboursé si on annule AVANT le jet', () => {
     const al = hero({ id: 'al', wounds: { current: 4, max: 12 }, skills: [] });
     useGame.setState({ mode: 'exploration', battle: null, party: [al], pendingHeal: null, medic: null, money: { gold: 0, silver: 10, brass: 0 } });

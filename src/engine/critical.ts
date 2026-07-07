@@ -142,9 +142,9 @@ export function rollCritical(
     traumas.push(...permanentAmputations(entry.amputation.sequels, location, rng));
   }
   // Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du pied sans
-  // Chirurgie sous 1d10 jours) — stampée SUR la plaie chirurgicale. Roll placé en DERNIER (ne décale que
-  // les critiques à escalade). Même patron que le chemin AA (`resolveAACritical`).
-  stampCriticalEscalation(traumas, entry.escalation, rng);
+  // Chirurgie sous 1d10 jours ; « Épaule luxée »/« Genou démis » : membre désactivé jusqu'au Test étendu de
+  // Guérison) — placée en DERNIER (ne décale que les critiques à escalade). Même patron que le chemin AA.
+  stampCriticalEscalation(traumas, entry.escalation, location, rng);
   return {
     location,
     name: entry.name,

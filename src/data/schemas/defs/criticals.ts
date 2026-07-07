@@ -14,6 +14,16 @@ export const critEscalationSchema = z.strictObject({
   fingerLossPerRound: z.boolean().optional(),
   amputateAfter1d10Days: z.boolean().optional(),
   amputateSequel: z.string().optional(),
+  // « Épaule luxée »/« Genou démis » : membre désactivé jusqu'à un Test étendu de Guérison réussi (DR
+  // `restoreDR`) APRÈS Aide Médicale, puis pénalité 1d10 jours (`recoveryPenalty`). Cf. `CritEscalation`.
+  medicalAidGate: z
+    .strictObject({
+      label: z.string(),
+      disable: z.array(gameOpSchema),
+      restoreDR: z.number(),
+      recoveryPenalty: z.array(gameOpSchema),
+    })
+    .optional(),
 });
 
 const critEntrySchema = z.strictObject({

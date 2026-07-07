@@ -808,7 +808,11 @@
         {
           "op": "condition",
           "name": "sonne",
-          "value": 1
+          "value": 1,
+          "lockedUntil": {
+            "kind": "flag",
+            "expr": "!awaitingMedicalAid"
+          }
         }
       ],
       "resist": {
@@ -825,6 +829,25 @@
             "value": 1
           }
         ]
+      },
+      "escalation": {
+        "medicalAidGate": {
+          "label": "Épaule luxée (bras perdu)",
+          "disable": [
+            {
+              "op": "maxWeaponHands",
+              "hands": 1
+            }
+          ],
+          "restoreDR": 6,
+          "recoveryPenalty": [
+            {
+              "op": "charMod",
+              "char": "CC",
+              "mod": -10
+            }
+          ]
+        }
       },
       "desc": "Lâchez ; bras perdu (inutilisable) ; Sonné jusqu’à Aide Médicale ; Guérison étendue DR 6 pour récupérer le bras ; -10 aux Tests du bras 1d10 jours."
     },
@@ -1850,9 +1873,38 @@
           {
             "op": "condition",
             "name": "sonne",
-            "value": 1
+            "value": 1,
+            "lockedUntil": {
+              "kind": "flag",
+              "expr": "!awaitingMedicalAid"
+            }
           }
         ]
+      },
+      "escalation": {
+        "medicalAidGate": {
+          "label": "Genou démis (jambe perdue)",
+          "disable": [
+            {
+              "op": "moveScale",
+              "num": 1,
+              "den": 2
+            }
+          ],
+          "restoreDR": 6,
+          "recoveryPenalty": [
+            {
+              "op": "charMod",
+              "char": "Ag",
+              "mod": -10
+            },
+            {
+              "op": "moveScale",
+              "num": 1,
+              "den": 2
+            }
+          ]
+        }
       },
       "desc": "Sonné retiré par Aide Médicale ; Guérison étendue DR 6 ; Mouvement moitié + -10 aux Tests de la jambe 1d10 jours."
     },

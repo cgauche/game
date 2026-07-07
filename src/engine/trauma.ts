@@ -378,19 +378,63 @@ export function tickFingerLossEscalation(c: Combatant, rng: RNG = defaultRNG): s
 }
 
 /**
- * Instancie l'escalade GATÉE d'un critique (`CritEscalation`, LDB / Aux Armes) SUR la plaie chirurgicale posée
- * par le bloc d'amputation (SOURCE UNIQUE, partagée par `rollCritical` et `resolveAACritical`) :
- *  - « Main ouverte » (l.2571) → `fingerLossPerRound` + `awaitingMedicalAid` (escalade par Round de combat) ;
- *  - « Pied écrasé » (l.2624) → `amputateAfterDays = 1d10` + `amputateSequel` (perte du membre si pas de
- *    Chirurgie à temps ; décompté à l'entretien par `tickTraumaRecovery`).
- * Mute la plaie en place. No-op si l'entrée ne déclare pas d'escalade ou n'a pas posé de plaie chirurgicale.
+ * Instancie l'escalade GATÉE d'un critique (`CritEscalation`, LDB / Aux Armes) — SOURCE UNIQUE partagée par
+ * `rollCritical` et `resolveAACritical` :
+ *  - « Main ouverte » (l.2571) → `fingerLossPerRound` + `awaitingMedicalAid` SUR la plaie chirurgicale (escalade
+ *    par Round de combat) ;
+ *  - « Pied écrasé » (l.2624) → `amputateAfterDays = 1d10` + `amputateSequel` SUR la plaie (perte du membre si
+ *    pas de Chirurgie à temps ; décompté à l'entretien par `tickTraumaRecovery`) ;
+ *  - « Épaule luxée »/« Genou démis » (`medicalAidGate`) → POUSSE une NOUVELLE séquelle « membre désactivé » à
+ *    `location` (pas de plaie chirurgicale : le membre n'est pas amputé mais inutilisable), porteuse de
+ *    `restoreDR`/`recoveryPenalty`/`awaitingMedicalAid`.
+ * Mute `traumas` en place. No-op si l'entrée ne déclare pas d'escalade (ou, pour finger/pied, pas de plaie).
  */
-export function stampCriticalEscalation(traumas: Trauma[], esc: CritEscalation | undefined, rng: RNG = defaultRNG): void {
+export function stampCriticalEscalation(
+  traumas: Trauma[],
+  esc: CritEscalation | undefined,
+  location: HitLocation,
+  rng: RNG = defaultRNG,
+): void {
   if (!esc) return;
   const plaie = traumas.find((t) => t.needsSurgery && t.traumaId == null); // « Amputation » = la plaie chirurgicale
-  if (!plaie) return;
-  if (esc.fingerLossPerRound) { plaie.fingerLossPerRound = true; plaie.awaitingMedicalAid = true; }
-  if (esc.amputateAfter1d10Days) { plaie.amputateAfterDays = d10(rng); plaie.amputateSequel = esc.amputateSequel; }
+  if (plaie && esc.fingerLossPerRound) { plaie.fingerLossPerRound = true; plaie.awaitingMedicalAid = true; }
+  if (plaie && esc.amputateAfter1d10Days) { plaie.amputateAfterDays = d10(rng); plaie.amputateSequel = esc.amputateSequel; }
+  if (esc.medicalAidGate) {
+    const g = esc.medicalAidGate;
+    traumas.push({
+      label: g.label,
+      location,
+      ops: g.disable.map((o) => ({ ...o })),
+      awaitingMedicalAid: true,
+      restoreDR: g.restoreDR,
+      recoveryPenalty: g.recoveryPenalty.map((o) => ({ ...o })),
+    });
+  }
+}
+
+/** Séquelles « membre désactivé » (`medicalAidGate`) dont l'Aide Médicale a été reçue et qui attendent le Test
+ *  étendu de Guérison de récupération (acte « Guérison » de l'Infirmerie). */
+export function recoverableTraumas(c: Combatant): Trauma[] {
+  return (c.traumas ?? []).filter((t) => t.restoreDR != null && !t.awaitingMedicalAid);
+}
+/** Le personnage a-t-il un membre désactivé prêt à récupérer son usage (Aide Médicale reçue) ? */
+export function hasRecoverableTrauma(c: Combatant): boolean {
+  return recoverableTraumas(c).length > 0;
+}
+/** Un membre désactivé attend-il ENCORE l'Aide Médicale (le Test de récupération est bloqué tant qu'elle
+ *  n'est pas donnée, LDB l.120/179 : « Après application de cette Aide… ») ? */
+export function hasLimbAwaitingAid(c: Combatant): boolean {
+  return (c.traumas ?? []).some((t) => t.restoreDR != null && t.awaitingMedicalAid);
+}
+/** Usage du membre RÉCUPÉRÉ (Test étendu de Guérison atteint) : retire la séquelle « membre désactivé »
+ *  d'INDICE `idx` parmi `recoverableTraumas` et renvoie ses `recoveryPenalty` (posées par l'appelant via
+ *  `applyOps`, avec une durée d'horloge partagée 1d10 jours) + le journal. */
+export function recoverDisabledLimb(c: Combatant, idx = 0): { penalty: import('./ops').GameOp[]; log: string[] } {
+  const pool = recoverableTraumas(c);
+  const t = pool[idx] ?? pool[0];
+  if (!t) return { penalty: [], log: [`${c.name} : aucun membre à rééduquer.`] };
+  c.traumas = (c.traumas ?? []).filter((x) => x !== t);
+  return { penalty: t.recoveryPenalty ?? [], log: [`${c.name} : usage du membre récupéré (${t.label}, ${t.location}).`] };
 }
 
 /**

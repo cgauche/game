@@ -672,6 +672,15 @@ export interface Trauma {
   amputateAfterDays?: number;
   /** id STABLE de la fiche de séquelle (`traumas.json`) posée si `amputateAfterDays` expire sans Chirurgie. */
   amputateSequel?: string;
+  /** « Épaule luxée » (AA l.125 / LDB l.120) / « Genou démis » (AA l.179 / LDB l.179) : membre DÉSACTIVÉ
+   *  (les `ops` passives — bras `maxWeaponHands:1` / jambe `moveScale` — tiennent tant que la séquelle vit).
+   *  Après Aide Médicale (`awaitingMedicalAid` levé), un Test ÉTENDU de Guérison Accessible (+20) de
+   *  `restoreDR` DR (acte « Guérison » de l'Infirmerie, `medicFlow`) rend l'usage : la séquelle est retirée et
+   *  `recoveryPenalty` posé à la cible (durée d'horloge partagée = 1d10 jours). */
+  restoreDR?: number;
+  /** Ops posées à la cible quand `restoreDR` est atteint (charMod −10 / `moveScale` jambe) — appliquées avec
+   *  une durée d'horloge partagée (1d10 jours) par l'acte « Guérison » (`medicFlow`). */
+  recoveryPenalty?: import('./ops').GameOp[];
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';

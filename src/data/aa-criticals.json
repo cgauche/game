@@ -1,5 +1,5 @@
 {
-  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y COMPRIS les sous-effets récurrents à durée Rounds (#125 : `maxWeaponHands.durationRounds`/`charMod.durationRounds`, `resist.skill` hors-Résistance), les durées en JOURS (#153 : `condition`/`charMod` `durationHours` = jours×24, ctx.now câblé côté combatFlow), l'objet lâché (#153 : op `disarm`) et l'Amputation structurée (#153 : `amputation.{difficulty,sequels}`, même patron que `data/criticals.ts` LDB). `desc` = « Effets supplémentaires » VERBATIM (reste l'affichage long terme). aa-jambe-81 (Tendon rompu, l.2620) : RAW ne donne AUCUNE Difficulté pour l'Amputation référencée (« voir p.180 », contrairement à toutes ses voisines qui en citent une) — arbitrage maison NON entériné : réutilise la Difficulté Difficile du Test de Résistance de la MÊME ligne (seule valeur que la ligne fournit) ; à valider. Restent TEXTE (non modélisés, cf. aaCritical.ts en-tête) : la cascade Aide Médicale + Test étendu de Guérison (bras 96-109/jambe 96-105), l'escalade doigt/pied par Round ou par jour sans soin (bras 116-120/jambe 106-115), et le Test PAR ACTION de « Main ensanglantée » (bras 46-50).",
+  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y COMPRIS les sous-effets récurrents à durée Rounds (#125 : `maxWeaponHands.durationRounds`/`charMod.durationRounds`, `resist.skill` hors-Résistance), les durées en JOURS (#153 : `condition`/`charMod` `durationHours` = jours×24, ctx.now câblé côté combatFlow), l'objet lâché (#153 : op `disarm`) et l'Amputation structurée (#153 : `amputation.{difficulty,sequels}`, même patron que `data/criticals.ts` LDB). `desc` = « Effets supplémentaires » VERBATIM (reste l'affichage long terme). aa-jambe-81 (Tendon rompu, l.2620) : RAW ne donne AUCUNE Difficulté pour l'Amputation référencée (« voir p.180 », contrairement à toutes ses voisines qui en citent une) — arbitrage maison NON entériné : réutilise la Difficulté Difficile du Test de Résistance de la MÊME ligne (seule valeur que la ligne fournit) ; à valider. La cascade « Aide Médicale → Test étendu de Guérison » (Épaule luxée 96-109 / Genou démis 96-105, #166) est modélisée par `escalation.medicalAidGate` (membre désactivé + `restoreDR`/`recoveryPenalty`, joué à l'Infirmerie via l'acte « Guérison ») et le Sonné « jusqu'à Aide Médicale » par `condition.lockedUntil` (flag `awaitingMedicalAid`) ; l'escalade doigt/pied par Round ou par jour sans soin (bras 116-120/jambe 106-115) par `escalation.fingerLossPerRound`/`amputateAfter1d10Days` (#167). Reste TEXTE (non modélisé) : le Test PAR ACTION de « Main ensanglantée » (bras 46-50, #165).",
   "tete": [
     {
       "id": "aa-tete-01",
@@ -680,9 +680,32 @@
         {
           "op": "condition",
           "name": "sonne",
-          "value": 1
+          "value": 1,
+          "lockedUntil": {
+            "kind": "flag",
+            "expr": "!awaitingMedicalAid"
+          }
         }
       ],
+      "escalation": {
+        "medicalAidGate": {
+          "label": "Épaule luxée (bras perdu)",
+          "disable": [
+            {
+              "op": "maxWeaponHands",
+              "hands": 1
+            }
+          ],
+          "restoreDR": 6,
+          "recoveryPenalty": [
+            {
+              "op": "charMod",
+              "char": "CC",
+              "mod": -10
+            }
+          ]
+        }
+      },
       "desc": "Le bras est considéré comme perdu (voir Amputation en page 180 de WFJDR). Vous subissez 1 État Sonné jusqu'à ce que vous receviez de l'Aide Médicale. Après ce traitement initial, il faut obtenir 6 DR sur un Test étendu de Guérison Accessible (+20) pour que vous récupériez l'usage de ce bras, après quoi les Tests effectués avec ce bras subissent une pénalité de –10 pendant 1d10 jours."
     },
     {
@@ -1542,9 +1565,38 @@
           {
             "op": "condition",
             "name": "sonne",
-            "value": 1
+            "value": 1,
+            "lockedUntil": {
+              "kind": "flag",
+              "expr": "!awaitingMedicalAid"
+            }
           }
         ]
+      },
+      "escalation": {
+        "medicalAidGate": {
+          "label": "Genou démis (jambe perdue)",
+          "disable": [
+            {
+              "op": "moveScale",
+              "num": 1,
+              "den": 2
+            }
+          ],
+          "restoreDR": 6,
+          "recoveryPenalty": [
+            {
+              "op": "charMod",
+              "char": "Ag",
+              "mod": -10
+            },
+            {
+              "op": "moveScale",
+              "num": 1,
+              "den": 2
+            }
+          ]
+        }
       },
       "desc": "Vous subissez 1 État À Terre. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 1 État Sonné, qui n'est retiré qu'une fois que vous avez reçu de l'Aide Médicale. Après cette Aide Médicale, il faut obtenir 6 DR sur un Test étendu de Guérison Accessible (+20) pour que vous récupériez l'usage de cette jambe, après quoi votre Mouvement est réduit de moitié et les Tests effectués avec cette jambe subissent une pénalité de -10 pendant 1d10 jours."
     },

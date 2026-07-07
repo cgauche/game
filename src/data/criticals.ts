@@ -34,10 +34,12 @@ export interface CritEntry {
   amputation?: { difficulty: Difficulty; sequels: string[] };
   /** Traumatismes ENGENDRÉS (LDB 18) — refs d'id de fiches `traumas.json` ; la localisation vient de la table. */
   traumas?: string[];
-  /** Escalade GATÉE d'une Blessure critique (LDB / Aux Armes) : sans soin, la plaie chirurgicale S'AGGRAVE.
-   *  `fingerLossPerRound` (« Main ouverte ») : 1 doigt de plus par Round de combat tant que l'Aide Médicale
-   *  n'est pas reçue (4+ doigts → main tranchée). `amputateAfter1d10Days` (« Pied écrasé ») : perte définitive
-   *  du membre (`amputateSequel`) si la Chirurgie de la plaie n'intervient pas dans le délai (1d10 jours). */
+  /** Escalade GATÉE d'une Blessure critique (LDB / Aux Armes) : sans soin, la séquelle S'AGGRAVE (ou n'est
+   *  levée que par un traitement). `fingerLossPerRound` (« Main ouverte ») : 1 doigt de plus par Round de
+   *  combat tant que l'Aide Médicale n'est pas reçue (4+ doigts → main tranchée). `amputateAfter1d10Days`
+   *  (« Pied écrasé ») : perte définitive du membre (`amputateSequel`) si la Chirurgie de la plaie n'intervient
+   *  pas dans le délai (1d10 jours). `medicalAidGate` (« Épaule luxée »/« Genou démis ») : membre désactivé
+   *  jusqu'à un Test étendu de Guérison réussi APRÈS Aide Médicale. */
   escalation?: CritEscalation;
   /** Texte canon (LONG TERME), DISPLAY-ONLY — jamais parsé pour de la mécanique. */
   desc: string;
@@ -48,6 +50,14 @@ export interface CritEscalation {
   fingerLossPerRound?: boolean;
   amputateAfter1d10Days?: boolean;
   amputateSequel?: string;
+  /** « Épaule luxée » (AA l.125 / LDB l.120) / « Genou démis » (AA l.179 / LDB l.179) : le membre est
+   *  DÉSACTIVÉ (séquelle portant `disable` en `ops` passives : bras `maxWeaponHands:1` / jambe `moveScale`),
+   *  en attente d'Aide Médicale (`awaitingMedicalAid`). Après l'Aide Médicale, un Test ÉTENDU de Guérison
+   *  Accessible (+20) de `restoreDR` DR rend l'usage du membre : la séquelle est retirée et `recoveryPenalty`
+   *  (charMod −10 / `moveScale` jambe, durée 1d10 jours) est posé à la cible. Instancié par
+   *  `stampCriticalEscalation` (nouvelle séquelle, pas une plaie chirurgicale) ; joué à l'Infirmerie (acte
+   *  « Guérison », `medicFlow`). */
+  medicalAidGate?: { label: string; disable: GameOp[]; restoreDR: number; recoveryPenalty: GameOp[] };
 }
 export type CritTable = CritEntry[];
 

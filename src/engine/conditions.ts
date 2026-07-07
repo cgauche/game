@@ -132,7 +132,10 @@ export function addClockCondition(c: Combatant, name: string, value: number, unt
 export function isConditionLocked(inst: ConditionInstance, c: Combatant): boolean {
   if (!inst.lockedUntil) return false;
   const ctx: ConditionCtx = {
-    flags: {}, // les verrous de Critique s'expriment sur l'état du porteur (États par nom), pas des drapeaux de scène
+    // Les verrous de Critique s'expriment sur l'état du porteur : États par nom (`compare`) et le drapeau
+    // `awaitingMedicalAid` (`flag !awaitingMedicalAid` — Sonné « jusqu'à Aide Médicale », LDB l.120/179 :
+    // vrai tant qu'une séquelle attend l'Aide Médicale, `receiveMedicalAid` le lève).
+    flags: { awaitingMedicalAid: (c.traumas ?? []).some((t) => t.awaitingMedicalAid) },
     gameTime: 0,
     target: { conditions: Object.fromEntries((c.conditions ?? []).map((x) => [x.name, x.value])) } as unknown as ActorView,
   };

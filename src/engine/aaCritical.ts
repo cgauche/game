@@ -17,14 +17,14 @@
  * (l.2608/2609) via `resist.skill`. #153 poursuit : durées en JOURS (charMod/condition
  * `durationHours`, ctx.now câblé côté `state/combatFlow.ts`), Amputation DÉCLARÉE STRUCTURELLEMENT
  * (`entry.amputation`, même patron que `data/criticals.ts` LDB — Test de Résistance → séquelle
- * permanente via `permanentAmputations`), et lâcher l'objet tenu (op `disarm`, ci-dessous). Ce qui
- * reste TEXTE (gap distinct, non modélisé ici — cf. #153 rapport) : la cascade Aide Médicale + Test
- * étendu de Guérison (bras 96-109/jambe 96-105 : « bras/jambe considéré comme perdu » PENDANT
- * l'attente de soins, PUIS pénalité −10 Nd10 jours après récupération), l'escalade « 1 doigt de plus
- * par Round sans Aide Médicale » (bras 116-120) et « perte du pied si pas de Chirurgie sous 1d10
- * jours » (jambe 106-115) — mêmes simplifications que leurs analogues LDB (`data/criticals.json`),
- * et le Test PAR ACTION impliquant la main (bras 46-50, « Main ensanglantée » — pas de hook d'Action
- * dans le moteur, cf. `actGate` qui ne couvre que le Round).
+ * permanente via `permanentAmputations`), et lâcher l'objet tenu (op `disarm`, ci-dessous). #166 modélise
+ * la cascade Aide Médicale + Test étendu de Guérison (bras 96-109/jambe 96-105) : `escalation.medicalAidGate`
+ * pose une séquelle « membre désactivé » (`ops` passives) en attente d'Aide Médicale (`awaitingMedicalAid`),
+ * dont l'usage se récupère par l'acte « Guérison » de l'Infirmerie (Test étendu DR `restoreDR`, `medicFlow`),
+ * puis pénalité −10 / 1d10 jours (`recoveryPenalty`) ; le Sonné « jusqu'à Aide Médicale » via `lockedUntil`.
+ * #167 modélise l'escalade « 1 doigt de plus par Round » (bras 116-120) et « perte du pied sans Chirurgie sous
+ * 1d10 jours » (jambe 106-115). Reste TEXTE : le Test PAR ACTION impliquant la main (bras 46-50, « Main
+ * ensanglantée » — pas de hook d'Action dans le moteur, cf. `actGate` qui ne couvre que le Round ; #165).
  */
 import aaJson from '../data/aa-criticals.json';
 import { d100, d10, RNG, defaultRNG } from './dice';
@@ -59,9 +59,10 @@ interface AAEntry {
    *  DR≤−2, +Inconscient si DR≤−4, comme LDB 18 l.328-333), `sequels` = ids de fiches de séquelle
    *  PERMANENTE (`traumas.json`), instanciées par `permanentAmputations` (SOURCE UNIQUE, réutilisée). */
   amputation?: { difficulty: import('./types').Difficulty; sequels: string[] };
-  /** Escalade GATÉE par les soins (même déclaration que `data/criticals.ts` LDB) : « Main ouverte »
-   *  (l.2571 : 1 doigt/Round sans Aide Médicale) / « Pied écrasé » (l.2624 : perte du pied si pas de
-   *  Chirurgie sous 1d10 jours). Instanciée sur la plaie chirurgicale par `stampCriticalEscalation`. */
+  /** Escalade GATÉE par les soins (même déclaration que `data/criticals.ts` LDB) : « Main ouverte » (l.127 :
+   *  1 doigt/Round sans Aide Médicale) / « Pied écrasé » (l.180 : perte du pied si pas de Chirurgie sous 1d10
+   *  jours) / « Épaule luxée » (l.125) / « Genou démis » (l.179 : membre désactivé jusqu'au Test étendu de
+   *  Guérison après Aide Médicale). Instanciée par `stampCriticalEscalation`. */
   escalation?: import('../data/criticals').CritEscalation;
   lethal?: boolean;
   desc: string;
@@ -122,10 +123,10 @@ export function resolveAACritical(
     // Séquelle(s) PERMANENTE(S) (membre absent) : SOURCE UNIQUE partagée avec le chemin LDB.
     traumas.push(...permanentAmputations(entry.amputation.sequels, location, rng));
   }
-  // Escalade GATÉE par les soins (« Main ouverte » l.2571 : doigt/Round ; « Pied écrasé » l.2624 : perte du
-  // pied sans Chirurgie sous 1d10 jours) — stampée SUR la plaie chirurgicale, en DERNIER (ne décale que les
-  // critiques à escalade). SOURCE UNIQUE partagée avec le chemin LDB (`rollCritical`).
-  stampCriticalEscalation(traumas, entry.escalation, rng);
+  // Escalade GATÉE par les soins (« Main ouverte » l.127 : doigt/Round ; « Pied écrasé » l.180 : perte du pied
+  // sans Chirurgie sous 1d10 jours ; « Épaule luxée » l.125 / « Genou démis » l.179 : membre désactivé jusqu'au
+  // Test étendu de Guérison) — en DERNIER (ne décale que les critiques à escalade). SOURCE UNIQUE (chemin LDB).
+  stampCriticalEscalation(traumas, entry.escalation, location, rng);
   return {
     location,
     name: entry.name,
