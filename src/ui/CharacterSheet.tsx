@@ -471,7 +471,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
             <span className="sc-value">{hero.movement}</span>
           </div>
           <div className={`stat-chip ${over ? 'enc-over' : ''}`}>
-            <span className="sc-label">Encombrement</span>
+            <span className="sc-label sc-label-truncate" title="Encombrement">Encombrement</span>
             <span className="sc-value">{enc}/{maxEnc}{over ? (<> <Icon id="ui/warning" size="sm" /></>) : ''}</span>
           </div>
         </div>

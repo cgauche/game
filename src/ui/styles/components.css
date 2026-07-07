@@ -133,6 +133,15 @@
   overflow-wrap: anywhere;
   line-height: 1.1;
 }
+/* Libellé tronqué (style Steam) : une ligne + ellipse + infobulle `title` native, pour les
+   libellés longs (Encombrement) où l'enroulement sur 2 lignes n'est pas souhaité (#206). */
+.stat-chip > .sc-label.sc-label-truncate {
+  overflow-wrap: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
 .stat-chip > .sc-value {
   font-size: 16px;
   font-weight: 700;
