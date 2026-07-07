@@ -730,6 +730,12 @@
           "value": 2
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 1,
+          "label": "Blessure béante"
+        }
+      },
       "desc": "Le coup ouvre une profonde blessure béante. Gagnez 2 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie afin de recoudre la blessure, tout nouveau Dégât au Bras que vous subirez vous fera gagner 1 État Hémorragique à cause de la blessure qui se sera réouverte."
     },
     {
@@ -840,6 +846,12 @@
           "value": 4
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 2,
+          "label": "Artère endommagée"
+        }
+      },
       "desc": "Gagnez 4 États Hémorragique. Tant que vous n'avez pas été la cible de Chirurgie, à\nchaque fois que vous subissez des Dégâts à cette Localisation, vous gagnez 2 États\nHémorragique"
     },
     {
@@ -1363,6 +1375,12 @@
           "value": 3
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 1,
+          "label": "Blessure béante"
+        }
+      },
       "desc": "Gagnez 3 États Hémorragique. Tant que vous n'avez pas été la cible de Chirurgie,\npour chaque Blessure supplémentaire que vous recevrez à cette Localisation, vous\ngagnerez 1 État Hémorragique, car la blessure se sera réouverte."
     },
     {
@@ -1418,6 +1436,12 @@
           "value": 4
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 2,
+          "label": "Dégâts artériels"
+        }
+      },
       "desc": "Gagnez 4 États Hémorragique. Tant que vous n'aurez pas été soigné par Chirurgie,\nchaque nouvelle Blessure à cette Localisation vous fera gagner 2 États Hémorragique."
     },
     {
@@ -1489,6 +1513,12 @@
           "value": 4
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 2,
+          "label": "Blessure majeure au torse"
+        }
+      },
       "desc": "Vous recevez une blessure importante au torse qui arrache la peau de ses muscles et\nde ses tendons. Recevez 4 États Hémorragique. Tant que vous n'êtes pas soigné par\nChirurgie afin de recoudre la blessure, toute nouvelle Blessure que vous recevrez à\ncette Localisation vous fera gagner 2 États Hémorragique supplémentaires à cause de\nla réouverture de la blessure."
     },
     {
@@ -1897,6 +1927,12 @@
             "value": 1
           }
         ]
+      },
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 1,
+          "label": "Cuisse lacérée"
+        }
       },
       "desc": "Gagnez 3 États Hémorragique alors que l'arme entaille profondément votre cuisse.\nRéussissez un Test de Résistance Intermédiaire (+0) ou gagnez l'État À Terre. Tant que\nvous n'aurez pas été soigné par Chirurgie afin de refermer la plaie, chaque fois que\nvous subirez des Dégâts à cette Jambe, gagnez 1 État Hémorragique"
     },

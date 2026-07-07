@@ -410,6 +410,21 @@ export function stampCriticalEscalation(
       recoveryPenalty: g.recoveryPenalty.map((o) => ({ ...o })),
     });
   }
+  if (esc.bleedOnReinjury) {
+    // Plaie « réouverte » (LDB 18 l.101/118/143/145/148/175 ; AA 07 l.119/147/149/152/175) : séquelle
+    // chirurgicale portant `bleedOnReinjury` à `location` — la Chirurgie la retire (`needsSurgery`), le
+    // déclencheur `reinjuryBleed` la lit au point d'application des Dégâts localisés.
+    traumas.push({ label: esc.bleedOnReinjury.label, location, bleedOnReinjury: esc.bleedOnReinjury.amount, needsSurgery: true });
+  }
+}
+
+/** États Hémorragique octroyés par la RÉOUVERTURE des plaies critiques de `c` (LDB 18 / AA 07) lorsqu'il
+ *  subit un nouveau Dégât à `location` : somme des `bleedOnReinjury` des plaies encore ouvertes (non
+ *  recousues par Chirurgie) À CETTE Localisation. Un Dégât NON localisé (zone, chute) n'en rouvre aucune
+ *  (RAW « Dégâts à cette Localisation ») ; plusieurs plaies gatées à la même Localisation CUMULENT (RAW ne
+ *  les fusionne pas). Lu au point d'application des Dégâts localisés (`applyAttackResult`/Projectile magique). */
+export function reinjuryBleed(c: Combatant, location: HitLocation): number {
+  return (c.traumas ?? []).reduce((n, t) => n + (t.location === location ? (t.bleedOnReinjury ?? 0) : 0), 0);
 }
 
 /** Séquelles « membre désactivé » (`medicalAidGate`) dont l'Aide Médicale a été reçue et qui attendent le Test

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { receiveMedicalAid, tickFingerLossEscalation, tickTraumaRecovery, stampCriticalEscalation,
   recoverableTraumas, hasRecoverableTrauma, hasLimbAwaitingAid, recoverDisabledLimb, cannotWieldTwoHanded,
-  traumaMovementHalved } from './trauma';
+  traumaMovementHalved, reinjuryBleed, removeSurgicalTrauma } from './trauma';
+import { rollCritical } from './critical';
 import { addCondition, removeCondition, hasCondition, releaseConditionLocks } from './conditions';
 import { applyOps } from './ops';
 import { resolveAACritical } from './aaCritical';
@@ -218,5 +219,63 @@ describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé 
     expect(gate(aaJson.jambe, 'aa-jambe-96').restoreDR).toBe(6);
     expect(gate(criticalsJson.bras, 'epaule-luxee').restoreDR).toBe(6);
     expect(gate(criticalsJson.jambe, 'genou-demis').restoreDR).toBe(6);
+  });
+});
+
+describe('#190 — réouverture (bleedOnReinjury) : chaque Dégât à la Localisation → +N Hémorragique, levée par Chirurgie (LDB 18 / AA 07)', () => {
+  it('stamp pose une séquelle chirurgicale porteuse de `bleedOnReinjury` à la localisation', () => {
+    const traumas: Trauma[] = []; // Blessure béante n’engendre PAS d’amputation → aucune plaie préalable
+    stampCriticalEscalation(traumas, { bleedOnReinjury: { amount: 2, label: 'Dégâts artériels' } }, 'corps');
+    expect(traumas).toHaveLength(1);
+    expect(traumas[0]).toMatchObject({ label: 'Dégâts artériels', location: 'corps', bleedOnReinjury: 2, needsSurgery: true });
+  });
+
+  it('reinjuryBleed : nouveau Dégât à la MÊME Localisation → N ; autre Localisation → 0', () => {
+    const c = C({ traumas: [{ label: 'Blessure béante', location: 'brasD', bleedOnReinjury: 1, needsSurgery: true }] });
+    expect(reinjuryBleed(c, 'brasD')).toBe(1); // le bras rouvert saigne
+    expect(reinjuryBleed(c, 'brasG')).toBe(0); // autre bras : rien
+    expect(reinjuryBleed(c, 'corps')).toBe(0); // Dégât non localisé au bras : rien
+  });
+
+  it('reinjuryBleed : plusieurs plaies gatées à la même Localisation CUMULENT (RAW ne les fusionne pas)', () => {
+    const c = C({ traumas: [
+      { label: 'Blessure béante', location: 'corps', bleedOnReinjury: 1, needsSurgery: true },
+      { label: 'Dégâts artériels', location: 'corps', bleedOnReinjury: 2, needsSurgery: true },
+    ] });
+    expect(reinjuryBleed(c, 'corps')).toBe(3);
+  });
+
+  it('la Chirurgie (removeSurgicalTrauma) retire la plaie → plus de réouverture', () => {
+    const c = C({ criticalWounds: 1, traumas: [{ label: 'Cuisse lacérée', location: 'jambeD', bleedOnReinjury: 1, needsSurgery: true }] });
+    expect(reinjuryBleed(c, 'jambeD')).toBe(1);
+    removeSurgicalTrauma(c);
+    expect(reinjuryBleed(c, 'jambeD')).toBe(0);
+    expect(c.criticalWounds).toBe(0);
+  });
+
+  it('rollCritical(« Blessure béante » bras 46-50) stampe la plaie `bleedOnReinjury` à la localisation du coup', () => {
+    const c = C({ skills: [{ skillId: 'resistance', characteristic: 'E', advances: 0 }] });
+    const res = rollCritical(c, 'brasG', seq([48]), 0); // 48 ∈ 46-50 (Blessure béante)
+    const p = res.traumas.find((t) => t.bleedOnReinjury != null);
+    expect(p).toMatchObject({ location: 'brasG', bleedOnReinjury: 1, needsSurgery: true });
+  });
+
+  it('les entrées de réouverture LDB portent le bon montant ; AA idem (l’Artère AA n’en porte PAS)', () => {
+    const bleed = (arr: { id: string; escalation?: { bleedOnReinjury?: { amount: number } } }[], id: string) =>
+      arr.find((e) => e.id === id)?.escalation?.bleedOnReinjury?.amount;
+    // LDB (6 entrées)
+    expect(bleed(criticalsJson.bras, 'blessure-beante')).toBe(1);
+    expect(bleed(criticalsJson.bras, 'artere-endommagee')).toBe(2);
+    expect(bleed(criticalsJson.corps, 'blessure-beante-2')).toBe(1);
+    expect(bleed(criticalsJson.corps, 'degats-arteriels')).toBe(2);
+    expect(bleed(criticalsJson.corps, 'blessure-majeure-au-torse')).toBe(2);
+    expect(bleed(criticalsJson.jambe, 'cuisse-laceree')).toBe(1);
+    // AA (5 entrées) — l’« Artère endommagée » AA (aa-bras-91) n’a PAS la clause de réouverture (RAW AA 07)
+    expect(bleed(aaJson.bras, 'aa-bras-56')).toBe(1);
+    expect(bleed(aaJson.corps, 'aa-corps-56')).toBe(1);
+    expect(bleed(aaJson.corps, 'aa-corps-66')).toBe(2);
+    expect(bleed(aaJson.corps, 'aa-corps-81')).toBe(2);
+    expect(bleed(aaJson.jambe, 'aa-jambe-76')).toBe(1);
+    expect(bleed(aaJson.bras, 'aa-bras-91')).toBeUndefined();
   });
 });

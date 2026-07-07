@@ -516,6 +516,7 @@ export const fr = {
   'cf.enemyStaysEmpetre': '{name} reste Empêtré.',
   'cf.enemyStaysFlames': '{name} reste En flammes.',
   'cf.woundingStrike': 'Frappe blessante : {name} perd {n} Blessure(s) de plus.',
+  'cf.reinjuryBleed': 'Plaie rouverte ({loc}) : {name} gagne {n} État(s) Hémorragique.',
   'cf.spellBounces': '{spell} rebondit sur {name} !',
   'cf.zonePersistsRounds': '{spell} : la zone persiste {rounds} Round(s).',
   'cf.castCritical': 'Incantation Critique : le Projectile inflige une Blessure Critique.',

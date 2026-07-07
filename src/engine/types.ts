@@ -701,6 +701,10 @@ export interface Trauma {
   /** Ops posées à la cible quand `restoreDR` est atteint (charMod −10 / `moveScale` jambe) — appliquées avec
    *  une durée d'horloge partagée (1d10 jours) par l'acte « Guérison » (`medicFlow`). */
   recoveryPenalty?: import('./ops').GameOp[];
+  /** « Réouverture » (LDB 18 l.101/118/143/145/148/175 ; AA 07 l.119/147/149/152/175) : plaie non recousue.
+   *  Chaque nouveau Dégât à la MÊME `location` octroie `bleedOnReinjury` État Hémorragique (`reinjuryBleed`,
+   *  au point d'application des Dégâts localisés). Séquelle chirurgicale (`needsSurgery`) : la Chirurgie la retire. */
+  bleedOnReinjury?: number;
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';

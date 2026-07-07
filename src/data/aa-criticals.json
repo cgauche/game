@@ -566,6 +566,12 @@
           "value": 2
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 1,
+          "label": "Blessure béante"
+        }
+      },
       "desc": "Vous recevez 2 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie afin de recoudre la blessure, toute Blessure que vous subissez à votre bras blessé vous inflige un État Hémorragique supplémentaire."
     },
     {
@@ -1057,6 +1063,12 @@
           "value": 3
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 1,
+          "label": "Blessure béante"
+        }
+      },
       "desc": "Vous recevez 3 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie, toute Blessure que vous perdez au torse vous inflige un État Hémorragique supplémentaire car la plaie se rouvre."
     },
     {
@@ -1102,6 +1114,12 @@
           "value": 4
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 2,
+          "label": "Dégâts artériels"
+        }
+      },
       "desc": "Vous recevez 4 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie, chaque nouvelle Blessure à cette Localisation vous fait subir 2 États Hémorragique supplémentaires."
     },
     {
@@ -1156,6 +1174,12 @@
           "value": 4
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 2,
+          "label": "Blessure majeure au torse"
+        }
+      },
       "desc": "Vous recevez une blessure importante au torse qui arrache la peau de ses muscles et de ses tendons. Recevez 4 États Hémorragique. Tant que vous n'êtes pas soigné par Chirurgie afin de recoudre la blessure, toute nouvelle Blessure que vous recevrez à cette Localisation vous fera gagner 2 États Hémorragique supplémentaires à cause de la réouverture de la blessure."
     },
     {
@@ -1463,6 +1487,12 @@
           "value": 3
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 1,
+          "label": "Cuisse lacérée"
+        }
+      },
       "desc": "Vous recevez 3 États Hémorragique. Tant que vous n'aurez pas été soigné par Chirurgie afin de refermer la plaie, chaque fois que vous subirez des Blessures à cette Jambe, gagnez 1 État Hémorragique supplémentaire."
     },
     {

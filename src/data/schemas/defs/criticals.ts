@@ -24,6 +24,10 @@ export const critEscalationSchema = z.strictObject({
       recoveryPenalty: z.array(gameOpSchema),
     })
     .optional(),
+  // « Réouverture » (LDB 18 l.101/118/143/145/148/175 ; AA 07 l.119/147/149/152/175) : tant que la plaie
+  // n'a pas été recousue par Chirurgie, chaque nouveau Dégât à la MÊME Localisation octroie `amount` État
+  // Hémorragique. Stampé par `stampCriticalEscalation` en séquelle chirurgicale (`bleedOnReinjury` + `needsSurgery`).
+  bleedOnReinjury: z.strictObject({ amount: z.number(), label: z.string() }).optional(),
 });
 
 const critEntrySchema = z.strictObject({

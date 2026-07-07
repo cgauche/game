@@ -136,7 +136,7 @@ import { openRest, placesOfKind } from './restFlow';
 import { rollCritical, critWoundLocation, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
 import { aaCriticalIsTrivial } from '../engine/aaCritical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
-import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations, maxFingersLostForWeapon } from '../engine/trauma';
+import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations, maxFingersLostForWeapon, reinjuryBleed } from '../engine/trauma';
 import { effectiveWeaponDamage, effectiveWeaponRange, isThrownWeapon, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, effectiveWeapon, type WeaponContext } from '../engine/weaponDamage';
 import { scatter } from '../engine/scatter';
 import { TIME_COST } from '../engine/timeCost';
@@ -1624,6 +1624,11 @@ export function applyAttackResult(
     const overkill = res.woundsLost - currentBefore; // > 0 si le coup dépasse les PB COURANTS (LDB 18 l.30)
     target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
     const loc = res.location ?? 'corps';
+    // Réouverture d'une plaie critique (LDB 18 / AA 07) : un nouveau Dégât à CETTE Localisation octroie ses
+    // États Hémorragique (la plaie qui l'a posée est stampée APRÈS ce coup, elle ne se déclenche donc pas
+    // elle-même). Point d'application des Dégâts localisés — jumeau du Projectile magique (applyMissileHit).
+    const reinj = reinjuryBleed(target, loc);
+    if (reinj > 0) { addCondition(target, COND.hemorragique, reinj); critLog.push(tr('cf.reinjuryBleed', { name: target.name, n: reinj, loc: locationLabel(loc, target.bodyShape) })); }
     if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.82)
     // Blessures supplémentaires d'une Déviation (Dégâts recalculés à PA−1, LDB 63 l.30) : la PA n'est pas
     // encore sacrifiée ici (deflectCrit/enemyAutoDeviate le font) → on recompute woundsFromHit à PA−1
@@ -3619,6 +3624,11 @@ export function applyCast(
       const currentBefore = t.wounds.current;
       const overkill = mres.woundsLost - currentBefore;
       t.wounds.current = Math.max(0, currentBefore - mres.woundsLost);
+      // Réouverture d'une plaie critique (LDB 18 / AA 07) : jumeau du coup physique (applyAttackResult) —
+      // un Projectile qui frappe une Localisation déjà porteuse d'une plaie non recousue y ajoute ses États Hémorragique.
+      const mloc = mres.location ?? 'corps';
+      const mReinj = reinjuryBleed(t, mloc);
+      if (mReinj > 0) { addCondition(t, COND.hemorragique, mReinj); logLines.push(tr('cf.reinjuryBleed', { name: t.name, n: mReinj, loc: locationLabel(mloc, t.bodyShape) })); }
       // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
