@@ -63,7 +63,7 @@ import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveA
 import { posteHullOf, pushEligible, pushCrewOk, pushMovement, pushMoveEnv } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
-import { resolveVoyageCrewTest } from './seaVoyageFlow';
+import { resolveVoyageCrewTest, resolveSteamSave } from './seaVoyageFlow';
 import { rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById } from '../data';
@@ -1733,6 +1733,12 @@ export function createCombatSlice(get: Get, set: Set) {
       finishPlayerAction(get, set, [describeStateRecovery(sr, a.name)], 'condition'); // consomme l'Action
     },
     recoverCancel: () => set({ pendingStateRecovery: null }), // avant le jet : aucun coût
+    steamSaveConfirm: () => {
+      const p = get().pendingSteamSave;
+      if (!p || p.roll == null) return;
+      set({ pendingSteamSave: null });
+      resolveSteamSave(get, set, p); // échec → ébouillanté (scaldOps), puis la boucle maritime reprend
+    },
     battleSelectAmmo: (uid: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();

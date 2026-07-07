@@ -127,6 +127,8 @@ export const MODAL_DEFS = [
   // en cadence Rapide/Auto le driver le résout (Lancer → Appliquer), comme `reload`.
   { key: 'handGate', when: (s) => !!s.pendingHandGate, owner: (s) => s.pendingHandGate?.attackerId, auto: { mode: 'self', drive: ['handGateRoll', 'handGateConfirm'] } },
   { key: 'stateRecovery', when: (s) => !!s.pendingStateRecovery, owner: (s) => s.pendingStateRecovery?.actorId, auto: { mode: 'self', drive: ['recoverRoll', 'recoverConfirm'] } },
+  // Sauvegarde d'Initiative « Fuite de vapeur » (MDG 12 l.326-328) : jet PROPRE de la personne au moteur.
+  { key: 'steamSave', when: (s) => !!s.pendingSteamSave, owner: (s) => s.pendingSteamSave?.actorId, auto: { mode: 'self', drive: ['steamSaveRoll', 'steamSaveConfirm'] } },
   // (L'attaque n'a PLUS d'entrée propre : c'est une étape `jet:'attack'` de la cascade `combat` (CascadeModal
   //  → useAttackJetProps) — `pendingAttack` coexiste comme porteur de données. TOUS les chemins d'attaque
   //  (Charge / normale / gratuite + balayage/dual qui réutilisent) ouvrent une cascade → plus de modale

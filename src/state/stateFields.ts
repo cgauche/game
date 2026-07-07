@@ -40,6 +40,7 @@ const STATE_FIELDS = {
   hoverDelta: { init: null, resetOn: [] },
   pendingReload: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingStateRecovery: { init: null, resetOn: ['scene', 'combatStart'] },
+  pendingSteamSave: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingDefense: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingRenounce: { init: null, resetOn: [] },
   pendingMountTarget: { init: null, resetOn: ['combatStart'] },

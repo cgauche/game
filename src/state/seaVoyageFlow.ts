@@ -39,10 +39,12 @@ import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { maneuverCrewTotal } from './shipManeuver';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait } from '../data';
-import { installCost, rollSteamBreakdown, steamBreakdownTriggered } from '../engine/shipBuild';
+import { installCost, rollSteamBreakdown, steamBreakdownTriggered, type SteamBreakdownEntry } from '../engine/shipBuild';
 import { d10, d100, roll as rollDice, type RNG } from '../engine/dice';
 import { rollTest, isDoubleRoll } from '../engine/tests';
-import { testValue, partyAssisted } from '../engine/skills';
+import { testValue, partyAssisted, partyBest } from '../engine/skills';
+import { buildWeapon } from '../engine/items';
+import { QUALITY_IDS } from '../engine/qualities/ids';
 import { applyOps } from '../engine/ops';
 import { itemCapability } from '../engine/capabilities';
 import { isRation } from '../engine/provisions';
@@ -73,7 +75,8 @@ import { subtract, toMoney, type Money } from '../engine/money';
 import { rollShipCritical } from '../engine/shipCritical';
 import type { ShipCritKey } from '../data/shipCriticals';
 import { contractDisease } from '../engine/disease';
-import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
+import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
+import type { PendingSteamSave } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
 
@@ -277,7 +280,7 @@ export function runSeaDays(get: Get, set: Set): void {
   let guard = 0;
   while (guard++ < 200) {
     const plan = get().travelPlan;
-    if (!plan?.sea || plan.interrupted || get().pendingCrewTest) return;
+    if (!plan?.sea || plan.interrupted || get().pendingCrewTest || get().pendingSteamSave) return;
     const sea = plan.sea;
     const rng = battleRng();
     switch (sea.step) {
@@ -592,12 +595,8 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
         if (triggered) {
           const b = rollSteamBreakdown(rng);
           tell(get, set, [`PANNE DE VAPEUR — ${b.label} (MDG ch.12 l.313).`, b.desc]);
-          if (b.mSet != null || b.mMod) patchSea(get, set, { milesToday: b.mSet === 0 ? 0 : Math.max(0, Math.round((get().travelPlan?.sea?.milesToday ?? 0) * (1 + (b.mMod ?? 0) / 4))) });
-          if (b.hullCritical) { const c = rollShipCritical('coque', rng); applyVesselCritical(get, set, c.log, c.note); }
-          if (b.engineDestroyed && get().vessel) {
-            // Moteur détruit : l'Amélioration saute (elle devra être ré-installée au chantier).
-            set({ vessel: { ...get().vessel!, upgrades: (get().vessel!.upgrades ?? []).filter((u) => u.id !== 'propulsion-a-vapeur') } });
-          }
+          applySteamBreakdown(get, set, b, rng); // consomme TOUS les champs (redémarrage, dégâts, immobilisation)
+          if (get().pendingSteamSave) return; // « Fuite de vapeur » : suspension modale (la boucle reprend à la fermeture)
         }
       }
       break;
@@ -706,7 +705,131 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       break;
     }
   }
-  runSeaDays(get, set); // la boucle reprend à l'étape suivante
+  // Une « Fuite de vapeur » a ouvert la sauvegarde d'Initiative (modale) : la boucle reprendra à la
+  // fermeture (`steamSaveConfirm` → `resolveSteamSave`), pas ici.
+  if (!get().pendingSteamSave) runSeaDays(get, set); // la boucle reprend à l'étape suivante
+}
+
+// ── PANNE DE VAPEUR (MDG ch.12 l.313-352) — résolution first-class au voyage ─────────────────────
+
+/** La personne qui « s'occupe du moteur » (MDG 12 l.326) à l'échelle voyage (équipage = les PJ, MDG 14
+ *  l.39) : le meilleur au Métier (Ingénieur), sinon le premier PJ en état. */
+function engineerOf(party: Combatant[]): Combatant | undefined {
+  const apt = party.filter((h) => !h.dead && !h.outOfRencontre);
+  return partyBest(apt, 'metier', undefined, undefined, 'Ingénieur')?.actor ?? apt[0];
+}
+
+/** Total d'une expression de dés « C+AdB » / « AdB » / « AdB-C » (params de la table Panne de Vapeur —
+ *  « 1d10 », « 20+1d10 », « 1d10-5 »). PUR (RNG injecté). */
+function rollDiceExpr(expr: string, rng: RNG): number {
+  const m = /^(?:(\d+)\+)?(\d+)d(\d+)([+-]\d+)?$/.exec(expr.replace(/\s/g, ''));
+  if (!m) { const n = parseInt(expr, 10); return isNaN(n) ? 0 : n; }
+  return (m[1] ? parseInt(m[1], 10) : 0) + rollDice(parseInt(m[2], 10), parseInt(m[3], 10), rng) + (m[4] ? parseInt(m[4], 10) : 0);
+}
+
+/** Exécute les Tests de REDÉMARRAGE d'une panne (MDG 12 l.329-348) via la personne au moteur — Test
+ *  étendu de Force (`extendedDR`) puis Test(s) de Métier (Ingénieur). Retourne le DR du DERNIER Test de
+ *  redémarrage (« 5 − DR Rounds » de mise en pression, l.333). Tests d'AMBIANCE de voyage (« jusqu'à ce
+ *  que quelqu'un réussisse », l.331 → retry borné) — équipage abstrait, hors modale (≠ la sauvegarde
+ *  d'Initiative PERSO, seul jet influençable de la panne, cf. `openSteamSave`). */
+function runRestart(get: Get, set: Set, eng: Combatant, restart: NonNullable<SteamBreakdownEntry['restart']>, rng: RNG): number {
+  let lastDR = 0;
+  for (const step of restart) {
+    const value = testValue(eng, step.skillId, undefined, step.spec);
+    const label = step.spec ? `${step.skillId} (${step.spec})` : step.skillId;
+    if (step.extendedDR != null) {
+      let total = 0;
+      for (let i = 0; total < step.extendedDR && i < 20; i++) total += Math.max(0, rollTest(value, step.difficulty, rng).sl);
+      tell(get, set, [`${eng.name} — ${label} ${DIFFICULTY_LABELS[step.difficulty]} (Test étendu ${step.extendedDR} DR) : ${total >= step.extendedDR ? 'obstacle dégagé.' : 'à la peine.'}`]);
+    } else {
+      let t = rollTest(value, step.difficulty, rng);
+      for (let i = 0; !t.success && i < 20; i++) t = rollTest(value, step.difficulty, rng);
+      lastDR = Math.max(0, t.sl);
+      tell(get, set, [`${eng.name} — ${label} ${DIFFICULTY_LABELS[step.difficulty]} : ${t.roll}/${t.target} → moteur relancé (DR ${lastDR}).`]);
+    }
+  }
+  return lastDR;
+}
+
+/** Applique une PANNE DE VAPEUR (MDG ch.12 l.313-352) au voyage — CHAQUE champ first-class consommé :
+ *  « Fuite de vapeur » (`failDamage`) ouvre la sauvegarde d'Initiative INFLUENÇABLE ; l'« Explosion »
+ *  (`compartmentDamage`) frappe la personne au moteur (Perforante) ; le moteur détruit (`engineDestroyed`)
+ *  ôte la propulsion à vapeur du navire ; le Coup Critique à la Coque (`hullCritical`) est roulé. Les
+ *  effets de VITESSE (`mSet`/`mMod`, pendant `durationRounds`/`coolMinutes` + le redémarrage `restart`)
+ *  IMMOBILISENT le moteur : la journée perd la fraction de milles correspondante (durée convertie en
+ *  minutes via la règle maison `combat-round-seconds`, LDB 13 l.13). */
+export function applySteamBreakdown(get: Get, set: Set, b: SteamBreakdownEntry, rng: RNG): void {
+  // « Fuite de vapeur » (l.326-328) : un jet de vapeur ébouillante la personne au moteur → sauvegarde
+  // d'Initiative INFLUENÇABLE (modale) ; échec = dégâts ignorant l'Armure. Suspend la boucle maritime.
+  if (b.failDamage) { openSteamSave(get, set, b.failDamage, rng); return; }
+
+  const eng = engineerOf(get().party);
+
+  // « Explosion » (l.351-352) : quiconque dans le compartiment du moteur (la personne au moteur, équipage
+  // abstrait) subit `compartmentDamage` Dégâts avec l'Atout Perforante.
+  if (b.compartmentDamage != null && eng) {
+    const boiler = buildWeapon({ name: 'Explosion de chaudière', damage: { plusBF: false, flat: 0 }, qualities: [{ id: QUALITY_IDS.Perforante }] }); // Dégâts passés directement (weaponHit) → la spec ne sert qu'aux qualités
+
+    const lines = applyOps(eng, [{ op: 'wounds', amount: b.compartmentDamage, weaponHit: true }], { rng, weapon: boiler, location: 'corps' });
+    set({ party: [...get().party] });
+    tell(get, set, [`${eng.name} — souffle de l'explosion (${b.compartmentDamage} Dégâts, Perforante) :`, ...lines]);
+  }
+
+  // Moteur détruit : l'Amélioration Propulsion à vapeur saute (à ré-installer au chantier) → le navire
+  // retombe sur ses voiles/avirons ou dérive pour le reste de la traversée.
+  if (b.engineDestroyed && get().vessel) {
+    set({ vessel: { ...get().vessel!, upgrades: (get().vessel!.upgrades ?? []).filter((u) => u.id !== 'propulsion-a-vapeur') } });
+  }
+  if (b.hullCritical) { const c = rollShipCritical('coque', rng); applyVesselCritical(get, set, c.log, c.note); }
+
+  // IMMOBILISATION du moteur : fenêtre à vitesse réduite (`mMod`) ou nulle (`mSet:0`) → fraction perdue.
+  const secPerRound = Number(rule('combat-round-seconds')); // LDB 13 l.13 (MJ décide, valeur maison)
+  let windowMin = 0;
+  if (b.durationRounds) windowMin += rollDiceExpr(b.durationRounds, rng) * secPerRound / 60; // « les 1d10 prochains Rounds »
+  if (b.coolMinutes) windowMin += rollDiceExpr(b.coolMinutes, rng); // « attendre 20+1d10 minutes »
+  if (b.restart && eng) windowMin += Math.max(0, 5 - runRestart(get, set, eng, b.restart, rng)) * secPerRound / 60; // « 5 − DR Rounds » de mise en pression
+  if (windowMin > 0) {
+    const miles0 = get().travelPlan?.sea?.milesToday ?? 0;
+    const baseM = effectiveSeaM(get).m ?? 4;
+    const speedFactor = b.mSet === 0 ? 0 : b.mMod ? Math.max(0, (baseM + b.mMod) / baseM) : 1; // vitesse pendant la fenêtre
+    const miles = Math.max(0, Math.round(miles0 - miles0 * Math.min(1, windowMin / MINUTES_PER_DAY) * (1 - speedFactor)));
+    if (miles !== miles0) {
+      patchSea(get, set, { milesToday: miles });
+      tell(get, set, [`Moteur immobilisé ~${Math.round(windowMin)} min — ${miles0 - miles} mille(s) perdu(s).`]);
+    }
+  }
+}
+
+/** Ouvre la sauvegarde d'Initiative INFLUENÇABLE d'une « Fuite de vapeur » (MDG 12 l.326-328) sur la
+ *  personne au moteur — dégâts d'ébouillantage roulés d'avance (« 1d10–5 Dégâts (1 minimum) », ignorent
+ *  l'Armure). Aucun équipage → rien à ébouillanter (la boucle reprend normalement). */
+function openSteamSave(get: Get, set: Set, failDamage: string, rng: RNG): void {
+  const eng = engineerOf(get().party);
+  if (!eng) return;
+  const dmg = Math.max(1, rollDiceExpr(failDamage, rng)); // « (1 minimum) » sur les Dégâts
+  const value = testValue(eng, undefined, 'I'); // Test d'INITIATIVE (Difficulté par défaut : Intermédiaire +0)
+  set({
+    pendingSteamSave: {
+      actorId: eng.id, actorName: eng.name, skillValue: value, difficulty: 'intermediaire',
+      target: value + DIFFICULTY_MODIFIERS.intermediaire,
+      scaldOps: [{ op: 'wounds', amount: dmg, ignoreTB: false, ignoreAP: true }], // « qui ignorent l'Armure » (le BE reste déduit)
+      roll: null, success: false, sl: 0,
+    } satisfies PendingSteamSave,
+  });
+}
+
+/** Résout la sauvegarde d'Initiative d'une « Fuite de vapeur » (appelée par `steamSaveConfirm`) : ÉCHEC →
+ *  ébouillanté (`scaldOps` déjà roulés), puis la boucle maritime reprend. */
+export function resolveSteamSave(get: Get, set: Set, p: PendingSteamSave): void {
+  const eng = get().party.find((h) => h.id === p.actorId);
+  if (eng && !p.success) {
+    const lines = applyOps(eng, p.scaldOps, { rng: battleRng(), now: get().gameTime });
+    set({ party: [...get().party] });
+    tell(get, set, [`${eng.name} — Initiative ${p.roll}/${p.target} : ébouillanté par le jet de vapeur !`, ...lines]);
+  } else if (eng) {
+    tell(get, set, [`${eng.name} — Initiative ${p.roll}/${p.target} : esquive le jet de vapeur.`]);
+  }
+  runSeaDays(get, set);
 }
 
 /** Rattrapé par un navire hostile : combat si la route porte une embuscade AUTHORÉE (patron travelFlow) —

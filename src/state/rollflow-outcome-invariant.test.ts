@@ -110,6 +110,7 @@ const FIXTURES: Record<string, Fix> = {
   appraise: { make: (win) => ({ battle: arena(), pendingAppraise: { actorId: 'A', skillValue: 40, difficulty: 'intermediaire', roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },
   corruption: { make: (win) => ({ battle: arena(), pendingCorruption: { heroId: 'A', skill: 'calme', roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },
   test: { make: (win) => ({ battle: arena(), pendingTest: { actorId: 'A', skillValue: 40, difficulty: 'intermediaire', target: 40, requireSL: 0, roll: win ? 8 : 95, sl: win ? 3 : -5, success: win } }) },
+  steamSave: { make: (win) => ({ battle: arena(), pendingSteamSave: { actorId: 'A', actorName: 'A', skillValue: 40, difficulty: 'intermediaire', target: 40, scaldOps: [{ op: 'wounds', amount: 1, ignoreAP: true }], roll: win ? 8 : 95, sl: win ? 3 : -5, success: win } }) },
   activity: { make: (win) => ({ battle: arena(), pendingActivity: { heroId: 'A', kind: 'catalog', label: 'x', skillLabel: 'x', skillValue: 40, difficulty: 'intermediaire', mod: 0, roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },
   shanty: { make: (win) => ({ battle: arena(), pendingShanty: { singerId: 'A', shantyId: 'x', result: win ? WIN : LOSE } }) },
   // ── Opposés « joueur vs figé » avec re-résolution dédiée (récupération / marchandage) ──

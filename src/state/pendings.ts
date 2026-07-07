@@ -138,6 +138,24 @@ export interface PendingTest {
    *  annulable (la branche onSuccess/onFailure doit se résoudre). */
   cancellable?: boolean;
 }
+/** Sauvegarde d'Initiative d'une PANNE DE VAPEUR « Fuite de vapeur » (MDG 12 l.326-328) : la personne
+ *  qui s'occupe du moteur teste l'Initiative sous peine d'être ébouillantée. Modale INFLUENÇABLE
+ *  (Chance/Résilience) — l'ÉCHEC applique `scaldOps` (déjà roulés : 1d10−5 Dégâts min 1, ignorent
+ *  l'Armure) via `steamSaveConfirm`, puis la boucle maritime reprend. */
+export interface PendingSteamSave {
+  actorId: string;
+  actorName: string;
+  skillValue: number;
+  target: number;
+  difficulty: Difficulty;
+  /** Dégâts d'ébouillantage à appliquer sur ÉCHEC — `GameOp[]` au montant DÉJÀ roulé (min 1). */
+  scaldOps: GameOp[];
+  roll: number | null;
+  success: boolean;
+  sl: number;
+  forced?: boolean;
+  rerolled?: boolean;
+}
 /** Rechargement en attente (LDB 63-Armures l.28-29 : Test étendu de Projectiles, Indice DR).
  *  La modale affiche « Lancer », le DR, puis Chance avant d'acquitter (cumul vers `reload`). */
 export interface PendingReload {
