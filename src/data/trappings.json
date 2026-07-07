@@ -12053,6 +12053,7 @@
     "subType": "armes-de-siege",
     "siegeRig": "baliste",
     "weaponGroup": "machine-de-guerre",
+    "minRangeBand": "courte",
     "availability": "Rare",
     "reach": null,
     "range": 150,
@@ -12147,6 +12148,7 @@
     "subType": "armes-de-siege",
     "siegeRig": "canon-petit",
     "weaponGroup": "machine-de-guerre",
+    "minRangeBand": "courte",
     "availability": "Exotique",
     "reach": null,
     "range": 200,
@@ -12200,6 +12202,7 @@
     "subType": "armes-de-siege",
     "siegeRig": "canon-petit",
     "weaponGroup": "machine-de-guerre",
+    "minRangeBand": "courte",
     "availability": "Exotique",
     "reach": null,
     "range": 100,
@@ -12257,6 +12260,7 @@
     "subType": "armes-de-siege",
     "siegeRig": "canon-petit",
     "weaponGroup": "machine-de-guerre",
+    "minRangeBand": "courte",
     "availability": "Exotique",
     "reach": null,
     "range": 120,
@@ -12313,12 +12317,39 @@
     "subType": "armes-de-siege",
     "siegeRig": "canon-petit",
     "weaponGroup": "machine-de-guerre",
+    "minRangeBand": "courte",
     "availability": "Exotique",
     "reach": null,
     "range": 60,
     "loc": null,
     "pa": null,
-    "damage": null,
+    "damage": {
+      "literal": "Spéciaux"
+    },
+    "onHitEffects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "do",
+          "effect": {
+            "type": "ops",
+            "on": "target",
+            "ops": [
+              {
+                "op": "condition",
+                "name": "en-flammes",
+                "value": 2,
+                "valuePerSL": {
+                  "every": 1,
+                  "amount": 1
+                }
+              }
+            ]
+          }
+        }
+      }
+    ],
     "qualities": [
       {
         "id": "dangereuse"
@@ -12364,6 +12395,7 @@
     "siegeRig": "canon-petit",
     "weaponGroup": "machine-de-guerre",
     "indirect": true,
+    "minRangeBand": "courte",
     "availability": "Rare",
     "reach": null,
     "range": 60,
@@ -12415,6 +12447,7 @@
     "siegeRig": "canon-petit",
     "weaponGroup": "machine-de-guerre",
     "indirect": true,
+    "minRangeBand": "courte",
     "availability": "Rare",
     "reach": null,
     "range": 100,
@@ -12466,6 +12499,7 @@
     "siegeRig": "canon-petit",
     "weaponGroup": "machine-de-guerre",
     "indirect": true,
+    "minRangeBand": "moyenne",
     "availability": "Limitée",
     "reach": null,
     "range": 150,
@@ -12517,6 +12551,7 @@
     "siegeRig": "canon-petit",
     "weaponGroup": "machine-de-guerre",
     "indirect": true,
+    "minRangeBand": "moyenne",
     "availability": "Exotique",
     "reach": null,
     "range": 200,

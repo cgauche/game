@@ -38,6 +38,8 @@ import {
   woundsFromHit,
   woundsAtCritLocation,
   rangeBandModifier,
+  rangeBandName,
+  belowMinRangeBand,
   resolveStrayRangedHit,
   resolveTrample,
   resolveMeleePassive,
@@ -293,10 +295,11 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
  *  l'affordance ne mente jamais : un réticule de tir sur une arbalète vide DOIT dire « recharger », pas
  *  proposer une attaque qui se solderait par un log silencieux. Mêlée / pas d'arme à distance → `null`
  *  (la Recharge ne concerne que l'arme effectivement tirée, `firedWeapon`). */
-export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc' | 'sous-effectif'; detail: string } | null {
+export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min'; detail: string } | null {
   if (active.kind !== 'hero') return null;
   const b = get().battle;
-  const adj = (b ? mountedCombatDistance(b, active, target) : combatDistance(active, target)) <= meleeReachTiles(active.weapons); // même arbitrage d'arme que firedWeapon (géométrie monture)
+  const distanceTiles = b ? mountedCombatDistance(b, active, target) : combatDistance(active, target); // géométrie monture
+  const adj = distanceTiles <= meleeReachTiles(active.weapons); // même arbitrage d'arme que firedWeapon
   // Arme effectivement testée : choix EXPLICITE (poste servi → `weaponUid`) sinon auto selon la distance —
   // MÊME arbitrage que `firedWeapon` (le gate ne doit pas mentir sur une AUTRE arme que celle qui tirera).
   const w = (weaponUid ? active.weapons.find((x) => x.uid === weaponUid) : undefined) ?? attackWeapon(active.weapons, adj);
@@ -313,6 +316,14 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
   // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie
   // (ex. arme sans Groupe) reste possible. `ammoFamily` falsy ⇒ pas de suivi de munition (cf. compatibleAmmo).
   if (ammoFamily(w.subType) && !selectedAmmo(active, w)) return { reason: 'noammo', detail: `${active.name} n'a plus de munitions pour ${w.name}.` };
+  // PORTÉE MINIMALE d'une machine de siège (ADE II ch.08 l.251/253) : REFUS (pas un malus) si la cible est
+  // plus PROCHE que la bande minimale de l'arme — machines à distance : pas de Bout Portant (l.253) ;
+  // trébuchet/mortier : rien sous la Portée Courte (l.251). DONNÉE générique `w.minRangeBand` (pas un flag par-machine).
+  if (w.minRangeBand) {
+    const rangeM = effectiveWeaponRange(w, selectedAmmo(active, w)?.ammoRangeMod, () => bonus(effectiveChar(active, 'F')));
+    if (rangeM != null && belowMinRangeBand(distanceTiles, rangeM, w.minRangeBand))
+      return { reason: 'portee-min', detail: `${w.name} ne peut pas tirer d'aussi près (${rangeBandName(distanceTiles, rangeM) ?? 'trop proche'}).` };
+  }
   // Pièce d'artillerie à ARC (poste) : ne porte que dans son arc. NAVAL = relatif au cap de la coque support
   // (`shipOfCrew` → `facing[ship.id]`, `ship.pos`). EMPLACEMENT AU SOL (siège) : pas de coque (`shipOfCrew`
   // → undefined) → l'arc pivote avec l'orientation-monde ET la position DU CHEF lui-même. KIND-AGNOSTIQUE.
@@ -1837,7 +1848,7 @@ export function applyAttackResult(
   // Atouts de l'arme (Assommante, Immobilisante…) et Enchantements actifs — agrégés et appliqués par UN
   // dispatcher générique (state/triggeredEffects). `location` (Assommante Tête) et `woundsDealt` (Venin
   // sur PB) alimentent les Conditions Flow de gating.
-  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, location: res.location, attackKind: creatureAttackKind(weapon), attackType: weapon.type, rng: battleRng(), set })) log.push(ev('condition', line, target.id));
+  if (res.hit) for (const line of fireTriggers(get, attacker, 'onHit', { victim: target, weapon, woundsDealt: res.woundsLost, margin: res.netSL, location: res.location, attackKind: creatureAttackKind(weapon), attackType: weapon.type, rng: battleRng(), set })) log.push(ev('condition', line, target.id));
   // Combat de masse (ADE II 08 l.139/145) : une Scène de COMBAT compte les touches des PJ sur l'ennemi
   // (−1/touche) ; no-op hors bataille de masse. Réduction PUIS résolue à la victoire (massBattleResumeCombat).
   if (res.hit) massBattleTrackHit(get, set, attacker, target);
@@ -1846,7 +1857,7 @@ export function applyAttackResult(
   // les États « infligés par l'arme » sont propagés par le chemin GÉNÉRIQUE onHit (cf. `hitSecondary`).
   if (res.hit && weapon.type === 'ranged' && res.damage != null && attacker.pos && target.pos && !isOutOfAction(target)) {
     const area = resolveWeaponArea(get, set, {
-      attacker, primaryTarget: target, weapon, damage: res.damage, location: res.location ?? 'corps', distanceTiles: combatDistance(attacker, target),
+      attacker, primaryTarget: target, weapon, damage: res.damage, location: res.location ?? 'corps', distanceTiles: combatDistance(attacker, target), margin: res.netSL,
     }, battleAreaTargets(get), battleRng());
     log.push(...evLines(area.lines, 'shoot', attacker.id, target.id));
   }

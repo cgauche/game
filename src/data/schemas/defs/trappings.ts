@@ -6,7 +6,7 @@
  * engine) et d'un inventaire EXHAUSTIF par script (histogramme des 403 entrées, cf. preuve du rendu).
  */
 import { z } from 'zod';
-import { gameOpSchema, sourceRefSchema, formulaSchema, flowSchema } from '../common';
+import { gameOpSchema, sourceRefSchema, formulaSchema, flowSchema, triggeredEffectSchema } from '../common';
 
 export const file = 'trappings.json';
 
@@ -87,6 +87,10 @@ export const schema = z.array(
     weaponGroup: z.string().optional(),
     soloSimple: z.boolean().optional(),
     indirect: z.boolean().optional(),
+    /** Effets « à la touche » en DONNÉE (`TriggeredEffect[]`) — Canon à flammes nain (ADE II ch.08 l.243). */
+    onHitEffects: z.array(triggeredEffectSchema).optional(),
+    /** PORTÉE MINIMALE de tir (bande) — machines de siège à distance (ADE II ch.08 l.251/253). */
+    minRangeBand: z.enum(['bout-portant', 'courte', 'moyenne', 'longue', 'extreme']).optional(),
     siegeRig: z.string().optional(),
     shape: z.string().optional(),
     formChoices: z.array(z.string()).optional(),

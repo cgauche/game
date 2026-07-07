@@ -405,6 +405,16 @@ export interface TrappingData {
   /** Pièce à TIR INDIRECT (mortier/catapulte — « arc élevé », AA p.122-123) : peut viser une CASE au sol.
    *  Propagé Trapping → ItemInstance → Weapon (`indirect`) ; lu par `availableAttacks`. Canon/baliste = direct. */
   indirect?: boolean;
+  /** Effets DÉCLENCHÉS « à la touche » portés en DONNÉE (`TriggeredEffect[]`, MÊME vocabulaire que les
+   *  enchantements d'arme et les traits) : Canon à flammes nain — « 2 + DR États En flammes à chaque cible
+   *  affectée » (ADE II ch.08 l.243). Propagé Trapping → ItemInstance → Weapon (`onHitEffects`), dispatché
+   *  par `fireTriggers('onHit')` sur la cible primaire ET les cibles de la zone d'Explosion. */
+  onHitEffects?: import('../engine/flowCore').TriggeredEffect[];
+  /** PORTÉE MINIMALE de tir (bande) : la cible plus proche que cette bande REFUSE le tir (≠ malus). Machines
+   *  de siège à distance = `'courte'` (pas de Bout Portant, ADE II ch.08 l.253) ; trébuchet/mortier =
+   *  `'moyenne'` (« distance inférieure à leur Portée Courte » interdite, l.251). Propagé jusqu'à `Weapon`,
+   *  lu par `firedAttackBlock` (`belowMinRangeBand`). Absent = pas de minimale. */
+  minRangeBand?: import('../engine/types').RangeBandId;
   /** Engin de siège POSABLE : id de la def rig `creatures/defs/<Engin>.ts` (plan 'engin') dessinant
    *  l'affût rendu en emplacement. Pur ROUTAGE D'APPARENCE (≠ règle), comme `shape` route l'art d'arme.
    *  Absent ⇒ l'arme n'est pas posable comme emplacement (pas d'art d'affût). */

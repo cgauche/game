@@ -198,6 +198,8 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     ...(t.weaponGroup ? { weaponGroup: t.weaponGroup } : {}), // Groupe de Projectiles d'une arme de siège (AA p.122)
     ...(t.soloSimple ? { soloSimple: true } : {}), // baliste « relativement simple » : tir solo perd les Atouts (l.3818)
     ...(t.indirect ? { indirect: true } : {}), // mortier/catapulte « arc élevé » (AA p.122-123) : tir INDIRECT → viser une case
+    ...(t.onHitEffects?.length ? { onHitEffects: t.onHitEffects } : {}), // effets « à la touche » en DONNÉE (Canon à flammes nain → En flammes, ADE II ch.08 l.243)
+    ...(t.minRangeBand ? { minRangeBand: t.minRangeBand } : {}), // PORTÉE MINIMALE (machine de siège : pas de Bout Portant / trébuchet-mortier sous Portée Courte, ADE II ch.08 l.251/253)
     ...(t.requiresMastery ? { requiresMastery: true } : {}), // arme inhabituelle (ACE Annexe I p.219) : maîtrise requise
     hands: kind === 'melee' || kind === 'ranged' ? (t.hands === 2 ? 2 : 1) : undefined, // champ typé (LDB 62)
     qty: kind === 'ammo' ? (t.packSize ?? 1) : undefined, // taille de paquet typée
@@ -419,7 +421,7 @@ export function recomputeLoadout(c: Combatant): void {
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
     return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
-      range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, soloSimple: it.soloSimple, indirect: it.indirect, reload, damageTaken: it.damageTaken,
+      range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
       skin: it.skin, form: it.form, shape: it.shape, hands, hand, uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it) }, it.enchants ?? []);
   };
 
@@ -515,7 +517,7 @@ export function mannedPosteWeapon(c: Combatant, poste: ShipPoste): Weapon | unde
   if (hands === 2 && cannotWieldTwoHanded(c)) return undefined;
   const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
   return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
-    range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, soloSimple: it.soloSimple, indirect: it.indirect, reload, damageTaken: it.damageTaken,
+    range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
     skin: it.skin, form: it.form, shape: it.shape, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it) }, it.enchants ?? []);
 }
 

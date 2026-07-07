@@ -59,6 +59,9 @@ export interface AreaHit {
   /** Point d'impact CHOISI (pilonnage indirect) : l'aire se centre ICI. Absent → centre = `primaryTarget.pos`
    *  (tir direct/bordée — STRICTEMENT inchangé). Présent : l'Explosion frappe tout le rayon autour de la case. */
   center?: Pt;
+  /** DR (Degrés de Réussite) du jet de tir — propagé aux effets `onHit` des cibles de zone (`ctx.sl`) pour
+   *  les échelles `valuePerSL` (Canon à flammes nain : « 2 + DR En flammes », ADE II ch.08 l.243). Absent → 0. */
+  margin?: number;
 }
 
 /**
@@ -120,9 +123,12 @@ function hitSecondary(
   const lines: string[] = [];
   if (wl > 0) loseWounds(victim, wl);
   lines.push(tr(msgKey, { name: victim.name, wl }));
-  // États « infligés par l'arme » via le MÊME dispatcher que le tir individuel (Empêtré, En flammes, Venin…).
-  if (wl > 0 && !isOutOfAction(victim))
-    lines.push(...fireTriggers(get, hit.attacker, 'onHit', { victim, weapon: hit.weapon, woundsDealt: wl, location: hit.location, attackType: hit.weapon.type, rng, set }));
+  // États « infligés par l'arme » via le MÊME dispatcher que le tir individuel (Empêtré, En flammes, Venin…),
+  // déclenchés dès la touche — parité avec la cible PRIMAIRE (`applyAttackResult` fire l'onHit sur `res.hit` seul).
+  // Une arme à Dégâts « Spéciaux » (Canon à flammes nain, ADE II ch.08 l.243) applique donc son État à 0 Blessure ;
+  // les effets qui EXIGENT une Blessure se gardent EUX-MÊMES (Condition Flow `woundsDealt > 0` : Venin/Empoisonnement).
+  if (!isOutOfAction(victim))
+    lines.push(...fireTriggers(get, hit.attacker, 'onHit', { victim, weapon: hit.weapon, woundsDealt: wl, margin: hit.margin, location: hit.location, attackType: hit.weapon.type, rng, set }));
   return lines;
 }
 

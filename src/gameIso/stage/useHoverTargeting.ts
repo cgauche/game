@@ -41,6 +41,7 @@ function hoverErrText(reason: string): string {
     : reason === 'unloaded' ? 'Arme déchargée — recharger'
     : reason === 'noammo' ? 'Plus de munitions'
     : reason === 'sous-effectif' ? 'Équipe trop réduite'
+    : reason === 'portee-min' ? 'Cible trop proche — Portée minimale'
     : 'hors de portée';
 }
 

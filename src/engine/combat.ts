@@ -14,7 +14,7 @@ import { bypassedAP } from './armourBypass';
 import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
-import { Combatant, HitLocation, Weapon, BodyShape, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
+import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
 import locJson from '../data/localisation.json';
@@ -761,16 +761,20 @@ export function resolveMelee(
  * −10, Extrême (≤ Portée×3) −30 ; au-delà = hors de portée. Échelle 1 case = 2 m (LDB Déplacement l.55).
  * SOURCE UNIQUE des seuils : le modificateur ET le nom y lisent. `rangeMeters` = Portée de l'arme en m.
  */
-const RANGE_BANDS: { maxFactor: number; mod: number; name: string }[] = [
-  { maxFactor: 1 / 10, mod: 40, name: 'Bout portant' },
-  { maxFactor: 1 / 2, mod: 20, name: 'Courte portée' },
-  { maxFactor: 1, mod: 0, name: 'Moyenne' },
-  { maxFactor: 2, mod: -10, name: 'Longue' },
-  { maxFactor: 3, mod: -30, name: 'Extrême' },
+const RANGE_BANDS: { id: RangeBandId; maxFactor: number; mod: number; name: string }[] = [
+  { id: 'bout-portant', maxFactor: 1 / 10, mod: 40, name: 'Bout portant' },
+  { id: 'courte', maxFactor: 1 / 2, mod: 20, name: 'Courte portée' },
+  { id: 'moyenne', maxFactor: 1, mod: 0, name: 'Moyenne' },
+  { id: 'longue', maxFactor: 2, mod: -10, name: 'Longue' },
+  { id: 'extreme', maxFactor: 3, mod: -30, name: 'Extrême' },
 ];
 
+/** Ordre STABLE des bandes (du plus proche au plus loin) — SOURCE UNIQUE pour comparer une bande courante
+ *  à la PORTÉE MINIMALE d'une arme (`belowMinRangeBand`). */
+const RANGE_BAND_ORDER: RangeBandId[] = RANGE_BANDS.map((b) => b.id);
+
 /** Bande de portée applicable, ou null si hors de portée (au-delà de Portée×3). */
-function rangeBandAt(distanceTiles: number, rangeMeters: number): { mod: number; name: string } | null {
+function rangeBandAt(distanceTiles: number, rangeMeters: number): { id: RangeBandId; mod: number; name: string } | null {
   const m = distanceTiles * 2; // 1 case = 2 m
   return RANGE_BANDS.find((b) => m <= rangeMeters * b.maxFactor) ?? null;
 }
@@ -783,6 +787,21 @@ export function rangeBandModifier(distanceTiles: number, rangeMeters: number): n
 /** Nom de la bande de portée — pour l'affichage. */
 export function rangeBandName(distanceTiles: number, rangeMeters: number): string | null {
   return rangeBandAt(distanceTiles, rangeMeters)?.name ?? null;
+}
+
+/** id STABLE de la bande de portée courante (≠ libellé) ; null si hors de portée. */
+export function rangeBandId(distanceTiles: number, rangeMeters: number): RangeBandId | null {
+  return rangeBandAt(distanceTiles, rangeMeters)?.id ?? null;
+}
+
+/** Le tir est-il REFUSÉ car la cible est plus PROCHE que la bande minimale autorisée de l'arme (machines de
+ *  siège ADE II ch.08 l.251/253 : « à Bout Portant » / « distance inférieure à leur Portée Courte ») ? C'est
+ *  un REFUS, pas un malus. `false` si l'arme n'a pas de minimale, ou si la cible est HORS de portée (autre
+ *  gate) — on ne refuse QUE parce qu'elle est trop proche. */
+export function belowMinRangeBand(distanceTiles: number, rangeMeters: number, minBand: RangeBandId): boolean {
+  const cur = rangeBandId(distanceTiles, rangeMeters);
+  if (cur == null) return false; // hors de portée : géré ailleurs, pas « trop proche »
+  return RANGE_BAND_ORDER.indexOf(cur) < RANGE_BAND_ORDER.indexOf(minBand);
 }
 
 /**
