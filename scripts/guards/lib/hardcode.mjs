@@ -21,31 +21,63 @@ export function stripComments(src) {
 }
 
 /**
- * Marqueurs réactifs par-nom (code) — motifs TRAIT/TALENT recensés aux Lots 4bis/6 sur
+ * Marqueurs réactifs par-nom, famille TRAIT/TALENT — recensés aux Lots 4bis/6 sur
  * state/combat/roundHooks.ts et state/combatFlow.ts, généralisés à tout src/engine + src/state
  * (Lot 8) : une réaction de combat codée PAR-NOM (trait/talent) plutôt que par donnée.
- *
- * NB : le motif `hasCondition(c/target, COND.*)`/`stacks(c, COND.*)` du Lot 4 (engine/conditions.ts)
- * n'est PAS repris ici tel quel : son exclude d'origine (gating de mort/machinerie universelle) est
- * calibré aux formes précises de ce seul fichier — l'étendre tel quel au reste de l'arbre
- * re-flaguerait des gates légitimes ailleurs (ex. combatFlow.ts vérifiant
- * `hasCondition(target, COND.inconscient)` avant `applyZeroWounds`, une garde anti-double-application,
- * pas une réaction par-nom). conditions.ts reste à 0 sous CE regex généralisé (son motif Lot 4 est
- * un sous-ensemble déjà résorbé) — réintroduire le contrôle par État généralisé demanderait de
- * d'abord généraliser SES exclusions machinerie, pas juste dupliquer son regex.
  * @type {RegExp}
  */
-export const REACTIVE_RX = /isBestial|id: '(bestial-fire-fear|determination)|hasTraitKey\(|isUnstable|hasPerturbingAura/;
+export const TRAIT_TALENT_RX = /isBestial|id: '(bestial-fire-fear|determination)|hasTraitKey\(|isUnstable|hasPerturbingAura/;
 
 /**
- * Lignes à EXCLURE : déclarations d'import (jamais un site d'appel réactif).
+ * Marqueurs réactifs par-nom, famille PAR-ÉTAT — motif du Lot 4 (`hasCondition(_, COND.*)` /
+ * `stacks(_, COND.*)`), généralisé À TOUT l'arbre (Lot 8, issue #160). Var libre (`\w+`) : plus
+ * seulement `c`/`target`. Toute lecture d'un État en INTERROGATION nominative est candidate ;
+ * les GATES/mesures de machinerie universelle en sont retranchés par `MACHINERY_RX` (ci-dessous),
+ * PAS par une entrée nominative d'entité (COND.hemorragique/aTerre/surpris…).
+ * @type {RegExp}
+ */
+export const PER_ETAT_RX = /hasCondition\(\w+, ?COND\.|stacks\(\w+, ?COND\./;
+
+/**
+ * Lignes à EXCLURE inconditionnellement : déclarations d'import (jamais un site d'appel réactif).
  * @type {RegExp}
  */
 export const EXCLUDE_RX = /^\s*import/;
 
 /**
+ * EXCLUSIONS de MACHINERIE (généralisation de l'exclude Lot 4 d'engine/conditions.ts, issue #160) —
+ * appliquées AUX SEULES lectures PAR-ÉTAT. Chaque terme est une RÈGLE d'arène universelle ou une
+ * INSTRUMENTATION, JAMAIS un nom d'État/trait/talent éditable : une lecture d'État qui matche décrit
+ * un GATE (mort, action/mouvement, géométrie, contrôle) ou une MESURE/journalisation, pas la
+ * réaction propre d'une entité (celle-ci est en donnée — etats.json). Familles :
+ *  - mort & cycle de vie (LDB 18) : isOutOfAction/inDeathCondition/applyZeroWounds/aaDeathByCriticalCount/
+ *    usesSuddenDeath/criticalWounds/roundsAtZero/outOfRencontre/.dead + le gate 0 PB `wounds.current <= 0`
+ *    (BORNÉ à `<= 0` — surtout PAS `wounds.current` nu : un `wounds.current -= …` par-nom DOIT rester signalé) ;
+ *  - gating d'Action/Mouvement/Engagement : canTakeAction/isEngaged/controlsCombatant/movementUsed ;
+ *  - géométrie (allonge / balayage des surdimensionnés) : sizeGap / `return reach` ;
+ *  - coutures de contrôle/capacité : hasActiveCapability / pilotedByHuman ;
+ *  - transition d'État par la machinerie : removeCondition ;
+ *  - instrumentation : capture d'un compte d'États dans un local (`const/let X = stacks(`) pour un delta ;
+ *  - journal seul : la lecture ne nourrit qu'une ligne de log (log.push( / .log( / `return tr(`) ;
+ *  - SÉLECTEURS d'ouverture de combat / doctrine IA (l'État Surpris lu comme SIGNAL d'initiative) :
+ *    `return 'ambush'|'assault'|'combat'|'embuscade'`.
+ * Toute NOUVELLE lecture par-État qui n'est aucune de ces machineries = réaction par-nom → signalée.
+ * @type {RegExp}
+ */
+export const MACHINERY_RX = new RegExp([
+  'isOutOfAction', 'inDeathCondition', 'applyZeroWounds', 'aaDeathByCriticalCount', 'usesSuddenDeath',
+  'criticalWounds', 'roundsAtZero', 'outOfRencontre', '\\.dead\\b', 'wounds\\.current\\s*<=\\s*0',
+  'canTakeAction', 'isEngaged', 'controlsCombatant', 'movementUsed',
+  'sizeGap', '\\breturn reach\\b', 'hasActiveCapability', 'pilotedByHuman', 'removeCondition',
+  '\\b(?:const|let)\\s+\\w+\\s*=\\s*stacks\\([^)]*\\);?\\s*$', 'log\\.push\\(', '\\.log\\(', '\\breturn tr\\(',
+  "return '(?:ambush|assault|combat|embuscade)'",
+].join('|'));
+
+/**
  * Scan complet d'un fichier source : chaque ligne portant un marqueur réactif par-nom (hors
- * lignes exclues), commentaires/imports retirés.
+ * lignes exclues), commentaires/imports retirés. Une lecture PAR-ÉTAT (et par-État SEULE) qui est
+ * de la machinerie/instrumentation universelle (`MACHINERY_RX`) est un GATE, pas une réaction —
+ * retranchée. La famille TRAIT/TALENT n'est JAMAIS retranchée par la machinerie (baselines inchangées).
  * @param {string} relPath @param {string} contenu
  * @returns {{ line: number, detail: string }[]}
  */
@@ -54,7 +86,12 @@ export function scanHardcode(relPath, contenu) {
   stripComments(contenu)
     .split('\n')
     .forEach((line, i) => {
-      if (REACTIVE_RX.test(line) && !EXCLUDE_RX.test(line)) findings.push({ line: i + 1, detail: line.trim() });
+      if (EXCLUDE_RX.test(line)) return;
+      const trait = TRAIT_TALENT_RX.test(line);
+      const etat = PER_ETAT_RX.test(line);
+      if (!trait && !etat) return;
+      if (etat && !trait && MACHINERY_RX.test(line)) return; // gate/mesure d'arène — pas une réaction par-nom
+      findings.push({ line: i + 1, detail: line.trim() });
     });
   return findings;
 }

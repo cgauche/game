@@ -8,10 +8,14 @@ import { scanHardcode } from '../../scripts/guards/lib/hardcode.mjs';
  * Garde-fou « tout migrer » — chantier d'unification des événements/réactions de combat.
  * (cf. docs/combat-events-coherence.md — Recensement Lot 0.)
  *
- * Compte les SITES RÉACTIFS codés PAR-NOM (trait/talent) dans TOUT `src/engine` + `src/state`
- * (récursif, `.ts`/`.tsx`, HORS `*.test.*`) : une réaction de combat (pénalité, dégâts par round,
- * bonus, Riposte, Cleave, infection, contenu de trait/talent caché dans un hook…) doit devenir de
- * la DONNÉE (`TriggeredEffect`/`passive`), pas une branche impérative nommant l'entité.
+ * Compte les SITES RÉACTIFS codés PAR-NOM dans TOUT `src/engine` + `src/state` (récursif, `.ts`/
+ * `.tsx`, HORS `*.test.*`) : une réaction de combat (pénalité, dégâts par round, bonus, Riposte,
+ * Cleave, infection, contenu caché dans un hook…) doit devenir de la DONNÉE (`TriggeredEffect`/
+ * `passive`), pas une branche impérative nommant l'entité. Deux familles de marqueurs (cf.
+ * `hardcode.mjs`) : TRAIT/TALENT (`hasTraitKey(`, `isUnstable`…) et PAR-ÉTAT (`hasCondition(_, COND.*)`
+ * / `stacks(_, COND.*)`, généralisé à tout l'arbre — issue #160). La famille PAR-ÉTAT retranche les
+ * GATES/mesures de machinerie universelle (mort, gating, géométrie, journal, sélecteur d'ouverture)
+ * via `MACHINERY_RX` — des RÈGLES d'arène générales, jamais un nom d'État éditable.
  *
  * MODE CLIQUET (Lot 8 — généralisation du report-only Lot 0/4bis/6, qui ne portait que sur 3
  * fichiers nommés) : `BASELINES` gèle, PAR FICHIER, le nombre de sites tolérés au recensement.
