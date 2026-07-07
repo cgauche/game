@@ -45,7 +45,7 @@ import { resolveOpposed, evaluateTest, extendedTestStep, assistBonus } from '../
 import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
 import { effectiveChar, bonus } from '../engine/characteristics';
 import { isFrenzyCapable, isFrenzied, spendResolveForPsychImmunity, animositeOrHaine } from '../engine/psychology';
-import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon } from '../engine/items';
+import { recomputeLoadout, itemFromGive, compatibleAmmo, consumeAmmo, loadoutSetActive, loadoutLabel, mannedPosteWeapon, autoStowNewItem } from '../engine/items';
 import { magazineSize, canPushback, strikesLast, canStrikeFirst, reloadDRTarget } from '../engine/qualities/dispatch';
 import { talentFearIndice, canPreemptRanged, fleeMovementBonus, reloadDRBonus, reloadGrantsAssessAdvantage, hasCommandTeam, retreatAdvantageCost, keptAdvantageOnDisengage } from '../engine/combatFeatures/dispatch';
 import { teamCommandTargets } from './commandTeam';
@@ -1813,12 +1813,15 @@ export function createCombatSlice(get: Get, set: Set) {
         label = it.name;
         // ajout NON équipé au combattant actif (clone battle) ET au membre party (persiste post-combat).
         active.items = [...(active.items ?? []), it];
+        autoStowNewItem(active, it); // #204 : rangement par défaut
         recomputeLoadout(active);
         set((s) => ({
           party: s.party.map((h) => {
             if (h.id !== active.id) return h;
             const clone: Combatant = structuredClone(h);
-            clone.items = [...(clone.items ?? []), structuredClone(it)];
+            const itCopy = structuredClone(it);
+            clone.items = [...(clone.items ?? []), itCopy];
+            autoStowNewItem(clone, itCopy); // #204 : rangement par défaut
             recomputeLoadout(clone);
             return clone;
           }),

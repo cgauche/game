@@ -5,7 +5,7 @@
  */
 import type { GameState } from './store';
 import { Combatant, ItemInstance } from '../engine/types';
-import { recomputeLoadout, itemFromTrappingById, addItemToHero } from '../engine/items';
+import { recomputeLoadout, itemFromTrappingById, addItemToHero, autoStowNewItem } from '../engine/items';
 import { isRepairable, itemRepairCostBrass } from '../engine/repair';
 import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { SL_ASTOUNDING, rollTest } from '../engine/tests';
@@ -316,7 +316,9 @@ export function confirmDistribution(_get: Get, set: Set): void {
     const party = s.party.map((h) => {
       const add = byHero[h.id]; if (!add) return h;
       const clone: Combatant = structuredClone(h);
-      clone.items = [...(clone.items ?? []), ...add.map((it) => ({ ...it, equipped: false }))];
+      const added = add.map((it) => ({ ...it, equipped: false }));
+      clone.items = [...(clone.items ?? []), ...added];
+      for (const it of added) autoStowNewItem(clone, it); // #204 : rangement par défaut
       recomputeLoadout(clone);
       return clone;
     });

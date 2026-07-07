@@ -331,6 +331,23 @@ export function canStow(c: Combatant, it: ItemInstance, containerUid: string): b
   return containerFillEnc(c, containerUid) + ((it.enc || 0) + craftEncDelta(it)) <= capacity;
 }
 
+/** Rangement PAR DÉFAUT d'un objet nouvellement acquis (#204, retour playtest) : uid du contenant avec le
+ *  PLUS de place LIBRE (capacité − `containerFillEnc`) parmi ceux où `canStow(c, it, uid)` l'autorise —
+ *  `canStow` écarte déjà l'auto-rangement/l'imbrication, donc un objet qui EST lui-même un contenant ne
+ *  reçoit jamais de cible. `null` = aucun contenant compatible → `it` reste porté/en vrac. Départage
+ *  déterministe : premier contenant rencontré (ordre de `c.items`) à égalité de place libre. PUR. */
+export function defaultContainerFor(c: Combatant, it: ItemInstance): string | null {
+  let best: string | null = null;
+  let bestFree = -Infinity;
+  for (const cand of c.items ?? []) {
+    if (!cand.container) continue;
+    if (!canStow(c, it, cand.uid)) continue;
+    const free = cand.container.capacity - containerFillEnc(c, cand.uid);
+    if (free > bestFree) { bestFree = free; best = cand.uid; }
+  }
+  return best;
+}
+
 /** Objets ÉQUIPÉS en conflit de port avec `it` : armure de MÊME couche sur ≥1 localisation commune
  *  (pas deux justaucorps de cuir l'un sur l'autre), ou autre cape déjà portée. Équiper `it` doit
  *  d'abord les retirer (échange façon jeu vidéo). */
@@ -581,6 +598,16 @@ export function loadoutSetSlot(c: Combatant, id: string, slot: 'main' | 'off', u
   }
 }
 
+/** Auto-rangement (#204) : à l'ACQUISITION d'un objet, pose `it.inside` sur son contenant par défaut
+ *  (`defaultContainerFor`) s'il y en a un — sinon `it` reste porté/en vrac. JAMAIS pour un objet ÉQUIPÉ
+ *  explicitement par l'appelant (le port choisi prime). SOURCE UNIQUE : à appeler juste après avoir
+ *  poussé `it` dans `c.items`, avant `recomputeLoadout`. */
+export function autoStowNewItem(c: Combatant, it: ItemInstance): void {
+  if (it.equipped) return;
+  const uid = defaultContainerFor(c, it);
+  if (uid) it.inside = uid;
+}
+
 /**
  * Ajoute l'objet de catalogue `trappingId` à l'inventaire PERSONNEL d'un héros et re-dérive son équipement
  * actif. Retourne un NOUVEAU combattant (cloné). SOURCE UNIQUE du « donner un objet à un héros » : utilisée
@@ -591,6 +618,7 @@ export function addItemToHero(hero: Combatant, trappingId: string): Combatant {
   if (!it) return hero;
   const clone: Combatant = structuredClone(hero);
   clone.items = [...(clone.items ?? []), it];
+  autoStowNewItem(clone, it);
   recomputeLoadout(clone);
   return clone;
 }

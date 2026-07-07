@@ -18,7 +18,7 @@ import { easeDifficulty } from '../engine/tests';
 import { restoreFortune } from '../engine/fortune';
 import { hasTalent } from '../engine/magic';
 import { traumaOnImpossibleAmbition } from '../engine/psychology';
-import { recomputeLoadout, itemFromGive, giveTrappingLabel } from '../engine/items';
+import { recomputeLoadout, itemFromGive, giveTrappingLabel, autoStowNewItem } from '../engine/items';
 import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel } from '../data';
 import { MORALE_BASE } from '../engine/crewMorale';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
@@ -657,6 +657,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const who = env.mutateHero(e.heroId, (h) => {
         const clone: Combatant = structuredClone(h);
         clone.items = [...(clone.items ?? []), it]; // arrive NON équipé
+        autoStowNewItem(clone, it); // #204 : rangement par défaut (contenant avec le plus de place libre)
         recomputeLoadout(clone); // met à jour l'encombrement
         return clone;
       });

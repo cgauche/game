@@ -4,7 +4,7 @@
  * est absorbé par le contenant et ne compte plus au total ; seul l'Enc du contenant compte).
  */
 import { describe, it, expect } from 'vitest';
-import { totalEncumbrance, containerFillEnc, canStow } from './items';
+import { totalEncumbrance, containerFillEnc, canStow, defaultContainerFor } from './items';
 import type { Combatant, ItemInstance } from './types';
 
 const mk = (items: ItemInstance[]): Combatant => ({ items } as unknown as Combatant);
@@ -70,6 +70,41 @@ describe('Encombrement — CONTENANTS : LDB 64 l.5', () => {
     expect(canStow(mk([sac, objet]), objet, 'inconnu')).toBe(false);
     const nonSac = item({ uid: 'nonSac', enc: 1 }); // pas de container
     expect(canStow(mk([nonSac, objet]), objet, 'nonSac')).toBe(false);
+  });
+});
+
+describe('defaultContainerFor — rangement par défaut d’un objet acquis (#204)', () => {
+  it('rend le contenant avec le PLUS de place LIBRE parmi ceux compatibles', () => {
+    const petitSac = item({ uid: 'petit', enc: 1, container: { capacity: 3 } }); // libre 3
+    const grandSac = item({ uid: 'grand', enc: 1, container: { capacity: 6 } }); // libre 6
+    const dedans = item({ uid: 'd', enc: 2, inside: 'grand' }); // grand : libre 4
+    const c = mk([petitSac, grandSac, dedans]);
+    const trouve = item({ uid: 'nouveau', enc: 1 });
+    expect(defaultContainerFor(c, trouve)).toBe('grand'); // 3 libre vs 4 libre
+  });
+
+  it('null si aucun contenant ne peut l’accueillir (aucun sac, ou tous pleins)', () => {
+    const sansSac = mk([item({ uid: 'o', enc: 1 })]);
+    expect(defaultContainerFor(sansSac, item({ uid: 'n', enc: 1 }))).toBeNull();
+
+    const pleinSac = item({ uid: 'sac', enc: 1, container: { capacity: 2 } });
+    const dedans = item({ uid: 'd', enc: 2, inside: 'sac' }); // 0 libre
+    const c = mk([pleinSac, dedans]);
+    expect(defaultContainerFor(c, item({ uid: 'trop-gros', enc: 1 }))).toBeNull();
+  });
+
+  it('ne range jamais un contenant DANS un autre contenant (canStow refuse l’imbrication)', () => {
+    const sac = item({ uid: 'sac', enc: 1, container: { capacity: 6 } });
+    const besace = item({ uid: 'besace', enc: 1, container: { capacity: 2 } }); // objet lui-même un contenant
+    const c = mk([sac, besace]);
+    expect(defaultContainerFor(c, besace)).toBeNull();
+  });
+
+  it('départage déterministe à égalité : le PREMIER contenant rencontré (ordre de c.items)', () => {
+    const sacA = item({ uid: 'a', enc: 1, container: { capacity: 4 } }); // libre 4
+    const sacB = item({ uid: 'b', enc: 1, container: { capacity: 4 } }); // libre 4 (égalité)
+    const c = mk([sacA, sacB]);
+    expect(defaultContainerFor(c, item({ uid: 'n', enc: 1 }))).toBe('a');
   });
 });
 

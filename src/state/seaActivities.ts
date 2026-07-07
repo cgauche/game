@@ -31,7 +31,7 @@ import { activityById, activitiesFor, resolveTravelActivity, type ActivityDef } 
 import { rollTest, extendedTestStep } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { applyOps } from '../engine/ops';
-import { itemFromTrappingById, recomputeLoadout } from '../engine/items';
+import { itemFromTrappingById, recomputeLoadout, autoStowNewItem } from '../engine/items';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO } from '../engine/money';
 import { cargoTotalEnc, OPPORTUNITE, opportunityTradePct } from '../engine/seaVoyage';
 import { findVehicleById } from '../data';
@@ -131,6 +131,7 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
         if (it) {
           it.price = { gold: Math.max(0, t.sl), silver: 0, brass: 0 };
           hero.items = [...(hero.items ?? []), it];
+          autoStowNewItem(hero, it); // #204 : rangement par défaut
           recomputeLoadout(hero);
         }
         lines.push(`${hero.name} — Cartographie : ${t.roll}/${t.target} → une Carte marine d'une valeur de ${Math.max(0, t.sl)} CO (+2 DR d'Orientation, MDG 15).`);

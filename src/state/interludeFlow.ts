@@ -17,7 +17,7 @@ import { d100 } from '../engine/dice';
 import { extendedTestStep, isImpressiveSuccess, isImpressiveFailure, isAstoundingSuccess, isAstoundingFailure } from '../engine/tests';
 import { interludeEventFor, type InterludeEventFx } from '../data/interludeEvents';
 import { fromBrass, toBrass, formatMoney, priceToMoney, PA_PER_CO } from '../engine/money';
-import { itemFromTrappingById, recomputeLoadout, buildWeapon } from '../engine/items';
+import { itemFromTrappingById, recomputeLoadout, buildWeapon, autoStowNewItem } from '../engine/items';
 import { sleepParty } from './restFlow';
 import { confirmBattleActivity, massBattleBegin, battlePrepEntries } from './massBattleFlow';
 import {
@@ -107,6 +107,7 @@ export function startInterlude(get: Get, set: Set, weeks = 1): void {
     const it = hero ? itemFromTrappingById(o.trappingId) : null;
     if (hero && it) {
       hero.items = [...(hero.items ?? []), it];
+      autoStowNewItem(hero, it); // #204 : rangement par défaut
       recomputeLoadout(hero);
       lines.push(`${hero.name} reçoit sa commande : ${trappingLabelOf(o.trappingId)}.`);
     }
@@ -492,6 +493,7 @@ function runActivityResolver(get: Get, set: Set, resolver: string, pa: PendingAc
         if (it) {
           it.qualities = [...(it.qualities ?? []), ...st.craft.atouts.map((id) => ({ id })), ...st.craft.defauts.map((id) => ({ id }))]; // ids → QualityInstance
           h.items = [...(h.items ?? []), it];
+          autoStowNewItem(h, it); // #204 : rangement par défaut
           recomputeLoadout(h);
         }
         const atL = st.craft.atouts.map(craftQualLabel), dfL = st.craft.defauts.map(craftQualLabel);

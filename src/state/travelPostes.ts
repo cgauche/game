@@ -35,7 +35,7 @@ import {
 } from '../engine/travelStages';
 import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '../engine/exposure';
 import { rationCount } from '../engine/provisions';
-import { itemFromGive } from '../engine/items';
+import { itemFromGive, autoStowNewItem } from '../engine/items';
 import { testValue } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS, type Difficulty, type Combatant } from '../engine/types';
 import { partyWalkSpeed, vehicleTravel, type TravelMode } from '../engine/travel';
@@ -184,7 +184,9 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
     for (const h of party.filter((x) => !x.dead && !x.outOfRencontre)) {
       if (remaining <= 0) break;
       if (rationCount(h) >= 1) continue;
-      h.items = [...(h.items ?? []), itemFromGive({ trappingId: 'ration' })];
+      const ration = itemFromGive({ trappingId: 'ration' });
+      h.items = [...(h.items ?? []), ration];
+      autoStowNewItem(h, ration); // #204 : rangement par défaut
       remaining -= 1;
       j.push(`${h.name} reçoit une ration trouvée en chemin.`);
     }

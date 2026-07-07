@@ -25,7 +25,7 @@ import { setGrapple } from './grapple'; // op `condition {grapple:true}` → rel
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { applyAlcoholTest } from './drunkenness';
 import { cureCriticalWounds, receiveMedicalAid } from './trauma';
-import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString } from './items';
+import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString, autoStowNewItem } from './items';
 import { weaponMatchesFamily } from './weaponDamage';
 import { suppressPsychTraits, type PsychType } from './psychology';
 import { norm } from '../lib/normalize';
@@ -1541,7 +1541,11 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'giveTrapping': {
         const n = Math.max(1, (o.count ?? 1) + slBonus(ctx.sl, o.perSL));
         target.items = target.items ?? [];
-        for (let i = 0; i < n; i++) target.items.push(itemFromGive(o));
+        for (let i = 0; i < n; i++) {
+          const it = itemFromGive(o);
+          target.items.push(it);
+          autoStowNewItem(target, it); // #204 : rangement par défaut
+        }
         lines.push(t('op.giveTrapping', { name: target.name, count: n > 1 ? `${n}× ` : '', item: giveTrappingLabel(o), src: ctx.label ?? 'sort' }));
         break;
       }
