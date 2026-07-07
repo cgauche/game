@@ -46,6 +46,8 @@ import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef, WaterExposureModifier } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { POWER_ESTIMATE, MIGHT_MODIFIERS, WAR_MACHINES, STRUCTURES as MASS_BATTLE_STRUCTURES, BATTLE_HAZARDS } from '../../engine/massBattle';
+import { ACTIVITIES } from '../../engine/activities';
+import type { ActivityContext, OutcomeBand, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond } from '../../engine/activities';
 import { traitLabels, optionalLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize, woundsForSize } from '../../engine/size';
@@ -247,6 +249,53 @@ const QUALITY_CAP_LABEL: Record<string, string> = {
   layerable: 'Flexible', critImmuneOdd: 'Impénétrable', apIgnoredOnEven: 'Partielle', apIgnoredOnImpaleCrit: 'Points faibles',
   unbreakable: 'Incassable', magic: 'Magique',
 };
+
+// ── Activités (activities.json) — libellés FR d'affichage, SOURCE UNIQUE partagée par la projection
+//    Codex ci-dessous ET l'éditeur `CodexEdit` (selects). La logique reste keyée par id STABLE. ──
+export const ACTIVITY_CONTEXT_LABEL: Record<ActivityContext, string> = {
+  interlude: 'Entre deux aventures', voyage: 'Voyage (terre)', mer: 'Mer',
+  bataille: 'Bataille — préparation', 'bataille-round': 'Bataille — Scène de Round',
+};
+export const OUTCOME_ON_LABEL: Record<'success' | 'failure' | 'fumble', string> = {
+  success: 'Succès', failure: 'Échec', fumble: 'Maladresse',
+};
+export const BATTLE_COND_LABEL: Record<BattleCond, string> = {
+  generalDown: 'Général ennemi tombé', intervention: 'Un autre PJ a frappé',
+  noIntervention: 'Aucune intervention', combatWon: 'Combat gagné', combatLost: 'Combat perdu',
+};
+export const BATTLE_TARGET_LABEL: Record<BattleOutcomeTarget, string> = {
+  might: 'Puissance courante', startMight: 'Puissance de départ',
+  allyTestMod: 'Mod. Tests alliés (permanent)', firstRoundBonus: 'Bonus au 1er Round',
+  planningBonus: 'Bonus à la Planification (à venir)',
+};
+export const BATTLE_SCALE_LABEL: Record<BattleOutcomeScale, string> = {
+  fixed: 'Plat', perDR: '× DR', perHit: '× touches', perKill: '× ennemis tués',
+};
+export const BATTLE_SIDE_LABEL: Record<BattleSide, string> = { ally: 'Armée alliée', enemy: 'Armée ennemie' };
+
+/** Section « Issues par Degrés de Réussite » d'une Activité (bandes `OutcomeBand[]`) : une sous-tête par
+ *  bande (issue + fourchette de DR + gate de bataille) puis note verbatim, résolveur, rendu, effets et
+ *  issues de bataille. Vide si l'Activité n'a pas de table d'issues. */
+function outcomeBandsSection(bands?: OutcomeBand[]): CodexSection | null {
+  if (!bands?.length) return null;
+  const rows: CodexRow[] = [];
+  for (const b of bands) {
+    const head = [
+      b.on ? OUTCOME_ON_LABEL[b.on] : 'Toute issue',
+      b.minSL != null || b.maxSL != null ? `DR ${b.minSL ?? '−∞'} … ${b.maxSL ?? '+∞'}` : null,
+      b.when ? BATTLE_COND_LABEL[b.when] : null,
+    ].filter(Boolean).join(' · ');
+    rows.push({ t: 'sub', label: head });
+    if (b.note) rows.push({ t: 'text', text: b.note });
+    if (b.resolver) rows.push({ t: 'kv', k: 'Résolveur', v: b.resolver });
+    if (b.payoutPct != null) rows.push({ t: 'kv', k: 'Rendu', v: `${b.payoutPct} %` });
+    if (b.ops?.length) rows.push({ t: 'kv', k: 'Effet', v: `${b.ops.length} op(s) sur le Personnage` });
+    for (const o of b.battle ?? [])
+      rows.push({ t: 'kv', k: 'Bataille', v: `${BATTLE_TARGET_LABEL[o.target]} ${BATTLE_SCALE_LABEL[o.scale]} ${o.amount >= 0 ? '+' : ''}${o.amount}${o.side ? ` (${BATTLE_SIDE_LABEL[o.side]})` : ''}` });
+    if (b.chains?.length) rows.push({ t: 'kv', k: 'Enchaîne', v: b.chains.join(', ') });
+  }
+  return { title: 'Issues par Degrés de Réussite', layout: 'list', rows };
+}
 
 /**
  * SOURCE UNIQUE du contenu structuré d'une fiche de race — onglets Profil / Carrières / Détails.
@@ -966,6 +1015,31 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   {
     key: 'peripeties', label: 'Péripéties de voyage', group: 'Tables',
     build: () => peripeties.map((p) => ({ label: p.label, sub: `1d10 = ${p.roll} · ${p.kind}`, desc: p.text })),
+  },
+  {
+    key: 'activities', label: 'Activités', group: 'Tables',
+    // Catalogue UNIQUE des Activités (interlude LDB 23 / voyage EDOC ch.5 / mer MDG ch.15 / bataille de
+    // masse ADE II ch.8). Un Test « posté » (compétence(s) au choix + Difficulté) dont l'issue s'exprime
+    // en `onSuccess` (GameOp) et/ou en bandes `outcomes` (table DR → résultat, verbatim + effets).
+    build: () => ACTIVITIES.map((a) => ({
+      label: a.label,
+      sub: a.contexts.map((c) => ACTIVITY_CONTEXT_LABEL[c] ?? c).join(', '),
+      desc: a.desc,
+      source: src(a.source),
+      meta: facts(
+        fact('Contextes', a.contexts.map((c) => ACTIVITY_CONTEXT_LABEL[c] ?? c).join(', ')),
+        fact('Compétence(s)', a.skills?.length ? a.skills.map((s) => refLabel('skills', { id: s.skillId, spec: s.spec })).join(' / ') : (a.freeSkill ? 'Au choix (libre)' : null)),
+        fact('Caractéristique', a.char ? CHAR_LABELS[a.char] : null),
+        fact('Difficulté', a.difficulty ? DIFFICULTY_LABELS[a.difficulty] : null),
+        fact('Test étendu', a.extended ? `${a.extended.drPerStage} DR / Étape` : null),
+        fact('Résolveur', a.resolver ?? null),
+      ),
+      sections: sections(
+        chips('Compétences (au choix)', 'skills', (a.skills ?? []).map((s) => refLabel('skills', { id: s.skillId, spec: s.spec }))),
+        passiveSection(a.onSuccess, 'Effet de réussite'),
+        outcomeBandsSection(a.outcomes),
+      ),
+    })),
   },
   // ── Combat de masse / Puissance de Bataille (ADE II ch.8, #148) — 5 tables verbatim NICHÉES dans
   // UN seul fichier (`mass-battle.json`, moteur `engine/massBattle.ts`). Champs déjà imprimés en

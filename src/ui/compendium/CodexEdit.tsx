@@ -12,7 +12,8 @@ import { serializeDataset } from '../../data/serialize';
 import { validateDataset } from '../../data/schemas/validate';
 import * as fs from '../../data/fsPersist';
 import { inferFields, type FieldDesc } from './editFields';
-import { entryKey, invalidateCodexLookup } from './registry';
+import { entryKey, invalidateCodexLookup, ACTIVITY_CONTEXT_LABEL, OUTCOME_ON_LABEL, BATTLE_COND_LABEL, BATTLE_TARGET_LABEL, BATTLE_SCALE_LABEL, BATTLE_SIDE_LABEL } from './registry';
+import type { ActivityContext, OutcomeBand, BattleOutcome, BattleSide, BattleOutcomeTarget, BattleOutcomeScale, BattleCond } from '../../engine/activities';
 import { WEATHER_LABEL } from '../../engine/travelStages';
 import { RefField, refFieldCfg } from './RefField';
 import { Icon } from '../Icon';
@@ -63,6 +64,9 @@ const CATEGORY_DATASET: Record<string, DatasetKey> = {
   massBattleWarMachines: 'massBattleWarMachines', massBattleStructures: 'massBattleStructures',
   massBattleHazards: 'massBattleHazards', massBattleMightModifiers: 'massBattleMightModifiers',
   massBattlePowerEstimate: 'massBattlePowerEstimate',
+  // #168 : catalogue UNIQUE des Activités (interlude/voyage/mer/bataille de masse) — fichier
+  // `activities.json` (défaut), racine sérialisée = le tableau ; schéma `activities` déjà registré (#176).
+  activities: 'activities',
   // #157 : catalogues de CONTENU app-owned exposés au Codex — clé catégorie = clé dataset.
   structures: 'structures', vehicles: 'vehicles', celestialHouses: 'celestialHouses', groups: 'groups',
   psychologies: 'psychologies', seaShanties: 'seaShanties', crewRoles: 'crewRoles', crewTestTypes: 'crewTestTypes',
@@ -129,6 +133,8 @@ const CRITICAL_CATEGORIES = [
 
 const OPS_FIELDS: Record<string, string[]> = {
   traumas: ['ops'],
+  activities: ['onSuccess'], // #168 : effet mécanique de réussite (GameOp[]) → GameOpEditor commun
+
   criticalsTete: ['ops'], criticalsBras: ['ops'], criticalsCorps: ['ops'], criticalsJambe: ['ops'],
   aaCriticalsTete: ['ops'], aaCriticalsBras: ['ops'], aaCriticalsCorps: ['ops'], aaCriticalsJambe: ['ops'],
   incidentsMonture: ['occupantOps'], problemesVehicule: ['occupantOps'],
@@ -235,7 +241,7 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'mutationTables' || categoryKey === 'weather') add('ranges');
   if (categoryKey === 'mutations') add('psychTraits');
   if (['mutations', 'trappings'].includes(categoryKey)) add('derivedWeapon');
-  if (categoryKey === 'trappings') add('consumable', 'consumableDuration');
+  if (categoryKey === 'trappings') add('consumable', 'consumableDuration', 'onHitEffects'); // onHitEffects → TriggeredEffectsField (#175)
   if (categoryKey === 'maladies') add('symptoms');
   if (categoryKey === 'talents') add('combat', 'test');
   if (categoryKey === 'skills' || categoryKey === 'talents') add('specs');
@@ -249,6 +255,9 @@ export function dedicatedFieldKeys(categoryKey: string): Set<string> {
   if (categoryKey === 'details') add('texts');
   if (SHIP_CRIT_CATEGORIES.includes(categoryKey)) add('crewTest'); // {skillId?,difficulty?,crewTarget?,onFail}
   if (categoryKey === 'waterExposure') add('test', 'modifiers', 'diseases'); // #157 suite (T2C ch.14)
+  // #168 : Activité — Test « posté » (contexts/skills « au choix »/char/difficulty) + table d'issues
+  // `outcomes` (OutcomeBand[]) → éditeurs dédiés ; `onSuccess` couvert par opsFieldsOf ci-dessus.
+  if (categoryKey === 'activities') add('contexts', 'skills', 'char', 'difficulty', 'outcomes');
   return k;
 }
 
@@ -399,6 +408,9 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
   // Exposition à l'eau (`waterExposure`, #157 suite, T2C ch.14) : `test` (Compétence+Difficulté),
   // `modifiers` (WaterExposureModifier[]) et `diseases` (plages d100 → maladie) ont chacun leur éditeur.
   const isWaterExposure = categoryKey === 'waterExposure';
+  // #168 : Activité (`activities`) — Test « posté » (contexts/skills « au choix »/char/difficulty) +
+  // table d'issues `outcomes` (OutcomeBand[]) ; `onSuccess` reste sur le lot GameOpEditor commun.
+  const isActivity = categoryKey === 'activities';
   // Champs au formulaire GÉNÉRIQUE = tous les champs inférés SAUF ceux couverts par un éditeur dédié
   // (`dedicatedFieldKeys`, source unique partagée avec le garde-fou no-json-fields.test).
   const fields = useMemo(() => {
@@ -480,6 +492,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         )}
         {isSymptom && <SymptomTickField value={entry.onTick as { difficulty: Difficulty; onFail: GameOp[] } | undefined} onChange={(v) => edit('onTick', v)} />}
         {isTriggered && <TriggeredEffectsField value={entry.effects as TriggeredEffect[] | undefined} onChange={(v) => edit('effects', v)} />}
+        {hasConsumable && <TriggeredEffectsField label="effets à la touche de l’arme (onHit → Flow d’ops, ADE II)" value={entry.onHitEffects as TriggeredEffect[] | undefined} onChange={(v) => edit('onHitEffects', v.length ? v : undefined)} />}
         {isManeuver && <ManeuverDefField entry={entry} edit={edit} />}
         {isMutationTable && <MutationTableField value={entry.ranges as MutationRange[] | undefined} onChange={(v) => edit('ranges', v)} />}
         {isWeather && <WeatherRangesField value={entry.ranges as { max: number; weather: string }[] | undefined} onChange={(v) => edit('ranges', v)} />}
@@ -530,6 +543,8 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isWaterExposure && <WaterTestField value={entry.test as { skillId: string; difficulty: Difficulty } | undefined} onChange={(v) => edit('test', v)} />}
         {isWaterExposure && <WaterModifiersField value={entry.modifiers as WaterExposureModifier[] | undefined} onChange={(v) => edit('modifiers', v)} />}
         {isWaterExposure && <WaterDiseasesField value={entry.diseases as WaterExposureData['diseases'] | undefined} onChange={(v) => edit('diseases', v)} />}
+        {isActivity && <ActivityTestField entry={entry} edit={edit} />}
+        {isActivity && <OutcomeBandsField value={entry.outcomes as OutcomeBand[] | undefined} onChange={(v) => edit('outcomes', v.length ? v : undefined)} />}
         {opsFields.map((fieldKey) => (
           <div className="ed-field" key={fieldKey}>
             <span>{fieldKey} — effet (GameOp[], même éditeur que les modificateurs passifs)</span>
@@ -624,13 +639,13 @@ function SpellEffectsField({ value, onChange }: { value: Flow | undefined; onCha
  *  d'arme. MÊME logique authorée que les sorts : une LISTE d'effets, chacun = un DÉCLENCHEUR (sur
  *  événement) + une CIBLE + un `Flow` d'ops éditable (réutilise `FlowEditor`/`GameOpEditor`). Écrit le
  *  record `traits.json`/`qualities.json` au save → `state/triggeredEffects` les applique en jeu. */
-function TriggeredEffectsField({ value, onChange }: { value: TriggeredEffect[] | undefined; onChange: (v: TriggeredEffect[]) => void }) {
+function TriggeredEffectsField({ value, onChange, label = 'effets déclenchés (déclencheur → Flow d’ops, comme un sort)' }: { value: TriggeredEffect[] | undefined; onChange: (v: TriggeredEffect[]) => void; label?: string }) {
   const list = value ?? [];
   const set = (i: number, patch: Partial<TriggeredEffect>) => onChange(list.map((e, j) => (j === i ? { ...e, ...patch } : e)));
   const add = () => onChange([...list, { trigger: 'onHit', on: 'victim', flow: EMPTY_FLOW }]);
   return (
     <div className="ed-field">
-      <span>effets déclenchés (déclencheur → Flow d’ops, comme un sort)</span>
+      <span>{label}</span>
       {list.map((eff, i) => (
         <div className="ed-subfield trait-effect" key={i}>
           <div className="tf-row">
@@ -1040,6 +1055,144 @@ function WaterDiseasesField({ value, onChange }: { value: WaterExposureData['dis
         </div>
       ))}
       <button className="btn small" onClick={() => onChange([...list, { min: 1, max: 1, disease: maladieOpts[0]?.id ?? '' }])}>+ Maladie</button>
+    </div>
+  );
+}
+
+// ── Activités (`activities.json`, #168) — Test « posté » + table d'issues `OutcomeBand[]` ────────────
+const ACTIVITY_CONTEXTS = Object.keys(ACTIVITY_CONTEXT_LABEL) as ActivityContext[];
+const OUTCOME_ON_KEYS = Object.keys(OUTCOME_ON_LABEL) as ('success' | 'failure' | 'fumble')[];
+const BATTLE_COND_KEYS = Object.keys(BATTLE_COND_LABEL) as BattleCond[];
+const BATTLE_TARGET_KEYS = Object.keys(BATTLE_TARGET_LABEL) as BattleOutcomeTarget[];
+const BATTLE_SCALE_KEYS = Object.keys(BATTLE_SCALE_LABEL) as BattleOutcomeScale[];
+const BATTLE_SIDE_KEYS = Object.keys(BATTLE_SIDE_LABEL) as BattleSide[];
+
+/** Test « posté » d'une Activité (`TestSpec` — LDB 12) : contextes de proposition + compétence(s) « au
+ *  choix » (la meilleure de l'acteur est retenue) + caractéristique de repli + Difficulté. Réutilise
+ *  `SkillSpecListField` (mêmes `{skillId,spec?}[]` que les Rôles d'équipage). Vide = Activité SANS Test. */
+function ActivityTestField({ entry, edit }: { entry: Entry; edit: (key: string, v: unknown) => void }) {
+  const contexts = (entry.contexts as ActivityContext[] | undefined) ?? [];
+  const toggle = (c: ActivityContext) => edit('contexts', contexts.includes(c) ? contexts.filter((x) => x !== c) : [...contexts, c]);
+  return (
+    <div className="ed-field">
+      <span>contextes où l’Activité est proposable (au moins un)</span>
+      <div className="tf-row">
+        {ACTIVITY_CONTEXTS.map((c) => (
+          <label className="dr" key={c}><input type="checkbox" checked={contexts.includes(c)} onChange={() => toggle(c)} /> {ACTIVITY_CONTEXT_LABEL[c]}</label>
+        ))}
+      </div>
+      <span>Test « posté » — compétence(s) « au choix » + caractéristique de repli + Difficulté (laisser vide = Activité SANS Test)</span>
+      <SkillSpecListField value={entry.skills as { skillId: string; spec?: string }[] | undefined} onChange={(v) => edit('skills', v.length ? v : undefined)} />
+      <div className="tf-row">
+        <label className="dr">Caractéristique (repli)
+          <select value={(entry.char as string) ?? ''} onChange={(e) => edit('char', e.target.value || undefined)}>
+            <option value="">— (aucune) —</option>
+            {CHAR_KEYS.map((k) => <option key={k} value={k}>{CHAR_LABELS[k]}</option>)}
+          </select>
+        </label>
+        <label className="dr">Difficulté
+          <select value={(entry.difficulty as string) ?? ''} onChange={(e) => edit('difficulty', e.target.value || undefined)}>
+            <option value="">— (aucune) —</option>
+            {DIFFICULTIES.map((d) => <option key={d} value={d}>{DIFFICULTY_LABELS[d]}</option>)}
+          </select>
+        </label>
+      </div>
+    </div>
+  );
+}
+
+/** Issues de BATAILLE (ADE II ch.8) d'une bande — portent sur l'ARMÉE (delta de Puissance / mod de Test),
+ *  échelle `scale` (plat / × DR / × touches / × ennemis tués), montant SIGNÉ, camp éventuel. */
+function BattleOutcomeListField({ value, onChange }: { value: BattleOutcome[] | undefined; onChange: (v: BattleOutcome[]) => void }) {
+  const list = value ?? [];
+  const set = (i: number, patch: Partial<BattleOutcome>) => onChange(list.map((o, j) => (j === i ? { ...o, ...patch } : o)));
+  return (
+    <div className="ed-subfield">
+      <span>issues de BATAILLE (ADE II ch.8) — portent sur l’ARMÉE, pas sur le héros</span>
+      {list.map((o, i) => (
+        <div className="tf-row" key={i}>
+          <select value={o.target} onChange={(e) => set(i, { target: e.target.value as BattleOutcomeTarget })}>
+            {BATTLE_TARGET_KEYS.map((t) => <option key={t} value={t}>{BATTLE_TARGET_LABEL[t]}</option>)}
+          </select>
+          <select value={o.scale} onChange={(e) => set(i, { scale: e.target.value as BattleOutcomeScale })}>
+            {BATTLE_SCALE_KEYS.map((s) => <option key={s} value={s}>{BATTLE_SCALE_LABEL[s]}</option>)}
+          </select>
+          <label className="dr">montant<input type="number" style={{ width: 72 }} value={o.amount} onChange={(e) => set(i, { amount: Number(e.target.value) || 0 })} /></label>
+          <select value={o.side ?? ''} onChange={(e) => set(i, { side: (e.target.value || undefined) as BattleSide | undefined })}>
+            <option value="">— camp (auto) —</option>
+            {BATTLE_SIDE_KEYS.map((s) => <option key={s} value={s}>{BATTLE_SIDE_LABEL[s]}</option>)}
+          </select>
+          <button className="btn small danger" title="Retirer" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => onChange([...list, { target: 'might', scale: 'fixed', amount: 0 }])}>+ Issue de bataille</button>
+    </div>
+  );
+}
+
+/** Scènes IMPOSÉES au Round suivant si la bande matche (ids de rencontre/scène — enchaînements de bataille). */
+function ChainsField({ value, onChange }: { value: string[] | undefined; onChange: (v: string[]) => void }) {
+  const list = value ?? [];
+  return (
+    <div className="ed-subfield">
+      <span>scènes enchaînées (imposées au Round suivant) — ids de rencontre/scène</span>
+      {list.map((c, i) => (
+        <div className="de-reflrow" key={i}>
+          <input value={c} onChange={(e) => onChange(list.map((x, j) => (j === i ? e.target.value : x)))} />
+          <button className="btn small danger" title="Retirer" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <button className="btn small" onClick={() => onChange([...list, ''])}>+ Scène enchaînée</button>
+    </div>
+  );
+}
+
+/** Table d'ISSUES d'une Activité (`OutcomeBand[]`, ACE Annexe I / ADE II ch.8) : chaque bande = une
+ *  fourchette de DR (`minSL`/`maxSL`, primitive de PLAGE comme mutationTables/weather) filtrée par issue
+ *  (`on`) et gate de bataille (`when`), portant sa note VERBATIM, son effet `ops` (GameOpEditor commun),
+ *  ses issues de bataille et ses enchaînements. Maladresse (`on:'fumble'`) REMPLACE toute autre issue. */
+function OutcomeBandsField({ value, onChange }: { value: OutcomeBand[] | undefined; onChange: (v: OutcomeBand[]) => void }) {
+  const list = value ?? [];
+  const set = (i: number, patch: Partial<OutcomeBand>) => onChange(list.map((b, j) => (j === i ? { ...b, ...patch } : b)));
+  const numOrUndef = (s: string): number | undefined => (s === '' ? undefined : Number(s));
+  return (
+    <div className="ed-field">
+      <span>issues par Degrés de Réussite (bandes DR → résultat) — Maladresse remplace toute autre issue ; sans « issue » la bande matche par DR seul (ACE Annexe I)</span>
+      {list.map((b, i) => (
+        <div className="ed-subfield" key={i}>
+          <div className="tf-row">
+            <label className="dr">Issue
+              <select value={b.on ?? ''} onChange={(e) => set(i, { on: (e.target.value || undefined) as OutcomeBand['on'] })}>
+                <option value="">— toute issue —</option>
+                {OUTCOME_ON_KEYS.map((o) => <option key={o} value={o}>{OUTCOME_ON_LABEL[o]}</option>)}
+              </select>
+            </label>
+            <label className="dr">DR min<input type="number" style={{ width: 64 }} value={b.minSL ?? ''} onChange={(e) => set(i, { minSL: numOrUndef(e.target.value) })} /></label>
+            <label className="dr">DR max<input type="number" style={{ width: 64 }} value={b.maxSL ?? ''} onChange={(e) => set(i, { maxSL: numOrUndef(e.target.value) })} /></label>
+            <label className="dr">gate bataille
+              <select value={b.when ?? ''} onChange={(e) => set(i, { when: (e.target.value || undefined) as BattleCond | undefined })}>
+                <option value="">— aucun —</option>
+                {BATTLE_COND_KEYS.map((c) => <option key={c} value={c}>{BATTLE_COND_LABEL[c]}</option>)}
+              </select>
+            </label>
+            <button className="btn small danger" title="Supprimer la bande" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
+          </div>
+          <label className="ed-subfield">note (texte de résultat VERBATIM de la source)
+            <textarea rows={2} value={b.note ?? ''} onChange={(e) => set(i, { note: e.target.value || undefined })} />
+          </label>
+          <div className="tf-row">
+            <label className="dr">résolveur (bespoke)<input value={b.resolver ?? ''} onChange={(e) => set(i, { resolver: e.target.value || undefined })} /></label>
+            <label className="dr">rendu %<input type="number" style={{ width: 64 }} value={b.payoutPct ?? ''} onChange={(e) => set(i, { payoutPct: numOrUndef(e.target.value) })} /></label>
+          </div>
+          <div className="ed-subfield">
+            <span>effet mécanique sur le Personnage (GameOp[])</span>
+            <GameOpEditor ops={b.ops ?? []} onChange={(ops) => set(i, { ops: ops.length ? ops : undefined })} />
+          </div>
+          <BattleOutcomeListField value={b.battle} onChange={(v) => set(i, { battle: v.length ? v : undefined })} />
+          <ChainsField value={b.chains} onChange={(v) => set(i, { chains: v.length ? v : undefined })} />
+        </div>
+      ))}
+      <button className="btn small" onClick={() => onChange([...list, {}])}>+ Bande d’issue</button>
     </div>
   );
 }
