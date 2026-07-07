@@ -1166,7 +1166,7 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
               className="btn small"
               title="Nom aléatoire (race et sexe du personnage)"
               onClick={() => {
-                const n = generateName(sp.label, d.sex, makeRNG(Math.floor(Math.random() * 1e9)));
+                const n = generateName(sp.refChar, d.sex, makeRNG(Math.floor(Math.random() * 1e9)));
                 if (n) setD({ ...d, name: n });
               }}
             >

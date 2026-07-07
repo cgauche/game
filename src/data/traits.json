@@ -2186,6 +2186,15 @@
                 "kind": "compare",
                 "subject": {
                   "who": "target",
+                  "condition": "inconscient"
+                },
+                "op": "<",
+                "value": 1
+              },
+              {
+                "kind": "compare",
+                "subject": {
+                  "who": "target",
                   "condition": "surpris"
                 },
                 "op": "<",

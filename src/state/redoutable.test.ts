@@ -46,6 +46,13 @@ describe('Trait Redoutable (ZI) — Avantage minimum = Indice au début du tour'
     expect(c.advantage).toBe(0);
   });
 
+  it('Inconscient → ne gagne PAS d’Avantage (garde, ZI p.11)', () => {
+    const c = mk({ traits: [{ id: 'redoutable', value: 2 }] as never, advantage: 0 });
+    addCondition(c, COND.inconscient);
+    fire(c);
+    expect(c.advantage).toBe(0);
+  });
+
   it('Surpris → ne gagne PAS d’Avantage', () => {
     const c = mk({ traits: [{ id: 'redoutable', value: 2 }] as never, advantage: 0 });
     addCondition(c, COND.surpris);

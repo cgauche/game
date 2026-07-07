@@ -13,24 +13,23 @@
 import { names as POOLS, type NamePool } from '../data';
 import type { RNG } from './dice';
 
-/** Pool de la banque ← libellé d'espèce du jeu (species.json, variantes régionales incluses). */
-function poolOf(speciesLabel: string): NamePool | null {
-  const s = speciesLabel.toLowerCase();
-  if (s.startsWith('humains')) return POOLS['Humain'];
-  if (s.startsWith('nains')) return POOLS['Nain'];
-  if (s.startsWith('hauts elfes')) return POOLS['Haut Elfe'];
-  if (s.startsWith('elfes sylvains')) return POOLS['Elfe Sylvain'];
-  if (s.startsWith('halflings')) return POOLS['Halfling'];
-  if (s.startsWith('gnomes')) return POOLS['Gnome'];
-  if (s.startsWith('ogres')) return POOLS['Ogre'];
-  return null;
+/**
+ * Pool de la banque ← `species.refChar` (clé de `names.json`, cf. `names-species-keyspaces.test.ts`).
+ * `refChar` EST déjà la clé de la banque : simple lookup, aucun mapping par libellé (les variantes
+ * régionales partagent le même `refChar` — cf. `species.json`).
+ */
+function poolOf(refChar: string): NamePool | null {
+  return POOLS[refChar] ?? null;
 }
 
 const pick = <T>(arr: T[], rng: RNG): T => arr[rng.int(0, arr.length - 1)];
 
-/** « Prénom Nom » aléatoire pour l'espèce et le sexe — null si l'espèce n'a pas de pool. */
-export function generateName(speciesLabel: string, sex: 'M' | 'F', rng: RNG): string | null {
-  const pool = poolOf(speciesLabel);
+/**
+ * « Prénom Nom » aléatoire pour l'espèce et le sexe — null si l'espèce n'a pas de pool.
+ * `refChar` = clé de banque portée par `species.refChar` (l'appelant a l'objet species).
+ */
+export function generateName(refChar: string, sex: 'M' | 'F', rng: RNG): string | null {
+  const pool = poolOf(refChar);
   if (!pool) return null;
   const first = pick(sex === 'F' ? pool.femaleFirstNames : pool.maleFirstNames, rng);
   const suffixes = pool.lastNameSuffixes?.[sex];
