@@ -76,11 +76,11 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
       <CharStatsGrid value={(k) => hero.characteristics[k]} />
       <div className="char-vitals">
         <div className="stat-chip">
-          <span className="sc-label">Blessures</span>
+          <span className="sc-label" title="Blessures">Blessures</span>
           <span className="sc-value"><WoundsBadge wounds={hero.wounds} /></span>
         </div>
         <div className="stat-chip">
-          <span className="sc-label"><CodexRef category="characteristics" label="Mouvement">Mouvement</CodexRef></span>
+          <span className="sc-label" title="Mouvement"><CodexRef category="characteristics" label="Mouvement">Mouvement</CodexRef></span>
           <span className="sc-value">{hero.movement}</span>
         </div>
         <FateChips c={hero} />

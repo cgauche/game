@@ -29,10 +29,10 @@ export function ShipStateBlock({ ship, cap, morale, crew }: { ship: Combatant; c
   const apte = exposedCrew(crew);
   return (
     <div className="sheet-vitals">
-      <div className="stat-chip pv"><span className="sc-label">Coque</span><span className="sc-value">{ship.wounds.current}/{ship.wounds.max}</span></div>
-      {cap && <div className="stat-chip"><span className="sc-label">Cap</span><span className="sc-value">{DIR_LABEL[cap]}</span></div>}
-      <div className="stat-chip"><span className="sc-label">Moral</span><span className="sc-value">{morale}{band.crewTestDR ? ` (${band.crewTestDR > 0 ? '+' : ''}${band.crewTestDR})` : ''}</span></div>
-      <div className="stat-chip"><span className="sc-label">Effectif</span><span className="sc-value">{apte.length}/{crew.length}</span></div>
+      <div className="stat-chip pv"><span className="sc-label" title="Coque">Coque</span><span className="sc-value">{ship.wounds.current}/{ship.wounds.max}</span></div>
+      {cap && <div className="stat-chip"><span className="sc-label" title="Cap">Cap</span><span className="sc-value">{DIR_LABEL[cap]}</span></div>}
+      <div className="stat-chip"><span className="sc-label" title="Moral">Moral</span><span className="sc-value">{morale}{band.crewTestDR ? ` (${band.crewTestDR > 0 ? '+' : ''}${band.crewTestDR})` : ''}</span></div>
+      <div className="stat-chip"><span className="sc-label" title="Effectif">Effectif</span><span className="sc-value">{apte.length}/{crew.length}</span></div>
     </div>
   );
 }

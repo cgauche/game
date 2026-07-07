@@ -34,7 +34,7 @@ export function BackgroundPanel({ hero }: { hero: Combatant }) {
           <div className="bg-grid">
             {shown.map(([label, value]) => (
               <div className="stat-chip" key={label}>
-                <span className="sc-label">{label}</span>
+                <span className="sc-label" title={label}>{label}</span>
                 <span className="sc-value">{value}</span>
               </div>
             ))}

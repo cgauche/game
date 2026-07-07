@@ -129,18 +129,12 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
-  /* libellés longs non sécables (Encombrement, Détermination…) : enroulement au lieu du débordement à 360px */
-  overflow-wrap: anywhere;
-  line-height: 1.1;
-}
-/* Libellé tronqué (style Steam) : une ligne + ellipse + infobulle `title` native, pour les
-   libellés longs (Encombrement) où l'enroulement sur 2 lignes n'est pas souhaité (#206). */
-.stat-chip > .sc-label.sc-label-truncate {
-  overflow-wrap: normal;
+  /* une ligne + ellipse + infobulle `title` native (#206, généralisé) */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
+  line-height: 1.1;
 }
 .stat-chip > .sc-value {
   font-size: 16px;

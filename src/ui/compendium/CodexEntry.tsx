@@ -108,7 +108,7 @@ export function CodexEntry({ item, instance, category }: { item: CodexItem; inst
       <div className="row-flex codex-meta">
         {item.meta.map((m) => (
           <span key={m.label} className="stat-chip codex-fact">
-            <span className="sc-label">{m.label}</span>
+            <span className="sc-label" title={m.label}>{m.label}</span>
             <span className="sc-value">{m.value}</span>
           </span>
         ))}
