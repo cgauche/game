@@ -249,6 +249,11 @@ export type WeaponRangeSpec = number | { bf: number };
  *  SÉLECTIONNÉE pour le tir. « Comme l'arme » = AUCUN modificateur (absent/null → Portée de l'arme inchangée). */
 export type AmmoRangeMod = { mult: number } | { add: number };
 
+/** Bande de portée d'un tir (table des Difficultés de Combat, LDB 14) — id STABLE, du plus proche au plus
+ *  loin. SOURCE des seuils = `RANGE_BANDS` (engine/combat). Réutilisé par `Weapon.minRangeBand` (PORTÉE
+ *  MINIMALE d'une machine de guerre, ADE II ch.08 l.251/253). Le libellé affiché se résout via `rangeBandName`. */
+export type RangeBandId = 'bout-portant' | 'courte' | 'moyenne' | 'longue' | 'extreme';
+
 /** Atout/Défaut d'arme ou d'armure PORTÉ par un objet/arme au runtime. Forme STRUCTURÉE (id stable du
  *  registre + Indice éventuel) — miroir runtime de `QualityRef` de la donnée, sans l'aplatissement en
  *  chaîne « id value » re-parsée par regex. `value` = Indice (Solide N, Recharge N, Protectrice N) OU
@@ -322,9 +327,16 @@ export interface Weapon {
   /** Attaque NATURELLE de corps (morsure/griffes/cornes…) : aucune arme tenue n'est dessinée (le rig
    *  rend le membre). Stampé au spawn depuis `TraitInstance.natural` / la capacité `naturalWeapon`. */
   natural?: boolean;
-  /** Effets « à la touche » repliés depuis l'enchantement de l'arme (op `augmentWeapon` / arme
-   *  invoquée) par `recomputeLoadout` → lus par `effectsOf` (state/triggeredEffects). */
+  /** Effets « à la touche » : repliés depuis l'enchantement de l'arme (op `augmentWeapon` / arme
+   *  invoquée) par `recomputeLoadout`, OU portés en DONNÉE par le catalogue (`TrappingData.onHitEffects` —
+   *  Canon à flammes nain « 2 + DR En flammes à chaque cible affectée », ADE II ch.08 l.243) → lus par
+   *  `effectsOf` (state/triggeredEffects), dispatchés à la touche (primaire ET zone d'Explosion). */
   onHitEffects?: import('./flowCore').TriggeredEffect[];
+  /** PORTÉE MINIMALE : bande de portée la plus BASSE à laquelle l'arme peut tirer (ADE II ch.08 l.251/253).
+   *  Une cible plus proche que cette bande REFUSE le tir (`firedAttackBlock`, `belowMinRangeBand`), ce n'est
+   *  PAS un malus. Machines de siège à distance = `'courte'` (pas de Bout Portant, l.253) ; trébuchet/mortier
+   *  = `'moyenne'` (« distance inférieure à leur Portée Courte » interdite, l.251). Absent = aucune minimale. */
+  minRangeBand?: RangeBandId;
   /** Nature d'attaque NATURELLE (morsure/cornes/caudale/tentacules/pietinement…) STAMPÉE à la
    *  construction de l'arme (depuis le `kind` de la manœuvre/attaque gratuite qui la connaît). Clé de
    *  POSE (même domaine que le retour de `creatureAttackKind`) lue pour l'anim et la Condition Flow
@@ -647,6 +659,19 @@ export interface Trauma {
   /** Nombre d'éléments perdus pour une séquelle CUMULATIVE par comptage (LDB 18) : doigts (−5/doigt, 4+ →
    *  règle de la main, l.341/344) ou dents (−1 Soc/paire, l.338). Fusionné à chaque nouvelle perte. */
   count?: number;
+  /** En attente d'Aide Médicale (LDB 18 l.307-312 : Guérison réussie / bandage-cataplasme / sort-prière de
+   *  soin) — levé par le PREMIER acte de soin des 3 formes (`receiveMedicalAid`). Tant qu'il est posé, la
+   *  séquelle S'AGGRAVE : escalade « 1 doigt de plus par Round » de « Main ouverte » (AA l.2571 / LDB). */
+  awaitingMedicalAid?: boolean;
+  /** « Main ouverte » (AA l.2571 / LDB « Main ouverte ») : à chaque fin de Round de combat SANS Aide Médicale
+   *  (`awaitingMedicalAid`), un doigt de plus est perdu (`tickFingerLossEscalation`) — 4+ doigts → main tranchée. */
+  fingerLossPerRound?: boolean;
+  /** « Pied écrasé » (AA l.2624 / LDB) : jours restants avant la perte définitive du membre (`amputateSequel`)
+   *  si la Chirurgie de la plaie (`needsSurgery`) n'intervient pas à temps (1d10 jours). Décompté à l'entretien
+   *  (`tickTraumaRecovery`) ; l'opération réussie retire la plaie AVANT l'échéance → membre sauvé. */
+  amputateAfterDays?: number;
+  /** id STABLE de la fiche de séquelle (`traumas.json`) posée si `amputateAfterDays` expire sans Chirurgie. */
+  amputateSequel?: string;
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
@@ -695,6 +720,12 @@ export interface ItemInstance {
   soloSimple?: boolean;
   /** Pièce à TIR INDIRECT (mortier/catapulte, cf. `Weapon.indirect`) — propagé à l'arme dérivée. */
   indirect?: boolean;
+  /** Effets « à la touche » portés en DONNÉE par le catalogue (`TrappingData.onHitEffects`) — propagés à
+   *  l'arme dérivée (`Weapon.onHitEffects`). Ex. Canon à flammes nain (ADE II ch.08 l.243). */
+  onHitEffects?: import('./flowCore').TriggeredEffect[];
+  /** PORTÉE MINIMALE de tir (bande, cf. `Weapon.minRangeBand`) — propagée à l'arme dérivée. Machines de
+   *  siège à distance (ADE II ch.08 l.251/253). */
+  minRangeBand?: RangeBandId;
   /** Slug de FORME (`WeaponDef`/`ShieldDef.slug`) — id STABLE de routage de l'art (rig), ≠ libellé.
    *  Copié du catalogue (`TrappingData.shape`) par `itemFromTrappingById` ; propagé à `Weapon.shape`. */
   shape?: string;
