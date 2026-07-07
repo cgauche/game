@@ -5,7 +5,7 @@
  */
 import { z } from 'zod';
 import { gameOpSchema, difficultySchema } from '../common';
-import { critEscalationSchema } from './criticals';
+import { critEscalationSchema, amputationSchema } from './criticals';
 
 export const file = 'aa-criticals.json';
 
@@ -27,12 +27,9 @@ const aaEntrySchema = z.strictObject({
     })
     .optional(),
   traumas: z.array(z.string()).optional(),
-  amputation: z
-    .strictObject({
-      difficulty: difficultySchema,
-      sequels: z.array(z.string()),
-    })
-    .optional(),
+  // Amputation (« voir Amputation p.180 de WFJDR ») — MÊME forme partagée que le chemin LDB (`amputationSchema`) :
+  // le vocabulaire `timing`/`loss` vaut pour l'AA (mêmes textes « Une fois la rencontre terminée… »/« un orteil par DR »).
+  amputation: amputationSchema.optional(),
   /** Escalade GATÉE par les soins (« Main ouverte » l.2571 / « Pied écrasé » l.2624) — partagée LDB. */
   escalation: critEscalationSchema.optional(),
   lethal: z.boolean().optional(),

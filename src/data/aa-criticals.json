@@ -1421,7 +1421,11 @@
         "difficulty": "accessible",
         "sequels": [
           "orteil-ampute"
-        ]
+        ],
+        "timing": "postEncounter",
+        "loss": {
+          "difficulty": "intermediaire"
+        }
       },
       "desc": "Vous recevez 1 État Hémorragique. Une fois la rencontre terminée, effectuez un Test de Résistance Intermédiaire (+0). Sur un Échec, vous perdez un orteil – Amputation (Accessible)."
     },
@@ -1659,7 +1663,10 @@
         "difficulty": "accessible",
         "sequels": [
           "orteil-ampute"
-        ]
+        ],
+        "loss": {
+          "perDR": true
+        }
       },
       "escalation": {
         "amputateAfter1d10Days": true,

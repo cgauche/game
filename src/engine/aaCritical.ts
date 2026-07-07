@@ -114,10 +114,17 @@ export function resolveAACritical(
   // Amputation (« voir Amputation en page 180 de WFJDR ») DÉCLARÉE STRUCTURELLEMENT — `resolveAmputation`
   // (SOURCE UNIQUE LDB/AA) : Test de Résistance indépendant du `resist` de la ligne (les deux coexistent déjà
   // côté LDB, ex. « Coup défigurant »/« Tendons coupés »). Roll placé en DERNIER (ne décale que ces critiques).
+  // `timing: 'postEncounter'` (« Coupure à l'orteil » AA 07 l.171 : « Une fois la rencontre terminée… ») → aucun jet
+  // ICI : marqueur `pendingAmputation` résolu au foyer de fin de combat (`resolvePostEncounterAmputations`),
+  // MÊME patron que le chemin LDB (le foyer est kind-agnostique : il ne lit que le marqueur).
   if (!entry.lethal && entry.amputation) {
-    const amp = resolveAmputation(entry.amputation, location, resistVal, rng);
-    ops.push(...amp.ops);
-    traumas.push(...amp.traumas);
+    if (entry.amputation.timing === 'postEncounter') {
+      traumas.push({ label: entry.name, location, pendingAmputation: entry.amputation });
+    } else {
+      const amp = resolveAmputation(entry.amputation, location, resistVal, rng);
+      ops.push(...amp.ops);
+      traumas.push(...amp.traumas);
+    }
   }
   // Escalade GATÉE par les soins (« Main ouverte » l.127 : doigt/Round ; « Pied écrasé » l.180 : perte du pied
   // sans Chirurgie sous 1d10 jours ; « Épaule luxée » l.125 / « Genou démis » l.179 : membre désactivé jusqu'au

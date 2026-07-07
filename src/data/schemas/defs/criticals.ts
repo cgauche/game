@@ -50,6 +50,19 @@ export const critEscalationSchema = z.strictObject({
     .optional(),
 });
 
+/** Amputation (LDB 18 l.328-333) — reflet de `Amputation` (`src/data/criticals.ts`), SOURCE UNIQUE de forme
+ *  partagée LDB (`criticals.json`) et Aux Armes (`aa-criticals.json`, mêmes textes « Une fois la rencontre
+ *  terminée… »/« un orteil par DR »). Résolue par `resolveAmputation`. */
+export const amputationSchema = z.strictObject({
+  difficulty: difficultySchema,
+  sequels: z.array(z.string()),
+  // Test différé à la fin de la rencontre (« Coupure à l'orteil », LDB l.171 / AA 07 l.171) — marqueur `pendingAmputation`.
+  timing: z.literal('postEncounter').optional(),
+  // Séquelle CONDITIONNELLE : `difficulty` = Test gate SÉPARÉ (réussite → pas d'amputation) ; absent = le
+  // Test de Résistance `difficulty` détermine lui-même la perte. `perDR` = orteils 1 + DR en dessous de 0.
+  loss: z.strictObject({ difficulty: difficultySchema.optional(), perDR: z.boolean().optional() }).optional(),
+});
+
 const critEntrySchema = z.strictObject({
   id: z.string(),
   min: z.number(),
@@ -63,17 +76,7 @@ const critEntrySchema = z.strictObject({
     })
     .optional(),
   lethal: z.boolean().optional(),
-  amputation: z
-    .strictObject({
-      difficulty: difficultySchema,
-      sequels: z.array(z.string()),
-      // Test différé à la fin de la rencontre (« Coupure à l'orteil », l.171) — marqueur `pendingAmputation`.
-      timing: z.literal('postEncounter').optional(),
-      // Séquelle CONDITIONNELLE : `difficulty` = Test gate SÉPARÉ (réussite → pas d'amputation) ; absent = le
-      // Test de Résistance `difficulty` détermine lui-même la perte. `perDR` = orteils 1 + DR en dessous de 0.
-      loss: z.strictObject({ difficulty: difficultySchema.optional(), perDR: z.boolean().optional() }).optional(),
-    })
-    .optional(),
+  amputation: amputationSchema.optional(),
   traumas: z.array(z.string()).optional(),
   escalation: critEscalationSchema.optional(),
   // Note MAISON (#195) : trace éditable d'une valeur mécanique absente littéralement du texte RAW (règle stricte 7).
