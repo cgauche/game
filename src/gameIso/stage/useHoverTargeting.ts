@@ -27,7 +27,7 @@ export interface HoverAim {
   /** Chemin RÉEL d'un déplacement combiné (Charge / rejoindre) — tracé à la place de la ligne droite. */
   path?: { x: number; y: number }[];
   /** Carte d'infobulle : nom / compétence + valeur / dégâts / manœuvre — ou erreur courte. */
-  tip: { kind: 'info'; title: string; skill: string; base: number; mod: number; dmg: number | null; note?: string } | { kind: 'err'; text: string } | null;
+  tip: { kind: 'info'; title: string; targetName: string; skill: string; base: number; mod: number; dmg: number | null; note?: string } | { kind: 'err'; text: string } | null;
   /** Aperçu synthétisé (forme battle.preview) pour le clignotant des jauges (previewResourceDelta). */
   preview?: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
   reticle: boolean;
@@ -100,7 +100,7 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
       const ht = hoverTargeting(st, shooter, occ);
       if (ht.kind === 'none') return null;
       if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht.reason) }, reticle: false };
-      return { fromId: shooter.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
+      return { fromId: shooter.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
     }
     // Flux différés (bandeau TargetPrompt — Frappe Mortelle / 2ᵉ frappe / Surincantation +Cible) : le
     // réticule vient du MODE courant (targetingModes via hoverTargeting), AVANT les verrous acted/
@@ -128,7 +128,7 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
     const ht = hoverTargeting(st, activeH, occ);
     if (ht.kind === 'none') return null;
     if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht.reason) }, reticle: false };
-    return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
+    return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
   }, [combatCursor, hover, hoverCombatantId, mode, battle, scene, myTurn, preemptAiming, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
   // Combattant SOUS le focus (tuile survolée OU portrait de frise/Tab) — INDÉPENDANT du ciblage

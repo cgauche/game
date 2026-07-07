@@ -82,21 +82,22 @@ export function AimOverlay({ battle, hoverAim, anchor, dims, pendingAttack, pend
         );
       })()}
       {tip?.kind === 'info' && !t.postes?.length && (() => {
-        // Carte compacte : nom (or) / compétence + valeur EFFECTIVE (mod entre parenthèses) /
-        // dégâts « +N » / manœuvre (Charge…) — une info par ligne.
+        // Carte compacte : nom de la CIBLE (or, titre) / arme-ou-sort (sous-titre) / compétence +
+        // valeur EFFECTIVE (mod entre parenthèses) / dégâts « +N » / manœuvre (Charge…).
         const eff = tip.base + tip.mod;
         const modTxt = tip.mod ? ` (${tip.mod > 0 ? '+' : '−'}${Math.abs(tip.mod)})` : '';
         const l2 = `${tip.skill}  ${eff}${modTxt}`;
         const l3 = tip.dmg != null ? `Dégâts +${tip.dmg}` : null;
         const l4 = tip.note ?? null;
-        const w = Math.max(tip.title.length * 6.6, l2.length * 6, (l3 ?? '').length * 6, (l4 ?? '').length * 6) + 20;
-        const h = 38 + (l3 ? 14 : 0) + (l4 ? 14 : 0);
+        const w = Math.max(tip.targetName.length * 6.6, tip.title.length * 6, l2.length * 6, (l3 ?? '').length * 6, (l4 ?? '').length * 6) + 20;
+        const h = 52 + (l3 ? 14 : 0) + (l4 ? 14 : 0);
         const x0 = -w / 2 + 10;
-        let y = -h + 30; // la ligne 2 démarre sous le titre ; chaque ligne suivante descend de 14
+        let y = -h + 44; // la compétence démarre sous nom+titre ; chaque ligne suivante descend de 14
         return (
           <g transform={`translate(${to.cx},${to.cy - 60})`}>
             <rect x={-w / 2} y={-h} width={w} height={h} rx={6} fill="var(--tooltip-bg)" fillOpacity={0.95} stroke="var(--combat-gold)" strokeOpacity={0.75} strokeWidth={1} />
-            <text x={x0} y={-h + 16} fill="var(--combat-gold)" fontSize={11.5} fontWeight={700}>{tip.title}</text>
+            <text x={x0} y={-h + 16} fill="var(--combat-gold)" fontSize={11.5} fontWeight={700}>{tip.targetName}</text>
+            <text x={x0} y={-h + 30} fill="var(--tooltip-muted)" fontSize={10}>{tip.title}</text>
             <text x={x0} y={y} fontSize={10.5}>
               <tspan fill="var(--tooltip-muted)">{tip.skill}</tspan>
               <tspan fill="var(--tooltip-fg)" fontWeight={700}>{`  ${eff}`}</tspan>

@@ -61,6 +61,8 @@ export type HoverTargeting =
       line: 'dashed' | 'solid';
       /** Nom de l'arme ou du sort. */
       title: string;
+      /** Nom AFFICHÉ du combattant ciblé (retour playtest #201) — la cible déjà résolue par l'affordance. */
+      targetName: string;
       /** Libellé de la compétence employée (« Projectiles (Arcs) », « Langue (Magick) »…). */
       skill: string;
       /** Valeur de compétence nue ; `mod` = somme des modificateurs situationnels (peut être 0). */
@@ -157,7 +159,7 @@ function batteryAffordance(get: Get, active: Combatant, target: Combatant): Hove
   const gbf = () => bonus(effectiveChar(active, 'F')); // paresseux : la portée navale est fixe (number) → BF jamais évalué
   const maxRange = Math.max(...postes.map((p) => effectiveRange(p.item.range, gbf) ?? 0)); // mètres — la plus longue pièce du bord
   if (maxRange && combatDistance(active, target) * mpt > maxRange) return { kind: 'invalid', reason: 'range' };
-  return { kind: 'ok', line: 'dashed', title: `Bordée ${side}`, skill: 'Tir de batterie', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  return { kind: 'ok', line: 'dashed', title: `Bordée ${side}`, targetName: target.name, skill: 'Tir de batterie', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
 /** Mode incantation : mêmes gates que castSpell (équipe → portée → LdV). */
@@ -192,6 +194,7 @@ function castAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
     kind: 'ok',
     line: 'dashed',
     title: spell.label,
+    targetName: target.name,
     skill: castInfo(spell).skill === 'priere' ? 'Prière' : 'Langue (Magick)',
     base: pv.base,
     mod: pv.target - pv.base,
@@ -211,7 +214,7 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
     const p = serveTargetPoste(active, target, battle.combatants);
     if (!p) return { kind: 'none' };
     const join = isPosteManned(p, battle.combatants);
-    return { kind: 'ok', line: 'solid', title: `${join ? 'Renfort' : 'Servir'} : ${p.item.name}`, skill: join ? "Renfort d'équipe" : 'Chef de pièce', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+    return { kind: 'ok', line: 'solid', title: `${join ? 'Renfort' : 'Servir'} : ${p.item.name}`, targetName: target.name, skill: join ? "Renfort d'équipe" : 'Chef de pièce', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
   }
   const option = selectedAttackOption(active, battle);
   if (!option) return { kind: 'none' }; // mode non-attaque (cast/heal/…) ou aucune attaque abordable
@@ -223,17 +226,17 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
   if (isStructure(target) && active.weapons.every((w) => structureImmune(w, target))) return { kind: 'none' };
   if (option.targeting === 'trample')
     return (active.advantage ?? 0) >= 1 && !!trampleTarget(battle, active, target.id)
-      ? { kind: 'ok', line: 'solid', title: 'Piétinement', skill: 'Capacité de Combat', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } }
+      ? { kind: 'ok', line: 'solid', title: 'Piétinement', targetName: target.name, skill: 'Capacité de Combat', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } }
       : { kind: 'none' };
   if (option.targeting === 'zone') // Souffle/Vomi/Langue/Regard/Étreinte : réticule simple (portée/LdV au résolveur moteur)
-    return { kind: 'ok', line: 'dashed', title: option.label, skill: 'Capacité de Combat', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+    return { kind: 'ok', line: 'dashed', title: option.label, targetName: target.name, skill: 'Capacité de Combat', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
   if (option.targeting === 'aucontact') // « Au Contact » (LDB 62 l.176) : Test opposé de Corps à corps, pas une frappe
     return auContactEligible(active, target)
-      ? { kind: 'ok', line: 'dashed', title: 'Au contact', skill: 'Corps à corps', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } }
+      ? { kind: 'ok', line: 'dashed', title: 'Au contact', targetName: target.name, skill: 'Corps à corps', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } }
       : { kind: 'none' };
   if (option.targeting === 'grapple') // Empoignade (LDB 14 l.161) : Test opposé de Force, pas une frappe
     return grappleActionEligible(active, target)
-      ? { kind: 'ok', line: 'dashed', title: 'Empoignade', skill: 'Force', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } }
+      ? { kind: 'ok', line: 'dashed', title: 'Empoignade', targetName: target.name, skill: 'Force', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } }
       : { kind: 'none' };
   // === MÊLÉE (Arme + gratuites) : approche-puis-frappe — chemin réel + réticule au survol (le clic commet) ;
   // l'aperçu est calculé depuis la case d'ARRIVÉE (modificateurs honnêtes au contact). L'Allonge suit l'option.
@@ -256,6 +259,7 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
     // Gratuite (Morsure/Caudale/Tentacule) = toujours mêlée (trait solide) ; Arme = tir pointillé si à distance.
     line: option.freeKind ? 'solid' : p.kind === 'ranged' ? 'dashed' : 'solid',
     title: option.freeKind ? option.label : p.weapon.name,
+    targetName: target.name,
     skill: option.freeKind ? weaponSkillLabel('melee') : weaponSkillLabel(p.kind, p.weapon.subType),
     base: p.base,
     mod: combineMods(p.mods),
@@ -274,7 +278,7 @@ function healAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
   const battle = get().battle!;
   const allies = battle.combatants.filter((c) => c.kind === active.kind); // camp RELATIF : on soigne SON camp
   if (!healableTargets(active, allies, { adjacency: true }).some((c) => c.id === target.id)) return { kind: 'none' };
-  return { kind: 'ok', line: 'solid', title: 'Soigner', skill: 'Guérison', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  return { kind: 'ok', line: 'solid', title: 'Soigner', targetName: target.name, skill: 'Guérison', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
 /** Mode SURINCANTATION (+Cible, LDB 47 l.28) : cibles supplémentaires éligibles (portée/éveillées/LdV). */
@@ -285,7 +289,7 @@ function overcastAffordance(get: Get, _active: Combatant, target: Combatant): Ho
   const caster = pool.find((c) => c.id === pc.casterId);
   const spell = findSpellById(pc.spellId);
   if (!caster || !spell || !overcastTargetCandidates(pool, caster, pc.targetId, spell, !!pc.missile, overcastSourceOf(spell), pc.overcast?.range ?? 0, spellSightOf(get)).some((c) => c.id === target.id)) return { kind: 'none' };
-  return { kind: 'ok', line: 'dashed', title: spell.label, skill: 'Langue (Magick)', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  return { kind: 'ok', line: 'dashed', title: spell.label, targetName: target.name, skill: 'Langue (Magick)', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
 /** Mode FRAPPE MORTELLE (cleave, LDB 14 l.12) : enchaînements adjacents non encore frappés. */
@@ -295,7 +299,7 @@ function cleaveAffordance(get: Get, _active: Combatant, target: Combatant): Hove
   const pc = s.pendingCleave!;
   const atk = battle.combatants.find((c) => c.id === pc.attackerId);
   if (!atk || !cleaveTargets(battle, atk, pc.hitIds).some((c) => c.id === target.id)) return { kind: 'none' };
-  return { kind: 'ok', line: 'solid', title: 'Frappe Mortelle', skill: 'Corps à corps', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  return { kind: 'ok', line: 'solid', title: 'Frappe Mortelle', targetName: target.name, skill: 'Corps à corps', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
 /** Mode 2ᵉ FRAPPE (deux armes, LDB 10 l.638) : cibles à portée de la main secondaire. */
@@ -306,7 +310,7 @@ function dualAffordance(get: Get, _active: Combatant, target: Combatant): HoverT
   const atk = battle.combatants.find((c) => c.id === ds.attackerId);
   const off = atk?.weapons.find((w) => w.uid === ds.offWeaponUid);
   if (!atk || !off || !dualStrikeTargets(battle, atk, off).some((c) => c.id === target.id)) return { kind: 'none' };
-  return { kind: 'ok', line: 'solid', title: 'Deux armes', skill: 'Corps à corps', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  return { kind: 'ok', line: 'solid', title: 'Deux armes', targetName: target.name, skill: 'Corps à corps', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
 // ───────────────────────────────────────────────────────────────────────────
