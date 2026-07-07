@@ -10,7 +10,7 @@ import { buildWalls } from '../../src/gameIso/builders/walls';
 import { wallDepth, wallSvg } from '../../src/gameIso/backends/affineWalls';
 import { buildOperaFloorplan } from '../../src/scenes/opera/floorplan';
 import { DEFS } from '../../src/gameIso/sprites';
-import { stageSize, type Dims } from '../../src/gameIso/iso';
+import { stageSize, type Dims } from '../../src/geometry/iso';
 
 const scene = buildOperaFloorplan();
 

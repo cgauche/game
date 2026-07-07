@@ -6,7 +6,7 @@ import { DEFS } from '../src/gameIso/sprites';
 import { bonesToSvg } from '../src/gameIso/rig/renderBones';
 import { resolveRig } from '../src/gameIso/rig/composeRig';
 import { entityRigProfile } from '../src/gameIso/rig/enemyProfile';
-import { hashSeed } from '../src/gameIso/appearance';
+import { hashSeed } from '../src/engine/dice';
 import type { View } from '../src/gameIso/rig/facing';
 
 // nom → arme à la main (libellé libre)

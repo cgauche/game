@@ -6,12 +6,27 @@
  */
 import type { Weapon, ArmourPoints } from './types';
 import type { TraitInstance, TraitList } from './statEntry';
-import { buildWeapon, emptyArmour } from './items';
+import { buildWeapon, emptyArmour, newUid } from './items';
 import type { WeaponDamageSpec } from './types';
 import { findResolvedTrait, traitLabelById } from './traits/dispatch';
-import { findTraitById, findTrappingById, qualityInstance, SPEC_SOURCES, type TrappingData } from '../data/index';
+import { weaponGroupKey } from './weaponGroup';
+import { findTraitById, findTrappingById, findTrappingByLabel, qualityInstance, SPEC_SOURCES, type TrappingData } from '../data/index';
 import { QUALITY_IDS } from './qualities/ids';
 import { qualityIndice } from './qualities/dispatch';
+
+const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
+/** Construit une arme minimale depuis un LIBELLÉ d'authoring (override de scène `weapon:'X'`) : type
+ *  déduit du Groupe canonique (`weaponGroupKey`), FORME résolue au catalogue (`findTrappingByLabel` →
+ *  `Weapon.shape`, le rendu route l'art par id jamais par libellé). Hors catalogue → pas de shape.
+ *  Vit dans `engine` (authoring pur, sans Recharge) : partagé par le SPAWN (`state/spawn`) et le RENDU
+ *  d'exploration (`gameIso/rig`) sans inversion de couche (#187). */
+export function weaponFromLabel(label: string): Weapon {
+  const w: Weapon = { name: label, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
+  if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
+  const shape = findTrappingByLabel(label)?.shape;
+  if (shape) w.shape = shape;
+  return w;
+}
 
 /**
  * Résout l'`arg` d'un trait `arme`/`a-distance` (`specsSource` `weaponsMelee`/`weaponsRanged`, cf.

@@ -12,8 +12,8 @@
 import type {
   GameState,
   PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingCrewTest, PendingShanty, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
-  PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal, PendingSurgery,
-  PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage, PendingAuContact, PendingGrapple,
+  PendingReload, PendingStateRecovery, PendingTest, PendingSteamSave, PendingAppraise, PendingBargain, PendingHeal, PendingSurgery,
+  PendingCorruption, PendingAttack, PendingHandGate, PendingDefense, PendingCast, PendingDisengage, PendingAuContact, PendingGrapple,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
   PendingForceDoor, ForceDoorParticipant,
   PendingCastOpposition, OppositionParticipant,
@@ -1224,6 +1224,20 @@ export const FLOWS = {
     lens: flatRollLens((p) => p.success ? null : p.target),
   }),
 
+  /** Main ensanglantée (AA l.2569) : Test de Dextérité Accessible (+20) PAR ACTION, AVANT d'ouvrir une
+   *  attaque avec l'arme tenue dans la main gatée. Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68) via
+   *  la lentille (`caps.forced` + verbe `forceSuccess`) ; Chance « +1 DR » par `bumpSL`. Calque `reload`.
+   *  L'issue (RÉUSSITE → ouvre l'attaque ; ÉCHEC → `disarm` + Action consommée) vit dans `handGateConfirm`. */
+  handGate: makeRollFlow<PendingHandGate>({
+    key: 'pendingHandGate',
+    rolled: (p) => p.roll != null,
+    actor: (s, p) => actorIn(s, p.attackerId),
+    caps: { forced: true },
+    resolve: simpleTestResolve((p) => p.skillValue, (p) => p.difficulty, battleRng, { actorless: true }), // valeur Dextérité BAKÉE → actorless
+    outcome: (p) => rollOutcome(p.roll, p.target, p.sl),
+    lens: flatRollLens((p) => p.success ? null : p.target),
+  }),
+
   /** « Se libérer » (Empêtré, Test opposé de Force) / « se rouler au sol » (En flammes, Athlétisme) — LDB 16. */
   recover: makeRollFlow<PendingStateRecovery>({
     key: 'pendingStateRecovery',
@@ -1311,6 +1325,20 @@ export const FLOWS = {
     },
     outcome: (p) => rollOutcome(p.roll, p.target, p.sl), // d100 propre réussi (LDB ch.12 l.56 + l.29-31)
     bonus: { derive: (_s, p) => ({ sl: p.sl + 1, success: (p.roll ?? 0) <= p.target && p.sl + 1 >= p.requireSL }) },
+  }),
+
+  /** Sauvegarde d'Initiative d'une PANNE DE VAPEUR « Fuite de vapeur » (MDG 12 l.326-328) : la personne
+   *  au moteur teste l'Initiative sous peine d'être ébouillantée. Vrai Test JOUEUR → Résilience GLOBALE
+   *  (LDB 17 l.68) via la lentille plate ; Chance « +1 DR » par `bumpSL`. L'ébouillantage (échec) est
+   *  appliqué par `steamSaveConfirm`, qui reprend ensuite la boucle maritime. */
+  steamSave: makeRollFlow<PendingSteamSave>({
+    key: 'pendingSteamSave',
+    rolled: (p) => p.roll != null,
+    actor: (s, p) => actorIn(s, p.actorId),
+    caps: { forced: true },
+    resolve: simpleTestResolve((p) => p.skillValue, (p) => p.difficulty),
+    outcome: (p) => rollOutcome(p.roll, p.target, p.sl),
+    lens: flatRollLens((p) => p.success ? null : p.target), // rien à forcer si déjà réussi
   }),
 
   /** Exposition à une Influence corruptrice (LDB 19 l.23-75) : Test de Résistance ou de Calme
@@ -1452,6 +1480,7 @@ export const FLOW_VERBS = {
   maneuver:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   run:          { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
   reload:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
+  handGate:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   recover:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   focus:        { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   dispel:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
@@ -1462,6 +1491,7 @@ export const FLOW_VERBS = {
   surgery:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   corruption:   { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'resist'], coop: true },
   test:         { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess', 'cancel'] },
+  steamSave:    { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   activity:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   bargain:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
   appraise:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
@@ -1482,9 +1512,9 @@ export const FLOW_VERBS = {
 const FLOW_HANDLERS = {
   attack: FLOWS.attack, defense: FLOWS.defense, cast: FLOWS.cast, disengage: FLOWS.disengage, flee: FLOWS.flee,
   auContact: FLOWS.auContact, grapple: FLOWS.grapple, trample: FLOWS.trample, battement: FLOWS.battement,
-  distraire: FLOWS.distraire, maneuver: FLOWS.maneuver, run: FLOWS.run, reload: FLOWS.reload, recover: FLOWS.recover,
+  distraire: FLOWS.distraire, maneuver: FLOWS.maneuver, run: FLOWS.run, reload: FLOWS.reload, handGate: FLOWS.handGate, recover: FLOWS.recover,
   focus: FLOWS.focus, dispel: FLOWS.dispel, frenzy: FLOWS.frenzy, approach: FLOWS.approach, ward: FLOWS.ward,
-  heal: FLOWS.heal, surgery: FLOWS.surgery, corruption: FLOWS.corruption, test: FLOWS.test,
+  heal: FLOWS.heal, surgery: FLOWS.surgery, corruption: FLOWS.corruption, test: FLOWS.test, steamSave: FLOWS.steamSave,
   activity: FLOWS.activity, bargain: FLOWS.bargain, appraise: FLOWS.appraise, shanty: FLOWS.shanty,
   counterspell: FLOWS.counterspell, cascade: FLOWS.cascade, opposition: FLOWS.castOpposition, extendedTest: FLOWS.extendedTest,
   forceDoor: FLOWS.forceDoor, shipManeuver: FLOWS.shipManeuver, shipBattery: FLOWS.battery, crewTest: FLOWS.crewTest,

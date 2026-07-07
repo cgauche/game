@@ -9,7 +9,7 @@ import { Combatant } from '../../engine/types';
 import { zdeRadiusTiles, spellRangeTiles } from '../../engine/magic';
 import { findSpellById } from '../../data';
 import { placingZoneOf, placedZoneValidAt, castSightBlocked } from '../../state/combatFlow';
-import { Dims, diamondPath, diamondCorners } from '../iso';
+import { Dims, diamondPath, diamondCorners } from '../../geometry/iso';
 import { chebyshev } from '../../state/path';
 import type { Pt } from '../../state/path';
 

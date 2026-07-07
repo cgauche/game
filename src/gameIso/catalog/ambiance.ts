@@ -4,7 +4,7 @@
  *  plus aucune de ces couleurs en dur dans un renderer. */
 import { ambiance } from '../../data';
 import { ao, spec } from '../shade';
-import type { Dims } from '../iso';
+import type { Dims } from '../../geometry/iso';
 
 /** Halo radial (voile chaud / vignette) : centre + rayon en %, couleur et alpha au bord utile. */
 export interface RadialVeilDef { cx: string; cy: string; r: string; color: string; alpha: number; innerOff?: string }

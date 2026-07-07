@@ -110,7 +110,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
     const { H, E } = setup('grande'); // E est une source de Peur (Taille)
     H.resolve = 2;
     const round = useGame.getState().battle!.round;
-    // Peur déjà ENTAMÉE (Test étendu) : 1 DR cumulé sur 3 requis, pas encore testée ce Round.
+    // Peur déjà ENTAMÉE (Test étendu) : 1 DR cumulé sur 3 requis, Test de ce Round non encore effectué.
     H.psychState = [{ type: 'peur', sourceId: E.id, indice: 3, calmeDR: 1, lastTestRound: round - 1 }];
     openRoundEndCascade(useGame.getState, useGame.setState);
     const step = useGame.getState().pendingCascade!.participants[0];

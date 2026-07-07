@@ -5,7 +5,7 @@ import { buildProps } from '../builders/props';
 import { buildWalls } from '../builders/walls';
 import type { LightField } from '../../state/vision';
 import { AMBIANCE } from '../catalog/ambiance';
-import type { Dims } from '../iso';
+import type { Dims } from '../../geometry/iso';
 import { floorLayerObjs, wallLayerObjs } from './layers';
 
 const DIMS = (s: { dimensions: { w: number; h: number } }): Dims => ({ ...s.dimensions, rot: 0, view: 'iso' });

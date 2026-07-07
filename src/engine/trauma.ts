@@ -30,6 +30,11 @@ export type TraumaSeverity = 'mineur' | 'majeur';
 
 const LEG: HitLocation[] = ['jambeG', 'jambeD'];
 
+/** Texte de la plaie chirurgicale d'une amputation (LDB 18 l.239, DISPLAY-ONLY) — SOURCE UNIQUE partagée par
+ *  `resolveAmputation` (critical.ts) et `stampCriticalEscalation` (« Pied écrasé »). */
+export const AMPUTATION_WOUND_DESC =
+  'Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.';
+
 /**
  * Fiche de Traumatisme (registre `traumas.json`, app-owned) : mécanique = `ops` (GameOp[]), `desc` =
  * texte canon LDB 18 VERBATIM (DISPLAY-ONLY, jamais parsé). Couvre déchirures/fractures par localisation
@@ -45,6 +50,13 @@ export interface TraumaFiche {
   severity?: TraumaSeverity;
   prosthesis?: { trappingId: string; cancels: 'all' | 'movement' }[];
   needsSurgery?: boolean;
+  /** Séquelle COSMÉTIQUE (cicatrice) : n'est PAS une Blessure critique comptée (`criticalWounds`) — cf. `Trauma.cosmetic`. */
+  cosmetic?: boolean;
+  /** Surcharge du `kind` passif (défaut : `traumaOpKind`) — cf. `Trauma.passiveKind`. */
+  passiveKind?: import('./ops').PassiveKind;
+  /** Note MAISON (règle stricte 7) — trace éditable d'un arbitrage d'un point que le RAW laisse au contexte
+   *  (« certains Tests sociaux » / « en fonction du contexte »). DISPLAY/DOC only, jamais lu pour la mécanique. */
+  maison?: string;
 }
 
 const FICHES = traumasJson as TraumaFiche[];
@@ -116,6 +128,8 @@ export function traumaById(id: string, opts?: { be?: number; d10?: number }, loc
     if (f.kind === 'fracture' && sev === 'majeur') out.needsSurgery = true;
   }
   if (f.needsSurgery) out.needsSurgery = true;
+  if (f.cosmetic) out.cosmetic = true;
+  if (f.passiveKind) out.passiveKind = f.passiveKind;
   return out;
 }
 
@@ -378,19 +392,164 @@ export function tickFingerLossEscalation(c: Combatant, rng: RNG = defaultRNG): s
 }
 
 /**
- * Instancie l'escalade GATÉE d'un critique (`CritEscalation`, LDB / Aux Armes) SUR la plaie chirurgicale posée
- * par le bloc d'amputation (SOURCE UNIQUE, partagée par `rollCritical` et `resolveAACritical`) :
- *  - « Main ouverte » (l.2571) → `fingerLossPerRound` + `awaitingMedicalAid` (escalade par Round de combat) ;
- *  - « Pied écrasé » (l.2624) → `amputateAfterDays = 1d10` + `amputateSequel` (perte du membre si pas de
- *    Chirurgie à temps ; décompté à l'entretien par `tickTraumaRecovery`).
- * Mute la plaie en place. No-op si l'entrée ne déclare pas d'escalade ou n'a pas posé de plaie chirurgicale.
+ * Instancie l'escalade GATÉE d'un critique (`CritEscalation`, LDB / Aux Armes) — SOURCE UNIQUE partagée par
+ * `rollCritical` et `resolveAACritical` :
+ *  - « Main ouverte » (l.2571) → `fingerLossPerRound` + `awaitingMedicalAid` SUR la plaie chirurgicale (escalade
+ *    par Round de combat) ;
+ *  - « Pied écrasé » (l.2624) → `amputateAfterDays = 1d10` + `amputateSequel` SUR la plaie (perte du membre si
+ *    pas de Chirurgie à temps ; décompté à l'entretien par `tickTraumaRecovery`) ;
+ *  - « Épaule luxée »/« Genou démis » (`medicalAidGate`) → POUSSE une NOUVELLE séquelle « membre désactivé » à
+ *    `location` (pas de plaie chirurgicale : le membre n'est pas amputé mais inutilisable), porteuse de
+ *    `restoreDR`/`recoveryPenalty`/`awaitingMedicalAid`.
+ * Mute `traumas` en place. No-op si l'entrée ne déclare pas d'escalade (ou, pour finger/pied, pas de plaie).
  */
-export function stampCriticalEscalation(traumas: Trauma[], esc: CritEscalation | undefined, rng: RNG = defaultRNG): void {
+export function stampCriticalEscalation(
+  traumas: Trauma[],
+  esc: CritEscalation | undefined,
+  location: HitLocation,
+  rng: RNG = defaultRNG,
+  existing: Trauma[] = [],
+): void {
   if (!esc) return;
-  const plaie = traumas.find((t) => t.needsSurgery && t.traumaId == null); // « Amputation » = la plaie chirurgicale
-  if (!plaie) return;
-  if (esc.fingerLossPerRound) { plaie.fingerLossPerRound = true; plaie.awaitingMedicalAid = true; }
-  if (esc.amputateAfter1d10Days) { plaie.amputateAfterDays = d10(rng); plaie.amputateSequel = esc.amputateSequel; }
+  let plaie = traumas.find((t) => t.needsSurgery && t.traumaId == null); // « Amputation » = la plaie chirurgicale
+  if (plaie && esc.fingerLossPerRound) { plaie.fingerLossPerRound = true; plaie.awaitingMedicalAid = true; }
+  if (esc.amputateAfter1d10Days) {
+    // « Pied écrasé » (LDB 18 l.180) : le pied est une plaie chirurgicale À PART ENTIÈRE (« Si vous n'êtes pas
+    // soigné par Chirurgie… vous perdez votre pied »), indépendante de la perte d'orteil (`amputation.loss`
+    // peut n'avoir posé aucune plaie sur un Test réussi) → on en CRÉE une si aucune n'existe.
+    if (!plaie) { plaie = { label: 'Amputation', location, needsSurgery: true, desc: AMPUTATION_WOUND_DESC }; traumas.push(plaie); }
+    plaie.amputateAfterDays = d10(rng); plaie.amputateSequel = esc.amputateSequel;
+  }
+  if (esc.medicalAidGate) {
+    const g = esc.medicalAidGate;
+    traumas.push({
+      label: g.label,
+      location,
+      ops: g.disable.map((o) => ({ ...o })),
+      awaitingMedicalAid: true,
+      restoreDR: g.restoreDR,
+      recoveryPenalty: g.recoveryPenalty.map((o) => ({ ...o })),
+    });
+  }
+  if (esc.bleedOnReinjury) {
+    // Plaie « réouverte » (LDB 18 l.101/118/143/145/148/175 ; AA 07 l.119/147/149/152/175) : séquelle
+    // chirurgicale portant `bleedOnReinjury` à `location` — la Chirurgie la retire (`needsSurgery`), le
+    // déclencheur `reinjuryBleed` la lit au point d'application des Dégâts localisés.
+    traumas.push({ label: esc.bleedOnReinjury.label, location, bleedOnReinjury: esc.bleedOnReinjury.amount, needsSurgery: true });
+  }
+  if (esc.onHealGrant) {
+    // « Une fois que la blessure est guérie… » (LDB 18 l.61/72) : marqueur de la Blessure critique EN COURS de
+    // guérison, porteur de la cicatrice à octroyer. La guérison (retrait des États `whenClear`) est détectée par
+    // `settleHealedCriticals` au point unique de retrait d'État (`removeCondition`).
+    traumas.push({ label: `${traumaFicheById(esc.onHealGrant.scar).label} (en cours de guérison)`, location, onHealGrant: { scar: esc.onHealGrant.scar, whenClear: [...esc.onHealGrant.whenClear] } });
+  }
+  if (esc.onNextCritWhileCondition) {
+    // « Commotion cérébrale » (LDB 18 l.74) : séquelle porteuse d'un `critTrigger` — tant que le personnage
+    // porte `whileCondition`, un critique subséquent à `location` impose le Test `resist`. Dédupliquée (une
+    // même Localisation+État n'arme qu'un seul déclencheur : plusieurs commotions ne multiplient pas le Test).
+    const n = esc.onNextCritWhileCondition;
+    const same = (t: Trauma) => t.critTrigger?.whileCondition === n.whileCondition && t.critTrigger?.location === n.location;
+    if (!existing.some(same) && !traumas.some(same)) {
+      traumas.push({
+        label: n.label,
+        location,
+        critTrigger: { location: n.location, whileCondition: n.whileCondition, resist: { difficulty: n.resist.difficulty, onFail: n.resist.onFail.map((o) => ({ ...o })) } },
+      });
+    }
+  }
+}
+
+/**
+ * Séquelles POST-guérison (LDB 18 l.61 « Blessure spectaculaire » / l.72 « Nez cassé ») : « Une fois que la
+ * blessure est guérie… ». La guérison d'une Blessure critique est définie par le RAW (« Guérir les Blessures
+ * critiques », l.304 : « pas guéries tant que tous les États associés n'ont pas été retirés et que tous les
+ * modificateurs non permanents n'ont pas été supprimés ») → pour chaque marqueur `onHealGrant` dont AUCUN des
+ * États `whenClear` n'est plus porté : retire le marqueur, décompte la Blessure critique (`criticalWounds`) et
+ * octroie la cicatrice (fiche `scar`, séquelle PERMANENTE visible/éditable). Appelé au POINT UNIQUE de retrait
+ * d'État (`removeCondition`) — l'instant où le dernier État associé tombe. Idempotent (le marqueur retiré ne
+ * refait pas feu). Mute `c`, renvoie le journal. */
+export function settleHealedCriticals(c: Combatant): string[] {
+  const carriers = (c.traumas ?? []).filter((t) => t.onHealGrant);
+  if (!carriers.length) return [];
+  const log: string[] = [];
+  for (const t of carriers) {
+    const g = t.onHealGrant!;
+    if (g.whenClear.some((name) => (c.conditions ?? []).some((x) => x.name === name))) continue; // LDB 18 l.304 : un État associé encore porté ⇒ Blessure critique non guérie
+    c.traumas = (c.traumas ?? []).filter((x) => x !== t);
+    if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1); // la Blessure critique est guérie (l.304)
+    const scar = traumaById(g.scar, undefined, t.location);
+    c.traumas.push(scar);
+    log.push(`${c.name} : la blessure est guérie — il reste une cicatrice (${scar.label}).`);
+  }
+  return log;
+}
+
+/** Déclencheurs d'escalade (« Commotion cérébrale » : autre critique à la tête pendant Exténué → Test de
+ *  Résistance ou Inconscient, LDB 18 l.74) armés sur `target` (`Trauma.critTrigger`) que le critique COURANT
+ *  (à `location`) fait feu : pour chaque signature DISTINCTE dont le personnage porte l'État `whileCondition`
+ *  et dont la `location` correspond (ou est absente), un Test de sauvegarde `resist` (valeur `resistVal`, RNG
+ *  seedé) dont l'ÉCHEC renvoie ses `onFail`. Lu au point unique de résolution (rollCritical/resolveAACritical) ;
+ *  n'arme rien et ne consomme AUCUN RNG en l'absence de déclencheur (patron partagé des escalades). */
+export function fireCritTriggers(target: Combatant, location: HitLocation, resistVal: number, rng: RNG = defaultRNG): GameOp[] {
+  const out: GameOp[] = [];
+  const seen = new Set<string>();
+  for (const t of target.traumas ?? []) {
+    const trig = t.critTrigger;
+    if (!trig) continue;
+    if (trig.location && trig.location !== location) continue;
+    if (!(target.conditions ?? []).some((c) => c.name === trig.whileCondition)) continue;
+    const key = `${trig.location ?? ''}|${trig.whileCondition}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const res = rollTest(resistVal, trig.resist.difficulty, rng);
+    if (!res.success) out.push(...trig.resist.onFail.map((o) => ({ ...o })));
+  }
+  return out;
+}
+
+/** États Hémorragique octroyés par la RÉOUVERTURE des plaies critiques de `c` (LDB 18 / AA 07) lorsqu'il
+ *  subit un nouveau Dégât à `location` : somme des `bleedOnReinjury` des plaies encore ouvertes (non
+ *  recousues par Chirurgie) À CETTE Localisation. Un Dégât NON localisé (zone, chute) n'en rouvre aucune
+ *  (RAW « Dégâts à cette Localisation ») ; plusieurs plaies gatées à la même Localisation CUMULENT (RAW ne
+ *  les fusionne pas). Lu au point d'application des Dégâts localisés (`applyAttackResult`/Projectile magique). */
+export function reinjuryBleed(c: Combatant, location: HitLocation): number {
+  return (c.traumas ?? []).reduce((n, t) => n + (t.location === location ? (t.bleedOnReinjury ?? 0) : 0), 0);
+}
+
+/** Séquelles « membre désactivé » (`medicalAidGate`) dont l'Aide Médicale a été reçue et qui attendent le Test
+ *  étendu de Guérison de récupération (acte « Guérison » de l'Infirmerie). */
+export function recoverableTraumas(c: Combatant): Trauma[] {
+  return (c.traumas ?? []).filter((t) => t.restoreDR != null && !t.awaitingMedicalAid);
+}
+/** Le personnage a-t-il un membre désactivé prêt à récupérer son usage (Aide Médicale reçue) ? */
+export function hasRecoverableTrauma(c: Combatant): boolean {
+  return recoverableTraumas(c).length > 0;
+}
+/** Un membre désactivé attend-il ENCORE l'Aide Médicale (le Test de récupération est bloqué tant qu'elle
+ *  n'est pas donnée, LDB l.120/179 : « Après application de cette Aide… ») ? */
+export function hasLimbAwaitingAid(c: Combatant): boolean {
+  return (c.traumas ?? []).some((t) => t.restoreDR != null && t.awaitingMedicalAid);
+}
+/** Main tenant l'arme concernée par une Localisation de BRAS (convention DROITIER partagée avec `disarm`/
+ *  `handGate` : `brasD`→`main`, `brasG`→`off`) ; `undefined` pour toute autre Localisation (jambe/tête/corps,
+ *  aucune notion de main). */
+function armLocationHand(loc: HitLocation): 'main' | 'off' | undefined {
+  return loc === 'brasD' ? 'main' : loc === 'brasG' ? 'off' : undefined;
+}
+
+/** Usage du membre RÉCUPÉRÉ (Test étendu de Guérison atteint) : retire la séquelle « membre désactivé »
+ *  d'INDICE `idx` parmi `recoverableTraumas` et renvoie ses `recoveryPenalty` (posées par l'appelant via
+ *  `applyOps`, avec une durée d'horloge partagée 1d10 jours) + le journal. #193 : un `testMod{char:'CC'}`
+ *  de la `recoveryPenalty` (même donnée pour brasD/brasG) est ICI scopé à la main RÉELLE du membre — portée
+ *  MEMBRE (« Tests effectués avec ce bras ») au lieu d'un `charMod` global historique. */
+export function recoverDisabledLimb(c: Combatant, idx = 0): { penalty: import('./ops').GameOp[]; log: string[] } {
+  const pool = recoverableTraumas(c);
+  const t = pool[idx] ?? pool[0];
+  if (!t) return { penalty: [], log: [`${c.name} : aucun membre à rééduquer.`] };
+  c.traumas = (c.traumas ?? []).filter((x) => x !== t);
+  const hand = armLocationHand(t.location);
+  const penalty = (t.recoveryPenalty ?? []).map((o) => (hand && o.op === 'testMod' && o.char === 'CC' ? { ...o, weaponHand: hand } : { ...o }));
+  return { penalty, log: [`${c.name} : usage du membre récupéré (${t.label}, ${t.location}).`] };
 }
 
 /**
@@ -451,7 +610,7 @@ export function removeSurgicalTrauma(c: Combatant, idx = 0): string[] {
   const t = surg[idx] ?? surg[0];
   if (!t) return [`${c.name} : aucune blessure ne relève de la chirurgie.`];
   c.traumas = (c.traumas ?? []).filter((x) => x !== t);
-  if (c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1);
+  if (!t.cosmetic && c.criticalWounds) c.criticalWounds = Math.max(0, c.criticalWounds - 1); // une cicatrice n'est pas une Blessure critique comptée (déjà décomptée à la guérison)
   return [`${c.name} : ${t.label} (${t.location}) réparée par chirurgie.`];
 }
 
@@ -597,7 +756,7 @@ function scaleEtatOp(op: GameOp, mult: number): GameOp {
 export function passiveMods(c: Combatant): PassiveMod[] {
   const out: PassiveMod[] = [];
   for (const t of c.traumas ?? []) {
-    for (const o of traumaOps(t)) { const kind = traumaOpKind(o); if (modSurvives(c, kind, t)) out.push({ op: o, kind }); }
+    for (const o of traumaOps(t)) { const kind = t.passiveKind ?? traumaOpKind(o); if (modSurvives(c, kind, t)) out.push({ op: o, kind }); }
   }
   // Maladies (kind `maladie`, annulée par Détermination ; passifs des symptômes via `diseasePassiveOps`) +
   // Faim (kind `faim`, non annulée : `noHunger` purge l'état à l'entretien, pas ici). Pénalités de

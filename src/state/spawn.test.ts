@@ -207,14 +207,15 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
   });
 });
 
-/** L'apparence ÉDITÉE d'un ennemi (seed re-tiré, sexe, carrière…) doit survivre au spawn et
- *  atteindre le rig en combat — sans elle, `enemyRigProfile` redérivait tout du nom (bug). */
+/** L'apparence ÉDITÉE d'un ennemi (seed re-tiré, sexe, carrière…) doit survivre au spawn comme override
+ *  BRUT (`appearanceOverride`) : le rig la fige PARESSEUSEMENT au rendu (#187), plus au spawn/state. */
 describe('spawnEnemy — transport de l’apparence/carrière éditée vers le Combatant (parité explo↔combat)', () => {
   const at = { x: 0, y: 0 };
 
-  it('seed + sexe + carrure édités → portés par Combatant.appearance', () => {
+  it('seed + sexe + carrure édités → portés BRUTS par Combatant.appearanceOverride', () => {
     const c = spawnEnemy('Mutant', undefined, 'e1', at, { appearance: { seed: 12345, sex: 'F', build: 0.7 } });
-    expect(c.appearance).toMatchObject({ seed: 12345, sex: 'F', build: 0.7 });
+    expect(c.appearanceOverride).toMatchObject({ seed: 12345, sex: 'F', build: 0.7 });
+    expect(c.appearance).toBeUndefined(); // rien de figé dans state — la résolution rig est différée
   });
 
   it('tenue éditée → portée par Combatant.career', () => {
@@ -222,9 +223,9 @@ describe('spawnEnemy — transport de l’apparence/carrière éditée vers le C
     expect(c.career).toBe('Soldat');
   });
 
-  it('sans aucun override → appearance reste indéfini (rendu dérivé du nom inchangé)', () => {
+  it('sans aucun override → appearanceOverride reste indéfini (rendu dérivé du nom inchangé)', () => {
     const c = spawnEnemy('Mutant', undefined, 'e1', at);
-    expect(c.appearance).toBeUndefined();
+    expect(c.appearanceOverride).toBeUndefined();
   });
 
   it('override PARTIEL (seed seul) → enemyRigProfile conserve les défauts de race (coiffure/couleurs)', () => {

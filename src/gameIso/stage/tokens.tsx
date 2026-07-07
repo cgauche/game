@@ -11,7 +11,7 @@ import { Scene } from '../../state/scene';
 import { Combatant } from '../../engine/types';
 import { isOutOfAction } from '../../engine/conditions';
 import type { BattleState } from '../../state/store';
-import { CELL, Dims, tileCenter, depth, diamondPath } from '../iso';
+import { CELL, Dims, tileCenter, depth, diamondPath } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import { BodyToken } from '../BodyToken';
 import { MountedToken } from '../MountedToken';

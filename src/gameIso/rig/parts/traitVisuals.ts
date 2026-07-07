@@ -53,7 +53,7 @@ export function traitOverlaysFor(c: Combatant): RigOverlay[] {
     out.push({ bone: 'mainG', svg: '', replace: true });
   }
   // Vol : sauté si la créature porte déjà des ailes monstrueuses (Furie : ailes de cuir).
-  const monsterWings = !!(c.appearance?.monster?.ailes ?? d?.perso?.monster?.ailes);
+  const monsterWings = !!(c.appearanceOverride?.monster?.ailes ?? d?.perso?.monster?.ailes);
   if (has('vol') && !monsterWings) {
     out.push(...dorsalOverlays('torse', WINGS.plumes));
   }

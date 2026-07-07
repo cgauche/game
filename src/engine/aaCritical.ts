@@ -17,14 +17,15 @@
  * (l.2608/2609) via `resist.skill`. #153 poursuit : durées en JOURS (charMod/condition
  * `durationHours`, ctx.now câblé côté `state/combatFlow.ts`), Amputation DÉCLARÉE STRUCTURELLEMENT
  * (`entry.amputation`, même patron que `data/criticals.ts` LDB — Test de Résistance → séquelle
- * permanente via `permanentAmputations`), et lâcher l'objet tenu (op `disarm`, ci-dessous). Ce qui
- * reste TEXTE (gap distinct, non modélisé ici — cf. #153 rapport) : la cascade Aide Médicale + Test
- * étendu de Guérison (bras 96-109/jambe 96-105 : « bras/jambe considéré comme perdu » PENDANT
- * l'attente de soins, PUIS pénalité −10 Nd10 jours après récupération), l'escalade « 1 doigt de plus
- * par Round sans Aide Médicale » (bras 116-120) et « perte du pied si pas de Chirurgie sous 1d10
- * jours » (jambe 106-115) — mêmes simplifications que leurs analogues LDB (`data/criticals.json`),
- * et le Test PAR ACTION impliquant la main (bras 46-50, « Main ensanglantée » — pas de hook d'Action
- * dans le moteur, cf. `actGate` qui ne couvre que le Round).
+ * permanente via `permanentAmputations`), et lâcher l'objet tenu (op `disarm`, ci-dessous). #166 modélise
+ * la cascade Aide Médicale + Test étendu de Guérison (bras 96-109/jambe 96-105) : `escalation.medicalAidGate`
+ * pose une séquelle « membre désactivé » (`ops` passives) en attente d'Aide Médicale (`awaitingMedicalAid`),
+ * dont l'usage se récupère par l'acte « Guérison » de l'Infirmerie (Test étendu DR `restoreDR`, `medicFlow`),
+ * puis pénalité −10 / 1d10 jours (`recoveryPenalty`) ; le Sonné « jusqu'à Aide Médicale » via `lockedUntil`.
+ * #167 modélise l'escalade « 1 doigt de plus par Round » (bras 116-120) et « perte du pied sans Chirurgie sous
+ * 1d10 jours » (jambe 106-115). #165 modélise le Test de Dextérité (+20) PAR ACTION de « Main ensanglantée »
+ * (bras 46-50, l.2569) par l'op `handGate` (marqueur PAR-MAIN, gate `attackHandGate` à la déclaration d'attaque,
+ * Échec → op `disarm`).
  */
 import aaJson from '../data/aa-criticals.json';
 import { d100, d10, RNG, defaultRNG } from './dice';
@@ -34,10 +35,10 @@ import { bonus, effectiveChar } from './characteristics';
 import { testValue } from './skills';
 import { locationLabel } from './combat';
 import { Combatant, HitLocation } from './types';
-import { traumaById, traumaFicheById, stampCriticalEscalation } from './trauma';
+import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers } from './trauma';
 import type { GameOp } from './ops';
 import type { CriticalResolved } from './critical';
-import { permanentAmputations } from './critical';
+import { resolveAmputation } from './critical';
 
 interface AAEntry {
   id: string;
@@ -58,10 +59,11 @@ interface AAEntry {
    *  que `data/criticals.ts` (LDB) : `difficulty` = Test de Résistance (échec → À Terre, +Sonné si
    *  DR≤−2, +Inconscient si DR≤−4, comme LDB 18 l.328-333), `sequels` = ids de fiches de séquelle
    *  PERMANENTE (`traumas.json`), instanciées par `permanentAmputations` (SOURCE UNIQUE, réutilisée). */
-  amputation?: { difficulty: import('./types').Difficulty; sequels: string[] };
-  /** Escalade GATÉE par les soins (même déclaration que `data/criticals.ts` LDB) : « Main ouverte »
-   *  (l.2571 : 1 doigt/Round sans Aide Médicale) / « Pied écrasé » (l.2624 : perte du pied si pas de
-   *  Chirurgie sous 1d10 jours). Instanciée sur la plaie chirurgicale par `stampCriticalEscalation`. */
+  amputation?: import('../data/criticals').Amputation;
+  /** Escalade GATÉE par les soins (même déclaration que `data/criticals.ts` LDB) : « Main ouverte » (l.127 :
+   *  1 doigt/Round sans Aide Médicale) / « Pied écrasé » (l.180 : perte du pied si pas de Chirurgie sous 1d10
+   *  jours) / « Épaule luxée » (l.125) / « Genou démis » (l.179 : membre désactivé jusqu'au Test étendu de
+   *  Guérison après Aide Médicale). Instanciée par `stampCriticalEscalation`. */
   escalation?: import('../data/criticals').CritEscalation;
   lethal?: boolean;
   desc: string;
@@ -101,33 +103,39 @@ export function resolveAACritical(
     const res = rollTest(testVal, entry.resist.difficulty, rng);
     if (!res.success) ops.push(...entry.resist.onFail);
   }
-  const traumas = (entry.traumas ?? []).map((id) =>
+  // Occurrence-count PAR ID D'ENTRÉE (AA 07 l.96 : « Si vous subissez de nouveau ce résultat… ») : effet
+  // ALTERNATIF `escalation.onRepeat` (séquelles REMPLACÉES, ops immédiates AJOUTÉES). SOURCE UNIQUE (chemin LDB).
+  const repeated = (target.critEntriesSuffered ?? []).includes(entry.id);
+  const repeat = repeated ? entry.escalation?.onRepeat : undefined;
+  if (repeat?.ops) ops.push(...repeat.ops.map((o) => ({ ...o })));
+  const traumaRefs = repeat?.traumas ?? entry.traumas ?? [];
+  const traumas = traumaRefs.map((id) =>
     traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
-  // Amputation (« voir Amputation en page 180 de WFJDR ») DÉCLARÉE STRUCTURELLEMENT — même cascade que
-  // `rollCritical` (LDB 18 l.328-333) : Test de Résistance indépendant du `resist` de la ligne (les deux
-  // coexistent déjà côté LDB, ex. « Coup défigurant »/« Tendons coupés » — cf. `data/criticals.json`).
-  // Roll placé en DERNIER (ne décale que les critiques d'amputation).
+  // Amputation (« voir Amputation en page 180 de WFJDR ») DÉCLARÉE STRUCTURELLEMENT — `resolveAmputation`
+  // (SOURCE UNIQUE LDB/AA) : Test de Résistance indépendant du `resist` de la ligne (les deux coexistent déjà
+  // côté LDB, ex. « Coup défigurant »/« Tendons coupés »). Roll placé en DERNIER (ne décale que ces critiques).
+  // `timing: 'postEncounter'` (« Coupure à l'orteil » AA 07 l.171 : « Une fois la rencontre terminée… ») → aucun jet
+  // ICI : marqueur `pendingAmputation` résolu au foyer de fin de combat (`resolvePostEncounterAmputations`),
+  // MÊME patron que le chemin LDB (le foyer est kind-agnostique : il ne lit que le marqueur).
   if (!entry.lethal && entry.amputation) {
-    const res = rollTest(resistVal, entry.amputation.difficulty, rng);
-    if (!res.success) {
-      ops.push({ op: 'condition', name: 'a-terre', value: 1 });
-      if (res.sl <= -2) ops.push({ op: 'condition', name: 'sonne', value: 1 });
-      if (res.sl <= -4) ops.push({ op: 'condition', name: 'inconscient', value: 1 });
+    if (entry.amputation.timing === 'postEncounter') {
+      traumas.push({ label: entry.name, location, pendingAmputation: entry.amputation });
+    } else {
+      const amp = resolveAmputation(entry.amputation, location, resistVal, rng);
+      ops.push(...amp.ops);
+      traumas.push(...amp.traumas);
     }
-    // Plaie chirurgicale (LDB 18 l.333/401) : bloque la guérison jusqu'à l'opération.
-    traumas.push({
-      label: 'Amputation', location, needsSurgery: true,
-      desc: 'Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.',
-    });
-    // Séquelle(s) PERMANENTE(S) (membre absent) : SOURCE UNIQUE partagée avec le chemin LDB.
-    traumas.push(...permanentAmputations(entry.amputation.sequels, location, rng));
   }
-  // Escalade GATÉE par les soins (« Main ouverte » l.2571 : doigt/Round ; « Pied écrasé » l.2624 : perte du
-  // pied sans Chirurgie sous 1d10 jours) — stampée SUR la plaie chirurgicale, en DERNIER (ne décale que les
-  // critiques à escalade). SOURCE UNIQUE partagée avec le chemin LDB (`rollCritical`).
-  stampCriticalEscalation(traumas, entry.escalation, rng);
+  // Escalade GATÉE par les soins (« Main ouverte » l.127 : doigt/Round ; « Pied écrasé » l.180 : perte du pied
+  // sans Chirurgie sous 1d10 jours ; « Épaule luxée » l.125 / « Genou démis » l.179 : membre désactivé jusqu'au
+  // Test étendu de Guérison) — en DERNIER (ne décale que les critiques à escalade). SOURCE UNIQUE (chemin LDB).
+  stampCriticalEscalation(traumas, entry.escalation, location, rng, target.traumas ?? []);
+  // Déclencheurs armés par un critique ANTÉRIEUR (« Commotion cérébrale », LDB 18 l.74) — un critique LDB peut
+  // avoir armé le déclencheur, un critique AA le fait feu (l'historique est kind-agnostique). En DERNIER (RNG).
+  ops.push(...fireCritTriggers(target, location, resistVal, rng));
   return {
     location,
+    entryId: entry.id,
     name: entry.name,
     ops,
     lethal: !!entry.lethal,

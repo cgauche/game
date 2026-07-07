@@ -229,6 +229,9 @@ export interface SteamBreakdownEntry {
   mMod?: number;
   mSet?: number;
   durationRounds?: string;
+  /** Refroidissement obligatoire avant réparation (Rupture du réservoir, MDG 12 l.344) : « attendre
+   *  20+1d10 minutes » — minutes d'horloge d'immobilisation du moteur. */
+  coolMinutes?: string;
   failDamage?: string;
   engineDestroyed?: boolean;
   hullCritical?: boolean;

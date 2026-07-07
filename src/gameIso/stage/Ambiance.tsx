@@ -4,7 +4,7 @@
  */
 import { Scene } from '../../state/scene';
 import { ambientScalar } from '../../state/vision';
-import { Dims, tileCenter } from '../iso';
+import { Dims, tileCenter } from '../../geometry/iso';
 import { AMBIANCE, edgeDepthVeil } from '../catalog/ambiance';
 import { VW, VH } from './useStageCamera';
 

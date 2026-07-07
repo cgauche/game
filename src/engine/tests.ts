@@ -151,7 +151,8 @@ export interface OpposedResult {
  * Test opposé (12 - Tests.md). Le vainqueur est celui dont le DR est le plus
  * élevé ; en cas d'égalité de DR, celui dont la valeur cible (Compétence/
  * Caractéristique) est STRICTEMENT la plus élevée ; si elles sont aussi égales,
- * aucun vainqueur (statu quo / relance au choix du MJ). Pas de priorité
+ * aucun vainqueur : statu quo (la source laisse le choix statu quo OU relance, LDB 12 l.160 ;
+ * jeu sans MJ → statu quo retenu). Pas de priorité
  * « attaquant » (corrigé suite à l'audit de fidélité).
  */
 export function opposedTest(

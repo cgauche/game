@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { receiveMedicalAid, tickFingerLossEscalation, tickTraumaRecovery, stampCriticalEscalation } from './trauma';
+import { receiveMedicalAid, tickFingerLossEscalation, tickTraumaRecovery, stampCriticalEscalation,
+  recoverableTraumas, hasRecoverableTrauma, hasLimbAwaitingAid, recoverDisabledLimb, cannotWieldTwoHanded,
+  traumaMovementHalved, reinjuryBleed, removeSurgicalTrauma } from './trauma';
+import { rollCritical } from './critical';
+import { addCondition, removeCondition, hasCondition, releaseConditionLocks } from './conditions';
 import { applyOps } from './ops';
 import { resolveAACritical } from './aaCritical';
 import type { Combatant, Trauma, HitLocation } from './types';
@@ -111,17 +115,17 @@ describe('#167 — « Pied écrasé » : perte du pied si pas de Chirurgie sous 
 describe('#166/#167 — câblage DONNÉE→plaie (stampCriticalEscalation) + entrées de tables', () => {
   it('stamp « Main ouverte » pose fingerLossPerRound + awaitingMedicalAid sur la plaie', () => {
     const traumas = [plaie('brasD')];
-    stampCriticalEscalation(traumas, { fingerLossPerRound: true });
+    stampCriticalEscalation(traumas, { fingerLossPerRound: true }, 'brasD');
     expect(traumas[0].fingerLossPerRound).toBe(true);
     expect(traumas[0].awaitingMedicalAid).toBe(true);
   });
   it('stamp « Pied écrasé » pose amputateAfterDays (1d10) + amputateSequel', () => {
     const traumas = [plaie('jambeD')];
-    stampCriticalEscalation(traumas, { amputateAfter1d10Days: true, amputateSequel: 'membre-inferieur-ampute' }, seq([7]));
+    stampCriticalEscalation(traumas, { amputateAfter1d10Days: true, amputateSequel: 'membre-inferieur-ampute' }, 'jambeD', seq([7]));
     expect(traumas[0].amputateAfterDays).toBe(7);
     expect(traumas[0].amputateSequel).toBe('membre-inferieur-ampute');
   });
-  it('les 4 entrées de tables portent l’escalade attendue', () => {
+  it('les 4 entrées d’escalade doigt/pied portent l’escalade attendue', () => {
     const find = (arr: { id: string; escalation?: unknown }[], id: string) => arr.find((e) => e.id === id)!.escalation as Record<string, unknown>;
     expect(find(aaJson.bras, 'aa-bras-116')).toEqual({ fingerLossPerRound: true });
     expect(find(aaJson.jambe, 'aa-jambe-106')).toEqual({ amputateAfter1d10Days: true, amputateSequel: 'membre-inferieur-ampute' });
@@ -136,5 +140,142 @@ describe('#166/#167 — câblage DONNÉE→plaie (stampCriticalEscalation) + ent
     const p = res.traumas.find((t) => t.label === 'Amputation');
     expect(p?.amputateAfterDays).toBe(5);
     expect(p?.amputateSequel).toBe('membre-inferieur-ampute');
+  });
+});
+
+describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé → Test étendu de Guérison (AA l.125/179 / LDB)', () => {
+  it('stamp `medicalAidGate` POUSSE une séquelle « membre désactivé » (pas de plaie chirurgicale) à la localisation', () => {
+    const traumas: Trauma[] = []; // Épaule luxée n’engendre PAS d’amputation → aucune plaie chirurgicale préalable
+    stampCriticalEscalation(traumas, {
+      medicalAidGate: { label: 'Épaule luxée (bras perdu)', disable: [{ op: 'maxWeaponHands', hands: 1 }], restoreDR: 6, recoveryPenalty: [{ op: 'charMod', char: 'CC', mod: -10 }] },
+    }, 'brasD');
+    expect(traumas).toHaveLength(1);
+    const t = traumas[0];
+    expect(t.location).toBe('brasD');
+    expect(t.restoreDR).toBe(6);
+    expect(t.awaitingMedicalAid).toBe(true);
+    expect(t.ops).toEqual([{ op: 'maxWeaponHands', hands: 1 }]);
+    expect(t.recoveryPenalty).toEqual([{ op: 'charMod', char: 'CC', mod: -10 }]);
+  });
+
+  it('le membre désactivé grève passivement (bras → 2 mains impossibles ; jambe → Mouvement ÷2)', () => {
+    const arm = C({ traumas: [{ label: 'x', location: 'brasD', awaitingMedicalAid: true, restoreDR: 6, ops: [{ op: 'maxWeaponHands', hands: 1 }] }] });
+    expect(cannotWieldTwoHanded(arm)).toBe(true);
+    const leg = C({ traumas: [{ label: 'x', location: 'jambeD', awaitingMedicalAid: true, restoreDR: 6, ops: [{ op: 'moveScale', num: 1, den: 2 }] }] });
+    expect(traumaMovementHalved(leg)).toBe(true);
+  });
+
+  it('récupération BLOQUÉE tant que l’Aide Médicale n’est pas reçue, puis débloquée (LDB l.120/179)', () => {
+    const c = C({ traumas: [{ label: 'x', location: 'brasD', awaitingMedicalAid: true, restoreDR: 6, recoveryPenalty: [{ op: 'charMod', char: 'CC', mod: -10 }] }] });
+    expect(hasLimbAwaitingAid(c)).toBe(true);
+    expect(hasRecoverableTrauma(c)).toBe(false); // le Test étendu demeure indisponible avant l’Aide Médicale
+    receiveMedicalAid(c);
+    expect(hasLimbAwaitingAid(c)).toBe(false);
+    expect(recoverableTraumas(c)).toHaveLength(1);
+  });
+
+  it('`recoverDisabledLimb` retire la séquelle et rend sa `recoveryPenalty` (posée par l’appelant, 1d10 j)', () => {
+    const c = C({ traumas: [
+      { label: 'Genou démis (jambe perdue)', location: 'jambeD', restoreDR: 6, ops: [{ op: 'moveScale', num: 1, den: 2 }], recoveryPenalty: [{ op: 'testMod', char: 'Ag', amount: -10, movementOnly: true }, { op: 'moveScale', num: 1, den: 2 }] },
+    ] });
+    const { penalty, log } = recoverDisabledLimb(c, 0);
+    expect(c.traumas).toHaveLength(0); // le membre désactivé est retiré (usage récupéré)
+    expect(penalty).toEqual([{ op: 'testMod', char: 'Ag', amount: -10, movementOnly: true }, { op: 'moveScale', num: 1, den: 2 }]);
+    expect(log.join(' ')).toMatch(/usage du membre récupéré/);
+  });
+
+  // #193 — « Tests effectués avec ce bras » (LDB/AA) : `recoverDisabledLimb` scope le `testMod{char:'CC'}`
+  // à la main RÉELLE du membre (convention DROITIER, MÊME donnée pour brasD/brasG).
+  it("`recoverDisabledLimb` injecte `weaponHand` sur un `testMod{char:'CC'}` selon la Localisation (brasD → main, brasG → off)", () => {
+    const cD = C({ traumas: [{ label: 'x', location: 'brasD', restoreDR: 6, recoveryPenalty: [{ op: 'testMod', char: 'CC', amount: -10 }] }] });
+    expect(recoverDisabledLimb(cD, 0).penalty).toEqual([{ op: 'testMod', char: 'CC', amount: -10, weaponHand: 'main' }]);
+    const cG = C({ traumas: [{ label: 'x', location: 'brasG', restoreDR: 6, recoveryPenalty: [{ op: 'testMod', char: 'CC', amount: -10 }] }] });
+    expect(recoverDisabledLimb(cG, 0).penalty).toEqual([{ op: 'testMod', char: 'CC', amount: -10, weaponHand: 'off' }]);
+  });
+
+  it('Sonné « jusqu’à Aide Médicale » (Épaule luxée/Genou démis) : `unlockBy:medicalAid` le retient, l’Aide le retire', () => {
+    const c = C({ traumas: [{ label: 'x', location: 'brasD', awaitingMedicalAid: true, restoreDR: 6 }] });
+    addCondition(c, 'sonne', 1, undefined, undefined, 'medicalAid');
+    removeCondition(c, 'sonne'); // récupération d’État normale : INERTE (verrouillé)
+    expect(hasCondition(c, 'sonne')).toBe(true);
+    releaseConditionLocks(c, 'medicalAid'); // Aide reçue → l’acte retire l’État
+    expect(hasCondition(c, 'sonne')).toBe(false);
+  });
+
+  it('resolveAACritical(« Épaule luxée » 96-109) stampe le membre désactivé (usage à récupérer)', () => {
+    const c = C({});
+    const res = resolveAACritical(c, 'brasD', seq([100]), 0); // d100=100 → aa-bras-96 (96-109)
+    const t = res.traumas.find((x) => x.restoreDR != null);
+    expect(t?.restoreDR).toBe(6);
+    expect(t?.awaitingMedicalAid).toBe(true);
+    expect(t?.location).toBe('brasD');
+    expect(t?.ops).toEqual([{ op: 'maxWeaponHands', hands: 1 }]);
+  });
+
+  it('les 4 entrées « Épaule luxée »/« Genou démis » portent `medicalAidGate` (DR 6)', () => {
+    const gate = (arr: { id: string; escalation?: { medicalAidGate?: { restoreDR: number } } }[], id: string) =>
+      arr.find((e) => e.id === id)!.escalation!.medicalAidGate!;
+    expect(gate(aaJson.bras, 'aa-bras-96').restoreDR).toBe(6);
+    expect(gate(aaJson.jambe, 'aa-jambe-96').restoreDR).toBe(6);
+    expect(gate(criticalsJson.bras, 'epaule-luxee').restoreDR).toBe(6);
+    expect(gate(criticalsJson.jambe, 'genou-demis').restoreDR).toBe(6);
+  });
+});
+
+describe('#190 — réouverture (bleedOnReinjury) : chaque Dégât à la Localisation → +N Hémorragique, levée par Chirurgie (LDB 18 / AA 07)', () => {
+  it('stamp pose une séquelle chirurgicale porteuse de `bleedOnReinjury` à la localisation', () => {
+    const traumas: Trauma[] = []; // Blessure béante n’engendre PAS d’amputation → aucune plaie préalable
+    stampCriticalEscalation(traumas, { bleedOnReinjury: { amount: 2, label: 'Dégâts artériels' } }, 'corps');
+    expect(traumas).toHaveLength(1);
+    expect(traumas[0]).toMatchObject({ label: 'Dégâts artériels', location: 'corps', bleedOnReinjury: 2, needsSurgery: true });
+  });
+
+  it('reinjuryBleed : nouveau Dégât à la MÊME Localisation → N ; autre Localisation → 0', () => {
+    const c = C({ traumas: [{ label: 'Blessure béante', location: 'brasD', bleedOnReinjury: 1, needsSurgery: true }] });
+    expect(reinjuryBleed(c, 'brasD')).toBe(1); // le bras rouvert saigne
+    expect(reinjuryBleed(c, 'brasG')).toBe(0); // autre bras : rien
+    expect(reinjuryBleed(c, 'corps')).toBe(0); // Dégât non localisé au bras : rien
+  });
+
+  it('reinjuryBleed : plusieurs plaies gatées à la même Localisation CUMULENT (RAW ne les fusionne pas)', () => {
+    const c = C({ traumas: [
+      { label: 'Blessure béante', location: 'corps', bleedOnReinjury: 1, needsSurgery: true },
+      { label: 'Dégâts artériels', location: 'corps', bleedOnReinjury: 2, needsSurgery: true },
+    ] });
+    expect(reinjuryBleed(c, 'corps')).toBe(3);
+  });
+
+  it('la Chirurgie (removeSurgicalTrauma) retire la plaie → plus de réouverture', () => {
+    const c = C({ criticalWounds: 1, traumas: [{ label: 'Cuisse lacérée', location: 'jambeD', bleedOnReinjury: 1, needsSurgery: true }] });
+    expect(reinjuryBleed(c, 'jambeD')).toBe(1);
+    removeSurgicalTrauma(c);
+    expect(reinjuryBleed(c, 'jambeD')).toBe(0);
+    expect(c.criticalWounds).toBe(0);
+  });
+
+  it('rollCritical(« Blessure béante » bras 46-50) stampe la plaie `bleedOnReinjury` à la localisation du coup', () => {
+    const c = C({ skills: [{ skillId: 'resistance', characteristic: 'E', advances: 0 }] });
+    const res = rollCritical(c, 'brasG', seq([48]), 0); // 48 ∈ 46-50 (Blessure béante)
+    const p = res.traumas.find((t) => t.bleedOnReinjury != null);
+    expect(p).toMatchObject({ location: 'brasG', bleedOnReinjury: 1, needsSurgery: true });
+  });
+
+  it('les entrées de réouverture LDB portent le bon montant ; AA idem (l’Artère AA n’en porte PAS)', () => {
+    const bleed = (arr: { id: string; escalation?: { bleedOnReinjury?: { amount: number } } }[], id: string) =>
+      arr.find((e) => e.id === id)?.escalation?.bleedOnReinjury?.amount;
+    // LDB (6 entrées)
+    expect(bleed(criticalsJson.bras, 'blessure-beante')).toBe(1);
+    expect(bleed(criticalsJson.bras, 'artere-endommagee')).toBe(2);
+    expect(bleed(criticalsJson.corps, 'blessure-beante-2')).toBe(1);
+    expect(bleed(criticalsJson.corps, 'degats-arteriels')).toBe(2);
+    expect(bleed(criticalsJson.corps, 'blessure-majeure-au-torse')).toBe(2);
+    expect(bleed(criticalsJson.jambe, 'cuisse-laceree')).toBe(1);
+    // AA (5 entrées) — l’« Artère endommagée » AA (aa-bras-91) n’a PAS la clause de réouverture (RAW AA 07)
+    expect(bleed(aaJson.bras, 'aa-bras-56')).toBe(1);
+    expect(bleed(aaJson.corps, 'aa-corps-56')).toBe(1);
+    expect(bleed(aaJson.corps, 'aa-corps-66')).toBe(2);
+    expect(bleed(aaJson.corps, 'aa-corps-81')).toBe(2);
+    expect(bleed(aaJson.jambe, 'aa-jambe-76')).toBe(1);
+    expect(bleed(aaJson.bras, 'aa-bras-91')).toBeUndefined();
   });
 });

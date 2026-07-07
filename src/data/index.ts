@@ -3,7 +3,7 @@
  * écran 'dataEditor'). Les *.json de ce dossier sont la SOURCE CANONIQUE app-owned, éditée à la main :
  * aucune migration ne les régénère depuis Source/all-data.json (cela écraserait les données curées).
  */
-import type { EntityAppearance } from '../state/scene';
+import type { EntityAppearance } from '../engine/authoringAppearance';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
 import characteristicsJson from './characteristics.json';

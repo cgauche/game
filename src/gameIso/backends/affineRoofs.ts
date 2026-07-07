@@ -12,7 +12,7 @@
  * `{ plan: true }` pour son plan étiqueté par-cellule (couverture semi-transparente au travers de
  * laquelle on voit/édite les murs). Toute couleur vient du JSON (`roofMaterials.json`) ou de `shade`.
  */
-import { CELL, diamondPath, footprintDepth, isSquareView, tileCenter, type Dims } from '../iso';
+import { CELL, diamondPath, footprintDepth, isSquareView, tileCenter, type Dims } from '../../geometry/iso';
 import { roofMaterial, type RoofMaterialDef } from '../catalog/roofs';
 import { ROOF_SLOPE_M, roofCoursesPerStep } from '../builders/roofs';
 import {

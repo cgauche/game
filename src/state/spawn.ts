@@ -10,7 +10,8 @@ import { vehicleCombatant } from '../engine/vehicle';
 import { inanimateCombatant } from '../engine/inanimate';
 import { hullArmourBonus } from '../engine/navalTraits';
 import { requiredTerrains } from '../engine/ops';
-import { CustomStatblock, EntityAppearance, type Scene, heightAt, tileAt } from './scene';
+import { CustomStatblock, type Scene, heightAt, tileAt } from './scene';
+import type { EntityAppearance } from '../engine/authoringAppearance';
 import { emptyArmour, buildWeapon } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
@@ -19,17 +20,10 @@ import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwar
 import { rollMutation, mutationById } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
-import { weaponsFromTraits, armourFromTraits, renderWeaponsFromTraits } from '../engine/creatureEquip';
-import { riggedAppearance, weaponFromLabel } from '../gameIso/rig/enemyProfile';
-import { hashSeed } from '../gameIso/appearance';
-import { bodyPlanById } from '../gameIso/rig/bodyPlan';
+import { weaponsFromTraits, armourFromTraits, renderWeaponsFromTraits, weaponFromLabel } from '../engine/creatureEquip';
+import { hashSeed } from '../engine/dice';
+import { bodyShapeForSpecies } from '../engine/bodyForm';
 
-/**
- * Forme du corps (→ Tableau de Localisation, LDB p.312) dérivée du gabarit rigué de la créature.
- * Serpent & araignée ont des Localisations Alternatives ; quadrupède/ailé/oiseau réétiquettent le
- * tableau humanoïde (même mécanique). Les gabarits sans table canon (céphalopode/amorphe/squig/
- * spectral/jabberslythe) retombent sur `humanoide` (table par défaut, p.312 — pas d'invention).
- */
 /**
  * Pose la position d'un combattant en RAFRAÎCHISSANT sa hauteur métrique (`pos.h`) depuis le relief de
  * la scène — SOURCE UNIQUE de la cohérence position↔hauteur. À appeler au SPAWN et à CHAQUE déplacement
@@ -54,15 +48,13 @@ function tileAt2(scene: Scene | null, x: number, y: number, z: number): string {
   return scene ? tileAt(scene, x, y, z) : 'sol';
 }
 
+/** Forme du corps d'un Combattant (Tableau de Localisation, LDB p.312) : dérivée de l'ESPÈCE du record
+ *  (donnée neutre `bodyShapeForSpecies`), plus du registre de rendu du rig (#187). Une Nuée retombe sur
+ *  la table par défaut. Une créature sans espèce, un statbloc (nom hors bestiaire) → humanoïde. */
 export function bodyShapeOf(id: string): BodyShape {
-  switch (bodyPlanById(id)) {
-    case 'quadruped': return 'quadrupede';
-    case 'avian':
-    case 'winged': return 'oiseau'; // ailes = bras (p.312) ; mécaniquement identique au quadrupède
-    case 'serpentine': return 'serpent';
-    case 'arachnid': return 'araignee';
-    default: return 'humanoide';
-  }
+  const rec = findCreatureById(id);
+  if (rec && isSwarm(rec.traits)) return 'humanoide';
+  return bodyShapeForSpecies(rec?.appearance?.species);
 }
 
 function charsFrom(src: Partial<Record<string, number | null>>, fallback = 30): Characteristics {
@@ -211,24 +203,28 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   let chars = charsFrom(creature.char, 0);
   // Bonus de caractéristique octroyé par une variante « swap » (Grand Loup +15 Soc, Griffon +20 Soc,
   // ZI) — appliqué sur la base (une carac. « – » = 0 devient la valeur du bonus).
-  for (const s of swaps) if ('char' in s.grant) chars[s.grant.char] += s.grant.value;
+  const swapGrants = swaps.flatMap((s) => s.grant);
+  for (const g of swapGrants) if ('char' in g) chars[g.char] += g.value;
   // Compétences/talents de la donnée (PNJ nommés : Eusapia, Horreurs…) — avances dérivées du profil IMPRIMÉ.
   // + compétences d'AUTEUR ajoutées (extras.skills : qualifier un servant de pièce pour le Groupe de
-  // Projectiles de son engin, AA p.122-124) + compétences octroyées par une variante « swap » (ZI) —
-  // dérivées sur les MÊMES caractéristiques imprimées.
-  const swapSkills = swaps.flatMap((s) => ('skillId' in s.grant ? [{ id: s.grant.skillId, spec: s.grant.spec, value: s.grant.value }] : []));
-  const skills = [...skillsFromBook(creature.skills, chars), ...skillsFromBook(extras?.skills, chars), ...skillsFromBook(swapSkills, chars)];
+  // Projectiles de son engin, AA p.122-124).
+  const bookSkills = [...skillsFromBook(creature.skills, chars), ...skillsFromBook(extras?.skills, chars)];
+  // Compétences octroyées par une variante « swap » (ZI, Vouivre : Discrétion (Rurale) 65) — dérivées
+  // PLUS BAS, sur le profil FINAL (après Taille facultative éventuelle) : la valeur de Test IMPRIMÉE par
+  // la variante doit tenir compte du ∓5 Ag qu'elle-même inflige (LDB 85 l.276-277), sinon la variante se
+  // désaccorderait de son propre changement de Taille.
+  const swapSkillRefs = swapGrants.flatMap((g) => ('skillId' in g ? [{ id: g.skillId, spec: g.spec, value: g.value }] : []));
   const talents = talentsFromBook(creature.talents);
   if (extras?.randomChars) chars = randomizeChars(chars, id); // LDB 78 : −10 + 2d10 sur le profil rond
   // Traits facultatifs à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : le profil
   // imprimé est FINAL pour ses traits fixes (déjà cuits) ; un facultatif AJOUTÉ s'applique en DIRECT via
   // `liveTraits` (collecteur passif) → `characteristics` reste la base bestiaire, sans double-compte.
   const baseSize = sizeFromTraits(creature.traits) ?? 'moyenne';
-  // Taille FACULTATIVE : trait « Taille (X) » choisi, OU catégorie portée par une variante « swap »
-  // (Grand Loup : Grande). PRIME sur celle du bestiaire et applique « Utiliser les Tailles »
-  // (LDB 85 l.276-277 : ±10 F/E, ∓5 Ag par catégorie d'écart).
-  const swapSize = swaps.map((s) => s.size).find((x): x is string => !!x);
-  const optSize = sizeFromTraits(optTraits) ?? (swapSize ? parseSizeLabel(swapSize) : null);
+  // Taille FACULTATIVE : trait « Taille (X) » choisi, OU catégorie posée par une variante « swap »
+  // (bidirectionnel : Grand Loup Moyenne→Grande, Vouivre Énorme→Grande). PRIME sur celle du bestiaire
+  // et applique « Utiliser les Tailles » (LDB 85 l.276-277 : ±10 F/E, ∓5 Ag par catégorie d'écart).
+  const swapSize = swaps.map((s) => s.size).find((x): x is SizeCategory => !!x);
+  const optSize = sizeFromTraits(optTraits) ?? swapSize ?? null;
   const size = optSize ?? baseSize;
   if (optSize && optSize !== baseSize) chars = resizeBySteps(chars, SIZE_ORDER[optSize] - SIZE_ORDER[baseSize]);
   // char.B (bestiaire) = la valeur livre d'UNE créature (≈ formule × Taille) → base/surcharge ; la
@@ -237,8 +233,12 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   // Blessures dérivées de F/E/FM : computées sur le profil INCLUANT les facultatifs (Coriace +E, Élite +FM…),
   // même si `characteristics` ne stocke que la base — sinon une créature renforcée perdrait ses PB de trait.
   const charsEff = withTraitChars(chars, optTraits);
-  let wounds = typeof creature.char.B === 'number' && !profileChanged ? creature.char.B : maxWounds(charsEff, size);
-  if (traitBonusWoundsBE(optTraits)) wounds += bonus(charsEff.E); // Endurant facultatif : +BE Blessures (LDB 85)
+  // Blessures IMPOSÉES par une variante « swap » (Vouivre : « réduire ses B à 42 ») — remplace la valeur
+  // livre ET la formule par Taille, aucune des deux ne reprend la main.
+  const swapWounds = swaps.map((s) => s.wounds).find((w): w is number => w != null);
+  let wounds = swapWounds ?? (typeof creature.char.B === 'number' && !profileChanged ? creature.char.B : maxWounds(charsEff, size));
+  if (swapWounds == null && traitBonusWoundsBE(optTraits)) wounds += bonus(charsEff.E); // Endurant facultatif : +BE Blessures (LDB 85)
+  const skills = [...bookSkills, ...skillsFromBook(swapSkillRefs, chars)]; // swap : dérivée sur le profil FINAL (post-Taille)
   const swarm = isSwarm(traits);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // ×5 PB + 10 CC (la nuée = 5 créatures)
   const movement = typeof creature.char.M === 'number' ? creature.char.M : 4; // facultatifs → liveTraits (effectiveMovement)
@@ -371,22 +371,15 @@ export function spawnEnemy(
   }
 
   // COSMÉTIQUE — identité visuelle traversant explo↔combat à l'identique : tout override d'auteur
-  // (parts monstrueux, couleurs, coiffure, yeux, sexe/carrure, seed re-tiré) est porté par
-  // `Combatant.appearance` ; `enemyRigProfile` le SUPERPOSE aux défauts de race (champs absents
-  // conservés). Sans aucun override, `appearance` reste indéfini → rendu dérivé du nom inchangé.
+  // (parts monstrueux, couleurs, coiffure, yeux, sexe/carrure, seed re-tiré) est porté BRUT par
+  // `Combatant.appearanceOverride` (donnée d'authoring), puis figé PARESSEUSEMENT au rendu par
+  // `enemyRigProfile` (#187 : ce figeage rig ne s'exécute plus dans `state`). Le seed reste DÉTERMINISTE
+  // par combattant (dérivé de l'id, `Combatant.id === SceneEntity.id`). Sans override → champ absent,
+  // rendu dérivé du nom inchangé.
   const a = opts?.appearance;
   if (a?.species) c.species = a.species; // espèce/race d'auteur → rig en combat comme en exploration
   if (a && (a.species || a.monster || a.features || a.colors || a.parts || a.eyes || a.sex || a.build !== undefined || a.seed !== undefined)) {
-    c.appearance = riggedAppearance(c.name, a.seed ?? hashSeed(id), {
-      species: a.species,
-      monster: a.monster,
-      features: a.features,
-      colors: a.colors,
-      parts: a.parts,
-      sex: a.sex,
-      build: a.build,
-      eyes: a.eyes,
-    });
+    c.appearanceOverride = a;
   }
   // Tenue éditée (libellé) → portée par le rig (via Combatant.career, qui sert de tenue) en
   // combat comme en exploration.

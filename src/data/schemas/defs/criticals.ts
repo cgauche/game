@@ -4,7 +4,7 @@
  * (`src/data/criticals.ts`).
  */
 import { z } from 'zod';
-import { gameOpSchema, difficultySchema } from '../common';
+import { gameOpSchema, difficultySchema, hitLocationSchema } from '../common';
 
 export const file = 'criticals.json';
 
@@ -14,6 +14,57 @@ export const critEscalationSchema = z.strictObject({
   fingerLossPerRound: z.boolean().optional(),
   amputateAfter1d10Days: z.boolean().optional(),
   amputateSequel: z.string().optional(),
+  // « Épaule luxée »/« Genou démis » : membre désactivé jusqu'à un Test étendu de Guérison réussi (DR
+  // `restoreDR`) APRÈS Aide Médicale, puis pénalité 1d10 jours (`recoveryPenalty`). Cf. `CritEscalation`.
+  medicalAidGate: z
+    .strictObject({
+      label: z.string(),
+      disable: z.array(gameOpSchema),
+      restoreDR: z.number(),
+      recoveryPenalty: z.array(gameOpSchema),
+    })
+    .optional(),
+  // « Réouverture » (LDB 18 l.101/118/143/145/148/175 ; AA 07 l.119/147/149/152/175) : tant que la plaie
+  // n'a pas été recousue par Chirurgie, chaque nouveau Dégât à la MÊME Localisation octroie `amount` État
+  // Hémorragique. Stampé par `stampCriticalEscalation` en séquelle chirurgicale (`bleedOnReinjury` + `needsSurgery`).
+  bleedOnReinjury: z.strictObject({ amount: z.number(), label: z.string() }).optional(),
+  // « Si vous tombez une seconde fois sur cette blessure… » (Blessure majeure à l'oreille, LDB 18 l.71 / AA
+  // 07 l.96) : effet ALTERNATIF à la 2e occurrence de l'entrée (`onRepeat.traumas` remplace les séquelles de
+  // base, `onRepeat.ops` s'ajoute à l'effet immédiat). Évalué par `rollCritical`/`resolveAACritical`.
+  onRepeat: z
+    .strictObject({
+      traumas: z.array(z.string()).optional(),
+      ops: z.array(gameOpSchema).optional(),
+    })
+    .optional(),
+  // « Si vous recevez une autre Blessure critique à la tête alors que vous êtes Exténué… » (Commotion
+  // cérébrale, LDB 18 l.74) : séquelle porteuse d'un `critTrigger` — tant que `whileCondition` tient, tout
+  // critique subséquent à `location` impose le Test `resist`. Stampé par `stampCriticalEscalation`.
+  onNextCritWhileCondition: z
+    .strictObject({
+      label: z.string(),
+      location: hitLocationSchema.optional(),
+      whileCondition: z.string(),
+      resist: z.strictObject({ difficulty: difficultySchema, onFail: z.array(gameOpSchema) }),
+    })
+    .optional(),
+  // « Une fois que la blessure est guérie… » (Blessure spectaculaire l.61 / Nez cassé l.72) : marqueur de
+  // guérison (`Trauma.onHealGrant`) → cicatrice `scar` (fiche traumas.json) une fois tous les États `whenClear`
+  // retirés (LDB 18 l.304). Octroyée par `settleHealedCriticals` au retrait d'État.
+  onHealGrant: z.strictObject({ scar: z.string(), whenClear: z.array(z.string()) }).optional(),
+});
+
+/** Amputation (LDB 18 l.328-333) — reflet de `Amputation` (`src/data/criticals.ts`), SOURCE UNIQUE de forme
+ *  partagée LDB (`criticals.json`) et Aux Armes (`aa-criticals.json`, mêmes textes « Une fois la rencontre
+ *  terminée… »/« un orteil par DR »). Résolue par `resolveAmputation`. */
+export const amputationSchema = z.strictObject({
+  difficulty: difficultySchema,
+  sequels: z.array(z.string()),
+  // Test différé à la fin de la rencontre (« Coupure à l'orteil », LDB l.171 / AA 07 l.171) — marqueur `pendingAmputation`.
+  timing: z.literal('postEncounter').optional(),
+  // Séquelle CONDITIONNELLE : `difficulty` = Test gate SÉPARÉ (réussite → pas d'amputation) ; absent = le
+  // Test de Résistance `difficulty` détermine lui-même la perte. `perDR` = orteils 1 + DR en dessous de 0.
+  loss: z.strictObject({ difficulty: difficultySchema.optional(), perDR: z.boolean().optional() }).optional(),
 });
 
 const critEntrySchema = z.strictObject({
@@ -29,14 +80,11 @@ const critEntrySchema = z.strictObject({
     })
     .optional(),
   lethal: z.boolean().optional(),
-  amputation: z
-    .strictObject({
-      difficulty: difficultySchema,
-      sequels: z.array(z.string()),
-    })
-    .optional(),
+  amputation: amputationSchema.optional(),
   traumas: z.array(z.string()).optional(),
   escalation: critEscalationSchema.optional(),
+  // Note MAISON (#195) : trace éditable d'une valeur mécanique absente littéralement du texte RAW (règle stricte 7).
+  maison: z.string().optional(),
   desc: z.string(),
 });
 

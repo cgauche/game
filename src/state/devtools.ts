@@ -13,7 +13,7 @@ import { formatImperial } from '../engine/clock';
 import { testScenarios } from '../scenes/test-scenarios';
 import { hoverTargeting } from './targeting';
 import { maneuverShip } from './shipManeuver';
-import { getViewZ, setViewZ } from '../gameIso/viewLevel';
+import { getViewZ, setViewZ } from './viewLevel';
 import { setRevealAll } from './visionState';
 import { rule, setRule, resetRule, ruleDef, OPTIONAL_RULES, type RuleValue } from '../engine/policy';
 import { pickActiveModalKey, autoPolicyOf } from './modalArbiter';

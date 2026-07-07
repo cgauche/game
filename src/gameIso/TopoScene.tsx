@@ -13,7 +13,7 @@ import { buildFloors } from './builders/floors';
 import { buildWalls } from './builders/walls';
 import { floorLayerObjs, wallLayerObjs } from './stage/layers';
 import { sortByDepth } from './stage/objs';
-import { stageSize, tileCenter, type Dims } from './iso';
+import { stageSize, tileCenter, type Dims } from '../geometry/iso';
 import { IconG } from '../ui/Icon';
 import { MARKER_R, stationMarker, colocationOffsets } from './topoMarkers';
 import { relationColor } from './teamColors';

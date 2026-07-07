@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildWalls } from '../builders/walls';
 import type { WallEl } from '../builders/types';
 import { wallDepth, wallSvg, wallAccentsSvg } from './affineWalls';
-import { depth, tileEdge, type Dims } from '../iso';
+import { depth, tileEdge, type Dims } from '../../geometry/iso';
 import { structureAppearance } from '../catalog/structures';
 import { shade, SIDE_N } from '../shade';
 import { emptyScene, setStructureDown, type Scene, type WallSeg } from '../../state/scene';

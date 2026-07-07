@@ -26,6 +26,7 @@ import { applySummon } from './summonFlow';
 import { contractDisease, applyContraction, DISEASE_DEFS } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
+import { seaWeatherTestMod } from './seaVoyageFlow';
 import { openRest, placesOfKind } from './restFlow';
 import { permanentAmputations } from '../engine/critical';
 import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
@@ -343,6 +344,10 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     (!!spec.easierIf!.hasTalent && hasTalent(c, spec.easierIf!.hasTalent))
   ));
   const difficulty = eased ? easeDifficulty(baseDifficulty, spec.easierIf!.steps ?? 1) : baseDifficulty;
+  // Météo maritime ACTIVE (Précipitations, MDG 13 l.187-201) — POINT UNIQUE d'injection des mods
+  // d'environnement dans un Test : même malus pour tout le monde (indépendant du candidat), au même
+  // titre que le mod social ou le Soutien. `undefined` hors voyage en mer / Test de Caractéristique.
+  const env = seaWeatherTestMod(get().travelPlan?.sea, spec.skill, spec.spec);
   const living = get().party.filter((c) => !c.dead && (!restrictId || c.id === restrictId));
   const candidates = living.map((actor) => {
     // Soutien (LDB 12 l.214-225) : si CET acteur mène, les AUTRES membres capables l'assistent (+10, plafond
@@ -355,7 +360,9 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
     const tool = spec.tool ? actor.items?.find((i) => (i.trappingId === spec.tool || i.name === spec.tool) && !i.destroyed) : undefined;
     return {
       id: actor.id, name: actor.name, value,
-      target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[difficulty])),
+      // `env.mod` reste HORS `value` (comme la Difficulté) : une LIGNE de mod à part dans le breakdown,
+      // pas fondu dans la base — `base + mods = target` reste vérifiable à l'écran.
+      target: Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[difficulty] + (env?.mod ?? 0))),
       psychMod: (socialMod ? socialMod(actor) : 0) || undefined,
       psychDetail: socialDetail(actor),
       itemUid: tool?.uid,
@@ -372,6 +379,7 @@ export function openSkillTest(get: Get, set: SetFn, spec: FlowTest, onSuccess: F
       skillId: spec.skill, spec: spec.spec, char: spec.characteristic, // réf structurée pour talentTestSLBonus (LDB 10)
       requireSL: spec.requireSL ?? 0, target: def.target, psychMod: def.psychMod, psychDetail: def.psychDetail,
       itemUid: def.itemUid, isDouble: false, roll: null, success: false, sl: 0,
+      envMod: env?.mod, envLabel: env?.label,
       onSuccess, onFailure, after,
       candidates: candidates.length > 1 ? candidates : undefined,
     },

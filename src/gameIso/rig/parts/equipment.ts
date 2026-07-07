@@ -6,7 +6,7 @@ import type { PartArt } from './types';
 import { ARMOUR, ARMOUR_PALETTES } from './armour';
 import { WEAPON_DEFS } from './weapons/_registry.generated';
 import { SHIELD_DEFS } from './shields/_registry.generated';
-import { weaponGroupKey } from './weaponGroup';
+import { weaponGroupKey } from '../../../engine/weaponGroup';
 import { norm as wnorm } from './weaponForms';
 import { findTrappingById } from '../../../data';
 import { buildTokenMap, applyTokenMapArt } from '../palette';

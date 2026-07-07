@@ -77,7 +77,7 @@ describe('ZdE ennemie — télégraphe visuel actorAoe (pose pendant le télégr
     const cheb = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
     expect(cheb(aoe!.center, h1.pos!)).toBeLessThanOrEqual(aoe!.radius);
     expect(cheb(aoe!.center, h2.pos!)).toBeLessThanOrEqual(aoe!.radius);
-    // Avant le timer du télégraphe, la résolution n'est PAS encore amorcée (pas de cast en cours).
+    // Avant le timer du télégraphe, la résolution reste inamorcée (pas de cast en cours).
     expect(useGame.getState().pendingCast).toBeNull();
     expect(useGame.getState().pendingCascade).toBeNull();
 

@@ -31,7 +31,7 @@ import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
 import { openRest, placesOfKind } from './restFlow';
 import { dayIndex } from './upkeep';
-import { placeById, type WorldMap } from './worldMap';
+import { placeById, type WorldMap, type MapPlace } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { PendingCrewTest, ShipManeuverParticipant } from './pendings';
 import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta } from './shipCrew';
@@ -39,10 +39,12 @@ import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { maneuverCrewTotal } from './shipManeuver';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait } from '../data';
-import { installCost, rollSteamBreakdown, steamBreakdownTriggered } from '../engine/shipBuild';
+import { installCost, rollSteamBreakdown, steamBreakdownTriggered, type SteamBreakdownEntry } from '../engine/shipBuild';
 import { d10, d100, roll as rollDice, type RNG } from '../engine/dice';
 import { rollTest, isDoubleRoll } from '../engine/tests';
-import { testValue, partyAssisted } from '../engine/skills';
+import { testValue, partyAssisted, partyBest } from '../engine/skills';
+import { buildWeapon } from '../engine/items';
+import { QUALITY_IDS } from '../engine/qualities/ids';
 import { applyOps } from '../engine/ops';
 import { itemCapability } from '../engine/capabilities';
 import { isRation } from '../engine/provisions';
@@ -51,6 +53,7 @@ import { seasonOfMonth } from '../engine/travelStages';
 import {
   rollSeaWeather, rollWindDirection, windAspect, tickWindForce, windEffect, windAdjustedM,
   seaWeatherLabel, dailyWaterLitres, temperatureDef, seaExposureTestsPerDay, AFFALER_RULES,
+  precipitationSkillMod, precipitationDef,
   type SeaWeather, type WindDirection,
 } from '../engine/seaWeather';
 import {
@@ -72,7 +75,8 @@ import { subtract, toMoney, type Money } from '../engine/money';
 import { rollShipCritical } from '../engine/shipCritical';
 import type { ShipCritKey } from '../data/shipCriticals';
 import { contractDisease } from '../engine/disease';
-import { DIFFICULTY_LABELS, type Combatant, type Difficulty } from '../engine/types';
+import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
+import type { PendingSteamSave } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
 
@@ -119,6 +123,16 @@ export interface SeaVoyageState {
   /** Issue du Test de Voile/Ramer du JOUR (l.97) : 'won' → le +M s'applique aux milles du jour. Présent
    *  (won OU lost) = le rythme a été forcé → Test d'Épuisement Complexe (−10) au soir (l.111). */
   paceToday?: 'won' | 'lost';
+}
+
+/** Malus d'ENVIRONNEMENT (Précipitations, MDG 13 l.187-201) sur le Test de compétence `skillId` en
+ *  cours, quand un voyage en mer est ACTIF — POINT UNIQUE consommé par `openSkillTest` (aucun écran
+ *  ne relit `sea.weather` pour son propre Test : la modale générique porte le malus). `undefined` =
+ *  rien à afficher (mod nul, hors voyage maritime, ou Test de Caractéristique sans `skillId`). */
+export function seaWeatherTestMod(sea: SeaVoyageState | undefined, skillId?: string, spec?: string): { mod: number; label: string } | undefined {
+  if (!sea || !skillId) return undefined;
+  const mod = precipitationSkillMod(sea.weather.precipitations, skillId, spec);
+  return mod ? { mod, label: precipitationDef(sea.weather.precipitations).label } : undefined;
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -266,7 +280,7 @@ export function runSeaDays(get: Get, set: Set): void {
   let guard = 0;
   while (guard++ < 200) {
     const plan = get().travelPlan;
-    if (!plan?.sea || plan.interrupted || get().pendingCrewTest) return;
+    if (!plan?.sea || plan.interrupted || get().pendingCrewTest || get().pendingSteamSave) return;
     const sea = plan.sea;
     const rng = battleRng();
     switch (sea.step) {
@@ -538,11 +552,16 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
   const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...sea.lines, ...lines, ...evening] };
 
   if (plan.km - kmDone < 1e-9 && to) {
-    // ARRIVÉE : événement de port (2d10 ± Humeur, ch.15 l.127-129) puis transition. La distance de la
-    // traversée est NOTÉE sur le navire (vente à un port producteur : « plus de 100 milles », l.366).
+    // ARRIVÉE : la distance de la traversée est NOTÉE sur le navire (vente à un port producteur :
+    // « plus de 100 milles », l.366). Le CHOIX « relâche à terre » (MDG 15 l.245) se tranche AVANT
+    // le tirage de l'événement de port (`resolveShoreLeave` enchaîne `resolvePortArrival`).
     set({ travelPlan: null, ...(get().vessel ? { vessel: { ...get().vessel!, lastVoyageMilles: plan.km } } : {}) });
     log(get, set, [`— Accostage à ${to.label} —`]);
-    resolvePortArrival(get, set, to.port, battleRng());
+    if (to.port) {
+      set({ pendingShoreLeave: { to } });
+      return;
+    }
+    resolvePortArrival(get, set, to.port, battleRng(), true);
     get().transitionTo(to.scene, to.entry);
     return;
   }
@@ -581,12 +600,8 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
         if (triggered) {
           const b = rollSteamBreakdown(rng);
           tell(get, set, [`PANNE DE VAPEUR — ${b.label} (MDG ch.12 l.313).`, b.desc]);
-          if (b.mSet != null || b.mMod) patchSea(get, set, { milesToday: b.mSet === 0 ? 0 : Math.max(0, Math.round((get().travelPlan?.sea?.milesToday ?? 0) * (1 + (b.mMod ?? 0) / 4))) });
-          if (b.hullCritical) { const c = rollShipCritical('coque', rng); applyVesselCritical(get, set, c.log, c.note); }
-          if (b.engineDestroyed && get().vessel) {
-            // Moteur détruit : l'Amélioration saute (elle devra être ré-installée au chantier).
-            set({ vessel: { ...get().vessel!, upgrades: (get().vessel!.upgrades ?? []).filter((u) => u.id !== 'propulsion-a-vapeur') } });
-          }
+          applySteamBreakdown(get, set, b, rng); // consomme TOUS les champs (redémarrage, dégâts, immobilisation)
+          if (get().pendingSteamSave) return; // « Fuite de vapeur » : suspension modale (la boucle reprend à la fermeture)
         }
       }
       break;
@@ -695,7 +710,131 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       break;
     }
   }
-  runSeaDays(get, set); // la boucle reprend à l'étape suivante
+  // Une « Fuite de vapeur » a ouvert la sauvegarde d'Initiative (modale) : la boucle reprendra à la
+  // fermeture (`steamSaveConfirm` → `resolveSteamSave`), pas ici.
+  if (!get().pendingSteamSave) runSeaDays(get, set); // la boucle reprend à l'étape suivante
+}
+
+// ── PANNE DE VAPEUR (MDG ch.12 l.313-352) — résolution first-class au voyage ─────────────────────
+
+/** La personne qui « s'occupe du moteur » (MDG 12 l.326) à l'échelle voyage (équipage = les PJ, MDG 14
+ *  l.39) : le meilleur au Métier (Ingénieur), sinon le premier PJ en état. */
+function engineerOf(party: Combatant[]): Combatant | undefined {
+  const apt = party.filter((h) => !h.dead && !h.outOfRencontre);
+  return partyBest(apt, 'metier', undefined, undefined, 'Ingénieur')?.actor ?? apt[0];
+}
+
+/** Total d'une expression de dés « C+AdB » / « AdB » / « AdB-C » (params de la table Panne de Vapeur —
+ *  « 1d10 », « 20+1d10 », « 1d10-5 »). PUR (RNG injecté). */
+function rollDiceExpr(expr: string, rng: RNG): number {
+  const m = /^(?:(\d+)\+)?(\d+)d(\d+)([+-]\d+)?$/.exec(expr.replace(/\s/g, ''));
+  if (!m) { const n = parseInt(expr, 10); return isNaN(n) ? 0 : n; }
+  return (m[1] ? parseInt(m[1], 10) : 0) + rollDice(parseInt(m[2], 10), parseInt(m[3], 10), rng) + (m[4] ? parseInt(m[4], 10) : 0);
+}
+
+/** Exécute les Tests de REDÉMARRAGE d'une panne (MDG 12 l.329-348) via la personne au moteur — Test
+ *  étendu de Force (`extendedDR`) puis Test(s) de Métier (Ingénieur). Retourne le DR du DERNIER Test de
+ *  redémarrage (« 5 − DR Rounds » de mise en pression, l.333). Tests d'AMBIANCE de voyage (« jusqu'à ce
+ *  que quelqu'un réussisse », l.331 → retry borné) — équipage abstrait, hors modale (≠ la sauvegarde
+ *  d'Initiative PERSO, seul jet influençable de la panne, cf. `openSteamSave`). */
+function runRestart(get: Get, set: Set, eng: Combatant, restart: NonNullable<SteamBreakdownEntry['restart']>, rng: RNG): number {
+  let lastDR = 0;
+  for (const step of restart) {
+    const value = testValue(eng, step.skillId, undefined, step.spec);
+    const label = step.spec ? `${step.skillId} (${step.spec})` : step.skillId;
+    if (step.extendedDR != null) {
+      let total = 0;
+      for (let i = 0; total < step.extendedDR && i < 20; i++) total += Math.max(0, rollTest(value, step.difficulty, rng).sl);
+      tell(get, set, [`${eng.name} — ${label} ${DIFFICULTY_LABELS[step.difficulty]} (Test étendu ${step.extendedDR} DR) : ${total >= step.extendedDR ? 'obstacle dégagé.' : 'à la peine.'}`]);
+    } else {
+      let t = rollTest(value, step.difficulty, rng);
+      for (let i = 0; !t.success && i < 20; i++) t = rollTest(value, step.difficulty, rng);
+      lastDR = Math.max(0, t.sl);
+      tell(get, set, [`${eng.name} — ${label} ${DIFFICULTY_LABELS[step.difficulty]} : ${t.roll}/${t.target} → moteur relancé (DR ${lastDR}).`]);
+    }
+  }
+  return lastDR;
+}
+
+/** Applique une PANNE DE VAPEUR (MDG ch.12 l.313-352) au voyage — CHAQUE champ first-class consommé :
+ *  « Fuite de vapeur » (`failDamage`) ouvre la sauvegarde d'Initiative INFLUENÇABLE ; l'« Explosion »
+ *  (`compartmentDamage`) frappe la personne au moteur (Perforante) ; le moteur détruit (`engineDestroyed`)
+ *  ôte la propulsion à vapeur du navire ; le Coup Critique à la Coque (`hullCritical`) est roulé. Les
+ *  effets de VITESSE (`mSet`/`mMod`, pendant `durationRounds`/`coolMinutes` + le redémarrage `restart`)
+ *  IMMOBILISENT le moteur : la journée perd la fraction de milles correspondante (durée convertie en
+ *  minutes via la règle maison `combat-round-seconds`, LDB 13 l.13). */
+export function applySteamBreakdown(get: Get, set: Set, b: SteamBreakdownEntry, rng: RNG): void {
+  // « Fuite de vapeur » (l.326-328) : un jet de vapeur ébouillante la personne au moteur → sauvegarde
+  // d'Initiative INFLUENÇABLE (modale) ; échec = dégâts ignorant l'Armure. Suspend la boucle maritime.
+  if (b.failDamage) { openSteamSave(get, set, b.failDamage, rng); return; }
+
+  const eng = engineerOf(get().party);
+
+  // « Explosion » (l.351-352) : quiconque dans le compartiment du moteur (la personne au moteur, équipage
+  // abstrait) subit `compartmentDamage` Dégâts avec l'Atout Perforante.
+  if (b.compartmentDamage != null && eng) {
+    const boiler = buildWeapon({ name: 'Explosion de chaudière', damage: { plusBF: false, flat: 0 }, qualities: [{ id: QUALITY_IDS.Perforante }] }); // Dégâts passés directement (weaponHit) → la spec ne sert qu'aux qualités
+
+    const lines = applyOps(eng, [{ op: 'wounds', amount: b.compartmentDamage, weaponHit: true }], { rng, weapon: boiler, location: 'corps' });
+    set({ party: [...get().party] });
+    tell(get, set, [`${eng.name} — souffle de l'explosion (${b.compartmentDamage} Dégâts, Perforante) :`, ...lines]);
+  }
+
+  // Moteur détruit : l'Amélioration Propulsion à vapeur saute (à ré-installer au chantier) → le navire
+  // retombe sur ses voiles/avirons ou dérive pour le reste de la traversée.
+  if (b.engineDestroyed && get().vessel) {
+    set({ vessel: { ...get().vessel!, upgrades: (get().vessel!.upgrades ?? []).filter((u) => u.id !== 'propulsion-a-vapeur') } });
+  }
+  if (b.hullCritical) { const c = rollShipCritical('coque', rng); applyVesselCritical(get, set, c.log, c.note); }
+
+  // IMMOBILISATION du moteur : fenêtre à vitesse réduite (`mMod`) ou nulle (`mSet:0`) → fraction perdue.
+  const secPerRound = Number(rule('combat-round-seconds')); // LDB 13 l.13 (MJ décide, valeur maison)
+  let windowMin = 0;
+  if (b.durationRounds) windowMin += rollDiceExpr(b.durationRounds, rng) * secPerRound / 60; // « les 1d10 prochains Rounds »
+  if (b.coolMinutes) windowMin += rollDiceExpr(b.coolMinutes, rng); // « attendre 20+1d10 minutes »
+  if (b.restart && eng) windowMin += Math.max(0, 5 - runRestart(get, set, eng, b.restart, rng)) * secPerRound / 60; // « 5 − DR Rounds » de mise en pression
+  if (windowMin > 0) {
+    const miles0 = get().travelPlan?.sea?.milesToday ?? 0;
+    const baseM = effectiveSeaM(get).m ?? 4;
+    const speedFactor = b.mSet === 0 ? 0 : b.mMod ? Math.max(0, (baseM + b.mMod) / baseM) : 1; // vitesse pendant la fenêtre
+    const miles = Math.max(0, Math.round(miles0 - miles0 * Math.min(1, windowMin / MINUTES_PER_DAY) * (1 - speedFactor)));
+    if (miles !== miles0) {
+      patchSea(get, set, { milesToday: miles });
+      tell(get, set, [`Moteur immobilisé ~${Math.round(windowMin)} min — ${miles0 - miles} mille(s) perdu(s).`]);
+    }
+  }
+}
+
+/** Ouvre la sauvegarde d'Initiative INFLUENÇABLE d'une « Fuite de vapeur » (MDG 12 l.326-328) sur la
+ *  personne au moteur — dégâts d'ébouillantage roulés d'avance (« 1d10–5 Dégâts (1 minimum) », ignorent
+ *  l'Armure). Aucun équipage → rien à ébouillanter (la boucle reprend normalement). */
+function openSteamSave(get: Get, set: Set, failDamage: string, rng: RNG): void {
+  const eng = engineerOf(get().party);
+  if (!eng) return;
+  const dmg = Math.max(1, rollDiceExpr(failDamage, rng)); // « (1 minimum) » sur les Dégâts
+  const value = testValue(eng, undefined, 'I'); // Test d'INITIATIVE (Difficulté par défaut : Intermédiaire +0)
+  set({
+    pendingSteamSave: {
+      actorId: eng.id, actorName: eng.name, skillValue: value, difficulty: 'intermediaire',
+      target: value + DIFFICULTY_MODIFIERS.intermediaire,
+      scaldOps: [{ op: 'wounds', amount: dmg, ignoreTB: false, ignoreAP: true }], // « qui ignorent l'Armure » (le BE reste déduit)
+      roll: null, success: false, sl: 0,
+    } satisfies PendingSteamSave,
+  });
+}
+
+/** Résout la sauvegarde d'Initiative d'une « Fuite de vapeur » (appelée par `steamSaveConfirm`) : ÉCHEC →
+ *  ébouillanté (`scaldOps` déjà roulés), puis la boucle maritime reprend. */
+export function resolveSteamSave(get: Get, set: Set, p: PendingSteamSave): void {
+  const eng = get().party.find((h) => h.id === p.actorId);
+  if (eng && !p.success) {
+    const lines = applyOps(eng, p.scaldOps, { rng: battleRng(), now: get().gameTime });
+    set({ party: [...get().party] });
+    tell(get, set, [`${eng.name} — Initiative ${p.roll}/${p.target} : ébouillanté par le jet de vapeur !`, ...lines]);
+  } else if (eng) {
+    tell(get, set, [`${eng.name} — Initiative ${p.roll}/${p.target} : esquive le jet de vapeur.`]);
+  }
+  runSeaDays(get, set);
 }
 
 /** Rattrapé par un navire hostile : combat si la route porte une embuscade AUTHORÉE (patron travelFlow) —
@@ -998,7 +1137,22 @@ export interface PendingManannPriest {
   cost: Money;
 }
 
-export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undefined, rng: RNG): void {
+/** Permission de faire RELÂCHE À TERRE en attente de CHOIX joueur (MDG 15 l.245), posée à l'accostage
+ *  AVANT le tirage de l'événement de port — `resolveShoreLeave` tranche puis enchaîne `resolvePortArrival`
+ *  et la transition de scène (le lieu d'arrivée `to` porte la scène/l'entrée à rejoindre). */
+export interface PendingShoreLeave {
+  to: MapPlace;
+}
+
+/** ÉVÉNEMENT DE PORT (2d10 ± Humeur, ch.15 l.127-129 + Tableau l.239-263). `shoreLeave` = permission de
+ *  faire relâche à terre accordée par le capitaine (`resolveShoreLeave`, MDG 15 l.245) : gate DEUX entrées
+ *  de la table qui la référencent nommément — Embrigadement (l.245, « cet événement n'a pas lieu » si
+ *  refusée) et Fête de Manann (l.260, le bonus d'Humeur suppose « le capitaine autorise… à faire relâche »).
+ *  Les 19 autres entrées (Prêtre de Manann, Contrôle à quai, Tempête, Port désert, Gangs des quais, La
+ *  tache noire, Pénuries, Pas d'événement, Constructeur itinérant, Trop beau pour être vrai, Beau temps,
+ *  Passager clandestin, Rumeurs commerciales, Offre de mission, Bonne pêche, Saturation de produits…) ne
+ *  mentionnent pas la relâche à terre — vérifié entrée par entrée (MDG 15 l.243-263) — donc non gatées. */
+export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undefined, rng: RNG, shoreLeave = true): void {
   const vessel = get().vessel;
   const mood = vesselManann(vessel);
   const { roll, hours, event } = rollPortEvent(mood.score, rng);
@@ -1009,6 +1163,9 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
   const ship = voyageShip(get)?.hull;
   switch (event.kind) {
     case 'fete-manann':
+      // MDG 15 l.260 : le bonus d'Humeur suppose la relâche autorisée ET l'équipage sincèrement
+      // joint aux festivités — modélisé par la même permission que l'Embrigadement (l.245).
+      if (!shoreLeave) { log(get, set, ['Relâche refusée : l\'équipage ne se joint pas aux festivités de Manann.']); break; }
       if (vessel) set({ vessel: { ...vessel, manann: addManann(mood, rollDice(2, 10, rng)) } });
       break;
     case 'pretre-manann': {
@@ -1024,6 +1181,9 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
       if (ship) for (const l of applyShipMoraleDelta(get, set, ship, -rollDice(1, 10, rng))) log(get, set, [l]);
       break;
     case 'embrigadement': {
+      // « Si vous avez refusé la permission de faire relâche à terre à votre équipage, cet événement
+      // n'a pas lieu » (MDG 15 l.245) — gate sur la décision `resolveShoreLeave`.
+      if (!shoreLeave) { log(get, set, ['Relâche refusée : l\'Embrigadement n\'a pas lieu (l\'équipage reste à bord).']); break; }
       // « Vous perdez 2d10 membres d'équipage » (MDG 15 l.245) : perte PERSISTÉE puis SÉQUENCE de
       // recouvrement (Ragot Intermédiaire → rançon 2d10 CO OU Discrétion Complexe ; échec → 1d10 de
       // plus) — cascade influençable dans `embrigadementFlow`. Difficultés en donnée (`sea-events.json`).
@@ -1071,4 +1231,19 @@ export function resolveManannPriest(get: Get, set: Set, pay: boolean): void {
     return;
   }
   tellManann(get, set, -4);
+}
+
+/** Résout le choix « Relâche à terre » (MDG 15 l.245) posé à l'accostage, AVANT le tirage de
+ *  l'événement de port : `allow` accordé → Embrigadement/Fête de Manann peuvent se produire
+ *  normalement ; refusé → l'Embrigadement « n'a pas lieu » et la Fête de Manann perd son bonus
+ *  d'Humeur (gate porté par `resolvePortArrival`). Enchaîne le tirage puis la transition de scène. */
+export function resolveShoreLeave(get: Get, set: Set, allow: boolean): void {
+  const p = get().pendingShoreLeave;
+  if (!p) return;
+  set({ pendingShoreLeave: null });
+  log(get, set, [allow
+    ? 'Vous autorisez l\'équipage à faire relâche à terre.'
+    : 'Vous refusez à l\'équipage la permission de faire relâche à terre.']);
+  resolvePortArrival(get, set, p.to.port, battleRng(), allow);
+  get().transitionTo(p.to.scene, p.to.entry);
 }

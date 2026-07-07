@@ -6,12 +6,13 @@ import { Combatant, ActiveEffect, ConditionInstance } from './types';
 import { evalCondition, type ConditionCtx, type ActorView } from './flowCore';
 import { tickRound } from './duration';
 import { conditionLabel, findConditionById, findPsychologyById, skills } from '../data';
+import { slugId } from '../data/slug';
 import { t } from '../i18n';
 import { rule } from './policy';
 import { groupAdvantage } from './advantagePool';
 import { bonus, effectiveChar } from './characteristics';
 import { d100, RNG, defaultRNG } from './dice';
-import { passiveMods } from './trauma';
+import { passiveMods, settleHealedCriticals } from './trauma';
 import type { GameOp } from './ops';
 import { rollTest, isDoubleRoll, type TestResult } from './tests';
 import { dropExpiredGrantedTraits } from './grantedTraits';
@@ -35,6 +36,19 @@ export const COND = {
 /** Nombre de pions (cumul) d'un État donné. */
 export const stacks = (c: Combatant, name: string) => c.conditions.find((x) => x.name === name)?.value ?? 0;
 
+/** Marqueurs NARRATIFS hors LDB 16 (PAS des États `etats.json`, cf. `data-wellformed.test`) : Pétrifié
+ *  (LDB 85), sans entrée catalogue — sévérité portée ICI, unique exception. */
+const NARRATIVE_MARKER_SEVERITY: Record<string, number> = { petrifie: 95 };
+
+/** Sévérité d'un État (`etats.json` : `severity`, sinon marqueur narratif, sinon défaut 10) — PUR, clé
+ *  slugifiée (tolère un libellé : 'Pétrifié' → 'petrifie'). SOURCE UNIQUE partagée par l'icône
+ *  (`gameIso/effectIcons.conditionMeta`, `important` = sévérité ≥ 50) ET l'importance d'un évènement de
+ *  combat pour le bandeau/la cadence (`state/combatLog.isImportantEvent`). */
+export function conditionSeverity(name: string): number {
+  const id = slugId(name);
+  return findConditionById(id)?.severity ?? NARRATIVE_MARKER_SEVERITY[id] ?? 10;
+}
+
 /**
  * Hook injecté (inversion de dépendance) appelé quand `c` GAGNE un État (nouveau ou empilé) — le
  * moteur reste PUR (il ne connaît ni le store, ni les triggers). Le store le remplit (module feuille)
@@ -53,7 +67,7 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
   return Math.min(stacks, 1 + Math.max(0, dr));
 }
 
-export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition): void {
+export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition, unlockBy?: import('./types').ConditionUnlock): void {
   if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez tout Avantage » (LDB 16 l.15) — pas de perte per-combattant en mode « Avantage de groupe » (la réserve du camp ne change pas)
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
@@ -63,11 +77,12 @@ export function addCondition(c: Combatant, name: string, value = 1, escapeStreng
     // qui s'empile par-dessus (et inversement, un sort plus fort durcit l'évasion).
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
     if (lockedUntil != null) existing.lockedUntil = lockedUntil; // un Critique re-verrouille l'État déjà porté
+    if (unlockBy != null) existing.unlockBy = unlockBy; // un Critique re-verrouille l'État déjà porté (acte de soin, LDB 18)
     // Un ajout NON temporisé sur un État à durée : la durée saute (l'État redevient régi
     // par ses règles normales — on n'écourte jamais un État au prétexte qu'un sort expirait).
     delete existing.roundsLeft;
   } else {
-    c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}), ...(lockedUntil != null ? { lockedUntil } : {}) });
+    c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}), ...(lockedUntil != null ? { lockedUntil } : {}), ...(unlockBy != null ? { unlockBy } : {}) });
   }
   // L'État vient d'être GAGNÉ (nouveau ou empilé) → déclenche `onGainCondition` (Mâchoires d'acier).
   onConditionGained?.(c, name);
@@ -111,18 +126,52 @@ export function addClockCondition(c: Combatant, name: string, value: number, unt
   }
 }
 
-/** Un État posé par un Critique est-il VERROUILLÉ (LDB 18) ? Vrai si `lockedUntil` est présent et pas
- *  encore satisfait (algèbre flowCore, évaluée contre l'état VIVANT du porteur — États par nom, drapeaux).
- *  Ex. Aveuglé « tant que tous les Hémorragique n'ont pas été éliminés » (Tête 46-50) reste verrouillé
- *  tant que `stacks(hemorragique) > 0`. Tant qu'il tient, `removeCondition` est inerte sur cet État. */
+/** Un État posé par un Critique est-il VERROUILLÉ (LDB 18) ? Deux formes, INDÉPENDANTES d'un trauma porteur :
+ *  - `unlockBy` (acte de soin) : verrouillé tant que l'acte NOMMÉ (Aide Médicale / Chirurgie / magie) n'a pas
+ *    été reçu — l'acte le lève via `releaseConditionLocks` (Aveuglé/Sonné/Inconscient « par Aide Médicale »,
+ *    Hémorragique « par Chirurgie ») ;
+ *  - `lockedUntil` (prédicat d'état, algèbre flowCore) : verrouillé tant que la Condition n'est pas VRAIE contre
+ *    l'état VIVANT du porteur (Aveuglé « tant que tous les Hémorragique n'ont pas été éliminés », Tête 46-50 ⇒
+ *    `compare hemorragique == 0`).
+ *  Tant qu'il tient, `removeCondition` (dont l'auto-dissipation) est inerte sur cet État. */
 export function isConditionLocked(inst: ConditionInstance, c: Combatant): boolean {
+  if (inst.unlockBy != null) return true; // verrou d'acte de soin non encore levé (LDB 18)
   if (!inst.lockedUntil) return false;
   const ctx: ConditionCtx = {
-    flags: {}, // les verrous de Critique s'expriment sur l'état du porteur (États par nom), pas des drapeaux de scène
+    // Prédicat d'état du porteur : États par nom (`compare`). Aucun drapeau de trauma (le verrou d'Aide Médicale
+    // est désormais porté par `unlockBy`, plus par `awaitingMedicalAid` d'une séquelle porteuse).
+    flags: {},
     gameTime: 0,
     target: { conditions: Object.fromEntries((c.conditions ?? []).map((x) => [x.name, x.value])) } as unknown as ActorView,
   };
   return !evalCondition(inst.lockedUntil, ctx);
+}
+
+/** Un acte `act` LÈVE-t-il un verrou d'État `unlockBy` (LDB 18) ? Le soin magique compte AUSSI comme Aide
+ *  Médicale (LDB 18 l.311) → `magic` lève `medicalAid` ET `magic` ; sinon l'acte ne lève que son homonyme
+ *  (Aide Médicale ne lève pas un verrou de Chirurgie ; la Chirurgie ne lève pas un verrou magique). */
+function actLifts(unlockBy: import('./types').ConditionUnlock, act: import('./types').ConditionUnlock): boolean {
+  return unlockBy === act || (act === 'magic' && unlockBy === 'medicalAid');
+}
+
+/** Applique un acte de soin `act` : RETIRE tout État dont le verrou `unlockBy` est levé par cet acte (LDB 18 :
+ *  « ne peut être retiré QUE par [acte] » ⇒ l'acte est ce qui le soigne). SOURCE UNIQUE appelée à chaque point
+ *  de soin (`receiveMedicalAid`/soin magique → medicalAid/magic ; fin de Chirurgie → surgery). Pur ; renvoie le journal. */
+export function releaseConditionLocks(c: Combatant, act: import('./types').ConditionUnlock): string[] {
+  const log: string[] = [];
+  for (const inst of [...c.conditions]) {
+    if (inst.unlockBy == null || !actLifts(inst.unlockBy, act)) continue;
+    delete inst.unlockBy; // le verrou tombe → removeCondition n'est plus inerte
+    removeCondition(c, inst.name, inst.value); // l'acte SOIGNE l'État (LDB 18 : retiré par cet acte)
+    log.push(t('cond.lockReleased', { name: c.name, cond: conditionLabel(inst.name) }));
+  }
+  return log;
+}
+
+/** Le porteur a-t-il un État dont le retrait est VERROUILLÉ par la Chirurgie (LDB 18 : Hémorragie interne) ?
+ *  Rend la Chirurgie proposable/soignante à l'Infirmerie même sans Blessure Critique chirurgicale porteuse. */
+export function hasSurgeryLockedCondition(c: Combatant): boolean {
+  return (c.conditions ?? []).some((x) => x.unlockBy === 'surgery');
 }
 
 export function removeCondition(c: Combatant, name: string, value = 1): void {
@@ -131,6 +180,13 @@ export function removeCondition(c: Combatant, name: string, value = 1): void {
   if (isConditionLocked(existing, c)) return; // verrou de Critique (LDB 18) : ne part pas tant que sa Condition n'est pas remplie
   existing.value -= value;
   if (existing.value <= 0) c.conditions = c.conditions.filter((x) => x.name !== name);
+  // Main ensanglantée (AA l.2569) : le Test de Dextérité par Action tient « tant que vous êtes sous
+  // l'effet de cet État » → l'Hémorragique épuisé (instance retirée) lève TOUS les gates de main (op
+  // `handGate`). LEVER machinerie UNIQUE de la durée du marqueur (l'Hémorragique ne s'empile qu'en 1 instance).
+  if (name === COND.hemorragique && existing.value <= 0) delete c.handGates;
+  // POINT UNIQUE de retrait d'État → une Blessure critique dont tous les États associés sont désormais tombés
+  // est GUÉRIE (LDB 18 l.304) : octroie la cicatrice post-guérison (Blessure spectaculaire / Nez cassé, l.61/72).
+  settleHealedCriticals(c);
 }
 
 export function hasCondition(c: Combatant, name: string): boolean {
@@ -219,6 +275,25 @@ export function combatTestPenalty(c: Combatant): number {
 const MOVEMENT_SKILL = new Set(skills.filter((s) => s.movement).map((s) => s.id));
 // Tests « impliquant l'audition » (Assourdi −10, LDB 16 l.29) — même patron DONNÉE (`SkillData.hearing`).
 const HEARING_SKILL = new Set(skills.filter((s) => s.hearing).map((s) => s.id));
+/** Le Test `skill` est-il classé « déplacement » (`SkillData.movement`) ? Réutilisée par #193
+ *  (Épaule luxée/Genou démis : `testMod.movementOnly` = MÊME catégorie que l'État À Terre/Empêtré). */
+export function isMovementSkill(skill?: string): boolean {
+  return MOVEMENT_SKILL.has(skill ?? '');
+}
+
+/** Σ des `testMod` char-QUALIFIÉS ACTIFS (op `testMod{char}` exécutée, #193) pour la Caractéristique
+ *  `ck` — POINT UNIQUE partagé par `testValue` (Tests hors-combat), `combatValue`/`defenseValue`
+ *  parade (Tests d'arme, `weaponHand` gaté) et `defenseValue` Esquive (`movement:true`). `weaponHand`/
+ *  `movement` : contexte du Test COURANT, opposé aux gates portés par l'effet (`testModHand`/
+ *  `testModMovementOnly`) — absents des DEUX côtés = mod global (comportement historique). */
+export function activeCharTestMod(c: Combatant, ck: import('./types').CharKey, ctx: { weaponHand?: 'main' | 'off'; movement?: boolean } = {}): number {
+  return (c.activeEffects ?? []).reduce((s, e) => {
+    if (e.testModChar !== ck) return s;
+    if (e.testModHand != null && e.testModHand !== ctx.weaponHand) return s;
+    if (e.testModMovementOnly && !ctx.movement) return s;
+    return s + (e.testMod ?? 0);
+  }, 0);
+}
 export function testStatePenalty(c: Combatant, skill?: string): number {
   const effMod = effectTestMod(c); // modificateur de Sort (stacke, hors non-cumul d'État)
   if (!c.conditions?.length) return effMod;

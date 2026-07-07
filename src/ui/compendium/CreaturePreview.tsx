@@ -10,11 +10,11 @@ import { resolveRig } from '../../gameIso/rig/composeRig';
 import { bonesToSvg } from '../../gameIso/rig/renderBones';
 import { resolveRender, planById } from '../../gameIso/rig/bodyPlan';
 import { eyesArtFromKeys } from '../../gameIso/rig/parts/eyes';
-import { hashSeed } from '../../gameIso/appearance';
+import { hashSeed } from '../../engine/dice';
 import { findCreatureById } from '../../data';
 import type { View } from '../../gameIso/rig/facing';
 import type { Palette } from '../../gameIso/rig/palette';
-import type { EntityAppearance } from '../../state/scene';
+import type { EntityAppearance } from '../../engine/authoringAppearance';
 
 // `name` = id de créature (Codex/bestiaire) OU libellé d'espèce/race (la résolution lit l'espèce
 // explicite de l'apparence ; les Nuées tirent leur trait du record par id).

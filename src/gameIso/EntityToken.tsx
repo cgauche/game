@@ -1,4 +1,4 @@
-import { CELL, type Dims } from './iso';
+import { CELL, type Dims } from '../geometry/iso';
 import { BodyToken } from './BodyToken';
 import { pickBackend } from './pickBackend';
 import { sizeTokenScale } from './sizeScale';

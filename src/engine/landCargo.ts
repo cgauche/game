@@ -140,8 +140,8 @@ export function wineEvalDifficulty(alcoholResist: number): Difficulty {
 /** RÉVÉLATION de la qualité SECRÈTE d'un lot de Vin après le Test d'Évaluation (l.95). La qualité réelle est
  *  déduite du prix de base FIGÉ à l'ouverture (`WINE_QUALITY`, prix uniques). Succès → la vraie qualité ; échec
  *  → une FAUSSE indication décalée de |DR| échelons (« donnez-lui une fausse indication dont l'inexactitude est
- *  en rapport avec son degré d'échec » — direction vers le haut, ou vers le bas si plafonnée, pour rester FAUSSE ;
- *  magnitude/direction arbitrées, laissées au MJ par le RAW). PUR. */
+ *  en rapport avec son degré d'échec », l.95 — direction vers le haut, ou vers le bas si plafonnée, pour rester FAUSSE ;
+ *  la source ne chiffre ni la direction ni la magnitude du décalage, tranchées ici en donnée). PUR. */
 export function wineEvalReveal(basePrice: number, success: boolean, sl: number): { trueLabel: string; shownLabel: string } {
   const last = WINE_QUALITY.length - 1;
   let idx = WINE_QUALITY.findIndex((w) => w.price === basePrice);

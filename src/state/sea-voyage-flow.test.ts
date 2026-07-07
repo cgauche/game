@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import {
   buildSeaPlan, resolveVoyageCrewTest, portRepairVessel, portInstallUpgrade, runSeaDays,
-  resolvePortArrival, resolveManannPriest,
+  resolvePortArrival, resolveManannPriest, resolveShoreLeave,
 } from './seaVoyageFlow';
 import { seedBattleRng } from './battleRng';
 import { subtract, toBrass, fromBrass } from '../engine/money';
@@ -26,7 +26,7 @@ const seaMap: WorldMap = {
   id: 'm', nom: 'Mer des Griffes',
   places: [
     { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
-    { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b' },
+    { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
   ],
   routes: [{ id: 'r1', a: 'A', b: 'B', km: 550, modes: ['mer'], sea: true, seaHeading: 'est' }],
 };
@@ -370,5 +370,55 @@ describe('Port désert & Embrigadement — #150 (resolvePortArrival appelé APR�
     set({ vessel: { ...get().vessel!, crewLost: 12, manann: { score: -1, applied: [] } } }); // déjà 12/15 perdus
     resolvePortArrival(get, set, undefined, seq(1, 1, 1, 1, 9, 9)); // lostCrew roulé à 18 → 12+18=30, plafonné à 15
     expect(get().vessel!.crewLost).toBe(15);
+  });
+});
+
+describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MDG 15 l.245 : « Si vous avez refusé la permission de faire relâche à terre à votre équipage, cet événement [Embrigadement] n\'a pas lieu »)', () => {
+  beforeEach(freshState);
+
+  const seq = (...vals: number[]): RNG => {
+    let i = 0;
+    return { int: (min, max) => Math.min(max, Math.max(min, vals[i++ % vals.length])) };
+  };
+
+  function moodMinus1() {
+    set({ vessel: { ...get().vessel!, manann: { score: -1, applied: [] } } }); // mod −1 → roll min 1 atteignable (Embrigadement)
+  }
+
+  it('relâche REFUSÉE : Embrigadement (2d10 → 1) n\'a pas lieu — aucune perte d\'équipage, journal explicite', () => {
+    moodMinus1();
+    resolvePortArrival(get, set, undefined, seq(1, 1, 1, 1, 3, 4), false);
+    expect(get().vessel!.crewLost ?? 0).toBe(0);
+    expect(get().journal.some((l) => l.includes('n\'a pas lieu'))).toBe(true);
+  });
+
+  it('relâche ACCORDÉE (défaut) : Embrigadement se produit normalement (2d10 marins perdus)', () => {
+    moodMinus1();
+    resolvePortArrival(get, set, undefined, seq(1, 1, 1, 1, 3, 4), true);
+    expect(get().vessel!.crewLost).toBe(7); // 3+4
+  });
+
+  it('relâche REFUSÉE : Fête de Manann (2d10 → 18) perd son bonus d\'Humeur (MDG 15 l.260)', () => {
+    // Humeur neutre (mod 0) : 2d10 = 9+9 = 18 → « Fête de Manann » (min 18 max 18, sea-events.json).
+    resolvePortArrival(get, set, undefined, seq(9, 9, 1, 1), false);
+    expect(get().vessel!.manann?.score ?? 0).toBe(0);
+    expect(get().journal.some((l) => l.includes('ne se joint pas aux festivités'))).toBe(true);
+  });
+
+  it('relâche ACCORDÉE : Fête de Manann applique bien son bonus d\'Humeur (2d10)', () => {
+    resolvePortArrival(get, set, undefined, seq(9, 9, 1, 1, 5, 5), true);
+    expect(get().vessel!.manann?.score ?? 0).toBe(10); // 5+5
+  });
+
+  it('accostage RÉEL (runSeaDays) : pendingShoreLeave s\'ouvre AVANT tout tirage d\'événement de port', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, step: 'nuit', milesToday: 5 } } });
+    runSeaDays(get, set);
+    expect(get().pendingShoreLeave).toBeTruthy();
+    expect(get().pendingShoreLeave!.to.id).toBe('B');
+    expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(false); // pas encore tiré
+    resolveShoreLeave(get, set, true);
+    expect(get().pendingShoreLeave).toBeNull();
+    expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(true); // tiré APRÈS le choix
   });
 });

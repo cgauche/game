@@ -118,7 +118,7 @@ describe('Test opposé — HÉROS blindé : étape de déviation `self` (LDB 14 
       expect(dev.overkill).toBe(0);
       expect(dev.deflectExtraWounds).toBe(0);
     }
-    expect(live('V').criticalWounds ?? 0).toBe(0); // suspendu : pas encore appliqué
+    expect(live('V').criticalWounds ?? 0).toBe(0); // suspendu : application différée à ce stade
   });
 
   it('« Dévier » → −1 PA, Critique ignoré (criticalWounds inchangé)', () => {

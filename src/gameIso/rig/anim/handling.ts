@@ -9,7 +9,7 @@
  * encode la prise, et on ne retombe sur le Groupe que pour les armes NON dessinées.
  */
 import type { Weapon } from '../../../engine/types';
-import { weaponGroupKey } from '../parts/weaponGroup';
+import { weaponGroupKey } from '../../../engine/weaponGroup';
 
 export type Handling =
   | 'lame1m' | 'escrime' | 'lourde2m' | 'hampe' | 'lance_cav' | 'fleau' | 'parade' | 'poings'

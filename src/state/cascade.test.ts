@@ -89,7 +89,7 @@ describe('Cascade séquentielle influençable', () => {
     });
     useGame.getState().cascadeResolveAll(); // auto-résout s1..s3
     expect(applied).toHaveLength(3); // toutes les conséquences se sont appliquées
-    // BILAN : la modale reste ouverte (curseur EN FIN) pour voir les conséquences — pas encore fermée.
+    // BILAN : la modale reste ouverte (curseur EN FIN) pour voir les conséquences, avant fermeture explicite.
     expect(useGame.getState().pendingCascade!.cursor).toBe(3);
     useGame.getState().cascadeFinish(); // « Terminer » ferme
     expect(useGame.getState().pendingCascade).toBeNull();

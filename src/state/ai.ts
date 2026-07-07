@@ -46,8 +46,7 @@ import { hasCondition, canTakeAction, isActionLocked, restrictingConditions, CON
 import { effectiveMovement } from '../engine/encumbrance';
 import { isEngaged, meleeReachTiles } from '../engine/engagement';
 import { isFlankOrRear } from './combatGeometry';
-import { facingToward } from '../gameIso/rig/facing';
-import type { Dir8 } from './dir8';
+import { facingToward, type Dir8 } from './dir8';
 import { groupMatch } from '../engine/groups';
 import { isBestial, isTerritorial, isMindless, isStupid } from '../engine/traits/dispatch';
 import { creatureAttacks } from '../engine/creatureAttacks';
@@ -214,7 +213,7 @@ export type DoctrineId = 'standard' | 'meute' | 'racaille' | 'soldats' | 'tirail
 /** Macro-réglages LÉGERS d'une doctrine (au-delà des poids), appliqués DANS le cœur discrétionnaire sans
  *  jamais contredire une garde RAW. */
 interface DoctrineMacro {
-  /** REPLI « doctrine » (LATITUDE, hors RAW) : un NON-Bestial très entamé (PB/PBmax < seuil) qui n'est PAS
+  /** REPLI « doctrine » (LATITUDE de moteur, aucune règle ne la porte) : un NON-Bestial très entamé (PB/PBmax < seuil) qui n'est PAS
    *  Engagé se replie comme un Bestial (réutilise `fleeMove`, aucun nouveau mécanisme). N'a d'effet QUE pour
    *  un combattant SANS garde de fuite RAW (un Bestial est déjà géré en amont, intouché). Absent ⇒ pas de repli. */
   retreatBelow?: number;
@@ -648,7 +647,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // La doctrine (déduite des signaux DATA ou forcée par `enemy.aiDoctrine`) module les POIDS du cœur
   // discrétionnaire ci-dessous (`Weff` = `W` + override partiel). Elle est choisie APRÈS toutes les gardes
   // forcées (fin de combat, En flammes, Brisé, Bestial, anti-immobilisme) — qu'elle ne touche JAMAIS — et
-  // AVANT le scoring. Un éventuel REPLI « doctrine » (`macro.retreatBelow`, latitude hors RAW) ne s'applique
+  // AVANT le scoring. Un éventuel REPLI « doctrine » (`macro.retreatBelow`, latitude de moteur, aucune règle ne la porte) ne s'applique
   // qu'à un combattant SANS garde de fuite RAW (Bestial déjà géré en amont) et non Engagé.
   const doctrine = pickDoctrine(enemy, squad, input.heroes);
   const Weff = doctrineWeights(doctrine);

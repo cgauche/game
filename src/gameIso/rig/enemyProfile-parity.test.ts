@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { enemyRigProfile, entityRigProfile } from './enemyProfile';
-import { eyesArtFromKeys } from './parts/eyes';
 import type { Combatant, Weapon, ArmourPoints } from '../../engine/types';
 
 /**
@@ -19,18 +18,18 @@ function mk(id: string, name: string, over: Partial<Combatant> = {}): Combatant 
     armour: { ...noArmour }, skills: [], talents: [], movement: 4, ...over,
   } as Combatant;
 }
-const artEyes = eyesArtFromKeys({ G: 'reptilien', D: 'noir' }); // yeux RÉSOLUS (comme `c.appearance` au spawn)
-
+// Override d'authoring BRUT porté par `appearanceOverride` (EntityAppearance) — figé au rendu par
+// `enemyRigProfile` (#187). Les yeux sont des CLÉS de catalogue (résolues en art par le figeage), et il
+// n'y a pas de champ `gabarit` (celui-ci vient du perso/def de l'espèce, pas d'un override d'instance).
 const ENEMY_CASES: [string, Combatant][] = [
   ['humain-nu', mk('en1', 'Soldat')],
   ['species-orc', mk('en2', 'x', { species: 'Orc' })],
   ['species-gobelin', mk('en3', 'x', { species: 'Gobelin' })],
   ['species-skaven', mk('en4', 'x', { species: 'Guerrier des clans' })],
-  ['override-sex-build', mk('en5', 'Soldat', { appearance: { sex: 'F', build: 0.7 } as never })],
-  ['override-monster', mk('en6', 'Soldat', { appearance: { monster: { tete: 'lezard' } } as never })],
-  ['override-colors-parts', mk('en7', 'Soldat', { appearance: { colors: { peau: '#112233' }, parts: { hair: 3 } } as never })],
-  ['override-eyes', mk('en8', 'Soldat', { appearance: { eyes: artEyes } as never })],
-  ['override-gabarit', mk('en9', 'Soldat', { appearance: { gabarit: 'brute-bras-longs' } as never })],
+  ['override-sex-build', mk('en5', 'Soldat', { appearanceOverride: { sex: 'F', build: 0.7 } as never })],
+  ['override-monster', mk('en6', 'Soldat', { appearanceOverride: { monster: { tete: 'lezard' } } as never })],
+  ['override-colors-parts', mk('en7', 'Soldat', { appearanceOverride: { colors: { peau: '#112233' }, parts: { hair: 3 } } as never })],
+  ['override-eyes', mk('en8', 'Soldat', { appearanceOverride: { eyes: { G: 'reptilien', D: 'noir' } } as never })],
   ['career-tenue', mk('en10', 'Cultiste', { career: 'Flagellant' })],
 ];
 

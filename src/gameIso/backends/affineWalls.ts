@@ -6,7 +6,8 @@
  * (source unique avec le POV). La vue du DESSUS ('top') est la représentation SYMBOLIQUE historique
  * (traits épais / glyphe de porte), routée par `isSquareView` — elle se trace sur `el.ends`, pas les faces.
  */
-import { CELL, WALL_H_M, depth, diamondPath, isoPxToM, isSquareView, tileCenter, type Dims } from '../iso';
+import { CELL, depth, diamondPath, isSquareView, tileCenter, type Dims } from '../../geometry/iso';
+import { WALL_H_M, isoPxToM } from '../iso';
 import { metricToLift } from '../../state/relief';
 import { structureAppearance, wallPartColor, windowLit, type StructureAppearanceDef, type WallPart } from '../catalog/structures';
 import { shade, spec, SIDE_N, SIDE_LIT, POST_CAP, POST_BASE } from '../shade';

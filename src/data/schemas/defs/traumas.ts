@@ -1,8 +1,7 @@
 /**
  * Schéma de `traumas.json` — Traumatismes (LDB 18). Dérivé du contenu RÉEL (23 fiches) et de son
  * consommateur typé `TraumaFiche` (`src/engine/trauma.ts:38`). `ops` = `GameOp[]` (vocab partagé) ;
- * `needsSurgery` figure dans l'interface TS mais AUCUNE entrée actuelle ne le porte (optionnel gardé
- * conforme au type).
+ * `cosmetic`/`passiveKind`/`maison` : cicatrices post-guérison (LDB 18 l.61/72, #192).
  */
 import { z } from 'zod';
 import { gameOpSchema } from '../common';
@@ -26,6 +25,11 @@ export const schema = z.array(
       )
       .optional(),
     needsSurgery: z.boolean().optional(),
+    cosmetic: z.boolean().optional(),
+    passiveKind: z
+      .enum(['douleur', 'mobilité', 'structurel', 'sensoriel', 'maladie', 'faim', 'magique', 'etat', 'ivresse', 'intrinsèque'])
+      .optional(),
+    maison: z.string().optional(),
   }),
 );
 

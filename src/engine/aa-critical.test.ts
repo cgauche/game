@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { resolveAACritical, aaCriticalOffset, aaCriticalIsTrivial, aaDeathByCriticalCount } from './aaCritical';
-import { rollCritical } from './critical';
+import { rollCritical, resolvePostEncounterAmputations } from './critical';
 import { setRule, resetRule } from './policy';
 import aaJson from '../data/aa-criticals.json';
 import type { Combatant } from './types';
@@ -164,6 +164,45 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
         }
       }
       expect(count).toBeGreaterThan(0);
+    });
+  });
+
+  // #195 (revue) — les VARIANTES d'amputation (timing différé, graduation par DR) valent AUSSI pour l'AA :
+  // même texte RAW que le LDB (« Une fois la rencontre terminée… » / « un orteil par DR ») → même patron partagé.
+  describe('#195 — variantes d’amputation AA (timing/loss), même patron que le LDB', () => {
+    it('« Coupure à l’orteil » (AA jambe 56-60, AA 07 l.171) : timing postEncounter → marqueur pendingAmputation, AUCUN jet ni séquelle immédiate', () => {
+      const r = resolveAACritical(target(), 'jambeD', seq(58), 0); // 58 → aa-jambe-56 ; aucun autre tirage
+      expect(r.name).toBe("Coupure à l'orteil");
+      expect(r.traumas.some((t) => t.pendingAmputation)).toBe(true);
+      expect(r.traumas.some((t) => t.needsSurgery)).toBe(false);
+      expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false); // rien posé PENDANT le combat
+      expect(r.ops.some((o) => o.op === 'condition' && (o.name === 'a-terre' || o.name === 'sonne'))).toBe(false);
+    });
+
+    it('« Coupure à l’orteil » : résolution post-rencontre AA — gate Intermédiaire RÉUSSI → aucun orteil (le bug « séquelle toujours » est corrigé)', () => {
+      const c = target();
+      c.traumas = resolveAACritical(target(), 'jambeD', seq(58), 0).traumas; // le marqueur
+      resolvePostEncounterAmputations(c, seq(10, 10)); // gate Intermédiaire cible E30 : 10 ≤ 30 → réussi : pas d'amputation
+      expect(c.traumas!.some((t) => t.pendingAmputation)).toBe(false); // marqueur consommé
+      expect(c.traumas!.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
+      expect(c.traumas!.some((t) => t.needsSurgery)).toBe(false);
+    });
+
+    it('« Pied écrasé » (AA jambe 106-115, AA 07 l.180) : loss.perDR → orteils gradués par DR sur ÉCHEC', () => {
+      // overkill 6 → +60 : d100 50 → roll 110 (aa-jambe-106). Test Accessible (E30+20=50) : 75 → DR −2 → 1+2 = 3 orteils.
+      const r = resolveAACritical(target(), 'jambeD', seq(50, 75), 6);
+      expect(r.name).toBe('Pied écrasé');
+      const orteil = r.traumas.find((t) => t.traumaId === 'orteil-ampute')!;
+      expect(orteil).toBeTruthy();
+      expect(orteil.count).toBe(3);
+      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(true);
+    });
+
+    it('« Pied écrasé » : Test Accessible RÉUSSI → aucun orteil (loss gate LUI-MÊME la perte — plus de séquelle systématique)', () => {
+      const r = resolveAACritical(target(), 'jambeD', seq(50, 10), 6); // 10 ≤ 50 → réussite
+      expect(r.name).toBe('Pied écrasé');
+      expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
+      expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
     });
   });
 });

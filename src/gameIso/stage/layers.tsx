@@ -9,7 +9,7 @@ import { metricToLift } from '../../state/relief';
 import { isOutOfAction } from '../../engine/conditions';
 import type { LightField } from '../../state/vision';
 import type { BattleState } from '../../state/store';
-import { TW, TH, EDGE_H, Dims, tileCenter, depth, makeOccludes } from '../iso';
+import { TW, TH, EDGE_H, Dims, tileCenter, depth, makeOccludes } from '../../geometry/iso';
 import { floorSvg, floorAccentsSvg, floorDepth } from '../backends/affineFloors';
 import { wallSvg, wallAccentsSvg, wallDepth } from '../backends/affineWalls';
 import { roofSvg, roofDepth } from '../backends/affineRoofs';

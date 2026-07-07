@@ -14,7 +14,7 @@ import { wallDepth, wallSvg } from '../../src/gameIso/backends/affineWalls';
 import { buildOperaFloorplan } from '../../src/scenes/opera/floorplan';
 import { propSvg } from '../../src/gameIso/catalog/decor';
 import { DEFS } from '../../src/gameIso/sprites';
-import { stageSize, tileCenter, depth, type Dims } from '../../src/gameIso/iso';
+import { stageSize, tileCenter, depth, type Dims } from '../../src/geometry/iso';
 import { decorFootGeometry } from '../../src/state/footprint';
 import { scenarioEntities } from '../../src/scenes/opera/furnished';
 import type { SceneEntity } from '../../src/state/scene';

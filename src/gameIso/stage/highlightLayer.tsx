@@ -15,7 +15,7 @@ import { currentTargetingMode } from '../../state/targetingModes';
 import { controlsCombatant } from '../../state/netOwnership';
 import { footprintN, footprintTiles } from '../../state/footprint';
 import { mountOf } from '../../state/mount';
-import { Dims, depth, diamondPath } from '../iso';
+import { Dims, depth, diamondPath } from '../../geometry/iso';
 import { buildHighlights, type HighlightsView } from '../builders/highlights';
 import { highlightDepth, highlightJsx } from '../backends/affineHighlights';
 import { movePreviewEls } from './movePreview';

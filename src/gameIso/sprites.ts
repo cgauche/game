@@ -3,7 +3,7 @@
  * Chaque sprite est dessiné dans une boîte locale 120×150, pieds en (60,150).
  * placeSprite() le positionne sur une tuile. DEFS regroupe tous les dégradés.
  */
-import type { Rot } from './iso';
+import type { Rot } from '../geometry/iso';
 import { propSvg } from './catalog/decor';
 import type { Dir8 } from '../state/dir8';
 import { TERRAIN_DEFS } from '../state/terrain';

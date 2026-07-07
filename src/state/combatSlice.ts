@@ -18,7 +18,7 @@ import { continueRiverDayAfterCascade } from './riverVoyageFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf } from './combatGeometry';
@@ -30,7 +30,7 @@ import { pickActiveModalKey } from './modalArbiter';
 import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
 import { ev, evLines } from './combatLog';
 import { t } from '../i18n';
-import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, type DefenseMode } from '../engine/combat';
+import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, attackHandGate, type DefenseMode } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, reachRank } from '../engine/engagement';
 import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
@@ -52,7 +52,7 @@ import { teamCommandTargets } from './commandTeam';
 import { isConsumable } from '../engine/consumables';
 import { battleConsumeItem } from './consumableFlow';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook } from '../engine/conditions';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook, releaseConditionLocks } from '../engine/conditions';
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, type HealMode } from '../engine/healing';
 import { treatTrauma, receiveMedicalAid } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
@@ -63,7 +63,7 @@ import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveA
 import { posteHullOf, pushEligible, pushCrewOk, pushMovement, pushMoveEnv } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
-import { resolveVoyageCrewTest } from './seaVoyageFlow';
+import { resolveVoyageCrewTest, resolveSteamSave } from './seaVoyageFlow';
 import { rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById } from '../data';
@@ -1394,8 +1394,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // on ouvre donc une cascade à une étape `jet:'attack'` pour le tireur (refermée par attackConfirm).
       // `heldGround: true` : l'interruption est un tir IMMOBILE d'office (elle coûte le Mouvement du tour) → pas
       // de pénalité « Tir en bougeant » (LDB 14), qui n'aurait aucun sens hors du tour du tireur.
-      set({ pendingAttack: { attackerId: hero.id, targetId: target.id, location: null, result: null, interrupt: true, heldGround: true } });
-      startCascade(get, set, { title: 'Tir rapide', icon: 'action/shoot', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: hero.id }] });
+      openAttackCascade(get, set, { attackerId: hero.id, targetId: target.id, location: null, result: null, interrupt: true, heldGround: true }, 'Tir rapide', 'action/shoot');
     },
     // ── Tir rapide : ARMER/DÉSARMER la visée d'un héros pendant la pause (badge de la frise → clic adversaire) ──
     armPreempt: (heroId: string | null) => {
@@ -1678,6 +1677,33 @@ export function createCombatSlice(get: Get, set: Set) {
       if (aiDriven(get(), a) && get().battle) resumeEnemyTurn(get, set);
     },
     reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût
+    // Main ensanglantée (AA l.2569) : « Appliquer » le Test de Dextérité PAR ACTION.
+    handGateConfirm: () => {
+      const { battle, pendingHandGate: pg } = get();
+      if (!battle || !pg || pg.roll == null) return;
+      const attacker = battle.combatants.find((c) => c.id === pg.attackerId);
+      set({ pendingHandGate: null });
+      if (!attacker) return;
+      if (pg.success) {
+        // Réussite : l'Action déclarée s'ouvre TELLE QUELLE (`skipGate` pour ne pas re-tester). Une 2ᵉ frappe
+        // « des deux armes » reprend sa résolution pré-figée (`dualStrikeAttack`) ; sinon la cascade d'attaque.
+        if (pg.pa.dualSecond) get().dualStrikeAttack(pg.pa.targetId, true);
+        else openAttackCascade(get, set, pg.pa, pg.title, pg.icon, true);
+        return;
+      }
+      // Échec : l'objet glisse (op `disarm`, main gatée). Comme le gate de Bénédiction (`attackWardGate`),
+      // rien d'AUTRE n'est consommé — le joueur choisit une autre cible ou Action (mais l'arme est perdue).
+      const lines = applyOps(attacker, [{ op: 'disarm' }], { rng: battleRng(), location: pg.hand === 'off' ? 'brasG' : 'brasD' });
+      const b1 = get().battle!;
+      set({ battle: { ...b1, combatants: [...b1.combatants], log: [...b1.log, ...evLines(lines, 'attack', attacker.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      // 2ᵉ frappe « des deux armes » ratée : la 2ᵉ est renoncée (l'Action reste dépensée par la 1ʳᵉ frappe) →
+      // on clôt le sous-flux dual et on reprend la cascade (calque `dualStrikeSkip`).
+      if (pg.pa.dualSecond) { set({ pendingDualStrike: null }); advanceCombatJet(get); return; }
+      // Héros PILOTÉ par l'IA (Auto-combat) : son tour était suspendu par la modale → reprise (calque reloadConfirm).
+      if (aiDriven(get(), attacker) && get().battle) resumeEnemyTurn(get, set);
+    },
+    handGateCancel: () => set({ pendingHandGate: null }), // avant le jet : aucun coût (l'Action n'est pas encore ouverte)
     battleRecoverState: (state: 'empetre' | 'en-flammes') => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();
@@ -1712,6 +1738,12 @@ export function createCombatSlice(get: Get, set: Set) {
       finishPlayerAction(get, set, [describeStateRecovery(sr, a.name)], 'condition'); // consomme l'Action
     },
     recoverCancel: () => set({ pendingStateRecovery: null }), // avant le jet : aucun coût
+    steamSaveConfirm: () => {
+      const p = get().pendingSteamSave;
+      if (!p || p.roll == null) return;
+      set({ pendingSteamSave: null });
+      resolveSteamSave(get, set, p); // échec → ébouillanté (scaldOps), puis la boucle maritime reprend
+    },
     battleSelectAmmo: (uid: string) => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();
@@ -2045,8 +2077,9 @@ export function createCombatSlice(get: Get, set: Set) {
         .filter((c) => c.kind !== gunner.kind && !isOutOfAction(c) && c.pos && chebyshev(pt, c.pos) <= sa.radius)
         .sort((a, b) => chebyshev(pt, a.pos!) - chebyshev(pt, b.pos!))[0];
       if (!aim) { get().log(t('cf.siegeNoTarget', { name: gunner.name })); return; }
-      set({ pendingAttack: { attackerId: gunner.id, targetId: aim.id, location: null, result: null, weaponUid: sa.weaponUid, center: { ...pt }, siege: true } });
-      startCascade(get, set, { title: 'Pilonnage', icon: 'fire/blast', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: gunner.id }] });
+      // Pilonnage : la pièce est SERVIE (hors loadout main/off) → `openAttackCascade` ne gate jamais un
+      // canon monté (`attackHandGate` = null), mais passe par le MÊME point partagé que les autres attaques.
+      openAttackCascade(get, set, { attackerId: gunner.id, targetId: aim.id, location: null, result: null, weaponUid: sa.weaponUid, center: { ...pt }, siege: true }, 'Pilonnage', 'fire/blast');
     },
     cleaveAttack: (targetId: string) => {
       const { battle, pendingCleave: pc } = get();
@@ -2059,7 +2092,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingAttack: { attackerId: attacker.id, targetId, location: null, result: null, cleave: true } });
     },
     cleaveEnd: () => { set({ pendingCleave: null }); advanceCombatJet(get); }, // fin du balayage → clore l'étape-jet de la cascade (reprise)
-    dualStrikeAttack: (targetId: string) => {
+    dualStrikeAttack: (targetId: string, skipGate = false) => {
       const { battle, pendingDualStrike: ds } = get();
       if (!battle || !ds) return;
       const attacker = battle.combatants.find((c) => c.id === ds.attackerId);
@@ -2068,6 +2101,21 @@ export function createCombatSlice(get: Get, set: Set) {
       const off = attacker.weapons.find((w) => w.uid === ds.offWeaponUid);
       if (!off) { set({ pendingDualStrike: null }); return; }
       if (!dualStrikeTargets(battle, attacker, off).some((t) => t.id === targetId)) return; // cible invalide (hors d'Allonge)
+      // Main ensanglantée (AA l.2569) : « des deux armes » est UNE Action impliquant les DEUX mains → UN SEUL Test
+      // avant l'Action. La main directrice est testée à la déclaration (`openAttackCascade`) ; si SEULE la 2nde est
+      // gatée (la main directrice a déjà consommé le Test le cas échéant), la 2ᵉ frappe joue le Test ICI. Échec →
+      // l'objet de la 2nde main glisse (`disarm`), la 2ᵉ frappe est renoncée. `skipGate` : Test déjà PASSÉ (reprise).
+      if (!skipGate && attackHandGate(attacker, off.uid) && !attackHandGate(attacker)) {
+        const base = effectiveChar(attacker, 'Dex'); // Dextérité effective — +20 « Accessible » via la Difficulté
+        set({ pendingHandGate: {
+          attackerId: attacker.id, actorName: attacker.name, hand: 'off',
+          skillValue: base, difficulty: 'accessible', target: base + DIFFICULTY_MODIFIERS['accessible'],
+          roll: null, sl: 0, success: false,
+          pa: { attackerId: attacker.id, targetId, location: null, result: null, weaponUid: off.uid, dualSecond: true },
+          title: 'Des deux armes', icon: 'action/attack',
+        } });
+        return;
+      }
       // 2ᵉ frappe : jet IMPOSÉ (inversé / valeur du Critique) + pénalité main 2nde + nouveau jet de défense (LDB 10 l.638).
       const res = resolveDualSecond(get, attacker, target, off, ds.mainRoll, { critValue: ds.critValue });
       set({ pendingAttack: { attackerId: attacker.id, targetId, location: res.location ?? null, result: res, dualSecond: true, weaponUid: off.uid } });
@@ -2421,8 +2469,9 @@ export function createCombatSlice(get: Get, set: Set) {
           : treatTrauma(target, ph.sl, ph.success); // mode 'trauma' — l'échec consomme aussi le jet (LDB 18 l.317)
       }
       // Compétence Guérison RÉUSSIE = Aide Médicale (LDB 18 l.308) : lève l'escalade en attente (« Main
-      // ouverte » : plus de doigt perdu par Round). Un échec ne soigne pas → n'est pas de l'Aide Médicale.
-      if (ph.success) log = [...log, ...receiveMedicalAid(target)];
+      // ouverte » : plus de doigt perdu par Round) ET les verrous d'État « par Aide Médicale » (LDB 18 :
+      // Sonné/Inconscient/Aveuglé). Un échec ne soigne pas → n'est pas de l'Aide Médicale.
+      if (ph.success) log = [...log, ...receiveMedicalAid(target), ...releaseConditionLocks(target, 'medicalAid')];
       finishPlayerAction(get, set, log, 'heal'); // sortie commune combat / hors combat
     },
 

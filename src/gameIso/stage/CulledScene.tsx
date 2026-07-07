@@ -5,7 +5,7 @@
  * centre tombe dans le rectangle écran (+ marge pour les corps/murs HAUTS). Le navigateur ne rastérise
  * alors que l'écran à chaque frame → fini le re-raster de toute la carte.
  */
-import { Dims, tileCenter } from '../iso';
+import { Dims, tileCenter } from '../../geometry/iso';
 import { fogFilterFor, type FogParams } from '../FogLayer';
 import { lowerFloorDimCss } from '../catalog/ambiance';
 import type { StageObj } from './objs';

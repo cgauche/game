@@ -30,7 +30,7 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
   const level = draftLevel(d);
   const baseChars = draftChars(d);
   const careerLabel = findCareerById(d.careerId)?.label ?? d.careerId;
-  // Repli si le brouillon ne construit pas encore un héros : apparence du brouillon, sans équipement.
+  // Repli si le brouillon ne construit aucun héros valide (build échoue) : apparence du brouillon, sans équipement.
   const appearance: Appearance = { species: rigSpeciesId(d.speciesId), sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
   const wealth = draftWealth(d);
 

@@ -8,6 +8,7 @@
  * démêle UNE fois pour TOUT le code (combat ET Codex) — fini les regex recopiées par consommateur.
  */
 import type { CharKey } from './types';
+import type { SizeCategory } from './size';
 
 export interface StatEntry {
   /** Nom canonique (base), sans compte/bonus/indice/parenthèse : « Tentacules », « Arme »,
@@ -99,6 +100,10 @@ export type TraitList = TraitInstance[];
  * `label` = texte source VERBATIM (Markdown), affiché tel quel (JAMAIS reformulé) ; les autres champs
  * pilotent l'APPLICATION au spawn. Distinguée d'un `TraitInstance` par la présence de `note` (jamais d'`id`).
  */
+/** Un octroi ÉLÉMENTAIRE d'une variante « swap » : bonus signé sur UNE caractéristique, OU une
+ *  compétence à valeur de Test IMPRIMÉE (verbatim, pas une avance calculée). Une variante composite
+ *  (Vouivre ZI : « +20 en I, Int et Soc » + « Discrétion (Rurale) 65 ») en cumule PLUSIEURS. */
+export type SwapGrant = { char: CharKey; value: number } | { skillId: string; spec?: string; value: number };
 export interface OptionalWildcard {
   note: 'all-traits';
   /** Texte source VERBATIM (« Tous les traits »). */
@@ -110,10 +115,15 @@ export interface OptionalSwap {
   label: string;
   /** `id`s STABLES des Traits RETIRÉS du profil quand la variante est choisie. */
   remove: string[];
-  /** Bonus octroyé en échange : une caractéristique (Soc…) OU une compétence, + sa valeur. */
-  grant: { char: CharKey; value: number } | { skillId: string; spec?: string; value: number };
-  /** Catégorie de Taille appliquée par la même variante (Grand Loup : `grande`), le cas échéant. */
-  size?: string;
+  /** Bonus(-ent) octroyé(s) en échange : une ou plusieurs caractéristiques/compétences, + leur valeur
+   *  (Vouivre ZI : +20 en I, Int et Soc + Discrétion (Rurale) 65 → 4 octrois). */
+  grant: SwapGrant[];
+  /** Catégorie de Taille APPLIQUÉE par la même variante (posée dans les deux sens : Grand Loup
+   *  Moyenne→Grande, Vouivre Énorme→Grande) — remplace celle du bestiaire, aucune formule d'écart. */
+  size?: SizeCategory;
+  /** Blessures FINALES imposées par la variante (Vouivre : « réduire ses B à 42 ») — remplace la
+   *  valeur imprimée ET la formule par Taille (LDB 85), aucune des deux ne s'applique plus. */
+  wounds?: number;
 }
 export type OptionalNote = OptionalWildcard | OptionalSwap;
 /** Élément de la liste `optionals` (LDB 76) : Trait facultatif ordinaire OU note composée. */

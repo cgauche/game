@@ -14,7 +14,7 @@ import {
 } from './affineDetail';
 import { hash32 } from '../detail/hash';
 import type { DetailRecipe } from '../detail/types';
-import type { Dims } from '../iso';
+import type { Dims } from '../../geometry/iso';
 
 /**
  * Machinerie des MATÉRIAUX v2 (backend affine) : motifs partagés « pattern = structure, fill =

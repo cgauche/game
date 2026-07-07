@@ -94,8 +94,8 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
     const step = { id: 'e0', kind: 'exposure', actorId: h.id, target: 50, meta: { kind: 'chaleur' },
       result: { roll: 99, target: 50, sl: -5, success: false } } as unknown as import('./pendings').CascadeStep;
     const out = cascadeAppliers['exposure'].apply(useGame.getState, useGame.setState, step, h, { steps: [step], index: 0 });
-    expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(false); // pas encore tranché
-    expect(h.items).toHaveLength(1); // pas encore jeté
+    expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(false); // choix non encore rendu, rien n'a été tranché
+    expect(h.items).toHaveLength(1); // objet toujours en inventaire, rien n'a été jeté
     expect(out?.insert).toHaveLength(1);
     expect(out!.insert![0].kind).toBe('exposure-heat-drop');
     expect(out!.insert![0].options?.map((o) => o.key).sort()).toEqual(['garder', 'jeter']);

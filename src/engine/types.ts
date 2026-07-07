@@ -415,7 +415,18 @@ export interface ConditionInstance {
    *  'hemorragique'} == 0`. Tant que le verrou tient, `removeCondition` (dont l'auto-dissipation) est INERTE
    *  sur cet État. Évalué par `isConditionLocked`. */
   lockedUntil?: import('./flowCore').Condition;
+  /** VERROU d'ACTE de soin (LDB 18) : un État posé par un Critique « ne peut être retiré que par [acte] »
+   *  (Aveuglé/Sonné/Inconscient « par Aide Médicale », Hémorragique « par Chirurgie »). Porté sur l'INSTANCE
+   *  (aucun trauma porteur), levé par l'acte NOMMÉ via `releaseConditionLocks` (qui RETIRE alors l'État —
+   *  l'acte est ce qui le « soigne »). Tant qu'il est posé, `removeCondition` (récupération naturelle,
+   *  auto-dissipation) est INERTE sur cet État. Évalué par `isConditionLocked`. */
+  unlockBy?: ConditionUnlock;
 }
+
+/** Acte de soin qui LÈVE un verrou d'État de Critique (LDB 18). `medicalAid` = une des 3 formes d'Aide
+ *  Médicale (Guérison réussie / bandage-cataplasme / sort-prière de soin) ; `surgery` = acte de Chirurgie ;
+ *  `magic` = soin magique (qui compte AUSSI comme Aide Médicale, LDB 18 l.311 → lève aussi `medicalAid`). */
+export type ConditionUnlock = 'medicalAid' | 'surgery' | 'magic';
 
 /** Pénalité/blocage d'incantation temporisé (contrecoups des tables d'Imparfaites /
  *  Colère des dieux — LDB 46 l.61-136, LDB 40 l.58-138). Une seule des deux durées :
@@ -557,6 +568,15 @@ export interface ActiveEffect {
    *  d'Endurance et de FM, −10 Ag/I/Int », LDB 71 l.33) : le mod ne s'applique qu'aux Tests de cette
    *  carac, lu par `testValue` (engine/skills) ; EXCLU du global `effectTestMod`. */
   testModChar?: CharKey;
+  /** RESTREINT un `testModChar:'CC'` à l'arme tenue dans CETTE main (op `testMod.weaponHand`, #193 —
+   *  Épaule luxée « Tests effectués avec ce bras », LDB 18/AA) : lu par `combatValue`/`defenseValue`
+   *  (parade), jamais l'autre main. Absent = les deux mains (comportement historique). */
+  testModHand?: 'main' | 'off';
+  /** RESTREINT `testMod`/`testModChar` aux Tests classés « déplacement » (op `testMod.movementOnly`,
+   *  #193 — Genou démis « Tests impliquant cette jambe », LDB 18/AA) — MÊME catégorie `SkillData.movement`
+   *  que l'État À Terre/Empêtré (engine/conditions `MOVEMENT_SKILL`). Lu par `testValue`/`defenseValue`
+   *  (Esquive). Absent = tous les Tests de la carac visée. */
+  testModMovementOnly?: boolean;
   /** Modif. d'ATTRIBUT SECONDAIRE posé par l'op `attrMod` exécutée (Bonnet de fou « +4 Blessures »,
    *  LDB 71 l.20) — résolu numérique à l'application. `wounds` lu par `effectiveMaxWounds` ;
    *  `fortune`/`resolve` par `fortuneMax`/`resolveMax` (talentEffects). */
@@ -672,6 +692,42 @@ export interface Trauma {
   amputateAfterDays?: number;
   /** id STABLE de la fiche de séquelle (`traumas.json`) posée si `amputateAfterDays` expire sans Chirurgie. */
   amputateSequel?: string;
+  /** « Épaule luxée » (AA l.125 / LDB l.120) / « Genou démis » (AA l.179 / LDB l.179) : membre DÉSACTIVÉ
+   *  (les `ops` passives — bras `maxWeaponHands:1` / jambe `moveScale` — tiennent tant que la séquelle vit).
+   *  Après Aide Médicale (`awaitingMedicalAid` levé), un Test ÉTENDU de Guérison Accessible (+20) de
+   *  `restoreDR` DR (acte « Guérison » de l'Infirmerie, `medicFlow`) rend l'usage : la séquelle est retirée et
+   *  `recoveryPenalty` posé à la cible (durée d'horloge partagée = 1d10 jours). */
+  restoreDR?: number;
+  /** Ops posées à la cible quand `restoreDR` est atteint (charMod −10 / `moveScale` jambe) — appliquées avec
+   *  une durée d'horloge partagée (1d10 jours) par l'acte « Guérison » (`medicFlow`). */
+  recoveryPenalty?: import('./ops').GameOp[];
+  /** « Réouverture » (LDB 18 l.101/118/143/145/148/175 ; AA 07 l.119/147/149/152/175) : plaie non recousue.
+   *  Chaque nouveau Dégât à la MÊME `location` octroie `bleedOnReinjury` État Hémorragique (`reinjuryBleed`,
+   *  au point d'application des Dégâts localisés). Séquelle chirurgicale (`needsSurgery`) : la Chirurgie la retire. */
+  bleedOnReinjury?: number;
+  /** Déclencheur d'escalade posé par un critique (« Commotion cérébrale », LDB 18 l.74) : tant que le
+   *  personnage porte l'État `whileCondition`, tout critique SUBSÉQUENT à `location` (ou toute Localisation si
+   *  absente) impose le Test de sauvegarde `resist` (échec → ses `onFail`). Stampé par `stampCriticalEscalation`,
+   *  lu par `fireCritTriggers` au point unique de résolution des critiques. */
+  critTrigger?: { location?: HitLocation; whileCondition: string; resist: { difficulty: Difficulty; onFail: import('./ops').GameOp[] } };
+  /** Amputation DIFFÉRÉE à la fin de la rencontre (LDB 18, « Coupure à l'orteil » l.171 : « Une fois la
+   *  rencontre terminée… ») : marqueur posé par `rollCritical` pour un `amputation.timing === 'postEncounter'`,
+   *  résolu par `resolvePostEncounterAmputations` au foyer de fin de combat (jet + séquelle/plaie/États). */
+  pendingAmputation?: import('../data/criticals').Amputation;
+  /** Séquelle POST-guérison (LDB 18 l.61/72 : « Une fois que la blessure est guérie… ») : marqueur de la
+   *  Blessure critique EN COURS DE GUÉRISON. Le critique est GUÉRI quand tous les États `whenClear` sont
+   *  retirés (LDB 18 « Guérir les Blessures critiques » : « pas guéries tant que tous les États associés
+   *  n'ont pas été retirés ») → `settleHealedCriticals` retire ce marqueur, décompte la Blessure critique et
+   *  octroie la cicatrice `scar` (fiche `traumas.json`). Stampé par `stampCriticalEscalation`. */
+  onHealGrant?: { scar: string; whenClear: string[] };
+  /** Séquelle COSMÉTIQUE (cicatrice) : sequelle permanente qui n'EST PAS une Blessure critique comptée — la
+   *  Blessure d'origine est déjà guérie (`criticalWounds` décompté à l'octroi). La Chirurgie qui la retire
+   *  (`needsSurgery`, nez cassé LDB 18 l.72) ne re-décompte donc AUCUNE Blessure critique. */
+  cosmetic?: boolean;
+  /** Surcharge du `kind` passif de la séquelle (défaut : dérivé du type d'op par `traumaOpKind`). Une cicatrice
+   *  est un TRAIT DE CORPS permanent (`intrinsèque` : additif, non annulable) et non une douleur — c'est ce qui
+   *  fait sommer son `skillMod` social (+/−) par `passiveSkillSum`, hors du pool non-cumul des pénalités de crit. */
+  passiveKind?: import('./ops').PassiveKind;
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
@@ -1088,12 +1144,22 @@ export interface Combatant {
   /** A subi ≥1 Blessure critique DANS le combat courant (transitoire) — déclenche en fin de combat le Test
    *  de Résistance Très Facile (+60) « ou Infection Mineure » (LDB 20 l.72). Remis à zéro au prochain combat. */
   tookCriticalThisFight?: boolean;
+  /** Historique des ENTRÉES de Blessure critique subies (ids STABLES de `criticals.json`/`aa-criticals.json`),
+   *  appendé à chaque résolution (`applyCriticalToTarget`). PERSISTE à vie (jamais réinitialisé au combat) :
+   *  sert les escalades conditionnées à l'occurrence (« Si vous tombez une seconde fois sur cette blessure… »,
+   *  Blessure majeure à l'oreille, LDB 18 l.71) — lu par `rollCritical`/`resolveAACritical` (`escalation.onRepeat`). */
+  critEntriesSuffered?: string[];
   /** La blessure a été PANSÉE (matériel stérile / pansement) DANS le combat courant — un soin de Guérison
    *  réussi ou un bandage suffit : « aucune Infection ne se développera suite à la blessure » (LDB 09 /
    *  18 l.382). Empêche la contraction d'Infection Mineure en fin de combat. Transitoire (par rencontre). */
   woundDressed?: boolean;
   /** Traumatismes subis (LDB 18) — persistants ; effets en-combat lus par effectiveChar/effectiveMovement. */
   traumas?: Trauma[];
+  /** Mains « ensanglantées » par un Critique Main ensanglantée (AA l.2569, op `handGate`) : chaque main
+   *  gatée impose un Test de Dextérité (+20) AVANT toute Action employant l'arme qu'elle tient
+   *  (`attackHandGate`) ; sur un Échec, l'objet glisse (op `disarm`). Le gate tient TANT QUE l'État
+   *  Hémorragique tient — `removeCondition` purge ce marqueur dès que l'Hémorragique tombe à 0. */
+  handGates?: ('main' | 'off')[];
   /** Points de Corruption (LDB 19) — dérive de l'âme vers le Chaos. Gagnés par expositions/
    *  Sombres Pactes/contrecoups magiques ; au-delà de BFM+BE, chaque gain impose un Test de
    *  Résistance ou MUTATION. Persisté. */
@@ -1239,9 +1305,12 @@ export interface Combatant {
    *  *Empêtré* de l'Empoigné est une DONNÉE distincte (addCondition). Purgé sur sortie de combat par
    *  `clearEngagementOf` (qui lève engagement + contact + Empoignade d'un coup). */
   grapplingWith?: string[];
-  /** Apparence visuelle (cosmétique, ignorée par le moteur ; lue par le rendu).
-   *  Référence de TYPE seulement → élidée à la compilation, pas de dépendance runtime. */
+  /** Apparence visuelle RÉSOLUE (cosmétique, ignorée par le moteur ; lue directement par le rendu pour
+   *  un PJ rendu depuis son propre inventaire). Référence de TYPE seulement → élidée à la compilation. */
   appearance?: import('../gameIso/rig/appearance').Appearance;
+  /** Override d'apparence d'AUTHORING BRUT (cosmétique) porté depuis la scène au spawn (#187) : figé
+   *  PARESSEUSEMENT par le rig (`enemyRigProfile`) au premier rendu, jamais dans `state`. */
+  appearanceOverride?: import('./authoringAppearance').EntityAppearance;
 }
 
 /** Niveau de difficulté d'un Test (Livre de base, Tests). */

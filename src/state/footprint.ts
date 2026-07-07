@@ -2,7 +2,7 @@
  * Empreinte de grille des créatures par Taille — LDB `15 - Déplacement.md` l.55 :
  * « 1 case = 2 mètres … Les créatures plus grandes peuvent occuper **2, 4 ou même plus de cases**
  * sur la carte, en fonction de leur trait Taille (voir p.342). » Le LDB ne fige PAS de table par
- * catégorie (formulation permissive) ; choix de design ANCRÉ sur le texte canon :
+ * catégorie (formulation permissive) ; empreinte dérivée directement de ce texte canon (LDB 15 l.55) :
  *   Grande = 2×2 (= les « 4 cases » citées), Énorme = 3×3, Monstrueuse = 4×4 (« ou même plus ») ;
  *   Minuscule → Moyenne = 1×1 (standard implicite des espèces jouables).
  *

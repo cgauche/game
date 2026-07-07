@@ -6,7 +6,7 @@
  */
 import type { PropViz } from '../types';
 import type { Dir8 } from '../../../state/dir8';
-import type { Rot } from '../../iso';
+import type { Rot } from '../../../geometry/iso';
 import { PROP_DEFS } from './_registry.generated';
 
 export const PROPS: Record<string, PropViz> = Object.fromEntries(PROP_DEFS.map((p) => [p.id, p]));

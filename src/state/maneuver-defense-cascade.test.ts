@@ -81,7 +81,7 @@ describe('Défense de manœuvre de zone — cascade influençable (héros) vs si
       expect(step.meta?.maneuverDefense?.maneuverId).toBe('souffle-feu');
       expect(['hero']).toContain(useGame.getState().battle!.combatants.find((c) => c.id === step.actorId)!.kind);
     }
-    // Les effets ne sont PAS encore appliqués (différés à la validation de chaque étape).
+    // Les effets restent différés à la validation de chaque étape (non appliqués à ce stade).
     const live = () => useGame.getState().battle!.combatants;
     expect(live().find((c) => c.id === h1.id)!.wounds.current).toBe(before1);
     expect(live().find((c) => c.id === h2.id)!.wounds.current).toBe(before2);

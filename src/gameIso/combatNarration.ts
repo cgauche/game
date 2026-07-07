@@ -9,18 +9,16 @@
  *  - l'IMPORTANCE (les événements importants remontent dans le bandeau haut ; le reste reste au journal).
  */
 import { conditionMeta } from './effectIcons';
-import { etats } from '../data';
 import type { IconId } from '../ui/icons';
-import type { CombatEvent, CombatEventKind, ActorAim, ActorAimKind } from '../state/combatLog';
+import {
+  type CombatEvent, type CombatEventKind, type ActorAim, type ActorAimKind,
+  type CombatTone, toneOf, isImportantEvent, STATE_LABEL_TO_ID,
+} from '../state/combatLog';
 
 export interface NarratedSegment {
   text: string;
   team?: 'ally' | 'enemy';
 }
-
-/** Intensité d'un évènement → tenue à l'écran (le Réalisateur allonge les temps forts) ET emphase
- *  visuelle de la bannière. `grave` = un critique / une mise à mort ; `strong` = une Peur. */
-export type CombatTone = 'normal' | 'strong' | 'grave';
 
 export interface NarratedLine {
   raw: string;
@@ -45,50 +43,23 @@ const KIND_ICON: Record<CombatEventKind, IconId> = {
   condition: 'condition/bleeding', fear: 'flag/fear', death: 'journal/death', round: 'journal/round', detail: 'journal/detail', info: 'journal/info',
 };
 
-/** Types d'événements affichés dans le bandeau haut (les temps forts/actions/postures). */
-const IMPORTANT: Set<CombatEventKind> = new Set([
-  'charge', 'attack', 'shoot', 'cast', 'item', 'heal', 'flee',
-  'defensive', 'aim', 'focus', 'frenzy', 'crit', 'fear', 'death', 'round',
-]);
-
-/** Ton par type d'évènement (source UNIQUE — lue par le Réalisateur pour la tenue ET par la bannière
- *  pour l'emphase). Tout le reste retombe sur `normal`. */
-const KIND_TONE: Partial<Record<CombatEventKind, CombatTone>> = { crit: 'grave', death: 'grave', fear: 'strong' };
-export function toneOf(k: CombatEventKind): CombatTone {
-  return KIND_TONE[k] ?? 'normal';
-}
-
 /** États (LDB ch.16) reconnus dans le texte d'un événement `condition`/`detail` → icône via la
- *  source unique `conditionMeta` (jeu de noms FERMÉ, pas du devinage de verbe libre). */
-// Le texte d'un événement est en FRANÇAIS (journal) → on scanne le LIBELLÉ (etats.json + Pétrifié),
-// puis on mappe à l'`id` pour l'icône (conditionMeta keyé par id). Data-driven (zéro liste figée).
-const STATE_LABEL_TO_ID: [string, string][] = [...etats.map((e): [string, string] => [e.label, e.id]), ['Pétrifié', 'petrifie']];
-
-function stateMeta(text: string): { icon: IconId; important: boolean } | null {
+ *  source unique `conditionMeta` (jeu de noms FERMÉ, pas du devinage de verbe libre). Le texte d'un
+ *  événement est en FRANÇAIS (journal) → on scanne le LIBELLÉ (`STATE_LABEL_TO_ID`, partagé avec
+ *  `state/combatLog.isImportantEvent`), puis on mappe à l'`id` pour l'icône. Data-driven (zéro liste figée). */
+function iconOfState(text: string): IconId | null {
   for (const [label, id] of STATE_LABEL_TO_ID) {
-    if (text.includes(label)) {
-      const m = conditionMeta(id);
-      return { icon: m.icon, important: m.important };
-    }
+    if (text.includes(label)) return conditionMeta(id).icon;
   }
   return null;
 }
 
 function iconOf(e: CombatEvent): IconId {
   if (e.kind === 'condition' || e.kind === 'detail') {
-    const s = stateMeta(e.text);
-    if (s) return s.icon;
+    const icon = iconOfState(e.text);
+    if (icon) return icon;
   }
   return KIND_ICON[e.kind];
-}
-
-function importantOf(e: CombatEvent): boolean {
-  if (IMPORTANT.has(e.kind)) return true;
-  if (e.kind === 'condition') {
-    const s = stateMeta(e.text);
-    return !!s && s.important; // un État incapacitant appliqué (Sonné, À Terre…) monte au bandeau
-  }
-  return false;
 }
 
 function escapeRe(s: string): string {
@@ -121,7 +92,7 @@ function colorize(text: string, combatants: ComLite[]): NarratedSegment[] {
 
 /** Narre un événement de combat : icône unifiée + importance + ton + segments colorés par camp. */
 export function narrateEvent(e: CombatEvent, combatants: ComLite[] = []): NarratedLine {
-  return { raw: e.text, icon: iconOf(e), important: importantOf(e), tone: toneOf(e.kind), segments: colorize(e.text, combatants) };
+  return { raw: e.text, icon: iconOf(e), important: isImportantEvent(e), tone: toneOf(e.kind), segments: colorize(e.text, combatants) };
 }
 
 /** Verbe + kind (icône/ton) pour chaque manière de télégraphe d'intention. */
@@ -146,6 +117,6 @@ export function narrateIntent(aim: ActorAim, combatants: ComLite[] = []): Narrat
 
 /** Les `max` derniers événements IMPORTANTS (pour le bandeau haut), ordre chronologique préservé. */
 export function combatFeed(events: CombatEvent[], combatants: ComLite[] = [], max = 3): NarratedLine[] {
-  const important = events.filter((e) => importantOf(e)).map((e) => narrateEvent(e, combatants));
+  const important = events.filter((e) => isImportantEvent(e)).map((e) => narrateEvent(e, combatants));
   return important.slice(-max);
 }

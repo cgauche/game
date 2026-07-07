@@ -8,7 +8,7 @@
  * reçoit le motif d'appareillage partagé (LOD ≥ 1) ; les ACCENTS seedés (touffes, cailloux, blocs) sont
  * une COUCHE SÉPARÉE (`floorAccentsSvg`, LOD 2) que le stage n'étend qu'APRÈS le culling écran.
  */
-import { Dims, depth, diamondCorners, tileCenter } from '../iso';
+import { Dims, depth, diamondCorners, tileCenter } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
 import { terrainGradient } from '../catalog/terrain';
 import { reliefMaterial } from '../catalog/relief';

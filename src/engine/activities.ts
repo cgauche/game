@@ -576,9 +576,9 @@ export interface CraftOption {
 }
 
 /** Catalogue d'Artisanat : « créer de l'équipement du Chapitre 11 » (ch.23 l.66) = tout
- *  équipement de la base à prix chiffré. L'adéquation du Métier à l'objet est laissée au MJ
- *  par le canon — jeu sans MJ : catalogue non restreint (le Métier reste requis), arbitrage
- *  documenté. Trié par famille puis prix croissant. */
+ *  équipement de la base à prix chiffré. La source exige seulement « les Compétences Métier
+ *  appropriées » (ch.23 l.66), sans table d'adéquation Métier→objet — jeu sans MJ : catalogue
+ *  non restreint (le Métier reste requis), point ouvert tranché en donnée. Trié par famille puis prix croissant. */
 export function craftCatalog(): CraftOption[] {
   return trappings
     .filter((t) => toBrass({ gold: numPrice(t.price?.gold), silver: numPrice(t.price?.silver), brass: numPrice(t.price?.bronze) }) > 0)

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import React from 'react';
 import { CreaturePreview } from './CreaturePreview';
-import type { EntityAppearance } from '../../state/scene';
+import type { EntityAppearance } from '../../engine/authoringAppearance';
 
 const render = (name: string, appearance?: EntityAppearance) =>
   renderToStaticMarkup(React.createElement(CreaturePreview, { name, appearance }));

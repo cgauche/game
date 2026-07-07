@@ -80,7 +80,7 @@ describe('Piétinement en combat (store)', () => {
     useGame.getState().battleTrample(E.id);
     expect(useGame.getState().pendingTrample).toBeTruthy();
     expect(useGame.getState().pendingTrample!.result).toBeNull();
-    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.wounds.current).toBe(before); // pas encore appliqué
+    expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.wounds.current).toBe(before); // dégâts toujours en attente de résolution
     useGame.getState().trampleRoll();
     expect(useGame.getState().pendingTrample!.result).toBeTruthy();
     useGame.getState().trampleConfirm();

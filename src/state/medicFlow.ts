@@ -15,14 +15,16 @@
  * débit au clic d'acte ; « Annuler » AVANT le jet rembourse ; arrêter une opération jamais
  * commencée rembourse aussi.
  */
-import type { Combatant } from '../engine/types';
+import type { Combatant, Difficulty } from '../engine/types';
 import { battleRng } from './battleRng';
+import { d10 } from '../engine/dice';
+import { applyOps } from '../engine/ops';
 import { extendedTestStep } from '../engine/tests';
 import { partyAssisted } from '../engine/skills';
 import { bonus, effectiveChar } from '../engine/characteristics';
-import { addCondition, loseWounds } from '../engine/conditions';
+import { addCondition, loseWounds, releaseConditionLocks } from '../engine/conditions';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, type HealMode } from '../engine/healing';
-import { removeSurgicalTrauma } from '../engine/trauma';
+import { removeSurgicalTrauma, surgeryTraumas, recoverableTraumas, recoverDisabledLimb } from '../engine/trauma';
 import { toMoney, canAfford, subtract as moneySub, add as moneyAdd } from '../engine/money';
 import { touchActors } from './combatOrParty';
 import { finishPlayerAction, openContractionCascade } from './combatFlow';
@@ -43,8 +45,14 @@ export interface MedicState {
   /** Absent = soins entre héros (meilleur soigneur du groupe). */
   npc?: MedicNpc;
   patientId: string | null;
-  /** Opération ARMÉE : interrompre = perdre le cumul (Test étendu, LDB 12 l.200). */
+  /** Opération ARMÉE (Test étendu, LDB 12 l.200 : interrompre = perdre le cumul). Deux `kind`, MÊME machinerie
+   *  de passes (jet de Guérison influençable → cumul du DR) : `'surgery'` = Chirurgie d'une Blessure Critique
+   *  (Talent Chirurgie, chaque passe inflige 1d10 PB + 1 Hémorragie, LDB 10 l.154) ; `'recovery'` = Test étendu
+   *  de Guérison qui rend l'usage d'un membre désactivé (« Épaule luxée »/« Genou démis », LDB l.120/179 — aucun
+   *  dégât, cible DR 6, Accessible +20, pénalité 1d10 j à la clé). */
   surgery?: {
+    kind: 'surgery' | 'recovery';
+    difficulty: Difficulty;
     healerId?: string;
     healerName: string;
     skill: number;
@@ -61,7 +69,8 @@ export interface MedicState {
 
 import type { Get, Set } from './flowTypes';
 
-/** Meilleur soigneur du groupe pour un acte (Opérer exige AUSSI le Talent Chirurgie, LDB 10). */
+/** Meilleur soigneur du groupe pour un acte (Opérer exige AUSSI le Talent Chirurgie, LDB 10 ; la récupération
+ *  d'usage est un simple Test étendu de Guérison, sans Chirurgie, LDB l.120/179). */
 export function bestHealerFor(party: Combatant[], act: HealMode): { actor: Combatant; value: number } | null {
   const pool = act === 'surgery' ? party.filter((c) => hasHealSkill(c) && hasSurgerySkill(c)) : party.filter(hasHealSkill);
   return partyAssisted(pool, 'guerison'); // Soutien (LDB 12) : assistants de chirurgie/soin
@@ -90,13 +99,16 @@ export function closeMedic(get: Get, set: Set): void {
 }
 
 /** Lance un ACTE sur le patient courant : wounds/bleed/trauma → jet différé (pendingHeal) ;
- *  surgery → ARME l'opération (les passes suivent). PNJ : débite le tarif de l'acte. */
+ *  surgery/recovery → ARME l'opération étendue (les passes suivent). PNJ : débite le tarif de l'acte. */
 export function medicAct(get: Get, set: Set, act: HealMode): void {
   const m = get().medic;
   if (!m || get().pendingHeal) return;
-  if (m.surgery && (act === 'surgery' || act === 'trauma')) return; // pendant l'opération : seuls Bander/Hémorragie
+  if (m.surgery && (act === 'surgery' || act === 'trauma' || act === 'recovery')) return; // pendant l'op : seuls Bander/Hémorragie
   const patient = get().party.find((h) => h.id === m.patientId);
   if (!patient || !availableHealModes(patient).includes(act)) return;
+  // Récupération d'usage : bloquée tant que l'Aide Médicale n'a pas été reçue (LDB l.120/179 : « Après
+  // application de cette Aide… ») — l'acte reste proposé (raison affichée) mais ne s'arme pas.
+  if (act === 'recovery' && !recoverableTraumas(patient).length) { get().log('Aide Médicale requise avant de rééduquer le membre.'); return; }
 
   let healer: { id?: string; name: string; skill: number; intBonus: number };
   let paidCost: MedicCost | undefined;
@@ -116,13 +128,18 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
     healer = { id: best.actor.id, name: best.actor.name, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'Int')) };
   }
 
-  if (act === 'surgery') {
+  if (act === 'surgery' || act === 'recovery') {
+    // Chirurgie : cible MJ 5-10 (LDB 10), Intermédiaire +0. Récupération d'usage : DR 6 fixe (LDB l.120/179),
+    // Accessible +20 — cible lue sur la séquelle « membre désactivé » (restoreDR).
+    const recovery = act === 'recovery';
+    const targetDR = recovery ? (recoverableTraumas(patient)[0].restoreDR ?? 6) : 7;
     set({
       medic: {
         ...m,
         surgery: {
+          kind: act, difficulty: recovery ? 'accessible' : 'intermediaire',
           healerId: healer.id, healerName: healer.name, skill: healer.skill, intBonus: healer.intBonus,
-          traumaIdx: 0, targetDR: 7, cumDR: 0, paidCost, // cible MJ 5-10 (LDB 10)
+          traumaIdx: 0, targetDR, cumDR: 0, paidCost,
         },
       },
     });
@@ -158,19 +175,22 @@ export function openSurgeryPass(get: Get, set: Set): void {
     pendingSurgery: {
       healerId: sg.healerId ?? 'pnj-soigneur', healerName: sg.healerName,
       targetId: patient.id, targetName: patient.name,
-      skillValue: sg.skill, intBonus: sg.intBonus, difficulty: 'intermediaire', target: sg.skill,
+      skillValue: sg.skill, intBonus: sg.intBonus, difficulty: sg.difficulty, target: sg.skill,
       roll: null, success: false, sl: 0,
       traumaIdx: sg.traumaIdx, targetDR: sg.targetDR, cumDR: sg.cumDR, paidCost: sg.paidCost,
     },
   });
 }
 
-/** APPLIQUE la passe de Chirurgie (calque `extendedTestNext`) : prend le jet FIGÉ de `pendingSurgery`
- *  (déjà roulé + influencé en modale), cumule le DR (repart à 0 sous 0, LDB 12 l.200), inflige 1d10 PB +
- *  1 Hémorragie (LDB 10 l.154). Cible atteinte → Blessure Critique réparée + Test d'infection du PATIENT
- *  (LDB 10 l.365) DIFFÉRÉ en ÉTAPE de cascade INFLUENÇABLE (cascade `combatEndDisease`, jumeau de fin de
- *  combat : Chance/Résilience + auto-succès Résistance (Menace : Maladie)) — plus de jet silencieux. Patient
- *  à 0 PB → opération interrompue. Sinon → cumule sur `medic.surgery` et RÉOUVRE la passe suivante. */
+/** APPLIQUE une passe de l'opération étendue (calque `extendedTestNext`) : prend le jet FIGÉ de `pendingSurgery`
+ *  (déjà roulé + influencé en modale) et cumule le DR (repart à 0 sous 0, LDB 12 l.200).
+ *  - `kind:'surgery'` : chaque passe inflige 1d10 PB + 1 Hémorragie (LDB 10 l.154) ; à 0 PB → interruption.
+ *    Cible atteinte → Blessure Critique réparée + Test d'infection du PATIENT (LDB 10 l.365) DIFFÉRÉ en ÉTAPE de
+ *    cascade INFLUENÇABLE (`combatEndDisease`, jumeau de fin de combat).
+ *  - `kind:'recovery'` (« Épaule luxée »/« Genou démis », LDB l.120/179) : AUCUN dégât. Cible DR 6 atteinte →
+ *    usage du membre rendu (séquelle « membre désactivé » retirée) + `recoveryPenalty` posé à la cible avec une
+ *    durée d'horloge PARTAGÉE de 1d10 jours (charMod −10 / `moveScale` jambe) ; pas de Test d'infection.
+ *  Sinon (les deux) → cumule sur `medic.surgery` et RÉOUVRE la passe suivante. */
 export function surgeryNext(get: Get, set: Set): void {
   const ps = get().pendingSurgery;
   const m = get().medic;
@@ -178,19 +198,34 @@ export function surgeryNext(get: Get, set: Set): void {
   if (!ps || ps.roll == null || !m || !sg) return;
   const patient = get().party.find((h) => h.id === m.patientId);
   if (!patient) { set({ pendingSurgery: null, medic: { ...m, surgery: undefined } }); return; }
-  const { total: cum } = extendedTestStep(sg.cumDR, { success: ps.success, sl: ps.sl }, sg.targetDR); // Test étendu mutualisé (LDB 12) — chirurgie LDB 10
-  const harm = battleRng().int(1, 10);
-  loseWounds(patient, harm);
-  addCondition(patient, 'hemorragique');
-  const log = [`${sg.healerName} opère ${patient.name} — passe : DR ${ps.sl >= 0 ? '+' : ''}${ps.sl} (total ${cum}/${sg.targetDR}), ${harm} PB + 1 Hémorragie.`];
-  if (patient.wounds.current <= 0) { // « de fortes chances de tuer » (LDB 10) : on interrompt
+  const { total: cum } = extendedTestStep(sg.cumDR, { success: ps.success, sl: ps.sl }, sg.targetDR); // Test étendu mutualisé (LDB 12)
+  const recovery = sg.kind === 'recovery';
+  const verb = recovery ? 'rééduque' : 'opère';
+  const harm = recovery ? 0 : battleRng().int(1, 10);
+  if (!recovery) { loseWounds(patient, harm); addCondition(patient, 'hemorragique'); } // dégâts d'une passe de Chirurgie (LDB 10 l.154)
+  const log = [`${sg.healerName} ${verb} ${patient.name} — passe : DR ${ps.sl >= 0 ? '+' : ''}${ps.sl} (total ${cum}/${sg.targetDR})${recovery ? '.' : `, ${harm} PB + 1 Hémorragie.`}`];
+  if (!recovery && patient.wounds.current <= 0) { // « de fortes chances de tuer » (LDB 10) : on interrompt
     log.push(`${patient.name} sombre sur la table — l'opération est interrompue (stabilisez-le d'abord).`);
     set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
     finishPlayerAction(get, set, log, 'heal');
     return;
   }
-  if (cum >= sg.targetDR) { // cible atteinte : la Blessure Critique est réparée
-    log.push(...removeSurgicalTrauma(patient, sg.traumaIdx));
+  if (cum >= sg.targetDR) { // cible atteinte
+    if (recovery) {
+      const { penalty, log: recLog } = recoverDisabledLimb(patient, sg.traumaIdx);
+      log.push(...recLog);
+      // Pénalité 1d10 jours (LDB l.120/179) : durée d'horloge PARTAGÉE (charMod −10 ET Mouvement ÷2 de la jambe
+      // expirent ENSEMBLE) — `defaultUntilTime` fournit la même échéance à toutes les ops sans durée propre.
+      if (penalty.length) {
+        const now = get().gameTime;
+        log.push(...applyOps(patient, penalty, { rng: battleRng(), now, defaultUntilTime: now + d10(battleRng()) * 24 * 60 }));
+      }
+      set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
+      finishPlayerAction(get, set, log, 'heal');
+      return;
+    }
+    if (surgeryTraumas(patient).length) log.push(...removeSurgicalTrauma(patient, sg.traumaIdx)); // Chirurgie : Blessure Critique réparée (s'il y en a une à opérer)
+    log.push(...releaseConditionLocks(patient, 'surgery')); // verrous d'État « ne peut être retiré que par Chirurgie » (Hémorragie interne, LDB 18)
     set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
     finishPlayerAction(get, set, log, 'heal');
     // Test d'infection du PATIENT (LDB 10 l.365) : Résistance Accessible (+20) — plus un jet SILENCIEUX

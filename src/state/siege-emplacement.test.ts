@@ -214,7 +214,7 @@ describe('(E) AoE — mortier + bombe explosion frappe un groupe au sol (branche
     expect(lines.length).toBeGreaterThan(0);
     expect(a.wounds.current).toBeLessThan(wa); // touché par le souffle
     expect(b.wounds.current).toBeLessThan(wb); // touché par le souffle
-    expect(far.wounds.current).toBe(wf); // hors rayon → épargné
+    expect(far.wounds.current).toBe(wf); // hors rayon → indemne
   });
 });
 

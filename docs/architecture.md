@@ -13,6 +13,13 @@ src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans 
                             mutations.ts (Tableaux de Corruption LDB 19). Les métadonnées de résolution
                             des sorts vivent dans SpellData (spells.json) — l'ancien registre spellspecs/
                             et le repli regex sont SUPPRIMÉS (Migration #5)
+src/geometry/                Géométrie/simulation PURE partagée `state` ⇄ `gameIso` (#161 : `state` en a
+                            besoin pour SA PROPRE logique — curseur de combat, IA, cadence des beats —
+                            pas seulement le rendu ; zéro dépendance framework). `iso.ts` : projection
+                            isométrique (Dims, tileCenter, rotTile…) — `gameIso/iso.ts` la ré-importe pour
+                            ses dérivés qui ont besoin du MONDE (WALL_H_M/isoPxToM, via state/relief).
+                            `walk.ts` : interpolation temporelle le long d'un chemin (walkMs/walkXY,
+                            STEP_MS) — cadence l'attente de fin de marche AVANT résolution de combat.
 src/engine/                 Règles WFRP4, PUR + testé :
   types.ts                    Caractéristiques, Combatant, Weapon, ItemInstance, Difficulty…
   tests.ts                    Tests & Degrés de Réussite (DR), tests opposés
@@ -83,8 +90,18 @@ src/state/
                               des critiques, jours CALENDAIRES) + purge des effets a duree d'horloge
                               (castPenalties/ActiveEffect.untilTime) — anti-double-comptage lastUpkeepDay
   spawn.ts / path.ts / bus.ts
+  dir8.ts                     Dir8 (8 caps grille) + géométrie associée : rotateDir8, DIR8_DELTA,
+                              facingToward (#161 : ex-`gameIso/rig/facing.ts` — la géométrie de cap grille
+                              n'est pas du rendu, `gameIso` la ré-importe pour l'orientation écran)
+  viewLevel.ts                override DEBUG de l'étage AFFICHÉ (`__wfrp.viewLevel(z)`, #161 : ex-
+                              `gameIso/viewLevel.ts`) — SOURCE dans `state`, lu par `gameIso/IsoStage`
+  combatLog.ts                CombatEvent/CombatEventKind + CombatTone/toneOf/isImportantEvent/
+                              lastEventTone (#161 : cadence des beats, `gameIso/combatNarration` les
+                              réutilise pour l'icône/la coloration par camp, hors du périmètre `state`)
 src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
-  iso.ts                      projection (tileCenter, diamondPath, screenToTile, stageSize)
+  iso.ts                      dérivés MÉTRIQUES de la projection (WALL_H_M, isoPxToM — besoin du monde,
+                              via state/relief) ; la projection elle-même (Dims, tileCenter, diamondPath,
+                              screenToTile, stageSize…) vit dans `src/geometry/iso.ts` (#161)
   sprites.ts                  décor (props/villageois/terrain en relief) + DEFS (gradients) — PLUS de sprite créature
   rig/                        gabarits corporels (bipède + quadrupède/ailé/serpentin/…) — rend TOUT le bestiaire
                               AJOUTER une créature : suivre docs/creer-une-creature.md (registre defs/,

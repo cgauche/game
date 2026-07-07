@@ -38,7 +38,11 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   const actor = party.find((c) => c.id === pt.actorId);
   const multi = !rolled && !!pt.candidates && pt.candidates.length > 1;
   const skillLabel = pt.skill ?? pt.label;
-  const pendingLine = testPending(skillLabel, pt.skillValue, pt.target, pt.difficulty);
+  // Mod d'environnement (météo maritime — Précipitations, MDG 13 l.187-201) : ligne de mod dédiée,
+  // au même titre que la Difficulté — `envMod` est DÉJÀ intégré à `pt.target` (PAS à `skillValue`)
+  // par `openSkillTest` (seaWeatherTestMod, POINT UNIQUE), ici seulement pour l'AFFICHAGE.
+  const envMods = pt.envMod ? [{ label: pt.envLabel ?? 'Météo', value: pt.envMod }] : undefined;
+  const pendingLine = testPending(skillLabel, pt.skillValue, pt.target, pt.difficulty, envMods);
   // Option « Succès / échec stupéfiants » (LDB 12 l.151) : badge du double, pilotée par la règle.
   const amazing = rule('test-critiques-doubles') ? amazingTestLabel(pt) : null;
   // Barre : « Continuer » post-jet + « Annuler » pré-jet SI le test est annulable (action de COMBAT ;

@@ -64,7 +64,8 @@ const stripAccents = (s: string): string => s.normalize('NFD').replace(/[̀-ͯ]/
 
 /**
  * Catégorie depuis un libellé libre (« Énorme », « de Petite à Énorme »…). Une plage narrative
- * est résolue vers sa **borne HAUTE** (choix de design documenté : le RAW ne tranche pas). Renvoie
+ * est résolue vers sa **borne HAUTE** : un statbloc attribue UNE catégorie de Taille, une fourchette
+ * de libellé est un artefact d'authoring que ce parseur rabat sur sa borne haute. Renvoie
  * null si aucune catégorie n'est reconnue.
  */
 export function parseSizeLabel(raw: string): SizeCategory | null {

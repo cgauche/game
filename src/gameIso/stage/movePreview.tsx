@@ -3,7 +3,7 @@
  * entre l'aperçu tap-1 (battle.preview, tactile), l'aperçu au SURVOL (desktop), l'aperçu hors combat et
  * le télégraphe de déplacement ENNEMI (teinté).
  */
-import { Dims, tileCenter, diamondPath } from '../iso';
+import { Dims, tileCenter, diamondPath } from '../../geometry/iso';
 import { footprintTiles } from '../../state/footprint';
 import type { Pt } from '../../state/path';
 

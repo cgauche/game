@@ -100,6 +100,12 @@ export interface PendingTest {
   psychMod?: number;
   /** Libellé lisible du malus psy social (« Animosité −20 envers Elfe ») pour la modale de Test. */
   psychDetail?: string;
+  /** Mod d'ENVIRONNEMENT (météo maritime — Précipitations, MDG 13 l.187-201) — déjà intégré à
+   *  `target` (PAS à `skillValue`, comme la Difficulté : `seaWeatherTestMod`, POINT UNIQUE dans
+   *  `openSkillTest`) ; conservé À PART pour l'afficher comme une ligne de mod dédiée dans la modale. */
+  envMod?: number;
+  /** Libellé de la source du mod d'environnement (« Abondantes ») pour la modale de Test. */
+  envLabel?: string;
   /** Outil utilisé (uid résolu sur l'acteur) : sa qualité d'artisanat module l'issue / casse l'objet (Phase C2a). */
   itemUid?: string;
   /** Jet double (Maladresse si en plus c'est un échec) — pour casser un outil Bâclé hors combat. */
@@ -131,6 +137,24 @@ export interface PendingTest {
    *  l'Action n'est pas encore dépensée, rien à rembourser). Absent = test de dialogue/scène → NON
    *  annulable (la branche onSuccess/onFailure doit se résoudre). */
   cancellable?: boolean;
+}
+/** Sauvegarde d'Initiative d'une PANNE DE VAPEUR « Fuite de vapeur » (MDG 12 l.326-328) : la personne
+ *  qui s'occupe du moteur teste l'Initiative sous peine d'être ébouillantée. Modale INFLUENÇABLE
+ *  (Chance/Résilience) — l'ÉCHEC applique `scaldOps` (déjà roulés : 1d10−5 Dégâts min 1, ignorent
+ *  l'Armure) via `steamSaveConfirm`, puis la boucle maritime reprend. */
+export interface PendingSteamSave {
+  actorId: string;
+  actorName: string;
+  skillValue: number;
+  target: number;
+  difficulty: Difficulty;
+  /** Dégâts d'ébouillantage à appliquer sur ÉCHEC — `GameOp[]` au montant DÉJÀ roulé (min 1). */
+  scaldOps: GameOp[];
+  roll: number | null;
+  success: boolean;
+  sl: number;
+  forced?: boolean;
+  rerolled?: boolean;
 }
 /** Rechargement en attente (LDB 63-Armures l.28-29 : Test étendu de Projectiles, Indice DR).
  *  La modale affiche « Lancer », le DR, puis Chance avant d'acquitter (cumul vers `reload`). */
@@ -287,6 +311,32 @@ export interface PendingAttack {
   center?: Pt;
   /** Marqueur de pilonnage indirect (cf. `center`) — `attackConfirm` résout l'aire au lieu d'une touche directe. */
   siege?: boolean;
+}
+/** Test de Dextérité (+20) PAR ACTION de « Main ensanglantée » (Aux Armes bras 46-50, l.2569), posé AVANT
+ *  l'ouverture d'une Action d'attaque quand l'arme employée est tenue dans une main gatée (`attackHandGate`).
+ *  Modale INFLUENÇABLE (Chance/Pacte/Résilience — `FLOWS.handGate`, calque `reload`). Sur RÉUSSITE, l'Action
+ *  déclarée s'ouvre (le `pa`/`title`/`icon` FIGÉS — la cascade d'attaque reprend telle quelle) ; sur ÉCHEC,
+ *  l'objet glisse (op `disarm`) et l'Action est consommée. Chemin IA = jet inline forcé côté `doAttack`. */
+export interface PendingHandGate {
+  attackerId: string;
+  actorName: string;
+  /** Main gatée (loadout actif) — pour le `disarm` sur Échec (convention DROITIER `main`/`off`). */
+  hand: 'main' | 'off';
+  skillValue: number; // Dextérité BAKÉE (valeur effective de l'attaquant)
+  difficulty: Difficulty; // 'accessible' (+20 « Accessible »)
+  /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
+  roll: number | null;
+  target: number; // cible effective après difficulté
+  sl: number;
+  success: boolean;
+  rerolled?: boolean;
+  /** Réussite forcée par Résilience (LDB 17 l.73). */
+  forced?: boolean;
+  /** Action d'attaque FIGÉE à rouvrir sur RÉUSSITE (le porteur de données `pendingAttack` + le titre/icône
+   *  de la cascade des 3 sites de déclaration : flux normal / Tir rapide / Pilonnage). Sérialisable (coop). */
+  pa: PendingAttack;
+  title: string;
+  icon: string;
 }
 /** Pilonnage INDIRECT EN COURS (« viser une case », AA p.122-123) : une pièce indirecte SERVIE attend le
  *  POINT D'IMPACT au sol — placeur de zone PARTAGÉ (`placingZoneOf` source 'siege', même gabarit que les
@@ -652,7 +702,7 @@ export interface PendingDefense {
   attackerId: string; // ennemi
   defenderId: string; // héros
   weapon: Weapon; // arme active de l'attaquant, figée
-  location: HitLocation | null; // visée par l'IA (aucune pour l'instant → null)
+  location: HitLocation | null; // visée par l'IA (absente tant qu'aucune localisation choisie → null)
   atk: TestResult; // jet d'attaque figé (rollMeleeAttacker)
   mode: DefenseMode; // réaction choisie (défaut = bestDefenseMode) ; 'social' = substitution sociale (mêlée)
   /** Arme de parade choisie (uid d'ItemInstance) ; absent = main principale (weapons[0]). */

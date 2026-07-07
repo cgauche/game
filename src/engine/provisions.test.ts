@@ -127,7 +127,7 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
     expect(kind).toBe('faim');
     expect(penalty).toBe(0); // 1ᵉʳ Test → pénalité 0
     expect(r.log).toEqual([]); // RIEN de pré-résolu (pas de « ÉCHEC » dans le journal)
-    expect(c.hunger?.tests).toBe(0); // le Test n'est pas encore compté (appliqué à la validation)
+    expect(c.hunger?.tests).toBe(0); // le compteur de Test reste à 0 ici (incrémenté seulement à la validation)
     expect(c.hunger?.days).toBe(2); // la faim a bien progressé d'un jour
   });
 
@@ -190,7 +190,7 @@ describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.420)', () => {
     expect(effectiveChar(c, 'Int')).toBe(20);
     expect(effectiveChar(c, 'FM')).toBe(20);
     expect(effectiveChar(c, 'Soc')).toBe(20);
-    expect(effectiveChar(c, 'F')).toBe(30); // pas encore touché au 1ᵉʳ échec
+    expect(effectiveChar(c, 'F')).toBe(30); // F reste intacte au 1ᵉʳ échec
   });
 
   it('2ᵉ échec : −10 aux autres Caractéristiques + 1d10 − BE (min 1) Dégâts', () => {
@@ -217,7 +217,7 @@ describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.420)', () => {
     const w = dailyWaterUpkeep(c, false, 30, 3, fixed(95), (spec) => seen.push(spec));
     expect(seen[0]?.kind).toBe('soif');
     expect(c.thirst?.days).toBe(1);
-    expect(c.thirst?.tests).toBe(0); // pas encore compté
+    expect(c.thirst?.tests).toBe(0); // compteur à 0 ici (incrément différé)
     expect(w.log).toEqual([]);
   });
 

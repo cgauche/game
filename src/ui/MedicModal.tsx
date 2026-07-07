@@ -11,10 +11,10 @@ import { testBreakdown, testPending } from './breakdown';
 import { canReroll } from '../engine/fortune';
 import { freeRerollOf } from '../engine/activeFlags';
 import { isHealable, type HealMode } from '../engine/healing';
-import { hasTreatableTrauma, hasSurgeryTrauma, surgeryTraumas } from '../engine/trauma';
+import { hasTreatableTrauma, hasSurgeryTrauma, surgeryTraumas, recoverableTraumas, hasLimbAwaitingAid } from '../engine/trauma';
 import { bestHealerFor } from '../state/medicFlow';
 import { toMoney } from '../engine/money';
-import type { Combatant } from '../engine/types';
+import { DIFFICULTY_LABELS, type Combatant } from '../engine/types';
 import { Icon } from './Icon';
 
 const ACT_META: Record<HealMode, { icon: ReactNode; label: string }> = {
@@ -22,6 +22,7 @@ const ACT_META: Record<HealMode, { icon: ReactNode; label: string }> = {
   bleed: { icon: <Icon id="condition/bleeding" size="sm" />, label: 'Arrêter l’Hémorragie' },
   trauma: { icon: <Icon id="medical/tear" size="sm" />, label: 'Soigner la déchirure' },
   surgery: { icon: <Icon id="medical/scalpel" size="sm" />, label: 'Opérer' },
+  recovery: { icon: <Icon id="medical/crutch" size="sm" />, label: 'Rééduquer un membre' },
 };
 
 /** Pourquoi un acte est grisé — affiché en title (info de décision, pas de texte tuto). */
@@ -39,6 +40,10 @@ function actBlockReason(patient: Combatant, act: HealMode, hasSurgeon: boolean):
       if (!hasSurgeryTrauma(patient)) return 'Aucune blessure ne relève de la chirurgie';
       if (!hasSurgeon) return 'Aucun soigneur avec le Talent Chirurgie'; // prérequis LDB 10
       return null;
+    case 'recovery':
+      if (recoverableTraumas(patient).length) return null;
+      if (hasLimbAwaitingAid(patient)) return 'Aide Médicale requise d’abord'; // LDB l.120/179 : « Après application de cette Aide… »
+      return 'Aucun membre désactivé à rééduquer';
   }
 }
 
@@ -50,6 +55,7 @@ function actBlockReason(patient: Combatant, act: HealMode, hasSurgeon: boolean):
  */
 function SurgeryRollFlow() {
   const ps = useGame((s) => s.pendingSurgery);
+  const kind = useGame((s) => s.medic?.surgery?.kind);
   const party = useGame((s) => s.party);
   const roll = useGame((s) => s.surgeryRoll);
   const reroll = useGame((s) => s.surgeryReroll);
@@ -83,18 +89,19 @@ function SurgeryRollFlow() {
     onForce: force,
     forceShow: !ps.success,
   };
+  const recovery = kind === 'recovery';
   const actions: RollAction[] = [
-    { key: 'cancel', label: 'Arrêter l’opération', kind: 'ghost', onClick: cancel, when: 'pre' },
+    { key: 'cancel', label: recovery ? 'Arrêter la rééducation' : 'Arrêter l’opération', kind: 'ghost', onClick: cancel, when: 'pre' },
     { key: 'confirm', label: 'Appliquer la passe', kind: 'primary', onClick: next, when: 'post' },
   ];
   return (
     <RollShell
       embedded
-      title={<><Icon id="medical/scalpel" size="sm" /> Opérer (une passe)</>}
+      title={<>{recovery ? <Icon id="medical/crutch" size="sm" /> : <Icon id="medical/scalpel" size="sm" />} {recovery ? 'Rééduquer (une passe)' : 'Opérer (une passe)'}</>}
       subtitle={
         <>
-          <strong>{ps.healerName}</strong> opère <strong>{ps.targetName}</strong>{' '}
-          <span className="rm-weapon">(Guérison, Intermédiaire +0)</span>
+          <strong>{ps.healerName}</strong> {recovery ? 'rééduque' : 'opère'} <strong>{ps.targetName}</strong>{' '}
+          <span className="rm-weapon">(Guérison, {DIFFICULTY_LABELS[ps.difficulty]})</span>
         </>
       }
       rows={[actorRow]}
@@ -135,7 +142,7 @@ export function MedicModal() {
 
   // Les actes proposés : ceux du PNJ (tarifés) ou les 4 actes du groupe — grisés avec leur raison.
   const offers: { act: HealMode; cost?: { gold?: number; silver?: number; brass?: number } }[] =
-    npc ? npc.acts : (['wounds', 'bleed', 'trauma', 'surgery'] as HealMode[]).map((a) => ({ act: a }));
+    npc ? npc.acts : (['wounds', 'bleed', 'trauma', 'surgery', 'recovery'] as HealMode[]).map((a) => ({ act: a }));
 
   return (
     <Modal title={npc ? <><Icon id="journal/heal" size="sm" /> Soins — {npc.name}</> : <><Icon id="journal/heal" size="sm" /> Soins</>} variant="plain" className="medic-modal" onClose={busy ? undefined : close}>
@@ -162,15 +169,18 @@ export function MedicModal() {
       {/* DOSSIER du patient : les actes (l'opération en cours s'affiche au-dessus des actes). */}
       {patient && !ph && (
         <div className="medic-dossier">
-          {sg && (
+          {sg && (() => {
+            const recovery = sg.kind === 'recovery';
+            const pool = recovery ? recoverableTraumas(patient) : surgeryTraumas(patient);
+            return (
             <div className="medic-surgery">
               <p className="rm-vs">
-                <strong>{sg.healerName}</strong> opère <strong>{patient.name}</strong>{' '}
-                <span className="rm-weapon">(cumuler {sg.targetDR} DR · Intermédiaire +0)</span>
+                <strong>{sg.healerName}</strong> {recovery ? 'rééduque' : 'opère'} <strong>{patient.name}</strong>{' '}
+                <span className="rm-weapon">(cumuler {sg.targetDR} DR · {DIFFICULTY_LABELS[sg.difficulty]})</span>
               </p>
-              {!sg.last && surgeryTraumas(patient).length > 1 && (
+              {!sg.last && pool.length > 1 && (
                 <div className="modal-actions medic-wound-pick">
-                  {surgeryTraumas(patient).map((t, i) => (
+                  {pool.map((t, i) => (
                     <button key={i} className={`btn small${i === sg.traumaIdx ? ' btn-primary' : ''}`} onClick={() => setWound(i)}>
                       {t.label} ({t.location})
                     </button>
@@ -179,24 +189,25 @@ export function MedicModal() {
               )}
               <DrBar cum={sg.cumDR} target={sg.targetDR} />
               {sg.last && <p className="rm-note">Dernière passe : {sg.last.sl >= 0 ? '+' : ''}{sg.last.sl} DR</p>}
-              {/* coût RAW d'une passe : LDB 10 l.154 */}
-              <p className="rm-note">Chaque passe inflige 1d10 PB + 1 Hémorragie. À 0 PB, l’opération s’interrompt.</p>
+              {/* coût RAW d'une passe de Chirurgie : LDB 10 l.154 (la rééducation Guérison n'inflige rien). */}
+              <p className="rm-note">{recovery ? 'Test étendu de Guérison — récupération de l’usage du membre.' : 'Chaque passe inflige 1d10 PB + 1 Hémorragie. À 0 PB, l’opération s’interrompt.'}</p>
               {/* La passe est un jet INFLUENÇABLE (modale embarquée) ; avant le 1er jet, on l'arme/renonce. */}
               {ps ? (
                 <SurgeryRollFlow />
               ) : (
                 <div className="modal-actions">
                   <button className="btn btn-ghost" onClick={cancelSurgery} title={sg.last ? 'Le cumul de DR est perdu' : 'Renoncer (acte remboursé)'}>
-                    Arrêter l’opération
+                    {recovery ? 'Arrêter la rééducation' : 'Arrêter l’opération'}
                   </button>
-                  <button className="btn btn-primary" onClick={openPass}><Icon id="medical/scalpel" size="sm" /> Opérer (une passe)</button>
+                  <button className="btn btn-primary" onClick={openPass}>{recovery ? <><Icon id="medical/crutch" size="sm" /> Rééduquer (une passe)</> : <><Icon id="medical/scalpel" size="sm" /> Opérer (une passe)</>}</button>
                 </div>
               )}
             </div>
-          )}
+            );
+          })()}
           <div className="medic-acts">
             {offers.map(({ act: a, cost }) => {
-              if (sg && (a === 'surgery' || a === 'trauma')) return null; // pendant l'opération : Bander/Hémorragie seulement
+              if (sg && (a === 'surgery' || a === 'trauma' || a === 'recovery')) return null; // pendant l'op : Bander/Hémorragie seulement
               const reason = actBlockReason(patient, a, hasSurgeon);
               const healer = npc ? undefined : bestHealerFor(party, a)?.actor;
               const meta = ACT_META[a];

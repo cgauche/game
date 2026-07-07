@@ -15,7 +15,7 @@
  */
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
-import { addCondition, addTimedCondition, addClockCondition, removeCondition, loseWounds, hasCondition } from './conditions';
+import { addCondition, addTimedCondition, addClockCondition, removeCondition, loseWounds, hasCondition, releaseConditionLocks } from './conditions';
 import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel, findTrappingById } from '../data';
 import { contractDiseaseOnce } from './disease';
 import { groupMatch } from './groups';
@@ -332,6 +332,10 @@ export type GameOp =
        *  éliminés » (Tête 46-50) ⇒ `{ kind:'compare', subject:{who:'target',condition:'hemorragique'},
        *  op:'==', value:0 }`. Figé sur l'entrée d'État, évalué par `isConditionLocked`. */
       lockedUntil?: import('./flowCore').Condition;
+      /** VERROU d'ACTE de soin (LDB 18) : l'État posé « ne peut être retiré que par [acte] » (Aveuglé/Sonné/
+       *  Inconscient « par Aide Médicale », Hémorragique « par Chirurgie »). Figé sur l'instance, levé par l'acte
+       *  nommé (`releaseConditionLocks`) qui RETIRE alors l'État. Évalué par `isConditionLocked`. */
+      unlockBy?: import('./types').ConditionUnlock;
       /** Empoignade (LDB 14 l.159) : poser AUSSI la relation symétrique `grapplingWith` entre le RÉFÉRENT
        *  (`ctx.caster`, l'attaquant) et la cible — la SEULE voie data-driven de démarrage d'une Empoignade
        *  (Constricteur onHit, Tentacules/Langue, Absorption, et l'init JOUEUR migrée). L'État *Empêtré* est
@@ -516,8 +520,15 @@ export type GameOp =
   /** Modificateur de Test du porteur (Malédiction de malchance : −10 global). Sans `char` = GLOBAL (tous les
    *  Tests, porté par un effet actif, STACKE sur les États, lu par `combat/testStatePenalty`). AVEC `char` =
    *  modificateur de TEST qualifié par Caractéristique (Visage inversé −20 Soc, objet Laid −20 Soc), émis par
-   *  le collecteur passif et lu par `testValue/passiveTestMod` — n'altère PAS la Caractéristique (≠ charMod). */
-  | { op: 'testMod'; amount: number; char?: CharKey; combatOnly?: boolean; movementOnly?: boolean; hearingOnly?: boolean; exceptSkills?: string[] }
+   *  le collecteur passif et lu par `testValue/passiveTestMod` — n'altère PAS la Caractéristique (≠ charMod).
+   *  EXÉCUTÉ via `applyOps` (≠ passif d'État) : porte aussi `movementOnly`/`weaponHand`, portée MEMBRE d'une
+   *  pénalité de récupération (#193, Épaule luxée/Genou démis LDB+AA, « Tests effectués avec ce bras »/« cette
+   *  jambe ») — `weaponHand` restreint un `char:'CC'` à l'arme tenue dans CETTE main (lu par `combatValue`/
+   *  `defenseValue` parade uniquement, JAMAIS l'autre main) ; `movementOnly` restreint (`char:'Ag'` typiquement)
+   *  aux Tests classés « déplacement » (`SkillData.movement` — Athlétisme/Chevaucher/Escalade/Esquive/Natation,
+   *  MÊME catégorie que l'État À Terre/Empêtré) — lu par `testValue`/`defenseValue` (Esquive). Absent des deux
+   *  = comportement historique (global, comme avant #193). */
+  | { op: 'testMod'; amount: number; char?: CharKey; combatOnly?: boolean; movementOnly?: boolean; hearingOnly?: boolean; exceptSkills?: string[]; weaponHand?: 'main' | 'off' }
   /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête) tant que le Sort dure — Peau de loup
    *  d'hiver (Ulric), Protection contre la pluie. Lu par `exposureNight` (engine/exposure). */
   | { op: 'weatherWard' }
@@ -702,8 +713,11 @@ export type GameOp =
   | { op: 'mitigateIncoming'; mode: 'nullify'; unlessKeyword?: 'magic' }
   /** Échelle MULTIPLICATIVE du Mouvement — GÉNÉRALISE le drapeau `movementHalved` (= 1/2). `num/den` = la
    *  fraction appliquée à `c.movement` (amputation de jambe : 1/2). Trauma : lu par `traumaMovementHalved` ;
-   *  sort : `ActiveEffect.moveScale`. (`M` n'est pas une Caractéristique → op de mouvement dédiée.) */
-  | { op: 'moveScale'; num: number; den: number }
+   *  sort : `ActiveEffect.moveScale`. (`M` n'est pas une Caractéristique → op de mouvement dédiée.)
+   *  `durationRounds` : effet TEMPORAIRE à durée intrinsèque (Souffle coupé « Mouvement réduit de moitié
+   *  pendant 1d10 Rounds », LDB 18-Traumatisme) — MÊME patron que `maxWeaponHands.durationRounds` : résolu
+   *  indépendamment du ctx ; absent = durée du ctx (`durationFromCtx`, sort/effet permanent de trauma). */
+  | { op: 'moveScale'; num: number; den: number; durationRounds?: Formula }
   /** Modificateur ADDITIF de Mouvement (trait Brutal −1 / Rapide +1, mutation ±1, encombrement) — distinct de
    *  `moveScale` (multiplicatif). `effectiveMovement` somme les `moveMod` PUIS applique les `moveScale`. */
   | { op: 'moveMod'; mod: number }
@@ -735,6 +749,12 @@ export type GameOp =
    *  (« Choisissez au hasard l'un de vos deux bras ») → tirage aléatoire (`ctx.rng`). Sans objet tenu
    *  dans cette main : inerte (journalisé). */
   | { op: 'disarm' }
+  /** Main « ensanglantée » (Aux Armes bras 46-50, l.2569 : Main ensanglantée) — pose un marqueur PAR-MAIN
+   *  (`Combatant.handGates`), DISTINCT du compteur global Hémorragique, qui impose un Test de Dextérité
+   *  (+20) AVANT toute Action employant l'arme tenue par cette main (`attackHandGate` ; Échec → op `disarm`).
+   *  Main RÉSOLUE depuis `ctx.location` (convention DROITIER, comme `disarm` : `brasD`→`main`, `brasG`→`off`).
+   *  Le gate tient tant que l'Hémorragique tient (`removeCondition` purge le marqueur à 0). */
+  | { op: 'handGate' }
   /** Perte d'un organe sensoriel PAIRÉ (œil/oreille). Porté par une séquelle ; `escalateSensoryLoss`
    *  compte les `senseLoss` par sens (2 du même → Cécité/Surdité). */
   | { op: 'senseLoss'; sense: PairedSense }
@@ -1028,6 +1048,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.wounds.current = Math.min(target.wounds.max, target.wounds.current + n);
         lines.push(t('op.heal', { name: target.name, n }));
         lines.push(...receiveMedicalAid(target)); // sort/prière de soin = Aide Médicale (LDB 18 l.311)
+        lines.push(...releaseConditionLocks(target, ctx.sourceSpellId != null ? 'magic' : 'medicalAid')); // verrous d'État (LDB 18) : soin d'un sort = magie (⊇ Aide Médicale) ; potion/objet = Aide Médicale
         break;
       }
       case 'healCaster': {
@@ -1036,6 +1057,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         who.wounds.current = Math.min(who.wounds.max, who.wounds.current + n);
         lines.push(t('op.heal', { name: who.name, n }));
         lines.push(...receiveMedicalAid(who)); // sort/prière de soin = Aide Médicale (LDB 18 l.311)
+        lines.push(...releaseConditionLocks(who, 'magic')); // healCaster = soin d'un sort → magie (lève aussi les verrous Aide Médicale, LDB 18)
         break;
       }
       case 'gainAdvantage': {
@@ -1070,7 +1092,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           addTimedCondition(target, o.name, v, rounds, escape);
           lines.push(t('op.condTimed', { name: target.name, v, cond: conditionLabel(o.name), roundsTxt: t('op.frag.roundsCap', { n: rounds, s: rounds > 1 ? 's' : '' }) }));
         } else {
-          addCondition(target, o.name, v, escape, o.lockedUntil); // `lockedUntil` : verrou de Critique (LDB 18)
+          addCondition(target, o.name, v, escape, o.lockedUntil, o.unlockBy); // verrous de Critique (LDB 18) : prédicat d'état / acte de soin
           lines.push(t('op.cond', { name: target.name, v, cond: conditionLabel(o.name) })); // libellé (« Exténué »), cohérent avec removeCond
         }
         // Empoignade (LDB 14 l.159) : le flag `grapple` pose la relation symétrique entre l'attaquant
@@ -1307,6 +1329,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.woundDressed = true; // pas d'Infection post-critique (LDB 18 l.382)
         lines.push(t('op.preventInfection', { name: target.name, src: ctx.label ?? 'sort' }));
         lines.push(...receiveMedicalAid(target)); // bandage/cataplasme = Aide Médicale (LDB 18 l.310)
+        lines.push(...releaseConditionLocks(target, 'medicalAid')); // verrous d'État « par Aide Médicale » (LDB 18)
         break;
       }
       case 'exposeDisease': {
@@ -1460,6 +1483,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           duration: durationFromCtx(ctx),
           testMod: o.amount,
           ...(o.char ? { testModChar: o.char } : {}),
+          ...(o.weaponHand ? { testModHand: o.weaponHand } : {}),
+          ...(o.movementOnly ? { testModMovementOnly: true } : {}),
         });
         lines.push(t('op.testMod', { name: target.name, mod: `${o.amount >= 0 ? '+' : ''}${o.amount}${o.char ? ` (${CHAR_LABELS[o.char]})` : ''}`, src: ctx.label ?? 'sort' }));
         break;
@@ -1787,9 +1812,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'moveScale': {
         target.activeEffects = target.activeEffects ?? [];
+        // Durée INTRINSÈQUE (Souffle coupé : « pendant 1d10 Rounds ») résolue MAINTENANT, indépendamment
+        // du ctx — même patron que `maxWeaponHands`.
+        const dur: Duration = o.durationRounds != null
+          ? { scale: 'rounds', left: Math.max(1, resolveFormula(o.durationRounds, ref, rng)) }
+          : durationFromCtx(ctx);
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: durationFromCtx(ctx),
+          duration: dur,
           moveScale: { num: o.num, den: o.den },
         });
         lines.push(t('op.moveScale', { name: target.name, num: o.num, den: o.den, src: ctx.label ?? 'sort' }));
@@ -1834,6 +1864,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         } else {
           lines.push(t('op.disarmNothing', { name: target.name }));
         }
+        break;
+      }
+      case 'handGate': {
+        // Main gatée résolue depuis la Localisation du coup (convention DROITIER partagée avec `disarm`) —
+        // un Critique Main ensanglantée frappe toujours un bras (`brasG`/`brasD`) ; `corps`/absente → au hasard.
+        const hand: 'main' | 'off' = ctx.location === 'brasG' ? 'off' : ctx.location === 'brasD' ? 'main' : rng.int(0, 1) === 0 ? 'main' : 'off';
+        target.handGates = [...(target.handGates ?? []).filter((h) => h !== hand), hand];
+        lines.push(t('op.handGate', { name: target.name }));
         break;
       }
       case 'senseLoss': {

@@ -7,6 +7,18 @@ export interface RNG {
   int(min: number, max: number): number;
 }
 
+/** Hash FNV-1a 32 bits → graine entière stable pour un id (variation déterministe rejouable :
+ *  mutations/caractéristiques aléatoires au spawn LDB 78/85, rig cosmétique). PUR (#161 : ex-
+ *  `gameIso/appearance.ts` — utilitaire générique de seed, pas du rendu). */
+export function hashSeed(s: string): number {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+
 /** RNG déterministe (mulberry32) à partir d'une graine. */
 export function makeRNG(seed: number): RNG {
   let a = seed >>> 0;

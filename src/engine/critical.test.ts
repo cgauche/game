@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { makeRNG } from './dice';
 import type { RNG } from './dice';
-import { rollCritical, critLocationRoll, critWoundLocation, permanentAmputations } from './critical';
+import { rollCritical, critLocationRoll, critWoundLocation, permanentAmputations, resolvePostEncounterAmputations } from './critical';
 import { removeSurgicalTrauma } from './trauma';
 import { CRITICAL_TABLES } from '../data/criticals';
 import type { Combatant } from './types';
@@ -153,6 +153,86 @@ describe('permanentAmputations — séquelles permanentes par id de fiche (LDB 1
     removeSurgicalTrauma(c); // opère la plaie chirurgicale
     expect(c.traumas!.some((t) => t.needsSurgery)).toBe(false); // plaie réparée
     expect(c.traumas!.some((t) => t.ops?.some((o) => o.op === 'moveScale'))).toBe(true); // mobilité réduite à VIE
+  });
+});
+
+describe('#195 — variantes d’amputation de la table JAMBE (LDB 18)', () => {
+  // « Orteil contusionné » (01-10) : Résistance Accessible (+20) ou −10 Ag « jusqu'à la fin du prochain tour »
+  // → durationRounds: 2 (arbitrage maison tagué). E30 → cible 50.
+  it('Orteil contusionné : Résistance ratée → charMod Ag −10 à durée 2 Rounds (arbitrage maison)', () => {
+    const r = rollCritical(victim(30), 'jambeD', seq([5, 60])); // 5 = crit ; 60 > 50 → Résistance ratée
+    expect(r.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -10, durationRounds: 2 });
+  });
+  it('Orteil contusionné : Résistance réussie → aucune pénalité d’Agilité', () => {
+    const r = rollCritical(victim(30), 'jambeD', seq([5, 40])); // 40 ≤ 50 → réussite
+    expect(r.ops.some((o) => o.op === 'charMod')).toBe(false);
+  });
+  it('l’entrée porte une note maison traçant la valeur `durationRounds` (règle stricte 7)', () => {
+    const e = CRITICAL_TABLES.jambeD.find((x) => x.id === 'orteil-contusionne')!;
+    expect(e.maison).toBeTruthy();
+    expect(e.resist?.onFail?.[0]).toMatchObject({ op: 'charMod', char: 'Ag', mod: -10, durationRounds: 2 });
+  });
+
+  // « Tendon rompu » (71-75) : « Votre jambe devient inutilisable (voir Membres Amputés) » = disable DIRECT,
+  // sans Test ni Difficulté d'amputation → séquelle permanente `membre-inferieur-ampute`, PAS de plaie chirurgicale.
+  it('Tendon rompu : pose la séquelle permanente « membre inférieur amputé » SANS plaie chirurgicale ni test d’amputation', () => {
+    const r = rollCritical(victim(30), 'jambeD', seq([72, 40])); // 72 = crit ; 40 = Résistance (Difficile) de la ligne
+    const disable = r.traumas.find((t) => t.traumaId === 'membre-inferieur-ampute')!;
+    expect(disable).toBeTruthy();
+    expect(disable.ops?.some((o) => o.op === 'moveScale')).toBe(true);
+    expect(disable.ops).toContainEqual({ op: 'skillMod', skill: 'esquive', mod: -20 });
+    expect(disable.needsSurgery).toBeFalsy(); // pas une amputation chirurgicale : membre inutilisable
+    expect(r.traumas.some((t) => t.needsSurgery && t.label === 'Amputation')).toBe(false);
+    expect(r.traumas.some((t) => t.label.startsWith('Déchirure'))).toBe(true); // + Déchirure musculaire (Majeur)
+  });
+
+  // « Pied écrasé » (91-93) : un Test Accessible (+20) ; échec → perte d’1 orteil + 1 par DR en dessous de 0,
+  // ET le pied reste une plaie chirurgicale (perte du pied sans Chirurgie sous 1d10 jours).
+  it('Pied écrasé : échec à −2 DR → 3 orteils perdus (charMod Ag/CC −3), À Terre + Sonné, plaie à échéance', () => {
+    const r = rollCritical(victim(30), 'jambeD', seq([92, 70, 5])); // 92 crit ; 70 vs cible 50 → DR −2 ; 5 = 1d10 échéance
+    const orteil = r.traumas.find((t) => t.traumaId === 'orteil-ampute')!;
+    expect(orteil.count).toBe(3); // 1 + 2 DR
+    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -3 });
+    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -3 });
+    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(true);
+    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'sonne')).toBe(true);
+    const plaie = r.traumas.find((t) => t.needsSurgery && t.label === 'Amputation')!;
+    expect(plaie.amputateAfterDays).toBe(5);
+    expect(plaie.amputateSequel).toBe('membre-inferieur-ampute');
+  });
+  it('Pied écrasé : Test réussi → aucun orteil perdu, mais le pied reste une plaie chirurgicale (perte sous 1d10 j)', () => {
+    const r = rollCritical(victim(30), 'jambeD', seq([92, 20, 7])); // 20 ≤ 50 → réussite ; 7 = 1d10 échéance
+    expect(r.traumas.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
+    expect(r.ops.some((o) => o.op === 'condition' && (o.name === 'a-terre' || o.name === 'sonne'))).toBe(false); // pas d'États d'amputation (les 2 Hémorragique de base restent)
+    const plaie = r.traumas.find((t) => t.needsSurgery && t.label === 'Amputation')!;
+    expect(plaie.amputateAfterDays).toBe(7);
+    expect(plaie.amputateSequel).toBe('membre-inferieur-ampute');
+  });
+
+  // « Coupure à l'orteil » (46-50) : « Une fois la rencontre terminée… » → jet DIFFÉRÉ (timing postEncounter).
+  it('Coupure à l’orteil : pose un marqueur pendingAmputation, AUCUN jet ni amputation immédiate', () => {
+    const r = rollCritical(victim(30), 'jambeD', seq([48])); // un seul int (le jet du critique) : rien d'autre ne tire
+    expect(r.traumas.some((t) => t.pendingAmputation)).toBe(true);
+    expect(r.traumas.some((t) => t.needsSurgery)).toBe(false);
+    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(false);
+    expect(r.ops.some((o) => o.op === 'condition' && o.name === 'hemorragique')).toBe(true); // effet immédiat conservé
+  });
+  it('Coupure à l’orteil : résolution post-rencontre — gate Intermédiaire raté → orteil amputé + plaie chirurgicale', () => {
+    const c = victim(30);
+    c.traumas = rollCritical(victim(30), 'jambeD', seq([48])).traumas; // le marqueur
+    // gate Intermédiaire cible 30 : 55 > 30 → raté (orteil perdu) ; states Accessible cible 50 : 40 ≤ 50 → pas d'États.
+    resolvePostEncounterAmputations(c, seq([55, 40]));
+    expect(c.traumas!.some((t) => t.pendingAmputation)).toBe(false); // marqueur consommé
+    expect(c.traumas!.some((t) => t.traumaId === 'orteil-ampute')).toBe(true);
+    expect(c.traumas!.some((t) => t.needsSurgery && t.label === 'Amputation')).toBe(true);
+  });
+  it('Coupure à l’orteil : résolution post-rencontre — gate Intermédiaire réussi → aucun orteil, aucune plaie', () => {
+    const c = victim(30);
+    c.traumas = rollCritical(victim(30), 'jambeD', seq([48])).traumas;
+    resolvePostEncounterAmputations(c, seq([10])); // 10 ≤ 30 → gate réussi : pas d'amputation du tout (states non tiré)
+    expect(c.traumas!.some((t) => t.pendingAmputation)).toBe(false);
+    expect(c.traumas!.some((t) => t.traumaId === 'orteil-ampute')).toBe(false);
+    expect(c.traumas!.some((t) => t.needsSurgery)).toBe(false);
   });
 });
 

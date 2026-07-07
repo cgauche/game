@@ -38,6 +38,7 @@ import { PortView } from './PortView';
 import { LandMarketView } from './LandMarketView';
 import { SeaActivitiesModal } from './SeaActivitiesModal';
 import { ManannPriestModal } from './ManannPriestModal';
+import { ShoreLeaveModal } from './ShoreLeaveModal';
 import { TravelRecapModal } from './TravelRecapModal';
 import { placeOfScene } from '../state/worldMap';
 import { restPlacesHere } from '../state/restFlow';
@@ -73,6 +74,7 @@ export function CampaignView() {
   const openLandMarket = useGame((s) => s.openLandMarket);
   const pendingSeaActivities = useGame((s) => s.pendingSeaActivities);
   const pendingManannPriest = useGame((s) => s.pendingManannPriest);
+  const pendingShoreLeave = useGame((s) => s.pendingShoreLeave);
   const vessel = useGame((s) => s.vessel);
   const travelPlan = useGame((s) => s.travelPlan);
   const travelRecap = useGame((s) => s.travelRecap);
@@ -271,6 +273,7 @@ export function CampaignView() {
         {landMarket && mode === 'exploration' && <LandMarketView />}
         {pendingSeaActivities && mode === 'exploration' && <SeaActivitiesModal />}
         {pendingManannPriest && mode === 'exploration' && <ManannPriestModal />}
+        {pendingShoreLeave && mode === 'exploration' && <ShoreLeaveModal />}
         {/* Récapitulatif de voyage (audit M4) : à l'arrivée, ou APRÈS l'embuscade qui a interrompu
             le trajet (jamais par-dessus le combat/un dialogue). */}
         {travelRecap && mode === 'exploration' && !dialogue && !worldMapOpen && <TravelRecapModal />}

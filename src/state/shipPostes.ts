@@ -11,11 +11,9 @@ import { hasWeaponGroupSkill } from '../engine/combat';
 import { exposedCrew } from '../engine/shipCritical';
 import { isOutOfAction } from '../engine/conditions';
 import { combatDistance } from './footprint';
-import { rotateDir8 } from './dir8';
-import { DIR8_DELTA } from '../gameIso/rig/facing';
+import { rotateDir8, DIR8_DELTA, type Dir8 } from './dir8';
 import type { FireArc } from './fireArc';
 import type { Combatant, ShipPoste, ShipDeck } from '../engine/types';
-import type { Dir8 } from './dir8';
 
 // Le TYPE `ShipPoste` vit en engine/types (pour que `Combatant` le porte sans dépendance engine→state) ;
 // la LOGIQUE (placement, arc, support) reste ici. Ré-export pour les importeurs historiques.

@@ -9,7 +9,7 @@ import { ColorPalettePickers, MONSTER_COLOR_SLOTS } from '../ColorPalettePickers
 import { hairstylesForSex } from '../../gameIso/rig/parts/hairstyles';
 import { tenueOptions } from '../../gameIso/rig/parts/career';
 import { elementsOf } from '../../gameIso/rig/parts/elements';
-import type { MonsterPartsSel, ColorsSel } from '../../state/scene';
+import type { MonsterPartsSel, ColorsSel } from '../../engine/authoringAppearance';
 
 /** Armes équipables proposées (une par forme/groupe — affichées par le rig). */
 export const EDITOR_WEAPONS = ['Épée', 'Hache', 'Masse', 'Dague', 'Lance', 'Hallebarde', 'Bâton de combat', 'Arc', 'Arbalète', 'Pistolet', 'Fronde', 'Fouet'];

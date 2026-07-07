@@ -8,6 +8,7 @@ import type { IconId } from '../ui/icons';
 import { conditionLabel, findConditionById } from '../data';
 import { slugId } from '../data/slug';
 import { isFrenzied } from '../engine/psychology';
+import { conditionSeverity } from '../engine/conditions';
 
 export interface EffectChip {
   key: string;
@@ -28,22 +29,20 @@ export interface EffectChip {
 
 interface CondMeta { icon: IconId; severity: number; important: boolean; }
 
-/** Marqueurs NARRATIFS hors LDB 16 (PAS des États `etats.json`, cf. data-wellformed.test) : Pétrifié
- *  (LDB 85). Icône/sévérité d'affichage portées ICI faute d'entrée etats.json (unique exception). */
-const NARRATIVE_MARKERS: Record<string, { icon: IconId; severity: number }> = {
-  petrifie: { icon: 'condition/petrified', severity: 95 },
-};
-const UNKNOWN: CondMeta = { icon: 'journal/info', severity: 10, important: false };
+/** Icônes des marqueurs NARRATIFS hors LDB 16 (PAS des États `etats.json`, cf. data-wellformed.test) :
+ *  Pétrifié (LDB 85), sans entrée catalogue. Sévérité : `conditionSeverity` (engine, SOURCE UNIQUE
+ *  partagée avec l'importance d'un évènement de combat, `state/combatLog`). */
+const NARRATIVE_ICONS: Record<string, IconId> = { petrifie: 'condition/petrified' };
 
-/** Icône + sévérité d'AFFICHAGE d'un État — lues en DONNÉE (`etats.json` : `icon`/`severity`) ou, à
- *  défaut, sur un marqueur narratif. `important` = sévérité ≥ 50 (incapacitant, créneau unique de
- *  l'ordre de bataille). Clé SLUGIFIÉE → tolère un libellé ('Pétrifié' → 'petrifie'). */
+/** Icône + sévérité d'AFFICHAGE d'un État — icône lue en DONNÉE (`etats.json`) ou sur un marqueur
+ *  narratif (repli `journal/info`) ; sévérité déléguée à `conditionSeverity` (engine). `important` =
+ *  sévérité ≥ 50 (incapacitant, créneau unique de l'ordre de bataille). Clé SLUGIFIÉE → tolère un
+ *  libellé ('Pétrifié' → 'petrifie'). */
 export function conditionMeta(name: string): CondMeta {
   const id = slugId(name);
-  const et = findConditionById(id);
-  const src = et?.icon != null ? { icon: et.icon as IconId, severity: et.severity ?? 10 } : NARRATIVE_MARKERS[id];
-  if (!src) return UNKNOWN;
-  return { icon: src.icon, severity: src.severity, important: src.severity >= 50 };
+  const icon = (findConditionById(id)?.icon as IconId | undefined) ?? NARRATIVE_ICONS[id] ?? 'journal/info';
+  const severity = conditionSeverity(name);
+  return { icon, severity, important: severity >= 50 };
 }
 
 const BUFF_CHAR_ICON: Partial<Record<CharKey, IconId>> = {

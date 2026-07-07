@@ -8,9 +8,9 @@
  * Parade, Bagarre / Arc, Arbalète, Poudre noire, Fronde, Lancer, Entraves,
  * Explosifs, Ingénierie.
  */
-import type { Weapon } from '../../../engine/types';
-import { trappings } from '../../../data';
-import { norm } from '../../../lib/normalize';
+import type { Weapon } from './types';
+import { trappings } from '../data';
+import { norm } from '../lib/normalize';
 
 /** id de Groupe (subType) → clé de famille propre (sans accents). */
 const GROUP_KEY: Record<string, string> = {

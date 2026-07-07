@@ -7,7 +7,7 @@
  */
 import { useMemo, useRef, useState } from 'react';
 import { Scene, sceneMetresPerTile, Roof, type SceneEntity } from '../../state/scene';
-import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../gameIso/iso';
+import { Dims, diamondPath, tileCenter, screenToTileAtZ, screenToTileF, stageSize, depth, TH } from '../../geometry/iso';
 import { buildProps } from '../../gameIso/builders/props';
 import { EntityToken } from '../../gameIso/EntityToken';
 import { footprintTiles, sizeFootprint } from '../../state/footprint';

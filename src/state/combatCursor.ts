@@ -6,7 +6,7 @@
  */
 import type { Pt } from './path';
 import type { Get } from './flowTypes';
-import { tileCenter, type Dims } from '../gameIso/iso';
+import { tileCenter, type Dims } from '../geometry/iso';
 import { heightAt, isWalkable, tileAt, type Scene } from './scene';
 import { metricToLift } from './relief';
 import { combatantAtTile } from './combatGeometry';

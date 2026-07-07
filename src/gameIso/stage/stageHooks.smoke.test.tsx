@@ -6,7 +6,7 @@ import type { BattleState } from '../../state/store';
 import { useStageCamera, stageFocus, computeViewBounds, cameraTargeting, VW, VH } from './useStageCamera';
 import { useStagePointer } from './useStagePointer';
 import { useHoverTargeting } from './useHoverTargeting';
-import type { Dims } from '../iso';
+import type { Dims } from '../../geometry/iso';
 
 /**
  * SMOKE des hooks du stage — l'infra node (zustand v5 + rendu serveur) sert l'état INITIAL du store

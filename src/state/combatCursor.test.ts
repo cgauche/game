@@ -11,7 +11,7 @@ import { nextCursorTile, cursorCommitIntent } from './combatCursor';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { spawnEnemy } from './spawn';
-import type { Dims } from '../gameIso/iso';
+import type { Dims } from '../geometry/iso';
 
 /** Arène d'herbe minimale (cursorCommitIntent dérive l'affordance d'attaque → besoin d'une scène). */
 const arena = () => {

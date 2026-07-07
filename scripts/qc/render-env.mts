@@ -11,7 +11,7 @@ import { writeFileSync, mkdirSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { DEFS } from '../../src/gameIso/sprites';
 import { povAmbianceDefs } from '../../src/gameIso/catalog/ambiance';
-import { type Rot } from '../../src/gameIso/iso';
+import { type Rot } from '../../src/geometry/iso';
 import { type Scene } from '../../src/state/scene';
 import { buildScene } from '../../src/state/mapSpec';
 import { envPanel, povPanel, partyStart, capsToward } from './env-panels';

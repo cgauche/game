@@ -2,7 +2,8 @@
  * Niveau (étage z) AFFICHÉ — « un étage à la fois » : IsoStage ne rend QUE l'étage actif (les autres ne
  * sont pas dessinés). L'étage actif suit le groupe (ou le combattant actif). Ce module ne porte QUE
  * l'override DEBUG (devtool `__wfrp.viewLevel(z)`) : `null` = automatique (suit le groupe). Store externe
- * minimal (hors store Zustand : isolé, zéro couplage).
+ * minimal (hors store Zustand : isolé, zéro couplage). Vit dans `state` (#161 : ex-`gameIso/viewLevel.ts`) —
+ * le devtool (`state/devtools.ts`) le PILOTE, le rendu (`gameIso/IsoStage.tsx`) le LIT (sens normal).
  */
 let _viewZ: number | null = null;
 const subs = new Set<() => void>();

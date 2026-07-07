@@ -86,7 +86,7 @@ describe('#38 — chute Inconscient par perte de sang AA (Aux Armes l.2449)', ()
     addCondition(E, COND.hemorragique, 1);
     roundEndHooksOnly();
     // En LDB, la chute Inconscient à 0 PB passe par `tick-death` (roundsAtZero > BE), pas par le hook AA :
-    // au 1er Round à 0 PB (roundsAtZero 0→1 ≤ BE), l'ennemi n'est pas encore Inconscient.
+    // au 1er Round à 0 PB (roundsAtZero 0→1 ≤ BE), l'ennemi reste conscient.
     expect(hasCondition(E, COND.inconscient)).toBe(false);
   });
 });

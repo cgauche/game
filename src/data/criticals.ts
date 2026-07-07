@@ -29,18 +29,41 @@ export interface CritEntry {
   /** Test de Résistance (LDB 18) : ÉCHEC → ses `onFail` ops s'ajoutent à l'effet. Auto-résolu (seedé). */
   resist?: { difficulty: Difficulty; onFail: GameOp[] };
   lethal?: boolean;
-  /** Amputation (LDB 18 l.328-333) déclarée STRUCTURELLEMENT (plus de regex sur `desc`) : `difficulty` =
-   *  Test de Résistance, `sequels` = ids de fiches de séquelle PERMANENTE (`traumas.json`). */
-  amputation?: { difficulty: Difficulty; sequels: string[] };
+  /** Amputation (LDB 18 l.328-333) déclarée STRUCTURELLEMENT (plus de regex sur `desc`). */
+  amputation?: Amputation;
   /** Traumatismes ENGENDRÉS (LDB 18) — refs d'id de fiches `traumas.json` ; la localisation vient de la table. */
   traumas?: string[];
-  /** Escalade GATÉE d'une Blessure critique (LDB / Aux Armes) : sans soin, la plaie chirurgicale S'AGGRAVE.
-   *  `fingerLossPerRound` (« Main ouverte ») : 1 doigt de plus par Round de combat tant que l'Aide Médicale
-   *  n'est pas reçue (4+ doigts → main tranchée). `amputateAfter1d10Days` (« Pied écrasé ») : perte définitive
-   *  du membre (`amputateSequel`) si la Chirurgie de la plaie n'intervient pas dans le délai (1d10 jours). */
+  /** Escalade GATÉE d'une Blessure critique (LDB / Aux Armes) : sans soin, la séquelle S'AGGRAVE (ou n'est
+   *  levée que par un traitement). `fingerLossPerRound` (« Main ouverte ») : 1 doigt de plus par Round de
+   *  combat tant que l'Aide Médicale n'est pas reçue (4+ doigts → main tranchée). `amputateAfter1d10Days`
+   *  (« Pied écrasé ») : perte définitive du membre (`amputateSequel`) si la Chirurgie de la plaie n'intervient
+   *  pas dans le délai (1d10 jours). `medicalAidGate` (« Épaule luxée »/« Genou démis ») : membre désactivé
+   *  jusqu'à un Test étendu de Guérison réussi APRÈS Aide Médicale. */
   escalation?: CritEscalation;
+  /** Note MAISON (#195) — porte la trace éditable d'une valeur mécanique absente LITTÉRALEMENT du texte
+   *  RAW (règle stricte 7 : contextuel/« au MJ » → donnée taguée, jamais un nombre nu silencieux). Ex.
+   *  « Orteil contusionné » : le texte dit « jusqu'à la fin du prochain tour », `durationRounds: 2` en est
+   *  la traduction en Rounds. Éditable au Compendium ; DISPLAY/DOC only (jamais lu pour de la mécanique). */
+  maison?: string;
   /** Texte canon (LONG TERME), DISPLAY-ONLY — jamais parsé pour de la mécanique. */
   desc: string;
+}
+/** Amputation (LDB 18 l.328-333) — SOURCE UNIQUE de forme (LDB `criticals.json` + Aux Armes `aa-criticals.json`),
+ *  résolue par `resolveAmputation` (`src/engine/critical.ts`).
+ *  - `difficulty` = Test de Résistance de l'Amputation (échec → À Terre ; DR≤−2 → +Sonné ; DR≤−4 → +Inconscient).
+ *  - `sequels` = ids de fiches de séquelle PERMANENTE (`traumas.json`), instanciées par `permanentAmputations`.
+ *  - `timing: 'postEncounter'` = Test différé à la FIN de la rencontre (« Coupure à l'orteil », l.171 : « Une fois
+ *    la rencontre terminée… ») — marqueur `Trauma.pendingAmputation` posé par `rollCritical`, résolu au foyer de
+ *    fin de combat.
+ *  - `loss` = la SÉQUELLE est CONDITIONNELLE (sinon : membre tranché → séquelle TOUJOURS). `loss.difficulty`
+ *    présent → Test SÉPARÉ dont la RÉUSSITE annule toute l'amputation (« Coupure à l'orteil » : `loss.difficulty`
+ *    Intermédiaire, `difficulty` Accessible). Absent → le Test `difficulty` détermine LUI-MÊME la perte (« Pied
+ *    écrasé » : un seul Test Accessible). `loss.perDR` → nombre d'orteils = 1 + DR en dessous de 0 (« Pied écrasé »). */
+export interface Amputation {
+  difficulty: Difficulty;
+  sequels: string[];
+  timing?: 'postEncounter';
+  loss?: { difficulty?: Difficulty; perDR?: boolean };
 }
 /** Déclaration d'escalade gatée par les soins — partagée LDB (`criticals.json`) et Aux Armes (`aa-criticals.json`).
  *  Instanciée par `stampCriticalEscalation` (trauma.ts) sur la plaie chirurgicale du critique. */
@@ -48,6 +71,43 @@ export interface CritEscalation {
   fingerLossPerRound?: boolean;
   amputateAfter1d10Days?: boolean;
   amputateSequel?: string;
+  /** « Épaule luxée » (AA l.125 / LDB l.120) / « Genou démis » (AA l.179 / LDB l.179) : le membre est
+   *  DÉSACTIVÉ (séquelle portant `disable` en `ops` passives : bras `maxWeaponHands:1` / jambe `moveScale`),
+   *  en attente d'Aide Médicale (`awaitingMedicalAid`). Après l'Aide Médicale, un Test ÉTENDU de Guérison
+   *  Accessible (+20) de `restoreDR` DR rend l'usage du membre : la séquelle est retirée et `recoveryPenalty`
+   *  (charMod −10 / `moveScale` jambe, durée 1d10 jours) est posé à la cible. Instancié par
+   *  `stampCriticalEscalation` (nouvelle séquelle, pas une plaie chirurgicale) ; joué à l'Infirmerie (acte
+   *  « Guérison », `medicFlow`). */
+  medicalAidGate?: { label: string; disable: GameOp[]; restoreDR: number; recoveryPenalty: GameOp[] };
+  /** « Réouverture » (LDB 18 l.101/118/143/145/148/175 ; AA 07 l.119/147/149/152/175) : tant que la plaie n'a
+   *  pas été recousue par Chirurgie, chaque nouveau Dégât à la MÊME Localisation octroie `amount` État
+   *  Hémorragique. `stampCriticalEscalation` pose une séquelle chirurgicale (`Trauma.bleedOnReinjury`,
+   *  `needsSurgery`) que la Chirurgie retire ; le déclencheur est `reinjuryBleed` au point d'application des
+   *  Dégâts localisés (`applyAttackResult`/Projectile). `label` = nom de la plaie (liste de Chirurgie). */
+  bleedOnReinjury?: { amount: number; label: string };
+  /** « Si vous tombez une seconde fois sur cette blessure… » (Blessure majeure à l'oreille, LDB 18 l.71 /
+   *  AA 07 l.96) : à la 2e OCCURRENCE de CETTE entrée sur le personnage (compteur `critEntriesSuffered`),
+   *  l'effet ALTERNATIF s'applique — `traumas` REMPLACE les séquelles de base (perte auditive partielle →
+   *  Surdité totale), `ops` s'AJOUTE à l'effet immédiat de base. Évalué par `rollCritical`/`resolveAACritical`. */
+  onRepeat?: { traumas?: string[]; ops?: GameOp[] };
+  /** « Si vous recevez une autre Blessure critique à la tête alors que vous êtes Exténué… » (Commotion
+   *  cérébrale, LDB 18 l.74) : `stampCriticalEscalation` pose une séquelle porteuse de `Trauma.critTrigger`
+   *  (dédupliquée) ; tant que le personnage porte l'État `whileCondition`, tout critique SUBSÉQUENT à
+   *  `location` (ou toute Localisation si absente) impose le Test de sauvegarde `resist` (échec → ses `onFail`),
+   *  évalué par `fireCritTriggers` au point unique de résolution. `label` = nom de la séquelle affichée. */
+  onNextCritWhileCondition?: {
+    label: string;
+    location?: HitLocation;
+    whileCondition: string;
+    resist: { difficulty: Difficulty; onFail: GameOp[] };
+  };
+  /** Séquelle POST-guérison (LDB 18 l.61 « Blessure spectaculaire » / l.72 « Nez cassé » : « Une fois que la
+   *  blessure est guérie… ») : `stampCriticalEscalation` pose un marqueur `Trauma.onHealGrant` ; la Blessure
+   *  critique est réputée GUÉRIE quand tous les États `whenClear` sont retirés (LDB 18 « Guérir les Blessures
+   *  critiques » : « pas guéries tant que tous les États associés n'ont pas été retirés ») — `settleHealedCriticals`
+   *  (déclenché au retrait d'État, `removeCondition`) octroie alors la cicatrice `scar` (fiche `traumas.json`,
+   *  éditable). `scar` = id de fiche de séquelle ; `whenClear` = États dont le retrait signale la guérison. */
+  onHealGrant?: { scar: string; whenClear: string[] };
 }
 export type CritTable = CritEntry[];
 

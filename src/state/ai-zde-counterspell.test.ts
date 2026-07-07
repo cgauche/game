@@ -138,7 +138,7 @@ describe('ZdE ennemie — fenêtre de Contre-sort (parité missile, chemin PARTA
     const pc = useGame.getState().pendingCast;
     expect(pc).not.toBeNull(); // pending vivant (attend le clic réel)
     expect(pc!.zone!.placing).toBe(true); // gabarit qui suit le curseur
-    expect(pc!.zone!.center).toBeNull(); // pas encore posé
+    expect(pc!.zone!.center).toBeNull(); // zone non posée à ce stade
     // La cible n'a RIEN reçu (aucune application avant la pose).
     expect(useGame.getState().battle!.combatants.find((c) => c.id === 't1')!.wounds.current)
       .toBe(useGame.getState().battle!.combatants.find((c) => c.id === 't1')!.wounds.max);

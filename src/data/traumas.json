@@ -365,5 +365,54 @@
       }
     ],
     "desc": "Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l’ouïe."
+  },
+  {
+    "id": "perte-auditive-partielle",
+    "label": "Perte auditive partielle",
+    "ops": [
+      {
+        "op": "skillMod",
+        "skill": "perception",
+        "mod": -20,
+        "sense": "ouie"
+      }
+    ],
+    "desc": "Le coup endommage votre oreille, causant une perte auditive permanente. Vous\nsubissez une pénalité de -20 à tout Test ayant un rapport avec l'audition."
+  },
+  {
+    "id": "cicatrice-spectaculaire",
+    "label": "Cicatrice impressionnante",
+    "cosmetic": true,
+    "passiveKind": "intrinsèque",
+    "ops": [
+      {
+        "op": "skillMod",
+        "skill": "intimidation",
+        "mod": 10
+      }
+    ],
+    "maison": "« DR +1 à certains Tests sociaux » : le RAW (LDB 18 l.61) laisse « certains » au contexte. Arbitrage maison : la cicatrice impressionnante sert l'Intimidation (skillMod +10 — convention sociale du jeu, cf. objet Laid -10). Éditable au Compendium.",
+    "desc": "Une fois que la blessure est guérie, l'impressionnante cicatrice vous permet d'obtenir DR +1 à certains Tests sociaux."
+  },
+  {
+    "id": "cicatrice-nez-casse",
+    "label": "Nez cassé (cicatrice)",
+    "cosmetic": true,
+    "needsSurgery": true,
+    "passiveKind": "intrinsèque",
+    "ops": [
+      {
+        "op": "skillMod",
+        "skill": "intimidation",
+        "mod": 10
+      },
+      {
+        "op": "skillMod",
+        "skill": "charme",
+        "mod": -10
+      }
+    ],
+    "maison": "« DR +1/-1 aux Tests sociaux, en fonction du contexte » : le RAW (LDB 18 l.72) délègue le signe au contexte. Arbitrage maison à périmètre fixe : +10 Intimidation / -10 Charme (convention sociale du jeu, cf. objet Laid -10). Retirée par Chirurgie sur le nez (needsSurgery). Éditable au Compendium.",
+    "desc": "Une fois cette blessure guérie, gagnez DR +1/-1 aux Tests sociaux, en fonction du contexte, jusqu'à ce que Chirurgie soit utilisée sur le nez pour le réparer."
   }
 ]

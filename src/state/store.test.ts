@@ -1234,7 +1234,7 @@ describe('Boucle de jeu (store)', () => {
     const Ea = st.battle!.combatants.find((c) => c.id === E.id)!;
     let Ha = st.battle!.combatants.find((c) => c.id === H.id)!;
     expect(Ea.advantage).toBeGreaterThanOrEqual(eAdvBefore + 2); // +1 immédiat (l.101) + +1 touché (l.107)
-    // Coup dans le dos SUBI montré INLINE (phase 'fuir') ; Test de Calme DIFFÉRÉ → fuite PAS encore complétée.
+    // Coup dans le dos SUBI montré INLINE (phase 'fuir') ; Test de Calme DIFFÉRÉ → fuite toujours en attente.
     expect(st.pendingDisengage!.phase).toBe('fuir');
     expect(st.pendingDisengage!.fuir!.hit).toBe(true);
     expect(st.pendingDisengage!.fuir!.calme).toBeNull(); // jet de Calme influençable en attente

@@ -1,5 +1,5 @@
 {
-  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y COMPRIS les sous-effets récurrents à durée Rounds (#125 : `maxWeaponHands.durationRounds`/`charMod.durationRounds`, `resist.skill` hors-Résistance), les durées en JOURS (#153 : `condition`/`charMod` `durationHours` = jours×24, ctx.now câblé côté combatFlow), l'objet lâché (#153 : op `disarm`) et l'Amputation structurée (#153 : `amputation.{difficulty,sequels}`, même patron que `data/criticals.ts` LDB). `desc` = « Effets supplémentaires » VERBATIM (reste l'affichage long terme). aa-jambe-81 (Tendon rompu, l.2620) : RAW ne donne AUCUNE Difficulté pour l'Amputation référencée (« voir p.180 », contrairement à toutes ses voisines qui en citent une) — arbitrage maison NON entériné : réutilise la Difficulté Difficile du Test de Résistance de la MÊME ligne (seule valeur que la ligne fournit) ; à valider. Restent TEXTE (non modélisés, cf. aaCritical.ts en-tête) : la cascade Aide Médicale + Test étendu de Guérison (bras 96-109/jambe 96-105), l'escalade doigt/pied par Round ou par jour sans soin (bras 116-120/jambe 106-115), et le Test PAR ACTION de « Main ensanglantée » (bras 46-50).",
+  "_source": "Aux Armes (Up in Arms VF), « Une approche alternative des Blessures », tables de Blessures Critiques par Localisation (p.≈118-124). Système ALTERNATIF optionnel (policy combat-aa-blessures=aa). `blessures` = colonne Blessures (T = triviale, non comptée pour la mort ; nombre = Blessures perdues ; Mort = létal). `ops`/`resist`/`traumas` = corps mécanique immédiat, y COMPRIS les sous-effets récurrents à durée Rounds (#125 : `maxWeaponHands.durationRounds`/`charMod.durationRounds`, `resist.skill` hors-Résistance), les durées en JOURS (#153 : `condition`/`charMod` `durationHours` = jours×24, ctx.now câblé côté combatFlow), l'objet lâché (#153 : op `disarm`) et l'Amputation structurée (#153 : `amputation.{difficulty,sequels}`, même patron que `data/criticals.ts` LDB). `desc` = « Effets supplémentaires » VERBATIM (reste l'affichage long terme). aa-jambe-81 (Tendon rompu, l.2620) : RAW ne donne AUCUNE Difficulté pour l'Amputation référencée (« voir p.180 », contrairement à toutes ses voisines qui en citent une) — arbitrage maison NON entériné : réutilise la Difficulté Difficile du Test de Résistance de la MÊME ligne (seule valeur que la ligne fournit) ; à valider. La cascade « Aide Médicale → Test étendu de Guérison » (Épaule luxée 96-109 / Genou démis 96-105, #166) est modélisée par `escalation.medicalAidGate` (membre désactivé + `restoreDR`/`recoveryPenalty`, joué à l'Infirmerie via l'acte « Guérison ») et le Sonné « jusqu'à Aide Médicale » par `condition.unlockBy` (verrou d'acte de soin porté sur l'instance d'État, levé par `releaseConditionLocks`) ; l'escalade doigt/pied par Round ou par jour sans soin (bras 116-120/jambe 106-115) par `escalation.fingerLossPerRound`/`amputateAfter1d10Days` (#167). Le Test de Dextérité (+20) PAR ACTION de « Main ensanglantée » (bras 46-50, l.2569, #165) est modélisé par l'op `handGate` (marqueur PAR-MAIN `Combatant.handGates`, gate `attackHandGate` posé à la déclaration d'attaque, Échec → op `disarm`) ; il tient tant que l'Hémorragique tient (`removeCondition` purge le marqueur à 0).",
   "tete": [
     {
       "id": "aa-tete-01",
@@ -165,7 +165,8 @@
         {
           "op": "condition",
           "name": "aveugle",
-          "value": 1
+          "value": 1,
+          "unlockBy": "medicalAid"
         }
       ],
       "desc": "Un coup touche votre orbite. Vous recevez 1 État Hémorragique. Vous recevez également 1 État Aveuglé qui ne pourra être soigné que lorsque vous recevrez de l'Aide Médicale."
@@ -176,6 +177,16 @@
       "max": 50,
       "name": "Blessure majeure à l'oreille",
       "blessures": 3,
+      "traumas": [
+        "perte-auditive-partielle"
+      ],
+      "escalation": {
+        "onRepeat": {
+          "traumas": [
+            "surdite"
+          ]
+        }
+      },
       "desc": "Le coup endommage votre oreille. Vous subissez une pénalité permanente de –20 à tout Test ayant un rapport avec l'audition. Si vous subissez de nouveau ce résultat, vous perdez totalement l'audition."
     },
     {
@@ -522,6 +533,9 @@
           "op": "condition",
           "name": "hemorragique",
           "value": 1
+        },
+        {
+          "op": "handGate"
         }
       ],
       "desc": "Recevez 1 État Hémorragique. Tant que vous êtes sous l'effet de cet État, effectuez un Test de Dextérité Accessible (+20) avant d'effectuer une Action impliquant quelque chose de tenu dans cette main ; sur un Échec, l'objet vous glisse de la main."
@@ -562,6 +576,12 @@
           "value": 2
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 1,
+          "label": "Blessure béante"
+        }
+      },
       "desc": "Vous recevez 2 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie afin de recoudre la blessure, toute Blessure que vous subissez à votre bras blessé vous inflige un État Hémorragique supplémentaire."
     },
     {
@@ -680,9 +700,29 @@
         {
           "op": "condition",
           "name": "sonne",
-          "value": 1
+          "value": 1,
+          "unlockBy": "medicalAid"
         }
       ],
+      "escalation": {
+        "medicalAidGate": {
+          "label": "Épaule luxée (bras perdu)",
+          "disable": [
+            {
+              "op": "maxWeaponHands",
+              "hands": 1
+            }
+          ],
+          "restoreDR": 6,
+          "recoveryPenalty": [
+            {
+              "op": "testMod",
+              "char": "CC",
+              "amount": -10
+            }
+          ]
+        }
+      },
       "desc": "Le bras est considéré comme perdu (voir Amputation en page 180 de WFJDR). Vous subissez 1 État Sonné jusqu'à ce que vous receviez de l'Aide Médicale. Après ce traitement initial, il faut obtenir 6 DR sur un Test étendu de Guérison Accessible (+20) pour que vous récupériez l'usage de ce bras, après quoi les Tests effectués avec ce bras subissent une pénalité de –10 pendant 1d10 jours."
     },
     {
@@ -1033,6 +1073,12 @@
           "value": 3
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 1,
+          "label": "Blessure béante"
+        }
+      },
       "desc": "Vous recevez 3 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie, toute Blessure que vous perdez au torse vous inflige un État Hémorragique supplémentaire car la plaie se rouvre."
     },
     {
@@ -1078,6 +1124,12 @@
           "value": 4
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 2,
+          "label": "Dégâts artériels"
+        }
+      },
       "desc": "Vous recevez 4 États Hémorragique. Jusqu'à ce que vous soyez soigné par Chirurgie, chaque nouvelle Blessure à cette Localisation vous fait subir 2 États Hémorragique supplémentaires."
     },
     {
@@ -1132,6 +1184,12 @@
           "value": 4
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 2,
+          "label": "Blessure majeure au torse"
+        }
+      },
       "desc": "Vous recevez une blessure importante au torse qui arrache la peau de ses muscles et de ses tendons. Recevez 4 États Hémorragique. Tant que vous n'êtes pas soigné par Chirurgie afin de recoudre la blessure, toute nouvelle Blessure que vous recevrez à cette Localisation vous fera gagner 2 États Hémorragique supplémentaires à cause de la réouverture de la blessure."
     },
     {
@@ -1159,7 +1217,8 @@
         {
           "op": "condition",
           "name": "sonne",
-          "value": 1
+          "value": 1,
+          "unlockBy": "medicalAid"
         }
       ],
       "traumas": [
@@ -1177,7 +1236,8 @@
         {
           "op": "condition",
           "name": "inconscient",
-          "value": 1
+          "value": 1,
+          "unlockBy": "medicalAid"
         }
       ],
       "traumas": [
@@ -1195,7 +1255,8 @@
         {
           "op": "condition",
           "name": "hemorragique",
-          "value": 1
+          "value": 1,
+          "unlockBy": "surgery"
         }
       ],
       "desc": "Gagnez 1 État Hémorragique qui ne peut être retiré que par Chirurgie. Vous contractez une Infection du sang (voir Maladies et Infections en page 186 de WFJDR)."
@@ -1360,7 +1421,11 @@
         "difficulty": "accessible",
         "sequels": [
           "orteil-ampute"
-        ]
+        ],
+        "timing": "postEncounter",
+        "loss": {
+          "difficulty": "intermediaire"
+        }
       },
       "desc": "Vous recevez 1 État Hémorragique. Une fois la rencontre terminée, effectuez un Test de Résistance Intermédiaire (+0). Sur un Échec, vous perdez un orteil – Amputation (Accessible)."
     },
@@ -1436,6 +1501,12 @@
           "value": 3
         }
       ],
+      "escalation": {
+        "bleedOnReinjury": {
+          "amount": 1,
+          "label": "Cuisse lacérée"
+        }
+      },
       "desc": "Vous recevez 3 États Hémorragique. Tant que vous n'aurez pas été soigné par Chirurgie afin de refermer la plaie, chaque fois que vous subirez des Blessures à cette Jambe, gagnez 1 État Hémorragique supplémentaire."
     },
     {
@@ -1542,9 +1613,36 @@
           {
             "op": "condition",
             "name": "sonne",
-            "value": 1
+            "value": 1,
+            "unlockBy": "medicalAid"
           }
         ]
+      },
+      "escalation": {
+        "medicalAidGate": {
+          "label": "Genou démis (jambe perdue)",
+          "disable": [
+            {
+              "op": "moveScale",
+              "num": 1,
+              "den": 2
+            }
+          ],
+          "restoreDR": 6,
+          "recoveryPenalty": [
+            {
+              "op": "testMod",
+              "char": "Ag",
+              "amount": -10,
+              "movementOnly": true
+            },
+            {
+              "op": "moveScale",
+              "num": 1,
+              "den": 2
+            }
+          ]
+        }
       },
       "desc": "Vous subissez 1 État À Terre. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir 1 État Sonné, qui n'est retiré qu'une fois que vous avez reçu de l'Aide Médicale. Après cette Aide Médicale, il faut obtenir 6 DR sur un Test étendu de Guérison Accessible (+20) pour que vous récupériez l'usage de cette jambe, après quoi votre Mouvement est réduit de moitié et les Tests effectués avec cette jambe subissent une pénalité de -10 pendant 1d10 jours."
     },
@@ -1565,7 +1663,10 @@
         "difficulty": "accessible",
         "sequels": [
           "orteil-ampute"
-        ]
+        ],
+        "loss": {
+          "perDR": true
+        }
       },
       "escalation": {
         "amputateAfter1d10Days": true,

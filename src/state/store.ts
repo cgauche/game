@@ -10,8 +10,7 @@ import type { ShipMoraleState } from '../engine/crewMorale';
 import { dissipateSpell } from '../engine/dispel';
 import { type AttackKind } from '../engine/creatureAttacks';
 import { battleRng, seedBattleRng } from './battleRng';
-import { facingToward, DIR8_DELTA } from '../gameIso/rig/facing';
-import { rotateDir8, type Dir8 } from './dir8';
+import { facingToward, DIR8_DELTA, rotateDir8, type Dir8 } from './dir8';
 import { footprintTiles, footprintN } from './footprint';
 import type { CombatCursor, ScreenDir } from './combatCursor';
 import { applyShipCollision } from './shipCollision';
@@ -72,8 +71,8 @@ import * as merchantFlow from './merchantFlow';
 import type { MerchantState, MerchantStocks } from './merchantFlow';
 import * as tavernFlow from './tavernFlow';
 import type {
-  Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
+  Money, PendingVictory, PendingLoot, PendingTest, PendingSteamSave, PendingReload, PendingStateRecovery, PendingBargain,
+  PendingAppraise, PendingAttack, PendingHandGate, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect,
@@ -304,11 +303,16 @@ export interface GameState extends RollFlowActionsMap {
   campaignSceneId: string | null;
   money: Money;
   pendingTest: PendingTest | null;
+  /** Sauvegarde d'Initiative d'une « Fuite de vapeur » (MDG 12 l.326-328) — Test perso différé par modale. */
+  pendingSteamSave: PendingSteamSave | null;
   /** Exposition à une Influence corruptrice en cours (LDB 19) — Test différé par modale. */
   pendingCorruption: PendingCorruption | null;
   pendingBargain: PendingBargain | null;
   pendingAppraise: PendingAppraise | null;
   pendingAttack: PendingAttack | null;
+  /** Test de Dextérité PAR ACTION de « Main ensanglantée » (AA l.2569) — interposé AVANT l'attaque quand
+   *  l'arme employée est tenue dans une main gatée (`attackHandGate`). Modale influençable, calque `reload`. */
+  pendingHandGate: PendingHandGate | null;
   /** Pilonnage INDIRECT en cours (« viser une case », AA p.122-123) : pièce indirecte servie en attente du
    *  point d'impact (placeur de zone source 'siege'). Clic-case → `siegeAimCommit`. */
   pendingSiegeAim: PendingSiegeAim | null;
@@ -719,6 +723,12 @@ export interface GameState extends RollFlowActionsMap {
   reloadConfirm: () => void;
   /** Ferme la modale de rechargement sans coût (avant le jet). */
   reloadCancel: () => void;
+  // handGate{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
+  /** « Appliquer » le Test de Dextérité de Main ensanglantée (AA l.2569) : RÉUSSITE → ouvre l'Action figée ;
+   *  ÉCHEC → l'objet glisse (op `disarm`) et l'Action est consommée. */
+  handGateConfirm: () => void;
+  /** Annule l'Action avant le jet de Main ensanglantée (défait une charge misclic comme `attackCancel`). */
+  handGateCancel: () => void;
   /** Se libérer (Empêtré, Test opposé de Force) / se rouler au sol (En flammes, Athlétisme) : OUVRE la modale (LDB 16 l.61/77). */
   battleRecoverState: (state: 'empetre' | 'en-flammes') => void;
   // recover{Roll,Reroll,BonusSL,DarkPact} (Lancer/Chance/+1 DR/Pacte) : générés (RollFlowActionsMap).
@@ -726,6 +736,10 @@ export interface GameState extends RollFlowActionsMap {
   recoverConfirm: () => void;
   /** Ferme la modale de récupération sans coût (avant le jet). */
   recoverCancel: () => void;
+  // steamSave{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
+  /** « Appliquer » la sauvegarde d'Initiative d'une « Fuite de vapeur » (MDG 12 l.328) : ÉCHEC →
+   *  ébouillanté (`scaldOps`) ; puis la boucle maritime reprend (`resolveSteamSave`). */
+  steamSaveConfirm: () => void;
   /** Sélectionne la munition à tirer (uid d'un item `kind 'ammo'`). */
   battleSelectAmmo: (uid: string) => void;
   /** Détermination (Resolve, LDB ch.17 l.66) : retire un État de l'actif (+1 PB si À Terre).
@@ -872,8 +886,9 @@ export interface GameState extends RollFlowActionsMap {
   cleaveAttack: (targetId: string) => void;
   /** Termine le balayage en cours (le joueur renonce aux enchaînements restants). */
   cleaveEnd: () => void;
-  /** Maniement de deux armes (LDB 10 l.638) : 2ᵉ frappe (main secondaire) contre la cible choisie. */
-  dualStrikeAttack: (targetId: string) => void;
+  /** Maniement de deux armes (LDB 10 l.638) : 2ᵉ frappe (main secondaire) contre la cible choisie. `skipGate`
+   *  interne : Test de Main ensanglantée déjà PASSÉ (reprise via `handGateConfirm`), ne pas re-tester. */
+  dualStrikeAttack: (targetId: string, skipGate?: boolean) => void;
   /** Renonce à la 2ᵉ frappe (« peut viser » = optionnel) → pas de 2ᵉ attaque, pas d'Avantage. */
   dualStrikeSkip: () => void;
   /** Piétinement (LDB 85 l.320-321) : action gratuite (1 Avantage) contre un adversaire adjacent
@@ -1125,6 +1140,11 @@ export interface GameState extends RollFlowActionsMap {
   pendingManannPriest: import('./seaVoyageFlow').PendingManannPriest | null;
   /** Résout le choix : `true` = payer la bénédiction, `false` = réduire l'Humeur de Manann de 4d10. */
   resolveManannPriest: (pay: boolean) => void;
+  /** Permission de RELÂCHE À TERRE en attente de CHOIX, posée à l'accostage AVANT l'événement de
+   *  port (MDG 15 l.245). */
+  pendingShoreLeave: import('./seaVoyageFlow').PendingShoreLeave | null;
+  /** Résout le choix : `true` = relâche accordée, `false` = refusée (gate l'Embrigadement/Fête de Manann). */
+  resolveShoreLeave: (allow: boolean) => void;
 }
 
 /** Navire que le groupe possède/commande en campagne — survit aux jours et aux combats (≠ la coque
@@ -1997,6 +2017,7 @@ export const useGame = create<GameState>((set, get) => ({
   landEvalWine: (cargoId) => landMarketFlow.landEvalWine(get, set, cargoId),
   seaActivitiesConfirm: (picks) => seaActivities.seaActivitiesConfirm(get, set, picks),
   resolveManannPriest: (pay) => seaVoyageFlow.resolveManannPriest(get, set, pay),
+  resolveShoreLeave: (allow) => seaVoyageFlow.resolveShoreLeave(get, set, allow),
   setTravelRole: (heroId, role) => set({
     party: get().party.map((h) => h.id === heroId ? { ...h, ...(role ? { travelRole: role } : { travelRole: undefined }) } : h),
   }),

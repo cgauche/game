@@ -23,9 +23,7 @@ const ENGINE_DIR = fileURLToPath(new URL('.', import.meta.url));
 const FORBIDDEN_SEGMENTS: { segment: string; allow: Set<string> }[] = [
   {
     segment: 'state',
-    // Inversion engine→state RESTANTE, hors périmètre #8 : `corruption.ts` importe `EntityAppearance`
-    // (state/scene). À traiter séparément (même esprit que #8 : sortir le type vers une couche neutre).
-    allow: new Set(['corruption.ts']),
+    allow: new Set<string>(),
   },
   {
     segment: 'ui',

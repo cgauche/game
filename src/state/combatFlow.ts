@@ -5,7 +5,7 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload } from './pendings';
+import type { LootGear, PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack } from './pendings';
 import { describeReload } from './flowOutcomes';
 import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { rule } from '../engine/policy';
@@ -14,8 +14,7 @@ import { ev, evLines, type CombatEventKind } from './combatLog';
 import { t as tr } from '../i18n'; // alias : `t` est un identifiant local très fréquent ici (cibles/jets)
 import { TEMPO } from './tempo';
 import { beatHold, approachMs, afterApproach } from './combatDirector';
-import { facingToward } from '../gameIso/rig/facing';
-import type { Dir8 } from './dir8';
+import { facingToward, type Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
 import {
   resolveMelee,
@@ -51,6 +50,7 @@ import {
   crowdMod,
   defenseModifiers,
   DEFENSE_LABEL,
+  attackHandGate,
 } from '../engine/combat';
 import { engage, isEngaged, decayEngagement, chargeAdvantage, disengageFrom, clearEngagementOf, areInContact, reachTiles, meleeReachTiles } from '../engine/engagement';
 import { areGrappling, clearGrapple, grappleEnvMod } from '../engine/grapple';
@@ -133,10 +133,10 @@ import { rollContraction, contractDisease, contractionDue, applyContraction, has
 import { hasHealSkill, type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { openRest, placesOfKind } from './restFlow';
-import { rollCritical, critWoundLocation, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
+import { rollCritical, critWoundLocation, permanentAmputations, critImmediateSummary, resolvePostEncounterAmputations, type CriticalResolved } from '../engine/critical';
 import { aaCriticalIsTrivial } from '../engine/aaCritical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
-import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations, maxFingersLostForWeapon } from '../engine/trauma';
+import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations, maxFingersLostForWeapon, reinjuryBleed } from '../engine/trauma';
 import { effectiveWeaponDamage, effectiveWeaponRange, isThrownWeapon, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, effectiveWeapon, type WeaponContext } from '../engine/weaponDamage';
 import { scatter } from '../engine/scatter';
 import { TIME_COST } from '../engine/timeCost';
@@ -1195,6 +1195,9 @@ export function applyCriticalToTarget(
   const aaTrivial = !ctx?.critTwice && rule('combat-aa-blessures') === 'aa' && aaCriticalIsTrivial(crit.location, crit.roll);
   if (!aaTrivial) target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.72)
+  // Historique d'occurrence PAR ID D'ENTRÉE (LDB 18 l.71) : appendé après résolution — persiste à vie (jamais
+  // réinitialisé au combat). `rollCritical`/`resolveAACritical` l'ont LU avant (`onRepeat` sur une 2e occurrence).
+  target.critEntriesSuffered = [...(target.critEntriesSuffered ?? []), crit.entryId];
   log.push(crit.log);
   const revealLines = [crit.log];
   // Effets DÉTAILLÉS pour la modale enrichie : chaque trauma (Amputation, Fracture…) AVEC son explication
@@ -1624,6 +1627,11 @@ export function applyAttackResult(
     const overkill = res.woundsLost - currentBefore; // > 0 si le coup dépasse les PB COURANTS (LDB 18 l.30)
     target.wounds.current = Math.max(0, currentBefore - res.woundsLost);
     const loc = res.location ?? 'corps';
+    // Réouverture d'une plaie critique (LDB 18 / AA 07) : un nouveau Dégât à CETTE Localisation octroie ses
+    // États Hémorragique (la plaie qui l'a posée est stampée APRÈS ce coup, elle ne se déclenche donc pas
+    // elle-même). Point d'application des Dégâts localisés — jumeau du Projectile magique (applyMissileHit).
+    const reinj = reinjuryBleed(target, loc);
+    if (reinj > 0) { addCondition(target, COND.hemorragique, reinj); critLog.push(tr('cf.reinjuryBleed', { name: target.name, n: reinj, loc: locationLabel(loc, target.bodyShape) })); }
     if (res.critical) breakBacleArmour(target, loc, critLog); // armure Bâclée brisée par le Critique (LDB 60 l.82)
     // Blessures supplémentaires d'une Déviation (Dégâts recalculés à PA−1, LDB 63 l.30) : la PA n'est pas
     // encore sacrifiée ici (deflectCrit/enemyAutoDeviate le font) → on recompute woundsFromHit à PA−1
@@ -1985,23 +1993,30 @@ export function runPreemptShots(get: Get, set: SetFn): void {
   const shooters = battle.combatants
     .filter((s) => aiDriven(get(), s) && canPreemptRanged(s) && canTakeAction(s) && !s.loseNextAction && !isOutOfAction(s) && !!s.pos)
     .sort((a, b) => tirRapideTimes(b) - tirRapideTimes(a)); // le plus « entraîné » tire d'abord (LDB 10)
+  const scene = get().scene!;
+  const smoke = smokeOf(battle);
   let changed = false;
   for (const shooter of shooters) {
     if (isOutOfAction(shooter) || shooter.loseNextAction) continue; // tué / déjà tiré par un tir précédent de ce Round
-    const target = battle.combatants
+    // Cible = ennemi valide le plus proche AVEC Ligne de Vue (LDB 10). La LdV se tranche ici (`losClear`,
+    // même `losTo` que `resolveAttack` l.470-472) AVANT le gate : un candidat plus proche mais masqué ne
+    // consomme aucun Test — le gate ne joue qu'UNE fois, sur la cible réellement tirée.
+    const t0 = battle.combatants
       .filter((f) => f.kind !== shooter.kind && !isOutOfAction(f) && !!f.pos)
       .map((f) => ({ f, weapon: firedWeapon(shooter, f, undefined, battle.combatants) }))
       .filter((x) => x.weapon.type === 'ranged' && inFiringBand(shooter, x.f, x.weapon))
       .sort((a, b) => combatDistance(shooter, a.f) - combatDistance(shooter, b.f))
-      .map((x) => x.f);
-    for (const t0 of target) {
-      const r = resolveAttack(get, shooter, t0); // null = pas de Ligne de Vue
-      if (!r) continue;
+      .find((x) => losClear(scene, shooter.pos!, isStructure(x.f) ? structureAimCell(shooter.pos!, x.f) : x.f.pos!, smoke))?.f;
+    if (!t0) continue; // aucune cible en Ligne de Vue → pas d'interruption
+    // Main ensanglantée (AA l.2569) : le tireur gaté joue le MÊME Test de Dextérité (+20) AVANT son Tir rapide
+    // (point IA UNIQUE `aiHandGate`) ; Échec → l'arme lui glisse (`disarm`) et il renonce à l'interruption.
+    if (!aiHandGate(get, set, shooter, firedWeapon(shooter, t0, undefined, battle.combatants).uid)) { changed = true; continue; }
+    const r = resolveAttack(get, shooter, t0);
+    if (r) {
       get().battle!.log.push(ev('shoot', tr('cf.tirRapide', { name: shooter.name }), shooter.id)); // marqueur AVANT le résultat (applyAttackResult recopie battle.log)
       applyAttackResult(get, set, shooter, r.victim ?? t0, r.weapon, r.res);
       shooter.loseNextAction = true; shooter.loseNextMovement = true; // tour normal épuisé (LDB 10)
       changed = true;
-      break;
     }
     if (changed && checkBattleOver(get, set)) return;
   }
@@ -2183,6 +2198,50 @@ export function maybeOpenDefense(
 
 /** Attaque de l'IA : ouvre la modale de défense (→ true, tour SUSPENDU) si la cible
  *  est un héros qui peut se défendre en mêlée ; sinon résout instantanément (→ false). */
+/**
+ * OUVRE l'Action d'attaque des sites de déclaration CÔTÉ JOUEUR (flux normal `targetingModes` / Tir rapide /
+ * Pilonnage) — point PARTAGÉ du gate « Main ensanglantée » (AA l.2569 ; le balayage/2ᵉ frappe sont des
+ * CONTINUATIONS de la MÊME Action déjà gatée, non re-gatées). Si l'arme employée est tenue dans une main
+ * gatée (`attackHandGate`), interpose d'abord un Test de Dextérité (+20) INFLUENÇABLE (`pendingHandGate`,
+ * calque `reload`) : sur RÉUSSITE `handGateConfirm` RAPPELLE ce helper (le `pa`/`title`/`icon` FIGÉS →
+ * l'attaque s'ouvre telle quelle) ; sur ÉCHEC l'objet glisse (op `disarm`) et l'Action est consommée. Sans
+ * gate, ouvre directement la cascade `attackJet`. `pa.weaponUid` doit déjà être résolu (sinon = main directrice). */
+export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title: string, icon: string, skipGate = false): void {
+  const attacker = actorIn(get(), pa.attackerId);
+  const hand = !skipGate && attacker ? attackHandGate(attacker, pa.weaponUid) : null; // `skipGate` : gate déjà PASSÉ (reprise `handGateConfirm`) → pas de re-test
+  if (attacker && hand) {
+    const base = effectiveChar(attacker, 'Dex'); // Dextérité effective (LDB) — +20 « Accessible » via la Difficulté
+    set({ pendingHandGate: {
+      attackerId: attacker.id, actorName: attacker.name, hand,
+      skillValue: base, difficulty: 'accessible', target: base + DIFFICULTY_MODIFIERS['accessible'],
+      roll: null, sl: 0, success: false, pa, title, icon,
+    } });
+    return;
+  }
+  set({ pendingAttack: pa });
+  startCascade(get, set, { title, icon, purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: pa.attackerId }] });
+}
+
+/** Main ensanglantée (AA l.2569) — Test de Dextérité (+20) JOUÉ INLINE pour un attaquant PILOTÉ PAR L'IA
+ *  (jamais de modale, résolution forcée). SOURCE UNIQUE des chemins IA : attaque normale (`doAttack`), Tir
+ *  rapide (`runPreemptShots`) et pilonnage servi (même point). Renvoie `true` si le coup peut se poursuivre ;
+ *  sur ÉCHEC, l'objet de la main gatée glisse (op `disarm`) et l'on renvoie `false` (l'IA renonce à CE coup).
+ *  `weaponUid` = arme réellement employée : une pièce SERVIE hors loadout main/off → `attackHandGate` = null →
+ *  jamais gatée (parité avec le pilonnage joueur, canon monté). */
+export function aiHandGate(get: Get, set: SetFn, attacker: Combatant, weaponUid?: string): boolean {
+  const gHand = attackHandGate(attacker, weaponUid);
+  if (!gHand) return true;
+  const gt = rollTest(effectiveChar(attacker, 'Dex'), 'accessible', battleRng());
+  const bg = get().battle;
+  if (!gt.success) {
+    applyOps(attacker, [{ op: 'disarm' }], { rng: battleRng(), location: gHand === 'off' ? 'brasG' : 'brasD' });
+    if (bg) set({ battle: { ...bg, combatants: [...bg.combatants], log: [...bg.log, ev('info', tr('cf.handGateFail', { name: attacker.name, roll: gt.roll, target: gt.target }), attacker.id)] } });
+    return false;
+  }
+  if (bg) set({ battle: { ...bg, log: [...bg.log, ev('info', tr('cf.handGatePass', { name: attacker.name, roll: gt.roll, target: gt.target }), attacker.id)] } });
+  return true;
+}
+
 export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Combatant): boolean {
   // Bénédiction de Protection (LDB 41 — L13) : Test de FM Accessible (+20) pour oser attaquer le
   // béni ; échec → l'IA renonce à CE coup (simplification : pas de re-ciblage, documentée).
@@ -2190,6 +2249,9 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
   const b0 = get().battle;
   if (ward.lines.length && b0) set({ battle: { ...b0, log: [...b0.log, ...evLines(ward.lines, 'info', attacker.id)] } });
   if (!ward.allowed) return false;
+  // Main ensanglantée (AA l.2569) : l'attaquant gaté joue le Test de Dextérité (+20) sur l'arme EMPLOYÉE contre
+  // cette cible ; Échec → l'arme glisse et il renonce à CE coup (une pièce servie hors loadout n'est jamais gatée).
+  if (!aiHandGate(get, set, attacker, firedWeapon(attacker, target).uid)) return false;
   if (maybeOpenDefense(get, set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
   // Tir ennemi : l'annoncer dans le journal de COMBAT (battle.log → fil + tiroir) DÈS la décision — un tir
   // n'ouvre pas de modale de défense, donc « on ne savait jamais sur qui il tirait » (#12d). Avant, l'annonce
@@ -3565,6 +3627,11 @@ export function applyCast(
       const currentBefore = t.wounds.current;
       const overkill = mres.woundsLost - currentBefore;
       t.wounds.current = Math.max(0, currentBefore - mres.woundsLost);
+      // Réouverture d'une plaie critique (LDB 18 / AA 07) : jumeau du coup physique (applyAttackResult) —
+      // un Projectile qui frappe une Localisation déjà porteuse d'une plaie non recousue y ajoute ses États Hémorragique.
+      const mloc = mres.location ?? 'corps';
+      const mReinj = reinjuryBleed(t, mloc);
+      if (mReinj > 0) { addCondition(t, COND.hemorragique, mReinj); logLines.push(tr('cf.reinjuryBleed', { name: t.name, n: mReinj, loc: locationLabel(mloc, t.bodyShape) })); }
       // Blessure Critique : choix « Incantation Critique » du lanceur (LDB 46 l.55), ou overkill.
       const critWound = crit && choice === 'critique';
       if (critWound || overkill > 0) {
@@ -4106,6 +4173,13 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   const corr = worstCorruptionExposure(battle);
   const steps: import('./pendings').CascadeStep[] = [];
   const inlineLines: string[] = [];
+  // Amputations DIFFÉRÉES à la fin de la rencontre (LDB 18, « Coupure à l'orteil » : « Une fois la rencontre
+  // terminée… ») : jet + séquelle/plaie/États résolus ICI pour tout survivant porteur d'un marqueur (mute le
+  // combattant → repris par `carryOverState` au writeback). Jet silencieux (journal), comme la voie inline.
+  for (const c of battle.combatants) {
+    if (c.dead) continue;
+    inlineLines.push(...resolvePostEncounterAmputations(c, battleRng()));
+  }
   for (const c of battle.combatants) {
     if (!followsCharacterRules(c) || c.dead) continue; // #143 : RAW « Personnage » (LDB 18 l.5, LDB 20 l.14/206) — les créatures génériques et les défaits n'ont pas de jet de maladie/Corruption de fin de combat
     // Pas piloté-humain-manuel (auto/rapide) OU hors d'action (Inconscient — défaite) → jet inline silencieux.

@@ -183,6 +183,17 @@ describe('mystracine (LDB 71 l.33) — testMod char-qualifiés (ext. I) appliqu�
   });
 });
 
+// #193 — Genou démis (LDB/AA) : le testMod de récupération scopé `movementOnly` ne pénalise QUE les
+// Tests classés « déplacement » (SkillData.movement), pas les autres Tests d'Agilité.
+describe("testMod.movementOnly — portée « Tests impliquant cette jambe » (#193)", () => {
+  it('pénalise un Test de déplacement (Athlétisme, movement:true) mais pas un autre Test d’Agilité (Discrétion)', () => {
+    const c = makeTarget();
+    c.activeEffects = [{ label: 'Genou démis (récupération)', bonus: 0, duration: { scale: 'permanent' }, testMod: -10, testModChar: 'Ag', testModMovementOnly: true }];
+    expect(testValue(c, 'athletisme', 'Ag')).toBe(30 - 10);
+    expect(testValue(c, 'discretion', 'Ag')).toBe(30); // Discrétion n'est pas classée « déplacement »
+  });
+});
+
 describe('racine-de-mandragore (LDB 71 l.35)', () => {
   it('« le Mouvement est réduit de moitié » + « +20 aux Tests de Calme » + gate FM par Round (actGate)', () => {
     const c = makeTarget();

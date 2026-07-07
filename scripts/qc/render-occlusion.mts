@@ -16,7 +16,7 @@ import { buildWalls } from '../../src/gameIso/builders/walls';
 import { floorDepth } from '../../src/gameIso/backends/affineFloors';
 import { wallDepth } from '../../src/gameIso/backends/affineWalls';
 import { projGP } from '../../src/gameIso/backends/project';
-import { stageSize, type Rot, type Dims } from '../../src/gameIso/iso';
+import { stageSize, type Rot, type Dims } from '../../src/geometry/iso';
 import type { Scene } from '../../src/state/scene';
 import type { Face, FloorEl, WallEl } from '../../src/gameIso/builders/types';
 import { scenario as siege } from '../../src/scenes/test-scenarios/siege-explore';

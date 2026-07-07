@@ -9,7 +9,8 @@
  * Utilisé par les scènes de test (`src/scenes/**`). Le générateur d'arène (`scripts/arene/lib.mjs`,
  * Node pur) délègue à `buildScene` (`tsx`, MÊME compilateur) — pas de mirroir JS séparé à maintenir.
  */
-import type { CustomStatblock, EncounterDef, EncounterMember, EntityAppearance, SceneEntity } from './scene';
+import type { CustomStatblock, EncounterDef, EncounterMember, SceneEntity } from './scene';
+import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { Flow } from './flow';
 import type { OptionalEntry } from '../engine/statEntry';
 import type { ShipPoste, NavalTraitRef } from '../engine/types';
