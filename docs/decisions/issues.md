@@ -20,22 +20,15 @@
 - #98 [domaine:combat, policy-à-trancher, question] [design] Effet castSpell/forceCast — scripter un lancer de sort depuis dialogue/trigger
 - #99 [domaine:économie, livre:T2C, sev:mineur, type:système] [éco/T2C] Rumeur commerciale cross-Lieu — index géographique du Reikland + board de rumeurs persistant
 - #100 [audit:principe, sev:smell] [dette-code] Trier & purger les branches legacy / rétro-compat (rest legacy, LEGACY sans lodging, occupied(string), save legacy)
-- #156 [] [RAW/combat] Machines de guerre : résolution tactique (Projectiles (Machine de guerre) / Force pour le bélier) + pénalité d'Équipe non modélisées (ADE II 08 l.233)
-- #160 [] [Garde] Cliquet hardcode : généraliser le motif par-État (hasCondition/stacks) hors engine/conditions.ts
 - #161 [] [Architecture] state→gameIso : 11 fichiers d'imports runtime — trancher, puis garder le segment
-- #162 [] [RAW/naval] Météo — malus de Précipitations appliqué à TOUS les Tests de Projectiles au lieu de Projectiles (Poudre noire) seul
-- #163 [] [donnée] names.json ⇄ speciesRace.json : clés de race quasi-identiques mais divergentes (« Haut Elfe » vs « Haut-Elfe ») — famille de clés à unifier ou découpler explicitement
-- #164 [] [RAW/naval] Embrigadement — recouvrement d'équipage (Ragot/rançon/Discrétion) non mécanisé, MDG 15 l.245
 - #165 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — Test de Dextérité par-Action (Main ensanglantée, aa-bras-46) : pas de point d'interception propre
 - #166 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — durées gatées par Aide Médicale + Test étendu de Guérison (Épaule luxée/Genou démis, aa-bras-96/aa-jambe-96)
-- #167 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — escalades non gatées (Main ouverte aa-bras-116, Pied écrasé aa-jambe-106)
-- #168 [] [Codex] activities.json éditable au Codex — éditeur ActivityDef + OutcomeBand dédié
-- #169 [] [vocabulaire] EffectOp.on : 'victim' (79+ entrées) et 'self' (4 talents) hors de l'union TS — trancher ET vérifier la sémantique réelle de chaque 'self'
-- #170 [] [RAW/naval] steam-breakdown.json : champ engineerTest jamais lu — Test de l'ingénieur de « Fuite de vapeur » non modélisé
-- #171 [] [donnée] traits.json : champ suffix (124× null, tentacules '#') absent de TraitData et sans consommateur trouvé
-- #172 [] [types] mutations longues-jambes : appearance.legs consommé par le rig mais absent d'EntityAppearance
-- #174 [bug] [donnée] creatures.json : 3 optionals composés (« remplacer X par bonus Y en Z ») retirés — TraitInstance ne les exprime pas
-- #175 [bug] [ADE II ch.08] Machines de guerre : 3 règles non modélisées (Canon à flammes nain Spéciaux, restrictions de portée)
+- #177 [] [Gardes] Éteindre le stock d'alertes (excuses + affirmations-RAW) puis basculer le volet excuses en BLOQUANT
+- #178 [] [Ops] Supprimer la branche-filet feat/wfrp4-rpg-foundation (à partir du 2026-07-13)
+- #183 [] [RAW/naval] Météo en mer — les skillMods de Précipitations ne sont appliqués à AUCUN Test réel (aucun appelant de production)
+- #184 [] [RAW/naval] Pannes de vapeur — conséquences first-class jamais EXÉCUTÉES (failDamage, restart, compartmentDamage, durationRounds)
+- #185 [] [RAW/naval] Permission de faire relâche à terre non modélisée — gate d'occurrence de l'Embrigadement (MDG 15 l.245)
+- #186 [] [donnée/ZI] Vouivre — variante composite « perdre Bestial + Taille réduite + bonus multi-carac + B 42 + Discrétion (Rurale) 65 » non exprimable par OptionalSwap
 
 ## Fermées
 
@@ -169,7 +162,25 @@
 - #153 [bug] [RAW/combat] Critiques AA : sous-effets restants (durées en JOURS, lâcher-objet, cascade d'amputation, gates par-action)
 - #154 [bug] [éditeur] Avantage initial : exposer Menace/Manœuvrabilité/Terrain à l'authoring scripté (AuthoredEncounter/mapSpec)
 - #155 [bug] [naval] crewLost (Embrigadement) persisté mais non consommé par shipUndercrew (Manque de bras)
+- #156 [] [RAW/combat] Machines de guerre : résolution tactique (Projectiles (Machine de guerre) / Force pour le bélier) + pénalité d'Équipe non modélisées (ADE II 08 l.233)
 - #157 [] [Codex] Toute donnée doit être éditable au Codex — auditer + exposer les datasets manquants (structures.json…)
 - #158 [] [trauma] Sens non propage a crewTestContributors (marin PNJ representant un role) — latent, sans impact actuel
 - #159 [] [RAW/combat] Critiques AA — sous-effets a infra dediee : gate par-Action, durees gatees par soin, escalades
+- #160 [] [Garde] Cliquet hardcode : généraliser le motif par-État (hasCondition/stacks) hors engine/conditions.ts
+- #162 [] [RAW/naval] Météo — malus de Précipitations appliqué à TOUS les Tests de Projectiles au lieu de Projectiles (Poudre noire) seul
+- #163 [] [donnée] names.json ⇄ speciesRace.json : clés de race quasi-identiques mais divergentes (« Haut Elfe » vs « Haut-Elfe ») — famille de clés à unifier ou découpler explicitement
+- #164 [] [RAW/naval] Embrigadement — recouvrement d'équipage (Ragot/rançon/Discrétion) non mécanisé, MDG 15 l.245
+- #167 [audit:contenu-manquant, livre:AA] [RAW/combat] Aux Armes — escalades non gatées (Main ouverte aa-bras-116, Pied écrasé aa-jambe-106)
+- #168 [] [Codex] activities.json éditable au Codex — éditeur ActivityDef + OutcomeBand dédié
+- #169 [] [vocabulaire] EffectOp.on : 'victim' (79+ entrées) et 'self' (4 talents) hors de l'union TS — trancher ET vérifier la sémantique réelle de chaque 'self'
+- #170 [] [RAW/naval] steam-breakdown.json : champ engineerTest jamais lu — Test de l'ingénieur de « Fuite de vapeur » non modélisé
+- #171 [] [donnée] traits.json : champ suffix (124× null, tentacules '#') absent de TraitData et sans consommateur trouvé
+- #172 [] [types] mutations longues-jambes : appearance.legs consommé par le rig mais absent d'EntityAppearance
 - #173 [] [Codex/bug] RefDatalist émet des LABELS → champs keyés-id corrompus à l'édition (MutationTableField confirmé)
+- #174 [bug] [donnée] creatures.json : 3 optionals composés (« remplacer X par bonus Y en Z ») retirés — TraitInstance ne les exprime pas
+- #175 [bug] [ADE II ch.08] Machines de guerre : 3 règles non modélisées (Canon à flammes nain Spéciaux, restrictions de portée)
+- #176 [] [Contrat] Valider la donnée à la SAUVEGARDE éditeur/Compendium + au chargement dev — les 2 branchements restants du contrat de schéma
+- #179 [] [Docs] Section « conventions du contrat de schéma » dans docs/donnees.md (bloquée par WIP le 06/07)
+- #180 [] [poison/commentaires] combatSlice.ts flux opposition de sort — affirmation RAW nue (:2488) + excuse sans tag (:2538)
+- #181 [] [rig] Équipage : armure affichée HORS combat, vêtements EN combat — un des deux chemins d'apparence n'applique pas la couche armure
+- #182 [] [rig/apparence] PNJ armuré : rendu combat (vêtements) ≠ hors-combat (armure) — source unique violée

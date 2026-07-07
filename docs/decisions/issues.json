@@ -1840,11 +1840,11 @@
   {
     "number": 156,
     "title": "[RAW/combat] Machines de guerre : résolution tactique (Projectiles (Machine de guerre) / Force pour le bélier) + pénalité d'Équipe non modélisées (ADE II 08 l.233)",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [],
     "body": "> Détaché de #148 (Bélier). L'agent qui a tenté d'ajouter le Bélier a auto-admis une **déviation RAW** (« weaponGroup:base sans modéliser le Test de Force, hors scope ») — le doublon a été reverti, mais le gap de résolution tactique des machines de guerre reste réel et doit être tracké (credo : écart RAW connu → issue, jamais une note enterrée dans un rapport).\n\n## Source (verbatim, ADE II ch.08 l.233)\n> « Une Équipe est un groupe d'individus entraînés requis pour faire fonctionner une machine de guerre correctement. Les armes sans Équipe complète peuvent être utilisées avec une pénalité de **–20**. Elles ne peuvent être utilisées **avec moins de la moitié de l'Équipe** nécessaire. Toutes les machines de guerre ont les Atouts **Dévastatrice et Percutante**. Elles utilisent toutes la Compétence **Projectiles (Machine de guerre)**, à l'exception du **bélier, qui utilise Force**. »\n\n## Constat\nLes machines de guerre (Baliste, Bélier, Batterie tonnerre de feu… — table « Machines de guerre » ADE II) vivent dans `src/data/mass-battle.json` comme unités ABSTRAITES (dégâts en string, pas de résolution tactique). Elles ne sont pas maniables en combat tactique. Quand elles le deviendront (Scène cinématique de siège), la résolution devra utiliser :\n1. **Projectiles (Machine de guerre)** pour toutes, **SAUF le bélier → Force**. Le moteur `combatValue` est câblé en dur sur CC/CT selon `kind` (mêlée/distance) : aucune résolution d'arme par Caractéristique/Compétence arbitraire.\n2. **Pénalité d'Équipe** : −20 si l'Équipe est incomplète ; inutilisable sous la moitié de l'Équipe requise (le `crew` est déjà en donnée dans mass-battle.json).\n3. **Dévastatrice + Percutante** universelles (à porter en qualités structurées si l'arme devient une arme tactique).\n\n## Definition of Done\n- [ ] Une machine de guerre maniable en combat résout son attaque avec la bonne Compétence (Projectiles (Machine de guerre) / Force pour le bélier), via un mécanisme GÉNÉRAL (résolution d'arme par Caractéristique/Compétence), pas un cas `belier` en dur.\n- [ ] Pénalité d'Équipe (−20 incomplète, blocage sous la moitié) appliquée\n- [ ] Dévastatrice/Percutante portées en qualités structurées\n- [ ] RAW re-vérifié au Source ; tests + typecheck verts\n- [ ] Chantier possiblement lié à l'exposition tactique/Codex des machines de guerre (#148)\n",
     "createdAt": "2026-07-06T09:16:24Z",
-    "closedAt": null
+    "closedAt": "2026-07-06T22:01:47Z"
   },
   {
     "number": 157,
@@ -1876,11 +1876,11 @@
   {
     "number": 160,
     "title": "[Garde] Cliquet hardcode : généraliser le motif par-État (hasCondition/stacks) hors engine/conditions.ts",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [],
     "body": "Contexte : extraction Lot 0bis (3c8822f6) — le cliquet hardcode est généralisé à tout engine/state (12 sites gelés, 7 fichiers), MAIS le motif par-État du Lot 4 ('hasCondition(c, COND.*)'/'stacks(c, COND.*)') n'est PAS repris dans le REACTIVE_RX généralisé : son exclude d'origine (gating de mort/machinerie universelle) est calibré aux formes précises d'engine/conditions.ts — l'étendre tel quel re-flaguerait des gates légitimes (ex. combatFlow.ts vérifiant COND.inconscient avant applyZeroWounds). Réf : scripts/guards/lib/hardcode.mjs (NB du doc-comment REACTIVE_RX).\n\nFix attendu : généraliser d'abord les EXCLUSIONS de machinerie de ce motif (pas dupliquer le regex), puis l'inclure dans le scan généralisé.\n\nDoD : le motif par-État est scanné sur tout engine/state ; conditions.ts reste à 0 ; aucun gate de machinerie légitime flagué ; baselines mises à jour ; suite verte.",
     "createdAt": "2026-07-06T15:08:27Z",
-    "closedAt": null
+    "closedAt": "2026-07-07T00:35:59Z"
   },
   {
     "number": 161,
@@ -1894,29 +1894,29 @@
   {
     "number": 162,
     "title": "[RAW/naval] Météo — malus de Précipitations appliqué à TOUS les Tests de Projectiles au lieu de Projectiles (Poudre noire) seul",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [],
     "body": "Trouvé par le contrat de donnée (vague 1, 7e4d3921) : src/data/sea-weather.json porte le champ `precipitations[].skillMods[].spec = { \"projectiles\": \"poudre-noire\" }` conformément à son desc verbatim (« –10 sur les Tests d'Athlétisme, d'Escalade et de Projectiles (Poudre noire) »), mais le consommateur (PrecipitationDef / precipitationSkillMod, src/engine/seaWeather.ts) IGNORE le champ `spec` — seul le skillId générique \"projectiles\" est testé. Effet : le malus s'applique à TOUTE arme à projectiles, pas seulement à la poudre noire.\n\nFix attendu : propager `spec` dans PrecipitationDef et gater le mod sur la spécialisation (patron specsSource/SPEC_SOURCES).\nDoD : Test de Projectiles (Arc) sous précipitations = sans malus ; (Poudre noire) = –10 ; suite verte ; schéma sea-weather inchangé (déjà fidèle au JSON).",
     "createdAt": "2026-07-06T15:59:34Z",
-    "closedAt": null
+    "closedAt": "2026-07-06T23:48:44Z"
   },
   {
     "number": 163,
     "title": "[donnée] names.json ⇄ speciesRace.json : clés de race quasi-identiques mais divergentes (« Haut Elfe » vs « Haut-Elfe ») — famille de clés à unifier ou découpler explicitement",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [],
     "body": "Trouvé par le contrat de donnée (vague 1, 7e4d3921) : les clés de race de names.json (« Humain », « Haut Elfe », « Elfe Sylvain »…) ressemblent à s'y méprendre aux `race` de speciesRace.json (« Haut-Elfe » avec tiret, « Elfe sylvain » en casse différente) sans qu'aucun consommateur ne relie aujourd'hui les deux. C'est une collision latente : le jour où un système croisera les deux familles (générateur de PNJ par race…), l'appariement échouera silencieusement.\n\nFix attendu : soit unifier sur des ids stables partagés (doctrine label→id du repo), soit documenter dans docs/donnees.md que les deux familles sont INDÉPENDANTES par construction.\nDoD : décision tracée + (si unification) garde croisée dans le test-contrat ; suite verte.",
     "createdAt": "2026-07-06T15:59:36Z",
-    "closedAt": null
+    "closedAt": "2026-07-07T00:36:17Z"
   },
   {
     "number": 164,
     "title": "[RAW/naval] Embrigadement — recouvrement d'équipage (Ragot/rançon/Discrétion) non mécanisé, MDG 15 l.245",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [],
     "body": "Détaché de #150/#155 : `applyVesselCrewLoss` (`src/state/shipCrew.ts`) accepte un `delta` signé « pour un futur recouvrement » mais aucun appelant ne passe de négatif — la sous-intrigue de récupération de l'Embrigadement n'est PAS mécanisée.\n\n## RAW — MDG 15 l.245 (quote verbatim)\n\n> Embrigadement. Un bateau manquant de bras pour son équipage a enlevé une partie des vôtres. Vous perdez 2d10 membres d'équipage. Vous pouvez les récupérer en réussissant un Test de Ragot Intermédiaire (+0), puis en payant 2d10 CO ou en réussissant un Test de Discrétion Complexe (–10). En cas d'échec sur n'importe lequel des deux Tests, vous perdez 1d10 membres d'équipage de plus, car votre plan pour libérer vos compagnons tourne mal et l'autre navire prend la mer et quitte le port. Si vous avez refusé la permission de faire relâche à terre à votre équipage, cet événement n'a pas lieu.\n\nLe RAW définit une mécanique complète et chiffrée (2 Tests, un coût OU une compétence alternative, une pénalité d'échec) — ce n'est pas laissé au récit (règle stricte 7, « pas de MJ — tout se modélise »).\n\n## Fix attendu\n\n- Modéliser la séquence de récupération de l'Embrigadement dans `resolvePortArrival` (`case 'embrigadement'`, `src/state/seaVoyageFlow.ts`) : Test de Ragot Intermédiaire (+0) → si réussi, choix joueur entre payer 2d10 CO OU Test de Discrétion Complexe (–10) → si échec sur l'un des deux Tests, perte de 1d10 membres d'équipage supplémentaires (`applyVesselCrewLoss` avec delta positif).\n- Le recouvrement effectif (récupérer les marins perdus) appelle `applyVesselCrewLoss` avec un delta NÉGATIF — c'est le premier appelant réel de ce cas ; garder la borne `Math.max(0, ...)` de la fonction (déjà correcte pour ce sens).\n- Suivre le patron de modale existant (RollShell / rollFlowFactory) pour les deux Tests, pas de rollTest inline.\n\n## DoD\n\n- [ ] Séquence Ragot → (paiement OU Discrétion) → échec = perte supplémentaire, implémentée en donnée/flow (pas narratif)\n- [ ] `applyVesselCrewLoss` appelé avec un delta négatif au moins une fois (chemin de recouvrement)\n- [ ] Test(s) unitaires du flow (succès Ragot + paiement, succès Ragot + Discrétion, échec → perte 1d10 de plus, refus de permission = event n'a pas lieu si applicable)\n- [ ] `npx tsc --noEmit` et suite Vitest verts\n",
     "createdAt": "2026-07-06T16:16:52Z",
-    "closedAt": null
+    "closedAt": "2026-07-07T01:22:11Z"
   },
   {
     "number": 165,
@@ -1945,59 +1945,59 @@
   {
     "number": 167,
     "title": "[RAW/combat] Aux Armes — escalades non gatées (Main ouverte aa-bras-116, Pied écrasé aa-jambe-106)",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [
       "audit:contenu-manquant",
       "livre:AA"
     ],
     "body": "Détaché de #159 (lui-même détaché de #153). Investigation faite dans le périmètre `src/state/combatFlow.ts` / `combatSlice.ts` / `combatManeuvers.ts` / `src/engine/ops.ts` — **non traité**, rapporté tel que demandé (« ne pas hacker »).\n\n## Constat\n\n**Source verbatim re-vérifiée** (`Source/WH - V4 - Aux Armes/01 - WH - V4 - Aux Armes.md`) :\n- l.2571 (Bras 116-120, Main ouverte) : *« Votre main s'ouvre. Perdez 1 doigt – Amputation (Complexe). Gagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous vos doigts, vous perdez votre main – Amputation (Complexe). »*\n- l.2624 (Jambe 106-115, Pied écrasé) : *« […] Si vous n'êtes pas soigné par Chirurgie au cours des 1d10 jours suivants, vous perdez votre pied. »*\n\nLes DEUX correspondances (`aa-bras-116`, `aa-jambe-106` dans `src/data/aa-criticals.json` l.710-734 / l.1549-1568) modélisent déjà la perte immédiate d'1 doigt/orteil via la cascade d'amputation structurelle (#153), mais PAS l'escalade différée. Comme le note `src/engine/aaCritical.ts` (docblock l.21-27), c'est la MÊME simplification que les entrées analogues du Livre de base (`src/data/criticals.json` l.886 « 1 doigt de plus par Round sans Aide Médicale » ; l.1890 « perte du pied si pas de Chirurgie sous 1d10 jours ») — un gap PRÉEXISTANT, pas introduit par l'AA, mais que l'AA rend à nouveau visible.\n\n## Patron #144 réutilisable ? NON (vérifié)\n\n`fingersLost`/`maxFingersLostForWeapon` (`src/engine/trauma.ts` l.245-262, #144) est un ACCESSEUR PASSIF, lu au moment d'un jet d'arme pour escalader la Maladresse — ce n'est PAS un déclencheur ACTIF « à chaque Round, perdre un doigt de plus ». Les deux mécaniques lisent la même donnée (compte de doigts perdus) mais l'une est une LECTURE (escalade de Maladresse, #144) et l'autre exigerait une ÉCRITURE périodique (perte effective). Pas réutilisable tel quel.\n\n## Pourquoi ce n'est pas un fix minimal + pourquoi pas de simplification maison ici\n\n- **Bras-116** dépend du MÊME flag « Aide Médicale reçue » absent que #166 (durées gatées) — bloqué pour la même raison structurelle (Aide Médicale = Test de Guérison OU bandage OU sort, dont 2 formes hors périmètre).\n- **Jambe-106** dépend d'un TICK par JOUR (pas par Round) qui vérifie si la Chirurgie a eu lieu, et déclenche une amputation à l'échéance. Le seul mécanisme de décompte par jour existant (`recoveryDays`, `src/engine/trauma.ts` l.110/176) ne fait QUE décrémenter un compteur — il n'y a AUCUN hook « à l'échéance, si condition non remplie → déclencher X » dans le moteur actuel, et le tick lui-même vit dans `src/state/upkeep.ts` (repos), hors périmètre.\n- **Simplification maison envisagée puis écartée** : gater l'escalade UNIQUEMENT sur `battleHeal`/`medicAct` réussi (en ignorant bandage/sort) serait une couverture PARTIELLE d'« Aide Médicale » — donc une déviation RAW SILENCIEUSE (un joueur qui soigne par bandage ne compterait pas comme ayant traité la main), pas une house-rule assumée et taguée. Écarté par la règle 7 du CLAUDE.md (« pas de MJ, tout se modélise » — un arbitrage caché n'est jamais une simplification acceptable).\n\n## Fix proposé (pour la session qui reprendra)\n\n- **Bras-116** : réutiliser le flag « Aide Médicale reçue » de #166 ; à la fin de chaque Round de combat où le flag est absent, perdre 1 doigt de plus via `permanentAmputations` (déjà réutilisable, cascade d'amputation existante) ; tous les doigts perdus → amputation de la main (même mécanisme).\n- **Jambe-106** : nouveau champ trauma `amputateAfterDays` (jours restants) posé à l'entrée du Critique, décrémenté par le même tick que `recoveryDays` (`upkeep.ts`) ; à 0 jour ET `needsSurgery` toujours actif → déclenche l'amputation du pied.\n\n## Definition of Done\n- [ ] Bras-116 : perte de doigt par Round sans Aide Médicale (flag partagé avec #166), cascade jusqu'à la main\n- [ ] Jambe-106 : champ `amputateAfterDays` + hook d'upkeep déclenchant l'amputation du pied à l'échéance si `needsSurgery` actif\n- [ ] Test(s) rouge→vert ; `npm test` + `npm run typecheck` complets verts\n\n## Lié\nPartage le flag « Aide Médicale reçue » avec #166 (durées gatées, aa-bras-96/aa-jambe-96) — à séquencer ensemble si possible.",
     "createdAt": "2026-07-06T16:21:45Z",
-    "closedAt": null
+    "closedAt": "2026-07-07T05:59:02Z"
   },
   {
     "number": 168,
     "title": "[Codex] activities.json éditable au Codex — éditeur ActivityDef + OutcomeBand dédié",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [],
     "body": "> Détaché de #157 (exposition Codex). L'audit #157 a exposé 34 catalogues de contenu au Codex ; `activities.json` (`ACTIVITIES`, `src/engine/activities.ts:259`) reste NON exposé car `ActivityDef` est une interface LOURDE qui exige un éditeur dédié — pas une projection simple. Écart connu → issue au gabarit (credo : jamais une note enterrée dans un rapport ou sur une issue fermée).\n\n## Constat\n`ActivityDef` (`src/engine/activities.ts:189`) `extends TestSpec` et porte : `icon` (registre), `contexts: ActivityContext[]`, `source`, `freeSkill?`, `extended?`, `failExtenue?`, `resolver?`, et surtout `outcomes: OutcomeBand[]`. `OutcomeBand` (`activities.ts:91`) = `{ on?, minSL?, maxSL?, ops?: GameOp[], resolver?, payoutPct?, note?, battle?: BattleOutcome[], when?: BattleCond, next? }` — les 3 derniers champs pilotent les Scènes de **bataille de masse** (ADE II ch.8).\n\nC'est un système central ACTIF (Activités d'interlude LDB/EDOC/MDG **et** Scènes de bataille de masse). L'exposer éditable proprement demande un éditeur de bandes `OutcomeBand` (réutiliser les primitives d'édition de plages `mutationTables`/`weather` + `GameOpEditor` là où ça colle), pas un formulaire bâclé.\n\n## Definition of Done\n- [ ] `activities` exposé au Codex (`CATEGORY_DATASET`), peuplé, éditable.\n- [ ] Éditeur `OutcomeBand[]` dédié réutilisant les primitives d'édition de plages/GameOp existantes (zéro duplication).\n- [ ] Champs `TestSpec` (skills « au choix », char, difficulty), `contexts`, `icon`, `resolver`, `extended`, `failExtenue` éditables.\n- [ ] Round-trip byte-fidèle vérifié (`serialize`).\n- [ ] Suite + typecheck verts ; recette navigateur (éditer une Activité + round-trip byte-exact).\n- [ ] Périmètre : `registry.ts`/`CodexEdit.tsx`/`overrides.ts` (+ leurs tests) — PAS `index.ts`/`schemas`.\n",
     "createdAt": "2026-07-06T17:22:16Z",
-    "closedAt": null
+    "closedAt": "2026-07-07T05:59:13Z"
   },
   {
     "number": 169,
     "title": "[vocabulaire] EffectOp.on : 'victim' (79+ entrées) et 'self' (4 talents) hors de l'union TS — trancher ET vérifier la sémantique réelle de chaque 'self'",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [],
     "body": "Trouvé par le contrat de donnée (vague 2) : l'union déclarée est 'party'|'hero'|'caster'|'target' (src/engine/flowCore.ts:48), mais la donnée porte on:'victim' (domains.json ×7, maneuvers.json ×20, qualities.json ×52) et on:'self' (talents.json ×4, ex. Assaut féroce onHit). Les 2 dispatchers (combatEffects.ts:443, combat/triggeredTest.ts:241) ne distinguent que 'caster' → tout le reste retombe sur target : 'victim' est fonctionnellement correct par accident ; **'self' est SUSPECT** — si l'intention d'Assaut féroce est d'appliquer l'effet à l'ATTAQUANT (self=caster), le repli l'envoie à la CIBLE = bug réel potentiel.\n\nFix attendu : (1) vérifier au RAW la cible voulue de chacun des 4 'self' ; (2) trancher le vocabulaire (migrer la donnée vers l'union canon OU étendre officiellement l'union — une seule langue, règles générales) ; (3) resserrer l'enum des schémas zod (domains/maneuvers/qualities/talents portent des élargissements locaux commentés à retirer).\nDoD : union TS = vocabulaire réel de la donnée ; 4 'self' vérifiés au RAW avec tests si comportement corrigé ; schémas resserrés ; suite verte.",
     "createdAt": "2026-07-06T17:54:18Z",
-    "closedAt": null
+    "closedAt": "2026-07-06T23:49:20Z"
   },
   {
     "number": 170,
     "title": "[RAW/naval] steam-breakdown.json : champ engineerTest jamais lu — Test de l'ingénieur de « Fuite de vapeur » non modélisé",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [],
     "body": "Trouvé par le contrat de donnée (vague 2) : l'entrée fuite-de-vapeur (min 41/max 60) porte engineerTest: { char: 'I' }, absent de SteamBreakdownEntry (src/engine/shipBuild.ts:223-237) et jamais lu par rollSteamBreakdown ni aucun consommateur — la donnée encode un Test que le moteur ignore.\n\nFix attendu : vérifier au Source (MDG, machines à vapeur) ce que dit la panne « Fuite de vapeur » ; si un Test d'ingénieur est RAW → le modéliser (règle 7 : pas de MJ) ; sinon retirer le champ mort de la donnée.\nDoD : champ consommé ou supprimé, jamais dormant ; schéma steam-breakdown resserré en conséquence ; suite verte.",
     "createdAt": "2026-07-06T17:54:21Z",
-    "closedAt": null
+    "closedAt": "2026-07-06T23:48:52Z"
   },
   {
     "number": 171,
     "title": "[donnée] traits.json : champ suffix (124× null, tentacules '#') absent de TraitData et sans consommateur trouvé",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [],
     "body": "Trouvé par le contrat de donnée (vague 2) : suffix présent sur 124/125 entrées (null partout sauf tentacules → '#'), absent de TraitData (src/data/index.ts:792-844), aucun consommateur au grep .suffix côté traits.\n\nFix attendu : archéologie git (introduction du champ) → soit un consommateur réel existe (le documenter sur l'interface + le schéma), soit champ mort → purge des 125 occurrences via le sérialiseur canonique.\nDoD : zéro champ dormant ; schéma traits sans le champ (ou avec, documenté) ; suite verte.",
     "createdAt": "2026-07-06T17:54:23Z",
-    "closedAt": null
+    "closedAt": "2026-07-06T23:49:22Z"
   },
   {
     "number": 172,
     "title": "[types] mutations longues-jambes : appearance.legs consommé par le rig mais absent d'EntityAppearance",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [],
     "body": "Trouvé par le contrat de donnée (vague 2) : longues-jambes.appearance porte { legs: 1.3 } — mécanisme réel (facteur d'échelle des jambes, lu par combatantVisuals.ts) mais le champ n'existe pas sur EntityAppearance (src/state/scene.ts:87-110) : fuite de type entre Appearance (rig) et EntityAppearance.\n\nFix attendu : ajouter legs?: number à EntityAppearance (ou réconcilier les deux types — vérifier la frontière rig⇄scene), le schéma mutations le modélise déjà par preuve JSON.\nDoD : typecheck sans fuite ; le champ est déclaré là où il est consommé ; suite verte.",
     "createdAt": "2026-07-06T17:54:25Z",
-    "closedAt": null
+    "closedAt": "2026-07-06T23:49:29Z"
   },
   {
     "number": 173,
@@ -2011,23 +2011,122 @@
   {
     "number": 174,
     "title": "[donnée] creatures.json : 3 optionals composés (« remplacer X par bonus Y en Z ») retirés — TraitInstance ne les exprime pas",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [
       "bug"
     ],
     "body": "## Contexte\n\nDécouvert par le contrat de schéma sur `creatures.json` : 3 entrées d'`optionals` portaient une clé\nlittérale `\"key\"` (pas `\"id\"`) — format d'authoring non conforme à `TraitInstance` (`src/engine/statEntry.ts`,\nqui exige `id: string`). Vérifié à l'usage (`src/ui/editor/OptionalTraitsPicker.tsx` :\n`traitLabels(creature.optionals)` → `formatTrait` → `traitById.get(t.id)`/`traitLabelById(t.id)`) :\navec `t.id === undefined`, `formatTrait` retourne littéralement la chaîne `\"undefined\"` (concaténation\nde template literal) — l'option affichée dans le picker n'a AUCUN sens et ne matche jamais la\nregex spéciale `/^tous les traits$/i` du Mutant (qui attendait exactement ce libellé). **Confirmé mort** :\njamais résolu, jamais proposé correctement, et si l'utilisateur cliquait dessus, `parseTraitInstance`\nproduirait un trait `id: \"undefined\"` inexistant au registre.\n\nLes 3 entrées, retirées de la donnée (`src/data/creatures.json`) le 2026-07-06 :\n\n1. **Mutant** (`livre-de-base` p.333) : `{ \"key\": \"Tous les traits\" }`\n   — libellé RAW verbatim : *(LDB 76, note du Mutant)* « Tous les traits »\n2. **Grand Loup** (`zoo-imperial` p.16) : `{ \"key\": \"Taille; remplacer Bestial, Dressé et Territorial par un bonus de en Soc\", \"value\": 15, \"arg\": \"Grande\" }`\n   — libellé RAW verbatim : « Taille ; remplacer Bestial, Dressé et Territorial par un bonus de **15** en Soc (Grande) »\n3. **Griffon** (`zoo-imperial`, entrée `griffon-zoo-imperial`) : `{ \"key\": \"Remplacer Bestial par un bonus de en Soc\", \"value\": 20 }`\n   — libellé RAW verbatim : « Remplacer Bestial par un bonus de **20** en Soc »\n\n## Pourquoi ce n'est pas exprimable aujourd'hui\n\n`TraitInstance` (id + value/arg/count/range) modélise **l'ajout** d'un trait facultatif à la créature —\njamais **le remplacement conditionnel** d'un ou plusieurs traits déjà posés (Bestial, Dressé, Territorial)\npar un bonus numérique sur une compétence/caractéristique (Soc). Il manque un vocabulaire pour :\n« si {traits X, Y, Z} sont retirés, alors {+N sur Soc} » — un swap trait↔bonus, pas un GameOp\nd'ajout pur.\n\n## Besoin de modélisation\n\n- Étendre `TraitInstance`/le schéma des `optionals` (ou une structure sœur) pour porter un\n  remplacement conditionnel : traits retirés + bonus accordé (`arg`/`value` visant une autre\n  caractéristique que celle du trait retiré).\n- Vérifier s'il existe d'autres occurrences de ce motif RAW (zoo-imperial et au-delà) avant de\n  figer la forme.\n- Une fois le vocabulaire disponible, réintroduire les 3 entrées ci-dessus (verbatim) dans\n  `creatures.json`.\n\n## DoD\n- [ ] Vocabulaire de remplacement conditionnel trait→bonus modélisé (schéma + moteur + éditeur)\n- [ ] Les 3 optionals réintroduits verbatim (Mutant, Grand Loup, Griffon) avec leur `value`/`arg`\n- [ ] Test de non-régression : le picker résout et affiche ces optionals sans literal \"undefined\"",
     "createdAt": "2026-07-06T18:17:05Z",
-    "closedAt": null
+    "closedAt": "2026-07-07T01:22:21Z"
   },
   {
     "number": 175,
     "title": "[ADE II ch.08] Machines de guerre : 3 règles non modélisées (Canon à flammes nain Spéciaux, restrictions de portée)",
-    "state": "OPEN",
+    "state": "CLOSED",
     "labels": [
       "bug"
     ],
     "body": "## Contexte\nTicket #156 (résolution tactique des machines de guerre ADE II ch.08 « Le théâtre de la guerre ») a ajouté les\n10 machines à `trappings.json` (ids `*-ade2`) avec leurs Atouts/Défauts structurés. Trois règles VERBATIM de la\nmême page (folio 88, `Source/Warhammer v4 - Les archives de l'Empire volume 2/08 - Le théâtre de la guerre.md`\nl.240-253) restent en PROSE (`desc`) mais ne sont PAS mécaniquement appliquées, faute d'un champ disponible\ndans `src/data/schemas/defs/trappings.ts` (schéma STRICT — hors périmètre du ticket #156, geler la migration\nschéma était une contrainte explicite).\n\n## 1. Canon à flammes nain — Dégâts « Spéciaux » (l.243/270)\n> « Les canons à flammes nain infligent 2 + DR États *En flammes* à chaque cible affectée. »\n\n`canon-a-flammes-nain-ade2` porte `\"damage\": null` (comme le `mortier` AA) + la règle verbatim dans `desc`,\nmais RIEN n'applique automatiquement `2 + DR` États *En flammes* à la touche — la table ne donne aucune\nvaleur de Dégâts chiffrée par ailleurs, donc ce N'EST PAS une omission de curation : c'est un effet « à la\ntouche » qui a besoin d'un canal mécanique (`Weapon.onHitEffects`/`TriggeredEffect`, déjà utilisé pour les\narmes enchantées — `src/engine/weaponDamage.ts` `applyEnchants`) mais qui n'est PAS encore exposable depuis\n`trappings.json` (le schéma `weaponSchema`/`schema` de `src/data/schemas/defs/trappings.ts` n'a pas de champ\n`onHitEffects`).\n\n## 2. Trébuchet / Mortier — inutilisables sous leur Portée Courte (l.251)\n> « Les trébuchets et les mortiers ne peuvent pas être utilisés si la distance jusqu'à la cible est inférieure\n> à leur Portée Courte. »\n\nAucun mécanisme de PORTÉE MINIMALE n'existe dans le moteur (`rangeBandModifier`/`rangeBandName` ne gèrent que\nles paliers Bout portant→Extrême, jamais un plancher qui REFUSE le tir). `trebuchet-ade2`/`mortier-ade2`\nportent la règle verbatim en `desc` + `indirect:true`, mais un tir à moins de Portée Courte n'est actuellement\nPAS bloqué.\n\n## 3. Armes de siège à distance — inutilisables à Bout Portant (l.253)\n> « Les armes de siège à distance ne peuvent pas être utilisées à Bout Portant. »\n\nUniverselle aux 9 machines à distance ADE II (`baliste-ade2`, `batterie-tonnerre-de-feu-ade2`,\n`canon-a-repetition-feu-d-enfer-ade2`, `canon-ade2`, `canon-a-flammes-nain-ade2`, `mangonneau-ade2`,\n`onagre-ade2`, `trebuchet-ade2`, `mortier-ade2`). Même constat que #2 : « Bout portant » n'est aujourd'hui\nqu'un PALIER de modificateur (+40), jamais un refus de tir. Toutes portent la règle verbatim en `desc`.\n\n## Fix proposé\n- **#1** : ajouter `onHitEffects?: TriggeredEffect[]` (ou équivalent) au schéma `weaponSchema`/top-level de\n  `src/data/schemas/defs/trappings.ts` (+ `Weapon`/`TrappingData` si pas déjà exposé), puis stamper la règle\n  sur `canon-a-flammes-nain-ade2`.\n- **#2/#3** : un champ déclaratif générique de PORTÉE MINIMALE (ex. `Weapon.minRangeBand` ou\n  `noPointBlank?: boolean` + `noShortRange?: boolean`), lu par le même point que `rangeBandModifier` pour\n  REFUSER le tir (comme `firedAttackBlock` refuse déjà Recharge/munition/arc) plutôt que de le pénaliser.\n\n## DoD\n- [ ] Canon à flammes nain inflige mécaniquement `2 + DR` États En flammes à la touche (zone Explosion 5 incluse)\n- [ ] Trébuchet/Mortier refusent le tir sous leur Portée Courte (gate, pas juste un malus)\n- [ ] Les 9 machines à distance ADE II refusent le tir à Bout Portant\n- [ ] Tests dédiés + `npm test`/`npm run typecheck` verts",
     "createdAt": "2026-07-06T18:40:26Z",
+    "closedAt": "2026-07-07T05:59:08Z"
+  },
+  {
+    "number": 176,
+    "title": "[Contrat] Valider la donnée à la SAUVEGARDE éditeur/Compendium + au chargement dev — les 2 branchements restants du contrat de schéma",
+    "state": "CLOSED",
+    "labels": [],
+    "body": "Queue du programme pérennité (design exécuté : docs/plans/2026-07-06-perennite-10-ans-design.md, commité 23a24cc7, purgé après exécution — git porte l'historique). Le contrat couvre 94/94 datasets aux portes test CI + pre-commit ; restent les 2 branchements prévus :\n1. SAUVEGARDE éditeur/Compendium : valider contre SCHEMA_DEFS (src/data/schemas/_registry.generated.ts) AVANT l'écriture FS (chemin serializeDataset/fsPersist), refus avec message actionnable champ par champ (formatZodError de schema-contract.test.ts réutilisable).\n2. Chargement DEV : validation dure sous import.meta.env.DEV (le prod charge le JSON que la CI a validé — pas de coût runtime).\n\nDoD : recette navigateur (éditer une donnée au Codex → sauvegarder : invalide = refusée avec message, valide = écrite octet-fidèle serialize) ; suite verte ; typecheck propre.",
+    "createdAt": "2026-07-06T20:14:57Z",
+    "closedAt": "2026-07-07T00:36:05Z"
+  },
+  {
+    "number": 177,
+    "title": "[Gardes] Éteindre le stock d'alertes (excuses + affirmations-RAW) puis basculer le volet excuses en BLOQUANT",
+    "state": "OPEN",
+    "labels": [],
+    "body": "Queue du programme pérennité. Stock au recensement du 2026-07-06 soir : ~8 excuses faux-positifs résiduels (reformulation) + ~19 affirmations-RAW non ancrées (ancrer d'une réf de livre ADJACENTE après vérification Source, ou reformuler) — scripts de recensement : le canal ALERTE du pre-commit les liste au fil des gestes.\n\nFlip : EXCUSE_GUARD_ACTIVE = true dans scripts/guards/lib/commentPoison.mjs (UN interrupteur → les 3 portes : test CI, pre-commit bloquant, stylo). Le volet affirmations-RAW RESTE en alerte (la vérité d'une thèse n'est pas machine-vérifiable, seul l'ancrage l'est).\n\nDoD : recensement excuses à zéro ; flip commité ; scan complet actif en CI ; aucune reformulation qui travestit le sens d'un commentaire.",
+    "createdAt": "2026-07-06T20:14:59Z",
+    "closedAt": null
+  },
+  {
+    "number": 178,
+    "title": "[Ops] Supprimer la branche-filet feat/wfrp4-rpg-foundation (à partir du 2026-07-13)",
+    "state": "OPEN",
+    "labels": [],
+    "body": "main est le tronc depuis le 2026-07-06 (fast-forward 2609 commits, clone local basculé, CLAUDE.md à jour). La branche feat/wfrp4-rpg-foundation est conservée UNE SEMAINE en filet, synchronisée au moment de la bascule. Passé une semaine de main vert :\ngit push origin --delete feat/wfrp4-rpg-foundation && git branch -D feat/wfrp4-rpg-foundation\n\nDoD : branche supprimée (remote + local) ; grep 'feat/wfrp4-rpg-foundation' sur CLAUDE.md/docs/scripts/workflows = zéro occurrence restante (ci.yml garde 'feat/**' générique, OK).",
+    "createdAt": "2026-07-06T20:15:01Z",
+    "closedAt": null
+  },
+  {
+    "number": 179,
+    "title": "[Docs] Section « conventions du contrat de schéma » dans docs/donnees.md (bloquée par WIP le 06/07)",
+    "state": "CLOSED",
+    "labels": [],
+    "body": "docs/donnees.md est la carte des données — le contrat de schéma (src/data/schemas/defs/, convention stricte, registre SCHEMA_DEFS généré, PENDING vide = tout nouveau JSON naît avec son def, validate-data au pre-commit) doit y avoir sa section. Reportée deux fois le 2026-07-06 : le fichier était dans le WIP vivant d'une autre session.\n\nDoD : section écrite (conventions + le geste « ajouter un dataset » = JSON + def + npm run gen) ; npm run docs:check vert ; data-atlas-complete.test.ts inchangé-vert.",
+    "createdAt": "2026-07-06T20:15:03Z",
+    "closedAt": "2026-07-07T00:36:11Z"
+  },
+  {
+    "number": 180,
+    "title": "[poison/commentaires] combatSlice.ts flux opposition de sort — affirmation RAW nue (:2488) + excuse sans tag (:2538)",
+    "state": "CLOSED",
+    "labels": [],
+    "body": "> Re-signalé par le hook anti-poison à chaque commit touchant `combatSlice.ts` (dernier : #156 bélier, SANS rapport). PRÉ-EXISTANT dans le flux de lancer/opposition de sort (~l.2488/2538), jamais touché par #156. Hors périmètre → issue (credo).\n\n## Deux commentaires poison (CLAUDE.md règle 6)\n- **`src/state/combatSlice.ts:2488`** — affirmation RAW non ancrée : *« le LANCEUR (même clause de distance FM mètres ; le RAW est muet) »*. Un commentaire qui affirme le RAW (« le RAW est muet ») est suspect → ouvrir le `Source/`, puis réduire à une **réf nue** OU, si le RAW est réellement muet, **arbitrage maison tagué** (pas une affirmation nue).\n- **`src/state/combatSlice.ts:2538`** — commentaire-excuse sans tag : *« ne s'applique PAS encore — on ouvre le multijet d'opposition DANS la modale (GARDE pendingCast) »*. Sans validation `[entériné AAAA-MM-JJ]`, « pas encore » est de la dette signalée, pas une autorisation.\n\n## Definition of Done\n- [ ] `:2488` — vérifier au Source si le RAW chiffre la distance d'opposition de sort ; réf nue si oui, arbitrage maison éditable tagué si muet. Retirer l'affirmation nue.\n- [ ] `:2538` — trancher « ne s'applique pas encore » : soit le multijet d'opposition S'APPLIQUE (corriger), soit c'est un arbitrage à documenter/tagger. Retirer l'excuse.\n- [ ] ⚠ Flux de sort/opposition = zone possiblement partagée avec la session magie/data — coordonner avant d'éditer.\n",
+    "createdAt": "2026-07-06T22:03:30Z",
+    "closedAt": "2026-07-06T22:07:43Z"
+  },
+  {
+    "number": 181,
+    "title": "[rig] Équipage : armure affichée HORS combat, vêtements EN combat — un des deux chemins d'apparence n'applique pas la couche armure",
+    "state": "CLOSED",
+    "labels": [],
+    "body": "Playtest 2026-07-06 (scénario bélier #156) : les servants d'équipage s'affichent EN ARMURE hors combat mais EN VÊTEMENTS en mode combat, pour les mêmes entités. La doctrine du repo est pourtant tenues+armures = defs SOURCE UNIQUE quel que soit le contexte.\n\nPiste (constat de la session #156, non tracée jusqu'ici) : deux chemins d'apparence coexistent — defaultAppearance/combatantAppearance (jeton combat) vs riggedAppearance/bipedTenue (profil/hors-combat) — l'un des deux n'applique pas la couche tenue-armure. À tracer de façon focalisée, pas à deviner.\n\nDoD : les deux contextes rendent la MÊME apparence depuis la même source ; cause racine identifiée (pas un patch par-contexte) ; recette navigateur combat + hors-combat sur un servant équipé ; suite verte.",
+    "createdAt": "2026-07-06T22:22:15Z",
+    "closedAt": "2026-07-07T01:22:26Z"
+  },
+  {
+    "number": 182,
+    "title": "[rig/apparence] PNJ armuré : rendu combat (vêtements) ≠ hors-combat (armure) — source unique violée",
+    "state": "CLOSED",
+    "labels": [],
+    "body": "> Trouvé en playtest de la scène bélier (#156) : les PNJ (`garde-du-village`) ne rendent PAS la même apparence **en combat vs hors combat** — **en combat = vêtements** (base), **hors combat = armure**. Violation de la règle « tenues + armures = defs source UNIQUE » ([[game-tenues-defs-source-unique]]) : le même combattant doit rendre identiquement dans les deux contextes.\n\n## Constat\nDeux chemins d'apparence coexistent et divergent sur la couche tenue/armure :\n- `src/gameIso/rig/appearance.ts:27` `defaultAppearance(c)` + `src/gameIso/rig/parts/combatantVisuals.ts:51` `combatantAppearance(a, c)` (chemin d'un `Combatant`).\n- `src/gameIso/rig/enemyProfile.ts:79` `riggedAppearance(name, seed, opts)` + `bipedTenue(...)` (:114) (chemin profil PNJ/ennemi par nom/seed).\n\nUn des deux applique l'armure portée (tenue), l'autre non → l'affichage change selon le contexte de rendu (token ISO de combat vs autre vue). À TRACER : quel chemin sert le rendu de combat, lequel sert le hors-combat, et lequel omet la couche armure.\n\n## Definition of Done\n- [ ] Tracer les 2 chemins de rendu (combat vs hors-combat) d'un même PNJ ; identifier lequel omet la tenue/armure.\n- [ ] Faire converger sur une SOURCE UNIQUE d'apparence (l'armure portée dérive du même endroit dans les deux contextes) — pas deux résolutions parallèles.\n- [ ] Recette navigateur : un `garde-du-village` (ou tout PNJ armuré) rend IDENTIQUE en combat et hors combat.\n- [ ] Garde si possible (test golden d'apparence croisant les 2 contextes).\n",
+    "createdAt": "2026-07-06T22:29:25Z",
+    "closedAt": "2026-07-07T01:22:28Z"
+  },
+  {
+    "number": 183,
+    "title": "[RAW/naval] Météo en mer — les skillMods de Précipitations ne sont appliqués à AUCUN Test réel (aucun appelant de production)",
+    "state": "OPEN",
+    "labels": [],
+    "body": "Découvert par la revue de #162 : `precipitationSkillMod` (src/engine/seaWeather.ts:165) n'a AUCUN appelant hors de son test unitaire — les malus météo de Précipitations n'atteignent aucun jet en jeu.\n\n## RAW — MDG 13 l.187-201 (desc verbatim déjà dans src/data/sea-weather.json)\n> « –10 sur les Tests d'Athlétisme, d'Escalade et de Projectiles (Poudre noire) » (et paliers supérieurs –20/–30 + « –10 sur tous les autres Tests » en Très abondantes)\n\nLe moteur gate correctement la spécialisation depuis #162 (spec `poudre-noire`), mais la fonction est inerte : aucun point du state/UI ne passe le contexte météo maritime aux Tests.\n\n## Fix attendu\nCâbler le contexte météo actif (voyage en mer) au point GÉNÉRIQUE des modificateurs de Test (breakdown `{ label, base, mods }` — primitive `optionPending`/`testPending`), en passant `skillId` + `spec` du Test réel. Pas de câblage par-écran : un seul point d'injection des mods d'environnement.\n\n## DoD\n- [ ] Sous Précipitations, un Test d'Athlétisme / Escalade / Projectiles (Poudre noire) porte le malus, VISIBLE dans le breakdown de la modale de jet ; Projectiles (Arc) n'en porte pas\n- [ ] Test(s) unitaires du point d'injection ; suite + typecheck verts",
+    "createdAt": "2026-07-06T23:54:03Z",
+    "closedAt": null
+  },
+  {
+    "number": 184,
+    "title": "[RAW/naval] Pannes de vapeur — conséquences first-class jamais EXÉCUTÉES (failDamage, restart, compartmentDamage, durationRounds)",
+    "state": "OPEN",
+    "labels": [],
+    "body": "Découvert par #170 : `resolveVoyageCrewTest` (src/state/seaVoyageFlow.ts:581-590) n'applique que `mMod`/`mSet`/`hullCritical`/`engineDestroyed` au navire. Les autres champs first-class de `SteamBreakdownEntry` (src/engine/shipBuild.ts) — `failDamage`, `compartmentDamage`, `durationRounds`, `restart` — ne sont consommés NULLE PART : les Tests de redémarrage et les sauvegardes des PANNES DE VAPEUR sont narrés en `desc`, jamais résolus (règle stricte 7 : pas de MJ — tout se modélise).\n\n## RAW — MDG 12 l.326-328 (verbatim)\n> « Fuite de vapeur : un jet de vapeur jaillit de la chaudière. La personne qui s'occupe du moteur doit réussir un Test d'Initiative sous peine d'être ébouillantée et de subir 1d10–5 Dégâts (1 minimum), qui ignorent l'Armure. »\n\n(Les 5 autres entrées de la table portent des Tests de redémarrage analogues via `restart`.)\n\n## Fix attendu\nFlux de résolution des pannes de vapeur : identifier le PJ « qui s'occupe du moteur » (poste machine — patron PosteSheet/stations), sauvegarde d'Initiative INFLUENÇABLE (RollShell/rollFlowFactory, jamais rollTest inline, zéro jet silencieux), dégâts `1d10-5` min 1 ignorant l'Armure via GameOp, Tests de redémarrage `restart` exécutés.\n\n## DoD\n- [ ] `engineerTest`-class : sauvegarde d'Initiative jouée dans une modale influençable à la panne « Fuite de vapeur »\n- [ ] `failDamage`/`compartmentDamage`/`durationRounds`/`restart` consommés (ou retirés s'ils s'avèrent non-RAW, champ par champ au Source)\n- [ ] Test(s) rouge→vert ; suite + typecheck verts",
+    "createdAt": "2026-07-06T23:54:05Z",
+    "closedAt": null
+  },
+  {
+    "number": 185,
+    "title": "[RAW/naval] Permission de faire relâche à terre non modélisée — gate d'occurrence de l'Embrigadement (MDG 15 l.245)",
+    "state": "OPEN",
+    "labels": [],
+    "body": "Détaché de #164 (recouvrement mécanisé en bd7d35af) : le gate RAW d'occurrence de l'événement n'est PAS modélisé — l'Embrigadement se déclenche TOUJOURS à l'arrivée au port.\n\n## RAW — MDG 15 l.245 (verbatim, fin de l'entrée Embrigadement)\n> « Si vous avez refusé la permission de faire relâche à terre à votre équipage, cet événement n'a pas lieu. »\n\nAucun système de « permission de relâche / congé à terre » n'existe (grep relâche/shoreLeave/permission = néant, vérifié par l'agent #164 puis sa revue). Règle stricte 7 : c'est un CHOIX JOUEUR défini par le RAW, pas un point à narrer.\n\n## Fix attendu\n- Décision joueur « accorder / refuser la relâche à terre » à l'arrivée au port (avant le tirage des événements de port), persistée pour l'escale.\n- Gater l'occurrence de l'événement `embrigadement` sur cette décision (refus → l'événement n'a pas lieu).\n- Vérifier au Source si d'autres événements de port de la même table référencent la relâche (appliquer le même gate le cas échéant).\n- Mineur (revue #164) : quand personne à bord n'a Ragot, la cascade de récupération ne s'ouvre pas SANS ligne de journal — ajouter l'explication.\n\n## DoD\n- [ ] Choix joueur modélisé et persisté (donnée/flow éditable, pas de MJ)\n- [ ] Refus de relâche → embrigadement ne se déclenche pas (test)\n- [ ] Journal explicite quand la récupération est impossible (pas de Ragot à bord)\n- [ ] Suite + typecheck verts",
+    "createdAt": "2026-07-07T01:24:30Z",
+    "closedAt": null
+  },
+  {
+    "number": 186,
+    "title": "[donnée/ZI] Vouivre — variante composite « perdre Bestial + Taille réduite + bonus multi-carac + B 42 + Discrétion (Rurale) 65 » non exprimable par OptionalSwap",
+    "state": "OPEN",
+    "labels": [],
+    "body": "Découvert pendant #174 (vocabulaire OptionalEntry, commit c5656959) : la VOUIVRE (ZI) porte une variante Facultatif PLUS RICHE que le swap modélisé, non réintroduite car le vocabulaire ne la couvre pas.\n\n## RAW — Source/WH - V4 - Le zoo impérial/01 - WH - V4 - Le zoo impérial.md l.829 (verbatim)\n> « Peut perdre Bestial et réduire sa Taille à Grande pour gagner un bonus de +20 en I, Int et Soc, réduire ses B à 42 et gagner Discrétion (Rurale) 65 »\n\n`OptionalSwap` (src/engine/statEntry.ts, schéma defs/creatures.ts) porte aujourd'hui : `remove: string[]` + `grant: { char | skillId, value }` UNIQUE + `size?`. Il manque : grant MULTIPLE (+20 en I, Int ET Soc), RÉDUCTION de Taille (Énorme→Grande — le champ size? actuel pose une Taille, vérifier le sens), OVERRIDE de B (42), et OCTROI de compétence à valeur absolue (Discrétion (Rurale) 65).\n\n## Fix attendu\n- Généraliser `OptionalSwap` : `grant` en tableau, champ d'override de caractéristique (B), octroi de compétence à valeur fixe — en réutilisant les vocabulaires existants (statEntry/skills) sans type parallèle.\n- Ajouter l'entrée VERBATIM sur la créature vouivre de creatures.json (vérifier au passage que ses Facultatifs simples — Cornes, Dressé ×5, Redoutable, Souffle (Poison) +10, l.827 — sont présents).\n- Test moteur : l'application retire Bestial, réduit la Taille, pose +20 I/Int/Soc, B=42, Discrétion (Rurale) 65.\n\n## DoD\n- [ ] Vocabulaire généralisé (schéma + moteur + éditeur/affichage) sans casser les 3 entrées #174\n- [ ] Entrée vouivre réintroduite verbatim + Facultatifs simples vérifiés\n- [ ] Tests rouge→vert ; serialize/schema-contract verts ; suite + typecheck verts",
+    "createdAt": "2026-07-07T01:24:32Z",
     "closedAt": null
   }
 ]
