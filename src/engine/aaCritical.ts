@@ -35,7 +35,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { testValue } from './skills';
 import { locationLabel } from './combat';
 import { Combatant, HitLocation } from './types';
-import { traumaById, traumaFicheById, stampCriticalEscalation } from './trauma';
+import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers } from './trauma';
 import type { GameOp } from './ops';
 import type { CriticalResolved } from './critical';
 import { permanentAmputations } from './critical';
@@ -103,7 +103,13 @@ export function resolveAACritical(
     const res = rollTest(testVal, entry.resist.difficulty, rng);
     if (!res.success) ops.push(...entry.resist.onFail);
   }
-  const traumas = (entry.traumas ?? []).map((id) =>
+  // Occurrence-count PAR ID D'ENTRÉE (AA 07 l.96 : « Si vous subissez de nouveau ce résultat… ») : effet
+  // ALTERNATIF `escalation.onRepeat` (séquelles REMPLACÉES, ops immédiates AJOUTÉES). SOURCE UNIQUE (chemin LDB).
+  const repeated = (target.critEntriesSuffered ?? []).includes(entry.id);
+  const repeat = repeated ? entry.escalation?.onRepeat : undefined;
+  if (repeat?.ops) ops.push(...repeat.ops.map((o) => ({ ...o })));
+  const traumaRefs = repeat?.traumas ?? entry.traumas ?? [];
+  const traumas = traumaRefs.map((id) =>
     traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
   // Amputation (« voir Amputation en page 180 de WFJDR ») DÉCLARÉE STRUCTURELLEMENT — même cascade que
   // `rollCritical` (LDB 18 l.328-333) : Test de Résistance indépendant du `resist` de la ligne (les deux
@@ -127,9 +133,13 @@ export function resolveAACritical(
   // Escalade GATÉE par les soins (« Main ouverte » l.127 : doigt/Round ; « Pied écrasé » l.180 : perte du pied
   // sans Chirurgie sous 1d10 jours ; « Épaule luxée » l.125 / « Genou démis » l.179 : membre désactivé jusqu'au
   // Test étendu de Guérison) — en DERNIER (ne décale que les critiques à escalade). SOURCE UNIQUE (chemin LDB).
-  stampCriticalEscalation(traumas, entry.escalation, location, rng);
+  stampCriticalEscalation(traumas, entry.escalation, location, rng, target.traumas ?? []);
+  // Déclencheurs armés par un critique ANTÉRIEUR (« Commotion cérébrale », LDB 18 l.74) — un critique LDB peut
+  // avoir armé le déclencheur, un critique AA le fait feu (l'historique est kind-agnostique). En DERNIER (RNG).
+  ops.push(...fireCritTriggers(target, location, resistVal, rng));
   return {
     location,
+    entryId: entry.id,
     name: entry.name,
     ops,
     lethal: !!entry.lethal,

@@ -241,6 +241,16 @@
           "ignoreAP": true
         }
       ],
+      "traumas": [
+        "perte-auditive-partielle"
+      ],
+      "escalation": {
+        "onRepeat": {
+          "traumas": [
+            "surdite"
+          ]
+        }
+      },
       "desc": "Le coup endommage votre oreille, causant une perte auditive permanente. Vous\nsubissez une pénalité de -20 à tout Test ayant un rapport avec l'audition. Si vous\ntombez une seconde fois sur cette blessure, vous perdez totalement l'audition, car votre\ndeuxième oreille devient elle aussi silencieuse. Ne peut être guéri que par la magie."
     },
     {
@@ -355,6 +365,23 @@
           }
         }
       ],
+      "escalation": {
+        "onNextCritWhileCondition": {
+          "label": "Commotion cérébrale",
+          "location": "tete",
+          "whileCondition": "extenue",
+          "resist": {
+            "difficulty": "accessible",
+            "onFail": [
+              {
+                "op": "condition",
+                "name": "inconscient",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
       "desc": "Votre cerveau va percuter votre boîte crânienne alors que le sang coule à flots de votre\nnez et de vos oreilles. Gagnez les États suivants : 1 Assourdi, 2 Hémorragique et 1d10\nSonné. Gagnez également 1'État Exténué qui va durer 1d10 jours. Si vous recevez une\nautre Blessure critique à la tête alors que vous êtes Exténué, réussissez un Test de\nRésistance Accessible (+20) ou gagnez l'État Inconscient"
     },
     {

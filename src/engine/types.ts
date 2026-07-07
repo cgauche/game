@@ -705,6 +705,11 @@ export interface Trauma {
    *  Chaque nouveau Dégât à la MÊME `location` octroie `bleedOnReinjury` État Hémorragique (`reinjuryBleed`,
    *  au point d'application des Dégâts localisés). Séquelle chirurgicale (`needsSurgery`) : la Chirurgie la retire. */
   bleedOnReinjury?: number;
+  /** Déclencheur d'escalade posé par un critique (« Commotion cérébrale », LDB 18 l.74) : tant que le
+   *  personnage porte l'État `whileCondition`, tout critique SUBSÉQUENT à `location` (ou toute Localisation si
+   *  absente) impose le Test de sauvegarde `resist` (échec → ses `onFail`). Stampé par `stampCriticalEscalation`,
+   *  lu par `fireCritTriggers` au point unique de résolution des critiques. */
+  critTrigger?: { location?: HitLocation; whileCondition: string; resist: { difficulty: Difficulty; onFail: import('./ops').GameOp[] } };
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';
@@ -1121,6 +1126,11 @@ export interface Combatant {
   /** A subi ≥1 Blessure critique DANS le combat courant (transitoire) — déclenche en fin de combat le Test
    *  de Résistance Très Facile (+60) « ou Infection Mineure » (LDB 20 l.72). Remis à zéro au prochain combat. */
   tookCriticalThisFight?: boolean;
+  /** Historique des ENTRÉES de Blessure critique subies (ids STABLES de `criticals.json`/`aa-criticals.json`),
+   *  appendé à chaque résolution (`applyCriticalToTarget`). PERSISTE à vie (jamais réinitialisé au combat) :
+   *  sert les escalades conditionnées à l'occurrence (« Si vous tombez une seconde fois sur cette blessure… »,
+   *  Blessure majeure à l'oreille, LDB 18 l.71) — lu par `rollCritical`/`resolveAACritical` (`escalation.onRepeat`). */
+  critEntriesSuffered?: string[];
   /** La blessure a été PANSÉE (matériel stérile / pansement) DANS le combat courant — un soin de Guérison
    *  réussi ou un bandage suffit : « aucune Infection ne se développera suite à la blessure » (LDB 09 /
    *  18 l.382). Empêche la contraction d'Infection Mineure en fin de combat. Transitoire (par rencontre). */

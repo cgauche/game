@@ -10,7 +10,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape, locationLabel } from './combat';
 import { BodyShape, Combatant, HitLocation, Trauma } from './types';
 import { CRITICAL_TABLES } from '../data/criticals';
-import { traumaById, traumaFicheById, stampCriticalEscalation } from './trauma';
+import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers } from './trauma';
 import { rule } from './policy';
 import { resolveAACritical } from './aaCritical';
 import type { GameOp } from './ops';
@@ -46,6 +46,9 @@ export function permanentAmputations(sequels: string[], location: HitLocation, r
 
 export interface CriticalResolved {
   location: HitLocation;
+  /** id STABLE de l'entrée de table (`criticals.json`/`aa-criticals.json`) — appendé à `critEntriesSuffered`
+   *  par `applyCriticalToTarget` pour l'historique d'occurrence (escalade `onRepeat`). */
+  entryId: string;
   name: string;
   /** Effet IMMÉDIAT RÉSOLU (PB ignorant BE+PA + États immédiats + onFail du Test de Résistance/Amputation),
    *  appliqué par `applyOps` chez l'appelant — valeurs littérales (RNG déjà consommé ici). */
@@ -114,10 +117,17 @@ export function rollCritical(
     const res = rollTest(resistVal, entry.resist.difficulty, rng);
     if (!res.success) ops.push(...entry.resist.onFail);
   }
+  // Occurrence-count PAR ID D'ENTRÉE (LDB 18 l.71 : « Si vous tombez une seconde fois sur cette blessure… ») :
+  // la MÊME entrée déjà subie → effet ALTERNATIF `escalation.onRepeat` (séquelles REMPLACÉES, ops immédiates
+  // AJOUTÉES). L'effet IMMÉDIAT de base (PB, États) reste appliqué (le coup blesse toujours).
+  const repeated = (target.critEntriesSuffered ?? []).includes(entry.id);
+  const repeat = repeated ? entry.escalation?.onRepeat : undefined;
+  if (repeat?.ops) ops.push(...repeat.ops.map((o) => ({ ...o })));
+  const traumaRefs = repeat?.traumas ?? entry.traumas ?? [];
   // Durée de convalescence (Jalon 5) : BE déjà calculé ; 1d10 tiré seulement pour les fractures (RAW 30+1d10)
   // afin de ne pas décaler le flux RNG des critiques sans fracture. Les refs d'id de fiche (`traumas.json`)
   // portent leur `kind` → on instancie à la localisation du coup.
-  const traumas = (entry.traumas ?? []).map((id) =>
+  const traumas = traumaRefs.map((id) =>
     traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
   // Amputation (LDB 18 l.328-333) : DÉCLARÉE STRUCTURELLEMENT (`entry.amputation`, plus de regex sur le texte).
   // Test de Résistance ou À Terre ; échec −2 DR → +Sonné ; échec −4 DR → +Inconscient. Le membre perdu
@@ -144,9 +154,14 @@ export function rollCritical(
   // Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du pied sans
   // Chirurgie sous 1d10 jours ; « Épaule luxée »/« Genou démis » : membre désactivé jusqu'au Test étendu de
   // Guérison) — placée en DERNIER (ne décale que les critiques à escalade). Même patron que le chemin AA.
-  stampCriticalEscalation(traumas, entry.escalation, location, rng);
+  stampCriticalEscalation(traumas, entry.escalation, location, rng, target.traumas ?? []);
+  // Déclencheurs armés par un critique ANTÉRIEUR (« Commotion cérébrale » : autre critique tête pendant
+  // Exténué, LDB 18 l.74) — lus sur `target.traumas` (jamais la séquelle stampée à l'instant : elle n'est pas
+  // encore sur la cible). En DERNIER pour ne décaler le flux RNG que des critiques qui font effectivement feu.
+  ops.push(...fireCritTriggers(target, location, resistVal, rng));
   return {
     location,
+    entryId: entry.id,
     name: entry.name,
     ops,
     lethal: !!entry.lethal,

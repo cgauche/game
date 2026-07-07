@@ -365,5 +365,18 @@
       }
     ],
     "desc": "Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l’ouïe."
+  },
+  {
+    "id": "perte-auditive-partielle",
+    "label": "Perte auditive partielle",
+    "ops": [
+      {
+        "op": "skillMod",
+        "skill": "perception",
+        "mod": -20,
+        "sense": "ouie"
+      }
+    ],
+    "desc": "Le coup endommage votre oreille, causant une perte auditive permanente. Vous\nsubissez une pénalité de -20 à tout Test ayant un rapport avec l'audition."
   }
 ]

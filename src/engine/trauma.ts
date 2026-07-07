@@ -394,6 +394,7 @@ export function stampCriticalEscalation(
   esc: CritEscalation | undefined,
   location: HitLocation,
   rng: RNG = defaultRNG,
+  existing: Trauma[] = [],
 ): void {
   if (!esc) return;
   const plaie = traumas.find((t) => t.needsSurgery && t.traumaId == null); // « Amputation » = la plaie chirurgicale
@@ -416,6 +417,43 @@ export function stampCriticalEscalation(
     // déclencheur `reinjuryBleed` la lit au point d'application des Dégâts localisés.
     traumas.push({ label: esc.bleedOnReinjury.label, location, bleedOnReinjury: esc.bleedOnReinjury.amount, needsSurgery: true });
   }
+  if (esc.onNextCritWhileCondition) {
+    // « Commotion cérébrale » (LDB 18 l.74) : séquelle porteuse d'un `critTrigger` — tant que le personnage
+    // porte `whileCondition`, un critique subséquent à `location` impose le Test `resist`. Dédupliquée (une
+    // même Localisation+État n'arme qu'un seul déclencheur : plusieurs commotions ne multiplient pas le Test).
+    const n = esc.onNextCritWhileCondition;
+    const same = (t: Trauma) => t.critTrigger?.whileCondition === n.whileCondition && t.critTrigger?.location === n.location;
+    if (!existing.some(same) && !traumas.some(same)) {
+      traumas.push({
+        label: n.label,
+        location,
+        critTrigger: { location: n.location, whileCondition: n.whileCondition, resist: { difficulty: n.resist.difficulty, onFail: n.resist.onFail.map((o) => ({ ...o })) } },
+      });
+    }
+  }
+}
+
+/** Déclencheurs d'escalade (« Commotion cérébrale » : autre critique à la tête pendant Exténué → Test de
+ *  Résistance ou Inconscient, LDB 18 l.74) armés sur `target` (`Trauma.critTrigger`) que le critique COURANT
+ *  (à `location`) fait feu : pour chaque signature DISTINCTE dont le personnage porte l'État `whileCondition`
+ *  et dont la `location` correspond (ou est absente), un Test de sauvegarde `resist` (valeur `resistVal`, RNG
+ *  seedé) dont l'ÉCHEC renvoie ses `onFail`. Lu au point unique de résolution (rollCritical/resolveAACritical) ;
+ *  n'arme rien et ne consomme AUCUN RNG en l'absence de déclencheur (patron partagé des escalades). */
+export function fireCritTriggers(target: Combatant, location: HitLocation, resistVal: number, rng: RNG = defaultRNG): GameOp[] {
+  const out: GameOp[] = [];
+  const seen = new Set<string>();
+  for (const t of target.traumas ?? []) {
+    const trig = t.critTrigger;
+    if (!trig) continue;
+    if (trig.location && trig.location !== location) continue;
+    if (!(target.conditions ?? []).some((c) => c.name === trig.whileCondition)) continue;
+    const key = `${trig.location ?? ''}|${trig.whileCondition}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const res = rollTest(resistVal, trig.resist.difficulty, rng);
+    if (!res.success) out.push(...trig.resist.onFail.map((o) => ({ ...o })));
+  }
+  return out;
 }
 
 /** États Hémorragique octroyés par la RÉOUVERTURE des plaies critiques de `c` (LDB 18 / AA 07) lorsqu'il

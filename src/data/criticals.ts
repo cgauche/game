@@ -64,6 +64,22 @@ export interface CritEscalation {
    *  `needsSurgery`) que la Chirurgie retire ; le déclencheur est `reinjuryBleed` au point d'application des
    *  Dégâts localisés (`applyAttackResult`/Projectile). `label` = nom de la plaie (liste de Chirurgie). */
   bleedOnReinjury?: { amount: number; label: string };
+  /** « Si vous tombez une seconde fois sur cette blessure… » (Blessure majeure à l'oreille, LDB 18 l.71 /
+   *  AA 07 l.96) : à la 2e OCCURRENCE de CETTE entrée sur le personnage (compteur `critEntriesSuffered`),
+   *  l'effet ALTERNATIF s'applique — `traumas` REMPLACE les séquelles de base (perte auditive partielle →
+   *  Surdité totale), `ops` s'AJOUTE à l'effet immédiat de base. Évalué par `rollCritical`/`resolveAACritical`. */
+  onRepeat?: { traumas?: string[]; ops?: GameOp[] };
+  /** « Si vous recevez une autre Blessure critique à la tête alors que vous êtes Exténué… » (Commotion
+   *  cérébrale, LDB 18 l.74) : `stampCriticalEscalation` pose une séquelle porteuse de `Trauma.critTrigger`
+   *  (dédupliquée) ; tant que le personnage porte l'État `whileCondition`, tout critique SUBSÉQUENT à
+   *  `location` (ou toute Localisation si absente) impose le Test de sauvegarde `resist` (échec → ses `onFail`),
+   *  évalué par `fireCritTriggers` au point unique de résolution. `label` = nom de la séquelle affichée. */
+  onNextCritWhileCondition?: {
+    label: string;
+    location?: HitLocation;
+    whileCondition: string;
+    resist: { difficulty: Difficulty; onFail: GameOp[] };
+  };
 }
 export type CritTable = CritEntry[];
 

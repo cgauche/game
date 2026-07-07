@@ -1195,6 +1195,9 @@ export function applyCriticalToTarget(
   const aaTrivial = !ctx?.critTwice && rule('combat-aa-blessures') === 'aa' && aaCriticalIsTrivial(crit.location, crit.roll);
   if (!aaTrivial) target.criticalWounds = (target.criticalWounds ?? 0) + 1;
   target.tookCriticalThisFight = true; // fin de combat : Résistance Très Facile (+60) ou Infection Mineure (LDB 20 l.72)
+  // Historique d'occurrence PAR ID D'ENTRÉE (LDB 18 l.71) : appendé après résolution — persiste à vie (jamais
+  // réinitialisé au combat). `rollCritical`/`resolveAACritical` l'ont LU avant (`onRepeat` sur une 2e occurrence).
+  target.critEntriesSuffered = [...(target.critEntriesSuffered ?? []), crit.entryId];
   log.push(crit.log);
   const revealLines = [crit.log];
   // Effets DÉTAILLÉS pour la modale enrichie : chaque trauma (Amputation, Fracture…) AVEC son explication

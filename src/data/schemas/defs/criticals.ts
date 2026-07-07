@@ -4,7 +4,7 @@
  * (`src/data/criticals.ts`).
  */
 import { z } from 'zod';
-import { gameOpSchema, difficultySchema } from '../common';
+import { gameOpSchema, difficultySchema, hitLocationSchema } from '../common';
 
 export const file = 'criticals.json';
 
@@ -28,6 +28,26 @@ export const critEscalationSchema = z.strictObject({
   // n'a pas été recousue par Chirurgie, chaque nouveau Dégât à la MÊME Localisation octroie `amount` État
   // Hémorragique. Stampé par `stampCriticalEscalation` en séquelle chirurgicale (`bleedOnReinjury` + `needsSurgery`).
   bleedOnReinjury: z.strictObject({ amount: z.number(), label: z.string() }).optional(),
+  // « Si vous tombez une seconde fois sur cette blessure… » (Blessure majeure à l'oreille, LDB 18 l.71 / AA
+  // 07 l.96) : effet ALTERNATIF à la 2e occurrence de l'entrée (`onRepeat.traumas` remplace les séquelles de
+  // base, `onRepeat.ops` s'ajoute à l'effet immédiat). Évalué par `rollCritical`/`resolveAACritical`.
+  onRepeat: z
+    .strictObject({
+      traumas: z.array(z.string()).optional(),
+      ops: z.array(gameOpSchema).optional(),
+    })
+    .optional(),
+  // « Si vous recevez une autre Blessure critique à la tête alors que vous êtes Exténué… » (Commotion
+  // cérébrale, LDB 18 l.74) : séquelle porteuse d'un `critTrigger` — tant que `whileCondition` tient, tout
+  // critique subséquent à `location` impose le Test `resist`. Stampé par `stampCriticalEscalation`.
+  onNextCritWhileCondition: z
+    .strictObject({
+      label: z.string(),
+      location: hitLocationSchema.optional(),
+      whileCondition: z.string(),
+      resist: z.strictObject({ difficulty: difficultySchema, onFail: z.array(gameOpSchema) }),
+    })
+    .optional(),
 });
 
 const critEntrySchema = z.strictObject({

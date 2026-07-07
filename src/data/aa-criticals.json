@@ -177,6 +177,16 @@
       "max": 50,
       "name": "Blessure majeure à l'oreille",
       "blessures": 3,
+      "traumas": [
+        "perte-auditive-partielle"
+      ],
+      "escalation": {
+        "onRepeat": {
+          "traumas": [
+            "surdite"
+          ]
+        }
+      },
       "desc": "Le coup endommage votre oreille. Vous subissez une pénalité permanente de –20 à tout Test ayant un rapport avec l'audition. Si vous subissez de nouveau ce résultat, vous perdez totalement l'audition."
     },
     {
