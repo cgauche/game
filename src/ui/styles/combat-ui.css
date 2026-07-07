@@ -367,7 +367,7 @@ textarea:focus {
 
 /* Beat d'OUVERTURE de combat (symétrique de .victory-overlay) — décoratif, ne bloque rien. */
 .combat-splash { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; pointer-events: none; }
-.combat-splash-inner { text-align: center; animation: combat-splash-in 1.7s ease-out forwards; }
+.combat-splash-inner { text-align: center; animation: combat-splash-in 2.7s ease-out forwards; }
 .combat-splash-word {
   font-family: var(--font-display);
   font-size: clamp(40px, 12vw, 120px);
@@ -385,7 +385,7 @@ textarea:focus {
   100% { opacity: 0; transform: scale(1.02); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .combat-splash-inner { animation: combat-splash-fade 1.3s ease-out forwards; }
+  .combat-splash-inner { animation: combat-splash-fade 2.3s ease-out forwards; }
 }
 @keyframes combat-splash-fade { 0%, 68% { opacity: 1; } 100% { opacity: 0; } }
 

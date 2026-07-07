@@ -1,15 +1,36 @@
 import { PortraitTile } from './PortraitTile';
 import { ALLY_TINT, ENEMY_TINT } from '../gameIso/teamColors';
 import { strikesLast } from '../engine/qualities/dispatch';
+import { baseWithTraits } from '../engine/characteristics';
+import { talentInitiativeBonus } from '../engine/combatFeatures/dispatch';
+import { rule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
 import { Icon } from './Icon';
+
+/** Infobulle détaillant le calcul d'Initiative (`rollInitiative`, `state/combatSetup.ts`) pour le
+ *  badge `.is-score` — décomposition disponible SANS inventer la valeur d'un d10 non conservé dans
+ *  l'état (méthodes `roll-i`/`roll-bi`, LDB 13 l.40). */
+function initiativeTitle(c: Combatant): string {
+  const base = baseWithTraits(c, 'I');
+  const talent = talentInitiativeBonus(c);
+  const talentPart = talent ? ` + Instinctif(${talent})` : '';
+  switch (rule('combat-init-method')) {
+    case 'fixed-i':
+      return `Init(${base})${talentPart} = ${c.initiative}`;
+    case 'roll-bi':
+      return `d10 + BonusInit + BonusAg${talentPart} = ${c.initiative} (détail du jet non conservé)`;
+    default: // 'roll-i'
+      return `d10 + Init(${base})${talentPart} = ${c.initiative} (détail du jet non conservé)`;
+  }
+}
 
 /**
  * Frise d'INITIATIVE (haut du champ, façon BG3) : une tuile-portrait par combattant dans l'ordre
  * du Round (`battle.order`), cadre = teinte d'ÉQUIPE (vert allié / rouge ennemi — la forme
  * pleine/tirets du cadre vient de RigPortrait, R9 daltonisme), actif = or + marqueur, KO grisé.
  * Badge de score d'Initiative (LDB 13) en coin de chaque tuile (héros + ennemis), sablier si arme
- * Lente. Pendant la pause de début de Round (LDB ch.17 l.27), badge de pré-emption (Icon ui/preempt)
+ * Lente — visible UNIQUEMENT pendant la pause d'ouverture/de Round (`turn === -1`, LDB ch.17 l.27),
+ * masqué une fois le tour engagé (retour playtest #205). Pendant cette pause, badge de pré-emption (Icon ui/preempt)
  * sous les héros éligibles — gratuit (arme Rapide) =
  * classe `.free`, sinon coût en Chance affiché. Toggle d'inspection au bout. Pur à props — câblé
  * par CampaignView.
@@ -61,10 +82,12 @@ export function InitiativeStrip(p: InitiativeStripProps) {
               onMouseEnter={() => p.onHover?.(id)}
               onMouseLeave={() => p.onHover?.(null)}
             >
-              <span className={`is-score${strikesLast(c.weapons) ? ' lente' : ''}`}
-                title={strikesLast(c.weapons) ? `Initiative ${c.initiative} — arme Lente : frappe en dernier` : `Initiative ${c.initiative}`}>
-                {c.initiative}{strikesLast(c.weapons) ? <> <Icon id="ui/wait" size={10} /></> : null}
-              </span>
+              {p.turn === -1 && (
+                <span className={`is-score${strikesLast(c.weapons) ? ' lente' : ''}`}
+                  title={strikesLast(c.weapons) ? `${initiativeTitle(c)} — arme Lente : frappe en dernier` : initiativeTitle(c)}>
+                  {c.initiative}{strikesLast(c.weapons) ? <> <Icon id="ui/wait" size={10} /></> : null}
+                </span>
+              )}
               <PortraitTile
                 c={c}
                 ring={isHero ? ALLY_TINT : ENEMY_TINT}

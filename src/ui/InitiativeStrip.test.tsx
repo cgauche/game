@@ -29,12 +29,21 @@ describe('InitiativeStrip', () => {
   it('badge de score d’Initiative rendu pour héros ET ennemis', () => {
     const { h, foe } = fixtures();
     const html = renderToStaticMarkup(
-      <InitiativeStrip order={['e1', 'h1']} turn={0} combatants={[h, foe]} over={false}
+      <InitiativeStrip order={['e1', 'h1']} turn={-1} combatants={[h, foe]} over={false}
         canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
     );
     expect(html).toContain('is-score');
     expect(html).toContain('42'); // initiative du héros
     expect(html).toContain('31'); // initiative de l'ennemi
+  });
+
+  it('badge de score d’Initiative absent une fois le combat engagé (#205)', () => {
+    const { h, foe } = fixtures();
+    const html = renderToStaticMarkup(
+      <InitiativeStrip order={['e1', 'h1']} turn={1} combatants={[h, foe]} over={false}
+        canFirstIds={[]} inspectEnabled={false} onToggleInspect={noop} onActivate={noop} onPromote={noop} />,
+    );
+    expect(html).not.toContain('is-score');
   });
 
   it('pause de début de Round : badge de pré-emption (is-first) sur les héros éligibles', () => {
