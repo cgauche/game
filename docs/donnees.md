@@ -186,7 +186,50 @@ Leçon : deux mécaniques « ram » homonymes (brise-porte ADE II ↔ collision 
 sourcé, testé** — pas un doublon. Un nom partagé n'autorise JAMAIS à fusionner ni à dupliquer : vérifier
 le CONCEPT (§C), pas le mot.
 
-## §E — À COLLER DANS UN BRIEF D'AGENT « DONNÉE »
+## §E-bis — Contrat de schéma (`src/data/schemas/`)
+
+Chaque `src/data/*.json` valide contre un schéma zod **STRICT** — le contrat de donnée (Lot 1,
+94/94 datasets sous contrat). Trois pièces :
+
+- **`src/data/schemas/defs/<nom>.ts`** — 1 def PAR dataset (même basename que le `.json`), exporte
+  `file` (le nom de fichier) et `schema` (`z.ZodTypeAny`, racine = la forme EXACTE du JSON — tableau
+  ou objet à sous-catalogues). `characteristics.ts` est l'EXEMPLAIRE de la convention. Champs de
+  référence commun (`source.book`/`source.page`) : `sourceRefSchema` (`src/data/schemas/common.ts`).
+- **`src/data/schemas/_registry.generated.ts`** — GÉNÉRÉ par `node scripts/gen-registry.mjs`
+  (`npm run gen`), scanne `defs/` et exporte `SCHEMA_DEFS: SchemaDef[]`. Ne JAMAIS éditer à la main.
+- **`PENDING`** dans `src/data/schema-contract.test.ts` — la liste des `.json` encore sans schéma.
+  **Vide** depuis la fin de la migration : tout nouveau dataset naît AVEC son def, jamais en PENDING
+  transitoire.
+
+**Portes qui font respecter le contrat :**
+- `src/data/schema-contract.test.ts` (CI/`npm test`) : (a) chaque dataset de `SCHEMA_DEFS` valide
+  son JSON réel, (b) EXHAUSTIVITÉ (tout `.json` est registré ou dans `PENDING`), (c) CLIQUET
+  (`PENDING` ne peut pas contenir un fichier déjà schématisé).
+- `scripts/guards/validate-data.mts` (pre-commit, `scripts/git-hooks/pre-commit.mjs`) : sur les
+  `.json` STAGÉS, reparse et revalide contre `SCHEMA_DEFS` (Node/tsx, hors Vitest) ; un fichier sans
+  schéma enregistré est ignoré silencieusement (ne peut pas arriver hors PENDING, cf. ci-dessus).
+
+**Geste « ajouter un dataset »** : créer le `.json` **et** `src/data/schemas/defs/<nom>.ts` dans le
+même commit, puis `npm run gen` (régénère `_registry.generated.ts`) — sinon la garde EXHAUSTIVITÉ
+échoue (orphelin ni registré ni PENDING).
+
+## §E-ter — Les deux espaces de clés « race » (species ⇄ rig)
+
+Deux conventions de nommage de race coexistent, **par dessein**, DÉCOUPLÉES :
+
+- **espace « données de personnage »** (`species.refChar`, ex. `Haut Elfe`, `Elfe Sylvain`) — clé de
+  `names.json`, `careers.json`, `eyes.json`, `hairs.json`, `characteristics.json`, `details.json`.
+- **espace « rig »** (id d'apparence, sûr pour nom de fichier, ex. `Haut-Elfe`, `Elfe sylvain`) — id
+  de `raceAppearance.json` et des defs de `src/gameIso/rig/`.
+
+`speciesRace.json` (consommé via `baseSpeciesOf`) est le **pont UNIQUE** species→rig — 5 des 7 races
+jouables sont identiques d'un espace à l'autre, seuls les elfes divergent par tiret/casse ; ce
+découplage est **intentionnel** (unifier les deux espaces casserait l'un des deux clans, chacun avec
+ses dizaines de fichiers). Garde : `src/data/names-species-keyspaces.test.ts` — échoue si `names.json`
+dérive hors de l'espace `refChar`, si le pont species→rig cesse d'être 1:1, ou si une clé d'un espace
+se met à ressembler à une clé de l'autre sans être le couple ponté sanctionné.
+
+## §F — À COLLER DANS UN BRIEF D'AGENT « DONNÉE »
 
 > Tu vas ajouter/curer une entrée dans `src/data/*.json`. Discipline OBLIGATOIRE :
 > 1. **CHECK-FIRST** : `grep -rniE '<id>|<label>|<concept>' src/data/*.json`. Le concept vit peut-être
