@@ -1,19 +1,7 @@
 /**
  * Schéma de `creatures.json` — le BESTIAIRE (472 entrées), miroir de `CreatureData`
  * (`src/data/index.ts:504-550`). GROS dataset : inventaire de clés fait par script node sur
- * les 472 entrées (histogramme complet, pas d'échantillonnage) — cf. anomalies ci-dessous.
- *
- * ANOMALIES relevées (à rapporter, PAS corrigées ici) :
- *  1. `nuee-de-nurglings.char` porte une clé littérale `"undefined"` (valeur 35) en plus des 10
- *     abréviations de caractéristique attendues — signe d'une caractéristique perdue lors d'une
- *     migration (clé JS `undefined` stringifiée). `char` reste un `Record<string, number|null>` (le
- *     schéma ACCEPTE donc cette clé structurellement), mais la donnée est fausse : à corriger à la
- *     main (retrouver la bonne abréviation, probablement B/Soc/Dex manquante pour cette entrée).
- *  2. `jaego-roth.trappings` porte `{ id:'crochet', text:'crochet de main' }` — `id` ET `text`
- *     ensemble, alors que `TrappingRef` (`src/data/index.ts:1753`) est une UNION exclusive
- *     (`Ref & {count?}` OU `{text, count?}`). Le schéma reflète l'union stricte → cette entrée fait
- *     ÉCHOUER le parse (vraie incohérence : soit c'est un objet catalogue `crochet` avec juste un
- *     libellé narratif superflu, soit `id` est de trop).
+ * les 472 entrées (histogramme complet, pas d'échantillonnage).
  */
 import { z } from 'zod';
 import { sourceRefSchema, refSchema, countSpecSchema, trappingRefSchema, entityAppearanceSchema } from '../common';
