@@ -108,7 +108,7 @@ import { corruptionGain } from '../engine/corruption';
 import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
 import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty } from '../engine/tests';
-import { effectiveChar, bonus, refreshWounds } from '../engine/characteristics';
+import { effectiveChar, bonus, refreshWounds, volatileCharLines } from '../engine/characteristics';
 import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
 import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
@@ -651,7 +651,14 @@ export function previewAttack(
   const target0 = base + combineMods(mods);
   const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'F'))); // Portée résolue (jet `{bf}` → BF×N) + modificateur de la munition sélectionnée ; null = hors bande
   const inRange = kind === 'ranged' ? (rangeM != null && rangeBandModifier(dist, rangeM) != null) : dist <= reachTiles(weapon);
-  return { weapon, kind, inRange, blocked: false, target: target0, base, mods, dmg, soak };
+  // Décomposition affichée (issue #202) : sépare de `base` les contributions volatiles étiquetées de la
+  // Caractéristique résolue (Bénédiction de Bataille, séquelle…) — `combatValue`/`target` restent identiques
+  // (charLines `uncapped`, cf. `combineMods`).
+  const charKey = weapon.resolveChar ?? (kind === 'melee' ? 'CC' : 'CT');
+  const charLines = volatileCharLines(attacker, charKey);
+  const base2 = base - charLines.reduce((s, l) => s + l.value, 0);
+  const mods2 = [...charLines, ...mods];
+  return { weapon, kind, inRange, blocked: false, target: target0, base: base2, mods: mods2, dmg, soak };
 }
 
 /** Ligne ADVERSE du panneau de jet pré-rempli (modale d'attaque) : ce que le joueur est en droit

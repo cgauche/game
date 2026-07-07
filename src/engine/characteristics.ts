@@ -2,10 +2,11 @@
  * Calculs dérivés des Caractéristiques — Livre de base, chapitre Personnage.
  */
 import { CharKey, Characteristics, Combatant } from './types';
-import { traumaCharPenalties, passiveCharSum } from './trauma';
+import { traumaCharPenalties, traumaCharPenaltiesLabeled, passiveCharSum } from './trauma';
 import { traitCharMods } from './traits/dispatch';
 import { SizeCategory, woundsForSize, effectiveSize } from './size';
 import { findTalentById } from '../data';
+import type { ModLine } from './combat';
 
 /** Bonus de Caractéristique = chiffre des dizaines (ex. 37 → 3). */
 export function bonus(value: number): number {
@@ -27,6 +28,15 @@ export function baseWithTraits(c: Combatant, key: CharKey): number {
   return c.characteristics[key] + (traitCharMods(c.liveTraits)[key] ?? 0);
 }
 
+/** Pool des contributions VOLATILES étiquetées à une Caractéristique (effets actifs + pénalités passives
+ *  non-cumul) — source UNIQUE pour `effectiveChar` (Σ meilleur bonus + pire pénalité) et `volatileCharLines`
+ *  (affichage, issue #202). Sépare la BASE (permanente : `characteristics` + `passiveCharSum`) du pool. */
+function volatileCharEntries(c: Combatant, key: CharKey): { label: string; value: number }[] {
+  const entries = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => ({ label: e.label, value: e.bonus }));
+  entries.push(...traumaCharPenaltiesLabeled(c, key).map((p) => ({ label: p.label, value: p.mod })));
+  return entries;
+}
+
 /**
  * Valeur effective d'une Caractéristique, modifiée par les effets magiques
  * actifs. Les bonus/pénalités ne se cumulent pas : seuls le MEILLEUR bonus et la
@@ -39,15 +49,33 @@ export function effectiveChar(c: Combatant, key: CharKey): number {
   // Sociabilité »…) — s'ajoutent à la BASE (hors pool non-cumul : un corps transformé n'est pas un bonus
   // magique), via le collecteur passif unifié (kind `intrinsèque`, sommé).
   base += passiveCharSum(c, key);
-  const mods = (c.activeEffects ?? []).filter((e) => e.char === key).map((e) => e.bonus);
   // Pénalités PASSIVES non-cumul (pool « pire pénalité », LDB l.168) du collecteur unifié : traumatisme
   // (LDB 18), maladie (LDB 20 : fièvre −10 Physique/Social) et faim (LDB 18 l.422 : −10 F/E puis −10 ailleurs)
   // — toutes en charMod non-`intrinsèque`, gating (Détermination…) déjà appliqué par le collecteur.
-  mods.push(...traumaCharPenalties(c, key));
+  const mods = volatileCharEntries(c, key).map((e) => e.value);
   if (mods.length === 0) return base;
   const bestBonus = Math.max(0, ...mods.filter((m) => m > 0));
   const worstPenalty = Math.min(0, ...mods.filter((m) => m < 0));
   return base + bestBonus + worstPenalty;
+}
+
+/** Lignes ÉTIQUETÉES (≤2) du MEILLEUR bonus et de la PIRE pénalité volatiles gagnants du pool non-cumul
+ *  (issue #202 — affichage dans la modale d'attaque). `uncapped` : hors plafond « Combiner les Difficultés »
+ *  (comme l'Avantage, `combat.ts`) — ces valeurs sont déjà dans `effectiveChar`, pas de nouveau plafond. */
+export function volatileCharLines(c: Combatant, key: CharKey): ModLine[] {
+  const entries = volatileCharEntries(c, key);
+  const bonuses = entries.filter((e) => e.value > 0);
+  const penalties = entries.filter((e) => e.value < 0);
+  const lines: ModLine[] = [];
+  if (bonuses.length) {
+    const best = bonuses.reduce((a, b) => (b.value > a.value ? b : a));
+    lines.push({ label: best.label, value: best.value, uncapped: true });
+  }
+  if (penalties.length) {
+    const worst = penalties.reduce((a, b) => (b.value < a.value ? b : a));
+    lines.push({ label: worst.label, value: worst.value, uncapped: true });
+  }
+  return lines;
 }
 
 /**

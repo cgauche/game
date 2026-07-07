@@ -873,14 +873,27 @@ export function passiveTestMod(c: Combatant, charKey: CharKey): number {
   return pmods(c, 'testMod', true).filter((o) => o.char === charKey).reduce((s, o) => s + o.amount, 0);
 }
 
+/** Libellé FR d'un `kind` de pénalité de Caractéristique volatile, pour l'affichage étiqueté (issue #202). */
+const CHAR_PENALTY_KIND_LABEL: Partial<Record<PassiveKind, string>> = {
+  douleur: 'Séquelle', maladie: 'Maladie', faim: 'Faim/Soif', ivresse: 'Ivresse', etat: 'État',
+};
+
+/** Variante ÉTIQUETÉE de `traumaCharPenalties` : mêmes valeurs, avec le `kind` PASSIF d'origine (pour
+ *  l'affichage — issue #202). Source UNIQUE : `traumaCharPenalties` en dérive (`.map((p) => p.mod)`). */
+export function traumaCharPenaltiesLabeled(c: Combatant, key: CharKey): { kind: PassiveKind; label: string; mod: number }[] {
+  return passiveMods(c)
+    .filter((m) => m.op.op === 'charMod' && !isAdditiveKind(m.kind) && m.op.char === key && m.op.mod < 0)
+    .map((m) => {
+      const kind = m.kind ?? 'intrinsèque';
+      return { kind, label: CHAR_PENALTY_KIND_LABEL[kind] ?? kind, mod: (m.op as Extract<GameOp, { op: 'charMod' }>).mod };
+    });
+}
+
 /** Pénalités de Caractéristique PASSIVES non-`intrinsèque` (valeurs négatives, pour le pool « pire pénalité ») :
  *  traumatismes (LDB 18), maladies (LDB 20) et faim (LDB 18 l.422), toutes sources confondues via le collecteur.
  *  Le gating (Détermination/Insensible/prothèse selon le `kind`) est déjà appliqué par `passiveMods`. */
 export function traumaCharPenalties(c: Combatant, key: CharKey): number[] {
-  // `passiveMods` applique déjà le gating séquelle (Détermination/Insensible/prothèse). Le charMod de SORT
-  // est lu à part par effectiveChar (e.char/e.bonus) → non émis par passiveMods. `additive=false` exclut les
-  // charMods de mutation/qualité (intrinsèque, sommés dans la base par effectiveChar) → pas de double comptage.
-  return pmods(c, 'charMod', false).filter((o) => o.char === key).map((o) => o.mod).filter((p) => p < 0);
+  return traumaCharPenaltiesLabeled(c, key).map((p) => p.mod);
 }
 
 /** Pire pénalité de mobilité/Esquive due aux traumatismes de jambe (≤ 0 ; non-cumul, LDB l.20). Une prothèse

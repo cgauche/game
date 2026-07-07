@@ -129,6 +129,18 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
     expect(p.base + combineMods(p.mods)).toBe(p.target);
     expect(p.base).toBe(50); // CC 50, pas de Spé
   });
+
+  it('issue #202 — buff de Caractéristique (Bénédiction de Bataille +10 CC) : target INCHANGÉ, base amputé, ligne étiquetée uncapped', () => {
+    const a = combatant({ id: 'A', activeEffects: [{ label: 'Bénédiction de Bataille', char: 'CC', bonus: 10 }] as never });
+    const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 1, y: 0 } });
+    const withoutBuff = previewAttack(mkGet([combatant({ id: 'A' }), b]), combatant({ id: 'A' }), b);
+    const withBuff = previewAttack(mkGet([a, b]), a, b);
+    expect(withBuff.target).toBe(withoutBuff.target + 10); // le buff reste bien PORTÉ au jet (byte-identique à l'avant-split)
+    expect(withBuff.base).toBe(withoutBuff.base); // le +10 est sorti de `base` vers une ModLine
+    expect(withBuff.base + combineMods(withBuff.mods)).toBe(withBuff.target);
+    const line = withBuff.mods.find((m) => m.label === 'Bénédiction de Bataille');
+    expect(line).toEqual({ label: 'Bénédiction de Bataille', value: 10, uncapped: true });
+  });
 });
 
 describe('attackPlan — gate PRÉ-clic du tir (parité avec le refus de sort)', () => {
