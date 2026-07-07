@@ -1139,6 +1139,11 @@ export interface GameState extends RollFlowActionsMap {
   pendingManannPriest: import('./seaVoyageFlow').PendingManannPriest | null;
   /** Résout le choix : `true` = payer la bénédiction, `false` = réduire l'Humeur de Manann de 4d10. */
   resolveManannPriest: (pay: boolean) => void;
+  /** Permission de RELÂCHE À TERRE en attente de CHOIX, posée à l'accostage AVANT l'événement de
+   *  port (MDG 15 l.245). */
+  pendingShoreLeave: import('./seaVoyageFlow').PendingShoreLeave | null;
+  /** Résout le choix : `true` = relâche accordée, `false` = refusée (gate l'Embrigadement/Fête de Manann). */
+  resolveShoreLeave: (allow: boolean) => void;
 }
 
 /** Navire que le groupe possède/commande en campagne — survit aux jours et aux combats (≠ la coque
@@ -2011,6 +2016,7 @@ export const useGame = create<GameState>((set, get) => ({
   landEvalWine: (cargoId) => landMarketFlow.landEvalWine(get, set, cargoId),
   seaActivitiesConfirm: (picks) => seaActivities.seaActivitiesConfirm(get, set, picks),
   resolveManannPriest: (pay) => seaVoyageFlow.resolveManannPriest(get, set, pay),
+  resolveShoreLeave: (allow) => seaVoyageFlow.resolveShoreLeave(get, set, allow),
   setTravelRole: (heroId, role) => set({
     party: get().party.map((h) => h.id === heroId ? { ...h, ...(role ? { travelRole: role } : { travelRole: undefined }) } : h),
   }),

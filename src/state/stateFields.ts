@@ -91,6 +91,9 @@ const STATE_FIELDS = {
   // Survit à `transitionTo` : posé JUSTE avant la transition vers la scène de port (resolvePortArrival),
   // il doit rester actif dans la nouvelle scène (comme pendingSeaActivities ci-dessus).
   pendingManannPriest: { init: null, resetOn: [] },
+  // Posé à l'accostage AVANT toute transition de scène (celle-ci n'intervient qu'à la résolution du
+  // choix, `resolveShoreLeave`) — aucune scène à survivre, mais transitoire de voyage comme les autres.
+  pendingShoreLeave: { init: null, resetOn: [] },
 } satisfies { [K in keyof GameState]?: { readonly init: GameState[K]; readonly resetOn: readonly ResetScope[] } };
 
 /** Clés du manifeste — SOURCE des champs transitoires, dérivée de `STATE_FIELDS` (plus de double-liste). */

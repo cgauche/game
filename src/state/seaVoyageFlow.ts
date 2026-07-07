@@ -31,7 +31,7 @@ import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
 import { openRest, placesOfKind } from './restFlow';
 import { dayIndex } from './upkeep';
-import { placeById, type WorldMap } from './worldMap';
+import { placeById, type WorldMap, type MapPlace } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { PendingCrewTest, ShipManeuverParticipant } from './pendings';
 import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta } from './shipCrew';
@@ -552,11 +552,16 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
   const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...sea.lines, ...lines, ...evening] };
 
   if (plan.km - kmDone < 1e-9 && to) {
-    // ARRIVÉE : événement de port (2d10 ± Humeur, ch.15 l.127-129) puis transition. La distance de la
-    // traversée est NOTÉE sur le navire (vente à un port producteur : « plus de 100 milles », l.366).
+    // ARRIVÉE : la distance de la traversée est NOTÉE sur le navire (vente à un port producteur :
+    // « plus de 100 milles », l.366). Le CHOIX « relâche à terre » (MDG 15 l.245) se tranche AVANT
+    // le tirage de l'événement de port (`resolveShoreLeave` enchaîne `resolvePortArrival`).
     set({ travelPlan: null, ...(get().vessel ? { vessel: { ...get().vessel!, lastVoyageMilles: plan.km } } : {}) });
     log(get, set, [`— Accostage à ${to.label} —`]);
-    resolvePortArrival(get, set, to.port, battleRng());
+    if (to.port) {
+      set({ pendingShoreLeave: { to } });
+      return;
+    }
+    resolvePortArrival(get, set, to.port, battleRng(), true);
     get().transitionTo(to.scene, to.entry);
     return;
   }
@@ -1132,7 +1137,22 @@ export interface PendingManannPriest {
   cost: Money;
 }
 
-export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undefined, rng: RNG): void {
+/** Permission de faire RELÂCHE À TERRE en attente de CHOIX joueur (MDG 15 l.245), posée à l'accostage
+ *  AVANT le tirage de l'événement de port — `resolveShoreLeave` tranche puis enchaîne `resolvePortArrival`
+ *  et la transition de scène (le lieu d'arrivée `to` porte la scène/l'entrée à rejoindre). */
+export interface PendingShoreLeave {
+  to: MapPlace;
+}
+
+/** ÉVÉNEMENT DE PORT (2d10 ± Humeur, ch.15 l.127-129 + Tableau l.239-263). `shoreLeave` = permission de
+ *  faire relâche à terre accordée par le capitaine (`resolveShoreLeave`, MDG 15 l.245) : gate DEUX entrées
+ *  de la table qui la référencent nommément — Embrigadement (l.245, « cet événement n'a pas lieu » si
+ *  refusée) et Fête de Manann (l.260, le bonus d'Humeur suppose « le capitaine autorise… à faire relâche »).
+ *  Les 19 autres entrées (Prêtre de Manann, Contrôle à quai, Tempête, Port désert, Gangs des quais, La
+ *  tache noire, Pénuries, Pas d'événement, Constructeur itinérant, Trop beau pour être vrai, Beau temps,
+ *  Passager clandestin, Rumeurs commerciales, Offre de mission, Bonne pêche, Saturation de produits…) ne
+ *  mentionnent pas la relâche à terre — vérifié entrée par entrée (MDG 15 l.243-263) — donc non gatées. */
+export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undefined, rng: RNG, shoreLeave = true): void {
   const vessel = get().vessel;
   const mood = vesselManann(vessel);
   const { roll, hours, event } = rollPortEvent(mood.score, rng);
@@ -1143,6 +1163,9 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
   const ship = voyageShip(get)?.hull;
   switch (event.kind) {
     case 'fete-manann':
+      // MDG 15 l.260 : le bonus d'Humeur suppose la relâche autorisée ET l'équipage sincèrement
+      // joint aux festivités — modélisé par la même permission que l'Embrigadement (l.245).
+      if (!shoreLeave) { log(get, set, ['Relâche refusée : l\'équipage ne se joint pas aux festivités de Manann.']); break; }
       if (vessel) set({ vessel: { ...vessel, manann: addManann(mood, rollDice(2, 10, rng)) } });
       break;
     case 'pretre-manann': {
@@ -1158,6 +1181,9 @@ export function resolvePortArrival(get: Get, set: Set, port: PortProfile | undef
       if (ship) for (const l of applyShipMoraleDelta(get, set, ship, -rollDice(1, 10, rng))) log(get, set, [l]);
       break;
     case 'embrigadement': {
+      // « Si vous avez refusé la permission de faire relâche à terre à votre équipage, cet événement
+      // n'a pas lieu » (MDG 15 l.245) — gate sur la décision `resolveShoreLeave`.
+      if (!shoreLeave) { log(get, set, ['Relâche refusée : l\'Embrigadement n\'a pas lieu (l\'équipage reste à bord).']); break; }
       // « Vous perdez 2d10 membres d'équipage » (MDG 15 l.245) : perte PERSISTÉE puis SÉQUENCE de
       // recouvrement (Ragot Intermédiaire → rançon 2d10 CO OU Discrétion Complexe ; échec → 1d10 de
       // plus) — cascade influençable dans `embrigadementFlow`. Difficultés en donnée (`sea-events.json`).
@@ -1205,4 +1231,19 @@ export function resolveManannPriest(get: Get, set: Set, pay: boolean): void {
     return;
   }
   tellManann(get, set, -4);
+}
+
+/** Résout le choix « Relâche à terre » (MDG 15 l.245) posé à l'accostage, AVANT le tirage de
+ *  l'événement de port : `allow` accordé → Embrigadement/Fête de Manann peuvent se produire
+ *  normalement ; refusé → l'Embrigadement « n'a pas lieu » et la Fête de Manann perd son bonus
+ *  d'Humeur (gate porté par `resolvePortArrival`). Enchaîne le tirage puis la transition de scène. */
+export function resolveShoreLeave(get: Get, set: Set, allow: boolean): void {
+  const p = get().pendingShoreLeave;
+  if (!p) return;
+  set({ pendingShoreLeave: null });
+  log(get, set, [allow
+    ? 'Vous autorisez l\'équipage à faire relâche à terre.'
+    : 'Vous refusez à l\'équipage la permission de faire relâche à terre.']);
+  resolvePortArrival(get, set, p.to.port, battleRng(), allow);
+  get().transitionTo(p.to.scene, p.to.entry);
 }
