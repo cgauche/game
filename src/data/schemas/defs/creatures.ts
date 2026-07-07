@@ -26,15 +26,18 @@ const optionalWildcardSchema = z.strictObject({
   note: z.literal('all-traits'),
   label: z.string(),
 });
+const swapGrantSchema = z.union([
+  z.strictObject({ char: z.string(), value: z.number() }),
+  z.strictObject({ skillId: z.string(), spec: z.string().optional(), value: z.number() }),
+]);
 const optionalSwapSchema = z.strictObject({
   note: z.literal('swap'),
   label: z.string(),
   remove: z.array(z.string()),
-  grant: z.union([
-    z.strictObject({ char: z.string(), value: z.number() }),
-    z.strictObject({ skillId: z.string(), spec: z.string().optional(), value: z.number() }),
-  ]),
+  /** Un ou plusieurs octrois (Vouivre ZI : 4 — 3 caractéristiques + 1 compétence). */
+  grant: z.array(swapGrantSchema),
   size: z.string().optional(),
+  wounds: z.number().optional(),
 });
 const optionalEntrySchema = z.union([traitInstanceSchema, optionalWildcardSchema, optionalSwapSchema]);
 

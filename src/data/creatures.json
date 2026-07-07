@@ -49982,10 +49982,12 @@
           "bestial",
           "territorial"
         ],
-        "grant": {
-          "char": "Soc",
-          "value": 15
-        },
+        "grant": [
+          {
+            "char": "Soc",
+            "value": 15
+          }
+        ],
         "size": "grande"
       }
     ],
@@ -54491,10 +54493,12 @@
         "remove": [
           "bestial"
         ],
-        "grant": {
-          "char": "Soc",
-          "value": 20
-        }
+        "grant": [
+          {
+            "char": "Soc",
+            "value": 20
+          }
+        ]
       },
       {
         "id": "territorial"
@@ -54590,6 +54594,34 @@
         "id": "souffle",
         "value": 10,
         "arg": "poison"
+      },
+      {
+        "note": "swap",
+        "label": "Peut perdre Bestial et réduire sa Taille à Grande pour gagner un bonus de +20 en I, Int et Soc, réduire ses B à 42 et gagner Discrétion (Rurale) 65",
+        "remove": [
+          "bestial"
+        ],
+        "grant": [
+          {
+            "char": "I",
+            "value": 20
+          },
+          {
+            "char": "Int",
+            "value": 20
+          },
+          {
+            "char": "Soc",
+            "value": 20
+          },
+          {
+            "skillId": "discretion",
+            "spec": "rurale",
+            "value": 65
+          }
+        ],
+        "size": "grande",
+        "wounds": 42
       }
     ],
     "skills": [],
