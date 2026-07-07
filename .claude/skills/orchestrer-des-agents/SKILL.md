@@ -23,7 +23,10 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    (`model` seul — l'effort vient de la définition du type dans `.claude/agents/*.md`, sinon
    HÉRITE de la session : ultracode = xhigh silencieux) ; définition d'agent épinglée (modèle +
    effort au frontmatter). Workflows lourds SÉQUENTIELS (3 en // = rate-limit serveur, finders
-   morts) ; gros volume → lots séquentiels dans le script.
+   morts) ; gros volume → lots séquentiels dans le script. ⚠ Un type épinglé qui hérite TOUS les
+   outils (`tools:` omis) doit porter `disallowedTools: Agent, Workflow` — sinon l'agent voit son
+   propre type « prévu pour ce travail » dans la liste et se re-délègue sa mission à l'infini
+   (vécu : recetteur → recetteur → recetteur, 2026-07-08).
 4. **Isolation** — agent qui MUTE des fichiers pendant qu'une session // est active →
    `isolation: "worktree"` ; à défaut committer immédiatement au retour. Deux strays d'agents
    consécutifs dans l'arbre principal = j'applique moi-même le patch chirurgical connu.
