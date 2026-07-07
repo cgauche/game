@@ -13,7 +13,7 @@ import type {
   GameState,
   PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, ShipManeuverParticipant, PendingShipBattery, ShipBatteryParticipant, PendingCrewTest, PendingShanty, PendingFocus, PendingDispel, PendingFrenzy, PendingApproach, PendingWard,
   PendingReload, PendingStateRecovery, PendingTest, PendingAppraise, PendingBargain, PendingHeal, PendingSurgery,
-  PendingCorruption, PendingAttack, PendingDefense, PendingCast, PendingDisengage, PendingAuContact, PendingGrapple,
+  PendingCorruption, PendingAttack, PendingHandGate, PendingDefense, PendingCast, PendingDisengage, PendingAuContact, PendingGrapple,
   PendingCounterspell, CounterParticipant, PendingExtendedTest, ExtendedTestRound,
   PendingForceDoor, ForceDoorParticipant,
   PendingCastOpposition, OppositionParticipant,
@@ -1224,6 +1224,20 @@ export const FLOWS = {
     lens: flatRollLens((p) => p.success ? null : p.target),
   }),
 
+  /** Main ensanglantée (AA l.2569) : Test de Dextérité Accessible (+20) PAR ACTION, AVANT d'ouvrir une
+   *  attaque avec l'arme tenue dans la main gatée. Vrai Test joueur → Résilience GLOBALE (LDB 17 l.68) via
+   *  la lentille (`caps.forced` + verbe `forceSuccess`) ; Chance « +1 DR » par `bumpSL`. Calque `reload`.
+   *  L'issue (RÉUSSITE → ouvre l'attaque ; ÉCHEC → `disarm` + Action consommée) vit dans `handGateConfirm`. */
+  handGate: makeRollFlow<PendingHandGate>({
+    key: 'pendingHandGate',
+    rolled: (p) => p.roll != null,
+    actor: (s, p) => actorIn(s, p.attackerId),
+    caps: { forced: true },
+    resolve: simpleTestResolve((p) => p.skillValue, (p) => p.difficulty, battleRng, { actorless: true }), // valeur Dextérité BAKÉE → actorless
+    outcome: (p) => rollOutcome(p.roll, p.target, p.sl),
+    lens: flatRollLens((p) => p.success ? null : p.target),
+  }),
+
   /** « Se libérer » (Empêtré, Test opposé de Force) / « se rouler au sol » (En flammes, Athlétisme) — LDB 16. */
   recover: makeRollFlow<PendingStateRecovery>({
     key: 'pendingStateRecovery',
@@ -1452,6 +1466,7 @@ export const FLOW_VERBS = {
   maneuver:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   run:          { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
   reload:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
+  handGate:     { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   recover:      { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   focus:        { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'], coop: true },
   dispel:       { kind: 'mono',  verbs: ['roll', 'reroll', 'bonusSL', 'darkPact', 'forceSuccess'] },
@@ -1482,7 +1497,7 @@ export const FLOW_VERBS = {
 const FLOW_HANDLERS = {
   attack: FLOWS.attack, defense: FLOWS.defense, cast: FLOWS.cast, disengage: FLOWS.disengage, flee: FLOWS.flee,
   auContact: FLOWS.auContact, grapple: FLOWS.grapple, trample: FLOWS.trample, battement: FLOWS.battement,
-  distraire: FLOWS.distraire, maneuver: FLOWS.maneuver, run: FLOWS.run, reload: FLOWS.reload, recover: FLOWS.recover,
+  distraire: FLOWS.distraire, maneuver: FLOWS.maneuver, run: FLOWS.run, reload: FLOWS.reload, handGate: FLOWS.handGate, recover: FLOWS.recover,
   focus: FLOWS.focus, dispel: FLOWS.dispel, frenzy: FLOWS.frenzy, approach: FLOWS.approach, ward: FLOWS.ward,
   heal: FLOWS.heal, surgery: FLOWS.surgery, corruption: FLOWS.corruption, test: FLOWS.test,
   activity: FLOWS.activity, bargain: FLOWS.bargain, appraise: FLOWS.appraise, shanty: FLOWS.shanty,

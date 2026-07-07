@@ -23,8 +23,9 @@
  * dont l'usage se récupère par l'acte « Guérison » de l'Infirmerie (Test étendu DR `restoreDR`, `medicFlow`),
  * puis pénalité −10 / 1d10 jours (`recoveryPenalty`) ; le Sonné « jusqu'à Aide Médicale » via `lockedUntil`.
  * #167 modélise l'escalade « 1 doigt de plus par Round » (bras 116-120) et « perte du pied sans Chirurgie sous
- * 1d10 jours » (jambe 106-115). Reste TEXTE : le Test PAR ACTION impliquant la main (bras 46-50, « Main
- * ensanglantée » — pas de hook d'Action dans le moteur, cf. `actGate` qui ne couvre que le Round ; #165).
+ * 1d10 jours » (jambe 106-115). #165 modélise le Test de Dextérité (+20) PAR ACTION de « Main ensanglantée »
+ * (bras 46-50, l.2569) par l'op `handGate` (marqueur PAR-MAIN, gate `attackHandGate` à la déclaration d'attaque,
+ * Échec → op `disarm`).
  */
 import aaJson from '../data/aa-criticals.json';
 import { d100, d10, RNG, defaultRNG } from './dice';

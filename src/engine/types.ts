@@ -1103,6 +1103,11 @@ export interface Combatant {
   woundDressed?: boolean;
   /** Traumatismes subis (LDB 18) — persistants ; effets en-combat lus par effectiveChar/effectiveMovement. */
   traumas?: Trauma[];
+  /** Mains « ensanglantées » par un Critique Main ensanglantée (AA l.2569, op `handGate`) : chaque main
+   *  gatée impose un Test de Dextérité (+20) AVANT toute Action employant l'arme qu'elle tient
+   *  (`attackHandGate`) ; sur un Échec, l'objet glisse (op `disarm`). Le gate tient TANT QUE l'État
+   *  Hémorragique tient — `removeCondition` purge ce marqueur dès que l'Hémorragique tombe à 0. */
+  handGates?: ('main' | 'off')[];
   /** Points de Corruption (LDB 19) — dérive de l'âme vers le Chaos. Gagnés par expositions/
    *  Sombres Pactes/contrecoups magiques ; au-delà de BFM+BE, chaque gain impose un Test de
    *  Résistance ou MUTATION. Persisté. */

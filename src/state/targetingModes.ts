@@ -36,7 +36,6 @@ import { placeCombatant } from './spawn';
 import { mountOf, mountMovement, mountedCombatDistance } from './mount';
 import { pilotedByHuman } from './netOwnership';
 import { afterApproach } from './combatDirector';
-import { startCascade } from './cascade';
 import { ev } from './combatLog';
 import { t } from '../i18n';
 import { bus, EVT } from './bus';
@@ -46,7 +45,7 @@ import {
   trampleTarget, auContactEligible, grappleActionEligible, firedAttackBlock,
   displaceSmaller, fearedSourceTowards, frenzyTarget, applyZoneCrossings,
   placingZoneOf, placedZoneValidAt, commitPlacedZone, overcastTargetCandidates,
-  cleaveTargets, dualStrikeTargets, castZoneSpell, castSpell, spellSightOf,
+  cleaveTargets, dualStrikeTargets, castZoneSpell, castSpell, spellSightOf, openAttackCascade,
 } from './combatFlow';
 
 export type HoverTargeting =
@@ -509,8 +508,8 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   afterApproach(get, approachPath, () => {
     const b = get().battle;
     if (!b || b.over || b.order[b.turn] !== active.id || get().pendingCascade) return;
-    set({ pendingAttack: pa });
-    startCascade(get, set, { title: 'Attaque', icon: 'action/attack', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: active.id }] });
+    // Point PARTAGÉ : gate « Main ensanglantée » (AA l.2569) puis ouverture de la cascade d'attaque.
+    openAttackCascade(get, set, pa, 'Attaque', 'action/attack');
   });
 }
 

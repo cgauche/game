@@ -71,7 +71,9 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   // (Psychologie de COMBAT : PLUS d'intents `psych*` — cascade de Round, via les intents `cascade*` ci-dessus.)
   'frenzyRoll', 'frenzyReroll', 'frenzyDarkPact', 'frenzyForceSuccess', 'frenzyConfirm',
   'frenzyCancel', 'reloadRoll', 'reloadReroll', 'reloadBonusSL', 'reloadDarkPact',
-  'reloadForceSuccess', 'reloadConfirm', 'reloadCancel', 'recoverRoll', 'recoverReroll', 'recoverBonusSL',
+  'reloadForceSuccess', 'reloadConfirm', 'reloadCancel',
+  'handGateRoll', 'handGateReroll', 'handGateBonusSL', 'handGateDarkPact', 'handGateForceSuccess', 'handGateConfirm', 'handGateCancel',
+  'recoverRoll', 'recoverReroll', 'recoverBonusSL',
   'recoverDarkPact', 'recoverForceSuccess', 'recoverConfirm', 'recoverCancel', 'healRoll', 'healReroll',
   'healBonusSL', 'healDarkPact', 'healForceSuccess', 'healConfirm', 'healCancel',
   // Infirmerie (hors combat) : patients / actes / chirurgie + fermeture — l'hôte valide.

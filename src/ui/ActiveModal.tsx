@@ -5,6 +5,7 @@ import { willAutoResolve } from '../state/combatAuto';
 import type { JSX } from 'react';
 import { Icon } from './Icon';
 import { ReloadModal } from './ReloadModal';
+import { HandGateModal } from './HandGateModal';
 import { StateRecoveryModal } from './StateRecoveryModal';
 import { RenounceModal } from './RenounceModal';
 import { MountTargetModal } from './MountTargetModal';
@@ -43,7 +44,7 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   fateSave: FateSaveModal, renounce: RenounceModal,
   battement: BattementModal, distraire: DistraireModal, maneuver: ManeuverModal, reveal: RevealModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, auContact: AuContactModal, grapple: GrappleModal, approach: ApproachModal, ward: WardModal, run: RunModal, shipManeuver: ShipManeuverModal, shipBattery: ShipBatteryModal, crewTest: CrewTestModal, shanty: ShantyModal, focus: FocusModal, dispel: DispelModal,
-  medic: MedicModal, rest: RestModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, stateRecovery: StateRecoveryModal,
+  medic: MedicModal, rest: RestModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, handGate: HandGateModal, stateRecovery: StateRecoveryModal,
   corruption: CorruptionModal, activity: ActivityModal,
 };
 

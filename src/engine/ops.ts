@@ -735,6 +735,12 @@ export type GameOp =
    *  (« Choisissez au hasard l'un de vos deux bras ») → tirage aléatoire (`ctx.rng`). Sans objet tenu
    *  dans cette main : inerte (journalisé). */
   | { op: 'disarm' }
+  /** Main « ensanglantée » (Aux Armes bras 46-50, l.2569 : Main ensanglantée) — pose un marqueur PAR-MAIN
+   *  (`Combatant.handGates`), DISTINCT du compteur global Hémorragique, qui impose un Test de Dextérité
+   *  (+20) AVANT toute Action employant l'arme tenue par cette main (`attackHandGate` ; Échec → op `disarm`).
+   *  Main RÉSOLUE depuis `ctx.location` (convention DROITIER, comme `disarm` : `brasD`→`main`, `brasG`→`off`).
+   *  Le gate tient tant que l'Hémorragique tient (`removeCondition` purge le marqueur à 0). */
+  | { op: 'handGate' }
   /** Perte d'un organe sensoriel PAIRÉ (œil/oreille). Porté par une séquelle ; `escalateSensoryLoss`
    *  compte les `senseLoss` par sens (2 du même → Cécité/Surdité). */
   | { op: 'senseLoss'; sense: PairedSense }
@@ -1830,6 +1836,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         } else {
           lines.push(t('op.disarmNothing', { name: target.name }));
         }
+        break;
+      }
+      case 'handGate': {
+        // Main gatée résolue depuis la Localisation du coup (convention DROITIER partagée avec `disarm`) —
+        // un Critique Main ensanglantée frappe toujours un bras (`brasG`/`brasD`) ; `corps`/absente → au hasard.
+        const hand: 'main' | 'off' = ctx.location === 'brasG' ? 'off' : ctx.location === 'brasD' ? 'main' : rng.int(0, 1) === 0 ? 'main' : 'off';
+        target.handGates = [...(target.handGates ?? []).filter((h) => h !== hand), hand];
+        lines.push(t('op.handGate', { name: target.name }));
         break;
       }
       case 'senseLoss': {

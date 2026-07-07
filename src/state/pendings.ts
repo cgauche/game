@@ -288,6 +288,32 @@ export interface PendingAttack {
   /** Marqueur de pilonnage indirect (cf. `center`) — `attackConfirm` résout l'aire au lieu d'une touche directe. */
   siege?: boolean;
 }
+/** Test de Dextérité (+20) PAR ACTION de « Main ensanglantée » (Aux Armes bras 46-50, l.2569), posé AVANT
+ *  l'ouverture d'une Action d'attaque quand l'arme employée est tenue dans une main gatée (`attackHandGate`).
+ *  Modale INFLUENÇABLE (Chance/Pacte/Résilience — `FLOWS.handGate`, calque `reload`). Sur RÉUSSITE, l'Action
+ *  déclarée s'ouvre (le `pa`/`title`/`icon` FIGÉS — la cascade d'attaque reprend telle quelle) ; sur ÉCHEC,
+ *  l'objet glisse (op `disarm`) et l'Action est consommée. Chemin IA = jet inline forcé côté `doAttack`. */
+export interface PendingHandGate {
+  attackerId: string;
+  actorName: string;
+  /** Main gatée (loadout actif) — pour le `disarm` sur Échec (convention DROITIER `main`/`off`). */
+  hand: 'main' | 'off';
+  skillValue: number; // Dextérité BAKÉE (valeur effective de l'attaquant)
+  difficulty: Difficulty; // 'accessible' (+20 « Accessible »)
+  /** Rempli après « Lancer » ; null tant que le jet n'a pas eu lieu (Chance possible ensuite). */
+  roll: number | null;
+  target: number; // cible effective après difficulté
+  sl: number;
+  success: boolean;
+  rerolled?: boolean;
+  /** Réussite forcée par Résilience (LDB 17 l.73). */
+  forced?: boolean;
+  /** Action d'attaque FIGÉE à rouvrir sur RÉUSSITE (le porteur de données `pendingAttack` + le titre/icône
+   *  de la cascade des 3 sites de déclaration : flux normal / Tir rapide / Pilonnage). Sérialisable (coop). */
+  pa: PendingAttack;
+  title: string;
+  icon: string;
+}
 /** Pilonnage INDIRECT EN COURS (« viser une case », AA p.122-123) : une pièce indirecte SERVIE attend le
  *  POINT D'IMPACT au sol — placeur de zone PARTAGÉ (`placingZoneOf` source 'siege', même gabarit que les
  *  sorts de zone). Le clic-case → `siegeAimCommit` ouvre la modale de tir (`pendingAttack` siège). */

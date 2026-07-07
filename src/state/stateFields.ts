@@ -32,6 +32,7 @@ const STATE_FIELDS = {
   pendingBargain: { init: null, resetOn: [] },
   pendingAppraise: { init: null, resetOn: [] },
   pendingAttack: { init: null, resetOn: ['scene', 'combatStart'] },
+  pendingHandGate: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingSiegeAim: { init: null, resetOn: ['scene', 'combatStart'] },
   actorAim: { init: null, resetOn: ['combatStart'] },
   actorMove: { init: null, resetOn: ['combatStart'] },

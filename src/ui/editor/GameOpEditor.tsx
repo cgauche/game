@@ -119,6 +119,7 @@ const OP_LABEL: Record<GameOp['op'], string> = {
   moveMod: 'Modif. de Mouvement (±N)',
   maxWeaponHands: 'Plafond de mains d’arme',
   disarm: 'Lâcher l’objet tenu (main)',
+  handGate: 'Main ensanglantée (Test par Action)',
   senseLoss: 'Perte sensorielle (œil/oreille)',
   loseTurn: 'Perdre Action + Mouvement',
   weaponRollMod: 'Atout d’arme — modif. de jet (passif)',
@@ -159,7 +160,7 @@ const OP_ICON: Record<GameOp['op'], IconIdInput> = {
   giveTrapping: 'item/misc', perRound: 'ui/wait', summon: 'mechanic/invoke', scheduleRespawn: 'ui/wait',
   zone: 'scenario/trap', polymorph: 'mechanic/invoke', transform: 'mechanic/invoke', endTransform: 'ui/wait',
   lifeSteal: 'condition/bleeding', light: 'fire/flame', skillMod: 'mechanic/stat-mod',
-  moveScale: 'resource/movement', moveMod: 'resource/movement', maxWeaponHands: 'item/weapon', disarm: 'item/weapon',
+  moveScale: 'resource/movement', moveMod: 'resource/movement', maxWeaponHands: 'item/weapon', disarm: 'item/weapon', handGate: 'condition/bleeding',
   senseLoss: 'ui/eye', loseTurn: 'ui/wait', weaponRollMod: 'item/weapon', weaponDamageMod: 'item/weapon',
   armourPierce: 'item/weapon', critOnRoll: 'journal/critical', spendAdvantage: 'flag/focus', rollThreshold: 'nav/dice',
   intoxicate: 'item/consumable', narrative: 'journal/detail',
@@ -178,7 +179,7 @@ const OP_GROUPS: [string, GameOp['op'][]][] = [
   ['Projection & téléportation', ['push', 'teleport', 'chain']],
   ['Soin avancé', ['cureDisease', 'reduceDiseaseDays', 'preventInfection', 'cureCriticalWound', 'diseaseTestMod', 'suppressSymptom']],
   ['Divers', ['suppressPsych', 'suffocate', 'noBreath', 'noHunger', 'weatherWard', 'damageArmour', 'martyr', 'giveTrapping', 'perRound', 'delayed', 'loseTurn', 'actGate', 'removeShipPoste', 'light']],
-  ['Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'senseLoss']],
+  ['Séquelles & mobilité', ['skillMod', 'moveScale', 'moveMod', 'offTerrainMod', 'maxWeaponHands', 'disarm', 'handGate', 'senseLoss']],
   ['Atouts/Défauts d’arme (passifs)', ['weaponRollMod', 'weaponDamageMod', 'armourPierce', 'critOnRoll']],
   ['Contrôle', ['rollThreshold', 'spendAdvantage']],
   ['Création de personnage (Talents)', ['attrMod', 'grantCareerSkill', 'grantCareerTalent']],
@@ -368,6 +369,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'attrMod': return { op: 'attrMod', attr: 'fortune', mod: 1 };
     case 'maxWeaponHands': return { op: 'maxWeaponHands', hands: 1 };
     case 'disarm': return { op: 'disarm' };
+    case 'handGate': return { op: 'handGate' };
     case 'senseLoss': return { op: 'senseLoss', sense: 'vue' };
     case 'loseTurn': return { op: 'loseTurn' };
     case 'removeShipPoste': return { op: 'removeShipPoste' };

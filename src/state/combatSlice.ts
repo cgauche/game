@@ -18,7 +18,7 @@ import { continueRiverDayAfterCascade } from './riverVoyageFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf } from './combatGeometry';
@@ -1394,8 +1394,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // on ouvre donc une cascade à une étape `jet:'attack'` pour le tireur (refermée par attackConfirm).
       // `heldGround: true` : l'interruption est un tir IMMOBILE d'office (elle coûte le Mouvement du tour) → pas
       // de pénalité « Tir en bougeant » (LDB 14), qui n'aurait aucun sens hors du tour du tireur.
-      set({ pendingAttack: { attackerId: hero.id, targetId: target.id, location: null, result: null, interrupt: true, heldGround: true } });
-      startCascade(get, set, { title: 'Tir rapide', icon: 'action/shoot', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: hero.id }] });
+      openAttackCascade(get, set, { attackerId: hero.id, targetId: target.id, location: null, result: null, interrupt: true, heldGround: true }, 'Tir rapide', 'action/shoot');
     },
     // ── Tir rapide : ARMER/DÉSARMER la visée d'un héros pendant la pause (badge de la frise → clic adversaire) ──
     armPreempt: (heroId: string | null) => {
@@ -1678,6 +1677,28 @@ export function createCombatSlice(get: Get, set: Set) {
       if (aiDriven(get(), a) && get().battle) resumeEnemyTurn(get, set);
     },
     reloadCancel: () => set({ pendingReload: null }), // avant le jet : aucun coût
+    // Main ensanglantée (AA l.2569) : « Appliquer » le Test de Dextérité PAR ACTION.
+    handGateConfirm: () => {
+      const { battle, pendingHandGate: pg } = get();
+      if (!battle || !pg || pg.roll == null) return;
+      const attacker = battle.combatants.find((c) => c.id === pg.attackerId);
+      set({ pendingHandGate: null });
+      if (!attacker) return;
+      if (pg.success) {
+        // Réussite : l'Action déclarée s'ouvre TELLE QUELLE (pa/title/icon figés) — `skipGate` pour ne pas re-tester.
+        openAttackCascade(get, set, pg.pa, pg.title, pg.icon, true);
+        return;
+      }
+      // Échec : l'objet glisse (op `disarm`, main gatée). Comme le gate de Bénédiction (`attackWardGate`),
+      // rien d'AUTRE n'est consommé — le joueur choisit une autre cible ou Action (mais l'arme est perdue).
+      const lines = applyOps(attacker, [{ op: 'disarm' }], { rng: battleRng(), location: pg.hand === 'off' ? 'brasG' : 'brasD' });
+      const b1 = get().battle!;
+      set({ battle: { ...b1, combatants: [...b1.combatants], log: [...b1.log, ...evLines(lines, 'attack', attacker.id)] } });
+      bus.emit(EVT.SCENE_DIRTY);
+      // Héros PILOTÉ par l'IA (Auto-combat) : son tour était suspendu par la modale → reprise (calque reloadConfirm).
+      if (aiDriven(get(), attacker) && get().battle) resumeEnemyTurn(get, set);
+    },
+    handGateCancel: () => set({ pendingHandGate: null }), // avant le jet : aucun coût (l'Action n'est pas encore ouverte)
     battleRecoverState: (state: 'empetre' | 'en-flammes') => {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const { battle } = get();
@@ -2042,8 +2063,9 @@ export function createCombatSlice(get: Get, set: Set) {
         .filter((c) => c.kind !== gunner.kind && !isOutOfAction(c) && c.pos && chebyshev(pt, c.pos) <= sa.radius)
         .sort((a, b) => chebyshev(pt, a.pos!) - chebyshev(pt, b.pos!))[0];
       if (!aim) { get().log(t('cf.siegeNoTarget', { name: gunner.name })); return; }
-      set({ pendingAttack: { attackerId: gunner.id, targetId: aim.id, location: null, result: null, weaponUid: sa.weaponUid, center: { ...pt }, siege: true } });
-      startCascade(get, set, { title: 'Pilonnage', icon: 'fire/blast', purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: gunner.id }] });
+      // Pilonnage : la pièce est SERVIE (hors loadout main/off) → `openAttackCascade` ne gate jamais un
+      // canon monté (`attackHandGate` = null), mais passe par le MÊME point partagé que les autres attaques.
+      openAttackCascade(get, set, { attackerId: gunner.id, targetId: aim.id, location: null, result: null, weaponUid: sa.weaponUid, center: { ...pt }, siege: true }, 'Pilonnage', 'fire/blast');
     },
     cleaveAttack: (targetId: string) => {
       const { battle, pendingCleave: pc } = get();

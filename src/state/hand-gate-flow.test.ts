@@ -1,0 +1,137 @@
+/**
+ * Main ensanglantée (Aux Armes bras 46-50, l.2569) — flux de jet PAR ACTION câblé aux points de
+ * déclaration d'attaque : le point PARTAGÉ `openAttackCascade` interpose le Test de Dextérité (+20)
+ * INFLUENÇABLE (`pendingHandGate`) quand l'arme est tenue dans une main gatée ; RÉUSSITE → l'attaque
+ * s'ouvre, ÉCHEC → l'objet glisse (`disarm`). Chemin IA = jet inline forcé dans `doAttack`.
+ */
+import { describe, it, expect, beforeEach } from 'vitest';
+import { useGame } from './store';
+import { initialFields } from './stateFields';
+import { openAttackCascade, doAttack } from './combatFlow';
+import { seedBattleRng } from './battleRng';
+import type { Combatant, ItemInstance, Weapon } from '../engine/types';
+
+const CHARS = (dex: number) => ({ CC: 45, CT: 45, F: 35, E: 35, I: 30, Ag: 30, Dex: dex, Int: 30, FM: 30, Soc: 30 });
+const ARM = () => ({ tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 });
+const SWORD = (uid: string): Weapon => ({ uid, name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'main', hands: 1 } as unknown as Weapon);
+const SWORD_ITEM = (uid: string): ItemInstance => ({ uid, name: 'Épée', kind: 'melee', qualities: [] } as unknown as ItemInstance);
+
+const mkHero = (over: Partial<Combatant> = {}): Combatant => ({
+  id: 'h', name: 'H', kind: 'hero', pos: { x: 0, y: 0 }, size: 'moyenne',
+  characteristics: CHARS(40), skills: [], talents: [], advantage: 0, conditions: [],
+  wounds: { base: 12, max: 12, current: 12 },
+  weapons: [SWORD('m')], items: [SWORD_ITEM('m')],
+  loadouts: [{ id: 'lo', main: 'm' }], activeLoadoutId: 'lo',
+  armour: ARM(), ...over,
+} as unknown as Combatant);
+
+const mkFoe = (id: string, over: Partial<Combatant> = {}): Combatant => ({
+  id, name: id, kind: 'enemy', pos: { x: 1, y: 0 }, size: 'moyenne',
+  characteristics: CHARS(40), skills: [], talents: [], advantage: 0, conditions: [],
+  wounds: { base: 10, max: 10, current: 10 },
+  weapons: [SWORD('e')], items: [SWORD_ITEM('e')],
+  loadouts: [{ id: 'loe', main: 'e' }], activeLoadoutId: 'loe',
+  armour: ARM(), ...over,
+} as unknown as Combatant);
+
+function setup(h: Combatant, f: Combatant) {
+  useGame.setState({
+    scene: { ambiance: 'exterieur', weather: 'clair' } as never,
+    gameTime: 0,
+    battle: { combatants: [h, f], order: ['h', f.id], turn: 0, round: 1, log: [],
+      acted: false, movementUsed: 0, movedPreAction: false, loadoutSwapped: false, reachable: new Map() } as never,
+    pendingReveals: [],
+  });
+  const b = useGame.getState().battle!;
+  return { h: b.combatants.find((c) => c.id === 'h')!, f: b.combatants.find((c) => c.id === f.id)! };
+}
+
+const bleeding = (over: Partial<Combatant> = {}): Partial<Combatant> => ({ handGates: ['main'], conditions: [{ name: 'hemorragique', value: 2 }], ...over });
+
+beforeEach(() => { useGame.setState({ ...initialFields(), battle: null, scene: null, gameTime: 0, party: [] }); seedBattleRng(1); });
+
+describe('openAttackCascade — point PARTAGÉ des déclarations d\'attaque (joueur)', () => {
+  it('main gatée + arme tenue dans cette main → interpose le Test de Dextérité, PAS l\'attaque directe', () => {
+    const { h, f } = setup(mkHero(bleeding()), mkFoe('f'));
+    openAttackCascade(useGame.getState, useGame.setState, { attackerId: h.id, targetId: f.id, location: null, result: null, weaponUid: 'm' }, 'Attaque', 'action/attack');
+    const s = useGame.getState();
+    expect(s.pendingHandGate).toBeTruthy();
+    expect(s.pendingHandGate!.hand).toBe('main');
+    expect(s.pendingHandGate!.difficulty).toBe('accessible');
+    expect(s.pendingAttack).toBeNull(); // l'attaque n'est PAS encore ouverte
+    expect(s.pendingCascade).toBeNull();
+  });
+
+  it('main NON gatée → ouvre directement la cascade d\'attaque (comportement inchangé)', () => {
+    const { h, f } = setup(mkHero(), mkFoe('f'));
+    openAttackCascade(useGame.getState, useGame.setState, { attackerId: h.id, targetId: f.id, location: null, result: null, weaponUid: 'm' }, 'Attaque', 'action/attack');
+    const s = useGame.getState();
+    expect(s.pendingHandGate).toBeNull();
+    expect(s.pendingAttack).toBeTruthy();
+    expect(s.pendingCascade?.participants[0].jet).toBe('attack');
+  });
+
+  it('handGateRoll pose un jet (délégué influençable généré) puis RÉUSSITE → l\'attaque s\'ouvre', () => {
+    const { h, f } = setup(mkHero(bleeding()), mkFoe('f'));
+    openAttackCascade(useGame.getState, useGame.setState, { attackerId: h.id, targetId: f.id, location: null, result: null, weaponUid: 'm' }, 'Attaque', 'action/attack');
+    (useGame.getState() as unknown as { handGateRoll: () => void }).handGateRoll();
+    expect(useGame.getState().pendingHandGate!.roll).not.toBeNull();
+    // Force une RÉUSSITE pour tester l'ouverture de l'attaque (le jet lui-même est aléatoire).
+    const pg = useGame.getState().pendingHandGate!;
+    useGame.setState({ pendingHandGate: { ...pg, roll: pg.target, success: true, sl: 0 } });
+    useGame.getState().handGateConfirm();
+    const s = useGame.getState();
+    expect(s.pendingHandGate).toBeNull();
+    expect(s.pendingAttack).toBeTruthy();
+    expect(s.pendingCascade?.participants[0].jet).toBe('attack'); // l'Action figée s'est ouverte
+    // Pas de re-gate en boucle : l'attaque est bien ouverte, pas un 2ᵉ pendingHandGate.
+  });
+
+  it('ÉCHEC → l\'objet glisse (disarm : loadout vidé), pas d\'attaque, Action non re-consommée', () => {
+    const { h, f } = setup(mkHero(bleeding()), mkFoe('f'));
+    openAttackCascade(useGame.getState, useGame.setState, { attackerId: h.id, targetId: f.id, location: null, result: null, weaponUid: 'm' }, 'Attaque', 'action/attack');
+    const pg = useGame.getState().pendingHandGate!;
+    useGame.setState({ pendingHandGate: { ...pg, roll: 99, success: false, sl: -3 } });
+    useGame.getState().handGateConfirm();
+    const s = useGame.getState();
+    expect(s.pendingHandGate).toBeNull();
+    expect(s.pendingAttack).toBeNull(); // l'attaque n'a pas lieu
+    const hero = s.battle!.combatants.find((c) => c.id === 'h')!;
+    expect(hero.loadouts![0].main).toBeUndefined(); // arme lâchée
+    expect(s.battle!.log.some((l) => /lâche/i.test(l.text))).toBe(true);
+  });
+
+  it('handGateCancel referme sans coût (avant le jet)', () => {
+    const { h, f } = setup(mkHero(bleeding()), mkFoe('f'));
+    openAttackCascade(useGame.getState, useGame.setState, { attackerId: h.id, targetId: f.id, location: null, result: null, weaponUid: 'm' }, 'Attaque', 'action/attack');
+    useGame.getState().handGateCancel();
+    expect(useGame.getState().pendingHandGate).toBeNull();
+    expect(useGame.getState().pendingAttack).toBeNull();
+  });
+});
+
+describe('doAttack — l\'IA gatée joue le MÊME Test inline (résolution forcée non-interactive)', () => {
+  it('un ennemi gaté surface le Test de Main ensanglantée (jamais de modale IA)', () => {
+    const { h, f } = setup(mkHero(), mkFoe('f', bleeding()));
+    // On teste le tour de l'ennemi : il attaque le héros.
+    doAttack(useGame.getState, useGame.setState, f, h);
+    const s = useGame.getState();
+    // Aucune modale ouverte pour l'IA ; le gate a été JOUÉ inline (une des deux lignes de journal).
+    expect(s.pendingHandGate).toBeNull();
+    expect(s.battle!.log.some((l) => /Main ensanglantée/i.test(l.text))).toBe(true);
+  });
+
+  it('sur un ÉCHEC du Test, l\'IA lâche son arme (disarm) et renonce au coup', () => {
+    // Dex très basse (1 → cible 21) : on cherche un seed qui rate.
+    let disarmed = false;
+    for (let seed = 1; seed <= 40 && !disarmed; seed++) {
+      useGame.setState({ ...initialFields(), battle: null, scene: null, gameTime: 0, party: [] });
+      seedBattleRng(seed);
+      const { h, f } = setup(mkHero(), mkFoe('f', bleeding({ characteristics: CHARS(1) as never })));
+      const proceeded = doAttack(useGame.getState, useGame.setState, f, h);
+      const foe = useGame.getState().battle!.combatants.find((c) => c.id === 'f')!;
+      if (!proceeded && foe.loadouts![0].main === undefined) disarmed = true;
+    }
+    expect(disarmed).toBe(true); // il existe des jets ratés → arme lâchée + coup renoncé
+  });
+});

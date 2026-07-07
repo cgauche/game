@@ -104,6 +104,7 @@ const FIXTURES: Record<string, Fix> = {
   ward: { make: (win) => ({ battle: arena(), pendingWard: { attackerId: 'A', result: win ? WIN : LOSE } }) },
   // ── Tests numériques « jet propre » (soin/rechargement/évaluation/corruption/activité/test) ──
   reload: { make: (win) => ({ battle: arena(), pendingReload: { actorId: 'A', skillValue: 40, difficulty: 'intermediaire', roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },
+  handGate: { make: (win) => ({ battle: arena(), pendingHandGate: { attackerId: 'A', actorName: 'A', hand: 'main', skillValue: 40, difficulty: 'accessible', roll: win ? 8 : 95, target: 60, sl: win ? 3 : -5, success: win, pa: { attackerId: 'A', targetId: 'B', location: null, result: null }, title: 'Attaque', icon: 'action/attack' } }) },
   heal: { make: (win) => ({ battle: arena(), pendingHeal: { healerId: 'A', mode: 'first-aid', skillValue: 40, difficulty: 'intermediaire', roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },
   surgery: { make: (win) => ({ battle: arena(), pendingSurgery: { healerId: 'A', skillValue: 40, difficulty: 'intermediaire', roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },
   appraise: { make: (win) => ({ battle: arena(), pendingAppraise: { actorId: 'A', skillValue: 40, difficulty: 'intermediaire', roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, success: win } }) },

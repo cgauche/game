@@ -72,7 +72,7 @@ import type { MerchantState, MerchantStocks } from './merchantFlow';
 import * as tavernFlow from './tavernFlow';
 import type {
   Money, PendingVictory, PendingLoot, PendingTest, PendingReload, PendingStateRecovery, PendingBargain,
-  PendingAppraise, PendingAttack, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
+  PendingAppraise, PendingAttack, PendingHandGate, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
   PendingCastOpposition, PendingCascade, ScheduledEffect,
@@ -308,6 +308,9 @@ export interface GameState extends RollFlowActionsMap {
   pendingBargain: PendingBargain | null;
   pendingAppraise: PendingAppraise | null;
   pendingAttack: PendingAttack | null;
+  /** Test de Dextérité PAR ACTION de « Main ensanglantée » (AA l.2569) — interposé AVANT l'attaque quand
+   *  l'arme employée est tenue dans une main gatée (`attackHandGate`). Modale influençable, calque `reload`. */
+  pendingHandGate: PendingHandGate | null;
   /** Pilonnage INDIRECT en cours (« viser une case », AA p.122-123) : pièce indirecte servie en attente du
    *  point d'impact (placeur de zone source 'siege'). Clic-case → `siegeAimCommit`. */
   pendingSiegeAim: PendingSiegeAim | null;
@@ -718,6 +721,12 @@ export interface GameState extends RollFlowActionsMap {
   reloadConfirm: () => void;
   /** Ferme la modale de rechargement sans coût (avant le jet). */
   reloadCancel: () => void;
+  // handGate{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
+  /** « Appliquer » le Test de Dextérité de Main ensanglantée (AA l.2569) : RÉUSSITE → ouvre l'Action figée ;
+   *  ÉCHEC → l'objet glisse (op `disarm`) et l'Action est consommée. */
+  handGateConfirm: () => void;
+  /** Annule l'Action avant le jet de Main ensanglantée (défait une charge misclic comme `attackCancel`). */
+  handGateCancel: () => void;
   /** Se libérer (Empêtré, Test opposé de Force) / se rouler au sol (En flammes, Athlétisme) : OUVRE la modale (LDB 16 l.61/77). */
   battleRecoverState: (state: 'empetre' | 'en-flammes') => void;
   // recover{Roll,Reroll,BonusSL,DarkPact} (Lancer/Chance/+1 DR/Pacte) : générés (RollFlowActionsMap).
