@@ -33,6 +33,7 @@ public/qc/
 !.claude/settings.json
 !.claude/credo.md
 !.claude/skills/
+!.claude/agents/
 !.claude/workflows/
 *.exe
 *.log

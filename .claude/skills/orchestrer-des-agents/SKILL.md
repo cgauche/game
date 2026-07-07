@@ -40,12 +40,15 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
 
 ## Calibrage — routage et cérémonie
 
-| Étage | Modèle | Effort |
-|---|---|---|
-| Lecture / comparaison de masse | sonnet | medium |
-| Vérification mécanique (existence, famille) | haiku | low |
-| Code sous spec précise | sonnet | medium |
-| Jugement dur (réfutation, synthèse, archi) | opus | medium |
+| Étage | Type épinglé (`.claude/agents/`) | Modèle | Effort |
+|---|---|---|---|
+| Lecture / comparaison de masse | `lecteur` | sonnet | medium |
+| Vérification mécanique (existence, famille) | `verif-mecanique` | haiku | low |
+| Code sous spec précise | `codeur` | sonnet | medium |
+| Jugement dur (réfutation, synthèse, archi) | `juge` | opus | medium |
+
+Via le tool Agent, préférer ces quatre types (modèle + effort épinglés au frontmatter) à
+`general-purpose`, qui hérite l'effort de session.
 
 **JAMAIS Sonnet en effort haut/xhigh** (coûte plus cher qu'un Opus medium). La cérémonie se
 calibre à la taille/risque RÉEL, pas au flag ultracode : petite feature testée → 1 agent codeur
