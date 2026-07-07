@@ -240,6 +240,25 @@ export function combatTestPenalty(c: Combatant): number {
 const MOVEMENT_SKILL = new Set(skills.filter((s) => s.movement).map((s) => s.id));
 // Tests « impliquant l'audition » (Assourdi −10, LDB 16 l.29) — même patron DONNÉE (`SkillData.hearing`).
 const HEARING_SKILL = new Set(skills.filter((s) => s.hearing).map((s) => s.id));
+/** Le Test `skill` est-il classé « déplacement » (`SkillData.movement`) ? Réutilisée par #193
+ *  (Épaule luxée/Genou démis : `testMod.movementOnly` = MÊME catégorie que l'État À Terre/Empêtré). */
+export function isMovementSkill(skill?: string): boolean {
+  return MOVEMENT_SKILL.has(skill ?? '');
+}
+
+/** Σ des `testMod` char-QUALIFIÉS ACTIFS (op `testMod{char}` exécutée, #193) pour la Caractéristique
+ *  `ck` — POINT UNIQUE partagé par `testValue` (Tests hors-combat), `combatValue`/`defenseValue`
+ *  parade (Tests d'arme, `weaponHand` gaté) et `defenseValue` Esquive (`movement:true`). `weaponHand`/
+ *  `movement` : contexte du Test COURANT, opposé aux gates portés par l'effet (`testModHand`/
+ *  `testModMovementOnly`) — absents des DEUX côtés = mod global (comportement historique). */
+export function activeCharTestMod(c: Combatant, ck: import('./types').CharKey, ctx: { weaponHand?: 'main' | 'off'; movement?: boolean } = {}): number {
+  return (c.activeEffects ?? []).reduce((s, e) => {
+    if (e.testModChar !== ck) return s;
+    if (e.testModHand != null && e.testModHand !== ctx.weaponHand) return s;
+    if (e.testModMovementOnly && !ctx.movement) return s;
+    return s + (e.testMod ?? 0);
+  }, 0);
+}
 export function testStatePenalty(c: Combatant, skill?: string): number {
   const effMod = effectTestMod(c); // modificateur de Sort (stacke, hors non-cumul d'État)
   if (!c.conditions?.length) return effMod;

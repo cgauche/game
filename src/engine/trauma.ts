@@ -426,15 +426,26 @@ export function hasRecoverableTrauma(c: Combatant): boolean {
 export function hasLimbAwaitingAid(c: Combatant): boolean {
   return (c.traumas ?? []).some((t) => t.restoreDR != null && t.awaitingMedicalAid);
 }
+/** Main tenant l'arme concernée par une Localisation de BRAS (convention DROITIER partagée avec `disarm`/
+ *  `handGate` : `brasD`→`main`, `brasG`→`off`) ; `undefined` pour toute autre Localisation (jambe/tête/corps,
+ *  aucune notion de main). */
+function armLocationHand(loc: HitLocation): 'main' | 'off' | undefined {
+  return loc === 'brasD' ? 'main' : loc === 'brasG' ? 'off' : undefined;
+}
+
 /** Usage du membre RÉCUPÉRÉ (Test étendu de Guérison atteint) : retire la séquelle « membre désactivé »
  *  d'INDICE `idx` parmi `recoverableTraumas` et renvoie ses `recoveryPenalty` (posées par l'appelant via
- *  `applyOps`, avec une durée d'horloge partagée 1d10 jours) + le journal. */
+ *  `applyOps`, avec une durée d'horloge partagée 1d10 jours) + le journal. #193 : un `testMod{char:'CC'}`
+ *  de la `recoveryPenalty` (même donnée pour brasD/brasG) est ICI scopé à la main RÉELLE du membre — portée
+ *  MEMBRE (« Tests effectués avec ce bras ») au lieu d'un `charMod` global historique. */
 export function recoverDisabledLimb(c: Combatant, idx = 0): { penalty: import('./ops').GameOp[]; log: string[] } {
   const pool = recoverableTraumas(c);
   const t = pool[idx] ?? pool[0];
   if (!t) return { penalty: [], log: [`${c.name} : aucun membre à rééduquer.`] };
   c.traumas = (c.traumas ?? []).filter((x) => x !== t);
-  return { penalty: t.recoveryPenalty ?? [], log: [`${c.name} : usage du membre récupéré (${t.label}, ${t.location}).`] };
+  const hand = armLocationHand(t.location);
+  const penalty = (t.recoveryPenalty ?? []).map((o) => (hand && o.op === 'testMod' && o.char === 'CC' ? { ...o, weaponHand: hand } : { ...o }));
+  return { penalty, log: [`${c.name} : usage du membre récupéré (${t.label}, ${t.location}).`] };
 }
 
 /**

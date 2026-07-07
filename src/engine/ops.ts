@@ -516,8 +516,15 @@ export type GameOp =
   /** Modificateur de Test du porteur (Malédiction de malchance : −10 global). Sans `char` = GLOBAL (tous les
    *  Tests, porté par un effet actif, STACKE sur les États, lu par `combat/testStatePenalty`). AVEC `char` =
    *  modificateur de TEST qualifié par Caractéristique (Visage inversé −20 Soc, objet Laid −20 Soc), émis par
-   *  le collecteur passif et lu par `testValue/passiveTestMod` — n'altère PAS la Caractéristique (≠ charMod). */
-  | { op: 'testMod'; amount: number; char?: CharKey; combatOnly?: boolean; movementOnly?: boolean; hearingOnly?: boolean; exceptSkills?: string[] }
+   *  le collecteur passif et lu par `testValue/passiveTestMod` — n'altère PAS la Caractéristique (≠ charMod).
+   *  EXÉCUTÉ via `applyOps` (≠ passif d'État) : porte aussi `movementOnly`/`weaponHand`, portée MEMBRE d'une
+   *  pénalité de récupération (#193, Épaule luxée/Genou démis LDB+AA, « Tests effectués avec ce bras »/« cette
+   *  jambe ») — `weaponHand` restreint un `char:'CC'` à l'arme tenue dans CETTE main (lu par `combatValue`/
+   *  `defenseValue` parade uniquement, JAMAIS l'autre main) ; `movementOnly` restreint (`char:'Ag'` typiquement)
+   *  aux Tests classés « déplacement » (`SkillData.movement` — Athlétisme/Chevaucher/Escalade/Esquive/Natation,
+   *  MÊME catégorie que l'État À Terre/Empêtré) — lu par `testValue`/`defenseValue` (Esquive). Absent des deux
+   *  = comportement historique (global, comme avant #193). */
+  | { op: 'testMod'; amount: number; char?: CharKey; combatOnly?: boolean; movementOnly?: boolean; hearingOnly?: boolean; exceptSkills?: string[]; weaponHand?: 'main' | 'off' }
   /** Immunité à l'EXPOSITION météo (froid/pluie/neige/tempête) tant que le Sort dure — Peau de loup
    *  d'hiver (Ulric), Protection contre la pluie. Lu par `exposureNight` (engine/exposure). */
   | { op: 'weatherWard' }
@@ -702,8 +709,11 @@ export type GameOp =
   | { op: 'mitigateIncoming'; mode: 'nullify'; unlessKeyword?: 'magic' }
   /** Échelle MULTIPLICATIVE du Mouvement — GÉNÉRALISE le drapeau `movementHalved` (= 1/2). `num/den` = la
    *  fraction appliquée à `c.movement` (amputation de jambe : 1/2). Trauma : lu par `traumaMovementHalved` ;
-   *  sort : `ActiveEffect.moveScale`. (`M` n'est pas une Caractéristique → op de mouvement dédiée.) */
-  | { op: 'moveScale'; num: number; den: number }
+   *  sort : `ActiveEffect.moveScale`. (`M` n'est pas une Caractéristique → op de mouvement dédiée.)
+   *  `durationRounds` : effet TEMPORAIRE à durée intrinsèque (Souffle coupé « Mouvement réduit de moitié
+   *  pendant 1d10 Rounds », LDB 18-Traumatisme) — MÊME patron que `maxWeaponHands.durationRounds` : résolu
+   *  indépendamment du ctx ; absent = durée du ctx (`durationFromCtx`, sort/effet permanent de trauma). */
+  | { op: 'moveScale'; num: number; den: number; durationRounds?: Formula }
   /** Modificateur ADDITIF de Mouvement (trait Brutal −1 / Rapide +1, mutation ±1, encombrement) — distinct de
    *  `moveScale` (multiplicatif). `effectiveMovement` somme les `moveMod` PUIS applique les `moveScale`. */
   | { op: 'moveMod'; mod: number }
@@ -1466,6 +1476,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           duration: durationFromCtx(ctx),
           testMod: o.amount,
           ...(o.char ? { testModChar: o.char } : {}),
+          ...(o.weaponHand ? { testModHand: o.weaponHand } : {}),
+          ...(o.movementOnly ? { testModMovementOnly: true } : {}),
         });
         lines.push(t('op.testMod', { name: target.name, mod: `${o.amount >= 0 ? '+' : ''}${o.amount}${o.char ? ` (${CHAR_LABELS[o.char]})` : ''}`, src: ctx.label ?? 'sort' }));
         break;
@@ -1789,9 +1801,14 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       }
       case 'moveScale': {
         target.activeEffects = target.activeEffects ?? [];
+        // Durée INTRINSÈQUE (Souffle coupé : « pendant 1d10 Rounds ») résolue MAINTENANT, indépendamment
+        // du ctx — même patron que `maxWeaponHands`.
+        const dur: Duration = o.durationRounds != null
+          ? { scale: 'rounds', left: Math.max(1, resolveFormula(o.durationRounds, ref, rng)) }
+          : durationFromCtx(ctx);
         target.activeEffects.push({
           label: ctx.label ?? 'Effet', bonus: 0,
-          duration: durationFromCtx(ctx),
+          duration: dur,
           moveScale: { num: o.num, den: o.den },
         });
         lines.push(t('op.moveScale', { name: target.name, num: o.num, den: o.den, src: ctx.label ?? 'sort' }));

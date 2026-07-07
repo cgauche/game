@@ -18,7 +18,7 @@ import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LA
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
 import locJson from '../data/localisation.json';
-import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition, COND } from './conditions';
+import { combatTestPenalty, meleeAttackerBonus, cannotDefend, hasCondition, COND, activeCharTestMod } from './conditions';
 import { effectiveWeaponDamage, effectiveWeapon, effectiveWeaponRange } from './weaponDamage';
 import { traumaDodgePenalty, damageSBBonus, amputationCombatPenalty } from './trauma';
 import { SIZE_RANGED_MOD, SIZE_LABEL, sizeGap, effectiveSize, sizeDamageMultiplier, sizeGrantedQualities } from './size';
@@ -144,7 +144,10 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
   // aucune Compétence associée (comme l'Empoignade, `rollGrappleForce`) — court-circuite CC/CT et la Spé du Groupe.
   if (weapon?.resolveChar) return effectiveChar(c, weapon.resolveChar);
   const charKey = kind === 'melee' ? 'CC' : 'CT';
-  const base = effectiveChar(c, charKey);
+  // #193 : pénalité de récupération « Tests effectués avec ce bras » (Épaule luxée, LDB/AA) — scopée à
+  // l'arme tenue dans CETTE main (`weaponHand`), jamais l'autre. Inerte si `weapon` absent (créature sans
+  // arme, Piétinement…) ou si aucun effet ne porte `testModHand`.
+  const base = effectiveChar(c, charKey) + activeCharTestMod(c, charKey, { weaponHand: weapon?.hand });
   if (weapon && weaponUnmastered(c, weapon)) return base; // arme inhabituelle non maîtrisée : carac brute (ACE p.219)
   const skillId = kind === 'melee' ? 'corps-a-corps' : 'projectiles';
   const matching = c.skills.filter((s) => s.skillId === skillId);
@@ -207,7 +210,9 @@ export function defenseValue(c: Combatant, mode: DefenseMode, weapon?: Weapon, s
   // Pénalité de mobilité : pire pénalité (non-cumul, LDB l.20) entre Encombrement et traumatisme
   // de jambe (Déchirure −10/−20, Fracture −20 « règle du Pied », LDB 18 l.298/315/369).
   const mobilityPenalty = Math.min(agilityTestPenalty(c), traumaDodgePenalty(c));
-  return effectiveChar(c, 'Ag') + (sk?.advances ?? 0) + mobilityPenalty;
+  // #193 : pénalité de récupération « Tests impliquant cette jambe » (Genou démis, LDB/AA) — Esquive EST
+  // classée « déplacement » (SkillData.movement), même catégorie que l'État À Terre/Empêtré.
+  return effectiveChar(c, 'Ag') + (sk?.advances ?? 0) + mobilityPenalty + activeCharTestMod(c, 'Ag', { movement: true });
 }
 
 /** Détail d'un jet (pour l'affichage : base, modificateurs, cible, d100 et DR). */

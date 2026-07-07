@@ -221,6 +221,42 @@ describe('applyOps — opérations unitaires', () => {
     expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 1 });
   });
 
+  // #193 — Souffle coupé (LDB 18-Traumatisme) : « Mouvement réduit de moitié pendant 1d10 Rounds »,
+  // MÊME patron que maxWeaponHands.durationRounds ci-dessus.
+  it("moveScale : durationRounds INLINE → ActiveEffect à durée ROUNDS, indépendant du ctx", () => {
+    const c = hero();
+    const rng = makeRNG(7);
+    applyOps(c, [{ op: 'moveScale', num: 1, den: 2, durationRounds: { dice: { n: 1, sides: 10 } } }], { rng });
+    expect(c.activeEffects).toHaveLength(1);
+    const eff = c.activeEffects![0];
+    expect(eff.moveScale).toEqual({ num: 1, den: 2 });
+    expect(eff.duration.scale).toBe('rounds');
+    if (eff.duration.scale === 'rounds') {
+      expect(eff.duration.left).toBeGreaterThanOrEqual(1);
+      expect(eff.duration.left).toBeLessThanOrEqual(10);
+    }
+  });
+
+  it('moveScale : sans durationRounds → comportement INCHANGÉ (durée du ctx, rétro-compatible)', () => {
+    const c = hero();
+    applyOps(c, [{ op: 'moveScale', num: 1, den: 2 }], { defaultDurationRounds: 3 });
+    expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 3 });
+  });
+
+  // #193 — Épaule luxée/Genou démis (LDB/AA) : `testMod.weaponHand`/`testMod.movementOnly` (portée MEMBRE
+  // d'une pénalité de récupération) sont COPIÉS sur l'ActiveEffect (testModHand/testModMovementOnly),
+  // lus par combatValue/defenseValue/testValue (cf. weapon-spec.test.ts pour la consommation).
+  it("testMod : weaponHand/movementOnly COPIÉS sur l'ActiveEffect (testModHand/testModMovementOnly)", () => {
+    const c = hero();
+    applyOps(c, [{ op: 'testMod', char: 'CC', amount: -10, weaponHand: 'main' }], { defaultDurationRounds: 9999 });
+    applyOps(c, [{ op: 'testMod', char: 'Ag', amount: -10, movementOnly: true }], { defaultDurationRounds: 9999 });
+    expect(c.activeEffects).toHaveLength(2);
+    expect(c.activeEffects![0]).toMatchObject({ testMod: -10, testModChar: 'CC', testModHand: 'main' });
+    expect(c.activeEffects![0].testModMovementOnly).toBeUndefined();
+    expect(c.activeEffects![1]).toMatchObject({ testMod: -10, testModChar: 'Ag', testModMovementOnly: true });
+    expect(c.activeEffects![1].testModHand).toBeUndefined();
+  });
+
   // (Un Test imbriqué est un nœud Flow `{kind:'test'}` résolu cadence-aware (héros manuel = jet
   //  influençable, ennemi = inline). Sa résolution + branches + gates sont couvertes par
   //  `state/combat/run-combat-flow.test.ts` et `state/combat/venin-test.test.ts`.)

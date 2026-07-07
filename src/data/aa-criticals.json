@@ -702,9 +702,9 @@
           "restoreDR": 6,
           "recoveryPenalty": [
             {
-              "op": "charMod",
+              "op": "testMod",
               "char": "CC",
-              "mod": -10
+              "amount": -10
             }
           ]
         }
@@ -1589,9 +1589,10 @@
           "restoreDR": 6,
           "recoveryPenalty": [
             {
-              "op": "charMod",
+              "op": "testMod",
               "char": "Ag",
-              "mod": -10
+              "amount": -10,
+              "movementOnly": true
             },
             {
               "op": "moveScale",

@@ -132,3 +132,39 @@ describe('Arme inhabituelle — maîtrise requise (ACE Annexe I p.219 « Entraî
     expect(weaponUnmastered(noItems, w)).toBe(false); // uid non retrouvé → inerte
   });
 });
+
+// #193 — Épaule luxée (LDB/AA) : « Tests effectués avec ce bras » subissent -10 pendant 1d10 jours.
+// `recoverDisabledLimb` scope le testMod{char:'CC'} à la main du membre (weaponHand) — PAS l'autre main.
+describe('combatValue/defenseValue — testMod{char} scopé par main (#193, weaponHand)', () => {
+  const withPenalty = (hand: 'main' | 'off') => hero({
+    activeEffects: [{ label: 'Épaule luxée (récupération)', bonus: 0, duration: { scale: 'permanent' }, testMod: -10, testModChar: 'CC', testModHand: hand }],
+  });
+
+  it("pénalise l'attaque/parade avec l'arme tenue dans LA main visée (main)", () => {
+    const c = withPenalty('main');
+    expect(combatValue(c, 'melee', { ...wpn('Base'), hand: 'main' })).toBe(30); // CC 40 − 10
+    expect(defenseValue(c, 'parade', { ...wpn('Base'), hand: 'main' })).toBe(30);
+  });
+
+  it("laisse INTACTE l'arme tenue dans L'AUTRE main (off)", () => {
+    const c = withPenalty('main');
+    expect(combatValue(c, 'melee', { ...wpn('Base'), hand: 'off' })).toBe(40); // pas de −10
+  });
+
+  it('sans arme (weapon absent, manœuvre générique) : le mod hand-scopé ne s’applique pas (info manquante)', () => {
+    const c = withPenalty('main');
+    expect(combatValue(c, 'melee')).toBe(40);
+  });
+});
+
+// #193 — Genou démis (LDB/AA) : « Tests impliquant cette jambe » subissent -10 pendant 1d10 jours —
+// scopé aux Tests classés « déplacement » (SkillData.movement), Esquive INCLUSE (defenseValue).
+describe('defenseValue — Esquive scopée par movementOnly (#193)', () => {
+  it('Esquive (Test de déplacement) subit le malus', () => {
+    const c = hero({
+      activeEffects: [{ label: 'Genou démis (récupération)', bonus: 0, duration: { scale: 'permanent' }, testMod: -10, testModChar: 'Ag', testModMovementOnly: true }],
+      skills: [{ skillId: 'esquive', characteristic: 'Ag', advances: 0 }],
+    });
+    expect(defenseValue(c, 'esquive')).toBe(30); // Ag 40 − 10
+  });
+});

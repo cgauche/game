@@ -8,7 +8,7 @@ import { itemCapability } from './capabilities';
 import { groupMatch } from './groups';
 import { effectiveChar, bonus } from './characteristics';
 import { assistBonus } from './tests';
-import { testStatePenalty } from './conditions';
+import { testStatePenalty, activeCharTestMod, isMovementSkill } from './conditions';
 import { agilityTestPenalty } from './encumbrance';
 import { traumaSkillPenalty, passiveSkillSum, passiveTestMod } from './trauma';
 import type { PairedSense } from './ops';
@@ -86,8 +86,9 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   const passive = passiveSkillSum(c, skill) + passiveTestMod(c, ck);
   // Mods de Test char-QUALIFIÉS d'effets ACTIFS (op `testMod{char}` exécutée — Mystracine « +10 aux
   // Tests d'E et de FM, −10 Ag/I/Int », LDB 71 l.33) : sommés pour la seule carac testée ; les mods
-  // GLOBAUX (sans char) sont déjà comptés via `testStatePenalty` (→ effectTestMod).
-  const fxChar = (c.activeEffects ?? []).reduce((s, e) => s + (e.testModChar === ck ? (e.testMod ?? 0) : 0), 0);
+  // GLOBAUX (sans char) sont déjà comptés via `testStatePenalty` (→ effectTestMod). `movementOnly`
+  // (#193, Genou démis « Tests impliquant cette jambe ») restreint aux Tests classés « déplacement ».
+  const fxChar = activeCharTestMod(c, ck, { movement: isMovementSkill(skill) });
   return base + (sk?.advances ?? 0) + states + enc + traumaSkill + passive + fxChar + skillToolMod(c, skill);
 }
 

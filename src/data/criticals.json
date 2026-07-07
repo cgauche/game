@@ -914,9 +914,9 @@
           "restoreDR": 6,
           "recoveryPenalty": [
             {
-              "op": "charMod",
+              "op": "testMod",
               "char": "CC",
-              "mod": -10
+              "amount": -10
             }
           ]
         }
@@ -1220,6 +1220,17 @@
           "op": "condition",
           "name": "sonne",
           "value": 1
+        },
+        {
+          "op": "moveScale",
+          "num": 1,
+          "den": 2,
+          "durationRounds": {
+            "dice": {
+              "n": 1,
+              "sides": 10
+            }
+          }
         }
       ],
       "resist": {
@@ -2028,9 +2039,10 @@
           "restoreDR": 6,
           "recoveryPenalty": [
             {
-              "op": "charMod",
+              "op": "testMod",
               "char": "Ag",
-              "mod": -10
+              "amount": -10,
+              "movementOnly": true
             },
             {
               "op": "moveScale",

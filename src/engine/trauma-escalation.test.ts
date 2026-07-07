@@ -178,12 +178,21 @@ describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé 
 
   it('`recoverDisabledLimb` retire la séquelle et rend sa `recoveryPenalty` (posée par l’appelant, 1d10 j)', () => {
     const c = C({ traumas: [
-      { label: 'Genou démis (jambe perdue)', location: 'jambeD', restoreDR: 6, ops: [{ op: 'moveScale', num: 1, den: 2 }], recoveryPenalty: [{ op: 'charMod', char: 'Ag', mod: -10 }, { op: 'moveScale', num: 1, den: 2 }] },
+      { label: 'Genou démis (jambe perdue)', location: 'jambeD', restoreDR: 6, ops: [{ op: 'moveScale', num: 1, den: 2 }], recoveryPenalty: [{ op: 'testMod', char: 'Ag', amount: -10, movementOnly: true }, { op: 'moveScale', num: 1, den: 2 }] },
     ] });
     const { penalty, log } = recoverDisabledLimb(c, 0);
     expect(c.traumas).toHaveLength(0); // le membre désactivé est retiré (usage récupéré)
-    expect(penalty).toEqual([{ op: 'charMod', char: 'Ag', mod: -10 }, { op: 'moveScale', num: 1, den: 2 }]);
+    expect(penalty).toEqual([{ op: 'testMod', char: 'Ag', amount: -10, movementOnly: true }, { op: 'moveScale', num: 1, den: 2 }]);
     expect(log.join(' ')).toMatch(/usage du membre récupéré/);
+  });
+
+  // #193 — « Tests effectués avec ce bras » (LDB/AA) : `recoverDisabledLimb` scope le `testMod{char:'CC'}`
+  // à la main RÉELLE du membre (convention DROITIER, MÊME donnée pour brasD/brasG).
+  it("`recoverDisabledLimb` injecte `weaponHand` sur un `testMod{char:'CC'}` selon la Localisation (brasD → main, brasG → off)", () => {
+    const cD = C({ traumas: [{ label: 'x', location: 'brasD', restoreDR: 6, recoveryPenalty: [{ op: 'testMod', char: 'CC', amount: -10 }] }] });
+    expect(recoverDisabledLimb(cD, 0).penalty).toEqual([{ op: 'testMod', char: 'CC', amount: -10, weaponHand: 'main' }]);
+    const cG = C({ traumas: [{ label: 'x', location: 'brasG', restoreDR: 6, recoveryPenalty: [{ op: 'testMod', char: 'CC', amount: -10 }] }] });
+    expect(recoverDisabledLimb(cG, 0).penalty).toEqual([{ op: 'testMod', char: 'CC', amount: -10, weaponHand: 'off' }]);
   });
 
   it('Sonné « jusqu’à Aide Médicale » : `lockedUntil` (flag) le retient tant qu’une séquelle attend l’Aide', () => {
