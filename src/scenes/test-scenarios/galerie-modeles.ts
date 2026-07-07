@@ -2,7 +2,8 @@ import { pregenParty, PREGEN } from '../../data/pregens';
 import { creatures, careers, trappings } from '../../data/index';
 import { arena } from './_shared';
 import type { TestScenario } from './_shared';
-import type { SceneEntity, MonsterPartsSel } from '../../state/scene';
+import type { SceneEntity } from '../../state/scene';
+import type { MonsterPartsSel } from '../../engine/authoringAppearance';
 import { sizeFromTraits } from '../../state/spawn';
 import { sizeFootprint } from '../../state/footprint';
 

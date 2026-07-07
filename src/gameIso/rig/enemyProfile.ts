@@ -9,11 +9,9 @@ import type { Combatant, ItemInstance, ArmourPoints, HitLocation } from '../../e
 import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { equipFromCombatant } from './parts/equipment';
-import { newUid, emptyArmour } from '../../engine/items';
-import { renderWeaponsFromTraits, armourFromTraits } from '../../engine/creatureEquip';
-import { findTrappingByLabel } from '../../data';
+import { emptyArmour } from '../../engine/items';
+import { renderWeaponsFromTraits, armourFromTraits, weaponFromLabel } from '../../engine/creatureEquip';
 import type { TraitList } from '../../engine/statEntry';
-import { weaponGroupKey } from './parts/weaponGroup';
 import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
 import { hashSeed } from '../../engine/dice';
@@ -21,21 +19,9 @@ import type { SceneEntity } from '../../state/scene';
 import { bipedDef } from './creatures';
 import { resolveRender } from './bodyPlan';
 import { findCreatureById } from '../../data';
-import type { EntityAppearance } from '../../state/scene';
+import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { raceById } from './races';
 import { baseSpeciesOf } from './skeletons';
-
-const RANGED_GROUPS = new Set(['arc', 'arbalete', 'poudre', 'fronde', 'lancer', 'entraves', 'explosifs', 'ingenierie']);
-/** Construit une arme minimale depuis un libellé (type déduit du Groupe canonique). Override de scène
- *  `weapon:'X'` : le libellé est résolu en slug de FORME AU SPAWN (`findTrappingByLabel`, authoring) et
- *  posé sur `Weapon.shape` → le rendu route l'art par id, jamais par libellé. Hors catalogue → pas de shape. */
-export function weaponFromLabel(label: string): import('../../engine/types').Weapon {
-  const w: import('../../engine/types').Weapon = { name: label, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
-  if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
-  const shape = findTrappingByLabel(label)?.shape;
-  if (shape) w.shape = shape;
-  return w;
-}
 
 export interface EnemyRigProfile {
   appearance: Appearance;
@@ -121,8 +107,8 @@ const buildFromSeed = (seed: number): number => +(0.35 + ((Math.floor(seed / 7) 
 /**
  * CONSTRUCTEUR UNIQUE de l'apparence rig — combat ET exploration. Une seule précédence par champ :
  * override d'instance → record créature (`cd`) → perso/race → défaut-seed. `override` porte ses YEUX
- * DÉJÀ en art (combat : `c.appearance` résolu au spawn ; exploration : `opts` pré-résolus par l'appelant).
- * Avant : deux implémentations (overlay-layering vs `riggedAppearance`) de cette MÊME précédence (dérive).
+ * DÉJÀ en art (combat : `c.appearanceOverride` figé au rendu par `riggedAppearance` ; exploration :
+ * `opts` pré-résolus par l'appelant).
  */
 function rigAppearance(seed: number, base: ReturnType<typeof bipedBase>, cd: EntityAppearance | undefined, override?: Partial<Appearance>): Appearance {
   const { species, d, race, perso } = base;
@@ -163,8 +149,14 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   const seed = hashSeed(c.id);
   const cd = findCreatureById(c.creatureId)?.appearance; // apparence par défaut UNIFIÉE du record créature (par id)
   const bb = bipedBase(c.species, cd); // résolution PARTAGÉE espèce→def/race/perso
-  // Apparence : SOURCE UNIQUE `rigAppearance`. `c.appearance` (override d'instance) est déjà résolu au spawn.
-  const appearance = rigAppearance(seed, bb, cd, c.appearance);
+  // Override d'authoring (`c.appearanceOverride`) FIGÉ PARESSEUSEMENT ici (#187 : plus au spawn/state) :
+  // yeux clés→art, sexe/carrure du seed si non forcés. Déterministe (seed dérivé de l'id, `id ===
+  // SceneEntity.id`). Superposé aux défauts de race/record via `rigAppearance`.
+  const ov = c.appearanceOverride;
+  const frozen = ov
+    ? riggedAppearance(c.name, ov.seed ?? seed, { species: ov.species, monster: ov.monster, features: ov.features, colors: ov.colors, parts: ov.parts, sex: ov.sex, build: ov.build, eyes: ov.eyes })
+    : undefined;
+  const appearance = rigAppearance(seed, bb, cd, frozen);
   // Tenue DATA-DRIVEN : carrière du Combatant → record → défaut de la def (perso/race) → Nu (l'auteur l'habille).
   const tenue = bipedTenue(c.career, cd, bb.perso, bb.race);
 

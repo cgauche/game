@@ -126,7 +126,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
       }
       return { backend: 'rig', id: c.id, speciesScale: r.scale, portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={c} profile={prof ?? undefined} pos={c.pos} /> };
     }
-    return { backend: 'plan', id: c.id, speciesScale: r.scale, portraitBox: planPortraitBox(r.plan), flat: top, body: <AnimatedPlanToken id={c.id} planId={r.plan} species={r.species} colors={c.appearance?.colors} eyes={c.appearance?.eyes} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
+    return { backend: 'plan', id: c.id, speciesScale: r.scale, portraitBox: planPortraitBox(r.plan), flat: top, body: <AnimatedPlanToken id={c.id} planId={r.plan} species={r.species} colors={c.appearanceOverride?.colors} eyes={eyesArtFromKeys(c.appearanceOverride?.eyes)} dead={groundStateOf(c) === 'corpse' || isOutOfAction(c)} prone={groundStateOf(c) === 'prone'} pos={c.pos} /> };
   }
 
   if (subject.kind === 'partyLeader') {
@@ -164,8 +164,8 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
     return { backend: 'rig', id, speciesScale: r.scale, portraitBox: FACE_BOX, flat: false, body: <RigToken id={id} appearance={prof.appearance} equip={prof.equip} career={prof.tenue} ambientAnim={ent.anim ?? ''} facing={ent.facing} pos={ent.pos} /> };
   }
   if (r.kind === 'plan') {
-    // ent.appearance.eyes = CLÉS du catalogue (donnée éditeur) → résolues en arts ici
-    // (les combattants passent par riggedAppearance au spawn, qui résout déjà).
+    // ent.appearance.eyes = CLÉS du catalogue (donnée éditeur) → résolues en arts ici — comme le
+    // combattant non-humanoïde plus haut (`c.appearanceOverride.eyes`, même `eyesArtFromKeys`).
     return { backend: 'plan', id, speciesScale: r.scale, portraitBox: planPortraitBox(r.plan), flat: top, body: <AnimatedPlanToken id={id} planId={r.plan} species={r.species} colors={ent.appearance?.colors} eyes={eyesArtFromKeys(ent.appearance?.eyes)} facing={ent.facing} pos={ent.pos} /> };
   }
   return { backend: 'sprite', id, speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <g dangerouslySetInnerHTML={{ __html: entitySprite(ent) }} /> };

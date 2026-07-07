@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { resolveRig } from '../composeRig';
 import { bonesToSvg } from '../renderBones';
-import { entityRigProfile, weaponFromLabel } from '../enemyProfile';
+import { entityRigProfile } from '../enemyProfile';
+import { weaponFromLabel } from '../../../engine/creatureEquip';
 import { resolveSpecies } from '../bodyPlan';
 import { slugId } from '../../../data/slug';
 import type { View } from '../facing';

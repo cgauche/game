@@ -1253,9 +1253,12 @@ export interface Combatant {
    *  *Empêtré* de l'Empoigné est une DONNÉE distincte (addCondition). Purgé sur sortie de combat par
    *  `clearEngagementOf` (qui lève engagement + contact + Empoignade d'un coup). */
   grapplingWith?: string[];
-  /** Apparence visuelle (cosmétique, ignorée par le moteur ; lue par le rendu).
-   *  Référence de TYPE seulement → élidée à la compilation, pas de dépendance runtime. */
+  /** Apparence visuelle RÉSOLUE (cosmétique, ignorée par le moteur ; lue directement par le rendu pour
+   *  un PJ rendu depuis son propre inventaire). Référence de TYPE seulement → élidée à la compilation. */
   appearance?: import('../gameIso/rig/appearance').Appearance;
+  /** Override d'apparence d'AUTHORING BRUT (cosmétique) porté depuis la scène au spawn (#187) : figé
+   *  PARESSEUSEMENT par le rig (`enemyRigProfile`) au premier rendu, jamais dans `state`. */
+  appearanceOverride?: import('./authoringAppearance').EntityAppearance;
 }
 
 /** Niveau de difficulté d'un Test (Livre de base, Tests). */

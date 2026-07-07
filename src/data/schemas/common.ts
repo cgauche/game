@@ -135,7 +135,7 @@ export const advancementRefSchema: z.ZodType<
   z.strictObject({ random: z.number() }),
 ]);
 
-/** `EntityAppearance` (`src/state/scene.ts:87-110`) — apparence d'entité (créature/trait/mutation).
+/** `EntityAppearance` (`src/engine/authoringAppearance.ts`) — apparence d'entité (créature/trait/mutation).
  *  Dupliqué à l'identique dans `creatures`/`traits` ; `mutations` l'étend d'un `legs` anomalique
  *  (cf. `mutations.ts`, non repris ici — anomalie propre à ce seul dataset). */
 export const entityAppearanceSchema = z.strictObject({

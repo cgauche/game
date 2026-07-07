@@ -8,6 +8,7 @@ import { enemyRigProfile, rendersFromOwnInventory } from './rig/enemyProfile';
 import { defaultAppearance } from './rig/appearance';
 import { equipFromCombatant, isShield } from './rig/parts/equipment';
 import { combatantAppearance, combatantOverlays } from './rig/parts/combatantVisuals';
+import { eyesArtFromKeys } from './rig/parts/eyes';
 import { resolveRender } from './rig/bodyPlan';
 import { findCareerById } from '../data';
 import { sizeTokenScale } from './sizeScale';
@@ -40,7 +41,7 @@ export function MountedToken({ mount, rider }: { mount: Combatant; rider: Combat
   if (!mountA.plan) return null; // monture sans gabarit (improbable) — rien à composer
 
   const view = mountA.view; // le couple partage la vue de la monture
-  const mountBones = mountA.plan.resolve(mountA.species, view, mountA.pose, { colors: mount.appearance?.colors, wings: mountA.wings, eyes: mount.appearance?.eyes });
+  const mountBones = mountA.plan.resolve(mountA.species, view, mountA.pose, { colors: mount.appearanceOverride?.colors, wings: mountA.wings, eyes: eyesArtFromKeys(mount.appearanceOverride?.eyes) });
   // Pose MONTÉE dédiée (corps assis + tenue d'arme selon l'arme tenue) + delta du clip vivant
   // (idle/attaque) par-dessus. On n'utilise PAS la prise d'arme à pied (riderA.holdPose).
   const mainWeapon = equip.weapons?.find((w) => !isShield(w)) ?? equip.weapons?.[0];

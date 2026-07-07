@@ -25,7 +25,7 @@ import type { ConsumableDuration } from '../../engine/consumables';
 import { JsonField } from '../editor/JsonField';
 import { creatureSpeciesOptions } from '../../gameIso/rig/creatures';
 import { CreaturePreview } from './CreaturePreview';
-import type { EntityAppearance } from '../../state/scene';
+import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { type Flow, EMPTY_FLOW, type TriggeredEffect, type EffectTrigger } from '../../state/flow';
 import { TRIGGER_LABEL, ON_LABEL } from './triggerLabels';
 import { MANEUVER_ACTIVATION_LABEL, MANEUVER_TARGETING_LABEL } from './maneuverLabels';

@@ -58,19 +58,6 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
 }
 `;
 
-exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du merge) > enemyRigProfile · override-gabarit 1`] = `
-{
-  "appearance": {
-    "build": 0.72,
-    "gabarit": "brute-bras-longs",
-    "seed": 797841609,
-    "sex": "M",
-    "species": "humain",
-  },
-  "tenue": "Bourgeois",
-}
-`;
-
 exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du merge) > enemyRigProfile · override-monster 1`] = `
 {
   "appearance": {

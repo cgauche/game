@@ -78,7 +78,7 @@ export interface Mutation {
   /** Apparence COSMÉTIQUE déclarée en DONNÉE (calques du catalogue via `features` + `colors` + `eyes`) —
    *  fusionnée sur le rig quand la mutation est présente (cf. `combatantVisuals`). Type erased : le
    *  moteur ne la lit jamais (comme `Combatant.appearance` côté types). */
-  appearance?: import('../state/scene').EntityAppearance;
+  appearance?: import('./authoringAppearance').EntityAppearance;
 }
 
 // ---------------------------------------------------------------------------

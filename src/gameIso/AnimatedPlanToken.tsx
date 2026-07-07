@@ -2,7 +2,7 @@ import { bonesToSvg } from './rig/renderBones';
 import { usePlanAnim } from './usePlanAnim';
 import type { BodyPlanId } from './rig/bodyPlan';
 import type { Dir8 } from '../state/dir8';
-import type { ColorsSel } from '../state/scene';
+import type { ColorsSel } from '../engine/authoringAppearance';
 
 /**
  * Token ANIMÉ GÉNÉRIQUE pour TOUT gabarit rigué non-bipède (quadrupède, ailé, serpentin,

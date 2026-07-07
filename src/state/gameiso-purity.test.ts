@@ -32,13 +32,6 @@ const ALLOWLIST = new Set([
   // recette de surface, zéro dépendance runtime) : `state/terrain/types.ts` TYPE le champ `detail` d'un
   // `TerrainDef` sans jamais le lire (« la walkability n'en lit rien, seul le rendu la consommera »).
   'terrain/types.ts',
-  // `riggedAppearance`/`weaponFromLabel` (gameIso/rig/enemyProfile) + `bodyPlanById` (gameIso/rig/bodyPlan) :
-  // authentiquement entremêlés au REGISTRE DE RENDU du rig (squelettes/poses par espèce, 97 fichiers
-  // `creatures/defs/`) — contrairement aux symboles extraits par #161, la classification de plan corporel
-  // qu'utilise `bodyShapeOf` (LDB p.312) n'est PAS séparable de ce registre sans le désenchevêtrer en
-  // profondeur. Hors périmètre #161, tracé et détaillé : issue #187 (à retirer de cette allowlist une fois
-  // fait).
-  'spawn.ts',
 ]);
 
 /** Tout import (statique `from`, dynamique/inline `import(`, ou side-effect `import '…'`) ciblant un

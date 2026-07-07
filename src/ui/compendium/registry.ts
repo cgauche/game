@@ -57,7 +57,7 @@ import { formatDice } from '../../engine/dice';
 import { formatDiseaseTime } from '../../engine/disease';
 import { costPerEnc } from '../../engine/harvest';
 import { formatMoney, priceToMoney } from '../../engine/money';
-import type { EntityAppearance } from '../../state/scene';
+import type { EntityAppearance } from '../../engine/authoringAppearance';
 import type { MutationData } from '../../data/mutations';
 import { passiveSection, effectsSection, careerGrantSection, spellFlowSection, capabilitySection } from './describe';
 import { reverseGroups, bookContents } from './relations';
