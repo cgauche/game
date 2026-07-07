@@ -87,6 +87,7 @@ export function CharCard({ hero, compact, onOpen }: { hero: Combatant; compact?:
       </div>
       {(arms.length > 0 || wornZones.length > 0) && (
         <div className="char-equip">
+          <div className="mini-title">Équipement</div>
           {arms.length > 0 && (
             <span className="ce-weap"><Icon id="item/weapon" size="sm" /> {arms.map((w, i) => (
               <EntityRef key={i} category="trappings" label={w.name} show={w.name} badge={damageString(w.damage)} />
