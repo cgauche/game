@@ -623,6 +623,14 @@ h3 {
   display: block;
   font-size: 10px;
   color: var(--muted);
+  padding: 3px 0;
+}
+/* #200 : le déclencheur CodexRef d'un libellé de caractéristique (I, CC…) est minuscule
+   (dimensionné au seul texte) → cible de survol impossible à viser. Il remplit ici toute la
+   largeur du libellé (scopé `.stat-label`, jamais global — chips/tags gardent leur taille). */
+.stat-label > .codex-ref {
+  display: block;
+  width: 100%;
 }
 .stat-val {
   font-weight: 700;
