@@ -51,6 +51,7 @@ import { seasonOfMonth } from '../engine/travelStages';
 import {
   rollSeaWeather, rollWindDirection, windAspect, tickWindForce, windEffect, windAdjustedM,
   seaWeatherLabel, dailyWaterLitres, temperatureDef, seaExposureTestsPerDay, AFFALER_RULES,
+  precipitationSkillMod, precipitationDef,
   type SeaWeather, type WindDirection,
 } from '../engine/seaWeather';
 import {
@@ -119,6 +120,16 @@ export interface SeaVoyageState {
   /** Issue du Test de Voile/Ramer du JOUR (l.97) : 'won' → le +M s'applique aux milles du jour. Présent
    *  (won OU lost) = le rythme a été forcé → Test d'Épuisement Complexe (−10) au soir (l.111). */
   paceToday?: 'won' | 'lost';
+}
+
+/** Malus d'ENVIRONNEMENT (Précipitations, MDG 13 l.187-201) sur le Test de compétence `skillId` en
+ *  cours, quand un voyage en mer est ACTIF — POINT UNIQUE consommé par `openSkillTest` (aucun écran
+ *  ne relit `sea.weather` pour son propre Test : la modale générique porte le malus). `undefined` =
+ *  rien à afficher (mod nul, hors voyage maritime, ou Test de Caractéristique sans `skillId`). */
+export function seaWeatherTestMod(sea: SeaVoyageState | undefined, skillId?: string, spec?: string): { mod: number; label: string } | undefined {
+  if (!sea || !skillId) return undefined;
+  const mod = precipitationSkillMod(sea.weather.precipitations, skillId, spec);
+  return mod ? { mod, label: precipitationDef(sea.weather.precipitations).label } : undefined;
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
