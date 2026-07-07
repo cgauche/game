@@ -14,6 +14,7 @@ import { testValue } from '../../engine/skills';
 import { bonus, effectiveChar, refreshWounds } from '../../engine/characteristics';
 import { addCondition, isOutOfAction, COND, tickDeath, bleedDeathRoll, stacks, endOfRound, hasCondition } from '../../engine/conditions';
 import { suffocationTick } from '../../engine/suffocation';
+import { tickFingerLossEscalation } from '../../engine/trauma';
 import { clearPsychOf } from '../../engine/psychology';
 import { zonesRoundTick } from '../zones';
 import { purgeExpiredSummons } from '../summonFlow';
@@ -211,6 +212,16 @@ registerCombatHook({
     }
     battle.bleedDoomed = doomed.length ? doomed : undefined;
   },
+});
+registerCombatHook({
+  // « Main ouverte » (AA l.2571 / LDB « Main ouverte ») : MACHINERIE UNIVERSELLE — toute séquelle portant
+  // `fingerLossPerRound` encore `awaitingMedicalAid` perd un doigt de plus à chaque fin de Round (4+ doigts →
+  // main tranchée). Ne nomme aucune entité éditable ; comme `tick-death`, c'est une règle de l'arène. Inerte
+  // (aucune ligne ni RNG) tant qu'aucun combattant ne porte le marqueur → franchissement de Round iso-comportement.
+  id: 'finger-loss-escalation',
+  phase: 'onRoundEnd',
+  order: 76.7,
+  run: ({ battle, sink }) => { for (const c of battle.combatants) tickFingerLossEscalation(c, battleRng()).forEach((l) => sink(l, c)); },
 });
 registerCombatHook({
   // Noyade et Suffocation (LDB 18 l.424-425) : MACHINERIE environnementale UNIVERSELLE — la règle de mort

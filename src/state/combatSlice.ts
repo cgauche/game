@@ -54,7 +54,7 @@ import { battleConsumeItem } from './consumableFlow';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, addCondition, removeCondition, hasCondition, canTakeAction, isActionLocked, loseWounds, stacks, recoveredStacks, COND, setConditionGainedHook } from '../engine/conditions';
 import { hasHealSkill, availableHealModes, resolveWoundsHeal, resolveBleedHeal, type HealMode } from '../engine/healing';
-import { treatTrauma } from '../engine/trauma';
+import { treatTrauma, receiveMedicalAid } from '../engine/trauma';
 import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
 import { rollOups } from '../engine/oups';
@@ -2417,6 +2417,9 @@ export function createCombatSlice(get: Get, set: Set) {
           ? resolveBleedHeal(target, ph.sl, ph.success)
           : treatTrauma(target, ph.sl, ph.success); // mode 'trauma' — l'échec consomme aussi le jet (LDB 18 l.317)
       }
+      // Compétence Guérison RÉUSSIE = Aide Médicale (LDB 18 l.308) : lève l'escalade en attente (« Main
+      // ouverte » : plus de doigt perdu par Round). Un échec ne soigne pas → n'est pas de l'Aide Médicale.
+      if (ph.success) log = [...log, ...receiveMedicalAid(target)];
       finishPlayerAction(get, set, log, 'heal'); // sortie commune combat / hors combat
     },
 

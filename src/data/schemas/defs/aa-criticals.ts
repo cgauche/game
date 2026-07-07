@@ -5,6 +5,7 @@
  */
 import { z } from 'zod';
 import { gameOpSchema, difficultySchema } from '../common';
+import { critEscalationSchema } from './criticals';
 
 export const file = 'aa-criticals.json';
 
@@ -32,6 +33,8 @@ const aaEntrySchema = z.strictObject({
       sequels: z.array(z.string()),
     })
     .optional(),
+  /** Escalade GATÉE par les soins (« Main ouverte » l.2571 / « Pied écrasé » l.2624) — partagée LDB. */
+  escalation: critEscalationSchema.optional(),
   lethal: z.boolean().optional(),
   desc: z.string(),
 });

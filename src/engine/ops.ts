@@ -24,7 +24,7 @@ import { grantTrait, dropExpiredGrantedTraits } from './grantedTraits';
 import { setGrapple } from './grapple'; // op `condition {grapple:true}` → relation d'Empoignade (côté grapple : import type GameOp erased → pas de cycle runtime)
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { applyAlcoholTest } from './drunkenness';
-import { cureCriticalWounds } from './trauma';
+import { cureCriticalWounds, receiveMedicalAid } from './trauma';
 import { damageLeatherArmour, itemFromTrappingById, itemFromGive, giveTrappingLabel, recomputeLoadout, buildWeapon, weaponItem, newUid, activeLoadout, damageString } from './items';
 import { weaponMatchesFamily } from './weaponDamage';
 import { suppressPsychTraits, type PsychType } from './psychology';
@@ -1027,6 +1027,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const n = Math.max(0, resolveFormula(o.amount, ref, rng, ctx.rolled, ctx.indice, ctx.stacks) + slBonus(ctx.sl, o.perSL));
         target.wounds.current = Math.min(target.wounds.max, target.wounds.current + n);
         lines.push(t('op.heal', { name: target.name, n }));
+        lines.push(...receiveMedicalAid(target)); // sort/prière de soin = Aide Médicale (LDB 18 l.311)
         break;
       }
       case 'healCaster': {
@@ -1034,6 +1035,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         const n = Math.max(0, resolveFormula(o.amount, ref, rng));
         who.wounds.current = Math.min(who.wounds.max, who.wounds.current + n);
         lines.push(t('op.heal', { name: who.name, n }));
+        lines.push(...receiveMedicalAid(who)); // sort/prière de soin = Aide Médicale (LDB 18 l.311)
         break;
       }
       case 'gainAdvantage': {
@@ -1304,6 +1306,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'preventInfection': {
         target.woundDressed = true; // pas d'Infection post-critique (LDB 18 l.382)
         lines.push(t('op.preventInfection', { name: target.name, src: ctx.label ?? 'sort' }));
+        lines.push(...receiveMedicalAid(target)); // bandage/cataplasme = Aide Médicale (LDB 18 l.310)
         break;
       }
       case 'exposeDisease': {

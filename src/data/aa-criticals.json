@@ -730,6 +730,9 @@
           "doigt-ampute"
         ]
       },
+      "escalation": {
+        "fingerLossPerRound": true
+      },
       "desc": "Votre main s'ouvre. Perdez 1 doigt – Amputation (Complexe). Gagnez 2 États Hémorragique et 1 État Sonné. Pour chaque Round au cours duquel vous ne recevez pas d'Aide Médicale, vous perdez un autre doigt. Si vous perdez tous vos doigts, vous perdez votre main – Amputation (Complexe)."
     },
     {
@@ -1563,6 +1566,10 @@
         "sequels": [
           "orteil-ampute"
         ]
+      },
+      "escalation": {
+        "amputateAfter1d10Days": true,
+        "amputateSequel": "membre-inferieur-ampute"
       },
       "desc": "Effectuez un Test de Résistance Accessible (+20) ; sur un Échec, vous gagnez l'État À Terre et perdez un orteil, plus un orteil par DR en dessous de 0 – Amputation (Accessible). Gagnez 2 États Hémorragique. Si vous n'êtes pas soigné par Chirurgie au cours des 1d10 jours suivants, vous perdez votre pied."
     },

@@ -34,8 +34,20 @@ export interface CritEntry {
   amputation?: { difficulty: Difficulty; sequels: string[] };
   /** Traumatismes ENGENDRÉS (LDB 18) — refs d'id de fiches `traumas.json` ; la localisation vient de la table. */
   traumas?: string[];
+  /** Escalade GATÉE d'une Blessure critique (LDB / Aux Armes) : sans soin, la plaie chirurgicale S'AGGRAVE.
+   *  `fingerLossPerRound` (« Main ouverte ») : 1 doigt de plus par Round de combat tant que l'Aide Médicale
+   *  n'est pas reçue (4+ doigts → main tranchée). `amputateAfter1d10Days` (« Pied écrasé ») : perte définitive
+   *  du membre (`amputateSequel`) si la Chirurgie de la plaie n'intervient pas dans le délai (1d10 jours). */
+  escalation?: CritEscalation;
   /** Texte canon (LONG TERME), DISPLAY-ONLY — jamais parsé pour de la mécanique. */
   desc: string;
+}
+/** Déclaration d'escalade gatée par les soins — partagée LDB (`criticals.json`) et Aux Armes (`aa-criticals.json`).
+ *  Instanciée par `stampCriticalEscalation` (trauma.ts) sur la plaie chirurgicale du critique. */
+export interface CritEscalation {
+  fingerLossPerRound?: boolean;
+  amputateAfter1d10Days?: boolean;
+  amputateSequel?: string;
 }
 export type CritTable = CritEntry[];
 

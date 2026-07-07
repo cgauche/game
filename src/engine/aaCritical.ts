@@ -34,7 +34,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { testValue } from './skills';
 import { locationLabel } from './combat';
 import { Combatant, HitLocation } from './types';
-import { traumaById, traumaFicheById } from './trauma';
+import { traumaById, traumaFicheById, stampCriticalEscalation } from './trauma';
 import type { GameOp } from './ops';
 import type { CriticalResolved } from './critical';
 import { permanentAmputations } from './critical';
@@ -59,6 +59,10 @@ interface AAEntry {
    *  DR≤−2, +Inconscient si DR≤−4, comme LDB 18 l.328-333), `sequels` = ids de fiches de séquelle
    *  PERMANENTE (`traumas.json`), instanciées par `permanentAmputations` (SOURCE UNIQUE, réutilisée). */
   amputation?: { difficulty: import('./types').Difficulty; sequels: string[] };
+  /** Escalade GATÉE par les soins (même déclaration que `data/criticals.ts` LDB) : « Main ouverte »
+   *  (l.2571 : 1 doigt/Round sans Aide Médicale) / « Pied écrasé » (l.2624 : perte du pied si pas de
+   *  Chirurgie sous 1d10 jours). Instanciée sur la plaie chirurgicale par `stampCriticalEscalation`. */
+  escalation?: import('../data/criticals').CritEscalation;
   lethal?: boolean;
   desc: string;
 }
@@ -118,6 +122,10 @@ export function resolveAACritical(
     // Séquelle(s) PERMANENTE(S) (membre absent) : SOURCE UNIQUE partagée avec le chemin LDB.
     traumas.push(...permanentAmputations(entry.amputation.sequels, location, rng));
   }
+  // Escalade GATÉE par les soins (« Main ouverte » l.2571 : doigt/Round ; « Pied écrasé » l.2624 : perte du
+  // pied sans Chirurgie sous 1d10 jours) — stampée SUR la plaie chirurgicale, en DERNIER (ne décale que les
+  // critiques à escalade). SOURCE UNIQUE partagée avec le chemin LDB (`rollCritical`).
+  stampCriticalEscalation(traumas, entry.escalation, rng);
   return {
     location,
     name: entry.name,

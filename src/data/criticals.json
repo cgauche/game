@@ -883,6 +883,9 @@
           "doigt-ampute"
         ]
       },
+      "escalation": {
+        "fingerLossPerRound": true
+      },
       "desc": "Perdez 1 doigt — Amputation (Complexe) ; 1 doigt de plus par Round sans Aide Médicale."
     },
     {
@@ -1886,6 +1889,10 @@
         "sequels": [
           "orteil-ampute"
         ]
+      },
+      "escalation": {
+        "amputateAfter1d10Days": true,
+        "amputateSequel": "membre-inferieur-ampute"
       },
       "desc": "Perte d'un orteil (+1 par DR sous 0) — Amputation (Accessible) ; perte du pied si pas de Chirurgie sous 1d10 jours."
     },

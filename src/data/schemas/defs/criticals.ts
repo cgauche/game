@@ -8,6 +8,14 @@ import { gameOpSchema, difficultySchema } from '../common';
 
 export const file = 'criticals.json';
 
+/** Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du membre sans
+ *  Chirurgie sous 1d10 jours) — reflet de `CritEscalation` (`src/data/criticals.ts`). Partagée AA/LDB. */
+export const critEscalationSchema = z.strictObject({
+  fingerLossPerRound: z.boolean().optional(),
+  amputateAfter1d10Days: z.boolean().optional(),
+  amputateSequel: z.string().optional(),
+});
+
 const critEntrySchema = z.strictObject({
   id: z.string(),
   min: z.number(),
@@ -28,6 +36,7 @@ const critEntrySchema = z.strictObject({
     })
     .optional(),
   traumas: z.array(z.string()).optional(),
+  escalation: critEscalationSchema.optional(),
   desc: z.string(),
 });
 

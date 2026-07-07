@@ -10,7 +10,7 @@ import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape, locationLabel } from './combat';
 import { BodyShape, Combatant, HitLocation, Trauma } from './types';
 import { CRITICAL_TABLES } from '../data/criticals';
-import { traumaById, traumaFicheById } from './trauma';
+import { traumaById, traumaFicheById, stampCriticalEscalation } from './trauma';
 import { rule } from './policy';
 import { resolveAACritical } from './aaCritical';
 import type { GameOp } from './ops';
@@ -141,6 +141,10 @@ export function rollCritical(
     // (la perte de dents tire 1d10 — placé après le Test de Résistance d'amputation pour ne pas décaler le reste).
     traumas.push(...permanentAmputations(entry.amputation.sequels, location, rng));
   }
+  // Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du pied sans
+  // Chirurgie sous 1d10 jours) — stampée SUR la plaie chirurgicale. Roll placé en DERNIER (ne décale que
+  // les critiques à escalade). Même patron que le chemin AA (`resolveAACritical`).
+  stampCriticalEscalation(traumas, entry.escalation, rng);
   return {
     location,
     name: entry.name,

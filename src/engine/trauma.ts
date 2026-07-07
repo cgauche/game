@@ -12,7 +12,8 @@
  */
 import { Combatant, CharKey, HitLocation, Trauma, Difficulty, UpkeepDeferTest, Weapon } from './types';
 import { rollTest } from './tests';
-import { RNG, defaultRNG } from './dice';
+import { RNG, defaultRNG, d10 } from './dice';
+import type { CritEscalation } from '../data/criticals';
 import { isPainless, traitPassiveMods } from './traits/dispatch';
 import { findConditionById, findPsychologyById, findTrappingById } from '../data';
 import { talentPassiveMods } from './talentEffects';
@@ -173,6 +174,19 @@ export function tickTraumaRecovery(c: Combatant, days: number, rng: RNG = defaul
   const remaining: Trauma[] = [];
   const fractureTests: { severity: string; location: string; label: string }[] = [];
   for (const t of c.traumas) {
+    // « Pied écrasé » (AA l.2624 / LDB) : perte définitive du membre si la Chirurgie de la plaie n'est pas
+    // faite dans le délai (1d10 jours). L'opération réussie retire la plaie AVANT l'échéance (removeSurgicalTrauma)
+    // → ce trauma n'existe plus ici → membre sauvé. Sinon, à l'échéance, la séquelle permanente est posée.
+    if (t.amputateAfterDays != null) {
+      const dLeft = t.amputateAfterDays - days;
+      if (dLeft > 0) { remaining.push({ ...t, amputateAfterDays: dLeft }); continue; }
+      // Délai expiré sans Chirurgie : le membre est perdu (séquelle permanente `amputateSequel`) ; la plaie
+      // reste chirurgicale (le moignon exige toujours une opération), débarrassée de son décompte d'escalade.
+      remaining.push({ ...t, amputateAfterDays: undefined, amputateSequel: undefined });
+      if (t.amputateSequel) remaining.push(traumaById(t.amputateSequel, undefined, t.location));
+      log.push(`${c.name} : faute de Chirurgie à temps, le membre est perdu (${t.label}, ${t.location}).`);
+      continue;
+    }
     if (t.recoveryDays == null) { remaining.push(t); continue; }
     const left = t.recoveryDays - days;
     if (left > 0) {
@@ -318,6 +332,65 @@ export function consolidateAmputations(c: Combatant): string[] {
   }
   c.traumas = kept;
   return log;
+}
+
+/**
+ * Aide Médicale reçue (LDB 18 l.307-312 : Compétence Guérison réussie, bandage/cataplasme, ou sort/prière de
+ * soin) : lève le drapeau `awaitingMedicalAid` de TOUTES les séquelles en attente — le PREMIER acte de soin des
+ * 3 formes stoppe leur aggravation (escalade « 1 doigt de plus par Round » de « Main ouverte », AA l.2571 / LDB).
+ * Appelé par les 3 formes (ops `heal`/`healCaster`/`preventInfection` ; succès de Guérison en infirmerie). Pur.
+ */
+export function receiveMedicalAid(c: Combatant): string[] {
+  const awaiting = (c.traumas ?? []).filter((t) => t.awaitingMedicalAid);
+  if (!awaiting.length) return [];
+  for (const t of awaiting) t.awaitingMedicalAid = false;
+  return [`${c.name} reçoit de l'Aide Médicale — l'aggravation de la blessure est stoppée.`];
+}
+
+/**
+ * Escalade « Main ouverte » (AA l.2571 / LDB « Main ouverte ») : à CHAQUE fin de Round de combat SANS Aide
+ * Médicale (`awaitingMedicalAid`), la main perd un doigt de plus. `consolidateAmputations` applique ensuite la
+ * règle de la main tranchée (4+ doigts → `main-bras-ampute`, LDB 18 l.341). Mute `c`, renvoie le journal.
+ * Appelé par le hook de franchissement de Round (`roundHooks`, machinerie universelle — ne nomme aucune entité).
+ */
+export function tickFingerLossEscalation(c: Combatant, rng: RNG = defaultRNG): string[] {
+  const gated = (c.traumas ?? []).filter((t) => t.fingerLossPerRound && t.awaitingMedicalAid);
+  if (!gated.length) return [];
+  const log: string[] = [];
+  for (const t of gated) {
+    const finger = traumaById('doigt-ampute', undefined, t.location);
+    finger.count = 1; // 1 doigt de plus (cumulé par consolidateAmputations, comme permanentAmputations)
+    c.traumas = [...(c.traumas ?? []), finger];
+    log.push(`${c.name} : sans Aide Médicale, la main perd un doigt de plus (${t.location}).`);
+  }
+  const cons = consolidateAmputations(c);
+  // Main tranchée (4+ doigts) : la règle « perdez tous vos doigts → vous perdez votre main » est atteinte —
+  // la plaie de doigt n'a plus lieu de saigner (le membre est amputé), on retire l'escalade en attente. Vérifié
+  // PAR LOCALISATION : une main déjà amputée sur l'AUTRE bras (crit antérieur) ne coupe pas une escalade « Main
+  // ouverte » fraîche — seule la main effectivement tranchée arrête SON escalade (AA l.2571 / LDB « Main ouverte »).
+  for (const t of c.traumas ?? []) {
+    if (t.fingerLossPerRound && (c.traumas ?? []).some((x) => x.traumaId === 'main-bras-ampute' && x.location === t.location)) {
+      t.fingerLossPerRound = false;
+      t.awaitingMedicalAid = false;
+    }
+  }
+  return [...log, ...cons];
+}
+
+/**
+ * Instancie l'escalade GATÉE d'un critique (`CritEscalation`, LDB / Aux Armes) SUR la plaie chirurgicale posée
+ * par le bloc d'amputation (SOURCE UNIQUE, partagée par `rollCritical` et `resolveAACritical`) :
+ *  - « Main ouverte » (l.2571) → `fingerLossPerRound` + `awaitingMedicalAid` (escalade par Round de combat) ;
+ *  - « Pied écrasé » (l.2624) → `amputateAfterDays = 1d10` + `amputateSequel` (perte du membre si pas de
+ *    Chirurgie à temps ; décompté à l'entretien par `tickTraumaRecovery`).
+ * Mute la plaie en place. No-op si l'entrée ne déclare pas d'escalade ou n'a pas posé de plaie chirurgicale.
+ */
+export function stampCriticalEscalation(traumas: Trauma[], esc: CritEscalation | undefined, rng: RNG = defaultRNG): void {
+  if (!esc) return;
+  const plaie = traumas.find((t) => t.needsSurgery && t.traumaId == null); // « Amputation » = la plaie chirurgicale
+  if (!plaie) return;
+  if (esc.fingerLossPerRound) { plaie.fingerLossPerRound = true; plaie.awaitingMedicalAid = true; }
+  if (esc.amputateAfter1d10Days) { plaie.amputateAfterDays = d10(rng); plaie.amputateSequel = esc.amputateSequel; }
 }
 
 /**
@@ -665,9 +738,9 @@ export function traumaDodgePenalty(c: Combatant): number {
 /** Un `skillMod` restreint à un `sense` (Surdité : « Tests de Perception basés sur l'ouïe », LDB 18)
  *  s'applique-t-il à un Test qui sollicite `testSense` ? Sans restriction (`opSense` absent, ex. Cécité —
  *  déjà scopée par compétence nommée) → toujours. Restreint mais le sens du Test COURANT est INCONNU
- *  (`testSense` absent — cas d'un appelant qui ne le précise pas) → s'applique (le RAW n'est pas
- *  levé faute d'info, le sens précis d'un Test de Perception étant une donnée NARRATIVE que seul l'appelant
- *  connaît, cf. Talent Sens aiguisé `manual:true`). Restreint et CONNU mais différent → exempté. */
+ *  (`testSense` absent — cas d'un appelant qui ne le précise pas) → s'applique par défaut (le sens précis
+ *  d'un Test de Perception est une donnée NARRATIVE que seul l'appelant connaît, cf. Talent Sens aiguisé
+ *  `manual:true`). Restreint et CONNU mais différent → exempté (surdité, LDB 18 l.363). */
 function senseMatches(opSense: PairedSense | undefined, testSense: PairedSense | undefined): boolean {
   return opSense == null || testSense == null || opSense === testSense;
 }
