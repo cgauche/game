@@ -222,7 +222,8 @@
         {
           "op": "condition",
           "name": "aveugle",
-          "value": 1
+          "value": 1,
+          "unlockBy": "medicalAid"
         }
       ],
       "desc": "Le coup lézarde votre orbite. Gagnez 1'État Hémorragique. Gagnez également 1'État\nAveuglé qui ne pourra être soigné que lorsqu'on vous appliquera Aide Médicale."
@@ -878,10 +879,7 @@
           "op": "condition",
           "name": "sonne",
           "value": 1,
-          "lockedUntil": {
-            "kind": "flag",
-            "expr": "!awaitingMedicalAid"
-          }
+          "unlockBy": "medicalAid"
         },
         {
           "op": "disarm"
@@ -1532,7 +1530,8 @@
         {
           "op": "condition",
           "name": "sonne",
-          "value": 1
+          "value": 1,
+          "unlockBy": "medicalAid"
         }
       ],
       "traumas": [
@@ -1555,7 +1554,8 @@
         {
           "op": "condition",
           "name": "inconscient",
-          "value": 1
+          "value": 1,
+          "unlockBy": "medicalAid"
         }
       ],
       "traumas": [
@@ -1578,7 +1578,8 @@
         {
           "op": "condition",
           "name": "hemorragique",
-          "value": 1
+          "value": 1,
+          "unlockBy": "surgery"
         },
         {
           "op": "contractDisease",
@@ -2019,10 +2020,7 @@
             "op": "condition",
             "name": "sonne",
             "value": 1,
-            "lockedUntil": {
-              "kind": "flag",
-              "expr": "!awaitingMedicalAid"
-            }
+            "unlockBy": "medicalAid"
           }
         ]
       },

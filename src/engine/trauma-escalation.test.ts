@@ -2,16 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { receiveMedicalAid, tickFingerLossEscalation, tickTraumaRecovery, stampCriticalEscalation,
   recoverableTraumas, hasRecoverableTrauma, hasLimbAwaitingAid, recoverDisabledLimb, cannotWieldTwoHanded,
   traumaMovementHalved } from './trauma';
-import { addCondition, removeCondition, hasCondition } from './conditions';
+import { addCondition, removeCondition, hasCondition, releaseConditionLocks } from './conditions';
 import { applyOps } from './ops';
 import { resolveAACritical } from './aaCritical';
 import type { Combatant, Trauma, HitLocation } from './types';
-import type { Condition } from './flowCore';
 import type { RNG } from './dice';
 import aaJson from '../data/aa-criticals.json';
 import criticalsJson from '../data/criticals.json';
-
-const UNTIL_AID: Condition = { kind: 'flag', expr: '!awaitingMedicalAid' };
 
 const C = (over: Partial<Combatant>): Combatant =>
   ({
@@ -195,13 +192,12 @@ describe('#166 — « Épaule luxée »/« Genou démis » : membre désactivé 
     expect(recoverDisabledLimb(cG, 0).penalty).toEqual([{ op: 'testMod', char: 'CC', amount: -10, weaponHand: 'off' }]);
   });
 
-  it('Sonné « jusqu’à Aide Médicale » : `lockedUntil` (flag) le retient tant qu’une séquelle attend l’Aide', () => {
+  it('Sonné « jusqu’à Aide Médicale » (Épaule luxée/Genou démis) : `unlockBy:medicalAid` le retient, l’Aide le retire', () => {
     const c = C({ traumas: [{ label: 'x', location: 'brasD', awaitingMedicalAid: true, restoreDR: 6 }] });
-    addCondition(c, 'sonne', 1, undefined, UNTIL_AID);
+    addCondition(c, 'sonne', 1, undefined, undefined, 'medicalAid');
     removeCondition(c, 'sonne'); // récupération d’État normale : INERTE (verrouillé)
     expect(hasCondition(c, 'sonne')).toBe(true);
-    receiveMedicalAid(c); // Aide reçue → le verrou tombe
-    removeCondition(c, 'sonne');
+    releaseConditionLocks(c, 'medicalAid'); // Aide reçue → l’acte retire l’État
     expect(hasCondition(c, 'sonne')).toBe(false);
   });
 

@@ -415,7 +415,18 @@ export interface ConditionInstance {
    *  'hemorragique'} == 0`. Tant que le verrou tient, `removeCondition` (dont l'auto-dissipation) est INERTE
    *  sur cet État. Évalué par `isConditionLocked`. */
   lockedUntil?: import('./flowCore').Condition;
+  /** VERROU d'ACTE de soin (LDB 18) : un État posé par un Critique « ne peut être retiré que par [acte] »
+   *  (Aveuglé/Sonné/Inconscient « par Aide Médicale », Hémorragique « par Chirurgie »). Porté sur l'INSTANCE
+   *  (aucun trauma porteur), levé par l'acte NOMMÉ via `releaseConditionLocks` (qui RETIRE alors l'État —
+   *  l'acte est ce qui le « soigne »). Tant qu'il est posé, `removeCondition` (récupération naturelle,
+   *  auto-dissipation) est INERTE sur cet État. Évalué par `isConditionLocked`. */
+  unlockBy?: ConditionUnlock;
 }
+
+/** Acte de soin qui LÈVE un verrou d'État de Critique (LDB 18). `medicalAid` = une des 3 formes d'Aide
+ *  Médicale (Guérison réussie / bandage-cataplasme / sort-prière de soin) ; `surgery` = acte de Chirurgie ;
+ *  `magic` = soin magique (qui compte AUSSI comme Aide Médicale, LDB 18 l.311 → lève aussi `medicalAid`). */
+export type ConditionUnlock = 'medicalAid' | 'surgery' | 'magic';
 
 /** Pénalité/blocage d'incantation temporisé (contrecoups des tables d'Imparfaites /
  *  Colère des dieux — LDB 46 l.61-136, LDB 40 l.58-138). Une seule des deux durées :

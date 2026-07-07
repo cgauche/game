@@ -179,6 +179,7 @@ export const fr = {
   'cond.dissipate': '{name} : un État {cond} se dissipe.',
   'cond.effectExpire': '{name} : {label} se dissipe.',
   'cond.spellCondExpire': "{name} : l'État {cond} (sort) se dissipe.",
+  'cond.lockReleased': "{name} : l'État {cond} est levé par le soin (Blessure critique, LDB 18).",
   'cond.lastWoundExhausted': '{name} est Exténué (dernière plaie refermée).',
   'cond.coagulate': '{name} : une plaie coagule ({roll}, double) — un État Hémorragique en moins.',
   'cond.bleedDeath': "{name} succombe à l'hémorragie ({roll} ≤ {threshold}).",

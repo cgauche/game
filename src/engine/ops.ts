@@ -15,7 +15,7 @@
  */
 import { RNG, defaultRNG, roll, type DiceSpec, rollDice } from './dice';
 import { bonus, effectiveChar, refreshWounds } from './characteristics';
-import { addCondition, addTimedCondition, addClockCondition, removeCondition, loseWounds, hasCondition } from './conditions';
+import { addCondition, addTimedCondition, addClockCondition, removeCondition, loseWounds, hasCondition, releaseConditionLocks } from './conditions';
 import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, traitById, refLabel, findTrappingById } from '../data';
 import { contractDiseaseOnce } from './disease';
 import { groupMatch } from './groups';
@@ -332,6 +332,10 @@ export type GameOp =
        *  éliminés » (Tête 46-50) ⇒ `{ kind:'compare', subject:{who:'target',condition:'hemorragique'},
        *  op:'==', value:0 }`. Figé sur l'entrée d'État, évalué par `isConditionLocked`. */
       lockedUntil?: import('./flowCore').Condition;
+      /** VERROU d'ACTE de soin (LDB 18) : l'État posé « ne peut être retiré que par [acte] » (Aveuglé/Sonné/
+       *  Inconscient « par Aide Médicale », Hémorragique « par Chirurgie »). Figé sur l'instance, levé par l'acte
+       *  nommé (`releaseConditionLocks`) qui RETIRE alors l'État. Évalué par `isConditionLocked`. */
+      unlockBy?: import('./types').ConditionUnlock;
       /** Empoignade (LDB 14 l.159) : poser AUSSI la relation symétrique `grapplingWith` entre le RÉFÉRENT
        *  (`ctx.caster`, l'attaquant) et la cible — la SEULE voie data-driven de démarrage d'une Empoignade
        *  (Constricteur onHit, Tentacules/Langue, Absorption, et l'init JOUEUR migrée). L'État *Empêtré* est
@@ -1044,6 +1048,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.wounds.current = Math.min(target.wounds.max, target.wounds.current + n);
         lines.push(t('op.heal', { name: target.name, n }));
         lines.push(...receiveMedicalAid(target)); // sort/prière de soin = Aide Médicale (LDB 18 l.311)
+        lines.push(...releaseConditionLocks(target, ctx.sourceSpellId != null ? 'magic' : 'medicalAid')); // verrous d'État (LDB 18) : soin d'un sort = magie (⊇ Aide Médicale) ; potion/objet = Aide Médicale
         break;
       }
       case 'healCaster': {
@@ -1052,6 +1057,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         who.wounds.current = Math.min(who.wounds.max, who.wounds.current + n);
         lines.push(t('op.heal', { name: who.name, n }));
         lines.push(...receiveMedicalAid(who)); // sort/prière de soin = Aide Médicale (LDB 18 l.311)
+        lines.push(...releaseConditionLocks(who, 'magic')); // healCaster = soin d'un sort → magie (lève aussi les verrous Aide Médicale, LDB 18)
         break;
       }
       case 'gainAdvantage': {
@@ -1086,7 +1092,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           addTimedCondition(target, o.name, v, rounds, escape);
           lines.push(t('op.condTimed', { name: target.name, v, cond: conditionLabel(o.name), roundsTxt: t('op.frag.roundsCap', { n: rounds, s: rounds > 1 ? 's' : '' }) }));
         } else {
-          addCondition(target, o.name, v, escape, o.lockedUntil); // `lockedUntil` : verrou de Critique (LDB 18)
+          addCondition(target, o.name, v, escape, o.lockedUntil, o.unlockBy); // verrous de Critique (LDB 18) : prédicat d'état / acte de soin
           lines.push(t('op.cond', { name: target.name, v, cond: conditionLabel(o.name) })); // libellé (« Exténué »), cohérent avec removeCond
         }
         // Empoignade (LDB 14 l.159) : le flag `grapple` pose la relation symétrique entre l'attaquant
@@ -1323,6 +1329,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         target.woundDressed = true; // pas d'Infection post-critique (LDB 18 l.382)
         lines.push(t('op.preventInfection', { name: target.name, src: ctx.label ?? 'sort' }));
         lines.push(...receiveMedicalAid(target)); // bandage/cataplasme = Aide Médicale (LDB 18 l.310)
+        lines.push(...releaseConditionLocks(target, 'medicalAid')); // verrous d'État « par Aide Médicale » (LDB 18)
         break;
       }
       case 'exposeDisease': {

@@ -22,9 +22,9 @@ import { applyOps } from '../engine/ops';
 import { extendedTestStep } from '../engine/tests';
 import { partyAssisted } from '../engine/skills';
 import { bonus, effectiveChar } from '../engine/characteristics';
-import { addCondition, loseWounds } from '../engine/conditions';
+import { addCondition, loseWounds, releaseConditionLocks } from '../engine/conditions';
 import { hasHealSkill, hasSurgerySkill, availableHealModes, isHealable, type HealMode } from '../engine/healing';
-import { removeSurgicalTrauma, recoverableTraumas, recoverDisabledLimb } from '../engine/trauma';
+import { removeSurgicalTrauma, surgeryTraumas, recoverableTraumas, recoverDisabledLimb } from '../engine/trauma';
 import { toMoney, canAfford, subtract as moneySub, add as moneyAdd } from '../engine/money';
 import { touchActors } from './combatOrParty';
 import { finishPlayerAction, openContractionCascade } from './combatFlow';
@@ -224,7 +224,8 @@ export function surgeryNext(get: Get, set: Set): void {
       finishPlayerAction(get, set, log, 'heal');
       return;
     }
-    log.push(...removeSurgicalTrauma(patient, sg.traumaIdx)); // Chirurgie : Blessure Critique réparée
+    if (surgeryTraumas(patient).length) log.push(...removeSurgicalTrauma(patient, sg.traumaIdx)); // Chirurgie : Blessure Critique réparée (s'il y en a une à opérer)
+    log.push(...releaseConditionLocks(patient, 'surgery')); // verrous d'État « ne peut être retiré que par Chirurgie » (Hémorragie interne, LDB 18)
     set({ pendingSurgery: null, medic: { ...m, surgery: undefined } });
     finishPlayerAction(get, set, log, 'heal');
     // Test d'infection du PATIENT (LDB 10 l.365) : Résistance Accessible (+20) — plus un jet SILENCIEUX

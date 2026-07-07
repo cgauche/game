@@ -5,7 +5,7 @@
  */
 import { Combatant } from './types';
 import { hasSurgery } from './combatFeatures/dispatch';
-import { loseWounds, addCondition, removeCondition, hasCondition, recoveredStacks } from './conditions';
+import { loseWounds, addCondition, removeCondition, hasCondition, recoveredStacks, hasSurgeryLockedCondition } from './conditions';
 import { hasTreatableTrauma, hasSurgeryTrauma, hasRecoverableTrauma, hasLimbAwaitingAid } from './trauma';
 import { contractDisease } from './disease';
 import { isAstoundingFailure } from './tests';
@@ -31,7 +31,7 @@ export function hasSurgerySkill(c: Combatant): boolean {
 export function isHealable(c: Combatant): boolean {
   if (c.dead || c.outOfRencontre) return false;
   return c.wounds.current < c.wounds.max || condStacks(c, 'hemorragique') > 0 || hasTreatableTrauma(c)
-    || hasSurgeryTrauma(c) || hasRecoverableTrauma(c) || hasLimbAwaitingAid(c);
+    || hasSurgeryTrauma(c) || hasRecoverableTrauma(c) || hasLimbAwaitingAid(c) || hasSurgeryLockedCondition(c);
 }
 
 /** `recovery` = Test ÉTENDU de Guérison qui rend l'usage d'un membre désactivé (« Épaule luxée »/« Genou
@@ -46,7 +46,7 @@ export function availableHealModes(target: Combatant): HealMode[] {
   if (target.wounds.current < target.wounds.max && !target.soinRencontreUtilise) modes.push('wounds');
   if (condStacks(target, 'hemorragique') > 0) modes.push('bleed');
   if (hasTreatableTrauma(target)) modes.push('trauma');
-  if (hasSurgeryTrauma(target)) modes.push('surgery'); // gate Talent Chirurgie côté action
+  if (hasSurgeryTrauma(target) || hasSurgeryLockedCondition(target)) modes.push('surgery'); // Blessure Critique chirurgicale OU État verrouillé « par Chirurgie » (Hémorragie interne, LDB 18) ; gate Talent Chirurgie côté action
   // Récupération d'usage : proposée dès qu'un membre est désactivé (Test étendu de Guérison), MAIS bloquée tant
   // que l'Aide Médicale n'a pas été reçue (`actBlockReason` : « Aide Médicale d'abord », LDB l.120/179).
   if (hasRecoverableTrauma(target) || hasLimbAwaitingAid(target)) modes.push('recovery');

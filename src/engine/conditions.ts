@@ -67,7 +67,7 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
   return Math.min(stacks, 1 + Math.max(0, dr));
 }
 
-export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition): void {
+export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition, unlockBy?: import('./types').ConditionUnlock): void {
   if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez tout Avantage » (LDB 16 l.15) — pas de perte per-combattant en mode « Avantage de groupe » (la réserve du camp ne change pas)
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
@@ -77,11 +77,12 @@ export function addCondition(c: Combatant, name: string, value = 1, escapeStreng
     // qui s'empile par-dessus (et inversement, un sort plus fort durcit l'évasion).
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
     if (lockedUntil != null) existing.lockedUntil = lockedUntil; // un Critique re-verrouille l'État déjà porté
+    if (unlockBy != null) existing.unlockBy = unlockBy; // un Critique re-verrouille l'État déjà porté (acte de soin, LDB 18)
     // Un ajout NON temporisé sur un État à durée : la durée saute (l'État redevient régi
     // par ses règles normales — on n'écourte jamais un État au prétexte qu'un sort expirait).
     delete existing.roundsLeft;
   } else {
-    c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}), ...(lockedUntil != null ? { lockedUntil } : {}) });
+    c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}), ...(lockedUntil != null ? { lockedUntil } : {}), ...(unlockBy != null ? { unlockBy } : {}) });
   }
   // L'État vient d'être GAGNÉ (nouveau ou empilé) → déclenche `onGainCondition` (Mâchoires d'acier).
   onConditionGained?.(c, name);
@@ -125,21 +126,52 @@ export function addClockCondition(c: Combatant, name: string, value: number, unt
   }
 }
 
-/** Un État posé par un Critique est-il VERROUILLÉ (LDB 18) ? Vrai si `lockedUntil` est présent et pas
- *  encore satisfait (algèbre flowCore, évaluée contre l'état VIVANT du porteur — États par nom, drapeaux).
- *  Ex. Aveuglé « tant que tous les Hémorragique n'ont pas été éliminés » (Tête 46-50) reste verrouillé
- *  tant que `stacks(hemorragique) > 0`. Tant qu'il tient, `removeCondition` est inerte sur cet État. */
+/** Un État posé par un Critique est-il VERROUILLÉ (LDB 18) ? Deux formes, INDÉPENDANTES d'un trauma porteur :
+ *  - `unlockBy` (acte de soin) : verrouillé tant que l'acte NOMMÉ (Aide Médicale / Chirurgie / magie) n'a pas
+ *    été reçu — l'acte le lève via `releaseConditionLocks` (Aveuglé/Sonné/Inconscient « par Aide Médicale »,
+ *    Hémorragique « par Chirurgie ») ;
+ *  - `lockedUntil` (prédicat d'état, algèbre flowCore) : verrouillé tant que la Condition n'est pas VRAIE contre
+ *    l'état VIVANT du porteur (Aveuglé « tant que tous les Hémorragique n'ont pas été éliminés », Tête 46-50 ⇒
+ *    `compare hemorragique == 0`).
+ *  Tant qu'il tient, `removeCondition` (dont l'auto-dissipation) est inerte sur cet État. */
 export function isConditionLocked(inst: ConditionInstance, c: Combatant): boolean {
+  if (inst.unlockBy != null) return true; // verrou d'acte de soin non encore levé (LDB 18)
   if (!inst.lockedUntil) return false;
   const ctx: ConditionCtx = {
-    // Les verrous de Critique s'expriment sur l'état du porteur : États par nom (`compare`) et le drapeau
-    // `awaitingMedicalAid` (`flag !awaitingMedicalAid` — Sonné « jusqu'à Aide Médicale », LDB l.120/179 :
-    // vrai tant qu'une séquelle attend l'Aide Médicale, `receiveMedicalAid` le lève).
-    flags: { awaitingMedicalAid: (c.traumas ?? []).some((t) => t.awaitingMedicalAid) },
+    // Prédicat d'état du porteur : États par nom (`compare`). Aucun drapeau de trauma (le verrou d'Aide Médicale
+    // est désormais porté par `unlockBy`, plus par `awaitingMedicalAid` d'une séquelle porteuse).
+    flags: {},
     gameTime: 0,
     target: { conditions: Object.fromEntries((c.conditions ?? []).map((x) => [x.name, x.value])) } as unknown as ActorView,
   };
   return !evalCondition(inst.lockedUntil, ctx);
+}
+
+/** Un acte `act` LÈVE-t-il un verrou d'État `unlockBy` (LDB 18) ? Le soin magique compte AUSSI comme Aide
+ *  Médicale (LDB 18 l.311) → `magic` lève `medicalAid` ET `magic` ; sinon l'acte ne lève que son homonyme
+ *  (Aide Médicale ne lève pas un verrou de Chirurgie ; la Chirurgie ne lève pas un verrou magique). */
+function actLifts(unlockBy: import('./types').ConditionUnlock, act: import('./types').ConditionUnlock): boolean {
+  return unlockBy === act || (act === 'magic' && unlockBy === 'medicalAid');
+}
+
+/** Applique un acte de soin `act` : RETIRE tout État dont le verrou `unlockBy` est levé par cet acte (LDB 18 :
+ *  « ne peut être retiré QUE par [acte] » ⇒ l'acte est ce qui le soigne). SOURCE UNIQUE appelée à chaque point
+ *  de soin (`receiveMedicalAid`/soin magique → medicalAid/magic ; fin de Chirurgie → surgery). Pur ; renvoie le journal. */
+export function releaseConditionLocks(c: Combatant, act: import('./types').ConditionUnlock): string[] {
+  const log: string[] = [];
+  for (const inst of [...c.conditions]) {
+    if (inst.unlockBy == null || !actLifts(inst.unlockBy, act)) continue;
+    delete inst.unlockBy; // le verrou tombe → removeCondition n'est plus inerte
+    removeCondition(c, inst.name, inst.value); // l'acte SOIGNE l'État (LDB 18 : retiré par cet acte)
+    log.push(t('cond.lockReleased', { name: c.name, cond: conditionLabel(inst.name) }));
+  }
+  return log;
+}
+
+/** Le porteur a-t-il un État dont le retrait est VERROUILLÉ par la Chirurgie (LDB 18 : Hémorragie interne) ?
+ *  Rend la Chirurgie proposable/soignante à l'Infirmerie même sans Blessure Critique chirurgicale porteuse. */
+export function hasSurgeryLockedCondition(c: Combatant): boolean {
+  return (c.conditions ?? []).some((x) => x.unlockBy === 'surgery');
 }
 
 export function removeCondition(c: Combatant, name: string, value = 1): void {
