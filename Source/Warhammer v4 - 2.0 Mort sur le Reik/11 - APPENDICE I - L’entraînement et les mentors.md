@@ -1,4 +1,4 @@
-*Pages PDF 140-160*
+*Folio 142+*
 
 #### **L'entraînement**
 
@@ -41,7 +41,7 @@ Si quelqu'un mentionne le nom d'Etelka Herzen, ou montre à Hieronymus le *Docum
 
 Hieronymus peut transformer tout Personnage Lettré en Sorcier novice, ou entraîner un novice pour le faire devenir un véritable Sorcier (**WFJDR**, p. 60). Si vous jugez que c'est pertinent pour votre campagne, il peut également former tout Personnage capable de lancer des sorts qui suit une autre Carrière. Il peut également enseigner des Compétences de Sorcier à tout Personnage capable de les apprendre, et transmettre les sorts de Magie mineure et de Magie des Arcanes qu'il connaît, mais il ne pourra enseigner aucun sort du Domaine des Cieux, puisque l'Ordre Céleste exige que quiconque souhaite apprendre les sorts de ce domaine suive les cours de l'université d'Altdorf.
 
-
+<span id="page-141-0" data-folio="142"></span>
 Si personne dans le groupe n'est sorcier, vous pouvez autoriser l'un des aventuriers à devenir son apprenti. Ce Personnage doit cependant avoir assez de points d'expérience pour changer de Carrière, et devra convaincre Hieronymus qu'il fera un excellent élève. Pour ce faire, il lui faudra une Intelligence de 30 au minimum et la réussite d'un Test de **Charme Intermédiaire (+0)**.
 
 Si vous avez besoin d'un Personnage en remplacement, Schiller pourrait se joindre au groupe, mais réfléchissez bien avant d'accepter un autre lanceur de sort si le groupe en a déjà un. Une puissance trop grande dans un domaine entraîne souvent une faiblesse dans un autre, et les épreuves à traverser au cours de cette campagne demandent tout un éventail de compétences.
@@ -70,8 +70,8 @@ Le Personnage qui porte cette bague de protection contre les morts-vivants ne su
 
 **Domaine des Cieux :** Arc de T'Essla, Bouclier céruléen, Comète de Cassandora
 
-
-#### <span id="page-142-0"></span>**Hans Peter Schiller**
+<span id="page-142-0" data-folio="143"></span>
+#### **Hans Peter Schiller**
 
 Hans Peter est un homme mince de taille moyenne aux cheveux noirs et bouclés et aux yeux marron. Il a l'air plutôt détendu, bien que sous cette façade se cache une grande soif de connaissance... et donc de pouvoir.
 
@@ -115,8 +115,8 @@ Max acceptera de former tout Personnage méritant qui possède une Intelligence 
 
 S'il le souhaite, n'importe quel aventurier peut faire un Test de **Sociabilité Accessible (+20)** pour tenter de faire ami-ami avec un ou plusieurs des chats errants de Max. Bien évidemment, Max restera leur favori.
 
+<span id="page-143-0" data-folio="144"></span>
 
-<span id="page-143-0"></span>
 
 #### **Maxmillian Schnippmesser**
 
@@ -152,7 +152,7 @@ S'ils livrent le coffret comme convenu, les Personnages laisseront une bonne imp
 
 Luigi pourrait se prendre d'affection pour un ou plusieurs des aventuriers sans s'y attendre : il aime les personnes serviles, mais il respecte et admire celles qui font preuve de courage, qui rient dans les situations critiques, et qui sont bourrées de talent. Il acceptera de former tout Personnage éligible aux Carrières de coupe-jarret ou de rançonneur (**WFJDR**, p. 106) et pourra enseigner aux autres Personnages toute Compétence tirée de la Carrière de rançonneur qui figure également dans leur Carrière. Si un Personnage non Roublard impressionne ou amuse particulièrement Luigi, il pourra apprendre auprès de lui une ou deux Compétences de rançonneur, même si celles-ci ne se trouvent pas dans la liste de Compétences de sa Carrière. Tous les entraînements suivent les règles établies au *Chapitre 6 : Entre deux Aventures*, dans le Livre de Règles de **WFJDR**.
 
-
+<span id="page-144-0" data-folio="145"></span>
 #### **Luigi Belladonna**
 
 Luigi est de taille moyenne et a les cheveux gris. Il affiche également un léger embonpoint, mais personne n'a jamais pu le lui faire remarquer deux fois. Ses bajoues semblent toujours garder un peu de nourriture en réserve, voire une paire de chaussettes, et ses yeux bruns lui donnent un regard sévère et impitoyable. Son discours n'est qu'un murmure rauque, ce qui force ses interlocuteurs à se pencher vers lui pour entendre ce qu'il leur raconte. Luigi ne se répète jamais, et n'élève jamais la voix. Il n'en a pas besoin : c'est à son audience de prêter l'oreille. Il choisit bien ses mots et parle de manière formelle, signe d'une éducation et de pensées complexes qu'on ne s'imagine pas forcément retrouver chez un criminel. Ses vêtements sont composés des plus belles soies et laines, et ses cheveux sont élégamment gominés. Ses petits doigts potelés sont ornés de bagues en or et en diamant. Il a l'air en tous points d'un marchand prospère, jouissant d'une fortune gagnée et non héritée.
@@ -189,7 +189,7 @@ Luigi ne va nulle part sans ses deux « petits » cousins, Carlo et Furio. Ces d
 
 **Possessions :** gourdin, dague, veste de cuir
 
-
+<span id="page-145-0" data-folio="146"></span>
 | A                                                                | J                                             |
 |------------------------------------------------------------------|-----------------------------------------------|
 | Adeptes (Les)23                                                  | Joyeux Drille (Le)15                          |
@@ -252,7 +252,7 @@ Luigi ne va nulle part sans ses deux « petits » cousins, Carlo et Furio. Ces d
 | I                                                                |                                               |
 | Il y a quelque chose en bas12                                    |                                               |
 
-
+<span id="page-146-0" data-folio="147"></span>
 | T                                     | U                                |  |
 |---------------------------------------|----------------------------------|--|
 | Tempête (La)87                        | Une Interruption malpolie39      |  |
@@ -316,7 +316,7 @@ Luigi ne va nulle part sans ses deux « petits » cousins, Carlo et Furio. Ces d
 | Ingénieur nain37                      | Zombies37                        |  |
 |                                       |                                  |  |
 
-
+<span id="page-147-0" data-folio="148"></span>
 **Mort sur le Reik :** Aide de jeux 1 **Mort sur le Reik :** Aide de jeux 2
 
  C'est votre dernier avertissement ! Livrez les marchandises à la Grange Rouge avant Le coucher du soleil ce soir !
@@ -327,7 +327,7 @@ Luigi ne va nulle part sans ses deux « petits » cousins, Carlo et Furio. Ces d
 
 À: Loorbeer et Kuhn Nos agents rappor tent que la cible se dirige vers vous en compagnie du groupe évoqué lors de notre dernière réunion. Les premières tentatives de contact ont été peu fructueuses. Assurez-vous que nous ne perdions plus la trace de notre magot en établissant des rappor ts réguliers de la manière usuelle. N'oubliez pas que la paume pourpre a déjà été transmise. Le Temps des Changements est proche! L'Arch Lumen
 
-
+<span id="page-148-0" data-folio="149"></span>
 **Mort sur le Reik :** Aide de jeux 8
 
 **Mort sur le Reik :** Aide de jeux 4 **Mort sur le Reik :** Aide de jeux 6
@@ -338,7 +338,7 @@ L es cieux s'emplirent d'innombrables étoiles filantes, dont certaines eurent l
 
 F ort de mon expérience lors de la nuit de Hexenstag, je fus cette fois-ci en mesure de calculer la trajectoire d'une étoile filante particulièrement grande, qui semblait être tombée de Morrslieb elle-même. D'après mes estimations, l'étoile a dû choir sur les plateaux de Talabecland, près de la source de la rivière Narn.
 
-
+<span id="page-149-0" data-folio="150"></span>
 **Mort sur le Reik :** Aide de jeux 7 **Mort sur le Reik :** Aide de jeux 10
 
 La sagesse est de mise. Le moment viendra où les ennemis du Chaos baisseront la garde : le regard rivé sur l'horizon, se croyant à l'abri dans leur forteresse, ils ne verront pas les ombres tapies dans leur dos. C'est alors que le Grand Changeur causera l'éveil de la lune déformée, et l'aimée de Morr s'éclaircira la gorge pour cracher sur l'Empire. Les faibles craindront de se rendre là où sa salive tombera, mais un grand pouvoir sera accordé à ceux qui iront la recueillir.
@@ -349,14 +349,14 @@ Cher ami,
 
 Nous ne pouvons plus nous permettre de laisser cette situation s'éterniser. Le Cercle intérieur a des choses bien plus importantes à faire que de courir après un Magister Impedimentae en cavale. Ceci est notre dernier avertissement. Amenez les 20 000 Couronnes d'or à Altdorf avant la fin de la semaine ; à moins que vous ne préfériez les délivrer en personne à Middenheim. N'essayez pas de vous enfuir, ou nous ferons en sorte que vous viviez juste assez longtemps pour supplier qu'on vous achève. À très bientôt...
 
-
+<span id="page-150-0" data-folio="151"></span>
 **Mort sur le Reik :** Aide de jeux 12
 
 **Mort sur le Reik :** Aide de jeux 18 **Mort sur le Reik :** Aide de jeux 17
 
 pas notre affaire de savoir pourquoi mes employeurs sont si désireux de parler à ces gens. Bien que, comme je l 'ai dit, je ne puisse pas nommer leur ordre secret, ils n'en restent pas moins puissants et influents, même s'ils sont d 'un genre douteux. Par conséquent, et parce qu'ils m'ont aidé par le passé, je suis certain que leur bonne considération pourrait être utile à nos deux familles. Si vous les localisez, ils doivent être envoyés à Middenheim, au capitaine Scharlach, à <sup>l</sup> 'Enseigne des Clés croisées, sur Hoffen Strasse. J'espère que toi et ta chère Karoline vous portez bien, Albrecht Oldenhaller.
 
-
+<span id="page-151-0" data-folio="152"></span>
 ### CHRONOLOGIE DE L'AVENTURE
 
 | Jour | Date | Position des aventuriers | Lieu/Événement                                                                                                                               |
@@ -379,36 +379,36 @@ pas notre affaire de savoir pourquoi mes employeurs sont si désireux de parler 
 | 31   |      |                          | Après une courte pause dans la ville, le groupe part<br>vers le nord en quête de l'observatoire de Dagmar von<br>Wittgenstein.               |
 | 36   |      |                          | Les adeptes arrivent à la Tour à signaux, de préférence<br>peu de temps avant les aventuriers.                                               |
 
-
+<span id="page-152-0" data-folio="153"></span>
 #### **Mort sur le Reik :** Maison d'Elvyra
 
-
+<span id="page-153-0" data-folio="154"></span>
 **Mort sur le Reik :** La Cuvette du Diable
 
 **Mort sur le Reik :** La grange rouge
 
 **Mort sur le Reik :** Grissenwald
 
-
+<span id="page-154-0" data-folio="155"></span>
 **Mort sur le Reik :** Ferme typique
 
-
+<span id="page-155-0" data-folio="156"></span>
 **Mort sur le Reik :** La vieille mine
 
 **Mort sur le Reik :** La Tour d'Etelka
 
-
+<span id="page-156-0" data-folio="157"></span>
 **Mort sur le Reik :** Unterbaum et ses environs
 
 **Mort sur le Reik :** Temple de Sigmar
 
-
+<span id="page-157-0" data-folio="158"></span>
 **Mort sur le Reik :** Wittgendorf
 
-
+<span id="page-158-0" data-folio="159"></span>
 **Mort sur le Reik :** La Tour à signaux
 
-
+<span id="page-159-0" data-folio="160"></span>
 *Au moment convenu, nous émergerons de nos repaires secrets et nous mettrons à genoux les villes et cités de l'Empire. Le Chaos envahira cette terre, et nous, les Serviteurs élus, nous nous couvrirons de gloire devant SES yeux. Gloire à Tzeentch, Changeur de Voies ! Njawrr'thakh Lzimbarr Tzeentch !*
 
 **Mort sur le Reik** est le second volume de la version intégrale ou « Director's cut », révisée et mise à jour, de L'Ennemi Intérieur, l'une des campagnes de jeu de rôles les plus estimées.

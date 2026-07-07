@@ -1,4 +1,4 @@
-*Pages PDF 144-148*
+*Folio 145+*
 
 # APPENDICE 2 : NOUVELLES RÈGLES
 
@@ -53,8 +53,8 @@ Les accents des PNJ de la campagne de **L'Ennemi Intérieur** sont normalement s
 
 Donc, en supposant que vous aimiez imiter différents accents, c'est à vous de décider à quoi ressemble celui d'une personne originaire du Middenland dans vos parties, ou 
 
-
-<span id="page-144-0"></span>du Stirland, ou du Nordland. Attribuez les accents que vous préférez à chacune des provinces et des grandes villes, et vous êtes prêt à jouer. Si vous cherchez des directives sur la façon de procéder, consultez le tableau ci-après, qui n'est proposé qu'à titre indicatif.
+<span id="page-144-0" data-folio="145"></span>
+du Stirland, ou du Nordland. Attribuez les accents que vous préférez à chacune des provinces et des grandes villes, et vous êtes prêt à jouer. Si vous cherchez des directives sur la façon de procéder, consultez le tableau ci-après, qui n'est proposé qu'à titre indicatif.
 
 | Accents     | Comment choisir son accent                                 |  |  |  |
 |-------------|------------------------------------------------------------|--|--|--|
@@ -126,7 +126,7 @@ Ces deux nouveaux symptômes peuvent être ajoutés à n'importe quelle maladie 
 
 Votre raison bascule, avec des moments de clarté remplacés soudain par des accès de délire, d'hallucinations et de terreur. Faites un Test de **Force Mentale Intermédiaire (+0)** toutes les heures et consultez le tableau suivant.
 
-
+<span id="page-145-0" data-folio="146"></span>
 | 1d10 | Effet                                                                                                                                                                                                                                                           |
 |------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1-2  | Épisode lucide : vous vivez une période de calme<br>reposant. Tous les États que vous avez précédemment<br>acquis à cause de votre délire sont supprimés.                                                                                                       |
@@ -164,8 +164,8 @@ La campagne de **L'Ennemi Intérieur** propose des situations particulièrement 
 
 Si vous ne souhaitez pas utiliser ces Difficultés extrêmes, remplacez simplement Presque Impossible (−40) et Impossible (−50) dans ce livre par Très Difficile (−30).
 
-
-<span id="page-146-0"></span>Cette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).
+<span id="page-146-0" data-folio="147"></span>
+Cette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).
 
 Quelques guérisseurs utilisent des cataplasmes cicatrisants pour réduire le gonflement, surtout s'il y a une plaie visible sur laquelle ils peuvent être appliqués. Un Test étendu de **Guérison Complexe (-10)** réussi, nécessitant +5 DR et un cataplasme de guérison par Test, réduit le gonflement de (2d10 + le Bonus d'Endurance du patient) heures. Chaque Test dure 10 minutes.
 
@@ -229,7 +229,7 @@ La créature est un blob amorphe. Il divise par deux toutes les Blessures subies
 
 La créature héberge la maladie indiquée, et elle peut la transmettre au toucher. Dans ce cas, la victime doit tester s'il y a Contraction, mais le Test est de 2 niveaux plus difficile que la normale. Si la maladie est contractée, son incubation est changée en « Instantanée ».
 
-
+<span id="page-147-0" data-folio="148"></span>
 #### **Décérébré**
 
 La créature est stupide, ne vivant qu'en suivant ses bas instincts ou par compulsion magique. Elle n'a pas d'Initiative, d'Intelligence, de Force Mentale ou de Sociabilité et n'a jamais besoin de les Tester. Pour le calcul des Blessures, on utilise son Bonus de Force chaque fois que le Bonus de Force Mentale est requis. Comme elle n'a pas d'Initiative, elle joue toujours en dernier dans n'importe quel tour.
@@ -261,3 +261,5 @@ Tout démon portant l'anneau peut ignorer le Trait de créature Instable et ne p
 Les mortels portant l'anneau gagnent à la place tous les effets du sort Aura ordinaire.
 
 Malheureusement, comme l'anneau est maintenant, et depuis de nombreuses années, imprégné des énergies démoniaques de Gideon, il est dangereux. Pour chaque mois pendant lequel il est porté par un mortel, un Test de **Résistance** à une exposition mineure à la Corruption doit être effectué. Cette souillure ne peut être supprimée que par de rares rituels et sorts de du Domaine de la Lumière.
+
+<span id="page-148-0" data-folio="149"></span>

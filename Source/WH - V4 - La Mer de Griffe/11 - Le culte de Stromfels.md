@@ -1,4 +1,4 @@
-*Pages PDF 92-96*
+*Folio 89+*
 
 # LE CULTE DE STROMFELS • **L'adoration proscrite et sanglante du dieu des prédateurs**
 
@@ -32,7 +32,7 @@ Le long de la côte des Pirates et parmi les îles de la Mer Tiléenne, Stromfel
 
 Loin des côtes, Stromfels est quasiment inconnu, en dehors d'un culte isolé dans l'est du Stirland, dont les propres légendes suggèrent qu'il pourrait descendre d'une bande de pirates ayant fui à l'intérieur des terres.
 
-
+<span id="page-92-0" data-folio="89"></span>
 # **Sites sacrés**
 
 Les sites sacrés du culte sont des lieux secrets et naturels comme des cavernes et des grottes côtières. Les formations rocheuses ressemblant à l'aileron dorsal d'un requin sont aussi considérées comme importantes. Dans les ports les moins respectables, comme Brionne et Moussillon, les halls des guildes de marins peuvent abriter des autels semi-clandestins.
@@ -81,7 +81,7 @@ Les suivants de Stromfels croient qu'en fin de compte, la puissance du corps dé
 
 La pénitence la plus courante pour un adorateur de Stromfels consiste à nager dans une étendue d'eau habitée par des requins et d'autres dangers. Les cultistes dont la loyauté est mise en doute sont envoyés dans des raids de pillage ou de piraterie, tandis qu'un prêtre pourrait devoir mener un assaut majeur. Ceux qui ont gravement offensé le dieu sont forcés de combattre un requin gris à barbelures avec une dague pour seule arme.
 
-
+<span id="page-93-0" data-folio="90"></span>
 # **PRÊTRE DE STROMFELS** Humain
 
 *Vous prêchez que les forts sont en droit d'exploiter les faibles et vous invoquez le nom de Stromfels pour qu'il vous aide dans vos prédations.*
@@ -136,7 +136,7 @@ contact, Guerrier né, Pilote
 
 10 munitions
 
-
+<span id="page-94-0" data-folio="91"></span>
 # **MIRACLES DE STROMFELS**
 
 Peut-être plus que tout autre dieu, Stromfels aide ceux qui s'aident eux-mêmes. Il est avare de Bénédictions et de Miracles. En plus des autres effets découlant des Points de Péché, Stromfels retire à un suivant la capacité d'utiliser le Talent *Invocation* s'il possède au moins deux Points de Péché et celle d'utiliser le Talent *Béni* s'il possède au moins cinq Points de Péché.
@@ -217,3 +217,5 @@ Vous vous concentrez sur un navire endommagé et vous exercez votre volonté pou
 **Durée :** (Force) minutes
 
 Vous invoquez les vents pour qu'ils soufflent avec davantage de force dans les voiles d'un navire. Augmentez l'intensité du vent d'un cran pendant toute la durée du Miracle (voir page 107). La direction du vent n'est pas affectée.
+
+<span id="page-95-0" data-folio="92"></span>

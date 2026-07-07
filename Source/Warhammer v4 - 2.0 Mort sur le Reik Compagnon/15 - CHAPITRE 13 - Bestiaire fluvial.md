@@ -1,6 +1,6 @@
-*Pages PDF 85-90*
+*Folio 86+*
 
-## <span id="page-84-0"></span>CHAPITRE 13 BESTIAIRE FLUVIAL
+## CHAPITRE 13 BESTIAIRE FLUVIAL
 
 ## **RIVIÈRES PÉRILLEUSES**
 
@@ -10,8 +10,8 @@ La menace banale, bien qu'effrayante, des naufrageurs et des pirates est plus qu
 
 Les amibes sont des créatures simples et unicellulaires qui ressemblent à une substance gluante ou à de la gelée informe. Elles rampent lentement ou, pour se déplacer plus rapidement, déploient des pseudopodes qui peuvent atteindre la moitié de leur longueur. Elles se nourrissent de matières organiques, laissant de côté les métaux et les minéraux. Elles sont inexorables, dépourvues d'esprit et existent simplement pour se déplacer et absorber de la nourriture, qu'il s'agisse de feuilles, d'animaux morts, de champignons ou d'aventuriers endormis. Les amibes sont attirées par la chaleur, qu'elles associent à la nourriture, mais fuient les températures extrêmes qui peuvent endommager leur membrane cellulaire. Elles sont par ailleurs dépourvues de sens.
 
-
-### <span id="page-85-0"></span>**ANGUILLES DU REIK**
+<span id="page-85-0" data-folio="86"></span>
+### **ANGUILLES DU REIK**
 
 L'anguille du Reik se trouve dans le Reik et ses nombreux affluents. Elle atteint généralement une longueur de 3 à 5 mètres et possède une crête sur toute la longueur de son dos vert-gris. Certaines peuvent atteindre des tailles vraiment terrifiantes, et il existe des récits, à peine exagérés, d'anguilles du Reik avalant des barques entières.
 
@@ -49,7 +49,7 @@ Les sangsues-caméléons possèdent des glandes près de leur tête qui sécrèt
 
 Ces créatures possèdent les Traits Amphibie et Arboricole plutôt qu'Aquatique. Elles se dissimulent parmi les vignes et les feuillages suspendus des zones humides, attendant de tomber sur une source de chaleur corporelle qui passe par là.
 
-
+<span id="page-86-0" data-folio="87"></span>
 #### LA LORLAY
 
 Les naïades sont rares au sein de l'Empire, au point que leur existence même est discutée. Elles sont tout de même mentionnées dans les contes populaires de la plupart des régions de l'Empire, le plus souvent sous la forme de femmes à la beauté éblouissante dont le seul désir est d'attirer les hommes vers leur perte, notamment sur des rochers et autres dangers. De tous ces contes, le plus connu est celui de la Lorlay, immortalisé par le poète Franz-Heinrich Holzer :
@@ -62,8 +62,8 @@ Imposante formation rocheuse ignée, la Lorlay se dresse dans le courant du Reik
 
 Au cours des derniers siècles, aucune naïade n'a été signalée sur le rocher ou à proximité, et certains chercheurs pensent que leur chant est en réalité le son provoqué par les vents sifflant dans les interstices de ce pic dentelé. D'autres soutiennent fermement que les naïades y ont vécu et qu'elles peuvent encore y revenir : de temps en temps, un imprésario de théâtre organise un événement choral au sommet du rocher, avec des chanteuses déguisées en naïades selon l'idée que s'en fait un costumier. Si les créatures sont toujours là, elles n'ont pas réagi à ces événements, malgré les craintes de nombreux habitants.
 
-
-## <span id="page-87-0"></span>XIII
+<span id="page-87-0" data-folio="88"></span>
+## XIII
 
 ### **NAÏADES**
 
@@ -110,8 +110,8 @@ Nombreux sont ceux qui ont essayé de capturer la créature, que ce soit au file
 
 En réalité, le monstre à trois yeux est une légende que les riverains racontent depuis des décennies pour attirer les étrangers. Beaucoup d'entre eux gagnent leur vie en emmenant des nobles sans cervelle à la pêche dans les eaux que ce monstrueux brochet du Stir est censé hanter. Cependant, ces dernières années, quelques-unes de ces expéditions ont disparu, et les gens commencent à se demander s'il n'y a pas une part de vérité dans cette vieille histoire. Le monstre à trois yeux existe-t-il vraiment, ou quelque chose d'autre est-il sorti des entrailles du château de Wittgendorf pour troubler les honnêtes riverains du Reikland ?
 
-
-### <span id="page-88-0"></span>**TROLLS DES RIVIÈRES**
+<span id="page-88-0" data-folio="89"></span>
+### **TROLLS DES RIVIÈRES**
 
 basse.
 
@@ -127,8 +127,8 @@ Les trolls des rivières sont rares dans l'Empire, mais pas inconnus. On les tro
 
 **Facultatif :** Affamé, Belliqueux, Bestial, Brutal, Discrétion, Dur à Cuire, Frénésie, Grand, Insensible à la douleur, Mutation, Parasité, Résistance à la Magie, Taille (Énorme), Territorial
 
+<span id="page-89-0" data-folio="90"></span>
 
-<span id="page-89-0"></span>
 
 ### **NOUVEAUX TRAITS**
 
@@ -177,3 +177,5 @@ Les morsures de la créature ne provoquent aucune douleur, ce qui lui permet de 
 ### **Salive anticoagulante**
 
 La victime de la morsure de la créature gagne l'État *Hémorragique*.
+
+<span id="page-90-0" data-folio="91"></span>

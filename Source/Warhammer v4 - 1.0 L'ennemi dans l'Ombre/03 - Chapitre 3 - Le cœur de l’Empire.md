@@ -1,6 +1,6 @@
-*Pages PDF 32-42*
+*Folio 33+*
 
-# <span id="page-31-0"></span>CHAPITRE 3 : LE CŒUR DE L'EMPIRE
+# CHAPITRE 3 : LE CŒUR DE L'EMPIRE
 
 La diligence de nos héros émerge par le sud de la forêt de la Drakwald et se dirige vers les murs blancs d'Altdorf, la capitale de l'Empire, qui est également la plus grande et la plus riche de ses cités.
 
@@ -33,8 +33,8 @@ Le passage à Altdorf influence les Personnages de façon inattendue, presque co
 - 0 Tous les lanceurs de sorts gagnent +1 DR à leurs Test de **Langue (Magick)** et de **Focalisation**. À moins que l'un de leur dé n'indique un 9 (comme dans 19 ou 92), auquel cas ils gagnent à la place +1d10 DR et subissent une Incantation Imparfaite Majeure.
 - 0 Tous les non-magiciens qui disposent du Talent Sixième Sens se sentent mal à l'aise en permanence, et ne peuvent faire appel à ce Talent.
 
+<span id="page-32-0" data-folio="33"></span>
 
-<span id="page-32-0"></span>
 
 - 0 Lancez 1d10 chaque jour. Sur un résultat de 8, un Personnage désigné au hasard gagne 1 point de Corruption. Sur un 9, un Personnage désigné aléatoirement détermine au hasard une nouvelle couleur de cheveux ou d'yeux (à votre convenance). Sur un 10, un Personnage gagne +1 point de Chance.
 - 0 Tout Personnage disposant du Talent Visions sacrées fait d'horribles cauchemars qu'il oublie au réveil. Chaque semaine passée dans la cité lui fait gagner +1 État *Exténué* qu'il ne peut éliminer qu'en quittant la ville ou en priant pendant au moins 1d10 heures.
@@ -54,8 +54,8 @@ En descendant de leur diligence, les Personnages sont assaillis de cris comme «
 
 Derrière chaque complot, chaque intrigue, chaque changement de fortune d'Altdorf, se cache Tzeentch, le dieu du Chaos de la magie, de la mutation et du changement. Sa terrible influence est proche, mais secrète, et ne sera pas révélée avant **L'Empire en Ruines**. Pour le moment, évoquez cette atmosphère étrange sans trop insister, de façon à ne pas perturber les Personnages, et utilisez au contraire ces étranges circonstances pour inciter le groupe à poursuivre sa route vers Bögenhafen.
 
-
-<span id="page-33-0"></span>Alors que les Personnages tentent de se frayer un chemin à travers la foule compacte, ils sont stoppés nets par les sons des cors et d'une troupe en marche. En un rien de temps, un cortège de soldats appartenant au 1er régiment d'infanterie du Reikland, la Garde Impériale, traverse la place. L'Empereur, ayant fière allure avec sa mâchoire carrée et revêtu de son armure complète, chevauche un magnifique étalon noir bardé d'or à leur suite. À ses côtés et derrière lui avancent des rangs de chevaliers en tenue de cérémonie. La foule acclame le passage de la procession, et ce n'est que lorsque la parade est complètement achevée que les choses reprennent leur cours normal.
+<span id="page-33-0" data-folio="34"></span>
+Alors que les Personnages tentent de se frayer un chemin à travers la foule compacte, ils sont stoppés nets par les sons des cors et d'une troupe en marche. En un rien de temps, un cortège de soldats appartenant au 1er régiment d'infanterie du Reikland, la Garde Impériale, traverse la place. L'Empereur, ayant fière allure avec sa mâchoire carrée et revêtu de son armure complète, chevauche un magnifique étalon noir bardé d'or à leur suite. À ses côtés et derrière lui avancent des rangs de chevaliers en tenue de cérémonie. La foule acclame le passage de la procession, et ce n'est que lorsque la parade est complètement achevée que les choses reprennent leur cours normal.
 
 Les Personnages l'ignorent, mais il s'avère que ce n'est pas le véritable Empereur. Ce n'est que l'un de ses sosies. L'Empereur, lui, est en convalescence dans le Palais impérial, un peu plus loin de l'autre côté du fleuve. Cette doublure ne se montre que pour faire taire les commérages sur la fragilité croissante du dirigeant. C'est la quatrième fois qu'il traverse la Königsplatz cette semaine, et déjà des rumeurs se répandent sur l'existence d'un sosie de l'Empereur. **Note :** il est important que les Personnages aperçoivent le double de l'Empereur pour des raisons qui apparaîtront clairement dans **Le Rat Cornu**, aussi ne faites pas l'impasse sur cette scène, ou sur votre propre version de celle-ci.
 
@@ -75,8 +75,8 @@ Toute personne interrogée peut indiquer aux Personnages le chemin vers le domai
 
 Si les Personnages persévèrent dans leur enquête, les gardes portant la livrée au taureau qui surveillent les portes confirmeront les faits. Il semble que les Personnages arrivent trop tard : le Prince héritier et tout son entourage ont déjà quitté la ville à bord d'un bateau, et font cap vers le sud dans le but de débarquer à Bögenhafen.
 
-
-## <span id="page-34-0"></span>**BIENVENUE À ALTDORF, HERR LIEBERUNG**
+<span id="page-34-0" data-folio="35"></span>
+## **BIENVENUE À ALTDORF, HERR LIEBERUNG**
 
 Dans le tumulte qui règne sur la place, deux hommes s'approchent des aventuriers. Rien ne les distingue des autres personnes présentes sur la place, si ce n'est leur comportement étrange. Pendant que l'un surveille la foule, l'autre gratte son oreille gauche de l'auriculaire de sa main droite en fixant du regard la personne qu'il pense être Kastor Lieberung. Il recommence à plusieurs reprises, à chaque fois de façon plus prononcée. N'hésitez pas à jouer cette scène autour de la table, car le geste devient de plus en plus comique au fur et à mesure qu'il l'exagère, et que les deux hommes semblent de plus en plus perturbés devant l'absence de réaction appropriée de la part des aventuriers.
 
@@ -106,8 +106,8 @@ Si, par une chance inouïe ou grâce à un plan spectaculaire, les Personnages p
 
 En effet, l'associé en question pourrait exécuter Adolphus d'un tir d'arbalète pour l'empêcher de tomber sous le joug des adorateurs du Chaos ; ce dernier pourrait également disposer d'une capsule de poison, cachée dans une fausse dent, et pourrait préférer se tuer plutôt que se rendre. Adolphus croit fermement avoir à faire à des membres hauts placés au sein d'une secte, et il ne serait pas étonnant qu'il choisisse de mourir plutôt que de tomber entre leurs mains.
 
-
-<span id="page-35-0"></span>Cette rencontre peut être utilisée n'importe quand, dès que vous avez décidé qu'il est temps de faire avancer les choses, mais elle devrait idéalement avoir lieu dans la soirée ou en fin d'après-midi. Si les Personnages prévoient de faire des emplettes à Altdorf, vous devriez leur laisser l'occasion de faire les boutiques auparavant. S'ils suivent l'un des rabatteurs jusqu'à une auberge, vous pouvez utiliser cet évènement sur le chemin, ou le lendemain, après qu'ils ont pu prendre un peu de repos. Il est également possible que Josef se promène sur la Königsplatz, juste après l'incident avec les cultistes, encore émerveillé d'avoir pu apercevoir l'Empereur quelques minutes auparavant.
+<span id="page-35-0" data-folio="36"></span>
+Cette rencontre peut être utilisée n'importe quand, dès que vous avez décidé qu'il est temps de faire avancer les choses, mais elle devrait idéalement avoir lieu dans la soirée ou en fin d'après-midi. Si les Personnages prévoient de faire des emplettes à Altdorf, vous devriez leur laisser l'occasion de faire les boutiques auparavant. S'ils suivent l'un des rabatteurs jusqu'à une auberge, vous pouvez utiliser cet évènement sur le chemin, ou le lendemain, après qu'ils ont pu prendre un peu de repos. Il est également possible que Josef se promène sur la Königsplatz, juste après l'incident avec les cultistes, encore émerveillé d'avoir pu apercevoir l'Empereur quelques minutes auparavant.
 
 Le Personnage choisi se retourne en entendant son nom, pour voir un homme grand et musclé, portant une énorme barbe, se diriger à grands pas vers le groupe. Donnez au joueur le *Document 5 : Josef Quartjin*, dont le texte est reproduit dans la colonne ci-contre.
 
@@ -143,8 +143,8 @@ Cet évènement peut avoir lieu à n'importe quel moment avant d'arriver à L'au
 
 Si vous souhaitez apporter une conclusion dramatique à cette scène, décrivez la façon dont le prophète de malheur s'écroule ensuite, une écume sanglante aux lèvres et le corps pris de spasmes, avant de mourir. Ou sinon, une fois que l'augure a terminé sa tirade, il sourit puis ramasse ses affaires. Sa prophétie ne le préoccupera pas. « *Oh non. Je ne m'en ferais pas si j'étais toi. Ce n'est qu'un spectacle que je fais pour gagner ma vie. Ça fait plaisir aux pèlerins. Des seigneurs autrefois puissants ? Des murs blancs qui tombent ? Aucune idée, mon gars. Je ne fais que dire ce qui me passe par la tête. Mais si tu as aimé, tu veux peut-être me payer un coup ?* »
 
-
-## <span id="page-36-0"></span>**L'AUBERGE DU BATELIER**
+<span id="page-36-0" data-folio="37"></span>
+## **L'AUBERGE DU BATELIER**
 
 Josef finit de conduire les aventuriers le long de la rue aux Cents Tavernes jusqu'au fleuve. Toutes sortes de bateaux sont amarrés le long des berges, aussi bien des voiliers aux grands mâts que des chalands et des péniches. L'auberge du Batelier n'est que l'un des nombreux établissements des quais. Cela semble être un endroit agréable ; un peu défraîchi, mais engageant.
 
@@ -182,8 +182,8 @@ Rapidement, ils se lancent dans un concours de boisson qu'ils appellent « *le v
 
 Un Test d'**Intuition Accessible (+20)** permettra à un Personnage de remarquer que Max semble bien connaître les gardes du corps, et qu'il les observe attentivement, mais qu'il essaie de le cacher en sirotant son eau-de-vie. Josef tente de dissuader les Personnages de recourir à la violence en faisant remarquer qu'il ne serait pas très malin de se mettre une maison noble à dos, d'autant que les gardes du corps semblent euxmêmes chercher la bagarre. Quitter l'auberge n'est pas chose 
 
-
-<span id="page-37-0"></span>aisée, car deux d'entre eux bloquent la porte. Si les Personnages s'avèrent incapables de se retenir, et qu'ils souhaitent passer à l'attaque, Max Ernst repoussera sa chaise et se dirigera vers eux, comme il a été engagé pour le faire. D'une voix sèche et rauque il leur dit : « *Je ne ferais pas ça si j'étais vous, crânes de piaf. Pourquoi ne pas vous asseoir et vous amuser comme tout le monde ?* » Le silence se fera alors dans toute l'auberge, tout le monde attendant la réponse des Personnages. Les jeunes nobles, quant à eux, se glissent derrière leurs gardes du corps en ricanant et en savourant leur plaisanterie.
+<span id="page-37-0" data-folio="38"></span>
+aisée, car deux d'entre eux bloquent la porte. Si les Personnages s'avèrent incapables de se retenir, et qu'ils souhaitent passer à l'attaque, Max Ernst repoussera sa chaise et se dirigera vers eux, comme il a été engagé pour le faire. D'une voix sèche et rauque il leur dit : « *Je ne ferais pas ça si j'étais vous, crânes de piaf. Pourquoi ne pas vous asseoir et vous amuser comme tout le monde ?* » Le silence se fera alors dans toute l'auberge, tout le monde attendant la réponse des Personnages. Les jeunes nobles, quant à eux, se glissent derrière leurs gardes du corps en ricanant et en savourant leur plaisanterie.
 
 À partir de là, Max prend les choses en main. Il repousse tout Personnage qui tenterait de se lever sur sa chaise en le couvrant d'insultes de choix comme : « *Pourquoi les bouseux comme vous ne prennent-ils pas la peine de se laver avant de venir chez les gens civilisés ?* » Il continuera à provoquer les Personnages jusqu'à ce qu'ils réagissent physiquement, ou jusqu'à ce que vous estimiez que la scène a duré assez longtemps. Dans le premier cas, Max attaquera pour assommer ou désarmer son adversaire, en supposant qu'il s'agisse d'un combat loyal. S'il doit avoir à faire face à plus d'un adversaire, il fera un commentaire comme quoi il faut plus d'un idiot du village pour l'effrayer, et commencera à se battre sérieusement. Il n'a pas vraiment envie de tuer qui que ce soit, mais il le fera s'il est en sous-nombre. Il ne bénéficiera ni de l'aide des nobles, qui trouvent la situation très amusante, ni de celle de leurs gardes du corps.
 
@@ -211,7 +211,7 @@ Si les aventuriers ignorent leurs poursuivants ou échouent à se rendre compte 
 
 Une fouille des deux cultistes fournira deux dagues et 3/19. Ils n'ont pas de signes distinctifs, à part un petit tatouage représentant une main pourpre sur le sein droit. Ces tatouages ne seront découverts qu'au prix d'une fouille approfondie assez déplaisante, car l'hygiène des deux hommes laissait à désirer !
 
-
+<span id="page-38-0" data-folio="39"></span>
 ## OPTIONS : UN AUTRE ADOLPHUS
 
 Des joueurs expérimentés s'attendront à ce qu'Adolphus Kuftsos, le chasseur de primes, soit tel qu'il est décrit, ce qui vous offre une parfaite occasion de surprendre des personnes si présomptueuses en lui donnant de toutes autres motivations. Voici quatre suggestions, que vous êtes libre de développer si vous le souhaitez.
@@ -246,8 +246,8 @@ Adolphus passe à l'action après le chapitre final de *Ombres sur Bögenhafen*.
 
 En admettant qu'il y parvienne, Nacht découvrira rapidement la vérité si les Personnages sont sincères, ce qui pourrait leur fournir un allié puissant pour l'avenir. Mieux encore, maintenant qu'ils se trouvent à Ubersreik, vous avez l'occasion de leur faire jouer certains des scénarios de la **Boîte d'Initiation WFJDR**, ou certaines des **Aventures à Ubersreik**, avant de débuter **Mort sur le Reik**.
 
-
-## <span id="page-39-0"></span>**CONCLUSION**
+<span id="page-39-0" data-folio="40"></span>
+## **CONCLUSION**
 
 ## **Récompenses**
 
@@ -294,7 +294,7 @@ Le bateau de Josef est le *Bérébéli*, un chaland à voile typique du Reik et 
 
 Marx Ernst est un sadique glacial à l'air mauvais. Grand et musclé, ses cheveux châtain clair sont coiffés en arrière, et ses yeux sont bleu acier. Il émane de lui une présence autoritaire, et il n'est jamais vu autrement que vêtu de cuir noir. Max parle peu, mais lorsqu'il le fait, c'est d'une voix grave et rauque, avec un fort accent d'Altdorf. Il a tendance à fixer son interlocuteur d'une façon déconcertante lorsqu'il s'adresse à lui. Il boit beaucoup, et lorsqu'il est seul, il noie les souvenirs de son passé difficile dans l'alcool et les larmes.
 
-
+<span id="page-40-0" data-folio="41"></span>
 |                                                               | MAX ERNST - SPADASSIN HUMAIN (ARGENT 1) |    |    |    |    |    |    |    |    |    |    |  |  |  |  |
 |---------------------------------------------------------------|-----------------------------------------|----|----|----|----|----|----|----|----|----|----|--|--|--|--|
 | M<br>CC<br>CT<br>F<br>E<br>I<br>Ag<br>Dex<br>Int<br>FM<br>Soc |                                         |    |    |    |    |    |    |    |    | B  |    |  |  |  |  |
@@ -346,7 +346,7 @@ ARWIN, FRANKA, GORROF, MILTRUD - GARDE HUMAIN (ARGENT 2)
 
 **Traits :** Arme (Divers) +7, Armure (Cuir) 1, Préjugé (Tous ceux que leurs employeurs n'aiment pas)
 
-
+<span id="page-41-0" data-folio="42"></span>
 #### **Les habitués**
 
 Les Personnages ne sont pas les seules personnes dans l'auberge. Les dockers sont connus pour être des durs, mais ils ne sont pas stupides.
@@ -393,3 +393,5 @@ La mère d'Una était une rançonneuse tiléenne, et elle a conservé l'accent d
 **Possessions :** fléau improvisé (fabriqué à partir de deux pieds de tabouret), tromblon (sous le bar)
 
 \*Bien qu'il s'agisse d'une Arme Improvisée, le fléau improvisé dispose également des Qualités *À Enroulement*  et *Perturbante*
+
+<span id="page-42-0" data-folio="43"></span>

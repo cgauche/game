@@ -1,6 +1,6 @@
-*Pages PDF 70-79*
+*Folio 71+*
 
-# <span id="page-69-0"></span>CHAPITRE 7 : DANS LES TÉNÈBRES
+# CHAPITRE 7 : DANS LES TÉNÈBRES
 
 Nos héros parcourent les égouts de la ville à la recherche du gobelin mutant en fuite. Ce faisant, ils tombent sur le temple secret où Johannes Teugen prévoit d'effectuer le rituel qui, selon lui, sauvera son âme.
 
@@ -36,8 +36,8 @@ Ceux qui souhaitent traverser le canal central doivent sauter ou patauger. En ra
 
 Les Personnages qui se retrouvent à patauger doivent réussir un Test d'**Athlétisme** au début de chacun de leur Tour en combat (ou chaque minute hors combat) sans quoi ils glissent et tombent. Quant à ceux désirant traverser les collecteurs secondaires, ils n'ont pas le choix et doivent patauger.
 
-
-## <span id="page-70-0"></span>**Les égouts et les couleurs**
+<span id="page-70-0" data-folio="71"></span>
+## **Les égouts et les couleurs**
 
 Il est fort possible que les Personnages se retrouvent à tomber ou à patauger dans les eaux usées. Ceux qui le font voient leur Sociabilité divisée par deux jusqu'à ce qu'ils aient l'occasion de prendre un bain et de nettoyer leurs vêtements. Seuls les Personnages mesurant moins d'1,20 mètres risquent de se noyer s'ils tombent dans le canal central d'un collecteur principal, risque qui peut être évité si les Personnages s'encordent ensemble.
 
@@ -65,8 +65,8 @@ Il y a beaucoup d'écho ce qui fait que le son se propage deux fois plus loin qu
 
 Enfin, les relents des égouts sont pour le moins désagréables. Lorsque les Personnages pénètrent dans les égouts, chacun d'entre eux doit réussir un Test de **Résistance Accessible (+20)** ou souffrir des effets du Symptôme *Nausée* (voir **WFJDR**, page 189) tant qu'il reste dans les tunnels. Tout État *Sonné* obtenu de cette façon dure jusqu'à la fin du Round suivant.
 
-
-## <span id="page-71-0"></span>**RENCONTRES FACULTATIVES**
+<span id="page-71-0" data-folio="72"></span>
+## **RENCONTRES FACULTATIVES**
 
 En plus des emplacements indiqués sur la carte des égouts, vous aurez peut-être envie de placer quelques dangers ou des événements, afin d'entretenir une ambiance tendue. Les Rencontres Facultatives qui suivent sont présentées afin de vous aider à recréer l'atmosphère des égouts, et n'ont pas pour vocation de donner du fil à retordre aux Personnages. Le plus important est de faire ressentir à quel point cet endroit est sombre, moite et malodorant, en décrivant des sons distants et étranges, ainsi que les bruits de clapotement proches, afin de déstabiliser tout le monde.
 
@@ -112,7 +112,7 @@ Les eaux du canal se soulèvent soudainement, et une odeur nauséabonde vient as
 
 Les Personnages dérangent une colonie de chauves-souris perchées au plafond des égouts. Elles paniquent et volent en tous sens en formant un nuage compact. Chaque aventurier subit une attaque de **CC** 30 avec le Trait Arme +2, modifié par l'Armure et le Bonus d'Endurance comme il se doit. Après quoi, chacun doit réussir un Test d'**Esquive Accessible (+20)** ou tomber dans le canal en essayant d'éviter les chauves-souris, et gagner un État *À terre* .
 
-
+<span id="page-72-0" data-folio="73"></span>
 #### **Moisissure mortelle**
 
 Une plaque de moisissures rouges ou jaunes se développe sur le mur du collecteur (chances égales de chaque type). Elle peut être identifiée avec un Test de **Savoir (Plantes) Accessible (+20)** ou de **Savoir (Herbes) Intermédiaire (+0)**. Les Personnages aperçoivent les moisissures avant de l'atteindre. Dans un collecteur principal, la seule façon pour les Personnages d'éviter de provoquer l'émission d'un nuage de spores est de passer sur le chemin de l'autre côté. Dans un collecteur secondaire, par contre, impossible de l'éviter. Dans le cas où le nuage de spores survient, celui-ci remplit le collecteur sur 5 mètres de part et d'autre du point d'émission.
@@ -152,8 +152,8 @@ Le passage sur l'un des côtés du collecteur d'égouts est particulièrement da
 
 Un nid-de-poule difficile à voir se trouve sur le chemin du Personnage en tête. Il doit réussir un Test d'**Athlétisme Difficile (-20)** pour ne pas perdre l'équilibre. En cas d'échec, son pied se coince dans le trou et il acquiert un État *À terre*. De plus, dans le cas d'un Échec Impressionnant (-4 DR) ou pire encore, le Personnage souffre d'un Traumatisme *Déchirure musculaire (Mineure)* à une jambe déterminée au hasard sur la table des Localisations, car sa cheville s'est violemment tordue. Ce Traumatisme ne peut bénéficier de la Déviation Critique.
 
-
-## <span id="page-73-0"></span>**EMPLACEMENTS PRINCIPAUX**
+<span id="page-73-0" data-folio="74"></span>
+## **EMPLACEMENTS PRINCIPAUX**
 
 Les emplacements suivants sont importants pour le bon déroulement de l'aventure. Ils sont indiqués sur la carte.
 
@@ -196,8 +196,8 @@ Une fois dans la chambre, les sacs sont ôtés et les Personnages sont désarmé
 - *« Nous ne savons pas trop quoi faire de vous. Mes deux associés ici présents m'ont dit qu'ils aimeraient vous réduire en bouillie avant de vous jeter dans les égouts avec un sac de briques autour du cou. Mais ça ne serait pas très gentil. Ils ont tendance à s'énerver quand quelque chose les contrarie. Je suis sûr que vous pouvez comprendre et que vous leur pardonnerez, n'est-ce pas ? »*
 - *« « Non », me suis-je dit quand je vous ai vus. « Ces gens-là sont raisonnables. Je suis certain qu'ils comprendront. » Alors je vais me contenter de vous dire de considérer ceci comme notre petit secret.*
 
-
-<span id="page-74-0"></span>*Vous pouvez garder un secret, n'est-ce pas ? Oui, je suis sûr que vous le pouvez. Et j'ai une totale confiance en mon jugement. Je tiens ça de ma mère, voyez-vous. Elle avait un don pour juger les gens. »*
+<span id="page-74-0" data-folio="75"></span>
+*Vous pouvez garder un secret, n'est-ce pas ? Oui, je suis sûr que vous le pouvez. Et j'ai une totale confiance en mon jugement. Je tiens ça de ma mère, voyez-vous. Elle avait un don pour juger les gens. »*
 
 *« Évidemment, je serais très désappointé s'il s'avérait que j'ai tort, et mes deux amis également. Ainsi que tous nos autres amis. Nous avons beaucoup de chance, vous savez : nous avons des tas d'amis. Je suppose que cela vient de notre côté plutôt accommodant. »*
 
@@ -241,7 +241,7 @@ En entrant ou en illuminant l'intérieur, les Personnages peuvent se rendre comp
 
 Au centre de celui-ci se trouve le dessin d'une étoile à huit branches, ornée d'une tête d'animal et des mots « *Ordo Septenarius* ». Une partie de la tête est recouverte par une tache sombre (le sang du gobelin).
 
-
+<span id="page-75-0" data-folio="76"></span>
 ## OPTIONS : LIBÉREZ LE DÉMON !
 
 Au lieu que le démon gardien ne soit prisonnier dans le temple secret en attendant l'arrivée inévitable des Personnages, vous pouvez faire en sorte qu'il soit libre. Remplacez simplement son Trait Territorial (temple secret) par Territorial (égouts). Vous pouvez alors faire des égouts un endroit terrifiant, en faisant chuchoter le démon dans l'obscurité pour se moquer des Personnages, les insulter ou les ridiculiser. Au lieu de trouver des Amibes ou des voleurs adorateurs de Ranald, le groupe trouve une multitude de cadavres mutilés, et de multiples traces de sang permettant de remonter jusqu'au temple secret. Lorsque les Personnages arrivent sur place (ou y sont conduits), le démon apparaît et claque la porte derrière eux en ricanant. Puis il lance du feu bleu à travers celle-ci !
@@ -262,8 +262,8 @@ Si les Personnages détruisent le démon, ils peuvent alors fouiller la pièce. 
 
 Ils ne peuvent pas découvrir la porte secrète, qui est verrouillée et barrée depuis l'autre côté. Cette sortie permet de rejoindre, grâce à une volée de marches de pierres, les bureaux de Franz Steinhäger (voir page 88).
 
-
-## <span id="page-76-0"></span>**AU SORTIR DES ÉGOUTS**
+<span id="page-76-0" data-folio="77"></span>
+## **AU SORTIR DES ÉGOUTS**
 
 Lorsque les Personnages sortent des égouts, ils devraient avoir découvert les traces de sinistres agissements à l'œuvre au sein de la ville. Ils peuvent tenter plusieurs choses par la suite, et cette section envisage les possibilités les plus probables.
 
@@ -318,7 +318,7 @@ La matière organique est digérée une fois dans le corps des amibes. Les maté
 
 Il est conseillé d'utiliser les Caractéristiques fournies pour toute Amibe rencontrée dans les égouts, afin d'être sûr qu'il ne s'agit pas d'un adversaire trop puissant. Si vous avez l'impression que le groupe pourrait affronter un adversaire plus dangereux, utilisez certains des Traits Facultatifs ou les Traits Standards de Créatures qui se trouvent dans **WFJDR**, page 310.
 
-
+<span id="page-77-0" data-folio="78"></span>
 | AMIBE |    |    |    |    |   |    |     |     |    |     |    |
 |-------|----|----|----|----|---|----|-----|-----|----|-----|----|
 | M     | CC | CT | F  | E  | I | Ag | Dex | Int | FM | Soc | B  |
@@ -361,7 +361,7 @@ Les jumeaux Reinhold et Reinhardt sont au service de « La direction », et mêm
 
 Leurs accents sont ceux des quartiers défavorisés du Reikland, mais il est difficile de savoir s'ils viennent d'Altdorf, d'Ubersreik, de Tahme ou d'ailleurs.
 
-
+<span id="page-78-0" data-folio="79"></span>
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |  |  |
 |---|----|----|----|----|----|----|-----|-----|----|-----|----|--|--|
 | 4 | 50 | 30 | 50 | 50 | 30 | 20 | 25  | 25  | 40 | 25  | 19 |  |  |
@@ -393,3 +393,5 @@ FRANZ BAUMANN - PRÊTRE DE RANALD HUMAIN (OR 1)
 **Traits :** Arme (Gourdin) +7, Armure (Cuir) 1
 
 **Possessions :** armes de base (Gourdin), dague, livre (Les Dix Devinettes), les Piques Croisées, outils professionnels (Voleur)
+
+<span id="page-79-0" data-folio="80"></span>

@@ -1,4 +1,4 @@
-*Pages PDF 38-44*
+*Folio 35+*
 
 # LE PAYS DES TROLLS • **Un désert infesté de monstres**
 
@@ -16,7 +16,7 @@ Malgré cette diversité, les trolls dominent ici, surtout à l'extrême nord o�
 
 Évidemment, les tueurs de trolls fréquentent beaucoup cette région, généralement pour accompagner les marchands téméraires et autres voyageurs poursuivant des quêtes risquées. Ces idiots aventureux sont nombreux et divers ; ils s'éloignent rarement de la côte, mais cela suffit souvent pour qu'ils voient de leurs propres yeux les décors lugubres et les horreurs monstrueuses du lieu. Le littoral est aussi lugubre que le reste du Pays des Trolls, c'est pourquoi la côte rocheuse et les marais salants sont appelés les Terres Bilieuses.
 
-
+<span id="page-38-0" data-folio="35"></span>
 # **LES TERRES BILIEUSES**
 
 Sans surprise, de nombreux trolls de pierre rôdent sur les plages rocailleuses et les falaises escarpées des Terres Bilieuses et beaucoup de trolls des rivières hantent leurs marais brumeux et leurs baies isolées. Ce rivage est l'un des plus dangereux du Vieux Monde, et il faut constamment regarder où l'on met les pieds.
@@ -45,7 +45,7 @@ Trois trolls, Shakinel Brisos, Grog Écrasagile et Hobol Souffledefeu, sont rep�
 
 Le tertre de Chamon Dharek est connu pour sa puissante aura magique, teintée par *Dhar*. Cependant, les sorciers attentifs y sentent également des zéphyrs de *Chamon*. Ce phénomène a depuis été associé au mythe d'une sorcière des mers capable de fendre en deux le bateau d'un ennemi avec une lame puissante. Peut-être que ce Sort existait réellement, mais les chercheurs du Collège de Magie Doré d'Altdorf ont émis l'hypothèse que cette description pourrait faire référence à un artefact enterré, un bélier naval magique. Il est possible que quelqu'un ait voulu cacher la magie de cette arme derrière une aura plus sombre.
 
-
+<span id="page-39-0" data-folio="36"></span>
 # **Chamon Dharek**
 
 Au nord du delta de la Tobol, un estuaire mène à une région vallonnée abritant Chamon Dharek, un grand tertre funéraire très ancien. Il est entouré d'innombrables chevaux momifiés, certains debout, d'autres tombés à terre et brisés en mille morceaux. Sacré aux yeux des Kurgans, le tertre devient un campement d'hiver pour eux et même pour certains Sarls. Il est interdit de verser le sang à proximité, et malgré un mythe de joyaux et d'argent enterrés à l'intérieur, même ces pillards sauvages laissent Chamon Dharek intact.
@@ -70,7 +70,7 @@ Un autel sacrificiel se dresse au sommet d'un éperon bien visible des falaises 
 
 Les rois de l'Autel vont et viennent, mais pas sans résistance. La détentrice actuelle du titre est Runa Hrossháfurm, nommée pour sa main offerte par Khorne, un sabot de cheval (ce que les Skaelings approuvent), qui donne à son coup de poing la puissance d'une charge de cet équidé. Ce n'est pas une administratrice et elle délègue ces tâches ennuyeuses à quelques esclaves de confiance, qui lui servent de gratte-papiers, mais aussi d'espions. D'ailleurs, l'organisation de l'Autel se repose beaucoup sur les esclaves pour bien fonctionner. Alors où se trouve le vrai pouvoir ?
 
-
+<span id="page-40-0" data-folio="37"></span>
 # **La Baie des lames**
 
 La Baie des lames tire son nom des nombreux requins qui rôdent dans ses eaux, y compris le magnifique requin bleu norse et le féroce requin gris à barbelures. Une plage de lourds galets entoure la baie et une chute d'eau coule depuis les falaises au-dessus, creusant un canal vers la mer. La chute d'eau fait de la baie un endroit où les navires peuvent facilement se ravitailler en eau douce. Des morceaux d'un étrange ambre vert flottent parfois dans ces eaux, emportés là par le courant depuis les forêts des montagnes.
@@ -87,7 +87,7 @@ Les histoires sont pimentées de rumeurs et de tentations : des princes et princ
 
 Le repaire de Throgg est devenu une légende même parmi les tueurs de trolls, une fin parfaite à leurs histoires personnelles. Des expéditions sont montées pour l'attaquer, généralement par bateau, mais les seules personnes qui en reviennent sont des tueurs qui n'ont pas trouvé l'emplacement ou des marins et des guides qui ont déjà de la chance d'être repartis, à moitié fous et avec des engelures.
 
-
+<span id="page-41-0" data-folio="38"></span>
 # THROGG, LE ROI DES TROLLS
 
 **Motivation :** conquérir le sud.
@@ -116,7 +116,7 @@ Ceux qui ont le malheur de rencontrer Throgg ont une chance d'y survivre s'ils m
 
 Tant qu'il n'est pas immédiatement nécessaire de tuer les intrus, il peut profiter de leur compagnie et faire d'eux des invités contre leur gré. Il est peu probable que qui que ce soit arrive à le persuader de modifier ou d'abandonner ses objectifs par un argumentaire raisonné, mais Throgg adorerait débattre de ce sujet.
 
-
+<span id="page-42-0" data-folio="39"></span>
 | THROGG - ROI DES TROLLS |    |    |    |    |    |    |     |     |    |        |     |
 |-------------------------|----|----|----|----|----|----|-----|-----|----|--------|-----|
 | M                       | CC | CT | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B   |
@@ -139,3 +139,5 @@ Throgg adore pêcher et est souvent assis seul sur une falaise ou la rive d'une 
 **Merlin de Throgg :** avec son énorme tête de pierre et son manche taillé dans le tronc d'un arbre, cette arme ne peut être maniée que par les créatures dont la Force est d'au moins 80. Cependant, des ingénieurs militaires pourraient l'utiliser pour construire un puissant bélier (Portée Longue, Dégâts BF+12) infligeant Peur 2 aux défenseurs. Pour en savoir plus sur les béliers, reportez-vous à la page 89 d'**Archives de l'Empire : volume 2**.
 
 **Vomi de Throgg :** le vomi de Throgg est très abondant et contient sans doute quelque chose d'utile, de précieux ou qui aiguille vers une sous-intrigue. Chaque fois qu'il vomit, la masse répugnante expulsée est considérée comme une mare de bile telle que décrite en page 35.
+
+<span id="page-43-0" data-folio="40"></span>

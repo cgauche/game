@@ -1,4 +1,4 @@
-*Pages PDF 67-84*
+*Folio 64+*
 
 # LA CLASSE CÔTIER
 
@@ -53,7 +53,7 @@ Un Personnage doté de ce Talent a l'habitude de gérer des équipes maniant des
 
 Vos hommes vous respectent et vous font confiance. Pour tout Test de Commandement approprié effectué à bord de votre bateau ou impliquant votre équipage, vous gagnez un bonus de DR égal à votre nombre de niveaux en Commandant émérite. Ce bonus s'applique aux Tests d'équipage comme aux Tests de Commandement individuels.
 
-
+<span id="page-67-0" data-folio="64"></span>
 # **ARTILLEUR DE NAVIRE**
 
 Halfling, haut elfe, humain, nain
@@ -116,7 +116,7 @@ Voyageur aguerri
 
 **Possessions :** cabine, uniforme de bonne qualité
 
-
+<span id="page-68-0" data-folio="65"></span>
 Ce poste est très qualifié et très respecté, et au fur et à mesure que l'Artilleur monte dans la hiérarchie il se retrouve audessus de l'équipage principal et traité davantage comme un officier. Comme la taille et la puissance de feu des navires de la Marine impériale semblent en augmentation constante, les Artilleurs sont de plus en plus recherchés. Et avec la piraterie omniprésente sur la Mer des Griffes, les vaisseaux marchands ont de plus en plus tendance à s'équiper de canons pour repousser les flibustiers.
 
 Pendant la navigation, l'Artilleur de navire en début de carrière est souvent traité comme un membre ordinaire de l'équipage et va probablement briquer le pont ou grimper au gréement comme n'importe quel autre mousse. Mais quand une bataille éclate, il déploie tout son potentiel dans son travail de niche essentiel.
@@ -147,7 +147,7 @@ Les Maîtres artilleurs supervisent toutes les armes à bord de leur vaisseau, e
 
 L'Artilleur de navire qui sert à bord depuis des années et a grimpé les échelons depuis le poste de Mousse artilleur n'apprécie sans doute pas ce traitement arbitraire, mais serait bien avisé de ne pas le montrer.
 
-
+<span id="page-69-0" data-folio="66"></span>
 *Vous coordonnez les actions de l'équipage de votre navire, vous guidez ses activités et vous lui remontez le moral avec des chansonnettes entraînantes.*
 
 N'importe quel marin digne de ce nom fait mieux son travail au son d'un Chansonnier. Certains affirment que les Chansonniers ne sont que des chanteurs et des musiciens ordinaires. Mais les équipages de la plupart des navires croient que les meilleurs Chansonniers peuvent avoir un effet surnaturel sur ceux qu'ils guident.
@@ -198,7 +198,7 @@ de l'orientation
 
 – Marian Zelman, marin
 
-
+<span id="page-70-0" data-folio="67"></span>
 Le Chansonnier est un membre de l'équipage d'un bateau, généralement d'un navire de haute-mer, qui chante des chansons pour améliorer l'humeur de l'équipage, marquer l'écoulement du temps, coordonner les activités et motiver les marins dans l'effort. Presque tous les vaisseaux comptent une personne qui accomplit cette tâche, mais tous n'ont pas de véritable Chansonnier.
 
 Le Chansonnier est spécial, car ses chansons ont un pouvoir qui augmente les capacités de l'équipage audelà de ce qui est possible par des moyens ordinaires. Même si l'équipage n'a pas conscience de ses pouvoirs, il peut sentir que son Chansonnier lui touche vraiment l'âme et l'aiguillonne comme personne. La plupart des Chansonniers s'accompagnent d'un instrument de musique pour mieux garder le rythme et se faire entendre par-dessus le brouhaha d'un bateau en train de voguer. Cependant, ils peuvent travailler sans instrument.
@@ -247,7 +247,7 @@ Cette chanson paillarde a de très nombreux couplets et les marins sont encourag
 
 Cette chanson sur les nombreux actes héroïques du capitaine de fiction Vriez van Vijnen donne un sentiment d'optimisme et de confiance dans le capitaine du navire. Tout Test de Sociabilité tenté par le capitaine ou par une autre figure d'autorité à bord et ciblant l'équipage reçoit un bonus de +20.
 
-
+<span id="page-71-0" data-folio="68"></span>
 *Vous travaillez à bord d'un bateau, à nettoyer les ponts et à ajuster la voilure.*
 
 Les humains du Vieux Monde ont dû apprendre la navigation par eux-mêmes, car les nains n'ont jamais été une grande civilisation maritime et les elfes n'avaient aucune envie d'encourager les hommes à explorer le vaste monde. Avant l'âge de Sigmar, la civilisation humaine s'aventurait rarement sur les vagues. Même les puissants Khemris construisaient peu de vaisseaux capables de voyager sur les océans.
@@ -308,7 +308,7 @@ de l'orientation
 
 vue, sextant
 
-
+<span id="page-72-0" data-folio="69"></span>
 # **Marins estaliens**
 
 Les Marins des royaumes du sud sont souvent cités comme faisant partie des meilleurs du Vieux Monde. Les Estaliens en particulier sont connus comme particulièrement zélés dans leur haine et leur traque des pirates.
@@ -331,7 +331,7 @@ Les vaisseaux majestueux de la flotte sont souvent soutenus par plusieurs petits
 
 L'Empire n'a pas de prestigieuse tradition de marine. L'empereur Hasso nomma le premier des Seigneurs des mers en 632 CI, mais la marine qu'ils supervisaient n'était pas une grande flotte capable de mener des projets d'exploration et de conquête. C'était une force défensive employée pour protéger les gens des côtes du nord de l'Empire contre les pillards norses. Plus tard, le développement de la marine de l'Empire a été entravé par les longues périodes de guerre civile et de désunion entre les provinces. Plus tard encore, la croissance d'une flotte efficace a été freinée par l'indépendance de Marienburg qui a confiné les plus grandes forces navales de l'Empire à ses fleuves.
 
-
+<span id="page-73-0" data-folio="70"></span>
 *Vous attirez les navires et les faites couler par le fond avant de récupérer leur précieuse cargaison.*
 
 Des bandes de Naufrageurs sévissent autour des côtes de toutes les nations du Vieux Monde. Ils vivent en récupérant le chargement des vaisseaux échoués. Certains Naufrageurs habitent près de bandes de littoral traîtresses et attendent patiemment que des bateaux se prennent dans les récifs, voire même restent dans la légalité en informant les autorités de leurs actions, mais en réclamant une part des biens sortis de l'eau. Mais ces gens ne sont pas des Naufrageurs classiques. Généralement, le Naufrageur est opportuniste et criminel, et ce nom est associé à ceux qui s'assurent activement d'avoir toujours des navires à faire couler et à piller.
@@ -400,7 +400,7 @@ Commandant émérite, Guerrier né
 
 **Possessions :** flottille de bateaux de transport avec un équipage de Naufrageurs, menottes, tonnelet de bière
 
-
+<span id="page-74-0" data-folio="71"></span>
 # **Faux pilotes**
 
 Certains Naufrageurs se font passer pour des Nautoniers ou pour des pilotes, en promettant un trajet sûr qui évite les périls à leurs victimes avant de les mener tout droit sur des rochers ou des bancs de sable. Ces criminels doivent se montrer suffisamment convaincants et charmants pour mettre les capitaines en confiance et avoir des compétences suffisamment équivalentes à celles d'un vrai timonier pour ne pas s'échouer eux-mêmes tout en condamnant les bateaux qui les suivent.
@@ -442,7 +442,7 @@ Le code combine des notions d'honneur et d'intégrité avec un certain respect d
 - 0 Les membres de l'équipage jurent de servir sur le navire jusqu'à ce que chacun d'entre eux ait gagné 100 CO.
 - 0 Les membres de l'équipage ont tous interdiction de fraterniser avec ceux pratiquant la sorcellerie ou vénérant les dieux du Chaos.
 
-
+<span id="page-75-0" data-folio="72"></span>
 *Vous guidez les navires sur les eaux les plus traîtresses des nombreuses mers du monde.*
 
 Les Nautoniers sont connus pour travailler sur les fleuves de l'Empire, mais évidemment, les pilotes et les timoniers sont encore plus précieux pour un capitaine de vaisseau de haute-mer. Les Nautoniers marins doivent non seulement connaître les zones de rochers, de récifs ou de bancs de sable, mais aussi savoir déterminer où ils se trouvent à partir de la position du soleil et des étoiles, car les navires naviguent souvent loin de tous les autres repères géographiques connus.
@@ -497,7 +497,7 @@ Vivacité
 
 **Possessions :** canotier, petit bateau de transport
 
-
+<span id="page-76-0" data-folio="73"></span>
 La Mer des Griffes est un endroit traître. Les côtes du Nordland et de l'Ostland sont connues pour leurs rivages rocailleux et celle de Norsca est un labyrinthe de criques et d'îles. Un capitaine digne de ce nom sait qu'il n'arrivera pas au bout de son voyage sans l'aide d'un pilote local capable de lui montrer comment accoster sur le littoral sans toucher de récif.
 
 Plus à l'ouest, les pilotes travaillant autour du littoral de L'Anguille sont particulièrement renommés, car les nombreux rochers de la Gueule du dragon forment le péril le plus dangereux de cette mer, une vaste bande d'océan percée par des centaines et des centaines de flèches de roche dépassant de l'eau.
@@ -530,7 +530,7 @@ Plus à l'est, le long de la côte allant vers le nord de la forêt de Laurelorn
 
 Les pilotes qui parviennent à voguer dans ces zones sans dommage sont les meilleurs dans leur domaine, même sans quitter les côtes autour des terres considérées comme sûres et civilisées au sud de la Mer des Griffes. Et ceux qui connaissent les côtes lugubres du Pays des Trolls ou les fjords glacés de Norsca sont encore plus rares.
 
-
+<span id="page-77-0" data-folio="74"></span>
 *Vous commandez un navire et vous devez convaincre les membres de votre équipage de vous confier leurs vies.*
 
 Les Officiers de navire, surtout les capitaines, sont l'autorité suprême à bord de leur vaisseau. Manann leur confère le pouvoir de vie et de mort sur les marins à leur service, mais c'est une épée à double tranchant. L'officier doit aussi persuader l'équipage de faire confiance à son jugement et à ses compétences, sans quoi il risque la mutinerie.
@@ -593,7 +593,7 @@ Volonté de fer
 
 **Possessions :** flotte de navires
 
-
+<span id="page-78-0" data-folio="75"></span>
 Les officiers de la marine impériale viennent souvent de familles de marins. Ce sont généralement des maisons nobles mineures ou des lignées qui aspirent à la noblesse et qui ont pour tradition de servir en mer. L'officier potentiel est fréquemment préparé dès son plus jeune âge avec le projet de l'envoyer chercher fortune en mer. Le népotisme fait rage au sein de la Première Flotte impériale, mais dans beaucoup d'autres marines, un officier doit grimper les échelons par lui-même et n'est au départ qu'un humble enseigne. La vie à bord d'un bateau exige la compétence et le respect, et l'équipage doit savoir que son officier a acquis de l'expérience et appris son métier.
 
 À bord d'un vaisseau, la discipline est essentielle et le capitaine cruel et arbitraire est un stéréotype courant parmi les marins de la Mer des Griffes. Cependant, la plupart des matelots savent que leur sécurité est intrinsèquement liée à celle de leur capitaine, ne serait-ce que parce que si le pire se produit, le capitaine doit être prêt à couler avec son bateau.
@@ -622,7 +622,7 @@ Les Seigneurs des mers impériaux ont la réputation d'être des aristocrates ha
 
 Malgré cela, les Bretonniens sont vus comme d'excellents marins. Le fait que les officiers ont tendance à déléguer la gestion de leurs vaisseaux aux capitaines qui ont fait leurs armes comme flibustiers est un secret éventé depuis longtemps au sein de la marine bretonnienne, mais l'évoquer à haute voix vous vaudrait quelques coups de fouet.
 
-
+<span id="page-79-0" data-folio="76"></span>
 ### **PRÊTRE MARIN DE MANANN** Humain
 
 *Vous apportez la volonté de Manann à ses suivants et vous intercédez pour obtenir sa faveur et éviter sa colère.*
@@ -685,7 +685,7 @@ Nageur endurant, Pilote
 
 prêtres capitaines subalternes
 
-
+<span id="page-80-0" data-folio="77"></span>
 Ceux qui prêchent pour Manann sont attirés vers ce sacerdoce par une profonde affinité avec ce dieu et un grand respect pour la mer. Les gens dont la vie dépend des caprices des vagues et des tempêtes se tournent vers leurs prêtres pour qu'ils implorent la clémence du lunatique Seigneur des océans et qu'ils les protègent contre ses humeurs.
 
 La plupart des Prêtres marins viennent de communautés côtières ou fluviales où le culte fait partie de la vie quotidienne. Quelques-uns sont nés à l'intérieur des terres et se sentent attirés vers la mer par une étrange pulsion, comme si leur destinée avait toujours été de vénérer Manann. Les prêtres sédentaires prêchent auprès des marins dans les ports ainsi qu'aux congrégations locales comptant beaucoup de leurs suivants. D'autres prennent la mer avec des flottes marchandes, des explorateurs et des vaisseaux militaires en tant que membre éminemment utile de l'équipage.
@@ -712,7 +712,7 @@ Un Prêtre de Manann a toujours le devoir de mettre la main à la pâte quand to
 
 Pendant les périodes difficiles, un Prêtre de Manann peut commander l'équipage ou le punir au nom du capitaine afin d'éviter une mutinerie ou soumettre des marins turbulents. Pour un capitaine impopulaire, il peut être plus efficace et moins risqué de faire craindre la fureur de Manann à un équipage perturbé.
 
-
+<span id="page-81-0" data-folio="78"></span>
 # **RATISSEUR DE PLAGES**
 
 Halfling, humain
@@ -764,7 +764,7 @@ Pêcheur, Sens de l'orientation **Possessions :** filet de pêche, sac à cordon
 
 **–** Janie la Folle, ratisseuse de plages
 
-
+<span id="page-82-0" data-folio="79"></span>
 Les Ratisseurs de plages considèrent leur « parcelle » comme leur territoire et la gardent jalousement. Ils sont prêts à se battre pour empêcher quelqu'un d'autre de la fouiller. Des bandes de Ratisseurs de plages s'unissent pour défendre leurs langues de sable ou empiéter sur celles des autres.
 
 Les Ratisseurs de plages n'espèrent pas seulement récupérer des épaves et des débris ; ils guettent aussi des plantes et des créatures naturellement présentes sur le littoral. Ils récoltent toutes sortes de fruits de mer, d'anémones et même de limaces de mer, car ils connaissent les meilleurs endroits pour les trouver, et ils sont passés maîtres dans l'art de reconnaître les plus savoureux, ou au moins les plus mangeables. Les meilleurs coquillages peuvent être vendus aux marchands locaux, et une fois qu'ils arrivent dans une grande ville à l'intérieur des terres, par exemple Nuln ou Altdorf, ils peuvent se vendre à un très bon prix.
@@ -790,3 +790,5 @@ Bien que très lente sur terre, dans l'eau la créature nage aussi vite qu'un po
 Le gouvernement impérial accueille le bureau du « Séquestre officiel des épaves et des cargaisons abandonnées de l'Empereur ». Logé loin de la mer à Altdorf, le Séquestre des épaves est chargé de noter dans les archives l'emplacement de toutes les épaves de navire dans les eaux impériales. Techniquement, ces épaves et tout ce qui est trouvé dessus lui appartiennent, même s'il offre une récompense d'une couronne par tranche de dix couronnes de valeur pour tout débris marin récupéré qui lui est signalé.
 
 Tous les capitaines de navire ont la responsabilité d'informer ce bureau si leur bateau coule, et quiconque trouve une épave ou des débris marins, quels qu'ils soient, se doit de signaler sa trouvaille. Mais le Séquestre n'est pas aussi occupé qu'il devrait l'être.
+
+<span id="page-83-0" data-folio="80"></span>

@@ -1,4 +1,4 @@
-*Pages PDF 8-12*
+*Folio 5+*
 
 # LA MER DES GRIFFES
 
@@ -18,7 +18,7 @@ Les règles de navigation maritime peuvent être utilisées pour compléter cell
 
 4
 
-
+<span id="page-8-0" data-folio="5"></span>
 # **Une mer cruelle**
 
 La Mer des Griffes est située entre les terres de Norsca et les nations du Vieux Monde. C'est une étendue d'eau traîtresse et sauvage. Des vents glacés, de forts courants, des côtes rocailleuses et des icebergs constituent tous de formidables dangers que les marins doivent affronter, et c'est sans compter sur les bandes de maraudeurs norses écumant la mer à bord de leurs flottilles de guerre, ou sur les attaques de nombreux monstres rodant sous les vagues..
@@ -33,7 +33,7 @@ La Mer des Griffes donne à l'Empire son seul littoral. Depuis la sécession du 
 
 L'Empire se remet encore de l'impact chaotique des troubles civils que les historiens ont nommé la Tourmente, mais dans le Nordland, un nouvel esprit d'aventure et d'entreprise gagne en popularité. Des gens ambitieux, comme désespérés, se rendent à Salzenmund pour conquérir les vagues au nom du grand baron Theodoric Gausser et de l'empereur Karl Franz.
 
-
+<span id="page-9-0" data-folio="6"></span>
 ### CHRONOLOGIE DE LA MER DES GRIFFES
 
 #### **Environ –5600 CI**
@@ -142,7 +142,7 @@ Les norses reprennent leurs raids de pillage sur le Westerland. Marienburg est o
 
 Les norses abandonnent Marienburg face à la peste noire décimant leurs armées.
 
-
+<span id="page-10-0" data-folio="7"></span>
 #### **1597 CI**
 
 Une armée bretonnienne menée par le duc de L'Anguille s'empare de Marienburg. Pendant les cinq années suivantes, l'armée d'occupation est harcelée par les locaux. Quand l'armée du Grand-Duc du Middenland s'approche de Marienburg, les Bretonniens abandonnent la ville.
@@ -236,3 +236,5 @@ La nécromancienne Hela Demi-morte mène une horde de cadavres réanimés jusqu'
 #### **2512 CI**
 
 Le Nordland regagne son statut de province électorale et Theodoric Gausser devient son électeur. Il jure de se montrer digne de la foi que l'Empereur a placée en lui en parrainant la construction d'une nouvelle flotte.
+
+<span id="page-11-0" data-folio="8"></span>

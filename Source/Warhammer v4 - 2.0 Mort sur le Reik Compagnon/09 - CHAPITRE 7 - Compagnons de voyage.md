@@ -1,8 +1,8 @@
-*Pages PDF 38-49*
+*Folio 39+*
 
 ## CHAPITRE 7
 
-<span id="page-37-0"></span>
+
 
 # COMPAGNONS DE VOYAGE
 
@@ -40,7 +40,7 @@ La vie d'un escroc professionnel n'est pas chose aisée, mais Grugor a porté l'
 
 **Possessions :** dague, faux documents, plan pour quitter la ville, sélection de « potions », vêtements élaborés.
 
-
+<span id="page-38-0" data-folio="39"></span>
 #### LIEBERUNG EST PERDU ? Début de Mort sur le Reik
 
 Dans **L'Ennemi dans l'Ombre - Compagnon**, un début alternatif à **L'Ennemi dans l'Ombre** a été présenté. Intitulée *In Media Fuite !*, cette introduction va droit au but : nos Personnages sont à bord d'une diligence volée poursuivie par des patrouilleurs routiers qui hurlent « Kastor Lieberung, vous êtes en état d'arrestation ». Cette introduction plutôt brusque a permis aux joueurs de se plonger directement dans l'action, en attribuant l'identité vitale de Kastor Lieberung à l'un des Personnages.
@@ -69,8 +69,8 @@ Peut-être que les personnages essaieront de se servir de la lettre de Kastor s'
 
 *« Non mais, franchement. J'en ai vu des tentatives désespérées pour quitter le groupe en mon temps, mais simuler sa propre mort ? À d'autres, Kastor.»*
 
-
-### <span id="page-39-0"></span>**PILLEURS DE TOMBES**
+<span id="page-39-0" data-folio="40"></span>
+### **PILLEURS DE TOMBES**
 
 Les Personnages sont approchés par deux voyageurs qui portent une grande caisse. Ils se présentent sous le nom de Hans et Hannes, expliquent qu'ils doivent atteindre rapidement la prochaine ville et proposent aux personnages 5 Couronnes d'or pour les transporter, eux et la caisse. Cette caisse mesure environ 1,80 m sur 60 cm par 60 cm et porte les mentions « Fragile », « Maintenir droit », « Ne pas faire tomber », etc. Les voyageurs sont très nerveux à l'idée de laisser quiconque s'en approcher.
 
@@ -104,8 +104,8 @@ Le pillage de tombes n'est pas une vocation pour la plupart des gens, mais Hans 
 
 **Possessions :** bâche, cadavre, cape à capuche, marteau et 2d10 clous de cercueil, pelle, pied-de-biche
 
-
-### <span id="page-40-0"></span>**CHASSEURS**
+<span id="page-40-0" data-folio="41"></span>
+### **CHASSEURS**
 
 Les chasseurs proposent un service demandé en permanence : ils fournissent de la nourriture tout au long de l'année. Le gibier capturé par les chasseurs, qui risquent leur vie dans les profondeurs des vastes forêts du Reikland, constitue une source précieuse de viande pour les paysans qui peuvent rarement s'offrir un repas plus coûteux. Quelques-uns se spécialisent dans l'acquisition de délices à la mode pour les plus riches, ou encore dans l'escorte de groupes de nobles malchanceux lors de parties de chasse soigneusement mises en scène. En période de vaches maigres, beaucoup se tournent vers le braconnage et risquent le courroux de propriétaires terriens en chassant le faisan, le cerf ou le sanglier sur leurs domaines protégés.
 
@@ -142,8 +142,8 @@ Comme tant de chasseurs avant lui, Klaus a commencé sa vie en tant que braconni
 
 \*Les Blessures supplémentaires du Talent Dur à Cuire ont déjà été incluses dans le profil.
 
-
-### <span id="page-41-0"></span>**NOBLES**
+<span id="page-41-0" data-folio="42"></span>
+### **NOBLES**
 
 Les nobles qui voyagent se répartissent généralement en deux catégories : ceux qui partent avec un cortège pour les affaires familiales et les jeunes héritiers qui se sont lancés dans l'aventure et d'autres activités. Un exemple pour chaque catégorie est donné ci-dessous.
 
@@ -179,7 +179,7 @@ Le bon baron a vécu une tout autre vie autrefois, mais peu de choses durent ét
 
 **Possessions :** bague en saphir fin (30 CO), cortège de gardes et de serviteurs, habit de cour, rapière avec filigrane en argent fin (25 CO)
 
-
+<span id="page-42-0" data-folio="43"></span>
 #### **Qu'ils s'encanaillent !**
 
 Les petits nobles et les jeunes héritiers seront là pour s'amuser, à l'image des deux jeunes hommes pleins d'entrain de l'incident *Hourra pour Henry* dans **L'Ennemi dans l'Ombre - Campagne**  page 37. En plus de s'adonner au jeu consistant à boire jusqu'à en vomir, ils peuvent décider de lancer un de leurs gardes du corps contre un client de l'auberge qui ne se doute de rien (comme l'un des Personnages) pour parier avec acharnement sur l'issue du combat avant de faire pleuvoir de l'or sur le vainqueur ; ce combat n'est pas armé et d'autres gardes du corps veillent à ce que personne n'intervienne de part et d'autre. D'autres paris peuvent porter sur le temps pendant lequel un paysan parvient à rester conscient lorsqu'il est maintenu la tête dans un seau de bière, sur le nombre de personnes qu'ils peuvent désensorceler en seulement dix minutes, ou encore sur la possibilité d'arroser toutes les personnes présentes dans la pièce avec une seule bouteille de vin mousseux sans même se lever de leur siège. Les nobles ne se soucient guère de ceux qu'ils contrarient ou humilient, pourvu qu'ils s'amusent. De plus, ils seront en compagnie d'un ou plusieurs gardes du corps (gardes, spadassins et/ou duellistes) qui veilleront à ce que personne ne les dérange.
@@ -210,8 +210,8 @@ Bruckesel n'est sûr que de deux choses : la quantité minimale d'impact nécess
 
 **Possessions :** bâton de combat, foi inébranlable dans le baron Sigismund, cotte de mailles, marteau de guerre
 
-
-### <span id="page-43-0"></span>**GLADIATEURS**
+<span id="page-43-0" data-folio="44"></span>
+### **GLADIATEURS**
 
 Un forain accompagné d'une troupe de gladiateurs s'est installé dans une auberge. Il y a délimité une arène temporaire avec des cordes et met au défi tous les participants d'affronter son champion. Il peut s'agir d'un combat à mort, remporté dès la première manche (le premier combattant à subir une ou plusieurs Blessures perd) ou se déroulant jusqu'aux « blessures honorables » (le premier combattant à tomber à 3 Points de Blessure ou moins est déclaré perdant).
 
@@ -245,8 +245,8 @@ Lorsqu'un répurgateur a commencé à donner des coups de botte pour enfoncer la
 
 en bois brut d'un enfant
 
-
-### <span id="page-44-0"></span>**DÉBARDEURS**
+<span id="page-44-0" data-folio="45"></span>
+### **DÉBARDEURS**
 
 Les aventuriers croiseront des débardeurs dans les villes de toutes tailles pendant leur voyage. S'il est rare de les rencontrer dans des auberges en bord de fleuve, ils constituent l'écrasante majorité de la clientèle que l'on retrouve dans les tavernes des quais plus rustres. En plus d'offrir la possibilité de recruter des PNJ ou de remplacer des Personnages morts, ils peuvent impliquer les Personnages dans une bagarre de bar, en leur lançant des insultes imagées comme « *Mon ami dit qu'il n'aime pas ta tête* ».
 
@@ -278,8 +278,8 @@ Hilma Bootschlecht sait que certaines personnes se retirent plus tôt que d'autr
 
 **Possessions :** contacts avec l'entreprise commerciale Kliendorfer, gaffe, gants de cuir
 
-
-### <span id="page-45-0"></span>**BLANCS-BECS**
+<span id="page-45-0" data-folio="46"></span>
+### **BLANCS-BECS**
 
 De temps à autre, on peut avoir l'impression que les Personnages sont les seuls à s'être aventurés dans le monde en quête d'aventure, ou à avoir eu une telle vie. Ce n'est pas toujours le cas, mais la plupart des tentatives de recherche d'aventure pour le plaisir se terminent par une tragédie prévisible. Cependant, ici et là, les Personnages peuvent rencontrer de telles personnes qui bravent les dangers du Vieux Monde à la recherche de risque et d'excitation, et qui les trouvent bien trop souvent.
 
@@ -313,7 +313,7 @@ Les cuisiniers sont généralement dehors tôt dans la journée afin de se préc
 
 Bien qu'il ne se déplace pas directement parmi les grands de ce monde, le cuisinier d'une maison riche ou noble entend tout autant de choses que n'importe quel autre serviteur. Si ce n'est plus, car les informations sont collectées et distillées à travers les ragots constants de la salle réservée aux serviteurs. Cependant, ils sont aussi loyaux envers leur employeur que n'importe quel autre serviteur et n'apprécieront pas qu'on leur demande ouvertement des informations, à moins qu'ils ne se soient disputés avec leur employeur.
 
-
+<span id="page-46-0" data-folio="47"></span>
 #### PARTOUT SAUF ICI
 
 Avaloi est convaincue que sa situation a été orchestrée et qu'il ne s'agit pas d'une coïncidence. La position de sa mère ayant engendré beaucoup d'ennemis, le meurtre de son père était trop opportun. De plus, elle refuse de croire qu'aucun membre de sa famille ne viendra la chercher... Elle a fait profil bas pendant un certain temps, au cas où les ennemis de sa famille l'auraient suivie jusque dans l'Empire, mais elle commence maintenant à se lasser de la vue, du goût et surtout des odeurs.
@@ -344,8 +344,8 @@ Fille d'un prince marchand ruiné et devenu chef cuisinier assassiné, Avaloi s'
 
 tablier, 1d10 pistoles d'argent
 
-
-### <span id="page-47-0"></span>**SORCIERS**
+<span id="page-47-0" data-folio="48"></span>
+### **SORCIERS**
 
 Dans les différentes régions de l'Empire, devenir sorcier est une vocation respectable, voire militaire, à la manière des plaideurs ou des médecins. Cependant, ce respect est tempéré par la quantité non négligeable de peur suscitée, surtout dans les petites villes et villages de l'Empire.
 
@@ -385,8 +385,8 @@ l'obscurité **Domaine de la Bête :** La lance d'Ambre, Langue bestiale,
 
 Maître de la bête, Vol du Destin
 
-
-### <span id="page-48-0"></span>**MÉDECINS**
+<span id="page-48-0" data-folio="49"></span>
+### **MÉDECINS**
 
 En raison de leurs occupations, les aventuriers ont régulièrement besoin d'une assistance médicale. Toute ville de taille moyenne ou grande abritera un ou plusieurs médecins, et une grande ville pourra disposer de plusieurs officines et cabinets, ainsi qu'une maison de guilde.
 
@@ -421,3 +421,5 @@ Doktor Schnee vient d'entrer dans l'âge mûr et était auparavant titulaire à 
 **Traits :** Arme (Mains nues) +2, Effrayé (Ombres)
 
 **Possessions :** bandages, licence de guilde, livre (Remèdes), outils professionnels (remèdes), potion de guérison, 3d10 pistoles d'argent
+
+<span id="page-49-0" data-folio="50"></span>

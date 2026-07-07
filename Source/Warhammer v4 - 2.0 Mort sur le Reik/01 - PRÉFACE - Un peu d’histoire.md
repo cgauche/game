@@ -1,6 +1,6 @@
-*Pages PDF 3*
+*Folio 4+*
 
-# <span id="page-2-0"></span>PRÉFACE : UN PEU D'HISTOIRE
+# PRÉFACE : UN PEU D'HISTOIRE
 
 Avant de rejoindre Games Workshop, Jim Bambra et Phil Gallagher avaient déjà conçu, en collaboration avec Graeme Morris, plusieurs modules d'aventures qui avaient reçu un accueil critique positif ; ils contribuaient aussi régulièrement à des magazines de jeux de rôle. L'équipe s'était également illustrée en créant un module de campagne considéré comme un chef-d'œuvre en la matière. À bien des égards, **Mort sur le Reik** en fut le successeur spirituel. Il s'agissait du troisième acte de la campagne *L'Ennemi Intérieur*, publié pour la première fois en 1987 sous la forme d'un coffret contenant le livre d'aventure principal, un supplément de 16 pages intitulé « La vie fluviale dans l'Empire », ainsi que plusieurs cartes et documents destinés aux joueurs.
 
@@ -24,5 +24,4 @@ Un grand merci à Games Workshop et Cubicle 7
 
 Traduction française Khaos Project © 2022 Tous droits réservés, © copyright Games Workshop. La reproduction de cet ouvrage même partielle est formellement interdite, sous toutes ses formes. Publié par Khaos Project SAS, 133 avenue de Caen, 76530 Grand Couronne
 
-
-<span id="page-3-0"></span>
+<span id="page-3-0" data-folio="4"></span>

@@ -1,6 +1,6 @@
-*Pages PDF 24-38*
+*Folio 25+*
 
-# <span id="page-23-0"></span>CHAPITRE 2 D'ALTDORF À KEMPERBAD
+# CHAPITRE 2 D'ALTDORF À KEMPERBAD
 
 Les adeptes de la Couronne Rouge jouent un rôle important dans les quatre prochains chapitres, mais les joueurs auront peu d'occasions d'interagir directement avec eux. Cependant, vous devrez toujours avoir une idée claire de leur emplacement, et surtout, de leurs interactions avec les aventuriers : notez quand elles ont lieu et comment elles se passent.
 
@@ -35,7 +35,7 @@ Vous trouverez des informations sur Blitzen dans l'annexe de ce livre. Vous pouv
 
 Bien sûr, les aventuriers qui sont attachés à la ville sont libres de s'y rendre, mais le scénario ne l'exige pas.
 
-
+<span id="page-24-0" data-folio="25"></span>
 ### **Rencontres avec la Couronne Rouge**
 
 *La tour à signaux* (p. 27) est l'endroit idéal pour un affrontement entre les aventuriers et les adeptes de la Couronne Rouge. Le combat se déclenche quand les aventuriers y retournent avec la sixième clef après avoir exploré les Collines Stériles. Cependant, cette rencontre peut avoir lieu à un autre moment. Voici les scénarios les plus probables.
@@ -64,7 +64,7 @@ C'est un endroit approprié pour un affrontement, surtout si les cultistes sont 
 
 Le fantôme de Brunhilde (p. 59 et 63) peut se joindre aux aventuriers s'ils ont besoin de renforts : elle reconnaît les adeptes comme des serviteurs du Chaos. Elle peut facilement faire fuir les mercenaires engagés par la Couronne Rouge, ce qui permet aux aventuriers de concentrer leurs efforts sur les deux sorciers. Si davantage de renforts sont nécessaires, elle peut dégager un éboulement devant *La grotte des morts* (p. 61) d'un geste de la main des plus théâtraux. Cela permet aux quatre squelettes qui s'y trouvaient de se dégager et de rejoindre le combat sous
 
-
+<span id="page-25-0" data-folio="26"></span>
 ses ordres. Un fantôme ordinaire serait incapable de faire ça avec des squelettes ordinaires. La façon dont ils sont morts et la présence de malepierre ont donné aux morts-vivants des pouvoirs aussi étranges qu'inattendus. En plus de ça, ils ont soif de vengeance et détestent les serviteurs du Chaos…
 
 #### **Entre la Cuvette du Diable et Kemperbad, jours 24-29**
@@ -81,8 +81,8 @@ La section suivante de l'aventure se concentre sur les actions des deux groupes 
 
 La colonne « Jour » fonctionne comme une montre qui mesure la progression des adeptes dans leur quête de la dernière clef nécessaire pour pénétrer dans la bibliothèque secrète de Dagmar sous la tour à signaux. Une aide est disponible à la fin du livre pour vous aider à suivre la progression de votre groupe. Si les joueurs flânent trop, ou s'ils se laissent distraire par des événements secondaires, vous pouvez leur faire comprendre qu'ils perdent du temps, en leur faisant remarquer un ou deux adeptes qui observent leur groupe de loin. Cette surveillance s'intensifie alors que Heidlemann se rapproche de son but. Si les aventuriers sont trop lents, n'hésitez pas à faire en sorte que Heidlemann arrive à la tour avant eux, et qu'il soit déjà en possession de la sixième clef. Le groupe doit alors tenter de l'empêcher d'atteindre la bibliothèque secrète.
 
-
-### <span id="page-26-0"></span>**VOYAGE VERS GRISSENWALD**
+<span id="page-26-0" data-folio="27"></span>
+### **VOYAGE VERS GRISSENWALD**
 
 Le périple des aventuriers depuis Grissenwald et les Crêtes Noires leur fait parcourir presque 435 km le long du Reik. Encore une fois, n'hésitez pas à animer le trajet avec des rencontres ou autres complications si vous le souhaitez. Certains événements importants méritent d'être mentionnés.
 
@@ -114,7 +114,7 @@ Si les aventuriers s'arrêtent pour les prendre, les nains embarqueront le plus 
 
 Avant qu'ils aient le temps de leur poser plus de questions, une troisième naine arrive en courant sur la rive. Elle a quelques kilos en trop, le souffle court, et le visage presque aussi rouge que son large pantalon. En la voyant, Thingrim et Belegol en perdent l'usage de la voix.
 
-
+<span id="page-27-0" data-folio="28"></span>
 Elle leur lance un regard noir, et pointe du doigt la tour à signaux à moitié finie. Quand elle leur parle, sa voix est haletante :
 
 *« À moins que vous vouliez (Hmpf !) être mis sur liste noire (Pfiou !) par tous les nains de l'Empire (Ahem !), vous allez retourner au chantier SUR-LE-CHAMP ! »*
@@ -151,8 +151,8 @@ Les Puissances de la Ruine ont, elles aussi, découvert son existence récemment
 
 Au fil des années, l'observatoire est partiellement tombé en ruines, mais certaines des protections que Dagmar avait mises en place fonctionnent toujours. Une puissante goule et cinq zombies assurent toujours sa défense : ils sont responsables de la mort, disparition et paralysie de certains nains qui travaillaient sur le chantier. Des clefs magiques sont également nécessaires pour accéder à l'observatoire.
 
-
-<span id="page-28-0"></span>Si les aventuriers essayent de discuter avec elle, elle peut leur dire :
+<span id="page-28-0" data-folio="29"></span>
+Si les aventuriers essayent de discuter avec elle, elle peut leur dire :
 
 - *« Dans l'équipe que je supervise, il y a douze ingénieurs. C'était, auparavant, tous des nains compétents et travailleurs. On a été recrutés à Altdorf il y a six semaines. On nous a demandé de construire une tour à signaux pour l'Empereur ici. »*
 - *« Ça avait l'air d'être un endroit idéal. La visibilité est bonne de part et d'autre, et le vieux bâtiment en dessous est en assez bon état pour servir de fondation. »*
@@ -190,7 +190,7 @@ Le sol de la tour correspond au plafond de l'observatoire. Les nains qui ont dis
 
 Si les aventuriers décident de passer la nuit ici, la goule les attaquera au petit matin. La trappe s'ouvre sans un bruit et la goule surgit dans la pièce. La créature est tellement rapide qu'elle ne peut pas être attaquée avant d'être complètement sortie de la trappe. Si les aventuriers font l'erreur de ne pas surveiller la trappe, personne ne détecte la présence de la goule avant qu'elle n'attaque. La goule tente de fuir par la trappe si elle tombe à 2 blessures ou moins. Si cela arrive, les aventuriers auront le temps de la suivre, ou de bloquer la trappe avant qu'elle ne se referme.
 
-
+<span id="page-29-0" data-folio="30"></span>
 #### **L'observatoire**
 
 Les aventuriers peuvent entrer dans l'observatoire (voir *La carte de l'observatoire* p. 31) en passant par la trappe à l'intérieur de la tour à signaux ou depuis l'extérieur avec la clef de la goule. (Voir *Les clefs magiques*, p. 29)
@@ -215,7 +215,7 @@ Le laboratoire est rempli d'instruments d'alchimie. Les différents plans de tra
 
 Il a été écrit à la main en langue classique, et ses marges sont intégralement recouvertes d'annotations et de révisions. Un Personnage qui connaît le classique mettrait des jours à en venir 
 
-
+<span id="page-30-0" data-folio="31"></span>
 à bout. Il faut le feuilleter quelques heures avant de comprendre que son propriétaire faisait des recherches sur l'invocation et le contrôle des squelettes, des zombies et des goules.
 
 Un Test de **Recherche Difficile (-20)** réussi révélera aux lecteurs plusieurs références brèves et volontairement cryptiques à la malepierre. Les informations contenues dans le livre peuvent être étudiées comme n'importe quel sort. Elles permettent à un sorcier de contrôler ces types de morts-vivants, mais pas de les invoquer. Une pincée de malepierre en poudre par mortvivant est nécessaire pour lancer le sort, qui fonctionne comme *Réanimation* (**WFJDR**, p. 257).
@@ -230,7 +230,7 @@ L'armoire à tiroirs contient plusieurs cartes anciennes qui représentent diff�
 
 Yanick Bedard - pumpkinhead83@hotmail.fr
 
-
+<span id="page-31-0" data-folio="32"></span>
 Il n'y a rien sur la table à dessin elle-même. Les portraits représentent divers membres de la famille Wittgenstein, mais leur nom n'est pas indiqué. Les aventuriers ne les reconnaîtront pas avant d'être allés au château Wittgenstein. La ressemblance entre tous les sujets est pourtant évidente : ils ont le nez aquilin, le front haut, et les sourcils épais et broussailleux.
 
 Un bâton aux motifs délicatement sculptés est posé dans un coin. Ceux qui possèdent le Talent Détection d'artefact sentent une aura très puissante s'en dégager. Les zombies n'attaqueront pas la personne qui le porte.
@@ -263,10 +263,10 @@ Une table se trouve au centre de la bibliothèque. Trois énormes livres sont po
 
 Les pages du troisième volume sont couvertes de texte écrit en Magick, d'une petite écriture difficile à lire. Le titre visible sur la première page peut être traduit par *« Journal du sorcier Dagmar von Wittgenstein, année 2405* ». La dernière entrée est reproduite dans le *Document 8* (plus bas) : c'est elle la plus intéressante. Elle donne aux aventuriers le dernier indice dont ils ont besoin pour se rendre au château Wittgenstein, le grand final de leur aventure.
 
-
+<span id="page-32-0" data-folio="33"></span>
 ### LA TOUR À SIGNAUX
 
-<span id="page-32-0"></span>Les joueurs grognards connaîtront déjà la tour et ses secrets, y compris les morts-vivants, les clefs et les livres. Vous pouvez pimenter les choses en effectuant quelques changements, dont voici certains exemples :
+Les joueurs grognards connaîtront déjà la tour et ses secrets, y compris les morts-vivants, les clefs et les livres. Vous pouvez pimenter les choses en effectuant quelques changements, dont voici certains exemples :
 
 La clef que porte la goule est complètement inutile. À la place, c'est sa tête, ou son corps tout entier qu'il faut approcher de la trappe pour qu'elle s'ouvre. Il en va de même pour les clefs portées par les cinq zombies. Pour ouvrir la trappe qui donne accès à la bibliothèque secrète, le pouce droit de chaque zombie doit être inséré de force dans les trous au sol du hall central, à chaque branche de l'hexagramme. Le pouce qui va servir de sixième clef peut être récupéré sur un des zombies des compagnons de Dagmar (qui remplacent les squelettes dans cette version) lors de son expédition aux Collines Stériles (voir *La Caverne aux morts* p. 60).
 
@@ -306,7 +306,7 @@ Grâce au commerce, Kemperbad est une ville riche et prospère : on peut y trouv
 
 En théorie, le coût de la vie à Kemperbad devrait être plus bas qu'ailleurs, puisqu'il n'y a aucun petit seigneur pour imposer des impôts à la population. Dans les faits, les choses coûtent aussi cher qu'ailleurs ; les membres du Conseil ont simplement augmenté leurs propres impôts en conséquence. Ainsi, Kemperbad est plus propre et mieux entretenue que beaucoup d'autres villes, parce que le Conseil dispose d'assez de fonds pour maintenir les rues en bon état.
 
-
+<span id="page-33-0" data-folio="34"></span>
 ### NOUVELLES ET RUMEURS DE KEMPERBAD
 
 Les informations suivantes peuvent être recueillies à Kemperbad. Comme toujours, vous pouvez les choisir ou les sélectionner au hasard. Toutes les rumeurs ne sont pas vraies.
@@ -347,8 +347,8 @@ Peu de temps avant que le groupe ne quitte Kemperbad pour rejoindre Grissenwald,
 
 On lui a arraché une mèche de cheveux ! Cette action n'aura aucune conséquence évidente, mais cela n'empêchera pas les aventuriers de s'inquiéter. Pour un profil d'adepte typique, voir *Les Adeptes* (p. 23).
 
-
-### <span id="page-34-0"></span>**CONCLUSION**
+<span id="page-34-0" data-folio="35"></span>
+### **CONCLUSION**
 
 ### **Récompenses**
 
@@ -409,7 +409,7 @@ Cette baguette sculptée dans une pierre noire et polie agit comme un puits de p
 
 **Traits** : Arme +3, Bestial, Foulée, Nerveux, Taille (Très Petit), Vision nocturne
 
-
+<span id="page-35-0" data-folio="36"></span>
 #### **Ernst Heidlemann**
 
 Ernst est un homme sec et dégingandé au visage de fouine, aux cheveux châtains et au teint blafard. Il se fait passer pour un médecin récemment diplômé au service de dame Etelka, et entretient la supercherie en refusant de soigner qui que ce soit d'autre. Ernst est discret et réservé, il ne parle pas beaucoup, mais peut se montrer cinglant avec ceux qui lui déplaisent. Il est cruel et calculateur, et pendant la campagne, il n'hésitera pas à recruter des voyous pour effectuer ses basses besognes, afin de réserver ses pouvoirs jusqu'au moment le plus opportun.
@@ -452,7 +452,7 @@ La plupart du temps, Aynjulls porte une veste de cuir maculée de taches d'huile
 
 **Possessions** : 3 CO, 4/-, anneau de la Guilde des Ingénieurs nains (5 CO), hache, outils de charpentier, outils de tailleur de pierre, veste de cuir
 
-
+<span id="page-36-0" data-folio="37"></span>
 #### **Les ingénieurs (6) – ingénieurs nains**
 
 Il reste six ingénieurs la première fois que les aventuriers rencontrent Aynjulls. Thingrim, Belegol, Kardak, Gundrun, Guzul et Minak. Ils sont tous désarçonnés et terrifiés par la mort mystérieuse de leurs collègues, mais ils tentent de ne rien laisser paraître.
@@ -497,3 +497,6 @@ La goule a été enchantée par Dagmar : non seulement elle est liée à la tour
 \*Ces zombies fonctionnent grâce à la terrible magie de Dagmar. Tant qu'ils sont dans la tour, ils ne sont pas Instables et bénéficient de Régénération.
 
 **Possessions** : une clef en fer de 15 cm de long en forme d'étoile à six branches est attachée par une lanière de cuir au cou de chaque zombie.
+
+<span id="page-37-0" data-folio="38"></span>
+<span id="page-38-0" data-folio="39"></span>

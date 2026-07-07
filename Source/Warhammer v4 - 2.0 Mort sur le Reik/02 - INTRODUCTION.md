@@ -1,4 +1,4 @@
-*Pages PDF 4-8*
+*Folio 5+*
 
 # INTRODUCTION
 
@@ -32,7 +32,7 @@ Il nous paraissait plus cohérent d'inclure les règles de navigation et de comm
 
 *\* Celui qui boit beaucoup : pas de problèmes*
 
-
+<span id="page-4-0" data-folio="5"></span>
 - 0 Encouragez les joueurs à planifier leurs objectifs pour la session de jeu suivante avant que le groupe ne se disperse à la fin de la session. Cela vous donnera le temps de détailler les lieux qui ne sont pas décrits dans ces pages.
 - 0 Essayez de comprendre ce que les joueurs souhaitent pour leurs Personnages. Par exemple, si un membre du groupe souhaite devenir Initié, faites courir la rumeur que des initiés sont actuellement ordonnés dans une ville qui se trouve justement sur la route que doivent emprunter les aventuriers. Si vous préférez retarder la transition de carrière, alors les aventuriers arrivent trop tard : les prêtres ordonnateurs sont partis, ou bien il y a trop de postulants.
 - 0 Une rumeur déplaisante peut décourager les aventuriers de visiter un endroit qu'il vaut mieux laisser de côté pour le moment. Une maladie mystérieuse et meurtrière, par exemple, ou bien des mutants et autres hommes-bêtes semant la panique pourront vous être utiles.
@@ -50,8 +50,8 @@ Le changement le plus significatif sera une augmentation nette du trafic militai
 
 Les négociants de la région se font toujours un plaisir d'arnaquer les voyageurs naïfs, et la Garde est tout aussi ravie de les jeter en prison à la moindre infraction. Les miliciens cupides leur font ensuite payer une amende exorbitante pour être libérés et conduits aux portes de la ville, avec la stricte interdiction d'y remettre les pieds. Mis à part les villes qui ont un rôle spécifique dans l'aventure, elles se ressemblent toutes plus ou moins : les aventuriers ne sont pas vraiment les bienvenus, mais leur argent, oui.
 
-
-### <span id="page-5-0"></span>**L'HISTOIRE**
+<span id="page-5-0" data-folio="6"></span>
+### **L'HISTOIRE**
 
 Dans cette aventure, plusieurs intrigues complexes se déroulent simultanément. Certaines sont nouvelles, d'autres sont héritées de précédentes aventures ; certaines seront résolues dans ce livre, tandis que d'autres jetteront une ombre sur la vie des aventuriers pour les mois à venir.
 
@@ -86,8 +86,8 @@ Pendant qu'ils enquêtaient sur l'*Ordo Septenarius* à Bögenhafen, les aventur
 
 L'intrigue principale de **Mort sur le Reik** concerne une météorite tombée dans une région reculée de l'Empire il y a plus de deux siècles. La météorite est en fait un morceau de la lune du Chaos, Morrslieb, de la taille d'une tête de vache. Ce fragment de malepierre a été récupéré par une famille noble de la région, mais semble avoir affecté de manière étrange les membres de la famille, leur château et leurs serviteurs.
 
-
-### <span id="page-6-0"></span>**LES CHAPITRES**
+<span id="page-6-0" data-folio="7"></span>
+### **LES CHAPITRES**
 
 **Mort sur le Reik** comporte huit chapitres.
 
@@ -130,3 +130,6 @@ Enfin, les aventuriers découvrent la météorite de malepierre. Mais à ce mome
 Le voyage pour Middenheim est long et le fleuve offre de multiples distractions. À plusieurs jours de voyage se trouve la prestigieuse cité portuaire de Marienburg, ville de richesse, d'opportunités et de plaisirs. Certains disent (non sans un léger sentiment de culpabilité) que sa taille surpasse même celle d'Altdorf. Pour un groupe de voyageurs disposant de leur propre bateau et ayant le goût du commerce, il peut s'agir d'une attraction irrésistible, surtout lorsqu'un marchand leur propose d'y livrer une cargaison.
 
 Ce qu'ils ignorent, c'est qu'il s'agit d'un piège fomenté par les agents de la Main Pourpre, pour coincer les aventuriers en détruisant leur barge. Une fois capturés, les aventuriers doivent être livrés aux dirigeants du culte... à Middenheim.
+
+<span id="page-7-0" data-folio="8"></span>
+<span id="page-8-0" data-folio="9"></span>

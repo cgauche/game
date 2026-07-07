@@ -1,6 +1,6 @@
-*Pages PDF 91-93*
+*Folio 92+*
 
-## <span id="page-90-0"></span>CHAPITRE 14 MALADIES TRANSMISES PAR L'EAU
+## CHAPITRE 14 MALADIES TRANSMISES PAR L'EAU
 
 Les voies navigables de l'Empire s'étendent des ruisseaux de montagne étincelants aux marais et marécages fétides. Les rivières qui traversent les villes peuvent être de véritables égouts à ciel ouvert, remplis d'effluents humains, de déchets en décomposition, de chats morts et de bien d'autres choses. Chaque fois qu'une personne boit de l'eau de rivière sans la faire bouillir au préalable, elle risque de contracter une maladie ou d'ingérer un parasite.
 
@@ -62,8 +62,8 @@ Si le Test de Résistance est raté, lancez un dé selon le tableau suivant, ave
 
 <sup>1</sup> Relancez si le Personnage n'est pas blessé.
 
-
-### <span id="page-91-0"></span>**MALADIES ET PARASITES**
+<span id="page-91-0" data-folio="92"></span>
+### **MALADIES ET PARASITES**
 
 Toutes les maladies non décrites ci-dessous peuvent être trouvées dans **WFJDR**, p. 186 à 188.
 
@@ -102,8 +102,8 @@ Si le ver de carie n'est pas éliminé dans les trois jours qui suivent, il n'es
 
 Les œufs du ver de carie éclosent 1d10 jours après avoir été pondus, suintant des narines de la victime à la recherche d'un nouvel hôte. Pour ceux qui survivent à ce processus, toutes les pénalités sont permanentes et ne peuvent être annulées que par des moyens magiques ou miraculeux.
 
-
-#### <span id="page-92-0"></span>**Colique**
+<span id="page-92-0" data-folio="93"></span>
+#### **Colique**
 
 Le patient est saisi par les douleurs abdominales aiguës qui donnent son nom à cette maladie. Elles surviennent de manière irrégulière, sans prévenir et peuvent être accompagnées de Fièvre, d'Intoxication alimentaire et de Vomissement.
 
@@ -158,3 +158,5 @@ Sur un Échec Impressionnant ou pire, il doit effectuer un Test de **Force Menta
 Sur un Échec Stupéfiant, il s'évanouit de douleur, gagnant l'État *Inconscient*.
 
 **Traitement :** une infusion d'écorce de saule peut aider un peu (bonus de +10 à tous les Tests résultant de coliques pendant d10 heures), mais il n'y a pas grand-chose d'autre à faire, mis à part attendre que la maladie suive son cours.
+
+<span id="page-93-0" data-folio="94"></span>

@@ -1,6 +1,7 @@
-*Pages PDF 114-128*
+*Folio 114+*
 
-## <span id="page-113-0"></span>CHAPITRE 17 LA VENGEANCE DU SEIGNEUR DES TOMBES
+<span id="page-113-0" data-folio="114"></span>
+## CHAPITRE 17 LA VENGEANCE DU SEIGNEUR DES TOMBES
 
 Cette courte aventure est le début d'un scénario optionnel pouvant se dérouler en parallèle de l'intrigue principale ; on y fait la rencontre d'Hans Gräber, un jeune nécromancien plein d'ambition, qui aime se faire appeler « le Seigneur des tombes ». Ce chapitre de la saga du Seigneur des tombes a été conçu à partir de « *Charogne sur le Reik* », une aventure à l'origine écrite par James Wallis, dont le commentaire se trouve au début de ce livre. Contrairement à ce qu'évoque le titre, il n'était fait mention d'aucune charogne dans « *Charogne sur le Reik* » ; cette aventure-ci corrige, entre autres choses, ce manque décevant.
 
@@ -12,8 +13,8 @@ Le doyen de la communauté, le père Marcus, est reconnu comme étant l'un des p
 
 La menace ne vient pas de fanatiques ulricains, extrêmement rares en ces contrées, mais d'un certain Hans Gräber, un moine novice que le père Marcus a expulsé de la communauté deux ans auparavant. Ignorant les avertissements répétés de ses supérieurs, Gräber a été surpris pour la troisième fois dans la section réservée de la bibliothèque, en train de consulter d'anciens récits du parcours et de la vie d'Heinrich Kemmler, le redouté Seigneur des Liches. Obsédé par ces histoires, il a commencé, à l'insu de ses supérieurs, qui l'auraient très certainement fait brûler s'ils connaissaient la vérité, à tâter de la nécromancie. Son expulsion du monastère fut l'affront de trop, et il bascula alors dans une folie vengeresse ; depuis ce jour, il erre à travers le sud du Reikland, étudiant la magie dès qu'il le peut, en particulier le Domaine interdit de la nécromancie, et attendant d'être suffisamment puissant pour prendre sa revanche. Maintenant que le père Marcus est en voyage et parfaitement vulnérable, l'heure est venue d'accomplir la vengeance du Seigneur des tombes.
 
-
-#### <span id="page-114-0"></span>**Déroulement de cette aventure**
+<span id="page-114-0" data-folio="115"></span>
+#### **Déroulement de cette aventure**
 
 Cette aventure est constituée d'événements courts et autonomes que le MJ peut greffer sur l'aventure de *Mort sur le Reik*, ou toute autre scénario comprenant un voyage par la rivière jusqu'à Altdorf. Ces évènements a priori isolés, qui ont pour seuls facteurs communs des traces de nécromancie et un nom étrange, semblent obéir de plus en plus à un certain schéma, si bien que les Personnages seront peut-être tentés d'établir un lien avec l'intrigue principale de la campagne. Le MJ devrait les laisser faire, même s'il n'existe en réalité aucun lien entre les deux intrigues.
 
@@ -41,7 +42,7 @@ Alors que le bateau est sur le point de larguer les amarres, trois hommes vêtus
 
 Avec ces passagers supplémentaires, la question du nombre de couchettes disponibles se pose. Il n'y en avait plus qu'une avant que les trois moines ne montent à bord, ce qui signifie que deux personnes vont devoir dormir sur le pont ou sur la berge tous les soirs. L'équipage refuse, et si les Personnages refusent également, les deux jeunes prêtres acceptent de dormir sur le pont. Cependant, ils insistent pour que leur supérieur, le père Marcus, dispose de sa propre couchette, voire même d'une cabine entière pour lui seul.
 
-
+<span id="page-115-0" data-folio="116"></span>
 #### **Père Marcus**
 
 Le père Marcus, tant par son air que par sa manière de s'exprimer (avec un léger accent middenlander), a tout du stéréotype de l'érudit distrait. Il est vif et perspicace, mais après n'avoir côtoyé que des prêtres et érudits pendant si longtemps, il a tendance à penser que tout le monde en sait autant que lui, et sa conversation peut rapidement devenir incompréhensible pour le profane. Il se montre parfois vague ou distant, mais il n'est pas malveillant, et il est difficile de ne pas l'apprécier.
@@ -84,8 +85,8 @@ FRÈRE MARTIN ET FRÈRE ROLF - MOINES HUMAINS (NONNES) (BRONZE 4)
 
 **Possessions :** épée, robe, pendentif en forme de marteau, sac à dos contenant de la nourriture, de la boisson et une tenue de cérémonie, 3/5 chacun
 
-
-#### <span id="page-116-0"></span>**Le voyage**
+<span id="page-116-0" data-folio="117"></span>
+#### **Le voyage**
 
 La première partie du voyage se déroule sans encombre. Le père Marcus passe le plus clair de son temps à lire dans sa cabine, mais il repère bien vite s'il y a des fidèles de Sigmar parmi les aventuriers et peut alors leur confier les raisons de son voyage. Les trois moines ne se rendent pas à Altdorf dans un simple but académique. Le père Marcus a été convoqué par le Grand Théogoniste à une réunion des érudits sigmarites afin d'aborder le problème d'une soi-disant Hérésie sigmarite (voir **L'Ennemi dans l'Ombre - Campagne**, p. 5). Cette hérésie n'est généralement embrassée que par les adeptes d'Ulric les plus fanatiques, mais, récemment, elle a connu une véritable explosion dans le nord, et le père Marcus a entendu de nombreux rapports concernant des violences sectaires. Le Grand Théogoniste craint que ces tensions n'éclatent en un conflit ouvert entre les deux cultes.
 
@@ -115,7 +116,7 @@ Contrôlées par Gräber, qui est caché au milieu des arbres bordant la rive, l
 
 Si les attaques des trois charognards échouent, et que les trois moines réussissent leurs Tests d'Agilité, alors ils parviennent à mettre le père Marcus à l'abri ; les deux frères remontent ensuite sur le pont, épée en main, et s'apprêtent à combattre les créatures. Mais au Round suivant, le père Marcus, qui en avait assez de se cacher lâchement, remonte lui aussi sur le pont et commence à prier pour invoquer des miracles contre leurs assaillants, ses deux gardes du corps, fidèles à leur devoir, doivent alors tenter de l'emmener de force pour le remettre en sécurité.
 
-
+<span id="page-117-0" data-folio="118"></span>
 ## XVII WARHAMMER FANTASY
 
 #### LES CHAROGNARDS
@@ -158,8 +159,8 @@ ils survolent le bateau à pleine vitesse, manquant de peu le sommet du mât. L'
 
 AINSI PÉRISSENT CEUX QUI CONTRARIENT LE SEIGNEUR DES TOMBES
 
-
-<span id="page-118-0"></span>subir, en cas d'échec, 1 Blessure par Degré d'échec) et sur le ruban qui y est attaché, un message est rédigé en grosses lettres noires : AINSI PÉRISSENT CEUX QUI CONTRARIENT LE SEIGNEUR DES TOMBES. Ni les Personnages, ni les moines survivants ne savent ce que tout cela signifie.
+<span id="page-118-0" data-folio="119"></span>
+subir, en cas d'échec, 1 Blessure par Degré d'échec) et sur le ruban qui y est attaché, un message est rédigé en grosses lettres noires : AINSI PÉRISSENT CEUX QUI CONTRARIENT LE SEIGNEUR DES TOMBES. Ni les Personnages, ni les moines survivants ne savent ce que tout cela signifie.
 
 ### **PARTIE 3 : FRÈRES EN DEUIL**
 
@@ -191,8 +192,8 @@ C'est alors qu'un second rayon d'énergie, d'un violet sombre, jaillit d'un autr
 
 Le silence retombe sur l'assemblée, rompu seulement par des pleurs et le murmure des prières ; les deux moines survivants fixent un moment la dépouille d'un regard horrifié, puis ils replacent le corps sur la civière, éventuellement aidés d'un ou de plusieurs Personnages, et se remettent en chemin. Il doit bien y avoir quelque chose de plus qu'ils puissent faire, mais aucun ne sait quoi.
 
-
-### <span id="page-119-0"></span>**De la poudre aux yeux**
+<span id="page-119-0" data-folio="120"></span>
+### **De la poudre aux yeux**
 
 Malgré son effet sans nul doute dramatique, cette mise en scène ne se compose en réalité que de trois sorts. La brume verdâtre-violacée est un sort de *Réanimation* du Domaine de la nécromancie, qui transforme le cadavre du père Marcus en zombie ; un zombie à l'air relativement frais et vivant, mais un zombie tout de même. Le discours est fait à l'aide du sort de Magie mineure *Murmures*, et le final spectaculaire grâce au sort *Vortex d'âmes* du Domaine de la Mort. Tous ces sorts sont lancés par Gräber, caché au milieu de la foule ; il change de position entre le premier et le troisième sort. Une fois le spectacle terminé, il ordonne au zombie de s'effondrer et annule l'emprise du sortilège, de manière à ce que le zombie redevienne un corps inanimé. Puis, pendant que les yeux de la foule sont rivés sur le cadavre, il s'éclipse sans être vu.
 
@@ -231,7 +232,7 @@ Les Personnages seront certainement frustrés par la situation, mais encore une 
 - 0 10 points chacun pour avoir discuté avec le père Marcus et pour avoir parlé de l'Hérésie sigmarite.
 - 0 10 points chacun pour avoir aidé à porter le corps jusqu'au temple.
 
-
+<span id="page-120-0" data-folio="121"></span>
 | A                                                              | Commissaire de bord Eberhardt Kleingeld 108      |  |
 |----------------------------------------------------------------|--------------------------------------------------|--|
 | Accident 26                                                    | Comte Otto Boorman 18                            |  |
@@ -302,7 +303,7 @@ Les Personnages seront certainement frustrés par la situation, mais encore une 
 | Commandant frontalier 111                                      | Faux pilote 79                                   |  |
 |                                                                |                                                  |  |
 
-
+<span id="page-121-0" data-folio="122"></span>
 | Feuille d'araignée 15                                         | Liber Mutandis (Le) 95                                   |  |
 |---------------------------------------------------------------|----------------------------------------------------------|--|
 | Feuille de mage 12                                            | Lieberung est perdu ? 39                                 |  |
@@ -373,7 +374,7 @@ Les Personnages seront certainement frustrés par la situation, mais encore une 
 |                                                               |                                                          |  |
 | Le monstre à trois yeux 88                                    |                                                          |  |
 
-
+<span id="page-122-0" data-folio="123"></span>
 | Q                                                     |
 |-------------------------------------------------------|
 | Qu'est-ce qu'on s'amuse ! 91                          |
@@ -489,11 +490,11 @@ Les Personnages seront certainement frustrés par la situation, mais encore une 
 | W                                    |  |
 |                                      |  |
 
-
-
+<span id="page-123-0" data-folio="124"></span>
+<span id="page-124-0" data-folio="125"></span>
 AINSI PÉRISSENT CEUX QUI CONTRARIENT LE SEIGNEUR DES TOMBES
 
-
+<span id="page-125-0" data-folio="126"></span>
 ### **SIGRID SOMMERFELD**
 
 CHEF DE BANDE
@@ -630,7 +631,7 @@ de cuivre (sc)
 | Dur à cuire | 0  |  |  |
 | Blessures   | 13 |  |  |
 
-
+<span id="page-126-0" data-folio="127"></span>
 #### APPARENCE ET PERSONNALITÉ
 
 *« Bien sûr, j'entre la première. Ça ne peut pas être pire que le château Wittgenstein… »*
@@ -656,7 +657,7 @@ Commencez avec 1d10 pistoles d'argent en plus par secret choisi.
 
 NOTES
 
-
+<span id="page-127-0" data-folio="128"></span>
 *Au moment convenu, nous émergerons de nos repaires secrets et nous mettrons à genoux les villes et cités de l'Empire. Le Chaos envahira cette terre, et nous, les Serviteurs élus, nous nous couvrirons de gloire devant SES yeux. Gloire à Tzeentch, Changeur de Voies ! Njawrr'thakh Lzimbarr Tzeentch !*
 
 **Le Compagnon de Mort sur le Reik** est le guide indispensable pour cette deuxième partie de la campagne épique de **L'Ennemi Intérieur**, l'aventure novatrice qui a inspiré toute une génération de joueurs.

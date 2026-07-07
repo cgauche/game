@@ -1,4 +1,4 @@
-*Pages PDF 3-5*
+*Folio 4+*
 
 # PRÉFACE : UN PEU D'HISTOIRE
 
@@ -28,7 +28,7 @@ Un grand merci à Games Workshop et Cubicle 7
 
 Traduction française Khaos Project © 2022 Tous droits réservés, © copyright Games Workshop. La reproduction de cet ouvrage même partielle est formellement interdite, sous toutes ses formes. Publié par Khaos Project SAS, 133 avenue de Caen, 76530 Grand Couronne
 
-
+<span id="page-3-0" data-folio="4"></span>
 # Les illustrations de Mort sur le Reik
 
 #### Par Martin McKenna
@@ -51,7 +51,7 @@ Après Mort sur le Reik, j'ai continué à travailler pour WFJDR et d'autres pro
 
 Je ne saurais pas vous dire pourquoi j'ai arrêté de travailler pour GW. J'étais de plus en plus accaparé par d'autres projets, et notre collaboration a cessé petit à petit, c'est tout. Au cours de ma vie, j'ai eu l'occasion de travailler sur pas mal de choses différentes : j'ai bossé dans l'édition, dans le jeu vidéo, j'ai été chef décorateur pour le cinéma et la télévision. En ce moment, j'aime écrire et illustrer mes propres livres. La plupart sont destinés aux enfants. Alors que j'écris ces lignes, je peaufine mon dernier livre d'images.
 
-
+<span id="page-4-0" data-folio="5"></span>
 ## Oui, j'ai coule ta barge
 
 #### Par James Wallis
@@ -81,5 +81,4 @@ Je ne saurais pas vous dire pourquoi j'ai arrêté de travailler pour GW. J'éta
 
 **Pour ce qui est de ma réécriture de L'Empire en Flammes, et pourquoi elle n'a jamais été publiée… ça, ce sera pour une prochaine fois, quand j'aurai un verre ou deux à portée de main.**
 
-
-<span id="page-5-0"></span>
+<span id="page-5-0" data-folio="6"></span>

@@ -1,4 +1,4 @@
-*Pages PDF 107-125*
+*Folio 104+*
 
 # NAVIGATION MARITIME • **Piloter un navire sur les mers et éviter les périls des océans** •
 
@@ -35,7 +35,7 @@ Quand elles indiquent qu'un Test de Navigation est nécessaire, les présentes r
 |                     | consentants, Intimidation s'ils ne le sont pas.                                 |  |  |
 | Magie               | Langue (Magick)                                                                 |  |  |
 
-
+<span id="page-107-0" data-folio="104"></span>
 # **PROGRESSION**
 
 Comme les Personnages, les bateaux possèdent un Attribut Mouvement qui détermine leur vitesse moyenne. Les Caractéristiques Mouvement et la vitesse approximative qu'elles représentent sont indiquées dans le tableau qui suit.
@@ -91,7 +91,7 @@ Les résultats du Test de Navigation peuvent ensuite être comparés au tableau 
 | Suivre un itinéraire sûr le<br>long d'une bande rocailleuse<br>de côte par un épais<br>brouillard | Difficile (–20)      | Heure              |
 | Suivre un itinéraire dans la<br>Gueule du dragon en pleine<br>tempête                             | Très Difficile (–30) | Round              |
 
-
+<span id="page-108-0" data-folio="105"></span>
 # **Forcer le rythme**
 
 Un équipage peut tenter d'augmenter la vitesse de son vaisseau, soit en s'efforçant de prendre le vent de la meilleure manière possible, soit en ramant plus vigoureusement. Mais la vitesse que peut gagner un bateau par ce biais est limitée, et pour bénéficier du bonus de Mouvement, un Test de **Voile** ou de **Ramer** doit être réussi comme expliqué dans le tableau qui suit. **Note :** ce Test n'est pas un Test de Navigation et Savoir (Océans) ne donne donc pas de bonus dessus.
@@ -158,7 +158,7 @@ Les Salissures peuvent être retirées des petits navires en utilisant les Comp�
 | 4          | Le ventre de la coque est totalement recouvert de varech.                      | –2 DR sur les Manœuvres, –2 M                                            | 20 % du coût de base |  |
 | 5          | Sous la ligne de flottaison, le navire ressemble à un récif de corail inversé. | –3 DR sur les Manœuvres, –2 M,<br>–1 DR sur tous les Tests de Navigation | 25 % du coût de base |  |
 
-
+<span id="page-109-0" data-folio="106"></span>
 # **MÉTÉO**
 
 La météo est connue pour être changeante sur la Mer des Griffes. Le tableau Météo de la Mer des Griffes vous donne la météo de la journée concernant les Précipitations, la Température, la Visibilité et les Vents. Lancez le dé pour chaque aspect. Si vous obtenez une série de résultats qui semble illogique, vous pouvez soit attribuer cela aux Vents de Magie venant des désolations du Chaos au nord, soit décider de relancer le dé. Les scores de base sont prévus pour l'été, donc ajoutez 2 au résultat pour les mois d'automne et de printemps et 4 pour l'hiver.
@@ -242,7 +242,7 @@ La Mer des Griffes est souvent enveloppée de brouillard, ce qui rend les Tests 
 |               | basés sur la vue subissent une pénalité de –3 DR si la   |
 |               | cible se trouve à plus de 5 mètres de distance.          |
 
-
+<span id="page-110-0" data-folio="107"></span>
 # **Vents**
 
 Le vent est l'aspect de la météo qui affecte le plus sérieusement la navigation à la voile, mais il a un impact bien plus grand sur le voyage en mer que sur les vaisseaux fluviaux. Lancez le dé sur le tableau qui suit pour déterminer aléatoirement la direction du vent.
@@ -303,7 +303,7 @@ Si le vaisseau possède une Embarcation de bord équipée d'avirons, elle peut �
 
 Le Mouvement du navire peut être augmenté en virant de bord, ce qui nécessite un Test réussi de **Navigation Intermédiaire (+0)**. En cas d'échec, le bateau se déplace normalement, sans bonus.
 
-
+<span id="page-111-0" data-folio="108"></span>
 # **ORIENTATION**
 
 Trouver et garder ses repères est vital en haute mer, où les horizons sans aucun relief et les littoraux inconnus peuvent déconcerter même le marin le plus aguerri.
@@ -350,7 +350,7 @@ Si le phare se trouve près d'un danger, tous les Tests de Perception entrepris 
 
 Certains ports, dont le plus célèbre est en Bilbali en Estalie, utilisent des clochers pour guider les navires plutôt que des phares. Distinguer de quelle direction vient le son de la cloche est plus compliqué que de voir la lumière d'un phare, c'est pourquoi les clochers ne confèrent que +2 DR sur les Tests d'Orientation. Le son porte normalement moins loin que la lumière, vous devez donc diviser par deux toutes les distances du tableau Voir la lumière pour un clocher. Cependant, les cloches sont avantageuses en cas de brouillard, qui pourrait masquer la lumière d'un phare.
 
-
+<span id="page-112-0" data-folio="109"></span>
 # **COURSE-POURSUITE**
 
 Les règles de course-poursuite sont une adaptation des règles de Poursuite sur terre (voir **WFJDR**, p. 166). Cependant, comme l'échelle de ces poursuites est beaucoup plus vaste en mer, faire jouer une Poursuite en utilisant les règles terrestres pourrait prendre beaucoup de temps. C'est pourquoi, sauf si les équipages des bateaux impliqués dans la Poursuite interagissent d'une autre manière (par exemple se tirent dessus au canon, lancent des Sorts, etc.), nous vous recommandons de demander des Tests pour déterminer la Distance tous les dix Rounds et de multiplier les résultats par dix pour définir la véritable Distance.
@@ -402,7 +402,7 @@ Les Poursuivants peuvent être considérés comme un groupe s'ils ont tous le m�
 
 Pendant cette étape, si un Poursuivant réduit sa Distance à 0 par rapport à un membre de la Cible, il peut décider s'il veut l'attaquer ou le dépasser dans l'espoir d'attraper un autre membre de la Cible situé plus loin.
 
-
+<span id="page-113-0" data-folio="110"></span>
 **Exemple :** un langskip norse tente de rattraper une caraque impériale. Le langskip est doté d'un M de 6 en utilisant ses Avirons tandis que la caraque a un M de 5 en employant ses Voiles.
 
 Le MJ décide que la poursuite commence alors que le langskip se trouve hors de portée des canons de la caraque. Comme les deux bateaux ne peuvent pas réellement interagir entre eux autrement qu'en modifiant leur position l'un par rapport à l'autre, le MJ déclare que les Tests entrepris pour poursuivre doivent l'être tous les 10 Rounds et que leurs effets doivent être multipliés par dix jusqu'à ce que d'autres interactions deviennent possibles. Le MJ détermine que la distance initiale entre les vaisseaux est de 500 mètres et que les conditions sont un temps dégagé en haute mer dans un espace ouvert. Il donne à la caraque une longueur d'avance de 50 (Distance).
@@ -419,7 +419,7 @@ Dans le cas qui nous occupe, le langskip réduit la Distance à 21 et les Tests 
 
 L'équipage de la caraque ferait mieux d'espérer parvenir à infliger suffisamment de Dégâts au langskip pour le forcer à abandonner la Poursuite avant qu'il réduise la Distance à 0, sans quoi une collision, suivie d'un abordage déterminé, est malheureusement inévitable.
 
-
+<span id="page-114-0" data-folio="111"></span>
 # **COLLISIONS**
 
 La plupart du temps les marins veillent soigneusement à éviter les collisions, mais les accidents sont toujours possibles, et parfois un capitaine peut ordonner à son vaisseau de rentrer volontairement dans un autre pour l'attaquer, ou en désespoir de cause.
@@ -463,7 +463,7 @@ Il existe plusieurs facteurs qui peuvent rendre une collision plus ou moins dest
 
 Sauf précision contraire, les coups résultant d'une collision touchent toujours les bateaux sur la Localisation de la Coque.
 
-
+<span id="page-115-0" data-folio="112"></span>
 # **PÉRILS EN MER**
 
 Les mers du Vieux Monde sont des endroits dangereux, habités par des monstres et sillonnés par les groupes de pillards de nations et d'espèces hostiles. Il existe également des périls plus prosaïques comme ceux présentés par l'environnement lui-même.
@@ -510,7 +510,7 @@ Dans un Détroit, tous les Tests de Navigation subissent une pénalité indiqué
 
 #### NAVIGATION DANS UN DÉTROIT **Détroit <sup>M</sup> Tests de Navigation** Faible 4 –1 DR Moyen 8 –2 DR Fort 16 –3 DR
 
-
+<span id="page-116-0" data-folio="113"></span>
 # **Tourbillons**
 
 Les Tourbillons sont des plans d'eau tournante générés par les courants qui y circulent. Comme les Détroits, les Tourbillons ont leur propre valeur de M représentant l'attraction vers le centre. Si un navire atteint le centre, il risque de ne plus pouvoir repartir et les forces exercées par l'eau tournante peuvent le détruire ou le faire couler. Les Tourbillons possèdent deux parties différentes : la zone (le plan d'eau aspiré vers le centre) et le centre (le milieu d'un Tourbillon qui peut infliger des Dégâts à un vaisseau). Les Tourbillons possèdent les Caractéristiques suivantes :
@@ -536,7 +536,7 @@ Si un navire entre dans la Zone, il se déplace vers le centre au rythme du M du
 | Maelstrom                        | 8  | 60 mètres/100  | –2 DR | 20 | Test étendu de Manœuvre Difficile (–20) pour un total de 35 DR      |
 | Maelstrom primordial             | 10 | 100 mètres/150 | –2 DR | 50 | Test étendu de Manœuvre Très Difficile (–30) pour un total de 45 DR |
 
-
+<span id="page-117-0" data-folio="114"></span>
 **Exemple :** se retrouver piégé dans un Tourbillon peut être une situation compliquée à gérer. Les divers facteurs pouvant jouer un rôle sont abordés ici. Les Tests d'équipage sont mentionnés ci-dessous, mais expliqués en détail dans le chapitre 14.
 
 Une caraque est prise au bord d'un Tourbillon. Ce qui signifie qu'elle se trouve tout au bout d'une spirale faisant un total de 50 M depuis le rebord du Tourbillon jusqu'au centre.
@@ -563,7 +563,7 @@ Afin de s'échapper, elle doit réussir un Test étendu de **Manœuvre Interméd
 
 Si le Test de Manœuvre est un succès, le Personnage à la barre peut ensuite entreprendre un Test de Navigation afin de savoir à quel point le navire s'éloigne du centre. S'il s'échappe de la Zone du Tourbillon, il est en sécurité. Sinon, il risque d'être de nouveau aspiré.
 
-
+<span id="page-118-0" data-folio="115"></span>
 # **INFLIGER DES DÉGÂTS AUX NAVIRES**
 
 Chaque bateau possède un score d'Endurance qui modifie les Dégâts qu'il subit, et un score de Blessures qui indique la quantité de Dégâts qu'il peut supporter.
@@ -606,7 +606,7 @@ Généralement, les tirs de petites armes, c'est-à-dire d'armes à projectiles 
 
 Le MJ décide si les PNJ qui tirent avec de petites armes visent un membre d'équipage en particulier (ce qui est souvent difficile, car certaines parties du bateau lui fournissent un couvert) ou tirent sur le navire (qui est une cible plus grande mais la plupart des projectiles touchent alors des structures qui ignorent les tirs de petites armes et seuls quelques coups de chance vont frapper les membres de l'équipage). Les Personnages peuvent eux-mêmes décider de tirer de l'une ou l'autre manière.
 
-
+<span id="page-119-0" data-folio="116"></span>
 #### **Attaques de Corps <sup>à</sup> corps contre un navire**
 
 Si des ennemis attaquent directement l'équipage, cette situation est gérée comme une attaque entre personnages. Toute attaque de corps à corps portée contre une autre partie du bateau touche automatiquement et les Personnages qui attaquent un navire au corps à corps peuvent choisir quelle Localisation attaquer, à condition qu'ils puissent atteindre celle choisie.
@@ -650,7 +650,7 @@ Il est possible d'entreprendre des réparations temporaires sans amener le batea
 
 Cependant, le navire doit effectuer un Test d'Endurance pour chaque jour complet de voyage après les réparations temporaires. Il doit également effectuer ce Test chaque fois qu'un Test de Manœuvre doit avoir lieu. Chaque Test raté inflige 1d10–4 Dégâts, car la réparation temporaire cède.
 
-
+<span id="page-120-0" data-folio="117"></span>
 # **CRITIQUES SUR UN NAVIRE**
 
 Quand un jet d'attaque réussi contre un bateau donne un double, il subit un Critique. De plus, tous les coups qui touchent une fois que le score de Blessures d'un vaisseau est tombé à 0 sont des Critiques. Il existe différents modèles de bateau et la description d'un Critique donné peut ne pas s'appliquer au vaisseau concerné. Dans ce cas, utilisez le Critique le plus proche en termes de gravité.
@@ -701,7 +701,7 @@ Certains effets des Blessures Critiques sur un vaisseau peuvent être retirés e
 | 7-8             | Cargaison détruite                 | 2d100 points d'Enc de cargaison sont détruits. Éclats 6.                                                                                                                                                                                                                                                                                                                                               |  |
 | 9-10            | Explosion du dépôt de<br>munitions | Un incendie éclate dans la réserve de poudre noire et de munitions du navire. La<br>Localisation Cargaison subit trois États En flammes et le bateau subit 1d10 Critiques sur<br>la Coque.<br>Si le vaisseau n'a pas besoin de dépôt de munitions et ne transporte pas de réserve de<br>poudre noire, un énorme incendie éclate à la place. La Localisation Cargaison subit trois<br>États En flammes. |  |
 
-
+<span id="page-121-0" data-folio="118"></span>
 # BLESSURES CRITIQUES SUR LE GRÉEMENT
 
 | Résultat<br>Conséquences<br>du d10 |                  | Effets                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |  |
@@ -717,7 +717,7 @@ Certains effets des Blessures Critiques sur un vaisseau peuvent être retirés e
 | 9                                  | Vergue brisée    | Réparation : Test étendu de Métier (Charpentier) Complexe (–10) pour un total de 40 DR.<br>L'une des vergues s'est brisée. Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Éclats<br>8. Si un Personnage se trouve dans le gréement, il doit réussir un Test d'Athlétisme Intermédiaire (+0) sous<br>peine de tomber.                                                                                                                                                                                                                                                                                        |  |
 | 10                                 | Mât brisé        | Réparation : Test étendu de Métier (Charpentier) Complexe (–10) pour un total de 50 DR.<br>Le vaisseau ne peut plus se déplacer en étant propulsé par ses voiles. Éclats 10. Si un Personnage se<br>trouve dans le gréement, il doit réussir un Test d'Athlétisme Complexe (–10) sous peine de tomber.<br>Réparation : Test d'équipage étendu d'Entretien Difficile (–20) pour un total de 80 DR afin d'installer une<br>voile improvisée pouvant propulser le bateau à 25 % de sa vitesse normale. Une réparation totale ne peut<br>être effectuée qu'en atteignant la terre ferme et en remettant totalement en état le vaisseau. |  |
 
-
+<span id="page-122-0" data-folio="119"></span>
 ## BLESSURES CRITIQUES SUR LA COQUE
 
 |                    |                                                      | BLESSURES CRITIQUES SUR LA COQUE                                                                                                                                                                                                                                                                                                                             |
@@ -743,7 +743,7 @@ Certains effets des Blessures Critiques sur un vaisseau peuvent être retirés e
 |                    | Voie d'eau en                                        | Voie d'eau 4. Éclats 2.                                                                                                                                                                                                                                                                                                                                      |
 | 10                 | dessous de la<br>ligne de flottaison                 | Réparation : Test étendu de Métier (Charpentier) Difficile (–20) pour un total de 30 DR afin de reboucher le trou.                                                                                                                                                                                                                                           |
 
-
+<span id="page-123-0" data-folio="120"></span>
 #### BLESSURES CRITIQUES SUR LES AVIRONS
 
 | Résultat<br>du d10 | Conséquences     | Effets                                                                                                                                                                                                                                                                                                                                                                               |
@@ -764,3 +764,5 @@ Certains effets des Blessures Critiques sur un vaisseau peuvent être retirés e
 | 5-6                | Ancre perdue                  | Le vaisseau ne peut plus jeter son ancre.<br>Réparation : impossible, l'objet doit être<br>récupéré ou remplacé. Si des objets<br>lourds adaptés se trouvent à bord du<br>navire, le MJ peut décider qu'une ancre<br>improvisée peut être bricolée.                                                                                                                                                                                                                                                                           |
 | 7-8                | Canon perdu                   | L'un des gros canons, ou un pierrier si<br>le bateau n'en comporte pas, passe par<br>dessus bord et est perdu.<br>Réparation : impossible, l'objet doit être<br>récupéré ou remplacé.                                                                                                                                                                                                                                                                                                                                         |
 | 9-10               | Embarcation de<br>bord perdue | Qu'elle soit stockée sur le pont ou<br>remorquée, l'Embarcation de bord est<br>perdue. La prochaine fois que l'équipage<br>doit descendre à terre, cela pourrait<br>causer des problèmes.<br>Réparation : impossible, l'objet doit être<br>récupéré ou remplacé.                                                                                                                                                                                                                                                              |
+
+<span id="page-124-0" data-folio="121"></span>

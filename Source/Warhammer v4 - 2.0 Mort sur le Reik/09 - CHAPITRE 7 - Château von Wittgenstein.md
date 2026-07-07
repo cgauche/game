@@ -1,6 +1,7 @@
-*Pages PDF 84-124*
+*Folio 84+*
 
-<span id="page-83-0"></span>
+<span id="page-83-0" data-folio="84"></span>
+
 
 # CHAPITRE 7 CHÂTEAU WITTGENSTEIN
 
@@ -24,8 +25,8 @@ Ils donnent l'alarme dès qu'ils se font attaquer. Cela pousse les gardes posté
 
 Le lieutenant Doppler et ses sergents suivent une stratégie de défense classique. D'abord, ils vont renforcer les défenses la porte principale. Si cela n'est pas suffisant, ils envoient des gardes dans la barbacane pour tirer sur les attaquants parderrière. Si la porte principale tombe, les gardes se replient vers la porte extérieure, puis dans la tour de garde, et enfin
 
-
-<span id="page-84-0"></span>vers la porte intérieure. Si la porte intérieure tombe, les gardes perdront leur résolution et fuiront. Ils ne continueront à se battre que si Doppler ou l'un des sergents arrive à les motiver.
+<span id="page-84-0" data-folio="85"></span>
+vers la porte intérieure. Si la porte intérieure tombe, les gardes perdront leur résolution et fuiront. Ils ne continueront à se battre que si Doppler ou l'un des sergents arrive à les motiver.
 
 Enfin ça, c'est la théorie. En pratique, il faut 20 Rounds après une alarme pour que les gardes qui étaient dans le donjon se rassemblent dans la lice et se dirigent vers la porte principale. Si, comme le prévoit le plan de Sigrid, les hors-la-loi et les aventuriers arrivent directement par la lice, cela désarçonnera les gardes, qui se replieront dans le donjon en attendant que Doppler jauge la situation. Doppler a deux priorités : empêcher les assaillants d'ouvrir la porte et d'atteindre la haute lice.
 
@@ -95,7 +96,7 @@ Si les aventuriers trouvent un autre plan, qu'ils en discutent en détail. Sigri
 
 Si le groupe de hors-la-loi dirigé par Sigrid perd 25 % de son effectif, elle doit faire un Test de **Commandement Accessible (+20)** pour les remotiver. Si le groupe n'est dirigé par personne, faites un seul Test de **Calme Intermédiaire (+0)** pour tous les hors-la-loi du groupe. S'il est réussi, les hors-la-loi continuent à se battre jusqu'à la prochaine perte. Le Test sera alors à refaire. En cas d'échec, les hors-la-loi tentent de fuir le château ou, si c'est impossible, de se mettre à couvert et d'attendre. Ils ont peur de se faire capturer et se battront jusqu'à la mort plutôt que de se rendre.
 
-
+<span id="page-85-0" data-folio="86"></span>
 Vous devrez décrire la bataille de façon dramatique, en mettant en avant les aventuriers. Leur combat à eux est joué en détail : quand un ennemi tombe, ils n'ont qu'une fraction de seconde pour se tourner vers les hors-la-loi et voir comment ils s'en sortent. N'ayez pas peur de changer l'issue des combats qui n'impliquent pas les joueurs. Si les aventuriers sont en difficulté, donnez-leur de l'espoir en décrivant les progrès impressionnants des hors-laloi. S'ils s'en sortent trop facilement, dites-leur que les autres ont du mal à venir à bout de leurs ennemis et qu'ils ont besoin d'aide. Décrivez chaque scène de façon épique et théâtrale, comme la bataille finale d'un film d'action à gros budget.
 
 ### **Mettre fin <sup>à</sup> l'attaque**
@@ -126,8 +127,8 @@ Les champignons sont assez inoffensifs si on les laisse tranquilles, mais vous p
 
 Enfin, la sangsue géante près de la porte fluviale peut être remplacée par une autre créature. Alors que les aventuriers scrutent l'eau nerveusement pour essayer d'éviter la sangsue, une araignée géante ou deux pourraient être en train de les observer depuis le plafond.
 
-
-### <span id="page-86-0"></span>**La tempête**
+<span id="page-86-0" data-folio="87"></span>
+### **La tempête**
 
 Alors que les aventuriers lancent l'assaut, un frais vent d'ouest se lève et le temps commence à se couvrir. D'immenses nuages noirs tournoient au-dessus du château, et le tonnerre se met à gronder au loin. Pendant la bataille, pensez à rappeler aux joueurs qu'une tempête est sur le point d'éclater. Quand les combats prennent fin, le vent est plus violent que jamais et la pluie tombe à seaux. La tempête se rapprochera encore quand les aventuriers exploreront la haute lice, et quand ils seront prêts à entrer dans le quartier des habitations (Zones 49–77) et La tour de sorcellerie où loge dame Margritte (Zones 60– 62), la tempête sera juste au-dessus de leur tête, et des éclairs viendront effleurer le dernier étage du château.
 
@@ -147,7 +148,7 @@ Ce labyrinthe de tunnels est habité par Brutagh, un mutant humain rendu fou par
 
 Brutagh était jadis bûcheron. Mais à cause de son exposition prolongée à la malepierre, il a perdu beaucoup de son humanité. Désormais, il est complètement fou, même s'il a de brefs moments de lucidité quand il se laisse aller à la mélancolie : ses yeux s'emplissent de larmes, et il divague sur son ancienne vie dans les bois. La plupart du temps, il rôde dans la grotte et ne sort que pour chercher de la nourriture. Brutagh ne doit pas être vu avant d'attaquer : il doit être une présence
 
-
+<span id="page-87-0" data-folio="88"></span>
 furtive, mystérieuse et insaisissable. Le tronc, les bras et la tête de Brutagh sont couverts d'une carapace verte et dure, qui lui confère 2 PA dans ces zones. Son cou extrêmement long peut serpenter au tournant d'un couloir. Des ventouses sur ses mains et ses pieds lui permettent de grimper sur les murs et au plafond.
 
 |  |  | BRUTAGH LE MUTANT |  |  |  |
@@ -196,7 +197,7 @@ La présence de malepierre dans le château a affecté les rats qui vivent dans 
 
 Ces grottes sont remplies de champignons scintillants de toutes formes et de toutes tailles. Ils sont inoffensifs, à moins d'être ingérés. Si un Personnage tente d'en manger un, il doit faire un Test de **Résistance Intermédiaire (+0)**. S'il échoue, il passera 2 Rounds à vomir. Quel que soit le résultat, il commencera à avoir mal au ventre 30 minutes plus tard, pour une durée de 1d10 heures moins son bonus d'Endurance, pour un minimum d'une heure. Pendant ce temps, il subit un malus de -10 à tous les Tests.
 
-
+<span id="page-88-0" data-folio="89"></span>
 #### RATS GÉANTS (4) **M CC CT F E I Ag Dex Int FM Soc B** 4 25 - 30 25 25 35 - 15 15 - 8
 
 **Traits :** Arme +4, Bestial, Corruption (Mineure), Foulée, Infecté, Nerveux, Sang corrosif, Taille (Moyen), Vision nocturne
@@ -239,8 +240,8 @@ Le bateau des aventuriers est entreposé ici depuis sa confiscation (voir *Confi
 
 ‡ Basée sur la perception des vibrations dans l'eau plutôt que la vue, il faudra ajuster certains Tests selon les circonstances.
 
-
-### <span id="page-89-0"></span>TAPIS DANS LA CAVERNE
+<span id="page-89-0" data-folio="90"></span>
+### TAPIS DANS LA CAVERNE
 
 Les événements suivants peuvent être utilisés pendant que les aventuriers explorent la caverne, pour créer une atmosphère de peur et de tension.
 
@@ -288,7 +289,7 @@ Personne ne remet en question la présence de mendiants dans la lice, et eux-mê
 
 Se déguiser en gardes offre plus d'options aux aventuriers. Par exemple, il leur est possible d'entrer par la porte principale en bluffant. Seul un autre garde pourrait remettre en question leur présence dans la basse lice. Ils peuvent être convaincus avec du bluff, mais Doppler et les sergents seront plus difficiles à berner : les aventuriers subissent alors un malus de -20 à leurs jets. Rien de ce que les Personnages diront ne convaincra les gardes de les laisser traverser le pont à la porte extérieure, mais un Test de **Charme Intermédiaire (+0)** peut désamorcer leur hostilité. S'ils échouent au Test, les gardes donneront l'alarme 3 Rounds plus tard, s'ils n'en sont pas empêchés.
 
-
+<span id="page-90-0" data-folio="91"></span>
 ### **1. Barbacane**
 
 Une tour s'élève devant la porte principale du château, reliée aux remparts par un passage au premier étage. De là, les gardes peuvent tirer dans le dos de ceux qui attaquent la porte, ce qui rend cette zone particulièrement mortelle. La présence de la barbacane rend inefficaces les béliers et les tirs d'artillerie.
@@ -325,10 +326,10 @@ Si les Personnages se retrouvent coincés en dessous, les gardes se feront un pl
 
 VII
 
-
-
-
-### <span id="page-93-0"></span>CONTENU DES PIÈCES DU CHÂTEAU
+<span id="page-91-0" data-folio="92"></span>
+<span id="page-92-0" data-folio="93"></span>
+<span id="page-93-0" data-folio="94"></span>
+### CONTENU DES PIÈCES DU CHÂTEAU
 
 Les descriptions des pages suivantes ne contiennent que des informations sommaires sur le contenu des pièces. Si les aventuriers décident d'explorer un endroit plus attentivement, plus de détails seront sans doute nécessaires. Dans ce cas, vous pouvez choisir des objets dans le Tableau ci-dessous, ou lancer 1d100 pour les sélectionner aléatoirement. Faites preuve de bon sens, et pensez à la fonction de chaque pièce : il est improbable de trouver des draps dans une cuisine.
 
@@ -379,8 +380,8 @@ Une créature particulièrement pitoyable (dotée de trois yeux et dénuée de n
 
 On y trouve les cinq chevaux de selle du château. Un homme appelé Hans Shumacher s'occupe d'eux et vit au-dessus de 
 
-
-<span id="page-94-0"></span>l'écurie. Hans scintille d'une lueur verte malsaine, et ses bras lui arrivent aux genoux. Il s'attaque à quiconque s'approche de ses chevaux : il garde une fourche près de l'entrée de l'écurie et n'hésite pas à s'en servir à la moindre provocation. S'il le faut, vous pouvez utiliser le profil d'un garde normal pour lui (p. 123). Les pièces à l'étage sont bien entretenues, mais peu fournies. Hans dort à même le sol, sur un matelas en crin de cheval infesté de poux. Si une personne touche le lit, elle a 50 % de chance d'être infestée de poux (voir *Les mendiants de Wittgendorf*, p. 69). Il n'y a aucun objet de valeur dans ces pièces.
+<span id="page-94-0" data-folio="95"></span>
+l'écurie. Hans scintille d'une lueur verte malsaine, et ses bras lui arrivent aux genoux. Il s'attaque à quiconque s'approche de ses chevaux : il garde une fourche près de l'entrée de l'écurie et n'hésite pas à s'en servir à la moindre provocation. S'il le faut, vous pouvez utiliser le profil d'un garde normal pour lui (p. 123). Les pièces à l'étage sont bien entretenues, mais peu fournies. Hans dort à même le sol, sur un matelas en crin de cheval infesté de poux. Si une personne touche le lit, elle a 50 % de chance d'être infestée de poux (voir *Les mendiants de Wittgendorf*, p. 69). Il n'y a aucun objet de valeur dans ces pièces.
 
 ### **7. Écurie – Chevaux d'attelage**
 
@@ -445,7 +446,7 @@ Cette pièce contient des armes, des armures et des boucliers rangés sur des su
 
 Des ustensiles de cuisine sont suspendus près du feu. Trois domestiques (Helga, Hans et Fritz) travaillent, mangent et vivent ici. Ils sont couverts de suie et de graisse, avec un teint pâle à cause du manque de soleil. Leur tablier en cuir leur donne 1 PA à la poitrine et sur le devant des cuisses, mais ils se battront uniquement pour se défendre, en utilisant des couteaux de cuisine comme des dagues.
 
-
+<span id="page-95-0" data-folio="96"></span>
 Quand les aventuriers entrent dans la pièce, les domestiques terrifiés courent se cacher sous le plan de travail. Ils ne sont pas satisfaits de leur sort, mais seul un Test de **Charme Accessible (+20)** réussi peut les persuader de sortir de leur cachette pour aider les aventuriers. Les domestiques peuvent fournir des informations sur les autres pièces du donjon aux aventuriers, mais ce qu'ils veulent vraiment, c'est fuir le château (ce qu'ils feront à la première occasion).
 
 Si les aventuriers échouent au Test de **Charme**, les domestiques restent sous la table et ne font rien pour les empêcher de fouiller la cuisine. Que le Test soit réussi ou pas, ils les préviendront de ne pas ouvrir la porte de la réserve (Zone 18) : *« N'ouvrez pas la porte, messires ! Ne les laissez pas sortir ! »* Si les Personnages leur demandent ce qu'il y a derrière la porte, ils mentionnent des rats verts d'une voix tremblante de peur. *« Et ils sont gros, en plus ! Avec des dents longues comme des bras et tranchantes comme des couteaux ! »* Quand ils doivent aller dans la réserve, ils utilisent des torches allumées pour les tenir en respect.
@@ -485,7 +486,7 @@ L'odeur désagréable que les aventuriers commençaient à sentir en bas des esc
 
 L'odeur fétide, qui rappelle celle de la viande avariée, émane non seulement des gardes, mais aussi des lits et des couvertures. Même si elle est extrêmement désagréable, elle ne devient insupportable que si quelqu'un tire la couverture d'un des lits, auquel cas un Test de **Résistance Intermédiaire (+0)** est nécessaire pour ne pas vomir pendant 2 Rounds. Les coffres ne sont pas fermés à clef, et contiennent les effets personnels des gardes : des babioles inintéressantes pour la plupart. Chaque coffre renferme l'équivalent de 5d10 pistoles d'argent en pièces diverses.
 
-
+<span id="page-96-0" data-folio="97"></span>
 ### **20. Chambre de Kratz**
 
 La chambre du sergent est dégoûtante, et l'odeur y est encore pire que dans le cantonnement des gardes. La tête empaillée d'un homme-bête caprin est exposée sur le mur ouest. Avec un Test de **Perception Complexe (-10)**, les aventuriers se rendent compte que la barbe a l'air compressée, comme si la tête était souvent manipulée. Une potion de Soin est cachée dans la bouche. Elle restaure instantanément 1d10+2 Points de Blessure quand elle est consommée.
@@ -514,8 +515,8 @@ Au lieu d'être des fabrications sans cervelle, ce sont d'anciens gardes morts e
 
 Ou alors, ils restent des fabrications mort-vivantes, mais les expériences de dame Margritte leur ont apporté quelques Traits supplémentaires, comme Champion, Élite, Rapide, Endurant, Increvable, Magique, Résistance à la Magie, Régénération, et (dans le cas du capitaine Hegel) Meneur, les rendront plus redoutables au combat. Si vous êtes vraiment sans scrupules, vous pouvez exploiter toute l'étendue de la liste des Traits de créatures et faire d'un simple squelette une machine de guerre implacable (avec ça, vos joueurs grognards feront moins les malins).
 
-
-### <span id="page-97-0"></span>**LA TOUR DU CAPITAINE**
+<span id="page-97-0" data-folio="98"></span>
+### **LA TOUR DU CAPITAINE**
 
 Cette tour accueille les squelettes de l'ancien capitaine Georg Hegel et de six anciens gardes. Le capitaine est mort il y a quelques mois, et a été ranimé par dame Margritte.
 
@@ -566,8 +567,8 @@ Hegel était capitaine de la garde avant son fâcheux trépas, il y a trois mois
 
 **Possessions :** arbalète et carreaux (10), chausses de mailles, cotte de mailles, épée bâtarde, casque complet sur coiffe de mailles
 
-
-#### <span id="page-98-0"></span>**Tour de garde centrale**
+<span id="page-98-0" data-folio="99"></span>
+#### **Tour de garde centrale**
 
 Cette tour se dresse sur un monticule isolé qui sépare la haute et la basse lice. Son rôle est de défendre le pont qui relie les deux parties du château. Cinq gardes sont postés là en permanence. Ils ne laissent personne entrer dans la haute lice, mais n'interpellent pas ceux qui se rendent dans la basse. En cas d'assaut sur la porte extérieure (Zone 3), ces gardes seront remplacés par d'autres venant de la basse lice (s'il en reste suffisamment), tandis qu'eux-mêmes iront défendre la porte intérieure, la dernière position qu'ils tiendront avant la fuite.
 
@@ -589,7 +590,7 @@ La haute lice est occupée par la famille Wittgenstein et ses domestiques. On ne
 
 Alors que les aventuriers entrent dans le jardin de la haute lice, leur regard est attiré par la nuée d'oiseaux noirs à l'air maléfique en train de voler en cercle au-dessus de leur tête, ou de les observer depuis les toits. Leurs yeux semblent pétiller d'intelligence alors qu'ils suivent attentivement chacun des mouvements, allant jusqu'à sautiller le long des murs pour les garder dans leur champ de vision. Ces oiseaux sont des corbeaux légèrement mutants (mais inoffensifs). Ils sont très intéressés par ce qu'il se passe autour d'eux, mais sont loin d'avoir une intelligence humaine. Malgré ça, ils peuvent quand
 
-
+<span id="page-99-0" data-folio="100"></span>
 même faire leur petit effet sur les Personnages ! Par exemple, ils peuvent les observer attentivement pendant quelque temps avant d'entrer dans le château par une fenêtre ouverte, comme s'ils allaient faire leur rapport.
 
 ### **31. Volière**
@@ -631,7 +632,7 @@ Ce coin de la cour a été clos il y a de nombreuses années. Les murs qui l'ent
 
 Des plantes mutantes de toutes sortes poussent ici. Certaines sont inoffensives, mais d'autres sont douées d'une étrange intelligence malveillante. Les plantes inoffensives ressemblent à des légumes décolorés et boursouflés, comme des tomates, des courges, des artichauts, etc. Parmi elles, on trouve aussi des plantes grimpantes d'un vert malsain qui essaient de s'enrouler autour de tous les Personnages qui entrent dans le potager.
 
-
+<span id="page-100-0" data-folio="101"></span>
 ### **Les lianes grimpantes**
 
 La chose qui envahit le potager possède une énorme gueule en son centre, et est entourée de lianes grimpantes qui s'enroulent autour des victimes pour les entraîner dans la gueule.
@@ -660,7 +661,7 @@ Une petite bâtisse décrépite en bois se dresse dans le coin nord-est du potag
 
 **Traits :** Arme +5, Bestial, Immunité psychologique, Insensible à la douleur, Morsure +5, Taille (Énorme) La gueule est grande ouverte, révélant des rangées de dents couvertes d'un pus sanguinolent et verdâtre. Les Personnages qui se sont fait tirer sur 6 m sont à portée de morsure : faites un jet d'attaque normal. Tout Personnage
 
-
+<span id="page-101-0" data-folio="102"></span>
 ### ET ÇA BOUGE EN PLUS !
 
 La Chose du potager est un monstre difficile à battre, mais peut-être trop facile à éviter. Donnez-lui deux troncs d'arbres en guise de jambes (Mouvement 6) et laissez-le patrouiller la haute lice : les joueurs se sentiront encore plus en danger. Étant donné ses similitudes avec une certaine créature d'un certain mythe, il ne serait pas absurde de lui donner le Trait Peur 3 ou Terreur 2.
@@ -695,8 +696,8 @@ Le charnier est également accessible depuis le donjon (voir *Porte du charnier*
 
 Comme le potager, le charnier peut être trop facile à éviter pour les joueurs grognards. Peut-être qu'au lieu d'être reléguée à la fosse, la Chose occupe tout l'espace de la haute lice : elle mesure plusieurs mètres de haut, uniquement contenue par l'enceinte de la cour. Sa catégorie de taille est Monstrueuse (**WFJDR**, p. 342) au moins, et elle bénéficie de tous les avantages que cela implique. Peut-être que la grille qui recouvre la fosse a été remplacée par une planche étroite qui plie sous le poids des aventuriers qui marchent dessus : il faut des nerfs d'acier et un bon score d'Agilité pour faire la traversée en sécurité. Ce dont la créature est consciente, ce qui fait qu'elle lance des morceaux de chair, qu'elle arrache de son propre corps, à tous ceux qu'elle perçoit sur la planche avec une CT de 20. Ou alors, elle est capable de transformer sa chair informe en 1d10 tentacules par Round…
 
+<span id="page-102-0" data-folio="103"></span>
 
-<span id="page-102-0"></span>
 
 ### **LA TOUR SOMBRE**
 
@@ -728,7 +729,7 @@ Des portraits de divers membres (passés et présents) de la famille sont visibl
 
 La musique est plus forte à cet étage, et les aventuriers se rendent compte qu'une belle voix masculine accompagne l'instrument. S'ils décident de partir plutôt que de monter, Ludwig descendra les accueillir.
 
-
+<span id="page-103-0" data-folio="104"></span>
 #### SUPPRESSION DU NUISIBLE
 
 Les joueurs grognards auront sans doute hâte de rencontrer Ludwig, le sympathique homme-cafard dilettante. Depuis 30 ans maintenant, il est souvent cité comme l'un des PNJ les plus appréciés de toute la campagne. Après les mauvaises surprises que vous avez peut-être réservées à vos joueurs expérimentés, il est peut-être sage de laisser Ludwig tel qu'il est. Il est parfois bon de laisser les joueurs avoir un point de repère familier pour faire baisser la tension. Mais peut-être que vos joueurs ne respecteront pas cette preuve de bonté, peu importe à quel point elle leur serait bénéfique…
@@ -767,8 +768,8 @@ Ludwig déplore le comportement de sa famille, qu'il attribue à « la malédict
 
 **Possessions :** lunettes, montre à gousset en or, perruque poudrée, tabatière en or (1 CO, 8/-)
 
-
-### <span id="page-104-0"></span>**LE TEMPLE DE SLAANESH**
+<span id="page-104-0" data-folio="105"></span>
+### **LE TEMPLE DE SLAANESH**
 
 Ce bâtiment rectangulaire d'un étage situé du côté ouest de la cour était autrefois la chapelle du château, dédiée au culte de Sigmar. Les frises gravées sur sa façade représentent des moments clés de la vie du Dieu de l'Empire, celui où il a reçu le marteau Ghal-Maraz, sa victoire sur le chef des Teutogens, la Bataille du Col du Feu noir, et bien d'autres encore. Ces gravures ont été considérablement dégradées.
 
@@ -788,7 +789,7 @@ Les fidèles ne remarquent même pas les aventuriers lorsqu'ils se frayent un ch
 
 Quand les aventuriers se dirigent vers l'autel, tout Personnage qui possède le Talent Sixième sens, Perception de la magie ou Harmonisation aethyrique aura un mauvais pressentiment. L'autel, comme le reste du temple, était autrefois dédié au culte de Sigmar, mais il a été profané puis consacré à Slaanesh. En s'approchant de cet autel, les aventuriers remarqueront qu'un bas-relief situé à l'avant a été abîmé et qu'il montrait autrefois Sigmar tenant son marteau, bien qu'il soit difficile de discerner avec certitude ce qu'il tient désormais dans sa main.
 
-
+<span id="page-105-0" data-folio="106"></span>
 Dès que quelqu'un pose un pied sur l'estrade, un cri perçant déchire l'air et une silhouette se rue par-dessus la statue, exécute un double saut périlleux et atterrit dans une posture d'attaque devant l'autel. Cette créature n'est nulle autre qu'une démonette de Slaanesh, un démon mineur.
 
 #### **Démonette – Démon mineur de Slaanesh**
@@ -824,8 +825,8 @@ Pendant ce temps, des tentacules couverts d'écailles émergent de quatre des tu
 
 Si personne ne tranche les tentacules et que l'orgue n'a pas été détruit, seule la tête de la victime n'est pas avalée par le tuyau d'ici la fin du quatrième Round. La tête se met alors à chanter, le Personnage s'est fait absorber par l'orgue et a perdu la vie.
 
-
-### <span id="page-106-0"></span>**L'orgue du Chaos**
+<span id="page-106-0" data-folio="107"></span>
+### **L'orgue du Chaos**
 
 #### LES TENTACULES (4) **M CC CT F E I Ag Dex Int FM Soc B** - 35 - 20 40 55 - - - - - 4
 
@@ -875,10 +876,10 @@ C'est d'ici qu'on a la meilleure vue sur le Reik, qui coule en contrebas. Quatre
 
 S'ils parviennent à s'en débarrasser, ils pourront récolter 1d10 kilos de miel. En raison des effets de la malepierre sur les ruches, chaque livre de miel (si l'on en consume un peu tous les jours pendant une semaine) accordera à un Personnage une immunité contre les venins pendant un mois.
 
-
+<span id="page-107-0" data-folio="108"></span>
 #### LE MIEL MUTANT
 
-<span id="page-107-0"></span>Si les joueurs s'attendent à ce que le miel les protège contre les venins, vous pourrez inventer d'autres effets : il s'agit après tout d'un produit du Chaos. Par exemple, en manger pourrait causer une Exposition Mineure à la Corruption ou donner le Symptôme *Nausée* (voir **WFJDR**, p. 189) pendant 1d10 heures après ingestion. Ce miel pourrait d'ailleurs avoir des effets différents à chaque fois, parfois positifs, parfois non.
+Si les joueurs s'attendent à ce que le miel les protège contre les venins, vous pourrez inventer d'autres effets : il s'agit après tout d'un produit du Chaos. Par exemple, en manger pourrait causer une Exposition Mineure à la Corruption ou donner le Symptôme *Nausée* (voir **WFJDR**, p. 189) pendant 1d10 heures après ingestion. Ce miel pourrait d'ailleurs avoir des effets différents à chaque fois, parfois positifs, parfois non.
 
 ### **45. Le dortoir des domestiques**
 
@@ -923,7 +924,7 @@ Les deux escaliers en acajou craquent et grincent lorsqu'on les monte, comme s'i
 
 Slurd a au moins 90 ans, mais personne ne connaît son âge exact, et lui non plus. Il a toujours été là, d'aussi loin qu'on se souvienne, et il a toujours été vieux. Slurd marche le dos voûté, si bien que son chef ridé et grisâtre pointe toujours vers le sol. 
 
-
+<span id="page-108-0" data-folio="109"></span>
 Sa voix est rocailleuse et il penche toujours la tête sur le côté quand il parle. Sa main gauche a muté en serre d'oiseau, ce qui explique pourquoi il la cache dès que possible. En cas d'attaque, il tentera de griffer le visage de son adversaire. Slurd est sénile et se contente de répéter quelques actions simples. Il n'est pas une source sûre puisqu'il ne fait que répéter les paroles et les gestes imposés par son poste de majordome, encore et encore, sans réellement en comprendre le sens.
 
 SLURD LE MAJORDOME – DOMESTIQUE HUMAIN (ARGENT 1)
@@ -954,7 +955,7 @@ Le cadavre d'un homme d'âge mûr tenant dans sa main une pipe est assis sur une
 
 Lorsque les aventuriers entrent, Kurt se tient immobile et se contente de les observer. Le seul moyen de se rendre compte qu'il est en vie est de le regarder de près ou de le toucher. Si quelqu'un se met à tripoter l'un de ses « amis », Kurt l'attaquera sauvagement jusqu'à ce que le groupe quitte l'atelier, mais il ne les poursuivra pas. Si quelqu'un le touche lui, en revanche, il salue les aventuriers et leur demande s'ils veulent devenir ses « amis ». Si un Personnage accepte, Kurt se saisit de ses outils et l'invite à s'allonger sur son établi...
 
-
+<span id="page-109-0" data-folio="110"></span>
 #### **Kurt von Wittgenstein**
 
 Kurt est complètement fou et passe son temps à préparer et empailler des cadavres de tous types. Il adore ses « amis » naturalisés et leur parle comme s'ils étaient encore en vie. Il avoue sans problème qu'il aimerait que tous les habitants du château (non, du monde entier !) deviennent ses « amis », et l'idée provoque en lui une excitation perturbante. Les domestiques refusent depuis peu d'entrer dans son atelier, puisque la dernière à avoir osé se trouve désormais accrochée au dos de la porte. Elle n'apporte plus ses repas, mais Kurt juge que leurs conversations sont désormais bien plus intéressantes.
@@ -1002,7 +1003,7 @@ La chambre est meublée sobrement d'un lit et d'un coffre. Le lit n'est pas fait
 
 Ulfhednar est à la tête d'une bande de mutants et d'hommesbêtes dans la Grande Forêt. Ayant eu vent de la réputation de la famille Wittgenstein, il a voyagé jusqu'au château pour obtenir le soutien de dame Ingrid. Ulfhednar espère faire de ce lieu un terrain d'entraînement pour des armées du Chaos et de s'en servir comme une base pour permettre à ses forces de frapper le cœur de l'Empire. Pour l'instant, dame Ingrid n'a pas montré de signe d'intérêt pour ce plan, mais si elle venait à passer le flambeau, Ulfhednar pense que dame Margritte serait davantage disposée à l'écouter. En tant que fidèle de Tzeentch, Ulfhednar ne comprend pas pourquoi un château rempli de mutants refuserait de rejoindre sa cause.
 
-
+<span id="page-110-0" data-folio="111"></span>
 | ULFHEDNAR LE DESTRUCTEUR - GUERRIER DU CHAOS |   |    |    |    |    |    |    |     |     |    |     |    |
 |----------------------------------------------|---|----|----|----|----|----|----|-----|-----|----|-----|----|
 |                                              | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
@@ -1046,7 +1047,7 @@ Si les aventuriers les sauvent, ils seront acclamés comme des héros au village
 
 Personne n'a jamais dit qu'il était facile d'être un héros. Ou alors, c'était un mensonge.
 
-
+<span id="page-111-0" data-folio="112"></span>
 ### **55. Troisième chambre d'ami**
 
 Cette chambre est inoccupée pour le moment. Elle renferme un lit et un coffre vide. Une épée normale est accrochée au mur ouest.
@@ -1091,7 +1092,7 @@ Les meubles de dame Ingrid ont été dégradés et lacérés par d'innombrables 
 
 **Possessions** : collier de diamant (35 CO), boucles d'oreilles assorties (10 CO), vêtements de luxe (mais sales), bracelets d'or et d'argent (3, à 15 CO chacun), bracelet épais en argent (15 CO), bague sertie d'une grande émeraude (30 CO)
 
-
+<span id="page-112-0" data-folio="113"></span>
 Des trophées de chasse qu'Ingrid a obtenus dans sa jeunesse sont accrochés aux murs. Les têtes empaillées ont le regard tourné vers le sol et chacune possède une plaque de cuivre gravée : « Paysan – 2490 », « Patrouilleur routier – 2492 », « Homme-bête – 2493 », « Percepteur impérial – 2496 » ainsi que d'autres proies moins glorieuses, comme des cerfs, des sangliers, des ours et des gobelins.
 
 Une table près du lit à baldaquin accueille une boîte à bijoux et plusieurs fioles de parfum. La plupart de ces parfums dégagent une odeur musquée de félin plutôt désagréable. La boîte à bijoux est faite en ivoire, incrustée de nacre (25 CO) et contient trois paires de boucles d'oreilles en or serties de pierres précieuses (50 CO par paire), une tiare en diamant (175 CO), une broche en forme de chat parsemée de saphirs et d'émeraudes (80 CO), la clé du garde-manger des hommes-oiseaux (Zone 31) et un médaillon en or en forme de cœur (50 CO) qui contient une mèche de cheveux noirs appartenant à Gotthard.
@@ -1139,8 +1140,8 @@ Le coffre contre le mur contient quelques vêtements ainsi que la boîte à bijo
 
 Une porte mène à l'étage le plus bas de la tour de sorcellerie.
 
-
-### <span id="page-113-0"></span>**LA TOUR DE SORCELLERIE**
+<span id="page-113-0" data-folio="114"></span>
+### **LA TOUR DE SORCELLERIE**
 
 C'est dans cette tour que dame Margritte mène toutes ses expériences dépravées. L'édifice est soutenu par des arcsboutants, et non seulement il ne possède pas de rez-dechaussée, mais son étage le plus bas surplombe la haute lice.
 
@@ -1181,7 +1182,7 @@ Plusieurs livres entreposés ici contiennent des sorts. dame Margritte a noté l
 
 Dame Margritte est une chercheuse appliquée et consciencieuse entretenant des contacts au sein des marchés de livres rares (légaux et illégaux) à travers le monde entier. Les ex-libris et les factures pliées en deux servent de marque-page et renseignent l'adresse des marchands, de Marienburg à la lointaine Cathay, et pour un adepte de la magie, ces contacts pourraient bien être encore plus précieux que les sorts trouvés dans ces ouvrages.
 
-
+<span id="page-114-0" data-folio="115"></span>
 ### DES LIVRES NOIRS
 
 Les joueurs grognards s'attendront sans doute à tomber sur une mine d'or de connaissances magiques en entrant dans la bibliothèque, et auront peut-être prévu le coup en se faisant un stock de papier, d'encre, et d'autres choses utiles pour retranscrire des sorts dans leurs grimoires. Voici quelques manières de les punir et de décevoir leurs attentes.
@@ -1216,7 +1217,7 @@ Les colonnes de métal tremblent sous l'impulsion électrique et une horrible od
 
 Dame Margritte mettra 3 Rounds à faire descendre la table jusqu'au sol avec sa manivelle. Si elle arrive au bout de sa manœuvre, son mort-vivant suprême s'offrira à la vue des aventuriers. Lorsque la plateforme touche le sol, le monstre se lève et les fixe de son regard inexpressif. Dame Margritte lui ordonnera de tuer les aventuriers. Il se traînera alors vers eux d'un pas lourd, mais inexorable, pour les attaquer.
 
-
+<span id="page-115-0" data-folio="116"></span>
 Si dame Margritte est attaquée avant que la table ne touche le sol, les chaînes qui retenaient le monstre sur la table voleront en éclats. Il sera désorienté pendant 3 Rounds, avant de sauter de la table et d'attaquer la personne la plus proche, même s'il s'agit de dame Margritte. Après s'être débarrassé de ce premier ennemi, il attaquera le deuxième Personnage le plus proche, sauf si personne ne se trouve à moins de 2 mètres de lui, auquel cas il quittera la pièce d'un pas mal assuré pour errer dans le château pendant un certain temps, prêt à attaquer quiconque croisera son chemin. Il finira par sortir en pleine campagne.
 
 ### **Dame Margritte von Wittgenstein**
@@ -1262,10 +1263,10 @@ Dame Margritte a utilisé des cadavres de villageois et de mendiants imprégnés
 
 **Domaine de la Nécromancie :** L'appel de Vanhel, Réanimation, Relever les morts
 
-
+<span id="page-116-0" data-folio="117"></span>
 #### BORIS QUI ?
 
-<span id="page-116-0"></span>Les joueurs grognards s'attendront sûrement à devoir affronter le monstre, mais vous pouvez les surprendre.
+Les joueurs grognards s'attendront sûrement à devoir affronter le monstre, mais vous pouvez les surprendre.
 
 #### **Quelques améliorations**
 
@@ -1304,7 +1305,7 @@ Les étagères qui remplissent cette pièce renferment des bouteilles de vin et 
 
 L'odeur que les aventuriers avaient sentie du haut des marches dans la salle de banquet s'amplifie à mesure qu'ils approchent de la chambre. À l'intérieur, Slagdarg l'ogre tortionnaire se repaît d'une de ses victimes. Il n'attaquera pas tout de suite, mais demandera aux aventuriers ce qu'ils font ici. Slagdarg croira n'importe quelle excuse, tant qu'elle n'est pas trop farfelue. La pièce ne renferme aucun objet de valeur, puisque Slagdarg n'est pas rémunéré pour son travail. Les seuls objets qui décorent la pièce sont les ignobles peaux d'animaux sur lesquelles il dort.
 
-
+<span id="page-117-0" data-folio="118"></span>
 #### **Slagdarg - Tortionnaire ogre mutant**
 
 Du haut de ses 3 m 20, Slagdarg est d'un vert vif parsemé de poils orange au niveau de ses bras musclés. Les têtes de quelquesunes de ses dernières victimes pendent à la grande ceinture qui lui enserre la taille. Il aime les maintenir en vie aussi longtemps que possible et leur pose toujours les deux mêmes questions : *« Où est l'argent ? »* et *« Qui sont tes complices ? »* Peu importe le crime de sa victime, que ce soit de l'évasion fiscale ou avoir marché sans faire exprès devant la calèche de dame Margritte, il pose toujours ces deux questions, et ne pas y répondre justifie de faire tourner le levier du chevalet d'un cran supplémentaire. Slagdarg n'est pas très malin, même pour un ogre, et ne se posera pas de question sur la présence des aventuriers dans ses cachots. Cependant, il sentira les potentielles « entourloupes », comme la libération des prisonniers, et tentera de les empêcher. Il a obtenu ce poste suite à une erreur du tortionnaire précédent, qui avait écorché un des cousins de dame Margritte, venu lui rendre visite. Tant qu'il ne saura pas qui sont les aventuriers, il n'usera de la violence qu'en dernier recours.
@@ -1346,7 +1347,7 @@ Fritz est « l'invité » de dame Margritte depuis son échec face à la maladie
 
 Slagdarg n'est pas autorisé à torturer Fritz, et une étrange amitié s'est développée entre eux. La porte de la cage n'est pas fermée à clé, mais le prisonnier n'en sortira pas de lui-même, puisqu'au fil du temps, elle est devenue sa maison. *« Il fait bon, je suis au sec, et quand il commence à faire froid, Slagdarg déplace le feu pour que je puisse rester au chaud. »* Si Fritz est sorti de force de sa cage, il paniquera et se mettra en boule jusqu'à ce qu'il puisse y retourner.
 
-
+<span id="page-118-0" data-folio="119"></span>
 ### **4. Porte du charnier**
 
 La porte du charnier (Zone 33, p. 102) a été condamnée de ce côté (BE = 6, B = 20) et Slargdarg y a peint l'ébauche d'un crâne et d'ossements.
@@ -1375,7 +1376,7 @@ Comme tout charmant psychopathe, Fritz agit et parle comme décrit plus tôt, en
 
 **Corruption mentale (additionnelle) :** Infinie malveillance
 
-
+<span id="page-119-0" data-folio="120"></span>
 ### **6. La pièce de la malepierre**
 
 C'est ici que Dagmar a entreposé sa météorite de malepierre. L'accès à cette pièce se fait soit en déplaçant l'autel du temple (Zone 38), soit via le passage secret des cachots (5c). Idéalement, les aventuriers exploreront cette salle en dernier.
@@ -1409,7 +1410,7 @@ Cette zone fait 3 m 60 de haut et un tunnel tout récent sert de sortie. Cinq gu
 
 Lorsque les skavens prennent la fuite, ou après 5 Rounds de combat, un fracas retentit plus loin dans le passage. Un Round plus tard, un nuage de poussière très dense se propage vers les aventuriers. Il se déplace au rythme de 2 m par Round. On peut donc facilement l'éviter. Il s'agit d'un gaz empoisonné relâché par l'un des technomages du clan Skryre. Quiconque respire ce gaz doit réussir un Test de **Résistance Intermédiaire (+0)** ou subir l'un des effets listés à la page 122. Lancez un dé pour chacun des Personnages touchés, y compris les skavens.
 
-
+<span id="page-120-0" data-folio="121"></span>
 ### LES SKAVENS ET LA MALEPIERRE
 
 Les grognards se rappelleront trop bien la frustration de s'être vu refuser l'obtention de la malepierre au cours de leur précédente aventure dans le château Wittgenstein. Certains ont peut-être même passé toute leur aventure à élaborer un plan pour tenter de surprendre les skavens et la leur dérober sans qu'ils ne se doutent de rien. Il est possible que ce plan ait mûri pendant trente ans et relève du génie ! Votre réponse ne dépend que de vous.
@@ -1442,8 +1443,8 @@ Vous pouvez relier ce passage à n'importe quel autre lieu de votre choix, ou la
 
 Les escaliers de la salle de banquet descendent toujours jusqu'aux cachots, mais vous pouvez rendre l'accès à la salle en elle-même plus difficile. La créature du charnier (Zone 33) peut en déborder et occuper l'intégralité de la haute lice sur une épaisseur de 90 cm environ (voir les détails dans l'encadré destiné aux joueurs grognards : *Carnage généralisé*, p. 102).
 
-
-### <span id="page-121-0"></span>**L'ÉCROULEMENT DU CHÂTEAU WITTGENSTEIN**
+<span id="page-121-0" data-folio="122"></span>
+### **L'ÉCROULEMENT DU CHÂTEAU WITTGENSTEIN**
 
 Alors que le gaz empoisonné se répand, un tremblement secoue les fondations du château. Tout Personnage possédant la Compétence **Savoir (Géologie ou Ingénierie)** se rendra compte que cette secousse signale un effondrement de grande ampleur et qu'il serait sage de quitter les lieux immédiatement. Alors que les tremblements se font de plus en plus puissants, de la poussière et des pierres commencent à tomber du plafond. D'ici à ce que les aventuriers rejoignent la cour, tout le château tremble et des fissures déchirent le sol. Les technomages sont en train de détruire le château pour pouvoir s'échapper sans se faire repérer. Si les aventuriers décident de rejoindre leur bateau, laissez-les y arriver. Des rochers viennent s'écraser dans l'eau autour d'eux alors qu'ils parviennent à prendre la fuite sur le Reik. S'ils s'enfuient à pied, des bâtiments s'effondrent derrière eux et quelques crevasses viennent se former devant eux, suffisamment étroites pour être franchies d'un bond. Par chance, leur bateau peut s'être fait emporter vers l'aval, loin de la porte fluviale et des bâtiments environnant en train de s'écrouler (s'ils ne le retrouvent pas, un hors-la-loi ou un villageois pourra les renseigner).
 
@@ -1486,7 +1487,7 @@ Comme toujours, n'hésitez pas à attribuer des PX aux joueurs qui selon vous le
 
 Le château Wittgenstein est tout bonnement labyrinthique, et la plupart des PNJ, des créatures et des ennemis rencontrés par les Personnages ont déjà été présentés dans les parties qui concernent le lieu dans lequel ils apparaissent. Cependant, les gardes et leurs supérieurs peuvent être croisés à tout moment dans le château ainsi que dans le village de Wittgendorf. Leur profil a donc été déplacé ici, en fin de chapitre.
 
-
+<span id="page-122-0" data-folio="123"></span>
 ### **Les gardes**
 
 ### **De la chair en putréfaction**
@@ -1537,7 +1538,7 @@ Doppler est cruel, vaniteux, et la torture lui procure un immense plaisir. Pour 
 
 Doppler est affecté d'une étrange mutation qui lui permet de tourner sa tête et ses bras à 360°. Il peut attaquer de dos sans problème, mais comme ses jambes resteront orientées vers l'avant, son Mouvement vers l'arrière sera réduit de moitié. Il peut utiliser sa mutation à son avantage pour faire le mort, en faisant ainsi mine d'avoir eu le cou fracturé. Si un Personnage l'examine et réussit un Test de **Guérison Facile (+40)**, il remarquera qu'il est encore en vie.
 
-
+<span id="page-123-0" data-folio="124"></span>
 ### **Kratz, Sergent de la garde**
 
 Le sergent Kratz est un homme grand et musclé à l'air menaçant. Il porte une armure noire et ne retire jamais son casque (son visage est si putréfié qu'il en arrive à apprécier luimême l'effet que son apparence produit sur les autres résidents du château). Kratz adore persécuter les villageois, et il verra dans un premier temps les aventuriers comme de potentielles nouvelles victimes de son sens de l'humour particulier. Kratz ne se limite pas à de l'intimidation, il n'hésitera pas à mettre ses menaces à exécution et à attaquer quiconque s'oppose à lui. Il frappera ceux qui l'agacent avec son coup-de-poing, mais face à quelqu'un de déterminé à lui résister, il sortira son fléau. Kratz n'est toutefois pas stupide et battra en retraite s'il se rend compte qu'il n'a aucune chance de vaincre.
@@ -1556,8 +1557,8 @@ Le sergent Kratz est un homme grand et musclé à l'air menaçant. Il porte une 
 
 **Possessions :** bouclier, chemise de mailles et chausses de mailles, coup-de-poing, fléau, casque intégral
 
-
-# <span id="page-124-0"></span>CHAPITRE 8 CHAROGNE SUR LE REIK
+<span id="page-124-0" data-folio="125"></span>
+# CHAPITRE 8 CHAROGNE SUR LE REIK
 
 ## **UN NOUVEAU DÉPART**
 
@@ -1573,8 +1574,8 @@ Blucher proposera d'acheter la cargaison du groupe à un bon prix, puis leur pro
 
 Désespérant de quitter la ville avant que d'autres attaques ne surviennent, le groupe acceptera probablement la commande chaleureuse (et à peine moins généreuse) de Blucher qui consistera à livrer une caisse d'antiquités à Middenheim. Ils pourront voyager gratuitement à bord de l'un des bateaux de sa famille jusqu'à Altdorf, d'où ils se rendront en diligence à la Cité du Loup Blanc. Puis, alertée par un message de Blucher, la branche la plus ancienne et la plus puissante de la secte se tiendra prête. Le *Magister* sera enfin appréhendé et Blucher sera récompensé pour son brio. Tout devrait se passer comme prévu.
 
-
-### <span id="page-125-0"></span>**DÉPART DE WITTGENDORF**
+<span id="page-125-0" data-folio="126"></span>
+### **DÉPART DE WITTGENDORF**
 
 La destruction du château donne aux aventuriers plusieurs raisons impérieuses de quitter Wittgendorf au plus vite. Si les Personnages n'y pensent pas par eux-mêmes, n'hésitez pas à leur faire un petit rappel.
 

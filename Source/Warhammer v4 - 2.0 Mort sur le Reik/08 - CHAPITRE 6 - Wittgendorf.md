@@ -1,8 +1,8 @@
-*Pages PDF 68-83*
+*Folio 69+*
 
 # CHAPITRE 6 WITTGENDORF
 
-### <span id="page-67-0"></span>**UN MAUVAIS AMARRAGE**
+### **UN MAUVAIS AMARRAGE**
 
 Le village de Wittgendorf, voir la carte p. 71, se trouve sur la rive ouest du Reik, à environ un kilomètre du château Wittgenstein. Cette bourgade était autrefois florissante, mais l'arrivée de la malepierre a entraîné le déclin dramatique de ses richesses.
 
@@ -26,8 +26,8 @@ La majeure partie du village est sordide et déprimante, mais il abrite deux end
 
 Les habitants se méfient des étrangers, craignant qu'ils n'attirent sur eux la colère des Wittgenstein. La plupart des villageois connaissent l'existence des hors-la-loi dans la forêt et beaucoup sont favorables à leur cause, mais ils n'en parleront pas aux aventuriers tant que ceux-ci ne se seront pas montrés dignes de leur aide. Si les Personnages leur posent des questions sur le château et ses habitants, ils préviendront de rester à l'écart pour leur propre bien et celui du village : *« Si vous avez la moindre décence, laissez-nous tranquilles. La situation est déjà assez mauvaise, vous ne feriez que l'empirer ».*
 
-
-### <span id="page-68-0"></span>LES VENTS DU CHANGEMENT
+<span id="page-68-0" data-folio="69"></span>
+### LES VENTS DU CHANGEMENT
 
 Deux ans plus tôt, une tempête épouvantable et anormale a fait rage sur le château. Il n'y a pas eu de pluie, seulement un vent hurlant et des éclairs qui ont jailli du château vers le ciel. Cet événement a été suivi d'une semaine de « pluie noire ».
 
@@ -75,7 +75,7 @@ personne infectée. **Incubation :** 1d10+5 heures. **Durée :** jusqu'au traite
 
 **Symptômes :** démangeaisons fréquentes, honte.
 
-
+<span id="page-69-0" data-folio="70"></span>
 Cette jeune femme est dame Margritte (p. 116) qui est en train de superviser l'enlèvement d'un villageois de plus. Un mendiant est allongé sur le sol, du sang coulant de son bras estropié. Un jeune homme qui lutte avec les gardes appelle les étrangers à l'aide lorsqu'il les aperçoit, mais il est rapidement frappé sans aucune raison. Dame Margritte fixe froidement les aventuriers pendant un certain temps, puis retourne au château avec sa victime inconsciente.
 
 Si les aventuriers décident d'intervenir, ils devront faire face aux six gardes (*Sentinelle humain* p. 123). Les gardes dégagent une odeur nauséabonde, et toute personne se trouvant à moins de 2 mètres d'un garde doit effectuer un Test de **Résistance Intermédiaire (+0)** ou subir une pénalité de -10 en CC pour toute la durée du combat. Dame Margritte jettera des sorts pour aider les gardes et s'enfuira vers le château si la défaite semble certaine. Le combat est entravé par la panique des mendiants : tous les scores d'Initiative subissent une pénalité de -10 et les gardes en fuite peuvent automatiquement s'échapper.
@@ -110,8 +110,8 @@ S'il est interrogé, Kratz s'explique : « *Ce bateau a été confisqué car vou
 
 Les frais d'amarrage sont un prétexte, mais Kratz n'écoute aucune excuse et les aventuriers n'ont pas d'autre choix que de s'exécuter. Leur bateau est conduit à la porte d'écluse du château (p. 87) et est amarré au quai qui s'y trouve. Toute proposition de paiement sera rejetée, comme l'explique Kratz : « *Nous avons besoin de temps pour calculer le montant total de votre amende. Nous allons devoir sortir le grand boulier pour votre groupe* ».
 
-
-### <span id="page-70-0"></span>**Jour 3**
+<span id="page-70-0" data-folio="71"></span>
+### **Jour 3**
 
 #### **Trois pintes et trois pailles**
 
@@ -137,7 +137,7 @@ Ces dernières années, l'appontement de Wittgendorf, délabré et négligé, a 
 
 L'Étoile Filante était autrefois une auberge prospère qui n'abrite désormais guère plus que l'aubergiste ainsi qu'une poignée de locaux n'ayant pas encore été gravement affectés par le tordboyaux de Rousseaux. L'aubergiste, Herbert Marcuse, et les habitants évitent autant que possible de parler aux étrangers, mais ils répondent aux questions directes concernant le village et ses environs.
 
-
+<span id="page-71-0" data-folio="72"></span>
 Ils peuvent indiquer la direction à suivre pour se rendre aux ruines du temple de Sigmar (*Emplacement 4*) et à la maison du médecin (*Emplacement 3*). Ils refusent de parler du château et seront soudain très occupés par une chope à astiquer de toute urgence, ou un coin de table à nettoyer, si le sujet est abordé.
 
 Des chambres sont libres dans l'auberge si les aventuriers souhaitent rester. La literie est moisie, pourtant étonnamment exempte de vermine. Il y a de grandes quantités de bière, mais très peu de nourriture. Herbert explique que les aventuriers sont les premiers clients que l'auberge a reçus depuis trois ans. Il va partager ses maigres provisions autant que possible pour nourrir ses invités. Les poulets du jardin ont tous deux têtes et trois pattes. Une fois cuits, leur aspect est très étrange et les légumes arborent une couleur peu naturelle. Malgré ces détails inquiétants, les aventuriers ne souffriront d'aucun effet néfaste en mangeant dans l'auberge.
@@ -158,7 +158,7 @@ Aux abords de la maison, les aventuriers sont accueillis par Frau Blucher, la go
 
 Un banc en bois est placé contre un mur pour les patients qui ne peuvent pas se tenir debout tout seuls. Les visiteurs seront priés de laisser ici leurs manteaux ou leurs vestes.
 
-
+<span id="page-72-0" data-folio="73"></span>
 #### **B. Salle à manger et cuisine**
 
 C'est dans ces deux pièces que Frau Blucher passe la plupart de son temps lorsqu'elle ne fait pas le ménage. Elles n'ont rien d'exceptionnel. Les placards de la cuisine contiennent seulement une miche de pain rassis et quelques maigres provisions.
@@ -191,7 +191,7 @@ Une volée de marches en bois branlantes mène à la cave. C'est ici que Roussea
 
 Si les Personnages s'approchent de cette masse bourdonnante, des centaines de mouches s'envolent, révélant un corps humain en décomposition. Ces mouches sont inoffensives et se posent à nouveau sur le cadavre au bout de quelques minutes. Le corps avait autrefois quatre bras, mais ils ont tous été sectionnés : les os et une scie chirurgicale se trouvent dans un seau sous le banc. Ayant pris goût à la chair humaine, Rousseaux s'est arrangé pour que les cannibales lui apportent des corps.
 
-
+<span id="page-73-0" data-folio="74"></span>
 Sur la table sont disposés un ensemble de balances, une pipette et plusieurs flacons contenant de l'eau et du sable colorés. L'un de ces flacons contient de la poudre de malepierre. Il y a également une grande jarre de tord-boyaux, un tuyau en caoutchouc, un entonnoir et un stock de bouteilles bleues vides.
 
 #### **F-H. Chambres**
@@ -218,7 +218,7 @@ Toute correspondance que les aventuriers trouveront dans la maison du médecin s
 
 Pendant ce temps, à l'auberge, les aventuriers ne trouveront qu'une ou deux notes concises donnant des instructions à Marcuse : « une nouvelle préparation arrive demain, à distribuer comme la dernière fois » ou « votre homme devra diluer tous les lots à venir d'un dixième de plus que précédemment ».
 
-
+<span id="page-74-0" data-folio="75"></span>
 ### LA POUDRE DE MALEPIERRE
 
 L'une des fioles dans la cave de Rousseaux contient une petite quantité de poudre verte qui est en fait de la poudre de malepierre. Elle peut être identifiée en réussissant un Test de **Savoir (Magie ou Chaos) Intermédiaire (+0)**. Si quelqu'un ouvre la fiole, la poudre se met à tourbillonner comme si elle était vivante et prend la forme d'un visage humanoïde grossier, mais reconnaissable. Si la fiole reste ouverte, la poudre figée s'envole soudain, se pose sur le cadavre et envoie des centaines de mouches bourdonner dans les airs. Une fois que la tempête de mouches se dissipe, le cadavre se redresse puis des tentacules sombres et visqueux lui poussent sur le corps. Ces vrilles frappent tout Personnage dans un rayon de 2 mètres.
@@ -247,7 +247,7 @@ Le tord-boyaux, Rotgut, de Jean Rousseaux contient de la poudre de malepierre en
 
 Chaque gorgée inflige une Exposition Mineure à la Corruption (voir **WFJDR**, p. 182). Une bouteille contient 16 gorgées.
 
-
+<span id="page-75-0" data-folio="76"></span>
 ### ÉVÉNEMENT : UN DÎNER
 
 Cet événement a lieu seulement si les aventuriers acceptent l'invitation de Jean Rousseaux à rencontrer dame Margritte autour d'un dîner. Après les avoir invité à revenir chez lui à dix-neuf heures le lendemain, il les incitera poliment à partir. S'ils surveillent sa maison, ils le verront monter au château presque immédiatement.
@@ -284,7 +284,7 @@ Les cannibales évitent cette zone consacrée. Construite sur le site du premier
 
 Le plafond voûté est décoré d'une écriture élaborée en langue classique. Tout Personnage possédant cette Compétence peut effectuer un Test de **Langue (Classique) Accessible (+20)** pour la comprendre. L'inscription est une sorte de version abrégée de l'histoire du temple. Elle raconte comment il a été fondé sous le règne de l'empereur Boris Ier. Les Personnages possédant la Compétence Savoir (Histoire) peuvent se souvenir des informations concernant Boris l'Avide, voir **WFJDR** p. 273. Il est également écrit que le temple a été construit sur le site d'une des batailles légendaires de Sigmar. Une autre partie de l'inscription fait l'éloge d'un chevalier nommé Siegfried von Kesselring qui a défendu le temple, peu après sa construction, contre un assaut d'hommes-bêtes menés par un guerrier du Chaos. Avec l'aide de Barrakul, son épée magique, il a pu repousser l'assaut jusqu'à l'arrivée des renforts, mais a été mortellement blessé au cours des événements. Il a été enterré avec son épée dans la crypte du temple lors de funérailles dirigées par le Grand Théogoniste lui-même.
 
-
+<span id="page-76-0" data-folio="77"></span>
 Une grande clé (qui mène à la Zone D) se trouve sur l'autel, et à côté d'elle, un livre relié en cuir est ouvert à la section qui raconte la Légende de Sigmar. Quiconque examine le livre remarque qu'il repose sur un ancien morceau de parchemin. Celui-ci est également écrit en langue classique et prédit le retour de Sigmar pour sauver l'Empire au moment où il en aura le plus besoin (voir le document ci-dessous). Tout Personnage qui lit ceci à voix haute (vous pouvez déterminer le degré de vénération approprié) recevra une Bénédiction.
 
 Les lanternes s'éteignent puis s'illuminent, les yeux de la statue brillent d'intelligence et de vie. Une voix que seul le Personnage qui lit le parchemin peut entendre lui annonce : « *L'heure est proche. Êtes-vous prêt ?* » Si le Personnage répond par l'affirmative, la voix poursuit. « *Je vous enverrai un signe. Allez maintenant, et trouvez la source du Chaos qui gâte mes terres ».* Les lanternes s'éteignent et se rallument, et la statue a repris sa forme d'origine. Le Personnage béni est guéri de toutes ses Blessures et bénéficie d'un bonus de +10 pour tous les Tests de Peur pendant les 24 heures à venir.
@@ -303,7 +303,7 @@ Leur existence sauvage prend progressivement le pas sur leur humanité, bien qu'
 
 Lorsque ces créatures verront les aventuriers pour la première fois, elles les prendront pour des émissaires du château. Les cannibales n'attaqueront pas, mais essaieront de repousser toute tentative de conversation en protestant qu'ils « *ne peuvent plus se passer de nourriture* » (par nourriture, comprenez cadavres). S'il apparaît clairement que les aventuriers n'ont aucun lien avec le château, un Test de **Charme Intermédiaire (+0)** réussi convaincra les cannibales d'expliquer que dame Margritte a commandité un certain nombre d'expéditions pour exhumer des corps du cimetière et du mausolée.
 
-
+<span id="page-77-0" data-folio="78"></span>
 #### **C — Chambre du prêtre**
 
 Autrefois, cette pièce était meublée sommairement avec un simple lit de camp, un coffre pour les vêtements et autres effets personnels ainsi qu'une étagère sur laquelle trônaient des livres et des images religieuses. C'est à présent un désordre complet saccagé par les cannibales. Il semblerait même qu'ils aient essayé d'y mettre le feu, mais sans succès.
@@ -344,8 +344,8 @@ La seule niche encore fermée porte une plaque lisible malgré son ancienneté :
 
 Les Personnages qui ont reçu la bénédiction de Sigmar dans le temple (Zone B, ci-dessus) verront briller cette inscription. Ouvrir cette niche révèle un squelette dans une armure de plate rouillée (et inutile). Sur son torse se trouve une épée longue brillante dans un fourreau incrusté de pierres précieuses, tous deux aussi impeccables que le jour où ils ont été placés dans la tombe. Quiconque tente de dégainer l'épée doit effectuer un Test de **Force Mentale Intermédiaire (+0)**. En cas de réussite, ce Personnage peut tirer et manier l'épée, sinon il ne pourra jamais la dégainer.
 
-
-<span id="page-78-0"></span>L'épée, que le MJ peut choisir de considérer comme une Arme simple ou une zweihänder en fonction des compétences du groupe, est en parfait état. Son nom, **Barrakul** (« Espoir des montagnes »), est inscrit en runes naines le long de sa lame. Il s'agit sans aucun doute de la création d'un forgeron des runes d'une grande compétence. Lorsqu'elle est maniée au combat, la lame brille, visible un instant et disparaissant l'instant d'après, et seule la lueur rouge de ses runes est constante. Les armures non magiques sont inutiles contre cette lame, vous pouvez donc ignorer les PA des armures ou boucliers non magiques. Elle possède la qualité Incassable, mais gagne le défaut Inoffensive si elle est brandie contre un nain.
+<span id="page-78-0" data-folio="79"></span>
+L'épée, que le MJ peut choisir de considérer comme une Arme simple ou une zweihänder en fonction des compétences du groupe, est en parfait état. Son nom, **Barrakul** (« Espoir des montagnes »), est inscrit en runes naines le long de sa lame. Il s'agit sans aucun doute de la création d'un forgeron des runes d'une grande compétence. Lorsqu'elle est maniée au combat, la lame brille, visible un instant et disparaissant l'instant d'après, et seule la lueur rouge de ses runes est constante. Les armures non magiques sont inutiles contre cette lame, vous pouvez donc ignorer les PA des armures ou boucliers non magiques. Elle possède la qualité Incassable, mais gagne le défaut Inoffensive si elle est brandie contre un nain.
 
 ### **H et I — Cimetière et mausolée**
 
@@ -391,7 +391,7 @@ Il se peut également qu'ils pactisent avec les skavens, se servant des aventuri
 
 Si aucun de ces scénarios ne vous convient, les hors-la-loi peuvent simplement vouloir se servir des aventuriers pour se débarrasser de la famille Wittgenstein et de ses domestiques. Ils évolueront au sein du château, tuant tous ceux que les Personnages épargnent et exécutant peut-être brutalement plusieurs PNJ sympathiques, comme le paisible Ludwig ou encore Fritz, dérangé mais inoffensif. Une fois leur mission accomplie, ils ont l'intention d'occuper le château et de déclarer Wittgendorf cité-État libre, un plan ambitieux, pour ne pas dire impossible.
 
-
+<span id="page-79-0" data-folio="80"></span>
 seront affligés de douleurs à l'estomac au bout de 30 minutes, pendant 1d10 heures. Pendant ce temps, tous les Tests subissent une pénalité de -20.
 
 ### **Nuit dans la forêt**
@@ -480,8 +480,8 @@ Corruption (Mineure) **Possessions :** gourdin
 
 Tout homme-bête supplémentaire peut reprendre les statistiques présentées à la page 331 du Livre de Règles **WFJDR**. Des mutants supplémentaires peuvent être générés de manière aléatoire sur la base du Tableau de Corruption physique qui se trouve à la page 184 du Livre de Règles **WFJDR**, ou les Tableaux de mutation dans **L'Ennemi dans l'Ombre - Compagnon** (page 65).
 
-
-<span id="page-80-0"></span>Tout aventurier peut dépenser 100 Points d'Expérience pour commencer la Carrière de Hors-la-loi pendant qu'il est au campement, même s'il est d'une Classe différente ou si sa Carrière actuelle n'est pas terminée. Les Personnages qui restent amis avec Sigrid et ses partisans peuvent également revenir plus tard pour suivre un entraînement.
+<span id="page-80-0" data-folio="81"></span>
+Tout aventurier peut dépenser 100 Points d'Expérience pour commencer la Carrière de Hors-la-loi pendant qu'il est au campement, même s'il est d'une Classe différente ou si sa Carrière actuelle n'est pas terminée. Les Personnages qui restent amis avec Sigrid et ses partisans peuvent également revenir plus tard pour suivre un entraînement.
 
 ### **Départ du campement**
 
@@ -543,7 +543,7 @@ Herbert est aubergiste à L'Étoile Filante depuis deux décennies. Ayant perdu 
 
 **Possessions :** chiffon pour polir les verres (son passetemps favori), manche de pioche (gourdin) caché sous le bar.
 
-
+<span id="page-81-0" data-folio="82"></span>
 #### **Kurt Kutzmann, distillateur chez Rousseaux**
 
 Kurt passe la plupart de ses journées à s'occuper de l'alambic et à distribuer du tord-boyaux aux paysans. Ses mains sont couvertes d'une tache brune et ses doigts épais et boudinés commencent à ressembler à des gourdin. Kurt boit lui-même du tord-boyaux et est presque complètement dérangé. Ses paroles ont peu de sens et on l'entend souvent se chanter des absurdités en travaillant. La nuit, il verrouille la salle de distillation et va dormir dans sa chambre. C'est un fidèle fanatique de Rousseaux à qui il obéit sans discuter.
@@ -592,7 +592,7 @@ Il ne mentionne pas la source du tord-boyaux que boivent les mendiants, mais ne 
 
 **Possessions :** 6 CO 8/4, boîte de tabac à priser, bouteilles et bocaux de liquides et de poudres inefficaces mais colorés, montre de poche en or (15 CO), rapière, trousse médicale
 
-
+<span id="page-82-0" data-folio="83"></span>
 ### **Les hors-la-loi**
 
 Sigrid est à la tête d'un groupe d'anciens villageois qui ont préféré devenir hors-la-loi plutôt que de continuer à subir le règne sévère et insensé de la famille Wittgenstein. Il y a dixhuit mois, son mari a été emmené au château et personne n'a plus jamais entendu parler de lui. Pour se venger, Sigrid a tué un garde et s'est enfuie dans la forêt, refusant de se soumettre à la justice des Wittgenstein. D'autres hommes et femmes ont fui le village pour la rejoindre ; sa bande compte actuellement trente hors-la-loi.

@@ -1,8 +1,8 @@
-*Pages PDF 24-31*
+*Folio 25+*
 
 ## CHAPITRE 2 :
 
-<span id="page-23-0"></span>
+
 
 # ERREUR SUR LA PERSONNE
 
@@ -28,7 +28,7 @@ Lorsque Rolf se précipite vers la diligence, les chevaux paniquent et s'emballe
 
 En examinant le corps mutilé du cocher de la compagnie des Quatre Saisons, les Personnages s'apercevront qu'il a été tué d'un carreau d'arbalète en travers du cou. Il porte encore sa chemise de mailles à manches ; celle-ci conviendra à tout Personnage humain de carrure moyenne. Les traces de sa diligence continuent sur la route au-delà du virage.
 
-
+<span id="page-24-0" data-folio="25"></span>
 ## OPTIONS : QUOI ? PAS DE MUTANTS ?
 
 Si les joueurs s'attendent à des mutants, vous pourriez avoir envie de les surprendre en modifiant cette rencontre. Pour le bon déroulement de la campagne, les Personnages doivent absolument découvrir le corps de Kastor Lieberung et trouver les deux lettres qu'il portait : la façon dont cela se produit n'a pas d'importance. Même si c'est la première fois que les joueurs participent à cette aventure, ces alternatives à l'attaque des mutants peuvent vous paraître plus inspirantes.
@@ -67,8 +67,8 @@ Tout est calme quand les Personnages arrivent. Les attaquants sont repartis, et 
 
 Bien sûr, les joueurs l'ignorent, et s'ils s'attendent à être attaqués par des mutants à tout moment, vous pouvez vous amuser en gardant le silence et en laissant monter leur paranoïa à propos d'une embuscade qui n'aura jamais lieu. Le craquement d'une branche qui tombe, le bruissement d'une petite créature dans le sous-bois, une brise soudaine qui agite les feuilles, tout cela peut secouer leurs nerfs déjà durement éprouvés, surtout si le groupe a souffert de blessures lors d'une rencontre précédente et qu'il craint d'être trop faible pour faire face à un ennemi trop puissant.
 
-
-## <span id="page-25-0"></span>**HURLEMENTS DANS LE VENT**
+<span id="page-25-0" data-folio="26"></span>
+## **HURLEMENTS DANS LE VENT**
 
 Alors que les Personnages se demandent ce qu'ils vont faire maintenant, un cri bestial provenant de plus loin dans le virage déchire l'air, tandis des bruits de craquement retentissent de la forêt qui borde la route. Une silhouette sort alors des bois et se précipite sur eux. Les aventuriers seront sans doute sur leurs gardes à ce moment, et il se peut qu'ils fassent feu avant de reconnaître Hultz, le cocher qui avait été vu pour la dernière fois entraîné par les chevaux paniqués. Il se précipite en courant vers la diligence en criant « C'est moi, Hultz ! Ne tirez pas ! » Si un Personnage trop impétueux lui tire dessus malgré tout, il pourrait bien le tuer, car il ne lui reste que 2 Blessures après son passage entre les arbres.
 
@@ -102,7 +102,7 @@ Les patrouilleurs se montrent d'abord très méfiants à l'égard des aventurier
 
 Les patrouilleurs routiers prennent alors les choses en main et mettent tous les Personnages valides à contribution, à l'exception de Dame Isolde et de sa suite. Avec un peu d'effort, et tous les jets de dés que vous jugez nécessaires, la diligence renversée est bientôt remise sur ses roues. L'un des deux chevaux survivants est mortellement blessé et sera achevé, mais l'autre retrouve son calme, grâce à la présence des patrouilleurs routiers et de leurs montures.
 
-
+<span id="page-26-0" data-folio="27"></span>
 ## OPTIONS : VOUS N'AVEZ PAS UNE TÊTE À VOUS APPELER KASTOR…
 
 Dans la campagne telle qu'elle a été écrite, le *Magister impedimentae* est un homme nommé Kastor Lieberung. Ce qui est très bien, tant qu'au moins un des membres du groupe en est un également. Mais si ce n'est pas le cas, ou si vous souhaitez tout simplement modifier l'espèce, voire le genre du *Magister impedimentae* de façon à les faire correspondre à l'un des Personnages, référez-vous au tableau ci-dessous.
@@ -142,8 +142,8 @@ Vous devriez donner au *Magister* une identité qui constitue un défi amusant p
 
 *Signé en ce dixième jour de Nachhexen, dans la deux mille cinq cent douzième année de l'Empire.*
 
-
-## <span id="page-27-0"></span>DOCUMENT 4 : L'AFFIDAVIT
+<span id="page-27-0" data-folio="28"></span>
+## DOCUMENT 4 : L'AFFIDAVIT
 
 Nous, soussignés, jurons solennellement que le porteur de ce document se nomme Kastor Aloysius Lieberung.
 
@@ -173,8 +173,8 @@ La disposition de l'Auberge des Sept Rayons ressemble beaucoup à celle de l'aub
 
 Sur place, Dame Isolde, Janna et Marie abandonnent la diligence pour réserver des places à bord d'une autre appartenant à la compagnie des Quatre Saisons, qui prendra la route au matin en direction de la capitale. Les Personnages peuvent en faire autant s'ils souhaitent prendre une autre diligence pour terminer leur voyage.
 
-
-<span id="page-28-0"></span>Le reste du trajet pour Altdorf n'a rien de remarquable, bien que vous puissiez transmettre d'autres rumeurs aux Personnages, à moins que vous ne préfériez leur faire croiser une unité de cavalerie ou un colporteur avec un chariot bien rempli pour ajouter une touche de vie.
+<span id="page-28-0" data-folio="29"></span>
+Le reste du trajet pour Altdorf n'a rien de remarquable, bien que vous puissiez transmettre d'autres rumeurs aux Personnages, à moins que vous ne préfériez leur faire croiser une unité de cavalerie ou un colporteur avec un chariot bien rempli pour ajouter une touche de vie.
 
 ## **Un médecin fort à propos**
 
@@ -223,7 +223,7 @@ Tout le groupe est dérangeant, mais ces mutants sont d'autant plus horribles qu
 
 Le troisième mutant est pourvu d'une tête en ogive, et émet un gémissement de douleur quasi-permanent. Quant au dernier, il a vu ses jambes remplacées par les pattes d'une chèvre, et parle avec un accent reiklander étonnement raffiné. Tous sont dotés du même profil de caractéristiques, bien que chacun porte une mutation distincte (voir page 147 pour les descriptions de chaque mutation), et dispose de ses propres points de Blessure.
 
-
+<span id="page-29-0" data-folio="30"></span>
 #### TERENZ, MIKAEL, JOHANN, ERIK - BANDIT MUTANT (BRONZE 1)
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B   |
@@ -271,7 +271,7 @@ Pflaster est un homme sec de taille moyenne à la peau sombre et aux yeux marron
 
 **Traits :** À distance (Pistolet) +8 (20), Arme (Épée) +7, Armure (Chemise de mailles) 2, Préjugé (Criminels) **Possessions :** chemise de mailles, épée, pistolet (avec munitions pour 10 tirs), cheval avec selle et harnais
 
-
+<span id="page-30-0" data-folio="31"></span>
 #### **La troupe de Pflaster**
 
 Les quatre Patrouilleurs routiers qui constituent la troupe de Pflaster s'expriment tous avec un fort accent d'Altdorf, et c'est leur sergent qui s'occupe des discussions officielles, car il est payé pour ce genre de bêtises. En son absence, aucun d'entre eux n'hésite à dresser des amendes pour des infractions fabriquées de toutes pièces, ou à accepter des pots-de-vin pour faire disparaître les problèmes. En fait, c'est de cette façon qu'ils gagnent l'essentiel de leur argent, dont ils dépenseront la majeure partie au Cheval Bai, leur taverne favorite à Altdorf.
@@ -315,3 +315,5 @@ Savoir (Médecine) 73 **Talents :** Chirurgie, Lire/ Ecrire, Pansement de fortun
 **Traits :** Arme (Poings) +3, Préjugé (Rustres et Idiots)
 
 **Possessions :** sacoche médicale contenant : des bandages (autant que nécessaire), des potions de guérison (6), des outils professionnels (Médecin), une licence accordée par une guilde, et tous les autres biens que vous jugerez nécessaires à son voyage
+
+<span id="page-31-0" data-folio="32"></span>

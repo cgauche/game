@@ -1,4 +1,4 @@
-*Pages PDF 33-38*
+*Folio 30+*
 
 # LA CÔTE DE L'OSTLAND
 
@@ -18,7 +18,7 @@ Hans-Hals von Tasseninck avait à peine été couronné grand prince qu'il décl
 
 L'Ostland a peu de chances de tirer le meilleur parti de son littoral. Cependant, le noble Oleg von Raukov a suggéré que l'Ostland crée son propre Seigneur des mers et même une Troisième Flotte (comme la majeure partie des habitants de l'Empire, il ignore totalement l'existence de la puissance navale potentielle de Carroburg). Le nombre grandissant de raids norses ces derniers temps l'inquiète et il est suffisamment malin pour se rendre compte que, tant que les Tasseninck sont en conflit avec le Talabecland, il ne peut attendre aucune aide de Wolfenburg.
 
-
+<span id="page-33-0" data-folio="30"></span>
 # **SALKALTEN**
 
 Nichée dans le golf de Kislev, à côté de la route qui relie Middenheim et Erengrad, Salkalten plie sous le poids de sa propre fondation. Quiconque se promène dans la ville peut aisément repérer les façades architecturales qui s'effritent, les statues corrodées et les autres signes de gloire passée, alors qu'en réalité cette gloire n'a jamais vraiment existé. En 2455 CI, Jens-Pieter Riemanns a persuadé le grand prince Ivan von Königswald d'investir de l'argent pour agrandir le port de Salkalten et embellir les bâtiments afin d'attirer dans la ville le commerce qui allait jusqu'ici à Marienburg. Mais quand l'afflux d'or promis ne s'est pas manifesté, Salkalten est retournée à son indolence d'avant, et avec la parcimonie typique des Ostlanders, les habitants de la ville ont démoli la majeure partie des façades décoratives et des statues pour en faire du lest.
@@ -48,7 +48,7 @@ Les locaux évitent cet établissement, mais quand un marin veut davantage qu'un
 - *« La Kislevite aux cheveux blancs a déjà payé trois tournées à toute la salle. Elle dit qu'elle est la fille d'un boyard. C'est ça, et moi je suis la Tsarine ! Je parie que ses pièces d'or sont des fausses. »*
 - *« J'ai entendu dire que le baron s'était rapproché du comte Raukov. Les Tasseninck ne vont pas aimer, Raukov est déjà trop populaire. C'est peut-être pour ça qu'il y a trois de leurs espions qui boivent là-bas, près du feu. »*
 
-
+<span id="page-34-0" data-folio="31"></span>
 # **Au Repaire des monstres**
 
 Au Repaire des monstres est une échoppe miteuse en bordure de la place centrale de Salkalten, facile à repérer grâce au serpent de mer et au sextant sur l'enseigne audessus de la porte. Quiconque cherche une carte est sûr de la trouver parmi ses piles de parchemins poussiéreux. Cependant, même si les cartes sont d'excellente qualité, c'est la spécialité singulière de la propriétaire qui les rend si demandées : localiser les repaires de monstres.
@@ -79,7 +79,7 @@ En faisant leurs emplettes parmi les marchandises de Trusten, les Personnages tr
 
 Si les Personnages trouvent celui qui a caché ces bouteilles, Trusten sera ravi de leur faire un prix d'ami sur toutes les fournitures dont ils ont besoin.
 
-
+<span id="page-35-0" data-folio="32"></span>
 ### **Le guet d'Odrall, Ordre des Fils de Manann**
 
 Les Fils de Manann ont des postes de garde un peu partout le long de la côte nord de l'Empire, mais le guet d'Odrall, une tour circulaire et trapue perchée au sommet des falaises près de Salkalten, est leur véritable foyer et la première base historique de cet ordre de chevalerie.
@@ -108,7 +108,7 @@ Jannick était en train de vider ses poissons, quand soudain des pièces d'or se
 
 Certain qu'il s'agit d'une bénédiction de Manann, Jannick a commencé à rassembler autant de gens que possible pour jeter davantage de filets là où la voix le lui a indiqué.
 
-
+<span id="page-36-0" data-folio="33"></span>
 # **SCHÖNFELD**
 
 Les Skeers, une série de rochers dentelés perçant les vagues à l'ouest de Salkalten, ont envoyé beaucoup de navires par le fond. À cause des courants traîtres, même les marins qui connaissent bien ces eaux crachent par-dessus bord pour supplier Manann de les bénir avant d'approcher. Cependant, sans ces périls, le village de Schönfeld ne pourrait pas exister. Schönfeld est un hameau côtier doté d'un petit mouillage, et un endroit morose même du point de vue d'un Ostlander. Les habitants subsistent en pêchant et en récupérant tout ce que les Skeers prennent entre leurs dents. Ce genre de naufrage est si courant que quand un navire se perd le long de cette route, ceux qui l'attendent envoient souvent un messager à Schönfeld, où il pourrait retrouver sa figure de proue ajoutée à la pile au centre du village.
@@ -146,3 +146,5 @@ La cloche de plongée est une capsule de métal dotée de trois hublots en verre
 | Cloche de plongée | 4        | 6  | 35 | 112,5 m    | Expérimental (5) |  |
 
 **Expérimental :** pour chaque heure d'utilisation, un Test de **Métier (Ingénierie) Intermédiaire (+0)** est requis. En cas d'échec, pour chaque double obtenu, quelque chose se casse. Quelque chose peut se casser un nombre de fois égal à l'Indice du Trait avant que l'embarcation cesse de fonctionner.
+
+<span id="page-37-0" data-folio="34"></span>

@@ -1,6 +1,6 @@
-*Pages PDF 100-117*
+*Folio 101+*
 
-# <span id="page-99-0"></span>CHAPITRE 9 : L'HEURE FATIDIQUE
+# CHAPITRE 9 : L'HEURE FATIDIQUE
 
 Nos héros assemblent les dernières pièces du puzzle, et se mettent à la recherche d'un sorcier maléfique. Accusés injustement de meurtre, la ville entière se lance bientôt à leur poursuite. Pourront-ils éviter l'arrestation et empêcher le sorcier d'arriver à ses fins ? Ou une porte s'ouvrira-t-elle sur les Royaumes du Chaos, détruisant Bögenhafen et transformant à jamais l'Empire ?
 
@@ -34,10 +34,10 @@ Tout Personnage ayant exercé une Carrière de Bourgeois, ou disposant d'un Tale
 
 Le jeune serviteur est en réalité Gideon sous une autre apparence. Le démon a tué Magirius lorsqu'il a réalisé que le maître de la Guilde des Marchands avait craqué, et qu'il était désormais impossible de lui faire confiance. Il va tenter de faire porter le chapeau aux Personnages pour ce meurtre, ce qu'ils découvriront lorsqu'ils arriveront chez Magirius (voir *Document 10 : La lettre d'Herzen* et *Document 11 : Le mot de Magirius* en page 153).
 
-
+<span id="page-100-0" data-folio="101"></span>
 #### DOCUMENT 10 : LA LETTRE D'HERZEN
 
-<span id="page-100-0"></span>Les Crêtes Noires Grissenwald Près Nuln
+Les Crêtes Noires Grissenwald Près Nuln
 
 Mon cher ami,
 
@@ -87,8 +87,8 @@ signalée à cet endroit.
 
 Comme expliqué précédemment (voir page 54), Magirius pourrait être à la tête de l'*Ordo Septenarius* à la place de Teugen. Dans ce cas, ce dernier pourrait être celui qui craque et tente d'avertir les Personnages. Si vous êtes de bonne humeur, il pourrait réussir. Sinon, Magirius attire le groupe dans un endroit isolé en lui promettant des informations, et y cache le corps mutilé de Teugen. Une fois les Personnages arrivés sur les lieux, il envoie une patrouille du Guet pour enquêter sur une bagarre
 
-
-<span id="page-101-0"></span>Pendant que les Personnages s'interrogent sur la signification du message, ils entendent quelqu'un crier « *Au secours ! Au secours ! Au meurtre !* » depuis la porte d'entrée de la maison. Par la fenêtre, ils pourront apercevoir une patrouille du Guet accourir. Au même instant, le serviteur apparaît dans la pièce, semblant se matérialiser devant eux. Gideon a appelé à l'aide, et revient se délecter de l'arrestation imminente des Personnages.
+<span id="page-101-0" data-folio="102"></span>
+Pendant que les Personnages s'interrogent sur la signification du message, ils entendent quelqu'un crier « *Au secours ! Au secours ! Au meurtre !* » depuis la porte d'entrée de la maison. Par la fenêtre, ils pourront apercevoir une patrouille du Guet accourir. Au même instant, le serviteur apparaît dans la pièce, semblant se matérialiser devant eux. Gideon a appelé à l'aide, et revient se délecter de l'arrestation imminente des Personnages.
 
 Le démon s'adresse à eux d'une voix caverneuse semblant résulter de la superposition surnaturelle de plusieurs voix, qui fait froid dans le dos : « *Vous savez, vous auriez vraiment dû vous occuper de vos affaires.* » Il disparaît à nouveau grâce au Sort *Linceul d'invisibilité*, mais son rire moqueur continue à résonner quelques instants après qu'il se soit évaporé.
 
@@ -116,8 +116,8 @@ Le mur autour de la propriété mesure 3 m de haut, et n'est pas très facile à
 
 > Le sol de l'autre côté du mur se trouve 3 mètres en contrebas. Les Personnages qui sautent depuis le sommet doivent donc effectuer un Saut d'une hauteur de 3 mètres, tandis que ceux qui se suspendent avant de se laisser tomber ne font un Saut que d'1 mètre.
 
-
-## <span id="page-102-0"></span>**UNE CHOSE APRÈS L'AUTRE**
+<span id="page-102-0" data-folio="103"></span>
+## **UNE CHOSE APRÈS L'AUTRE**
 
 Une fois le mur franchi, les Personnages peuvent s'enfuir. Vous pouvez prolonger le suspense en informant les joueurs que des habitants s'élancent à leur poursuite après s'être échappés de la propriété de Magirius, mais ils devraient parvenir à les semer après quelques minutes de course effrénée en passant dans les ruelles et les contre-allées, en ajoutant peut-être quelques Tests d'Athlétisme pour faire bonne mesure.
 
@@ -151,8 +151,8 @@ Alors que le Guet traque les Personnages dans toute la ville, la lumière maléf
 
 Puis, au moment où le groupe pense pouvoir échapper au Guet, des hurlements bestiaux résonnent dans les rues vides. Désormais, ils n'ont plus seulement affaire au Guet, mais à sa version mutante ! Et si cette horrible menace devait parvenir à les rattraper, elle leur dira : « *C'est vous le problème, mon pote, pas nous ! Vous êtes des meurtriers ! Les mutants, ça n'existe plus ! L'Empereur nous soutient !* »
 
-
-<span id="page-103-0"></span>Les Personnages vont probablement s'intéresser à l'un de ces deux emplacements de l'Ostendamm : l'Entrepôt 13 et l'Entrepôt 17. Si les Personnages les observent, ils réaliseront rapidement qu'il n'y aucun signe d'activité à l'Entrepôt 17, alors que plusieurs personnes entrent dans l'Entrepôt 13.
+<span id="page-103-0" data-folio="104"></span>
+Les Personnages vont probablement s'intéresser à l'un de ces deux emplacements de l'Ostendamm : l'Entrepôt 13 et l'Entrepôt 17. Si les Personnages les observent, ils réaliseront rapidement qu'il n'y aucun signe d'activité à l'Entrepôt 17, alors que plusieurs personnes entrent dans l'Entrepôt 13.
 
 ## **L'Entrepôt 17**
 
@@ -182,8 +182,8 @@ Cette section détaille les évènements qui se déroulent dans l'Entrepôt 13. 
 
 Peu après la tombée de la nuit, un chariot transportant Franz Steinhäger et deux ouvriers arrive en provenance des bureaux de la famille Steinhäger. Il s'arrête devant l'Entrepôt 13, et les trois hommes commencent à décharger plusieurs sacs contenant les objets retirés du temple secret. Après quoi, le chariot repart et Steinhäger reste seul à l'intérieur. Il commence à préparer le temple : il dispose le cercle de cuivre, dessine un octogramme sur le sol avec du sel, et place les chandeliers d'argent à chacune de ses extrémités.
 
-
-<span id="page-104-0"></span>Après environ une demi-heure, cinq calèches arrivent avec environ un quart d'heure d'intervalle. Teugen et Gideon (qui arbore à nouveau l'apparence du « cousin de Teugen », de sorte que les Personnages ont peu de chances de le reconnaître) descendent de l'une d'entre elles, dont les portes sont ornées de la rose de la famille Teugen. Les passagers entrent dans l'entrepôt, chacun portant un petit paquet (ses robes), après quoi les calèches repartent. C'est le Conseil intérieur de l'*Ordo Septenarius*. Il est arrivé pour accomplir le rituel, et passe la demi-heure suivante à revêtir ses robes et à faire d'autres préparatifs. Pendant ce temps, une douzaine d'hommes de main (utilisez le profil de la page 79), appartenant à la Guilde des Débardeurs, encerclent discrètement l'entrepôt, pour s'assurer que les personnes à l'intérieur ne seront pas dérangées.
+<span id="page-104-0" data-folio="105"></span>
+Après environ une demi-heure, cinq calèches arrivent avec environ un quart d'heure d'intervalle. Teugen et Gideon (qui arbore à nouveau l'apparence du « cousin de Teugen », de sorte que les Personnages ont peu de chances de le reconnaître) descendent de l'une d'entre elles, dont les portes sont ornées de la rose de la famille Teugen. Les passagers entrent dans l'entrepôt, chacun portant un petit paquet (ses robes), après quoi les calèches repartent. C'est le Conseil intérieur de l'*Ordo Septenarius*. Il est arrivé pour accomplir le rituel, et passe la demi-heure suivante à revêtir ses robes et à faire d'autres préparatifs. Pendant ce temps, une douzaine d'hommes de main (utilisez le profil de la page 79), appartenant à la Guilde des Débardeurs, encerclent discrètement l'entrepôt, pour s'assurer que les personnes à l'intérieur ne seront pas dérangées.
 
 Ce n'est pas évident à percevoir à travers le brouillard teinté de vert, et ceux qui se trouvent à l'extérieur de l'entrepôt doivent réussir un Test de **Perception Intermédiaire (+0)** pour le remarquer. À ce moment, tous les Personnages qui sont dehors doivent effectuer un nouveau Test de **Discrétion (Urbaine) Facile (+40)**, modifié à votre convenance selon l'endroit où ils se cachent. Les gros bras feront déguerpir tous ceux qu'ils trouveront.
 
@@ -211,8 +211,8 @@ Teugen ne l'a pas remarqué. Il lui faut environ une demi-heure pour lire le par
 
 Soudainement, la psalmodie de Teugen change de ton. Les cultistes se tiennent absolument immobiles dans attitude de recueillement profond, et Gideon reste immobile derrière Teugen. Le rituel est presque achevé.
 
-
-## <span id="page-105-0"></span>**Faire échouer le rituel**
+<span id="page-105-0" data-folio="106"></span>
+## **Faire échouer le rituel**
 
 S'il rien ne vient l'interrompre, le rituel s'achève quelques minutes avant minuit. Il existe plusieurs moyens pour les Personnages de l'en empêcher.
 
@@ -264,8 +264,8 @@ Teugen hurle alors qu'il est consumé par un feu multicolore. Les cultistes, eff
 
 « *Il n'y a pas de portail. Tu as échoué. Reviens-moi.* »
 
-
-<span id="page-106-0"></span>Gideon est alors contraint de reprendre sa forme démoniaque (s'il ne l'avait pas déjà adoptée), et commence à son tour à se consumer dans des flammes scintillantes. Il hurle et se tord de douleur dans une agonie indescriptible, puis disparaît. Tout Personnage assistant à ce spectacle doit effectuer un Test de **Calme Complexe (-10)** contre les effets de Terreur 2. Le grand Œil dans l'octogramme se tourne alors vers le Personnage qui ressemble à Kastor Lieberung (s'il est toujours en vie, sinon choisissez-en un autre). L'Œil s'arrête. Le Personnage est figé sur place. Puis l'Œil se consume dans une gerbe d'étincelles multicolores.
+<span id="page-106-0" data-folio="107"></span>
+Gideon est alors contraint de reprendre sa forme démoniaque (s'il ne l'avait pas déjà adoptée), et commence à son tour à se consumer dans des flammes scintillantes. Il hurle et se tord de douleur dans une agonie indescriptible, puis disparaît. Tout Personnage assistant à ce spectacle doit effectuer un Test de **Calme Complexe (-10)** contre les effets de Terreur 2. Le grand Œil dans l'octogramme se tourne alors vers le Personnage qui ressemble à Kastor Lieberung (s'il est toujours en vie, sinon choisissez-en un autre). L'Œil s'arrête. Le Personnage est figé sur place. Puis l'Œil se consume dans une gerbe d'étincelles multicolores.
 
 Tout Personnage qui se trouve dans un rayon de 100 mètres autour de l'Œil doit effectuer un Test contre une Exposition Majeure à la Corruption.
 
@@ -285,7 +285,7 @@ Si le rituel est achevé avant minuit, une porte s'ouvre vers le Labyrinthe de C
 
 Pendant quelques minutes, tout est immobile. L'intérieur du puits est totalement noir : on ne distingue même pas les parois. Quiconque regarde dans la fosse voit au loin une lumière multicolore qui se rapproche rapidement. À une vitesse alarmante, une masse bouillonnante de Chaos primitif se dirige vers le nouveau Portail du Chaos.
 
-
+<span id="page-107-0" data-folio="108"></span>
 Tout Personnage qui l'aperçoit doit faire un Test de **Calme Très difficile (-30)** pour résister à Terreur 4. Une cacophonie de hurlements, de mugissements et de cris déchirants se fait entendre depuis le puits, augmentant en volume jusqu'à devenir presqu'insupportable. Une langue de feu rose jaillit alors, fracasse le toit de l'entrepôt et se déverse dans le ciel nocturne de la ville. Des gouttelettes de ce feu retombent en fumant et en grésillant sur le sol. Partout où elles atterrissent, des démons contrefaits se forment.
 
 La fosse s'élargit lentement à raison d'environ 3 mètres par minutes, jusqu'à ce qu'elle occupe toute la ville. Elle avale hommes, bêtes et bâtiments, tandis que le feu rose continue à se répandre sans relâche dans le ciel.
@@ -314,10 +314,10 @@ Il vous est possible d'introduire quelques rencontres et évènements de façon 
 
 108
 
-
+<span id="page-108-0" data-folio="109"></span>
 ## OPTION : TRAUMA
 
-<span id="page-108-0"></span>**L'Ennemi dans l'Ombre** peut très mal se terminer, et le traumatisme d'avoir été confronté au pire de ce que les Royaumes du Chaos ont à offrir est durable. Notez le nombre de Tests de Terreur auquel échoue chaque Personnage au cours du final, et faites-en le total. Après la fin de l'aventure, demandez à chaque Personnage d'effectuer un Test de **Calme Intermédiaire (+0)**. Une réussite diminue le total de 1. Chaque DR supplémentaire obtenu le diminue d'1 de plus. Les Personnages dont le total est supérieur à 0 après ce Test développent un Trauma personnalisé, comme il est indiqué dans **WFJDR**, page 191.
+**L'Ennemi dans l'Ombre** peut très mal se terminer, et le traumatisme d'avoir été confronté au pire de ce que les Royaumes du Chaos ont à offrir est durable. Notez le nombre de Tests de Terreur auquel échoue chaque Personnage au cours du final, et faites-en le total. Après la fin de l'aventure, demandez à chaque Personnage d'effectuer un Test de **Calme Intermédiaire (+0)**. Une réussite diminue le total de 1. Chaque DR supplémentaire obtenu le diminue d'1 de plus. Les Personnages dont le total est supérieur à 0 après ce Test développent un Trauma personnalisé, comme il est indiqué dans **WFJDR**, page 191.
 
 0 Plusieurs bâtiments ont pris feu, et l'un d'eux s'effondre sur la foule à quelques dizaines de centimètres du groupe. Chaque Personnage doit effectuer un Test d'**Esquive Intermédiaire (+0)** ou perdre 1d10 + 5 Points de Blessure, modifiés par le Bonus d'Endurance et les PA comme d'habitude. Si un 9 est obtenu au dé, le Personnage concerné gagne également 1 Point de Corruption.
 
@@ -354,7 +354,7 @@ Si un démon majeur du dieu du Changement apparaît dans votre région, il sembl
 
 Toutefois, une partie dans laquelle tous les Personnages ont muté jusqu'à devenir injouables est potentiellement décevante, et pas très amusante, à moins que vos joueurs n'aiment ce genre de fin. Donc, lorsque vous réclamez des Tests pour résister aux Influences corruptrices, gardez en tête le nombre de points de Corruption dont chacun dispose, et rappelez aux joueurs qu'ils peuvent utiliser des points de Résilience pour éviter les mutations. Vous pouvez toujours faire muter des PNJ pour montrer les dangers insidieux d'une exposition au Chaos.
 
-
+<span id="page-109-0" data-folio="110"></span>
 ## **Quitter la ville**
 
 Le plus probable est que les Personnages aient vaincu Teugen et sauvé Bögenhafen, mais qu'ils soient maintenant recherchés en tant que criminels.
@@ -401,8 +401,8 @@ Si le rituel va à son terme, Gideon n'entre plus dans la fosse avec jubilation.
 
 Si vous décidez que Gideon est en vérité le Changelin, les retombées de cette option seront abordées dans le **Compagnon de L'Empire en Ruines**, où l'impact du Changelin sur la fin de la campagne est examiné plus en détail.
 
-
-- <span id="page-110-0"></span>0 Les Personnages disposent de la lettre envoyée par Etelka Herzen (voir page 153) qui peut les amener à se diriger vers Nuln et les Crêtes Noires.
+<span id="page-110-0" data-folio="111"></span>
+- 0 Les Personnages disposent de la lettre envoyée par Etelka Herzen (voir page 153) qui peut les amener à se diriger vers Nuln et les Crêtes Noires.
 - 0 Le chasseur de primes Adolphus Kuftsos était actif en deux endroits et les aventuriers pourraient chercher à savoir ce sur quoi il travaillait. Ce qui peut les amener à Weissbruck pour retrouver ses hommes de main Bengt, Gurt et Willi, ou tenter de savoir qui se cache derrière les mystérieuses initiales Q.F.
 - 0 Des Personnages téméraires peuvent choisir de retourner à Altdorf, bien qu'ils y soient toujours recherchés pour le meurtre d'un jeune noble (voir page 101), en pensant qu'ils ont de bonnes chances d'éviter d'être retrouvés dans la métropole surpeuplée. C'est toujours la capitale de l'Empire, dont on dit que les rues sont pavées, sinon d'or, du moins d'occasions en or.
 - 0 Si les Personnages sont toujours en bons termes avec Josef Quartjin, ils peuvent décider de continuer à travailler à bord du *Bérébeli* en attendant de décider de l'endroit où se rendre ensuite. Ayant vendu sa cargaison à Bögenhafen, Josef s'en retourne vers Weissbruck avec une nouvelle cargaison de vins de la région, ou, si le pire est arrivé, un chargement de réfugiés terrifiés.
@@ -443,7 +443,7 @@ mauvais caractère
 
 Bien qu'il s'agisse du premier chapitre où les Personnages sont confrontés au Guet, il est possible qu'ils aient rencontrés la fine fleur de Bögenhafen plus tôt. Les patrouilles en ville se composent en général d'un sergent, accompagné de trois gardes et d'une recrue. En comparaison, pendant la Schaffenfest, les patrouilles sont généralement composées d'un garde accompagné de trois recrues fraîchement engagées pour prêter main forte sur le champ de foire.
 
-
+<span id="page-111-0" data-folio="112"></span>
 | RECRUES DU GUET                                                    |    |    |    |    |    |    |    |    |    |    |    |  |  |  |
 |--------------------------------------------------------------------|----|----|----|----|----|----|----|----|----|----|----|--|--|--|
 | M<br>CC<br>CT<br>F<br>E<br>I<br>Ag<br>Dex<br>Int<br>FM<br>Soc<br>B |    |    |    |    |    |    |    |    |    |    |    |  |  |  |
@@ -497,7 +497,7 @@ Son implication dans la pratique de l'art sombre de la démonologie a eu un prof
 
 **Mineurs :** Choc, Feux follets, Malédiction de Tzeentch, Putréfaction, Serrure ouverte, Sommeil
 
-
+<span id="page-112-0" data-folio="113"></span>
 Gideon sait ce dont il souffre, et prend un malin plaisir à en abuser, mâchant parfois quelques gousses d'ail avant d'aller converser avec son « bon ami » Teugen. Ce qui fait que ce dernier en est venu à croire que son aversion pour l'ail provient de son antipathie pour Gideon, qui semble toujours grignoter de cet horrible condiment.
 
 Teugen fait en sorte que rien ne vienne ternir son image, d'une part en poursuivant ses actes de charité, et d'autre part en s'assurant que ses activités criminelles soient aussi secrètes que possible.
@@ -536,7 +536,7 @@ Pour inciter Teugen à sceller le pacte, Gideon lui a dit que s'il pouvait persu
 
 Gideon est un maître de l'illusion, et peut prendre d'autres apparences. Sa forme naturelle ressemble à celle d'une horreur rose, avec une aura magique permanente autour de lui : un démon aux multiples bras, à la chair rose vif, doté d'une gueule béante hérissée de crocs et de tentacules ondulant sans cesse. Gideon n'est cependant pas comme la plupart des démons de Tzeentch. Ce n'est pas une créature folle et caquetante répandant la magie autour de lui de façon débridée. Il est beaucoup plus rusé. Son maître l'a créé à partir de l'avidité des autres dans un but précis. Gideon est ambitieux, intelligent, plein de ressources, et accomplit les desseins de son maître vers un objectif donné qui terrifierait Teugen s'il en connaissait la nature.
 
-
+<span id="page-113-0" data-folio="114"></span>
 Au cours de ses premiers mois à Nuln, le démon a passé la plupart du temps revêtu de la peau de Nina Dietrich, une célèbre actrice du Théâtre Staatsoper, et l'une des favorites de Teugen. C'était avant que le pacte ne soit conclu, avant que le Conseiller ne se voit offrir le monde et bien plus encore dans les promesses que le démon lui chuchotait à l'oreille. Une fois l'accord conclu, le démon a pris l'identité de Gideon, un lointain cousin de Teugen. Il ressemble à un homme grand et mince aux cheveux noirs, à la tenue toujours impeccable, et dont le visage attirant est animé par un regard intense. Gideon l'interprète comme une personne sardonique, dotée d'un sens de l'humour excentrique et plein de sarcasmes. Il ne rit jamais, mais a toujours aux lèvres un sourire ironique et légèrement dédaigneux.
 
 Même s'il a conscience qu'il ne le devrait pas, le démon apprécie énormément son séjour dans le Royaume des Mortels. Ces derniers temps, Gideon a pris l'habitude d'adopter l'apparence d'un enfant lorsqu'il est en présence de Teugen, et de mâcher beaucoup d'ail, car il sait que ce sont deux choses qui irritent le Conseiller. Au fil des années, l'amusement que le démon feignait d'avoir face à l'avidité et à la crédulité des mortels est devenu tout à fait réel, et n'est surpassé que par sa délectation à la pensée de son triomphe imminent lorsque le rituel de Teugen, que cet idiot croit capable de sauver son âme, ouvrira en fait un Portail du Chaos en plein cœur du Reikland. Son maître en sera si heureux.
@@ -569,8 +569,8 @@ De plus, si vous avez à votre disposition le Compagnon pour l'Ennemi dans l'Omb
 
 **Traits :** Arme (Griffes) +6, Corruption (Modérée), Démoniaque 9+, Peur 1
 
-
-
+<span id="page-114-0" data-folio="115"></span>
+<span id="page-115-0" data-folio="116"></span>
 ## CHRONOLOGIE DE BÖGENHAFEN
 
 Voici un résumé des principaux événements dans l'histoire de la ville de Bögenhafen et de la maison Saponatheim au Reikland.
@@ -667,7 +667,7 @@ Les Saponà font don d'une très importante somme d'argent à la maison Schnital
 
 *Le Festin empoisonné*. Constant Drachenfels, le Grand enchanteur, organise une fête pour les membres des maisons du Reikland, et les empoisonne. Les Stürmdunkel de Bögenhafen décèdent, laissant une branche mineure de la famille, vivant dans le duché de Mittlevorbergland, comme unique héritière de l'un des plus grands duchés du Reikland. 
 
-
+<span id="page-116-0" data-folio="117"></span>
 Johannes Teugen prend le contrôle de la maison Teugen, avec des rêves de grandeur pour Bögenhafen. La maison Trott le conteste, car l'ancien duc de Bögenhafen était marié à la duchesse Gaalopé de la maison Trott, survivante du Festin empoisonné.
 
 #### **1941-1950 CI**
@@ -745,3 +745,5 @@ La reconstruction de Bögenhafen est en grande partie achevée, financée princi
 #### **2510 CI**
 
 Johannes Teugen prend le contrôle de la Maison Teugen, et entraîne Bögenhafen vers la prospérité.
+
+<span id="page-117-0" data-folio="118"></span>

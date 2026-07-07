@@ -1,4 +1,4 @@
-*Pages PDF 52-62*
+*Folio 49+*
 
 # LA CÔTE DES SKAELINGS • •
 
@@ -18,7 +18,7 @@ Malgré les nombreux dangers, la côte des Skaelings attire beaucoup de gens ven
 
 Cela fournit aux marchands du Vieux Monde d'excellentes occasions d'échanger leurs produits de luxe contre des essences de bois rares, de l'or venant des montagnes des norses et des armes d'excellente qualité. Le port de Kirkjugarður Langskipa est sans doute la destination commerciale la plus sûre, mais reste un lieu où les mœurs n'ont rien de tendre. Les marchands sont accompagnés d'explorateurs, d'érudits et de guerriers en quête d'aventure, de secrets et de gloire.
 
-
+<span id="page-52-0" data-folio="49"></span>
 # **LES PILLARDS NORSES**
 
 Les norses forment incontestablement une nation maritime. Leurs langskips ne sont ni aussi beaux que les éperviers elfes, ni aussi puissants que les cuirassés nains, ni aussi hauts que les vaisseaux de l'Empire ou de Bretonnie, mais ils sont élancés, rapides et résistants. Les elfes sont probablement les seuls à avoir une expérience et une connaissance des mers aussi bonnes que celles des norses. Et il est vrai que rares sont les spectacles aussi intimidants sur les vagues que la proue à tête de dragon d'un langskip norse.
@@ -43,7 +43,7 @@ Après une terrible tempête, les Personnages découvrent les corps de plusieurs
 
 Sur une plage gelée au nord-ouest de Norsca, les Personnages repèrent le bateau accosté de chasseurs de phoques skaelings. Les pauvres bêtes ne meurent pas sans douleur et les Personnages compatissants pourraient intervenir pour les sauver. Cependant, si les Personnages prennent le temps d'observer la scène, ils se rendent compte que les phoques ont des crocs empoisonnés de cinq bons centimètres… et qu'ils n'ont pas peur de s'en servir !
 
-
+<span id="page-53-0" data-folio="50"></span>
 # **LES NORSES ET LA PIRATERIE**
 
 Les norses sont tristement célèbres pour leurs raids et leurs pillages, il n'est donc pas surprenant qu'ils aient la réputation d'être également des pirates féroces. Même les tribus les plus civilisées de Norsca, comme les Bjornlings, n'hésitent pas à se livrer à la piraterie si l'occasion se présente ou si les circonstances les empêchent de gagner leur vie par un commerce honnête.
@@ -68,7 +68,7 @@ Mais c'est ici que le serpent se mord la queue, car Sartosa doit la majeure part
 
 L'une des étoiles montantes parmi les maraudeurs qui infestent actuellement la Mer Tiléenne est la Reine des Marées, une capitaine pirate mutante connue pour sa haine des norses. À bord de son vaisseau, l'*Espadon*, elle a affronté et coulé beaucoup de langskips sans aucune pitié. Pourtant, certains affirment qu'elle est originaire des fjords glacés de la côte des Bjornlings, et que sa campagne contre les norses est motivée par un désir de parricide vengeur.
 
-
+<span id="page-54-0" data-folio="51"></span>
 # **LES SKAELINGS**
 
 Bien qu'elles soient considérées comme un seul et même groupe culturel suivant pour l'essentiel le même ensemble de coutumes et de règles, les tribus de Skaelings sont nombreuses, diverses et éparpillées un peu partout sur la côte des Skaelings et dans les montagnes au-delà. Si elles n'ont pas de raison immédiate de combattre les étrangers, elles trouvent facilement une raison de se battre entre elles : pour du territoire, des tributs, d'anciennes rancœurs, parce que Khorne l'exige ou simplement pour l'excitation du combat. Ce sont de ferventes adoratrices du Chaos, même si elles ne sont pas aussi furieusement sanguinaires et perverses que les Varg, les Aeslings ou les innombrables tribus des Kurgans, contre lesquelles elles protègent sans doute le Vieux Monde dans une certaine mesure. Elles ont davantage en commun avec les Sarls, bien qu'elles considèrent leur enthousiasme plus relatif concernant les sacrifices de sang, comme un signe de faiblesse. Elles méprisent souvent les Bjornlings parce qu'à leurs yeux, ils sont davantage commerçants que guerriers et ne vénèrent pas Khorne avec assez de zèle.
@@ -91,7 +91,7 @@ Les Skaelings pratiquent éhontément les sacrifices d'animaux et d'humains, mai
 
 Même s'ils les dédaignent en raison de ce qu'ils considèrent comme un manque de cran face à la pratique du sacrifice, les Skaelings voient les Sarls comme leurs rivaux principaux au combat, pour le territoire et en termes de talent dans la construction de bateaux. La zone tampon entre leurs deux territoires est la Baie des lames, sacrée pour les deux tribus, et le port à proximité, l'autel de la Moisson écarlate. Ce dernier se trouve sur les terres des Sarls, mais les Skaelings y sont les bienvenus et leur traditions plus sanglantes y sont respectées. Les deux tribus se livrent à des querelles territoriales, surtout dans les terres. Le long de la côte, que ce soit sur terre ou sur mer, les effusions de sang sont en revanche limitées et menées avec honneur et respect. Les Skaelings et les Sarls ont évidemment de nombreux liens de parenté, et quand ils sont menacés par des étrangers, ils redeviennent tous des norses unis.
 
-
+<span id="page-55-0" data-folio="52"></span>
 # **Halle des Snaegrs**
 
 Les Snaegrs sont une tribu de Skaelings dont le but principal est la vénération de Khorne. Un ancien jarl, Urlf, était si fervent et si brutal dans sa dévotion que Khorne l'a élevé au statut de démon et il est devenu Urlfsangdémon. Après cela, la tribu s'est mise à vénérer Urlfsangdémon aux côtés de Khorne et s'est considérée comme la favorite de Khorne. L'anniversaire de l'ascension d'Urlf est appelé la *Lune d'Urlf* et est devenu une période où les Snaegrs voyagent vers le sud et attaquent tous ceux qui croisent leur route, même les autres Skaelings. Pendant la Lune, les guerriers snaegrs sont souvent temporairement bénis par leur dieu et se métamorphosent pour devenir des créatures imitant la forme démoniaque d'Urlfsangdémon. L'un des descendants d'Urlf, Grydal, est le jarl actuel de la tribu, et il recherche constamment la bénédiction d'Urlfsangdémon.
@@ -124,7 +124,7 @@ Si quelqu'un y boit, la coupe répond au besoin principal du buveur en la transf
 
 Si un buveur a simplement besoin de traverser les montagnes, son corps se transforme en pierre froide et en prend la force et la résistance, même s'il devient aussi plus lent. Si un autre chasse un cerf, ses jambes deviennent proches de pattes de cerf, endurantes et agiles. Si un buveur recherche davantage son véritable amour qu'une quelconque quête immédiate, il devient très similaire (mais pas identique) à la personne qu'il cherche, quelle qu'elle soit. Les effets ne persistent que tant que le besoin n'est pas satisfait. Du moins pour les plus chanceux.
 
-
+<span id="page-56-0" data-folio="53"></span>
 # **KIRKJUGARÐUR LANGSKIPA**
 
 Kirkjugarður Langskipa est un port ouvert qui accueille chaque jour des navires venant de nombreuses nations et cultures du pourtour de la Mer des Griffes. C'est peut-être un creuset culturel plus divers que n'importe quel autre lieu, même Marienburg. Après tout, Marienburg ne tolère ni les mutants, ni les orcs, ni le sacrifice humain, du moins pas ouvertement. Cependant, la tolérance n'est pas l'acceptation et certains étrangers sont davantage détestés que d'autres, c'est pourquoi il est dangereux de s'aventurer au-delà des quais pour tous ceux qui ne sont pas norses. Cela dit, la force et la maîtrise du combat sont très respectés, même si elles conduisent parfois certains norses à affronter la personne concernée pour prouver leur valeur. Même le combattant le plus redoutable doit faire attention à ne pas emprunter la mauvaise rue.
@@ -159,7 +159,7 @@ Quelques personnes âgées, les dernières sauvées après cette grande bataille
 
 Une voix draconique forte émanant du monument pourrait demander n'importe quoi : la guerre contre les elfes noirs, un sacrifice de sang (n'importe quel elfe ferait l'affaire), un tribut matériel (qui disparaît dans la nuit), le fait d'être de nouveau fixée sur un langskip avec un équipage. Est-ce la supercherie d'un ventriloque ? Ou la magie d'un sorcier ? Ou est-ce que quelque sombre esprit s'est éveillé dans la proue ?
 
-
+<span id="page-57-0" data-folio="54"></span>
 # **Temple de Mermedus**
 
 En périphérie du port se trouve une plage qu'évitent tous ceux qui n'ont pas de bonne raison de la fréquenter. Cette langue solitaire de sable et de galets pue la pourriture de la mer et est couverte d'amas d'algues sombres grouillant de puces de sable. Une coque moisie est adossée à la paroi d'une falaise abrupte, couverte de mousse de mer, de barnacles et d'étranges incrustations. Cet endroit est le temple local de Mermedus.
@@ -192,7 +192,7 @@ Ragnulf était autrefois un fier huscarl de la suite du jarl, toujours en premi�
 
 Maintenant, Ragnulf vit à la cabane de Vargr et n'est plus que l'ombre tragique de lui-même. Des souvenirs de son ancienne vie remontent parfois à la surface, ce qui est une occasion à saisir, car tout le monde dans la halle du jarl veut savoir où il a caché son trésor.
 
-
+<span id="page-58-0" data-folio="55"></span>
 # **OLG BLÓÐSALT**
 
 Pour les autres norses, en particulier les Skaelings, Olg Blóðsalt est un champion béni par les dieux. À l'âge de 19 ans, il s'est déjà élevé au rang de capitaine de navire. Pour ceux qui ne connaissent pas les coutumes des norses, il semble sinistre, mais apparemment moins imposant que les carrures droites et musclées de ceux qu'il commande. À cause de sa bénédiction divine, la mutation *Buveur de saumure*, son corps est trapu, boursouflé et incrusté de sel humide et collant. Sa peau pâle et gonflée et ses cheveux roux emmêlés le font paraître considérablement plus vieux que son âge. Dans son armure rouillée et avec ses armes corrodées, seuls les plus attentifs et ceux qui l'ont vu se battre comprennent qu'Olg est un guerrier et un pillard brutal.
@@ -218,7 +218,7 @@ Quelqu'un qui possède cette mutation peut boire l'eau salée sans que cela soit
 
 **Possessions :** bouclier rouillé, chemise de mailles rouillée, dague rouillée, hache, jambières de cuir, veste de cuir
 
-
+<span id="page-59-0" data-folio="56"></span>
 # **PERSONNAGES NORSES**
 
 Si vous désirez créer un Personnage venant de Norsca, vous pouvez utiliser les règles ci-dessous à la place des règles pour les Personnages du Reikland en page 36 du **Livre de Règles Warhammer Fantasy le Jeu de Rôle.** Les Joueurs et le MJ doivent réfléchir à l'impact qu'un Personnage norse pourrait avoir sur un groupe d'aventuriers typique. Même les Personnages norses les plus civilisés ont été élevés dans une société qui légitime une forme de respect envers les dieux du Chaos, apprend à ses jeunes à développer leur robustesse personnelle et à considérer ceux qui ne le font pas comme des idiots et des faibles.
@@ -259,7 +259,7 @@ De plus, le Personnage peut acheter les Talents suivant comme s'ils étaient des
 
 **Noms de famille :** les humains norses utilisent souvent le même système de noms de famille que celui majoritaire chez les nains, une tradition partagée qui vient des liens commerciaux déjà entretenus par les humains norses et les nains norses lors des âges passés. Ce système est détaillé en page 38 du **Livre de Règles WFJDR**, bien que les surnoms norses ne soient pas en khazalid et concernent surtout des prouesses personnelles, des vantardises intimidantes ou les prétentions d'avoir des démons ou des monstres pour cousins.
 
-
+<span id="page-60-0" data-folio="57"></span>
 # **Carrières norses**
 
 Les Personnages norses peuvent déterminer une Carrière de départ en utilisant le tableau ci-dessous. Les Carrières norses couvrent un périmètre plus limité, mais les norses sont considérés comme des humains pour l'acquisition de nouvelles Carrières, donc même si un Personnage norse ne peut pas commencer par une Carrière de Sorcier, il peut potentiellement en devenir un si l'occasion se présente.
@@ -309,3 +309,5 @@ La société norse est très différente de celle du reste du Vieux Monde, isol�
 Chaque fois qu'une Carrière suggère qu'un Personnage acquiert des Compétences, des Talents et des Possessions servant à utiliser Projectiles (Poudre noire, Ingénierie ou Arbalète), un Personnage norse n'a besoin d'apprendre que Projectiles (Lancer) à la place. De la même manière, Corps à corps (Escrime) doit être remplacé par Corps à corps (Deuxmains). L'armure de plates est rare en Norsca, c'est pourquoi la maille la remplace si un Personnage norse a besoin d'une armure comme Possession. Le MJ et les Joueurs doivent considérer toute Compétence, Talent ou Possession qui ne correspond pas au style de vie ou à l'esthétique des norses comme facultatif ou le remplacer par une alternative adaptée.
 
 Un Personnage norse qui commence une nouvelle vie dans une autre partie du monde peut ignorer ces restrictions.
+
+<span id="page-61-0" data-folio="58"></span>

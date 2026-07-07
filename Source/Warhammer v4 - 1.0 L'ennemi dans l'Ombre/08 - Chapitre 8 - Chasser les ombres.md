@@ -1,6 +1,6 @@
-*Pages PDF 80-99*
+*Folio 81+*
 
-# <span id="page-79-0"></span>CHAPITRE 8 : CHASSER LES OMBRES
+# CHAPITRE 8 : CHASSER LES OMBRES
 
 Nos héros, après avoir découvert un temple du Chaos dissimulé sous les rues de Bögenhafen, reviennent pour découvrir que personne ne croit en son existence. En cherchant à découvrir la vérité sur ce qui se trame, ils s'engagent dans une course contre la montre pour sauver leurs vies, mais aussi celles de tous les habitants de la ville !
 
@@ -40,10 +40,10 @@ Les Personnages devraient revoir le doktor Malthusius lors du premier jour de le
 
 Malthusius est convaincu qu'ils ont fait de leur mieux pour récupérer le gobelin, et ne leur en veut pas de ne pas y être parvenu. Il les invite dans sa roulotte et leur propose du tabac et de l'eau-de-vie. Malthusius a entendu dire que le gobelin a été tué dans un entrepôt près de la rivière, et se désole de la perte de l'attraction principale de son spectacle. Il a conscience que les gens de la ville ne souhaitaient pas le prendre vivant, mais il est consterné que l'employé de l'hôtel de ville rejette ses demandes de récupérer le corps, afin qu'il puisse le faire empailler pour l'exposer. Il ne parvient pas à comprendre les raisons derrière cette décision, puisque le cadavre n'est d'aucune utilité à qui que ce soit.
 
-
+<span id="page-80-0" data-folio="81"></span>
 ## RUMEURS
 
-<span id="page-80-0"></span>Les rumeurs suivantes proviennent de la bouche des PNJ de Bögenhafen. Il faudra néanmoins que les Personnages parlent à plusieurs d'entre eux pour arriver à prendre connaissance de l'intégralité des ragots ci-dessous. Elles ne contiennent pas d'informations secrètes, et peuvent donc être obtenues sur une réussite à un Test de **Ragot Accessible (+20)**.
+Les rumeurs suivantes proviennent de la bouche des PNJ de Bögenhafen. Il faudra néanmoins que les Personnages parlent à plusieurs d'entre eux pour arriver à prendre connaissance de l'intégralité des ragots ci-dessous. Elles ne contiennent pas d'informations secrètes, et peuvent donc être obtenues sur une réussite à un Test de **Ragot Accessible (+20)**.
 
 #### **Les marchands**
 
@@ -82,7 +82,7 @@ Les Personnages surprennent une conversation au sujet d'un illuminé dans l'un d
 
 Les Personnages croisent le chemin d'un pauvre hère d'apparence répugnante et répondant au nom d'Ulthar, dans l'un des squares de la ville au milieu d'un petit groupe de personnes, vociférant et dressant le poing dans le vide.
 
-
+<span id="page-81-0" data-folio="82"></span>
 La plupart du temps, il se contente de répéter les quatre mêmes phrases : « *Maudits ! Nous sommes maudits ! Le Chaos est sur nous ! Les signes sont partout !* »
 
 Mais de temps en temps, ses divagations prennent une autre tournure : « *J'en vois sept, j'en vois neuf, et tout ce qu'ils ont sera à moi, à moi, à moi !* » ou « *L'étoile dans le cercle est le signe de la mort !*  », ou encore « *Méfiez-vous de l'homme qui n'est pas un homme !* »
@@ -119,8 +119,8 @@ En réussissant un Test de **Perception Accessible (+20)**, il est possible de r
 
 Une fois les Personnages encerclés, l'un des voyous prend la parole : « *Nous avons un message pour vous. Arrêtez de fourrer votre nez dans ce qui ne vous regarde pas, ou vous pourriez vous réveiller un matin au fond de la rivière. Pourquoi ne pas aller tenter votre chance ailleurs, hein ? J'ai entendu dire qu'Altdorf est charmante à cette époque de l'année.* » Après quoi la bande se disperse. Ils ne font aucun geste agressif, à moins d'être euxmêmes attaqués ou provoqués.
 
-
-## <span id="page-82-0"></span>**Jour 3 - Le jour précédant le rituel**
+<span id="page-82-0" data-folio="83"></span>
+## **Jour 3 - Le jour précédant le rituel**
 
 **Note :** si les Personnages progressent rapidement, les évènements de cette journée peuvent être utilisés dès le Jour 2.
 
@@ -154,8 +154,8 @@ Deux coupe-jarrets (utilisez le profil des Coupe-Jarrets de la page 79) suivent 
 
 Une fois le combat commencé, il y a 50% de chances à chaque Round que la Garde arrive dans 1d10 Rounds. Si cela se produit, les malfrats prennent la fuite. Les Personnages seraient bien avisés d'en faire autant, ou bien ils devront trouver rapidement de bonnes excuses pour éviter d'être arrêtés pour désordre sur la voie publique et bagarre.
 
-
-## <span id="page-83-0"></span>**EMPLACEMENTS PRINCIPAUX**
+<span id="page-83-0" data-folio="84"></span>
+## **EMPLACEMENTS PRINCIPAUX**
 
 Plusieurs endroits sont susceptibles d'intéresser les Personnages dans leur recherche de renseignements. Aucun ordre de passage n'est requis, sauf lorsqu'un indice trouvé à un endroit mène à un autre.
 
@@ -199,10 +199,10 @@ Si les Personnages retournent voir Andrea après avoir parlé avec le capitaine 
 
 Le juge Richter vit seul, ne partageant ses quartiers qu'avec sa gouvernante, Gertie, qui ouvre la porte ornée d'une chouette aux Personnages lorsqu'ils arrivent. Gertie est âgée de 57 ans, et est au service du juge depuis vingt ans. Elle adore Richter, et la maladie de ce dernier l'inquiète au plus haut point.
 
-
+<span id="page-84-0" data-folio="85"></span>
 ## UNE LUNE MAUVAISE SE LÈVE
 
-<span id="page-84-0"></span>Deux lunes tournent autour du monde de Warhammer : Morrslieb et Mannslieb. La première est la plus petite des deux, également connue sous le nom de « lune du Chaos ». Elle est entièrement composée de malepierre, projetée dans le ciel suite à une grande catastrophe survenue il y a fort longtemps. Cette lune possède une orbite erratique qui la place parfois proche et parfois lointaine, et il est de notoriété publique qu'elle réagit aux activités des Puissances de la Ruine. Étant donné que le dieu du Chaos Tzeentch et ses sbires s'apprêtent à détruire Bögenhafen pour créer un Portail du Chaos au milieu de l'Empire, Morrslieb subit de nombreux changements visibles à l'œil nu. Les événements suivants sont entièrement facultatifs. Vous pouvez les trouver utiles pour créer un sentiment de désastre cosmique imminent, mais il se peut aussi que vous les trouviez un peu trop théâtraux.
+Deux lunes tournent autour du monde de Warhammer : Morrslieb et Mannslieb. La première est la plus petite des deux, également connue sous le nom de « lune du Chaos ». Elle est entièrement composée de malepierre, projetée dans le ciel suite à une grande catastrophe survenue il y a fort longtemps. Cette lune possède une orbite erratique qui la place parfois proche et parfois lointaine, et il est de notoriété publique qu'elle réagit aux activités des Puissances de la Ruine. Étant donné que le dieu du Chaos Tzeentch et ses sbires s'apprêtent à détruire Bögenhafen pour créer un Portail du Chaos au milieu de l'Empire, Morrslieb subit de nombreux changements visibles à l'œil nu. Les événements suivants sont entièrement facultatifs. Vous pouvez les trouver utiles pour créer un sentiment de désastre cosmique imminent, mais il se peut aussi que vous les trouviez un peu trop théâtraux.
 
 #### **Jour 1**
 
@@ -238,7 +238,7 @@ S'ils sont toujours là à son retour, il leur apprend qu'il a été autorisé �
 
 Le greffier n'en sait pas plus sur ce qui est arrivé au gobelin, et refuse de se renseigner pour le compte des Personnages : *« Fa ne me conferne pas* ». S'ils demandent à voir le juge Richter, ou un responsable, il leur dira de s'adresser au Tribunal des Fêtes (voir page 63).
 
-
+<span id="page-85-0" data-folio="86"></span>
 ## LA FAUSSE PISTE DU TEMPLE
 
 Les initiales sur le mouchoir trouvé dans le temple sont une fausse piste destinée à lancer les joueurs sur la piste de Franz Steinhäger, et à les éloigner de Johannes Teugen. Si celui-ci n'est plus le grand méchant de votre aventure (voir page 112), et que le rôle de Franz Steinhäger a également changé, il sera peut-être nécessaire de changer les initiales sur le tissu, ainsi que le nom du propriétaire de l'entrepôt. Peut-être que ces faux indices pourraient conduire sur la piste de Johannes Teugen à la place ?
@@ -279,8 +279,8 @@ Peut-être qu'au lieu de faire penser à un vampire, Teugen ressemble à autre c
 
 Quelle qu'elles soient, ces mutations doivent rester mineures et pouvoir être facilement dissimulées, afin qu'il soit plausible que personne en ville ne les ai remarquées jusqu'à présent. Il doit être facile pour lui de nier les accusations que les Personnages parvenienne à faire prendre au sérieux par un représentant de l'autorité. Rappelez-vous que Teugen est un citoyen riche et respecté, dont la parole a beaucoup plus de poids que les divagations d'une bande de fauteurs de troubles.
 
-
-<span id="page-86-0"></span>que les dents du conseiller sont particulièrement longues et pointues. Autour de son cou pend une chaîne en or à laquelle est accroché un médaillon portant le symbole de sa famille.
+<span id="page-86-0" data-folio="87"></span>
+que les dents du conseiller sont particulièrement longues et pointues. Autour de son cou pend une chaîne en or à laquelle est accroché un médaillon portant le symbole de sa famille.
 
 En dépit des apparences, Teugen n'est pas un vampire. Le gobelet contient du vin, et la pâleur de sa peau tout comme ses dents pointues ne sont que le résultat d'années passées à manipuler le *Dhar* corrupteur. Si vous le désirez, vous pouvez encourager les joueurs à se mettre dans l'embarras en brandissant des marteaux sacrés, de l'eau bénite ou en déchirant les rideaux, mais toute l'affaire peut être dédramatisée si Teugen leur propose du vin pris dans la même carafe qu'il a utilisée pour remplir son propre gobelet.
 
@@ -323,8 +323,8 @@ Les Piques Croisées sont ouvertes de midi à minuit. Pendant les heures d'ouver
 | 01-90 | Un passant s'arrête et demande aux aventuriers ce qu'ils font. Un Test de Charme Accessible (+20) doit être effectué si l'histoire<br>inventée est crédible ; si elle ne l'est pas, ajustez la Difficulté du jet en conséquence. Si le jet est un échec, le passant va<br>avertir le Guet. En ce cas, une patrouille de gardes arrivera sur les lieux en 2d10 minutes. Se reporter au résultat suivant pour<br>la façon dont elle réagit.                                                                                                             |
 | 91-00 | Une patrouille de quatre gardes arrive sur les lieux (voir page 98) et demande des explications aux Personnages. Un Test de<br>Charme Intermédiaire (+0) est nécessaire si l'histoire qu'ils concoctent tient la route. Si ce n'est pas le cas, ajustez la Difficulté du<br>jet en conséquence. En cas d'échec, la patrouille accusera les Personnages de délit d'intention. La sanction est une amende de 2d10<br>Pistoles, sous peine d'emprisonnement et de confiscation des biens. Ceux-ci leur seront restitués lorsque l'amende aura été payée. |
 
-
-<span id="page-87-0"></span>personnel fait constamment la navette entre le comptoir et l'arrière-salle. Baumann est assisté par plusieurs barmans, ainsi que de Reinhold et Reinhardt, ses « videurs » jumeaux, qui ne le quittent pas d'une semelle.
+<span id="page-87-0" data-folio="88"></span>
+personnel fait constamment la navette entre le comptoir et l'arrière-salle. Baumann est assisté par plusieurs barmans, ainsi que de Reinhold et Reinhardt, ses « videurs » jumeaux, qui ne le quittent pas d'une semelle.
 
 En plus du personnel, 2d10 clients sont également des membres des Doigts Crochus, et seront prêts à soutenir Baumann en cas de besoin.
 
@@ -355,7 +355,7 @@ La famille Steinhäger est l'une des plus importantes maisons marchandes de la v
 
 Le seul moyen pour les Personnages d'obtenir une conversation
 
-
+<span id="page-88-0" data-folio="89"></span>
 avec Franz Steinhäger consiste à se rendre à ses bureaux (voir page 90). Toute tentative de l'aborder dans la rue ne ferait que provoquer une réaction très désagréable de sa part ainsi que de celles de ses gardes du corps.
 
 Heinrich serait très intéressé d'apprendre l'implication de son frère dans l'*Ordo Septenarius*, et tenterait de s'en servir pour le discréditer et prendre le contrôle des affaires familiales. Quant au fils de Franz, Albrecht, il est au courant de l'implication de son père dans l'organisation, mais pense que celle-ci n'est qu'une branche inoffensive de la Guilde des Marchands.
@@ -380,8 +380,8 @@ Lorsque les Personnages le rencontrent, Franz Steinhäger est irrité par l'effr
 
 Au cours de l'entretien, le Personnage ayant la Compétence Perception la plus élevée remarque le symbole de l'*Ordo Septenarius* au bas d'une feuille de parchemin. Un Test de **Perception Intermédiaire (+0)** est nécessaire pour distinguer la signature ainsi que ce qui est écrit. Franz recouvre rapidement la lettre s'il pense que quelqu'un l'a remarquée. Le texte en est reproduit ici. Vous ne devriez révéler que ce qui vous semble correspondre à ce que le Personnage concerné a pu déchiffrer (en tenant compte du fait qu'il lisait à l'envers), et ne remettre aux joueurs le *Document 9 : « Tout se passe bien »* que si les Personnages arrivent à dérober la lettre d'une manière ou d'une autre.
 
-
-#### <span id="page-89-0"></span>**Heinrich Steinhäger**
+<span id="page-89-0" data-folio="90"></span>
+#### **Heinrich Steinhäger**
 
 S'ils ne parviennent pas à avancer grâce à Franz, les Personnages se tourneront peut-être vers Heinrich, son frère. Il est facile d'obtenir un rendez-vous avec celui-ci une fois l'entretien avec Franz terminé, car il aime être tenu au courant de tout ce qui se passe. Les Personnages ont également la possibilité d'aborder Heinrich le soir, lorsqu'il rentre chez lui.
 
@@ -423,7 +423,7 @@ Les Personnages peuvent aller se renseigner dans chacune des maisons des princip
 
 Partout où le groupe pose des questions au sujet de l'*Ordo Septenarius*, à l'exception de la résidence Ruggbroder, il leur sera répondu de se rendre à la Guilde des Marchands et de demander le conseiller Friedrich Magirius, et ceci quel que soit leur résultat au Test de Ragot ou de quelque autre Test que ce soit, car le conseiller a laissé des instructions pour que quiconque se renseigne au sujet de l'organisation lui soit envoyé.
 
-
+<span id="page-90-0" data-folio="91"></span>
 #### **La résidence Teugen**
 
 La résidence Teugen se trouve un peu en retrait de la rue, au cœur d'un jardin privé. Les murs qui entourent celui-ci sont faits de pierre et mesurent 4,5 m de haut. Un Test d'**Escalade Impossible (-50)** est nécessaire pour les franchir (souvenez-vous que le Talent Grimpeur annulera la Difficulté de la tâche, et que du matériel d'escalade peut également être utile). Les portes font également 4,5 m de haut, mais peuvent être franchies grâce à un Test d'**Escalade Accessible (+20)**. Pendant la journée, les portes sont ouvertes et les visiteurs peuvent sonner à la porte de la maison. Durant la nuit, elles sont verrouillées (D -10, DR 5) et trois chiens de garde sont lâchés dans la propriété. Quatre gardes du corps demeurent en permanence à l'intérieur de la maison pour s'occuper des éventuels intrus.
@@ -448,8 +448,8 @@ Dès leur arrivée, les Personnages sont introduits auprès de Hieronymus Ruggbr
 
 Ruggbroder utilisera tout ce que les Personnages lui fourniront pour discréditer les familles impliquées, et il ira présenter ces preuves devant le graf von Saponatheim, au Château Grauenberg (voir page 139). Cela prendra plusieurs mois pour résoudre cette situation, car le Graf a des relations compliquées avec le Conseil de la Ville, mais il finira par saisir les biens
 
-
-<span id="page-91-0"></span>des personnes impliquées, et les partagera avec Ruggbroder, faisant de ce dernier la seule grande famille marchande de Bögenhafen. En admettant que le rituel de Teugen échoue, bien entendu (voir page 112).
+<span id="page-91-0" data-folio="92"></span>
+des personnes impliquées, et les partagera avec Ruggbroder, faisant de ce dernier la seule grande famille marchande de Bögenhafen. En admettant que le rituel de Teugen échoue, bien entendu (voir page 112).
 
 ## **L'entrepôt n°4 de Steinhäger**
 
@@ -500,7 +500,7 @@ Voici quelques exemples de « message » que les différents dieux peuvent trans
 - 0 **Bögenhauer** : ma rivière va s'assécher, et les échanges cesseront. Partez maintenant, de peur que tout ne soit empoisonné à jamais.
 - 0 **Handrich** : Bögenhafen court à la catastrophe. La richesse et le confort cèderont bientôt la place à la pauvreté et à la misère.
 
-
+<span id="page-92-0" data-folio="93"></span>
 - 0 **Morr** : ceux qui recherchent le profit causeront de nombreuses morts. Personne ne survivra en ces lieux.
 - 0 **Myrmidia** : une stratégie est à l'œuvre. Les riches qui pensent devenir plus riches encore par leurs actions ne trouveront que la mort.
 - 0 **Ranald** : de dangereux mensonges ont été racontés : un a menti à un, qui a menti à sept, qui ont menti à sept par sept.
@@ -535,8 +535,8 @@ En plus de pouvoir discuter avec Greta, les Personnages ont la possibilité d'ac
 
 Chaque tentative, qu'elle soit ou non couronnée de succès, prend deux heures si le Personnage utilise la Compétence Recherche, et quatre heures sinon. Greta peut s'en charger pour les joueurs, s'ils font un don approprié (au moins 10 pistoles, ou peut-être un livre rare), ou s'ils réussissent un Test de **Charme Très difficile (-30)**.
 
-
-- <span id="page-93-0"></span>0 **Les familles de marchands :** les informations sur les quatre principales familles de marchands se trouvent en page 119. Un jet est nécessaire pour chacune d'entre elles.
+<span id="page-93-0" data-folio="94"></span>
+- 0 **Les familles de marchands :** les informations sur les quatre principales familles de marchands se trouvent en page 119. Un jet est nécessaire pour chacune d'entre elles.
 - 0 **La lune grimaçante :** les références de la bibliothèque concernant Morrslieb, la seconde lune, et sa relation présumée avec le Chaos, y compris le passage suivant : « *Las ! Quand la bien-aimée de Morr GRANDIRA et qu'elle s'ornera d'un SOURIRE surnaturel, le temps du changement sera arrivé ! Le Grand Architecte viendra alors assouvir Ses plaisirs et les mortels apaiseront sa faim.* »
 - 0 **Karl Teugen :** il est possible de trouver un journal écrit d'une main tremblante par Ulthar l'instable (voir page 97), qui ne l'a pas signé : « *Karl Teugen souffre d'une étrange maladie, les médecins n'ont pas réussi à l'aider et il va bientôt mourir. Je leur ai dit que les démons sont parmi nous et qu'il a été touché, mais ils ne m'écoutent pas !* » Cette phrase est suivie d'une autre entrée. « *Karl Teugen est mort aujourd'hui, son visage était violacé et ses yeux lui sortaient de sa tête. Sa langue pendait hors de sa bouche comme un grand serpent boursouflé. La marque des Puissances de la Ruine est sur lui et sur tout Bögenhafen !* »
 
@@ -572,8 +572,8 @@ La *Guilde des Marchands* (voir page 128) a installé un employé à un bureau o
 
 Si les Personnages se renseignent sur l'*Ordo Septenarius*, on leur demandera de patienter. Au bout de 15 minutes, ils sont introduits auprès de Friedrich Magirius, le maître de guilde.
 
-
-<span id="page-94-0"></span>Il se lève lorsque les Personnages entrent, se présente et leur propose de s'asseoir. Magirius demande ensuite poliment en quoi l'*Ordo Septenarius* les intéresse, puis écoute attentivement tout ce qu'ils voudront bien lui raconter. Il ne manifestera aucun signe permettant de savoir s'il prête foi à ce qu'ils racontent. Lorsqu'ils ont terminé, Magirius se lève, toujours le sourire aux lèvres.
+<span id="page-94-0" data-folio="95"></span>
+Il se lève lorsque les Personnages entrent, se présente et leur propose de s'asseoir. Magirius demande ensuite poliment en quoi l'*Ordo Septenarius* les intéresse, puis écoute attentivement tout ce qu'ils voudront bien lui raconter. Il ne manifestera aucun signe permettant de savoir s'il prête foi à ce qu'ils racontent. Lorsqu'ils ont terminé, Magirius se lève, toujours le sourire aux lèvres.
 
 « *Il me semble que tout cela n'est rien de plus qu'une malheureuse série de malentendus. Si vous me faites l'honneur de dîner avec moi, je vous expliquerai toute l'affaire. Je peux vous assurer qu'il n'y a rien de dramatique dans tout cela.* »
 
@@ -597,8 +597,8 @@ Celui-ci achevé, Magirius commandera une carafe de brandy, et commencera à par
 
 *De plus, notre coopération dans certaines entreprises commerciales pourrait susciter un certain ressentiment parmi nos concurrents. À l'heure actuelle, les gens savent qu'il existe des ententes, mais ils ne savent pas qui est impliqué ; ainsi, ils ne peuvent accuser ouvertement qui que ce soit de malversation, ni exercer les moindres représailles. Sans compter que leurs soupçons ont tendance à se retourner contre eux, ce qui nous donne un avantage plus grand encore.*
 
-
-<span id="page-95-0"></span>*Vous comprenez donc notre besoin de discrétion. Nombreux sont ceux qui tireraient un grand avantage politique s'ils venaient à connaître l'identité des membres de l'Ordo, et certains de nos plus jeunes membres pourraient être tentés par leurs propositions. Nous devons les… encourager à respecter les règles de l'organisation. C'est la raison pour laquelle le fonctionnement de l'ordre prend la forme de rituels, ou plutôt devrais-je dire de simulacres de rituels, avec diverses cérémonies, des serments, et des grades d'initiation. Je trouve que rien n'incite plus à la loyauté et à l'obéissance que la participation à une cérémonie, et la promesse d'une promotion.* »
+<span id="page-95-0" data-folio="96"></span>
+*Vous comprenez donc notre besoin de discrétion. Nombreux sont ceux qui tireraient un grand avantage politique s'ils venaient à connaître l'identité des membres de l'Ordo, et certains de nos plus jeunes membres pourraient être tentés par leurs propositions. Nous devons les… encourager à respecter les règles de l'organisation. C'est la raison pour laquelle le fonctionnement de l'ordre prend la forme de rituels, ou plutôt devrais-je dire de simulacres de rituels, avec diverses cérémonies, des serments, et des grades d'initiation. Je trouve que rien n'incite plus à la loyauté et à l'obéissance que la participation à une cérémonie, et la promesse d'une promotion.* »
 
 Au cours de cette conversation, Magirius écarte toute allusion à une présence démoniaque dans les égouts, sans parler des rituels horribles qu'une telle présence impliquerait. Il croit fermement qu'il n'y a rien de maléfique dans l'*Ordo Septenarius*, et cherche à en convaincre les Personnages.
 
@@ -650,7 +650,7 @@ Les profils de Personnages fournis ici sont ceux de gros bras typiques et de leu
 
 **Possessions :** arme simple, dague
 
-
+<span id="page-96-0" data-folio="97"></span>
 un proche de Karl Teugen, le frère de Johannes. Son esprit n'a hélas pas survécu au fait de voir son ami mourir dans d'atroces souffrances. Ulthar a connu des jours meilleurs : sa peau est marquée, ses ongles sont cassés et jaunis, ses dents sont en mauvais état, et nous passerons sous silence ses nombreuses infestations. Cependant, si les Personnages parviennent à atteindre l'homme qui se cache derrière son apparence repoussante et son esprit brisé, ils trouveront un homme
 
 éduqué doté d'une grande intelligence. Ulthar occupe une masure abandonnée dans *La Fosse* (voir page 132), où il survit du mieux qu'il peut. En dépit de son apparence, et même si ses yeux ne cessent d'aller d'un point à un autre lorsqu'il parle à quelqu'un, son accent est celui d'une personne très éduquée. Il tousse beaucoup et marmonne souvent : ce n'est plus, d'une façon générale, qu'une véritable épave. Il se méfie
@@ -699,7 +699,7 @@ marchand (Haute Qualité)
 
 Gerhardt, un homme mince aux cheveux d'un blanc éclatant et aux yeux d'un gris profond, a servi la famille Steinhäger pendant la majeure partie des 63 années de sa vie. Il est très loyal, et fait son possible pour empêcher toute effraction. Toutefois, il n'est pas suicidaire, et se rend ou s'enfuit si les choses tournent mal. Son accent est impossible à identifier, et il parle avec un léger sifflement.
 
-
+<span id="page-97-0" data-folio="98"></span>
 ## **La caserne du Guet**
 
 #### **Le capitaine**
@@ -741,7 +741,7 @@ REINER GOERTRIN - CAPITAINE DE LA MILICE HUMAIN (OR 1)
 
 **Possessions :** arme simple (Épée), cotte de mailles à manches, heaume, médaillon (en or, avec le blason de Bögenhafen)
 
-
+<span id="page-98-0" data-folio="99"></span>
 ## **La Guilde des Marchands**
 
 #### **Le maître de guilde**
@@ -769,3 +769,5 @@ Savoir (Loi) 57
 **Possessions :** bagues (sertis de pierres, valant 3 CO et 5
 
 CO), tenue de marchand (d'excellente qualité)
+
+<span id="page-99-0" data-folio="100"></span>

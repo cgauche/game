@@ -1,4 +1,4 @@
-*Pages PDF 22-33*
+*Folio 19+*
 
 # LA CÔTE DU NORDLAND
 
@@ -16,7 +16,7 @@ La péninsule de Klauhugel est un cap élevé, divisé en deux par le fleuve de 
 
 Les Nordlanders du littoral endurent depuis des millénaires les raids des norses, des elfes noirs et des pirates. Leurs rivages comportent des défenses conséquentes, des forts marins aux îles fortifiées, en passant par un réseau de feux de signal.
 
-
+<span id="page-22-0" data-folio="19"></span>
 # **LA MARINE IMPÉRIALE**
 
 L'Empire n'est pas une grande puissance maritime. Les Asurs dominent les océans du monde, les Bretonniens sont de meilleurs marins et les norses, les Tiléens et les Estaliens sont de plus grands explorateurs. La sécession de Marienburg a en outre beaucoup handicapé toutes les flottes de l'Empire. Cependant, la Marine impériale est redoutable et beaucoup de comtes et de barons veulent s'en servir pour étendre leur influence autour du globe.
@@ -39,7 +39,7 @@ La plupart des bateaux de la Première Flotte sont des galères de guerre, adapt
 
 *Blason héraldique des Seigneurs des mers impériaux, représentant Triton (p. 148) portant des armes et une armure de guerre imaginées par l'artiste dans un style impérial archaïque.*
 
-
+<span id="page-23-0" data-folio="20"></span>
 # **Histoire**
 
 Au cours des premiers millénaires d'existence de l'Empire, la côte était constamment ravagée par les raids des marins norses. En réaction au sac de Marienburg en 632 CI, l'empereur Hasso ordonna que des vaisseaux et des fortifications soient construits afin de défendre le littoral sous le patronage d'une nouvelle organisation, les Gardiens de la Côte. Ces nobles montèrent la première marine permanente, qui combattit si bien qu'elle força les Bjornlings, les Skaelings et les Sarls à signer des traités à l'althing de Traktatsey en 765 CI.
@@ -81,7 +81,7 @@ Sur les bâtiments navals, la journée est divisée en sept quarts, décomptés 
 | Premier quart (ou quart bien-aimé<br>en référence à Mannslieb) | 20h – 00h |  |  |  |
 |                                                                |           |  |  |  |
 
-
+<span id="page-24-0" data-folio="21"></span>
 # **Cloche du bateau**
 
 La cloche ne se contente pas de marquer le passage du temps. Sur les bâtiments navals, elle sonne pour marquer l'arrivée d'un officier à bord ou pour commémorer un décès en mer. Les messes et les prières à Manann sont ponctuées par le glas de la cloche et, plus prosaïquement, elle est utilisée par temps de brouillard pour prévenir les autres navires de la présence de celui-ci.
@@ -116,7 +116,7 @@ Ludolf le Jeune ne sait que trop bien que son père le voit seulement comme un s
 
 Les amiraux de la flotte du Nordland sont un mélange de vieux loups de mer et de jeunes pairs de Ludolf. Ils comptent plusieurs cousins Köhler, car l'amirauté est quasiment une entreprise familiale et les autres dynasties navales comme les Hargenfels en sont tenues à l'écart. Les relations entre Ludolf le Jeune et ses amiraux sont bonnes. Il préfère ne pas imposer son autorité et attache de l'importance à l'expérience des marins plus âgés sous son commandement, qu'il accompagne souvent à la chasse aux pirates. Ludolf est mécène du régiment des Balbuzards du Nordland, mais il n'aime pas la façon dont le capitaine Dreist regarde sa femme.
 
-
+<span id="page-25-0" data-folio="22"></span>
 # **Ludolf le Jeune comme mécène**
 
 Le Seigneur des mers a des responsabilités quotidiennes envers la Deuxième Flotte et son père dominateur dicte ses décisions. C'est pourquoi il a du mal à poursuivre certaines de ses ambitions les plus aventureuses et un groupe de Personnages ingénieux lui serait très utile, surtout s'ils sont discrets.
@@ -141,7 +141,7 @@ Dame Helene Köhler est une exploratrice et se trouve actuellement en Lustrie. I
 
 Le baron Köhler est fasciné par les navires terrestre de Marienburg et veut en construire une flottille pour la Deuxième Flotte. Pourquoi les frontières de l'océan devraient-elles limiter les déplacements de la Marine ? Il voudrait que les Personnages volent un navire terrestre… ou au moins en récupèrent les plans dans le bureau du gardien des marais Aloysius Ambrosius à Marienburg.
 
-
+<span id="page-26-0" data-folio="23"></span>
 # **DIETERSHAFEN**
 
 Dietershafen a toujours abrité des navires de guerre et des bateaux de pêche. Elle a récemment connu un essor fulgurant et est devenue le port maritime le plus important de la côte de l'Empire. Là où il n'y avait autrefois que des frégates désorganisées se dresse désormais une flotte bien entraînée, supervisée par le Seigneur des mers impérial depuis le palais de l'Amirauté. Des hauts-gradés de l'Empire se rendent sur les quais pour inspecter les vaisseaux, les tavernes sont remplies de marins de passage et le commerce maritime sur le rivage prospère.
@@ -174,7 +174,7 @@ Chaque année, en Brauzeit, le temple organise le Festin des Coquillages lors du
 
 La lumière de la Lanterne de Manann porte aussi loin que celle de tout autre phare (voir page 108). Cependant, que ce soit en raison d'une bizarrerie optique ou de la bienveillance de Manann, la lumière traverse la brume et le brouillard comme s'ils n'existaient pas. Les Tests de Perception effectués pour repérer ce phare ne sont pas affectés par la Visibilité (voir page 106).
 
-
+<span id="page-27-0" data-folio="24"></span>
 # **La taverne du Béhémoth**
 
 Les marins qui veulent dépenser leur argent durement gagné pour faire la fête vont être déçus au Béhémoth. Son enseigne est une baleine à une corne gravée sur le bois, accrochée dans une ruelle étroite et escarpée de la Ville Neuve. Le plafond est bas, la grande salle à peine éclairée par des bougies et la conversation sérieuse. Tard dans la nuit, les clients un peu ivres peuvent se mettre à chanter, mais ce sont alors des complaintes de marins tristes pleurant ceux perdus en mer et non des chansons paillardes.
@@ -201,7 +201,7 @@ Le dock tire son nom d'une vieille ballade de Dietershafen. Dans la chanson, un 
 
 Quand le navire Otto l'Audacieux entre en cale sèche, les ouvriers font une étrange découverte. Une grappe de squelettes d'humains, d'orcs et d'hommes-bêtes ont mordu dans la quille et sont restés coincés là. Lorsque l'Otto a contourné le Cap des Pirates, l'équipage a aperçu une lumière verte troublante sous les vagues, et plusieurs vaisseaux ont coulé là-bas ces derniers temps.
 
-
+<span id="page-28-0" data-folio="25"></span>
 # **Le cimetière des Bateaux**
 
 Parmi les dunes à l'extérieur de Dietershafen se trouve une cuvette sablonneuse remplie d'épaves commémorant ceux perdus en mer. L'endroit est un labyrinthe de coques brisées et de mâts penchant dans des angles improbables, avec une galère de guerre échouée au centre. Quand un marin de Dietershafen disparaît en mer, la famille en deuil grave son nom sur une partie de ce navire, et son bois porte à présent des milliers de patronymes.
@@ -226,7 +226,7 @@ Les constructions sur la rive ouest de la Salz ont été bâties en suivant un p
 
 Ceux qui passent par Neues Emskrank essaient de repartir le plus vite possible après avoir jeté l'ancre. Les locaux sont hargneux envers les voyageurs et maladifs, à croire que quelque chose dans le pessimisme ambiant les affecte physiquement. Le commerce est maigre dans cette ville : du poisson et quelques marchandises transitent par les rares quais intacts avant de remonter la rivière. Les trafics illicites sont courants, surtout dans la vieille ville.
 
-
+<span id="page-29-0" data-folio="26"></span>
 ### UNE VILLE DANS LA BRUME
 
 Si un voyageur embrasse du regard toute la baie de Drosselspule à l'aube par un matin de printemps, la lumière du soleil semble tracer d'étranges motifs dans la brume marine. En regardant assez longtemps, vous pouvez discerner des flèches et de grandes tours blanches dans la baie, comme si une cité perdue s'élevait des profondeurs.
@@ -253,7 +253,7 @@ Un navire qui manque de bras peut facilement embaucher des membres d'équipage i
 
 Neues Emskrank est mal défendue et le risque d'une attaque des Skaelings est toujours présent. Au crépuscule, des voiles rouges apparaissent à l'horizon et les Lions de Leopold se préparent au combat. Alors que les langskips approchent, les citadins se barricadent chez eux. Mais ce n'est qu'une ruse : alors que tout le monde est distrait par le « raid » imminent, les contrebandiers sont en train de débarquer une énorme cargaison de rhum, de poudre à canon et de soie au château.
 
-
+<span id="page-30-0" data-folio="27"></span>
 # **NORDEN**
 
 Pendant l'Ère des Guerres, des colons norses fondèrent un village qu'ils nommèrent Norden. Ces conquérants se sont ensuite adaptés à la vie dans le sud et intégrés à la culture impériale, et font désormais commerce de biens maritimes avec les voyageurs sur la route entre Middenheim et Erengrad.
@@ -268,7 +268,7 @@ Norden a un secret. Pendant que le regard des puissances étrangères est rivé 
 
 Les groupes de Personnages travaillant pour les Gausser, Altdorf ou la Marine peuvent pénétrer dans la ville avec une lettre de recommandation. Par la mer, ils doivent mouiller à une certaine distance de la côte et prendre de plus petits bateaux jusqu'au port. Ceux qui ne disposent pas d'une recommandation doivent voyager à pied et rester sur leurs gardes, car même s'ils n'ont pas expressément interdiction d'explorer Norden, ils sont sous surveillance et la plupart des habitants les encouragent à partir.
 
-
+<span id="page-31-0" data-folio="28"></span>
 # **Château Neurath**
 
 L'ancien siège de la famille Neurath est un petit château juste à l'est de la ville, situé sur un grand domaine seigneurial au bord de la mer. Cette noble famille a cédé l'endroit à aux ingénieurs navals sous le patronage de l'amiral Luther Hakluyt, qui désire faire entrer la marine de l'Empire dans le 26e siècle, malgré toutes les récriminations. Un petit groupe d'ingénieurs impériaux est cantonné ici et a accès à des ateliers et à des ouvriers pour l'aider à développer de nouvelles technologies d'exploration et de combat naval.
@@ -294,3 +294,5 @@ Une légende raconte que Manann a combattu un démon des mers nommé Ruinesang q
 #### UN MARIN IVRE
 
 Après une bière de trop, un marin se met à déblatérer au sujet du pic du Dormeur. Il dit que des silhouettes se déplacent sur le rocher la nuit, des gens encapuchonnés comme des moines qui décrivent des cercles et même plusieurs hommes montés… sauf qu'il serait impossible de transporter un cheval sur ce rocher. Le marin croit que Manann a éveillé ses dormeurs, mais d'autres explications pourraient exister : des contrebandiers, des naufrageurs ou des cultistes.
+
+<span id="page-32-0" data-folio="29"></span>

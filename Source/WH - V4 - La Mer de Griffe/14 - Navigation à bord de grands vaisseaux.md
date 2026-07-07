@@ -1,4 +1,4 @@
-*Pages PDF 125-132*
+*Folio 122+*
 
 # NAVIGATION À BORD DE GRANDS VAISSEAUX • •
 
@@ -31,7 +31,7 @@ Le MJ peut décider que l'un des rôles est essentiel pour le Test au point qu'i
 | Chirurgien                 | Guérison                   | Le Chirurgien est essentiel pour la santé de l'équipage après les combats ou quand la maladie fait rage à bord.                                                                                                                                                                                                      |  |  |  |
 | Chansonnier                | Divertissement (Chant)     | En plus d'utiliser la Compétence Divertissement (Chant) pour contribuer à un Test d'équipage d'une<br>manière similaire à celle du reste de l'équipage, le Chansonnier peut employer la chanson de marin<br>« Naviguons tous ensemble, ho hisse, ho hisse… » pour donner des bonus aux Tests du reste de l'équipage. |  |  |  |
 
-
+<span id="page-125-0" data-folio="122"></span>
 ### **Qui effectue un Test d'équipage ?**
 
 Le but des Tests d'équipage est de faire en sorte que les Personnages aient tout de même de l'influence quand un grand bateau tente d'entreprendre une action et d'épargner au MJ la tâche de lancer des douzaines de dés pour savoir comment s'en sort l'ensemble des gens à bord. Bien qu'une personne puisse occuper n'importe quel rôle et que certains ne peuvent être tenus que par une seule personne, d'autres peuvent être gérés par plusieurs personnes en même temps, en particulier les Vigies, les Mousses et les Artilleurs. Si l'un de ces rôles est occupé par un Personnage, alors son Joueur peut lancer les dés pour représenter tous ceux qui accomplissent ce rôle. Si plusieurs Personnages occupent le même rôle, ils peuvent tous lancer les dés et utiliser le total cumulé.
@@ -70,7 +70,7 @@ Ce genre de Test sert à déterminer la vitesse. Il suit généralement les règ
 
 **Rôles :** Capitaine, Chansonnier, *Mousse*, Navigateur, Timonier
 
-
+<span id="page-126-0" data-folio="123"></span>
 # **Tests de Navigation pour les Manœuvres**
 
 Chaque fois qu'un vaisseau doit entreprendre un Test de Navigation afin de manœuvrer pour prendre un virage serré ou contourner un obstacle, ce Test peut être remplacé par un Test d'équipage. Le Timonier est le personnage le plus important dans ce cas.
@@ -129,7 +129,7 @@ Si un ennemi se trouve à portée de tir du vaisseau, ce Test d'équipage peut �
 
 **Rôles :** Capitaine, Chansonnier, Mousse, *Artilleur*, Timonier
 
-
+<span id="page-127-0" data-folio="124"></span>
 # **MORAL**
 
 Passer une longue période de temps en mer est une expérience très déplaisante ; les maladies, l'ennui et la mauvaise nourriture se combinent pour saper l'humeur de n'importe quel groupe. Le MJ doit noter l'évolution du Moral d'un navire pour déterminer le degré de confiance et d'affection que l'équipage a envers le capitaine.
@@ -180,7 +180,7 @@ Par ailleurs, le tableau qui suit est calibré sur les coutumes et les attentes 
 
 Le prochain tableau résume les effets que le Moral d'un navire a sur les Tests de Compétence de l'équipage et sur la difficulté à le motiver avec des Tests de Commandement.
 
-
+<span id="page-128-0" data-folio="125"></span>
 | EFFETS DU MORAL |                                                              |  |  |  |  |  |  |  |
 |-----------------|--------------------------------------------------------------|--|--|--|--|--|--|--|
 | Moral           | Effet                                                        |  |  |  |  |  |  |  |
@@ -241,7 +241,7 @@ Il est essentiel de planifier minutieusement un long voyage sur mer pour qu'il r
 
 L'eau douce est généralement stockée dans de grands tonneaux et distribuée avec précaution. Un bon capitaine sait qu'il doit s'assurer que le navire transporte davantage d'eau que nécessaire, surtout pour les voyages sur des mers inconnues. Lors d'une telle expédition, le capitaine doit saisir la moindre occasion de renflouer ses réserves. Un tonneau contient 145 litres d'eau. Un membre d'équipage boit 2 à 3 litres d'eau par jour.
 
-
+<span id="page-129-0" data-folio="126"></span>
 | PROVISIONS                                       |              |     |               |  |  |  |  |  |
 |--------------------------------------------------|--------------|-----|---------------|--|--|--|--|--|
 | Objet                                            | Coût         | Enc | Disponibilité |  |  |  |  |  |
@@ -301,7 +301,7 @@ En plus de sa paie ordinaire, l'équipage d'un bateau s'attend à recevoir des p
 | Mercenaire<br>expérimenté | 9/–               | 3 CO 12/–            | S'attend à recevoir des<br>parts de prise |  |  |  |
 | Médecin de bord           | 15/–              | 5 CO                 | –                                         |  |  |  |
 
-
+<span id="page-130-0" data-folio="127"></span>
 |                                                   | MOUSSE – ARGENT 1 |    |    |    |    |    |    |    |    |    |    |
 |---------------------------------------------------|-------------------|----|----|----|----|----|----|----|----|----|----|
 | M<br>CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc |                   |    |    |    |    |    |    |    | B  |    |    |
@@ -377,3 +377,5 @@ En plus de sa paie ordinaire, l'équipage d'un bateau s'attend à recevoir des p
 **Traits :** Arme (Dague) +5
 
 **Possessions :** bandages, besace contenant des outils professionnels (médecine), bourse, dague, décoction de guérison, licence de guilde, livre (médecine), nécessaire d'écriture et 5 feuilles de parchemin, vêtement
+
+<span id="page-131-0" data-folio="128"></span>

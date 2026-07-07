@@ -1,6 +1,6 @@
-*Pages PDF 118-143*
+*Folio 119+*
 
-# <span id="page-117-0"></span>APPENDICE 1 : UN GUIDE DE BÖGENHAFEN
+# APPENDICE 1 : UN GUIDE DE BÖGENHAFEN
 
 « *Bögenhafen change pour le mieux. Retenez bien ce que je dis. Notre succès ne fera pas seulement la richesse de cette ville, mais celle de tous* ». - Johannes Teugen, Prince marchand de Bögenhafen
 
@@ -33,8 +33,8 @@ Le Conseil municipal se réunit une fois par mois, sauf en cas d'urgence nécess
 
 En plus des membres votants du conseil, le Premier magistrat (actuellement Heinz Richter) siège au conseil mais, par tradition, n'a pas le droit de vote. D'autres personnalités de la ville sont invitées, ou convoquées, pour témoigner, offrir des conseils et faire pression sur les membres votants. Les prêtres d'autres cultes prennent souvent la parole au Conseil, lorsque les sujets concernent leur foi. Celui de Verena offre régulièrement des conseils juridiques (qui contredisent fréquemment ceux du Premier magistrat), tandis que la Grande prêtresse de Shallya adresse régulièrement des pétitions aux conseillers au nom des pauvres. Les officiers du Guet sont souvent présents lorsque l'ordre public est remis en question, ou lorsque des plaintes sont déposées à cause du comportement de leurs hommes.
 
-
-<span id="page-118-0"></span>Leur présence à ces réunions, avec leur regard d'acier et leur visage froid, sert généralement à intimider la plupart des plaignants, ce qui fait que peu de citoyens se donnent la peine de dénoncer les veilleurs corrompus, préférant payer des potsde-vin et faire profil bas.
+<span id="page-118-0" data-folio="119"></span>
+Leur présence à ces réunions, avec leur regard d'acier et leur visage froid, sert généralement à intimider la plupart des plaignants, ce qui fait que peu de citoyens se donnent la peine de dénoncer les veilleurs corrompus, préférant payer des potsde-vin et faire profil bas.
 
 Étant donné leur contrôle majoritaire du Conseil, si la Guilde des Marchands demeure unie en ce qui concerne ses intérêts (ce qui est généralement le cas, s'ils ont l'intention de faire du profit), ils sont, de facto, les dirigeants de Bögenhafen. Selon un précédent traditionnel, le président du Conseil est toujours un représentant de la Guilde des Marchands, mais pas nécessairement le maître de la Guilde.
 
@@ -64,8 +64,8 @@ Les Haagen sont des habitants du Wasteland, jouissant de plusieurs contacts comm
 
 La famille Ruggbroder vend principalement des céréales et autres produits agricoles, qu'ils négocient à Bögenhafen en échange d'articles et de produits métalliques produits dans la ville même. Heironymus Ruggbroder est le chef de famille et tient fermement les rênes de l'entreprise, bien qu'il ait largement dépassé les soixante-dix ans. Ils jouissaient autrefois d'une sorte de monopole sur le commerce avec Helmgart et la Bretonnie, mais ils se trouvent maintenant en concurrence avec les Teugen.
 
-
-<span id="page-119-0"></span>Les Ruggbroder possèdent plusieurs entrepôts le long de l'Ostendamm, mais ne s'impliquent pas activement dans le transport fluvial, utilisant plutôt les équipages de leurs fournisseurs ou de petits opérateurs indépendants. La maison Ruggbroder entretient des liens étroits avec la Guilde des Conducteurs, le plus important employeur de charretiers et de muletiers de Bögenhafen. C'est aussi la plus petite des quatre grandes familles de marchands, et elle conserve des liens plus étroits avec les petits commerçants de la ville.
+<span id="page-119-0" data-folio="120"></span>
+Les Ruggbroder possèdent plusieurs entrepôts le long de l'Ostendamm, mais ne s'impliquent pas activement dans le transport fluvial, utilisant plutôt les équipages de leurs fournisseurs ou de petits opérateurs indépendants. La maison Ruggbroder entretient des liens étroits avec la Guilde des Conducteurs, le plus important employeur de charretiers et de muletiers de Bögenhafen. C'est aussi la plus petite des quatre grandes familles de marchands, et elle conserve des liens plus étroits avec les petits commerçants de la ville.
 
 ## **Steinhäger**
 
@@ -101,7 +101,7 @@ Jochen Haagen est le chef de la famille, un homme d'affaires sobre et avisé, ay
 
 0 Les Haagen vendent des produits de luxe, et la rumeur prétend que beaucoup se trouvent dans leur manoir. Lorsque les Personnages entendent parler d'un plan pour cambrioler une nuit la maison Haagen, ils peuvent prévenir les intéressés dans l'espoir d'obtenir une récompense, ou s'y introduire en premier dans l'espoir d'obtenir de plus grandes richesses.
 
-
+<span id="page-120-0" data-folio="121"></span>
 0 En plus du symbole Haagen, le galion doré au sommet du manoir Haagen porte une sirène serrant une bourse, symbole de Marienburg, comme figure de proue. Ce rappel peu subtil des racines de la famille Haagen provoque beaucoup de mécontentement parmi les familles plus anciennes, aux origines plus locales. La rumeur raconte que la maison Teugen paiera grassement celui qui pourra voler la figure de proue, et la lui livrer. Les Personnages découvriront rapidement qu'ils ont été trompés s'ils le font et, s'ils ne sont pas prudents, ils risquent la prison.
 
 ## **Le manoir Kleinwald**
@@ -132,7 +132,7 @@ La maison Ruggbroder a fait son temps, tout comme son propriétaire Heironymus R
 
 Heironymus sort rarement de chez lui et dirige ses occupations depuis sa maison, fuyant son bureau à la Guilde des Marchands, comme ceux de sa famille. La majorité de ses affaires se traitent surtout par lettres, ou par le biais d'un intermédiaire, et il ne reçoit jamais de visiteurs inconnus. Le fils unique de Ruggbroder, Gosbert, réside actuellement à Bechafen, le plus loin possible de son tyran de père.
 
-
+<span id="page-121-0" data-folio="122"></span>
 - 0 Le commis en chef de Ruggbroder, Clotilda Kundicht, la représentante la plus connue de l'entreprise, remplace son maître lorsque c'est nécessaire, et passe presque tout son temps dans les bureaux de Ruggbroder à exécuter les ordres que Heironymus lui envoie quotidiennement par lettre. Ruggbroder lui a refusé un congé pour assister à l'enterrement de sa sœur à Trosreut, mais elle désire vraiment s'y rendre. L'aller-retour ne devrait pas prendre plus d'une semaine : les Personnages peuvent-ils la remplacer ?
 - 0 Des rumeurs commencent à courir sur la mort de Ruggbroder, survenue quelques semaines plus tôt. Il a en fait souffert d'une attaque cérébrale, qui l'a laissé à peine conscient. Son valet, Meinrad, dissimule son état, en imitant la signature de son maître, afin de détourner autant d'argent que possible de la succession, avant que tout ne revienne à Gosbert. Lorsque Kundicht soupçonne que l'écriture sur sa dernière missive pourrait être un faux, elle disparaît, laissant les Personnages avec un mystère à résoudre, dans une maison à laquelle ils ne peuvent pas avoir (légalement) accès.
 
@@ -153,8 +153,8 @@ La maison demeure inoccupée une grande partie de l'année, car le graf Wilhelm 
 
 0 Le cousin du graf Wilhelm, le seigneur Siegfried von Saponatheim fait une visite rare et inopinée à la propriété de son cousin, et arrive dans un carrosse ornementé, accompagné d'un entourage affairé composé de serviteurs et de gardes. Une fois installé, il envoie un mot aux Personnages, les invitant à lui rendre visite. Ils ont attiré
 
-
-<span id="page-122-0"></span>0 Lorsque le jeune neveu du Graf, Magnus (voir page 132), vient inspecter les troupes de l'armée régulière, cela déclenche une panique générale parmi les gardes, surtout du côté du capitaine Goertrin. Le lieutenant Brotte a besoin de l'aide du groupe pour contacter le seigneur von Saponatheim, alors que le Capitaine récompense quiconque la retarde assez longtemps pour la discréditer complètement avant qu'elle ne lui fasse subir le même sort.
+<span id="page-122-0" data-folio="123"></span>
+0 Lorsque le jeune neveu du Graf, Magnus (voir page 132), vient inspecter les troupes de l'armée régulière, cela déclenche une panique générale parmi les gardes, surtout du côté du capitaine Goertrin. Le lieutenant Brotte a besoin de l'aide du groupe pour contacter le seigneur von Saponatheim, alors que le Capitaine récompense quiconque la retarde assez longtemps pour la discréditer complètement avant qu'elle ne lui fasse subir le même sort.
 
 #### **Le manoir Steinhäger**
 
@@ -186,7 +186,7 @@ Johan Wachter est le maître de Guilde depuis plus de vingt ans. Il a entretenu 
 
 0 À l'insu de tous, Wachter installe des compartiments secrets dans ses wagons pour faciliter la contrebande de biens et de personnes en passant les murs de la ville. Quand l'un de ses wagons est utilisé pour envoyer de la poudre noire en Bretonnie, il craint des représailles. Il souhaite rejeter la faute sur autrui, et va payer les PJ pour qu'ils témoignent au tribunal contre son apprenti, Olli.
 
-
+<span id="page-123-0" data-folio="124"></span>
 0 Lorsque l'atelier du charron Klaus Kenwurt est infesté par le *knirschenkäfer* (un coléoptère mangeur de bois), il est contraint de tout brûler pour éradiquer les insectes, ce qui ruine son gagne-pain. Le maître de Guilde Wachter engage les PJ pour enquêter, soupçonnant un acte de sabotage professionnel. Si les PJ suivent les indices, ils découvrent que le partenaire de Kenwurt est à l'origine de sa ruine. Obsédé par la pourriture, il est déjà sous le joug de Nurgle, le dieu du Chaos de la Putréfaction. Pour éliminer leurs rivaux, il a caché des *knirschenkäfer* dans un certain nombre d'ateliers dans toute la ville. L'infestation de l'atelier de Kenwurt était un accident, car certains coléoptères se sont échappés.
 
 #### CHANGEMENT SUCCESSORAL
@@ -210,8 +210,8 @@ Le maître de la Guilde, Gurney Dumkopf, est une brute imposante, avec une expé
 
 0 En plus de défendre le monopole de la Guilde, les débardeurs de Dumkopf sont les bras armés de tous ceux qui peuvent payer, sauf, bien sûr, pour les conducteurs. Lucius Schwapp, un négociant de poterie, les a utilisés pour malmener un rival,
 
-
-- <span id="page-124-0"></span>mais craignant des poursuites, il demande aux Personnages de s'introduire dans la maison de la Guilde pour détruire toute preuve de la transaction. Malheureusement, la seule trace se trouve dans la tête de Dumkopf...
+<span id="page-124-0" data-folio="125"></span>
+- mais craignant des poursuites, il demande aux Personnages de s'introduire dans la maison de la Guilde pour détruire toute preuve de la transaction. Malheureusement, la seule trace se trouve dans la tête de Dumkopf...
 - 0 Les rançonneurs de débardeurs ont été infiltrés par un culte secret de Khorne, le Dieu du sang. Les cultistes du Nez Sanglant se réunissent irrégulièrement, quand Morrslieb est pleine, pour se frapper mutuellement jusqu'à ce que le sang coule sur leur visage, avec l'interdiction stricte de parler à quiconque de l'existence du culte, ou de ses activités. Si le groupe est impliqué dans des combats aux poings, ils peuvent par inadvertance se retrouver dans un rassemblement rituel.
 
 ## **La Guilde des Conducteurs**
@@ -244,8 +244,8 @@ La Guilde des Ferronniers est un bâtiment haut et étroit situé sur l'Eisen Ba
 
 Dans la maison de la Guilde, on ne trouve que des bureaux et des commis. Il n'y a aucun atelier sur place, car la fumée, la chaleur et les coups incessants sur le métal d'une forge ne 
 
-
-<span id="page-125-0"></span>sont pas propices aux réunions d'affaires demandant de la concentration. Schweisser est un dirigeant avisé, et en termes amicaux avec la Guilde des Marchands, sur laquelle comptent ses membres pour les minerais et les expéditions de métaux. Il a récemment obtenu un contrat pour fournir en cottes de maille les régiments de l'armée régulière du duché de Saponatheim (y compris le Guet de la Ville), ce qui rapportera une somme d'argent importante aux forgerons de Bögenhafen.
+<span id="page-125-0" data-folio="126"></span>
+sont pas propices aux réunions d'affaires demandant de la concentration. Schweisser est un dirigeant avisé, et en termes amicaux avec la Guilde des Marchands, sur laquelle comptent ses membres pour les minerais et les expéditions de métaux. Il a récemment obtenu un contrat pour fournir en cottes de maille les régiments de l'armée régulière du duché de Saponatheim (y compris le Guet de la Ville), ce qui rapportera une somme d'argent importante aux forgerons de Bögenhafen.
 
 - 0 Désireux de renforcer la réputation de Bögenhafen en tant que centre d'excellence de la forge, Schweisser est en négociation avec un consortium de fabricants de Nuln pour obtenir les moyens de produire des armes de poing. Il sait que le régiment favori du Graf, le 118ème régiment de fantassins du Reikland, « Les Dos verts », en utilise. Il voit là un moyen sûr de gagner les faveurs du Graf (et encore plus d'argent). Les agents de la famille Oldenhaller, également originaires de Nuln, emploient les Personnages pour s'assurer que cela n'arrive pas, par tous les moyens nécessaires.
 - 0 L'un des membres de la Guilde, Terrell Schwermann, est un alchimiste chevronné de l'Ordre doré. Soucieux de cacher ses talents magiques à ses pairs, il demande aux Personnages de transmettre un message à sa sœur, Trude, chamane de l'Ordre d'Ambre, qui attend Terrell dans les bois, au-delà d'Ardlich. Quand les PJ arrivent, ils tombent dans un piège tendu par des répurgateurs véreux, désireux d'éradiquer tous les sorciers du Reikland. Reste à savoir si les Personnages survivent à l'attaque, et s'ils se retournent contre leur employeur.
@@ -276,8 +276,8 @@ En dépit de son âge avancé et de ses articulations enflées, Kringler effectu
 - 0 Un bac de Kringler disparaît et il engage les PJ pour le retrouver. Comme les rames sont sous clef pendant la nuit, il suppose que l'embarcation a dérivé en aval. Le groupe découvre que la petite famille qui l'a volé dort à proximité. Les parents ont fui la ville après avoir réalisé que leur bébé était une mutante, dotée de petites oreilles de lapin et d'une queue blanche et duveteuse. En principe, les Personnages devraient remettre la famille aux autorités, mais elle a l'air si mignonne et innocente...
 - 0 Lorsque Liesel Langensang, de l'école d'ingénieurs d'Altdorf, arrive en ville, des rumeurs circulent selon lesquelles elle est ici pour effectuer des recherches sur la construction d'un pont sur la Bögen. Dans l'espoir de préserver son gagne-pain, Kringler paie les Personnages pour l'en dissuader. L'ingénieur bavard est, en réalité, une
 
-
-<span id="page-126-0"></span>adepte de l'Œil Fracturé, un culte du Chaos qui se consacre à la poursuite de toutes les connaissances (voir le **Guide d'Ubersreik** dans la **Boîte d'Initiation** de **WFJDR**, page 63), donc toute tentative d'enquêter sur elle de trop près n'est guère appréciée.
+<span id="page-126-0" data-folio="127"></span>
+adepte de l'Œil Fracturé, un culte du Chaos qui se consacre à la poursuite de toutes les connaissances (voir le **Guide d'Ubersreik** dans la **Boîte d'Initiation** de **WFJDR**, page 63), donc toute tentative d'enquêter sur elle de trop près n'est guère appréciée.
 
 ## **L'appontement de Haagen**
 
@@ -309,7 +309,7 @@ Toute personne introduite en sa présence est accueillie avec indifférence et d
 
 Les mécréants qui vivent assez longtemps pour être jugés y sont condamnés. Une statue grandeur nature de Verena se dresse devant le palais de justice, bien que les tribunaux ne soient plus officiellement affiliés au culte ou au temple local de Verena. Le bâtiment n'est ouvert que les jours où la cour siège. Sinon, les grandes portes en acier sont verrouillées, avec un seul humble portier sur place pour ouvrir à contrecœur la porte à tous ceux qui appellent. À l'arrière de la cour elle-même se trouve un manoir attenant, décoré avec des chouettes et des épées, les attributs de Verena.
 
-
+<span id="page-127-0" data-folio="128"></span>
 C'était autrefois la demeure de sa Grande Prêtresse, mais depuis que les tribunaux et le culte se sont séparés, c'est la maison du premier magistrat qui préside.
 
 Dans les tribunaux se trouvent un certain nombre de petites salles pour les magistrats, les avocats, et les témoins qui attendent d'être appelés, ainsi que des cellules pour enfermer les accusés. Les acquittements sont rarement prononcés, car cela donnerait l'impression que le système est inefficace. Les magistrats sont nommés par le conseil municipal et Richter est leur chef. Il vit dans les appartements du manoir, chouchouté par sa gouvernante Gertie.
@@ -334,8 +334,8 @@ La nourriture et les boissons servies dans le club sont délicieuses, et les ser
 
 La Guilde des Marchands est incontestablement l'organisation la plus puissante de Bögenhafen. Elle y domine à la fois le Conseil municipal et la scène sociale. La maison de la Guilde elle-même occupe un bâtiment trop grand et ostentatoire au coin de la Bergstrasse et de la Dreieckeplatz.
 
-
-<span id="page-128-0"></span>Le rez-de-chaussée est utilisé comme un lieu de rencontre pour les marchands (locaux et de passage) pour faire du commerce et des échanges, et un certain nombre de chaises, tables et bancs sont réservés à l'usage des marchands et des commis de la Guilde.
+<span id="page-128-0" data-folio="129"></span>
+Le rez-de-chaussée est utilisé comme un lieu de rencontre pour les marchands (locaux et de passage) pour faire du commerce et des échanges, et un certain nombre de chaises, tables et bancs sont réservés à l'usage des marchands et des commis de la Guilde.
 
 L'étage est constitué d'une série de bureaux utilisés par les marchands locaux. Ceux des quatre grandes sont rarement utilisés par leurs chefs qui préfèrent utiliser leurs propres installations privées dans leurs propres bâtiments. La concurrence pour des espaces disponibles est rude, et beaucoup de petits marchands font pression sur la Guilde pour y avoir accès. Friedrick Marigius est l'actuel maître de la Guilde.
 
@@ -367,7 +367,7 @@ La Göttenplatz, ou Place des Dieux, abrite la plupart des temples de Bögenhafe
 
 Le jour, la Göttenplatz est envahie par tout Bögenhafen, la plupart des gens vaquant à leurs occupations quotidiennes ou visitant l'un des temples. La nuit, les gens utilisent la Göttenplatz pour circuler, donc elle est rarement déserte. Les clochards, les pickpockets et les mendiants fréquentent autant ce quartier que la Dreieckeplatz.
 
-
+<span id="page-129-0" data-folio="130"></span>
 #### **Grand Temple de Sigmar**
 
 Dominant la Göttenplatz, ce temple était à l'origine en forme de marteau, mais au fil des siècles, des ailes et des tours ont été ajoutées. Quatre flèches jaillissent maintenant de son toit, chacune dotée d'une grande cloche de bronze. La plus importante d'entre elles, la Grosse Klara, n'est sonnée que lorsque des membres de la famille royale visitent la ville. Traditionnellement, les nombreux petits temples de Sigmar ne peuvent sonner l'heure avant que le Grand Temple ne le fasse. Étant donné que le sacristain du Grand Temple, Snorri Hörrohr, est malentendant et manque souvent les cloches de l'hôtel de ville, bien plus silencieuses, cela peut conduire à une certaine confusion avec des cloches qui sonnent à toutes sortes d'heures bizarres.
@@ -390,7 +390,7 @@ Il n'y a pas de prêtre au temple, mais les jours de fête, des prêtres du cult
 
 Le temple de Handrich, dieu des Marchands, de l'Or et de la Philanthropie, consiste en une salle carrée surmontée d'un dôme et dotée de deux absides semi-circulaires. L'une d'entre elles est utilisée comme une chapelle privée réservée aux membres de la Guilde des Marchands, tandis que l'autre ressemble à une salle d'offrandes et au trésor. Au-dessus de la porte principale est suspendu un grand disque peint en or, le symbole du dieu. À cause de la valeur des décorations et des offrandes votives, un ou plusieurs gardiens sont toujours en service, leurs cottes de mailles recouvertes de tuniques resplendissantes en tissu d'or, armés de hallebardes étincelantes et extrêmement affûtées.
 
-
+<span id="page-130-0" data-folio="131"></span>
 Le temple ne compte aucun prêtre, mais l'entretien du bâtiment et les salaires des gardes sont payés par la Guilde des Marchands. Ses membres officient lors des cérémonies en l'honneur de Handrich lors de certains jours sacrés, ou à la veille d'importantes négociations commerciales. En théorie, n'importe quel membre de la Guilde peut officier, mais le plus souvent, c'est Werner Asche, un marchand de papier presque retraité, qui dirige le service, un honneur onéreux (et non rémunéré) que la plupart des marchands préfèrent éviter.
 
 - 0 Si Handrich est une divinité mineure dans l'Empire, il est extrêmement vénéré sous le nom de Haendryk dans la ville portuaire de Marienburg. Quand un marchand wastelander en visite se rend compte qu'il n'y a pas de prêtre sur place, il propose de financer une bourse d'études à Marienburg pour la progéniture d'une des familles marchandes de Bögenhafen. Alors que les marchands se disputent les faveurs du visiteur de Marienburg à coup de flatteries et de pots-de-vin, l'un des PJ reconnaît Mikhail Ziegel d'Altdorf, l'infâme charlatan, travaillant clairement à obtenir quelque chose. Se sachant repéré, Ziegel offre aux Personnages l'opportunité de se
@@ -416,8 +416,8 @@ Mère Rubenstein, la Grande Prêtresse, est la seule shallyenne nommée à Böge
 - 0 Mère Rubenstein s'inquiète lorsque ni ses soins, ni toute la sagesse conjointe de la Guilde des Médecins et du Temple de Verena ne peuvent soulager le patient terriblement atteint. Peu importe les remèdes utilisés, il souffre beaucoup, avec des déformations progressives de ses membres. La panique se répand, et des milliers de brochures sont imprimées, chacune soulignant les causes probables (pain, halflings, vin, livres) et les remèdes possibles (betteraves, bile de chèvre, vin, urine). Si les Personnages enquêtent, ils découvrent que le patient est en fait, un imposteur. Ses symptômes sont simulés par un mélange de tatouages bien conçus et de la compétence Divertissement (Contorsionniste). Toute l'affaire a été imaginée par les imprimeurs de la ville pour stimuler le commerce. Quelqu'un doit bien imprimer tous ces libelles, après tout...
 - 0 Quand l'une des volontaires de Rubenstein, Margo Helberger, semble avoir contracté la *Vérole urticante*, personne n'a d'arrière-pensée. Lorsque la maladie perdure plus qu'elle ne le devrait, Rubenstein demande aux Personnages d'enquêter, craignant que des agents du Seigneur des Mouches ne complotent à Bögenhafen. La vérité est moins dramatique : Margo entretient une liaison avec l'un des fournisseurs de son mari, un marchand de fourrure du Nordland, et elle a contracté en fait la vérole du tanneur. Bien que la maladie ne dure que quelques semaines, la tache sur la réputation de Margo, si la vérité est révélée, peut ne pas s'effacer aussi vite.
 
-
-#### <span id="page-131-0"></span>**Temple d'Ulric**
+<span id="page-131-0" data-folio="132"></span>
+#### **Temple d'Ulric**
 
 Ulric demeure un dieu du Nord sauvage, et non du Sud civilisé, donc son culte est mineur dans le Vorbergland, même s'il était autrefois puissant. Le temple ressemble à un petit donjon, avec des murs solides, des créneaux robustes, une porte fortifiée, et une cour intérieure, l'un des points les plus défendables de Bögenhafen, au grand dam de l'armée régulière. Le grand bâtiment est presque vide, défendu par seulement sept hommes.
 
@@ -447,7 +447,7 @@ Le quartier nord de Bögenhafen est considéré par les habitants les plus riche
 
 Le commandement de la caserne est confié au lieutenant Giséla Brotte, une jeune Reiklander ambitieuse, frustrée par l'attitude hautaine de Goertrin envers la Guilde des Marchands, et son désintérêt pour le rétablissement de l'ordre dans la Fosse. D'une trentaine d'années, aux larges épaules, avec des yeux d'un bleu profond sous un front perpétuellement froncé, elle est dévouée à son travail et s'efforce inlassablement de maintenir 
 
-
+<span id="page-132-0" data-folio="133"></span>
 la motivation et la loyauté de son personnel dans une ville où les pots-de-vin et les dessous de table sont presque une seconde nature pour tous les citoyens.
 
 - 0 Durant une opération visant à rétablir l'ordre, le lieutenant Brotte a capturé Gustav Friek, le tristement célèbre chef des Brochets Noirs, une bande de criminels opérant dans la Fosse. Compte tenu de la réticence de la population à témoigner contre Friek, et la peur des magistrats de subir des représailles, il est difficile de mener l'affaire jusqu'au procès. À moins que les Personnages ne puissent obtenir des preuves tangibles, ou de convaincre quelqu'un dans la Fosse de témoigner contre les Brochets Noirs.
@@ -470,8 +470,8 @@ L'un des nombreux petits temples de Sigmar à Bögenhafen, la chapelle du Bienhe
 
 Le père Sigiwalt est le prêtre de la chapelle, un homme vieillissant qui a vécu toute sa vie dans la Fosse, à l'exception d'une brève formation à Altdorf. C'est un membre actif de sa communauté, qui aide l'hospice de soeur Bromein, en collectant des fonds pour un orphelinat, et coordonne même la ligue de Middenball de la Fosse. Même si Sigiwalt est trop vieux pour jouer, il manque rarement un match et on peut le voir sur la ligne de touche rugissant de triomphe et célébrant chaque but sanglant. Pour plus d'informations sur le Middenball, voir **Nuits Agitées & Dures Journées**, ainsi que **Middenheim : La cité du Loup Blanc**.
 
-
-- <span id="page-133-0"></span>0 Les matchs de Middenball sont devenus de plus en plus violents. Le père Sigiwalt est inquiet, mais ne réalise pas l'ampleur de la situation. Les cultistes du Nez Sanglant ont infiltré un certain nombre d'équipes locales, et travaillent activement à rendre le jeu encore plus agressif et violent. Lorsqu'une émeute éclate lors d'un match, le Sigmarite est renversé au sol et sera piétiné par la foule en colère, à moins que le groupe ne puisse le secourir.
+<span id="page-133-0" data-folio="134"></span>
+- 0 Les matchs de Middenball sont devenus de plus en plus violents. Le père Sigiwalt est inquiet, mais ne réalise pas l'ampleur de la situation. Les cultistes du Nez Sanglant ont infiltré un certain nombre d'équipes locales, et travaillent activement à rendre le jeu encore plus agressif et violent. Lorsqu'une émeute éclate lors d'un match, le Sigmarite est renversé au sol et sera piétiné par la foule en colère, à moins que le groupe ne puisse le secourir.
 - 0 Soucieux de récolter des fonds pour les défavorisés de la Fosse, le père Sigiwalt a utilisé sa connaissance experte du Middenball pour faire quelques paris au Demi-Mesure (voir page 124). Le prêtre, toujours honnête, ne se rend pas compte de l'influence qu'exercent Digitale Basfond et Lori Havrebas sur ce sport. Lorsqu'il perd tout l'argent, il est dévasté. Les Personnages peuvent-ils l'aider à le récupérer avant que ses fidèles ne découvrent ce qu'il a fait ?
 
 ## **Teuerberg**
@@ -499,7 +499,7 @@ Le Guet, officiellement connue sous le nom de 99e Régiment de fantassins, fait 
 
 Le capitaine Goertrin est un homme de haute taille, d'une maigreur cadavérique, avec des manières raffinées et d'un air dédaigneux. Le jour, on peut le trouver, généralement, dans son luxueux bureau ou en train de visiter la Guilde des Marchands, ou encore l'hôtel de ville. Son lieutenant, Gerd Locke, s'occupe du quotidien de la caserne et de la coordination des patrouilles. Le seul intérêt de Goertrin est de maintenir sa position lucrative. Il bénéficie de nombreux coups de pouce de la part de la Guilde des Marchands, pour s'assurer que leurs intérêts soient prioritaires.
 
-
+<span id="page-134-0" data-folio="135"></span>
 - 0 Tomas Krone, voleur d'art notoire, croupit actuellement dans une cellule en attendant son procès. Il a été pris en train de s'introduire dans la maison de Jochem Haagen à la recherche d'une peinture rare que Haagen avait acquise auprès d'un marchand à Nuln. Si les Personnages connaissent Baumann des Piques croisées, Krone leur demande de relayer une demande d'aide. Krone est en réalité un agent du lieutenant Locke, placé en cellule pour découvrir le tunnel secret.
 - 0 Le sergent Jager a la réputation d'être dur mais juste. Après la mort du jeune Siegfried von Bullendorf sous sa garde, Jager est suspendu et emprisonné alors qu'il avait juré qu'il ne serait jamais assez stupide pour traiter un noble comme un vulgaire criminel. Si les PJ prouvent son innocence, un sergent du Guet capable et moralement flexible leur devra un service, mais s'attireront l'inimitié de la véritable meurtrière, Sieghilde von Saponatheim, la cousine dissolue du graf local.
 
@@ -529,7 +529,7 @@ Les médecins constituent une Guilde mineure en termes de nombre, mais grâce à
 
 Tous les médecins agréés de Bögenhafen sont obligés d'ouvrir leur cabinet dans la maison de la Guilde. Les pièces du fond et les niveaux supérieurs forment un dédale de petites salles de consultation. On trouve aussi deux salles d'opération communes, carrelées et équipées de systèmes de poulies complexes. Elles bénéficient également de drains pour le sang et autres substances post-opératoires qui descendent à la cave, où une sortie mène vers les égouts. Selon un précédent, le poste
 
-
+<span id="page-135-0" data-folio="136"></span>
 de maître de corporation est attribué au chirurgien qui a réalisé le plus d'interventions chirurgicales, c'est-à-dire le jeune doktor Schlüsselbaum. À quarante-huit ans, il est actuellement le maître de la guilde, en grande partie grâce à son empressement à découper ses patients.
 
 - 0 Deiderich Ochtend, un jeune Doktor récemment arrivé de Marienburg, cache un sombre secret. Adepte du dieu proscrit Khaine, Seigneur du meurtre, il choisit secrètement des patients qu'il juge indignes et les assassine sous couvert d'erreur chirurgicale. Combien de ses patients mourront-ils « sous le couteau » avant que cela n'éveille des soupçons ?
@@ -554,8 +554,8 @@ Ulka Starr, une ancienne mercenaire, dirige la taverne avec un seul œil et avec
 - 0 Quand Detlev, l'ancien quartier-maître d'Ulka, arrive en ville, il prétend qu'Ulka a des arriérés de salaire que lui doit son ancienne compagnie, Les Bâtards d'Argent, conservés en son nom dans une banque à Ubersreik. Comme Ulka ne peut pas abandonner sa taverne, elle demande au groupe d'aller chercher cette somme à place. Si les Personnages acceptent, ils ignorent que Detlev a trahi Ulka et qu'ils tombent dans un piège tendu par Willi Sellebricht, son ancien employeur rancunier.
 - 0 Assis autour du feu à la Queue du loup, partageant des histoires avec les autres clients, les Personnages entendent parler de peaux vertes qui attaquent les fermes voisines. S'ils enquêtent, ils arrivent à suivre les traces jusqu'à une petite hutte. Un coup d'œil rapide sur la cabane révèle des uniformes, ce qui suggère que les « peaux vertes » sont
 
-
-<span id="page-136-0"></span>en fait des patrouilleurs routiers corrompus, menant ces attaques dans l'espoir de gagner plus d'argent. Lorsque ces derniers tombent sur les Personnages, un affrontement tendu s'ensuit...
+<span id="page-136-0" data-folio="137"></span>
+en fait des patrouilleurs routiers corrompus, menant ces attaques dans l'espoir de gagner plus d'argent. Lorsque ces derniers tombent sur les Personnages, un affrontement tendu s'ensuit...
 
 ## **Les murs et au-delà**
 
@@ -581,7 +581,7 @@ vers ceux d'en bas, attrapant les corbeaux qui cherchent à se régaler de sa ch
 
 Comme mère Carlitz, la prêtresse de Morr, passe beaucoup de temps à la Guilde des Pleureurs (voir page 129), la chapelle est généralement vide, sauf lors de service funéraire. Non loin de là, un appentis se blottit contre les murs extérieurs de la ville. Les fossoyeurs y conservent leurs outils, et les membres laïcs de la Guilde des Pleureurs passent souvent du temps à boire dans la cabane, lorsqu'ils ne creusent pas de tombes ou ne lavent pas de cadavres. Il fait partie de leurs attributions d'agir en tant que gardiens, protégeant contre les pilleurs de tombes, bien que la plupart ne soient pas vraiment dévoués à cette cause. S'ils
 
-
+<span id="page-137-0" data-folio="138"></span>
 suspectent la présence de voleurs de corps, ils sonnent la cloche à main, conservée dans la cabane pour de telles occasions, et espèrent que les intrus partent rapidement, ou que le Guet arrive avant que les pilleurs de tombes ne s'échappent.
 
 - 0 Mère Carlitz soupçonne que des corps ont disparu des tombes des indigents, bien que cela soit difficile à prouver car elle répugne à déranger le reste de ceux qu'elle a envoyés à travers le portail de Morr. Si le groupe enquête en son nom, ils découvrent que non seulement une goule s'est régalée sur des cadavres récemment enterrés, mais également qu'un jeune de la région a pris l'habitude de couvrir les traces de la créature, en la considérant comme un animal de compagnie. Pourquoi la goule n'a pas attaqué l'enfant demeure un mystère...
@@ -609,8 +609,8 @@ La Schaffenfest est un événement animé, florissant et attirant les citoyens d
 
 Cherchant toujours à augmenter leurs profits, les marchands affluent de tout le Reikland et au-delà pour profiter de cette opportunité d'un commerce de bétail exempt de taxes. Pour cette raison, le marché aux bestiaux domine la Schaffenfest, à la fois en termes de taille et de puanteur. La plupart des animaux échangés ici sont des moutons et des chèvres, mais un certain nombre de bovins, de porcs, de volailles sont également vendus, avec de plus en plus de chevaux et d'autres animaux. Le long voyage vaut la peine d'être effectué, ne serait-ce que pour les économies potentielles sur la coûteuse viande de cheval. Alors qu'un seul jour est exempt de taxes, la fête s'étend à présent sur trois jours, donnant aux marchands plus de temps pour vérifier les stocks et négocier les prix, avant de finaliser les contrats et d'échanger des biens et des paiements le jour dit, le *Geltgrubetag*.
 
-
-- <span id="page-138-0"></span>0 Bien sûr, là où de grandes foules se rassemblent pour dépenser d'énormes sommes d'argent, d'autres suivent en cherchant à faire du profit. Par conséquent, la Schaffenfest grouille d'une profusion de distractions et de divertissements. Une myriade d'opportunités passionnantes, bien au-delà du bétail, y attendent les visiteurs. Des diseurs de bonne aventure, des charlatans, des escrocs, des musiciens et acrobates, des cracheurs de feu venus de la lointaine Arabie, des danseurs d'épée estaliens, et bien plus encore. Des marchands entreprenants ont installé des stands vendant presque tout le nécessaire, et ce qui ne l'est pas. Les stands de nourriture sont partout, comme les stands et tentes vendant de la bière. Des mendiants, des pickpockets, des charlatans, et des prostituées en nombre impressionnant travaillent les foules à leur manière, cherchant un moyen de se remplir les poches aux dépens de quelqu'un d'autre.
+<span id="page-138-0" data-folio="139"></span>
+- 0 Bien sûr, là où de grandes foules se rassemblent pour dépenser d'énormes sommes d'argent, d'autres suivent en cherchant à faire du profit. Par conséquent, la Schaffenfest grouille d'une profusion de distractions et de divertissements. Une myriade d'opportunités passionnantes, bien au-delà du bétail, y attendent les visiteurs. Des diseurs de bonne aventure, des charlatans, des escrocs, des musiciens et acrobates, des cracheurs de feu venus de la lointaine Arabie, des danseurs d'épée estaliens, et bien plus encore. Des marchands entreprenants ont installé des stands vendant presque tout le nécessaire, et ce qui ne l'est pas. Les stands de nourriture sont partout, comme les stands et tentes vendant de la bière. Des mendiants, des pickpockets, des charlatans, et des prostituées en nombre impressionnant travaillent les foules à leur manière, cherchant un moyen de se remplir les poches aux dépens de quelqu'un d'autre.
 - 0 Le groupe remarque un escroc particulièrement doué qui semble ne jamais perdre. Méfiants, ils peuvent soupçonner le charlatan d'être une sorcière. S'ils expriment leurs inquiétudes, même discrètement, l'accusation est répétée par la foule, qui, en colère, se masse rapidement. Bien sûr, elle n'est pas une sorcière, mais un charlatan expérimenté, adepte de Ranald, qui n'appréciera pas l'attention que la fête lui porte.
 - 0 Gilbert Mutigge, un négociant en bétail d'Averland, a fait un long voyage depuis Wuppertal avec un vaste troupeau de bœufs à longues cornes. Il s'apprête à faire un gros profit, s'il arrive jusqu'à la Schaffenfest, mais le temps presse, et un certain nombre de ses conducteurs ont contracté la *Courante Galopante*. Si les Personnages sont en mesure d'aider, il les paiera bien. Cependant, ils doivent faire attention à ce qu'ils mangent, car des agents du graf von Saponatheim veillent à ce que le troupeau soit en retard pour que la taxe soit payée à la vente.
 
@@ -636,8 +636,8 @@ Bien que le duché de Saponatheim soit l'une des plus grandes provinces du Reikl
 
 Le graf Wilhelm von Saponatheim, depuis le château de Grauenberg, règne sur la majorité de la province (pour en savoir plus sur ce lieu, lire **Nuits Agitées & Dures Journées**). Le duché est divisé en une mosaïque de fiefs, distribués à des membres de moindre importance de la famille, ainsi qu'à 
 
-
-<span id="page-139-0"></span>des partisans privilégiés. Ces titres sont toujours accordés à titre viager, plutôt qu'à titre héréditaire. Cela signifie qu'ils reviennent au Graf à la mort de leur détenteur.
+<span id="page-139-0" data-folio="140"></span>
+des partisans privilégiés. Ces titres sont toujours accordés à titre viager, plutôt qu'à titre héréditaire. Cela signifie qu'ils reviennent au Graf à la mort de leur détenteur.
 
 Cela permet au Graf de maintenir un contrôle étroit sur sa famille, tout en gagnant pour lui-même un peu de loyauté. Il ne reste que deux fiefs permanents à Saponatheim : le comté de Kleinwald et la baronnie de Stürmdunkel. Les autres ont été dissous il y a plus de deux siècles, pendant la réforme de l'Empire par Magnus le Pieux.
 
@@ -659,8 +659,8 @@ Les nobles jumeaux Laurenz et Léota Kleinwald dirigent le comté. Ils sont conn
 
 Le siège du pouvoir à Kleinwald est le château de Schevinger. La petite tour en ruines est pleine de courants d'air avec peu de commodités. Selon le règlement de Saponatheim, le souverain doit passer au moins une nuit par an au château, sinon les terres reviennent au graf Wilhelm. Pour rendre leur « séjour » plus supportable, l'année dernière, les jumeaux ont organisé une grande fête très alcoolisée qui a duré toute la nuit, avant de s'endormir dans le carrosse qui les ramenait à leur manoir de Bögenhafen.
 
-
-- <span id="page-140-0"></span>0 Les archives varient quant à savoir lequel des jumeaux est né en premier. Un précédent du Reikland indique que Laurenz, en tant qu'héritier mâle, devrait hériter, mais un expert juridique (engagé par Laurenz lui-même) à Nuln cite un précédent différent, car la maison Kleinwald vient du Wissenland, et ses lois pourraient s'appliquer. Cela donnerait le pouvoir à Léota. Les Personnages sont engagés par chacun des jumeaux pour défendre les droits de l'autre.
+<span id="page-140-0" data-folio="141"></span>
+- 0 Les archives varient quant à savoir lequel des jumeaux est né en premier. Un précédent du Reikland indique que Laurenz, en tant qu'héritier mâle, devrait hériter, mais un expert juridique (engagé par Laurenz lui-même) à Nuln cite un précédent différent, car la maison Kleinwald vient du Wissenland, et ses lois pourraient s'appliquer. Cela donnerait le pouvoir à Léota. Les Personnages sont engagés par chacun des jumeaux pour défendre les droits de l'autre.
 - 0 Lorsque le moment est venu pour Laurenz et Léota de passer à nouveau la nuit dans le château Schevinger, ils engagent (ou forcent) les Personnages pour qu'ils assurent la sécurité et, murmurent-ils avec un sourire, le « divertissement ». Malheureusement, la nuit qu'ils ont choisie est la Hexensnacht, celle durant laquelle les morts s'agitent. Comme le soleil se couche, l'esprit de leur mère tourmentée s'élève. Elle entretient un différend avec sa progéniture rebelle.
 
 ## **La baronnie de Stürmdunkel**
@@ -686,8 +686,8 @@ Le Nez Sanglant est une secte relativement récente, fondée il y a quelques dé
 
 qu'un certain nombre de gardes privés et de soldats du Guet aient récemment été endoctrinés. Aucun ne réalise au départ le chemin qu'ils empruntent, car ils se délectent simplement de l'opportunité de se battre pour le plaisir, mais alors que le sang coule sur leurs visages, ils perdent leurs âmes de la même façon, goutte à goutte.
 
-
-<span id="page-141-0"></span>Le Nez Sanglant se réunit irrégulièrement, quand Morrslieb est pleine. Les membres se réunissent dans un entrepôt vide, utilisant leur connaissance des docks pour en assurer la discrétion. Leurs rassemblements débutent par une cérémonie rituelle au cours de laquelle, tout d'abord, tous les membres jurent de garder secrète l'existence de la secte, avant que chacun ne reçoive le « salut », qui consiste à se frapper les uns les autres sur le nez jusqu'à ce que du sang inonde le visage. Une fois que tout le monde saigne, les choses deviennent moins formelles avec des jeux à boire, des histoires échangées et des luttes, rivalisant avec des mêlées plus violentes impliquant des douzaines de cultistes se tabassant mutuellement jusqu'à l'inconscience.
+<span id="page-141-0" data-folio="142"></span>
+Le Nez Sanglant se réunit irrégulièrement, quand Morrslieb est pleine. Les membres se réunissent dans un entrepôt vide, utilisant leur connaissance des docks pour en assurer la discrétion. Leurs rassemblements débutent par une cérémonie rituelle au cours de laquelle, tout d'abord, tous les membres jurent de garder secrète l'existence de la secte, avant que chacun ne reçoive le « salut », qui consiste à se frapper les uns les autres sur le nez jusqu'à ce que du sang inonde le visage. Une fois que tout le monde saigne, les choses deviennent moins formelles avec des jeux à boire, des histoires échangées et des luttes, rivalisant avec des mêlées plus violentes impliquant des douzaines de cultistes se tabassant mutuellement jusqu'à l'inconscience.
 
 - 0 À la suite d'une réunion particulièrement bruyante du Nez Sanglant dans un entrepôt de Haagen, des dizaines de chiens ont été trouvés en train de lécher du sang avec enthousiasme. Quand les Personnages sont invités à enquêter, les choses se gâtent rapidement, car les chiens développent les Traits Brute et Frénésie et se retournent contre le groupe.
 - 0 Gunther Faustkämpfer est, depuis des années, un membre de la secte. Il se délecte des opportunités qu'elle lui offre de violence implacable et d'effusions de sang. Il trouve frustrant qu'il n'y ait plus de commandement depuis la mort de Klaus, et demeure déterminé à s'imposer en tant que chef du culte en gagnant la faveur du Dieu du sang dans les combats rituels. La nuit, il recherche le Personnage le plus grand et le plus costaud et le frappe en plein visage, sans provocation ni avertissement. Il essaye ensuite de frapper sa victime à mort de ses mains nues. Gunther est accompagné de trois ou quatre autres cultistes, qui font de leur mieux pour empêcher toute autre personne d'interférer.
@@ -709,7 +709,7 @@ Depuis plus de 300 ans, l'Œil Vigilant surveille Bögenhafen. En 2203 CI, lorsq
 
 Ainsi est né le culte de l'Œil Vigilant. Drauchen, doté d'un pouvoir arcanique grâce à son exposition à la matière brute du Chaos, commença à recruter d'autres personnes. Sachant que la toile entre les mondes était affaiblie à Bögenhafen, il considérait comme son devoir sacré de préserver la ville contre toutes les menaces, sachant qu'un jour, elle serait vitale pour le plan du Grand Architecte.
 
-
+<span id="page-142-0" data-folio="143"></span>
 Alors que le culte grandissait, il s'est retiré dans l'ombre, manipulant les autres pour qu'ils accomplissent sa volonté. Ainsi, il a donné le pouvoir à Wilhard Kleinwald d'éliminer le seigneur de guerre orque Zzadrag, et plus tard s'est assuré que le seigneur-bête Gurkthar Corne sanglante soit vaincu par Abermann von Stürmdunkel. Gunther a également aidé le capitaine Inge von Sternberg à repousser la marée de peaux vertes de Grom la Panse en ordonnant aux cultistes de l'Œil Vigilant de la soutenir. Au fil des décennies, Drauchen a pris l'habitude de méditer sur les plans de son Seigneur noir, Tzeentch, pendant des périodes de plus en plus longues, et n'a pas été vu depuis le milieu des années 2400.
 
 En l'absence de Drauchen, le culte est supervisé par Unter-Magus Else Überraschung, un sergent du Guet de Bögenhafen qui vit à Altstadt. Comme tous les membres de la secte, elle a juré d'assurer la survie de la ville. Les rangs de la secte sont uniquement composés de citoyens de classe inférieure de la ville et de ses environs.
@@ -743,5 +743,4 @@ Menaçant, Prévoyant 5, Sans peur (Démons) 4, Savoir-vivre (Cultistes) 2, Seco
 
 **Possessions :** dague cérémonielle, Destin de Bögenhafen, grimoire, robes en lambeaux
 
-
-<span id="page-143-0"></span>
+<span id="page-143-0" data-folio="144"></span>

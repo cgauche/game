@@ -1,4 +1,4 @@
-*Pages PDF 84-92*
+*Folio 81+*
 
 # LE CULTE DE MANANN • •
 
@@ -26,7 +26,7 @@ Les premiers adorateurs de Manann vivaient à l'époque préhistorique, avant qu
 
 Avant la naissance de Sigmar, Manann émergea comme dieu protecteur des Endals, une tribu vivant sur les côtes au nord de ce qui est à présent l'Empire. De la même manière, le dieu Olovald était le dieu marin de la tribu voisine des Jutones à l'est. Le sinistre panthéon des Norsii avait son propre équivalent brutal, l'incarnation rude et inhumaine de la Mer des Griffes. Au sud, les premiers peuples de Tilée semblent s'être inspirés des ruines asurs où ils vivaient et vénéraient un dieu très proche de la divinité elfique Mathlann.
 
-
+<span id="page-84-0" data-folio="81"></span>
 ### HAUTS FAITS DE MANANN
 
 #### **Une jeunesse audacieuse**
@@ -53,7 +53,7 @@ Vers la fin du XXVe siècle CI, le culte de Manaan de Marienburg déclara une cr
 
 Plus récemment, le pouvoir politique grandissant des manaanites à Marienburg a causé une certaine division au sein du culte. Les prêtres de l'Empire, de Tilée, de Bretonnie et de Kislev prennent de plus en plus de distance avec la cupidité ostentatoire du culte de Marienburg.
 
-
+<span id="page-85-0" data-folio="82"></span>
 # **Personnalités du culte**
 
 Au sein de l'Empire, le culte de Manann n'est pas aussi central que ceux d'Ulric ou de Sigmar. Pourtant, l'importance du voyage maritime pour le commerce, la pêche et la guerre est tel que plusieurs adeptes de Manann ont acquis de l'influence et une certaine renommée.
@@ -94,7 +94,7 @@ Le grand maître des Fils de Manann. Halfdan est un imposant chevalier menant ce
 
 Le Grand Prêtre du Nordland est une figure importante à Salzenmund et peut-être le manannite le plus influent de l'Empire actuellement. Il a joué un rôle crucial, mais subtil pour soutenir le coup d'État du futur grand baron Theodoric Gausser visant à prendre le Nordland et se réjouit de l'expansion de la Deuxième Flotte à Dietershafen. Pour plus d'informations concernant le seigneur des vagues Sider, reportez-vous à **Salzenmund**.
 
-
+<span id="page-86-0" data-folio="83"></span>
 # **Croyances et livres sacrés**
 
 Les croyances du culte de Manann sont connues pour leur diversité. Les prêtres des autres cultes font remarquer qu'il semble exister autant de manières de suivre le dieu marin que de bateaux sur la mer. Les choses sont encore davantage embrouillées par les caprices de Manann, à cause desquels vous ne pouvez jamais prévoir ce qui va lui faire plaisir ou le mettre en colère. Cela dit, certaines croyances centrales sont communes à tous les suivants. Les commandements exposés dans **WFJDR** (en page 205) sont universels.
@@ -131,7 +131,7 @@ Les *Contes de l'Albatros* contiennent de longues descriptions de rituels et de 
 
 Le *Liber Manann* est un cycle mythologique de Manann en 11 volumes racontant tous les actes légendaires du dieu. Il a été rédigé par de nombreux auteurs différents et abrite des contradictions, des répétitions et de longs récits empruntés aux traditions de nombreux dieux marins différents.
 
-
+<span id="page-87-0" data-folio="84"></span>
 *Acta Nautica Ex Odrallus* décrit les deux voyages en mer les plus célèbres d'Odrall qui lui ont permis de découvrir de nouvelles terres. Le premier récit est celui d'une navigation vers Albion. Après de nombreuses mésaventures qui pourraient être davantage allégoriques que factuelles, Odrall et son équipage accostent sur la côte sud de cette île entourée par les brumes et fêtent l'équinoxe de printemps sur le rivage. Le deuxième voyage est bien plus long et composé de journaux de bord très anciens. Le prêtre parcourt la Mer des Griffes dans le sens inverse des aiguilles d'une montre et finit par arriver sur la mer du Chaos, où il accoste sur une île perdue sacrée pour Manann.
 
 # **Grands centres de culte**
@@ -168,7 +168,7 @@ Manannsheim est un monastère sur une île du même nom au large de la côte du 
 
 La bibliothèque du monastère contient une vaste collection de cartes marines, d'histoires de voyages sur l'océan et d'exemplaires de tous les livres sacrés de Manann. L'autel du temple est un bloc blanc poli par les vagues qui, selon l'Ordre de Triton, vient de la halle de Manann au fond des mers.
 
-
+<span id="page-88-0" data-folio="85"></span>
 # **Sous-cultes**
 
 Les nombreuses facettes de Manann sont presque chacune un dieu mineur à part entière. Elles attirent chacune leurs propres suivants qui forment des sous-cultes spécifiques à un lieu ou à une vocation.
@@ -201,7 +201,7 @@ Un autre ordre de templiers, basé à Salkalten dans l'Ostland. Contrairement au
 
 Un ordre de prêtres consacré à la traque et à l'élimination des suivants de Stromfels. Ils agissent dans le nord de l'Empire, et leur salle capitulaire est cachée sur la côte du Nordland, entre Hargendorf et Broghur.
 
-
+<span id="page-89-0" data-folio="86"></span>
 # **ZÉLOTES ET ÉTRANGETÉS**
 
 Les zélotes de Manann sont ceux qui ont ressenti la fureur de la mer et subi son courroux, des gens qui ont survécu à un naufrage, perdu de la famille ou des camarades en mer ou été volontairement naufragés. D'autres ont vécu des expériences religieuses intenses, des visions ou des révélations de Manann qui les ont totalement focalisés sur la clémence du dieu.
@@ -228,7 +228,7 @@ Les Enfants de la Mer sont en général tolérés par le culte de Manann, car le
 
 Le culte de Manann se montre soupçonneux envers les suivants excentriques de Manhavok dans le Stirland. Le seul lieu de culte de cet aspect de Manann est l'autel de Manhavok, penché vers les eaux, sur la rive de la rivière Aver près de Streissen. Les habitants de la région traitent Manhavok comme un dieu local mineur dont les inondations peuvent engloutir des villages ou apporter la fertilité au sol. Ils lui font des offrandes de poisson ou de viande au début du printemps et à la fin de l'été pour gagner sa faveur. Un petit nombre de cultistes vénèrent Manhavok comme au-dessus de tous les autres dieux. Ils décorent son autel de reproductions en argile approximatives de créatures marines (car aucun d'entre eux n'a jamais vu la mer), révèrent les écrevisses qu'ils trouvent dans l'Aver et s'habillent de haillons verts. À chaque Mitterfruhl, ils jouent des pièces de théâtre costumées dans les villages locaux, lors desquelles les cultistes de Manhavok jettent des poignées de terre sur ceux qui ont la faveur du dieu et des seaux d'eau sur ceux qu'il réprouve pour leurs actes. Les cultistes sont généralement chassés des villages avant de terminer la pièce.
 
-
+<span id="page-90-0" data-folio="87"></span>
 # **MIRACLES DE MANANN**
 
 Voici plusieurs Miracles accomplis par les Prêtres de Manann, qui peuvent être utilisés en plus de ceux du chapitre 7 de **WFJDR**.
@@ -300,3 +300,5 @@ Vous pouvez psalmodier cette prière à l'adresse d'une créature marine, ce qui
 **Durée :** (Bonus de Sociabilité) minutes
 
 Vos prières permettent à un Personnage de respirer l'eau comme s'il s'agissait d'air. S'il risquerait normalement de se noyer dans de l'eau, le Personnage peut ignorer les règles de Suffocation en page 181 de **WFJDR** pendant toute la durée du Miracle. Vous ne pouvez pas accomplir ce Miracle si votre propre bouche est déjà sous l'eau.
+
+<span id="page-91-0" data-folio="88"></span>

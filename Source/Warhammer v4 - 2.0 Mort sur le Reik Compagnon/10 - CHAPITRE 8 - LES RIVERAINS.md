@@ -1,8 +1,8 @@
-*Pages PDF 50-60*
+*Folio 51+*
 
 ## CHAPITRE 8 LES RIVERAINS
 
-<span id="page-49-0"></span>Les aventuriers pourront rencontrer un certain nombre de PNJ intéressants sur les voies fluviales de l'Empire, ou dans les auberges bordant les rives. Tous les voyageurs qui parcourent l'Empire ont une destination et une raison de voyager ; des rencontres avec quelques PNJ originaux, qu'ils apportent ou non quelque chose à l'intrigue principale, vous aideront à donner l'impression que les Personnages évoluent dans un monde rempli de vraies gens, ce qui permet de rendre le jeu plus « réaliste » et plus plaisant.
+Les aventuriers pourront rencontrer un certain nombre de PNJ intéressants sur les voies fluviales de l'Empire, ou dans les auberges bordant les rives. Tous les voyageurs qui parcourent l'Empire ont une destination et une raison de voyager ; des rencontres avec quelques PNJ originaux, qu'ils apportent ou non quelque chose à l'intrigue principale, vous aideront à donner l'impression que les Personnages évoluent dans un monde rempli de vraies gens, ce qui permet de rendre le jeu plus « réaliste » et plus plaisant.
 
 Des profils basiques sont listés ci-après, que le MJ peut adapter à sa guise. Pour plus d'informations sur les différents types de bateaux, voir p. 32-33.
 
@@ -20,7 +20,7 @@ Les équipages de navires marchands échangent volontiers des nouvelles et des r
 
 Si les Personnages venaient à perdre leur barge, obtenir une place à bord d'un tel bateau peut constituer un assez bon moyen de continuer leur route. Cela ralentirait considérablement le rythme de l'aventure, mais les Personnages voyageraient malgré tout plus vite ainsi qu'à pied, et il peut s'agir d'une option viable en attendant de trouver un nouveau bateau. Bien entendu, un groupe particulièrement impitoyable pourrait organiser une mutinerie s'ils pensent pouvoir s'en sortir sans problème ; après quoi, chaque rencontre avec une Patrouille fluviale serait alors beaucoup plus tendue...
 
-
+<span id="page-50-0" data-folio="51"></span>
 #### **Elias Answell**
 
 Le bateau d'Elias, *Je décline à regret*, est autant une maison qu'un navire de commerce. Avec ses voiles rouge sang et son intérieur de cuivre rutilant, cette péniche de 12 m de long reflète toute l'excentricité de son capitaine. Elle se transmet de génération en génération aux membres de la famille Answell et a été réaménagée tellement de fois qu'elle ressemble de plus en plus à ce qui pourrait être la mise en pratique physique d'une expérience de pensée tiléenne au sujet de la nature de l'identité. Quant à Elias, c'est un homme calme et réfléchi ; son implacable honnêteté a fait de lui un négociant respecté de tous, malgré son goût immodéré pour le poisson mariné, à l'odeur particulièrement nauséabonde.
@@ -61,7 +61,7 @@ Mia Answell a deux buts précis dans la vie : obtenir une situation confortable 
 
 3d10 sous de cuivre
 
-
+<span id="page-51-0" data-folio="52"></span>
 ### **Bateau de pêche**
 
 Il est très fréquent de croiser des bateaux de pêche dans les régions peuplées de l'Empire, les grandes voies d'eau, le Reik, le Stir, le Talabec et l'Aver, constituant une importante source de poisson. La plupart des bateaux de pêche ne sont rien de plus que des barques ordinaires occupées par un seul homme du fleuve, mais aux endroits où les rivières font au moins un kilomètre de large, on trouve des bateaux de pêche plus imposants, de la taille de petits navires marchands, qui sont la propriété de familles de pêcheurs ou, près des grandes villes, de sociétés de pêche. Les pêcheurs à la ligne ne se rencontrent que dans un rayon d'environ huit kilomètres autour des villes et villages.
@@ -84,7 +84,7 @@ Le petit bateau de pêche de Sofia, le *Six pieds sous l'onde*, est à la fois u
 
 **Possessions :** canne à pêche et appâts, dette considérable, jambières de cuir, seau, 1d10 sous de cuivre
 
-
+<span id="page-52-0" data-folio="53"></span>
 ### **Navire à passagers**
 
 Un navire à passagers est globalement semblable à un navire marchand, mais au lieu d'être doté d'une cale pour le stockage des marchandises, il comporte des cabines destinées à accueillir des passagers. Sont qualifiés de navires à passagers aussi bien les ferries aux itinéraires fixes servant de navettes fluviales, que les bateaux de plaisance privés appartenant à des nobles et autres nantis. Certains ferries sont pilotés par de petits propriétaires indépendants, qui transportent des cargaisons légères en plus des passagers, tandis que d'autres appartiennent à des sociétés locales, similaires aux sociétés de diligences. Le prix du voyage tourne généralement autour d'une pistole par kilomètre et demi ; on arrondit généralement à la Couronne ou demi-Couronne supérieure.
@@ -117,7 +117,7 @@ Uwe et ses amis ne se lassent jamais de « cabrioler », selon leur expression, 
 
 habit de cour
 
-
+<span id="page-53-0" data-folio="54"></span>
 ### **Personne d'importance**
 
 Bien que les nobliaux puissent avoir l'air puissants et intimidants au premier abord, ils ne sont en réalité que du menu fretin à l'échelle de l'Empire, et la plupart n'ont d'autorité que sur quelques paysans de province. Cependant, il peut arriver que les Personnages fassent la rencontre d'une personne réellement importante.
@@ -148,7 +148,7 @@ De la même manière que les jeunes nobles ne pensent qu'à passer du bon temps 
 
 Si l'un des nobles à bord nécessite ou désire quoi que ce soit, qu'il s'agisse d'une pêche fraîche ou d'un chirurgien qualifié, le héraut se mettra à héler tous les bateaux qui passent pour savoir si un tel objet ou une telle personne se trouve à leur bord. Si les nobles passagers apprennent, ou même suspectent que ce qu'ils désirent se trouve à bord d'un certain bateau, ils ordonneront aux gardes de l'aborder et de leur ramener la personne ou l'objet souhaité. La déférence prompte et respectueuse se verra récompensée d'une poignée de pièces, ce qui pourrait même suffire à couvrir les frais de la requête en question ; toute réticence ou résistance sera punie par l'usage de la force, et aucune compensation ne pourra être attendue en retour.
 
-
+<span id="page-54-0" data-folio="55"></span>
 ### **Bateau-théâtre**
 
 Il n'est pas rare que des groupes de saltimbanques voyagent par voie fluviale plutôt que par la route, et certaines troupes possèdent même leur propre bateau.
@@ -185,7 +185,7 @@ l'avoir croisé à la Schaffenfest de Bögenhafen ; le parieur peut se révéler
 
 Les autorités municipales, si elles existent, ne font rien pour empêcher le lynchage, et les Personnages peuvent tenter de résoudre le problème de manière pacifique (voir *Parler en public*, **WFJDR**, p. 119), ou, s'ils ont eux aussi des raisons d'en vouloir au saltimbanque, ils peuvent se contenter d'assister à la scène en encourageant les villageois. S'ils aident le saltimbanque, ils auront gagné un ami pour la vie, qui pourrait même les aider dans de prochaines aventures.
 
-
+<span id="page-55-0" data-folio="56"></span>
 #### **Sigrund Dopplewasser**
 
 Il fut un temps où Sigrund savait très bien que ses remèdes miracles ne guérissaient personne, mais ce temps est désormais révolu. Il a suffi de quelques guérisons heureuses, d'un peu de bidouillage avec ses propres concoctions et de l'éternelle crédulité d'un public désespéré de trouver du secours pour qu'il adopte le surnom de « Sigrund Dopplewasser, Médecin d'illustre renommée », et qu'il ne réfère plus à sa personne d'une autre manière. Sigrund est convaincu que ses potions, baumes et autres remèdes sont vraiment efficaces, et même lorsqu'il apparaît évident que ce n'est pas du tout le cas, il trouve toujours une excuse. Peut-être que les plumes de coquelet n'ont pas été obtenues en plumant l'oiseau tout en étant tourné vers le sud, ou peut-être que les crottes de souris en poudre étaient en fait des crottes de rat ? Toujours à la recherche de nouveaux remèdes fantastiques, Sigrund a récemment fait l'acquisition d'une bouteille de la célèbre panacée du village de Wittgendorf, et il a terriblement hâte de l'essayer.
@@ -208,7 +208,7 @@ Les charlatans spécialistes des faux médicaments, et plus rarement, les apothi
 
 Si les Personnages ont besoin de traitements pour des blessures, des maladies ou un empoisonnement, il y a des chances qu'un de ces prétendus médecins propose de les aider, et il est sans doute encore plus probable que le traitement qui leur est vendu ait des effets secondaires inattendus, comme de fortes démangeaisons, une perte de cheveux ou pire, un changement radical de la couleur de la peau du patient. Contrairement aux médecins « respectables », ce qu'ils prétendent évidemment être, ce genre de charlatan accepte aussi de troquer leurs traitements contre des biens ou des faveurs, ce qui fait d'eux une bonne source d'aventures au milieu de la pègre des rivières et des villes fluviales.
 
-
+<span id="page-56-0" data-folio="57"></span>
 ### **Prototype de laGuilde des ingénieurs**
 
 La Guilde des ingénieurs nains est mère de nombreuses inventions impressionnantes, et certaines d'entre elles peuvent même être manœuvrées en toute sécurité. Les Personnages rencontrent un bateau ayant bénéficié de très nombreuses modifications ; il fait l'objet d'une phase de test visant à démontrer le génie d'un nouvel équipement révolutionnaire : un moteur à vapeur, ou bien un mécanisme de pilotage automatique qui rend inutile la présence d'un équipage, ou toute autre invention. La nature exacte de cette nouvelle technologie est à la discrétion du MJ, mais pour une rencontre la plus mémorable possible, il faudrait que cela soit quelque chose dont le dysfonctionnement serait spectaculaire et aurait des conséquences dangereuses. Un moteur pourrait exploser ou refuser de ralentir ; un système de pilotage automatique pourrait faire se diriger le bateau expérimental vers un autre navire sans que la trajectoire de collision ne puisse être corrigée, etc.
@@ -237,7 +237,7 @@ Cette rencontre donnera du fil à retordre à n'importe quel groupe de Personnag
 
 **Possessions :** licence de guilde, livre d'ingénierie (*Sempiternels labeurs nautiques II*), outils professionnels, pistolet à répétition avec 12 munitions, 2d10 pistoles d'argent
 
-
+<span id="page-57-0" data-folio="58"></span>
 #### **Expédition**
 
 Dans **L'Ennemi dans l'Ombre**, les Personnages entendent parler de l'expédition du prince Hergard von Tasseninck dans les Montagnes Grises. Le bon prince n'est pas le seul à entreprendre un tel périple, et les Personnages pourraient faire la rencontre d'une expédition complète, parée pour l'aventure, en partance d'Altdorf ou d'une autre grande ville, ou remontant le cours supérieur d'une des rivières de l'Empire.
@@ -276,7 +276,7 @@ d'écriture
 
 **Particularités :** peur diffuse
 
-
+<span id="page-58-0" data-folio="59"></span>
 #### **Pèlerins**
 
 L'Empire est une terre aux nombreux dieux, quoi qu'en disent les dévots de Sigmar à Altdorf, et il existe une multitude de lieux saints qui attirent des pèlerins de toutes les confessions, ou vers lesquels se tournent ceux qui ont particulièrement besoin d'un certain type de faveur divine. Sur les routes, les pèlerins voyagent en longues processions, guidés par un prêtre qu'ils suivent à pied, à dos d'âne ou de cheval, ou à bord de véhicules, en fonction de leurs moyens. Sur les rivières, ils louent des bateaux pour accomplir leurs pieux pèlerinages.
@@ -303,7 +303,7 @@ AGRIN « LE SANG DU FLAGELLANT EST CELUI DE SIGMAR » LOSBURG - ZÉLOTE HUMAIN (
 
 **Possessions :** fléau, haillons, petit bocal de pommade pour les blessures cutanées et soigneusement dissimulé
 
-
+<span id="page-59-0" data-folio="60"></span>
 ### **Bateau-pilote**
 
 Aux endroits les plus traîtres de la rivière, où il est possible de gagner sa vie en guidant les bateaux à travers les pires écueils, il n'est pas rare de rencontrer des nautoniers proposant leurs services contre rémunération. Il n'existe pas de guilde ou d'organisation centralisée pour les nautoniers, mais d'après la coutume de la rivière, leur barque arbore toujours un drapeau jaune représentant une barre de bateau et un poisson.

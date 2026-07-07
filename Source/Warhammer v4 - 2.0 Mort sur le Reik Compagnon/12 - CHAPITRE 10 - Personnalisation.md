@@ -1,6 +1,6 @@
-*Pages PDF 64-69*
+*Folio 65+*
 
-## <span id="page-63-0"></span>CHAPITRE 10 PERSONNALISATION
+## CHAPITRE 10 PERSONNALISATION
 
 Les bateaux standard qui figurent p. 32-33 représentent les embarcations types que vous pouvez rencontrer sur les voies fluviales de l'Empire. Cependant, toutes sortes de modifications peuvent être apportées à un bateau, si on en a les moyens. Ces modifications peuvent ajouter à l'Encombrement du véhicule : pour chaque Point d'Encombrement ajouté, le véhicule perd un point de Chargement.
 
@@ -36,8 +36,8 @@ Cependant, un bateau doté d'une coque de course est difficile à manier, et né
 
 Les réparations ordinaires effectuées sur une coque de course coûtent le double du prix mentionné p. 30, et nécessitent un savoir-faire avancé : tous les Tests nécessaires pour réparer le bateau sont un degré de difficulté au-dessus de la normale.
 
-
-#### <span id="page-64-0"></span>**Lissage**
+<span id="page-64-0" data-folio="65"></span>
+#### **Lissage**
 
 **Coût :** 40 CO pour 10 mètres de longueur.
 
@@ -81,12 +81,12 @@ Cet appareil consiste en deux larges volets de bois qui peuvent être dépliés 
 
 **Poids :** +15 Points d'Encombrement (barque) ; +40 Points d'Encombrement (esquif de pêche) ; +80 Points d'Encombrement (barge moyenne ou bateau de patrouille) ; +160 Points d'Encombrement (grande barge).
 
-
+<span id="page-65-0" data-folio="66"></span>
 Les murs d'une cabine ou de toute autre superstructure sont blindés à l'aide de plaques de fer. Tout Personnage ou PNJ situé derrière un mur blindé bénéficie d'une couverture totale (**WFJDR**, p. 161) rendant les tirs de projectiles contre lui Très Difficile.
 
 ### **Sabord**
 
-<span id="page-65-0"></span>X
+X
 
 **Coût :** 15 CO (petit) ; 85 CO (large).
 
@@ -136,8 +136,8 @@ Un clinfoc est une voile supplémentaire située à la proue et qui nécessite u
 
 En plus d'avoir développé la coque de course (voir ci-avant), les propriétaires de bateaux nantis de l'Empire, ou plutôt, les talentueux constructeurs de bateaux à leur service, ont inventé un système de voiles et de gréements pensé spécifiquement pour la vitesse, au détriment d'une certaine solidité. Un gréement de course accorde un bonus de vitesse de Mouvement de +10 % par rapport à la valeur indiquée dans le Tableau des vents (p. 28), mais seulement en cas de vent arrière ou de vent de côté. En cas de vent contraire, le malus à la vitesse de Mouvement est réduit de -5 %. Le gréement de course inclut un clinfoc (voir ci-avant), et les avantages des deux ne sont pas cumulables.
 
-
-<span id="page-66-0"></span>Cependant, cette rapidité a un prix. Ce gréement de course complexe nécessite un équipage expérimenté pour le manier, ce qui impose un malus de –10 à tous les Tests de **Navigation**, pour piloter le bateau. De plus, tous les coups infligés au gréement causent le double de Dégâts.
+<span id="page-66-0" data-folio="67"></span>
+Cependant, cette rapidité a un prix. Ce gréement de course complexe nécessite un équipage expérimenté pour le manier, ce qui impose un malus de –10 à tous les Tests de **Navigation**, pour piloter le bateau. De plus, tous les coups infligés au gréement causent le double de Dégâts.
 
 ### **RAMES**
 
@@ -181,7 +181,7 @@ La **boîte à mitraille** est un sac rempli de balles de plomb qui transforme l
 
 Le **boulet chaîné** est constitué de deux boulets reliés par une chaîne. Tiré par un canon, il fend l'air et lamine les cibles peu solides ou s'enroule violemment autour des plus résistantes. Un canon chargé avec un boulet chaîné ne gagne aucun Atout, mais inflige un Coup Critique automatique au gréement d'un bateau si le Test de **Projectiles** est réussi avec un Succès Impressionnant (+4 DR) ou mieux. Les boulets chaînés sont conçus pour détruire les gréements et voiles d'un bateau afin de l'immobiliser.
 
-
+<span id="page-67-0" data-folio="68"></span>
 Les canons peuvent être montés à la proue, à la poupe ou sur les côtés d'un bateau. Contrairement aux balistes, les canons ne peuvent pas pivoter et ne peuvent donc tirer que dans une seule direction, vers l'avant, l'arrière ou perpendiculairement au bateau selon leur placement.
 
 ### **Catapultes**
@@ -233,8 +233,8 @@ Un fusil à salve est assez semblable à un pistolet à répétition, mais contr
 
 Ces armes relèvent de la spécialisation Ingénierie. **Note :** Les balistes et les catapultes ne possèdent pas l'Atout À Poudre noire.
 
-
-### <span id="page-68-0"></span>**PROPULSION**
+<span id="page-68-0" data-folio="69"></span>
+### **PROPULSION**
 
 ### **Magique**
 
@@ -263,3 +263,5 @@ Un bateau propulsé par un moteur à vapeur conserve sa vitesse de Mouvement sta
 | 81–90 | Feu éteint : de l'eau s'infiltre dans la chaudière du moteur, éteignant le feu et empêchant le moteur de fonctionner. Il faut<br>d10 Rounds pour retirer le charbon humide du foyer de la chaudière et le remplacer par du carburant sec, puis il faut réussir un<br>Test de Métier (Ingénieur) pour remettre le moteur en route. Après le redémarrage du moteur, il faut attendre 5 –DR Rounds<br>avant que le niveau de pression de la vapeur remonte suffisamment pour permettre la propulsion du bateau.                                                                                             |  |  |  |  |  |  |
 | 91–95 | Rupture du réservoir : un élément important des mécanismes du moteur saute, ce qui libère toute la vapeur. Le moteur ne peut<br>pas être réparé avant d'avoir refroidi, ce qui nécessite de retirer le charbon (voir ci-dessus) et d'attendre 20 + d10 minutes.<br>Ensuite, il faut réussir un Test de Métier (Ingénieur) Complexe (–10) pour réparer le moteur, et un autre, Intermédiaire (+0) pour<br>le faire redémarrer. Après le redémarrage du moteur, il faut attendre 5 –DR Rounds avant que le niveau de pression de la vapeur<br>remonte suffisamment pour permettre la propulsion du bateau. |  |  |  |  |  |  |
 | 96–00 | Explosion : la chaudière explose, causant la destruction du moteur et infligeant des Coups Critiques à la coque et à la<br>superstructure (voir p. 29). Toutes les personnes se trouvant dans le même compartiment subissent 12 points de Dégâts à<br>cause de l'explosion et du souffle.                                                                                                                                                                                                                                                                                                                |  |  |  |  |  |  |
+
+<span id="page-69-0" data-folio="70"></span>

@@ -1,4 +1,4 @@
-*Pages PDF 132-144*
+*Folio 129+*
 
 # LONGS VOYAGES
 
@@ -36,7 +36,7 @@ En tant que groupe de jeu, le MJ et les Joueurs peuvent ne pas vouloir passer de
 | 6 à 9      | Voyage sans encombre. 10 % de la cargaison s'est<br>gâtée.                                                                                                                                         |
 | 10 ou plus | Voyage parfait. Pas de conséquence négative.                                                                                                                                                       |
 
-
+<span id="page-132-0" data-folio="129"></span>
 | Distances en milles       | Erengrad | Marienburg | Salzenmund | L'Anguille | Kirkjugarður<br>Langskipa | Skjold |
 |---------------------------|----------|------------|------------|------------|---------------------------|--------|
 | Erengrad                  | –        | 1200       | 550        | 1250       | 820                       | 1350   |
@@ -77,7 +77,7 @@ La distance parcourue par jour suppose que le vaisseau en question est doté d'u
 
 Quand vous utilisez le Test d'équipage de Navigation pour la progression du bateau, tout DR obtenu peut augmenter la progression du jour d'environ 10 %. Les DR négatifs la réduisent d'autant. Ces temps de voyage peuvent aussi être accélérés ou ralentis, presque imperceptiblement, par les courants de l'océan. Les mauvaises conditions climatiques n'augmentent pas directement le temps de voyage, mais ajoutent à la Difficulté des Tests d'équipage pertinents.
 
-
+<span id="page-133-0" data-folio="130"></span>
 # **ÉVÉNEMENTS EN MER**
 
 Ceux qui voyagent en mer le font par la grâce de Manann. Si vous vous attirez sa faveur, le trajet sera probablement sans encombre. Mais si vous le mettez en colère, les choses vont se gâter. Manann est jaloux et capricieux, c'est pourquoi même le plus dévot des matelots ne peut jamais être sûr des dispositions dans lesquelles il se trouve.
@@ -128,7 +128,7 @@ Quand la situation devient désespérée, les capitaines de navire se détournen
 
 Arriver au port déclenche un événement de port, que le MJ détermine en lançant 2d10 et en consultant le Tableau des événements d'escale dans un port (voir page 133) dès que le bateau accoste. L'événement se produit dans les 2d10 heures après accostage. L'Humeur de Manann a moins d'influence sur la nature des événements de port : si elle est négative, réduisez de 1 le résultat des 2d10, et si elle est positive, augmentez le de 1.
 
-
+<span id="page-134-0" data-folio="131"></span>
 # TABLEAU DES ÉVÉNEMENTS DE BORD
 
 | d100               | Événement                                                                                                                                     |
@@ -188,7 +188,7 @@ Arriver au port déclenche un événement de port, que le MJ détermine en lanç
 |                    | soit changer de cap et réduire votre Mouvement de 2 pour un jour de voyage, soit continuer et perdre 2d10 Moral.                              |
 | 10 à 18<br>19 à 23 | Calme plat. Les vents vous abandonnent pour les prochains 1d10 jours.                                                                         |
 
-
+<span id="page-135-0" data-folio="132"></span>
 | d100        | Événement                                                                                                                                                                                                                                                                                                                                                                                   |  |  |
 |-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|
 | 24 à 27     | Vaisseau de pestiférés. Vous repérez une cogue apparemment abandonnée dérivant sur les flots. Si vous l'abordez, elle contient du<br>butin composé de 2d10 caisses d'une cargaison choisie au hasard, d'1d100 jours de rations de biscuits de mer, de 2d10 tonneaux<br>d'eau et de 3d10 CO. Quelques membres d'équipage sont également encore présents à bord, mais ils ne sont qu'à moitié |  |  |
@@ -235,7 +235,7 @@ Arriver au port déclenche un événement de port, que le MJ détermine en lanç
 | 150 ou plus | Manne de Manann. Un banc de stylets saute depuis les vagues et atterrit sur le pont du navire. L'équipage les attrape et en                                                                                                                                                                                                                                                                 |  |  |
 |             |                                                                                                                                                                                                                                                                                                                                                                                             |  |  |
 
-
+<span id="page-136-0" data-folio="133"></span>
 | TABLEAU DES ÉVÉNEMENTS D'ESCALE DANS UN PORT |
 |----------------------------------------------|
 |----------------------------------------------|
@@ -262,7 +262,7 @@ Arriver au port déclenche un événement de port, que le MJ détermine en lanç
 | 20     | Bonne pêche. Récemment, les pêcheurs locaux remontent des filets grouillant de poissons ou de crabes. Vous pouvez les acheter en<br>tant que rations pour un jour au prix réduit de 3sc.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | 21     | Saturation de produits. Les ballots de cargaison s'entassent dans les entrepôts du rivage. Tous les biens mentionnés dans la colonne Production                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
-
+<span id="page-137-0" data-folio="134"></span>
 # **ACTIVITÉS EN MER**
 
 Pour chaque semaine (8 jours) de voyage en mer, chaque Personnage a l'occasion d'effectuer une Activité. Comme elles ont lieu sur les flots, ces Activités ne sont pas soumises aux règles *Argent à gaspiller*, *Avec le pouvoir*… et *Amélioration elfique* (voir page de **WFJDR**, page 195).
@@ -305,7 +305,7 @@ Un vaisseau subit inévitablement de l'usure. Les planches pourries doivent êtr
 
 Si votre bateau a perdu des Blessures, vous pouvez les réparer pour un coût de 2 points d'Encombrement de pièces détachées de navire par tranche de 5 Blessures restaurées. Si votre navire a subi des Blessures Critiques, vous pouvez les réparer en effectuant un Test de **Métier (Charpentier** *ou*  **Constructeur de navires) Difficile (–20)**. En cas de succès, vous dépensez un nombre de points d'Encombrement de pièces détachées de navire et de bois égal à la Taille de votre navire et vous retirez la Blessure Critique.
 
-
+<span id="page-138-0" data-folio="135"></span>
 # **COMMERCE MARITIME**
 
 Le commerce est le moteur principal des voyages en mer. Les bénéfices colossaux qu'il génère sont la seule chose qui permet de payer le coût monstrueux de la gestion d'un vaisseau. Il est composé de deux actes différents : acheter une cargaison et la vendre.
@@ -356,7 +356,7 @@ Une fois la cargaison achetée, elle peut être transportée dans un autre port 
 
 Pour calculer les chances de trouver un acheteur, vous devez d'abord déterminer quelle relation le port dans lequel vous tentez de vendre a avec les marchandises que vous proposez.
 
-
+<span id="page-139-0" data-folio="136"></span>
 0 Si le port ne produit pas la cargaison que vous vendez, ou si la mention « commerce » est présente dans la colonne Production du port, vous avez de bonnes chances de trouver un acheteur, surtout s'il existe une Demande locale pour ces biens.
 
 Additionnez la Taille du Lieu à toute Demande pour la cargaison, puis multipliez le résultat par 10, en ajoutant +30 si la mention « commerce » est présente dans la colonne Production du Lieu ; cela vous donne le nombre visé. Lancez 1d100 et si le résultat est inférieur ou égal au nombre visé, vous trouvez un acheteur. Un échec indique que personne ne s'intéresse à une cargaison de la taille de celle que les Personnages tentent de vendre. S'ils le souhaitent, ils peuvent proposer la moitié de la cargaison à la place : lancez de nouveau les dés avec le même nombre visé. Si ce deuxième essai échoue, il n'existe vraiment aucun marchand intéressé.
@@ -398,7 +398,7 @@ Le vendeur subit –3 DR sur tous les Tests de Marchandage qu'il effectue.
 
 Si les Personnages disposent d'une cargaison qu'ils ne peuvent pas transporter ailleurs pour la vendre en temps utile, mais que, pour une raison ou pour une autre, ils veulent s'en débarrasser, ils trouveront toujours des marchands à la recherche de gens aux abois. Les Personnages peuvent toujours vendre une cargaison pour un quart de son prix de base dans n'importe quel Lieu pour lequel la mention « commerce » est indiquée dans la colonne Production ou dans lequel il existe une Demande pour ce bien en particulier.
 
-
+<span id="page-140-0" data-folio="137"></span>
 # **Générer les cargaisons disponibles**
 
 Quand vous avez besoin de générer une cargaison aléatoire, il vous suffit de lancer 1d100 et de consulter le tableau ci-dessous. Comme la disponibilité de certains biens varie en fonction de la période de l'année, utilisez la ligne dans la colonne de la saison actuelle pour déterminer le résultat.
@@ -435,7 +435,7 @@ Une fois que vous avez déterminé quelle est la cargaison disponible, en utilis
 
 Le prix est donné en CO pour 1 point d'Encombrement de cargaison. Notez le prix du Vin quand il est acheté.
 
-
+<span id="page-141-0" data-folio="138"></span>
 | INDEX DES PORTS SUR LE POURTOUR DE LA MER DES GRIFFES<br>Lieu<br>Taill<br>Dirigeant<br>R<br>Production<br>Surpl<br>Demande<br>Notes<br>e<br>us<br>BRETONNIE<br>Duc Taubert de<br>Armes +1, produits<br>Capitale d'un duché de Bretonnie ; phare<br>L'Anguille<br>4<br>3<br>Commerce, vin<br>Poisson salé +1<br>L'Anguille<br>de luxe +1<br>spectaculaire<br>WASTELAND<br>Armes +1, bois +1,<br>Commerce, poisson<br>Pièces détachées de<br>Marienburg<br>4<br>Le Directorat<br>5<br>métaux +1, produits<br>Plus grande cité et plus grand port du Vieux Monde<br>salé, vin<br>navire +1<br>de luxe +1<br>Baron Martinus van<br>Aarnau<br>3<br>3<br>Céréales, poisson salé<br>–<br>Armes +1<br>–<br>Buuren<br>Pièces détachées de<br>Pièces détachées de navire souvent récupérées sur |  |  |  |  |  |  |  |  |  |  |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|--|--|--|--|--|--|--|--|
 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |  |  |  |  |  |  |  |  |  |  |
@@ -473,7 +473,7 @@ Le prix est donné en CO pour 1 point d'Encombrement de cargaison. Notez le prix
 | Armes +1,<br>Île abritant la commanderie des Chevaliers du<br>Svunum<br>1<br>Culte de Myrmidia<br>1<br>Minimum vital<br>–<br>céréales +1<br>Soleil Flamboyant                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |  |  |  |  |  |  |  |  |  |  |
 | Produits de luxe<br>Fjirgard<br>1<br>Skiftet Fyrr<br>1<br>–<br>Armes +1<br>–<br>(fourrures)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |  |  |  |  |  |  |  |  |  |  |
 
-
+<span id="page-142-0" data-folio="139"></span>
 | INDEX DES PORTS INTERNATIONAUX |            |                                              |   |                                                                 |                                     |                                                            |                                                                                                            |  |  |  |
 |--------------------------------|------------|----------------------------------------------|---|-----------------------------------------------------------------|-------------------------------------|------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|--|--|--|
 | Lieu                           | Taill<br>e | Dirigeant                                    | R | Production                                                      | Surpl<br>us                         | Demande                                                    | Notes                                                                                                      |  |  |  |
@@ -504,3 +504,5 @@ Le prix est donné en CO pour 1 point d'Encombrement de cargaison. Notez le prix
 | Lashiek                        | 4          | Sultan de Lashiek                            | 5 | Commerce                                                        | –                                   | –                                                          | Beaucoup de pirates rôdent sur les mers autour<br>de ce port                                               |  |  |  |
 | Copher                         | 4          | Sultan de Copher                             | 4 | Commerce                                                        | Produits de luxe<br>(épices) +2     | Bois +1, céréales +1                                       | –                                                                                                          |  |  |  |
 | Al-Haikk                       | 4          | Grand sultan d'Arabie                        | 4 | Commerce                                                        | –                                   | Céréales +1, huile +1                                      | –                                                                                                          |  |  |  |
+
+<span id="page-143-0" data-folio="140"></span>

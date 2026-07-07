@@ -1,6 +1,6 @@
-*Pages PDF 28-33*
+*Folio 29+*
 
-## <span id="page-27-0"></span>CHAPITRE 5 NAVIGATION FLUVIALE
+## CHAPITRE 5 NAVIGATION FLUVIALE
 
 Dans **Mort sur le Reik**, les aventuriers passent une grande partie de leur temps à naviguer sur le fleuve dans une barge commerciale. Le MJ peut partir du principe que les Personnages arrivent toujours à destination sans encombre, mais il peut être plus intéressant de jouer au moins quelques trajets en détail, en utilisant les règles suivantes et en imaginant quels problèmes et accidents ils pourraient rencontrer.
 
@@ -40,8 +40,8 @@ Le seul facteur météorologique qui impacte la vitesse de mouvement d'un bateau
 - 4. Un Test de **Navigation Accessible (+20)** doit être effectué pour retirer la voile avant que le bateau ne soit renversé. Si le Test échoue, la voile et le gréement tombent, le bateau se renverse et commence à prendre l'eau. Les Personnages peuvent faire un seul Test de **Navigation Accessible (+20)** par Round pour essayer de redresser le bateau ; chaque Test échoué ajoute un malus de -5 au Test suivant. S'il n'est pas redressé, le bateau coule en un nombre de tours égal à son Bonus d'Endurance.
 - 5. Un Test de **Navigation Accessible (+20)** est nécessaire pour éviter que la voile et le gréement subissent des dégâts. Si le Test échoue, traitez le résultat comme un Coup Critique au gréement (voir plus bas). Le bateau dérive, hors de contrôle, à 25 % de sa vitesse normale, sans compter la force et la direction du vent qu'il faudra aussi ajouter. Les Tests de **Navigation** pour tenter de diriger le bateau subissent un malus de -20.
 
-
-## <span id="page-28-0"></span>**DÉGÂTS INFLIGÉS AU BATEAU**
+<span id="page-28-0" data-folio="29"></span>
+## **DÉGÂTS INFLIGÉS AU BATEAU**
 
 Tout bateau peut subir des dégâts, comme n'importe quel Personnage. Il a un Bonus d'Endurance, qui modifient les dégâts qu'il reçoit, et des points de Blessure, qui indiquent combien il peut en perdre.
 
@@ -93,8 +93,8 @@ Il y a un trou dans le bateau, qui commence à prendre l'eau. Il coule en un nom
 
 Si le bateau dispose d'une cale, et que cette dernière est touchée, tous les Personnages qui s'y trouvent doivent faire un Test d'**Initiative** ou subir +5 Dégâts à cause des éclats d'échardes. À part ça, le bateau n'est pas affecté.
 
-
-### <span id="page-29-0"></span>**S'échouer**
+<span id="page-29-0" data-folio="30"></span>
+### **S'échouer**
 
 Dans certaines circonstances, il est possible qu'un bateau s'échoue ; les chances que cela arrive sont données quand un danger se présente. Quand un bateau s'échoue, il s'arrête soudainement et sa coque subit 12 Dégâts. Il doit être tiré afin d'être remis à l'eau. Pour un bateau chargé, cette tâche nécessite un Test de **Force** avec un malus égal au nombre total de Points d'Encombrement du bateau et de sa cargaison. N'importe quel Personnage ou animal de trait peut contribuer à la tâche, tant qu'il y a assez de cordes pour tout le monde (il est préférable que les Personnages qui aident ne soient pas déjà encombrés par des armures lourdes, des sacs à dos, etc.)
 
@@ -124,8 +124,8 @@ Voyager par le fleuve, c'est parfois être confronté à des dangers particulier
 
 De fortes pluies dans les montagnes où le fleuve prend sa source ont provoqué une coulée de débris en aval. Des arbres déracinés et d'autres objets lourds flottent le long du fleuve, et les Personnages doivent agir vite pour éviter les dégâts d'une collision : si le Test de **Navigation** échoue, le bateau subit deux coups à la coque et prend +10 Dégâts par coup.
 
-
-<span id="page-30-0"></span>Là où le cours d'eau est étroit ou l'eau est peu profonde, les débris se sont peut-être agglomérés et forment un barrage qui doit être dégagé avant de continuer. Ces obstacles ont une Endurance de 1d10 × 10 et 2d10 de Blessures. Essayer de foncer dessus en utilisant le bateau comme un bélier inflige +10 Dégâts au barrage ainsi qu'à la coque du bateau. Pour dégager le barrage à la main (si la profondeur de l'eau le permet), il faut déblayer 3d10 objets. Chaque élément a 4d10 Points d'Encombrement.
+<span id="page-30-0" data-folio="31"></span>
+Là où le cours d'eau est étroit ou l'eau est peu profonde, les débris se sont peut-être agglomérés et forment un barrage qui doit être dégagé avant de continuer. Ces obstacles ont une Endurance de 1d10 × 10 et 2d10 de Blessures. Essayer de foncer dessus en utilisant le bateau comme un bélier inflige +10 Dégâts au barrage ainsi qu'à la coque du bateau. Pour dégager le barrage à la main (si la profondeur de l'eau le permet), il faut déblayer 3d10 objets. Chaque élément a 4d10 Points d'Encombrement.
 
 ### **Rochers et eaux peu profondes**
 
@@ -165,8 +165,8 @@ Certaines des cordes qui contrôlaient les voiles rompent, à cause d'une négli
 
 Un vent de côté soudain change la direction de la voile : le tangon pivote violemment à travers le pont. Les Personnages qui étaient sur son chemin doivent réussir un Test d'**Esquive Intermédiaire (+0)** afin de l'éviter, ou subir 5 Dégâts. Les Personnages percutés par le tangon doivent réussir un Test d'**Athlétisme Intermédiaire (+0)** pour ne pas être éjectés dans l'eau.
 
-
-
+<span id="page-31-0" data-folio="32"></span>
+<span id="page-32-0" data-folio="33"></span>
 #### EMBARCATIONS DE L'EMPIRE
 
 | Objet                 | Coût<br>(CO) | Encombr.** | Chargem. | Disponibilité | Force<br>motrice | Mouv. | Endurance | Points de<br>Blessure | Longueur<br>(mètres) |
@@ -180,3 +180,5 @@ Un vent de côté soudain change la direction de la voile : le tangon pivote vio
 \*Les bateaux de patrouille sont renforcés par un placage en bronze qui leur offre 1 Point d'Armure. Ils sont également équipés d'un bélier. Les malus à la vitesse de mouvement et au Chargement sont déjà calculés dans le profil.
 
 \*\*Ici, Encombrement veut dire le poids et le volume du bateau. Le Chargement est le nombre de Points d'Encombrement que le bateau peut
+
+<span id="page-33-0" data-folio="34"></span>

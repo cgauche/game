@@ -1,4 +1,4 @@
-*Pages PDF 54-63*
+*Folio 55+*
 
 # CHAPITRE 4 DE GRISSENWALD AUX COLLINES STÉRILES
 
@@ -26,8 +26,8 @@ Pour un profil d'adepte typique, voir *Les adeptes* (p. 23).
 
 Dans le cas où le double de Lieberung serait mort, l'adepte approchera l'un des Personnages avec des questions très précises : *« Qu'avez-vous fait de Kastor, et où est l'argent ? »* Alors que le groupe clame son ignorance, l'adepte paraît incrédule, et se montre même franchement hostile ; il semble évident pour les aventuriers que le temps leur est compté, et qu'ils ne pourront s'en sortir qu'en livrant Kastor ou son héritage.
 
-
-### <span id="page-54-0"></span>**Les Collines Stériles**
+<span id="page-54-0" data-folio="55"></span>
+### **Les Collines Stériles**
 
 Si les aventuriers interrogent les habitants de Kemperbad au sujet des Collines Stériles, ils se retrouveront face à un mur d'effroi et de dégoût. Personne n'est capable de donner des informations spécifiques à propos de cet endroit, mais tout le monde est d'accord pour dire qu'il vaut mieux l'éviter. Les aventuriers ne pourront pas non plus trouver un guide pour les y accompagner, peu importe la somme d'argent qu'ils proposent en échange. S'ils persistent à en chercher un, en proposant une rémunération ridiculement élevée (plus de 1000 CO, ou tout autre montant que le MJ considère comme bien trop important), un guide acceptera de les accompagner, mais dès que le groupe aura quitté Unterbaum (p. 57), il apparaîtra évident qu'il ne connaît absolument pas les lieux.
 
@@ -59,8 +59,8 @@ Cet évènement ne peut avoir lieu que si l'expédition de la Couronne Rouge a u
 - 0 Des vêtements assortis (pour femme) ; certains peuvent encore être portés, à condition d'être d'abord séchés.
 - 0 Un paquet scellé en toile huilée, dont le cachet porte le symbole de la Couronne Rouge. Il renferme une carte grossière de l'Empire, avec un cercle tracé autour de la région des Collines Stériles, et la position de l'observatoire de Dagmar clairement marquée et annotée. Cette carte est similaire à celle trouvée dans le bureau de Dagmar (voir p. 31), sans les marquages et avec l'ajout de l'observatoire.
 
-
-### <span id="page-55-0"></span>**LES CHUTES JUMELLES**
+<span id="page-55-0" data-folio="56"></span>
+### **LES CHUTES JUMELLES**
 
 À mesure que les aventuriers approchent du confluent du Stir et de la Narn (voir ci-dessous), les turbulences de la rivière augmentent en intensité et on peut entendre dans le lointain un grondement continu. La Narn et le Stir se rencontrent en se jetant tous deux avec fracas par-dessus d'immenses falaises, formant ainsi des cascades jumelles tonitruantes mesurant plus de 120 m de haut. Les eaux des cours d'eau ont creusé un vaste bassin de pierre, frémissant et bouillonnant comme un chaudron, et l'air est saturé d'une brume de fines gouttelettes qui détrempe les Personnages plus rapidement et plus efficacement que n'importe quelle averse.
 
@@ -78,8 +78,8 @@ Si les aventuriers la questionnent au sujet des Collines Stériles, Astrit devie
 
 Si le groupe décide de raccompagner Astrit au village, elle les mène alors à l'intérieur de la grotte, qui se prolonge en un tunnel ascendant avant de révéler un escalier en spirale taillé dans la roche. L'escalier s'élève sur 105 mètres de hauteur, et les marches sont assez glissantes, mais fort heureusement, une rampe en corde empêche les voyageurs de tomber. Au sommet, l'escalier débouche sur une mince bande herbeuse qui sépare le bord de la falaise de l'orée de la forêt ; de là-haut, la vue sur les cascades grondantes est à couper le souffle. Il y a un chemin qui s'enfonce dans la forêt, et au pied d'un chêne magnifique se trouve un cheval attelé à une charrette. Astrit prend les rênes et fait signe aux aventuriers de monter à l'arrière, avant de les conduire lentement le long du chemin forestier jusqu'au village d'Unterbaum.
 
-
-### <span id="page-56-0"></span>**L'Auberge des Chutes grondantes**
+<span id="page-56-0" data-folio="57"></span>
+### **L'Auberge des Chutes grondantes**
 
 Uta Freikrüger est la propriétaire de l'auberge et l'éclusière. Comme l'a dit Astrit, son établissement est un endroit propre, chaleureux et accueillant. Les chambres et la nourriture y sont moitié moins chers qu'indiqués dans le *Guide de l'équipement* (**WFJDR** p. 302). Quelques clients peuvent déjà être présents dans l'auberge, riverains pour la plupart, ou bien les aventuriers peuvent être les seuls clients.
 
@@ -115,8 +115,8 @@ Les Baumenvolks sont généralement grands et bien bâtis, et presque tous ont l
 
 Le doyen du village est élu par l'assemblée des villageois adultes. Son rôle ressemble davantage à celui d'un administrateur que d'un dirigeant : l'assemblée des villageois vote les décisions importantes, et le doyen fait exécuter les décisions de l'assemblée.
 
-
-<span id="page-57-0"></span>Si les aventuriers ne peuvent être dissuadés de leur quête, Corrobreth proposera de les accompagner. Il a besoin d'aller cueillir des herbes de toutes façons, et ne souhaite pas qu'il arrive malheur aux aventuriers. Ceux-ci ont tout intérêt à accepter l'offre du druide, car sans guide, leurs chances de trouver le cratère sont infimes. Les Collines Stériles s'étendent sur des kilomètres, si bien qu'ils pourraient errer pendant des mois sans trouver le cratère.
+<span id="page-57-0" data-folio="58"></span>
+Si les aventuriers ne peuvent être dissuadés de leur quête, Corrobreth proposera de les accompagner. Il a besoin d'aller cueillir des herbes de toutes façons, et ne souhaite pas qu'il arrive malheur aux aventuriers. Ceux-ci ont tout intérêt à accepter l'offre du druide, car sans guide, leurs chances de trouver le cratère sont infimes. Les Collines Stériles s'étendent sur des kilomètres, si bien qu'ils pourraient errer pendant des mois sans trouver le cratère.
 
 ### **DANS L'INCONNU**
 
@@ -150,7 +150,7 @@ Le cratère principal s'est rempli d'eau au fil des siècles. Il est entouré d'
 
 La nuit tombée, Morrslieb s'élève dans le ciel, comme suspendue au-dessus du cratère. Indépendamment de son cycle normal, Morrslieb apparaît toujours pleine depuis les Collines Stériles. À l'approche de minuit, une étrange lueur bleue éclaire les eaux du lac, et le vent souffle une complainte lugubre. Une silhouette bleue scintillante s'approche alors depuis l'extérieur du cercle, tandis qu'au même moment, une bourrasque venue de nulle part 
 
-
+<span id="page-58-0" data-folio="59"></span>
 se lève et balaie le campement des aventuriers, soulevant de la poussière qui trouble la vision des voyageurs. Une fois celle-ci retombée, les aventuriers découvrent la forme lacérée et déchirée d'une femme. Transparente et entourée d'un halo de lumière bleu, elle se déplace sans toucher le sol, et pas une goutte de sang ne s'écoule des plaies béantes qu'elle porte au flanc.
 
 D'une voix lointaine et sifflante, elle implore de l'aide. *« Aiiideeez-moiii... S'il vous plaît... Accordez-moi le repos éternel, car j'ai arpenté ces collines bien trop longtemps. Suivez-moi et vous verrez... Suivez-moi... Et vous verrez. »* La forme spectrale se dirige ensuite vers les grottes, et si les Personnages ne la suivent pas, elle essaiera de les persuader. Ils n'auront pas la paix tant qu'ils ne la suivront pas.
@@ -173,7 +173,7 @@ Avant que les aventuriers n'aient le temps de s'avancer dans la grotte, ils ente
 
 Derrière Crap se trouvent deux autres skavens, arme au poing ; pendant ce temps-là, trois autres sont en train de se faufiler le long du ruisseau souterrain pour prendre les aventuriers à revers. Deux d'entre eux vont bloquer l'entrée de la deuxième grotte, tandis que le troisième emprunte le passage reliant le ruisseau à la première grotte.
 
-
+<span id="page-59-0" data-folio="60"></span>
 Si les aventuriers font le moindre mouvement hostile, les skavens attaquent. Sinon, Crap essaiera de parlementer avec eux, afin d'obtenir le plus d'informations possible en attendant que son piège se referme. *« Pierre, pierre ! »* exige-t-il. *« Où ça, où ça ? »*
 
 Une fois les trois autres skavens en position, Crap tente de capturer le groupe. S'ils se rendent, les aventuriers auront des épées pointées sur eux le temps que Crap torture l'un des leurs pour obtenir des informations... et pour se divertir. Crap commence par Corrobreth le druide, et les skavens seront tellement obnubilés par la torture que les aventuriers auront une chance de s'échapper ou de les prendre par surprise.
@@ -218,10 +218,10 @@ Pisteur, Porte-bouclier 2, Vision nocturne
 
 **Possessions :** bouclier, cotte de mailles, épée, casque
 
-
+<span id="page-60-0" data-folio="61"></span>
 #### LES SKAVENS
 
-<span id="page-60-0"></span>Si les joueurs s'attendent à rencontrer des skavens, il peut être judicieux de retarder cette rencontre. Les joueurs grognards pourraient exiger que leurs Personnages passent beaucoup de temps à fouiller les moindres recoins de la Cuvette du Diable à la recherche des hommes-rats, avec la certitude que ceux-ci rôdent dans les parages, prêts à leur tendre une embuscade. Après tout, là où il y a de la malepierre, les skavens ne sont jamais bien loin.
+Si les joueurs s'attendent à rencontrer des skavens, il peut être judicieux de retarder cette rencontre. Les joueurs grognards pourraient exiger que leurs Personnages passent beaucoup de temps à fouiller les moindres recoins de la Cuvette du Diable à la recherche des hommes-rats, avec la certitude que ceux-ci rôdent dans les parages, prêts à leur tendre une embuscade. Après tout, là où il y a de la malepierre, les skavens ne sont jamais bien loin.
 
 Laissez les joueurs chercher tant qu'ils veulent. Attendez patiemment jusqu'à ce qu'ils abandonnent et retournent à Unterbaum ou Grissenwald, puis lancez sur eux une attaque de skavens au moment où ils s'y attendent le moins. Peut-être que Crap et ses guerriers les attendent à Unterbaum, et que les Baumenvolks sont en fait des partisans des skavens. Peut-être qu'ils attendent dans des tunnels secrets sous l'Auberge des Chutes grondantes ; peut-être aussi que, maintenant que les gobelins ont été expulsés des Crêtes Noires, ils se sont installés dans la mine et attendent que les aventuriers reviennent avec la précieuse malepierre.
 
@@ -255,8 +255,8 @@ Le voyage de retour jusqu'à Unterbaum se déroule sans encombre, mais le groupe
 
 Le skaven les suit jusqu'à Wittgendorf (voir p. 68), puis retourne auprès de son maître pour faire son rapport.
 
-
-### <span id="page-61-0"></span>**CONCLUSION**
+<span id="page-61-0" data-folio="62"></span>
+### **CONCLUSION**
 
 ### **Récompenses**
 
@@ -312,7 +312,7 @@ Corrobreth est conscient des transformations causées par la météorite de male
 
 **Miracles :** Caresse de Rhya, Enfants de Rhya, Récolte de Rhya
 
-
+<span id="page-62-0" data-folio="63"></span>
 #### **Graulich le corbeau**
 
 Corrobreth a entraîné Graulich pour qu'il lui serve d'éclaireur : il peut voler dans une direction donnée et descendre en piqué pour indiquer la position de personnes ou de créatures plus grandes que lui. Quand il ne sert pas d'éclaireur à Corrobreth, Graulich reste généralement perché sur son épaule.
@@ -358,3 +358,5 @@ Depuis ce jour, Brunhilde hante la région autour de la Cuvette du Diable, anim�
 **Traits :** Arme +8, Armure 2, Fabriqué, Infravision, Insensible à la douleur, Mort-vivant, Peur 2
 
 **Possessions :** arme simple, cotte de mailles en lambeaux **Règles particulières :** en raison des circonstances de leur mort, ces squelettes ne sont pas Instables, et peuvent se déplacer librement. Si les Personnages fuient, les squelettes les poursuivront jusqu'à être détruits ou jusqu'à ce que les Personnages meurent.
+
+<span id="page-63-0" data-folio="64"></span>

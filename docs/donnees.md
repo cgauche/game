@@ -139,9 +139,10 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
   `.md` du livre (`docs/sources-vf.md` → dossier `Source/`), puis lis le **`data-folio="N"`** de l'ancre
   `<span id="page-… data-folio="N">` la plus proche AU-DESSUS de ton contenu — **`N` = la valeur de
   `source.page`**. ⚠ Le NUMÉRO du span-id seul (`page-89`) est l'**index PDF**, PAS le folio (c'est le
-  piège de #148) — toujours lire `data-folio`. Livres étiquetés (LDB, ADE I/II, EDOC, Middenheim, NADJ,
-  ACE, PDT) : `data-folio` baké. Scans (AA, ZI, MDG, EDO, MSR, MSRC) : pas encore de `data-folio` → lire le
-  folio dans l'**en-tête de page** du PDF (baking à venir).
+  piège de #148) — toujours lire `data-folio`. **Tous les livres de règles autorisés** ont `data-folio`
+  baké et les ancres nues (sans folio) retirées — étiquetés (LDB, ADE I/II, EDOC, Middenheim, NADJ, ACE,
+  PDT) comme scans (AA, ZI, MDG, EDO, MSR, MSRC) ; le `00 - Index.md` de chaque livre liste ses chapitres
+  avec leur folio de début.
 - **`desc`** et tout champ de prose (effet, règles) = **copié/collé VERBATIM** de la source, en **Markdown**
   (`**gras**`, `*ital*`, listes `-`), jamais en HTML, jamais reformulé (règle stricte 5 ; garde
   `src/data/no-html-in-prose.test.ts`).

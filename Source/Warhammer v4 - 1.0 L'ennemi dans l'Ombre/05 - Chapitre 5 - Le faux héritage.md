@@ -1,4 +1,4 @@
-*Pages PDF 52-54*
+*Folio 53+*
 
 # CHAPITRE 5 : LE FAUX HÉRITAGE
 
@@ -6,7 +6,7 @@ En arrivant à Bögenhafen, nos héros sont sans doute impatients de se rendre a
 
 ## **BÖGENHAFEN**
 
-<span id="page-51-0"></span>V
+V
 
 Bögenhafen est typique des villes marchandes qui bordent les fleuves de l'Empire. Les Personnages en visiteront plusieurs dans **Mort sur le Reik**. Une présentation détaillée figure dans l'Annexe 1, et vous pouvez vous y référez dès que vous souhaitez présentez une ville de ce type aux joueurs, que ce soit dans le cadre de cette campagne ou dans un autre.
 
@@ -42,7 +42,7 @@ Si Adolphus s'est enfui, ou s'il a un partenaire pour prendre sa relève, le cha
 
 « *Herr Barl était impatient de vous rencontrer, Herr Lieberung* », dit-il. « *Je vais lui faire savoir que vous êtes arrivé.* » Il prend les deux documents, puis sort par une porte au fond de la pièce. Au moment où la porte se referme, plusieurs choses se produisent.
 
-
+<span id="page-52-0" data-folio="53"></span>
 ## V
 
 ## CE QU'IL SE PASSE À BÖGENHAFEN
@@ -85,10 +85,10 @@ Le cadavre semble avoir été mis en pièces par une sorte de monstre. Sa poitri
 
 La fouille du corps mutilé fournira la lettre de « Q.F. » (*Document 7 : La lettre*, page 153). Si les Personnages ne semblent pas vouloir toucher le cadavre, ils pourront apercevoir un coin de la lettre pointer hors d'une des bottes du chasseur de primes. Celle-ci pourra apporter quelques réponses à leurs interrogations, mais elle les laissera avec autant de nouvelles questions.
 
-
+<span id="page-53-0" data-folio="54"></span>
 ## OPTIONS : LE GRAND MÉCHANT
 
-<span id="page-53-0"></span>Quiconque a déjà joué à la première version de **Ombres sur Bögenhafen** se souviendra que Johannes Teugen est le méchant de l'histoire, et qu'il est assisté par un démon nommé Gideon. Par conséquent, il est possible que vous souhaitiez placer un autre personnage à la tête de l'*Ordo Septenarius*, de façon à préserver la surprise des joueurs.
+Quiconque a déjà joué à la première version de **Ombres sur Bögenhafen** se souviendra que Johannes Teugen est le méchant de l'histoire, et qu'il est assisté par un démon nommé Gideon. Par conséquent, il est possible que vous souhaitiez placer un autre personnage à la tête de l'*Ordo Septenarius*, de façon à préserver la surprise des joueurs.
 
 Il est possible de promouvoir d'autres candidats à ce poste par un simple changement de nom. Franz Steinhäger et Friedrich Magirius sont les plus évidents, mais les évènements au Tribunal des Fêtes pourraient prendre une autre tournure si le juge Richter était secrètement à la tête de l'*Ordo Septenarius.* Au lieu d'être frappé par une maladie magique (voir **Les appartements de Richter**, page 84), il fait seulement semblant d'être malade, et fait en sorte de dissimuler le temple secret et de déplacer le lieu du rituel. Hieronymus Ruggbroder pourrait être un opposant de l'*Ordo* en public, mais le diriger en secret, laissant un homme de paille (peut-être Steinhäger ou Magirius) à la tête du Conseil Intérieur. À moins qu'un marchand jusque-là inconnu, appartenant à une famille mineure, en dirige en réalité l'organisation, la vie tranquille qu'il semble mener ne visant qu'à éviter d'attirer l'attention.
 
@@ -112,3 +112,5 @@ En plus des PX habituels que vous accordez pour une bonne interprétation, ou to
 
 - 0 5-10 points chacun pour avoir évité à l'attaque d'Adolphus Kuftsos ou y avoir survécu.
 - 0 20 points chacun pour avoir vaincu Adolphus Kuftsos.
+
+<span id="page-54-0" data-folio="55"></span>

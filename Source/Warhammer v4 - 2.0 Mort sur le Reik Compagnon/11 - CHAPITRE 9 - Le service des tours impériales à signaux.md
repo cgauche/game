@@ -1,6 +1,7 @@
-*Pages PDF 61-63*
+*Folio 61+*
 
-## <span id="page-60-0"></span>CHAPITRE 9 LE SERVICE DES TOURS À SIGNAUX IMPÉRIALES
+<span id="page-60-0" data-folio="61"></span>
+## CHAPITRE 9 LE SERVICE DES TOURS À SIGNAUX IMPÉRIALES
 
 ### **LES TOURS À SIGNAUX**
 
@@ -12,8 +13,8 @@ Pour le moment, il n'existe qu'une seule chaîne composée de neuf tours à sign
 
 Quand le réseau entier sera mis en place, on estime qu'une alarme provenant de n'importe quel endroit de l'Empire pourra atteindre Altdorf en moins d'une journée, ce qui permettra aux forces électorales et impériales de parer à tous types de menaces, aux armées du Chaos marchant sur Kislev aux hordes de peauxvertes passant par le Col du Feu noir, avec une rapidité et une flexibilité jusqu'alors jugées impossibles.
 
-
-### <span id="page-61-0"></span>**STRUCTURE**
+<span id="page-61-0" data-folio="62"></span>
+### **STRUCTURE**
 
 Situées au sommet d'une colline ou autre promontoire, en vue les unes des autres par temps clair, les tours à signaux sont construites en pierre de taille à l'aide de techniques naines avancées afin d'être les plus résistantes et durables possible. Leur hauteur peut varier, mais le dispositif au sommet est toujours le même.
 
@@ -55,7 +56,7 @@ Chaque tour est équipée d'un livre-code contenant les codes impériaux standar
 
 Cependant, nombreux sont ceux qui seraient prêts à payer très cher pour connaître les codes impériaux en usage : des Électeurs malintentionnés, des rebelles potentiels, des adeptes de cultes désireux de semer la discorde, des espions au service de puissances étrangères...
 
-
+<span id="page-62-0" data-folio="63"></span>
 Tandis que les Personnages se trouvent dans une tour à signaux, ils ont peut-être été contraints de s'y réfugier à cause du mauvais temps ou d'hommes-bêtes en maraude, ou s'y sont rendus pour exécuter une tâche quelconque, ils y affrontent un espion ou un voleur tentant de s'emparer d'un livre-code. Ou peut-être que les Personnages eux-mêmes ont pour mission de dérober le livre, ou bien, de manière assez comique, de remplacer un volume erroné par une version corrigée, sans que les opérateurs ne s'en aperçoivent. Cela peut s'expliquer par le fait que les autorités voudraient éviter de se couvrir de ridicule en avouant que le livre contenait des erreurs, ou bien il pourrait s'agir d'une opération pour exposer un agent ennemi ayant intercepté des transmissions avec l'aide un complice parmi les opérateurs de la tour.
 
 #### **La Société impériale des colombophiles d'Altdorf**
@@ -73,3 +74,5 @@ La première vague d'assaillants se brise sur les murs de la tour, qui est quasi
 La tour a été construite sur une petite colline que les éclaireurs impériaux ont prise pour une formation naturelle ; il s'agit en réalité d'un antique tertre funéraire de l'ère pré-sigmarite. Le propriétaire du tumulus, un fantôme, un spectre de cairn, une banshee, ou tout autre mort-vivant très puissant, se met en tête de détruire la tour et de punir les opérateurs.
 
 La créature peut être seule, ou bien il peut s'agir de la dépouille d'un ancien chef, qui fut enterré avec un contingent de serviteurs et de guerriers, devenus des morts-vivants mineurs, comme des squelettes ou des zombies, qui escaladent à présent la tour et tentent de la démolir tandis que leur chef s'occupe des mortels terrifiés réfugiés à l'intérieur. Pour ajouter à l'horreur de ce scénario, le chef des morts-vivants peut posséder un Trait rare qui transforme les victimes qu'il a tuées en zombies ou un autre type de morts-vivants quelques Rounds après leur mort.
+
+<span id="page-63-0" data-folio="64"></span>

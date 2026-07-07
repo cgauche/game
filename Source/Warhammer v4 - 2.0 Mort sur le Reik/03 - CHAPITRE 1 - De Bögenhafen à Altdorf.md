@@ -1,6 +1,6 @@
-*Pages PDF 9-23*
+*Folio 10+*
 
-# <span id="page-8-0"></span>CHAPITRE 1 DE BÖGENHAFEN À ALTDORF
+# CHAPITRE 1 DE BÖGENHAFEN À ALTDORF
 
 I
 
@@ -44,12 +44,12 @@ Plus proche qu'Altdorf ou Nuln se trouve la ville de Weissbruck, patrie de l'her
 
 Enfin, l'ami des aventuriers, Josef Quartjin, est de retour à Weissbruck avec sa barge, le *Bérébéli*. À bord se trouve une cargaison fraîche de vin local, si tout s'est bien passé, ou un groupe de réfugiés terrorisés si les événements ont mal tourné. Puisque certains des aventuriers se sont engagés comme membres d'équipage lorsque la barge se dirigeait vers Bögenhafen, Josef leur propose donc de les ramener à Weissbruck dans les mêmes conditions : 2 pistoles par jour pour un maximum de quatre Personnages qui rejoignent l'équipage. Le reste du groupe peut voyager gratuitement.
 
-
+<span id="page-9-0" data-folio="10"></span>
 ## **DE BÖGENHAFEN À WEISSBRUCK**
 
 Le voyage vers Weissbruck peut être aussi bien paisible que mouvementé, à vous de choisir. Si les choses ont mal tourné à Bögenhafen, la rivière déborde de réfugiés qui fuient la ville condamnée. Les rumeurs abondent sur les terribles événements qui s'y sont produits, et toutes les villes et baronnies voisines rassemblent désespérément des soldats. Si Bögenhafen a été épargnée, la circulation sur les rivières est normale.
 
-<span id="page-9-0"></span>I
+I
 
 Ce voyage est l'occasion idéale pour présenter aux joueurs les règles de navigation proposées dans le livre **Mort sur le Reik - Compagnon**. Vous pouvez également vous essayer à certains des dangers et rencontres qui y sont décrits. Les conversations avec les riverains croisés, ou la nuit dans les auberges au bord de la rivière, permettent aux aventuriers d'en apprendre plus sur les nouvelles et les rumeurs.
 
@@ -75,8 +75,8 @@ Vous pouvez révéler les nouvelles et les rumeurs suivantes lorsque les aventur
 - 0 Le Prince héritier Hergard von Tasseninck, fils unique et héritier du Grand Prince Hals von Tasseninck, souverain d'Ostland, a été tué lors d'une expédition dans les Montagnes Grises. On raconte que des hommes-bêtes rôdent par là-bas, qu'ils lancent des éclairs avec des bâtons verts. Certains disent avoir les cicatrices qui le prouvent ! Avez-vous déjà entendu de telles balivernes ?
 - 0 Des émeutes ont eu lieu dans le Middenland, au nord. Les habitants ont toujours suivi Ulric, maintenant ils se retournent contre les vrais partisans de Sigmar. Il est temps que l'Empereur les considère comme des rebelles et envoie des troupes pour leur régler leur compte !
 
+<span id="page-10-0" data-folio="11"></span>
 
-<span id="page-10-0"></span>
 
 ### **UN BATEAU EN PERDITION**
 
@@ -106,7 +106,7 @@ Les Personnages ayant l'État *Empêtrés* peuvent tenter de s'échapper en réa
 
 Au début du Round de l'homme-bête, si ce dernier a *Empêtré* une victime, il la tire par-dessus bord. La cible peut réaliser un Test de **Force Complexe (-10)** pour s'accrocher au bastingage et éviter d'être entraînée dans la rivière.
 
-
+<span id="page-11-0" data-folio="12"></span>
 #### CE NE SONT PAS DES MUTANTS !
 
 Les joueurs grognards s'attendront à croiser des mutants, vous pouvez donc vouloir leur offrir de la nouveauté en proposant aux aventuriers des ennemis différents qu'ils devront affronter pour récupérer la barge.
@@ -145,8 +145,8 @@ S'ils voyagent avec Josef, les adieux seront chaleureux et arrosés avec modéra
 
 Si aucun des aventuriers ne possède de Compétence de Navigation (Ramer ou Voile), Josef passera une journée à enseigner à au moins l'un d'entre eux les rudiments du maniement d'un bateau. Ce temps n'est pas suffisant pour apprendre une Compétence, mais chacun des aventuriers recevant cet enseignement doit effectuer un Test d'**Intelligence Intermédiaire (+0)**. Ceux qui 
 
-
-<span id="page-12-0"></span>réussissent gagnent un bonus de +10 à tous les Tests impliquant des bateaux que vous jugerez pertinents jusqu'à ce qu'ils acquièrent convenablement l'une ou l'autre des Compétences.
+<span id="page-12-0" data-folio="13"></span>
+réussissent gagnent un bonus de +10 à tous les Tests impliquant des bateaux que vous jugerez pertinents jusqu'à ce qu'ils acquièrent convenablement l'une ou l'autre des Compétences.
 
 Même si Josef est disponible, Renate proposera son aide pour le bateau. C'est le moins qu'elle puisse faire pour aider les héros qui l'ont sauvée.
 
@@ -182,8 +182,8 @@ Ou bien, Liza pourrait être une alliée des ravisseurs, gardant rancune contre 
 
 Les ravisseurs eux-mêmes peuvent être très différents du souvenir qu'en ont les joueurs : pour commencer, ils peuvent être plus nombreux. Ils pourraient être mieux organisés et leur employeur, Hollzauber, dont les sorts peuvent faire pencher la balance contre les aventuriers les plus imprudents, pourrait même se trouver avec eux. Au lieu d'être un démonologue, il pourrait être un répurgateur ayant arrêté Elvyra, car il la soupçonnait d'être une démonologue. Il s'est servi de cet enlèvement comme appât attirer ses éventuels complices, qu'il identifiera comme toute personne qui viendrait la sauver. Imaginez le plaisir du répurgateur à la vue d'une poignée de personnages très suspects et bien armés tombant directement dans son piège.
 
-
-### <span id="page-13-0"></span>**LA PHARMACOLOGUE**
+<span id="page-13-0" data-folio="14"></span>
+### **LA PHARMACOLOGUE**
 
 Elvyra Kleinestun est bien connue à Weissbruck et presque tous les habitants peuvent expliquer aux aventuriers où la trouver. La maison d'Elvyra (voir la carte ci-dessous) est une bâtisse simple comprenant deux pièces au rez de chaussée, et deux chambres à l'étage, située près de l'auberge du Joyeux Drille. L'habitation est bien entretenue, fraîchement repeinte, avec des jardinières d'herbes et de fleurs. Cependant, en approchant, les aventuriers remarqueront qu'une des fenêtres a été brisée et que sa jardinière est cassée. Un aventurier réalisant un Test de **Perception Accessible (+20)** se rendra compte que la fenêtre a été cassée de l'extérieur. Il verra également quelques fils accrochés au verre brisé, ce qui signifie que quelqu'un est entré par là. En regardant par la fenêtre, les signes d'une lutte violente sont évidents : meubles cassés, éclats de verre, etc.
 
@@ -209,8 +209,8 @@ La porte cachée s'ouvre sur une volée de marches raides et étroites menant à
 
 Il manque une marche à peu près à mi-chemin de l'escalier. Si le premier à descendre l'escalier possède le Talent Vision nocturne, une lampe ou effectue un Test de **Perception Accessible (+20)**, la brèche est repérée. Dans le cas contraire, le Personnage doit effectuer un Test d'**Agilité Très Difficile (-30)** ou il tombera dans les escaliers. Toute personne chutant 
 
-
-<span id="page-14-0"></span>jusqu'au sol de la cave se retrouve avec une cheville tordue à cause de la hauteur de 1,80 m ; le Mouvement et l'Initiative sont réduits de moitié pendant 1d10 heures.
+<span id="page-14-0" data-folio="15"></span>
+jusqu'au sol de la cave se retrouve avec une cheville tordue à cause de la hauteur de 1,80 m ; le Mouvement et l'Initiative sont réduits de moitié pendant 1d10 heures.
 
 Une fillette terrifiée se cache au milieu d'un amas de chiffons et de boîtes dans un coin de la cave. Un Personnage humain qui effectue un Test de **Sociabilité Accessible (+20)** convaincra la jeune fille que les aventuriers ne lui veulent aucun mal. Un Personnage nonhumain doit réaliser un Test de **Sociabilité Intermédiaire (+0)**.
 
@@ -252,8 +252,8 @@ Les aventuriers doivent gagner la confiance des habitants pour obtenir des infor
 
 Trois étrangers ont séjourné à l'auberge quelques jours plus tôt. La nuit dernière, ils ont réglé leur séjour et ont quitté les lieux. L'aubergiste se souvient qu'ils devaient rencontrer « un ami batelier » censé les emmener à Altdorf, mais il ne devait pas arriver avant demain matin.
 
-
-<span id="page-15-0"></span>Il était un peu perplexe quant à l'endroit où ils allaient loger, mais pas plus curieux que cela. « Les gens font bien ce qu'ils veulent », voilà son état d'esprit.
+<span id="page-15-0" data-folio="16"></span>
+Il était un peu perplexe quant à l'endroit où ils allaient loger, mais pas plus curieux que cela. « Les gens font bien ce qu'ils veulent », voilà son état d'esprit.
 
 On trouve beaucoup de granges aux alentours. Certaines d'entre elles pourraient bien être rouges. Les granges existent de toutes les couleurs. Tous s'accordent à dire que le « bon vieil Otto », l'employé âgé de la taverne, est une grande source d'information. Il travaille ici depuis aussi longtemps que l'on s'en souvienne et il voit absolument tout.
 
@@ -277,7 +277,7 @@ Lorsqu'elle se rend compte que les aventuriers ne partent pas, la sentinelle cri
 
 Les deux autres malfrats dans le grenier à foin prennent deux Rounds pour réagir à l'alerte de la sentinelle ou aux bruits de combat. Au premier Round, ils regardent par-dessus la balustrade du grenier à foin, d'un mètre de haut, puis s'esquivent dès qu'ils aperçoivent les aventuriers. Le deuxième Round se
 
-
+<span id="page-16-0" data-folio="17"></span>
 déroule dans la panique, car ils ne s'attendaient pas à tant de difficultés. Au troisième Round, ils hissent Elvyra de sa chaise, la maintenant pieds et poings liés. Si les aventuriers montent l'échelle, ils trouveront les deux voyous derrière Elvyra, une dague sous la gorge.
 
 Ces derniers n'ont pas l'intention de tuer Elvyra : elle a une grande valeur aux yeux de leur maître. Ils s'attendent à ce que la menace fasse hésiter les aventuriers, ce qui leur laisserait le temps de pousser Elvyra hors du grenier à foin dans un tas de paille moisie situé à l'extérieur, de sauter, puis de s'échapper du mieux qu'ils peuvent. Ce plan n'est pas parfait, loin de là, mais c'est le meilleur dont ils disposent. S'il devient évident qu'ils ne peuvent pas gagner dans un face-à-face ou un combat, les coupe-jarrets se rendront, espérant s'enfuir lorsqu'ils seront conduits hors de la grange.
@@ -302,7 +302,7 @@ Si les aventuriers parviennent à sauver Elvyra, elle formera volontiers quiconq
 
 Vous pouvez décider de la durée de l'entraînement en fonction du style de jeu préféré de votre groupe. Il peut s'écouler une semaine avant qu'un aventurier puisse utiliser une nouvelle Carrière ou qu'une nouvelle Carrière soit disponible pour la prochaine session de jeu.
 
-
+<span id="page-17-0" data-folio="18"></span>
 ### **Le chasseur de primes**
 
 I
@@ -339,8 +339,8 @@ Les informations suivantes peuvent être apprises lorsque les aventuriers voyage
 - 0 Des gens ont commencé à arriver à Altdorf par le nord. Ils disent avoir été persécutés dans le Middenland en raison de leur foi envers Sigmar. Certains rapportent même que deux ordres de chevaliers ont été impliqués dans cette violence religieuse. Les Templiers ulricains de l'Ordre du Loup Blanc et les Chevaliers Panthères, la garde d'élite de l'Électeur local ! Ils se battent ! Mais où va le monde ?
 - 0 Les marchands de Marienburg requalifient l'eau-de-vie bretonnienne sous l'appellation « Produit du Sudenland » pour tenter de contourner l'embargo sur les importations imposé par les collecteurs d'impôts de l'Empereur.
 
-
-<span id="page-18-0"></span>Si les aventuriers ont l'air de passer un mauvais quart d'heure, souvenez-vous que les voyous ont rarement beaucoup d'amis et qu'un passant leur indiquera toujours la bonne direction. Personne ne sera contrarié si Bengt, Gurt et Willi se prennent une petite raclée... ou pire.
+<span id="page-18-0" data-folio="19"></span>
+Si les aventuriers ont l'air de passer un mauvais quart d'heure, souvenez-vous que les voyous ont rarement beaucoup d'amis et qu'un passant leur indiquera toujours la bonne direction. Personne ne sera contrarié si Bengt, Gurt et Willi se prennent une petite raclée... ou pire.
 
 Capturer un ou plusieurs hommes de main permet de poser certaines questions, mais les réponses ne seront pas très utiles. Le « patron » a payé en espèces, il pourrait être originaire d'Altdorf, ils ne lui ont pas demandé ce qu'il voulait aux aventuriers : « On a juste rempli notre mission, vous savez... c'est tout. On s'est amusés et on a bien rigolé ». Kuftsos ne passait pas inaperçu. Les aventuriers peuvent trouver de nombreux aubergistes et patrons de bar sur les quais qui se souviennent de lui. Toutefois, il n'a jamais dit aux habitants de Weissbruck ce qui l'amenait ici.
 
@@ -384,10 +384,10 @@ Les adeptes surveillent les quais, mais cette fois, ils ne tentent pas d'établi
 
 Deux fois par jour, vous devez effectuer un Test d'**Initiative Intermédiaire (+0)** secret, en utilisant la valeur d'Initiative la plus élevée parmi les aventuriers, et accorder un bonus de +10 à 
 
-
+<span id="page-19-0" data-folio="20"></span>
 tout Personnage possédant le Talent Sixième sens. Réalisez ce Test lorsque les aventuriers s'arrêtent pour la nuit et lorsqu'ils reprennent leur voyage le matin.
 
-<span id="page-19-0"></span>I
+I
 
 Si les aventuriers repèrent les adeptes, vous devez les décrire brièvement. Les adeptes doivent réaliser un Test d'**Intelligence Accessible (+20)** pour se rendre compte qu'ils ont été repérés. Ils feront ensuite de leur mieux pour éviter le combat avec les aventuriers. Si le Test est raté, ils se dirigeront droit dans une embuscade tendue par les Personnages.
 
@@ -434,7 +434,7 @@ En plus des points que vous pouvez donner pour un bon jeu de rôle et des idées
 
 À tort ou à raison, la population de mutants de l'Empire est mise au ban de la société. Si certains cherchent simplement à se cacher, beaucoup se tournent vers la violence, soit pour survivre, soit pour punir la société qui les a abandonnés.
 
-
+<span id="page-20-0" data-folio="21"></span>
 #### MUTANT À TENTACULES (BRONZE 0) **M CC CT F E I Ag Dex Int FM Soc B** 4 55 30 35 55 40 45 25 25 30 25 16
 
 **Compétences :** Corps à corps (Bagarre) 65, Esquive 55 **Traits :** Amphibie, Armure 1, Corruption (Mineure), Mutation (Œil Gigantesque), 2 Tentacules +7, Vision nocturne
@@ -480,7 +480,7 @@ Jeune femme très indépendante et autonome, Renate est souvent prise pour une S
 
 **Possessions :** bobines de ruban de couleur (3), boîte à amadou, corde (10 mètres), couteau, couvertures (4), épingles (300), lanterne, petits couteaux et fourchettes (12), pots de fer (2), sac, bourse (contenant 3/6)
 
-
+<span id="page-21-0" data-folio="22"></span>
 # **La fille de la pharmacologue, Liza Sauber**
 
 Liza porte une simple blouse et se déplace pieds nus. Elle aime beaucoup Elvyra et fera tout ce qu'elle peut pour l'aider.
@@ -531,7 +531,7 @@ Elvyra habite à Weissbruck depuis deux ans. Originaire d'Altdorf, elle a démé
 
 **Traits :** Arme (Dague) +4, Préjugé (Studieux)
 
-
+<span id="page-22-0" data-folio="23"></span>
 ### **Les adeptes**
 
 Tous les adeptes de la Main Pourpre portent un vêtement de cette couleur : tunique, cape, ceinture ou autre. Après trois ou quatre rencontres avec des adeptes, commencez à effectuer des Tests d'**Intelligence Intermédiaire (+0)** secrets pour que les aventuriers repèrent ces éléments de couleur pourpre. De plus, tous les adeptes ont un petit tatouage violet représentant une main ouverte quelque part sur le corps. Bien qu'ils disposent d'une variété de professions leur fournissant une couverture plausible, ils ont tous un certain nombre de Compétences en commun énumérées ci-dessous. Ils disposent également de toutes les Compétences hors combat cohérentes avec leur couverture et la situation dans laquelle ils se trouvent.
@@ -576,3 +576,5 @@ Armure (Chemise de mailles et Casque) 2
 **Talents :** Très fort
 
 **Traits :** Armure (Veste de cuir) 1, Arme (Épée) +8 **Possessions :** épée, uniforme, veste de cuir
+
+<span id="page-23-0" data-folio="24"></span>

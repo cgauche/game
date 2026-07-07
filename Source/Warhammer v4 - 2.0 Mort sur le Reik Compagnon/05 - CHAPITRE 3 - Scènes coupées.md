@@ -1,4 +1,4 @@
-*Pages PDF 17-22*
+*Folio 18+*
 
 ## CHAPITRE 3 SCÈNES COUPÉES
 
@@ -18,8 +18,8 @@ Le comte Otto Boormann a été envoyé à Kemperbad pour étudier la vieille cha
 
 Alors que les Personnages approchent du port, ils voient une escouade de soldats en livrée disperser des civils attroupés sur l'un des plus grands embarcadères, tandis qu'un énorme bateau de patrouille fluvial arborant le pavillon impérial y accoste. Au milieu d'une fanfare de cuivres, un personnage richement vêtu et assez corpulent descend la passerelle d'un pas mal assuré. Un officier s'avance pour l'accueillir, et, sous le hurlement des trompettes, les deux hommes embarquent dans le montecharge qui les conduira à la ville. Les accompagnateurs d'Otto les suivent, et occupent tous les monte-charge disponibles jusqu'à ce qu'ils aient tous atteint Kemperbad.
 
-
-### <span id="page-17-0"></span>**CONNAISSANCES**
+<span id="page-17-0" data-folio="18"></span>
+### **CONNAISSANCES**
 
 En posant les bonnes questions en ville, les aventuriers peuvent découvrir l'identité du Comte, son rang et sa mission. Ils peuvent essayer de faire sa connaissance de plusieurs façons.
 
@@ -55,8 +55,8 @@ Si la mission de Boorman à Kemperbad se solde par un échec, il sera quand mêm
 
 Plus tard, Boorman pourra aussi apparaître dans **L'Empire en Ruines**, la dernière partie de **L'Ennemi Intérieur**, où il jouera un rôle similaire, en présentant aux aventuriers certains Personnages importants et en leur expliquant les intrigues qui rythment la vie de cour d'Altdorf.
 
-
-### <span id="page-18-0"></span>**LA** MARIA BORGER
+<span id="page-18-0" data-folio="19"></span>
+### **LA** MARIA BORGER
 
 Cette rencontre peut survenir à n'importe quel moment alors que les aventuriers voyagent sur les cours d'eau de l'Empire, en plus ou à la place d'une autre rencontre avec un bateau de commerce.
 
@@ -88,8 +88,8 @@ Un Test de **Perception Intermédiaire (+0)** révèle un petit pendentif en arg
 
 *« Je n'ai vraiment pas besoin de ça, en ce moment*, dit-il. *Vous voyez, j'ai une cargaison spéciale, et elle doit être livrée dans deux jours. Si on n'y arrive pas, on perdra sans doute le bateau. »* Pendant que lui et Reiner chargeaient le bateau deux jours plus tôt, ils ont été abordés par des représentants d'une grande organisation marchande. Aucun de leurs bateaux n'allait dans la bonne direction, et ils offraient presque deux fois le tarif normal. Bernhardt a accepté la cargaison, en espérant qu'il pourrait continuer à faire affaire avec eux à l'avenir.
 
-
-### <span id="page-19-0"></span>**LA CARGAISON**
+<span id="page-19-0" data-folio="20"></span>
+### **LA CARGAISON**
 
 Cette cargaison spéciale consiste en une seule caisse, d'environ 2,5 m de long, 2,5 m de large, et 1 m de haut. Le couvercle est fermé avec des clous, et un énorme sceau de plomb est visible sur l'un des côtés. Un Test de **Savoir (Héraldique) Difficile (–20)** permet de reconnaître les armoiries des Orlok, une petite famille de nobles d'Ostland, qui s'est éteinte pendant l'Âge des Trois Empereurs. La caisse doit être livrée dans une ville sur leur chemin et placée dans un entrepôt (ce que le transporteur devra aussi se charger de faire), au nom du graf Orlok. Ce service a été rémunéré à l'avance : trente-cinq Couronnes d'or pour le transport, et quinze pour l'entrepôt. Bernhardt ne laissera pas les aventuriers ouvrir la caisse, à moins qu'ils réussissent un Test opposé de **Charme/Calme**. S'ils ouvrent la caisse, ils découvrent deux cercueils à l'intérieur. L'un ne contient qu'une fine couche de terre, et l'autre un corps. Ses vêtements sont à la mode d'il y a trois cents ans, mais le corps en lui-même ne montre aucun signe de décomposition. Un filet de sang frais souille la commissure de ses lèvres.
 
@@ -127,7 +127,7 @@ Bernhardt pense qu'il a déjà affronté tout ce que le fleuve peut lui réserve
 
 **Possessions :** arbalète et 12 carreaux, épée, outils de charpentier, la *Maria Borger*, sac contenant 3 CO, veste de cuir, 17/6
 
-
+<span id="page-20-0" data-folio="21"></span>
 ### **Hans Vollrat, Reiner et Karl Dampfer**
 
 Les canotiers de la *Maria Borger* sont des hommes amicaux et affables avec la plupart des gens qu'ils croisent sur le fleuve, mais ils gardent toujours une arbalète à portée de main. Reiner et Karl ont une vingtaine d'années, et se préparent à reprendre l'entreprise familiale. Hans est plus âgé et expérimenté que les deux fils Dampfer : ça fait presque dix ans qu'il travaille avec leur père. À cause du travail nécessaire à l'entretien et au bon fonctionnement de la barge, sans parler de son inquiétude pour ses camarades malades, Reiner n'a pas une minute à lui. Il fera de son mieux pour assister les aventuriers, mais ses corvées sur le bateau occuperont le plus clair de son temps.
@@ -174,8 +174,8 @@ Maintenant que le comte Orlok est hors d'état de nuire, et que Karl et Hans se 
 
 Mais que se passe-t-il quand de nouvelles rumeurs d'attaques de vampires commencent à suivre la *Maria Borger* ? Même après la mort du comte Orlok, sa présence persiste. Qui sait ? Il ne s'est peut-être pas contenté de se nourrir de Karl et Hans. Il les a peut-être transformés en vampires, eux aussi. Terrifiés et incapables de comprendre ce qui leur arrive, les deux hommes ont commencé à se nourrir des aubergistes, débardeurs et autres personnages qui peuplent le port. Reiner, désemparé, demandera peut-être aux aventuriers de l'aider à régler ce problème qu'il n'a pas le courage d'affronter tout seul.
 
-
-### <span id="page-21-0"></span>**METTRE FIN À LA RENCONTRE**
+<span id="page-21-0" data-folio="22"></span>
+### **METTRE FIN À LA RENCONTRE**
 
 Une fois le vampire détruit, Hans et Karl regagneront leurs Points de Blessure perdus à un rythme normal. Si le MJ le souhaite, les autorités peuvent offrir une récompense à l'équipage et aux aventuriers pour la destruction du vampire. Les temples de Morr sont toujours prêts à offrir 25 CO en échange d'informations qui mènent à l'exécution de mortsvivants et de nécromanciens. La Guilde des Thanatopracteurs s'occupe de la récompense.
 
@@ -202,3 +202,5 @@ Le château von Wittgenstein est rempli de créatures terribles, et parmi les gu
 #### Un étrange philanthrope
 
 Comme le montrent les expériences des Wittgenstein et les multiples vols des skavens, la malepierre est une ressource précieuse, mais dangereuse. Si vous avez du mal à amener vos aventuriers jusqu'au château von Wittgenstein, un PNJ vampire s'y rendant pour aller récupérer de la malepierre peut faire un excellent guide. Il est peutêtre assez âgé pour avoir rencontré Dagmar lui-même, ou pour l'avoir aidé à aller chercher le fragment de malepierre dans les Collines stériles. Bien entendu, une fois le précieux matériau récupéré, ce mécène au teint pâle aura la ferme intention de s'en servir, et les histoires d'hommes-rats perfides n'y changeront rien.
+
+<span id="page-22-0" data-folio="23"></span>

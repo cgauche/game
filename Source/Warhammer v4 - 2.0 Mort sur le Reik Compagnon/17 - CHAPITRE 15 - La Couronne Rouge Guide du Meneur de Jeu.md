@@ -1,6 +1,6 @@
-*Pages PDF 94-101*
+*Folio 95+*
 
-## <span id="page-93-0"></span>CHAPITRE 15 LA COURONNE ROUGE GUIDE DU MENEUR DE JEU
+## CHAPITRE 15 LA COURONNE ROUGE GUIDE DU MENEUR DE JEU
 
 ### **BERGERS DE MONSTRES**
 
@@ -26,8 +26,8 @@ Le culte de la Couronne Rouge, qui se consacre à la protection des mutants et d
 
 — tiré du *Liber Mutandis*
 
-
-### <span id="page-94-0"></span>**ORGANISATION**
+<span id="page-94-0" data-folio="95"></span>
+### **ORGANISATION**
 
 Les cultistes de la Couronne Rouge opèrent par le biais de cellules encore plus petites que celles de la Main Pourpre : une cellule typique se compose d'un sorcier et d'un ou deux apprentis accompagnés d'une poignée de contacts parmi les mutants et les hommes -bêtes locaux . Pour des raisons de sécurité, les cellules ignorent généralement l'existence les unes des autres. Leur petite taille et leur éloignement font qu'elles entrent rarement en contact.
 
@@ -53,8 +53,8 @@ Les membres de la Couronne Rouge se déplacent parmi les mutants et les hommes-b
 
 Dans les grandes villes, les membres de ce culte sont souvent actifs dans les initiatives locales de soutien et de protection des mutants. Certains spécialistes pensent à tort que la Couronne Rouge est en quelque sorte responsable du récent Édit de l'Empereur concernant les mutants.
 
-
-# <span id="page-95-0"></span>POUR LES GROGNARDS : L'ENNEMI AVEC NOUS, ÉDITION COURONNE ROUGE
+<span id="page-95-0" data-folio="96"></span>
+# POUR LES GROGNARDS : L'ENNEMI AVEC NOUS, ÉDITION COURONNE ROUGE
 
 Les aventuriers mènent une vie dangereuse, et d'ici peu, surtout après avoir survécu au château Wittgenstein, un ou plusieurs des Personnages pourraient être atteints d'une mutation. Cette situation peut s'avérer extrêmement stressante, car le Personnage essaiera de cacher son état aux autorités, et peut-être même aux autres membres du groupe, tout en cherchant un moyen de s'en débarrasser.
 
@@ -94,7 +94,7 @@ En plus de sa Carrière de couverture, un sorcier du culte suit également la Ca
 
 Un sorcier du culte a également 50 % de chances de subir une mutation par niveau de Carrière (**WFJDR**, p. 183 à 185) : si une mutation physique est indiquée, effectuez un jet de dé sur la colonne Tzeentch du Tableau des mutations, p. 66 de **L'Ennemi dans l'Ombre - Compagnon**.
 
-
+<span id="page-96-0" data-folio="97"></span>
 Notez qu'un sorcier du culte peut avoir une Carrière de couverture de sorcier dans une autre école, ce qui l'oblige à suivre deux Carrières de sorcier à la fois !
 
 ### **Mutants**
@@ -121,8 +121,8 @@ Pour créer un rejeton du Chaos, commencez avec un profil standard de mutant ou 
 
 Extrait du Livre de la Transmutation La Langue sombre et la Langue bestiale
 
-
-### <span id="page-97-0"></span>**DOMAINE DE TZEENTCH**
+<span id="page-97-0" data-folio="98"></span>
+### **DOMAINE DE TZEENTCH**
 
 Certains sorts du Domaine de Tzeentch sont donnés dans **L'Ennemi dans l'Ombre - Compagnon**. Bien qu'ils soient le plus souvent utilisés par le culte de la Main Pourpre, le MJ peut les mettre à la disposition des cultistes de la Couronne Rouge, selon ses goûts personnels. Les sorts présentés ci-dessous sont plus communément associés à la Couronne Rouge.
 
@@ -204,7 +204,7 @@ Vous invoquez les grâces de Tzeentch et gagnez une mutation temporaire : consul
 | 8    | Ailes            | Envol 60                     |
 | 9-10 | Lancer deux fois |                              |
 
-
+<span id="page-98-0" data-folio="99"></span>
 #### **Escalade**
 
 **NI :** 5
@@ -289,7 +289,7 @@ Vous focalisez le pouvoir de Tzeentch et votre corps se transforme en celui d'un
 
 Un de vos pieds se transforme brièvement en un grand sabot enveloppé de flammes violettes. Le sol tremble lorsque vous tapez du pied et toutes les créatures situées dans un rayon égal à votre Bonus de Force Mentale en mètres (sauf vous) doivent effectuer un Test d'**Agilité** ou tomber, ce qui leur confère l'État *À Terre*.
 
-
+<span id="page-99-0" data-folio="100"></span>
 ### **Serviteurs duSeigneur du Changement**
 
 Dans *Le Guide de la Main Pourpre* (**L'Ennemi dans l'Ombre - Compagnon**, p. 77), vous découvrirez le Magus du culte de Tzeentch, un puissant utilisateur de magie. Bien que la Couronne Rouge et la Main Pourpre servent toutes deux la même Puissance de la Ruine, elles adoptent une approche très différente. La Main Pourpre infiltre les plus hauts niveaux de la société impériale, une pourriture chancreuse visant le cœur de l'Empire. La Couronne Rouge, quant à elle, guide les pions moins subtils du Seigneur du Changement : les mutants et les hommes-bêtes que la société impériale rejette et redoute.
@@ -306,7 +306,7 @@ Il ne suffit pas de dépenser les Points d'Expérience requis pour progresser da
 
 Les élus de Tzeentch sont des maîtres de la magie et acquièrent un léger degré de perspicacité et de contrôle sur les dons horribles de leur protecteur. Lorsque vous obtenez une mutation, lancez deux fois n'importe quel dé et choisissez le résultat qui vous convient le mieux.
 
-
+<span id="page-100-0" data-folio="101"></span>
 *Tzeentch est l'Architecte du Destin, le Grand Conspirateur. Le changement lui-même est le domaine de Tzeentch et vous vous y êtes livré corps, esprit et âme.*
 
 Alors que Tzeentch se délecte des changements apportés par des conspirateurs secrets et des chercheurs de connaissances cruels, le Grand Changeur ne néglige pas le rôle que peut jouer la violence dans l'avènement du changement. Nombre de ses mortels préférés sont des guerriers fourbes ou des généraux rusés qui imposent des changements violents et sanglants au Vieux Monde. Ces serviteurs plus militants manient l'acier et la magie au service de leur dieu blasphématoire, traçant un chemin de ruines fumantes vers le futur éphémère qui leur a été promis.
@@ -354,3 +354,5 @@ h **Initié des mystères – Bronze 1**
 Tueur
 
 **Possessions :** arme liée à un démon, cohorte de guerriers du Chaos, familier démoniaque, têtes coupées d'au moins deux chefs ennemis
+
+<span id="page-101-0" data-folio="102"></span>

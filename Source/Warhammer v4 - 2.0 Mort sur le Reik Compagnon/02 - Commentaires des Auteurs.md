@@ -1,4 +1,4 @@
-*Pages PDF 6*
+*Folio 7+*
 
 # COMMENTAIRES DES AUTEURS
 
@@ -21,3 +21,5 @@ Ces encadrés mettent en avant des idées que vous pouvez utiliser dans votre ca
 #### LES PNJ DE L'OMBRE
 
 Ces encadrés vous suggèrent des façons de vous servir des PNJ de Mort sur le Reik pour aider les personnages, les frustrer, ou rendre leur vie plus intéressante.
+
+<span id="page-6-0" data-folio="7"></span>

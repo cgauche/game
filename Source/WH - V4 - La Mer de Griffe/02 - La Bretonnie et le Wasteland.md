@@ -1,4 +1,4 @@
-*Pages PDF 12-22*
+*Folio 9+*
 
 # LA BRETONNIE ET LE WASTELAND • •
 
@@ -16,7 +16,7 @@ Les Bretonniens affirment depuis longtemps qu'ils sont les meilleurs marins du V
 
 Évidemment, le plus gros des marins bretonniens ne servira jamais à bord d'un navire de guerre. Au lieu de cela, ces gens bravent les mers sur d'humbles esquifs de pêche ou des bateaux marchands. Et c'est à bord de ces vaisseaux vulnérables que la réputation de navigateurs des Bretonniens se mérite. La côte de la Mer des Griffes est rude et inhospitalière. Pour voguer dans ces eaux sans risque, un marin doit être compétent. Le Grand Phare guide les navires vers L'Anguille, le seul port important de la côte nord de Bretonnie.
 
-
+<span id="page-12-0" data-folio="9"></span>
 # **La Gueule du dragon**
 
 Au nord-ouest du golfe de L'Anguille se trouve la Gueule du dragon. N'importe quel marin un tant soit peu sain d'esprit refuse de s'approcher de cette région, car elle a la réputation (méritée) d'être mortelle. Des rochers tranchants émergent des vagues comme des crocs dentelés, recouverts de l'écume des marées vicieuses qui martèlent constamment leurs flancs. Les courants sont imprévisibles, la visibilité est mauvaise, et pour ne rien arranger des tempêtes déferlent fréquemment sur la zone. La côte est si peu accueillante que presque personne n'y habite. Le seigneur local a offert une jolie récompense à quiconque réussirait à cartographier une route sûre traversant la Gueule, mais jusqu'ici aucun aventurier n'a été assez idiot pour relever le défi.
@@ -45,7 +45,7 @@ En période de conflit avec Marienburg ou avec l'Empire, le Roi offre des primes
 
 Les Personnages ont été embauchés pour aller chercher une cargaison dans un petit village de pêcheurs sur le littoral de Couronne. À leur arrivée, ils découvrent que la « marchandise » est en réalité composée d'une douzaine de purs-sangs. Parvenir à faire monter ces bêtes nerveuses à bord du bateau ne sera déjà pas aisé, mais que faire quand un seigneur des marches très en colère débarque (accompagné d'une douzaine d'hommes d'armes) et exige que sa propriété lui soit rendue ?
 
-
+<span id="page-13-0" data-folio="10"></span>
 # **L'Anguille**
 
 La côte accidentée de L'Anguille est connue pour sa dangerosité. À cause des falaises abruptes, des courants imprévisibles et des rumeurs parlant de redoutables créatures qui s'attaquent aux imprudents, seuls les naufrageurs, les contrebandiers et quelques cultistes fréquentent ces rivages. Mais le Grand Phare guide les navires en lieu sûr, jusqu'au port de L'Anguille, la plus grande cité marchande de Bretonnie.
@@ -83,7 +83,7 @@ Le Grand Phare est considéré comme un phare à tous points de vue (voir page 1
 
 Alors que leur navire approche de L'Anguille, les Personnages remarquent que la lumière du Phare semble clignoter. Il devient vite évident que le rythme des flashs n'est pas aléatoire : c'est un signal codé ! Mais qui l'envoie et à qui ? Et quel est le message ?
 
-
+<span id="page-14-0" data-folio="11"></span>
 # **LE WASTELAND**
 
 S'étendant de l'embouchure du Reik à la Mer des Griffes, le détroit de Marienburg (ou Manaanspoort Zee comme l'appellent les habitants du cru) grouille constamment de trafic maritime. Des centaines de bateaux de pêche fournissent leurs prise quotidiennes à Marienburg. Des vaisseaux marchands apportent leur cargaison des quatre coins du monde. Parfois un navire de guerre impérial peut être aperçu, ayant traversé la cité à partir du Reik et faisant route pour une affectation le long de la côte du Nordland.
@@ -106,7 +106,7 @@ Le Cap des Pirates se dresse à l'entrée de la baie. Il abritait autrefois une 
 
 Tout au nord-est du Wasteland, à la frontière de la forêt de la Laurelorn, se trouve la ville isolée d'Aarnau. Les bateaux qui s'y arrêtent décrivent une petite communauté tranquille de fermiers et de pêcheurs, mais avec un goût étonnant pour la chose militaire. La milice de la ville est bien équipée et s'entraîne régulièrement. Chaque fois que la brume descend vers l'ouest depuis les collines déferlantes, le baron van Buuren rassemble cette force et la tient stationnée là, prête à attaquer. Si quelqu'un leur demande pourquoi, les locaux murmurent des choses sur les « démons à un œil » et verrouillent leurs portes.
 
-
+<span id="page-15-0" data-folio="12"></span>
 # **MARIENBURG**
 
 Marienburg est la plus grande cité commerciale du Vieux Monde (au grand dam des marchands de L'Anguille). Un flot ininterrompu de bateaux voyage sur le Rijksweg, le canal du Reik qui divise la cité en deux. L'énorme pont du Hoogbrug s'étend d'un côté à l'autre de cette voie d'eau est si gigantesque que même les plus grands navires peuvent passer en dessous. Sur les deux rives, des douzaines d'îles sont agglomérées en un labyrinthe de canaux et de passerelles, couvertes de hauts bâtiments penchés audessus de l'eau. Même les ponts abritent des auberges, des boutiques et des résidences. Les Marienbourgeois industrieux et entreprenants utilisent chaque centimètre d'espace disponible et quand tout est occupé au sol, ils se mettent à construire en hauteur.
@@ -127,7 +127,7 @@ Le commerce est l'âme de la cité et des marchands venus du monde entier y vend
 
 Aucune taxe n'est prélevée sur le trafic fluvial passant par Marienburg, mais la cité trouve tout de même des manières d'en tirer profit. Si un bateau veut entrer à Marienburg ou en sortir, il doit accepter les services d'un pilote agréé par la cité pour 1 pistole par mètre de longueur du navire. Les vaisseaux passent immanquablement au moins une nuit en ville et les frais d'amarrage et de déchargement, l'argent dépensé dans les auberges et les tavernes par les équipages, l'achat de fournitures et les réparations de coque finissent au total par constituer une jolie somme. Mais l'essentiel du bénéfice se fait à la Bourse d'Import-Export du Wasteland, là où se déroule tout le commerce de gros de Marienburg. Tous ceux qui veulent acheter ou vendre une cargaison en ville doivent réaliser l'opération à la Bourse, via des courtiers accrédités et en payant une taxe de 2 % sur toutes les ventes.
 
-
+<span id="page-16-0" data-folio="13"></span>
 # **La cathédrale de Manaan**
 
 Le quartier de Tempelwijk de Marienburg abrite beaucoup d'autels et de temples, mais aucun n'arrive à la cheville de la cathédrale de Manaan. Ses murs en pierre de craie blanche semblent s'élever directement de l'eau. Le toit est surmonté de trois clochers dorés censés évoquer le trident du dieu. Deux templiers de l'ordre des Chevaliers des Mers gardent les portes du lieu, qui sont ouvertes nuit et jour.
@@ -158,7 +158,7 @@ La Fraternité et l'Association ne s'entendent pas depuis longtemps, mais récem
 
 # DU SANG DANS LES EAUX
 
-
+<span id="page-17-0" data-folio="14"></span>
 # **Le collège du baron Henryk**
 
 Fondée en 1947 CI, la meilleure institution d'enseignement de Marienburg est l'un des établissements d'éducation les plus renommés du Vieux Monde. Situés dans un ancien palais du quartier de Tempelwijk, les couloirs du collège sentant le renfermé grouillent constamment d'érudits, d'étudiants et de leurs serviteurs à la grande patience. Les rues et les places des alentours comportent des salons de thé, des auberges, des tavernes et des pensions où les jeunes et riches élèves se mélangent à leurs professeurs et débattent de sujets ésotériques, s'enivrent ou débattent de sujets ésotériques une fois ivres.
@@ -185,7 +185,7 @@ Les modificateurs suivants s'appliquent aux tentatives de Focalisation et d'Inca
 
 **Domaine de la Vie :** *Ghyran* sature les mers, accordant une puissance facile à un sorcier de Jade. Cependant, il fluctue beaucoup et un sorcier peut en perdre le contrôle en un instant. Les DR des Tests de Focalisation sont doublés sur les mers, mais une Focalisation Critique donne une Incantation Imparfaite Majeure au lieu de Mineure. Si vous possédez le Talent *Harmonisation aethyrique*, faites un lancer sur le tableau des Incantations Imparfaites Mineures à la place.
 
-
+<span id="page-18-0" data-folio="15"></span>
 # **Domaine de la Vie**
 
 Les druides de l'école de jade peuvent sembler ne pas être à leur place à bord d'un bateau, mais leur présence est très
@@ -261,7 +261,7 @@ Vous hurlez à tous ceux à bord de votre vaisseau de se taire et vous fermez le
 
 Ce Sort est une variante d'une création du seigneur astromancien Wilfried-Gotthelm Niezlib, qui cherchait à l'utiliser pour prouver ses théories concernant le mouvement des corps célestes. Il s'est ensuite rendu compte que cette magie avait des applications plus concrètes et l'a modifiée pour déterminer le moment exact auquel un bateau doit tirer une bordée. Le lanceur peut calculer le roulis du vaisseau, la distance par rapport à la cible, le poids des boulets de canon et la puissance de chaque tir. Pendant toute la durée du Sort, les Tests effectués pour tirer avec un canon bénéficient de +1 DR.
 
-
+<span id="page-19-0" data-folio="16"></span>
 # **LES ELFES SUR LA MER DES GRIFFES**
 
 La Mer des Griffes n'est pas connue pour être une zone qui intéresse beaucoup les elfes, mais ils y sont tout de même actifs.
@@ -284,7 +284,7 @@ La Garde maritime de Lothern est la meilleure force de combat naval du monde, me
 
 Aislinn est fier et a un côté très cruel. Il défie généralement en duel tout humain ou nain qui lui manque de respect et il hait particulièrement (et étrangement) les halflings.
 
-
+<span id="page-20-0" data-folio="17"></span>
 # **Les elfes noirs**
 
 Ulthuan est confronté à des périls si grands que le royaume a besoin de nommer des commandants comme Aislinn. Sans ses méthodes, la côte orientale d'Ulthuan constituerait une cible de choix pour les norses et les hauts elfes finiraient par succomber aux attaques incessantes des elfes noirs revanchards de Naggaroth.
@@ -308,3 +308,5 @@ Pour déstabiliser la région, les elfes noirs ont élaboré un plan faisant app
 Khyrathi s'intéresse davantage à la violence qu'à la diplomatie, mais c'est une elfe patiente et elle est à peu près certaine que si elle accomplit sa mission actuelle, le Roi Sorcier lui trouvera un autre travail mieux adapté à ses goûts. Elle pense que les deux lignées elfiques pourraient trouver un terrain d'entente sur la question des humains du Nordland.
 
 Si elle parvient à semer la discorde entre humains et elfes sylvains, la reine Marrisith pourrait peut-être s'engager progressivement sur le chemin d'une alliance avec les elfes noirs.
+
+<span id="page-21-0" data-folio="18"></span>

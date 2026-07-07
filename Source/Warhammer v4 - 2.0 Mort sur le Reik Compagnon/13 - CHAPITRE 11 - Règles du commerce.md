@@ -1,6 +1,6 @@
-*Pages PDF 70-78*
+*Folio 71+*
 
-## <span id="page-69-0"></span>CHAPITRE 11 RÈGLES DU COMMERCE
+## CHAPITRE 11 RÈGLES DU COMMERCE
 
 Les routes et les voies navigables de l'Empire sont animées par le commerce, et dans **Mort sur le Reik**, les Personnages ont de nombreuses occasions d'y participer. Les règles suivantes sont conçues pour vous aider à vous y retrouver.
 
@@ -16,7 +16,7 @@ Toute action commerciale comporte trois étapes de base : acheter un bien à bas
 
 Dans la plupart des cas, le transporteur achète une cargaison à un endroit et la revend à un autre, au lieu d'être simplement payé pour la transporter. Il s'agit principalement d'une manière de protéger le marchand : après tout, payer un équipage inconnu
 
-
+<span id="page-70-0" data-folio="71"></span>
 à la fois ses honoraires et ses marchandises ! Lorsque les Personnages arrivent à un endroit et sont à la recherche d'une cargaison, ils veulent savoir quatre choses : la disponibilité, la nature, la quantité et le prix.
 
 ### **1. Disponibilité des biens**
@@ -63,7 +63,7 @@ Si un lieu est indiqué dans l'Index géographique comme tirant sa Richesse du C
 
 Pour des raisons de praticité, les prix sont entièrement exprimés en Couronnes d'or afin de faciliter les calculs. Naturellement, les marchands indiqueront leurs prix en Bronze, Argent et Or, vous pouvez donc les convertir si vous le souhaitez (**WFJDR**, p. 288). Mais pour les personnes plus à l'aise avec les décimales, tout exprimer en Couronnes comme ici est plus facile à utiliser.
 
-
+<span id="page-71-0" data-folio="72"></span>
 #### TABLEAU DES CARGAISONS
 
 Lorsque vous devez générer une cargaison aléatoire, il suffit de lancer un d100 et de consulter le tableau ci-dessous. Comme la disponibilité de certains biens varie tout au long de l'année, utilisez la ligne correspondant à la saison en cours pour déterminer le résultat.
@@ -103,8 +103,8 @@ Le vin et l'eau-de-vie sont des cas particuliers, car leur qualité varie consid
 | 8-9 | Excellent | 6 CO               |
 | 10  | Supérieur | 12 CO              |
 
-
-#### <span id="page-72-0"></span>**Types de cargaisons**
+<span id="page-72-0" data-folio="73"></span>
+#### **Types de cargaisons**
 
 **Armement :** armes et armures raffinées pouvant servir à une milice ou une armée permanente. Disponibles partout où le travail des métaux figure dans la colonne Produits. Ils sont particulièrement recherchés au printemps, période typique des campagnes militaires, mais ils sont malheureusement demandés en permanence. Il s'agit généralement d'armes simples, d'armures en cuir ou de carreaux, les articles plus exotiques (et dangereux) comme les canons et la poudre noire étant transportés par des barges spécialisées. L'expédition d'Armement est parfaitement légale, mais les patrouilleurs fluviaux ne peuvent s'empêcher de s'intéresser à qui, exactement, vous avez l'intention de fournir ces équipements.
 
@@ -142,7 +142,7 @@ Un Emplacement n'a généralement pas de demande pour une marchandise qu'il prod
 
 De plus, les Personnages ne peuvent jamais vendre une cargaison à l'emplacement où ils l'ont achetée. En effet, si un acheteur était disponible, le marchand local le mieux informé l'aurait trouvé ! Les Personnages doivent se déplacer pour tenter de trouver un acheteur pour les biens qu'ils ont achetés ou attendre au moins une semaine avant de tenter de les vendre à l'emplacement actuel.
 
-
+<span id="page-73-0" data-folio="74"></span>
 Une fois que les Personnages sont arrivés dans un port prometteur, ils peuvent commencer à chercher un acheteur pour leur cargaison. Il peut s'agir d'un marchand local, qui acheminera les marchandises vers leurs détaillants finaux, ou de sociétés et de particuliers de la ville. Pour calculer les chances de trouver un acheteur, multipliez la Taille de l'Emplacement par 10, en ajoutant +30 si l'Emplacement dispose du Commerce dans la colonne « Produits ». Lancez un d100 : si le résultat est inférieur ou égal au chiffre final, un acheteur est trouvé. Un échec indique qu'il n'y a pas de demande pour la taille de la cargaison que les Personnages essaient de vendre. S'ils le souhaitent, ils peuvent proposer la moitié de la cargaison à la place : lancez à nouveau le dé en l'opposant au nombre précédemment obtenu. Si cette deuxième tentative échoue, c'est qu'il n'y a tout simplement aucun marchand intéressé à un prix raisonnable.
 
 Si un acheteur est trouvé, il fait une offre pour la cargaison sur la base du tableau ci-dessous. C'est ce qu'on appelle la Mise à prix.
@@ -179,7 +179,7 @@ Si les règles telles qu'elles sont présentées peuvent être utilisées pour g
 
 Chaque fois que les Personnages s'arrêtent dans une auberge prometteuse, ils peuvent effectuer un Test de **Ragot Complexe** (-10). S'ils réussissent, lancez un d100 pour déterminer un emplacement à l'aide de l'index géographique des pages suivantes, puis lancez un dé sur le Tableau des rumeurs, p. 78, afin de générer une rumeur commerciale. Chaque rumeur constitue une indication du type de marchandise qui pourrait être très demandée à cet emplacement. Vous pouvez laisser les joueurs essayer de deviner de quelle marchandise il s'agit (la colonne des Biens est réservée au MJ). Si les Personnages trouvent la marchandise qui correspond à une certaine rumeur, ils peuvent en vendre autant qu'ils le souhaitent pour le double du prix de base correspondant à cette cargaison.
 
-
+<span id="page-74-0" data-folio="75"></span>
 #### INDEX GÉOGRAPHIQUE DE LA GRANDE PRINCIPAUTÉ DU REIKLAND (2512 CI)
 
 | d100  | Emplacement          | Taille | Dirigeant                                          | Pop       | R | Produits                       | Garnison /<br>Milice | Commentaires                                                        |
@@ -215,7 +215,7 @@ Chaque fois que les Personnages s'arrêtent dans une auberge prometteuse, ils pe
 | 41    | DIESDORF             | 2      | Empereur                                           | 210       | 2 | Vivres                         | -/25c                |                                                                     |
 | 42-45 | EILHART              | 3      | Graf Johann von<br>Hardenburg                      | 3 200     | 3 | Vivres, Vin                    | 25b/125c             |                                                                     |
 
-
+<span id="page-75-0" data-folio="76"></span>
 | d100  | Emplacement | Taille | Dirigeant                                               | Pop   | R | Produits                                            | Garnison /<br>Milice | Commentaires                                                                        |
 |-------|-------------|--------|---------------------------------------------------------|-------|---|-----------------------------------------------------|----------------------|-------------------------------------------------------------------------------------|
 | 46-49 | GRÜNBURG    | 3      | Empereur                                                | 2 900 | 2 | Commerce                                            | 25b/100c             | Bac, Construction de<br>bateaux                                                     |
@@ -245,7 +245,7 @@ Chaque fois que les Personnages s'arrêtent dans une auberge prometteuse, ils pe
 | 82    | WEISSBRUCK  | 2      | Empereur (dirigé et<br>détenu par la famille<br>Gruber) | 359   | 2 | Commerce,<br>Produits de<br>luxe                    | -                    | Bac, maison éclusière<br>sur le canal d'Altdorf                                     |
 | 83    | Wittgendorf | 2      | Baronne Ingrid<br>von Wittgenstein                      | 150   | 1 | Subsistance                                         | 25b/-                |                                                                                     |
 
-
+<span id="page-76-0" data-folio="77"></span>
 ### INDEX GÉOGRAPHIQUE DE LA *FREISTADT* DE BÖGENHAFEN (2512 CI)
 
 | d100  | Emplacement           | Taille | Dirigeant                       | Pop    | R | Produits               | Garnison/<br>Milice | Commentaires                                                            |
@@ -277,7 +277,7 @@ Chaque fois que les Personnages s'arrêtent dans une auberge prometteuse, ils pe
 
 La lettre qui suit le chiffre indique la qualité du soldat. **a**=soldats correctement entraînés, bien formés et équipés. **b**=troupes moyennes, moyennement entraînées et équipées. **c**=troupes peu entraînées, éventuellement tenues d'apporter leur propre équipement, généralement ancien et/ou de mauvaise qualité.
 
-
+<span id="page-77-0" data-folio="78"></span>
 |       | TABLEAU DES RUMEURS COMMERCIALES                                                                                                                                                                                                                                                                                                                                           |                                                                          |
 |-------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
 | D100  | Rumeur                                                                                                                                                                                                                                                                                                                                                                     | Biens                                                                    |
@@ -301,3 +301,5 @@ La lettre qui suit le chiffre indique la qualité du soldat. **a**=soldats corre
 | 86-90 | Vous êtes au courant que la milice a engagé un ogre là-bas ? Oui, je sais. On peut à peine nourrir cette<br>chose, et un honnête criminel ne peut pas gagner sa vie de peur d'être dévoré                                                                                                                                                                                  | Armement, Vivres                                                         |
 | 91-95 | Une naine forgeron a emménagé : pourquoi a-t-elle choisi ce coin ? Elle forge comme une folle depuis<br>et vend tout ce qu'elle fait pour presque rien. Certains disent que ses pots sont maudits, mais j'en ai un<br>et il ne fuit qu'un tout petit peu !                                                                                                                 | Métal                                                                    |
 | 96-00 | Vous êtes au courant ? Une bande de puînés et de gaspilleurs déshérités se préparent pour un voyage<br>vers les Principautés frontalières. On dit qu'ils remplissent à ras-bord leurs chariots de marchandises.                                                                                                                                                            | Armement, Vivres,<br>Produits de luxe, Bois,<br>Vin ou Eau-de-vie, Laine |
+
+<span id="page-78-0" data-folio="79"></span>

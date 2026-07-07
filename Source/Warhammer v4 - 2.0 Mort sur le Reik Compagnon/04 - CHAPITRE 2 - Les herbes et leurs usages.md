@@ -1,8 +1,8 @@
-*Pages PDF 8-16*
+*Folio 9+*
 
 ### CHAPITRE 2
 
-<span id="page-7-0"></span>
+
 
 # LES HERBES ET LEURS USAGES
 
@@ -22,10 +22,10 @@ Hors saison, la Disponibilité de toutes les plantes baisse d'une catégorie. Co
 
 Les herbes peuvent être récoltées avec la Compétence Savoir (Herbes), mais pour les préparations les plus complexes, il faut avoir la Compétence Métier (Herboriste) et être équipé d'outils professionnels appropriés. Des potions peuvent être préparées avec la Compétence Métier (Apothicaire). Des traitements ou des poisons à base de plantes préparés correctement peuvent être administrés par quasiment n'importe qui, et nécessitent rarement des Compétences spéciales.
 
-
+<span id="page-8-0" data-folio="9"></span>
 #### HERBES DE L'EMPIRE
 
-<span id="page-8-0"></span>
+
 
 | Herbe              | Coût par dose | Enc | Disponibilité | Emplacement            | Saison           |
 |--------------------|---------------|-----|---------------|------------------------|------------------|
@@ -69,8 +69,8 @@ Faites-leur faire un Test de **Savoir (Herbes) Accessible (+20)**. Le DR total o
 | Rare     | 3  |
 | Exotique | 4  |
 
-
-### <span id="page-9-0"></span>**CATAPLASMES, POTIONS ET INFUSIONS**
+<span id="page-9-0" data-folio="10"></span>
+### **CATAPLASMES, POTIONS ET INFUSIONS**
 
 Pour le profane, la maîtrise des plantes peut avoir l'air d'une activité bien incongrue, mais il n'en est rien. Certaines herbes doivent être préparées d'une façon bien précise pour libérer tout leur potentiel. Certaines doivent simplement être mâchées, avalées, ou frottées contre la peau pour révéler leurs effets (qu'ils soient bénéfiques ou nocifs). De plus, certaines herbes peuvent avoir des effets très différents selon la méthode de préparation employée. Par exemple, une infusion de valériane séchée a, paraît-il, le pouvoir de neutraliser les effets d'un excès d'alcool, tandis qu'une feuille fraîche provoque une légère nausée.
 
@@ -108,7 +108,7 @@ Sous forme de potion, l'agurk est un poison potentiellement mortel. Elle inflige
 
 Cette herbe est généralement connue sous le nom d'agurk, mais dans le Moot, on l'appelle la grelottelle. Elle est appelée *Zitterwort* dans l'Empire, *Trema* en Tilée, et *Gysenblat* en Norsca. Les elfes l'appellent *Echryddeillen*. Elle pousse dans les prairies au sol sec, mais pas trop sableux. Pour la préparer, retirez les tiges et jetezles. Faites sécher les feuilles près du feu pendant au moins une semaine. Cette herbe améliore la circulation sanguine, et peut aider les personnes atteintes d'un gros rhume à s'en débarrasser. Elle ne doit surtout pas être utilisée en cas de fièvre, car elle fait augmenter la température corporelle. Pour utiliser l'herbe, placez quelques feuilles dans un bol d'eau bouillante, faites-les infuser une minute ou deux, ou jusqu'à ce que l'eau prenne de la couleur, et laissez le patient inhaler les vapeurs pendant trois à quatre minutes. Le patient devrait alors se mettre à trembler : assurez-vous qu'il est à l'aise et gardez-le à l'œil les trois ou quatre heures suivantes. Si les tremblements persistent, vous pouvez lui administrer un sédatif léger. Assurez-vous de bien jeter l'infusion qui reste, et ne laissez personne en boire : elle peut causer des convulsions mortelles si elle est avalée.
 
-
+<span id="page-10-0" data-folio="11"></span>
 #### **Alfunas**
 
 **Préparation :** Cataplasme
@@ -147,7 +147,7 @@ Le cervolent est une neurotoxine très légère. Son infusion a un goût amer, e
 
 Un cataplasme obtenu à partir de cette plante a un effet complètement différent : appliquée à une blessure récente, elle permet d'annuler un État *Hémorragique*. Cependant, à partir de deux doses, il faut faire un Test de **Résistance Intermédiaire (+0)** pour éviter les mêmes effets néfastes qu'avec une infusion de cervolent, comme décrit ci-dessus.
 
-
+<span id="page-11-0" data-folio="12"></span>
 #### CERVOLENT
 
 Je sais que certaines personnes ne considèrent cette plante que comme un simple poison, mais elle s'avère très utile dans des cas extrêmes d'hystérie nerveuse, pour empêcher un patient de se blesser, par exemple, ou bien lorsqu'une douleur ou infection empêche le patient de dormir. Si la dose est rigoureusement contrôlée, et que la température et la respiration du patient sont surveillées, j'estime que le danger est négligeable. Cette plante pousse dans les zones marécageuses et abonde souvent près des nénuphars. Pour l'utiliser, il faut d'abord tremper la racine dans de l'eau salée pendant trois jours et trois nuits pour en laver toute impureté, puis la sécher dans une casserole près du feu pendant deux jours, ou jusqu'à ce qu'elle résonne comme du bois lorsqu'on la frappe avec une fourchette. Il faut alors la râper finement, la mélanger avec un peu de noix de muscade si possible, puis la placer dans un petit sac de tissu et l'accrocher dans la cheminée pour la fumer pendant deux jours. La poudre ainsi obtenue doit alors être infusée pendant deux jours dans un volume d'eau auquel on aura ajouté un filet de vinaigre. Le liquide doit ensuite être filtré, et peut désormais être ajouté en petite quantité à du thé sucré ou du vin chaud.
@@ -174,7 +174,7 @@ La feuille de mage se mange fraîche, et garde ses pouvoirs pendant une semaine 
 
 Au départ, je n'étais pas sûre de traiter de cette herbe, étant donné qu'elle n'a aucune propriété médicinale. Cependant, ses effets magiques sont assez connus pour que je mentionne ses différents noms à travers les régions, cela évitera à mes lecteurs de croire qu'il existe plusieurs plantes avec les mêmes propriétés. Les elfes l'appellent *daionillyseiwyn*, ce qui, si j'en crois mes recherches, veut dire « la bonne plante ». En Norsca, elle s'appelle *troldblat*, en Bretonnie la *feuille sorcière*, en Tilée *folimaggi* (une version abâtardie de l'appellation classique *folia magii*) et enfin, *draodill* en Albion, ce qu'on pourrait traduire par « La feuille des Druides ».
 
-
+<span id="page-12-0" data-folio="13"></span>
 ### TRIAGE SUR LE REIK
 
 En descendant le fleuve, les Personnages croisent une barge aux occupants très mal en point. Ils souffrent tous d'une terrible maladie, mais leurs multiples symptômes ne sont pas tout à fait les mêmes d'une personne à l'autre. À cause des tremblements inexpliqués, des maux de tête insupportables, des nausées, des saignements, et autres maux qui affligent l'équipage, la barge n'a eu le droit d'accoster nulle part où aurait pu se trouver un Doktor. Il est évident que, si personne n'aide les matelots, plusieurs mourront. Ce n'est que grâce aux soins de l'herboriste bretonnienne Marie Du Pont, qui se trouvait par hasard sur le bateau pour assurer le bon transport de ses précieuses herbes médicinales, qu'ils ont pu survivre jusque-là !
@@ -197,7 +197,7 @@ C'est une herbe très simple à utiliser : écrasez les feuilles pour libérer l
 
 Cette herbe est un léger stimulant, et une tasse d'herbuste permet d'augmenter le score d'Initiative d'un Personnage de +10 pendant 1d10+4 minutes. Après ce laps de temps, le Personnage doit faire un Test de **Résistance Accessible (+20**) ou subir un État *Exténué* par niveau d'échec. Ceux qui disposent du Trait Immunité (Poison) peuvent profiter des bénéfices de l'herbuste sans jamais devenir *Exténué*.
 
-
+<span id="page-13-0" data-folio="14"></span>
 #### MA PETITE CHOUCHOUTE
 
 Aussi connu sous le nom de sautille, plante gigote, et *folia vitae*, cette plante pousse dans les grandes plaines ensoleillées, surtout celles qui ont été laissées en jachère après avoir servi l'année précédente. On sèche la racine, on la râpe, puis on la laisse infuser dans du vinaigre dilué pendant dix jours. Ensuite, on fait bouillir la mixture, on la filtre, avant de la laisser reposer quatre jours dans un endroit sombre et frais. Sucrée avec du miel ou ajoutée à du thé ou du vin chaud, cette préparation apporte un soulagement temporaire aux patients qui souffrent de maux
@@ -240,7 +240,7 @@ Cette plante peut être utilisée pour traiter la *Vérole du Tanneur* (**WFJDR*
 
 Une potion de rouille mouchetée ne permet pas de prévenir l'arrivée de la *Vérole du Tanneur*, mais elle peut être utilisée pour la traiter une fois qu'elle est là. Chaque dose réduit la durée de la maladie de 1d10 jours. Prendre plus d'une dose par jour provoque des *Nausées* (**WFJDR**, p. 189) pendant les 1d10 heures suivantes.
 
-
+<span id="page-14-0" data-folio="15"></span>
 #### UNE DÉCOCTION REPOSANTE
 
 Les habitants du Moot l'appellent feuille de rêve, Les Tiléens *dormifolio*, et les elfes *paraudiel*. Cette plante pousse principalement dans les prairies, et est particulièrement abondante à la fin de l'hiver, quand la neige commence à fondre. On la cueille aussi dans les zones marécageuses dégagées et le long des cours d'eau dont les rives ne sont pas trop hautes. C'est un excellent sédatif et somnifère qui peut être combiné avec d'autres ingrédients sans effets secondaires. Pour un résultat optimal, portez de l'eau à ébullition, laissez-la refroidir une minute ou deux avant d'y placer quelques feuilles séchées. Si l'eau est trop chaude, l'infusion sera amère et perdra en efficacité. Les feuilles peuvent également être ajoutées à du thé ou du vin chaud ; un peu de miel permet d'adoucir l'âcreté qu'elles apportent.
@@ -267,7 +267,7 @@ Un Personnage peut résister aux effets de la potion en faisant un Test de **Cal
 
 La sobriandre est un tubercule au goût amer qui a l'étrange pouvoir de supprimer les effets de l'alcool. Un Personnage qui en mange gagne un bonus de +20 à tous ses Tests de **Résistance à l'Alcool** pendant les 24 heures suivantes.
 
-
+<span id="page-15-0" data-folio="16"></span>
 #### SOBRIANDRE
 
 Selon la tradition halfling, la connaissance de cette plante nous a été accordée par la déesse Esméralda elle-même, après que son premier mari Bibogenitus nous a fait cadeau de ses connaissances sur les techniques de brassage et de vinification. Dans le Moot, on l'appelle la racine de sobriété, et les elfes l'appellent *corrylliamid*. Elle se trouve au plus profond de la forêt, et pousse souvent entre les racines des arbres lornalims, ou aux pieds de chênes centenaires. La racine doit être épluchée et rôtie doucement dans un four à basse température, jusqu'à ce qu'elle soit aussi moelleuse que des panais bien cuits. Elle peut alors être mangée.
@@ -306,5 +306,4 @@ La varena est un stimulant qui rend inutile le besoin de repos. Elle est surtout
 
 Certains herboristes de l'Empire et de Tilée croient que cette plante tient son nom de la déesse humaine Verena. Moi-même, je n'adhère pas à cette théorie : elle est aussi appelée de la même façon en Norsca et à Kislev, où le culte d'Ulric est bien plus répandu que celui de Verena. Cette plante pousse sur le versant sud de collines de craie, où il y a beaucoup de soleil et peu de vent. Les feuilles sont cueillies, nettoyées, trempées dans de l'eau salée pendant deux semaines, avant d'être bouillies et servies comme des épinards. Un peu de beurre et de poivre noir améliorent grandement leur goût. À titre personnel, je ne m'en sers pas sur mes patients en convalescence, car le mal de tête qu'il provoque quand l'effet stimulant s'estompe peut facilement annuler tous les bienfaits que le patient aura reçus. Je le conseille néanmoins à ceux qui doivent monter la garde, ou passer la nuit à chercher des voyageurs disparus : en somme, à toute personne qui doit rester éveillée à une heure où elle dort habituellement, et qui peut se permettre d'en payer le prix plus tard.
 
-
-<span id="page-16-0"></span>
+<span id="page-16-0" data-folio="17"></span>

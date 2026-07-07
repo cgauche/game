@@ -1,4 +1,4 @@
-*Pages PDF 125-139*
+*Folio 127+*
 
 ### **Une halte en chemin**
 
@@ -16,8 +16,8 @@ Le bateau des aventuriers peut brûler lors d'un incident indépendant, peut-êt
 
 Finalement, le plus important est que les aventuriers partent pour Altdorf. Tout le reste peut être géré en cours de route.
 
-
-### <span id="page-126-0"></span>**DES HABITANTS SYMPATHIQUES**
+<span id="page-126-0" data-folio="127"></span>
+### **DES HABITANTS SYMPATHIQUES**
 
 Alors que les aventuriers amarrent leur bateau à un quai public, ils se rendent compte que deux hommes les observent depuis l'extérieur d'un grand entrepôt à un étage. Tous deux sont bien habillés : l'un est petit et jeune, l'autre est grand et âgé.
 
@@ -49,10 +49,10 @@ Max propose 300 CO pour cette tâche, payables à l'arrivée au quai des Blucher
 
 Tout Personnage (ou PNJ) possédant la Compétence Savoir (Loi) constatera que la paperasse est parfaitement normale et rédigée dans un langage juridique standard, sans avoir besoin d'effectuer un Test. La famille Blucher a bel et bien engagé les aventuriers comme entrepreneurs pour transporter une cargaison à Marienburg à bord de leur bateau.
 
-
+<span id="page-127-0" data-folio="128"></span>
 ### LES PETITS CARACTÈRES
 
-<span id="page-127-0"></span>Dès la signature du contrat et jusqu'à la réception de la marchandise à la fin du voyage, tout dommage causé à la cargaison doit être payé intégralement par les aventuriers, à l'exception de « l'entière responsabilité, fiscale, légale et commerciale, pour tout dommage, destruction, décomposition, détérioration, dépréciation, diminution, dissolution, dévaluation, dévastation, la dépossession ou la saisie (qu'elle soit légale ou non), la défalcation, la désarticulation ou la désertion, pour quelque raison que ce soit et à cause de toute personne, circonstance ou action, à l'exception de ce qui est expressément interdit par la Loi impériale ou atténué dans une autre section du présent contrat, survenant au navire sous contrat ou à la cargaison sous contrat, à moins que ces dommages, destruction, dégradation, etc. ne soient manifestement causés par la partie première (la famille Blucher) ou ses employés, ou pendant que le bateau est sous l'entière garde de la partie première ou de ses employés : auquel cas toutes les réparations, remplacements, rénovations, remboursements, restitutions, restaurations et autres recours nécessaires, de quelque nature que ce soit, seront entrepris par, et à la seule responsabilité et aux frais de la partie première, et toutes ces réparations, remplacements, etc. devront être achevés dans les trois mois suivant la notification à la partie première desdits dommages, destructions, etc. »
+Dès la signature du contrat et jusqu'à la réception de la marchandise à la fin du voyage, tout dommage causé à la cargaison doit être payé intégralement par les aventuriers, à l'exception de « l'entière responsabilité, fiscale, légale et commerciale, pour tout dommage, destruction, décomposition, détérioration, dépréciation, diminution, dissolution, dévaluation, dévastation, la dépossession ou la saisie (qu'elle soit légale ou non), la défalcation, la désarticulation ou la désertion, pour quelque raison que ce soit et à cause de toute personne, circonstance ou action, à l'exception de ce qui est expressément interdit par la Loi impériale ou atténué dans une autre section du présent contrat, survenant au navire sous contrat ou à la cargaison sous contrat, à moins que ces dommages, destruction, dégradation, etc. ne soient manifestement causés par la partie première (la famille Blucher) ou ses employés, ou pendant que le bateau est sous l'entière garde de la partie première ou de ses employés : auquel cas toutes les réparations, remplacements, rénovations, remboursements, restitutions, restaurations et autres recours nécessaires, de quelque nature que ce soit, seront entrepris par, et à la seule responsabilité et aux frais de la partie première, et toutes ces réparations, remplacements, etc. devront être achevés dans les trois mois suivant la notification à la partie première desdits dommages, destructions, etc. »
 
 ### **LE COL DU CYGNE**
 
@@ -74,7 +74,7 @@ Ce marchand sociable et quelque peu rustre vient de vendre sa cargaison à un bo
 
 « *Vous ne connaissez pas le carnaval ? Mes amis, qu'attendezvous ! À côté, la Schaffenfest de Bögenhafen est un spectacle de foire, je vous assure ! Une semaine entière de spectacles, d'expositions, de boissons, de jeunes créatures et de tout ce qui vous fait envie. Oui, je sais ce que vous allez me dire : les habitants du Middenland n'ont*  
 
-
+<span id="page-128-0" data-folio="129"></span>
 *aucun sens de l'humour, et en temps normal, j'aurais été d'accord avec vous. Mais pendant le carnaval... c'est une tout autre paire de manches, voyez-vous ! Ma foi, il faut bien qu'ils se détendent d'une manière ou d'une autre, et ils le font lors de cette semaine de folie. Ils relâchent toute la pression pour être à nouveau prêts à passer le reste de l'année aussi impassibles qu'une statue de nain. Sans vouloir les vexer, très chers camarades. Une autre tournée ? Aubergiste !* »
 
 Tous les clients de l'auberge connaissent le carnaval de Middenheim, et la plupart d'entre eux partageront l'entrain d'Alex. Les aventuriers avaient déjà plusieurs raisons de se rendre à Middenheim, ils en ont maintenant une de plus.
@@ -103,8 +103,8 @@ Cette commerçante à la petite semaine revient de Marienburg et sera intéress�
 
 Si les aventuriers disent à Frida qu'ils transportent une cargaison à Marienburg pour le compte des Blucher, elle sera curieuse, car elle a demandé le matin même à un employé des Blucher s'ils avaient besoin d'un transporteur pour Marienburg, question à laquelle ils ont répondu par la négative. Les autres marchands considèrent Frida comme du menu fretin. Transporteuse indépendante et très intelligente, elle possède une barge de 7 mètres de long. Elle n'est pas du genre à créer des problèmes.
 
-
-### <span id="page-129-0"></span>**CHARGEMENT DE LA CARGAISON**
+<span id="page-129-0" data-folio="130"></span>
+### **CHARGEMENT DE LA CARGAISON**
 
 La soirée sera tranquille et aucune bagarre n'aura lieu à moins que les aventuriers n'en déclenchent une. Le retour au quai se déroule sans incident et leur bateau est exactement comme ils l'ont laissé. Aux premières lueurs du jour le lendemain matin, les aventuriers sont réveillés par des coups et des cris provenant de l'extérieur de leur cabine. Une équipe de débardeurs est en train de décharger la cargaison de leur bateau pour la transporter dans l'un des entrepôts des Blucher. Les tentatives pour les arrêter sont vaines, sauf si les joueurs menacent de recourir à violence, auquel cas tout le monde sur le quai s'arrête brusquement. Quoi qu'il arrive et quel que soit le degré d'agitation des aventuriers, tout sera géré par Klaus, le contremaître, qui supervise les travailleurs depuis le quai.
 
@@ -138,7 +138,7 @@ La maison des Blucher est un grand manoir situé à l'extrémité des limites de
 
 Les invités traversent un couloir richement décoré pour se rendre dans la salle de réception, où leur nom est annoncé à leur entrée. À vingt-et-une heure, on dénombre une centaine d'invités dans la salle, tous sur leur trente-et-un, et au moins vingt serviteurs avec des plateaux de nourriture et de vin. Des musiciens jouent des danses de cour depuis une galerie. Si les aventuriers ne se sentaient pas à leur place au Col du Cygne, ils se sentiront ici complètement dépassés. Ce ne sont pas des personnes qui possèdent des bateaux et des entrepôts : ce sont ceux qui possèdent ces personnes.
 
-
+<span id="page-130-0" data-folio="131"></span>
 ### MAX LA MENACE
 
 Max est furieux si les aventuriers refusent de laisser ses hommes faire leur travail. Il s'avance vers eux comme une cigogne belliqueuse, le visage rouge et les sourcils hérissés. Les débardeurs sourient et ricanent tandis qu'il passe un savon aux aventuriers en public.
@@ -167,8 +167,8 @@ Quel que soit le nom de jeune fille de Karoline, les Personnages réalisent à p
 
 La fête se poursuit jusqu'à peu avant minuit, lorsque la plupart des invités partent en carrosses. Personne n'a rien de particulier à dire sur Karoline ou sa famille : ce mariage était une affaire rondement menée, certes, mais n'est-ce pas là le but du commerce ?
 
-
-### <span id="page-131-0"></span>**LA FÊTE EST FINIE**
+<span id="page-131-0" data-folio="132"></span>
+### **LA FÊTE EST FINIE**
 
 Alors que les aventuriers retournent sur les quais, ils aperçoivent une lueur au loin, derrière les bâtiments. Quelque chose est en train de brûler. Lorsque les quais sont en vue, ils se rendent compte qu'il s'agit de leur précieux bateau. Les gens se précipitent autour avec des seaux et des pompes à eau pour éteindre le feu. Il faudra environ dix minutes pour venir à bout de l'incendie, ou moins si les aventuriers utilisent la magie appropriée.
 
@@ -188,7 +188,7 @@ Le Col du Cygne est toujours ouvert et les aventuriers pourront y obtenir des ch
 
 Plus tard dans la soirée, Thierry Ostend s'approche d'eux. Il n'a aucune information utile concernant le bateau brûlé, mais souhaite parler de Middenheim. Les aventuriers s'y sont-ils déjà rendus ? Que savent-ils de cet endroit ? Si on lui demande pourquoi il veut savoir, il haussera les épaules : il pense se rendre au carnaval de Middenheim dans quelques semaines. On raconte qu'il s'agit de la plus belle foire de l'Empire et que les occasions sont excellentes pour faire des affaires avec les marchands du Vieux Monde tout entier.
 
-
+<span id="page-132-0" data-folio="133"></span>
 ### IL FAUT SAUVER LE BATEAU
 
 L'incendie de la barge des aventuriers est un événement gravé dans la mémoire de ceux qui ont joué à « *Charogne sur le Reik* » dans le cadre de l'édition Hogshead de 1998 du **Pouvoir derrière le Trône**.
@@ -227,7 +227,7 @@ Matthias a conseillé aux aventuriers de ne pas fouiller le contenu de la cargai
 
 La caisse contient un certain nombre d'objets emballés dans de la paille. Il est important que le nombre d'objets soit le même que le nombre d'aventuriers dans le groupe, plus un. Peu importe la nature des objets puisque Max les a ramassés au hasard dans
 
-
+<span id="page-133-0" data-folio="134"></span>
 #### LE CONTACT OLDENHALLER
 
 Albrecht Oldenhaller de Nuln était également l'employeur dans « Le contrat d'Oldenhaller », l'aventure d'introduction de la première édition de **WFJDR**. Si les joueurs n'ont pas entendu parler d'Oldenhaller, d'autres PNJ pourraient prendre sa place : libre à vous de choisir le nom qui convient le mieux à votre campagne.
@@ -262,7 +262,7 @@ Dans ce scénario, Karoline pourrait être la fille d'un marchand de Middenheim 
 
 Un lien avec Gotthard von Wittgenstein renforcerait la motivation des aventuriers à se rendre à Middenheim, mais ils seront probablement plus méfiants et moins faciles à duper. Ils seront également accueillis par des cultistes du Sceptre de Jade et de la Main Pourpre. Cet accueil (réservé par les deux cultes et qui consiste à vouloir les captures et les interroger) se transformera en une bataille à trois confuse, les deux cultes rivaux luttant pour appréhender les aventuriers.
 
-
+<span id="page-134-0" data-folio="135"></span>
 un bazar sur les ordres de Matthias. Parmi les possibilités, on trouve un vieux fourreau rouillé, dépourvu d'épée, une pie empaillée, un gros coquillage, une cape de pèlerin couverte de symboles de différents sanctuaires situés dans tout l'Empire, un crâne de chien, un simple gobelet en étain et un manuscrit intitulé « Le Journal de Hieronymous Prosch, 2487-2488 », qui révèle que Herr Prosch était un marchand de laine qui buvait trop et avait une liaison avec la servante de sa femme.
 
 La lettre correspond au *Document 17*. Vous devrez sans doute réaliser une copie manuscrite de cette lettre pour les joueurs, en modifiant le nombre d'articles et le nom du contact si nécessaire. Le nombre d'objets mentionnés dans la lettre doit être le même que le nombre d'aventuriers dans le groupe, qui ne peut pas être de six. De plus, la caisse doit contenir un objet de plus que ce que la lettre indique. Le nom du contact et sa relation avec Blucher doivent être modifiés si nécessaire (voir *Le contact Oldenhaller*).
@@ -295,8 +295,8 @@ En ville, les Blucher sont appréciés dans l'ensemble et ils ont la réputation
 
 Matthias et Max réagiront mal aux intimidations. Irrités et brusques, ils continuent de faire semblant de rendre service aux aventuriers et peuvent menacer de mettre fin à leur accord afin de les poursuivre en justice pour rupture de contrat, abus de confiance, extorsion par tromperie, piraterie, sorcellerie et divers autres crimes.
 
-
-<span id="page-135-0"></span>pas notre affaire de savoir pourquoi mes employeurs sont si désireux de parler à ces gens. Bien que, comme je l 'ai dit, je ne puisse pas nommer leur ordre secret, ils n'en restent pas moins puissants et influents, même s'ils sont d 'un genre douteux. Par conséquent, et parce qu'ils m'ont aidé par le passé, je suis certain que leur bonne considération pourrait être utile à nos deux familles. Si vous les localisez, ils doivent être envoyés à Middenheim, au capitaine Scharlach, à <sup>l</sup> 'Enseigne des Clés croisées, sur Hoffen Strasse. J'espère que toi et ta chère Karoline vous portez bien, Albrecht Oldenhaller.
+<span id="page-135-0" data-folio="136"></span>
+pas notre affaire de savoir pourquoi mes employeurs sont si désireux de parler à ces gens. Bien que, comme je l 'ai dit, je ne puisse pas nommer leur ordre secret, ils n'en restent pas moins puissants et influents, même s'ils sont d 'un genre douteux. Par conséquent, et parce qu'ils m'ont aidé par le passé, je suis certain que leur bonne considération pourrait être utile à nos deux familles. Si vous les localisez, ils doivent être envoyés à Middenheim, au capitaine Scharlach, à <sup>l</sup> 'Enseigne des Clés croisées, sur Hoffen Strasse. J'espère que toi et ta chère Karoline vous portez bien, Albrecht Oldenhaller.
 
 Max est totalement immunisé contre la subornation et sa loyauté envers les Blucher est absolue. Bien que Klaus soit tout à fait disposé à parler de ses employeurs, il trouve qu'ils étaient tout à fait corrects avec lui et ne sait malheureusement pas grand-chose d'utile pour les Personnages.
 
@@ -328,8 +328,8 @@ Alors que les aventuriers maudissent leur sort et se demandent quoi faire, par l
 
 La seule chose que les aventuriers apprendront au cours de ce voyage est qu'Alex Eisen est un véritable malotru qui pense que sa parole et son avis sont plus doux à entendre que n'importe quelle musique. C'est un homme profondément ignorant et plein de préjugés qui se méfie de la plupart des gens qui sont étrangers à sa propre expérience, plutôt limitée. 
 
-
-<span id="page-136-0"></span>Si on l'interroge à ce sujet, il répondra rapidement : « *Je suis un homme raisonnable et personne ne peut m'accuser d'avoir des préjugés, mais je ne les aurais pas emmenés si vous ne travailliez pas pour la famille Blucher. Les elfes ? Les nains ? Franchement, je ne sais pas comment vous faites pour supporter de voyager avec eux. On ne peut clairement pas faire confiance aux elfes et ne me parlez même pas des nains. Je vous le dis, Middenheim a eu l'idée du siècle avec ces nouvelles taxes* ».
+<span id="page-136-0" data-folio="137"></span>
+Si on l'interroge à ce sujet, il répondra rapidement : « *Je suis un homme raisonnable et personne ne peut m'accuser d'avoir des préjugés, mais je ne les aurais pas emmenés si vous ne travailliez pas pour la famille Blucher. Les elfes ? Les nains ? Franchement, je ne sais pas comment vous faites pour supporter de voyager avec eux. On ne peut clairement pas faire confiance aux elfes et ne me parlez même pas des nains. Je vous le dis, Middenheim a eu l'idée du siècle avec ces nouvelles taxes* ».
 
 Plus d'informations sur les nouvelles taxes controversées de Middenheim sont disponibles dans **Le Pouvoir derrière le Trône**. Si les aventuriers interrogent Alex sur ces taxes ou s'ils expliquent qu'ils n'en ont pas entendu parler, Alex sourit malicieusement. « *Oh que oui* », poursuit-il. « *Ils taxent les elfes et les nains. C'est logique, avec tous les problèmes qu'ils causent* ». Alex a du mal à citer des problèmes particuliers que les elfes ou les nains lui ont causés, bien évidemment, mais il rejette toute tentative de le convaincre du contraire.
 
@@ -379,7 +379,7 @@ Selon certaines rumeurs, Klaus, qui mesure près de 2 mètres, serait à moitié
 
 **Traits :** Arme (Gourdin) +9, Armure (Justaucorps de cuir) 1 **Possessions :** gourdin, craie, justaucorps de cuir, une bonne longueur de ficelle
 
-
+<span id="page-137-0" data-folio="138"></span>
 #### LE BATEAU : TERMINUS, TOUT LE MONDE DESCEND
 
 Altdorf marque la fin des exploits aquatiques du groupe, même s'ils ne le savent pas encore. S'ils possèdent encore leur bateau, c'est le moment pour vous de les en soulager. Il existe plusieurs façons d'y parvenir.
@@ -410,7 +410,7 @@ En fin de compte, il n'y a aucun mal à laisser le bateau aux aventuriers, s'ils
 
 Si les joueurs insistent pour poursuivre la vie marchande, leurs Personnages cesseront d'être les héros de la campagne et en deviendront de simples témoins : ils entendront parler d'actes obscurs à Middenheim et d'une terrible menace dans les Montagnes du Milieu. Enfin, ils seront plongés dans une guerre civile qui s'intensifiera et auront beaucoup de retard à rattraper. Il serait regrettable qu'ils manquent les deux prochains actes de la campagne, mais ce ne serait pas la fin du monde pour autant : elle interviendra plus tard...
 
-
+<span id="page-138-0" data-folio="139"></span>
 #### **Les débardeurs**
 
 Harold et Stefan, quand ils ne sont pas occupés à récurer les casseroles dans les cuisines du Col du Cygne, prennent un malin plaisir à botter les fesses des ivrognes, des profiteurs, des fauteurs de troubles, des troubadours et des mimes. Leur taille et leur réputation leur permettent d'éviter la plupart des problèmes, mais on peut toujours compter sur eux pour se jeter corps et âme dans n'importe quelle situation impliquant la boisson.
@@ -465,8 +465,8 @@ Max Wagner est au moins deux fois plus âgé que Matthias Blucher, mais il sait 
 
 **Possessions :** 6 CO, bourse de tabac à priser, dague (Dissimulée), livre de comptes, vêtements à la mode
 
+<span id="page-139-0" data-folio="140"></span>
 
-<span id="page-139-0"></span>
 
 # APPENDICE 1 L'ENTRAÎNEMENT ET LES MENTORS
 
@@ -496,5 +496,4 @@ Les aventuriers ont fait une partie du voyage à bord du *Bérébeli*, la barge 
 
 Josef leur proposera de les entraîner, non pas parce qu'il a besoin d'un équipage, et encore moins parce qu'il croit en leur avenir dans ce métier, mais plutôt parce que selon lui, il n'a pas vraiment le choix. Sa réputation et son respect pour la sécurité maritime le forcent à proposer son aide aux joueurs qui se pensent (à tort) capables de pouvoir naviguer par euxmêmes. Il ronchonnera, grognera et soupirera de manière exagérée, ajoutera parfois à ça un clin d'œil, une gorgée d'eaude-vie ou de rhum, sans oublier de nombreuses tapes amicales, mais il apprendra malgré tout au moins incompétent du groupe comment faire en sorte de diminuer le danger et la honte qu'il représente sur l'eau.
 
-
-<span id="page-140-0"></span>
+<span id="page-140-0" data-folio="141"></span>

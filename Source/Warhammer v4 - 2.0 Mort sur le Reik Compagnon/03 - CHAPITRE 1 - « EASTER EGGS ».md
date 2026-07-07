@@ -1,6 +1,6 @@
-*Pages PDF 7*
+*Folio 8+*
 
-## <span id="page-6-0"></span>CHAPITRE 1 « EASTER EGGS »
+## CHAPITRE 1 « EASTER EGGS »
 
 Comme **L'Ennemi dans l'Ombre**, **Mort sur le Reik** comprend un certain nombre de noms amusants, de jeux de mots, et de références à la pop culture. Le titre de l'aventure est une référence à Agatha Christie et son célèbre *Mort sur le Nil*, dont l'adaptation filmée de 1978 a fait son apparition sur les écrans britanniques peu de temps avant le début de l'écriture. En voici d'autres :
 
@@ -27,3 +27,5 @@ Loorbeer et Kuhn, les adeptes de la Main Pourpre qui rencontrent les personnages
 L'affable et cultivé Ludwig, le chef de famille des Wittgenstein partiellement transformé en cafard, est un hommage à *La Métamorphose* de Kafka.
 
 La rencontre avec Gutbug Tueur-de-fouines, le chef gobelin qui a enfilé la robe d'Etelka Herzen car il pensait qu'elle était la source de son pouvoir, est un bon exemple de ce qui fait « l'humour Warhammer » par excellence. Cela a causé quelques conflits à l'époque : Games Workshop traitait les premières aventures de *L'Ennemi Intérieur* comme ses Packs de Bataille, et essayait de vendre des figurines pour chacune d'elles. Cela veut dire qu'il fallait faire une figurine à l'effigie de ce pauvre diable de Gutbug, et les sculpteurs n'étaient pas particulièrement emballés à cette idée. Aujourd'hui, c'est l'une des figurines les plus chères et les plus difficiles à trouver sur Internet.
+
+<span id="page-7-0" data-folio="8"></span>

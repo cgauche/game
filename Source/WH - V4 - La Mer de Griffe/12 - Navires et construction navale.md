@@ -1,4 +1,4 @@
-*Pages PDF 96-107*
+*Folio 93+*
 
 # NAVIRES ET CONSTRUCTION NAVALE • **Règles de base pour fabriquer un bateau et équiper un vaisseau** •
 
@@ -44,7 +44,7 @@ Le deuxième nombre (É) est le nombre minimum de membres d'équipage requis pou
 
 Comme pour les Voiles, le premier nombre (M) est le score de Mouvement du vaisseau, en supposant que le nombre minimum de membres d'équipage soit disponible, que le temps soit beau et que les matelots rament à un rythme modéré. Le deuxième nombre (É) est le nombre minimum de membres d'équipage requis pour faire avancer le bateau à la rame à sa vitesse de Mouvement pendant une période de deux heures.
 
-
+<span id="page-96-0" data-folio="93"></span>
 ### **Manœuvre (Man)**
 
 La Caractéristique Manœuvre fournit un modificateur imposé aux Tests pour lesquels la réactivité et l'agilité du navire sont importantes. Cela inclut les Tests de Voile et de Ramer dans les zones comportant des dangers, mais d'autres Tests peuvent aussi être affectés.
@@ -102,9 +102,9 @@ Les Traits et les Améliorations sont des éléments de conception qui peuvent �
 | Boutre d'Inja          | 400 CO    | 15       | 5 (8)               | –                | –     | 25     | 45 | 60  | 300        | –                               |
 | Bateau-trésor cathayen | 10 000 CO | 220      | 9 (200)             | –                | –     | 130    | 50 | 400 | 4 000      | –                               |
 
-
-
-
+<span id="page-97-0" data-folio="94"></span>
+<span id="page-98-0" data-folio="95"></span>
+<span id="page-99-0" data-folio="96"></span>
 # **CONSTRUIRE UN NAVIRE**
 
 Cette section peut être utilisée comme guide pour que les Joueurs construisent ou fassent construire leurs propres vaisseaux ou pour donner au MJ un moyen de créer des bateaux. Pour déterminer le coût d'un nouveau bateau, le futur propriétaire doit décider de plusieurs facteurs : la Taille du bateau ; son mode de propulsion ; si son style affecte ou non la manœuvrabilité, la vitesse ou l'espace pour la cargaison ; et si des Traits ou des Améliorations s'appliquent au navire.
@@ -163,7 +163,7 @@ La vitesse du vaisseau est dérivée de la valeur M de ses Voiles ou de ses Avir
 |             |              | Retire 75 % de  |              |              |  |
 | Foudroyant  | +3           | Contenance      | –            | +10 %        |  |
 
-
+<span id="page-100-0" data-folio="97"></span>
 # **TRAITS**
 
 Les Traits qui suivent peuvent être intégrés à un bateau lors de sa construction initiale. Contrairement aux Améliorations, ils ne peuvent être ni ajoutés ni modifiés une fois la charpente terminée.
@@ -224,7 +224,7 @@ Un Bélier en métal peut être fixé à l'avant d'un bateau. Le Bélier fournit
 
 **Coût :** 250 CO (pour du bronze) ou 330 CO (pour du fer) par tranche de 5 mètres de Taille pour les bateaux Petits à Moyens ; 500 CO (pour du bronze) ou 560 CO (pour du fer) par tranche de 5 mètres de Taille pour les bateaux plus grands que Moyens.
 
-
+<span id="page-101-0" data-folio="98"></span>
 **Poids (par tranche de 5 mètres de Taille) :** 160 points d'Encombrement (pour du fer) ; 175 points d'Encombrement (pour du bronze).
 
 Le Blindage ne peut être installé que sur des chantiers navals spécialisés et nécessite les compétences de forgerons et de constructeurs de navires experts en la matière. Ajouter le blindage prend deux semaines pour les navires Petits à Moyens et un mois pour les navires plus grands que Moyens.
@@ -283,7 +283,7 @@ Si la Figure de proue est de particulièrement bonne facture, elle devient une s
 
 Ce mécanisme est composé de deux larges ailettes de bois qui peuvent être dépliées sur les côtés du bateau. Quand vous avancez, ouvrir les freins augmente la résistance et réduit le Mouvement de 1 ou 2 points, selon s'ils sont ouverts à moitié ou totalement. S'ils sont ouverts dans un Détroit ou dans un Tourbillon, ils augmentent le M effectif du courant du même nombre de points.
 
-
+<span id="page-102-0" data-folio="99"></span>
 # **Lissage**
 
 **Coût :** 66 CO par tranche de 5 mètres de Taille pour les bateaux Minuscules à Moyens ; 132 CO par tranche de 5 mètres de Taille pour les bateaux plus grands que Moyens.
@@ -363,7 +363,7 @@ Les Sabords sont des trappes refermables permettant à une arme à projectiles d
 
 Si un navire ne dispose pas de Sabords, les tirs doivent nécessairement être effectués depuis le pont. Le pont ne fournit aucun couvert, alors qu'un Sabord donne une couverture totale. Ouvrir ou fermer un Sabord est considéré comme une seule action. Les Sabords ouverts peuvent représenter un danger si le navire commence à couler (voir page 117).
 
-
+<span id="page-103-0" data-folio="100"></span>
 # **PIÈCES D'ARTILLERIE**
 
 La navigation maritime est périlleuse et même les petits navires marchands ont tendance à être équipés d'armes efficaces. Entre les bonnes mains, quelques petits canons peuvent pousser un corsaire bretonnien ou des langskips de pillage norses à chercher une proie plus facile.
@@ -406,7 +406,7 @@ Un pierrier est l'équivalent d'un tromblon en plus grand. En raison de son poid
 | Mortier       | 50 CO  | 50  | Exotique            | 100          | –      | Arme d'équipe 3, Recharge 4             |
 | Pierrier      | 20 CO  | 5   | Rare                | 30           | +14    | Dangereuse, Recharge 4                  |
 
-
+<span id="page-104-0" data-folio="101"></span>
 |                                           |      |     |               | MUNITIONS POUR PIÈCES D'ARTILLERIE |          |                                      |
 |-------------------------------------------|------|-----|---------------|------------------------------------|----------|--------------------------------------|
 | Arme                                      | Prix | Enc | Disponibilité | Portée                             | Dégâts   | Atouts et Défauts                    |
@@ -434,7 +434,7 @@ Le propriétaire du bateau doit pouvoir décider comment placer les canons (et t
 
 Le diagramme de droite indique quatre manières dont dix canons pourraient être disposés sur le pont. Les deux placements du haut sont équilibrés et n'imposeraient pas de pénalité pour le pilotage du vaisseau. Les deux placements du bas imposeraient des pénalités, sauf si du lest de compensation, par exemple des sacs de sable, est placé de façon à rendre la répartition du poids plus uniforme.
 
-
+<span id="page-105-0" data-folio="102"></span>
 # **NOUVEAUX ATOUTS ET DÉFAUTS D'ARME**
 
 # **Arme d'équipe (Indice)**
@@ -470,3 +470,5 @@ Les armes possédant l'Atout *Tir de zone* tirent un nuage de projectiles qui se
 - 0 **Bout portant :** le tir cible un seul individu. Ajoutez l'Indice aux Dégâts de l'arme.
 - 0 **Portée Courte à Longue :** le tir cible un individu, mais aussi les (Indice) créatures visibles les plus proches. Deux cibles ne peuvent pas se trouver à plus de (Indice) mètres de distance l'une de l'autre.
 - 0 **Portée Extrême :** comme pour Portée Courte à Longue, mais réduit les Dégâts de l'arme de (Indice).
+
+<span id="page-106-0" data-folio="103"></span>

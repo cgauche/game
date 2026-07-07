@@ -1,6 +1,6 @@
-*Pages PDF 55-69*
+*Folio 56+*
 
-# <span id="page-54-0"></span>CHAPITRE 6 : LA SCHAFFENFEST
+# CHAPITRE 6 : LA SCHAFFENFEST
 
 Nos héros, ayant découvert que l'héritage n'était qu'un leurre, ont sans doute besoin d'un peu de réconfort. Heureusement, l'une des plus grandes foires du Reikland se déroule à deux pas : la Schaffenfest !
 
@@ -21,8 +21,8 @@ Les Personnages peuvent parcourir la Schaffenfest à leur rythme, y découvrir l
 
 Le groupe peut visiter la Schaffenfest en toute liberté, et profiter de l'une des plus grandes foires de l'Empire. Pour vous aider à lui donner vie, ce chapitre propose une sélection d'Événements optionnels que vous pouvez utiliser à votre guise, ainsi que cinq Emplacements principaux qui sont importants pour l'aventure ou la foire. En plus de ceux-ci, vous trouverez les deux scènes-clés qui sont nécessaires à la bonne progression de l'aventure. Chaque Emplacement principal propose également deux rencontres optionnelles que vous pouvez utiliser comme bon vous semble.
 
-
-<span id="page-55-0"></span>Votre tâche, dans cette partie de l'aventure, consiste à donner vie au champ de foire bondé et bruyant, pendant que les Personnages inspectent les étals, les attractions, et s'intéressent aux évènements ainsi qu'à certains PNJ, comme le font les gens dans une vraie foire. Décrivez l'atmosphère, tout particulièrement le mélange des gens qui se côtoient, des mendiants sales, des artisans bien habillés, des saltimbanques vêtus de couleurs vives, des membres du Guet à la mine sévère : toute la population de Bögenhafen est représentée. On entend des ouvriers chanter à tue-tête (après s'être gavés de bière), des bébés qui pleurent, des camelots qui vantent leurs produits, et tout cela se mêle aux braillements des gens qui s'amusent pour former le brouhaha de la fête.
+<span id="page-55-0" data-folio="56"></span>
+Votre tâche, dans cette partie de l'aventure, consiste à donner vie au champ de foire bondé et bruyant, pendant que les Personnages inspectent les étals, les attractions, et s'intéressent aux évènements ainsi qu'à certains PNJ, comme le font les gens dans une vraie foire. Décrivez l'atmosphère, tout particulièrement le mélange des gens qui se côtoient, des mendiants sales, des artisans bien habillés, des saltimbanques vêtus de couleurs vives, des membres du Guet à la mine sévère : toute la population de Bögenhafen est représentée. On entend des ouvriers chanter à tue-tête (après s'être gavés de bière), des bébés qui pleurent, des camelots qui vantent leurs produits, et tout cela se mêle aux braillements des gens qui s'amusent pour former le brouhaha de la fête.
 
 ## **Le Guet**
 
@@ -68,7 +68,7 @@ Le groupe aura la possibilité de lui rendre visite, et de la sortir d'une situa
 
 Les voyants, les chiromanciens et autres prophètes auto-proclamés s'installent en général dans de petites tentes peu éclairées, pour dire la bonne aventure en échange d'une petite somme, en général entre 5 et 16 sous. Le prix ne varie pas seulement d'un médium à l'autre, mais également selon l'estimation que celui-ci fait de la somme que le client est prêt à débourser. Il existe de nombreuses méthodes de divination, comme la chiromancie, les tarots, les dés, les boules de cristal, ou les feuilles de thé entre autres. La plupart des voyants en utilisent plusieurs, chacune nécessitant l'utilisation d'accessoires spécifiques. Les prédictions habituelles incluent des rencontres avec des étrangers grands et sombres, ou de longs voyages, mais un « authentique » devin pourrait fournir à un Personnage des informations utiles.
 
-
+<span id="page-56-0" data-folio="57"></span>
 ## RUMEURS
 
 Ces rumeurs devraient être utilisées de la même manière que celles de la page 15, mais représentent les nouveaux ragots qui ont vu le jour depuis que le groupe a quitté Altdorf. Prenez surtout note de la dernière rumeur, car elle est importante et on l'entend partout.
@@ -100,8 +100,8 @@ Cette rumeur sert à poser l'ambiance des évènements en cours dans l'Empire. �
 
 Cette rumeur, bien qu'incroyable, est entièrement vraie. Elle atteint Bögenhafen le jour de l'arrivée des joueurs, et est au cœur des conversations de toutes les tavernes et de toutes les buvettes de la ville. Les raisons pour lesquelles l'Empereur a autorisé un tel décret seront expliquées dans le dernier volume de **L'Ennemi Intérieur** : **L'Empire en Ruines**, et provoquent d'importants bouleversements politiques.
 
-
-#### <span id="page-57-0"></span>**Megret la mystique**
+<span id="page-57-0" data-folio="58"></span>
+#### **Megret la mystique**
 
 Megret la mystique a toujours pu voir l'avenir. Ses présages, bien qu'ils ne soient pas toujours immédiatement compréhensibles, même pour elle-même, s'avèrent presque toujours vrais. Que le groupe s'intéresse à sa tente jaune et rouge vif vous donne l'occasion de glisser quelques indices sur ce qui se passe à Bögenhafen. Selon le moment où les Personnages entendent les prédictions de Megret, elles peuvent être utiles ou simplement contribuer à l'atmosphère générale. Elles n'auront sans doute aucun sens sur le moment, mais lorsqu'elles se réaliseront, elles laisseront aux Personnages comme aux joueurs un sentiment de malaise. Vous trouverez ci-dessous quelques exemples de ce que peut révéler Megret. Ne révélez pas tout en une seule fois, pour permettre aux Personnages de revenir pour avoir d'autres prédictions s'ils le souhaitent, que ce soit ensemble ou séparément.
 
@@ -158,7 +158,7 @@ Les Personnages voient quelqu'un être emmené de force par une patrouille du Gu
 
 Les Personnages se retrouvent en plein milieu d'une bagarre. Choisissez-en les participants ou jetez 1d10 dans la table cidessous pour découvrir qui est impliqué.
 
-
+<span id="page-58-0" data-folio="59"></span>
 Une patrouille de quatre hommes du Guet arrive après 1d10 Rounds et arrête autant de participants que possible. Dans la confusion, il est fort probable que des passants innocents (dont un ou plusieurs Personnages) soient également arrêtés, et traînés devant le *Tribunal des Fêtes* (voir page 66).
 
 | d10 | La bagarre a lieu entre :                                                                            |
@@ -209,8 +209,8 @@ Sur un étal improvisé, les Personnages remarquent ce qui semble être un jeu a
 
 Grâce à la combinaison de tours de passe-passe, d'accessoires truqués et de bluff, il est virtuellement impossible que le charlatan perde. Si un Personnage décide de tenter sa chance, il peut tenter un Test de **Perception Très difficile (-30)** pour comprendre la façon dont le jeu est truqué.
 
-
-<span id="page-59-0"></span>Les jeux les plus courants consistent à deviner sous quelle tasse ou coquillage se trouve la pièce ou la balle, à essayer de tirer certaines cartes dans un paquet (par exemple : chacune plus forte que la précédente, chacune d'une couleur différente, etc), ou tenter de jeter une corde ou un anneau de bois sur des lots qui sont légèrement plus grands que ne le sont les anneaux.
+<span id="page-59-0" data-folio="60"></span>
+Les jeux les plus courants consistent à deviner sous quelle tasse ou coquillage se trouve la pièce ou la balle, à essayer de tirer certaines cartes dans un paquet (par exemple : chacune plus forte que la précédente, chacune d'une couleur différente, etc), ou tenter de jeter une corde ou un anneau de bois sur des lots qui sont légèrement plus grands que ne le sont les anneaux.
 
 ## **Mendiant**
 
@@ -252,8 +252,8 @@ Après tout, peut-être y a-t-il un grand chapiteau sous lequel le célèbre Cir
 
 Un saltimbanque, habillé de couleurs criardes, se tient devant un espace délimité par une corde, et invite les candidats plein d'espoir présents dans la foule à venir combattre un champion tatoué et visiblement exténué, pour remporter une somme pouvant aller jusqu'à 4 couronnes.
 
-
-<span id="page-60-0"></span>*« Approchez, approchez, venez gagner deux couronnes ! C'est exact, deux couronnes entières pour un léger effort de quelques minutes ! Tout ce que vous avez à faire, c'est de tenir trois minutes sur le ring avec mon champion ! Deux couronnes si vous tenez trois minutes, quatre si vous parvenez à le battre dans ce laps de temps ! Vous, là, vous as l'air d'être un rapide ! Croyez-vous que vous pourrez rester hors de portée pendant trois minutes ? C'est vite passé trois minutes, vous savez ! Et vous ! Oui, vous, pourquoi ne pas montrer à vos amis de quel bois vous êtes fait ? Pour deux petites pistoles, il est tout à vous ! »*
+<span id="page-60-0" data-folio="61"></span>
+*« Approchez, approchez, venez gagner deux couronnes ! C'est exact, deux couronnes entières pour un léger effort de quelques minutes ! Tout ce que vous avez à faire, c'est de tenir trois minutes sur le ring avec mon champion ! Deux couronnes si vous tenez trois minutes, quatre si vous parvenez à le battre dans ce laps de temps ! Vous, là, vous as l'air d'être un rapide ! Croyez-vous que vous pourrez rester hors de portée pendant trois minutes ? C'est vite passé trois minutes, vous savez ! Et vous ! Oui, vous, pourquoi ne pas montrer à vos amis de quel bois vous êtes fait ? Pour deux petites pistoles, il est tout à vous ! »*
 
 *« Allez mes amis, qui va relever le défi ? Pour un investissement de 2 malheureuses pistoles, vous pouvez ressortir avec 20 ou 40 fois plus après seulement trois petites minutes ! Allons, si j'étais usurier, je me ferais enfermer pour avoir demandé des intérêts pareils ! »* 
 
@@ -280,8 +280,8 @@ Les espaces d'enchères sont animés tout au long des trois jours que dure la fo
 
 0 Un hurlement puissant déchire l'air en provenance du marché aux bestiaux, suivi par un terrible vacarme dû aux animaux qui paniquent dans leurs enclos et aux fermiers qui s'enfuient. S'ils se rendent sur place, les Personnages découvriront un hippogriffe en cage à côté des enclos à 
 
-
-<span id="page-61-0"></span>volaille. Non loin de là, l'air contrarié, Godri Widdensehen, un chasseur de monstres assez connu et originaire des environs, se fait sermonner par un percepteur. *« Non, Herr Widdensehen, peu importe ce que vous en dites, ce n'est pas un poulet géant. Et ce n'est certainement pas un « animal domestique ». Alors vous pouvez le vendre lors de Geltgrubetag si vous le voulez, mais vous devrez payer les taxes si vous le faites ! »*
+<span id="page-61-0" data-folio="62"></span>
+volaille. Non loin de là, l'air contrarié, Godri Widdensehen, un chasseur de monstres assez connu et originaire des environs, se fait sermonner par un percepteur. *« Non, Herr Widdensehen, peu importe ce que vous en dites, ce n'est pas un poulet géant. Et ce n'est certainement pas un « animal domestique ». Alors vous pouvez le vendre lors de Geltgrubetag si vous le voulez, mais vous devrez payer les taxes si vous le faites ! »*
 
 0 Alberich le mouton, un Hopfberg à longues cornes appartenant à Nanci Alschwartz, est presque assuré d'être couronné roi de la Schaffenfest. Talya Schwering, la propriétaire de Jeph le mouton, un Vorbergland longue laine, est prête à payer pour empêcher que cela se produise. Après tout, si Jeph gagne le titre, il vaudra dix fois son prix actuel. Peut-être même vingt fois ! Est-ce que les Personnages accepteront de tuer Alberich pour 2 CO ? Et s'ils accomplissent cette sombre besogne, comment réagiront-ils lorsqu'un autre que Jeph remportera le prix, et qu'il s'avérera que Talya n'a pas les moyens de les payer ?
 
@@ -294,10 +294,10 @@ Si vous voulez plus d'informations sur les Personnages importants de la maison S
 - 0 Primus von Bildhofen est terrifié. Il ne veut pas participer à la joute, peu lui importe que son grand-père, le Grand-Duc Leopold, l'exige. Alors quand une servante l'informe qu'elle a repéré quelqu'un qui lui ressemble physiquement, une idée brillante lui vient à l'esprit : Primus pourrait envoyer cet individu jouter à sa place ! Après tout, son armure est complètement fermée, donc personne ne saurait que ce n'est pas vraiment lui. Comment cela pourrait-il mal tourner ?
 - 0 Un grand festin est organisé sous le grand pavillon en l'honneur de la présence du Grand-Duc Leopold du Middenland à Bögenhafen. Quand les Personnages repèrent un serviteur agissant de façon suspecte, et qu'ils le voient mettre quelque chose dans le bol à punch doré, que font-ils ?
 
-
+<span id="page-62-0" data-folio="63"></span>
 ## OPTIONS : LE NAIN CHANCEUX !
 
-<span id="page-62-0"></span>Des joueurs qui connaissent le sort de Gottri pourraient décider de passer du temps avec lui, que ce soit pour le protéger, ou pour tenter de connaître la personne qui va l'assassiner et jeter son corps dans les égouts (voir page 70). Si Gideon avait choisi de sacrifier Gottri pour invoquer le démon gardien, c'est parce que le nain était seul, et qu'il ne manquerait à personne. Mais s'il découvre que les Personnages veillent sur lui, il jettera son dévolu sur quelqu'un d'autre, ce qui implique que c'est un autre corps qui sera découvert plus tard.
+Des joueurs qui connaissent le sort de Gottri pourraient décider de passer du temps avec lui, que ce soit pour le protéger, ou pour tenter de connaître la personne qui va l'assassiner et jeter son corps dans les égouts (voir page 70). Si Gideon avait choisi de sacrifier Gottri pour invoquer le démon gardien, c'est parce que le nain était seul, et qu'il ne manquerait à personne. Mais s'il découvre que les Personnages veillent sur lui, il jettera son dévolu sur quelqu'un d'autre, ce qui implique que c'est un autre corps qui sera découvert plus tard.
 
 ## **Le tribunal des fêtes et les piloris**
 
@@ -323,8 +323,8 @@ En passant à proximité du Tribunal des Fêtes, les Personnages voient l'un des
 
 Si quelqu'un s'approche à portée de voix, Gottri implorera pathétiquement qu'on lui prête les 2 pistoles dont il a besoin pour payer son amende et être libéré. Si un Personnage règle son amende, il manifestera sa reconnaissance de façon très embarrassante, lui jurant d'une voix avinée une reconnaissance éternelle et racontant à tous les passants quel bon ami il a trouvé là.
 
-
-<span id="page-63-0"></span>Au bout d'un petit moment, sa conversation revient à son sujet favori : la boisson, et surtout son prochain verre. Jouez son rôle à fond, en insistant sur le côté grossier et embarrassant du nain, ainsi que son odeur, de façon à faire regretter aux Personnages leur bonne action.
+<span id="page-63-0" data-folio="64"></span>
+Au bout d'un petit moment, sa conversation revient à son sujet favori : la boisson, et surtout son prochain verre. Jouez son rôle à fond, en insistant sur le côté grossier et embarrassant du nain, ainsi que son odeur, de façon à faire regretter aux Personnages leur bonne action.
 
 Ceux qui se joignent à Gottri pour boire un verre et tenter d'en savoir plus à son sujet, malgré les regards hostiles et les chuchotements désapprobateurs des autres personnes de la buvette, pourront apprendre qu'il a été exclu de la Guilde des Ingénieurs Nains à cause d'une invention qu'il ne peut expliquer de façon cohérente, et qu'il noie son chagrin depuis lors.
 
@@ -359,8 +359,8 @@ Dans un cas comme dans l'autre, le Docteur Malthusius est extrêmement reconnais
 
 Une fois le calme revenu, Grunni commence à encaisser la pistole demandée comme droit d'entrée dans la zone délimitée par la corde. Quand le nombre déterminé de personnes est entré, le 
 
-
-<span id="page-64-0"></span>Docteur Malthusius vérifie qu'il n'y a pas de répurgateur parmi les personnes présentes. Une fois qu'il est satisfait, il se met au centre, sur le devant de la scène, pendant que Grunni amène les diverses créatures difformes et biscornues pour le public puisse les voir. Il montre un éventail de créatures extraordinaires telles que « L'Horreur Horriblement Velue du Hochland » (un singe à poils longs acheté à Marienburg), « l'Ignoble Chien borgne de Diersdorf » (un véritable chien mutant avec un seul œil sur le front, tout à fait illégal), « l'Incommensurable Gueule des Montagnes centrales » (un squig, plutôt petit) et « L'Épouvantable Gobelin à Trois Pattes de Grissenwald ».
+<span id="page-64-0" data-folio="65"></span>
+Docteur Malthusius vérifie qu'il n'y a pas de répurgateur parmi les personnes présentes. Une fois qu'il est satisfait, il se met au centre, sur le devant de la scène, pendant que Grunni amène les diverses créatures difformes et biscornues pour le public puisse les voir. Il montre un éventail de créatures extraordinaires telles que « L'Horreur Horriblement Velue du Hochland » (un singe à poils longs acheté à Marienburg), « l'Ignoble Chien borgne de Diersdorf » (un véritable chien mutant avec un seul œil sur le front, tout à fait illégal), « l'Incommensurable Gueule des Montagnes centrales » (un squig, plutôt petit) et « L'Épouvantable Gobelin à Trois Pattes de Grissenwald ».
 
 Au moment où Grunni fait sortir le gobelin de sa cage, celui-ci se retourne brusquement, mord la main du nain, et s'échappe à nouveau en courant. La foule se met à paniquer et à courir en tous sens, se mettant en travers du chemin et empêchant quiconque de se lancer à la poursuite de la créature. Celle-ci disparaît rapidement dans un petit trou du mur de la ville dont la grille s'est partiellement désagrégée sous l'effet de la rouille.
 
@@ -396,7 +396,7 @@ Schattiger, un homme brun, est l'archétype même du saltimbanque à la petite s
 
 Sur scène, sa voix est mélodieuse et profonde, presque distinguée, et il ponctue ses discours de grands gestes. Mais lorsqu'il n'est pas en représentation, il a l'accent un peu nasillard et plaintif des gens du Hochland, et il jure beaucoup.
 
-
+<span id="page-65-0" data-folio="66"></span>
 #### KLAUS SCHATTIGER - CHARLATAN HUMAIN (BRONZE 5)
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
@@ -455,7 +455,7 @@ Gottri est bedonnant, sale, ses cheveux grisonnants tout comme sa barbe sont emm
 
 panneau où est écrit « IVROGNE ET VAGABOND » a été accroché à son cou. Il parle mal, jure beaucoup, et est prompt à passer du coq à l'âne, rendant difficile toute conversation.
 
-
+<span id="page-66-0" data-folio="67"></span>
 #### GOTTRI GURNISSON - MENDIANT NAIN (BRONZE 2)
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
@@ -512,7 +512,7 @@ Le Docteur Malthusius sait parfaitement qu'abriter un mutant est illégal (ou pl
 
 **Traits** : Animosité (Tout le monde), Arme (Dents et griffes) +5, Effrayé (Elfes, Nains), Infecté, Mutation ( Jambe supplémentaire, Vitesse surnaturelle), Rapide, Taille (Petit), Vision nocturne
 
-
+<span id="page-67-0" data-folio="68"></span>
 ## **Évènements optionnels**
 
 #### **L'apothicaire**
@@ -545,7 +545,7 @@ MEGRET SEE - SAGE HUMAIN (BRONZE 3)
 
 **Traits** : Arme (Dague) +4, Préjugé (Ceux qui l'ignorent) **Possessions** : 34/12, amulettes (diverses et variées), besace, bijoux (de pacotille mais très voyants), jeu de cartes (tarot du Reikland), sac de couchage, tente (rouge et blanc)
 
-
+<span id="page-68-0" data-folio="69"></span>
 #### **Bétail en liberté**
 
 Les caractéristiques suivantes sont celles d'animaux domestiques courants dans le Reikland. Si vous pensez qu'un animal ne représente pas un défi suffisant, ou qu'il s'agit de la deuxième fois que la rencontre survient, piochez dans la liste des Traits Facultatifs, ou dans celle des Traits standards de Créature (voir **WFJDR** page 310).
@@ -650,3 +650,5 @@ Maladie (au choix)
 **Facultatif** : À distance (50) +8, Dur à cuire, Maladie (au
 
 choix), Parasité, Pisteur
+
+<span id="page-69-0" data-folio="70"></span>

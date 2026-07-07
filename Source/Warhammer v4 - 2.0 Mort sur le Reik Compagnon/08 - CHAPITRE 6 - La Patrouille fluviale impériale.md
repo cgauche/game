@@ -1,6 +1,6 @@
-*Pages PDF 34-37*
+*Folio 35+*
 
-## <span id="page-33-0"></span>CHAPITRE 6 LA PATROUILLE FLUVIALE IMPÉRIALE
+## CHAPITRE 6 LA PATROUILLE FLUVIALE IMPÉRIALE
 
 La Patrouille fluviale impériale, aussi connue sous l'appellation familière d'Abordeurs, est une organisation similaire à celle des patrouilleurs routiers, chargée de faire régner la paix impériale sur les rivières et canaux de l'Empire.
 
@@ -22,8 +22,8 @@ Les grandes auberges en bord de rivière mettent généralement de côté quelqu
 
 Certaines maisons éclusières (voir p. 24-27) sont gérées par la Patrouille fluviale de la même manière que les péages sur les routes sont administrés par le Service impérial de patrouille routière.
 
-
-### <span id="page-34-0"></span>**PERSONNEL**
+<span id="page-34-0" data-folio="35"></span>
+### **PERSONNEL**
 
 Même si le nom de Patrouille fluviale impériale évoque en premier lieu la carrière de patrouilleurs fluvial (**WFJDR**, p. 100), le personnel de ce service est extrêmement varié, et comprend une plus grande proportion d'anciens aventuriers que n'importe quelle autre organisation.
 
@@ -67,7 +67,7 @@ uniforme, 2d10 sous de cuivre, veste de cuir
 
 Si les Personnages venaient à se retrouver du mauvais côté de la loi, Gertrud peut leur donner l'opportunité d'échanger un pot-de-vin contre leur liberté. La jeune patrouilleuse fluviale n'a pas encore fait une croix sur toutes ses vieilles habitudes, et son influence sur le respecté August Hauser lui permet souvent de convaincre l'homme de fermer les yeux sur certaines choses...
 
-
+<span id="page-35-0" data-folio="36"></span>
 Cela fait plus d'une décennie qu'Hauser a dédié sa vie à la rivière, et il a toujours fait en sorte de naviguer sur des eaux où peu de gens le reconnaîtraient. Aimable, rigoureux dans son travail, et doté d'un penchant pour les paris aux enjeux excentriques, ce patrouilleur fluvial à la carrure robuste prend cependant une mine sombre lorsqu'on lui pose trop de questions sur son passé. C'était il y a quelques mois qu'il fit la rencontre, à sa grande surprise, d'une jeune femme portant une amulette de Bögenhauer en argent, l'ultime cadeau qu'il avait fait à sa femme avant de les quitter, elle et leur petite fille tout juste née. Hauser usa alors de son don pour les jeux d'argent, ainsi que d'un crochet du gauche, pour faire monter Gertrud à bord de son bateau de patrouille. Même s'il est bien trop tard pour réparer ses erreurs, Hauser nourrit quand même l'espoir de transmettre un peu de savoir utile à la jeune femme.
 
 #### AUGUST HAUSER - PATROUILLEUR FLUVIAL HUMAIN (ARGENT 2)
@@ -102,8 +102,8 @@ Adalia est devenue patrouilleuse fluviale pour deux raisons précises : avoir un
 
 **Possessions :** bouclier, cotte de mailles, épée, grappin, heaume, lanterne et huile, pistolet avec 10 munitions, uniforme, 3d10 pistoles d'argent, veste de cuir
 
+<span id="page-36-0" data-folio="37"></span>
 
-<span id="page-36-0"></span>
 
 #### **Wilgryn Augenlos dit « le Trempé »**
 
@@ -136,3 +136,5 @@ Malgré tout, il est possible que les Personnages et leur bateau soient parfois 
 Arrêtés pour un contrôle « de routine », les Personnages se retrouvent à nouveau à devoir répondre aux interrogations d'une Patrouille fluviale locale. La plupart des patrouilleurs sont montés à bord du bateau des Personnages pour inspecter et fouiller son contenu ; soudain, une embarcation légère et rapide dépasse la barge de la Patrouille fluviale et y jette une bombe incendiaire ! L'esquif se met ensuite à descendre la rivière à toute vitesse, et alors que leur propre bateau de patrouille est en proie aux flammes, les patrouilleurs offrent aux Personnages un choix : passer le reste de la journée empêtrés dans l'inspection de marchandises la plus lente de leur vie, ou « Suivez ce bateau ! ».
 
 Les occupants de la petite embarcation, deux pirates bien armés (voir p. 82) ont attaqué la Patrouille fluviale afin de l'empêcher d'intervenir tandis que, non loin de là, leurs complices donnaient l'assaut sur leur véritable cible, la péniche d'un riche commerçant ou un paquebot fluvial de renom comme l'*Empereur Luitpold* (voir Chapitre 16). Si les Personnages parviennent à rattraper l'esquif, la Patrouille fluviale se chargera des pirates, et les patrouilleurs se montreront très reconnaissants si un membre de l'équipage venait à leur prêter main-forte, d'autant plus si les Personnages les aident ensuite à arrêter les complices des pirates.
+
+<span id="page-37-0" data-folio="38"></span>

@@ -1,6 +1,6 @@
-*Pages PDF 11-23*
+*Folio 12+*
 
-# <span id="page-10-0"></span>CHAPITRE 1 : ON RECHERCHE : AVENTURIERS COURAGEUX
+# CHAPITRE 1 : ON RECHERCHE : AVENTURIERS COURAGEUX
 
 Nos héros forment un groupe hétéroclite que la soif d'aventures a conduit à prendre la direction d'Altdorf, tout comme de nombreux habitants des campagnes et des bourgades de l'Empire. Altdorf, l'immense et trépidante capitale, où les rues sont pavées d'or et où tout est possible.
 
@@ -38,7 +38,7 @@ Elle est surtout utilisée pour les soins des chevaux et les réparations des di
 
 C'est la pièce que les voyageurs fréquentent le plus ; ils peuvent s'y détendre et profiter de la nourriture et des boissons que propose l'auberge. C'est également l'endroit où se trouve en général Gustav, le propriétaire, en train de superviser le personnel ou de servir lui-même certaines tables. Le prix du repas varie de 3sc pour un bol de soupe ou du pain avec du fromage, à 6sc pour une portion de ragoût de bœuf ou une tourte, voire 12sc ou 1/- pour un plat complet composé du rôti du jour, de saucisses et de légumes. La bière locale est au prix raisonnable de 2sc, mais les vins d'importation sont chers et vendus entre 2 et 6 pistoles la bouteille.
 
-
+<span id="page-11-0" data-folio="12"></span>
 ## **5. Écuries et remise**
 
 C'est ici que les palefreniers mettent les chevaux à l'écurie et s'en occupent. Par mauvais temps et pendant l'hiver, les diligences sont placées à l'abri dans la remise ; sinon elles sont laissées dans la cour.
@@ -71,8 +71,8 @@ Le personnel de l'auberge y dort, ainsi que les cochers de passage, la plupart d
 
 De nombreuses auberges-relais réservent une chambre ou deux à destination des patrouilleurs routiers. Leurs portes sont souvent marquées du blason de l'armée d'état locale. Les patrouilleurs routiers y trouvent des lits pour la nuit, et un endroit où ils peuvent s'acquitter de leurs tâches administratives. En contrepartie, l'auberge bénéficie de leur protection. Ces chambres sont fréquemment utilisées par les officiers de l'armée, bien que la plupart d'entre eux préfèrent s'offrir des chambres privées, plus confortables.
 
-
-## <span id="page-12-0"></span>**L'APPROCHE DE L'AUBERGE**
+<span id="page-12-0" data-folio="13"></span>
+## **L'APPROCHE DE L'AUBERGE**
 
 On suppose que les Personnages arrivent en début de soirée, juste au moment du départ de la dernière diligence. Si vous souhaitez qu'ils arrivent à un autre moment, pensez à modifier les informations ci-dessous. Lorsque les Personnages approchent de l'auberge, une diligence franchit le portail. Elle appartient à la compagnie des Quatre Saisons, et se dirige vers Middenheim (ou une autre destination appropriée). La diligence vient de faire réparer l'une de ses roues, et son cocher se dépêche afin de rattraper le temps perdu. Une fois le seuil franchi, il lance ses chevaux au galop et son véhicule s'élance sur la route à une vitesse vertigineuse.
 
@@ -96,8 +96,8 @@ Avant que les Personnages puissent faire quoi que ce soit, Gustav, l'expansif pr
 
 Dès qu'ils sont installés à la table, les Personnages se rendent compte que Phillipe Descartes les observe attentivement. Lorsqu'il se sent repéré, il se replonge dans la contemplation
 
-
-<span id="page-13-0"></span>de son verre. Les autres clients ne se préoccupent pas des aventuriers : dame Isolde picore délicatement dans son assiette, pendant que sa servante a le regard perdu dans le vague, et que Marie, son garde du corps, boit son vin d'un air maussade. Ernst Heidlemann est absorbé par sa lecture, et y consacrera toute la soirée. Quant aux cochers, Gunnar et Hultz, ils sont trop occupés à s'enivrer, profitant de l'occasion de passer un bon moment avant de devoir reprendre la route le lendemain matin.
+<span id="page-13-0" data-folio="14"></span>
+de son verre. Les autres clients ne se préoccupent pas des aventuriers : dame Isolde picore délicatement dans son assiette, pendant que sa servante a le regard perdu dans le vague, et que Marie, son garde du corps, boit son vin d'un air maussade. Ernst Heidlemann est absorbé par sa lecture, et y consacrera toute la soirée. Quant aux cochers, Gunnar et Hultz, ils sont trop occupés à s'enivrer, profitant de l'occasion de passer un bon moment avant de devoir reprendre la route le lendemain matin.
 
 #### **Hébergement**
 
@@ -145,7 +145,7 @@ Bien que leur diligence soit quasiment pleine, ils sont d'accord pour emmener le
 
 Dame Isolde n'adressera pas la parole aux Personnages, persuadée qu'il est indigne d'elle de fréquenter la racaille. S'ils insistent pour lui parler, elle semblera très contrariée et demandera à Janna, sa servante, de leur dire de la laisser
 
-
+<span id="page-14-0" data-folio="15"></span>
 #### RUMEURS
 
 Au cours de cette aventure, le groupe peut entendre les rumeurs suivantes. Elles ne sont pas associées à des PNJ spécifiques, aussi vous pouvez décider librement de celui qui les livre aux Personnages, et du moment où il le fait. Les sources les plus évidentes sont Gustav, l'aubergiste bavard, et Philippe, le joueur, mais de nombreux autres PNJ peuvent également les raconter : un nouveau client, un cocher de passage, voire le beau-frère du voisin d'un ami. Il est déconseillé de toutes les utiliser dans l'auberge : elles peuvent également être évoquées pendant le voyage, au cours du séjour à Altdorf, ou à tout autre endroit qui vous semblera approprié.
@@ -182,8 +182,8 @@ Partiellement vrai. Il se passe quelque chose à Altdorf, mais ce n'est pas à c
 - 0 *La Schaffenfest de cette année s'annonce comme la plus grande, la plus lucrative et la plus amusante (et probablement la plus dangereuse) à ce jour !*
   - Tout le monde parle de la Schaffenfest et fera tout pour s'y rendre. Rien que la nourriture des stands de restauration est à tomber.
 
-
-<span id="page-15-0"></span>tranquille. Celle-ci s'exécutera docilement, appuyée par le regard menaçant de Marie, le garde du corps d'Isolde. Si les aventuriers persistent, Isolde et son entourage se retirent dans leurs chambres.
+<span id="page-15-0" data-folio="16"></span>
+tranquille. Celle-ci s'exécutera docilement, appuyée par le regard menaçant de Marie, le garde du corps d'Isolde. Si les aventuriers persistent, Isolde et son entourage se retirent dans leurs chambres.
 
 **L'apprenti**
 
@@ -225,8 +225,8 @@ S'il est accusé de tricherie, Phillipe niera farouchement, paraissant outré qu
 
 Les Personnages qui poursuivent Phillipe dans les escaliers se retrouveront face à un Gustav fébrile et déconcerté, brandissant son tromblon et leur criant d'arrêter. Il n'a aucune idée de ce qui s'est passé en bas, mais il veut y mettre un terme. Il tirera sur quiconque continue à bouger, tombant à la renverse sous l'effet du recul. Bien sûr, il se répandra en excuses lorsqu'il se rendra compte de la situation.
 
-
-<span id="page-16-0"></span>Une fois en haut des escaliers, Phillipe saute par la fenêtre qui donne sur les écuries, 4 mètres en dessous. Il effectue un Test d'**Athlétisme Accessible (+20)** et, s'il est réussi, il diminue la hauteur de sa chute d'un total égal à 1+DR. Par conséquent, s'il obtient +3 DR, il atterrit, effectue une roulade et s'en sort sans autre dommage. Sinon, la chute lui fait perdre un nombre de Blessures égal à 1d10 + 3 par mètre de chute (voir **WFJDR**, page 166).
+<span id="page-16-0" data-folio="17"></span>
+Une fois en haut des escaliers, Phillipe saute par la fenêtre qui donne sur les écuries, 4 mètres en dessous. Il effectue un Test d'**Athlétisme Accessible (+20)** et, s'il est réussi, il diminue la hauteur de sa chute d'un total égal à 1+DR. Par conséquent, s'il obtient +3 DR, il atterrit, effectue une roulade et s'en sort sans autre dommage. Sinon, la chute lui fait perdre un nombre de Blessures égal à 1d10 + 3 par mètre de chute (voir **WFJDR**, page 166).
 
 Si les Blessures encaissées excèdent son Bonus d'Endurance, il reçoit également un État *À terre* en atterrissant lourdement sur le sol. Tout Personnage souhaitant le suivre par la fenêtre peut le faire en suivant les mêmes règles (à moins qu'il ne souhaite se suspendre d'abord, ce qui réduira la hauteur de chute à 2 mètres, mais donnera à Philippe le temps de prendre de l'avance). S'il est acculé, Phillipe combat à contrecœur. À moins qu'il ne soit confronté à deux Personnages à la fois, il préfère Retenir ses coups (**WFJDR**, page 173), afin qu'ils n'infligent pas de Blessures Critiques, et utilise son Talent Désarmer. Si ses Blessures atteignent 3 ou moins, il se rendra et restituera tout l'argent qu'il a gagné au jeu.
 
@@ -256,7 +256,7 @@ Il est près de 10 heures lorsque la diligence est finalement prête et que les 
 
 Les Personnages prêts à braver les éléments peuvent voyager sur le toit, mais aucun des PNJ n'acceptera de le faire. Chercher à entasser des passagers supplémentaires à l'intérieur rencontrera une forte opposition de la part de Dame Isolde, qui menacera de représailles de la part de ses très importants parents d'Altdorf. Se faire rembourser par les cochers est impossible : l'argent a depuis longtemps été dépensé, et a contribué à leur état actuel.
 
-
+<span id="page-17-0" data-folio="18"></span>
 ## OPTIONS : À LA RECHERCHE D'UN TRICHEUR
 
 Les joueurs expérimentés s'attendront à ce que Phillipe Descartes triche, et il ne fait pas de doute que leurs Personnages garderont un œil attentif sur ses cartes. Faites-le jouer honnêtement, et, puisque les aventuriers le surveillent de près, faites surgir une surprise ou deux en arrière-plan.
@@ -293,8 +293,8 @@ Ernst lâche son livre en poussant un cri dès que la fumée commence à s'en é
 
 Quant à l'animal, il s'envole par une fenêtre ouverte dans un gloussement de rire hystérique (et très humain). C'est à vous de voir si vous souhaitez réutiliser « Noiraud », qui a été envoyé pour gêner les agents de la Couronne Rouge (voir les caractéristiques d'Ernst) et a remplacé le corbeau domestique du propriétaire.
 
-
-<span id="page-18-0"></span>Si le groupe envisage d'attendre le passage de la prochaine diligence, Gustav les informera que « *Il n'y en n'a pas de prévue avant deux jours, et elle sera sans doute aussi bondée que celle-ci. Quoique celle qui a précédé celle-ci était encore plus pleine ! Ils étaient entassés sur le toit, et d'autres s'accrochaient aux rebords aussi…* »
+<span id="page-18-0" data-folio="19"></span>
+Si le groupe envisage d'attendre le passage de la prochaine diligence, Gustav les informera que « *Il n'y en n'a pas de prévue avant deux jours, et elle sera sans doute aussi bondée que celle-ci. Quoique celle qui a précédé celle-ci était encore plus pleine ! Ils étaient entassés sur le toit, et d'autres s'accrochaient aux rebords aussi…* »
 
 Dans l'hypothèse peu probable où les Personnages parviendraient à convaincre Dame Isolde de les laisser s'installer dans la diligence, elle regrettera rapidement sa décision et leur ordonnera de sortir. S'ils obéissent, tout ira bien. Dans le cas contraire, Dame Isolde sera d'une humeur massacrante durant tout le voyage, ne leur adressant la parole que pour les gratifier d'insultes bien senties.
 
@@ -330,8 +330,8 @@ Si vous souhaitez créer vos propres PNJ (voir page 144), vous devez être sûr 
 
 Ou alors, vous pouvez tout simplement échanger un élément d'un PNJ avec un autre. Par exemple, Ernst Heidlemann, l'étudiant en médecine, pourrait ne pas étudier la magie démoniaque en secret dans le cadre de son appartenance à la secte du Chaos de la Couronne Rouge (voir page 22). Il pourrait s'agir de Dame Isolde à la place. Ou de sa servante.
 
-
-<span id="page-19-0"></span>de pied réussissent à s'introduire à l'intérieur de la diligence, et déclenchent une bagarre. Tous les PNJ se trouvant déjà à l'intérieur font leur possible pour expulser les PJ mouillés. Tout combat dans la cabine avec autre chose que ses poings ou une dague se fait avec un malus de -20 pour toucher.
+<span id="page-19-0" data-folio="20"></span>
+de pied réussissent à s'introduire à l'intérieur de la diligence, et déclenchent une bagarre. Tous les PNJ se trouvant déjà à l'intérieur font leur possible pour expulser les PJ mouillés. Tout combat dans la cabine avec autre chose que ses poings ou une dague se fait avec un malus de -20 pour toucher.
 
 Les cochers ne prendront pas part à cet affrontement, à moins que les aventuriers ne commencent à endommager la diligence (en tentant de découper le toit par exemple), auquel cas ils leur demanderont d'arrêter. Si cela ne suffit pas, l'un d'eux les menacera avec son tromblon, et fera feu sur tout Personnage qui persévérera ; cependant, cela ne fonctionnera que sur un résultat pair des dés (comme 24 ou 32) à cause de la pluie. S'ils affichent un résultat impair, comme 23 ou 35, le tromblon devra être rechargé au sec pour fonctionner à nouveau. **Note :** le tromblon ne sera utilisé qu'en dernier recours, car le bruit de la détonation sera presqu'aussi douloureux pour la gueule de bois de Gunnar et Hultz que le projectile le sera pour les aventuriers !
 
@@ -379,7 +379,7 @@ Gustav est un homme chauve et bedonnant d'1m70, aux favoris grisonnants et aux y
 
 Noiraud, le corbeau apprivoisé de Gustav, reste perché sur une poutre au-dessus du comptoir, d'où on peut l'entendre imiter Gustav. La voix est fidèle, mais si Gustav est inarrêtable, Noiraud est juste incompréhensible : *« Eh bien, bienvenue, vous partez déjà, quel plaisir de vous voir, voulez-vous une route à parcourir ou est-ce que vous venez d'arriver ? Oh, bien sûr que vous venez d'arriver ! Vous boirez bien un p'tit poulet ! »* Il peut continuer ainsi pendant presqu'aussi longtemps que Gustav.
 
-
+<span id="page-20-0" data-folio="21"></span>
 I
 
 #### **Le barman**
@@ -426,7 +426,7 @@ En tant que noble dame typique de la Drakwald, Dame Isolde von Strudledorf est �
 
 Les biens de valeur de Dame Isolde sont conservés dans un coffre dans sa chambre. Celui-ci dispose d'une serrure **Complexe (-10)** requérant +2 DR pour s'ouvrir, et contient des vêtements somptueux et des bijoux pour une valeur de 7 CO.
 
-
+<span id="page-21-0" data-folio="22"></span>
 #### ISOLDE VON STRUDELDORF - HÉRITIER HUMAIN (OR 1)
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | B  |
@@ -491,7 +491,7 @@ Il prétend être un étudiant en médecine se rendant à Altdorf pour poursuivr
 
 **Corruption :** 6
 
-
+<span id="page-22-0" data-folio="23"></span>
 Le livre d'Ernst est doté d'une fausse couverture sur laquelle apparaît le titre *Des Sangsues et de leurs propriétés curatives*, mais il s'agit en vérité de *De Vitae Occultae Daemoniis* (« La Vie Secrète des Démons »). L'ouvrage est rédigé en Classique, et tout Personnage qui le lit gagne une connaissance de base des démons tels qu'ils sont décrits dans le Bestiaire (voir **WFJDR**, pages 335-336) et subit une Exposition Mineure à la Corruption (voir **WFJDR** page 182) ; cela signifie que le lecteur doit réussir un Test de **Calme Intermédiaire (+0)** ou gagner 1 point de Corruption.
 
 Son sac de voyage en cuir contient ses effets personnels, ainsi qu'un compartiment secret qui dissimule les préparations qu'il s'apprête à livrer à Altdorf : six fioles d'un liquide vert bouillonnant, des poudres colorées, et tout ce que vous voudrez y mettre.
@@ -523,3 +523,5 @@ Pari 50, Perception 55, Projectiles (Poudre noire) 60, Ragot 44, Résistance 53,
 **Talents :** Attirant, Chat de gouttière, Coude-à-coude, Maîtrise des dés, Rechargement rapide, Savoir-vivre (Soldats), Seigneur de guerre, Tricheur, Vigilance
 
 **Traits :** À distance (Pistolet) +7 (30), Arme (Épée) +8 **Possessions :** 49/67, dés (2 paires dont 1 pipée), jeu de cartes marquées (avec 5 as en plus)
+
+<span id="page-23-0" data-folio="24"></span>

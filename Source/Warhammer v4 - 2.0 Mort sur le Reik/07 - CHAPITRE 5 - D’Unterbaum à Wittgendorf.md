@@ -1,6 +1,6 @@
-*Pages PDF 64-67*
+*Folio 65+*
 
-# <span id="page-63-0"></span>CHAPITRE 5 D'UNTERBAUM À WITTGENDORF
+# CHAPITRE 5 D'UNTERBAUM À WITTGENDORF
 
 Les aventuriers devraient maintenant être en possession de la dernière clé permettant d'accéder à la bibliothèque secrète sous l'observatoire (p. 32), et avec de la chance, ils devraient se rendre compte de son importance. Ils savent que Dagmar von Wittgenstein s'est emparé d'un gros éclat de malepierre trouvé dans les Collines Stériles, après avoir assassiné tous les autres membres de son expédition ; ils doivent également savoir que l'expédition de la Couronne Rouge a quitté les Collines Stériles avant eux (le cas échéant, voir *Chronologie*, p. 26) et qu'ils risquent d'atteindre le prochain objectif avant les aventuriers.
 
@@ -28,8 +28,8 @@ La Main Pourpre n'a pas oublié l'existence du *Magister Impedimentae*, et la pr
 
 Pendant que les aventuriers se relaxent autour d'un repas ou de quelques boissons, un membre du personnel de l'auberge leur apporte une lettre. L'enveloppe est cachetée avec de la cire violette, et estampillée d'un sceau semblable à une empreinte
 
-
-<span id="page-64-0"></span>de main. En l'ouvrant, les aventuriers découvrent qu'elle contient une mèche de cheveux, celle-là même qui fut volée à l'un des Personnages lors de leur dernière visite à Kemperbad ; ils trouvent également une lettre délivrant le message suivant :
+<span id="page-64-0" data-folio="65"></span>
+de main. En l'ouvrant, les aventuriers découvrent qu'elle contient une mèche de cheveux, celle-là même qui fut volée à l'un des Personnages lors de leur dernière visite à Kemperbad ; ils trouvent également une lettre délivrant le message suivant :
 
 Cher ami,
 
@@ -67,8 +67,8 @@ Les aventuriers arrivent et trouvent la tour aux mains des adeptes de la Couronn
 
 Les aventuriers peuvent choisir d'attaquer directement les adeptes de la Couronne Rouge. Une bonne tactique consiste à neutraliser les deux gardes et libérer les nains, qui s'empareront alors d'outils, de pierres ou de tout ce qu'ils auront sous la main, et combattront aux côtés des aventuriers contre leur ennemi commun.
 
-
-<span id="page-65-0"></span>V
+<span id="page-65-0" data-folio="66"></span>
+V
 
 Dès qu'ils sentent que les choses commencent à mal tourner, les deux sorciers ordonnent au reste des coupe-jarrets de former une ligne de défense afin de les protéger pendant qu'ils lancent des sorts. Si le combat semble tourner à leur désavantage, ils essaieront de rejoindre leurs chevaux pour s'enfuir, avec l'intention de revenir à la tour plus tard et d'attaquer les aventuriers par surprise dès que l'occasion se présentera.
 
@@ -104,10 +104,10 @@ Si les aventuriers s'arrêtent une quatrième fois à Kemperbad, la loge de la M
 
 Le chef de la loge de Kemperbad a décidé d'arrêter de jouer la carte de la subtilité. Si les aventuriers passent plus de trois heures en ville, ils seront attaqués par un groupe d'ennemis puissants,
 
-
+<span id="page-66-0" data-folio="67"></span>
 ### NOUVELLES ET RUMEURS
 
-<span id="page-66-0"></span>Les nouvelles et rumeurs suivantes pourront être entendues pendant cette partie du voyage. Choisissez une rumeur adaptée aux circonstances actuelles des Personnages, ou lancez un 1d10 pour en choisir une au hasard.
+Les nouvelles et rumeurs suivantes pourront être entendues pendant cette partie du voyage. Choisissez une rumeur adaptée aux circonstances actuelles des Personnages, ou lancez un 1d10 pour en choisir une au hasard.
 
 - 0 L'Empereur a fait une apparition en public, apaisant ainsi les angoisses du peuple qui le pensait souffrant, d'une maladie, d'une mutation, ou pire encore. Il a pris part à la cérémonie d'investiture de nouveaux membres de la Reiksguard, l'une des unités militaires d'élite de l'Empire. Cependant, au moins une source raconte que l'Empereur n'avait pas l'air d'être luimême, et que c'était peut-être bien le cas, au sens propre du terme : *« Il a un double qui sert à tromper les assassins, tout le monde le sait. Et il s'est trompé en prononçant le Serment de Loyauté quand il s'est adressé aux nouvelles recrues. Mon beau-frère était là à ce moment-là, il est né et a grandi à Altdorf, et il a vu l'Empereur assez de fois pour savoir quand il a affaire à un imposteur. »*
 - 0 Il y a des rumeurs à propos d'affrontements à la frontière entre l'Ostland et le Talabecland. Le Grand Prince d'Ostland reproche au Grand-Duc Gustav von Krieglitz du Talabecland la mort de son fils, le Prince héritier Hergard, qui a été tué lors d'une expédition dans les Montagnes Grises. Plusieurs villages ont été saisis par les deux camps, mais jusqu'à présent, on ne sait toujours pas qui a débuté les hostilités et qui est en train de l'emporter.
@@ -137,3 +137,5 @@ Si la situation tourne mal, plusieurs Personnages pourraient être tués, ou obl
 ### **Récompenses**
 
 À la fin de la session, des PX doivent être attribués aux joueurs en fonction de la qualité de interprétation et de la pertinence de leurs idées.
+
+<span id="page-67-0" data-folio="68"></span>

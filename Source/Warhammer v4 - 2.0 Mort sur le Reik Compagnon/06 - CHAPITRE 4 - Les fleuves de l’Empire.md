@@ -1,6 +1,6 @@
-*Pages PDF 23-27*
+*Folio 24+*
 
-## <span id="page-22-0"></span>CHAPITRE 4 LES FLEUVES DE L'EMPIRE
+## CHAPITRE 4 LES FLEUVES DE L'EMPIRE
 
 *Les vastes étendues de l'Empire se rejoignent aux bords de nombreux fleuves et rivières, notamment le Reik, le Talabec et le Stir. Avec leurs affluents, ces trois grands cours d'eau forment un gigantesque système de voies qui atteint chaque province de l'empire. À part Middenheim, chaque contrée, peu importe sa taille, est accessible par un cours d'eau ou un autre. Située à la jonction du Reik et de le Talabec (là où tout le système fluvial conflue), Altdorf doit son pouvoir économique et sa force politique à son contrôle des fleuves.*
 
@@ -32,8 +32,8 @@ L'Aver et le Stir sont les deux fleuves majeurs du sud de l'Empire : c'est d'ell
 
 La section *Navigation Fluviale* liste les types d'embarcations les plus communes sur les cours d'eau de l'Empire, et détaille les règles pour la navigation, le combat, les accidents et les dégâts. Une attention particulière est apportée aux écluses et aux péages qui rythment beaucoup de trajets fluviaux. Les auberges en bord de fleuve et les PNJ qui les fréquentent ont aussi droit à leur description.
 
+<span id="page-23-0" data-folio="24"></span>
 
-<span id="page-23-0"></span>
 
 ## **ÉCLUSES ET PÉAGES**
 
@@ -47,8 +47,8 @@ La fréquence des péages varie d'un fleuve à l'autre, mais on en compte géné
 
 Le prix d'un passage peut varier d'une poignée de pistoles à une couronne pour une petite barge, et aller jusqu'à 6-7 CO pour les plus grands bateaux. Comme avec tous les péages, le prix varie également d'une région à l'autre, selon l'importance du trafic et la cupidité des autorités. Les péagers peuvent faire partie de la Patrouille fluviale (voir Chapitre 6), ou alors, ce sont des baillis employés par le seigneur local ou le conseil municipal.
 
-
-## <span id="page-24-0"></span>**LES ÉCLUSES**
+<span id="page-24-0" data-folio="25"></span>
+## **LES ÉCLUSES**
 
 La plupart du temps, des écluses sont construites quand le niveau de la rivière chute drastiquement. On trouve des rochers et des rapides dans des cours d'eau reculés et isolés, mais dans des zones de passage, ils sont remplacés par un système d'écluses rapide et efficace. L'écluse en elle-même est un canal droit, encadré par des murs de pierres et fermé aux extrémités par deux portes. Les vannes sont actionnées par une manivelle. Le niveau de l'eau peut baisser de 4,5 m entre l'amont et l'aval.
 
@@ -74,8 +74,8 @@ Les portes des écluses ont un Bonus d'Endurance de 8 plus 4d10 Points de Blessu
 
 Les Personnages qui n'arrivent pas à entrer dans une écluse avec leur bateau subissent un malus à tous les Tests de **Sociabilité** réalisés pour parler à l'éclusier ou aux voyageurs qu'ils retardent. Selon les dégâts infligés aux portes, ce malus va de –10 à –30.
 
-
-### <span id="page-25-0"></span>ÉCLUSES ET TABLEAU DES ÉCHECS
+<span id="page-25-0" data-folio="26"></span>
+### ÉCLUSES ET TABLEAU DES ÉCHECS
 
 | DR négatif                                  | Résultat                                                                                                                                                                                                                                                         |  |  |  |  |  |
 |---------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|--|--|--|
@@ -106,7 +106,7 @@ Alors que les aventuriers se rapprochent de l'écluse, ils voient un autre batea
 
 Dégager le bateau du barrage nécessite une assistance supplémentaire pour un total de 110 points de Force. Une fois le bateau sorti d'affaire, son capitaine offre à boire à tous ceux qui l'ont aidé. Il peut s'avérer un ami utile si les aventuriers le recroisent. L'éclusier est aussi reconnaissant envers eux, et les laissera peut-être traverser l'écluse gratuitement en guise de remerciements (*« Mais ne le dites à personne, hein ! »*)
 
-
+<span id="page-26-0" data-folio="27"></span>
 ### **Une attaque**
 
 L'écluse et la maison ont été réduites en cendres. Si l'éclusier a survécu, il raconte qu'il s'est fait attaquer par des hors-la-loi ou des mutants. S'il est mort, les attaquants sont peut-être encore sur place à l'arrivée des aventuriers. Dans ce cas, ils prendront sûrement la fuite. S'ils restent pour se battre, chaque assaillant aura déjà perdu 1d10-3 Points de Blessure dans l'assaut.
@@ -126,3 +126,5 @@ Dans tous les cas, les bateaux font la queue de part et d'autre de l'écluse, et
 Les Personnages auront peut-être du mal à rester patients pendant cette rencontre, mais rappelez-leur que les patrouilleurs fluviaux sont là depuis plus longtemps qu'eux encore, et qu'ils ne demandent rien de mieux qu'une excuse pour rompre la monotonie de cette journée. Si les Personnages font demitour pour attendre le départ du bailli, ils ne feront qu'attiser sa suspicion. Ils seront arrêtés et fouillés avec une attention toute particulière (faites faire deux Tests de **Perception** au bailli et retardez-les encore de 2 ou 3 heures).
 
 Vous pouvez moduler cette rencontre si vous le souhaitez : par exemple, le bailli pourrait être un charlatan, muni d'un faux certificat assez réussi pour berner la Patrouille fluviale. Plus tard au cours de leur voyage, les Personnages tombent sur le « bailli », démasqué et sur le point d'être pendu. Il va sans dire que les Personnages ne reverront jamais l'argent qu'il leur avait extorqué.
+
+<span id="page-27-0" data-folio="28"></span>

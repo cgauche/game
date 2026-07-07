@@ -1,6 +1,6 @@
-*Pages PDF 102-113*
+*Folio 103+*
 
-## <span id="page-101-0"></span>CHAPITRE 16 L'*EMPEREUR LUITPOLD*
+## CHAPITRE 16 L'*EMPEREUR LUITPOLD*
 
 #### BONUS
 
@@ -38,7 +38,7 @@ Peu d'arrêts réguliers sont prévus pendant la première partie du trajet, pri
 
 La combinaison de voiles et de rames de l'*Empereur Luitpold* en fait un moyen de déplacement rapide. Son voyage de 1 200 km dure environ 2 semaines vers l'aval et 2 semaines et demie en amont, selon une moyenne de 72 et 61 km par jour respectivement.
 
-
+<span id="page-102-0" data-folio="103"></span>
 #### **Règles pendant la traversée**
 
 Toutes les lois de l'Empire s'appliquent à bord de l'*Empereur Luitpold*. À des fins juridiques, le bateau de croisière est considéré comme relevant de la compétence des autorités judiciaires d'Altdorf. Il existe également certaines règles que les passagers doivent respecter à bord :
@@ -61,8 +61,8 @@ Des collations et de l'eau sont disponibles dans le bar-salon des passagers tout
 
 Pendant la journée, plusieurs jeux sont proposés sur le pont. L'entraînement aux armes et les duels amicaux (au premier sang) sont autorisés sur le pont promenade avec accord préalable. Ceux qui souhaitent s'engager dans une compétition amicale doivent en informer le capitaine ou le commissaire de bord avant d'entamer un combat. Si l'équipage n'a pas connaissance d'un accord préalable, il traitera l'incident comme une vulgaire bagarre et interviendra pour maîtriser les combattants.
 
-
-<span id="page-103-0"></span>Après le dîner, des divertissements sont organisés dans le barsalon des passagers : par exemple, il est courant qu'un musicien ou un autre artiste travaille durant son voyage en échange d'un tarif réduit. La réduction tarifaire standard est de 50 % et n'est pas négociable. Un Personnage souhaitant conclure ce type d'accord doit réussir un Test de **Représentation** ou de **Musique Complexe (-10)**, modifié comme suit pour chacune des compétences listées :
+<span id="page-103-0" data-folio="104"></span>
+Après le dîner, des divertissements sont organisés dans le barsalon des passagers : par exemple, il est courant qu'un musicien ou un autre artiste travaille durant son voyage en échange d'un tarif réduit. La réduction tarifaire standard est de 50 % et n'est pas négociable. Un Personnage souhaitant conclure ce type d'accord doit réussir un Test de **Représentation** ou de **Musique Complexe (-10)**, modifié comme suit pour chacune des compétences listées :
 
 | Réaction | Activité                                |
 |----------|-----------------------------------------|
@@ -103,7 +103,7 @@ En plus d'être aux commandes de l'*Empereur Luitpold*, avec une autorité qui n
 
 **Possessions :** livrée de capitaine, cotte de mailles, épée, pistolet avec 12 munitions, tromblon (toujours chargé)
 
-
+<span id="page-104-0" data-folio="105"></span>
 #### **Premier pilote Ella Vertvallon**
 
 Ella est chargée de la navigation quotidienne de l'*Empereur Luitpold*. Ayant grandi sur les rives de l'Aver dans le Mootland, Ella est fascinée par les rivières depuis son plus jeune âge. Elle a construit son premier bateau à l'âge de douze ans, et à vingt ans, ce qui est encore considéré comme l'enfance par la plupart des halflings, elle dirigeait déjà sa propre entreprise de transport fluvial local. Bien que le capitaine soit aux commandes, Ella considère l'*Empereur Luitpold* comme son propre navire et sa priorité est de veiller à sa sécurité.
@@ -154,7 +154,7 @@ métier.
 
 **Traits :** Arme (Dague) +6, Préjugé (Elfes) **Possessions :** Cartes fluviales, Dague, Uniforme
 
-
+<span id="page-105-0" data-folio="106"></span>
 **Maître d'équipage Hans Sauber**
 
 Si le capitaine Willendorf est le gant de velours, bien qu'elle soit tout sauf tendre, alors Sauber est la main de fer. Ses fonctions consistent à superviser l'équipage de bagnards rameurs et à maintenir l'ordre à bord. Bien qu'il soit aussi poli que les normes sociales l'exigent, il ne faut pas prendre sa courtoisie pour de la servilité. Même les jeunes nobles les plus obtus se rendent bien compte qu'il n'est pas le genre d'homme qu'il faut traiter à la légère, bien que de temps en temps quelqu'un essaye de tester ses limites. Ces vauriens finissent toujours par être débarqués du navire, soit au port suivant, soit directement dans la rivière.
@@ -215,7 +215,7 @@ Les rameurs font avancer l'*Empereur Luitpold* lorsque le vent est insuffisant p
 
 **Traits :** Préjugé (Divers), Arme (Improvisée) +4 **Possessions :** lourde dette, savon, uniforme de rameur
 
-
+<span id="page-106-0" data-folio="107"></span>
 #### **Chef cuisinier Maximillian**
 
 Aucun cadre de luxe, qu'il s'agisse d'un château, d'un hôtel ou d'un bateau, n'est totalement complet sans un cuisinier halfling pour offrir une cuisine de classe mondiale aux clients les plus exigeants. Max est à bord de l'*Empereur Luitpold* depuis plus longtemps que n'importe quel autre membre de l'équipage, à l'exception du commissaire de bord Kleingeld, et certains reviennent sur le bateau de croisière simplement pour déguster sa cuisine.
@@ -274,8 +274,8 @@ Une équipe d'une douzaine de serveurs fait la navette entre les cuisines, prend
 
 Intuition 40, Perception 39, Résistance 50 **Talents :** Lire/Écrire, Savoir-vivre (Serviteur) **Traits :** Arme (Dague) +5, Préjugé (Pingres) **Possessions :** carnet et crayon, dague
 
+<span id="page-107-0" data-folio="108"></span>
 
-<span id="page-107-0"></span>
 
 #### **Commissaire de bord Eberhardt Kleingeld**
 
@@ -339,7 +339,7 @@ Les riches marchands sont des passagers que l'on retrouve fréquemment à bord d
 
 **Possessions :** épée, 2d10 Couronnes d'or vêtements
 
-
+<span id="page-108-0" data-folio="109"></span>
 #### **Négociateur vif d'esprit**
 
 **Apparence :** tout âge et toute carrure. Bien habillé sans trop en faire.
@@ -402,7 +402,7 @@ les roturiers.
 
 **Possessions :** bijoux d'une valeur de 3d10 Couronnes d'or, chevalière, fleuret, habit de cour
 
-
+<span id="page-109-0" data-folio="110"></span>
 #### **Jeune noble**
 
 **Apparence :** jeune, athlétique, magnifiquement habillé. **Personnalité :** fougueux, irresponsable, bruyant.
@@ -457,8 +457,8 @@ Tricheur, Vision nocturne **Traits :** Arme (Dague) +5
 
 **Possessions :** alibi, cartes marquées, dague, dés pipés, nécessaire de déguisement, outils de crochetage, plusieurs documents contrefaits, 2d10 Pistoles d'argent
 
-
-### <span id="page-110-0"></span>**Officiers de l'armée**
+<span id="page-110-0" data-folio="111"></span>
+### **Officiers de l'armée**
 
 Les militaires de haut rang doivent voyager régulièrement entre la capitale et leurs bases. Leur rang exact varie, mais ceux qui peuvent voyager à bord de l'*Empereur Luitpold* sont toujours haut placés. Il peut s'agir de commandants de régiments frontaliers, de chefs d'ordres de chevalerie ou d'autres commandants supérieurs.
 
@@ -518,7 +518,7 @@ Un groupe de voyageurs n'ayant apparemment aucun lien entre eux et qui se retrou
 
 Par exemple, imaginons que la victime du meurtre soit Handrijk van den Kuyster, un marchand tout à fait détestable. Un bon nombre de passagers se réjouiraient donc de sa mort. Compte tenu de la façon dont il traitait ses subordonnés, il aurait pu malmener un ou plusieurs régisseurs. Il aurait aussi pu être surpris en train de tricher aux cartes, ou encore avoir eu un coup de chance qui lui aurait permis de gagner une grosse somme d'argent auprès d'un autre passager qui n'en avait manifestement pas les moyens. Il aurait tout aussi bien pu faire des avances inappropriées à la fille d'un passager noble. Ou il aurait pu croiser un autre marchand avec qui il avait récemment réalisé une transaction commerciale douteuse, et avec lequel il se serait violemment disputé lors de la première nuit à bord.
 
-
+<span id="page-111-0" data-folio="112"></span>
 Voilà les indices les plus évidents. La plupart d'entre eux, du moins, seront des fausses pistes, mais au fur et à mesure que les Personnages approfondissent leur enquête, en supposant, bien sûr, qu'ils disposent des scores et Compétences de Sociabilité auprès des autres passagers pour coopérer avec eux, ils découvrent des motifs de plus en plus secrets. En effet, l'un des passagers ou membres de l'équipage peut être l'enfant illégitime de la victime, dont la mère délaissée est morte d'un chagrin d'amour. Un autre pourrait être victime de chantage. Et ainsi de suite, jusqu'à ce que vous élaboriez une intrigue appropriée.
 
 Maintenant, passons à l'heure de la mort et à la méthode employée. Supposons que la victime soit retrouvée morte dans sa cabine par un régisseur qui était allé lui annoncer le dîner. La victime est allongée sur le lit, face contre terre, avec une dague entre les omoplates. La dernière fois qu'elle a été vue par l'un des passagers, c'était vers le milieu de l'après-midi, lorsque plusieurs personnes ont assisté à une violente dispute dans le bar-salon entre la victime et un autre passager.
@@ -544,3 +544,5 @@ Au milieu de la traversée, le chef ogre est ramené d'entre les morts pour puni
 Au contraire, il vaut mieux que le monstre se comporte intelligemment, qu'il tue quand il trouve une victime seule et qu'il se cache le reste du temps. En premier lieu, quelqu'un constate que les caisses ont été ouvertes violemment, puis un membre de l'équipage est retrouvé horriblement mutilé. Le capitaine approche les Personnages, leur faisant jurer de garder le secret pour ne pas provoquer la panique à bord. Ils doivent fouiller le pont des rameurs, en se divisant éventuellement en petits groupes pour que la créature ne s'échappe pas. La rencontre doit se dérouler comme un thriller rempli de tension, un ennemi incroyablement habile se cachant dans l'obscurité, sans jamais être vu.
 
 L'ogre mort-vivant peut s'inspirer du profil d'une goule de crypte, ou vous pouvez créer une créature unique pour cette rencontre.
+
+<span id="page-112-0" data-folio="113"></span>

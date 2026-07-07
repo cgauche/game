@@ -1,8 +1,8 @@
-*Pages PDF 39-53*
+*Folio 40+*
 
 ## CHAPITRE 3
 
-# <span id="page-38-0"></span>DE KEMPERBAD AUX CRÊTES NOIRES
+# DE KEMPERBAD AUX CRÊTES NOIRES
 
 Quelques rencontres aléatoires peuvent venir pimenter le voyage de Kemperbad jusqu'à Grissenwald, si vous le souhaitez. Les aventuriers peuvent à tout moment croiser la route des fidèles de la secte de la Couronne Rouge (voir *La Chronologie*, p. 26), mais les risques d'affrontement sont minimes. Après plusieurs jours de voyage, le bateau des aventuriers arrive à Grissenwald.
 
@@ -52,7 +52,7 @@ Les aventuriers nains bénéficieront d'un traitement de faveur.
 
 Le tavernier essaie de les calmer et leur offre même des verres s'ils promettent de ne causer aucun problème. Mais les nains persistent et les aventuriers ne peuvent échapper à leurs insultes qu'en quittant les lieux.
 
-
+<span id="page-39-0" data-folio="40"></span>
 ### UN RACCOURCI
 
 Ce voyage mène les aventuriers jusque dans l'ombre du château Wittgenstein. Les joueurs grognards sont susceptibles d'essayer de sauter les chapitres suivants et de se rendre directement au château. Vous pouvez les en empêcher de différentes manières.
@@ -81,8 +81,8 @@ Si les aventuriers posent des questions sur les nains, ils en apprendront davant
 
 D'autres clients confirment cette histoire. Trois fermes ont été attaquées de nuit récemment, sans aucun survivant. Bien que personne n'ait vu les nains commettre ces atrocités, les habitants de Grissenwald n'ont aucun doute sur leur culpabilité :
 
-
-<span id="page-40-0"></span>*« Ces nains dépensent leur argent comme s'il ne vaudrait plus rien demain ! Ils viennent de mettre la main sur un sacré pactole. Pas besoin d'être un génie pour faire le rapprochement. »*
+<span id="page-40-0" data-folio="41"></span>
+*« Ces nains dépensent leur argent comme s'il ne vaudrait plus rien demain ! Ils viennent de mettre la main sur un sacré pactole. Pas besoin d'être un génie pour faire le rapprochement. »*
 
 Les habitants du village insistent auprès des aventuriers pour les dissuader de s'approcher des taudis des nains situés aux portes de Grissenwald. Si vous le souhaitez, ils peuvent également leur fournir une partie ou la totalité des informations issues du chapitre *Les nains de Grissenwald*, p. 42.
 
@@ -100,7 +100,7 @@ Plus d'une vingtaine de nains vivent dans ce tas de cabanes délabrées en bois.
 
 Même si la vendetta n'a pas été déclenchée, tout elfe qui visite Khazid Slumbol se fera insulter, lancer des légumes pourris à la figure, et de manière générale, on lui fera sentir qu'il n'est pas le bienvenu. Les humains reçoivent un meilleur accueil, bien qu'ils ne récoltent guère plus que quelques regards renfrognés. Si un Personnage souhaite s'entretenir avec Gorim Grandmarteau, il devra réussir un Test de **Charme Difficile (-20)**. Les elfes y ajoutent un malus de -50, tandis que les nains bénéficient d'un bonus de +10.
 
-
+<span id="page-41-0" data-folio="42"></span>
 ### LES NAINS DE GRISSENWALD
 
 Les nains sont descendus des Montagnes Grises pour s'installer aux Crêtes Noires il y a de cela 30 ans, en quête d'or. Tout ce qu'ils y ont trouvé était du charbon. Ils ont exploité la mine pendant 27 longues années sans jamais trouver la moindre pépite. Lorsqu'Etelka Herzen leur a rendu visite et leur a proposé de racheter leur mine, les nains ont accepté de bon gré. Ils sont même allés jusqu'à lui construire sa maison, autant par gratitude que par appât du gain.
@@ -125,8 +125,8 @@ Les aventuriers vont devoir faire un Test d'**Endurance Intermédiaire (+0)** po
 
 Une voix caverneuse et autoritaire s'élève du fond de la cabane. *« Eh bien, entrez, entrez, et cessez donc de tousser. Vous avez pas l'habitude de l'air pur ou quoi ? »* À travers le rideau de ténèbres, les aventuriers aperçoivent Gorim Grandmarteau, assis sur un trône de pierre et entouré de quatre nains armés de chaque côté. *« Vous voulez quoi ? J'ai pas toute la journée, moi ! »*
 
-
-<span id="page-42-0"></span>Si on lui pose des questions sur la mine, Gorim explique qu'Etelka Herzen, une sorcière démoniaque, les a escroqués. *« Elle en avait après notre or, vous savez. On savait bien qu'il y en avait, mais elle a enchanté la mine pour qu'on ne trouve rien. À la fin, on n'avait pas d'autre choix que de vendre. Le moins possible qu'elle a payé, pour sûr ! »*
+<span id="page-42-0" data-folio="43"></span>
+Si on lui pose des questions sur la mine, Gorim explique qu'Etelka Herzen, une sorcière démoniaque, les a escroqués. *« Elle en avait après notre or, vous savez. On savait bien qu'il y en avait, mais elle a enchanté la mine pour qu'on ne trouve rien. À la fin, on n'avait pas d'autre choix que de vendre. Le moins possible qu'elle a payé, pour sûr ! »*
 
 Rien de tout ça n'est vrai, mais Gorim et les autres nains en sont persuadés. Etelka leur a donné une belle somme pour une mine déjà presque épuisée, même si les nains refusent de l'admettre. *« Elle persiste à dire qu'elle nous en a offert un bon prix, et les humains sont de son avis, mais je vous le dis, il y a de l'or dans cette mine. Elle nous a volés. Dévalisés, même. »*
 
@@ -154,8 +154,8 @@ Si les aventuriers rendent visite aux autres fermes encore habitées, ils sont a
 
 Si les aventuriers trouvent l'épée et le cadavre de gobelin dans la forêt, ils peuvent automatiquement convaincre les humains de Grissenwald, y compris les fermiers, que ce sont les gobelins qui ont lancé ces attaques et que les nains de Khazid Slumbol sont innocents. Si les aventuriers ne trouvent que l'épée et la ramènent, leur représentant doit réussir un Test de **Charme Complexe (-10)**. S'ils n'ont repéré que les empreintes de gobelins, il doit faire un Test de **Sociabilité Difficile (-20)**. Que les humains se laissent convaincre par les aventuriers ou non, Gorim appréciera leurs efforts. Il pourrait même aller jusqu'à offrir des renforts nains au groupe. À la condition de les payer correctement, bien entendu (voir *Des amis dans le besoin*, ci-avant).
 
-
-### <span id="page-43-0"></span>**LES ATTAQUES**
+<span id="page-43-0" data-folio="44"></span>
+### **LES ATTAQUES**
 
 La prochaine attaque des gobelins a lieu pendant la première nuit que les aventuriers passent à Grissenwald. Le lendemain, la nouvelle a fait le tour de la ville. La quatrième ferme à avoir été attaquée se situe elle aussi à proximité des Crêtes Noires, mais personne n'a relevé ce point commun entre tous les raids. La carte ci-dessous illustre l'agencement typique des fermes de Grissenwald. La carte intitulée *Grissenwald et ses environs* (p. 45) indique l'emplacement des autres fermes.
 
@@ -175,8 +175,8 @@ Au cours de cette première vague, huit gobelins à dos de loup vont franchir le
 
 Si plus de six gobelins sont tués, ils cessent le combat et battent en retraite vers les Crêtes Noires. Selon l'efficacité du groupe, vous pouvez adapter la réaction des fermiers, qui peuvent soit prêter main-forte aux aventuriers, soit courir dans tous les sens, pris de panique.
 
+<span id="page-44-0" data-folio="45"></span>
 
-<span id="page-44-0"></span>
 
 ### **LE VOYAGE JUSQU'À LA MINE**
 
@@ -198,8 +198,8 @@ La mine des Crêtes Noires tient son nom du charbon qu'elle renfermait auparavan
 
 Etelka a ensuite pris contact avec les membres restants d'une tribu de gobelins qui avaient établi leur repaire dans la forêt voisine. Les gobelins ont emménagé dans la mine avec leurs loups, et ont réalisé diverses tâches sur les ordres d'Etelka. Après le départ d'Etelka pour une mission commandée par la secte de la Couronne Rouge, plus personne ne pouvait empêcher les gobelins d'assouvir leurs pulsions meurtrières, et Gutbag, leur chef, a organisé des raids contre les fermes voisines.
 
+<span id="page-45-0" data-folio="46"></span>
 
-<span id="page-45-0"></span>
 
 #### **Les gobe lins — E n journée**
 
@@ -235,7 +235,7 @@ Pendant les raids, entre 3 et 5 gobelins blessés restent dans la tour, avec seu
 
 Le plan de la vieille mine (voir ci-dessus) détaille la structure de ce gisement. On sent dès l'entrée une odeur très prononcée de loups et de gobelins. Les traverses qui consolident l'entrée sont dans un état de pourrissement avancé et sont infestées de vers de bois. On peut facilement les retirer avec un Test de **Force Accessible (+20)**, ce qui piégerait les gobelins à l'intérieur. Ils mettraient alors au moins deux jours à se créer une sortie.
 
-
+<span id="page-46-0" data-folio="47"></span>
 #### LES GOBELINS
 
 Les joueurs grognards peuvent être amenés à croire qu'il suffisait de vaincre les gobelins de la Gueule Tordue pour sauver la mine et les fermes des environs, ce qui était le cas dans la première édition de **Mort sur le Reik**. Si vous souhaitez créer un rebondissement, les aventuriers pourraient apprendre que le problème qu'ils ont résolu en a créé un autre.
@@ -278,8 +278,8 @@ Leurs sentiments à l'égard d'Etelka Herzen sont mitigés : ils la méprisent p
 
 **Traits :** Arme +7, Armure 1, Bestial, Dressé (Monture), Foulée, Nerveux, Pisteur, Vision nocturne
 
-
-### <span id="page-47-0"></span>**LA TOUR D'ETELKA**
+<span id="page-47-0" data-folio="48"></span>
+### **LA TOUR D'ETELKA**
 
 La tour à un étage (voir ci-dessous), faite de blocs de pierre, a été construite par les nains.
 
@@ -300,7 +300,7 @@ C'est ici que les gobelins ont stocké leurs 21 torches (dans la pièce 4) et le
 - **6. La salle à manger** : une grande table en bois occupe la partie centrale de la pièce, encadrée de huit chaises à haut dossier assorties. Des vitrines le long des murs renfermaient autrefois l'argenterie et autres vaisselles, mais leurs portes sont grandes ouvertes et l'intérieur a été détruit et sali.
 - **7. La cuisine** : comparée au reste de la maison, cette pièce est encore bien rangée. La hauteur de la table et des plans de travail est adaptée aux halflings. Si un aventurier parvient à entrer dans la cuisine sans se faire repérer, il y trouvera Boulette Piedfoin (p. 53), qui y travaille en journée. La nuit, elle se repose dans sa chambre.
 
-
+<span id="page-48-0" data-folio="49"></span>
 **8. La chambre de Boulette** : si elle entend qu'on se bat dans la maison, Boulette Piedfoin se cachera sous son lit, armée d'un attendrisseur de viande (arme improvisée). Si personne ne pense à regarder sous le lit, elle peut attirer l'attention des joueurs en éternuant.
 
 ### **Le premier étage**
@@ -331,7 +331,7 @@ Les joueurs qui ont déjà fait la rencontre de Gutbag seront surpris de voir qu
 
 Quant à Boulette Piedfoin, elle joue très bien le rôle de la halfling respectable effarée des agissements de sa maîtresse, mais qu'en est-il réellement ? Serait-elle restée dans une maisonnée si vile après avoir appris la vérité ? Ou est-elle la complice secrète d'Etelka en plus de cuisiner pour elle, équipée de quelques pincées de poudre de malepierre, prête à mettre les aventuriers en échec dès que l'occasion se présentera ? Bien sûr, elle ne ferait jamais rien qui éveillerait le moindre soupçon, ou qui la mettrait en danger. Si elle ne voit d'autre issue, elle continuera à jouer les innocentes et voyagera en compagnie des aventuriers jusqu'à ce qu'elle trouve une occasion de s'enfuir avec la majeure partie de leurs trésors magiques les plus précieux.
 
-
+<span id="page-49-0" data-folio="50"></span>
 #### GUTBAG TUEUR-DE-FOUINES – CHEF DES GOBELINS
 
 Gutbag, un gobelin un peu (à peine) plus intelligent que la moyenne, a pris Etelka Herzen pour modèle et a décidé de devenir sorcier à son tour. Il ne sait absolument pas comment s'y prendre, mais en attendant d'y voir plus clair, il la copie sous tous les aspects : il porte ses vêtements, ses bijoux, et même son parfum. L'une de ces étranges habitudes doit bien être la source de son pouvoir, non ?
@@ -362,8 +362,8 @@ Gutbag a volé ce bouclier à un nain lors d'une embuscade, avant que les gobeli
 
 Un Test de **Perception Difficile (-20)** révèlera la présence d'un compartiment caché : il suffit de tourner un rivet au fond du coffre pour l'ouvrir. Le MJ peut opter plutôt pour un faux fond, repéré par les joueurs qui inspectent le coffre vide et qui
 
-
-<span id="page-50-0"></span>réussissent un Test d'**Intelligence Complexe (-10)**. Dans ce compartiment secret se trouve un sac en tissu contenant un collier en or (1 CO), un bracelet en or (2 CO) et une bague en argent décorée de l'emblème de la Couronne Rouge (1 CO, 2 CO une fois fondue).
+<span id="page-50-0" data-folio="51"></span>
+réussissent un Test d'**Intelligence Complexe (-10)**. Dans ce compartiment secret se trouve un sac en tissu contenant un collier en or (1 CO), un bracelet en or (2 CO) et une bague en argent décorée de l'emblème de la Couronne Rouge (1 CO, 2 CO une fois fondue).
 
 **13. Le solarium** : les fenêtres de cette pièce ont été brisées et les meubles ont servi à faire du feu. Les restes de celui-ci se trouvent au centre de la pièce, un mélange de boiseries brûlées et d'ossements provenant d'animaux et d'humains.
 
@@ -409,8 +409,8 @@ En plus des points attribués en fin de session pour un jeu de qualité et à le
 - 0 25 points pour avoir aidé les fermiers près des Crêtes Noires.
 - 0 75 points pour avoir vaincu les gobelins.
 
-
-### <span id="page-51-0"></span>**PNJ**
+<span id="page-51-0" data-folio="52"></span>
+### **PNJ**
 
 #### **Les fermiers de Grissenwald et les ouvriers agricoles**
 
@@ -482,7 +482,7 @@ Lire/Écrire, Résistance à la Magie, Vision nocturne **Traits :** Arme (Hache)
 
 **Possessions :** hache, pelle, pioche, sac, tamis de prospecteur, tente, veste de cuir, 1d10 pistoles d'argent
 
-
+<span id="page-52-0" data-folio="53"></span>
 #### **Le chef des nains, Gorim Grandmarteau**
 
 Gorim est bien bâti avec une longue chevelure et d'une barbe assortie, chef des quelques nains restés à Khazid Slumbol. Pour empêcher son peuple de mourir de faim, il a vendu son marteau de guerre magique pour partager les gains au sein du clan. Comme les autres nains, Gorim est persuadé qu'Etelka Herzen leur a dérobé une mine riche en or en les arnaquant sur le prix.
@@ -537,5 +537,4 @@ Boulette est très heureuse de répondre aux questions des aventuriers, car selo
 
 uniforme
 
-
-<span id="page-53-0"></span>
+<span id="page-53-0" data-folio="54"></span>

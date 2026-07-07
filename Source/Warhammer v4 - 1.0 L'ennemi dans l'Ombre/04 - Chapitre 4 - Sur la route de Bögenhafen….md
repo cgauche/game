@@ -1,6 +1,6 @@
-*Pages PDF 43-51*
+*Folio 44+*
 
-# <span id="page-42-0"></span>CHAPITRE 4 : SUR LA ROUTE DE BÖGENHAFEN…
+# CHAPITRE 4 : SUR LA ROUTE DE BÖGENHAFEN…
 
 Altdorf a de nombreux attraits, et regorge de possibilités d'aventure, mais il est temps pour nos héros de quitter la capitale et de se diriger vers Bögenhafen, où la suite de la campagne les attend. C'est là que Josef se rend, aussi ont-ils la possibilité de voyager gratuitement, et même de recevoir un peu d'argent. Ils ont aussi en leur possession la lettre des juristes qui promet richesse et anoblissement à « Kastor Lieberung ». Enfin, Josef prétend que le festival de Bögenhafen, la Schaffenfest, est
 
@@ -26,8 +26,8 @@ Les vaisseaux de guerre de la Première Flotte Impériale sont ancrés partout, 
 
 Josef explique tout cela d'un air jovial en buvant du vin à la barre. Il désigne l'énorme Empereur Wilhelm III, dont il est dit qu'il embarque plus de mille hommes d'équipage, et affirme que ce mastodonte n'a jamais quitté le Reiksport en soixante-dix
 
-
-<span id="page-43-0"></span>ans de service. Il montre également plusieurs prisons flottantes, et suppose en souriant qu'elles sont aujourd'hui dirigées par les criminels qu'elles étaient supposées enfermer.
+<span id="page-43-0" data-folio="44"></span>
+ans de service. Il montre également plusieurs prisons flottantes, et suppose en souriant qu'elles sont aujourd'hui dirigées par les criminels qu'elles étaient supposées enfermer.
 
 Une fois qu'il a dépassé la fine fleur de la marine impériale, Josef met cap au sud, en direction du canal de Weissbruck.
 
@@ -63,8 +63,8 @@ Josef ne semble pas s'en soucier. Il sourit, fait un signe de la main, avale une
 
 Puis la pluie se remet à tomber, et plutôt fort. Dans ces conditions, le voyage sur le canal dure quasiment trois jours. Heureusement, en dehors des bateliers qui maudissent Josef et son énorme bateau, il ne se passe pas grand-chose. Durant la nuit, le *B*é*r*é*beli* est amarré à proximité d'une des auberges situées près des écluses, et les aventuriers peuvent se détendre près d'un bon feu en buvant un coup en dégustant une spécialité locale. Ils peuvent même avoir vent d'une ou deux rumeurs (voir page 57).
 
-
-## <span id="page-44-0"></span>**WEISSBRUCK**
+<span id="page-44-0" data-folio="45"></span>
+## **WEISSBRUCK**
 
 Weissbruck est une ville en plein essor qui se trouve au bord de la rivière Bögen. Elle est dirigée par la famille Gruber, récemment anoblie, qui s'est enrichie grâce aux mines des collines de Skaag, mais dont le prestige reste mince. Il y a moins d'un siècle, ce n'était encore qu'un de ces villages de fermiers et de pêcheurs sans intérêt, mais l'ouverture des mines avoisinantes et la construction du canal lui ont permis de se développer rapidement.
 
@@ -80,14 +80,14 @@ Adolphus ne souhaite pas affronter immédiatement les aventuriers. Au contraire,
 
 Après avoir aperçu Adolphus, nos Personnages peuvent opter pour l'une des trois options suivantes. Les joueurs les plus entreprenants voudront partir à sa recherche. Les personnalités moins audacieuses préfèreront partir immédiatement pour Bögenhafen. Il est également possible que le groupe passe la nuit à Weissbruck, en prenant les précautions qui s'imposent, et parte pour Bögenhafen aux premières lueurs du jour. La section suivante se décompose en deux parties : la première traite des évènements qui se produisent si les Personnages se lancent à la poursuite d'Adolphus, et la seconde, à ce qui se passe si le plan de celui-ci se déroule comme prévu.
 
-
+<span id="page-45-0" data-folio="46"></span>
 #### OPTIONS : VARIATIONS POUR TROMPETTE
 
 Des joueurs expérimentés pourraient se souvenir qu'Adolphus réside à l'auberge de la Trompette. Voici plusieurs façons d'aborder différemment cette partie.
 
 **C'est un piège !**
 
-<span id="page-45-0"></span>Si les Personnages parviennent à découvrir que le chasseur de primes loge à l'auberge de la Trompette, ce n'est que parce que celui-ci veut qu'ils le sachent. Il a bien pris une chambre sur place, mais celle-ci est piégée de diverses façons très imaginatives. Il surveille l'établissement avec ses hommes de main, et tous suivront les Personnages à l'intérieur pour leur tendre une embuscade quand ces derniers ressortiront de la chambre piégée, meurtris et les mains vides.
+Si les Personnages parviennent à découvrir que le chasseur de primes loge à l'auberge de la Trompette, ce n'est que parce que celui-ci veut qu'ils le sachent. Il a bien pris une chambre sur place, mais celle-ci est piégée de diverses façons très imaginatives. Il surveille l'établissement avec ses hommes de main, et tous suivront les Personnages à l'intérieur pour leur tendre une embuscade quand ces derniers ressortiront de la chambre piégée, meurtris et les mains vides.
 
 #### **N'habite pas à l'adresse indiquée**
 
@@ -131,7 +131,7 @@ Adolphus a l'intention d'attaquer le *Bérébéli* pendant qu'il est amarré pou
 
 Si l'embarcation est laissée sans surveillance, Adolphus et ses hommes monteront à bord et attendront le retour des Personnages. Au moment de l'attaque, ceux qui leur feront face subiront un État *Surpris*, à moins qu'ils n'aient préparé quelque chose de spécial.
 
-
+<span id="page-46-0" data-folio="47"></span>
 ## OPTIONS : L'ATTAQUE
 
 Des joueurs expérimentés peuvent s'attendre à l'attaque d'Adolphus, ce qui gâcherait l'effet de surprise. En fait, certains joueurs pourraient même consacrer un temps considérable à trouver des moyens de transformer le chaland en forteresse. Voici quelques suggestions pour modifier l'action d'Adolphus.
@@ -172,8 +172,8 @@ Si Adolphus survit à l'attaque sur le chaland, les Personnages ne trouveront pa
 
 D'ici là, ils doivent rester perplexes.
 
-
-## <span id="page-47-0"></span>DOCUMENT 7 : LA LETTRE
+<span id="page-47-0" data-folio="48"></span>
+## DOCUMENT 7 : LA LETTRE
 
 *À l'attention personnelle de Herr Adolphus Kuftsos À l'auberge-relais des Neuf Etoiles Route de Middenheim Altdorf*
 
@@ -208,8 +208,8 @@ Certes, rien ne sera gâché si le chasseur de primes meurt au cours de cette re
 
 Néanmoins, si le combat tourne en sa défaveur, il arrête les frais et revient à son plan initial. Abandonnant ses hommes de mains, il s'enfuit dans les ruelles de Weissbruck et fait appel à ses Compétences et à ses Talents pour disparaître sans laisser de traces. Il réapparaîtra à Bögenhafen (voir page 53).
 
-
-## <span id="page-48-0"></span>**VOYAGE JUSQU'À BÖGENHAFEN**
+<span id="page-48-0" data-folio="49"></span>
+## **VOYAGE JUSQU'À BÖGENHAFEN**
 
 Le trajet de Weissbruck à Bögenhafen dure quatre jours. Il se déroule sans incident, à moins que le *Bérébéli* n'ait été brûlé par Adolphus, auquel cas des réparations constantes seront nécessaires.
 
@@ -234,8 +234,8 @@ En plus des PX pour une interprétation appropriée et les bons moments passés 
 
 Si vous souhaitez récompenser un Personnage qui a accompli quelque chose de particulièrement remarquable, utilisez les montants de PX ci-dessus comme indication.
 
-
-## <span id="page-49-0"></span>**PNJ**
+<span id="page-49-0" data-folio="50"></span>
+## **PNJ**
 
 ## **Les chasseurs**
 
@@ -270,3 +270,6 @@ BENGT, GURT ET WILLIE - PORTEUR HUMAIN (BRONZE 3)
 | 4 | 33 | 33 | 36 | 43 | 32 | 43 | 27  | 24  | 25 | 27  | 13 |
 
 **Traits :** Arme (Massues) +7, Armure (Cuir) 1, Préjugé (Gens riches)
+
+<span id="page-50-0" data-folio="51"></span>
+<span id="page-51-0" data-folio="52"></span>

@@ -1,4 +1,4 @@
-*Pages PDF 62-67*
+*Folio 59+*
 
 # LA CÔTE DES BJORNLINGS • •
 
@@ -26,7 +26,7 @@ Plus au sud se trouve Bragnir, une île vallonnée proche du continent. Beaucoup
 
 La côte des Bjornlings compte plusieurs sites géographiques notables. La montagne Kronfjall s'élève de manière abrupte jusqu'à une hauteur considérable depuis la côte, ses pentes ouest disparaissant sous les vagues. Par temps de tempête, le pic est entouré par des éclairs, indiquant le repaire du dragon-ogre dans une grotte au sommet.
 
-
+<span id="page-62-0" data-folio="59"></span>
 Les monolithes de Chenhild forment un arc de dolmens émergeant de la mer, chacun marqué de runes puissantes bénies par Tzeentch, le Grand Comploteur. Les Bjornlings croient qu'elles repoussent les elfes noirs pillards qui rôdent sur la côte à la recherche de captifs.
 
 Beaucoup de fleuves et de fjords se déversent dans la Mer des Griffes ici. Le fleuve Viggslatra est importante car il forme une frontière naturelle avec le pays des Skaelings. La rivière Kallavild irrigue les collines du sud-est avec la fonte des glaciers qui apporte parfois de la poussière de malepierre et des mutations depuis le nord. L'esprit de la rivière Draumr est un serviteur sinueux de Shornaal (Slaanesh), vénéré par les clans bjornlings.
@@ -57,7 +57,7 @@ Les mutations brillent par leur absence au sein de la société des Bjornlings, 
 
 Les villages des Bjornlings sont plus cosmopolites que ceux des Skaelings et des Sarls. Des marchands de Marienburg, d'Erengrad, de L'Anguille et du Nordland y négocient les prix sur le rivage ou profitent de l'hospitalité du chef local dans sa halle. Tant qu'ils restent vigilants (et gardent toujours leurs armes à portée de main), la plupart des gens du sud rentrent chez eux en vie.
 
-
+<span id="page-63-0" data-folio="60"></span>
 ### ACHETER LE VENT
 
 Les sorciers dissidents bjornlings vivent dans des cabanes ou des cavernes isolées remplies de fourrures et de breloques. Si vous traitez l'un de ces sorciers avec respect, il peut vous vendre un vent. Ce vent est piégé dans une petite bouteille d'argile ou une bourse de cuir, et si le contenant est ouvert en mer, il libère une brise favorable à la navigation. Quand le vent ne fonctionne pas comme espéré, il pourrait déclencher un ouragan, créer un calme plat ou produire des effets météorologiques étranges. Après tout, difficile de faire confiance à un sorcier, n'est-ce pas ?
@@ -89,7 +89,7 @@ les falaises mènent jusqu'à l'eau, là où les quais de la ville accueillent l
 
 Les gens de Skjold sont pragmatiques et leur culte des Puissances de la Ruine est relativement inoffensif. Autour des murailles se dressent des dolmens sur lesquels sont inscrits des runes compliquées et des textes en langue sombre implorant la protection des dieux. La ville est tapageuse et typiquement norse, mais les étrangers sont tolérés et même bien reçus s'ils ont quelque chose à offrir. Les vaisseaux du sud peuvent mouiller dans la baie sans être attaqués, sauf s'ils provoquent les Bjornlings ou si un chef ambitieux voit une occasion de récolter beaucoup de butin facilement.
 
-
+<span id="page-64-0" data-folio="61"></span>
 # **La halle du roi**
 
 Au sommet d'un tertre surélevé, ceint d'une palissade de bois, se dressent la halle du roi et plusieurs autres bâtiments appartenant au roi Ulfric Grondal. Entouré de ses huscarls, de ses skjaldmös (femmes guerrières) et de ses jarls, il mène une vie d'abondance grâce à la richesse du pillage et du commerce. Ulric demeure, malgré tout, troublé car ses jarls complotent pour prendre sa place tandis que sa seule héritière a juré de le tuer.
@@ -122,7 +122,7 @@ Si un bateau endommagé fait escale à Skjold, les apprentis constructeurs d'Haf
 
 Lars est l'apprenti le plus doué d'Hafskael. Il a une compréhension instinctive du bois et peut tailler une quille avec un don presque surnaturel pour créer le navire le plus rapide et le plus maniable possible. Mais Lars cache le fait qu'il est en train de muter : un long aileron dorsal hérissé de pointes pousse sur son dos. Hafskael le sait, mais garde le secret pour éviter que les autres Bjornlings le découvrent et exécutent le meilleur charpentier naval de Norsca.
 
-
+<span id="page-65-0" data-folio="62"></span>
 # **L'autel des Navigateurs**
 
 Au pied des falaises s'ouvre une grotte marine où résonne l'écho des vagues, sa large entrée incrustée de bernacles et d'algues. À marée haute, elle est inondée et l'eau arrive à la taille du visiteur, tandis qu'à marée basse, il doit se faufiler entre les rochers dans la pénombre. C'est ici que les Bjornlings vénèrent d'innombrables divinités marines, dont beaucoup empruntées à d'autres cultures. Après tout, on ne sait jamais quel dieu va venir vous aider quand on en aura besoin.
@@ -156,3 +156,5 @@ Hornborg est un nain norse qui fait mentir à la fois les stéréotypes sur les 
 **Vestes de fourrure d'ours jarl :** ces vestes sans manches taillées dans la fourrure orange d'ours jarl béni de Tchar (Tzeentch) sont connues pour réguler la température corporelle du porteur. Que ce soit dans les hauteurs des montagnes norses ou dans les profondeurs de la jungle lustrienne, il n'aura jamais ni chaud, ni froid. Le porteur ne subit aucune pénalité à cause des extrêmes de température naturels, chauds ou froids, mais le contact physique direct avec le feu brûle tout de même. Hornborg vend ces vestes, 3 CO pièce.
 
 **Charmes en dent de requin :** les dents de requin géant gravées de rune sont des babioles magiques courantes, bien qu'elles aient plus fréquemment certains pouvoirs que d'autres, 2sc.
+
+<span id="page-66-0" data-folio="63"></span>

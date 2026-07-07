@@ -1,4 +1,4 @@
-*Pages PDF 44-52*
+*Folio 41+*
 
 # KRAKA RAVNSVAKE
 
@@ -30,7 +30,7 @@ Ces montagnes contiennent de riches filons de fer, de métaux précieux (surtout
 
 Les nains norses ne se mirent pas à naviguer aussi tôt dans leur histoire que ceux de Barak Varr. Après avoir décidé de contacter les terres du sud, les nains norses capturèrent des langskips norses pour comprendre leur mode de construction et créer leur propre flotte. Kraka Ravnsvake savait qu'une rivière souterraine alimentait la Dypvann et commença à bâtir un port secret pour les navires en cours de fabrication. Les marins norses fournissaient aux nains une bonne connaissance de la mer, mais ils avaient également besoin d'expérience. Les nains norses de Kraka Ravnsvake et de Sjoktraken allaient passer des siècles à maîtriser la navigation sur les fleuves et dans les eaux côtières avant de s'aventurer en haute mer.
 
-
+<span id="page-44-0" data-folio="41"></span>
 # **LES NAINS NORSES**
 
 En -4421 CI, Morgrim Grimnirsson rentre de ses voyages en Norsca. Lorsqu'il revint à Karaz Ankor (le Royaume éternel, comme les nains appellent l'empire sur lequel règne leur haut roi). Son retour eut lieu pendant l'Avènement du Chaos, et le sort subi par les nains norses allait rester un mystère pour leurs cousins du sud pendant des millénaires. Les forces du Chaos isolèrent les nains norses pendant des siècles, car leurs forteresses étaient encerclées et supposées perdues.
@@ -67,7 +67,7 @@ Même s'ils ne sont plus isolés, les nains norses restent encerclés par leurs 
 
 Les nains norses résident sur un terrain montagneux couvert de neige ou de glace pendant la majeure partie de l'année. Ceux d'entre eux qui vivent de chasse et de cueillette, et ils sont nombreux, sont experts dans l'art de se déplacer dans les montagnes sur des skis, d'escalader des parois de falaise abruptes et de gravir les pentes montagneuses raides.
 
-
+<span id="page-45-0" data-folio="42"></span>
 # **Relations avec Karaz Ankor**
 
 Les nains norses ont établi des relations avec Karaz Ankor via leur commerce avec Karak Vlag. À la suite de cela, le Haut Roi a envoyé un message déclarant que les nains norses expatriés depuis si longtemps lui devaient allégeance, comme au Haut Roi avant l'Avènement du Chaos. Les rois nains norses ont répondu que le dernier Haut Roi auquel ils devaient allégeance était Grungni lui-même, et que leur allégeance allait toujours au dieu ancestral. Le Haut Roi était furieux de cette réplique, mais ne pouvait ni nier sa logique ni refuser la position de ses cousins du nord.
@@ -94,7 +94,7 @@ Le trésorier du roi, Asborn Eivinsson, parvient à maintenir l'ordre dans les f
 
 Le conseil du roi Haarkon inclut le poste de maître de la flotte, actuellement occupé par le capitaine Steinam Kareksson. Le maître de la flotte est responsable de l'état de la marine des nains norses et de son déploiement. De plus, il est chargé de rassembler des informations sur les activités maritimes des Aeslings, des autres tribus norses vivant sur la Mer des Griffes et des grands ports le long de la côte sud de la mer. Le maître de la flotte rapporte les informations récoltées et recommande un plan d'action au conseil du roi pour que ses membres puissent débattre et arriver à un accord.
 
-
+<span id="page-46-0" data-folio="43"></span>
 # **Ravnshafnaz**
 
 Ravnshafnaz, le Port des Corbeaux, se trouve dans l'un des niveaux de l'En-dessous de Kraka Ravnsvake. Le port abrite un chantier naval antique, les artisans qui y travaillent et pas mal de tavernes. Beaucoup de gemmes de quartz transparent, sur lesquelles des runes de lumière sont inscrites, éclairent la caverne.
@@ -127,7 +127,7 @@ Un visiteur haut elfe venu de Lothern, en Ulthuan, est retrouvé mort dans l'une
 
 Les berserkers nains norses ressemblent beaucoup aux tueurs de Karaz Ankor, car ils révèrent tous les deux le dieu ancêtre Grimnir. La grande différence entre les deux réside dans leur approche du combat. Contrairement aux tueurs, les berserkers nains norses adorent se battre sans céder un pouce de terrain ; ils considèrent cela comme glorieux en soi et comme une façon d'honorer Grimnir. Les berserkers qui tombent au combat se voient accorder des funérailles honorant le défunt comme un grand héros, et ceux qui survivent racontent l'histoire de leurs actes valeureux.
 
-
+<span id="page-47-0" data-folio="44"></span>
 # **MARINE DE KRAKA RAVNSVAKE**
 
 Kraka Ravnsvake a été la première à soutenir l'établissement d'un commerce maritime et d'une flotte pour le protéger. Avant cela, cette tradition n'existait pas parmi les forteresses naines norses. Tout ce dont elle avait besoin, c'était de bateaux, de quelques ports sûrs et d'un accès à la mer.
@@ -163,7 +163,7 @@ Le système d'engrenages est une machinerie complexe et délicate. Si la Localis
 
 *Brise-coque :* cette munition est conçue pour traverser les structures en bois en y laissant de gros trous. Quand elle touche une structure en bois, par exemple un bateau, elle inflige +2 Dégâts et gagne l'atout Dévastatrice.
 
-
+<span id="page-48-0" data-folio="45"></span>
 ## **Croissance de la marine des nains norses**
 
 Agrandir la marine des nains norses était l'objectif principal des constructeurs de navires de Kraka Ravnsvake, car une flotte marchande sans escorte risquait de subir les attaques des norses. Avec le temps, Kraka Drak a fait de même avec sa propre marine, principalement pour effectuer des raids sur les villages aeslings et protéger les flottes de baleiniers sur la mer des Glaces. Une fois que les capitaines et les équipages eurent acquis de l'expérience sur les fleuves et dans les eaux côtières, les guerriers désireux d'attaquer les norses sur leurs propres terres ne manquèrent pas. Au début de la Grande Guerre contre le Chaos, la marine des nains norses comptait environ 250 navires de guerre.
@@ -192,7 +192,7 @@ Valaya est l'ancêtre naine associée au foyer, à la maison et à la guérison.
 
 Un bateau dont le capitaine est un nain et dont l'équipage compte un bon nombre de nains ne subit ni les avantages ni les inconvénients de l'*Humeur de Manann* (voir page 130) tant que le MJ constate qu'ils ne tentent pas volontairement d'insulter Manann.
 
-
+<span id="page-49-0" data-folio="46"></span>
 # SKALDOR « LE RAVAGEUR » LOTHARKSSON CAPITAINE NAIN NORSE
 
 **Motivation :** la vengeance.
@@ -229,7 +229,7 @@ Skaldor veut que le groupe délivre la vengeance des nains aux coupables si poss
 
 Le *Grund A Dum* est équipé d'une baliste placée à la proue, chargée avec des carreaux nains norses et tournée vers l'avant, et de huit canons Moyens sur le pont, quatre tournés à bâbord et quatre à tribord.
 
-
+<span id="page-50-0" data-folio="47"></span>
 #### SKALDOR « LE RAVAGEUR » LOTHARKSSON - CAPITAINE (OR 2)
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B  |
@@ -261,3 +261,5 @@ Si elle est inscrite sur une lentille, la Rune de Clairvoyance permet à l'utili
 #### **Rune de Vision Lointaine**
 
 La Rune de Vision Lointaine permet à l'utilisateur qui regarde par la lentille sur laquelle elle est inscrite, de voir des objets situés jusqu'à un mille et demi de distance comme s'ils étaient bien plus proches, comme avec un télescope. Rien ne doit obstruer la ligne de vue jusqu'à l'objet.
+
+<span id="page-51-0" data-folio="48"></span>

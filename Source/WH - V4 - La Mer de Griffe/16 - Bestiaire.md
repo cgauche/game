@@ -1,4 +1,4 @@
-*Pages PDF 144-164*
+*Folio 141+*
 
 # BESTIAIRE
 
@@ -35,7 +35,7 @@ La baudroye utilise l'étrange lueur phosphorescente sur sa tête pour attirer l
 
 **Traits d'attaque :** Arme (Crocs horribles) +8 **Facultatif :** Nuée, Taille (Petite à Moyenne)
 
-
+<span id="page-144-0" data-folio="141"></span>
 # **Crabe boxeur**
 
 Un crabe boxeur adulte fait la taille d'un chien. Il est doté d'une carapace portant un marquage qui évoque un crâne et de grands yeux écarlates polypeux. Cette créature fait partie de la faune de Norsca. Les jeunes crabes boxeurs plus petits forment des essaims dangereux, capables d'escalader les cordages qui pendent d'un bateau ou de grimper les uns sur les autres pour former des escaliers vivants leur permettant de surmonter les obstacles. Leur cycle de vie peut aussi se révéler nuisible pour les navires, car leurs petits forment des grappes semblables à celles des coquillages pouvant endommager la coque d'un bateau, tandis que les crabes adultes rôdent sur les plages pour trouver de la chair à manger. Ils ont l'habitude de s'entraîner en se combattant entre eux et tentent souvent de désarmer ou d'empoigner leur adversaire. Ils font un excellent repas.
@@ -87,7 +87,7 @@ Même si les stylets préfèrent les eaux chaudes, ils fréquentent la Mer des G
 
 **Vers la lumière :** les stylets sont attirés par la lumière. Si quelqu'un tente d'utiliser le feu pour leur faire peur, cela ne fait que les encourager. Ils possèdent le Trait *Bestial*, mais ils ne reculent pas devant le feu et ne subissent pas d'État *Brisé* parce qu'ils sont touchés par des attaques enflammées.
 
-
+<span id="page-145-0" data-folio="142"></span>
 # **Élémentaire de mer**
 
 D'après ceux qui étudient les arcanes de la magie, le Vent de Jade de *Ghyran* comporte une certaine ressemblance avec l'eau. Ceux qui possèdent la Seconde vue peuvent le regarder tomber sur la terre comme de la pluie, s'écouler le long des fleuves et des rivières et s'accumuler en mares. Il n'est donc pas très surprenant que les océans du monde contiennent de grandes quantités de *Ghyran*.
@@ -112,7 +112,7 @@ Le personnage immergé suffoque comme détaillé en page 181 de **WFJDR**. Il pe
 
 **Lanceur de sorts instinctif :** les élémentaires de mer peuvent utiliser leur Caractéristique Force pour le lancement de sorts et la focalisation.
 
-
+<span id="page-146-0" data-folio="143"></span>
 # **Gargantuan**
 
 Le Gargantuan est une bête serpentine d'au moins une centaine de mètres de long. Son corps est musculeux et incroyablement puissant, atteignant jusqu'à dix mètres de diamètre. Selon les elfes d'Ulthuan, il n'existe qu'un seul Gargantuan, qui vit dans les profondeurs depuis l'aube du monde.
@@ -142,7 +142,7 @@ Tant que le Gargantuan est sous l'effet d'un État *Exténué*, ses attaques de 
 
 Le Gargantuan peut aussi transmettre des décharges électriques quand il a *Empoigné* un navire. Cela n'inflige pas de Dégâts au vaisseau, mais les membres de l'équipage reçoivent tous un choc et subissent un coup de 6 Dégâts (3 Dégâts seulement si le Gargantuan subit un État *Exténué*).
 
-
+<span id="page-147-0" data-folio="144"></span>
 # **Kharibde**
 
 Le kharibde ne fait pas partie de la faune naturelle de la Mer des Griffes. Ces bêtes hantent les profondeurs froides et obscures autour des rives de Naggaroth, loin à l'ouest. Ce sont d'horribles créatures, stupides, mais puissantes. De leur corps trapu et immense jaillit une couronne de cinq tentacules fouettant l'air. Quatre se terminent par une tête rudimentaire, atavique au point d'être quasiment un vestige. À peine plus qu'une bouche dotée d'un goût et d'un odorat basiques, elle est spécialisée dans la tâche de rechercher et dévorer des proies. La cinquième tête, la centrale, est plus large et plus complexe et abrite le minuscule cerveau de la créature. Elle est pourvue d'une longue et sinueuse mâchoire inférieure bordée de centaines de crocs acérés. Le kharibde utilise cette bouche en torsade pour déchirer les grosses proies, faisant ainsi gicler des morceaux de chair et d'organes que les petites têtes dévorent. Ce monstre a un appétit vorace et des enzymes digestifs férocement efficaces capables de dissoudre la chair, le métal et les os en quelques minutes seulement.
@@ -168,7 +168,7 @@ caudale +8, Morsure +9
 
 **Traits facultatifs :** Belliqueux, Territorial
 
-
+<span id="page-148-0" data-folio="145"></span>
 # **Wyrm des mers**
 
 La Mer des Griffes est connue pour abriter beaucoup de wyrms des mers. Ce sont de grandes créatures dont la longueur rivalise avec celle des baleines. Ils possèdent un long corps ophidien recouvert d'une couche d'écailles épaisses et muni de tendons étirés et de paquets de muscles robustes. Cependant, les wyrms des mers ne sont pas de véritables serpents de mer, car si nécessaire, ils peuvent sortir de l'eau et se traîner maladroitement sur terre à l'aide de quatre membres courtauds se terminant chacun par des griffes aiguisées comme des rasoirs.
@@ -207,7 +207,7 @@ Les autres peuples soupçonnent les Sarls de jeter des utilisateurs de magie min
 
 **Chant de la syrène bleue :** au prix d'une action, la syrène bleue peut entonner son chant hypnotique. Les Personnages situés à (Initiative de la syrène) mètres ou moins du monstre doivent réussir un Test de **Calme Complexe (–10)** sous peine d'être envoûtés par la mélodie et incapables d'entreprendre la moindre action à part se déplacer vers la syrène bleue, ce qui en pratique revient à subir l'État *Inconscient*.
 
-
+<span id="page-149-0" data-folio="146"></span>
 # **Hydre d'os**
 
 En de rares occasions, les cadavres de créatures marines dérivent dans des zones où la magie malveillante de malepierres sous-marines peut les corrompre et les réanimer.
@@ -242,7 +242,7 @@ Les sangsues des abysses sont les dépouilles animées de dragons des mers qui o
 
 **Traits d'attaque :** Arme (Mâchoires tenailles) +12, Attaque caudale +11, Morsure +11, Vomissement
 
-
+<span id="page-150-0" data-folio="147"></span>
 # **Léviathan-phare et léviathan noir**
 
 Il existe plusieurs espèces de léviathans dans les océans du monde. Elles ont toutes en commun d'être des poissons osseux dont la tête et le dos sont protégés par de lourdes écailles. Ce sont toutes des prédateurs voraces.
@@ -277,7 +277,7 @@ Le plus grand des léviathans est le léviathan noir, un énorme poisson des aby
 
 Pour considérer l'impact psychologique des autres sources de Peur et de Terreur, le MJ doit prendre en compte le fait que, si une source n'est pas quelque chose que le léviathan noir devrait respecter en termes de taille, elle ne va probablement pas le troubler. Même si les démonettes, les zombies et les sorciers à la tête enflammée sont clairement surnaturels, aux yeux du léviathan noir, ils sont surtout de la nourriture pour poisson.
 
-
+<span id="page-151-0" data-folio="148"></span>
 # **Triton**
 
 Aucune autre créature au monde ne suscite autant de légendes et de spéculation que Triton. Malgré la fascination qu'il génère aussi bien chez les marins que chez les érudits, les sorciers et les prêtres, l'immense majorité des informations concernant sa nature fait l'objet d'une intense controverse.
@@ -292,7 +292,7 @@ Une autre théorie soutient que Triton n'a pas été affecté par le Chaos et qu
 
 Les humains du Vieux Monde croient que Triton a un lien de parenté avec Manann, mais les contes populaires et les testaments apocryphes déclarent tour à tour qu'il s'agit du fils, du frère, de l'avatar, du premier fidèle ou du serviteur divin du dieu marin. Les elfes pensent que la question n'est pas si simple, car les Druchii honorent Mathlann (la divinité elfique dont le domaine et la nature sont très proches de ceux de Manann) aussi sincèrement que les marins de Cothique, et pourtant Triton leur voue une haine meurtrière.
 
-
+<span id="page-152-0" data-folio="149"></span>
 | TRITON |       |    |    |    |    |    |            |    |        |    |     |  |  |  |
 |--------|-------|----|----|----|----|----|------------|----|--------|----|-----|--|--|--|
 | M      | CC CT |    | F  | E  | I  |    | Ag Dex Int |    | FM Soc |    | B   |  |  |  |
@@ -326,7 +326,7 @@ Une immense arme d'hast à trois pointes faisant plus de cent mètres de long. T
 
 **Naufrageuse :** chaque fois que le trident de Triton inflige des Dégâts à la Coque d'un vaisseau, ce bateau doit effectuer un Test d'**Endurance Complexe (–10)**. En cas d'échec, le navire subit *Voie d'eau 1*. Chaque fois que le trident de Triton inflige des Dégâts Critiques à la Coque d'un bateau, ce vaisseau doit effectuer un Test d'**Endurance Difficile (–20)**. En cas d'échec, le navire subit *Voie d'eau 3*.
 
-
+<span id="page-153-0" data-folio="150"></span>
 # **CAPITAINE JAEGO ROTH, CORSAIRE DE SARTOSA**
 
 Le capitaine Jaego Roth est considéré comme le plus grand corsaire de l'époque actuelle. Fils du célèbre cartographe et explorateur Indigio Roth, le jeune Jaego passait sa vie à bord d'un bateau, voyageant avec son père vers des lieux inconnus de tous les autres flibustiers, pourtant grands marins, de Sartosa. Quand Roth père a finalement été forcé de prendre sa retraite après avoir perdu ses deux jambes face à un géant des mers, Jaego est parti forger sa propre légende.
@@ -349,7 +349,7 @@ Le *Quart de nuit* est équipé d'un Grand canon placé à la proue et tourné v
 
 Quart de nuit 50 10 (25) 6 (40) – 55 65 200 1 000 Bélier, Renforcé, Solide
 
-
+<span id="page-154-0" data-folio="151"></span>
 | JAEGO ROTH - CAPITAINE CORSAIRE (OR 2) |                                                   |    |    |    |    |    |    |    |    |    |    |
 |----------------------------------------|---------------------------------------------------|----|----|----|----|----|----|----|----|----|----|
 | M                                      | CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |    |    |    |    |    |    |    |    |    |    |
@@ -377,7 +377,7 @@ Jaego Roth recherche quiconque pourrait lui apporter des réponses au sujet de c
 
 **Carte sur une carapace de tortue :** une carte couverte d'une iconographie grotesque, avec un maelstrom tourbillonnant au centre.
 
-
+<span id="page-155-0" data-folio="152"></span>
 # **LONG DRONG SILVER, CAPITAINE DES PIRATES TUEURS**
 
 *« J'te tirerai dessus d'puis les halles de Grimnir, salopard ! »*
@@ -410,7 +410,7 @@ Avec ses prothèses, Long Drong ne subit pas de pénalité parce qu'il lui manqu
 
 **Rhum tord-boyaux :** un mélange de rhum, de Poudre noire et de copeaux de fer. Considéré comme deux verres et celui qui le boit doit effectuer un Test de Résistan,ce à l'alcool. En cas d'échec, il est pris de maux de ventre et de flatulences. Le Personnage subit alors une pénalité de –20 sur ses Tests de Charme et reçoit le Trait *Perturbant* jusqu'à ce qu'il redevienne sobre.
 
-
+<span id="page-156-0" data-folio="153"></span>
 | LA BELLE FREGAR                   |    |                |     |        |   |        |                    |                                                           |  |  |
 |-----------------------------------|----|----------------|-----|--------|---|--------|--------------------|-----------------------------------------------------------|--|--|
 | Nom du navire Équipage Propulsion |    | à vapeur M (É) | Man | Taille | E | B      | Cont<br>enanc<br>e | Traits et<br>Améliorations                                |  |  |
@@ -430,7 +430,7 @@ Généralement, Drong part avec 200 Enc de charbon dans sa cale.
 
 Le moteur à vapeur pourrait être alimenté en brûlant du bois. Cette méthode est moins efficace, mais comme le charbon n'est pas toujours disponible, Drong y a parfois recours. Pour chaque heure d'utilisation, le moteur à vapeur consomme 2 Enc de bois.
 
-
+<span id="page-157-0" data-folio="154"></span>
 # **WULFRIK, CHAMPION DES SARLS**
 
 Tous les langskips norses éveillent la terreur dans les cœurs de ceux qui vivent le long de la côte, mais il en existe un que même les plus braves ont appris à redouter. Sa voile arbore la roue sans cesse en mouvement des Puissances de la Ruine, barbouillée de sang séché. Des têtes, venant uniquement d'adversaires vaincus en combat singulier, bordent sa proue. Ses avirons brassent les vagues à l'unisson, faisant avancer le vaisseau en rythme au son des chanteurs skalds entonnant un seul nom : Wulfrik.
@@ -451,7 +451,7 @@ Les chefs et les rois des peuples norses deviennent faibles et sont trop occupé
 
 **Bénédiction des dieux :** toutes les attaques à distance contre le Kotfotr sont considérées comme des Tests Complexes (–10) (sauf si le Test devrait normalement être d'une Difficulté encore supérieure).
 
-
+<span id="page-158-0" data-folio="155"></span>
 | WULFRIK - CHAMPION DES SARLS (OR 2) |                                                   |    |    |    |    |    |    |    |    |    |    |
 |-------------------------------------|---------------------------------------------------|----|----|----|----|----|----|----|----|----|----|
 | M                                   | CC CT<br>F<br>E<br>I<br>Ag Dex Int<br>FM Soc<br>B |    |    |    |    |    |    |    |    |    |    |
@@ -469,7 +469,7 @@ Les chefs et les rois des peuples norses deviennent faibles et sont trop occupé
 
 **Tueur de champions :** Wulfrik gagne un point d'Avantage quand il affronte un chef ou un champion ennemi en combat singulier.
 
-
+<span id="page-159-0" data-folio="156"></span>
 # **ARCHISEIGNEUR DES MERS VRISK GRATTE-LE-FER**
 
 Vrisk Gratte-le-Fer est l'Archiseigneur des mers du clan Skorbut. Il était présent au Grand Rassemblement de 2302 et a audacieusement placé sa patte sur le pilier noir des Commandements et gagné le droit de siéger au conseil des Treize. Son élévation a surpris beaucoup de monde, car le clan Skorbut n'était absolument pas une puissance majeure chez les skavens.
@@ -498,7 +498,7 @@ Vrisk occupe le huitième siège du conseil des Treize. C'est une position humbl
 
 **Possessions :** armure de malepierre complète, bourse contenant 425 grammes de malepierre raffinée, pistolet patte d'oie à malepierre, épée, hallebarde.
 
-
+<span id="page-160-0" data-folio="157"></span>
 **Alimenté par la malepierre (1 fragment) :** Vrisk a besoin de consommer une certaine quantité de malepierre raffinée chaque semaine pour que son corps fonctionne normalement. S'il passe une semaine sans consommer 1 fragment (28 grammes) de malepierre raffinée, réduisez toutes ses Caractéristiques à pourcentage de 20 et son Talent Chanceux 13 devient Chanceux 3.
 
 **Favori du Rat Cornu :** Vrisk a touché le pilier des Commandements et y a survécu. Il possède 3 points de Destin et 3 points de Résilience.
@@ -535,7 +535,7 @@ Les *Crocs de Port de l'Échine* a 10 canons navals à malefoudre sur son pont, 
 
 **ZAP ! :** ces armes tirent une rafale d'énergie arcanique. Les armes ZAP ! réduisent les PA de 1 et ignorent les PA venant d'une armure en métal.
 
-
+<span id="page-161-0" data-folio="158"></span>
 # **INDEX** • •
 
 | A                                    | F                                      | Léviathan-phare et                    | R                                    |
@@ -602,6 +602,8 @@ Les *Crocs de Port de l'Échine* a 10 canons navals à malefoudre sur son pont, 
 
 Les Seigneurs des mers impériaux ... 19
 
-
+<span id="page-162-0" data-folio="159"></span>
 |  |  |  |  |  |  |  | 159 |  |  |  |  |  |
 |--|--|--|--|--|--|--|-----|--|--|--|--|--|
+
+<span id="page-163-0" data-folio="160"></span>

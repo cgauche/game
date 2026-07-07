@@ -1,6 +1,6 @@
-*Pages PDF 79-84*
+*Folio 80+*
 
-## <span id="page-78-0"></span>CHAPITRE 12 NAUFRAGEURS, CONTREBANDIERS ET PIRATES
+## CHAPITRE 12 NAUFRAGEURS, CONTREBANDIERS ET PIRATES
 
 Les dangers fluviaux ne proviennent pas tous de la nature ou des monstres locaux. Les naufrageurs, les contrebandiers et les pirates opèrent dans de nombreux endroits, parfois même avec le soutien tacite des autorités locales, et peuvent être aussi dangereux que n'importe quel autre ennemi.
 
@@ -24,7 +24,7 @@ Alors que le navire des Personnages s'apprête à aborder un tronçon périlleux
 
 S'il est défié, le faux nautonier tente de s'enfuir, laissant les Personnages se débrouiller seuls pour traverser la zone dangereuse. En revanche, si la supercherie n'est pas découverte, le naufrageur guide le bateau directement sur les rochers ou le banc de sable (causant des dommages comme décrit à la page 30), sautant par-dessus bord à la dernière minute. Les naufrageurs entoureront alors le bateau comme décrit ci-dessus.
 
-
+<span id="page-79-0" data-folio="80"></span>
 ### **Dangers artificiels**
 
 Certains naufrageurs vont jusqu'à créer leurs propres dangers si la rivière ne leur offre rien. Les versions les plus rudimentaires consistent en des récifs artificiels faits de rochers et d'autres débris déversés dans la rivière ; les versions plus sophistiquées comprennent des barrières en rondins amovibles, parfois équipées de pointes de fer ou de lourdes chaînes qui peuvent être posées en travers de la rivière pour bloquer le passage. À moins que les naufrageurs ne travaillent avec un baron du crime local, ces pièges sont généralement éliminés par la Patrouille fluviale dès qu'ils sont signalés. Cependant, étant donné qu'ils n'apparaissent pas sur les cartes fluviales et que les habitants ne les connaissent pas ou choisissent de ne rien dire, ils peuvent réserver de mauvaises surprises aux navigateurs imprudents.
@@ -61,7 +61,7 @@ Dès son plus jeune âge, Bathilda a fait preuve d'une grande cruauté. Renvoyé
 
 **Possessions :** épée, grand sac, pied-de-biche, pochon de dents humaines, bourse contenant 22/5
 
-
+<span id="page-80-0" data-folio="81"></span>
 #### **Dederick Ritter**
 
 Peu d'entre eux ont opté volontairement pour la vie de naufrageur. Dederick n'a pas vraiment eu le choix après que la barge qu'il pilotait s'est accrochée à un récif, coulant avec les 3 000 Couronnes de la meilleure eau-de-vie de Kemperbad qu'il transportait pour l'entreprise commerciale Kliendorfer. Ce qui aurait dû être une simple affaire pour ses assureurs s'est transformé en une fuite nocturne jusqu'à Weissbruck, une auberge en flammes et trois corps laissés dans le sillage de Dederick. Aujourd'hui, il gagne sa vie comme il le doit, son ancien équipage et quelques nouvelles recrues, certaines plus désespérées que d'autres, tirant le meilleur parti de la situation en transmettant leur malheur aux autres.
@@ -90,8 +90,8 @@ Le commandement d'Altdorf de la Patrouille fluviale subit une pression croissant
 
 D'autres suggèrent que personne ne le trouve car il n'existe pas. Selon eux, il n'est peut-être qu'un slogan et une excuse pour la violence, dont le nom et la réputation sont utilisés par plusieurs équipages de pirates différents.
 
-
-### <span id="page-81-0"></span>**PIRATES**
+<span id="page-81-0" data-folio="82"></span>
+### **PIRATES**
 
 Les pirates des rivières constituent une menace constante sur les voies navigables de l'Empire, malgré les efforts de la Patrouille fluviale. La plupart de ceux qui se lancent dans la piraterie le font par désespoir. Incapables de se nourrir et de nourrir leur famille grâce à un travail honnête pour une raison ou une autre, ils ont dû faire un choix. Ces équipages comptent généralement cinq à dix personnes et agissent à partir d'une seule barge. Il est peu probable qu'ils soient des tueurs, préférant menacer et tromper leurs victimes, et ils attaquent rarement les navires dont les défenses sont évidentes.
 
@@ -127,7 +127,7 @@ Boris a nettoyé des porcheries pendant douze ans. Un jour, alors qu'il transpor
 
 #### ACCROCHE D'AVENTURE : DU LARD OU DU COCHON
 
-
+<span id="page-82-0" data-folio="83"></span>
 #### **Reginhard Vieth**
 
 Reginhard Vieth a fait enfermer plus de pirates que la plupart des gens n'en verront jamais, les traînant dans les cellules sous le château Reikguard ou laissant la rivière emporter leurs corps. Pourquoi n'aurait-il pas été autorisé à garder un peu de leur butin pour lui ? Le salaire d'un patrouilleur fluvial était une somme dérisoire comparée à l'argent et aux marchandises qu'il pouvait dérober à ses proies. De telles pensées rongeaient Reginhard, jusqu'à ce qu'un marchand ingrat de trop soit témoin de la nouvelle vie de Vieth et de ses plus loyaux officiers : ils étaient bien déterminés à commencer une nouvelle vie de l'autre côté de la loi. Aujourd'hui, Vieth est la terreur de son tronçon des voies navigables de l'Empire et la honte de ses camarades patrouilleurs fluviaux.
@@ -168,8 +168,8 @@ Si les Personnages ne parviennent pas à repousser l'attaque ou à couper les li
 
 Marisella Gurt est une adoratrice de Stromfels qui est convaincue que Reginhard Vieth est l'incarnation de ce dieu interdit depuis qu'elle a aperçu son aileron. À présent, cette femme hante chacun de ses pas, et il veut à tout prix se débarrasser d'elle et des autres adeptes. En réalité, il est tellement désespéré qu'il est prêt à épargner les Personnages de tout vol ou dégât s'ils arrivent à trouver un moyen de la convaincre que Vieth n'est rien de plus qu'un pirate honnête.
 
-
-### <span id="page-83-0"></span>**CONTREBANDIERS**
+<span id="page-83-0" data-folio="84"></span>
+### **CONTREBANDIERS**
 
 Partout où les marchandises sont transportées et taxées, il y a ceux qui gagnent leur vie en évitant ces taxes, et les rivières sont les artères du commerce dans le Vieux Monde. De plus, d'autres s'arrangeront toujours pour transporter des cargaisons illégales et peu recommandables si la rémunération est suffisamment élevée.
 
@@ -216,3 +216,5 @@ Sorte de vilain petit canard de sa famille, Sophie est issue de l'illustre (et e
 **Possessions :** biens illégaux, boulier, dague, diverses licences de guilde contrefaites, 5d10 pistoles d'argent et
 
 20 Couronnes d'or
+
+<span id="page-84-0" data-folio="85"></span>

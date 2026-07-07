@@ -1,8 +1,8 @@
-*Pages PDF 149-164*
+*Folio 150+*
 
 ## ANNEXE 3 :
 
-<span id="page-148-0"></span>
+
 
 # DOCUMENTS ET AIDES DE JEUX
 
@@ -56,7 +56,7 @@ Voici le nom des mois et leur signification.
 
 Le Livre des Jours, Finreir de Saphery
 
-
+<span id="page-149-0" data-folio="150"></span>
 ## **LE CALENDRIER IMPÉRIAL**
 
 **Hexenstag - Jour du Nouvel An**
@@ -202,29 +202,29 @@ Aubentag 1
 | Angestag  | 6 | 14     | 22 | 30 |    |
 | Festag    | 7 | 15     | 23 | 31 |    |
 
-
+<span id="page-150-0" data-folio="151"></span>
 Document 3 de la page 27
 
-
+<span id="page-151-0" data-folio="152"></span>
 #### Document 4 de la page 28 Document 8 de la page 82
 
 Document 6 de la page 37
 
-
+<span id="page-152-0" data-folio="153"></span>
 Document 10 de la page 101 Document 9 de la page 90
 
 Document 11 de la page 101
 
-
+<span id="page-153-0" data-folio="154"></span>
 Plan de la page 88
 
-
+<span id="page-154-0" data-folio="155"></span>
 #### Plan de la page 45
 
 Plan de la page 89
 
-
-
+<span id="page-155-0" data-folio="156"></span>
+<span id="page-156-0" data-folio="157"></span>
 | A                                        | Changement de Personnage32          |  |
 |------------------------------------------|-------------------------------------|--|
 | À la croisée des chemins20               | Changement de scène32               |  |
@@ -291,7 +291,7 @@ Plan de la page 89
 | Cercle de la Truite d'Or128              | Entrepôt 17104                      |  |
 |                                          |                                     |  |
 
-
+<span id="page-157-0" data-folio="158"></span>
 | Entrer par effraction90                         | I                                              |
 |-------------------------------------------------|------------------------------------------------|
 | Équipage du Bérébéli (L')40                     | Informateur anonyme (Un)47                     |
@@ -361,7 +361,7 @@ Plan de la page 89
 | Hôtel de ville (Le)85,127                       | Noble dame (La)14                              |
 | Humour et horreur9                              | Noiraud le corbeau20                           |
 
-
+<span id="page-158-0" data-folio="159"></span>
 | O                                        | Schaffenfest (La) 92, 138                        |  |
 |------------------------------------------|--------------------------------------------------|--|
 | Obstacle invisible73                     | Se cacher dans l'entrepôt104                     |  |
@@ -430,7 +430,7 @@ Plan de la page 89
 | Rumeurs 15, 57, 81                       | Voyage commence (Le)19                           |  |
 | S<br>S'enfuir de la maison102            | Z<br>Zoocopée (La)67                             |  |
 
-
+<span id="page-159-0" data-folio="160"></span>
 ## **INDEX DES PNJ**
 
 | A                                                  | I                                                                |  |
@@ -487,10 +487,10 @@ Plan de la page 89
 | Horreur rose de Tzeentch 114                       | Visiteurs 69                                                     |  |
 |                                                    | Volker Drauchen (Yeux de Tzeentch) 143                           |  |
 
-
-
-
-
+<span id="page-160-0" data-folio="161"></span>
+<span id="page-161-0" data-folio="162"></span>
+<span id="page-162-0" data-folio="163"></span>
+<span id="page-163-0" data-folio="164"></span>
 #### **L'ENNEMI DANS L'OMBRE 1 RE PARTIE DE LA CAMPAGNE DE L'ENNEMI INTÉRIEUR**
 
 *Au moment convenu, nous émergerons de nos repaires secrets et nous mettrons à genoux les villes et cités de l'Empire. Le Chaos envahira cette terre, et nous, les Serviteurs élus, nous nous couvrirons de gloire devant SES yeux. Gloire à Tzeentch, Changeur de Voies ! Njawrr'thakh Lzimbarr Tzeentch !*
