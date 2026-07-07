@@ -75,7 +75,7 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       for (const s of c.spells) { expect(isObj(s)).toBe(true); expect(findSpellById(s.id)).toBeTruthy(); }
       for (const sk of c.skills) expect(isObj(sk) && typeof sk.id === 'string').toBe(true);
       for (const t of c.talents) expect(isObj(t) && typeof t.id === 'string').toBe(true);
-      for (const o of c.optionals) expect(isObj(o)).toBe(true); // TraitInstance (clé de registre)
+      for (const o of c.optionals) expect(isObj(o)).toBe(true); // OptionalEntry : TraitInstance OU note composée (#174)
       for (const tr of c.trappings) { expect(isObj(tr)).toBe(true); if ('id' in tr) expect(itemFromTrappingById(tr.id as string)).toBeTruthy(); }
     }
   });

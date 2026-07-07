@@ -34,8 +34,8 @@ import { WeaponField } from '../editor/WeaponField';
 import { PsychTraitsField } from '../editor/PsychTraitsField';
 import type { Weapon } from '../../engine/types';
 import type { PsychTrait } from '../../engine/psychology';
-import { SymptomsField, SymptomTickField, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField, TraitListField, HarvestField, SpecsField } from './StructFields';
-import type { TraitInstance } from '../../engine/statEntry';
+import { SymptomsField, SymptomTickField, TalentTestField, CombatField, AdvancementRefField, TrappingRefField, CharKeysField, StarSubField, DomainEffectsField, TraitListField, OptionalsListField, HarvestField, SpecsField } from './StructFields';
+import type { TraitInstance, OptionalEntry } from '../../engine/statEntry';
 import type { DomainData } from '../../data';
 import type { CharKey, Difficulty } from '../../engine/types';
 import { CHAR_KEYS, CHAR_LABELS, DIFFICULTY_LABELS } from '../../engine/types';
@@ -515,7 +515,7 @@ export function CodexEdit({ categoryKey, label, onClose, isNew }: { categoryKey:
         {isCreature && (
           <>
             <TraitListField label="Traits" hint="(LDB 85 — armement « Arme (Épée) +7 », Psychologie « Peur 3 »…)" value={entry.traits as TraitInstance[] | undefined} onChange={(v) => edit('traits', v)} />
-            <TraitListField label="Traits optionnels" hint="(LDB 76 — proposés au spawn)" value={entry.optionals as TraitInstance[] | undefined} onChange={(v) => edit('optionals', v)} />
+            <OptionalsListField label="Traits optionnels" hint="(LDB 76 — proposés au spawn ; notes composées « swap »/« tous les traits » en lecture seule)" value={entry.optionals as OptionalEntry[] | undefined} onChange={(v) => edit('optionals', v)} />
             <HarvestField value={entry.harvest as { rarity: import('../../data').HarvestRarity; danger: import('../../data').HarvestDanger; uses: string } | undefined} onChange={(v) => edit('harvest', v)} />
           </>
         )}

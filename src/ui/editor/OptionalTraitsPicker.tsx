@@ -9,8 +9,8 @@
  */
 import { CreatureData, spells, findSpell, refLabel, traits } from '../../data';
 import { CHAR_KEYS } from '../../engine/types';
-import { traitLabels, parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
-import type { TraitInstance } from '../../engine/statEntry';
+import { traitLabels, parseTraitInstance, formatTrait, optionalLabel } from '../../engine/traits/dispatch';
+import { isOptionalNote, type TraitInstance, type OptionalEntry } from '../../engine/statEntry';
 
 /** Traits Standard de créature (LDB 76 l.28-31) — « ajoutés à la liste Facultative de TOUTES les
  *  créatures » : dérivés de la DONNÉE (`traits.json`, drapeau `standard`), pas d'une liste en dur. */
@@ -48,39 +48,54 @@ export function OptionalTraitsPicker({
   onChange,
 }: {
   creature: CreatureData;
-  value: TraitInstance[] | undefined;
-  onChange: (v: TraitInstance[] | undefined) => void;
+  value: OptionalEntry[] | undefined;
+  onChange: (v: OptionalEntry[] | undefined) => void;
 }) {
   const chosen = value ?? [];
-  const set = (next: TraitInstance[]) => onChange(next.length ? next : undefined);
-  // creature.optionals = TraitInstance[] → libellés pour les suggestions (l'édition reste en chaînes, parsées au choix).
-  const optionLabels = traitLabels(creature.optionals);
-  // « Tous les traits » (Mutant) n'est pas une chaîne posable telle quelle → note, pas d'option.
-  const suggested = optionLabels.filter((o) => !/^tous les traits$/i.test(o));
-  const allTraits = optionLabels.some((o) => /^tous les traits$/i.test(o));
+  const set = (next: OptionalEntry[]) => onChange(next.length ? next : undefined);
+  // OFFRABLES du bestiaire : les optionnels de la créature SAUF le joker « tous les traits » (une note
+  // qui n'est PAS posable — juste une indication). Les Traits ORDINAIRES restent éditables en chaîne
+  // (l'auteur complète l'Indice/la Cible) ; une variante « swap » est posée telle quelle (note VERBATIM).
+  const offerable = (creature.optionals ?? []).filter((o) => !(isOptionalNote(o) && o.note === 'all-traits'));
+  const allTraits = (creature.optionals ?? []).some((o) => isOptionalNote(o) && o.note === 'all-traits');
+  const addOffer = (idx: number) => set([...chosen, offerable[idx]]);
+  const addStandard = (label: string) => set([...chosen, parseTraitInstance(label)]);
   return (
     <div className="ed-field">
       Traits facultatifs (LDB 76) — éditez la chaîne pour compléter l'Indice/la Cible
       {chosen.map((t, i) => (
         <div key={i} className="trait-row">
-          <input value={formatTrait(t)} onChange={(e) => set(chosen.map((x, j) => (j === i ? parseTraitInstance(e.target.value) : x)))} />
+          {isOptionalNote(t) ? (
+            // Note composée (variante « swap » / joker) : texte source VERBATIM, non éditable en chaîne.
+            <span className="chip">{optionalLabel(t)}</span>
+          ) : (
+            <input value={formatTrait(t)} onChange={(e) => set(chosen.map((x, j) => (j === i ? parseTraitInstance(e.target.value) : x)))} />
+          )}
           <button className="btn small danger" title="Retirer ce trait facultatif" onClick={() => set(chosen.filter((_, j) => j !== i))}>
             ✕
           </button>
         </div>
       ))}
-      <select value="" onChange={(e) => e.target.value && set([...chosen, parseTraitInstance(e.target.value)])}>
+      <select
+        value=""
+        onChange={(e) => {
+          if (!e.target.value) return;
+          const [kind, rest] = [e.target.value.slice(0, 4), e.target.value.slice(4)];
+          if (kind === 'opt:') addOffer(Number(rest));
+          else addStandard(rest);
+        }}
+      >
         <option value="">+ Ajouter un trait facultatif…</option>
-        {suggested.length > 0 && (
+        {offerable.length > 0 && (
           <optgroup label={`Facultatifs de ${creature.label}`}>
-            {suggested.map((o) => (
-              <option key={o} value={o}>{o}</option>
+            {offerable.map((o, i) => (
+              <option key={i} value={`opt:${i}`}>{optionalLabel(o)}</option>
             ))}
           </optgroup>
         )}
         <optgroup label="Traits standard (LDB 76 : toutes créatures)">
           {STANDARD_OPTIONALS.map((o) => (
-            <option key={o} value={o}>{o}</option>
+            <option key={o} value={`std:${o}`}>{o}</option>
           ))}
         </optgroup>
       </select>

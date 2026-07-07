@@ -46,7 +46,7 @@ import { talentMaxLabel } from '../../engine/careerSlots';
 import type { AdvancementRef, WaterExposureModifier } from '../../data';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import { POWER_ESTIMATE, MIGHT_MODIFIERS, WAR_MACHINES, STRUCTURES as MASS_BATTLE_STRUCTURES, BATTLE_HAZARDS } from '../../engine/massBattle';
-import { traitLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
+import { traitLabels, optionalLabels, traitArgSkeleton } from '../../engine/traits/dispatch';
 import { CHAR_KEYS, CHAR_LABELS, HIT_LOCATION_LABELS, DIFFICULTY_LABELS, type Combatant, type HitLocation } from '../../engine/types';
 import { SIZE_LABEL, effectiveSize, woundsForSize } from '../../engine/size';
 import { bonus } from '../../engine/characteristics';
@@ -836,7 +836,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       sections: sections(
         { title: 'Caractéristiques', layout: 'grid', rows: kvRows(Object.entries(c.char)) },
         chips('Traits', 'traits', traitLabels(c.traits)),
-        chips('Traits optionnels', 'traits', traitLabels(c.optionals)),
+        chips('Traits optionnels', 'traits', optionalLabels(c.optionals)),
         chips('Compétences', 'skills', c.skills.map(skillRefLabel)), // SkillRef[] → libellés « Calme 58 »
         chips('Talents', 'talents', c.talents.map(talentRefLabel)), // TalentRef[] → libellés « Magie des Arcanes (Ghur) »
         chips('Sorts', 'spells', c.spells.map((s) => refLabel('spells', s))),

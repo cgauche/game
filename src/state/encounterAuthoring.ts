@@ -11,7 +11,7 @@
  */
 import type { CustomStatblock, EncounterDef, EncounterMember, EntityAppearance, SceneEntity } from './scene';
 import type { Flow } from './flow';
-import type { TraitInstance } from '../engine/statEntry';
+import type { OptionalEntry } from '../engine/statEntry';
 import type { ShipPoste, NavalTraitRef } from '../engine/types';
 import type { SkillRef } from '../data';
 import type { Dir8 } from './dir8';
@@ -36,7 +36,7 @@ export interface AuthoredEnemy {
   mount?: boolean;
   /** Index (dans `enemies`) de la monture chevauchée au spawn. */
   rides?: number;
-  optionals?: TraitInstance[];
+  optionals?: OptionalEntry[];
   spells?: string[];
   randomChars?: boolean;
   /** Compétences d'AUTEUR ajoutées (réfs `SkillRef`) — fusionnées au spawn (servant de pièce : Projectiles

@@ -17,8 +17,8 @@ import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRa
 import { specEntryId, specEntryLabel } from '../../data';
 import { slugId } from '../../data/slug';
 import { ConditionEditor } from '../editor/ConditionEditor';
-import type { TraitInstance } from '../../engine/statEntry';
-import { parseTraitInstance, formatTrait } from '../../engine/traits/dispatch';
+import { isOptionalNote, type TraitInstance, type OptionalEntry } from '../../engine/statEntry';
+import { parseTraitInstance, formatTrait, optionalLabel } from '../../engine/traits/dispatch';
 import { GameOpEditor } from '../editor/GameOpEditor';
 import type { GameOp } from '../../engine/ops';
 
@@ -518,6 +518,36 @@ export function TraitListField(
       ))}
       <datalist id={dlId}>{opts.map((o) => <option key={o} value={o} />)}</datalist>
       <button className="btn small" onClick={() => set([...list, { id: 'arme' }])}>+ Ajouter un trait</button>
+    </div>
+  );
+}
+
+/** Liste d'OPTIONNELS (LDB 76) : `TraitInstance` ORDINAIRES éditables en chaîne (comme `TraitListField`)
+ *  + NOTES composées (joker « tous les traits », variante « swap » ZI) affichées en LECTURE SEULE
+ *  (texte source VERBATIM — pas de saisie libre, elles se curent en JSON) mais supprimables. Les notes
+ *  sont PRÉSERVÉES lors de l'édition des traits ordinaires (jamais écrasées par le round-trip chaîne). */
+export function OptionalsListField(
+  { label, hint, value, onChange }:
+  { label: string; hint?: string; value: OptionalEntry[] | undefined; onChange: (v: OptionalEntry[]) => void },
+) {
+  const list = value ?? [];
+  const dlId = `dl-optlist-${label.replace(/\s+/g, '-')}`;
+  const opts = traitDatalistOptions();
+  return (
+    <div className="ed-field">
+      <span>{label}{hint && <em className="de-hint"> {hint}</em>}</span>
+      {list.map((t, i) => (
+        <div key={i} className="trait-row">
+          {isOptionalNote(t) ? (
+            <span className="chip">{optionalLabel(t)}</span>
+          ) : (
+            <input list={dlId} value={formatTrait(t)} onChange={(e) => onChange(list.map((x, j) => (j === i ? parseTraitInstance(e.target.value) : x)))} />
+          )}
+          <button className="btn small danger" title="Retirer cet optionnel" onClick={() => onChange(list.filter((_, j) => j !== i))}>✕</button>
+        </div>
+      ))}
+      <datalist id={dlId}>{opts.map((o) => <option key={o} value={o} />)}</datalist>
+      <button className="btn small" onClick={() => onChange([...list, { id: 'arme' }])}>+ Ajouter un trait optionnel</button>
     </div>
   );
 }

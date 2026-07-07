@@ -4150,7 +4150,12 @@
         "arg": "cornes-asymetriques"
       }
     ],
-    "optionals": [],
+    "optionals": [
+      {
+        "note": "all-traits",
+        "label": "Tous les traits"
+      }
+    ],
     "skills": [],
     "talents": [],
     "trappings": [],
@@ -49969,7 +49974,21 @@
         "id": "vision-nocturne"
       }
     ],
-    "optionals": [],
+    "optionals": [
+      {
+        "note": "swap",
+        "label": "Taille (Grande) ; remplacer Bestial, Dressé et Territorial par un bonus de +15 en Soc",
+        "remove": [
+          "bestial",
+          "territorial"
+        ],
+        "grant": {
+          "char": "Soc",
+          "value": 15
+        },
+        "size": "grande"
+      }
+    ],
     "skills": [],
     "talents": [],
     "trappings": [],
@@ -54465,6 +54484,17 @@
       },
       {
         "id": "immunite-psychologique"
+      },
+      {
+        "note": "swap",
+        "label": "Remplacer Bestial par un bonus de +20 en Soc",
+        "remove": [
+          "bestial"
+        ],
+        "grant": {
+          "char": "Soc",
+          "value": 20
+        }
       },
       {
         "id": "territorial"

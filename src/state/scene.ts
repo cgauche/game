@@ -158,8 +158,9 @@ export interface SceneEntity {
    *  enrôlé dans une rencontre (cf. EncounterMember). Porte les choix d'auteur qui DÉCRIVENT la
    *  personne au combat — son profil (ref/statblock) et son apparence vivent déjà sur l'entité. */
   combat?: {
-    /** Traits FACULTATIFS choisis (LDB 76 l.49), STRUCTURÉS (`TraitInstance`), fusionnés au spawn. */
-    optionals?: import('../engine/statEntry').TraitInstance[];
+    /** OPTIONNELS choisis (LDB 76 l.49) : `TraitInstance` fusionnés au spawn OU notes composées
+     *  (joker « tous les traits », variante « swap » retirant des Traits + octroyant un bonus, ZI). */
+    optionals?: import('../engine/statEntry').OptionalEntry[];
     /** Sorts connus (ids de spells.json, créature `ref`) — choix d'auteur (la donnée bestiaire n'en liste pas). */
     spells?: string[];
     /** Caractéristiques aléatoires au spawn (LDB 78 : −10 + 2d10, graine stable par id). */

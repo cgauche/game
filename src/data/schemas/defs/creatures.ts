@@ -9,14 +9,7 @@
  *     migration (clé JS `undefined` stringifiée). `char` reste un `Record<string, number|null>` (le
  *     schéma ACCEPTE donc cette clé structurellement), mais la donnée est fausse : à corriger à la
  *     main (retrouver la bonne abréviation, probablement B/Soc/Dex manquante pour cette entrée).
- *  2. 3 entrées portent un `optionals[]` SANS `id` (requis par `TraitInstance`,
- *     `src/engine/statEntry.ts:73-83`) mais avec un champ `key` (libellé descriptif, reliquat de
- *     pré-migration id-pure) : `mutant` (`{key:"Tous les traits"}`), `grand-loup`
- *     (`{key:"Taille ; remplacer Bestial, Dressé et Territorial par un bonus de en Soc", value:15,
- *     arg:"Grande"}`), `griffon-zoo-imperial` (`{key:"Remplacer Bestial par un bonus de en Soc",
- *     value:20}`). Le schéma reflète FIDÈLEMENT `TraitInstance` (id requis) → ces 3 entrées FONT
- *     ÉCHOUER le parse (attendu : ce sont de vraies dettes de migration, pas une variante légitime).
- *  3. `jaego-roth.trappings` porte `{ id:'crochet', text:'crochet de main' }` — `id` ET `text`
+ *  2. `jaego-roth.trappings` porte `{ id:'crochet', text:'crochet de main' }` — `id` ET `text`
  *     ensemble, alors que `TrappingRef` (`src/data/index.ts:1753`) est une UNION exclusive
  *     (`Ref & {count?}` OU `{text, count?}`). Le schéma reflète l'union stricte → cette entrée fait
  *     ÉCHOUER le parse (vraie incohérence : soit c'est un objet catalogue `crochet` avec juste un
@@ -27,8 +20,7 @@ import { sourceRefSchema, refSchema, countSpecSchema, trappingRefSchema, entityA
 
 export const file = 'creatures.json';
 
-/** `TraitInstance` (`src/engine/statEntry.ts:73-83`) — utilisé pour `traits`/`optionals`. Cf. anomalie
- *  #2 de tête : 3 entrées d'`optionals` n'ont PAS `id` (échec de parse attendu, dette réelle). */
+/** `TraitInstance` (`src/engine/statEntry.ts`) — utilisé pour `traits` et les optionnels ORDINAIRES. */
 const traitInstanceSchema = z.strictObject({
   id: z.string(),
   value: z.number().optional(),
@@ -37,6 +29,26 @@ const traitInstanceSchema = z.strictObject({
   range: z.number().optional(),
   natural: z.boolean().optional(),
 });
+
+/** `OptionalEntry` (`src/engine/statEntry.ts`) — un élément d'`optionals` (LDB 76) : soit un
+ *  `TraitInstance` ordinaire, soit une NOTE composée irréductible à un trait (discriminée par `note`) :
+ *  joker « tous les traits » (Mutant, LDB p.333) ou variante « remplacer des Traits par un bonus »
+ *  (Grand Loup ZI p.16, Griffon ZI). La note porte son `label` source VERBATIM + les champs d'application. */
+const optionalWildcardSchema = z.strictObject({
+  note: z.literal('all-traits'),
+  label: z.string(),
+});
+const optionalSwapSchema = z.strictObject({
+  note: z.literal('swap'),
+  label: z.string(),
+  remove: z.array(z.string()),
+  grant: z.union([
+    z.strictObject({ char: z.string(), value: z.number() }),
+    z.strictObject({ skillId: z.string(), spec: z.string().optional(), value: z.number() }),
+  ]),
+  size: z.string().optional(),
+});
+const optionalEntrySchema = z.union([traitInstanceSchema, optionalWildcardSchema, optionalSwapSchema]);
 
 /** `SkillRef` (`src/data/index.ts:1560-1562`) — `Ref` + valeur de Test imprimée. */
 const skillRefSchema = z.strictObject({ id: z.string(), spec: z.string().optional(), value: z.number() });
@@ -62,7 +74,7 @@ export const schema = z.array(
      *  acceptée, mais fausse — à corriger à la main, pas un défaut de CE schéma). */
     char: z.record(z.string(), z.union([z.number(), z.null()])),
     traits: z.array(traitInstanceSchema),
-    optionals: z.array(traitInstanceSchema),
+    optionals: z.array(optionalEntrySchema),
     skills: z.array(skillRefSchema),
     talents: z.array(talentRefSchema),
     trappings: z.array(trappingRefSchema),

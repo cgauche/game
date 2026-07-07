@@ -6,7 +6,7 @@
  */
 import type { CharKey, Combatant } from '../types';
 import { TRAITS, TraitDef } from './registry';
-import { parseStatEntry, type TraitInstance, type TraitList } from '../statEntry';
+import { parseStatEntry, isOptionalNote, type TraitInstance, type TraitList, type OptionalEntry } from '../statEntry';
 import { traitByLabel, traitById, SPEC_SOURCES, type SpecsSource, type TraitCapabilities, type TraitData } from '../../data';
 import { slugId } from '../../data/slug';
 import type { PassiveMod } from '../ops';
@@ -83,6 +83,16 @@ export function formatTrait(t: TraitInstance): string {
  *  `formatTrait` (inverse fidèle de `parseTraitInstance`). */
 export const traitLabels = (traits: TraitList | undefined): string[] =>
   (traits ?? []).map(formatTrait);
+
+/** Libellé d'un OPTIONNEL (LDB 76) : un `TraitInstance` ordinaire est formaté par `formatTrait` ; une
+ *  NOTE composée (joker « Tous les traits », variante « swap ») affiche son `label` source VERBATIM.
+ *  SOURCE UNIQUE d'affichage des `optionals` — jamais `formatTrait` sur une note (sinon libellé `undefined`). */
+export const optionalLabel = (e: OptionalEntry): string =>
+  isOptionalNote(e) ? e.label : formatTrait(e);
+
+/** Liste d'optionnels → libellés affichables (Codex/picker), notes composées incluses. */
+export const optionalLabels = (list: OptionalEntry[] | undefined): string[] =>
+  (list ?? []).map(optionalLabel);
 
 /** Nom d'affichage FR du POOL d'une `specsSource` (le TYPE d'argument attendu, pas une valeur) — pour
  *  le squelette d'argument d'un trait (sous-titre du Codex). Une source par ligne : ajouter une

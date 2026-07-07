@@ -4,7 +4,7 @@
  */
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance, type ShipPoste, type NavalTraitRef } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
-import { type TraitInstance, type TraitList } from '../engine/statEntry';
+import { isOptionalNote, type TraitInstance, type TraitList, type OptionalEntry, type OptionalSwap } from '../engine/statEntry';
 import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, findTrappingById, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { vehicleCombatant } from '../engine/vehicle';
 import { inanimateCombatant } from '../engine/inanimate';
@@ -166,8 +166,9 @@ export function talentsFromBook(list: TalentRef[] | undefined): TalentInstance[]
 
 /** Personnalisations d'AUTEUR au spawn d'une créature (portées par SceneEntity.combat). */
 export interface SpawnExtras {
-  /** Traits FACULTATIFS choisis (LDB 76 l.49), STRUCTURÉS (`TraitInstance`) — fusionnés avant dérivation. */
-  optionals?: TraitInstance[];
+  /** OPTIONNELS choisis (LDB 76 l.49) : `TraitInstance` ordinaires (fusionnés avant dérivation) OU
+   *  NOTES composées (joker « tous les traits », variante « swap » qui RETIRE des Traits + octroie un bonus). */
+  optionals?: OptionalEntry[];
   /** Sorts connus (la donnée bestiaire n'en liste pas — choix d'auteur). */
   spells?: string[];
   /** Caractéristiques aléatoires (LDB 78). */
@@ -194,27 +195,40 @@ function withTraitChars(chars: Characteristics, live: TraitList | undefined): Ch
 }
 
 export function creatureToCombatant(creature: CreatureData, id: string, pos: { x: number; y: number; z?: number }, extras?: SpawnExtras): Combatant {
-  const optTraits = extras?.optionals ?? [];
-  // Traits FACULTATIFS (LDB 76 l.49 : « Traits de créature courants que vous pouvez ajouter si vous
-  // créez votre propre version ») : fusionnés AVANT toutes les dérivations (armes, armure, psy, nuée…).
-  // `creature.traits` (donnée) ET `optTraits` (choix d'auteur) sont déjà des `TraitInstance` structurés.
-  const traits = [...creature.traits, ...optTraits];
+  const optEntries = extras?.optionals ?? [];
+  // Les optionnels choisis (LDB 76 l.49) se répartissent : Traits FACULTATIFS ordinaires (fusionnés)
+  // vs NOTES composées « swap » (Grand Loup/Griffon ZI). Le joker « all-traits » (Mutant) est une
+  // indication au picker (« n'importe quel Trait peut être ajouté ») → aucun effet mécanique au spawn.
+  const optTraits = optEntries.filter((e): e is TraitInstance => !isOptionalNote(e));
+  const swaps = optEntries.filter((e): e is OptionalSwap => isOptionalNote(e) && e.note === 'swap');
+  // Variante « swap » (ZI) : RETIRE les Traits qu'elle nomme (Bestial/Dressé/Territorial) — en échange
+  // d'un bonus (appliqué plus bas). Traits FACULTATIFS (LDB 76 l.49) fusionnés AVANT toutes les
+  // dérivations (armes, armure, psy, nuée…), puis les Traits retirés par les variantes sont ôtés.
+  const removedBySwap = new Set(swaps.flatMap((s) => s.remove));
+  const traits = [...creature.traits, ...optTraits].filter((t) => !removedBySwap.has(t.id));
   // « – » du Schéma des Profils (LDB 76) = caractéristique INEXISTANTE → 0 (Int/FM nulles = Fabriqué,
   // auto-réussite via isMindless ; CT nulle = pas d'arme à distance dans la donnée). Pas de 30 inventé.
   let chars = charsFrom(creature.char, 0);
+  // Bonus de caractéristique octroyé par une variante « swap » (Grand Loup +15 Soc, Griffon +20 Soc,
+  // ZI) — appliqué sur la base (une carac. « – » = 0 devient la valeur du bonus).
+  for (const s of swaps) if ('char' in s.grant) chars[s.grant.char] += s.grant.value;
   // Compétences/talents de la donnée (PNJ nommés : Eusapia, Horreurs…) — avances dérivées du profil IMPRIMÉ.
   // + compétences d'AUTEUR ajoutées (extras.skills : qualifier un servant de pièce pour le Groupe de
-  // Projectiles de son engin, AA p.122-124) — dérivées sur les MÊMES caractéristiques imprimées.
-  const skills = [...skillsFromBook(creature.skills, chars), ...skillsFromBook(extras?.skills, chars)];
+  // Projectiles de son engin, AA p.122-124) + compétences octroyées par une variante « swap » (ZI) —
+  // dérivées sur les MÊMES caractéristiques imprimées.
+  const swapSkills = swaps.flatMap((s) => ('skillId' in s.grant ? [{ id: s.grant.skillId, spec: s.grant.spec, value: s.grant.value }] : []));
+  const skills = [...skillsFromBook(creature.skills, chars), ...skillsFromBook(extras?.skills, chars), ...skillsFromBook(swapSkills, chars)];
   const talents = talentsFromBook(creature.talents);
   if (extras?.randomChars) chars = randomizeChars(chars, id); // LDB 78 : −10 + 2d10 sur le profil rond
   // Traits facultatifs à modificateurs de PROFIL (Élite, Coriace, Brutal, Rapide… — LDB 85) : le profil
   // imprimé est FINAL pour ses traits fixes (déjà cuits) ; un facultatif AJOUTÉ s'applique en DIRECT via
   // `liveTraits` (collecteur passif) → `characteristics` reste la base bestiaire, sans double-compte.
   const baseSize = sizeFromTraits(creature.traits) ?? 'moyenne';
-  // Taille FACULTATIVE : PRIME sur celle du bestiaire et applique « Utiliser les Tailles »
+  // Taille FACULTATIVE : trait « Taille (X) » choisi, OU catégorie portée par une variante « swap »
+  // (Grand Loup : Grande). PRIME sur celle du bestiaire et applique « Utiliser les Tailles »
   // (LDB 85 l.276-277 : ±10 F/E, ∓5 Ag par catégorie d'écart).
-  const optSize = sizeFromTraits(optTraits);
+  const swapSize = swaps.map((s) => s.size).find((x): x is string => !!x);
+  const optSize = sizeFromTraits(optTraits) ?? (swapSize ? parseSizeLabel(swapSize) : null);
   const size = optSize ?? baseSize;
   if (optSize && optSize !== baseSize) chars = resizeBySteps(chars, SIZE_ORDER[optSize] - SIZE_ORDER[baseSize]);
   // char.B (bestiaire) = la valeur livre d'UNE créature (≈ formule × Taille) → base/surcharge ; la

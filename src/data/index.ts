@@ -517,8 +517,9 @@ export interface CreatureData {
   /** Traits STRUCTURÉS (`TraitInstance[]`) — source app-owned migrée du parsing de chaînes (de-POC).
    *  Lus sans aucun parsing (`resolveTraits`/`hasTraitKey`) ; plus de chaîne legacy. */
   traits: import('../engine/statEntry').TraitList;
-  /** Traits FACULTATIFS (`TraitInstance` structurés) — affichés au Codex, choisissables au spawn. */
-  optionals: import('../engine/statEntry').TraitInstance[];
+  /** OPTIONNELS (LDB 76) — affichés au Codex, choisissables au spawn : `TraitInstance` ordinaires OU
+   *  NOTES composées (joker « tous les traits », variante « remplacer des Traits par un bonus », ZI). */
+  optionals: import('../engine/statEntry').OptionalEntry[];
   /** Compétences STRUCTURÉES (`SkillRef` par id stable + valeur de Test imprimée) — fin du parsing
    *  de chaînes « Calme 58 ». Le bestiaire stocke des refs ; `skillRefLabel` reformate à l'affichage. */
   skills: SkillRef[];

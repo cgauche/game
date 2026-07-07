@@ -21,12 +21,10 @@
  * (`src/scenes/arene/arene-projet.json`, compilé via `parseProject`, #146) — un statbloc/projet de scène
  * est une SOURCE de données comme le bestiaire, la même dérive (libellé tapé à la main au lieu de l'id)
  * s'y produit (#145, #146). TOUTES sont id-based `{ id, value?, arg?, range?, count? }` — la liste
- * `optionals[]` du bestiaire a été migrée du format legacy label-`key` vers les id. Restent 3 entrées
- * `optionals` en `key` (libellé) : des NOTES de profil GENUINEMENT PROSE, irréductibles à un id de
- * trait — « Tous les traits » (Mutant), et deux
- * transformations « remplacer Bestial/Dressé/Territorial par un bonus de Soc » (Grand Loup, Griffon ZI).
- * Laissées telles quelles (non forcées), donc naturellement hors des invariants #2/#3 (pas d'`id`) ;
- * l'invariant #1 les couvre si leur `key` résout à un trait.
+ * `optionals[]` du bestiaire peut AUSSI porter des OPTIONNELS COMPOSÉS (`OptionalEntry`, #174) : une
+ * NOTE discriminée par `note` (« all-traits » = joker Mutant LDB p.333 ; « swap » = variante « remplacer
+ * des Traits par un bonus », Grand Loup/Griffon ZI). Ces notes n'ont ni `id` ni `value` de premier niveau
+ * (le bonus vit sous `grant`) → naturellement hors des invariants #1/#2/#3, sans exclusion ad hoc.
  *
  * Les instances CONSTRUITES par op (`grantTrait { traitId, arg? }`, dans mutations/sorts/traits/États/
  * maladies) sont balayées par l'invariant #4 (même résolution, fermée ET ouverte, que #2). Toute dérive
@@ -42,12 +40,11 @@ import { parseProject } from '../state/worldMap';
 import areneProjetJson from '../scenes/arene/arene-projet.json';
 import type { Scene } from '../state/scene';
 
-/** Forme BRUTE d'une instance. Typage local : le type `TraitInstance` public n'a que `id` ; les 33
- *  entrées `optionals` non migrées portent encore `key` (libellé) → accès via ce shape. */
-type RawTraitInstance = { id?: string; key?: string; value?: unknown; arg?: unknown; range?: unknown; count?: unknown };
+/** Forme BRUTE d'une instance. Typage local : un `TraitInstance` porte `id` ; un OPTIONNEL COMPOSÉ
+ *  (`OptionalEntry`, #174) porte `note` (et jamais `id`/`value` de premier niveau) → accès via ce shape. */
+type RawTraitInstance = { id?: string; note?: string; value?: unknown; arg?: unknown; range?: unknown; count?: unknown };
 
 const byId = new Map(traits.map((t) => [t.id, t] as const));
-const byLabel = new Map(traits.map((t) => [t.label, t] as const));
 
 /** Sentinelle joker d'un statbloc RAW (« Animosité (un au choix) », « Peur (Au choix) ») — tolérée. */
 const WILDCARD = /^(un |une |deux )?au choix$/i;
@@ -93,14 +90,14 @@ function* eachSceneInstance(): Generator<Row> {
 }
 
 /** Toutes les instances de trait (`creatures.json` `traits[]`/`optionals[]` + statblocs de scène), def
- *  résolue par `id` (byId) puis, à défaut, par libellé `key` (byLabel — les 33 entrées prose non migrées
- *  du bestiaire). `hasId` = l'instance porte un vrai `id` (⇒ soumise à la résolution #2 et à #3). */
+ *  résolue par `id` (byId). Les OPTIONNELS COMPOSÉS (`note`, #174) n'ont pas d'`id` → def undefined,
+ *  `hasId` faux : hors des invariants #1/#2/#3. `hasId` = l'instance porte un vrai `id` (⇒ soumise à #2/#3). */
 function* eachInstance(): Generator<Row> {
   for (const c of creatures) {
     for (const list of ['traits', 'optionals'] as const) {
       for (const inst of (c[list] ?? []) as unknown as RawTraitInstance[]) {
-        const def = typeof inst.id === 'string' ? byId.get(inst.id) : typeof inst.key === 'string' ? byLabel.get(inst.key) : undefined;
-        yield { inst, def, where: `${c.label}.${list}[${String(inst.id ?? inst.key)}]`, hasId: typeof inst.id === 'string' };
+        const def = typeof inst.id === 'string' ? byId.get(inst.id) : undefined;
+        yield { inst, def, where: `${c.label}.${list}[${String(inst.id ?? inst.note)}]`, hasId: typeof inst.id === 'string' };
       }
     }
   }

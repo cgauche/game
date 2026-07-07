@@ -25,6 +25,7 @@ import {
   locations, stars, mutationTables, advancementBaseId, careersForSpecies, findCareerById,
 } from '../../data';
 import type { AdvancementRef } from '../../data';
+import { isOptionalNote } from '../../engine/statEntry';
 import { spellEffectOps } from '../../state/flow';
 import type { Flow, TriggeredEffect } from '../../state/flow';
 import { codexLookupVersion } from './registry';
@@ -149,7 +150,9 @@ const graph = versionCached<ReverseGraph>(() => {
   for (const c of creatures) {
     const by: Referrer = { category: 'creatures', label: c.label };
     for (const tr of c.traits) addReverse('traits', tr.id, by, 'Créatures ayant ce trait');
-    for (const tr of c.optionals) addReverse('traits', tr.id, { ...by, detail: 'facultatif' }, 'Créatures ayant ce trait');
+    // Les optionnels COMPOSÉS (notes « tous les traits »/« swap ») n'ont pas d'`id` de trait → seuls
+    // les optionnels ORDINAIRES (`TraitInstance`) alimentent le rétro-liage « facultatif de X ».
+    for (const tr of c.optionals) if (!isOptionalNote(tr)) addReverse('traits', tr.id, { ...by, detail: 'facultatif' }, 'Créatures ayant ce trait');
     for (const sk of c.skills) addReverse('skills', sk.id, by);
     for (const ta of c.talents) addReverse('talents', ta.id, by);
     for (const sp of c.spells) addReverse('spells', sp.id, by, 'Créatures la lançant');

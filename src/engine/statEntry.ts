@@ -7,6 +7,8 @@
  * cible (« (Cheval) », « (Feu) », « (Tiléens) ») ou de portée (« (50) »). Cette fonction les
  * démêle UNE fois pour TOUT le code (combat ET Codex) — fini les regex recopiées par consommateur.
  */
+import type { CharKey } from './types';
+
 export interface StatEntry {
   /** Nom canonique (base), sans compte/bonus/indice/parenthèse : « Tentacules », « Arme »,
    *  « À distance », « Chevaucher », « Magie des Arcanes ». Clé de lookup registre/données. */
@@ -88,6 +90,38 @@ export interface TraitInstance {
  * `SceneEntity.traits`, résolue au spawn) et à la migration de données — plus jamais au runtime.
  */
 export type TraitList = TraitInstance[];
+
+/**
+ * OPTIONNEL COMPOSÉ (LDB 76) — élément de la liste `optionals` d'une créature IRRÉDUCTIBLE à un
+ * `TraitInstance` : une NOTE de variante d'auteur. Deux formes (discriminées par `note`) :
+ *  - `all-traits` : joker « n'importe quel Trait peut être ajouté » (Mutant, LDB p.333) ;
+ *  - `swap` : variante « remplacer des Traits par un bonus » (Grand Loup ZI p.16, Griffon ZI).
+ * `label` = texte source VERBATIM (Markdown), affiché tel quel (JAMAIS reformulé) ; les autres champs
+ * pilotent l'APPLICATION au spawn. Distinguée d'un `TraitInstance` par la présence de `note` (jamais d'`id`).
+ */
+export interface OptionalWildcard {
+  note: 'all-traits';
+  /** Texte source VERBATIM (« Tous les traits »). */
+  label: string;
+}
+export interface OptionalSwap {
+  note: 'swap';
+  /** Texte source VERBATIM (« Remplacer Bestial par un bonus de +20 en Soc »). */
+  label: string;
+  /** `id`s STABLES des Traits RETIRÉS du profil quand la variante est choisie. */
+  remove: string[];
+  /** Bonus octroyé en échange : une caractéristique (Soc…) OU une compétence, + sa valeur. */
+  grant: { char: CharKey; value: number } | { skillId: string; spec?: string; value: number };
+  /** Catégorie de Taille appliquée par la même variante (Grand Loup : `grande`), le cas échéant. */
+  size?: string;
+}
+export type OptionalNote = OptionalWildcard | OptionalSwap;
+/** Élément de la liste `optionals` (LDB 76) : Trait facultatif ordinaire OU note composée. */
+export type OptionalEntry = TraitInstance | OptionalNote;
+
+/** Une entrée d'`optionals` est-elle une NOTE composée (vs un `TraitInstance` ordinaire) ? */
+export const isOptionalNote = (e: OptionalEntry): e is OptionalNote =>
+  typeof (e as OptionalNote).note === 'string';
 
 /** Nom canonique seul (raccourci pour les lookups Codex/registre). */
 export const statName = (raw: string): string => parseStatEntry(raw).name;
