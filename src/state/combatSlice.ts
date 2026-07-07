@@ -30,7 +30,7 @@ import { pickActiveModalKey } from './modalArbiter';
 import { mountMovement, canMove, mountUp, dismount, mountOf, mountableNear, isControlledMount, insertByInitiative } from './mount';
 import { ev, evLines } from './combatLog';
 import { t } from '../i18n';
-import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, type DefenseMode } from '../engine/combat';
+import { initiativeOrder, combatValue, rollMeleeDefender, rollDisengageAttack, rollGrappleForce, resolveBackstabAttack, attackHandGate, type DefenseMode } from '../engine/combat';
 import { disengageFrom, isEngaged, setContact, clearContact, reachRank } from '../engine/engagement';
 import { areGrappling, clearGrapple } from '../engine/grapple';
 import { applyOps } from '../engine/ops';
@@ -1685,8 +1685,10 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingHandGate: null });
       if (!attacker) return;
       if (pg.success) {
-        // Réussite : l'Action déclarée s'ouvre TELLE QUELLE (pa/title/icon figés) — `skipGate` pour ne pas re-tester.
-        openAttackCascade(get, set, pg.pa, pg.title, pg.icon, true);
+        // Réussite : l'Action déclarée s'ouvre TELLE QUELLE (`skipGate` pour ne pas re-tester). Une 2ᵉ frappe
+        // « des deux armes » reprend sa résolution pré-figée (`dualStrikeAttack`) ; sinon la cascade d'attaque.
+        if (pg.pa.dualSecond) get().dualStrikeAttack(pg.pa.targetId, true);
+        else openAttackCascade(get, set, pg.pa, pg.title, pg.icon, true);
         return;
       }
       // Échec : l'objet glisse (op `disarm`, main gatée). Comme le gate de Bénédiction (`attackWardGate`),
@@ -1695,6 +1697,9 @@ export function createCombatSlice(get: Get, set: Set) {
       const b1 = get().battle!;
       set({ battle: { ...b1, combatants: [...b1.combatants], log: [...b1.log, ...evLines(lines, 'attack', attacker.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
+      // 2ᵉ frappe « des deux armes » ratée : la 2ᵉ est renoncée (l'Action reste dépensée par la 1ʳᵉ frappe) →
+      // on clôt le sous-flux dual et on reprend la cascade (calque `dualStrikeSkip`).
+      if (pg.pa.dualSecond) { set({ pendingDualStrike: null }); advanceCombatJet(get); return; }
       // Héros PILOTÉ par l'IA (Auto-combat) : son tour était suspendu par la modale → reprise (calque reloadConfirm).
       if (aiDriven(get(), attacker) && get().battle) resumeEnemyTurn(get, set);
     },
@@ -2084,7 +2089,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingAttack: { attackerId: attacker.id, targetId, location: null, result: null, cleave: true } });
     },
     cleaveEnd: () => { set({ pendingCleave: null }); advanceCombatJet(get); }, // fin du balayage → clore l'étape-jet de la cascade (reprise)
-    dualStrikeAttack: (targetId: string) => {
+    dualStrikeAttack: (targetId: string, skipGate = false) => {
       const { battle, pendingDualStrike: ds } = get();
       if (!battle || !ds) return;
       const attacker = battle.combatants.find((c) => c.id === ds.attackerId);
@@ -2093,6 +2098,21 @@ export function createCombatSlice(get: Get, set: Set) {
       const off = attacker.weapons.find((w) => w.uid === ds.offWeaponUid);
       if (!off) { set({ pendingDualStrike: null }); return; }
       if (!dualStrikeTargets(battle, attacker, off).some((t) => t.id === targetId)) return; // cible invalide (hors d'Allonge)
+      // Main ensanglantée (AA l.2569) : « des deux armes » est UNE Action impliquant les DEUX mains → UN SEUL Test
+      // avant l'Action. La main directrice est testée à la déclaration (`openAttackCascade`) ; si SEULE la 2nde est
+      // gatée (la main directrice a déjà consommé le Test le cas échéant), la 2ᵉ frappe joue le Test ICI. Échec →
+      // l'objet de la 2nde main glisse (`disarm`), la 2ᵉ frappe est renoncée. `skipGate` : Test déjà PASSÉ (reprise).
+      if (!skipGate && attackHandGate(attacker, off.uid) && !attackHandGate(attacker)) {
+        const base = effectiveChar(attacker, 'Dex'); // Dextérité effective — +20 « Accessible » via la Difficulté
+        set({ pendingHandGate: {
+          attackerId: attacker.id, actorName: attacker.name, hand: 'off',
+          skillValue: base, difficulty: 'accessible', target: base + DIFFICULTY_MODIFIERS['accessible'],
+          roll: null, sl: 0, success: false,
+          pa: { attackerId: attacker.id, targetId, location: null, result: null, weaponUid: off.uid, dualSecond: true },
+          title: 'Des deux armes', icon: 'action/attack',
+        } });
+        return;
+      }
       // 2ᵉ frappe : jet IMPOSÉ (inversé / valeur du Critique) + pénalité main 2nde + nouveau jet de défense (LDB 10 l.638).
       const res = resolveDualSecond(get, attacker, target, off, ds.mainRoll, { critValue: ds.critValue });
       set({ pendingAttack: { attackerId: attacker.id, targetId, location: res.location ?? null, result: res, dualSecond: true, weaponUid: off.uid } });

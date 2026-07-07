@@ -7,7 +7,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { initialFields } from './stateFields';
-import { openAttackCascade, doAttack } from './combatFlow';
+import { openAttackCascade, doAttack, runPreemptShots } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 
@@ -36,7 +36,7 @@ const mkFoe = (id: string, over: Partial<Combatant> = {}): Combatant => ({
 
 function setup(h: Combatant, f: Combatant) {
   useGame.setState({
-    scene: { ambiance: 'exterieur', weather: 'clair' } as never,
+    scene: { ambiance: 'exterieur', weather: 'clair', dimensions: { w: 8, h: 4 }, layers: [{ z: 0, tiles: [] }], entities: [] } as never,
     gameTime: 0,
     battle: { combatants: [h, f], order: ['h', f.id], turn: 0, round: 1, log: [],
       acted: false, movementUsed: 0, movedPreAction: false, loadoutSwapped: false, reachable: new Map() } as never,
@@ -133,5 +133,75 @@ describe('doAttack — l\'IA gatée joue le MÊME Test inline (résolution forc�
       if (!proceeded && foe.loadouts![0].main === undefined) disarmed = true;
     }
     expect(disarmed).toBe(true); // il existe des jets ratés → arme lâchée + coup renoncé
+  });
+
+  // Pilonnage IA / pièce servie (AA l.2569 ; parité pilonnage joueur) : le gate suit l'arme RÉELLEMENT employée,
+  // pas la main directrice — une arme hors de la main gatée (2nde main, ou pièce servie hors loadout) ne gate pas.
+  it('l\'arme EMPLOYÉE hors de la main gatée n\'est pas gatée, même la main directrice ensanglantée', () => {
+    // Foe gaté sur la MAIN, mais la seule arme tenue est en OFF (uid 'e', non gaté) → firedWeapon la choisit.
+    const foe = mkFoe('f', { handGates: ['main'], conditions: [{ name: 'hemorragique', value: 2 }],
+      weapons: [SWORD('e')], items: [SWORD_ITEM('e')],
+      loadouts: [{ id: 'loe', off: 'e' }] as never, activeLoadoutId: 'loe' } as never);
+    const { h, f } = setup(mkHero(), foe);
+    doAttack(useGame.getState, useGame.setState, f, h);
+    const s = useGame.getState();
+    expect(s.battle!.log.some((l) => /Main ensanglantée/i.test(l.text))).toBe(false); // arme employée (off) ≠ main gatée → aucun Test
+  });
+});
+
+describe('runPreemptShots — le Tir rapide de l\'IA joue le MÊME Test de Main ensanglantée (AA l.2569)', () => {
+  const BOW = (uid: string): Weapon => ({ uid, name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 8 }, range: 30, qualities: [] } as unknown as Weapon);
+  const BOW_ITEM = (uid: string): ItemInstance => ({ uid, name: 'Arc', kind: 'ranged', qualities: [] } as unknown as ItemInstance);
+  const shooter = (over: Partial<Combatant> = {}): Combatant => mkFoe('f', {
+    pos: { x: 2, y: 0 }, loaded: true, talents: [{ talentId: 'tir-rapide', times: 1 }] as never,
+    weapons: [BOW('bow')], items: [BOW_ITEM('bow')], loadouts: [{ id: 'lob', main: 'bow' }] as never, activeLoadoutId: 'lob',
+    handGates: ['main'], conditions: [{ name: 'hemorragique', value: 2 }], ...over,
+  });
+
+  it('un tireur gaté JOUE le Test avant son tir (jamais de modale IA)', () => {
+    setup(mkHero({ pos: { x: 0, y: 0 } }), shooter());
+    seedBattleRng(1);
+    runPreemptShots(useGame.getState, useGame.setState);
+    const s = useGame.getState();
+    expect(s.pendingHandGate).toBeNull();
+    expect(s.battle!.log.some((l) => /Main ensanglantée/i.test(l.text))).toBe(true);
+  });
+
+  it('sur un ÉCHEC, le tireur lâche son arc (disarm) et RENONCE au Tir rapide (pas de tir)', () => {
+    let renounced = false;
+    for (let seed = 1; seed <= 40 && !renounced; seed++) {
+      useGame.setState({ ...initialFields(), battle: null, scene: null, gameTime: 0, party: [] });
+      seedBattleRng(seed);
+      setup(mkHero({ pos: { x: 0, y: 0 } }), shooter({ characteristics: CHARS(1) as never }));
+      runPreemptShots(useGame.getState, useGame.setState);
+      const f = useGame.getState().battle!.combatants.find((c) => c.id === 'f')!;
+      // Arc lâché + il n'a PAS consommé son tour normal (renoncé, pas tiré).
+      if (f.loadouts![0].main === undefined && !f.loseNextAction) renounced = true;
+    }
+    expect(renounced).toBe(true);
+  });
+
+  // #188 : la cible la plus proche HORS Ligne de Vue ne doit PAS provoquer un 2ᵉ Test de Main ensanglantée.
+  // La LdV se tranche AVANT le gate → le gate ne joue qu'UNE fois, sur la cible réellement tirée (une seule
+  // ligne de journal « Main ensanglantée » pour cette interruption « tire UNE fois »).
+  it('cible la plus proche masquée : le gate ne joue qu\'UNE fois (pas de re-Test par candidat)', () => {
+    // Mur opaque en (2,0) : masque la LdV du tireur (0,0) vers l\'ennemi le PLUS proche en (4,0) ; l\'ennemi
+    // en (0,6) reste dégagé (colonne libre). Tir attendu sur le second, avec un SEUL Test de Dextérité.
+    const tiles = Array(80).fill('sol'); tiles[2] = 'mur'; // index (2,0) = 0*10+2
+    const sh = shooter({ pos: { x: 0, y: 0 } });
+    const near = mkHero({ id: 'near', pos: { x: 4, y: 0 } });
+    const far = mkHero({ id: 'far', pos: { x: 0, y: 6 } });
+    useGame.setState({
+      scene: { ambiance: 'exterieur', weather: 'clair', dimensions: { w: 10, h: 8 }, layers: [{ z: 0, tiles }], entities: [] } as never,
+      gameTime: 0,
+      battle: { combatants: [sh, near, far], order: ['f', 'near', 'far'], turn: 0, round: 1, log: [],
+        acted: false, movementUsed: 0, movedPreAction: false, loadoutSwapped: false, reachable: new Map() } as never,
+      pendingReveals: [],
+    });
+    seedBattleRng(6); // seed où le Test PASSE : l'ancien code re-gaterait le 2ᵉ candidat (2 lignes)
+    runPreemptShots(useGame.getState, useGame.setState);
+    const s = useGame.getState();
+    expect(s.battle!.log.filter((l) => /Main ensanglantée/i.test(l.text)).length).toBe(1);
+    expect(s.battle!.combatants.find((c) => c.id === 'f')!.loseNextAction).toBe(true); // il a bien tiré (sur la cible dégagée)
   });
 });

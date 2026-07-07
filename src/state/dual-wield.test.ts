@@ -198,6 +198,65 @@ describe('bornage : jamais sur une attaque gratuite / enchaînée (LDB 10 l.638 
   });
 });
 
+describe('Main ensanglantée (AA l.2569) — 2ᵉ frappe « des deux armes » : un SEUL Test avant l\'Action', () => {
+  // « Des deux armes » = UNE Action impliquant les DEUX mains (main directrice + 2nde). La directrice est testée
+  // à la déclaration (`openAttackCascade`) ; si SEULE la 2nde est gatée, la 2ᵉ frappe joue le Test avant de se
+  // résoudre. Sur Échec, l'objet de la 2nde main glisse (`disarm`) ; la 2ᵉ frappe est renoncée.
+  const gatedHero = (hands: ('main' | 'off')[]): Partial<Combatant> => ({
+    handGates: hands, activeLoadoutId: 'lo',
+    loadouts: [{ id: 'lo', main: 'm', off: 'o' }] as never,
+    items: [{ uid: 'm', name: 'Épée', kind: 'melee', qualities: [] }, { uid: 'o', name: 'Dague', kind: 'melee', qualities: [] }] as never,
+  });
+
+  it('SEULE la 2nde main gatée → la 2ᵉ frappe interpose le Test (pas encore résolue)', () => {
+    setupBattle(gatedHero(['off']));
+    useGame.setState({ pendingDualStrike: { attackerId: 'h', offWeaponUid: 'o', mainRoll: 30 } as any });
+    useGame.getState().dualStrikeAttack('f2');
+    const s = useGame.getState();
+    expect(s.pendingHandGate?.hand).toBe('off');
+    expect(s.pendingAttack).toBeNull();
+    expect(s.pendingDualStrike).not.toBeNull(); // le sous-flux dual reste ouvert pour la reprise
+  });
+
+  it('RÉUSSITE → la 2ᵉ frappe se résout (dualSecond pré-résolu)', () => {
+    setupBattle(gatedHero(['off']));
+    useGame.setState({ pendingDualStrike: { attackerId: 'h', offWeaponUid: 'o', mainRoll: 30 } as any });
+    useGame.getState().dualStrikeAttack('f2');
+    const pg = useGame.getState().pendingHandGate!;
+    useGame.setState({ pendingHandGate: { ...pg, roll: pg.target, success: true, sl: 0 } });
+    useGame.getState().handGateConfirm();
+    const s = useGame.getState();
+    expect(s.pendingHandGate).toBeNull();
+    expect(s.pendingAttack?.dualSecond).toBe(true);
+    expect(s.pendingAttack?.result).not.toBeNull();
+  });
+
+  it('ÉCHEC → l\'objet de la 2nde main glisse (pas la directrice) ; 2ᵉ frappe renoncée, sous-flux clos', () => {
+    setupBattle(gatedHero(['off']));
+    useGame.setState({ pendingDualStrike: { attackerId: 'h', offWeaponUid: 'o', mainRoll: 30 } as any });
+    useGame.getState().dualStrikeAttack('f2');
+    const pg = useGame.getState().pendingHandGate!;
+    useGame.setState({ pendingHandGate: { ...pg, roll: 99, success: false, sl: -3 } });
+    useGame.getState().handGateConfirm();
+    const s = useGame.getState();
+    expect(s.pendingHandGate).toBeNull();
+    expect(s.pendingAttack).toBeNull();
+    expect(s.pendingDualStrike).toBeNull();
+    const hero = s.battle!.combatants.find((c) => c.id === 'h')!;
+    expect(hero.loadouts![0].off).toBeUndefined(); // 2nde arme lâchée
+    expect(hero.loadouts![0].main).toBe('m');       // main directrice CONSERVÉE
+  });
+
+  it('un SEUL Test par Action : main directrice AUSSI gatée → la 2nde n\'est PAS re-testée', () => {
+    setupBattle(gatedHero(['main', 'off']));
+    useGame.setState({ pendingDualStrike: { attackerId: 'h', offWeaponUid: 'o', mainRoll: 30 } as any });
+    useGame.getState().dualStrikeAttack('f2');
+    const s = useGame.getState();
+    expect(s.pendingHandGate).toBeNull();           // le Test de la directrice a déjà couvert l'Action
+    expect(s.pendingAttack?.dualSecond).toBe(true); // la 2ᵉ frappe se résout directement
+  });
+});
+
 describe('purge du −10 au début du prochain Tour du porteur', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });

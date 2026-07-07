@@ -1985,23 +1985,30 @@ export function runPreemptShots(get: Get, set: SetFn): void {
   const shooters = battle.combatants
     .filter((s) => aiDriven(get(), s) && canPreemptRanged(s) && canTakeAction(s) && !s.loseNextAction && !isOutOfAction(s) && !!s.pos)
     .sort((a, b) => tirRapideTimes(b) - tirRapideTimes(a)); // le plus « entraîné » tire d'abord (LDB 10)
+  const scene = get().scene!;
+  const smoke = smokeOf(battle);
   let changed = false;
   for (const shooter of shooters) {
     if (isOutOfAction(shooter) || shooter.loseNextAction) continue; // tué / déjà tiré par un tir précédent de ce Round
-    const target = battle.combatants
+    // Cible = ennemi valide le plus proche AVEC Ligne de Vue (LDB 10). La LdV se tranche ici (`losClear`,
+    // même `losTo` que `resolveAttack` l.470-472) AVANT le gate : un candidat plus proche mais masqué ne
+    // consomme aucun Test — le gate ne joue qu'UNE fois, sur la cible réellement tirée.
+    const t0 = battle.combatants
       .filter((f) => f.kind !== shooter.kind && !isOutOfAction(f) && !!f.pos)
       .map((f) => ({ f, weapon: firedWeapon(shooter, f, undefined, battle.combatants) }))
       .filter((x) => x.weapon.type === 'ranged' && inFiringBand(shooter, x.f, x.weapon))
       .sort((a, b) => combatDistance(shooter, a.f) - combatDistance(shooter, b.f))
-      .map((x) => x.f);
-    for (const t0 of target) {
-      const r = resolveAttack(get, shooter, t0); // null = pas de Ligne de Vue
-      if (!r) continue;
+      .find((x) => losClear(scene, shooter.pos!, isStructure(x.f) ? structureAimCell(shooter.pos!, x.f) : x.f.pos!, smoke))?.f;
+    if (!t0) continue; // aucune cible en Ligne de Vue → pas d'interruption
+    // Main ensanglantée (AA l.2569) : le tireur gaté joue le MÊME Test de Dextérité (+20) AVANT son Tir rapide
+    // (point IA UNIQUE `aiHandGate`) ; Échec → l'arme lui glisse (`disarm`) et il renonce à l'interruption.
+    if (!aiHandGate(get, set, shooter, firedWeapon(shooter, t0, undefined, battle.combatants).uid)) { changed = true; continue; }
+    const r = resolveAttack(get, shooter, t0);
+    if (r) {
       get().battle!.log.push(ev('shoot', tr('cf.tirRapide', { name: shooter.name }), shooter.id)); // marqueur AVANT le résultat (applyAttackResult recopie battle.log)
       applyAttackResult(get, set, shooter, r.victim ?? t0, r.weapon, r.res);
       shooter.loseNextAction = true; shooter.loseNextMovement = true; // tour normal épuisé (LDB 10)
       changed = true;
-      break;
     }
     if (changed && checkBattleOver(get, set)) return;
   }
@@ -2207,6 +2214,26 @@ export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title
   startCascade(get, set, { title, icon, purpose: 'combat', steps: [{ id: 'attack-jet', kind: 'attackJet', jet: 'attack', actorId: pa.attackerId }] });
 }
 
+/** Main ensanglantée (AA l.2569) — Test de Dextérité (+20) JOUÉ INLINE pour un attaquant PILOTÉ PAR L'IA
+ *  (jamais de modale, résolution forcée). SOURCE UNIQUE des chemins IA : attaque normale (`doAttack`), Tir
+ *  rapide (`runPreemptShots`) et pilonnage servi (même point). Renvoie `true` si le coup peut se poursuivre ;
+ *  sur ÉCHEC, l'objet de la main gatée glisse (op `disarm`) et l'on renvoie `false` (l'IA renonce à CE coup).
+ *  `weaponUid` = arme réellement employée : une pièce SERVIE hors loadout main/off → `attackHandGate` = null →
+ *  jamais gatée (parité avec le pilonnage joueur, canon monté). */
+export function aiHandGate(get: Get, set: SetFn, attacker: Combatant, weaponUid?: string): boolean {
+  const gHand = attackHandGate(attacker, weaponUid);
+  if (!gHand) return true;
+  const gt = rollTest(effectiveChar(attacker, 'Dex'), 'accessible', battleRng());
+  const bg = get().battle;
+  if (!gt.success) {
+    applyOps(attacker, [{ op: 'disarm' }], { rng: battleRng(), location: gHand === 'off' ? 'brasG' : 'brasD' });
+    if (bg) set({ battle: { ...bg, combatants: [...bg.combatants], log: [...bg.log, ev('info', tr('cf.handGateFail', { name: attacker.name, roll: gt.roll, target: gt.target }), attacker.id)] } });
+    return false;
+  }
+  if (bg) set({ battle: { ...bg, log: [...bg.log, ev('info', tr('cf.handGatePass', { name: attacker.name, roll: gt.roll, target: gt.target }), attacker.id)] } });
+  return true;
+}
+
 export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Combatant): boolean {
   // Bénédiction de Protection (LDB 41 — L13) : Test de FM Accessible (+20) pour oser attaquer le
   // béni ; échec → l'IA renonce à CE coup (simplification : pas de re-ciblage, documentée).
@@ -2214,20 +2241,9 @@ export function doAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
   const b0 = get().battle;
   if (ward.lines.length && b0) set({ battle: { ...b0, log: [...b0.log, ...evLines(ward.lines, 'info', attacker.id)] } });
   if (!ward.allowed) return false;
-  // Main ensanglantée (AA l.2569) : l'attaquant gaté joue le MÊME Test de Dextérité (+20) — résolution
-  // forcée non-interactive (l'IA n'ouvre pas de modale, comme le gate de Bénédiction ci-dessus) ; sur un
-  // Échec l'arme lui glisse (op `disarm`, main résolue depuis le gate) et il renonce à CE coup.
-  const gHand = attackHandGate(attacker);
-  if (gHand) {
-    const gt = rollTest(effectiveChar(attacker, 'Dex'), 'accessible', battleRng());
-    const bg = get().battle;
-    if (!gt.success) {
-      applyOps(attacker, [{ op: 'disarm' }], { rng: battleRng(), location: gHand === 'off' ? 'brasG' : 'brasD' });
-      if (bg) set({ battle: { ...bg, combatants: [...bg.combatants], log: [...bg.log, ev('info', tr('cf.handGateFail', { name: attacker.name, roll: gt.roll, target: gt.target }), attacker.id)] } });
-      return false;
-    }
-    if (bg) set({ battle: { ...bg, log: [...bg.log, ev('info', tr('cf.handGatePass', { name: attacker.name, roll: gt.roll, target: gt.target }), attacker.id)] } });
-  }
+  // Main ensanglantée (AA l.2569) : l'attaquant gaté joue le Test de Dextérité (+20) sur l'arme EMPLOYÉE contre
+  // cette cible ; Échec → l'arme glisse et il renonce à CE coup (une pièce servie hors loadout n'est jamais gatée).
+  if (!aiHandGate(get, set, attacker, firedWeapon(attacker, target).uid)) return false;
   if (maybeOpenDefense(get, set, attacker, target)) return true; // suspendu : reprise via defenseConfirm/Cancel
   // Tir ennemi : l'annoncer dans le journal de COMBAT (battle.log → fil + tiroir) DÈS la décision — un tir
   // n'ouvre pas de modale de défense, donc « on ne savait jamais sur qui il tirait » (#12d). Avant, l'annonce
