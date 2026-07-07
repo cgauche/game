@@ -710,6 +710,10 @@ export interface Trauma {
    *  absente) impose le Test de sauvegarde `resist` (échec → ses `onFail`). Stampé par `stampCriticalEscalation`,
    *  lu par `fireCritTriggers` au point unique de résolution des critiques. */
   critTrigger?: { location?: HitLocation; whileCondition: string; resist: { difficulty: Difficulty; onFail: import('./ops').GameOp[] } };
+  /** Amputation DIFFÉRÉE à la fin de la rencontre (LDB 18, « Coupure à l'orteil » l.171 : « Une fois la
+   *  rencontre terminée… ») : marqueur posé par `rollCritical` pour un `amputation.timing === 'postEncounter'`,
+   *  résolu par `resolvePostEncounterAmputations` au foyer de fin de combat (jet + séquelle/plaie/États). */
+  pendingAmputation?: import('../data/criticals').Amputation;
 }
 
 export type ItemKind = 'melee' | 'ranged' | 'armor' | 'ammo' | 'misc';

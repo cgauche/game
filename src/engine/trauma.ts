@@ -30,6 +30,11 @@ export type TraumaSeverity = 'mineur' | 'majeur';
 
 const LEG: HitLocation[] = ['jambeG', 'jambeD'];
 
+/** Texte de la plaie chirurgicale d'une amputation (LDB 18 l.239, DISPLAY-ONLY) — SOURCE UNIQUE partagée par
+ *  `resolveAmputation` (critical.ts) et `stampCriticalEscalation` (« Pied écrasé »). */
+export const AMPUTATION_WOUND_DESC =
+  'Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.';
+
 /**
  * Fiche de Traumatisme (registre `traumas.json`, app-owned) : mécanique = `ops` (GameOp[]), `desc` =
  * texte canon LDB 18 VERBATIM (DISPLAY-ONLY, jamais parsé). Couvre déchirures/fractures par localisation
@@ -397,9 +402,15 @@ export function stampCriticalEscalation(
   existing: Trauma[] = [],
 ): void {
   if (!esc) return;
-  const plaie = traumas.find((t) => t.needsSurgery && t.traumaId == null); // « Amputation » = la plaie chirurgicale
+  let plaie = traumas.find((t) => t.needsSurgery && t.traumaId == null); // « Amputation » = la plaie chirurgicale
   if (plaie && esc.fingerLossPerRound) { plaie.fingerLossPerRound = true; plaie.awaitingMedicalAid = true; }
-  if (plaie && esc.amputateAfter1d10Days) { plaie.amputateAfterDays = d10(rng); plaie.amputateSequel = esc.amputateSequel; }
+  if (esc.amputateAfter1d10Days) {
+    // « Pied écrasé » (LDB 18 l.180) : le pied est une plaie chirurgicale À PART ENTIÈRE (« Si vous n'êtes pas
+    // soigné par Chirurgie… vous perdez votre pied »), indépendante de la perte d'orteil (`amputation.loss`
+    // peut n'avoir posé aucune plaie sur un Test réussi) → on en CRÉE une si aucune n'existe.
+    if (!plaie) { plaie = { label: 'Amputation', location, needsSurgery: true, desc: AMPUTATION_WOUND_DESC }; traumas.push(plaie); }
+    plaie.amputateAfterDays = d10(rng); plaie.amputateSequel = esc.amputateSequel;
+  }
   if (esc.medicalAidGate) {
     const g = esc.medicalAidGate;
     traumas.push({

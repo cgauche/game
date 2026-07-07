@@ -1668,6 +1668,18 @@
           "ignoreAP": true
         }
       ],
+      "resist": {
+        "difficulty": "accessible",
+        "onFail": [
+          {
+            "op": "charMod",
+            "char": "Ag",
+            "mod": -10,
+            "durationRounds": 2
+          }
+        ]
+      },
+      "maison": "« jusqu'à la fin du prochain tour » → durationRounds: 2 (le tour de jeu couvrant le Round courant et le suivant ; le mapping tour→Round n'est pas donné par le RAW).",
       "desc": "Dans le feu de la bataille, vous vous cognez l'orteil. Réussissez un Test de Résistance\nAccessible (+20) ou subissez une pénalité de -10 à tous vos Tests d'Agilité jusqu'à la\nfin du prochain tour."
     },
     {
@@ -1837,7 +1849,11 @@
         "difficulty": "accessible",
         "sequels": [
           "orteil-ampute"
-        ]
+        ],
+        "timing": "postEncounter",
+        "loss": {
+          "difficulty": "intermediaire"
+        }
       },
       "desc": "Gagnez 1 État Hémorragique. Une fois la rencontre terminée, effectuez un Test\nde Résistance Intermédiaire (+0). Sur un échec, vous perdez un orteil – Amputation\n(Accessible)"
     },
@@ -1997,7 +2013,8 @@
         ]
       },
       "traumas": [
-        "dechirure-jambe-majeure"
+        "dechirure-jambe-majeure",
+        "membre-inferieur-ampute"
       ],
       "desc": "Gagnez les États À Terre et Sonné au moment où votre tendon cède. Réussissez un\nTest de Résistance Difficile (-20) ou gagnez 1 État Inconscient. Votre jambe devient\ninutilisable (voir Membres Amputés). Subissez un Traumatisme Déchirure musculaire\n(Majeur)"
     },
@@ -2133,21 +2150,14 @@
           "value": 2
         }
       ],
-      "resist": {
-        "difficulty": "accessible",
-        "onFail": [
-          {
-            "op": "condition",
-            "name": "a-terre",
-            "value": 1
-          }
-        ]
-      },
       "amputation": {
         "difficulty": "accessible",
         "sequels": [
           "orteil-ampute"
-        ]
+        ],
+        "loss": {
+          "perDR": true
+        }
       },
       "escalation": {
         "amputateAfter1d10Days": true,

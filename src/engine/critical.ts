@@ -9,11 +9,11 @@ import { rollTest } from './tests';
 import { bonus, effectiveChar } from './characteristics';
 import { hitLocationByShape, locationLabel } from './combat';
 import { BodyShape, Combatant, HitLocation, Trauma } from './types';
-import { CRITICAL_TABLES } from '../data/criticals';
-import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers } from './trauma';
+import { CRITICAL_TABLES, type Amputation } from '../data/criticals';
+import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers, consolidateAmputations, AMPUTATION_WOUND_DESC } from './trauma';
 import { rule } from './policy';
 import { resolveAACritical } from './aaCritical';
-import type { GameOp } from './ops';
+import { applyOps, type GameOp } from './ops';
 
 /**
  * Séquelles PERMANENTES d'une amputation (LDB 18 l.335-370) — distinctes de la plaie chirurgicale : elles
@@ -24,13 +24,19 @@ import type { GameOp } from './ops';
  * (doigts l.341, dents l.338) reçoivent leur effet/comptage variable ICI (cumulé ensuite par
  * `consolidateAmputations`) ; la perte du SECOND œil/oreille est agrégée par `escalateSensoryLoss`.
  */
-export function permanentAmputations(sequels: string[], location: HitLocation, rng: RNG = defaultRNG): Trauma[] {
+export function permanentAmputations(sequels: string[], location: HitLocation, rng: RNG = defaultRNG, toeCount = 1): Trauma[] {
   return sequels.map((id) => {
     const t = traumaById(id, undefined, location);
     if (id === 'doigt-ampute') {
       // 1 doigt par critique ; cumulé par consolidateAmputations. Pénalité −5/doigt = CONTEXTUELLE À L'ARME
       // (`amputationCombatPenalty`, LDB 18 l.251) — plus de charMod CC/CT global ici.
       t.count = 1;
+    } else if (id === 'orteil-ampute') {
+      // « Pour chaque orteil perdu, −1 Ag et −1 CC » (LDB 18 l.281) : les traumas d'orteil s'ADDITIONNENT (pas de
+      // consolidation par paire comme les dents) → `toeCount` orteils = charMods ×`toeCount`. « Pied écrasé »
+      // (l.180) : 1 orteil + 1 par DR en dessous de 0 (`amputation.loss.perDR`).
+      t.count = toeCount;
+      t.ops = (t.ops ?? []).map((o) => (o.op === 'charMod' ? { ...o, mod: -toeCount } : o));
     } else if (id === 'main-bras-ampute') {
       // −20 (LDB 18 l.263) = contextuel à l'arme (`amputationCombatPenalty`) ; ICI seul l'interdit d'arme à 2 mains.
       t.ops = [{ op: 'maxWeaponHands', hands: 1 }];
@@ -42,6 +48,69 @@ export function permanentAmputations(sequels: string[], location: HitLocation, r
     }
     return t;
   });
+}
+
+/** Valeur de Résistance d'un Coup Critique (LDB 18) : Endurance effective + Avances de Résistance. SOURCE UNIQUE. */
+export function critResistValue(c: Combatant): number {
+  return effectiveChar(c, 'E') + (c.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+}
+
+/**
+ * Résout une Amputation (LDB 18 l.328-333) — SOURCE UNIQUE partagée par `rollCritical` (LDB), `resolveAACritical`
+ * (Aux Armes) et la résolution post-rencontre. Renvoie l'effet immédiat (`ops` : États À Terre/Sonné/Inconscient)
+ * et les `traumas` (plaie chirurgicale `needsSurgery` + séquelles permanentes). RNG consommé :
+ *  - `loss.difficulty` présent → 1 Test SÉPARÉ (gate) D'ABORD : sa RÉUSSITE annule TOUT (ni séquelle, ni plaie, ni
+ *    États). Sinon on continue (« Coupure à l'orteil » : gate Intermédiaire).
+ *  - puis le Test de Résistance `difficulty` (États par DR). Sans `loss.difficulty`, un `loss` sans gate propre fait
+ *    de CE Test le déterminant de la perte (« Pied écrasé » : un seul Test Accessible gate ET États).
+ *  - `loss.perDR` → orteils = 1 + DR en dessous de 0 du Test qui gate la perte.
+ * Sans `loss` : séquelle TOUJOURS (membre tranché — pied sectionné, tendon coupé…).
+ */
+export function resolveAmputation(amp: Amputation, location: HitLocation, resistVal: number, rng: RNG = defaultRNG): { ops: GameOp[]; traumas: Trauma[] } {
+  const ops: GameOp[] = [];
+  const traumas: Trauma[] = [];
+  let toeCount = 1;
+  if (amp.loss?.difficulty) {
+    const gate = rollTest(resistVal, amp.loss.difficulty, rng);
+    if (gate.success) return { ops, traumas }; // Test gate réussi → pas d'amputation du tout
+    if (amp.loss.perDR) toeCount = 1 + Math.max(0, -gate.sl);
+  }
+  const res = rollTest(resistVal, amp.difficulty, rng);
+  if (!res.success) {
+    ops.push({ op: 'condition', name: 'a-terre', value: 1 });
+    if (res.sl <= -2) ops.push({ op: 'condition', name: 'sonne', value: 1 });
+    if (res.sl <= -4) ops.push({ op: 'condition', name: 'inconscient', value: 1 });
+  }
+  if (amp.loss && !amp.loss.difficulty) {
+    // Pas de gate séparé : le Test de Résistance ci-dessus détermine LUI-MÊME la perte (succès → pas d'amputation).
+    if (res.success) return { ops, traumas };
+    if (amp.loss.perDR) toeCount = 1 + Math.max(0, -res.sl);
+  }
+  traumas.push({ label: 'Amputation', location, needsSurgery: true, desc: AMPUTATION_WOUND_DESC });
+  traumas.push(...permanentAmputations(amp.sequels, location, rng, toeCount));
+  return { ops, traumas };
+}
+
+/**
+ * Résout à la FIN de la rencontre (LDB 18) les amputations DIFFÉRÉES (`Trauma.pendingAmputation`, posé par
+ * `rollCritical` pour un `amputation.timing === 'postEncounter'`, ex. « Coupure à l'orteil »). Retire les
+ * marqueurs, applique les États résultants et pose les séquelles/plaie, puis consolide (orteils cumulés).
+ * Mute `c` ; renvoie le journal. Appelé au foyer de fin de combat (`state/combatFlow.ts`).
+ */
+export function resolvePostEncounterAmputations(c: Combatant, rng: RNG = defaultRNG): string[] {
+  const pending = (c.traumas ?? []).filter((t) => t.pendingAmputation);
+  if (!pending.length) return [];
+  const resistVal = critResistValue(c);
+  c.traumas = (c.traumas ?? []).filter((t) => !t.pendingAmputation);
+  const log: string[] = [];
+  for (const t of pending) {
+    const r = resolveAmputation(t.pendingAmputation!, t.location, resistVal, rng);
+    applyOps(c, r.ops, { rng });
+    c.traumas = [...(c.traumas ?? []), ...r.traumas];
+    log.push(r.traumas.length > 1 ? `${c.name} : ${t.label} — amputation confirmée après la rencontre.` : `${c.name} : ${t.label} — sans séquelle après la rencontre.`);
+  }
+  consolidateAmputations(c);
+  return log;
 }
 
 export interface CriticalResolved {
@@ -109,9 +178,7 @@ export function rollCritical(
   const raw = twice ? Math.max(d100(rng), d100(rng)) : d100(rng);
   const roll = Math.max(1, raw - reduction);
   const entry = findTableEntry(CRITICAL_TABLES[location], roll);
-  const resistVal =
-    effectiveChar(target, 'E') +
-    (target.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+  const resistVal = critResistValue(target);
   const ops: GameOp[] = [...(entry.ops ?? [])];
   if (entry.resist) {
     const res = rollTest(resistVal, entry.resist.difficulty, rng);
@@ -130,26 +197,18 @@ export function rollCritical(
   const traumas = traumaRefs.map((id) =>
     traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
   // Amputation (LDB 18 l.328-333) : DÉCLARÉE STRUCTURELLEMENT (`entry.amputation`, plus de regex sur le texte).
-  // Test de Résistance ou À Terre ; échec −2 DR → +Sonné ; échec −4 DR → +Inconscient. Le membre perdu
-  // exige la Chirurgie (l.333/401) : trauma `needsSurgery` (opérable via le Talent Chirurgie). Roll placé
-  // en DERNIER (rien ne tire après) pour ne décaler le flux RNG que des critiques d'amputation.
+  // Résolue par `resolveAmputation` (SOURCE UNIQUE LDB/AA/post-rencontre). Placée en DERNIER (rien ne tire
+  // après) pour ne décaler le flux RNG que des critiques d'amputation. `timing: 'postEncounter'` (« Coupure à
+  // l'orteil », l.171 : « Une fois la rencontre terminée… ») → aucun jet ICI : marqueur `pendingAmputation`
+  // résolu au foyer de fin de combat (`resolvePostEncounterAmputations`).
   if (!entry.lethal && entry.amputation) {
-    const res = rollTest(resistVal, entry.amputation.difficulty, rng);
-    if (!res.success) {
-      ops.push({ op: 'condition', name: 'a-terre', value: 1 });
-      if (res.sl <= -2) ops.push({ op: 'condition', name: 'sonne', value: 1 });
-      if (res.sl <= -4) ops.push({ op: 'condition', name: 'inconscient', value: 1 });
+    if (entry.amputation.timing === 'postEncounter') {
+      traumas.push({ label: entry.name, location, pendingAmputation: entry.amputation });
+    } else {
+      const amp = resolveAmputation(entry.amputation, location, resistVal, rng);
+      ops.push(...amp.ops);
+      traumas.push(...amp.traumas);
     }
-    // Plaie chirurgicale (l.333/401) : retirée par la Chirurgie ; bloque la guérison jusqu'à l'opération.
-    traumas.push({
-      label: 'Amputation', // localisation portée par `t.location`, rendue shape-aware à l'affichage (pas bakée)
-      location,
-      needsSurgery: true,
-      desc: 'Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.',
-    });
-    // Séquelle(s) PERMANENTE(S) (membre absent) : survivent à la Chirurgie (l.335-370). Une tête peut en cumuler
-    // (la perte de dents tire 1d10 — placé après le Test de Résistance d'amputation pour ne pas décaler le reste).
-    traumas.push(...permanentAmputations(entry.amputation.sequels, location, rng));
   }
   // Escalade GATÉE par les soins (« Main ouverte » : doigt/Round ; « Pied écrasé » : perte du pied sans
   // Chirurgie sous 1d10 jours ; « Épaule luxée »/« Genou démis » : membre désactivé jusqu'au Test étendu de

@@ -67,10 +67,17 @@ const critEntrySchema = z.strictObject({
     .strictObject({
       difficulty: difficultySchema,
       sequels: z.array(z.string()),
+      // Test différé à la fin de la rencontre (« Coupure à l'orteil », l.171) — marqueur `pendingAmputation`.
+      timing: z.literal('postEncounter').optional(),
+      // Séquelle CONDITIONNELLE : `difficulty` = Test gate SÉPARÉ (réussite → pas d'amputation) ; absent = le
+      // Test de Résistance `difficulty` détermine lui-même la perte. `perDR` = orteils 1 + DR en dessous de 0.
+      loss: z.strictObject({ difficulty: difficultySchema.optional(), perDR: z.boolean().optional() }).optional(),
     })
     .optional(),
   traumas: z.array(z.string()).optional(),
   escalation: critEscalationSchema.optional(),
+  // Note MAISON (#195) : trace éditable d'une valeur mécanique absente littéralement du texte RAW (règle stricte 7).
+  maison: z.string().optional(),
   desc: z.string(),
 });
 

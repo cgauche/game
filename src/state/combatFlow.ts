@@ -133,7 +133,7 @@ import { rollContraction, contractDisease, contractionDue, applyContraction, has
 import { hasHealSkill, type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
 import { openRest, placesOfKind } from './restFlow';
-import { rollCritical, critWoundLocation, permanentAmputations, critImmediateSummary, type CriticalResolved } from '../engine/critical';
+import { rollCritical, critWoundLocation, permanentAmputations, critImmediateSummary, resolvePostEncounterAmputations, type CriticalResolved } from '../engine/critical';
 import { aaCriticalIsTrivial } from '../engine/aaCritical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations, maxFingersLostForWeapon, reinjuryBleed } from '../engine/trauma';
@@ -4173,6 +4173,13 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
   const corr = worstCorruptionExposure(battle);
   const steps: import('./pendings').CascadeStep[] = [];
   const inlineLines: string[] = [];
+  // Amputations DIFFÉRÉES à la fin de la rencontre (LDB 18, « Coupure à l'orteil » : « Une fois la rencontre
+  // terminée… ») : jet + séquelle/plaie/États résolus ICI pour tout survivant porteur d'un marqueur (mute le
+  // combattant → repris par `carryOverState` au writeback). Jet silencieux (journal), comme la voie inline.
+  for (const c of battle.combatants) {
+    if (c.dead) continue;
+    inlineLines.push(...resolvePostEncounterAmputations(c, battleRng()));
+  }
   for (const c of battle.combatants) {
     if (!followsCharacterRules(c) || c.dead) continue; // #143 : RAW « Personnage » (LDB 18 l.5, LDB 20 l.14/206) — les créatures génériques et les défaits n'ont pas de jet de maladie/Corruption de fin de combat
     // Pas piloté-humain-manuel (auto/rapide) OU hors d'action (Inconscient — défaite) → jet inline silencieux.

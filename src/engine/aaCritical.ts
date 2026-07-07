@@ -38,7 +38,7 @@ import { Combatant, HitLocation } from './types';
 import { traumaById, traumaFicheById, stampCriticalEscalation, fireCritTriggers } from './trauma';
 import type { GameOp } from './ops';
 import type { CriticalResolved } from './critical';
-import { permanentAmputations } from './critical';
+import { resolveAmputation } from './critical';
 
 interface AAEntry {
   id: string;
@@ -59,7 +59,7 @@ interface AAEntry {
    *  que `data/criticals.ts` (LDB) : `difficulty` = Test de Résistance (échec → À Terre, +Sonné si
    *  DR≤−2, +Inconscient si DR≤−4, comme LDB 18 l.328-333), `sequels` = ids de fiches de séquelle
    *  PERMANENTE (`traumas.json`), instanciées par `permanentAmputations` (SOURCE UNIQUE, réutilisée). */
-  amputation?: { difficulty: import('./types').Difficulty; sequels: string[] };
+  amputation?: import('../data/criticals').Amputation;
   /** Escalade GATÉE par les soins (même déclaration que `data/criticals.ts` LDB) : « Main ouverte » (l.127 :
    *  1 doigt/Round sans Aide Médicale) / « Pied écrasé » (l.180 : perte du pied si pas de Chirurgie sous 1d10
    *  jours) / « Épaule luxée » (l.125) / « Genou démis » (l.179 : membre désactivé jusqu'au Test étendu de
@@ -111,24 +111,13 @@ export function resolveAACritical(
   const traumaRefs = repeat?.traumas ?? entry.traumas ?? [];
   const traumas = traumaRefs.map((id) =>
     traumaById(id, { be, d10: traumaFicheById(id).kind === 'fracture' ? d10(rng) : undefined }, location));
-  // Amputation (« voir Amputation en page 180 de WFJDR ») DÉCLARÉE STRUCTURELLEMENT — même cascade que
-  // `rollCritical` (LDB 18 l.328-333) : Test de Résistance indépendant du `resist` de la ligne (les deux
-  // coexistent déjà côté LDB, ex. « Coup défigurant »/« Tendons coupés » — cf. `data/criticals.json`).
-  // Roll placé en DERNIER (ne décale que les critiques d'amputation).
+  // Amputation (« voir Amputation en page 180 de WFJDR ») DÉCLARÉE STRUCTURELLEMENT — `resolveAmputation`
+  // (SOURCE UNIQUE LDB/AA) : Test de Résistance indépendant du `resist` de la ligne (les deux coexistent déjà
+  // côté LDB, ex. « Coup défigurant »/« Tendons coupés »). Roll placé en DERNIER (ne décale que ces critiques).
   if (!entry.lethal && entry.amputation) {
-    const res = rollTest(resistVal, entry.amputation.difficulty, rng);
-    if (!res.success) {
-      ops.push({ op: 'condition', name: 'a-terre', value: 1 });
-      if (res.sl <= -2) ops.push({ op: 'condition', name: 'sonne', value: 1 });
-      if (res.sl <= -4) ops.push({ op: 'condition', name: 'inconscient', value: 1 });
-    }
-    // Plaie chirurgicale (LDB 18 l.333/401) : bloque la guérison jusqu'à l'opération.
-    traumas.push({
-      label: 'Amputation', location, needsSurgery: true,
-      desc: 'Toutes les amputations nécessitent d’être traitées par la chirurgie, ce qui signifie qu’une Blessure ne peut pas être soignée tant que vous n’êtes pas passé entre les mains d’un chirurgien.',
-    });
-    // Séquelle(s) PERMANENTE(S) (membre absent) : SOURCE UNIQUE partagée avec le chemin LDB.
-    traumas.push(...permanentAmputations(entry.amputation.sequels, location, rng));
+    const amp = resolveAmputation(entry.amputation, location, resistVal, rng);
+    ops.push(...amp.ops);
+    traumas.push(...amp.traumas);
   }
   // Escalade GATÉE par les soins (« Main ouverte » l.127 : doigt/Round ; « Pied écrasé » l.180 : perte du pied
   // sans Chirurgie sous 1d10 jours ; « Épaule luxée » l.125 / « Genou démis » l.179 : membre désactivé jusqu'au

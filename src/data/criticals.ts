@@ -29,9 +29,8 @@ export interface CritEntry {
   /** Test de Résistance (LDB 18) : ÉCHEC → ses `onFail` ops s'ajoutent à l'effet. Auto-résolu (seedé). */
   resist?: { difficulty: Difficulty; onFail: GameOp[] };
   lethal?: boolean;
-  /** Amputation (LDB 18 l.328-333) déclarée STRUCTURELLEMENT (plus de regex sur `desc`) : `difficulty` =
-   *  Test de Résistance, `sequels` = ids de fiches de séquelle PERMANENTE (`traumas.json`). */
-  amputation?: { difficulty: Difficulty; sequels: string[] };
+  /** Amputation (LDB 18 l.328-333) déclarée STRUCTURELLEMENT (plus de regex sur `desc`). */
+  amputation?: Amputation;
   /** Traumatismes ENGENDRÉS (LDB 18) — refs d'id de fiches `traumas.json` ; la localisation vient de la table. */
   traumas?: string[];
   /** Escalade GATÉE d'une Blessure critique (LDB / Aux Armes) : sans soin, la séquelle S'AGGRAVE (ou n'est
@@ -41,8 +40,30 @@ export interface CritEntry {
    *  pas dans le délai (1d10 jours). `medicalAidGate` (« Épaule luxée »/« Genou démis ») : membre désactivé
    *  jusqu'à un Test étendu de Guérison réussi APRÈS Aide Médicale. */
   escalation?: CritEscalation;
+  /** Note MAISON (#195) — porte la trace éditable d'une valeur mécanique absente LITTÉRALEMENT du texte
+   *  RAW (règle stricte 7 : contextuel/« au MJ » → donnée taguée, jamais un nombre nu silencieux). Ex.
+   *  « Orteil contusionné » : le texte dit « jusqu'à la fin du prochain tour », `durationRounds: 2` en est
+   *  la traduction en Rounds. Éditable au Compendium ; DISPLAY/DOC only (jamais lu pour de la mécanique). */
+  maison?: string;
   /** Texte canon (LONG TERME), DISPLAY-ONLY — jamais parsé pour de la mécanique. */
   desc: string;
+}
+/** Amputation (LDB 18 l.328-333) — SOURCE UNIQUE de forme (LDB `criticals.json` + Aux Armes `aa-criticals.json`),
+ *  résolue par `resolveAmputation` (`src/engine/critical.ts`).
+ *  - `difficulty` = Test de Résistance de l'Amputation (échec → À Terre ; DR≤−2 → +Sonné ; DR≤−4 → +Inconscient).
+ *  - `sequels` = ids de fiches de séquelle PERMANENTE (`traumas.json`), instanciées par `permanentAmputations`.
+ *  - `timing: 'postEncounter'` = Test différé à la FIN de la rencontre (« Coupure à l'orteil », l.171 : « Une fois
+ *    la rencontre terminée… ») — marqueur `Trauma.pendingAmputation` posé par `rollCritical`, résolu au foyer de
+ *    fin de combat.
+ *  - `loss` = la SÉQUELLE est CONDITIONNELLE (sinon : membre tranché → séquelle TOUJOURS). `loss.difficulty`
+ *    présent → Test SÉPARÉ dont la RÉUSSITE annule toute l'amputation (« Coupure à l'orteil » : `loss.difficulty`
+ *    Intermédiaire, `difficulty` Accessible). Absent → le Test `difficulty` détermine LUI-MÊME la perte (« Pied
+ *    écrasé » : un seul Test Accessible). `loss.perDR` → nombre d'orteils = 1 + DR en dessous de 0 (« Pied écrasé »). */
+export interface Amputation {
+  difficulty: Difficulty;
+  sequels: string[];
+  timing?: 'postEncounter';
+  loss?: { difficulty?: Difficulty; perDR?: boolean };
 }
 /** Déclaration d'escalade gatée par les soins — partagée LDB (`criticals.json`) et Aux Armes (`aa-criticals.json`).
  *  Instanciée par `stampCriticalEscalation` (trauma.ts) sur la plaie chirurgicale du critique. */
