@@ -10,7 +10,7 @@ import { enemyRigProfile, entityRigProfileFor, rendersFromOwnInventory } from '.
 import { resolveRender, planById } from './rig/bodyPlan';
 import { structureAppearance } from './catalog/structures';
 import { isStructure } from '../engine/structures';
-import { findCreatureById, findCareerById, findTrappingById } from '../data';
+import { findCreatureById, findCareerById, findTrappingById, findVehicleById } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite } from './sprites';
 import { hashSeed } from '../engine/dice';
@@ -111,10 +111,13 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
     // Structure de siège (`bodyShape:'structure'`) : fortification inerte → bloc de pierre crénelé, JAMAIS
     // un bipède Humain (`resolveRender` retomberait là-dessus, faute d'espèce). Invariant du classifieur.
     if (isStructure(c)) return { backend: 'plan', id: c.id, speciesScale: 1, portraitBox: STRUCT_BOX, flat: top, body: STRUCT_BODY };
-    // Résolution de rendu UNIQUE par la DONNÉE (espèce explicite + trait Nuée), repli nom : classe
-    // (rig humanoïde vs gabarit créature), plan, espèce canonique, échelle. `kind==='hero'` est
-    // surchargé (PJ bipède OU acteur allié — cheval libre compris) → on route par le PLAN CORPOREL.
-    const r = resolveRender(c.species, c.traits, c.name);
+    // Résolution de rendu UNIQUE par la DONNÉE (espèce explicite + trait Nuée), repli `creatureId`
+    // (id STABLE posé au spawn, cf. Combatant.creatureId) : classe (rig humanoïde vs gabarit créature),
+    // plan, espèce canonique, échelle. `kind==='hero'` est surchargé (PJ bipède OU acteur allié — cheval
+    // libre compris) → on route par le PLAN CORPOREL. `c.name` (LABEL d'affichage, multilangue) n'est
+    // PLUS jamais la clé de résolution — repli ultime seulement pour un statbloc d'auteur sans id de
+    // catalogue (`creatureId` absent, ex. ennemi générique nommé).
+    const r = resolveRender(c.species, c.traits, c.creatureId ?? c.name);
     if (r.kind === 'rig') {
       const prof = rendersFromOwnInventory(c) ? null : enemyRigProfile(c);
       if (top) {
@@ -153,7 +156,9 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   // Garde DEV : un personnage dont la `ref` n'est PAS un id de créature valide ET sans espèce explicite
   // tombe silencieusement en bipède Humain (plus de devinette par le nom). Signale l'apparence perdue.
   // Un engin de siège (ref = trapping à art d'affût `siegeRig`) est résolu via la ref → pas un défaut perdu.
-  if (import.meta.env.DEV && ent.kind === 'personnage' && ent.ref && !ent.appearance?.species && !findCreatureById(ent.ref) && !findTrappingById(ent.ref)?.siegeRig)
+  // Une coque de véhicule (ref = id `vehicles.json` à facette `hull`, ex. navire) est résolue via la
+  // même ref (`resolveRender`, branche véhicule ci-dessus l.117) → pas non plus un défaut perdu (#224).
+  if (import.meta.env.DEV && ent.kind === 'personnage' && ent.ref && !ent.appearance?.species && !findCreatureById(ent.ref) && !findTrappingById(ent.ref)?.siegeRig && !findVehicleById(ent.ref)?.hull)
     console.warn(`[pickBackend] entité « ${ent.id} » : ref « ${ent.ref} » non résolue (pas un id de créature) et sans Espèce (rig) → bipède Humain par défaut. Choisis une Espèce (rig) ou une réf de créature valide.`);
   const prof = ent.kind === 'personnage' ? entityRigProfileFor(ent, subject.enrolled) : null;
   if (prof) {
