@@ -112,6 +112,13 @@ sélecteur DOM (vrais clics Playwright, cf. piège ci-dessous).
   VRAIS clics Playwright (`browser_click`, sélecteur `data-cid`/rôle/texte).
 - **Passer des tours** : `turn('id')` (triche, donne le tour) ou `fastForward()` (avance l'IA) —
   jamais de manipulation manuelle de `battle.round`/`battle.turn`/`battle.order` via `store`.
+- **Cliquer une ROUTE de la carte du monde** : le tracé SVG n'a de hit-test QUE sur son trait
+  (`pointer-events: stroke`) — jamais la bbox, jamais son label (`pointer-events: none`). Un clic au
+  centre du bbox (ce que fait `browser_click` sur l'élément) tombe hors du trait et est intercepté par
+  la vignette de lieu dessous. Méthode canonique : calculer un point ON-PATH via la méthode SVG
+  native `getPointAtLength` du `path` + `getScreenCTM()` (coordonnées écran réelles du trait), puis un
+  VRAI clic souris (`page.mouse.click`) à ces coordonnées — jamais `browser_click` sur le sélecteur de
+  la route.
 
 ## Piège du *closure-sync*
 
