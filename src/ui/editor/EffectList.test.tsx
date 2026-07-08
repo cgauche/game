@@ -58,3 +58,35 @@ describe('selects guidés (audit M9) — fini les ids à taper', () => {
     expect(without).toContain('Aucune entité marchande');
   });
 });
+
+describe('#94 — Effets santé éditables (ambitionLost/inflictThirst/inflictPsychology)', () => {
+  it('ambitionLost : champ héros rendu (modèle inflictNightmares)', () => {
+    const html = renderToStaticMarkup(
+      <EffectList effects={[{ type: 'ambitionLost', heroId: '' }]} onChange={() => {}} ctx={ctx} />,
+    );
+    expect(html).toMatch(/id du héros/);
+  });
+
+  it('inflictThirst : cible + jours (modèle inflictHunger)', () => {
+    const html = renderToStaticMarkup(
+      <EffectList effects={[{ type: 'inflictThirst', days: 2, target: 'party' }]} onChange={() => {}} ctx={ctx} />,
+    );
+    expect(html).toMatch(/Jours assoiffés/);
+    expect(html).toContain('Tout le groupe');
+  });
+
+  it('inflictPsychology : kind/indice/label/cible rendus', () => {
+    const html = renderToStaticMarkup(
+      <EffectList effects={[{ type: 'inflictPsychology', kind: 'terreur', indice: 2, label: 'Un spectre hurlant', target: 'party' }]} onChange={() => {}} ctx={ctx} />,
+    );
+    expect(html).toContain('Terreur');
+    expect(html).toMatch(/Indice/);
+  });
+
+  it('openPort : champ placeId rendu', () => {
+    const html = renderToStaticMarkup(
+      <EffectList effects={[{ type: 'openPort', placeId: '' }]} onChange={() => {}} ctx={ctx} />,
+    );
+    expect(html).toMatch(/id du lieu/);
+  });
+});

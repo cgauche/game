@@ -557,12 +557,7 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
     // le tirage de l'événement de port (`resolveShoreLeave` enchaîne `resolvePortArrival`).
     set({ travelPlan: null, ...(get().vessel ? { vessel: { ...get().vessel!, lastVoyageMilles: plan.km } } : {}) });
     log(get, set, [`— Accostage à ${to.label} —`]);
-    if (to.port) {
-      set({ pendingShoreLeave: { to } });
-      return;
-    }
-    resolvePortArrival(get, set, to.port, battleRng(), true);
-    get().transitionTo(to.scene, to.entry);
+    openPortAt(get, set, to);
     return;
   }
   // ACTIVITÉS EN MER (MDG 15 l.266-272) : « Pour chaque semaine (8 jours) de voyage en mer, chaque
@@ -1142,6 +1137,20 @@ export interface PendingManannPriest {
  *  et la transition de scène (le lieu d'arrivée `to` porte la scène/l'entrée à rejoindre). */
 export interface PendingShoreLeave {
   to: MapPlace;
+}
+
+/** Ouvre le PORT d'un lieu (arrivée en mer OU Effet scripté `openPort`) — SOURCE UNIQUE : avec profil de
+ *  port (`to.port`) → relâche à terre en attente de décision (`pendingShoreLeave`, MDG 15 l.245) ; sans
+ *  profil (destination sans port) → résout directement (rien à jouer) et transitionne à la scène du lieu.
+ *  Appelée par `finishSeaDay` (accostage) et le handler `openPort` (state/combatEffects) — jamais un
+ *  doublon de cette décision. */
+export function openPortAt(get: Get, set: Set, to: MapPlace): void {
+  if (to.port) {
+    set({ pendingShoreLeave: { to } });
+    return;
+  }
+  resolvePortArrival(get, set, to.port, battleRng(), true);
+  get().transitionTo(to.scene, to.entry);
 }
 
 /** ÉVÉNEMENT DE PORT (2d10 ± Humeur, ch.15 l.127-129 + Tableau l.239-263). `shoreLeave` = permission de

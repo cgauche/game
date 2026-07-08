@@ -99,9 +99,11 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'inflictNightmares': return `Cauchemars${e.heroId ? ` → ${e.heroId}` : ''}`;
     case 'inflictDisease': return `Maladie : ${e.disease || '?'}`;
     case 'inflictHunger': return `Faim ×${e.days ?? 1} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
+    case 'inflictThirst': return `Soif ×${e.days ?? 1} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
     case 'exposureNight': return `Exposition ${e.kind === 'chaleur' ? 'chaleur' : 'froid'} ×${e.count ?? 2} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
     case 'inflictTrauma': return `Critique : ${e.kind ?? 'fracture'} (${e.location ?? '?'})`;
     case 'ambitionLost': return `Ambition anéantie → Trauma${e.heroId ? ` → ${e.heroId}` : ''}`;
+    case 'inflictPsychology': return `${e.kind === 'terreur' ? 'Terreur' : 'Peur'} ${e.indice ?? 1} — ${e.label || '?'} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
     case 'ops': {
       const who = e.on === 'hero' ? '1ᵉʳ héros' : e.on === 'caster' ? 'lanceur' : e.on === 'target' ? 'cible' : 'groupe';
       return `${who} : ${(e.ops ?? []).map(opSummary).join(', ') || '(aucune op)'}`;
@@ -137,6 +139,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'setVessel': return `Navire : ${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}`;
     case 'startDialogue': return `Dialogue : ${e.dialogue || '?'}`;
     case 'openMerchant': return `Boutique : ${e.entityId || '?'}`;
+    case 'openPort': return `Port : ${e.placeId || '?'}`;
     case 'openTavernGames': return `Jeux de taverne`;
     case 'medicalAid': return `Soins payants (${(e.acts ?? (e.act ? [0] : [])).length} acte(s))`;
     case 'extendedTest': return `Test Étendu ${e.skill ? refLabel('skills', { id: e.skill, spec: e.spec }) : (e.characteristic || '?')} → DR cumulé ${e.targetDR ?? 0}${e.flag ? ` (flag ${e.flag})` : ''}`;
@@ -217,6 +220,9 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         {effect.type === 'inflictNightmares' && (
           <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
         )}
+        {effect.type === 'ambitionLost' && (
+          <input placeholder="id du héros (vide = le premier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+        )}
         {effect.type === 'inflictDisease' && (
           <>
             <select value={e.disease ?? ''} onChange={(ev) => upd({ disease: ev.target.value })}>
@@ -237,6 +243,18 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
             )}
             <label className="dr">Jours affamés <input type="number" min={1} style={{ width: '3.2em' }} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+          </div>
+        )}
+        {effect.type === 'inflictThirst' && (
+          <div className="tf-row">
+            <select value={e.target ?? 'party'} onChange={(ev) => upd({ target: ev.target.value })}>
+              <option value="party">Tout le groupe</option>
+              <option value="hero">Un héros</option>
+            </select>
+            {e.target === 'hero' && (
+              <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
+            )}
+            <label className="dr">Jours assoiffés <input type="number" min={1} style={{ width: '3.2em' }} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
           </div>
         )}
         {effect.type === 'exposureNight' && (
@@ -307,6 +325,23 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             <label>Péchés (1-3 selon gravité) <input type="number" min={1} max={3} value={e.amount ?? 1} onChange={(ev) => upd({ amount: Math.max(1, Number(ev.target.value) || 1) })} /></label>
             <input placeholder="id du héros (vide = premier sachant Prier)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
           </>
+        )}
+        {effect.type === 'inflictPsychology' && (
+          <div className="tf-row">
+            <select value={e.kind ?? 'peur'} onChange={(ev) => upd({ kind: ev.target.value })}>
+              <option value="peur">Peur</option>
+              <option value="terreur">Terreur</option>
+            </select>
+            <label className="dr">Indice <input type="number" min={1} style={{ width: '3.2em' }} value={e.indice ?? 1} onChange={(ev) => upd({ indice: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <input placeholder="Source (apparition, présage…)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value })} />
+            <select value={e.target ?? 'party'} onChange={(ev) => upd({ target: ev.target.value })}>
+              <option value="party">Tout le groupe</option>
+              <option value="hero">Un héros</option>
+            </select>
+            {e.target === 'hero' && (
+              <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
+            )}
+          </div>
         )}
         {effect.type === 'corruptionExposure' && (
           <>
@@ -575,6 +610,9 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         ) : (
           <input placeholder="id de l’entité marchande (doit porter un archétype)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value })} />
         ))}
+        {effect.type === 'openPort' && (
+          <input placeholder="id du lieu (carte du monde)" value={e.placeId ?? ''} onChange={(ev) => upd({ placeId: ev.target.value })} />
+        )}
         {effect.type === 'medicalAid' && (() => {
           // Schéma : une LISTE d'actes tarifés (le débit a lieu à l'acte, dans l'infirmerie).
           const ACTS: { key: 'wounds' | 'bleed' | 'trauma' | 'surgery'; label: string | JSX.Element }[] = [

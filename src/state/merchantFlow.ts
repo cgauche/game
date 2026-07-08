@@ -11,7 +11,8 @@ import { bargainBuyFactor, bargainSellFactor } from '../engine/bargain';
 import { SL_ASTOUNDING, rollTest } from '../engine/tests';
 import { battleRng } from './battleRng';
 import { craftPriceFactor, shiftAvailability } from '../engine/qualities/craftEconomy';
-import { rule } from '../engine/policy';
+import { rule, type RuleValue } from '../engine/policy';
+import type { SceneEntity } from './scene';
 import { partyAssisted } from '../engine/skills';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { appraiseEstimate } from '../engine/appraisal';
@@ -83,10 +84,21 @@ function partyStatusBudgetBrass(party: Combatant[]): number {
   return best;
 }
 
+/** Valeur EFFECTIVE d'un des 3 flags Marché (LDB 59/60) POUR UNE ENTITÉ marchande (#93) : l'OVERRIDE
+ *  d'entité (`SceneEntity.merchant.{guild,marketMode,tenirComptes}`) PRIME sur la règle maison globale
+ *  (`engine/policy` `rule('market-*')`) ; absent = héritage du global, JAMAIS un 3ᵉ état ambigu. Couture
+ *  UNIQUE : tout call-site qui lisait `rule('market-*')` directement lit désormais CETTE fonction. */
+function marketRule(ent: SceneEntity | undefined, key: 'guild' | 'marketMode' | 'tenirComptes'): RuleValue {
+  const override = ent?.merchant?.[key];
+  if (override !== undefined) return override;
+  const ruleId = key === 'guild' ? 'market-guild' : key === 'marketMode' ? 'market-mode' : 'market-tenir-comptes';
+  return rule(ruleId);
+}
+
 /** « Tenir les comptes » (LDB 59 l.9-11, option `market-tenir-comptes`) : un objet dont le prix listé
  *  est ≤ au niveau de Statut du groupe s'achète « autant de fois que nécessaire », sans débit. */
-function comptesFree(party: Combatant[], listedBrass: number): boolean {
-  return !!rule('market-tenir-comptes') && listedBrass > 0 && listedBrass <= partyStatusBudgetBrass(party);
+function comptesFree(ent: SceneEntity | undefined, party: Combatant[], listedBrass: number): boolean {
+  return !!marketRule(ent, 'tenirComptes') && listedBrass > 0 && listedBrass <= partyStatusBudgetBrass(party);
 }
 
 /** Bonus de recherche de Disponibilité du groupe (LDB 59 l.50) : +10 si un héros a une Carrière
@@ -104,10 +116,10 @@ function partyAvailabilityBonus(party: Combatant[], gossipDay = false): number {
  *  Persiste le stock (`merchantStocks`) et journalise les articles trouvés. Retourne le stock tiré. */
 function rollFreshStock(
   get: Get, set: Set,
-  entityId: string, arch: (typeof MERCHANTS)[string], settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean,
+  entityId: string, ent: SceneEntity | undefined, arch: (typeof MERCHANTS)[string], settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean,
 ): { id: string; qty: number }[] {
-  const guild = !!rule('market-guild');
-  const marketMode = rule('market-mode') as string;
+  const guild = !!marketRule(ent, 'guild');
+  const marketMode = marketRule(ent, 'marketMode') as string;
   const cat: CatalogItem[] = trappings
     .filter((t) => (!arch.category.types || arch.category.types.includes(t.type)) && (!arch.category.subTypes || (t.subType != null && arch.category.subTypes.includes(t.subType))))
     .map((t) => {
@@ -147,7 +159,7 @@ export function openMerchant(get: Get, set: Set, entityId: string): void {
   // Disponibilité) ; système simplifié (pas de Test de Disponibilité) ; cf. `market-guild`/`market-mode`.
   let stock = prev?.stock;
   if (!prev || now - prev.rolledAt >= restockPeriod) {
-    stock = rollFreshStock(get, set, entityId, arch, settlement, now, restockPeriod, false);
+    stock = rollFreshStock(get, set, entityId, ent, arch, settlement, now, restockPeriod, false);
   }
   const persisted = get().merchantStocks[entityId];
   set({ merchant: { entityId, archetype: ent.merchant.archetype, settlement, resaleRate, buyMarkup, stock: stock!, cart: [], bargainLocked: persisted?.bargainLocked ?? false } });
@@ -160,11 +172,11 @@ export function openMerchant(get: Get, set: Set, entityId: string): void {
 export function searchAvailability(get: Get, set: Set): void {
   const m = get().merchant;
   if (!m) return;
-  const marketMode = rule('market-mode') as string;
+  const ent = get().scene?.entities.find((e) => e.id === m.entityId);
+  const marketMode = marketRule(ent, 'marketMode') as string;
   if (marketMode === 'sans-disponibilite' || marketMode === 'simplifie') return; // pas de Test de Disponibilité → rien à améliorer
   const arch = MERCHANTS[m.archetype];
   if (!arch) return;
-  const ent = get().scene?.entities.find((e) => e.id === m.entityId);
   const restockPeriod = (ent?.merchant?.restockDays ?? arch.restockDays ?? 1) * MINUTES_PER_DAY;
   // Test de Ragot du groupe (Soutien LDB 12) — Intermédiaire (+0), le RAW ne chiffre pas la difficulté.
   const best = partyAssisted(get().party, 'ragot', 'Soc');
@@ -172,7 +184,7 @@ export function searchAvailability(get: Get, set: Set): void {
   const gossipDay = !!res?.success;
   get().advanceTime(MINUTES_PER_DAY); // « journée entière » — l'horloge cascade normalement (#T3)
   const now = get().gameTime;
-  const stock = rollFreshStock(get, set, m.entityId, arch, m.settlement, now, restockPeriod, gossipDay);
+  const stock = rollFreshStock(get, set, m.entityId, ent, arch, m.settlement, now, restockPeriod, gossipDay);
   set((s) => (s.merchant ? { merchant: { ...s.merchant, stock, cart: [], bargainBuy: null, bargainSell: null, bargainLocked: false } } : {}));
   get().log(res == null
     ? 'Personne dans le groupe ne sait glaner un Ragot — une journée passée en vain aux étals.'
@@ -199,7 +211,8 @@ export function buyItem(get: Get, set: Set, id: string, heroId?: string): void {
   const t = findTrappingById(id); if (!t) return;
   const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
   // « Tenir les comptes » (LDB 59 l.9-11) : objet ≤ Statut du groupe → acquis sans compter les pièces.
-  const free = comptesFree(get().party, listedBrassOf(t));
+  const ent = get().scene?.entities.find((e) => e.id === m.entityId);
+  const free = comptesFree(ent, get().party, listedBrassOf(t));
   const cost = free ? fromBrass(0) : fromBrass(Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor));
   if (!free && !canAfford(get().money, cost)) { get().log(`Bourse insuffisante pour ${t.label}.`); return; }
   const it = itemFromTrappingById(id); if (!it) return;
@@ -268,10 +281,11 @@ export function payCart(get: Get, set: Set): void {
   const cart = m.cart ?? []; if (!cart.length) return;
   const factor = m.bargainBuy ? bargainBuyFactor(m.bargainBuy.won, m.bargainBuy.drNet, m.bargainBuy.negotiator) : 1;
   const party = get().party;
+  const ent = get().scene?.entities.find((e) => e.id === m.entityId);
   // « Tenir les comptes » (LDB 59 l.9-11) : une ligne ≤ Statut du groupe n'est pas comptée (0 sc).
   const unitBrass = (id: string) => {
     const t = findTrappingById(id); if (!t) return 0;
-    if (comptesFree(party, listedBrassOf(t))) return 0;
+    if (comptesFree(ent, party, listedBrassOf(t))) return 0;
     return Math.round(toBrass(priceToMoney(t.price)) * craftPriceFactor({ qualities: t.qualities }) * (m.buyMarkup ?? 1) * factor);
   };
   let totalBrass = 0;
@@ -503,7 +517,8 @@ export function repairItem(get: Get, set: Set, uid: string, heroId: string): voi
 
 export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   const m = get().merchant; if (!m) return;
-  const mkt = rule('market-mode') as string;
+  const ent = get().scene?.entities.find((e) => e.id === m.entityId);
+  const mkt = marketRule(ent, 'marketMode') as string;
   if (mkt === 'sans-marchandage' || mkt === 'simplifie') return; // Marchandage désactivé (règle optionnelle LDB 59 l.15)
   if (m.soured) return; // botch antérieur : le marchand se méfie, plus de marchandage (LDB 60 l.12)
   if (m.bargainLocked) return; // VERROU PARTAGÉ : a refusé/renié un marché (achat OU vente) → plus de négociation jusqu'au réassort

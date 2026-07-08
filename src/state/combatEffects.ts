@@ -26,13 +26,15 @@ import { applySummon } from './summonFlow';
 import { contractDisease, applyContraction, DISEASE_DEFS } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
-import { seaWeatherTestMod } from './seaVoyageFlow';
+import { seaWeatherTestMod, openPortAt } from './seaVoyageFlow';
+import { placeById } from './worldMap';
+import { openScriptedPsych } from './encounterPsychFlow';
 import { openRest, placesOfKind } from './restFlow';
 import { permanentAmputations } from '../engine/critical';
 import { traumaById, dechirureFractureFicheId } from '../engine/trauma';
 import { DAY_PHASES, minutesUntilNext } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
-import { feedFromMeal, applyFaimTest } from '../engine/provisions';
+import { feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { isWeatherWarded, exposureTarget, type ExposureKind } from '../engine/exposure';
 import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
@@ -879,6 +881,28 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (heroes.length) { env.set(touchActors(env.get())); lines.forEach((l) => env.log(l)); }
     },
   },
+  inflictThirst: {
+    group: 'Afflictions', label: 'Imposer la Soif (LDB 18 — groupe assoiffé)', icon: 'flag/hungry',
+    make: () => ({ type: 'inflictThirst', days: 1, target: 'party' }),
+    apply: (e, env) => {
+      // Soif (LDB 18 l.417-422, miroir de la Faim) posée par l'auteur — via la fonction PURE partagée
+      // `applySoifTest` (1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ+ → −10 autres + 1d10 Dégâts ignorant les PA, min 1).
+      const heroes = env.targets(e.target ?? 'party', e.heroId);
+      const n = Math.max(1, e.days ?? 1);
+      const lines: string[] = [];
+      for (const c of heroes) {
+        const be = Math.floor(effectiveChar(c, 'E') / 10);
+        let damage = 0;
+        for (let i = 0; i < n; i++) {
+          const r = applySoifTest(c, false, be, battleRng());
+          lines.push(...r.log);
+          damage += r.damage;
+        }
+        if (damage > 0) loseWounds(c, damage);
+      }
+      if (heroes.length) { env.set(touchActors(env.get())); lines.forEach((l) => env.log(l)); }
+    },
+  },
   exposureNight: {
     group: 'Afflictions', label: 'Exposition froid / chaleur (LDB 18)', icon: 'rest/cold',
     make: () => ({ type: 'exposureNight', kind: 'froid', count: 2, target: 'party' }),
@@ -969,6 +993,17 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const line = t(acquired ? 'eff.ambitionTrauma' : 'eff.ambitionResisted', { name: who.name, roll: s.roll, target: s.target });
       env.log(line);
       if (acquired) env.pushReveal({ kind: 'effet', title: t('eff.ambitionTitle'), lines: [line], subjectId: who.id, severity: 'grave' });
+    },
+  },
+  inflictPsychology: {
+    group: 'Afflictions', label: 'Peur / Terreur scénique (LDB 21)', icon: 'flag/fear',
+    make: () => ({ type: 'inflictPsychology', kind: 'peur', indice: 1, label: 'Une vision terrifiante', target: 'party' }),
+    apply: (e, env) => {
+      // Source de Peur/Terreur SCÉNIQUE (apparition, présage) : MÊME cascade de Tests de Calme que la
+      // Psychologie de rencontre (`openScriptedPsych`, applier 'encounterPsych' partagé) — jamais un jet
+      // silencieux. Frénésie s'octroie déjà via `ops`/`grantPsychTrait` (capacité, pas une affliction testée).
+      const heroes = env.targets(e.target ?? 'party', e.heroId);
+      openScriptedPsych(env.get, env.set, e.kind, Math.max(1, e.indice ?? 1), e.label || 'Scène', heroes);
     },
   },
   corruptionExposure: {
@@ -1169,6 +1204,18 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     group: 'Combat & social', label: 'Ouvrir une boutique (marchand)', icon: 'merchant/cart',
     make: () => ({ type: 'openMerchant', entityId: '' }),
     apply: (e, env) => { env.get().openMerchant(e.entityId); }, // ouvre la boutique de l'entité (Marchand inclus dans un dialogue, #2)
+  },
+  openPort: {
+    group: 'Navigation', label: 'Ouvrir un port (MDG ch.15 — relâche à terre)', icon: 'travel/anchor',
+    make: () => ({ type: 'openPort', placeId: '' }),
+    apply: (e, env) => {
+      // SOURCE UNIQUE avec l'accostage en mer (`finishSeaDay`) : `openPortAt` (state/seaVoyageFlow).
+      const wm = env.get().worldMap;
+      const place = wm ? placeById(wm, e.placeId) : undefined;
+      if (!place) return;
+      openPortAt(env.get, env.set, place);
+    },
+    refs: (e) => (e.placeId ? [] : [{ level: 'error', message: 'Effet → Ouvrir un port : lieu manquant' }]),
   },
   openTavernGames: {
     group: 'Combat & social', label: 'Jeux de taverne (NADJ ch.16)', icon: 'nav/dice',

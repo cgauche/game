@@ -103,7 +103,12 @@ export interface SceneEntity {
   /** Marchand (#2) : ce PNJ ouvre un panneau d'achat/vente (référence un archétype de `state/merchants`).
    *  `settlement`/`resaleRate`/`buyMarkup` surchargent l'archétype pour cette entité (prix paramétrables :
    *  resaleRate = rachat à la vente, buyMarkup = majoration à l'achat). */
-  merchant?: { archetype: string; settlement?: import('../engine/disponibilite').Settlement; resaleRate?: number; buyMarkup?: number; restockDays?: number };
+  /** OVERRIDES par-entité des 3 règles maison Marché (LDB 59/60, `market-guild`/`market-mode`/
+   *  `market-tenir-comptes`) — mêmes domaines de valeurs que la règle globale correspondante. Absent =
+   *  HÉRITAGE du global (`engine/policy` `rule(...)`), jamais un 3ᵉ état ambigu. Lus par `marketRule`
+   *  (state/merchantFlow, couture UNIQUE). */
+  merchant?: { archetype: string; settlement?: import('../engine/disponibilite').Settlement; resaleRate?: number; buyMarkup?: number; restockDays?: number;
+      guild?: boolean; marketMode?: 'complet' | 'sans-disponibilite' | 'sans-marchandage' | 'simplifie'; tenirComptes?: boolean };
   /** RÔLE combat optionnel (au même titre que dialogue/marchand) : présent = ce personnage peut être
    *  enrôlé dans une rencontre (cf. EncounterMember). Porte les choix d'auteur qui DÉCRIVENT la
    *  personne au combat — son profil (ref/statblock) et son apparence vivent déjà sur l'entité. */
@@ -200,6 +205,11 @@ export type Effect =
   /** Ouvre la boutique d'une entité marchande (par son id) — permet d'inclure le Marchand dans un
    *  dialogue (ex. choix « Montrez-moi vos marchandises »). L'entité doit porter `merchant` (#2). */
   | { type: 'openMerchant'; entityId: string }
+  /** Ouvre le PORT d'un lieu de la carte du monde (MDG ch.15) — SCRIPTÉ (arrivée mise en scène, cinématique
+   *  de quête) sur le MÊME chemin que l'accostage en mer (`openPortAt`, state/seaVoyageFlow) : avec profil
+   *  de port → relâche à terre en attente de décision (`pendingShoreLeave`) ; sans profil → transition
+   *  directe. `placeId` = id d'un `MapPlace` de `state.worldMap`. */
+  | { type: 'openPort'; placeId: string }
   /** Soins PAYANTS d'un PNJ (médecin/guérisseur/temple — LDB 75 « Docteur en médecine », l'aide
    *  médicale se paie À L'ACTE, 4-6 pistoles) : ouvre l'INFIRMERIE du PNJ (modale persistante,
    *  state/medicFlow) avec ses actes et leurs tarifs — `acts` liste {act, cost?} ; le débit a lieu
@@ -230,6 +240,12 @@ export type Effect =
    *  Accessible (+20) ; échec → Trait psychologique *Trauma*. Déclencheur NARRATIF (aucun hook mécanique),
    *  donc posé par l'auteur (défaut : le premier héros). Inerte si la règle facultative est éteinte. */
   | { type: 'ambitionLost'; heroId?: string }
+  /** Source de PEUR/TERREUR scénique (LDB 21) — une apparition, un présage, une vision d'horreur mise en
+   *  scène par l'auteur (PAS un PNJ de la scène : hors combat, la Peur/Terreur de créature ne se teste QUE
+   *  scriptée, cf. `engine/encounterPsych`). Ouvre la MÊME cascade de Tests de Calme que la Psychologie de
+   *  rencontre (`openScriptedPsych`, applier `'encounterPsych'` partagé) — jamais un jet silencieux. Cible :
+   *  `party` ou `hero` (+`heroId`, défaut le premier). */
+  | { type: 'inflictPsychology'; kind: 'peur' | 'terreur'; indice: number; label: string; target?: 'party' | 'hero'; heroId?: string }
   /** Inflige une Maladie (LDB 20) à un héros (défaut : le premier) — nourriture avariée, contact infecté,
    *  morsure… L'auteur choisit la maladie (DISEASE_DEFS) ; incubation/durée sont tirées à la contraction. */
   | { type: 'inflictDisease'; disease: string; heroId?: string }
@@ -237,6 +253,11 @@ export type Effect =
    *  2ᵉ+ → −10 aux autres Caractéristiques + 1d10 Dégâts (ignore les PA, min 1). Pour scénariser un groupe
    *  affamé (siège, cachot, traversée sans vivres). Cible : `party` ou `hero` (+`heroId`, défaut le premier). */
   | { type: 'inflictHunger'; days?: number; target?: 'party' | 'hero'; heroId?: string }
+  /** Impose la Soif (LDB 18 l.417-422, miroir de la Faim) : `days` échecs de Test de Soif déjà encaissés —
+   *  1ᵉʳ → −10 Int/FM/Soc ; 2ᵉ+ → −10 aux autres Caractéristiques + 1d10 Dégâts (ignore les PA, min 1).
+   *  Moteur partagé `applySoifTest` (engine/provisions), zéro logique nouvelle. Cible : `party` ou `hero`
+   *  (+`heroId`, défaut le premier). */
+  | { type: 'inflictThirst'; days?: number; target?: 'party' | 'hero'; heroId?: string }
   /** Exposition au froid ou à la chaleur (LDB 18 l.326-334) : `count` Tests de Résistance (Intermédiaire),
    *  échecs en cascade (froid : −10 CT/Ag/Dex, puis −10 le reste, puis 1d10 Dégâts ignorant les PA, Inconscient
    *  à 0 PB ; chaleur : −10 Int/FM + Exténué, puis −10 le reste + Exténué, puis 1d10). Pour une nuit glaciale,

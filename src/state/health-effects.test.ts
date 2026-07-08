@@ -10,6 +10,7 @@ import { cascadeAppliers } from './cascade';
 import { makePregens } from '../data/pregens';
 import { setRule, resetRule } from '../engine/policy';
 import { effectiveChar } from '../engine/characteristics';
+import type { WorldMap } from './worldMap';
 
 beforeEach(() => {
   useGame.setState({ battle: null, party: [], journal: [], tavernGames: null });
@@ -144,6 +145,59 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
   });
 });
 
+describe('Effet inflictThirst (LDB 18 l.417-422, miroir de la Faim)', () => {
+  it('1 jour assoiffé → 1ᵉʳ échec : −10 Intelligence/FM/Sociabilité (via le pool de soif)', () => {
+    const party = makePregens().slice(0, 1);
+    const baseInt = effectiveChar(party[0], 'Int');
+    useGame.setState({ party });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictThirst', days: 1, target: 'hero', heroId: party[0].id }]);
+    const h = useGame.getState().party[0];
+    expect(h.thirst?.failures).toBe(1);
+    expect(effectiveChar(h, 'Int')).toBe(baseInt - 10);
+  });
+
+  it('2 jours → 2ᵉ échec : Dégâts encaissés (1d10 ignorant les PA, min 1) sur tout le groupe', () => {
+    const party = makePregens().slice(0, 2);
+    const before = party.map((h) => h.wounds.current);
+    useGame.setState({ party });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictThirst', days: 2, target: 'party' }]);
+    const after = useGame.getState().party;
+    expect(after[0].thirst?.failures).toBe(2);
+    expect(after[0].wounds.current).toBeLessThan(before[0]);
+    expect(after[1].wounds.current).toBeLessThan(before[1]);
+  });
+
+  it('journalise l’affliction', () => {
+    const party = makePregens().slice(0, 1);
+    useGame.setState({ party });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictThirst', days: 1, target: 'hero', heroId: party[0].id }]);
+    expect(useGame.getState().journal.some((l) => /sèche|déshydrat/i.test(l))).toBe(true);
+  });
+});
+
+describe('Effet inflictPsychology (Peur/Terreur scénique, LDB 21) — cascade INFLUENÇABLE', () => {
+  it('ouvre UNE cascade de Test de Calme par héros concerné, AUCUN jet résolu (jamais silencieux)', () => {
+    const party = makePregens().slice(0, 2);
+    useGame.setState({ party, pendingCascade: null, journal: [] });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictPsychology', kind: 'peur', indice: 2, label: 'Une ombre glaçante', target: 'party' }]);
+    const pc = useGame.getState().pendingCascade;
+    expect(pc).not.toBeNull();
+    const steps = pc!.participants.filter((s) => s.kind === 'encounterPsych');
+    expect(steps).toHaveLength(2);
+    expect(steps.every((s) => s.result == null)).toBe(true);
+    expect(steps.every((s) => s.encounterPsych?.kind === 'peur' && s.encounterPsych?.indice === 2)).toBe(true);
+  });
+
+  it('kind terreur → étape taguée terreur, ciblée sur un seul héros', () => {
+    const party = makePregens().slice(0, 1);
+    useGame.setState({ party, pendingCascade: null, journal: [] });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictPsychology', kind: 'terreur', indice: 3, label: 'Un spectre hurlant', target: 'hero', heroId: party[0].id }]);
+    const step = useGame.getState().pendingCascade!.participants[0];
+    expect(step.encounterPsych?.kind).toBe('terreur');
+    expect(step.actorId).toBe(party[0].id);
+  });
+});
+
 describe('Effet setVessel (navire de campagne, MDG ch.13-15)', () => {
   beforeEach(() => useGame.setState({ vessel: undefined }));
 
@@ -168,6 +222,36 @@ describe('Effet setVessel (navire de campagne, MDG ch.13-15)', () => {
     expect(useGame.getState().vessel).toBeUndefined();
     applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'zzz-inconnu' }]);
     expect(useGame.getState().vessel).toBeUndefined();
+  });
+});
+
+describe('Effet openPort (#93 — MÊME chemin que l’accostage en mer)', () => {
+  const worldMap: WorldMap = {
+    id: 'm', nom: 'Carte',
+    places: [
+      { id: 'sans-port', label: 'Village', pos: { x: 0, y: 0 }, scene: 'sc-village' },
+      { id: 'avec-port', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'sc-port', port: { taille: 3, richesse: 3, production: ['bois'] } },
+    ],
+    routes: [],
+  };
+
+  beforeEach(() => {
+    useGame.setState({ worldMap, pendingShoreLeave: null, scene: null, party: makePregens().slice(0, 1), journal: [] });
+  });
+
+  it('lieu SANS profil de port : aucune relâche à terre en attente (résout directement)', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'openPort', placeId: 'sans-port' }]);
+    expect(useGame.getState().pendingShoreLeave).toBeNull();
+  });
+
+  it('lieu AVEC profil de port : ouvre `pendingShoreLeave` — MÊME état que l’accostage en mer', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'openPort', placeId: 'avec-port' }]);
+    expect(useGame.getState().pendingShoreLeave?.to.id).toBe('avec-port');
+  });
+
+  it('placeId inconnu → no-op (aucune casse)', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'openPort', placeId: 'zzz' }]);
+    expect(useGame.getState().pendingShoreLeave).toBeNull();
   });
 });
 

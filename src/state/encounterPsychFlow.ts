@@ -15,7 +15,7 @@ import { Scene } from './scene';
 import type { CascadeStep } from './pendings';
 import { spawnEnemy } from './spawn';
 import { encounterPsych } from '../engine/encounterPsych';
-import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, suppressSupersededPsych } from '../engine/psychology';
+import { CIBLE_TYPES, CIBLE_LABEL, PsychType, failConditionAmount, psychResolution, suppressSupersededPsych, isPsychImmune } from '../engine/psychology';
 import { skillBaseValue } from '../engine/skills';
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { psychologyLabel, refLabel, findPsychologyById } from '../data';
@@ -76,6 +76,39 @@ export function openEncounterPsych(get: Get, set: Set): void {
       target, // Test (Calme par défaut) à la difficulté déclarée (défaut Intermédiaire +0)
       label: cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice} — ${src?.name ?? '?'}`,
       encounterPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: src?.name ?? '?', indice: t.indice, cible: t.cible },
+    });
+  }
+  if (!steps.length) return;
+  startCascade(get, set, { title: 'Sang-froid', icon: 'flag/fear', purpose: 'test', steps });
+}
+
+/** Ouvre la cascade des Tests de Calme pour une source de PEUR/TERREUR SCÉNIQUE (Effet d'auteur
+ *  `inflictPsychology` — apparition, présage, vision d'horreur), sur la MÊME machinerie que
+ *  `openEncounterPsych` (applier `'encounterPsych'` partagé) — `sceneFearSources`/`encounterPsych` restent
+ *  réservés aux PNJ de la scène (Peur/Terreur EXCLUES hors combat par design, cf. `engine/encounterPsych` :
+ *  cet Effet est le seul déclencheur volontaire de l'auteur, pas une ré-activation automatique). No-op en
+ *  combat ou si une cascade est déjà ouverte. */
+export function openScriptedPsych(get: Get, set: Set, kind: 'peur' | 'terreur', indice: number, label: string, heroes: Combatant[]): void {
+  const s = get();
+  if (s.battle || s.pendingCascade) return;
+  const sourceId = `scripted:${label}`;
+  const steps: CascadeStep[] = [];
+  for (const hero of heroes) {
+    if (hero.dead || isPsychImmune(hero)) continue;
+    const td = findPsychologyById(kind)?.test;
+    const skill = td?.skill ?? 'calme';
+    const base = skillBaseValue(hero, skill);
+    const target = base + DIFFICULTY_MODIFIERS[td?.difficulty ?? 'intermediaire'];
+    steps.push({
+      id: `psych-${hero.id}`,
+      kind: 'encounterPsych',
+      actorId: hero.id,
+      icon: kind === 'terreur' ? 'creature/scream' : 'flag/fear',
+      rollLabel: refLabel('skills', { id: skill }),
+      base,
+      target,
+      label: `${kind === 'terreur' ? 'Terreur' : 'Peur'} ${indice} — ${label}`,
+      encounterPsych: { kind, sourceId, sourceName: label, indice },
     });
   }
   if (!steps.length) return;

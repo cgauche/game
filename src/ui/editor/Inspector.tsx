@@ -700,6 +700,41 @@ function EntityPanel({
                     onChange={(e) => updateSel({ merchant: { ...ent.merchant!, restockDays: e.target.value === '' ? undefined : Number(e.target.value) } })}
                   />
                 </label>
+                <label className="ed-field">
+                  ↳ Système d'achat / vente (override, LDB 59 l.15)
+                  <select
+                    value={ent.merchant.marketMode ?? ''}
+                    onChange={(e) => updateSel({ merchant: { ...ent.merchant!, marketMode: (e.target.value || undefined) as NonNullable<SceneEntity['merchant']>['marketMode'] } })}
+                  >
+                    <option value="">— (hériter du global) —</option>
+                    <option value="complet">Complet (Disponibilité + Marchandage)</option>
+                    <option value="sans-disponibilite">Sans Disponibilité (tout en stock)</option>
+                    <option value="sans-marchandage">Sans Marchandage (prix fixes)</option>
+                    <option value="simplifie">Simplifié (les deux désactivés)</option>
+                  </select>
+                </label>
+                <label className="ed-field">
+                  ↳ Guildes d'Artisans (override, LDB 60 l.69)
+                  <select
+                    value={ent.merchant.guild == null ? '' : String(ent.merchant.guild)}
+                    onChange={(e) => updateSel({ merchant: { ...ent.merchant!, guild: e.target.value === '' ? undefined : e.target.value === 'true' } })}
+                  >
+                    <option value="">— (hériter du global) —</option>
+                    <option value="true">Activées</option>
+                    <option value="false">Désactivées</option>
+                  </select>
+                </label>
+                <label className="ed-field">
+                  ↳ Tenir les comptes (override, LDB 59 l.9)
+                  <select
+                    value={ent.merchant.tenirComptes == null ? '' : String(ent.merchant.tenirComptes)}
+                    onChange={(e) => updateSel({ merchant: { ...ent.merchant!, tenirComptes: e.target.value === '' ? undefined : e.target.value === 'true' } })}
+                  >
+                    <option value="">— (hériter du global) —</option>
+                    <option value="true">Activé</option>
+                    <option value="false">Désactivé</option>
+                  </select>
+                </label>
               </>
             )}
           </Fold>
