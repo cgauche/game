@@ -18,28 +18,32 @@ import type { TestScenario } from './_shared';
  * (`t.siegeFootprint`) — c'est l'affût qui doit toucher la porte, pas seulement le chef qui le sert.
  *
  * Carte (10×15, pavée) : la formation (chef + bélier 2×2 + 5 servants, `crewFormationSlots`, ADE II ch.08
- * l.258 : « on pousse par les flancs/l'arrière ») démarre à 5 cases de la porte (arête N de (5,4)) —
- * DISTANCE À TRAVERSER (Lot 2 #156, MOBILITÉ) : « roues, se déplace sur le champ de bataille » (l.256/258,
- * vitesse non chiffrée → `siege-engine-push-speed`, plafond maison 2 cases/poussée) — il faut plusieurs
- * poussées du chef pour amener l'ENGIN au contact avant de l'assener. Un gobelin défend l'autre côté de la
- * porte (5,2). `heroStart` pose le GROUPE (4 héros) en colonne à `x−1` (`startCombat`, combatSlice.ts) → le
- * Soldat (1er du groupe, `makeParty` ci-dessous) atterrit en (5,10), qui EST le flanc gauche de la formation
- * (`crewFormationSlots` en (px−1,py) pour un affût posé en (6,10)) — les 5 servants occupent les autres
- * cases de la formation, aucune sur la colonne des 3 autres héros ((5,11)/(5,12)/(5,13)) ni sur l'affût.
+ * l.258 : « on pousse par les flancs/l'arrière ») démarre ALIGNÉE en x avec la porte (arête N de (5,4),
+ * colonne x=5 comprise dans l'empreinte 2×2 dès le départ), à 3 cases de la porte — DISTANCE À TRAVERSER
+ * (Lot 2 #156, MOBILITÉ) : « roues, se déplace sur le champ de bataille » (l.256/258, vitesse non chiffrée
+ * → `siege-engine-push-speed`, plafond maison 2 cases/poussée) — EXACTEMENT 2 poussées plein Nord (2 cases
+ * puis le reliquat de 1) amènent l'empreinte au contact DIRECT de la porte (dx=0, jamais en diagonale) : la
+ * démonstration reste courte, zéro dérive de trajectoire. Un gobelin défend l'autre côté de la porte (5,2).
+ * `heroStart` pose le GROUPE (4 héros) en colonne à `x−1` (`startCombat`, combatSlice.ts) → le Soldat (1er
+ * du groupe, `makeParty` ci-dessous) atterrit en (3,8), qui EST le flanc gauche de la formation
+ * (`crewFormationSlots` en (px−1,py) pour un affût posé en (4,8)) — les 5 servants occupent les autres
+ * cases de la formation, aucune sur la colonne des 3 autres héros ((3,9)/(3,10)/(3,11)) ni sur l'affût.
  */
 const RAM_CREW = [
   `pregen-${PREGEN.soldat}`, // chef de pièce (crewIds[0]) : un héros, seul à manier le bélier
   'enemy-siege-belier-2', 'enemy-siege-belier-3', 'enemy-siege-belier-4', 'enemy-siege-belier-5', 'enemy-siege-belier-6', // 5 servants PNJ (Équipe 6, ADE II ch.08 l.233)
 ];
 
-// Affût posé à (6,10), footprint 2×2 (`t.siegeFootprint`), pointant vers la porte (heading 'N', l'engin
-// frappe au Nord) — `crewFormationSlots` donne l'anneau ORDONNÉ (droite/gauche/angles-arrière/arrière,
-// JAMAIS l'avant où l'engin frappe) autour de cette empreinte ; la colonne des 3 autres héros du groupe
-// (x=5, y=11..13, posée par `heroStart`/`startCombat`) recouvre le flanc gauche SOUS le Soldat (5,10) —
-// on l'écarte : le Soldat atterrit là par `heroStart`, les 5 servants prennent les 5 cases RESTANTES.
-const RAM_POS = { x: 6, y: 10 };
+// Affût posé à (4,8), footprint 2×2 (`t.siegeFootprint`) couvrant les colonnes x=4..5 — la colonne x=5 EST
+// celle de la porte (5,4) : pousser plein Nord amène l'empreinte au contact DIRECT (dx=0), jamais en
+// diagonale. Pointant vers la porte (heading 'N', l'engin frappe au Nord) — `crewFormationSlots` donne
+// l'anneau ORDONNÉ (droite/gauche/angles-arrière/arrière, JAMAIS l'avant où l'engin frappe) autour de cette
+// empreinte ; la colonne des 3 autres héros du groupe (x=3, y=9..11, posée par `heroStart`/`startCombat`)
+// recouvre le flanc gauche SOUS le Soldat (3,8) — on l'écarte : le Soldat atterrit là par `heroStart`, les
+// 5 servants prennent les 5 cases RESTANTES.
+const RAM_POS = { x: 4, y: 8 };
 const RAM_HEADING = 'N' as const;
-const HERO_COLUMN_X = 5; // heroStart=[6,10] → colonne du groupe (partyPos.x−1)
+const HERO_COLUMN_X = 3; // heroStart=[4,8] → colonne du groupe (partyPos.x−1)
 const SERVANT_SLOTS = crewFormationSlots({ pos: RAM_POS, footprint: 2 }, { crewIds: RAM_CREW }, { heading: RAM_HEADING })
   .filter((p) => p.x !== HERO_COLUMN_X); // écarte tout le flanc gauche (colonne des héros, dont le Soldat)
 
@@ -52,7 +56,7 @@ const scene = buildScene({
   metresPerTile: 2,
   ambiance: 'exterieur',
   ambientLight: 'jour',
-  heroStart: [6, 10], // le Soldat (1er du groupe) atterrit en (5,10) — flanc gauche de la formation, à 5 cases de la porte
+  heroStart: [4, 8], // le Soldat (1er du groupe) atterrit en (3,8) — flanc gauche de la formation, à 3 cases de la porte
   startMessage: "Le Soldat sert le bélier (poste, Équipe de 6) : poussez-le jusqu'à la porte (Action « Pousser », mouvement simple) puis enfoncez-la (Test de Force) — la VICTOIRE se joue sur la porte ABATTUE, pas sur le défenseur qui la garde.",
   walls: [{ x: 5, y: 4, side: 'N', structure: 'porte-de-ville' }],
 });

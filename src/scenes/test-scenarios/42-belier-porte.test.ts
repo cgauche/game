@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from '../../state/store';
 import { scenario } from './42-belier-porte';
-import { resolveAttack, firedWeapon, firedAttackBlock } from '../../state/combatFlow';
+import { resolveAttack, firedWeapon, firedAttackBlock, attackPlan } from '../../state/combatFlow';
 import { placeCombatant } from '../../state/spawn';
 import { seedBattleRng } from '../../state/battleRng';
 import { combatValue } from '../../engine/combat';
@@ -44,7 +44,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ battle: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
-  it("scène : une porte-de-ville brèchable sur l'arête N de (5,4), formation à 5 cases de la porte", () => {
+  it("scène : une porte-de-ville brèchable sur l'arête N de (5,4), formation ALIGNÉE en x, à 3 cases de la porte", () => {
     const s = scenario.scene;
     expect(s.dimensions).toEqual({ w: 10, h: 15 });
     const gate = s.walls!.find((w) => w.structure === 'porte-de-ville');
@@ -218,7 +218,25 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     expect(useGame.getState().battle!.action).toBeNull(); // sous la moitié → poussée IMPOSSIBLE (comme un tir sous-effectif)
   });
 
-  it("après avoir POUSSÉ la formation jusqu'à la porte (3 poussées, cap 2), le bélier l'assène (Force + Blessures)", () => {
+  it("EXACTEMENT 2 poussées plein Nord (cap 2, cases 2 puis 1) amènent l'empreinte au contact DIRECT de la porte (anti-régression du grind)", () => {
+    const { soldat, ram, porte } = startBelier();
+    const pushBy = (dy: number) => {
+      setActive(soldat.id);
+      useGame.getState().battlePushEngine();
+      useGame.getState().battleClickTile({ x: soldat.pos!.x, y: soldat.pos!.y - dy });
+    };
+    // Départ (3 cases d'écart) : hors d'Allonge, la porte étant inanimée (jamais de Charge/approche implicite).
+    expect(attackPlan(() => useGame.getState(), soldat, porte).kind).toBe('blocked');
+    pushBy(2); // (3,8) → (3,6) : reliquat de 1 case restant, toujours hors d'Allonge
+    expect(attackPlan(() => useGame.getState(), soldat, porte).kind).toBe('blocked');
+    pushBy(1); // (3,6) → (3,5) : contact — la 2e poussée suffit
+    expect(soldat.pos).toEqual({ x: 3, y: 5 });
+    expect(ram.pos).toEqual({ x: 4, y: 5 }); // formation rigide : offset chef↔engin inchangé après 2 poussées cumulées
+    // Contact DIRECT (dx=0) : la case (5,5) de l'empreinte 2×2 (colonnes 4-5) est juste au Nord de la porte (5,4).
+    expect(attackPlan(() => useGame.getState(), soldat, porte).kind).toBe('attack');
+  });
+
+  it("après avoir POUSSÉ la formation jusqu'à la porte (2 poussées, cap 2), le bélier l'assène (Force + Blessures)", () => {
     const { soldat, ram, porte } = startBelier();
     soldat.characteristics.F = 90; // Test quasi-garanti (indépendant de la mobilité testée ici)
     const pushBy = (dy: number) => {
@@ -226,11 +244,10 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
       useGame.getState().battlePushEngine();
       useGame.getState().battleClickTile({ x: soldat.pos!.x, y: soldat.pos!.y - dy });
     };
-    pushBy(2); // (5,10) → (5,8)
-    pushBy(2); // (5,8) → (5,6)
-    pushBy(1); // (5,6) → (5,5) : adjacent à la porte (arête N de (5,4)), comme l'ancienne position figée du Lot 1
-    expect(soldat.pos).toEqual({ x: 5, y: 5 });
-    expect(ram.pos).toEqual({ x: 6, y: 5 }); // formation rigide : offset chef↔engin inchangé après 3 poussées cumulées
+    pushBy(2); // (3,8) → (3,6)
+    pushBy(1); // (3,6) → (3,5) : adjacente DIRECTE à la porte (arête N de (5,4), dx=0)
+    expect(soldat.pos).toEqual({ x: 3, y: 5 });
+    expect(ram.pos).toEqual({ x: 4, y: 5 }); // formation rigide : offset chef↔engin inchangé après 2 poussées cumulées
     seedBattleRng(1);
     const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
     const r = resolveAttack(() => useGame.getState(), soldat, porte, undefined, false, false, false, belier.uid);
