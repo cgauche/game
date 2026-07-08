@@ -128,6 +128,14 @@ console MCP partagé entre sessions (`all:true` remontait les crashes de la sess
 
 **Compléments d'expérience de la traversée jouée (3 jours, mini-recette 2026-07-09)** — le récit
 confirme #227/#229 et ajoute :
+**Dernière vague OUVERTE le 2026-07-09** : 21→#231 (cartographié site par site : `MapRoute.km`
+porte des MILLES en mer, affichages tantôt conscients du mode tantôt « km » en dur) · 22→#232
+(rectification en vérifiant : la « Perception 1 jour/3 » était une MÉLECTURE — c'est le test du
+PHARE d'arrivée, gaté ≤15 milles + port à phare, `seaVoyageFlow.ts:363-373` ; le défaut UX de
+déclencheur incompris tient). Complément posté sur #211. **Le skill #219 est LIVRÉ et FERMÉ**
+(`f6581b33`, `.claude/skills/creer-une-campagne/SKILL.md` — corrigé de l'erreur bridge du journal).
+**PASSE NAVALE INTÉGRALEMENT CLOSE : #212-#232 + 4 corrections directes commitées.**
+
 21. **Unités km/milles mélangées pour la MÊME valeur** (tracé carte « 480 km » vs panneau
     « 480 milles » ; récap « 202 km » vs liste « 202 milles ») — le libellé km du système
     terrestre jamais adapté au mode mer. À ouvrir.
