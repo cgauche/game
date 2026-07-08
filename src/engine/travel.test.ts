@@ -66,18 +66,21 @@ describe('travelPlanCalc (l.224 : 6 h/jour sans Test)', () => {
 
 describe('transportCost (l.207-219 : prix par km par passager)', () => {
   it('diligence Intérieur 2 sous/km : 10 km × 4 passagers = 80 sous', () => {
-    expect(toBrass(transportCost(10, 'diligence', 'interieur', 4))).toBe(80);
+    expect(toBrass(transportCost(10, 'diligence', 'interieur', 4)!)).toBe(80);
   });
   it('diligence Extérieur 1 sou/km ; barge Cabine 5 / Pont 2', () => {
-    expect(toBrass(transportCost(10, 'diligence', 'exterieur', 1))).toBe(10);
-    expect(toBrass(transportCost(10, 'barge', 'cabine', 1))).toBe(50);
-    expect(toBrass(transportCost(10, 'barge', 'pont', 1))).toBe(20);
+    expect(toBrass(transportCost(10, 'diligence', 'exterieur', 1)!)).toBe(10);
+    expect(toBrass(transportCost(10, 'barge', 'cabine', 1)!)).toBe(50);
+    expect(toBrass(transportCost(10, 'barge', 'pont', 1)!)).toBe(20);
   });
   it('prix d’auteur (override par route) respecté', () => {
-    expect(toBrass(transportCost(10, 'diligence', 'interieur', 1, 4))).toBe(40);
+    expect(toBrass(transportCost(10, 'diligence', 'interieur', 1, 4)!)).toBe(40);
   });
   it('km fractionnaires arrondis au sou supérieur', () => {
-    expect(toBrass(transportCost(2.5, 'diligence', 'exterieur', 1))).toBe(3);
+    expect(toBrass(transportCost(2.5, 'diligence', 'exterieur', 1)!)).toBe(3);
+  });
+  it('mode « mer » (navire de campagne, pas un passage payant à la classe) → null, jamais de throw', () => {
+    expect(transportCost(100, 'mer', '', 1)).toBeNull();
   });
 });
 

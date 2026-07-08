@@ -288,7 +288,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const kmh = selRoute ? travelSpeed(party, mode, selRoute.speed?.[mode], effAllure) : 0;
   const hours = mode === 'pied' && forced ? maxH : mode === 'monture' && forced ? 12 : base;
   const plan = selRoute && kmh > 0 ? travelPlanCalc(selRoute.km, kmh, hours) : null;
-  const cost = selRoute && mode !== 'pied' && mode !== 'monture'
+  const cost = selRoute && mode !== 'pied' && mode !== 'monture' && mode !== 'mer'
     ? transportCost(selRoute.km, mode, classKey, passengers, selRoute.prices?.[mode])
     : null;
   const affordable = !cost || canAfford(money, cost);

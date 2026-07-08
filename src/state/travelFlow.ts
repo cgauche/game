@@ -227,6 +227,7 @@ export function startTravel(
   if (mode !== 'pied' && mode !== 'monture') {
     const passengers = party.filter((h) => !h.dead && !h.outOfRencontre).length;
     const cost = transportCost(route.km, mode, opts.classKey ?? '', passengers, route.prices?.[mode]);
+    if (!cost) return; // mode sans facette `travel` (id de véhicule invalide) — rien à débiter, rien à jouer
     const purse = get().money;
     if (!canAfford(purse, cost)) {
       log(get, set, [`Le passage (${TRAVEL_MODE_LABEL[mode].toLowerCase()}, ${formatMoney(cost)}) dépasse les moyens du groupe.`]);

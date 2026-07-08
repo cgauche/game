@@ -127,15 +127,18 @@ export function travelPlanCalc(km: number, kmh: number, hoursPerDay: number): Tr
 }
 
 /** Coût d'un transport payant : prix/km × km × passagers (l.207 « par kilomètre parcouru »).
- *  `brassPerKmOverride` = prix d'auteur sur la route (défaut : classe RAW). */
+ *  `brassPerKmOverride` = prix d'auteur sur la route (défaut : classe RAW). `null` si `mode` n'a
+ *  pas de facette `travel` (ex. `'mer'` = navire de campagne, pas un passage payant à la classe). */
 export function transportCost(
   km: number,
   mode: Exclude<TravelMode, 'pied'>,
   classKey: string,
   passengers: number,
   brassPerKmOverride?: number,
-): Money {
-  const classes = vehicleTravel(mode)!.classes;
+): Money | null {
+  const travel = vehicleTravel(mode);
+  if (!travel) return null;
+  const classes = travel.classes;
   const cls = classes.find((c) => c.key === classKey) ?? classes[0];
   const perKm = brassPerKmOverride ?? cls.brassPerKm;
   return fromBrass(Math.ceil(perKm * km) * Math.max(1, passengers));
