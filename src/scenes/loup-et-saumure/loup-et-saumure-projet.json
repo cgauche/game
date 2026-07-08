@@ -1,0 +1,2662 @@
+{
+ "schema": 2,
+ "scenes": [
+  {
+   "id": "ls-quai-salzenmund",
+   "nom": "Salzenmund — le quai de la Seconde Flotte",
+   "description": "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, à côté du Loup impérial amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; Griet accorde son luth.",
+   "dimensions": {
+    "w": 16,
+    "h": 10
+   },
+   "ambiance": "exterieur",
+   "layers": [
+    {
+     "z": 0,
+     "tiles": [
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau"
+     ]
+    }
+   ],
+   "entities": [
+    {
+     "id": "start",
+     "kind": "heroStart",
+     "pos": {
+      "x": 2,
+      "y": 4
+     }
+    },
+    {
+     "id": "kohler",
+     "kind": "personnage",
+     "pos": {
+      "x": 5,
+      "y": 3
+     },
+     "label": "Baron Ludolf Köhler",
+     "facing": "S",
+     "dialogueId": "dlg-kohler",
+     "appearance": {
+      "species": "Humains (Reiklander)",
+      "career": "Noblesse",
+      "sex": "M",
+      "build": 0.5
+     }
+    },
+    {
+     "id": "aldo",
+     "kind": "personnage",
+     "pos": {
+      "x": 8,
+      "y": 3
+     },
+     "label": "Frère Aldo",
+     "facing": "S",
+     "dialogueId": "dlg-aldo",
+     "appearance": {
+      "species": "Humains (Reiklander)",
+      "career": "Prêtre initié",
+      "sex": "M",
+      "build": 0.6
+     }
+    },
+    {
+     "id": "kramer",
+     "kind": "personnage",
+     "pos": {
+      "x": 11,
+      "y": 3
+     },
+     "label": "Dame Vasilika Kramer",
+     "facing": "S",
+     "dialogueId": "dlg-kramer",
+     "appearance": {
+      "species": "Humains (Kislevite)",
+      "career": "Marchande",
+      "sex": "F",
+      "build": 0.45
+     }
+    },
+    {
+     "id": "griet",
+     "kind": "personnage",
+     "pos": {
+      "x": 5,
+      "y": 6
+     },
+     "label": "Griet",
+     "facing": "N",
+     "dialogueId": "dlg-griet",
+     "appearance": {
+      "species": "Humains (Reiklander)",
+      "career": "Ménestrel",
+      "sex": "F",
+      "build": 0.4
+     }
+    },
+    {
+     "id": "avitailleuse",
+     "kind": "personnage",
+     "pos": {
+      "x": 9,
+      "y": 6
+     },
+     "label": "Cambuse du port (rations/eau)",
+     "facing": "N",
+     "merchant": {
+      "archetype": "taverniere"
+     },
+     "appearance": {
+      "species": "Humains (Reiklander)",
+      "career": "Bourgeois",
+      "sex": "F",
+      "build": 0.55
+     }
+    },
+    {
+     "id": "armurier",
+     "kind": "personnage",
+     "pos": {
+      "x": 12,
+      "y": 6
+     },
+     "label": "Arsenal du port (munitions/pièces)",
+     "facing": "N",
+     "merchant": {
+      "archetype": "armurier"
+     },
+     "appearance": {
+      "species": "Humains (Reiklander)",
+      "career": "Artisan",
+      "sex": "M",
+      "build": 0.6
+     }
+    },
+    {
+     "id": "p0",
+     "kind": "prop",
+     "pos": {
+      "x": 2,
+      "y": 8
+     },
+     "label": "La jetée d’appareillage",
+     "interact": {
+      "flow": {
+       "kind": "if",
+       "cond": {
+        "kind": "flag",
+        "expr": "ls_commission_acceptee"
+       },
+       "then": {
+        "kind": "seq",
+        "steps": [
+         {
+          "kind": "do",
+          "effect": {
+           "type": "openWorldMap"
+          }
+         }
+        ]
+       },
+       "else": {
+        "kind": "seq",
+        "steps": [
+         {
+          "kind": "do",
+          "effect": {
+           "type": "journal",
+           "text": "Il faut d’abord accepter la commission du baron Köhler."
+          }
+         }
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "dialogues": [
+    {
+     "id": "dlg-kohler",
+     "start": "k1",
+     "nodes": [
+      {
+       "id": "k1",
+       "speaker": "Baron Ludolf Köhler",
+       "text": "« Capitaine. Le Loup impérial est vôtre pour cette traversée — porter à Erengrad une cargaison d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. »",
+       "choices": [
+        {
+         "text": "Accepter la commission (40 CO, le Loup impérial à quai)",
+         "when": {
+          "kind": "flag",
+          "expr": "!ls_commission_acceptee"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveMoney",
+             "gold": 40
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setVessel",
+             "vehicleId": "loup-imperial",
+             "morale": 75,
+             "hullCurrent": 180,
+             "hullMax": 180
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "ls_commission_acceptee"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Le Loup impérial est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage."
+            }
+           }
+          ]
+         },
+         "next": "k1"
+        },
+        {
+         "text": "Lui demander de financer le carénage (60 CO)",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale. »"
+            }
+           }
+          ]
+         },
+         "next": "k1"
+        },
+        {
+         "text": "Prendre congé",
+         "when": {
+          "kind": "flag",
+          "expr": "ls_commission_acceptee"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "dlg-aldo",
+     "start": "a1",
+     "nodes": [
+      {
+       "id": "a1",
+       "speaker": "Frère Aldo",
+       "text": "« Un navire qui appareille sans la bénédiction de Manann navigue nu, capitaine. Un petit sacrifice, et je bénis la coque. »",
+       "choices": [
+        {
+         "text": "Demander la bénédiction du navire",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "ls_benediction_aldo"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe."
+            }
+           }
+          ]
+         },
+         "next": "a1"
+        },
+        {
+         "text": "Lui demander l’origine de son ordre",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels — mieux que je ne le voudrais. »"
+            }
+           }
+          ]
+         },
+         "next": "a1"
+        },
+        {
+         "text": "Le saluer",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "dlg-kramer",
+     "start": "kr1",
+     "nodes": [
+      {
+       "id": "kr1",
+       "speaker": "Dame Vasilika Kramer",
+       "text": "« Ma cargaison est dans la cale, capitaine, et j'entends qu'elle y reste jusqu'à Erengrad. »",
+       "choices": [
+        {
+         "text": "S’enquérir du fret",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »"
+            }
+           }
+          ]
+         },
+         "next": "kr1"
+        },
+        {
+         "text": "L’observer discrètement (Intuition)",
+         "flow": {
+          "kind": "test",
+          "test": {
+           "skill": "intuition",
+           "difficulty": "difficile",
+           "label": "Intuition — quelque chose cloche chez Kramer"
+          },
+          "success": {
+           "kind": "seq",
+           "steps": [
+            {
+             "kind": "do",
+             "effect": {
+              "type": "setFlag",
+              "flag": "ls_kramer_soupconnee"
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "journal",
+              "text": "Un éclair de calcul froid passe dans son regard, vite maîtrisé. Elle cache quelque chose."
+             }
+            }
+           ]
+          },
+          "fail": {
+           "kind": "seq",
+           "steps": [
+            {
+             "kind": "do",
+             "effect": {
+              "type": "journal",
+              "text": "Rien ne transparaît — une négociante comme une autre, en apparence."
+             }
+            }
+           ]
+          }
+         },
+         "next": "kr1"
+        },
+        {
+         "text": "La laisser à ses affaires",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "dlg-griet",
+     "start": "g1",
+     "nodes": [
+      {
+       "id": "g1",
+       "speaker": "Griet",
+       "text": "« Une chanson pour la route, capitaine ? »",
+       "choices": [
+        {
+         "text": "Écouter sa chanson",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Griet entonne « Jacques Bret a rencontré notre acier » — l’équipage reprend le refrain."
+            }
+           }
+          ]
+         },
+         "next": "g1"
+        },
+        {
+         "text": "La saluer",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "triggers": [],
+   "encounters": [],
+   "flags": {},
+   "weather": "brouillard",
+   "entryPoints": {
+    "retour": {
+     "x": 2,
+     "y": 4
+    }
+   }
+  },
+  {
+   "id": "ls-abordage-cogue",
+   "nom": "La Dent de Manann — voile noire sous le vent (J4)",
+   "description": "La cogue pirate intercepte le Loup impérial en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille de cale et pillage, PUIS un prisonnier à sacrifier à Stromfels. Frère Aldo nomme l'ennemi à voix haute.",
+   "dimensions": {
+    "w": 22,
+    "h": 14
+   },
+   "ambiance": "exterieur",
+   "layers": [
+    {
+     "z": 0,
+     "tiles": [
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau"
+     ]
+    }
+   ],
+   "entities": [
+    {
+     "id": "start",
+     "kind": "heroStart",
+     "pos": {
+      "x": 4,
+      "y": 6
+     }
+    },
+    {
+     "id": "grimm",
+     "kind": "personnage",
+     "ref": "loup-imperial",
+     "pos": {
+      "x": 4,
+      "y": 6
+     },
+     "facing": "E",
+     "label": "Le Loup impérial",
+     "crewIds": [
+      "aldo-crew",
+      "griet-crew"
+     ],
+     "postes": [
+      {
+       "item": {
+        "uid": "itm-grimm-tribord-1",
+        "trappingId": "canon-moyen",
+        "name": "Canon (moyen)",
+        "kind": "ranged",
+        "damage": {
+         "plusBF": false,
+         "flat": 14
+        },
+        "reach": null,
+        "range": 75,
+        "qualities": [
+         {
+          "id": "dangereuse"
+         },
+         {
+          "id": "recharge",
+          "value": 6
+         },
+         {
+          "id": "arme-d-equipe",
+          "value": 3
+         },
+         {
+          "id": "siege"
+         }
+        ],
+        "enc": 50,
+        "equipped": false,
+        "weaponGroup": "poudre-noire",
+        "subType": "armes-de-siege"
+       },
+       "side": "tribord",
+       "crewIds": []
+      },
+      {
+       "item": {
+        "uid": "itm-grimm-babord-2",
+        "trappingId": "canon-moyen",
+        "name": "Canon (moyen)",
+        "kind": "ranged",
+        "damage": {
+         "plusBF": false,
+         "flat": 14
+        },
+        "reach": null,
+        "range": 75,
+        "qualities": [
+         {
+          "id": "dangereuse"
+         },
+         {
+          "id": "recharge",
+          "value": 6
+         },
+         {
+          "id": "arme-d-equipe",
+          "value": 3
+         },
+         {
+          "id": "siege"
+         }
+        ],
+        "enc": 50,
+        "equipped": false,
+        "weaponGroup": "poudre-noire",
+        "subType": "armes-de-siege"
+       },
+       "side": "babord",
+       "crewIds": []
+      },
+      {
+       "item": {
+        "uid": "itm-grimm-proue-3",
+        "trappingId": "pierrier",
+        "name": "Pierrier",
+        "kind": "ranged",
+        "damage": {
+         "plusBF": false,
+         "flat": 14
+        },
+        "reach": null,
+        "range": 30,
+        "qualities": [
+         {
+          "id": "dangereuse"
+         },
+         {
+          "id": "recharge",
+          "value": 4
+         }
+        ],
+        "enc": 5,
+        "equipped": false,
+        "weaponGroup": "poudre-noire",
+        "subType": "armes-de-siege"
+       },
+       "side": "proue",
+       "crewIds": []
+      }
+     ]
+    },
+    {
+     "id": "aldo-crew",
+     "kind": "personnage",
+     "pos": {
+      "x": 4,
+      "y": 5
+     },
+     "label": "Frère Aldo (équipage exposé)",
+     "statblock": {
+      "name": "Frère Aldo (équipage exposé)",
+      "char": {
+       "M": 4,
+       "CC": 35,
+       "CT": 30,
+       "F": 33,
+       "E": 35,
+       "Ag": 30,
+       "Dex": 30,
+       "Int": 30,
+       "FM": 30,
+       "Soc": 30,
+       "B": 12
+      }
+     }
+    },
+    {
+     "id": "griet-crew",
+     "kind": "personnage",
+     "pos": {
+      "x": 5,
+      "y": 5
+     },
+     "label": "Griet (équipage exposé)",
+     "statblock": {
+      "name": "Griet (équipage exposé)",
+      "char": {
+       "M": 4,
+       "CC": 35,
+       "CT": 30,
+       "F": 33,
+       "E": 35,
+       "Ag": 30,
+       "Dex": 30,
+       "Int": 30,
+       "FM": 30,
+       "Soc": 30,
+       "B": 12
+      }
+     }
+    },
+    {
+     "id": "cogue",
+     "kind": "personnage",
+     "ref": "cogue",
+     "pos": {
+      "x": 16,
+      "y": 6
+     },
+     "facing": "O",
+     "label": "La Dent de Manann",
+     "crewIds": [
+      "pirate-1",
+      "pirate-2"
+     ],
+     "postes": [
+      {
+       "item": {
+        "uid": "itm-cogue-tribord-4",
+        "trappingId": "canon-moyen",
+        "name": "Canon (moyen)",
+        "kind": "ranged",
+        "damage": {
+         "plusBF": false,
+         "flat": 14
+        },
+        "reach": null,
+        "range": 75,
+        "qualities": [
+         {
+          "id": "dangereuse"
+         },
+         {
+          "id": "recharge",
+          "value": 6
+         },
+         {
+          "id": "arme-d-equipe",
+          "value": 3
+         },
+         {
+          "id": "siege"
+         }
+        ],
+        "enc": 50,
+        "equipped": false,
+        "weaponGroup": "poudre-noire",
+        "subType": "armes-de-siege"
+       },
+       "side": "tribord",
+       "crewIds": []
+      }
+     ]
+    },
+    {
+     "id": "pirate-1",
+     "kind": "personnage",
+     "ref": "pirate-fluvial",
+     "pos": {
+      "x": 15,
+      "y": 5
+     },
+     "label": "Pirate"
+    },
+    {
+     "id": "pirate-2",
+     "kind": "personnage",
+     "ref": "pirate-fluvial",
+     "pos": {
+      "x": 15,
+      "y": 7
+     },
+     "label": "Pirate"
+    },
+    {
+     "id": "chef-cogue",
+     "kind": "personnage",
+     "ref": "chef-pirate",
+     "pos": {
+      "x": 17,
+      "y": 6
+     },
+     "label": "Le chef de la Dent de Manann"
+    }
+   ],
+   "dialogues": [],
+   "triggers": [],
+   "encounters": [
+    {
+     "id": "enc-cogue",
+     "members": [
+      {
+       "entityId": "grimm",
+       "side": "ally"
+      },
+      {
+       "entityId": "aldo-crew",
+       "side": "ally"
+      },
+      {
+       "entityId": "griet-crew",
+       "side": "ally"
+      },
+      {
+       "entityId": "cogue",
+       "side": "enemy"
+      },
+      {
+       "entityId": "pirate-1",
+       "side": "enemy"
+      },
+      {
+       "entityId": "pirate-2",
+       "side": "enemy"
+      },
+      {
+       "entityId": "chef-cogue",
+       "side": "enemy"
+      }
+     ],
+     "onVictory": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setFlag",
+         "flag": "ls_cogue_vaincue"
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "giveXp",
+         "amount": 150
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "giveMoney",
+         "gold": 15
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "journal",
+         "text": "La Dent de Manann rompt et sombre. Des épaves flottent — Séquestre à faire valoir à quai."
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "transition",
+         "scene": "ls-quai-erengrad",
+         "entry": "arrivee"
+        }
+       }
+      ]
+     }
+    }
+   ],
+   "flags": {},
+   "weather": "brouillard",
+   "entryPoints": {
+    "arrivee": {
+     "x": 4,
+     "y": 6
+    }
+   }
+  },
+  {
+   "id": "ls-quai-erengrad",
+   "nom": "Erengrad — le port kislevite",
+   "description": "Erengrad (Taille 4, Richesse 4, surplus Laine +1 — MDG 15 l.439-506). Négoce, rumeurs, et une nuit où le chat du bord tombe malade.",
+   "dimensions": {
+    "w": 16,
+    "h": 8
+   },
+   "ambiance": "exterieur",
+   "layers": [
+    {
+     "z": 0,
+     "tiles": [
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau"
+     ]
+    }
+   ],
+   "entities": [
+    {
+     "id": "start",
+     "kind": "heroStart",
+     "pos": {
+      "x": 2,
+      "y": 4
+     }
+    },
+    {
+     "id": "docker",
+     "kind": "personnage",
+     "pos": {
+      "x": 7,
+      "y": 3
+     },
+     "label": "Docker du port",
+     "facing": "S",
+     "dialogueId": "dlg-rumeur-olg",
+     "appearance": {
+      "species": "Humains (Kislevite)",
+      "career": "Ouvrier",
+      "sex": "M",
+      "build": 0.6
+     }
+    },
+    {
+     "id": "kramer-erengrad",
+     "kind": "personnage",
+     "pos": {
+      "x": 11,
+      "y": 3
+     },
+     "label": "Dame Vasilika Kramer",
+     "facing": "S",
+     "dialogueId": "dlg-kramer-nuit-du-chat",
+     "appearance": {
+      "species": "Humains (Kislevite)",
+      "career": "Marchande",
+      "sex": "F",
+      "build": 0.45
+     }
+    },
+    {
+     "id": "charpentier",
+     "kind": "personnage",
+     "pos": {
+      "x": 9,
+      "y": 6
+     },
+     "label": "Charpentier de bord",
+     "facing": "N",
+     "dialogueId": "dlg-reparation",
+     "appearance": {
+      "species": "Humains (Reiklander)",
+      "career": "Artisan",
+      "sex": "M",
+      "build": 0.6
+     }
+    },
+    {
+     "id": "p1",
+     "kind": "prop",
+     "pos": {
+      "x": 2,
+      "y": 7
+     },
+     "label": "Reprendre la mer vers Salzenmund",
+     "interact": {
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "openWorldMap"
+         }
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "dialogues": [
+    {
+     "id": "dlg-rumeur-olg",
+     "start": "r1",
+     "nodes": [
+      {
+       "id": "r1",
+       "speaker": "Docker",
+       "text": "« Vous naviguez vers Salzenmund ? Faites gaffe à Olg Blóðsalt — un skaeling qui « boit la saumure » et écume la route avec son langskip. La guilde marchande a mis une prime sur sa tête. »",
+       "choices": [
+        {
+         "text": "Merci pour l’avertissement",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "ls_rumeur_olg"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "dlg-kramer-nuit-du-chat",
+     "start": "nc1",
+     "nodes": [
+      {
+       "id": "nc1",
+       "speaker": "Dame Vasilika Kramer",
+       "text": "Au matin de l'appareillage, le chat du bord est malade et un albatros mort est cloué au beaupré. Kramer était « à terre toute la nuit ».",
+       "choices": [
+        {
+         "text": "L’interroger sur sa nuit (Intuition)",
+         "flow": {
+          "kind": "test",
+          "test": {
+           "skill": "intuition",
+           "difficulty": "difficile",
+           "label": "Intuition — la nuit du chat"
+          },
+          "success": {
+           "kind": "seq",
+           "steps": [
+            {
+             "kind": "do",
+             "effect": {
+              "type": "setFlag",
+              "flag": "ls_kramer_demasquee"
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "journal",
+              "text": "Elle craque : ce n’est pas une négociante, mais une initiée de Stromfels. L’équipage gronde."
+             }
+            }
+           ]
+          },
+          "fail": {
+           "kind": "seq",
+           "steps": [
+            {
+             "kind": "do",
+             "effect": {
+              "type": "journal",
+              "text": "« Une insomnie de plus, capitaine. La traversée est éprouvante pour tous. »"
+             }
+            }
+           ]
+          }
+         },
+         "next": "nc1"
+        },
+        {
+         "text": "La laisser tranquille",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "id": "dlg-reparation",
+     "start": "rp1",
+     "nodes": [
+      {
+       "id": "rp1",
+       "speaker": "Charpentier de bord",
+       "text": "« Calfeutrons la coque avant de reprendre la mer, capitaine — la traversée l'a mise à mal. »",
+       "choices": [
+        {
+         "text": "Superviser la réparation (Test étendu de Métier (Charpentier), 5 DR)",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "extendedTest",
+             "skill": "metier",
+             "spec": "Charpentier",
+             "difficulty": "intermediaire",
+             "label": "Réparation temporaire du Loup impérial",
+             "targetDR": 5,
+             "flag": "ls_coque_reparee"
+            }
+           }
+          ]
+         },
+         "next": "rp1"
+        },
+        {
+         "text": "Plus tard",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "triggers": [],
+   "encounters": [],
+   "flags": {},
+   "weather": "neige",
+   "entryPoints": {
+    "arrivee": {
+     "x": 2,
+     "y": 4
+    }
+   }
+  },
+  {
+   "id": "ls-abordage-olg",
+   "nom": "Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)",
+   "description": "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Loup impérial chargé de laine. Poursuite, feu de chasse, collision, abordage — le morceau de bravoure de la traversée.",
+   "dimensions": {
+    "w": 22,
+    "h": 14
+   },
+   "ambiance": "exterieur",
+   "layers": [
+    {
+     "z": 0,
+     "tiles": [
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau"
+     ]
+    }
+   ],
+   "entities": [
+    {
+     "id": "start",
+     "kind": "heroStart",
+     "pos": {
+      "x": 4,
+      "y": 6
+     }
+    },
+    {
+     "id": "grimm2",
+     "kind": "personnage",
+     "ref": "loup-imperial",
+     "pos": {
+      "x": 4,
+      "y": 6
+     },
+     "facing": "E",
+     "label": "Le Loup impérial",
+     "crewIds": [
+      "aldo-crew-2",
+      "griet-crew-2"
+     ],
+     "postes": [
+      {
+       "item": {
+        "uid": "itm-grimm2-tribord-5",
+        "trappingId": "canon-moyen",
+        "name": "Canon (moyen)",
+        "kind": "ranged",
+        "damage": {
+         "plusBF": false,
+         "flat": 14
+        },
+        "reach": null,
+        "range": 75,
+        "qualities": [
+         {
+          "id": "dangereuse"
+         },
+         {
+          "id": "recharge",
+          "value": 6
+         },
+         {
+          "id": "arme-d-equipe",
+          "value": 3
+         },
+         {
+          "id": "siege"
+         }
+        ],
+        "enc": 50,
+        "equipped": false,
+        "weaponGroup": "poudre-noire",
+        "subType": "armes-de-siege"
+       },
+       "side": "tribord",
+       "crewIds": []
+      },
+      {
+       "item": {
+        "uid": "itm-grimm2-babord-6",
+        "trappingId": "canon-moyen",
+        "name": "Canon (moyen)",
+        "kind": "ranged",
+        "damage": {
+         "plusBF": false,
+         "flat": 14
+        },
+        "reach": null,
+        "range": 75,
+        "qualities": [
+         {
+          "id": "dangereuse"
+         },
+         {
+          "id": "recharge",
+          "value": 6
+         },
+         {
+          "id": "arme-d-equipe",
+          "value": 3
+         },
+         {
+          "id": "siege"
+         }
+        ],
+        "enc": 50,
+        "equipped": false,
+        "weaponGroup": "poudre-noire",
+        "subType": "armes-de-siege"
+       },
+       "side": "babord",
+       "crewIds": []
+      },
+      {
+       "item": {
+        "uid": "itm-grimm2-poupe-7",
+        "trappingId": "pierrier",
+        "name": "Pierrier",
+        "kind": "ranged",
+        "damage": {
+         "plusBF": false,
+         "flat": 14
+        },
+        "reach": null,
+        "range": 30,
+        "qualities": [
+         {
+          "id": "dangereuse"
+         },
+         {
+          "id": "recharge",
+          "value": 4
+         }
+        ],
+        "enc": 5,
+        "equipped": false,
+        "weaponGroup": "poudre-noire",
+        "subType": "armes-de-siege"
+       },
+       "side": "poupe",
+       "crewIds": []
+      }
+     ]
+    },
+    {
+     "id": "aldo-crew-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 4,
+      "y": 5
+     },
+     "label": "Frère Aldo (équipage exposé)",
+     "statblock": {
+      "name": "Frère Aldo (équipage exposé)",
+      "char": {
+       "M": 4,
+       "CC": 35,
+       "CT": 30,
+       "F": 33,
+       "E": 35,
+       "Ag": 30,
+       "Dex": 30,
+       "Int": 30,
+       "FM": 30,
+       "Soc": 30,
+       "B": 12
+      }
+     }
+    },
+    {
+     "id": "griet-crew-2",
+     "kind": "personnage",
+     "pos": {
+      "x": 5,
+      "y": 5
+     },
+     "label": "Griet (équipage exposé)",
+     "statblock": {
+      "name": "Griet (équipage exposé)",
+      "char": {
+       "M": 4,
+       "CC": 35,
+       "CT": 30,
+       "F": 33,
+       "E": 35,
+       "Ag": 30,
+       "Dex": 30,
+       "Int": 30,
+       "FM": 30,
+       "Soc": 30,
+       "B": 12
+      }
+     }
+    },
+    {
+     "id": "serpent-de-sel",
+     "kind": "personnage",
+     "ref": "langskip",
+     "pos": {
+      "x": 16,
+      "y": 6
+     },
+     "facing": "O",
+     "label": "Le Serpent-de-Sel",
+     "crewIds": [
+      "norse-1",
+      "norse-2"
+     ]
+    },
+    {
+     "id": "norse-1",
+     "kind": "personnage",
+     "ref": "pirate-fluvial",
+     "pos": {
+      "x": 15,
+      "y": 5
+     },
+     "label": "Norse"
+    },
+    {
+     "id": "norse-2",
+     "kind": "personnage",
+     "ref": "pirate-fluvial",
+     "pos": {
+      "x": 15,
+      "y": 7
+     },
+     "label": "Norse"
+    },
+    {
+     "id": "olg",
+     "kind": "personnage",
+     "ref": "olg-blodsalt",
+     "pos": {
+      "x": 17,
+      "y": 6
+     },
+     "label": "Olg Blóðsalt",
+     "weapon": "Hache"
+    }
+   ],
+   "dialogues": [],
+   "triggers": [],
+   "encounters": [
+    {
+     "id": "enc-olg",
+     "members": [
+      {
+       "entityId": "grimm2",
+       "side": "ally"
+      },
+      {
+       "entityId": "aldo-crew-2",
+       "side": "ally"
+      },
+      {
+       "entityId": "griet-crew-2",
+       "side": "ally"
+      },
+      {
+       "entityId": "serpent-de-sel",
+       "side": "enemy"
+      },
+      {
+       "entityId": "norse-1",
+       "side": "enemy"
+      },
+      {
+       "entityId": "norse-2",
+       "side": "enemy"
+      },
+      {
+       "entityId": "olg",
+       "side": "enemy"
+      }
+     ],
+     "onVictory": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setFlag",
+         "flag": "ls_olg_vaincu"
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "giveXp",
+         "amount": 250
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "giveMoney",
+         "gold": 40
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "journal",
+         "text": "Olg Blóðsalt tombe. Le Serpent-de-Sel amène pavillon — la prise à armer, ~40 survivants à répartir sur deux coques."
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "transition",
+         "scene": "ls-epilogue-salzenmund",
+         "entry": "retour"
+        }
+       }
+      ]
+     },
+     "threat": {
+      "camp": "enemies",
+      "tier": "dangereuse"
+     }
+    }
+   ],
+   "flags": {},
+   "weather": "tempete",
+   "entryPoints": {
+    "arrivee": {
+     "x": 4,
+     "y": 6
+    }
+   }
+  },
+  {
+   "id": "ls-epilogue-salzenmund",
+   "nom": "Salzenmund — le retour (J13)",
+   "description": "Les parts, le chantier, le conseil final. Köhler regarde la prise avec des yeux gourmands.",
+   "dimensions": {
+    "w": 14,
+    "h": 9
+   },
+   "ambiance": "exterieur",
+   "layers": [
+    {
+     "z": 0,
+     "tiles": [
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau"
+     ]
+    }
+   ],
+   "entities": [
+    {
+     "id": "start",
+     "kind": "heroStart",
+     "pos": {
+      "x": 2,
+      "y": 3
+     }
+    },
+    {
+     "id": "kohler-epilogue",
+     "kind": "personnage",
+     "pos": {
+      "x": 6,
+      "y": 3
+     },
+     "label": "Baron Ludolf Köhler",
+     "facing": "S",
+     "dialogueId": "dlg-epilogue"
+    }
+   ],
+   "dialogues": [
+    {
+     "id": "dlg-epilogue",
+     "start": "e1",
+     "nodes": [
+      {
+       "id": "e1",
+       "speaker": "Baron Ludolf Köhler",
+       "text": "« La Seconde Flotte manque de coques, capitaine. La prise du Serpent-de-Sel est à vendre ? »",
+       "choices": [
+        {
+         "text": "Toucher la solde de la mission (parts + prime)",
+         "when": {
+          "kind": "flag",
+          "expr": "!ls_solde_versee"
+         },
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveMoney",
+             "gold": 60
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "setFlag",
+             "flag": "ls_solde_versee"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveXp",
+             "amount": 100
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Köhler verse la solde et la prime d’Olg. Le chantier attend le Loup impérial — carénage enfin, critiques réparés."
+            }
+           }
+          ]
+         },
+         "next": "e1"
+        },
+        {
+         "text": "Prendre congé",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "endDialogue"
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "triggers": [],
+   "encounters": [],
+   "flags": {},
+   "entryPoints": {
+    "retour": {
+     "x": 2,
+     "y": 3
+    }
+   }
+  }
+ ],
+ "worldMap": {
+  "id": "carte-loup-et-saumure",
+  "nom": "La Mer des Griffes — Salzenmund ⇄ Erengrad",
+  "places": [
+   {
+    "id": "salzenmund",
+    "label": "Salzenmund",
+    "pos": {
+     "x": 25,
+     "y": 60
+    },
+    "scene": "ls-quai-salzenmund",
+    "icon": "scenario/port",
+    "port": {
+     "taille": 4,
+     "richesse": 4,
+     "production": [
+      "fer",
+      "armes"
+     ],
+     "surplus": {
+      "fer": 1
+     }
+    }
+   },
+   {
+    "id": "erengrad",
+    "label": "Erengrad",
+    "pos": {
+     "x": 78,
+     "y": 20
+    },
+    "scene": "ls-quai-erengrad",
+    "icon": "scenario/port",
+    "port": {
+     "taille": 4,
+     "richesse": 4,
+     "production": [
+      "laine"
+     ],
+     "surplus": {
+      "laine": 1
+     }
+    }
+   }
+  ],
+  "routes": [
+   {
+    "id": "route-salzenmund-erengrad-aller",
+    "a": "salzenmund",
+    "b": "erengrad",
+    "km": 550,
+    "modes": [
+     "mer"
+    ],
+    "sea": true,
+    "seaHeading": "nord",
+    "ambush": {
+     "scene": "ls-abordage-cogue",
+     "encounter": "enc-cogue"
+    }
+   },
+   {
+    "id": "route-salzenmund-erengrad-retour",
+    "a": "salzenmund",
+    "b": "erengrad",
+    "km": 550,
+    "modes": [
+     "mer"
+    ],
+    "sea": true,
+    "seaHeading": "sud",
+    "ambush": {
+     "scene": "ls-abordage-olg",
+     "encounter": "enc-olg"
+    }
+   }
+  ]
+ }
+}
