@@ -58,4 +58,25 @@ describe('pickBackend — coque de véhicule en COMBAT (#224 : routage par creat
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
   });
+
+  for (const id of ['cogue', 'loup-imperial']) {
+    it(`sceneEntity « ${id} » (EXPLORATION/ÉDITEUR — figurant/EntityToken/Inspector partagent ce même
+        classifieur) route vers le gabarit navire, jamais bipède`, () => {
+      const r = pickBackend({ kind: 'sceneEntity', ent: ent({ id: `fig-${id}`, kind: 'personnage', ref: id }) });
+      expect(r.backend).toBe('plan');
+    });
+
+    it(`sceneEntity « ${id} » renommée (label ≠ id/label catalogue) route toujours par la ref, pas par le label`, () => {
+      const r = pickBackend({ kind: 'sceneEntity', ent: ent({ id: `fig-${id}-renamed`, kind: 'personnage', ref: id, label: 'Un Nom De Fiction Sans Rapport' }) });
+      expect(r.backend).toBe('plan');
+    });
+  }
+
+  it('la garde DEV HURLE pour une sceneEntity dont la ref ne résout ni créature ni véhicule ni engin (#223)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const r = pickBackend({ kind: 'sceneEntity', ent: ent({ id: 'e', kind: 'personnage', ref: 'ref-totalement-inconnue' }) });
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(r.backend).toBe('rig'); // repli bipède Humain, mais SIGNALÉ — plus jamais silencieux
+    warn.mockRestore();
+  });
 });
