@@ -359,6 +359,16 @@ textarea:focus {
   display: grid;
   place-items: center;
 }
+/* #225 — filet de niveau écran (SceneErrorBoundary autour de CampaignView) : overlay plein
+   viewport, INDÉPENDANT du layout ambiant (l'arbre parent a pu crasher en plein milieu). */
+.app-error-boundary {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: var(--bg, #14161c);
+}
 .stage-hint {
   position: absolute;
   bottom: 18px;

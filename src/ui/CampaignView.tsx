@@ -160,6 +160,15 @@ export function CampaignView() {
   };
 
   return (
+    // #225 : filet de niveau écran — couvre carte du monde, port, marché, modales… (tout ce qui est
+    // hors du stage, jusque-là rendu à nu). `onRetry` = simple reprise du rendu (pas de reload : le
+    // store n'est pas touché par un crash de render, la session en mémoire survit).
+    <SceneErrorBoundary
+      className="app-error-boundary"
+      message="Une erreur d'affichage est survenue. Votre partie n'est pas perdue."
+      retryLabel="Revenir à la scène"
+      onRetry={() => {}}
+    >
     <div className="screen campaign-view">
       <main className="stage">
         <SceneErrorBoundary>{mode === 'exploration' && povActive ? <PovStage /> : <IsoStage />}</SceneErrorBoundary>
@@ -323,5 +332,6 @@ export function CampaignView() {
       })()}
       {inspected && <InspectPanel combatant={inspected} onClose={() => setInspectId(null)} />}
     </div>
+    </SceneErrorBoundary>
   );
 }

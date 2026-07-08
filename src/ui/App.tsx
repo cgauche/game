@@ -6,6 +6,7 @@ import { PartyScreen } from './PartyScreen';
 import { CharacterCreator } from './creator/CharacterCreator';
 import { GlobalSvgDefs } from './GlobalSvgDefs';
 import { Icon } from './Icon';
+import { SceneErrorBoundary } from './SceneErrorBoundary';
 
 // Le rendu de jeu (iso SVG + sprites du bestiaire) et l'éditeur d'authoring ne
 // sont pas nécessaires à l'écran menu : chunks async séparés (React.lazy) pour
@@ -44,24 +45,34 @@ export function App() {
     if (new URLSearchParams(location.search).get('join')) useGame.getState().setScreen('coop');
   }, []);
   return (
-    <div className="app">
-      <GlobalSvgDefs />
-      <CoopBanner />
-      <Suspense fallback={<div className="lazy-fallback" role="status">Chargement…</div>}>
-        {screen === 'menu' && <MainMenu />}
-        {screen === 'party' && <PartyScreen />}
-        {screen === 'creator' && <CharacterCreator />}
-        {screen === 'campaign' && <CampaignView />}
-        {screen === 'editor' && <Editor />}
-        {screen === 'test' && <TestScenariosScreen />}
-        {screen === 'interlude' && <InterludeScreen />}
-        {screen === 'massBattle' && <MassBattleView />}
-        {screen === 'coop' && <CoopLobby />}
-        {screen === 'compendium' && <CompendiumScreen />}
-        {/* Drill-in d'une réf Codex EN JEU : modale par-dessus l'écran courant (n'importe lequel),
-            sans démonter le jeu/la fiche → musique et contexte préservés (cf. openCodex). */}
-        {codexOverlay && <CodexOverlay />}
-      </Suspense>
-    </div>
+    // #225 : filet de DERNIER RECOURS — un crash de render N'IMPORTE OÙ dans l'app (menu, éditeur,
+    // interlude…) retombe sur le menu principal plutôt que sur un écran vide. La boundary de
+    // CampaignView (plus ciblée) intercepte déjà les crashs de la campagne avant qu'ils remontent ici.
+    <SceneErrorBoundary
+      className="app-error-boundary"
+      message="Une erreur d'affichage est survenue. Votre partie n'est pas perdue."
+      retryLabel="Revenir au menu"
+      onRetry={() => useGame.getState().setScreen('menu')}
+    >
+      <div className="app">
+        <GlobalSvgDefs />
+        <CoopBanner />
+        <Suspense fallback={<div className="lazy-fallback" role="status">Chargement…</div>}>
+          {screen === 'menu' && <MainMenu />}
+          {screen === 'party' && <PartyScreen />}
+          {screen === 'creator' && <CharacterCreator />}
+          {screen === 'campaign' && <CampaignView />}
+          {screen === 'editor' && <Editor />}
+          {screen === 'test' && <TestScenariosScreen />}
+          {screen === 'interlude' && <InterludeScreen />}
+          {screen === 'massBattle' && <MassBattleView />}
+          {screen === 'coop' && <CoopLobby />}
+          {screen === 'compendium' && <CompendiumScreen />}
+          {/* Drill-in d'une réf Codex EN JEU : modale par-dessus l'écran courant (n'importe lequel),
+              sans démonter le jeu/la fiche → musique et contexte préservés (cf. openCodex). */}
+          {codexOverlay && <CodexOverlay />}
+        </Suspense>
+      </div>
+    </SceneErrorBoundary>
   );
 }
