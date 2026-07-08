@@ -28,7 +28,9 @@ import { bus, EVT } from './bus';
  * « dégage les combattants de taille inférieure du chemin, se déplaçant où elle veut » (LDB 85
  * l.373-374). C'est l'ensemble de TRANSIT (ce qui interrompt le passage). Pour ce qui interdit de
  * FINIR son déplacement (on ne s'arrête jamais sur une autre créature), voir `cannotStopOn`.
- * Passer un id (legacy/tests) ⇒ aucun filtrage de Taille (toutes les empreintes bloquent).
+ * L'overload `id: string` sert le placement AVANT existence d'un `Combatant` (Taille inconnue,
+ * ex. pose d'une invocation dans `summonFlow.ts`) : aucun filtrage de Taille, toutes les
+ * empreintes bloquent.
  */
 export function occupied(battle: BattleState, mover: Combatant | string): Set<string> {
   const exceptId = typeof mover === 'string' ? mover : mover.id;
@@ -157,7 +159,7 @@ export function displaceSmaller(get: Get, mover: Combatant): boolean {
 /** Case walkable la plus proche de `c`, non occupée (toutes empreintes) et HORS de l'empreinte de
  *  `mover` — anneaux croissants (rayon ≤ 6). `undefined` si rien (c reste, co-occupation tolérée). */
 function nearestFreeOutside(scene: Scene, battle: BattleState, c: Combatant, mover: Combatant): Pt | undefined {
-  const blocked = occupied(battle, c.id); // id (legacy) ⇒ TOUTES les empreintes bloquent (placement)
+  const blocked = occupied(battle, c.id); // Taille de `c` non prise en compte ici ⇒ TOUTES les empreintes bloquent (placement)
   for (let r = 1; r <= 6; r++)
     for (let dy = -r; dy <= r; dy++)
       for (let dx = -r; dx <= r; dx++) {

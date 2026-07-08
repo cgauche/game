@@ -1043,7 +1043,8 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'rest', days: 1 }),
     apply: (e, env) => {
       // Repos déclenché par l'éditeur (trigger/dialogue) : ouvre la MODALE DE NUIT (couchage +
-      // pitance par héros, prix RAW, bilan globalisé). LEGACY sans `lodging` : contexte maison.
+      // pitance par héros, prix RAW, bilan globalisé). `lodging` non renseigné dans l'effet ⇒
+      // défaut maison (arbitrage de contexte, cf. `placesOfKind`).
       openRest(env.get, env.set, { places: placesOfKind(e.lodging ?? 'maison'), quality: e.quality, days: e.days ?? 1 });
     },
   },

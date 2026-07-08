@@ -162,8 +162,8 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
       // le MÊME chemin `readSlot` → `migrateSave` → `applyLoadedSave` que loadGame(slot)).
       expect(saveToSlot(1, migrated!)).toBe(true);
       expect(useGame.getState().loadGame(1)).toBe(true);
-      // La preuve motivant la migration v1→v2 : le worldMap LEGACY vide (fixture v1) ne subsiste pas —
-      // la carte de campagne (non vide) de la base est restaurée.
+      // La preuve motivant la migration v1→v2 : le worldMap vide de la fixture v1 (format pré-migration,
+      // conservée pour le cliquet) ne subsiste pas — la carte de campagne (non vide) de la base est restaurée.
       expect(useGame.getState().worldMap?.places.length).toBeGreaterThan(0);
     });
   }

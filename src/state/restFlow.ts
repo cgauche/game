@@ -60,8 +60,9 @@ export interface RestPlaces {
   camp?: boolean;
 }
 
-/** L'offre d'un contexte nommé (effet `rest` legacy / halte de voyage) — dormir dehors reste
- *  toujours possible (choix personnel : on peut manger à l'auberge et dormir à la belle étoile). */
+/** L'offre par DÉFAUT d'un contexte nommé (`kind`, faute de `lodging` explicite fourni par
+ *  l'effet `rest` / halte de voyage) — dormir dehors reste toujours possible (choix personnel :
+ *  on peut manger à l'auberge et dormir à la belle étoile). */
 export function placesOfKind(kind: RestKind): RestPlaces {
   return kind === 'auberge' ? { auberge: true, camp: true } : kind === 'maison' ? { maison: true, camp: true } : { camp: true };
 }
