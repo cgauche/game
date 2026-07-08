@@ -69,10 +69,10 @@ const village = buildScene({
   rest: { auberge: true },
   startMessage:
     'Ouvrez la carte du monde pour voyager : le hameau (24 km, route peu sûre), le bourg (30 km, diligence, relais) — ' +
-    'et depuis le hameau, la LONGUE route d’Eichenfeld (96 km, 3 nuits). Chacun tient son POSTE (Bjorn au plein air, ' +
+    'et depuis le hameau, la LONGUE route d’Altdorf (96 km, 3 nuits). Chacun tient son POSTE (Bjorn au plein air, ' +
     'Mira aux aguets, Aldric cartographie, Greta fourrage) — le mode Étapes (EDOC) est activé, coupable au panneau ' +
     'Règles maison. Le groupe part blessé : chaque nuit, le bilan montre récupération, faim, Vérole et cauchemars. ' +
-    'À Eichenfeld, marchez sur le cercle : l’interlude d’Activités s’ouvre.',
+    'À Altdorf, marchez sur le cercle : l’interlude d’Activités s’ouvre.',
   entities: [
     { id: 'aubergiste', kind: 'personnage', label: 'Aubergiste', pos: { x: 8, y: 3 }, dialogueId: 'dlg-auberge' },
   ],
@@ -104,7 +104,7 @@ const hameau = buildScene({
   terrain: 'herbe',
   heroStart: [3, 4],
   weather: 'pluie', // la longue route part d'ici : camper sous la pluie expose
-  startMessage: 'Vous voilà à Federholz. (Reprenez la carte pour repartir — la LONGUE route d’Eichenfeld part d’ici.)',
+  startMessage: 'Vous voilà à Federholz. (Reprenez la carte pour repartir — la LONGUE route d’Altdorf part d’ici.)',
 });
 
 const bourg = buildScene({
@@ -120,12 +120,12 @@ const bourg = buildScene({
 // Cité d'arrivée + INTERLUDE (Entre deux aventures) : marcher sur le cercle ouvre les Activités.
 const cite = buildScene({
   id: 'test-voyage-cite',
-  nom: 'Eichenfeld, la cité aux chênes',
+  nom: 'Altdorf, la capitale',
   description: 'Arène de test.',
   size: [12, 8],
   terrain: 'herbe',
   heroStart: [3, 4],
-  startMessage: 'Eichenfeld, au bout de la longue route. Marchez sur le cercle runique pour l’entre-deux-aventures (Activités).',
+  startMessage: 'Altdorf, au bout de la longue route. Marchez sur le cercle runique pour l’entre-deux-aventures (Activités).',
   entities: [
     { id: 'cercle', kind: 'prop', ref: 'cercle-runique', pos: { x: 6, y: 4 } },
   ],
@@ -169,7 +169,9 @@ const carte: WorldMap = {
     { id: 'p-village', label: 'Weiler', pos: { x: 24, y: 62 }, scene: 'test-voyage-village', icon: 'scenario/village' },
     { id: 'p-hameau', label: 'Federholz', pos: { x: 72, y: 30 }, scene: 'test-voyage-hameau', icon: 'scenario/hamlet' },
     { id: 'p-bourg', label: 'Steinbruck', pos: { x: 70, y: 78 }, scene: 'test-voyage-bourg', icon: 'scenario/port' },
-    { id: 'p-cite', label: 'Eichenfeld', pos: { x: 90, y: 20 }, scene: 'test-voyage-cite', icon: 'scenario/siege' },
+    // id 'altdorf' (pas juste 'p-cite') : les Activités d'Altdorf (ACE Annexe I) gatées `where:['altdorf']`
+    // (activities.json — Pénitence, Entraînement, Tester des objets…) lisent `currentPlaceId` par id de lieu.
+    { id: 'altdorf', label: 'Altdorf', pos: { x: 90, y: 20 }, scene: 'test-voyage-cite', icon: 'scenario/siege' },
   ],
   routes: [
     {
@@ -199,7 +201,7 @@ const carte: WorldMap = {
       // LONG voyage (96 km à M4 = 4 jours / 3 nuits à pied) : récupération nocturne, rations qui fondent,
       // faim de Greta, postes d'Étapes répétés — relais d'auberges en chemin (ou belle étoile, au choix).
       id: 'r-longue',
-      a: 'p-hameau', b: 'p-cite',
+      a: 'p-hameau', b: 'altdorf',
       km: 96,
       modes: ['pied', 'diligence'],
       inns: true,
@@ -219,7 +221,9 @@ export const scenario: TestScenario = {
     'Fourrage, règle travel-etapes activable), HALTES de nuit (modale de Repos), LONG voyage 96 km = 3 nuits, ' +
     'bilan de nuit COMPLET (récupération des blessés, faim RAW, Vérole de Greta + contagion, cauchemars, ' +
     'Exposition sous la pluie), péripéties + embuscade + reprise, et INTERLUDE d’Activités à l’arrivée (Revenus/' +
-    'Artisanat/banque/Apprentissage, le temps passe).',
+    'Artisanat/banque/Apprentissage, le temps passe) — la cité d’arrivée est le lieu `altdorf` de la carte : ' +
+    'les Activités d’Altdorf (ACE Annexe I : Pénitence, Entraînement inhabituel, Tester des objets, Mécénat, ' +
+    'Recherche universitaire), gatées `where`, y deviennent atteignables.',
   partyNote: 'Bjorn (plein air) · Mira (aguets) · Aldric (cartographe, 300 PX) · Greta (fourrage faible, blessée, Vérole, cauchemars)',
   makeParty: groupe,
   scene: village,

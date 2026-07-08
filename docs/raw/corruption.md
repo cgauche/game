@@ -564,6 +564,8 @@ Quand la menace choisie est **Mutation** : réussir automatiquement le premier T
 | Mods passifs via collecteur unifié passiveMods | `passive: GameOp[]` sur `Mutation` (mutations.json) | **OK** |
 | Traits de créature via mutation (Tentacule, Stupide…) | `attachMutation` → copie `m.traits` sur `c.traits` | **OK** |
 | Traits psychologiques via mutation (Frénésie) | `attachMutation` → copie `m.psychTraits` | **OK** |
+| Sombres Murmures (LDB 19 l.95-105 — choix OPTIONNEL, refuser garde le PC) | `DialogueChoice.flow` porte `{ op: 'corruption', amount: -1 }` (`src/engine/ops.ts`) ; le choix EST le dialogue d'auteur (accepter/refuser), rien de plus au moteur | **OK** |
+| Absolution (LDB 19 l.167-182 — « limites laissées à l'appréciation du MJ ») | quantité AUTHORABLE : `{ op: 'corruption', amount: -n }` (`applyOps`, `src/engine/ops.ts`) décrémente `corruption`, plancher 0, sans passer par `ctx.onCorruption` (pas de seuil/mutation sur un retrait) ; éditable au GameOpEditor (`src/ui/editor/GameOpEditor.tsx`) | **OK** |
 
 ### Non implémenté / delta code↔RAW
 
@@ -578,8 +580,6 @@ Quand la menace choisie est **Mutation** : réussir automatiquement le premier T
 | Masochisme pressant (mutation mentale EDOC) | **Non implémenté** |
 | Haine sporadique + Tableau des Obsessions (EDOC) | **Non implémenté** |
 | Mutations spécifiques EDO App.2 (Chair Nécrosée, Crétin, Écailles épineuses EDO, Pattes Chèvre, Tête Pointue EDO) | **Non implémenté** dans mutations.json — ces entrées ne sont pas présentes |
-| Sombres Murmures (perdre 1 PC en commettant un acte répréhensible MJ) | **(Non implémenté)** — pas de mécanique store pour cette perte narrative |
-| Absolution (perte narrative de PC) | **(Non implémenté)** — pas de `{ op: 'corruption', amount: -n }` ou équivalent |
 | Arme naturelle Écailles Épineuses EDOC (-10 Dex, -10 Soc) vs LDB (+1 PA seul) | **Divergence** — la version EDOC pénalise Dex et Soc en plus du PA ; `mutations.json` (`ecailles-epineuses`) n'a que `apAll: 1`, pas de malus Dex/Soc |
 
 ### Note : « Écailles Épineuses » — version LDB vs EDOC

@@ -422,3 +422,33 @@ describe("op:'corruptionExposure' — Exposition différée (LDB 19 l.23-75)", (
     expect(c.corruption ?? 0).toBe(0);
   });
 });
+
+describe("op:'corruption' amount négatif — Absolution (LDB 19 l.167-182, #97 reliquat 3)", () => {
+  it('décrément direct plancher 0, sans passer par ctx.onCorruption (aucun seuil/mutation déclenché)', () => {
+    const c = hero({ corruption: 3 });
+    let onCorruptionCalls = 0;
+    const lines = applyOps(c, [{ op: 'corruption', amount: -2 }], {
+      onCorruption: () => { onCorruptionCalls++; return ['ne devrait jamais apparaître']; },
+    });
+    expect(c.corruption).toBe(1);
+    expect(onCorruptionCalls).toBe(0);
+    expect(lines).toEqual(['Cobaye : -2 Point(s) de Corruption (total 1).']);
+  });
+
+  it('plancher 0 : jamais négatif même si amount dépasse le total courant', () => {
+    const c = hero({ corruption: 1 });
+    const lines = applyOps(c, [{ op: 'corruption', amount: -5 }]);
+    expect(c.corruption).toBe(0);
+    expect(lines).toEqual(['Cobaye : -1 Point(s) de Corruption (total 0).']);
+  });
+
+  it('amount positif inchangé (non-régression) : passe par ctx.onCorruption quand fourni', () => {
+    const c = hero();
+    const seen: number[] = [];
+    applyOps(c, [{ op: 'corruption', amount: 2 }], {
+      onCorruption: (n) => { seen.push(n); return ['gain']; },
+    });
+    expect(seen).toEqual([2]);
+    expect(c.corruption ?? 0).toBe(0); // le hook gère le total lui-même (store) — non simulé ici
+  });
+});

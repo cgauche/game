@@ -5,7 +5,7 @@
 > hors du code. Tolérance ligne = ±20.
 
 **Sens A — code → Atlas** : 0 chapitre(s) cités par le code & absents de l'Atlas · 4 chapitre(s) couverts avec des lignes non pinées.
-**Sens B — Atlas → code** : 161 marqueur(s) « (non implémenté) » · 23 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
+**Sens B — Atlas → code** : 159 marqueur(s) « (non implémenté) » · 23 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
 
 ## A1 — Chapitres appelés par le CODE, ABSENTS de l'Atlas (trous durs)
 
@@ -14,30 +14,30 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 ## A2 — Lignes appelées par le CODE non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
 ### LDB 46 — 10/30 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
-- l.185 — `src/state/combatSlice.ts:2738` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
-- l.188 — `src/data/index.ts:488` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
-- l.193 — `src/state/combatFlow.ts:1835` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
-- l.194 — `src/engine/ops.ts:565` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
+- l.185 — `src/state/combatSlice.ts:2845` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
+- l.188 — `src/data/index.ts:504` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
+- l.193 — `src/state/combatFlow.ts:1896` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
+- l.194 — `src/engine/ops.ts:595` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
 - l.199 — `src/engine/magic.ts:165` — * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
 - l.201 — `src/engine/engine.test.ts:699` — it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
 - l.202 — `src/engine/magic.ts:539` — *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
-- l.204 — `src/engine/conditions.ts:380` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
-- l.205 — `src/state/combatSlice.ts:2798` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
-- l.207 — `src/engine/tests.ts:205` — *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
+- l.204 — `src/engine/conditions.ts:464` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
+- l.205 — `src/state/combatSlice.ts:2905` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
+- l.207 — `src/engine/tests.ts:206` — *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
 
 ### LDB 10 — 6/21 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
-- l.310 — `src/engine/types.ts:708` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
-- l.364 — `src/engine/types.ts:1173` — /** Distraire (LDB 10 l.364 / AA l.4395) : distrait par un adversaire → ne peut gagner AUCUN Avantage
-- l.365 — `src/state/combatFlow.ts:4137` — *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
+- l.310 — `src/engine/types.ts:820` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
+- l.364 — `src/engine/types.ts:1295` — /** Distraire (LDB 10 l.364 / AA l.4395) : distrait par un adversaire → ne peut gagner AUCUN Avantage
+- l.365 — `src/state/combatFlow.ts:4271` — *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
 - l.569 — `src/engine/grimoire.ts:11` — *    inclusives — aucun sort inclus au Talent, LDB 10 l.569).
 - l.859 — `src/state/granted-traits.test.ts:122` — it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.859) : immunise vs l’Ennemi spécifié seulement', async () => {
 - l.864 — `src/engine/psychology.ts:74` — *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
 
 ### LDB 11 — 2/2 ligne(s) code hors couverture (propriétaire : docs\raw\equipement.md)
 - l.143 — `src/state/vision.ts:11` — * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
-- l.147 — `src/data/index.ts:783` — /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
+- l.147 — `src/data/index.ts:803` — /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
 
-### LDB 12 — 1/20 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
+### LDB 12 — 1/21 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
 - l.229 — `src/engine/activities.ts:223` — /** Test COMBINÉ (LDB 12 l.229) : UN jet confronté aux DEUX premières `skills` (Infiltration Discrétion+
 
 ## B1 — Règles décrites par l'Atlas marquées « (non implémenté) »
@@ -127,18 +127,16 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - **docs\raw\combat.md** L6084 — **Implémente** : `(non implémenté)` — l'artillerie navale n'est pas modélisée séparément. Les Atouts/Défauts partagés (Recharge, Dangereuse, Explosion, Empaleuse, Perforante, Pointue, Tir de zone) son
 - **docs\raw\combat.md** L6131 — **Implémente** : Atout **Tir de zone** reconnu en donnée (`capabilities.areaFire`, `src/data/index.ts`) et porté par les armes à poudre/artillerie (`src/data/trappings.json`). Défaut **Arme d'équipe**
 - **docs\raw\competences.md** L1036 — **Implémente** : `(non implémenté)` — aucune mécanique d'hypnose dans `src/engine` (Compétence de table/MJ).
-- **docs\raw\corruption.md** L568 — ### Non implémenté / delta code↔RAW
-- **docs\raw\corruption.md** L572 — | Tables EDOC étendues par dieu (Khorne/Nurgle/Slaanesh/Tzeentch) | **Non implémenté** — `mutationTables.json` ne contient que les 2 tables LDB 19 génériques ; les 3 tables EDOC (physique étendue, Têt
-- **docs\raw\corruption.md** L573 — | Talent Résistance (Mutation) — réussite auto 1×/séance | **Non implémenté** — non géré dans `corruptionThresholdExceeded` |
-- **docs\raw\corruption.md** L574 — | Mauvais œil (mutation EDOC) — sort lancé sans test | **Non implémenté** — cette entrée EDOC n'est pas dans `mutations.json` |
-- **docs\raw\corruption.md** L575 — | Malefrénésie (mutation EDOC) — mutation temporaire en Frénésie | **Non implémenté** |
-- **docs\raw\corruption.md** L576 — | Corruption sublime (mutation mentale EDOC) — État Exténué hebdomadaire si pas de gain de Corruption | **Non implémenté** |
-- **docs\raw\corruption.md** L577 — | Esprit anéanti (mutation mentale EDOC) | **Non implémenté** |
-- **docs\raw\corruption.md** L578 — | Masochisme pressant (mutation mentale EDOC) | **Non implémenté** |
-- **docs\raw\corruption.md** L579 — | Haine sporadique + Tableau des Obsessions (EDOC) | **Non implémenté** |
-- **docs\raw\corruption.md** L580 — | Mutations spécifiques EDO App.2 (Chair Nécrosée, Crétin, Écailles épineuses EDO, Pattes Chèvre, Tête Pointue EDO) | **Non implémenté** dans mutations.json — ces entrées ne sont pas présentes |
-- **docs\raw\corruption.md** L581 — | Sombres Murmures (perdre 1 PC en commettant un acte répréhensible MJ) | **(Non implémenté)** — pas de mécanique store pour cette perte narrative |
-- **docs\raw\corruption.md** L582 — | Absolution (perte narrative de PC) | **(Non implémenté)** — pas de `{ op: 'corruption', amount: -n }` ou équivalent |
+- **docs\raw\corruption.md** L570 — ### Non implémenté / delta code↔RAW
+- **docs\raw\corruption.md** L574 — | Tables EDOC étendues par dieu (Khorne/Nurgle/Slaanesh/Tzeentch) | **Non implémenté** — `mutationTables.json` ne contient que les 2 tables LDB 19 génériques ; les 3 tables EDOC (physique étendue, Têt
+- **docs\raw\corruption.md** L575 — | Talent Résistance (Mutation) — réussite auto 1×/séance | **Non implémenté** — non géré dans `corruptionThresholdExceeded` |
+- **docs\raw\corruption.md** L576 — | Mauvais œil (mutation EDOC) — sort lancé sans test | **Non implémenté** — cette entrée EDOC n'est pas dans `mutations.json` |
+- **docs\raw\corruption.md** L577 — | Malefrénésie (mutation EDOC) — mutation temporaire en Frénésie | **Non implémenté** |
+- **docs\raw\corruption.md** L578 — | Corruption sublime (mutation mentale EDOC) — État Exténué hebdomadaire si pas de gain de Corruption | **Non implémenté** |
+- **docs\raw\corruption.md** L579 — | Esprit anéanti (mutation mentale EDOC) | **Non implémenté** |
+- **docs\raw\corruption.md** L580 — | Masochisme pressant (mutation mentale EDOC) | **Non implémenté** |
+- **docs\raw\corruption.md** L581 — | Haine sporadique + Tableau des Obsessions (EDOC) | **Non implémenté** |
+- **docs\raw\corruption.md** L582 — | Mutations spécifiques EDO App.2 (Chair Nécrosée, Crétin, Écailles épineuses EDO, Pattes Chèvre, Tête Pointue EDO) | **Non implémenté** dans mutations.json — ces entrées ne sont pas présentes |
 - **docs\raw\deplacement.md** L588 — **Implémente :** (non implémenté)
 - **docs\raw\deplacement.md** L614 — **Implémente :** (non implémenté)
 - **docs\raw\deplacement.md** L634 — **Implémente :** (non implémenté)

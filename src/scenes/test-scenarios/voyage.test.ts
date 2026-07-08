@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { useGame } from '../../state/store';
 import { setRule, resetRule } from '../../engine/policy';
 import { seedBattleRng } from '../../state/battleRng';
+import { currentPlaceId, interludeCatalog } from '../../state/interludeFlow';
 import { scenario } from './voyage';
 
 /** Les 5 sous-scènes sont désormais produites par `buildScene(MapSpec)` (WorldMap/extraScenes restent sur
@@ -70,5 +71,30 @@ describe('16-voyage — intégration Voyage par Étapes', () => {
     const j = useGame.getState().journal;
     expect(j.some((l) => l.includes('Météo'))).toBe(true);
     expect(j.some((l) => l.includes('Plein air') || l.includes('Aux aguets') || l.includes('Cartographie') || l.includes('Approvisionnement'))).toBe(true);
+  });
+});
+
+describe('16-voyage — lieu « altdorf » : Activités d’Altdorf (ACE Annexe I, #96) atteignables à l’arrivée', () => {
+  const byId = (id: string) => [scenario.scene, ...(scenario.extraScenes ?? [])].find((s) => s.id === id)!;
+
+  it('la cité d’arrivée (Altdorf) est le lieu `altdorf` de la carte du monde', () => {
+    expect(scenario.worldMap!.places.find((p) => p.scene === 'test-voyage-cite')?.id).toBe('altdorf');
+  });
+
+  it('currentPlaceId + interludeCatalog : arrivé à Altdorf, les Activités gatées `where:[altdorf]` sont proposées', () => {
+    const cite = byId('test-voyage-cite');
+    useGame.setState({ scene: cite, worldMap: scenario.worldMap, massBattle: null });
+    expect(currentPlaceId(useGame.getState())).toBe('altdorf');
+    const cat = interludeCatalog(useGame.getState());
+    expect(cat.some((d) => d.id === 'penitence')).toBe(true);
+    expect(cat.some((d) => d.id === 'entrainement-arme-inhabituelle')).toBe(true);
+  });
+
+  it('hors d’Altdorf (autre scène du même voyage), ces Activités disparaissent du catalogue', () => {
+    const village = byId('test-voyage-village');
+    useGame.setState({ scene: village, worldMap: scenario.worldMap, massBattle: null });
+    expect(currentPlaceId(useGame.getState())).not.toBe('altdorf');
+    const cat = interludeCatalog(useGame.getState());
+    expect(cat.some((d) => d.id === 'penitence')).toBe(false);
   });
 });
