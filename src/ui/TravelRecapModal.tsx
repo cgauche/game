@@ -1,7 +1,7 @@
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { MultiRollList } from './MultiRollList';
-import { TRAVEL_MODE_LABEL } from '../engine/travel';
+import { TRAVEL_MODE_LABEL, routeDistanceLabel } from '../engine/travel';
 import type { TravelRecap } from '../state/travelFlow';
 import { GameDate } from './GameDate';
 import { Icon } from './Icon';
@@ -39,6 +39,7 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
   const recap = seam ?? storeRecap;
   if (!recap) return null;
   const ambush = !!recap.then; // une embuscade ATTEND : l'acquittement déclenche le combat
+  const sea = recap.mode === 'mer'; // route MARITIME : `km` porte des MILLES (cf. `routeDistanceLabel`)
   const title = ambush
     ? <><Icon id="action/attack" size="sm" /> Embuscade en chemin !</>
     : recap.status === 'arrived'
@@ -51,14 +52,14 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
   return (
     <Modal title={title} variant="plain" className="travel-recap" onClose={dismiss} backdropClose={!ambush}>
       <p className="travel-recap-route">
-        {recap.fromLabel} → <b>{recap.toLabel}</b> · {recap.km} km, {TRAVEL_MODE_LABEL[recap.mode].toLowerCase()}
-        {recap.status !== 'arrived' && <> · <b>{kmLeft > 0 ? `${kmLeft} km restants` : `aux portes de ${recap.toLabel}`}</b></>}
+        {recap.fromLabel} → <b>{recap.toLabel}</b> · {routeDistanceLabel(recap.km, sea)}, {TRAVEL_MODE_LABEL[recap.mode].toLowerCase()}
+        {recap.status !== 'arrived' && <> · <b>{kmLeft > 0 ? `${routeDistanceLabel(kmLeft, sea)} restants` : `aux portes de ${recap.toLabel}`}</b></>}
       </p>
       <ol className="travel-recap-days">
         {recap.days.map((d, i) => (
           <li key={i}>
             <span className="travel-recap-day">
-              Jour {i + 1} — {Math.round(d.kmTo - d.kmFrom)} km en {Math.round(d.hours)} h de route
+              Jour {i + 1} — {routeDistanceLabel(d.kmTo - d.kmFrom, sea)} en {Math.round(d.hours)} h de route
             </span>
             <TravelDayBody day={d} />
           </li>

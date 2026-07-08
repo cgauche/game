@@ -4,7 +4,7 @@ import { makeRNG } from './dice';
 import { stacks } from './conditions';
 import {
   partyWalkSpeed, travelSpeed, travelPlanCalc, transportCost, forcedMarchTest, applyTravelFatigue,
-  vehicleTravel, TRAVEL_DEFAULTS,
+  vehicleTravel, TRAVEL_DEFAULTS, distanceUnit, routeDistanceLabel,
 } from './travel';
 import { toBrass } from './money';
 
@@ -127,5 +127,17 @@ describe('défauts RAW', () => {
     expect(TRAVEL_DEFAULTS.perilDie).toBe(8);
     expect(vehicleTravel('diligence')!.movement).toBe(6);
     expect(vehicleTravel('barge')!.movement).toBe(8);
+  });
+});
+
+describe('unité de distance (#231 : MapRoute.km porte des MILLES en route sea)', () => {
+  it('terrestre → km ; maritime → milles', () => {
+    expect(distanceUnit(false)).toBe('km');
+    expect(distanceUnit(undefined)).toBe('km');
+    expect(distanceUnit(true)).toBe('milles');
+  });
+  it('routeDistanceLabel arrondit et pose la bonne unité', () => {
+    expect(routeDistanceLabel(18, false)).toBe('18 km');
+    expect(routeDistanceLabel(480.4, true)).toBe('480 milles');
   });
 });

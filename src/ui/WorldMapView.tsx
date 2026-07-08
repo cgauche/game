@@ -5,6 +5,7 @@ import { placeOfScene, placeById, routesFrom, otherEnd, declutterPositions, MapR
 import { baseHoursPerDay, maxHoursPerDay } from '../state/travelFlow';
 import {
   TravelMode, TRAVEL_MODE_LABEL, vehicleTravel, travelModeIcon, travelSpeed, travelPlanCalc, transportCost,
+  routeDistanceLabel,
 } from '../engine/travel';
 import {
   type Allure, ALLURE_LABEL, availableAllures, partyFullyMounted, partyMounts,
@@ -300,6 +301,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
 
   // Reprise d'un voyage interrompu.
   const resumeDest = travelPlan?.interrupted ? placeById(map, travelPlan.toPlaceId) : undefined;
+  const resumeRoute = travelPlan ? map.routes.find((r) => r.id === travelPlan.routeId) : undefined;
 
   return (
     <div className="worldmap-overlay">
@@ -389,8 +391,9 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 onClick={fromHere ? () => selectRoute(r) : undefined}
                 style={fromHere ? { cursor: 'pointer' } : undefined}
               >
-                {/* zone de clic généreuse (trait invisible épais) */}
-                {fromHere && <path d={c.d} fill="none" stroke="#000" strokeOpacity="0" strokeWidth={5} pointerEvents="stroke" />}
+                {/* zone de clic généreuse (trait invisible épais — tolérance large, le tracé visible
+                    reste fin : #226, ~35 tentatives de recette perdues sur un hit-target trop maigre) */}
+                {fromHere && <path d={c.d} fill="none" stroke="#000" strokeOpacity="0" strokeWidth={18} pointerEvents="stroke" />}
                 <path
                   d={c.d}
                   fill="none"
@@ -406,10 +409,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                     routes partant d'ICI (celles qu'on peut prendre) : les autres restent des traits
                     propres, pas une nuée de « 30 km » sur chaque segment. */}
                 {fromHere && (
-                  <g transform={`translate(${c.lx} ${c.ly}) scale(${1 / view.z})`} style={{ pointerEvents: 'none' }}>
+                  <g transform={`translate(${c.lx} ${c.ly}) scale(${1 / view.z})`}>
                     <rect x="-5" y="-2" width="10" height="3" rx="1.5" fill="#efe2bd" opacity="0.88" />
                     <text y="0.15" textAnchor="middle" fontSize="2.1" fill="#5d4520">
-                      {r.km} km
+                      {routeDistanceLabel(r.km, r.sea)}
                     </text>
                     {/* Badge de mode (véhicule possible) : barque (voie d'eau) / compas (route carrossable). */}
                     {r.modes.some((m) => m !== 'pied') && (
@@ -499,7 +502,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           <p>
             Voyage vers <b>{resumeDest.label}</b> interrompu —{' '}
             {Math.round(travelPlan.km - travelPlan.kmDone) > 0
-              ? `${Math.round(travelPlan.km - travelPlan.kmDone)} km restants.`
+              ? `${routeDistanceLabel(travelPlan.km - travelPlan.kmDone, resumeRoute?.sea)} restants.`
               : `le groupe est aux portes de ${resumeDest.label}.`}
           </p>
           <div className="modal-actions">
@@ -512,7 +515,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
       {!travelPlan?.interrupted && selRoute && dest && here && (
         <div className="worldmap-panel">
           <div className="wm-trip">
-            <span className="wm-trip-route"><b>{here.label}</b> <span className="wm-arrow">→</span> <b>{dest.label}</b> · {selRoute.km} {selRoute.sea ? 'milles' : 'km'}</span>
+            <span className="wm-trip-route"><b>{here.label}</b> <span className="wm-arrow">→</span> <b>{dest.label}</b> · {routeDistanceLabel(selRoute.km, selRoute.sea)}</span>
             <div className="wm-modes">
               {modeChoices.map((m) => (
                 <button key={m} type="button" className={`btn small ${mode === m ? 'btn-primary' : ''}`} onClick={() => pickMode(m)}>

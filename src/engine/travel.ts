@@ -57,6 +57,20 @@ export const TRAVEL_MODE_LABEL: Record<string, string> = {
   ...Object.fromEntries(TRAVEL_VEHICLES.map((v) => [v.id, v.label])),
 };
 
+/** Unité affichée pour une distance de route : une route `sea` (mode `'mer'`) porte ses
+ *  MILLES dans le même champ `km` — les tables RAW de traversée sont en milles (MDG ch.13/15
+ *  l.57-78, cf. `src/state/seaVoyageFlow.ts:7`). Source UNIQUE de l'unité, pour ne jamais
+ *  ré-écrire « km »/« milles » en dur à un site d'affichage. */
+export function distanceUnit(sea: boolean | undefined): 'milles' | 'km' {
+  return sea ? 'milles' : 'km';
+}
+
+/** Libellé complet « <valeur> <unité> » d'une distance de route (`Math.round` : les valeurs
+ *  calculées peuvent porter des décimales). */
+export function routeDistanceLabel(km: number, sea: boolean | undefined): string {
+  return `${Math.round(km)} ${distanceUnit(sea)}`;
+}
+
 /** `IconId` du pictogramme d'un mode de voyage (registre `src/ui/icons/`, famille `travel/*`) :
  *  donnée `vehicle.icon` ; `'pied'`/`'monture'`/`'mer'` → id fixe, défaut véhicule → `travel/coach`. */
 export function travelModeIcon(mode: TravelMode): string {
