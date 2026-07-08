@@ -59,19 +59,48 @@ RAW (« Capitaine/Timonier/Canonnier/Mage tiennent les postes-clés »).
 
 `state.vessel.manann` (`ManannMood`) n'est mise à jour QUE par `seaVoyageFlow.ts` (`tellManann`,
 `applyManannFactor`, événements de bord/port RNG). Aucun membre de l'union `Effect` (`src/state/scene.ts`
-l.152-346) ne l'expose. La bénédiction d'Aldo (scène 0.3) et le grand sacrifice de Frère Aldo (scène 3.3)
-sont **[INEXPRIMABLE]** mécaniquement — posés en simple `setFlag` + `journal` (flavor, zéro effet réel sur
-la jauge). Piste NON explorée par manque de temps : un Effect `adjustManann` symétrique à `giveMoney`
-serait la couture manquante logique (à proposer, pas à improviser ici).
+l.152-346) ne l'exposait. La bénédiction d'Aldo (scène 0.3) et le grand sacrifice de Frère Aldo (scène 3.3)
+étaient **[INEXPRIMABLE]** mécaniquement — posés en simple `setFlag` + `journal` (flavor, zéro effet réel sur
+la jauge).
+
+**[EXPRIMABLE depuis 02743fd5]** — l'Effect `adjustManann` (`src/state/scene.ts` l.352,
+`src/state/combatEffects.ts` l.1198-1220) a été livré, symétrique à la piste envisagée ci-dessus : membre
+`factorId` référençant un facteur réel de `MANANN_FACTORS` (`src/data/sea-events.json` `manann.factors`,
+via `engine/seaVoyage.ts`) ou `delta` brut. La scène du quai (`scripts/loup-et-saumure/generate.mjs`,
+dialogue `dlg-aldo`) câble désormais la bénédiction ET les trois paliers de sacrifice RAW sur de VRAIS ids
+de facteur : bénédiction du prêtre → `pretre-sans-peche` (Aldo se présente sans Point de Péché), petit
+sacrifice (1 CO) → `petit-sacrifice`, sacrifice moyen (20 CO, une gemme) → `sacrifice-moyen`, grand
+sacrifice (50 CO, la vache et les provisions) → `grand-sacrifice`. Textes joueur restés purement
+diégétiques (aucun id/jargon), verrouillé par un test dédié.
 
 ## Friction n°5 — sabotage de Kramer : deux pipelines disjoints
 
 `op:'testMod'` (`engine/ops.ts` l.550, appliqué par `applyOps`) module les Tests de PERSONNAGE (combat,
 compétence). Les Tests d'ÉQUIPAGE (Progression/Orientation/Manœuvre) sont résolus par
 `engine/seaVoyage.ts`/`state/seaVoyageFlow.ts`, un pipeline ENTIÈREMENT séparé qui ne lit AUCUN `GameOp`.
-Le sabotage RAW de Kramer (MDG 14 l.45-47, −1 à −5 DR « selon l'impact ») est donc **[INEXPRIMABLE]** :
-aucune couture ne relie un Effect d'auteur à un malus de Test d'équipage. Confirmé au `Source/` : la
-mécanique existe (Kramer dialogue le nomme), mais rien dans le moteur ne la porte.
+Le sabotage RAW de Kramer (MDG 14 l.45-47, −1 à −5 DR « selon l'impact ») était donc **[INEXPRIMABLE]** :
+aucune couture ne reliait un Effect d'auteur à un malus de Test d'équipage.
+
+**[EXPRIMABLE depuis 02743fd5]** — l'Effect `setVessel` porte désormais un membre `saboteurDR` (clamp
+`[-5,0]`, `src/state/scene.ts` l.345, `src/state/combatEffects.ts` l.1173-1196), posé DANS
+`state.vessel.saboteurDR` et lu par le pipeline de voyage. La commission de Köhler (`dlg-kohler`, scène du
+quai) pose désormais `setVessel { …, saboteurDR: -2 }` [maison] au moment où le Loup impérial est armé —
+le sabotage discret de l'affréteuse pèse sur les Tests d'équipage dès le départ, sans exposer de jargon au
+joueur.
+
+Limite RÉELLE trouvée en creusant le démasquage de Kramer (Erengrad, `dlg-kramer-nuit-du-chat`) : la
+couture livrée n'est PAS un patch. `setVessel.apply` (`combatEffects.ts` l.1176-1189) fait
+`env.set({ vessel: { vehicleId, morale: {...}, ...hullMax≠null ? wounds, ...saboteurDR≠null ? saboteurDR } })`
+— un `env.set` qui REMPLACE tout `state.vessel`, pas un merge. Poser un second `setVessel` au démasquage
+pour remettre `saboteurDR` à 0 effacerait au passage la progression d'Humeur de Manann (`manann`, absente
+du remplacement) ET les dégâts de coque accumulés au combat de la Dent de Manann (`wounds`, réinitialisés à
+`hullMax` si reposé, ou disparus si omis). Conformément au brief : **NE PAS câbler** ce second `setVessel`
+au prix d'une régression du navire de campagne — « lever le sabotage en cours de route » reste
+**[INEXPRIMABLE]** avec la forme actuelle du handler. Piste pour un futur ticket : faire de `setVessel` un
+PATCH partiel (merge champ par champ sur `state.vessel` existant) plutôt qu'un remplacement total —
+distincte de sa sémantique actuelle « poser un NOUVEAU navire de campagne » (l.1177 : « comme le champ de
+scénario `TestScenario.vessel`, mais authorable »), donc pas un simple correctif : deux usages
+(instancier vs ajuster) mériteraient deux Effects distincts.
 
 ## Friction n°6 — pas de bridge `state.vessel` ⇄ Combattant de combat
 
@@ -128,7 +157,7 @@ Olg à l'aller).
 | 0.1 Commission de Köhler (avance, prémisse) | **EXPRIMABLE** | `giveMoney` + `setVessel` + `setFlag`, dialogue unique (pas de refus réel — assumé) |
 | 0.1 Carénage 5 % / −1 DR Man si sale | **CONTOURNÉ** | décision posée en texte pur (Köhler refuse) ; aucun Effect « salissure/carénage » authorable trouvé en dehors du système d'entretien du navire lui-même (hors scope du test) |
 | 0.2 Recrutement/intendance/chargement | **CONTOURNÉ** | non authoré en scène dédiée (hors périmètre des 5 scènes demandées) ; le marchand d'avitaillement les représente en creux |
-| 0.3 Bénédiction + sacrifice à Manann | **INEXPRIMABLE** | aucune couture Effect → `state.vessel.manann` (friction n°4) |
+| 0.3 Bénédiction + sacrifice à Manann | **EXPRIMABLE depuis 02743fd5** | Effect `adjustManann`, `factorId` → `pretre-sans-peche`/`petit-sacrifice`/`sacrifice-moyen`/`grand-sacrifice` (friction n°4) |
 | 1.1 Routine/anti-grind/voyage rapide | **CONTOURNÉ** | géré par `seaVoyageFlow`/`travelFlow` EXISTANTS (hors scène authorée) ; non ré-authoré ici |
 | 1.2 Infestation de rats | **CONTOURNÉ** | non authoré (hors périmètre des 5 scènes) — le vocabulaire existe (`extendedTest`, démontré ailleurs) |
 | 1.3 Combat contre la Dent de Manann | **EXPRIMABLE** (structure) / **CONTOURNÉ** (seuil de reddition) | coque+équipage+postes servables ; `allEnemiesDead` en repli (friction n°7) |
@@ -138,15 +167,16 @@ Olg à l'aller).
 | 2.2 Négoce, rumeur d'Olg | **EXPRIMABLE** | dialogue + `setFlag` ; le commerce de cargaison lui-même est un système existant (non ré-authoré) |
 | 2.3 Nuit du chat / enquête Kramer | **EXPRIMABLE** (enquête) / **INEXPRIMABLE** (Humeur du chat malade) | `test` node pour l'enquête ; la baisse d'Humeur reste hors couture (friction n°4) |
 | 2.x Réparation temporaire de la coque | **EXPRIMABLE** | `extendedTest` (Métier Charpentier, 5 DR) |
-| 3.1 Tempête, sabotage silencieux, changement de cap | **INEXPRIMABLE** (sabotage) / **CONTOURNÉ** (reste, hors scope des 5 scènes) | friction n°5 |
+| 3.1 Tempête, sabotage silencieux, changement de cap | **EXPRIMABLE depuis 02743fd5** (pose initiale, `saboteurDR: -2`) / **INEXPRIMABLE** (lever le sabotage en cours de route — `setVessel` remplace tout `state.vessel`, pas un patch) / **CONTOURNÉ** (reste, hors scope des 5 scènes) | friction n°5 |
 | 3.2 Poursuite/feu de chasse/collision/abordage d'Olg | **EXPRIMABLE** (structure combat) | coque+équipage+postes ; Proue-idole non instanciée (friction mineure) |
 | 3.3 Jugement de Triton | **CONTOURNÉ** | non authoré en scène dédiée (hors périmètre des 5-6 scènes demandées ; le mécanisme RAW lui-même dépend de l'Humeur, friction n°4) |
 | 3.4 Épilogue, parts, chantier, crochets Kramer | **EXPRIMABLE** (solde/XP) / **CONTOURNÉ** (parts détaillées 50/10/40, crochets Kramer à 3 branches) | épilogue simplifié à une solde forfaitaire |
 
 ## Décompte
 
-**14 EXPRIMABLE · 9 CONTOURNÉ · 5 INEXPRIMABLE** (comptage par ligne de la table ci-dessus, verdicts
-doubles comptés une fois par face).
+**16 EXPRIMABLE · 9 CONTOURNÉ · 4 INEXPRIMABLE** (comptage par ligne de la table ci-dessus, verdicts
+doubles/triples comptés une fois par face ; mise à jour 2026-07-09 post-`02743fd5` : beats 0.3 et
+3.1-sabotage câblés, cf. frictions n°4/n°5 amendées).
 
 ## Notes déplacées hors texte joueur (recette 2026-07-09)
 

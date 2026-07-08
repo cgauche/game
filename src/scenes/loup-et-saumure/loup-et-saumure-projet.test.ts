@@ -5,6 +5,8 @@ import { parseProject } from '../../state/worldMap';
 import { validateScene, type Warning } from '../../state/validateScene';
 import type { Scene } from '../../state/scene';
 import { findCreatureById, findVehicleById } from '../../data';
+import { findManannFactor } from '../../engine/seaVoyage';
+import type { Effect } from '../../state/scene';
 
 /**
  * « Le Loup et la Saumure » — projet de données pures GÉNÉRÉ par `scripts/loup-et-saumure/generate.mjs`
@@ -112,6 +114,51 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     const reparation = erengrad.dialogues.find((d) => d.id === 'dlg-reparation')!;
     const choice = reparation.nodes[0].choices.find((c) => c.flow?.kind === 'seq' && c.flow.steps.some((s) => s.kind === 'do' && s.effect.type === 'extendedTest'));
     expect(choice, 'extendedTest présent').toBeTruthy();
+  });
+
+  /** Tous les `Effect` posés dans un `flow` (choix de dialogue), toutes scènes confondues. */
+  function allEffects(): Effect[] {
+    const out: Effect[] = [];
+    const walk = (flow: any) => {
+      if (!flow) return;
+      if (flow.kind === 'do') out.push(flow.effect);
+      else if (flow.kind === 'seq') for (const s of flow.steps) walk(s);
+      else if (flow.kind === 'if') { walk(flow.then); walk(flow.else); }
+      else if (flow.kind === 'test') { for (const s of flow.onSuccess ?? []) walk(s); for (const s of flow.onFailure ?? []) walk(s); }
+    };
+    for (const sc of project) for (const d of sc.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.flow);
+    return out;
+  }
+
+  it('la bénédiction/le sacrifice d’Aldo posent un Effect adjustManann avec un factorId RÉEL (MANANN_FACTORS)', () => {
+    const manannEffects = allEffects().filter((e): e is Extract<Effect, { type: 'adjustManann' }> => e.type === 'adjustManann');
+    expect(manannEffects.length).toBeGreaterThan(0);
+    for (const e of manannEffects) {
+      expect(e.factorId, 'factorId posé (pas un delta brut)').toBeTruthy();
+      expect(findManannFactor(e.factorId!), `facteur Manann « ${e.factorId} » existe`).toBeTruthy();
+    }
+  });
+
+  it('le setVessel de la commission porte saboteurDR dans [-5,0] (sabotage discret de Kramer, MDG 14 l.45-47)', () => {
+    const setVesselEffects = allEffects().filter((e): e is Extract<Effect, { type: 'setVessel' }> => e.type === 'setVessel');
+    const commission = setVesselEffects.find((e) => e.vehicleId === 'loup-imperial');
+    expect(commission, 'setVessel du Loup impérial posé').toBeTruthy();
+    expect(commission!.saboteurDR).toBeDefined();
+    expect(commission!.saboteurDR!).toBeGreaterThanOrEqual(-5);
+    expect(commission!.saboteurDR!).toBeLessThanOrEqual(0);
+  });
+
+  it('ZÉRO jargon technique dans les textes joueur (répliques de dialogue)', () => {
+    const jargonPattern = /`|state\.vessel|seaVoyageFlow|op:'testMod'|engine\/ops\.ts|adjustManann|setVessel|saboteurDR|factorId|MDG \d+ l\.\d/;
+    const bad: string[] = [];
+    for (const sc of project)
+      for (const d of sc.dialogues)
+        for (const n of d.nodes) {
+          if (jargonPattern.test(n.text)) bad.push(`${sc.id}/${d.id}/${n.id}: node.text`);
+          for (const c of n.choices) if (jargonPattern.test(c.text)) bad.push(`${sc.id}/${d.id}/${n.id}: choice "${c.text}"`);
+        }
+    for (const e of allEffects()) if (e.type === 'journal' && jargonPattern.test(e.text)) bad.push(`journal: "${e.text}"`);
+    expect(bad).toEqual([]);
   });
 
   it('chaque combat enrôlé spawn sur une case MARCHABLE de la carte (footprint des coques compris)', () => {

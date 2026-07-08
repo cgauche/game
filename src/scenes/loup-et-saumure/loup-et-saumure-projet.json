@@ -367,7 +367,8 @@
              "vehicleId": "loup-imperial",
              "morale": 75,
              "hullCurrent": 180,
-             "hullMax": 180
+             "hullMax": 180,
+             "saboteurDR": -2
             }
            },
            {
@@ -443,6 +444,13 @@
            {
             "kind": "do",
             "effect": {
+             "type": "adjustManann",
+             "factorId": "pretre-sans-peche"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
              "type": "setFlag",
              "flag": "ls_benediction_aldo"
             }
@@ -452,6 +460,96 @@
             "effect": {
              "type": "journal",
              "text": "Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe."
+            }
+           }
+          ]
+         },
+         "next": "a1"
+        },
+        {
+         "text": "Faire un petit sacrifice (une pièce jetée à la mer)",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveMoney",
+             "gold": -1
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "adjustManann",
+             "factorId": "petit-sacrifice"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »"
+            }
+           }
+          ]
+         },
+         "next": "a1"
+        },
+        {
+         "text": "Faire un sacrifice moyen (une gemme de votre bourse)",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveMoney",
+             "gold": -20
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "adjustManann",
+             "factorId": "sacrifice-moyen"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »"
+            }
+           }
+          ]
+         },
+         "next": "a1"
+        },
+        {
+         "text": "Faire un grand sacrifice (une vache entière, la moitié des provisions)",
+         "flow": {
+          "kind": "seq",
+          "steps": [
+           {
+            "kind": "do",
+            "effect": {
+             "type": "giveMoney",
+             "gold": -50
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "adjustManann",
+             "factorId": "grand-sacrifice"
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "journal",
+             "text": "La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »"
             }
            }
           ]

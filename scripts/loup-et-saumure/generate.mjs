@@ -133,7 +133,10 @@ scenes.push(scene({
             when: { kind: 'flag', expr: '!ls_commission_acceptee' },
             flow: flowOf([
               { type: 'giveMoney', gold: 40 },
-              { type: 'setVessel', vehicleId: 'loup-imperial', morale: 75, hullCurrent: 180, hullMax: 180 },
+              // saboteurDR: -2 [maison] — le sabotage discret de l'affréteuse Kramer pèse sur les Tests
+              // d'équipage du voyage dès le départ (MDG 14 l.45-47), posé par cette MÊME commission qui
+              // embarque Kramer à bord.
+              { type: 'setVessel', vehicleId: 'loup-imperial', morale: 75, hullCurrent: 180, hullMax: 180, saboteurDR: -2 },
               { type: 'setFlag', flag: 'ls_commission_acceptee' },
               { type: 'journal', text: 'Le Loup impérial est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage.' },
             ]),
@@ -161,10 +164,41 @@ scenes.push(scene({
           "et je bénis la coque. »",
         choices: [
           {
+            // Aldo est prêtre initié et sans Point de Péché (texte de présentation) — sa propre bénédiction,
+            // sans offrande du capitaine, mappe sur le facteur « prêtre à bord sans péché » (MANANN_FACTORS,
+            // sea-events.json id `pretre-sans-peche`).
             text: 'Demander la bénédiction du navire',
             flow: flowOf([
+              { type: 'adjustManann', factorId: 'pretre-sans-peche' },
               { type: 'setFlag', flag: 'ls_benediction_aldo' },
               { type: 'journal', text: 'Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe.' },
+            ]),
+            next: 'a1',
+          },
+          {
+            text: 'Faire un petit sacrifice (une pièce jetée à la mer)',
+            flow: flowOf([
+              { type: 'giveMoney', gold: -1 },
+              { type: 'adjustManann', factorId: 'petit-sacrifice' },
+              { type: 'journal', text: 'Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »' },
+            ]),
+            next: 'a1',
+          },
+          {
+            text: 'Faire un sacrifice moyen (une gemme de votre bourse)',
+            flow: flowOf([
+              { type: 'giveMoney', gold: -20 },
+              { type: 'adjustManann', factorId: 'sacrifice-moyen' },
+              { type: 'journal', text: 'La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »' },
+            ]),
+            next: 'a1',
+          },
+          {
+            text: 'Faire un grand sacrifice (une vache entière, la moitié des provisions)',
+            flow: flowOf([
+              { type: 'giveMoney', gold: -50 },
+              { type: 'adjustManann', factorId: 'grand-sacrifice' },
+              { type: 'journal', text: 'La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »' },
             ]),
             next: 'a1',
           },
@@ -315,6 +349,11 @@ scenes.push(scene({
           "Kramer était « à terre toute la nuit ».",
         choices: [
           {
+            // Démasquer Kramer ne LÈVE PAS son sabotage (`saboteurDR: -2`, scène du quai) : `setVessel`
+            // REMPLACE tout `state.vessel` (morale/coque/manann compris), ce n'est pas un patch — un second
+            // `setVessel` ici effacerait la progression d'Humeur de Manann et les dégâts de coque accumulés
+            // depuis le départ. [INEXPRIMABLE, non tenté] : consigné au journal d'authoring plutôt que
+            // câblé au prix d'une régression du navire de campagne.
             text: 'L’interroger sur sa nuit (Intuition)',
             flow: testNode(
               { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — la nuit du chat' },

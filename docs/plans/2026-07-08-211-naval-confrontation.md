@@ -136,6 +136,23 @@ déclencheur incompris tient). Complément posté sur #211. **Le skill #219 est 
 (`f6581b33`, `.claude/skills/creer-une-campagne/SKILL.md` — corrigé de l'erreur bridge du journal).
 **PASSE NAVALE INTÉGRALEMENT CLOSE : #212-#232 + 4 corrections directes commitées.**
 
+## 6. TRAITEMENT des tickets (l'utilisateur a confié le chantier, 2026-07-09 ~1h — « garant de la campagne »)
+
+**Vague 1 LIVRÉE** (4 codeurs //, suite 9182 verte, typecheck 0) : #213+#214 → `02743fd5`
+(adjustManann + saboteurDR voyage + commentaire corrigé) · #224 → `d752c173` (rendu par
+creatureId) · #231+#226 → `4219db2e` (unités + hit-target) · #225 → `5fa66a0f` (boundary 3
+étages). **Campagne étalon CÂBLÉE sur les coutures neuves** (Aldo → facteurs réels, Kramer →
+saboteurDR −2 [maison] ; journal : 16 EXPRIMABLE · 9 CONTOURNÉ · 4 INEXPRIMABLE). Recette de fin
+de vague EN COURS (5 preuves d'écran) — fermetures des issues après preuves.
+**Trouvaille du câblage → #233 ouvert** : `setVessel` = remplacement TOTAL (`combatEffects.ts:
+1176-1189`) — ajuster sans effacer (lever un sabotage) inexprimable ; fix proposé : instancier
+vs ajuster (merge partiel ou `adjustVessel`).
+**Vagues suivantes** : 2 = données (#216 salaires, #217 ports MDG, #220 avitailleur, #221
+marin/Proue-idole, #230 nommage) · 3 = moteur (#212 événements ancrables, #215 reddition, #222
+ShipPoste-référence+garde, #223 gardes anti-repli, #218 expérience-auteur, #233) · 4 = écrans
+d'expérience (#227 dossier navire, #228 escale-hub, #229 équipage visible, #232 traversée
+commandée — spec = les maquettes de `2026-07-08-211-naval-ecrans.md`).
+
 21. **Unités km/milles mélangées pour la MÊME valeur** (tracé carte « 480 km » vs panneau
     « 480 milles » ; récap « 202 km » vs liste « 202 milles ») — le libellé km du système
     terrestre jamais adapté au mode mer. À ouvrir.
