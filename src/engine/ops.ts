@@ -135,10 +135,15 @@ export interface PerSL {
   every: number;
   /** Quantité ajoutée par palier (peut être négative — retrait de Corruption). */
   amount: number;
+  /** Échelle sur l'ÉCHEC (branche `fail` d'un nœud Flow `test`, `ctx.sl` négatif) au lieu de la réussite —
+   *  « gagnant un État X pour chaque niveau d'échec » (ex. Hallucinogène, T2C ch.13 l.167). Magnitude =
+   *  `|sl|` quand `sl < 0`, 0 sinon (symétrique du défaut qui ignore tout `sl` négatif). */
+  onFailure?: boolean;
 }
 export function slBonus(sl: number | undefined, p?: PerSL): number {
   if (!p || sl == null || !Number.isFinite(sl)) return 0; // DR absent OU non fini → 0 (jamais de NaN propagé)
-  return Math.floor(Math.max(0, sl) / Math.max(1, p.every)) * p.amount;
+  const magnitude = p.onFailure ? Math.max(0, -sl) : Math.max(0, sl);
+  return Math.floor(magnitude / Math.max(1, p.every)) * p.amount;
 }
 
 /** Estimation DÉTERMINISTE d'une `Formula` pour le SCORING (jamais de tirage — le planning ne doit PAS

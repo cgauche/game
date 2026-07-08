@@ -552,9 +552,19 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
               {op.op === 'removeCondition' && <option value="">— au choix (1er État) —</option>}
               {etats.map((s) => <option key={s.label} value={s.label}>{s.label}</option>)}
             </select>
-            <FormulaField label="Intensité" value={o.value ?? 1} min={1} onChange={(value) => upd({ value })} />
+            <FormulaField label="Intensité" value={o.value ?? 1} min={0} onChange={(value) => upd({ value })} />
             {op.op === 'condition' && (
-              <label className="dr"><input type="checkbox" checked={!!o.perRound} onChange={(e) => upd({ perRound: e.target.checked || undefined })} /> chaque Round</label>
+              <>
+                <label className="dr"><input type="checkbox" checked={!!o.perRound} onChange={(e) => upd({ perRound: e.target.checked || undefined })} /> chaque Round</label>
+                <label className="dr"><input type="checkbox" checked={o.valuePerSL != null} onChange={(e) => upd({ valuePerSL: e.target.checked ? { every: 1, amount: 1 } : undefined })} /> par DR</label>
+                {o.valuePerSL != null && (
+                  <>
+                    <label className="dr">tous les<input type="number" min={1} title="DR" value={o.valuePerSL.every ?? 1} onChange={(e) => upd({ valuePerSL: { ...o.valuePerSL, every: Math.max(1, Number(e.target.value) || 1) } })} /> DR</label>
+                    <label className="dr">+<input type="number" title="quantité par palier" value={o.valuePerSL.amount ?? 1} onChange={(e) => upd({ valuePerSL: { ...o.valuePerSL, amount: Number(e.target.value) || 0 } })} /></label>
+                    <label className="dr"><input type="checkbox" checked={!!o.valuePerSL.onFailure} onChange={(e) => upd({ valuePerSL: { ...o.valuePerSL, onFailure: e.target.checked || undefined } })} /> sur l'échec (niveau d'échec)</label>
+                  </>
+                )}
+              </>
             )}
           </>
         )}

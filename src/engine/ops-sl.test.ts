@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { applyOps, slBonus } from './ops';
 import { stacks } from './conditions';
 import type { Combatant } from './types';
+import { findTraitById } from '../data';
+import type { Flow } from './flowCore';
 
 /**
  * Enablers d'ops (Jalon 2.6) :
@@ -58,6 +60,46 @@ describe('PerSL — échelle « par +N DR » (OpsCtx.sl)', () => {
     const c = dummy();
     applyOps(c, [{ op: 'condition', name: 'en-flammes', value: 0, valuePerSL: { every: 1, amount: 1 } }], { sl: 4 });
     expect(stacks(c, 'en-flammes')).toBe(4);
+  });
+
+  it('slBonus onFailure : magnitude sur DR NÉGATIF (branche fail), 0 sur DR positif/nul', () => {
+    expect(slBonus(-2, { every: 1, amount: 1, onFailure: true })).toBe(2);
+    expect(slBonus(-1, { every: 1, amount: 1, onFailure: true })).toBe(1);
+    expect(slBonus(0, { every: 1, amount: 1, onFailure: true })).toBe(0);
+    expect(slBonus(3, { every: 1, amount: 1, onFailure: true })).toBe(0);
+    expect(slBonus(undefined, { every: 1, amount: 1, onFailure: true })).toBe(0);
+  });
+
+  it('condition « 1 Sonné par niveau d’échec » (Hallucinogène, MdRC ch.13 l.167) — value:0 + valuePerSL.onFailure', () => {
+    const c = dummy();
+    applyOps(c, [{ op: 'condition', name: 'sonne', value: 0, valuePerSL: { every: 1, amount: 1, onFailure: true } }], { sl: -2 });
+    expect(stacks(c, 'sonne')).toBe(2);
+    const c1 = dummy();
+    applyOps(c1, [{ op: 'condition', name: 'sonne', value: 0, valuePerSL: { every: 1, amount: 1, onFailure: true } }], { sl: -1 });
+    expect(stacks(c1, 'sonne')).toBe(1);
+  });
+
+  it('consommateurs valuePerSL/perSL existants à DR ≥ 0 restent inchangés (non-régression)', () => {
+    const c = dummy();
+    applyOps(c, [{ op: 'condition', name: 'empetre', valuePerSL: { every: 2, amount: 1 } }], { sl: 5 });
+    expect(stacks(c, 'empetre')).toBe(3);
+  });
+
+  it('donnée hallucinogene (traits.json) — Sonné 1 par niveau d’échec, 0 en réussite (#87)', () => {
+    const trait = findTraitById('hallucinogene');
+    const flow = trait?.effects?.[0]?.flow as Extract<Flow, { kind: 'test' }> | undefined;
+    expect(flow?.kind).toBe('test');
+    const fail = flow!.fail as Extract<Flow, { kind: 'do' }>;
+    expect(fail.effect.type).toBe('ops');
+    const c2 = dummy();
+    applyOps(c2, (fail.effect as { ops: Parameters<typeof applyOps>[1] }).ops, { sl: -2 });
+    expect(stacks(c2, 'sonne')).toBe(2);
+    const c1 = dummy();
+    applyOps(c1, (fail.effect as { ops: Parameters<typeof applyOps>[1] }).ops, { sl: -1 });
+    expect(stacks(c1, 'sonne')).toBe(1);
+    // réussite = branche `success` vide (aucun op) → aucune mutation.
+    const success = flow!.success as Extract<Flow, { kind: 'seq' }>;
+    expect(success.steps).toHaveLength(0);
   });
 });
 
