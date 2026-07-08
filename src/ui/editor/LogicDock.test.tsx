@@ -11,6 +11,7 @@ function dock(overrides: Partial<Parameters<typeof LogicDock>[0]>) {
     <LogicDock
       scene={scene}
       otherScenes={[]}
+      worldMap={null}
       setScene={vi.fn()}
       enemyCreatures={[]}
       warnings={[]}

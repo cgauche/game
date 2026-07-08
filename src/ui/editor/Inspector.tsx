@@ -7,6 +7,7 @@
  */
 import { useState, type ReactNode } from 'react';
 import { Scene, SceneEntity, Roof, RoofParams, Trigger, SceneEffectZone, WallSeg } from '../../state/scene';
+import type { WorldMap } from '../../state/worldMap';
 import type { Settlement } from '../../engine/disponibilite';
 import { hashSeed } from '../../engine/dice';
 import { SCENE_ANIMS } from '../../gameIso/sceneAnims';
@@ -79,6 +80,7 @@ const FIRE_ARCS: { side: FireArc; label: string }[] = [
 export function Inspector({
   scene,
   otherScenes,
+  worldMap,
   setScene,
   sel,
   setSel,
@@ -88,6 +90,8 @@ export function Inspector({
 }: {
   scene: Scene;
   otherScenes: Scene[];
+  /** Carte du monde du projet (id + label des lieux) pour `openPort` — absente ⇒ fallback texte. */
+  worldMap: WorldMap | null;
   setScene: (s: Scene) => void;
   sel: Sel;
   setSel: (s: Sel) => void;
@@ -154,7 +158,7 @@ export function Inspector({
             </button>
           </div>
 
-          {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} updateSel={updateSel} removeSel={removeSel} />}
+          {ent && <EntityPanel ent={ent} scene={scene} otherScenes={otherScenes} worldMap={worldMap} updateSel={updateSel} removeSel={removeSel} />}
 
           {ent && ent.kind === 'personnage' && (
             <Fold title={<><Icon id="action/attack" size="sm" /> Combat</>}>
@@ -517,12 +521,14 @@ function EntityPanel({
   ent,
   scene,
   otherScenes,
+  worldMap,
   updateSel,
   removeSel,
 }: {
   ent: SceneEntity;
   scene: Scene;
   otherScenes: Scene[];
+  worldMap: WorldMap | null;
   updateSel: (patch: Partial<SceneEntity>) => void;
   removeSel: () => void;
 }) {
@@ -800,7 +806,7 @@ function EntityPanel({
                 <FlowEditor
                   flow={ent.interact.flow}
                   onChange={(flow) => updateSel({ interact: { ...ent.interact!, flow } })}
-                  ctx={{ encounters: scene.encounters, dialogues: scene.dialogues, ...effectCtxOf(scene, otherScenes) }}
+                  ctx={{ encounters: scene.encounters, dialogues: scene.dialogues, ...effectCtxOf(scene, otherScenes, worldMap ?? undefined) }}
                 />
               </div>
             </>

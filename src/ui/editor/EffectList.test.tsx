@@ -83,10 +83,24 @@ describe('#94 — Effets santé éditables (ambitionLost/inflictThirst/inflictPs
     expect(html).toMatch(/Indice/);
   });
 
-  it('openPort : champ placeId rendu', () => {
+  it('openPort : fallback texte quand le contexte ne fournit pas de carte du monde', () => {
     const html = renderToStaticMarkup(
       <EffectList effects={[{ type: 'openPort', placeId: '' }]} onChange={() => {}} ctx={ctx} />,
     );
     expect(html).toMatch(/id du lieu/);
+  });
+
+  it('openPort : lieux de la carte du monde (ou explication si aucun)', () => {
+    const withP = renderToStaticMarkup(
+      <EffectList effects={[{ type: 'openPort', placeId: '' }]} onChange={() => {}}
+        ctx={{ encounters: [], dialogues: [], places: [{ id: 'port-marienburg', label: 'Marienburg' }] }} />,
+    );
+    expect(withP).toContain('Marienburg (port-marienburg)');
+    expect(withP).not.toMatch(/id du lieu/);
+    const without = renderToStaticMarkup(
+      <EffectList effects={[{ type: 'openPort', placeId: '' }]} onChange={() => {}}
+        ctx={{ encounters: [], dialogues: [], places: [] }} />,
+    );
+    expect(without).toContain('Aucun lieu sur la carte du monde');
   });
 });

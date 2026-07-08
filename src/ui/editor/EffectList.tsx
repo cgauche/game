@@ -46,11 +46,18 @@ const SPELL_GROUPS: [string, { id: string; label: string }[]][] = (() => {
   return [...m.entries()].sort(([a], [b]) => a.localeCompare(b));
 })();
 
-/** Contexte « projet » des selects guidés (M9), depuis la scène active + les autres scènes. */
-export function effectCtxOf(scene: Scene, otherScenes: Scene[] = []): Pick<Ctx, 'merchants' | 'scenes'> {
+/** Contexte « projet » des selects guidés (M9), depuis la scène active + les autres scènes.
+ *  `worldMap` est PROJET (pas scène) : passé par le fournisseur quand il y a structurellement
+ *  accès à la carte du monde (Editor) — absent ⇒ fallback texte pour `openPort`. */
+export function effectCtxOf(
+  scene: Scene,
+  otherScenes: Scene[] = [],
+  worldMap?: { places: { id: string; label: string }[] },
+): Pick<Ctx, 'merchants' | 'scenes' | 'places'> {
   return {
     merchants: scene.entities.filter((e) => e.merchant).map((e) => ({ id: e.id, label: e.label })),
     scenes: [scene, ...otherScenes].map((sc) => ({ id: sc.id, nom: sc.nom, entries: Object.keys(sc.entryPoints ?? {}) })),
+    places: worldMap?.places.map((p) => ({ id: p.id, label: p.label })),
   };
 }
 
@@ -61,6 +68,8 @@ export interface Ctx {
   merchants?: { id: string; label?: string }[];
   /** Scènes du projet (id + nom + points d'entrée) pour les transitions. Absent = input. */
   scenes?: { id: string; nom?: string; entries: string[] }[];
+  /** Lieux de la carte du monde (id + label) pour `openPort`. Absent = input. */
+  places?: { id: string; label: string }[];
 }
 
 /** Libellé / icône d'un type d'effet — dérivés du REGISTRE unique (plus de Record parallèle à
@@ -610,9 +619,20 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         ) : (
           <input placeholder="id de l’entité marchande (doit porter un archétype)" value={e.entityId ?? ''} onChange={(ev) => upd({ entityId: ev.target.value })} />
         ))}
-        {effect.type === 'openPort' && (
+        {effect.type === 'openPort' && (ctx.places ? (
+          ctx.places.length ? (
+            <select value={e.placeId ?? ''} onChange={(ev) => upd({ placeId: ev.target.value })}>
+              <option value="">— lieu de la carte du monde —</option>
+              {ctx.places.map((p) => (
+                <option key={p.id} value={p.id}>{p.label} ({p.id})</option>
+              ))}
+            </select>
+          ) : (
+            <span className="branch-label">Aucun lieu sur la carte du monde — créez-en un d'abord (onglet Monde).</span>
+          )
+        ) : (
           <input placeholder="id du lieu (carte du monde)" value={e.placeId ?? ''} onChange={(ev) => upd({ placeId: ev.target.value })} />
-        )}
+        ))}
         {effect.type === 'medicalAid' && (() => {
           // Schéma : une LISTE d'actes tarifés (le débit a lieu à l'acte, dans l'infirmerie).
           const ACTS: { key: 'wounds' | 'bleed' | 'trauma' | 'surgery'; label: string | JSX.Element }[] = [

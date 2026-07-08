@@ -420,6 +420,7 @@ export function Editor() {
         <Inspector
           scene={scene}
           otherScenes={otherScenes}
+          worldMap={worldMap}
           setScene={setScene}
           sel={sel}
           setSel={setSel}
@@ -443,6 +444,7 @@ export function Editor() {
       <LogicDock
         scene={scene}
         otherScenes={otherScenes}
+        worldMap={worldMap}
         setScene={setScene}
         enemyCreatures={enemyCreatures}
         warnings={warnings}

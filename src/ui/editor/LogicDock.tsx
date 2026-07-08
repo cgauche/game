@@ -6,6 +6,7 @@
  */
 import { useRef } from 'react';
 import { Scene, Trigger, EncounterDef, Dialogue, Effect } from '../../state/scene';
+import type { WorldMap } from '../../state/worldMap';
 import type { ThreatTier } from '../../engine/advantagePool';
 import { EMPTY_FLOW } from '../../state/flow';
 import type { Warning } from '../../state/validateScene';
@@ -24,6 +25,7 @@ export type LogicTab = 'triggers' | 'dialogues' | 'encounters' | 'validation';
 export function LogicDock({
   scene,
   otherScenes,
+  worldMap,
   setScene,
   enemyCreatures,
   warnings,
@@ -44,6 +46,8 @@ export function LogicDock({
 }: {
   scene: Scene;
   otherScenes: Scene[];
+  /** Carte du monde du projet (id + label des lieux) pour `openPort` — absente ⇒ fallback texte. */
+  worldMap: WorldMap | null;
   setScene: (s: Scene) => void;
   enemyCreatures: CreatureData[];
   warnings: Warning[];
@@ -64,7 +68,7 @@ export function LogicDock({
   encSel: string | null;
   setEncSel: (id: string | null) => void;
 }) {
-  const ctx: Ctx = { encounters: scene.encounters, dialogues: scene.dialogues, ...effectCtxOf(scene, otherScenes) };
+  const ctx: Ctx = { encounters: scene.encounters, dialogues: scene.dialogues, ...effectCtxOf(scene, otherScenes, worldMap ?? undefined) };
   const dragRef = useRef<{ sy: number; sh: number } | null>(null);
 
   const errors = warnings.filter((w) => w.level === 'error').length;
