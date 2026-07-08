@@ -14,7 +14,7 @@ import { bypassedAP } from './armourBypass';
 import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
-import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from './types';
+import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS } from './types';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
 import locJson from '../data/localisation.json';
@@ -156,6 +156,17 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
   const wanted = acceptableSpecs(weapon, kind);
   const sk = matching.find((s) => wanted.includes(s.spec ?? ''));
   return base + (sk?.advances ?? 0);
+}
+
+/**
+ * Libellé du Test d'attaque affiché (menteur si codé en dur indépendamment de `combatValue`, #203+) :
+ * une Résolution ALTERNATIVE déclarée par l'arme (bélier → Force, ADE II ch.08 l.233) résout sur la
+ * Caractéristique nommée, PAS Corps à corps/Projectiles — le libellé doit suivre `combatValue`,
+ * SOURCE UNIQUE des deux (jamais un binaire `kind` recalculé séparément).
+ */
+export function attackTestLabel(weapon: Weapon | undefined, kind: 'melee' | 'ranged'): string {
+  if (weapon?.resolveChar) return CHAR_LABELS[weapon.resolveChar];
+  return kind === 'ranged' ? 'Projectiles' : 'Corps à corps';
 }
 
 /**
@@ -647,7 +658,7 @@ export function finishMelee(
   withhold = false, // « Retenir ses coups » (Aux Armes l.2503-2505)
   sub?: DefenseSub, // substitution sociale (mode 'social') : base + libellé de la Compétence substituée
 ): AttackResult {
-  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
+  const atkBd = bd(attackTestLabel(weapon, 'melee'), combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, dmgProxy, parryWeapon, dodgeMod, withhold, sub });
 }
 
@@ -753,7 +764,7 @@ export function resolveMeleePassive(
   dmgProxy?: AttackOptions['dmgProxy'], // Charge montée : Force+Taille de la monture pour les dégâts (LDB 14 l.223)
   withhold = false, // « Retenir ses coups » (Aux Armes l.2503-2505)
 ): AttackResult {
-  const atkBd = bd('Corps à corps', combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
+  const atkBd = bd(attackTestLabel(weapon, 'melee'), combatValue(attacker, 'melee', weapon), atk, attackModifiers(attacker, defender, weapon, { kind: 'melee', location, env }));
   if (!atk.success) return miss(attacker, defender, atkBd, 'defender');
   const res = applyHit(attacker, defender, weapon, atkBd, atk.sl + attackDRAdjust(weapon) + psychDRAdjust(attacker, defender) + skillDRBonus(attacker, 'corps-a-corps') + offTerrainTestDR(attacker), atk.isDouble && atk.success, location, dmgProxy, 0, withhold); // Imprécise : −1 DR à l'attaque (LDB 62 l.323) ; Peur/Haine ±1 DR (LDB 21) ; +DR d'effet actif sur un Test réussi (Jacques Bret) ; hors de son terrain −DR (Créature marine, MDG p.140)
   if (res.hit && (attacker.swarm || sizeGap(dmgProxy?.size ?? attacker.size, defender.size) >= 1)) res.cleave = true; // Frappe Mortelle — plus grand OU Nuée (LDB 85 l.299/200) ; charge montée → Taille de la monture
@@ -900,7 +911,7 @@ export function resolveRanged(
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
   let atk = rollTest(atkVal, 'intermediaire', rng, combineMods(mods));
   if (hasCondition(defender, 'inconscient')) atk = helplessTest(atk, 'ranged'); // auto-succès, Dégâts à bout portant (LDB 16 l.112)
-  const atkBd = bd('Projectiles', atkVal, atk, mods);
+  const atkBd = bd(attackTestLabel(weapon, 'ranged'), atkVal, atk, mods);
   // Tir DÉFENDU (RAW : Protectrice 2+ LDB 62 l.307 / Bout Portant 14 l.62 / tireur Engagé 14 l.70) →
   // Test OPPOSÉ, cœur partagé avec la mêlée (`combineOpposed`). L'Inconscient ne se défend pas.
   if (defense && !hasCondition(defender, 'inconscient')) {
@@ -954,7 +965,7 @@ export function finishRanged(
   dodgeMod = 0,
 ): AttackResult {
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
-  const atkBd = bd('Projectiles', combatValue(attacker, 'ranged', weapon), atk, mods);
+  const atkBd = bd(attackTestLabel(weapon, 'ranged'), combatValue(attacker, 'ranged', weapon), atk, mods);
   return combineOpposed(attacker, defender, weapon, atk, def, defenseMode, atkBd, { location, parryWeapon, dodgeMod });
 }
 
@@ -972,7 +983,7 @@ export function resolveStrayRangedHit(
   effTarget: number,
 ): AttackResult {
   const atk = evaluateTest(roll, effTarget);
-  const atkBd = bd('Projectiles (dévié)', combatValue(attacker, 'ranged', weapon), atk, []);
+  const atkBd = bd(`${attackTestLabel(weapon, 'ranged')} (dévié)`, combatValue(attacker, 'ranged', weapon), atk, []);
   const res = applyHit(attacker, victim, weapon, atkBd, Math.max(0, atk.sl), atk.isDouble && atk.success);
   res.log = `Le tir dévie dans la mêlée et touche ${victim.name} !`;
   return res;
@@ -1207,7 +1218,7 @@ export function rederivePassiveAttack(
 ): AttackResult {
   // Sans la distance ici, le détail des modificateurs d'un tir omet la bande de portée → la somme
   // ne reconcilie pas et l'UI retombe sur l'affichage groupé (garde côté RollLine). En mêlée c'est complet.
-  const atkBd = bd(kind === 'ranged' ? 'Projectiles' : 'Corps à corps', combatValue(attacker, kind, weapon), atk, attackModifiers(attacker, defender, weapon, { kind, location }));
+  const atkBd = bd(attackTestLabel(weapon, kind), combatValue(attacker, kind, weapon), atk, attackModifiers(attacker, defender, weapon, { kind, location }));
   if (!atk.success) {
     return {
       hit: false,

@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { useGame, movementRemaining } from '../../state/store';
 import { FLOWS } from '../../state/rollFlowSpecs';
 import { HitLocation } from '../../engine/types';
-import { crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers, locationLabel, weaponInflictsFlames } from '../../engine/combat';
+import { crowdMod, bestRangedDefense, DEFENSE_LABEL, defenseModifiers, locationLabel, weaponInflictsFlames, attackTestLabel } from '../../engine/combat';
 import { isUnarmed } from '../../engine/items';
 import { isInanimate } from '../../engine/structures';
 import { hasCondition, COND } from '../../engine/conditions';
@@ -111,7 +111,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
         : {
             combatant: attacker,
             pending: {
-              label: preview!.kind === 'ranged' ? 'Projectiles' : 'Corps à corps',
+              label: attackTestLabel(preview!.weapon, preview!.kind),
               base: preview!.base,
               target: Math.max(0, Math.min(100, preview!.target)),
               mods: preview!.mods,

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseQualityInstance } from './qualities/normalize';
-import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, psychDRAdjust, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee, resolveMeleePassive, resolveTrample } from './combat';
+import { resolveMelee, resolveRanged, rangeBandModifier, rangeBandName, attackModifiers, psychDRAdjust, resolveStrayRangedHit, defenseModifiers, rollMeleeDefender, finishMelee, resolveMeleePassive, resolveTrample, attackTestLabel } from './combat';
 import { evaluateTest } from './tests';
 import { makeRNG } from './dice';
 import { Combatant, Weapon } from './types';
@@ -215,6 +215,24 @@ describe('AttackResult — détail des jets (breakdown) pour la modale', () => {
     const res = resolveRanged(mk({ name: 'Tir' }), mk({ name: 'Cible' }), bow, makeRNG(3));
     expect(res.attackerDetail!.label).toBe('Projectiles');
     expect(res.defenderDetail).toBeUndefined();
+  });
+});
+
+describe('attackTestLabel — libellé du Test SUIT combatValue, ne ment jamais (#203)', () => {
+  const belier: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], resolveChar: 'F' };
+  it('arme à Résolution alternative (bélier → Force, ADE II ch.08 l.233) → libellé de la Carac', () => {
+    expect(attackTestLabel(belier, 'melee')).toBe('Force');
+  });
+  it('arme de mêlée normale (épée) → « Corps à corps »', () => {
+    expect(attackTestLabel(sword, 'melee')).toBe('Corps à corps');
+  });
+  it('arme à distance normale (arc) → « Projectiles »', () => {
+    expect(attackTestLabel(bow, 'ranged')).toBe('Projectiles');
+  });
+  it('resolveMeleePassive avec un bélier : le breakdown affiche « Force », pas « Corps à corps »', () => {
+    const hit = evaluateTest(20, 60);
+    const r = resolveMeleePassive(mk({ characteristics: { ...mk().characteristics, F: 60 } }), mk(), belier, hit);
+    expect(r.attackerDetail!.label).toBe('Force');
   });
 });
 

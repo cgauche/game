@@ -11,8 +11,8 @@
  * combatSlice.ts, combatCursor.ts, combatOrParty.ts.
  */
 import type { Get, Set } from './flowTypes';
-import type { Combatant } from '../engine/types';
-import { combineMods, assertAttackWeapon } from '../engine/combat';
+import type { Combatant, Weapon } from '../engine/types';
+import { combineMods, assertAttackWeapon, attackTestLabel } from '../engine/combat';
 import { castInfo, isMagicMissile, missileDamage, spellRangeTiles } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { effectiveRange } from '../engine/weaponDamage';
@@ -116,9 +116,10 @@ export type TileTargetingMode = TargetingMode & Required<Pick<TargetingMode, 'ti
 /** Options du clic-token (parité `battleClickEntity`). */
 export type BattleClickOpts = { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string; wardCleared?: boolean };
 
-/** Libellé de la compétence d'attaque : Corps à corps/Projectiles + famille d'arme si connue. */
-const weaponSkillLabel = (kind: 'melee' | 'ranged', subType?: string): string =>
-  `${kind === 'ranged' ? 'Projectiles' : 'Corps à corps'}${subType ? ` (${subType})` : ''}`;
+/** Libellé de la compétence d'attaque : `attackTestLabel` (Corps à corps/Projectiles, ou la Carac
+ *  de Résolution alternative de l'arme) + famille d'arme si connue. */
+const weaponSkillLabel = (weapon: Weapon | undefined, kind: 'melee' | 'ranged', subType?: string): string =>
+  `${attackTestLabel(weapon, kind)}${subType ? ` (${subType})` : ''}`;
 
 /** Ops « cible » qui rendent un sort OFFENSIF → ciblable sur un ennemi (réticule + interdit hors portée,
  *  comme le tir). Tous les États WFRP sont négatifs (`condition`) ; `wounds` = Dégâts. Liste tenue
@@ -279,7 +280,7 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
     line: option.freeKind ? 'solid' : p.kind === 'ranged' ? 'dashed' : 'solid',
     title: option.freeKind ? option.label : p.weapon.name,
     targetName: target.name,
-    skill: option.freeKind ? weaponSkillLabel('melee') : weaponSkillLabel(p.kind, p.weapon.subType),
+    skill: option.freeKind ? weaponSkillLabel(undefined, 'melee') : weaponSkillLabel(p.weapon, p.kind, p.weapon.subType),
     base: p.base,
     mod: combineMods(p.mods),
     dmg: p.dmg, // (gratuite : Dégâts de l'arme tenue = cosmétique ; le chemin/réticule, lui, est exact)

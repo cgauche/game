@@ -45,6 +45,21 @@ Depuis un `browser_evaluate` :
   états/critiques/maladies purgés), `give(co)` / `xp(n)`, `flags()` / `flag('id', bool)` (portes de
   l'arène), `go('scene-id')` (transition), `fight()` (liste/lance une rencontre de la scène),
   `time(min)` / `rest(jours)` (horloge + cascade quotidienne).
+- `__wfrp.seed(n)` → **re-ensemence le RNG de bataille** (`makeRNG`/`seedBattleRng`) EN COURS de
+  combat — même action que `scenario(id, seed)` au lancement, pour rendre une recette reproductible
+  sans relancer le scénario.
+- `__wfrp.fastForward(maxIters?)` → **avance les tours IA** jusqu'au prochain tour d'un combattant
+  **piloté humain**, ou la fin du combat — par la MÊME machinerie que la partie réelle
+  (`advanceTurn`/`maybeRunEnemyTurn`), les délais de lisibilité du Réalisateur (chorégraphie
+  `combatDirector`/`TEMPO`) juste accélérés le temps de l'avance. `maxIters` (scrutations, défaut
+  400) est un **garde-fou anti-boucle infinie**, pas une taille de tour attendue — retourne une
+  chaîne `✗ borne atteinte…` s'il est dépassé (signal d'un soft-lock à diagnostiquer via
+  `__wfrp.auto()`, pas à relever). Retourne une Promise : `await __wfrp.fastForward()`.
+
+**Doctrine `seed`/`fastForward`** : SETUP et OBSERVATION seulement (même doctrine que le reste de
+`__wfrp`, cf. § ci-dessus) — `seed` fige l'aléatoire pour REJOUER une recette à l'identique, il ne
+force jamais une issue particulière ; `fastForward` saute le BRUIT des tours IA (temps d'attente
+Playwright), jamais l'action du joueur ni un jet du flux qu'on est en train de valider.
 
 ## Piège du *closure-sync*
 

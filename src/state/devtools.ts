@@ -1,7 +1,7 @@
 import { useGame } from './store';
 import { portRepairVessel, portCareenVessel, portInstallUpgrade } from './seaVoyageFlow';
 import { actorIn } from './combatOrParty';
-import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog } from './combatFlow';
+import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn } from './combatFlow';
 import { setAiTrace } from './ai';
 import { pushCombatStep } from './combatEffects';
 import type { PendingBladeTrap } from './pendings';
@@ -54,6 +54,10 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.fear(h,e,i?)   → pose une Peur (Indice) de h envers e puis simule l'approche (Test de Calme ou Brisé)
  *   __wfrp.time(min)      → avance l'horloge ; __wfrp.rest(jours) → dort (cascade quotidienne #T3)
  *   __wfrp.quality(id,label,av?) → ajoute un Atout d'arme à l'arme active + Avantages (test renversement…)
+ *   __wfrp.seed(n)        → ré-ensemence le RNG de bataille (déterminisme, EN COURS de combat)
+ *   __wfrp.fastForward(n?) → avance les tours IA (BORNÉ à `n` scrutations) jusqu'au prochain tour d'un
+ *                           combattant piloté HUMAIN ou la fin du combat — MÊME machinerie (advanceTurn/
+ *                           maybeRunEnemyTurn), juste sans les délais de lisibilité (chorégraphie)
  */
 /** Flux « jet différé » pilotable parmi des `pending*` ouverts — convention pending<Flux> ↔
  *  <flux>Roll/Confirm/Cancel. Les files à verbe propre (révélations, pause de Round, victoire)
@@ -755,6 +759,61 @@ export function buildApi() {
         active: act ? { id: act.id, kind: act.kind, aiDriven: aiDriven(s, act), acted: !!b!.acted } : null,
       };
     },
+
+    /** RECETTE : ré-ensemence le RNG de bataille (`makeRNG`/`seedBattleRng`, déterminisme) — MÊME action
+     *  que `store.seedRng` (utilisée par `scenario(id, seed)` au lancement), exposée pour re-seeder EN
+     *  COURS de combat, recette reproductible sans relancer le scénario. */
+    seed: (n: number) => {
+      g().seedRng(n);
+      return `✓ RNG de bataille re-ensemencé (seed ${n})`;
+    },
+
+    /** RECETTE : avance les tours IA jusqu'au prochain tour d'un combattant piloté HUMAIN, ou la fin du
+     *  combat — SANS chemin parallèle : passe par la MÊME machinerie que la partie réelle
+     *  (`maybeRunEnemyTurn`/`advanceTurn`/`runEnemyAI`), on accélère seulement les délais de lisibilité
+     *  du Réalisateur (`combatDirector.beatHold`, TEMPO) le temps de l'avance — restaurés à la fin (y
+     *  compris si `maxIters` est atteint). `maxIters` (scrutations, pas des tours) est un GARDE-FOU
+     *  anti-boucle infinie, jamais une taille de tour attendue. Un coût de recette, pas un raccourci du
+     *  flux testé (doctrine __wfrp : ne saute que le bruit IA, jamais l'action du joueur). */
+    fastForward: (maxIters = 400) =>
+      new Promise<string>((resolve) => {
+        // `globalThis` (pas `window`) : identique en navigateur (window === globalThis) ET testable
+        // hors DOM (vitest tourne les tests d'état en environnement 'node', sans `window`).
+        type TimeoutSetter = (cb: (...a: unknown[]) => void, ms?: number, ...a: unknown[]) => unknown;
+        const g2 = globalThis as unknown as { setTimeout: TimeoutSetter };
+        const real = g2.setTimeout.bind(globalThis);
+        const fast: TimeoutSetter = (cb, _ms, ...a) => real(cb, 0, ...a);
+        g2.setTimeout = fast;
+        let n = 0;
+        let lastKey = ''; // « round:tour » vu à la scrutation précédente
+        let stalled = 0;
+        const finish = (msg: string) => { g2.setTimeout = real; resolve(msg); };
+        const status = (): { done: boolean; msg: string } => {
+          const s = g();
+          const b = s.battle;
+          if (!b || b.over) return { done: true, msg: b?.over ? `✓ combat terminé (${b.over})` : '✓ pas de combat en cours' };
+          const c = b.combatants.find((x) => x.id === b.order[b.turn]);
+          if (!c || !aiDriven(s, c)) return { done: true, msg: `✓ tour de ${c?.name ?? '—'} (piloté)` };
+          return { done: false, msg: '' };
+        };
+        // Relance `maybeRunEnemyTurn` seulement au PREMIER constat d'immobilité (round:tour inchangé
+        // depuis la dernière scrutation) — jamais à chaque scrutation : la machinerie EST déjà
+        // auto-perpétuante (`advanceTurn` rappelle `maybeRunEnemyTurn` à chaque tour) ; la relancer en
+        // boucle empilerait des `runEnemyAI` redondants sur le MÊME combattant (le ciblage par id ne
+        // vérifie pas que c'est encore son tour) et casserait l'ordre d'initiative.
+        const kick = () => maybeRunEnemyTurn(() => useGame.getState(), useGame.setState);
+        const tick = () => {
+          const r = status();
+          if (r.done) return finish(r.msg);
+          const b = g().battle!;
+          const key = `${b.round}:${b.turn}`;
+          if (key === lastKey) { if (++stalled === 1) kick(); } else { lastKey = key; stalled = 0; }
+          if (n++ >= maxIters) return finish(`✗ borne atteinte (${maxIters} scrutations) sans tour humain — voir __wfrp.auto()`);
+          real(tick, 4);
+        };
+        kick(); // amorce si rien n'est déjà en vol (ex. juste après confirmRoundStart)
+        tick();
+      }),
   };
 }
 
