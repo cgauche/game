@@ -3,7 +3,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, CascadeStep } from './pendings';
 import { Combatant, DIFFICULTY_MODIFIERS, CHAR_LABELS } from '../engine/types';
 import { battleRng } from './battleRng';
-import { d10, d100, defaultRNG, type RNG } from '../engine/dice';
+import { d10, d100, defaultRNG, roll as rollDice, type RNG } from '../engine/dice';
 import { petitePriereAnswered } from '../engine/prayer';
 import { applyOps, resolveFormula, type OpsCtx } from '../engine/ops';
 import { rule } from '../engine/policy';
@@ -26,7 +26,8 @@ import { applySummon } from './summonFlow';
 import { contractDisease, applyContraction, DISEASE_DEFS } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
-import { seaWeatherTestMod, openPortAt } from './seaVoyageFlow';
+import { seaWeatherTestMod, openPortAt, vesselManann } from './seaVoyageFlow';
+import { applyManannFactor, addManann, findManannFactor } from '../engine/seaVoyage';
 import { placeById } from './worldMap';
 import { openScriptedPsych } from './encounterPsychFlow';
 import { openRest, placesOfKind } from './restFlow';
@@ -1182,6 +1183,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           vehicleId: e.vehicleId,
           morale: { score: e.morale ?? MORALE_BASE, lastMoraleWeek: 0, factors: [] },
           ...(e.hullMax != null ? { wounds: { current: e.hullCurrent ?? e.hullMax, max: e.hullMax } } : {}),
+          ...(e.saboteurDR != null ? { saboteurDR: e.saboteurDR } : {}),
         },
       });
       env.log(t('eff.setVessel', { name: v.label }));
@@ -1192,6 +1194,29 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (!v.ship) return [{ level: 'error', message: `Effet → « ${v.label} » n'est pas un navire (pas de facette ship)` }];
       return [];
     },
+  },
+  adjustManann: {
+    group: 'Navigation', label: 'Humeur de Manann (MDG ch.15 l.83-125)', icon: 'travel/anchor',
+    make: () => ({ type: 'adjustManann', delta: { flat: 5, d10: 0, sign: 1 } }),
+    apply: (e, env) => {
+      const vessel = env.get().vessel;
+      if (!vessel) { env.log('Humeur de Manann : pas de navire de campagne — sans effet.'); return; }
+      const mood = vesselManann(vessel);
+      if (e.factorId) {
+        const already = mood.applied.includes(e.factorId);
+        const { mood: next, delta, label } = applyManannFactor(mood, e.factorId, battleRng());
+        if (already) { env.log(`Humeur de Manann : facteur « ${label ?? e.factorId} » déjà appliqué à ce navire — sans effet.`); return; }
+        env.set({ vessel: { ...vessel, manann: next } });
+        env.log(`Humeur de Manann : ${delta >= 0 ? '+' : ''}${delta} (${label ?? e.factorId}).`);
+        return;
+      }
+      if (e.delta) {
+        const rolled = e.delta.sign * (e.delta.flat + (e.delta.d10 > 0 ? rollDice(e.delta.d10, 10, battleRng()) : 0));
+        env.set({ vessel: { ...vessel, manann: addManann(mood, rolled) } });
+        env.log(`Humeur de Manann : ${rolled >= 0 ? '+' : ''}${rolled}.`);
+      }
+    },
+    refs: (e) => (e.factorId && !findManannFactor(e.factorId)) ? [{ level: 'error', message: `Effet → facteur Manann inexistant « ${e.factorId} »` }] : [],
   },
 
   // ── Combat & social ────────────────────────────────────────────────────

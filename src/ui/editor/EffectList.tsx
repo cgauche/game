@@ -13,6 +13,7 @@ import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
 import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById } from '../../data';
+import { MANANN_FACTORS, findManannFactor } from '../../engine/seaVoyage';
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
 import { GameOpEditor, opSummary } from './GameOpEditor';
@@ -151,7 +152,10 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     }
     case 'transitionBack': return `Retour scène précédente`;
     case 'openWorldMap': return `Carte du monde (voyage)`;
-    case 'setVessel': return `Navire : ${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}`;
+    case 'setVessel': return `Navire : ${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}${e.saboteurDR != null ? ` · sabotage ${e.saboteurDR} DR` : ''}`;
+    case 'adjustManann': return e.factorId
+      ? `Manann : facteur « ${findManannFactor(e.factorId)?.label ?? e.factorId} »`
+      : `Manann : ${e.delta ? `${e.delta.sign < 0 ? '−' : '+'}${e.delta.flat}${e.delta.d10 ? `+${e.delta.d10}d10` : ''}` : '?'}`;
     case 'startDialogue': return `Dialogue : ${e.dialogue || '?'}`;
     case 'openMerchant': return `Boutique : ${e.entityId || '?'}`;
     case 'openPort': return `Port : ${e.placeId || '?'}`;
@@ -472,7 +476,31 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               {e.hullMax != null && (
                 <label className="dr">Coque actuelle <input type="number" min={0} style={{ width: '3.6em' }} value={e.hullCurrent ?? e.hullMax} onChange={(ev) => upd({ hullCurrent: Math.max(0, Number(ev.target.value) || 0) })} /></label>
               )}
+              <label className="dr">Sabotage DR (vide = aucun, MDG 14 l.45-47) <input type="number" min={-5} max={0} style={{ width: '3.6em' }} value={e.saboteurDR ?? ''} onChange={(ev) => upd({ saboteurDR: ev.target.value === '' ? undefined : Math.max(-5, Math.min(0, Number(ev.target.value) || 0)) })} /></label>
             </div>
+          </>
+        )}
+        {effect.type === 'adjustManann' && (
+          <>
+            <select
+              value={e.factorId ?? '__delta'}
+              onChange={(ev) => upd(ev.target.value === '__delta'
+                ? { factorId: undefined, delta: e.delta ?? { flat: 5, d10: 0, sign: 1 } }
+                : { factorId: ev.target.value, delta: undefined })}
+            >
+              <option value="__delta">— delta libre (événement narratif hors-tableau) —</option>
+              {MANANN_FACTORS.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
+            </select>
+            {!e.factorId && (
+              <div className="tf-row">
+                <select value={e.delta?.sign ?? 1} onChange={(ev) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), sign: Number(ev.target.value) as 1 | -1 } })}>
+                  <option value={1}>+</option>
+                  <option value={-1}>−</option>
+                </select>
+                <label className="dr">Fixe <input type="number" min={0} style={{ width: '3.6em' }} value={e.delta?.flat ?? 0} onChange={(ev) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), flat: Math.max(0, Number(ev.target.value) || 0) } })} /></label>
+                <label className="dr">d10 <input type="number" min={0} style={{ width: '3.6em' }} value={e.delta?.d10 ?? 0} onChange={(ev) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), d10: Math.max(0, Number(ev.target.value) || 0) } })} /></label>
+              </div>
+            )}
           </>
         )}
         {effect.type === 'giveMoney' && (

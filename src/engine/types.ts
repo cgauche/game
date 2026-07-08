@@ -971,7 +971,9 @@ export interface Combatant {
   /** SABOTAGE des Tests d'équipage de cette coque (MDG ch.14 l.45-47 : un saboteur à bord « n'effectue pas
    *  ce Test… le MJ pourra imposer de -1 à -5 DR sur le Test d'équipage ») — AUTHORÉ par le scénario sur le
    *  Combattant-coque (le contenu est de la donnée, pas du code) ; lu CLAMPÉ à [-5, 0] par `shipSaboteurDR`
-   *  et appliqué au total de TOUT Test d'équipage (manœuvre, bordée, Rude épreuve…). */
+   *  et appliqué au total du Test d'équipage EN COMBAT (`combatSlice.openCrewTestPending`) comme du Test
+   *  d'équipage de VOYAGE (Progression, Orientation… `seaVoyageFlow.openVoyageCrewTest`, #214) — en voyage,
+   *  la valeur vient de `CampaignVessel.saboteurDR`, recopiée sur la coque de trajet (`voyageShip`). */
   saboteurDR?: number;
   /** Coque : QUART du dernier chant de marin (index `gameTime ÷ 4 h`) — « Une seule chanson de marin peut
    *  être chantée lors de chaque quart » (MDG 09 l.40). Posé par `battleSingShanty`. */

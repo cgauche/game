@@ -34,7 +34,7 @@ import { dayIndex } from './upkeep';
 import { placeById, type WorldMap, type MapPlace } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { PendingCrewTest, ShipManeuverParticipant } from './pendings';
-import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta } from './shipCrew';
+import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR } from './shipCrew';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { maneuverCrewTotal } from './shipManeuver';
 import { vehicleCombatant } from '../engine/vehicle';
@@ -168,6 +168,7 @@ function voyageShip(get: Get): { vessel: CampaignVessel; hull: Combatant } | nul
   // #30 : Blessures de coque persistantes — la coque de trajet REPART de l'état sauvegardé.
   if (vessel.wounds) hull.wounds = { ...hull.wounds, current: Math.min(vessel.wounds.current, hull.wounds.max) };
   hull.upgrades = vessel.upgrades ? [...vessel.upgrades] : undefined;
+  hull.saboteurDR = vessel.saboteurDR;
   return { vessel, hull };
 }
 
@@ -237,11 +238,13 @@ function openVoyageCrewTest(get: Get, set: Set, testTypeId: string, kind: string
     ...(sense ? { sense } : {}),
     result: null,
   }));
+  const saboteur = shipSaboteurDR(ship); // MDG ch.14 l.45-47 : −1..−5 DR plats, aussi en voyage (#214)
   set({
     pendingCrewTest: {
       shipId: ship.id, testTypeId, participants, essentialRoleId,
       moraleScore: shipMoraleScore(get, ship),
       voyage: { kind, shipName: ship.name },
+      ...(saboteur ? { extraDR: saboteur } : {}),
     } satisfies PendingCrewTest,
   });
   return true;

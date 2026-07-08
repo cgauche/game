@@ -119,6 +119,17 @@ describe('Carte marine (MDG 15) — Orientation & Planque (#147)', () => {
     expect(driveDayCaptureOrientation()).toBeUndefined();
   });
 
+  it('#214 : un saboteur authoré sur la coque de campagne pèse (−DR) sur les Tests d’équipage de VOYAGE, clampé [-5,0]', () => {
+    set({ vessel: { ...get().vessel!, saboteurDR: -3 } });
+    get().startTravel('r1', 'mer');
+    expect(driveDayCaptureOrientation()).toBe(-3); // MDG 14 l.45-47, cumulable avec le bonus Carte marine
+
+    freshState();
+    set({ vessel: { ...get().vessel!, saboteurDR: -9 } }); // hors fourchette RAW → clampé à -5
+    get().startTravel('r1', 'mer');
+    expect(driveDayCaptureOrientation()).toBe(-5);
+  });
+
   it('Planque (l.292) : sûre tant que le dépositaire GARDE la carte, à découvert si elle est perdue', () => {
     const hero = get().party[0];
     // Stash chartSecured à rate 100 = découverte GARANTIE sans la carte → isole l'effet de la possession.

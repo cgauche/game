@@ -223,6 +223,42 @@ describe('Effet setVessel (navire de campagne, MDG ch.13-15)', () => {
     applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'zzz-inconnu' }]);
     expect(useGame.getState().vessel).toBeUndefined();
   });
+
+  it('saboteurDR authoré initial (#214) est posé sur le navire de campagne', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue', saboteurDR: -3 }]);
+    expect(useGame.getState().vessel?.saboteurDR).toBe(-3);
+  });
+});
+
+describe('Effet adjustManann (#213 — MDG ch.15 l.83-125)', () => {
+  beforeEach(() => {
+    useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } } });
+    useGame.getState().seedRng(7);
+  });
+
+  it('sans navire de campagne → no-op journalisé', () => {
+    useGame.setState({ vessel: undefined, journal: [] });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustManann', factorId: 'petit-sacrifice' }]);
+    expect(useGame.getState().vessel).toBeUndefined();
+    expect(useGame.getState().journal.some((l) => /sans effet/i.test(l))).toBe(true);
+  });
+
+  it('facteur du tableau (petit sacrifice) applique son delta, une seule fois par navire (l.85)', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustManann', factorId: 'petit-sacrifice' }]);
+    const scoreAfterFirst = useGame.getState().vessel!.manann!.score;
+    expect(scoreAfterFirst).toBeGreaterThan(0); // Petit sacrifice à Manann → +5
+    expect(useGame.getState().vessel!.manann!.applied).toContain('petit-sacrifice');
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustManann', factorId: 'petit-sacrifice' }]);
+    expect(useGame.getState().vessel!.manann!.score).toBe(scoreAfterFirst); // déjà appliqué → sans effet
+  });
+
+  it('delta maison chiffré (hors tableau) s’ajoute sans passer par le registre `applied`', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustManann', delta: { flat: 3, d10: 0, sign: 1 } }]);
+    expect(useGame.getState().vessel!.manann!.score).toBe(3);
+    expect(useGame.getState().vessel!.manann!.applied).toEqual([]);
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustManann', delta: { flat: 3, d10: 0, sign: -1 } }]);
+    expect(useGame.getState().vessel!.manann!.score).toBe(0); // pas de garde-fou d'unicité → cumule
+  });
 });
 
 describe('Effet openPort (#93 — MÊME chemin que l’accostage en mer)', () => {

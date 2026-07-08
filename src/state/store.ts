@@ -1167,6 +1167,9 @@ export interface CampaignVessel {
   fouling?: { level: number; lastWeek: number };
   /** Humeur de Manann (MDG ch.15 l.83-125) — par navire, registre des facteurs déjà appliqués. */
   manann?: import('../engine/seaVoyage').ManannMood;
+  /** SABOTAGE authoré sur cette coque (MDG ch.14 l.45-47) — clampé [-5,0] par `shipSaboteurDR`,
+   *  recopié sur la coque de trajet (`voyageShip`) comme `upgrades`/`wounds`. */
+  saboteurDR?: number;
   /** Cargaison en cale (commerce maritime, MDG ch.15) — perdue avec le navire (abandon/capture). */
   cargo?: import('../engine/seaVoyage').CargoLot[];
   /** Critiques de navire subis EN VOYAGE (notes verbatim, MDG ch.13) — à purger à la remise en état. */
