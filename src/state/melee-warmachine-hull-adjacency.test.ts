@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { attackPlan } from './combatFlow';
-import { combatGeomOf, combatGeomOfList } from './mount';
+import { attackPlan, firedWeapon } from './combatFlow';
+import { combatGeomOf, combatGeomOfList, pickAttackWeaponList } from './mount';
 import { meleeWarMachineHullOf, isMeleeWarMachine } from './siegePush';
 import type { Combatant, ShipPoste } from '../engine/types';
 import type { GameState } from './store';
@@ -82,5 +82,46 @@ describe('#210 — adjacence d\'une pièce de MÊLÉE servie = celle de la COQUE
     const ram = hull({ x: 1, y: 0 }, ramPoste);
     const chef = combatant({ id: 'chef', mannedPoste: ramPoste } as never);
     expect(meleeWarMachineHullOf(chef, [chef, ram])).toBe(ram);
+  });
+});
+
+/**
+ * Addendum (retour utilisateur, suite #210/BUG-A) — « un intent, une entrée » : l'option d'attaque
+ * GÉNÉRIQUE ('arme') et l'option DÉDIÉE « Servir <pièce> » (`weaponUid` épinglé) ne doivent JAMAIS
+ * matcher la MÊME cible — `pickAttackWeaponList` (auto-choix, SANS `weaponUid`) exclut toujours l'arme
+ * du poste servi, qu'elle soit de mêlée (bélier) OU à distance (canon/pierrier) : la pièce reste
+ * accessible UNIQUEMENT par choix explicite (`weaponUid`, posé par l'option 'poste' / l'IA).
+ */
+describe('pickAttackWeaponList — auto-choix EXCLUT toujours l\'arme du poste servi ("un intent, une entrée")', () => {
+  const sword = { name: 'Épée', type: 'melee' as const, damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [], uid: 'sword-w' };
+  const dagger = { name: 'Dague', type: 'melee' as const, damage: { plusBF: true, flat: 1 }, qualities: [], uid: 'dagger-w' };
+
+  it('bélier (mêlée servie) : coque adjacente + chef loin → auto-choix (sans weaponUid) ne prend JAMAIS le Bélier', () => {
+    const gate = door({ x: 5, y: 0 });
+    const ram = hull({ x: 4, y: 0 }, ramPoste); // adjacente à la porte
+    const chef = combatant({ pos: { x: 0, y: 0 }, mannedPoste: ramPoste, weapons: [sword, { ...ramWeapon }] } as never); // loin, arme perso + pièce servie
+    const w = pickAttackWeaponList([chef, ram, gate], chef, gate);
+    expect(w.uid).not.toBe(ramWeapon.uid);
+    expect(w.uid).toBe(sword.uid); // repli sur l'arme personnelle
+  });
+
+  it('bélier : weaponUid EXPLICITE (option « Servir ») → le Bélier reste choisi (non-régression)', () => {
+    const gate = door({ x: 5, y: 0 });
+    const ram = hull({ x: 4, y: 0 }, ramPoste);
+    const chef = combatant({ pos: { x: 0, y: 0 }, mannedPoste: ramPoste, weapons: [sword, { ...ramWeapon }] } as never);
+    const w = firedWeapon(chef, gate, ramWeapon.uid, [chef, ram, gate]);
+    expect(w.uid).toBe(ramWeapon.uid);
+  });
+
+  it('non-régression ARTILLERIE À DISTANCE (canon servi) : auto-choix (sans weaponUid) prend l\'arme PERSONNELLE (abordage), jamais le canon', () => {
+    const target = combatant({ id: 'foe', pos: { x: 1, y: 0 } } as never); // au contact (mêlée personnelle possible)
+    const cannonPoste2: ShipPoste = { item: cannonWeapon as never, crewIds: ['gunner'] };
+    const gunner = combatant({ id: 'gunner', pos: { x: 0, y: 0 }, mannedPoste: cannonPoste2, weapons: [dagger, { ...cannonWeapon, type: 'ranged' as const }] } as never);
+    const w = pickAttackWeaponList([gunner, target], gunner, target);
+    expect(w.uid).not.toBe(cannonWeapon.uid);
+    expect(w.uid).toBe(dagger.uid);
+    // Option DÉDIÉE « Servir le canon » (weaponUid explicite) : inchangée.
+    const w2 = pickAttackWeaponList([gunner, target], gunner, target, cannonWeapon.uid);
+    expect(w2.uid).toBe(cannonWeapon.uid);
   });
 });

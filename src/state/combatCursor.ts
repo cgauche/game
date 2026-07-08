@@ -141,12 +141,25 @@ export function tileModeValidTiles(get: Get, mode: Required<Pick<TargetingMode, 
 }
 
 /**
- * Voisin CLAVIER en mode-CASE (#198, résidus) : contrairement à `nextCursorTile` (curseur LIBRE, 8
- * voisins de grille bruts — comportement voulu pour cibler un combattant), ne considère QUE l'ensemble
- * `valid` (cases commettables du mode courant) : flèche = la case valide la MIEUX ALIGNÉE à l'écran
- * avec la direction poussée (jamais un snap sur une case invalide, porte/reach dépassé compris). `cur`
+ * Voisin CLAVIER en mode-CASE (#198, résidus ; BUG-B suite #198 : cases CARDINALES inatteignables) :
+ * contrairement à `nextCursorTile` (curseur LIBRE, 8 voisins de grille bruts — comportement voulu pour
+ * cibler un combattant), ne considère QUE l'ensemble `valid` (cases commettables du mode courant). `cur`
  * hors de `valid` (entrée dans le mode, ou curseur désynchronisé) → la case valide la plus PROCHE de
- * `anchor` (position de l'acteur). `null` si `valid` est vide (rien à naviguer). PUR.
+ * `anchor` (position de l'acteur). `null` si `valid` est vide (rien à naviguer).
+ *
+ * Filtre directionnel par DEMI-PLAN LARGE (`dot > 0`, pas un cône étroit sur le max d'alignement) : en vue
+ * iso, une flèche ÉCRAN projette EXACTEMENT sur une DIAGONALE de grille (dot=1) tandis qu'une case
+ * CARDINALE de grille n'atteint jamais que ≈0.45-0.89 sur ce même axe — un tri PAR ALIGNEMENT seul (l'ex-
+ * comportement, « argmax dot ») fait donc TOUJOURS gagner une diagonale plus ÉLOIGNÉE sur une cardinale
+ * plus PROCHE, qui n'est alors JAMAIS sélectionnable (cône structurellement aveugle aux cardinales). Le
+ * tri retenu est la DISTANCE (la case valide la plus PROCHE dans le demi-plan poussé), l'alignement ne
+ * départageant qu'une ÉGALITÉ de distance. Reste un cas GENUINEMENT symétrique (ex. un ensemble en croix
+ * radius-1 : N et E sont à la MÊME distance et au MÊME alignement pour une poussée « droite », miroirs
+ * l'un de l'autre autour de la diagonale NE) : un DERNIER départage préfère la case dont le déplacement de
+ * GRILLE porte sur l'axe NOMMÉ par la touche (|dx| pour gauche/droite, |dy| pour haut/bas) — sans lui,
+ * « droite » retomberait arbitrairement sur une cardinale du MAUVAIS axe (N au lieu d'Est) selon l'ordre de
+ * `valid`. Ainsi les 8 directions de grille d'un ensemble en croix (cardinales + diagonales à coût 1)
+ * restent toutes atteignables en 1-2 pressions. PUR.
  */
 export function nextCaseCursorTile(scene: Scene, cur: Pt | null, dir: ScreenDir, dims: Dims, anchor: Pt, valid: Pt[]): Pt | null {
   if (!valid.length) return null;
@@ -161,15 +174,21 @@ export function nextCaseCursorTile(scene: Scene, cur: Pt | null, dir: ScreenDir,
     }
     return best;
   }
+  const horizontal = dir === 'left' || dir === 'right';
   let best: Pt | null = null;
-  let bestDot = 0; // strictement positif requis → jamais de saut arrière
+  let bestDist = Infinity;
+  let bestDot = 0;
+  let bestAxis = -1;
   for (const v of valid) {
     if (sameTile(v, from)) continue;
     const dot = screenStepDot(scene, from, v, dir, dims);
-    if (dot <= 0 || dot < bestDot) continue;
-    const closer = best && dot === bestDot && Math.hypot(v.x - from.x, v.y - from.y) < Math.hypot(best.x - from.x, best.y - from.y);
-    if (dot > bestDot || closer) {
+    if (dot <= 0) continue; // demi-plan LARGE : jamais de saut arrière, mais aucun cône étroit sur le max
+    const dist = Math.hypot(v.x - from.x, v.y - from.y);
+    const axis = horizontal ? Math.abs(v.x - from.x) : Math.abs(v.y - from.y); // départage GENUINEMENT symétrique
+    if (dist < bestDist || (dist === bestDist && (dot > bestDot || (dot === bestDot && axis > bestAxis)))) {
+      bestDist = dist;
       bestDot = dot;
+      bestAxis = axis;
       best = v;
     }
   }

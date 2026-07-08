@@ -1,13 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from '../../state/store';
 import { scenario } from './42-belier-porte';
-import { resolveAttack, firedWeapon, firedAttackBlock, attackPlan } from '../../state/combatFlow';
+import { resolveAttack, firedWeapon, firedAttackBlock, attackPlan, previewAttack } from '../../state/combatFlow';
 import { placeCombatant } from '../../state/spawn';
 import { seedBattleRng } from '../../state/battleRng';
 import { combatValue } from '../../engine/combat';
 import { effectiveChar } from '../../engine/characteristics';
 import { rule } from '../../engine/policy';
 import { pushSlot } from '../../state/siegePush';
+import { hoverTargeting } from '../../state/targeting';
 import type { Combatant } from '../../engine/types';
 
 /**
@@ -254,5 +255,78 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     expect(r).not.toBeNull();
     expect(r!.res.hit).toBe(true); // Force 90 → Test quasi-garanti
     expect(r!.res.woundsLost ?? 0).toBeGreaterThan(0); // la porte encaisse RÉELLEMENT, après le trajet poussé
+  });
+
+  // ── Addendum (retour utilisateur) : « un intent, une entrée » — l'option générique 'arme' et
+  // l'option dédiée « Servir <pièce> » ne se recouvrent JAMAIS pour une pièce de mêlée servie. ──
+
+  it("option générique « Attaque » (auto, SANS weaponUid) : jamais le Bélier, même coque adjacente et chef loin — réservé à « Servir »", () => {
+    const { soldat, ram, porte } = startBelier();
+    const pushBy = (dy: number) => {
+      setActive(soldat.id);
+      useGame.getState().battlePushEngine();
+      useGame.getState().battleClickTile({ x: soldat.pos!.x, y: soldat.pos!.y - dy });
+    };
+    pushBy(2);
+    pushBy(1); // coque adjacente à la porte ; le chef (3,5) en reste à distance 2
+    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const w = firedWeapon(soldat, porte, undefined, useGame.getState().battle!.combatants);
+    expect(w.uid).not.toBe(belier.uid); // jamais auto-choisi
+    expect(w.type).toBe('melee'); // une arme PERSONNELLE (ou le repli générique), jamais la pièce
+  });
+
+  it('option DÉDIÉE « Servir le Bélier » (weaponUid explicite) : le Bélier reste choisi, géométrie de la coque (non-régression)', () => {
+    const { soldat, ram, porte } = startBelier();
+    ram.pos = { x: 6, y: 5 };
+    placeCombatant(ram, useGame.getState().scene!, ram.pos);
+    soldat.pos = { x: 0, y: 0 }; // chef très loin — hors-sujet pour la pièce servie
+    placeCombatant(soldat, useGame.getState().scene!, soldat.pos);
+    const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
+    const w = firedWeapon(soldat, porte, belier.uid, useGame.getState().battle!.combatants);
+    expect(w.uid).toBe(belier.uid);
+  });
+
+  it("survol (hover/aim) : « Servir le Bélier » sélectionné → libellé de compétence « Force » ; « Attaque » générique → l'arme personnelle du chef (jamais « Force »)", () => {
+    const { soldat, ram, porte } = startBelier();
+    const pushBy = (dy: number) => {
+      setActive(soldat.id);
+      useGame.getState().battlePushEngine();
+      useGame.getState().battleClickTile({ x: soldat.pos!.x, y: soldat.pos!.y - dy });
+    };
+    pushBy(2);
+    pushBy(1); // coque adjacente (le clic « Servir » doit fonctionner sans approche)
+    setActive(soldat.id);
+    const b = () => useGame.getState().battle!;
+    useGame.setState({ battle: { ...b(), selectedAttack: 'poste' } });
+    const hoverPoste = hoverTargeting(() => useGame.getState(), soldat, porte);
+    expect(hoverPoste.kind).toBe('ok');
+    expect((hoverPoste as { skill?: string }).skill).toMatch(/^Force/); // Force (armes-de-siege) : attackTestLabel + subType
+    useGame.setState({ battle: { ...b(), selectedAttack: 'arme' } });
+    const hoverArme = hoverTargeting(() => useGame.getState(), soldat, porte);
+    expect((hoverArme as { skill?: string }).skill).not.toMatch(/^Force/);
+  });
+
+  it('BUG-B (recette) : au clavier, en mode Pousser, la case plein NORD est sélectionnable (curseur clavier, vue iso par défaut)', () => {
+    const { soldat } = startBelier();
+    setActive(soldat.id);
+    useGame.getState().battlePushEngine();
+    const start = { ...soldat.pos! };
+    const north = { x: start.x, y: start.y - 1 };
+    expect(useGame.getState().battle!.reachable.has(`${north.x},${north.y}`)).toBe(true); // au menu du mode
+    let found = false;
+    const dirs: Array<'up' | 'down' | 'left' | 'right'> = ['up', 'down', 'left', 'right'];
+    for (const d1 of dirs) {
+      useGame.setState({ combatCursor: null });
+      useGame.getState().moveCursor(d1);
+      const t1 = useGame.getState().combatCursor?.tile;
+      if (t1 && t1.x === north.x && t1.y === north.y) { found = true; break; }
+      for (const d2 of dirs) {
+        useGame.getState().moveCursor(d2);
+        const t2 = useGame.getState().combatCursor?.tile;
+        if (t2 && t2.x === north.x && t2.y === north.y) { found = true; break; }
+      }
+      if (found) break;
+    }
+    expect(found).toBe(true); // plein Nord atteignable en ≤ 2 pressions
   });
 });

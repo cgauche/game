@@ -4,16 +4,19 @@
  * la position et l'empreinte de la MONTURE (souvent Grande → 2×2). Module-feuille pur (aucun import de
  * combatFlow) : mute les combattants, l'appelant (store) re-set la bataille + émet SCENE_DIRTY.
  */
-import type { Combatant } from '../engine/types';
+import type { Combatant, Weapon } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
 import { effectiveMovement } from '../engine/encumbrance';
 import { sizeGap, type SizeCategory } from '../engine/size';
 import { fearSizeAsMount } from '../engine/combatFeatures/dispatch';
 import type { ModLine } from '../engine/combat';
+import { assertAttackWeapon } from '../engine/combat';
+import { reachTiles, meleeReachTiles } from '../engine/engagement';
 import { Scene, isWalkable } from './scene';
 import { occupiesTile, footprintN, combatDistance } from './footprint';
 import { hasTraitKey } from '../engine/traits/dispatch';
-import { meleeWarMachineHullOf } from './siegePush';
+import { meleeWarMachineHullOf, isMeleeWarMachine } from './siegePush';
+import { structureImmune } from '../engine/structures';
 import type { Pt } from './path';
 import type { BattleState } from './store';
 
@@ -53,8 +56,73 @@ export const combatGeomOfList = (combatants: Combatant[], c: Combatant): Combata
 /** Géométrie de COMBAT d'un combattant : sa MONTURE s'il est cavalier (le couple partage pos+empreinte,
  *  LDB 14), la COQUE de la pièce de mêlée qu'il sert s'il est chef d'un engin de siège de mêlée servi
  *  (#210 — bélier ADE II ch.08 : c'est la pièce qui frappe, pas le chef qui la sert), sinon lui-même.
- *  SOURCE UNIQUE pour mesurer reach/adjacence d'un couple monté OU d'une pièce de mêlée servie. */
+ *  Substitution PAR-ACTEUR (indépendante de toute arme) : réservée au côté DÉFENSEUR/cible d'une attaque
+ *  (l'arme employée par l'attaquant est hors-sujet pour la géométrie de SA cible) et aux usages hors attaque
+ *  (mouvement, Peur, `mountedCombatDistance` générique). Côté ATTAQUANT d'une attaque → `attackGeomOf`
+ *  (PAR-arme, #BUG-A) : une arme personnelle ne doit JAMAIS hériter de l'allonge de la coque servie. */
 export const combatGeomOf = (battle: BattleState, c: Combatant): Combatant => combatGeomOfList(battle.combatants, c);
+
+/** Géométrie D'ATTAQUE d'un combattant pour UNE arme donnée (#BUG-A, suite #210) : sa MONTURE s'il est
+ *  cavalier (fondu avec elle quelle que soit l'arme tenue — LDB 14), la COQUE de la pièce de mêlée servie
+ *  SEULEMENT si `weapon` EST cette pièce (`isMeleeWarMachine`) — une arme personnelle du chef (épée…) ne
+ *  bénéficie JAMAIS de l'allonge de l'engin qu'il sert, et réciproquement. SOURCE UNIQUE pour un site
+ *  d'ATTAQUE (aperçu/plan/résolution/tir/choix d'arme) : `combatGeomOf` (par-acteur) reste réservé au
+ *  DÉFENSEUR/cible et aux usages hors attaque. */
+export const attackGeomOfList = (combatants: Combatant[], c: Combatant, weapon: Weapon | null | undefined): Combatant => {
+  const mount = c.mountId ? combatants.find((x) => x.id === c.mountId) : undefined;
+  if (mount) return mount;
+  if (weapon && isMeleeWarMachine(weapon)) {
+    const hull = meleeWarMachineHullOf(c, combatants);
+    if (hull) return hull;
+  }
+  return c;
+};
+export const attackGeomOf = (battle: BattleState, c: Combatant, weapon: Weapon | null | undefined): Combatant =>
+  attackGeomOfList(battle.combatants, c, weapon);
+
+/** Arme de MÊLÉE de `attacker` la plus UTILE contre `target` — chaque candidate évaluée avec SA PROPRE
+ *  géométrie (`attackGeomOfList`, #BUG-A) et parmi celles À PORTÉE, celle qui peut effectivement BLESSER
+ *  `target` gagne sur celle qui ne le peut pas (`structureImmune`, ADE II ch.08 l.249 : seul un Bélier
+ *  abîme une porte) — jamais un `if` bélier : règle GÉNÉRALE « utile bat inutile », qui rejoue pour toute
+ *  future immunité d'arme/cible. Repli sur la 1ʳᵉ candidate à portée (même immunisée) si aucune n'est utile
+ *  — mieux vaut un choix cohérent qu'aucun. `undefined` si aucune arme de mêlée n'atteint la cible. */
+export function meleeWeaponInRangeList(combatants: Combatant[], attacker: Combatant, target: Combatant, weapons: Weapon[] = attacker.weapons): Weapon | undefined {
+  const tGeom = combatGeomOfList(combatants, target);
+  const inRange = weapons.filter((w) => w.type === 'melee' && combatDistance(attackGeomOfList(combatants, attacker, w), tGeom) <= reachTiles(w));
+  return inRange.find((w) => !structureImmune(w, target)) ?? inRange[0];
+}
+export function meleeWeaponInRange(battle: BattleState, attacker: Combatant, target: Combatant): Weapon | undefined {
+  return meleeWeaponInRangeList(battle.combatants, attacker, target);
+}
+
+/** Armes PERSONNELLES d'un combattant — HORS l'arme dérivée du poste qu'il sert (`mannedPoste`), si un
+ *  poste est servi. « Un intent, une entrée » : l'option d'attaque GÉNÉRIQUE ('arme', `availableAttacks`)
+ *  et l'option DÉDIÉE « Servir <pièce> » (`weaponUid` épinglé) se recouvraient sinon pour une pièce de
+ *  MÊLÉE servie (l'auto-choix générique prenait l'épée OU le bélier au hasard des géométries) — la pièce
+ *  servie reste accessible UNIQUEMENT par choix explicite (`weaponUid`, posé par l'option 'poste' et par
+ *  l'IA). PUR. */
+function personalWeaponsOf(attacker: Combatant): Weapon[] {
+  const posteUid = attacker.mannedPoste?.item.uid;
+  return posteUid ? attacker.weapons.filter((w) => w.uid !== posteUid) : attacker.weapons;
+}
+
+/** Choix d'arme d'ATTAQUE PAR-ARME (#BUG-A) : l'arme EXPLICITE `weaponUid` si posée (pièce servie
+ *  épinglée par l'option « Servir », ou choix de l'IA), sinon la mêlée PERSONNELLE la plus UTILE à
+ *  portée (`meleeWeaponInRangeList` sur `personalWeaponsOf` — géométrie propre + `structureImmune` ; la
+ *  pièce de siège servie n'est JAMAIS auto-choisie, cf. `personalWeaponsOf`), sinon le fallback générique
+ *  `assertAttackWeapon` (préfère une arme à distance). Remplace tout `assertAttackWeapon(weapons, adj)`
+ *  où `adj` était calculé PAR-ACTEUR (bug vécu : une arme personnelle héritait de l'allonge de la coque
+ *  servie — #203/#210 suite). Variante `List` utilisable hors `BattleState` complet (ex. `firedWeapon`). */
+export function pickAttackWeaponList(combatants: Combatant[] | undefined, attacker: Combatant, target: Combatant, weaponUid?: string): Weapon {
+  const chosen = weaponUid ? attacker.weapons.find((w) => w.uid === weaponUid) : undefined;
+  if (chosen) return chosen;
+  const personal = personalWeaponsOf(attacker);
+  if (!combatants) return assertAttackWeapon(personal, combatDistance(attacker, target) <= meleeReachTiles(personal));
+  return meleeWeaponInRangeList(combatants, attacker, target, personal) ?? assertAttackWeapon(personal, false);
+}
+export function pickAttackWeapon(battle: BattleState, attacker: Combatant, target: Combatant, weaponUid?: string): Weapon {
+  return pickAttackWeaponList(battle.combatants, attacker, target, weaponUid);
+}
 
 /** Cavalier émérite (AA l.4369) : Taille EFFECTIVE de `self` face à la Peur/Terreur causée par la TAILLE
  *  de l'adversaire. Le porteur du Talent, une fois monté, compte la Taille de sa MONTURE (« confiant une

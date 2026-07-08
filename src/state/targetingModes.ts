@@ -12,12 +12,12 @@
  */
 import type { Get, Set } from './flowTypes';
 import type { Combatant, Weapon } from '../engine/types';
-import { combineMods, assertAttackWeapon, attackTestLabel } from '../engine/combat';
+import { combineMods, attackTestLabel } from '../engine/combat';
 import { castInfo, isMagicMissile, missileDamage, spellRangeTiles } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { effectiveRange } from '../engine/weaponDamage';
 import { isOutOfAction, canTakeAction, hasCondition, COND } from '../engine/conditions';
-import { isEngaged, meleeReachTiles } from '../engine/engagement';
+import { isEngaged, reachTiles } from '../engine/engagement';
 import { campGain, campSpend } from './combat/advantagePool';
 import { hasActiveFlag } from '../engine/activeFlags';
 import { isFrenzied } from '../engine/psychology';
@@ -33,7 +33,7 @@ import { serveTargetPoste, isPosteManned } from './shipPostes';
 import { posteHullOf } from './siegePush';
 import { spellOps } from './flow';
 import { placeCombatant } from './spawn';
-import { mountOf, mountMovement, mountedCombatDistance } from './mount';
+import { mountOf, mountMovement, attackGeomOf, combatGeomOf, pickAttackWeapon } from './mount';
 import { pilotedByHuman } from './netOwnership';
 import { afterApproach } from './combatDirector';
 import { ev } from './combatLog';
@@ -262,7 +262,7 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
   // l'aperçu est calculé depuis la case d'ARRIVÉE (modificateurs honnêtes au contact). L'Allonge suit l'option.
   const plan = attackPlan(get, active, target, { reach: option.reach, forceMelee: option.forceMelee });
   if (plan.kind === 'blocked') {
-    const p = previewAttack(get, active, target);
+    const p = previewAttack(get, active, target, undefined, { weaponUid: option.weaponUid });
     return { kind: 'invalid', reason: p.blocked ? 'los' : p.kind === 'melee' && isEngaged(active) ? 'engaged' : 'range' };
   }
   // Tir direct (pas une Charge/rejoindre, pas une attaque gratuite) refusé faute de ressource : MÊME
@@ -273,7 +273,9 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
     if (block) return { kind: 'invalid', reason: block.reason };
   }
   const from = plan.kind === 'attack' ? active : { ...active, pos: plan.dest };
-  const p = previewAttack(get, from, target);
+  // `option.weaponUid` ÉPINGLE l'arme du poste servi pour l'option DÉDIÉE « Servir » (jamais pour 'arme',
+  // qui reste auto-choisie parmi les armes PERSONNELLES — `pickAttackWeaponList`/addendum « un intent, une entrée »).
+  const p = previewAttack(get, from, target, undefined, { weaponUid: option.weaponUid });
   return {
     kind: 'ok',
     // Gratuite (Morsure/Caudale/Tentacule) = toujours mêlée (trait solide) ; Arme = tir pointillé si à distance.
@@ -504,11 +506,12 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
       pa = { attackerId: active.id, targetId: target.id, location: null, result: null, freeKind: option.freeKind, ...(option.weaponUid ? { weaponUid: option.weaponUid } : {}) };
     } else {
       // Arme effectivement employée : choix EXPLICITE (poste servi → `option.weaponUid` épingle le canon)
-      // sinon auto selon la distance — PAS weapons[0], sinon un héros mixte mêlée+distance ne pourrait
-      // jamais tirer une cible éloignée (LDB Armes l.297-298). Portée de mêlée = Allonge (RAW-3, LDB 62).
-      const adj = mountedCombatDistance(get().battle!, active, target) <= meleeReachTiles(active.weapons); // géométrie monture (cavalier au contact par sa monture)
-      const w = (option.weaponUid ? active.weapons.find((x) => x.uid === option.weaponUid) : undefined) ?? assertAttackWeapon(active.weapons, adj);
-      if (!adj && w.type === 'melee') {
+      // sinon auto — chaque candidate de mêlée évaluée avec SA PROPRE géométrie (`pickAttackWeapon`,
+      // #BUG-A : une arme personnelle n'hérite jamais de l'allonge de la coque servie) — PAS weapons[0],
+      // sinon un héros mixte mêlée+distance ne pourrait jamais tirer une cible éloignée (LDB Armes l.297-298).
+      const battleNow = get().battle!;
+      const w = pickAttackWeapon(battleNow, active, target, option.weaponUid);
+      if (w.type === 'melee' && combatDistance(attackGeomOf(battleNow, active, w), combatGeomOf(battleNow, target)) > reachTiles(w)) {
         get().log(t('cs.meleeOutOfRange')); // aucune arme à distance dispo → mêlée hors de portée
         return;
       }

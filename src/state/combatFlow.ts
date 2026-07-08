@@ -155,7 +155,7 @@ import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructure
 import { STEP_MAX_M } from './relief';
 import { placeCombatant } from './spawn';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
-import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountedCombatDistance, mountUp, mountableNear, movementRemaining, canMove, riderFearSize, combatGeomOf, combatGeomOfList } from './mount';
+import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove, riderFearSize, combatGeomOf, attackGeomOf, meleeWeaponInRange, pickAttackWeaponList } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste, crewPosteOf } from './shipPostes';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
@@ -241,14 +241,11 @@ export function applyIncomingMeleeAdvantage(get: Get, attacker: Combatant, targe
  *  rapproché — LDB Armes l.297-298), AUGMENTÉE de la munition pour un héros (Dégâts + Atouts combinés).
  *  Centralisé pour que résolution / Chance / application voient la MÊME arme (munition, Empaleuse, reload). */
 export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: string, combatants?: Combatant[]): Weapon {
-  // Adjacence depuis la MONTURE (cavalier/cible monté) ou la COQUE d'une pièce de mêlée servie (#210)
-  // quand la liste est fournie — un cavalier au contact par sa monture doit choisir la mêlée, pas basculer
-  // en tir (LDB 14) ; un chef de bélier de même depuis l'empreinte de la pièce. Sans `combatants` → géométrie propre.
-  const geom = (c: Combatant) => (combatants ? combatGeomOfList(combatants, c) : c);
-  const adj = combatDistance(geom(attacker), geom(target)) <= meleeReachTiles(attacker.weapons); // Allonge incluse (RAW-3)
-  // Choix explicite du joueur : l'arme du loadout actif portant cet uid (si présente) ; sinon auto-choix.
-  const chosen = weaponUid ? attacker.weapons.find((w) => w.uid === weaponUid) : undefined;
-  const base = chosen ?? assertAttackWeapon(attacker.weapons, adj);
+  // Choix explicite du joueur (uid) sinon auto-choix PAR-ARME (#BUG-A, poule-et-œuf) : chaque candidate de
+  // mêlée est évaluée avec SA PROPRE géométrie (`pickAttackWeaponList`) — un cavalier au contact par sa
+  // monture choisit la mêlée (LDB 14), un chef de bélier via l'empreinte de LA PIÈCE, mais une arme
+  // personnelle (épée du chef) ne bénéficie JAMAIS de l'allonge de la coque servie.
+  const base = pickAttackWeaponList(combatants, attacker, target, weaponUid);
   const ammo = base.type === 'ranged' && attacker.kind === 'hero' ? selectedAmmo(attacker, base) : undefined;
   let w = ammo ? weaponWithAmmo(base, ammo) : base;
   // Pièce SERVIE en sous-effectif (poste) : bake les Défauts d'Arme d'équipe selon les servants APTES présents
@@ -299,11 +296,13 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
 export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min'; detail: string } | null {
   if (active.kind !== 'hero') return null;
   const b = get().battle;
-  const distanceTiles = b ? mountedCombatDistance(b, active, target) : combatDistance(active, target); // géométrie monture
-  const adj = distanceTiles <= meleeReachTiles(active.weapons); // même arbitrage d'arme que firedWeapon
-  // Arme effectivement testée : choix EXPLICITE (poste servi → `weaponUid`) sinon auto selon la distance —
-  // MÊME arbitrage que `firedWeapon` (le gate ne doit pas mentir sur une AUTRE arme que celle qui tirera).
-  const w = (weaponUid ? active.weapons.find((x) => x.uid === weaponUid) : undefined) ?? assertAttackWeapon(active.weapons, adj);
+  // Arme effectivement testée + distance PAR CETTE ARME (#BUG-A, poule-et-œuf) : choix EXPLICITE (poste
+  // servi → `weaponUid`) sinon chaque candidate de mêlée évaluée avec SA PROPRE géométrie (`pickAttackWeapon`,
+  // MÊME arbitrage que `firedWeapon`) — le gate ne doit pas mentir sur une AUTRE arme que celle qui tirera.
+  const w = b
+    ? pickAttackWeaponList(b.combatants, active, target, weaponUid)
+    : (weaponUid ? active.weapons.find((x) => x.uid === weaponUid) : undefined) ?? assertAttackWeapon(active.weapons, combatDistance(active, target) <= meleeReachTiles(active.weapons));
+  const distanceTiles = b ? combatDistance(attackGeomOf(b, active, w), combatGeomOf(b, target)) : combatDistance(active, target);
   // Machine de guerre ADE II (Qualité `equipe`, ch.08 l.233) sous LA MOITIÉ de l'Équipe requise : INUTILISABLE
   // — mêlée (bélier, Force) ET distance, donc AVANT le early-return ranged-only ci-dessous.
   const required = warMachineCrewRequired(w);
@@ -532,11 +531,12 @@ export function resolveAttack(
   withhold?: boolean, // « Retenir ses coups » (Aux Armes l.2503-2505) — déclaré avant le jet, mêlée seule
 ): { res: AttackResult; weapon: Weapon; victim?: Combatant } | null {
   const battle = get().battle!;
-  // Distance de COMBAT depuis la géométrie de la MONTURE (cavalier/cible monté, LDB 14) : sinon une attaque
-  // de charge qui rapproche la MONTURE au contact serait jugée hors d'allonge sur le cavalier 1×1 → `null`,
-  // et la cascade d'attaque déjà ouverte resterait ORPHELINE (soft-lock de fin de tour).
-  const dist = mountedCombatDistance(battle, attacker, target);
   const weapon = firedWeapon(attacker, target, weaponUid, battle.combatants); // arme choisie + munition + sous-effectif du poste servi
+  // Distance de COMBAT PAR L'ARME EFFECTIVEMENT tirée (#BUG-A, suite LDB 14) : géométrie de la MONTURE
+  // (cavalier/cible monté — sinon une attaque de charge qui rapproche la MONTURE au contact serait jugée
+  // hors d'allonge sur le cavalier 1×1 → `null`, cascade d'attaque ORPHELINE) OU de la COQUE SEULEMENT si
+  // `weapon` est la pièce de mêlée servie — jamais pour une arme personnelle (`attackGeomOf`).
+  const dist = combatDistance(attackGeomOf(battle, attacker, weapon), combatGeomOf(battle, target));
   if (dist > reachTiles(weapon) && weapon.type === 'melee') return null; // hors de portée de mêlée (Allonge incluse, RAW-3)
   // (Sonné → +1 Avantage à l'attaquant en mêlée, LDB 16 l.123 : DÉJÀ géré par le flux d'attaque existant.)
   const { env, blocked, inMelee, crowd, cm, sc, flankRear } = attackEnv(get, attacker, target, weapon, { intoCrowd, heldGround });
@@ -632,12 +632,16 @@ export function previewAttack(
   location?: HitLocation,
   opts?: { intoCrowd?: boolean; heldGround?: boolean; weaponUid?: string },
 ): AttackPreview {
-  // Distance de COMBAT depuis la géométrie de la MONTURE pour un cavalier/cible monté (LDB 14) — le reach
-  // de mêlée et la bande de portée se mesurent du couple (empreinte de la monture), pas du cavalier 1×1.
   const battle = get().battle;
-  const dist = combatDistance((battle && mountOf(battle, attacker)) || attacker, (battle && mountOf(battle, target)) || target);
-  const weapon = firedWeapon(attacker, target, opts?.weaponUid, get().battle?.combatants);
+  const weapon = firedWeapon(attacker, target, opts?.weaponUid, battle?.combatants);
   const kind: 'melee' | 'ranged' = weapon.type === 'ranged' ? 'ranged' : 'melee';
+  // Distance de COMBAT PAR L'ARME EFFECTIVEMENT visée (#BUG-A) : géométrie de la MONTURE pour un
+  // cavalier/cible monté (LDB 14 — le reach/la bande de portée se mesurent du couple, pas du cavalier 1×1),
+  // ou de la COQUE SEULEMENT si `weapon` est la pièce de mêlée servie (`attackGeomOf`) — jamais pour une
+  // arme personnelle. L'aperçu DOIT rejouer EXACTEMENT la même géométrie que `attackPlan`/la résolution.
+  const dist = battle
+    ? combatDistance(attackGeomOf(battle, attacker, weapon), combatGeomOf(battle, target))
+    : combatDistance(attacker, target);
   // Estimation de dégâts (R4) : dégâts d'arme (Force incluse) et encaissé de la cible. Le `soak` est dérivé
   // de `woundsFromHit` (oracle) avec un dégât large → capture exactement PA + réduction d'armure (Perforante…).
   const dmg = effectiveWeaponDamage(weapon, bonus(effectiveChar(attacker, 'F')));
@@ -1093,9 +1097,15 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
   const geom = combatGeomOf(battle, active);
   const tgtGeom = combatGeomOf(battle, target);
   // `opts` (attaque CHOISIE : arme tenue vs attaque naturelle gratuite) : `reach` impose l'Allonge (gratuites
-  // de mêlée = 1), `forceMelee` ignore la branche distance même avec une arme à distance tenue. Sans opts =
-  // comportement historique (arme du Set actif), byte-identique.
-  if (combatDistance(geom, tgtGeom) <= (opts?.reach ?? meleeReachTiles(active.weapons))) return { kind: 'attack' };
+  // de mêlée = 1, géométrie PERSONNELLE — soi/monture — jamais la coque d'une pièce que cette attaque
+  // naturelle ne concerne pas) ; sans `reach`, chaque arme de mêlée TENUE est évaluée avec SA PROPRE
+  // géométrie (`meleeWeaponInRange`, #BUG-A) — une arme personnelle n'hérite jamais de l'allonge de la
+  // coque servie, et réciproquement la pièce (bélier) reste disponible même chef loin. `forceMelee` ignore
+  // la branche distance même avec une arme à distance tenue.
+  const inMeleeRange = opts?.reach != null
+    ? combatDistance(mountOf(battle, active) ?? active, tgtGeom) <= opts.reach
+    : !!meleeWeaponInRange(battle, active, target);
+  if (inMeleeRange) return { kind: 'attack' };
   // L'arme du SET ACTIF décide : une arme à distance présente → tir. Gate PRÉ-clic (parité sort) :
   // sans Ligne de Vue (LDB 13 l.123) ou au-delà de la bande Extrême (Portée ×3), refuser AVANT la
   // modale — sinon « Lancer » fabrique un raté garanti qui consomme l'Action. Les gates de la

@@ -90,6 +90,46 @@ describe('nextCaseCursorTile — mode-CASE (#198, résidus) : navigation BORNÉE
   it('ensemble valide vide → null (rien à naviguer)', () => {
     expect(nextCaseCursorTile(flat(), anchor, 'right', dims(), anchor, [])).toBeNull();
   });
+
+  // BUG-B (recette bornée, scénario 42-belier-porte) : ensemble VALIDE en CROIX (cardinales + diagonales
+  // à coût 1, vue iso par défaut) — l'ex-comportement (argmax d'alignement) ne sélectionnait JAMAIS les
+  // cardinales (toujours dominées par une diagonale géométriquement plus « parfaite »). Chaque case
+  // CARDINALE doit rester atteignable par une séquence de flèches ≤ 2.
+  describe('ensemble en CROIX (8 voisins, coût 1) : chaque cardinale atteignable en ≤ 2 flèches', () => {
+    const cross = [
+      anchor,
+      { x: anchor.x, y: anchor.y - 1 }, // N
+      { x: anchor.x, y: anchor.y + 1 }, // S
+      { x: anchor.x + 1, y: anchor.y }, // E
+      { x: anchor.x - 1, y: anchor.y }, // W
+      { x: anchor.x + 1, y: anchor.y - 1 }, // NE
+      { x: anchor.x - 1, y: anchor.y - 1 }, // NW
+      { x: anchor.x + 1, y: anchor.y + 1 }, // SE
+      { x: anchor.x - 1, y: anchor.y + 1 }, // SW
+    ];
+    const cardinals: Record<string, { x: number; y: number }> = {
+      N: cross[1], S: cross[2], E: cross[3], W: cross[4],
+    };
+    const dirsToTry: import('./combatCursor').ScreenDir[] = ['up', 'down', 'left', 'right'];
+
+    /** Explore ≤ 2 pressions depuis `anchor` (BFS large sur les 4 flèches) — `true` si `target` est atteint. */
+    function reachableWithin2(target: { x: number; y: number }): boolean {
+      const eq = (a: { x: number; y: number }, b: { x: number; y: number }) => a.x === b.x && a.y === b.y;
+      for (const d1 of dirsToTry) {
+        const p1 = nextCaseCursorTile(flat(), anchor, d1, dims(), anchor, cross)!;
+        if (eq(p1, target)) return true;
+        for (const d2 of dirsToTry) {
+          const p2 = nextCaseCursorTile(flat(), p1, d2, dims(), anchor, cross)!;
+          if (eq(p2, target)) return true;
+        }
+      }
+      return false;
+    }
+
+    it.each(Object.entries(cardinals))('cardinale %s atteignable en ≤ 2 pressions', (_name, target) => {
+      expect(reachableWithin2(target)).toBe(true);
+    });
+  });
 });
 
 describe('cursorCommitIntent — parité performClick (mode-aware)', () => {
