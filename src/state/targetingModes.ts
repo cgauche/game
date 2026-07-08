@@ -46,7 +46,7 @@ import {
   displaceSmaller, fearedSourceTowards, frenzyTarget, applyZoneCrossings,
   placingZoneOf, placedZoneValidAt, commitPlacedZone, overcastTargetCandidates,
   cleaveTargets, dualStrikeTargets, castZoneSpell, castSpell, spellSightOf, openAttackCascade,
-  captureMoveSnapshot,
+  captureMoveSnapshot, firedWeapon,
 } from './combatFlow';
 
 export type HoverTargeting =
@@ -319,7 +319,8 @@ function cleaveAffordance(get: Get, _active: Combatant, target: Combatant): Hove
   const pc = s.pendingCleave!;
   const atk = battle.combatants.find((c) => c.id === pc.attackerId);
   if (!atk || !cleaveTargets(battle, atk, pc.hitIds).some((c) => c.id === target.id)) return { kind: 'none' };
-  return { kind: 'ok', line: 'solid', title: 'Frappe Mortelle', targetName: target.name, skill: 'Corps à corps', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  const weapon = firedWeapon(atk, target, undefined, battle.combatants); // MÊME résolution que la chaîne (resolveAttack, aucun weaponUid)
+  return { kind: 'ok', line: 'solid', title: 'Frappe Mortelle', targetName: target.name, skill: attackTestLabel(weapon, 'melee'), base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
 /** Mode 2ᵉ FRAPPE (deux armes, LDB 10 l.638) : cibles à portée de la main secondaire. */
@@ -330,7 +331,7 @@ function dualAffordance(get: Get, _active: Combatant, target: Combatant): HoverT
   const atk = battle.combatants.find((c) => c.id === ds.attackerId);
   const off = atk?.weapons.find((w) => w.uid === ds.offWeaponUid);
   if (!atk || !off || !dualStrikeTargets(battle, atk, off).some((c) => c.id === target.id)) return { kind: 'none' };
-  return { kind: 'ok', line: 'solid', title: 'Deux armes', targetName: target.name, skill: 'Corps à corps', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
+  return { kind: 'ok', line: 'solid', title: 'Deux armes', targetName: target.name, skill: attackTestLabel(off, 'melee'), base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
 }
 
 // ───────────────────────────────────────────────────────────────────────────

@@ -776,18 +776,26 @@ export function buildApi() {
      *  anti-boucle infinie, jamais une taille de tour attendue. Un coût de recette, pas un raccourci du
      *  flux testé (doctrine __wfrp : ne saute que le bruit IA, jamais l'action du joueur). */
     fastForward: (maxIters = 400) =>
-      new Promise<string>((resolve) => {
+      new Promise<string>((resolve, reject) => {
         // `globalThis` (pas `window`) : identique en navigateur (window === globalThis) ET testable
-        // hors DOM (vitest tourne les tests d'état en environnement 'node', sans `window`).
+        // hors DOM (vitest tourne les tests d'état en environnement 'node', sans `window`). La
+        // référence RESTAURÉE doit être la MÊME que celle capturée (jamais un clone `.bind`) — sous
+        // fake timers, réassigner un clone empêche `vi.useRealTimers()` de reconnaître son propre
+        // mock et casse `globalThis.setTimeout` pour tout test ultérieur du même worker (#flake).
         type TimeoutSetter = (cb: (...a: unknown[]) => void, ms?: number, ...a: unknown[]) => unknown;
         const g2 = globalThis as unknown as { setTimeout: TimeoutSetter };
-        const real = g2.setTimeout.bind(globalThis);
+        const real = g2.setTimeout;
         const fast: TimeoutSetter = (cb, _ms, ...a) => real(cb, 0, ...a);
         g2.setTimeout = fast;
+        let restored = false;
+        // idempotent + déclenchée sur TOUTE sortie (résolution normale OU exception) : jamais de
+        // patch de `setTimeout` qui survit à un throw imprévu dans `status`/`kick`/`tick`.
+        const restore = () => { if (!restored) { restored = true; g2.setTimeout = real; } };
         let n = 0;
         let lastKey = ''; // « round:tour » vu à la scrutation précédente
         let stalled = 0;
-        const finish = (msg: string) => { g2.setTimeout = real; resolve(msg); };
+        const finish = (msg: string) => { restore(); resolve(msg); };
+        const fail = (e: unknown) => { restore(); reject(e); };
         const status = (): { done: boolean; msg: string } => {
           const s = g();
           const b = s.battle;
@@ -803,16 +811,24 @@ export function buildApi() {
         // vérifie pas que c'est encore son tour) et casserait l'ordre d'initiative.
         const kick = () => maybeRunEnemyTurn(() => useGame.getState(), useGame.setState);
         const tick = () => {
-          const r = status();
-          if (r.done) return finish(r.msg);
-          const b = g().battle!;
-          const key = `${b.round}:${b.turn}`;
-          if (key === lastKey) { if (++stalled === 1) kick(); } else { lastKey = key; stalled = 0; }
-          if (n++ >= maxIters) return finish(`✗ borne atteinte (${maxIters} scrutations) sans tour humain — voir __wfrp.auto()`);
-          real(tick, 4);
+          try {
+            const r = status();
+            if (r.done) { finish(r.msg); return; }
+            const b = g().battle!;
+            const key = `${b.round}:${b.turn}`;
+            if (key === lastKey) { if (++stalled === 1) kick(); } else { lastKey = key; stalled = 0; }
+            if (n++ >= maxIters) { finish(`✗ borne atteinte (${maxIters} scrutations) sans tour humain — voir __wfrp.auto()`); return; }
+            real(tick, 4);
+          } catch (e) {
+            fail(e);
+          }
         };
-        kick(); // amorce si rien n'est déjà en vol (ex. juste après confirmRoundStart)
-        tick();
+        try {
+          kick(); // amorce si rien n'est déjà en vol (ex. juste après confirmRoundStart)
+          tick();
+        } catch (e) {
+          fail(e);
+        }
       }),
   };
 }

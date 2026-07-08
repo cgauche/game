@@ -105,6 +105,27 @@ describe('candidates des modes à liste', () => {
     expect(mode.affordance!(useGame.getState, hero, e1).kind).toBe('ok'); // ennemi adjacent → frappe
     expect(mode.affordance!(useGame.getState, hero, ally).kind).toBe('none'); // allié → pas une cible d'attaque
   });
+
+  it('Frappe Mortelle : le libellé du réticule SUIT attackTestLabel (arme à Résolution alternative), jamais codé en dur (#203)', () => {
+    const { hero, e1 } = combat();
+    hero.weapons[0] = { ...hero.weapons[0], resolveChar: 'F' };
+    useGame.setState({ pendingCleave: { attackerId: 'h1', hitIds: [], count: 0 } as never, battle: { ...useGame.getState().battle! } });
+    const mode = currentTargetingMode(useGame.getState);
+    const r = mode.affordance!(useGame.getState, hero, e1);
+    expect(r.kind).toBe('ok');
+    expect((r as { skill: string }).skill).toBe('Force');
+  });
+
+  it('2ᵉ frappe (deux armes) : le libellé du réticule SUIT attackTestLabel de l’arme SECONDAIRE, jamais codé en dur (#203)', () => {
+    const { hero, e1 } = combat();
+    const off = { ...hero.weapons[0], uid: 'off1', resolveChar: 'F' as const };
+    hero.weapons = [...hero.weapons, off];
+    useGame.setState({ pendingDualStrike: { attackerId: 'h1', offWeaponUid: 'off1', mainRoll: 10 } as never, battle: { ...useGame.getState().battle! } });
+    const mode = currentTargetingMode(useGame.getState);
+    const r = mode.affordance!(useGame.getState, hero, e1);
+    expect(r.kind).toBe('ok');
+    expect((r as { skill: string }).skill).toBe('Force');
+  });
 });
 
 describe('TILE_MODES — garde structurelle : aperçu non-vide sur une tuile valide (#198)', () => {
