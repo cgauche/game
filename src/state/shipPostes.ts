@@ -233,6 +233,19 @@ export function isPosteManned(poste: ShipPoste, combatants: Combatant[]): boolea
   return !!chef && !isOutOfAction(chef) && chef.mannedPoste?.item.uid === poste.item.uid;
 }
 
+/** Le poste (et sa coque/emplacement) que `id` sert comme membre d'ÉQUIPAGE d'un poste ACTIF (coque encore en
+ *  action), parmi `combatants` — SOURCE UNIQUE consultée par l'IA pour tenir sa FORMATION (#196 : un servant
+ *  IA d'un engin crewé — bélier, batterie de siège — ne charge ni ne s'approche seul, c'est le poste qui le
+ *  déplace). `undefined` si `id` ne figure dans le `crewIds` d'AUCUN poste dont la coque est encore active.
+ *  KIND-AGNOSTIQUE. Aucun flag miroir sur le `Combatant` : cherche directement dans `crewIds`. PUR. */
+export function crewPosteOf(id: string, combatants: Combatant[]): { hull: Combatant; poste: ShipPoste } | undefined {
+  for (const hull of combatants) {
+    if (isOutOfAction(hull)) continue;
+    for (const poste of hull.postes ?? []) if ((poste.crewIds ?? []).includes(id)) return { hull, poste };
+  }
+  return undefined;
+}
+
 /** Postes qu'un `actor` peut REJOINDRE maintenant : ceux d'un emplacement/coque ADJACENT (empreinte, ≤ 1 case)
  *  dont il ne fait PAS DÉJÀ partie de l'équipage. Une pièce déjà servie reste « rejoignable » en SUPPORT (Arme
  *  d'équipe : on peut être plusieurs à servir) — `serveAtPoste` décide ensuite chef-vs-support. KIND-AGNOSTIQUE

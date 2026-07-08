@@ -4,7 +4,8 @@
  * overcastTargetCandidates ; attaque = ennemis via l'affordance par défaut).
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { currentTargetingMode, spellAffinity } from './targetingModes';
+import { currentTargetingMode, spellAffinity, TILE_MODES } from './targetingModes';
+import { tilePreviewAt } from './targeting';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { spawnEnemy } from './spawn';
@@ -103,6 +104,55 @@ describe('candidates des modes à liste', () => {
     const mode = currentTargetingMode(useGame.getState);
     expect(mode.affordance!(useGame.getState, hero, e1).kind).toBe('ok'); // ennemi adjacent → frappe
     expect(mode.affordance!(useGame.getState, hero, ally).kind).toBe('none'); // allié → pas une cible d'attaque
+  });
+});
+
+describe('TILE_MODES — garde structurelle : aperçu non-vide sur une tuile valide (#198)', () => {
+  beforeEach(() => { useGame.setState({ battle: null, party: [], pendingCleave: null, pendingDualStrike: null, pendingCast: null, pendingAttack: null, pendingSiegeAim: null }); });
+
+  it('catalogue = teleport + push + placing-zone, chacun avec tileValidAt/commitTile/tilePreview', () => {
+    expect(TILE_MODES.map((m) => m.id).sort()).toEqual(['placing-zone', 'push', 'teleport']);
+    for (const m of TILE_MODES) {
+      expect(typeof m.tileValidAt).toBe('function');
+      expect(typeof m.commitTile).toBe('function');
+      expect(typeof m.tilePreview).toBe('function');
+    }
+  });
+
+  it('teleport : tilePreview non-vide (target + chemin depuis l’actif) sur une tuile de battle.reachable', () => {
+    const { hero } = combat({ action: 'teleport', reachable: new Map([['9,6', 0]]) });
+    const mode = TILE_MODES.find((m) => m.id === 'teleport')!;
+    const pt = { x: 9, y: 6 };
+    expect(mode.tileValidAt(useGame.getState, hero, pt)).toBe(true);
+    const pv = mode.tilePreview(useGame.getState, hero, pt);
+    expect(pv).not.toBeNull();
+    expect(pv!.target).toEqual(pt);
+    expect(pv!.path).toEqual([hero.pos, pt]);
+  });
+
+  it('push : tilePreview non-vide et porte le COÛT de battle.reachable', () => {
+    const { hero } = combat({ action: 'push', reachable: new Map([['8,6', 2]]) });
+    const mode = TILE_MODES.find((m) => m.id === 'push')!;
+    const pt = { x: 8, y: 6 };
+    expect(mode.tileValidAt(useGame.getState, hero, pt)).toBe(true);
+    const pv = mode.tilePreview(useGame.getState, hero, pt);
+    expect(pv).not.toBeNull();
+    expect(pv!.cost).toBe(2);
+  });
+
+  it('placing-zone : tilePreview non-vide (au moins un libellé de badge)', () => {
+    const { hero } = combat();
+    const mode = TILE_MODES.find((m) => m.id === 'placing-zone')!;
+    const pv = mode.tilePreview(useGame.getState, hero, { x: 6, y: 7 });
+    expect(pv).not.toBeNull();
+    expect(pv!.label).toBeTruthy();
+  });
+
+  it('tilePreviewAt (sélecteur au survol, #198) : non-vide en mode PUSH sur une case atteignable, null en mode neutre (ATTACK n’a pas de tileValidAt)', () => {
+    combat({ action: 'push', reachable: new Map([['8,6', 1]]) });
+    expect(tilePreviewAt(useGame.getState, { x: 8, y: 6 })).not.toBeNull();
+    combat({ action: null }); // mode neutre → attaque implicite, pas un mode-case
+    expect(tilePreviewAt(useGame.getState, { x: 7, y: 6 })).toBeNull();
   });
 });
 

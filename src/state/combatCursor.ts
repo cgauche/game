@@ -6,11 +6,13 @@
  */
 import type { Pt } from './path';
 import type { Get } from './flowTypes';
+import type { Combatant } from '../engine/types';
 import { tileCenter, type Dims } from '../geometry/iso';
 import { heightAt, isWalkable, tileAt, type Scene } from './scene';
 import { metricToLift } from './relief';
 import { combatantAtTile } from './combatGeometry';
 import { combatantClickActs } from './combatOrParty';
+import type { TargetingMode } from './targetingModes';
 
 export interface CombatCursor {
   tile: Pt;
@@ -117,4 +119,59 @@ export function cursorCommitIntent(get: Get, cur: CombatCursor): CursorIntent | 
   if (occ && combatantClickActs(get, occ)) return { kind: 'entity', id: occ.id };
   if (occ) return get().inspectEnabled ? { kind: 'inspect', id: occ.id } : null;
   return { kind: 'tile', pt: mk(x, y, z) };
+}
+
+/**
+ * Ensemble des cases VALIDES d'un mode-CASE (#198, résidus) : balaie la scène et filtre par
+ * `tileValidAt` — GÉNÉRIQUE à tout mode-case (Pousser/Téléportation/pose de zone…), jamais une liste
+ * ad hoc par mode. O(w·h), appelé au déplacement clavier/manette (pas par frame) : coût négligeable
+ * face aux dimensions de scène courantes. PUR (lit `get`).
+ */
+export function tileModeValidTiles(get: Get, mode: Required<Pick<TargetingMode, 'tileValidAt'>>, active: Combatant): Pt[] {
+  const scene = get().scene;
+  if (!scene) return [];
+  const { w, h } = scene.dimensions;
+  const out: Pt[] = [];
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const pt = mk(x, y, resolveCursorZ(scene, x, y));
+      if (mode.tileValidAt(get, active, pt)) out.push(pt);
+    }
+  return out;
+}
+
+/**
+ * Voisin CLAVIER en mode-CASE (#198, résidus) : contrairement à `nextCursorTile` (curseur LIBRE, 8
+ * voisins de grille bruts — comportement voulu pour cibler un combattant), ne considère QUE l'ensemble
+ * `valid` (cases commettables du mode courant) : flèche = la case valide la MIEUX ALIGNÉE à l'écran
+ * avec la direction poussée (jamais un snap sur une case invalide, porte/reach dépassé compris). `cur`
+ * hors de `valid` (entrée dans le mode, ou curseur désynchronisé) → la case valide la plus PROCHE de
+ * `anchor` (position de l'acteur). `null` si `valid` est vide (rien à naviguer). PUR.
+ */
+export function nextCaseCursorTile(scene: Scene, cur: Pt | null, dir: ScreenDir, dims: Dims, anchor: Pt, valid: Pt[]): Pt | null {
+  if (!valid.length) return null;
+  const sameTile = (a: Pt, b: Pt) => a.x === b.x && a.y === b.y && (a.z ?? 0) === (b.z ?? 0);
+  const from = cur && valid.some((v) => sameTile(v, cur)) ? cur : null;
+  if (!from) {
+    let best = valid[0];
+    let bestD = Infinity;
+    for (const v of valid) {
+      const d = Math.abs(v.x - anchor.x) + Math.abs(v.y - anchor.y);
+      if (d < bestD) { bestD = d; best = v; }
+    }
+    return best;
+  }
+  let best: Pt | null = null;
+  let bestDot = 0; // strictement positif requis → jamais de saut arrière
+  for (const v of valid) {
+    if (sameTile(v, from)) continue;
+    const dot = screenStepDot(scene, from, v, dir, dims);
+    if (dot <= 0 || dot < bestDot) continue;
+    const closer = best && dot === bestDot && Math.hypot(v.x - from.x, v.y - from.y) < Math.hypot(best.x - from.x, best.y - from.y);
+    if (dot > bestDot || closer) {
+      bestDot = dot;
+      best = v;
+    }
+  }
+  return best ?? from;
 }

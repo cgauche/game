@@ -9,13 +9,14 @@ import { Combatant } from '../engine/types';
 import { isOutOfAction } from '../engine/conditions';
 import { combatDistance } from './footprint';
 import type { GameState } from './store';
-import { currentTargetingMode, type HoverTargeting } from './targetingModes';
+import { currentTargetingMode, type HoverTargeting, type TilePreview } from './targetingModes';
 import { controlsCombatant } from './netOwnership';
 import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
+import type { Pt } from './path';
 
 // Réexports de compatibilité : le TYPE d'affordance et la dérivation du côté visé d'un sort vivent
 // dans le registre de modes ; les importeurs historiques (IsoStage, tests) restent valides.
-export type { HoverTargeting, SpellAffinity } from './targetingModes';
+export type { HoverTargeting, SpellAffinity, TilePreview } from './targetingModes';
 export { spellAffinity } from './targetingModes';
 
 /**
@@ -80,6 +81,20 @@ export function cycleTarget(get: () => GameState, currentId: string | null): Com
   if (!sorted.length) return null;
   const idx = sorted.findIndex((c) => c.id === currentId);
   return sorted[(idx + 1) % sorted.length];
+}
+
+/** Aperçu du mode-CASE courant (Pousser/Téléportation/pose de zone) à `pt` — MÊME registre que le clic
+ *  (`tileValidAt`/`tilePreview` du mode courant, #198) : réticule + direction/coût au survol souris ET
+ *  au déplacement du curseur clavier (`combatCursor.tile`, appelant commun). null hors mode-case ou
+ *  tuile invalide (le mode ATTAQUE/CAST/HEAL/BATTERY, sans `tileValidAt`, retombe toujours à null ici —
+ *  ces modes gardent l'aperçu de DÉPLACEMENT normal, `movePreviewAt`). */
+export function tilePreviewAt(get: () => GameState, pt: Pt): TilePreview | null {
+  const battle = get().battle;
+  const active = cursorActor(get);
+  if (!battle || battle.over || !active) return null;
+  const mode = currentTargetingMode(get);
+  if (!mode.tileValidAt || !mode.tilePreview || !mode.tileValidAt(get, active, pt)) return null;
+  return mode.tilePreview(get, active, pt);
 }
 
 /** Cible PRÉCÉDENTE (Maj+Tab / gâchette gauche) : symétrique de `cycleTarget`, sens inverse. Null si aucune. */

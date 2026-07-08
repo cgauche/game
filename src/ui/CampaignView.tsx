@@ -4,6 +4,7 @@ import { canActFirst, freeActFirst } from '../state/turnEconomy';
 import { preemptShooterIds } from '../state/targeting';
 import { IsoStage } from '../gameIso/IsoStage';
 import { PovStage } from '../gameIso/pov/PovStage';
+import { SceneErrorBoundary } from './SceneErrorBoundary';
 import { PovControls } from './PovControls';
 import { ViewControls } from './ViewControls';
 import { DialogueBox } from './DialogueBox';
@@ -161,7 +162,7 @@ export function CampaignView() {
   return (
     <div className="screen campaign-view">
       <main className="stage">
-        {mode === 'exploration' && povActive ? <PovStage /> : <IsoStage />}
+        <SceneErrorBoundary>{mode === 'exploration' && povActive ? <PovStage /> : <IsoStage />}</SceneErrorBoundary>
         {/* ── Overlays HUD plein-champ (façon BG3, mobile-first) ── */}
         {mode === 'battle' && battle && (
           <>

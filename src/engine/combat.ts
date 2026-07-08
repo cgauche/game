@@ -548,12 +548,25 @@ export function canFireWhileEngaged(weapon: Weapon): boolean {
 
 /** Choisit l'arme adaptée à la distance de la cible : au CONTACT (Combat rapproché) on privilégie
  *  une arme de mêlée — une arme à distance n'y tire qu'avec l'Atout Pistolet (l.297-298) ; à
- *  DISTANCE on privilégie une arme à distance. Dernier recours : la première arme. */
-export function attackWeapon(weapons: Weapon[], targetAdjacent: boolean): Weapon {
+ *  DISTANCE on privilégie une arme à distance. Dernier recours : la première arme. `undefined` si
+ *  `weapons` est vide (structure/décor sans arme, ex. une porte survolée en combat — #203/régression
+ *  écran noir) : à l'appelant de décider (aucune arme à afficher/tirer n'est un cas légitime).*/
+export function attackWeapon(weapons: Weapon[], targetAdjacent: boolean): Weapon | undefined {
   if (targetAdjacent) {
     return weapons.find((w) => w.type === 'melee') ?? weapons.find(canFireWhileEngaged) ?? weapons[0];
   }
   return weapons.find((w) => w.type === 'ranged') ?? weapons[0];
+}
+
+/** `attackWeapon` pour un ATTAQUANT en train d'agir (attaque/tir choisi ou évalué) : un tel combattant
+ *  a TOUJOURS au moins une arme — mains nues en dernier recours pour un héros (`recomputeLoadout`,
+ *  `items.ts` l.512) ou une arme générique pour une créature (`weaponsFromTraits`, `items.ts` l.114-118).
+ *  Échoue fort (jamais un cast de complaisance) si l'invariant est violé — ce combattant ne devrait
+ *  jamais atteindre ce point sans arme. */
+export function assertAttackWeapon(weapons: Weapon[], targetAdjacent: boolean): Weapon {
+  const w = attackWeapon(weapons, targetAdjacent);
+  if (!w) throw new Error('assertAttackWeapon : combattant sans arme (invariant mains-nues/arme générique violé)');
+  return w;
 }
 
 /** Jet de l'ATTAQUANT seul (Précise +10, viser -10, Avantage×10, États) — n'inclut

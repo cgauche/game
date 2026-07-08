@@ -7,7 +7,7 @@
  *    (IsoStage) → parité souris (ennemi → attaque, case libre → déplacement, allié → inspection).
  */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { nextCursorTile, cursorCommitIntent } from './combatCursor';
+import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent } from './combatCursor';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { spawnEnemy } from './spawn';
@@ -61,6 +61,37 @@ describe('nextCursorTile — curseur écran-relatif', () => {
   });
 });
 
+describe('nextCaseCursorTile — mode-CASE (#198, résidus) : navigation BORNÉE à l\'ensemble VALIDE', () => {
+  const anchor = { x: 6, y: 10 };
+  // Ensemble VALIDE volontairement composé d'un voisin AXIAL (impossible à atteindre via nextCursorTile,
+  // biais diagonal-only) et d'un voisin diagonal — les 2 doivent rester atteignables ici.
+  const valid = [anchor, { x: 7, y: 10 }, { x: 7, y: 9 }];
+
+  it('entrée dans le mode (curseur null) : la case valide la plus PROCHE de l\'ancre', () => {
+    expect(nextCaseCursorTile(flat(), null, 'right', dims(), anchor, valid)).toEqual(anchor);
+  });
+
+  it('voisin AXIAL (x+1,y) atteignable — jamais possible via nextCursorTile (biais diagonal-only)', () => {
+    // Ensemble réduit au SEUL voisin axial : la « droite » écran doit pouvoir s'y poser (dot>0, best du lot).
+    expect(nextCaseCursorTile(flat(), anchor, 'right', dims(), anchor, [anchor, { x: 7, y: 10 }])).toEqual({ x: 7, y: 10 });
+  });
+
+  it('jamais de snap sur une case HORS ensemble valide, même si géométriquement mieux alignée', () => {
+    // Seul { x:7,y:9 } (diagonal, alignement parfait) est valide ; { x:7,y:10 } (axial) est ABSENT de `valid`
+    // dans ce sous-cas — la case retenue doit rester DANS l'ensemble fourni.
+    const r = nextCaseCursorTile(flat(), anchor, 'right', dims(), anchor, [anchor, { x: 7, y: 9 }]);
+    expect([anchor, { x: 7, y: 9 }]).toContainEqual(r);
+  });
+
+  it('aucune case valide dans la direction poussée → reste sur place (jamais de saut arrière)', () => {
+    expect(nextCaseCursorTile(flat(), anchor, 'left', dims(), anchor, [anchor, { x: 7, y: 10 }])).toEqual(anchor);
+  });
+
+  it('ensemble valide vide → null (rien à naviguer)', () => {
+    expect(nextCaseCursorTile(flat(), anchor, 'right', dims(), anchor, [])).toBeNull();
+  });
+});
+
 describe('cursorCommitIntent — parité performClick (mode-aware)', () => {
   beforeEach(() => { useGame.setState({ battle: null, party: [], inspectEnabled: false }); }); // ACTION par défaut (Inspection OFF)
   function makeState(over: Record<string, unknown> = {}) {
@@ -104,5 +135,60 @@ describe('cursorCommitIntent — parité performClick (mode-aware)', () => {
   it('hors combat → null', () => {
     useGame.setState({ battle: null });
     expect(cursorCommitIntent(useGame.getState, { tile: { x: 1, y: 1 } })).toBeNull();
+  });
+});
+
+describe('tileModeValidTiles — ensemble VALIDE générique (#198, résidus)', () => {
+  beforeEach(() => { useGame.setState({ battle: null, party: [], inspectEnabled: false }); });
+
+  it('filtre la scène ENTIÈRE par `tileValidAt` du mode — jamais toute la carte', () => {
+    const hero = makePregens()[0]; hero.id = 'h1'; hero.pos = { x: 6, y: 10 };
+    const battle = {
+      combatants: [hero], order: ['h1'], baseOrder: ['h1'], turn: 0, round: 1, action: null,
+      selectedSpellId: null, reachable: new Map([['6,10', 0], ['7,10', 1]]),
+      movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
+    };
+    useGame.setState({ battle: battle as never, scene: arena(), party: [hero] });
+    const mode = { tileValidAt: (get: typeof useGame.getState, _a: unknown, pt: { x: number; y: number }) =>
+      !!get().battle?.reachable.has(`${pt.x},${pt.y}`) };
+    const valid = tileModeValidTiles(useGame.getState, mode, hero);
+    // 22×16 = 352 cases dans `arena()` : l'ensemble valide ne porte QUE les 2 cases de `battle.reachable`.
+    expect(valid).toHaveLength(2);
+    expect(valid.map((p) => `${p.x},${p.y}`).sort()).toEqual(['6,10', '7,10']);
+  });
+});
+
+describe('moveCursor/commitCursor en mode-CASE (belier-porte, #198 résidus) — intégration store', () => {
+  it("le curseur clavier atteint la case AXIALE au nord (5,4)→(5,3) en mode Pousser, jamais bloqué sur le seul pas diagonal", async () => {
+    const { scenario } = await import('../scenes/test-scenarios/42-belier-porte');
+    useGame.setState({ party: scenario.makeParty() });
+    useGame.getState().startScene(scenario.scene);
+    useGame.getState().startCombat('siege-belier');
+    useGame.getState().confirmRoundStart();
+    const b0 = useGame.getState().battle!;
+    const soldat = b0.combatants.find((c) => c.kind === 'hero' && !!c.mannedPoste)!;
+    useGame.setState({ battle: { ...b0, turn: b0.order.indexOf(soldat.id), acted: false, action: null, movementUsed: 0 } });
+    useGame.getState().battlePushEngine();
+    expect(useGame.getState().battle!.action).toBe('push');
+    // Pousser vers le NORD (vers la porte) : un pas AXIAL de grille (dx=0,dy=-1) — le cas que le biais
+    // diagonal-only de `nextCursorTile` ne pouvait jamais atteindre en un seul appui.
+    useGame.getState().moveCursor('up');
+    const cur = useGame.getState().combatCursor;
+    expect(cur).not.toBeNull();
+    expect(useGame.getState().battle!.reachable.has(`${cur!.tile.x},${cur!.tile.y}`)).toBe(true); // jamais hors ensemble valide
+  });
+
+  it("Entrée sur une case NON commettable en mode-CASE prévient (log), jamais muet", () => {
+    const hero = makePregens()[0]; hero.id = 'h1'; hero.pos = { x: 6, y: 10 };
+    const door = spawnEnemy('Bandit de Grand Chemin', undefined, 'door', { x: 7, y: 10 });
+    const battle = {
+      combatants: [hero, door], order: ['h1'], baseOrder: ['h1'], turn: 0, round: 1, action: 'teleport',
+      selectedSpellId: null, reachable: new Map(), // AUCUNE case de reach : (7,10) reste occupée/non commettable
+      movementUsed: 0, movedPreAction: false, acted: false, log: [], over: null,
+    };
+    useGame.setState({ battle: battle as never, scene: arena(), party: [hero], inspectEnabled: false, combatCursor: { tile: { x: 7, y: 10 } }, journal: [] });
+    const before = useGame.getState().journal.length;
+    useGame.getState().commitCursor();
+    expect(useGame.getState().journal.length).toBe(before + 1); // feedback explicite, jamais un no-op silencieux
   });
 });

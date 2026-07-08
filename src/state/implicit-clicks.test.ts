@@ -110,6 +110,16 @@ describe('Course implicite — zone au-delà de la Marche, jet au commit (LDB 15
     void p; void M;
   });
 
+  it("zone de Course NOMINALE indisponible sous un mode-CASE (#198, résidus) : `battle.reachable` déjà "
+    + "peuplé par Pousser/Téléportation/pose de zone ne doit pas se faire recouvrir par la Marche+Course "
+    + "normales — sinon la grille 'run' (data-tile) ratisse toute la carte au lieu du seul ensemble du mode", () => {
+    const { H } = setup();
+    expect(computeRunReach(useGame.getState).size).toBeGreaterThan(0); // témoin : hors mode-case, la Course normale s'affiche
+    const b = useGame.getState().battle!;
+    useGame.setState({ battle: { ...b, action: 'teleport', reachable: new Map([[`${H.pos!.x},${H.pos!.y}`, 0]]) } });
+    expect(computeRunReach(useGame.getState).size).toBe(0);
+  });
+
   it('runConfirm : jet généreux → arrive à destination, Action consommée', () => {
     const { H } = setup();
     const p = { ...useGame.getState().battle!.combatants.find((c) => c.id === H.id)!.pos! };

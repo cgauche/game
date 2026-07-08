@@ -19,6 +19,7 @@ import type { OvercastAxis } from '../engine/overcast';
 import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal } from './combatFlow';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { EMPTY_FLOW, type Flow } from './flow';
+import type { MoveSnapshot } from './combatGeometry';
 export { movementRemaining, canMove } from './mount';
 
 import { type BattleZone } from './zones';
@@ -85,7 +86,7 @@ export type { MedicState, MedicNpc } from './medicFlow';
 import * as restFlow from './restFlow';
 import type { PendingRest, RestPlaces, RestLodging, RestFood } from './restFlow';
 export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
-import { Scene, Dialogue, Effect, isWalkable } from './scene';
+import { Scene, Dialogue, Effect, isWalkable, type VictoryCondition } from './scene';
 import { placeCombatant } from './spawn';
 import { chebyshev, Pt } from './path';
 import { exploreStepDest, povStepDest, spawnFacing } from './exploreNav';
@@ -155,6 +156,8 @@ export interface BattleState {
   log: CombatEvent[];
   over: null | 'victory' | 'defeat';
   onVictory?: Flow;
+  /** Objectif de victoire authorable (#197). Absent = `allEnemiesDead` (défaut historique, `checkBattleOver`). */
+  victoryCondition?: VictoryCondition;
   /** Zones persistantes (L11 — généralise l'ancienne fumée) : fumée du Souffle (blocksLoS),
    *  Mur de feu (onCross), Grands feux d'U'Zhul (perRound)… TTL décrémenté à chaque frontière
    *  de Round (state/zones.ts). */
@@ -175,7 +178,7 @@ export interface BattleState {
    *  d'ANNULER tout le déplacement tant qu'aucune Action n'a été prise (`cancelMove`). Restaure
    *  positions de TOUS les combattants (un grand a pu en déplacer d'autres), orientation et
    *  `movedPreAction`. Effacé à l'annulation ou écrasé au 1ᵉʳ segment du Tour suivant. */
-  moveSnapshot?: { pos: Record<string, Pt>; facing: Record<string, Dir8>; movedPreAction: boolean } | null;
+  moveSnapshot?: MoveSnapshot | null;
   /** Budget de Mouvement ÉTENDU du Tour après une Course (Marche + Course + DR, LDB 15 l.80) :
    *  le reliquat non parcouru reste dépensable en segments. Null hors Course ; purgé au Tour/Round. */
   runBudget?: number | null;

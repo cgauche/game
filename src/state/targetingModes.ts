@@ -12,7 +12,7 @@
  */
 import type { Get, Set } from './flowTypes';
 import type { Combatant } from '../engine/types';
-import { combineMods, attackWeapon } from '../engine/combat';
+import { combineMods, assertAttackWeapon } from '../engine/combat';
 import { castInfo, isMagicMissile, missileDamage, spellRangeTiles } from '../engine/magic';
 import { bonus, effectiveChar } from '../engine/characteristics';
 import { effectiveRange } from '../engine/weaponDamage';
@@ -46,6 +46,7 @@ import {
   displaceSmaller, fearedSourceTowards, frenzyTarget, applyZoneCrossings,
   placingZoneOf, placedZoneValidAt, commitPlacedZone, overcastTargetCandidates,
   cleaveTargets, dualStrikeTargets, castZoneSpell, castSpell, spellSightOf, openAttackCascade,
+  captureMoveSnapshot,
 } from './combatFlow';
 
 export type HoverTargeting =
@@ -78,11 +79,25 @@ export type HoverTargeting =
       preview: { kind: 'attack' | 'charge' | 'moveAttack'; targetId: string; path?: { x: number; y: number }[]; dest?: { x: number; y: number }; cost?: number; adv?: 0 | 1 };
     };
 
+/** Aperçu d'un mode à ciblage TUILE (#198) — au survol souris/curseur clavier d'une case VALIDE
+ *  (`tileValidAt` déjà vrai). `target` ancre le réticule (case d'arrivée / centre de zone) ; `path`
+ *  (facultatif, ≥2 points) trace la direction depuis l'origine ; `cost` porte la distance/le coût
+ *  affiché ; `label` est le texte du badge (rendu par `movePreviewEls`, MÊME primitive que l'aperçu de
+ *  déplacement normal — pas de nouveau système visuel). */
+export interface TilePreview {
+  target: Pt;
+  path?: Pt[];
+  cost?: number;
+  label: string;
+}
+
 /**
  * Un MODE de ciblage. Un mode-COMBATTANT remplit `affordance` (réticule au survol) + `commitCombatant`
- * (clic-token) ; un mode-CASE remplit `tileValidAt` + `commitTile` (clic-sol). `candidates` (Tab/curseur)
- * vaut par défaut « les combattants dont l'affordance ≠ 'none' » — un mode ne le surcharge que s'il a
- * une liste propre (soin, surincantation…). Tout est PUR (lit l'état) sauf les commit (mutent via set).
+ * (clic-token) ; un mode-CASE remplit `tileValidAt` + `commitTile` (clic-sol) + `tilePreview` (aperçu au
+ * survol — voir `TileTargetingMode` ci-dessous, qui rend les trois REQUIS pour un mode-case : la garde
+ * structurelle du ticket #198, un mode-case sans aperçu ne compile pas). `candidates` (Tab/curseur) vaut
+ * par défaut « les combattants dont l'affordance ≠ 'none' » — un mode ne le surcharge que s'il a une
+ * liste propre (soin, surincantation…). Tout est PUR (lit l'état) sauf les commit (mutent via set).
  */
 export interface TargetingMode {
   id: string;
@@ -91,7 +106,12 @@ export interface TargetingMode {
   commitCombatant?(get: Get, set: Set, active: Combatant, id: string, opts?: BattleClickOpts): void;
   tileValidAt?(get: Get, active: Combatant, pt: Pt): boolean;
   commitTile?(get: Get, set: Set, active: Combatant, pt: Pt): void;
+  tilePreview?(get: Get, active: Combatant, pt: Pt): TilePreview | null;
 }
+
+/** Mode-CASE COMPLET : `tileValidAt`/`commitTile`/`tilePreview` tous requis — un mode qui cible des
+ *  tuiles (catalogue `TILE_MODES`) DOIT fournir son aperçu, sinon erreur de compilation (#198). */
+export type TileTargetingMode = TargetingMode & Required<Pick<TargetingMode, 'tileValidAt' | 'commitTile' | 'tilePreview'>>;
 
 /** Options du clic-token (parité `battleClickEntity`). */
 export type BattleClickOpts = { confirm?: boolean; skipMountChoice?: boolean; forceAttackId?: string; wardCleared?: boolean };
@@ -462,14 +482,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
       // Rejoindre la cible dans la Marche restante (pas une Charge → pas de bonus), puis attaquer.
       // MÊMES mutations qu'un segment de battleClickTile (snapshot d'annulation compris).
       const b = get().battle!;
-      const snapshot =
-        (b.movementUsed ?? 0) === 0
-          ? {
-              pos: Object.fromEntries(b.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
-              facing: { ...get().facing },
-              movedPreAction: b.movedPreAction,
-            }
-          : b.moveSnapshot ?? null;
+      const snapshot = (b.movementUsed ?? 0) === 0 ? captureMoveSnapshot(b, get().facing) : b.moveSnapshot ?? null;
       const geom = mountOf(b, active) ?? active;
       approachPath = plan.path;
       active.pos = { ...plan.dest };
@@ -492,7 +505,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
       // sinon auto selon la distance — PAS weapons[0], sinon un héros mixte mêlée+distance ne pourrait
       // jamais tirer une cible éloignée (LDB Armes l.297-298). Portée de mêlée = Allonge (RAW-3, LDB 62).
       const adj = mountedCombatDistance(get().battle!, active, target) <= meleeReachTiles(active.weapons); // géométrie monture (cavalier au contact par sa monture)
-      const w = (option.weaponUid ? active.weapons.find((x) => x.uid === option.weaponUid) : undefined) ?? attackWeapon(active.weapons, adj);
+      const w = (option.weaponUid ? active.weapons.find((x) => x.uid === option.weaponUid) : undefined) ?? assertAttackWeapon(active.weapons, adj);
       if (!adj && w.type === 'melee') {
         get().log(t('cs.meleeOutOfRange')); // aucune arme à distance dispo → mêlée hors de portée
         return;
@@ -574,6 +587,10 @@ function pushCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void {
   const poste = active.mannedPoste;
   const hull = poste && posteHullOf(poste, battle.combatants);
   if (!poste || !hull?.pos) return;
+  // Annulation (#199) : au PREMIER segment du Tour (`movementUsed === 0`), capture l'état AVANT de
+  // pousser — MÊME snapshot que battleClickTile/moveAttack (positions + facing + movedPreAction +
+  // loseNextMovement des servants), pour que `cancelMove` défasse aussi une poussée.
+  const snapshot = (battle.movementUsed ?? 0) === 0 ? captureMoveSnapshot(battle, get().facing) : battle.moveSnapshot ?? null;
   const delta = { x: pt.x - active.pos.x, y: pt.y - active.pos.y };
   const movers = [hull, ...(poste.crewIds ?? [])
     .map((id) => battle.combatants.find((c) => c.id === id))
@@ -594,7 +611,7 @@ function pushCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void {
     if (c) c.loseNextMovement = true;
   }
   const log = [...battle.log, ev('move', t('cs.pushEngine', { name: active.name, weapon: hull.name, n: dist, s: dist > 1 ? 's' : '' }), active.id)];
-  set({ battle: { ...get().battle!, movementUsed: mountMovement(get().battle!, active), action: null, reachable: new Map(), preview: null, log } });
+  set({ battle: { ...get().battle!, moveSnapshot: snapshot, movementUsed: mountMovement(get().battle!, active), action: null, reachable: new Map(), preview: null, log } });
   bus.emit(EVT.SCENE_DIRTY);
 }
 
@@ -671,25 +688,37 @@ const DUAL_MODE: TargetingMode = {
   },
   commitCombatant: (get, _set, _active, id) => { get().dualStrikeAttack(id); },
 };
-const TELEPORT_MODE: TargetingMode = {
+const TELEPORT_MODE: TileTargetingMode = {
   id: 'teleport',
   tileValidAt: (get, _active, pt) => !!get().battle?.reachable.has(`${pt.x},${pt.y}`),
   commitTile: teleportCommitTile,
+  tilePreview: (_get, active, pt) => (active.pos ? { target: pt, path: [active.pos, pt], label: 'Téléporter' } : null),
 };
 /** POUSSÉE d'un engin de siège (ADE II ch.08 l.258, Lot 2 #156) : case-cible parmi `battle.reachable`
  *  (posé par `battlePushEngine`), MÊME gabarit que TELEPORT_MODE. */
-const PUSH_MODE: TargetingMode = {
+const PUSH_MODE: TileTargetingMode = {
   id: 'push',
   tileValidAt: (get, _active, pt) => !!get().battle?.reachable.has(`${pt.x},${pt.y}`),
   commitTile: pushCommitTile,
+  tilePreview: (get, active, pt) => {
+    if (!active.pos) return null;
+    const cost = get().battle?.reachable.get(`${pt.x},${pt.y}`) ?? 0;
+    return { target: pt, path: [active.pos, pt], cost, label: `Pousser (${cost})` };
+  },
 };
 /** Pose libre d'un gabarit de zone (sort de ZdE après jet OU pilonnage indirect de siège). */
-const PLACING_MODE: TargetingMode = {
+const PLACING_MODE: TileTargetingMode = {
   id: 'placing-zone',
   tileValidAt: (get, _active, pt) => { const pz = placingZoneOf(get()); return !!pz && placedZoneValidAt(get, pz, pt); },
   commitTile: (get, set, _active, pt) => commitPlacedZone(get, set, pt),
   commitCombatant: placingCommitCombatant,
+  tilePreview: (_get, _active, pt) => ({ target: pt, label: 'Poser la zone' }),
 };
+
+/** Catalogue des modes-CASE (#198) — SOURCE UNIQUE pour la garde exhaustive (test qui les itère et
+ *  vérifie un aperçu non-vide sur une tuile valide) et pour tout consommateur générique (aperçu au
+ *  survol, adressabilité DOM des cases valides). */
+export const TILE_MODES: readonly TileTargetingMode[] = [TELEPORT_MODE, PUSH_MODE, PLACING_MODE];
 
 /**
  * Aiguilleur UNIQUE — extrait factuellement des priorités de `battleClickEntity`/`hoverAim` :

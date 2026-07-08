@@ -355,6 +355,10 @@ textarea:focus {
   overflow: hidden;
   min-width: 0;
 }
+.scene-error-boundary {
+  display: grid;
+  place-items: center;
+}
 .stage-hint {
   position: absolute;
   bottom: 18px;

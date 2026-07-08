@@ -148,6 +148,13 @@ export interface EnemyTurnInput {
    *  tandis qu'une arme ordinaire ne l'abîme pas (`structureImmune` → 0 Blessure → utilité ~0, non choisie).
    *  ABSENT/vide (toute fixture sans structure) → aucun candidat (parité golden). */
   structures?: Combatant[];
+  /** Cet ennemi sert un poste d'engin ACTIF (`crewPosteOf`, #196 : bélier, batterie de siège — le naval lie
+   *  déjà son équipage autrement, `shipOfCrew`) — il TIENT SA FORMATION plutôt que de charger : c'est le
+   *  MOUVEMENT DU POSTE (poussée du chef) qui le déplace, pas une décision individuelle. Implémenté en
+   *  plafonnant son Mouvement effectif à 0 (aucune approche/charge générée) ; Engagé (ennemi déjà adjacent),
+   *  il se défend/attaque normalement DEPUIS sa case (la mêlée sur cible adjacente n'exige aucun Mouvement).
+   *  ABSENT/faux = comportement normal (parité golden). */
+  holdsFormation?: boolean;
 }
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
@@ -486,7 +493,11 @@ function argmax(cands: Candidate[]): Candidate | null {
 
 /** Choisit l'action d'un ennemi pour son tour. Pure et déterministe. */
 export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
-  const { enemy, scene, blocked, movement, smoke, flying, facing } = input;
+  const { enemy, scene, blocked, smoke, flying, facing } = input;
+  // Tenue de formation (#196) : Mouvement effectif plafonné à 0 → tout le reste de la fonction (approche,
+  // repositionnement/kiting, fallback anti-immobilisme) n'énumère plus que la case courante — un ennemi déjà
+  // adjacent (`inMelee`/`withinMelee`, testés sur `pos` SANS passer par `reach`) reste attaquable normalement.
+  const movement = input.holdsFormation ? 0 : input.movement;
   const spells = input.spells ?? []; // absent (tests purs / fixtures sans sort) → aucun candidat de sort
   // Escouade (Lot 4) : alliés posés encore en action (l'ennemi exclu par l'appelant). Absent → [] →
   // surnombre/cohésion/danger-map neutres = comportement Lot 3 strictement inchangé.

@@ -18,7 +18,7 @@ import { isFrenzied } from '../../engine/psychology';
 import { combatantAtTile } from '../../state/combatGeometry';
 import { controlsCombatant } from '../../state/netOwnership';
 import { outOfSightTargetIds, castOutOfSightTargetIds, movePreviewAt, previewResourceDelta, frenzyTarget, hasFreeWeaponAttack } from '../../state/combatFlow';
-import { hoverTargeting } from '../../state/targeting';
+import { hoverTargeting, tilePreviewAt } from '../../state/targeting';
 
 export interface HoverAim {
   fromId: string | null; // départ de la ligne (résolu en pixels au rendu — suit le glissement)
@@ -143,14 +143,20 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
   }, [combatCursor, mode, battle, hover, hoverCombatantId]);
   useEffect(() => { setHovered(hoveredId); }, [hoveredId, setHovered]);
 
-  // Aperçu de DÉPLACEMENT au SURVOL (desktop) : le chemin + le coût se matérialisent sous la souris,
-  // le clic UNIQUE commet — le tap-1 (battle.preview) reste le flux tactile. Mêmes sources que le clic.
-  const hoverMove = useMemo<{ kind: 'move' | 'run'; path: { x: number; y: number }[]; cost: number } | null>(() => {
+  // Aperçu de DÉPLACEMENT au SURVOL (desktop) ET au curseur clavier/manette (effHover) : le chemin + le
+  // coût se matérialisent sous la souris, le clic UNIQUE commet — le tap-1 (battle.preview) reste le
+  // flux tactile. Mêmes sources que le clic. Un mode-CASE du catalogue (Pousser/Téléportation/pose de
+  // zone, `tilePreviewAt` #198) PRIME et rend son aperçu même Action consommée / case VIDE (le mode
+  // décide, pas ce hook) ; sinon on retombe sur l'aperçu de déplacement NORMAL (mode neutre only).
+  const hoverMove = useMemo<{ kind: 'move' | 'run' | 'tile'; path: Pt[]; cost?: number; label: string } | null>(() => {
     if (mode !== 'battle' || !battle || battle.over || !effHover || battle.preview || !myTurn) return null;
+    const tp = tilePreviewAt(useGame.getState, effHover);
+    if (tp) return { kind: 'tile', path: tp.path ?? [], cost: tp.cost, label: tp.label };
     if (pendingAttack || pendingDefense || pendingTrample || pendingHeal || pendingCast || pendingCleave || pendingDualStrike) return null;
     const occ = combatantAtTile(battle.combatants, effHover.x, effHover.y, effHover.z ?? 0);
     if (occ) return null; // une cible a sa propre visée (hoverAim)
-    return movePreviewAt(useGame.getState, effHover);
+    const mv = movePreviewAt(useGame.getState, effHover);
+    return mv ? { kind: mv.kind, path: mv.path, cost: mv.cost, label: mv.kind === 'move' ? `Aller (${mv.cost})` : 'Courir' } : null;
   }, [combatCursor, hover, mode, battle, myTurn, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 
   // Aperçu de DÉPLACEMENT au SURVOL hors combat : même calcul que le clic (moveAlong) — pathTo avec la
@@ -172,7 +178,7 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
   // l'intention SOUS LA SOURIS — un aperçu de la forme tap-1 est synthétisé du survol et passe par la
   // MÊME source (`previewResourceDelta`). Écrit au store seulement quand le delta CHANGE.
   useEffect(() => {
-    const pvLike = hoverAim?.preview ?? (hoverMove && hover ? { kind: hoverMove.kind, tile: { ...hover }, path: hoverMove.path, cost: hoverMove.cost } : null);
+    const pvLike = hoverAim?.preview ?? (hoverMove && hover && hoverMove.kind !== 'tile' ? { kind: hoverMove.kind, tile: { ...hover }, path: hoverMove.path, cost: hoverMove.cost } : null);
     const delta = pvLike && battle ? previewResourceDelta({ ...battle, preview: pvLike as never }) : null;
     const cur = useGame.getState().hoverDelta;
     const same = (!delta && !cur) || (!!delta && !!cur && delta.action === cur.action && delta.move === cur.move && delta.adv === cur.adv);

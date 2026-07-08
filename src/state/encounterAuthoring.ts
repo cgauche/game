@@ -9,7 +9,7 @@
  * Utilisé par les scènes de test (`src/scenes/**`). Le générateur d'arène (`scripts/arene/lib.mjs`,
  * Node pur) délègue à `buildScene` (`tsx`, MÊME compilateur) — pas de mirroir JS séparé à maintenir.
  */
-import type { CustomStatblock, EncounterDef, EncounterMember, SceneEntity } from './scene';
+import type { CustomStatblock, EncounterDef, EncounterMember, SceneEntity, VictoryCondition } from './scene';
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { Flow } from './flow';
 import type { OptionalEntry } from '../engine/statEntry';
@@ -70,6 +70,8 @@ export interface AuthoredEncounter {
   threat?: { camp: 'party' | 'enemies'; tier: ThreatTier };
   /** Avantage initial — Terrain (AA l.4149-4167), cf. `EncounterDef.terrain`. */
   terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
+  /** Objectif de victoire (#197), cf. `EncounterDef.victoryCondition`. Absent = `allEnemiesDead`. */
+  victoryCondition?: VictoryCondition;
 }
 
 export interface BuiltEncounter {
@@ -118,6 +120,7 @@ export function buildEncounter(a: AuthoredEncounter): BuiltEncounter {
   if (a.maneuverability) encounter.maneuverability = a.maneuverability;
   if (a.threat) encounter.threat = a.threat;
   if (a.terrain) encounter.terrain = a.terrain;
+  if (a.victoryCondition) encounter.victoryCondition = a.victoryCondition;
   return { entities, encounter };
 }
 

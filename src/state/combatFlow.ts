@@ -30,7 +30,7 @@ import {
   rollMeleeAttacker,
   rollDisengageAttack,
   rollGrappleForce,
-  attackWeapon,
+  assertAttackWeapon,
   hitLocationByShape,
   locationLabel,
   reverseRoll,
@@ -151,13 +151,13 @@ import { findSpell, findSpellById } from '../data/index';
  *  (un fallback id→libellé = rétro-compatibilité, proscrite). Les libellés restent au seul niveau AUTHORING. */
 const resolveSpell = (id: string) => findSpellById(id);
 import { toBrass, fromBrass } from '../engine/money';
-import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructureDown, setTileCollapsed, parapetTilesAbove, heightAt } from './scene';
+import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructureDown, setTileCollapsed, parapetTilesAbove, heightAt, structureIsDown, type VictoryCondition } from './scene';
 import { STEP_MAX_M } from './relief';
 import { placeCombatant } from './spawn';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountedCombatDistance, mountUp, mountableNear, movementRemaining, canMove, riderFearSize } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
-import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste } from './shipPostes';
+import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste, crewPosteOf } from './shipPostes';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { warMachineFireWeapon, warMachineCrewRequired, warMachineCrewPenalty } from '../engine/warMachineCrew';
 import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
@@ -247,7 +247,7 @@ export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: 
   const adj = combatDistance(geom(attacker), geom(target)) <= meleeReachTiles(attacker.weapons); // Allonge incluse (RAW-3)
   // Choix explicite du joueur : l'arme du loadout actif portant cet uid (si présente) ; sinon auto-choix.
   const chosen = weaponUid ? attacker.weapons.find((w) => w.uid === weaponUid) : undefined;
-  const base = chosen ?? attackWeapon(attacker.weapons, adj);
+  const base = chosen ?? assertAttackWeapon(attacker.weapons, adj);
   const ammo = base.type === 'ranged' && attacker.kind === 'hero' ? selectedAmmo(attacker, base) : undefined;
   let w = ammo ? weaponWithAmmo(base, ammo) : base;
   // Pièce SERVIE en sous-effectif (poste) : bake les Défauts d'Arme d'équipe selon les servants APTES présents
@@ -302,7 +302,7 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
   const adj = distanceTiles <= meleeReachTiles(active.weapons); // même arbitrage d'arme que firedWeapon
   // Arme effectivement testée : choix EXPLICITE (poste servi → `weaponUid`) sinon auto selon la distance —
   // MÊME arbitrage que `firedWeapon` (le gate ne doit pas mentir sur une AUTRE arme que celle qui tirera).
-  const w = (weaponUid ? active.weapons.find((x) => x.uid === weaponUid) : undefined) ?? attackWeapon(active.weapons, adj);
+  const w = (weaponUid ? active.weapons.find((x) => x.uid === weaponUid) : undefined) ?? assertAttackWeapon(active.weapons, adj);
   // Machine de guerre ADE II (Qualité `equipe`, ch.08 l.233) sous LA MOITIÉ de l'Équipe requise : INUTILISABLE
   // — mêlée (bélier, Force) ET distance, donc AVANT le early-return ranged-only ci-dessous.
   const required = warMachineCrewRequired(w);
@@ -983,6 +983,11 @@ function briseFleeFilter(scene: Scene, battle: BattleState, active: Combatant, r
 export function computeRunReach(get: Get): Map<string, number> {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over || battle.acted || battle.movementUsed > 0) return new Map();
+  // Mode-CASE (#198, résidus) : Pousser/Téléportation/pose de zone posent LEUR PROPRE ensemble dans
+  // `battle.reachable` (déjà priorisé par `displayedReach` ci-dessous) — la zone de Course NOMINALE
+  // (Marche+Course normales) n'a pas de sens pendant ces modes et ne doit pas s'y superposer (sinon la
+  // grille 'run', qui porte `data-tile`, ratisse toute la carte au lieu du seul ensemble du mode).
+  if (battle.reachable.size > 0) return new Map();
   const active = activeCombatant(battle);
   if (!active || !controlsCombatant(get(), active) || !active.pos) return new Map();
   if (isEngaged(active) || hasCondition(active, COND.aTerre) || !canTakeAction(active)) return new Map();
@@ -1094,7 +1099,7 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
   // modale — sinon « Lancer » fabrique un raté garanti qui consomme l'Action. Les gates de la
   // résolution restent (défense en profondeur). Le gate de RESSOURCE (Recharge/munition) est porté
   // par `firedAttackBlock` (concern orthogonal), rejoué par le clic ET le survol sur ce `{kind:'attack'}`.
-  if (!opts?.forceMelee && attackWeapon(active.weapons, false).type === 'ranged') {
+  if (!opts?.forceMelee && assertAttackWeapon(active.weapons, false).type === 'ranged') {
     const p = previewAttack(get, active, target);
     if (p.blocked) return { kind: 'blocked', reason: 'Pas de ligne de vue (cible masquée).' };
     if (!p.inRange) return { kind: 'blocked', reason: 'Cible hors de portée.' };
@@ -3333,6 +3338,9 @@ export function buildAiInput(enemy: Combatant, get: Get): EnemyTurnInput {
     // impur a la liste complète des combattants). Vide en scène sans emplacement → aucun candidat (parité golden).
     servablePostes: servablePostes(enemy, battle.combatants).map(({ hull, poste }) => ({ hullId: hull.id, posteUid: poste.item.uid })),
     structures,
+    // Tenue de FORMATION (#196) : crew d'un poste d'engin ACTIF (bélier, batterie de siège) → il ne charge
+    // pas seul, c'est le poste qui le déplace (naval : le passager suit `shipOfCrew`, cas déjà distinct).
+    holdsFormation: !!crewPosteOf(enemy.id, battle.combatants),
   };
 }
 
@@ -4296,6 +4304,25 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   }
 }
 
+/** L'OBJECTIF de victoire de la rencontre en cours est-il rempli ? (#197) Absent = `allEnemiesDead`
+ *  (équivalent à `!enemiesAlive`, comportement historique inchangé). `enemiesAlive` est passé par
+ *  l'appelant (déjà calculé par `checkBattleOver`, hors engins INERTES). PUR (aucune écriture). */
+function victoryConditionMet(vc: VictoryCondition | undefined, battle: BattleState, scene: Scene | null, enemiesAlive: boolean): boolean {
+  switch (vc?.type) {
+    case undefined:
+    case 'allEnemiesDead':
+      return !enemiesAlive;
+    case 'destroyStructure':
+      return !!scene && structureIsDown(scene, vc.edge);
+    case 'surviveRounds':
+      return battle.round > vc.rounds;
+    case 'reachZone': {
+      const kind = (vc.camp ?? 'party') === 'party' ? 'hero' : 'enemy';
+      return battle.combatants.some((c) => c.kind === kind && !c.inert && !isOutOfAction(c) && c.pos && inRect(c.pos, vc.rect));
+    }
+  }
+}
+
 export function checkBattleOver(get: Get, set: SetFn): boolean {
   const battle = get().battle;
   if (!battle || battle.over) return true;
@@ -4321,7 +4348,10 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
   // (`kind:'hero'`) ni côté ennemi : la victoire/défaite se joue sur les créatures (l'équipage), pas l'objet.
   const heroesAlive = battle.combatants.some((c) => c.kind === 'hero' && !c.inert && !isOutOfAction(c));
   const enemiesAlive = battle.combatants.some((c) => c.kind === 'enemy' && !c.inert && !isOutOfAction(c));
-  if (!enemiesAlive) {
+  // Objectif de victoire authorable (#197) : par défaut `allEnemiesDead` (équivalent à `!enemiesAlive`,
+  // comportement historique inchangé) — un autre type NE termine PAS le combat à la mort du dernier
+  // ennemi tant que sa propre condition n'est pas remplie (ex. porte intacte, bélier-porte).
+  if (victoryConditionMet(battle.victoryCondition, battle, scene, enemiesAlive)) {
     // Tests de fin de combat des héros survivants (maladie/Corruption) AVANT l'écran de victoire (décision
     // utilisateur) : cadence-aware (héros manuel → cascade influençable). Si une cascade s'ouvre, on DIFFÈRE
     // la victoire — sa fermeture (`combatEndBoundary`) enchaîne sur `finishCombatEnd`/`finishVictory`.
@@ -5094,8 +5124,13 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const foeKind = enemy.kind === 'enemy' ? 'hero' : 'enemy';
   const heroes = battle.combatants.filter((c) => c.kind === foeKind && !isOutOfAction(c));
   if (heroes.length === 0) {
-    checkBattleOver(get, set);
-    return;
+    // Aucun adversaire vivant mais le combat continue (`victoryCondition` non authorable atteinte,
+    // ex. structure encore intacte) : `checkBattleOver` ne termine PAS forcément le combat → il n'y a
+    // rien à jouer ce tour (aucune cible), mais le tour DOIT quand même se clore, sinon l'IA reste
+    // bloquée indéfiniment (soft-lock). Si `checkBattleOver` a terminé/suspendu le combat
+    // (victoire/défaite/cascade), ne pas avancer par-dessus.
+    if (checkBattleOver(get, set)) return;
+    return advanceTurn(get, set);
   }
   // Combat monté (LDB 14) : un PNJ à pied, non Engagé, adjacent à une monture LIBRE de son camp décide
   // de l'enfourcher (aucun jet → simple Mouvement ; il pourra ensuite ATTAQUER, mais pas se déplacer en plus).

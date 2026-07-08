@@ -69,6 +69,20 @@ describe('buildEncounter — authoring terse → entités + members canoniques',
     expect(encounter.terrain).toBeUndefined();
   });
 
+  it('victoryCondition (#197) passe sur la rencontre — round-trip, absent = allEnemiesDead implicite', () => {
+    const { encounter } = buildEncounter({
+      id: 'e',
+      victoryCondition: { type: 'destroyStructure', edge: { x: 5, y: 4, side: 'N' } },
+      enemies: [{ ref: 'Orc', pos: { x: 1, y: 1 } }],
+    });
+    expect(encounter.victoryCondition).toEqual({ type: 'destroyStructure', edge: { x: 5, y: 4, side: 'N' } });
+  });
+
+  it('victoryCondition absent → absent sur la rencontre (comme surprise)', () => {
+    const { encounter } = buildEncounter({ id: 'e', enemies: [{ ref: 'Orc', pos: { x: 1, y: 1 } }] });
+    expect(encounter.victoryCondition).toBeUndefined();
+  });
+
   it('buildEncounters agrège entités et rencontres de plusieurs rencontres', () => {
     const { entities, encounters } = buildEncounters([
       { id: 'a', enemies: [{ ref: 'Gobelin', pos: { x: 1, y: 1 } }] },

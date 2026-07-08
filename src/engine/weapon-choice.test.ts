@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { canFireWhileEngaged, attackWeapon } from './combat';
+import { canFireWhileEngaged, attackWeapon, assertAttackWeapon } from './combat';
 import { Weapon } from './types';
 
 const arbalete: Weapon = { name: 'Arbalète', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
@@ -26,5 +26,18 @@ describe('attackWeapon — choisit l’arme selon la distance', () => {
   });
   it('cible distante : privilégie l’arme à DISTANCE', () => {
     expect(attackWeapon([epee, arbalete], false)).toBe(arbalete);
+  });
+  it('tableau vide (structure/décor sans arme) : undefined, jamais un crash (#203 régression écran noir)', () => {
+    expect(attackWeapon([], true)).toBeUndefined();
+    expect(attackWeapon([], false)).toBeUndefined();
+  });
+});
+
+describe('assertAttackWeapon — garde explicite de l’invariant « un attaquant a toujours une arme »', () => {
+  it('délègue à attackWeapon quand une arme existe', () => {
+    expect(assertAttackWeapon([epee, arbalete], false)).toBe(arbalete);
+  });
+  it('échoue fort (jamais un cast silencieux) si l’invariant mains-nues est violé', () => {
+    expect(() => assertAttackWeapon([], true)).toThrow();
   });
 });

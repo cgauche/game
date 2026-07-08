@@ -240,3 +240,25 @@ export function isFlankOrRear(targetFacing: Dir8, dirToAttacker: Dir8): boolean 
 export function seesInDark(c: Combatant): boolean {
   return traitSeesInDark(c.traits) || (c.talents ?? []).some((t) => t.talentId === 'vision-nocturne');
 }
+
+/** Instantané de `cancelMove` (R6/LOT 6, #199) : ce que capture le PREMIER segment de Mouvement (ou de
+ *  poussée d'engin, `pushCommitTile`) du Tour, pour tout défaire tant qu'aucune Action n'a été prise —
+ *  positions de TOUS les combattants (un grand/une poussée a pu en déplacer d'autres), orientation,
+ *  `movedPreAction` et le `loseNextMovement` que la poussée pose sur les servants (siegePush.ts). */
+export interface MoveSnapshot {
+  pos: Record<string, Pt>;
+  facing: Record<string, Dir8>;
+  movedPreAction: boolean;
+  loseNextMovement: Record<string, boolean>;
+}
+
+/** Capture `MoveSnapshot` — SOURCE UNIQUE, réutilisée par `battleClickTile`/`moveAttack`/`pushCommitTile`
+ *  pour que `cancelMove` défasse TOUJOURS exactement ce qu'un premier segment a posé. */
+export function captureMoveSnapshot(battle: BattleState, facing: Record<string, Dir8>): MoveSnapshot {
+  return {
+    pos: Object.fromEntries(battle.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
+    facing: { ...facing },
+    movedPreAction: battle.movedPreAction,
+    loseNextMovement: Object.fromEntries(battle.combatants.map((c) => [c.id, !!c.loseNextMovement])),
+  };
+}

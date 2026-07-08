@@ -18,10 +18,13 @@ export function highlightDepth(el: HighlightEl, dims: Dims): number {
 export function highlightJsx(el: HighlightEl, dims: Dims): JSX.Element {
   const d = diamondPath(el.cell.x, el.cell.y, dims, el.h ? metricToLift(el.h) : 0);
   switch (el.kind) {
+    // `data-tile="x,y"` (#198) : adressabilité DOM BORNÉE à l'ensemble déjà surligné (Marche/Course —
+    // déplacement normal ET modes-case Pousser/Téléportation qui réutilisent la MÊME grille via
+    // `displayedReach`/`battle.reachable`), jamais toute la carte — recette Playwright + clic testable.
     case 'walk':
-      return <path key={el.key} d={d} fill="var(--combat-walk)" opacity={0.32} />;
+      return <path key={el.key} data-tile={`${el.cell.x},${el.cell.y}`} d={d} fill="var(--combat-walk)" opacity={0.32} />;
     case 'run':
-      return <path key={el.key} d={d} fill="var(--combat-run)" opacity={0.24} />;
+      return <path key={el.key} data-tile={`${el.cell.x},${el.cell.y}`} d={d} fill="var(--combat-run)" opacity={0.24} />;
     case 'team':
       return <path key={el.key} d={d} fill={tileTint(el.hero, el.active)} opacity={el.active ? 0.3 : 0.2} pointerEvents="none" />;
     case 'zone':

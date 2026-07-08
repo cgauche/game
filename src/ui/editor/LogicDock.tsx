@@ -489,6 +489,78 @@ function EncountersTab({
               </label>
             )}
           </div>
+          <div className="mini-title">Objectif de victoire</div>
+          <div className="enemy-mount">
+            <label title="Comment le combat se GAGNE. Défaut : tous les ennemis hors d'action (comportement historique).">
+              Type{' '}
+              <select
+                value={enc.victoryCondition?.type ?? 'allEnemiesDead'}
+                onChange={(e) => {
+                  const t = e.target.value;
+                  if (t === 'allEnemiesDead') upd({ victoryCondition: undefined });
+                  else if (t === 'destroyStructure') upd({ victoryCondition: { type: 'destroyStructure', edge: { x: 0, y: 0, side: 'N' } } });
+                  else if (t === 'surviveRounds') upd({ victoryCondition: { type: 'surviveRounds', rounds: 3 } });
+                  else if (t === 'reachZone') upd({ victoryCondition: { type: 'reachZone', rect: { x: 0, y: 0, w: 1, h: 1 } } });
+                }}
+              >
+                <option value="allEnemiesDead">Tous les ennemis hors d'action</option>
+                <option value="destroyStructure">Détruire une structure (brèche)</option>
+                <option value="surviveRounds">Survivre N Rounds</option>
+                <option value="reachZone">Atteindre une zone</option>
+              </select>
+            </label>
+          </div>
+          {enc.victoryCondition?.type === 'destroyStructure' && (() => {
+            const vc = enc.victoryCondition!;
+            return (
+              <div className="enemy-mount">
+                <label>X <input type="number" value={vc.edge.x} onChange={(e) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, x: Number(e.target.value) } } })} /></label>
+                <label>Y <input type="number" value={vc.edge.y} onChange={(e) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, y: Number(e.target.value) } } })} /></label>
+                <label>
+                  Arête{' '}
+                  <select
+                    value={vc.edge.side}
+                    onChange={(e) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, side: e.target.value as 'N' | 'E' | '\\' | '/' } } })}
+                  >
+                    <option value="N">N</option>
+                    <option value="E">E</option>
+                    <option value="\">\</option>
+                    <option value="/">/</option>
+                  </select>
+                </label>
+                <label>Z <input type="number" value={vc.edge.z ?? 0} onChange={(e) => upd({ victoryCondition: { type: 'destroyStructure', edge: { ...vc.edge, z: Number(e.target.value) || undefined } } })} /></label>
+              </div>
+            );
+          })()}
+          {enc.victoryCondition?.type === 'surviveRounds' && (() => {
+            const vc = enc.victoryCondition!;
+            return (
+              <div className="enemy-mount">
+                <label>Rounds à tenir <input type="number" min={1} value={vc.rounds} onChange={(e) => upd({ victoryCondition: { type: 'surviveRounds', rounds: Math.max(1, Number(e.target.value)) } })} /></label>
+              </div>
+            );
+          })()}
+          {enc.victoryCondition?.type === 'reachZone' && (() => {
+            const vc = enc.victoryCondition!;
+            return (
+              <div className="enemy-mount">
+                <label>X <input type="number" value={vc.rect.x} onChange={(e) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, x: Number(e.target.value) } } })} /></label>
+                <label>Y <input type="number" value={vc.rect.y} onChange={(e) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, y: Number(e.target.value) } } })} /></label>
+                <label>L <input type="number" min={1} value={vc.rect.w} onChange={(e) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, w: Math.max(1, Number(e.target.value)) } } })} /></label>
+                <label>H <input type="number" min={1} value={vc.rect.h} onChange={(e) => upd({ victoryCondition: { type: 'reachZone', camp: vc.camp, rect: { ...vc.rect, h: Math.max(1, Number(e.target.value)) } } })} /></label>
+                <label>
+                  Camp{' '}
+                  <select
+                    value={vc.camp ?? 'party'}
+                    onChange={(e) => upd({ victoryCondition: { type: 'reachZone', rect: vc.rect, camp: e.target.value as 'party' | 'enemies' } })}
+                  >
+                    <option value="party">Le groupe</option>
+                    <option value="enemies">Les ennemis</option>
+                  </select>
+                </label>
+              </div>
+            );
+          })()}
           <div className="mini-title">À la victoire (récompenses : PX, butin, flag…)</div>
           <FlowEditor flow={enc.onVictory ?? EMPTY_FLOW} onChange={(flow) => upd({ onVictory: flow })} ctx={ctx} />
         </div>

@@ -23,11 +23,14 @@ export function CursorOverlay({ tile, footN, dims, liftAt }: { tile: Pt; footN: 
   );
 }
 
-/** Aperçu de DÉPLACEMENT au survol (desktop) ET sous le curseur clavier/manette (effHover) en combat. */
-export function HoverMovePreview({ move, at, footN, dims, lift }: { move: { kind: 'move' | 'run'; path: Pt[]; cost: number }; at: Pt; footN: number; dims: Dims; lift: (p: Pt) => number }) {
+/** Aperçu de DÉPLACEMENT au survol (desktop) ET sous le curseur clavier/manette (effHover) en combat —
+ *  déplacement NORMAL (Marche/Course) ou mode-CASE du catalogue (Pousser/Téléportation/pose de zone,
+ *  `tilePreviewAt` #198) : même primitive de tracé (`movePreviewEls`), `move.label` porte le badge
+ *  (« Aller (N) »/« Courir »/« Pousser (N) »/« Téléporter »/« Poser la zone »). */
+export function HoverMovePreview({ move, at, footN, dims, lift }: { move: { path: Pt[]; label: string }; at: Pt; footN: number; dims: Dims; lift: (p: Pt) => number }) {
   return (
     <g pointerEvents="none">
-      {movePreviewEls(move.path, at, move.kind === 'move' ? `Aller (${move.cost})` : 'Courir', dims, 'hmv', 'var(--combat-gold)', footN, lift)}
+      {movePreviewEls(move.path, at, move.label, dims, 'hmv', 'var(--combat-gold)', footN, lift)}
     </g>
   );
 }

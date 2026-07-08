@@ -388,6 +388,8 @@ export interface EncounterDef {
    *  Aplati en `Effect[]` par `finishVictory` (la déférence transition/dialogue + la mesure de récompense
    *  restent sur la séquence plate). */
   onVictory?: Flow;
+  /** Objectif de victoire (#197). Absent = `allEnemiesDead` (défaut historique). */
+  victoryCondition?: VictoryCondition;
   /** Surprise (LDB 13 l.52-81) : camp pris en EMBUSCADE au début du combat. Les combattants de ce camp
    *  font un Test opposé de Perception vs la meilleure Discrétion des embusqueurs ; les vaincus gagnent
    *  l'État `Surpris`. Absent = personne n'est surpris. */
@@ -673,6 +675,19 @@ export function structureDownKey(x: number, y: number, side: WallSide, z = 0): s
 export function structureIsDown(scene: Pick<Scene, 'flags'>, seg: WallSeg): boolean {
   return scene.flags?.[structureDownKey(seg.x, seg.y, seg.side, seg.z ?? 0)] === true;
 }
+
+/** OBJECTIF de victoire d'une rencontre (#197) — AUTHORABLE en donnée, lu par `checkBattleOver`.
+ *  Absent = `allEnemiesDead` (comportement HISTORIQUE, tous les scénarios existants inchangés).
+ *  `destroyStructure` référence l'arête par son identifiant STABLE (x/y/side/z), le même couple que
+ *  `structureIsDown`/`Combatant.structureEdge` (bélier-porte, AA p.120-121) — la victoire se déclenche
+ *  à la BRÈCHE, indépendamment du sort des combattants. `surviveRounds` : victoire posée au début du
+ *  Round `rounds + 1` (le groupe a tenu N Rounds complets). `reachZone` réutilise le rectangle de zone
+ *  des `Trigger`/`SceneEffectZone` (`inRect`, `combatGeometry.ts`) — aucun 2e mécanisme de zone. */
+export type VictoryCondition =
+  | { type: 'allEnemiesDead' }
+  | { type: 'destroyStructure'; edge: { x: number; y: number; side: WallSide; z?: number } }
+  | { type: 'surviveRounds'; rounds: number }
+  | { type: 'reachZone'; rect: { x: number; y: number; w: number; h: number }; camp?: 'party' | 'enemies' };
 
 /** Le segment portant une STRUCTURE sur l'arête (x,y,side,z), ou undefined. */
 export function structureAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {

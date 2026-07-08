@@ -38,12 +38,16 @@ const scene = buildScene({
   ambiance: 'exterieur',
   ambientLight: 'jour',
   heroStart: [6, 10], // le Soldat (1er du groupe) atterrit en (5,10) — à 5 cases de la porte (mobilité DÉMONTRABLE)
-  startMessage: "Le Soldat sert le bélier (poste, Équipe de 6) : poussez-le jusqu'à la porte (Action « Pousser », mouvement simple) puis enfoncez-la (Test de Force) avant de venir à bout du défenseur.",
+  startMessage: "Le Soldat sert le bélier (poste, Équipe de 6) : poussez-le jusqu'à la porte (Action « Pousser », mouvement simple) puis enfoncez-la (Test de Force) — la VICTOIRE se joue sur la porte ABATTUE, pas sur le défenseur qui la garde.",
   walls: [{ x: 5, y: 4, side: 'N', structure: 'porte-de-ville' }],
 });
 setEncounters(scene, [
   {
     id: 'siege-belier',
+    // Objectif de victoire (#197) : la porte ABATTUE, pas la mort du gobelin — `checkBattleOver`
+    // consultait exclusivement les ennemis avant #197, ce qui déclarait la victoire dès le gobelin
+    // hors d'action alors que la porte tenait toujours (bug du ticket).
+    victoryCondition: { type: 'destroyStructure', edge: { x: 5, y: 4, side: 'N' } },
     enemies: [
       { ref: 'gobelin', pos: { x: 5, y: 2 }, facing: 'S' }, // index 0 : défenseur
       // index 1 : l'EMPLACEMENT du bélier — affût INERTE (branche siège de `spawnEnemy`, `ref` porte un

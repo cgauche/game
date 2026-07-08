@@ -21,7 +21,7 @@ import { battleRng } from './battleRng';
 import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
-import { smokeOf } from './combatGeometry';
+import { smokeOf, captureMoveSnapshot } from './combatGeometry';
 import { discreetPrayerDifficulty } from '../engine/prayer';
 import { setTriggeredTestRouter, fireTriggers } from './triggeredEffects';
 import { emitCombatEvent } from './combatEvents';
@@ -80,7 +80,7 @@ import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
 import { actorIn } from './combatOrParty';
 import { controlsCombatant, pilotedByHuman } from './netOwnership';
-import { nextCursorTile, cursorCommitIntent, type ScreenDir } from './combatCursor';
+import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
 import { currentTargetingMode, type BattleClickOpts } from './targetingModes';
 import { resolveRecoverTest } from './combat/recover';
@@ -649,13 +649,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // Annulation (R6/LOT 6) : au PREMIER segment du Tour (movementUsed === 0), on capture l'état
       // positionnel AVANT de bouger, pour pouvoir tout annuler tant qu'aucune Action n'a été prise.
       const snapshot =
-        (battle.movementUsed ?? 0) === 0
-          ? {
-              pos: Object.fromEntries(battle.combatants.filter((c) => c.pos).map((c) => [c.id, { ...c.pos! }])),
-              facing: { ...get().facing },
-              movedPreAction: battle.movedPreAction,
-            }
-          : battle.moveSnapshot ?? null;
+        (battle.movementUsed ?? 0) === 0 ? captureMoveSnapshot(battle, get().facing) : battle.moveSnapshot ?? null;
       const path = pathTo(scene, active.pos!, dest, env);
       placeCombatant(active, scene, dest);
       if (geom !== active) placeCombatant(geom, scene, dest); // déplace la monture sous le cavalier (couple solidaire)
@@ -684,6 +678,9 @@ export function createCombatSlice(get: Get, set: Set) {
       for (const c of battle.combatants) {
         const p = snap.pos[c.id];
         if (p) c.pos = { ...p }; // restaure TOUS (un grand a pu en déplacer d'autres sous son empreinte)
+        // Défait le `loseNextMovement` posé par une poussée d'engin annulée (siegePush.ts, #199) — sans
+        // ce ré-arme, un servant perdrait son Mouvement suivant pour une poussée qui n'a jamais eu lieu.
+        c.loseNextMovement = snap.loseNextMovement?.[c.id] ?? false;
       }
       set({
         facing: { ...snap.facing },
@@ -701,6 +698,15 @@ export function createCombatSlice(get: Get, set: Set) {
       const owner = cursorActor(get); // l'ACTIF, ou le tireur Tir rapide ARMÉ pendant la pause (le curseur suit ses yeux)
       if (!owner?.pos) return;
       const dims = { w: scene.dimensions.w, h: scene.dimensions.h, rot: camRot, view: viewMode, edge: camEdge };
+      const mode = currentTargetingMode(get);
+      if (mode.tileValidAt) {
+        // Mode-CASE (#198, résidus) : le curseur ne navigue QUE l'ensemble VALIDE du mode (Pousser/
+        // Téléportation/pose de zone) — jamais un snap sur une case non commettable (porte, hors reach).
+        const valid = tileModeValidTiles(get, { tileValidAt: mode.tileValidAt }, owner);
+        const next = nextCaseCursorTile(scene, get().combatCursor?.tile ?? null, dir, dims, owner.pos, valid);
+        if (next) set({ combatCursor: { tile: next } });
+        return;
+      }
       set({ combatCursor: { tile: nextCursorTile(scene, get().combatCursor, dir, dims, owner.pos) } });
     },
     snapCursorToTarget: (step: 1 | -1) => {
@@ -713,7 +719,14 @@ export function createCombatSlice(get: Get, set: Set) {
       const cur = s.combatCursor;
       if (!cur) return;
       const intent = cursorCommitIntent(get, cur);
-      if (!intent) return;
+      if (!intent) {
+        // Mode-CASE (#198, résidus) : un commit qui tombe malgré tout sur une case non commettable
+        // (occupant sans action pour ce mode) prévient — jamais muet — même mécanisme que les autres
+        // refus d'action (`get().log`), pas un nouveau système. Hors mode-case : no-op voulu (allié
+        // sans Inspection, cf. combatCursor.test.ts).
+        if (currentTargetingMode(get).tileValidAt) s.log(t('cs.cursorInvalidTile'));
+        return;
+      }
       if (intent.kind === 'entity') s.battleClickEntity(intent.id, { confirm: true });
       else if (intent.kind === 'inspect') s.setInspectId(intent.id);
       else s.battleClickTile(intent.pt, { confirm: true });
@@ -2352,6 +2365,7 @@ export function createCombatSlice(get: Get, set: Set) {
         log: [ev('round', t('cs.combatStart'))],
         over: null,
         onVictory: onVictory ?? enc.onVictory,
+        victoryCondition: enc.victoryCondition,
         // Pièges/hasards authorés de la scène → zones de bataille PERMANENTES (même runtime que les sorts).
         zones: sceneZonesToBattle(scene.effectZones),
         // Réserves d'Avantage par camp (AA l.4149-4167) : seulement en mode « Avantage de groupe ».
