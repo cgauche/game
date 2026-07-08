@@ -27,7 +27,9 @@ export const DIR8_DELTA: Record<Dir8, { gx: number; gy: number }> = {
   S: { gx: 0, gy: 1 }, SO: { gx: -1, gy: 1 }, O: { gx: -1, gy: 0 }, NO: { gx: -1, gy: -1 },
 };
 
-const DELTA_DIR8: Record<string, Dir8> = {
+/** Delta grille unitaire (signes -1/0/1, jamais `0,0`) → Dir8 — inverse de `DIR8_DELTA`. Exporté pour la
+ *  classification RELATIVE d'une case autour d'une empreinte (`crewFormationSlots`, shipPostes.ts). */
+export const DELTA_DIR8: Record<string, Dir8> = {
   '0,-1': 'N', '1,-1': 'NE', '1,0': 'E', '1,1': 'SE',
   '0,1': 'S', '-1,1': 'SO', '-1,0': 'O', '-1,-1': 'NO',
 };

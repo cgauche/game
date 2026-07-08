@@ -92,6 +92,7 @@ export const schema = z.array(
     /** PORTÉE MINIMALE de tir (bande) — machines de siège à distance (ADE II ch.08 l.251/253). */
     minRangeBand: z.enum(['bout-portant', 'courte', 'moyenne', 'longue', 'extreme']).optional(),
     siegeRig: z.string().optional(),
+    siegeFootprint: z.number().optional(),
     shape: z.string().optional(),
     formChoices: z.array(z.string()).optional(),
     requiresMastery: z.boolean().optional(),

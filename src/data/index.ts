@@ -419,6 +419,12 @@ export interface TrappingData {
    *  l'affût rendu en emplacement. Pur ROUTAGE D'APPARENCE (≠ règle), comme `shape` route l'art d'arme.
    *  Absent ⇒ l'arme n'est pas posable comme emplacement (pas d'art d'affût). */
   siegeRig?: string;
+  /** EMPREINTE de grille (côté N×N) de l'affût POSÉ en combat — recopiée sur `Combatant.footprint`
+   *  (`footprintN`), MÊME champ que `VehicleData.ship.footprint`. ADE II ch.08 l.239/258 (profil + description
+   *  physique du tronc suspendu sur portique à roues) ne chiffre aucune Taille en cases : la valeur posée
+   *  en donnée (2, belier-ade2, #210) reste éditable au Compendium plutôt que codée en dur ailleurs. Absent
+   *  = empreinte 1 (affûts compacts type baliste/canon). */
+  siegeFootprint?: number;
   /** Slug de FORME (`WeaponDef`/`ShieldDef.slug`) — id STABLE de routage de l'art d'arme/bouclier (rig),
    *  ≠ libellé. Posé à la migration par jointure `norm(label)` → forme. Absent pour munitions/armes de
    *  siège/Mains nues (aucune silhouette tenue). Propagé sur `ItemInstance.shape` puis `Weapon.shape`. */

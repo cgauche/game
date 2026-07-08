@@ -60,7 +60,7 @@ import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy, placeCombatant } from './spawn';
 import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef, isPosteManned } from './shipPostes';
-import { posteHullOf, pushEligible, pushCrewOk, pushMovement, pushMoveEnv } from './siegePush';
+import { posteHullOf, pushEligible, pushCrewOk, pushMovement, pushReachable } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
 import { resolveVoyageCrewTest, resolveSteamSave } from './seaVoyageFlow';
@@ -1339,8 +1339,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const hull = posteHullOf(poste, battle.combatants);
       const w = mannedPosteWeapon(active, poste);
       if (!hull || !hull.pos || !active.pos || !w || !pushCrewOk(poste, w, battle.combatants)) return;
-      const env = pushMoveEnv(battle, active, hull);
-      const reach = reachable(scene, active.pos, pushMovement(), env);
+      const reach = pushReachable(battle, scene, active, hull);
       set({ battle: { ...battle, action: 'push', reachable: reach, preview: null } });
       bus.emit(EVT.SCENE_DIRTY);
     },

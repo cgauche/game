@@ -11,13 +11,14 @@
  */
 import type { Combatant, ShipPoste, Weapon } from '../engine/types';
 import type { BattleState } from './store';
-import type { MoveEnv } from './path';
 import { mannedPosteWeapon } from '../engine/items';
 import { warMachineCrewRequired, warMachineCrewPenalty } from '../engine/warMachineCrew';
 import { exposedCrew } from '../engine/shipCritical';
-import { footprintN } from './footprint';
+import { footprintN, footprintTiles } from './footprint';
 import { moveEnv } from './combatGeometry';
 import { rule } from '../engine/policy';
+import { reachable, tileKey } from './path';
+import { isWalkable, type Scene } from './scene';
 
 /** Le Combattant-affût qui PORTE `poste` (le poste vit sur `hull.postes`) — recherche par `uid` de la
  *  pièce (pas de dépendance à l'identité d'objet), MÊME esprit que `isPosteManned` (shipPostes.ts).
@@ -33,6 +34,31 @@ export function posteHullOf(poste: ShipPoste, combatants: Combatant[]): Combatan
  *  celui-ci. PUR. */
 export function isPushableEngine(w: Pick<Weapon, 'subType' | 'qualities'>): boolean {
   return w.subType === 'armes-de-siege' && warMachineCrewRequired(w) > 0;
+}
+
+/** L'arme d'un poste servi est-elle une machine de guerre de MÊLÉE (ADE II ch.08 l.233 — « Toutes les
+ *  machines de guerre... utilisent... Projectiles [Machine de guerre], à l'exception du bélier, qui
+ *  utilise Force ») : la SEULE de ce type est le bélier, dérivé du type d'arme + de la Qualité `equipe`,
+ *  aucun id en dur. #210 : c'est cette pièce (pas le chef qui la sert) qui doit être adjacente pour
+ *  frapper. PUR. */
+export function isMeleeWarMachine(w: Pick<Weapon, 'type' | 'qualities'>): boolean {
+  return w.type === 'melee' && warMachineCrewRequired(w) > 0;
+}
+
+/** La COQUE/l'affût portant la pièce de MÊLÉE que sert `actor` (#210) : l'adjacence/allonge d'une pièce
+ *  de mêlée servie (bélier) se mesure depuis L'EMPREINTE DE LA PIÈCE, pas depuis celle du chef qui la
+ *  sert — le chef reste le testeur/déclencheur, sa position propre ne donne plus la portée. `undefined`
+ *  si `actor` ne sert aucune pièce, ou si la pièce servie est à DISTANCE (baliste/canon : géométrie du
+ *  chef inchangée, cf. `firedAttackBlock`/`firedWeapon`). KIND-AGNOSTIQUE (aucun id d'arme en dur). PUR. */
+export function meleeWarMachineHullOf(actor: Combatant, combatants: Combatant[]): Combatant | undefined {
+  const poste = actor.mannedPoste;
+  // `poste.item.kind` PORTE déjà le type d'arme (melee/ranged) — filtrer ICI évite de dériver l'arme
+  // complète (`mannedPosteWeapon`) pour CHAQUE poste à distance (bordée navale, artillerie) sur CHAQUE
+  // calcul de distance : cette dérivation n'est due qu'aux pièces de mêlée, jamais aux autres.
+  if (!poste || poste.item.kind !== 'melee') return undefined;
+  const w = mannedPosteWeapon(actor, poste);
+  if (!w || !isMeleeWarMachine(w)) return undefined;
+  return posteHullOf(poste, combatants);
 }
 
 /** `active` est-il le CHEF d'un poste d'engin MOBILE (rôle/équipement — ne juge PAS l'effectif, cf.
@@ -76,11 +102,40 @@ export function pushSlot(active: Combatant, combatants: Combatant[]): { show: bo
   return { show, undercrew: show && !pushCrewOk(poste!, w!, combatants) };
 }
 
-/** Environnement de déplacement de la poussée : celui du CHEF (`moveEnv`, mêmes obstacles/barrières)
- *  mais avec l'empreinte de l'ENGIN substituée (`footprintN(hull)`) — c'est l'ENGIN qui doit tenir dans un
- *  passage, pas le chef. `servablePostes` impose déjà au chef d'être à ≤1 case de l'engin (adjacence), donc
- *  l'ancrage au chef reste une approximation fidèle tant que l'engin garde une empreinte 1×1 (cas courant :
- *  aucun engin ADE II n'a d'empreinte >1 en donnée aujourd'hui). PUR. */
-export function pushMoveEnv(battle: BattleState, active: Combatant, hull: Combatant): MoveEnv {
-  return { ...moveEnv(battle, active), foot: footprintN(hull) };
+/** L'empreinte N×N de `hull` ancrée en (x,y) tient-elle (praticable, hors `blocked`) ? Réplique locale de
+ *  `footFits` (path.ts, non exportée) — même convention de clé (`tileKey`). PUR. */
+function hullFootFits(scene: Scene, x: number, y: number, n: number, blocked: Set<string>): boolean {
+  for (let dy = 0; dy < n; dy++)
+    for (let dx = 0; dx < n; dx++) {
+      if (!isWalkable(scene, x + dx, y + dy) || blocked.has(tileKey(x + dx, y + dy, 0))) return false;
+    }
+  return true;
+}
+
+/**
+ * Cases de POUSSÉE atteignables (#210 : formation à empreinte RÉELLE, ≥1 sur le bélier ADE II) — le CHEF se
+ * déplace en 1×1 (lui-même), mais une destination n'est retenue que si l'EMPREINTE DE L'ENGIN
+ * (`footprintN(hull)`) tiendrait à sa position RÉSULTANTE (le delta chef→engin est RIGIDE, `pushCommitTile`
+ * l'applique tel quel) — contre TOUS les obstacles (`moveEnv`) SAUF l'engin et SA PROPRE Équipe (`crewIds`),
+ * qui translatent AVEC la poussée et ne sont donc jamais des obstacles à eux-mêmes. Sans ce retrait, l'engin
+ * bloquerait sa PROPRE case de départ (`occupied` ne connaît que le CHEF, jamais l'engin qu'il pousse) et
+ * aucune poussée ne serait jamais possible dès que `footprintN(hull) > 1`. PUR (lit `battle`, ne mute rien).
+ */
+export function pushReachable(battle: BattleState, scene: Scene, active: Combatant, hull: Combatant): Map<string, number> {
+  if (!active.pos || !hull.pos) return new Map();
+  const crewIds = new Set(active.mannedPoste?.crewIds ?? []);
+  const blocked = new Set(moveEnv(battle, active).blocked);
+  for (const c of battle.combatants) {
+    if ((c.id !== hull.id && !crewIds.has(c.id)) || !c.pos) continue;
+    for (const t of footprintTiles(c.pos, footprintN(c))) blocked.delete(tileKey(t.x, t.y, c.pos.z ?? 0));
+  }
+  const delta = { x: hull.pos.x - active.pos.x, y: hull.pos.y - active.pos.y };
+  const n = footprintN(hull);
+  const raw = reachable(scene, active.pos, pushMovement(), { blocked, foot: 1 });
+  const out = new Map<string, number>();
+  for (const [k, d] of raw) {
+    const [x, y] = k.split(',').map(Number);
+    if (hullFootFits(scene, x + delta.x, y + delta.y, n, blocked)) out.set(k, d);
+  }
+  return out;
 }

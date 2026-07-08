@@ -353,7 +353,7 @@ export function spawnEnemy(
     // équipage. Neutralisé en tuant l'équipage, pas en le détruisant. Son espèce de rendu est DÉRIVÉE de la
     // `ref` (l'art d'affût `siegeRig` du trapping) → plus aucun `appearance.species` forcé à l'authoring.
     const t = findTrappingById(ref)!;
-    c = inanimateCombatant({ id, name: t.label, refId: ref, bodyShape: 'engin', inert: true });
+    c = inanimateCombatant({ id, name: t.label, refId: ref, bodyShape: 'engin', inert: true, footprint: t.siegeFootprint });
     c.kind = 'enemy';
     c.pos = { ...pos };
     c.species = t.siegeRig; // espèce DÉRIVÉE de la ref → rig engin au combat (parité avec l'explo/éditeur)

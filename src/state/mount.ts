@@ -13,6 +13,7 @@ import type { ModLine } from '../engine/combat';
 import { Scene, isWalkable } from './scene';
 import { occupiesTile, footprintN, combatDistance } from './footprint';
 import { hasTraitKey } from '../engine/traits/dispatch';
+import { meleeWarMachineHullOf } from './siegePush';
 import type { Pt } from './path';
 import type { BattleState } from './store';
 
@@ -44,9 +45,16 @@ export function insertByInitiative(orderIds: string[], combatants: Combatant[], 
 export const mountOf = (battle: BattleState, rider: Combatant): Combatant | undefined =>
   rider.mountId ? battle.combatants.find((c) => c.id === rider.mountId) : undefined;
 
+/** Géométrie de COMBAT d'un combattant, à partir d'une liste brute de combattants (utilisable hors
+ *  `BattleState` complet, ex. `firedWeapon`). */
+export const combatGeomOfList = (combatants: Combatant[], c: Combatant): Combatant =>
+  (c.mountId ? combatants.find((x) => x.id === c.mountId) : undefined) ?? meleeWarMachineHullOf(c, combatants) ?? c;
+
 /** Géométrie de COMBAT d'un combattant : sa MONTURE s'il est cavalier (le couple partage pos+empreinte,
- *  LDB 14), sinon lui-même. SOURCE UNIQUE pour mesurer reach/adjacence d'un couple monté. */
-export const combatGeomOf = (battle: BattleState, c: Combatant): Combatant => mountOf(battle, c) ?? c;
+ *  LDB 14), la COQUE de la pièce de mêlée qu'il sert s'il est chef d'un engin de siège de mêlée servi
+ *  (#210 — bélier ADE II ch.08 : c'est la pièce qui frappe, pas le chef qui la sert), sinon lui-même.
+ *  SOURCE UNIQUE pour mesurer reach/adjacence d'un couple monté OU d'une pièce de mêlée servie. */
+export const combatGeomOf = (battle: BattleState, c: Combatant): Combatant => combatGeomOfList(battle.combatants, c);
 
 /** Cavalier émérite (AA l.4369) : Taille EFFECTIVE de `self` face à la Peur/Terreur causée par la TAILLE
  *  de l'adversaire. Le porteur du Talent, une fois monté, compte la Taille de sa MONTURE (« confiant une

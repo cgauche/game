@@ -155,7 +155,7 @@ import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructure
 import { STEP_MAX_M } from './relief';
 import { placeCombatant } from './spawn';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
-import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountedCombatDistance, mountUp, mountableNear, movementRemaining, canMove, riderFearSize } from './mount';
+import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountedCombatDistance, mountUp, mountableNear, movementRemaining, canMove, riderFearSize, combatGeomOf, combatGeomOfList } from './mount';
 import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste, crewPosteOf } from './shipPostes';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
@@ -241,9 +241,10 @@ export function applyIncomingMeleeAdvantage(get: Get, attacker: Combatant, targe
  *  rapproché — LDB Armes l.297-298), AUGMENTÉE de la munition pour un héros (Dégâts + Atouts combinés).
  *  Centralisé pour que résolution / Chance / application voient la MÊME arme (munition, Empaleuse, reload). */
 export function firedWeapon(attacker: Combatant, target: Combatant, weaponUid?: string, combatants?: Combatant[]): Weapon {
-  // Adjacence depuis la MONTURE (cavalier/cible monté) quand la liste est fournie — un cavalier au contact
-  // par sa monture doit choisir la mêlée, pas basculer en tir (LDB 14). Sans `combatants` → géométrie propre.
-  const geom = (c: Combatant) => (combatants && c.mountId ? combatants.find((x) => x.id === c.mountId) ?? c : c);
+  // Adjacence depuis la MONTURE (cavalier/cible monté) ou la COQUE d'une pièce de mêlée servie (#210)
+  // quand la liste est fournie — un cavalier au contact par sa monture doit choisir la mêlée, pas basculer
+  // en tir (LDB 14) ; un chef de bélier de même depuis l'empreinte de la pièce. Sans `combatants` → géométrie propre.
+  const geom = (c: Combatant) => (combatants ? combatGeomOfList(combatants, c) : c);
   const adj = combatDistance(geom(attacker), geom(target)) <= meleeReachTiles(attacker.weapons); // Allonge incluse (RAW-3)
   // Choix explicite du joueur : l'arme du loadout actif portant cet uid (si présente) ; sinon auto-choix.
   const chosen = weaponUid ? attacker.weapons.find((w) => w.uid === weaponUid) : undefined;
@@ -1087,9 +1088,10 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
   const battle = get().battle!;
   const scene = get().scene!;
   // Géométrie de COMBAT (LDB 14) : un cavalier mesure reach/adjacence depuis l'empreinte de sa MONTURE
-  // (le couple partage position+empreinte, souvent 2×2) ; idem si la CIBLE est montée. Sans monture = soi.
-  const geom = mountOf(battle, active) ?? active;
-  const tgtGeom = mountOf(battle, target) ?? target;
+  // (le couple partage position+empreinte, souvent 2×2) ; idem si la CIBLE est montée. Un chef de pièce
+  // de MÊLÉE servie (bélier, #210) mesure depuis l'empreinte de la COQUE — `combatGeomOf` (SOURCE UNIQUE).
+  const geom = combatGeomOf(battle, active);
+  const tgtGeom = combatGeomOf(battle, target);
   // `opts` (attaque CHOISIE : arme tenue vs attaque naturelle gratuite) : `reach` impose l'Allonge (gratuites
   // de mêlée = 1), `forceMelee` ignore la branche distance même avec une arme à distance tenue. Sans opts =
   // comportement historique (arme du Set actif), byte-identique.

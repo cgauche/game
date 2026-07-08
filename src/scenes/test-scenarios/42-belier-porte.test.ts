@@ -78,11 +78,15 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
   });
 
   it('une touche RÉUSSIE contre la porte lui inflige des Blessures (Atout Bélier + Siège, ×2 dégâts structure)', () => {
-    const { soldat, porte } = startBelier();
+    const { soldat, ram, porte } = startBelier();
     const scene = useGame.getState().scene!;
     expect(porte).toBeTruthy();
+    // #210 : l'adjacence d'une pièce de MÊLÉE servie se mesure depuis l'EMPREINTE DE LA COQUE (`meleeWarMachineHullOf`),
+    // pas depuis le chef qui la sert — c'est l'affût 2×2 qui doit toucher la porte, pas seulement le Soldat.
     soldat.pos = { x: 5, y: 5 };
     placeCombatant(soldat, scene, soldat.pos);
+    ram.pos = { x: 6, y: 5 };
+    placeCombatant(ram, scene, ram.pos);
     soldat.characteristics.F = 90; // Test quasi-garanti (Force très haute), aucune Spé requise (raw characteristic)
     seedBattleRng(1);
     // weaponUid EXPLICITE (Bélier) : le Soldat garde SON arme personnelle en plus du poste servi (kind-agnostique,

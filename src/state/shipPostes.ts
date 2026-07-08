@@ -10,8 +10,10 @@ import { mannedPosteWeapon } from '../engine/items';
 import { hasWeaponGroupSkill } from '../engine/combat';
 import { exposedCrew } from '../engine/shipCritical';
 import { isOutOfAction } from '../engine/conditions';
-import { combatDistance } from './footprint';
-import { rotateDir8, DIR8_DELTA, type Dir8 } from './dir8';
+import { combatDistance, footprintN } from './footprint';
+import { rotateDir8, DIR8_DELTA, DIR8_ORDER, DELTA_DIR8, type Dir8 } from './dir8';
+import { isWalkable, type Scene } from './scene';
+import { findFreeTile } from './combatGeometry';
 import type { FireArc } from './fireArc';
 import type { Combatant, ShipPoste, ShipDeck } from '../engine/types';
 
@@ -172,6 +174,64 @@ export function posteAnchor(
     return { x: hull.pos.x + d.gx * step, y: hull.pos.y + d.gy * step, ...(hull.pos.z !== undefined ? { z: hull.pos.z } : {}) };
   }
   return { x: hull.pos.x, y: hull.pos.y, ...(hull.pos.z !== undefined ? { z: hull.pos.z } : {}) };
+}
+
+/** Ordre de priorité RELATIF au cap `heading` (pas de Dir8.indexOf, mais l'ÉCART de crans) pour peupler la
+ *  formation d'un poste terrestre CREWÉ — droite, gauche, puis les 2 angles arrière, puis l'arrière : jamais
+ *  l'avant (crans 0/±1, exclus), l'engin y frappe (#210, ADE II ch.08 l.258 : « on pousse par les flancs/
+ *  l'arrière »). */
+const CREW_FORMATION_STEPS = [2, 6, 3, 5, 4] as const;
+
+/**
+ * Cases de FORMATION autour de l'empreinte d'un poste terrestre CREWÉ (bélier, batterie de siège…) — ADE II
+ * ch.08 l.258. Anneau de cases adjacentes à l'empreinte de `hull` (Chebyshev 1), ORDONNÉ (`CREW_FORMATION_STEPS`) :
+ * flanc droit, flanc gauche, angle arrière-droit, angle arrière-gauche, arrière — jamais l'avant, où l'engin
+ * frappe. `opts.heading` = cap vers lequel l'engin frappe (le SENS de poussée, pas un cap de coque) ; combiné à
+ * `poste.side` via `arcDir8` si le poste porte un côté (généralise `posteAnchor`, qui gère déjà `hull.footprint
+ * > 1`). GÉOMÉTRIE PURE : ne connaît pas l'occupation de la scène — `assignCrewFormation` filtre/retombe sur
+ * `findFreeTile` pour un poste à l'empreinte enclavée. PUR.
+ */
+export function crewFormationSlots(
+  hull: Pick<Combatant, 'pos' | 'footprint' | 'size'>,
+  poste: Pick<ShipPoste, 'side' | 'crewIds'>,
+  opts?: { heading?: Dir8 },
+): Pt[] {
+  if (!hull.pos) return [];
+  const heading = poste.side ? arcDir8(poste.side, opts?.heading ?? 'N') : opts?.heading ?? 'N';
+  const n = footprintN(hull);
+  const px = hull.pos.x, py = hull.pos.y;
+  const byStep = new Map<number, Pt[]>();
+  for (let y = py - 1; y <= py + n; y++) {
+    for (let x = px - 1; x <= px + n; x++) {
+      if (x >= px && x < px + n && y >= py && y < py + n) continue; // sous l'empreinte
+      const dx = x < px ? -1 : x >= px + n ? 1 : 0;
+      const dy = y < py ? -1 : y >= py + n ? 1 : 0;
+      const step = (DIR8_ORDER.indexOf(DELTA_DIR8[`${dx},${dy}`]) - DIR8_ORDER.indexOf(heading) + 8) % 8;
+      if (step === 0 || step === 1 || step === 7) continue; // jamais l'avant (front, front-droit, front-gauche)
+      (byStep.get(step) ?? byStep.set(step, []).get(step)!).push({ x, y });
+    }
+  }
+  const out: Pt[] = [];
+  for (const step of CREW_FORMATION_STEPS) for (const p of (byStep.get(step) ?? []).sort((a, b) => a.y - b.y || a.x - b.x)) out.push(p);
+  return out;
+}
+
+/**
+ * Assigne à chaque `crewIds` de `poste` UNE case de la formation (`crewFormationSlots`), en écartant les
+ * cases impraticables/occupées (`occupied`) — au-delà (empreinte enclavée : moins de cases libres que de
+ * servants), retombe sur la case libre la plus proche de la scène (`findFreeTile`) : aucun servant sans
+ * case. PUR (ne mute rien ; l'appelant pose les `pos`). Ordre = celui de `poste.crewIds`.
+ */
+export function assignCrewFormation(
+  hull: Pick<Combatant, 'pos' | 'footprint' | 'size'>,
+  poste: Pick<ShipPoste, 'side' | 'crewIds'>,
+  scene: Scene,
+  occupied: (p: Pt) => boolean,
+  opts?: { heading?: Dir8 },
+): Pt[] {
+  const crewIds = poste.crewIds ?? [];
+  const free = crewFormationSlots(hull, poste, opts).filter((p) => isWalkable(scene, p.x, p.y) && !occupied(p));
+  return crewIds.map((_, i) => free[i] ?? findFreeTile(scene));
 }
 
 /**

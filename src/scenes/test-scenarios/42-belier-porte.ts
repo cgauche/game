@@ -1,6 +1,7 @@
 import { pregenParty, PREGEN } from '../../data/pregens';
 import { itemFromTrappingById } from '../../engine/items';
 import { buildScene } from '../../state/mapSpec';
+import { crewFormationSlots } from '../../state/shipPostes';
 import { setEncounters } from './_shared';
 import type { TestScenario } from './_shared';
 
@@ -12,21 +13,35 @@ import type { TestScenario } from './_shared';
  * seul à tirer/manier) ; 5 servants PNJ (`garde-du-village`, IA) complètent l'Équipe de 6. `applyShipPostes`
  * sert le poste au chef au début du combat (aucune action « équiper » ni loadout) — le bélier SERVI est
  * assené contre une VRAIE porte (`porte-de-ville`, structure brèchable) : le jet d'attaque se résout sur la
- * Force du chef (jamais sa CC), seule la porte encaisse des Dégâts (Atout Bélier).
+ * Force du chef (jamais sa CC), seule la porte encaisse des Dégâts (Atout Bélier). L'adjacence d'une pièce
+ * de MÊLÉE servie se mesure depuis l'EMPREINTE DE LA COQUE (#210, `meleeWarMachineHullOf`), désormais 2×2
+ * (`t.siegeFootprint`) — c'est l'affût qui doit toucher la porte, pas seulement le chef qui le sert.
  *
- * Carte (10×15, pavée) : la formation (chef + bélier + 5 servants) démarre à 5 cases de la porte (arête N
- * de (5,4)) — DISTANCE À TRAVERSER (Lot 2 #156, MOBILITÉ) : « roues, se déplace sur le champ de bataille »
- * (ADE II ch.08 l.256/258, vitesse non chiffrée → `siege-engine-push-speed`, plafond maison 2 cases/
- * poussée) — il faut plusieurs poussées du chef pour amener l'engin au contact avant de l'assener. Un
- * gobelin défend l'autre côté de la porte (5,2). `heroStart` pose le GROUPE (4 héros) en colonne à
- * `x−1` (`startCombat`, combatSlice.ts) → le Soldat (1er du groupe, `makeParty` ci-dessous) atterrit en
- * (5,10) ; bélier + servants sont posés en conséquence, à côté de lui (jamais sur la colonne des 3 autres
- * héros ni sur l'affût).
+ * Carte (10×15, pavée) : la formation (chef + bélier 2×2 + 5 servants, `crewFormationSlots`, ADE II ch.08
+ * l.258 : « on pousse par les flancs/l'arrière ») démarre à 5 cases de la porte (arête N de (5,4)) —
+ * DISTANCE À TRAVERSER (Lot 2 #156, MOBILITÉ) : « roues, se déplace sur le champ de bataille » (l.256/258,
+ * vitesse non chiffrée → `siege-engine-push-speed`, plafond maison 2 cases/poussée) — il faut plusieurs
+ * poussées du chef pour amener l'ENGIN au contact avant de l'assener. Un gobelin défend l'autre côté de la
+ * porte (5,2). `heroStart` pose le GROUPE (4 héros) en colonne à `x−1` (`startCombat`, combatSlice.ts) → le
+ * Soldat (1er du groupe, `makeParty` ci-dessous) atterrit en (5,10), qui EST le flanc gauche de la formation
+ * (`crewFormationSlots` en (px−1,py) pour un affût posé en (6,10)) — les 5 servants occupent les autres
+ * cases de la formation, aucune sur la colonne des 3 autres héros ((5,11)/(5,12)/(5,13)) ni sur l'affût.
  */
 const RAM_CREW = [
   `pregen-${PREGEN.soldat}`, // chef de pièce (crewIds[0]) : un héros, seul à manier le bélier
   'enemy-siege-belier-2', 'enemy-siege-belier-3', 'enemy-siege-belier-4', 'enemy-siege-belier-5', 'enemy-siege-belier-6', // 5 servants PNJ (Équipe 6, ADE II ch.08 l.233)
 ];
+
+// Affût posé à (6,10), footprint 2×2 (`t.siegeFootprint`), pointant vers la porte (heading 'N', l'engin
+// frappe au Nord) — `crewFormationSlots` donne l'anneau ORDONNÉ (droite/gauche/angles-arrière/arrière,
+// JAMAIS l'avant où l'engin frappe) autour de cette empreinte ; la colonne des 3 autres héros du groupe
+// (x=5, y=11..13, posée par `heroStart`/`startCombat`) recouvre le flanc gauche SOUS le Soldat (5,10) —
+// on l'écarte : le Soldat atterrit là par `heroStart`, les 5 servants prennent les 5 cases RESTANTES.
+const RAM_POS = { x: 6, y: 10 };
+const RAM_HEADING = 'N' as const;
+const HERO_COLUMN_X = 5; // heroStart=[6,10] → colonne du groupe (partyPos.x−1)
+const SERVANT_SLOTS = crewFormationSlots({ pos: RAM_POS, footprint: 2 }, { crewIds: RAM_CREW }, { heading: RAM_HEADING })
+  .filter((p) => p.x !== HERO_COLUMN_X); // écarte tout le flanc gauche (colonne des héros, dont le Soldat)
 
 const scene = buildScene({
   id: 'belier-porte',
@@ -37,7 +52,7 @@ const scene = buildScene({
   metresPerTile: 2,
   ambiance: 'exterieur',
   ambientLight: 'jour',
-  heroStart: [6, 10], // le Soldat (1er du groupe) atterrit en (5,10) — à 5 cases de la porte (mobilité DÉMONTRABLE)
+  heroStart: [6, 10], // le Soldat (1er du groupe) atterrit en (5,10) — flanc gauche de la formation, à 5 cases de la porte
   startMessage: "Le Soldat sert le bélier (poste, Équipe de 6) : poussez-le jusqu'à la porte (Action « Pousser », mouvement simple) puis enfoncez-la (Test de Force) — la VICTOIRE se joue sur la porte ABATTUE, pas sur le défenseur qui la garde.",
   walls: [{ x: 5, y: 4, side: 'N', structure: 'porte-de-ville' }],
 });
@@ -50,21 +65,20 @@ setEncounters(scene, [
     victoryCondition: { type: 'destroyStructure', edge: { x: 5, y: 4, side: 'N' } },
     enemies: [
       { ref: 'gobelin', pos: { x: 5, y: 2 }, facing: 'S' }, // index 0 : défenseur
-      // index 1 : l'EMPLACEMENT du bélier — affût INERTE (branche siège de `spawnEnemy`, `ref` porte un
-      // `siegeRig`), servi par l'Équipe `RAM_CREW`. Position propre (le chef attaque depuis SA case, pas
-      // celle de l'affût) — adjacente au Soldat (5,10), à l'EST, loin de la porte (mobilité à démontrer).
+      // index 1 : l'EMPLACEMENT du bélier — affût INERTE 2×2 (branche siège de `spawnEnemy`, `ref` porte un
+      // `siegeRig`), orienté vers la porte (facing 'N'), servi par l'Équipe `RAM_CREW`.
       {
-        ref: 'belier-ade2', pos: { x: 6, y: 10 }, facing: 'N', side: 'ally', label: 'Bélier (poste)',
+        ref: 'belier-ade2', pos: RAM_POS, facing: RAM_HEADING, side: 'ally', label: 'Bélier (poste)',
         postes: [{ item: itemFromTrappingById('belier-ade2')!, crewIds: [...RAM_CREW] }],
       },
       // index 2-6 : les 5 servants PNJ (IA, agissent seuls) qui complètent l'Équipe (le 6e membre = le
-      // Soldat, crewIds[0] ci-dessus) — rangée juste au SUD de l'affût (formation à pousser ensemble),
-      // en x=3/4/6/7/8 pour éviter la colonne des 3 autres héros (`startCombat` les pose en (5,11)/(5,12)/(5,13)).
-      { ref: 'garde-du-village', pos: { x: 3, y: 11 }, facing: 'N', side: 'ally', ai: true, label: 'Servant du bélier' },
-      { ref: 'garde-du-village', pos: { x: 4, y: 11 }, facing: 'N', side: 'ally', ai: true, label: 'Servant du bélier' },
-      { ref: 'garde-du-village', pos: { x: 6, y: 11 }, facing: 'N', side: 'ally', ai: true, label: 'Servant du bélier' },
-      { ref: 'garde-du-village', pos: { x: 7, y: 11 }, facing: 'N', side: 'ally', ai: true, label: 'Servant du bélier' },
-      { ref: 'garde-du-village', pos: { x: 8, y: 11 }, facing: 'N', side: 'ally', ai: true, label: 'Servant du bélier' },
+      // Soldat, crewIds[0] ci-dessus) — en FORMATION autour de l'affût (`crewFormationSlots`, jamais
+      // éparpillés), aucun sur la colonne des 3 autres héros ni sur l'affût.
+      { ref: 'garde-du-village', pos: SERVANT_SLOTS[0], facing: 'N', side: 'ally', ai: true, label: 'Servant du bélier' },
+      { ref: 'garde-du-village', pos: SERVANT_SLOTS[1], facing: 'N', side: 'ally', ai: true, label: 'Servant du bélier' },
+      { ref: 'garde-du-village', pos: SERVANT_SLOTS[2], facing: 'N', side: 'ally', ai: true, label: 'Servant du bélier' },
+      { ref: 'garde-du-village', pos: SERVANT_SLOTS[3], facing: 'N', side: 'ally', ai: true, label: 'Servant du bélier' },
+      { ref: 'garde-du-village', pos: SERVANT_SLOTS[4], facing: 'N', side: 'ally', ai: true, label: 'Servant du bélier' },
     ],
   },
 ]);

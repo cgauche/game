@@ -237,3 +237,25 @@ describe('spawnEnemy — transport de l’apparence/carrière éditée vers le C
     expect(seeded.appearance.colors).toEqual(plain.appearance.colors);
   });
 });
+
+describe('spawnEnemy — branche engin de siège (`ref` à `siegeRig`, #210)', () => {
+  const at = { x: 0, y: 0 };
+
+  it('belier-ade2 : espèce DÉRIVÉE = `belier` (art propre, plus le recyclage de baliste)', () => {
+    const c = spawnEnemy('belier-ade2', undefined, 'ram1', at);
+    expect(c.species).toBe('belier');
+    expect(c.bodyShape).toBe('engin');
+    expect(c.inert).toBe(true);
+  });
+
+  it('belier-ade2 : empreinte 2 recopiée sur le Combatant (`footprintN`, ADE II ch.08 l.239/258)', () => {
+    const c = spawnEnemy('belier-ade2', undefined, 'ram2', at);
+    expect(c.footprint).toBe(2);
+  });
+
+  it('baliste (sans `siegeFootprint` en donnée) : empreinte ABSENTE — `footprintN` retombe à 1 (non-régression)', () => {
+    const c = spawnEnemy('baliste', undefined, 'bal1', at);
+    expect(c.species).toBe('baliste');
+    expect(c.footprint).toBeUndefined();
+  });
+});

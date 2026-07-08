@@ -266,6 +266,12 @@ describe('machine de guerre (Qualité `equipe` — ADE II ch.08 l.233) : jamais 
     expect(c.weapons.map((w) => w.name)).toEqual(['Mains nues']); // repli seul, aucune arme de siège tenue
   });
 
+  it('belier-ade2 : art d’affût `belier` (PAS l’affût de baliste recyclé) + empreinte 2 (#210, ADE II ch.08 l.239/258)', () => {
+    const t = trappings.find((x) => x.id === 'belier-ade2')!;
+    expect(t.siegeRig).toBe('belier');
+    expect(t.siegeFootprint).toBe(2);
+  });
+
   it('item hors `armes-de-siege` mais portant la Qualité `equipe` : même veto (non-régression sur les armes ordinaires)', () => {
     const engin = { uid: 'x', name: 'Engin', kind: 'melee', qualities: [{ id: 'equipe', value: 4 }], enc: 1, equipped: true, hands: 1 } as unknown as ItemInstance;
     const c = heroWith([engin], { loadouts: [{ id: 'l', main: 'x' }], activeLoadoutId: 'l' });
