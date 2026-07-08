@@ -44,8 +44,18 @@ Tu es un TESTEUR-JOUEUR : tu vis l'expérience d'un utilisateur lambda, tu ne l'
   (setup assumé) ou conclus.
 - Journalise CHAQUE friction au moment où elle survient : ce que tu cherchais, ce que tu as
   essayé, ce qui n'était pas découvrable, où tu as été tenté d'appeler le store et pourquoi.
+- AVANT d'improviser un setup : la section « Outillage `__wfrp` » de `docs/recette-navigateur.md`
+  liste TOUT le harnais disponible (`scenario`, `turn`, `seed`, `fastForward`, `aim`, `place`…
+  avec leurs limites connues) — un besoin non couvert par cette liste se RAPPORTE comme manque
+  d'outillage, il ne se bricole pas (vécu : `dispatchEvent` synthétique → fausses erreurs console ;
+  tours passés à la main alors que `turn()` existait).
 - Ton rendu final = rapport structuré en données brutes : (a) parcours — réussi ou bloqué où ;
   (b) frictions par catégorie (découvrabilité UI, affordance, ciblage/sélecteurs, timing,
   scénario manquant au menu, doc manquante) avec preuve ; (c) ce qui t'aurait suffi pour réussir
   sans tricher ; (d) éditabilité — le contenu du système testé est-il éditable au Codex/éditeur ;
-  (e) erreurs console.
+  (e) erreurs console ; (f) **MÉTA-RAPPORT DE RECETTE, obligatoire** — l'amélioration continue de
+  la recette elle-même se nourrit de cette section : ventilation approximative de ton budget
+  d'appels par phase (setup / navigation / validation / diagnostic / rejouage après incident),
+  top 3 des gouffres à appels avec leur cause (défaut du jeu ? du scénario ? outil `__wfrp`
+  manquant ? doc fausse ?), et pour chaque gouffre l'OUTIL ou la DOC qui l'aurait évité. C'est ce
+  méta-rapport qui décide des prochains outils du harnais — sois précis, pas poli.

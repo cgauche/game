@@ -359,15 +359,37 @@ export function buildApi() {
       return `✓ au tour de ${c.name}`;
     },
 
-    /** TRICHE de recette : téléporte un COMBATTANT (mise en place de situations LdV/portée). */
+    /** TRICHE de recette : téléporte un COMBATTANT (mise en place de situations LdV/portée). Cible une
+     *  COQUE à postes (`postes` non vide) ou un membre d'ÉQUIPAGE de poste (`ShipPoste.crewIds`) →
+     *  déplace la FORMATION SOLIDAIRE (coque + tout l'équipage des postes de la coque, MÊME delta —
+     *  sémantique de `pushCommitTile`, targetingModes.ts : `pushCommitTile` n'est pas réutilisable ici,
+     *  liée à `battle.reachable`/Action/Mouvement du chef ; delta ré-implémenté ici) — téléporter la
+     *  coque SEULE désynchronise aperçu (postes) et vérité de portée (équipage resté en arrière), piège
+     *  vécu en recette. Combattant simple (ni coque ni crew) : téléportation directe inchangée. */
     place: (id: string, pt: { x: number; y: number }) => {
       const b = g().battle;
       const c = b?.combatants.find((x) => x.id === id);
-      if (!b || !c) return '✗ combattant introuvable (combat uniquement — hors combat : goto)';
-      c.pos = { ...pt };
+      if (!b || !c || !c.pos) return '✗ combattant introuvable (combat uniquement — hors combat : goto)';
+      const hull = c.postes?.length ? c : b.combatants.find((h) => h.postes?.some((p) => p.crewIds?.includes(c.id)));
+      if (!hull?.pos) {
+        c.pos = { ...pt };
+        useGame.setState({ battle: { ...b } });
+        bus.emit(EVT.SCENE_DIRTY);
+        return `✓ ${c.name} → (${pt.x},${pt.y})`;
+      }
+      const delta = { x: pt.x - c.pos.x, y: pt.y - c.pos.y };
+      const crewIds = new Set<string>();
+      for (const p of hull.postes ?? []) for (const cid of p.crewIds ?? []) crewIds.add(cid);
+      const movers = [hull, ...[...crewIds]
+        .map((cid) => b.combatants.find((x) => x.id === cid))
+        .filter((x): x is Combatant => !!x?.pos && x.id !== hull.id)];
+      const moved = movers.map((m) => {
+        m.pos = { x: m.pos!.x + delta.x, y: m.pos!.y + delta.y };
+        return m.id;
+      });
       useGame.setState({ battle: { ...b } });
       bus.emit(EVT.SCENE_DIRTY);
-      return `✓ ${c.name} → (${pt.x},${pt.y})`;
+      return { msg: `✓ formation (${hull.name}) → delta (${delta.x},${delta.y}) — ${moved.length} déplacé(s)`, moved };
     },
 
     /** TRICHE de recette : VIRE le cap d'un NAVIRE (manœuvre, MDG ch.13) → re-mappe ses arcs de bordée.

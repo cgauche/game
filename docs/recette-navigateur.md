@@ -21,45 +21,97 @@ Ordre de préférence STRICT pour exercer un flux :
    jamais pour valider le flux testé — on validerait un chemin que le joueur n'emprunte pas, et
    c'est la première source d'erreurs (closures, état non re-rendu, préconditions sautées).
 
-## Outils de recette `window.__wfrp` (DEV uniquement, `src/state/devtools.ts`)
+## Outillage `__wfrp` (SOURCE UNIQUE du harnais, DEV uniquement, `src/state/devtools.ts`)
 
-Pour piloter le jeu depuis Playwright **sans chasser les coordonnées pixel des tokens**.
-Depuis un `browser_evaluate` :
-- `__wfrp.state()` → instantané lisible (écran, `sceneId`, `partyPos`, `inDialogue`, `inCombat`, groupe, argent).
-- `__wfrp.entities()` → **cartographie** : chaque entité de la scène `{ id, label, kind, pos, access }`
-  (`access` = `talk`/`merchant`/`interact`/`—`).
-- `__wfrp.talk('id')` → téléporte le groupe à côté de l'entité et l'**interpelle** (ouvre dialogue/marchand).
-- `__wfrp.goto('id'|{x,y})` → place le groupe sur la case (déclenche portes/triggers au pas).
-- `__wfrp.screen('menu'|'party'|…)` → navigue ; `__wfrp.store` = store Zustand brut (`getState`/`setState`).
-- `__wfrp.scenario('entrainement', seed?)` → **lance un scénario de test prêt à jouer** (sans menu, pause de Round 1
-  acquittée, initiative déterministe si `seed`) ; sans argument : liste les ids.
-- `__wfrp.hover('id'|{x,y}|null)` → **survol programmatique** en combat (tooltip + réticule de visée se rendent
-  sans souris) ; `__wfrp.aim('id')` → vérité state du ciblage (ok/invalid + raison, compétence, dégâts).
-- `__wfrp.battle()` → snapshot combat (round, actif, modales ouvertes, combattants une ligne chacun) ;
-  `__wfrp.turn('id')` → **donne le tour** (fini d'attendre l'IA) ; `__wfrp.place('id',{x,y})` → téléporte ;
-  `__wfrp.log(n)` → queue lisible des journaux (exploration + feed de combat).
-- `__wfrp.modal()` → modale(s) `pending*` ouvertes ; `__wfrp.roll()` / `__wfrp.confirm()` / `__wfrp.cancel()`
-  → pilotent LA modale ouverte par convention `<flux>Roll/Confirm/Cancel` (révélations/Round : verbe propre).
-- Les tokens de combat portent `data-cid="<id du combattant>"` dans le SVG → survol/clic ciblé par sélecteur DOM.
-- **Triches de recette** : `killEnemies()` (victoire par le flux normal), `healParty()` (PB max,
-  états/critiques/maladies purgés), `give(co)` / `xp(n)`, `flags()` / `flag('id', bool)` (portes de
-  l'arène), `go('scene-id')` (transition), `fight()` (liste/lance une rencontre de la scène),
-  `time(min)` / `rest(jours)` (horloge + cascade quotidienne).
-- `__wfrp.seed(n)` → **re-ensemence le RNG de bataille** (`makeRNG`/`seedBattleRng`) EN COURS de
-  combat — même action que `scenario(id, seed)` au lancement, pour rendre une recette reproductible
-  sans relancer le scénario.
-- `__wfrp.fastForward(maxIters?)` → **avance les tours IA** jusqu'au prochain tour d'un combattant
-  **piloté humain**, ou la fin du combat — par la MÊME machinerie que la partie réelle
-  (`advanceTurn`/`maybeRunEnemyTurn`), les délais de lisibilité du Réalisateur (chorégraphie
-  `combatDirector`/`TEMPO`) juste accélérés le temps de l'avance. `maxIters` (scrutations, défaut
-  400) est un **garde-fou anti-boucle infinie**, pas une taille de tour attendue — retourne une
-  chaîne `✗ borne atteinte…` s'il est dépassé (signal d'un soft-lock à diagnostiquer via
-  `__wfrp.auto()`, pas à relever). Retourne une Promise : `await __wfrp.fastForward()`.
+Pour piloter le jeu depuis Playwright **sans chasser les coordonnées pixel des tokens**, via
+`browser_evaluate`. Cette section liste **TOUS** les helpers de `buildApi()` — un ajout/retrait
+côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste partielle ailleurs).
+
+### Scène / navigation
+
+| Helper | Usage | Limites connues |
+|---|---|---|
+| `state()` | instantané `{screen, sceneId, partyPos, inDialogue, inCombat, party, money…}` | lecture seule |
+| `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
+| `talk('id')` | téléporte le groupe à côté de l'entité + l'interpelle (dialogue/marchand) | rien si l'entité n'a ni dialogue ni marchand |
+| `goto('id'\|{x,y,z?})` | place le groupe sur une case (déclenche portes/triggers au pas) | — |
+| `screen('menu'\|'party'\|…)` | navigue vers un écran | id d'écran non validé (erreur runtime si invalide) |
+| `levels()` | décompose le rendu multi-niveaux (tuiles/murs/hauteurs par étage) | lecture seule |
+| `viewLevel(z?\|null)` | force l'étage AFFICHÉ (debug rendu) ; sans argument : lit l'override | n'affecte que le RENDU, jamais la logique (LdV/portée restent réelles) |
+| `ascii(z?)` | plan ASCII de la couche (à comparer œil-pour-œil avec l'écran) | `console.log(__wfrp.ascii())` pour l'alignement monospace |
+| `fog(on=false)` | brouillard ON/OFF (diagnostic RENDU sans vision) | bascule GLOBALE — remettre `fog(true)` avant de valider un flux de vision réel |
+| `labels(on?)` | overlay debug de coordonnées sur la carte | bascule ; zéro coût si OFF |
+| `go('scene-id', entry?)` | saute vers une scène du projet | scène inconnue → message `✗`, scène inchangée |
+| `fight(encounterId?)` | sans argument : liste les rencontres de la scène ; avec id : lance le combat | — |
+| `store` | store Zustand brut (`getState`/`setState`) | **dernier recours** (doctrine ci-dessus, §3) |
+
+### Combat — lecture / ciblage
+
+| Helper | Usage | Limites connues |
+|---|---|---|
+| `battle()` | snapshot combat (round, actif, modales, combattants une ligne chacun) | lecture seule |
+| `hover('id'\|{x,y}\|null)` | survol PROGRAMMATIQUE (tooltip + réticule sans souris) | requiert IsoStage monté (`✗ IsoStage non monté` sinon) |
+| `aim('id')` | vérité state du ciblage pour l'actif (`ok`/`invalid`/`none` + raison, compétence, dégâts) | uniquement en combat |
+| `pad('A'\|'B'\|…)` / `padDir('up'\|…)` | simule bouton/direction manette (shim DEV, MÊME chemin que la vraie manette) | requiert le shim `window.__wfrpPad(Dir)` installé (`useGamepad` monté) |
+| `modal()` | modale(s) `pending*` ouvertes + actions dérivées | conventions `<flux>Roll/Confirm/Cancel` uniquement (voir doctrine ci-dessous) |
+| `roll()` / `confirm()` / `cancel()` | pilotent LA modale ouverte par convention | `✗ aucune modale ouverte` / `✗ pas de flux pilotable` si hors convention |
+| `log(n=8)` | dernières lignes du journal (exploration + feed combat) | lecture seule |
+| `aiLog(n=50)` | diagnostic IA : action choisie + classement des candidats par tour | `(forcé)` = garde psychologie/RAW hors scoring |
+| `auto()` | diagnostic auto-cadence (mode, modale active, `willAutoResolve`, `pending*` ouverts) | pour investiguer un soft-lock, pas pour agir |
+
+### Combat — triche de mise en place
+
+| Helper | Usage | Limites connues |
+|---|---|---|
+| `turn('id')` | donne le TOUR à un combattant (réinitialise Action/Mouvement) | saute les bornes de Round — mise en place, pas simulation de partie |
+| `place('id',{x,y})` | téléporte un combattant | **PIÈGE COMPOSITE (corrigé)** : cible une coque à postes (`postes` non vide) ou un membre de `ShipPoste.crewIds` → déplace la FORMATION ENTIÈRE (coque + tout l'équipage des postes) du même delta, MÊME sémantique que la poussée (`pushCommitTile`). Téléporter la coque SEULE désynchronisait aperçu (postes) et portée réelle (équipage resté en arrière) — 30 % du budget d'une recette perdu à débugger ce déphasage avant fix. Retourne `{msg, moved:[ids]}` en cas composite, une chaîne sinon (combattant simple inchangé). |
+| `turnShip('id','tribord'\|'babord'\|crans)` | vire le cap d'un navire (triche, sans jet) | ne déplace QUE le cap (`facing`), jamais la position — vérifier ensuite avec `aim()` |
+| `maneuver('id', side?, helmsmanId?)` | manœuvre RÉELLE (Test de Navigation, peut échouer) | contrairement à `turnShip`, PEUT rater — pas une triche |
+| `killEnemies()` | élimine tous les ennemis + flux de victoire NORMAL | ignore les postes `inert` non `dead` (affûts non visés, LDB — voir `isOutOfAction`) |
+| `combatEnd({heroId?,critical?,corruption?})` | arme les conséquences de fin de combat (Infection/Corruption/Destin) puis LAISSE la cascade ouverte | à conduire à la main (`cascadeRoll`/`Next`) — n'auto-résout rien, contrairement à `killEnemies` |
+| `healParty()` | groupe à neuf (PB max, états/critiques/maladies purgés, morts relevés) | ne touche QUE `kind:'hero'` en combat |
+| `charge('enemyId', heroId?)` | simule une charge (déclenche `onCharged`, Frappe réactive) | héros cible = le plus proche par défaut |
+| `quality('id', label?, advantage?)` | ajoute un Atout/Défaut à l'arme ACTIVE + Avantages | ne touche que `weapons[0]` |
+| `condition('id', name?, n?)` | applique un État via le VRAI `addCondition` (déclenche les triggers) | — |
+| `bladeTrap(defenderId, attackerId, defSL?)` | ouvre l'étape « Piège-lame » sans forcer un Critique défensif | assigne un `uid` factice à l'arme de l'attaquant si absent |
+| `focus('id', spell?, dr?)` | met un combattant en Focalisation (test d'interruption au coup suivant) | — |
+| `fear(heroId, enemyId, indice?)` | pose une Peur + simule l'approche de la source | positions requises (`✗` sinon) |
+| `talent('id', talentId, times?)` | octroie un Talent à un combattant | — |
+
+### Groupe / campagne / règles
+
+| Helper | Usage | Limites connues |
+|---|---|---|
+| `give(gold=10)` / `xp(amount=100)` | crédite la bourse / +PX au groupe | — |
+| `flags()` / `flag('id', value=true)` | lit/force un drapeau de scénario | — |
+| `time(minutes=60)` / `rest(days=1)` | avance l'horloge / dort N jours (cascade quotidienne) | — |
+| `chantier('reparer'\|'carener'\|upgradeId, units?)` | services du chantier naval au port | hors combat, navire de campagne requis |
+| `massBattle(ally?, enemy?, rounds?)` | lance une bataille de masse de démo | la scène courante doit porter les rencontres attendues |
+| `scenario(id?, seed?)` | lance un scénario de test PRÊT À JOUER ; sans argument : liste les ids | Round 1 déjà acquitté, initiative déterministe SI `seed` |
+| `rules(id?, value?)` | lit/force une règle optionnelle (`policy.ts`) — inclut `combat-cadence` (auto/rapide/manuel) | override runtime NON persisté ; `rules(id, null)` réinitialise |
+| `seed(n)` | re-ensemence le RNG de bataille EN COURS de combat | même action que `scenario(id, seed)` au lancement |
+| `fastForward(maxIters=400)` | avance les tours IA jusqu'au prochain tour PILOTÉ HUMAIN (ou fin de combat), MÊME machinerie que la partie réelle, juste sans les délais du Réalisateur | `maxIters` = garde-fou anti-boucle (scrutations, pas des tours) — `✗ borne atteinte…` = soft-lock probable, à diagnostiquer via `auto()` ; retourne une `Promise` (`await`) |
 
 **Doctrine `seed`/`fastForward`** : SETUP et OBSERVATION seulement (même doctrine que le reste de
-`__wfrp`, cf. § ci-dessus) — `seed` fige l'aléatoire pour REJOUER une recette à l'identique, il ne
+`__wfrp`, § ci-dessus) — `seed` fige l'aléatoire pour REJOUER une recette à l'identique, il ne
 force jamais une issue particulière ; `fastForward` saute le BRUIT des tours IA (temps d'attente
-Playwright), jamais l'action du joueur ni un jet du flux qu'on est en train de valider.
+Playwright), jamais l'action du joueur ni un jet du flux qu'on est en train de valider. **Passer un
+Round/tour se fait TOUJOURS par `turn()`/`fastForward()`, jamais à la main** (pas de bidouille de
+`battle.round`/`order` par `store.setState` — ce sont des recettes, pas le flux testé).
+
+Les tokens de combat portent `data-cid="<id du combattant>"` dans le SVG → survol/clic ciblé par
+sélecteur DOM (vrais clics Playwright, cf. piège ci-dessous).
+
+## Pièges vécus (corrections d'expérience)
+
+- **Captures d'écran** : SEUL chemin autorisé par l'outil Playwright MCP = `.playwright-mcp/` à la
+  RACINE du repo (gitignoré, `.gitignore:19`) — jamais `%TEMP%` (rejeté « outside allowed roots »),
+  jamais un fichier à la racine du repo hors ce dossier.
+- **Jamais de `dispatchEvent`/`MouseEvent` synthétique** pour cliquer un token/bouton — provoque de
+  FAUSSES erreurs `setPointerCapture` (l'élément n'a jamais reçu de vrai pointeur). Utiliser les
+  VRAIS clics Playwright (`browser_click`, sélecteur `data-cid`/rôle/texte).
+- **Passer des tours** : `turn('id')` (triche, donne le tour) ou `fastForward()` (avance l'IA) —
+  jamais de manipulation manuelle de `battle.round`/`battle.turn`/`battle.order` via `store`.
 
 ## Piège du *closure-sync*
 
