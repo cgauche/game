@@ -38,7 +38,9 @@ export function StateRecoveryModalView({
   // montré par son portrait dans la ligne de jet (plus de nom en clair).
   const sub = sr.opposed
     ? `${sr.skillLabel} (opposé) contre ${sr.opponentName}`
-    : `${sr.skillLabel}, cible ${sr.roll?.target ?? sr.skillValue}`;
+    : sr.requireSl != null
+      ? `${sr.skillLabel}, cible ${sr.roll?.target ?? sr.skillValue} · DR ≥ ${sr.requireSl}`
+      : `${sr.skillLabel}, cible ${sr.roll?.target ?? sr.skillValue}`;
 
   // Rangée INTERACTIVE du joueur (pré-jet en attente puis résultat), porteuse de son cycle d'influence.
   const actorRow: RollRowData = {

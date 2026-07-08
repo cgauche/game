@@ -1370,10 +1370,10 @@
     },
     "qualities": [
       {
-        "id": "immobilisante"
+        "id": "filet"
       }
     ],
-    "desc": "Certains gobelins de la nuit se servent de filets pour capturer leurs ennemis afin que leurs congénères les passent à tabac et les torturent plus tard. Ceux-là ont le Trait d'attaque À distance (Filet 3) +0 (6).",
+    "desc": "Les filets font partie du groupe d'armes à Entraves. Si un gobelin réussit une attaque avec son filet, sa cible gagne un État Empêtré. Pour s'en débarrasser, elle doit effectuer un Test de Force Intermédiaire (+0) et obtenir un nombre de DR égal à l'Indice du filet. Les DR ne sont pas cumulatifs ; si la cible ne parvient pas à se dépêtrer, elle gagne un État Empêtré supplémentaire.",
     "price": null,
     "source": {
       "book": "zoo-imperial",
@@ -8220,7 +8220,7 @@
         "id": "defensive"
       },
       {
-        "id": "immobilisante"
+        "id": "immobilisante-fixe"
       },
       {
         "id": "inoffensive"

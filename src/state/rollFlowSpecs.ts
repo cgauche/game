@@ -1251,12 +1251,12 @@ export const FLOWS = {
         if (p.success) return null; // déjà réussi → rien à forcer
         const target = p.roll?.target ?? p.skillValue + DIFFICULTY_MODIFIERS[p.difficulty]; // cible effective (cf. rollTest)
         const die = bestForcedRoll(target); // dé DR-MAX policy-aware (JAMAIS 01 en dur)
-        const actorT = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, 1));
+        const actorT = forcedTR(die, target, Math.max(evaluateTest(die, target).sl, p.requireSl ?? 1, 1));
         if (p.opposed && p.opponentRoll) {
           const opp = resolveOpposed(actorT, p.opponentRoll); // re-oppose vs la source FIGÉE
           return { roll: actorT, netSL: Math.max(1, opp.netSL), success: true }; // l'emporte (DR +1 mini)
         }
-        return { roll: actorT, netSL: Math.max(1, actorT.sl), success: true };
+        return { roll: actorT, netSL: Math.max(p.requireSl ?? 1, 1), success: true };
       }
       const actorT = rollTest(p.skillValue, p.difficulty, battleRng());
       if (p.opposed && p.opponentValue != null) {
@@ -1264,7 +1264,9 @@ export const FLOWS = {
         const opp = resolveOpposed(actorT, oppT);
         return { roll: actorT, opponentRoll: oppT, netSL: opp.netSL, success: opp.attackerWins };
       }
-      return { roll: actorT, netSL: Math.max(0, actorT.sl), success: actorT.success };
+      const netSL = Math.max(0, actorT.sl);
+      // Filets (Zoo Impérial p.29) : Test NON opposé, réussite exige DR ≥ Indice du filet (`requireSl`).
+      return { roll: actorT, netSL, success: p.requireSl != null ? actorT.success && netSL >= p.requireSl : actorT.success };
     },
     reresolve: (_s, p) => {
       const actorT = rollTest(p.skillValue, p.difficulty, battleRng());
@@ -1272,10 +1274,11 @@ export const FLOWS = {
         const opp = resolveOpposed(actorT, p.opponentRoll); // la source garde son jet figé
         return { roll: actorT, netSL: opp.netSL, success: opp.attackerWins };
       }
-      return { roll: actorT, netSL: Math.max(0, actorT.sl), success: actorT.success };
+      const netSL = Math.max(0, actorT.sl);
+      return { roll: actorT, netSL, success: p.requireSl != null ? actorT.success && netSL >= p.requireSl : actorT.success };
     },
     outcome: (p) => ({ won: !!p.success, sl: p.netSL ?? 0 }),
-    bonus: { derive: (_s, p) => ({ netSL: p.netSL + 1 }) },
+    bonus: { derive: (_s, p) => ({ netSL: p.netSL + 1, success: p.requireSl != null ? (p.netSL + 1 >= p.requireSl) : p.success }) },
   }),
 
   /** Test de compétence interactif (Effet de scène `test`). `requireSL` = seuil de DR exigé. */

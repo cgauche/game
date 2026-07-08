@@ -67,7 +67,7 @@ export function recoveredStacks(dr: number, stacks: number, success: boolean): n
   return Math.min(stacks, 1 + Math.max(0, dr));
 }
 
-export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition, unlockBy?: import('./types').ConditionUnlock): void {
+export function addCondition(c: Combatant, name: string, value = 1, escapeStrength?: number, lockedUntil?: import('./flowCore').Condition, unlockBy?: import('./types').ConditionUnlock, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number): void {
   if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État quel qu'il soit, vous perdez tout Avantage » (LDB 16 l.15) — pas de perte per-combattant en mode « Avantage de groupe » (la réserve du camp ne change pas)
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
@@ -76,13 +76,16 @@ export function addCondition(c: Combatant, name: string, value = 1, escapeStreng
     // CONTRAIGNANTE (max), pour qu'un Enchevêtrement ne soit pas affaibli par un État Empêtré « banal »
     // qui s'empile par-dessus (et inversement, un sort plus fort durcit l'évasion).
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
+    if (escapeThreshold != null) existing.escapeThreshold = Math.max(existing.escapeThreshold ?? 0, escapeThreshold);
+    if (entangleOnFail) existing.entangleOnFail = true;
+    if (struggleDamage != null) existing.struggleDamage = Math.max(existing.struggleDamage ?? 0, struggleDamage);
     if (lockedUntil != null) existing.lockedUntil = lockedUntil; // un Critique re-verrouille l'État déjà porté
     if (unlockBy != null) existing.unlockBy = unlockBy; // un Critique re-verrouille l'État déjà porté (acte de soin, LDB 18)
     // Un ajout NON temporisé sur un État à durée : la durée saute (l'État redevient régi
     // par ses règles normales — on n'écourte jamais un État au prétexte qu'un sort expirait).
     delete existing.roundsLeft;
   } else {
-    c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}), ...(lockedUntil != null ? { lockedUntil } : {}), ...(unlockBy != null ? { unlockBy } : {}) });
+    c.conditions.push({ name, value, ...(escapeStrength != null ? { escapeStrength } : {}), ...(escapeThreshold != null ? { escapeThreshold } : {}), ...(entangleOnFail ? { entangleOnFail } : {}), ...(struggleDamage != null ? { struggleDamage } : {}), ...(lockedUntil != null ? { lockedUntil } : {}), ...(unlockBy != null ? { unlockBy } : {}) });
   }
   // L'État vient d'être GAGNÉ (nouveau ou empilé) → déclenche `onGainCondition` (Mâchoires d'acier).
   onConditionGained?.(c, name);
@@ -91,17 +94,20 @@ export function addCondition(c: Combatant, name: string, value = 1, escapeStreng
 /** Ajout d'un État À DURÉE (posé par un sort : « 1 État Sonné qui dure N Rounds », LDB).
  *  Sur un État déjà porté : temporisé → durée max conservée ; NON temporisé → inchangé
  *  (la durée du sort ne raccourcit pas un État permanent). */
-export function addTimedCondition(c: Combatant, name: string, value: number, rounds: number, escapeStrength?: number): void {
+export function addTimedCondition(c: Combatant, name: string, value: number, rounds: number, escapeStrength?: number, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number): void {
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
     if (!groupAdvantage()) c.advantage = 0;
     existing.value += value;
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
+    if (escapeThreshold != null) existing.escapeThreshold = Math.max(existing.escapeThreshold ?? 0, escapeThreshold);
+    if (entangleOnFail) existing.entangleOnFail = true;
+    if (struggleDamage != null) existing.struggleDamage = Math.max(existing.struggleDamage ?? 0, struggleDamage);
     if (existing.roundsLeft != null) existing.roundsLeft = Math.max(existing.roundsLeft, rounds);
     // sinon : instance non temporisée — elle le reste.
     onConditionGained?.(c, name); // État empilé (gagné) → déclenche `onGainCondition`
   } else {
-    addCondition(c, name, value, escapeStrength); // (déclenche déjà `onGainCondition`)
+    addCondition(c, name, value, escapeStrength, undefined, undefined, escapeThreshold, entangleOnFail, struggleDamage); // (déclenche déjà `onGainCondition`)
     c.conditions.find((x) => x.name === name)!.roundsLeft = rounds;
   }
 }
@@ -111,17 +117,20 @@ export function addTimedCondition(c: Combatant, name: string, value: number, rou
  *  `purgeClockEffects` (upkeep), même patron que `castPenalties.untilTime`. Sur un État déjà porté :
  *  temporisé-horloge → échéance MAX conservée ; NON temporisé → inchangé (on n'écourte jamais un État
  *  permanent au prétexte qu'une drogue expirait). */
-export function addClockCondition(c: Combatant, name: string, value: number, until: number, escapeStrength?: number): void {
+export function addClockCondition(c: Combatant, name: string, value: number, until: number, escapeStrength?: number, escapeThreshold?: number, entangleOnFail?: boolean, struggleDamage?: number): void {
   const existing = c.conditions.find((x) => x.name === name);
   if (existing) {
     if (!groupAdvantage()) c.advantage = 0; // « Si vous subissez un État, vous perdez tout Avantage » (LDB 16 l.15) — inerte en mode « Avantage de groupe »
     existing.value += value;
     if (escapeStrength != null) existing.escapeStrength = Math.max(existing.escapeStrength ?? 0, escapeStrength);
+    if (escapeThreshold != null) existing.escapeThreshold = Math.max(existing.escapeThreshold ?? 0, escapeThreshold);
+    if (entangleOnFail) existing.entangleOnFail = true;
+    if (struggleDamage != null) existing.struggleDamage = Math.max(existing.struggleDamage ?? 0, struggleDamage);
     if (existing.untilTime != null) existing.untilTime = Math.max(existing.untilTime, until);
     // sinon : instance non temporisée — elle le reste.
     onConditionGained?.(c, name); // État empilé (gagné) → déclenche `onGainCondition`
   } else {
-    addCondition(c, name, value, escapeStrength); // (déclenche déjà `onGainCondition`)
+    addCondition(c, name, value, escapeStrength, undefined, undefined, escapeThreshold, entangleOnFail, struggleDamage); // (déclenche déjà `onGainCondition`)
     c.conditions.find((x) => x.name === name)!.untilTime = until;
   }
 }

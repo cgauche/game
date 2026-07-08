@@ -53,11 +53,14 @@ export function effectCtxOf(
   scene: Scene,
   otherScenes: Scene[] = [],
   worldMap?: { places: { id: string; label: string }[] },
-): Pick<Ctx, 'merchants' | 'scenes' | 'places'> {
+): Pick<Ctx, 'merchants' | 'scenes' | 'places' | 'personas'> {
   return {
     merchants: scene.entities.filter((e) => e.merchant).map((e) => ({ id: e.id, label: e.label })),
     scenes: [scene, ...otherScenes].map((sc) => ({ id: sc.id, nom: sc.nom, entries: Object.keys(sc.entryPoints ?? {}) })),
     places: worldMap?.places.map((p) => ({ id: p.id, label: p.label })),
+    // Effet `castSpell` (#98) : lanceur/cible = un « personnage » de la scène (Combatant.id ==
+    // SceneEntity.id EN COMBAT — cf. combatSlice) ou un héros du groupe (id libre hors combat).
+    personas: scene.entities.filter((e) => e.kind === 'personnage').map((e) => ({ id: e.id, label: e.label })),
   };
 }
 
@@ -70,6 +73,8 @@ export interface Ctx {
   scenes?: { id: string; nom?: string; entries: string[] }[];
   /** Lieux de la carte du monde (id + label) pour `openPort`. Absent = input. */
   places?: { id: string; label: string }[];
+  /** Entités « personnage » de la scène (id + label) — lanceur/cible de `castSpell` (#98). Absent = input. */
+  personas?: { id: string; label?: string }[];
 }
 
 /** Libellé / icône d'un type d'effet — dérivés du REGISTRE unique (plus de Record parallèle à
@@ -125,6 +130,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'corruptionExposure': return `Influence corruptrice (${e.level ?? 'mineure'}, ${e.skill ?? 'au choix'})${e.align ? ` — ${CHAOS_ALIGN_LABELS[e.align as ChaosAlign]}` : ''}`;
     case 'waterExposure': return `Eau souillée (${e.mode === 'immersion' ? 'immersion' : 'ingestion'}${e.source ? ` · ${e.source}` : ''}) → ${e.target === 'party' ? 'groupe' : (e.heroId || '1ᵉʳ héros')}`;
     case 'learnSpell': return `Apprendre : ${e.spell ? refLabel('spells', { id: e.spell }) : '?'}`;
+    case 'castSpell': return `Incanter ${e.spellId ? refLabel('spells', { id: e.spellId }) : '?'} — ${e.casterId || '?'}${e.targetId ? ` → ${e.targetId}` : ''}${e.mode === 'forceSuccess' ? ' (garanti)' : ''}`;
     case 'petitePriere': {
       const n = e.reward ? (e.reward.kind === 'seq' ? e.reward.steps.length : 1) : 0;
       return `Petites Prières (site sacré)${e.heroId ? ` → ${e.heroId}` : ''} · ${n} bloc(s) si exaucée`;
@@ -414,6 +420,44 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               ))}
             </select>
             <input placeholder="id du héros (vide = premier au Talent éligible)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value })} />
+          </>
+        )}
+        {effect.type === 'castSpell' && (
+          <>
+            {ctx.personas ? (
+              <select value={e.casterId ?? ''} onChange={(ev) => upd({ casterId: ev.target.value })}>
+                <option value="">— lanceur (personnage de la scène ou id de héros) —</option>
+                {ctx.personas.map((p) => (
+                  <option key={p.id} value={p.id}>{p.label ? `${p.label} (${p.id})` : p.id}</option>
+                ))}
+              </select>
+            ) : (
+              <input placeholder="id du lanceur (personnage de la scène ou héros)" value={e.casterId ?? ''} onChange={(ev) => upd({ casterId: ev.target.value })} />
+            )}
+            <select value={e.spellId ?? ''} onChange={(ev) => upd({ spellId: ev.target.value })}>
+              <option value="">— sort/prière —</option>
+              {SPELL_GROUPS.map(([g, list]) => (
+                <optgroup key={g} label={g}>
+                  {list.map((sp) => (
+                    <option key={sp.id} value={sp.id}>{sp.label}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            {ctx.personas ? (
+              <select value={e.targetId ?? ''} onChange={(ev) => upd({ targetId: ev.target.value || undefined })}>
+                <option value="">— cible : le lanceur (soi) —</option>
+                {ctx.personas.map((p) => (
+                  <option key={p.id} value={p.id}>{p.label ? `${p.label} (${p.id})` : p.id}</option>
+                ))}
+              </select>
+            ) : (
+              <input placeholder="id de la cible (vide = le lanceur)" value={e.targetId ?? ''} onChange={(ev) => upd({ targetId: ev.target.value || undefined })} />
+            )}
+            <select value={e.mode ?? 'jet'} onChange={(ev) => upd({ mode: ev.target.value })}>
+              <option value="jet">Jet réel (RAW — modale influençable si piloté par un humain)</option>
+              <option value="forceSuccess">Rituel garanti (arbitrage d'auteur, aucun jet)</option>
+            </select>
           </>
         )}
         {effect.type === 'setVessel' && (

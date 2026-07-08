@@ -1733,7 +1733,8 @@ export function createCombatSlice(get: Get, set: Set) {
         pendingStateRecovery: {
           actorId: active.id, actorName: active.name, state,
           skillLabel: rt.skillLabel, skillValue: rt.skillValue, difficulty: rt.difficulty,
-          opposed: rt.opposed, opponentValue: rt.opponentValue, opponentName: rt.opponentName, stacks: n,
+          opposed: rt.opposed, opponentValue: rt.opponentValue, opponentName: rt.opponentName, requireSl: rt.requireSl,
+          entangleOnFail: rt.entangleOnFail, struggleDamage: rt.struggleDamage, stacks: n,
           roll: null, opponentRoll: null, netSL: 0, success: false,
         },
       });
@@ -1744,10 +1745,16 @@ export function createCombatSlice(get: Get, set: Set) {
       const a = battle.combatants.find((c) => c.id === sr.actorId);
       set({ pendingStateRecovery: null });
       if (!a) return;
+      // Filets barbelés (Zoo Impérial p.29) : Dégâts ignorant l'armure à CHAQUE tentative, réussie ou ratée.
+      const struggleLines = sr.struggleDamage != null
+        ? applyOps(a, [{ op: 'wounds', amount: sr.struggleDamage, ignoreTB: false }], { caster: a })
+        : [];
       const removed = recoveredStacks(sr.netSL, stacks(a, sr.state), sr.success); // 1 + DR, borné
       if (removed > 0) removeCondition(a, sr.state, removed);
+      // Filets (Zoo Impérial p.29) : un échec de libération AGGRAVE l'Empêtré (≠ Immobilisante générique).
+      if (!sr.success && sr.entangleOnFail) addCondition(a, sr.state, 1);
       // Issue = source UNIQUE avec la popin (describeStateRecovery).
-      finishPlayerAction(get, set, [describeStateRecovery(sr, a.name)], 'condition'); // consomme l'Action
+      finishPlayerAction(get, set, [...struggleLines, describeStateRecovery(sr, a.name)], 'condition'); // consomme l'Action
     },
     recoverCancel: () => set({ pendingStateRecovery: null }), // avant le jet : aucun coût
     steamSaveConfirm: () => {

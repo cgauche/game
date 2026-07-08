@@ -50653,6 +50653,12 @@
     ],
     "optionals": [
       {
+        "id": "a-distance",
+        "value": 0,
+        "arg": "filet",
+        "range": 6
+      },
+      {
         "id": "furtif"
       }
     ],

@@ -48,4 +48,21 @@ describe('resolveRecoverTest (LDB 16 l.61/77) — données EtatData.recover', ()
     const c = mk({ conditions: [{ name: 'sonne', value: 1 }] });
     expect(resolveRecoverTest(c, 'sonne')).toBeNull();
   });
+
+  it('Empêtré (Filet, Zoo Impérial p.29) + escapeThreshold FIGÉ : Test NON opposé, DR ≥ Indice exigé', () => {
+    const c = mk({ conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, sourceId: 'gobelin' }] });
+    const r = resolveRecoverTest(c, 'empetre')!; // priorité sur escapeStrength/source vivante
+    expect(r.opposed).toBe(false);
+    expect(r.opponentValue).toBeUndefined();
+    expect(r.requireSl).toBe(3);
+    expect(r.skillLabel).toBe('Force');
+    expect(r.difficulty).toBe('intermediaire'); // Test de Force Intermédiaire (+0)
+  });
+
+  it('escapeThreshold prioritaire sur escapeStrength si les deux sont posées (mutuellement exclusifs en donnée)', () => {
+    const c = mk({ conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, escapeStrength: 55 }] });
+    const r = resolveRecoverTest(c, 'empetre')!;
+    expect(r.requireSl).toBe(3);
+    expect(r.opposed).toBe(false);
+  });
 });

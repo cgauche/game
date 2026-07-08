@@ -564,6 +564,15 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                     <label className="dr"><input type="checkbox" checked={!!o.valuePerSL.onFailure} onChange={(e) => upd({ valuePerSL: { ...o.valuePerSL, onFailure: e.target.checked || undefined } })} /> sur l'échec (niveau d'échec)</label>
                   </>
                 )}
+                {/* Se libérer (LDB 16 l.61 / Filets, Zoo Impérial p.29) — escapeStrength (Test opposé) et
+                    escapeThreshold (Test à seuil) sont MUTUELLEMENT EXCLUSIFS (cf. resolveRecoverTest). */}
+                <label className="dr"><input type="checkbox" checked={o.escapeStrength != null} onChange={(e) => upd({ escapeStrength: e.target.checked ? { charOf: 'F' } : undefined, escapeThreshold: e.target.checked ? undefined : o.escapeThreshold })} /> Force d'évasion (opposée)</label>
+                {o.escapeStrength != null && <FormulaField label="Force" value={o.escapeStrength} min={0} onChange={(escapeStrength) => upd({ escapeStrength, escapeThreshold: undefined })} />}
+                <label className="dr"><input type="checkbox" checked={o.escapeThreshold != null} onChange={(e) => upd({ escapeThreshold: e.target.checked ? 3 : undefined, escapeStrength: e.target.checked ? undefined : o.escapeStrength })} /> Seuil de DR (Test non opposé)</label>
+                {o.escapeThreshold != null && <FormulaField label="Seuil (DR)" value={o.escapeThreshold} min={0} onChange={(escapeThreshold) => upd({ escapeThreshold, escapeStrength: undefined })} />}
+                <label className="dr"><input type="checkbox" checked={!!o.entangleOnFail} onChange={(e) => upd({ entangleOnFail: e.target.checked || undefined })} /> échec → +1 État (Filets, ZI p.29)</label>
+                <label className="dr"><input type="checkbox" checked={o.struggleDamage != null} onChange={(e) => upd({ struggleDamage: e.target.checked ? 1 : undefined })} /> Dégâts par tentative (ignore armure)</label>
+                {o.struggleDamage != null && <FormulaField label="Dégâts" value={o.struggleDamage} min={0} onChange={(struggleDamage) => upd({ struggleDamage })} />}
               </>
             )}
           </>

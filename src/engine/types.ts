@@ -401,6 +401,21 @@ export interface ConditionInstance {
    *  l'op `condition.escapeStrength` (ex. Force Mentale du lanceur d'un Enchevêtrement). Si présente, le
    *  flux de récupération l'oppose AU LIEU de la Force de la source vivante — vaut même lanceur absent. */
   escapeStrength?: number;
+  /** Seuil de DR FIGÉ d'un État à Test NON opposé (Empêtré « se libérer » — Filets, Zoo Impérial p.29 :
+   *  « Test de Force Intermédiaire (+0) et obtenir un nombre de DR égal à l'Indice du filet ») : posé par
+   *  l'op `condition.escapeThreshold`. Si présent, le flux de récupération exige DR ≥ ce seuil (au lieu
+   *  d'opposer une Force) — prioritaire sur `escapeStrength`. */
+  escapeThreshold?: number;
+  /** Aggravation FIGÉE sur ÉCHEC du Test de récupération (Filets, Zoo Impérial p.29 : « si la cible ne
+   *  parvient pas à se dépêtrer, elle gagne un État Empêtré supplémentaire ») — posée par l'op
+   *  `condition.entangleOnFail`. Absente (défaut LDB, Immobilisante générique) : un échec ne fait qu'échouer. */
+  entangleOnFail?: boolean;
+  /** Dégâts FIGÉS ignorant l'armure, infligés à CHAQUE tentative de libération (réussie ou ratée) — Filets
+   *  BARBELÉS (Zoo Impérial p.29 : « infligent automatiquement des Dégâts qui ignorent l'armure à toute
+   *  cible qui se débat »). Posés par l'op `condition.struggleDamage`. ZI p.29 ne chiffre pas ce montant :
+   *  le moteur ne fixe AUCUNE valeur — c'est un champ de DONNÉE éditable (qualité `filet-barbele`,
+   *  `qualities.json`), à régler par qui autorise le contenu, jamais codé en dur ici. */
+  struggleDamage?: number;
   /** Durée en Rounds d'un État posé par un SORT (« 1 État Sonné qui dure 1d10 Rounds ») —
    *  décrémenté en fin de Round, l'État se dissipe à 0. Un ajout NON temporisé du même État
    *  efface la durée (l'État redevient régi par ses règles normales — on n'écourte jamais). */

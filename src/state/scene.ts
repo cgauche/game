@@ -313,6 +313,16 @@ export type Effect =
    *  Cible : héros désigné, sinon le premier dont un Talent rend le sort apprenable. L'apprentissage
    *  PAYANT passe par l'onglet Avancement (buySpell, LDB 46 l.44-47). */
   | { type: 'learnSpell'; spell: string; heroId?: string }
+  /** Incantation SCRIPTÉE (#98) : rituel scénique, piège magique, PNJ qui lance à un beat précis (dialogue,
+   *  trigger, effet différé). `casterId`/`targetId` = id STABLE d'un combattant — un combattant EN COMBAT
+   *  (`Combatant.id === SceneEntity.id`) ou un héros du GROUPE hors combat (`actorIn`, state/combatOrParty) ;
+   *  un PNJ hors combat n'a pas de Combatant à faire incanter — pas de pseudo-combat inventé pour ce cas
+   *  (le lanceur doit alors être en combat). `targetId` absent = le lanceur (soi/zone). `mode:'jet'`
+   *  (défaut) route par le flux d'incantation STANDARD (`castSpell`, cadence-aware ; modale influençable
+   *  si le lanceur est piloté par un humain — jamais un jet silencieux). `mode:'forceSuccess'` = arbitrage
+   *  D'AUTEUR explicite (rituel garanti, sans jet) : applique directement les effets du sort (`GameOp`,
+   *  `ctx.caster` = le lanceur) — dérogation VOULUE, jamais un défaut. */
+  | { type: 'castSpell'; casterId: string; spellId: string; targetId?: string; mode?: 'jet' | 'forceSuccess' }
   /** « Petites Prières » (LDB 25 l.22-24, option `prayer-petites`) : posé sur un SITE SACRÉ (autel,
    *  sanctuaire). Un personnage NON Béni y prie : 1d100 secret, exaucé sur 01 (pourcentage relevé s'il
    *  possède la Compétence Prière). Exaucée → le `reward` (Flow authoré : bonus, don, flag…) s'applique ;

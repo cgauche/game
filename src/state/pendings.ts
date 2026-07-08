@@ -194,6 +194,12 @@ export interface PendingStateRecovery {
   opposed: boolean;
   opponentValue?: number; // Force de la source (Empêtré opposé)
   opponentName?: string;
+  /** Seuil de DR exigé sur un Test NON opposé (Filets, Zoo Impérial p.29 : DR ≥ Indice du filet). */
+  requireSl?: number;
+  /** Aggravation sur ÉCHEC (Filets, Zoo Impérial p.29 : « gagne un État Empêtré supplémentaire »). */
+  entangleOnFail?: boolean;
+  /** Dégâts ignorant l'armure à CHAQUE tentative, réussie ou ratée (Filets barbelés, Zoo Impérial p.29). */
+  struggleDamage?: number;
   stacks: number; // pions présents (max retirables)
   /** Jet de l'acteur ; null tant que pas lancé (Chance possible ensuite). */
   roll: TestResult | null;

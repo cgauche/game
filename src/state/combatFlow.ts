@@ -197,7 +197,7 @@ export function activeCombatant(battle: BattleState): Combatant | undefined {
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
 export * from './combatEffects';
-import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog, applyFall } from './combatEffects';
+import { pushReveal, pushCombatStep, applyEffects, gearFromEffects, drainPendingLog, applyFall, registerCastSpellEffect } from './combatEffects';
 import { teamCommandMod } from './commandTeam';
 // --- Manœuvres de créature (énumération + résolveurs roll/apply) extraites → combatManeuvers.ts (baril) ---
 export * from './combatManeuvers';
@@ -3063,6 +3063,10 @@ export function castSpell(
   }
 }
 
+// Effet d'auteur `castSpell` (#98, scene.ts) : EN COMBAT, route par CE flux standard — enregistré ici
+// (pas dans combatEffects.ts, module FEUILLE qui n'importe rien de combatFlow).
+registerCastSpellEffect(castSpell);
+
 /** Après le jet (figé) d'un Sort ENNEMI : ouvre le Contre-sort à plusieurs si au moins un héros peut
  *  Dissiper (LDB 46 l.201-202 ; cast RÉUSSI, pas une Prière, pas un Critique non-Projectile
  *  « inéluctable »). Sinon : on laisse `pendingCast` (pré-roulé) — la modale `cast` l'affiche en
@@ -5375,14 +5379,22 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       if (rt.opposed && rt.opponentValue != null) {
         const opp = opposedTest(rt.skillValue, rt.opponentValue, battleRng()); success = opp.attackerWins; netSL = opp.netSL;
       } else {
-        const t = rollTest(rt.skillValue, rt.difficulty, battleRng()); success = t.success; netSL = Math.max(0, t.sl);
+        const t = rollTest(rt.skillValue, rt.difficulty, battleRng());
+        netSL = Math.max(0, t.sl);
+        success = rt.requireSl != null ? t.success && netSL >= rt.requireSl : t.success; // Filets (Zoo Impérial p.29) : DR ≥ Indice
       }
+      // Filets barbelés (Zoo Impérial p.29) : Dégâts ignorant l'armure à CHAQUE tentative, réussie ou ratée.
+      const struggleLines: string[] = rt.struggleDamage != null
+        ? applyOps(enemy, [{ op: 'wounds', amount: rt.struggleDamage, ignoreTB: false }], { caster: enemy })
+        : [];
       const removed = recoveredStacks(netSL, stacks(enemy, action.state), success);
       if (removed > 0) removeCondition(enemy, action.state, removed);
+      // Filets (Zoo Impérial p.29) : un échec de libération AGGRAVE l'Empêtré (≠ Immobilisante générique).
+      if (!success && rt.entangleOnFail) addCondition(enemy, action.state, 1);
       const line = removed > 0
         ? (action.state === COND.empetre ? tr('cf.enemyFreed', { name: enemy.name, removed }) : tr('cf.enemyDouses', { name: enemy.name, removed }))
         : (action.state === COND.empetre ? tr('cf.enemyStaysEmpetre', { name: enemy.name }) : tr('cf.enemyStaysFlames', { name: enemy.name }));
-      set({ battle: { ...battle, log: [...battle.log, ev('condition', line, enemy.id)] } });
+      set({ battle: { ...battle, log: [...battle.log, ...struggleLines.map((l) => ev('condition', l, enemy.id)), ev('condition', line, enemy.id)] } });
       bus.emit(EVT.SCENE_DIRTY);
       setTimeout(() => advanceTurn(get, set), beatHold(get, 'afterMove'));
       return;

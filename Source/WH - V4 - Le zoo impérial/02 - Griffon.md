@@ -171,4 +171,12 @@ Certains gobelins de la nuit se servent de filets pour capturer leurs ennemis af
 *Avant que la tribu ne parte au combat, certains de ses membres peuvent recevoir « l'honneur » d'ingurgiter une boisson brassée à base de bonnets de fou. Une fois que leurs yeux commencent à sortir de leurs orbites et qu'ils parviennent à peine à se contrôler, leurs congénères savent que la boisson fait effet. Les horreurs qui en résultent sont connues sous le nom de fanatiques gobelins de la nuit. Leurs camarades les maintiennent en place jusqu'à ce que l'ennemi s'approche, puis les relâchent. Les fanatiques déchaînés se mettent alors à tournoyer en direction de leur ennemi en bavant, armés de gigantesques boulets métalliques attachés au bout d'une chaîne.* Les fanatiques gobelins de la nuit gagnent +10 en Force, ont 16 Blessures et gagnent le Trait Frénésie. Ils gagnent aussi la Compétence Corps à corps (Deux-mains) 40. Leur boulet est une arme à deux mains. Il a les Atouts À Enroulement et Percutante, ainsi que le Défaut Dangereuse. Entre les mains des fanatiques, il inflige +10 Dégâts.
 
 <span id="page-31-0" data-folio="29"></span>
+### FILETS
+
+Les filets font partie du groupe d'armes à Entraves. Si un gobelin réussit une attaque avec son filet, sa cible gagne un État *Empêtré*. Pour s'en débarrasser, elle doit effectuer un **Test de Force Intermédiaire (+0)** et obtenir un nombre de DR égal à l'Indice du filet. Les DR ne sont pas cumulatifs ; si la cible ne parvient pas à se dépêtrer, elle gagne un État *Empêtré* supplémentaire.
+
+Les filets barbelés infligent automatiquement des Dégâts qui ignorent l'armure à toute cible qui se débat, qu'elle parvienne à se dépêtrer ou non.
+
+Le bruit court que les cruels elfes de Naggaroth utilisent des filets ensorcelés qui se battent activement contre leur cible, ou qui se dotent de barbelés magiques qui mordent la chair de leur victime, ce qui rend toute évasion impossible.
+
 <span id="page-32-0" data-folio="30"></span>

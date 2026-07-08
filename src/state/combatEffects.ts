@@ -39,12 +39,12 @@ import { isWeatherWarded, exposureTarget, type ExposureKind } from '../engine/ex
 import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect, setDoorOpen } from './scene';
-import { type Flow, type FlowTest, type EffectOp, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, leafOpsCtx, EMPTY_FLOW } from './flow';
+import { type Flow, type FlowTest, type EffectOp, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, leafOpsCtx, EMPTY_FLOW, spellOps } from './flow';
 import { inRect, combatantsWithinRadius } from './combatGeometry';
 import { startCascade, registerCascadeApplier } from './cascade';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
 import { loseWounds, addCondition, hasCondition } from '../engine/conditions';
-import { touchActors } from './combatOrParty';
+import { touchActors, actorIn } from './combatOrParty';
 import { ev } from './combatLog';
 import { t } from '../i18n';
 
@@ -597,6 +597,15 @@ export function applyFall(c: Combatant, metres: number, rng: RNG): void {
   const lost = Math.max(0, 3 * m + d10(rng) - be);
   loseWounds(c, lost);
   if (lost > be) addCondition(c, 'a-terre');
+}
+
+/** Exécuteur EN COMBAT du flux d'incantation standard (`castSpell`, `state/combatFlow`) pour l'Effet
+ *  `castSpell` (#98) — enregistré par `combatFlow` à son chargement : ce module FEUILLE n'importe RIEN
+ *  de `combatFlow` (qui, lui, importe CE module). `null` tant qu'aucun appelant ne s'est enregistré. */
+let castSpellRunner: ((get: Get, set: SetFn, caster: Combatant, target: Combatant, spellId: string) => void) | null = null;
+/** Enregistre l'exécuteur d'incantation EN COMBAT de l'Effet `castSpell` (appelé par `combatFlow`). */
+export function registerCastSpellEffect(fn: NonNullable<typeof castSpellRunner>): void {
+  castSpellRunner = fn;
 }
 
 /**
@@ -1227,6 +1236,43 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     // tarif par défaut : « aide médicale 4-6 pistoles » (LDB 75) → 5 pa
     make: () => ({ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }], skill: 50, intBonus: 4 }),
     apply: (e, env) => { openMedicalAidEffect(env.get, env.set, e); }, // soins payants d'un PNJ : ouvre son infirmerie (actes tarifés)
+  },
+  castSpell: {
+    group: 'Combat & social', label: 'Incanter un sort/prière (scripté, #98)', icon: 'magic/power',
+    make: () => ({ type: 'castSpell', casterId: '', spellId: '', mode: 'jet' }),
+    apply: (e, env) => {
+      const { get, set } = env;
+      const caster = actorIn(get(), e.casterId);
+      if (!caster) { env.log(`Effet Incanter : lanceur « ${e.casterId} » introuvable (en combat, ou héros du groupe hors combat).`); return; }
+      const spell = findSpellById(e.spellId);
+      if (!spell) { env.log(`Effet Incanter : sort « ${e.spellId} » introuvable.`); return; }
+      const target = (e.targetId ? actorIn(get(), e.targetId) : undefined) ?? caster;
+      if (e.mode === 'forceSuccess') {
+        // Arbitrage D'AUTEUR explicite (rituel garanti) : le RAW ne prévoit aucun lancer scripté SANS jet —
+        // applique directement les effets du sort (Critique/Imparfaite n'ont pas de sens hors d'un vrai jet).
+        const ctx: OpsCtx = { rng: battleRng(), caster, label: spell.label, sl: spell.cn ?? 0 };
+        for (const line of applyOps(target, spellOps(spell.effects, 'target'), ctx)) env.log(line);
+        for (const line of applyOps(caster, spellOps(spell.effects, 'caster'), ctx)) env.log(line);
+        env.log(`${caster.name} incante ${spell.label} (rituel garanti).`);
+        return;
+      }
+      if (get().battle) {
+        // EN COMBAT : flux d'incantation STANDARD (jet influençable si piloté par un humain, cadence-aware,
+        // même chemin que l'IA) — exécuteur enregistré par `combatFlow` (module FEUILLE, anti-cycle).
+        castSpellRunner?.(get, set, caster, target, spell.id);
+        return;
+      }
+      // HORS COMBAT (couture D) : seul un héros du GROUPE a un flux d'incantation jouable (`oocCastSpell`,
+      // jet réel par modale) — un PNJ hors combat n'a pas de Combatant à faire incanter (`actorIn` ne
+      // l'a alors résolu que depuis `party`), pas de pseudo-combat inventé pour ce cas.
+      get().oocCastSpell(caster.id, spell.id, target.id);
+    },
+    refs: (e) => {
+      const issues: EffectRefIssue[] = [];
+      if (!e.casterId) issues.push({ level: 'error', message: 'Effet Incanter : lanceur manquant' });
+      if (!e.spellId || !findSpellById(e.spellId)) issues.push({ level: 'error', message: `Effet Incanter : sort inexistant « ${e.spellId} »` });
+      return issues;
+    },
   },
 
   // ── Tests ──────────────────────────────────────────────────────────────

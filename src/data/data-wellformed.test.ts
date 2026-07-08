@@ -48,7 +48,7 @@ const SOFT_CONDITIONS = new Set(['petrifie']);
 
 // Champs d'une `GameOp` typés `Formula` (ou `number`, qui passe `isValidFormula`) — au minimum amount/count.
 const FORMULA_FIELDS = [
-  'amount', 'count', 'value', 'durationRounds', 'escapeStrength', 'radius', 'damage', 'meters',
+  'amount', 'count', 'value', 'durationRounds', 'escapeStrength', 'escapeThreshold', 'struggleDamage', 'radius', 'damage', 'meters',
   'maxBounces', 'hopMeters', 'delayDays', 'radiusMeters', 'lengthMeters', 'bonus', 'indice', 'mod',
   'rounds', 'minutes', 'hours', 'days',
   // Extensions #50 : États à durée d'horloge (op `condition`) + ops différées (op `delayed`).

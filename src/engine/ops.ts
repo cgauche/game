@@ -332,6 +332,20 @@ export type GameOp =
        *  ou un littéral (`60`). Absente ⇒ le flux de récupération garde son défaut (Force de la source
        *  vivante, ou Test simple). */
       escapeStrength?: Formula;
+      /** Seuil de DR FIGÉ d'un État à Test NON opposé (Empêtré « se libérer » contre un seuil, Filets —
+       *  Zoo Impérial p.29 : « Test de Force Intermédiaire (+0) et obtenir un nombre de DR égal à l'Indice
+       *  du filet »). Résolue contre le RÉFÉRENT et FIGÉE sur l'entrée de condition, comme `escapeStrength`
+       *  (mutuellement exclusifs : priorité à `escapeThreshold` s'il est présent — cf. `resolveRecoverTest`). */
+      escapeThreshold?: Formula;
+      /** Aggravation sur ÉCHEC du Test de récupération (Filets, Zoo Impérial p.29 : « si la cible ne
+       *  parvient pas à se dépêtrer, elle gagne un État Empêtré supplémentaire ») — FIGÉE sur l'entrée de
+       *  condition. Absent (Immobilisante générique LDB p.298) : un échec n'aggrave rien. */
+      entangleOnFail?: boolean;
+      /** Dégâts ignorant l'armure infligés à CHAQUE tentative de libération, réussie ou ratée (Filets
+       *  BARBELÉS, Zoo Impérial p.29 : « infligent automatiquement des Dégâts qui ignorent l'armure à toute
+       *  cible qui se débat »). Résolue contre le RÉFÉRENT et FIGÉE sur l'entrée de condition ; ZI p.29 ne
+       *  chiffre pas ce montant — champ de DONNÉE éditable (qualité `filet-barbele`), rien en dur ici. */
+      struggleDamage?: Formula;
       /** VERROU de Critique (LDB 18) : l'État posé ne pourra être RETIRÉ que lorsque cette Condition
        *  (algèbre flowCore) sera vraie. Ex. Aveuglé « tant que tous les Hémorragique n'ont pas été
        *  éliminés » (Tête 46-50) ⇒ `{ kind:'compare', subject:{who:'target',condition:'hemorragique'},
@@ -1081,23 +1095,25 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         // référent (le lanceur pour un sort) et FIGÉE sur l'entrée d'État → le flux de récupération
         // l'opposera, même si le lanceur n'est plus en jeu.
         const escape = o.escapeStrength != null ? Math.max(0, resolveFormula(o.escapeStrength, ref, rng)) : undefined;
+        const threshold = o.escapeThreshold != null ? Math.max(0, resolveFormula(o.escapeThreshold, ref, rng)) : undefined;
+        const struggleDamage = o.struggleDamage != null ? Math.max(0, resolveFormula(o.struggleDamage, ref, rng)) : undefined;
         if (o.perRound) {
           // État récurrent = cas particulier de l'effet récurrent général (op `perRound`) : la
           // valeur est figée maintenant, l'op `condition` littérale est re-jouée chaque fin de Round.
-          pushPerRound(target, [{ op: 'condition', name: o.name, value: v, ...(escape != null ? { escapeStrength: escape } : {}) }], ctx);
+          pushPerRound(target, [{ op: 'condition', name: o.name, value: v, ...(escape != null ? { escapeStrength: escape } : {}), ...(threshold != null ? { escapeThreshold: threshold } : {}), ...(o.entangleOnFail ? { entangleOnFail: true } : {}), ...(struggleDamage != null ? { struggleDamage } : {}) }], ctx);
           lines.push(t('op.condPerRound', { name: target.name, v, cond: conditionLabel(o.name), src: ctx.label ?? 'sort' }));
         } else if (o.durationMinutes != null || o.durationHours != null) {
           // État à durée d'HORLOGE (Belladone/Fleur de lune : sommeil « 1d10+4/5 heures ») — échéance
           // résolue MAINTENANT depuis ctx.now, purgée par purgeClockEffects (patron castPenalty.minutes).
           const min = Math.max(1, resolveFormula(o.durationMinutes ?? 0, ref, rng) + resolveFormula(o.durationHours ?? 0, ref, rng) * 60);
-          addClockCondition(target, o.name, v, (ctx.now ?? 0) + min, escape);
+          addClockCondition(target, o.name, v, (ctx.now ?? 0) + min, escape, threshold, o.entangleOnFail, struggleDamage);
           lines.push(t('op.condTimed', { name: target.name, v, cond: conditionLabel(o.name), roundsTxt: min >= 60 ? t('op.frag.hours', { n: Math.round(min / 60), s: min >= 120 ? 's' : '' }) : t('op.frag.min', { n: min }) }));
         } else if (o.durationRounds != null) {
           const rounds = Math.max(1, resolveFormula(o.durationRounds, ref, rng));
-          addTimedCondition(target, o.name, v, rounds, escape);
+          addTimedCondition(target, o.name, v, rounds, escape, threshold, o.entangleOnFail, struggleDamage);
           lines.push(t('op.condTimed', { name: target.name, v, cond: conditionLabel(o.name), roundsTxt: t('op.frag.roundsCap', { n: rounds, s: rounds > 1 ? 's' : '' }) }));
         } else {
-          addCondition(target, o.name, v, escape, o.lockedUntil, o.unlockBy); // verrous de Critique (LDB 18) : prédicat d'état / acte de soin
+          addCondition(target, o.name, v, escape, o.lockedUntil, o.unlockBy, threshold, o.entangleOnFail, struggleDamage); // verrous de Critique (LDB 18) : prédicat d'état / acte de soin
           lines.push(t('op.cond', { name: target.name, v, cond: conditionLabel(o.name) })); // libellé (« Exténué »), cohérent avec removeCond
         }
         // Empoignade (LDB 14 l.159) : le flag `grapple` pose la relation symétrique entre l'attaquant

@@ -233,6 +233,123 @@
     ]
   },
   {
+    "id": "immobilisante-fixe",
+    "label": "Immobilisante",
+    "type": "atout",
+    "subType": "arme",
+    "desc": "Quand vous effectuez un Test pour savoir si un adversaire s'empêtre dans un filet lesté, le filet a une Force de 55.",
+    "source": {
+      "book": "aux-armes",
+      "page": 95
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "empetre",
+                    "value": 1,
+                    "unlessCondition": "empetre",
+                    "escapeStrength": 55
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "filet",
+    "label": "Filet",
+    "type": "atout",
+    "subType": "arme",
+    "desc": "Les filets font partie du groupe d'armes à Entraves. Si un gobelin réussit une attaque avec son filet, sa cible gagne un État Empêtré. Pour s'en débarrasser, elle doit effectuer un Test de Force Intermédiaire (+0) et obtenir un nombre de DR égal à l'Indice du filet. Les DR ne sont pas cumulatifs ; si la cible ne parvient pas à se dépêtrer, elle gagne un État Empêtré supplémentaire.",
+    "source": {
+      "book": "zoo-imperial",
+      "page": 29
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "empetre",
+                    "value": 1,
+                    "unlessCondition": "empetre",
+                    "escapeThreshold": 3,
+                    "entangleOnFail": true
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "id": "filet-barbele",
+    "label": "Filet barbelé",
+    "type": "atout",
+    "subType": "arme",
+    "desc": "Les filets barbelés infligent automatiquement des Dégâts qui ignorent l'armure à toute cible qui se débat, qu'elle parvienne à se dépêtrer ou non.",
+    "source": {
+      "book": "zoo-imperial",
+      "page": 29
+    },
+    "effects": [
+      {
+        "trigger": "onHit",
+        "on": "victim",
+        "flow": {
+          "kind": "seq",
+          "steps": [
+            {
+              "kind": "do",
+              "effect": {
+                "type": "ops",
+                "on": "target",
+                "ops": [
+                  {
+                    "op": "condition",
+                    "name": "empetre",
+                    "value": 1,
+                    "unlessCondition": "empetre",
+                    "escapeThreshold": 3,
+                    "entangleOnFail": true,
+                    "struggleDamage": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
     "id": "incassable",
     "label": "Incassable",
     "type": "atout",

@@ -123,6 +123,59 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
     expect(sr.opponentName).toBe('Liane'); // nom de la source si présente
   });
 
+  it('Filet (Zoo Impérial p.29) : échec du Test à seuil → entangleOnFail AGGRAVE (+1 État Empêtré)', () => {
+    const h = hero({ id: 'h', conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true }], armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 } });
+    setBattle([h], 'h');
+    useGame.getState().battleRecoverState('empetre');
+    useGame.getState().recoverRoll();
+    useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: false, netSL: 1 } }); // DR < seuil → échoue
+    useGame.getState().recoverConfirm();
+    const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
+    expect(after.conditions.find((c) => c.name === 'empetre')?.value).toBe(2); // 1 → 2 (aggravation)
+  });
+
+  it('Immobilisante GÉNÉRIQUE (fouet/lasso, LDB p.298) : échec = rien (pas d’entangleOnFail en donnée)', () => {
+    const h = hero({ id: 'h', conditions: [{ name: 'empetre', value: 1, escapeStrength: 47 }] });
+    setBattle([h], 'h');
+    useGame.getState().battleRecoverState('empetre');
+    useGame.getState().recoverRoll();
+    useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: false, netSL: 0 } });
+    useGame.getState().recoverConfirm();
+    const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
+    expect(after.conditions.find((c) => c.name === 'empetre')?.value).toBe(1); // inchangé
+  });
+
+  it('Filet BARBELÉ (Zoo Impérial p.29) : Dégâts ignorant l’armure à CHAQUE tentative — RÉUSSIE', () => {
+    // Endurance quasi nulle (BE 0) : isole le seul comportement testé (ignore l'ARMURE, PAS l'Endurance).
+    const h = hero({ id: 'h', wounds: { current: 12, max: 12 },
+      characteristics: { CC: 40, CT: 40, F: 80, E: 1, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 } as any,
+      armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 },
+      conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true, struggleDamage: 1 }] });
+    setBattle([h], 'h');
+    useGame.getState().battleRecoverState('empetre');
+    useGame.getState().recoverRoll();
+    useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: true, netSL: 3 } });
+    useGame.getState().recoverConfirm();
+    const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
+    expect(after.wounds!.current).toBe(11); // 1 Blessure malgré 5 PA (ignore l’armure)
+    expect(after.conditions.find((c) => c.name === 'empetre')).toBeUndefined(); // libéré
+  });
+
+  it('Filet BARBELÉ (Zoo Impérial p.29) : Dégâts ignorant l’armure à CHAQUE tentative — RATÉE', () => {
+    const h = hero({ id: 'h', wounds: { current: 12, max: 12 },
+      characteristics: { CC: 40, CT: 40, F: 80, E: 1, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 } as any,
+      armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 },
+      conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true, struggleDamage: 1 }] });
+    setBattle([h], 'h');
+    useGame.getState().battleRecoverState('empetre');
+    useGame.getState().recoverRoll();
+    useGame.setState({ pendingStateRecovery: { ...useGame.getState().pendingStateRecovery!, success: false, netSL: 1 } });
+    useGame.getState().recoverConfirm();
+    const after = useGame.getState().battle!.combatants.find((c) => c.id === 'h')!;
+    expect(after.wounds!.current).toBe(11); // Dégâts infligés MÊME sur échec
+    expect(after.conditions.find((c) => c.name === 'empetre')?.value).toBe(2); // + aggravation
+  });
+
   it('cancel avant Appliquer : pas de coût d’Action', () => {
     const h = hero({ id: 'h', conditions: [{ name: 'en-flammes', value: 1 }] });
     setBattle([h], 'h');
