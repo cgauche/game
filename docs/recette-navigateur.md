@@ -104,6 +104,15 @@ sélecteur DOM (vrais clics Playwright, cf. piège ci-dessous).
 
 ## Pièges vécus (corrections d'expérience)
 
+- **Module Vite PÉRIMÉ après un fix** (vécu 2026-07-09, faux « PAS CORRIGÉ » sur un P0) : le
+  watcher Vite sous Windows peut RATER une écriture de fichier (agent/git) — le serveur sert alors
+  l'ancienne transformation même après un reload complet. Symptôme : la stack console cite des
+  numéros de ligne de l'AVANT-fix ; preuve : le `?t=` de l'URL du module (`travel.ts?t=…`) est plus
+  vieux que le fix. Remède : toucher le mtime du fichier (`(Get-Item f).LastWriteTime = Get-Date`)
+  puis recharger — vérifier le `?t=` AVANT de conclure qu'un fix ne marche pas. Corollaire : la
+  console MCP est un buffer PARTAGÉ entre sessions/onglets — `all:true` peut remonter les erreurs
+  d'une session PRÉCÉDENTE ; après un clic sensible, lire la console IMMÉDIATEMENT et depuis la
+  dernière navigation, jamais en fin de parcours.
 - **Captures d'écran** : SEUL chemin autorisé par l'outil Playwright MCP = `.playwright-mcp/` à la
   RACINE du repo (gitignoré, `.gitignore:19`) — jamais `%TEMP%` (rejeté « outside allowed roots »),
   jamais un fichier à la racine du repo hors ce dossier.
