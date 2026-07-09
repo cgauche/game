@@ -45,9 +45,11 @@ function pierrier(tag) {
 function poste(item, side) { return { item, side, crewIds: [] }; }
 
 /** Entité-COQUE brute (navire = Combattant à PV, ref vers `vehicles.json`) — chemin `entities` du
- *  MapSpec (jamais normalisé par `creatureId`), cf. commentaire d'en-tête. */
-function hull(id, ref, x, y, facing, label, crewIds, postes) {
-  return { id, kind: 'personnage', ref, pos: { x, y }, facing, label, crewIds, postes };
+ *  MapSpec (jamais normalisé par `creatureId`), cf. commentaire d'en-tête. `upgrades` = améliorations
+ *  d'INSTANCE (`NavalTraitRef[]` : `{ id, value? }`, lues au spawn par `spawn.ts` puis par les Tests
+ *  d'équipage de combat via `Combatant.upgrades`). */
+function hull(id, ref, x, y, facing, label, crewIds, postes, upgrades) {
+  return { id, kind: 'personnage', ref, pos: { x, y }, facing, label, crewIds, postes, ...(upgrades ? { upgrades } : {}) };
 }
 /** Rangées ASCII d'une scène MER : `w`×`h` cases d'eau ('.') avec DEUX empreintes rectangulaires ('=')
  *  posées par coordonnées — construites par CODE (pas comptées à la main) pour éviter l'erreur de
@@ -82,7 +84,7 @@ scenes.push(scene({
   nom: 'Salzenmund — le quai de la Seconde Flotte',
   description:
     "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, " +
-    "à côté du Loup impérial amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; " +
+    "à côté du Grimm amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; " +
     "Griet accorde son luth.",
   weather: 'brouillard',
   base: 'sable',
@@ -107,6 +109,7 @@ scenes.push(scene({
     NPC('griet', 5, 6, 'Griet', { facing: 'N', dialogueId: 'dlg-griet', appearance: { species: 'Humains (Reiklander)', career: 'Ménestrel', sex: 'F', build: 0.4 } }),
     NPC('avitailleuse', 9, 6, 'Cambuse du port (rations/eau)', { facing: 'N', merchant: { archetype: 'taverniere' }, appearance: { species: 'Humains (Reiklander)', career: 'Bourgeois', sex: 'F', build: 0.55 } }),
     NPC('armurier', 12, 6, 'Arsenal du port (munitions/pièces)', { facing: 'N', merchant: { archetype: 'armurier' }, appearance: { species: 'Humains (Reiklander)', career: 'Artisan', sex: 'M', build: 0.6 } }),
+    NPC('avitailleur', 13, 4, 'Chandelier du quai (eau, rations de mer, pièces, boulets)', { facing: 'S', merchant: { archetype: 'avitailleur' }, appearance: { species: 'Humains (Reiklander)', career: 'Bourgeois', sex: 'M', build: 0.5 } }),
     P(2, 8, undefined, {
       label: 'La jetée d’appareillage',
       interact: {
@@ -124,21 +127,34 @@ scenes.push(scene({
       nodes: [{
         id: 'k1', speaker: 'Baron Ludolf Köhler',
         text:
-          "« Capitaine. Le Loup impérial est vôtre pour cette traversée — porter à Erengrad une cargaison " +
+          "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison " +
           "d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et " +
           "une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. »",
         choices: [
           {
-            text: 'Accepter la commission (40 CO, le Loup impérial à quai)',
+            text: 'Accepter la commission (40 CO, le Grimm à quai)',
             when: { kind: 'flag', expr: '!ls_commission_acceptee' },
             flow: flowOf([
               { type: 'giveMoney', gold: 40 },
               // saboteurDR: -2 [maison] — le sabotage discret de l'affréteuse Kramer pèse sur les Tests
               // d'équipage du voyage dès le départ (MDG 14 l.45-47), posé par cette MÊME commission qui
               // embarque Kramer à bord.
-              { type: 'setVessel', vehicleId: 'loup-imperial', morale: 75, hullCurrent: 180, hullMax: 180, saboteurDR: -2 },
+              // crew : roster SALARIÉ d'un petit caboteur — officiers de bord nommés + poignée de mousses
+              // (paie hebdo `tickCampaignVesselWeek`, barème `crew-roles.json`). #216
+              {
+                type: 'setVessel', vehicleId: 'loup-imperial', name: 'Le Grimm',
+                morale: 75, hullCurrent: 180, hullMax: 180, saboteurDR: -2,
+                crew: [
+                  { roleId: 'navigateur', count: 1 },
+                  { roleId: 'chirurgien', count: 1 },
+                  { roleId: 'cuisinier', count: 1 },
+                  { roleId: 'chansonnier', count: 1 },
+                  { roleId: 'vigie', count: 1 },
+                  { roleId: 'mousse', count: 8 },
+                ],
+              },
               { type: 'setFlag', flag: 'ls_commission_acceptee' },
-              { type: 'journal', text: 'Le Loup impérial est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage.' },
+              { type: 'journal', text: 'Le Grimm est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage.' },
             ]),
             next: 'k1',
           },
@@ -254,7 +270,7 @@ scenes.push(scene({
   id: 'ls-abordage-cogue',
   nom: 'La Dent de Manann — voile noire sous le vent (J4)',
   description:
-    "La cogue pirate intercepte le Loup impérial en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille " +
+    "La cogue pirate intercepte le Grimm en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille " +
     "de cale et pillage, PUIS un prisonnier à sacrifier à Stromfels. Frère Aldo nomme l'ennemi à voix haute.",
   weather: 'brouillard',
   base: 'eau',
@@ -263,7 +279,7 @@ scenes.push(scene({
   rows: seaRows(22, 14, [{ x: 3, y: 5, w: 4, h: 4 }, { x: 15, y: 5, w: 3, h: 3 }]),
   entities: [
     hero(4, 6),
-    hull('grimm', 'loup-imperial', 4, 6, 'E', 'Le Loup impérial', ['aldo-crew', 'griet-crew'],
+    hull('grimm', 'loup-imperial', 4, 6, 'E', 'Le Grimm', ['aldo-crew', 'griet-crew'],
       [poste(canonMoyen('grimm-tribord'), 'tribord'), poste(canonMoyen('grimm-babord'), 'babord'), poste(pierrier('grimm-proue'), 'proue')]),
     marinDuGrimm('aldo-crew', 4, 5, 'Frère Aldo (équipage exposé)'),
     marinDuGrimm('griet-crew', 5, 5, 'Griet (équipage exposé)'),
@@ -276,9 +292,7 @@ scenes.push(scene({
   encounters: [
     {
       id: 'enc-cogue',
-      // RAW (MDG 14 l.45-47) fait rompre la cogue à MI-BLESSURES, pas à sa mort totale : AUCUNE variante de
-      // `VictoryCondition` (allEnemiesDead/destroyStructure/surviveRounds/reachZone) n'exprime un seuil de PV
-      // partiel — repli sur `allEnemiesDead` [CONTOURNÉ, seuil de reddition non modélisable].
+      // #215
       members: [
         { entityId: 'grimm', side: 'ally' },
         { entityId: 'aldo-crew', side: 'ally' },
@@ -374,7 +388,7 @@ scenes.push(scene({
         choices: [
           {
             text: 'Superviser la réparation (Test étendu de Métier (Charpentier), 5 DR)',
-            flow: flowOf([{ type: 'extendedTest', skill: 'metier', spec: 'Charpentier', difficulty: 'intermediaire', label: 'Réparation temporaire du Loup impérial', targetDR: 5, flag: 'ls_coque_reparee' }]),
+            flow: flowOf([{ type: 'extendedTest', skill: 'metier', spec: 'Charpentier', difficulty: 'intermediaire', label: 'Réparation temporaire du Grimm', targetDR: 5, flag: 'ls_coque_reparee' }]),
             next: 'rp1',
           },
           { text: 'Plus tard', flow: flowOf([{ type: 'endDialogue' }]) },
@@ -392,7 +406,7 @@ scenes.push(scene({
   id: 'ls-abordage-olg',
   nom: 'Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)',
   description:
-    "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Loup impérial chargé de laine. Poursuite, feu de chasse, " +
+    "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Grimm chargé de laine. Poursuite, feu de chasse, " +
     "collision, abordage — le morceau de bravoure de la traversée.",
   weather: 'tempete',
   base: 'eau',
@@ -401,18 +415,15 @@ scenes.push(scene({
   rows: seaRows(22, 14, [{ x: 3, y: 5, w: 4, h: 4 }, { x: 15, y: 5, w: 3, h: 3 }]),
   entities: [
     hero(4, 6),
-    hull('grimm2', 'loup-imperial', 4, 6, 'E', 'Le Loup impérial', ['aldo-crew-2', 'griet-crew-2'],
+    hull('grimm2', 'loup-imperial', 4, 6, 'E', 'Le Grimm', ['aldo-crew-2', 'griet-crew-2'],
       [poste(canonMoyen('grimm2-tribord'), 'tribord'), poste(canonMoyen('grimm2-babord'), 'babord'), poste(pierrier('grimm2-poupe'), 'poupe')]),
     marinDuGrimm('aldo-crew-2', 4, 5, 'Frère Aldo (équipage exposé)'),
     marinDuGrimm('griet-crew-2', 5, 5, 'Griet (équipage exposé)'),
-    // Trait de coque « Proue-idole de Stromfels » [maison, +1 DR Poursuite tant qu'intacte, cf. scénario réf.
-    // l.66-70] : AUCUNE `NavalTraitRef` de ce nom au catalogue naval (traits `belier`/`renforce`/`solide`
-    // seulement) — non instanciable sans inventer un id de trait [INEXPRIMABLE].
-    { id: 'serpent-de-sel', kind: 'personnage', ref: 'langskip', pos: { x: 16, y: 6 }, facing: 'O', label: 'Le Serpent-de-Sel', crewIds: ['norse-1', 'norse-2'] },
-    // Aucune créature « norse »/« pillard skaeling » générique au bestiaire : repli sur `pirate-fluvial`
-    // (Naufrageurs & Pirates Fluviaux, frenchy-bzh) — [CONTOURNÉ, réutilisation d'une réf existante].
-    { id: 'norse-1', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 15, y: 5 }, label: 'Norse' },
-    { id: 'norse-2', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 15, y: 7 }, label: 'Norse' },
+    // Proue-idole de Stromfels : amélioration d'INSTANCE de la coque (#221).
+    hull('serpent-de-sel', 'langskip', 16, 6, 'O', 'Le Serpent-de-Sel', ['norse-1', 'norse-2'], undefined,
+      [{ id: 'proue-idole-de-stromfels' }]),
+    { id: 'norse-1', kind: 'personnage', ref: 'maraudeur-du-chaos', pos: { x: 15, y: 5 }, label: 'Norse' },
+    { id: 'norse-2', kind: 'personnage', ref: 'maraudeur-du-chaos', pos: { x: 15, y: 7 }, label: 'Norse' },
     { id: 'olg', kind: 'personnage', ref: 'olg-blodsalt', pos: { x: 17, y: 6 }, label: 'Olg Blóðsalt', weapon: 'Hache' },
   ],
   encounters: [
@@ -478,7 +489,7 @@ scenes.push(scene({
               { type: 'giveMoney', gold: 60 },
               { type: 'setFlag', flag: 'ls_solde_versee' },
               { type: 'giveXp', amount: 100 },
-              { type: 'journal', text: 'Köhler verse la solde et la prime d’Olg. Le chantier attend le Loup impérial — carénage enfin, critiques réparés.' },
+              { type: 'journal', text: 'Köhler verse la solde et la prime d’Olg. Le chantier attend le Grimm — carénage enfin, critiques réparés.' },
             ]),
             next: 'e1',
           },
@@ -497,14 +508,11 @@ const worldMap = {
   places: [
     {
       id: 'salzenmund', label: 'Salzenmund', pos: { x: 25, y: 60 }, scene: 'ls-quai-salzenmund', icon: 'scenario/port',
-      // Production/Surplus/Demande : colonnes exactes NON vérifiées à l'index des ports (MDG 15 l.439-506)
-      // — valeurs plausibles [maison, à recaler (index MDG 15)].
-      port: { taille: 4, richesse: 4, production: ['fer', 'armes'], surplus: { fer: 1 } },
+      port: { ref: 'salzenmund' }, // #217 — Taille/Richesse/Production/Surplus/Demande RAW coulent du catalogue
     },
     {
       id: 'erengrad', label: 'Erengrad', pos: { x: 78, y: 20 }, scene: 'ls-quai-erengrad', icon: 'scenario/port',
-      // Surplus Laine +1 confirmé au synopsis de référence ; colonnes Production/Demande [maison, à recaler].
-      port: { taille: 4, richesse: 4, production: ['laine'], surplus: { laine: 1 } },
+      port: { ref: 'erengrad' }, // #217
     },
   ],
   routes: [

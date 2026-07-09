@@ -4,7 +4,7 @@
   {
    "id": "ls-quai-salzenmund",
    "nom": "Salzenmund — le quai de la Seconde Flotte",
-   "description": "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, à côté du Loup impérial amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; Griet accorde son luth.",
+   "description": "L'automne rend la Mer des Griffes mauvaise et le fret précieux. Le baron Ludolf Köhler attend sur le quai, à côté du Grimm amarré. Frère Aldo bénit les départs ; Dame Kramer surveille le chargement de son fret ; Griet accorde son luth.",
    "dimensions": {
     "w": 16,
     "h": 10
@@ -293,6 +293,25 @@
      }
     },
     {
+     "id": "avitailleur",
+     "kind": "personnage",
+     "pos": {
+      "x": 13,
+      "y": 4
+     },
+     "label": "Chandelier du quai (eau, rations de mer, pièces, boulets)",
+     "facing": "S",
+     "merchant": {
+      "archetype": "avitailleur"
+     },
+     "appearance": {
+      "species": "Humains (Reiklander)",
+      "career": "Bourgeois",
+      "sex": "M",
+      "build": 0.5
+     }
+    },
+    {
      "id": "p0",
      "kind": "prop",
      "pos": {
@@ -342,10 +361,10 @@
       {
        "id": "k1",
        "speaker": "Baron Ludolf Köhler",
-       "text": "« Capitaine. Le Loup impérial est vôtre pour cette traversée — porter à Erengrad une cargaison d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. »",
+       "text": "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. »",
        "choices": [
         {
-         "text": "Accepter la commission (40 CO, le Loup impérial à quai)",
+         "text": "Accepter la commission (40 CO, le Grimm à quai)",
          "when": {
           "kind": "flag",
           "expr": "!ls_commission_acceptee"
@@ -365,10 +384,37 @@
             "effect": {
              "type": "setVessel",
              "vehicleId": "loup-imperial",
+             "name": "Le Grimm",
              "morale": 75,
              "hullCurrent": 180,
              "hullMax": 180,
-             "saboteurDR": -2
+             "saboteurDR": -2,
+             "crew": [
+              {
+               "roleId": "navigateur",
+               "count": 1
+              },
+              {
+               "roleId": "chirurgien",
+               "count": 1
+              },
+              {
+               "roleId": "cuisinier",
+               "count": 1
+              },
+              {
+               "roleId": "chansonnier",
+               "count": 1
+              },
+              {
+               "roleId": "vigie",
+               "count": 1
+              },
+              {
+               "roleId": "mousse",
+               "count": 8
+              }
+             ]
             }
            },
            {
@@ -382,7 +428,7 @@
             "kind": "do",
             "effect": {
              "type": "journal",
-             "text": "Le Loup impérial est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage."
+             "text": "Le Grimm est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage."
             }
            }
           ]
@@ -734,7 +780,7 @@
   {
    "id": "ls-abordage-cogue",
    "nom": "La Dent de Manann — voile noire sous le vent (J4)",
-   "description": "La cogue pirate intercepte le Loup impérial en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille de cale et pillage, PUIS un prisonnier à sacrifier à Stromfels. Frère Aldo nomme l'ennemi à voix haute.",
+   "description": "La cogue pirate intercepte le Grimm en haute mer. Sommation RAW complète (MDG 15 l.171-173) : fouille de cale et pillage, PUIS un prisonnier à sacrifier à Stromfels. Frère Aldo nomme l'ennemi à voix haute.",
    "dimensions": {
     "w": 22,
     "h": 14
@@ -1073,7 +1119,7 @@
       "y": 6
      },
      "facing": "E",
-     "label": "Le Loup impérial",
+     "label": "Le Grimm",
      "crewIds": [
       "aldo-crew",
       "griet-crew"
@@ -1756,7 +1802,7 @@
              "skill": "metier",
              "spec": "Charpentier",
              "difficulty": "intermediaire",
-             "label": "Réparation temporaire du Loup impérial",
+             "label": "Réparation temporaire du Grimm",
              "targetDR": 5,
              "flag": "ls_coque_reparee"
             }
@@ -1798,7 +1844,7 @@
   {
    "id": "ls-abordage-olg",
    "nom": "Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)",
-   "description": "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Loup impérial chargé de laine. Poursuite, feu de chasse, collision, abordage — le morceau de bravoure de la traversée.",
+   "description": "Au petit matin, le langskip d'Olg Blóðsalt fond sur le Grimm chargé de laine. Poursuite, feu de chasse, collision, abordage — le morceau de bravoure de la traversée.",
    "dimensions": {
     "w": 22,
     "h": 14
@@ -2137,7 +2183,7 @@
       "y": 6
      },
      "facing": "E",
-     "label": "Le Loup impérial",
+     "label": "Le Grimm",
      "crewIds": [
       "aldo-crew-2",
       "griet-crew-2"
@@ -2309,12 +2355,17 @@
      "crewIds": [
       "norse-1",
       "norse-2"
+     ],
+     "upgrades": [
+      {
+       "id": "proue-idole-de-stromfels"
+      }
      ]
     },
     {
      "id": "norse-1",
      "kind": "personnage",
-     "ref": "pirate-fluvial",
+     "ref": "maraudeur-du-chaos",
      "pos": {
       "x": 15,
       "y": 5
@@ -2324,7 +2375,7 @@
     {
      "id": "norse-2",
      "kind": "personnage",
-     "ref": "pirate-fluvial",
+     "ref": "maraudeur-du-chaos",
      "pos": {
       "x": 15,
       "y": 7
@@ -2641,7 +2692,7 @@
             "kind": "do",
             "effect": {
              "type": "journal",
-             "text": "Köhler verse la solde et la prime d’Olg. Le chantier attend le Loup impérial — carénage enfin, critiques réparés."
+             "text": "Köhler verse la solde et la prime d’Olg. Le chantier attend le Grimm — carénage enfin, critiques réparés."
             }
            }
           ]
@@ -2692,15 +2743,7 @@
     "scene": "ls-quai-salzenmund",
     "icon": "scenario/port",
     "port": {
-     "taille": 4,
-     "richesse": 4,
-     "production": [
-      "fer",
-      "armes"
-     ],
-     "surplus": {
-      "fer": 1
-     }
+     "ref": "salzenmund"
     }
    },
    {
@@ -2713,14 +2756,7 @@
     "scene": "ls-quai-erengrad",
     "icon": "scenario/port",
     "port": {
-     "taille": 4,
-     "richesse": 4,
-     "production": [
-      "laine"
-     ],
-     "surplus": {
-      "laine": 1
-     }
+     "ref": "erengrad"
     }
    }
   ],

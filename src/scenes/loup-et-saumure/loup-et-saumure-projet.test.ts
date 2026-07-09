@@ -4,8 +4,9 @@ import { describe, it, expect } from 'vitest';
 import { parseProject } from '../../state/worldMap';
 import { validateScene, type Warning } from '../../state/validateScene';
 import type { Scene } from '../../state/scene';
-import { findCreatureById, findVehicleById } from '../../data';
+import { findCreatureById, findVehicleById, findNavalTrait, findCrewRoleById } from '../../data';
 import { findManannFactor } from '../../engine/seaVoyage';
+import { MERCHANTS } from '../../state/merchants';
 import type { Effect } from '../../state/scene';
 
 /**
@@ -40,6 +41,9 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     expect(wm.places.map((p) => p.id)).toEqual(['salzenmund', 'erengrad']);
     for (const p of wm.places) {
       expect(p.port, `port de ${p.id}`).toBeTruthy();
+      // #217 — le lieu porte une réf de catalogue (naval-ports.json) ; parseProject/resolvePortRef a
+      // fait couler Taille/Richesse RAW depuis le catalogue (l'authoring JSON est sparse : { ref }).
+      expect(p.port!.ref, `réf de port de ${p.id}`).toBe(p.id);
       expect(p.port!.taille).toBe(4);
       expect(p.port!.richesse).toBe(4);
     }
@@ -146,6 +150,42 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     expect(commission!.saboteurDR).toBeDefined();
     expect(commission!.saboteurDR!).toBeGreaterThanOrEqual(-5);
     expect(commission!.saboteurDR!).toBeLessThanOrEqual(0);
+  });
+
+  it('le setVessel de la commission porte le NOM d’instance « Le Grimm » (#230) et un roster SALARIÉ valide (#216)', () => {
+    const setVesselEffects = allEffects().filter((e): e is Extract<Effect, { type: 'setVessel' }> => e.type === 'setVessel');
+    const commission = setVesselEffects.find((e) => e.vehicleId === 'loup-imperial')!;
+    expect(commission.name).toBe('Le Grimm');
+    expect(commission.crew, 'roster salarié posé').toBeTruthy();
+    expect(commission.crew!.length).toBeGreaterThan(0);
+    for (const hire of commission.crew!) {
+      expect(hire.count).toBeGreaterThan(0);
+      expect(findCrewRoleById(hire.roleId), `rôle d’équipage « ${hire.roleId} » existe (crew-roles.json)`).toBeTruthy();
+    }
+  });
+
+  it('la coque du Serpent-de-Sel porte la Proue-idole de Stromfels en amélioration d’INSTANCE (#221)', () => {
+    const sc = project.find((s) => s.id === 'ls-abordage-olg')!;
+    const serpent = sc.entities.find((e) => e.id === 'serpent-de-sel')!;
+    expect(serpent.upgrades, 'améliorations d’instance posées').toBeTruthy();
+    expect(serpent.upgrades!.some((u) => u.id === 'proue-idole-de-stromfels')).toBe(true);
+    for (const u of serpent.upgrades!) expect(findNavalTrait(u.id), `amélioration navale « ${u.id} » existe`).toBeTruthy();
+  });
+
+  it('l’équipage norse d’Olg référence la créature maraudeur-du-chaos (#221)', () => {
+    const sc = project.find((s) => s.id === 'ls-abordage-olg')!;
+    for (const id of ['norse-1', 'norse-2']) {
+      const norse = sc.entities.find((e) => e.id === id)!;
+      expect(norse.ref).toBe('maraudeur-du-chaos');
+    }
+    expect(findCreatureById('maraudeur-du-chaos')).toBeTruthy();
+  });
+
+  it('l’avitailleur du quai référence un archétype marchand RÉEL du registre (#220)', () => {
+    const sc = project.find((s) => s.id === 'ls-quai-salzenmund')!;
+    const av = sc.entities.find((e) => e.id === 'avitailleur')!;
+    expect(av.merchant?.archetype).toBe('avitailleur');
+    expect(MERCHANTS[av.merchant!.archetype!], 'archétype « avitailleur » au registre').toBeTruthy();
   });
 
   it('ZÉRO jargon technique dans les textes joueur (répliques de dialogue)', () => {
