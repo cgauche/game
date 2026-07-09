@@ -1,4 +1,4 @@
-import { useGame } from './store';
+import { useGame, SCREENS } from './store';
 import { portRepairVessel, portCareenVessel, portInstallUpgrade } from './seaVoyageFlow';
 import { actorIn } from './combatOrParty';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn } from './combatFlow';
@@ -219,8 +219,13 @@ export function buildApi() {
       return `étage z=${zz} (${W}×${H})\n` + rows.join('\n');
     },
 
-    /** Navigue vers un écran (menu/party/creator/editor/test/coop/campaign). */
+    /** Navigue vers un écran (menu/party/creator/editor/test/coop/campaign) — id invalide = `throw`
+     *  IMMÉDIAT (liste des ids valides) plutôt qu'un routage silencieux vers un écran blanc (#211,
+     *  ex. 'game' n'existe pas : `SCREENS` est la source unique, `state/store.ts`). */
     screen: (screen: string) => {
+      if (!(SCREENS as readonly string[]).includes(screen)) {
+        throw new Error(`__wfrp.screen : id invalide « ${screen} » — écrans valides : ${SCREENS.join(', ')}`);
+      }
       g().setScreen(screen as never);
       return g().screen;
     },

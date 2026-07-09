@@ -4,7 +4,7 @@ import type { NetState } from '../state/netFlow';
 import { makePregens } from '../data/pregens';
 import { rosterLoad, rosterRemove, rosterAdd, rosterExport, rosterImport } from '../state/roster';
 import { downloadText, fileSlug } from '../state/fileIo';
-import { campaign } from '../scenes/campaign';
+import { campaign, builtinCampaigns } from '../scenes/campaign';
 import { publishedProjects } from '../state/projectLibrary';
 import { Combatant } from '../engine/types';
 import { Money } from '../engine/money';
@@ -130,6 +130,18 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
               {currentName == null ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
             </button>
           </div>
+          {builtinCampaigns.map((c) => (
+            <div key={c.id} className="pregen-row">
+              <span className="campaign-row-name"><Icon id={c.icon} size="sm" /> {c.name}</span>
+              <button
+                className="btn small btn-primary"
+                disabled={currentName === c.name}
+                onClick={() => pick({ name: c.name, scenes: c.scenes, startSceneId: c.startSceneId, worldMap: c.worldMap })}
+              >
+                {currentName === c.name ? t('party.campaign.pick.current') : t('party.campaign.pick.choose')}
+              </button>
+            </div>
+          ))}
           {published.map((p) => (
             <div key={p.id} className="pregen-row">
               <span className="campaign-row-name"><Icon id="nav/campaign" size="sm" /> {p.name}</span>

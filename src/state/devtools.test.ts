@@ -42,6 +42,17 @@ describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, vict
   });
 });
 
+describe('__wfrp.screen — garde d’id (#211)', () => {
+  it('id invalide → throw (liste des ids valides), aucun routage silencieux vers un écran blanc', () => {
+    expect(() => buildApi().screen('game')).toThrow(/game/);
+    expect(() => buildApi().screen('game')).toThrow(/menu/); // la liste des ids valides est portée par le message
+  });
+
+  it('id valide → navigue normalement', () => {
+    expect(buildApi().screen('menu')).toBe('menu');
+  });
+});
+
 describe('__wfrp — autres commandes de recette', () => {
   beforeEach(() => {
     vi.useFakeTimers();

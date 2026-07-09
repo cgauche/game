@@ -409,7 +409,12 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   // étape influençable (sinon il serait pré-résolu dans le journal AVANT que le joueur n'agisse).
   const caredFor = party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
   const deferred: DeferredUpkeepTest[] = [];
-  log.push(...runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily, onDeferTest: (t) => deferred.push(t) }));
+  // `runDailyUpkeep` journalise DÉJÀ ses propres lignes (upkeep.ts, source unique anti-double-comptage,
+  // #216) : on les garde dans `log` (retourné pour le bilan/la modale de cascade) SANS les re-journaliser
+  // plus bas — `upkeepCount` marque la frontière entre ce qui est déjà écrit et le reste de cette fonction.
+  const upkeep = runDailyUpkeep(get, set, { caredFor, fedDaily: opts.fedDaily, onDeferTest: (t) => deferred.push(t) });
+  log.push(...upkeep);
+  const upkeepCount = upkeep.length;
 
   const steps: CascadeStep[] = [];
   // MARCHE FORCÉE de la journée de voyage (l.224) : un jet par héros — la chaîne ouvre la cascade.
@@ -476,7 +481,9 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   }
 
 
-  set({ party: [...get().party], journal: [...get().journal.slice(-40), '— Le groupe dort jusqu’à l’aube —', ...log] });
+  // Journal : le titre de nuit + tout ce qui s'est ajouté APRÈS l'entretien (tente, récupération sans
+  // jet…) — l'entretien lui-même est déjà dans le journal (`runDailyUpkeep`, écriture unique, #216).
+  set({ party: [...get().party], journal: [...get().journal.slice(-40), '— Le groupe dort jusqu’à l’aube —', ...log.slice(upkeepCount)] });
   bus.emit(EVT.SCENE_DIRTY);
   return { steps, log, slept: { from, to: get().gameTime } };
 }
@@ -620,7 +627,8 @@ export function restSleep(get: Get, set: Set): void {
         : 'Campement';
       startCascade(get, set, { title, icon: 'time/night', purpose: p.travelHalt ? 'travel' : 'night', travelHalt: p.travelHalt, steps, log });
     } else {
-      for (const l of log) get().log(l); // rien à influencer (PB pleins, pas de campement) — déjà dormi
+      // `buildNightCascade` a DÉJÀ journalisé le titre + tout ce qui suit l'entretien (#216) — rien à
+      // influencer (PB pleins, pas de campement), rien à rejournaliser ici.
       if (p.travelHalt) continueTravelAfterNight(get, set);
     }
     return;

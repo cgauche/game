@@ -81,4 +81,20 @@ describe('Paie hebdomadaire de l’équipage salarié (MDG 14, #216) — couture
     expect(v.wagesOwed).toBeUndefined();
     expect(toBrass(useGame.getState().money)).toBe(toBrass({ gold: 5, silver: 0, brass: 0 })); // bourse intacte
   });
+
+  it('halte de nuit (openRest/restSleep) franchissant la semaine → le bilan de paie ne se journalise QU’UNE FOIS', () => {
+    // Repro #216 : trois écritures indépendantes du MÊME bilan (upkeep.ts, buildNightCascade,
+    // restSleep) écrivaient chacune le journal — l'Argent ne bougeait qu'une fois (garde hebdo
+    // interne à `tickCampaignVesselWeek`), mais le texte apparaissait ×3 à l'écran.
+    useGame.setState({
+      battle: null, mode: 'exploration', journal: [], travelPlan: null, pendingReveals: [], pendingRest: null,
+      party: makePregens().slice(0, 1), gameTime: 7 * MINUTES_PER_DAY - 100, lastUpkeepDay: 6,
+      money: { gold: 10, silver: 0, brass: 0 },
+      vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, crew: [{ roleId: 'mousse', count: 1 }] },
+    });
+    useGame.getState().openRest({ places: { camp: true } });
+    useGame.getState().restSleep();
+    const wageLines = useGame.getState().journal.filter((l) => l.includes('Solde hebdomadaire'));
+    expect(wageLines).toHaveLength(1);
+  });
 });

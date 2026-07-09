@@ -35,7 +35,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
 | `talk('id')` | téléporte le groupe à côté de l'entité + l'interpelle (dialogue/marchand) | rien si l'entité n'a ni dialogue ni marchand |
 | `goto('id'\|{x,y,z?})` | place le groupe sur une case (déclenche portes/triggers au pas) | — |
-| `screen('menu'\|'party'\|…)` | navigue vers un écran | id d'écran non validé (erreur runtime si invalide) |
+| `screen('menu'\|'party'\|…)` | navigue vers un écran | id validé contre `SCREENS` (`state/store.ts`) — `throw` immédiat + liste des ids valides si invalide (#211 ; avant : routage silencieux, écran blanc, zéro erreur console) |
 | `levels()` | décompose le rendu multi-niveaux (tuiles/murs/hauteurs par étage) | lecture seule |
 | `viewLevel(z?\|null)` | force l'étage AFFICHÉ (debug rendu) ; sans argument : lit l'override | n'affecte que le RENDU, jamais la logique (LdV/portée restent réelles) |
 | `ascii(z?)` | plan ASCII de la couche (à comparer œil-pour-œil avec l'écran) | `console.log(__wfrp.ascii())` pour l'alignement monospace |
@@ -127,7 +127,9 @@ sélecteur DOM (vrais clics Playwright, cf. piège ci-dessous).
   la vignette de lieu dessous. Méthode canonique : calculer un point ON-PATH via la méthode SVG
   native `getPointAtLength` du `path` + `getScreenCTM()` (coordonnées écran réelles du trait), puis un
   VRAI clic souris (`page.mouse.click`) à ces coordonnées — jamais `browser_click` sur le sélecteur de
-  la route.
+  la route. Cette méthode requiert l'outil `browser_run_code_unsafe` (exécution JS côté page pour lire
+  `getPointAtLength`/`getScreenCTM`, hors sélecteurs Playwright standards) — ABSENT du set d'outils de
+  démarrage : le charger via ToolSearch avant de router un clic de route.
 
 ## Piège du *closure-sync*
 
