@@ -8,7 +8,7 @@
  *  - bas niveau : `appearance` (+ `equip`/`career`/`overlays`) — créateur/éditeur, avant qu'un
  *    Combatant n'existe ;
  *  - haut niveau : `hero` (Combatant) — tout est dérivé via les briques canoniques
- *    (combatantAppearance/combatantOverlays/equipFromCombatant/findCareerById).
+ *    (combatantAppearance/combatantOverlays/equipFromCombatant).
  *
  * AUCUN `<defs>` local : les gradients du rig (DEFS) sont montés UNE fois au niveau App
  * (GlobalSvgDefs). Tailles et ambiances en CSS (`.charprev`, components.css).
@@ -22,7 +22,6 @@ import { combatantAppearance, combatantOverlays } from '../gameIso/rig/parts/com
 import type { RigOverlay } from '../gameIso/rig/bones';
 import type { Pose } from '../gameIso/rig/poses';
 import type { View } from '../gameIso/rig/facing';
-import { findCareerById } from '../data';
 
 export type CharacterPreviewSize = 'xs' | 'sm' | 'md' | 'lg' | 'fill';
 export type CharacterPreviewAmbiance = 'none' | 'panel' | 'parchment' | 'spotlight';
@@ -40,7 +39,7 @@ interface CommonProps {
 interface RawProps extends CommonProps {
   appearance: Appearance;
   equip?: EquipCtx;
-  /** Libellé de TENUE (la carrière d'un héros sert de tenue par défaut). */
+  /** Id de garde-robe (tenue OU carrière) — la carrière d'un héros sert de tenue par défaut. */
   career?: string;
   overlays?: RigOverlay[];
   hero?: undefined;
@@ -73,7 +72,7 @@ function CharacterPreviewBase(props: CharacterPreviewProps) {
   );
   const equip = useMemo(() => (hero ? equipFromCombatant(hero) : props.equip ?? EMPTY_EQUIP), [hero, props.equip]);
   const overlays = useMemo(() => (hero ? combatantOverlays(hero) : props.overlays), [hero, props.overlays]);
-  const career = hero ? findCareerById(hero.career)?.label ?? hero.career : props.career;
+  const career = hero ? hero.career : props.career; // id de garde-robe (carrière), jamais un libellé
   // Résolution du rig mémoïsée (rendu en listes de 8-15) : mêmes entrées → même élément, React saute le sous-arbre.
   const sprite = useMemo(
     () => <RigSprite appearance={appearance} equip={equip} pose={pose} career={career} view={view} overlays={overlays} mirror={mirror} />,

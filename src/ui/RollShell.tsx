@@ -45,7 +45,7 @@ const ACTION_CLASS = { primary: 'btn btn-primary', ghost: 'btn btn-ghost', resou
 /** Commandes de barre NEUTRES (≠ verbes de cadence portés par les RANGÉES) présentes dans les
  *  modales : abandon / validation / progression. Toute AUTRE clé d'action doit être un verbe DÉCLARÉ
  *  du flux (`flowKey`) — sinon dérive (#211 : une action re-boulonnée hors du vocabulaire déclaré). */
-const NEUTRAL_ACTION_KEYS = new Set(['cancel', 'confirm', 'apply', 'rollAll', 'next', 'finish', 'all', 'ack', 'break']);
+const NEUTRAL_ACTION_KEYS = new Set(['cancel', 'confirm', 'apply', 'rollAll', 'next', 'finish', 'continue', 'all', 'ack', 'break']);
 
 /** DEV : verrouille la surface d'actions d'une modale de jet à son vocabulaire (verbes du flux +
  *  neutres). Une clé hors-vocabulaire LÈVE — le choke-point relie la barre aux verbes DÉCLARÉS. */

@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { weaponFromTrait, renderWeaponsFromTraits, weaponsFromTraits, armourFromTraits } from './creatureEquip';
+import { describe, it, expect, vi } from 'vitest';
+import { weaponFromTrait, renderWeaponsFromTraits, weaponsFromTraits, armourFromTraits, weaponFromId } from './creatureEquip';
 import type { TraitInstance } from './statEntry';
 
 const t = (o: { id: string; arg?: string; value?: number; range?: number; natural?: boolean }): TraitInstance => o as TraitInstance;
@@ -58,6 +58,25 @@ describe('creatureEquip — dérivation traits → armes (source unique de l’a
     expect(fallback[0].name).toBe('Arme');
     // avec un trait d'arme explicite, pas de repli ajouté
     expect(weaponsFromTraits([t({ id: 'arme', arg: 'Hache', value: 6 })])).toHaveLength(1);
+  });
+});
+
+describe('creatureEquip — weaponFromId (canal d’authoring de scène `weapon` = trappingId)', () => {
+  it('trappingId valide → arme de rendu (nom/forme/type du catalogue)', () => {
+    const w = weaponFromId('arc');
+    expect(w.name).toBe('Arc');
+    expect(w.type).toBe('ranged');
+    expect(w.shape).toBe('arc');
+  });
+  it('mêlée : type déduit du catalogue', () => {
+    expect(weaponFromId('hache-d-armes').type).toBe('melee');
+  });
+  it('trappingId INCONNU → console.warn bruyant (#223) + arme générique', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const w = weaponFromId('Arc'); // un LIBELLÉ n'est pas un id
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Arc'));
+    expect(w.name).toBe('Arc');
+    warn.mockRestore();
   });
 });
 

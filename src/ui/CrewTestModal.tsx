@@ -28,7 +28,9 @@ export function CrewTestModal() {
   const force = useGame((s) => s.crewTestForceSuccess);
   const confirm = useGame((s) => s.crewTestConfirm);
   const cancel = useGame((s) => s.crewTestCancel);
+  const cont = useGame((s) => s.crewTestContinue);
   if (!p) return null;
+  const resolved = p.resolved; // VOYAGE : phase RÉSOLU — dénouement SUR PLACE + « Continuer »
   // En VOYAGE (7b, hors combat), l'équipage = le groupe et la coque vit dans le plan de traversée —
   // le nom voyage sur le pending (`voyage.shipName`) ; en combat, le pool est la bataille.
   const pool = battle?.combatants ?? party;
@@ -60,7 +62,7 @@ export function CrewTestModal() {
       actor,
       row,
       rolled: !!res,
-      interactive: part.interactive && owns(part.id),
+      interactive: !resolved && part.interactive && owns(part.id),
       onRoll: () => roll(part.id),
       rerollable: !!res && canReroll(res.roll > res.target, !!part.rerolled),
       onReroll: () => reroll(part.id),
@@ -73,11 +75,13 @@ export function CrewTestModal() {
     }];
   });
 
-  const actions: RollAction[] = [
-    ...(!p.voyage ? [{ key: 'cancel', label: 'Annuler', kind: 'ghost' as const, onClick: cancel, when: 'always' as const }] : []),
-    ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
-    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'always', disabled: !allRolled },
-  ];
+  const actions: RollAction[] = resolved
+    ? [{ key: 'continue', label: 'Continuer', kind: 'primary', onClick: cont, when: 'always' }]
+    : [
+        ...(!p.voyage ? [{ key: 'cancel', label: 'Annuler', kind: 'ghost' as const, onClick: cancel, when: 'always' as const }] : []),
+        ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
+        { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'always', disabled: !allRolled },
+      ];
 
   return (
     <RollShell
@@ -92,6 +96,9 @@ export function CrewTestModal() {
       rolled={allRolled}
       summary={allRolled
         ? <>DR total <b>{sign(total)}</b> — {total >= 1 ? 'succès' : 'échec'} (l.13).{moraleLoss ? <> Rude épreuve : <b>{moraleLoss}</b> Moral (l.110).</> : null}</>
+        : undefined}
+      postRollExtra={resolved
+        ? <div className="cs-denouement">{resolved.lines.map((l, i) => <p key={i} className="rm-note">{l}</p>)}</div>
         : undefined}
       actions={actions}
       onCancel={p.voyage ? undefined : cancel}

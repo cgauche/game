@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { Characteristics, Combatant, ItemInstance } from './types';
 import { makeRNG, RNG } from './dice';
-import { dailyFoodUpkeep, applyFaimTest, isStarving, hungerCharPenalties, rationCount, isRation, dailyWaterUpkeep, applySoifTest, isThirsty, isDeprived, thirstCharPenalties } from './provisions';
+import { dailyFoodUpkeep, applyFaimTest, isStarving, hungerCharPenalties, rationCount, isRation, dailyWaterUpkeep, applySoifTest, isThirsty, isDeprived, thirstCharPenalties, provisioningManifest } from './provisions';
 import { effectiveChar } from './characteristics';
 import { restRecovery, needsRecoveryRoll } from './rest';
 import { addCondition, stacks } from './conditions';
@@ -228,6 +228,54 @@ describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.420)', () => {
     expect(r1.damage).toBe(0);
     const r2 = applySoifTest(c, false, 3, fixed(95)); // 2ᵉ échec → dégâts
     expect(r2.damage).toBe(7);
+  });
+
+  describe('provisioningManifest — manifeste d\'avitaillement au départ (#241)', () => {
+    it('suffisant : rations et eau couvrent les jours estimés', () => {
+      const party = [hero({ rations: 5 }), hero({ rations: 5 })];
+      const m = provisioningManifest(party, 100, 3);
+      expect(m.joursEstimes).toBe(3);
+      expect(m.rationsDispo).toBe(10);
+      expect(m.rationsRequises).toBe(6); // 2 héros × 3 jours
+      expect(m.eauRequiseLitres).toBe(18); // 2 héros × 3 jours × 3 L (médiane)
+      expect(m.eauDispoLitres).toBe(100);
+      expect(m.suffisant).toBe(true);
+    });
+
+    it('insuffisant en vivres', () => {
+      const party = [hero({ rations: 1 })];
+      const m = provisioningManifest(party, 100, 5);
+      expect(m.rationsDispo).toBe(1);
+      expect(m.rationsRequises).toBe(5);
+      expect(m.suffisant).toBe(false);
+    });
+
+    it('insuffisant en eau seule (vivres suffisants)', () => {
+      const party = [hero({ rations: 10 })];
+      const m = provisioningManifest(party, 5, 5); // besoin 15 L, dispo 5
+      expect(m.eauRequiseLitres).toBe(15);
+      expect(m.suffisant).toBe(false);
+    });
+
+    it('waterLitres absent : ravitaillement réputé assuré, ne bloque pas', () => {
+      const party = [hero({ rations: 10 })];
+      const m = provisioningManifest(party, undefined, 5);
+      expect(m.eauDispoLitres).toBeNull();
+      expect(m.suffisant).toBe(true);
+    });
+
+    it('Brouet : 1 ration couvre 2 jours de voyage', () => {
+      const party = [hero({ rations: 2, brouet: true })];
+      const m = provisioningManifest(party, 100, 4);
+      expect(m.rationsRequises).toBe(2); // ceil(4/2)
+      expect(m.suffisant).toBe(true);
+    });
+
+    it('héros morts exclus du manifeste', () => {
+      const party = [hero({ rations: 0 }), { ...hero({ rations: 0 }), dead: true }];
+      const m = provisioningManifest(party, 100, 3);
+      expect(m.rationsRequises).toBe(3); // un seul héros vivant compté
+    });
   });
 
   it('isDeprived : affamé OU assoiffé bloque la récupération ; assoiffé seul suffit', () => {

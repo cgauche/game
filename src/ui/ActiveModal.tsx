@@ -29,6 +29,7 @@ import { GrappleModal } from './GrappleModal';
 import { HealModal } from './HealModal';
 import { MedicModal } from './MedicModal';
 import { RestModal } from './RestModal';
+import { CouncilModal } from './CouncilModal';
 // CastModal n'est plus monté ici : la situation d'incantation est une étape `jet:'cast'` de la
 // cascade (rendue par `CascadeModal`, qui hôte `CastModal`) — cf. state/modalArbiter (entrée `cast` retirée).
 import { CascadeModal } from './CascadeModal';
@@ -45,7 +46,7 @@ const COMPONENT: Record<ModalKey, () => JSX.Element | null> = {
   fateSave: FateSaveModal, renounce: RenounceModal,
   battement: BattementModal, distraire: DistraireModal, maneuver: ManeuverModal, reveal: RevealModal,
   mountTarget: MountTargetModal, frenzy: FrenzyModal, auContact: AuContactModal, grapple: GrappleModal, approach: ApproachModal, ward: WardModal, run: RunModal, shipManeuver: ShipManeuverModal, shipBattery: ShipBatteryModal, crewTest: CrewTestModal, shanty: ShantyModal, focus: FocusModal, dispel: DispelModal,
-  medic: MedicModal, rest: RestModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, handGate: HandGateModal, stateRecovery: StateRecoveryModal, steamSave: SteamSaveModal,
+  medic: MedicModal, rest: RestModal, council: CouncilModal, heal: HealModal, cascade: CascadeModal, reload: ReloadModal, handGate: HandGateModal, stateRecovery: StateRecoveryModal, steamSave: SteamSaveModal,
   corruption: CorruptionModal, activity: ActivityModal,
 };
 

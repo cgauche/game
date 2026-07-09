@@ -7,7 +7,7 @@ import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
   traits, stars, talents, maneuvers, skills, domains, crewRoles,
-  findSkillById, findTalentById, findTrappingById, findTrappingByLabel, findQualityById, findSpellById, findSeaShantyById,
+  findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
   findCreatureById, findVehicleById,
   specLabel, refLabel, specEntryId, specEntryLabel, SPEC_SOURCES, type SpecsSource,
@@ -473,15 +473,16 @@ describe('appearance.species — id stable (species.json ∪ defs rig), jamais u
 });
 
 // ── SWEEP DE RÉFÉRENCES DE SCÈNE (#223, même walk que la garde species) — chaque `SceneEntity` d'un
-// projet/scénario doit avoir des refs qui RÉSOLVENT au chargement, sinon repli silencieux/bruyant :
+// projet/scénario ne porte que des IDS STABLES (doctrine « labels interdits ») qui RÉSOLVENT au
+// chargement, sinon repli silencieux/bruyant :
 //  - `personnage`.ref → créature ∪ véhicule (coque) ∪ engin de siège (trapping siegeRig), les 3 familles
 //    légitimes du spawn (`spawnEnemy`) ; `undefined` (statbloc/générique) toléré.
-//  - `weapon` (libellé d'authoring) → `findTrappingByLabel` (arme du catalogue).
-//  - `appearance.tenue` (garde-robe authorée) → carrière ∪ classe ∪ tenue (`wardrobeKeyResolves`).
-// `appearance.career` n'existe PAS au schéma `EntityAppearance` (champ mort, ignoré au rendu) : signalé
-// à part (report d'authoring, corrigé par le passage campagne) — pas de garde dure sur de la donnée hors
-// périmètre. Toute violation ci-dessus = `fichier/entité/valeur`.
-describe('refs de scène — ref/weapon/tenue résolvent au catalogue (#223)', () => {
+//  - `weapon` → `trappingId` EXACT du catalogue d'armes (`findTrappingById`).
+//  - `appearance.tenue` → id EXACT de garde-robe (carrière ∪ classe ∪ tenue ∪ 'nu', `wardrobeKeyResolves`).
+//    Le vocabulaire est le MÊME que le résolveur de rendu (`tenueFor` : une carrière SANS tenue dédiée
+//    résout par sa classe) — d'où l'ensemble carrière∪classe∪tenue plutôt que les seules tenues.
+// Toute violation ci-dessus = `fichier/entité/valeur`. DUR partout (projets régénérés par l'auteur en ids).
+describe('refs de scène — ref/weapon/tenue = ids EXACTS du catalogue (#223, labels interdits)', () => {
   const refResolves = (ref: string): boolean =>
     !!findCreatureById(ref) || !!findVehicleById(ref)?.hull || !!findTrappingById(ref)?.siegeRig;
   const ENTITY_KINDS = new Set(['heroStart', 'personnage', 'prop']);
@@ -492,23 +493,20 @@ describe('refs de scène — ref/weapon/tenue résolvent au catalogue (#223)', (
       const who = `${where}(${node.id ?? node.label ?? node.kind})`;
       if (node.kind === 'personnage' && typeof node.ref === 'string' && !refResolves(node.ref))
         out.push(`${who}.ref = ${JSON.stringify(node.ref)} (ni créature ∪ véhicule ∪ engin de siège)`);
-      if (typeof node.weapon === 'string' && !findTrappingByLabel(node.weapon))
-        out.push(`${who}.weapon = ${JSON.stringify(node.weapon)} (hors catalogue d'armes)`);
+      if (typeof node.weapon === 'string' && !findTrappingById(node.weapon))
+        out.push(`${who}.weapon = ${JSON.stringify(node.weapon)} (pas un trappingId du catalogue d'armes)`);
       const app = node.appearance;
       if (isObj(app) && typeof app.tenue === 'string' && !wardrobeKeyResolves(app.tenue))
-        out.push(`${who}.appearance.tenue = ${JSON.stringify(app.tenue)} (ni carrière ∪ classe ∪ tenue)`);
+        out.push(`${who}.appearance.tenue = ${JSON.stringify(app.tenue)} (pas un id carrière ∪ classe ∪ tenue)`);
     }
     for (const [k, v] of Object.entries(node)) sweep(v, `${where}.${k}`, out);
   }
 
-  // Projets de campagne : SWEEP-et-REPORT (bruyant) — la donnée d'authoring de campagne est hors
-  // périmètre moteur (corrigée par le passage campagne). On la parcourt et on HURLE toute violation en
-  // console, sans garde dure (un projet en dette ne bloque pas le tronc ; la dette est visible + listée).
-  it('projets Arène + Loup-et-Saumure : ref/weapon/tenue swept, violations reportées en console', () => {
+  it('projets Arène + Loup-et-Saumure : ref/weapon/tenue = ids exacts (DUR)', () => {
     const bad: string[] = [];
     sweep(areneProject, 'arene-projet.json', bad);
     sweep(loupProject, 'loup-et-saumure-projet.json', bad);
-    for (const v of bad) console.warn(`[sweep #223] ${v}`);
+    expect(bad, bad.join('\n')).toEqual([]);
   });
 
   it('scénarios de test (scene + extraScenes + party) : ref/weapon/tenue de chaque entité résolvent', () => {
@@ -527,8 +525,8 @@ describe('refs de scène — ref/weapon/tenue résolvent au catalogue (#223)', (
 // → `itemFromTrappingById`), JAMAIS matérialisée dans la donnée de scène (qui dériverait du catalogue).
 //  - INVARIANT DUR (toutes scènes) : un poste NEUF (`trappingId` au niveau du poste) NE porte AUCUNE base
 //    copiée (`item`/`damage`/`qualities`/`enc`…) et sa réf RÉSOUT au catalogue.
-//  - REPORT (projets de campagne, précédent #223) : un poste en forme ANCIENNE (`item` complet copié) est une
-//    DETTE de pré-migration — HURLÉE en console (le passage campagne régénère) mais reste HYDRATABLE.
+//  - INVARIANT DUR (projets de campagne, #218) : ZÉRO poste en forme ANCIENNE (`item` complet copié) — les
+//    deux projets sont régénérés par `scripts/campagne/lib.mjs::poste` (forme référence `{ trappingId, … }`).
 describe('postes d’artillerie — réf catalogue hydratée, jamais une base copiée (#222)', () => {
   const BASE_FIELDS = ['item', 'damage', 'qualities', 'enc', 'range', 'reach', 'pa'] as const;
   const walkPostes = (node: unknown, where: string, visit: (poste: Record<string, unknown>, where: string) => void): void => {
@@ -555,17 +553,10 @@ describe('postes d’artillerie — réf catalogue hydratée, jamais une base co
     expect(bad, bad.join('\n')).toEqual([]);
   });
 
-  it('REPORT #223 — postes en forme ANCIENNE (item copié) des projets : dette hurlée, réf HYDRATABLE au spawn', () => {
+  it('INVARIANT DUR (#218) — les projets régénérés ne portent AUCUN poste en forme ANCIENNE (item copié)', () => {
     const stale: string[] = [];
     walkPostes(areneProject, 'arene-projet.json', (p, where) => { if (typeof p.trappingId !== 'string' && isObj(p.item)) stale.push(where); });
     walkPostes(loupProject, 'loup-et-saumure-projet.json', (p, where) => { if (typeof p.trappingId !== 'string' && isObj(p.item)) stale.push(where); });
-    for (const v of stale) console.warn(`[garde #222] ${v} : base copiée (item complet) — migrée par hydratePoste au spawn`);
-    const check = (p: Record<string, unknown>, where: string): void => {
-      if (typeof p.trappingId === 'string' || !isObj(p.item)) return;
-      const nested = (p.item as Record<string, unknown>).trappingId;
-      expect(typeof nested === 'string' && !!itemFromTrappingById(nested), `${where} : réf ancienne « ${String(nested)} » non hydratable`).toBe(true);
-    };
-    walkPostes(areneProject, 'arene-projet.json', check);
-    walkPostes(loupProject, 'loup-et-saumure-projet.json', check);
+    expect(stale, `postes old-format (item copié) restants — régénérer via scripts/campagne/lib.mjs::poste :\n${stale.join('\n')}`).toEqual([]);
   });
 });

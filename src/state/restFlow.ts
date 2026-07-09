@@ -70,8 +70,12 @@ export function placesOfKind(kind: RestKind): RestPlaces {
   return kind === 'auberge' ? { auberge: true, camp: true } : kind === 'maison' ? { maison: true, camp: true } : { camp: true };
 }
 
-/** Entrée du BILAN — modèle de la brique « multi-jets » (réutilisable : fins de Round, etc.). */
+/** Entrée du PROCÈS-VERBAL (bilan multi-jets, réutilisable : bilan de nuit, jour de mer #232…). Une
+ *  ligne = un jet de ROUTINE résolu en lot, rendu par le PV et — pour un jet de HÉROS RATÉ dont la
+ *  conséquence est recalculable — INFLUENÇABLE après coup (Chance/relance, flux `restLedger`). */
 export interface NightEntry {
+  /** id STABLE de la ligne (ancre du flux `restLedger` : relance/+1 DR ciblent CETTE ligne). */
+  id?: string;
   actorId?: string;
   icon?: string;
   label: string;
@@ -80,9 +84,15 @@ export interface NightEntry {
   /** Issue / note en clair (« +7 PB », « jour 4/6 »). */
   text?: string;
   tone?: 'ok' | 'bad' | 'info';
+  /** Type de conséquence RECALCULABLE ligne à ligne (delta pur, sans re-simuler la nuit) → seule une
+   *  ligne ainsi taguée porte l'influence après coup. Absent = ligne LECTURE SEULE (conséquence tissée
+   *  aux autres jours/jets, non réversible proprement : Exposition/Contagion/Faim). */
+  reKind?: 'recovery' | 'nightmare';
+  /** Relance de Chance déjà consommée sur CETTE ligne (LDB 12 l.40 : une relance max par Test). */
+  rerolled?: boolean;
 }
 
-export interface PendingRest {
+export interface PendingRest extends PendingBase {
   places: RestPlaces;
   /** Piètre : ½ prix, nourriture à risque (Courante galopante 10 %) — LDB ch.66. */
   quality: 'normale' | 'pietre';
@@ -105,7 +115,35 @@ export interface PendingRest {
   travelMarch?: string[];
 }
 
+/**
+ * RÉ-RÉSOLUTION d'une ligne de PV (Chance après coup, LDB 17 l.21-27) : le jet `tr` (relance ou +1 DR)
+ * remplace celui de la ligne `entry`, et la CONSÉQUENCE est recalculée EN DELTA (sans re-simuler la
+ * nuit) — recevable pour les seuls jets INDÉPENDANTS (`reKind`) :
+ *  - `recovery` (LDB 18 l.380 volet a) : seul le soin de DR+BE est graduel ; le +BE inconditionnel
+ *    (volet b) et la dissipation d'Exténué du sommeil ne dépendent PAS du jet → le delta = variation
+ *    du volet a seul ;
+ *  - `nightmare` (LDB 21 l.92) : échec → +1 Exténué ; la relance ajuste d'un cran l'Exténué.
+ * Mute `hero`, renvoie le patch de la ligne (`d`/`text`/`tone`). `null` = ligne non ré-résolvable.
+ */
+export function applyLedgerReresolve(hero: Combatant, entry: NightEntry, tr: import('../engine/tests').TestResult): Partial<NightEntry> | null {
+  const d = entry.d;
+  if (!d || !entry.reKind) return null;
+  const nd: RollBreakdown = { ...d, roll: tr.roll, success: tr.success, sl: tr.sl };
+  if (entry.reKind === 'recovery') {
+    const be = bonus(effectiveChar(hero, 'E'));
+    const heal = (r: { success: boolean; sl: number }) => (r.success ? Math.max(0, r.sl) + be : 0); // volet a (LDB 18 l.380)
+    const delta = heal(tr) - heal(d);
+    if (delta !== 0) hero.wounds.current = Math.max(0, Math.min(hero.wounds.max, hero.wounds.current + delta));
+    return { d: nd, text: delta > 0 ? `+${delta} PB (relance de Chance)` : tr.success ? 'récupération' : 'aucune récupération cette nuit', tone: tr.success ? 'ok' : 'bad' };
+  }
+  // nightmare : l'échec avait ajouté 1 Exténué (LDB 21 l.92) — la relance l'ajuste d'un cran.
+  if (!d.success && tr.success) removeCondition(hero, 'extenue', 1);
+  else if (d.success && !tr.success) addCondition(hero, 'extenue');
+  return { d: nd, text: tr.success ? 'sommeil sans rêve (relance de Chance)' : 'cauchemars → Exténué', tone: tr.success ? 'ok' : 'bad' };
+}
+
 import type { Get, Set } from './flowTypes';
+import type { PendingBase } from './rollFlowFactory';
 
 /**
  * LE moteur de nuit (sans modale) : avance l'horloge à l'aube (× days), entretien #T3, récupération
@@ -151,15 +189,17 @@ export function sleepParty(
     if (h.dead) continue;
     const rolls: RestRoll[] = [];
     const log = restRecovery(h, rng, n, rolls);
-    for (const r of rolls) {
+    rolls.forEach((r, ri) => {
       entries.push({
+        id: `${h.id}-${r.kind}-${ri}`,
         actorId: h.id,
         icon: r.kind === 'recovery' ? 'rest/bed' : 'creature/scream',
         label: r.kind === 'recovery' ? 'Récupération' : 'Cauchemars (Calme)',
         d: { label: r.kind === 'recovery' ? 'Résistance' : 'Calme', base: r.base, modifier: r.target - r.base, target: r.target, roll: r.roll, success: r.success, sl: r.sl },
         tone: r.success ? 'ok' : 'bad',
+        reKind: r.kind,
       });
-    }
+    });
     for (const line of log) entries.push({ actorId: h.id, icon: 'rest/bed', label: 'Nuit', text: line.replace(`${h.name} `, ''), tone: 'info' });
     journal.push(...log);
   }

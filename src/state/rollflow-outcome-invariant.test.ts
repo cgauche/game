@@ -139,6 +139,13 @@ const FIXTURES: Record<string, Fix> = {
     battle: arena(),
     pendingForceDoor: { label: 'Porte', doorBE: 2, doorB: 6, doorBmax: 6, participants: [{ id: 'A', result: { roll: win ? 8 : 95, target: 40, sl: win ? 3 : -5, damage: win ? 4 : 0 } }] },
   }) },
+  // PV de repos : une ligne de récupération de HÉROS ratée est relançable (Chance) ; réussie = no-op.
+  restLedger: { pid: 'rec-A', make: (win) => ({
+    battle: null, party: [hero(), foe()],
+    pendingRest: { places: { camp: true }, quality: 'normale', days: 3, perHero: {}, phase: 'bilan',
+      results: [{ id: 'rec-A', actorId: 'A', label: 'Récupération', reKind: 'recovery',
+        d: { label: 'Résistance', base: 55, modifier: 0, target: 55, roll: win ? 8 : 95, success: win, sl: win ? 3 : -5 } }] },
+  }) },
 };
 
 /** Flux NON couverts par une fixture minimale — justifiés (leur `outcome` est trivial + partagé). */

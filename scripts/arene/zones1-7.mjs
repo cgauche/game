@@ -1,6 +1,6 @@
 /** Zones 1-7 de l'échelle — refaites en GRAND (24×16 → 32×24), layouts structurés, fouilles,
  *  rencontres enrichies. Ids/flags conservés (`arene-zoneN`, `zoneN_clear`). */
-import { scene, P, hero, resetIds, fouille, fightTrigger, zoneVictory, NUEE_DE_RATS, flowOf, testNode } from './lib.mjs';
+import { scene, P, hero, resetIds, fouille, fightTrigger, zoneVictory, NUEE_DE_RATS, flowOf, testNode } from '../campagne/lib.mjs';
 
 // ── Zone 1 — La Cour (24×16, sable) : échauffement, tutoriel du couvert ────────────────────
 
@@ -56,12 +56,12 @@ export function makeZone1() {
       {
         id: 'enc-zone1',
         enemies: [
-          { ref: 'Snotling', pos: { x: 13, y: 4 } },
-          { ref: 'Snotling', pos: { x: 15, y: 11 } },
-          { ref: 'Snotling', pos: { x: 18, y: 5 } },
-          { ref: 'Gobelin', pos: { x: 16, y: 3 } },
-          { ref: 'Gobelin', pos: { x: 19, y: 12 }, randomChars: true },
-          { ref: 'Rat géant', pos: { x: 12, y: 12 } },
+          { ref: 'snotling', pos: { x: 13, y: 4 } },
+          { ref: 'snotling', pos: { x: 15, y: 11 } },
+          { ref: 'snotling', pos: { x: 18, y: 5 } },
+          { ref: 'gobelin', pos: { x: 16, y: 3 } },
+          { ref: 'gobelin', pos: { x: 19, y: 12 }, randomChars: true },
+          { ref: 'rat-geant', pos: { x: 12, y: 12 } },
         ],
         onVictory: zoneVictory(1, { money: { silver: 8 }, xp: 100, journal: 'La Cour : vaincue ! Retournez voir le maître d’arène.' }),
       },
@@ -144,11 +144,11 @@ export function makeZone2() {
       {
         id: 'enc-zone2',
         enemies: [
-          { ref: 'Gobelin', pos: { x: 8, y: 10 }, randomChars: true },
-          { ref: 'Gobelin', pos: { x: 13, y: 9 }, randomChars: true },
-          { ref: 'Gobelin', pos: { x: 6, y: 4 } },
-          { ref: 'Gobelin', pos: { x: 15, y: 14 } },
-          { ref: 'Orc', pos: { x: 12, y: 5 } },
+          { ref: 'gobelin', pos: { x: 8, y: 10 }, randomChars: true },
+          { ref: 'gobelin', pos: { x: 13, y: 9 }, randomChars: true },
+          { ref: 'gobelin', pos: { x: 6, y: 4 } },
+          { ref: 'gobelin', pos: { x: 15, y: 14 } },
+          { ref: 'orc', pos: { x: 12, y: 5 } },
         ],
         onVictory: zoneVictory(2, { money: { silver: 12 }, xp: 120, journal: 'Les Ruines : nettoyées ! (La salle au trésor, au nord-est, n’a pas dit son dernier mot.)' }),
       },
@@ -157,9 +157,9 @@ export function makeZone2() {
         id: 'enc-ruines-tresor',
         surprise: 'enemies',
         enemies: [
-          { ref: 'Orc', pos: { x: 22, y: 4 }, optionals: ['Insensible à la douleur'] },
-          { ref: 'Gobelin', pos: { x: 20, y: 3 } },
-          { ref: 'Gobelin', pos: { x: 24, y: 6 } },
+          { ref: 'orc', pos: { x: 22, y: 4 }, optionals: ['Insensible à la douleur'] },
+          { ref: 'gobelin', pos: { x: 20, y: 3 } },
+          { ref: 'gobelin', pos: { x: 24, y: 6 } },
         ],
         onVictory: flowOf([
           { type: 'giveXp', amount: 50 },
@@ -226,7 +226,7 @@ export function makeZone3() {
         rect: { x: 1, y: 7, w: 28, h: 1 },
         once: true,
         flow: testNode(
-          { skill: 'Résistance', difficulty: 'facile', label: 'Miasmes des égouts' },
+          { skill: 'resistance', difficulty: 'facile', label: 'Miasmes des égouts' },
           [{ type: 'journal', text: 'L’air est irrespirable, mais vous gardez vos tripes — et votre santé.' }],
           [
             { type: 'inflictDisease', disease: 'Fièvre du Rongeur' },
@@ -240,12 +240,12 @@ export function makeZone3() {
       {
         id: 'enc-zone3',
         enemies: [
-          { ref: 'Rat géant', pos: { x: 10, y: 4 } },
-          { ref: 'Rat géant', pos: { x: 24, y: 3 } },
+          { ref: 'rat-geant', pos: { x: 10, y: 4 } },
+          { ref: 'rat-geant', pos: { x: 24, y: 3 } },
           { statblock: NUEE_DE_RATS, pos: { x: 8, y: 6 } },
           { statblock: NUEE_DE_RATS, pos: { x: 22, y: 5 } },
-          { ref: 'Snotling', pos: { x: 15, y: 3 } },
-          { ref: 'Snotling', pos: { x: 18, y: 6 } },
+          { ref: 'snotling', pos: { x: 15, y: 3 } },
+          { ref: 'snotling', pos: { x: 18, y: 6 } },
         ],
         onVictory: zoneVictory(3, { money: { silver: 16 }, xp: 140, journal: 'Les Égouts : purgés ! Remontez respirer au Bourg.' }),
       },
@@ -305,7 +305,7 @@ export function makeZone4() {
       P(9, 15, 'cadavre', {
         label: 'Fossoyeur mort',
         ...fouille(testNode(
-          { skill: 'Résistance', difficulty: 'intermediaire', label: 'Fouiller les morts du charnier' },
+          { skill: 'resistance', difficulty: 'intermediaire', label: 'Fouiller les morts du charnier' },
           [
             { type: 'giveMoney', silver: 18 },
             { type: 'journal', text: 'Le fossoyeur serrait encore sa bourse : 18 pa, et rien d’attrapé.' },
@@ -341,13 +341,13 @@ export function makeZone4() {
         id: 'enc-zone4',
         surprise: 'party',
         enemies: [
-          { ref: 'Squelette', pos: { x: 8, y: 3 } },
-          { ref: 'Squelette', pos: { x: 16, y: 7 } },
-          { ref: 'Squelette', pos: { x: 22, y: 3 }, optionals: ['Territorial'] },
-          { ref: 'Zombie', pos: { x: 10, y: 8 } },
-          { ref: 'Zombie', pos: { x: 14, y: 3 } },
-          { ref: 'Zombie', pos: { x: 20, y: 8 } },
-          { ref: 'Goule de crypte', pos: { x: 12, y: 6 } },
+          { ref: 'squelette', pos: { x: 8, y: 3 } },
+          { ref: 'squelette', pos: { x: 16, y: 7 } },
+          { ref: 'squelette', pos: { x: 22, y: 3 }, optionals: ['Territorial'] },
+          { ref: 'zombie', pos: { x: 10, y: 8 } },
+          { ref: 'zombie', pos: { x: 14, y: 3 } },
+          { ref: 'zombie', pos: { x: 20, y: 8 } },
+          { ref: 'goule-de-crypte', pos: { x: 12, y: 6 } },
         ],
         onVictory: zoneVictory(4, {
           money: { gold: 1 },
@@ -417,15 +417,15 @@ export function makeZone5() {
         id: 'enc-zone5',
         enemies: [
           // 0 : destrier LIBRE côté héros — enfourchable (vitrine du combat monté).
-          { ref: 'Cheval', pos: { x: 6, y: 11 }, mount: true, side: 'ally' },
+          { ref: 'cheval', pos: { x: 6, y: 11 }, mount: true, side: 'ally' },
           // 1-2 : le champion mutant, pré-monté.
-          { ref: 'Cheval', pos: { x: 22, y: 4 }, mount: true },
-          { ref: 'Mutant', pos: { x: 22, y: 4 }, rides: 1 },
+          { ref: 'cheval', pos: { x: 22, y: 4 }, mount: true },
+          { ref: 'mutant', pos: { x: 22, y: 4 }, rides: 1 },
           // 3-4 : lancier gobelin, pré-monté.
-          { ref: 'Cheval', pos: { x: 26, y: 10 }, mount: true },
-          { ref: 'Gobelin', pos: { x: 26, y: 10 }, rides: 3 },
+          { ref: 'cheval', pos: { x: 26, y: 10 }, mount: true },
+          { ref: 'gobelin', pos: { x: 26, y: 10 }, rides: 3 },
           // 5 : piquier à pied derrière la barrière.
-          { ref: 'Gobelin', pos: { x: 18, y: 6 } },
+          { ref: 'gobelin', pos: { x: 18, y: 6 } },
         ],
         onVictory: zoneVictory(5, { money: { gold: 1, silver: 10 }, xp: 180, journal: 'Les Lices : remportées sous la pluie ! Le Bourg parle déjà de votre charge.' }),
       },
@@ -512,13 +512,13 @@ export function makeZone6() {
         id: 'enc-zone6',
         surprise: 'party',
         enemies: [
-          { ref: 'Gor', pos: { x: 14, y: 6 } },
-          { ref: 'Gor', pos: { x: 20, y: 16 }, optionals: ['Armure 2'] },
-          { ref: 'Ungor', pos: { x: 17, y: 7 } },
-          { ref: 'Ungor', pos: { x: 22, y: 10 } },
-          { ref: 'Loup funeste', pos: { x: 10, y: 14 } },
-          { ref: 'Loup funeste', pos: { x: 25, y: 5 } },
-          { ref: 'Fimir', pos: { x: 18, y: 12 } },
+          { ref: 'gor', pos: { x: 14, y: 6 } },
+          { ref: 'gor', pos: { x: 20, y: 16 }, optionals: ['Armure 2'] },
+          { ref: 'ungor', pos: { x: 17, y: 7 } },
+          { ref: 'ungor', pos: { x: 22, y: 10 } },
+          { ref: 'loup-funeste', pos: { x: 10, y: 14 } },
+          { ref: 'loup-funeste', pos: { x: 25, y: 5 } },
+          { ref: 'fimir', pos: { x: 18, y: 12 } },
         ],
         onVictory: zoneVictory(6, { money: { gold: 2 }, xp: 200, journal: 'Le Marais : la harde est brisée — et son Fimir avec. Le brouillard se lève enfin.' }),
       },
@@ -570,7 +570,7 @@ export function makeZone7() {
       P(6, 5, 'cocon', {
         label: 'Cocon frémissant',
         ...fouille(testNode(
-          { skill: 'Athlétisme', difficulty: 'intermediaire', label: 'Éventrer le cocon sans s’y prendre' },
+          { skill: 'athletisme', difficulty: 'intermediaire', label: 'Éventrer le cocon sans s’y prendre' },
           [
             { type: 'giveTrapping', trapping: 'Potion de guérison' },
             { type: 'journal', text: 'Dans la soie : la besace d’une victime, potion intacte.' },
@@ -615,13 +615,13 @@ export function makeZone7() {
       {
         id: 'enc-zone7',
         enemies: [
-          { ref: 'Araignée géante', pos: { x: 12, y: 6 } },
-          { ref: 'Araignée géante', pos: { x: 18, y: 14 } },
-          { ref: 'Araignée géante', pos: { x: 8, y: 12 }, optionals: ['Armure 1'] },
-          { ref: 'Serpent', pos: { x: 20, y: 6 } },
-          { ref: 'Serpent', pos: { x: 14, y: 16 } },
-          { ref: 'Basilic', pos: { x: 22, y: 18 } },
-          { ref: 'Vouivre', pos: { x: 24, y: 5 } }, // empreinte 3×3 : (24,4) chevaucherait les « Chapeaux moirés » (26,4), désormais bloquants
+          { ref: 'araignee-geante', pos: { x: 12, y: 6 } },
+          { ref: 'araignee-geante', pos: { x: 18, y: 14 } },
+          { ref: 'araignee-geante', pos: { x: 8, y: 12 }, optionals: ['Armure 1'] },
+          { ref: 'serpent', pos: { x: 20, y: 6 } },
+          { ref: 'serpent', pos: { x: 14, y: 16 } },
+          { ref: 'basilic', pos: { x: 22, y: 18 } },
+          { ref: 'vouivre', pos: { x: 24, y: 5 } }, // empreinte 3×3 : (24,4) chevaucherait les « Chapeaux moirés » (26,4), désormais bloquants
         ],
         onVictory: zoneVictory(7, { money: { gold: 2, silver: 10 }, xp: 220, journal: 'Le Nid : brûlé ! La vouivre ne sifflera plus sous l’arène.' }),
       },

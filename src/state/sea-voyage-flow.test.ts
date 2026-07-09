@@ -83,6 +83,7 @@ describe('journée en mer — Tests d’équipage de VOYAGE en modales (#65)', (
       kinds.push(p.voyage!.kind);
       for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
       get().crewTestConfirm();
+      if (get().pendingCrewTest?.resolved) get().crewTestContinue(); // dénouement SUR PLACE → « Continuer » relance la boucle
     }
     expect(kinds).toContain('progression'); // Test quotidien de Progression (MDG 14 l.61, ch.15 l.78)
     expect(kinds).toContain('orientation'); // « un Test par jour de voyage » (MDG ch.13 l.311)
@@ -91,6 +92,40 @@ describe('journée en mer — Tests d’équipage de VOYAGE en modales (#65)', (
     // La journée de mer s'arrête au CRÉPUSCULE (18:00) : la nuit de sommeil (halte) enjambe minuit —
     // un seul franchissement de jour par cycle jour+nuit (l'entretien s'y résout, après le repas).
     expect(get().gameTime).toBe(18 * 60); // départ 08:00 jour 0 → crépuscule du même jour
+  });
+});
+
+describe('Résultat SUR PLACE d’un Test d’équipage de VOYAGE (le jet s’affiche là où il a eu lieu)', () => {
+  beforeEach(freshState);
+
+  it('« Appliquer » ne fait PAS avancer le voyage : la MÊME modale passe en phase RÉSOLU (dénouement) ; « Continuer » SEUL relance la boucle', () => {
+    get().startTravel('r1', 'mer');
+    const p = get().pendingCrewTest;
+    expect(p?.voyage).toBeTruthy();
+    for (const part of p!.participants) if (!part.result) get().crewTestRoll(part.id);
+    const dayBefore = get().travelPlan!.sea!.daysAtSea;
+
+    get().crewTestConfirm();
+    // La modale reste ouverte, en phase RÉSOLU, avec son dénouement — le voyage n'a PAS avancé.
+    const resolved = get().pendingCrewTest;
+    expect(resolved?.resolved?.lines.length).toBeGreaterThan(0); // la conséquence (milles, cap, Moral…) est SUR PLACE
+    expect(get().pendingRest).toBeNull();
+    expect(get().travelPlan!.sea!.daysAtSea).toBe(dayBefore); // aucune journée franchie tant qu'on n'a pas continué
+
+    // « Continuer » relance la boucle : un nouveau Test s'ouvre (ou la nuit tombe), jamais un re-« Appliquer ».
+    get().crewTestContinue();
+    expect(get().pendingCrewTest?.resolved).toBeFalsy();
+    expect(get().pendingCrewTest || get().pendingRest || get().pendingSeaActivities).toBeTruthy();
+  });
+
+  it('« Appliquer » deux fois (double-clic) est idempotent : la phase RÉSOLU ignore un second Appliquer', () => {
+    get().startTravel('r1', 'mer');
+    const p = get().pendingCrewTest!;
+    for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
+    get().crewTestConfirm();
+    const linesAfterFirst = [...get().pendingCrewTest!.resolved!.lines];
+    get().crewTestConfirm(); // no-op en phase RÉSOLU (garde `p.resolved`)
+    expect(get().pendingCrewTest!.resolved!.lines).toEqual(linesAfterFirst);
   });
 });
 
@@ -105,6 +140,7 @@ describe('Carte marine (MDG 15) — Orientation & Planque (#147)', () => {
       if (p.voyage?.kind === 'orientation') extra = p.extraDR;
       for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
       get().crewTestConfirm();
+      if (get().pendingCrewTest?.resolved) get().crewTestContinue(); // dénouement SUR PLACE → « Continuer » relance la boucle
     }
     return extra;
   }
@@ -195,6 +231,7 @@ describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG ch.13 l.
       if (p.voyage?.kind === 'progression') progression = p;
       for (const part of p.participants) if (!part.result) useGame.getState().crewTestRoll(part.id);
       useGame.getState().crewTestConfirm();
+      if (useGame.getState().pendingCrewTest?.resolved) useGame.getState().crewTestContinue();
     }
     expect(phare).toBeTruthy(); // la modale du phare a bien été atteinte (port à phare, km 1 → dans la portée dès le jour 1)
     // Le sens est posé pour TOUT le Test (kind 'phare' = Perception visuelle), pas juste pour la Vigie —
@@ -359,6 +396,145 @@ describe('Embuscade maritime AUTHORÉE à ancrage déterministe — #212', () =>
     expect(get().travelPlan?.sea?.ambushFired).toBeFalsy();
     expect(get().pendingCrewTest?.voyage?.kind).not.toBe('embuscade');
     expect(get().battle).toBeNull();
+  });
+});
+
+describe('Périls d’AUTEUR lus au fil des jours en mer — C.22 (route.perils)', () => {
+  beforeEach(freshState);
+
+  it('un `route.perils` à 100 % se déclenche CHAQUE jour de mer (patron terrestre), en plus de l’ambush ANCRÉE', () => {
+    const perilMap: WorldMap = {
+      ...seaMap,
+      routes: [{ ...seaMap.routes[0], perils: [{ label: 'Récif affleurant', chancePct: 100, effects: [{ type: 'journal', text: 'La coque frôle un récif.' }] }] }],
+    };
+    set({ worldMap: perilMap } as never);
+    get().startTravel('r1', 'mer');
+    // On déroule la 1ʳᵉ journée jusqu’à la halte : le péril d’auteur DOIT avoir été lu (journal).
+    for (let i = 0; i < 30 && !get().pendingRest; i++) {
+      const p = get().pendingCrewTest;
+      if (!p) break;
+      for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
+      get().crewTestConfirm();
+      if (get().pendingCrewTest?.resolved) get().crewTestContinue();
+    }
+    expect(get().journal.some((l) => l.includes('Péripétie : Récif affleurant'))).toBe(true);
+  });
+
+  it('un péril d’auteur `startCombat` INTERROMPT la traversée (comme l’embuscade)', () => {
+    const krakenScene = emptyScene(10, 10); krakenScene.id = 'port-a'; krakenScene.nom = 'Mer';
+    const enc = buildEncounter({ id: 'enc-kraken', enemies: [{ statblock: { name: 'Kraken', char: { CC: 30, F: 30, E: 30, I: 30, Ag: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+    krakenScene.entities.push(...enc.entities); krakenScene.encounters = [enc.encounter];
+    const combatPeril: WorldMap = {
+      ...seaMap,
+      routes: [{ ...seaMap.routes[0], perils: [{ label: 'Kraken', chancePct: 100, effects: [{ type: 'startCombat', encounter: 'enc-kraken' }] }] }],
+    };
+    set({ scene: krakenScene as never, worldMap: combatPeril } as never);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', combatPeril.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, step: 'perils' } } } as never);
+    runSeaDays(get, set);
+    expect(get().travelPlan!.interrupted).toBe(true); // la traversée s’arrête sur le combat d’auteur
+    expect(get().battle).toBeTruthy();
+    expect(get().journal.some((l) => l.includes('Péripétie : Kraken'))).toBe(true);
+  });
+});
+
+describe('Traversée RAPIDE — un seul Test de Rude épreuve (MDG 15 l.21-37, C.16)', () => {
+  beforeEach(freshState);
+
+  function driveFast(): void {
+    const p = get().pendingCrewTest;
+    expect(p?.voyage?.kind).toBe('voyage-rapide'); // l’UNIQUE Test canonique (modale existante)
+    for (const part of p!.participants) if (!part.result) get().crewTestRoll(part.id);
+    get().crewTestConfirm();
+    expect(get().pendingCrewTest?.resolved).toBeTruthy(); // le palier s’affiche SUR PLACE
+    get().crewTestContinue(); // « Continuer » finalise (jours écoulés + accostage)
+  }
+
+  it('appareille en UN Test, franchit les jours et accoste (pendingShoreLeave) sans dérouler la boucle jour par jour', () => {
+    set({ vessel: { ...get().vessel!, waterLitres: 1000 } });
+    const t0 = get().gameTime;
+    get().startTravel('r1', 'mer', { fast: true });
+    driveFast();
+    expect(get().travelPlan).toBeNull(); // arrivée
+    expect(get().pendingShoreLeave).toBeTruthy(); // événement de port (port B a un profil)
+    expect(get().vessel!.lastVoyageMilles).toBe(550);
+    // 550 milles / (18×5) = ~7 jours → l’horloge a franchi ~7 jours (couture unique advanceTime).
+    expect(get().gameTime - t0).toBe(7 * 24 * 60);
+    expect(get().vessel!.waterLitres).toBeLessThan(1000); // eau des tonneaux consommée (comme le détaillé)
+  });
+
+  it('palier DÉSASTREUX (Humeur de Manann effondrée) : équipage manquant, cargaison perdue, coque meurtrie, 3 Critiques', () => {
+    set({ vessel: {
+      ...get().vessel!, manann: { score: -1000, applied: [] }, // dizaine −100 → résultat ≤ 0 quel que soit le d10/DR
+      wounds: { current: 50, max: 50 }, cargo: [{ cargoId: 'bois', enc: 100, basePriceGold: 1 }], criticals: [],
+    } });
+    get().startTravel('r1', 'mer', { fast: true });
+    driveFast();
+    const v = get().vessel!;
+    expect(v.crewLost).toBe(8); // 50 % de 15 PNJ (round 7,5) — couture partagée applyVesselCrewLoss
+    expect(v.cargo![0].enc).toBe(25); // −75 % (floor 100×0,25)
+    expect(v.wounds!.current).toBe(12); // 50 − round(50×0,75)=38
+    expect(v.criticals!.length).toBe(3); // 3 Coups Critiques (l.33)
+  });
+
+  it('palier PARFAIT (Humeur de Manann au zénith) : aucune conséquence négative', () => {
+    set({ vessel: {
+      ...get().vessel!, manann: { score: 1000, applied: [] }, // dizaine +100 → résultat ≥ 10 → Voyage parfait
+      wounds: { current: 50, max: 50 }, cargo: [{ cargoId: 'bois', enc: 100, basePriceGold: 1 }], criticals: [],
+    } });
+    get().startTravel('r1', 'mer', { fast: true });
+    driveFast();
+    const v = get().vessel!;
+    expect(v.crewLost ?? 0).toBe(0);
+    expect(v.cargo![0].enc).toBe(100);
+    expect(v.wounds!.current).toBe(50);
+    expect(v.criticals!.length).toBe(0);
+  });
+});
+
+describe('Traversée rapide × embuscade ANCRÉE (#212) : interruption puis reprise en rapide', () => {
+  const abordageMap: WorldMap = {
+    id: 'm', nom: 'Mer des Griffes',
+    places: [
+      { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
+      { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
+    ],
+    routes: [{ id: 'r1', a: 'A', b: 'B', km: 550, modes: ['mer'], sea: true, seaHeading: 'est', ambush: { scene: 'ls-abordage', encounter: 'enc-abordage', at: 0.5 } }],
+  };
+  function portScene(id: string, nom: string): Scene { const s = emptyScene(2, 2); s.id = id; s.nom = nom; return s; }
+  function abordageScene(): Scene {
+    const s = emptyScene(10, 10); s.id = 'ls-abordage'; s.nom = 'Abordage';
+    const enc = buildEncounter({ id: 'enc-abordage', enemies: [{ statblock: { name: 'Écumeur', char: { CC: 30, F: 30, E: 30, I: 30, Ag: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+    s.entities.push(...enc.entities); s.encounters = [enc.encounter];
+    return s;
+  }
+  beforeEach(() => {
+    seedBattleRng(1);
+    useGame.setState({
+      party: makePregens().slice(0, 3), battle: null, travelPlan: null, travelRecap: null,
+      pendingCrewTest: null, pendingRest: null, gameTime: 8 * 60, lastUpkeepDay: 0,
+      vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } }, journal: [],
+    } as never);
+    useGame.getState().loadProject([portScene('port-a', 'Port A'), portScene('port-b', 'Port B'), abordageScene()], 'port-a', abordageMap);
+    useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } } } as never);
+  });
+
+  it('l’abordage ancré INTERROMPT le voyage rapide ; après le combat, la traversée se finit en rapide', () => {
+    get().startTravel('r1', 'mer', { fast: true });
+    const p = get().pendingCrewTest!;
+    for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
+    get().crewTestConfirm();
+    get().crewTestContinue(); // finalize → embuscade ancrée
+    expect(get().battle).toBeTruthy(); // abordage ouvert par la couture partagée (#212)
+    expect(get().scene!.id).toBe('ls-abordage');
+    expect(get().travelPlan!.sea!.ambushFired).toBe(true);
+    expect(get().travelPlan!.interrupted).toBe(true);
+    expect(get().travelPlan!.sea!.fast!.pendingFinalize).toBe(true); // le palier reste à appliquer
+    // Combat gagné → reprise : la traversée s’achève en rapide (arrivée), sans rejouer l’embuscade.
+    set({ battle: null });
+    get().resumeTravel();
+    expect(get().travelPlan).toBeNull(); // accosté
+    expect(get().pendingShoreLeave).toBeTruthy();
   });
 });
 

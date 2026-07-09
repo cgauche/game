@@ -590,6 +590,15 @@
 .rest-travel-lines { margin: 0 0 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }
 .rest-travel-lines li { margin: 2px 0; }
 
+/* ── Conseil de bord (paie hebdomadaire + Moral, #229) ── */
+.council-modal .rm-loc-grid { grid-template-columns: 1fr; gap: 6px; }
+.council-modal .rm-loc-grid button { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 4px 10px; text-align: left; }
+.council-opt-label { font-weight: 600; }
+.council-opt-cost { text-align: right; }
+.council-opt-effect { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+.council-result { margin: 10px 0 0; text-align: center; font-size: 13px; }
+.council-result.danger { color: var(--danger-soft); }
+
 /* ── Brique MULTI-JETS (bilan de nuit, cascades globalisées) ── */
 .mrl { display: flex; flex-direction: column; gap: 6px; max-height: min(46vh, 420px); overflow-y: auto; }
 .mrl-row { display: flex; gap: 8px; align-items: flex-start; }

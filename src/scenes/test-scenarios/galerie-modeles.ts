@@ -64,14 +64,14 @@ newSection();
 
 // 2) Toutes les carrières — rig humain + vêtements de la carrière (Moyenne, 1×1).
 for (const c of careers) {
-  place({ id: `car-${n++}`, kind: 'personnage', ref: 'humain', label: `Carrière — ${c.label}`, appearance: { tenue: c.label }, weapon: 'Épée bâtarde' }, 1);
+  place({ id: `car-${n++}`, kind: 'personnage', ref: 'humain', label: `Carrière — ${c.label}`, appearance: { tenue: c.id }, weapon: 'epee-batarde' }, 1);
 }
 newSection();
 
 // 3) Toutes les armes — rig humain tenant chaque arme (mêlée + distance).
 const weapons = trappings.filter((t) => t.type === 'melee' || t.type === 'ranged');
 for (const w of weapons) {
-  place({ id: `wp-${n++}`, kind: 'personnage', ref: 'humain', label: `Arme — ${w.label}`, weapon: w.label }, 1);
+  place({ id: `wp-${n++}`, kind: 'personnage', ref: 'humain', label: `Arme — ${w.label}`, weapon: w.id }, 1);
 }
 newSection();
 

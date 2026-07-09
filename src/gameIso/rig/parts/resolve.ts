@@ -5,7 +5,6 @@ import { cosmeticPart } from './cosmetic';
 import { genericPart } from './generic';
 import { tenueFor } from './career';
 import { TENUE_BAREFOOT } from './tenues';
-import { slugId } from '../../../data/slug';
 import { armourPart, weaponPart, shieldPart, isShield, type EquipCtx } from './equipment';
 
 const BODY_SLOTS: Slot[] = ['tete', 'bras', 'torse', 'jambes'];
@@ -112,17 +111,17 @@ const CLAWFOOT: PartArt = {
 export function resolveParts(
   species: string,
   sex: 'M' | 'F',
-  tenueLabel: string | undefined,
+  tenueKey: string | undefined,
   equip: EquipCtx,
   overrides: Partial<Record<Slot, number>>,
   seed: number,
   view: View = 'front',
 ): Record<Slot, Part | null> {
-  const tenue = tenueFor(tenueLabel);
+  const tenue = tenueFor(tenueKey);
   // Corps non chaussé (flag bareFoot du def : 'Nu', squelette décharné, tenues de MONSTRE) — pieds
   // griffus et substitutions dos/profil en chair plutôt qu'en botte/tissu. SOURCE UNIQUE : le flag
-  // du def, plus de hardcode par id. Clé par ID (slugId absorbe un libellé).
-  const tenueId = slugId(tenueLabel ?? '');
+  // du def, clé par ID stable de garde-robe.
+  const tenueId = tenueKey ?? '';
   const bareFoot = TENUE_BAREFOOT.has(tenueId);
   const out = {} as Record<Slot, Part | null>;
   const P = (art: PartArt | null | undefined): Part => ({ svg: pickView(art, view) });

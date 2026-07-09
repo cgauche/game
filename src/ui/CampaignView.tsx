@@ -36,6 +36,7 @@ import { CoopMenuSection, GmSoloToggle } from './CoopPanels';
 import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
 import { PortView } from './PortView';
+import { ShipDossier } from './ShipDossier';
 import { LandMarketView } from './LandMarketView';
 import { SeaActivitiesModal } from './SeaActivitiesModal';
 import { ManannPriestModal } from './ManannPriestModal';
@@ -105,6 +106,7 @@ export function CampaignView() {
   const [saveOpen, setSaveOpen] = useState(false); // modale Sauvegarder/Charger (Jalon 5)
   const [rulesOpen, setRulesOpen] = useState(false); // panneau « Règles maison » (dont Cadence de combat)
   const [optionsOpen, setOptionsOpen] = useState(false); // écran Options (remap clavier)
+  const [dossierOpen, setDossierOpen] = useState(false); // dossier du navire persistant (#227, EN et HORS combat)
   const [sessionOpen, setSessionOpen] = useState(false); // écran de fin de séance (Ambitions/Détermination)
   const inspected = inspectEnabled && inspectId ? battle?.combatants.find((c) => c.id === inspectId) ?? null : null;
   // Dock : version « vivante » des héros en combat (PB/effets à jour), sinon la party.
@@ -209,6 +211,18 @@ export function CampaignView() {
         {/* Barre d'actions de lieu : carte / port / marché / repos — rangée qui s'auto-empile
             (aucune se recouvre, quel que soit le sous-ensemble affiché). */}
         <div className="worldmap-actions">
+        {/* Dossier du navire (#227) : écran PERSISTANT du navire de campagne, visible dès que
+            `vessel` existe — EN et HORS combat (source unique ; en combat il montre le même dossier). */}
+        {vessel && (
+          <button
+            type="button"
+            className="worldmap-btn"
+            onClick={() => setDossierOpen(true)}
+            title="Dossier du navire — état, cargaison, équipage"
+          >
+            <Icon id="travel/sail-ship" size="lg" />
+          </button>
+        )}
         {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
             qu'un voyage interrompu attend sa reprise. */}
         {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (
@@ -281,6 +295,8 @@ export function CampaignView() {
         <TavernGameModal />
         {worldMapOpen && mode === 'exploration' && <WorldMapView />}
         {port && mode === 'exploration' && <PortView />}
+        {/* Dossier du navire (#227) : plein-champ, monté EN et HORS combat (persistant). */}
+        {dossierOpen && vessel && <ShipDossier onClose={() => setDossierOpen(false)} />}
         {landMarket && mode === 'exploration' && <LandMarketView />}
         {pendingSeaActivities && mode === 'exploration' && <SeaActivitiesModal />}
         {pendingManannPriest && mode === 'exploration' && <ManannPriestModal />}

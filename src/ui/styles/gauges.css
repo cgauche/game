@@ -1,0 +1,131 @@
+/* Jauges du navire — <NotchGauge> (jauge à crans) + <WindRose> (rose des vents). Sobres, denses,
+   thème sombre, lisibles à 360px. Toutes les couleurs viennent des tokens :root (charte UI). */
+
+/* ── NotchGauge ──────────────────────────────────────────────────────────────────────────────── */
+.notch-gauge {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-areas: 'head track value';
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.notch-gauge[data-stacked] {
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'head value'
+    'track track';
+  row-gap: 0.25rem;
+}
+
+.notch-gauge__head {
+  grid-area: head;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.notch-gauge__label {
+  color: var(--muted);
+  font-size: 0.85em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.notch-gauge__icon {
+  display: inline-flex;
+  color: var(--gold);
+}
+
+.notch-gauge__track {
+  grid-area: track;
+  position: relative;
+  min-width: 0;
+}
+.notch-gauge__notches {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+}
+.notch-gauge__notch {
+  flex: 1 1 0;
+  min-width: 2px;
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 1px;
+}
+.notch-gauge__mark {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--gold2);
+  pointer-events: none;
+}
+
+.notch-gauge__value {
+  grid-area: value;
+  color: var(--text);
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Tons sémantiques des crans allumés (charte : tokens uniquement). */
+.notch-gauge[data-tone='neutral'] .notch-gauge__notch[data-on] { background: var(--silver); border-color: var(--silver); }
+.notch-gauge[data-tone='ok'] .notch-gauge__notch[data-on] { background: var(--ok-bright); border-color: var(--ok); }
+.notch-gauge[data-tone='warn'] .notch-gauge__notch[data-on] { background: var(--gold2); border-color: var(--gold); }
+.notch-gauge[data-tone='danger'] .notch-gauge__notch[data-on] { background: var(--danger); border-color: var(--danger); }
+
+/* ── WindRose ────────────────────────────────────────────────────────────────────────────────── */
+.wind-rose {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+.wind-rose__svg {
+  display: block;
+  width: 72px;
+  height: 72px;
+}
+.wind-rose--sm .wind-rose__svg { width: 48px; height: 48px; }
+
+.wind-rose__ring {
+  fill: var(--panel);
+  stroke: var(--border);
+  stroke-width: 2;
+}
+.wind-rose__tick { fill: var(--muted); }
+.wind-rose__tick[data-card] { fill: var(--gold2); }
+
+.wind-rose__heading {
+  stroke: var(--gold);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 4 3;
+}
+
+.wind-rose__shaft { stroke: var(--silver); stroke-width: 3; stroke-linecap: round; }
+.wind-rose__head { fill: var(--silver); }
+
+/* Intensité de la force → couleur de la flèche (échelle des 6 vents, tokens uniquement). */
+.wind-rose[data-force='calme-plat'] .wind-rose__shaft,
+.wind-rose[data-force='calme-plat'] .wind-rose__head { stroke: var(--muted); fill: var(--muted); }
+.wind-rose[data-force='legere-brise'] .wind-rose__shaft { stroke: var(--ok); }
+.wind-rose[data-force='legere-brise'] .wind-rose__head { fill: var(--ok); }
+.wind-rose[data-force='brise-fraiche'] .wind-rose__shaft { stroke: var(--ok-bright); }
+.wind-rose[data-force='brise-fraiche'] .wind-rose__head { fill: var(--ok-bright); }
+.wind-rose[data-force='vent-modere'] .wind-rose__shaft { stroke: var(--gold2); }
+.wind-rose[data-force='vent-modere'] .wind-rose__head { fill: var(--gold2); }
+.wind-rose[data-force='vent-violent'] .wind-rose__shaft { stroke: var(--danger-soft); }
+.wind-rose[data-force='vent-violent'] .wind-rose__head { fill: var(--danger-soft); }
+.wind-rose[data-force='violente-tempete'] .wind-rose__shaft { stroke: var(--danger); }
+.wind-rose[data-force='violente-tempete'] .wind-rose__head { fill: var(--danger); }
+
+.wind-rose__force {
+  color: var(--muted);
+  font-size: 0.75em;
+  white-space: nowrap;
+}

@@ -34,7 +34,9 @@ import { dayIndex } from './upkeep';
 import { placeById, type WorldMap, type MapPlace, type MapRoute } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { PendingCrewTest, ShipManeuverParticipant } from './pendings';
-import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR } from './shipCrew';
+import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss } from './shipCrew';
+import { applyEffects, applyEffectsLoot } from './combatEffects';
+import type { Effect } from './scene';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { maneuverCrewTotal } from './shipManeuver';
 import { vehicleCombatant } from '../engine/vehicle';
@@ -67,7 +69,8 @@ import { addCondition } from '../engine/conditions';
 import { findWhirlpool } from '../engine/seaPerils';
 import {
   rollBoardEvent, rollPortEvent, rollDaysToNextEvent, applyManannFactor, addManann, MANANN_BASE,
-  removeCargo, cargoTotalEnc, type SeaEventDef, type ManannMood, type PortProfile,
+  removeCargo, cargoTotalEnc, resolveFastVoyage, FAST_VOYAGE_PALIERS,
+  type SeaEventDef, type ManannMood, type PortProfile,
 } from '../engine/seaVoyage';
 import { navalMoveMod, navalTestTypeDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
@@ -86,7 +89,7 @@ export type SeaCrisis =
   | { kind: 'tourbillon'; label: string; whirlpoolId: string; need: number; progress: number };
 
 /** Étape de la journée maritime — la boucle se SUSPEND sur chaque modale et reprend à l'étape suivante. */
-export type SeaStep = 'meteo' | 'affaler' | 'progression' | 'crise' | 'embuscade' | 'perception' | 'orientation' | 'extermination' | 'events' | 'entretien' | 'nuit';
+export type SeaStep = 'meteo' | 'perils' | 'affaler' | 'progression' | 'crise' | 'embuscade' | 'perception' | 'orientation' | 'extermination' | 'events' | 'entretien' | 'nuit';
 
 /** État NAVAL d'un TravelPlan (route `sea`) — persiste dans la save avec le plan. */
 export interface SeaVoyageState {
@@ -126,7 +129,16 @@ export interface SeaVoyageState {
   /** Issue du Test de Voile/Ramer du JOUR (l.97) : 'won' → le +M s'applique aux milles du jour. Présent
    *  (won OU lost) = le rythme a été forcé → Test d'Épuisement Complexe (−10) au soir (l.111). */
   paceToday?: 'won' | 'lost';
+  /** LONGS VOYAGES TRÈS RAPIDES (MDG 15 l.21-37) : présent = traversée RAPIDE (résolue en UN Test de
+   *  Rude épreuve, JAMAIS la boucle jour par jour). `palierId`/`roll`/`result` : cran du d10 calculé ;
+   *  `pendingFinalize` = le palier reste à appliquer (après un abordage ancré éventuel — `finalizeFastVoyage`
+   *  est ré-entrant). */
+  fast?: { days: number; weeks: number; palierId?: string; roll?: number; result?: number; pendingFinalize?: boolean };
 }
+
+/** Semaine impériale (8 jours, MDG 15 l.268) — cadence de la pénalité « −1 par semaine en mer » du
+ *  voyage rapide (l.28) et des Activités en mer (`daysAtSea % 8`, `finishSeaDay`). */
+const SEA_WEEK_DAYS = 8;
 
 /** Malus d'ENVIRONNEMENT (Précipitations, MDG 13 l.187-201) sur le Test de compétence `skillId` en
  *  cours, quand un voyage en mer est ACTIF — POINT UNIQUE consommé par `openSkillTest` (aucun écran
@@ -283,6 +295,127 @@ export function buildSeaPlan(
   };
 }
 
+// ── LONGS VOYAGES TRÈS RAPIDES (MDG 15 l.21-37) ──────────────────────────────────────────────────
+
+/** M de CROISIÈRE (hors vent/événement) pour estimer la durée du voyage rapide (l.25) — mêmes milles
+ *  que le détaillé (18 × M) : voiles/avirons du gréement, ou M 4 constant à la vapeur (ch.12 l.311). */
+function cruiseM(hull: Combatant): number {
+  if (shipHasNavalTrait(hullTraits(hull), 'propulsion-a-vapeur')) return 4;
+  const vd = findVehicleById(hull.creatureId ?? '')?.ship;
+  return Math.max(1, vd?.sail?.m ?? vd?.oars?.m ?? 1);
+}
+
+/** Appareille en TRAVERSÉE RAPIDE (l.21-37) : construit un plan `sea.fast` (jamais la boucle jour par
+ *  jour), estime la durée (distance / vitesse moyenne, l.25) puis ouvre l'UNIQUE Test d'équipage de
+ *  Rude épreuve (modale existante). Sans équipage apte : palier au DR 0, résolution immédiate. `false`
+ *  = aucun navire en état (l'appelant journalise). */
+export function startFastVoyage(
+  get: Get, set: Set, routeId: string, fromPlaceId: string, toPlaceId: string,
+  route: { km: number; seaHeading?: WindDirection }, opts: { pace?: number } = {},
+): boolean {
+  const plan = buildSeaPlan(get, routeId, fromPlaceId, toPlaceId, route, opts);
+  if (!plan) return false;
+  const days = Math.max(1, Math.ceil(plan.km / seaMilesPerDay(cruiseM(plan.vehicle!), true)));
+  const weeks = Math.floor(days / SEA_WEEK_DAYS); // « par semaine passée en mer » (l.28)
+  set({ travelPlan: { ...plan, sea: { ...plan.sea!, fast: { days, weeks } } }, worldMapOpen: false, travelRecap: null });
+  const to = get().worldMap ? placeById(get().worldMap!, toPlaceId) : undefined;
+  log(get, set, [`— ${plan.vehicle!.name} appareille vers ${to?.label ?? '?'} (traversée rapide, ~${days} jour(s), ${plan.km} milles) —`]);
+  if (openVoyageCrewTest(get, set, 'rude-epreuve', 'voyage-rapide')) return true;
+  computeFastPalier(get, set, 0); // aucun équipage apte au Test → DR 0
+  finalizeFastVoyage(get, set);
+  return true;
+}
+
+/** Calcule le palier du voyage rapide (`resolveFastVoyage`) depuis le DR de Rude épreuve + l'Humeur de
+ *  Manann + les semaines en mer, le PERSISTE sur `sea.fast` (application différée) et le raconte. */
+function computeFastPalier(get: Get, set: Set, crewDR: number): void {
+  const fast = get().travelPlan?.sea?.fast;
+  if (!fast) return;
+  const mood = vesselManann(get().vessel);
+  const { roll, manannTens, result, palier } = resolveFastVoyage(crewDR, mood.score, fast.weeks, battleRng());
+  patchSea(get, set, { fast: { ...fast, palierId: palier.id, roll, result, pendingFinalize: true } });
+  tell(get, set, [
+    `Voyage rapide — d10 ${roll} − ${fast.weeks} semaine(s) ${crewDR >= 0 ? '+' : ''}${crewDR} DR (Rude épreuve) ${manannTens >= 0 ? '+' : ''}${manannTens} (dizaine d'Humeur de Manann) = ${result} → ${palier.label}.`,
+    palier.desc,
+  ]);
+}
+
+/** Applique les conséquences d'un palier de voyage rapide (l.33-37) : équipage PNJ manquant (couture
+ *  partagée `applyVesselCrewLoss`, plafonnée au nominal), cargaison gâtée/volée (% par lot), Blessures
+ *  de coque perdues (% du max, PERSISTÉ #30) et Coups Critiques (localisation aléatoire, notés — l.49 :
+ *  les Dégâts d'équipage d'un Critique sont ignorés, déjà couverts par les pertes du voyage). */
+function applyFastPalier(get: Get, set: Set, palierId?: string): void {
+  const palier = FAST_VOYAGE_PALIERS.find((p) => p.id === palierId);
+  if (!palier) return;
+  const rng = battleRng();
+  const vessel0 = get().vessel;
+  if (palier.crewLostPct > 0 && vessel0) {
+    const nominal = findVehicleById(vessel0.vehicleId)?.ship?.crew ?? 0;
+    const present = Math.max(0, nominal - (vessel0.crewLost ?? 0));
+    const lost = Math.round(present * palier.crewLostPct / 100);
+    if (lost > 0) for (const l of applyVesselCrewLoss(get, set, lost)) tell(get, set, [l]);
+  }
+  const vessel1 = get().vessel;
+  if (palier.cargoLostPct > 0 && vessel1?.cargo?.length) {
+    const cargo = vessel1.cargo
+      .map((l) => ({ ...l, enc: Math.floor(l.enc * (1 - palier.cargoLostPct / 100)) }))
+      .filter((l) => l.enc > 0);
+    set({ vessel: { ...vessel1, cargo } });
+    tell(get, set, [`${palier.cargoLostPct} % de la cargaison s'est gâtée ou a été volée.`]);
+  }
+  const vessel2 = get().vessel;
+  if (palier.hullLostPct > 0 && vessel2) {
+    const max = vessel2.wounds?.max ?? findVehicleById(vessel2.vehicleId)?.hull?.char.B ?? 0;
+    const cur = vessel2.wounds?.current ?? max;
+    const lost = Math.round(max * palier.hullLostPct / 100);
+    if (max > 0 && lost > 0) {
+      set({ vessel: { ...vessel2, wounds: { current: Math.max(0, cur - lost), max } } });
+      tell(get, set, [`${vessel2.name ?? 'La coque'} perd ${Math.min(lost, cur)} Blessure(s) (${palier.hullLostPct} %).`]);
+    }
+  }
+  const locs: ShipCritKey[] = ['greement', 'coque', 'avirons', 'equipements', 'cargaison'];
+  for (let i = 0; i < palier.criticals; i++) {
+    const crit = rollShipCritical(locs[rng.int(0, locs.length - 1)], rng);
+    applyVesselCritical(get, set, crit.log, crit.note);
+  }
+}
+
+/** Achève une traversée rapide (RÉ-ENTRANT) : une embuscade ANCRÉE (#212) non déclenchée INTERROMPT
+ *  d'abord (le reste s'achève en rapide APRÈS le combat, via `resumeTravel` → `runSeaDays`) ; sinon
+ *  applique le palier, avance de N jours (couture unique `advanceTime` → faim/soif/maladies/paie
+ *  d'équipage), consomme l'eau des tonneaux (comme le détaillé) et accoste (`openPortAt`). */
+function finalizeFastVoyage(get: Get, set: Set): void {
+  const plan = get().travelPlan;
+  const fast = plan?.sea?.fast;
+  if (!plan?.sea || !fast?.pendingFinalize) return;
+  // Embuscade ANCRÉE non déclenchée : le rythme forcé du voyage rapide court-circuite la vigie —
+  // l'abordage surgit à son ancrage et SURPREND le navire (pas de Test de Perception jour par jour).
+  const route = (get().worldMap as WorldMap | undefined)?.routes.find((r) => r.id === plan.routeId);
+  if (!plan.sea.ambushFired && route?.ambush?.scene && route.ambush.encounter) {
+    tell(get, set, ['La traversée rapide est rompue : une voile hostile surgit sans que la vigie l\'ait vue venir (Surprise) !']);
+    openAuthoredSeaAmbush(get, set, route, false); // reprise post-combat → ce finalize s'exécute à nouveau (ambushFired le saute)
+    return;
+  }
+  applyFastPalier(get, set, fast.palierId);
+  patchSea(get, set, { fast: { ...fast, pendingFinalize: false } });
+  // Eau douce des tonneaux (MDG 14 l.242) : consommation d'équipage médiane × jours — MÊME couture que
+  // le détaillé (`finishSeaDay`), le voyage rapide ne tirant pas la Température jour par jour.
+  const vessel = get().vessel;
+  const patch: Partial<CampaignVessel> = { lastVoyageMilles: plan.km };
+  if (vessel?.waterLitres != null) {
+    const crew = get().party.filter((h) => !h.dead).length;
+    patch.waterLitres = Math.max(0, vessel.waterLitres - crew * dailyWaterLitres('mediane') * fast.days);
+  }
+  if (vessel) set({ vessel: { ...vessel, ...patch } });
+  const to = get().worldMap ? placeById(get().worldMap!, plan.toPlaceId) : undefined;
+  set({ travelPlan: null });
+  // Jours écoulés : franchissement par la couture UNIQUE `advanceTime` (entretien quotidien : faim/soif,
+  // maladies, convalescence, paie hebdomadaire de l'équipage) — l'eau vient d'être décrémentée.
+  get().advanceTime(fast.days * MINUTES_PER_DAY);
+  log(get, set, [`— Accostage à ${to?.label ?? '?'} (traversée rapide, ${fast.days} jour(s)) —`]);
+  if (to) openPortAt(get, set, to);
+}
+
 // ── Boucle jour par jour ─────────────────────────────────────────────────────────────────────────
 
 /** Boucle maritime — appelée par `runTravelDays` (plan `sea`), la reprise de nuit et la résolution des
@@ -294,6 +427,9 @@ export function runSeaDays(get: Get, set: Set): void {
     if (!plan?.sea || plan.interrupted || get().pendingCrewTest || get().pendingSteamSave) return;
     const sea = plan.sea;
     const rng = battleRng();
+    // VOYAGE RAPIDE (MDG 15 l.21-37) : ce plan ne déroule JAMAIS la journée par étape — le palier
+    // calculé s'applique en un bloc (`finalizeFastVoyage`, ré-entrant après un abordage ancré).
+    if (sea.fast) { if (sea.fast.pendingFinalize) finalizeFastVoyage(get, set); return; }
     switch (sea.step) {
       case 'meteo': {
         // 1. Météo du jour (ch.13 l.164) + direction du vent (rose, l.250) — force du vent : celle de la
@@ -308,8 +444,29 @@ export function runSeaDays(get: Get, set: Set): void {
         if (lock && lock.days <= 0) lock = undefined;
         let reversed = sea.reversedWinds;
         if (reversed && reversed > 0) { windFrom = 'est'; reversed -= 1; } // dominants d'ouest inversés (ch.15)
-        patchSea(get, set, { weather, windFrom, weatherLock: lock, reversedWinds: reversed, milesToday: 0, sailsDown: false, lighthouseDR: 0, eventMMod: sea.eventMMod, paceToday: undefined, step: 'affaler' });
+        patchSea(get, set, { weather, windFrom, weatherLock: lock, reversedWinds: reversed, milesToday: 0, sailsDown: false, lighthouseDR: 0, eventMMod: sea.eventMMod, paceToday: undefined, step: 'perils' });
         tell(get, set, [`Météo du jour : ${seaWeatherLabel(weather)} — vent de ${windFrom} (cap ${sea.heading}).`]);
+        break;
+      }
+      case 'perils': {
+        // C.22. Périls d'AUTEUR de la route (`route.perils`) lus JOUR PAR JOUR — MÊME patron que le
+        // terrestre (travelFlow) : tirage à `chancePct` %, effets appliqués (butin attribué hors combat) ;
+        // un effet `startCombat`/`transition` INTERROMPT la traversée (reprise via `resumeTravel`). Les
+        // périls (hasard au fil des jours) et l'embuscade ANCRÉE (`ambush.at`, #212) coexistent comme sur
+        // terre. Le Test éventuel reste un Test d'ÉQUIPAGE (vigie, `openVoyageCrewTest`) — l'ancrage le porte.
+        patchSea(get, set, { step: 'affaler' });
+        const route = (get().worldMap as WorldMap | undefined)?.routes.find((r) => r.id === plan.routeId);
+        for (const peril of route?.perils ?? []) {
+          if (d100(rng) > Math.max(0, Math.min(100, peril.chancePct))) continue;
+          tell(get, set, [`Péripétie : ${peril.label}`]);
+          const interrupts = (peril.effects ?? []).some((e: Effect) => e.type === 'startCombat' || e.type === 'transition');
+          if (interrupts) {
+            set({ travelPlan: { ...get().travelPlan!, interrupted: true } });
+            applyEffects(get, set, peril.effects); // combat/transition d'auteur → la traversée s'arrête là
+            return;
+          }
+          applyEffectsLoot(get, set, peril.effects, peril.label); // trouvaille d'auteur → fenêtre d'attribution
+        }
         break;
       }
       case 'affaler': {
@@ -728,6 +885,13 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       }
       break;
     }
+    case 'voyage-rapide': {
+      // VOYAGE RAPIDE (MDG 15 l.28) : le DR du Test de Rude épreuve alimente le tableau. Le palier est
+      // CALCULÉ ici (affiché SUR PLACE via `crewTestConfirm`) ; son APPLICATION est différée à
+      // `finalizeFastVoyage` (relancé par « Continuer » → `runSeaDays`), après un abordage ancré éventuel.
+      computeFastPalier(get, set, total);
+      break;
+    }
     case 'entretien': {
       // Le Test d'équipage REMPLACE le Métier à −2 DR (MDG 14 l.122) → réparation temporaire (ch.13 l.647).
       const adj = total + REPARATION.entretienCrewTestDR;
@@ -741,9 +905,9 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       break;
     }
   }
-  // Une « Fuite de vapeur » a ouvert la sauvegarde d'Initiative (modale) : la boucle reprendra à la
-  // fermeture (`steamSaveConfirm` → `resolveSteamSave`), pas ici.
-  if (!get().pendingSteamSave) runSeaDays(get, set); // la boucle reprend à l'étape suivante
+  // La boucle NE reprend PAS ici : le dénouement s'affiche SUR PLACE (`crewTestConfirm` → phase
+  // `resolved`) et « Continuer » (`crewTestContinue`) SEUL relance `runSeaDays`. Une « Fuite de vapeur »
+  // (pendingSteamSave) ou un abordage (battle) ouvert ci-dessus reprend par sa propre clôture.
 }
 
 // ── PANNE DE VAPEUR (MDG ch.12 l.313-352) — résolution first-class au voyage ─────────────────────

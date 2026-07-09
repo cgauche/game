@@ -198,7 +198,7 @@
      "dialogueId": "dlg-kohler",
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Noblesse",
+      "tenue": "noble",
       "sex": "M",
       "build": 0.5
      }
@@ -215,7 +215,7 @@
      "dialogueId": "dlg-aldo",
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Prêtre initié",
+      "tenue": "pretre",
       "sex": "M",
       "build": 0.6
      }
@@ -231,7 +231,7 @@
      "facing": "S",
      "dialogueId": "dlg-kramer",
      "appearance": {
-      "career": "Marchande",
+      "tenue": "marchand",
       "sex": "F",
       "build": 0.45
      }
@@ -248,7 +248,7 @@
      "dialogueId": "dlg-griet",
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Ménestrel",
+      "tenue": "artiste",
       "sex": "F",
       "build": 0.4
      }
@@ -267,7 +267,7 @@
      },
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Bourgeois",
+      "tenue": "bourgeois",
       "sex": "F",
       "build": 0.55
      }
@@ -286,7 +286,7 @@
      },
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Artisan",
+      "tenue": "artisan",
       "sex": "M",
       "build": 0.6
      }
@@ -305,7 +305,7 @@
      },
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Bourgeois",
+      "tenue": "bourgeois",
       "sex": "M",
       "build": 0.5
      }
@@ -1125,103 +1125,20 @@
      ],
      "postes": [
       {
-       "item": {
-        "uid": "itm-grimm-tribord-1",
-        "trappingId": "canon-moyen",
-        "name": "Canon (moyen)",
-        "kind": "ranged",
-        "damage": {
-         "plusBF": false,
-         "flat": 14
-        },
-        "reach": null,
-        "range": 75,
-        "qualities": [
-         {
-          "id": "dangereuse"
-         },
-         {
-          "id": "recharge",
-          "value": 6
-         },
-         {
-          "id": "arme-d-equipe",
-          "value": 3
-         },
-         {
-          "id": "siege"
-         }
-        ],
-        "enc": 50,
-        "equipped": false,
-        "weaponGroup": "poudre-noire",
-        "subType": "armes-de-siege"
-       },
+       "trappingId": "canon-moyen",
+       "uid": "poste-1",
        "side": "tribord",
        "crewIds": []
       },
       {
-       "item": {
-        "uid": "itm-grimm-babord-2",
-        "trappingId": "canon-moyen",
-        "name": "Canon (moyen)",
-        "kind": "ranged",
-        "damage": {
-         "plusBF": false,
-         "flat": 14
-        },
-        "reach": null,
-        "range": 75,
-        "qualities": [
-         {
-          "id": "dangereuse"
-         },
-         {
-          "id": "recharge",
-          "value": 6
-         },
-         {
-          "id": "arme-d-equipe",
-          "value": 3
-         },
-         {
-          "id": "siege"
-         }
-        ],
-        "enc": 50,
-        "equipped": false,
-        "weaponGroup": "poudre-noire",
-        "subType": "armes-de-siege"
-       },
+       "trappingId": "canon-moyen",
+       "uid": "poste-2",
        "side": "babord",
        "crewIds": []
       },
       {
-       "item": {
-        "uid": "itm-grimm-proue-3",
-        "trappingId": "pierrier",
-        "name": "Pierrier",
-        "kind": "ranged",
-        "damage": {
-         "plusBF": false,
-         "flat": 14
-        },
-        "reach": null,
-        "range": 30,
-        "qualities": [
-         {
-          "id": "dangereuse"
-         },
-         {
-          "id": "recharge",
-          "value": 4
-         }
-        ],
-        "enc": 5,
-        "equipped": false,
-        "weaponGroup": "poudre-noire",
-        "subType": "armes-de-siege"
-       },
+       "trappingId": "pierrier",
+       "uid": "poste-3",
        "side": "proue",
        "crewIds": []
       }
@@ -1293,38 +1210,8 @@
      ],
      "postes": [
       {
-       "item": {
-        "uid": "itm-cogue-tribord-4",
-        "trappingId": "canon-moyen",
-        "name": "Canon (moyen)",
-        "kind": "ranged",
-        "damage": {
-         "plusBF": false,
-         "flat": 14
-        },
-        "reach": null,
-        "range": 75,
-        "qualities": [
-         {
-          "id": "dangereuse"
-         },
-         {
-          "id": "recharge",
-          "value": 6
-         },
-         {
-          "id": "arme-d-equipe",
-          "value": 3
-         },
-         {
-          "id": "siege"
-         }
-        ],
-        "enc": 50,
-        "equipped": false,
-        "weaponGroup": "poudre-noire",
-        "subType": "armes-de-siege"
-       },
+       "trappingId": "canon-moyen",
+       "uid": "poste-4",
        "side": "tribord",
        "crewIds": []
       }
@@ -1612,7 +1499,7 @@
      "facing": "S",
      "dialogueId": "dlg-rumeur-olg",
      "appearance": {
-      "career": "Ouvrier",
+      "tenue": "debardeur",
       "sex": "M",
       "build": 0.6
      }
@@ -1628,7 +1515,7 @@
      "facing": "S",
      "dialogueId": "dlg-kramer-nuit-du-chat",
      "appearance": {
-      "career": "Marchande",
+      "tenue": "marchand",
       "sex": "F",
       "build": 0.45
      }
@@ -1645,7 +1532,7 @@
      "dialogueId": "dlg-reparation",
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Artisan",
+      "tenue": "artisan",
       "sex": "M",
       "build": 0.6
      }
@@ -2187,103 +2074,20 @@
      ],
      "postes": [
       {
-       "item": {
-        "uid": "itm-grimm2-tribord-5",
-        "trappingId": "canon-moyen",
-        "name": "Canon (moyen)",
-        "kind": "ranged",
-        "damage": {
-         "plusBF": false,
-         "flat": 14
-        },
-        "reach": null,
-        "range": 75,
-        "qualities": [
-         {
-          "id": "dangereuse"
-         },
-         {
-          "id": "recharge",
-          "value": 6
-         },
-         {
-          "id": "arme-d-equipe",
-          "value": 3
-         },
-         {
-          "id": "siege"
-         }
-        ],
-        "enc": 50,
-        "equipped": false,
-        "weaponGroup": "poudre-noire",
-        "subType": "armes-de-siege"
-       },
+       "trappingId": "canon-moyen",
+       "uid": "poste-5",
        "side": "tribord",
        "crewIds": []
       },
       {
-       "item": {
-        "uid": "itm-grimm2-babord-6",
-        "trappingId": "canon-moyen",
-        "name": "Canon (moyen)",
-        "kind": "ranged",
-        "damage": {
-         "plusBF": false,
-         "flat": 14
-        },
-        "reach": null,
-        "range": 75,
-        "qualities": [
-         {
-          "id": "dangereuse"
-         },
-         {
-          "id": "recharge",
-          "value": 6
-         },
-         {
-          "id": "arme-d-equipe",
-          "value": 3
-         },
-         {
-          "id": "siege"
-         }
-        ],
-        "enc": 50,
-        "equipped": false,
-        "weaponGroup": "poudre-noire",
-        "subType": "armes-de-siege"
-       },
+       "trappingId": "canon-moyen",
+       "uid": "poste-6",
        "side": "babord",
        "crewIds": []
       },
       {
-       "item": {
-        "uid": "itm-grimm2-poupe-7",
-        "trappingId": "pierrier",
-        "name": "Pierrier",
-        "kind": "ranged",
-        "damage": {
-         "plusBF": false,
-         "flat": 14
-        },
-        "reach": null,
-        "range": 30,
-        "qualities": [
-         {
-          "id": "dangereuse"
-         },
-         {
-          "id": "recharge",
-          "value": 4
-         }
-        ],
-        "enc": 5,
-        "equipped": false,
-        "weaponGroup": "poudre-noire",
-        "subType": "armes-de-siege"
-       },
+       "trappingId": "pierrier",
+       "uid": "poste-7",
        "side": "poupe",
        "crewIds": []
       }
@@ -2388,7 +2192,7 @@
       "y": 6
      },
      "label": "Olg Blóðsalt",
-     "weapon": "Hache"
+     "weapon": "hache-d-armes"
     }
    ],
    "dialogues": [],

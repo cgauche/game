@@ -3,7 +3,7 @@ import {
   MANANN_BASE, applyManannFactor, addManann, rollBoardEvent, rollPortEvent, rollDaysToNextEvent,
   rollRandomCargo, cargoBasePrice, rollCargoAvailability, rollMerchantSkill, buySellerDR,
   sellRelation, sellChance, offerPricePct, dumpingPricePct, opportunityTradePct,
-  cargoTotalEnc, removeCargo, type PortProfile,
+  cargoTotalEnc, removeCargo, resolveFastVoyage, type PortProfile,
 } from './seaVoyage';
 import type { RNG } from './dice';
 
@@ -56,6 +56,35 @@ describe('événements de bord & de port (MDG ch.15 l.89 + l.127-129)', () => {
     const f = rollPortEvent(15, seq(10, 10, 1, 1)); // 10+10+1 = 21 → Saturation
     expect(f.roll).toBe(21);
     expect(f.event.kind).toBe('saturation');
+  });
+});
+
+describe('longs voyages très rapides (MDG ch.15 l.21-37)', () => {
+  it('d10 seul → le palier suit la table (6-9 = sans encombre, ≥10 = parfait)', () => {
+    expect(resolveFastVoyage(0, 0, 0, seq(7)).palier.id).toBe('sans-encombre'); // 7 ∈ [6,9]
+    expect(resolveFastVoyage(0, 0, 0, seq(10)).palier.id).toBe('parfait'); // 10 ∈ [10,+]
+    expect(resolveFastVoyage(0, 0, 0, seq(4)).palier.id).toBe('difficile'); // 4 ∈ [3,5]
+  });
+
+  it('−1 par semaine en mer (l.28) : deux semaines abaissent un d10 de 1 à −1 → désastreux', () => {
+    const r = resolveFastVoyage(0, 0, 2, seq(1)); // 1 − 2 semaines = −1
+    expect(r.result).toBe(-1);
+    expect(r.palier.id).toBe('desastreux'); // ≤ 0
+  });
+
+  it('dizaine SIGNÉE de l’Humeur de Manann (l.26) : +30 → +3, −23 → −2', () => {
+    expect(resolveFastVoyage(0, 30, 0, seq(7)).manannTens).toBe(3);
+    expect(resolveFastVoyage(0, 30, 0, seq(7)).result).toBe(10); // 7 + 3 → parfait
+    expect(resolveFastVoyage(0, 30, 0, seq(7)).palier.id).toBe('parfait');
+    expect(resolveFastVoyage(0, -23, 0, seq(5)).manannTens).toBe(-2);
+    expect(resolveFastVoyage(0, -23, 0, seq(5)).result).toBe(3); // 5 − 2 → difficile
+  });
+
+  it('les DR du Test de Rude épreuve s’ajoutent (l.28) : +5 DR remonte un d10 raté', () => {
+    expect(resolveFastVoyage(5, 0, 0, seq(1)).result).toBe(6); // 1 + 5 DR → sans encombre
+    expect(resolveFastVoyage(5, 0, 0, seq(1)).palier.id).toBe('sans-encombre');
+    expect(resolveFastVoyage(-4, 0, 0, seq(5)).result).toBe(1); // 5 − 4 DR → éreintant [1,2]
+    expect(resolveFastVoyage(-4, 0, 0, seq(5)).palier.id).toBe('ereintant');
   });
 });
 

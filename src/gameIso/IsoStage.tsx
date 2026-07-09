@@ -48,6 +48,7 @@ import { AimOverlay } from './stage/AimOverlay';
 import { CrewTooltip } from './stage/CrewTooltip';
 import { DebugMapLabels, DebugLegend } from './stage/DebugOverlay';
 import { Flies, AmbianceVeils } from './stage/Ambiance';
+import { WeatherVeil } from './stage/WeatherVeil';
 import { useStageCamera, cameraTargeting, stageFocus, computeViewBounds, VW, VH } from './stage/useStageCamera';
 import { useStagePointer } from './stage/useStagePointer';
 import { useHoverTargeting } from './stage/useHoverTargeting';
@@ -256,6 +257,7 @@ export function IsoStage() {
       </g>
       {debugLabels && <DebugLegend />}
       <AmbianceVeils scene={scene} dims={dims} gameTime={gameTime} lightLevel={lightLevel} />
+      <WeatherVeil weather={scene.weather} />
     </svg>
   );
 }

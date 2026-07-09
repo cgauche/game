@@ -22,7 +22,7 @@ import type { Availability } from '../engine/types';
 import { priceToMoney, subtract as moneySub, add as moneyAdd, canAfford, fromBrass, toBrass, formatMoney, statusBudgetBrass, type StatusTier } from '../engine/money';
 import { actorStatus } from '../engine/social';
 import { MINUTES_PER_DAY } from '../engine/clock';
-import { findTrappingById, findCareerById, trappings } from '../data/index';
+import { findTrappingById, trappings } from '../data/index';
 import { slugId } from '../data/slug';
 import { MERCHANTS } from './merchants/index';
 import { describeBargain } from './flowOutcomes';
@@ -105,8 +105,11 @@ function comptesFree(ent: SceneEntity | undefined, party: Combatant[], listedBra
  *  cohérente (« Marchand ou Receleur », l.50) ; +10 de plus si le groupe a passé une journée entière à
  *  chercher activement (Test de Ragot réussi, `gossipDay`). Le RAW plafonne à +20 %
  *  (`availabilitySearchBonus`). Renvoie le % à ajouter aux Tests de Disponibilité du stock. */
+/** Carrières « cohérentes » pour la recherche de Disponibilité (LDB 59 l.50) — ids STABLES, pas des
+ *  libellés (`Combatant.career` porte l'id de la Carrière). */
+const COHERENT_AVAILABILITY_CAREERS = new Set(['marchand', 'receleur']);
 function partyAvailabilityBonus(party: Combatant[], gossipDay = false): number {
-  const coherent = party.some((h) => /marchand|receleur/i.test(findCareerById(h.career ?? '')?.label ?? ''));
+  const coherent = party.some((h) => COHERENT_AVAILABILITY_CAREERS.has(h.career ?? ''));
   return availabilitySearchBonus({ coherentCareer: coherent, gossipDay });
 }
 

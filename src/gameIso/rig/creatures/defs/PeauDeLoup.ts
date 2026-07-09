@@ -10,7 +10,7 @@ export const creature: CreatureDef = {
   perso: {
     head: 'chien', // tête de canidé sur corps humanoïde
     gabarit: 'brute', // carrure massive et voûtée
-    tenue: 'Nu', // bête féroce : pas d'armure/casque, le pelage à nu
+    tenue: 'nu', // bête féroce : pas d'armure/casque, le pelage à nu
     colors: { peau: '#6a5e4c', cheveux: '#352c22' }, // pelage gris-brun
   },
 };

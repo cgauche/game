@@ -39,6 +39,7 @@ function sailToPort(maxSteps = 400): string[] {
       kinds.push(ct.voyage!.kind);
       for (const part of ct.participants) if (!part.result) get().crewTestRoll(part.id);
       get().crewTestConfirm();
+      if (get().pendingCrewTest?.resolved) get().crewTestContinue();
       continue;
     }
     if (get().pendingSeaActivities) { get().seaActivitiesConfirm({}); continue; }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { MORALE_BASE, MORALE_FACTORS, MORALE_BANDS, moraleBand, recalcMorale, resolveCrewTest, tickShipMorale } from './crewMorale';
+import { MORALE_BASE, MORALE_FACTORS, MORALE_BANDS, moraleBand, recalcMorale, resolveCrewTest, tickShipMorale, PAY_CHOICES, payChoiceCostBrass, isPayChoice, findMoraleFactor } from './crewMorale';
 import { makeRNG, type RNG } from './dice';
 
 const seq = (values: number[]): RNG => { let i = 0; return { int: () => values[i++] }; };
@@ -54,6 +54,27 @@ describe('Moral d’équipage — données verbatim + recalcul hebdomadaire', ()
     expect(moraleBand(-200).id).toBe('canailles');
     expect(moraleBand(50).id).toBe('canailles'); // 50 = borne haute de la bande basse
     expect(moraleBand(51).id).toBe('equipage-satisfait');
+  });
+});
+
+describe('Choix de paie du Conseil de bord (#229) — facteurs RÉELS + multiplicateur de solde maison', () => {
+  it('les 4 choix référencent des facteurs de Moral EXISTANTS (par id)', () => {
+    expect(PAY_CHOICES.map((c) => c.factorId)).toEqual(['paie-genereuse', 'paie-reguliere', 'paie-chiche', 'pas-de-paie']);
+    for (const c of PAY_CHOICES) { expect(findMoraleFactor(c.factorId)).toBeTruthy(); expect(isPayChoice(c.factorId)).toBe(true); }
+    expect(isPayChoice('paie-irreguliere')).toBe(false); // facteur circonstanciel, PAS un choix
+  });
+  it('solde versée = barème × multiplicateur (généreuse ×2, régulière ×1, chiche ×½, pas-de-paie ×0)', () => {
+    expect(payChoiceCostBrass(288, 'paie-genereuse')).toBe(576);
+    expect(payChoiceCostBrass(288, 'paie-reguliere')).toBe(288);
+    expect(payChoiceCostBrass(288, 'paie-chiche')).toBe(144);
+    expect(payChoiceCostBrass(288, 'pas-de-paie')).toBe(0);
+    expect(payChoiceCostBrass(288, 'inconnu')).toBe(0);
+  });
+  it('recalcMorale expose un jet PAR facteur (procès-verbal du conseil)', () => {
+    const r = recalcMorale(75, ['paie-chiche'], makeRNG(1));
+    expect(r.rolls).toHaveLength(1);
+    expect(r.rolls[0]).toMatchObject({ id: 'paie-chiche' });
+    expect(r.rolls[0].rolled).toBe(r.delta);
   });
 });
 

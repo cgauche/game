@@ -5,12 +5,13 @@ import { findCargoById } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { foulingEffects } from '../engine/seaNavigation';
-import { canAfford, toMoney, fromBrass, formatMoney } from '../engine/money';
-import { weeklyCrewWageBrass } from '../engine/crewMorale';
-import { crewRoles } from '../data';
+import { canAfford, toMoney } from '../engine/money';
+import { moraleBand } from '../engine/crewMorale';
 import { Coins } from './Coins';
 import { Prose } from './Prose';
 import { Icon } from './Icon';
+import { NotchGauge } from './NotchGauge';
+import { moraleTone, ShipCrewWages } from './shipStatus';
 
 /**
  * ÉCRAN PORT (MDG 15) — services au navire de campagne à quai : Réparer (MDG 13 l.643) / Caréner
@@ -56,9 +57,6 @@ export function PortView() {
   }, [vessel.upgrades, vd.ship]);
 
   const cargo = vessel.cargo ?? [];
-  // #216 — Solde hebdomadaire due par l'équipage salarié (barème MDG 14) + dette non payée.
-  const weeklyWageBrass = weeklyCrewWageBrass(vessel.crew);
-  const crewLabel = (roleId: string) => crewRoles.find((r) => r.id === roleId)?.label ?? roleId;
 
   return (
     <div className="worldmap-overlay port-overlay">
@@ -87,15 +85,15 @@ export function PortView() {
               >
                 <Icon id="travel/repair" size="sm" /> Réparer{missing > 0 ? ` — ${missing} Blessure(s), ${repairCost} CO` : ''}
               </button>
-              {(vessel.crew?.length || weeklyWageBrass > 0 || vessel.wagesOwed) ? (
-                <p className="port-hint">
-                  Équipage salarié : {vessel.crew?.length
-                    ? vessel.crew.map((h) => `${h.count} ${crewLabel(h.roleId)}`).join(', ')
-                    : '—'}
-                  {' · solde hebdomadaire '}<b>{formatMoney(fromBrass(weeklyWageBrass))}</b>
-                  {vessel.wagesOwed ? <> · dette <b>{formatMoney(fromBrass(vessel.wagesOwed))}</b></> : null}
-                </p>
-              ) : null}
+              <NotchGauge
+                label="Moral"
+                value={vessel.morale.score}
+                max={100}
+                stacked
+                tone={moraleTone}
+                format={(v) => `${v} — ${moraleBand(v).desc.split('.')[0]}`}
+              />
+              <ShipCrewWages vessel={vessel} />
               <p className="port-hint">Salissures : niveau <b>{foulLevel}</b>{vessel.crabs ? ' · crabes boxeurs' : ''}{foulLevel > 0 ? ` — ${foulingEffects(foulLevel).desc}` : ''}</p>
               <button
                 type="button"
@@ -137,32 +135,37 @@ export function PortView() {
               <h3>Acheter — offres de l’escale</h3>
               <p className="port-hint">Cale libre : <b>{port.freeEnc} Enc</b></p>
               {port.offers.length === 0 && <p className="port-hint">Aucune cargaison à vendre dans ce port (production « minimum vital » ou stock épuisé).</p>}
-              <table className="port-table">
-                <thead><tr><th>Cargaison</th><th>Dispo (Enc)</th><th>Prix base</th><th>Enc</th><th /></tr></thead>
-                <tbody>
-                  {port.offers.map((o) => {
-                    const want = buyEnc[o.cargoId] ?? Math.min(o.enc, port.freeEnc);
-                    return (
-                      <tr key={o.cargoId}>
-                        <td>{o.label}{o.surplus ? ' (Surplus)' : ''}</td>
-                        <td>{o.enc}</td>
-                        <td>{o.basePrice} CO/Enc</td>
-                        <td>
-                          <input
-                            type="number" min={1} max={Math.min(o.enc, port.freeEnc)} value={want}
-                            onChange={(e) => setBuyEnc((s) => ({ ...s, [o.cargoId]: Math.max(1, Math.min(o.enc, port.freeEnc, Number(e.target.value) || 1)) }))}
-                          />
-                        </td>
-                        <td>
-                          <button type="button" className="btn small" disabled={isGuest || port.freeEnc <= 0} title={`≈ ${Math.round(want * o.basePrice)} CO avant Marchandage`} onClick={() => buy(o.cargoId, want)}>
-                            Acheter
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div className="panel-grid">
+                {port.offers.map((o) => {
+                  const want = buyEnc[o.cargoId] ?? Math.min(o.enc, port.freeEnc);
+                  const estCost = toMoney({ gold: Math.round(want * o.basePrice) });
+                  const affordable = canAfford(money, estCost);
+                  return (
+                    <div key={o.cargoId} className="market-offer">
+                      <div className="market-offer-head">
+                        <b>{o.label}{o.surplus ? ' (Surplus)' : ''}</b>
+                        <span className="port-hint">Dispo <b>{o.enc}</b> Enc · <Coins money={toMoney({ gold: o.basePrice })} />/Enc</span>
+                      </div>
+                      <div className={`market-offer-buy ${affordable ? '' : 'unaffordable'}`}>
+                        <input
+                          type="number" min={1} max={Math.min(o.enc, port.freeEnc)} value={want}
+                          onChange={(e) => setBuyEnc((s) => ({ ...s, [o.cargoId]: Math.max(1, Math.min(o.enc, port.freeEnc, Number(e.target.value) || 1)) }))}
+                        />
+                        <span className="market-offer-total">Total ≈ <Coins money={estCost} /></span>
+                        <button
+                          type="button"
+                          className="btn small"
+                          disabled={isGuest || port.freeEnc <= 0 || !affordable}
+                          title={affordable ? 'Estimation avant Marchandage' : 'Bourse insuffisante'}
+                          onClick={() => buy(o.cargoId, want)}
+                        >
+                          Acheter
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </section>
             <section className="panel port-section">
               <h3>Vendre — cale du navire</h3>
@@ -174,7 +177,7 @@ export function PortView() {
                     <tr key={i}>
                       <td>{findCargoById(lot.cargoId)?.label ?? lot.cargoId}</td>
                       <td>{lot.enc}</td>
-                      <td>{lot.basePriceGold} CO/Enc</td>
+                      <td><Coins money={toMoney({ gold: lot.basePriceGold })} />/Enc</td>
                       <td className="port-sell-actions">
                         <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander (MDG 15 l.351-397)" onClick={() => sell(i)}>Vendre</button>
                         <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à ¼ du prix de base (MDG 15 l.399)" onClick={() => dump(i)}>Brader</button>

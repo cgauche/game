@@ -1,6 +1,6 @@
 /** Expéditions de la carte du monde (#T2) — on y VOYAGE depuis le Bourg (rations, péripéties,
  *  embuscades), on en revient par la carte. Pas de retour-hub automatique : la route est le retour. */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, testNode, flowOf } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, testNode, flowOf } from '../campagne/lib.mjs';
 
 // ── La Vieille Futaie (40×28) : harde en lisière + camp de Bella la Noire (PNJ nommée) ──────
 
@@ -98,14 +98,14 @@ export function makeForet() {
         surprise: 'party',
         hidden: true,
         enemies: [
-          { ref: 'Gor', pos: { x: 12, y: 9 } },
-          { ref: 'Gor', pos: { x: 18, y: 16 }, optionals: ['Armure 2'] },
-          { ref: 'Ungor', pos: { x: 9, y: 12 } },
-          { ref: 'Ungor', pos: { x: 15, y: 20 } },
-          { ref: 'Ungor', pos: { x: 19, y: 7 } },
-          { ref: 'Loup', pos: { x: 7, y: 16 } },
-          { ref: 'Loup', pos: { x: 14, y: 12 } },
-          { ref: 'Loup', pos: { x: 17, y: 23 } },
+          { ref: 'gor', pos: { x: 12, y: 9 } },
+          { ref: 'gor', pos: { x: 18, y: 16 }, optionals: ['Armure 2'] },
+          { ref: 'ungor', pos: { x: 9, y: 12 } },
+          { ref: 'ungor', pos: { x: 15, y: 20 } },
+          { ref: 'ungor', pos: { x: 19, y: 7 } },
+          { ref: 'loup', pos: { x: 7, y: 16 } },
+          { ref: 'loup', pos: { x: 14, y: 12 } },
+          { ref: 'loup', pos: { x: 17, y: 23 } },
         ],
         onVictory: flowOf([
           { type: 'giveXp', amount: 120 },
@@ -116,10 +116,10 @@ export function makeForet() {
         // Le camp de Bella la Noire — PNJ NOMMÉE du bestiaire (ADE), à la tête de ses coupe-jarrets.
         id: 'enc-foret-bande',
         enemies: [
-          { ref: 'Bella la Noire', pos: { x: 31, y: 11 } },
-          { ref: 'Humain', pos: { x: 29, y: 9 }, weapon: 'Arc', randomChars: true, label: 'Coupe-jarret de Bella', appearance: { career: 'Voleur', sex: 'F' } },
-          { ref: 'Humain', pos: { x: 33, y: 13 }, weapon: 'Épée bâtarde', randomChars: true, label: 'Spadassin de Bella', appearance: { career: 'Voleur' } },
-          { ref: 'Chien', pos: { x: 28, y: 14 } },
+          { ref: 'bella-la-noire', pos: { x: 31, y: 11 } },
+          { ref: 'humain', pos: { x: 29, y: 9 }, weapon: 'arc', randomChars: true, label: 'Coupe-jarret de Bella', appearance: { tenue: 'hors-la-loi', sex: 'F' } },
+          { ref: 'humain', pos: { x: 33, y: 13 }, weapon: 'epee-batarde', randomChars: true, label: 'Spadassin de Bella', appearance: { tenue: 'hors-la-loi' } },
+          { ref: 'chien', pos: { x: 28, y: 14 } },
         ],
         onVictory: flowOf([
           { type: 'setFlag', flag: 'contrat_foret_fait' },
@@ -197,7 +197,7 @@ export function makeMarais() {
       P(20, 18, 'cadavre', {
         label: 'Voyageur repêché',
         ...fouille(testNode(
-          { skill: 'Résistance', difficulty: 'facile', label: 'Fouiller le noyé sans frémir' },
+          { skill: 'resistance', difficulty: 'facile', label: 'Fouiller le noyé sans frémir' },
           [
             { type: 'giveMoney', silver: 22 },
             { type: 'journal', text: 'Le noyé voyageait riche : 22 pa, que la tourbe lui pardonne.' },
@@ -217,10 +217,10 @@ export function makeMarais() {
         surprise: 'party',
         hidden: true, // embuscade de tourbière : la chose surgit de l'eau morte
         enemies: [
-          { ref: 'Bête des marais', pos: { x: 15, y: 19 } },
-          { ref: 'Pieuvre des tourbières', pos: { x: 22, y: 19 } },
-          { ref: 'Serpent', pos: { x: 9, y: 20 } },
-          { ref: 'Serpent', pos: { x: 21, y: 16 } },
+          { ref: 'bete-des-marais', pos: { x: 15, y: 19 } },
+          { ref: 'pieuvre-des-tourbieres', pos: { x: 22, y: 19 } },
+          { ref: 'serpent', pos: { x: 9, y: 20 } },
+          { ref: 'serpent', pos: { x: 21, y: 16 } },
         ],
         onVictory: flowOf([
           { type: 'setFlag', flag: 'contrat_marais_fait' },
@@ -318,7 +318,7 @@ export function makeVillage() {
         rect: { x: 6, y: 8, w: 3, h: 3 },
         once: true,
         flow: testNode(
-          { skill: 'Résistance', difficulty: 'intermediaire', label: 'Les remontées du puits maudit' },
+          { skill: 'resistance', difficulty: 'intermediaire', label: 'Les remontées du puits maudit' },
           [{ type: 'journal', text: 'L’odeur du puits vous plie en deux — mais rien ne s’accroche. Cette eau a TUÉ le village.' }],
           [
             { type: 'inflictDisease', disease: 'Courante Galopante' },
@@ -332,12 +332,12 @@ export function makeVillage() {
       {
         id: 'enc-village',
         enemies: [
-          { ref: 'Zombie', pos: { x: 14, y: 7 } },
-          { ref: 'Zombie', pos: { x: 18, y: 12 }, optionals: ['Maladie'] },
-          { ref: 'Zombie', pos: { x: 11, y: 16 } },
-          { ref: 'Zombie', pos: { x: 22, y: 8 }, randomChars: true },
-          { ref: 'Zombie', pos: { x: 16, y: 19 } },
-          { ref: 'Goule de crypte', pos: { x: 20, y: 20 } },
+          { ref: 'zombie', pos: { x: 14, y: 7 } },
+          { ref: 'zombie', pos: { x: 18, y: 12 }, optionals: ['Maladie'] },
+          { ref: 'zombie', pos: { x: 11, y: 16 } },
+          { ref: 'zombie', pos: { x: 22, y: 8 }, randomChars: true },
+          { ref: 'zombie', pos: { x: 16, y: 19 } },
+          { ref: 'goule-de-crypte', pos: { x: 20, y: 20 } },
         ],
         onVictory: flowOf([
           { type: 'setFlag', flag: 'contrat_village_fait' },
@@ -400,10 +400,10 @@ export function makeEmbuscade() {
         surprise: 'party',
         hidden: true, // embuscade de route : les détrousseurs jaillissent des fourrés
         enemies: [
-          { ref: 'Gobelin', pos: { x: 14, y: 4 }, randomChars: true },
-          { ref: 'Gobelin', pos: { x: 18, y: 9 }, randomChars: true },
-          { ref: 'Gobelin', pos: { x: 10, y: 10 } },
-          { ref: 'Orc', pos: { x: 21, y: 5 } },
+          { ref: 'gobelin', pos: { x: 14, y: 4 }, randomChars: true },
+          { ref: 'gobelin', pos: { x: 18, y: 9 }, randomChars: true },
+          { ref: 'gobelin', pos: { x: 10, y: 10 } },
+          { ref: 'orc', pos: { x: 21, y: 5 } },
         ],
         onVictory: flowOf([
           { type: 'giveXp', amount: 80 },

@@ -28,10 +28,10 @@ describe('registre de créatures (auto-collecté depuis defs/)', () => {
   });
 
   it('défauts d\'apparence bipède portés par la Race', () => {
-    expect(raceById('Skaven').tenue).toBe('Skaven');
+    expect(raceById('Skaven').tenue).toBe('skaven');
     expect(raceById('Vampire').sex).toBe('M');
     expect(raceById('Goule').head).toBe('goule');
-    expect(raceById('Nain').tenue).toBe('Artisan'); // espèce civilisée → défaut HABILLÉ (anti-« à poil »), comme toutes les races
-    expect(raceById('Humain').tenue).toBe('Bourgeois');
+    expect(raceById('Nain').tenue).toBe('artisan'); // espèce civilisée → défaut HABILLÉ (anti-« à poil »), comme toutes les races
+    expect(raceById('Humain').tenue).toBe('bourgeois');
   });
 });

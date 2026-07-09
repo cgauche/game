@@ -43,23 +43,23 @@ describe('#223 — arme d’authoring hors catalogue', () => {
 });
 
 describe('#223 — garde-robe inconnue = repli citadins BRUYANT', () => {
-  it('carrière au FÉMININ hors catalogue (Marchande) → console.warn + tenue de classe Citadins', () => {
+  it('id hors catalogue (marchande) → console.warn + tenue de classe Citadins', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const t = tenueFor('Marchande');
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Marchande'));
+    const t = tenueFor('marchande');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('marchande'));
     expect(t).toEqual(tenueForClass('citadins'));
   });
 
-  it('libellé inexistant du catalogue (Ouvrier) → console.warn + Citadins', () => {
+  it('LIBELLÉ pris pour un id (Marchand, majuscule) → console.warn + Citadins', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const t = tenueFor('Ouvrier');
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Ouvrier'));
+    const t = tenueFor('Marchand');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('Marchand'));
     expect(t).toEqual(tenueForClass('citadins'));
   });
 
-  it('carrière RÉSOLUE du catalogue (Marchand) → aucun warn', () => {
+  it('id de tenue RÉSOLU du catalogue (marchand) → aucun warn', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    tenueFor('Marchand');
+    tenueFor('marchand');
     expect(warn).not.toHaveBeenCalled();
   });
 });

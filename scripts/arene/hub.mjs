@@ -1,5 +1,5 @@
 /** Le Bourg de l'Arène (hub refondu, id conservé `arene-hub`) — TOUT-EN-SCÈNE, une seule scène. */
-import { scene, P, NPC, hero, resetIds, flowOf, flagWhen, testNode } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, flowOf, flagWhen, testNode } from '../campagne/lib.mjs';
 
 // ── Modèle TOUT-EN-SCÈNE ────────────────────────────────────────────────────────────────────
 // Un bâtiment n'est PLUS une scène-intérieur séparée : c'est une GRANDE empreinte SUR la carte du
@@ -54,7 +54,7 @@ const dlgHub = {
           text: '🔓 Crocheter le vieux coffre du maître (Test de Crochetage).',
           when: flagWhen('!coffre_pris'),
           flow: testNode(
-            { skill: 'Crochetage', difficulty: 'intermediaire', label: 'Crocheter le coffre' },
+            { skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter le coffre' },
             [
               { type: 'setFlag', flag: 'coffre_pris' },
               { type: 'giveMoney', gold: 5 },
@@ -275,7 +275,7 @@ const dlgFrere = {
           text: '🕯️ Piller le tronc des offrandes (Test de Discrétion).',
           when: flagWhen('!tronc_pille'),
           flow: testNode(
-            { skill: 'Discrétion', difficulty: 'difficile', label: 'Piller le tronc sous l’œil de Sigmar' },
+            { skill: 'discretion', difficulty: 'difficile', label: 'Piller le tronc sous l’œil de Sigmar' },
             [
               { type: 'setFlag', flag: 'tronc_pille' },
               { type: 'giveMoney', silver: 30 },
@@ -432,18 +432,18 @@ export function makeHub() {
       NPC('maitre', 25, 20, 'Maître d’arène', {
         facing: 'S',
         dialogueId: 'dlg-hub',
-        appearance: { species: 'Humains (Reiklander)', career: 'Répurgateur', sex: 'M', build: 0.62 },
-        weapon: 'Épée bâtarde',
+        appearance: { species: 'humains-reiklander', tenue: 'repurgateur', sex: 'M', build: 0.62 },
+        weapon: 'epee-batarde',
       }),
       NPC('garde', 25, 34, 'Garde du Bourg', {
         facing: 'S',
         dialogueId: 'dlg-garde',
-        appearance: { species: 'Humains (Reiklander)', career: 'Soldat', sex: 'M', build: 0.58 },
-        weapon: 'Hallebarde',
+        appearance: { species: 'humains-reiklander', tenue: 'soldat', sex: 'M', build: 0.58 },
+        weapon: 'hallebarde',
       }),
-      NPC('villageoise', 21, 22, 'Villageoise', { facing: 'S', dialogueId: 'dlg-rumeurs', anim: 'standing', appearance: { career: 'Mendiant', sex: 'F' } }),
-      NPC('villageois-1', 30, 22, 'Villageois', { anim: 'standing', appearance: { career: 'Mendiant' } }),
-      NPC('villageois-2', 29, 17, 'Badaud', { anim: 'cowering', facing: 'E', appearance: { career: 'Bourgeois' } }),
+      NPC('villageoise', 21, 22, 'Villageoise', { facing: 'S', dialogueId: 'dlg-rumeurs', anim: 'standing', appearance: { tenue: 'mendiant', sex: 'F' } }),
+      NPC('villageois-1', 30, 22, 'Villageois', { anim: 'standing', appearance: { tenue: 'mendiant' } }),
+      NPC('villageois-2', 29, 17, 'Badaud', { anim: 'cowering', facing: 'E', appearance: { tenue: 'bourgeois' } }),
       P(20, 18, 'puits'),
       P(28, 16, 'coffre', { label: 'Le coffre du maître' }),
       P(19, 15, 'lampadaire'),
@@ -457,7 +457,7 @@ export function makeHub() {
         facing: 'S',
         dialogueId: 'dlg-medecin',
         merchant: { archetype: 'medecin' },
-        appearance: { species: 'Humains (Reiklander)', career: 'Apothicaire', sex: 'M', build: 0.46 },
+        appearance: { species: 'humains-reiklander', tenue: 'apothicaire', sex: 'M', build: 0.46 },
       }),
       P(27, 14, 'tente', { foot: { w: 2, h: 2 }, label: 'Infirmerie' }),
       // Coin entraînement (herbe, ouest de la place)
@@ -473,11 +473,11 @@ export function makeHub() {
         facing: 'S',
         dialogueId: 'dlg-taverne',
         merchant: { archetype: 'taverniere' },
-        appearance: { career: 'Bourgeois', sex: 'F', build: 0.55 },
+        appearance: { tenue: 'bourgeois', sex: 'F', build: 0.55 },
       }),
-      NPC('client-1', 5, 8, 'Client', { anim: 'feeding', facing: 'E', appearance: { species: 'Nains', career: 'Batelier' } }),
-      NPC('client-2', 14, 9, 'Habitué', { anim: 'standing', facing: 'O', appearance: { career: 'Mendiant' } }),
-      NPC('client-3', 6, 10, 'Buveur', { anim: 'standing', facing: 'E', appearance: { career: 'Soldat', sex: 'M' } }),
+      NPC('client-1', 5, 8, 'Client', { anim: 'feeding', facing: 'E', appearance: { species: 'nains', tenue: 'batelier' } }),
+      NPC('client-2', 14, 9, 'Habitué', { anim: 'standing', facing: 'O', appearance: { tenue: 'mendiant' } }),
+      NPC('client-3', 6, 10, 'Buveur', { anim: 'standing', facing: 'E', appearance: { tenue: 'soldat', sex: 'M' } }),
       P(4, 4, 'feu-camp', { label: 'Âtre' }),
       P(12, 4, 'etagere'),
       P(13, 4, 'tonneau'),
@@ -494,9 +494,9 @@ export function makeHub() {
       NPC('frere', 40, 5, 'Frère Anselm', {
         facing: 'S',
         dialogueId: 'dlg-frere',
-        appearance: { species: 'Humains (Reiklander)', career: 'Prêtre', sex: 'M', build: 0.5 },
+        appearance: { species: 'humains-reiklander', tenue: 'pretre', sex: 'M', build: 0.5 },
       }),
-      NPC('fidele', 38, 10, 'Fidèle en prière', { anim: 'cowering', facing: 'N', appearance: { career: 'Mendiant', sex: 'F' } }),
+      NPC('fidele', 38, 10, 'Fidèle en prière', { anim: 'cowering', facing: 'N', appearance: { tenue: 'mendiant', sex: 'F' } }),
       P(40, 4, 'autel'),
       P(38, 4, 'chandelier'),
       P(42, 4, 'chandelier'),
@@ -513,10 +513,10 @@ export function makeHub() {
         facing: 'N',
         dialogueId: 'dlg-forgeron',
         merchant: { archetype: 'armurier' },
-        appearance: { species: 'Nains', career: 'Artisan', sex: 'M', build: 0.7 },
-        weapon: 'Marteau de guerre',
+        appearance: { species: 'nains', tenue: 'artisan', sex: 'M', build: 0.7 },
+        weapon: 'marteau-de-guerre',
       }),
-      NPC('apprenti', 11, 31, 'Apprenti', { anim: 'standing', facing: 'O', appearance: { career: 'Artisan', sex: 'M', build: 0.4 } }),
+      NPC('apprenti', 11, 31, 'Apprenti', { anim: 'standing', facing: 'O', appearance: { tenue: 'artisan', sex: 'M', build: 0.4 } }),
       P(4, 28, 'feu-camp', { label: 'Le foyer' }),
       P(6, 30, 'etabli', { label: 'Établi & enclume' }),
       P(4, 32, 'tonneau', { label: 'Cuve à trempe' }),
@@ -530,9 +530,9 @@ export function makeHub() {
         facing: 'N',
         dialogueId: 'dlg-echoppier',
         merchant: { archetype: 'herboriste' },
-        appearance: { career: 'Bourgeois', sex: 'F', build: 0.48 },
+        appearance: { tenue: 'bourgeois', sex: 'F', build: 0.48 },
       }),
-      NPC('chaland', 44, 32, 'Chaland', { anim: 'standing', facing: 'O', appearance: { career: 'Mendiant' } }),
+      NPC('chaland', 44, 32, 'Chaland', { anim: 'standing', facing: 'O', appearance: { tenue: 'mendiant' } }),
       P(37, 28, 'etal-marche', { label: 'Comptoir' }),
       P(45, 28, 'etagere'),
       P(38, 30, 'etagere'),

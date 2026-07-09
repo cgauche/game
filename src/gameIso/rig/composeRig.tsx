@@ -282,7 +282,7 @@ export function RigSprite({ appearance, equip, pose = {}, career, view = 'front'
   appearance: Appearance;
   equip: EquipCtx;
   pose?: Pose;
-  /** Libellé de TENUE à porter (la carrière de jeu d'un héros sert de tenue par défaut). */
+  /** Id de garde-robe (tenue OU carrière) — la carrière de jeu d'un héros sert de tenue par défaut. */
   career?: string;
   view?: View;
   overlays?: RigOverlay[];

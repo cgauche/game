@@ -38,3 +38,6 @@ export const TENUE_BAREFOOT: ReadonlySet<string> = new Set(
 );
 /** Libellés des tenues SPÉCIFIQUES (sélecteur d'éditeur) — les archétypes de classe ne s'assignent pas à la main. */
 export const SPECIFIC_TENUE_NAMES: string[] = TENUE_DEFS.filter((d) => !isClassDef(d.name)).map((d) => d.name);
+/** Tenues SPÉCIFIQUES `{ id, label }` — id dérivé du nom de def AU CHARGEMENT du catalogue (couture de
+ *  build id↔label, comme les clés de `TENUE_BY_ID`). Consommé par les pickers éditeur (id stocké, label affiché). */
+export const SPECIFIC_TENUES: { id: string; label: string }[] = TENUE_DEFS.filter((d) => !isClassDef(d.name)).map((d) => ({ id: slugId(d.name), label: d.name }));

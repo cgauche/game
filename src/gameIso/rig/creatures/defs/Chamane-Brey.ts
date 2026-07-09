@@ -10,7 +10,7 @@ export const creature: CreatureDef = {
   plan: 'biped',
   race: 'Homme-bête',
   perso: {
-    tenue: 'Chamane-Bray',
+    tenue: 'chamane-bray',
     features: [
       appendageFeature('cornes-gor'),
     ],

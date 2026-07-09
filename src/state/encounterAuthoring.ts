@@ -6,7 +6,7 @@
  * la VISIBILITÉ (`hidden`) est un choix explicite (défaut : visible — RAW, le groupe voit ses
  * adversaires, quitte à les manquer sur un Test de Perception opposé via `surprise`).
  *
- * Utilisé par les scènes de test (`src/scenes/**`). Le générateur d'arène (`scripts/arene/lib.mjs`,
+ * Utilisé par les scènes de test (`src/scenes/**`). Le générateur de campagne (`scripts/campagne/lib.mjs`,
  * Node pur) délègue à `buildScene` (`tsx`, MÊME compilateur) — pas de mirroir JS séparé à maintenir.
  */
 import type { CustomStatblock, EncounterDef, EncounterMember, SceneEntity, VictoryCondition } from './scene';

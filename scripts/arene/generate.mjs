@@ -2,7 +2,7 @@
 /**
  * Génère `src/scenes/arene/arene-projet.json` (projet v2 : { schema, scenes, worldMap }).
  * OUTIL D'AUTEUR (itération de layout) — le JSON commité reste la source canonique, 100 %
- * éditable dans l'éditeur. Usage : `tsx scripts/arene/generate.mjs` (tsx car `lib.mjs` importe
+ * éditable dans l'éditeur. Usage : `tsx scripts/arene/generate.mjs` (tsx car `scripts/campagne/lib.mjs` importe
  * `buildScene` du moteur — l'ASCII/les bâtiments/les rencontres sont compilés par le compilateur
  * headless-editor `src/state/mapSpec.ts`, zéro fabrique de scène dupliquée).
  */
@@ -129,7 +129,7 @@ for (const s of scenes) {
 }
 
 // Bâtiments composés (toit + périmètre de murs d'arête + porte + sol) et empilement en `layers` sont
-// désormais produits par `buildScene`/`addBuilding` DANS `lib.mjs::scene` — plus de post-passe ici.
+// désormais produits par `buildScene`/`addBuilding` DANS `campagne/lib.mjs::scene` — plus de post-passe ici.
 
 const doc = { schema: 2, scenes, worldMap };
 const out = join(dirname(fileURLToPath(import.meta.url)), '../../src/scenes/arene/arene-projet.json');

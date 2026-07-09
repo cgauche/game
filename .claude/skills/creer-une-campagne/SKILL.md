@@ -5,18 +5,19 @@ description: À utiliser quand on crée ou modifie une CAMPAGNE — un projet de
 
 # Créer une campagne
 
-Le pipeline d'authoring de campagne EXISTE, testé et éprouvé (Arène, « Le Loup et la Saumure ») — mais
-il vit sous un nom trompeur (`scripts/arene/`, namespacé « arène » de bout en bout). Ne JAMAIS écrire un
+Le pipeline d'authoring de campagne EXISTE, testé et éprouvé (Arène, « Le Loup et la Saumure »). La lib
+partagée vit en `scripts/campagne/lib.mjs` (promue depuis `scripts/arene/`, #218). Ne JAMAIS écrire un
 `*-projet.json` à la main (tableaux de tuiles comptés un par un — fastidieux et silencieusement invalide) :
 tout passe par `scene()`/`buildScene`, le MÊME compilateur que l'éditeur.
 
 ## Le chemin canonique en 6 étapes
 
 **1. `scripts/<campagne>/generate.mjs`, modelé sur `scripts/arene/generate.mjs`.**
-Importer les helpers de `scripts/arene/lib.mjs` (`scene`, `hero`, `NPC`, `P`, `flowOf`, `flagWhen`,
-`testNode`, `fightTrigger`, `resetIds`…) — **par IMPORT, jamais par copie** (`scripts/loup-et-saumure/generate.mjs`
-est le précédent à suivre). `lib.mjs` reste un outil GÉNÉRIQUE malgré son namespace : ne pas le renommer,
-ne pas le dupliquer — l'étendre sur place si un helper manque à toute campagne (pas seulement la tienne).
+Importer les helpers de `scripts/campagne/lib.mjs` (`scene`, `hero`, `NPC`, `P`, `poste`, `flowOf`,
+`flagWhen`, `testNode`, `fightTrigger`, `resetIds`…) — **par IMPORT, jamais par copie**
+(`scripts/loup-et-saumure/generate.mjs` est le précédent à suivre). `scripts/campagne/lib.mjs` est la lib
+GÉNÉRIQUE de TOUTE campagne : ne pas la dupliquer — l'étendre sur place si un helper manque à toutes les
+campagnes (pas seulement la tienne).
 
 **2. Cartes en ASCII via `scene({ rows, legend, base, entities, buildings, encounters, triggers, dialogues })`.**
 `rows` = grille de caractères (`parseAsciiRows`), `legend` mappe un caractère → un id de terrain, `buildings`
@@ -25,11 +26,12 @@ compose toit + murs + porte + sol via `addBuilding` (même primitive que l'édit
 les rangées PAR CODE (motif `seaRows` de `scripts/loup-et-saumure/generate.mjs`) — jamais comptées à la main :
 `parseAsciiRows` lève une erreur EXPLICITE si une ligne n'a pas la largeur attendue.
 
-**3. Écrire des libellés lisibles ; les résolveurs de `lib.mjs` les normalisent en ids stables.**
-`ref` de créature, `skill`, `spell`, trait `arg` (source FERMÉE : écrire l'id en minuscule, ex.
-`Taille (petite)`, jamais le libellé du livre) — chaque résolveur est FAIL-FAST (libellé inconnu → `throw`,
-jamais un id deviné) et IDEMPOTENT (un id déjà résolu passe tel quel). Toute logique du moteur est keyée par
-id stable ; le libellé n'est que de l'affichage (CLAUDE.md règle stricte, en bas de fichier).
+**3. Écrire des IDS stables ; les résolveurs de `lib.mjs` les VALIDENT (fail-fast), ils ne normalisent plus.**
+`ref` de créature, `skill`, `spell`, `species`, `weapon` (trappingId), `appearance.tenue` (id de tenue/
+carrière), trait `arg` (source FERMÉE : id en minuscule, ex. `Taille (petite)`) — chaque validateur laisse
+passer un id valide et `throw` sur TOUT le reste, en pointant où trouver l'id (Compendium/catalogue). Les
+labels ne servent qu'à l'AFFICHAGE et à la SAISIE (pickers de l'éditeur/Compendium qui aident à trouver l'id) ;
+au final ce qu'on manipule c'est des ids (CLAUDE.md, encadré « id STABLE », en bas de fichier).
 
 **4. Sortie = `src/scenes/<campagne>/<campagne>-projet.json`.**
 Format projet v2 (`{ schema: 2, scenes, worldMap }`), COMMITÉ, source canonique, 100 % rééditable dans
@@ -51,15 +53,15 @@ le DOM dans le même `evaluate` que l'action qui le change.
 
 ## Pièges connus (2 lignes max chacun)
 
-- **Coques de navire non résolues par `creatureId()`** : `lib.mjs::normalizeEnemy` ne connaît que le
-  bestiaire (`findCreatureById`/`findCreature`), pas `findVehicleById` — un `ref` vers `vehicles.json`
-  dans `encounters[].enemies[]` lève. Contournement PRÉVU par le schéma : poser l'entité-coque en
-  `entities` BRUTE (jamais normalisée) et l'enrôler via `encounters[].members` (ids explicites). Chantier
-  en cours pour fermer cette friction proprement : issue #218.
-- **Postes d'artillerie (`ShipPoste.item`)** : aucun fabricant dans `lib.mjs` — `ShipPoste.item` matérialise
-  aujourd'hui une `ItemInstance` complète à la main (patron `itemFromTrappingById`, helper local du
-  générateur). Ce schéma est identifié comme un défaut de modélisation (référence par id attendue plutôt
-  qu'une copie de stats) : issue #222 — écrire le helper local en attendant, ne pas le généraliser en dur.
+- **Coques de navire en `enemies[]` terse — OK (#218)** : `creatureId()` accepte créature ∪ véhicule
+  (`findVehicleById`) ; un `ref` vers `vehicles.json` (`cogue`/`langskip`/`loup-imperial`) passe. Pour une
+  coque RICHE (équipage exposé `crewIds`, artillerie `postes`, améliorations `upgrades`), la poser en
+  `entities` BRUTE + l'enrôler via `encounters[].members` reste préférable (plus expressif que le terse).
+- **Postes d'artillerie : `poste(trappingId, side, crewIds?)` (#222)** — helper de `scripts/campagne/lib.mjs`.
+  Émet la forme de référence `{ trappingId, uid, side, crewIds }` : la base (Dégâts/Qualités/Portée) N'est
+  PAS matérialisée, elle est HYDRATÉE au spawn depuis `trappingId` (`hydratePoste`, `src/engine/items.ts`).
+  `trappingId` doit désigner une pièce POSABLE (art d'affût `siegeRig`) sinon `throw`. `crewIds` vide =
+  poste servable en jeu (aucun id de héros connu à l'authoring).
 - **`saboteurDR`/sabotage de coque s'authore SUR l'entité-coque**, effet de COMBAT seulement (le pipeline
   de voyage `seaVoyageFlow`/Test d'équipage est un chemin séparé qui ne lit aucun `GameOp`) — ne pas
   attendre qu'un Effect d'auteur module un Test d'équipage, cette couture n'existe pas.
@@ -75,9 +77,10 @@ le DOM dans le même `evaluate` que l'action qui le change.
 - **`appearance.species` = id STABLE, jamais un libellé** — vocabulaire = ids de `species.json` (espèces
   jouables : `humains-reiklander`, `nains`…) ∪ ids de def rig (monstres/races non-jouables). `species`
   absent = défaut Humain (documenté). Un libellé vit d'un défaut silencieux → poison.
-- **Résolveur `speciesId` de `lib.mjs`** (branché dans `NPC`) : accepte un id valide (idempotent) OU un
-  libellé EXACT de `species.json` (converti en id), tout le reste → throw. L'auteur peut donc écrire
-  `species: 'Humains (Reiklander)'` (libellé lisible) ; la sortie régénérée ne porte que l'id.
+- **Validateurs de `scripts/campagne/lib.mjs`** (`creatureId`/`skillId`/`spellId`/`speciesId`/`tenueId`/
+  `weaponId`, branchés dans `NPC`/`normalizeEnemy`/`scene`) : un id valide passe, TOUT le reste → throw. Ils ne convertissent PLUS
+  aucun libellé — l'auteur écrit `species: 'humains-reiklander'`, `weapon: 'arc'`, `appearance.tenue: 'mendiant'`
+  (ids), jamais les libellés. Les pickers de l'éditeur/Compendium aident à trouver l'id à la saisie.
 - **JAMAIS de note technique dans un texte joueur.** Un `node.text`/dialogue est rendu VERBATIM
   (`DialogueBox.tsx`) : ni identifiant de code (`` `state.vessel.manann` ``), ni tag d'auteur
   (`[INEXPRIMABLE]`/`[CONTOURNÉ]`), ni citation RAW brute (`MDG 14 l.45-47`) ne doivent s'y glisser — les
@@ -85,12 +88,14 @@ le DOM dans le même `evaluate` que l'action qui le change.
 
 ## Renvois
 
+- `docs/campagne-authoring.md` — la carte des coutures d'auteur TOUS SYSTÈMES (pipeline, navire de
+  campagne, routes, catalogues navals, postes, VictoryConditions, règles d'or). Référence vivante.
 - `docs/plans/2026-07-08-211-naval-authoring-journal.md` — le walkthrough complet dont ce skill est la
   distillation (frictions n°0 à n°8, verdicts EXPRIMABLE/CONTOURNÉ/INEXPRIMABLE beat par beat).
-- Issue #218 — chantier « expérience auteur » en cours (coques terse, pipeline introuvable — ce skill
-  répond à la moitié « pipeline introuvable » ; la résolution technique de #218 reste à faire).
+- Issue #218 — chantier « expérience auteur » : lib promue en `scripts/campagne/`, `creatureId()` accepte
+  les coques, helper `poste()` de référence — livrés.
 - Issue #219 — ce skill.
-- Issue #222 — `ShipPoste.item` par référence plutôt que par copie de stats.
+- Issue #222 — `poste()` par référence catalogue plutôt que par copie de stats — livré.
 - `docs/map-authoring.md` — détail de MapSpec/`buildScene`/l'ASCII.
 - `docs/test-scenarios.md` — pendant « scénario de test » (groupe fixe, un seul combat) ; une CAMPAGNE
   (ce skill) est un projet à plusieurs scènes reliées par une carte du monde, pas un scénario de test.

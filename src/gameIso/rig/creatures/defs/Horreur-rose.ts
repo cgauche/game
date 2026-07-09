@@ -17,7 +17,7 @@ export const creature: CreatureDef = {
   name: 'Horreur rose',
   plan: 'biped',
   perso: {
-    tenue: 'Nu',
+    tenue: 'nu',
     gabarit: 'gremlin', // dégingandé à grosse tête — la gueule domine la silhouette
     scale: 1.15,
     monster: { tete: 'horreur', griffes: true },

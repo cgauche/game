@@ -57,7 +57,7 @@ export const creature: CreatureDef = {
   name: 'Lutin',
   plan: 'biped',
   perso: {
-    tenue: 'Nu',
+    tenue: 'nu',
     gabarit: 'decharne',          // chétif, membres grêles
     scale: 0.5,                   // minuscule (« Très petite » géré au combat/footprint ; l'art plafonne à 0.5)
     colors: { peau: '#e7e3da', cheveux: '#cdc8be' }, // peau blafarde, cheveux argentés (éthéré)

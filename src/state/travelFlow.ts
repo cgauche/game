@@ -50,7 +50,7 @@ import { stageAssignmentFromRoles, type StagePosting } from '../engine/activitie
 import { buildStageSteps, type StageContext } from './travelPostes';
 import { startCascade, registerCascadeApplier } from './cascade';
 import type { CascadeStep } from './pendings';
-import { buildSeaPlan, runSeaDays } from './seaVoyageFlow';
+import { buildSeaPlan, runSeaDays, startFastVoyage } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import { DIFFICULTY_MODIFIERS, type Combatant } from '../engine/types';
 
@@ -179,7 +179,7 @@ export function startTravel(
   get: Get, set: Set,
   routeId: string,
   mode: TravelMode,
-  opts: { classKey?: string; hoursPerDay?: number; allure?: Allure; seaPace?: number } = {},
+  opts: { classKey?: string; hoursPerDay?: number; allure?: Allure; seaPace?: number; fast?: boolean } = {},
 ): void {
   const { worldMap, scene, battle, party } = get();
   if (battle || !worldMap || !scene) return;
@@ -197,6 +197,13 @@ export function startTravel(
   // MILLES, résolution du jour déléguée à `seaVoyageFlow` (météo/vent, Tests d'équipage, événements).
   if (mode === 'mer') {
     if (!route.sea) return;
+    // Traversée RAPIDE (MDG 15 l.21-37) : un seul Test de Rude épreuve résout tout le trajet.
+    if (opts.fast) {
+      if (!startFastVoyage(get, set, routeId, from.id, to.id, route, { pace: opts.seaPace })) {
+        log(get, set, ['Aucun navire de campagne en état de prendre la mer — pas de traversée.']);
+      }
+      return;
+    }
     const seaPlan = buildSeaPlan(get, routeId, from.id, to.id, route, { pace: opts.seaPace });
     if (!seaPlan) {
       log(get, set, ['Aucun navire de campagne en état de prendre la mer — pas de traversée.']);

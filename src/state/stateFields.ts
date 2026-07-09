@@ -58,6 +58,7 @@ const STATE_FIELDS = {
   pendingSurgery: { init: null, resetOn: [] }, // hors-combat, vit DANS l'infirmerie (medic, resetOn []) — purgé avec elle
   medic: { init: null, resetOn: [] },
   pendingRest: { init: null, resetOn: [] },
+  pendingCouncil: { init: null, resetOn: [] },
   pendingCleave: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingDualStrike: { init: null, resetOn: ['scene'] },
   pendingReveals: { init: [], resetOn: ['combatStart'] },

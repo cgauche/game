@@ -87,6 +87,9 @@ export type { MedicState, MedicNpc } from './medicFlow';
 import * as restFlow from './restFlow';
 import type { PendingRest, RestPlaces, RestLodging, RestFood } from './restFlow';
 export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
+import { councilPay as councilPayFlow, councilClose as councilCloseFlow } from './shipCrew';
+import type { PendingCouncil } from './shipCrew';
+export type { PendingCouncil } from './shipCrew';
 import { Scene, Dialogue, Effect, isWalkable, type VictoryCondition } from './scene';
 import { placeCombatant } from './spawn';
 import { chebyshev, Pt } from './path';
@@ -379,6 +382,8 @@ export interface GameState extends RollFlowActionsMap {
   medic: MedicState | null;
   /** Modale de Repos (nuit à l'auberge / chez soi / campement — state/restFlow). */
   pendingRest: PendingRest | null;
+  /** Conseil de bord hebdomadaire (choix de paie + recalcul de Moral joué — #229, state/shipCrew). */
+  pendingCouncil: PendingCouncil | null;
   /** Balayage (Frappe Mortelle) d'un héros en cours : enchaînements d'attaque restants. */
   pendingCleave: PendingCleave | null;
   /** Maniement de deux armes : sélection de la 2ᵉ cible (après une 1ʳᵉ frappe réussie). */
@@ -723,6 +728,9 @@ export interface GameState extends RollFlowActionsMap {
   restSleep: () => void;
   restCancel: () => void;
   restContinue: () => void;
+  /** CONSEIL DE BORD (#229) : arrête la paie de la semaine, puis clôt le bilan de Moral. */
+  councilPay: (decision: string) => void;
+  councilClose: () => void;
   // heal{Roll,Reroll,BonusSL,DarkPact,ForceSuccess} : générés (RollFlowActionsMap).
   healConfirm: () => void;
   healCancel: () => void;
@@ -961,6 +969,8 @@ export interface GameState extends RollFlowActionsMap {
   battleCrewTest: (shipId: string, testTypeId: string) => void;
   crewTestConfirm: () => void;
   crewTestCancel: () => void;
+  /** VOYAGE : « Continuer » de la phase RÉSOLU (dénouement affiché sur place) → relance `runSeaDays`. */
+  crewTestContinue: () => void;
   // crewTest{Roll,Reroll,BonusSL,ForceSuccess,DarkPact} : générés (RollFlowActionsMap, MULTI).
   /** Chanson de marin (Talent, MDG 09 l.32-40) : ouvre la modale du chanteur (choix de chanson + Test de Chant). */
   battleSingShanty: (shipId: string) => void;
@@ -1090,7 +1100,7 @@ export interface GameState extends RollFlowActionsMap {
   travelRecap: import('./travelFlow').TravelRecap | null;
   dismissTravelRecap: () => void;
   /** Démarre un voyage depuis le lieu courant le long d'une route (mode + classe + allure). */
-  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure; seaPace?: number }) => void;
+  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure; seaPace?: number; fast?: boolean }) => void;
   /** Reprend un voyage interrompu par une péripétie. */
   resumeTravel: () => void;
   /** Épingle le RÔLE de marche PERSISTANT d'un héros (`travelRole`, id d'Activité de voyage EDOC ch.5),
@@ -1840,6 +1850,10 @@ export const useGame = create<GameState>((set, get) => ({
   restSleep: () => restFlow.restSleep(get, set),
   restCancel: () => restFlow.restCancel(get, set),
   restContinue: () => restFlow.restContinue(get, set),
+
+  // ── Conseil de bord (paie hebdomadaire + Moral) : cf. state/shipCrew ──
+  councilPay: (decision) => councilPayFlow(get, set, decision),
+  councilClose: () => councilCloseFlow(get, set),
 
   usePartyItem: (heroId, uid) => usePartyConsumable(get, set, heroId, uid),
 

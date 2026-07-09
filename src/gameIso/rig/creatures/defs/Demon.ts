@@ -10,7 +10,7 @@ export const creature: CreatureDef = {
   name: "Démon",
   plan: 'biped',
   perso: {
-    tenue: 'Sanguinaire',
+    tenue: 'sanguinaire',
     features: [
       { bone: 'mainG', svg: GRIFFES_ART },
       { bone: 'mainD', svg: GRIFFES_ART },

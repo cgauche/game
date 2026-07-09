@@ -10,7 +10,7 @@ import {
 import {
   type Allure, ALLURE_LABEL, availableAllures, partyFullyMounted, partyMounts,
 } from '../engine/mountTravel';
-import { rationCount } from '../engine/provisions';
+import { rationCount, provisioningManifest } from '../engine/provisions';
 import { findVehicleById } from '../data';
 import { formatMoney, canAfford } from '../engine/money';
 import { Coins } from './Coins';
@@ -21,6 +21,7 @@ import { DIFFICULTY_LABELS } from '../engine/types';
 import { TravelRolesPanel } from './TravelRolesPanel';
 import { ShipRolesPanel } from './ShipRolesPanel';
 import { Icon, IconG } from './Icon';
+import { VB_W, VB_H, Z_MIN, Z_MAX, type Viewport, clampViewport, fitViewport } from './worldMapViewport';
 
 /** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
 function hashStr(s: string): number {
@@ -67,32 +68,9 @@ function CompassRose({ x, y }: { x: number; y: number }) {
 }
 
 // ── Cadre logique de la carte (unités du viewBox) ────────────────────────────────────────────
-const VB_W = 100, VB_H = 64;
-const Z_MIN = 1, Z_MAX = 4;
 /** Écart mini visé entre deux médaillons (unités viewBox) — un médaillon fait r≈2.9 + cartouche,
  *  ~8 les sépare confortablement sans les coller. */
 const DECLUTTER_MIN = 8;
-
-/** Vue caméra de la carte : zoom `z` + translation `panX/panY` (unités viewBox). Le CONTENU est
- *  transformé par `translate(panX panY) scale(z)` ; le parchemin reste plein cadre. */
-interface Viewport { z: number; panX: number; panY: number }
-
-/** Borne le pan pour garder le contenu à l'écran : à `z`, le contenu couvre `VB_*·z` ; on autorise
- *  un débordement translaté dans `[VB_*·(1−z), 0]` (jamais de vide d'un côté au-delà du cadre). */
-function clampViewport(v: Viewport): Viewport {
-  const z = Math.min(Z_MAX, Math.max(Z_MIN, v.z));
-  const minX = VB_W * (1 - z), minY = VB_H * (1 - z);
-  return {
-    z,
-    panX: Math.min(0, Math.max(minX, v.panX)),
-    panY: Math.min(0, Math.max(minY, v.panY)),
-  };
-}
-
-/** Vue centrée+zoomée sur un point logique `(cx, cy)` (unités viewBox) à un zoom donné. */
-function viewOn(cx: number, cy: number, z: number): Viewport {
-  return clampViewport({ z, panX: VB_W / 2 - cx * z, panY: VB_H / 2 - cy * z });
-}
 
 /**
  * Carte du monde (#T2 Voyage) — overlay plein écran en exploration : carte au PARCHEMIN dessinée
@@ -124,6 +102,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const [forceGallop, setForceGallop] = useState(false);
   /** Forcer le rythme en mer (MDG 13 l.95-107) : bonus de M demandé (0 = allure de conception). */
   const [seaPace, setSeaPace] = useState(0);
+  /** Traversée RAPIDE (MDG 15 l.21-37) : tout le trajet en UN Test de Rude épreuve, sinon jour par jour. */
+  const [seaFast, setSeaFast] = useState(false);
   /** Lieu cliqué SANS route directe depuis ici → on l'explique au lieu de rester muet. */
   const [farId, setFarId] = useState<string | null>(null);
   /** Lieu survolé — révèle son nom sur une carte dense (les non-pertinents n'ont pas de cartouche fixe). */
@@ -144,9 +124,25 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   /** Position de rendu décluttérée d'un lieu (repli sur `pos` brut si absent). */
   const posOf = (p: MapPlace) => layout.get(p.id) ?? { x: p.pos.x, y: p.pos.y * 0.64 };
 
-  // Caméra : à l'ouverture, on part du lieu courant (le voyage démarre d'ici) à un zoom modéré.
+  // Caméra : à l'ouverture, on part du lieu courant (le voyage démarre d'ici) à un zoom modéré —
+  // MAIS cadré pour englober les routes+badges directs (#234 : sinon un badge proche du bord tombe
+  // sous la bordure décorative, invisible bien que présent au DOM).
   const hereRender = here ? posOf(here) : { x: VB_W / 2, y: VB_H / 2 };
-  const [view, setView] = useState<Viewport>(() => viewOn(hereRender.x, hereRender.y, 2));
+  /** Lieux/étiquettes de route à garantir visibles au cadrage (ICI + chaque destination directe + le
+   *  milieu de sa courbe, où vit le badge de distance). */
+  const fitPoints = (): { x: number; y: number }[] => {
+    if (!map || !here) return [];
+    const pts: { x: number; y: number }[] = [hereRender];
+    for (const r of routes) {
+      const other = placeById(map, otherEnd(r, here.id));
+      if (!other) continue;
+      const po = posOf(other);
+      const c = routeCurve(hereRender.x, hereRender.y, po.x, po.y, r.id);
+      pts.push(po, { x: c.lx, y: c.ly });
+    }
+    return pts;
+  };
+  const [view, setView] = useState<Viewport>(() => fitViewport(fitPoints(), { ...hereRender, z: 2 }));
 
   const svgRef = useRef<SVGSVGElement | null>(null);
   // Pointeurs actifs (souris/tactile) → glisser (1 doigt) & pinch (2 doigts).
@@ -236,7 +232,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
       const wx = (VB_W / 2 - v.panX) / v.z, wy = (VB_H / 2 - v.panY) / v.z;
       return clampViewport({ z, panX: VB_W / 2 - wx * z, panY: VB_H / 2 - wy * z });
     });
-  const recenterHere = () => setView(viewOn(hereRender.x, hereRender.y, 2));
+  const recenterHere = () => setView(fitViewport(fitPoints(), { ...hereRender, z: 2 }));
 
   if (!map) return null;
   const selRoute: MapRoute | null = routes.find((r) => r.id === selId) ?? null;
@@ -295,6 +291,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const affordable = !cost || canAfford(money, cost);
   const rationsOwned = party.reduce((s, h) => s + (h.dead ? 0 : rationCount(h)), 0);
   const rationsNeeded = plan ? Math.max(0, (plan.days - 1) * passengers) : 0; // les nuits en route mangent
+
+  // Avitaillement au départ EN MER (#241) : le groupe qui appareille sans vivres/eau le SAIT.
+  const seaDaysEstimated = mode === 'mer' && selRoute && seaM > 0 ? Math.max(1, Math.ceil(selRoute.km / (18 * seaM))) : 0;
+  const provisions = mode === 'mer' && seaDaysEstimated > 0 ? provisioningManifest(party, vessel?.waterLitres, seaDaysEstimated) : null;
 
   const fmtDuration = (p: NonNullable<typeof plan>) =>
     p.days <= 1 ? `≈ ${Math.max(1, Math.round(p.travelMinutes / 60))} h` : `${p.days} jours (${hours} h de route/jour)`;
@@ -558,7 +558,27 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               </select>
             </label>
           )}
-          {mode === 'mer' && vessel && seaM > 0 && seaPaceChoices.length > 1 && (
+          {mode === 'mer' && vessel && seaM > 0 && (
+            <div className="wm-modes">
+              <button
+                type="button"
+                className={`btn small ${!seaFast ? 'btn-primary' : ''}`}
+                onClick={() => setSeaFast(false)}
+                title="La traversée se joue jour par jour (météo, Tests d'équipage de Navigation, événements de bord, escales)."
+              >
+                Traversée détaillée
+              </button>
+              <button
+                type="button"
+                className={`btn small ${seaFast ? 'btn-primary' : ''}`}
+                onClick={() => { setSeaFast(true); setSeaPace(0); }}
+                title="Tout le trajet se résout en UN Test d'équipage de Rude épreuve, modulé par l'Humeur de Manann et la durée (MDG ch.15)."
+              >
+                Traversée rapide (un Test)
+              </button>
+            </div>
+          )}
+          {mode === 'mer' && vessel && seaM > 0 && !seaFast && seaPaceChoices.length > 1 && (
             <div className="wm-modes">
               {seaPaceChoices.map((b) => {
                 const diff = b ? forcePaceDifficulty(b, seaRig) : null;
@@ -605,6 +625,17 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               <>Le groupe ne peut pas avancer (surcharge) — allégez les sacs.</>
             )}
           </p>
+          {mode === 'mer' && provisions && (
+            <div className="wm-provision">
+              <span className={`wm-provision-item ${provisions.rationsDispo < provisions.rationsRequises ? 'short' : ''}`}>
+                <Icon id="scenario/port" size="sm" /> Vivres {provisions.rationsDispo}/{provisions.rationsRequises}
+              </span>
+              <span className={`wm-provision-item ${provisions.eauDispoLitres != null && provisions.eauDispoLitres < provisions.eauRequiseLitres ? 'short' : ''}`}>
+                Eau {provisions.eauDispoLitres != null ? `${provisions.eauDispoLitres} L` : '—'}/{provisions.eauRequiseLitres} L
+              </span>
+              {!provisions.suffisant && <span className="wm-provision-item short">Avitaillement insuffisant pour {provisions.joursEstimes} jour(s) estimé(s).</span>}
+            </div>
+          )}
           {mode === 'mer' && vessel ? <ShipRolesPanel /> : rule('travel-etapes') && <TravelRolesPanel />}
           <div className="modal-actions">
             <button type="button" className="btn" onClick={() => setSelId(null)}>Annuler</button>
@@ -614,6 +645,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               disabled={(mode === 'mer' ? !vessel || seaM <= 0 : kmh <= 0 || !affordable) || isGuest}
               title={isGuest ? 'L’hôte décide des départs.'
                 : mode === 'mer' && (!vessel || seaM <= 0) ? 'Aucun navire de campagne en état de prendre la mer.'
+                : mode === 'mer' && provisions && !provisions.suffisant ? 'Le navire appareille sans provisions suffisantes.'
                 : mode !== 'mer' && kmh <= 0 ? 'Le groupe est trop chargé pour avancer — allégez les sacs.'
                 : mode !== 'mer' && !affordable ? `Bourse insuffisante (${cost ? formatMoney(cost) : ''})`
                 : undefined}
@@ -621,10 +653,11 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 classKey: classKey || undefined,
                 hoursPerDay: forced ? (mode === 'pied' ? maxH : mode === 'monture' ? 12 : undefined) : undefined,
                 allure: effAllure,
-                seaPace: mode === 'mer' && seaPace > 0 ? seaPace : undefined,
+                seaPace: mode === 'mer' && !seaFast && seaPace > 0 ? seaPace : undefined,
+                fast: mode === 'mer' && seaFast ? true : undefined,
               })}
             >
-              <Icon id="scenario/travel" size="sm" /> Partir
+              <Icon id="scenario/travel" size="sm" /> {mode === 'mer' && provisions && !provisions.suffisant ? 'Appareiller quand même' : 'Partir'}
             </button>
           </div>
         </div>

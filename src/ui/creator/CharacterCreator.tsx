@@ -463,7 +463,7 @@ export function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: Re
                   const l1 = levelsForCareer(c.id).find((l) => l.level === 1);
                   return (
                     <button key={c.id} className={`pick-row ${d.careerId === c.id ? 'selected' : ''}`} onClick={() => setD(withCareer(d, c.id))}>
-                      <CharacterPreview appearance={pickAppearance(sp.id, d.sex)} career={c.label} size="xs" />
+                      <CharacterPreview appearance={pickAppearance(sp.id, d.sex)} career={c.id} size="xs" />
                       <span className="row-body">
                         <strong>{c.label}</strong>
                         <em>{l1 ? `${l1.label} · ${l1.status}` : findClassById(c.class)?.label}</em>
@@ -482,7 +482,7 @@ export function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: Re
   const main = (
     <>
       <div className="main-head">
-        <CharacterPreview appearance={pickAppearance(sp.id, d.sex)} career={career?.label} size="md" ambiance="panel" />
+        <CharacterPreview appearance={pickAppearance(sp.id, d.sex)} career={d.careerId} size="md" ambiance="panel" />
         <div>
           <h2>
             <CodexRef category="careers" label={career?.label ?? d.careerId}>{career?.label ?? d.careerId}</CodexRef>{' '}
@@ -1183,7 +1183,7 @@ function DetailZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode
         <AppearancePanel
           value={appearance}
           equip={{ weapons: [], armour: [] }}
-          career={findCareerById(d.careerId)?.label}
+          career={d.careerId}
           onChange={(a) => setD({ ...d, sex: a.sex, build: a.build, appSeed: a.seed ?? d.appSeed, colors: a.colors, parts: a.parts })}
         />
       </Section>

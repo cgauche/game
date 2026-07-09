@@ -18,7 +18,7 @@ export const creature: CreatureDef = {
   plan: 'biped', // race par défaut = Humain (baseSpeciesOf) ; buste de damoiselle
   perso: {
     sex: 'F',
-    tenue: 'Nu', // buste nu (la queue prend le bas du corps)
+    tenue: 'nu', // buste nu (la queue prend le bas du corps)
     monster: { griffes: true }, // griffes acérées aux mains
     colors: { peau: '#d3d4c0', cheveux: '#46715f' }, // chair pâle verdâtre + chevelure vert-de-mer
     features: [

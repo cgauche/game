@@ -30,7 +30,7 @@ const ENEMY_CASES: [string, Combatant][] = [
   ['override-monster', mk('en6', 'Soldat', { appearanceOverride: { monster: { tete: 'lezard' } } as never })],
   ['override-colors-parts', mk('en7', 'Soldat', { appearanceOverride: { colors: { peau: '#112233' }, parts: { hair: 3 } } as never })],
   ['override-eyes', mk('en8', 'Soldat', { appearanceOverride: { eyes: { G: 'reptilien', D: 'noir' } } as never })],
-  ['career-tenue', mk('en10', 'Cultiste', { career: 'Flagellant' })],
+  ['career-tenue', mk('en10', 'Cultiste', { career: 'flagellant' })],
 ];
 
 const ENTITY_CASES: [string, string, number, Record<string, unknown> | undefined][] = [
@@ -43,7 +43,7 @@ const ENTITY_CASES: [string, string, number, Record<string, unknown> | undefined
   ['override-colors-parts', 'Soldat', 42, { colors: { peau: '#112233' }, parts: { hair: 3 } }],
   ['override-eyes', 'Soldat', 42, { eyes: { G: 'reptilien', D: 'noir' } }],
   ['override-features', 'Soldat', 42, { features: ['barbe'] }],
-  ['tenue', 'Villageois', 42, { tenue: 'Mendiant' }],
+  ['tenue', 'Villageois', 42, { tenue: 'mendiant' }],
 ];
 
 // On teste la parité des VALEURS, pas la forme de l'objet : l'ORDRE des clés (diffère entre builders) et

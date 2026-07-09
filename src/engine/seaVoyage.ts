@@ -41,10 +41,24 @@ export interface SeaEventDef {
   params?: Record<string, unknown>;
 }
 
+/** Palier du VOYAGE RAPIDE (l.33-37) : cran du d10, conséquences en % + Coups Critiques. */
+export interface FastVoyagePalier {
+  min: number;
+  max: number;
+  id: string;
+  label: string;
+  desc: string;
+  crewLostPct: number;
+  cargoLostPct: number;
+  hullLostPct: number;
+  criticals: number;
+}
+
 const EVENTS = seaEventsJson as unknown as {
   manann: { base: number; portEventMod: number; factors: ManannFactor[] };
   boardEvents: SeaEventDef[];
   portEvents: SeaEventDef[];
+  fastVoyage: { paliers: FastVoyagePalier[] };
 };
 
 const CARGO = seaCargoJson as unknown as {
@@ -68,6 +82,7 @@ const CARGO = seaCargoJson as unknown as {
 export const MANANN_FACTORS = EVENTS.manann.factors;
 export const BOARD_EVENTS = EVENTS.boardEvents;
 export const PORT_EVENTS = EVENTS.portEvents;
+export const FAST_VOYAGE_PALIERS = EVENTS.fastVoyage.paliers;
 export const CARGOES = CARGO.cargoes;
 export const OPPORTUNITE = CARGO.opportunite;
 export const findCargoById = (id: string): CargoDef | undefined => CARGO.cargoes.find((c) => c.id === id);
@@ -119,6 +134,22 @@ export function rollPortEvent(manannScore: number, rng: RNG = defaultRNG): { rol
   const mod = manannScore < 0 ? -EVENTS.manann.portEventMod : manannScore > 0 ? EVENTS.manann.portEventMod : 0;
   const roll = d10(rng) + d10(rng) + mod;
   return { roll, hours: d10(rng) + d10(rng), event: findTableEntry(EVENTS.portEvents, roll) };
+}
+
+// ── Longs voyages TRÈS RAPIDES (l.21-37) ─────────────────────────────────────────────────────────
+
+/** VOYAGE RAPIDE (l.21-37) : un trajet résolu en UN Test. « Lancez le dé dans le tableau … en
+ *  soustrayant 1 au résultat par semaine passée en mer, puis en ajoutant ou retirant la dizaine de
+ *  l'Humeur de Manann et les DR du Test d'équipage de Rude épreuve » (l.28) → palier `[min,max]`
+ *  (`findTableEntry`). `manannScore` : Humeur de Manann du navire (sa dizaine SIGNÉE est le mod, l.26).
+ *  PUR (RNG injecté). */
+export function resolveFastVoyage(
+  crewDR: number, manannScore: number, weeksAtSea: number, rng: RNG = defaultRNG,
+): { roll: number; manannTens: number; result: number; palier: FastVoyagePalier } {
+  const roll = d10(rng);
+  const manannTens = Math.trunc(manannScore / 10); // « la dizaine de l'Humeur de Manann » (l.26/l.28)
+  const result = roll - Math.max(0, weeksAtSea) + manannTens + crewDR;
+  return { roll, manannTens, result, palier: findTableEntry(EVENTS.fastVoyage.paliers, result) };
 }
 
 // ── Commerce maritime (l.309-436) ────────────────────────────────────────────────────────────────

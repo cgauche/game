@@ -517,6 +517,10 @@ export interface PendingCrewTest extends MultiPending<ShipManeuverParticipant> {
    *  (`seaVoyageFlow.resolveVoyageCrewTest`), `shipName` = affichage (la coque vit dans
    *  `travelPlan.vehicle`, pas dans une bataille). Absent = Test de COMBAT (chemin historique). */
   voyage?: { kind: string; shipName: string };
+  /** VOYAGE, phase RÉSOLU-EN-ATTENTE : « Appliquer » a résolu le Test (conséquences déjà appliquées,
+   *  `resolveVoyageCrewTest`) ; le dénouement s'affiche SUR PLACE et « Continuer » (`crewTestContinue`)
+   *  SEUL relance la boucle maritime (`runSeaDays`). Le résultat d'un jet s'affiche là où le jet a eu lieu. */
+  resolved?: { lines: string[] };
 }
 /** CHANSON DE MARIN en attente (Talent, MDG 09 l.32-40) : le chanteur choisit sa chanson CONNUE (pré-jet,
  *  OptionChooser — specs du Talent) puis lance son Test de **Divertissement (Chant)** ; sur un succès,

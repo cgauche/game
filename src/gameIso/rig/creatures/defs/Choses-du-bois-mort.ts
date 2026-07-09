@@ -15,7 +15,7 @@ export const creature: CreatureDef = {
   perso: {
     gabarit: 'trapu-voute', // carrure voûtée trapue = le tell du villageois corrompu
     sex: 'M',
-    tenue: 'Ruraux', // loques de paysan (pas de tenue « mendiant » dédiée)
+    tenue: 'ruraux', // loques de paysan (pas de tenue « mendiant » dédiée)
     monster: { griffes: true }, // griffes (« armes rouillées ou griffes »)
     colors: { peau: '#9a9d88', cheveux: '#39332a' }, // chair gris malade + cheveux ternes
   },

@@ -14,7 +14,7 @@
       "cheveuxO": "#0a0806",
       "cheveuxH": "#2c2620"
     },
-    "tenue": "Nu",
+    "tenue": "nu",
     "head": "demon",
     "legs": "chevre",
     "featureKeys": [
@@ -25,7 +25,7 @@
   {
     "id": "Elfe sylvain",
     "gabarit": "elance",
-    "tenue": "Bourgeois",
+    "tenue": "bourgeois",
     "gabaritOverride": {
       "sl": 1.05,
       "st": 0.9
@@ -59,7 +59,7 @@
       "cheveuxO": "#241810",
       "cheveuxH": "#4c3624"
     },
-    "tenue": "Nu",
+    "tenue": "nu",
     "head": "cyclope",
     "featureKeys": [
       "queue",
@@ -88,7 +88,7 @@
       "epauleG": 4,
       "epauleD": 4
     },
-    "tenue": "Mendiant",
+    "tenue": "mendiant",
     "head": "gobelin",
     "colors": {
       "vet1": "#3a5a28",
@@ -119,7 +119,7 @@
       "epauleG": 8,
       "epauleD": 8
     },
-    "tenue": "Nu",
+    "tenue": "nu",
     "head": "goule",
     "featureKeys": [
       "griffes"
@@ -128,7 +128,7 @@
   {
     "id": "Guerrier du Chaos",
     "gabarit": "trapu-massif",
-    "tenue": "Guerrier du Chaos",
+    "tenue": "guerrier-du-chaos",
     "palette": {
       "peau": "#b7a596",
       "peauO": "#8c7b6e",
@@ -152,7 +152,7 @@
   {
     "id": "Halfling",
     "gabarit": "halfling",
-    "tenue": "Bourgeois",
+    "tenue": "bourgeois",
     "palette": {
       "peau": "#e2b48c",
       "peauO": "#cf9a72",
@@ -172,7 +172,7 @@
   {
     "id": "Haut-Elfe",
     "gabarit": "elance",
-    "tenue": "Bourgeois",
+    "tenue": "bourgeois",
     "palette": {
       "peau": "#c69a72",
       "peauO": "#b98a64",
@@ -214,7 +214,7 @@
       "epauleG": 5,
       "epauleD": 5
     },
-    "tenue": "Nu",
+    "tenue": "nu",
     "head": "caprin",
     "legs": "chevre",
     "featureKeys": [
@@ -225,7 +225,7 @@
   {
     "id": "Humain",
     "gabarit": "moyen",
-    "tenue": "Bourgeois",
+    "tenue": "bourgeois",
     "palette": {
       "cheveux": "#5a4427",
       "peauH": "#e2b48c",
@@ -258,7 +258,7 @@
       "cheveuxO": "#241810",
       "cheveuxH": "#4c3624"
     },
-    "tenue": "Nu",
+    "tenue": "nu",
     "head": "taureau",
     "legs": "chevre",
     "featureKeys": [
@@ -270,7 +270,7 @@
   {
     "id": "Nain",
     "gabarit": "courtaud",
-    "tenue": "Artisan",
+    "tenue": "artisan",
     "palette": {
       "cheveux": "#5a3a1e",
       "peauO": "#d98e6a",
@@ -301,7 +301,7 @@
       "cheveuxO": "#241810",
       "cheveuxH": "#4c3624"
     },
-    "tenue": "Ogre",
+    "tenue": "ogre",
     "head": "ogre",
     "pose": {
       "torse": 6,
@@ -330,7 +330,7 @@
       "epauleG": 5,
       "epauleD": 5
     },
-    "tenue": "Mendiant",
+    "tenue": "mendiant",
     "head": "orc",
     "colors": {
       "vet1": "#5a4a30",
@@ -356,7 +356,7 @@
       "epauleG": 4,
       "epauleD": 4
     },
-    "tenue": "Skaven",
+    "tenue": "skaven",
     "head": "rat",
     "featureKeys": [
       "queue-rat"
@@ -373,7 +373,7 @@
       "cheveuxO": "#16220c",
       "cheveuxH": "#384a22"
     },
-    "tenue": "Nu",
+    "tenue": "nu",
     "head": "gobelin",
     "featureKeys": [
       "queue"
@@ -390,7 +390,7 @@
       "cheveuxO": "#5a5e68",
       "cheveuxH": "#aab0bc"
     },
-    "tenue": "Squelette",
+    "tenue": "squelette",
     "head": "crane"
   },
   {
@@ -411,7 +411,7 @@
       "epauleG": 6,
       "epauleD": 6
     },
-    "tenue": "Nu",
+    "tenue": "nu",
     "head": "troll",
     "featureKeys": [
       "verrues"
@@ -433,7 +433,7 @@
       "cheveuxO": "#0a0808",
       "cheveuxH": "#2c262a"
     },
-    "tenue": "Vampire",
+    "tenue": "vampire",
     "dropHeadgear": true,
     "sex": "M",
     "parts": {
@@ -470,7 +470,7 @@
       "cou": 6,
       "tete": -4
     },
-    "tenue": "Mendiant",
+    "tenue": "mendiant",
     "head": "pourri",
     "featureKeys": [
       "plaie"

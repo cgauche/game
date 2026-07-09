@@ -28,6 +28,21 @@ export function weaponFromLabel(label: string): Weapon {
   return w;
 }
 
+/** Arme de RENDU depuis un `trappingId` d'authoring de scène (`SceneEntity.weapon`) : lookup EXACT au
+ *  catalogue (`findTrappingById`) — type déduit du Groupe, FORME/nom hérités du trapping. Id hors
+ *  catalogue → `console.warn` bruyant (#223) + arme générique (le rendu ne casse pas, la faute est visible). */
+export function weaponFromId(trappingId: string): Weapon {
+  const trapping = findTrappingById(trappingId);
+  if (!trapping) {
+    console.warn(`[weapon] trappingId « ${trappingId} » introuvable au catalogue d'armes (#223) — arme générique`);
+    const w: Weapon = { name: trappingId, type: 'melee', damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}` };
+    if (RANGED_GROUPS.has(weaponGroupKey(w))) w.type = 'ranged';
+    return w;
+  }
+  const type: 'melee' | 'ranged' = trapping.type === 'ranged' ? 'ranged' : 'melee';
+  return { name: trapping.label, type, damage: { plusBF: false, flat: 0 }, qualities: [], uid: `w-${newUid()}`, ...(trapping.shape ? { shape: trapping.shape } : {}) };
+}
+
 /**
  * Résout l'`arg` d'un trait `arme`/`a-distance` (`specsSource` `weaponsMelee`/`weaponsRanged`, cf.
  * `data/index.ts`) vers son TRAPPING de catalogue — l'`arg` porte alors un `id` STABLE (validité :

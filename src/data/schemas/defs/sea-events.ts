@@ -32,6 +32,21 @@ const seaEventDef = z.strictObject({
   params: z.record(z.string(), z.unknown()),
 });
 
+/** Palier du VOYAGE RAPIDE (`FastVoyagePalier`, `src/engine/seaVoyage.ts`) — cran du d10 (l.33-37) :
+ *  fourchette `[min,max]` (`findTableEntry`) + conséquences en % (équipage/cargaison/Blessures) et
+ *  Coups Critiques. `desc` = verbatim RAW (règle 5). */
+const fastVoyagePalier = z.strictObject({
+  min: z.number(),
+  max: z.number(),
+  id: z.string(),
+  label: z.string(),
+  desc: z.string(),
+  crewLostPct: z.number(),
+  cargoLostPct: z.number(),
+  hullLostPct: z.number(),
+  criticals: z.number(),
+});
+
 export const schema = z.strictObject({
   manann: z.strictObject({
     base: z.number(),
@@ -40,6 +55,7 @@ export const schema = z.strictObject({
   }),
   boardEvents: z.array(seaEventDef),
   portEvents: z.array(seaEventDef),
+  fastVoyage: z.strictObject({ paliers: z.array(fastVoyagePalier) }),
 });
 
 export type SeaEventsData = z.infer<typeof schema>;

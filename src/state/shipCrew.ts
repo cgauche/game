@@ -5,9 +5,13 @@
  * batterie, perception…) — un seul endroit assigne les marins aux postes.
  */
 import type { Combatant } from '../engine/types';
-import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, tickShipMorale, weeklyCrewWageBrass, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
-import { fromBrass, subtract as moneySub, formatMoney } from '../engine/money';
+import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, weeklyCrewWageBrass, recalcMorale, payChoiceCostBrass, isPayChoice, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
+import { fromBrass, subtract as moneySub, formatMoney, type Money } from '../engine/money';
+import { cadenceAuto } from '../engine/cadence';
 import type { RNG } from '../engine/dice';
+import type { CampaignVessel } from './store';
+import type { NightEntry } from './restFlow';
+import type { PendingBase } from './rollFlowFactory';
 import type { PairedSense } from '../engine/ops';
 import { findCrewRoleById, findCrewTestTypeById, findVehicleById, findSeaShantyById } from '../data';
 import { exposedCrew } from '../engine/shipCritical';
@@ -247,45 +251,169 @@ export function applyShipMoraleDelta(get: Get, set: SetFn, ship: Combatant, delt
   return lines;
 }
 
+/** CONSEIL DE BORD hebdomadaire (#229) : phase `choix` de la paie (aucune mutation), puis `bilan` où le
+ *  recalcul de Moral se joue (PV des facteurs + delta + nouvelle bande). Ancré au navire de campagne unique. */
+export interface PendingCouncil extends PendingBase {
+  /** Jour de campagne au franchissement de semaine (source de la semaine recalculée). */
+  today: number;
+  /** Barème hebdomadaire (solde régulière due, sous de cuivre) — base des montants offerts. */
+  wageBrass: number;
+  phase: 'choix' | 'bilan';
+  /** bilan : id du facteur de paie retenu. */
+  decision?: string;
+  /** bilan : procès-verbal des jets de Moral (un par facteur). */
+  results?: NightEntry[];
+  /** bilan : variation totale, avant/après (nouvelle bande dérivée d'`after`). */
+  delta?: number;
+  before?: number;
+  after?: number;
+}
+
+/** Résultat PUR d'une semaine d'entretien du navire (paie + recalcul du Moral). */
+export interface VesselWeekOutcome {
+  /** Navire mis à jour (Moral recalculé, `lastMoraleWeek` avancé, `wagesOwed` cumulé). */
+  vessel: CampaignVessel;
+  /** Bourse après prélèvement de la solde. */
+  money: Money;
+  /** Ligne de journal de la PAIE (ou null : aucun équipage salarié). */
+  paidLine: string | null;
+  /** Solde EFFECTIVEMENT versée cette semaine (sous de cuivre). */
+  costBrass: number;
+  /** Jets de Moral par facteur (surface le recalcul en procès-verbal). */
+  factorRolls: MoraleRoll[];
+  delta: number;
+  before: number;
+  after: number;
+  /** Journal complet (paie + Moral recalculé + un jet par facteur). */
+  lines: string[];
+}
+type MoraleRoll = { id: string; label: string; rolled: number };
+
 /**
- * Entretien HEBDOMADAIRE du navire de campagne (MDG 14) : PAIE de l'équipage salarié PUIS recalcul du Moral,
- * en une seule fois par semaine calendaire (même garde que `tickShipMorale`). La solde due (`weeklyCrewWageBrass`)
- * est prélevée sur la bourse du groupe si payable → facteur `paie-reguliere` ; sinon `pas-de-paie` + dette
- * cumulée dans `wagesOwed`. Politique de déduction automatique, régulière par défaut : #216 (les variantes
- * généreuse/chiche restent des choix joueur, #229). Le facteur de paie n'est injecté que pour le recalcul de
- * CETTE semaine, jamais persisté dans `morale.factors` (édités par l'auteur). Appelé par `upkeep.ts` (MÊME site
- * que l'ancien tick). Renvoie le journal (vide si aucune semaine franchie / pas de navire). RNG injecté.
+ * Cœur PUR de l'entretien HEBDOMADAIRE du navire de campagne (MDG 14) : PAIE de l'équipage salarié selon
+ * la DÉCISION `decision` (id d'un facteur de paie de `PAY_CHOICES`, ou null = pas d'équipage salarié) PUIS
+ * recalcul du Moral. Ne lit ni ne mute le store — prend le navire + la bourse, renvoie leurs nouvelles
+ * valeurs + le procès-verbal. La solde versée = `payChoiceCostBrass(barème, decision)` (généreuse ×2,
+ * régulière ×1, chiche ×½, pas-de-paie ×0) ; `pas-de-paie` (ou une bourse insuffisante) cumule la solde
+ * régulière due dans `wagesOwed`. Le facteur de paie n'est injecté que pour le recalcul de CETTE semaine,
+ * jamais persisté dans `morale.factors` (édités par l'auteur). #216/#229. RNG injecté.
+ */
+export function resolveVesselWeek(vessel: CampaignVessel, money: Money, decision: string | null, today: number, rng: RNG): VesselWeekOutcome {
+  const week = Math.floor(today / 7);
+  const wageBrass = weeklyCrewWageBrass(vessel.crew);
+  const lines: string[] = [];
+  let paidFactor: string | null = null;
+  let paidLine: string | null = null;
+  let outMoney = money;
+  let costBrass = 0;
+  let wagesOwed = vessel.wagesOwed ?? 0;
+  if (wageBrass > 0 && decision && isPayChoice(decision)) {
+    if (decision === 'pas-de-paie') {
+      paidFactor = 'pas-de-paie';
+      wagesOwed += wageBrass;
+      paidLine = `L'équipage n'est pas payé — solde due cumulée (${formatMoney(fromBrass(wageBrass))}).`;
+    } else {
+      costBrass = payChoiceCostBrass(wageBrass, decision);
+      const cost = fromBrass(costBrass);
+      const paid = moneySub(money, cost);
+      if (paid) {
+        outMoney = paid;
+        paidFactor = decision;
+        paidLine = `Solde hebdomadaire de l'équipage versée : ${formatMoney(cost)}.`;
+      } else {
+        // Bourse insuffisante → repli `pas-de-paie` + dette (défaut de la cadence auto ; en Conseil de
+        // bord manuel l'option non payable est désactivée, ce repli ne s'y produit pas).
+        paidFactor = 'pas-de-paie';
+        costBrass = 0;
+        wagesOwed += wageBrass;
+        paidLine = `Bourse insuffisante pour la solde de l'équipage (${formatMoney(cost)}) — l'équipage n'est pas payé.`;
+      }
+    }
+    lines.push(paidLine);
+  }
+  const factorsThisWeek = paidFactor && !vessel.morale.factors.includes(paidFactor)
+    ? [...vessel.morale.factors, paidFactor]
+    : vessel.morale.factors;
+  const before = vessel.morale.score;
+  const r = recalcMorale(before, factorsThisWeek, rng);
+  const newVessel: CampaignVessel = {
+    ...vessel,
+    morale: { ...vessel.morale, score: r.score, lastMoraleWeek: week },
+    ...(wagesOwed ? { wagesOwed } : {}),
+  };
+  lines.push(`Moral de l'équipage recalculé : ${r.score} (${moraleBand(r.score).desc.split('.')[0]}).`, ...r.lines);
+  return { vessel: newVessel, money: outMoney, paidLine, costBrass, factorRolls: r.rolls, delta: r.delta, before, after: r.score, lines };
+}
+
+/** Décision de paie PAR DÉFAUT de la cadence auto (#216) : paie RÉGULIÈRE dès qu'il y a un équipage
+ *  salarié — `resolveVesselWeek` bascule seul sur le repli « bourse insuffisante » (dette) si besoin ;
+ *  null sans équipage salarié. PUR. */
+function defaultPayDecision(wageBrass: number): string | null {
+  return wageBrass > 0 ? 'paie-reguliere' : null;
+}
+
+/**
+ * Entretien HEBDOMADAIRE du navire de campagne (MDG 14) — appelé par `upkeep.ts` (site UNIQUE) une fois par
+ * semaine calendaire (même garde que `tickShipMorale`). CADENCE-AWARE (#229) : quand un humain est à la barre
+ * (cadence MANUELLE) et qu'un vrai choix de paie existe (équipage salarié), la décision REMONTE en CONSEIL DE
+ * BORD (modale `pendingCouncil`) — aucune mutation ici, le recalcul se joue à la validation du joueur. Il n'y
+ * a pas de combattant « navire » à piloter → le prédicat de contrôle canonique se réduit à la cadence
+ * (`cadenceAuto` ; en Rapide/Auto le recalcul se résout seul, comme un jet de fin de Round). En combat, jamais
+ * de conseil (repli auto silencieux). Cadence auto / pas d'équipage salarié → recalcul immédiat, régulière par
+ * défaut (#216). Renvoie le journal (vide si aucune semaine franchie / conseil convoqué / pas de navire). RNG injecté.
  */
 export function tickCampaignVesselWeek(get: Get, set: SetFn, today: number, rng: RNG): string[] {
   const vessel = get().vessel;
   if (!vessel) return [];
   const week = Math.floor(today / 7);
   if (week <= vessel.morale.lastMoraleWeek) return [];
-  const lines: string[] = [];
   const wageBrass = weeklyCrewWageBrass(vessel.crew);
-  let paidFactor: string | null = null;
-  let wagesOwed = vessel.wagesOwed ?? 0;
-  if (wageBrass > 0) {
-    const cost = fromBrass(wageBrass);
-    const paid = moneySub(get().money, cost);
-    if (paid) {
-      set({ money: paid });
-      paidFactor = 'paie-reguliere';
-      lines.push(`Solde hebdomadaire de l'équipage versée : ${formatMoney(cost)}.`);
-    } else {
-      paidFactor = 'pas-de-paie';
-      wagesOwed += wageBrass;
-      lines.push(`Bourse insuffisante pour la solde de l'équipage (${formatMoney(cost)}) — l'équipage n'est pas payé.`);
-    }
+  if (!cadenceAuto() && wageBrass > 0 && !get().battle && !get().pendingCouncil) {
+    set({ pendingCouncil: { today, wageBrass, phase: 'choix' } });
+    return [];
   }
-  const factorsThisWeek = paidFactor && !vessel.morale.factors.includes(paidFactor)
-    ? [...vessel.morale.factors, paidFactor]
-    : vessel.morale.factors;
-  const mt = tickShipMorale({ ...vessel.morale, factors: factorsThisWeek }, today, rng);
-  const cur = get().vessel!; // ré-lu après le prélèvement (vessel inchangé par le set money)
-  set({ vessel: { ...cur, morale: { ...cur.morale, score: mt.state.score, lastMoraleWeek: mt.state.lastMoraleWeek }, ...(wagesOwed ? { wagesOwed } : {}) } });
-  lines.push(`Moral de l'équipage recalculé : ${mt.state.score} (${moraleBand(mt.state.score).desc.split('.')[0]}).`, ...mt.lines);
-  return lines;
+  const out = resolveVesselWeek(vessel, get().money, defaultPayDecision(wageBrass), today, rng);
+  set({ money: out.money, vessel: out.vessel });
+  return out.lines;
+}
+
+/** Une entrée de procès-verbal (`NightEntry`) par jet de facteur de Moral — non-d100 (dés signés `+2d10`),
+ *  donc ligne de PV LECTURE SEULE (le recalcul de Moral n'est pas un Test influençable par la Chance). #229 */
+function factorLedger(rolls: MoraleRoll[]): NightEntry[] {
+  return rolls.map((f, i) => ({
+    id: `council-factor-${i}`,
+    icon: 'scenario/naval',
+    label: f.label,
+    text: `${f.rolled >= 0 ? '+' : ''}${f.rolled} Moral`,
+    tone: f.rolled > 0 ? 'ok' : f.rolled < 0 ? 'bad' : 'info',
+  }));
+}
+
+/**
+ * CONSEIL DE BORD — le joueur ARRÊTE la paie de la semaine (#229). Phase `choix` (aucune mutation encore) →
+ * `councilPay(decision)` prélève la solde, recalcule le Moral (`resolveVesselWeek`, cœur PUR partagé avec la
+ * cadence auto) et bascule en phase `bilan` où le recalcul se JOUE (PV des facteurs + delta + nouvelle bande).
+ * Choix invalide / non payable rejeté (l'UI désactive déjà l'option non payable ; pas-de-paie toujours offert).
+ */
+export function councilPay(get: Get, set: SetFn, decision: string): void {
+  const p = get().pendingCouncil;
+  const vessel = get().vessel;
+  if (!p || p.phase !== 'choix' || !vessel || !isPayChoice(decision)) return;
+  // Non payable (hors pas-de-paie) → rejet : le Conseil n'accepte que ce que la bourse couvre.
+  if (decision !== 'pas-de-paie' && !moneySub(get().money, fromBrass(payChoiceCostBrass(p.wageBrass, decision)))) return;
+  const out = resolveVesselWeek(vessel, get().money, decision, p.today, battleRng());
+  set({
+    money: out.money,
+    vessel: out.vessel,
+    journal: [...get().journal.slice(-40), ...out.lines],
+    pendingCouncil: { ...p, phase: 'bilan', decision, results: factorLedger(out.factorRolls), delta: out.delta, before: out.before, after: out.after },
+  });
+}
+
+/** Clôt le Conseil de bord (phase bilan) — le recalcul a déjà été appliqué à la validation de la paie. #229 */
+export function councilClose(get: Get, set: SetFn): void {
+  if (get().pendingCouncil?.phase !== 'bilan') return;
+  set({ pendingCouncil: null });
 }
 
 /**

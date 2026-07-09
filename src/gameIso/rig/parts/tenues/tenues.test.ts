@@ -12,11 +12,11 @@ describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
     expect(Object.keys(CLASS_TENUE_BY_ID).length).toBe(8);
   });
 
-  it("une tenue SPÉCIFIQUE déposée en defs/ est consommée par tenueFor — un fichier, zéro merge", () => {
+  it("une tenue SPÉCIFIQUE déposée en defs/ est consommée par tenueFor (par ID) — un fichier, zéro merge", () => {
     expect(TENUE_BY_ID['guerrier-du-chaos']).toBeDefined();
-    const t = tenueFor('Guerrier du Chaos');
+    const t = tenueFor('guerrier-du-chaos');
     expect(pickView(t.tete, 'profile')).toContain('@metal'); // heaume cornu, vue dédiée
-    expect(tenuePaletteFor('Guerrier du Chaos').metal).toBe('#3a3a46'); // palette portée par le def
+    expect(tenuePaletteFor('guerrier-du-chaos').metal).toBe('#3a3a46'); // palette portée par le def
   });
 
   it('chaque def expose torse + jambes non vides', () => {
@@ -32,11 +32,11 @@ describe('registre des tenues (defs/ = source UNIQUE, data-driven)', () => {
     expect(TENUE_BAREFOOT.has('squelette')).toBe(true);
   });
 
-  it('tenueFor("Nu") renvoie le corps nu', () => {
-    expect(tenueFor('Nu')).toBe(TENUE_NUE);
+  it('tenueFor("nu") renvoie le corps nu', () => {
+    expect(tenueFor('nu')).toBe(TENUE_NUE);
   });
 
-  it("tenueFor(carrière inconnue) retombe sur l'archétype de classe Citadins", () => {
-    expect(tenueFor('Carrière imaginaire')).toBe(CLASS_TENUE_BY_ID.citadins);
+  it("tenueFor(id inconnu) retombe sur l'archétype de classe Citadins", () => {
+    expect(tenueFor('carriere-imaginaire')).toBe(CLASS_TENUE_BY_ID.citadins);
   });
 });

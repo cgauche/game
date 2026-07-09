@@ -15,7 +15,7 @@ export const creature: CreatureDef = {
   name: 'Furie du Chaos',
   plan: 'biped',
   perso: {
-    tenue: 'Nu',
+    tenue: 'nu',
     gabarit: 'elance-voute',
     monster: { tete: 'chien', ailes: 'cuir', griffes: true, queue: true },
     colors: { peau: '#3a2c22' }, // fourrure sombre (les ailes-cuir @peauO suivent)

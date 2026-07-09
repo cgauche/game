@@ -29,6 +29,7 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 | Ajouter une créature (rig) | `docs/creer-une-creature.md` |
 | Ajouter/curer une donnée dans `src/data/*.json` (hors sort/créature/effet/icône) | `docs/donnees.md` (carte + conventions) + skill `ajouter-une-donnee` |
 | Authoring de map | `docs/map-authoring.md` |
+| Créer/modifier une campagne (projet multi-scènes + carte du monde) | `docs/campagne-authoring.md` + skill `creer-une-campagne` |
 | Créer ou retoucher un écran UI (CSS, densité, responsive) | `docs/charte-ui.md` + règle stricte 4 |
 
 > **Politique `docs/`** : ce dossier ne contient que des **références vivantes**, maintenues au fil
@@ -97,6 +98,10 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 > jamais de `Map`/`Record`/comparaison par label dans `src/engine`/`src/state` (pas de
 > `X_BY_LABEL`). Seule couture tolérée : la conversion label→id au CHARGEMENT des données,
 > dans `src/data/index.ts` uniquement.
+> Doctrine utilisateur (2026-07-09, verbatim) : « Le seul endroit où on peut mettre des labels,
+> c'est dans le champ `label`, ou pour l'afficher, ou sur des écrans du codex/éditeur pour aider à
+> la saisie — mais au final ce qu'on manipule c'est des IDs. » Y COMPRIS à l'authoring : l'auteur
+> écrit des ids ; les résolveurs (`scripts/*/lib.mjs`) VALIDENT (fail-fast), ils ne normalisent plus.
 
 ## Sources VF — l'essentiel
 

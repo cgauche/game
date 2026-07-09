@@ -968,5 +968,64 @@
       "kind": "saturation",
       "params": {}
     }
-  ]
+  ],
+  "fastVoyage": {
+    "paliers": [
+      {
+        "min": -999,
+        "max": 0,
+        "id": "desastreux",
+        "label": "Voyage désastreux",
+        "desc": "Voyage désastreux. 50 % des PNJ membres de l'équipage sont manquants. 75 % de la cargaison s'est gâtée ou a été volée. Le vaisseau perd 75 % de ses Blessures et subit 3 Coups Critiques.",
+        "crewLostPct": 50,
+        "cargoLostPct": 75,
+        "hullLostPct": 75,
+        "criticals": 3
+      },
+      {
+        "min": 1,
+        "max": 2,
+        "id": "ereintant",
+        "label": "Voyage éreintant",
+        "desc": "Voyage éreintant. 20 % des PNJ membres de l'équipage sont perdus. 50 % de la cargaison s'est gâtée ou a été volée. Le vaisseau perd 50 % de ses Blessures et subit 2 Coups Critiques.",
+        "crewLostPct": 20,
+        "cargoLostPct": 50,
+        "hullLostPct": 50,
+        "criticals": 2
+      },
+      {
+        "min": 3,
+        "max": 5,
+        "id": "difficile",
+        "label": "Voyage difficile",
+        "desc": "Voyage difficile. 10 % des PNJ membres de l'équipage sont perdus. 25 % de la cargaison s'est gâtée ou a été volée. Le vaisseau perd 25 % de ses Blessures et subit 1 Coup Critique.",
+        "crewLostPct": 10,
+        "cargoLostPct": 25,
+        "hullLostPct": 25,
+        "criticals": 1
+      },
+      {
+        "min": 6,
+        "max": 9,
+        "id": "sans-encombre",
+        "label": "Voyage sans encombre",
+        "desc": "Voyage sans encombre. 10 % de la cargaison s'est gâtée.",
+        "crewLostPct": 0,
+        "cargoLostPct": 10,
+        "hullLostPct": 0,
+        "criticals": 0
+      },
+      {
+        "min": 10,
+        "max": 999,
+        "id": "parfait",
+        "label": "Voyage parfait",
+        "desc": "Voyage parfait. Pas de conséquence négative.",
+        "crewLostPct": 0,
+        "cargoLostPct": 0,
+        "hullLostPct": 0,
+        "criticals": 0
+      }
+    ]
+  }
 }

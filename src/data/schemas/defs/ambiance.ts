@@ -22,6 +22,15 @@ const povFogSchema = z.strictObject({
   fogGamma: z.number(),
 });
 
+// #239 — FX de météo AUTHORÉE de scène (`scene.weather`), par type.
+const weatherFxSchema = z.strictObject({
+  tint: z.string(),
+  alpha: z.number(),
+  particles: z.enum(['pluie', 'averse', 'neige']).optional(),
+  pcolor: z.string().optional(),
+  density: z.number().optional(),
+});
+
 export const schema = z.strictObject({
   ambientFloor: z.number(),
   iso: z.strictObject({
@@ -36,6 +45,12 @@ export const schema = z.strictObject({
       alpha: z.number(),
       topFrac: z.number(),
       bottomFrac: z.number(),
+    }),
+    weather: z.strictObject({
+      pluie: weatherFxSchema.optional(),
+      brouillard: weatherFxSchema.optional(),
+      neige: weatherFxSchema.optional(),
+      tempete: weatherFxSchema.optional(),
     }),
   }),
   pov: z.strictObject({

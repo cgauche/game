@@ -39,6 +39,7 @@ import { RNG, defaultRNG, d10 } from './dice';
 import { rollTest } from './tests';
 import { hasActiveFlag } from './activeFlags';
 import { itemCapability } from './capabilities';
+import { dailyWaterLitres } from './seaWeather';
 
 /** État de faim d'un personnage (absent = nourri normalement). */
 export interface HungerState {
@@ -295,4 +296,29 @@ export function dailyWaterUpkeep(c: Combatant, hasWater: boolean, resVal: number
   }
   c.thirst = s;
   return res;
+}
+
+/** Manifeste d'avitaillement AU DÉPART (#241) : vivres/eau disponibles vs requis pour couvrir
+ *  `joursEstimes` de voyage. PUR — aucune mutation, aucune consommation. `waterLitres` = tonneaux du
+ *  navire (`CampaignVessel.waterLitres`, absent = ravitaillement réputé assuré, cf. en-tête) ; l'eau
+ *  requise suit le régime de bord médian (`dailyWaterLitres('mediane')`, MDG ch.14 l.242 — la bande de
+ *  Température réelle n'est tirée qu'en mer). Les vivres suivent Brouet (l.113 : 1 ration / 2 jours). */
+export interface ProvisioningManifest {
+  joursEstimes: number;
+  rationsDispo: number;
+  rationsRequises: number;
+  eauDispoLitres: number | null;
+  eauRequiseLitres: number;
+  suffisant: boolean;
+}
+
+export function provisioningManifest(party: Combatant[], waterLitres: number | undefined, joursEstimes: number): ProvisioningManifest {
+  const alive = party.filter((h) => !h.dead);
+  const days = Math.max(0, joursEstimes);
+  const rationsDispo = alive.reduce((sum, h) => sum + rationCount(h), 0);
+  const rationsRequises = alive.reduce((sum, h) => sum + (hasBrouet(h) ? Math.ceil(days / 2) : days), 0);
+  const eauRequiseLitres = alive.length * days * dailyWaterLitres('mediane');
+  const eauDispoLitres = waterLitres ?? null;
+  const suffisant = rationsDispo >= rationsRequises && (eauDispoLitres == null || eauDispoLitres >= eauRequiseLitres);
+  return { joursEstimes: days, rationsDispo, rationsRequises, eauDispoLitres, eauRequiseLitres, suffisant };
 }

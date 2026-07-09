@@ -56,6 +56,7 @@ function runOneSeaDay() {
     if (!p) break;
     for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
     get().crewTestConfirm();
+    if (get().pendingCrewTest?.resolved) get().crewTestContinue(); // dénouement SUR PLACE → « Continuer »
   }
 }
 

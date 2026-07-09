@@ -2722,11 +2722,11 @@
      "dialogueId": "dlg-hub",
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Répurgateur",
+      "tenue": "repurgateur",
       "sex": "M",
       "build": 0.62
      },
-     "weapon": "Épée bâtarde"
+     "weapon": "epee-batarde"
     },
     {
      "id": "garde",
@@ -2740,11 +2740,11 @@
      "dialogueId": "dlg-garde",
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Soldat",
+      "tenue": "soldat",
       "sex": "M",
       "build": 0.58
      },
-     "weapon": "Hallebarde"
+     "weapon": "hallebarde"
     },
     {
      "id": "villageoise",
@@ -2758,7 +2758,7 @@
      "dialogueId": "dlg-rumeurs",
      "anim": "standing",
      "appearance": {
-      "career": "Mendiant",
+      "tenue": "mendiant",
       "sex": "F"
      }
     },
@@ -2772,7 +2772,7 @@
      "label": "Villageois",
      "anim": "standing",
      "appearance": {
-      "career": "Mendiant"
+      "tenue": "mendiant"
      }
     },
     {
@@ -2786,7 +2786,7 @@
      "anim": "cowering",
      "facing": "E",
      "appearance": {
-      "career": "Bourgeois"
+      "tenue": "bourgeois"
      }
     },
     {
@@ -2877,7 +2877,7 @@
      },
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Apothicaire",
+      "tenue": "apothicaire",
       "sex": "M",
       "build": 0.46
      }
@@ -2956,7 +2956,7 @@
       "archetype": "taverniere"
      },
      "appearance": {
-      "career": "Bourgeois",
+      "tenue": "bourgeois",
       "sex": "F",
       "build": 0.55
      }
@@ -2973,7 +2973,7 @@
      "facing": "E",
      "appearance": {
       "species": "nains",
-      "career": "Batelier"
+      "tenue": "batelier"
      }
     },
     {
@@ -2987,7 +2987,7 @@
      "anim": "standing",
      "facing": "O",
      "appearance": {
-      "career": "Mendiant"
+      "tenue": "mendiant"
      }
     },
     {
@@ -3001,7 +3001,7 @@
      "anim": "standing",
      "facing": "E",
      "appearance": {
-      "career": "Soldat",
+      "tenue": "soldat",
       "sex": "M"
      }
     },
@@ -3121,7 +3121,7 @@
      "dialogueId": "dlg-frere",
      "appearance": {
       "species": "humains-reiklander",
-      "career": "Prêtre",
+      "tenue": "pretre",
       "sex": "M",
       "build": 0.5
      }
@@ -3137,7 +3137,7 @@
      "anim": "cowering",
      "facing": "N",
      "appearance": {
-      "career": "Mendiant",
+      "tenue": "mendiant",
       "sex": "F"
      }
     },
@@ -3249,11 +3249,11 @@
      },
      "appearance": {
       "species": "nains",
-      "career": "Artisan",
+      "tenue": "artisan",
       "sex": "M",
       "build": 0.7
      },
-     "weapon": "Marteau de guerre"
+     "weapon": "marteau-de-guerre"
     },
     {
      "id": "apprenti",
@@ -3266,7 +3266,7 @@
      "anim": "standing",
      "facing": "O",
      "appearance": {
-      "career": "Artisan",
+      "tenue": "artisan",
       "sex": "M",
       "build": 0.4
      }
@@ -3351,7 +3351,7 @@
       "archetype": "herboriste"
      },
      "appearance": {
-      "career": "Bourgeois",
+      "tenue": "bourgeois",
       "sex": "F",
       "build": 0.48
      }
@@ -3367,7 +3367,7 @@
      "anim": "standing",
      "facing": "O",
      "appearance": {
-      "career": "Mendiant"
+      "tenue": "mendiant"
      }
     },
     {
@@ -12809,10 +12809,10 @@
      },
      "ref": "humain",
      "appearance": {
-      "career": "Mendiant",
+      "tenue": "mendiant",
       "build": 0.72
      },
-     "weapon": "Épée bâtarde",
+     "weapon": "epee-batarde",
      "label": "Gladiateur enchaîné"
     },
     {
@@ -14925,7 +14925,7 @@
      "anim": "cowering",
      "appearance": {
       "species": "halflings",
-      "career": "Mendiant",
+      "tenue": "mendiant",
       "sex": "M"
      }
     },
@@ -20765,10 +20765,10 @@
      },
      "ref": "humain",
      "appearance": {
-      "career": "Voleur",
+      "tenue": "hors-la-loi",
       "sex": "F"
      },
-     "weapon": "Arc",
+     "weapon": "arc",
      "label": "Coupe-jarret de Bella",
      "combat": {
       "randomChars": true
@@ -20783,9 +20783,9 @@
      },
      "ref": "humain",
      "appearance": {
-      "career": "Voleur"
+      "tenue": "hors-la-loi"
      },
-     "weapon": "Épée bâtarde",
+     "weapon": "epee-batarde",
      "label": "Spadassin de Bella",
      "combat": {
       "randomChars": true

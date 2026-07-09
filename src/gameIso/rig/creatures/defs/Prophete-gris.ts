@@ -9,7 +9,7 @@ export const creature: CreatureDef = {
   plan: 'biped',
   race: 'Skaven',
   perso: {
-    tenue: 'Prophète gris',
+    tenue: 'prophete-gris',
     features: [appendageFeature('cornes-caprin')], // cornes derrière le crâne
     colors: { peau: '#b3aca0', cheveux: '#8a8478' }, // fourrure grise
   },

@@ -59,6 +59,7 @@ export function RestModal() {
   const restCancel = useGame((s) => s.restCancel);
   const restContinue = useGame((s) => s.restContinue);
   const restReady = useGame((s) => s.restReady);
+  const restLedgerReroll = useGame((s) => s.restLedgerReroll);
   const state = useGame();
   if (!p) return null;
 
@@ -74,7 +75,12 @@ export function RestModal() {
             <span className="rest-time-len"> · {Math.round((p.slept.to - p.slept.from) / 60)} h</span>
           </p>
         )}
-        <MultiRollList entries={p.results ?? []} />
+        {/* PV de la nuit : chaque ligne de HÉROS ratée à conséquence recalculable (récupération,
+            cauchemars) est influençable après coup — la Chance RELANCE (LDB 17 l.21-27). */}
+        <MultiRollList
+          entries={p.results ?? []}
+          influence={{ reroll: (id) => restLedgerReroll(id), owns: (hid) => net.mode === 'local' || ownsLocally(state, hid) }}
+        />
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={() => restContinue()}>{p.travelHalt ? 'Reprendre la route' : 'Continuer'}</button>
         </div>

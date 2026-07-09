@@ -12,32 +12,32 @@ const plastron: ItemInstance = { uid: '1', name: 'Plastron', kind: 'armor', qual
 
 describe('resolveParts — priorité', () => {
   it('sans rien : torse = tenue de la carrière (par-carrière)', () => {
-    const r = resolveParts('Humain', 'M', 'Soldat', empty, {}, 1);
-    expect(r.torse?.svg).toBe(pickView(tenueFor('Soldat').torse, 'front'));
+    const r = resolveParts('Humain', 'M', 'soldat', empty, {}, 1);
+    expect(r.torse?.svg).toBe(pickView(tenueFor('soldat').torse, 'front'));
   });
 
   it('armure équipée sur le corps PRIME sur la tenue de carrière', () => {
     const equip: EquipCtx = { weapons: [], armour: [plastron] };
-    const r = resolveParts('Humain', 'M', 'Soldat', equip, {}, 1);
+    const r = resolveParts('Humain', 'M', 'soldat', equip, {}, 1);
     expect(r.torse?.svg).toBe(pickView(armourPart(plastron, 'torse'), 'front'));
-    expect(r.torse?.svg).not.toBe(pickView(tenueFor('Soldat').torse, 'front'));
+    expect(r.torse?.svg).not.toBe(pickView(tenueFor('soldat').torse, 'front'));
   });
 
   it('arme et bouclier suivent l’équipement', () => {
     const equip: EquipCtx = { weapons: [wep('Hache', 'melee')], armour: [], shield: { name: 'Bouclier', qualities: [] } as unknown as Weapon };
-    const r = resolveParts('Humain', 'M', 'Soldat', equip, {}, 1);
+    const r = resolveParts('Humain', 'M', 'soldat', equip, {}, 1);
     expect(r.arme?.svg).toContain('<');
     expect(r.bouclier?.svg).toContain('<');
   });
 
   it('override éditeur (parts) PRIME sur l’équipement', () => {
     const equip: EquipCtx = { weapons: [], armour: [plastron] };
-    const r = resolveParts('Humain', 'M', 'Soldat', equip, { torse: 0 }, 1);
+    const r = resolveParts('Humain', 'M', 'soldat', equip, { torse: 0 }, 1);
     expect(r.torse?.svg).not.toBe(pickView(armourPart(plastron, 'torse'), 'front'));
   });
 
   it('visage et cheveux sont toujours présents', () => {
-    const r = resolveParts('Humain', 'M', 'Soldat', empty, {}, 1);
+    const r = resolveParts('Humain', 'M', 'soldat', empty, {}, 1);
     expect(r.visage?.svg).toContain('<');
     expect(r.cheveux?.svg).toContain('<');
   });
@@ -47,19 +47,19 @@ describe('resolveParts — dual-wield (main secondaire dessinée)', () => {
   const wh = (name: string, hand: 'main' | 'off', q: { id: string; value?: number }[] = []): Weapon => ({ name, type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: q, hand } as Weapon);
 
   it('épée + dague (hand off) → la 2e arme est dessinée à la main secondaire (os bouclier)', () => {
-    const r = resolveParts('Humain', 'M', 'Soldat', { weapons: [wh('Épée', 'main'), wh('Dague', 'off')], armour: [] }, {}, 1);
+    const r = resolveParts('Humain', 'M', 'soldat', { weapons: [wh('Épée', 'main'), wh('Dague', 'off')], armour: [] }, {}, 1);
     expect(r.arme?.svg).toContain('<');
     expect(r.bouclier?.svg).toContain('<'); // dague dessinée à la main secondaire
   });
 
   it('épée seule → main secondaire vide', () => {
-    const r = resolveParts('Humain', 'M', 'Soldat', { weapons: [wh('Épée', 'main')], armour: [] }, {}, 1);
+    const r = resolveParts('Humain', 'M', 'soldat', { weapons: [wh('Épée', 'main')], armour: [] }, {}, 1);
     expect(r.bouclier?.svg ?? '').toBe('');
   });
 
   it('épée + bouclier → le bouclier prime sur une arme à la main secondaire', () => {
     const shield = { name: 'Bouclier', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [], hand: 'off' } as unknown as Weapon;
-    const r = resolveParts('Humain', 'M', 'Soldat', { weapons: [wh('Épée', 'main'), shield], armour: [], shield }, {}, 1);
+    const r = resolveParts('Humain', 'M', 'soldat', { weapons: [wh('Épée', 'main'), shield], armour: [], shield }, {}, 1);
     expect(r.bouclier?.svg).toContain('<');
   });
 });

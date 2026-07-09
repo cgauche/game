@@ -9,6 +9,11 @@ import type { Dims } from '../../geometry/iso';
 /** Halo radial (voile chaud / vignette) : centre + rayon en %, couleur et alpha au bord utile. */
 export interface RadialVeilDef { cx: string; cy: string; r: string; color: string; alpha: number; innerOff?: string }
 
+/** #239 — voile de MÉTÉO authorée (`scene.weather`) : teinte plein écran (`tint`/`alpha`) et,
+ *  pour la précipitation, un champ de particules (`particles` = classe CSS, `pcolor`, `density`). */
+export interface WeatherFxDef { tint: string; alpha: number; particles?: 'pluie' | 'averse' | 'neige'; pcolor?: string; density?: number }
+export type WeatherFxId = 'pluie' | 'brouillard' | 'neige' | 'tempete';
+
 export interface AmbianceDef {
   /** Luminosité PLANCHER partagée : une surface éclairée à 0 n'est jamais totalement noire. Source UNIQUE
    *  du clamp de lumière des DEUX vues — POV (`tint`, `pov/camera.ts`) et voile d'occlusion des sols iso
@@ -33,6 +38,8 @@ export interface AmbianceDef {
      *  l'écran) s'assombrissent progressivement (perspective atmosphérique). Décoration de VUE, subtile
      *  (alpha ≈ 8-12 % max). `topFrac`/`bottomFrac` = bornes verticales écran du dégradé (0 = haut). */
     edgeDepth: { color: string; alpha: number; topFrac: number; bottomFrac: number };
+    /** Voiles de MÉTÉO authorée de scène (`scene.weather`), par type (#239). `clair` = absent. */
+    weather: Partial<Record<WeatherFxId, WeatherFxDef>>;
   };
   pov: {
     /** Haut du ciel d'extérieur — l'horizon se fond dans `fogOutdoor`. */

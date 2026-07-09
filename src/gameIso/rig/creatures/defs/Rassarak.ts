@@ -15,7 +15,7 @@ export const creature: CreatureDef = {
   plan: 'biped',
   race: 'Skaven',
   perso: {
-    tenue: 'Esclave skaven',
+    tenue: 'esclave-skaven',
     colors: { peau: '#e8e2d4', cheveux: '#cfc8b8' }, // blanc pur
     features: [
       { bone: 'tete', svg: OEIL_LAITEUX_FRONT, layer: 55, view: 'front' },

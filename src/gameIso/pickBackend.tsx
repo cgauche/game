@@ -10,7 +10,7 @@ import { enemyRigProfile, entityRigProfileFor, rendersFromOwnInventory } from '.
 import { resolveRender, planById } from './rig/bodyPlan';
 import { structureAppearance } from './catalog/structures';
 import { isStructure } from '../engine/structures';
-import { findCreatureById, findCareerById, findTrappingById, findVehicleById } from '../data';
+import { findCreatureById, findTrappingById, findVehicleById } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite } from './sprites';
 import { hashSeed } from '../engine/dice';
@@ -123,7 +123,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
       if (top) {
         const appearance = combatantAppearance(prof?.appearance ?? c.appearance ?? defaultAppearance(c), c);
         const equip = prof?.equip ?? equipFromCombatant(c);
-        const tenue = prof?.tenue ?? findCareerById(c.career)?.label ?? c.career; // careerId → libellé de tenue (rig)
+        const tenue = prof?.tenue ?? c.career; // garde-robe = tenue du profil, sinon id de carrière (Combatant.career)
         const f = faceFrame(appearance, equip, tenue, combatantOverlays(c));
         return { backend: 'rig', id: c.id, speciesScale: r.scale, portraitBox: f.box, flat: true, body: f.body };
       }
@@ -136,7 +136,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
     const leader = subject.leader;
     if (leader) {
       if (top) {
-        const f = faceFrame(combatantAppearance(leader.appearance ?? defaultAppearance(leader), leader), equipFromCombatant(leader), findCareerById(leader.career)?.label ?? leader.career, combatantOverlays(leader));
+        const f = faceFrame(combatantAppearance(leader.appearance ?? defaultAppearance(leader), leader), equipFromCombatant(leader), leader.career, combatantOverlays(leader));
         return { backend: 'rig', id: '__party', speciesScale: 1, portraitBox: f.box, flat: true, body: f.body };
       }
       return { backend: 'rig', id: '__party', speciesScale: 1, portraitBox: FACE_BOX, flat: false, body: <AnimatedRigToken combatant={leader} /> };

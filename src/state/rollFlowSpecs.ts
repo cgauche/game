@@ -20,6 +20,7 @@ import type {
   PendingCascade, CascadeStep,
 } from './store';
 import type { PendingActivity } from './interludeFlow';
+import { applyLedgerReresolve, type PendingRest, type NightEntry } from './restFlow';
 import type { Combatant, Weapon } from '../engine/types';
 import type { Get, Set } from './flowTypes';
 import { makeRollFlow, type RollFlowHandlers, type RollOutcome, type RollFlowLens, type PendingBase } from './rollFlowFactory';
@@ -1022,6 +1023,24 @@ export const FLOWS = {
    *  de jet par rôle ; l'issue par type (Rude épreuve → Moral, l.110) vit dans `crewTestConfirm`. */
   crewTest: makeRollFlow<PendingCrewTest, ShipManeuverParticipant>(crewRoleFlowSpec('pendingCrewTest')),
 
+  /** PROCÈS-VERBAL de repos (bilan multi-jours) — jets de ROUTINE résolus en lot, INFLUENÇABLES après
+   *  coup ligne à ligne (LDB 17 l.21-27) : la Chance RELANCE un jet de HÉROS raté (LDB 12 l.40 : 1× max),
+   *  la conséquence est recalculée en DELTA (`applyLedgerReresolve`) pour les seules lignes recalculables
+   *  (`reKind` : récupération/cauchemars). Multi sur `pendingRest.results` (une ligne = un slot). */
+  restLedger: makeRollFlow<PendingRest, NightEntry>({
+    key: 'pendingRest',
+    multi: {
+      slots: (p) => (p.results ?? []).filter((e) => !!e.reKind && !!e.d),
+      idOf: (e) => e.id ?? '',
+      replace: (p, slots) => ({ ...p, results: (p.results ?? []).map((e) => slots.find((s) => s.id === e.id) ?? e) }),
+    },
+    rolled: () => true, // le PV n'affiche que des jets DÉJÀ résolus (lot) — pas de jet INITIAL ici
+    actor: (s, e) => s.party.find((h) => h.id === e.actorId),
+    resolve: () => null, // aucun jet initial : seule la relance (opReroll) agit sur une ligne du PV
+    reresolve: (_s, e, actor) => (e.d ? applyLedgerReresolve(actor, e, evaluateTest(battleRng().int(1, 100), e.d.target)) : null),
+    outcome: (e) => ({ won: !!e.d?.success, sl: e.d?.sl ?? 0 }),
+  }),
+
   /** CHANSON DE MARIN (Talent, MDG 09 l.32-40) : Test de **Divertissement (Chant)** du chanteur — la
    *  chanson doit être CHOISIE au pré-jet (OptionChooser). Réussi → effet 3 min + DR sur l'équipage
    *  (`shantyConfirm`). Résilience : 01 → DR max (durée maximale). */
@@ -1507,6 +1526,9 @@ export const FLOW_VERBS = {
   shipManeuver: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
   shipBattery:  { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
   crewTest:     { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'] },
+  // PV de repos : seule la RELANCE est exposée — sur un jet de routine RATÉ, un +1 DR ne peut pas
+  // renverser l'échec (LDB 17 l.84), donc rien d'autre à influencer après coup que la relance (l.21-27).
+  restLedger:   { kind: 'multi', verbs: ['reroll'] },
 } as const satisfies Record<string, FlowVerbs>;
 
 /** Handler (runtime) par flux — préfixe → `FLOWS.x`. `satisfies Record<keyof typeof FLOW_VERBS, …>`
@@ -1521,6 +1543,7 @@ const FLOW_HANDLERS = {
   activity: FLOWS.activity, bargain: FLOWS.bargain, appraise: FLOWS.appraise, shanty: FLOWS.shanty,
   counterspell: FLOWS.counterspell, cascade: FLOWS.cascade, opposition: FLOWS.castOpposition, extendedTest: FLOWS.extendedTest,
   forceDoor: FLOWS.forceDoor, shipManeuver: FLOWS.shipManeuver, shipBattery: FLOWS.battery, crewTest: FLOWS.crewTest,
+  restLedger: FLOWS.restLedger,
 } satisfies Record<keyof typeof FLOW_VERBS, RollFlowHandlers>;
 
 /** Un flux → ses délégués (Mono ou Multi selon `kind`) ; verbes lus depuis `FLOW_VERBS`. */

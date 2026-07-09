@@ -7,7 +7,7 @@ export const creature: CreatureDef = {
   name: 'Horreur bleue',
   plan: 'biped',
   perso: {
-    tenue: 'Nu',
+    tenue: 'nu',
     gabarit: 'gremlin',
     scale: 0.8, // moitié moins massive que la rose
     monster: { tete: 'horreur', griffes: true },

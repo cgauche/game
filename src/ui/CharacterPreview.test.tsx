@@ -8,7 +8,7 @@ const app: Appearance = { species: 'Humain', sex: 'F', build: 0.5, seed: 3 };
 
 describe('CharacterPreview (rendu headless)', () => {
   it('rend le rig depuis une apparence brute, SANS <defs> local (DEFS montés au niveau App)', () => {
-    const html = renderToStaticMarkup(<CharacterPreview appearance={app} career="Soldat" size="sm" ambiance="panel" />);
+    const html = renderToStaticMarkup(<CharacterPreview appearance={app} career="soldat" size="sm" ambiance="panel" />);
     expect(html).toContain('class="rig"');
     expect(html).toContain('data-bone="torse"');
     expect(html).toContain('data-bone="tete"');

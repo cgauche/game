@@ -2,47 +2,18 @@
 /**
  * Génère `src/scenes/loup-et-saumure/loup-et-saumure-projet.json` (projet v2 : { schema, scenes, worldMap }).
  * Modelé sur `scripts/arene/generate.mjs` — RÉUTILISE `scene()`/`hero()`/`NPC()`/`P()`/`flowOf()`/
- * `flagWhen()`/`testNode()` de `scripts/arene/lib.mjs` (IMPORT, zéro modification de ce fichier).
+ * `flagWhen()`/`testNode()`/`poste()` de `scripts/campagne/lib.mjs` (IMPORT, zéro modification de ce fichier).
  *
- * Écart d'authoring trouvé (à documenter pour `creer-une-campagne`) : `lib.mjs::scene()` normalise le
- * `ref` des ennemis TERSE (`encounters[].enemies[]`) via `creatureId()`, qui n'interroge QUE le
- * registre des CRÉATURES (`findCreatureById`/`findCreature`) — un `ref` de NAVIRE (`vehicles.json` :
- * `cogue`/`langskip`/`loup-imperial`) y lève « créature introuvable ». Contournement : les entités-COQUE
- * (Grimm/cogue/langskip, avec `crewIds`/`postes`) sont posées en `entities` BRUTES (chemin QUI EXISTE
- * dans `MapSpec`/`buildScene`, jamais normalisé) + enrôlées via `encounters[].members` (ids explicites)
- * plutôt que par le chemin terse `enemies[]` — aucun helper de lib.mjs modifié, aucune ré-implémentation
- * du compilateur, juste l'autre chemin déjà prévu par le schéma pour des entités déjà posées.
+ * `scene()` normalise le `ref` des ennemis TERSE (`encounters[].enemies[]`) via `creatureId()`, qui
+ * accepte désormais créature ∪ véhicule (#218) — un `ref` de NAVIRE (`vehicles.json` : `cogue`/`langskip`/
+ * `loup-imperial`) passe. Les entités-COQUE (Grimm/cogue/langskip) restent posées en `entities` BRUTES +
+ * enrôlées via `encounters[].members` (ids explicites) car elles portent `crewIds`/`postes`/`upgrades`
+ * (équipage exposé, artillerie montée, améliorations d'instance) — plus riche que le terse `enemies[]`.
  */
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scene, hero, NPC, P, flowOf, flagWhen, testNode } from '../arene/lib.mjs';
-
-// ── Postes d'artillerie : ItemInstance à la main (patron `itemFromTrappingById`, engine/items.ts) ──
-// lib.mjs n'exporte aucun fabricant de ShipPoste (outillage pensé « arène » = terrestre, pas naval) —
-// helper LOCAL, noté au journal comme 2e trouvaille de lib d'auteur incomplète côté naval.
-let uidN = 0;
-const uid = (tag) => `itm-${tag}-${++uidN}`;
-function canonMoyen(tag) {
-  return {
-    uid: uid(tag), trappingId: 'canon-moyen', name: 'Canon (moyen)', kind: 'ranged',
-    damage: { plusBF: false, flat: 14 }, reach: null, range: 75,
-    qualities: [{ id: 'dangereuse' }, { id: 'recharge', value: 6 }, { id: 'arme-d-equipe', value: 3 }, { id: 'siege' }],
-    enc: 50, equipped: false, weaponGroup: 'poudre-noire', subType: 'armes-de-siege',
-  };
-}
-function pierrier(tag) {
-  return {
-    uid: uid(tag), trappingId: 'pierrier', name: 'Pierrier', kind: 'ranged',
-    damage: { plusBF: false, flat: 14 }, reach: null, range: 30,
-    qualities: [{ id: 'dangereuse' }, { id: 'recharge', value: 4 }],
-    enc: 5, equipped: false, weaponGroup: 'poudre-noire', subType: 'armes-de-siege',
-  };
-}
-/** Poste SANS chef pré-assigné (`crewIds` vide) : servable EN JEU par tout héros adjacent (« Servir
- *  cette pièce », `state/shipPostes.ts` servablePostes/serveAtPoste) — les ids de héros ne sont connus
- *  qu'à la création de personnage, jamais à l'authoring de campagne. */
-function poste(item, side) { return { item, side, crewIds: [] }; }
+import { scene, hero, NPC, P, flowOf, flagWhen, testNode, poste } from '../campagne/lib.mjs';
 
 /** Entité-COQUE brute (navire = Combattant à PV, ref vers `vehicles.json`) — chemin `entities` du
  *  MapSpec (jamais normalisé par `creatureId`), cf. commentaire d'en-tête. `upgrades` = améliorations
@@ -103,13 +74,13 @@ scenes.push(scene({
   ],
   entities: [
     hero(2, 4),
-    NPC('kohler', 5, 3, 'Baron Ludolf Köhler', { facing: 'S', dialogueId: 'dlg-kohler', appearance: { species: 'Humains (Reiklander)', career: 'Noblesse', sex: 'M', build: 0.5 } }),
-    NPC('aldo', 8, 3, 'Frère Aldo', { facing: 'S', dialogueId: 'dlg-aldo', appearance: { species: 'Humains (Reiklander)', career: 'Prêtre initié', sex: 'M', build: 0.6 } }),
-    NPC('kramer', 11, 3, 'Dame Vasilika Kramer', { facing: 'S', dialogueId: 'dlg-kramer', appearance: { career: 'Marchande', sex: 'F', build: 0.45 } }),
-    NPC('griet', 5, 6, 'Griet', { facing: 'N', dialogueId: 'dlg-griet', appearance: { species: 'Humains (Reiklander)', career: 'Ménestrel', sex: 'F', build: 0.4 } }),
-    NPC('avitailleuse', 9, 6, 'Cambuse du port (rations/eau)', { facing: 'N', merchant: { archetype: 'taverniere' }, appearance: { species: 'Humains (Reiklander)', career: 'Bourgeois', sex: 'F', build: 0.55 } }),
-    NPC('armurier', 12, 6, 'Arsenal du port (munitions/pièces)', { facing: 'N', merchant: { archetype: 'armurier' }, appearance: { species: 'Humains (Reiklander)', career: 'Artisan', sex: 'M', build: 0.6 } }),
-    NPC('avitailleur', 13, 4, 'Chandelier du quai (eau, rations de mer, pièces, boulets)', { facing: 'S', merchant: { archetype: 'avitailleur' }, appearance: { species: 'Humains (Reiklander)', career: 'Bourgeois', sex: 'M', build: 0.5 } }),
+    NPC('kohler', 5, 3, 'Baron Ludolf Köhler', { facing: 'S', dialogueId: 'dlg-kohler', appearance: { species: 'humains-reiklander', tenue: 'noble', sex: 'M', build: 0.5 } }),
+    NPC('aldo', 8, 3, 'Frère Aldo', { facing: 'S', dialogueId: 'dlg-aldo', appearance: { species: 'humains-reiklander', tenue: 'pretre', sex: 'M', build: 0.6 } }),
+    NPC('kramer', 11, 3, 'Dame Vasilika Kramer', { facing: 'S', dialogueId: 'dlg-kramer', appearance: { tenue: 'marchand', sex: 'F', build: 0.45 } }),
+    NPC('griet', 5, 6, 'Griet', { facing: 'N', dialogueId: 'dlg-griet', appearance: { species: 'humains-reiklander', tenue: 'artiste', sex: 'F', build: 0.4 } }),
+    NPC('avitailleuse', 9, 6, 'Cambuse du port (rations/eau)', { facing: 'N', merchant: { archetype: 'taverniere' }, appearance: { species: 'humains-reiklander', tenue: 'bourgeois', sex: 'F', build: 0.55 } }),
+    NPC('armurier', 12, 6, 'Arsenal du port (munitions/pièces)', { facing: 'N', merchant: { archetype: 'armurier' }, appearance: { species: 'humains-reiklander', tenue: 'artisan', sex: 'M', build: 0.6 } }),
+    NPC('avitailleur', 13, 4, 'Chandelier du quai (eau, rations de mer, pièces, boulets)', { facing: 'S', merchant: { archetype: 'avitailleur' }, appearance: { species: 'humains-reiklander', tenue: 'bourgeois', sex: 'M', build: 0.5 } }),
     P(2, 8, undefined, {
       label: 'La jetée d’appareillage',
       interact: {
@@ -280,11 +251,11 @@ scenes.push(scene({
   entities: [
     hero(4, 6),
     hull('grimm', 'loup-imperial', 4, 6, 'E', 'Le Grimm', ['aldo-crew', 'griet-crew'],
-      [poste(canonMoyen('grimm-tribord'), 'tribord'), poste(canonMoyen('grimm-babord'), 'babord'), poste(pierrier('grimm-proue'), 'proue')]),
+      [poste('canon-moyen', 'tribord'), poste('canon-moyen', 'babord'), poste('pierrier', 'proue')]),
     marinDuGrimm('aldo-crew', 4, 5, 'Frère Aldo (équipage exposé)'),
     marinDuGrimm('griet-crew', 5, 5, 'Griet (équipage exposé)'),
     hull('cogue', 'cogue', 16, 6, 'O', 'La Dent de Manann', ['pirate-1', 'pirate-2'],
-      [poste(canonMoyen('cogue-tribord'), 'tribord')]),
+      [poste('canon-moyen', 'tribord')]),
     { id: 'pirate-1', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 15, y: 5 }, label: 'Pirate' },
     { id: 'pirate-2', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 15, y: 7 }, label: 'Pirate' },
     { id: 'chef-cogue', kind: 'personnage', ref: 'chef-pirate', pos: { x: 17, y: 6 }, label: 'Le chef de la Dent de Manann' },
@@ -338,9 +309,9 @@ scenes.push(scene({
   ],
   entities: [
     hero(2, 4),
-    NPC('docker', 7, 3, 'Docker du port', { facing: 'S', dialogueId: 'dlg-rumeur-olg', appearance: { career: 'Ouvrier', sex: 'M', build: 0.6 } }),
-    NPC('kramer-erengrad', 11, 3, 'Dame Vasilika Kramer', { facing: 'S', dialogueId: 'dlg-kramer-nuit-du-chat', appearance: { career: 'Marchande', sex: 'F', build: 0.45 } }),
-    NPC('charpentier', 9, 6, 'Charpentier de bord', { facing: 'N', dialogueId: 'dlg-reparation', appearance: { species: 'Humains (Reiklander)', career: 'Artisan', sex: 'M', build: 0.6 } }),
+    NPC('docker', 7, 3, 'Docker du port', { facing: 'S', dialogueId: 'dlg-rumeur-olg', appearance: { tenue: 'debardeur', sex: 'M', build: 0.6 } }),
+    NPC('kramer-erengrad', 11, 3, 'Dame Vasilika Kramer', { facing: 'S', dialogueId: 'dlg-kramer-nuit-du-chat', appearance: { tenue: 'marchand', sex: 'F', build: 0.45 } }),
+    NPC('charpentier', 9, 6, 'Charpentier de bord', { facing: 'N', dialogueId: 'dlg-reparation', appearance: { species: 'humains-reiklander', tenue: 'artisan', sex: 'M', build: 0.6 } }),
     P(2, 7, undefined, { label: 'Reprendre la mer vers Salzenmund', interact: { flow: flowOf([{ type: 'openWorldMap' }]) } }),
   ],
   dialogues: [
@@ -416,7 +387,7 @@ scenes.push(scene({
   entities: [
     hero(4, 6),
     hull('grimm2', 'loup-imperial', 4, 6, 'E', 'Le Grimm', ['aldo-crew-2', 'griet-crew-2'],
-      [poste(canonMoyen('grimm2-tribord'), 'tribord'), poste(canonMoyen('grimm2-babord'), 'babord'), poste(pierrier('grimm2-poupe'), 'poupe')]),
+      [poste('canon-moyen', 'tribord'), poste('canon-moyen', 'babord'), poste('pierrier', 'poupe')]),
     marinDuGrimm('aldo-crew-2', 4, 5, 'Frère Aldo (équipage exposé)'),
     marinDuGrimm('griet-crew-2', 5, 5, 'Griet (équipage exposé)'),
     // Proue-idole de Stromfels : amélioration d'INSTANCE de la coque (#221).
@@ -424,7 +395,7 @@ scenes.push(scene({
       [{ id: 'proue-idole-de-stromfels' }]),
     { id: 'norse-1', kind: 'personnage', ref: 'maraudeur-du-chaos', pos: { x: 15, y: 5 }, label: 'Norse' },
     { id: 'norse-2', kind: 'personnage', ref: 'maraudeur-du-chaos', pos: { x: 15, y: 7 }, label: 'Norse' },
-    { id: 'olg', kind: 'personnage', ref: 'olg-blodsalt', pos: { x: 17, y: 6 }, label: 'Olg Blóðsalt', weapon: 'Hache' },
+    { id: 'olg', kind: 'personnage', ref: 'olg-blodsalt', pos: { x: 17, y: 6 }, label: 'Olg Blóðsalt', weapon: 'hache-d-armes' },
   ],
   encounters: [
     {

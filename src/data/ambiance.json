@@ -28,6 +28,33 @@
       "alpha": 0.1,
       "topFrac": 0,
       "bottomFrac": 0.62
+    },
+    "weather": {
+      "pluie": {
+        "tint": "#3b4657",
+        "alpha": 0.13,
+        "particles": "pluie",
+        "pcolor": "#aebfd0",
+        "density": 70
+      },
+      "brouillard": {
+        "tint": "#aab4bd",
+        "alpha": 0.24
+      },
+      "neige": {
+        "tint": "#c6d4e6",
+        "alpha": 0.15,
+        "particles": "neige",
+        "pcolor": "#eef4ff",
+        "density": 55
+      },
+      "tempete": {
+        "tint": "#232a35",
+        "alpha": 0.3,
+        "particles": "averse",
+        "pcolor": "#9fb0c4",
+        "density": 120
+      }
     }
   },
   "pov": {

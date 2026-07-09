@@ -39,7 +39,7 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
       {hero ? (
         <CharacterPreview hero={hero} size="fill" ambiance="panel" className="creator-fig" />
       ) : (
-        <CharacterPreview appearance={appearance} career={careerLabel} size="fill" ambiance="panel" className="creator-fig" />
+        <CharacterPreview appearance={appearance} career={d.careerId} size="fill" ambiance="panel" className="creator-fig" />
       )}
       <div className="creator-id">
         <strong>{d.name.trim() || 'Aventurier'}</strong>

@@ -93,7 +93,8 @@ export interface SceneEntity {
   appearance?: EntityAppearance;
   /** Animation d'ambiance en boucle (clé de AMBIENT_CLIPS) — rend l'entité via le rig. */
   anim?: string;
-  /** Arme ÉQUIPÉE (libellé) — affichée par le rig (tenue prête si à distance). Ex. 'Arbalète'. */
+  /** Arme ÉQUIPÉE : `trappingId` STABLE du catalogue d'armes — affichée par le rig (tenue prête si à
+   *  distance). Ex. `'arbalete'`. Résolue par `weaponFromId` (lookup exact, warn si hors catalogue). */
   weapon?: string;
   /** Empreinte multi-cases (décor statique : charrette 2×1, épave 2×2…). Défaut 1×1.
    *  Bloque la walkability (entityBlockedAt) et porte le Couvert sur toutes ses cases. */

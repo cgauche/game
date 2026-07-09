@@ -42,7 +42,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
   };
   for (const view of VIEWS) {
     it(`Humain-Soldat-épée / ${view} stable`, () => {
-      const svg = bonesToSvg(resolveRig(appSoldat, equipSoldat, {}, 'Soldat', view));
+      const svg = bonesToSvg(resolveRig(appSoldat, equipSoldat, {}, 'soldat', view));
       expect(svg).toMatchSnapshot();
     });
   }
@@ -59,7 +59,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
   };
   for (const view of VIEWS) {
     it(`Humain-Noble-bouclier-armure / ${view} stable`, () => {
-      const svg = bonesToSvg(resolveRig(appGuardien, equipGuardien, {}, 'Noble', view));
+      const svg = bonesToSvg(resolveRig(appGuardien, equipGuardien, {}, 'noble', view));
       expect(svg).toMatchSnapshot();
     });
   }
@@ -75,7 +75,7 @@ describe('golden master — héros équipés (anti-régression chemins arme/armu
   };
   for (const view of VIEWS) {
     it(`Humain-Voleur-couleur-override / ${view} stable`, () => {
-      const svg = bonesToSvg(resolveRig(appMercenaire, equipMercenaire, {}, 'Voleur', view));
+      const svg = bonesToSvg(resolveRig(appMercenaire, equipMercenaire, {}, 'voleur', view));
       expect(svg).toMatchSnapshot();
     });
   }

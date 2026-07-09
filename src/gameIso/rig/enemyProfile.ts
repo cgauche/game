@@ -10,7 +10,7 @@ import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
 import { equipFromCombatant } from './parts/equipment';
 import { emptyArmour } from '../../engine/items';
-import { renderWeaponsFromTraits, armourFromTraits, weaponFromLabel } from '../../engine/creatureEquip';
+import { renderWeaponsFromTraits, armourFromTraits, weaponFromId } from '../../engine/creatureEquip';
 import type { TraitList } from '../../engine/statEntry';
 import { EYE_OPTIONS, eyesArtFromKeys } from './parts/eyes';
 import type { MonsterParts } from './parts/monstrous';
@@ -97,9 +97,10 @@ function bipedBase(override: string | undefined, cd: EntityAppearance | undefine
   return { species, d, race: raceById(d?.race ?? baseSpeciesOf(species)), perso: d?.perso };
 }
 
-/** Tenue PARTAGÉE : surcharge (carrière / opts) → record créature → perso/race → Nu (l'auteur l'habille). */
+/** Garde-robe PARTAGÉE (id STABLE) : surcharge (carrière / opts) → record créature → perso/race → 'nu'
+ *  (l'auteur l'habille). Toutes ces sources portent des IDS de garde-robe (tenue ∪ carrière), jamais un libellé. */
 function bipedTenue(override: string | undefined, cd: EntityAppearance | undefined, perso: { tenue?: string } | undefined, race: { tenue?: string }): string {
-  return override ?? cd?.tenue ?? perso?.tenue ?? race.tenue ?? 'Nu';
+  return override ?? cd?.tenue ?? perso?.tenue ?? race.tenue ?? 'nu';
 }
 
 /** Carrure par défaut dérivée du seed (0.35..0.75) — formule UNIQUE. */
@@ -225,18 +226,18 @@ export function entityRigProfile(
   // reste mains libres même si son record porte un trait « Arme ». Armes EXPLICITES seulement
   // (`renderWeaponsFromTraits` — pas de repli « Arme » générique qui serait dessiné en épée).
   const traits = opts?.traits ?? (opts?.enrolled ? rec?.traits ?? [] : []);
-  // `opts.weapon` (libellé d'authoring) ne s'ajoute QUE si les Traits n'ont PAS déjà produit une arme du
+  // `opts.weapon` (trappingId d'authoring) ne s'ajoute QUE si les Traits n'ont PAS déjà produit une arme du
   // MÊME type (melee/ranged) — même règle que le spawn de combat (`spawn.ts` spawnEnemy), sinon
   // DUPLICATION du rendu (#126/#145). Un type ABSENT des Traits reste additif (Garde du Village posté
-  // « archer » : trait Arme mêlée générique + `weapon:'Arc'`).
+  // « archer » : trait Arme mêlée générique + `weapon:'arc'`).
   const traitWeapons = renderWeaponsFromTraits(traits);
-  const labelWeaponInst = opts?.weapon ? weaponFromLabel(opts.weapon) : undefined;
-  const labelWeapon = labelWeaponInst && !traitWeapons.some((w) => w.type === labelWeaponInst.type) ? [labelWeaponInst] : [];
+  const idWeaponInst = opts?.weapon ? weaponFromId(opts.weapon) : undefined;
+  const idWeapon = idWeaponInst && !traitWeapons.some((w) => w.type === idWeaponInst.type) ? [idWeaponInst] : [];
   const armourPA: ArmourPoints = opts?.armour != null ? emptyArmour(opts.armour) : armourFromTraits(traits);
   return {
     appearance: rigAppearance(seed, base, cd, override),
     tenue: bipedTenue(opts?.tenue, cd, base.perso, base.race),
-    equip: { weapons: [...labelWeapon, ...traitWeapons], armour: synthArmour(armourPA) },
+    equip: { weapons: [...idWeapon, ...traitWeapons], armour: synthArmour(armourPA) },
   };
 }
 

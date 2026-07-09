@@ -49,7 +49,7 @@ export const creature: CreatureDef = {
   id: 'predateur-sanglant',
   plan: 'biped', // race par défaut = Humain (baseSpeciesOf)
   perso: {
-    tenue: 'Nu', // corps de chair musculeux (bareFoot)
+    tenue: 'nu', // corps de chair musculeux (bareFoot)
     gabarit: 'brute', // carrure la plus massive (Géant/Minotaure)
     sex: 'M',
     scale: 1.08, // NUANCE intra-Énorme (dépasse un Énorme standard)

@@ -15,7 +15,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "M",
     "species": "humain",
   },
-  "tenue": "Flagellant",
+  "tenue": "flagellant",
 }
 `;
 
@@ -34,7 +34,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "M",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -52,7 +52,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "M",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -75,7 +75,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -97,7 +97,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -116,7 +116,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -133,7 +133,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "Gobelin",
   },
-  "tenue": "Mendiant",
+  "tenue": "mendiant",
 }
 `;
 
@@ -150,7 +150,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "M",
     "species": "Orc",
   },
-  "tenue": "Mendiant",
+  "tenue": "mendiant",
 }
 `;
 
@@ -169,7 +169,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "M",
     "species": "Guerrier des clans",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -181,7 +181,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -199,7 +199,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -215,7 +215,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -230,7 +230,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -245,7 +245,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -257,7 +257,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "humain",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -274,7 +274,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "Gobelin",
   },
-  "tenue": "Mendiant",
+  "tenue": "mendiant",
 }
 `;
 
@@ -291,7 +291,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "Orc",
   },
-  "tenue": "Mendiant",
+  "tenue": "mendiant",
 }
 `;
 
@@ -303,7 +303,7 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "Guerrier des clans",
   },
-  "tenue": "Bourgeois",
+  "tenue": "bourgeois",
 }
 `;
 
@@ -315,6 +315,6 @@ exports[`CARACTÉRISATION — apparence rig (parité avant/après unification du
     "sex": "F",
     "species": "humain",
   },
-  "tenue": "Mendiant",
+  "tenue": "mendiant",
 }
 `;

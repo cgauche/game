@@ -63,7 +63,7 @@ import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveA
 import { posteHullOf, pushEligible, pushCrewOk, pushMovement, pushReachable } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
-import { resolveVoyageCrewTest, resolveSteamSave } from './seaVoyageFlow';
+import { resolveVoyageCrewTest, resolveSteamSave, runSeaDays } from './seaVoyageFlow';
 import { rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById } from '../data';
@@ -1152,15 +1152,23 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     crewTestConfirm: () => {
       const { battle, pendingCrewTest: p } = get();
-      if (!p) return;
+      if (!p || p.resolved) return; // déjà résolu (phase SUR PLACE) → « Continuer » relance, pas « Appliquer »
       if (p.participants.some((x) => !x.result)) return; // tous les contributeurs doivent avoir lancé
       // Test d'équipage de VOYAGE maritime (7b — hors combat) : l'issue est déléguée au flux de
       // traversée (`resolveVoyageCrewTest` : Progression, Orientation, Affaler, Poursuite…).
       if (p.voyage) {
         const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
-        set({ pendingCrewTest: null });
         get().log(`${findCrewTestTypeById(p.testTypeId)?.label ?? p.testTypeId} — ${p.voyage.shipName} : DR ${total >= 0 ? `+${total}` : total} → ${total >= 1 ? 'succès' : 'échec'} (MDG 14 l.13).`);
+        // Le dénouement s'affiche LÀ où le jet a eu lieu : on capture les lignes de conséquence (narration
+        // du jour, `sea.lines`) produites par `resolveVoyageCrewTest` pour les rendre SUR PLACE (le verdict
+        // DR est déjà porté par le bandeau `summary` de la modale).
+        const seaBefore = get().travelPlan?.sea?.lines.length ?? 0;
         resolveVoyageCrewTest(get, set, p, total);
+        // Un abordage (battle) ou une « Fuite de vapeur » (pendingSteamSave) ouvert par la résolution PREND
+        // le devant : la modale d'équipage s'efface (sa reprise vit dans la clôture du sous-flux).
+        if (get().battle || get().pendingSteamSave) { set({ pendingCrewTest: null }); return; }
+        const lines = get().travelPlan?.sea?.lines.slice(seaBefore) ?? [];
+        set({ pendingCrewTest: { ...p, resolved: { lines } } });
         return;
       }
       if (!battle) return;
@@ -1181,6 +1189,14 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
     crewTestCancel: () => set({ pendingCrewTest: null }),
+    crewTestContinue: () => {
+      // « Continuer » de la phase RÉSOLU d'un Test d'équipage de VOYAGE : ferme la modale et relance
+      // SEULE la boucle maritime (le dénouement a déjà été lu sur place).
+      const p = get().pendingCrewTest;
+      if (!p?.voyage || !p.resolved) return;
+      set({ pendingCrewTest: null });
+      runSeaDays(get, set);
+    },
 
     // ── CHANSON DE MARIN (Talent, MDG 09 l.32-40) : le chanteur (équipage doté du Talent) choisit une
     //    chanson CONNUE (spec du Talent) puis lance son Test de Divertissement (Chant) ; réussi → l'effet

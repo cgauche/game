@@ -1,0 +1,111 @@
+# Authoring de campagne — la carte des coutures d'auteur
+
+Référence VIVANTE (maintenue au fil du code). Une **campagne** = un projet multi-scènes relié par une
+carte du monde (`{ schema: 2, scenes, worldMap }`), COMMITÉ, 100 % rééditable dans l'éditeur. Pour le
+pas-à-pas « par où commencer », voir le skill `creer-une-campagne`. Ce document cartographie CHAQUE
+système qu'un auteur mobilise. Règle d'or transverse : **on n'authore que des IDS stables** (le libellé
+est de l'affichage multilangue — CLAUDE.md, encadré « id STABLE ») ; **personne ne lit le journal**
+(tout dénouement doit être VISIBLE au moment) ; **aucun texte technique dans un texte joueur**.
+
+## 1. Pipeline
+
+- **Lib partagée** `scripts/campagne/lib.mjs` — helpers purs de TOUTE campagne (`scene`, `hero`, `NPC`,
+  `P`, `poste`, `flowOf`, `flagWhen`, `testNode`, `fightTrigger`, `resetIds`, `fouille`, `zoneVictory`).
+  Importée, jamais copiée ni dupliquée. L'étendre sur place si un helper manque à toutes les campagnes.
+- **Générateur** `scripts/<campagne>/generate.mjs` (modèles : `scripts/arene/generate.mjs`,
+  `scripts/loup-et-saumure/generate.mjs`) — assemble les scènes + la `worldMap`, écrit le JSON. OUTIL
+  d'auteur (`tsx`), PAS un build : la sortie commitée est la source.
+- **Compilation** `scene()` construit un `MapSpec` déclaratif puis délègue à `buildScene()`
+  (`src/state/mapSpec.ts`) — MÊME compilateur headless-editor que l'éditeur. L'ASCII (`rows`/`legend`/
+  `base`) est parsé, les bâtiments composés par `addBuilding`, les rencontres terse expansées par
+  `buildEncounter()` (`src/state/encounterAuthoring.ts`). Jamais poser une tuile à la main.
+- **Chargement** `parseProject()` (`src/state/worldMap.ts`) relit le JSON et résout les réfs sparse
+  (ports, cf. §5). Les validateurs id-only de la lib (`creatureId`/`skillId`/`spellId`/`speciesId`/
+  `tenueId`/`weaponId`) FAIL-FAST à l'authoring — un libellé qui s'y glisse lève.
+
+## 2. Navire de campagne (`state.vessel`)
+
+Câblé par des **Effects** (`src/state/scene.ts`), jamais en dur :
+
+- `setVessel` — POSE/REMPLACE le navire de campagne (`vehicleId`, `name`, `morale`, `hullCurrent`/
+  `hullMax`, `saboteurDR`, `crew`). REMPLACE tout `state.vessel` : un second `setVessel` efface Humeur de
+  Manann, dégâts de coque et Moral accumulés — pour un patch, utiliser `adjustVessel`.
+- `adjustVessel` — patch INCRÉMENTAL (`name`/`morale`/`hullCurrent`/`saboteurDR`…) sans réinitialiser le
+  reste (ex. `saboteurDR` remis à 0 quand un sabotage est levé, sans toucher la coque).
+- `adjustManann` — décale l'Humeur de Manann par `factorId` RÉEL de `src/data/sea-events.json` (validé par
+  `findManannFactor()`, `src/engine/seaVoyage.ts`), jamais un delta brut anonyme.
+- `saboteurDR` (dans `[-5,0]`) — malus discret aux Tests d'équipage de COMBAT ; s'authore SUR le
+  `setVessel`. Effet de combat SEULEMENT : le pipeline de voyage ne lit aucun `GameOp`.
+- `crew` — roster SALARIÉ (`{ roleId, count }`, `roleId` de `src/data/crew-roles.json`, barème `wage`).
+
+**Bridge campagne ⇄ combat** : au DÉBUT du combat, toute coque spawnée dont `creatureId === vessel.vehicleId`
+repart de l'état persisté (`src/state/combatSlice.ts`) ; à la FIN, ses dégâts sont réécrits dans le navire
+de campagne (`src/state/combatFlow.ts`). Sans `setVessel` (ou avec un autre `vehicleId`), aucune
+persistance — chaque combat spawn une coque fraîche.
+
+## 3. Routes et voyage (`worldMap.routes`, `MapRoute`)
+
+- `a`/`b` bidirectionnels, `km` (MILLES si `sea`), `modes`, `perils` (péripéties d'auteur `chancePct`),
+  `perilDie` (seuil d10 RAW). DEUX routes entre les mêmes lieux sont OK (seul `id` est une clé) — le
+  « sens » n'est qu'un nommage d'auteur, pas une contrainte mécanique.
+- `ambush: { scene, encounter, at? }` — cible du « Attaqués ! ». En MER, `at` (fraction 0-1, défaut 0.5)
+  ANCRE l'embuscade de façon DÉTERMINISTE : elle se déclenche quand la distance franchit `at × km`, une
+  fois par traversée, hors RNG (#212).
+- `sea: true` → voyage joué sur le navire de campagne (`src/state/seaVoyageFlow.ts`, cap `seaHeading`) ;
+  `river: true` → descente jouée jour par jour (`src/state/riverVoyageFlow.ts`, `riverPerils`/
+  `riverExposure`). Terrestre = table de péripéties + `inns` (relais d'auberge).
+
+## 4. Catalogues navals (data-driven, éditables)
+
+- `src/data/naval-traits.json` — Traits de coque (blindage, bélier…) et **améliorations d'INSTANCE**
+  (`upgrades: NavalTraitRef[]` sur l'entité-coque, ex. `proue-idole-de-stromfels`), validées par
+  `findNavalTrait()`.
+- `src/data/naval-ports.json` — Index des ports (Taille/Richesse/Production/Surplus/Demande RAW).
+- `src/data/crew-roles.json` — rôles d'équipage salarié (`wage` hebdomadaire) ; `src/data/crew-test-types.json`
+  — types de Tests d'équipage (`progression`, `manoeuvre`, `perception`, `orientation`…).
+
+## 5. Ports par référence (`place.port`)
+
+`place.port = { ref }` où `ref` est un id de `naval-ports.json` (#217). L'authoring JSON est SPARSE :
+`resolvePortRef()` (`src/state/worldMap.ts`, appelé par `parseProject()`) fait couler Taille/Richesse/
+surplus depuis le catalogue. Des champs locaux surchargent le catalogue port par port.
+
+## 6. Postes d'artillerie par référence (`poste`, #222)
+
+`poste(trappingId, side, crewIds?)` de la lib émet la forme de RÉFÉRENCE `{ trappingId, uid, side,
+crewIds }`. La base (Dégâts/Qualités/Enc/Portée) N'est PAS matérialisée : elle est HYDRATÉE au spawn
+depuis `trappingId` par `hydratePoste()` (`src/engine/items.ts`). `trappingId` doit désigner une pièce
+POSABLE (trapping à art d'affût `siegeRig`) sinon `throw`. `crewIds` vide = poste servable en jeu par un
+héros adjacent (`serveAtPoste()`, `src/state/shipPostes.ts`) — aucun id de héros n'est connu à l'authoring.
+Garde-fou : les projets ne portent AUCUN poste en forme ancienne (base copiée), cf. la garde #222 de
+`src/data/refs-migrated.test.ts`.
+
+## 7. Entités-coque (`ref` de véhicule)
+
+`creatureId()` accepte créature ∪ véhicule (`findVehicleById()`, #218) : un `ref` de `vehicles.json`
+(`cogue`/`langskip`/`loup-imperial`) passe en `encounters[].enemies[]` terse comme en `entities` BRUTES.
+Une coque RICHE (équipage exposé `crewIds`, artillerie `postes`, améliorations `upgrades`) se pose en
+`entities` + s'enrôle via `encounters[].members` (plus expressif que le terse).
+
+## 8. Objectifs de victoire (`EncounterDef.victoryCondition`)
+
+Cinq formes (`VictoryCondition`, `src/state/scene.ts`), défaut `allEnemiesDead` :
+`allEnemiesDead` · `destroyStructure` (arête) · `surviveRounds` · `reachZone` (rect) · `woundsThreshold`
+(reddition d'une cible sous `belowPercent` de ses Blessures). `onVictory` = un `Flow` (aplati en Effets).
+
+## 9. Flags et gating
+
+`setFlag` pose un drapeau de scène (`Scene.flags`) ; `flagWhen` (lib) / `when` gatent un choix ou un
+Trigger sur une expression « flag,!flag ». C'est le seul mécanisme d'état narratif — pas de compteur
+codé en dur.
+
+## 10. Règles d'or
+
+- **IDS partout** — `ref`/`skill`/`spell`/`weapon`/`species`/`tenue`/`trappingId`/`factorId`/`roleId` sont
+  des ids STABLES. Un libellé est un défaut silencieux (poison). Doctrine : CLAUDE.md, encadré « id STABLE ».
+- **Personne ne lit le journal** — tout dénouement pertinent est une surface VISIBLE au moment (dialogue,
+  modale, effet à l'écran), le `journal` ne fait que rappeler.
+- **Aucun texte technique dans un texte joueur** — un `node.text`/`journal` est rendu VERBATIM par
+  `Prose` (`src/ui/Prose.tsx`) : ni identifiant de code, ni tag d'auteur (`[INEXPRIMABLE]`), ni citation
+  RAW brute (`MDG 14 l.45`). Les constats d'authoring vont dans un journal `docs/plans/`, jamais en jeu.
+- **Prose = verbatim source, Markdown** (CLAUDE.md règle 5) — jamais de reformulation ni de HTML.

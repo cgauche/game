@@ -1,86 +1,97 @@
 /**
- * Outillage d'AUTHORING de l'Arène — helpers purs pour composer le projet (fabriques
- * d'entités/rencontres/triggers). Le JSON commité (`src/scenes/arene/arene-projet.json`) reste la
- * SOURCE CANONIQUE, 100 % éditable dans l'éditeur : ce script n'est qu'un outil d'auteur (itération de
- * layout), PAS un build — ne pas le brancher dans package.json.
+ * Outillage d'AUTHORING de CAMPAGNE — helpers purs pour composer un projet (`{ schema, scenes, worldMap }`)
+ * partagé par TOUTES les campagnes (Arène, « Le Loup et la Saumure », …). Le JSON commité
+ * (`src/scenes/<campagne>/<campagne>-projet.json`) reste la SOURCE CANONIQUE, 100 % éditable dans
+ * l'éditeur : ce script n'est qu'un outil d'auteur (itération de layout), PAS un build — ne pas le
+ * brancher dans package.json.
  *
- * Lancé via tsx (`tsx scripts/arene/generate.mjs`) : `scene()` construit un `MapSpec` (format déclaratif)
- * puis appelle `buildScene` (`src/state/mapSpec.ts`) — MÊME compilateur headless-editor que les scénarios
- * `src/scenes/…`. Plus de fabrique de scène divergente : l'ASCII est parsé par `buildScene`, les bâtiments
- * composés par `addBuilding`, les rencontres terse par `buildEncounter`. Ce fichier ne garde QUE la couche
- * de normalisation LIBELLÉ→id (l'auteur écrit des libellés lisibles ; le JSON canonique ne porte que des ids).
+ * Lancé via tsx : `scene()` construit un `MapSpec` (format déclaratif) puis appelle `buildScene`
+ * (`src/state/mapSpec.ts`) — MÊME compilateur headless-editor que les scénarios `src/scenes/…`. Plus de
+ * fabrique de scène divergente : l'ASCII est parsé par `buildScene`, les bâtiments composés par
+ * `addBuilding`, les rencontres terse par `buildEncounter`. L'auteur écrit des IDS ; ce fichier ne fait
+ * que les VALIDER (fail-fast) — il ne normalise plus aucun libellé (doctrine « labels interdits »).
  */
 import { buildScene } from '../../src/state/mapSpec.ts';
-import { findCreature, findCreatureById, findSkill, findSkillById, findSpellById, spells as SPELL_CATALOG, species as SPECIES_CATALOG } from '../../src/data/index.ts';
+import { findCreatureById, findSkillById, findSpellById, findTrappingById, findVehicleById, species as SPECIES_CATALOG } from '../../src/data/index.ts';
 import { creatureSpeciesOptions } from '../../src/gameIso/rig/creatures/index.ts';
+import { wardrobeKeyResolves } from '../../src/gameIso/rig/parts/career.ts';
 import { parseTraitInstance } from '../../src/engine/traits/dispatch.ts';
 
-// ── Normalisation LIBELLÉ → id STABLE, à l'AUTHORING ────────────────────────────────────────
-// L'auteur écrit des LIBELLÉS lisibles (« Snotling », « Résistance ») ; le JSON canonique, lui, ne
-// porte QUE des ids stables (`snotling`, `resistance`) — un libellé qui se faufile fait un mannequin
-// de repli / un trait mort / une compétence introuvable au runtime. Chaque résolveur est IDEMPOTENT
-// (un id déjà résolu passe tel quel) et FAIL-FAST (libellé inconnu → throw, jamais un id deviné).
-// Cf. [[game-ids-internes-libelles-display-multilangue]].
-// ⚠ `traitInstance`/`parseTraitInstance` (LIGNE suivante) ne normalise QUE la clé du trait (« Taille »
-// → `taille`) — son `arg` (« Taille (Petite) » → `arg:'Petite'`) reste VERBATIM, jamais résolu vers
-// l'id du registre (`sizes`/`arcaneDomains`/…) : sur un trait à source FERMÉE (ex. `taille`), écrire
-// directement l'id en minuscule dans la parenthèse (« Taille (petite) »), pas le libellé du livre
-// (#146 : `arene-projet.json` portait `arg:'Petite'` — un libellé pris pour un id, source fermée).
+// ── VALIDATION id-only, à l'AUTHORING ───────────────────────────────────────────────────────
+// L'auteur écrit des IDS STABLES (`snotling`, `resistance`, `arc`, `mendiant`) — le libellé est de
+// l'AFFICHAGE (multilangue), jamais une clé (CLAUDE.md, encadré id STABLE). Chaque résolveur VALIDE :
+// un id valide passe tel quel, TOUT le reste → throw en pointant où trouver les ids (Compendium/
+// catalogue). Il ne NORMALISE plus (plus de libellé accepté au chargement). Les pickers de l'éditeur/
+// Compendium aident à trouver l'id à la saisie.
+// ⚠ `traitInstance`/`parseTraitInstance` (statblocks de créature) ne normalise QUE la clé du trait
+// (« Taille » → `taille`) — son `arg` (« Taille (Petite) » → `arg:'Petite'`) reste VERBATIM : sur un
+// trait à source FERMÉE (ex. `taille`), écrire directement l'id en minuscule (« Taille (petite) »), pas
+// le libellé du livre (#146).
 
-/** Apostrophe typographique (U+2019/U+2018/U+02BC) → droite, pour matcher un libellé de catalogue. */
-const APOS = (s) => s.normalize('NFC').replace(/[‘’ʼ]/g, "'");
-
-/** `ref` créature : id stable (idempotent). Libellé de bestiaire → son id ; inconnu → throw. */
+/** `ref` d'entité : id STABLE de bestiaire OU de coque (`vehicles.json`, findVehicleById). Une coque est
+ *  un ref d'entité LÉGITIME (naval, MDG ch.13) posé en `enemies[]` terse comme en `entities`. Valide →
+ *  passe ; inconnu → throw (chercher au Compendium). */
 function creatureId(ref) {
-  if (findCreatureById(ref)) return ref;
-  const c = findCreature(ref);
-  if (!c) throw new Error(`arène : créature introuvable « ${ref} » (ni id ni libellé de bestiaire)`);
-  return c.id;
+  if (findCreatureById(ref) || findVehicleById(ref)) return ref;
+  throw new Error(`campagne : réf introuvable « ${ref} » — ni créature ni véhicule du catalogue (Compendium → Bestiaire / Véhicules).`);
 }
-/** Compétence : skillId stable (idempotent). Libellé → son id ; inconnu → throw. */
-function skillId(label) {
-  if (findSkillById(label)) return label;
-  const s = findSkill(label);
-  if (!s) throw new Error(`arène : compétence introuvable « ${label} »`);
-  return s.id;
+/** Compétence : skillId STABLE. Valide → passe ; inconnu → throw. */
+function skillId(id) {
+  if (findSkillById(id)) return id;
+  throw new Error(`campagne : compétence introuvable « ${id} » — attendu un id de skills.json (Compendium → Compétences).`);
 }
-/** Sort : id stable (idempotent). Libellé (apostrophe tolérante) → son id ; inconnu → throw. */
-function spellId(label) {
-  if (findSpellById(label)) return label;
-  const key = APOS(label);
-  const sp = SPELL_CATALOG.find((s) => APOS(s.label) === key);
-  if (!sp) throw new Error(`arène : sort introuvable « ${label} »`);
-  return sp.id;
+/** Sort : id STABLE. Valide → passe ; inconnu → throw. */
+function spellId(id) {
+  if (findSpellById(id)) return id;
+  throw new Error(`campagne : sort introuvable « ${id} » — attendu un id de spells.json (Compendium → Sorts).`);
 }
 // Vocabulaire d'`appearance.species` : ids STABLES de species.json (espèces jouables) ∪ ids de def rig
 // (DEF_BY_ID, monstres/races non-jouables). Un LIBELLÉ n'est PAS un id — cf. [[game-ids-internes-libelles-display-multilangue]].
 const SPECIES_IDS = new Set(SPECIES_CATALOG.map((s) => s.id));
-const SPECIES_ID_BY_LABEL = new Map(SPECIES_CATALOG.map((s) => [s.label, s.id]));
 const RIG_DEF_IDS = new Set(creatureSpeciesOptions().map((o) => o.id));
-/** `appearance.species` : id STABLE (species.json OU def rig) — IDEMPOTENT (id valide passe tel quel) ;
- *  libellé EXACT de species.json → son id ; tout le reste → throw (jamais un id deviné). */
-function speciesId(input) {
-  if (SPECIES_IDS.has(input) || RIG_DEF_IDS.has(input)) return input;
-  const byLabel = SPECIES_ID_BY_LABEL.get(input);
-  if (byLabel) return byLabel;
+/** `appearance.species` : id STABLE (species.json OU def rig). Valide → passe ; tout le reste → throw. */
+function speciesId(id) {
+  if (SPECIES_IDS.has(id) || RIG_DEF_IDS.has(id)) return id;
   throw new Error(
-    `arène : appearance.species introuvable « ${input} » — attendu un id de species.json ` +
-      `(${[...SPECIES_IDS].join(', ')}) ou un id de def rig (ex. ${[...RIG_DEF_IDS].slice(0, 8).join(', ')}…)`,
+    `campagne : appearance.species introuvable « ${id} » — attendu un id de species.json ` +
+      `(${[...SPECIES_IDS].join(', ')}) ou un id de def rig (ex. ${[...RIG_DEF_IDS].slice(0, 8).join(', ')}…).`,
   );
+}
+/** `appearance.tenue` : id STABLE de garde-robe (tenue ∪ carrière ∪ classe ∪ 'nu'). Valide → passe ;
+ *  tout le reste → throw (chercher au Compendium → Carrières / au registre des tenues). */
+function tenueId(id) {
+  if (wardrobeKeyResolves(id)) return id;
+  throw new Error(`campagne : appearance.tenue introuvable « ${id} » — attendu un id de tenue/carrière/classe (Compendium → Carrières).`);
+}
+/** `weapon` d'entité de scène : `trappingId` STABLE du catalogue d'armes. Valide → passe ; tout le reste
+ *  → throw (chercher au Compendium → Objets). */
+function weaponId(id) {
+  if (findTrappingById(id)) return id;
+  throw new Error(`campagne : weapon introuvable « ${id} » — attendu un trappingId du catalogue d'armes (Compendium → Objets).`);
 }
 
 /** Chaîne de statbloc/optionnel (« Souffle +15 (Ténèbres) ») → `TraitInstance` structuré ; objet déjà
  *  structuré → inchangé. `parseTraitInstance` est le SEUL parseur libellé→trait (registre `traits.json`). */
 const traitInstance = (t) => (typeof t === 'string' ? parseTraitInstance(t) : t);
 
-/** Un ennemi authored terse : `ref`/`optionals`/`spells`/`statblock.traits` par libellé → ids stables.
- *  PUR (renvoie une copie ; ne mute pas les statblocs-constantes partagés). */
+/** Un ennemi authored terse : VALIDE `ref`/`spells`/`weapon`/`appearance` (ids stables, throw sinon),
+ *  parse `optionals`/`statblock.traits` (statblocks). PUR (copie ; ne mute pas les statblocs partagés). */
 function normalizeEnemy(e) {
   const out = { ...e };
   if (out.ref) out.ref = creatureId(out.ref);
+  if (out.weapon) out.weapon = weaponId(out.weapon);
   if (out.optionals) out.optionals = out.optionals.map(traitInstance);
   if (out.spells) out.spells = out.spells.map(spellId);
+  if (out.appearance?.species != null || out.appearance?.tenue != null) out.appearance = validateAppearance(out.appearance);
   if (out.statblock?.traits) out.statblock = { ...out.statblock, traits: out.statblock.traits.map(traitInstance) };
+  return out;
+}
+
+/** VALIDE `appearance.species`/`appearance.tenue` (ids stables) — copie, throw si un libellé s'y glisse. */
+function validateAppearance(app) {
+  const out = { ...app };
+  if (out.species != null) out.species = speciesId(out.species);
+  if (out.tenue != null) out.tenue = tenueId(out.tenue);
   return out;
 }
 
@@ -172,16 +183,29 @@ export function resetIds() {
   propSeq = 0;
 }
 
-/** Personnage (PNJ) : apparence/dialogue/marchand via opts. `appearance.species` (LIBELLÉ lisible
- *  d'auteur) → id STABLE via `speciesId` (fail-fast). `species` absent = défaut Humain (documenté). */
+/** Personnage (PNJ) : apparence/dialogue/marchand via opts. `weapon`/`appearance.species`/`appearance.tenue`
+ *  sont VALIDÉS (ids stables, fail-fast). `species`/`tenue` absents = défauts documentés (Humain / garde-robe de race). */
 export function NPC(id, x, y, label, opts = {}) {
   const e = { id, kind: 'personnage', pos: { x, y }, label, ...opts };
-  if (e.appearance?.species != null) e.appearance = { ...e.appearance, species: speciesId(e.appearance.species) };
+  if (e.weapon != null) e.weapon = weaponId(e.weapon);
+  if (e.appearance != null) e.appearance = validateAppearance(e.appearance);
   return e;
 }
 
 export function hero(x, y) {
   return { id: 'start', kind: 'heroStart', pos: { x, y } };
+}
+
+let posteSeq = 0;
+/** Poste d'artillerie MONTÉ (#222) : émet la forme AUTHORÉE de référence `{ trappingId, uid, side, crewIds }`
+ *  — la base (Dégâts/Qualités/Enc/Portée) N'est PAS matérialisée, elle est HYDRATÉE au spawn depuis
+ *  `trappingId` (`hydratePoste`, `src/engine/items.ts`). VALIDE `trappingId` : doit être une pièce POSABLE
+ *  (trapping à art d'affût `siegeRig`, cf. `siegeEngines`/`findVehicleById` du naval) — sinon throw. `crewIds`
+ *  vide par défaut : aucun id de héros n'est connu à l'authoring, le poste est servable en jeu (`serveAtPoste`). */
+export function poste(trappingId, side, crewIds = []) {
+  const t = findTrappingById(trappingId);
+  if (!t?.siegeRig) throw new Error(`campagne : poste « ${trappingId} » — attendu un trappingId de pièce POSABLE (art d'affût siegeRig ; Compendium → Objets, armes de siège).`);
+  return { trappingId, uid: `poste-${++posteSeq}`, side, crewIds };
 }
 
 /** Flow PLAT (séquence de `do`) à partir d'une liste d'Effets — forme attendue par `Trigger.flow`. */
@@ -226,7 +250,7 @@ export function fouille(effectsOrFlow, consume = false) {
   return { interact: { flow, ...(consume ? { consume: true } : {}) } };
 }
 
-/** Statblocks d'AUTEUR conservés VERBATIM du projet v1 (sourcés à leur création). */
+/** Statblocks d'AUTEUR conservés VERBATIM du projet Arène v1 (sourcés à leur création). */
 export const NUEE_DE_RATS = {
   name: 'Nuée de rats',
   char: { M: 4, CC: 30, F: 25, E: 30, Ag: 40, B: 5 },

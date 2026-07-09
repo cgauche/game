@@ -13,7 +13,7 @@ export const creature: CreatureDef = {
   name: 'Démonette',
   plan: 'biped',
   perso: {
-    tenue: 'Démonette',
+    tenue: 'demonette',
     sex: 'F',
     monster: { brasG: 'griffe', brasD: 'griffe', jambes: 'chevre' },
     eyes: { G: 'noir', D: 'noir' },

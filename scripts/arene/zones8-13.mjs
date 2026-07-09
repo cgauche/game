@@ -1,5 +1,5 @@
 /** Zones 8-13 de l'échelle — le haut du tableau : Fosse, Caverne, Vermine, Cercle, Sépulcre, Dragon. */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, DRAGON_DES_TENEBRES, flowOf, flagWhen, testNode } from './lib.mjs';
+import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, zoneVictory, DRAGON_DES_TENEBRES, flowOf, flagWhen, testNode } from '../campagne/lib.mjs';
 
 // ── Zone 8 — La Fosse (30×20, roche) : gouffres, harde du Chaos, gladiateur ALLIÉ ───────────
 
@@ -62,13 +62,13 @@ export function makeZone8() {
         enemies: [
           // 0 : le gladiateur évadé — un ALLIÉ de scène à pied (vitrine side:'ally' hors monture).
           //     Dépouillé de son armure par la harde : haillons + carrure de lutteur (≠ soldat générique).
-          { ref: 'Humain', pos: { x: 5, y: 10 }, side: 'ally', weapon: 'Épée bâtarde', label: 'Gladiateur enchaîné', appearance: { career: 'Mendiant', build: 0.72 } },
-          { ref: 'Gor', pos: { x: 14, y: 5 } },
-          { ref: 'Gor', pos: { x: 22, y: 11 }, optionals: ['Armure 2'] },
-          { ref: 'Gor', pos: { x: 12, y: 16 } },
-          { ref: 'Ungor', pos: { x: 17, y: 9 } },
-          { ref: 'Ungor', pos: { x: 24, y: 6 } },
-          { ref: 'Minotaure', pos: { x: 20, y: 16 } },
+          { ref: 'humain', pos: { x: 5, y: 10 }, side: 'ally', weapon: 'epee-batarde', label: 'Gladiateur enchaîné', appearance: { tenue: 'mendiant', build: 0.72 } },
+          { ref: 'gor', pos: { x: 14, y: 5 } },
+          { ref: 'gor', pos: { x: 22, y: 11 }, optionals: ['Armure 2'] },
+          { ref: 'gor', pos: { x: 12, y: 16 } },
+          { ref: 'ungor', pos: { x: 17, y: 9 } },
+          { ref: 'ungor', pos: { x: 24, y: 6 } },
+          { ref: 'minotaure', pos: { x: 20, y: 16 } },
         ],
         onVictory: zoneVictory(8, {
           money: { gold: 3 },
@@ -152,10 +152,10 @@ export function makeZone9() {
       {
         id: 'enc-zone9',
         enemies: [
-          { ref: 'Troll', pos: { x: 12, y: 8 } },
-          { ref: 'Squig des cavernes', pos: { x: 16, y: 14 } },
-          { ref: 'Squig des cavernes', pos: { x: 8, y: 11 }, optionals: ['Frénésie'] },
-          { ref: 'Gor', pos: { x: 18, y: 6 } },
+          { ref: 'troll', pos: { x: 12, y: 8 } },
+          { ref: 'squig-des-cavernes', pos: { x: 16, y: 14 } },
+          { ref: 'squig-des-cavernes', pos: { x: 8, y: 11 }, optionals: ['Frénésie'] },
+          { ref: 'gor', pos: { x: 18, y: 6 } },
         ],
         onVictory: zoneVictory(9, {
           money: { gold: 3, silver: 10 },
@@ -166,7 +166,7 @@ export function makeZone9() {
       {
         // L'invité de marque : un Ogre mercenaire a flairé le magot avant vous.
         id: 'enc-caverne-ogre',
-        enemies: [{ ref: 'Ogre', pos: { x: 27, y: 9 }, optionals: ['Affamé'] }],
+        enemies: [{ ref: 'ogre', pos: { x: 27, y: 9 }, optionals: ['Affamé'] }],
         onVictory: flowOf([
           { type: 'giveXp', amount: 60 },
           { type: 'journal', text: 'L’Ogre s’effondre en travers de son feu. Le magot n’attend plus que vous.' },
@@ -193,7 +193,7 @@ export function makeZone10() {
             text: '🔓 Crocheter la cage (Test de Crochetage).',
             when: flagWhen('!prisonnier_libre'),
             flow: testNode(
-              { skill: 'Crochetage', difficulty: 'accessible', label: 'Crocheter la cage du garde-manger' },
+              { skill: 'crochetage', difficulty: 'accessible', label: 'Crocheter la cage du garde-manger' },
               [
                 { type: 'setFlag', flag: 'prisonnier_libre' },
                 { type: 'giveMoney', silver: 40 },
@@ -247,7 +247,7 @@ export function makeZone10() {
       NPC('prisonnier', 10, 5, 'Prisonnier en cage', {
         dialogueId: 'dlg-prisonnier',
         anim: 'cowering',
-        appearance: { species: 'Halflings', career: 'Mendiant', sex: 'M' },
+        appearance: { species: 'halflings', tenue: 'mendiant', sex: 'M' },
       }),
       P(10, 6, 'cage', { label: 'Cage du garde-manger' }),
       P(12, 5, 'detritus'),
@@ -286,15 +286,15 @@ export function makeZone10() {
       {
         id: 'enc-zone10',
         enemies: [
-          { ref: 'Guerrier des clans', pos: { x: 16, y: 10 }, randomChars: true },
-          { ref: 'Guerrier des clans', pos: { x: 22, y: 12 }, randomChars: true },
-          { ref: 'Guerrier des clans', pos: { x: 18, y: 19 }, randomChars: true },
-          { ref: 'Guerrier des clans', pos: { x: 28, y: 9 }, optionals: ['Pisteur'] },
-          { ref: 'Vermine de choc', pos: { x: 20, y: 15 } },
-          { ref: 'Vermine de choc', pos: { x: 24, y: 20 } },
-          { ref: 'Rat ogre', pos: { x: 29, y: 14 } },
-          { ref: 'Rat géant', pos: { x: 14, y: 15 } },
-          { ref: 'Rat géant', pos: { x: 10, y: 20 } },
+          { ref: 'guerrier-des-clans', pos: { x: 16, y: 10 }, randomChars: true },
+          { ref: 'guerrier-des-clans', pos: { x: 22, y: 12 }, randomChars: true },
+          { ref: 'guerrier-des-clans', pos: { x: 18, y: 19 }, randomChars: true },
+          { ref: 'guerrier-des-clans', pos: { x: 28, y: 9 }, optionals: ['Pisteur'] },
+          { ref: 'vermine-de-choc', pos: { x: 20, y: 15 } },
+          { ref: 'vermine-de-choc', pos: { x: 24, y: 20 } },
+          { ref: 'rat-ogre', pos: { x: 29, y: 14 } },
+          { ref: 'rat-geant', pos: { x: 14, y: 15 } },
+          { ref: 'rat-geant', pos: { x: 10, y: 20 } },
         ],
         onVictory: zoneVictory(10, {
           money: { gold: 4 },
@@ -363,7 +363,7 @@ export function makeZone11() {
         label: 'Coffre du célébrant',
         ...fouille([
           { type: 'giveTrapping', trapping: 'Grimoire' },
-          { type: 'learnSpell', spell: 'Éblouissant' },
+          { type: 'learnSpell', spell: 'eblouissant' },
           { type: 'journal', text: 'Le grimoire du célébrant — votre sorcier en déchiffre déjà un charme (Éblouissant) ; le reste se lira au calme.' },
         ]),
       }),
@@ -374,7 +374,7 @@ export function makeZone11() {
         rect: { x: 13, y: 3, w: 8, h: 6 },
         once: true,
         flow: flowOf([
-          { type: 'corruptionExposure', level: 'mineure', skill: 'Calme' },
+          { type: 'corruptionExposure', level: 'mineure', skill: 'calme' },
           { type: 'journal', text: 'L’idole noire CHANTE dans vos crânes — une influence corruptrice à l’état pur.' },
         ]),
       },
@@ -384,15 +384,15 @@ export function makeZone11() {
       {
         id: 'enc-zone11',
         enemies: [
-          { ref: 'Chamane-Brey', pos: { x: 17, y: 3 }, spells: ['Fléchette', 'La lance d’Ambre', 'Serres d’ambre'] },
-          { ref: 'Cultiste', pos: { x: 13, y: 10 }, spells: ['Fléchette'], optionals: ['Lanceur de Sorts (Chaos)'] },
-          { ref: 'Cultiste', pos: { x: 21, y: 10 }, randomChars: true },
-          { ref: 'Cultiste', pos: { x: 17, y: 12 }, randomChars: true },
-          { ref: 'Mutant', pos: { x: 10, y: 6 } },
-          { ref: 'Mutant', pos: { x: 24, y: 6 } },
-          { ref: 'Sanguinaire de Khorne', pos: { x: 15, y: 14 } },
-          { ref: 'Horreur rose', pos: { x: 19, y: 14 } },
-          { ref: 'Horreur bleue', pos: { x: 22, y: 16 } },
+          { ref: 'chamane-brey', pos: { x: 17, y: 3 }, spells: ['flechette', 'la-lance-d-ambre', 'serres-d-ambre'] },
+          { ref: 'cultiste', pos: { x: 13, y: 10 }, spells: ['flechette'], optionals: ['Lanceur de Sorts (Chaos)'] },
+          { ref: 'cultiste', pos: { x: 21, y: 10 }, randomChars: true },
+          { ref: 'cultiste', pos: { x: 17, y: 12 }, randomChars: true },
+          { ref: 'mutant', pos: { x: 10, y: 6 } },
+          { ref: 'mutant', pos: { x: 24, y: 6 } },
+          { ref: 'sanguinaire-de-khorne', pos: { x: 15, y: 14 } },
+          { ref: 'horreur-rose', pos: { x: 19, y: 14 } },
+          { ref: 'horreur-bleue', pos: { x: 22, y: 16 } },
         ],
         onVictory: zoneVictory(11, {
           money: { gold: 5 },
@@ -480,13 +480,13 @@ export function makeZone12() {
       {
         id: 'enc-zone12',
         enemies: [
-          { ref: 'Squelette', pos: { x: 8, y: 4 } },
-          { ref: 'Squelette', pos: { x: 22, y: 4 } },
-          { ref: 'Fantôme', pos: { x: 12, y: 8 } },
-          { ref: 'Fantôme', pos: { x: 20, y: 12 } },
-          { ref: 'Banshee', pos: { x: 16, y: 2 } },
-          { ref: 'Spectre de cairn', pos: { x: 14, y: 12 } },
-          { ref: 'Vampire', pos: { x: 16, y: 8 }, optionals: ['Champion'] },
+          { ref: 'squelette', pos: { x: 8, y: 4 } },
+          { ref: 'squelette', pos: { x: 22, y: 4 } },
+          { ref: 'fantome', pos: { x: 12, y: 8 } },
+          { ref: 'fantome', pos: { x: 20, y: 12 } },
+          { ref: 'banshee', pos: { x: 16, y: 2 } },
+          { ref: 'spectre-de-cairn', pos: { x: 14, y: 12 } },
+          { ref: 'vampire', pos: { x: 16, y: 8 }, optionals: ['Champion'] },
         ],
         onVictory: zoneVictory(12, {
           money: { gold: 6 },
@@ -560,7 +560,7 @@ export function makeZone13() {
       P(13, 17, 'tas-or', {
         label: 'Or épars (le dragon DORT…)',
         ...fouille(testNode(
-          { skill: 'Discrétion', difficulty: 'difficile', label: 'Chiper l’or sous l’œil clos du dragon' },
+          { skill: 'discretion', difficulty: 'difficile', label: 'Chiper l’or sous l’œil clos du dragon' },
           [
             { type: 'giveMoney', gold: 8 },
             { type: 'journal', text: 'Huit couronnes glissées sans un tintement. Le dragon ronfle toujours.' },
@@ -586,11 +586,11 @@ export function makeZone13() {
         id: 'enc-zone13',
         enemies: [
           { statblock: DRAGON_DES_TENEBRES, pos: { x: 28, y: 9 } },
-          { ref: 'Gobelin', pos: { x: 24, y: 5 } },
-          { ref: 'Gobelin', pos: { x: 26, y: 16 } },
-          { ref: 'Gobelin', pos: { x: 21, y: 12 }, randomChars: true },
-          { ref: 'Gobelin', pos: { x: 33, y: 18 } },
-          { ref: 'Cultiste', pos: { x: 30, y: 3 }, optionals: ['Armure 1'] },
+          { ref: 'gobelin', pos: { x: 24, y: 5 } },
+          { ref: 'gobelin', pos: { x: 26, y: 16 } },
+          { ref: 'gobelin', pos: { x: 21, y: 12 }, randomChars: true },
+          { ref: 'gobelin', pos: { x: 33, y: 18 } },
+          { ref: 'cultiste', pos: { x: 30, y: 3 }, optionals: ['Armure 1'] },
         ],
         onVictory: zoneVictory(13, {
           money: { gold: 10 },

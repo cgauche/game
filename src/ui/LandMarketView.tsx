@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { findLandCargoById } from '../engine/landCargo';
 import { cargoTotalEnc } from '../engine/cargo';
+import { canAfford, toMoney } from '../engine/money';
 import { Coins } from './Coins';
 
 /**
@@ -9,7 +10,7 @@ import { Coins } from './Coins';
  * un Lieu `market` de la carte : acheter les offres de l'étape (disponibilité 2 temps + Marchandage + lot
  * partiel), vendre/brader le convoi. PENDANT terrestre de `PortView` (commerce maritime) : même overlay
  * plein écran (patron `WorldMapView`), sections en `.layout-sidebar`/`.panel` (responsive ≤900/700/560),
- * français, aucun texte tuto. Réutilise les classes `.port-*` de la feuille de style commune.
+ * français, aucun texte tuto. Réutilise les classes `.port-*`/`.market-offer*` de la feuille de style commune.
  */
 export function LandMarketView() {
   const market = useGame((s) => s.landMarket);
@@ -52,37 +53,42 @@ export function LandMarketView() {
           <section className="panel port-section">
             <h3>Acheter — offres de l’étape</h3>
             {market.offers.length === 0 && <p className="port-hint">Aucun marchand n’a de cargaison à céder ici (disponibilité T2C ch.11 l.22-42).</p>}
-            <table className="port-table">
-              <thead><tr><th>Cargaison</th><th>Dispo (Enc)</th><th>Prix base</th><th>Enc</th><th /></tr></thead>
-              <tbody>
-                {market.offers.map((o) => {
-                  const want = buyEnc[o.cargoId] ?? o.enc;
-                  return (
-                    <tr key={o.cargoId}>
-                      <td>
+            <div className="panel-grid">
+              {market.offers.map((o) => {
+                const want = buyEnc[o.cargoId] ?? o.enc;
+                const estCost = toMoney({ gold: Math.round(want * o.basePrice) });
+                const affordable = canAfford(money, estCost);
+                return (
+                  <div key={o.cargoId} className="market-offer">
+                    <div className="market-offer-head">
+                      <b>
                         {o.label}
                         {o.wine && (o.wineTier
                           ? <span className="port-hint"> — {o.wineTier}{o.wineEvalOk ? '' : ' (?)'}</span>
                           : <> <button type="button" className="btn small ghost" disabled={isGuest} title="Test d’Évaluation pour révéler la qualité secrète du vin (T2C ch.11 l.95)" onClick={() => evalWine(o.cargoId)}>Évaluer</button></>)}
-                      </td>
-                      <td>{o.enc}</td>
-                      <td>{o.basePrice} CO/Enc</td>
-                      <td>
-                        <input
-                          type="number" min={1} max={o.enc} value={want}
-                          onChange={(e) => setBuyEnc((s) => ({ ...s, [o.cargoId]: Math.max(1, Math.min(o.enc, Number(e.target.value) || 1)) }))}
-                        />
-                      </td>
-                      <td>
-                        <button type="button" className="btn small" disabled={isGuest} title={`≈ ${Math.round(want * o.basePrice)} CO avant Marchandage (+10 % si lot partiel, l.131)`} onClick={() => buy(o.cargoId, want)}>
-                          Acheter
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </b>
+                      <span className="port-hint">Dispo <b>{o.enc}</b> Enc · <Coins money={toMoney({ gold: o.basePrice })} />/Enc</span>
+                    </div>
+                    <div className={`market-offer-buy ${affordable ? '' : 'unaffordable'}`}>
+                      <input
+                        type="number" min={1} max={o.enc} value={want}
+                        onChange={(e) => setBuyEnc((s) => ({ ...s, [o.cargoId]: Math.max(1, Math.min(o.enc, Number(e.target.value) || 1)) }))}
+                      />
+                      <span className="market-offer-total">Total ≈ <Coins money={estCost} /></span>
+                      <button
+                        type="button"
+                        className="btn small"
+                        disabled={isGuest || !affordable}
+                        title={affordable ? 'Estimation avant Marchandage (+10 % si lot partiel, l.131)' : 'Bourse insuffisante'}
+                        onClick={() => buy(o.cargoId, want)}
+                      >
+                        Acheter
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </section>
           <section className="panel port-section">
             <h3>Vendre — convoi du groupe</h3>
@@ -94,7 +100,7 @@ export function LandMarketView() {
                   <tr key={i}>
                     <td>{findLandCargoById(lot.cargoId)?.label ?? lot.cargoId}</td>
                     <td>{lot.enc}</td>
-                    <td>{lot.basePriceGold} CO/Enc</td>
+                    <td><Coins money={toMoney({ gold: lot.basePriceGold })} />/Enc</td>
                     <td className="port-sell-actions">
                       <button type="button" className="btn small" disabled={isGuest} title="Trouver un acheteur puis marchander (T2C ch.11 l.133-160)" onClick={() => sell(i)}>Vendre</button>
                       <button type="button" className="btn small ghost" disabled={isGuest} title="Brader à la moitié du prix de base (T2C ch.11 l.160)" onClick={() => dump(i)}>Brader</button>

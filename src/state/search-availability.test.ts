@@ -62,6 +62,21 @@ describe('#57 — recherche active de Disponibilité (LDB 59 l.50)', () => {
     expect(success).not.toEqual(failure); // le bonus de recherche a bel et bien influé sur le réassort
   });
 
+  it('Carrière cohérente par ID (marchand/receleur, LDB 59 l.50) décale le réassort — id STABLE, pas libellé', () => {
+    const stockFor = (career: string) => {
+      useGame.getState().seedRng(4);
+      const h = gossiper(30); (h as unknown as { career: string }).career = career;
+      useGame.setState({ party: [h], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 }, merchantStocks: {}, gameTime: 8 * 60 });
+      useGame.getState().openMerchant('pnj');
+      return useGame.getState().merchant!.stock.map((l) => `${l.id}:${l.qty}`).sort().join('|');
+    };
+    const marchand = stockFor('marchand'); // carrière cohérente (id) → +10 % de Disponibilité
+    const roublard = stockFor('roublard'); // carrière NON cohérente → 0
+    const libellePiege = stockFor('Marchand'); // un LIBELLÉ n'est pas un id → ne déclenche PLUS le bonus
+    expect(marchand).not.toEqual(roublard); // l'id cohérent a bel et bien décalé le tirage
+    expect(libellePiege).toEqual(roublard); // id-only : le libellé se comporte comme une carrière quelconque
+  });
+
   it('système simplifié (pas de Test de Disponibilité) : recherche = no-op (rien à améliorer, pas de journée perdue)', () => {
     setRule('market-mode', 'simplifie');
     useGame.setState({ party: [gossiper(90)], scene: merchantScene(), money: { gold: 50, silver: 0, brass: 0 }, merchantStocks: {}, gameTime: 8 * 60 });
