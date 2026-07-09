@@ -28,6 +28,8 @@ import type { Combatant } from '../engine/types';
  * Playwright SANS chasser les coordonnées pixel des tokens. Depuis une recette :
  *   __wfrp.state()        → instantané lisible (écran, dialogue, combat, position du groupe)
  *   __wfrp.entities()     → liste des entités de la scène + leur mode d'accès
+ *   __wfrp.screenPos('id') → bounding box ÉCRAN du token (combat ET exploration, `data-cid`) — LECTURE
+ *                           seule (`getBoundingClientRect`), `null` si absent du DOM
  *   __wfrp.talk('id')     → téléporte le groupe à côté de l'entité et l'interpelle (dialogue/marchand)
  *   __wfrp.goto('id')     → place le groupe sur la case de l'entité (déclenche portes/triggers au pas)
  *   __wfrp.screen('menu') → navigue vers un écran
@@ -121,6 +123,16 @@ export function buildApi() {
         pos: e.pos,
         access: e.dialogueId ? 'talk' : e.merchant ? 'merchant' : e.interact ? 'interact' : '—',
       })),
+
+    /** OBSERVATION seule : bounding box ÉCRAN du token `id` (combat ET exploration — même canal
+     *  `data-cid`, #226) via `getBoundingClientRect`. `null` si le token n'est pas dans le DOM
+     *  (hors vue, scène/combat sans ce token). Zéro action — ne pilote rien. */
+    screenPos: (id: string): { x: number; y: number; width: number; height: number } | null => {
+      const el = document.querySelector(`[data-cid="${id}"]`);
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: r.x, y: r.y, width: r.width, height: r.height };
+    },
 
     /** ACCÈS DIRECT : ouvre le dialogue/marchand d'une entité (téléporte le groupe à côté puis interagit). */
     talk: (id: string) => {

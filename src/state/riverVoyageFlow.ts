@@ -41,7 +41,7 @@ import {
   rollRiverWind, tickRiverWindDay, riverWindEffect, riverPilotSkill, savoirVoiesFluvialesBonus,
   rowingAgilityFactor, ROWING_AGILITY_DIFFICULTY, riverDayKm, riverDriftKm, navDifficultyWithPenalty,
   riverControlKept, resolveCapsizeRighting, capsizeSinkTurns, holeSinkMinutes, riverCritical, findRiverPeril,
-  resolveRiverImpact, rollBarrage, echouageDamage, NAV_BASE_DIFFICULTY, TACK_DIFFICULTY,
+  resolveRiverImpact, rollBarrage, rollBarrageClearing, echouageDamage, NAV_BASE_DIFFICULTY, TACK_DIFFICULTY,
   DRIFT_NAV_PENALTY, OUT_OF_CONTROL, CAPSIZE, TEMPORARY_REPAIR, difficultyFromModifier,
   type RiverWindForceId, type RiverWindDirId,
 } from '../engine/riverNavigation';
@@ -462,8 +462,43 @@ registerCascadeApplier('riverPerilCheck', (get, set, step) => {
     }];
     return { insert };
   }
-  // detect / obstacle : pas de jet joueur → résolution inline (sous-jets dans le même ordre qu'inline).
+  if (peril.kind === 'obstacle' && peril.obstacle) {
+    // Barrage (l.128) : CHOIX joueur — forcer au bélier (Dégâts à la coque) OU déblayer à la main (temps,
+    // coque intacte). L'Endurance/les Blessures du barrage sont tirées ici pour la lisibilité du choix.
+    const b = rollBarrage(peril.obstacle, rng);
+    return { insert: [{
+      id: `${step.id}-obstacle`, kind: 'riverObstacleChoice', actorId: step.actorId, icon: 'ui/warning',
+      label: `${peril.label} (Endurance ${b.endurance}, ${b.wounds} Blessures) — forcer ou déblayer ?`,
+      options: [
+        { key: 'deblayer', label: 'Déblayer à la main', detail: 'Dégager les débris (3d10 objets) : du temps perdu, mais la coque est épargnée.' },
+        { key: 'forcer', label: 'Forcer au bélier', detail: `Enfoncer le barrage : +${peril.obstacle.ramDamage} Dégâts à la coque.` },
+      ],
+      // Cadence commandée : défaut = le MOINS destructif (déblayer, coque intacte) — T2C ch.5 l.128.
+      defaultChoice: 'deblayer', interactive: true, meta: { perilId },
+    }] };
+  }
+  // detect : pas de jet joueur → résolution inline (sous-jets dans le même ordre qu'inline).
   return { journal: resolveRiverPerilConsequence(get, set, peril, { ...step, result: null } as CascadeStep, rng) };
+});
+
+/** CHOIX au barrage (l.128) : forcer au bélier (+ramDamage à la coque) ou déblayer à la main (3d10 objets
+ *  × 4d10 Enc, coque INTACTE, le halage ampute la progression du jour via `dayAgilityFactor`). */
+registerCascadeApplier('riverObstacleChoice', (get, set, step) => {
+  const peril = findRiverPeril(String(step.meta?.perilId ?? ''));
+  if (!peril?.obstacle) return;
+  const coque = get().travelPlan!.vehicle!;
+  if (step.chosen === 'forcer') {
+    coque.wounds.current = Math.max(0, coque.wounds.current - peril.obstacle.ramDamage);
+    set({ travelPlan: { ...get().travelPlan! } });
+    return { journal: [`${peril.label} — forcé au bélier : la coque subit ${peril.obstacle.ramDamage} Dégâts (reste ${coque.wounds.current}/${coque.wounds.max}).`] };
+  }
+  if (!peril.clear) return { journal: [`${peril.label} — déblayé à la main : la coque est épargnée.`] };
+  const c = rollBarrageClearing(peril.clear, battleRng());
+  const workDay = baseHoursPerDay(get().worldMap as WorldMap);
+  const factor = workDay > 0 ? Math.max(0, 1 - c.hours / workDay) : 1;
+  const prev = get().travelPlan?.river?.dayAgilityFactor ?? 1;
+  set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, dayAgilityFactor: prev * factor } } });
+  return { journal: [`${peril.label} — déblayé à la main : ${c.objects} objets (${c.enc} Enc) dégagés en ~${c.hours} h, coque épargnée (progression du jour −${Math.round((1 - factor) * 100)} %).`] };
 });
 
 /** Évitement INFLUENÇABLE d'un péril à Test de Navigation (Débris, l.125) : le jet (`step.result`) décide
@@ -535,8 +570,8 @@ function sinkBoat(get: Get, set: Set, tell: (l: string[]) => void, reason: strin
 }
 
 /** CONSÉQUENCE d'un PÉRIL de rivière (l.119-166) SURVENU, résolue selon le `kind` (`river-perils.json`).
- *  Pour `navTest` (Débris) le jet d'évitement est INFLUENÇABLE (lu dans `step.result`) ; les autres kinds
- *  (`detect`/`obstacle`) résolvent leurs sous-jets inline (RNG injecté) — comme l'ancien chemin. */
+ *  Pour `navTest` (Débris) le jet d'évitement est INFLUENÇABLE (lu dans `step.result`) ; `detect` résout
+ *  ses sous-jets inline (RNG injecté). `obstacle` (Barrage) passe par le CHOIX `riverObstacleChoice`. */
 function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<ReturnType<typeof findRiverPeril>>, step: CascadeStep, rng: RNG): string[] {
   const plan = get().travelPlan!;
   const river = plan.river!;
@@ -567,10 +602,6 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
       if (impact.echoue) applyEchouage(get, set, (l) => j.push(...l));
       if (impact.holed) applyBoatCritical(get, set, plan, river, coque, 'coque', (l) => j.push(...l), rng); // Critique coque = percée (l.88)
     }
-  } else if (peril.kind === 'obstacle' && peril.obstacle) {
-    // Barrage de débris (l.128) : forcer le passage en bélier → +ramDamage à la coque (et au barrage).
-    const b = rollBarrage(peril.obstacle, rng);
-    damageHull(peril.obstacle.ramDamage, ` en enfonçant le barrage (Endurance ${b.endurance}, ${b.wounds} Blessures)`);
   }
   return j;
 }

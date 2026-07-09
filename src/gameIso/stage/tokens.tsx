@@ -159,7 +159,7 @@ export function figurantLayerObjs(tokenEls: TokenEl[], ctx: TokenCtx): StageObj[
         vis: true,
         el: wrap(
           r.id,
-          <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={ctx.liftAt(ent.pos.x, ent.pos.y, ez)} dims={ctx.dims} scale={0.55} fx={ent.anim}>
+          <BodyToken key={r.id} x={ent.pos.x} y={ent.pos.y} z={ctx.liftAt(ent.pos.x, ent.pos.y, ez)} dims={ctx.dims} scale={0.55} fx={ent.anim} cid={ent.id}>
             <g dangerouslySetInnerHTML={{ __html: entitySprite(ent, ctx.dims.rot) }} />
           </BodyToken>,
           inBattle,
@@ -175,7 +175,7 @@ export function figurantLayerObjs(tokenEls: TokenEl[], ctx: TokenCtx): StageObj[
         vis: true,
         el: wrap(
           r.id,
-          <BodyToken key={r.id} x={ex} y={ey} z={ctx.liftAt(ent.pos.x, ent.pos.y, ez)} dims={ctx.dims} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))}>
+          <BodyToken key={r.id} x={ex} y={ey} z={ctx.liftAt(ent.pos.x, ent.pos.y, ez)} dims={ctx.dims} scale={base * r.speciesScale * sizeTokenScale(entitySize(ent))} bakedDeath flat={isTop} portraitBox={r.portraitBox} discR={discRfn(entitySize(ent))} cid={ent.id}>
             {r.body}
           </BodyToken>,
           inBattle,
@@ -253,7 +253,7 @@ export function partyLeaderObj(ctx: TokenCtx, partyPos: Pt, partyLeader: Combata
   // Le jeton de groupe rend TOUJOURS le rig (AnimatedRigToken du meneur, ou jeton vide si groupe vide) :
   // pickBackend('partyLeader') renvoie toujours un rig, jamais 'sprite'.
   const r = pickBackend({ kind: 'partyLeader', leader: partyLeader }, ctx.view);
-  const el = tokenNode(ctx, r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: ctx.view === 'top', portraitBox: r.portraitBox, discR: discR(1) }, pZ);
+  const el = tokenNode(ctx, r.id, wp.x, wp.y, r.body, 0.6, HERO_RING[0], false, wp.walking, { flat: ctx.view === 'top', portraitBox: r.portraitBox, discR: discR(1), cid: partyLeader?.id }, pZ);
   return { d: depth(wp.sortPt.x, wp.sortPt.y, ctx.dims, pZ) + 0.5, z: pZ, vis: true, el }; // le groupe est toujours en vue → au-dessus du voile
 }
 

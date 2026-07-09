@@ -8,7 +8,7 @@ import type { Combatant } from '../engine/types';
 import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, weeklyCrewWageBrass, recalcMorale, payChoiceCostBrass, isPayChoice, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
 import { fromBrass, subtract as moneySub, formatMoney, type Money } from '../engine/money';
 import { cadenceAuto } from '../engine/cadence';
-import type { RNG } from '../engine/dice';
+import { d100, type RNG } from '../engine/dice';
 import type { CampaignVessel } from './store';
 import type { NightEntry } from './restFlow';
 import type { PendingBase } from './rollFlowFactory';
@@ -433,4 +433,26 @@ export function applyVesselCrewLoss(get: Get, set: SetFn, delta: number): string
   if (after === before) return [];
   set({ vessel: { ...vessel, crewLost: after } });
   return [`Équipage : ${after > before ? '−' : '+'}${Math.abs(after - before)} membre(s) (reste ${Math.max(0, nominal - after)}/${nominal}).`];
+}
+
+/**
+ * DÉSERTION à la relâche à terre ACCORDÉE (MDG 14 l.192-202) : « Si l'équipage reçoit la permission de faire
+ * relâche à terre, lancez 1d100 pour chaque membre d'équipage. Sur un résultat de [04 / 16] ou moins, ce
+ * membre ne revient pas sur le bateau. » Seuil = `moraleBand(score).desertionRoll` (04 bande satisfaite,
+ * 16 bande canailles ; ABSENT au-dessus de 75 → aucune désertion). Population = effectif PNJ PRÉSENT du
+ * navire de campagne (`nominal − crewLost`, le MÊME agrégat que l'Embrigadement et le Manque de bras — pas
+ * d'individus) ; les partants sont retirés par la couture partagée `applyVesselCrewLoss`. Événement SUBI
+ * (pas un Test de héros, MDG 14 l.192) → une ligne au journal suffit. RNG injecté. Renvoie le journal.
+ */
+export function resolveShoreLeaveDesertion(get: Get, set: SetFn, rng: RNG): string[] {
+  const vessel = get().vessel;
+  if (!vessel) return [];
+  const threshold = moraleBand(vessel.morale.score).desertionRoll;
+  if (!threshold) return []; // Moral > 75 : bande sans seuil de désertion (MDG 14 l.187-191)
+  const nominal = findVehicleById(vessel.vehicleId)?.ship?.crew ?? 0;
+  const present = Math.max(0, nominal - (vessel.crewLost ?? 0));
+  let deserters = 0;
+  for (let i = 0; i < present; i++) if (d100(rng) <= threshold) deserters++;
+  if (!deserters) return [];
+  return [`Relâche à terre : ${deserters} marin(s) ne sont pas revenus à bord.`, ...applyVesselCrewLoss(get, set, deserters)];
 }

@@ -13,18 +13,26 @@ import type { Combatant } from '../engine/types';
 const POS = { x: 0, y: 0 };
 afterEach(() => vi.restoreAllMocks());
 
-describe('#223 — repli bruyant de réf. irrésoluble', () => {
-  it('réf. absente → mannequin marqué au nom + console.error', () => {
+describe('#223 — repli bruyant de réf. irrésoluble (réf. FOURNIE-mais-fausse uniquement)', () => {
+  it('réf. absente (ni statbloc) → PNJ générique SILENCIEUX (comportement historique, pas un repli bruyant)', () => {
     const err = vi.spyOn(console, 'error').mockImplementation(() => {});
     const c = spawnEnemy(undefined, undefined, 'x1', POS);
-    expect(c.name).toContain('RÉF ?');
+    expect(c.name).not.toContain('RÉF ?');
+    expect(err).not.toHaveBeenCalled();
+  });
+
+  it('réf. bidon → le nom porte la réf. littérale (visible au token/frise) + console.error', () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const c = spawnEnemy('creature-fantome-xyz', undefined, 'x2', POS);
+    expect(c.name).toBe('RÉF ? « creature-fantome-xyz »');
     expect(err).toHaveBeenCalledWith(expect.stringContaining('irrésoluble'));
   });
 
-  it('réf. bidon → le nom porte la réf. littérale (visible au token/frise)', () => {
-    vi.spyOn(console, 'error').mockImplementation(() => {});
-    const c = spawnEnemy('creature-fantome-xyz', undefined, 'x2', POS);
-    expect(c.name).toBe('RÉF ? « creature-fantome-xyz »');
+  it('réf. VALIDE → aucun repli bruyant (contrôle)', () => {
+    const err = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const c = spawnEnemy('humain', undefined, 'x3', POS);
+    expect(c.name).not.toContain('RÉF ?');
+    expect(err).not.toHaveBeenCalled();
   });
 });
 

@@ -59,7 +59,7 @@ import { persistentConditions } from '../engine/persistence';
 import { testValue, actorHasSkill, soutienBonus } from '../engine/skills';
 import { rollOups } from '../engine/oups';
 import { spawnEnemy, placeCombatant } from './spawn';
-import { applyShipPostes, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef, isPosteManned } from './shipPostes';
+import { applyShipPostes, autoFormCrews, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef, isPosteManned } from './shipPostes';
 import { posteHullOf, pushEligible, pushCrewOk, pushMovement, pushReachable } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
@@ -2354,13 +2354,17 @@ export function createCombatSlice(get: Get, set: Set) {
         })
         .filter((c): c is Combatant => !!c);
       const all = [...heroes, ...enemies, ...structures];
+      // Postes d'artillerie (MDG ch.12-13) : sert chaque poste de coque à son chef de pièce (mannedPoste +
+      // octroi du canon dérivé). Après le spawn, sur TOUS les combattants (héros/allié/ennemi indifférent).
+      applyShipPostes(all);
+      // Formation runtime des servants d'un poste TERRESTRE crewé (#210 résidu) : un servant sans position
+      // PROPRE authorée (pos == celle de la coque) est réparti en anneau autour de l'empreinte — AVANT le
+      // stampage de hauteur ci-dessous, pour que sa `pos.h` finale soit celle de sa case de formation.
+      autoFormCrews(all, scene, (hull) => byEntity.get(hull.id)?.facing);
       // Hauteur métrique au SPAWN : stampe `pos.h` (relief de la scène) sur TOUS les combattants posés —
       // héros, ennemis, structures et montures — pour que la distance verticale et le −10 « en contrebas »
       // partent justes (RAFRAÎCHIE ensuite à chaque déplacement via `placeCombatant`).
       for (const c of all) if (c.pos) placeCombatant(c, scene, c.pos);
-      // Postes d'artillerie (MDG ch.12-13) : sert chaque poste de coque à son chef de pièce (mannedPoste +
-      // octroi du canon dérivé). Après le spawn, sur TOUS les combattants (héros/allié/ennemi indifférent).
-      applyShipPostes(all);
       // Surprise (LDB 13) : si l'encounter le déclare, le camp embusqué teste Perception vs Discrétion.
       // `noSurprise` : le voyage annule l'embuscade quand le groupe « les voit venir » (Perception réussie).
       // Le Test (héros-atteignable) est ROUTÉ cadence-aware par `applySurprise` APRÈS la pose du `battle`

@@ -21,6 +21,11 @@
         "wounds": "2d10",
         "ramDamage": 10
       },
+      "clear": {
+        "objects": "3d10",
+        "encPerObject": "4d10",
+        "encPerHour": 100
+      },
       "ref": "T2C ch.5 l.128"
     },
     {

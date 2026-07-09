@@ -33,6 +33,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 |---|---|---|
 | `state()` | instantané `{screen, sceneId, partyPos, inDialogue, inCombat, party, money…}` | lecture seule |
 | `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
+| `screenPos('id')` | bounding box ÉCRAN (`{x,y,width,height}`) du token `[data-cid="id"]` — COMBAT ET EXPLORATION (même canal `data-cid`, #226) | lecture seule ; `null` si le token n'est pas dans le DOM (hors vue) |
 | `talk('id')` | téléporte le groupe à côté de l'entité + l'interpelle (dialogue/marchand) | rien si l'entité n'a ni dialogue ni marchand |
 | `goto('id'\|{x,y,z?})` | place le groupe sur une case (déclenche portes/triggers au pas) | — |
 | `screen('menu'\|'party'\|…)` | navigue vers un écran | id validé contre `SCREENS` (`state/store.ts`) — `throw` immédiat + liste des ids valides si invalide (#211 ; avant : routage silencieux, écran blanc, zéro erreur console) |
@@ -43,7 +44,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | `labels(on?)` | overlay debug de coordonnées sur la carte | bascule ; zéro coût si OFF |
 | `go('scene-id', entry?)` | saute vers une scène du projet | scène inconnue → message `✗`, scène inchangée |
 | `fight(encounterId?)` | sans argument : liste les rencontres de la scène ; avec id : lance le combat | — |
-| `store` | store Zustand brut (`getState`/`setState`) | **dernier recours** (doctrine ci-dessus, §3) |
+| `store` | store Zustand brut (`getState`/`setState`) | **dernier recours** (doctrine ci-dessus, §3) — ⚠ **`setState` brut peut CORROMPRE l'état sans récupération** (pas de validation/dérivations liées, contrairement aux actions du store) : un état incohérent après un `setState` direct impose un RELOAD complet, pas un simple retour arrière. `store` = LECTURE (`getState()`) ; toute mutation passe par un helper `__wfrp` ou une vraie action du store (`getState().xxx()`), jamais `setState` à la main sur un flux qu'on valide |
 
 ### Combat — lecture / ciblage
 
@@ -84,7 +85,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 |---|---|---|
 | `give(gold=10)` / `xp(amount=100)` | crédite la bourse / +PX au groupe | — |
 | `flags()` / `flag('id', value=true)` | lit/force un drapeau de scénario | — |
-| `time(minutes=60)` / `rest(days=1)` | avance l'horloge / dort N jours (cascade quotidienne) | — |
+| `time(minutes=60)` / `rest(days=1)` | avance l'horloge / dort N jours (cascade quotidienne) | ⚠ **NE PILOTE PAS une traversée EN MER** : `rest()` appelle `restFlow.sleepParty` directement, découplé de `travelPlan.sea` (`state/seaVoyageFlow.ts`) — avance l'horloge SANS faire progresser le navire sur sa route (désynchronise `gameTime` du voyage). Pour accélérer une traversée COMMANDÉE, voir « Voyage en mer » ci-dessous |
 | `chantier('reparer'\|'carener'\|upgradeId, units?)` | services du chantier naval au port | hors combat, navire de campagne requis |
 | `massBattle(ally?, enemy?, rounds?)` | lance une bataille de masse de démo | la scène courante doit porter les rencontres attendues |
 | `scenario(id?, seed?)` | lance un scénario de test PRÊT À JOUER ; sans argument : liste les ids | Round 1 déjà acquitté, initiative déterministe SI `seed` |
@@ -99,8 +100,24 @@ Playwright), jamais l'action du joueur ni un jet du flux qu'on est en train de v
 Round/tour se fait TOUJOURS par `turn()`/`fastForward()`, jamais à la main** (pas de bidouille de
 `battle.round`/`order` par `store.setState` — ce sont des recettes, pas le flux testé).
 
-Les tokens de combat portent `data-cid="<id du combattant>"` dans le SVG → survol/clic ciblé par
-sélecteur DOM (vrais clics Playwright, cf. piège ci-dessous).
+Les tokens portent `data-cid="<id de l'entité/combattant>"` dans le SVG — COMBAT ET EXPLORATION
+(#226, `src/gameIso/stage/tokens.tsx`) → survol/clic ciblé par sélecteur DOM (vrais clics
+Playwright, cf. piège ci-dessous), ou lecture de position via `screenPos('id')`.
+
+### Voyage en mer — accélérer une traversée commandée (recette)
+
+La progression jour par jour d'une traversée EN MER (`runSeaDays`, `state/seaVoyageFlow.ts` — météo,
+périls, halte de nuit) est une boucle qui se SUSPEND à chaque Test d'équipage (modale) et à chaque
+halte de nuit (`pendingRest`) ; elle reprend à la CONFIRMATION de ces modales, jamais via `time()`/
+`rest()` (ci-dessus). **Aucun helper `__wfrp` n'existe pour la sauter** (pas de `fastForward`
+équivalent côté voyage — seul le combat en a un) : `pendingRest` n'est pas piloté par la convention
+`roll()`/`confirm()` (pas de `restConfirm` câblé dessus, contrairement aux flux `pending<Flux>`
+usuels). La méthode réelle la MOINS chère en recette : dérouler la traversée à la main, halte de
+nuit après halte de nuit, en cliquant les vrais boutons de la modale de repos (couchage/pitance puis
+« dormir ») autant de fois que de jours de traversée — coûteux pour une longue route. Si le scénario
+propose un départ en **voyage rapide** (MDG ch.15 l.21-37, `sea.fast` — palier appliqué en un bloc,
+sans boucle jour par jour), le choisir AU DÉPART est la vraie accélération native du jeu ; il n'est
+pas rejouable après coup sur une traversée déjà en cours au pas.
 
 ## Pièges vécus (corrections d'expérience)
 

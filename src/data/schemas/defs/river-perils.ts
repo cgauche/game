@@ -20,6 +20,11 @@ export const schema = z.strictObject({
       obstacle: z
         .strictObject({ endurance: z.string(), enduranceMult: z.number(), wounds: z.string(), ramDamage: z.number() })
         .optional(),
+      /** Déblayage à la main (T2C ch.5 l.128 : `objects` = 3d10 éléments de `encPerObject` = 4d10 Enc) ;
+       *  `encPerHour` = débit de halage, valeur maison éditable (T2C ch.5 l.128, règle stricte 7). */
+      clear: z
+        .strictObject({ objects: z.string(), encPerObject: z.string(), encPerHour: z.number() })
+        .optional(),
       /** Rochers/eaux peu profondes (l.138-144) : Dégâts + chances de percée/échouage. */
       onHit: z
         .strictObject({ hullDamage: z.number(), holeChancePct: z.number().optional(), echouageChancePct: z.number().optional() })

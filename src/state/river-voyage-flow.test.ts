@@ -177,6 +177,65 @@ describe('PARITÉ — km / Dégâts de coque IDENTIQUES à l\'ancien chemin inli
   });
 });
 
+/**
+ * BARRAGE de débris (T2C ch.5 l.128) — CHOIX joueur : forcer au bélier (+10 Dégâts à la coque) ou déblayer
+ * à la main (3d10 objets × 4d10 Enc, coque intacte, temps perdu). Défaut de cadence commandée = déblayer.
+ */
+describe('barrage fluvial (l.128) — forcer au bélier OU déblayer à la main', () => {
+  /** Déroule la cascade, tranchant chaque étape « choix » avec `key`. */
+  function drainChoosing(key: string): void {
+    let g = 0;
+    while (get().pendingCascade && g++ < 300) {
+      const p = get().pendingCascade!;
+      const cur = p.participants[p.cursor];
+      if (!cur) { get().cascadeNext(); continue; }
+      if (cur.options && cur.chosen == null) { get().cascadeChoose(cur.id, key); continue; }
+      if (cur.target != null && !cur.result) { get().cascadeRoll(cur.id); continue; }
+      get().cascadeNext();
+    }
+  }
+
+  it('le péril obstacle OUVRE une étape « choix » (forcer / déblayer), pas une résolution muette', () => {
+    launch(false, 45, { riverPerils: [{ perilId: 'barrage', chancePct: 100 }] });
+    seedBattleRng(7);
+    get().startTravel('r-reik', 'barge');
+    // Déroule les jets du jour jusqu'à l'étape de choix du barrage.
+    let g = 0;
+    while (get().pendingCascade && g++ < 200) {
+      const p = get().pendingCascade!;
+      const cur = p.participants[p.cursor];
+      if (cur?.options) break; // étape de choix atteinte
+      if (cur?.target != null && !cur.result) get().cascadeRoll(cur.id);
+      else get().cascadeNext();
+    }
+    const cur = get().pendingCascade!.participants[get().pendingCascade!.cursor];
+    expect(cur.kind).toBe('riverObstacleChoice');
+    expect(cur.options!.map((o) => o.key).sort()).toEqual(['deblayer', 'forcer']);
+    expect(cur.defaultChoice).toBe('deblayer'); // cadence commandée : le moins destructif
+  });
+
+  it('FORCER au bélier → +10 Dégâts à la coque (l.128), journal explicite', () => {
+    launch(false, 45, { riverPerils: [{ perilId: 'barrage', chancePct: 100 }] });
+    seedBattleRng(7);
+    get().startTravel('r-reik', 'barge');
+    drainChoosing('forcer');
+    expect(get().travelPlan!.vehicle!.wounds.current).toBe(50); // 60 − 10 (ram, l.128)
+    expect(get().journal.join('\n')).toContain('forcé au bélier');
+  });
+
+  it('DÉBLAYER à la main → coque INTACTE, objets/Enc déblayés, progression du jour amputée', () => {
+    launch(false, 45, { riverPerils: [{ perilId: 'barrage', chancePct: 100 }] });
+    seedBattleRng(7);
+    get().startTravel('r-reik', 'barge');
+    drainChoosing('deblayer');
+    expect(get().travelPlan!.vehicle!.wounds.current).toBe(60); // coque non touchée par le barrage
+    const j = get().journal.join('\n');
+    expect(j).toMatch(/déblayé à la main/);
+    expect(j).toMatch(/objets/);
+    expect(j).toMatch(/progression du jour −/);
+  });
+});
+
 describe('influence effective — Résilience sur un jet du jour fluvial', () => {
   it('la Résilience force la réussite d\'un jet du jour (le mécanisme UNIQUE de cascade s\'applique)', () => {
     launch();

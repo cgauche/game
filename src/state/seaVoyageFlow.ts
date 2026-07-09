@@ -34,7 +34,7 @@ import { dayIndex } from './upkeep';
 import { placeById, type WorldMap, type MapPlace, type MapRoute } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { PendingCrewTest, ShipManeuverParticipant } from './pendings';
-import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss } from './shipCrew';
+import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss, resolveShoreLeaveDesertion } from './shipCrew';
 import { applyEffects, applyEffectsLoot } from './combatEffects';
 import type { Effect } from './scene';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
@@ -1556,6 +1556,8 @@ export function resolveShoreLeave(get: Get, set: Set, allow: boolean): void {
   log(get, set, [allow
     ? 'Vous autorisez l\'équipage à faire relâche à terre.'
     : 'Vous refusez à l\'équipage la permission de faire relâche à terre.']);
+  // Désertion à la relâche ACCORDÉE (MDG 14 l.192-202) — retour de permission = moment du tirage.
+  if (allow) { const d = resolveShoreLeaveDesertion(get, set, battleRng()); if (d.length) log(get, set, d); }
   resolvePortArrival(get, set, p.to.port, battleRng(), allow);
   get().transitionTo(p.to.scene, p.to.entry);
 }

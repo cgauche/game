@@ -79,6 +79,9 @@ POSABLE (trapping à art d'affût `siegeRig`) sinon `throw`. `crewIds` vide = po
 héros adjacent (`serveAtPoste()`, `src/state/shipPostes.ts`) — aucun id de héros n'est connu à l'authoring.
 Garde-fou : les projets ne portent AUCUN poste en forme ancienne (base copiée), cf. la garde #222 de
 `src/data/refs-migrated.test.ts`.
+Formation des servants (#210) : un servant posé SUR la case de l'engin (ou sans position propre) est
+AUTO-FORMÉ au spawn en anneau autour de l'empreinte (`autoFormCrews` — jamais l'avant, ADE II ch.08
+l.258) ; une position de scène DISTINCTE prime toujours (placement d'auteur respecté).
 
 ## 7. Entités-coque (`ref` de véhicule)
 

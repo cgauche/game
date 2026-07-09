@@ -235,6 +235,36 @@ export function assignCrewFormation(
 }
 
 /**
+ * Auto-FORMATION runtime des servants d'un poste TERRESTRE crewé (#210 résidu — un engin de siège SPAWNÉ
+ * n'importe où sur la carte reçoit sa formation, sans que le scénario/l'éditeur ait à précalculer
+ * `crewFormationSlots` à la main comme 42-belier-porte.ts). Un membre de `poste.crewIds` dont la `pos`
+ * COÏNCIDE avec celle de la coque (défaut de qui ne pose pas la formation à la main — aucune position
+ * PROPRE authorée) est réparti en anneau (`assignCrewFormation`, ADE II ch.08 l.258) autour de l'empreinte
+ * de la coque. Un servant à une position DISTINCTE de la coque (authorée à la main) n'est JAMAIS touché —
+ * le placement d'AUTEUR prime toujours. Ne lit QUE `hull.postes[].crewIds` (postes terrestres, bélier/
+ * baliste) — l'équipage de COQUE navale (`Combatant.crewIds`, MDG ch.14) est PASSAGER hors case propre,
+ * hors du champ de cette fonction. Mute en place ; appelé une fois au spawn (`combatSlice.startCombat`).
+ */
+export function autoFormCrews(combatants: Combatant[], scene: Scene, facingOf?: (hull: Combatant) => Dir8 | undefined): void {
+  for (const hull of combatants) {
+    if (!hull.pos || !hull.postes?.length) continue;
+    for (const poste of hull.postes) {
+      const crew = (poste.crewIds ?? [])
+        .map((id) => combatants.find((c) => c.id === id))
+        .filter((c): c is Combatant => !!c);
+      const unplaced = crew.filter((c) => c.pos && c.pos.x === hull.pos!.x && c.pos.y === hull.pos!.y);
+      if (!unplaced.length) continue;
+      const occupied = (p: Pt) => combatants.some((c) => c !== hull && !unplaced.includes(c) && c.pos && c.pos.x === p.x && c.pos.y === p.y);
+      const slots = assignCrewFormation(hull, { side: poste.side, crewIds: unplaced.map((c) => c.id) }, scene, occupied, { heading: facingOf?.(hull) });
+      unplaced.forEach((c, i) => {
+        const p = slots[i];
+        if (p) c.pos = { x: p.x, y: p.y, ...(c.pos!.z !== undefined ? { z: c.pos!.z } : {}) };
+      });
+    }
+  }
+}
+
+/**
  * SERVICE d'une pièce par son chef (KIND-AGNOSTIQUE) : pose le lien `mannedPoste` et OCTROIE l'arme dérivée
  * (taguée `mountSide`) DIRECTEMENT — pour que le canon apparaisse aussi sur un chef à STATBLOC (ennemi, qui
  * ne passe pas par `recomputeLoadout`). Idempotent ; un chef héros la re-dérivera identiquement au prochain

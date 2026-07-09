@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
+import { resolveShoreLeaveDesertion } from './shipCrew';
 import { MINUTES_PER_DAY } from '../engine/clock';
+import { makeRNG } from '../engine/dice';
 import { toBrass } from '../engine/money';
 import { setRule, resetRule } from '../engine/policy';
 import { makePregens } from '../data/pregens';
@@ -154,5 +156,28 @@ describe('Conseil de bord (#229) — cadence MANUELLE : la paie remonte en modal
     useGame.getState().advanceTime(8 * MINUTES_PER_DAY);
     expect(useGame.getState().pendingCouncil).toBeNull();
     expect(useGame.getState().vessel!.morale.lastMoraleWeek).toBe(1); // recalculé sur place
+  });
+});
+
+describe('Désertion à la relâche à terre ACCORDÉE (MDG 14 l.192-202) — seuil = bande de Moral', () => {
+  const lowVessel = () => useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 40, lastMoraleWeek: 0, factors: [] } } });
+
+  it('bande basse (canailles, seuil 16) → désertions DÉTERMINISTES au RNG semé, crewLost augmente + ligne visible', () => {
+    lowVessel();
+    const lines = resolveShoreLeaveDesertion(useGame.getState, useGame.setState, makeRNG(1));
+    const deserters = useGame.getState().vessel!.crewLost ?? 0;
+    expect(deserters).toBeGreaterThan(0); // 15 marins présents × d100 ≤ 16
+    expect(lines.join('\n')).toMatch(/ne sont pas revenus à bord/);
+    // même graine → même compte (déterminisme)
+    lowVessel();
+    resolveShoreLeaveDesertion(useGame.getState, useGame.setState, makeRNG(1));
+    expect(useGame.getState().vessel!.crewLost).toBe(deserters);
+  });
+
+  it('bande haute (excellent équipage, sans seuil au-dessus de 75) → AUCUNE désertion', () => {
+    useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 90, lastMoraleWeek: 0, factors: [] } } });
+    const lines = resolveShoreLeaveDesertion(useGame.getState, useGame.setState, makeRNG(1));
+    expect(lines).toEqual([]);
+    expect(useGame.getState().vessel!.crewLost ?? 0).toBe(0);
   });
 });
