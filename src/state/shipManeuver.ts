@@ -18,7 +18,7 @@ import { rollTest, evaluateTest, easeDifficulty, bestForcedRoll } from '../engin
 import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { testValue, partyBest } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
-import { navalMoveMod, navalSkillTestDR } from '../engine/navalTraits';
+import { navalMoveMod, navalSkillTestDR, navalTestTypeDR } from '../engine/navalTraits';
 import { exposedCrew } from '../engine/shipCritical';
 import { crewRoleValue, crewTalentDR, moraleBand } from '../engine/crewMorale';
 import { placementPenalty } from './shipPostes';
@@ -138,11 +138,12 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
     : { m: 0, man: 0, navDR: 0 };
   // « Lissage » → op `moveMod` (M +1, l.293) ; « Peu maniable » → op `skillDRBonus` (Voile/Ramer, −1/niveau,
   // l.173, DISTINCT du Man) — lus en GameOp (`naval-traits.json`, langue unique) sur Traits+Améliorations.
+  // #221 : op `skillDRBonus` ciblée par `testType` (ex. « manoeuvre ») — agnostique de skillId, cumulée.
   const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
   return {
     baseM: baseM + navalMoveMod(navalTraits) + place.m,
     manoeuvre: (vd?.manoeuvre ?? 0) + place.man,
-    extraDR: navalSkillTestDR(navalTraits, skillId) + place.navDR,
+    extraDR: navalSkillTestDR(navalTraits, skillId) + navalTestTypeDR(navalTraits, 'manoeuvre') + place.navDR,
     skillId,
   };
 }

@@ -68,10 +68,21 @@ export function navalMoveMod(traits: NavalTraitRef[] | undefined): number {
 
 /** Bonus de DR (négatif = malus) à un Test de Compétence `skillId` conféré par le Trait **Peu maniable** & co —
  *  op `skillDRBonus` (MÊME op qu'un Trait de personnage ; MDG ch.12 l.173 : −1 DR/niveau aux Tests de
- *  Voile/Ramer). Lu par la manœuvre comme `extraDR` du Test de Navigation. PUR. */
+ *  Voile/Ramer). Lu par la manœuvre comme `extraDR` du Test de Navigation. Ne matche QUE les ops portant un
+ *  `skill` (une op `testType`-only, #221, n'a pas de `skill` → exclue naturellement). PUR. */
 export function navalSkillTestDR(traits: NavalTraitRef[] | undefined, skillId: string): number {
   return navalPassiveOps(traits).reduce(
     (n, op) => (op.op === 'skillDRBonus' && op.skill === skillId && typeof op.bonus === 'number' ? n + op.bonus : n),
+    0,
+  );
+}
+
+/** Bonus de DR (négatif = malus) à un TYPE de Test d'équipage `testTypeId` (`crew-test-types.json`, #221) —
+ *  MÊME op `skillDRBonus`, ciblage agnostique de la compétence (une Poursuite se court à la Voile OU aux
+ *  avirons). Ne matche QUE les ops portant un `testType` correspondant. PUR. */
+export function navalTestTypeDR(traits: NavalTraitRef[] | undefined, testTypeId: string): number {
+  return navalPassiveOps(traits).reduce(
+    (n, op) => (op.op === 'skillDRBonus' && op.testType === testTypeId && typeof op.bonus === 'number' ? n + op.bonus : n),
     0,
   );
 }

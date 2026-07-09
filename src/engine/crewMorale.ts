@@ -22,6 +22,7 @@ import { bestForSkills, bestSkilledOption, actorHasSkill } from './skills';
 import { talentTestSLBonus } from './magic';
 import { skillDRBonus } from './ops';
 import { crewRoles, findCrewRoleById, findCrewTestTypeById, type CrewRoleData } from '../data';
+import { priceToMoney, toBrass } from './money';
 import type { Combatant, Difficulty } from './types';
 import type { PairedSense } from './ops';
 
@@ -162,6 +163,21 @@ export function undercrewPenalty(nominal: number, present: number): UndercrewPen
   if (nominal <= 0 || present >= nominal) return { tranches: 0, dr: 0, capSuccesMinime: false };
   const tranches = Math.floor(((nominal - present) * 10) / nominal); // tranches de 10 % manquantes (arith. entière, <10 % → 0)
   return tranches >= 1 ? { tranches, dr: -2 * tranches, capSuccesMinime: true } : { tranches: 0, dr: 0, capSuccesMinime: false };
+}
+
+/** Un poste d'équipage SALARIÉ embauché (barème `crew-roles.json`) — `count` PNJ payés à ce rôle. #216 */
+export interface CrewHire {
+  roleId: string;
+  count: number;
+}
+
+/** Solde HEBDOMADAIRE due par un roster salarié (Σ count × coût hebdomadaire du rôle), en sous de
+ *  cuivre (MDG 14 l.293-302). Un rôle sans barème (`wage` absent) ne coûte rien. PUR. #216 */
+export function weeklyCrewWageBrass(crew: CrewHire[] | undefined): number {
+  return (crew ?? []).reduce((s, h) => {
+    const w = findCrewRoleById(h.roleId)?.wage?.weekly;
+    return s + (w ? toBrass(priceToMoney(w)) * Math.max(0, h.count) : 0);
+  }, 0);
 }
 
 /** État de Moral PERSISTANT d'un navire (porté par l'instance de navire en campagne ; recalc hebdomadaire). */

@@ -8,6 +8,7 @@ import { useGame } from './store';
 import { applyEffects } from './combatFlow';
 import { cascadeAppliers } from './cascade';
 import { makePregens } from '../data/pregens';
+import { findVehicleById } from '../data';
 import { setRule, resetRule } from '../engine/policy';
 import { effectiveChar } from '../engine/characteristics';
 import type { WorldMap } from './worldMap';
@@ -227,6 +228,20 @@ describe('Effet setVessel (navire de campagne, MDG ch.13-15)', () => {
   it('saboteurDR authoré initial (#214) est posé sur le navire de campagne', () => {
     applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue', saboteurDR: -3 }]);
     expect(useGame.getState().vessel?.saboteurDR).toBe(-3);
+  });
+
+  it('#230 — nom d\'instance authoré : posé sur le navire ET interpolé au journal', () => {
+    useGame.setState({ journal: [] });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue', name: 'Le Cormoran' }]);
+    expect(useGame.getState().vessel?.name).toBe('Le Cormoran');
+    expect(useGame.getState().journal.some((l) => l.includes('Le Cormoran'))).toBe(true);
+  });
+
+  it('#230 — sans nom d\'instance : name absent, le journal porte le label du TYPE', () => {
+    useGame.setState({ journal: [] });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue' }]);
+    expect(useGame.getState().vessel?.name).toBeUndefined();
+    expect(useGame.getState().journal.some((l) => l.includes(findVehicleById('cogue')!.label))).toBe(true);
   });
 });
 

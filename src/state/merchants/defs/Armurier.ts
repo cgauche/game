@@ -5,6 +5,6 @@ export const merchantArchetype: MerchantArchetypeDef = {
   label: 'Armurier',
   category: { types: ['melee', 'ranged', 'armor', 'ammunition'] },
   settlement: 'ville',
-  resaleRate: 0.5, // base ½ du prix listé (LDB 60 l.22) ; Marchandage la module ¼–½
+  resaleRate: 0.5, // LDB 59 l.54
   bargainSkill: 45,
 };

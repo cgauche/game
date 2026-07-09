@@ -50,6 +50,12 @@ describe('pickBackend — coque de véhicule en COMBAT (#224 : routage par creat
       const r = pickBackend({ kind: 'combatant', combatant: c });
       expect(r.backend).toBe('plan');
     });
+
+    it(`#230 — coque au NOM D'INSTANCE de campagne (« Le Cormoran ») route toujours par creatureId`, () => {
+      const c = vehicleCombatant(findVehicleById(id)!, `g-${id}-cormoran`)!;
+      c.name = 'Le Cormoran'; // nom d'instance authoré : AFFICHAGE pur, jamais une clé de rendu
+      expect(pickBackend({ kind: 'combatant', combatant: c }).backend).toBe('plan');
+    });
   }
 
   it('la garde DEV ne hurle pas pour une sceneEntity dont la ref est une coque de véhicule valide', () => {

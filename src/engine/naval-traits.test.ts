@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { shipHasNavalTrait, navalTraitLevel, navalPassiveOps, navalMoveMod, navalSkillTestDR, hullArmourBonus, belierRam, hasDeckCover, effectiveDeckPostes } from './navalTraits';
+import { shipHasNavalTrait, navalTraitLevel, navalPassiveOps, navalMoveMod, navalSkillTestDR, navalTestTypeDR, hullArmourBonus, belierRam, hasDeckCover, effectiveDeckPostes } from './navalTraits';
 import { resolveCollision } from './collision';
 import { installCost } from './shipBuild';
-import { findVehicleById, findNavalTrait } from '../data';
+import navalTraitsData from '../data/naval-traits.json';
+import { findVehicleById, findNavalTrait, findCrewTestTypeById } from '../data';
 
 /**
  * EFFETS des Traits & Améliorations de navire (MDG ch.12) — DATA-DRIVEN : les valeurs vivent dans le catalogue
@@ -63,6 +64,56 @@ describe('navalSkillTestDR — Peu maniable → DR de Voile/Ramer, op skillDRBon
     expect(navalSkillTestDR([{ id: 'peu-maniable' }], 'navigation')).toBe(0); // ne touche pas les autres compétences
     expect(navalSkillTestDR([{ id: 'robuste' }], 'voile')).toBe(0);
     expect(navalSkillTestDR(undefined, 'voile')).toBe(0);
+  });
+});
+
+describe('navalSkillTestDR — non-régression sur le catalogue entier (#221, 20 entrées)', () => {
+  it.each(
+    (navalTraitsData as { id: string; passive?: { op: string; skill?: string; bonus?: number }[] }[])
+      .filter((e) => e.passive?.some((op) => op.op === 'skillDRBonus' && op.skill))
+      .map((e) => e.id),
+  )('%s : DR par compétence inchangé, indépendant de `testType`', (id) => {
+    const entry = (navalTraitsData as { id: string; passive?: { op: string; skill?: string; bonus?: number }[] }[]).find((e) => e.id === id)!;
+    for (const op of entry.passive!.filter((o) => o.op === 'skillDRBonus' && o.skill)) {
+      expect(navalSkillTestDR([{ id }], op.skill!)).toBe(op.bonus);
+    }
+  });
+  it('une op `testType` SANS `skill` (Proue-idole de Stromfels) ne matche JAMAIS `navalSkillTestDR`', () => {
+    expect(navalSkillTestDR([{ id: 'proue-idole-de-stromfels' }], 'voile')).toBe(0);
+    expect(navalSkillTestDR([{ id: 'proue-idole-de-stromfels' }], 'ramer')).toBe(0);
+  });
+});
+
+describe('navalTestTypeDR — Proue-idole de Stromfels & vocabulaire `testType` (#221)', () => {
+  it('matche le TYPE de Test d’équipage visé, agnostique de la compétence tenue par le représentant', () => {
+    expect(navalTestTypeDR([{ id: 'proue-idole-de-stromfels' }], 'progression-poursuite')).toBe(1);
+  });
+  it('un autre type de Test d’équipage → 0 (pas de fuite hors cible)', () => {
+    expect(navalTestTypeDR([{ id: 'proue-idole-de-stromfels' }], 'manoeuvre')).toBe(0);
+    expect(navalTestTypeDR([{ id: 'proue-idole-de-stromfels' }], 'progression')).toBe(0);
+  });
+  it('une op `skill` SANS `testType` (Peu maniable) ne matche JAMAIS `navalTestTypeDR`', () => {
+    expect(navalTestTypeDR([{ id: 'peu-maniable' }], 'manoeuvre')).toBe(0);
+  });
+  it('catalogue vide / trait absent → 0', () => {
+    expect(navalTestTypeDR(undefined, 'progression-poursuite')).toBe(0);
+    expect(navalTestTypeDR([{ id: 'belier' }], 'progression-poursuite')).toBe(0);
+  });
+  it('cumule à travers PLUSIEURS traits ciblant le même type (même sommation que le ranked de `navalPassiveOps`, l.44)', () => {
+    expect(navalTestTypeDR([{ id: 'proue-idole-de-stromfels' }, { id: 'proue-idole-de-stromfels' }], 'progression-poursuite')).toBe(2);
+  });
+});
+
+describe('Proue-idole de Stromfels (#221) — résout au catalogue, entrée maison sourcée MDG ch.11 (culte)', () => {
+  it('id trouvable, type de Test d’équipage visé existant dans crew-test-types.json', () => {
+    const trait = findNavalTrait('proue-idole-de-stromfels');
+    expect(trait).toBeDefined();
+    expect(trait!.kind).toBe('amelioration');
+    expect(trait!.maison).toBeTruthy();
+    const op = trait!.passive![0];
+    const testTypeId = op.op === 'skillDRBonus' ? op.testType! : undefined;
+    expect(testTypeId).toBe('progression-poursuite');
+    expect(findCrewTestTypeById(testTypeId!)).toBeDefined();
   });
 });
 

@@ -5,7 +5,9 @@ import { findCargoById } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { foulingEffects } from '../engine/seaNavigation';
-import { canAfford, toMoney } from '../engine/money';
+import { canAfford, toMoney, fromBrass, formatMoney } from '../engine/money';
+import { weeklyCrewWageBrass } from '../engine/crewMorale';
+import { crewRoles } from '../data';
 import { Coins } from './Coins';
 import { Prose } from './Prose';
 import { Icon } from './Icon';
@@ -54,11 +56,14 @@ export function PortView() {
   }, [vessel.upgrades, vd.ship]);
 
   const cargo = vessel.cargo ?? [];
+  // #216 — Solde hebdomadaire due par l'équipage salarié (barème MDG 14) + dette non payée.
+  const weeklyWageBrass = weeklyCrewWageBrass(vessel.crew);
+  const crewLabel = (roleId: string) => crewRoles.find((r) => r.id === roleId)?.label ?? roleId;
 
   return (
     <div className="worldmap-overlay port-overlay">
       <div className="worldmap-head">
-        <h2><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vd.label}</h2>
+        <h2><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vessel.name ?? vd.label}</h2>
         <button type="button" className="btn small" onClick={close}>✕ Fermer</button>
       </div>
       <div className="port-tabs">
@@ -82,6 +87,15 @@ export function PortView() {
               >
                 <Icon id="travel/repair" size="sm" /> Réparer{missing > 0 ? ` — ${missing} Blessure(s), ${repairCost} CO` : ''}
               </button>
+              {(vessel.crew?.length || weeklyWageBrass > 0 || vessel.wagesOwed) ? (
+                <p className="port-hint">
+                  Équipage salarié : {vessel.crew?.length
+                    ? vessel.crew.map((h) => `${h.count} ${crewLabel(h.roleId)}`).join(', ')
+                    : '—'}
+                  {' · solde hebdomadaire '}<b>{formatMoney(fromBrass(weeklyWageBrass))}</b>
+                  {vessel.wagesOwed ? <> · dette <b>{formatMoney(fromBrass(vessel.wagesOwed))}</b></> : null}
+                </p>
+              ) : null}
               <p className="port-hint">Salissures : niveau <b>{foulLevel}</b>{vessel.crabs ? ' · crabes boxeurs' : ''}{foulLevel > 0 ? ` — ${foulingEffects(foulLevel).desc}` : ''}</p>
               <button
                 type="button"

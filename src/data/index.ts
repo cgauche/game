@@ -28,6 +28,7 @@ import reliefMaterialsJson from './reliefMaterials.json';
 import roofMaterialsJson from './roofMaterials.json';
 import ambianceJson from './ambiance.json';
 import navalTraitsJson from './naval-traits.json';
+import navalPortsJson from './naval-ports.json';
 import seaShantiesJson from './sea-shanties.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
@@ -1302,6 +1303,8 @@ export interface NavalTraitData {
   /** Sabord (MDG ch.12 l.364) : la Coque offre un COUVERT total à ses postes — géométrie de Pont, consommée
    *  par `effectiveDeckPostes`/le rendu du Pont. Sous-système navire, hors vocabulaire combattant. */
   deckCover?: boolean;
+  /** #221 : même champ `maison` que `TraumaFiche` (`src/data/schemas/defs/traumas.ts:32`). */
+  maison?: string;
 }
 export const NAVAL_TRAITS = navalTraitsJson as NavalTraitData[];
 const navalTraitById = new Map(NAVAL_TRAITS.map((t) => [t.id, t]));
@@ -1309,6 +1312,33 @@ const navalTraitById = new Map(NAVAL_TRAITS.map((t) => [t.id, t]));
  *  PAS dans la clé (plus de parsing de libellé « Renforcé 2 »). PUR. */
 export function findNavalTrait(id: string): NavalTraitData | undefined {
   return navalTraitById.get(id);
+}
+/** Index des ports de la Mer des Griffes (#217, MDG ch.15 l.439-506) — catalogue app-owned éditable au
+ *  Codex, consommé PAR RÉFÉRENCE depuis un lieu de la carte du monde (`MapPlace.port.ref`,
+ *  `state/worldMap.ts`). `production`/`surplus`/`demande` sont keyés par id de `sea-cargo.json`
+ *  (+ marqueurs `commerce`/`minimum-vital`), même vocabulaire que `PortProfile` (`engine/seaVoyage.ts`). */
+export interface NavalPortData {
+  id: string;
+  label: string;
+  /** Région/nation de la colonne « Lieu » de l'Index (regroupement RAW, ex. « Nordland », « Tilée »). */
+  region: string;
+  taille: number;
+  richesse: number;
+  production?: string[];
+  surplus?: Record<string, number>;
+  demande?: Record<string, number>;
+  /** Grand port cosmopolite (Marienburg/Lothern, MDG 15 l.343-349). */
+  cosmopolite?: boolean;
+  /** Colonne Dirigeant, verbatim. */
+  dirigeant?: string;
+  /** Colonne Notes, verbatim Markdown. */
+  desc?: string;
+  source: { book: string; page: number };
+}
+export const navalPorts = navalPortsJson as NavalPortData[];
+const navalPortById = new Map(navalPorts.map((p) => [p.id, p]));
+export function findNavalPortById(id: string): NavalPortData | undefined {
+  return navalPortById.get(id);
 }
 /** Chanson de marins (MDG 09 l.218-248, payload du Talent Chanson de marin) — catalogue app-owned.
  *  `crewOps` = effet exprimé dans la langue UNIQUE `GameOp[]`, appliqué à CHAQUE membre d'équipage pendant
@@ -1333,11 +1363,20 @@ export function findSeaShantyById(id: string): SeaShantyData | undefined {
 /** Rôles d'équipage naval (MDG ch.14 « Tests d'équipage ») — catalogue app-owned éditable au Codex.
  *  Chaque rôle mappe une (ou plusieurs, ex. Mousse = Voile/Ramer → meilleure) Compétence par `id` STABLE
  *  (+ `spec` pour Artilleur/Cuisinier/Chansonnier). Le `desc` est le verbatim de la colonne « Tâches ». */
+/** Solde d'un rôle (MDG 14 l.293-302 « Exemples de mercenaires ») : coûts quotidien/hebdomadaire
+ *  verbatim ; `source` = correspondance RAW explicite, `maison` = correspondance arbitrée. #216 */
+export interface CrewWage {
+  daily: { gold: number; silver: number; bronze: number };
+  weekly: { gold: number; silver: number; bronze: number };
+  source?: { book: string; page: number };
+  maison?: string;
+}
 export interface CrewRoleData {
   id: string;
   label: string;
   skills: { skillId: string; spec?: string }[];
   desc: string;
+  wage?: CrewWage;
 }
 /** Type de Test d'équipage (MDG ch.14) : rôles contributeurs + rôle ESSENTIEL (son DR compte double). */
 export interface CrewTestTypeData {

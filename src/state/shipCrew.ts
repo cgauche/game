@@ -5,7 +5,9 @@
  * batterie, perception…) — un seul endroit assigne les marins aux postes.
  */
 import type { Combatant } from '../engine/types';
-import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
+import { crewRoleValue, moraleBand, MORALE_BASE, undercrewPenalty, tickShipMorale, weeklyCrewWageBrass, type CrewAssignment, type UndercrewPenalty } from '../engine/crewMorale';
+import { fromBrass, subtract as moneySub, formatMoney } from '../engine/money';
+import type { RNG } from '../engine/dice';
 import type { PairedSense } from '../engine/ops';
 import { findCrewRoleById, findCrewTestTypeById, findVehicleById, findSeaShantyById } from '../data';
 import { exposedCrew } from '../engine/shipCritical';
@@ -237,6 +239,47 @@ export function applyShipMoraleDelta(get: Get, set: SetFn, ship: Combatant, delt
   const lines = [`Moral de l'équipage : ${delta > 0 ? '+' : ''}${delta} (${before} → ${after}).`];
   const bandAfter = moraleBand(after);
   if (bandAfter.id !== moraleBand(before).id) lines.push(`« ${bandAfter.desc.split('.')[0]}. »`);
+  return lines;
+}
+
+/**
+ * Entretien HEBDOMADAIRE du navire de campagne (MDG 14) : PAIE de l'équipage salarié PUIS recalcul du Moral,
+ * en une seule fois par semaine calendaire (même garde que `tickShipMorale`). La solde due (`weeklyCrewWageBrass`)
+ * est prélevée sur la bourse du groupe si payable → facteur `paie-reguliere` ; sinon `pas-de-paie` + dette
+ * cumulée dans `wagesOwed`. Politique de déduction automatique, régulière par défaut : #216 (les variantes
+ * généreuse/chiche restent des choix joueur, #229). Le facteur de paie n'est injecté que pour le recalcul de
+ * CETTE semaine, jamais persisté dans `morale.factors` (édités par l'auteur). Appelé par `upkeep.ts` (MÊME site
+ * que l'ancien tick). Renvoie le journal (vide si aucune semaine franchie / pas de navire). RNG injecté.
+ */
+export function tickCampaignVesselWeek(get: Get, set: SetFn, today: number, rng: RNG): string[] {
+  const vessel = get().vessel;
+  if (!vessel) return [];
+  const week = Math.floor(today / 7);
+  if (week <= vessel.morale.lastMoraleWeek) return [];
+  const lines: string[] = [];
+  const wageBrass = weeklyCrewWageBrass(vessel.crew);
+  let paidFactor: string | null = null;
+  let wagesOwed = vessel.wagesOwed ?? 0;
+  if (wageBrass > 0) {
+    const cost = fromBrass(wageBrass);
+    const paid = moneySub(get().money, cost);
+    if (paid) {
+      set({ money: paid });
+      paidFactor = 'paie-reguliere';
+      lines.push(`Solde hebdomadaire de l'équipage versée : ${formatMoney(cost)}.`);
+    } else {
+      paidFactor = 'pas-de-paie';
+      wagesOwed += wageBrass;
+      lines.push(`Bourse insuffisante pour la solde de l'équipage (${formatMoney(cost)}) — l'équipage n'est pas payé.`);
+    }
+  }
+  const factorsThisWeek = paidFactor && !vessel.morale.factors.includes(paidFactor)
+    ? [...vessel.morale.factors, paidFactor]
+    : vessel.morale.factors;
+  const mt = tickShipMorale({ ...vessel.morale, factors: factorsThisWeek }, today, rng);
+  const cur = get().vessel!; // ré-lu après le prélèvement (vessel inchangé par le set money)
+  set({ vessel: { ...cur, morale: { ...cur.morale, score: mt.state.score, lastMoraleWeek: mt.state.lastMoraleWeek }, ...(wagesOwed ? { wagesOwed } : {}) } });
+  lines.push(`Moral de l'équipage recalculé : ${mt.state.score} (${moraleBand(mt.state.score).desc.split('.')[0]}).`, ...mt.lines);
   return lines;
 }
 

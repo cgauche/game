@@ -74,6 +74,7 @@ import { bearingPostes } from './shipBattery';
 import { resolveVolley } from '../engine/volley';
 import type { ShipManeuverParticipant, ShipBatteryParticipant } from './pendings';
 import { isVehicle } from '../engine/vehicle';
+import { navalTestTypeDR } from '../engine/navalTraits';
 import { crewedFireWeapon, crewedReloadStep } from '../engine/crewedWeapon';
 import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
@@ -150,11 +151,14 @@ function openCrewTestPending(get: Get, ship: Combatant, testTypeId: string): {
     result: null,
   }));
   const saboteur = shipSaboteurDR(ship); // MDG ch.14 l.45-47 : −1..−5 DR plats
+  // #221 : Traits/Améliorations navals ciblant CE type de Test d'équipage (op `skillDRBonus` à `testType`).
+  const traits = [...(findVehicleById(ship.creatureId ?? '')?.ship?.traits ?? []), ...(ship.upgrades ?? [])];
+  const extraDR = saboteur + navalTestTypeDR(traits, testTypeId);
   return {
     participants, essentialRoleId,
     moraleScore: shipMoraleScore(get, ship),
     undercrew: shipUndercrew(get, ship, battle.combatants),
-    ...(saboteur ? { extraDR: saboteur } : {}),
+    ...(extraDR ? { extraDR } : {}),
   };
 }
 
@@ -2290,8 +2294,12 @@ export function createCombatSlice(get: Get, set: Set) {
       // #30 — Blessures de COQUE persistantes : une coque spawnée qui EST le navire de campagne
       // (creatureId = vehicleId) repart de l'état persisté (writeback symétrique dans finalizeBattle).
       const vessel0 = get().vessel;
-      if (vessel0?.wounds) {
-        for (const c of enemies) if (c.creatureId === vessel0.vehicleId) c.wounds.current = Math.min(vessel0.wounds.current, c.wounds.max);
+      if (vessel0) {
+        // `enemies` porte TOUTES les coques spawnées (allié comme ennemi ; `kind` est réassigné plus bas).
+        for (const c of enemies) if (c.creatureId === vessel0.vehicleId) {
+          if (vessel0.wounds) c.wounds.current = Math.min(vessel0.wounds.current, c.wounds.max);
+          if (vessel0.name) c.name = vessel0.name; // #230 — nom d'instance (affichage ; rendu keyé par creatureId)
+        }
       }
       // Combat monté (LDB 14) : marquer les montures rideables, basculer les « alliés », puis appairer
       // les couples pré-montés (ridesEntityId → la monture). Le cavalier monte SUR sa monture.

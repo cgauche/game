@@ -4,6 +4,8 @@ import { WorldMap, MapPlace, MapRoute, emptyWorldMap, placeById } from '../../st
 import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
 import { LAND_CARGOES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
 import { CARGOES, type PortProfile } from '../../engine/seaVoyage';
+import { navalPorts, findNavalPortById } from '../../data';
+import { resolvePortRef } from '../../state/worldMap';
 import { EffectList } from './EffectList';
 import { Icon, IconG } from '../Icon';
 
@@ -315,7 +317,8 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
               </label>
               {selPlace.port && (() => {
                 const pt = selPlace.port;
-                const updPort = (patch: Partial<PortProfile & { lighthouse?: boolean }>) => updPlace(selPlace.id, { port: { ...pt, ...patch } });
+                const updPort = (patch: Partial<PortProfile & { lighthouse?: boolean; ref?: string }>) =>
+                  updPlace(selPlace.id, { port: { ...pt, ...patch } });
                 // Bascule d'une clé d'un Record<id, indice> (Surplus/Demande) : cocher = indice 1, décocher = retirer la clé.
                 const toggleTable = (key: 'surplus' | 'demande', id: string) => {
                   const tbl = { ...(pt[key] ?? {}) };
@@ -326,6 +329,32 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                   updPort({ [key]: { ...(pt[key] ?? {}), [id]: Math.max(1, lvl) } });
                 return (
                   <>
+                    <label className="ed-field">Port du catalogue (Index des ports, #217 — optionnel)
+                      <select
+                        value={pt.ref ?? ''}
+                        onChange={(e) => {
+                          const ref = e.target.value || undefined;
+                          if (!ref) { updPort({ ref: undefined }); return; }
+                          // Choisir une réf REMPLACE le profil par celui du catalogue (seul lighthouse,
+                          // hors catalogue, est préservé) — pas les défauts d'auteur pré-résolution (#217).
+                          const resolved = resolvePortRef({ ref, lighthouse: pt.lighthouse });
+                          updPlace(selPlace.id, { port: resolved });
+                        }}
+                      >
+                        <option value="">— aucun (port d'auteur) —</option>
+                        {navalPorts.map((p) => <option key={p.id} value={p.id}>{p.label} ({p.region})</option>)}
+                      </select>
+                    </label>
+                    {pt.ref && (() => {
+                      const def = findNavalPortById(pt.ref);
+                      return def ? (
+                        <div className="ed-hint">
+                          Résolu du catalogue : Taille {def.taille}, Richesse {def.richesse}
+                          {def.dirigeant ? ` — ${def.dirigeant}` : ''}
+                          {def.desc ? ` — ${def.desc}` : ''}
+                        </div>
+                      ) : null;
+                    })()}
                     <label className="ed-field">Taille du port (1-4, l.439-506)
                       <select value={pt.taille} onChange={(e) => updPort({ taille: Number(e.target.value) })}>
                         {TAILLE_LABELS.map((label, i) => <option key={i} value={i + 1}>{i + 1} — {label}</option>)}

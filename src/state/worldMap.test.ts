@@ -4,7 +4,7 @@
  * amont : l'éditeur affiche « JSON invalide », pas un crash), jamais être parsé en silence.
  */
 import { describe, it, expect } from 'vitest';
-import { parseProject, declutterPositions, type ProjectDoc, type RenderPoint } from './worldMap';
+import { parseProject, declutterPositions, resolvePortRef, type ProjectDoc, type RenderPoint } from './worldMap';
 import type { Scene } from './scene';
 
 const scene = (id: string) => ({ id } as Scene);
@@ -57,6 +57,52 @@ describe('parseProject — validation du format projet v2', () => {
     const doc: ProjectDoc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithPort as never };
     const round = parseProject(JSON.parse(JSON.stringify(doc)));
     expect(round.worldMap!.places[0].port).toEqual(port);
+  });
+
+  it('#217 : MapPlace.port.ref seul → résolu aux valeurs du catalogue naval-ports.json au chargement', () => {
+    const mapWithRef = { id: 'm', nom: 'Côte', places: [{ id: 'l1', label: 'Salzenmund', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'salzenmund' } }], routes: [] };
+    const doc: ProjectDoc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithRef as never };
+    const round = parseProject(JSON.parse(JSON.stringify(doc)));
+    const port = round.worldMap!.places[0].port!;
+    expect(port.taille).toBe(4);
+    expect(port.richesse).toBe(4);
+    expect(port.ref).toBe('salzenmund');
+  });
+
+  it('#217 : MapPlace.port.ref + surcharge locale → la surcharge gagne sur le catalogue', () => {
+    const mapWithOverride = { id: 'm', nom: 'Côte', places: [{ id: 'l1', label: 'Salzenmund', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'salzenmund', taille: 1 } }], routes: [] };
+    const doc: ProjectDoc = { schema: 2, scenes: [scene('s1')], worldMap: mapWithOverride as never };
+    const round = parseProject(JSON.parse(JSON.stringify(doc)));
+    const port = round.worldMap!.places[0].port!;
+    expect(port.taille).toBe(1); // surcharge locale
+    expect(port.richesse).toBe(4); // hérité du catalogue
+  });
+
+  it('#217 : MapPlace.port SANS ref → comportement inchangé (aucune résolution)', () => {
+    const port = { taille: 2, richesse: 2, production: ['sel'] };
+    const mapNoRef = { id: 'm', nom: 'Côte', places: [{ id: 'l1', label: 'Port maison', pos: { x: 50, y: 50 }, scene: 's1', port }], routes: [] };
+    const doc: ProjectDoc = { schema: 2, scenes: [scene('s1')], worldMap: mapNoRef as never };
+    const round = parseProject(JSON.parse(JSON.stringify(doc)));
+    expect(round.worldMap!.places[0].port).toEqual(port);
+  });
+
+  it('#217 : MapPlace.port.ref inconnue → erreur EXPLICITE (fail-fast, jamais un port silencieusement vide)', () => {
+    const mapBadRef = { id: 'm', nom: 'Côte', places: [{ id: 'l1', label: 'Nulle-part', pos: { x: 50, y: 50 }, scene: 's1', port: { ref: 'port-qui-n-existe-pas' } }], routes: [] };
+    const doc: ProjectDoc = { schema: 2, scenes: [scene('s1')], worldMap: mapBadRef as never };
+    expect(() => parseProject(JSON.parse(JSON.stringify(doc)))).toThrow(/réf de port inconnue/);
+  });
+
+  it('resolvePortRef : sans ref, retourne le port TEL QUEL (même référence)', () => {
+    const port = { taille: 3, richesse: 3, production: [] };
+    expect(resolvePortRef(port)).toBe(port);
+  });
+
+  it('#217 : resolvePortRef({ ref, lighthouse }) SPARSE (picker) — le catalogue l\'emporte, lighthouse local préservé', () => {
+    // Verrou anti-régression : DEFAULT_PORT (taille:2, richesse:2) ne doit JAMAIS écraser le catalogue.
+    const resolved = resolvePortRef({ ref: 'salzenmund', lighthouse: true });
+    expect(resolved!.taille).toBe(4); // Salzenmund, MDG 15 l.452 — pas le défaut d'auteur (2)
+    expect(resolved!.richesse).toBe(4);
+    expect(resolved!.lighthouse).toBe(true);
   });
 
   it('WorldMap.background (vraie carte de fond) survit au round-trip via parseProject', () => {

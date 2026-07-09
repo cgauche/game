@@ -1,0 +1,816 @@
+[
+  {
+    "id": "l-anguille",
+    "label": "L'Anguille",
+    "region": "Bretonnie",
+    "taille": 4,
+    "richesse": 3,
+    "production": [
+      "commerce",
+      "vin"
+    ],
+    "surplus": {
+      "poisson-sale": 1
+    },
+    "demande": {
+      "armes": 1,
+      "produits-de-luxe": 1
+    },
+    "dirigeant": "Duc Taubert de L'Anguille",
+    "desc": "Capitale d'un duché de Bretonnie ; phare spectaculaire",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "marienburg",
+    "label": "Marienburg",
+    "region": "Wasteland",
+    "taille": 4,
+    "richesse": 5,
+    "production": [
+      "commerce",
+      "poisson-sale",
+      "vin"
+    ],
+    "surplus": {
+      "armes": 1,
+      "bois": 1,
+      "metaux": 1,
+      "produits-de-luxe": 1
+    },
+    "demande": {
+      "pieces-detachees-de-navire": 1
+    },
+    "cosmopolite": true,
+    "dirigeant": "Le Directorat",
+    "desc": "Plus grande cité et plus grand port du Vieux Monde",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "aarnau",
+    "label": "Aarnau",
+    "region": "Wasteland",
+    "taille": 3,
+    "richesse": 3,
+    "production": [
+      "cereales",
+      "poisson-sale"
+    ],
+    "demande": {
+      "armes": 1
+    },
+    "dirigeant": "Baron Martinus van Buuren",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "broekwater",
+    "label": "Broekwater",
+    "region": "Wasteland",
+    "taille": 1,
+    "richesse": 1,
+    "production": [
+      "pieces-detachees-de-navire",
+      "poisson-sale"
+    ],
+    "dirigeant": "Ancienne du village",
+    "desc": "Pièces détachées de navire souvent récupérées sur des épaves, rumeurs de piraterie",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "leydenhoven",
+    "label": "Leydenhoven",
+    "region": "Wasteland",
+    "taille": 2,
+    "richesse": 2,
+    "production": [
+      "laine",
+      "poisson-sale"
+    ],
+    "dirigeant": "Conseil du village",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "salzenmund",
+    "label": "Salzenmund",
+    "region": "Nordland",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "bois",
+      "commerce"
+    ],
+    "surplus": {
+      "produits-de-luxe": 1
+    },
+    "demande": {
+      "armes": 1,
+      "cereales": 1
+    },
+    "dirigeant": "Comte Électeur Theodoric Gausser",
+    "desc": "Capitale du Nordland, Grand Temple d'Ulric et temple de Manann Resplendissant",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "dietershafen",
+    "label": "Dietershafen",
+    "region": "Nordland",
+    "taille": 3,
+    "richesse": 3,
+    "production": [
+      "poisson-sale"
+    ],
+    "demande": {
+      "armes": 1
+    },
+    "dirigeant": "Baron Ludolf Köhler",
+    "desc": "Mouillage de la Seconde Flotte de la Marine impériale",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "hargendorf",
+    "label": "Hargendorf",
+    "region": "Nordland",
+    "taille": 3,
+    "richesse": 3,
+    "production": [
+      "laine",
+      "poisson-sale"
+    ],
+    "surplus": {
+      "sel": 1
+    },
+    "demande": {
+      "produits-de-luxe": 1
+    },
+    "dirigeant": "Baron Gunther von Hargenfels",
+    "desc": "Centre du plus gros réseau de contrebande du Nordland",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "neues-emskrank",
+    "label": "Neues Emskrank",
+    "region": "Nordland",
+    "taille": 3,
+    "richesse": 2,
+    "production": [
+      "commerce"
+    ],
+    "surplus": {
+      "poisson-sale": 2
+    },
+    "dirigeant": "Comte Électeur Gausser",
+    "desc": "A été fondé en 2460 CI pour tenter de détourner le commerce de Marienburg, mais a lamentablement échoué",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "norden",
+    "label": "Norden",
+    "region": "Nordland",
+    "taille": 3,
+    "richesse": 3,
+    "production": [
+      "commerce",
+      "produits-de-luxe"
+    ],
+    "surplus": {
+      "armes": 2,
+      "bois": 1,
+      "metaux": 1,
+      "pieces-detachees-de-navire": 1
+    },
+    "demande": {
+      "poisson-sale": 1
+    },
+    "dirigeant": "Baron Ottmar von Neurath",
+    "desc": "Port dans la baie de Drosselspule, secrètement développé comme base d'opérations pour l'exploration et la conquête de la Lustrie",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "salkalten",
+    "label": "Salkalten",
+    "region": "Ostland",
+    "taille": 3,
+    "richesse": 2,
+    "production": [
+      "poisson-sale",
+      "produits-de-luxe"
+    ],
+    "surplus": {
+      "sel": 1
+    },
+    "demande": {
+      "armes": 1,
+      "pieces-detachees-de-navire": 1
+    },
+    "dirigeant": "Baron Gustav von Wolder",
+    "desc": "Port fondé en 2462 CI pour tenter de détourner le commerce de Marienburg, mais le plan a échoué",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "schonfeld",
+    "label": "Schönfeld",
+    "region": "Ostland",
+    "taille": 1,
+    "richesse": 1,
+    "production": [
+      "commerce",
+      "poisson-sale"
+    ],
+    "dirigeant": "Baron Wolder",
+    "desc": "Pièces détachées de navire souvent récupérées sur des épaves, rumeurs de piraterie",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "erengrad",
+    "label": "Erengrad",
+    "region": "Kislev",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "commerce",
+      "produits-de-luxe"
+    ],
+    "surplus": {
+      "laine": 1
+    },
+    "demande": {
+      "pieces-detachees-de-navire": 1
+    },
+    "dirigeant": "Alexandr Yevschenko",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "autel-de-la-moisson-ecarlate",
+    "label": "Autel de la Moisson écarlate",
+    "region": "Pays des Trolls",
+    "taille": 1,
+    "richesse": 1,
+    "demande": {
+      "armes": 1
+    },
+    "dirigeant": "Runa Hrossháfurm",
+    "desc": "Forteresse sarle partagée avec les Skaelings",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "kraka-ravnsvake",
+    "label": "Kraka Ravnsvake",
+    "region": "Kraka Ravnsvake",
+    "taille": 2,
+    "richesse": 3,
+    "production": [
+      "produits-de-luxe"
+    ],
+    "surplus": {
+      "metaux": 1
+    },
+    "demande": {
+      "armes": 1,
+      "cereales": 1
+    },
+    "dirigeant": "Roi Haarkon et reine Inga",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "kirkjugardur-langskipa",
+    "label": "Kirkjugarður Langskipa",
+    "region": "Côte des Skaelings",
+    "taille": 2,
+    "richesse": 2,
+    "demande": {
+      "armes": 1,
+      "produits-de-luxe": 1
+    },
+    "dirigeant": "Öskra et Signe",
+    "desc": "Respect envers le dieu du sang nécessaire pour faire du commerce ici",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "skjold",
+    "label": "Skjold",
+    "region": "Côte des Bjornlings",
+    "taille": 2,
+    "richesse": 2,
+    "production": [
+      "bois",
+      "poisson-sale"
+    ],
+    "demande": {
+      "armes": 1
+    },
+    "dirigeant": "Haut roi Ulfric Grondal",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "eyristaad",
+    "label": "Eyristaad",
+    "region": "Côte des Bjornlings",
+    "taille": 2,
+    "richesse": 1,
+    "production": [
+      "poisson-sale"
+    ],
+    "demande": {
+      "armes": 1
+    },
+    "dirigeant": "Eyri Doigt-d'or",
+    "desc": "Une série de hameaux et non un seul et même lieu",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "svunum",
+    "label": "Svunum",
+    "region": "Côte des Bjornlings",
+    "taille": 1,
+    "richesse": 1,
+    "production": [
+      "minimum-vital"
+    ],
+    "demande": {
+      "armes": 1,
+      "cereales": 1
+    },
+    "dirigeant": "Culte de Myrmidia",
+    "desc": "Île abritant la commanderie des Chevaliers du Soleil Flamboyant",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "fjirgard",
+    "label": "Fjirgard",
+    "region": "Côte des Bjornlings",
+    "taille": 1,
+    "richesse": 1,
+    "surplus": {
+      "produits-de-luxe": 1
+    },
+    "demande": {
+      "armes": 1
+    },
+    "dirigeant": "Skiftet Fyrr",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 138
+    }
+  },
+  {
+    "id": "altdorf-port",
+    "label": "Altdorf",
+    "region": "L'Empire",
+    "taille": 4,
+    "richesse": 5,
+    "production": [
+      "commerce"
+    ],
+    "surplus": {
+      "produits-de-luxe": 1
+    },
+    "demande": {
+      "cereales": 1,
+      "produits-de-luxe": 1
+    },
+    "dirigeant": "Empereur Karl Franz I Holswig Schliestein",
+    "desc": "Capitale impériale ; Grande Cathédrale de Sigmar",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "bordeleaux",
+    "label": "Bordeleaux",
+    "region": "Bretonnie",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "commerce"
+    ],
+    "surplus": {
+      "poisson-sale": 1
+    },
+    "demande": {
+      "armes": 1,
+      "metaux": 1
+    },
+    "dirigeant": "Duc Alberic de Bordeleaux",
+    "desc": "Énorme navire-temple de Manann amarré dans le port, la Première Chapelle",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "brionne",
+    "label": "Brionne",
+    "region": "Bretonnie",
+    "taille": 4,
+    "richesse": 3,
+    "production": [
+      "commerce"
+    ],
+    "surplus": {
+      "produits-de-luxe": 1
+    },
+    "demande": {
+      "bois": 1,
+      "vin": 1
+    },
+    "dirigeant": "Duc Theodoric de Brionne",
+    "desc": "Halle des Ménestrels",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "lyonesse",
+    "label": "Lyonesse",
+    "region": "Bretonnie",
+    "taille": 3,
+    "richesse": 1,
+    "production": [
+      "commerce"
+    ],
+    "demande": {
+      "armes": 1,
+      "cereales": 1
+    },
+    "dirigeant": "Duc Adélard de Lyonesse",
+    "desc": "Île-forteresse et siège du duché ; les petits bateaux peuvent entrer dans la cour du château par la mer",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "mousillon",
+    "label": "Mousillon",
+    "region": "Bretonnie",
+    "taille": 3,
+    "richesse": 2,
+    "production": [
+      "minimum-vital"
+    ],
+    "dirigeant": "Incertain",
+    "desc": "Un endroit réputé misérable et abandonné par les dieux",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "miragliano",
+    "label": "Miragliano",
+    "region": "Tilée",
+    "taille": 2,
+    "richesse": 4,
+    "production": [
+      "commerce",
+      "poisson-sale"
+    ],
+    "surplus": {
+      "produits-de-luxe": 1
+    },
+    "demande": {
+      "armes": 1,
+      "cereales": 1,
+      "metaux": 1
+    },
+    "dirigeant": "Princesse douairière Dolchellata Belladonna",
+    "desc": "La Taille de Miragliano est actuellement diminuée à cause des troubles civils et de la fièvre jaune",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "tobaro",
+    "label": "Tobaro",
+    "region": "Tilée",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "commerce",
+      "poisson-sale",
+      "produits-de-luxe"
+    ],
+    "surplus": {
+      "cereales": 1
+    },
+    "demande": {
+      "armes": 1,
+      "bois": 1
+    },
+    "dirigeant": "Prince Tibaldus Marsarius de Vela",
+    "desc": "Rendue quasi inaccessible par la mer à cause des Rochers du Fol",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "sartosa",
+    "label": "Sartosa",
+    "region": "Tilée",
+    "taille": 3,
+    "richesse": 3,
+    "production": [
+      "commerce"
+    ],
+    "demande": {
+      "armes": 1,
+      "cereales": 1,
+      "pieces-detachees-de-navire": 1
+    },
+    "dirigeant": "La Princesse des Pirates",
+    "desc": "Repaire de pirates ne répondant à personne sauf peut-être parfois au code de la piraterie.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "luccini",
+    "label": "Luccini",
+    "region": "Tilée",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "cereales",
+      "commerce",
+      "produits-de-luxe"
+    ],
+    "surplus": {
+      "laine": 1
+    },
+    "demande": {
+      "sel": 1
+    },
+    "dirigeant": "Prince Lorenzo Lupo",
+    "desc": "Plus ancienne cité de Tilée",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "remas",
+    "label": "Remas",
+    "region": "Tilée",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "commerce"
+    ],
+    "surplus": {
+      "poisson-sale": 1
+    },
+    "demande": {
+      "huile": 1
+    },
+    "dirigeant": "Le Triumvirat",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "magritta",
+    "label": "Magritta",
+    "region": "Estalie",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "commerce"
+    ],
+    "surplus": {
+      "metaux": 1
+    },
+    "demande": {
+      "armes": 1,
+      "pieces-detachees-de-navire": 1
+    },
+    "dirigeant": "Roi Carlos IX",
+    "desc": "Port grouillant d'activité qui hait la piraterie",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "bilbali",
+    "label": "Bilbali",
+    "region": "Estalie",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "commerce"
+    ],
+    "surplus": {
+      "vin": 1
+    },
+    "demande": {
+      "cereales": 1
+    },
+    "dirigeant": "Reine Juana la Roja",
+    "desc": "Produit le célèbre vin de Bilbali",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "skeggi",
+    "label": "Skeggi",
+    "region": "Lustrie",
+    "taille": 2,
+    "richesse": 3,
+    "production": [
+      "bois",
+      "produits-de-luxe"
+    ],
+    "demande": {
+      "armes": 1,
+      "cereales": 1
+    },
+    "dirigeant": "Le roi des jakkers (sur le papier)",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "lothern",
+    "label": "Lothern",
+    "region": "Ulthuan",
+    "taille": 4,
+    "richesse": 5,
+    "production": [
+      "commerce"
+    ],
+    "demande": {
+      "cereales": 1,
+      "laine": 1
+    },
+    "cosmopolite": true,
+    "dirigeant": "Roi phénix Finubar",
+    "desc": "Tous les bateaux doivent être guidés jusqu'à la ville par un pilote elfe",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "tor-koruali",
+    "label": "Tor Koruali",
+    "region": "Ulthuan",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "commerce"
+    ],
+    "surplus": {
+      "pieces-detachees-de-navire": 1
+    },
+    "demande": {
+      "bois": 1
+    },
+    "dirigeant": "Conseil des princes",
+    "desc": "Immense cité taillée dans une falaise et s'étendant loin sous terre",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "tor-yvresse",
+    "label": "Tor Yvresse",
+    "region": "Ulthuan",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "commerce"
+    ],
+    "demande": {
+      "cereales": 1
+    },
+    "dirigeant": "Prince Eltharion le Sinistre",
+    "desc": "Immense cité aux hautes tours construite sur neuf collines",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "lashiek",
+    "label": "Lashiek",
+    "region": "Arabie",
+    "taille": 4,
+    "richesse": 5,
+    "production": [
+      "commerce"
+    ],
+    "dirigeant": "Sultan de Lashiek",
+    "desc": "Beaucoup de pirates rôdent sur les mers autour de ce port",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "copher",
+    "label": "Copher",
+    "region": "Arabie",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "commerce"
+    ],
+    "surplus": {
+      "produits-de-luxe": 2
+    },
+    "demande": {
+      "bois": 1,
+      "cereales": 1
+    },
+    "dirigeant": "Sultan de Copher",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  },
+  {
+    "id": "al-haikk",
+    "label": "Al-Haikk",
+    "region": "Arabie",
+    "taille": 4,
+    "richesse": 4,
+    "production": [
+      "commerce"
+    ],
+    "demande": {
+      "cereales": 1,
+      "huile": 1
+    },
+    "dirigeant": "Grand sultan d'Arabie",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 139
+    }
+  }
+]

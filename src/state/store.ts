@@ -1156,6 +1156,9 @@ export interface GameState extends RollFlowActionsMap {
  *  défaut (coque intacte, humeur neutre, cale vide) — migration par défauts, jamais de corruption. */
 export interface CampaignVessel {
   vehicleId: string;
+  /** #230 — Nom d'INSTANCE authoré (« Le Cormoran »…). Affichage pur (jamais une clé de logique/rendu) ;
+   *  absent = le label du TYPE (`findVehicleById(vehicleId).label`). Migration par défaut. */
+  name?: string;
   morale: ShipMoraleState;
   /** #30 — Blessures de COQUE persistantes (absent = coque intacte). Synchronisées par le voyage
    *  maritime (`persistHullWounds`) et les réparations ; la coque de trajet en repart. */
@@ -1186,6 +1189,12 @@ export interface CampaignVessel {
    *  plafonné au complément nominal du type (`vehicles.json` ship.crew — `applyVesselCrewLoss`). Absent
    *  = aucune perte. #150. */
   crewLost?: number;
+  /** #216 — Équipage SALARIÉ embauché (barème `crew-roles.json`). Absent/vide = aucun équipage salarié
+   *  = aucune paie prélevée à l'entretien hebdomadaire. */
+  crew?: import('../engine/crewMorale').CrewHire[];
+  /** #216 — Solde hebdomadaire NON payée cumulée (sous de cuivre) : bourse insuffisante au tick →
+   *  `pas-de-paie` et dette accumulée ici. Absent = aucune dette. */
+  wagesOwed?: number;
 }
 
 export const useGame = create<GameState>((set, get) => ({

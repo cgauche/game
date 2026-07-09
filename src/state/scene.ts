@@ -342,7 +342,7 @@ export type Effect =
    *  reçoit/achète un bateau (don d'un patron, chantier). `vehicleId` = un navire de `vehicles.json`
    *  (facette `ship`) ; Moral et Blessures de coque INITIAUX authorés (coque neuve = pas de `wounds`).
    *  Le navire survit aux jours et aux combats (le voyage maritime et le Port en repartent). */
-  | { type: 'setVessel'; vehicleId: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number }
+  | { type: 'setVessel'; vehicleId: string; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; crew?: import('../engine/crewMorale').CrewHire[] }
   /** Fait varier l'HUMEUR DE MANANN du navire de campagne (MDG ch.15 l.83-125) — à poser sur une
    *  bénédiction de prêtre, un sacrifice ou tout événement narratif d'auteur. `factorId` = un facteur
    *  du tableau « EFFET SUR L'HUMEUR DE MANANN » (`sea-events.json`, appliqué UNE SEULE FOIS par

@@ -1181,12 +1181,14 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       env.set({
         vessel: {
           vehicleId: e.vehicleId,
+          ...(e.name?.trim() ? { name: e.name.trim() } : {}), // #230 — nom d'instance (affichage)
           morale: { score: e.morale ?? MORALE_BASE, lastMoraleWeek: 0, factors: [] },
           ...(e.hullMax != null ? { wounds: { current: e.hullCurrent ?? e.hullMax, max: e.hullMax } } : {}),
           ...(e.saboteurDR != null ? { saboteurDR: e.saboteurDR } : {}),
+          ...(e.crew && e.crew.length ? { crew: e.crew.filter((h) => h.roleId && h.count > 0) } : {}),
         },
       });
-      env.log(t('eff.setVessel', { name: v.label }));
+      env.log(t('eff.setVessel', { name: e.name?.trim() || v.label }));
     },
     refs: (e) => {
       const v = e.vehicleId ? findVehicleById(e.vehicleId) : undefined;

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { resolveCrewTestByRoles, crewRoleValue, undercrewPenalty } from './crewMorale';
+import { resolveCrewTestByRoles, crewRoleValue, undercrewPenalty, weeklyCrewWageBrass } from './crewMorale';
+import { toBrass, priceToMoney } from './money';
 import { crewRoles, crewTestTypes, findCrewRoleById } from '../data';
 import { traumaById } from './trauma';
 import type { Combatant, SkillInstance } from './types';
@@ -36,6 +37,37 @@ describe('Catalogue des rôles d’équipage + types de Test (MDG ch.14) — don
     // Tir de batterie → Artilleur essentiel (MDG ch.14).
     const batt = crewTestTypes.find((t) => t.id === 'batterie')!;
     expect(batt.essential).toBe('artilleur');
+  });
+});
+
+describe('Barème de solde (MDG 14 l.293-302) — lu depuis la donnée, #216', () => {
+  it('chaque rôle porte un barème quotidien + hebdomadaire et un tag (source RAW ou maison)', () => {
+    for (const r of crewRoles) {
+      expect(r.wage).toBeDefined();
+      expect(r.wage!.daily).toBeDefined();
+      expect(r.wage!.weekly).toBeDefined();
+      expect(!!r.wage!.source || !!r.wage!.maison).toBe(true); // exactement l'un des deux
+    }
+    // Correspondances RAW EXPLICITES (nom identique au barème) — MDG 14 page 126.
+    expect(findCrewRoleById('mousse')!.wage!.source).toEqual({ book: 'mer-des-griffes', page: 126 });
+    expect(findCrewRoleById('chirurgien')!.wage!.source).toEqual({ book: 'mer-des-griffes', page: 126 });
+    // Mousse : 3/– par jour, 1 CO 4/– par semaine (colonnes NON multiples l'une de l'autre, verbatim).
+    expect(findCrewRoleById('mousse')!.wage!.daily).toEqual({ gold: 0, silver: 3, bronze: 0 });
+    expect(findCrewRoleById('mousse')!.wage!.weekly).toEqual({ gold: 1, silver: 4, bronze: 0 });
+    // Correspondances arbitrées → tag maison (pas de tag source).
+    expect(findCrewRoleById('capitaine')!.wage!.maison).toBeTruthy();
+    expect(findCrewRoleById('capitaine')!.wage!.source).toBeUndefined();
+  });
+
+  it('weeklyCrewWageBrass = Σ count × coût hebdomadaire (sous de cuivre) ; roster absent/inconnu = 0', () => {
+    // Mousse hebdo = 1 CO 4/– = 240 + 48 = 288 sc ; Capitaine hebdo = 5 CO = 1200 sc.
+    expect(weeklyCrewWageBrass([{ roleId: 'mousse', count: 1 }])).toBe(288);
+    expect(weeklyCrewWageBrass([{ roleId: 'capitaine', count: 1 }])).toBe(1200);
+    expect(weeklyCrewWageBrass([{ roleId: 'mousse', count: 2 }, { roleId: 'capitaine', count: 1 }])).toBe(288 * 2 + 1200);
+    expect(weeklyCrewWageBrass([{ roleId: 'mousse', count: 1 }])).toBe(toBrass(priceToMoney(findCrewRoleById('mousse')!.wage!.weekly)));
+    expect(weeklyCrewWageBrass(undefined)).toBe(0);
+    expect(weeklyCrewWageBrass([])).toBe(0);
+    expect(weeklyCrewWageBrass([{ roleId: 'inexistant', count: 3 }])).toBe(0);
   });
 });
 

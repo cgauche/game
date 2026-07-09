@@ -113,8 +113,9 @@ function riverHull(get: Get, route: MapRoute): { coque: Combatant; hasSail: bool
   if (!v?.ship || !v.hull) return null;
   const coque = vehicleCombatant(v);
   if (!coque) return null;
-  if (vessel && vessel.vehicleId === vId && vessel.wounds) {
-    coque.wounds = { ...coque.wounds, current: Math.min(vessel.wounds.current, coque.wounds.max) };
+  if (vessel && vessel.vehicleId === vId) {
+    if (vessel.name) coque.name = vessel.name; // #230 — nom d'instance (affichage)
+    if (vessel.wounds) coque.wounds = { ...coque.wounds, current: Math.min(vessel.wounds.current, coque.wounds.max) };
   }
   return { coque, hasSail: !!v.ship.sail };
 }

@@ -10,7 +10,7 @@ export const merchantArchetype: MerchantArchetypeDef = {
   label: 'Tavernière',
   category: { subTypes: ['nourriture-boisson-et-hebergement'] }, // id de Groupe
   settlement: 'village',
-  resaleRate: 0.5, // base ½ du prix listé (LDB 60 l.22)
+  resaleRate: 0.5, // LDB 59 l.54
   bargainSkill: 45,
   curated: ['ration', 'repas-auberge', 'biere-pinte', 'vin-bouteille', 'nourriture-courses-journee'],
 };

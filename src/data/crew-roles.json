@@ -7,7 +7,20 @@
         "skillId": "commandement"
       }
     ],
-    "desc": "Le Capitaine évalue la situation, obtient des informations auprès de certains membres de l'équipage, décide des actions à entreprendre et transmet ses ordres à l'équipage."
+    "desc": "Le Capitaine évalue la situation, obtient des informations auprès de certains membres de l'équipage, décide des actions à entreprendre et transmet ses ordres à l'équipage.",
+    "wage": {
+      "daily": {
+        "gold": 0,
+        "silver": 15,
+        "bronze": 0
+      },
+      "weekly": {
+        "gold": 5,
+        "silver": 0,
+        "bronze": 0
+      },
+      "maison": "Correspondance maison → mercenaire « Officier » (MDG 14 l.300) : le capitaine tient un rôle d'officier (l.143 « peuvent être considérés comme des officiers »). #216"
+    }
   },
   {
     "id": "timonier",
@@ -17,7 +30,20 @@
         "skillId": "voile"
       }
     ],
-    "desc": "Le Timonier met à profit toute son expérience et sa connaissance des éléments pour piloter le navire."
+    "desc": "Le Timonier met à profit toute son expérience et sa connaissance des éléments pour piloter le navire.",
+    "wage": {
+      "daily": {
+        "gold": 0,
+        "silver": 9,
+        "bronze": 0
+      },
+      "weekly": {
+        "gold": 3,
+        "silver": 12,
+        "bronze": 0
+      },
+      "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : le Timonier est un marin expérimenté à la barre. #216"
+    }
   },
   {
     "id": "vigie",
@@ -27,7 +53,20 @@
         "skillId": "perception"
       }
     ],
-    "desc": "Le rôle de la Vigie peut être crucial quand le danger est proche. Elle peut parcourir le pont ou rester à la proue, ou, sur les grands navires, grimper jusqu'à la position précaire du nid-de-pie."
+    "desc": "Le rôle de la Vigie peut être crucial quand le danger est proche. Elle peut parcourir le pont ou rester à la proue, ou, sur les grands navires, grimper jusqu'à la position précaire du nid-de-pie.",
+    "wage": {
+      "daily": {
+        "gold": 0,
+        "silver": 9,
+        "bronze": 0
+      },
+      "weekly": {
+        "gold": 3,
+        "silver": 12,
+        "bronze": 0
+      },
+      "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : la Vigie est un marin de quart posté en observation. #216"
+    }
   },
   {
     "id": "mousse",
@@ -40,7 +79,23 @@
         "skillId": "ramer"
       }
     ],
-    "desc": "Les Mousses accomplissent tous les travaux manuels à bord. Malgré leur rang très bas dans la hiérarchie, leur travail demande beaucoup de compétences et est vital pour que le vaisseau soit bien géré."
+    "desc": "Les Mousses accomplissent tous les travaux manuels à bord. Malgré leur rang très bas dans la hiérarchie, leur travail demande beaucoup de compétences et est vital pour que le vaisseau soit bien géré.",
+    "wage": {
+      "daily": {
+        "gold": 0,
+        "silver": 3,
+        "bronze": 0
+      },
+      "weekly": {
+        "gold": 1,
+        "silver": 4,
+        "bronze": 0
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 126
+      }
+    }
   },
   {
     "id": "navigateur",
@@ -50,7 +105,20 @@
         "skillId": "orientation"
       }
     ],
-    "desc": "Tous les Tests d'équipage impliquant de trouver un itinéraire nécessitent un Navigateur."
+    "desc": "Tous les Tests d'équipage impliquant de trouver un itinéraire nécessitent un Navigateur.",
+    "wage": {
+      "daily": {
+        "gold": 0,
+        "silver": 15,
+        "bronze": 0
+      },
+      "weekly": {
+        "gold": 5,
+        "silver": 0,
+        "bronze": 0
+      },
+      "maison": "Correspondance maison → mercenaire « Officier » (MDG 14 l.300) : la navigation d'un grand vaisseau est une charge d'officier. #216"
+    }
   },
   {
     "id": "artilleur",
@@ -61,7 +129,20 @@
         "spec": "poudre-noire"
       }
     ],
-    "desc": "L'Artilleur supervise les armes du navire et intervient dans tous les Tests de combat."
+    "desc": "L'Artilleur supervise les armes du navire et intervient dans tous les Tests de combat.",
+    "wage": {
+      "daily": {
+        "gold": 0,
+        "silver": 9,
+        "bronze": 0
+      },
+      "weekly": {
+        "gold": 3,
+        "silver": 12,
+        "bronze": 0
+      },
+      "maison": "Correspondance maison → mercenaire « Mercenaire expérimenté » (MDG 14 l.301) : l'Artilleur est un combattant spécialiste des pièces. #216"
+    }
   },
   {
     "id": "cuisinier",
@@ -72,7 +153,20 @@
         "spec": "cuisinier"
       }
     ],
-    "desc": "Un rôle trop souvent sous-estimé, car rien ne sape le moral de l'équipage plus rapidement qu'une mauvaise nourriture."
+    "desc": "Un rôle trop souvent sous-estimé, car rien ne sape le moral de l'équipage plus rapidement qu'une mauvaise nourriture.",
+    "wage": {
+      "daily": {
+        "gold": 0,
+        "silver": 3,
+        "bronze": 0
+      },
+      "weekly": {
+        "gold": 1,
+        "silver": 4,
+        "bronze": 0
+      },
+      "maison": "Correspondance maison → mercenaire « Nautonier » (MDG 14 l.299) : non-combattant de bord sans part de prise. #216"
+    }
   },
   {
     "id": "chirurgien",
@@ -82,7 +176,23 @@
         "skillId": "guerison"
       }
     ],
-    "desc": "Le Chirurgien est essentiel pour la santé de l'équipage après les combats ou quand la maladie fait rage à bord."
+    "desc": "Le Chirurgien est essentiel pour la santé de l'équipage après les combats ou quand la maladie fait rage à bord.",
+    "wage": {
+      "daily": {
+        "gold": 0,
+        "silver": 15,
+        "bronze": 0
+      },
+      "weekly": {
+        "gold": 5,
+        "silver": 0,
+        "bronze": 0
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 126
+      }
+    }
   },
   {
     "id": "chansonnier",
@@ -93,6 +203,19 @@
         "spec": "chant"
       }
     ],
-    "desc": "En plus d'utiliser la Compétence Divertissement (Chant) pour contribuer à un Test d'équipage d'une manière similaire à celle du reste de l'équipage, le Chansonnier peut employer la chanson de marin « Naviguons tous ensemble, ho hisse, ho hisse… » pour donner des bonus aux Tests du reste de l'équipage."
+    "desc": "En plus d'utiliser la Compétence Divertissement (Chant) pour contribuer à un Test d'équipage d'une manière similaire à celle du reste de l'équipage, le Chansonnier peut employer la chanson de marin « Naviguons tous ensemble, ho hisse, ho hisse… » pour donner des bonus aux Tests du reste de l'équipage.",
+    "wage": {
+      "daily": {
+        "gold": 0,
+        "silver": 9,
+        "bronze": 0
+      },
+      "weekly": {
+        "gold": 3,
+        "silver": 12,
+        "bronze": 0
+      },
+      "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : le Chansonnier est un marin qui mène le chant. #216"
+    }
   }
 ]

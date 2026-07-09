@@ -8,12 +8,23 @@ import { z } from 'zod';
 
 export const file = 'crew-roles.json';
 
+const money = z.strictObject({ gold: z.number(), silver: z.number(), bronze: z.number() });
+
 export const schema = z.array(
   z.strictObject({
     id: z.string(),
     label: z.string(),
     skills: z.array(z.strictObject({ skillId: z.string(), spec: z.string().optional() })),
     desc: z.string(),
+    // Barème de solde (MDG 14 l.293-302 « Exemples de mercenaires ») : coûts quotidien ET hebdomadaire
+    // verbatim (colonnes non-multiples l'une de l'autre). `source` = correspondance RAW explicite ;
+    // `maison` = correspondance rôle→type de mercenaire arbitrée. #216
+    wage: z.strictObject({
+      daily: money,
+      weekly: money,
+      source: z.strictObject({ book: z.string(), page: z.number() }).optional(),
+      maison: z.string().optional(),
+    }).optional(),
   }),
 );
 

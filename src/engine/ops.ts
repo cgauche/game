@@ -172,7 +172,7 @@ export function formulaExpectation(f: Formula, ref: Combatant): number {
 export function skillDRBonus(c: Combatant, skillId: string, spec?: string): number {
   // Une op SANS `spec` s'applique à toute spécialisation (Furtif → Discrétion) ; une op AVEC `spec` ne
   // s'applique qu'à cette spécialisation (Aura de Dhar → Langue (Magick) seulement, pas Langue (Bretonnien)).
-  const matches = (op: { skill: string; spec?: string }) => op.skill === skillId && (op.spec == null || op.spec === spec);
+  const matches = (op: { skill?: string; spec?: string }) => op.skill === skillId && (op.spec == null || op.spec === spec);
   let n = 0;
   for (const t of c.traits ?? []) {
     for (const op of traitById.get(t.id)?.passive ?? []) {
@@ -695,8 +695,12 @@ export type GameOp =
    *  Lu par `skillDRBonus` — PASSIF depuis les `TraitData.passive` du porteur (par id), ET, quand
    *  l'op est EXÉCUTÉE par un sort/une chanson (`applyOps`), depuis un `ActiveEffect.drBonus` temporisé.
    *  DISTINCT de `skillMod` (qui modifie la VALEUR du Test, pas le DR obtenu). `spec` OPTIONNEL :
-   *  restreint à une spécialisation (Aura de Dhar → Langue (Magick) seulement) ; absent = toute spéc. */
-  | { op: 'skillDRBonus'; skill: string; bonus: Formula; spec?: string }
+   *  restreint à une spécialisation (Aura de Dhar → Langue (Magick) seulement) ; absent = toute spéc.
+   *  `testType` OPTIONNEL (#221, traits navals `naval-traits.json` uniquement) : cible un TYPE de Test
+   *  d'équipage (`crew-test-types.json`) plutôt qu'une compétence — `skill` devient alors optionnel (une
+   *  Poursuite se court à la Voile OU aux avirons, le bonus est agnostique de la compétence) ; lu par
+   *  `navalTestTypeDR`, JAMAIS par `skillDRBonus` (personnage) ni `navalSkillTestDR` (coque). */
+  | { op: 'skillDRBonus'; skill?: string; bonus: Formula; spec?: string; testType?: string }
   /** +N DR aux Tests d'une CARACTÉRISTIQUE (chanson « Camarades d'équipage » : +1 DR sur tout Test de
    *  Sociabilité, MDG 09 l.236) — variante par carac de `skillDRBonus`. Exécutée → `ActiveEffect.drBonus`
    *  temporisé ; lisible aussi en PASSIF (trait/aura). Consommée par `charDRBonusOf` sur un Test RÉUSSI. */
@@ -1798,7 +1802,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           label: ctx.label ?? 'Effet', bonus: 0, duration: durationFromCtx(ctx),
           drBonus: [{ skill: o.skill, ...(o.spec != null ? { spec: o.spec } : {}), bonus: resolveFormula(o.bonus, ref, rng) }],
         });
-        lines.push(t('op.drBonus', { name: target.name, what: o.skill, src: ctx.label ?? 'sort' }));
+        lines.push(t('op.drBonus', { name: target.name, what: o.skill ?? o.testType ?? '', src: ctx.label ?? 'sort' }));
         break;
       }
       case 'charDRBonus': {

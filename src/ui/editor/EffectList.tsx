@@ -12,7 +12,7 @@ import { EMPTY_FLOW } from '../../state/flow';
 import { EFFECT_HANDLERS, EFFECT_GROUP_ORDER } from '../../state/combatEffects';
 import { DAY_PHASES, DayPhaseKey } from '../../engine/clock';
 import { DISEASE_DEFS } from '../../engine/disease';
-import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById } from '../../data';
+import { spells, trappings as trappingsData, refLabel, WATER_EXPOSURE, vehicles, findVehicleById, crewRoles } from '../../data';
 import { MANANN_FACTORS, findManannFactor } from '../../engine/seaVoyage';
 import { giveTrappingLabel } from '../../engine/items';
 import { FlowEditor } from './FlowEditor';
@@ -152,7 +152,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     }
     case 'transitionBack': return `Retour scène précédente`;
     case 'openWorldMap': return `Carte du monde (voyage)`;
-    case 'setVessel': return `Navire : ${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}${e.saboteurDR != null ? ` · sabotage ${e.saboteurDR} DR` : ''}`;
+    case 'setVessel': return `Navire : ${e.name?.trim() ? `« ${e.name.trim()} » (${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'})` : (e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?')}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}${e.saboteurDR != null ? ` · sabotage ${e.saboteurDR} DR` : ''}${e.crew?.length ? ` · équipage ${e.crew.reduce((s: number, h: { count: number }) => s + h.count, 0)}` : ''}`;
     case 'adjustManann': return e.factorId
       ? `Manann : facteur « ${findManannFactor(e.factorId)?.label ?? e.factorId} »`
       : `Manann : ${e.delta ? `${e.delta.sign < 0 ? '−' : '+'}${e.delta.flat}${e.delta.d10 ? `+${e.delta.d10}d10` : ''}` : '?'}`;
@@ -470,6 +470,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               <option value="">— navire de campagne —</option>
               {SHIP_VEHICLES.map((v) => <option key={v.id} value={v.id}>{v.label}</option>)}
             </select>
+            <input placeholder="Nom du navire (ex. « Le Cormoran » — vide = nom du type)" value={e.name ?? ''} onChange={(ev) => upd({ name: ev.target.value || undefined })} />
             <div className="tf-row">
               <label className="dr">Moral initial <input type="number" min={0} max={100} style={{ width: '3.6em' }} value={e.morale ?? 75} onChange={(ev) => upd({ morale: Math.max(0, Math.min(100, Number(ev.target.value) || 0)) })} /></label>
               <label className="dr">Coque max (vide = intacte) <input type="number" min={1} style={{ width: '3.6em' }} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>
@@ -478,6 +479,17 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               )}
               <label className="dr">Sabotage DR (vide = aucun, MDG 14 l.45-47) <input type="number" min={-5} max={0} style={{ width: '3.6em' }} value={e.saboteurDR ?? ''} onChange={(ev) => upd({ saboteurDR: ev.target.value === '' ? undefined : Math.max(-5, Math.min(0, Number(ev.target.value) || 0)) })} /></label>
             </div>
+            <div className="mini-title">Équipage salarié (barème MDG 14 — solde prélevée chaque semaine)</div>
+            {(e.crew ?? []).map((h: { roleId: string; count: number }, i: number) => (
+              <div className="tf-row" key={i}>
+                <select value={h.roleId} onChange={(ev) => upd({ crew: (e.crew ?? []).map((x: { roleId: string; count: number }, j: number) => (j === i ? { ...x, roleId: ev.target.value } : x)) })}>
+                  {crewRoles.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
+                </select>
+                <label className="dr">×<input type="number" min={1} style={{ width: '3.6em' }} value={h.count} onChange={(ev) => upd({ crew: (e.crew ?? []).map((x: { roleId: string; count: number }, j: number) => (j === i ? { ...x, count: Math.max(1, Number(ev.target.value) || 1) } : x)) })} /></label>
+                <button type="button" className="btn small" onClick={() => upd({ crew: (e.crew ?? []).filter((_: unknown, j: number) => j !== i) })}>Retirer</button>
+              </div>
+            ))}
+            <button type="button" className="btn small" onClick={() => upd({ crew: [...(e.crew ?? []), { roleId: crewRoles[0].id, count: 1 }] })}>+ poste salarié</button>
           </>
         )}
         {effect.type === 'adjustManann' && (

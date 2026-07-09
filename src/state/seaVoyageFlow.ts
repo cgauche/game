@@ -69,7 +69,7 @@ import {
   rollBoardEvent, rollPortEvent, rollDaysToNextEvent, applyManannFactor, addManann, MANANN_BASE,
   removeCargo, cargoTotalEnc, type SeaEventDef, type ManannMood, type PortProfile,
 } from '../engine/seaVoyage';
-import { navalMoveMod, shipHasNavalTrait } from '../engine/navalTraits';
+import { navalMoveMod, navalTestTypeDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
 import { subtract, toMoney, type Money } from '../engine/money';
 import { rollShipCritical } from '../engine/shipCritical';
@@ -165,6 +165,7 @@ function voyageShip(get: Get): { vessel: CampaignVessel; hull: Combatant } | nul
   if (!v?.ship) return null;
   const hull = vehicleCombatant(v);
   if (!hull) return null;
+  if (vessel.name) hull.name = vessel.name; // #230 — nom d'instance (affichage ; le rendu reste keyé par creatureId)
   // #30 : Blessures de coque persistantes — la coque de trajet REPART de l'état sauvegardé.
   if (vessel.wounds) hull.wounds = { ...hull.wounds, current: Math.min(vessel.wounds.current, hull.wounds.max) };
   hull.upgrades = vessel.upgrades ? [...vessel.upgrades] : undefined;
@@ -239,12 +240,16 @@ function openVoyageCrewTest(get: Get, set: Set, testTypeId: string, kind: string
     result: null,
   }));
   const saboteur = shipSaboteurDR(ship); // MDG ch.14 l.45-47 : −1..−5 DR plats, aussi en voyage (#214)
+  // #221 : Traits/Améliorations navals ciblant CE type de Test d'équipage (op `skillDRBonus` à `testType`,
+  // ex. Proue-idole de Stromfels → Poursuite) — agnostique de la compétence tenue par le représentant.
+  const traitDR = navalTestTypeDR(hullTraits(ship), testTypeId);
+  const extraDR = saboteur + traitDR;
   set({
     pendingCrewTest: {
       shipId: ship.id, testTypeId, participants, essentialRoleId,
       moraleScore: shipMoraleScore(get, ship),
       voyage: { kind, shipName: ship.name },
-      ...(saboteur ? { extraDR: saboteur } : {}),
+      ...(extraDR ? { extraDR } : {}),
     } satisfies PendingCrewTest,
   });
   return true;

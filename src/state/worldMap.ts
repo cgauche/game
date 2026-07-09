@@ -12,6 +12,8 @@
  */
 import type { Effect } from './scene';
 import type { TravelMode } from '../engine/travel';
+import type { PortProfile } from '../engine/seaVoyage';
+import { findNavalPortById } from '../data';
 
 /** Lieu posé sur la carte. Être dans `scene` = être à ce lieu ; y arriver → transition vers elle. */
 export interface MapPlace {
@@ -27,8 +29,12 @@ export interface MapPlace {
   icon?: string;
   /** Profil COMMERCIAL de port (Index des ports, MDG ch.15 l.439-506) — présent = ce lieu est un port
    *  maritime (commerce, événements d'escale, chantier). `lighthouse` : un phare veille sur l'approche
-   *  (Test de Perception d'équipage à l'atterrage, MDG ch.13 l.333-351). */
-  port?: import('../engine/seaVoyage').PortProfile & { lighthouse?: boolean };
+   *  (Test de Perception d'équipage à l'atterrage, MDG ch.13 l.333-351). `ref` (#217) : id de
+   *  `naval-ports.json` — les champs `PortProfile` ci-dessous sont alors des SURCHARGES locales
+   *  par-dessus le catalogue (sparse en authoring JSON, résolues/complétées au chargement du projet
+   *  par `resolvePortRef`, `parseProject`) ; le type reste NON-partiel car tout consommateur aval lit
+   *  `place.port` APRÈS résolution (jamais la forme sparse brute). */
+  port?: { ref?: string } & import('../engine/seaVoyage').PortProfile & { lighthouse?: boolean };
   /** Indices de COMMERCE TERRESTRE/FLUVIAL (Index géographique, T2C ch.11 l.183-278) — présent = ce Lieu
    *  offre des opportunités de commerce de cargaison (achat/vente/rumeurs). Taille + Richesse + colonne
    *  Produits, éditables par l'auteur (aucun index codé en dur). */
@@ -112,6 +118,35 @@ export interface WorldMap {
 
 export function emptyWorldMap(): WorldMap {
   return { id: `carte-${Date.now()}`, nom: 'Carte du monde', places: [], routes: [] };
+}
+
+/**
+ * Résout un `MapPlace.port` par RÉFÉRENCE (#217) : `ref` absent → inchangé. `ref` présent → les champs
+ * du catalogue `naval-ports.json` servent de DÉFAUTS, tout champ déjà présent sur `port` (surcharge
+ * locale d'auteur, authoring SPARSE toléré en entrée — `Partial<PortProfile>`) l'emporte. `ref` inconnu
+ * → erreur EXPLICITE (fail-fast, jamais un port silencieusement vide). Appelée par `parseProject`
+ * (chargement de projet, entrée déjà résolue/concrète ou sparse à plat) et par l'éditeur au moment où
+ * l'auteur choisit une réf au picker (`WorldMapEditor` — entrée sparse `{ ref, lighthouse }` : choisir
+ * une réf REMPLACE le profil par celui du catalogue, seul `lighthouse` — hors catalogue — est préservé).
+ */
+export function resolvePortRef(
+  port: ({ ref?: string } & Partial<PortProfile> & { lighthouse?: boolean }) | undefined,
+): MapPlace['port'] {
+  if (!port?.ref) return port as MapPlace['port'];
+  const def = findNavalPortById(port.ref);
+  if (!def) {
+    throw new Error(`Lieu-port : réf de port inconnue "${port.ref}" (absente de naval-ports.json).`);
+  }
+  return {
+    ref: port.ref,
+    taille: port.taille ?? def.taille,
+    richesse: port.richesse ?? def.richesse,
+    production: port.production ?? def.production ?? [],
+    surplus: port.surplus ?? def.surplus,
+    demande: port.demande ?? def.demande,
+    cosmopolite: port.cosmopolite ?? def.cosmopolite,
+    lighthouse: port.lighthouse,
+  };
 }
 
 /** Lieu correspondant à une scène (être dans la scène = être à ce lieu). */
@@ -238,5 +273,9 @@ export function parseProject(data: unknown): { scenes: Scene[]; worldMap?: World
       `{ schema: ${CURRENT_PROJECT_SCHEMA}, scenes: [...] }, et aucune migration n'est disponible vers ce format.`,
     );
   }
-  return { scenes: migrated.scenes as Scene[], worldMap: (migrated.worldMap as WorldMap) ?? undefined };
+  const worldMap = (migrated.worldMap as WorldMap) ?? undefined;
+  if (worldMap) {
+    worldMap.places = worldMap.places.map((p) => (p.port ? { ...p, port: resolvePortRef(p.port) } : p));
+  }
+  return { scenes: migrated.scenes as Scene[], worldMap };
 }

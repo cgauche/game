@@ -274,7 +274,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   // Traversée MARITIME (routes `sea`, MDG ch.13/15) : sur le navire de campagne — estimation en milles/jour.
   const vessel = useGame((s) => s.vessel);
   const vesselData = vessel ? findVehicleById(vessel.vehicleId) : undefined;
-  const vesselLabel = vesselData?.label ?? '';
+  const vesselLabel = vessel?.name ?? vesselData?.label ?? ''; // #230 — nom d'instance prioritaire
   const seaM = (vessel?.wounds == null || vessel.wounds.current > 0) ? (vesselData?.ship?.sail?.m ?? vesselData?.ship?.oars?.m ?? 0) : 0;
   // Forcer le rythme (MDG 13 l.95-107) : +1 M voile/avirons, +2 M avirons seulement — rien à la vapeur (ch.12 l.311).
   const seaRig: 'voile' | 'avirons' = vesselData?.ship?.sail ? 'voile' : 'avirons';

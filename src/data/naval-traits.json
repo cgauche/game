@@ -666,6 +666,20 @@
     "desc": "Pour une maniabilité maximale, un gouvernail auxiliaire appelé bouteur peut être ajouté à la proue du bateau. Cet ajout réduit la vitesse de Mouvement du bateau de –1, mais avec deux barreurs bien entraînés assignés à chaque gouvernail, tous les Tests de **Navigation** réalisés pour diriger le bateau reçoivent un bonus de +20."
   },
   {
+    "id": "proue-idole-de-stromfels",
+    "label": "Proue-idole de Stromfels",
+    "kind": "amelioration",
+    "passive": [
+      {
+        "op": "skillDRBonus",
+        "testType": "progression-poursuite",
+        "bonus": 1
+      }
+    ],
+    "maison": "Amélioration hors RAW (#221) : une idole du Dieu Requin sculptée à l'avant de la coque, dans l'esprit du culte de Stromfels (dieu des prédateurs et de la chasse en mer, MDG ch.11). Tant que la proue reste intacte, elle porte chance à l'équipage pour rattraper ou fuir une proie : +1 DR aux Tests d'équipage de Poursuite (à la Voile comme aux avirons). Sa destruction se modélise par le RETRAIT de ce Trait (la Proue-idole EST le trait).",
+    "desc": "Une idole du Dieu Requin, taillée dans le bois et peinte de rouge sombre, fixée à la proue du navire — symbole de chasse et de prédation en mer plutôt que de bonne fortune bénie par Manann. Tant qu'elle reste intacte à son poste, elle galvanise l'équipage lorsqu'il faut rattraper ou distancer une autre embarcation."
+  },
+  {
     "id": "murs-blindes",
     "label": "Murs blindés",
     "kind": "amelioration",

@@ -12,7 +12,7 @@ import { Formula, GameOp } from '../../engine/ops';
 import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
 import { CHAR_LABELS, CharKey } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
-import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel } from '../../data';
+import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel, findCrewTestTypeById } from '../../data';
 import { RefField } from '../compendium/RefField';
 import { slugId } from '../../data/slug';
 import { splitLabel } from '../../engine/statEntry';
@@ -399,7 +399,7 @@ export function opSummary(o: GameOp): string {
     case 'sbBonus': return `+${o.amount} BF aux Dégâts`;
     case 'charMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'skillMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} ${refLabel('skills', { id: o.skill })}`;
-    case 'skillDRBonus': return `+${formulaSummary(o.bonus)} DR ${refLabel('skills', { id: o.skill })}${o.spec ? ` (${o.spec})` : ''}`;
+    case 'skillDRBonus': return `+${formulaSummary(o.bonus)} DR ${o.skill ? refLabel('skills', { id: o.skill }) : (findCrewTestTypeById(o.testType ?? '')?.label ?? o.testType)}${o.spec ? ` (${o.spec})` : ''}`;
     case 'charDRBonus': return `+${formulaSummary(o.bonus)} DR ${CHAR_LABELS[o.char] ?? o.char}`;
     case 'crewTestMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} (Tests d’équipage)`;
     case 'moveMod': return `${o.mod >= 0 ? '+' : ''}${o.mod} Mouvement`;
