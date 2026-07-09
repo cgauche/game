@@ -266,3 +266,88 @@ commandée — spec = les maquettes de `2026-07-08-211-naval-ecrans.md`).
 5. Statuer avec l'utilisateur : la campagne loup-et-saumure reste-t-elle comme scénario de
    référence commité (à committer alors : scripts/ + src/scenes/loup-et-saumure/ + les 5 docs de
    plans) ou artefact de passe jetable ?
+
+## 6bis. TRAITEMENT — vague 2 (données) : SOLDÉE le 2026-07-09 (~19h45)
+
+#216/#217/#220/#221/#230 FERMÉS sur preuves (récap posté sur #211). Commits : `9828b080` (5 lots),
+`185f006b` (étalon recâblé : Le Grimm, roster, ports par ref, maraudeurs, Proue-idole posée,
+avitailleur au quai, excuses purgées), `582dae8c` (5 ports recalés au PDF — la table markdown est
+INARBITRABLE, ma propre lecture Salzenmund était fausse, le PDF contre-vérifié à l'œil fait foi),
+`90bf3b5c` (species→ids : 33 sites, résolveur fail-fast lib.mjs, garde de classe, règle humain
+explicite — directive utilisateur), `cc6dc85f` (follow-ups recette : journal de nuit ×3 → un seul
+écrivain ; builtinCampaigns → l'étalon ENFIN au menu ; __wfrp.screen valide + doc). Gate à chaque
+cran (typecheck, 9250 tests, docs:check). Recette joueur : 5 verdicts d'écran, méta-rapport riche
+(l'entrée de campagne était un hack obligé — corrigé).
+
+- **#216 salaires** : `crew-roles.json` porte `wage` (2 colonnes RAW verbatim MDG 14 p.126,
+  2 mappings source purs + 7 maison argumentés) ; `CampaignVessel.crew`/`wagesOwed` ;
+  `setVessel.crew` + éditeur ; paie hebdo dans `tickCampaignVesselWeek` (shipCrew.ts, appelé du
+  site upkeep existant) → facteurs `paie-reguliere`/`pas-de-paie` ENFIN peuplés (le recalc
+  tournait à vide) ; dossier navire PortView affiche solde due + dette. Note DoD : l'épilogue
+  générique N'EXISTE PAS (vérifié) — la « solde d'épilogue » = dette visible au dossier navire.
+- **#217 ports** : `naval-ports.json` 39 ports (20 régionaux folio 138 + 19 internationaux 139),
+  zéro terme marchandise non mappé (tout résout `sea-cargo.json`) ; `MapPlace.port.ref` sparse
+  résolu par `resolvePortRef` dans `parseProject` ; picker éditeur (bug DEFAULT_PORT-écrase-
+  catalogue trouvé à la relecture et CORRIGÉ + verrou 21e test). OCR douteux transcrit verbatim :
+  « Forteresse sarle » (autel-de-la-moisson-ecarlate) — à vérifier au PDF un jour.
+- **#220 avitailleur** : def + registre + 3 tests ; curated = tonneau-d-eau-douce, 3 rations de
+  mer, pièces détachées, boulet/mitraille (le filtre catégorie s'applique AVANT curated → union de
+  3 subTypes obligatoire, documentée). Poison de classe corrigé dans le geste : les 5 defs
+  marchands portaient la paraphrase avec RÉF FAUSSE `LDB 60 l.22` → réf nue `LDB 59 l.54`
+  (vérifiée au Source, section Vente).
+- **#221 Proue-idole** : GameOp GÉNÉRAL `skillDRBonus` étendu (`skill?` + `testType?`),
+  `navalTestTypeDR` câblé aux 3 sites qui connaissent leur type (shipManeuver 'manoeuvre',
+  openVoyageCrewTest, openCrewTestPending combat) ; trait `proue-idole-de-stromfels` [maison]
+  ciblé `progression-poursuite` ; 26 tests dont non-régression paramétrée sur le catalogue.
+- **#230 nom d'instance** : `CampaignVessel.name` + `setVessel.name` + éditeur ; propagé à
+  voyageShip/riverHull/réconciliation combat (PV conditionnels préservés) ; WorldMapView/PortView ;
+  verrou pickBackend « renommée route toujours par creatureId ».
+
+**RESTE pour clore la vague** (ordre) : (1) relancer le codeur campagne (KILLÉ avant toute
+édition — fichiers campagne vierges) : ports par ref, nom « le Grimm » + re-harmonisation
+dialogues, roster salarié, norse→maraudeur-du-chaos, Proue-idole sur le Serpent-de-Sel
+(upgrades d'instance — étendre hull() de lib.mjs génériquement si besoin), avitailleur au quai,
+purge des 3 commentaires-excuses de generate.mjs (l.279-281→réf nue #215 ; l.408-410 et l.413
+supprimés car exprimés), régénération + tests projet ; (2) gate garant : suite COMPLÈTE +
+typecheck sortie complète + docs:check ; (3) commits par chemins explicites (5 lots + campagne —
+l'arbre ne porte QUE cette vague, vérifié) ; (4) recette navigateur étalon (paie hebdo visible au
+journal, avitailleur vend, Grimm nommé partout, ports RAW au dossier) ; (5) fermer les 5 issues
+avec hash + preuve ; mettre à jour §6bis + mémoire.
+
+### Décisions utilisateur du 2026-07-09 (fil de traitement vague 2)
+
+- **« Plus jamais de labels au lieu d'ids »** (déclencheur : `appearance.species: 'Humains (Reiklander)'`
+  dans les scènes) : le vocabulaire d'apparence devient ids stables (species.json ∪ defs rig), résolveur
+  fail-fast dans lib.mjs, GARDE de classe sur tous les documents de scène, 33 sites migrés. Constat
+  aggravant établi : même les HÉROS (rigSpeciesId = slug de label) et le repli codé 'humain' ne
+  résolvent dans aucun registre exact — tout vivait du matching tolérant/défaut de speciesRace.json
+  (aucune règle « humain » n'y existait). Chantier lancé dans la vague.
+- **« La carte du combat naval rentre dans l'attendu contre la réalité »** : le résidu de #224 n'est
+  pas qu'une échelle de sprite — la VAGUE 4 confronte la carte d'abordage entière à l'attendu B :
+  ponts accolés JOUABLES (B.9), postes visibles/tenables sur le plan de pont, échelle à la toise
+  (Loup impérial 55 m vs cogue), lisibilité ruban/bordées. Premier indice recette : aucune affordance
+  d'inspection de la coque ENNEMIE (PosteSheet ne s'ouvre que via le bandeau allié) — la Proue-idole
+  est invisible au joueur.
+- **« Ton recetteur est un hacker »** : discipline resserrée — tout hack de recette est déclaré
+  [HACK] + consigné comme MANQUE D'AFFORDANCE joueur. La recette vague 2 en a produit 3 majeurs :
+  pas de point d'entrée joueur pour la campagne (fix en cours), pas d'inspection de coque ennemie,
+  __wfrp.screen silencieux sur id invalide (doc mensongère, fix en cours).
+
+### Dossier vague 4 — « carte du combat naval vs attendu B » (observations utilisateur du 2026-07-09, sur screenshot d'un scénario de test naval)
+
+- RECTIFICATIF : la MER est bien présente dans l'étalon (seaRows) — le plancher-parquet continu était
+  propre au scénario de test regardé. La classe de défauts, elle, tient partout :
+- **Échelle inversée** : les personnages sont plus hauts que les navires entiers ; à la toise (2 m/case)
+  une cogue de 16-20 m devrait faire 8-10 cases et dominer un homme.
+- **Le navire est un prop, pas une plateforme** : l'équipage se tient À CÔTÉ de la coque ; aucun pont
+  jouable, aucun poste tenable SUR le plan de pont (attendu B.4/B.7).
+- **Personne n'est assigné à une arme ni à un rôle, et AUCUN moyen de le faire en combat** (observation
+  utilisateur) : les organes existent en donnée (ShipPoste, crew-roles) mais le combat n'offre pas le
+  geste d'assignation/prise de poste — leçon du bélier #210 (« poste naval habillé ») étendue au pont entier.
+- **Aucune inspection de la coque ennemie** (recette v2) : PosteSheet ne s'ouvre que via le bandeau
+  allié ; traits/Proue-idole/postes adverses invisibles.
+- **Portrait de coque illisible** : vignette quasi vide avec voile microscopique.
+- Pièce : screenshot utilisateur (conversation du 2026-07-09) + `verdict-224-navires.png` (vague 1).
+  Le traitement = confrontation dédiée en OUVERTURE de vague 4, grille B.1-B.10, attendu re-formulé
+  par l'utilisateur en ouverture de session (méthode #211). L'action GitHub sur #224 est EN ATTENTE
+  d'un accord utilisateur explicite (une requalification a été refusée le 2026-07-09).
