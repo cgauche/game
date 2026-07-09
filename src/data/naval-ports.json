@@ -35,13 +35,13 @@
       "vin"
     ],
     "surplus": {
+      "pieces-detachees-de-navire": 1
+    },
+    "demande": {
       "armes": 1,
       "bois": 1,
       "metaux": 1,
       "produits-de-luxe": 1
-    },
-    "demande": {
-      "pieces-detachees-de-navire": 1
     },
     "cosmopolite": true,
     "dirigeant": "Le Directorat",
@@ -199,13 +199,13 @@
       "produits-de-luxe"
     ],
     "surplus": {
+      "poisson-sale": 1
+    },
+    "demande": {
       "armes": 2,
       "bois": 1,
       "metaux": 1,
       "pieces-detachees-de-navire": 1
-    },
-    "demande": {
-      "poisson-sale": 1
     },
     "dirigeant": "Baron Ottmar von Neurath",
     "desc": "Port dans la baie de Drosselspule, secrètement développé comme base d'opérations pour l'exploration et la conquête de la Lustrie",
@@ -266,10 +266,10 @@
       "produits-de-luxe"
     ],
     "surplus": {
-      "laine": 1
+      "pieces-detachees-de-navire": 1
     },
     "demande": {
-      "pieces-detachees-de-navire": 1
+      "laine": 1
     },
     "dirigeant": "Alexandr Yevschenko",
     "source": {
@@ -321,10 +321,10 @@
     "region": "Côte des Skaelings",
     "taille": 2,
     "richesse": 2,
-    "demande": {
-      "armes": 1,
-      "produits-de-luxe": 1
-    },
+    "production": [
+      "armes",
+      "produits-de-luxe"
+    ],
     "dirigeant": "Öskra et Signe",
     "desc": "Respect envers le dieu du sang nécessaire pour faire du commerce ici",
     "source": {
@@ -396,9 +396,9 @@
     "region": "Côte des Bjornlings",
     "taille": 1,
     "richesse": 1,
-    "surplus": {
-      "produits-de-luxe": 1
-    },
+    "production": [
+      "produits-de-luxe"
+    ],
     "demande": {
       "armes": 1
     },

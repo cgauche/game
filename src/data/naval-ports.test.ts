@@ -34,16 +34,46 @@ describe('naval-ports.json — catalogue de l’Index des ports (#217)', () => {
     }
   });
 
-  it('Salzenmund : Taille 4, Richesse 4 (MDG 15 l.452, folio 138)', () => {
+  it('Salzenmund : Taille 4, Richesse 4, Surplus produits-de-luxe +1, Demande armes+céréales +1 (MDG 15 l.452, folio 138)', () => {
     const salzenmund = findNavalPortById('salzenmund')!;
     expect(salzenmund.taille).toBe(4);
     expect(salzenmund.richesse).toBe(4);
+    expect(salzenmund.surplus).toEqual({ 'produits-de-luxe': 1 });
+    expect(salzenmund.demande).toEqual({ armes: 1, cereales: 1 });
   });
 
-  it('Erengrad : Taille 4, Richesse 4 (MDG 15 l.461-462, folio 138)', () => {
+  it('Erengrad : Taille 4, Richesse 4, Surplus pièces-détachées-de-navire +1, Demande laine +1 (MDG 15 l.461-462, folio 138)', () => {
     const erengrad = findNavalPortById('erengrad')!;
     expect(erengrad.taille).toBe(4);
     expect(erengrad.richesse).toBe(4);
+    expect(erengrad.surplus).toEqual({ 'pieces-detachees-de-navire': 1 });
+    expect(erengrad.demande).toEqual({ laine: 1 });
+  });
+
+  it('Marienburg : Surplus pièces-détachées-de-navire +1, Demande armes/bois/métaux/produits-de-luxe +1 (MDG 15 l.439, folio 138)', () => {
+    const marienburg = findNavalPortById('marienburg')!;
+    expect(marienburg.surplus).toEqual({ 'pieces-detachees-de-navire': 1 });
+    expect(marienburg.demande).toEqual({ armes: 1, bois: 1, metaux: 1, 'produits-de-luxe': 1 });
+  });
+
+  it('Norden : Surplus poisson-salé +1, Demande armes +2/bois/métaux/pièces-détachées-de-navire +1 (MDG 15 l.456, folio 138)', () => {
+    const norden = findNavalPortById('norden')!;
+    expect(norden.surplus).toEqual({ 'poisson-sale': 1 });
+    expect(norden.demande).toEqual({ armes: 2, bois: 1, metaux: 1, 'pieces-detachees-de-navire': 1 });
+  });
+
+  it('Kirkjugarður Langskipa : production armes/produits-de-luxe, sans surplus ni demande (MDG 15 l.468-469, folio 138)', () => {
+    const kirkjugardur = findNavalPortById('kirkjugardur-langskipa')!;
+    expect(kirkjugardur.production).toEqual(['armes', 'produits-de-luxe']);
+    expect(kirkjugardur.surplus).toBeUndefined();
+    expect(kirkjugardur.demande).toBeUndefined();
+  });
+
+  it('Fjirgard : production produits-de-luxe, Demande armes +1, sans surplus (MDG 15 l.474, folio 138)', () => {
+    const fjirgard = findNavalPortById('fjirgard')!;
+    expect(fjirgard.production).toEqual(['produits-de-luxe']);
+    expect(fjirgard.surplus).toBeUndefined();
+    expect(fjirgard.demande).toEqual({ armes: 1 });
   });
 
   it('Marienburg et Lothern : cosmopolite (MDG 15 l.343-349) ; les autres ports commerce ordinaires ne le sont pas', () => {
