@@ -7,11 +7,10 @@
  * du canvas (couplés UI/gameIso) y restent. NE JAMAIS importer `../ui/` ni `../gameIso/` ici.
  */
 import { Scene, SceneEntity, Terrain, EncounterMember, layerTiles, WallSeg, WallSide, Roof } from './scene';
-import type { FireArc, ShipPoste } from '../engine/types';
+import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import type { Dir8 } from './dir8';
 import { EMPTY_FLOW } from './flow';
 import { nextEntityId } from './entityId';
-import { itemFromTrappingById } from '../engine/items';
 import { findTrappingById } from '../data';
 import { siegeEmplacementEntity } from './siegeEmplacement';
 
@@ -169,7 +168,7 @@ export function paintCrenellated(scene: Scene, p: Pt, structure: string | null, 
 
 /** Pose un EMPLACEMENT DE SIÈGE à p via le builder PARTAGÉ `siegeEmplacementEntity` (même source que les
  *  scénarios) : une SceneEntity-personnage portant `ref` (source de l'engin → la branche siège de
- *  `spawnEnemy` construit l'affût inerte) et un poste d'artillerie (`postes:[{ item, crewIds:[] }]`).
+ *  `spawnEnemy` construit l'affût inerte) et un poste d'artillerie (`postes:[{ trappingId, crewIds:[] }]`).
  *  AUCUN `appearance.species` : le rig d'engin est DÉRIVÉ de la `ref` au rendu (éditeur ↔ explo ↔ combat).
  *  Au combat, `applyShipPostes` sert la pièce au chef (`crewIds[0]`). Posable ⇔ l'engin a un art d'affût
  *  (`siegeRig`) ; sinon → null (pas d'entité fantôme). */
@@ -181,7 +180,7 @@ export function placeEmplacement(scene: Scene, trappingId: string, p: Pt, z = 0,
 }
 
 /** Patche le poste UNIQUE (postes[0]) de l'emplacement `entityId` (no-op si l'entité n'en porte pas). */
-function patchPoste0(scene: Scene, entityId: string, fn: (p: ShipPoste) => ShipPoste): Scene {
+function patchPoste0(scene: Scene, entityId: string, fn: (p: AuthoredShipPoste) => AuthoredShipPoste): Scene {
   return {
     ...scene,
     entities: scene.entities.map((e) => (e.id === entityId && e.postes?.length ? { ...e, postes: e.postes.map((p, i) => (i === 0 ? fn(p) : p)) } : e)),
@@ -204,18 +203,18 @@ export function setPosteSide(scene: Scene, entityId: string, side: FireArc | und
   });
 }
 
-/** Change l'engin du poste : nouvelle ItemInstance + libellé, ET restampe la `ref` sur l'entité — le rig
- *  d'affût étant DÉRIVÉ de la `ref`, le rendu suit l'engin servi sans `appearance.species`. Équipage
- *  conservé. No-op si l'engin est inconnu ou sans art d'affût (`siegeRig`). */
+/** Change l'engin du poste : nouvelle réf catalogue (`trappingId`) + libellé, ET restampe la `ref` sur
+ *  l'entité — le rig d'affût étant DÉRIVÉ de la `ref`, le rendu suit l'engin servi sans `appearance.species`.
+ *  La base est HYDRATÉE au spawn (#222 — plus d'`ItemInstance` matérialisée ici). Équipage conservé. No-op si
+ *  l'engin est inconnu ou sans art d'affût (`siegeRig`). */
 export function setPosteEngine(scene: Scene, entityId: string, trappingId: string): Scene {
   const t = findTrappingById(trappingId);
-  const item = itemFromTrappingById(trappingId);
-  if (!t?.siegeRig || !item) return scene;
+  if (!t?.siegeRig) return scene;
   return {
     ...scene,
     entities: scene.entities.map((e) =>
       e.id === entityId && e.postes?.length
-        ? { ...e, label: t.label, ref: trappingId, postes: e.postes.map((p, i) => (i === 0 ? { ...p, item } : p)) }
+        ? { ...e, label: t.label, ref: trappingId, postes: e.postes.map((p, i) => (i === 0 ? { ...p, trappingId, item: undefined } : p)) }
         : e),
   };
 }

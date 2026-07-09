@@ -1,7 +1,7 @@
 /**
  * Builder UNIQUE d'un EMPLACEMENT DE SIÈGE en `SceneEntity` — SOURCE DE VÉRITÉ PARTAGÉE par l'éditeur
  * (`placeEmplacement`) ET les scénarios (`siege-enceinte`). Un emplacement = une SceneEntity-personnage
- * qui PORTE un poste d'artillerie (`postes:[{ item, crewIds }]`) et dont l'apparence est ENTIÈREMENT
+ * qui PORTE un poste d'artillerie (`postes:[{ trappingId, crewIds }]`, base hydratée au spawn) et dont l'apparence est ENTIÈREMENT
  * DÉRIVÉE de sa `ref` (le trapping à art d'affût `siegeRig`) — JAMAIS d'`appearance.species` forcé :
  * `resolveRender` lit le rig d'engin depuis la ref (rendu IDENTIQUE éditeur ↔ exploration ↔ combat).
  * L'affût INERTE non-destructible (RAW-pur, AA p.122-123) vient de la branche siège de `spawnEnemy`
@@ -11,9 +11,8 @@
  */
 import type { SceneEntity } from './scene';
 import type { Dir8 } from './dir8';
-import type { FireArc, ShipPoste } from '../engine/types';
+import type { FireArc, AuthoredShipPoste } from '../engine/types';
 import { findTrappingById } from '../data';
-import { itemFromTrappingById } from '../engine/items';
 
 export interface SiegeEmplacementOpts {
   /** Étage de pose (chemin de ronde = 1). Sol (0/absent) = clé omise. */
@@ -39,9 +38,9 @@ export function siegeEmplacementEntity(
   opts: SiegeEmplacementOpts = {},
 ): SceneEntity | null {
   const t = findTrappingById(trappingId);
-  const item = itemFromTrappingById(trappingId);
-  if (!t?.siegeRig || !item) return null; // posable ⇔ a un art d'affût (`siegeRig`)
-  const poste: ShipPoste = { item, crewIds: opts.crewIds ?? [], ...(opts.side ? { side: opts.side } : {}) };
+  if (!t?.siegeRig) return null; // posable ⇔ a un art d'affût (`siegeRig`)
+  // #222 — réf catalogue AUTHORÉE (base hydratée au spawn), jamais une `ItemInstance` de base matérialisée.
+  const poste: AuthoredShipPoste = { trappingId, crewIds: opts.crewIds ?? [], ...(opts.side ? { side: opts.side } : {}) };
   const ent: SceneEntity = {
     id,
     kind: 'personnage', // seul kind enrôlable en rencontre → spawn en Combattant (affût servi)

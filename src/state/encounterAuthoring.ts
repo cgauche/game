@@ -13,7 +13,7 @@ import type { CustomStatblock, EncounterDef, EncounterMember, SceneEntity, Victo
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { Flow } from './flow';
 import type { OptionalEntry } from '../engine/statEntry';
-import type { ShipPoste, NavalTraitRef } from '../engine/types';
+import type { AuthoredShipPoste, NavalTraitRef } from '../engine/types';
 import type { SkillRef } from '../data';
 import type { Dir8 } from './dir8';
 import type { ThreatTier } from '../engine/advantagePool';
@@ -48,7 +48,7 @@ export interface AuthoredEnemy {
   crewIds?: string[];
   /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13). Chaque poste réfère son équipage par
    *  `crewIds` (ids déterministes `enemy-<idRencontre>-<index>`) ; `applyShipPostes` sert le poste au chef. */
-  postes?: ShipPoste[];
+  postes?: AuthoredShipPoste[];
   /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, réfs par id ex. `{ id: 'blindage-fer' }`) — posées
    *  sur le Combattant au spawn (Blindage → PA de coque, Lissage → M…). */
   upgrades?: NavalTraitRef[];

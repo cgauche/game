@@ -4,7 +4,7 @@
  * (`Combatant.weapons` / `armour`) sont DÉRIVÉES de l'équipement via
  * recomputeLoadout : équiper une hache ou une armure change donc le combat.
  */
-import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance, type ShipPoste } from './types';
+import { Combatant, ItemInstance, ItemKind, HitLocation, ArmourPoints, Weapon, WeaponLoadout, WeaponDamageSpec, QualityInstance, type ShipPoste, type AuthoredShipPoste } from './types';
 import { bonus, baseWithTraits } from './characteristics';
 import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
@@ -536,6 +536,40 @@ export function mannedPosteWeapon(c: Combatant, poste: ShipPoste): Weapon | unde
   return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
     range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
     skin: it.skin, form: it.form, shape: it.shape, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it) }, it.enchants ?? []);
+}
+
+/**
+ * HYDRATATION d'un poste AUTHORÉ (#222) — couture UNIQUE, appelée au spawn (`spawnEnemy`). Résout la base
+ * de la pièce depuis `trappingId` (`itemFromTrappingById`, la couture existante — JAMAIS une base copiée),
+ * puis re-pose l'état d'INSTANCE propre au poste (uid stable, enchants de dérogation, usure). MIGRATION
+ * transparente de l'ancienne forme : `trappingId` manquant se dérive de `item.trappingId` (l'arme copiée
+ * pré-#222) ; sa base copiée est JETÉE (re-résolue du catalogue). `trappingId` irrésoluble → throw explicite
+ * (fail-fast — une pièce fantôme est un défaut d'authoring, pas un silence).
+ */
+export function hydratePoste(a: AuthoredShipPoste): ShipPoste {
+  const trappingId = a.trappingId ?? a.item?.trappingId;
+  if (!trappingId) throw new Error(`[poste] réf catalogue absente (ni trappingId ni item.trappingId) : ${JSON.stringify(a)} (#222)`);
+  const base = itemFromTrappingById(trappingId);
+  if (!base) throw new Error(`[poste] trappingId inconnu « ${trappingId} » — pièce non hydratable (#222)`);
+  const enchants = a.enchants ?? a.item?.enchants;
+  const item: ItemInstance = {
+    ...base,
+    uid: a.uid ?? a.item?.uid ?? base.uid, // uid d'instance STABLE (liens hotbar/log)
+    ...(enchants?.length ? { enchants } : {}), // dérogation de CETTE pièce (hors base catalogue)
+    ...(a.item?.damageTaken != null ? { damageTaken: a.item.damageTaken } : {}), // usure runtime (LDB 62 l.178)
+    ...(a.item?.destroyed ? { destroyed: true } : {}),
+  };
+  const poste: ShipPoste = { item };
+  if (a.side) poste.side = a.side;
+  if (a.sabord) poste.sabord = a.sabord;
+  if (a.crewIds) poste.crewIds = a.crewIds;
+  if (a.loaded != null) poste.loaded = a.loaded;
+  if (a.reloadProgress != null) poste.reloadProgress = a.reloadProgress;
+  if (a.ammo) poste.ammo = a.ammo;
+  if (a.ammoUid) poste.ammoUid = a.ammoUid;
+  if (a.enchants?.length) poste.enchants = a.enchants;
+  if (a.anchor) poste.anchor = a.anchor;
+  return poste;
 }
 
 let loadoutCounter = 0;

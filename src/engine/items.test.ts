@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString } from './items';
+import { recomputeLoadout, totalEncumbrance, maxEncumbrance, itemFromTrappingById, weaponWithAmmo, compatibleAmmo, selectedAmmo, emptyArmour, damageArmour, weaponHands, activeLoadout, ensureDefaultLoadout, unarmedWeapon, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, loadoutLabel, isOffHandEligible, armourLayer, equipConflicts, isCapeItem, buildInventory, damageString, hydratePoste, mannedPosteWeapon } from './items';
 import { effectiveWeaponRange } from './weaponDamage';
 import { rangeBandName } from './combat';
 import { trappings, type TrappingRef } from '../data';
@@ -660,5 +660,49 @@ describe('Munitions & rechargement', () => {
     const arc = c.weapons.find((w) => w.name === 'Arc')!;
     expect(arc.reload).toBe(0);
     expect(arc.subType).toBe('arc'); // id de Groupe
+  });
+});
+
+// #222 — hydratation d'un poste d'artillerie : la base est RÉSOLUE du catalogue au spawn, l'état d'instance
+// préservé ; l'ancienne forme (item copié) est MIGRÉE ; une réf inconnue échoue franchement (fail-fast).
+describe('hydratePoste (#222) — réf catalogue → arme hydratée, migration de l’ancienne forme, fail-fast', () => {
+  const chef = { characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, weapons: [] } as unknown as Combatant;
+
+  it('forme NEUVE : `{ trappingId }` → item complet du catalogue, arme dérivée FONCTIONNELLE', () => {
+    const p = hydratePoste({ trappingId: 'canon-moyen', side: 'tribord', crewIds: ['g1'] });
+    expect(p.item.trappingId).toBe('canon-moyen');
+    const cat = itemFromTrappingById('canon-moyen')!;
+    expect(p.item.damage).toEqual(cat.damage); // base RÉSOLUE (jamais copiée en donnée)
+    expect(p.item.qualities.map((q) => q.id)).toEqual(cat.qualities.map((q) => q.id));
+    expect(p.side).toBe('tribord');
+    expect(p.crewIds).toEqual(['g1']);
+    const w = mannedPosteWeapon(chef, p)!; // tir/recharge : l'arme dérivée porte le canon complet
+    expect(w.type).toBe('ranged');
+    expect(w.mountSide).toBe('tribord');
+    expect(w.reload).toBeGreaterThan(0); // Recharge N (canon moyen)
+  });
+
+  it('uid : préservé s’il est authoré, sinon frais', () => {
+    expect(hydratePoste({ trappingId: 'pierrier', uid: 'itm-fixe-1' }).item.uid).toBe('itm-fixe-1');
+    expect(hydratePoste({ trappingId: 'pierrier' }).item.uid).toBeTruthy();
+  });
+
+  it('MIGRATION de l’ancienne forme : `{ item }` complet → base re-résolue, uid conservé, base copiée jetée', () => {
+    const old = itemFromTrappingById('canon-moyen')!;
+    old.uid = 'itm-legacy-9';
+    (old.damage as { flat: number }).flat = 999; // base copiée PÉRIMÉE (dérive du catalogue)
+    const p = hydratePoste({ item: old, side: 'babord' });
+    expect(p.item.trappingId).toBe('canon-moyen');
+    expect(p.item.uid).toBe('itm-legacy-9'); // état d'instance préservé
+    expect(p.item.damage).toEqual(itemFromTrappingById('canon-moyen')!.damage); // base FRAÎCHE (la copie périmée est jetée)
+    expect(p.side).toBe('babord');
+  });
+
+  it('fail-fast : `trappingId` inconnu → throw explicite', () => {
+    expect(() => hydratePoste({ trappingId: 'engin-inexistant-222' })).toThrow(/trappingId inconnu/);
+  });
+
+  it('fail-fast : ni `trappingId` ni `item.trappingId` → throw explicite', () => {
+    expect(() => hydratePoste({ crewIds: ['g1'] })).toThrow(/réf catalogue absente/);
   });
 });

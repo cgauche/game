@@ -7,7 +7,7 @@
  * Aucune scène n'est codée « en dur » : la campagne est de la donnée.
  */
 import { CharKey, Difficulty } from '../engine/types';
-import type { ShipPoste, NavalTraitRef } from '../engine/types';
+import type { AuthoredShipPoste, NavalTraitRef } from '../engine/types';
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import type { Flow, Condition, EffectOp } from './flow';
 import { type DayPhaseKey } from '../engine/clock';
@@ -75,9 +75,10 @@ export interface SceneEntity {
   statblock?: CustomStatblock;
   /** Coque/navire : `id`s des entités d'ÉQUIPAGE exposées à bord (MDG ch.14) — posés sur le Combattant au spawn. */
   crewIds?: string[];
-  /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13) — posées sur le Combattant-coque au
-   *  spawn, puis `applyShipPostes` sert chaque poste à son chef de pièce. */
-  postes?: ShipPoste[];
+  /** Coque/navire : pièces d'artillerie MONTÉES (postes AUTHORÉS par réf catalogue, MDG ch.12-13) —
+   *  HYDRATÉES au spawn (`hydratePoste`) sur le Combattant-coque, puis `applyShipPostes` sert chaque poste
+   *  à son chef de pièce. La base n'est PAS matérialisée dans la scène (#222). */
+  postes?: AuthoredShipPoste[];
   /** Coque/navire : **Améliorations d'INSTANCE** (MDG ch.12, réfs par id ex. `{ id: 'blindage-fer' }`) —
    *  s'ajoutent aux Traits du TYPE et modifient ce navire-ci (PA de coque, M, couvert…). Posées au spawn. */
   upgrades?: NavalTraitRef[];

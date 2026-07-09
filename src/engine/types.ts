@@ -862,14 +862,23 @@ export interface ItemInstance {
   mountInjury?: import('./mountTravel').MountInjury;
 }
 
-/** Une pièce d'artillerie MONTÉE sur un navire (poste) — DONNÉE pure (item + côté + équipage). Authorée sur
- *  le Combattant-coque (`hull.postes`, source de vérité) ; au spawn, le chef de pièce (`crewIds[0]`) la SERT
- *  via `Combatant.mannedPoste`. L'arme est une `ItemInstance` complète (base + qualités/enchants) → gère
- *  catalogue, custom Codex et armes à atouts ajoutés. La LOGIQUE (arc, placement, support) vit en
- *  `state/shipPostes.ts` ; ce TYPE pur vit ici pour que `Combatant` le porte sans dépendance engine→state. */
-export interface ShipPoste {
-  /** L'arme montée (instance complète — base via `trappingId` + `qualities`/`enchants` propres). */
-  item: ItemInstance;
+/** Pièce d'artillerie MONTÉE — forme AUTHORÉE/STOCKÉE (donnée de scène, #222). La base (Dégâts/Qualités/Enc/
+ *  Portée…) n'est PLUS matérialisée : elle est HYDRATÉE au spawn depuis `trappingId` par `hydratePoste`
+ *  (`itemFromTrappingById`/`buildWeapon`, coutures UNIQUES). Ne persiste QUE la réf catalogue + l'état propre
+ *  au poste (uid, côté, équipage, recharge, munitions, dérogations). L'ancienne forme (`item` complet) est
+ *  MIGRÉE au spawn (`item?` toléré en entrée d'hydratation, extrait `item.trappingId`). */
+export interface AuthoredShipPoste {
+  /** Réf catalogue de la pièce (SOURCE de la base — hydratée en `item` au spawn). Requise en forme neuve ;
+   *  absente en forme ANCIENNE (dérivée de `item.trappingId` à la migration). */
+  trappingId?: string;
+  /** ANCIENNE forme (pré-#222) : l'arme copiée en entier. Jamais authorée en neuf ; MIGRÉE par `hydratePoste`
+   *  (extrait `trappingId`/`uid`/`enchants`/usure, jette la base copiée). Absente en forme neuve. */
+  item?: ItemInstance;
+  /** uid d'instance STABLE (liens hotbar/log/persistance) ; généré à l'hydratation si absent. */
+  uid?: string;
+  /** Dérogations d'INSTANCE : enchants ajoutés à CETTE pièce (magie/qualité hors catalogue), repliés sur
+   *  l'arme dérivée par `mannedPosteWeapon` (`applyEnchants`). Hors base catalogue → persistés à part. */
+  enchants?: WeaponEnchant[];
   /** Côté de montage relatif au cap → arc de tir (`inFireArc`). NAVAL : toujours authoré (bordée).
    *  EMPLACEMENT AU SOL (siège) : ABSENT = pivot libre (tir omni, aucune contrainte d'arc) ; présent =
    *  arc relatif à l'orientation-monde DU CHEF de pièce (pas d'une coque). */
@@ -897,6 +906,16 @@ export interface ShipPoste {
   /** Ancre spatiale optionnelle de la pièce dans l'espace de la scène (authorable). Absente → dérivée
    *  (emplacement au sol = pos de l'entité ; coque = empreinte décalée par l'arc). Index-only, aucun effet combat. */
   anchor?: { x: number; y: number; z?: number };
+}
+
+/** Pièce d'artillerie MONTÉE — forme VIVANTE (runtime, sur le Combattant-coque). Étend `AuthoredShipPoste`
+ *  avec l'arme HYDRATÉE (`item`, base résolue de `trappingId` au spawn par `hydratePoste`). Au spawn, le chef
+ *  de pièce (`crewIds[0]`) la SERT via `Combatant.mannedPoste`. La LOGIQUE (arc, placement, support) vit en
+ *  `state/shipPostes.ts` ; ce TYPE pur vit ici pour que `Combatant` le porte sans dépendance engine→state. */
+export interface ShipPoste extends Omit<AuthoredShipPoste, 'item'> {
+  /** L'arme HYDRATÉE (instance complète — base via `trappingId` + `qualities`/`enchants` propres). Jamais
+   *  persistée : re-résolue à chaque spawn depuis la réf, cf. `hydratePoste`. */
+  item: ItemInstance;
 }
 
 /** Emplacement de POSTE sur un gabarit de pont (`ShipDeck`) — un MOUNT POINT authoré (pos + arc), PAS une

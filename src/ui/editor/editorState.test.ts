@@ -247,7 +247,7 @@ describe('editorState — emplacement de siège (postes authorés à l’éditeu
     expect(ent.ref).toBe('baliste'); // SOURCE de l'engin → spawn construit l'affût inerte ET le rig est dérivé de la ref
     expect(ent.appearance).toBeUndefined(); // PLUS d'espèce forcée : le rig d'affût se dérive de `ref` (resolveRender)
     expect(ent.postes).toHaveLength(1);
-    expect(ent.postes![0].item.trappingId).toBe('baliste');
+    expect(ent.postes![0].trappingId).toBe('baliste'); // #222 — réf catalogue authorée (base hydratée au spawn), plus d'`item` matérialisé
     expect(ent.postes![0].crewIds).toEqual([]); // pas d'équipage tant que non assigné
     expect(ent.postes![0].side).toBeUndefined(); // par défaut tir omni
     expect(ent.statblock).toBeUndefined(); // affût INERTE : pas de profil à PV (RAW-pur), le rig + spawn s'en chargent
@@ -283,13 +283,14 @@ describe('editorState — emplacement de siège (postes authorés à l’éditeu
     expect('side' in s.entities[0].postes![0]).toBe(false); // retirée
   });
 
-  it('setPosteEngine : change l’engin (item + libellé + ref), apparence DÉRIVÉE de la ref, équipage conservé', () => {
+  it('setPosteEngine : change l’engin (trappingId + libellé + ref), apparence DÉRIVÉE de la ref, équipage conservé', () => {
     let s = placeEmplacement(emptyScene(10, 10), 'baliste', { x: 3, y: 3 })!.scene;
     const id = s.entities[0].id;
     s = setPosteCrew(s, id, ['g1']);
     s = setPosteEngine(s, id, 'mortier');
     const mortier = SIEGE_ENGINES.find((t) => t.id === 'mortier')!;
-    expect(s.entities[0].postes![0].item.trappingId).toBe('mortier');
+    expect(s.entities[0].postes![0].trappingId).toBe('mortier'); // #222 — la réf change, jamais une base copiée
+    expect(s.entities[0].postes![0].item).toBeUndefined(); // base HYDRATÉE au spawn, pas matérialisée à l'authoring
     expect(s.entities[0].label).toBe(mortier.label);
     expect(s.entities[0].ref).toBe('mortier'); // ref restampée → spawn construit le BON affût ET le rig suit la ref
     expect(s.entities[0].appearance).toBeUndefined(); // jamais d'`appearance.species` restampé : le rig dérive de `ref`

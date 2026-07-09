@@ -521,3 +521,51 @@ describe('refs de scène — ref/weapon/tenue résolvent au catalogue (#223)', (
     expect(bad, bad.join('\n')).toEqual([]);
   });
 });
+
+// ── GARDE DE CLASSE (#222) — anti-copie-périmée des POSTES d'artillerie. Un `ShipPoste` AUTHORÉ ne porte que
+// sa RÉF catalogue (`trappingId`) ; la base (Dégâts/Qualités/Enc/Portée) est HYDRATÉE au spawn (`hydratePoste`
+// → `itemFromTrappingById`), JAMAIS matérialisée dans la donnée de scène (qui dériverait du catalogue).
+//  - INVARIANT DUR (toutes scènes) : un poste NEUF (`trappingId` au niveau du poste) NE porte AUCUNE base
+//    copiée (`item`/`damage`/`qualities`/`enc`…) et sa réf RÉSOUT au catalogue.
+//  - REPORT (projets de campagne, précédent #223) : un poste en forme ANCIENNE (`item` complet copié) est une
+//    DETTE de pré-migration — HURLÉE en console (le passage campagne régénère) mais reste HYDRATABLE.
+describe('postes d’artillerie — réf catalogue hydratée, jamais une base copiée (#222)', () => {
+  const BASE_FIELDS = ['item', 'damage', 'qualities', 'enc', 'range', 'reach', 'pa'] as const;
+  const walkPostes = (node: unknown, where: string, visit: (poste: Record<string, unknown>, where: string) => void): void => {
+    if (Array.isArray(node)) { node.forEach((x, i) => walkPostes(x, `${where}[${i}]`, visit)); return; }
+    if (!isObj(node)) return;
+    if (Array.isArray(node.postes)) node.postes.forEach((p, i) => { if (isObj(p)) visit(p, `${where}.postes[${i}]`); });
+    for (const [k, v] of Object.entries(node)) walkPostes(v, `${where}.${k}`, visit);
+  };
+
+  it('INVARIANT DUR — tout poste NEUF (`trappingId`) résout au catalogue et NE matérialise aucune base', () => {
+    const bad: string[] = [];
+    const hard = (p: Record<string, unknown>, where: string): void => {
+      if (typeof p.trappingId !== 'string') return; // forme ancienne (item) → report ci-dessous
+      if (!findTrappingById(p.trappingId)) bad.push(`${where} : trappingId « ${p.trappingId} » inconnu du catalogue`);
+      for (const f of BASE_FIELDS) if (f in p) bad.push(`${where} : « ${f} » copié alors qu'hydratable de « ${p.trappingId} » (base interdite en donnée, #222)`);
+    };
+    walkPostes(areneProject, 'arene-projet.json', hard);
+    walkPostes(loupProject, 'loup-et-saumure-projet.json', hard);
+    for (const s of SCENARIOS) {
+      walkPostes(s.scene, `${s.id}.scene`, hard);
+      if (s.extraScenes) walkPostes(s.extraScenes, `${s.id}.extraScenes`, hard);
+      walkPostes(s.makeParty(), `${s.id}.party`, hard);
+    }
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
+  it('REPORT #223 — postes en forme ANCIENNE (item copié) des projets : dette hurlée, réf HYDRATABLE au spawn', () => {
+    const stale: string[] = [];
+    walkPostes(areneProject, 'arene-projet.json', (p, where) => { if (typeof p.trappingId !== 'string' && isObj(p.item)) stale.push(where); });
+    walkPostes(loupProject, 'loup-et-saumure-projet.json', (p, where) => { if (typeof p.trappingId !== 'string' && isObj(p.item)) stale.push(where); });
+    for (const v of stale) console.warn(`[garde #222] ${v} : base copiée (item complet) — migrée par hydratePoste au spawn`);
+    const check = (p: Record<string, unknown>, where: string): void => {
+      if (typeof p.trappingId === 'string' || !isObj(p.item)) return;
+      const nested = (p.item as Record<string, unknown>).trappingId;
+      expect(typeof nested === 'string' && !!itemFromTrappingById(nested), `${where} : réf ancienne « ${String(nested)} » non hydratable`).toBe(true);
+    };
+    walkPostes(areneProject, 'arene-projet.json', check);
+    walkPostes(loupProject, 'loup-et-saumure-projet.json', check);
+  });
+});

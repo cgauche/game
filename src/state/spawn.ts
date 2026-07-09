@@ -2,7 +2,7 @@
  * Construction de Combattants depuis le bestiaire (réf.) ou un statblock
  * personnalisé d'une scène. Sert au combat tactique.
  */
-import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance, type ShipPoste, type NavalTraitRef } from '../engine/types';
+import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance, type AuthoredShipPoste, type NavalTraitRef } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
 import { isOptionalNote, type TraitInstance, type TraitList, type OptionalEntry, type OptionalSwap } from '../engine/statEntry';
 import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, findTrappingById, findTrappingByLabel, CreatureData, type SkillRef, type TalentRef } from '../data';
@@ -12,7 +12,7 @@ import { hullArmourBonus } from '../engine/navalTraits';
 import { requiredTerrains } from '../engine/ops';
 import { CustomStatblock, type Scene, heightAt, tileAt } from './scene';
 import type { EntityAppearance } from '../engine/authoringAppearance';
-import { emptyArmour, buildWeapon } from '../engine/items';
+import { emptyArmour, buildWeapon, hydratePoste } from '../engine/items';
 import { maxWounds, bonus } from '../engine/characteristics';
 import { parseSizeLabel, resizeBySteps, SIZE_ORDER, SizeCategory } from '../engine/size';
 import { parsePsychTraits } from '../engine/psychology';
@@ -167,8 +167,9 @@ export interface SpawnExtras {
   randomChars?: boolean;
   /** Coque/navire : `id`s des Combattants d'ÉQUIPAGE exposés (MDG ch.14) — posés sur le `Combatant`. */
   crewIds?: string[];
-  /** Coque/navire : pièces d'artillerie MONTÉES (postes, MDG ch.12-13) — posées sur le Combattant-coque. */
-  postes?: ShipPoste[];
+  /** Coque/navire : pièces d'artillerie MONTÉES (postes AUTHORÉS, MDG ch.12-13) — HYDRATÉES (`hydratePoste`)
+   *  et posées sur le Combattant-coque au spawn. Réf catalogue → base résolue, jamais une base copiée (#222). */
+  postes?: AuthoredShipPoste[];
   /** Coque/navire : Améliorations d'INSTANCE (MDG ch.12, réfs par id) — posées sur le Combattant ;
    *  Blindage est appliqué ici même (PA de coque). */
   upgrades?: NavalTraitRef[];
@@ -364,7 +365,7 @@ export function spawnEnemy(
     c = statblockToCombatant({ name: `RÉF ? « ${ref ?? ''} »`, char: { B: 10 } }, id, pos);
   }
   if (opts?.crewIds) c.crewIds = opts.crewIds;
-  if (opts?.postes) c.postes = opts.postes;
+  if (opts?.postes) c.postes = opts.postes.map(hydratePoste); // #222 — réf catalogue → base HYDRATÉE (couture unique)
   if (opts?.upgrades) c.upgrades = opts.upgrades;
   // Blindage (MDG ch.12 l.234/236) : PA de coque depuis les Traits du TYPE (`ship.traits`) + les Améliorations
   // d'INSTANCE (`upgrades`). Self-contained → posé ici (pas de post-pass type `applyShipPostes`). Consommé par
