@@ -7,8 +7,9 @@ import { describe, it, expect } from 'vitest';
 import {
   trappings, qualities, spells, creatures, classes, careers, careerLevels, species, gods, etats, maladies, weaponGroups,
   traits, stars, talents, maneuvers, skills, domains, crewRoles,
-  findSkillById, findTalentById, findTrappingById, findQualityById, findSpellById, findSeaShantyById,
+  findSkillById, findTalentById, findTrappingById, findTrappingByLabel, findQualityById, findSpellById, findSeaShantyById,
   findCareerById, findClassById, findSpeciesById, findConditionById, findDiseaseById, findWeaponGroupById, findSymptomById,
+  findCreatureById, findVehicleById,
   specLabel, refLabel, specEntryId, specEntryLabel, SPEC_SOURCES, type SpecsSource,
 } from './index';
 import { itemFromTrappingById } from '../engine/items';
@@ -23,6 +24,7 @@ import areneProject from '../scenes/arene/arene-projet.json';
 import loupProject from '../scenes/loup-et-saumure/loup-et-saumure-projet.json';
 import { SCENARIOS } from '../scenes/test-scenarios/_registry.generated';
 import { creatureSpeciesOptions } from '../gameIso/rig/creatures';
+import { wardrobeKeyResolves } from '../gameIso/rig/parts/career';
 import { CHAR_KEYS } from '../engine/types';
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x != null;
@@ -465,6 +467,56 @@ describe('appearance.species — id stable (species.json ∪ defs rig), jamais u
       collect(s.scene, `${s.id}.scene`, bad);
       if (s.extraScenes) collect(s.extraScenes, `${s.id}.extraScenes`, bad);
       collect(s.makeParty(), `${s.id}.party`, bad);
+    }
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+});
+
+// ── SWEEP DE RÉFÉRENCES DE SCÈNE (#223, même walk que la garde species) — chaque `SceneEntity` d'un
+// projet/scénario doit avoir des refs qui RÉSOLVENT au chargement, sinon repli silencieux/bruyant :
+//  - `personnage`.ref → créature ∪ véhicule (coque) ∪ engin de siège (trapping siegeRig), les 3 familles
+//    légitimes du spawn (`spawnEnemy`) ; `undefined` (statbloc/générique) toléré.
+//  - `weapon` (libellé d'authoring) → `findTrappingByLabel` (arme du catalogue).
+//  - `appearance.tenue` (garde-robe authorée) → carrière ∪ classe ∪ tenue (`wardrobeKeyResolves`).
+// `appearance.career` n'existe PAS au schéma `EntityAppearance` (champ mort, ignoré au rendu) : signalé
+// à part (report d'authoring, corrigé par le passage campagne) — pas de garde dure sur de la donnée hors
+// périmètre. Toute violation ci-dessus = `fichier/entité/valeur`.
+describe('refs de scène — ref/weapon/tenue résolvent au catalogue (#223)', () => {
+  const refResolves = (ref: string): boolean =>
+    !!findCreatureById(ref) || !!findVehicleById(ref)?.hull || !!findTrappingById(ref)?.siegeRig;
+  const ENTITY_KINDS = new Set(['heroStart', 'personnage', 'prop']);
+  function sweep(node: unknown, where: string, out: string[]): void {
+    if (Array.isArray(node)) { node.forEach((x, i) => sweep(x, `${where}[${i}]`, out)); return; }
+    if (!isObj(node)) return;
+    if (typeof node.kind === 'string' && ENTITY_KINDS.has(node.kind) && isObj(node.pos)) {
+      const who = `${where}(${node.id ?? node.label ?? node.kind})`;
+      if (node.kind === 'personnage' && typeof node.ref === 'string' && !refResolves(node.ref))
+        out.push(`${who}.ref = ${JSON.stringify(node.ref)} (ni créature ∪ véhicule ∪ engin de siège)`);
+      if (typeof node.weapon === 'string' && !findTrappingByLabel(node.weapon))
+        out.push(`${who}.weapon = ${JSON.stringify(node.weapon)} (hors catalogue d'armes)`);
+      const app = node.appearance;
+      if (isObj(app) && typeof app.tenue === 'string' && !wardrobeKeyResolves(app.tenue))
+        out.push(`${who}.appearance.tenue = ${JSON.stringify(app.tenue)} (ni carrière ∪ classe ∪ tenue)`);
+    }
+    for (const [k, v] of Object.entries(node)) sweep(v, `${where}.${k}`, out);
+  }
+
+  // Projets de campagne : SWEEP-et-REPORT (bruyant) — la donnée d'authoring de campagne est hors
+  // périmètre moteur (corrigée par le passage campagne). On la parcourt et on HURLE toute violation en
+  // console, sans garde dure (un projet en dette ne bloque pas le tronc ; la dette est visible + listée).
+  it('projets Arène + Loup-et-Saumure : ref/weapon/tenue swept, violations reportées en console', () => {
+    const bad: string[] = [];
+    sweep(areneProject, 'arene-projet.json', bad);
+    sweep(loupProject, 'loup-et-saumure-projet.json', bad);
+    for (const v of bad) console.warn(`[sweep #223] ${v}`);
+  });
+
+  it('scénarios de test (scene + extraScenes + party) : ref/weapon/tenue de chaque entité résolvent', () => {
+    const bad: string[] = [];
+    for (const s of SCENARIOS) {
+      sweep(s.scene, `${s.id}.scene`, bad);
+      if (s.extraScenes) sweep(s.extraScenes, `${s.id}.extraScenes`, bad);
+      sweep(s.makeParty(), `${s.id}.party`, bad);
     }
     expect(bad, bad.join('\n')).toEqual([]);
   });

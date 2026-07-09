@@ -22,6 +22,7 @@ import { findCreatureById } from '../../data';
 import type { EntityAppearance } from '../../engine/authoringAppearance';
 import { raceById } from './races';
 import { baseSpeciesOf } from './skeletons';
+import { humanSeedColors, humanSeedHairIndex } from './parts/humanVariety';
 
 export interface EnemyRigProfile {
   appearance: Appearance;
@@ -153,10 +154,17 @@ export function enemyRigProfile(c: Combatant): EnemyRigProfile | null {
   // yeux clés→art, sexe/carrure du seed si non forcés. Déterministe (seed dérivé de l'id, `id ===
   // SceneEntity.id`). Superposé aux défauts de race/record via `rigAppearance`.
   const ov = c.appearanceOverride;
-  const frozen = ov
+  let override: Partial<Appearance> | undefined = ov
     ? riggedAppearance(c.name, ov.seed ?? seed, { species: ov.species, monster: ov.monster, features: ov.features, colors: ov.colors, parts: ov.parts, sex: ov.sex, build: ov.build, eyes: ov.eyes })
     : undefined;
-  const appearance = rigAppearance(seed, bb, cd, frozen);
+  // Variété seedée des humains GÉNÉRIQUES (#223) : hors bestiaire (pas de creatureId) et sans
+  // couleurs/coiffure authorées → teintes/coiffure dérivées du seed (parité explo↔combat). Un
+  // record de bestiaire (creatureId) garde son apparence figée → goldens intacts.
+  if (!c.creatureId && baseSpeciesOf(bb.species) === 'Humain' && !override?.colors && !override?.parts) {
+    const vseed = ov?.seed ?? seed;
+    override = { ...(override ?? {}), colors: humanSeedColors(vseed), parts: { cheveux: humanSeedHairIndex(vseed) } };
+  }
+  const appearance = rigAppearance(seed, bb, cd, override);
   // Tenue DATA-DRIVEN : carrière du Combatant → record → défaut de la def (perso/race) → Nu (l'auteur l'habille).
   const tenue = bipedTenue(c.career, cd, bb.perso, bb.race);
 
@@ -185,7 +193,10 @@ export function entityRigProfile(
      *  affiche son équipement par défaut DÉRIVÉ du record (parité avec le spawn `creatureToCombatant`),
      *  même sans statbloc. Une entité d'AMBIANCE (non enrôlée, défaut `false`) reste mains libres, quitte
      *  à ce que son record porte un trait « Arme » (un villageois ne dégaine pas pour décorer la scène). */
-    enrolled?: boolean },
+    enrolled?: boolean;
+    /** Variété seedée d'un humain GÉNÉRIQUE (#223) — opt-in réservé au rendu de scène
+     *  (`entityRigProfileFor`) ; les goldens appellent SANS → apparence de repli figée. */
+    seededVariety?: boolean },
 ): EnemyRigProfile | null {
   const rec = findCreatureById(name);
   // Résolution d'espèce par la DONNÉE (espèce explicite de l'entité → espèce du record) — IDENTIQUE à
@@ -201,6 +212,12 @@ export function entityRigProfile(
     species: opts?.species, sex: opts?.sex, build: opts?.build, monster: opts?.monster,
     features: opts?.features, colors: opts?.colors, parts: opts?.parts, eyes: eyesArtFromKeys(opts?.eyes),
   };
+  // Variété seedée des humains GÉNÉRIQUES (#223, miroir exact d'`enemyRigProfile`) : opt-in de scène,
+  // hors record de bestiaire (`!rec`), sans couleurs/coiffure authorées → dérivées du seed stable.
+  if (opts?.seededVariety && r.kind === 'rig' && !rec && baseSpeciesOf(r.species) === 'Humain' && !override.colors && !override.parts) {
+    override.colors = humanSeedColors(seed);
+    override.parts = { cheveux: humanSeedHairIndex(seed) };
+  }
   // Équipement : MÊME dérivation qu'au combat (parité explo↔combat). Précédence des traits de combat :
   //   statbloc d'éditeur (`opts.traits`) → record créature SI ENRÔLÉE (`rec.traits`) → mains libres.
   // Le repli sur `rec.traits` est RÉSERVÉ aux entités enrôlées (combattantes) — c'est exactement la
@@ -235,5 +252,6 @@ export function entityRigProfileFor(ent: SceneEntity, enrolled?: boolean): Enemy
     features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors,
     parts: ent.appearance?.parts, sex: ent.appearance?.sex, build: ent.appearance?.build,
     eyes: ent.appearance?.eyes, traits: ent.statblock?.traits, armour: ent.statblock?.armour, enrolled,
+    seededVariety: true,
   });
 }

@@ -48,7 +48,7 @@ export function ChanceButtons({
         ? 'Bénédiction de Chance : relance gratuite du Test raté — sans dépenser de Chance'
         : 'Dépense un point de Chance pour relancer le jet'}
     >
-      {freeReroll ? <><Icon id="faith/prayer" size="sm" /> Relancer</> : <><Icon id="resource/fortune" size="sm" /> Relancer ×{fortune}</>}
+      {freeReroll ? <><Icon id="faith/prayer" size="sm" /> Relancer</> : <><Icon id="resource/fortune" size="sm" /> Relancer</>}
     </button>
   );
   return (

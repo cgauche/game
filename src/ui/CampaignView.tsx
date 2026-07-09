@@ -81,6 +81,7 @@ export function CampaignView() {
   const travelRecap = useGame((s) => s.travelRecap);
   const setScreen = useGame((s) => s.setScreen);
   const startScene = useGame((s) => s.startScene);
+  const partyWiped = useGame((s) => s.partyWiped);
   const party = useGame((s) => s.party);
   const zoom = useGame((s) => s.zoom);
   const setZoom = useGame((s) => s.setZoom);
@@ -306,6 +307,16 @@ export function CampaignView() {
               >
                 {useGame.getState().massBattle?.combatScene ? 'Poursuivre la bataille' : 'Reprendre'}
               </button>
+            </div>
+          </div>
+        )}
+        {/* Anéantissement HORS COMBAT (`checkPartyWiped`) : MÊME écran de défaite que le combat, hors
+            bataille (aucun `battle`) — le groupe entier est tombé (faim, exposition, damnation…). */}
+        {partyWiped && (
+          <div className="defeat-overlay">
+            <div className="battle-result defeat">
+              <h2>Le groupe a péri…</h2>
+              <button className="btn btn-primary" onClick={() => useGame.getState().dismissDefeat()}>Retour au menu</button>
             </div>
           </div>
         )}

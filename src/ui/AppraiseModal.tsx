@@ -62,6 +62,7 @@ export function AppraiseModalView({
 
   return (
     <RollShell
+      flowKey="appraise"
       variant="test"
       title={detect ? `Détecter l'aura — ${pa.itemName}` : `Évaluer — ${pa.itemName}`}
       /* QUI évalue → portrait dans la ligne de jet (plus de nom en clair) ; la cible/DR vit dans le cadre. */

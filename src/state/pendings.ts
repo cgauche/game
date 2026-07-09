@@ -7,7 +7,7 @@ import type { CharKey, Difficulty, HitLocation, Weapon, FireArc, Combatant } fro
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { Pt } from './path';
 import type { Dir8 } from './dir8';
-import type { Effect } from './scene';
+import type { Effect, Dialogue } from './scene';
 import type { Flow } from './flow';
 import type { GameOp, PairedSense } from '../engine/ops';
 import type { TestResult, OpposedResult } from '../engine/tests';
@@ -76,6 +76,10 @@ export interface PendingVictory {
   /** COOP (spec §4bis) : ✓ de chaque siège — l'écran est synchronisé, l'hôte ferme à l'unanimité. */
   readyBySeat?: Record<number, boolean>;
 }
+/** Avancée d'un dialogue une fois un Test suspendu résolu : transition vers un nœud (dialogue
+ *  conservé), ou clôture de la conversation. */
+export type DialogueTransition = { dialogue: Dialogue; nodeId: string; speakerId?: string } | 'close';
+
 /** Test de compétence interactif en attente d'acquittement par le joueur. */
 export interface PendingTest {
   actorId: string;
@@ -133,6 +137,10 @@ export interface PendingTest {
    *  (via `gainAdvantage`, qui respecte AUSSI le plafond général d'Avantage). Consomme l'Action, réussi
    *  ou non (« Chaque Round que vous passez à… »). Absent = Test ordinaire. */
   combatAdvantage?: { combatantId: string; cap: number };
+  /** Avancée de DIALOGUE différée : quand `chooseDialogue` lance un `choice.flow` qui SUSPEND sur ce
+   *  Test, l'avancée (`choice.next` → nœud, ou clôture) est portée ici et appliquée par `resolveTest`
+   *  APRÈS la branche + continuation — sinon le nœud suivant coexiste sous la modale de jet. */
+  dialogueNext?: DialogueTransition;
   /** Test initié en COMBAT (Cumuler l'Avantage…) : annulable pré-jet (« Annuler » referme la cascade ;
    *  l'Action n'est pas encore dépensée, rien à rembourser). Absent = test de dialogue/scène → NON
    *  annulable (la branche onSuccess/onFailure doit se résoudre). */

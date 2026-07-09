@@ -3,6 +3,7 @@ import { Modal } from './Modal';
 import { RollRow, type RollRowProps, DEFAULT_ROLL_LABEL } from './RollRow';
 import { useRollFrisson } from './useRollFrisson';
 import { Icon } from './Icon';
+import { FLOW_VERBS } from '../state/rollFlowSpecs';
 
 /**
  * RollShell — LA coquille UNIQUE des modales de jet différé (mono, opposé, ou N contributeurs).
@@ -41,6 +42,24 @@ export interface RollAction {
 
 const ACTION_CLASS = { primary: 'btn btn-primary', ghost: 'btn btn-ghost', resource: 'btn btn-resource' } as const;
 
+/** Commandes de barre NEUTRES (≠ verbes de cadence portés par les RANGÉES) présentes dans les
+ *  modales : abandon / validation / progression. Toute AUTRE clé d'action doit être un verbe DÉCLARÉ
+ *  du flux (`flowKey`) — sinon dérive (#211 : une action re-boulonnée hors du vocabulaire déclaré). */
+const NEUTRAL_ACTION_KEYS = new Set(['cancel', 'confirm', 'apply', 'rollAll', 'next', 'finish', 'all', 'ack', 'break']);
+
+/** DEV : verrouille la surface d'actions d'une modale de jet à son vocabulaire (verbes du flux +
+ *  neutres). Une clé hors-vocabulaire LÈVE — le choke-point relie la barre aux verbes DÉCLARÉS. */
+function assertActionVocabulary(flowKey: keyof typeof FLOW_VERBS, actions: RollAction[]): void {
+  const declared: readonly string[] = FLOW_VERBS[flowKey].verbs;
+  for (const a of actions) {
+    if (!NEUTRAL_ACTION_KEYS.has(a.key) && !declared.includes(a.key)) {
+      throw new Error(
+        `RollShell[${flowKey}] : action « ${a.key} » hors vocabulaire (verbes du flux : ${declared.join(', ')} ; neutres : ${[...NEUTRAL_ACTION_KEYS].join(', ')}).`,
+      );
+    }
+  }
+}
+
 export function RollShell({
   title,
   variant = 'roll',
@@ -60,6 +79,7 @@ export function RollShell({
   forcedExtra,
   actions,
   onCancel,
+  flowKey,
 }: {
   title: ReactNode;
   /** Famille de classes : 'roll' (rm-vs) / 'test' (test-actor). */
@@ -94,7 +114,11 @@ export function RollShell({
   actions: RollAction[];
   /** Échap = annuler (pré-jet, ou si autorisé). Absent → modale non annulable au clavier. */
   onCancel?: () => void;
+  /** Clé du flux de jet de la modale (`FLOW_VERBS`) : arme la garde de vocabulaire d'actions (DEV).
+   *  Absente = modale sans flux naturel (garde inerte). */
+  flowKey?: keyof typeof FLOW_VERBS;
 }) {
+  if (import.meta.env.DEV && flowKey) assertActionVocabulary(flowKey, actions);
   const subClass = variant === 'test' ? 'test-actor' : 'rm-vs';
   const single = rows.length === 1;
   // « Lancer » hissé dans la barre (cas MONO). On hisse quand EXACTEMENT UNE rangée est à lancer :

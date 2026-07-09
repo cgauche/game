@@ -129,10 +129,15 @@ export function shipUndercrew(get: Get, ship: Combatant, combatants: Combatant[]
   return undercrewPenalty(nominal, Math.max(0, exposed - lost));
 }
 
-/** SABOTAGE des Tests d'équipage d'une coque (MDG ch.14 l.45-47 : « de -1 à -5 DR sur le Test d'équipage »)
- *  — lit `Combatant.saboteurDR` (authoré par le scénario) CLAMPÉ à la fourchette RAW [-5, 0]. PUR. */
+/** MDG ch.14 l.45-47 : « de -1 à -5 DR sur le Test d'équipage ». PUR. */
+export function clampSaboteurDR(dr: number): number {
+  return Math.max(-5, Math.min(0, dr));
+}
+
+/** SABOTAGE des Tests d'équipage d'une coque — lit `Combatant.saboteurDR` (authoré par le scénario)
+ *  CLAMPÉ à la fourchette RAW [-5, 0]. PUR. */
 export function shipSaboteurDR(ship: Combatant): number {
-  return Math.max(-5, Math.min(0, ship.saboteurDR ?? 0));
+  return clampSaboteurDR(ship.saboteurDR ?? 0);
 }
 
 /** QUART de veille (MDG 09 l.40 : « Une seule chanson de marin peut être chantée lors de chaque quart ») —

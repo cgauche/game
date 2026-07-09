@@ -51,6 +51,7 @@ export function SteamSaveModal() {
 
   return (
     <RollShell
+      flowKey="steamSave"
       variant="test"
       title="Fuite de vapeur — Initiative"
       subtitle={<>panne de vapeur · MDG ch.12</>}

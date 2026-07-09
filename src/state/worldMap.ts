@@ -67,8 +67,10 @@ export interface MapRoute {
   perilDie?: number;
   /** Péripéties d'auteur (en PLUS de la table d10 RAW). */
   perils?: RoutePeril[];
-  /** Cible du « Attaqués ! » (péripétie 10) : scène d'embuscade + rencontre. Absent = narratif. */
-  ambush?: { scene: string; entry?: string; encounter: string };
+  /** Cible du « Attaqués ! » (péripétie 10) : scène d'embuscade + rencontre. Absent = narratif.
+   *  `at` (fraction 0-1, défaut 0.5) : en MER, ancrage DÉTERMINISTE de l'embuscade authorée — elle se
+   *  déclenche quand `kmDone` franchit `at × km`, une fois par traversée, indépendamment du RNG (#212). */
+  ambush?: { scene: string; entry?: string; encounter: string; at?: number };
   /** Relais d'auberges en bord de route (section Voyage : « Les auberges en bord de route sont
    *  souvent placées à la convenance des relais de diligences ») : la halte de NUIT propose
    *  l'auberge (chambres/repas payants, modale de Repos) en plus du campement. Absent = belle

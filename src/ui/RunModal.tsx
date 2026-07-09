@@ -61,6 +61,7 @@ export function RunModal() {
 
   return (
     <RollShell
+      flowKey="run"
       title={<><Icon id="melee/flee" size="sm" /> Course</>}
       subtitle={
         <>

@@ -67,6 +67,7 @@ export function useTrampleJetProps(): ComponentProps<typeof RollShell> | null {
   ];
 
   return {
+    flowKey: 'trample',
     title: <><Icon id="resource/movement" size="sm" /> Piétinement</>,
     subtitle: (
       <>

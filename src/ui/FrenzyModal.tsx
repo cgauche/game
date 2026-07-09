@@ -56,6 +56,7 @@ export function FrenzyModal() {
 
   return (
     <RollShell
+      flowKey="frenzy"
       title={<><Icon id="flag/frenzy" size="sm" /> Frénésie</>}
       subtitle={
         <>

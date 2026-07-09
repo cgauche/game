@@ -115,6 +115,7 @@ export function ActivityModal() {
 
   return (
     <RollShell
+      flowKey="activity"
       variant="test"
       title={pa.label}
       /* QUI fait l'Activité → portrait dans la ligne de jet ; la compétence vit dans le cadre. */

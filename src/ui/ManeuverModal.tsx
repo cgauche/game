@@ -77,6 +77,7 @@ export function ManeuverModal() {
 
   return (
     <RollShell
+      flowKey="maneuver"
       title={<><Icon id={MANEUVER_ICON[pm.kind]} /> {ATTACK_LABEL[pm.kind]}</>}
       subtitle={
         <>

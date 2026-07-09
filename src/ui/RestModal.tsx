@@ -21,6 +21,7 @@ const LODGING_META: Record<RestLodging, { icon: IconIdInput; label: string }> = 
   commune: { icon: 'rest/couch', label: 'Commune' },
   maison: { icon: 'rest/home', label: 'Chez soi' },
   dehors: { icon: 'rest/camp', label: 'Dehors' },
+  bord: { icon: 'travel/sail-ship', label: 'À bord' },
 };
 const FOOD_META: Record<RestFood, { icon: IconIdInput; label: string }> = {
   repas: { icon: 'rest/stew', label: 'Repas' },
@@ -61,7 +62,7 @@ export function RestModal() {
   const state = useGame();
   if (!p) return null;
 
-  const title = p.places.auberge ? <><Icon id="rest/bed" size="sm" /> Nuit à l’auberge</> : p.places.maison ? <><Icon id="time/night" size="sm" /> Nuit chez soi</> : <><Icon id="rest/camp" size="sm" /> Campement</>;
+  const title = p.places.auberge ? <><Icon id="rest/bed" size="sm" /> Nuit à l’auberge</> : p.places.maison ? <><Icon id="time/night" size="sm" /> Nuit chez soi</> : p.places.bord ? <><Icon id="travel/sail-ship" size="sm" /> Nuit à bord</> : <><Icon id="rest/camp" size="sm" /> Campement</>;
 
   // ── Phase BILAN : le temps écoulé + tous les jets de la nuit sur UN écran ──
   if (p.phase === 'bilan') {

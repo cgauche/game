@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
-import { restPlacesHere } from './restFlow';
+import { restPlacesHere, lodgingOptions } from './restFlow';
 import { seedBattleRng } from './battleRng';
 import { emptyScene } from './scene';
 import { toBrass } from '../engine/money';
@@ -154,6 +154,33 @@ describe('openRest / choix par héros', () => {
     const cas = useGame.getState().pendingCascade!;
     expect(cas.participants.some((s) => s.kind === 'exposure')).toBe(false); // tente → 0 Test difficile
     expect(cas.log.some((l) => /tente/i.test(l))).toBe(true); // « La tente est montée… »
+  });
+});
+
+describe('couchage À BORD (MDG) — le navire n’est pas un bivouac', () => {
+  it('en mer, `bord` est le SEUL couchage : « dehors » ne figure PAS dans l’offre', () => {
+    expect(lodgingOptions({ bord: true })).toEqual(['bord']);
+    // Sur la rivière (mouillage possible), `bord` s’ajoute au campement, la belle étoile reste offerte.
+    expect(lodgingOptions({ camp: true, bord: true })).toEqual(['bord', 'dehors']);
+  });
+
+  it('nuit à bord sous la tempête : ABRITÉ (aucune étape d’Exposition), la récupération a bien lieu', () => {
+    const sc = emptyScene(10, 10);
+    sc.weather = 'tempete'; // extrême à terre — mais on est à bord (hamacs, abrité)
+    useGame.setState({ scene: sc });
+    useGame.getState().openRest({ places: { bord: true } });
+    expect(useGame.getState().pendingRest!.perHero['h1'].lodging).toBe('bord'); // défaut = à bord
+    useGame.getState().restSleep();
+    const cas = useGame.getState().pendingCascade!;
+    expect(cas.participants.some((s) => s.kind === 'exposure' || s.kind === 'shelter')).toBe(false);
+    expect(cas.participants.every((s) => s.kind === 'recovery')).toBe(true); // récupération (Résistance +20) inchangée
+    walkCascade();
+    expect(useGame.getState().pendingCascade).toBeNull();
+  });
+
+  it('à terre SANS navire : offre inchangée (pas de couchage `bord`)', () => {
+    expect(lodgingOptions({ camp: true })).toEqual(['dehors']);
+    expect(lodgingOptions({ auberge: true })).toEqual(['privee', 'commune', 'dehors']);
   });
 });
 

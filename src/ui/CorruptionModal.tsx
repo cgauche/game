@@ -71,6 +71,7 @@ export function CorruptionModal() {
 
   return (
     <RollShell
+      flowKey="corruption"
       variant="test"
       title={seuil ? <><Icon id="nav/mutation" size="sm" /> Seuil de Corruption ({hero?.corruption ?? '?'} Points)</> : <><Icon id="nav/mutation" size="sm" /> Influence corruptrice ({EXPOSURE_LABELS[pc.level ?? 'mineure']})</>}
       subtitle={

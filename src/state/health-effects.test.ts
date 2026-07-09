@@ -245,6 +245,63 @@ describe('Effet setVessel (navire de campagne, MDG ch.13-15)', () => {
   });
 });
 
+describe('Effet adjustVessel (#233 — patch PARTIEL du navire de campagne, ≠ setVessel)', () => {
+  beforeEach(() => useGame.setState({ vessel: undefined, journal: [] }));
+
+  it('sans navire de campagne → no-op journalisé', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustVessel', morale: 40 }]);
+    expect(useGame.getState().vessel).toBeUndefined();
+    expect(useGame.getState().journal.some((l) => /navire/i.test(l))).toBe(true);
+  });
+
+  it('aucun champ fourni → no-op journalisé, navire intact', () => {
+    useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, saboteurDR: -2 } });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustVessel' }]);
+    expect(useGame.getState().vessel?.morale.score).toBe(75);
+    expect(useGame.getState().vessel?.saboteurDR).toBe(-2);
+  });
+
+  it('patch d\'un SEUL champ (saboteurDR) → Humeur de Manann/coque/Moral/nom/équipage INTACTS', () => {
+    useGame.setState({
+      vessel: {
+        vehicleId: 'cogue',
+        name: 'Le Cormoran',
+        morale: { score: 60, lastMoraleWeek: 2, factors: ['x'] },
+        wounds: { current: 10, max: 30 },
+        manann: { applied: ['benediction'], score: 5 } as never,
+        saboteurDR: -2,
+        crew: [{ roleId: 'timonier', count: 1 }],
+      },
+    });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustVessel', saboteurDR: 0 }]);
+    const v = useGame.getState().vessel!;
+    expect(v.saboteurDR).toBe(0);
+    expect(v.name).toBe('Le Cormoran');
+    expect(v.morale).toEqual({ score: 60, lastMoraleWeek: 2, factors: ['x'] });
+    expect(v.wounds).toEqual({ current: 10, max: 30 });
+    expect(v.manann).toEqual({ applied: ['benediction'], score: 5 });
+    expect(v.crew).toEqual([{ roleId: 'timonier', count: 1 }]);
+  });
+
+  it('saboteurDR hors [-5,0] → clampé (MDG 14 l.45-47)', () => {
+    useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } } });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustVessel', saboteurDR: -9 }]);
+    expect(useGame.getState().vessel?.saboteurDR).toBe(-5);
+  });
+
+  it('patch hullCurrent seul (coque déjà endommagée) → max préservé', () => {
+    useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, wounds: { current: 10, max: 30 } } });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustVessel', hullCurrent: 25 }]);
+    expect(useGame.getState().vessel?.wounds).toEqual({ current: 25, max: 30 });
+  });
+
+  it('patch morale seul → score changé, semaine/facteurs préservés', () => {
+    useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 3, factors: ['a'] } } });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustVessel', morale: 20 }]);
+    expect(useGame.getState().vessel?.morale).toEqual({ score: 20, lastMoraleWeek: 3, factors: ['a'] });
+  });
+});
+
 describe('Effet adjustManann (#213 — MDG ch.15 l.83-125)', () => {
   beforeEach(() => {
     useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } } });

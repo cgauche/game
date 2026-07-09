@@ -136,6 +136,7 @@ export function DisengageModal() {
 
     return (
       <RollShell
+        flowKey="disengage"
         title="Se désengager"
         extra={header}
         rows={rows}
@@ -181,6 +182,7 @@ export function DisengageModal() {
 
   return (
     <RollShell
+      flowKey="disengage"
       title="Se désengager"
       extra={header}
       rows={[foeRow, moverRow]}

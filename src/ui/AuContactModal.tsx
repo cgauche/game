@@ -84,6 +84,7 @@ export function AuContactModal() {
     // Le VAINQUEUR (héros) tranche : « Au contact » / « Combat normal ». Panneau résolu conservé.
     return (
       <RollShell
+        flowKey="auContact"
         title="Au contact"
         extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb={<Icon id="melee/close-in" size="sm" />} />}
         rows={[foeRow, actorRow]}
@@ -109,6 +110,7 @@ export function AuContactModal() {
 
   return (
     <RollShell
+      flowKey="auContact"
       title="Au contact"
       extra={<VsHeader actor={mover} target={foe} label="entrer dans la longueur d'arme" verb={<Icon id="melee/close-in" size="sm" />} />}
       rows={[foeRow, actorRow]}

@@ -10,6 +10,20 @@ import type { StoredPalette } from '../palette';
 const CAREER_CLASS_BY_ID: Record<string, string> = {};
 for (const row of careers) CAREER_CLASS_BY_ID[row.id] = row.class;
 
+// Vocabulaire de garde-robe RÉSOLVABLE (id stable, `slugId` absorbe le libellé authoré) : carrière
+// (careers.json) ∪ classe (CLASS_TENUE_BY_ID) ∪ tenue spécifique (TENUE_BY_ID, dont 'nu'). Hors de
+// cet ensemble = vocabulaire INCONNU (faute d'authoring) → repli citadins BRUYANT (#223).
+const KNOWN_WARDROBE_IDS = new Set<string>([
+  ...Object.keys(CAREER_CLASS_BY_ID),
+  ...Object.keys(CLASS_TENUE_BY_ID),
+  ...Object.keys(TENUE_BY_ID),
+]);
+/** Une clé de garde-robe (id ou libellé) résout-elle à une carrière/classe/tenue connue ? */
+export function wardrobeKeyResolves(key: string | undefined): boolean {
+  const id = slugId(key ?? '');
+  return id === '' || id === 'nu' || KNOWN_WARDROBE_IDS.has(id);
+}
+
 /** Classe (id) d'une CLÉ — id de carrière (héros) ou id de tenue/inconnu → défaut « citadins ».
  *  `slugId` absorbe un libellé authoré éventuel. */
 export function careerClass(key: string): string {
@@ -45,5 +59,9 @@ export function tenuePaletteFor(tenue: string | undefined): StoredPalette {
 export function tenueFor(tenue: string | undefined): TenueSet {
   const id = slugId(tenue ?? '');
   if (id === 'nu') return TENUE_NUE; // corps nu (monstres sans habit)
-  return TENUE_BY_ID[id] ?? tenueForClass(careerClass(tenue ?? ''));
+  const specific = TENUE_BY_ID[id];
+  if (specific) return specific;
+  if (!wardrobeKeyResolves(id))
+    console.warn(`[tenue] « ${tenue} » introuvable au catalogue (careers ∪ classes ∪ tenues) — repli citadins (#223)`);
+  return tenueForClass(careerClass(tenue ?? ''));
 }

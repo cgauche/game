@@ -157,8 +157,9 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
   set({ party: [...get().party], pendingSeaActivities: null });
   log(get, set, lines);
   const day: TravelRecapDay = { ...pending.day, lines: [...pending.day.lines, ...lines] };
-  // Halte de nuit (machinerie EXISTANTE) — le recap du jour, Activités comprises, s'y lit.
-  openRest(get, set, { places: placesOfKind('camp'), travelHalt: true, travelDay: day });
+  // Halte de nuit (machinerie EXISTANTE) — le recap du jour, Activités comprises, s'y lit. En mer, on
+  // dort à bord (hamacs, MDG 03 l.71) : couchage unique et abrité.
+  openRest(get, set, { places: get().vessel ? { bord: true } : placesOfKind('camp'), travelHalt: true, travelDay: day });
 }
 
 /** Catalogue 'mer' (source UNIQUE `activities.json`) — pour la modale. */

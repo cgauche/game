@@ -66,6 +66,7 @@ export function ReloadModalView({
 
   return (
     <RollShell
+      flowKey="reload"
       variant="test"
       title={`Recharger — ${weaponName}`}
       /* QUI recharge → portrait dans la ligne de jet ; Projectiles/cible vivent dans le cadre, le cumul dans le DrBar. */

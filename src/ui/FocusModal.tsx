@@ -61,6 +61,7 @@ export function FocusModal() {
 
   return (
     <RollShell
+      flowKey="focus"
       title={<><Icon id="flag/focus" size="sm" /> Focalisation</>}
       subtitle={
         <>

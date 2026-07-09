@@ -140,6 +140,7 @@ export function useAttackJetProps(): ComponentProps<typeof RollShell> | null {
   const rows = [attackerRow, ...(defenderRow ? [defenderRow] : [])];
 
   return {
+    flowKey: 'attack',
     title: 'Attaque',
     subtitle: null,
     extra: (

@@ -10,6 +10,8 @@ import { subtract, toBrass, fromBrass } from '../engine/money';
 import { itemFromTrappingById } from '../engine/items';
 import { bankWithdraw } from './interludeFlow';
 import { traumaById } from '../engine/trauma';
+import { buildEncounter } from './encounterAuthoring';
+import { emptyScene, type Scene } from './scene';
 import type { WorldMap } from './worldMap';
 import type { RNG } from '../engine/dice';
 import type { PendingCrewTest } from './pendings';
@@ -265,6 +267,98 @@ describe('progression — message « Encalminé »/« Voiles affalées » pilot�
     const journal = get().journal;
     expect(journal.some((l) => l.includes('affalées'))).toBe(true);
     expect(journal.some((l) => l.includes('Encalminé'))).toBe(false);
+  });
+});
+
+describe('Embuscade maritime AUTHORÉE à ancrage déterministe — #212', () => {
+  const abordageMap: WorldMap = {
+    id: 'm', nom: 'Mer des Griffes',
+    places: [
+      { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
+      { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
+    ],
+    routes: [{ id: 'r1', a: 'A', b: 'B', km: 550, modes: ['mer'], sea: true, seaHeading: 'est', ambush: { scene: 'ls-abordage', encounter: 'enc-abordage', at: 0.5 } }],
+  };
+
+  function portScene(id: string, nom: string): Scene {
+    const s = emptyScene(2, 2); s.id = id; s.nom = nom; return s;
+  }
+  function abordageScene(): Scene {
+    const s = emptyScene(10, 10); s.id = 'ls-abordage'; s.nom = 'Abordage';
+    const enc = buildEncounter({ id: 'enc-abordage', enemies: [{ statblock: { name: 'Écumeur', char: { CC: 30, F: 30, E: 30, I: 30, Ag: 30, B: 8 } }, pos: { x: 5, y: 5 } }] });
+    s.entities.push(...enc.entities); s.encounters = [enc.encounter];
+    return s;
+  }
+  function freshAmbush(worldMap: WorldMap = abordageMap) {
+    seedBattleRng(1); // RNG semé : le jour joué directement à l'étape 'embuscade' ne tire AUCUN événement de bord
+    useGame.setState({
+      party: makePregens().slice(0, 3), battle: null, travelPlan: null, travelRecap: null,
+      pendingCrewTest: null, pendingRest: null, gameTime: 8 * 60, lastUpkeepDay: 0,
+      vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } }, journal: [],
+    } as never);
+    useGame.getState().loadProject([portScene('port-a', 'Port A'), portScene('port-b', 'Port B'), abordageScene()], 'port-a', worldMap);
+    useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } } } as never); // startScene remet le vessel de campagne — repose-le
+  }
+
+  it('franchissement de l’ancrage (kmDone ≥ at × km) → Test d’équipage de Perception PUIS abordage, une seule fois', () => {
+    freshAmbush();
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', abordageMap.routes[0])!;
+    // Ancrage = 0.5 × 550 = 275 milles ; 270 (fait) + 20 (jour) = 290 → franchi.
+    set({ travelPlan: { ...plan, kmDone: 270, sea: { ...plan.sea!, step: 'embuscade', milesToday: 20 } } });
+    runSeaDays(get, set);
+    const p = get().pendingCrewTest;
+    expect(p?.voyage?.kind).toBe('embuscade'); // Test de Perception influençable (patron terrestre « Attaqués ! »)
+    for (const part of p!.participants) if (!part.result) get().crewTestRoll(part.id);
+    get().crewTestConfirm();
+    expect(get().travelPlan!.sea!.ambushFired).toBe(true);
+    expect(get().travelPlan!.interrupted).toBe(true);
+    expect(get().battle).toBeTruthy(); // abordage ouvert par la couture partagée
+    expect(get().scene!.id).toBe('ls-abordage');
+  });
+
+  it('poursuite RNG perdue → abordage ouvert par la MÊME couture ; le franchissement ultérieur ne le rejoue pas (anti-double-feu #212)', () => {
+    freshAmbush();
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', abordageMap.routes[0])!;
+    // Poursuite à Distance très négative → rattrapé quel que soit le jet (startChaseBoarding).
+    set({ travelPlan: { ...plan, kmDone: 100, sea: { ...plan.sea!, step: 'crise', crisis: { kind: 'poursuite', label: 'Écumeur', distance: -100, escapeAt: 100, foeM: 3, foeSkill: 30, desc: '' } } } });
+    const pending = { shipId: plan.vehicle!.id, testTypeId: 'progression-poursuite', participants: [], moraleScore: 75, voyage: { kind: 'poursuite', shipName: 'Cogue' } };
+    resolveVoyageCrewTest(get, set, pending as never, 0);
+    expect(get().travelPlan!.sea!.ambushFired).toBe(true);
+    expect(get().battle).toBeTruthy();
+    expect(get().scene!.id).toBe('ls-abordage');
+    // On rejoue jusqu’au franchissement de l’ancrage : l’embuscade NE se rouvre PAS (flag sur travelPlan.sea).
+    set({ battle: null, travelPlan: { ...get().travelPlan!, interrupted: false, kmDone: 270, sea: { ...get().travelPlan!.sea!, step: 'embuscade', milesToday: 20 } } });
+    runSeaDays(get, set);
+    expect(get().pendingCrewTest?.voyage?.kind).not.toBe('embuscade');
+    expect(get().battle).toBeNull();
+  });
+
+  it('route sans `at` → ancrage par défaut à mi-route (0.5 × km)', () => {
+    const midMap: WorldMap = { ...abordageMap, routes: [{ ...abordageMap.routes[0], ambush: { scene: 'ls-abordage', encounter: 'enc-abordage' } }] };
+    freshAmbush(midMap);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', midMap.routes[0])!;
+    // Juste AVANT la mi-route (275) : 260 + 10 = 270 → pas encore.
+    set({ travelPlan: { ...plan, kmDone: 260, sea: { ...plan.sea!, step: 'embuscade', milesToday: 10 } } });
+    runSeaDays(get, set);
+    expect(get().travelPlan?.sea?.ambushFired).toBeFalsy();
+    expect(get().pendingCrewTest?.voyage?.kind).not.toBe('embuscade');
+    // AU franchissement de la mi-route (274 + 2 = 276 ≥ 275) → embuscade.
+    freshAmbush(midMap);
+    const plan2 = buildSeaPlan(get, 'r1', 'A', 'B', midMap.routes[0])!;
+    set({ travelPlan: { ...plan2, kmDone: 274, sea: { ...plan2.sea!, step: 'embuscade', milesToday: 2 } } });
+    runSeaDays(get, set);
+    expect(get().pendingCrewTest?.voyage?.kind).toBe('embuscade');
+  });
+
+  it('route SANS embuscade authorée → le franchissement ne déclenche rien', () => {
+    const noAmbush: WorldMap = { ...abordageMap, routes: [{ ...abordageMap.routes[0], ambush: undefined }] };
+    freshAmbush(noAmbush);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', noAmbush.routes[0])!;
+    set({ travelPlan: { ...plan, kmDone: 270, sea: { ...plan.sea!, step: 'embuscade', milesToday: 20 } } });
+    runSeaDays(get, set);
+    expect(get().travelPlan?.sea?.ambushFired).toBeFalsy();
+    expect(get().pendingCrewTest?.voyage?.kind).not.toBe('embuscade');
+    expect(get().battle).toBeNull();
   });
 });
 

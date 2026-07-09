@@ -61,6 +61,7 @@ import { campGain } from './combat/advantagePool';
 import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
+import { checkPartyWiped } from './partyWipe';
 import { actorIn, touchActors } from './combatOrParty';
 import { FLOWS, buildRollFlowActions, type RollFlowActionsMap } from './rollFlowSpecs';
 import { gainCorruption, applyMutation } from './corruptionFlow';
@@ -76,7 +77,7 @@ import type {
   PendingAppraise, PendingAttack, PendingHandGate, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
-  PendingCastOpposition, PendingCascade, ScheduledEffect,
+  PendingCastOpposition, PendingCascade, ScheduledEffect, DialogueTransition,
 } from './pendings';
 import { openEncounterPsych } from './encounterPsychFlow';
 import { subtract as moneySub, canAfford, toMoney } from '../engine/money';
@@ -221,6 +222,8 @@ export interface GameState extends RollFlowActionsMap {
   party: Combatant[];
   scene: Scene | null;
   mode: 'exploration' | 'battle';
+  /** Groupe anéanti HORS COMBAT (invariant `checkPartyWiped`) → écran de défaite (CampaignView). */
+  partyWiped: boolean;
   camRot: 0 | 1 | 2 | 3; // orientation caméra (cran de 90° horaire) — état de vue, non sérialisé
   camEdge: boolean; // cran impair : vue « de face » (edge-on, grille axis-alignée 3D) ; alterne avec le coin (losange) par ¼ de tour
   rotateCam: (dir: 1 | -1) => void;
@@ -1201,6 +1204,17 @@ export interface CampaignVessel {
   wagesOwed?: number;
 }
 
+/** Applique une avancée de dialogue (transition vers un nœud, ou clôture) — point UNIQUE partagé par
+ *  `chooseDialogue` (cas sans Test) et `resolveTest` (reprise après un Test suspendu par `choice.flow`). */
+function applyDialogueTransition(get: () => GameState, set: (s: Partial<GameState>) => void, tr: DialogueTransition): void {
+  if (tr === 'close') {
+    if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture (no-op si un Effect a déjà fermé)
+    set({ dialogue: null });
+    return;
+  }
+  set({ dialogue: tr });
+}
+
 export const useGame = create<GameState>((set, get) => ({
   // Actions de combat inline — extraites dans `combatSlice.ts`, spreadées EN TÊTE (mêmes `get`/`set`).
   // Surface IDENTIQUE : cette tranche ne porte que des ACTIONS ; l'état reste assemblé plus bas (forme à plat).
@@ -1222,6 +1236,7 @@ export const useGame = create<GameState>((set, get) => ({
   party: [],
   scene: null,
   mode: 'exploration',
+  partyWiped: false,
   camRot: 0,
   camEdge: false, // défaut = vue de COIN (losange, la plus lisible) ; la rotation 8 crans alterne coin ↔ face par 45°
   // 8 crans (45°) : +1 fait coin→face (même rot) puis face→coin (rot+1) ; -1 l'inverse.
@@ -1686,16 +1701,20 @@ export const useGame = create<GameState>((set, get) => ({
       if (!canAfford(get().money, cost)) { get().log('Pas assez d’argent pour cette option.'); return; }
       set((s) => ({ money: moneySub(s.money, cost)! }));
     }
+    const transition: DialogueTransition = choice.next
+      ? { dialogue: st.dialogue.dialogue, nodeId: choice.next, speakerId: st.dialogue.speakerId }
+      : 'close';
     // Logique du choix (effets + branches) → runFlow ; objet/argent reçu = fenêtre d'attribution (titrée du donateur).
     if (choice.flow) {
       const speaker = st.scene?.entities.find((e) => e.id === st.dialogue?.speakerId)?.label;
+      const suspended = get().pendingTest;
       runFlow(get, set, choice.flow, speaker ?? 'Butin');
+      // Le Flow a SUSPENDU sur un Test (`openSkillTest`) : l'avancée du dialogue est portée par le
+      // pending et appliquée par `resolveTest` — sinon le nœud suivant coexiste sous la modale de jet.
+      const pt = get().pendingTest;
+      if (pt && pt !== suspended) { set({ pendingTest: { ...pt, dialogueNext: transition } }); return; }
     }
-    if (choice.next) set({ dialogue: { dialogue: st.dialogue.dialogue, nodeId: choice.next, speakerId: st.dialogue.speakerId } });
-    else {
-      if (get().dialogue) get().advanceTime(TIME_COST.dialogue); // clôture (no-op si un Effect a déjà fermé)
-      set({ dialogue: null });
-    }
+    applyDialogueTransition(get, set, transition);
   },
 
   closeDialogue: () => {
@@ -1758,6 +1777,8 @@ export const useGame = create<GameState>((set, get) => ({
    *  abstraction), l'issue `combatLost` alimente le camp allié (Duel l.223 : −20 ; Percée l.175 : Charge),
    *  et la bataille CONTINUE. Hors bataille de masse : reprise standard (retour à la scène / redémarrage). */
   dismissDefeat: () => {
+    // Anéantissement HORS COMBAT (`checkPartyWiped`) : pas de bataille à reprendre — retour au menu.
+    if (get().partyWiped) { set({ partyWiped: false, battle: null, screen: 'menu' }); return; }
     const inMassBattleCombat = !!get().massBattle?.combatScene;
     if (inMassBattleCombat) {
       // Repoussés, pas anéantis : on relève le groupe (le combat de scène ne tue pas définitivement).
@@ -1984,6 +2005,14 @@ export const useGame = create<GameState>((set, get) => ({
     // (butin de Test → fenêtre d'attribution ; if/test imbriqués gérés).
     const branch = effSuccess ? pt.onSuccess : pt.onFailure;
     runFlow(get, set, { kind: 'seq', steps: [branch ?? EMPTY_FLOW, pt.after ?? EMPTY_FLOW] }, pt.label);
+    // Avancée de dialogue différée (un `choice.flow` avait suspendu ICI) : appliquée une fois la
+    // branche + continuation résolue. Si celles-ci ré-ouvrent un Test, on la reporte sur le nouveau
+    // pending (le dialogue n'avance jamais sous une modale de jet).
+    if (pt.dialogueNext) {
+      const nextPt = get().pendingTest;
+      if (nextPt) set({ pendingTest: { ...nextPt, dialogueNext: pt.dialogueNext } });
+      else applyDialogueTransition(get, set, pt.dialogueNext);
+    }
   },
   closeDocument: () => set({ document: null }),
 
@@ -2011,6 +2040,7 @@ export const useGame = create<GameState>((set, get) => ({
     // bilans), le franchissement de jour pousse une révélation témoin groupée.
     const upkeepLines = runDailyUpkeep(get, set);
     if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' });
+    checkPartyWiped(get, set); // faim/agonie/maladie a-t-elle anéanti tout le groupe hors combat ? → défaite
   },
   // « Dormir » : sommeil de `days` journée(s) (défaut 1) — récup. (Exténué/Blessures) + cauchemars (LDB 16/18/21).
   restParty: (days = 1) => { restFlow.sleepParty(get, set, days); },

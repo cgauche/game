@@ -74,13 +74,14 @@ export function CrewTestModal() {
   });
 
   const actions: RollAction[] = [
-    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'always' },
+    ...(!p.voyage ? [{ key: 'cancel', label: 'Annuler', kind: 'ghost' as const, onClick: cancel, when: 'always' as const }] : []),
     ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
     { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'always', disabled: !allRolled },
   ];
 
   return (
     <RollShell
+      flowKey="crewTest"
       title={<><Icon id="travel/anchor" size="sm" /> {testType.label} — Test d’équipage</>}
       variant="test"
       subtitle={<><strong>{ship.name}</strong> — Moral {p.moraleScore}{p.extraDR ? ` · sabotage ${sign(p.extraDR)} DR` : ''} (MDG ch.14)</>}
@@ -93,7 +94,7 @@ export function CrewTestModal() {
         ? <>DR total <b>{sign(total)}</b> — {total >= 1 ? 'succès' : 'échec'} (l.13).{moraleLoss ? <> Rude épreuve : <b>{moraleLoss}</b> Moral (l.110).</> : null}</>
         : undefined}
       actions={actions}
-      onCancel={cancel}
+      onCancel={p.voyage ? undefined : cancel}
     />
   );
 }

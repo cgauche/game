@@ -4336,7 +4336,26 @@ function victoryConditionMet(vc: VictoryCondition | undefined, battle: BattleSta
       const kind = (vc.camp ?? 'party') === 'party' ? 'hero' : 'enemy';
       return battle.combatants.some((c) => c.kind === kind && !c.inert && !isOutOfAction(c) && c.pos && inRect(c.pos, vc.rect));
     }
+    case 'woundsThreshold': {
+      const target = battle.combatants.find((c) => c.id === vc.targetId);
+      if (!target?.wounds || target.wounds.max <= 0) return false;
+      return target.wounds.current / target.wounds.max < vc.belowPercent / 100;
+    }
   }
+}
+
+/** REDDITION (#215) — sweep de `checkBattleOver` pour un objectif `woundsThreshold` : dès que la
+ *  cible passe SOUS le seuil, elle sort du combat (`outOfRencontre`, même mécanisme que la coque
+ *  PRISE de `resolveShipUnits` — kind-agnostique, aucun 2e flag de sortie de combat) et le journal
+ *  reçoit une ligne de reddition. Idempotent (`outOfRencontre` déjà posé → no-op) ; muet si la cible
+ *  est déjà hors d'action (mort/coulée) — `isOutOfAction` couvre alors seule la fin de rencontre. */
+function resolveSurrenderThreshold(battle: BattleState, vc: VictoryCondition | undefined): string[] {
+  if (vc?.type !== 'woundsThreshold') return [];
+  const target = battle.combatants.find((c) => c.id === vc.targetId);
+  if (!target?.wounds || target.wounds.max <= 0 || isOutOfAction(target)) return [];
+  if (target.wounds.current / target.wounds.max >= vc.belowPercent / 100) return [];
+  target.outOfRencontre = true;
+  return [tr('cf.surrender', { name: target.name })];
 }
 
 export function checkBattleOver(get: Get, set: SetFn): boolean {
@@ -4358,6 +4377,13 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
   const navalResolved = resolveShipUnits(battle.combatants);
   if (navalResolved.length) {
     set({ battle: { ...battle, log: [...battle.log, ...evLines(navalResolved, 'detail')] } });
+    bus.emit(EVT.SCENE_DIRTY);
+  }
+  // Reddition à seuil de dommage (#215) : une cible sous le seuil de son objectif `woundsThreshold`
+  // sort du combat AVANT le calcul de victoire (même sweep que le naufrage/l'abordage ci-dessus).
+  const surrendered = resolveSurrenderThreshold(battle, battle.victoryCondition);
+  if (surrendered.length) {
+    set({ battle: { ...battle, log: [...battle.log, ...evLines(surrendered, 'detail')] } });
     bus.emit(EVT.SCENE_DIRTY);
   }
   // Un engin INERTE (affût servi, immune) ne compte JAMAIS comme un combattant vivant — ni côté allié

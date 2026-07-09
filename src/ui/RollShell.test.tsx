@@ -158,6 +158,39 @@ describe('RollShell — coquille de jet unifiée', () => {
     expect(html.match(/rm-netsl/g)?.length).toBe(1);
   });
 
+  // ── Garde de vocabulaire d'actions (#211) : la barre d'une modale de jet est verrouillée à
+  //    (verbes DÉCLARÉS du flux ∪ commandes neutres). Choke-point unique : `RollShell` + `flowKey`. ──
+  const act = (key: string): RollAction => ({ key, label: key, kind: 'primary', onClick: noop, when: 'always' });
+
+  it('(h) garde : actions NEUTRES (cancel/rollAll/confirm) passent pour tout flux', () => {
+    expect(() =>
+      render(<RollShell flowKey="crewTest" title="T" rows={[rolledRow()]} rolled actions={[act('cancel'), act('rollAll'), act('confirm')]} />),
+    ).not.toThrow();
+  });
+
+  it('(i) garde : un verbe DÉCLARÉ du flux passe (resist ∈ cascade)', () => {
+    expect(() =>
+      render(<RollShell flowKey="cascade" title="T" rows={[rolledRow()]} rolled actions={[act('resist')]} />),
+    ).not.toThrow();
+  });
+
+  it('(j) garde : action FANTÔME (hors verbes déclarés + neutres) LÈVE', () => {
+    // 'resist' n'est PAS déclaré par le flux `test` (ni neutre) → dérive rejetée.
+    expect(() =>
+      render(<RollShell flowKey="test" title="T" rows={[rolledRow()]} rolled actions={[act('resist')]} />),
+    ).toThrow(/hors vocabulaire/);
+    // clé inventée sur un flux qui ne la déclare pas.
+    expect(() =>
+      render(<RollShell flowKey="crewTest" title="T" rows={[rolledRow()]} rolled actions={[act('zorglub')]} />),
+    ).toThrow(/hors vocabulaire/);
+  });
+
+  it('(k) garde : sans flowKey, inerte (modale sans flux naturel)', () => {
+    expect(() =>
+      render(<RollShell title="T" rows={[rolledRow()]} rolled actions={[act('zorglub')]} />),
+    ).not.toThrow();
+  });
+
   it('(d) actions filtrées par phase : Annuler (pre) disparaît après jet, Appliquer (post) apparaît', () => {
     const pre = render(
       <RollShell title="T" rows={[pendingRow()]} rolled={false} actions={actions} onCancel={noop} />,

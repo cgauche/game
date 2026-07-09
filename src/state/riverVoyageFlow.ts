@@ -613,5 +613,8 @@ function finishRiverDay(get: Get, set: Set, to: { scene: string; entry?: string;
 
   if (arrived) { arriveRiver(get, set, to); return; }
   const route = (get().worldMap as WorldMap)?.routes.find((r) => r.id === plan.routeId);
-  openRest(get, set, { places: placesOfKind(route?.inns ? 'auberge' : 'camp'), travelHalt: true, travelDay: recapDay });
+  // Sur la rivière on peut mouiller le long de la berge : coucher À BORD (hamacs, MDG 03 l.71) offert
+  // en plus du campement/de l'auberge de la halte — la belle étoile sur la berge reste possible.
+  const places = { ...placesOfKind(route?.inns ? 'auberge' : 'camp'), ...(get().vessel ? { bord: true } : {}) };
+  openRest(get, set, { places, travelHalt: true, travelDay: recapDay });
 }

@@ -49,7 +49,7 @@ import { bus, EVT } from './bus';
 import type { GameState } from './store';
 
 export type RestKind = 'auberge' | 'maison' | 'camp';
-export type RestLodging = 'commune' | 'privee' | 'maison' | 'dehors';
+export type RestLodging = 'commune' | 'privee' | 'maison' | 'dehors' | 'bord';
 export type RestFood = 'repas' | 'ration' | 'maison' | 'rien';
 
 /** Lieux de repos OFFERTS par le contexte (scène, effet, halte de voyage) — combinables :
@@ -58,6 +58,9 @@ export interface RestPlaces {
   auberge?: boolean;
   maison?: boolean;
   camp?: boolean;
+  /** À bord du navire de campagne (hamacs/quartiers, MDG 03 l.71 · 09 l.87) — couchage ABRITÉ (pas
+   *  d'Exposition de plein air) ; en mer c'est le seul couchage (l'offre `camp`/`dehors` s'efface). */
+  bord?: boolean;
 }
 
 /** L'offre par DÉFAUT d'un contexte nommé (`kind`, faute de `lodging` explicite fourni par
@@ -496,6 +499,7 @@ export function lodgingOptions(places: RestPlaces): RestLodging[] {
   const out: RestLodging[] = [];
   if (places.auberge) out.push('privee', 'commune');
   if (places.maison) out.push('maison');
+  if (places.bord) out.push('bord'); // à bord = hamacs (MDG 03 l.71) ; par défaut si offert
   if (places.camp || places.auberge || places.maison) out.push('dehors'); // la belle étoile reste un choix
   return out;
 }
@@ -624,6 +628,7 @@ export function restSleep(get: Get, set: Set): void {
       const lodgings = party.filter((h) => !h.dead && p.perHero[h.id]).map((h) => p.perHero[h.id].lodging);
       const title = lodgings.some((l) => l === 'privee' || l === 'commune') ? 'Nuit à l’auberge'
         : lodgings.some((l) => l === 'maison') ? 'Nuit chez soi'
+        : lodgings.some((l) => l === 'bord') ? 'Nuit à bord'
         : 'Campement';
       startCascade(get, set, { title, icon: 'time/night', purpose: p.travelHalt ? 'travel' : 'night', travelHalt: p.travelHalt, steps, log });
     } else {

@@ -61,6 +61,7 @@ export function DispelModal() {
 
   return (
     <RollShell
+      flowKey="dispel"
       title={<><Icon id="action/dispel" size="sm" /> Dissipation</>}
       subtitle={
         <>

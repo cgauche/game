@@ -77,6 +77,7 @@ export function ShipBatteryModal() {
 
   return (
     <RollShell
+      flowKey="shipBattery"
       title={<><Icon id="action/aim" size="sm" /> Tir de batterie — Test d’équipage</>}
       variant="test"
       subtitle={<><strong>{ship.name}</strong> — bordée {p.side} sur <strong>{target.name}</strong> ({postes.length} pièce{plural(postes.length)}, MDG ch.14)</>}

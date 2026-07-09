@@ -350,6 +350,11 @@ export type Effect =
    *  « Fête de Manann » 2d10) — mutuellement exclusifs, `factorId` prioritaire si les deux sont posés.
    *  Sans navire de campagne → no-op journalisé. */
   | { type: 'adjustManann'; factorId?: string; delta?: { flat: number; d10: number; sign: 1 | -1 } }
+  /** AJUSTE le navire de campagne EXISTANT (#233) — patch des SEULS champs fournis, contrairement à
+   *  `setVessel` (remplacement total : effacerait Humeur de Manann/dégâts/Moral accumulés). À poser
+   *  sur un événement narratif qui touche PARTIELLEMENT le navire (ex. démasquage d'un saboteur qui
+   *  remet `saboteurDR` à 0 sans réinitialiser le reste). Sans navire de campagne → no-op journalisé. */
+  | { type: 'adjustVessel'; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; crew?: import('../engine/crewMorale').CrewHire[] }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {
@@ -720,12 +725,18 @@ export function structureIsDown(scene: Pick<Scene, 'flags'>, seg: WallSeg): bool
  *  `structureIsDown`/`Combatant.structureEdge` (bélier-porte, AA p.120-121) — la victoire se déclenche
  *  à la BRÈCHE, indépendamment du sort des combattants. `surviveRounds` : victoire posée au début du
  *  Round `rounds + 1` (le groupe a tenu N Rounds complets). `reachZone` réutilise le rectangle de zone
- *  des `Trigger`/`SceneEffectZone` (`inRect`, `combatGeometry.ts`) — aucun 2e mécanisme de zone. */
+ *  des `Trigger`/`SceneEffectZone` (`inRect`, `combatGeometry.ts`) — aucun 2e mécanisme de zone.
+ *  `woundsThreshold` (#215) : REDDITION à seuil de dommage partiel — `targetId` référence l'id
+ *  STABLE d'une entité de scène (`SceneEntity.id` = `Combatant.id` au spawn, identité unifiée).
+ *  Le RAW ne chiffre AUCUN seuil de reddition (silence confirmé) ; seul précédent chiffré, la
+ *  reddition d'un monstre marin à mi-Blessures (MDG 15 l.143, l.166-168). `belowPercent` reste
+ *  une valeur ÉDITABLE par rencontre, sans seuil RAW imposé (CLAUDE.md règle 7). */
 export type VictoryCondition =
   | { type: 'allEnemiesDead' }
   | { type: 'destroyStructure'; edge: { x: number; y: number; side: WallSide; z?: number } }
   | { type: 'surviveRounds'; rounds: number }
-  | { type: 'reachZone'; rect: { x: number; y: number; w: number; h: number }; camp?: 'party' | 'enemies' };
+  | { type: 'reachZone'; rect: { x: number; y: number; w: number; h: number }; camp?: 'party' | 'enemies' }
+  | { type: 'woundsThreshold'; targetId: string; belowPercent: number };
 
 /** Le segment portant une STRUCTURE sur l'arête (x,y,side,z), ou undefined. */
 export function structureAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {

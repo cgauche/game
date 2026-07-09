@@ -110,4 +110,53 @@ describe('checkBattleOver — objectif de victoire authorable (#197)', () => {
     expect(over).toBe(false);
     expect(useGame.getState().battle!.over).toBeNull();
   });
+
+  describe('woundsThreshold — reddition à seuil de dommage partiel (#215)', () => {
+    it("seuil franchi (Blessures < belowPercent%) → victoire, cible hors de combat, journal de reddition", () => {
+      startFixtureCombat();
+      const b = useGame.getState().battle!;
+      const enemy = b.combatants.find((c) => c.kind === 'enemy')!;
+      enemy.wounds = { current: 4, max: 10 }; // 40% < 50%
+      useGame.setState({
+        battle: { ...b, victoryCondition: { type: 'woundsThreshold', targetId: enemy.id, belowPercent: 50 } },
+      });
+      const over = checkBattleOver(useGame.getState, useGame.setState);
+      drainCombatEndCascade();
+      expect(over).toBe(true);
+      expect(useGame.getState().battle!.over).toBe('victory');
+      const resolved = useGame.getState().battle!.combatants.find((c) => c.id === enemy.id)!;
+      expect(resolved.outOfRencontre).toBe(true);
+      expect(useGame.getState().battle!.log.some((e) => e.text.includes('amène son pavillon'))).toBe(true);
+    });
+
+    it("seuil NON franchi → le combat continue, cible toujours en jeu", () => {
+      startFixtureCombat();
+      const b = useGame.getState().battle!;
+      const enemy = b.combatants.find((c) => c.kind === 'enemy')!;
+      enemy.wounds = { current: 8, max: 10 }; // 80% ≥ 50%
+      useGame.setState({
+        battle: { ...b, victoryCondition: { type: 'woundsThreshold', targetId: enemy.id, belowPercent: 50 } },
+      });
+      const over = checkBattleOver(useGame.getState, useGame.setState);
+      expect(over).toBe(false);
+      expect(useGame.getState().battle!.over).toBeNull();
+      const resolved = useGame.getState().battle!.combatants.find((c) => c.id === enemy.id)!;
+      expect(resolved.outOfRencontre).toBeFalsy();
+    });
+
+    it("cible tuée (0 Blessure) → victoire a fortiori, même seuil non franchi explicitement", () => {
+      startFixtureCombat();
+      const b = useGame.getState().battle!;
+      const enemy = b.combatants.find((c) => c.kind === 'enemy')!;
+      enemy.wounds = { current: 0, max: 10 };
+      enemy.dead = true;
+      useGame.setState({
+        battle: { ...b, victoryCondition: { type: 'woundsThreshold', targetId: enemy.id, belowPercent: 50 } },
+      });
+      const over = checkBattleOver(useGame.getState, useGame.setState);
+      drainCombatEndCascade();
+      expect(over).toBe(true);
+      expect(useGame.getState().battle!.over).toBe('victory');
+    });
+  });
 });

@@ -21,6 +21,7 @@ import { traumaOnImpossibleAmbition } from '../engine/psychology';
 import { recomputeLoadout, itemFromGive, giveTrappingLabel, autoStowNewItem } from '../engine/items';
 import { findCreatureById, findVehicleById, refLabel, WATER_EXPOSURE, diseaseLabel } from '../data';
 import { MORALE_BASE } from '../engine/crewMorale';
+import { clampSaboteurDR } from './shipCrew';
 import { harvestSizeOf, harvestYield } from '../engine/harvest';
 import { applySummon } from './summonFlow';
 import { contractDisease, applyContraction, DISEASE_DEFS } from '../engine/disease';
@@ -1219,6 +1220,26 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       }
     },
     refs: (e) => (e.factorId && !findManannFactor(e.factorId)) ? [{ level: 'error', message: `Effet → facteur Manann inexistant « ${e.factorId} »` }] : [],
+  },
+  adjustVessel: {
+    group: 'Navigation', label: 'Ajuster le navire de campagne (#233)', icon: 'travel/anchor',
+    make: () => ({ type: 'adjustVessel' }),
+    apply: (e, env) => {
+      const vessel = env.get().vessel;
+      if (!vessel) { env.log('Ajustement du navire : pas de navire de campagne — sans effet.'); return; }
+      const parts: string[] = [];
+      const next: typeof vessel = { ...vessel };
+      if (e.name?.trim()) { next.name = e.name.trim(); parts.push(`nom « ${e.name.trim()} »`); }
+      if (e.morale != null) { next.morale = { ...vessel.morale, score: e.morale }; parts.push(`moral ${e.morale}`); }
+      if (e.hullMax != null) { next.wounds = { current: e.hullCurrent ?? e.hullMax, max: e.hullMax }; parts.push(`coque ${next.wounds.current}/${next.wounds.max}`); }
+      else if (e.hullCurrent != null && vessel.wounds) { next.wounds = { ...vessel.wounds, current: e.hullCurrent }; parts.push(`coque ${next.wounds.current}/${next.wounds.max}`); }
+      if (e.saboteurDR != null) { next.saboteurDR = clampSaboteurDR(e.saboteurDR); parts.push(`sabotage ${next.saboteurDR} DR`); }
+      if (e.crew && e.crew.length) { next.crew = e.crew.filter((h) => h.roleId && h.count > 0); parts.push(`équipage ${next.crew.reduce((s, h) => s + h.count, 0)}`); }
+      if (!parts.length) { env.log('Ajustement du navire : aucun champ fourni — sans effet.'); return; }
+      env.set({ vessel: next });
+      env.log(`Ajustement du navire : ${parts.join(', ')}.`);
+    },
+    refs: () => [],
   },
 
   // ── Combat & social ────────────────────────────────────────────────────

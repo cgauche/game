@@ -164,6 +164,7 @@ export function CastModal() {
 
   return (
     <RollShell
+      flowKey="cast"
       title={isPrayer ? 'Prière' : 'Incantation'}
       extra={
         <>

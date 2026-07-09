@@ -60,6 +60,7 @@ export function ShantyModal() {
 
   return (
     <RollShell
+      flowKey="shanty"
       title={<><Icon id="audio/music" size="sm" /> Chanson de marin</>}
       subtitle={<><strong>{singer.name}</strong> entonne pour l'équipage (Test de Divertissement (Chant), MDG 09)</>}
       setup={

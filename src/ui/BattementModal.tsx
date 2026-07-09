@@ -65,6 +65,7 @@ export function BattementModal() {
 
   return (
     <RollShell
+      flowKey="battement"
       title={<><Icon id="action/attack" /> Battement</>}
       subtitle={
         <>

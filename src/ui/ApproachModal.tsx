@@ -57,6 +57,7 @@ export function ApproachModal() {
 
   return (
     <RollShell
+      flowKey="approach"
       title={<><Icon id="flag/fear" size="sm" /> Affronter sa Peur</>}
       subtitle={
         <>

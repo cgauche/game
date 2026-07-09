@@ -56,6 +56,7 @@ export function WardModal() {
 
   return (
     <RollShell
+      flowKey="ward"
       title={<><Icon id="action/defend" size="sm" /> Bénédiction de Protection</>}
       subtitle={
         <>

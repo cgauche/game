@@ -97,6 +97,7 @@ import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
 import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
+import { checkPartyWiped } from './partyWipe';
 import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
 
 /** Un flux DIFFÉRÉ tient la main (modale de jet/révélation, ciblage par carte : Frappe Mortelle,
@@ -220,6 +221,9 @@ export function createCombatSlice(get: Get, set: Set) {
   // domaine se lit sur le plan (`river` présent = descente fluviale), pas par deux chemins ad hoc.
   // Partagé par `cascadeNext` (avance) et `cascadeFinish` (« Tout résoudre »).
   const dispatchCascadeDone = (done: ReturnType<typeof advanceCascade>) => {
+    // Une cascade de NUIT/voyage (faim, exposition, maladie) a pu anéantir tout le groupe : défaite AVANT
+    // de reprendre la route — no-op en combat (`combatEndBoundary` gère la défaite via `battle`).
+    if (done && checkPartyWiped(get, set)) return;
     if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
     else if (done?.purpose === 'travelDay') { if (get().travelPlan?.river) continueRiverDayAfterCascade(get, set); else travelFlow.continueTravelDayAfterCascade(get, set); }
     else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite

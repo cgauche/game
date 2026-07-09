@@ -505,12 +505,14 @@ function EncountersTab({
                   else if (t === 'destroyStructure') upd({ victoryCondition: { type: 'destroyStructure', edge: { x: 0, y: 0, side: 'N' } } });
                   else if (t === 'surviveRounds') upd({ victoryCondition: { type: 'surviveRounds', rounds: 3 } });
                   else if (t === 'reachZone') upd({ victoryCondition: { type: 'reachZone', rect: { x: 0, y: 0, w: 1, h: 1 } } });
+                  else if (t === 'woundsThreshold') upd({ victoryCondition: { type: 'woundsThreshold', targetId: members[0]?.entityId ?? '', belowPercent: 50 } });
                 }}
               >
                 <option value="allEnemiesDead">Tous les ennemis hors d'action</option>
                 <option value="destroyStructure">Détruire une structure (brèche)</option>
                 <option value="surviveRounds">Survivre N Rounds</option>
                 <option value="reachZone">Atteindre une zone</option>
+                <option value="woundsThreshold">Reddition à seuil de dommage</option>
               </select>
             </label>
           </div>
@@ -561,6 +563,32 @@ function EncountersTab({
                     <option value="party">Le groupe</option>
                     <option value="enemies">Les ennemis</option>
                   </select>
+                </label>
+              </div>
+            );
+          })()}
+          {enc.victoryCondition?.type === 'woundsThreshold' && (() => {
+            const vc = enc.victoryCondition!;
+            return (
+              <div className="enemy-mount">
+                <label title="Cible dont les Blessures sont surveillées : sous le seuil, elle amène son pavillon et sort du combat (reddition, #215).">
+                  Cible{' '}
+                  <select value={vc.targetId} onChange={(e) => upd({ victoryCondition: { type: 'woundsThreshold', targetId: e.target.value, belowPercent: vc.belowPercent } })}>
+                    <option value="">— aucune —</option>
+                    {members.map((m) => (
+                      <option key={m.entityId} value={m.entityId}>
+                        {byId.get(m.entityId)?.label ?? byId.get(m.entityId)?.ref ?? m.entityId}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Sous{' '}
+                  <input
+                    type="number" min={1} max={99} value={vc.belowPercent}
+                    onChange={(e) => upd({ victoryCondition: { type: 'woundsThreshold', targetId: vc.targetId, belowPercent: Math.min(99, Math.max(1, Number(e.target.value))) } })}
+                  />
+                  % de ses Blessures
                 </label>
               </div>
             );

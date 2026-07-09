@@ -213,24 +213,24 @@ describe('spawnEnemy — transport de l’apparence/carrière éditée vers le C
   const at = { x: 0, y: 0 };
 
   it('seed + sexe + carrure édités → portés BRUTS par Combatant.appearanceOverride', () => {
-    const c = spawnEnemy('Mutant', undefined, 'e1', at, { appearance: { seed: 12345, sex: 'F', build: 0.7 } });
+    const c = spawnEnemy('mutant', undefined, 'e1', at, { appearance: { seed: 12345, sex: 'F', build: 0.7 } });
     expect(c.appearanceOverride).toMatchObject({ seed: 12345, sex: 'F', build: 0.7 });
     expect(c.appearance).toBeUndefined(); // rien de figé dans state — la résolution rig est différée
   });
 
   it('tenue éditée → portée par Combatant.career', () => {
-    const c = spawnEnemy('Mutant', undefined, 'e1', at, { appearance: { tenue: 'Soldat' } });
+    const c = spawnEnemy('mutant', undefined, 'e1', at, { appearance: { tenue: 'Soldat' } });
     expect(c.career).toBe('Soldat');
   });
 
   it('sans aucun override → appearanceOverride reste indéfini (rendu dérivé du nom inchangé)', () => {
-    const c = spawnEnemy('Mutant', undefined, 'e1', at);
+    const c = spawnEnemy('mutant', undefined, 'e1', at);
     expect(c.appearanceOverride).toBeUndefined();
   });
 
   it('override PARTIEL (seed seul) → enemyRigProfile conserve les défauts de race (coiffure/couleurs)', () => {
-    const plain = enemyRigProfile(spawnEnemy('Mutant', undefined, 'e1', at))!;
-    const seeded = enemyRigProfile(spawnEnemy('Mutant', undefined, 'e1', at, { appearance: { seed: 999 } }))!;
+    const plain = enemyRigProfile(spawnEnemy('mutant', undefined, 'e1', at))!;
+    const seeded = enemyRigProfile(spawnEnemy('mutant', undefined, 'e1', at, { appearance: { seed: 999 } }))!;
     expect(seeded.appearance.seed).toBe(999);
     // Les champs NON édités (parts/colors canoniques de la race) restent ceux du défaut.
     expect(seeded.appearance.parts).toEqual(plain.appearance.parts);

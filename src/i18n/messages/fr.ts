@@ -497,6 +497,7 @@ export const fr = {
   'cf.finishHelpless': '{name} achève {foe}, sans défense.',
   'cf.grappleInit': '{name} empoigne {foe} : ils sont Empoignés et {foe} gagne l’État Empêtré.',
   'cf.outOfAction': '{name} est mis hors de combat !',
+  'cf.surrender': '{name} amène son pavillon.',
   'cf.critDespiteLoss': "{name} place un Critique malgré l'échange perdu.",
   'cf.critOnDefense': '{name} place un Critique sur sa défense.',
   'cf.riposte': '{name} contre-attaque et inflige {n} Blessure(s) en défendant.',

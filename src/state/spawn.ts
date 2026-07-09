@@ -5,7 +5,7 @@
 import { Combatant, Characteristics, CHAR_KEYS, Weapon, ArmourPoints, BodyShape, SkillInstance, TalentInstance, type ShipPoste, type NavalTraitRef } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
 import { isOptionalNote, type TraitInstance, type TraitList, type OptionalEntry, type OptionalSwap } from '../engine/statEntry';
-import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, findTrappingById, CreatureData, type SkillRef, type TalentRef } from '../data';
+import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, findTrappingById, findTrappingByLabel, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { vehicleCombatant } from '../engine/vehicle';
 import { inanimateCombatant } from '../engine/inanimate';
 import { hullArmourBonus } from '../engine/navalTraits';
@@ -357,7 +357,12 @@ export function spawnEnemy(
     c.kind = 'enemy';
     c.pos = { ...pos };
     c.species = t.siegeRig; // espèce DÉRIVÉE de la ref → rig engin au combat (parité avec l'explo/éditeur)
-  } else c = statblockToCombatant({ name: ref ?? 'Ennemi', char: { B: 10 } }, id, pos); // repli
+  } else {
+    // Repli BRUYANT (#223) : réf. irrésoluble (créature ∪ véhicule ∪ engin de siège tous en échec) →
+    // console.error + mannequin PORTANT le marqueur au nom (affiché tel quel au token/frise).
+    console.error(`[spawn] réf. irrésoluble « ${ref ?? ''} » (entité « ${id} ») — mannequin de repli visible (#223)`);
+    c = statblockToCombatant({ name: `RÉF ? « ${ref ?? ''} »`, char: { B: 10 } }, id, pos);
+  }
   if (opts?.crewIds) c.crewIds = opts.crewIds;
   if (opts?.postes) c.postes = opts.postes;
   if (opts?.upgrades) c.upgrades = opts.upgrades;
@@ -392,6 +397,8 @@ export function spawnEnemy(
   // légitime (ne duplique rien). `renderWeaponsFromTraits` = armes EXPLICITES sans repli générique.
   if (opts?.weapon) {
     const labelWeapon = weaponFromLabel(opts.weapon);
+    if (!findTrappingByLabel(opts.weapon))
+      console.warn(`[spawn] arme « ${opts.weapon} » introuvable au catalogue (entité « ${id} ») — arme générique de rendu (#223)`);
     if (!renderWeaponsFromTraits(c.traits ?? []).some((w) => w.type === labelWeapon.type)) {
       c.weapons = [labelWeapon, ...c.weapons];
     }

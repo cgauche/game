@@ -77,6 +77,7 @@ export function BargainModalView({
 
   return (
     <RollShell
+      flowKey="bargain"
       variant="test"
       title={`Marchander ${pb.mode === 'buy' ? 'l’achat' : 'la vente'} — ${pb.merchantName}`}
       /* Pré-jet (1 ligne) : portrait du négociateur injecté ; post-jet opposé : 2 lignes à portrait. */

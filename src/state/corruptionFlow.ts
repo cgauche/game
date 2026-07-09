@@ -35,6 +35,7 @@ import { rule } from '../engine/policy';
 import { rollTest } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { pushReveal } from './combatFlow';
+import { checkPartyWiped } from './partyWipe';
 import { evLines } from './combatLog';
 import { pilotedByHuman } from './netOwnership';
 import { followsCharacterRules } from '../engine/relations';
@@ -122,6 +123,7 @@ export function applyMutation(get: Get, set: Set, hero: Combatant, test?: { roll
   }
   if (pilotedByHuman(get(), hero))
     pushReveal(set, { kind: 'mutation', title: `Mutation — ${m.label}`, dice: m.roll, lines: [...lines], subjectId: hero.id, severity: 'grave' });
+  checkPartyWiped(get, set); // damnation du dernier héros hors combat → défaite (no-op en combat)
   return lines;
 }
 

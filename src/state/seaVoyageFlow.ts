@@ -31,7 +31,7 @@ import { battleRng } from './battleRng';
 import { bus, EVT } from './bus';
 import { openRest, placesOfKind } from './restFlow';
 import { dayIndex } from './upkeep';
-import { placeById, type WorldMap, type MapPlace } from './worldMap';
+import { placeById, type WorldMap, type MapPlace, type MapRoute } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { PendingCrewTest, ShipManeuverParticipant } from './pendings';
 import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR } from './shipCrew';
@@ -86,7 +86,7 @@ export type SeaCrisis =
   | { kind: 'tourbillon'; label: string; whirlpoolId: string; need: number; progress: number };
 
 /** Étape de la journée maritime — la boucle se SUSPEND sur chaque modale et reprend à l'étape suivante. */
-export type SeaStep = 'meteo' | 'affaler' | 'progression' | 'crise' | 'perception' | 'orientation' | 'extermination' | 'events' | 'entretien' | 'nuit';
+export type SeaStep = 'meteo' | 'affaler' | 'progression' | 'crise' | 'embuscade' | 'perception' | 'orientation' | 'extermination' | 'events' | 'entretien' | 'nuit';
 
 /** État NAVAL d'un TravelPlan (route `sea`) — persiste dans la save avec le plan. */
 export interface SeaVoyageState {
@@ -118,6 +118,9 @@ export interface SeaVoyageState {
   /** Infestation de rats ACTIVE (Test étendu d'Extermination, MDG 14 l.98 + événements ch.15). */
   infestation?: { label: string; difficulty: Difficulty; need: number; progress: number; spoilPerNight: string };
   crisis?: SeaCrisis;
+  /** Embuscade authorée déjà ouverte sur CETTE traversée (#212) — anti-double-feu entre l'ancrage
+   *  déterministe (`MapRoute.ambush.at`) et l'abordage de fin de Poursuite (`startChaseBoarding`). */
+  ambushFired?: boolean;
   /** FORCER LE RYTHME (MDG 13 l.95-107) : bonus de M demandé au départ (+1 voile/avirons, +2 avirons). */
   forcePace?: number;
   /** Issue du Test de Voile/Ramer du JOUR (l.97) : 'won' → le +M s'applique aux milles du jour. Présent
@@ -361,12 +364,26 @@ export function runSeaDays(get: Get, set: Set): void {
       case 'crise': {
         // 6. Crise en cours : une manche par jour... non — une manche par MODALE, la boucle y reste
         // jusqu'à l'issue (Poursuite ch.13 l.354 : Tests tous les 10 Rounds ×10 ; Tourbillon l.514).
-        if (!sea.crisis) { patchSea(get, set, { step: 'perception' }); break; }
+        if (!sea.crisis) { patchSea(get, set, { step: 'embuscade' }); break; }
         if (sea.crisis.kind === 'poursuite') {
           if (openVoyageCrewTest(get, set, 'progression-poursuite', 'poursuite')) return;
         } else if (openVoyageCrewTest(get, set, 'manoeuvre', 'tourbillon')) return;
-        patchSea(get, set, { step: 'perception', crisis: undefined }); // pas d'équipage → la crise se dénoue au récit
+        patchSea(get, set, { step: 'embuscade', crisis: undefined }); // pas d'équipage → la crise se dénoue au récit
         break;
+      }
+      case 'embuscade': {
+        // #212. Embuscade AUTHORÉE à ancrage déterministe : au franchissement de `at × km` (défaut mi-route),
+        // Test d'équipage de Perception influençable (patron terrestre « Attaqués ! », travelFlow) — réussi →
+        // préparés (pas de Surprise), échec → surpris — PUIS ouverture de l'abordage. Une seule fois par traversée.
+        patchSea(get, set, { step: 'perception' });
+        const route = (get().worldMap as WorldMap | undefined)?.routes.find((r) => r.id === plan.routeId);
+        if (sea.ambushFired || !(route?.ambush?.scene && route.ambush.encounter)) break;
+        const anchor = Math.max(0, Math.min(1, route.ambush.at ?? 0.5)) * plan.km;
+        if (plan.kmDone + sea.milesToday < anchor) break; // ancrage pas encore franchi ce jour
+        tell(get, set, ['Une voile hostile grandit à l\'horizon : la vigie donne l\'alerte !']);
+        if (openVoyageCrewTest(get, set, 'perception', 'embuscade')) return; // suspension modale
+        openAuthoredSeaAmbush(get, set, route, false); // aucun équipage pour tester → surpris
+        return;
       }
       case 'perception': {
         // 4. Phare du port d'arrivée en vue (dernier jour de mer) → Test d'équipage de PERCEPTION (#65).
@@ -575,8 +592,9 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
     set({ pendingSeaActivities: { picks: {}, day: recapDay } });
     return;
   }
-  // Halte de nuit (machinerie de repos EXISTANTE — le recap du jour s'y lit, patron travelFlow).
-  openRest(get, set, { places: placesOfKind('camp'), travelHalt: true, travelDay: recapDay });
+  // Halte de nuit (machinerie de repos EXISTANTE — le recap du jour s'y lit, patron travelFlow). EN MER,
+  // on dort À BORD (hamacs, MDG 03 l.71) : couchage unique et abrité — pas de tente sur l'eau.
+  openRest(get, set, { places: get().vessel ? { bord: true } : placesOfKind('camp'), travelHalt: true, travelDay: recapDay });
 }
 
 // ── Résolution des Tests d'équipage de VOYAGE (appelée par crewTestConfirm) ──────────────────────
@@ -644,6 +662,16 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       const dr = success && best ? Math.max(1, lighthouseOrientationDR(best.actor, false), savoirOceansBonus(best.actor)) : 0;
       patchSea(get, set, { lighthouseDR: dr });
       tell(get, set, [success ? `La lumière du phare est en vue — l'atterrage se précise (+${dr} DR d'Orientation, MDG ch.13 l.335).` : 'Aucune lumière à l\'horizon — brume ou distance.']);
+      break;
+    }
+    case 'embuscade': {
+      // #212. Réussite = préparés (pas de Surprise) ; échec = surpris — même sémantique que le terrestre
+      // « Attaqués ! » (`noSurprise: step.result.success`, travelFlow), transposée à l'abordage naval.
+      const route = (get().worldMap as WorldMap | undefined)?.routes.find((r) => r.id === plan.routeId);
+      tell(get, set, [success
+        ? 'La vigie a vu venir l\'abordage : le navire s\'y prépare (pas de Surprise).'
+        : 'Trop tard — le navire hostile fond sur vous avant que l\'équipage ne réagisse (Surprise) !']);
+      openAuthoredSeaAmbush(get, set, route, success);
       break;
     }
     case 'poursuite': {
@@ -840,18 +868,25 @@ export function resolveSteamSave(get: Get, set: Set, p: PendingSteamSave): void 
   runSeaDays(get, set);
 }
 
-/** Rattrapé par un navire hostile : combat si la route porte une embuscade AUTHORÉE (patron travelFlow) —
- *  sinon l'issue reste au récit (rien d'inventé). */
+/** Ouvre l'embuscade AUTHORÉE d'une route de mer (couture UNIQUE, #212) — même pipeline que l'embuscade
+ *  terrestre (« Attaqués ! », travelFlow) : interruption + scène + rencontre AUTHORÉES. `noSurprise` :
+ *  la Poursuite (`startChaseBoarding`) a prévenu (défaut `true`) ; l'ancrage déterministe le fait dépendre
+ *  du Test de Perception. Anti-double-feu par `sea.ambushFired`. Retourne `false` si rien à ouvrir. */
+function openAuthoredSeaAmbush(get: Get, set: Set, route: MapRoute | undefined, noSurprise = true): boolean {
+  const plan = get().travelPlan;
+  if (plan?.sea?.ambushFired || !(route?.ambush?.scene && route.ambush.encounter)) return false;
+  set({ travelPlan: { ...plan!, interrupted: true, sea: { ...plan!.sea!, ambushFired: true } } });
+  get().transitionTo(route.ambush.scene, route.ambush.entry);
+  get().startCombat(route.ambush.encounter, undefined, { noSurprise });
+  return true;
+}
+
+/** Rattrapé par un navire hostile : abordage si la route porte une embuscade AUTHORÉE — la Poursuite a
+ *  prévenu (pas de Surprise) ; sinon l'issue reste au récit (rien d'inventé). */
 function startChaseBoarding(get: Get, set: Set): void {
   const plan = get().travelPlan;
-  const worldMap = get().worldMap as WorldMap;
-  const route = worldMap?.routes.find((r) => r.id === plan?.routeId);
-  if (route?.ambush?.scene && route.ambush.encounter) {
-    // Même pipeline que l'embuscade terrestre (« Attaqués ! ») : interruption + scène + rencontre AUTHORÉES.
-    set({ travelPlan: { ...plan!, interrupted: true } });
-    get().transitionTo(route.ambush.scene, route.ambush.entry);
-    get().startCombat(route.ambush.encounter, undefined, { noSurprise: true }); // la Poursuite a prévenu : pas de Surprise
-  } else {
+  const route = (get().worldMap as WorldMap | undefined)?.routes.find((r) => r.id === plan?.routeId);
+  if (!openAuthoredSeaAmbush(get, set, route)) {
     tell(get, set, ['(Aucune rencontre d\'abordage n\'est configurée sur cette route — l\'issue reste au récit.)']);
   }
 }

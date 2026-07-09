@@ -112,6 +112,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   ];
 
   return {
+    flowKey: 'defense',
     title: 'Défense',
     subtitle: null,
     extra: <VsHeader actor={attacker} target={defender} label={pd.weapon?.name ?? 'Mains nues'} verb="attaque →" />,

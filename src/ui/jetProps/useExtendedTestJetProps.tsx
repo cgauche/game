@@ -41,6 +41,7 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
   const willReset = rolled && projected < 0;
 
   return {
+    flowKey: 'extendedTest',
     title: <><Icon id="ui/key" size="sm" /> {p.label}</>,
     subtitle: <>Round {p.rounds.length} · Test étendu (le DR de chaque Round se cumule)</>,
     /* Progression = barre de DR cumulé vers la cible (comme le Rechargement). */

@@ -79,6 +79,7 @@ export function GrappleModal() {
     // Le VAINQUEUR tranche l'issue de l'Empoignade. Panneau résolu conservé.
     return (
       <RollShell
+        flowKey="grapple"
         title="Empoignade"
         extra={<VsHeader actor={actor} target={foe} label="lutte au corps à corps" verb={<Icon id="melee/grapple" size="sm" />} />}
         rows={[foeRow, actorRow]}
@@ -114,6 +115,7 @@ export function GrappleModal() {
 
   return (
     <RollShell
+      flowKey="grapple"
       title="Empoignade"
       extra={<VsHeader actor={actor} target={foe} label="lutte au corps à corps" verb={<Icon id="melee/grapple" size="sm" />} />}
       rows={[foeRow, actorRow]}

@@ -51,6 +51,7 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   if (pt.cancellable) actions.unshift({ key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' });
 
   return {
+    flowKey: 'test',
     variant: 'test',
     title: pt.label,
     /* Sous-titre = uniquement le malus psy social, si présent (la cible/valeur vit dans le cadre de jet). */

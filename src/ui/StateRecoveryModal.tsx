@@ -76,6 +76,7 @@ export function StateRecoveryModalView({
 
   return (
     <RollShell
+      flowKey="recover"
       variant="test"
       title={`${sr.state === 'empetre' ? 'Se libérer' : 'Se rouler au sol'} — ${sr.state}`}
       subtitle={<>{sub} · {sr.stacks} pion{sr.stacks > 1 ? 's' : ''}</>}

@@ -90,6 +90,7 @@ export function ShipManeuverModal() {
 
   return (
     <RollShell
+      flowKey="shipManeuver"
       title={<><Icon id="action/steer-ship" size="sm" /> Manœuvre — Test d’équipage</>}
       variant="test"
       subtitle={<><strong>{ship.name}</strong> — {p.participants.length} rôle{plural(p.participants.length)} à la manœuvre (DR sommés, MDG ch.14)</>}

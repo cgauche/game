@@ -520,6 +520,15 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                       onChange={(e) => updRoute(selRoute.id, { ambush: { ...selRoute.ambush!, entry: e.target.value || undefined } })}
                     />
                   </label>
+                  {selRoute.sea && (
+                    <label className="ed-field">Ancrage en mer (% de la route, défaut 50 %)
+                      <input
+                        type="number" min={0} max={100}
+                        value={Math.round((selRoute.ambush.at ?? 0.5) * 100)}
+                        onChange={(e) => updRoute(selRoute.id, { ambush: { ...selRoute.ambush!, at: Math.max(0, Math.min(100, Number(e.target.value) || 0)) / 100 } })}
+                      />
+                    </label>
+                  )}
                 </>
               )}
 
