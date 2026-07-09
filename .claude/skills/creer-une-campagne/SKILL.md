@@ -72,6 +72,12 @@ le DOM dans le même `evaluate` que l'action qui le change.
   route n'est pas une garantie de rencontre scénarisée à coup sûr (issue #212).
 - **Deux routes entre les mêmes lieux, c'est OK** — le « sens » n'est qu'un nommage d'auteur, pas une
   contrainte mécanique (cf. étape 4 ci-dessus).
+- **`appearance.species` = id STABLE, jamais un libellé** — vocabulaire = ids de `species.json` (espèces
+  jouables : `humains-reiklander`, `nains`…) ∪ ids de def rig (monstres/races non-jouables). `species`
+  absent = défaut Humain (documenté). Un libellé vit d'un défaut silencieux → poison.
+- **Résolveur `speciesId` de `lib.mjs`** (branché dans `NPC`) : accepte un id valide (idempotent) OU un
+  libellé EXACT de `species.json` (converti en id), tout le reste → throw. L'auteur peut donc écrire
+  `species: 'Humains (Reiklander)'` (libellé lisible) ; la sortie régénérée ne porte que l'id.
 - **JAMAIS de note technique dans un texte joueur.** Un `node.text`/dialogue est rendu VERBATIM
   (`DialogueBox.tsx`) : ni identifiant de code (`` `state.vessel.manann` ``), ni tag d'auteur
   (`[INEXPRIMABLE]`/`[CONTOURNÉ]`), ni citation RAW brute (`MDG 14 l.45-47`) ne doivent s'y glisser — les

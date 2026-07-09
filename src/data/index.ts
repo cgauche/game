@@ -1543,7 +1543,9 @@ export function findSpeciesById(id: string | undefined): SpeciesData | undefined
   return id ? SPECIES_BY_ID.get(id) : undefined;
 }
 /** id d'espèce RIG (slug, clé `appearance.species`) dérivé d'un id d'espèce RULES (ou chaîne libre) :
- *  slug du LIBELLÉ d'espèce. Pont UNIQUE rules→rig (pregens/draft/creator/defaultAppearance). Défaut Humain. */
+ *  slug du LIBELLÉ d'espèce. Pont UNIQUE rules→rig (pregens/draft/creator/defaultAppearance). Défaut Humain.
+ *  Invariant : `slugId(label) === id` pour TOUTE entrée de species.json → la sortie est un id species.json
+ *  (vocabulaire canonique d'`appearance.species`, gardé par `refs-migrated.test.ts`). */
 export function rigSpeciesId(rulesId: string | undefined): string {
   return slugId(findSpeciesById(rulesId)?.label ?? rulesId ?? 'Humain');
 }

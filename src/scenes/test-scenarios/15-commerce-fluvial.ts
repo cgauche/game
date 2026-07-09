@@ -42,20 +42,20 @@ function traders(): Combatant[] {
   skill(berta, 'evaluation', 50);
   skill(berta, 'resistance-a-l-alcool', 45);
   berta.items = [...(berta.items ?? []), itemFromTrappingById('ration')!, itemFromTrappingById('ration')!];
-  berta.appearance = { species: 'Humains (Reiklander)', sex: 'F', build: 0.5 };
+  berta.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.5 };
 
   const gunnar = createHero({ speciesId: 'humains-reiklander', careerId: 'batelier', name: 'Gunnar le Batelier', motivation: 'Test', rng: makeRNG(1502), id: 'com-gunnar' });
   skill(gunnar, 'ramer', 50);
   skill(gunnar, 'voile', 40);
-  gunnar.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.58 };
+  gunnar.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.58 };
 
   const otto = createHero({ speciesId: 'humains-reiklander', careerId: 'garde', name: 'Otto le Garde', motivation: 'Test', rng: makeRNG(1503), id: 'com-otto' });
   skill(otto, 'intimidation', 40);
-  otto.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.62 };
+  otto.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.62 };
 
   const lise = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Lise la Scribe', motivation: 'Test', rng: makeRNG(1504), id: 'com-lise' });
   skill(lise, 'metier', 40, 'Cartographe');
-  lise.appearance = { species: 'Humains (Reiklander)', sex: 'F', build: 0.42 };
+  lise.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.42 };
 
   return [berta, gunnar, otto, lise];
 }

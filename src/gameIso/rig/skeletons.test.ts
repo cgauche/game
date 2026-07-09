@@ -3,6 +3,8 @@ import { baseSpeciesOf, baseSkeleton, applyBuild } from './skeletons';
 import { gabaritById } from './gabarits';
 import { worldTransforms, apply } from './kinematics';
 import { BONE_IDS } from './bones';
+import { species } from '../../data/index';
+import speciesRaceJson from '../../data/speciesRace.json';
 
 describe('baseSpeciesOf', () => {
   it('normalise les variantes régionales', () => {
@@ -11,6 +13,32 @@ describe('baseSpeciesOf', () => {
     expect(baseSpeciesOf('Halflings (Cendreplaine)')).toBe('Halfling');
     expect(baseSpeciesOf('Hauts Elfes')).toBe('Haut-Elfe');
     expect(baseSpeciesOf('Elfes sylvains')).toBe('Elfe sylvain');
+  });
+
+  // Le vocabulaire d'`appearance.species` = ids STABLES de species.json (slug du libellé). Chaque id
+  // valide DOIT matcher une RÈGLE explicite de speciesRace.json, jamais vivre du défaut silencieux.
+  const RACE_BY_FAMILY: Record<string, string> = {
+    Humains: 'Humain', Halflings: 'Halfling', Nains: 'Nain', Gnomes: 'Gnome',
+    Ogres: 'Ogre', 'Hauts elfes': 'Haut-Elfe', 'Elfes sylvains': 'Elfe sylvain',
+  };
+  it('une règle EXPLICITE couvre l\'id humain (pas le défaut)', () => {
+    const humainRule = speciesRaceJson.rules.find((r) => r.race === 'Humain' && (r.prefix ?? []).includes('humain'));
+    expect(humainRule, 'speciesRace.json doit porter une règle prefix "humain" → Humain').toBeTruthy();
+  });
+  it('tout id de species.json résout vers la race de sa famille PAR RÈGLE', () => {
+    for (const s of species) {
+      const family = s.family ?? s.label;
+      const expected = RACE_BY_FAMILY[family];
+      expect(expected, `famille non cartographiée: ${family} (${s.id})`).toBeTruthy();
+      expect(baseSpeciesOf(s.id), `${s.id} → ${expected}`).toBe(expected);
+    }
+  });
+  it('une chaîne poubelle retombe sur le DÉFAUT (Humain), discriminant', () => {
+    // 'zzz-espece-inconnue' ne matche AUCUNE règle → défaut ; 'nains' matche une règle → Nain (≠ défaut),
+    // ce qui prouve que les ids valides passent bien par les règles et non par la retombée.
+    expect(baseSpeciesOf('zzz-espece-inconnue')).toBe(speciesRaceJson.default);
+    expect(baseSpeciesOf('nains')).toBe('Nain');
+    expect(baseSpeciesOf('nains')).not.toBe(speciesRaceJson.default);
   });
 });
 

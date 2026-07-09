@@ -20,6 +20,9 @@ import interludeEventsJson from './interludeEvents.json';
 import tavernGamesJson from './tavernGames.json';
 import seaWeatherJson from './sea-weather.json';
 import areneProject from '../scenes/arene/arene-projet.json';
+import loupProject from '../scenes/loup-et-saumure/loup-et-saumure-projet.json';
+import { SCENARIOS } from '../scenes/test-scenarios/_registry.generated';
+import { creatureSpeciesOptions } from '../gameIso/rig/creatures';
 import { CHAR_KEYS } from '../engine/types';
 
 const isObj = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x != null;
@@ -430,5 +433,39 @@ describe('refs migrées — refs structurées par id, zéro libellé résiduel',
       walk(makePregens(), 'pregens(runtime — makePregens)', false); // composition réelle career/species → Combatant
       expect(unresolved, unresolved.join('\n')).toEqual([]);
     });
+  });
+});
+
+// ── GARDE DE CLASSE — `appearance.species` = id STABLE, jamais un LIBELLÉ. Le champ route (1) le PLAN de
+// rig par lookup EXACT `defById` dans DEF_BY_ID et (2) la RACE par `baseSpeciesOf` : un libellé n'y résout
+// dans aucun registre exact et vit d'un défaut silencieux. Vocabulaire CANONIQUE = ids de species.json
+// (espèces jouables) ∪ ids de def rig (creatureSpeciesOptions). `species` absent = OK (défaut Humain
+// documenté). Cf. [[game-ids-internes-libelles-display-multilangue]].
+describe('appearance.species — id stable (species.json ∪ defs rig), jamais un libellé', () => {
+  const VALID_SPECIES = new Set<string>([...species.map((s) => s.id), ...creatureSpeciesOptions().map((o) => o.id)]);
+  function collect(node: unknown, where: string, out: string[]): void {
+    if (Array.isArray(node)) { node.forEach((x, i) => collect(x, `${where}[${i}]`, out)); return; }
+    if (!isObj(node)) return;
+    const app = node.appearance;
+    if (isObj(app) && typeof app.species === 'string' && !VALID_SPECIES.has(app.species))
+      out.push(`${where}.appearance.species = ${JSON.stringify(app.species)}`);
+    for (const [k, v] of Object.entries(node)) collect(v, `${where}.${k}`, out);
+  }
+
+  it('projets Arène + Loup-et-Saumure : tout appearance.species est une clé exacte de species.json ∪ defs rig', () => {
+    const bad: string[] = [];
+    collect(areneProject, 'arene-projet.json', bad);
+    collect(loupProject, 'loup-et-saumure-projet.json', bad);
+    expect(bad, bad.join('\n')).toEqual([]);
+  });
+
+  it('scénarios de test (scene + extraScenes + party) : tout appearance.species résout dans le vocabulaire', () => {
+    const bad: string[] = [];
+    for (const s of SCENARIOS) {
+      collect(s.scene, `${s.id}.scene`, bad);
+      if (s.extraScenes) collect(s.extraScenes, `${s.id}.extraScenes`, bad);
+      collect(s.makeParty(), `${s.id}.party`, bad);
+    }
+    expect(bad, bad.join('\n')).toEqual([]);
   });
 });

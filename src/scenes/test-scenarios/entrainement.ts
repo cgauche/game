@@ -49,7 +49,7 @@ function tireur(): Combatant {
   recomputeLoadout(h);
   // Tir rapide (LDB 10) : interruption à distance pendant la pause de début de Round (badge de la frise d'Initiative).
   if (!h.talents.some((t) => t.talentId === 'tir-rapide')) h.talents.push({ talentId: 'tir-rapide', times: 1 });
-  h.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.5 };
+  h.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.5 };
   return h;
 }
 

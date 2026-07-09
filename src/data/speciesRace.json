@@ -4,6 +4,12 @@
   "rules": [
     {
       "prefix": [
+        "humain"
+      ],
+      "race": "Humain"
+    },
+    {
+      "prefix": [
         "haut"
       ],
       "race": "Haut-Elfe"

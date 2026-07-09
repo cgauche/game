@@ -11,7 +11,8 @@
  * de normalisation LIBELLÉ→id (l'auteur écrit des libellés lisibles ; le JSON canonique ne porte que des ids).
  */
 import { buildScene } from '../../src/state/mapSpec.ts';
-import { findCreature, findCreatureById, findSkill, findSkillById, findSpellById, spells as SPELL_CATALOG } from '../../src/data/index.ts';
+import { findCreature, findCreatureById, findSkill, findSkillById, findSpellById, spells as SPELL_CATALOG, species as SPECIES_CATALOG } from '../../src/data/index.ts';
+import { creatureSpeciesOptions } from '../../src/gameIso/rig/creatures/index.ts';
 import { parseTraitInstance } from '../../src/engine/traits/dispatch.ts';
 
 // ── Normalisation LIBELLÉ → id STABLE, à l'AUTHORING ────────────────────────────────────────
@@ -51,6 +52,23 @@ function spellId(label) {
   if (!sp) throw new Error(`arène : sort introuvable « ${label} »`);
   return sp.id;
 }
+// Vocabulaire d'`appearance.species` : ids STABLES de species.json (espèces jouables) ∪ ids de def rig
+// (DEF_BY_ID, monstres/races non-jouables). Un LIBELLÉ n'est PAS un id — cf. [[game-ids-internes-libelles-display-multilangue]].
+const SPECIES_IDS = new Set(SPECIES_CATALOG.map((s) => s.id));
+const SPECIES_ID_BY_LABEL = new Map(SPECIES_CATALOG.map((s) => [s.label, s.id]));
+const RIG_DEF_IDS = new Set(creatureSpeciesOptions().map((o) => o.id));
+/** `appearance.species` : id STABLE (species.json OU def rig) — IDEMPOTENT (id valide passe tel quel) ;
+ *  libellé EXACT de species.json → son id ; tout le reste → throw (jamais un id deviné). */
+function speciesId(input) {
+  if (SPECIES_IDS.has(input) || RIG_DEF_IDS.has(input)) return input;
+  const byLabel = SPECIES_ID_BY_LABEL.get(input);
+  if (byLabel) return byLabel;
+  throw new Error(
+    `arène : appearance.species introuvable « ${input} » — attendu un id de species.json ` +
+      `(${[...SPECIES_IDS].join(', ')}) ou un id de def rig (ex. ${[...RIG_DEF_IDS].slice(0, 8).join(', ')}…)`,
+  );
+}
+
 /** Chaîne de statbloc/optionnel (« Souffle +15 (Ténèbres) ») → `TraitInstance` structuré ; objet déjà
  *  structuré → inchangé. `parseTraitInstance` est le SEUL parseur libellé→trait (registre `traits.json`). */
 const traitInstance = (t) => (typeof t === 'string' ? parseTraitInstance(t) : t);
@@ -154,9 +172,12 @@ export function resetIds() {
   propSeq = 0;
 }
 
-/** Personnage (PNJ) : apparence/dialogue/marchand via opts. */
+/** Personnage (PNJ) : apparence/dialogue/marchand via opts. `appearance.species` (LIBELLÉ lisible
+ *  d'auteur) → id STABLE via `speciesId` (fail-fast). `species` absent = défaut Humain (documenté). */
 export function NPC(id, x, y, label, opts = {}) {
-  return { id, kind: 'personnage', pos: { x, y }, label, ...opts };
+  const e = { id, kind: 'personnage', pos: { x, y }, label, ...opts };
+  if (e.appearance?.species != null) e.appearance = { ...e.appearance, species: speciesId(e.appearance.species) };
+  return e;
 }
 
 export function hero(x, y) {

@@ -2721,7 +2721,7 @@
      "facing": "S",
      "dialogueId": "dlg-hub",
      "appearance": {
-      "species": "Humains (Reiklander)",
+      "species": "humains-reiklander",
       "career": "Répurgateur",
       "sex": "M",
       "build": 0.62
@@ -2739,7 +2739,7 @@
      "facing": "S",
      "dialogueId": "dlg-garde",
      "appearance": {
-      "species": "Humains (Reiklander)",
+      "species": "humains-reiklander",
       "career": "Soldat",
       "sex": "M",
       "build": 0.58
@@ -2876,7 +2876,7 @@
       "archetype": "medecin"
      },
      "appearance": {
-      "species": "Humains (Reiklander)",
+      "species": "humains-reiklander",
       "career": "Apothicaire",
       "sex": "M",
       "build": 0.46
@@ -2972,7 +2972,7 @@
      "anim": "feeding",
      "facing": "E",
      "appearance": {
-      "species": "Nains",
+      "species": "nains",
       "career": "Batelier"
      }
     },
@@ -3120,7 +3120,7 @@
      "facing": "S",
      "dialogueId": "dlg-frere",
      "appearance": {
-      "species": "Humains (Reiklander)",
+      "species": "humains-reiklander",
       "career": "Prêtre",
       "sex": "M",
       "build": 0.5
@@ -3248,7 +3248,7 @@
       "archetype": "armurier"
      },
      "appearance": {
-      "species": "Nains",
+      "species": "nains",
       "career": "Artisan",
       "sex": "M",
       "build": 0.7
@@ -14924,7 +14924,7 @@
      "dialogueId": "dlg-prisonnier",
      "anim": "cowering",
      "appearance": {
-      "species": "Halflings",
+      "species": "halflings",
       "career": "Mendiant",
       "sex": "M"
      }

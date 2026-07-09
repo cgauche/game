@@ -32,26 +32,26 @@ function crew(): Combatant[] {
   skill(cap, 'commandement', 50);
   skill(cap, 'voile', 40);
   cap.items = [...(cap.items ?? []), itemFromTrappingById('ration')!, itemFromTrappingById('ration')!];
-  cap.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.55 };
+  cap.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.55 };
 
   const timo = createHero({ speciesId: 'humains-reiklander', careerId: 'chasseur', name: 'Timonière Hilda', motivation: 'Test', rng: makeRNG(4802), id: 'mar-timo' });
   timo.shipRole = 'timonier';
   skill(timo, 'voile', 55);
   skill(timo, 'ramer', 45);
   skill(timo, 'metier', 40, 'Charpentier'); // entretien de la coque au soir
-  timo.appearance = { species: 'Humains (Reiklander)', sex: 'F', build: 0.42 };
+  timo.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.42 };
 
   const navi = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Navigateur Ansmann', motivation: 'Test', rng: makeRNG(4803), id: 'mar-navi' });
   navi.shipRole = 'navigateur';
   skill(navi, 'orientation', 55);
   skill(navi, 'savoir', 40, 'oceans'); // bonus d'Orientation au phare (MDG ch.13 l.335)
-  navi.appearance = { species: 'Humains (Reiklander)', sex: 'M', build: 0.48 };
+  navi.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.48 };
 
   const vigie = createHero({ speciesId: 'humains-reiklander', careerId: 'eclaireur', name: 'Vigie Perla', motivation: 'Test', rng: makeRNG(4804), id: 'mar-vigie' });
   vigie.shipRole = 'vigie';
   skill(vigie, 'perception', 55);
   skill(vigie, 'voile', 35);
-  vigie.appearance = { species: 'Humains (Reiklander)', sex: 'F', build: 0.4 };
+  vigie.appearance = { species: 'humains-reiklander', sex: 'F', build: 0.4 };
 
   return [cap, timo, navi, vigie];
 }
