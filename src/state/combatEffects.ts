@@ -1209,6 +1209,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           morale: { score: e.morale ?? MORALE_BASE, lastMoraleWeek: 0, factors: [] },
           ...(e.hullMax != null ? { wounds: { current: e.hullCurrent ?? e.hullMax, max: e.hullMax } } : {}),
           ...(e.saboteurDR != null ? { saboteurDR: e.saboteurDR } : {}),
+          ...(e.waterLitres != null ? { waterLitres: Math.max(0, e.waterLitres) } : {}),
           ...(e.crew && e.crew.length ? { crew: e.crew.filter((h) => h.roleId && h.count > 0) } : {}),
         },
       });
@@ -1257,6 +1258,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       if (e.hullMax != null) { next.wounds = { current: e.hullCurrent ?? e.hullMax, max: e.hullMax }; parts.push(`coque ${next.wounds.current}/${next.wounds.max}`); }
       else if (e.hullCurrent != null && vessel.wounds) { next.wounds = { ...vessel.wounds, current: e.hullCurrent }; parts.push(`coque ${next.wounds.current}/${next.wounds.max}`); }
       if (e.saboteurDR != null) { next.saboteurDR = clampSaboteurDR(e.saboteurDR); parts.push(`sabotage ${next.saboteurDR} DR`); }
+      if (e.waterLitres != null) { next.waterLitres = Math.max(0, e.waterLitres); parts.push(`eau ${next.waterLitres} L`); }
       if (e.crew && e.crew.length) { next.crew = e.crew.filter((h) => h.roleId && h.count > 0); parts.push(`équipage ${next.crew.reduce((s, h) => s + h.count, 0)}`); }
       if (!parts.length) { env.log('Ajustement du navire : aucun champ fourni — sans effet.'); return; }
       env.set({ vessel: next });

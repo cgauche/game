@@ -28,6 +28,7 @@ import type {
   EncounterMember,
   EncounterDef,
   SceneStationAnchor,
+  VictoryCondition,
 } from './scene';
 import { emptyScene } from './scene';
 import type { Flow } from './flow';
@@ -138,6 +139,8 @@ export interface EncounterSpec {
   threat?: { camp: 'party' | 'enemies'; tier: ThreatTier };
   /** Avantage initial — Terrain (AA l.4149-4167), cf. `EncounterDef.terrain`. */
   terrain?: { camp: 'party' | 'enemies'; heavy?: boolean };
+  /** Objectif de victoire (#197), cf. `EncounterDef.victoryCondition`. Absent = `allEnemiesDead`. */
+  victoryCondition?: VictoryCondition;
 }
 
 /** RECETTE par LETTRE d'une CASE COMPLÈTE (sol + AU PLUS un rôle/structure dessus) — l'authoring unifié
@@ -497,7 +500,7 @@ export function buildScene(spec: MapSpec): Scene {
   for (const e of spec.encounters ?? []) {
     const built = buildEncounter({
       id: e.id, enemies: e.enemies ?? [], surprise: e.surprise, onVictory: e.onVictory, hidden: e.hidden,
-      maneuverability: e.maneuverability, threat: e.threat, terrain: e.terrain,
+      maneuverability: e.maneuverability, threat: e.threat, terrain: e.terrain, victoryCondition: e.victoryCondition,
     });
     encEntities.push(...built.entities);
     const bound = boundMembers.filter((b) => b.enc === e.id).map((b) => b.member);

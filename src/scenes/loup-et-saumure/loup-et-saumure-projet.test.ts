@@ -120,17 +120,26 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     expect(choice, 'extendedTest présent').toBeTruthy();
   });
 
-  /** Tous les `Effect` posés dans un `flow` (choix de dialogue), toutes scènes confondues. */
+  /** Marche UN Flow (feuille `do`, `seq`, `if`, `test`) et collecte ses `Effect`. Le nœud `test`
+   *  porte ses branches en `success`/`fail` (Flows `flowOf`), PAS `onSuccess`/`onFailure`. */
+  function walkFlow(flow: any, out: Effect[]) {
+    if (!flow) return;
+    if (flow.kind === 'do') out.push(flow.effect);
+    else if (flow.kind === 'seq') for (const s of flow.steps) walkFlow(s, out);
+    else if (flow.kind === 'if') { walkFlow(flow.then, out); walkFlow(flow.else, out); }
+    else if (flow.kind === 'test') { walkFlow(flow.success, out); walkFlow(flow.fail, out); }
+  }
+
+  /** Tous les `Effect` posés dans un `flow` de la campagne — choix de dialogue, triggers, onVictory des
+   *  rencontres, et interactions de décor (`entities[].interact`) — toutes scènes confondues. */
   function allEffects(): Effect[] {
     const out: Effect[] = [];
-    const walk = (flow: any) => {
-      if (!flow) return;
-      if (flow.kind === 'do') out.push(flow.effect);
-      else if (flow.kind === 'seq') for (const s of flow.steps) walk(s);
-      else if (flow.kind === 'if') { walk(flow.then); walk(flow.else); }
-      else if (flow.kind === 'test') { for (const s of flow.onSuccess ?? []) walk(s); for (const s of flow.onFailure ?? []) walk(s); }
-    };
-    for (const sc of project) for (const d of sc.dialogues) for (const n of d.nodes) for (const c of n.choices) walk(c.flow);
+    for (const sc of project) {
+      for (const d of sc.dialogues) for (const n of d.nodes) for (const c of n.choices) walkFlow(c.flow, out);
+      for (const t of sc.triggers) walkFlow(t.flow, out);
+      for (const enc of sc.encounters) walkFlow(enc.onVictory, out);
+      for (const e of sc.entities) if (e.interact?.flow) walkFlow(e.interact.flow, out);
+    }
     return out;
   }
 
@@ -188,8 +197,8 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     expect(MERCHANTS[av.merchant!.archetype!], 'archétype « avitailleur » au registre').toBeTruthy();
   });
 
-  it('ZÉRO jargon technique dans les textes joueur (répliques de dialogue)', () => {
-    const jargonPattern = /`|state\.vessel|seaVoyageFlow|op:'testMod'|engine\/ops\.ts|adjustManann|setVessel|saboteurDR|factorId|MDG \d+ l\.\d/;
+  it('ZÉRO jargon technique dans les textes joueur (dialogues, journal, modales document, objectifs)', () => {
+    const jargonPattern = /`|INEXPRIMABLE|CONTOURN|\bstate\.|\bvessel\.|\bTODO\b|seaVoyageFlow|op:'testMod'|engine\/ops\.ts|adjustManann|adjustVessel|setVessel|setObjective|saboteurDR|factorId|woundsThreshold|MDG \d+ l\.\d/;
     const bad: string[] = [];
     for (const sc of project)
       for (const d of sc.dialogues)
@@ -197,8 +206,75 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
           if (jargonPattern.test(n.text)) bad.push(`${sc.id}/${d.id}/${n.id}: node.text`);
           for (const c of n.choices) if (jargonPattern.test(c.text)) bad.push(`${sc.id}/${d.id}/${n.id}: choice "${c.text}"`);
         }
-    for (const e of allEffects()) if (e.type === 'journal' && jargonPattern.test(e.text)) bad.push(`journal: "${e.text}"`);
+    for (const e of allEffects()) {
+      if (e.type === 'journal' && jargonPattern.test(e.text)) bad.push(`journal: "${e.text}"`);
+      if (e.type === 'document' && (jargonPattern.test(e.title) || jargonPattern.test(e.text))) bad.push(`document: "${e.title}"`);
+      if (e.type === 'setObjective' && jargonPattern.test(e.text)) bad.push(`objectif: "${e.text}"`);
+    }
     expect(bad).toEqual([]);
+  });
+
+  it('OBJECTIFS d’acte (#238) : posés/mis à jour aux bascules (id STABLE unique), vidés à l’épilogue', () => {
+    const objTexts = allEffects().filter((e): e is Extract<Effect, { type: 'setObjective' }> => e.type === 'setObjective');
+    // Tous keyés par le MÊME id stable (une pile d’objectif qui ÉVOLUE, doc §10).
+    expect(objTexts.length).toBeGreaterThanOrEqual(4);
+    for (const o of objTexts) expect(o.id).toBe('ls-mission');
+    // Bascule 1 : la commission de Köhler pose l’objectif d’aller.
+    const salzenmund = project.find((s) => s.id === 'ls-quai-salzenmund')!;
+    const accept = salzenmund.dialogues.find((d) => d.id === 'dlg-kohler')!.nodes.flatMap((n) => n.choices).find((c) => /Accepter la commission/.test(c.text))!;
+    const acceptEffects: Effect[] = [];
+    walkFlow(accept.flow, acceptEffects);
+    expect(acceptEffects.some((e) => e.type === 'setObjective')).toBe(true);
+    // Bascule 2 : la victoire sur la cogue met l’objectif à jour.
+    const cogue = project.find((s) => s.id === 'ls-abordage-cogue')!;
+    const cogueOnVictory: Effect[] = [];
+    walkFlow(cogue.encounters[0].onVictory, cogueOnVictory);
+    expect(cogueOnVictory.some((e) => e.type === 'setObjective')).toBe(true);
+    // Bascule 3 : l’arrivée à Erengrad (trigger) pose l’objectif d’escale.
+    const erengrad = project.find((s) => s.id === 'ls-quai-erengrad')!;
+    const trigEffects: Effect[] = [];
+    for (const t of erengrad.triggers) walkFlow(t.flow, trigEffects);
+    expect(trigEffects.some((e) => e.type === 'setObjective')).toBe(true);
+    // Bascule 4 : reprendre la mer vers Salzenmund pose l’objectif de retour.
+    const depart = erengrad.entities.find((e) => e.interact?.flow && /Reprendre la mer/.test(e.label ?? ''))!;
+    const departEffects: Effect[] = [];
+    walkFlow(depart.interact!.flow, departEffects);
+    expect(departEffects.some((e) => e.type === 'setObjective')).toBe(true);
+    // Épilogue : la pile est VIDÉE (clearObjective sans id).
+    const clears = allEffects().filter((e): e is Extract<Effect, { type: 'clearObjective' }> => e.type === 'clearObjective');
+    expect(clears.length).toBeGreaterThan(0);
+    expect(clears.some((e) => e.id == null)).toBe(true);
+  });
+
+  it('REDDITION (#215) : enc-cogue porte woundsThreshold sur la coque « cogue » à mi-Blessures', () => {
+    const cogue = project.find((s) => s.id === 'ls-abordage-cogue')!;
+    const vc = cogue.encounters.find((e) => e.id === 'enc-cogue')!.victoryCondition;
+    expect(vc, 'victoryCondition câblée sur enc-cogue').toBeTruthy();
+    expect(vc).toEqual({ type: 'woundsThreshold', targetId: 'cogue', belowPercent: 50 });
+    // targetId référence une VRAIE entité-coque de la scène.
+    expect(cogue.entities.some((e) => e.id === 'cogue')).toBe(true);
+  });
+
+  it('DÉMASQUAGE de Kramer (#233) : la réussite d’Intuition à la nuit du chat lève le sabotage (adjustVessel saboteurDR 0)', () => {
+    const erengrad = project.find((s) => s.id === 'ls-quai-erengrad')!;
+    const nc = erengrad.dialogues.find((d) => d.id === 'dlg-kramer-nuit-du-chat')!;
+    const intuition = nc.nodes[0].choices.find((c) => c.flow?.kind === 'test')!;
+    const succ: Effect[] = [];
+    walkFlow((intuition.flow as any).success, succ);
+    const patch = succ.find((e): e is Extract<Effect, { type: 'adjustVessel' }> => e.type === 'adjustVessel');
+    expect(patch, 'adjustVessel posé sur la branche de réussite').toBeTruthy();
+    expect(patch!.saboteurDR).toBe(0);
+    // Le dénouement est VISIBLE au moment (modale document), pas seulement au journal.
+    expect(succ.some((e) => e.type === 'document')).toBe(true);
+  });
+
+  it('les DEUX instances de Kramer partagent la MÊME apparence (même personnage, id STABLE)', () => {
+    const quai = project.find((s) => s.id === 'ls-quai-salzenmund')!.entities.find((e) => e.id === 'kramer')!;
+    const erengrad = project.find((s) => s.id === 'ls-quai-erengrad')!.entities.find((e) => e.id === 'kramer-erengrad')!;
+    expect(quai.appearance).toBeTruthy();
+    expect(quai.appearance).toEqual(erengrad.appearance);
+    expect(quai.appearance!.tenue).toBe('marchand');
+    expect(quai.appearance!.species).toBe('humains-reiklander');
   });
 
   it('chaque combat enrôlé spawn sur une case MARCHABLE de la carte (footprint des coques compris)', () => {

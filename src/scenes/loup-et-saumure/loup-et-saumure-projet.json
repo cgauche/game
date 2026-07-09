@@ -200,7 +200,8 @@
       "species": "humains-reiklander",
       "tenue": "noble",
       "sex": "M",
-      "build": 0.5
+      "build": 0.5,
+      "seed": 5120
      }
     },
     {
@@ -231,9 +232,11 @@
      "facing": "S",
      "dialogueId": "dlg-kramer",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "marchand",
       "sex": "F",
-      "build": 0.45
+      "build": 0.45,
+      "seed": 20471
      }
     },
     {
@@ -342,8 +345,9 @@
          {
           "kind": "do",
           "effect": {
-           "type": "journal",
-           "text": "Il faut d’abord accepter la commission du baron Köhler."
+           "type": "document",
+           "title": "La passerelle du Grimm",
+           "text": "Le maître de quai croise les bras devant la passerelle. « Pas d’appareillage sans l’ordre du baron Köhler, capitaine. Voyez-le d’abord. »"
           }
          }
         ]
@@ -360,7 +364,7 @@
       {
        "id": "k1",
        "speaker": "Baron Ludolf Köhler",
-       "text": "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. »",
+       "text": "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. Le fond de cale est avitaillé au minimum ; le chandelier du quai vous vendra l'eau et les vivres du voyage. »",
        "choices": [
         {
          "text": "Accepter la commission (40 CO, le Grimm à quai)",
@@ -388,6 +392,7 @@
              "hullCurrent": 180,
              "hullMax": 180,
              "saboteurDR": -2,
+             "waterLitres": 516,
              "crew": [
               {
                "roleId": "navigateur",
@@ -426,6 +431,14 @@
            {
             "kind": "do",
             "effect": {
+             "type": "setObjective",
+             "id": "ls-mission",
+             "text": "Livrer le fret de Dame Kramer à Erengrad avant les glaces."
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
              "type": "journal",
              "text": "Le Grimm est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage."
             }
@@ -436,19 +449,7 @@
         },
         {
          "text": "Lui demander de financer le carénage (60 CO)",
-         "flow": {
-          "kind": "seq",
-          "steps": [
-           {
-            "kind": "do",
-            "effect": {
-             "type": "journal",
-             "text": "« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale. »"
-            }
-           }
-          ]
-         },
-         "next": "k1"
+         "next": "k-careene"
         },
         {
          "text": "Prendre congé",
@@ -467,6 +468,17 @@
            }
           ]
          }
+        }
+       ]
+      },
+      {
+       "id": "k-careene",
+       "speaker": "Baron Ludolf Köhler",
+       "text": "« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale, et vous traînerez la salissure dans chaque manœuvre. »",
+       "choices": [
+        {
+         "text": "Revenir à la commission",
+         "next": "k1"
         }
        ]
       }
@@ -499,17 +511,10 @@
              "type": "setFlag",
              "flag": "ls_benediction_aldo"
             }
-           },
-           {
-            "kind": "do",
-            "effect": {
-             "type": "journal",
-             "text": "Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe."
-            }
            }
           ]
          },
-         "next": "a1"
+         "next": "a-benediction"
         },
         {
          "text": "Faire un petit sacrifice (une pièce jetée à la mer)",
@@ -529,17 +534,10 @@
              "type": "adjustManann",
              "factorId": "petit-sacrifice"
             }
-           },
-           {
-            "kind": "do",
-            "effect": {
-             "type": "journal",
-             "text": "Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »"
-            }
            }
           ]
          },
-         "next": "a1"
+         "next": "a-petit"
         },
         {
          "text": "Faire un sacrifice moyen (une gemme de votre bourse)",
@@ -559,17 +557,10 @@
              "type": "adjustManann",
              "factorId": "sacrifice-moyen"
             }
-           },
-           {
-            "kind": "do",
-            "effect": {
-             "type": "journal",
-             "text": "La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »"
-            }
            }
           ]
          },
-         "next": "a1"
+         "next": "a-moyen"
         },
         {
          "text": "Faire un grand sacrifice (une vache entière, la moitié des provisions)",
@@ -589,33 +580,14 @@
              "type": "adjustManann",
              "factorId": "grand-sacrifice"
             }
-           },
-           {
-            "kind": "do",
-            "effect": {
-             "type": "journal",
-             "text": "La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »"
-            }
            }
           ]
          },
-         "next": "a1"
+         "next": "a-grand"
         },
         {
          "text": "Lui demander l’origine de son ordre",
-         "flow": {
-          "kind": "seq",
-          "steps": [
-           {
-            "kind": "do",
-            "effect": {
-             "type": "journal",
-             "text": "« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels — mieux que je ne le voudrais. »"
-            }
-           }
-          ]
-         },
-         "next": "a1"
+         "next": "a-origine"
         },
         {
          "text": "Le saluer",
@@ -632,6 +604,61 @@
          }
         }
        ]
+      },
+      {
+       "id": "a-benediction",
+       "speaker": "Frère Aldo",
+       "text": "Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe. « La coque est bénie, capitaine. Manann veille. »",
+       "choices": [
+        {
+         "text": "Le remercier",
+         "next": "a1"
+        }
+       ]
+      },
+      {
+       "id": "a-petit",
+       "speaker": "Frère Aldo",
+       "text": "Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »",
+       "choices": [
+        {
+         "text": "Revenir",
+         "next": "a1"
+        }
+       ]
+      },
+      {
+       "id": "a-moyen",
+       "speaker": "Frère Aldo",
+       "text": "La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »",
+       "choices": [
+        {
+         "text": "Revenir",
+         "next": "a1"
+        }
+       ]
+      },
+      {
+       "id": "a-grand",
+       "speaker": "Frère Aldo",
+       "text": "La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »",
+       "choices": [
+        {
+         "text": "Revenir",
+         "next": "a1"
+        }
+       ]
+      },
+      {
+       "id": "a-origine",
+       "speaker": "Frère Aldo",
+       "text": "« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels, le dieu des naufrageurs — mieux que je ne le voudrais. On ne le paie pas : on le nourrit. »",
+       "choices": [
+        {
+         "text": "Revenir",
+         "next": "a1"
+        }
+       ]
       }
      ]
     },
@@ -646,19 +673,7 @@
        "choices": [
         {
          "text": "S’enquérir du fret",
-         "flow": {
-          "kind": "seq",
-          "steps": [
-           {
-            "kind": "do",
-            "effect": {
-             "type": "journal",
-             "text": "« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »"
-            }
-           }
-          ]
-         },
-         "next": "kr1"
+         "next": "kr-fret"
         },
         {
          "text": "L’observer discrètement (Intuition)",
@@ -682,8 +697,16 @@
             {
              "kind": "do",
              "effect": {
+              "type": "document",
+              "title": "Votre intuition",
+              "text": "Un éclair de calcul froid passe dans le regard de Dame Kramer, vite maîtrisé. Cette femme cache quelque chose — et ce n’est pas une simple affaire de fret."
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
               "type": "journal",
-              "text": "Un éclair de calcul froid passe dans son regard, vite maîtrisé. Elle cache quelque chose."
+              "text": "Intuition : Dame Kramer cache quelque chose."
              }
             }
            ]
@@ -694,7 +717,8 @@
             {
              "kind": "do",
              "effect": {
-              "type": "journal",
+              "type": "document",
+              "title": "Votre intuition",
               "text": "Rien ne transparaît — une négociante comme une autre, en apparence."
              }
             }
@@ -718,6 +742,17 @@
          }
         }
        ]
+      },
+      {
+       "id": "kr-fret",
+       "speaker": "Dame Vasilika Kramer",
+       "text": "« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »",
+       "choices": [
+        {
+         "text": "Revenir",
+         "next": "kr1"
+        }
+       ]
       }
      ]
     },
@@ -732,19 +767,31 @@
        "choices": [
         {
          "text": "Écouter sa chanson",
+         "when": {
+          "kind": "flag",
+          "expr": "!ls_chant_griet"
+         },
          "flow": {
           "kind": "seq",
           "steps": [
            {
             "kind": "do",
             "effect": {
-             "type": "journal",
-             "text": "Griet entonne « Jacques Bret a rencontré notre acier » — l’équipage reprend le refrain."
+             "type": "setFlag",
+             "flag": "ls_chant_griet"
             }
            }
           ]
          },
-         "next": "g1"
+         "next": "g-chant"
+        },
+        {
+         "text": "Lui demander un autre air",
+         "when": {
+          "kind": "flag",
+          "expr": "ls_chant_griet"
+         },
+         "next": "g-chant-encore"
         },
         {
          "text": "La saluer",
@@ -759,6 +806,28 @@
            }
           ]
          }
+        }
+       ]
+      },
+      {
+       "id": "g-chant",
+       "speaker": "Griet",
+       "text": "Griet entonne « Jacques Bret a rencontré notre acier ». Le refrain court de bouche en bouche ; les gabiers tapent du pied sur le pont et reprennent en chœur.",
+       "choices": [
+        {
+         "text": "Applaudir",
+         "next": "g1"
+        }
+       ]
+      },
+      {
+       "id": "g-chant-encore",
+       "speaker": "Griet",
+       "text": "« Toujours la même rengaine ? » Elle rit et enchaîne une complainte plus douce, pour ceux qui restent à quai.",
+       "choices": [
+        {
+         "text": "La saluer",
+         "next": "g1"
         }
        ]
       }
@@ -1310,8 +1379,16 @@
        {
         "kind": "do",
         "effect": {
+         "type": "setObjective",
+         "id": "ls-mission",
+         "text": "Rallier Erengrad avec le fret — la Dent de Manann écartée."
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
          "type": "journal",
-         "text": "La Dent de Manann rompt et sombre. Des épaves flottent — Séquestre à faire valoir à quai."
+         "text": "La Dent de Manann amène son pavillon à mi-coque — la cogue se rend. Des épaves flottent : Séquestre à faire valoir à quai."
         }
        },
        {
@@ -1323,6 +1400,11 @@
         }
        }
       ]
+     },
+     "victoryCondition": {
+      "type": "woundsThreshold",
+      "targetId": "cogue",
+      "belowPercent": 50
      }
     }
    ],
@@ -1499,9 +1581,11 @@
      "facing": "S",
      "dialogueId": "dlg-rumeur-olg",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "debardeur",
       "sex": "M",
-      "build": 0.6
+      "build": 0.6,
+      "seed": 8830
      }
     },
     {
@@ -1515,9 +1599,11 @@
      "facing": "S",
      "dialogueId": "dlg-kramer-nuit-du-chat",
      "appearance": {
+      "species": "humains-reiklander",
       "tenue": "marchand",
       "sex": "F",
-      "build": 0.45
+      "build": 0.45,
+      "seed": 20471
      }
     },
     {
@@ -1534,11 +1620,12 @@
       "species": "humains-reiklander",
       "tenue": "artisan",
       "sex": "M",
-      "build": 0.6
+      "build": 0.6,
+      "seed": 3312
      }
     },
     {
-     "id": "p1",
+     "id": "p0",
      "kind": "prop",
      "pos": {
       "x": 2,
@@ -1549,6 +1636,14 @@
       "flow": {
        "kind": "seq",
        "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "setObjective",
+          "id": "ls-mission",
+          "text": "Ramener le Grimm et sa cargaison à Salzenmund."
+         }
+        },
         {
          "kind": "do",
          "effect": {
@@ -1626,8 +1721,23 @@
             {
              "kind": "do",
              "effect": {
+              "type": "adjustVessel",
+              "saboteurDR": 0
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
+              "type": "document",
+              "title": "Kramer démasquée",
+              "text": "Elle craque. Ce n’est pas une négociante de Kislev, mais une initiée de Stromfels — c’est elle qui minait le Grimm depuis Salzenmund. Prise à découvert, elle n’a plus les mains libres : ses manigances cessent. L’équipage gronde."
+             }
+            },
+            {
+             "kind": "do",
+             "effect": {
               "type": "journal",
-              "text": "Elle craque : ce n’est pas une négociante, mais une initiée de Stromfels. L’équipage gronde."
+              "text": "Dame Kramer démasquée : initiée de Stromfels, saboteuse. Le sabotage cesse."
              }
             }
            ]
@@ -1638,7 +1748,8 @@
             {
              "kind": "do",
              "effect": {
-              "type": "journal",
+              "type": "document",
+              "title": "La nuit du chat",
               "text": "« Une insomnie de plus, capitaine. La traversée est éprouvante pour tous. »"
              }
             }
@@ -1714,7 +1825,31 @@
      ]
     }
    ],
-   "triggers": [],
+   "triggers": [
+    {
+     "id": "obj-erengrad",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 16,
+      "h": 8
+     },
+     "once": true,
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setObjective",
+         "id": "ls-mission",
+         "text": "Vendre la laine kislevite et découvrir qui en veut à la cargaison."
+        }
+       }
+      ]
+     }
+    }
+   ],
    "encounters": [],
    "flags": {},
    "weather": "neige",
@@ -2446,7 +2581,14 @@
      },
      "label": "Baron Ludolf Köhler",
      "facing": "S",
-     "dialogueId": "dlg-epilogue"
+     "dialogueId": "dlg-epilogue",
+     "appearance": {
+      "species": "humains-reiklander",
+      "tenue": "noble",
+      "sex": "M",
+      "build": 0.5,
+      "seed": 5120
+     }
     }
    ],
    "dialogues": [
@@ -2487,6 +2629,12 @@
             "effect": {
              "type": "giveXp",
              "amount": 100
+            }
+           },
+           {
+            "kind": "do",
+            "effect": {
+             "type": "clearObjective"
             }
            },
            {

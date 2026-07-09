@@ -174,7 +174,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     }
     case 'transitionBack': return `Retour scène précédente`;
     case 'openWorldMap': return `Carte du monde (voyage)`;
-    case 'setVessel': return `Navire : ${e.name?.trim() ? `« ${e.name.trim()} » (${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'})` : (e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?')}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}${e.saboteurDR != null ? ` · sabotage ${e.saboteurDR} DR` : ''}${e.crew?.length ? ` · équipage ${e.crew.reduce((s: number, h: { count: number }) => s + h.count, 0)}` : ''}`;
+    case 'setVessel': return `Navire : ${e.name?.trim() ? `« ${e.name.trim()} » (${e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?'})` : (e.vehicleId ? (findVehicleById(e.vehicleId)?.label ?? e.vehicleId) : '?')}${e.hullMax != null ? ` · coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}` : ''}${e.saboteurDR != null ? ` · sabotage ${e.saboteurDR} DR` : ''}${e.waterLitres != null ? ` · eau ${e.waterLitres} L` : ''}${e.crew?.length ? ` · équipage ${e.crew.reduce((s: number, h: { count: number }) => s + h.count, 0)}` : ''}`;
     case 'adjustVessel': {
       const parts: string[] = [];
       if (e.name?.trim()) parts.push(`nom « ${e.name.trim()} »`);
@@ -182,6 +182,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
       if (e.hullMax != null) parts.push(`coque ${e.hullCurrent ?? e.hullMax}/${e.hullMax}`);
       else if (e.hullCurrent != null) parts.push(`coque actuelle ${e.hullCurrent}`);
       if (e.saboteurDR != null) parts.push(`sabotage ${e.saboteurDR} DR`);
+      if (e.waterLitres != null) parts.push(`eau ${e.waterLitres} L`);
       if (e.crew?.length) parts.push(`équipage ${e.crew.reduce((s: number, h: { count: number }) => s + h.count, 0)}`);
       return `Ajuster le navire : ${parts.length ? parts.join(', ') : '(aucun champ)'}`;
     }
@@ -519,6 +520,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
                 <label className="dr">Coque actuelle <input type="number" min={0} style={{ width: '3.6em' }} value={e.hullCurrent ?? e.hullMax} onChange={(ev) => upd({ hullCurrent: Math.max(0, Number(ev.target.value) || 0) })} /></label>
               )}
               <label className="dr">Sabotage DR (vide = aucun, MDG 14 l.45-47) <input type="number" min={-5} max={0} style={{ width: '3.6em' }} value={e.saboteurDR ?? ''} onChange={(ev) => upd({ saboteurDR: ev.target.value === '' ? undefined : Math.max(-5, Math.min(0, Number(ev.target.value) || 0)) })} /></label>
+              <label className="dr">Eau douce L (vide = ravitaillement réputé assuré) <input type="number" min={0} style={{ width: '4em' }} value={e.waterLitres ?? ''} onChange={(ev) => upd({ waterLitres: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
             </div>
             <CrewRosterFields e={e} upd={upd} />
           </>
@@ -532,6 +534,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               <label className="dr">Coque max (vide = inchangée) <input type="number" min={1} style={{ width: '3.6em' }} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>
               <label className="dr">Coque actuelle (vide = inchangée) <input type="number" min={0} style={{ width: '3.6em' }} value={e.hullCurrent ?? ''} onChange={(ev) => upd({ hullCurrent: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
               <label className="dr">Sabotage DR (vide = inchangé, MDG 14 l.45-47) <input type="number" min={-5} max={0} style={{ width: '3.6em' }} value={e.saboteurDR ?? ''} onChange={(ev) => upd({ saboteurDR: ev.target.value === '' ? undefined : Math.max(-5, Math.min(0, Number(ev.target.value) || 0)) })} /></label>
+              <label className="dr">Eau douce L (vide = inchangée) <input type="number" min={0} style={{ width: '4em' }} value={e.waterLitres ?? ''} onChange={(ev) => upd({ waterLitres: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
             </div>
             <CrewRosterFields e={e} upd={upd} />
           </>

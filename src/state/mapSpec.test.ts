@@ -277,6 +277,20 @@ describe('buildScene — encounters : marqueurs d’Avantage initial (Manœuvrab
   });
 });
 
+describe('buildScene — encounters : victoryCondition (#197) forwardée par le compilateur MapSpec', () => {
+  const s = buildScene({
+    id: 'vc', nom: 'VC', size: [10, 6], terrain: 'herbe', heroStart: [1, 3],
+    encounters: [{
+      id: 'enc-vc',
+      victoryCondition: { type: 'destroyStructure', edge: { x: 5, y: 4, side: 'N' } },
+      enemies: [{ ref: 'gobelin', pos: { x: 8, y: 3 } }],
+    }],
+  });
+  it('la rencontre buildée porte victoryCondition', () => {
+    expect(s.encounters[0].victoryCondition).toEqual({ type: 'destroyStructure', edge: { x: 5, y: 4, side: 'N' } });
+  });
+});
+
 describe('buildScene — markerFill + emplacement hérite du z du marqueur', () => {
   const s = buildScene({
     id: 'mz', nom: 'MZ', size: [4, 2],

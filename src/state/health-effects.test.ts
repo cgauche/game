@@ -230,6 +230,14 @@ describe('Effet setVessel (navire de campagne, MDG ch.13-15)', () => {
     expect(useGame.getState().vessel?.saboteurDR).toBe(-3);
   });
 
+  it('#241 — waterLitres authoré initial est posé sur le navire de campagne, clampé à ≥0', () => {
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue', waterLitres: -10 }]);
+    expect(useGame.getState().vessel?.waterLitres).toBe(0);
+    useGame.setState({ vessel: undefined });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue', waterLitres: 200 }]);
+    expect(useGame.getState().vessel?.waterLitres).toBe(200);
+  });
+
   it('#230 — nom d\'instance authoré : posé sur le navire ET interpolé au journal', () => {
     useGame.setState({ journal: [] });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'setVessel', vehicleId: 'cogue', name: 'Le Cormoran' }]);
@@ -293,6 +301,13 @@ describe('Effet adjustVessel (#233 — patch PARTIEL du navire de campagne, ≠ 
     useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, wounds: { current: 10, max: 30 } } });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustVessel', hullCurrent: 25 }]);
     expect(useGame.getState().vessel?.wounds).toEqual({ current: 25, max: 30 });
+  });
+
+  it('#241 — patch waterLitres seul → posé, clampé à ≥0, reste des champs INTACT', () => {
+    useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, saboteurDR: -2 } });
+    applyEffects(useGame.getState, useGame.setState, [{ type: 'adjustVessel', waterLitres: -5 }]);
+    expect(useGame.getState().vessel?.waterLitres).toBe(0);
+    expect(useGame.getState().vessel?.saboteurDR).toBe(-2);
   });
 
   it('patch morale seul → score changé, semaine/facteurs préservés', () => {

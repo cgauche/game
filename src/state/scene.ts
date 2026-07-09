@@ -350,7 +350,7 @@ export type Effect =
    *  reçoit/achète un bateau (don d'un patron, chantier). `vehicleId` = un navire de `vehicles.json`
    *  (facette `ship`) ; Moral et Blessures de coque INITIAUX authorés (coque neuve = pas de `wounds`).
    *  Le navire survit aux jours et aux combats (le voyage maritime et le Port en repartent). */
-  | { type: 'setVessel'; vehicleId: string; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; crew?: import('../engine/crewMorale').CrewHire[] }
+  | { type: 'setVessel'; vehicleId: string; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; waterLitres?: number; crew?: import('../engine/crewMorale').CrewHire[] }
   /** Fait varier l'HUMEUR DE MANANN du navire de campagne (MDG ch.15 l.83-125) — à poser sur une
    *  bénédiction de prêtre, un sacrifice ou tout événement narratif d'auteur. `factorId` = un facteur
    *  du tableau « EFFET SUR L'HUMEUR DE MANANN » (`sea-events.json`, appliqué UNE SEULE FOIS par
@@ -362,7 +362,7 @@ export type Effect =
    *  `setVessel` (remplacement total : effacerait Humeur de Manann/dégâts/Moral accumulés). À poser
    *  sur un événement narratif qui touche PARTIELLEMENT le navire (ex. démasquage d'un saboteur qui
    *  remet `saboteurDR` à 0 sans réinitialiser le reste). Sans navire de campagne → no-op journalisé. */
-  | { type: 'adjustVessel'; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; crew?: import('../engine/crewMorale').CrewHire[] }
+  | { type: 'adjustVessel'; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; waterLitres?: number; crew?: import('../engine/crewMorale').CrewHire[] }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {

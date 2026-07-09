@@ -9,11 +9,21 @@
  * `loup-imperial`) passe. Les entités-COQUE (Grimm/cogue/langskip) restent posées en `entities` BRUTES +
  * enrôlées via `encounters[].members` (ids explicites) car elles portent `crewIds`/`postes`/`upgrades`
  * (équipage exposé, artillerie montée, améliorations d'instance) — plus riche que le terse `enemies[]`.
+ *
+ * DÉMO du produit : chaque dénouement (refus de la jetée, lecture d'Intuition, démasquage de Kramer) a
+ * une surface VISIBLE au moment (nœud de dialogue conditionnel `flagWhen`, ou modale `document`) — le
+ * `journal` ne fait que doubler en archive (« personne ne lit le journal »). Les objectifs d'acte
+ * (`setObjective`, id STABLE `ls-mission`) balisent chaque bascule ; `clearObjective` à l'épilogue.
  */
 import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scene, hero, NPC, P, flowOf, flagWhen, testNode, poste } from '../campagne/lib.mjs';
+import { scene, hero, NPC, P, flowOf, flagWhen, testNode, poste, resetIds } from '../campagne/lib.mjs';
+import { dailyWaterLitres } from '../../src/engine/seaWeather.ts';
+
+// #241 — fond de cale du Grimm au départ : régime de bord médian (MDG 14 l.242) × 43 âmes (journal
+// « 43 âmes à bord sur 50 ») × 4 jours (quelques jours d'eau, pas l'autonomie totale du voyage).
+const GRIMM_WATER_LITRES = dailyWaterLitres('mediane') * 43 * 4;
 
 /** Entité-COQUE brute (navire = Combattant à PV, ref vers `vehicles.json`) — chemin `entities` du
  *  MapSpec (jamais normalisé par `creatureId`), cf. commentaire d'en-tête. `upgrades` = améliorations
@@ -45,11 +55,21 @@ function marinDuGrimm(id, x, y, label) {
   };
 }
 
+/** Objectif d'acte (surface « je fais quoi ? », #238) sur la pile `store.objectives`, keyé par id STABLE
+ *  UNIQUE `ls-mission` : re-poser met à jour le texte et le remonte en tête (doc §10). */
+const OBJ = (text) => ({ type: 'setObjective', id: 'ls-mission', text });
+
+// Apparences EXPLICITES, id STABLE (point 6). Kramer partagée par ses DEUX instances (même personnage :
+// même seed/colors/tenue → rendu identique quai ⇄ Erengrad) ; Köhler partagé quai ⇄ épilogue.
+const KRAMER_APPEARANCE = { species: 'humains-reiklander', tenue: 'marchand', sex: 'F', build: 0.45, seed: 20471 };
+const KOHLER_APPEARANCE = { species: 'humains-reiklander', tenue: 'noble', sex: 'M', build: 0.5, seed: 5120 };
+
 const scenes = [];
 
 // ════════════════════════════════════════════════════════════════════════════════════════════
 // Scène 0 — Salzenmund, le quai (Acte 0 : commission, armement, départ sous les auspices)
 // ════════════════════════════════════════════════════════════════════════════════════════════
+resetIds();
 scenes.push(scene({
   id: 'ls-quai-salzenmund',
   nom: 'Salzenmund — le quai de la Seconde Flotte',
@@ -74,9 +94,9 @@ scenes.push(scene({
   ],
   entities: [
     hero(2, 4),
-    NPC('kohler', 5, 3, 'Baron Ludolf Köhler', { facing: 'S', dialogueId: 'dlg-kohler', appearance: { species: 'humains-reiklander', tenue: 'noble', sex: 'M', build: 0.5 } }),
+    NPC('kohler', 5, 3, 'Baron Ludolf Köhler', { facing: 'S', dialogueId: 'dlg-kohler', appearance: KOHLER_APPEARANCE }),
     NPC('aldo', 8, 3, 'Frère Aldo', { facing: 'S', dialogueId: 'dlg-aldo', appearance: { species: 'humains-reiklander', tenue: 'pretre', sex: 'M', build: 0.6 } }),
-    NPC('kramer', 11, 3, 'Dame Vasilika Kramer', { facing: 'S', dialogueId: 'dlg-kramer', appearance: { tenue: 'marchand', sex: 'F', build: 0.45 } }),
+    NPC('kramer', 11, 3, 'Dame Vasilika Kramer', { facing: 'S', dialogueId: 'dlg-kramer', appearance: KRAMER_APPEARANCE }),
     NPC('griet', 5, 6, 'Griet', { facing: 'N', dialogueId: 'dlg-griet', appearance: { species: 'humains-reiklander', tenue: 'artiste', sex: 'F', build: 0.4 } }),
     NPC('avitailleuse', 9, 6, 'Cambuse du port (rations/eau)', { facing: 'N', merchant: { archetype: 'taverniere' }, appearance: { species: 'humains-reiklander', tenue: 'bourgeois', sex: 'F', build: 0.55 } }),
     NPC('armurier', 12, 6, 'Arsenal du port (munitions/pièces)', { facing: 'N', merchant: { archetype: 'armurier' }, appearance: { species: 'humains-reiklander', tenue: 'artisan', sex: 'M', build: 0.6 } }),
@@ -87,7 +107,8 @@ scenes.push(scene({
         flow: {
           kind: 'if', cond: flagWhen('ls_commission_acceptee'),
           then: flowOf([{ type: 'openWorldMap' }]),
-          else: flowOf([{ type: 'journal', text: 'Il faut d’abord accepter la commission du baron Köhler.' }]),
+          // Refus VISIBLE (modale) : « personne ne lit le journal » — le maître de quai barre la passerelle.
+          else: flowOf([{ type: 'document', title: 'La passerelle du Grimm', text: 'Le maître de quai croise les bras devant la passerelle. « Pas d’appareillage sans l’ordre du baron Köhler, capitaine. Voyez-le d’abord. »' }]),
         },
       },
     }),
@@ -95,140 +116,185 @@ scenes.push(scene({
   dialogues: [
     {
       id: 'dlg-kohler', start: 'k1',
-      nodes: [{
-        id: 'k1', speaker: 'Baron Ludolf Köhler',
-        text:
-          "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison " +
-          "d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et " +
-          "une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. »",
-        choices: [
-          {
-            text: 'Accepter la commission (40 CO, le Grimm à quai)',
-            when: { kind: 'flag', expr: '!ls_commission_acceptee' },
-            flow: flowOf([
-              { type: 'giveMoney', gold: 40 },
-              // saboteurDR: -2 [maison] — le sabotage discret de l'affréteuse Kramer pèse sur les Tests
-              // d'équipage du voyage dès le départ (MDG 14 l.45-47), posé par cette MÊME commission qui
-              // embarque Kramer à bord.
-              // crew : roster SALARIÉ d'un petit caboteur — officiers de bord nommés + poignée de mousses
-              // (paie hebdo `tickCampaignVesselWeek`, barème `crew-roles.json`). #216
-              {
-                type: 'setVessel', vehicleId: 'loup-imperial', name: 'Le Grimm',
-                morale: 75, hullCurrent: 180, hullMax: 180, saboteurDR: -2,
-                crew: [
-                  { roleId: 'navigateur', count: 1 },
-                  { roleId: 'chirurgien', count: 1 },
-                  { roleId: 'cuisinier', count: 1 },
-                  { roleId: 'chansonnier', count: 1 },
-                  { roleId: 'vigie', count: 1 },
-                  { roleId: 'mousse', count: 8 },
-                ],
-              },
-              { type: 'setFlag', flag: 'ls_commission_acceptee' },
-              { type: 'journal', text: 'Le Grimm est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage.' },
-            ]),
-            next: 'k1',
-          },
-          {
-            text: 'Lui demander de financer le carénage (60 CO)',
-            flow: flowOf([{ type: 'journal', text: '« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale. »' }]),
-            next: 'k1',
-          },
-          {
-            text: 'Prendre congé',
-            when: { kind: 'flag', expr: 'ls_commission_acceptee' },
-            flow: flowOf([{ type: 'endDialogue' }]),
-          },
-        ],
-      }],
+      nodes: [
+        {
+          id: 'k1', speaker: 'Baron Ludolf Köhler',
+          text:
+            "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison " +
+            "d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et " +
+            "une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. " +
+            "Le fond de cale est avitaillé au minimum ; le chandelier du quai vous vendra l'eau et les vivres du voyage. »",
+          choices: [
+            {
+              text: 'Accepter la commission (40 CO, le Grimm à quai)',
+              when: { kind: 'flag', expr: '!ls_commission_acceptee' },
+              flow: flowOf([
+                { type: 'giveMoney', gold: 40 },
+                // saboteurDR: -2 [maison] — le sabotage discret de l'affréteuse Kramer pèse sur les Tests
+                // d'équipage de COMBAT dès le départ (MDG 14 l.45-47), posé par cette MÊME commission qui
+                // embarque Kramer à bord. Levé au démasquage (nuit du chat) via `adjustVessel { saboteurDR: 0 }`.
+                // crew : roster SALARIÉ d'un petit caboteur (paie hebdo `tickCampaignVesselWeek`, `crew-roles.json`). #216
+                {
+                  type: 'setVessel', vehicleId: 'loup-imperial', name: 'Le Grimm',
+                  morale: 75, hullCurrent: 180, hullMax: 180, saboteurDR: -2, waterLitres: GRIMM_WATER_LITRES,
+                  crew: [
+                    { roleId: 'navigateur', count: 1 },
+                    { roleId: 'chirurgien', count: 1 },
+                    { roleId: 'cuisinier', count: 1 },
+                    { roleId: 'chansonnier', count: 1 },
+                    { roleId: 'vigie', count: 1 },
+                    { roleId: 'mousse', count: 8 },
+                  ],
+                },
+                { type: 'setFlag', flag: 'ls_commission_acceptee' },
+                OBJ('Livrer le fret de Dame Kramer à Erengrad avant les glaces.'),
+                { type: 'journal', text: 'Le Grimm est à vous. 43 âmes à bord sur 50 — un sous-effectif visible dès le départ, et une avance qui ne couvre pas le carénage.' },
+              ]),
+              next: 'k1',
+            },
+            {
+              text: 'Lui demander de financer le carénage (60 CO)',
+              next: 'k-careene',
+            },
+            {
+              text: 'Prendre congé',
+              when: { kind: 'flag', expr: 'ls_commission_acceptee' },
+              flow: flowOf([{ type: 'endDialogue' }]),
+            },
+          ],
+        },
+        {
+          id: 'k-careene', speaker: 'Baron Ludolf Köhler',
+          text: '« L’avance de 40 couronnes est tout ce que la Seconde Flotte peut avancer, capitaine. Le reste sort de votre poche — ou vous partez sale, et vous traînerez la salissure dans chaque manœuvre. »',
+          choices: [{ text: 'Revenir à la commission', next: 'k1' }],
+        },
+      ],
     },
     {
       id: 'dlg-aldo', start: 'a1',
-      nodes: [{
-        id: 'a1', speaker: 'Frère Aldo',
-        text:
-          "« Un navire qui appareille sans la bénédiction de Manann navigue nu, capitaine. Un petit sacrifice, " +
-          "et je bénis la coque. »",
-        choices: [
-          {
-            // Aldo est prêtre initié et sans Point de Péché (texte de présentation) — sa propre bénédiction,
-            // sans offrande du capitaine, mappe sur le facteur « prêtre à bord sans péché » (MANANN_FACTORS,
-            // sea-events.json id `pretre-sans-peche`).
-            text: 'Demander la bénédiction du navire',
-            flow: flowOf([
-              { type: 'adjustManann', factorId: 'pretre-sans-peche' },
-              { type: 'setFlag', flag: 'ls_benediction_aldo' },
-              { type: 'journal', text: 'Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe.' },
-            ]),
-            next: 'a1',
-          },
-          {
-            text: 'Faire un petit sacrifice (une pièce jetée à la mer)',
-            flow: flowOf([
-              { type: 'giveMoney', gold: -1 },
-              { type: 'adjustManann', factorId: 'petit-sacrifice' },
-              { type: 'journal', text: 'Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »' },
-            ]),
-            next: 'a1',
-          },
-          {
-            text: 'Faire un sacrifice moyen (une gemme de votre bourse)',
-            flow: flowOf([
-              { type: 'giveMoney', gold: -20 },
-              { type: 'adjustManann', factorId: 'sacrifice-moyen' },
-              { type: 'journal', text: 'La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »' },
-            ]),
-            next: 'a1',
-          },
-          {
-            text: 'Faire un grand sacrifice (une vache entière, la moitié des provisions)',
-            flow: flowOf([
-              { type: 'giveMoney', gold: -50 },
-              { type: 'adjustManann', factorId: 'grand-sacrifice' },
-              { type: 'journal', text: 'La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »' },
-            ]),
-            next: 'a1',
-          },
-          {
-            text: 'Lui demander l’origine de son ordre',
-            flow: flowOf([{ type: 'journal', text: '« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels — mieux que je ne le voudrais. »' }]),
-            next: 'a1',
-          },
-          { text: 'Le saluer', flow: flowOf([{ type: 'endDialogue' }]) },
-        ],
-      }],
+      nodes: [
+        {
+          id: 'a1', speaker: 'Frère Aldo',
+          text:
+            "« Un navire qui appareille sans la bénédiction de Manann navigue nu, capitaine. Un petit sacrifice, " +
+            "et je bénis la coque. »",
+          choices: [
+            {
+              // Aldo est prêtre initié et sans Point de Péché (texte de présentation) — sa propre bénédiction,
+              // sans offrande du capitaine, mappe sur le facteur « prêtre à bord sans péché » (sea-events.json
+              // id `pretre-sans-peche`).
+              text: 'Demander la bénédiction du navire',
+              flow: flowOf([
+                { type: 'adjustManann', factorId: 'pretre-sans-peche' },
+                { type: 'setFlag', flag: 'ls_benediction_aldo' },
+              ]),
+              next: 'a-benediction',
+            },
+            {
+              text: 'Faire un petit sacrifice (une pièce jetée à la mer)',
+              flow: flowOf([{ type: 'giveMoney', gold: -1 }, { type: 'adjustManann', factorId: 'petit-sacrifice' }]),
+              next: 'a-petit',
+            },
+            {
+              text: 'Faire un sacrifice moyen (une gemme de votre bourse)',
+              flow: flowOf([{ type: 'giveMoney', gold: -20 }, { type: 'adjustManann', factorId: 'sacrifice-moyen' }]),
+              next: 'a-moyen',
+            },
+            {
+              text: 'Faire un grand sacrifice (une vache entière, la moitié des provisions)',
+              flow: flowOf([{ type: 'giveMoney', gold: -50 }, { type: 'adjustManann', factorId: 'grand-sacrifice' }]),
+              next: 'a-grand',
+            },
+            { text: 'Lui demander l’origine de son ordre', next: 'a-origine' },
+            { text: 'Le saluer', flow: flowOf([{ type: 'endDialogue' }]) },
+          ],
+        },
+        {
+          id: 'a-benediction', speaker: 'Frère Aldo',
+          text: 'Frère Aldo asperge la proue d’eau de mer et prie Manann à voix basse. L’équipage se signe. « La coque est bénie, capitaine. Manann veille. »',
+          choices: [{ text: 'Le remercier', next: 'a1' }],
+        },
+        {
+          id: 'a-petit', speaker: 'Frère Aldo',
+          text: 'Une pièce tombe dans l’écume. Aldo hoche la tête, satisfait. « Manann prend note, capitaine. »',
+          choices: [{ text: 'Revenir', next: 'a1' }],
+        },
+        {
+          id: 'a-moyen', speaker: 'Frère Aldo',
+          text: 'La gemme disparaît sous les vagues. « Un sacrifice qui compte, capitaine. Manann s’en souviendra. »',
+          choices: [{ text: 'Revenir', next: 'a1' }],
+        },
+        {
+          id: 'a-grand', speaker: 'Frère Aldo',
+          text: 'La vache est jetée par-dessus bord avec la moitié des provisions. L’équipage retient son souffle — puis Aldo sourit. « Manann ne vous oubliera pas. »',
+          choices: [{ text: 'Revenir', next: 'a1' }],
+        },
+        {
+          id: 'a-origine', speaker: 'Frère Aldo',
+          text: '« J’ai prêché sur tous les quais de la Mer des Griffes, capitaine. Je connais le Requin — Stromfels, le dieu des naufrageurs — mieux que je ne le voudrais. On ne le paie pas : on le nourrit. »',
+          choices: [{ text: 'Revenir', next: 'a1' }],
+        },
+      ],
     },
     {
       id: 'dlg-kramer', start: 'kr1',
-      nodes: [{
-        id: 'kr1', speaker: 'Dame Vasilika Kramer',
-        text:
-          "« Ma cargaison est dans la cale, capitaine, et j'entends qu'elle y reste jusqu'à Erengrad. »",
-        choices: [
-          { text: 'S’enquérir du fret', flow: flowOf([{ type: 'journal', text: '« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »' }]), next: 'kr1' },
-          {
-            text: 'L’observer discrètement (Intuition)',
-            flow: testNode(
-              { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — quelque chose cloche chez Kramer' },
-              [{ type: 'setFlag', flag: 'ls_kramer_soupconnee' }, { type: 'journal', text: 'Un éclair de calcul froid passe dans son regard, vite maîtrisé. Elle cache quelque chose.' }],
-              [{ type: 'journal', text: 'Rien ne transparaît — une négociante comme une autre, en apparence.' }],
-            ),
-            next: 'kr1',
-          },
-          { text: 'La laisser à ses affaires', flow: flowOf([{ type: 'endDialogue' }]) },
-        ],
-      }],
+      nodes: [
+        {
+          id: 'kr1', speaker: 'Dame Vasilika Kramer',
+          text:
+            "« Ma cargaison est dans la cale, capitaine, et j'entends qu'elle y reste jusqu'à Erengrad. »",
+          choices: [
+            { text: 'S’enquérir du fret', next: 'kr-fret' },
+            {
+              text: 'L’observer discrètement (Intuition)',
+              flow: testNode(
+                { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — quelque chose cloche chez Kramer' },
+                // Révélation VISIBLE au moment (modale document) + flag + archive au journal.
+                [
+                  { type: 'setFlag', flag: 'ls_kramer_soupconnee' },
+                  { type: 'document', title: 'Votre intuition', text: 'Un éclair de calcul froid passe dans le regard de Dame Kramer, vite maîtrisé. Cette femme cache quelque chose — et ce n’est pas une simple affaire de fret.' },
+                  { type: 'journal', text: 'Intuition : Dame Kramer cache quelque chose.' },
+                ],
+                [{ type: 'document', title: 'Votre intuition', text: 'Rien ne transparaît — une négociante comme une autre, en apparence.' }],
+              ),
+              next: 'kr1',
+            },
+            { text: 'La laisser à ses affaires', flow: flowOf([{ type: 'endDialogue' }]) },
+          ],
+        },
+        {
+          id: 'kr-fret', speaker: 'Dame Vasilika Kramer',
+          text: '« Des étoffes, des piécettes d’ambre. Rien qui vous regarde, capitaine. »',
+          choices: [{ text: 'Revenir', next: 'kr1' }],
+        },
+      ],
     },
     {
       id: 'dlg-griet', start: 'g1',
-      nodes: [{
-        id: 'g1', speaker: 'Griet',
-        text: "« Une chanson pour la route, capitaine ? »",
-        choices: [
-          { text: 'Écouter sa chanson', flow: flowOf([{ type: 'journal', text: 'Griet entonne « Jacques Bret a rencontré notre acier » — l’équipage reprend le refrain.' }]), next: 'g1' },
-          { text: 'La saluer', flow: flowOf([{ type: 'endDialogue' }]) },
-        ],
-      }],
+      nodes: [
+        {
+          id: 'g1', speaker: 'Griet',
+          text: "« Une chanson pour la route, capitaine ? »",
+          choices: [
+            // Après écoute, le choix ne reboucle plus à l'identique : la réplique change (flag ls_chant_griet).
+            { text: 'Écouter sa chanson', when: { kind: 'flag', expr: '!ls_chant_griet' }, flow: flowOf([{ type: 'setFlag', flag: 'ls_chant_griet' }]), next: 'g-chant' },
+            { text: 'Lui demander un autre air', when: { kind: 'flag', expr: 'ls_chant_griet' }, next: 'g-chant-encore' },
+            { text: 'La saluer', flow: flowOf([{ type: 'endDialogue' }]) },
+          ],
+        },
+        {
+          id: 'g-chant', speaker: 'Griet',
+          // Narration VISIBLE : le refrain répond (le vrai effet « Camarades d'équipage »/« Jacques Bret »
+          // est un buff de DR de COMBAT — inexprimable à quai, cf. journal d'authoring).
+          text: 'Griet entonne « Jacques Bret a rencontré notre acier ». Le refrain court de bouche en bouche ; les gabiers tapent du pied sur le pont et reprennent en chœur.',
+          choices: [{ text: 'Applaudir', next: 'g1' }],
+        },
+        {
+          id: 'g-chant-encore', speaker: 'Griet',
+          text: '« Toujours la même rengaine ? » Elle rit et enchaîne une complainte plus douce, pour ceux qui restent à quai.',
+          choices: [{ text: 'La saluer', next: 'g1' }],
+        },
+      ],
     },
   ],
   entryPoints: { retour: { x: 2, y: 4 } },
@@ -237,6 +303,7 @@ scenes.push(scene({
 // ════════════════════════════════════════════════════════════════════════════════════════════
 // Scène 1 — L'aller : la Dent de Manann (combat naval d'artillerie, Acte I scène 1.3)
 // ════════════════════════════════════════════════════════════════════════════════════════════
+resetIds();
 scenes.push(scene({
   id: 'ls-abordage-cogue',
   nom: 'La Dent de Manann — voile noire sous le vent (J4)',
@@ -263,7 +330,9 @@ scenes.push(scene({
   encounters: [
     {
       id: 'enc-cogue',
-      // #215
+      // Reddition à mi-coque (#215) : la Dent de Manann amène son pavillon quand la coque `cogue` tombe
+      // sous 50 % de ses Blessures — la victoire se déclenche à la reddition, pas au naufrage.
+      victoryCondition: { type: 'woundsThreshold', targetId: 'cogue', belowPercent: 50 },
       members: [
         { entityId: 'grimm', side: 'ally' },
         { entityId: 'aldo-crew', side: 'ally' },
@@ -277,7 +346,8 @@ scenes.push(scene({
         { type: 'setFlag', flag: 'ls_cogue_vaincue' },
         { type: 'giveXp', amount: 150 },
         { type: 'giveMoney', gold: 15 },
-        { type: 'journal', text: 'La Dent de Manann rompt et sombre. Des épaves flottent — Séquestre à faire valoir à quai.' },
+        OBJ('Rallier Erengrad avec le fret — la Dent de Manann écartée.'),
+        { type: 'journal', text: 'La Dent de Manann amène son pavillon à mi-coque — la cogue se rend. Des épaves flottent : Séquestre à faire valoir à quai.' },
         { type: 'transition', scene: 'ls-quai-erengrad', entry: 'arrivee' },
       ]),
     },
@@ -288,6 +358,7 @@ scenes.push(scene({
 // ════════════════════════════════════════════════════════════════════════════════════════════
 // Scène 2 — Erengrad, l'escale (Acte II)
 // ════════════════════════════════════════════════════════════════════════════════════════════
+resetIds();
 scenes.push(scene({
   id: 'ls-quai-erengrad',
   nom: 'Erengrad — le port kislevite',
@@ -307,12 +378,19 @@ scenes.push(scene({
     '================',
     '~~~~~~~~~~~~~~~~',
   ],
+  // Objectif d'acte II posé à l'ARRIVÉE (premier pas sur le quai — `checkTriggers` sur le rect de scène).
+  triggers: [
+    { id: 'obj-erengrad', rect: { x: 0, y: 0, w: 16, h: 8 }, once: true, flow: flowOf([OBJ('Vendre la laine kislevite et découvrir qui en veut à la cargaison.')]) },
+  ],
   entities: [
     hero(2, 4),
-    NPC('docker', 7, 3, 'Docker du port', { facing: 'S', dialogueId: 'dlg-rumeur-olg', appearance: { tenue: 'debardeur', sex: 'M', build: 0.6 } }),
-    NPC('kramer-erengrad', 11, 3, 'Dame Vasilika Kramer', { facing: 'S', dialogueId: 'dlg-kramer-nuit-du-chat', appearance: { tenue: 'marchand', sex: 'F', build: 0.45 } }),
-    NPC('charpentier', 9, 6, 'Charpentier de bord', { facing: 'N', dialogueId: 'dlg-reparation', appearance: { species: 'humains-reiklander', tenue: 'artisan', sex: 'M', build: 0.6 } }),
-    P(2, 7, undefined, { label: 'Reprendre la mer vers Salzenmund', interact: { flow: flowOf([{ type: 'openWorldMap' }]) } }),
+    NPC('docker', 7, 3, 'Docker du port', { facing: 'S', dialogueId: 'dlg-rumeur-olg', appearance: { species: 'humains-reiklander', tenue: 'debardeur', sex: 'M', build: 0.6, seed: 8830 } }),
+    NPC('kramer-erengrad', 11, 3, 'Dame Vasilika Kramer', { facing: 'S', dialogueId: 'dlg-kramer-nuit-du-chat', appearance: KRAMER_APPEARANCE }),
+    NPC('charpentier', 9, 6, 'Charpentier de bord', { facing: 'N', dialogueId: 'dlg-reparation', appearance: { species: 'humains-reiklander', tenue: 'artisan', sex: 'M', build: 0.6, seed: 3312 } }),
+    P(2, 7, undefined, {
+      label: 'Reprendre la mer vers Salzenmund',
+      interact: { flow: flowOf([OBJ('Ramener le Grimm et sa cargaison à Salzenmund.'), { type: 'openWorldMap' }]) },
+    }),
   ],
   dialogues: [
     {
@@ -334,16 +412,18 @@ scenes.push(scene({
           "Kramer était « à terre toute la nuit ».",
         choices: [
           {
-            // Démasquer Kramer ne LÈVE PAS son sabotage (`saboteurDR: -2`, scène du quai) : `setVessel`
-            // REMPLACE tout `state.vessel` (morale/coque/manann compris), ce n'est pas un patch — un second
-            // `setVessel` ici effacerait la progression d'Humeur de Manann et les dégâts de coque accumulés
-            // depuis le départ. [INEXPRIMABLE, non tenté] : consigné au journal d'authoring plutôt que
-            // câblé au prix d'une régression du navire de campagne.
             text: 'L’interroger sur sa nuit (Intuition)',
             flow: testNode(
               { skill: 'intuition', difficulty: 'difficile', label: 'Intuition — la nuit du chat' },
-              [{ type: 'setFlag', flag: 'ls_kramer_demasquee' }, { type: 'journal', text: 'Elle craque : ce n’est pas une négociante, mais une initiée de Stromfels. L’équipage gronde.' }],
-              [{ type: 'journal', text: '« Une insomnie de plus, capitaine. La traversée est éprouvante pour tous. »' }],
+              // Démasquage : dénouement VISIBLE (document) + le sabotage CESSE (adjustVessel { saboteurDR: 0 }
+              // — patch INCRÉMENTAL, la coque/l'Humeur/le Moral accumulés depuis le départ sont préservés, #233).
+              [
+                { type: 'setFlag', flag: 'ls_kramer_demasquee' },
+                { type: 'adjustVessel', saboteurDR: 0 },
+                { type: 'document', title: 'Kramer démasquée', text: 'Elle craque. Ce n’est pas une négociante de Kislev, mais une initiée de Stromfels — c’est elle qui minait le Grimm depuis Salzenmund. Prise à découvert, elle n’a plus les mains libres : ses manigances cessent. L’équipage gronde.' },
+                { type: 'journal', text: 'Dame Kramer démasquée : initiée de Stromfels, saboteuse. Le sabotage cesse.' },
+              ],
+              [{ type: 'document', title: 'La nuit du chat', text: '« Une insomnie de plus, capitaine. La traversée est éprouvante pour tous. »' }],
             ),
             next: 'nc1',
           },
@@ -373,6 +453,7 @@ scenes.push(scene({
 // ════════════════════════════════════════════════════════════════════════════════════════════
 // Scène 3 — Le retour : Olg Blóðsalt attaque (Acte III, climax scène 3.2)
 // ════════════════════════════════════════════════════════════════════════════════════════════
+resetIds();
 scenes.push(scene({
   id: 'ls-abordage-olg',
   nom: 'Rames dans l’eau ! — le Serpent-de-Sel attaque (banc de Norden, J10-J11)',
@@ -425,6 +506,7 @@ scenes.push(scene({
 // ════════════════════════════════════════════════════════════════════════════════════════════
 // Scène 4 — Salzenmund, l'épilogue (J13)
 // ════════════════════════════════════════════════════════════════════════════════════════════
+resetIds();
 scenes.push(scene({
   id: 'ls-epilogue-salzenmund',
   nom: 'Salzenmund — le retour (J13)',
@@ -444,7 +526,7 @@ scenes.push(scene({
   ],
   entities: [
     hero(2, 3),
-    NPC('kohler-epilogue', 6, 3, 'Baron Ludolf Köhler', { facing: 'S', dialogueId: 'dlg-epilogue' }),
+    NPC('kohler-epilogue', 6, 3, 'Baron Ludolf Köhler', { facing: 'S', dialogueId: 'dlg-epilogue', appearance: KOHLER_APPEARANCE }),
   ],
   dialogues: [
     {
@@ -460,6 +542,7 @@ scenes.push(scene({
               { type: 'giveMoney', gold: 60 },
               { type: 'setFlag', flag: 'ls_solde_versee' },
               { type: 'giveXp', amount: 100 },
+              { type: 'clearObjective' }, // fin d'acte : la pile d'objectifs de la campagne est vidée
               { type: 'journal', text: 'Köhler verse la solde et la prime d’Olg. Le chantier attend le Grimm — carénage enfin, critiques réparés.' },
             ]),
             next: 'e1',
@@ -494,10 +577,9 @@ const worldMap = {
     },
     {
       // DEUXIÈME route entre les MÊMES lieux — le schéma l'ACCEPTE (`MapRoute.id` est la seule clé ; `a`/`b`
-      // ne sont pas contraints à l'unicité) : porte l'embuscade d'Olg au RETOUR. Limite trouvée : rien dans
-      // `WorldMap`/`travel.ts` ne restreint une route au SENS de trajet — les deux sont offertes dans les
-      // deux sens ; le scénario suppose que le joueur reprend la seconde au retour, l'engin ne l'IMPOSE PAS
-      // [CONTOURNÉ : deux routes nommées, direction non appliquée mécaniquement].
+      // ne sont pas contraints à l'unicité) : porte l'embuscade d'Olg au RETOUR. Le moteur ne restreint pas
+      // une route au SENS de trajet — les deux sont offertes dans les deux sens ; le scénario suppose que le
+      // joueur reprend la seconde au retour, l'engin ne l'IMPOSE PAS.
       id: 'route-salzenmund-erengrad-retour',
       a: 'salzenmund', b: 'erengrad', km: 550, modes: ['mer'], sea: true, seaHeading: 'sud',
       ambush: { scene: 'ls-abordage-olg', encounter: 'enc-olg' },
