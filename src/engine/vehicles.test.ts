@@ -4,7 +4,7 @@ import { VEHICLES_LIST, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, vehicleTravel, trave
 import { itemFromTrappingById, itemFromVehicleById } from './items';
 
 /**
- * Fondation données « véhicule à coque » (`vehicles.json`) — FOYER UNIQUE remplaçant `transports.json`.
+ * Fondation données « véhicule à coque » (`vehicles.json`) — FOYER UNIQUE des transports payants.
  * On garantit l'intégrité du catalogue et l'accès data-driven (aucun `id` de véhicule codé en dur côté moteur).
  */
 describe('catalogue véhicules (data-driven)', () => {
