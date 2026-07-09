@@ -1531,6 +1531,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!hero) return;
       hero.fate = (hero.fate ?? 0) - 1;
       hero.outOfRencontre = true; // survit mais éjecté de la rencontre (vivant)
+      hero.exitReason = 'destin'; // #237 : lu « hors-combat » (endState)
       if (!hero.conditions.some((c) => c.name === COND.inconscient)) addCondition(hero, COND.inconscient);
       const anim = acquireAnimositeOnFate(hero, p.foeCible); // ADE II Annexe I (règle facultative)
       set({ battle: { ...battle, log: [...battle.log, ev('info', t('cs.fateFlee', { name: hero.name }), hero.id), ...(anim ? [ev('fear', anim, hero.id)] : [])] } });

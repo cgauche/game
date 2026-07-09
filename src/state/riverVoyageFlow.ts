@@ -46,7 +46,8 @@ import {
   type RiverWindForceId, type RiverWindDirId,
 } from '../engine/riverNavigation';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
-import { startCascade, registerCascadeApplier } from './cascade';
+import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
+import { riverAutoResolves, type VoyageCadence, type VoyageOrders } from './voyageCadence';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import type { Get, Set } from './flowTypes';
 
@@ -128,13 +129,17 @@ export function hasBatelier(party: Combatant[]): boolean {
 
 /** Construit le TravelPlan d'une DESCENTE fluviale (route `river`, mode barge) — `null` si aucun bateau ou
  *  aucun batelier (→ repli transport payant). PUR de RNG hormis le tirage du vent de départ. */
-export function buildRiverPlan(get: Get, routeId: string, fromPlaceId: string, toPlaceId: string, route: MapRoute): TravelPlan | null {
+export function buildRiverPlan(get: Get, routeId: string, fromPlaceId: string, toPlaceId: string, route: MapRoute, opts: { cadence?: VoyageCadence } = {}): TravelPlan | null {
   const hull = riverHull(get, route);
   if (!hull || hull.coque.wounds.current <= 0) return null;
   if (!hasBatelier(get().party)) return null;
   const wind = rollRiverWind(battleRng());
+  // ORDRES permanents (couche `voyageCadence`) : défaut d'API JOUR-PAR-JOUR (rétro-compat) ; l'écran de
+  // départ passe COMMANDÉE → la journée de descente se joue d'un bloc (résidu #91 : plus de modale par jet).
+  const orders: VoyageOrders = { cadence: opts.cadence ?? 'jour-par-jour' };
   return {
     routeId, fromPlaceId, toPlaceId, mode: 'barge', hoursPerDay: 24, km: route.km, kmDone: 0, interrupted: false,
+    orders,
     vehicle: hull.coque,
     river: { windForce: wind.force, windDir: wind.dir, daysAfloat: 0 },
   };
@@ -182,6 +187,15 @@ function resolveRiverDay(get: Get, set: Set, route: MapRoute, to: { scene: strin
   if (!steps.length) {
     // Aucun jet influençable (bateau coulé d'entrée, ou aucune entrée de vitesse à tester) : on
     // finalise directement, comme la cascade le ferait à la clôture.
+    continueRiverDayAfterCascade(get, set);
+    return;
+  }
+  // Route COMMANDÉE (couche `voyageCadence`, résidu #91) : la journée de descente est de la ROUTINE
+  // influençable — l'auto-pilote pilote LE MÊME plan d'étapes via le pilote IMMÉDIAT de la cascade
+  // (mêmes appliers, mêmes conséquences), SANS modale par jet ; les lignes tombent au PV du jour
+  // (journal → recap de la halte). En coop, la conduite reste manuelle (modale).
+  if (get().net.mode === 'local' && riverAutoResolves(get().travelPlan?.orders)) {
+    runCascadeImmediate(get, set, steps);
     continueRiverDayAfterCascade(get, set);
     return;
   }

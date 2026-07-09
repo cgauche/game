@@ -4355,6 +4355,7 @@ function resolveSurrenderThreshold(battle: BattleState, vc: VictoryCondition | u
   if (!target?.wounds || target.wounds.max <= 0 || isOutOfAction(target)) return [];
   if (target.wounds.current / target.wounds.max >= vc.belowPercent / 100) return [];
   target.outOfRencontre = true;
+  target.exitReason = 'reddition'; // #237 : pavillon amené, lu « rendu » (endState)
   return [tr('cf.surrender', { name: target.name })];
 }
 

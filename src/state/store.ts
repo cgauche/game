@@ -207,6 +207,13 @@ export interface BattleState {
     | null;
 }
 
+/** Un objectif courant de la pile (#238) — `id` STABLE (re-poser le même = mise à jour du `text`),
+ *  `text` = la consigne joueur affichée au HUD (« je fais quoi maintenant ? »). */
+export interface Objective {
+  id: string;
+  text: string;
+}
+
 export interface GameState extends RollFlowActionsMap {
   screen: Screen;
   /** Codex : entrée ciblée à l'ouverture (depuis un `CodexRef`), null = page d'accueil du Codex.
@@ -297,6 +304,11 @@ export interface GameState extends RollFlowActionsMap {
    *  (horloge/ambiance). Posé par l'Effet `setLight`, lu par le rendu (overlay d'assombrissement). */
   lightLevel: number | null;
   flags: Record<string, boolean>;
+  /** PILE d'objectifs courants (« je fais quoi maintenant ? »), keyés par id STABLE — posés/mis à jour/
+   *  retirés par les Effets `setObjective`/`clearObjective`. Le HUD affiche le plus récent (dernier de
+   *  la pile). PERSISTE entre transitions de scène (hors `stateFields`, comme `flags`) — un objectif
+   *  traverse les scènes ; vidé en nouvelle partie (`startScene`). #238. */
+  objectives: Objective[];
   /** Brouillard de guerre : cases déjà explorées par scène (`sceneId` → clés "x,y,z"). PERSISTE entre
    *  transitions (hors manifeste de reset `stateFields`) ; vidé en nouvelle partie (`startScene`). */
   explored: Record<string, string[]>;
@@ -1100,9 +1112,12 @@ export interface GameState extends RollFlowActionsMap {
   travelRecap: import('./travelFlow').TravelRecap | null;
   dismissTravelRecap: () => void;
   /** Démarre un voyage depuis le lieu courant le long d'une route (mode + classe + allure). */
-  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure; seaPace?: number; fast?: boolean }) => void;
+  startTravel: (routeId: string, mode: import('../engine/travel').TravelMode, opts?: { classKey?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure; seaPace?: number; fast?: boolean; cadence?: import('./voyageCadence').VoyageCadence }) => void;
   /** Reprend un voyage interrompu par une péripétie. */
   resumeTravel: () => void;
+  /** Bascule la CADENCE des ordres de la traversée en cours (couche `voyageCadence`) — « Passer en
+   *  jour-par-jour » de l'écran de traversée, ou retour en commandée. */
+  setVoyageCadence: (cadence: import('./voyageCadence').VoyageCadence) => void;
   /** Épingle le RÔLE de marche PERSISTANT d'un héros (`travelRole`, id d'Activité de voyage EDOC ch.5),
    *  ou le détache (`null` ⇒ rôle inféré). Réutilisé au départ de chaque trajet (0 ré-assignation/jour). */
   setTravelRole: (heroId: string, role: string | null) => void;
@@ -1135,6 +1150,10 @@ export interface GameState extends RollFlowActionsMap {
   portCareen: () => void;
   /** Installe une Amélioration navale (coût par bande de Taille, MDG 12). */
   portInstallUpgrade: (traitId: string, units?: number) => void;
+  /** Recrute `count` PNJ salariés au rôle `roleId` (escale-hub #228 — barème `crew-roles.json`, MDG 14 l.293-302). */
+  portHireCrew: (roleId: string, count?: number) => void;
+  /** Débarque `count` PNJ salariés du rôle `roleId` (#228). */
+  portDismissCrew: (roleId: string, count?: number) => void;
   /** Cargaison TERRESTRE/FLUVIALE transportée par le groupe (convoi/chariot — T2C ch.11). Persiste au
    *  niveau GROUPE (pas de Contenance de coque, à la différence du navire). */
   caravanCargo: import('../engine/cargo').CargoLot[];
@@ -1376,6 +1395,7 @@ export const useGame = create<GameState>((set, get) => ({
   partyPos: { x: 0, y: 0 },
   lightLevel: null,
   flags: {},
+  objectives: [],
   explored: {},
   markExplored: (keys) => visionStateMod.recordExplored(get, set, keys),
   journal: [],
@@ -2064,6 +2084,7 @@ export const useGame = create<GameState>((set, get) => ({
   closeWorldMap: () => set({ worldMapOpen: false }),
   startTravel: (routeId, mode, opts) => travelFlow.startTravel(get, set, routeId, mode, opts),
   resumeTravel: () => travelFlow.resumeTravel(get, set),
+  setVoyageCadence: (cadence) => { const p = get().travelPlan; if (p) set({ travelPlan: { ...p, orders: { ...(p.orders ?? { cadence: 'jour-par-jour' }), cadence } } }); },
   openPort: () => portFlow.openPort(get, set),
   closePort: () => portFlow.closePort(get, set),
   portBuyCargo: (cargoId, enc) => portFlow.portBuyCargo(get, set, cargoId, enc),
@@ -2072,6 +2093,8 @@ export const useGame = create<GameState>((set, get) => ({
   portRepair: () => portFlow.portRepairVessel(get, set).forEach((l) => get().log(l)),
   portCareen: () => portFlow.portCareenVessel(get, set).forEach((l) => get().log(l)),
   portInstallUpgrade: (traitId, units) => portFlow.portInstallUpgrade(get, set, traitId, units).forEach((l) => get().log(l)),
+  portHireCrew: (roleId, count) => portFlow.portHireCrew(get, set, roleId, count),
+  portDismissCrew: (roleId, count) => portFlow.portDismissCrew(get, set, roleId, count),
   openLandMarket: () => landMarketFlow.openLandMarket(get, set),
   closeLandMarket: () => landMarketFlow.closeLandMarket(get, set),
   landBuyCargo: (cargoId, enc) => landMarketFlow.landBuyCargo(get, set, cargoId, enc),

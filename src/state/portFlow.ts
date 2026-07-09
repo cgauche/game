@@ -19,8 +19,9 @@ import { partyAssisted } from '../engine/skills';
 import { opposedTest, rollTest, SL_ASTOUNDING } from '../engine/tests';
 import { d100 } from '../engine/dice';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
-import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, subtract, toMoney } from '../engine/money';
-import { findVehicleById } from '../data';
+import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, subtract, toMoney, priceToMoney } from '../engine/money';
+import { findVehicleById, findCrewRoleById } from '../data';
+import { weeklyCrewWageBrass } from '../engine/crewMorale';
 import {
   rollCargoAvailability, rollMerchantSkill, buySellerDR, cargoBasePrice, rollRandomCargo,
   sellChance, offerPricePct, sellRelation, dumpingPricePct, cargoTotalEnc, findCargoById,
@@ -44,6 +45,9 @@ export interface PortOffer {
 export interface PortState {
   placeId: string;
   label: string;
+  /** id `naval-ports.json` du lieu-port (#217, `MapPlace.port.ref`) — source de la desc/région du
+   *  catalogue pour l'en-tête du hub. Absent = port authoré sans référence de catalogue. */
+  ref?: string;
   port: PortProfile;
   /** Contenance libre du navire (Enc) — plafond d'embarquement (l.325). */
   freeEnc: number;
@@ -55,11 +59,11 @@ const log = (get: Get, set: Set, lines: string[]) => {
 };
 
 /** Lieu portuaire courant (place de la carte dont la scène EST la scène courante + `port`). */
-export function currentPort(get: Get): { placeId: string; label: string; port: PortProfile; cosmopolite: boolean } | null {
+export function currentPort(get: Get): { placeId: string; label: string; ref?: string; port: PortProfile; cosmopolite: boolean } | null {
   const map = get().worldMap;
   const place = map ? placeOfScene(map, get().scene?.id) : undefined;
   if (!place?.port) return null;
-  return { placeId: place.id, label: place.label, port: place.port, cosmopolite: !!place.port.cosmopolite };
+  return { placeId: place.id, label: place.label, ref: place.port.ref, port: place.port, cosmopolite: !!place.port.cosmopolite };
 }
 
 /** Contenance libre du navire (Contenance − cargaison embarquée). */
@@ -98,7 +102,7 @@ export function openPort(get: Get, set: Set): void {
       surplus: (port.surplus?.[cargoId] ?? 0) > 0,
     });
   }
-  set({ port: { placeId: cur.placeId, label: cur.label, port, freeEnc: vesselFreeEnc(get), offers } });
+  set({ port: { placeId: cur.placeId, label: cur.label, ref: cur.ref, port, freeEnc: vesselFreeEnc(get), offers } });
 }
 
 export function closePort(_get: Get, set: Set): void {
@@ -228,6 +232,43 @@ export function portDumpCargo(get: Get, set: Set, cargoIndex: number): void {
     vessel: { ...vessel, cargo: (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex) },
   });
   log(get, set, [`${lot.enc} Enc de ${label} bradés (${pct} % du prix de base) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
+}
+
+/** RECRUTEMENT à quai (#228, escale-hub) : embauche `count` PNJ salariés au rôle `roleId` — fusionné
+ *  dans le roster `vessel.crew` (`CrewHire[]`, #216). La solde HEBDOMADAIRE (`crew-roles.json`,
+ *  MDG 14 l.293-302) est prélevée à l'entretien (`resolveVesselWeek`) : le moteur ne débite JAMAIS à
+ *  l'embauche (aucune avance dans le modèle), la bourse ne bouge pas ici. Un rôle sans barème (`wage`
+ *  absent) n'est pas recrutable. Renvoie le journal (ligne de solde totale recalculée). */
+export function portHireCrew(get: Get, set: Set, roleId: string, count = 1): string[] {
+  const vessel = get().vessel;
+  if (!vessel || count <= 0) return [];
+  const role = findCrewRoleById(roleId);
+  if (!role?.wage) return [];
+  const crew = vessel.crew ?? [];
+  const next = crew.some((h) => h.roleId === roleId)
+    ? crew.map((h) => h.roleId === roleId ? { ...h, count: h.count + count } : h)
+    : [...crew, { roleId, count }];
+  set({ vessel: { ...vessel, crew: next } });
+  const lines = [`${count} ${role.label} embauché(s) à ${formatMoney(priceToMoney(role.wage.weekly))}/semaine — solde hebdomadaire de l'équipage : ${formatMoney(fromBrass(weeklyCrewWageBrass(next)))}.`];
+  log(get, set, lines);
+  return lines;
+}
+
+/** DÉBARQUEMENT d'un membre salarié à quai (#228) : retire `count` PNJ du rôle `roleId` (poste supprimé
+ *  s'il tombe à 0). Aucune indemnité modélisée (le moteur ne débite qu'à la paie). Renvoie le journal. */
+export function portDismissCrew(get: Get, set: Set, roleId: string, count = 1): string[] {
+  const vessel = get().vessel;
+  if (!vessel || count <= 0) return [];
+  const crew = vessel.crew ?? [];
+  const cur = crew.find((h) => h.roleId === roleId);
+  if (!cur) return [];
+  const left = cur.count - count;
+  const next = left > 0 ? crew.map((h) => h.roleId === roleId ? { ...h, count: left } : h) : crew.filter((h) => h.roleId !== roleId);
+  set({ vessel: { ...vessel, crew: next } });
+  const role = findCrewRoleById(roleId);
+  const lines = [`${Math.min(count, cur.count)} ${role?.label ?? roleId} débarqué(s) — solde hebdomadaire de l'équipage : ${formatMoney(fromBrass(weeklyCrewWageBrass(next)))}.`];
+  log(get, set, lines);
+  return lines;
 }
 
 // Ré-exports des services de coque (déjà dans seaVoyageFlow) — l'écran Port les appelle par le store.

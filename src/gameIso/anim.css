@@ -146,6 +146,18 @@
   50% { opacity: 0.8; }
 }
 .interact-halo { animation: haloPulse 1.6s ease-in-out infinite; }
+/* Pastille d'état de FIN sur le token iso (#237) : disque teinté par état + icône, langage visuel
+   UNIQUE partagé avec le portrait (src/ui/endStateVisual.ts). Le disque `circle` prend la teinte
+   d'état, l'icône reste claire pour le contraste. */
+.token-endmark circle { stroke: rgba(0, 0, 0, 0.6); stroke-width: 1px; }
+.token-endmark.es-mort circle { fill: #6b1e1e; }
+.token-endmark.es-koan circle { fill: #2f4a7a; }
+.token-endmark.es-rendu circle { fill: #e9e4d6; }
+.token-endmark.es-hors circle { fill: #4a5240; }
+.token-endmark.es-mort { color: #f2dede; }
+.token-endmark.es-koan { color: #dbe6ff; }
+.token-endmark.es-rendu { color: #4a4030; }
+.token-endmark.es-hors { color: #d8e0cc; }
 /* SURVOL direct du décor interactif : halo NETTEMENT renforcé (plus vif, plus large, double lueur).
    Le `.hovered` est posé par IsoStage quand la tuile survolée == la tuile du prop (hors combat).
    #207 (playtest « pas assez visible ») : cadence plus rapide, amplitude d'opacité pleine, contour

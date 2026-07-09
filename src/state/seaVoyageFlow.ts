@@ -74,6 +74,9 @@ import {
 } from '../engine/seaVoyage';
 import { navalMoveMod, navalTestTypeDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
+import { seaAutoResolves, voyageDayEntry, type VoyageOrders, type VoyageCadence } from './voyageCadence';
+import { crewRoleValue } from '../engine/crewMorale';
+import type { NightEntry } from './restFlow';
 import { subtract, toMoney, type Money } from '../engine/money';
 import { rollShipCritical } from '../engine/shipCritical';
 import type { ShipCritKey } from '../data/shipCriticals';
@@ -104,6 +107,9 @@ export interface SeaVoyageState {
   step: SeaStep;
   /** Lignes du jour (recap de la halte de nuit). */
   lines: string[];
+  /** PROCÈS-VERBAL structuré du jour (couche `voyageCadence`) : une ligne de JET par Test d'équipage de
+   *  ROUTINE auto-résolu en route COMMANDÉE — « aucun jet silencieux » (rendu par `MultiRollList`). */
+  entries?: NightEntry[];
   /** Milles parcourus AUJOURD'HUI (fixés par la Progression). */
   milesToday: number;
   /** Dérive mineure déjà vue (Repères : « sans effet la première fois », ch.13 l.318). */
@@ -134,6 +140,22 @@ export interface SeaVoyageState {
    *  `pendingFinalize` = le palier reste à appliquer (après un abordage ancré éventuel — `finalizeFastVoyage`
    *  est ré-entrant). */
   fast?: { days: number; weeks: number; palierId?: string; roll?: number; result?: number; pendingFinalize?: boolean };
+}
+
+/** Instantané d'un jour de mer pour l'ÉCRAN DE TRAVERSÉE (`SeaVoyageScreen`) : rose des vents + jauges
+ *  compactes + distance restante. Self-contained (le plan est parfois déjà annulé au moment du rendu). */
+export interface SeaRecapChrome {
+  weatherLabel: string;
+  windForce: SeaWeather['vent'];
+  windFrom: WindDirection;
+  heading: WindDirection;
+  hull: { current: number; max: number };
+  morale: number;
+  manann: number;
+  waterLitres?: number;
+  /** Milles restants à parcourir et estimation de jours de mer restants (à la vitesse de croisière). */
+  milesLeft: number;
+  daysLeft: number;
 }
 
 /** Semaine impériale (8 jours, MDG 15 l.268) — cadence de la pénalité « −1 par semaine en mer » du
@@ -230,12 +252,17 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; label: stri
 
 // ── Ouverture d'un Test d'équipage de VOYAGE (hors combat — l'équipage = les PJ) ────────────────
 
-function openVoyageCrewTest(get: Get, set: Set, testTypeId: string, kind: string): boolean {
+/** Issue de `openVoyageCrewTest` : `'modal'` = pending laissé au joueur (suspend la boucle) ; `'auto'` =
+ *  Test de ROUTINE auto-résolu en route COMMANDÉE (la boucle CONTINUE, lignes au PV) ; `'none'` = aucun
+ *  équipage apte (rien ouvert — l'appelant applique son chemin sans-jet). */
+type CrewTestOutcome = 'modal' | 'auto' | 'none';
+
+function openVoyageCrewTest(get: Get, set: Set, testTypeId: string, kind: string): CrewTestOutcome {
   const plan = get().travelPlan;
   const ship = plan?.vehicle;
-  if (!ship) return false;
+  if (!ship) return 'none';
   const party = get().party.filter((h) => !h.dead && !h.outOfRencontre);
-  if (!party.length) return false;
+  if (!party.length) return 'none';
   ship.crewIds = party.map((h) => h.id); // les PJ tiennent les rôles (MDG 14 l.39)
   // Phare du port d'arrivée (kind 'phare') : « voir la lumière d'un phare » (MDG ch.13 l.337) est un Test
   // de Perception VISUEL — sens narratif posé ICI (ce call site précis, pas la donnée `perception` partagée
@@ -243,7 +270,7 @@ function openVoyageCrewTest(get: Get, set: Set, testTypeId: string, kind: string
   // Le sens gate aussi le RANKING du marin représentant (#158), pas seulement la valeur de chaque participant.
   const sense = kind === 'phare' ? 'vue' : undefined;
   const contributors = crewTestContributors(ship, party, testTypeId, new Set(party.map((h) => h.id)), sense);
-  if (!contributors.length) return false;
+  if (!contributors.length) return 'none';
   const essentialRoleId = findCrewTestTypeById(testTypeId)?.essential;
   const participants: ShipManeuverParticipant[] = contributors.map((a) => ({
     id: a.crew.id,
@@ -267,7 +294,48 @@ function openVoyageCrewTest(get: Get, set: Set, testTypeId: string, kind: string
       ...(extraDR ? { extraDR } : {}),
     } satisfies PendingCrewTest,
   });
-  return true;
+  // Route COMMANDÉE + Test de ROUTINE : l'AUTO-PILOTE pilote LE MÊME flux (mêmes verbes de jet,
+  // MÊME résolveur `resolveVoyageCrewTest`) — pas de modale, lignes au PV DU JOUR. En coop, la conduite
+  // reste manuelle (l'auto-pilote local ne joue pas pour les autres postes).
+  if (get().net.mode === 'local' && seaAutoResolves(plan!.orders, kind)) return autoResolveVoyageCrewTest(get, set);
+  return 'modal';
+}
+
+/**
+ * AUTO-PILOTE d'un Test d'équipage de VOYAGE de ROUTINE (route COMMANDÉE) : lance TOUS les contributeurs
+ * par le MÊME verbe de jet que la modale (`crewTestRoll`), somme les DR (`maneuverCrewTotal`), pousse la
+ * ligne de jet au PV DU JOUR (`sea.entries` + résumé `sea.lines`) puis délègue la conséquence au MÊME
+ * résolveur que « Appliquer » (`resolveVoyageCrewTest`). « Aucun jet silencieux » : une trace par jet.
+ * Renvoie `'auto'` (la boucle continue) — un abordage/Fuite de vapeur ouvert par la conséquence suspend
+ * de lui-même via le garde de tête de `runSeaDays`.
+ */
+function autoResolveVoyageCrewTest(get: Get, set: Set): 'auto' {
+  const p0 = get().pendingCrewTest!;
+  for (const part of p0.participants) if (part.interactive && !part.result) get().crewTestRoll(part.id);
+  const p = get().pendingCrewTest!;
+  const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
+  const label = findCrewTestTypeById(p.testTypeId)?.label ?? p.testTypeId;
+  // PV structuré : une entrée de JET par contributeur (rendue par `MultiRollList` sur l'écran de traversée).
+  const pool = get().party;
+  const entries: NightEntry[] = p.participants.flatMap((part, i) => {
+    const actor = pool.find((c) => c.id === part.id);
+    const res = part.result;
+    if (!actor || !res) return [];
+    const role = findCrewRoleById(part.roleId);
+    const val = role ? crewRoleValue(actor, role, part.sense).value : res.target;
+    return [voyageDayEntry({
+      id: `sea-${p.voyage!.kind}-${get().travelPlan?.sea?.daysAtSea ?? 0}-${part.id}-${i}`,
+      actorId: part.id, icon: 'travel/anchor', label: `${label}${part.essential ? ' ★' : ''}`,
+      d: { label: role?.label ?? part.roleId, base: val, modifier: res.target - val, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl },
+      tone: res.roll <= res.target ? 'ok' : 'bad',
+    })];
+  });
+  patchSea(get, set, { entries: [...(get().travelPlan?.sea?.entries ?? []), ...entries] });
+  // Résumé DR au PV (idem `crewTestConfirm` branche voyage), qui va aussi au journal.
+  tell(get, set, [`${label} — ${p.voyage!.shipName} : DR ${total >= 0 ? `+${total}` : total} → ${total >= 1 ? 'succès' : 'échec'} (MDG 14 l.13).`]);
+  set({ pendingCrewTest: null });
+  resolveVoyageCrewTest(get, set, p, total);
+  return 'auto';
 }
 
 /** Construit le TravelPlan d'une TRAVERSÉE (route `sea`) sur le navire de campagne — `null` si aucun
@@ -275,14 +343,18 @@ function openVoyageCrewTest(get: Get, set: Set, testTypeId: string, kind: string
 export function buildSeaPlan(
   get: Get, routeId: string, fromPlaceId: string, toPlaceId: string,
   route: { km: number; seaHeading?: WindDirection },
-  opts: { pace?: number } = {},
+  opts: { pace?: number; cadence?: VoyageCadence } = {},
 ): TravelPlan | null {
   const ship = voyageShip(get);
   if (!ship || ship.hull.wounds.current <= 0) return null;
   const rng = battleRng();
   const season = seasonOfMonth(toDate(get().gameTime).month);
+  // ORDRES permanents (couche `voyageCadence`) : l'API par défaut reste JOUR-PAR-JOUR (rétro-compat) ;
+  // l'écran de départ passe COMMANDÉE (son défaut d'affichage).
+  const orders: VoyageOrders = { cadence: opts.cadence ?? 'jour-par-jour' };
   return {
     routeId, fromPlaceId, toPlaceId, mode: 'mer', hoursPerDay: 24, km: route.km, kmDone: 0, interrupted: false,
+    orders,
     vehicle: ship.hull,
     sea: {
       heading: route.seaHeading ?? 'ouest',
@@ -311,7 +383,7 @@ function cruiseM(hull: Combatant): number {
  *  = aucun navire en état (l'appelant journalise). */
 export function startFastVoyage(
   get: Get, set: Set, routeId: string, fromPlaceId: string, toPlaceId: string,
-  route: { km: number; seaHeading?: WindDirection }, opts: { pace?: number } = {},
+  route: { km: number; seaHeading?: WindDirection }, opts: { pace?: number; cadence?: VoyageCadence } = {},
 ): boolean {
   const plan = buildSeaPlan(get, routeId, fromPlaceId, toPlaceId, route, opts);
   if (!plan) return false;
@@ -320,7 +392,7 @@ export function startFastVoyage(
   set({ travelPlan: { ...plan, sea: { ...plan.sea!, fast: { days, weeks } } }, worldMapOpen: false, travelRecap: null });
   const to = get().worldMap ? placeById(get().worldMap!, toPlaceId) : undefined;
   log(get, set, [`— ${plan.vehicle!.name} appareille vers ${to?.label ?? '?'} (traversée rapide, ~${days} jour(s), ${plan.km} milles) —`]);
-  if (openVoyageCrewTest(get, set, 'rude-epreuve', 'voyage-rapide')) return true;
+  if (openVoyageCrewTest(get, set, 'rude-epreuve', 'voyage-rapide') === 'modal') return true;
   computeFastPalier(get, set, 0); // aucun équipage apte au Test → DR 0
   finalizeFastVoyage(get, set);
   return true;
@@ -475,7 +547,7 @@ export function runSeaDays(get: Get, set: Set): void {
         if (eff.sail && eff.m === null && eff.label.startsWith('Affaler')) {
           patchSea(get, set, { step: 'progression', sailsDown: true });
           tell(get, set, ['Les vents forcissent dangereusement : il faut affaler les voiles (MDG ch.13) !']);
-          if (openVoyageCrewTest(get, set, 'affaler', 'affaler')) return; // suspension modale
+          if (openVoyageCrewTest(get, set, 'affaler', 'affaler') === 'modal') return; // 'auto'/'none' → la boucle continue
           break;
         }
         patchSea(get, set, { step: 'progression' });
@@ -513,9 +585,9 @@ export function runSeaDays(get: Get, set: Set): void {
         }
         patchSea(get, set, { step: 'crise' });
         tell(get, set, [`${plan.vehicle!.name} fait route (${eff.label}, M effectif ${eff.m}).`]);
-        if (openVoyageCrewTest(get, set, 'progression', 'progression')) return;
-        // Sans équipage apte au Test : progression sans DR.
-        applySeaProgress(get, set, 0);
+        const prog = openVoyageCrewTest(get, set, 'progression', 'progression');
+        if (prog === 'modal') return;
+        if (prog === 'none') applySeaProgress(get, set, 0); // aucun équipage apte → progression sans DR ('auto' l'a déjà appliquée)
         break;
       }
       case 'crise': {
@@ -523,8 +595,8 @@ export function runSeaDays(get: Get, set: Set): void {
         // jusqu'à l'issue (Poursuite ch.13 l.354 : Tests tous les 10 Rounds ×10 ; Tourbillon l.514).
         if (!sea.crisis) { patchSea(get, set, { step: 'embuscade' }); break; }
         if (sea.crisis.kind === 'poursuite') {
-          if (openVoyageCrewTest(get, set, 'progression-poursuite', 'poursuite')) return;
-        } else if (openVoyageCrewTest(get, set, 'manoeuvre', 'tourbillon')) return;
+          if (openVoyageCrewTest(get, set, 'progression-poursuite', 'poursuite') === 'modal') return;
+        } else if (openVoyageCrewTest(get, set, 'manoeuvre', 'tourbillon') === 'modal') return;
         patchSea(get, set, { step: 'embuscade', crisis: undefined }); // pas d'équipage → la crise se dénoue au récit
         break;
       }
@@ -538,7 +610,7 @@ export function runSeaDays(get: Get, set: Set): void {
         const anchor = Math.max(0, Math.min(1, route.ambush.at ?? 0.5)) * plan.km;
         if (plan.kmDone + sea.milesToday < anchor) break; // ancrage pas encore franchi ce jour
         tell(get, set, ['Une voile hostile grandit à l\'horizon : la vigie donne l\'alerte !']);
-        if (openVoyageCrewTest(get, set, 'perception', 'embuscade')) return; // suspension modale
+        if (openVoyageCrewTest(get, set, 'perception', 'embuscade') === 'modal') return; // suspension modale
         openAuthoredSeaAmbush(get, set, route, false); // aucun équipage pour tester → surpris
         return;
       }
@@ -550,7 +622,7 @@ export function runSeaDays(get: Get, set: Set): void {
         patchSea(get, set, { step: 'orientation' });
         if (lighthouse && milesLeft <= 15 && lighthouseSpotDifficulty(Math.max(1, Math.round(milesLeft))) != null) {
           tell(get, set, [`${dest!.label} : un phare veille sur l'approche — la vigie scrute l'horizon (MDG ch.13 l.337).`]);
-          if (openVoyageCrewTest(get, set, 'perception', 'phare')) return;
+          if (openVoyageCrewTest(get, set, 'perception', 'phare') === 'modal') return;
         }
         break;
       }
@@ -564,13 +636,13 @@ export function runSeaDays(get: Get, set: Set): void {
         const opened = chartDR > 0
           ? openVoyageCrewTestWithExtra(get, set, 'orientation', 'orientation', chartDR)
           : openVoyageCrewTest(get, set, 'orientation', 'orientation');
-        if (opened) return;
+        if (opened === 'modal') return;
         break;
       }
       case 'extermination': {
         // 7. Infestation active : un Test étendu d'EXTERMINATION par jour (1d10 h, MDG 14 l.100 ; #65).
         patchSea(get, set, { step: 'events' });
-        if (sea.infestation && openVoyageCrewTest(get, set, 'extermination-nuisibles', 'extermination')) return;
+        if (sea.infestation && openVoyageCrewTest(get, set, 'extermination-nuisibles', 'extermination') === 'modal') return;
         break;
       }
       case 'events': {
@@ -593,7 +665,7 @@ export function runSeaDays(get: Get, set: Set): void {
         const hull = plan.vehicle!;
         if (hull.wounds.current < hull.wounds.max) {
           tell(get, set, [`${hull.name} accuse ${hull.wounds.max - hull.wounds.current} Blessure(s) — l'équipage s'affaire aux réparations du soir (MDG 14 l.116).`]);
-          if (openVoyageCrewTest(get, set, 'entretien', 'entretien')) return;
+          if (openVoyageCrewTest(get, set, 'entretien', 'entretien') === 'modal') return;
         }
         break;
       }
@@ -724,14 +796,26 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
 
   const miles = sea.milesToday;
   const kmDone = Math.min(plan.km, plan.kmDone + miles);
-  patchSea(get, set, { daysAtSea, step: 'meteo', lines: [] });
+  // PV DU JOUR (couche `voyageCadence`) : les jets de ROUTINE auto-résolus s'y sont accumulés (`sea.entries`) —
+  // on les EMPORTE dans le recap du jour avant de rincer l'accumulateur pour le lendemain.
+  const dayEntries = [...(sea.entries ?? [])];
+  const hull = plan.vehicle!;
+  const chrome: SeaRecapChrome = {
+    weatherLabel: seaWeatherLabel(sea.weather), windForce: sea.weather.vent, windFrom: sea.windFrom, heading: sea.heading,
+    hull: { current: hull.wounds.current, max: hull.wounds.max },
+    morale: shipMoraleScore(get, hull), manann: vesselManann(get().vessel).score,
+    waterLitres: get().vessel?.waterLitres,
+    milesLeft: Math.max(0, Math.round(plan.km - kmDone)),
+    daysLeft: Math.max(0, Math.ceil(Math.max(0, plan.km - kmDone) / seaMilesPerDay(cruiseM(hull), true))),
+  };
+  patchSea(get, set, { daysAtSea, step: 'meteo', lines: [], entries: [] });
   set({ travelPlan: { ...get().travelPlan!, kmDone } });
   persistHullWounds(get, set);
   tell(get, set, [...lines, ...evening]);
 
   const worldMap = get().worldMap as WorldMap;
   const to = placeById(worldMap, plan.toPlaceId);
-  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...sea.lines, ...lines, ...evening] };
+  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...sea.lines, ...lines, ...evening], entries: dayEntries, sea: chrome };
 
   if (plan.km - kmDone < 1e-9 && to) {
     // ARRIVÉE : la distance de la traversée est NOTÉE sur le navire (vente à un port producteur :
@@ -1100,7 +1184,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       // Test d'équipage d'Affaler Difficile (−20) sinon 3 Critiques au Gréement — l'échec du Test
       // d'équipage se joue en MODALE (le −20 RAW est porté par extraDR).
       const pend = openVoyageCrewTestWithExtra(get, set, 'affaler', 'ouragan', -2);
-      if (!pend) for (let i = 0; i < 3; i++) { const c = rollShipCritical('greement', rng); applyVesselCritical(get, set, c.log, c.note); }
+      if (pend === 'none') for (let i = 0; i < 3; i++) { const c = rollShipCritical('greement', rng); applyVesselCritical(get, set, c.log, c.note); }
       break;
     }
     case 'infestation': {
@@ -1254,12 +1338,24 @@ function tellManann(get: Get, set: Set, deltaD10: number): void {
   tell(get, set, [`Humeur de Manann : ${delta >= 0 ? '+' : ''}${delta} (→ ${vesselManann(get().vessel).score}).`]);
 }
 
-/** Variante d'ouverture avec un extraDR RAW (Ouragan : Affaler Difficile −20 → −2 DR plats). */
-function openVoyageCrewTestWithExtra(get: Get, set: Set, testTypeId: string, kind: string, extraDR: number): boolean {
-  if (!openVoyageCrewTest(get, set, testTypeId, kind)) return false;
+/** Variante d'ouverture avec un extraDR RAW (Ouragan : Affaler Difficile −20 → −2 DR plats). L'extraDR
+ *  est posé AVANT une éventuelle auto-résolution → on court-circuite l'auto-pilote et on l'applique ici
+ *  (ces kinds — ouragan/orientation-avec-carte — ne sont pas de la routine muette : ouragan est un
+ *  événement, l'orientation à la carte reste routine mais son bonus doit être compté). */
+function openVoyageCrewTestWithExtra(get: Get, set: Set, testTypeId: string, kind: string, extraDR: number): CrewTestOutcome {
+  const plan = get().travelPlan;
+  const auto = get().net.mode === 'local' && seaAutoResolves(plan?.orders, kind);
+  // On construit le pending SANS auto (cadence forcée jour-par-jour le temps de poser l'extraDR), puis
+  // on ajoute l'extraDR et — si les ordres l'exigent — on auto-résout via le MÊME auto-pilote.
+  const built = auto && plan
+    ? (set({ travelPlan: { ...plan, orders: { ...plan.orders!, cadence: 'jour-par-jour' } } }),
+       openVoyageCrewTest(get, set, testTypeId, kind))
+    : openVoyageCrewTest(get, set, testTypeId, kind);
+  if (auto && plan) set({ travelPlan: { ...get().travelPlan!, orders: plan.orders } }); // restaure les ordres
+  if (built === 'none') return 'none';
   const p = get().pendingCrewTest!;
   set({ pendingCrewTest: { ...p, extraDR: (p.extraDR ?? 0) + extraDR } });
-  return true;
+  return auto ? autoResolveVoyageCrewTest(get, set) : 'modal';
 }
 
 // ── Services PORTUAIRES (#30 — réparation, carénage, Améliorations, construction) ────────────────

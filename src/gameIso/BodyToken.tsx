@@ -3,6 +3,8 @@ import { tileCenter, billboardScale, type Dims } from '../geometry/iso';
 import { hpColor, ACTIVE_RING } from './teamColors';
 import { IconG } from '../ui/Icon';
 import type { IconId } from '../ui/icons';
+import type { EndState } from '../engine/conditions';
+import { END_STATE_VISUAL } from '../ui/endStateVisual';
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 
@@ -42,6 +44,7 @@ export function BodyToken({
   discR,
   cid,
   highlight,
+  endState,
 }: {
   x: number;
   y: number;
@@ -81,8 +84,12 @@ export function BodyToken({
    *  de relation : rouge adversaire / vert allié / or neutre). Désambiguë deux tokens empilés en iso
    *  (celui de devant, mis en évidence, ressort). Absent = pas de halo. */
   highlight?: string;
+  /** État de FIN (#237) — pastille distincte par-dessus la tête (mort/inconscient/rendu/hors-combat),
+   *  langage visuel UNIQUE (endStateVisual). Absent = combattant en état. */
+  endState?: EndState | null;
 }) {
   const { cx, cy } = tileCenter(x, y, dims, z); // feetY = cy : pieds au centre de la tuile (étage z)
+  const endMark = endState ? END_STATE_VISUAL[endState] : null;
   const s = scale * billboardScale(dims); // échelle effective du billboard : réduite en vue « de face »
   const hpRatio = hp && hp.max > 0 ? clamp01(hp.current / hp.max) : null;
   const iconList = icons ?? [];
@@ -141,6 +148,15 @@ export function BodyToken({
               <rect x={-13} y={0} width={26 * hpRatio} height={4} rx={2} fill={hpColor(hpRatio)} />
             </>
           )}
+        </g>
+      )}
+      {endMark && (
+        // Pastille d'état de FIN (#237) : disque teinté par état (classe es-*) + icône du registre,
+        // au-dessus de la tête (iso) ou du disque-portrait (flat). Distincte de la barre d'icônes d'États.
+        <g className={`token-endmark ${endMark.className}`} transform={`translate(0,${badgeY - 22})`} pointerEvents="none">
+          <title>{endMark.label}</title>
+          <circle cx={0} cy={0} r={8.5} />
+          <IconG id={endMark.icon} x={-6} y={-6} size={12} />
         </g>
       )}
     </g>

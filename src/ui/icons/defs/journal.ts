@@ -79,6 +79,15 @@ export const icons: IconFamily = [
       `<path ${KF} d="M10.2 18.4 V20.6 M12 18.6 V20.8 M13.8 18.4 V20.6"/>`,
   },
   {
+    id: 'journal/surrender',
+    label: 'Reddition',
+    svg:
+      // Pavillon amené : hampe droite, drapeau (silhouette pleine) AFFAISSÉ vers le bas, plis pendants.
+      `<path ${K} d="M6.4 3.4 V20.6"/>` +
+      `<path ${F} d="M6.4 4.6 C10.2 4 13.7 4.6 17 6.2 C15.8 8.3 15.6 10.6 16.4 13.1 C13.2 11.6 9.8 11 6.4 11.4 Z"/>` +
+      `<path ${KF} d="M9.4 12 C9.6 14.4 9.4 16.7 8.8 18.9"/>`,
+  },
+  {
     id: 'journal/round',
     label: 'Fin de Round',
     svg:

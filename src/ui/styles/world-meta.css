@@ -141,7 +141,13 @@
 }
 .port-purse { margin-left: auto; font-size: 13px; color: var(--muted); }
 .port-body { width: min(900px, 96vw); margin: 6px auto 0; }
-.port-yard, .port-trade { align-items: start; }
+.port-yard, .port-trade, .port-escale { align-items: start; }
+/* En-tête d'escale-hub (#228) : région + 5 indices de l'Index des ports + desc du catalogue. */
+.port-head { width: min(900px, 96vw); margin: 0 auto 6px; }
+.port-region { margin: 0 0 6px; }
+.port-indices { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--muted); margin: 4px 0; }
+.port-indices span b { color: var(--gold2); font-weight: 500; margin-right: 4px; }
+.port-crew-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .port-section { padding: 12px 14px; }
 .port-section h3 { margin: 0 0 8px; font-size: 15px; color: var(--gold2); }
 .port-section .btn { margin: 4px 0; }

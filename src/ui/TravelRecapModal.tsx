@@ -4,12 +4,16 @@ import { MultiRollList } from './MultiRollList';
 import { TRAVEL_MODE_LABEL, routeDistanceLabel } from '../engine/travel';
 import type { TravelRecap } from '../state/travelFlow';
 import { GameDate } from './GameDate';
+import { SeaVoyageBody } from './SeaVoyageScreen';
 import { Icon } from './Icon';
 
 /** Corps PARTAGÉ du rapport d'une journée de route : péripéties/entretien en clair + JETS en
  *  multijet (MÊME brique que le bilan de nuit) — utilisé par la halte du soir (RestModal) et le
  *  recap de voyage. Une seule présentation des journées, pas deux. */
 export function TravelDayBody({ day }: { day: import('../state/travelFlow').TravelRecapDay }) {
+  // MER (route COMMANDÉE) : l'écran de traversée dédié (rose des vents + jauges + PV) remplace le corps
+  // de recap terrestre — une seule surface de jour, propre à la mer.
+  if (day.sea) return <SeaVoyageBody day={day} />;
   return (
     <>
       {day.lines.length > 0 && (

@@ -558,6 +558,26 @@ export function isOutOfAction(c: Combatant): boolean {
   return c.dead === true || c.outOfRencontre === true || hasCondition(c, COND.inconscient) || (usesSuddenDeath(c) && c.wounds.current <= 0);
 }
 
+/** Catégorie d'état de FIN d'un combattant, pour l'AFFICHAGE (#237). */
+export type EndState = 'mort' | 'inconscient' | 'rendu' | 'hors-combat';
+
+/** État de FIN d'un combattant pour le RENDU (#237) — SOURCE UNIQUE consommée par les trois surfaces
+ *  (token iso, portrait, frise d'initiative) ; distinct de `isOutOfAction` (booléen de règle), il
+ *  renvoie la CATÉGORIE lisible. `mort` (définitif) → `rendu` (reddition #215 / coque amenée, pavillon
+ *  baissé) → `hors-combat` (éjecté vivant : Destin, naufrage, Mort Subite d'un figurant, coque coulée)
+ *  → `inconscient` (KO conscient perdu). `rendu` vs `hors-combat` repose sur `exitReason` (seul champ
+ *  qui les distingue). `null` = en état de se battre (un héros à 0 PB reste À Terre, PAS un état de fin).
+ *  Un OBJET INERTE (affût servi, 0 PB permanent immune) n'a jamais d'état de fin. */
+export function endState(c: Combatant): EndState | null {
+  if (c.inert) return null;
+  if (c.dead) return 'mort';
+  if (c.outOfRencontre) return c.exitReason === 'reddition' || c.exitReason === 'prise' ? 'rendu' : 'hors-combat';
+  if (c.bodyShape === 'vehicule') return c.wounds && c.wounds.current <= 0 ? 'hors-combat' : null; // coque coulée (MDG ch.13)
+  if (usesSuddenDeath(c) && c.wounds && c.wounds.current <= 0) return 'hors-combat'; // figurant tombé à 0 PB
+  if (!c.dead && hasCondition(c, COND.inconscient)) return 'inconscient'; // vivant mais KO (même gate de cycle de vie qu'isOutOfAction)
+  return null;
+}
+
 /** Condition de mort lente (LDB 18-Traumatisme l.48-49) : Inconscient + 0 PB + (Blessures
  *  critiques > Bonus d'Endurance), et pas déjà mort/éjecté. Suffocation (LDB 18 l.425) :
  *  « au bout d'un nombre de Rounds égal à votre BE, vous mourez » — compteur à 0 = mort

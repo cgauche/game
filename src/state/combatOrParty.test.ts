@@ -75,6 +75,13 @@ describe('combatOrParty — base des actions joueur combat ⇄ hors combat', () 
       useGame.setState({ battle: null });
       expect(combatantClickActs(useGame.getState, c('z'))).toBe(false);
     });
+
+    it('COQUE ennemie en mode INSPECTION (#240) → n’agit pas : le clic INSPECTE, jamais un ciblage', () => {
+      combat();
+      const hull = { id: 'hull1', name: 'Le Serpent de Sel', kind: 'npc', bodyShape: 'vehicule' } as unknown as Combatant;
+      useGame.setState({ battle: { ...useGame.getState().battle!, combatants: [...useGame.getState().battle!.combatants, hull] }, inspectEnabled: true });
+      expect(combatantClickActs(useGame.getState, hull)).toBe(false); // route vers setInspectId, pas battleClickEntity
+    });
   });
 
   describe('touchActors : patch de re-rendu selon le contexte', () => {

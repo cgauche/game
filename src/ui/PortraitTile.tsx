@@ -2,6 +2,8 @@ import { RigPortrait } from './RigPortrait';
 import { hpColor } from '../gameIso/teamColors';
 import { StateChips } from './StateChips';
 import { Icon } from './Icon';
+import { endState } from '../engine/conditions';
+import { END_STATE_VISUAL } from './endStateVisual';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -49,9 +51,10 @@ export interface PortraitTileProps {
 export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, selected, hovered, team, maxStates = 4, onClick, title }: PortraitTileProps) {
   const px = CHAR_SIZE_PX[size];
   const ratio = c.wounds.max > 0 ? Math.max(0, Math.min(1, c.wounds.current / c.wounds.max)) : 0;
-  // Un engin INERTE (affût servi) n'a PAS de Blessures (immune) : ni jauge de PV, ni croix « hors de combat »
-  // (ses 0 PB ne sont pas une mort) — c'est un objet, pas un combattant blessable.
-  const ko = !c.inert && (c.dead || c.wounds.current <= 0 || c.conditions.some((x) => x.name === 'inconscient'));
+  // État de FIN (#237) : SOURCE UNIQUE (endState) — distingue mort / inconscient / rendu / hors-combat
+  // (une croix ✕ générique les confondait). null = en état (un héros à 0 PB reste À Terre, pas une fin).
+  const es = endState(c);
+  const endMark = es ? END_STATE_VISUAL[es] : null;
   const showGauge = variant !== 'identity' && !c.inert;
   const showPv = showGauge && c.kind === 'hero' && px >= CHAR_SIZE_PX.md;
   // R6 : l'unité active est plus grosse que les autres pour la mettre en évidence.
@@ -60,7 +63,7 @@ export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, s
     <div className="ptile-wrap">
       <button
         type="button"
-        className={`ptile ${active ? 'active' : ''} ${selected ? 'sel' : ''} ${hovered ? 'hov' : ''} ${ko ? 'ko' : ''} ${team ? `team-${team}` : ''}`}
+        className={`ptile ${active ? 'active' : ''} ${selected ? 'sel' : ''} ${hovered ? 'hov' : ''} ${endMark ? `ko ${endMark.className}` : ''} ${team ? `team-${team}` : ''}`}
         style={{ width: s }}
         onClick={onClick}
         title={title ?? c.name}
@@ -69,7 +72,11 @@ export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, s
         {active && <i className="ptile-caret">▼</i>}
         <span className="ptile-face" style={{ width: s, height: s }}>
           <RigPortrait combatant={c} size={s} ring={ring} />
-          {ko && <span className="ko-cross">✕</span>}
+          {endMark && (
+            <span className={`end-mark ${endMark.className}`} title={endMark.label} aria-label={endMark.label}>
+              <Icon id={endMark.icon} size="sm" />
+            </span>
+          )}
         </span>
         {showGauge && (
           <span className="ptile-gauge" title={showPv ? `Blessures : ${c.wounds.current}/${c.wounds.max}` : 'Blessures'}>

@@ -9,7 +9,7 @@
 import type { ReactNode } from 'react';
 import { Scene } from '../../state/scene';
 import { Combatant } from '../../engine/types';
-import { isOutOfAction } from '../../engine/conditions';
+import { isOutOfAction, endState } from '../../engine/conditions';
 import type { BattleState } from '../../state/store';
 import { CELL, Dims, tileCenter, depth, diamondPath } from '../../geometry/iso';
 import { metricToLift } from '../../state/relief';
@@ -51,12 +51,12 @@ function token(ctx: TokenCtx, id: string, x: number, y: number, inner: string, s
   );
 }
 
-type TokenExtras = { hp?: { current: number; max: number }; icons?: import('../../ui/icons').IconId[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string };
+type TokenExtras = { hp?: { current: number; max: number }; icons?: import('../../ui/icons').IconId[]; iconsMore?: number; veil?: string; active?: boolean; ringDash?: string; flat?: boolean; portraitBox?: string; discR?: number; ghost?: boolean; cid?: string; highlight?: string; endState?: import('../../engine/conditions').EndState | null };
 function tokenNode(ctx: TokenCtx, id: string, x: number, y: number, child: ReactNode, scale: number, ringColor?: string, dim?: boolean, walking?: boolean, extras?: TokenExtras, z = 0) {
   return (
     <BodyToken key={id} x={x} y={y} z={ctx.liftAt(x, y, z)} dims={ctx.dims} scale={scale} ring={ringColor} ringDash={extras?.ringDash} dim={dim} ghost={extras?.ghost} walking={walking} bakedDeath
       hp={extras?.hp} icons={extras?.icons} iconsMore={extras?.iconsMore} veil={extras?.veil} active={extras?.active}
-      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid} highlight={extras?.highlight}>
+      flat={extras?.flat} portraitBox={extras?.portraitBox} discR={extras?.discR} cid={extras?.cid} highlight={extras?.highlight} endState={extras?.endState}>
       {child}
     </BodyToken>
   );
@@ -227,6 +227,7 @@ export function combatantObjs(tokenEls: TokenEl[], ctx: CombatTokenCtx): StageOb
         ghost: ctx.ghostIds.has(c.id), // hors-LdV du tireur actif → fantomatique
         cid: c.id, // ciblage DOM (recettes Playwright : survol/clic par data-cid)
         highlight: c.id === ctx.hoveredId ? relationColor(c.kind) : undefined, // FOCUS (survol token/frise) → halo couleur de relation
+        endState: endState(c), // #237 : pastille d'état de fin distincte (mort/inconscient/rendu/hors-combat)
       }, cz);
       out.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, ctx.dims, cz) + 0.5, z: cz, vis: true, el }); // en vue → au-dessus du voile ; tri constant sur le pas (sortPt)
     } else if (tk.subject.kind === 'mounted') {
@@ -238,7 +239,7 @@ export function combatantObjs(tokenEls: TokenEl[], ctx: CombatTokenCtx): StageOb
       const wp = ctx.walkPosOf(mount.id, mount.pos!.x, mount.pos!.y, mz); // suit l'animation de marche de la monture
       const cx = wp.x + off, cy = wp.y + off;
       const mountScale = 0.62 * pickBackend({ kind: 'combatant', combatant: mount }).speciesScale * sizeTokenScale(mount.size);
-      const el = tokenNode(ctx, `${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, isOutOfAction(mount), wp.walking);
+      const el = tokenNode(ctx, `${mount.id}-mtd`, cx, cy, <MountedToken mount={mount} rider={rider} />, mountScale, undefined, isOutOfAction(mount), wp.walking, { endState: endState(mount) });
       out.push({ d: depth(wp.sortPt.x + off, wp.sortPt.y + off, ctx.dims, mz) + 0.5, z: mz, vis: true, el });
     }
   }

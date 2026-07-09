@@ -221,12 +221,13 @@ export function resolveShipUnits(combatants: Combatant[]): string[] {
       // Naufrage : l'équipage encore en état sombre avec le navire (sort de la rencontre).
       const aboard = exposedCrew(crew).filter((c) => !isOutOfAction(c));
       if (aboard.length) {
-        for (const c of aboard) c.outOfRencontre = true;
+        for (const c of aboard) { c.outOfRencontre = true; c.exitReason = 'naufrage'; } // #237 : éjecté vivant, lu « hors-combat »
         lines.push(`${hull.name} sombre — son équipage (${aboard.map((c) => c.name).join(', ')}) passe par-dessus bord.`);
       }
     } else if (crew.length && crew.every((c) => isOutOfAction(c))) {
       // Plus personne à bord : la coque, sans équipage pour la défendre ni la manœuvrer, quitte le combat.
       hull.outOfRencontre = true;
+      hull.exitReason = 'prise'; // #237 : coque amenée, lue « rendu » (pavillon baissé) au token de coque
       lines.push(`${hull.name} n'a plus d'équipage en état de le défendre : le navire est pris et sort du combat.`);
     }
   }

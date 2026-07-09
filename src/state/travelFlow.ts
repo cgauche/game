@@ -66,6 +66,9 @@ export interface TravelRecapDay {
   /** Les JETS du jour (marche forcée, Survie, Perception…) en lignes de jet structurées —
    *  même brique multijet que le bilan de nuit (MultiRollList), pas du texte. */
   entries?: import('./restFlow').NightEntry[];
+  /** MER (route COMMANDÉE) : instantané du jour pour l'écran de traversée (rose des vents + jauges +
+   *  distance restante) — rendu par `SeaVoyageScreen` à la place du corps de recap terrestre. */
+  sea?: import('./seaVoyageFlow').SeaRecapChrome;
 }
 
 /** Suite DIFFÉRÉE derrière le récit du voyage (embuscade d'auteur ou « Attaqués ! » de la table
@@ -109,6 +112,9 @@ export interface TravelPlan {
   kmDone: number;
   /** Interrompu par une péripétie (combat/transition) — reprise via `resumeTravel`. */
   interrupted: boolean;
+  /** ORDRES permanents de la traversée (couche `voyageCadence`) : cadence COMMANDÉE (routine auto-résolue,
+   *  PV du jour) ou JOUR-PAR-JOUR (modale par jet). Consommé par la mer ET le fluvial. */
+  orders?: import('./voyageCadence').VoyageOrders;
   /** Postes d'Activité de l'Étape : un héros → ≤1 Activité (EDOC ch.5). Initialisé depuis les rôles
    *  PERSISTANTS (`travelRole`) au départ, réutilisé chaque Étape (0 ré-assignation par jour). */
   postes?: Record<string, StagePosting>;
@@ -179,7 +185,7 @@ export function startTravel(
   get: Get, set: Set,
   routeId: string,
   mode: TravelMode,
-  opts: { classKey?: string; hoursPerDay?: number; allure?: Allure; seaPace?: number; fast?: boolean } = {},
+  opts: { classKey?: string; hoursPerDay?: number; allure?: Allure; seaPace?: number; fast?: boolean; cadence?: import('./voyageCadence').VoyageCadence } = {},
 ): void {
   const { worldMap, scene, battle, party } = get();
   if (battle || !worldMap || !scene) return;
@@ -199,12 +205,12 @@ export function startTravel(
     if (!route.sea) return;
     // Traversée RAPIDE (MDG 15 l.21-37) : un seul Test de Rude épreuve résout tout le trajet.
     if (opts.fast) {
-      if (!startFastVoyage(get, set, routeId, from.id, to.id, route, { pace: opts.seaPace })) {
+      if (!startFastVoyage(get, set, routeId, from.id, to.id, route, { pace: opts.seaPace, cadence: opts.cadence })) {
         log(get, set, ['Aucun navire de campagne en état de prendre la mer — pas de traversée.']);
       }
       return;
     }
-    const seaPlan = buildSeaPlan(get, routeId, from.id, to.id, route, { pace: opts.seaPace });
+    const seaPlan = buildSeaPlan(get, routeId, from.id, to.id, route, { pace: opts.seaPace, cadence: opts.cadence });
     if (!seaPlan) {
       log(get, set, ['Aucun navire de campagne en état de prendre la mer — pas de traversée.']);
       return;
@@ -220,7 +226,7 @@ export function startTravel(
   // se JOUE jour par jour (Test de Navigation, table des vents, périls, chavirage) au lieu d'un transport
   // payant. Repli sur le transport payant (« on paie un passeur ») si aucun batelier/embarcation.
   if (route.river && mode !== 'pied' && mode !== 'monture' && findVehicleById(mode)?.ship) {
-    const riverPlan = buildRiverPlan(get, routeId, from.id, to.id, route);
+    const riverPlan = buildRiverPlan(get, routeId, from.id, to.id, route, { cadence: opts.cadence });
     if (riverPlan) {
       set({ travelPlan: riverPlan, worldMapOpen: false, travelRecap: null });
       log(get, set, [`— ${riverPlan.vehicle!.name} descend le fleuve vers ${to.label} (${route.km} km, navigation fluviale) —`]);

@@ -99,7 +99,22 @@ Cinq formes (`VictoryCondition`, `src/state/scene.ts`), défaut `allEnemiesDead`
 Trigger sur une expression « flag,!flag ». C'est le seul mécanisme d'état narratif — pas de compteur
 codé en dur.
 
-## 10. Règles d'or
+## 10. Objectifs courants (`setObjective` / `clearObjective`)
+
+Réponse à « je fais quoi maintenant ? » (#238, corollaire de « personne ne lit le journal ») : une PILE
+d'objectifs (`store.objectives`, `{ id, text }[]`) affichée par un bandeau discret mais TOUJOURS visible
+en exploration (`src/ui/ObjectiveBanner.tsx`, masqué en combat). Le plus RÉCENT est en tête ; plusieurs →
+dépliable.
+
+- `setObjective { id, text }` — pose OU met à jour (re-poser le même `id` STABLE remplace son `text` et le
+  remonte en tête). `text` = consigne joueur verbatim (`Prose`-safe : pas d'id de code ni de réf RAW brute).
+- `clearObjective { id? }` — retire l'objectif `id`, ou TOUS si `id` absent (fin d'acte).
+
+La pile TRAVERSE les scènes (persistée hors `stateFields`, comme `flags`) et n'est vidée qu'en nouvelle
+partie (`startScene`). Chaque pose/maj/retrait est aussi archivé au `journal`. L'étalon de campagne câble
+les objectifs acte par acte (passage dédié) — l'auteur n'a rien à coder en dur.
+
+## 11. Règles d'or
 
 - **IDS partout** — `ref`/`skill`/`spell`/`weapon`/`species`/`tenue`/`trappingId`/`factorId`/`roleId` sont
   des ids STABLES. Un libellé est un défaut silencieux (poison). Doctrine : CLAUDE.md, encadré « id STABLE ».

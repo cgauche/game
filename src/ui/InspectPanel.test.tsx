@@ -40,4 +40,18 @@ describe('InspectPanel', () => {
     expect(html).toContain('Lanceur de sorts');
     expect(html).toContain('Sorts');
   });
+
+  it('COQUE ennemie (#240) : inspecte l’objet visible (Coque + Proue-idole #221), PAS le statbloc-personnage', () => {
+    const serpent = {
+      id: 'serpent', name: 'Le Serpent de Sel', kind: 'npc', bodyShape: 'vehicule',
+      creatureId: 'loup-imperial', conditions: [], wounds: { current: 60, max: 80 },
+      upgrades: [{ id: 'proue-idole-de-stromfels' }],
+    } as unknown as Parameters<typeof InspectPanel>[0]['combatant'];
+    const html = render(serpent);
+    expect(html).toContain('Le Serpent de Sel');
+    expect(html).toContain('Coque');
+    expect(html).toContain('60/80');
+    expect(html).toContain('Proue-idole de Stromfels');
+    expect(html).not.toContain('Caractéristiques'); // pas de grille de caracs pour une coque
+  });
 });

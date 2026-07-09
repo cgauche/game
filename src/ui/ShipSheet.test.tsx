@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { ShipStateBlock, ShipCrewByRole, PosteDetail } from './ShipSheet';
+import { ShipStateBlock, ShipCrewByRole, PosteDetail, ShipInspectBody } from './ShipSheet';
 import type { Combatant, SkillInstance } from '../engine/types';
 
 const mk = (id: string, dex: number, skills: { skillId: string; advances: number; spec?: string }[] = [], shipRole?: string): Combatant =>
@@ -63,5 +63,50 @@ describe('ShipSheet — fiche du navire (état · postes · rôles)', () => {
     expect(p1).not.toContain('Couleuvrine');
     expect(p2).toContain('Couleuvrine');
     expect(p2).not.toContain('Pierrier');
+  });
+
+  it('PosteDetail readOnly (#240) : munition chargée montrée SANS sélecteur (pas d’édition de la pièce d’autrui)', () => {
+    const ship = { id: 'ship', name: 'Le Serpent', conditions: [] } as unknown as Combatant;
+    const p: Poste = { item: { name: 'Baliste', uid: 'p1' }, side: 'tribord', ammo: [{ uid: 'a1', name: 'Boulet', qty: 8 }] } as unknown as Poste;
+    const rw = renderToStaticMarkup(<PosteDetail hull={ship} poste={p} combatants={[ship]} />);
+    const ro = renderToStaticMarkup(<PosteDetail hull={ship} poste={p} combatants={[ship]} readOnly />);
+    expect(rw).toContain('<select'); // éditable côté allié
+    expect(ro).not.toContain('<select'); // lecture seule : pas de contrôle
+    expect(ro).toContain('Boulet'); // munition chargée visible
+  });
+});
+
+describe('ShipInspectBody — inspection en LECTURE d’une coque ennemie (#240)', () => {
+  type Poste = NonNullable<Combatant['postes']>[number];
+  // Le Serpent de Sel : raider de classe loup-imperial (ship.traits : bélier/renforcé/solide) portant la
+  // Proue-idole de Stromfels (Amélioration d’INSTANCE, #221) sur `upgrades`.
+  const serpent = {
+    id: 'serpent', name: 'Le Serpent de Sel', kind: 'npc', bodyShape: 'vehicule',
+    creatureId: 'loup-imperial', conditions: [], wounds: { current: 60, max: 80 },
+    upgrades: [{ id: 'proue-idole-de-stromfels' }],
+    postes: [{ item: { name: 'Baliste', uid: 'p1' }, side: 'tribord', crewIds: [] } as unknown as Poste],
+  } as unknown as Combatant;
+
+  it('Coque, cap, gréement + postes visibles', () => {
+    const html = renderToStaticMarkup(<ShipInspectBody hull={serpent} crew={[]} cap="NE" />);
+    expect(html).toContain('Coque');
+    expect(html).toContain('60/80');
+    expect(html).toContain('Nord-Est'); // cap
+    expect(html).toContain('Mixte'); // gréement du loup-imperial
+    expect(html).toContain('Baliste'); // poste apparent
+    expect(html).toContain('Tribord');
+  });
+
+  it('Traits du TYPE + Améliorations d’INSTANCE listés — la Proue-idole de Stromfels apparaît (#221)', () => {
+    const html = renderToStaticMarkup(<ShipInspectBody hull={serpent} crew={[]} cap="NE" />);
+    expect(html).toContain('Bélier'); // ship.traits du loup-imperial
+    expect(html).toContain('Renforcé');
+    expect(html).toContain('Solide');
+    expect(html).toContain('Proue-idole de Stromfels'); // upgrade d’instance
+  });
+
+  it('Moral d’équipage ABSENT (résolve interne, non visible d’une coque ennemie)', () => {
+    const html = renderToStaticMarkup(<ShipInspectBody hull={serpent} crew={[]} cap="NE" />);
+    expect(html).not.toContain('Moral');
   });
 });

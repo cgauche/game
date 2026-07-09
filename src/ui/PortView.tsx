@@ -1,26 +1,124 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../state/store';
-import { findVehicleById, NAVAL_TRAITS, findNavalTrait } from '../data';
-import { findCargoById } from '../engine/seaVoyage';
+import { findVehicleById, NAVAL_TRAITS, findNavalPortById, crewRoles, type NavalPortData } from '../data';
+import { findCargoById, type PortProfile } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { foulingEffects } from '../engine/seaNavigation';
-import { canAfford, toMoney } from '../engine/money';
+import { canAfford, toMoney, priceToMoney, type Money } from '../engine/money';
 import { moraleBand } from '../engine/crewMorale';
+import type { CampaignVessel } from '../state/store';
+import type { PendingShoreLeave, PendingManannPriest } from '../state/seaVoyageFlow';
 import { Coins } from './Coins';
 import { Prose } from './Prose';
 import { Icon } from './Icon';
 import { NotchGauge } from './NotchGauge';
+import { ChoiceButtons } from './OptionChooser';
 import { moraleTone, ShipCrewWages } from './shipStatus';
 
+/** Libellé d'un id de cargaison / marqueur d'Index (`commerce`/`minimum-vital` ne sont pas des cargaisons). */
+const cargoLabel = (id: string): string => id === 'commerce' ? 'Commerce' : id === 'minimum-vital' ? 'Minimum vital' : findCargoById(id)?.label ?? id;
+const indiceList = (rec: Record<string, number> | undefined): string =>
+  Object.entries(rec ?? {}).map(([id, n]) => `${cargoLabel(id)}${n > 1 ? ` ×${n}` : ''}`).join(', ');
+
+/** En-tête de l'escale-hub (#228) : région + 5 indices de l'Index des ports (MDG 15 l.439-506) + desc
+ *  verbatim du catalogue `naval-ports.json` (si le lieu porte une `ref`). PUR (props). */
+export function PortHeader({ pp, catalogue }: { pp: PortProfile; catalogue?: NavalPortData }) {
+  return (
+    <div className="port-head">
+      {catalogue?.region && <p className="port-hint port-region">{catalogue.region}{pp.cosmopolite ? ' · port cosmopolite' : ''}</p>}
+      <div className="port-indices">
+        <span><b>Taille</b> {pp.taille}</span>
+        <span><b>Richesse</b> {pp.richesse}</span>
+        <span><b>Production</b> {pp.production.length ? pp.production.map(cargoLabel).join(', ') : '—'}</span>
+        <span><b>Surplus</b> {indiceList(pp.surplus) || '—'}</span>
+        <span><b>Demande</b> {indiceList(pp.demande) || '—'}</span>
+      </div>
+      {catalogue?.desc && <Prose md={catalogue.desc} />}
+    </div>
+  );
+}
+
+/** Onglet ESCALE (#228) — actions d'escale agrégées, PUR (props) : événements d'escale en cours surfacés
+ *  (Relâche à terre MDG 15 l.245 / Prêtre de Manann l.246 — le hub OUVRE les décisions existantes) et
+ *  RECRUTEMENT salarié (MDG 14 l.293-302, `crew-roles.json`). Les modales autonomes restent montées à
+ *  l'arrivée ; ici on réutilise leurs actions de résolution. */
+export function EscaleTab({ vessel, money, isGuest, pendingShoreLeave, pendingManannPriest, onHire, onDismiss, onShoreLeave, onManann }: {
+  vessel: CampaignVessel; money: Money; isGuest: boolean;
+  pendingShoreLeave: PendingShoreLeave | null; pendingManannPriest: PendingManannPriest | null;
+  onHire: (roleId: string) => void; onDismiss: (roleId: string) => void;
+  onShoreLeave: (allow: boolean) => void; onManann: (pay: boolean) => void;
+}) {
+  const hireable = crewRoles.filter((r) => r.wage?.weekly);
+  const countOf = (roleId: string) => vessel.crew?.find((h) => h.roleId === roleId)?.count ?? 0;
+  const hasEvent = !!(pendingShoreLeave || pendingManannPriest);
+  return (
+    <div className="layout-sidebar port-escale">
+      <section className="panel port-section">
+        <h3>Vie du port</h3>
+        {!hasEvent && <p className="port-hint">Aucun événement d’escale en cours.</p>}
+        {pendingShoreLeave && (
+          <div className="port-upgrade">
+            <div className="port-upgrade-head"><b><Icon id="travel/anchor" size="sm" /> Relâche à terre</b></div>
+            <p className="port-hint">Autorisez-vous l’équipage à faire relâche à terre pendant l’escale ? (MDG 15 l.245)</p>
+            <ChoiceButtons
+              options={[
+                { key: 'accorder', label: 'Accorder la relâche', primary: true, disabled: isGuest, onSelect: () => onShoreLeave(true) },
+                { key: 'refuser', label: 'Refuser la relâche', disabled: isGuest, onSelect: () => onShoreLeave(false), title: 'L\'Embrigadement n\'aura pas lieu' },
+              ]}
+            />
+          </div>
+        )}
+        {pendingManannPriest && (
+          <div className="port-upgrade">
+            <div className="port-upgrade-head"><b><Icon id="faith/church" size="sm" /> Un Prêtre de Manann s’avance</b></div>
+            <p className="port-hint">Payez <Coins money={pendingManannPriest.cost} /> pour une bénédiction, ou refusez (−4d10 Humeur de Manann). (MDG 15 l.246)</p>
+            <ChoiceButtons
+              options={[
+                { key: 'payer', label: <>Payer (<Coins money={pendingManannPriest.cost} />)</>, primary: true, disabled: isGuest || !canAfford(money, pendingManannPriest.cost), onSelect: () => onManann(true) },
+                { key: 'refuser', label: 'Refuser', disabled: isGuest, onSelect: () => onManann(false), title: 'Manann reste courroucé' },
+              ]}
+            />
+          </div>
+        )}
+      </section>
+      <section className="panel port-section">
+        <h3>Recruter de l’équipage</h3>
+        <p className="port-hint">Embauche de marins salariés (MDG 14 l.293-302) : la solde est prélevée à l’entretien hebdomadaire, aucune avance à l’embauche.</p>
+        <div className="panel-grid">
+          {hireable.map((role) => {
+            const n = countOf(role.id);
+            return (
+              <div key={role.id} className="port-upgrade">
+                <div className="port-upgrade-head">
+                  <b>{role.label}{n > 0 ? ` ×${n}` : ''}</b>
+                  <span className="port-hint"><Coins money={priceToMoney(role.wage!.weekly)} />/sem.</span>
+                </div>
+                <div className="port-crew-actions">
+                  <button type="button" className="btn small" disabled={isGuest} title={`Embaucher un ${role.label}`} onClick={() => onHire(role.id)}>Embaucher</button>
+                  <button type="button" className="btn small ghost" disabled={isGuest || n <= 0} title={`Débarquer un ${role.label}`} onClick={() => onDismiss(role.id)}>Débarquer</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <ShipCrewWages vessel={vessel} />
+        {!vessel.crew?.length && !vessel.wagesOwed && <p className="port-hint">Aucun équipage salarié pour l’instant.</p>}
+      </section>
+    </div>
+  );
+}
+
 /**
- * ÉCRAN PORT (MDG 15) — services au navire de campagne à quai : Réparer (MDG 13 l.643) / Caréner
- * (Salissures l.150-159) / Améliorations (coût par bande de Taille, MDG 12) / Cargaison (commerce
- * maritime l.309-399 : acheter les offres de l'escale, vendre/brader la cale). Overlay plein écran
- * (patron `WorldMapView`), sections en `.layout-sidebar`/`panel-grid` (responsive ≤900/700/560),
- * français, aucun texte tuto (les `desc` sont le VERBATIM des Améliorations/cargaisons).
+ * ESCALE-HUB (#228, MDG 15) — LE point d'entrée de port unifié : en-tête enrichi (`PortHeader` : nom du
+ * port, ses 5 indices de l'Index des ports, la desc du catalogue `naval-ports.json` si le lieu porte une
+ * `ref`), puis trois onglets. Chantier (Réparer MDG 13 l.643 / Caréner Salissures l.150-159 /
+ * Améliorations MDG 12) · Cargaison (commerce maritime l.309-399) · Escale (`EscaleTab` : événements
+ * d'escale en cours surfacés + recrutement salarié). Overlay plein écran (patron `WorldMapView`),
+ * sections en `.layout-sidebar`/`panel-grid` (responsive ≤900/700/560), français, aucun texte tuto
+ * (les `desc` sont du VERBATIM). `initialTab` : levier de test (rendu statique) ; défaut = Chantier.
  */
-export function PortView() {
+export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'cargaison' | 'escale' } = {}) {
   const port = useGame((s) => s.port);
   const vessel = useGame((s) => s.vessel);
   const money = useGame((s) => s.money);
@@ -31,11 +129,26 @@ export function PortView() {
   const repair = useGame((s) => s.portRepair);
   const careen = useGame((s) => s.portCareen);
   const install = useGame((s) => s.portInstallUpgrade);
+  const hire = useGame((s) => s.portHireCrew);
+  const dismiss = useGame((s) => s.portDismissCrew);
+  const pendingShoreLeave = useGame((s) => s.pendingShoreLeave);
+  const pendingManannPriest = useGame((s) => s.pendingManannPriest);
+  const resolveShoreLeave = useGame((s) => s.resolveShoreLeave);
+  const resolveManannPriest = useGame((s) => s.resolveManannPriest);
   const isGuest = useGame((s) => s.net.mode) === 'guest';
-  const [tab, setTab] = useState<'coque' | 'cargaison'>('coque');
+  const [tab, setTab] = useState<'coque' | 'cargaison' | 'escale'>(initialTab);
   const [buyEnc, setBuyEnc] = useState<Record<string, number>>({});
 
   const vd = vessel ? findVehicleById(vessel.vehicleId) : undefined;
+  const upgrades = useMemo(() => {
+    if (!vd?.ship) return [];
+    const owned = new Set((vessel?.upgrades ?? []).map((u) => u.id));
+    return NAVAL_TRAITS
+      .filter((t) => t.kind === 'amelioration' && t.install && !owned.has(t.id))
+      .map((t) => ({ def: t, cost: installCost(t.install!, vd.ship!.lengthM, 1) }))
+      .filter((u) => u.cost.gold != null);
+  }, [vessel?.upgrades, vd?.ship]);
+
   if (!port || !vessel || !vd?.ship) return null;
   const woundsMax = vessel.wounds?.max ?? vd.hull?.char.B ?? 0;
   const woundsCur = vessel.wounds?.current ?? woundsMax;
@@ -46,17 +159,9 @@ export function PortView() {
   const repairCost = Math.ceil(missing * (lissage ? 1.5 : 1));
   const careenPct = foulingEffects(foulLevel).repairPctOfBase;
   const careenCost = Math.ceil((vd.purchase?.price?.gold ?? 0) * (careenPct / 100));
-
-  // Améliorations POSABLES : `kind:'amelioration'` non déjà installées, coût chiffré pour cette coque.
-  const upgrades = useMemo(() => {
-    const owned = new Set((vessel.upgrades ?? []).map((u) => u.id));
-    return NAVAL_TRAITS
-      .filter((t) => t.kind === 'amelioration' && t.install && !owned.has(t.id))
-      .map((t) => ({ def: t, cost: installCost(t.install!, vd.ship!.lengthM, 1) }))
-      .filter((u) => u.cost.gold != null);
-  }, [vessel.upgrades, vd.ship]);
-
   const cargo = vessel.cargo ?? [];
+  const catalogue = port.ref ? findNavalPortById(port.ref) : undefined;
+  const hasEscaleEvent = !!(pendingShoreLeave || pendingManannPriest);
 
   return (
     <div className="worldmap-overlay port-overlay">
@@ -64,9 +169,11 @@ export function PortView() {
         <h2><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vessel.name ?? vd.label}</h2>
         <button type="button" className="btn small" onClick={close}>✕ Fermer</button>
       </div>
+      <PortHeader pp={port.port} catalogue={catalogue} />
       <div className="port-tabs">
         <button type="button" className={`btn small ${tab === 'coque' ? 'btn-primary' : ''}`} onClick={() => setTab('coque')}><Icon id="travel/repair" size="sm" /> Chantier</button>
         <button type="button" className={`btn small ${tab === 'cargaison' ? 'btn-primary' : ''}`} onClick={() => setTab('cargaison')}><Icon id="item/misc" size="sm" /> Cargaison</button>
+        <button type="button" className={`btn small ${tab === 'escale' ? 'btn-primary' : ''}`} onClick={() => setTab('escale')}><Icon id="travel/anchor" size="sm" /> Escale{hasEscaleEvent ? ' •' : ''}</button>
         <span className="port-purse">Bourse : <b><Coins money={money} /></b></span>
       </div>
 
@@ -129,7 +236,7 @@ export function PortView() {
               </div>
             </section>
           </div>
-        ) : (
+        ) : tab === 'cargaison' ? (
           <div className="layout-sidebar port-trade">
             <section className="panel port-section">
               <h3>Acheter — offres de l’escale</h3>
@@ -188,6 +295,13 @@ export function PortView() {
               </table>
             </section>
           </div>
+        ) : (
+          <EscaleTab
+            vessel={vessel} money={money} isGuest={isGuest}
+            pendingShoreLeave={pendingShoreLeave} pendingManannPriest={pendingManannPriest}
+            onHire={(roleId) => hire(roleId, 1)} onDismiss={(roleId) => dismiss(roleId, 1)}
+            onShoreLeave={resolveShoreLeave} onManann={resolveManannPriest}
+          />
         )}
       </div>
     </div>

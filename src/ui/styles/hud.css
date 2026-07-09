@@ -217,15 +217,31 @@
   font-variant-numeric: tabular-nums;
   line-height: 10px;
 }
-.ptile .ko-cross {
+/* États de FIN (#237) : pastille distincte par état, coin bas-droit du portrait — teinte propre à
+   chaque état (langage visuel UNIQUE, cf. src/ui/endStateVisual.ts). */
+.ptile .end-mark {
   position: absolute;
-  inset: 0;
+  right: -3px;
+  bottom: -3px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  line-height: 1;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  z-index: 3;
 }
+.ptile .end-mark svg { width: 12px; height: 12px; }
+.end-mark.es-mort { background: #6b1e1e; color: #f2dede; }
+.end-mark.es-koan { background: #2f4a7a; color: #dbe6ff; }
+.end-mark.es-rendu { background: #e9e4d6; color: #4a4030; }
+.end-mark.es-hors { background: #4a5240; color: #d8e0cc; }
+/* Teinte du portrait selon l'état de fin (au-delà du grisé commun .ptile.ko) : la reddition reste
+   colorée (l'ennemi capturé est intact, pas un cadavre) ; hors-combat vire au sépia (parti). */
+.ptile.es-rendu .rig-portrait { filter: none; opacity: 0.85; }
+.ptile.es-hors .rig-portrait { filter: grayscale(0.75) sepia(0.25); opacity: 0.6; }
 .ptile-states {
   display: flex;
   flex-direction: column;
@@ -491,6 +507,66 @@
 }
 @media (max-width: 700px) {
   .date-chip { top: 64px; right: 8px; } /* sous les ViewControls sur petit écran */
+}
+
+/* ── Bandeau d'objectif courant (#238 — haut-centre, exploration) ── */
+.objective-banner {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 45;
+  max-width: min(520px, 70vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.objective-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  background: rgba(10, 14, 20, 0.66);
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--gold);
+  border-radius: 14px;
+  padding: 6px 13px;
+  color: var(--text);
+  font-size: 13px;
+  cursor: default;
+}
+.objective-head[aria-expanded] {
+  cursor: pointer;
+}
+.objective-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.objective-count {
+  flex: none;
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 5px;
+}
+.objective-list {
+  margin: 0;
+  padding: 8px 14px;
+  list-style: disc inside;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 100%;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+.objective-list li { margin: 2px 0; }
+@media (max-width: 700px) {
+  .objective-banner { top: 60px; max-width: 86vw; }
 }
 
 /* ── Overlay Défaite (centre du champ) ── */

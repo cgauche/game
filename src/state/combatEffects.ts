@@ -648,6 +648,29 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'setFlag', flag: '', value: true }),
     apply: (e, env) => { env.set((s: GameState) => ({ flags: { ...s.flags, [e.flag]: e.value ?? true } })); },
   },
+  setObjective: {
+    group: 'Narration', label: 'Objectif courant (« je fais quoi maintenant ? »)', icon: 'map-tool/start-flag',
+    make: () => ({ type: 'setObjective', id: '', text: '' }),
+    apply: (e, env) => {
+      // Pile keyée par id STABLE : re-poser le même id MET À JOUR le texte (et le remonte en tête), sinon
+      // AJOUTE en fin (le plus récent = surface HUD). #238 « personne ne lit le journal » → archivé aussi.
+      env.set((s: GameState) => {
+        const rest = s.objectives.filter((o) => o.id !== e.id);
+        return { objectives: [...rest, { id: e.id, text: e.text }] };
+      });
+      env.log(t('eff.objectiveSet', { text: e.text }));
+    },
+  },
+  clearObjective: {
+    group: 'Narration', label: 'Retirer un objectif', icon: 'ui/close',
+    make: () => ({ type: 'clearObjective' }),
+    apply: (e, env) => {
+      const before = env.get().objectives;
+      const done = e.id ? before.find((o) => o.id === e.id) : undefined;
+      env.set((s: GameState) => ({ objectives: e.id ? s.objectives.filter((o) => o.id !== e.id) : [] }));
+      env.log(done ? t('eff.objectiveDone', { text: done.text }) : t('eff.objectiveClearAll'));
+    },
+  },
   setLight: {
     group: 'Narration', label: 'Lumière de scène (les lumières baissent / se rallument)', icon: 'scene/light',
     make: () => ({ type: 'setLight', level: 0.3 }),

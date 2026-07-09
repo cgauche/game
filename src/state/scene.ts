@@ -153,6 +153,12 @@ export interface Roof {
 
 export type Effect =
   | { type: 'setFlag'; flag: string; value?: boolean }
+  /** Pose/met à jour un OBJECTIF courant (surface « je fais quoi maintenant ? », #238) sur la pile
+   *  `store.objectives`, keyé par `id` STABLE : re-poser le même `id` MET À JOUR son `text`. Le HUD
+   *  affiche le plus récent. Archivé aussi au journal. */
+  | { type: 'setObjective'; id: string; text: string }
+  /** Retire un objectif de la pile : `id` précis, ou TOUS si absent (fin d'acte). */
+  | { type: 'clearObjective'; id?: string }
   /** Donne un objet à un héros (défaut : le premier). `trappingId` = objet de CATALOGUE à stats (réf
    *  `TrappingData.id`) ; `custom` = objet HORS-base (nom libre — trinket/quête/pièces de monstre) sans
    *  stats. L'objet arrive NON équipé. Champs MAGIQUES optionnels (butin/quête) : `qualities` AJOUTÉES

@@ -1,0 +1,66 @@
+import { describe, it, expect } from 'vitest';
+import { endState } from './conditions';
+import type { Combatant } from './types';
+
+const mk = (over: Partial<Combatant> = {}): Combatant =>
+  ({
+    name: 'C',
+    kind: 'hero',
+    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, // BE=3
+    wounds: { current: 10, max: 12 },
+    conditions: [],
+    skills: [],
+    ...over,
+  }) as unknown as Combatant;
+
+describe('endState — état de fin lisible (#237)', () => {
+  it('null quand le combattant est en état de se battre', () => {
+    expect(endState(mk())).toBe(null);
+  });
+  it("héros à 0 PB CONSCIENT = null (À Terre, PAS un état de fin)", () => {
+    expect(endState(mk({ wounds: { current: 0, max: 12 } }))).toBe(null);
+  });
+  it('mort = « mort » (prioritaire sur tout le reste)', () => {
+    expect(endState(mk({ dead: true }))).toBe('mort');
+    expect(endState(mk({ dead: true, outOfRencontre: true, exitReason: 'reddition' }))).toBe('mort');
+  });
+  it('Inconscient (condition) = « inconscient »', () => {
+    expect(endState(mk({ conditions: [{ name: 'inconscient', value: 1 }] as Combatant['conditions'] }))).toBe('inconscient');
+  });
+  it('reddition (#215) = « rendu »', () => {
+    expect(endState(mk({ outOfRencontre: true, exitReason: 'reddition' }))).toBe('rendu');
+  });
+  it('coque PRISE (pavillon amené) = « rendu »', () => {
+    expect(endState(mk({ bodyShape: 'vehicule', outOfRencontre: true, exitReason: 'prise' } as Partial<Combatant>))).toBe('rendu');
+  });
+  it('Destin (Meurs un autre jour) = « hors-combat » (éjecté vivant, MÊME s\'il est aussi Inconscient)', () => {
+    expect(endState(mk({ outOfRencontre: true, exitReason: 'destin', conditions: [{ name: 'inconscient', value: 1 }] as Combatant['conditions'] }))).toBe('hors-combat');
+  });
+  it('naufrage (par-dessus bord) = « hors-combat »', () => {
+    expect(endState(mk({ outOfRencontre: true, exitReason: 'naufrage' }))).toBe('hors-combat');
+  });
+  it('sortie générique (sans motif) = « hors-combat »', () => {
+    expect(endState(mk({ outOfRencontre: true }))).toBe('hors-combat');
+  });
+  it('figurant tombé à 0 PB (Mort Subite) = « hors-combat »', () => {
+    expect(endState(mk({ kind: 'enemy', wounds: { current: 0, max: 12 } }))).toBe('hors-combat');
+  });
+  it('coque coulée (0 PB) = « hors-combat » ; coque intacte = null', () => {
+    expect(endState(mk({ bodyShape: 'vehicule', wounds: { current: 0, max: 40 } } as Partial<Combatant>))).toBe('hors-combat');
+    expect(endState(mk({ bodyShape: 'vehicule', wounds: { current: 40, max: 40 } } as Partial<Combatant>))).toBe(null);
+  });
+  it('objet INERTE (affût servi) = null (0 PB permanent, jamais une fin)', () => {
+    expect(endState(mk({ inert: true, wounds: { current: 0, max: 0 } } as Partial<Combatant>))).toBe(null);
+  });
+
+  it('les 4 états produisent 4 catégories DISTINCTES', () => {
+    const states = [
+      endState(mk({ dead: true })),
+      endState(mk({ conditions: [{ name: 'inconscient', value: 1 }] as Combatant['conditions'] })),
+      endState(mk({ outOfRencontre: true, exitReason: 'reddition' })),
+      endState(mk({ outOfRencontre: true, exitReason: 'destin' })),
+    ];
+    expect(new Set(states).size).toBe(4);
+    expect(states).toEqual(['mort', 'inconscient', 'rendu', 'hors-combat']);
+  });
+});

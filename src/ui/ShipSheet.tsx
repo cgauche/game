@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useGame } from '../state/store';
-import { crewRoles, findCrewRoleById, findCrewTestTypeById } from '../data';
+import { crewRoles, findCrewRoleById, findCrewTestTypeById, findVehicleById, findNavalTrait } from '../data';
 import { moraleBand, crewRoleValue } from '../engine/crewMorale';
 import { exposedCrew } from '../engine/shipCritical';
 import { shipMoraleScore, shipDefaultRoles, BENCHED } from '../state/shipCrew';
@@ -12,11 +12,13 @@ import { StationSheet } from './StationSheet';
 import { postesToStations } from '../state/stations';
 import { posteAnchor } from '../state/shipPostes';
 import { isVehicle } from '../engine/vehicle';
-import type { Combatant } from '../engine/types';
+import type { Combatant, NavalTraitRef } from '../engine/types';
 import type { Dir8 } from '../state/dir8';
 import { Icon } from './Icon';
+import { Prose } from './Prose';
 
 const DIR_LABEL: Record<Dir8, string> = { N: 'Nord', NE: 'Nord-Est', E: 'Est', SE: 'Sud-Est', S: 'Sud', SO: 'Sud-Ouest', O: 'Ouest', NO: 'Nord-Ouest' };
+const RIG_LABEL: Record<string, string> = { avirons: 'Avirons', voile: 'Voile', mixte: 'Mixte (voile et avirons)' };
 const SIDE_LABEL: Record<string, string> = { proue: 'Proue', tribord: 'Tribord', poupe: 'Poupe', babord: 'Bâbord' };
 const MANOEUVRE = 'manoeuvre';
 
@@ -41,14 +43,18 @@ type Poste = NonNullable<Combatant['postes']>[number];
 
 /** Détail du poste SÉLECTIONNÉ (MDG ch.12) : son bord, son STOCK DE MUNITIONS (l.410-424, sélecteur qui persiste
  *  `ShipPoste.ammoUid`) et son équipage de pièce (PLUSIEURS servants possibles, ch.14 l.9) en portraits. */
-export function PosteDetail({ hull, poste, combatants }: { hull: Combatant; poste: Poste; combatants: Combatant[] }) {
+export function PosteDetail({ hull, poste, combatants, readOnly }: { hull: Combatant; poste: Poste; combatants: Combatant[]; readOnly?: boolean }) {
   const setPosteAmmo = useGame((s) => s.setPosteAmmo);
   const gun = (poste.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
   const stock = (poste.ammo ?? []).filter((a) => (a.qty ?? 0) > 0);
+  const loaded = stock.find((a) => a.uid === (poste.ammoUid ?? stock[0]?.uid));
   return (
     <div className="ship-poste selected">
       <span className="ship-poste-name"><Icon id="action/aim" size="sm" /> {poste.side ? SIDE_LABEL[poste.side] ?? poste.side : 'Omni'} · {poste.item.name}</span>
-      {stock.length > 0 && (
+      {stock.length > 0 && (readOnly ? (
+        // Inspection (#240) : munition chargée VISIBLE mais non modifiable (pas de sélecteur sur la pièce d'autrui).
+        <span className="ship-poste-ammo"><span aria-hidden><Icon id="fire/blast" size="sm" /></span> {loaded?.name ?? stock[0].name}</span>
+      ) : (
         <label className="ship-poste-ammo">
           <span aria-hidden><Icon id="fire/blast" size="sm" /></span>
           <select
@@ -59,11 +65,59 @@ export function PosteDetail({ hull, poste, combatants }: { hull: Combatant; post
             {stock.map((a) => <option key={a.uid} value={a.uid}>{a.name} × {a.qty ?? 0}</option>)}
           </select>
         </label>
-      )}
+      ))}
       <div className="ship-crew-row">
         {gun.length ? gun.map((c) => <CharFrame key={c.id} c={c} variant="identity" size="xs" title={c.name} />) : <span className="muted">— sans servant —</span>}
       </div>
     </div>
+  );
+}
+
+/**
+ * INSPECTION en LECTURE d'une coque (alliée OU ennemie, #240) — ce qu'un marin VOIT depuis une autre
+ * embarcation : type/gréement, Coque, cap (allure), Effectif apparent, postes servis, et les
+ * Traits/Améliorations physiquement apparents (figure de proue dont la Proue-idole de Stromfels #221,
+ * bélier, blindage, sabord…). AUCUN contrôle d'édition (`PosteDetail` rendu `readOnly` : ni sélecteur de
+ * munition, ni assignation de rôle). Le Moral d'équipage est VOLONTAIREMENT absent : `shipMoraleScore` ne
+ * suit que le navire de campagne du joueur → l'afficher pour une coque ennemie serait un mensonge (résolve
+ * interne, pas une donnée visible). Corps PUR (props) : testable en rendu statique. Réfs de Traits par id
+ * (`NavalTraitRef`), verbatim rendu par `<Prose>` (règle 5). */
+export function ShipInspectBody({ hull, crew, cap }: { hull: Combatant; crew: Combatant[]; cap?: Dir8 }) {
+  const vd = hull.creatureId ? findVehicleById(hull.creatureId) : undefined;
+  const rig = vd?.hull?.rig;
+  // Traits du TYPE (`ship.traits`) + Améliorations d'INSTANCE (`Combatant.upgrades`, dont la Proue-idole #221).
+  const refs: NavalTraitRef[] = [...(vd?.ship?.traits ?? []), ...(hull.upgrades ?? [])];
+  const traits = refs
+    .map((ref) => ({ ref, def: findNavalTrait(ref.id) }))
+    .filter((t): t is { ref: NavalTraitRef; def: NonNullable<typeof t.def> } => !!t.def);
+  const apte = exposedCrew(crew);
+  const postes = hull.postes ?? [];
+  return (
+    <>
+      <div className="sheet-vitals">
+        {hull.wounds.max > 0 && <div className="stat-chip pv"><span className="sc-label" title="Coque">Coque</span><span className="sc-value">{hull.wounds.current}/{hull.wounds.max}</span></div>}
+        {cap && <div className="stat-chip"><span className="sc-label" title="Cap">Cap</span><span className="sc-value">{DIR_LABEL[cap]}</span></div>}
+        {rig && <div className="stat-chip"><span className="sc-label" title="Gréement">Gréement</span><span className="sc-value">{RIG_LABEL[rig] ?? rig}</span></div>}
+        {crew.length > 0 && <div className="stat-chip"><span className="sc-label" title="Effectif apparent">Effectif</span><span className="sc-value">{apte.length}/{crew.length}</span></div>}
+      </div>
+      {postes.length > 0 && (
+        <div className="ship-section">
+          <div className="mini-title">Armes · postes</div>
+          {postes.map((p) => <PosteDetail key={p.item.uid} hull={hull} poste={p} combatants={[hull, ...crew]} readOnly />)}
+        </div>
+      )}
+      {traits.length > 0 && (
+        <div className="ship-section">
+          <div className="mini-title">Traits &amp; améliorations visibles</div>
+          {traits.map(({ ref, def }) => (
+            <div className="ship-trait" key={ref.id}>
+              <span className="ship-trait-name"><b>{def.label}{def.ranked && ref.value ? ` ${ref.value}` : ''}</b></span>
+              <div className="ship-trait-desc"><Prose md={def.desc} /></div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
   );
 }
 

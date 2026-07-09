@@ -74,12 +74,19 @@ describe('PortraitTile', () => {
     expect(renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />)).not.toContain('▾');
   });
 
-  it('KO : croix + classe ko ; actif : classe active + caret ; selected : classe sel', () => {
+  it('état de fin : mort = classe ko es-mort + icône crâne ; actif : classe active + caret ; selected : classe sel', () => {
     const c = base();
-    c.wounds = { current: 0, max: 12 };
-    const ko = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />);
-    expect(ko).toContain('ko-cross');
-    expect(ko).toContain('✕');
+    c.dead = true;
+    const dead = renderToStaticMarkup(<PortraitTile c={c} ring="#4f8fe0" />);
+    expect(dead).toContain('ko'); // grisé commun
+    expect(dead).toContain('es-mort'); // teinte propre à la MORT
+    expect(dead).toContain(iconSvg('journal/death')); // crâne, pas une croix générique
+    // un héros à 0 PB CONSCIENT reste À Terre (pas un état de fin) : ni ko, ni pastille
+    const aterre = base();
+    aterre.wounds = { current: 0, max: 12 };
+    const html = renderToStaticMarkup(<PortraitTile c={aterre} ring="#4f8fe0" />);
+    expect(html).not.toContain('end-mark');
+    expect(html).not.toContain(' ko ');
     const c2 = base();
     const act = renderToStaticMarkup(<PortraitTile c={c2} ring="#4f8fe0" active />);
     expect(act).toContain('active');

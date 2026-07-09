@@ -104,6 +104,9 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const [seaPace, setSeaPace] = useState(0);
   /** Traversée RAPIDE (MDG 15 l.21-37) : tout le trajet en UN Test de Rude épreuve, sinon jour par jour. */
   const [seaFast, setSeaFast] = useState(false);
+  /** CADENCE de la traversée détaillée (couche `voyageCadence`) : COMMANDÉE (routine auto-résolue, PV du
+   *  jour — défaut) ou JOUR-PAR-JOUR (modale par jet). Ignoré en traversée rapide. */
+  const [seaCadence, setSeaCadence] = useState<'commande' | 'jour-par-jour'>('commande');
   /** Lieu cliqué SANS route directe depuis ici → on l'explique au lieu de rester muet. */
   const [farId, setFarId] = useState<string | null>(null);
   /** Lieu survolé — révèle son nom sur une carte dense (les non-pertinents n'ont pas de cartouche fixe). */
@@ -562,11 +565,19 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             <div className="wm-modes">
               <button
                 type="button"
-                className={`btn small ${!seaFast ? 'btn-primary' : ''}`}
-                onClick={() => setSeaFast(false)}
-                title="La traversée se joue jour par jour (météo, Tests d'équipage de Navigation, événements de bord, escales)."
+                className={`btn small ${!seaFast && seaCadence === 'commande' ? 'btn-primary' : ''}`}
+                onClick={() => { setSeaFast(false); setSeaCadence('commande'); }}
+                title="Traversée COMMANDÉE : vous fixez l'allure et les ordres permanents ; les Tests d'équipage de routine (progression, orientation, entretien…) s'auto-résolvent et défilent au procès-verbal du jour. Seules les crises, les événements à choix, les embuscades et les urgences interrompent."
               >
-                Traversée détaillée
+                Traversée commandée
+              </button>
+              <button
+                type="button"
+                className={`btn small ${!seaFast && seaCadence === 'jour-par-jour' ? 'btn-primary' : ''}`}
+                onClick={() => { setSeaFast(false); setSeaCadence('jour-par-jour'); }}
+                title="Cadence MANUELLE : chaque Test d'équipage de Navigation ouvre sa modale (jour par jour)."
+              >
+                Jour par jour
               </button>
               <button
                 type="button"
@@ -655,6 +666,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                 allure: effAllure,
                 seaPace: mode === 'mer' && !seaFast && seaPace > 0 ? seaPace : undefined,
                 fast: mode === 'mer' && seaFast ? true : undefined,
+                cadence: mode === 'mer' && !seaFast ? seaCadence : undefined,
               })}
             >
               <Icon id="scenario/travel" size="sm" /> {mode === 'mer' && provisions && !provisions.suffisant ? 'Appareiller quand même' : 'Partir'}

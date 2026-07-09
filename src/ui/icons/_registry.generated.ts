@@ -140,6 +140,7 @@ export type IconIdGenerated =
   | 'journal/move'
   | 'journal/reload'
   | 'journal/round'
+  | 'journal/surrender'
   | 'magic/area'
   | 'magic/component'
   | 'magic/gust'

@@ -41,6 +41,31 @@
   densité maîtrisée mais lisible. **Vérifier à 360px ET en large** : un layout qui tient à 360
   peut s'étaler à vide en grand (breakpoints canon 900/700/560, règle stricte 4).
 
+## États de fin d'un combattant (#237)
+
+Un combattant qui quitte le combat NE se rend pas de la même façon selon la raison — une croix
+générique confondait mort, KO, reddition et hors-combat. Langage visuel défini **une seule fois**
+dans `src/ui/endStateVisual.ts` (`END_STATE_VISUAL`), keyé sur la catégorie retournée par la
+fonction moteur PURE `endState(c)` (`src/engine/conditions.ts`) :
+
+| État (`endState`) | Sens | Icône | Classe |
+|---|---|---|---|
+| `mort` | mort définitive | `journal/death` (crâne) | `es-mort` (grenat) |
+| `inconscient` | KO conscient perdu | `condition/unconscious` | `es-koan` (bleu) |
+| `rendu` | reddition (#215) / coque amenée — pavillon baissé | `journal/surrender` | `es-rendu` (pâle, portrait NON grisé : l'ennemi capturé est intact) |
+| `hors-combat` | éjecté vivant (Destin, naufrage, Mort Subite, coque coulée) | `journal/flee` | `es-hors` (sépia) |
+
+`rendu` vs `hors-combat` repose sur le seul champ `Combatant.exitReason` (`reddition`/`prise` →
+rendu ; `destin`/`naufrage`/absent → hors-combat), posé aux sites de sortie (`resolveSurrenderThreshold`,
+`resolveShipUnits`, Destin dans `combatSlice`). Un héros à 0 PB CONSCIENT reste À Terre — `endState`
+renvoie `null`, aucun marqueur de fin (l'À Terre vit dans les pastilles d'États).
+
+Ce langage s'applique aux **trois surfaces** via cette source unique : le token iso (`BodyToken`,
+pastille `token-endmark`), le portrait et la frise d'initiative (`PortraitTile`, badge `end-mark` —
+la frise réutilise `PortraitTile`). Une coque (`bodyShape 'vehicule'`) passe par le même token :
+prise = pavillon amené (`rendu`), coulée = `hors-combat`. Verrou : `src/engine/endState.test.ts`
+(4 états distincts) + `src/ui/endStateVisual.test.ts` (icône/classe uniques sur token ET portrait).
+
 ## Zéro texte tutoriel
 
 - **Ne JAMAIS ajouter de texte d'aide/tutoriel dans l'UI** (HUD ou écrans). Une UI bien conçue se

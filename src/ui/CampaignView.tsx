@@ -29,6 +29,7 @@ import { PartyDock } from './PartyDock';
 import { LogDrawer } from './LogDrawer';
 import { Icon } from './Icon';
 import { GameMenu } from './GameMenu';
+import { ObjectiveBannerMount } from './ObjectiveBanner';
 import { SaveLoadModal } from './SaveLoadModal';
 import { HouseRulesModal } from './HouseRulesModal';
 import { SessionEndModal } from './SessionEndModal';
@@ -204,6 +205,9 @@ export function CampaignView() {
             la BARRE D'ACTION se transforme en bandeau d'interlude (cf. ActionBar). */}
         {/* Sauvegarder : exploration seulement (refusée en combat) et jamais l'invité (la save vit chez l'hôte). */}
         <GameMenu sceneName={scene?.nom} money={money} time={gameTime} onQuit={() => setScreen('party')} onSaveLoad={mode === 'exploration' && netMode !== 'guest' ? () => setSaveOpen(true) : undefined} onEndSession={mode === 'exploration' && netMode !== 'guest' ? () => setSessionOpen(true) : undefined} onHouseRules={() => setRulesOpen(true)} onOptions={() => setOptionsOpen(true)} coop={<><CoopMenuSection /><GmSoloToggle /><AudioControls /></>} />
+        {/* Objectif courant (#238) — surface discrète TOUJOURS visible en exploration ; masquée en
+            combat (l'écran tactique se réserve le HUD). Nulle si la pile d'objectifs est vide. */}
+        {mode === 'exploration' && <ObjectiveBannerMount />}
         {saveOpen && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
         {sessionOpen && <SessionEndModal onClose={() => setSessionOpen(false)} />}
         {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
@@ -299,8 +303,9 @@ export function CampaignView() {
         {dossierOpen && vessel && <ShipDossier onClose={() => setDossierOpen(false)} />}
         {landMarket && mode === 'exploration' && <LandMarketView />}
         {pendingSeaActivities && mode === 'exploration' && <SeaActivitiesModal />}
-        {pendingManannPriest && mode === 'exploration' && <ManannPriestModal />}
-        {pendingShoreLeave && mode === 'exploration' && <ShoreLeaveModal />}
+        {/* Au port ouvert, ces décisions sont surfacées par l'onglet Escale du hub (#228) — pas de double surface. */}
+        {pendingManannPriest && mode === 'exploration' && !port && <ManannPriestModal />}
+        {pendingShoreLeave && mode === 'exploration' && !port && <ShoreLeaveModal />}
         {/* Récapitulatif de voyage (audit M4) : à l'arrivée, ou APRÈS l'embuscade qui a interrompu
             le trajet (jamais par-dessus le combat/un dialogue). */}
         {travelRecap && mode === 'exploration' && !dialogue && !worldMapOpen && <TravelRecapModal />}

@@ -123,6 +123,8 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
   switch (effect.type) {
     case 'journal': return `Journal : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}`;
     case 'setFlag': return `Flag ${e.flag || '?'} = ${e.value === false ? 'faux' : 'vrai'}`;
+    case 'setObjective': return `Objectif [${e.id || '?'}] : ${e.text ? `« ${cut(e.text)} »` : '(vide)'}`;
+    case 'clearObjective': return e.id ? `Retirer l'objectif [${e.id}]` : `Retirer tous les objectifs`;
     case 'document': return `Document : ${e.title || '(sans titre)'}`;
     case 'giveTrapping': return `Objet : ${giveTrappingLabel(e) || '?'}${e.qualities?.length ? ` (+${e.qualities.length} qualité(s))` : ''}`;
     case 'giveMoney': {
@@ -236,6 +238,15 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               <input type="checkbox" checked={e.value !== false} onChange={(ev) => upd({ value: ev.target.checked })} /> vrai
             </label>
           </>
+        )}
+        {effect.type === 'setObjective' && (
+          <>
+            <input placeholder="id_de_l_objectif (stable — re-poser = mise à jour)" value={e.id ?? ''} onChange={(ev) => upd({ id: ev.target.value })} />
+            <input placeholder="Consigne joueur (ex. « Retrouver Gustav au port »)" value={e.text ?? ''} onChange={(ev) => upd({ text: ev.target.value })} />
+          </>
+        )}
+        {effect.type === 'clearObjective' && (
+          <input placeholder="id de l'objectif à retirer (vide = tous)" value={e.id ?? ''} onChange={(ev) => upd({ id: ev.target.value || undefined })} />
         )}
         {effect.type === 'document' && (
           <>

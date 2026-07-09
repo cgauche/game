@@ -627,20 +627,6 @@ textarea:focus {
   border-color: rgba(255, 224, 102, 0.5);
   background: rgba(255, 224, 102, 0.12);
 }
-.ko-cross {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ff4d4d;
-  font-size: 26px;
-  font-weight: 900;
-  line-height: 1;
-  text-shadow: 0 0 3px #000, 0 0 3px #000;
-  pointer-events: none;
-}
-
 /* ── Barre d'action EN BAS : panneau Perso (héros actif) + actions (Lot 1) ── */
 .action-bar {
   position: absolute;
