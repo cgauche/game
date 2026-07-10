@@ -52,6 +52,7 @@ import { startCascade, registerCascadeApplier } from './cascade';
 import type { CascadeStep } from './pendings';
 import { buildSeaPlan, runSeaDays, startFastVoyage } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
+import { humanControlled } from './netOwnership';
 import { DIFFICULTY_MODIFIERS, type Combatant } from '../engine/types';
 
 import type { Get, Set } from './flowTypes';
@@ -151,7 +152,6 @@ export interface TravelPlan {
  *  d'INTERRUPTION d'une péripétie (combat/embuscade différé), et `arrived`. Jamais persisté au-delà d'une
  *  journée. La ligne de récap du jour vit dans `plan.recap.days[dernier]` (le `while` la relit). */
 export interface LandDayContext {
-  arrived: boolean;
   toScene: string;
   toEntry?: string;
   toLabel: string;
@@ -163,6 +163,11 @@ export interface LandDayContext {
   journalMark: number;
   /** INTERRUPTION posée par une péripétie (le voyage s'arrête, le combat/l'embuscade attend le recap). */
   interrupt?: TravelThen;
+  /** Attelage FORCÉ (#270) : progression/conséquences du jour ACCUMULÉES par la chaîne de jets
+   *  `landForcedPace`/`landForcedPaceControl`, relues à la clôture pour poser `kmDone`/`gameTime`
+   *  (DIFFÉRÉS depuis le build, comme la vitesse fluviale `RiverDayContext`). Absent = conducteur non
+   *  humain (chemin synchrone `forcedPaceDay`, kmDone/gameTime déjà posés au build). */
+  forcedPaceResult?: { km: number; hours: number; vehicleOut: boolean; vehicleLame: boolean };
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -348,9 +353,23 @@ function runTravelDays(get: Get, set: Set): void {
     // Attelage FORCÉ au pas de course (EDOC 07 l.229) : la progression du jour se joue km par km
     // (Tests de Conduite d'attelage) — sinon, progression linéaire à la vitesse du mode.
     const kmLeft = plan.km - plan.kmDone;
-    const forced = plan.allure === 'galop' && plan.mode !== 'monture' && !plan.vehicleLame && vehicleTravel(plan.mode)?.draft
-      ? forcedPaceDay(get, set, kmLeft)
-      : null;
+    const forcedEligible = plan.allure === 'galop' && plan.mode !== 'monture' && !plan.vehicleLame && !!vehicleTravel(plan.mode)?.draft;
+    const forcedDriver = forcedEligible ? partyAssisted(party, 'conduite-d-attelage') : null;
+    // Conducteur JOUEUR (#270) : chaque Test de Conduite d'attelage au km devient une ÉTAPE de la
+    // cascade `travelDay` (Chance/Pacte/Résilience possibles), chaînée par insertions successives
+    // jusqu'au premier échec (`buildForcedPaceDaySteps`) — gameTime/kmDone sont alors DIFFÉRÉS à la
+    // clôture (`continueTravelDayAfterCascade`), comme la progression fluviale (`riverVoyageFlow`).
+    // Repli : pas de conducteur / conducteur IA-piloté → chemin SYNCHRONE historique (`forcedPaceDay`).
+    if (forcedEligible && forcedDriver && humanControlled(get(), forcedDriver.actor)) {
+      const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: plan.kmDone, hours: 0, lines: [], entries: [] };
+      recap?.days.push(recapDay);
+      if (recap) set({ travelPlan: { ...get().travelPlan!, recap } });
+      const daySteps = buildTravelDayCascade(get, set, route, recapDay, [], { toScene: to.scene, toEntry: to.entry, toLabel: to.label, destLabel: to.label });
+      const first = buildForcedPaceStep(forcedDriver, kmLeft);
+      startCascade(get, set, { title: 'Journée de route — allure forcée', icon: 'travel/cart', purpose: 'travelDay', steps: [first, ...daySteps] });
+      return; // la clôture de la cascade (continueTravelDayAfterCascade) finalise le jour
+    }
+    const forced = forcedEligible ? forcedPaceDay(get, set, kmLeft) : null;
     const hoursToday = forced ? forced.hours : Math.min(plan.hoursPerDay, kmLeft / kmh);
     set({ gameTime: get().gameTime + Math.round(hoursToday * 60) });
     bus.emit(EVT.TIME_ADVANCED, { minutes: Math.round(hoursToday * 60) });
@@ -360,7 +379,6 @@ function runTravelDays(get: Get, set: Set): void {
     // `runDailyUpkeep` (repos/advanceTime) le rattrape via la garde `lastUpkeepDay`.
     const kmDone = Math.min(plan.km, plan.kmDone + (forced ? forced.km : hoursToday * kmh));
     set({ travelPlan: { ...get().travelPlan!, kmDone } });
-    const arrived = plan.km - kmDone < 1e-9;
     const recapDay: TravelRecapDay = {
       kmFrom: plan.kmDone, kmTo: kmDone, hours: hoursToday,
       lines: [...(forced?.lines ?? [])], entries: [...(forced?.entries ?? [])],
@@ -409,7 +427,7 @@ function runTravelDays(get: Get, set: Set): void {
     // Étapes éteinte ET pas de péripétie testable), la cascade est VIDE → on finalise directement (le
     // chemin jour-par-jour du LdB reste BYTE-IDENTIQUE).
     const daySteps = buildTravelDayCascade(get, set, route, recapDay, marchHeroes, {
-      arrived, toScene: to.scene, toEntry: to.entry, toLabel: to.label, destLabel: to.label,
+      toScene: to.scene, toEntry: to.entry, toLabel: to.label, destLabel: to.label,
     });
     // Récap du SEGMENT posé sur le plan : la cascade suspend le `while`, donc son `recap`/`recapDay`
     // locaux ne survivent pas — `continueTravelDayAfterCascade` les relit depuis `plan.recap`.
@@ -451,7 +469,7 @@ function currentSeason(get: Get): Season {
  */
 function buildTravelDayCascade(
   get: Get, set: Set, route: MapRoute, recapDay: TravelRecapDay, marchHeroes: string[],
-  dest: { arrived: boolean; toScene: string; toEntry?: string; toLabel: string; destLabel: string },
+  dest: { toScene: string; toEntry?: string; toLabel: string; destLabel: string },
 ): CascadeStep[] {
   const steps: CascadeStep[] = [];
   // Repère de journal : le récap du jour (recapDay.lines) = la tranche écrite pendant la cascade.
@@ -477,9 +495,11 @@ function buildTravelDayCascade(
       meta: { destLabel: dest.destLabel } });
   }
 
-  // Contexte du jour relu par la clôture (arrivée/halte). L'interruption d'une péripétie s'y posera.
+  // Contexte du jour relu par la clôture (arrivée/halte, recalculée depuis `plan.kmDone` — posé avant
+  // le build sur le chemin synchrone, ou par la chaîne `landForcedPace` sur le chemin différé).
+  // L'interruption d'une péripétie s'y posera.
   set({ travelPlan: { ...get().travelPlan!, land: {
-    arrived: dest.arrived, toScene: dest.toScene, toEntry: dest.toEntry, toLabel: dest.toLabel,
+    toScene: dest.toScene, toEntry: dest.toEntry, toLabel: dest.toLabel,
     destLabel: dest.destLabel, marchHeroes: [...marchHeroes], journalMark,
   } } });
   void recapDay; // le récap du jour (plan.recap.days[dernier]) reçoit la tranche de journal à la clôture
@@ -505,6 +525,28 @@ export function continueTravelDayAfterCascade(get: Get, set: Set): boolean {
   // Récap du jour : la tranche de journal écrite pendant la cascade (météo, postes, Exposition,
   // péripéties) — les lignes de la cascade ne vont pas d'elles-mêmes dans `recapDay.lines`.
   if (recapDay && ctx) recapDay.lines.push(...get().journal.slice(ctx.journalMark));
+  // Attelage FORCÉ conducteur JOUEUR (#270) : gameTime/kmDone étaient DIFFÉRÉS depuis le build (la
+  // chaîne `landForcedPace` n'a résolu km/heures qu'au fil des jets) — on les pose maintenant, comme
+  // le chemin synchrone les pose avant le build. Absent (conducteur IA / pas d'attelage forcé) : rien
+  // à faire ici, `plan.kmDone`/`gameTime` sont déjà à jour.
+  const fp = ctx?.forcedPaceResult;
+  if (fp) {
+    set({ gameTime: get().gameTime + Math.round(fp.hours * 60) });
+    bus.emit(EVT.TIME_ADVANCED, { minutes: Math.round(fp.hours * 60) });
+    const kmDone = Math.min(plan.km, plan.kmDone + fp.km);
+    set({ travelPlan: { ...get().travelPlan!, kmDone } });
+    if (fp.vehicleLame) set({ travelPlan: { ...get().travelPlan!, vehicleLame: true } });
+    if (fp.vehicleOut) {
+      set({ travelPlan: { ...get().travelPlan!, mode: 'pied', allure: undefined } });
+      log(get, set, ['Le véhicule est hors d’usage — la route continue à pied.']);
+      recapDay?.lines.push('Le véhicule est hors d’usage — la route continue à pied.');
+    }
+    if (recapDay) { recapDay.kmTo = get().travelPlan?.kmDone ?? recapDay.kmTo; recapDay.hours = fp.hours; }
+  }
+  // Arrivée recalculée depuis `plan.kmDone` À JOUR (posé au build sur le chemin synchrone, ci-dessus
+  // sur le chemin différé) — source UNIQUE, plus de champ `LandDayContext.arrived` figé au build.
+  const arrived = (get().travelPlan?.km ?? 0) - (get().travelPlan?.kmDone ?? 0) < 1e-9;
+
   // Efface les contextes transitoires du jour (jamais persistés au-delà de la journée).
   set({ travelPlan: { ...get().travelPlan!, land: undefined, stage: undefined, recap: undefined } });
 
@@ -534,7 +576,7 @@ export function continueTravelDayAfterCascade(get: Get, set: Set): boolean {
   }
   if (!route || !ctx) { set({ travelPlan: null }); return true; }
 
-  if (ctx.arrived) {
+  if (arrived) {
     rollMarchEager();
     set({ travelPlan: null });
     const care = travelArrivalCare(get, set);
@@ -786,22 +828,133 @@ function applyVehicleProblemToTravel(get: Get, set: Set, out: Pick<ForcedPaceDay
     out.lines.push(`Problème de véhicule — ${entry.label}, à pleine allure : ACCIDENT !`);
     entry = rollVehicleProblem(96);
   }
+  return applyVehicleProblemEffects(get, set, entry, out.lines);
+}
+
+/** Dégâts d'un Problème de véhicule DÉJÀ tranché (Cassé/Accident remappés le cas échéant) — coque
+ *  (`applyVehicleProblem`) + occupants (`occupantOps`). Partagé par le chemin synchrone
+ *  (`applyVehicleProblemToTravel`, conducteur IA) et la chaîne cascade `landForcedPace`/
+ *  `landForcedPaceControl` (conducteur JOUEUR, #270) — SOURCE UNIQUE des Dégâts. */
+function applyVehicleProblemEffects(get: Get, set: Set, entry: ReturnType<typeof rollVehicleProblem>, lines: string[]): { vehicleOut: boolean; vehicleLame: boolean } {
+  const vehicle = get().travelPlan?.vehicle;
+  if (!vehicle) return { vehicleOut: false, vehicleLame: false };
   const r = applyVehicleProblem(vehicle, entry.min, battleRng());
-  out.lines.push(...r.lines);
+  lines.push(...r.lines);
   // Dégâts aux occupants (Cassé : 1 Blessure ignorant BE et PA ; Accident : 2d10 − BE − PA, min 1) —
   // langue unique GameOp, portée par la table (`occupantOps`).
   if (r.entry.occupantOps?.length) {
-    const lines: string[] = [];
+    const opLines: string[] = [];
     for (const h of get().party) {
       if (h.dead || h.outOfRencontre) continue;
-      lines.push(...applyOps(h, r.entry.occupantOps, { rng: battleRng() }));
+      opLines.push(...applyOps(h, r.entry.occupantOps, { rng: battleRng() }));
     }
     set({ party: [...get().party] });
-    out.lines.push(...lines);
+    lines.push(...opLines);
   }
   if (r.entry.id === 'endommage') return { vehicleOut: false, vehicleLame: true };
   return { vehicleOut: r.entry.id === 'accident' || vehicle.wounds.current <= 0, vehicleLame: false };
 }
+
+/** Construit l'ÉTAPE-JET de Conduite d'attelage au kilomètre COURANT (#270, conducteur JOUEUR) — pénalité
+ *  −10/km déjà galopé (l.229). `meta` porte l'accumulateur (km/heures déjà acquis) relu par l'applier
+ *  pour chaîner le km SUIVANT (`insert`) ou finaliser la journée (`finalizeForcedPace`). */
+function buildForcedPaceStep(driver: { actor: Combatant; value: number }, kmLeft: number, galloped = 0, km = 0, hours = 0): CascadeStep {
+  const base = Math.max(0, driver.value - 10 * galloped); // −10 par km déjà au pas de course (l.229)
+  return {
+    id: `land-forced-${galloped}`, kind: 'landForcedPace', actorId: driver.actor.id, icon: 'travel/cart',
+    label: `${driver.actor.name} — Conduite d'attelage (allure forcée)`, rollLabel: 'Conduite d’attelage',
+    base, target: Math.max(1, Math.min(99, base)), result: null, interactive: true,
+    meta: { kmLeft, galloped, km, hours, driverBase: driver.value },
+  };
+}
+
+/** Pose l'aggrégat FINAL de l'attelage forcé sur `travelPlan.land` (relu par `continueTravelDayAfterCascade`
+ *  pour poser `kmDone`/`gameTime`, DIFFÉRÉS depuis le build — cf. `LandDayContext.forcedPaceResult`). */
+function finalizeForcedPace(get: Get, set: Set, result: { km: number; hours: number; vehicleOut: boolean; vehicleLame: boolean }): void {
+  const land = get().travelPlan?.land;
+  if (!land) return;
+  set({ travelPlan: { ...get().travelPlan!, land: { ...land, forcedPaceResult: result } } });
+}
+
+/** ÉTAPE-JET de Conduite d'attelage au km (#270) : succès → chaîne le km SUIVANT (`insert`, tant que le
+ *  budget du jour reste) ; échec → les bêtes repassent au pas (résistance des bêtes de l'attelage, sans
+ *  jet joueur — non-héros) puis, sur un Échec Stupéfiant (−6 DR, l.253), un Problème de véhicule (d100,
+ *  donnée d'auteur) — « Incontrôlable » INSÈRE la reprise de contrôle INFLUENÇABLE (`landForcedPaceControl`) ;
+ *  les autres résultats s'appliquent inline (`applyVehicleProblemEffects`, pas de jet joueur supplémentaire). */
+registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
+  if (!step.result) return;
+  const m = step.meta!;
+  const kmLeft = Number(m.kmLeft), galloped = Number(m.galloped), driverBase = Number(m.driverBase);
+  let km = Number(m.km), hours = Number(m.hours);
+  const name = hero?.name ?? 'Le conducteur';
+  const plan = get().travelPlan!;
+  const t = vehicleTravel(plan.mode)!;
+  const draft = mountProfileById(t.draft!.montureId)!;
+  const gallopKmh = draft.m * ALLURE_KMH_PER_M.galop;
+  const walkKmh = t.movement;
+  if (step.result.success) {
+    km += 1; hours += 1 / gallopKmh;
+    const j = [`${name} — Conduite d'attelage (allure forcée) : ${step.result.roll}/${step.result.target} → l'attelage tient l'allure de course.`];
+    if (hours < plan.hoursPerDay - 1e-9 && km < kmLeft - 1e-9 && step.actorId && hero) {
+      return { journal: j, insert: [buildForcedPaceStep({ actor: hero, value: driverBase }, kmLeft, galloped + 1, km, hours)] };
+    }
+    finalizeForcedPace(get, set, { km: Math.min(km, kmLeft), hours, vehicleOut: false, vehicleLame: false });
+    return { journal: j };
+  }
+  const stupefiant = step.result.sl <= -6; // Échec Stupéfiant (EDOC 07 l.253)
+  const j = [`${name} — Conduite d'attelage (allure forcée) : ${step.result.roll}/${step.result.target} → ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`];
+  for (let i = 0; i < t.draft!.count; i++) {
+    const rt = rollTest(draft.e, 'intermediaire', battleRng());
+    if (!rt.success) j.push(`Une bête de l'attelage est Exténuée (Résistance ${rt.roll}/${rt.target}).`);
+  }
+  // Reste de la JOURNÉE (pas de l'ensemble du trajet) à la cadence de base — plafonné par le budget
+  // d'heures RESTANT du jour (`plan.hoursPerDay - hours`), EXACTEMENT `forcedPaceDay` (l.795).
+  const remaining = Math.max(0, kmLeft - km);
+  const restHours = walkKmh > 0 ? Math.min(plan.hoursPerDay - hours, remaining / walkKmh) : 0;
+  const finalKm = Math.min(kmLeft, km + restHours * walkKmh), finalHours = hours + restHours;
+  if (!stupefiant) {
+    finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false });
+    return { journal: j };
+  }
+  const roll = d100(battleRng());
+  let entry = rollVehicleProblem(roll);
+  if (entry.id === 'incontrolable') {
+    j.push(`Problème de véhicule — ${entry.label}.`);
+    if (step.actorId && hero) {
+      return { journal: j, insert: [{
+        id: `${step.id}-control`, kind: 'landForcedPaceControl', actorId: step.actorId, icon: 'travel/cart',
+        label: `${name} — reprendre le contrôle`, rollLabel: 'Conduite d’attelage',
+        base: driverBase, target: Math.max(1, Math.min(99, driverBase)), result: null, interactive: true,
+        meta: { finalKm, finalHours },
+      }] };
+    }
+    const rt = rollTest(driverBase, 'intermediaire', battleRng());
+    j.push(`${name} tente de reprendre le contrôle : ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
+    if (rt.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { journal: j }; }
+    entry = rollVehicleProblem(96);
+  } else if (entry.id === 'casse') {
+    j.push(`Problème de véhicule — ${entry.label}, à pleine allure : ACCIDENT !`);
+    entry = rollVehicleProblem(96);
+  }
+  const outcome = applyVehicleProblemEffects(get, set, entry, j);
+  finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, ...outcome });
+  return { journal: j };
+});
+
+/** Reprise de contrôle INFLUENÇABLE d'un attelage « Incontrôlable » (#270, EDOC 07 l.284) : succès →
+ *  l'attelage est maîtrisé (pas d'Accident) ; échec → Accident (96-00 de la table, verbatim). */
+registerCascadeApplier('landForcedPaceControl', (get, set, step, hero) => {
+  if (!step.result) return;
+  const m = step.meta!;
+  const finalKm = Number(m.finalKm), finalHours = Number(m.finalHours);
+  const name = hero?.name ?? 'Le conducteur';
+  const j = [`${name} tente de reprendre le contrôle : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`];
+  if (step.result.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { journal: j }; }
+  const entry = rollVehicleProblem(96); // 96-00 = Accident (table verbatim)
+  const outcome = applyVehicleProblemEffects(get, set, entry, j);
+  finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, ...outcome });
+  return { journal: j };
+});
 
 /**
  * Soins de l'ARRIVÉE au relais : le maréchal-ferrant remplace le fer (EDOC 07 l.166), la sellerie est

@@ -214,3 +214,51 @@ describe('enchaînement JOUR → halte de nuit → reprise → arrivée', () => 
 function afterEachRule(): void {
   afterEach(() => { resetRule('travel-etapes'); resetRule('travel-attraper-froid'); });
 }
+
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+// #270 — Attelage FORCÉ (allure « galop », EDOC 07 l.229) : le Test de Conduite d'attelage au km était
+// roulé INLINE (aucune Chance offerte sur un jet répété qui peut se solder en Accident) — gate CONTRÔLEUR :
+// conducteur PILOTÉ PAR UN HUMAIN → chaîne d'étapes `landForcedPace` (cascade `travelDay`, UNE cascade,
+// pas N modales) ; sinon → chemin synchrone historique (`forcedPaceDay`, inchangé).
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+describe('#270 — allure forcée (attelage) : gate contrôleur', () => {
+  afterEach(() => resetRule('travel-allures'));
+
+  function forcedRoute(km: number): WorldMap {
+    return { id: 'c', nom: 'c', places: [
+      { id: 'pa', label: 'A', pos: { x: 0, y: 0 }, scene: 'lieu-a-scene' },
+      { id: 'pb', label: 'B', pos: { x: 70, y: 0 }, scene: 'lieu-b-scene' },
+    ], routes: [{ id: 'r1', a: 'pa', b: 'pb', km, modes: ['diligence', 'pied'], perilDie: 0 }] };
+  }
+
+  it('conducteur JOUEUR (humanControlled) → la cascade travelDay s’ouvre sur une étape landForcedPace influençable', () => {
+    setRule('travel-allures', true);
+    seedBattleRng(1);
+    const h = hero({ id: 'h', skills: [{ skillId: 'conduite-d-attelage', advances: 40 } as any] });
+    useGame.setState({ party: [h], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [], money: { gold: 500, silver: 0, brass: 0 } as never });
+    get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', forcedRoute(20));
+    useGame.setState({ gameTime: CAMPAIGN_START });
+    get().startTravel('r1', 'diligence', { allure: 'galop' });
+    const pc = get().pendingCascade;
+    expect(pc?.purpose).toBe('travelDay');
+    const first = pc!.participants[0];
+    expect(first.kind).toBe('landForcedPace');
+    expect(first.interactive).toBe(true);
+    expect(first.result ?? null).toBeNull(); // pas encore roulé → influençable (Chance/Résilience)
+  });
+
+  it('conducteur SANS pilote humain (aiControlled) → repli inline (aucune étape landForcedPace), même formule', () => {
+    setRule('travel-allures', true);
+    seedBattleRng(1);
+    const h = hero({ id: 'h', aiControlled: true, skills: [{ skillId: 'conduite-d-attelage', advances: 40 } as any] });
+    useGame.setState({ party: [h], gameTime: CAMPAIGN_START, travelPlan: null, pendingRest: null, pendingCascade: null, travelRecap: null, journal: [], money: { gold: 500, silver: 0, brass: 0 } as never });
+    get().loadProject([sceneA(), sceneB()], 'lieu-a-scene', forcedRoute(20));
+    useGame.setState({ gameTime: CAMPAIGN_START });
+    get().startTravel('r1', 'diligence', { allure: 'galop' });
+    // Résolu par le chemin synchrone historique : soit une cascade travelDay SANS étape landForcedPace
+    // (postes/périls du jour, non liés à l'attelage), soit aucune cascade du tout.
+    const pc = get().pendingCascade;
+    if (pc) expect(pc.participants.some((s) => s.kind === 'landForcedPace')).toBe(false);
+    expect(get().journal.join('\n')).toMatch(/Conduite d'attelage \(allure forcée\)/);
+  });
+});

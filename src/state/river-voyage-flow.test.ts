@@ -382,3 +382,45 @@ describe('descente end-to-end — le Reik jusqu\'à Altdorf (cascades jour + nui
     expect(get().gameTime).toBeGreaterThanOrEqual(24 * 60); // au moins une journée a passé
   });
 });
+
+/**
+ * #270 — sous-tests de CONSÉQUENCE d'un péril (esquive d'éclats de Critique) : jusqu'ici inline même en
+ * cascade `travelDay` (aucune Chance offerte sur un jet de survie subi). Gate CONTRÔLEUR (`humanControlled`,
+ * état neuf du test = `combat-cadence` par défaut 'manuel' → héros non-`aiControlled` = piloté par un
+ * humain) : victime humaine → étape `riverSplinterDodge` INSÉRÉE (influençable) ; victime IA → inline
+ * (comportement historique, conséquence identique).
+ */
+describe('#270 — Critique au gréement : esquive d’éclats gâtée par contrôleur', () => {
+  function riggingFailStep(actorId: string) {
+    return { title: 'Journée', purpose: 'travelDay' as const, cursor: 0, log: [],
+      participants: [{ id: 'rig', kind: 'riverRigging', actorId, rollLabel: 'Voile', base: 40, target: 40,
+        result: { roll: 90, target: 40, sl: -5, success: false }, interactive: true }] };
+  }
+
+  it('victime PILOTÉE PAR UN HUMAIN → esquive INFLUENÇABLE insérée (riverSplinterDodge), pas résolue d’office', () => {
+    launch();
+    const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
+    set({ travelPlan: plan, journal: [] });
+    seedBattleRng(1);
+    const h = get().party[0];
+    set({ pendingCascade: riggingFailStep(h.id) as never });
+    get().cascadeNext(); // valide l'échec → Critique au gréement
+    const pc = get().pendingCascade;
+    expect(pc).toBeTruthy();
+    expect(pc!.participants.some((s) => s.kind === 'riverSplinterDodge' && s.actorId === h.id)).toBe(true);
+    expect(get().party.find((x) => x.id === h.id)!.dead).toBeFalsy(); // pas encore résolu
+  });
+
+  it('même Critique, victime IA (`aiControlled`) → esquive résolue INLINE (aucune étape insérée)', () => {
+    launch();
+    const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
+    set({ travelPlan: plan, journal: [] });
+    seedBattleRng(1);
+    const h = { ...get().party[0], aiControlled: true };
+    set({ party: [h, ...get().party.slice(1)] });
+    set({ pendingCascade: riggingFailStep(h.id) as never });
+    get().cascadeNext();
+    expect(get().pendingCascade).toBeNull(); // 1 seule étape, résolue inline → cascade close
+    expect(get().journal.join('\n')).toMatch(/Critique au greement/);
+  });
+});

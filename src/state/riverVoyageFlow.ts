@@ -48,6 +48,7 @@ import {
 } from '../engine/riverNavigation';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
 import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
+import { humanControlled } from './netOwnership';
 import { riverAutoResolves, type VoyageCadence, type VoyageOrders } from './voyageCadence';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import type { Get, Set } from './flowTypes';
@@ -283,7 +284,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   if (eff.riggingRisk) {
     if (pilot) steps.push(riverStep('river-rigging', 'riverRigging', pilot.actor.id, 'Préserver le gréement', 'nautical/wind',
       skillId === 'voile' ? 'Voile' : 'Ramer', pilot.value, CAPSIZE.removeSailDifficulty, { savoir: savoirVoiesFluvialesBonus(pilot.actor) }));
-    else { applyBoatCriticalNoPilot(get, set, coque, (l) => logs.push(...l)); }
+    else { steps.push(...applyBoatCriticalNoPilot(get, set, coque, (l) => logs.push(...l))); }
   }
 
   // 6. PÉRILS de rivière (l.119-166) — un pas de VÉRIFICATION d'occurrence par péril d'auteur (affichage
@@ -304,12 +305,15 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
   return { steps, log: logs };
 }
 
-/** Coup Critique au gréement SANS barreur (note 5) — Critique + dérive hors de contrôle, sans jet. */
-function applyBoatCriticalNoPilot(get: Get, set: Set, coque: Combatant, tell: (l: string[]) => void): void {
+/** Coup Critique au gréement SANS barreur (note 5) — Critique + dérive hors de contrôle. Le jet d'éclats
+ *  reste possiblement INFLUENÇABLE (#270, `applyBoatCritical`) même sans barreur (l'esquive porte sur la
+ *  victime exposée, pas sur le pilote). */
+function applyBoatCriticalNoPilot(get: Get, set: Set, coque: Combatant, tell: (l: string[]) => void): CascadeStep[] {
   tell(['Vent très fort contraire — aucun barreur : le gréement lâche.']);
-  applyBoatCritical(get, set, get().travelPlan!, get().travelPlan!.river!, coque, 'greement', tell, battleRng());
+  const insert = applyBoatCritical(get, set, get().travelPlan!, get().travelPlan!.river!, coque, 'greement', tell, battleRng(), 'river-rigging-nopilot');
   set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, outOfControl: true } } });
   tell(['Le bateau part en dérive, hors de contrôle (25 % de la vitesse, Tests de Navigation −20 jusqu\'à réparation — l.41).']);
+  return insert;
 }
 
 /**
@@ -433,11 +437,11 @@ registerCascadeApplier('riverRigging', (get, set, step) => {
   if (!step.result) return;
   const j = [`Vent très fort contraire — préserver le gréement (Navigation Accessible +20) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'le gréement tient.' : 'Critique au gréement !'}`];
   if (step.result.success) return { journal: j };
-  applyBoatCritical(get, set, get().travelPlan!, get().travelPlan!.river!, get().travelPlan!.vehicle!, 'greement', (l) => j.push(...l), battleRng());
+  const insert = applyBoatCritical(get, set, get().travelPlan!, get().travelPlan!.river!, get().travelPlan!.vehicle!, 'greement', (l) => j.push(...l), battleRng(), step.id);
   set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, outOfControl: true } } });
   patchDay(get, set, { forceDrift: true });
   j.push('Le bateau part en dérive, hors de contrôle (25 % de la vitesse, Tests de Navigation −20 jusqu\'à réparation — l.41).');
-  return { journal: j };
+  return { journal: j, insert: insert.length ? insert : undefined };
 });
 
 /** VÉRIFICATION d'occurrence d'un péril (l.119-166) : tire la CHANCE (d100, MÊME position RNG qu'inline —
@@ -455,7 +459,7 @@ registerCascadeApplier('riverPerilCheck', (get, set, step) => {
   if (peril.kind === 'navTest') {
     // Le Test d'évitement est INFLUENÇABLE → étape-jet insérée juste après (chance PUIS jet, ordre inline).
     const hasPilot = !!step.meta?.hasPilot;
-    if (!hasPilot) return { journal: resolveRiverPerilConsequence(get, set, peril, { ...step, result: null } as CascadeStep, rng) };
+    if (!hasPilot) return resolveRiverPerilConsequence(get, set, peril, { ...step, result: null } as CascadeStep, rng);
     const insert: CascadeStep[] = [{
       id: `${step.id}-nav`, kind: 'riverPerilNav', actorId: step.actorId, icon: 'nautical/snag', label: `${peril.label} — évitement`,
       rollLabel: step.rollLabel, base: Number(step.meta?.navBase ?? 0), target: Number(step.meta?.navTarget ?? 0), result: null, interactive: true,
@@ -478,8 +482,9 @@ registerCascadeApplier('riverPerilCheck', (get, set, step) => {
       defaultChoice: 'deblayer', interactive: true, meta: { perilId },
     }] };
   }
-  // detect : pas de jet joueur → résolution inline (sous-jets dans le même ordre qu'inline).
-  return { journal: resolveRiverPerilConsequence(get, set, peril, { ...step, result: null } as CascadeStep, rng) };
+  // detect : jet de détection GATÉ (#270, conducteur JOUEUR → étape insérée `riverPerilDetect` ; sinon
+  // résolution inline, sous-jets dans le même ordre qu'inline).
+  return resolveRiverPerilConsequence(get, set, peril, { ...step, result: null } as CascadeStep, rng);
 });
 
 /** CHOIX au barrage (l.128) : forcer au bélier (+ramDamage à la coque) ou déblayer à la main (3d10 objets
@@ -507,19 +512,81 @@ registerCascadeApplier('riverObstacleChoice', (get, set, step) => {
 registerCascadeApplier('riverPerilNav', (get, set, step) => {
   const peril = findRiverPeril(String(step.meta?.perilId ?? ''));
   if (!peril) return;
-  return { journal: resolveRiverPerilConsequence(get, set, peril, step, battleRng()) };
+  return resolveRiverPerilConsequence(get, set, peril, step, battleRng());
 });
 
-/** Applique un Coup Critique de bateau (l.72-94) : Dégâts d'éclats à l'équipage, États, dérive, ou coque
- *  percée. */
-function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoyageState, coque: Combatant, location: string, tell: (l: string[]) => void, rng: RNG): void {
+/** Esquive INFLUENÇABLE des éclats d'un Critique de bateau (#270, Initiative) — la victime EXPOSÉE tente
+ *  d'éviter les Dégâts (l.78-94) ; échec = Dégâts + État éventuel. */
+registerCascadeApplier('riverSplinterDodge', (get, set, step, hero) => {
+  if (!step.result || !hero) return;
+  const dmg = Number(step.meta?.dmg ?? 0);
+  const conditionId = String(step.meta?.conditionId ?? '') || undefined;
+  const location = String(step.meta?.location ?? '');
+  if (step.result.success) return { journal: [`Critique au ${location} — ${hero.name} esquive les éclats (Initiative ${step.result.roll}/${step.result.target}).`] };
+  hero.wounds.current = Math.max(0, hero.wounds.current - dmg);
+  if (conditionId) addCondition(hero, conditionId as Parameters<typeof addCondition>[1]);
+  set({ party: [...get().party] });
+  return { journal: [`Critique au ${location} — ${hero.name} subit ${dmg} Dégâts d'éclats${conditionId ? ` et gagne l'État ${conditionId}.` : '.'} (Initiative ${step.result.roll}/${step.result.target} ratée)`] };
+});
+
+/** Réparation d'urgence INFLUENÇABLE d'une coque PERCÉE (#270, Métier) — succès = voie d'eau colmatée
+ *  (+1d10 Blessures de coque, l.116) ; échec = le bateau sombre (l.103). */
+registerCascadeApplier('riverHoleRepair', (get, set, step, hero) => {
+  if (!step.result) return;
+  const plan = get().travelPlan!;
+  const name = hero?.name ?? 'Le charpentier';
+  if (step.result.success) {
+    const healed = Math.min(plan.vehicle!.wounds.max - plan.vehicle!.wounds.current, rollExpr(TEMPORARY_REPAIR.woundsPerRepair, battleRng()));
+    plan.vehicle!.wounds.current += healed;
+    set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, holed: false } } });
+    return { journal: [`${name} — calfatage d'urgence (Métier) : ${step.result.roll}/${step.result.target} → la voie d'eau est colmatée, +${healed} Blessure(s) de coque restaurées (réparation temporaire, l.116).`] };
+  }
+  const j = [`${name} — calfatage d'urgence (Métier) : ${step.result.roll}/${step.result.target} → le calfatage ne tient pas.`];
+  sinkBoat(get, set, (l) => j.push(...l), 'La coque prend l\'eau plus vite qu\'on ne la vide — le bateau sombre (T2C ch.5 l.103).');
+  return { journal: j };
+});
+
+/** Détection INFLUENÇABLE d'un péril « detect » (Rochers/eaux peu profondes, l.136, Agilité — #270) —
+ *  sans la Compétence de Navigation (auto-succès résolu AVANT l'insertion, cf. `resolveRiverPerilConsequence`).
+ *  Échec → impact (Dégâts fixes, chances de percée/échouage, MÊME conséquence que le chemin inline). */
+registerCascadeApplier('riverPerilDetect', (get, set, step) => {
+  const peril = findRiverPeril(String(step.meta?.perilId ?? ''));
+  if (!step.result || !peril?.onHit) return;
+  const j = [`${peril.label} — détection (Agilité) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'évité.' : 'impact !'}`];
+  if (step.result.success) return { journal: j };
+  const rng = battleRng();
+  const impact = resolveRiverImpact(peril.onHit, rng);
+  const plan = get().travelPlan!;
+  const coque = plan.vehicle!;
+  coque.wounds.current = Math.max(0, coque.wounds.current - impact.hullDamage);
+  set({ travelPlan: { ...get().travelPlan! } });
+  j.push(`${peril.label} : la coque subit ${impact.hullDamage} Dégâts (reste ${coque.wounds.current}/${coque.wounds.max}).`);
+  const insert: CascadeStep[] = [];
+  if (impact.echoue) insert.push(...applyEchouageSteps(get, set, step.id, j));
+  if (impact.holed) insert.push(...applyBoatCritical(get, set, plan, plan.river!, coque, 'coque', (l) => j.push(...l), rng, step.id));
+  return { journal: j, insert: insert.length ? insert : undefined };
+});
+
+/** Applique un Coup Critique de bateau (l.72-94) : Dégâts d'éclats à l'équipage — esquive INFLUENÇABLE
+ *  (#270, Initiative) si la victime exposée est pilotée par un humain, sinon inline — États, dérive, ou
+ *  coque percée (réparation elle-même GATÉE, `holeBoat`). Renvoie les étapes-jet à INSÉRER, propagées par
+ *  l'appelant (build-time `applyBoatCriticalNoPilot` ou applier `riverRigging`/`riverPerilDetect`). */
+function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoyageState, coque: Combatant, location: string, tell: (l: string[]) => void, rng: RNG, idPrefix: string): CascadeStep[] {
   const crit = riverCritical(location);
-  if (!crit) return;
+  if (!crit) return [];
+  const insert: CascadeStep[] = [];
   if (crit.splinterDamage) {
     // Éclats à un membre d'équipage exposé (l.78-94) : le barreur/premier héros vivant encaisse. Le RAW
     // gréement/superstructure OFFRE un Test d'Initiative pour ÉVITER les +5 Dégâts (et l'Empêtré, l.78).
     const victim = get().party.find((h) => !h.dead);
-    if (victim) {
+    if (victim && crit.initiativeTest && humanControlled(get(), victim)) {
+      const base = testValue(victim, undefined, 'I');
+      insert.push({
+        id: `${idPrefix}-splinter`, kind: 'riverSplinterDodge', actorId: victim.id, icon: 'ui/warning',
+        label: `Critique au ${location} — éclats`, rollLabel: 'Initiative', base, target: Math.max(1, Math.min(99, base)),
+        result: null, interactive: true, meta: { dmg: crit.splinterDamage, conditionId: crit.conditionId ?? '', location },
+      });
+    } else if (victim) {
       const dodge = crit.initiativeTest ? rollTest(testValue(victim, undefined, 'I'), 'intermediaire', rng) : null;
       if (dodge?.success) {
         tell([`Critique au ${location} — ${victim.name} esquive les éclats (Initiative ${dodge.roll}/${dodge.target}).`]);
@@ -532,8 +599,9 @@ function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoy
     }
   }
   if (crit.driftUntilRepair) set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, broken: true } } });
-  if (crit.hole) holeBoat(get, set, plan, tell);
+  if (crit.hole) insert.push(...holeBoat(get, set, plan, tell, idPrefix));
   void river;
+  return insert;
 }
 
 /** Le meilleur réparateur de bateau (l.107-117) : Métier (Construction de bateaux), sinon Métier
@@ -544,11 +612,20 @@ function bestShipwright(get: Get): { actor: Combatant; value: number } | null {
 }
 
 /** Coque PERCÉE (« Y a un trou », l.101-105) : le bateau prend l'eau et coule en E minutes ; on tente une
- *  réparation temporaire (Métier Construction de bateaux/Charpentier, Complexe — l.113-117). */
-function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => void): void {
-  const rng = battleRng();
+ *  réparation temporaire (Métier Construction de bateaux/Charpentier, Complexe — l.113-117), INFLUENÇABLE
+ *  (#270, `riverHoleRepair`) si le réparateur est piloté par un humain — sinon inline. */
+function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => void, idPrefix: string): CascadeStep[] {
   const minutes = holeSinkMinutes(plan.vehicle!.characteristics?.E ?? 0); // « coule en E minutes » (l.103)
   const repair = bestShipwright(get);
+  if (repair && humanControlled(get(), repair.actor)) {
+    tell([`Coque percée (le bateau coule en ~${minutes} min, l.103) — calfatage d'urgence en cours…`]);
+    return [{
+      id: `${idPrefix}-hole`, kind: 'riverHoleRepair', actorId: repair.actor.id, icon: 'travel/repair',
+      label: 'Calfatage d’urgence', rollLabel: 'Métier', base: repair.value,
+      target: Math.max(1, Math.min(99, repair.value + DIFFICULTY_MODIFIERS[TEMPORARY_REPAIR.difficulty])), result: null, interactive: true,
+    }];
+  }
+  const rng = battleRng();
   if (repair) {
     const t = rollTest(repair.value, TEMPORARY_REPAIR.difficulty, rng);
     tell([`Coque percée (le bateau coule en ~${minutes} min, l.103) — calfatage d'urgence (Métier ${DIFFICULTY_LABELS[TEMPORARY_REPAIR.difficulty]}) : ${t.roll}/${t.target} → ${t.success ? 'la voie d\'eau est colmatée.' : 'le calfatage ne tient pas.'}`]);
@@ -558,10 +635,11 @@ function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => v
       plan.vehicle!.wounds.current += healed;
       set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, holed: false } } });
       tell([`La coque tient — +${healed} Blessure(s) de coque restaurées (réparation temporaire, l.116).`]);
-      return;
+      return [];
     }
   } else tell(['Coque percée et personne pour la calfater.']);
   sinkBoat(get, set, tell, 'La coque prend l\'eau plus vite qu\'on ne la vide — le bateau sombre (T2C ch.5 l.103).');
+  return [];
 }
 
 /** Le bateau COULE : voyage perdu (le groupe reste au point de départ). */
@@ -571,13 +649,15 @@ function sinkBoat(get: Get, set: Set, tell: (l: string[]) => void, reason: strin
 }
 
 /** CONSÉQUENCE d'un PÉRIL de rivière (l.119-166) SURVENU, résolue selon le `kind` (`river-perils.json`).
- *  Pour `navTest` (Débris) le jet d'évitement est INFLUENÇABLE (lu dans `step.result`) ; `detect` résout
- *  ses sous-jets inline (RNG injecté). `obstacle` (Barrage) passe par le CHOIX `riverObstacleChoice`. */
-function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<ReturnType<typeof findRiverPeril>>, step: CascadeStep, rng: RNG): string[] {
+ *  Pour `navTest` (Débris) le jet d'évitement est INFLUENÇABLE (lu dans `step.result`) ; `obstacle`
+ *  (Barrage) passe par le CHOIX `riverObstacleChoice` ; `detect` GATE sa détection (#270, `riverPerilDetect`,
+ *  cf. `registerCascadeApplier` ci-dessus) — sans barreur qualifié piloté par un humain, résolution inline. */
+function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<ReturnType<typeof findRiverPeril>>, step: CascadeStep, rng: RNG): { journal: string[]; insert?: CascadeStep[] } {
   const plan = get().travelPlan!;
   const river = plan.river!;
   const coque = plan.vehicle!;
   const j: string[] = [];
+  const insert: CascadeStep[] = [];
   const damageHull = (dmg: number, note: string) => {
     coque.wounds.current = Math.max(0, coque.wounds.current - dmg);
     set({ travelPlan: { ...get().travelPlan! } });
@@ -591,20 +671,32 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
     j.push(`${peril.label} en aval — manœuvre d'évitement (Navigation) : ${res ? `${res.roll}/${res.target} → ${avoided ? 'évités.' : 'collision !'}` : 'aucun barreur — collision.'}`);
     if (!avoided) for (let i = 0; i < peril.onFail.hullHits; i++) damageHull(peril.onFail.damagePerHit, ' (collision)');
   } else if (peril.kind === 'detect' && peril.onHit) {
-    // Rochers / eaux peu profondes (l.136) : succès AUTO avec la Compétence Navigation ; sinon Agilité (+0).
+    // Rochers / eaux peu profondes (l.136) : succès AUTO avec la Compétence Navigation ; sinon Agilité (+0),
+    // INFLUENÇABLE (#270) si le barreur est piloté par un humain (`riverPerilDetect`).
     const pilotId = step.actorId;
     const pilot = pilotId ? get().party.find((h) => h.id === pilotId) : undefined;
     const skilled = pilot && (pilot.skills ?? []).some((s) => (s.skillId === 'voile' || s.skillId === 'ramer') && s.advances > 0);
-    const detect = skilled ? { success: true } : pilot ? rollTest(testValue(pilot, undefined, 'Ag'), 'intermediaire', rng) : { success: false };
-    j.push(`${peril.label} — ${skilled ? 'le barreur connaît le passage et l\'évite (Navigation, l.136).' : `détection (Agilité +0) : ${'roll' in detect ? (detect as TestResult).roll : '—'} → ${detect.success ? 'évité.' : 'impact !'}`}`);
-    if (!detect.success) {
-      const impact = resolveRiverImpact(peril.onHit, rng);
-      damageHull(impact.hullDamage, '');
-      if (impact.echoue) applyEchouage(get, set, (l) => j.push(...l));
-      if (impact.holed) applyBoatCritical(get, set, plan, river, coque, 'coque', (l) => j.push(...l), rng); // Critique coque = percée (l.88)
+    if (skilled) {
+      j.push(`${peril.label} — le barreur connaît le passage et l'évite (Navigation, l.136).`);
+    } else if (pilot && humanControlled(get(), pilot)) {
+      const base = testValue(pilot, undefined, 'Ag');
+      insert.push({
+        id: `${step.id}-detect`, kind: 'riverPerilDetect', actorId: pilot.id, icon: 'nautical/snag', label: `${peril.label} — détection`,
+        rollLabel: 'Agilité', base, target: Math.max(1, Math.min(99, base)), result: null, interactive: true,
+        meta: { perilId: peril.id },
+      });
+    } else {
+      const detect = pilot ? rollTest(testValue(pilot, undefined, 'Ag'), 'intermediaire', rng) : { success: false };
+      j.push(`${peril.label} — détection (Agilité +0) : ${'roll' in detect ? (detect as TestResult).roll : '—'} → ${detect.success ? 'évité.' : 'impact !'}`);
+      if (!detect.success) {
+        const impact = resolveRiverImpact(peril.onHit, rng);
+        damageHull(impact.hullDamage, '');
+        if (impact.echoue) insert.push(...applyEchouageSteps(get, set, step.id, j));
+        if (impact.holed) insert.push(...applyBoatCritical(get, set, plan, river, coque, 'coque', (l) => j.push(...l), rng, step.id)); // Critique coque = percée (l.88)
+      }
     }
   }
-  return j;
+  return { journal: j, insert: insert.length ? insert : undefined };
 }
 
 /** S'ÉCHOUER (l.97-99) : le bateau s'arrête, sa coque subit 12 Dégâts ; on le renfloue par un Test de Force
@@ -616,16 +708,54 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
 export function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): void {
   const coque = get().travelPlan!.vehicle!;
   coque.wounds.current = Math.max(0, coque.wounds.current - echouageDamage());
+  const { difficulty, encTxt } = echouageDifficulty(get);
+  const force = partyAssisted(get().party, undefined, 'F');
+  const t = force ? rollTest(force.value, difficulty, battleRng()) : null;
+  set({ travelPlan: { ...get().travelPlan! } });
+  tell([`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99)${t ? ` — renflouage (Force ${DIFFICULTY_LABELS[difficulty]}${encTxt}) : ${t.roll}/${t.target} → ${t.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}` : '.'}`]);
+}
+
+/** Malus/difficulté du renflouage (l.99, Enc du bateau + de la cargaison) — SOURCE UNIQUE, partagée par
+ *  le renflouage IA/synchrone (`applyEchouage`) et l'étape-jet JOUEUR (`riverEchouageForce`, #270). */
+function echouageDifficulty(get: Get): { difficulty: Difficulty; encTxt: string } {
+  const coque = get().travelPlan!.vehicle!;
   const boatEnc = findVehicleById(coque.creatureId ?? '')?.enc ?? 0;
   const cargoEnc = cargoTotalEnc(get().caravanCargo ?? []);
   const totalEnc = boatEnc + cargoEnc;
   const difficulty = totalEnc > 0 ? difficultyFromModifier(-totalEnc) : 'intermediaire';
-  const force = partyAssisted(get().party, undefined, 'F');
-  const t = force ? rollTest(force.value, difficulty, battleRng()) : null;
-  set({ travelPlan: { ...get().travelPlan! } });
   const encTxt = totalEnc > 0 ? ` (malus −${totalEnc} Enc : ${boatEnc} bateau + ${cargoEnc} cargaison, l.99)` : '';
-  tell([`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99)${t ? ` — renflouage (Force ${DIFFICULTY_LABELS[difficulty]}${encTxt}) : ${t.roll}/${t.target} → ${t.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}` : '.'}`]);
+  return { difficulty, encTxt };
 }
+
+/** ÉCHOUAGE (#270) : Dégâts fixes appliqués immédiatement (non-jetés) ; le renflouage (Test de Force)
+ *  devient une étape-jet INFLUENÇABLE (`riverEchouageForce`) si l'acteur est piloté par un humain —
+ *  sinon délègue à `applyEchouage` (chemin IA/synchrone inchangé). */
+function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: string[]): CascadeStep[] {
+  const force = partyAssisted(get().party, undefined, 'F');
+  if (!force || !humanControlled(get(), force.actor)) {
+    applyEchouage(get, set, (l) => j.push(...l));
+    return [];
+  }
+  const coque = get().travelPlan!.vehicle!;
+  coque.wounds.current = Math.max(0, coque.wounds.current - echouageDamage());
+  set({ travelPlan: { ...get().travelPlan! } });
+  const { difficulty, encTxt } = echouageDifficulty(get);
+  j.push(`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99).`);
+  return [{
+    id: `${idPrefix}-echouage`, kind: 'riverEchouageForce', actorId: force.actor.id, icon: 'travel/repair',
+    label: 'Renflouage', rollLabel: 'Force', base: force.value,
+    target: Math.max(1, Math.min(99, force.value + DIFFICULTY_MODIFIERS[difficulty])), result: null, interactive: true,
+    meta: { encTxt, difficultyLabel: DIFFICULTY_LABELS[difficulty] },
+  }];
+}
+
+/** Renflouage INFLUENÇABLE (#270, Force) — MÊME issue que `applyEchouage`, jet différé. */
+registerCascadeApplier('riverEchouageForce', (get, set, step, hero) => {
+  if (!step.result) return;
+  const encTxt = String(step.meta?.encTxt ?? '');
+  const difficultyLabel = String(step.meta?.difficultyLabel ?? '');
+  return { journal: [`${hero?.name ?? 'Le groupe'} — Renflouage (Force ${difficultyLabel}${encTxt}) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}`] };
+});
 
 /** Fin de journée : coque persistée (#30), horloge avancée (arrivée = +24 h ; halte = jusqu'au
  *  crépuscule), puis arrivée ou halte de nuit. L'entretien du jour se résout dans la cascade de nuit. */

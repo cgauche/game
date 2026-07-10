@@ -583,6 +583,7 @@ describe('Montures & attelages (EDOC ch.4, règle optionnelle travel-allures)', 
       seedBattleRng(seed);
       setup(map({ km: 30, modes: ['diligence'], prices: { diligence: 1 } }));
       useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur', allure: 'galop' });
+      drainCascade(); // #270 : le Test de Conduite d'attelage au km est une étape influençable (conducteur piloté par un humain)
       const st = useGame.getState();
       // La coque est créée dès que l'allure est forcée (les Dégâts du Problème doivent porter).
       expect(st.journal.some((l) => l.includes("Conduite d'attelage (allure forcée)"))).toBe(true);
@@ -602,6 +603,7 @@ describe('Montures & attelages (EDOC ch.4, règle optionnelle travel-allures)', 
       setup(map({ km: 200, modes: ['diligence'], prices: { diligence: 1 } }), [hero({ items: [ration('r1'), ration('r2'), ration('r3')] })]);
       useGame.setState({ money: { gold: 5, silver: 0, brass: 0 } });
       useGame.getState().startTravel('r1', 'diligence', { classKey: 'exterieur', allure: 'galop' });
+      drainCascade(); // #270 : le Test de Conduite d'attelage au km est une étape influençable (conducteur piloté par un humain)
       if (useGame.getState().travelPlan?.vehicleLame) lame = true;
       while (useGame.getState().pendingRest && useGame.getState().travelPlan && !lame) {
         sleepThroughHalt();
