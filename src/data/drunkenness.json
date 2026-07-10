@@ -6,7 +6,14 @@
       "max": 2,
       "name": "Bravoure du Marienburgher !",
       "effect": "bravoure",
-      "desc": "« Bravoure du Marienburgher ! » : Gagnez un bonus de +20 à votre Compétence Calme."
+      "desc": "« Bravoure du Marienburgher ! » : Gagnez un bonus de +20 à votre Compétence Calme.",
+      "ops": [
+        {
+          "op": "skillMod",
+          "skill": "calme",
+          "mod": 20
+        }
+      ]
     },
     {
       "id": "meilleur-ami",
@@ -14,7 +21,12 @@
       "max": 4,
       "name": "Vous êtes mon meilleur ami !",
       "effect": "ami",
-      "desc": "« Vous êtes mon meilleur ami ! » : Ignorez tous vos Préjugés et toutes vos Animosités existantes."
+      "desc": "« Vous êtes mon meilleur ami ! » : Ignorez tous vos Préjugés et toutes vos Animosités existantes.",
+      "ops": [
+        {
+          "op": "ignoreAnimosity"
+        }
+      ]
     },
     {
       "id": "piece-tourne",
@@ -30,7 +42,14 @@
       "max": 8,
       "name": "Je vais tous vous prendre un par un !",
       "effect": "belligerent",
-      "desc": "« Je vais tous vous prendre un par un ! » : Gagnez Animosité (Tout le monde !)."
+      "desc": "« Je vais tous vous prendre un par un ! » : Gagnez Animosité (Tout le monde !).",
+      "ops": [
+        {
+          "op": "grantPsychTrait",
+          "psychType": "animosite",
+          "cible": "Tout le monde"
+        }
+      ]
     },
     {
       "id": "comment-arrive",

@@ -14,7 +14,7 @@
  * contribution du trait accordé) car des entrées peuvent venir d'ailleurs (mutations).
  */
 import { Combatant } from './types';
-import { parsePsychTraits } from './psychology';
+import { parsePsychTraits, type PsychType } from './psychology';
 import type { TraitInstance } from './statEntry';
 
 /** Re-dérive les scalaires psy depuis les traits courants (Peur/Terreur/Immunité). */
@@ -44,6 +44,13 @@ export function grantTrait(c: Combatant, t: TraitInstance): void {
   resyncPsychScalars(c);
   const contrib = parsePsychTraits([t]).psychTraits ?? [];
   if (contrib.length) c.psychTraits = [...(c.psychTraits ?? []), ...contrib];
+}
+
+/** Accorde un Trait PSYCHOLOGIQUE (≠ état de combat) dans `c.psychTraits` — noyau PARTAGÉ par l'op
+ *  `grantPsychTrait` (`ops.ts`, effet temporisé) et `attachMutation` (`corruption.ts`, permanent :
+ *  Colère impie → Frénésie, mutation → Haine). Mute `c`. */
+export function grantPsychTrait(c: Combatant, type: PsychType, cible?: string): void {
+  c.psychTraits = [...(c.psychTraits ?? []), { type, ...(cible ? { cible } : {}) }];
 }
 
 /** Retire UNE instance du trait accordé (jamais un natif en double : la dernière occurrence — celle

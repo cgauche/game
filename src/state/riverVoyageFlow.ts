@@ -27,6 +27,8 @@ import { applyEffects } from './combatEffects';
 import { openRest, placesOfKind } from './restFlow';
 import { placeById, type MapRoute, type WorldMap } from './worldMap';
 import { persistHullWounds } from './seaVoyageFlow';
+import { damageHull as damageHullOp, healHull } from './shipDamage';
+import { applyOps } from '../engine/ops';
 import { baseHoursPerDay } from './travelFlow';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import { travelSpeed } from '../engine/travel';
@@ -495,7 +497,7 @@ registerCascadeApplier('riverObstacleChoice', (get, set, step) => {
   if (!peril?.obstacle) return;
   const coque = get().travelPlan!.vehicle!;
   if (step.chosen === 'forcer') {
-    coque.wounds.current = Math.max(0, coque.wounds.current - peril.obstacle.ramDamage);
+    damageHullOp(coque, peril.obstacle.ramDamage);
     set({ travelPlan: { ...get().travelPlan! } });
     return { journal: [`${peril.label} — forcé au bélier : la coque subit ${peril.obstacle.ramDamage} Dégâts (reste ${coque.wounds.current}/${coque.wounds.max}).`] };
   }
@@ -524,7 +526,8 @@ registerCascadeApplier('riverSplinterDodge', (get, set, step, hero) => {
   const conditionId = String(step.meta?.conditionId ?? '') || undefined;
   const location = String(step.meta?.location ?? '');
   if (step.result.success) return { journal: [`Critique au ${location} — ${hero.name} esquive les éclats (Initiative ${step.result.roll}/${step.result.target}).`] };
-  hero.wounds.current = Math.max(0, hero.wounds.current - dmg);
+  // HÉROS (pas la coque) : applyOps direct — les éclats sont un Dégât fixe RAW, sans mitigation BE/PA.
+  applyOps(hero, [{ op: 'wounds', amount: dmg, ignoreTB: true, ignoreAP: true }]);
   if (conditionId) addCondition(hero, conditionId as Parameters<typeof addCondition>[1]);
   set({ party: [...get().party] });
   return { journal: [`Critique au ${location} — ${hero.name} subit ${dmg} Dégâts d'éclats${conditionId ? ` et gagne l'État ${conditionId}.` : '.'} (Initiative ${step.result.roll}/${step.result.target} ratée)`] };
@@ -538,7 +541,7 @@ registerCascadeApplier('riverHoleRepair', (get, set, step, hero) => {
   const name = hero?.name ?? 'Le charpentier';
   if (step.result.success) {
     const healed = Math.min(plan.vehicle!.wounds.max - plan.vehicle!.wounds.current, rollExpr(TEMPORARY_REPAIR.woundsPerRepair, battleRng()));
-    plan.vehicle!.wounds.current += healed;
+    healHull(plan.vehicle!, healed);
     set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, holed: false } } });
     return { journal: [`${name} — calfatage d'urgence (Métier) : ${step.result.roll}/${step.result.target} → la voie d'eau est colmatée, +${healed} Blessure(s) de coque restaurées (réparation temporaire, l.116).`] };
   }
@@ -559,7 +562,7 @@ registerCascadeApplier('riverPerilDetect', (get, set, step) => {
   const impact = resolveRiverImpact(peril.onHit, rng);
   const plan = get().travelPlan!;
   const coque = plan.vehicle!;
-  coque.wounds.current = Math.max(0, coque.wounds.current - impact.hullDamage);
+  damageHullOp(coque, impact.hullDamage);
   set({ travelPlan: { ...get().travelPlan! } });
   j.push(`${peril.label} : la coque subit ${impact.hullDamage} Dégâts (reste ${coque.wounds.current}/${coque.wounds.max}).`);
   const insert: CascadeStep[] = [];
@@ -592,7 +595,8 @@ function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoy
       if (dodge?.success) {
         tell([`Critique au ${location} — ${victim.name} esquive les éclats (Initiative ${dodge.roll}/${dodge.target}).`]);
       } else {
-        victim.wounds.current = Math.max(0, victim.wounds.current - crit.splinterDamage);
+        // HÉROS (pas la coque) : applyOps direct — Dégâts d'éclats fixes RAW, sans mitigation BE/PA.
+        applyOps(victim, [{ op: 'wounds', amount: crit.splinterDamage, ignoreTB: true, ignoreAP: true }]);
         if (crit.conditionId) addCondition(victim, crit.conditionId as Parameters<typeof addCondition>[1]);
         set({ party: [...get().party] });
         tell([`Critique au ${location} — ${victim.name} subit ${crit.splinterDamage} Dégâts d'éclats${crit.conditionId ? ` et gagne l'État ${crit.conditionId}.` : '.'}${dodge ? ` (Initiative ${dodge.roll}/${dodge.target} ratée)` : ''}`]);
@@ -633,7 +637,7 @@ function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => v
     if (t.success) {
       // Réparation temporaire (l.116) : restaure 1d10 Blessures de coque.
       const healed = Math.min(plan.vehicle!.wounds.max - plan.vehicle!.wounds.current, rollExpr(TEMPORARY_REPAIR.woundsPerRepair, rng));
-      plan.vehicle!.wounds.current += healed;
+      healHull(plan.vehicle!, healed);
       set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, holed: false } } });
       tell([`La coque tient — +${healed} Blessure(s) de coque restaurées (réparation temporaire, l.116).`]);
       return [];
@@ -660,7 +664,7 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
   const j: string[] = [];
   const insert: CascadeStep[] = [];
   const damageHull = (dmg: number, note: string) => {
-    coque.wounds.current = Math.max(0, coque.wounds.current - dmg);
+    damageHullOp(coque, dmg);
     set({ travelPlan: { ...get().travelPlan! } });
     j.push(`${peril.label} : la coque subit ${dmg} Dégâts${note} (reste ${coque.wounds.current}/${coque.wounds.max}).`);
   };
@@ -708,7 +712,7 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
  *  convoi vide). Le RAW ne prévoit AUCUN délestage pour se renflouer (l.97-105 muets) → non modélisé. */
 export function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): void {
   const coque = get().travelPlan!.vehicle!;
-  coque.wounds.current = Math.max(0, coque.wounds.current - echouageDamage());
+  damageHullOp(coque, echouageDamage());
   const { difficulty, encTxt } = echouageDifficulty(get);
   const force = partyAssisted(get().party, undefined, 'F');
   const t = force ? rollTest(force.value, difficulty, battleRng()) : null;
@@ -738,7 +742,7 @@ function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: string[]): 
     return [];
   }
   const coque = get().travelPlan!.vehicle!;
-  coque.wounds.current = Math.max(0, coque.wounds.current - echouageDamage());
+  damageHullOp(coque, echouageDamage());
   set({ travelPlan: { ...get().travelPlan! } });
   const { difficulty, encTxt } = echouageDifficulty(get);
   j.push(`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99).`);

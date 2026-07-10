@@ -25,11 +25,14 @@
 import type { Combatant, CharKey } from './types';
 import { RNG, defaultRNG, d10 } from './dice';
 import { findTableEntry } from './tables';
+import type { GameOp } from './ops';
 import drunkennessJson from '../data/drunkenness.json';
 
-// Cycle d'import évité comme `provisions.ts` : ce module n'importe PAS `conditions` (que
-// `trauma.ts` → `conditions` → `trauma` boucleraient). La gueule de bois (op sur `conditions`) est
-// posée par l'APPELANT à partir du spec renvoyé par `soberUp` (patron « la source rend, l'appelant applique »).
+// Cycle d'import évité comme `provisions.ts` : ce module n'importe PAS `conditions`/`ops` (import
+// de VALEUR — `ops.ts` importe CE module par valeur, l'inverse boucherait). La MÉCANIQUE d'un résultat
+// d'Ivresse (Bravoure/meilleur ami/belligérant) est donc RENDUE en `GameOp[]` (`DrunkEntry.ops`, données
+// de `drunkenness.json`) et appliquée par l'APPELANT (`case 'intoxicate'` d'`applyOps`, le seul, cf. son
+// en-tête) — même patron que `soberUp`/`hangover` ci-dessous (« la source rend, l'appelant applique »).
 
 /** Caractéristiques pénalisées par l'Ivresse (LDB 09 l.475). */
 export const DRUNK_CARACS: CharKey[] = ['CC', 'CT', 'Ag', 'Dex', 'Int'];
@@ -44,7 +47,7 @@ export interface DrunkState {
   result?: string;
 }
 
-interface DrunkEntry { id: string; min: number; max: number; name: string; effect: string; desc: string }
+interface DrunkEntry { id: string; min: number; max: number; name: string; effect: string; desc: string; ops?: GameOp[] }
 const DRUNK_TABLE = (drunkennessJson as { table: DrunkEntry[] }).table;
 
 /** Nombre d'échecs de Résistance à l'alcool accumulés. */
@@ -76,7 +79,7 @@ export function drunkCharPenalties(c: Combatant, key: CharKey): number[] {
  * nombre d'échecs atteint le Bonus d'Endurance `be` et que le personnage n'était pas déjà Ivre : il
  * devient Ivre → tirage 1d10 sur le Tableau d'Ivresse (effet appliqué par `applyDrunkResult`). Mute `c`.
  */
-export function applyAlcoholTest(c: Combatant, success: boolean, be: number, rng: RNG = defaultRNG): { log: string[]; becameDrunk?: DrunkEntry } {
+export function applyAlcoholTest(c: Combatant, success: boolean, be: number, rng: RNG = defaultRNG): { log: string[]; becameDrunk?: DrunkEntry; drunkOps?: GameOp[] } {
   const s: DrunkState = c.drunk ?? { failedTests: 0 };
   const log: string[] = [];
   if (success) { c.drunk = s; return { log }; }
@@ -86,15 +89,16 @@ export function applyAlcoholTest(c: Combatant, success: boolean, be: number, rng
   if (!s.drunk && s.failedTests >= Math.max(1, be)) {
     const entry = applyDrunkResult(c, rng);
     log.push(`${c.name} est IVRE ! ${entry.desc}`);
-    return { log, becameDrunk: entry };
+    return { log, becameDrunk: entry, drunkOps: entry.ops };
   }
   return { log };
 }
 
-/** Passe le personnage Ivre : tire 1d10 sur le Tableau d'Ivresse et applique l'effet mécanisable
- *  (Bravoure → +20 Calme ; « meilleur ami » → ignore Préjugés/Animosités ; « tous » → Animosité (Tout
- *  le monde)). La gueule de bois et le risque d'Empoisonné du résultat « blackout » sont résolus au
- *  dessoûlage (`soberUp`). Mute `c`. */
+/** Passe le personnage Ivre : tire 1d10 sur le Tableau d'Ivresse et enregistre le résultat (`c.drunk`).
+ *  La MÉCANIQUE (Bravoure → +20 Calme ; « meilleur ami » → ignore Préjugés/Animosités ; « tous » →
+ *  Animosité (Tout le monde)) est `entry.ops` (`GameOp[]` de `drunkenness.json`) — RENDUE, pas exécutée
+ *  ici (cf. en-tête) ; c'est `applyAlcoholTest`/l'appelant qui la joue via `applyOps`. La gueule de bois
+ *  et le risque d'Empoisonné du résultat « blackout » restent résolus au dessoûlage (`soberUp`). Mute `c`. */
 export function applyDrunkResult(c: Combatant, rng: RNG = defaultRNG): DrunkEntry {
   const roll = d10(rng);
   const entry = findTableEntry(DRUNK_TABLE, roll);
@@ -102,18 +106,7 @@ export function applyDrunkResult(c: Combatant, rng: RNG = defaultRNG): DrunkEntr
   s.drunk = true;
   s.result = entry.id;
   c.drunk = s;
-  switch (entry.effect) {
-    case 'bravoure': // +20 Calme, jusqu'au dessoûlage (ActiveEffect skillMod, retiré par `soberUp`)
-      c.activeEffects = [...(c.activeEffects ?? []), { label: 'Bravoure du Marienburgher', bonus: 0, duration: { scale: 'permanent' }, skillMods: { calme: 20 }, drunkEffect: true }];
-      break;
-    case 'ami': // ignore Préjugés/Animosités : flag lu par la psychologie
-      c.activeEffects = [...(c.activeEffects ?? []), { label: 'Trop bourré pour la rancune', bonus: 0, duration: { scale: 'permanent' }, ignoreAnimosity: true, drunkEffect: true }];
-      break;
-    case 'belligerent': // Animosité (Tout le monde !)
-      c.psychTraits = [...(c.psychTraits ?? []), { type: 'animosite', cible: 'Tout le monde' }];
-      break;
-    // 'staggering' (Mvt OU Action) : lu par le tour de combat via `drunkStaggers` ; 'blackout' résolu au dessoûlage.
-  }
+  // 'staggering' (Mvt OU Action) : lu par le tour de combat via `drunkStaggers` ; 'blackout' résolu au dessoûlage.
   return entry;
 }
 
@@ -135,9 +128,10 @@ export function soberUp(c: Combatant, now: number, drDissipation: number, drHang
   if (!c.drunk) return { log: [] };
   const log: string[] = [];
   // Les effets de l'Ivresse (pénalités + Bravoure/ami) se dissipent après 10 − DR heures — modélisé au
-  // dessoûlage : on lève l'état et on retire les ActiveEffect d'ivresse.
+  // dessoûlage : on lève l'état et on retire les ActiveEffect d'ivresse (marqués `effectId:'ivresse'`
+  // à l'application des `drunkOps`, cf. `case 'intoxicate'` d'`applyOps` — identité, jamais le libellé).
   const dissipH = Math.max(0, 10 - drDissipation);
-  c.activeEffects = (c.activeEffects ?? []).filter((e) => !e.drunkEffect);
+  c.activeEffects = (c.activeEffects ?? []).filter((e) => e.effectId !== 'ivresse');
   c.drunk = undefined;
   log.push(`${c.name} dessoûle (effets dissipés après ${dissipH} h).`);
   // Gueule de bois = État Exténué non retirable pendant 5 − DR heures (durée d'horloge, purgée à l'entretien).

@@ -201,6 +201,7 @@ fait DANS la primitive, pas dans une nième copie.
 | Modificateur **PASSIF** d'un élément (trait/mutation/qualité/trauma/maladie/faim/sort) | `passiveMods(c)` collecteur UNIQUE + `passive: GameOp[]` en donnée | `src/engine/trauma.ts` |
 | Effet **DÉCLENCHÉ** (`effects: TriggeredEffect[]`) d'une entité, pour un Trigger — *réflexe avant tout chemin par-kind* | **`fireTriggers(get, actor, trigger, ctx)`** DISPATCHER UNIQUE : réunit Traits + Talents + Atouts + **États** (par composition : Maladies/Mutations octroient Trait/État). Ajouter une source = l'ajouter ICI, JAMAIS un dispatch parallèle | `src/state/triggeredEffects.ts` |
 | Attaque GRATUITE déclenchée (`grantFreeAttack` : Frappe réactive/Assaut féroce, et tout Trait/État) | `resolveFreeAttacks` (itère `freeAttackSourcesOf`, filtre `flowHasFreeAttack`) — kind-agnostique | `src/state/combatFlow.ts` |
+| Dégâts/soin de **coque** (voyage fluvial/maritime) | `damageHull`/`healHull` (routent `applyOps`) — ⚠ le double chemin « copie bare » est TRANSITOIRE et MEURT avec #296 (convergence à UNE source de coque) : ne JAMAIS le copier comme modèle | `src/state/shipDamage.ts` |
 
 > **Frontière orchestrateur · machinerie · data-driven** (cf. `docs/combat-events-coherence.md` §3bis) : un
 > Trigger doit fonctionner pour TOUT kind d'entité (maladie/talent/trait/sort/état/mutation) **sans code

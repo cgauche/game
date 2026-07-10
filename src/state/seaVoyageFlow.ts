@@ -48,6 +48,7 @@ import { testValue, partyAssisted, partyBest } from '../engine/skills';
 import { buildWeapon } from '../engine/items';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import { applyOps } from '../engine/ops';
+import { damageHull, healHull, type HullWounds } from './shipDamage';
 import { itemCapability } from '../engine/capabilities';
 import { isRation } from '../engine/provisions';
 import { toDate, MINUTES_PER_DAY, minutesUntilNext, DUSK_MINUTE } from '../engine/clock';
@@ -475,7 +476,11 @@ function applyFastPalier(get: Get, set: Set, palierId?: string): void {
     const cur = vessel2.wounds?.current ?? max;
     const lost = Math.round(max * palier.hullLostPct / 100);
     if (max > 0 && lost > 0) {
-      set({ vessel: { ...vessel2, wounds: { current: Math.max(0, cur - lost), max } } });
+      // Copie BARE `state.vessel.wounds` (#296, pas résolu ici) — même formule de clamp que le
+      // Combattant-coque (`damageHull`), sans Combattant complet.
+      const w: HullWounds = { current: cur, max };
+      damageHull(w, lost);
+      set({ vessel: { ...vessel2, wounds: w } });
       tell(get, set, [`${vessel2.name ?? 'La coque'} perd ${Math.min(lost, cur)} Blessure(s) (${palier.hullLostPct} %).`]);
     }
   }
@@ -1105,7 +1110,7 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       // Chaque manche au centre coûte des Dégâts de collision (IC du Tourbillon, l.526).
       const hull = get().travelPlan!.vehicle!;
       const dmg = Math.max(0, w.ic - Math.floor((hull.characteristics?.E ?? 0) / 10));
-      hull.wounds.current = Math.max(0, hull.wounds.current - dmg);
+      damageHull(hull, dmg);
       persistHullWounds(get, set);
       tell(get, set, [`${w.label} : l'eau tournoyante broie la coque (${dmg} Blessures) — évasion ${progress}/${c.need} DR.`]);
       if (progress >= c.need) {
@@ -1141,7 +1146,7 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       if (adj >= 1) {
         const hull = get().travelPlan!.vehicle!;
         const healed = Math.min(hull.wounds.max - hull.wounds.current, rollDice(1, 10, rng));
-        hull.wounds.current += healed;
+        healHull(hull, healed);
         persistHullWounds(get, set);
         tell(get, set, [`Réparations de fortune : +${healed} Blessures de coque (Entretien ${adj >= 0 ? '+' : ''}${adj} DR après −2, MDG 14 l.122).`]);
       } else tell(get, set, [`Les réparations n'aboutissent pas cette nuit (Entretien ${adj} DR après −2).`]);
@@ -1328,7 +1333,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
     case 'usure': {
       if (!ship) break;
       const w = num('wounds', rollDice(1, 10, rng)) || rollDice(1, 10, rng);
-      ship.wounds.current = Math.max(0, ship.wounds.current - w);
+      damageHull(ship, w);
       persistHullWounds(get, set);
       tell(get, set, [`${ship.name} perd ${w} Blessures (usure).`]);
       break;
@@ -1427,7 +1432,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       if (!ship) break;
       const eff = effectiveSeaM(get);
       const dmg = Math.max(0, 47 + (eff.m ?? 1) - Math.floor((ship.characteristics?.E ?? 0) / 10));
-      ship.wounds.current = Math.max(0, ship.wounds.current - dmg);
+      damageHull(ship, dmg);
       persistHullWounds(get, set);
       tell(get, set, [`Collision : la coque encaisse ${dmg} Blessures (Rocher IC 47, MDG ch.13 l.446/497).`]);
       if (d100(rng) <= 20) { // 20 % d'Échouage (l.497)

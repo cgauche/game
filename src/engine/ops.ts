@@ -20,7 +20,8 @@ import { conditionLabel, psychologyLabel, talentConcrete, qualityRefLabel, trait
 import { contractDiseaseOnce } from './disease';
 import { groupMatch } from './groups';
 import { bypassedAP } from './armourBypass';
-import { grantTrait, dropExpiredGrantedTraits } from './grantedTraits';
+import { grantTrait, grantPsychTrait, dropExpiredGrantedTraits } from './grantedTraits';
+import { rollObsession } from '../data/obsessions';
 import { setGrapple } from './grapple'; // op `condition {grapple:true}` → relation d'Empoignade (côté grapple : import type GameOp erased → pas de cycle runtime)
 import { cureDiseases, blessDiseaseDuration } from './rest';
 import { applyAlcoholTest } from './drunkenness';
@@ -424,7 +425,7 @@ export type GameOp =
    *  (« Peur 1 », « Vol (Agilité) » → valeur du lanceur), `indicePerSL` : « +1 par +3 DR ».
    *  `argFrom` : la Cible (`arg`) est TIRÉE à l'attache plutôt que littérale — `'obsessions'` =
    *  Tableau des Obsessions (EDOC ch.8 : mutation « Haine sporadique » → Haine (Cible déterminée
-   *  par les Obsessions)). Résolu par `attachMutation` (seul consommateur d'`argFrom` à ce jour). */
+   *  par les Obsessions)). Résolu par `applyOps` ET `attachMutation` (même tirage, `rollObsession`). */
   | { op: 'grantTrait'; traitId: string; arg?: string; argFrom?: 'obsessions'; indice?: Formula; indicePerSL?: PerSL; onlyGroups?: string[]; durationRounds?: Formula }
   /** Trait PSYCHOLOGIQUE conféré (Colère impie → Frénésie). PASSIF (mutation/trait) : posé dans
    *  `c.psychTraits` à l'attache. `psychType` = `PsychType` (frenesie, peur…). `argFrom` : la Cible
@@ -536,6 +537,9 @@ export type GameOp =
   /** « N'a pas besoin de manger ou de boire » (Graisse de la terre, LDB 48) : exempte de la Faim
    *  (système de provisions) tant que le Sort dure. Lu par `dailyFoodUpkeep` (engine/provisions). */
   | { op: 'noHunger' }
+  /** « Vous êtes mon meilleur ami ! » (Ivresse 3-4, LDB 09 l.480) : ignore Préjugés et Animosités
+   *  existants tant que l'effet dure — flag `ActiveEffect.ignoreAnimosity`. */
+  | { op: 'ignoreAnimosity' }
   /** Modificateur de Test du porteur (Malédiction de malchance : −10 global). Sans `char` = GLOBAL (tous les
    *  Tests, porté par un effet actif, STACKE sur les États, lu par `combat/testStatePenalty`). AVEC `char` =
    *  modificateur de TEST qualifié par Caractéristique (Visage inversé −20 Soc, objet Laid −20 Soc), émis par
@@ -753,10 +757,11 @@ export type GameOp =
    *  consommateurs purs (`offTerrainMoveCap`/`offTerrainTestDR`, trauma.ts) lisent le drapeau. Inerte
    *  dans applyOps (passif pur, jamais « lancé »). */
   | { op: 'offTerrainMod'; terrain: string; mSet?: number; testDR?: number }
-  /** Modif. d'un ATTRIBUT SECONDAIRE (≠ CharKey, ≠ Mouvement) : Blessures (Dur à cuire +BE), Chance
-   *  (Chanceux), Détermination (Obstiné), Destin, Résilience. `mod` = Formula (`{bonusOf:'E'}` pour Dur
-   *  à cuire). Lu par heroMaxWounds/fortuneMax/resolveMax — data-driven, jamais par libellé. */
-  | { op: 'attrMod'; attr: 'wounds' | 'fortune' | 'resolve' | 'fate' | 'resilience'; mod: Formula }
+  /** Modif. d'un ATTRIBUT SECONDAIRE À MAXIMUM (≠ CharKey, ≠ Mouvement) : Blessures (Dur à cuire +BE),
+   *  Chance (Chanceux), Détermination (Obstiné). `mod` = Formula (`{bonusOf:'E'}` pour Dur à cuire).
+   *  Lu par heroMaxWounds/fortuneMax/resolveMax — data-driven, jamais par libellé. Destin/Résilience
+   *  N'ONT PAS de maximum dérivé (un octroi passe par `gainResource`) → EXCLUS de l'union (#292). */
+  | { op: 'attrMod'; attr: 'wounds' | 'fortune' | 'resolve'; mod: Formula }
   /** Plafond de mains d'arme maniables — GÉNÉRALISE `noTwoHanded` (hands:1 = pas d'arme à deux mains).
    *  Une amputation de main/bras pose `maxWeaponHands:1` (PERMANENT, via Trauma.ops). `durationRounds` :
    *  effet TEMPORAIRE à durée intrinsèque (Aux Armes « main/bras inutilisable Nd10 [−BE] Rounds », l.2557/
@@ -1148,9 +1153,10 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         break;
       }
       case 'grantPsychTrait': {
-        // Trait PSYCHOLOGIQUE conféré (≠ état de combat) : posé dans `c.psychTraits` (la DONNÉE persistée).
-        // Calque la branche `grantPsychTrait` de `attachMutation` (Colère impie → Frénésie, mutation → Haine).
-        target.psychTraits = [...(target.psychTraits ?? []), { type: o.psychType as PsychType, ...(o.cible ? { cible: o.cible } : {}) }];
+        // Trait PSYCHOLOGIQUE conféré (≠ état de combat) : posé dans `c.psychTraits` (la DONNÉE persistée),
+        // noyau PARTAGÉ `grantPsychTrait` (`grantedTraits.ts`) — même chemin qu'`attachMutation` (permanent).
+        const cible = o.cible ?? (o.argFrom === 'obsessions' ? rollObsession(rng) : undefined);
+        grantPsychTrait(target, o.psychType as PsychType, cible);
         lines.push(t('op.grantPsychTrait', { name: target.name, psych: psychologyLabel(o.psychType), src: ctx.label ?? 'sort' }));
         break;
       }
@@ -1287,7 +1293,8 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'grantTrait': {
         if (!groupGate(o.onlyGroups)) break; // « les Mort-vivant/Démoniaque gagnent Instable » (Bannissement)
         const ind = o.indice != null ? resolveFormula(o.indice, ref, rng) + slBonus(ctx.sl, o.indicePerSL) : null;
-        const inst: TraitInstance = { id: o.traitId, ...(o.arg ? { arg: o.arg } : {}), ...(ind != null ? { value: ind } : {}) };
+        const arg = o.arg ?? (o.argFrom === 'obsessions' ? rollObsession(rng) : undefined);
+        const inst: TraitInstance = { id: o.traitId, ...(arg ? { arg } : {}), ...(ind != null ? { value: ind } : {}) };
         grantTrait(target, inst);
         target.activeEffects = target.activeEffects ?? [];
         target.activeEffects.push({
@@ -1517,9 +1524,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'attrMod': {
         // EXÉCUTABLE (Bonnet de fou « +4 Blessures », LDB 71 l.20) : effet actif `attrMods`, lu par le
         // calcul du max concerné (wounds → effectiveMaxWounds/refreshWounds ; fortune → fortuneMax ;
-        // resolve → resolveMax). `fate`/`resilience` restent PASSIFS-création uniquement (aucun maximum
-        // dérivé à moduler — un octroi temporaire de points passe par `gainResource`).
-        if (o.attr === 'fate' || o.attr === 'resilience') break;
+        // resolve → resolveMax). Destin/Résilience exclus de l'union `attr` (#292, ci-dessus).
         const n = resolveFormula(o.mod, ref, rng);
         if (!n) break;
         target.activeEffects = target.activeEffects ?? [];
@@ -1928,11 +1933,25 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
         who.advantage = Math.max(0, (who.advantage ?? 0) - o.amount);
         break;
       }
+      case 'ignoreAnimosity': {
+        target.activeEffects = target.activeEffects ?? [];
+        target.activeEffects.push({
+          label: ctx.label ?? 'Effet', bonus: 0,
+          duration: durationFromCtx(ctx),
+          ignoreAnimosity: true,
+        });
+        break;
+      }
       case 'intoxicate': {
         // Boisson alcoolisée (LDB 09 l.475) : un échec de Résistance à l'alcool → −10 aux CC/CT/Ag/Dex/Int,
         // Ivresse (1d10) au seuil BE. Le Test lui-même est le nœud `test` du Flow de consommable (branche fail).
         const be = bonus(effectiveChar(target, 'E'));
-        lines.push(...applyAlcoholTest(target, false, be, rng).log);
+        const { log, drunkOps } = applyAlcoholTest(target, false, be, rng);
+        lines.push(...log);
+        // La MÉCANIQUE du résultat d'Ivresse (Bravoure/meilleur ami/belligérant, `drunkenness.json`)
+        // est un `GameOp[]` — exécutée ICI (`effectId:'ivresse'` marque les ActiveEffect posés, retirés
+        // en bloc par `soberUp`), pas dans `drunkenness.ts` (cycle d'import évité, cf. son en-tête).
+        if (drunkOps?.length) lines.push(...applyOps(target, drunkOps, { ...ctx, effectId: 'ivresse' }));
         break;
       }
       case 'narrative':

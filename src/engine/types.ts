@@ -569,9 +569,6 @@ export interface ActiveEffect {
   /** Détermination : « ignorer les modificateurs négatifs de l'ivresse jusqu'à la fin du prochain
    *  Round » (LDB 09 l.487) — lu par `passiveMods` (les pénalités d'Ivresse ne sont pas émises). */
   drunkIgnore?: boolean;
-  /** Marqueur d'un ActiveEffect issu de l'Ivresse (Bravoure +20 Calme, « meilleur ami ») : retiré
-   *  d'un bloc au dessoûlage (`soberUp`), LDB 09 l.485. */
-  drunkEffect?: boolean;
   /** « Vous êtes mon meilleur ami ! » (Ivresse 3-4, LDB 09 l.480) : ignore Préjugés et Animosités
    *  existants tant que l'effet dure. */
   ignoreAnimosity?: boolean;

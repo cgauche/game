@@ -22,9 +22,9 @@ import { bonus, effectiveChar } from './characteristics';
 import { talentCorruptionThreshold } from './combatFeatures/dispatch';
 import { mutationBodyMaxForSpecies } from '../data';
 import { rollObsession } from '../data/obsessions';
+import { grantTrait, grantPsychTrait } from './grantedTraits';
 import type { PsychType } from './psychology';
 import type { GameOp } from './ops';
-import type { TraitInstance } from './statEntry';
 
 export type ExposureLevel = 'mineure' | 'moderee' | 'majeure';
 
@@ -136,25 +136,24 @@ export function mutationLimitExceeded(c: Combatant): boolean {
 }
 
 /** Attache une mutation au personnage : donnée + traits dérivés (créature/psychologie). RNG seedable
- *  pour les Cibles TIRÉES (`argFrom:'obsessions'` — Haine sporadique / Terribles phobies, EDOC ch.8). */
+ *  pour les Cibles TIRÉES (`argFrom:'obsessions'` — Haine sporadique / Terribles phobies, EDOC ch.8).
+ *  `grantTrait`/`grantPsychTrait` (noyau PARTAGÉ `grantedTraits.ts`, ci-dessus importé) : MÊME chemin
+ *  que l'op homonyme de `applyOps`, permanent (aucun `ActiveEffect` porteur — une mutation n'expire
+ *  jamais). `grantTalent` reste local : structurel PERMANENT (`c.talents`), distinct par construction
+ *  de l'op `grantTalent` d'`applyOps` (octroi TEMPORISÉ via `ActiveEffect.grantedTalent` — un sort). */
 export function attachMutation(c: Combatant, m: Mutation, rng: RNG = defaultRNG): void {
   c.mutations = [...(c.mutations ?? []), m];
-  // Traits (de créature / psychologiques) conférés = GameOps du `passive` (grantTrait/grantPsychTrait),
-  // posés à l'attache comme le ferait un Sort (mais permanents). L'armure (`ap`) et l'arme
-  // (`grantNaturalWeapon`) sont lues à la volée (mutationArmourBonus / recomputeLoadout).
   for (const op of m.passive ?? []) {
     if (op.op === 'grantTrait') {
-      // Valeur LITTÉRALE (les mutations RAW ont des indices fixes : Peur 3, Morsure +5) — pas de Formula
-      // dynamique à résoudre (et évite un import circulaire ops↔corruption).
+      // Valeur LITTÉRALE (les mutations RAW ont des indices fixes : Peur 3, Morsure +5).
       const value = typeof op.indice === 'number' ? op.indice : undefined;
       // Cible : littérale (`arg`), ou TIRÉE sur le Tableau des Obsessions (`argFrom:'obsessions'`,
       // « Haine sporadique » → Haine (Cible) déterminée par les Obsessions, EDOC ch.8).
       const arg = op.arg ?? (op.argFrom === 'obsessions' ? rollObsession(rng) : undefined);
-      const inst: TraitInstance = { id: op.traitId, ...(arg ? { arg } : {}), ...(value != null ? { value } : {}) };
-      c.traits = [...(c.traits ?? []), inst];
+      grantTrait(c, { id: op.traitId, ...(arg ? { arg } : {}), ...(value != null ? { value } : {}) });
     } else if (op.op === 'grantPsychTrait') {
       const cible = op.cible ?? (op.argFrom === 'obsessions' ? rollObsession(rng) : undefined);
-      c.psychTraits = [...(c.psychTraits ?? []), { type: op.psychType as PsychType, ...(cible ? { cible } : {}) }];
+      grantPsychTrait(c, op.psychType as PsychType, cible);
     } else if (op.op === 'grantTalent') {
       c.talents = [...(c.talents ?? []), { talentId: op.talentId, ...(op.spec ? { spec: op.spec } : {}), times: 1 }];
     }

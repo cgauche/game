@@ -746,7 +746,10 @@ export function confirmBattleActivity(get: Get, set: Set, pa: PendingActivity): 
       const be = bonus(effectiveChar(hero, 'E'));
       const heal = pa.success ? rallyHealAmount(pa.sl, be) : 0;
       if (heal > 0) {
-        set({ party: get().party.map((h) => h.id === hero.id ? { ...h, wounds: { ...h.wounds, current: Math.min(h.wounds.max, h.wounds.current + heal) } } : h) });
+        // HÉROS (pas la coque) : `applyOps` direct sur un clone, comme `armyWithMightDelta` ci-dessus.
+        const healed = { ...hero, wounds: { ...hero.wounds } };
+        applyOps(healed, [{ op: 'heal', amount: heal }]);
+        set({ party: get().party.map((h) => h.id === hero.id ? healed : h) });
         lines.push(`${hero.name} récupère au Rassemblement : +${heal} Blessures soignées (DR ${pa.sl} + BE ${be}).`);
       } else {
         lines.push(`${hero.name} ne parvient pas à récupérer au Rassemblement.`);

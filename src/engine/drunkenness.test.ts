@@ -4,6 +4,11 @@ import { makeRNG, RNG } from './dice';
 import { applyAlcoholTest, drunkPenalty, drunkCharPenalties, isDrunk, alcoholFailures, soberUp, drunkStaggers, DRUNK_CARACS } from './drunkenness';
 import { effectiveChar } from './characteristics';
 import { hasCondition, addClockCondition } from './conditions';
+import { applyOps } from './ops';
+
+/** Joue la MÉCANIQUE d'un résultat d'Ivresse (`drunkOps`) — reproduit `case 'intoxicate'` d'`applyOps`
+ *  (`effectId:'ivresse'` marque les ActiveEffect posés, retirés en bloc par `soberUp`). */
+const applyDrunkOps = (c: Combatant, ops: import('./ops').GameOp[] | undefined) => applyOps(c, ops ?? [], { effectId: 'ivresse' });
 
 function hero(E = 30): Combatant {
   return {
@@ -64,31 +69,35 @@ describe('Ivresse — Résistance à l’alcool (LDB 09 l.471-487)', () => {
     expect(drunkStaggers(c)).toBe(true); // Mouvement OU Action
   });
 
-  it('Ivresse 1-2 : Bravoure du Marienburgher → +20 Calme (ActiveEffect skillMod)', () => {
+  it('Ivresse 1-2 : Bravoure du Marienburgher → +20 Calme (ActiveEffect skillMod, rendu en GameOp[])', () => {
     const c = hero(20); // BE 2
     applyAlcoholTest(c, false, 2, d10fixed(1));
     const r = applyAlcoholTest(c, false, 2, d10fixed(1)); // BE 2 atteint → Ivre, d10=1 → Bravoure
     expect(r.becameDrunk?.id).toBe('bravoure-marienburgher');
-    expect(c.activeEffects?.some((e) => e.skillMods?.calme === 20 && e.drunkEffect)).toBe(true);
+    expect(r.drunkOps).toEqual([{ op: 'skillMod', skill: 'calme', mod: 20 }]);
+    applyDrunkOps(c, r.drunkOps);
+    expect(c.activeEffects?.some((e) => e.skillMods?.calme === 20 && e.effectId === 'ivresse')).toBe(true);
   });
 
-  it('Ivresse 7-8 : Animosité (Tout le monde !)', () => {
+  it('Ivresse 7-8 : Animosité (Tout le monde !), rendue en GameOp[] `grantPsychTrait`', () => {
     const c = hero(20);
     applyAlcoholTest(c, false, 2, d10fixed(7));
-    applyAlcoholTest(c, false, 2, d10fixed(7));
+    const r = applyAlcoholTest(c, false, 2, d10fixed(7));
+    applyDrunkOps(c, r.drunkOps);
     expect(c.psychTraits?.some((p) => p.type === 'animosite' && p.cible === 'Tout le monde')).toBe(true);
   });
 
-  it('soberUp : lève l’ivresse, retire les ActiveEffect d’ivresse, renvoie la gueule de bois (Exténué horloge)', () => {
+  it('soberUp : lève l’ivresse, retire les ActiveEffect d’ivresse (par `effectId`), renvoie la gueule de bois (Exténué horloge)', () => {
     const c = hero(20);
-    applyAlcoholTest(c, false, 2, d10fixed(1)); // Bravoure (+20 Calme, drunkEffect)
-    applyAlcoholTest(c, false, 2, d10fixed(1));
+    applyAlcoholTest(c, false, 2, d10fixed(1)); // Bravoure (+20 Calme)
+    const r = applyAlcoholTest(c, false, 2, d10fixed(1));
+    applyDrunkOps(c, r.drunkOps);
     expect(isDrunk(c)).toBe(true);
     const now = 1000;
     const { hangover } = soberUp(c, now, 2, 1); // DR dissipation 2, DR gueule de bois 1
     expect(isDrunk(c)).toBe(false);
     expect(drunkPenalty(c)).toBe(0);
-    expect(c.activeEffects?.some((e) => e.drunkEffect)).toBe(false); // Bravoure retirée
+    expect(c.activeEffects?.some((e) => e.effectId === 'ivresse')).toBe(false); // Bravoure retirée
     expect(hangover).toEqual({ name: 'extenue', value: 1, until: now + (5 - 1) * 60 }); // 4 h
     // L'appelant pose la gueule de bois :
     addClockCondition(c, hangover!.name, hangover!.value, hangover!.until);
