@@ -110,36 +110,11 @@
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
-.rm-pen {
-  color: var(--gold);
-  font-style: normal;
-  font-size: 12px;
-}
 .rm-log {
   font-size: 12px;
   color: var(--muted);
   text-align: center;
   margin: 8px 0;
-}
-.bp-hint {
-  font-size: 12px;
-  color: var(--gold);
-  margin: 0;
-}
-.bp-spells {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin: 6px 0;
-}
-.bp-spell-row {
-  display: flex;
-  gap: 4px;
-  align-items: stretch;
-}
-.bp-spell-row .btn {
-  flex: 1;
-  text-align: left;
 }
 .btn-sm {
   padding: 4px 8px;
@@ -219,22 +194,6 @@
   border-color: #c0392b;
   color: var(--danger-soft);
 }
-.insp-chars {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-.insp-char {
-  font-size: 13px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 6px;
-  padding: 3px 8px;
-}
-.insp-char b {
-  color: var(--muted);
-  font-size: 11px;
-}
 .insp-row {
   display: flex;
   gap: 8px;
@@ -248,20 +207,6 @@
   text-transform: uppercase;
   letter-spacing: 0.4px;
   padding-top: 2px;
-}
-.insp-traits {
-  opacity: 0.85;
-  font-size: 12px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.insp-trait-chip {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 1px 6px;
-  cursor: help; /* desc verbatim (LDB 85) en tooltip */
 }
 .rm-crowd {
   display: flex;
@@ -436,59 +381,6 @@
   pointer-events: none;
 }
 .crew-remove:hover::after { display: flex; }
-.ap-row {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 4px;
-}
-.ap-cell {
-  text-align: center;
-  background: var(--bg2);
-  border-radius: 6px;
-  padding: 4px 0;
-}
-.ap-cell span {
-  display: block;
-  font-size: 10px;
-  color: var(--muted);
-}
-.ap-cell b {
-  font-size: 16px;
-  color: var(--muted);
-}
-.ap-cell b.on {
-  color: var(--gold2);
-}
-.sc-meta {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: var(--muted);
-  flex-wrap: wrap;
-}
-.sc-meta b {
-  color: var(--text);
-}
-.sc-meta .enc-over b,
-.sc-meta .enc-over {
-  color: var(--danger);
-}
-.sc-weapons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.sc-weapons .weap {
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 2px 8px;
-  font-size: 12px;
-}
-.sc-weapons .weap em {
-  color: var(--gold);
-}
 /* ── Écran d'équipement (onglet Combat) : emplacements en CELLULES (loc × couche) + mannequin + sets ──
    ≥900px : 3 colonnes (emplacements | mannequin | armes) ; ≤900px : mannequin en haut, emplacements
    puis armes empilés. Cibles tactiles élargies via pointer: coarse. */

@@ -57,7 +57,6 @@
 .mtab.sub:hover { border-color: var(--accent2); }
 .mtab.sub.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
 .mtab.sub.active .tab-count { background: rgba(0, 0, 0, 0.32); }
-.merch-cat-body { display: flex; flex-direction: column; }
 /* Liste Acheter = tableau comparatif (colonnes alignées → comparer les articles entre eux) */
 .merch-table { width: 100%; border-collapse: collapse; }
 .merch-table thead th {
@@ -163,27 +162,6 @@
 .dist-row { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
 .dist-row .merch-name { flex: 1; }
 .haggle-bar { margin-bottom: 10px; min-height: 30px; }
-/* Familles repliables */
-.merch-section { margin-bottom: 6px; }
-.merch-cat {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  text-align: left;
-  background: var(--panel2);
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 7px 12px;
-  margin: 6px 0 2px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.merch-cat:hover { border-color: var(--accent2); }
-.merch-cat .caret { width: 12px; color: var(--muted); }
-.merch-cat .cat-count { margin-left: auto; color: var(--muted); font-weight: 400; font-size: 12px; }
 /* Lignes d'article */
 .merch-row {
   display: flex;
@@ -218,7 +196,6 @@
 .mc-hero:first-of-type { border-top: none; }
 .mc-hero-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
 .mc-hero-head .mc-cur { color: var(--muted); font-size: 12px; }
-.mc-hero-head .mc-actions { margin-left: auto; display: flex; gap: 6px; }
 .mc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 .mc-table th { text-align: left; font-weight: 500; color: var(--muted); padding: 1px 8px 1px 0; white-space: nowrap; width: 1%; }
 .mc-table td { padding: 1px 6px; }
@@ -233,7 +210,6 @@
 .merch-name.as-link:hover { color: var(--accent2); }
 .merch-name.as-link .caret { color: var(--muted); font-size: 11px; flex: none; }
 .merch-row.open { background: rgba(122, 79, 208, 0.10); border-radius: 6px 6px 0 0; }
-.mc-head .mc-stats { color: var(--muted); font-size: 12px; font-weight: 400; }
 .mc-quals { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
 .mc-qual { display: flex; gap: 8px; align-items: baseline; font-size: 12.5px; padding: 3px 8px; border-radius: 6px; border-left: 3px solid transparent; }
 .mc-qual.atout { background: rgba(46, 204, 113, 0.08); border-left-color: var(--ok); }
@@ -243,7 +219,6 @@
 .mc-qual.flaw .q-name { color: var(--danger-soft); }
 .mc-qual .q-desc { color: var(--muted); }
 .mc-desc { font-size: 12.5px; color: var(--text); font-style: italic; margin: 6px 0; opacity: 0.82; }
-.mc-equip-hint { font-size: 12px; color: var(--muted); margin: 8px 0 2px; font-weight: 600; }
 /* Divers */
 .merchant-body .empty { color: var(--muted); font-style: italic; padding: 8px 4px; }
 .bargain-tag { font-size: 13px; color: var(--muted); }

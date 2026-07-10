@@ -186,30 +186,6 @@
 .fold-body .adv-grid {
   margin-bottom: 0;
 }
-.adv-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--panel2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-bottom: 6px;
-}
-.adv-xp {
-  font-size: 14px;
-  color: var(--muted);
-}
-.adv-xp b {
-  font-size: 20px;
-  color: var(--gold2);
-  margin-left: 6px;
-}
-.adv-grant {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
 .adv-grid {
   display: flex;
   flex-direction: column;
@@ -297,22 +273,6 @@
   flex: 1;
 }
 
-/* ── Modale de jet : détail des DEUX côtés (Test opposé) ── */
-.rm-rolls {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin: 10px 0;
-}
-/* Jet opposé : portrait d'équipe à gauche de la ligne de jet (R10 : qui a fait quel jet). */
-.rm-roll-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.rm-roll-row .rm-roll-block {
-  flex: 1;
-}
 .rm-roll {
   display: grid;
   grid-template-columns: 1.1fr 1.5fr auto auto;

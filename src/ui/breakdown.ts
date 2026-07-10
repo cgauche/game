@@ -69,7 +69,7 @@ export function optionValue(base: number, mods: ModLine[]): number {
 /**
  * Ligne pré-jet d'une option choisie, dans la forme UNIQUE `{ label, base, mods }` (cible omise →
  * dérivée par `PendingRollLine`, ou fournie si déjà plafonnée). Builder canonique vers lequel
- * convergent `previewAttack`/`previewDefense`/`previewCast`/`testPending`/`calmePending` (cf. P6) :
+ * convergent `previewAttack`/`previewDefense`/`previewCast`/`testPending` (cf. P6) :
  * un seul endroit assemble le pré-jet d'une option. Réutiliser ; ne pas refabriquer l'objet à la main.
  */
 export function optionPending(label: ReactNode, base: number, mods: ModLine[], target?: number): PendingRoll {

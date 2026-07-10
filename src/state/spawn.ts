@@ -281,7 +281,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   // Traits du statbloc d'éditeur : déjà des `TraitInstance` structurés (édités par picker) — toutes
   // les dérivations en aval les lisent sans aucun parsing.
   const traits = sb.traits ?? [];
-  let chars = charsFrom(sb.char as any);
+  let chars = charsFrom(sb.char);
   // Compétences (refs `SkillRef` structurées, avances dérivées du profil SAISI) + talents du statbloc.
   const skills = skillsFromBook(sb.skills, chars);
   const talents = talentsFromBook(sb.talents);

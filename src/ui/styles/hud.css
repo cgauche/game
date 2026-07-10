@@ -492,23 +492,6 @@
   align-self: flex-start;
 }
 
-/* ── Chip date (haut-droite, exploration) ── */
-.date-chip {
-  position: absolute;
-  top: 16px;
-  right: 118px; /* à gauche des ViewControls (top:16 right:16, ~92px de large) */
-  z-index: 45;
-  background: rgba(10, 14, 20, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  padding: 6px 11px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-@media (max-width: 700px) {
-  .date-chip { top: 64px; right: 8px; } /* sous les ViewControls sur petit écran */
-}
-
 /* ── Bandeau d'objectif courant (#238 — haut-centre, exploration) ── */
 .objective-banner {
   position: absolute;
@@ -619,9 +602,6 @@
   padding: 6px 2px;
   margin: -2px 0 6px;
 }
-
-/* Sélecteur de cible de soin par PORTRAIT (#20) — tuiles-radio (CharFrame full, selected). */
-.heal-pick-grid { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 4px 0 8px; }
 
 /* ── Infirmerie (modale de soins persistante — MedicModal) ── */
 .medic-modal { min-width: min(480px, 94vw); }
@@ -752,31 +732,5 @@
   font-size: 11px;
   color: var(--muted);
   line-height: 1.35;
-}
-
-/* Sélecteur de soin par portrait dans l'ActionBar (#20). */
-.ab-heal-pick {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  padding: 4px 7px;
-}
-/* Protection de la zone touchée dans la modale de Déviation Critique (#critique). */
-.dev-zone {
-  text-align: center;
-  font-size: 13px;
-  margin: 6px 0;
-  background: rgba(79, 143, 224, 0.12);
-  border: 1px solid rgba(79, 143, 224, 0.4);
-  border-radius: 6px;
-  padding: 5px 10px;
-}
-.dev-zone.bare {
-  background: rgba(192, 57, 43, 0.12);
-  border-color: rgba(224, 83, 58, 0.4);
-  color: #e8a39a;
 }
 

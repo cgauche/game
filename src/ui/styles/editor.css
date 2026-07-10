@@ -545,9 +545,6 @@ button.insp-row.active {
 .choice-text {
   width: 100%;
 }
-.choice-cond {
-  width: 140px;
-}
 .choice-cost {
   display: inline-flex;
   align-items: center;
@@ -722,19 +719,9 @@ input.dr {
 .branch-label.fail {
   color: #ff7a6c;
 }
-.trig-cond {
-  width: 170px;
-}
-
 /* ── Éditeur de Flow : accent de bord par type de bloc (do neutre / si or / test vert) ── */
 .flow-node {
   border-left-width: 3px;
-}
-.flow-if {
-  border-left-color: var(--gold);
-}
-.flow-test {
-  border-left-color: var(--ok);
 }
 .flow-branch {
   display: flex;
@@ -911,10 +898,6 @@ input.dr {
     right: 0;
     transform: translateX(104%);
     border-left: 1px solid var(--border);
-  }
-  .editor-main.drawer-palette .editor-palette,
-  .editor-main.drawer-inspector .editor-inspector {
-    transform: translateX(0);
   }
   .editor-drawer-backdrop {
     display: block;

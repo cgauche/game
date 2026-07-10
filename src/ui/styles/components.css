@@ -18,10 +18,10 @@
 
 /* ── SURFACE ── */
 .panel {
-  background: var(--panel2);
+  background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 16px;
 }
 .panel.sunken {
   background: var(--bg2);

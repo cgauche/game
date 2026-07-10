@@ -24,15 +24,6 @@
   padding-top: 10px;
   border-top: 1px solid var(--border);
 }
-/* Creator */
-.creator-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1.2fr;
-  gap: 16px;
-  padding: 16px;
-  flex: 1;
-  overflow: auto;
-}
 /* ══ Créateur de personnage — composition 3 ZONES bord à bord ══
    rail (choix) | détail (travail de l'étape) | fiche vivante. Pas de panneaux flottants :
    colonnes pleine hauteur séparées par des bordures, sections internes à séparateurs. */
@@ -85,13 +76,6 @@
   height: 100%;
   background: var(--gold);
   border-radius: 2px;
-}
-/* Puces d'une entrée « A ou B » : chaque option garde SA règle au survol. */
-.entry-chips {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
 }
 .chip-ou {
   font-style: normal;
@@ -393,11 +377,6 @@
   gap: 10px;
   flex-wrap: wrap;
 }
-.form-cols {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 0 18px;
-}
 .input-dice {
   display: flex;
   gap: 6px;
@@ -523,37 +502,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 8px;
-}
-/* Données d'aide au choix : profil d'espèce, plan de carrière, annotations */
-.base-char-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-}
-.base-char {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 4px 8px;
-  font-size: 13px;
-}
-.base-char .char-key {
-  color: var(--muted);
-  font-weight: 700;
-  font-size: 11px;
-}
-.base-char em.up {
-  color: var(--ok);
-  font-style: normal;
-  font-size: 11px;
-}
-.base-char em.down {
-  color: var(--danger);
-  font-style: normal;
-  font-size: 11px;
 }
 .tag-char {
   font-style: normal;
@@ -690,9 +638,6 @@
   }
   .char-alloc-grid {
     grid-template-columns: 1fr;
-  }
-  .base-char-grid {
-    grid-template-columns: repeat(2, 1fr);
   }
   .char-alloc .char-name {
     display: none; /* mobile : l'abréviation + l'infobulle suffisent */

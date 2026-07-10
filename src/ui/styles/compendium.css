@@ -119,8 +119,7 @@
   color: var(--muted);
   flex-shrink: 0;
 }
-.codex-noresult,
-.codex-empty {
+.codex-noresult {
   color: var(--muted);
   padding: 16px;
   text-align: center;
@@ -180,10 +179,6 @@
   color: var(--gold2);
   font-weight: 600;
 }
-.codex-empty-desc {
-  color: var(--muted);
-}
-
 /* ── Instance paramétrée (« 8 Tentacules +8 ») en tête de fiche ── */
 .codex-instance {
   margin: 2px 0 10px;
@@ -221,11 +216,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
   gap: 5px;
-}
-.codex-sec-body.codex-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 /* sous-en-tête à l'intérieur d'une section de chips → casse la ligne, pleine largeur */
 .codex-rowsub {
