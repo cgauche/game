@@ -358,7 +358,7 @@ export function makeEmbuscade() {
     nom: 'Le Gué du Carrosse',
     description: 'Un gué encaissé sur la route de l’est — l’endroit rêvé pour détrousser les voyageurs.',
     startMessage:
-      'EMBUSCADE AU GUÉ ! Des silhouettes jaillissent des fourrés — défendez-vous, puis reprenez la route (🗺️).',
+      'EMBUSCADE AU GUÉ ! Des silhouettes jaillissent des fourrés — défendez-vous, puis reprenez la route.',
     rows: [
       '############################',
       '#bb......................bb#',

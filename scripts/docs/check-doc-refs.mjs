@@ -76,6 +76,47 @@ for (const file of readdirSync(DOCS_DIR).filter((f) => f.endsWith('.md'))) {
   }
 }
 
+// 3. TABLE « Primitives partagées » (CLAUDE.md, racine du dépôt — hors docs/) : chaque symbole
+// backtiqué de la colonne « Primitive (source unique) » doit résoudre à un EXPORT réel de src/ —
+// cause-racine des fantômes historiques (ex. `inBattle` cité alors que le fichier n'exportait que
+// `inBattleId`, `ParticipantRow` jamais exporté nulle part). Vérifié contre l'EXPORT global de src/
+// (pas juste la colonne « Fichier » de la ligne : la prose y cite légitimement des primitives
+// AUXILIAIRES/consommatrices qui vivent dans leur PROPRE fichier — `ForceDoorModal`/`CharFrame`/
+// `ResilienceButton`… ; une carte symbole→fichier-de-la-ligne stricte re-déclencherait ces faux positifs).
+const CLAUDE_MD = 'CLAUDE.md'
+if (existsSync(CLAUDE_MD)) {
+  const text = readFileSync(CLAUDE_MD, 'utf8')
+  const lines = text.split('\n')
+  const headerIdx = lines.findIndex((l) => /^\|\s*Besoin\s*\|\s*Primitive/.test(l))
+  if (headerIdx >= 0) {
+    const EXPORTED_SYMS = new Set()
+    for (const f of walk(SRC_DIR, ['.ts', '.tsx', '.mjs', '.mts'])) {
+      const src = readFileSync(f, 'utf8')
+      for (const m of src.matchAll(/export\s+(?:default\s+)?(?:async\s+)?(?:function|class|interface|type|enum)\s+([A-Za-z_$][\w$]*)/g)) EXPORTED_SYMS.add(m[1])
+      for (const m of src.matchAll(/export\s+(?:const|let|var)\s+([A-Za-z_$][\w$]*)/g)) EXPORTED_SYMS.add(m[1])
+      for (const m of src.matchAll(/export\s*\{([^}]*)\}/g))
+        for (const part of m[1].split(','))
+          if (part.trim()) EXPORTED_SYMS.add((part.split(/\s+as\s+/).pop() ?? part).trim())
+    }
+    // Corps du tableau : toute ligne `| … |` qui suit le header/séparateur, jusqu'à la 1re ligne non-tableau.
+    for (let i = headerIdx + 2; i < lines.length; i++) {
+      const row = lines[i]
+      if (!row.startsWith('|')) break
+      const cols = row.split('|').map((c) => c.trim())
+      const primitiveCol = cols[2] ?? ''
+      for (const span of primitiveCol.matchAll(/`([^`\n]+)`/g)) {
+        if (/\.(ts|tsx|mjs|mts)\b/.test(span[1])) continue // mention de FICHIER (ex. `seaVoyageFlow.ts`), pas un symbole
+        for (const c of span[1].matchAll(/\b([A-Za-z_$][\w$]*)\b/g)) {
+          const id = c[1]
+          if (!/[a-z]/.test(id) || !/[A-Z]/.test(id)) continue // camelCase/PascalCase only (cf. check 2)
+          if (!EXPORTED_SYMS.has(id))
+            problems.push({ file: CLAUDE_MD, line: i + 1, kind: 'primitive fantôme (aucun export src/)', tok: `${id}` })
+        }
+      }
+    }
+  }
+}
+
 if (problems.length) {
   console.error(`docs:check — ${problems.length} référence(s) morte(s) :`)
   for (const p of problems.sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line))

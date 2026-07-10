@@ -41,6 +41,16 @@ function scanFiles(): string[] {
   };
   for (const d of SCAN_DIRS) walk(join(ROOT, d));
   for (const e of readdirSync(join(ROOT, 'src/data'))) if (e.endsWith('.json')) files.push(join(ROOT, 'src/data', e));
+  // #290 — projets de campagne (`src/scenes/**/*.json`, données de dialogue/scène) : mêmes affordances
+  // que le code, jamais un emoji collé au `text` d'un choix (cf. `DialogueChoice.icon`, `<Icon>`).
+  const walkJson = (dir: string) => {
+    for (const e of readdirSync(dir)) {
+      const p = join(dir, e);
+      if (statSync(p).isDirectory()) walkJson(p);
+      else if (e.endsWith('.json')) files.push(p);
+    }
+  };
+  walkJson(join(ROOT, 'src/scenes'));
   return files;
 }
 

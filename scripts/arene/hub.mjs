@@ -12,7 +12,8 @@ import { scene, P, NPC, hero, resetIds, flowOf, flagWhen, testNode } from '../ca
 
 /** Porte d'une zone de l'échelle : visible quand la précédente est nettoyée, pas la suivante. */
 const porte = (n, nom) => ({
-  text: `⚔️ Entrer — ${nom}.`,
+  text: `Entrer — ${nom}.`,
+  icon: 'action/attack',
   when: flagWhen(n === 1 ? '!zone1_clear' : `zone${n - 1}_clear,!zone${n}_clear`),
   flow: flowOf([{ type: 'transition', scene: `arene-zone${n}` }]),
 });
@@ -20,15 +21,17 @@ const porte = (n, nom) => ({
 /** Contrat d'expédition : proposition (gated progression) puis paiement au retour (flag _fait). */
 const contrat = (key, cond, propose, fait, gold, xp) => [
   {
-    text: `📜 ${propose}`,
+    text: propose,
+    icon: 'file/document',
     when: flagWhen(`${cond},!contrat_${key}`),
     flow: flowOf([
       { type: 'setFlag', flag: `contrat_${key}` },
-      { type: 'journal', text: `Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. ${fait}` },
+      { type: 'journal', text: `Contrat accepté — ouvrez la carte du monde pour voyager. ${fait}` },
     ]),
   },
   {
-    text: `💰 Toucher la prime — ${propose.replace(/^.*?: /, '')}`,
+    text: `Toucher la prime — ${propose.replace(/^.*?: /, '')}`,
+    icon: 'resource/gold-purse',
     when: flagWhen(`contrat_${key}_fait,!contrat_${key}_paye`),
     flow: flowOf([
       { type: 'setFlag', flag: `contrat_${key}_paye` },
@@ -48,10 +51,11 @@ const dlgHub = {
       speaker: 'Maître d’arène',
       text: 'Tu saignes encore ? Parfait, le sable boit tout. L’échelle t’attend — et pour les plus gourmands, j’ai des contrats au-delà de la palissade.',
       choices: [
-        { text: '⚔️ L’échelle de l’arène.', next: 'echelle' },
-        { text: '📜 Les contrats d’expédition.', next: 'contrats' },
+        { text: 'L’échelle de l’arène.', icon: 'action/attack', next: 'echelle' },
+        { text: 'Les contrats d’expédition.', icon: 'file/document', next: 'contrats' },
         {
-          text: '🔓 Crocheter le vieux coffre du maître (Test de Crochetage).',
+          text: 'Crocheter le vieux coffre du maître (Test de Crochetage).',
+          icon: 'ui/lock',
           when: flagWhen('!coffre_pris'),
           flow: testNode(
             { skill: 'crochetage', difficulty: 'intermediaire', label: 'Crocheter le coffre' },
@@ -64,7 +68,8 @@ const dlgHub = {
           ),
         },
         {
-          text: '🏆 Réclamer ton titre de CHAMPION.',
+          text: 'Réclamer ton titre de CHAMPION.',
+          icon: 'scenario/arena',
           when: flagWhen('zone13_clear,!champion_fete'),
           flow: flowOf([
             { type: 'setFlag', flag: 'champion_fete' },
@@ -80,7 +85,8 @@ const dlgHub = {
           ]),
         },
         {
-          text: '🏆 Savourer ta gloire de champion.',
+          text: 'Savourer ta gloire de champion.',
+          icon: 'scenario/arena',
           when: flagWhen('champion_fete'),
           flow: flowOf([
             { type: 'journal', text: 'Le maître s’incline : « CHAMPION DE L’ARÈNE ! »' },
@@ -114,7 +120,7 @@ const dlgHub = {
     {
       id: 'contrats',
       speaker: 'Maître d’arène',
-      text: 'Le Bourg paie pour ce qui rôde au-delà de la palissade. Accepte, puis prends la route par la carte du monde (🗺️). Emporte des RATIONS — la Tavernière en vend : la route creuse l’estomac.',
+      text: 'Le Bourg paie pour ce qui rôde au-delà de la palissade. Accepte, puis prends la route par la carte du monde. Emporte des RATIONS — la Tavernière en vend : la route creuse l’estomac.',
       choices: [
         ...contrat('foret', 'zone4_clear', 'La Vieille Futaie : des hommes-bêtes ont dressé un camp — et la bande de Bella la Noire détrousse les convois.', 'Méfie-toi : la futaie a des yeux.', 3, 160),
         ...contrat('marais', 'zone6_clear', 'La Tourbière Noire : quelque chose de FABRIQUÉ y traîne les voyageurs sous l’eau.', 'Reste sur les pontons.', 4, 200),
@@ -134,9 +140,10 @@ const dlgMedecin = {
       speaker: 'Médecin',
       text: 'Encore vivant ? Bien. J’ai des potions, du faxtoryll pour les saignements, des membres de rechange… et la scie, si vraiment il faut OPÉRER.',
       choices: [
-        { text: '⚕️ Voir les remèdes et prothèses.', flow: flowOf([{ type: 'openMerchant', entityId: 'medecin' }]) },
+        { text: 'Voir les remèdes et prothèses.', icon: 'medical/aid', flow: flowOf([{ type: 'openMerchant', entityId: 'medecin' }]) },
         {
-          text: '🔪 Passer sur la table (actes payants).',
+          text: 'Passer sur la table (actes payants).',
+          icon: 'medical/scalpel',
           // « Une simple visite coûte 4-6 pistoles pour une aide médicale » (LDB 75 l.34) — tarif PAR ACTE.
           flow: flowOf([{
             type: 'medicalAid',
@@ -164,7 +171,7 @@ const dlgForgeron = {
       speaker: 'Forgeron',
       text: 'Le sable bouffe le fil des lames plus vite que les monstres. Montre-moi ton acier — je vends, je rachète, je RÉPARE.',
       choices: [
-        { text: '🛒 Armes, armures et réparations.', flow: flowOf([{ type: 'openMerchant', entityId: 'forgeron' }]) },
+        { text: 'Armes, armures et réparations.', icon: 'merchant/cart', flow: flowOf([{ type: 'openMerchant', entityId: 'forgeron' }]) },
         { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],
     },
@@ -180,7 +187,7 @@ const dlgEchoppier = {
       speaker: 'Échoppière',
       text: 'Onguents, herbes, cordages, torches — tout ce qui manque quand la nuit tombe sur la route. Entrez, entrez : ma boutique a tout ce que le sable n’a pas encore mangé.',
       choices: [
-        { text: '🛒 Voir l’étal (herbes, potions, fournitures).', flow: flowOf([{ type: 'openMerchant', entityId: 'echoppiere' }]) },
+        { text: 'Voir l’étal (herbes, potions, fournitures).', icon: 'merchant/cart', flow: flowOf([{ type: 'openMerchant', entityId: 'echoppiere' }]) },
         { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],
     },
@@ -196,20 +203,22 @@ const dlgTaverne = {
       speaker: 'Tavernière',
       text: 'Bienvenue au Trophée ! Table, chambre, et de quoi remplir les sacoches — la route ne nourrit personne, prenez des RATIONS avant de voyager.',
       choices: [
-        { text: '🧺 Voir le garde-manger (rations, vivres, pintes).', flow: flowOf([{ type: 'openMerchant', entityId: 'taverniere' }]) },
+        { text: 'Voir le garde-manger (rations, vivres, pintes).', icon: 'rest/stew', flow: flowOf([{ type: 'openMerchant', entityId: 'taverniere' }]) },
         {
           // Repas de MIDI (sans dormir) : prix de groupe d'auteur — la nuit passe par la modale de Repos.
-          text: '🍲 Repas chaud pour le groupe — 4 pa.',
+          text: 'Repas chaud pour le groupe — 4 pa.',
+          icon: 'rest/stew',
           cost: { silver: 4 },
           flow: flowOf([{ type: 'mealParty' }, { type: 'journal', text: 'Ragoût, pain noir et bière : le groupe est nourri pour la journée.' }]),
         },
         {
           // Nuit au Trophée : la MODALE DE REPOS fait le reste (chambre/repas PAR HÉROS, prix RAW
           // dans la modale — plus de forfait sur le choix de dialogue).
-          text: '🛏️ Prendre des chambres pour la nuit.',
+          text: 'Prendre des chambres pour la nuit.',
+          icon: 'rest/bed',
           flow: flowOf([{ type: 'rest', lodging: 'auberge' }]),
         },
-        { text: '👂 Écouter la salle.', next: 'rumeurs' },
+        { text: 'Écouter la salle.', icon: 'expedition/rumor', next: 'rumeurs' },
         { text: 'Plus tard.', flow: flowOf([{ type: 'endDialogue' }]) },
       ],
     },
@@ -254,11 +263,13 @@ const dlgFrere = {
       text: 'Sigmar garde les braves — et recoud les imprudents. Approche : la chapelle soigne, bénit, et accepte les dons.',
       choices: [
         {
-          text: '⚕️ Recevoir des soins (actes payants).',
+          text: 'Recevoir des soins (actes payants).',
+          icon: 'medical/aid',
           flow: flowOf([{ type: 'medicalAid', acts: [{ act: 'wounds', cost: { silver: 5 } }, { act: 'bleed', cost: { silver: 5 } }], skill: 55, intBonus: 4, entityId: 'frere' }]),
         },
         {
-          text: '🙏 Recevoir la bénédiction du départ (retrouver la Chance).',
+          text: 'Recevoir la bénédiction du départ (retrouver la Chance).',
+          icon: 'faith/prayer',
           when: flagWhen('!benediction_recue'),
           flow: flowOf([
             { type: 'restoreFortune' },
@@ -267,12 +278,14 @@ const dlgFrere = {
           ]),
         },
         {
-          text: '🪙 Faire un don au tronc — 1 co.',
+          text: 'Faire un don au tronc — 1 co.',
+          icon: 'resource/gold-purse',
           cost: { gold: 1 },
           flow: flowOf([{ type: 'journal', text: 'La pièce sonne au fond du tronc. Frère Anselm hoche la tête, sincèrement ému.' }]),
         },
         {
-          text: '🕯️ Piller le tronc des offrandes (Test de Discrétion).',
+          text: 'Piller le tronc des offrandes (Test de Discrétion).',
+          icon: 'action/pick-up',
           when: flagWhen('!tronc_pille'),
           flow: testNode(
             { skill: 'discretion', difficulty: 'difficile', label: 'Piller le tronc sous l’œil de Sigmar' },
@@ -413,7 +426,7 @@ export function makeHub() {
     ambiance: 'exterieur',
     music: { ambient: 'musique-ville' },
     startMessage:
-      'LE BOURG DE L’ARÈNE. Une place pavée, quatre bâtiments et treize portes. Le Maître d’arène (au centre) ouvre l’échelle et les contrats. Entrez dans la Taverne (repos, repas, rations), la Chapelle (soins, bénédiction), la Forge (armes, réparations) ou l’Échoppe (herbes, fournitures) — le toit se lève quand vous y pénétrez. La route de l’est part vers le monde (🗺️).',
+      'LE BOURG DE L’ARÈNE. Une place pavée, quatre bâtiments et treize portes. Le Maître d’arène (au centre) ouvre l’échelle et les contrats. Entrez dans la Taverne (repos, repas, rations), la Chapelle (soins, bénédiction), la Forge (armes, réparations) ou l’Échoppe (herbes, fournitures) — le toit se lève quand vous y pénétrez. La route de l’est part vers le monde.',
     rows: ROWS,
     base: 'terre',
     legend: { p: 'pave', h: 'herbe', b: 'plancher', m: 'marbre', d: 'dalle' },

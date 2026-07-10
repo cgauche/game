@@ -69,6 +69,25 @@ const PRICE_BASELINE: Record<string, number> = {
   'PortView.tsx': 4,
 };
 
+// ── (vii) `flex-wrap: wrap` hors `components.css` : le motif « rangée qui s'enroule » vit dans
+//    `.bar`/primitives partagées de `components.css` (§charte-ui). Un `flex-wrap` codé en dur dans un
+//    AUTRE module CSS est de la dette gelée (#287) — le cliquet interdit sa hausse, impose la décrue. ──
+const FLEX_WRAP_BASELINE: Record<string, number> = {
+  'styles/base.css': 5,
+  'styles/codex-edit.css': 1,
+  'styles/combat-modals.css': 7,
+  'styles/combat-ui.css': 7,
+  'styles/compendium.css': 3,
+  'styles/creator.css': 9,
+  'styles/editor.css': 10,
+  'styles/gauges.css': 1,
+  'styles/hud.css': 5,
+  'styles/mass-battle.css': 2,
+  'styles/merchant.css': 3,
+  'styles/sheet.css': 3,
+  'styles/world-meta.css': 22,
+};
+
 describe('#236 — cliquets d’hygiène UI', () => {
   it('(iv) hex hors tokens : aucune hausse par module CSS (base.css exclu)', () => {
     const files = walk(UI, (e) => e.endsWith('.css') && e !== 'base.css');
@@ -88,5 +107,15 @@ describe('#236 — cliquets d’hygiène UI', () => {
       if (n > 0) counts[rel(f)] = n;
     }
     assertRatchet(counts, PRICE_BASELINE, 'prix sans <Coins>');
+  });
+
+  it('(vii) flex-wrap: wrap hors components.css : aucune hausse par module CSS', () => {
+    const files = walk(UI, (e) => e.endsWith('.css') && e !== 'components.css');
+    const counts: Record<string, number> = {};
+    for (const f of files) {
+      const n = (readFileSync(f, 'utf8').match(/flex-wrap:\s*wrap/g) || []).length;
+      if (n > 0) counts[rel(f)] = n;
+    }
+    assertRatchet(counts, FLEX_WRAP_BASELINE, 'flex-wrap hors components.css');
   });
 });

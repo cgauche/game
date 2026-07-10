@@ -384,6 +384,10 @@ export type Effect =
 
 export interface DialogueChoice {
   text: string;
+  /** Icône d'affordance (registre `src/ui/icons/`, rendue par `<Icon>` dans `DialogueBox`) — jamais
+   *  un emoji collé au `text` (#290, doctrine anti-emoji). Id de string brute (couture UI hors de
+   *  `src/state`, cf. CLAUDE.md : la logique reste pure, `<Icon>` valide l'id au rendu). */
+  icon?: string;
   /** Condition d'AFFICHAGE du choix (algèbre `Condition`, cf. `evalCondition`). Absente = toujours visible. */
   when?: Condition;
   /** Prix de l'option (service payant : auberge, péage, pot-de-vin…). Le choix est RÉPÉTABLE mais

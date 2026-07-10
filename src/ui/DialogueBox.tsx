@@ -2,6 +2,8 @@ import { useGame } from '../state/store';
 import { evalCondition, conditionCtx } from '../state/flow';
 import { canAfford, toMoney } from '../engine/money';
 import { Coins } from './Coins';
+import { Icon } from './Icon';
+import type { IconIdInput } from './icons';
 import { pickBackend } from '../gameIso/pickBackend';
 
 export function DialogueBox() {
@@ -53,6 +55,7 @@ export function DialogueBox() {
               title={!affordable ? 'Pas assez d’argent' : undefined}
               onClick={() => choose(i)}
             >
+              {c.icon && <Icon id={c.icon as IconIdInput} size="sm" />}
               <span className="dlg-choice-text">{c.text}</span>
               {cost && <span className="dlg-choice-cost"><Coins money={cost} /></span>}
             </button>

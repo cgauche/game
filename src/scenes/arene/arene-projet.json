@@ -3455,15 +3455,18 @@
        "text": "Tu saignes encore ? Parfait, le sable boit tout. L’échelle t’attend — et pour les plus gourmands, j’ai des contrats au-delà de la palissade.",
        "choices": [
         {
-         "text": "⚔️ L’échelle de l’arène.",
+         "text": "L’échelle de l’arène.",
+         "icon": "action/attack",
          "next": "echelle"
         },
         {
-         "text": "📜 Les contrats d’expédition.",
+         "text": "Les contrats d’expédition.",
+         "icon": "file/document",
          "next": "contrats"
         },
         {
-         "text": "🔓 Crocheter le vieux coffre du maître (Test de Crochetage).",
+         "text": "Crocheter le vieux coffre du maître (Test de Crochetage).",
+         "icon": "ui/lock",
          "when": {
           "kind": "flag",
           "expr": "!coffre_pris"
@@ -3516,7 +3519,8 @@
          }
         },
         {
-         "text": "🏆 Réclamer ton titre de CHAMPION.",
+         "text": "Réclamer ton titre de CHAMPION.",
+         "icon": "scenario/arena",
          "when": {
           "kind": "flag",
           "expr": "zone13_clear,!champion_fete"
@@ -3570,7 +3574,8 @@
          }
         },
         {
-         "text": "🏆 Savourer ta gloire de champion.",
+         "text": "Savourer ta gloire de champion.",
+         "icon": "scenario/arena",
          "when": {
           "kind": "flag",
           "expr": "champion_fete"
@@ -3616,7 +3621,8 @@
        "text": "Treize portes, treize bourses. On ouvre la suivante quand la précédente est nettoyée. Équipe-toi avant d’entrer — le sable ne rend rien.",
        "choices": [
         {
-         "text": "⚔️ Entrer — La Cour (échauffement).",
+         "text": "Entrer — La Cour (échauffement).",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "!zone1_clear"
@@ -3635,7 +3641,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — Les Ruines.",
+         "text": "Entrer — Les Ruines.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone1_clear,!zone2_clear"
@@ -3654,7 +3661,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — Les Égouts.",
+         "text": "Entrer — Les Égouts.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone2_clear,!zone3_clear"
@@ -3673,7 +3681,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — Le Charnier.",
+         "text": "Entrer — Le Charnier.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone3_clear,!zone4_clear"
@@ -3692,7 +3701,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — Les Lices.",
+         "text": "Entrer — Les Lices.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone4_clear,!zone5_clear"
@@ -3711,7 +3721,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — Le Marais.",
+         "text": "Entrer — Le Marais.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone5_clear,!zone6_clear"
@@ -3730,7 +3741,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — Le Nid.",
+         "text": "Entrer — Le Nid.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone6_clear,!zone7_clear"
@@ -3749,7 +3761,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — La Fosse.",
+         "text": "Entrer — La Fosse.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone7_clear,!zone8_clear"
@@ -3768,7 +3781,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — La Caverne du Troll.",
+         "text": "Entrer — La Caverne du Troll.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone8_clear,!zone9_clear"
@@ -3787,7 +3801,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — Le Nid de Vermine.",
+         "text": "Entrer — Le Nid de Vermine.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone9_clear,!zone10_clear"
@@ -3806,7 +3821,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — Le Cercle Maudit.",
+         "text": "Entrer — Le Cercle Maudit.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone10_clear,!zone11_clear"
@@ -3825,7 +3841,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — Le Sépulcre.",
+         "text": "Entrer — Le Sépulcre.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone11_clear,!zone12_clear"
@@ -3844,7 +3861,8 @@
          }
         },
         {
-         "text": "⚔️ Entrer — L’Antre du Dragon.",
+         "text": "Entrer — L’Antre du Dragon.",
+         "icon": "action/attack",
          "when": {
           "kind": "flag",
           "expr": "zone12_clear,!zone13_clear"
@@ -3871,10 +3889,11 @@
       {
        "id": "contrats",
        "speaker": "Maître d’arène",
-       "text": "Le Bourg paie pour ce qui rôde au-delà de la palissade. Accepte, puis prends la route par la carte du monde (🗺️). Emporte des RATIONS — la Tavernière en vend : la route creuse l’estomac.",
+       "text": "Le Bourg paie pour ce qui rôde au-delà de la palissade. Accepte, puis prends la route par la carte du monde. Emporte des RATIONS — la Tavernière en vend : la route creuse l’estomac.",
        "choices": [
         {
-         "text": "📜 La Vieille Futaie : des hommes-bêtes ont dressé un camp — et la bande de Bella la Noire détrousse les convois.",
+         "text": "La Vieille Futaie : des hommes-bêtes ont dressé un camp — et la bande de Bella la Noire détrousse les convois.",
+         "icon": "file/document",
          "when": {
           "kind": "flag",
           "expr": "zone4_clear,!contrat_foret"
@@ -3893,14 +3912,15 @@
             "kind": "do",
             "effect": {
              "type": "journal",
-             "text": "Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. Méfie-toi : la futaie a des yeux."
+             "text": "Contrat accepté — ouvrez la carte du monde pour voyager. Méfie-toi : la futaie a des yeux."
             }
            }
           ]
          }
         },
         {
-         "text": "💰 Toucher la prime — des hommes-bêtes ont dressé un camp — et la bande de Bella la Noire détrousse les convois.",
+         "text": "Toucher la prime — des hommes-bêtes ont dressé un camp — et la bande de Bella la Noire détrousse les convois.",
+         "icon": "resource/gold-purse",
          "when": {
           "kind": "flag",
           "expr": "contrat_foret_fait,!contrat_foret_paye"
@@ -3940,7 +3960,8 @@
          }
         },
         {
-         "text": "📜 La Tourbière Noire : quelque chose de FABRIQUÉ y traîne les voyageurs sous l’eau.",
+         "text": "La Tourbière Noire : quelque chose de FABRIQUÉ y traîne les voyageurs sous l’eau.",
+         "icon": "file/document",
          "when": {
           "kind": "flag",
           "expr": "zone6_clear,!contrat_marais"
@@ -3959,14 +3980,15 @@
             "kind": "do",
             "effect": {
              "type": "journal",
-             "text": "Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. Reste sur les pontons."
+             "text": "Contrat accepté — ouvrez la carte du monde pour voyager. Reste sur les pontons."
             }
            }
           ]
          }
         },
         {
-         "text": "💰 Toucher la prime — quelque chose de FABRIQUÉ y traîne les voyageurs sous l’eau.",
+         "text": "Toucher la prime — quelque chose de FABRIQUÉ y traîne les voyageurs sous l’eau.",
+         "icon": "resource/gold-purse",
          "when": {
           "kind": "flag",
           "expr": "contrat_marais_fait,!contrat_marais_paye"
@@ -4006,7 +4028,8 @@
          }
         },
         {
-         "text": "📜 Felsbach : le village ne répond plus depuis un mois. Brûle ce qui marche encore.",
+         "text": "Felsbach : le village ne répond plus depuis un mois. Brûle ce qui marche encore.",
+         "icon": "file/document",
          "when": {
           "kind": "flag",
           "expr": "zone8_clear,!contrat_village"
@@ -4025,14 +4048,15 @@
             "kind": "do",
             "effect": {
              "type": "journal",
-             "text": "Contrat accepté — ouvrez la carte du monde (🗺️) pour voyager. Ne bois pas l’eau du puits."
+             "text": "Contrat accepté — ouvrez la carte du monde pour voyager. Ne bois pas l’eau du puits."
             }
            }
           ]
          }
         },
         {
-         "text": "💰 Toucher la prime — le village ne répond plus depuis un mois. Brûle ce qui marche encore.",
+         "text": "Toucher la prime — le village ne répond plus depuis un mois. Brûle ce qui marche encore.",
+         "icon": "resource/gold-purse",
          "when": {
           "kind": "flag",
           "expr": "contrat_village_fait,!contrat_village_paye"
@@ -4089,7 +4113,8 @@
        "text": "Encore vivant ? Bien. J’ai des potions, du faxtoryll pour les saignements, des membres de rechange… et la scie, si vraiment il faut OPÉRER.",
        "choices": [
         {
-         "text": "⚕️ Voir les remèdes et prothèses.",
+         "text": "Voir les remèdes et prothèses.",
+         "icon": "medical/aid",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -4104,7 +4129,8 @@
          }
         },
         {
-         "text": "🔪 Passer sur la table (actes payants).",
+         "text": "Passer sur la table (actes payants).",
+         "icon": "medical/scalpel",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -4300,7 +4326,8 @@
        "text": "Bienvenue au Trophée ! Table, chambre, et de quoi remplir les sacoches — la route ne nourrit personne, prenez des RATIONS avant de voyager.",
        "choices": [
         {
-         "text": "🧺 Voir le garde-manger (rations, vivres, pintes).",
+         "text": "Voir le garde-manger (rations, vivres, pintes).",
+         "icon": "rest/stew",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -4315,7 +4342,8 @@
          }
         },
         {
-         "text": "🍲 Repas chaud pour le groupe — 4 pa.",
+         "text": "Repas chaud pour le groupe — 4 pa.",
+         "icon": "rest/stew",
          "cost": {
           "silver": 4
          },
@@ -4339,7 +4367,8 @@
          }
         },
         {
-         "text": "🛏️ Prendre des chambres pour la nuit.",
+         "text": "Prendre des chambres pour la nuit.",
+         "icon": "rest/bed",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -4354,7 +4383,8 @@
          }
         },
         {
-         "text": "👂 Écouter la salle.",
+         "text": "Écouter la salle.",
+         "icon": "expedition/rumor",
          "next": "rumeurs"
         },
         {
@@ -4468,7 +4498,8 @@
        "text": "Sigmar garde les braves — et recoud les imprudents. Approche : la chapelle soigne, bénit, et accepte les dons.",
        "choices": [
         {
-         "text": "⚕️ Recevoir des soins (actes payants).",
+         "text": "Recevoir des soins (actes payants).",
+         "icon": "medical/aid",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -4499,7 +4530,8 @@
          }
         },
         {
-         "text": "🙏 Recevoir la bénédiction du départ (retrouver la Chance).",
+         "text": "Recevoir la bénédiction du départ (retrouver la Chance).",
+         "icon": "faith/prayer",
          "when": {
           "kind": "flag",
           "expr": "!benediction_recue"
@@ -4531,7 +4563,8 @@
          }
         },
         {
-         "text": "🪙 Faire un don au tronc — 1 co.",
+         "text": "Faire un don au tronc — 1 co.",
+         "icon": "resource/gold-purse",
          "cost": {
           "gold": 1
          },
@@ -4549,7 +4582,8 @@
          }
         },
         {
-         "text": "🕯️ Piller le tronc des offrandes (Test de Discrétion).",
+         "text": "Piller le tronc des offrandes (Test de Discrétion).",
+         "icon": "action/pick-up",
          "when": {
           "kind": "flag",
           "expr": "!tronc_pille"
@@ -4643,7 +4677,8 @@
        "text": "Le sable bouffe le fil des lames plus vite que les monstres. Montre-moi ton acier — je vends, je rachète, je RÉPARE.",
        "choices": [
         {
-         "text": "🛒 Armes, armures et réparations.",
+         "text": "Armes, armures et réparations.",
+         "icon": "merchant/cart",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -4685,7 +4720,8 @@
        "text": "Onguents, herbes, cordages, torches — tout ce qui manque quand la nuit tombe sur la route. Entrez, entrez : ma boutique a tout ce que le sable n’a pas encore mangé.",
        "choices": [
         {
-         "text": "🛒 Voir l’étal (herbes, potions, fournitures).",
+         "text": "Voir l’étal (herbes, potions, fournitures).",
+         "icon": "merchant/cart",
          "flow": {
           "kind": "seq",
           "steps": [
@@ -4766,7 +4802,7 @@
    "music": {
     "ambient": "musique-ville"
    },
-   "startMessage": "LE BOURG DE L’ARÈNE. Une place pavée, quatre bâtiments et treize portes. Le Maître d’arène (au centre) ouvre l’échelle et les contrats. Entrez dans la Taverne (repos, repas, rations), la Chapelle (soins, bénédiction), la Forge (armes, réparations) ou l’Échoppe (herbes, fournitures) — le toit se lève quand vous y pénétrez. La route de l’est part vers le monde (🗺️).",
+   "startMessage": "LE BOURG DE L’ARÈNE. Une place pavée, quatre bâtiments et treize portes. Le Maître d’arène (au centre) ouvre l’échelle et les contrats. Entrez dans la Taverne (repos, repas, rations), la Chapelle (soins, bénédiction), la Forge (armes, réparations) ou l’Échoppe (herbes, fournitures) — le toit se lève quand vous y pénétrez. La route de l’est part vers le monde.",
    "roofs": [
     {
      "id": "taverne",
@@ -15215,7 +15251,8 @@
        "text": "« Psst ! Par ici ! Les hommes-rats m’engraissent pour leur table — la serrure est grossière, sortez-moi de là ! »",
        "choices": [
         {
-         "text": "🔓 Crocheter la cage (Test de Crochetage).",
+         "text": "Crocheter la cage (Test de Crochetage).",
+         "icon": "ui/lock",
          "when": {
           "kind": "flag",
           "expr": "!prisonnier_libre"
@@ -24549,7 +24586,7 @@
     }
    ],
    "flags": {},
-   "startMessage": "EMBUSCADE AU GUÉ ! Des silhouettes jaillissent des fourrés — défendez-vous, puis reprenez la route (🗺️)."
+   "startMessage": "EMBUSCADE AU GUÉ ! Des silhouettes jaillissent des fourrés — défendez-vous, puis reprenez la route."
   }
  ],
  "worldMap": {

@@ -10,6 +10,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scanTombstones, scanExcuses, scanRawClaims, scanDecisionClaims, EXCUSE_GUARD_ACTIVE } from '../guards/lib/commentPoison.mjs';
 import { scanLabelLogic } from '../guards/lib/labelLogic.mjs';
+import { emojisIn } from '../guards/lib/emojiAffordance.mjs';
+import { scanHardcode } from '../guards/lib/hardcode.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -38,8 +40,29 @@ for (const f of staged) {
     warnings.push(`${rel}:${x.line} [affirmation RAW non ancrée] ${x.detail}`);
   for (const x of scanDecisionClaims(rel, text))
     warnings.push(`${rel}:${x.line} [revendication d'autorité sans trace] ${x.detail}`);
-  if (/^src\/(engine|state)\//.test(rel))
+  if (/^src\/(engine|state)\//.test(rel)) {
     for (const x of scanLabelLogic(rel, text)) offenders.push(`${rel}:${x.line} [logique par label] ${x.detail}`);
+    // hardcode.mjs porte des BASELINES par-fichier (policy dans combat-hardcode-guard.test.ts, PAS
+    // dupliquée ici) — un nouveau site réactif par-nom peut rester SOUS une baseline tolérée : simple
+    // signal, la CI (cliquet complet) reste la porte bloquante pour cette famille.
+    for (const x of scanHardcode(rel, text)) warnings.push(`${rel}:${x.line} [hardcode réactif par-nom] ${x.detail}`);
+  }
+  if (/^src\/(ui|state|gameIso)\//.test(rel))
+    for (const emoji of emojisIn(text)) offenders.push(`${rel} [emoji d'affordance] ${emoji}`);
+}
+
+// #290 — emoji dans la DONNÉE (`src/scenes/**/*.json` + `src/data/*.json`) : même tolérance zéro que le code.
+const emojiJsonStaged = staged.filter((f) => {
+  const r = f.replace(/\\/g, '/');
+  return /^src\/scenes\/.*\.json$/.test(r) || /^src\/data\/[^/]+\.json$/.test(r);
+});
+for (const f of emojiJsonStaged) {
+  const rel = f.replace(/\\/g, '/');
+  let text;
+  try {
+    text = argFiles.length ? readFileSync(join(ROOT, rel), 'utf8') : execFileSync('git', ['show', `:${rel}`], { cwd: ROOT, encoding: 'utf8' });
+  } catch { continue; }
+  for (const emoji of emojisIn(text)) offenders.push(`${rel} [emoji d'affordance] ${emoji}`);
 }
 
 const dataStaged = staged.filter((f) => /^src\/data\/[^/]+\.json$/.test(f.replace(/\\/g, '/')));
