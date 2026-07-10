@@ -3,6 +3,7 @@
  * GET /room/:code (upgrade WS) route vers le Durable Object de la room.
  */
 import { makeCode } from './roomLogic';
+import { secureRandom } from './rand';
 export { Room } from './room';
 
 interface Env {
@@ -22,7 +23,7 @@ export default {
 
     if (req.method === 'POST' && url.pathname === '/rooms') {
       for (let i = 0; i < 5; i++) {
-        const code = makeCode(Math.random);
+        const code = makeCode(secureRandom);
         const stub = env.ROOM.get(env.ROOM.idFromName(code));
         const res = await stub.fetch('https://do/init', { method: 'POST' });
         if (res.ok) {

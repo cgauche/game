@@ -11,6 +11,7 @@
  * Liveness : frame texte littérale 'ping' → auto-réponse 'pong' (sans réveiller le DO).
  */
 import { joinGuest, makeToken, resumeGuest, type RoomData } from './roomLogic';
+import { secureRandom } from './rand';
 
 const TTL_MS = 30 * 60_000;
 
@@ -27,7 +28,7 @@ export class Room {
     const url = new URL(req.url);
     if (req.method === 'POST' && url.pathname === '/init') {
       if (await this.room()) return new Response('exists', { status: 409 });
-      const hostToken = makeToken(Math.random);
+      const hostToken = makeToken(secureRandom);
       await this.state.storage.put('room', { hostToken, seats: [] } satisfies RoomData);
       await this.state.storage.setAlarm(Date.now() + TTL_MS);
       return Response.json({ hostToken });
@@ -69,7 +70,7 @@ export class Room {
       let info = token ? resumeGuest(room, token) : null;
       const isResume = info != null;
       if (!info) {
-        info = joinGuest(room, url.searchParams.get('name') ?? '', Math.random);
+        info = joinGuest(room, url.searchParams.get('name') ?? '', secureRandom);
         if (!info) return this.refuse(4409, 'Partie pleine.');
         await this.state.storage.put('room', room);
       }

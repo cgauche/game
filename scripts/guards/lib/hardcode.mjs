@@ -26,7 +26,7 @@ export function stripComments(src) {
  * (Lot 8) : une réaction de combat codée PAR-NOM (trait/talent) plutôt que par donnée.
  * @type {RegExp}
  */
-export const TRAIT_TALENT_RX = /isBestial|id: '(bestial-fire-fear|determination)|hasTraitKey\(|isUnstable|hasPerturbingAura/;
+export const TRAIT_TALENT_RX = /isBestial|id: '(bestial-fire-fear|determination)|hasTraitKey\(|isUnstable|hasPerturbingAura|hasTalent\(/;
 
 /**
  * Marqueurs réactifs par-nom, famille PAR-ÉTAT — motif du Lot 4 (`hasCondition(_, COND.*)` /

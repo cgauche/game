@@ -33,15 +33,26 @@ const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ →
 const SCAN_DIRS = ['src/engine', 'src/state'];
 const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel);
 
-/** Baseline gelée par fichier (recensement Lot 8, 2026-07-06 — total 12 sites sur 7 fichiers).
+/** Baseline gelée par fichier (recensement Lot 8, 2026-07-06 — total 12 sites sur 7 fichiers ;
+ *  révision 2026-07-11, `TRAIT_TALENT_RX` étendue à `hasTalent(` — 4 sites de trait/talent codés
+ *  PAR-NOM révélés (Diction instinctive/Harmonisation aethyrique/Béni×2) + 1 site data-driven
+ *  (`spec.easierIf!.hasTalent`, combatEffects.ts:350 — l'argument vient de la donnée, pas un nom
+ *  en dur, mais la mécanique de scan ne distingue pas l'appel de son argument) + 1 site
+ *  auto-référent (la définition de `hasTalent` elle-même matche son propre marqueur, comme
+ *  `hasTraitKey`/`isBestial` le font déjà pour `traits/dispatch.ts`). Ces sites entrent en
+ *  baseline SANS migration : convertir Diction instinctive/Harmonisation aethyrique/Béni en donnée
+ *  exige un grounding RAW séparé (#317).
  *  Chaque abaissement = une vraie migration vers la donnée ; chaque hausse = une régression. */
 const BASELINES: Record<string, number> = {
   'src/engine/items.ts': 1,
-  'src/engine/magic.ts': 1,
+  'src/engine/magic.ts': 2,
   'src/engine/psychology.ts': 1,
   'src/engine/traits/dispatch.ts': 3,
   'src/state/ai.ts': 3,
+  'src/state/combatEffects.ts': 3,
+  'src/state/combatFlow.ts': 1,
   'src/state/combatManeuvers.ts': 2,
+  'src/state/combatSlice.ts': 1,
   'src/state/mount.ts': 1,
 };
 
