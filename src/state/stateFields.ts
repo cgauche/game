@@ -22,6 +22,12 @@ import type { GameState } from './store';
  *  `combatStart` = ouverture de combat (`startCombat`). */
 export type ResetScope = 'scene' | 'combatStart';
 
+/** TOUTES les clés `pending*` de `GameState` — DÉRIVÉ (jamais une re-liste manuelle). Borne à la
+ *  fois `STATE_FIELDS` ci-dessous (couverture reset, `satisfies` en pied) et le registre d'owner
+ *  coop (`modalArbiter.ts` MODAL_DEFS.covers / HORS_MODAL) : un `pending*` ajouté à `GameState`
+ *  qui n'apparaît nulle part dans l'un des deux casse tsc, à l'endroit qui l'oublie (#284). */
+export type PendingKey = { [K in keyof GameState]-?: K extends `pending${string}` ? K : never }[keyof GameState];
+
 /** Le manifeste : pour chaque champ transitoire, sa valeur initiale et les contextes qui le
  *  réinitialisent. SOURCE UNIQUE des clés — `FieldKey` en est DÉRIVÉ (fin de la double-liste). Le
  *  `satisfies` borne chaque clé à `keyof GameState` ET lie `init` au type du champ : bidirectionnel
@@ -97,7 +103,17 @@ const STATE_FIELDS = {
   // Posé à l'accostage AVANT toute transition de scène (celle-ci n'intervient qu'à la résolution du
   // choix, `resolveShoreLeave`) — aucune scène à survivre, mais transitoire de voyage comme les autres.
   pendingShoreLeave: { init: null, resetOn: [] },
-} satisfies { [K in keyof GameState]?: { readonly init: GameState[K]; readonly resetOn: readonly ResetScope[] } };
+  // Campagne publiée choisie au menu (PartyScreen) : survit jusqu'à la constitution du groupe, jamais
+  // remis par un changement de scène/combat (posé AVANT toute scène de jeu).
+  pendingCampaign: { init: null, resetOn: [] },
+  // Commandes d'interlude (LDB 22-23) : purgées explicitement à l'ouverture du prochain interlude
+  // (`startInterlude`), jamais par `resetFields` (elles doivent SURVIVRE au combat/aux scènes entre-temps).
+  pendingOrders: { init: [], resetOn: [] },
+  // Jet d'Activité d'interlude/bataille de masse : clos par `activityCancel`/`confirmActivity`, jamais
+  // par un changement de scène/combat (l'interlude n'ouvre pas de combat pendant qu'une Activité est en cours).
+  pendingActivity: { init: null, resetOn: [] },
+} satisfies { [K in keyof GameState]?: { readonly init: GameState[K]; readonly resetOn: readonly ResetScope[] } }
+  & { readonly [K in PendingKey]: { readonly init: GameState[K]; readonly resetOn: readonly ResetScope[] } };
 
 /** Clés du manifeste — SOURCE des champs transitoires, dérivée de `STATE_FIELDS` (plus de double-liste). */
 type FieldKey = keyof typeof STATE_FIELDS;

@@ -1285,7 +1285,6 @@ export const useGame = create<GameState>((set, get) => ({
   compendiumFocus: null,
   compendiumReturn: 'menu',
   codexOverlay: null,
-  pendingCampaign: null,
   gameTime: CAMPAIGN_START,
   lastUpkeepDay: dayIndex(CAMPAIGN_START),
   vessel: null,
@@ -1465,13 +1464,11 @@ export const useGame = create<GameState>((set, get) => ({
   // ── Entre deux aventures (LDB 22-23, Jalon 5) ──
   interlude: null,
   bank: [],
-  pendingOrders: [],
   startInterlude: (weeks) => interludeFlow.startInterlude(get, set, weeks),
   interludeEnd: () => interludeFlow.interludeEnd(get, set),
   // Longues Séances de Jeu (LDB 17 l.52) : réutilise l'Effet `restoreFortune` (NE DUPLIQUE PAS la
   // logique — même case que le début de session, qui appelle `engine/fortune.restoreFortune`).
   restoreFortuneNow: () => applyEffects(get, set, [{ type: 'restoreFortune' }]),
-  pendingActivity: null,
   // TOUS les délégués de jet (mono+multi, 36 flux) en UN spread — dérivés de FLOW_WIRING (fin des 40 spreads épars).
   ...buildRollFlowActions(get, set),
   activityCancel: () => FLOWS.activity.cancel(get, set),
