@@ -306,3 +306,12 @@ boutons / prose / CSS → `retoucher-un-ecran-ui` (F5/F6/F10/F11) ; picker de re
   (git `M`) audités à HEAD seulement ; `pendingCrewTest`/`pendingShipManeuver`/`pendingShipBattery` (naval, WIP) hors périmètre.
 - `massBattleFlow.ts`/`interludeFlow.ts` (séquenceurs), `travelPostes.ts`, 33 scripts QC, ~centaines de defs rig, verbatim
   MSLRC (PDF >100 Mo) : non lus ligne à ligne.
+
+## Addendum (2026-07-10, chasse aux dormantes) — séquenceurs innocentés
+Verdict complémentaire à la famille F4 : `massBattleFlow.ts` et `interludeFlow.ts` ne sont PAS des FSM
+maison à cascader — leur forme est « handler + catalogue data-driven », structurellement distincte du
+`while+switch` de `seaVoyageFlow` (seul déviant confirmé, traité par le Lot 6/Ronde 2 du seam). Aucun
+lot supplémentaire. Chasse du même jour : 4 morts confirmés purgés (registre rig `races`, `psychLabels`,
+`ParamFields`, baril `engine/index`), `.panel` inerte requalifié #306, stock TODO/skip/ts-ignore PROPRE.
+Résidus non couverts de la chasse : 26 registres générés non vérifiés un à un, code mort intra-fichier,
+orphelins de src/data/*.json, sweep set() incomplet — 2e tour de chasse après la vague en cours.
