@@ -29,6 +29,17 @@ describe('socialPsychMod — pénalités de Sociabilité psy (LDB 21, P3)', () =
     const tester = mk({ psychTraits: [{ type: 'animosite', cible: 'Gobelin' }, { type: 'prejuge', cible: 'Gobelin' }] });
     expect(socialPsychMod(tester, ['Gobelin'])).toBe(-30);
   });
+  it('ignoreAnimosity (« meilleur ami ») : le malus contenu d’Animosité/Préjugé DISPARAÎT tant que l’effet dure', () => {
+    const tester = mk({
+      psychTraits: [{ type: 'animosite', cible: 'Gobelin' }, { type: 'prejuge', cible: 'Gobelin' }],
+      activeEffects: [{ label: 'Ivresse', bonus: 0, duration: { scale: 'permanent' }, ignoreAnimosity: true }],
+    });
+    expect(socialPsychMod(tester, ['Gobelin'])).toBe(0);
+  });
+  it('effet EXPIRÉ (activeEffects vide) → le malus contenu revient', () => {
+    const tester = mk({ psychTraits: [{ type: 'animosite', cible: 'Gobelin' }], activeEffects: [] });
+    expect(socialPsychMod(tester, ['Gobelin'])).toBe(-20);
+  });
   it('socialPsychLabel : libellé lisible du malus (ou undefined)', () => {
     expect(socialPsychLabel(mk({ psychTraits: [{ type: 'animosite', cible: 'Elfe' }] }), ['Elfe'])).toBe('Animosité −20');
     expect(socialPsychLabel(mk({ psychTraits: [{ type: 'animosite', cible: 'Gobelin' }, { type: 'prejuge', cible: 'Gobelin' }] }), ['Gobelin'])).toBe('Animosité −20 · Préjugé −10');

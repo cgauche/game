@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { parsePsychTraits, peurTerreurFromSize, resolvePeurTest, resolveTerreurTest, isFrenzyCapable, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, gainPhobieIfThreshold, animositeOrHaine, traumaOnImpossibleAmbition } from './psychology';
+import { parsePsychTraits, peurTerreurFromSize, resolvePeurTest, resolveTerreurTest, isFrenzyCapable, resolveFrenzyEntry, targetedTrigger, resolveCalmeSimple, gainPhobieIfThreshold, animositeOrHaine, traumaOnImpossibleAmbition, effectivePsychTraits } from './psychology';
 import { makeRNG } from './dice';
 import { setRule, resetRule } from './policy';
 import type { Combatant } from './types';
@@ -71,6 +71,32 @@ describe('Psychologie (pur)', () => {
     const self = { id: 's', kind: 'enemy', psychTraits: [{ type: 'animosite', cible: undefined }], psychState: [] } as unknown as Combatant;
     const foe = { id: 'f', kind: 'hero', groups: ['Elfe'] } as unknown as Combatant;
     expect(targetedTrigger(self, [foe])).toBeNull();
+  });
+  it('effectivePsychTraits : « Vous êtes mon meilleur ami ! » (ignoreAnimosity) retire Animosité/Préjugé, laisse le reste (LDB 09 l.480)', () => {
+    const c = {
+      psychTraits: [{ type: 'animosite', cible: 'elfe' }, { type: 'prejuge', cible: 'nain' }, { type: 'haine', cible: 'skaven' }],
+      activeEffects: [{ label: 'Ivresse', bonus: 0, ignoreAnimosity: true }],
+    } as unknown as Combatant;
+    expect(effectivePsychTraits(c)).toEqual([{ type: 'haine', cible: 'skaven' }]);
+  });
+  it('effectivePsychTraits : sans l’effet actif, Animosité/Préjugé restent', () => {
+    const c = { psychTraits: [{ type: 'animosite', cible: 'elfe' }] } as unknown as Combatant;
+    expect(effectivePsychTraits(c)).toEqual([{ type: 'animosite', cible: 'elfe' }]);
+  });
+  it('targetedTrigger : sous ignoreAnimosity, l’Animosité ne se déclenche PAS sur un ennemi visible du groupe cible', () => {
+    const self = {
+      id: 's', kind: 'enemy',
+      psychTraits: [{ type: 'animosite', cible: 'elfe' }],
+      psychState: [],
+      activeEffects: [{ label: 'Ivresse', bonus: 0, ignoreAnimosity: true }],
+    } as unknown as Combatant;
+    const foe = { id: 'f', kind: 'hero', groups: ['elfe'] } as unknown as Combatant;
+    expect(targetedTrigger(self, [foe])).toBeNull();
+  });
+  it('targetedTrigger : effet EXPIRÉ (retiré des activeEffects) → l’Animosité redéclenche normalement', () => {
+    const self = { id: 's', kind: 'enemy', psychTraits: [{ type: 'animosite', cible: 'elfe' }], psychState: [], activeEffects: [] } as unknown as Combatant;
+    const foe = { id: 'f', kind: 'hero', groups: ['elfe'] } as unknown as Combatant;
+    expect(targetedTrigger(self, [foe])).toEqual({ type: 'animosite', cible: 'elfe', sourceId: 'f' });
   });
   it('resolveCalmeSimple : Test de Calme binaire (succès = résisté)', () => {
     const r = resolveCalmeSimple(80, makeRNG(2));

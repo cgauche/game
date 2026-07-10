@@ -290,10 +290,20 @@ const TARGETS_ALLY = new Set<PsychType>(['amour', 'camaraderie']);
  *  dérivé à chaque lecture, comme les pénalités continues `diseasePassiveOps`). Lu par les déclencheurs
  *  (`targetedTrigger`) et la pénalité sociale (`skills.containedSocialPenalty`). Les manipulations qui
  *  ÉCRIVENT la donnée persistée (acquisition `animositeOrHaine`, suppression « Baume », sérialisation)
- *  restent sur `c.psychTraits` brut — un Trait transitoire de maladie ne s'acquiert ni ne se suspend. */
+ *  restent sur `c.psychTraits` brut — un Trait transitoire de maladie ne s'acquiert ni ne se suspend.
+ *
+ *  « Vous êtes mon meilleur ami ! » (Ivresse 3-4, LDB 09 l.480) : « Ignorez tous vos Préjugés et
+ *  toutes vos Animosités existants » — un porteur d'`ActiveEffect.ignoreAnimosity` (op générique
+ *  `ignoreAnimosity`, kind-agnostique) ne possède plus les Traits `animosite`/`prejuge` tant que
+ *  l'effet dure : ni nouveau déclenchement (`targetedTrigger`), ni malus social contenu
+ *  (`skills.containedSocialPenalty`/`socialPsychMod`). */
 export function effectivePsychTraits(c: Combatant): PsychTrait[] {
   const derived = diseasePsychTraits(c);
-  return derived.length ? [...(c.psychTraits ?? []), ...derived] : (c.psychTraits ?? []);
+  const all = derived.length ? [...(c.psychTraits ?? []), ...derived] : (c.psychTraits ?? []);
+  if ((c.activeEffects ?? []).some((e) => e.ignoreAnimosity)) {
+    return all.filter((p) => p.type !== 'animosite' && p.type !== 'prejuge');
+  }
+  return all;
 }
 
 /** Premier Trait psy CIBLÉ de `self` déclenché ce Round : un membre du groupe `cible` est VISIBLE
