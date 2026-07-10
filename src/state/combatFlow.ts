@@ -4374,9 +4374,10 @@ export function finalizeBattle(get: Get, set: SetFn): void {
     return c ? { ...h, ...carryOverState(c) } : h;
   });
   set({ party: newParty, ...(endLines.length ? { journal: [...get().journal.slice(-40), ...endLines] } : {}) });
-  // #30 — Blessures de COQUE persistantes : si une coque du combat EST le navire de campagne
-  // (creatureId = vehicleId), son état de fin de combat est écrit sur `CampaignVessel.wounds`
-  // (le voyage maritime et les réparations au port en repartent).
+  // #30/#296 — Blessures de COQUE persistantes : si une coque du combat EST le navire de campagne
+  // (creatureId = vehicleId), son état de fin de combat est écrit sur `CampaignVessel.wounds` (SOURCE
+  // UNIQUE) — le voyage maritime/fluvial en repart, et `resumeTravel` recharge la copie de travail
+  // (`travelPlan.vehicle`) restée en mémoire depuis AVANT ce combat.
   const vessel = get().vessel;
   const hull = vessel ? battle.combatants.find((c) => c.creatureId === vessel.vehicleId) : undefined;
   if (vessel && hull) set({ vessel: { ...vessel, wounds: { current: hull.wounds.current, max: hull.wounds.max } } });

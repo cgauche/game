@@ -48,7 +48,7 @@ import { testValue, partyAssisted, partyBest } from '../engine/skills';
 import { buildWeapon } from '../engine/items';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import { applyOps } from '../engine/ops';
-import { damageHull, healHull, type HullWounds } from './shipDamage';
+import { damageHull, healHull } from './shipDamage';
 import { itemCapability } from '../engine/capabilities';
 import { isRation } from '../engine/provisions';
 import { toDate, MINUTES_PER_DAY, minutesUntilNext, DUSK_MINUTE } from '../engine/clock';
@@ -227,6 +227,15 @@ function consumeCrewProvisions(get: Get, set: Set, days: number): string[] {
     : `Vivres d'équipage : −${need} (reste ${left} jour${left > 1 ? 's' : ''}-homme).`];
 }
 
+/** RECHARGE les Blessures du Combattant-coque de trajet depuis `vessel.wounds` — SOURCE UNIQUE (#296).
+ *  Réutilisée au build du plan (`voyageShip`/`riverHull`, coque de trajet REPART de l'état sauvegardé)
+ *  et à la reprise d'un voyage interrompu (`resumeTravel`, ex. combat naval : le writeback de
+ *  `finalizeBattle` sur `vessel.wounds` doit se propager à la coque de trajet, sinon le prochain
+ *  `persistHullWounds` l'écraserait avec sa valeur PRÉ-combat périmée — c'est le bug caché du #296). */
+export function syncHullWoundsFromVessel(hull: Combatant, vessel: Pick<CampaignVessel, 'wounds'>): void {
+  if (vessel.wounds) hull.wounds = { ...hull.wounds, current: Math.min(vessel.wounds.current, hull.wounds.max) };
+}
+
 /** Le navire de campagne, ses données de type et sa COQUE de trajet (Blessures PERSISTÉES, #30). */
 function voyageShip(get: Get): { vessel: CampaignVessel; hull: Combatant } | null {
   const vessel = get().vessel;
@@ -236,20 +245,43 @@ function voyageShip(get: Get): { vessel: CampaignVessel; hull: Combatant } | nul
   const hull = vehicleCombatant(v);
   if (!hull) return null;
   if (vessel.name) hull.name = vessel.name; // #230 — nom d'instance (affichage ; le rendu reste keyé par creatureId)
-  // #30 : Blessures de coque persistantes — la coque de trajet REPART de l'état sauvegardé.
-  if (vessel.wounds) hull.wounds = { ...hull.wounds, current: Math.min(vessel.wounds.current, hull.wounds.max) };
+  syncHullWoundsFromVessel(hull, vessel);
   hull.upgrades = vessel.upgrades ? [...vessel.upgrades] : undefined;
   hull.saboteurDR = vessel.saboteurDR;
   hull.cargoEnc = cargoTotalEnc(vessel.cargo ?? []); // #243 — surcharge (cargoOverload) sur la manœuvre de trajet
   return { vessel, hull };
 }
 
-/** PERSISTE les Blessures de la coque de trajet sur le navire de campagne (#30). */
+/** PERSISTE les Blessures de la coque de trajet sur le navire de campagne (#30) — l'UNIQUE écriture
+ *  `vessel.wounds` (#296). No-op si la coque de trajet n'est pas le navire de campagne (bateau de route
+ *  fluviale sans navire de campagne). */
 export function persistHullWounds(get: Get, set: Set): void {
   const plan = get().travelPlan;
   const vessel = get().vessel;
   if (!plan?.vehicle || !vessel || plan.vehicle.creatureId !== vessel.vehicleId) return;
   set({ vessel: { ...vessel, wounds: { current: plan.vehicle.wounds.current, max: plan.vehicle.wounds.max } } });
+}
+
+/** Inflige `amount` Dégâts à la coque de TRAJET (`hull`, `travelPlan.vehicle`) et PERSISTE aussitôt sur
+ *  `vessel.wounds` (#296) — UNE écriture, jamais un `damageHull` orphelin de sa persistance (c'était le
+ *  double chemin : certains sites persistaient au coup par coup, d'autres seulement en fin de jour, la
+ *  fenêtre entre les deux pouvait écraser une valeur plus fraîche écrite ailleurs, ex. fin de combat naval). */
+export function damageVesselHull(get: Get, set: Set, hull: Combatant, amount: number): string[] {
+  const j = damageHull(hull, amount);
+  const plan = get().travelPlan;
+  if (plan) set({ travelPlan: { ...plan } }); // bump de référence : la mutation en place de `hull` doit se voir
+  persistHullWounds(get, set);
+  return j;
+}
+
+/** Restaure `amount` Blessures à la coque de TRAJET et PERSISTE aussitôt sur `vessel.wounds` — pendant
+ *  de `damageVesselHull` pour les soins. */
+export function healVesselHull(get: Get, set: Set, hull: Combatant, amount: number): string[] {
+  const j = healHull(hull, amount);
+  const plan = get().travelPlan;
+  if (plan) set({ travelPlan: { ...plan } });
+  persistHullWounds(get, set);
+  return j;
 }
 
 /** Traits navals EFFECTIFS de la coque (type + Améliorations d'instance). */
@@ -471,16 +503,13 @@ function applyFastPalier(get: Get, set: Set, palierId?: string): void {
     tell(get, set, [`${palier.cargoLostPct} % de la cargaison s'est gâtée ou a été volée.`]);
   }
   const vessel2 = get().vessel;
-  if (palier.hullLostPct > 0 && vessel2) {
-    const max = vessel2.wounds?.max ?? findVehicleById(vessel2.vehicleId)?.hull?.char.B ?? 0;
-    const cur = vessel2.wounds?.current ?? max;
+  const hull2 = get().travelPlan?.vehicle;
+  if (palier.hullLostPct > 0 && vessel2 && hull2) {
+    const max = hull2.wounds.max;
+    const cur = hull2.wounds.current;
     const lost = Math.round(max * palier.hullLostPct / 100);
     if (max > 0 && lost > 0) {
-      // Copie BARE `state.vessel.wounds` (#296, pas résolu ici) — même formule de clamp que le
-      // Combattant-coque (`damageHull`), sans Combattant complet.
-      const w: HullWounds = { current: cur, max };
-      damageHull(w, lost);
-      set({ vessel: { ...vessel2, wounds: w } });
+      damageVesselHull(get, set, hull2, lost);
       tell(get, set, [`${vessel2.name ?? 'La coque'} perd ${Math.min(lost, cur)} Blessure(s) (${palier.hullLostPct} %).`]);
     }
   }
@@ -974,7 +1003,6 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
   };
   patchSea(get, set, { daysAtSea, step: 'meteo', lines: [], entries: [] });
   set({ travelPlan: { ...get().travelPlan!, kmDone } });
-  persistHullWounds(get, set);
   tell(get, set, [...lines, ...evening]);
 
   const worldMap = get().worldMap as WorldMap;
@@ -1110,8 +1138,7 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       // Chaque manche au centre coûte des Dégâts de collision (IC du Tourbillon, l.526).
       const hull = get().travelPlan!.vehicle!;
       const dmg = Math.max(0, w.ic - Math.floor((hull.characteristics?.E ?? 0) / 10));
-      damageHull(hull, dmg);
-      persistHullWounds(get, set);
+      damageVesselHull(get, set, hull, dmg);
       tell(get, set, [`${w.label} : l'eau tournoyante broie la coque (${dmg} Blessures) — évasion ${progress}/${c.need} DR.`]);
       if (progress >= c.need) {
         patchSea(get, set, { crisis: undefined });
@@ -1146,8 +1173,7 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       if (adj >= 1) {
         const hull = get().travelPlan!.vehicle!;
         const healed = Math.min(hull.wounds.max - hull.wounds.current, rollDice(1, 10, rng));
-        healHull(hull, healed);
-        persistHullWounds(get, set);
+        healVesselHull(get, set, hull, healed);
         tell(get, set, [`Réparations de fortune : +${healed} Blessures de coque (Entretien ${adj >= 0 ? '+' : ''}${adj} DR après −2, MDG 14 l.122).`]);
       } else tell(get, set, [`Les réparations n'aboutissent pas cette nuit (Entretien ${adj} DR après −2).`]);
       break;
@@ -1333,8 +1359,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
     case 'usure': {
       if (!ship) break;
       const w = num('wounds', rollDice(1, 10, rng)) || rollDice(1, 10, rng);
-      damageHull(ship, w);
-      persistHullWounds(get, set);
+      damageVesselHull(get, set, ship, w);
       tell(get, set, [`${ship.name} perd ${w} Blessures (usure).`]);
       break;
     }
@@ -1432,8 +1457,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       if (!ship) break;
       const eff = effectiveSeaM(get);
       const dmg = Math.max(0, 47 + (eff.m ?? 1) - Math.floor((ship.characteristics?.E ?? 0) / 10));
-      damageHull(ship, dmg);
-      persistHullWounds(get, set);
+      damageVesselHull(get, set, ship, dmg);
       tell(get, set, [`Collision : la coque encaisse ${dmg} Blessures (Rocher IC 47, MDG ch.13 l.446/497).`]);
       if (d100(rng) <= 20) { // 20 % d'Échouage (l.497)
         const plan2 = get().travelPlan!;

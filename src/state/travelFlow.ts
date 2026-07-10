@@ -50,7 +50,7 @@ import { stageAssignmentFromRoles, type StagePosting } from '../engine/activitie
 import { buildStageSteps, type StageContext } from './travelPostes';
 import { startCascade, registerCascadeApplier } from './cascade';
 import type { CascadeStep } from './pendings';
-import { buildSeaPlan, runSeaDays, startFastVoyage } from './seaVoyageFlow';
+import { buildSeaPlan, runSeaDays, startFastVoyage, syncHullWoundsFromVessel } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import { humanControlled } from './netOwnership';
 import { DIFFICULTY_MODIFIERS, type Combatant } from '../engine/types';
@@ -293,7 +293,17 @@ export function resumeTravel(get: Get, set: Set): void {
   const plan = get().travelPlan;
   if (!plan || get().battle) return;
   if (get().travelRecap?.then) return; // une embuscade ATTEND son acquittement — pas d'esquive
-  set({ travelPlan: { ...plan, interrupted: false }, worldMapOpen: false, travelRecap: null });
+  // #296 — RECHARGE la coque de trajet depuis `vessel.wounds` (SOURCE UNIQUE) avant de reprendre : un
+  // combat naval interrompant le voyage écrit sa fin sur `vessel` (`finalizeBattle`), jamais sur cette
+  // copie de travail restée en mémoire — sans ce rechargement, le prochain Dégât/soin de coque du voyage
+  // écraserait la valeur fraîche avec l'ancienne (persistance au coup par coup, `damageVesselHull`).
+  let vehicle = plan.vehicle;
+  const vessel = get().vessel;
+  if (vehicle && vessel && vehicle.creatureId === vessel.vehicleId) {
+    vehicle = { ...vehicle };
+    syncHullWoundsFromVessel(vehicle, vessel);
+  }
+  set({ travelPlan: { ...plan, interrupted: false, ...(vehicle ? { vehicle } : {}) }, worldMapOpen: false, travelRecap: null });
   log(get, set, ['— Le voyage reprend —']);
   if (plan.sea) { runSeaDays(get, set); return; } // traversée maritime : résolution navale
   if (plan.river) { runRiverDays(get, set); return; } // descente fluviale : résolution fluviale

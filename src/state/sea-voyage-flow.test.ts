@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import {
   buildSeaPlan, resolveVoyageCrewTest, portRepairVessel, portInstallUpgrade, runSeaDays,
-  resolvePortArrival, resolveManannPriest, resolveShoreLeave,
+  resolvePortArrival, resolveManannPriest, resolveShoreLeave, damageVesselHull, healVesselHull,
 } from './seaVoyageFlow';
 import { seedBattleRng } from './battleRng';
 import { subtract, toBrass, fromBrass } from '../engine/money';
@@ -15,6 +15,7 @@ import { emptyScene, type Scene } from './scene';
 import type { WorldMap } from './worldMap';
 import type { RNG } from '../engine/dice';
 import type { PendingCrewTest } from './pendings';
+import { resumeTravel } from './travelFlow';
 
 /**
  * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15) :
@@ -65,6 +66,35 @@ describe('buildSeaPlan — appareillage sur le navire de campagne', () => {
     expect(plan.vehicle!.wounds.current).toBe(20); // Blessures de coque persistantes
     expect(plan.sea!.daysToEvent).toBeGreaterThanOrEqual(1);
     expect(plan.sea!.daysToEvent).toBeLessThanOrEqual(10);
+  });
+});
+
+describe('#296 — state.vessel SOURCE UNIQUE de la coque de trajet (non-divergence)', () => {
+  beforeEach(freshState);
+
+  it('un Dégât de coque en cours de traversée se lit IDENTIQUEMENT sur vessel (damageVesselHull)', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: plan });
+    damageVesselHull(get, set, get().travelPlan!.vehicle!, 8);
+    expect(get().vessel!.wounds!.current).toBe(get().travelPlan!.vehicle!.wounds.current);
+    expect(get().vessel!.wounds!.current).toBe(plan.vehicle!.wounds.max - 8);
+    healVesselHull(get, set, get().travelPlan!.vehicle!, 3);
+    expect(get().vessel!.wounds!.current).toBe(get().travelPlan!.vehicle!.wounds.current);
+    expect(get().vessel!.wounds!.current).toBe(plan.vehicle!.wounds.max - 5);
+  });
+
+  it('reprise après une interruption (combat naval) : la coque de trajet, périmée, est RECHARGÉE depuis vessel.wounds — la reprise n’écrase plus le writeback du combat', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, interrupted: true } }); // voyage interrompu, coque de trajet = état D'AVANT combat
+    const intactMax = plan.vehicle!.wounds.max;
+    // `finalizeBattle` (combatFlow.ts) a déjà écrit la fin du combat naval sur `vessel.wounds` — la copie
+    // de travail embarquée dans `travelPlan.vehicle` n'a pas bougé (objet distinct de la coque de bataille).
+    set({ vessel: { ...get().vessel!, wounds: { current: intactMax - 15, max: intactMax } } });
+    expect(get().travelPlan!.vehicle!.wounds.current).not.toBe(intactMax - 15); // toujours périmée avant la reprise
+    resumeTravel(get, set);
+    // Le rechargement a eu lieu AVANT que `runSeaDays` ne reprenne — aucun Dégât ultérieur ne peut avoir
+    // déjà écrasé vessel avec l'ancienne valeur (c'était le bug caché du #296).
+    expect(get().vessel!.wounds!.current).toBe(intactMax - 15);
   });
 });
 

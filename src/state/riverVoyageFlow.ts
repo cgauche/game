@@ -4,9 +4,10 @@
  *
  * RÉUTILISATION (pas de duplication de la machinerie de voyage) : ce flux est le PENDANT FLUVIAL de
  * `seaVoyageFlow` (mer, MDG). Comme lui, il s'appuie sur la machinerie de voyage EXISTANTE — halte de nuit
- * (`openRest`), entretien quotidien (`runDailyUpkeep`), coque de trajet persistée (`persistHullWounds`),
- * récap du jour (`TravelRecapDay`) — et n'écrit QUE la résolution navale du jour. Il ne réimplémente ni la
- * boucle de nuit, ni l'entretien, ni la persistance.
+ * (`openRest`), entretien quotidien (`runDailyUpkeep`), coque de trajet PERSISTÉE au coup par coup
+ * (`damageVesselHull`/`healVesselHull`, #296 — SOURCE UNIQUE `vessel.wounds`), récap du jour
+ * (`TravelRecapDay`) — et n'écrit QUE la résolution navale du jour. Il ne réimplémente ni la boucle de
+ * nuit, ni l'entretien, ni la persistance.
  *
  * DISTINCT de la mer (choix de fidélité, pas de raccourci) : T2C ch.5 est un système PROPRE, plus simple que
  * MDG. Le Test de Navigation fluvial est le **barreur seul** (Voile) ou le **meilleur rameur** (Ramer), un par
@@ -26,8 +27,7 @@ import { minutesUntilNext, DUSK_MINUTE } from '../engine/clock';
 import { applyEffects } from './combatEffects';
 import { openRest, placesOfKind } from './restFlow';
 import { placeById, type MapRoute, type WorldMap } from './worldMap';
-import { persistHullWounds } from './seaVoyageFlow';
-import { damageHull as damageHullOp, healHull } from './shipDamage';
+import { damageVesselHull, healVesselHull, syncHullWoundsFromVessel } from './seaVoyageFlow';
 import { applyOps } from '../engine/ops';
 import { baseHoursPerDay } from './travelFlow';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
@@ -121,7 +121,7 @@ function riverHull(get: Get, route: MapRoute): { coque: Combatant; hasSail: bool
   if (!coque) return null;
   if (vessel && vessel.vehicleId === vId) {
     if (vessel.name) coque.name = vessel.name; // #230 — nom d'instance (affichage)
-    if (vessel.wounds) coque.wounds = { ...coque.wounds, current: Math.min(vessel.wounds.current, coque.wounds.max) };
+    syncHullWoundsFromVessel(coque, vessel);
   }
   return { coque, hasSail: !!v.ship.sail };
 }
@@ -497,8 +497,7 @@ registerCascadeApplier('riverObstacleChoice', (get, set, step) => {
   if (!peril?.obstacle) return;
   const coque = get().travelPlan!.vehicle!;
   if (step.chosen === 'forcer') {
-    damageHullOp(coque, peril.obstacle.ramDamage);
-    set({ travelPlan: { ...get().travelPlan! } });
+    damageVesselHull(get, set, coque, peril.obstacle.ramDamage);
     return { journal: [`${peril.label} — forcé au bélier : la coque subit ${peril.obstacle.ramDamage} Dégâts (reste ${coque.wounds.current}/${coque.wounds.max}).`] };
   }
   if (!peril.clear) return { journal: [`${peril.label} — déblayé à la main : la coque est épargnée.`] };
@@ -541,7 +540,7 @@ registerCascadeApplier('riverHoleRepair', (get, set, step, hero) => {
   const name = hero?.name ?? 'Le charpentier';
   if (step.result.success) {
     const healed = Math.min(plan.vehicle!.wounds.max - plan.vehicle!.wounds.current, rollExpr(TEMPORARY_REPAIR.woundsPerRepair, battleRng()));
-    healHull(plan.vehicle!, healed);
+    healVesselHull(get, set, plan.vehicle!, healed);
     set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, holed: false } } });
     return { journal: [`${name} — calfatage d'urgence (Métier) : ${step.result.roll}/${step.result.target} → la voie d'eau est colmatée, +${healed} Blessure(s) de coque restaurées (réparation temporaire, l.116).`] };
   }
@@ -562,8 +561,7 @@ registerCascadeApplier('riverPerilDetect', (get, set, step) => {
   const impact = resolveRiverImpact(peril.onHit, rng);
   const plan = get().travelPlan!;
   const coque = plan.vehicle!;
-  damageHullOp(coque, impact.hullDamage);
-  set({ travelPlan: { ...get().travelPlan! } });
+  damageVesselHull(get, set, coque, impact.hullDamage);
   j.push(`${peril.label} : la coque subit ${impact.hullDamage} Dégâts (reste ${coque.wounds.current}/${coque.wounds.max}).`);
   const insert: CascadeStep[] = [];
   if (impact.echoue) insert.push(...applyEchouageSteps(get, set, step.id, j));
@@ -637,7 +635,7 @@ function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => v
     if (t.success) {
       // Réparation temporaire (l.116) : restaure 1d10 Blessures de coque.
       const healed = Math.min(plan.vehicle!.wounds.max - plan.vehicle!.wounds.current, rollExpr(TEMPORARY_REPAIR.woundsPerRepair, rng));
-      healHull(plan.vehicle!, healed);
+      healVesselHull(get, set, plan.vehicle!, healed);
       set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, holed: false } } });
       tell([`La coque tient — +${healed} Blessure(s) de coque restaurées (réparation temporaire, l.116).`]);
       return [];
@@ -664,8 +662,7 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
   const j: string[] = [];
   const insert: CascadeStep[] = [];
   const damageHull = (dmg: number, note: string) => {
-    damageHullOp(coque, dmg);
-    set({ travelPlan: { ...get().travelPlan! } });
+    damageVesselHull(get, set, coque, dmg);
     j.push(`${peril.label} : la coque subit ${dmg} Dégâts${note} (reste ${coque.wounds.current}/${coque.wounds.max}).`);
   };
   if (peril.kind === 'navTest' && peril.onFail) {
@@ -712,11 +709,10 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
  *  convoi vide). Le RAW ne prévoit AUCUN délestage pour se renflouer (l.97-105 muets) → non modélisé. */
 export function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): void {
   const coque = get().travelPlan!.vehicle!;
-  damageHullOp(coque, echouageDamage());
+  damageVesselHull(get, set, coque, echouageDamage());
   const { difficulty, encTxt } = echouageDifficulty(get);
   const force = partyAssisted(get().party, undefined, 'F');
   const t = force ? rollTest(force.value, difficulty, battleRng()) : null;
-  set({ travelPlan: { ...get().travelPlan! } });
   tell([`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99)${t ? ` — renflouage (Force ${DIFFICULTY_LABELS[difficulty]}${encTxt}) : ${t.roll}/${t.target} → ${t.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}` : '.'}`]);
 }
 
@@ -742,8 +738,7 @@ function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: string[]): 
     return [];
   }
   const coque = get().travelPlan!.vehicle!;
-  damageHullOp(coque, echouageDamage());
-  set({ travelPlan: { ...get().travelPlan! } });
+  damageVesselHull(get, set, coque, echouageDamage());
   const { difficulty, encTxt } = echouageDifficulty(get);
   j.push(`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99).`);
   return [{
@@ -762,8 +757,9 @@ registerCascadeApplier('riverEchouageForce', (get, set, step, hero) => {
   return { journal: [`${hero?.name ?? 'Le groupe'} — Renflouage (Force ${difficultyLabel}${encTxt}) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}`] };
 });
 
-/** Fin de journée : coque persistée (#30), horloge avancée (arrivée = +24 h ; halte = jusqu'au
- *  crépuscule), puis arrivée ou halte de nuit. L'entretien du jour se résout dans la cascade de nuit. */
+/** Fin de journée : horloge avancée (arrivée = +24 h ; halte = jusqu'au crépuscule), puis arrivée ou
+ *  halte de nuit (la coque est déjà PERSISTÉE au coup par coup, `damageVesselHull`/`healVesselHull`,
+ *  #296). L'entretien du jour se résout dans la cascade de nuit. */
 function finishRiverDay(get: Get, set: Set, to: { scene: string; entry?: string; label: string }, kmDay: number, dayLines: string[]): void {
   const plan = get().travelPlan!;
   const river = plan.river!;
@@ -791,7 +787,6 @@ function finishRiverDay(get: Get, set: Set, to: { scene: string; entry?: string;
       river: { ...river, windForce: nextForce, daysAfloat: river.daysAfloat + 1 },
     },
   });
-  persistHullWounds(get, set);
 
   const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...dayLines] };
 
