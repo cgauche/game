@@ -4,12 +4,11 @@
  * consommateur. `_source` = note de traçabilité libre (non lue par le moteur).
  */
 import { z } from 'zod';
-import { freeSourceNoteSchema } from '../common';
+import { sourceRefSchema } from '../common';
 
 export const file = 'river-perils.json';
 
 export const schema = z.strictObject({
-  _source: freeSourceNoteSchema.optional(),
   perils: z.array(
     z.strictObject({
       id: z.string(),
@@ -31,6 +30,7 @@ export const schema = z.strictObject({
         .strictObject({ hullDamage: z.number(), holeChancePct: z.number().optional(), echouageChancePct: z.number().optional() })
         .optional(),
       ref: z.string(),
+      source: sourceRefSchema,
     }),
   ),
 });

@@ -1,21 +1,41 @@
 {
   "workPeriodHours": {
     "voile": 8,
-    "avirons": 2
+    "avirons": 2,
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 105,
+      "note": "ch.13 « Navigation maritime » — Périodes de travail (l.62)."
+    }
   },
   "epuisement": {
     "difficulty": "accessible",
-    "forcedDifficulty": "complexe"
+    "forcedDifficulty": "complexe",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 105,
+      "note": "ch.13 « Navigation maritime » — Épuisement (l.109-111)."
+    }
   },
   "forcerLeRythme": [
     {
       "bonusM": 1,
       "voile": "tresDifficile",
-      "avirons": "difficile"
+      "avirons": "difficile",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 105,
+        "note": "ch.13 « Navigation maritime » — table FORCER LE RYTHME (l.99-106)."
+      }
     },
     {
       "bonusM": 2,
-      "avirons": "tresDifficile"
+      "avirons": "tresDifficile",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 105,
+        "note": "ch.13 « Navigation maritime » — table FORCER LE RYTHME (l.99-106)."
+      }
     }
   ],
   "vitesseMax": {
@@ -26,37 +46,67 @@
         "max": 5,
         "difficulty": "accessible",
         "per": "heure",
-        "damage": 1
+        "damage": 1,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 105,
+          "note": "ch.13 « Navigation maritime » — table ÇA VA LÂCHER, CAPITAINE ! (l.127-140)."
+        }
       },
       {
         "min": 6,
         "max": 6,
         "difficulty": "intermediaire",
         "per": "heure",
-        "damage": 2
+        "damage": 2,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 105,
+          "note": "ch.13 « Navigation maritime » — table ÇA VA LÂCHER, CAPITAINE ! (l.127-140)."
+        }
       },
       {
         "min": 7,
         "max": 7,
         "difficulty": "complexe",
         "per": "minute",
-        "damage": 3
+        "damage": 3,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 105,
+          "note": "ch.13 « Navigation maritime » — table ÇA VA LÂCHER, CAPITAINE ! (l.127-140)."
+        }
       },
       {
         "min": 8,
         "max": 8,
         "difficulty": "difficile",
         "per": "round",
-        "damage": 5
+        "damage": 5,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 105,
+          "note": "ch.13 « Navigation maritime » — table ÇA VA LÂCHER, CAPITAINE ! (l.127-140)."
+        }
       },
       {
         "min": 9,
         "max": 9999,
         "difficulty": "tresDifficile",
         "per": "round",
-        "damage": 8
+        "damage": 8,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 105,
+          "note": "ch.13 « Navigation maritime » — table ÇA VA LÂCHER, CAPITAINE ! (l.127-140)."
+        }
       }
-    ]
+    ],
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 105,
+      "note": "ch.13 « Navigation maritime » — VITESSES MAXIMUM, M+4 sans risque (l.125)."
+    }
   },
   "salissures": {
     "weeklyTest": true,
@@ -67,7 +117,12 @@
         "mMod": 0,
         "navDR": 0,
         "repairPctOfBase": 5,
-        "desc": "Des algues et des coquillages commencent à s'accrocher à la coque du bateau."
+        "desc": "Des algues et des coquillages commencent à s'accrocher à la coque du bateau.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 105,
+          "note": "ch.13 « Navigation maritime » — table SALISSURES (l.152-159)."
+        }
       },
       {
         "level": 2,
@@ -75,7 +130,12 @@
         "mMod": -1,
         "navDR": 0,
         "repairPctOfBase": 10,
-        "desc": "Des tarets se mettent à faire des trous dans la coque."
+        "desc": "Des tarets se mettent à faire des trous dans la coque.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 105,
+          "note": "ch.13 « Navigation maritime » — table SALISSURES (l.152-159)."
+        }
       },
       {
         "level": 3,
@@ -83,7 +143,12 @@
         "mMod": -1,
         "navDR": 0,
         "repairPctOfBase": 15,
-        "desc": "De gros amas d'algues et de faune marine ralentissent le vaisseau."
+        "desc": "De gros amas d'algues et de faune marine ralentissent le vaisseau.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 105,
+          "note": "ch.13 « Navigation maritime » — table SALISSURES (l.152-159)."
+        }
       },
       {
         "level": 4,
@@ -91,7 +156,12 @@
         "mMod": -2,
         "navDR": 0,
         "repairPctOfBase": 20,
-        "desc": "Le ventre de la coque est totalement recouvert de varech."
+        "desc": "Le ventre de la coque est totalement recouvert de varech.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 105,
+          "note": "ch.13 « Navigation maritime » — table SALISSURES (l.152-159)."
+        }
       },
       {
         "level": 5,
@@ -99,9 +169,19 @@
         "mMod": -2,
         "navDR": -1,
         "repairPctOfBase": 25,
-        "desc": "Sous la ligne de flottaison, le navire ressemble à un récif de corail inversé."
+        "desc": "Sous la ligne de flottaison, le navire ressemble à un récif de corail inversé.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 105,
+          "note": "ch.13 « Navigation maritime » — table SALISSURES (l.152-159)."
+        }
       }
-    ]
+    ],
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 105,
+      "note": "ch.13 « Navigation maritime » — Salissures (l.144-150)."
+    }
   },
   "orientation": {
     "testsPerDay": 1,
@@ -110,31 +190,56 @@
         "min": 4,
         "max": 9999,
         "outcome": "exact",
-        "desc": "Le Navigateur sait dans quelle direction vogue le navire et s'il a accès aux cartes appropriées, il peut désigner l'emplacement du bateau sur une carte."
+        "desc": "Le Navigateur sait dans quelle direction vogue le navire et s'il a accès aux cartes appropriées, il peut désigner l'emplacement du bateau sur une carte.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table REPÈRES (l.313-320)."
+        }
       },
       {
         "min": 0,
         "max": 3,
         "outcome": "ok",
-        "desc": "Le bateau avance dans la direction supposée par le Navigateur."
+        "desc": "Le bateau avance dans la direction supposée par le Navigateur.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table REPÈRES (l.313-320)."
+        }
       },
       {
         "min": -2,
         "max": -1,
         "outcome": "drift-minor",
-        "desc": "Le vaisseau a légèrement dévié de sa trajectoire. L'écart est mineur, c'est pourquoi ce résultat n'a aucun effet la première fois, mais s'il se reproduit, lancez le dé dans le tableau Changement de cap."
+        "desc": "Le vaisseau a légèrement dévié de sa trajectoire. L'écart est mineur, c'est pourquoi ce résultat n'a aucun effet la première fois, mais s'il se reproduit, lancez le dé dans le tableau Changement de cap.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table REPÈRES (l.313-320)."
+        }
       },
       {
         "min": -4,
         "max": -3,
         "outcome": "drift",
-        "desc": "Le bateau a dévié de sa trajectoire. Lancez le dé dans le tableau Changement de cap."
+        "desc": "Le bateau a dévié de sa trajectoire. Lancez le dé dans le tableau Changement de cap.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table REPÈRES (l.313-320)."
+        }
       },
       {
         "min": -9999,
         "max": -5,
         "outcome": "drift-major",
-        "desc": "Le bateau a énormément dévié de sa trajectoire. Lancez le dé dans le tableau Changement de cap et ajoutez 2 au résultat."
+        "desc": "Le bateau a énormément dévié de sa trajectoire. Lancez le dé dans le tableau Changement de cap et ajoutez 2 au résultat.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table REPÈRES (l.313-320)."
+        }
       }
     ],
     "driftMajorBonus": 2,
@@ -146,64 +251,124 @@
         "min": -9999,
         "max": 3,
         "effect": "aucun",
-        "desc": "Le Navigateur n'arrive plus à trouver la position du bateau sur une carte. Sans conséquences."
+        "desc": "Le Navigateur n'arrive plus à trouver la position du bateau sur une carte. Sans conséquences.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table CHANGEMENT DE CAP (l.324-331)."
+        }
       },
       {
         "min": 4,
         "max": 6,
         "effect": "retard",
         "delayPct": 10,
-        "desc": "Le Navigateur est un peu perdu. Ajoutez 10 % au temps que prendra le bateau pour atteindre sa prochaine destination voulue."
+        "desc": "Le Navigateur est un peu perdu. Ajoutez 10 % au temps que prendra le bateau pour atteindre sa prochaine destination voulue.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table CHANGEMENT DE CAP (l.324-331)."
+        }
       },
       {
         "min": 7,
         "max": 9,
         "effect": "retard",
         "delayPct": 25,
-        "desc": "Le Navigateur a vraiment du mal à garder le cap. Ajoutez 25 % au temps que prendra le navire pour atteindre sa prochaine destination voulue."
+        "desc": "Le Navigateur a vraiment du mal à garder le cap. Ajoutez 25 % au temps que prendra le navire pour atteindre sa prochaine destination voulue.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table CHANGEMENT DE CAP (l.324-331)."
+        }
       },
       {
         "min": 10,
         "max": 11,
         "effect": "quart-de-tour",
-        "desc": "À cause des bourdes du Navigateur, le vaisseau a dévié de 90 degrés (donc s'il voyageait vers le nord, il voyage maintenant vers l'est ou l'ouest)."
+        "desc": "À cause des bourdes du Navigateur, le vaisseau a dévié de 90 degrés (donc s'il voyageait vers le nord, il voyage maintenant vers l'est ou l'ouest).",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table CHANGEMENT DE CAP (l.324-331)."
+        }
       },
       {
         "min": 12,
         "max": 9999,
         "effect": "demi-tour",
-        "desc": "Le bateau a accidentellement fait demi-tour et se dirige vers l'endroit d'où il vient."
+        "desc": "Le bateau a accidentellement fait demi-tour et se dirige vers l'endroit d'où il vient.",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table CHANGEMENT DE CAP (l.324-331)."
+        }
       }
-    ]
+    ],
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 108,
+      "note": "ch.13 « Navigation maritime » — ORIENTATION, un Test par jour (l.311)."
+    }
   },
   "phares": {
     "voirLaLumiere": [
       {
         "min": 0,
         "max": 5,
-        "difficulty": "facile"
+        "difficulty": "facile",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table VOIR LA LUMIÈRE (l.339-346)."
+        }
       },
       {
         "min": 6,
         "max": 10,
-        "difficulty": "intermediaire"
+        "difficulty": "intermediaire",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table VOIR LA LUMIÈRE (l.339-346)."
+        }
       },
       {
         "min": 11,
         "max": 15,
-        "difficulty": "difficile"
+        "difficulty": "difficile",
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 108,
+          "note": "ch.13 « Navigation maritime » — table VOIR LA LUMIÈRE (l.339-346)."
+        }
       }
     ],
     "perilSpotBonus": 20,
     "clocher": {
       "orientationDR": 2,
-      "distanceDiviseur": 2
+      "distanceDiviseur": 2,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 108,
+        "note": "ch.13 « Navigation maritime » — Clochers (l.349-351)."
+      }
+    },
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 108,
+      "note": "ch.13 « Navigation maritime » — Phares, bonus Perception près d’un danger (l.333-347)."
     }
   },
   "longsVoyages": {
     "millesParJourParM": 18,
     "sansVoguerDeNuitDiviseur": 2,
-    "progressionPctParDR": 10
+    "progressionPctParDR": 10,
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 129,
+      "note": "ch.15 « Longs voyages » — Vitesse moyenne des bateaux lors de longs voyages, table M/Milles par jour (l.53-70)."
+    }
   },
   "poursuite": {
     "distanceUnitM": 10,
@@ -211,65 +376,130 @@
       {
         "id": "brouillard-labyrinthe",
         "label": "Bancs d'un épais brouillard, formations rocheuses labyrinthiques",
-        "distance": 10
+        "distance": 10,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — table de Distance nécessaire pour s’échapper (l.364-370)."
+        }
       },
       {
         "id": "faible-lumiere-fjords",
         "label": "Faible lumière, fjords ou criques",
-        "distance": 30
+        "distance": 30,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — table de Distance nécessaire pour s’échapper (l.364-370)."
+        }
       },
       {
         "id": "brume-rochers",
         "label": "Légère brume, beaucoup de rochers et de bancs de sables à proximité",
-        "distance": 50
+        "distance": 50,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — table de Distance nécessaire pour s’échapper (l.364-370)."
+        }
       },
       {
         "id": "haute-mer-houleuse",
         "label": "Haute, mer un peu houleuse",
-        "distance": 70
+        "distance": 70,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — table de Distance nécessaire pour s’échapper (l.364-370)."
+        }
       },
       {
         "id": "haute-mer-degagee",
         "label": "Haute, mer d'huile, temps dégagé",
-        "distance": 100
+        "distance": 100,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — table de Distance nécessaire pour s’échapper (l.364-370)."
+        }
       }
     ],
     "drDeltas": [
       {
         "min": 4,
         "max": 9999,
-        "delta": 1
+        "delta": 1,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — table de progression de Distance par Round de Poursuite (l.378-398)."
+        }
       },
       {
         "min": 0,
         "max": 3,
-        "delta": 0
+        "delta": 0,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — table de progression de Distance par Round de Poursuite (l.378-398)."
+        }
       },
       {
         "min": -3,
         "max": -1,
-        "delta": -1
+        "delta": -1,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — table de progression de Distance par Round de Poursuite (l.378-398)."
+        }
       },
       {
         "min": -9999,
         "max": -4,
-        "delta": -2
+        "delta": -2,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — table de progression de Distance par Round de Poursuite (l.378-398)."
+        }
       }
     ],
     "lowMPenalty": [
       {
         "m": 3,
-        "dr": -1
+        "dr": -1,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — pénalité des bateaux M≤3 aux Tests de Poursuite (l.399)."
+        }
       },
       {
         "m": 2,
-        "dr": -2
+        "dr": -2,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — pénalité des bateaux M≤3 aux Tests de Poursuite (l.399)."
+        }
       },
       {
         "m": 1,
-        "dr": -3
+        "dr": -3,
+        "source": {
+          "book": "mer-des-griffes",
+          "page": 109,
+          "note": "ch.13 « Navigation maritime » — pénalité des bateaux M≤3 aux Tests de Poursuite (l.399)."
+        }
       }
-    ]
+    ],
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 109,
+      "note": "ch.13 « Navigation maritime » — COURSE-POURSUITE, 1 point de Distance = 10 mètres (l.362)."
+    }
   },
   "reparation": {
     "portCostGoldPerWound": 1,
@@ -284,6 +514,11 @@
       "woundsPerRepair": "1d10",
       "failDamage": "1d10-4"
     },
-    "entretienCrewTestDR": -2
+    "entretienCrewTestDR": -2,
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 116,
+      "note": "ch.13 « Navigation maritime » — RÉPARER LES NAVIRES + Réparations temporaires (l.639-651) ; entretienCrewTestDR croise ch.14 « Entretien » (l.122)."
+    }
   }
 }

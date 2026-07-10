@@ -26,6 +26,11 @@
         "ete": 1,
         "automne": 0.5,
         "hiver": 1
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     },
     {
@@ -54,6 +59,11 @@
         "ete": 5,
         "automne": 4,
         "hiver": 5
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     },
     {
@@ -82,6 +92,11 @@
         "ete": 25,
         "automne": 25,
         "hiver": 25
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     },
     {
@@ -110,6 +125,11 @@
         "ete": 4,
         "automne": 4,
         "hiver": 4
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     },
     {
@@ -138,6 +158,11 @@
         "ete": 0.75,
         "automne": 1,
         "hiver": 1.5
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     },
     {
@@ -163,6 +188,11 @@
       },
       "price": {
         "dice": "3d10"
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     },
     {
@@ -191,6 +221,11 @@
         "ete": 0.75,
         "automne": 1,
         "hiver": 1.5
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     },
     {
@@ -219,6 +254,11 @@
         "ete": 3,
         "automne": 4,
         "hiver": 3
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     },
     {
@@ -247,6 +287,11 @@
         "ete": 2,
         "automne": 4,
         "hiver": 6
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     },
     {
@@ -275,6 +320,11 @@
         "ete": 2,
         "automne": 1,
         "hiver": 2
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     },
     {
@@ -303,6 +353,11 @@
         "ete": 7,
         "automne": 6,
         "hiver": 7
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 137,
+        "note": "ch.15 « Longs voyages » — Générer les cargaisons disponibles, tables disponibilité + prix de base (l.406-434)."
       }
     }
   ],
@@ -317,7 +372,12 @@
       "plus": 55
     },
     "partialPurchaseSellerDR": 1,
-    "surplusSellerDR": 1
+    "surplusSellerDR": 1,
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 135,
+      "note": "ch.15 « Longs voyages » — COMMERCE MARITIME, Acheter (Type de cargaison/Taille/Marchandage, l.315-341)."
+    }
   },
   "sell": {
     "offerPrice": [
@@ -355,10 +415,14 @@
       "produces": -2,
       "surplus": -3
     },
-    "dumpingPctOfBase": 25
+    "dumpingPctOfBase": 25,
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 136,
+      "note": "ch.15 « Longs voyages » — Vendre, table Prix d’offre (l.374-383)."
+    }
   },
   "overload": {
-    "_source": "MDG ch.12 l.70-75 (Contenance) — « Un navire chargé d'une cargaison supérieure à cette valeur subit des pénalités à sa vitesse et à sa manœuvrabilité. » Degré d'Encombrement supplémentaire → effet. `fromPct` = seuil STRICT (>) en % de la Contenance ; `mMod`/`manoeuvreDR` = −M et −DR Manœuvre. `hardCapPct` 150 = « Impossible de prendre la mer ».",
     "hardCapPct": 150,
     "paliers": [
       {
@@ -382,7 +446,12 @@
         "mMod": -3,
         "manoeuvreDR": -3
       }
-    ]
+    ],
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 93,
+      "note": "ch.12 « Navires et construction navale » — Contenance (l.66-76)."
+    }
   },
   "opportunite": {
     "investMaxEnc": true,
@@ -411,6 +480,11 @@
         "minExtraDR": 6,
         "pct": 20
       }
-    ]
+    ],
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 134,
+      "note": "ch.15 « Longs voyages » — Commerce d’opportunité, table ACTIVITÉS DE COMMERCE (l.274-286)."
+    }
   }
 }

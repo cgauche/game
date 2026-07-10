@@ -4,6 +4,7 @@
  * (`src/engine/massBattle.ts:27-35`).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'mass-battle.json';
 
@@ -13,6 +14,7 @@ const powerEstimateRowSchema = z.strictObject({
   ally: z.number(),
   enemy: z.number(),
   example: z.string(),
+  source: sourceRefSchema,
 });
 
 const mightModifierRowSchema = z.strictObject({
@@ -20,6 +22,7 @@ const mightModifierRowSchema = z.strictObject({
   label: z.string(),
   mod: z.number(),
   example: z.string(),
+  source: sourceRefSchema,
 });
 
 const warMachineRowSchema = z.strictObject({
@@ -32,6 +35,7 @@ const warMachineRowSchema = z.strictObject({
   damage: z.string(),
   traits: z.string(),
   siege: z.boolean(),
+  source: sourceRefSchema,
 });
 
 const structureRowSchema = z.strictObject({
@@ -40,6 +44,7 @@ const structureRowSchema = z.strictObject({
   be: z.number(),
   wounds: z.number(),
   traits: z.string(),
+  source: sourceRefSchema,
 });
 
 const hazardRowSchema = z.strictObject({
@@ -47,6 +52,7 @@ const hazardRowSchema = z.strictObject({
   max: z.number(),
   label: z.string(),
   text: z.string(),
+  source: sourceRefSchema,
 });
 
 export const schema = z.strictObject({

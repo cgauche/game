@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import { CHAR_ABR } from '../data';
 import { CharValue } from './CharValue';
 
 describe('CharValue — caractéristique isolée', () => {
@@ -14,5 +15,17 @@ describe('CharValue — caractéristique isolée', () => {
   it('bonus optionnel affiché « BN »', () => {
     const html = renderToStaticMarkup(<CharValue charKey="F" value={38} bonus={3} />);
     expect(html).toContain('B3');
+  });
+
+  it('le libellé court suit la DONNÉE (CHAR_ABR), jamais la clé littérale — altère le dataset réel', () => {
+    const original = CHAR_ABR.CC;
+    try {
+      CHAR_ABR.CC = 'ZZ';
+      const html = renderToStaticMarkup(<CharValue charKey="CC" value={45} />);
+      expect(html).toContain('ZZ');
+      expect(html).not.toContain('>CC<');
+    } finally {
+      CHAR_ABR.CC = original;
+    }
   });
 });

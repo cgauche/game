@@ -633,11 +633,11 @@ const CODEX_SPECS: CodexCategorySpec[] = [
   },
   {
     key: 'characteristics', label: 'Caractéristiques', group: 'Personnage',
-    build: () => (characteristics as { label: string; abr?: string; type?: string; desc?: string; source?: CodexSource }[]).map((c) => ({
+    build: () => (characteristics as { id?: string; label: string; abr?: string; type?: string; desc?: string; source?: CodexSource }[]).map((c) => ({
       label: c.label, sub: c.abr, desc: c.desc, source: src(c.source),
       // Bonus de Caractéristique = chiffre des dizaines (LDB 03) — rappel sur les caracs à jet (d100).
       meta: c.type === 'roll' ? facts(fact('Bonus', 'chiffre des dizaines')) : undefined,
-      sections: sections(...reverseSections('characteristics', c.abr)),
+      sections: sections(...reverseSections('characteristics', c.id)),
     })),
   },
   {

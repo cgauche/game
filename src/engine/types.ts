@@ -2,7 +2,9 @@
 import { t } from '../i18n';
 import type { Duration } from './duration';
 
-/** Les 10 Caractéristiques (abréviations du Livre de base). */
+/** Les 10 Caractéristiques. Ids OPAQUES GELÉS (déjà des slugs FR figés dans données/saves — pas de
+ *  renommage) : l'affichage (abréviation/libellé) vient de `characteristics.json`/`CHAR_LABELS`,
+ *  jamais du littéral de la clé — une clé ne se rend JAMAIS telle quelle à l'écran. */
 export type CharKey =
   | 'CC' // Capacité de Combat
   | 'CT' // Capacité de Tir

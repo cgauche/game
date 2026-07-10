@@ -1,35 +1,59 @@
 {
-  "_source": "Mort sur le Reik — Compagnon, ch.5 « Navigation fluviale » (T2C ch.5). Tables VERBATIM.",
   "windForces": [
     {
       "id": "calme",
       "label": "Calme",
       "min": 1,
-      "max": 2
+      "max": 2,
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 29,
+        "note": "ch.5 « Navigation fluviale » — TABLEAU DES VENTS, colonne Force (l.23-33)."
+      }
     },
     {
       "id": "leger",
       "label": "Léger",
       "min": 3,
-      "max": 4
+      "max": 4,
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 29,
+        "note": "ch.5 « Navigation fluviale » — TABLEAU DES VENTS, colonne Force (l.23-33)."
+      }
     },
     {
       "id": "modere",
       "label": "Modéré",
       "min": 5,
-      "max": 6
+      "max": 6,
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 29,
+        "note": "ch.5 « Navigation fluviale » — TABLEAU DES VENTS, colonne Force (l.23-33)."
+      }
     },
     {
       "id": "fort",
       "label": "Fort",
       "min": 7,
-      "max": 8
+      "max": 8,
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 29,
+        "note": "ch.5 « Navigation fluviale » — TABLEAU DES VENTS, colonne Force (l.23-33)."
+      }
     },
     {
       "id": "tres-fort",
       "label": "Très fort",
       "min": 9,
-      "max": 10
+      "max": 10,
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 29,
+        "note": "ch.5 « Navigation fluviale » — TABLEAU DES VENTS, colonne Force (l.23-33)."
+      }
     }
   ],
   "windDirections": [
@@ -37,19 +61,34 @@
       "id": "arriere",
       "label": "Vent arrière",
       "min": 1,
-      "max": 3
+      "max": 3,
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 29,
+        "note": "ch.5 « Navigation fluviale » — TABLEAU DES VENTS, colonne Direction (l.23-33)."
+      }
     },
     {
       "id": "cote",
       "label": "Vent de côté",
       "min": 4,
-      "max": 7
+      "max": 7,
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 29,
+        "note": "ch.5 « Navigation fluviale » — TABLEAU DES VENTS, colonne Direction (l.23-33)."
+      }
     },
     {
       "id": "contraire",
       "label": "Vent contraire",
       "min": 8,
-      "max": 10
+      "max": 10,
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 29,
+        "note": "ch.5 « Navigation fluviale » — TABLEAU DES VENTS, colonne Direction (l.23-33)."
+      }
     }
   ],
   "windTickThreshold": 1,
@@ -123,22 +162,52 @@
     "difficulty": "intermediaire",
     "failSpeedPct": -20,
     "spectacularSL": -6,
-    "spectacularSpeedFactor": 0.5
+    "spectacularSpeedFactor": 0.5,
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "ch.5 « Navigation fluviale » — RÈGLES DE NAVIGATION, Test d’Agilité pour la Voile (l.17)."
+    }
   },
   "capsize": {
     "removeSailDifficulty": "accessible",
     "rightDifficulty": "accessible",
-    "rightCumulativePenalty": -5
+    "rightCumulativePenalty": -5,
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "ch.5 « Navigation fluviale » — TABLEAU DES VENTS, notes 4-5 (l.40-41)."
+    }
   },
   "outOfControl": {
-    "navPenalty": -20
+    "navPenalty": -20,
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 29,
+      "note": "ch.5 « Navigation fluviale » — TABLEAU DES VENTS, note 5 (l.41)."
+    }
   },
   "echouage": {
-    "hullDamage": 12
+    "hullDamage": 12,
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 30,
+      "note": "ch.5 « Navigation fluviale » — S’échouer (l.97-99)."
+    }
   },
   "temporaryRepair": {
     "difficulty": "complexe",
     "charpentierPenalty": -10,
-    "woundsPerRepair": "1d10"
+    "woundsPerRepair": "1d10",
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 30,
+      "note": "ch.5 « Navigation fluviale » — Réparations temporaires (l.113-117)."
+    }
+  },
+  "source": {
+    "book": "mort-sur-le-reik-compagnon",
+    "page": 29,
+    "note": "ch.5 « Navigation fluviale » — RÈGLES DE NAVIGATION (l.9-17) + notes du TABLEAU DES VENTS (l.35-41)."
   }
 }

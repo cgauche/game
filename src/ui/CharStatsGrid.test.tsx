@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { CHAR_KEYS } from '../engine/types';
+import { CHAR_ABR } from '../data';
 import { CharStatsGrid } from './CharStatsGrid';
 
 /** Nombre d'éléments `class="stat"` EXACT (le parent), sans capter `stat-label`/`stat-val`. */
@@ -47,5 +48,17 @@ describe('CharStatsGrid (rendu — markup unifié .char-stats)', () => {
   it('className est ajoutée au conteneur .char-stats (parité sheet-stats)', () => {
     const html = renderToStaticMarkup(<CharStatsGrid className="sheet-stats" value={(k) => k} />);
     expect(html).toContain('class="char-stats sheet-stats"');
+  });
+
+  it('le libellé court suit la DONNÉE (CHAR_ABR), jamais la clé littérale — altère le dataset réel', () => {
+    const original = CHAR_ABR.CC;
+    try {
+      CHAR_ABR.CC = 'ZZ';
+      const html = renderToStaticMarkup(<CharStatsGrid value={(k) => `VAL_${k}`} />);
+      expect(html).toContain('>ZZ</span>');
+      expect(html).not.toContain('>CC</span>');
+    } finally {
+      CHAR_ABR.CC = original;
+    }
   });
 });

@@ -18,7 +18,12 @@
       ],
       "e": 35,
       "b": 10,
-      "capacity": 50
+      "capacity": 50,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — CARACTÉRISTIQUES DE BATEAU STANDARD (l.120-129)."
+      }
     },
     {
       "size": "tres-petite",
@@ -38,7 +43,12 @@
       ],
       "e": 40,
       "b": 20,
-      "capacity": 100
+      "capacity": 100,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — CARACTÉRISTIQUES DE BATEAU STANDARD (l.120-129)."
+      }
     },
     {
       "size": "petite",
@@ -58,7 +68,12 @@
       ],
       "e": 40,
       "b": 60,
-      "capacity": 200
+      "capacity": 200,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — CARACTÉRISTIQUES DE BATEAU STANDARD (l.120-129)."
+      }
     },
     {
       "size": "moyenne",
@@ -78,7 +93,12 @@
       ],
       "e": 40,
       "b": 90,
-      "capacity": 400
+      "capacity": 400,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — CARACTÉRISTIQUES DE BATEAU STANDARD (l.120-129)."
+      }
     },
     {
       "size": "grande",
@@ -98,7 +118,12 @@
       ],
       "e": 50,
       "b": 150,
-      "capacity": 1000
+      "capacity": 1000,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — CARACTÉRISTIQUES DE BATEAU STANDARD (l.120-129)."
+      }
     },
     {
       "size": "enorme",
@@ -114,7 +139,12 @@
       ],
       "e": 50,
       "b": 250,
-      "capacity": 2000
+      "capacity": 2000,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — CARACTÉRISTIQUES DE BATEAU STANDARD (l.120-129)."
+      }
     },
     {
       "size": "monstrueuse",
@@ -130,29 +160,59 @@
       ],
       "e": 50,
       "b": 400,
-      "capacity": 4000
+      "capacity": 4000,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — CARACTÉRISTIQUES DE BATEAU STANDARD (l.120-129)."
+      }
     }
   ],
   "propulsion": {
     "secondaryMalus": 2,
-    "secondaryMinM": 3
+    "secondaryMinM": 3,
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 96,
+      "note": "ch.12 « Navires et construction navale » — Étape 2, choix du moyen de propulsion (l.131-133)."
+    }
   },
   "manoeuvrability": [
     {
       "manDR": -2,
-      "costPct": -40
+      "costPct": -40,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 3, Ajuster le coût selon la manœuvrabilité (l.139-144)."
+      }
     },
     {
       "manDR": -1,
-      "costPct": -20
+      "costPct": -20,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 3, Ajuster le coût selon la manœuvrabilité (l.139-144)."
+      }
     },
     {
       "manDR": 0,
-      "costPct": 0
+      "costPct": 0,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 3, Ajuster le coût selon la manœuvrabilité (l.139-144)."
+      }
     },
     {
       "manDR": 1,
-      "costPct": 20
+      "costPct": 20,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 3, Ajuster le coût selon la manœuvrabilité (l.139-144)."
+      }
     }
   ],
   "speedTraits": [
@@ -162,7 +222,12 @@
       "mMod": -3,
       "capacityPct": 100,
       "manDR": -2,
-      "costPct": 0
+      "costPct": 0,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 4, Ajuster le coût selon la vitesse (l.147-165)."
+      }
     },
     {
       "id": "tres-lent",
@@ -170,7 +235,12 @@
       "mMod": -2,
       "capacityPct": 50,
       "manDR": -1,
-      "costPct": 0
+      "costPct": 0,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 4, Ajuster le coût selon la vitesse (l.147-165)."
+      }
     },
     {
       "id": "lent",
@@ -178,7 +248,12 @@
       "mMod": -1,
       "capacityPct": 25,
       "manDR": 0,
-      "costPct": 0
+      "costPct": 0,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 4, Ajuster le coût selon la vitesse (l.147-165)."
+      }
     },
     {
       "id": "moyen",
@@ -186,7 +261,12 @@
       "mMod": 0,
       "capacityPct": 0,
       "manDR": 0,
-      "costPct": 0
+      "costPct": 0,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 4, Ajuster le coût selon la vitesse (l.147-165)."
+      }
     },
     {
       "id": "rapide",
@@ -194,7 +274,12 @@
       "mMod": 1,
       "capacityPct": -25,
       "manDR": 0,
-      "costPct": 0
+      "costPct": 0,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 4, Ajuster le coût selon la vitesse (l.147-165)."
+      }
     },
     {
       "id": "tres-rapide",
@@ -202,7 +287,12 @@
       "mMod": 2,
       "capacityPct": -50,
       "manDR": 0,
-      "costPct": 10
+      "costPct": 10,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 4, Ajuster le coût selon la vitesse (l.147-165)."
+      }
     },
     {
       "id": "foudroyant",
@@ -210,33 +300,58 @@
       "mMod": 3,
       "capacityPct": -75,
       "manDR": 0,
-      "costPct": 10
+      "costPct": 10,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 96,
+        "note": "ch.12 « Navires et construction navale » — Étape 4, Ajuster le coût selon la vitesse (l.147-165)."
+      }
     }
   ],
   "constructionTraits": [
     {
       "id": "peu-maniable",
       "maxLevel": 3,
-      "costPctPerLevel": -10
+      "costPctPerLevel": -10,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 97,
+        "note": "ch.12 « Navires et construction navale » — TRAITS (Peu maniable/Renforcé/Robuste/Solide, l.167-193)."
+      }
     },
     {
       "id": "renforce",
       "maxLevel": 3,
       "ePerLevel": 10,
       "capacityPctPerLevel": -10,
-      "costPctPerLevel": 10
+      "costPctPerLevel": 10,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 97,
+        "note": "ch.12 « Navires et construction navale » — TRAITS (Peu maniable/Renforcé/Robuste/Solide, l.167-193)."
+      }
     },
     {
       "id": "robuste",
       "maxLevel": 1,
-      "costPctPerLevel": 10
+      "costPctPerLevel": 10,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 97,
+        "note": "ch.12 « Navires et construction navale » — TRAITS (Peu maniable/Renforcé/Robuste/Solide, l.167-193)."
+      }
     },
     {
       "id": "solide",
       "maxLevel": 3,
       "bPctPerLevel": 30,
       "capacityPctPerLevel": -10,
-      "costPctPerLevel": 20
+      "costPctPerLevel": 20,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 97,
+        "note": "ch.12 « Navires et construction navale » — TRAITS (Peu maniable/Renforcé/Robuste/Solide, l.167-193)."
+      }
     }
   ]
 }

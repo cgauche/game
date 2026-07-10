@@ -5,10 +5,14 @@
  * de bande, ±DR de Commandement/Tests d'équipage, seuil de désertion optionnel).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'crew-morale.json';
 
 export const schema = z.strictObject({
+  /** Couvre le champ scalaire `base` (score de départ) — les listes `factors`/`bands` portent chacune
+   *  leur propre `source` par entrée. */
+  source: sourceRefSchema,
   base: z.number(),
   factors: z.array(
     z.strictObject({
@@ -16,6 +20,7 @@ export const schema = z.strictObject({
       label: z.string(),
       /** Dés signés texte (ex. « +2d10 », « -3d10 ») — lu par `rollExpr` (`src/engine/dice.ts`). */
       effect: z.string(),
+      source: sourceRefSchema,
     }),
   ),
   bands: z.array(
@@ -28,6 +33,7 @@ export const schema = z.strictObject({
       /** Absent si aucune désertion pour cette bande (« Mené de main de maître », « Excellent équipage »). */
       desertionRoll: z.number().optional(),
       desc: z.string(),
+      source: sourceRefSchema,
     }),
   ),
 });

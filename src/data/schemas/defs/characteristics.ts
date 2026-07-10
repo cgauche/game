@@ -5,20 +5,35 @@
  * `src/ui/compendium/registry.ts:460` (`{ label, abr?, type?, desc?, source? }`, `c.type === 'roll'`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { sourceRefSchema, charKeySchema } from '../common';
 
 export const file = 'characteristics.json';
+
+/** id STABLE — `CharKey` du moteur pour les 10 caracs à jet (« CC »…), slug dédié pour les 8 autres
+ *  entrées (Blessure/Destin/Chance/Résilience/Détermination/Extra Points/Mouvement/Corruption) qui
+ *  ne sont pas des `CharKey`. Catalogue FERMÉ (18 entrées) — union énumérée, pas `z.string()`. */
+const characteristicIdSchema = z.union([
+  charKeySchema,
+  z.enum(['blessure', 'destin', 'chance', 'resilience', 'determination', 'extra-points', 'mouvement', 'corruption']),
+]);
 
 /** `type` observés dans le JSON : 'roll' (10 caracs à jet), 'wounds' (B), 'extra' (Destin/Résilience),
  *  'mv' (Mouvement), 'points' (Extra Points), '' (Chance/Détermination/Corruption — pas de type propre). */
 export const schema = z.array(
   z.strictObject({
+    /** id STABLE — cible de la jointure (`src/data/index.ts`, `registry.ts`). `abr` reste un champ
+     *  d'AFFICHAGE (abréviation FR rendue sur la fiche perso), jamais une clé de logique. */
+    id: characteristicIdSchema,
     abr: z.string(),
     label: z.string(),
     type: z.enum(['roll', 'wounds', 'extra', 'mv', 'points', '']),
     desc: z.string(),
-    /** Valeur/formule de base par espèce (clé = `SpeciesData.label`, ex. "Humain", "Ogre"…) — un
-     *  nombre (la plupart des attributs) ou une formule texte (ex. Blessure : "BF+(2 × BE)+BFM"). */
+    /** Valeur/formule de base par FAMILLE d'espèce (clé = label FR, ex. "Humain", "Ogre"…) — un
+     *  nombre (la plupart des attributs) ou une formule texte (ex. Blessure : "BF+(2 × BE)+BFM").
+     *  Aucun consommateur dans `src` : la valeur réelle par espèce vient de `SpeciesData.baseChar`.
+     *  Ses clés ne correspondent déjà plus à `SpeciesData.family` (« Humain » vs « Humains », « Haut
+     *  Elfe » vs « Hauts elfes »…) et `family` lui-même n'est qu'un libellé de groupage d'affichage,
+     *  pas un id — ni ce champ ni les ids de `base` ne sont couverts par cette passe. */
     base: z.record(z.string(), z.union([z.number(), z.string()])),
     source: sourceRefSchema,
   }),

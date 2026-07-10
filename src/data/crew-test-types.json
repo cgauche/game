@@ -1,122 +1,174 @@
-[
-  {
-    "id": "progression",
-    "label": "Tests de Navigation pour la progression du bateau",
-    "roles": [
-      "capitaine",
-      "chansonnier",
-      "mousse",
-      "navigateur",
-      "timonier"
-    ],
-    "essential": "capitaine"
-  },
-  {
-    "id": "progression-poursuite",
-    "label": "Tests de Navigation pour la progression du bateau lors d'une Poursuite",
-    "roles": [
-      "capitaine",
-      "chansonnier",
-      "mousse",
-      "navigateur",
-      "timonier"
-    ],
-    "essential": "mousse"
-  },
-  {
-    "id": "manoeuvre",
-    "label": "Tests de Navigation pour les Manœuvres",
-    "roles": [
-      "capitaine",
-      "navigateur",
-      "mousse",
-      "timonier",
-      "chansonnier"
-    ],
-    "essential": "timonier"
-  },
-  {
-    "id": "perception",
-    "label": "Tests de Perception",
-    "roles": [
-      "vigie",
-      "navigateur",
-      "mousse",
-      "timonier",
-      "chansonnier"
-    ],
-    "essential": "vigie"
-  },
-  {
-    "id": "orientation",
-    "label": "Tests d'Orientation",
-    "roles": [
-      "capitaine",
-      "mousse",
-      "timonier",
-      "vigie",
-      "navigateur"
-    ],
-    "essential": "navigateur"
-  },
-  {
-    "id": "affaler",
-    "label": "Affaler les voiles",
-    "roles": [
-      "capitaine",
-      "vigie",
-      "mousse",
-      "timonier",
-      "chansonnier"
-    ],
-    "essential": "mousse"
-  },
-  {
-    "id": "extermination-nuisibles",
-    "label": "Extermination des nuisibles",
-    "roles": [
-      "capitaine",
-      "vigie",
-      "mousse",
-      "timonier",
-      "chansonnier"
-    ],
-    "essential": "mousse"
-  },
-  {
-    "id": "rude-epreuve",
-    "label": "Rude épreuve",
-    "roles": [
-      "chansonnier",
-      "cuisinier",
-      "navigateur",
-      "mousse",
-      "chirurgien"
-    ],
-    "essential": "cuisinier"
-  },
-  {
-    "id": "entretien",
-    "label": "Entretien",
-    "roles": [
-      "capitaine",
-      "chansonnier",
-      "mousse",
-      "timonier",
-      "navigateur"
-    ],
-    "essential": "mousse"
-  },
-  {
-    "id": "batterie",
-    "label": "Tir de batterie",
-    "roles": [
-      "capitaine",
-      "chansonnier",
-      "mousse",
-      "artilleur",
-      "timonier"
-    ],
-    "essential": "artilleur"
-  }
-]
+{
+  "types": [
+    {
+      "id": "progression",
+      "label": "Tests de Navigation pour la progression du bateau",
+      "roles": [
+        "capitaine",
+        "chansonnier",
+        "mousse",
+        "navigateur",
+        "timonier"
+      ],
+      "essential": "capitaine",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 122,
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — Rôles essentiels (l.17-32) + TYPES DE TEST D’ÉQUIPAGE (l.61-71)."
+      }
+    },
+    {
+      "id": "progression-poursuite",
+      "label": "Tests de Navigation pour la progression du bateau lors d'une Poursuite",
+      "roles": [
+        "capitaine",
+        "chansonnier",
+        "mousse",
+        "navigateur",
+        "timonier"
+      ],
+      "essential": "mousse",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 122,
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — Rôles essentiels (l.17-32) + TYPES DE TEST D’ÉQUIPAGE (l.61-71)."
+      }
+    },
+    {
+      "id": "manoeuvre",
+      "label": "Tests de Navigation pour les Manœuvres",
+      "roles": [
+        "capitaine",
+        "navigateur",
+        "mousse",
+        "timonier",
+        "chansonnier"
+      ],
+      "essential": "timonier",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 123,
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+      }
+    },
+    {
+      "id": "perception",
+      "label": "Tests de Perception",
+      "roles": [
+        "vigie",
+        "navigateur",
+        "mousse",
+        "timonier",
+        "chansonnier"
+      ],
+      "essential": "vigie",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 123,
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+      }
+    },
+    {
+      "id": "orientation",
+      "label": "Tests d'Orientation",
+      "roles": [
+        "capitaine",
+        "mousse",
+        "timonier",
+        "vigie",
+        "navigateur"
+      ],
+      "essential": "navigateur",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 123,
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+      }
+    },
+    {
+      "id": "affaler",
+      "label": "Affaler les voiles",
+      "roles": [
+        "capitaine",
+        "vigie",
+        "mousse",
+        "timonier",
+        "chansonnier"
+      ],
+      "essential": "mousse",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 123,
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+      }
+    },
+    {
+      "id": "extermination-nuisibles",
+      "label": "Extermination des nuisibles",
+      "roles": [
+        "capitaine",
+        "vigie",
+        "mousse",
+        "timonier",
+        "chansonnier"
+      ],
+      "essential": "mousse",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 123,
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+      }
+    },
+    {
+      "id": "rude-epreuve",
+      "label": "Rude épreuve",
+      "roles": [
+        "chansonnier",
+        "cuisinier",
+        "navigateur",
+        "mousse",
+        "chirurgien"
+      ],
+      "essential": "cuisinier",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 123,
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+      }
+    },
+    {
+      "id": "entretien",
+      "label": "Entretien",
+      "roles": [
+        "capitaine",
+        "chansonnier",
+        "mousse",
+        "timonier",
+        "navigateur"
+      ],
+      "essential": "mousse",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 123,
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+      }
+    },
+    {
+      "id": "batterie",
+      "label": "Tir de batterie",
+      "roles": [
+        "capitaine",
+        "chansonnier",
+        "mousse",
+        "artilleur",
+        "timonier"
+      ],
+      "essential": "artilleur",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 123,
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+      }
+    }
+  ]
+}

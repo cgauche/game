@@ -1,5 +1,4 @@
 {
-  "_source": "Mort sur le Reik — Compagnon, ch.5 « Navigation fluviale » — DANGERS (T2C ch.5 l.119-166). VERBATIM.",
   "perils": [
     {
       "id": "debris",
@@ -9,7 +8,12 @@
         "hullHits": 2,
         "damagePerHit": 10
       },
-      "ref": "T2C ch.5 l.123-125"
+      "ref": "T2C ch.5 l.123-125",
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 30,
+        "note": "ch.5 « Navigation fluviale » — Débris (l.123-125)."
+      }
     },
     {
       "id": "barrage",
@@ -26,7 +30,12 @@
         "encPerObject": "4d10",
         "encPerHour": 100
       },
-      "ref": "T2C ch.5 l.128"
+      "ref": "T2C ch.5 l.128",
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 31,
+        "note": "ch.5 « Navigation fluviale » — Débris, barrage à dégager (l.128)."
+      }
     },
     {
       "id": "rochers",
@@ -37,7 +46,12 @@
         "holeChancePct": 50,
         "echouageChancePct": 20
       },
-      "ref": "T2C ch.5 l.130-140"
+      "ref": "T2C ch.5 l.130-140",
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 31,
+        "note": "ch.5 « Navigation fluviale » — Rochers et eaux peu profondes, Rochers (l.130-140)."
+      }
     },
     {
       "id": "eaux-peu-profondes",
@@ -47,7 +61,12 @@
         "hullDamage": 5,
         "echouageChancePct": 40
       },
-      "ref": "T2C ch.5 l.142-144"
+      "ref": "T2C ch.5 l.142-144",
+      "source": {
+        "book": "mort-sur-le-reik-compagnon",
+        "page": 31,
+        "note": "ch.5 « Navigation fluviale » — Rochers et eaux peu profondes, Eaux peu profondes (l.142-144)."
+      }
     }
   ]
 }

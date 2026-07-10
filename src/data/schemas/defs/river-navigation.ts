@@ -1,10 +1,11 @@
 /**
  * Schéma de `river-navigation.json` — Navigation fluviale (T2C ch.5 « Navigation fluviale »), pendant
  * fluvial de `sea-navigation.json`. Dérivé de la vue typée `DATA` (`src/engine/riverNavigation.ts:62-78`),
- * seul consommateur. `_source` = note de traçabilité libre (non lue par le moteur).
+ * seul consommateur. `source` = réf structurée book+page+note PAR entrée/sous-objet (#278), non lue
+ * par le moteur (`DATA as unknown as { ... }` ignore le champ superflu).
  */
 import { z } from 'zod';
-import { difficultySchema, freeSourceNoteSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../common';
 
 export const file = 'river-navigation.json';
 
@@ -23,9 +24,11 @@ const riverWindEffect = z.strictObject({
 });
 
 export const schema = z.strictObject({
-  _source: freeSourceNoteSchema.optional(),
-  windForces: z.array(bandRow),
-  windDirections: z.array(bandRow),
+  /** Couvre les champs scalaires (`windTickThreshold`/`driftPctOfSpeed`/`navBaseDifficulty`…) —
+   *  `windForces`/`windDirections` et les sous-objets portent chacun leur propre `source`. */
+  source: sourceRefSchema,
+  windForces: z.array(bandRow.extend({ source: sourceRefSchema })),
+  windDirections: z.array(bandRow.extend({ source: sourceRefSchema })),
   windTickThreshold: z.number(),
   windTicksPerDay: z.number(),
   windEffect: z.record(z.string(), z.record(riverWindDirId, riverWindEffect)),
@@ -39,18 +42,21 @@ export const schema = z.strictObject({
     failSpeedPct: z.number(),
     spectacularSL: z.number(),
     spectacularSpeedFactor: z.number(),
+    source: sourceRefSchema,
   }),
   capsize: z.strictObject({
     removeSailDifficulty: difficultySchema,
     rightDifficulty: difficultySchema,
     rightCumulativePenalty: z.number(),
+    source: sourceRefSchema,
   }),
-  outOfControl: z.strictObject({ navPenalty: z.number() }),
-  echouage: z.strictObject({ hullDamage: z.number() }),
+  outOfControl: z.strictObject({ navPenalty: z.number(), source: sourceRefSchema }),
+  echouage: z.strictObject({ hullDamage: z.number(), source: sourceRefSchema }),
   temporaryRepair: z.strictObject({
     difficulty: difficultySchema,
     charpentierPenalty: z.number(),
     woundsPerRepair: z.string(),
+    source: sourceRefSchema,
   }),
 });
 

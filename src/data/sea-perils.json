@@ -1,6 +1,11 @@
 {
   "echouer": {
-    "desc": "Quand un navire s'est Échoué, il s'arrête net. Le vaisseau ne peut plus bouger jusqu'à ce qu'il soit dégagé du péril. Cette tâche nécessite un Test de Force avec une pénalité égale au total de points d'Encombrement du navire et de sa cargaison. N'importe quel nombre de Personnages, de bêtes de somme, etc. peut aider s'ils ont tous assez de cordes pour tirer."
+    "desc": "Quand un navire s'est Échoué, il s'arrête net. Le vaisseau ne peut plus bouger jusqu'à ce qu'il soit dégagé du péril. Cette tâche nécessite un Test de Force avec une pénalité égale au total de points d'Encombrement du navire et de sa cargaison. N'importe quel nombre de Personnages, de bêtes de somme, etc. peut aider s'ils ont tous assez de cordes pour tirer.",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 112,
+      "note": "ch.13 « Navigation maritime » — Échouer (l.471-473)."
+    }
   },
   "hazards": [
     {
@@ -8,7 +13,12 @@
       "label": "Iceberg",
       "m": 1,
       "ic": 25,
-      "desc": "Un Iceberg se déplace à une vitesse de M1. La masse d'un Iceberg est très variable, mais en moyenne, il a un Indice de Collision de 25."
+      "desc": "Un Iceberg se déplace à une vitesse de M1. La masse d'un Iceberg est très variable, mais en moyenne, il a un Indice de Collision de 25.",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 112,
+        "note": "ch.13 « Navigation maritime » — Icebergs (l.475-479)."
+      }
     },
     {
       "id": "debris-marins",
@@ -34,21 +44,36 @@
         "difficulty": "accessible",
         "totalDR": 10
       },
-      "desc": "Les Débris marins se déplacent à une vitesse de M1 et ont un Indice de Collision de 3. S'ils entrent en collision avec un navire, ce dernier a 20 % de chances de s'y empêtrer, ce qui lui impose une pénalité en fonction de sa Taille. L'équipage peut dégager le bateau des Débris marins en réussissant un Test étendu de Force Accessible (+20) pour un total de 10 DR."
+      "desc": "Les Débris marins se déplacent à une vitesse de M1 et ont un Indice de Collision de 3. S'ils entrent en collision avec un navire, ce dernier a 20 % de chances de s'y empêtrer, ce qui lui impose une pénalité en fonction de sa Taille. L'équipage peut dégager le bateau des Débris marins en réussissant un Test étendu de Force Accessible (+20) pour un total de 10 DR.",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 112,
+        "note": "ch.13 « Navigation maritime » — Débris marins (l.481-491)."
+      }
     },
     {
       "id": "rocher",
       "label": "Rocher",
       "ic": 47,
       "strandChancePct": 20,
-      "desc": "La taille et la masse d'un Rocher sont très variables, mais le Rocher moyen possède un Indice de Collision de 47. En cas de collision avec un Rocher, un vaisseau a 20 % de chances de s'Échouer dessus."
+      "desc": "La taille et la masse d'un Rocher sont très variables, mais le Rocher moyen possède un Indice de Collision de 47. En cas de collision avec un Rocher, un vaisseau a 20 % de chances de s'Échouer dessus.",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 112,
+        "note": "ch.13 « Navigation maritime » — Rochers et bas-fonds (l.493-499)."
+      }
     },
     {
       "id": "bas-fonds",
       "label": "Bas-fonds",
       "ic": 10,
       "strandChancePct": 40,
-      "desc": "Les Bas-fonds sont des bancs de petits rochers, de sable ou de boue. Leur taille et leur masse peuvent beaucoup varier d'un cas à l'autre, mais une zone de Bas-fonds typique possède un Indice de Collision de 10. S'il entre en collision avec des Bas-fonds, un bateau a 40 % de chances de s'y Échouer."
+      "desc": "Les Bas-fonds sont des bancs de petits rochers, de sable ou de boue. Leur taille et leur masse peuvent beaucoup varier d'un cas à l'autre, mais une zone de Bas-fonds typique possède un Indice de Collision de 10. S'il entre en collision avec des Bas-fonds, un bateau a 40 % de chances de s'y Échouer.",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 112,
+        "note": "ch.13 « Navigation maritime » — Rochers et bas-fonds (l.493-499)."
+      }
     }
   ],
   "detroits": [
@@ -56,19 +81,34 @@
       "id": "faible",
       "label": "Faible",
       "m": 4,
-      "navDR": -1
+      "navDR": -1,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 112,
+        "note": "ch.13 « Navigation maritime » — Détroits, table NAVIGATION DANS UN DÉTROIT (l.501-511)."
+      }
     },
     {
       "id": "moyen",
       "label": "Moyen",
       "m": 8,
-      "navDR": -2
+      "navDR": -2,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 112,
+        "note": "ch.13 « Navigation maritime » — Détroits, table NAVIGATION DANS UN DÉTROIT (l.501-511)."
+      }
     },
     {
       "id": "fort",
       "label": "Fort",
       "m": 16,
-      "navDR": -3
+      "navDR": -3,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 112,
+        "note": "ch.13 « Navigation maritime » — Détroits, table NAVIGATION DANS UN DÉTROIT (l.501-511)."
+      }
     }
   ],
   "tourbillons": [
@@ -83,6 +123,11 @@
       "evasion": {
         "difficulty": "accessible",
         "totalDR": 10
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 113,
+        "note": "ch.13 « Navigation maritime » — Tourbillons, table CARACTÉRISTIQUES D’UN TOURBILLON (l.514-537)."
       }
     },
     {
@@ -96,6 +141,11 @@
       "evasion": {
         "difficulty": "intermediaire",
         "totalDR": 20
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 113,
+        "note": "ch.13 « Navigation maritime » — Tourbillons, table CARACTÉRISTIQUES D’UN TOURBILLON (l.514-537)."
       }
     },
     {
@@ -109,6 +159,11 @@
       "evasion": {
         "difficulty": "complexe",
         "totalDR": 25
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 113,
+        "note": "ch.13 « Navigation maritime » — Tourbillons, table CARACTÉRISTIQUES D’UN TOURBILLON (l.514-537)."
       }
     },
     {
@@ -122,6 +177,11 @@
       "evasion": {
         "difficulty": "difficile",
         "totalDR": 35
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 113,
+        "note": "ch.13 « Navigation maritime » — Tourbillons, table CARACTÉRISTIQUES D’UN TOURBILLON (l.514-537)."
       }
     },
     {
@@ -135,28 +195,53 @@
       "evasion": {
         "difficulty": "tresDifficile",
         "totalDR": 45
+      },
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 113,
+        "note": "ch.13 « Navigation maritime » — Tourbillons, table CARACTÉRISTIQUES D’UN TOURBILLON (l.514-537)."
       }
     }
   ],
   "tourbillonSwim": {
     "skillId": "natation",
-    "difficulty": "complexe"
+    "difficulty": "complexe",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 113,
+      "note": "ch.13 « Navigation maritime » — Tourbillons, Natation dans la Zone (l.522)."
+    }
   },
   "gestionDesPerils": [
     {
       "distanceM": 100,
       "spot": "difficile",
-      "avoid": "facile"
+      "avoid": "facile",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 111,
+        "note": "ch.13 « Navigation maritime » — COLLISIONS, table GESTION DES PÉRILS (l.429-436)."
+      }
     },
     {
       "distanceM": 50,
       "spot": "intermediaire",
-      "avoid": "accessible"
+      "avoid": "accessible",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 111,
+        "note": "ch.13 « Navigation maritime » — COLLISIONS, table GESTION DES PÉRILS (l.429-436)."
+      }
     },
     {
       "distanceM": 10,
       "spot": "accessible",
-      "avoid": "complexe"
+      "avoid": "complexe",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 111,
+        "note": "ch.13 « Navigation maritime » — COLLISIONS, table GESTION DES PÉRILS (l.429-436)."
+      }
     }
   ]
 }

@@ -4,17 +4,21 @@
  * `src/engine/shipNavigation.ts` (`ProgressionEntry`, `findTableEntry`).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'naval-progression.json';
 
 /** `mode` observés : les 5 issues RAW de la table de Progression (ch.13 l.68-75). */
-export const schema = z.array(
-  z.strictObject({
-    min: z.number(),
-    max: z.number(),
-    mode: z.enum(['plus2', 'plus1', 'normal', 'minus1', 'half']),
-    desc: z.string(),
-  }),
-);
+export const schema = z.strictObject({
+  table: z.array(
+    z.strictObject({
+      min: z.number(),
+      max: z.number(),
+      mode: z.enum(['plus2', 'plus1', 'normal', 'minus1', 'half']),
+      desc: z.string(),
+      source: sourceRefSchema,
+    }),
+  ),
+});
 
 export type NavalProgressionData = z.infer<typeof schema>;

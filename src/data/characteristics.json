@@ -1,5 +1,6 @@
 [
   {
+    "id": "CC",
     "abr": "CC",
     "label": "Capacité de Combat",
     "type": "roll",
@@ -19,6 +20,7 @@
     }
   },
   {
+    "id": "CT",
     "abr": "CT",
     "label": "Capacité de Tir",
     "type": "roll",
@@ -38,6 +40,7 @@
     }
   },
   {
+    "id": "F",
     "abr": "F",
     "label": "Force",
     "type": "roll",
@@ -57,6 +60,7 @@
     }
   },
   {
+    "id": "E",
     "abr": "E",
     "label": "Endurance",
     "type": "roll",
@@ -76,6 +80,7 @@
     }
   },
   {
+    "id": "I",
     "abr": "I",
     "label": "Initiative",
     "type": "roll",
@@ -95,6 +100,7 @@
     }
   },
   {
+    "id": "Ag",
     "abr": "Ag",
     "label": "Agilité",
     "type": "roll",
@@ -114,6 +120,7 @@
     }
   },
   {
+    "id": "Dex",
     "abr": "Dex",
     "label": "Dextérité",
     "type": "roll",
@@ -133,6 +140,7 @@
     }
   },
   {
+    "id": "Int",
     "abr": "Int",
     "label": "Intelligence",
     "type": "roll",
@@ -152,6 +160,7 @@
     }
   },
   {
+    "id": "FM",
     "abr": "FM",
     "label": "Force Mentale",
     "type": "roll",
@@ -171,6 +180,7 @@
     }
   },
   {
+    "id": "Soc",
     "abr": "Soc",
     "label": "Sociabilité",
     "type": "roll",
@@ -190,6 +200,7 @@
     }
   },
   {
+    "id": "blessure",
     "abr": "B",
     "label": "Blessure",
     "type": "wounds",
@@ -209,6 +220,7 @@
     }
   },
   {
+    "id": "destin",
     "abr": "",
     "label": "Destin",
     "type": "extra",
@@ -228,6 +240,7 @@
     }
   },
   {
+    "id": "chance",
     "abr": "",
     "label": "Chance",
     "type": "",
@@ -247,6 +260,7 @@
     }
   },
   {
+    "id": "resilience",
     "abr": "",
     "label": "Résilience",
     "type": "extra",
@@ -266,6 +280,7 @@
     }
   },
   {
+    "id": "determination",
     "abr": "",
     "label": "Détermination",
     "type": "",
@@ -285,6 +300,7 @@
     }
   },
   {
+    "id": "extra-points",
     "abr": "",
     "label": "Extra Points",
     "type": "points",
@@ -304,6 +320,7 @@
     }
   },
   {
+    "id": "mouvement",
     "abr": "M",
     "label": "Mouvement",
     "type": "mv",
@@ -323,6 +340,7 @@
     }
   },
   {
+    "id": "corruption",
     "abr": "",
     "label": "Corruption",
     "type": "",

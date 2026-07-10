@@ -11,7 +11,7 @@
  * `src/engine/seaWeather.ts` (#162).
  */
 import { z } from 'zod';
-import { difficultySchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../common';
 
 export const file = 'sea-weather.json';
 
@@ -42,9 +42,16 @@ export const schema = z.strictObject({
       temperature: z.enum(['caniculaire', 'chaude', 'mediane', 'froide', 'glaciale']),
       visibilite: z.enum(['degage', 'brume', 'brouillard', 'puree-de-pois']),
       vent: windForce,
+      source: sourceRefSchema,
     }),
   ),
-  seasonMod: z.strictObject({ ete: z.number(), automne: z.number(), printemps: z.number(), hiver: z.number() }),
+  seasonMod: z.strictObject({
+    ete: z.number(),
+    automne: z.number(),
+    printemps: z.number(),
+    hiver: z.number(),
+    source: sourceRefSchema,
+  }),
   warmSeaMod: z.number(),
   precipitations: z.array(
     z.strictObject({
@@ -62,6 +69,7 @@ export const schema = z.strictObject({
         )
         .optional(),
       otherMod: z.number().optional(),
+      source: sourceRefSchema,
     }),
   ),
   temperatures: z.array(
@@ -72,6 +80,7 @@ export const schema = z.strictObject({
       difficulty: difficultySchema.optional(),
       exposure: z.enum(['chaleur', 'froid']).optional(),
       litresParJour: z.number().optional(),
+      source: sourceRefSchema,
     }),
   ),
   visibilites: z.array(
@@ -80,14 +89,16 @@ export const schema = z.strictObject({
       label: z.string(),
       drPenalty: z.number().optional(),
       beyondM: z.number().optional(),
+      source: sourceRefSchema,
     }),
   ),
-  vents: z.array(z.strictObject({ id: z.string(), label: z.string() })),
+  vents: z.array(z.strictObject({ id: z.string(), label: z.string(), source: sourceRefSchema })),
   roseDesVents: z.array(
     z.strictObject({
       min: z.number(),
       max: z.number(),
       direction: z.enum(['dominant', 'nord', 'sud', 'ouest', 'est']),
+      source: sourceRefSchema,
     }),
   ),
   effetDuVent: windEffectTable,

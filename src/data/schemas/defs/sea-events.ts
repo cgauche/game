@@ -7,6 +7,7 @@
  * au-delà de « objet »).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'sea-events.json';
 
@@ -19,6 +20,7 @@ const manannFactor = z.strictObject({
     flat: z.number(),
     d10: z.number(),
   }),
+  source: sourceRefSchema,
 });
 
 /** `SeaEventDef` (`src/engine/seaVoyage.ts:34-42`) — `params` = sac hétérogène PAR `kind`, lu par clé. */
@@ -30,6 +32,7 @@ const seaEventDef = z.strictObject({
   desc: z.string(),
   kind: z.string(),
   params: z.record(z.string(), z.unknown()),
+  source: sourceRefSchema,
 });
 
 /** Palier du VOYAGE RAPIDE (`FastVoyagePalier`, `src/engine/seaVoyage.ts`) — cran du d10 (l.33-37) :
@@ -45,17 +48,19 @@ const fastVoyagePalier = z.strictObject({
   cargoLostPct: z.number(),
   hullLostPct: z.number(),
   criticals: z.number(),
+  source: sourceRefSchema,
 });
 
 export const schema = z.strictObject({
   manann: z.strictObject({
     base: z.number(),
     portEventMod: z.number(),
+    source: sourceRefSchema,
     factors: z.array(manannFactor),
   }),
   boardEvents: z.array(seaEventDef),
   portEvents: z.array(seaEventDef),
-  fastVoyage: z.strictObject({ paliers: z.array(fastVoyagePalier) }),
+  fastVoyage: z.strictObject({ source: sourceRefSchema, paliers: z.array(fastVoyagePalier) }),
 });
 
 export type SeaEventsData = z.infer<typeof schema>;

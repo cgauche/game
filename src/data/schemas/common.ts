@@ -23,17 +23,25 @@ export const gameOpSchema = z.looseObject({ op: z.string() });
 export const sourceRefSchema = z.strictObject({
   book: z.string(),
   page: z.number(),
+  /** Précision optionnelle (ch./l. du passage, portée VERBATIM…) — display-only, jamais parsée. */
+  note: z.string().optional(),
 });
 
 /** Vue TS de `sourceRefSchema` — SEULE forme à importer côté `src/data/index.ts` (jamais `{ book:
- *  string; page: number }` inline, F20). */
+ *  string; page: number }` inline, F20). Réf de source UNIQUE du repo (#278) : posée par ENTRÉE sur
+ *  les datasets d'extraction de table RAW (`sea-events`/`sea-navigation`/`sea-perils`/`sea-weather`/
+ *  `ship-construction`/`naval-progression`/`crew-morale`/`crew-test-types`/`mass-battle`/
+ *  `land-cargo`/`sea-cargo`/`river-navigation`/`river-perils`), à la racine quand le dataset est un
+ *  objet de config unique plutôt qu'une liste. */
 export type SourceRef = z.infer<typeof sourceRefSchema>;
 
 /**
- * Note de provenance LIBRE `_source` — texte display-only jamais parsé (traçabilité de tableau
- * verbatim, périmètre d'extraction…), distincte de `sourceRefSchema` (réf structurée book+page).
- * Vue sur 5 datasets (`aa-criticals.json`, `land-cargo.json`, `sea-cargo.json` `overload._source`,
- * `river-navigation.json`, `river-perils.json`) — requise ou `.optional()` selon le dataset.
+ * Note de provenance LIBRE `_source` — SURVIT uniquement pour `aa-criticals.json` (#278) : « Aux
+ * Armes ! » n'a AUCUNE extraction Markdown avec spans `data-folio` dans `Source/` (seul le PDF brut
+ * existe, > 100 Mo, illisible par l'outillage) — impossible de retrouver un folio IMPRIMÉ vérifiable
+ * par entrée sans fabriquer la valeur. Migration en `source: sourceRefSchema` par entrée BLOQUÉE tant
+ * qu'une extraction Marker de ce livre n'existe pas ; ne pas réutiliser ailleurs (`sourceRefSchema` +
+ * `note` couvre tous les autres cas).
  */
 export const freeSourceNoteSchema = z.string();
 

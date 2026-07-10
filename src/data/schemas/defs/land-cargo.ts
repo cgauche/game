@@ -6,7 +6,7 @@
  * (verbatim des tableaux), présente en tête du JSON.
  */
 import { z } from 'zod';
-import { difficultySchema, freeSourceNoteSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../common';
 
 export const file = 'land-cargo.json';
 
@@ -14,7 +14,6 @@ const seasonRange = z.tuple([z.number(), z.number()]);
 const seasonPrice = z.strictObject({ printemps: z.number(), ete: z.number(), automne: z.number(), hiver: z.number() });
 
 export const schema = z.strictObject({
-  _source: freeSourceNoteSchema,
   cargoes: z.array(
     z.strictObject({
       id: z.string(),
@@ -23,9 +22,12 @@ export const schema = z.strictObject({
       wine: z.boolean().optional(),
       avail: z.strictObject({ printemps: seasonRange, ete: seasonRange, automne: seasonRange, hiver: seasonRange }),
       price: z.union([seasonPrice, z.strictObject({ dice: z.string() })]),
+      source: sourceRefSchema,
     }),
   ),
-  wineQuality: z.array(z.strictObject({ min: z.number(), max: z.number(), label: z.string(), price: z.number() })),
+  wineQuality: z.array(
+    z.strictObject({ min: z.number(), max: z.number(), label: z.string(), price: z.number(), source: sourceRefSchema }),
+  ),
   buy: z.strictObject({
     availabilityMultiplier: z.number(),
     merchantSkill: z.strictObject({ d10: z.number(), plus: z.number() }),
@@ -34,20 +36,23 @@ export const schema = z.strictObject({
     wineEvalDifficulty: difficultySchema,
     wineEvalEasyDifficulty: difficultySchema,
     wineAlcoholResistThreshold: z.number(),
+    source: sourceRefSchema,
   }),
   sell: z.strictObject({
     targetPerSize: z.number(),
     commerceBonus: z.number(),
     dumpingPctOfBase: z.number(),
     offerByRichesse: z.array(z.strictObject({ richesse: z.number(), label: z.string(), pct: z.number() })),
+    source: sourceRefSchema,
   }),
-  gossip: z.strictObject({ difficulty: difficultySchema, mod: z.number() }),
+  gossip: z.strictObject({ difficulty: difficultySchema, mod: z.number(), source: sourceRefSchema }),
   rumours: z.array(
     z.strictObject({
       min: z.number(),
       max: z.number(),
       biens: z.array(z.string()),
       text: z.string(),
+      source: sourceRefSchema,
     }),
   ),
 });

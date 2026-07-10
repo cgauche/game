@@ -33,6 +33,7 @@ import {
   trappings as allTrappings,
   levelsForCareer,
   characteristics as charData,
+  CHAR_ABR,
   stars as starsTable,
   celestialHouses,
   spells as allSpells,
@@ -153,9 +154,9 @@ const skillTip = (name: string) => {
   return `${CHAR_LABELS[data.characteristic]} · Compétence ${data.type === 'base' ? 'de Base' : 'Avancée'}\n${blurb(data.desc, 280)}`;
 };
 const talentTip = (name: string) => blurb(findTalent(splitLabel(name).name)?.desc, 300);
-/** Description des Caractéristiques (characteristics.json — LDB 05). */
+/** Description des Caractéristiques (characteristics.json — LDB 05), keyée par `id` STABLE. */
 const CHAR_DESC: Record<string, string> = Object.fromEntries(
-  (charData as { abr?: string; desc?: string }[]).filter((c) => c.abr && CHAR_KEYS.includes(c.abr as CharKey)).map((c) => [c.abr!, blurb(c.desc, 240)]),
+  charData.filter((c) => c.type === 'roll').map((c) => [c.id, blurb(c.desc, 240)]),
 );
 /** Clé de la Caractéristique liée à une compétence (« Ag »), pour annoter les listes. */
 const skillCharKey = (name: string): CharKey | null => findSkill(splitLabel(name).name)?.characteristic ?? null;
@@ -672,7 +673,7 @@ export function CharZones({ d, setD }: StepProps): { rail: ReactNode; main: Reac
         <div className="char-alloc-grid">
           {CHAR_KEYS.map((k, i) => (
             <div key={k} className="char-alloc">
-              <CodexRef category="characteristics" label={CHAR_LABELS[k]} className="char-key">{k}</CodexRef>
+              <CodexRef category="characteristics" label={CHAR_LABELS[k]} className="char-key">{CHAR_ABR[k]}</CodexRef>
               <span className="char-name">
                 {CHAR_LABELS[k]}
                 {careerKeys.includes(k) && <span className="tag char">carrière</span>}

@@ -1,7 +1,10 @@
 /**
  * Schéma de `aa-criticals.json` — Blessures critiques ALTERNATIVES (Aux Armes, l.2441-2627), 4 familles
  * (Tête/Bras/Corps/Jambe). Reflet de l'interface `AAEntry` (`src/engine/aaCritical.ts`) + `_source`
- * (note de provenance en tête de fichier, absente du chemin LDB).
+ * (note de provenance en tête de fichier, absente du chemin LDB). SEUL dataset encore sur
+ * `freeSourceNoteSchema` (#278) : « Aux Armes ! » n'a pas d'extraction Markdown avec folios `data-folio`
+ * dans `Source/` (PDF brut > 100 Mo, illisible par l'outillage) — migration vers `source` structuré PAR
+ * entrée BLOQUÉE tant qu'une extraction Marker n'existe pas (cf. `common.ts`).
  */
 import { z } from 'zod';
 import { gameOpSchema, difficultySchema, freeSourceNoteSchema } from '../common';

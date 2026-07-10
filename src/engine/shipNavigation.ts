@@ -16,7 +16,7 @@ interface ProgressionEntry {
   mode: ProgressionMode;
   desc: string;
 }
-const PROGRESSION = navalProgressionJson as ProgressionEntry[];
+const PROGRESSION = (navalProgressionJson as { table: ProgressionEntry[] }).table;
 
 /** Déplacement effectif d'un navire de Mouvement `baseM` selon le DR du Test de Navigation (MDG ch.13
  *  l.68-75 : 4+ → M+2 ; 1 à 3 → M+1 ; −2 à 0 → M ; −3 à −4 → M−1 ; −5 ou moins → M÷2 arrondi inférieur). PUR. */

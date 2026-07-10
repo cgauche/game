@@ -10,7 +10,7 @@ import { validateDataset, schemaForFile, formatZodError } from './validate';
 import { schema as characteristicsSchema } from './defs/characteristics';
 
 const VALID_CHAR = [
-  { abr: 'CC', label: 'Capacité de Combat', type: 'roll', desc: 'x', base: { Humain: 20 }, source: { book: 'livre-de-base', page: 33 } },
+  { id: 'CC', abr: 'CC', label: 'Capacité de Combat', type: 'roll', desc: 'x', base: { Humain: 20 }, source: { book: 'livre-de-base', page: 33 } },
 ];
 
 describe('validateDataset — point de validation partagé (#176)', () => {

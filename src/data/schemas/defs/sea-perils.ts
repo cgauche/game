@@ -4,7 +4,7 @@
  * vue typée `DATA` (`src/engine/seaPerils.ts:46-53`), seul consommateur.
  */
 import { z } from 'zod';
-import { difficultySchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../common';
 
 export const file = 'sea-perils.json';
 
@@ -31,6 +31,7 @@ const seaHazardDef = z.strictObject({
     .optional(),
   freeTest: z.strictObject({ skillId: z.string(), difficulty: difficultySchema, totalDR: z.number() }).optional(),
   desc: z.string(),
+  source: sourceRefSchema,
 });
 
 /** `StraitDef` (`src/engine/seaPerils.ts:33`). */
@@ -39,6 +40,7 @@ const straitDef = z.strictObject({
   label: z.string(),
   m: z.number(),
   navDR: z.number(),
+  source: sourceRefSchema,
 });
 
 /** `WhirlpoolDef` (`src/engine/seaPerils.ts:35-44`). */
@@ -51,15 +53,18 @@ const whirlpoolDef = z.strictObject({
   manDR: z.number(),
   ic: z.number(),
   evasion: z.strictObject({ difficulty: difficultySchema, totalDR: z.number() }),
+  source: sourceRefSchema,
 });
 
 export const schema = z.strictObject({
-  echouer: z.strictObject({ desc: z.string() }),
+  echouer: z.strictObject({ desc: z.string(), source: sourceRefSchema }),
   hazards: z.array(seaHazardDef),
   detroits: z.array(straitDef),
   tourbillons: z.array(whirlpoolDef),
-  tourbillonSwim: z.strictObject({ skillId: z.string(), difficulty: difficultySchema }),
-  gestionDesPerils: z.array(z.strictObject({ distanceM: z.number(), spot: difficultySchema, avoid: difficultySchema })),
+  tourbillonSwim: z.strictObject({ skillId: z.string(), difficulty: difficultySchema, source: sourceRefSchema }),
+  gestionDesPerils: z.array(
+    z.strictObject({ distanceM: z.number(), spot: difficultySchema, avoid: difficultySchema, source: sourceRefSchema }),
+  ),
 });
 
 export type SeaPerilsData = z.infer<typeof schema>;

@@ -1165,6 +1165,11 @@ export interface NamePool {
 }
 
 export const characteristics = characteristicsJson as CharacteristicsData;
+/** Abréviation FR AFFICHÉE d'une caractéristique à jet (« CC », « Ag »…), dérivée de `characteristics.json`
+ *  par `id` (jamais recopiée en dur dans l'UI — `CharKey` reste un id opaque, cf. engine/types.ts). */
+export const CHAR_ABR: Record<CharKey, string> = Object.fromEntries(
+  characteristics.filter((c) => c.type === 'roll').map((c) => [c.id, c.abr]),
+) as Record<CharKey, string>;
 export const species = speciesJson as SpeciesData[];
 export const classes = classesJson as ClassData[];
 export const careers = careersJson as CareerData[];
@@ -1400,7 +1405,7 @@ export interface CrewTestTypeData {
 export const crewRoles = crewRolesJson as CrewRoleData[];
 const crewRoleById = new Map(crewRoles.map((r) => [r.id, r]));
 export const findCrewRoleById = (id: string): CrewRoleData | undefined => crewRoleById.get(id);
-export const crewTestTypes = crewTestTypesJson as CrewTestTypeData[];
+export const crewTestTypes = (crewTestTypesJson as { types: CrewTestTypeData[] }).types;
 const crewTestTypeById = new Map(crewTestTypes.map((t) => [t.id, t]));
 export const findCrewTestTypeById = (id: string): CrewTestTypeData | undefined => crewTestTypeById.get(id);
 /** Groupes d'objet app-owned (taxonomie `subType` id-ifiée) — éditable au Codex. */

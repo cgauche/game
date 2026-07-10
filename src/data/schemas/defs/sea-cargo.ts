@@ -6,7 +6,7 @@
  * `{ dice }` (Vin maritime : 3d10, tiré une fois à l'achat).
  */
 import { z } from 'zod';
-import { difficultySchema, freeSourceNoteSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../common';
 
 export const file = 'sea-cargo.json';
 
@@ -20,6 +20,7 @@ export const schema = z.strictObject({
       label: z.string(),
       avail: z.strictObject({ printemps: seasonRange, ete: seasonRange, automne: seasonRange, hiver: seasonRange }),
       price: z.union([seasonPrice, z.strictObject({ dice: z.string() })]),
+      source: sourceRefSchema,
     }),
   ),
   buy: z.strictObject({
@@ -28,6 +29,7 @@ export const schema = z.strictObject({
     bigPortSkill: z.strictObject({ d10: z.number(), plus: z.number() }),
     partialPurchaseSellerDR: z.number(),
     surplusSellerDR: z.number(),
+    source: sourceRefSchema,
   }),
   sell: z.strictObject({
     offerPrice: z.array(z.strictObject({ sum: z.number(), pct: z.number() })),
@@ -37,13 +39,14 @@ export const schema = z.strictObject({
     surplusGossip: z.strictObject({ difficulty: difficultySchema, targetPerSize: z.number() }),
     sellerDR: z.strictObject({ noProduce: z.number(), demand: z.number(), produces: z.number(), surplus: z.number() }),
     dumpingPctOfBase: z.number(),
+    source: sourceRefSchema,
   }),
   overload: z.strictObject({
-    _source: freeSourceNoteSchema,
     hardCapPct: z.number(),
     paliers: z.array(
       z.strictObject({ id: z.string(), fromPct: z.number(), label: z.string(), mMod: z.number(), manoeuvreDR: z.number() }),
     ),
+    source: sourceRefSchema,
   }),
   opportunite: z.strictObject({
     investMaxEnc: z.boolean(),
@@ -61,6 +64,7 @@ export const schema = z.strictObject({
         pct: z.number(),
       }),
     ),
+    source: sourceRefSchema,
   }),
 });
 

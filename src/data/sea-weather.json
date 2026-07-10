@@ -6,7 +6,12 @@
       "precipitations": "aucune",
       "temperature": "caniculaire",
       "visibilite": "degage",
-      "vent": "calme-plat"
+      "vent": "calme-plat",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — table MÉTÉO DE LA MER DES GRIFFES (l.168-182)."
+      }
     },
     {
       "min": 2,
@@ -14,7 +19,12 @@
       "precipitations": "aucune",
       "temperature": "chaude",
       "visibilite": "degage",
-      "vent": "legere-brise"
+      "vent": "legere-brise",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — table MÉTÉO DE LA MER DES GRIFFES (l.168-182)."
+      }
     },
     {
       "min": 3,
@@ -22,7 +32,12 @@
       "precipitations": "aucune",
       "temperature": "mediane",
       "visibilite": "degage",
-      "vent": "brise-fraiche"
+      "vent": "brise-fraiche",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — table MÉTÉO DE LA MER DES GRIFFES (l.168-182)."
+      }
     },
     {
       "min": 5,
@@ -30,7 +45,12 @@
       "precipitations": "aucune",
       "temperature": "mediane",
       "visibilite": "brume",
-      "vent": "vent-modere"
+      "vent": "vent-modere",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — table MÉTÉO DE LA MER DES GRIFFES (l.168-182)."
+      }
     },
     {
       "min": 7,
@@ -38,7 +58,12 @@
       "precipitations": "legeres",
       "temperature": "mediane",
       "visibilite": "brume",
-      "vent": "vent-violent"
+      "vent": "vent-violent",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — table MÉTÉO DE LA MER DES GRIFFES (l.168-182)."
+      }
     },
     {
       "min": 9,
@@ -46,7 +71,12 @@
       "precipitations": "legeres",
       "temperature": "froide",
       "visibilite": "brouillard",
-      "vent": "violente-tempete"
+      "vent": "violente-tempete",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — table MÉTÉO DE LA MER DES GRIFFES (l.168-182)."
+      }
     },
     {
       "min": 10,
@@ -54,7 +84,12 @@
       "precipitations": "abondantes",
       "temperature": "froide",
       "visibilite": "puree-de-pois",
-      "vent": "vent-modere"
+      "vent": "vent-modere",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — table MÉTÉO DE LA MER DES GRIFFES (l.168-182)."
+      }
     },
     {
       "min": 11,
@@ -62,7 +97,12 @@
       "precipitations": "tres-abondantes",
       "temperature": "froide",
       "visibilite": "brume",
-      "vent": "brise-fraiche"
+      "vent": "brise-fraiche",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — table MÉTÉO DE LA MER DES GRIFFES (l.168-182)."
+      }
     },
     {
       "min": 13,
@@ -70,7 +110,12 @@
       "precipitations": "abondantes",
       "temperature": "glaciale",
       "visibilite": "brume",
-      "vent": "legere-brise"
+      "vent": "legere-brise",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — table MÉTÉO DE LA MER DES GRIFFES (l.168-182)."
+      }
     },
     {
       "min": 14,
@@ -78,20 +123,35 @@
       "precipitations": "aucune",
       "temperature": "glaciale",
       "visibilite": "degage",
-      "vent": "calme-plat"
+      "vent": "calme-plat",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — table MÉTÉO DE LA MER DES GRIFFES (l.168-182)."
+      }
     }
   ],
   "seasonMod": {
     "ete": 0,
     "automne": 2,
     "printemps": 2,
-    "hiver": 4
+    "hiver": 4,
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 106,
+      "note": "ch.13 « Navigation maritime » — MÉTÉO, modificateur saisonnier (l.164-166)."
+    }
   },
   "warmSeaMod": -2,
   "precipitations": [
     {
       "id": "aucune",
-      "label": "Aucune"
+      "label": "Aucune",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — EFFETS DES PRÉCIPITATIONS (l.187-201)."
+      }
     },
     {
       "id": "legeres",
@@ -109,7 +169,12 @@
           },
           "mod": -10
         }
-      ]
+      ],
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — EFFETS DES PRÉCIPITATIONS (l.187-201)."
+      }
     },
     {
       "id": "abondantes",
@@ -137,7 +202,12 @@
           ],
           "mod": -10
         }
-      ]
+      ],
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — EFFETS DES PRÉCIPITATIONS (l.187-201)."
+      }
     },
     {
       "id": "tres-abondantes",
@@ -166,7 +236,12 @@
           "mod": -20
         }
       ],
-      "otherMod": -10
+      "otherMod": -10,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — EFFETS DES PRÉCIPITATIONS (l.187-201)."
+      }
     }
   ],
   "temperatures": [
@@ -176,7 +251,12 @@
       "testEveryHours": 2,
       "difficulty": "intermediaire",
       "exposure": "chaleur",
-      "litresParJour": 4
+      "litresParJour": 4,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — Température (l.203-225)."
+      }
     },
     {
       "id": "chaude",
@@ -184,102 +264,197 @@
       "testEveryHours": 4,
       "difficulty": "accessible",
       "exposure": "chaleur",
-      "litresParJour": 3
+      "litresParJour": 3,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — Température (l.203-225)."
+      }
     },
     {
       "id": "mediane",
-      "label": "Médiane"
+      "label": "Médiane",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — Température (l.203-225)."
+      }
     },
     {
       "id": "froide",
       "label": "Froide",
       "testEveryHours": 4,
       "difficulty": "accessible",
-      "exposure": "froid"
+      "exposure": "froid",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — Température (l.203-225)."
+      }
     },
     {
       "id": "glaciale",
       "label": "Glaciale",
       "testEveryHours": 2,
       "difficulty": "intermediaire",
-      "exposure": "froid"
+      "exposure": "froid",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 106,
+        "note": "ch.13 « Navigation maritime » — Température (l.203-225)."
+      }
     }
   ],
   "visibilites": [
     {
       "id": "degage",
-      "label": "Dégagé"
+      "label": "Dégagé",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — Visibilité (l.227-243)."
+      }
     },
     {
       "id": "brume",
       "label": "Brume",
       "drPenalty": -1,
-      "beyondM": 20
+      "beyondM": 20,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — Visibilité (l.227-243)."
+      }
     },
     {
       "id": "brouillard",
       "label": "Brouillard",
       "drPenalty": -2,
-      "beyondM": 10
+      "beyondM": 10,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — Visibilité (l.227-243)."
+      }
     },
     {
       "id": "puree-de-pois",
       "label": "Purée de pois",
       "drPenalty": -3,
-      "beyondM": 5
+      "beyondM": 5,
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — Visibilité (l.227-243)."
+      }
     }
   ],
   "vents": [
     {
       "id": "calme-plat",
-      "label": "Calme plat"
+      "label": "Calme plat",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — Vents (l.246-248)."
+      }
     },
     {
       "id": "legere-brise",
-      "label": "Légère brise"
+      "label": "Légère brise",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — Vents (l.246-248)."
+      }
     },
     {
       "id": "brise-fraiche",
-      "label": "Brise fraîche"
+      "label": "Brise fraîche",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — Vents (l.246-248)."
+      }
     },
     {
       "id": "vent-modere",
-      "label": "Vent modéré"
+      "label": "Vent modéré",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — Vents (l.246-248)."
+      }
     },
     {
       "id": "vent-violent",
-      "label": "Vent violent"
+      "label": "Vent violent",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — Vents (l.246-248)."
+      }
     },
     {
       "id": "violente-tempete",
-      "label": "Violente tempête"
+      "label": "Violente tempête",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — Vents (l.246-248)."
+      }
     }
   ],
   "roseDesVents": [
     {
       "min": 1,
       "max": 6,
-      "direction": "dominant"
+      "direction": "dominant",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — ROSE DES VENTS (l.250-260)."
+      }
     },
     {
       "min": 7,
       "max": 7,
-      "direction": "nord"
+      "direction": "nord",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — ROSE DES VENTS (l.250-260)."
+      }
     },
     {
       "min": 8,
       "max": 8,
-      "direction": "sud"
+      "direction": "sud",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — ROSE DES VENTS (l.250-260)."
+      }
     },
     {
       "min": 9,
       "max": 9,
-      "direction": "ouest"
+      "direction": "ouest",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — ROSE DES VENTS (l.250-260)."
+      }
     },
     {
       "min": 10,
       "max": 10,
-      "direction": "est"
+      "direction": "est",
+      "source": {
+        "book": "mer-des-griffes",
+        "page": 107,
+        "note": "ch.13 « Navigation maritime » — ROSE DES VENTS (l.250-260)."
+      }
     }
   ],
   "effetDuVent": {

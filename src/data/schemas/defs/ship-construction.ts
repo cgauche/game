@@ -5,6 +5,7 @@
  * construction. `size` = `ShipSize` (`src/data/index.ts:1255`).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'ship-construction.json';
 
@@ -24,10 +25,11 @@ export const schema = z.strictObject({
       e: z.number(),
       b: z.number(),
       capacity: z.number(),
+      source: sourceRefSchema,
     }),
   ),
-  propulsion: z.strictObject({ secondaryMalus: z.number(), secondaryMinM: z.number() }),
-  manoeuvrability: z.array(z.strictObject({ manDR: z.number(), costPct: z.number() })),
+  propulsion: z.strictObject({ secondaryMalus: z.number(), secondaryMinM: z.number(), source: sourceRefSchema }),
+  manoeuvrability: z.array(z.strictObject({ manDR: z.number(), costPct: z.number(), source: sourceRefSchema })),
   speedTraits: z.array(
     z.strictObject({
       id: z.string(),
@@ -36,6 +38,7 @@ export const schema = z.strictObject({
       capacityPct: z.number(),
       manDR: z.number(),
       costPct: z.number(),
+      source: sourceRefSchema,
     }),
   ),
   constructionTraits: z.array(
@@ -46,6 +49,7 @@ export const schema = z.strictObject({
       ePerLevel: z.number().optional(),
       bPctPerLevel: z.number().optional(),
       capacityPctPerLevel: z.number().optional(),
+      source: sourceRefSchema,
     }),
   ),
 });
