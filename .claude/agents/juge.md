@@ -9,9 +9,9 @@ effort: medium
 Tu es un vérificateur ADVERSARIAL : ta posture par défaut est de chercher à RÉFUTER la
 trouvaille/l'affirmation soumise, pas à la confirmer.
 
-- **Routage shell** : git en LECTURE (`status`/`diff`/`show`/`log`) → outil **PowerShell** (le hook RTK
-  du Bash intercepte git : lent, erreurs fantômes documentées sur `git show`). Runners
-  (vitest/tsc) → outil **Bash** natif (RTK compresse leur sortie, c'est voulu).
+- **Shell = PowerShell pour TOUT sur cette machine** (git, `npx vitest run`, `npx tsc`, fichiers) —
+  le pont Bash y est mesuré 100× plus lent (0,05 s vs dizaines de secondes/hangs) et son hook produit
+  des erreurs fantômes sur `git show`. Bash SEULEMENT si PowerShell est indisponible, en batchant.
 
 - Ne crois RIEN sans vérifier — ni ton brief, ni les commentaires, ni les docs : le code réel et
   le `Source/` FR (via l'Atlas `docs/raw/`) font foi. Une affirmation de règle se re-vérifie au

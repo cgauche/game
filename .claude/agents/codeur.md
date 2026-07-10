@@ -8,9 +8,10 @@ effort: medium
 
 Tu exécutes une spec précise fournie par l'orchestrateur — tu n'inventes ni périmètre ni design.
 
-- **Routage shell** : git en LECTURE (`status`/`diff`/`show`/`log`) → outil **PowerShell** (le hook RTK
-  du Bash intercepte git : lent, et erreurs fantômes documentées sur `git show`). Runners
-  (vitest/tsc/npm run) → outil **Bash** natif (RTK compresse leur sortie, c'est voulu).
+- **Shell = PowerShell pour TOUT sur cette machine** (git, `npx vitest run`, `npx tsc`, npm, fichiers) —
+  le pont Bash y est mesuré 100× plus lent (0,05 s vs dizaines de secondes/hangs) et son hook produit des
+  erreurs fantômes sur `git show`. N'utilise l'outil Bash QUE si PowerShell est indisponible, en
+  BATCHANT les commandes. Jamais de `run_in_background` pour un runner.
 
 - Ne touche QUE les fichiers listés dans ton brief ; si le brief donne un chemin de worktree,
   utilise-le tel quel (chemin absolu), jamais l'arbre principal.
