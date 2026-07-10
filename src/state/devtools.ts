@@ -1,7 +1,7 @@
 import { useGame, SCREENS } from './store';
 import { portRepairVessel, portCareenVessel, portInstallUpgrade } from './seaVoyageFlow';
 import { actorIn } from './combatOrParty';
-import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn } from './combatFlow';
+import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
 import { setAiTrace } from './ai';
 import { pushCombatStep } from './combatEffects';
 import type { PendingBladeTrap } from './pendings';
@@ -53,6 +53,8 @@ import type { Combatant } from '../engine/types';
  *                           Corruption) puis termine le combat en LAISSANT la cascade ouverte (influençable)
  *   __wfrp.healParty()    → groupe à neuf (PB max, états/critiques/maladies purgés)
  *   __wfrp.give(co)       → crédite la bourse (couronnes d'or) ; __wfrp.xp(n) → +PX au groupe
+ *   __wfrp.giveTrapping(heroId, trappingId, qty?) → donne un objet de catalogue à un héros (VRAI
+ *                           pipeline giveTrapping : item bien formé, qualités comprises)
  *   __wfrp.flags()        → drapeaux de scénario ; __wfrp.flag('id', true) → force un drapeau
  *   __wfrp.go('scene-id') → saute vers une scène du projet ; __wfrp.fight() → liste/lance une rencontre
  *   __wfrp.fear(h,e,i?)   → pose une Peur (Indice) de h envers e puis simule l'approche (Test de Calme ou Brisé)
@@ -589,6 +591,22 @@ export function buildApi() {
     give: (gold = 10) => {
       g().creditPartyMoney({ gold, silver: 0, brass: 0 }, 'Recette');
       return g().money;
+    },
+
+    /** RECETTE : donne un objet de CATALOGUE à un héros (défaut : le premier), par le VRAI pipeline
+     *  `giveTrapping` du store (`applyEffects` → `itemFromGive` : item bien formé, qualités du catalogue,
+     *  rangement/Encombrement recalculés). `qty` (optionnel) fixe la quantité de l'instance reçue —
+     *  ex. `__wfrp.giveTrapping('hero-1', 'boulet-et-poudre', 6)` pour charger le coffre d'un canon. */
+    giveTrapping: (heroId: string | undefined, trappingId: string, qty?: number) => {
+      const s = g();
+      const hero = heroId ? s.party.find((h) => h.id === heroId) : s.party[0];
+      if (!hero) return `✗ héros « ${heroId ?? '(défaut)'} » introuvable — ${s.party.map((h) => h.id).join(', ')}`;
+      applyEffects(() => useGame.getState(), useGame.setState, [{ type: 'giveTrapping', trappingId, heroId: hero.id }]);
+      const after = useGame.getState().party.find((h) => h.id === hero.id);
+      const it = [...(after?.items ?? [])].reverse().find((i) => i.trappingId === trappingId);
+      if (!it) return `✗ don échoué (trappingId « ${trappingId} » inconnu au catalogue ?)`;
+      if (qty != null) { it.qty = qty; useGame.setState((st) => ({ party: [...st.party] })); }
+      return `✓ ${after!.name} reçoit « ${it.name} »${qty != null ? ` ×${qty}` : ''}`;
     },
 
     /** RECETTE : +PX à tout le groupe (teste l'avancement). */

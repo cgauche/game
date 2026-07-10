@@ -20,6 +20,25 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scene, hero, NPC, P, flowOf, flagWhen, testNode, poste, resetIds } from '../campagne/lib.mjs';
 import { dailyWaterLitres } from '../../src/engine/seaWeather.ts';
+import { itemFromTrappingById } from '../../src/engine/items.ts';
+
+let ammoSeq = 0;
+/** Munition de bord (`ItemInstance` kind:'ammo') bâtie par la couture CANONIQUE `itemFromTrappingById`
+ *  (Dégâts/Qualités du catalogue), estampillée d'un uid STABLE et de sa quantité (le fond de soute). */
+function ammoStock(trappingId, qty) {
+  const base = itemFromTrappingById(trappingId);
+  if (!base) throw new Error(`munition inconnue au catalogue : ${trappingId}`);
+  return { ...base, uid: `ammo-${trappingId}-${++ammoSeq}`, qty };
+}
+/** Poste d'artillerie ARMÉ (#241) : le `poste()` DOTÉ de son coffre à boulets de bord (`ShipPoste.ammo`,
+ *  MDG ch.12 l.410-424) + la munition sélectionnée par défaut (`ammoUid` = 1re du stock). Sans dotation,
+ *  la pièce est muette (affordance « Pas de munitions ») — un baron n'arme jamais un caboteur à sec. */
+function armedPoste(trappingId, side, stock) {
+  const p = poste(trappingId, side);
+  p.ammo = stock.map((s) => ammoStock(s.ref, s.qty));
+  p.ammoUid = p.ammo[0].uid;
+  return p;
+}
 
 // #241 — fond de cale du Grimm au départ : régime de bord médian (MDG 14 l.242) × 43 âmes (journal
 // « 43 âmes à bord sur 50 ») × 4 jours (quelques jours d'eau, pas l'autonomie totale du voyage).
@@ -132,7 +151,8 @@ scenes.push(scene({
             "« Capitaine. Le Grimm est vôtre pour cette traversée — porter à Erengrad une cargaison " +
             "d'armes, en rapporter de la laine kislevite avant les glaces. Voici votre lettre de mission, et " +
             "une avance de 40 couronnes. Dame Kramer voyage avec vous : sa cargaison, sa cabine, son contrat. " +
-            "Le fond de cale est avitaillé au minimum ; le chandelier du quai vous vendra l'eau et les vivres du voyage. »",
+            "Les trois pièces du Grimm sont servies, soutes garnies de poudre et de boulets pour la traversée ; " +
+            "mais le fond de cale est avitaillé au minimum — le chandelier du quai vous vendra l'eau et les vivres du voyage. »",
           choices: [
             {
               text: 'Accepter la commission (40 CO, le Grimm à quai)',
@@ -332,7 +352,9 @@ scenes.push(scene({
   entities: [
     hero(4, 6),
     hull('grimm', 'loup-imperial', 4, 6, 'E', 'Le Grimm', ['aldo-crew', 'griet-crew'],
-      [poste('canon-moyen', 'tribord'), poste('canon-moyen', 'babord'), poste('pierrier', 'proue')]),
+      [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
+       armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
+       armedPoste('pierrier', 'proue', [{ ref: 'balles-et-poudre-pierrier', qty: 16 }])]),
     marinDuGrimm('aldo-crew', 4, 5, 'Frère Aldo (équipage exposé)'),
     marinDuGrimm('griet-crew', 5, 5, 'Griet (équipage exposé)'),
     hull('cogue', 'cogue', 16, 6, 'O', 'La Dent de Manann', ['pirate-1', 'pirate-2'],
@@ -494,7 +516,9 @@ scenes.push(scene({
   entities: [
     hero(4, 6),
     hull('grimm2', 'loup-imperial', 4, 6, 'E', 'Le Grimm', ['aldo-crew-2', 'griet-crew-2'],
-      [poste('canon-moyen', 'tribord'), poste('canon-moyen', 'babord'), poste('pierrier', 'poupe')]),
+      [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
+       armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
+       armedPoste('pierrier', 'poupe', [{ ref: 'balles-et-poudre-pierrier', qty: 16 }])]),
     marinDuGrimm('aldo-crew-2', 4, 5, 'Frère Aldo (équipage exposé)'),
     marinDuGrimm('griet-crew-2', 5, 5, 'Griet (équipage exposé)'),
     // Proue-idole de Stromfels : amélioration d'INSTANCE de la coque (#221).

@@ -17,6 +17,24 @@ import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { scene, hero, P, flowOf, poste, resetIds } from '../campagne/lib.mjs';
+import { itemFromTrappingById } from '../../src/engine/items.ts';
+
+let ammoSeq = 0;
+/** Munition de bord (`ItemInstance` kind:'ammo') bâtie par la couture CANONIQUE `itemFromTrappingById`,
+ *  uid STABLE + quantité — cohérence témoin avec `scripts/loup-et-saumure/generate.mjs`. */
+function ammoStock(trappingId, qty) {
+  const base = itemFromTrappingById(trappingId);
+  if (!base) throw new Error(`munition inconnue au catalogue : ${trappingId}`);
+  return { ...base, uid: `ammo-${trappingId}-${++ammoSeq}`, qty };
+}
+/** Poste ARMÉ (#241) : le `poste()` DOTÉ de son coffre à boulets de bord (`ShipPoste.ammo`) + la munition
+ *  sélectionnée par défaut. Sans dotation, la pièce est muette (affordance « Pas de munitions »). */
+function armedPoste(trappingId, side, stock) {
+  const p = poste(trappingId, side);
+  p.ammo = stock.map((s) => ammoStock(s.ref, s.qty));
+  p.ammoUid = p.ammo[0].uid;
+  return p;
+}
 
 /** Entité-COQUE brute (chemin `entities` du MapSpec, JAMAIS normalisée par `creatureId`) — une coque
  *  RICHE (crewIds/postes/upgrades) se pose ainsi puis s'enrôle via `encounters[].members` (doc
@@ -74,7 +92,7 @@ scenes.push(scene({
           crew: [{ roleId: 'mousse', count: 2 }],
         },
         OBJ("Convoyer le sel jusqu'à l'îlot, malgré les pirates qui infestent la route."),
-        { type: 'journal', text: "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord." },
+        { type: 'journal', text: "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord — son canon servi, poudre et boulets en soute." },
       ]),
     },
   ],
@@ -107,7 +125,8 @@ scenes.push(scene({
   rows: seaRows(22, 14, [{ x: 3, y: 5, w: 4, h: 4 }, { x: 15, y: 5, w: 3, h: 3 }]),
   entities: [
     hero(4, 6),
-    hull('louve-grise', 'loup-imperial', 4, 6, 'E', 'La Louve grise', [], [poste('canon-moyen', 'tribord')]),
+    hull('louve-grise', 'loup-imperial', 4, 6, 'E', 'La Louve grise', [],
+      [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }])]),
     // Trait naval du catalogue (`naval-traits.json`, kind:'trait') posé en amélioration d'INSTANCE sur la
     // coque pirate — « Renforcé » (MDG p.97, +10 Endurance/niveau), thématiquement une coque de pirates
     // renforcée pour l'abordage.

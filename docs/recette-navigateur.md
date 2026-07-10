@@ -85,6 +85,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 | Helper | Usage | Limites connues |
 |---|---|---|
 | `give(gold=10)` / `xp(amount=100)` | crédite la bourse / +PX au groupe | — |
+| `giveTrapping(heroId, trappingId, qty?)` | donne un objet de CATALOGUE à un héros (défaut : le 1er), par le VRAI pipeline `giveTrapping` du store (`applyEffects` → `itemFromGive` : item bien formé, qualités du catalogue, rangement/Encombrement recalculés) | `trappingId` inconnu → message `✗` ; `qty` fixe la quantité de l'instance (ex. `giveTrapping('hero-1','boulet-et-poudre',6)` charge le coffre d'un canon) — ⚠ munitions ≠ rations (achat au marchand : la munition d'artillerie/à distance est un article SÉPARÉ des vivres, jamais suggéré à la place) |
 | `flags()` / `flag('id', value=true)` | lit/force un drapeau de scénario | — |
 | `time(minutes=60)` / `rest(days=1)` | avance l'horloge / dort N jours (cascade quotidienne) | ⚠ **NE PILOTE PAS une traversée EN MER** : `rest()` appelle `restFlow.sleepParty` directement, découplé de `travelPlan.sea` (`state/seaVoyageFlow.ts`) — avance l'horloge SANS faire progresser le navire sur sa route (désynchronise `gameTime` du voyage). Pour accélérer une traversée COMMANDÉE, voir « Voyage en mer » ci-dessous |
 | `chantier('reparer'\|'carener'\|upgradeId, units?)` | services du chantier naval au port | hors combat, navire de campagne requis |
@@ -139,6 +140,17 @@ pas rejouable après coup sur une traversée déjà en cours au pas.
   VRAIS clics Playwright (`browser_click`, sélecteur `data-cid`/rôle/texte).
 - **Passer des tours** : `turn('id')` (triche, donne le tour) ou `fastForward()` (avance l'IA) —
   jamais de manipulation manuelle de `battle.round`/`battle.turn`/`battle.order` via `store`.
+- **`aim()` juge l'arme SÉLECTIONNÉE dans la barre**, pas une arme perso du héros. Pour éprouver un
+  tir de pièce d'artillerie, ouvrir « Attaque ▾ » et cliquer l'entrée d'arme du CANON avant `aim()` —
+  un `range` sur l'arme personnelle du servant ne dit RIEN du canon. `aim()` renvoyant
+  `{invalid, reason:'noammo'}` = pièce sans munition : en acheter à l'arsenal/chandelier PUIS charger
+  (la munition d'artillerie est un article séparé des vivres, cf. `giveTrapping`) ; l'affordance à
+  l'écran nomme la munition attendue (« Pas de munitions (Boulet et poudre) »).
+- **Les tokens de combat SVG ne sont JAMAIS « stable » pour Playwright** : ils oscillent en
+  permanence (idle-bob, `src/gameIso/stage/tokens.tsx`) → `browser_click` attend une stabilité qui ne
+  vient pas et expire. Cibler par le **roster du HUD** (portraits/frise, éléments DOM stables) ou lire
+  `screenPos('id')` puis un VRAI clic souris (`page.mouse.click`) aux coordonnées — jamais un
+  `browser_click` qui attend la fin de l'animation du token.
 - **Cliquer une ROUTE de la carte du monde** : le tracé SVG n'a de hit-test QUE sur son trait
   (`pointer-events: stroke`) — jamais la bbox, jamais son label (`pointer-events: none`). Un clic au
   centre du bbox (ce que fait `browser_click` sur l'élément) tombe hors du trait et est intercepté par

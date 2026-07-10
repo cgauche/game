@@ -120,7 +120,7 @@ import { actorIn } from './combatOrParty';
 import { followsCharacterRules } from '../engine/relations';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
-import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
+import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, ammoFamilyLabel, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
 import { hasCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
@@ -294,7 +294,7 @@ export function weaponContextOf(attacker: Combatant, w: Weapon, target?: Combata
  *  l'affordance ne mente jamais : un réticule de tir sur une arbalète vide DOIT dire « recharger », pas
  *  proposer une attaque qui se solderait par un log silencieux. Mêlée / pas d'arme à distance → `null`
  *  (la Recharge ne concerne que l'arme effectivement tirée, `firedWeapon`). */
-export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min'; detail: string } | null {
+export function firedAttackBlock(get: Get, active: Combatant, target: Combatant, weaponUid?: string): { reason: 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min'; detail: string; need?: string } | null {
   if (active.kind !== 'hero') return null;
   const b = get().battle;
   // Arme effectivement testée + distance PAR CETTE ARME (#BUG-A, poule-et-œuf) : choix EXPLICITE (poste
@@ -316,7 +316,10 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
   if ((w.reload ?? 0) > 0 && !active.loaded) return { reason: 'unloaded', detail: `${active.name} doit recharger ${w.name}.` };
   // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie
   // (ex. arme sans Groupe) reste possible. `ammoFamily` falsy ⇒ pas de suivi de munition (cf. compatibleAmmo).
-  if (ammoFamily(w.subType) && !selectedAmmo(active, w)) return { reason: 'noammo', detail: `${active.name} n'a plus de munitions pour ${w.name}.` };
+  if (ammoFamily(w.subType) && !selectedAmmo(active, w)) {
+    const need = ammoFamilyLabel(w.subType);
+    return { reason: 'noammo', detail: `Pas de munitions (${need}) pour ${w.name}.`, need };
+  }
   // PORTÉE MINIMALE d'une machine de siège (ADE II ch.08 l.251/253) : REFUS (pas un malus) si la cible est
   // plus PROCHE que la bande minimale de l'arme — machines à distance : pas de Bout Portant (l.253) ;
   // trébuchet/mortier : rien sous la Portée Courte (l.251). DONNÉE générique `w.minRangeBand` (pas un flag par-machine).

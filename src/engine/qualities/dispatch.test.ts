@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { Weapon } from '../types';
 import { QUALITIES } from './registry';
-import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable, attackDRAdjust, dangerousNine, reloadDRTarget, magazineSize } from './dispatch';
+import { hasQuality, qualitySum, qualityCritTriggered, parryDRAdjust, isUnbreakable, attackDRAdjust, dangerousNine, reloadDRTarget, magazineSize, resolveQualities } from './dispatch';
+import { craftEncDelta } from './craftEconomy';
 import { findQualityById } from '../../data';
 import { parseQualityInstance } from './normalize';
 import { readFileSync } from 'node:fs';
@@ -19,6 +20,18 @@ describe('dispatch — hasQuality compare par ID de qualité (label/casse/Indice
     expect(hasQuality(w(['Solide 3']), 'solide')).toBe(true); // ignore l'Indice
     expect(hasQuality(w(['Perforante']), 'precise')).toBe(false);
     expect(hasQuality(undefined, 'precise')).toBe(false);
+  });
+});
+
+describe('dispatch — durcissement : un porteur au champ `qualities` absent (donnée corrompue / vieux save) ne fait pas tomber la chaîne', () => {
+  const malformed = { name: 'X' } as unknown as Weapon; // aucun `qualities`
+  it('resolveQualities tolère l’absence de `qualities` (→ liste vide, pas de throw)', () => {
+    expect(resolveQualities(malformed)).toEqual([]);
+    expect(hasQuality(malformed, 'precise')).toBe(false);
+    expect(qualitySum(malformed, 'attackMod')).toBe(0);
+  });
+  it('craftEncDelta tolère l’absence de `qualities` (→ 0)', () => {
+    expect(craftEncDelta(malformed)).toBe(0);
   });
 });
 

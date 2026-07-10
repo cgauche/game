@@ -85,6 +85,20 @@ describe('La Barge du Sel — mini-campagne navale (zéro code applicatif)', () 
     expect(louve.postes![0].crewIds).toEqual([]); // aucun héros connu à l'authoring (#222)
   });
 
+  it('DOTATION DE BORD (#241) : le canon de la Louve grise porte un coffre à munitions (ammo qty>0) et une sélection (ammoUid) valide', () => {
+    const sc = project.find((s) => s.id === 'barge-du-sel-embuscade')!;
+    const louve = sc.entities.find((e) => e.id === 'louve-grise')!;
+    for (const p of louve.postes ?? []) {
+      expect(p.ammo, `${p.trappingId} : coffre à munitions posé`).toBeTruthy();
+      expect(p.ammo!.length).toBeGreaterThan(0);
+      for (const a of p.ammo!) {
+        expect(a.kind).toBe('ammo');
+        expect(a.qty ?? 0).toBeGreaterThan(0);
+      }
+      expect(p.ammo!.some((a) => a.uid === p.ammoUid), `${p.trappingId} : ammoUid dans le stock`).toBe(true);
+    }
+  });
+
   it('la cogue pirate porte un TRAIT NAVAL du catalogue (upgrades) et son équipage exposé (crewIds)', () => {
     const sc = project.find((s) => s.id === 'barge-du-sel-embuscade')!;
     const cogue = sc.entities.find((e) => e.id === 'cogue-pirate')!;

@@ -795,6 +795,20 @@ export function ammoFamily(subType?: string): string {
   return s;
 }
 
+/** Libellé JOUEUR de la munition attendue par une arme à distance (hint d'achat/chargement quand le
+ *  carquois du tireur ET le coffre du poste sont vides) : la munition REPRÉSENTATIVE de la famille
+ *  (`ammoFamily`). Affichage FR pur (aide de saisie), jamais un id de logique. */
+export function ammoFamilyLabel(subType?: string): string {
+  switch (ammoFamily(subType)) {
+    case 'artillerie': return 'Boulet et poudre';
+    case 'poudre-ingenierie': return 'Balles et poudre';
+    case 'arc': return 'Flèches';
+    case 'arbalete': return 'Carreaux';
+    case 'fronde': return 'Billes';
+    default: return 'munitions';
+  }
+}
+
 /** Munitions compatibles avec une arme à distance (même famille canonique, qty>0) : l'inventaire du
  *  porteur, PLUS — s'il SERT cette pièce (`mannedPoste`) — le STOCK DU POSTE (MDG ch.12 l.410-424 :
  *  le coffre à boulets de la pièce), en tête (le stock de bord prime sur la besace du servant). */

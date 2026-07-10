@@ -188,7 +188,7 @@
         "kind": "do",
         "effect": {
          "type": "journal",
-         "text": "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord."
+         "text": "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord — son canon servi, poudre et boulets en soute."
         }
        }
       ]
@@ -547,7 +547,58 @@
        "trappingId": "canon-moyen",
        "uid": "poste-1",
        "side": "tribord",
-       "crewIds": []
+       "crewIds": [],
+       "ammo": [
+        {
+         "uid": "ammo-boulet-et-poudre-1",
+         "trappingId": "boulet-et-poudre",
+         "name": "Boulet et poudre",
+         "kind": "ammo",
+         "reach": null,
+         "range": null,
+         "qualities": [
+          {
+           "id": "a-explosion",
+           "value": 2
+          },
+          {
+           "id": "percutante"
+          }
+         ],
+         "enc": 1,
+         "equipped": false,
+         "desc": null,
+         "subType": "munition-de-siege",
+         "qty": 12
+        },
+        {
+         "uid": "ammo-mitraille-et-poudre-2",
+         "trappingId": "mitraille-et-poudre",
+         "name": "Mitraille et poudre",
+         "kind": "ammo",
+         "damage": {
+          "plusBF": false,
+          "flat": -5
+         },
+         "reach": null,
+         "range": null,
+         "qualities": [
+          {
+           "id": "tir-de-zone",
+           "value": 5
+          }
+         ],
+         "enc": 0,
+         "equipped": false,
+         "desc": null,
+         "subType": "munition-de-siege",
+         "qty": 4,
+         "ammoRangeMod": {
+          "mult": 0.25
+         }
+        }
+       ],
+       "ammoUid": "ammo-boulet-et-poudre-1"
       }
      ]
     },

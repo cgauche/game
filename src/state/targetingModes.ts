@@ -54,7 +54,10 @@ export type HoverTargeting =
   /** Cible refusée au clic — `engaged` = mêlée verrouillée par l'Engagement (Désengagement requis) ;
    *  `unloaded` = arme à Recharge non chargée (recharger d'abord) ; `noammo` = plus de munition ;
    *  `sous-effectif` = machine de guerre ADE II sous la moitié de l'Équipe requise (ch.08 l.233). */
-  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min' }
+  | { kind: 'invalid'; reason: 'los' | 'range' | 'engaged' | 'unloaded' | 'noammo' | 'arc' | 'sous-effectif' | 'portee-min';
+      /** Munition attendue (libellé JOUEUR, `noammo`) — nommée dans l'affordance/tooltip pour dire quoi
+       *  acheter/charger (« Pas de munitions (Boulet et poudre) »). */
+      need?: string }
   | {
       kind: 'ok';
       /** Style de la ligne de visée : pointillée (tir/sort) ou pleine (mêlée, déplacement compris). */
@@ -270,7 +273,7 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
   // au lieu d'une attaque qui se solderait par un log silencieux.
   if (plan.kind === 'attack' && !option.freeKind) {
     const block = firedAttackBlock(get, active, target, option.weaponUid);
-    if (block) return { kind: 'invalid', reason: block.reason };
+    if (block) return { kind: 'invalid', reason: block.reason, ...(block.need ? { need: block.need } : {}) };
   }
   const from = plan.kind === 'attack' ? active : { ...active, pos: plan.dest };
   // `option.weaponUid` ÉPINGLE l'arme du poste servi pour l'option DÉDIÉE « Servir » (jamais pour 'arme',

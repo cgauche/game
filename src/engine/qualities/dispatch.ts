@@ -38,7 +38,7 @@ const passiveOf = (id: string): GameOp[] => qualityById.get(id)?.passive ?? [];
 export function resolveQualities(w: QualityCarrier | undefined): ResolvedQuality[] {
   if (!w) return [];
   const out: ResolvedQuality[] = [];
-  for (const q of w.qualities) {
+  for (const q of w.qualities ?? []) {
     const data = qualityById.get(q.id);
     out.push({ def: { key: data?.label ?? q.id }, id: q.id, data, caps: data?.capabilities, indice: q.value });
   }

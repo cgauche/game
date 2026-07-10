@@ -34,12 +34,15 @@ export interface HoverAim {
 }
 
 /** Libellé d'erreur d'un survol de cible INVALIDE (source UNIQUE : ciblage normal ET Tir rapide) —
- *  rendu avec l'icône `ui/warning` par l'appelant (carte SVG `AimOverlay`). */
-function hoverErrText(reason: string): string {
+ *  rendu avec l'icône `ui/warning` par l'appelant (carte SVG `AimOverlay`). Pour `noammo`, NOMME la
+ *  munition attendue (`need`) — un canon sans boulet dit quoi acheter/charger, pas un cryptique
+ *  « Plus de munitions ». */
+function hoverErrText(inv: { reason: string; need?: string }): string {
+  const { reason, need } = inv;
   return reason === 'los' ? 'pas de ligne de vue'
     : reason === 'engaged' ? 'Engagé — se désengager'
     : reason === 'unloaded' ? 'Arme déchargée — recharger'
-    : reason === 'noammo' ? 'Plus de munitions'
+    : reason === 'noammo' ? (need ? `Pas de munitions (${need})` : 'Pas de munitions')
     : reason === 'sous-effectif' ? 'Équipe trop réduite'
     : reason === 'portee-min' ? 'Cible trop proche — Portée minimale'
     : 'hors de portée';
@@ -99,7 +102,7 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
       if (!shooter?.pos) return null;
       const ht = hoverTargeting(st, shooter, occ);
       if (ht.kind === 'none') return null;
-      if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht.reason) }, reticle: false };
+      if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht) }, reticle: false };
       return { fromId: shooter.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
     }
     // Flux différés (bandeau TargetPrompt — Frappe Mortelle / 2ᵉ frappe / Surincantation +Cible) : le
@@ -127,7 +130,7 @@ export function useHoverTargeting(scene: Scene | null, hover: Pt | null, myTurn:
     // qui lit l'`AttackOption` armée (selectedAttack) — plus de branche par mode.
     const ht = hoverTargeting(st, activeH, occ);
     if (ht.kind === 'none') return null;
-    if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht.reason) }, reticle: false };
+    if (ht.kind === 'invalid') return { fromId: null, toId: occ.id, line: null, tip: { kind: 'err', text: hoverErrText(ht) }, reticle: false };
     return { fromId: activeH.id, toId: occ.id, line: ht.line, path: ht.path, tip: { kind: 'info', title: ht.title, targetName: ht.targetName, skill: ht.skill, base: ht.base, mod: ht.mod, dmg: ht.dmg, note: ht.note }, preview: ht.preview, reticle: true };
   }, [combatCursor, hover, hoverCombatantId, mode, battle, scene, myTurn, preemptAiming, pendingAttack, pendingDefense, pendingCast, pendingCleave, pendingDualStrike, pendingTrample, pendingHeal]);
 

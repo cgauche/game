@@ -98,6 +98,29 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     }
   });
 
+  it('DOTATION DE BORD (#241) : chaque poste du Grimm porte un coffre à munitions (ammo qty>0) et une sélection (ammoUid) valide', () => {
+    for (const [sceneId, allyId] of [['ls-abordage-cogue', 'grimm'], ['ls-abordage-olg', 'grimm2']] as const) {
+      const sc = project.find((s) => s.id === sceneId)!;
+      const ally = sc.entities.find((e) => e.id === allyId)!;
+      for (const p of ally.postes ?? []) {
+        expect(p.ammo, `${sceneId}/${p.trappingId} : coffre à munitions posé`).toBeTruthy();
+        expect(p.ammo!.length).toBeGreaterThan(0);
+        for (const a of p.ammo!) {
+          expect(a.kind).toBe('ammo');
+          expect(a.qty ?? 0).toBeGreaterThan(0);
+        }
+        // La sélection persistante pointe une munition RÉELLEMENT en soute (selectedAmmo la trouvera).
+        expect(p.ammo!.some((a) => a.uid === p.ammoUid), `${sceneId}/${p.trappingId} : ammoUid dans le stock`).toBe(true);
+      }
+    }
+  });
+
+  it('la commission de Köhler MENTIONNE la dotation de bord (soutes garnies) — le joueur sait qu’il appareille armé', () => {
+    const sc = project.find((s) => s.id === 'ls-quai-salzenmund')!;
+    const k1 = sc.dialogues.find((d) => d.id === 'dlg-kohler')!.nodes.find((n) => n.id === 'k1')!;
+    expect(/poudre et de boulets/i.test(k1.text)).toBe(true);
+  });
+
   it('la Dent de Manann (cogue) porte son équipage exposé (crewIds) référencé par de vraies entités', () => {
     const sc = project.find((s) => s.id === 'ls-abordage-cogue')!;
     const cogue = sc.entities.find((e) => e.id === 'cogue')!;
