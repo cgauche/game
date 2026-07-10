@@ -1,0 +1,36 @@
+# Fixtures golden — saves (#301)
+
+Captures RÉELLES d'une `SaveGame` (`src/state/saves.ts`), écrites par le VRAI chemin de
+sérialisation (`saveGame` → `readSlot`), jamais composées à la main. Chargées par
+`src/state/saves-flow.test.ts` (« Golden saves ») : le filet qui empêchera un futur renommage/
+restructuration (ex. #311, CharKey→slugs) de casser silencieusement le chargement d'une save
+existante — l'échec de ce test exige un nouveau `MIGRATIONS[N]` dans `saves.ts`.
+
+## Convention de nommage
+
+`v<SAVE_VERSION au moment de la capture>-<nom>.json` — le préfixe `v<N>-` est lu par le CLIQUET
+de `saves-flow.test.ts` (`MIGRATIONS[v]` + fixture `v<v>-*.json` exigées pour chaque version
+`1..SAVE_VERSION-1`).
+
+## Fixtures actuelles
+
+- `v1-partie-reelle.json` — save pré-carte-de-campagne (worldMap vide), motive `MIGRATIONS[1]`
+  (v1→v2, cf. commentaire dans `saves.ts`).
+- `v2-voyage-maritime.json` — navire de campagne + équipage (le groupe) + plan de traversée maritime
+  actif (`vessel`/`travelPlan` cohérents, MDG ch.13-15).
+- `v2-post-combat-roster.json` — groupe complet (4) tout juste sorti d'un affrontement (Blessures/PX,
+  `battle: null`).
+
+## Ajouter/régénérer une fixture
+
+Ne JAMAIS écrire un fichier de save à la main. Utiliser `_generate.test.ts` (suite `describe.skip`
+— jamais exécutée en CI) :
+
+1. Ajouter/adapter un cas dans `_generate.test.ts` : construire un état réaliste via
+   `useGame.setState` (mêmes helpers que les autres suites `src/state/*.test.ts`), appeler
+   `useGame.getState().saveGame(slot)`, puis `write('<nom>', slot)`.
+2. Retirer temporairement `.skip` sur le `describe`, lancer
+   `npx vitest run src/state/__fixtures__/saves/_generate.test.ts`, puis remettre `.skip`.
+3. Vérifier le fichier écrit (`git diff`) avant de le committer.
+4. Si la capture se fait à une NOUVELLE `SAVE_VERSION` : ajouter aussi `MIGRATIONS[N-1]` dans
+   `saves.ts` — le CLIQUET refuse un bump de version sans fixture ET sans migrateur.

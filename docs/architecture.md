@@ -98,6 +98,25 @@ src/state/
   combatLog.ts                CombatEvent/CombatEventKind + CombatTone/toneOf/isImportantEvent/
                               lastEventTone (#161 : cadence des beats, `gameIso/combatNarration` les
                               réutilise pour l'icône/la coloration par camp, hors du périmètre `state`)
+  migrateDoc.ts                PRIMITIVE GÉNÉRIQUE de migration séquentielle de document versionné
+                              (`{version, ...}` → `MigrationMap` chaînée jusqu'à `targetVersion` ;
+                              refuse net — jamais ne corrompt — objet malformé/version future/trou
+                              dans la chaîne) : tout futur doc versionné la réutilise plutôt que de
+                              réinventer une chaîne ad hoc (#301)
+  saves.ts                    Sauvegarde/chargement de partie (localStorage 3 slots + export/import
+                              JSON) : `SAVE_VERSION` + `MIGRATIONS` (via `migrateDoc`) upgradent une
+                              save ancienne AVANT validation — un bump de version SANS son
+                              `MIGRATIONS[N]` ET sa fixture golden `v<N>-*.json` fait échouer le
+                              CLIQUET de `saves-flow.test.ts`. Fixtures RÉELLES (jamais composées à
+                              la main) sous `__fixtures__/saves/`, régénérées via
+                              `__fixtures__/saves/_generate.test.ts` (`describe.skip`, procédure
+                              dans son `README.md`) — chargées par `saves-flow.test.ts` (« Golden
+                              saves ») : le filet qui détecte qu'une refonte d'état (ex. #311,
+                              renommage `CharKey`) casse silencieusement une save existante.
+  roster.ts                   Roster persistant (localStorage) des personnages créés au créateur —
+                              son propre couple `EXPORT_VERSION`/`ROSTER_MIGRATIONS` (même primitive
+                              `migrateDoc`), indépendant de `saves.ts` (le roster ne voyage PAS dans
+                              la save de partie)
 src/gameIso/                Rendu isométrique SVG (remplace Phaser) :
   iso.ts                      dérivés MÉTRIQUES de la projection (WALL_H_M, isoPxToM — besoin du monde,
                               via state/relief) ; la projection elle-même (Dims, tileCenter, diamondPath,

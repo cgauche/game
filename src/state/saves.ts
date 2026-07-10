@@ -12,6 +12,19 @@
  *
  * Les règles maison (surcharges de `policy.ts`, hors GameState) voyagent à part dans `rules` :
  * une save reste portable d'une machine à l'autre AVEC ses règles (le localStorage ne suffit pas).
+ *
+ * POLITIQUE DE MIGRATION (#301) — deux filets DISTINCTS et complémentaires :
+ * 1. Champs manquants (donnée AJOUTÉE depuis la save) : tolérés gratuitement par le zustand `set`
+ *    au chargement (`applyLoadedSave`, `store.ts`) — un champ absent du snapshot chargé garde sa
+ *    valeur d'`initialFields` (`stateFields.ts`), jamais `undefined`.
+ * 2. Renommage / restructuration (donnée qui a changé de FORME) : `SAVE_VERSION` + `MIGRATIONS`
+ *    ci-dessous, chaînées par la primitive générique `migrateDoc` (`migrateDoc.ts` — même mécanique
+ *    que `worldMap.ts` ProjectDoc/`schema` et `roster.ts` ROSTER_MIGRATIONS/`EXPORT_VERSION`, à
+ *    RÉUTILISER plutôt que réinventer pour tout futur document versionné). Chaque bump de
+ *    `SAVE_VERSION` DOIT ajouter l'entrée `MIGRATIONS[N]` correspondante ET une fixture golden
+ *    `v(N+1)-*.json` sous `__fixtures__/saves/` — le CLIQUET de `saves-flow.test.ts` échoue sinon.
+ *    Une version FUTURE (save plus récente que l'app) ou un trou dans la chaîne sont REFUSÉS
+ *    (`null`), jamais silencieusement corrompus.
  */
 import type { RuleValue } from '../engine/policy';
 import { migrateDoc, type MigrationMap } from './migrateDoc';

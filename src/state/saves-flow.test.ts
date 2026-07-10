@@ -182,4 +182,43 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     const viaSaves = migrateSave(raw);
     expect(viaPrimitive).toEqual(viaSaves);
   });
+
+  // Le filet de #311 (migration CharKey→slugs) : les 2 fixtures ci-dessous sont générées par le
+  // VRAI chemin de sérialisation (`saveGame`, cf. `_generate.test.ts`) — un futur renommage de champ
+  // sans migrateur les casse ici, avant de casser une vraie save de joueur.
+  function loadFixture(name: string): SaveGame {
+    const raw = JSON.parse(readFileSync(new URL(name, FIXTURES_DIR), 'utf-8')) as unknown;
+    const migrated = migrateSave(raw);
+    expect(migrated, `${name} : migration/validation refusée`).not.toBeNull();
+    useGame.setState({ party: [], flags: {}, gameTime: 0, journal: [], scene: null, screen: 'menu' });
+    expect(saveToSlot(1, migrated!)).toBe(true);
+    expect(useGame.getState().loadGame(1)).toBe(true);
+    return migrated!;
+  }
+
+  it('fixture voyage maritime : party jouable + vessel/plan cohérents + scène présente', () => {
+    loadFixture('v2-voyage-maritime.json');
+    const s = useGame.getState();
+    expect(s.party.length).toBeGreaterThan(0);
+    for (const hero of s.party) expect(hero.wounds.current).toBeGreaterThanOrEqual(0);
+    expect(s.vessel).not.toBeNull();
+    expect(s.vessel!.wounds!.current).toBeGreaterThan(0);
+    expect(s.travelPlan).not.toBeNull();
+    expect(s.travelPlan!.vehicle!.wounds.current).toBe(s.vessel!.wounds!.current); // #296 non-divergence
+    expect(s.scene).not.toBeNull();
+    expect(s.worldMap?.places.length).toBeGreaterThan(0);
+  });
+
+  it('fixture post-combat : roster complet jouable + scène/campagne présentes', () => {
+    loadFixture('v2-post-combat-roster.json');
+    const s = useGame.getState();
+    expect(s.party.length).toBe(4);
+    for (const hero of s.party) {
+      expect(hero.wounds.current).toBeGreaterThan(0); // jouable, pas Hors combat
+      expect(hero.wounds.current).toBeLessThanOrEqual(hero.wounds.max);
+    }
+    expect(s.battle).toBeNull(); // post-combat : plus de bataille suspendue
+    expect(s.scene).not.toBeNull();
+    expect(s.scene?.id).toBe('test-fixture');
+  });
 });
