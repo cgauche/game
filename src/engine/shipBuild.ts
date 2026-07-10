@@ -15,9 +15,11 @@
  *  Traits de construction (l.167-193) : Peu maniable (−10 %/niveau), Renforcé (+10 E, −10 % Contenance,
  *  +10 %/niveau), Robuste (+10 %), Solide (+30 % B, −10 % Contenance, +20 %/niveau).
  *
- * Améliorations : coût / poids d'installation par bande de Taille (`NavalInstall`, verbatim ch.12) —
- * `per:'5m'` = par tranche de 5 m de Taille (Blindage l.225, Lissage l.289) ; `per:'unite'` = par
- * cabine (l.240) ; `'modele'` = ceux du modèle embarqué (Embarcation de bord, l.268).
+ * Améliorations : coût / poids d'installation par PALIER DE LONGUEUR (`NavalInstall`, verbatim ch.12 ;
+ * T2C ch.10 l.54-135 pour les Améliorations propres au T2C — le RAW y tarife par TYPE de navire à
+ * longueurs explicites, pas par `ShipSize`, #277) — `per:'5m'` = par tranche de 5 m de Taille (Blindage
+ * l.225, Lissage l.289) ; `per:'unite'` = par cabine (l.240) ; `'modele'` = ceux du modèle embarqué
+ * (Embarcation de bord, l.268).
  *
  * Réparations (ch.13 l.639-651) : constructeur naval au port — « 1 CO par Blessure restaurée. Chaque
  * Test réussi prend 1d10 heures de travail et restaure 1d10 Blessures » ; Métier (Charpentier) à −10
@@ -63,8 +65,6 @@ export const STANDARD_SHIPS = DATA.standard;
 export const SPEED_TRAITS = DATA.speedTraits;
 export const MAN_CHOICES = DATA.manoeuvrability;
 export const CONSTRUCTION_TRAITS = DATA.constructionTraits;
-
-const SIZE_ORDER: ShipSize[] = ['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse'];
 
 /** Taille MDG d'un navire d'après sa LONGUEUR (tableau standard, ch.12 l.120-129 : 1-10 m Minuscule …
  *  81 m+ Monstrueuse). PUR. */
@@ -151,28 +151,24 @@ export function buildShip(spec: ShipBuildSpec): ShipBuildResult {
 
 // ── Installation d'Améliorations (MDG ch.12 l.195-364, `NavalInstall`) ───────────────────────────
 
-function bandValue(bands: InstallBand[], size: ShipSize): number {
-  const idx = SIZE_ORDER.indexOf(size);
-  for (const b of bands) {
-    const min = b.min ? SIZE_ORDER.indexOf(b.min) : 0;
-    const max = b.max ? SIZE_ORDER.indexOf(b.max) : SIZE_ORDER.length - 1;
-    if (idx >= min && idx <= max) return b.value;
-  }
-  return 0;
+/** Palier retenu pour `lengthM` : le PREMIER dont `maxLengthM` ≥ `lengthM` (triés croissants), sinon le
+ *  DERNIER de la liste (bande ouverte, `maxLengthM: null`, #277). PUR. */
+function bandValue(bands: InstallBand[], lengthM: number): number {
+  for (const b of bands) if (b.maxLengthM != null && lengthM <= b.maxLengthM) return b.value;
+  return bands.length ? bands[bands.length - 1].value : 0;
 }
 
-/** Coût (CO) ou poids (Enc) d'installation d'une Amélioration : bande de Taille × multiplicateur
+/** Coût (CO) ou poids (Enc) d'installation d'une Amélioration : palier de LONGUEUR × multiplicateur
  *  `per:'5m'` (« par tranche de 5 mètres de Taille », l.225/289 — tranches ENTAMÉES comptées) ou
  *  `per:'unite'` (× `units`). `'modele'` (Embarcation de bord) → `null` : le prix est celui du modèle
  *  embarqué, résolu par l'appelant. PUR. */
 export function installAmount(
   part: NonNullable<NavalInstall['cost']>,
-  size: ShipSize,
   lengthM: number,
   units = 1,
 ): number | null {
   if (part === 'modele') return null;
-  const base = bandValue(part.bands, size);
+  const base = bandValue(part.bands, lengthM);
   if (part.per === '5m') return base * Math.max(1, Math.ceil(lengthM / 5));
   if (part.per === '10m') return base * Math.max(1, Math.ceil(lengthM / 10)); // T2C ch.10 « pour 10 mètres » (Coque de course l.23)
   if (part.per === 'unite') return base * Math.max(1, units);
@@ -181,10 +177,9 @@ export function installAmount(
 
 /** Coût + poids d'installation d'une Amélioration navale sur une coque de `lengthM` mètres. PUR. */
 export function installCost(install: NavalInstall, lengthM: number, units = 1): { gold: number | null; enc: number | null } {
-  const size = shipSizeOfLength(lengthM);
   return {
-    gold: installAmount(install.cost, size, lengthM, units),
-    enc: install.weightEnc ? installAmount(install.weightEnc, size, lengthM, units) : 0,
+    gold: installAmount(install.cost, lengthM, units),
+    enc: install.weightEnc ? installAmount(install.weightEnc, lengthM, units) : 0,
   };
 }
 

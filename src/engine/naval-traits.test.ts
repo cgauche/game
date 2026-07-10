@@ -173,12 +173,36 @@ describe('Améliorations T2C ch.10 (Personnalisation) — MÊME canal que MDG, e
     const postes = findVehicleById('cogue')!.deck!.postes!;
     expect(effectiveDeckPostes(postes, navalDeckCover([{ id: 'murs-blindes' }])).every((p) => p.cover === 'totale')).toBe(true);
   });
-  it('coût d’installation posé sur les bandes de Taille (canal installCost EXISTANT) — pas de duplication d’un chantier', () => {
-    // Une grande barge (25 m → petite) : Bouteur 120 CO / 95 Enc ; Murs blindés 300 CO / 160 Enc (T2C ch.10).
+  it('coût d’installation posé sur des PALIERS DE LONGUEUR (#277 — canal installCost EXISTANT) — pas de duplication d’un chantier', () => {
+    // Grande barge (~25 m, bande ouverte) : Bouteur 120 CO / 95 Enc ; Murs blindés 300 CO / 160 Enc (T2C ch.10 l.62/64, l.80/82).
     const bouteur = findNavalTrait('bouteur')!.install!;
     const murs = findNavalTrait('murs-blindes')!.install!;
     expect(installCost(bouteur, 25)).toEqual({ gold: 120, enc: 95 });
     expect(installCost(murs, 25)).toEqual({ gold: 300, enc: 160 });
+  });
+  it('barque (5 m) vs esquif de pêche (10 m) : MÊME `ShipSize` « minuscule », tarifs DIFFÉRENTS (#277, T2C ch.10 l.62/64)', () => {
+    // Le RAW tarife par TYPE de navire à longueurs explicites, pas par bande de Taille — la Taille aurait
+    // confondu les deux (10 m ≤ borne « minuscule » = 10 m, cf. shipSizeOfLength).
+    const bouteur = findNavalTrait('bouteur')!.install!;
+    expect(installCost(bouteur, 5)).toEqual({ gold: 8, enc: 5 }); // barque
+    expect(installCost(bouteur, 10)).toEqual({ gold: 30, enc: 35 }); // esquif de pêche
+  });
+  it('les 4 paliers RAW des 6 Améliorations T2C ch.10 (barque/esquif/moyenne+patrouille/grande barge)', () => {
+    const cases: [string, [number, number][]][] = [
+      ['safran', [[5, 5], [25, 20], [50, 40], [120, 80]]], // l.54/56
+      ['bouteur', [[8, 5], [30, 35], [60, 55], [120, 95]]], // l.62/64
+      ['murs-blindes', [[15, 15], [60, 40], [120, 80], [300, 160]]], // l.80/82
+      ['plat-bord', [[5, 5], [15, 20], [30, 35], [45, 60]]], // l.107/109
+      ['allegement', [[20, -10], [50, -15], [150, -45], [250, -80]]], // l.115/117
+      ['greement-de-course', [[8, 5], [30, 15], [60, 25], [120, 50]]], // l.133/135
+    ];
+    const lengths = [5, 10, 20, 30]; // barque / esquif / barge moyenne / grande barge (bande ouverte)
+    for (const [id, tiers] of cases) {
+      const install = findNavalTrait(id)!.install!;
+      tiers.forEach(([gold, enc], i) => {
+        expect(installCost(install, lengths[i])).toEqual({ gold, enc });
+      });
+    }
   });
 });
 
@@ -238,13 +262,13 @@ describe('Nouvelles Améliorations T2C ch.10 — résolvent au catalogue + coût
       expect(e.install).toBeDefined();
     });
   it('Coque de course : coût per:10m (T2C « 220 CO pour 10 mètres ») — 20 m de coque → 440 CO, −100 Enc', () => {
-    // shipSizeOfLength(20) = petite ; per:'10m' → ×ceil(20/10)=2 (T2C l.23/25).
+    // per:'10m' → ×ceil(20/10)=2 (T2C l.23/25) ; bande unique (uniforme, aucun palier de longueur).
     expect(installCost(findNavalTrait('coque-de-course')!.install!, 20)).toEqual({ gold: 440, enc: -100 });
   });
   it('Fourquines : coût à l’unité (T2C « 1 CO la pièce, +1 Enc ») — 3 pièces → 3 CO / 3 Enc', () => {
     expect(installCost(findNavalTrait('fourquines')!.install!, 15, 3)).toEqual({ gold: 3, enc: 3 });
   });
-  it('Plat-bord : bandes de Taille (grande barge 30 m → moyenne, band petite+) → 45 CO / 60 Enc (T2C l.107/109)', () => {
+  it('Plat-bord : palier de LONGUEUR (grande barge ~30 m, bande ouverte au-delà de 20 m) → 45 CO / 60 Enc (T2C l.107/109)', () => {
     expect(installCost(findNavalTrait('plat-bord')!.install!, 30)).toEqual({ gold: 45, enc: 60 });
   });
   it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, T2C l.117)', () => {

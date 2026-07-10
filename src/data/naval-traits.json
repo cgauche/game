@@ -62,11 +62,11 @@
       "cost": {
         "bands": [
           {
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 10
           },
           {
-            "min": "grande",
+            "maxLengthM": null,
             "value": 20
           }
         ]
@@ -74,11 +74,11 @@
       "weightEnc": {
         "bands": [
           {
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 50
           },
           {
-            "min": "grande",
+            "maxLengthM": null,
             "value": 75
           }
         ]
@@ -102,26 +102,23 @@
       "cost": {
         "bands": [
           {
-            "max": "tres-petite",
+            "maxLengthM": 15,
             "value": 15
           },
           {
-            "min": "petite",
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 30
           },
           {
-            "min": "grande",
-            "max": "grande",
+            "maxLengthM": 50,
             "value": 60
           },
           {
-            "min": "enorme",
-            "max": "enorme",
+            "maxLengthM": 80,
             "value": 120
           },
           {
-            "min": "monstrueuse",
+            "maxLengthM": null,
             "value": 240
           }
         ]
@@ -129,26 +126,23 @@
       "weightEnc": {
         "bands": [
           {
-            "max": "tres-petite",
+            "maxLengthM": 15,
             "value": 30
           },
           {
-            "min": "petite",
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 60
           },
           {
-            "min": "grande",
-            "max": "grande",
+            "maxLengthM": 50,
             "value": 120
           },
           {
-            "min": "enorme",
-            "max": "enorme",
+            "maxLengthM": 80,
             "value": 240
           },
           {
-            "min": "monstrueuse",
+            "maxLengthM": null,
             "value": 480
           }
         ]
@@ -176,11 +170,11 @@
         "per": "5m",
         "bands": [
           {
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 250
           },
           {
-            "min": "grande",
+            "maxLengthM": null,
             "value": 500
           }
         ]
@@ -189,6 +183,7 @@
         "per": "5m",
         "bands": [
           {
+            "maxLengthM": null,
             "value": 175
           }
         ]
@@ -216,11 +211,11 @@
         "per": "5m",
         "bands": [
           {
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 330
           },
           {
-            "min": "grande",
+            "maxLengthM": null,
             "value": 560
           }
         ]
@@ -229,6 +224,7 @@
         "per": "5m",
         "bands": [
           {
+            "maxLengthM": null,
             "value": 160
           }
         ]
@@ -249,6 +245,7 @@
         "per": "unite",
         "bands": [
           {
+            "maxLengthM": null,
             "value": 155
           }
         ]
@@ -257,6 +254,7 @@
         "per": "unite",
         "bands": [
           {
+            "maxLengthM": null,
             "value": 40
           }
         ]
@@ -276,36 +274,31 @@
       "cost": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 10,
             "value": 5
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 15,
             "value": 20
           },
           {
-            "min": "petite",
-            "max": "petite",
+            "maxLengthM": 20,
             "value": 40
           },
           {
-            "min": "moyenne",
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 80
           },
           {
-            "min": "grande",
-            "max": "grande",
+            "maxLengthM": 50,
             "value": 160
           },
           {
-            "min": "enorme",
-            "max": "enorme",
+            "maxLengthM": 80,
             "value": 320
           },
           {
-            "min": "monstrueuse",
+            "maxLengthM": null,
             "value": 600
           }
         ]
@@ -313,36 +306,31 @@
       "weightEnc": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 10,
             "value": 5
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 15,
             "value": 25
           },
           {
-            "min": "petite",
-            "max": "petite",
+            "maxLengthM": 20,
             "value": 45
           },
           {
-            "min": "moyenne",
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 70
           },
           {
-            "min": "grande",
-            "max": "grande",
+            "maxLengthM": 50,
             "value": 135
           },
           {
-            "min": "enorme",
-            "max": "enorme",
+            "maxLengthM": 80,
             "value": 240
           },
           {
-            "min": "monstrueuse",
+            "maxLengthM": null,
             "value": 430
           }
         ]
@@ -376,6 +364,7 @@
       "cost": {
         "bands": [
           {
+            "maxLengthM": null,
             "value": 2
           }
         ]
@@ -383,6 +372,7 @@
       "weightEnc": {
         "bands": [
           {
+            "maxLengthM": null,
             "value": 10
           }
         ]
@@ -409,11 +399,11 @@
         "per": "5m",
         "bands": [
           {
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 66
           },
           {
-            "min": "grande",
+            "maxLengthM": null,
             "value": 132
           }
         ]
@@ -441,11 +431,11 @@
       "cost": {
         "bands": [
           {
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 5
           },
           {
-            "min": "grande",
+            "maxLengthM": null,
             "value": 20
           }
         ]
@@ -453,11 +443,11 @@
       "weightEnc": {
         "bands": [
           {
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 5
           },
           {
-            "min": "grande",
+            "maxLengthM": null,
             "value": 20
           }
         ]
@@ -477,6 +467,7 @@
       "cost": {
         "bands": [
           {
+            "maxLengthM": null,
             "value": 500
           }
         ]
@@ -484,6 +475,7 @@
       "weightEnc": {
         "bands": [
           {
+            "maxLengthM": null,
             "value": 200
           }
         ]
@@ -503,36 +495,31 @@
       "cost": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 10,
             "value": 10
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 15,
             "value": 45
           },
           {
-            "min": "petite",
-            "max": "petite",
+            "maxLengthM": 20,
             "value": 75
           },
           {
-            "min": "moyenne",
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 140
           },
           {
-            "min": "grande",
-            "max": "grande",
+            "maxLengthM": 50,
             "value": 200
           },
           {
-            "min": "enorme",
-            "max": "enorme",
+            "maxLengthM": 80,
             "value": 350
           },
           {
-            "min": "monstrueuse",
+            "maxLengthM": null,
             "value": 500
           }
         ]
@@ -540,36 +527,31 @@
       "weightEnc": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 10,
             "value": 15
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 15,
             "value": 40
           },
           {
-            "min": "petite",
-            "max": "petite",
+            "maxLengthM": 20,
             "value": 50
           },
           {
-            "min": "moyenne",
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 110
           },
           {
-            "min": "grande",
-            "max": "grande",
+            "maxLengthM": 50,
             "value": 150
           },
           {
-            "min": "enorme",
-            "max": "enorme",
+            "maxLengthM": 80,
             "value": 300
           },
           {
-            "min": "monstrueuse",
+            "maxLengthM": null,
             "value": 500
           }
         ]
@@ -590,11 +572,11 @@
       "cost": {
         "bands": [
           {
-            "max": "moyenne",
+            "maxLengthM": 35,
             "value": 15
           },
           {
-            "min": "grande",
+            "maxLengthM": null,
             "value": 85
           }
         ]
@@ -602,6 +584,7 @@
       "weightEnc": {
         "bands": [
           {
+            "maxLengthM": null,
             "value": 0
           }
         ]
@@ -627,34 +610,42 @@
       "cost": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 8
+          },
+          {
+            "maxLengthM": 10,
             "value": 30
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 60
           },
           {
-            "min": "petite",
-            "value": 120
+            "maxLengthM": null,
+            "value": 120,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       },
       "weightEnc": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 5
+          },
+          {
+            "maxLengthM": 10,
             "value": 35
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 55
           },
           {
-            "min": "petite",
-            "value": 95
+            "maxLengthM": null,
+            "value": 95,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       }
@@ -688,34 +679,42 @@
       "cost": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 15
+          },
+          {
+            "maxLengthM": 10,
             "value": 60
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 120
           },
           {
-            "min": "petite",
-            "value": 300
+            "maxLengthM": null,
+            "value": 300,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       },
       "weightEnc": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 15
+          },
+          {
+            "maxLengthM": 10,
             "value": 40
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 80
           },
           {
-            "min": "petite",
-            "value": 160
+            "maxLengthM": null,
+            "value": 160,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       }
@@ -724,7 +723,7 @@
       "book": "mort-sur-le-reik-compagnon",
       "page": 65
     },
-    "desc": "Les murs d'une cabine ou de toute autre superstructure sont blindés à l'aide de plaques de fer. Tout Personnage ou PNJ situé derrière un mur blindé bénéficie d'une couverture totale rendant les tirs de projectiles contre lui Très Difficile."
+    "desc": "Les murs d'une cabine ou de toute autre superstructure sont blindés à l'aide de plaques de fer. Tout Personnage ou PNJ situé derrière un mur blindé bénéficie d'une couverture totale (**WFJDR**, p. 161) rendant les tirs de projectiles contre lui Très Difficile."
   },
   {
     "id": "coque-de-course",
@@ -742,6 +741,7 @@
         "per": "10m",
         "bands": [
           {
+            "maxLengthM": null,
             "value": 220
           }
         ]
@@ -750,6 +750,7 @@
         "per": "10m",
         "bands": [
           {
+            "maxLengthM": null,
             "value": -50
           }
         ]
@@ -769,34 +770,42 @@
       "cost": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 5
+          },
+          {
+            "maxLengthM": 10,
             "value": 25
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 50
           },
           {
-            "min": "petite",
-            "value": 120
+            "maxLengthM": null,
+            "value": 120,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       },
       "weightEnc": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 5
+          },
+          {
+            "maxLengthM": 10,
             "value": 20
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 40
           },
           {
-            "min": "petite",
-            "value": 80
+            "maxLengthM": null,
+            "value": 80,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       }
@@ -816,34 +825,42 @@
       "cost": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 5
+          },
+          {
+            "maxLengthM": 10,
             "value": 15
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 30
           },
           {
-            "min": "petite",
-            "value": 45
+            "maxLengthM": null,
+            "value": 45,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       },
       "weightEnc": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 5
+          },
+          {
+            "maxLengthM": 10,
             "value": 20
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 35
           },
           {
-            "min": "petite",
-            "value": 60
+            "maxLengthM": null,
+            "value": 60,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       }
@@ -862,34 +879,42 @@
       "cost": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 20
+          },
+          {
+            "maxLengthM": 10,
             "value": 50
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 150
           },
           {
-            "min": "petite",
-            "value": 250
+            "maxLengthM": null,
+            "value": 250,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       },
       "weightEnc": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": -10
+          },
+          {
+            "maxLengthM": 10,
             "value": -15
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": -45
           },
           {
-            "min": "petite",
-            "value": -80
+            "maxLengthM": null,
+            "value": -80,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       }
@@ -908,34 +933,42 @@
       "cost": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 8
+          },
+          {
+            "maxLengthM": 10,
             "value": 30
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 60
           },
           {
-            "min": "petite",
-            "value": 120
+            "maxLengthM": null,
+            "value": 120,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       },
       "weightEnc": {
         "bands": [
           {
-            "max": "minuscule",
+            "maxLengthM": 5,
+            "value": 5
+          },
+          {
+            "maxLengthM": 10,
             "value": 15
           },
           {
-            "min": "tres-petite",
-            "max": "tres-petite",
+            "maxLengthM": 20,
             "value": 25
           },
           {
-            "min": "petite",
-            "value": 50
+            "maxLengthM": null,
+            "value": 50,
+            "maison": "Bande ouverte au-delà de la grande barge (~25 m) : RAW muet passé ce point (T2C ch.10 l.54-135) — extrapolation MAISON du dernier palier."
           }
         ]
       }
@@ -955,6 +988,7 @@
         "per": "unite",
         "bands": [
           {
+            "maxLengthM": null,
             "value": 1
           }
         ]
@@ -963,6 +997,7 @@
         "per": "unite",
         "bands": [
           {
+            "maxLengthM": null,
             "value": 1
           }
         ]

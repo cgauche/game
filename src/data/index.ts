@@ -1275,14 +1275,19 @@ export const ambiance = ambianceJson as import('../gameIso/catalog/ambiance').Am
 /** Taille de navire MDG (catégorie dérivée de la LONGUEUR, tableau CARACTÉRISTIQUES DE BATEAU STANDARD,
  *  MDG ch.12 l.120-129 : 1-10 m Minuscule … 81 m+ Monstrueuse) — ids stables des bandes d'installation. */
 export type ShipSize = 'minuscule' | 'tres-petite' | 'petite' | 'moyenne' | 'grande' | 'enorme' | 'monstrueuse';
-/** Bande de Taille d'un tarif d'installation : `min`/`max` inclusifs (absent = ouvert vers le bas/le haut),
- *  `value` = CO (coût) ou Enc (poids) selon le champ porteur. */
-export interface InstallBand { min?: ShipSize; max?: ShipSize; value: number }
+/** Palier de LONGUEUR d'un tarif d'installation (#277 : T2C ch.10 l.54-135 tarife par TYPE de navire à
+ *  longueurs explicites — barque 5 m et esquif 10 m tombent dans la MÊME `ShipSize` « minuscule » avec des
+ *  tarifs DIFFÉRENTS, la Taille ne peut donc pas discriminer). `maxLengthM` = borne haute inclusive du
+ *  palier (`null` = bande OUVERTE au-delà — le dernier élément du tableau, triés par longueur croissante) ;
+ *  `value` = CO (coût) ou Enc (poids) selon le champ porteur ; `maison` = réf nue du tarif au-delà de la
+ *  dernière borne chiffrée par le livre porté sur la bande concernée. */
+export interface InstallBand { maxLengthM: number | null; value: number; maison?: string }
 /** Coût / Poids d'INSTALLATION d'une Amélioration navale (MDG ch.12, lignes « Coût : / Poids : » de chaque
- *  Amélioration, l.195-364) — VERBATIM structuré par bandes de Taille. `per: '5m'` = « par tranche de 5 m
- *  de Taille » (Blindage, Lissage) ; `per: 'unite'` = « par cabine » (Cabine de luxe) ; `'modele'` = ceux
- *  du modèle embarqué (Embarcation de bord). `weightEnc` absent = aucun poids (Lissage). Donnée consommée
- *  par le chantier construction/réparation navale (lot systèmes) — aucune valeur codée en dur. */
+ *  Amélioration, l.195-364 ; T2C ch.10 l.1-140) — VERBATIM structuré par paliers de LONGUEUR. `per: '5m'` =
+ *  « par tranche de 5 m de Taille » (Blindage, Lissage) ; `per: 'unite'` = « par cabine » (Cabine de luxe) ;
+ *  `'modele'` = ceux du modèle embarqué (Embarcation de bord). `weightEnc` absent = aucun poids (Lissage).
+ *  Donnée consommée par le chantier construction/réparation navale (lot systèmes) — aucune valeur codée en
+ *  dur. */
 export interface NavalInstall {
   cost: { bands: InstallBand[]; per?: '5m' | '10m' | 'unite' } | 'modele';
   weightEnc?: { bands: InstallBand[]; per?: '5m' | '10m' | 'unite' } | 'modele';

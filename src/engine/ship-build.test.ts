@@ -62,18 +62,26 @@ describe('buildShip — CONSTRUIRE UN NAVIRE en 4 étapes (MDG ch.12 l.108-164)'
   });
 });
 
-describe('installCost — pose d’une Amélioration par bandes de Taille (MDG ch.12 l.195-364)', () => {
-  it('Taille dérivée de la longueur (l.120-129)', () => {
+describe('installCost — pose d’une Amélioration par PALIER DE LONGUEUR (MDG ch.12 l.195-364, #277)', () => {
+  it('Taille dérivée de la longueur (l.120-129) — reste utile hors installation (buildShip)', () => {
     expect(shipSizeOfLength(3)).toBe('minuscule');
     expect(shipSizeOfLength(25)).toBe('moyenne');
     expect(shipSizeOfLength(60)).toBe('enorme');
     expect(shipSizeOfLength(130)).toBe('monstrueuse');
   });
 
-  it('Ancre : 10 CO / 50 Enc jusqu’à Moyen, 20 CO / 75 Enc au-delà (l.207-209)', () => {
+  it('Ancre : 10 CO / 50 Enc jusqu’à 35 m (borne « moyenne »), 20 CO / 75 Enc au-delà (l.207-209)', () => {
     const ancre = findNavalTrait('ancre')!.install!;
     expect(installCost(ancre, 25)).toEqual({ gold: 10, enc: 50 });
     expect(installCost(ancre, 60)).toEqual({ gold: 20, enc: 75 });
+  });
+
+  it('#277 — transcription MDG à l’IDENTIQUE : palier de longueur ⟺ ancienne bande de Taille (aucune valeur ne change)', () => {
+    // Bélier (MDG ch.12 l.221) : la bande [min:petite, max:moyenne] devient maxLengthM:35 (borne « moyenne »).
+    const belier = findNavalTrait('belier')!.install!;
+    expect(installCost(belier, 20)).toEqual({ gold: 30, enc: 60 }); // 20 m = Petite (avant) = ≤35 m (après)
+    expect(installCost(belier, 35)).toEqual({ gold: 30, enc: 60 }); // 35 m = Moyenne (avant) = ≤35 m (après)
+    expect(installCost(belier, 36)).toEqual({ gold: 60, enc: 120 }); // 36 m = Grande (avant) = palier suivant (après)
   });
 
   it('Blindage (fer) : « par tranche de 5 mètres de Taille » (l.225) — caraque 35 m = 7 tranches × 330 CO', () => {

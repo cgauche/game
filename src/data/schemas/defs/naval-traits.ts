@@ -1,7 +1,8 @@
 /**
- * Schéma de `naval-traits.json` — Traits/Améliorations navals (MDG ch.12), catalogue par id STABLE
- * (`NavalTraitRef.id`). Dérivé de l'interface `NavalTraitData` (`src/data/index.ts:1265`, + `NavalInstall`/
- * `InstallBand`/`ShipSize` co-localisées) et du contenu RÉEL (26 entrées : `id`/`label`/`kind`/`desc`
+ * Schéma de `naval-traits.json` — Traits/Améliorations navals (MDG ch.12, T2C ch.10), catalogue par id
+ * STABLE (`NavalTraitRef.id`). Dérivé de l'interface `NavalTraitData` (`src/data/index.ts:1265`, +
+ * `NavalInstall`/`InstallBand` co-localisées — bandes par PALIER DE LONGUEUR, #277) et du contenu RÉEL
+ * (26 entrées : `id`/`label`/`kind`/`desc`
  * toujours présents ; `source` 25/26 (#221 : Proue-idole de Stromfels = `maison`, pas de folio RAW) ;
  * `install` 20/26 ; `ranked` 4/26 ; `passive` 8/26 ; `ram` 1/26 ; `deckCover` 3/26 ; `maison` 1/26).
  */
@@ -10,12 +11,10 @@ import { gameOpSchema } from '../common';
 
 export const file = 'naval-traits.json';
 
-const shipSizeSchema = z.enum(['minuscule', 'tres-petite', 'petite', 'moyenne', 'grande', 'enorme', 'monstrueuse']);
-
 const installBandSchema = z.strictObject({
-  min: shipSizeSchema.optional(),
-  max: shipSizeSchema.optional(),
+  maxLengthM: z.number().nullable(),
   value: z.number(),
+  maison: z.string().optional(),
 });
 
 const installCostSchema = z.union([
