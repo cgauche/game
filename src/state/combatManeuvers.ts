@@ -31,6 +31,7 @@ import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatu
 import { findTalentById, findPsychologyById, findManeuverById, type ManeuverDef, type ManeuverMeasure } from '../data';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { pilotedByHuman } from './netOwnership';
+import { inBattleId } from './combatOrParty';
 import type { CascadeStep } from './pendings';
 import type { GameOp } from '../engine/ops';
 import type { IconId } from '../ui/icons';
@@ -511,7 +512,7 @@ registerCascadeApplier('maneuverDefense', (get, set, step, hero) => {
   const md = step.meta?.maneuverDefense;
   const opp = step.meta?.opposed;
   if (!md || !opp) return;
-  const attacker = get().battle?.combatants.find((c) => c.id === md.attackerId);
+  const attacker = inBattleId(get().battle, md.attackerId);
   const def = findManeuverById(md.maneuverId);
   if (!attacker || !def) return;
   const syncManeuver = () => {

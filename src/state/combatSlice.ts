@@ -80,7 +80,7 @@ import { crewedFireWeapon, crewedReloadStep } from '../engine/crewedWeapon';
 import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
-import { actorIn } from './combatOrParty';
+import { actorIn, inBattleId } from './combatOrParty';
 import { controlsCombatant, pilotedByHuman } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
@@ -193,11 +193,11 @@ function applyBatteryVolley(get: Get, set: Set, ship: Combatant, target: Combata
   const merScale = isMerScene(get().scene);
   const postes = bearingPostes(ship, side);
   const rig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
-  const crew = (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+  const crew = (ship.crewIds ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
   const volley = resolveVolley(ship, postes, target, rig, dr, crew, battleRng(), { merScale }); // couche Mer : équipage abstrait sert les pièces
   target.wounds.current = Math.max(0, target.wounds.current - volley.totalWounds); // mute la coque (pattern combat)
   const critLines: string[] = [];
-  const targetCrew = (target.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+  const targetCrew = (target.crewIds ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
   const distTiles = ship.pos && target.pos ? chebyshev(ship.pos, target.pos) : 0;
   for (const s of volley.shots) {
     if (s.critical) applyCriticalToTarget(target, 'corps', true, 0, critLines, set, { ctx: { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, get });
@@ -210,7 +210,7 @@ function applyBatteryVolley(get: Get, set: Set, ship: Combatant, target: Combata
   for (const s of volley.shots) {
     const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid);
     if (poste) { poste.loaded = false; poste.reloadProgress = 0; }
-    const chef = poste?.crewIds?.[0] ? battle.combatants.find((c) => c.id === poste.crewIds![0]) : undefined;
+    const chef = poste?.crewIds?.[0] ? inBattleId(battle, poste.crewIds![0]) : undefined;
     if (chef && s.ammo) consumeAmmo(chef, s.ammo);
   }
   get().log(bordeeGunnersLine(get, ship, side)); // les servants s'expriment (l.39)
@@ -327,7 +327,7 @@ export function createCombatSlice(get: Get, set: Set) {
     // Frénésie (`turnHooks`, module feuille) y lit la meilleure action sans importer `combatFlow` (pas de
     // cycle). Déterministe, zéro `battleRng`, ne mute rien.
     aiWouldCast: (id: string): boolean => {
-      const e = get().battle?.combatants.find((c) => c.id === id);
+      const e = inBattleId(get().battle, id);
       return !!e && aiWouldPrepareSpell(e, get);
     },
     // ── Combat monté : Monter / Descendre (LDB 14 l.212-225) ──
@@ -397,10 +397,10 @@ export function createCombatSlice(get: Get, set: Set) {
     disengageConfirmA: () => {
       const { battle, scene, pendingDisengage: pd } = get();
       if (!battle || !scene || !pd || !pd.canSacrifice) return;
-      const mover = battle.combatants.find((c) => c.id === pd.moverId);
+      const mover = inBattleId(battle, pd.moverId);
       if (!mover) return set({ pendingDisengage: null, pendingCascade: null });
       const foes = (mover.engagedWith ?? [])
-        .map((id) => battle.combatants.find((c) => c.id === id))
+        .map((id) => inBattleId(battle, id))
         .filter((c): c is Combatant => !!c);
       // « Ramener votre Avantage à 0 » (LDB 15-Dépl l.87) ; en mode « Avantage de groupe » c'est la
       // Retraite stratégique (AA l.4139) : dépense FIXE de 2 Avantages de la réserve du camp (1 avec
@@ -425,7 +425,7 @@ export function createCombatSlice(get: Get, set: Set) {
     disengageRoll: () => {
       const { battle, pendingDisengage: pd } = get();
       if (!battle || !pd || pd.phase !== 'choice') return;
-      const mover = battle.combatants.find((c) => c.id === pd.moverId);
+      const mover = inBattleId(battle, pd.moverId);
       if (!mover) return;
       const def = rollMeleeDefender(mover, 'esquive', battleRng());
       const opp = resolveOpposed(def, pd.atk!); // mover = « attaquant » du Test opposé
@@ -437,8 +437,8 @@ export function createCombatSlice(get: Get, set: Set) {
     disengageConfirm: () => {
       const { battle, scene, pendingDisengage: pd } = get();
       if (!battle || !scene || !pd || !pd.result) return;
-      const mover = battle.combatants.find((c) => c.id === pd.moverId);
-      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      const mover = inBattleId(battle, pd.moverId);
+      const foe = inBattleId(battle, pd.foeId);
       set({ pendingDisengage: null, pendingCascade: null });
       if (!mover || !foe) return;
       const log = [...battle.log];
@@ -448,7 +448,7 @@ export function createCombatSlice(get: Get, set: Set) {
         // Esquive réussie = on s'extrait du corps à corps → libéré de TOUS les Engagements
         // (cohérent avec l'option A, qui libère aussi tous les foes).
         const foes = (mover.engagedWith ?? [])
-          .map((id) => battle.combatants.find((c) => c.id === id))
+          .map((id) => inBattleId(battle, id))
           .filter((c): c is Combatant => !!c);
         for (const f of foes) disengageFrom(mover, f);
         log.push(ev('flee', t('cs.disengageDodge', { name: mover.name }), mover.id, foe.id));
@@ -476,8 +476,8 @@ export function createCombatSlice(get: Get, set: Set) {
     disengageFlee: () => {
       const { battle, scene, pendingDisengage: pd } = get();
       if (!battle || !scene || !pd) return;
-      const mover = battle.combatants.find((c) => c.id === pd.moverId);
-      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      const mover = inBattleId(battle, pd.moverId);
+      const foe = inBattleId(battle, pd.foeId);
       if (!mover || !foe) return set({ pendingDisengage: null, pendingCascade: null });
       const log = [...battle.log];
       campGain(get, foe); // l'adversaire gagne immédiatement +1 Avantage (l.101)
@@ -501,7 +501,7 @@ export function createCombatSlice(get: Get, set: Set) {
         return;
       }
       // Coup manqué / sans PB perdu : pas de Test de Calme → on complète la fuite directement.
-      const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+      const foes = (mover.engagedWith ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
       for (const f of foes) disengageFrom(mover, f);
       // Fuite : déplacement jusqu'à la Course (2×Mouvement) MAIS dans la direction opposée à l'adversaire
       // (LDB 15-Déplacement l.109) — les cases qui rapprochent du `foe` sont exclues du déplaçable.
@@ -524,8 +524,8 @@ export function createCombatSlice(get: Get, set: Set) {
     fleeConfirm: () => {
       const { battle, scene, pendingDisengage: pd } = get();
       if (!battle || !scene || !pd || !pd.fuir?.calme) return;
-      const mover = battle.combatants.find((c) => c.id === pd.moverId);
-      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      const mover = inBattleId(battle, pd.moverId);
+      const foe = inBattleId(battle, pd.foeId);
       if (!mover || !foe) return set({ pendingDisengage: null, pendingCascade: null });
       const calme = pd.fuir.calme;
       const broken = calme.success ? 0 : 1 + Math.max(0, -calme.sl); // échec → 1 + DR négatif (LDB 15-Dépl l.107)
@@ -535,7 +535,7 @@ export function createCombatSlice(get: Get, set: Set) {
         log.push(ev('fear', t('cs.panic', { name: mover.name, broken }), mover.id));
       }
       // Fuite complétée (différée) : libération de TOUS les Engagements + budget de Course (l.109).
-      const foes = (mover.engagedWith ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+      const foes = (mover.engagedWith ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
       for (const f of foes) disengageFrom(mover, f);
       set({ battle: { ...battle, action: null, reachable: fleeReachable(scene, mover.pos!, foe.pos!, (effectiveMovement(mover) + fleeMovementBonus(mover)) * 2, moveEnv(battle, mover)), log }, pendingDisengage: null, pendingCascade: null });
       bus.emit(EVT.SCENE_DIRTY);
@@ -552,7 +552,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || battle.over || battle.acted) return; // le Test opposé coûte l'Action
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
-      const foe = battle.combatants.find((c) => c.id === targetId);
+      const foe = inBattleId(battle, targetId);
       if (!foe || !auContactEligible(active, foe)) return;
       startAuContact(get, set, active, foe);
     },
@@ -560,7 +560,7 @@ export function createCombatSlice(get: Get, set: Set) {
     auContactRoll: () => {
       const { battle, pendingAuContact: pd } = get();
       if (!battle || !pd || pd.phase !== 'roll' || pd.def) return; // déjà lancé → no-op
-      const mover = battle.combatants.find((c) => c.id === pd.moverId);
+      const mover = inBattleId(battle, pd.moverId);
       if (!mover || !pd.atk) return;
       const def = rollDisengageAttack(mover, battleRng());
       const opp = resolveOpposed(def, pd.atk);
@@ -572,8 +572,8 @@ export function createCombatSlice(get: Get, set: Set) {
     auContactConfirm: () => {
       const { battle, pendingAuContact: pd } = get();
       if (!battle || !pd || !pd.result) return;
-      const mover = battle.combatants.find((c) => c.id === pd.moverId);
-      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      const mover = inBattleId(battle, pd.moverId);
+      const foe = inBattleId(battle, pd.foeId);
       if (!mover || !foe) return set({ pendingAuContact: null });
       if (pd.result === 'success') return set({ pendingAuContact: { ...pd, phase: 'choice' } }); // le héros tranche
       if (pd.result === 'tie') return applyAuContact(get, set, mover, foe, null); // statu quo, Action consommée
@@ -586,8 +586,8 @@ export function createCombatSlice(get: Get, set: Set) {
     auContactChoose: (mode: 'normal' | 'contact') => {
       const { battle, pendingAuContact: pd } = get();
       if (!battle || !pd || pd.phase !== 'choice' || pd.result !== 'success') return;
-      const mover = battle.combatants.find((c) => c.id === pd.moverId);
-      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      const mover = inBattleId(battle, pd.moverId);
+      const foe = inBattleId(battle, pd.foeId);
       if (!mover || !foe) return set({ pendingAuContact: null });
       applyAuContact(get, set, mover, foe, mode);
     },
@@ -601,7 +601,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle || battle.over || battle.acted) return; // le Test opposé coûte l'Action
       const active = activeCombatant(battle);
       if (!active || !controlsCombatant(get(), active) || !canTakeAction(active)) return;
-      const foe = battle.combatants.find((c) => c.id === targetId);
+      const foe = inBattleId(battle, targetId);
       if (!foe || !areGrappling(active, foe) || isOutOfAction(foe)) return;
       startGrapple(get, set, active, foe);
     },
@@ -610,8 +610,8 @@ export function createCombatSlice(get: Get, set: Set) {
     grappleBreak: () => {
       const { battle, pendingGrapple: pd } = get();
       if (!battle || !pd || pd.phase !== 'roll' || pd.def || !pd.canBreak) return;
-      const actor = battle.combatants.find((c) => c.id === pd.actorId);
-      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      const actor = inBattleId(battle, pd.actorId);
+      const foe = inBattleId(battle, pd.foeId);
       if (!actor || !foe) return set({ pendingGrapple: null });
       clearGrapple(actor, foe);
       removeCondition(actor, COND.empetre, stacks(actor, COND.empetre)); // l'acteur se libère de l'*Empêtré* de l'Empoignade
@@ -623,7 +623,7 @@ export function createCombatSlice(get: Get, set: Set) {
     grappleRoll: () => {
       const { battle, pendingGrapple: pd } = get();
       if (!battle || !pd || pd.phase !== 'roll' || pd.def) return; // déjà lancé → no-op
-      const actor = battle.combatants.find((c) => c.id === pd.actorId);
+      const actor = inBattleId(battle, pd.actorId);
       if (!actor || !pd.atk) return;
       const def = rollGrappleForce(actor, battleRng());
       const opp = resolveOpposed(def, pd.atk);
@@ -635,8 +635,8 @@ export function createCombatSlice(get: Get, set: Set) {
     grappleConfirm: () => {
       const { battle, pendingGrapple: pd } = get();
       if (!battle || !pd || !pd.result) return;
-      const actor = battle.combatants.find((c) => c.id === pd.actorId);
-      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      const actor = inBattleId(battle, pd.actorId);
+      const foe = inBattleId(battle, pd.foeId);
       if (!actor || !foe) return set({ pendingGrapple: null });
       if (pd.result === 'success') return set({ pendingGrapple: { ...pd, phase: 'options' }, battle: { ...battle, acted: true, action: null } }); // l'acteur tranche ; Action dépensée
       if (pd.result === 'failure') campGain(get, foe, 1); // l'adversaire l'emporte → +1 Avantage
@@ -649,8 +649,8 @@ export function createCombatSlice(get: Get, set: Set) {
     grappleChoose: (mode: 'damage' | 'entangle' | 'free') => {
       const { battle, pendingGrapple: pd } = get();
       if (!battle || !pd || pd.phase !== 'options' || pd.result !== 'success') return;
-      const actor = battle.combatants.find((c) => c.id === pd.actorId);
-      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      const actor = inBattleId(battle, pd.actorId);
+      const foe = inBattleId(battle, pd.foeId);
       if (!actor || !foe || !pd.def || !pd.atk) return set({ pendingGrapple: null });
       const dr = Math.max(0, resolveOpposed(pd.def, pd.atk).netSL); // DR net du Test gagné
       applyGrapple(get, set, actor, foe, mode, dr, pd.def.roll);
@@ -923,8 +923,8 @@ export function createCombatSlice(get: Get, set: Set) {
     trampleConfirm: () => {
       const { battle, pendingTrample: pt } = get();
       if (!battle || !pt || !pt.result) return;
-      const attacker = battle.combatants.find((c) => c.id === pt.attackerId);
-      const target = battle.combatants.find((c) => c.id === pt.targetId);
+      const attacker = inBattleId(battle, pt.attackerId);
+      const target = inBattleId(battle, pt.targetId);
       set({ pendingTrample: null });
       if (attacker && target) {
         const prevActed = battle.acted; // action GRATUITE : ne consomme pas l'Action
@@ -956,7 +956,7 @@ export function createCombatSlice(get: Get, set: Set) {
     battementSetFoe: (foeId: string) => {
       const { battle, pendingBattement: pb } = get();
       if (!battle || !pb || pb.result) return; // verrouillé une fois lancé
-      const active = battle.combatants.find((c) => c.id === pb.attackerId);
+      const active = inBattleId(battle, pb.attackerId);
       const foe = active && battementFoes(active, battle).find((c) => c.id === foeId);
       if (!active || !foe) return;
       startBattement(get, set, active, foe);
@@ -966,8 +966,8 @@ export function createCombatSlice(get: Get, set: Set) {
     battementConfirm: () => {
       const { battle, pendingBattement: pb } = get();
       if (!battle || !pb || !pb.result) return;
-      const attacker = battle.combatants.find((c) => c.id === pb.attackerId);
-      const foe = battle.combatants.find((c) => c.id === pb.foeId);
+      const attacker = inBattleId(battle, pb.attackerId);
+      const foe = inBattleId(battle, pb.foeId);
       set({ pendingBattement: null });
       if (!attacker || !foe) return;
       const line = resolveBattement(get, attacker, foe, pb.result); // MUTE le foe (et la réserve du camp)
@@ -996,7 +996,7 @@ export function createCombatSlice(get: Get, set: Set) {
     distraireSetFoe: (foeId: string) => {
       const { battle, scene, pendingDistraire: pd } = get();
       if (!battle || !scene || !pd || pd.atk) return; // verrouillé une fois lancé
-      const mover = battle.combatants.find((c) => c.id === pd.moverId);
+      const mover = inBattleId(battle, pd.moverId);
       const foe = mover && mover.pos && distraireFoes(mover, battle, (c) => losClear(scene, mover.pos!, c.pos!, smokeOf(battle))).find((c) => c.id === foeId);
       if (!mover || !foe) return;
       startDistraire(get, set, mover, foe);
@@ -1007,8 +1007,8 @@ export function createCombatSlice(get: Get, set: Set) {
     distraireConfirm: () => {
       const { battle, pendingDistraire: pd } = get();
       if (!battle || !pd || !pd.atk || !pd.result) return;
-      const mover = battle.combatants.find((c) => c.id === pd.moverId);
-      const foe = battle.combatants.find((c) => c.id === pd.foeId);
+      const mover = inBattleId(battle, pd.moverId);
+      const foe = inBattleId(battle, pd.foeId);
       set({ pendingDistraire: null });
       if (!mover || !foe) return;
       const line = resolveDistraire(mover, foe, pd.atk, pd.defRoll); // MUTE le foe (distractedRounds) sur une victoire
@@ -1024,7 +1024,7 @@ export function createCombatSlice(get: Get, set: Set) {
     maneuverConfirm: () => {
       const { battle, pendingManeuver: pm } = get();
       if (!battle || !pm || !pm.result) return;
-      const attacker = battle.combatants.find((c) => c.id === pm.attackerId);
+      const attacker = inBattleId(battle, pm.attackerId);
       set({ pendingManeuver: null });
       if (!attacker) return;
       const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === pm.kind);
@@ -1032,12 +1032,12 @@ export function createCombatSlice(get: Get, set: Set) {
       const prevActed = battle.acted;
       // RÉSOLVEUR GÉNÉRIQUE unique : dépense `avantageSpent`, choisit la/les cible(s) (clic = `targetId`),
       // roule les défenseurs, applique les effets AUTHORÉS de la `ManeuverDef`. Étreinte/Regard = Action.
-      const chosen = pm.targetId ? battle.combatants.find((c) => c.id === pm.targetId) : undefined;
+      const chosen = pm.targetId ? inBattleId(battle, pm.targetId) : undefined;
       resolveManeuver(get, set, attacker, a.def, a.indice, pm.result, pm.avantageSpent, chosen);
       // Manœuvre GRATUITE de zone (Souffle/Vomi/Langue/Regard) : 1/tour aussi (RAW « une Attaque gratuite ») —
       // même compteur partagé. (Étreinte/Regard à l'Action ne comptent pas — gérées par `acted` ci-dessous.)
       if (a.trigger === 'free') {
-        const atk = get().battle?.combatants.find((c) => c.id === pm.attackerId);
+        const atk = inBattleId(get().battle, pm.attackerId);
         if (atk) atk.freeAttacksThisTurn = { ...atk.freeAttacksThisTurn, [a.kind]: (atk.freeAttacksThisTurn?.[a.kind] ?? 0) + 1 };
       }
       const acted = a.trigger === 'action' ? true : prevActed; // Action consommée seulement par Étreinte/Regard
@@ -1048,7 +1048,7 @@ export function createCombatSlice(get: Get, set: Set) {
     maneuverSetAvantage: (n: number) => {
       const { battle, pendingManeuver: pm } = get();
       if (!battle || !pm || pm.result) return; // pas après le jet (l'Avantage fixe le DR)
-      const attacker = battle.combatants.find((c) => c.id === pm.attackerId);
+      const attacker = inBattleId(battle, pm.attackerId);
       if (!attacker) return;
       const clamped = Math.max(1, Math.min(n, attacker.advantage)); // 1..Avantage (LDB 85 l.238)
       set({ pendingManeuver: { ...pm, avantageSpent: clamped } });
@@ -1068,7 +1068,7 @@ export function createCombatSlice(get: Get, set: Set) {
     runConfirm: () => {
       const { battle, scene, pendingRun: pr } = get();
       if (!battle || !scene || !pr || !pr.result || !pr.dest) return;
-      const c = battle.combatants.find((x) => x.id === pr.combatantId);
+      const c = inBattleId(battle, pr.combatantId);
       set({ pendingRun: null });
       if (!c) return;
       // Combat monté : Course au Mouvement de la monture, empreinte/collisions de la monture (couple solidaire).
@@ -1141,7 +1141,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, pendingShipManeuver: p } = get();
       if (!battle || !p) return;
       if (p.participants.some((x) => !x.result)) return; // tous les contributeurs doivent avoir lancé
-      const ship = battle.combatants.find((c) => c.id === p.shipId);
+      const ship = inBattleId(battle, p.shipId);
       if (!ship) return;
       const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR); // Σ DR (essentiel ×2) + Moral + Manque de bras + sabotage
       const result = deriveManeuverFromCrew(ship, total); // virage si DR final ≥ 1 (ch.14)
@@ -1159,8 +1159,8 @@ export function createCombatSlice(get: Get, set: Set) {
     battleShipBattery: (shipId: string, targetId: string) => {
       const battle = get().battle;
       if (!battle) return;
-      const ship = battle.combatants.find((c) => c.id === shipId);
-      const target = battle.combatants.find((c) => c.id === targetId);
+      const ship = inBattleId(battle, shipId);
+      const target = inBattleId(battle, targetId);
       if (!ship || !target || !ship.pos || !target.pos) return;
       const side = targetArc(get().facing[ship.id] ?? 'N', ship.pos, target.pos); // bord qui porte (auto-dérivé de la cible)
       const postes = bearingPostes(ship, side); // sur ce bord ET chargées (pas en cours de recharge, ch.12)
@@ -1177,8 +1177,8 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, pendingShipBattery: p } = get();
       if (!battle || !p) return;
       if (p.participants.some((x) => !x.result)) return; // tous les Artilleurs doivent avoir lancé
-      const ship = battle.combatants.find((c) => c.id === p.shipId);
-      const target = battle.combatants.find((c) => c.id === p.targetId);
+      const ship = inBattleId(battle, p.shipId);
+      const target = inBattleId(battle, p.targetId);
       if (!ship || !target) { set({ pendingShipBattery: null }); return; }
       const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR); // DR PARTAGÉ (Σ, essentiel ×2, + Moral, + Manque de bras, + sabotage)
       set({ pendingShipBattery: null });
@@ -1197,8 +1197,8 @@ export function createCombatSlice(get: Get, set: Set) {
     shipAutoBattery: (shipId: string, targetId: string): boolean => {
       const battle = get().battle;
       if (!battle) return false;
-      const ship = battle.combatants.find((c) => c.id === shipId);
-      const target = battle.combatants.find((c) => c.id === targetId);
+      const ship = inBattleId(battle, shipId);
+      const target = inBattleId(battle, targetId);
       if (!ship || !target || !ship.pos || !target.pos) return false;
       const side = targetArc(get().facing[ship.id] ?? 'N', ship.pos, target.pos); // bord qui porte (auto-dérivé de la cible)
       if (!bearingPostes(ship, side).length) return false; // aucune pièce chargée sur ce bord → rien à lâcher
@@ -1261,7 +1261,7 @@ export function createCombatSlice(get: Get, set: Set) {
         return;
       }
       if (!battle) return;
-      const ship = battle.combatants.find((c) => c.id === p.shipId);
+      const ship = inBattleId(battle, p.shipId);
       if (!ship) { set({ pendingCrewTest: null }); return; }
       const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
       set({ pendingCrewTest: null });
@@ -1295,9 +1295,9 @@ export function createCombatSlice(get: Get, set: Set) {
       if (combatBusy(get())) return;
       const battle = get().battle;
       if (!battle || battle.over) return;
-      const ship = battle.combatants.find((c) => c.id === shipId);
+      const ship = inBattleId(battle, shipId);
       if (!ship || ship.lastShantyQuart === quartIndex(get().gameTime)) return; // « une seule chanson … par quart »
-      const crew = exposedCrew((ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c));
+      const crew = exposedCrew((ship.crewIds ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c));
       // Le CHANTEUR : le marin apte au Talent qui connaît le plus de chansons (les specs = chansons apprises, l.36).
       const singer = crew.filter((c) => knownShanties(c).length > 0 && !c.singingShanty)
         .sort((a, b) => knownShanties(b).length - knownShanties(a).length)[0];
@@ -1315,8 +1315,8 @@ export function createCombatSlice(get: Get, set: Set) {
     shantyConfirm: () => {
       const { battle, pendingShanty: p } = get();
       if (!battle || !p || !p.result || !p.shantyId) return;
-      const ship = battle.combatants.find((c) => c.id === p.shipId);
-      const singer = battle.combatants.find((c) => c.id === p.singerId);
+      const ship = inBattleId(battle, p.shipId);
+      const singer = inBattleId(battle, p.singerId);
       set({ pendingShanty: null });
       if (!ship || !singer) return;
       if (p.result.success) {
@@ -1336,8 +1336,8 @@ export function createCombatSlice(get: Get, set: Set) {
     approachConfirm: () => {
       const { battle, pendingApproach: pa } = get();
       if (!battle || !pa || !pa.result) return;
-      const c = battle.combatants.find((x) => x.id === pa.combatantId);
-      const src = battle.combatants.find((x) => x.id === pa.sourceId);
+      const c = inBattleId(battle, pa.combatantId);
+      const src = inBattleId(battle, pa.sourceId);
       set({ pendingApproach: null });
       if (!c) return;
       const ok = pa.result.success;
@@ -1360,8 +1360,8 @@ export function createCombatSlice(get: Get, set: Set) {
     wardConfirm: () => {
       const { battle, pendingWard: pw } = get();
       if (!battle || !pw || !pw.result) return;
-      const attacker = battle.combatants.find((x) => x.id === pw.attackerId);
-      const target = battle.combatants.find((x) => x.id === pw.targetId);
+      const attacker = inBattleId(battle, pw.attackerId);
+      const target = inBattleId(battle, pw.targetId);
       set({ pendingWard: null });
       if (!attacker || !target) return;
       const ok = pw.result.success;
@@ -1488,7 +1488,7 @@ export function createCombatSlice(get: Get, set: Set) {
     roundStartPromote: (heroId: string) => {
       const { battle, pendingRoundStart } = get();
       if (!battle || !pendingRoundStart) return;
-      const hero = battle.combatants.find((c) => c.id === heroId);
+      const hero = inBattleId(battle, heroId);
       // Réordonnancement d'initiative : arme Rapide (LDB 62 l.318-319) → gratuit ; sinon 1 point de Chance
       // (LDB ch.17 l.27). Tir rapide (interruption hors de l'ordre, LDB 10) ne passe PAS par ici (`preemptRangedShot`).
       const free = !!hero && canStrikeFirst(hero.weapons);
@@ -1503,8 +1503,8 @@ export function createCombatSlice(get: Get, set: Set) {
     preemptRangedShot: (heroId: string, targetId: string) => {
       const { battle, pendingRoundStart } = get();
       if (!battle || !pendingRoundStart || get().pendingAttack) return;
-      const hero = battle.combatants.find((c) => c.id === heroId);
-      const target = battle.combatants.find((c) => c.id === targetId);
+      const hero = inBattleId(battle, heroId);
+      const target = inBattleId(battle, targetId);
       if (!hero || !controlsCombatant(get(), hero) || !canPreemptRanged(hero) || hero.loseNextAction) return; // 1 interruption / Round (loseNext = déjà tiré)
       if (!target || target.kind === hero.kind || isOutOfAction(target)) return;
       // Cible VALIDE seulement (arme à distance + bande de portée + Ligne de Vue) — sinon on N'OUVRE PAS la
@@ -1525,7 +1525,7 @@ export function createCombatSlice(get: Get, set: Set) {
     armPreempt: (heroId: string | null) => {
       const { battle, pendingRoundStart } = get();
       if (!battle || !pendingRoundStart || heroId === null) { set({ preemptAiming: null }); return; }
-      const hero = battle.combatants.find((c) => c.id === heroId);
+      const hero = inBattleId(battle, heroId);
       if (!hero || !controlsCombatant(get(), hero) || !canPreemptRanged(hero) || hero.loseNextAction) { set({ preemptAiming: null }); return; }
       set({ preemptAiming: get().preemptAiming === heroId ? null : heroId }); // bascule
     },
@@ -1553,13 +1553,13 @@ export function createCombatSlice(get: Get, set: Set) {
       // Premier combattant valide de l'ordre (réordonné) à partir de l'index 0.
       let turn = 0;
       for (let i = 0; i < battle.order.length; i++) {
-        const c = battle.combatants.find((x) => x.id === battle.order[i]);
+        const c = inBattleId(battle, battle.order[i]);
         if (c && !isOutOfAction(c)) {
           turn = i;
           break;
         }
       }
-      const active = battle.combatants.find((c) => c.id === battle.order[turn]);
+      const active = inBattleId(battle, battle.order[turn]);
       let movementUsed = 0;
       let acted = false;
       if (active) {
@@ -1601,7 +1601,7 @@ export function createCombatSlice(get: Get, set: Set) {
     fateNegate: () => {
       const { battle, pendingFateSave: p } = get();
       if (!battle || !p || p.source !== 'hit') return; // « Comment ça a pu rater ? » : coup létal seulement
-      const hero = battle.combatants.find((c) => c.id === p.heroId);
+      const hero = inBattleId(battle, p.heroId);
       set({ pendingFateSave: null });
       if (!hero) return;
       hero.fate = (hero.fate ?? 0) - 1;
@@ -1614,7 +1614,7 @@ export function createCombatSlice(get: Get, set: Set) {
     fateSurvive: () => {
       const { battle, pendingFateSave: p } = get();
       if (!battle || !p) return;
-      const hero = battle.combatants.find((c) => c.id === p.heroId);
+      const hero = inBattleId(battle, p.heroId);
       const source = p.source;
       set({ pendingFateSave: null });
       if (!hero) return;
@@ -1630,7 +1630,7 @@ export function createCombatSlice(get: Get, set: Set) {
     fateAccept: () => {
       const { battle, pendingFateSave: p } = get();
       if (!battle || !p) return;
-      const hero = battle.combatants.find((c) => c.id === p.heroId);
+      const hero = inBattleId(battle, p.heroId);
       const source = p.source;
       set({ pendingFateSave: null });
       if (hero) {
@@ -1731,13 +1731,13 @@ export function createCombatSlice(get: Get, set: Set) {
       if (combatBusy(get())) return; // flux différé en cours : hotbar inerte
       const battle = get().battle;
       if (!battle || battle.over) return;
-      const ship = battle.combatants.find((c) => c.id === shipId);
+      const ship = inBattleId(battle, shipId);
       const poste = ship?.postes?.find((p) => p.item.uid === posteUid);
       if (!ship || !poste || poste.loaded !== false) return; // pièce déjà chargée → rien à recharger
-      const chef = poste.crewIds?.[0] ? battle.combatants.find((c) => c.id === poste.crewIds![0]) : undefined;
+      const chef = poste.crewIds?.[0] ? inBattleId(battle, poste.crewIds![0]) : undefined;
       if (!chef) return;
       if ((battle.crewActed?.[ship.id] ?? []).includes(chef.id)) return; // chef déjà engagé ce Round → 1 Test de recharge/pièce/Round
-      const servants = (poste.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+      const servants = (poste.crewIds ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c);
       const w0 = mannedPosteWeapon(chef, poste);
       if (!w0) return;
       // Effectif EFFECTIF = même décompte que le tir (servants aptes ET à la bonne Projectiles, AA l.3900) : la
@@ -1764,8 +1764,8 @@ export function createCombatSlice(get: Get, set: Set) {
       // — Recharge d'un POSTE de navire : applique le DR cumulé à la PIÈCE (pas au champ `loaded` du marin) et
       //   occupe l'équipage du poste (équipage-ressource), sans consommer le tour du navire.
       if (pr.posteUid && pr.shipId) {
-        const ship = battle.combatants.find((c) => c.id === pr.shipId);
-        const chef = battle.combatants.find((c) => c.id === pr.actorId);
+        const ship = inBattleId(battle, pr.shipId);
+        const chef = inBattleId(battle, pr.actorId);
         const poste = ship?.postes?.find((p) => p.item.uid === pr.posteUid);
         set({ pendingReload: null });
         if (!ship || !chef || !poste) return;
@@ -1780,7 +1780,7 @@ export function createCombatSlice(get: Get, set: Set) {
         bus.emit(EVT.SCENE_DIRTY);
         return;
       }
-      const a = battle.combatants.find((c) => c.id === pr.actorId);
+      const a = inBattleId(battle, pr.actorId);
       set({ pendingReload: null });
       if (!a) return;
       a.aiming = false; // recharger est une autre action → la visée est perdue
@@ -1807,7 +1807,7 @@ export function createCombatSlice(get: Get, set: Set) {
     handGateConfirm: () => {
       const { battle, pendingHandGate: pg } = get();
       if (!battle || !pg || pg.roll == null) return;
-      const attacker = battle.combatants.find((c) => c.id === pg.attackerId);
+      const attacker = inBattleId(battle, pg.attackerId);
       set({ pendingHandGate: null });
       if (!attacker) return;
       if (pg.success) {
@@ -1856,7 +1856,7 @@ export function createCombatSlice(get: Get, set: Set) {
     recoverConfirm: () => {
       const { battle, pendingStateRecovery: sr } = get();
       if (!battle || !sr || sr.roll == null) return;
-      const a = battle.combatants.find((c) => c.id === sr.actorId);
+      const a = inBattleId(battle, sr.actorId);
       set({ pendingStateRecovery: null });
       if (!a) return;
       // Filets barbelés (Zoo Impérial p.29) : Dégâts ignorant l'armure à CHAQUE tentative, réussie ou ratée.
@@ -2026,7 +2026,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const pa = get().pendingAttack;
       if (!pa || pa.result) return; // choix avant le jet seulement
       // Mode « des deux armes » : l'attaque-Action utilise la MAIN DIRECTRICE (la 2ᵉ frappe suit, off-hand).
-      const a = get().battle?.combatants.find((c) => c.id === pa.attackerId);
+      const a = inBattleId(get().battle, pa.attackerId);
       const mainUid = a?.weapons.find((w) => w.hand === 'main' && w.type === 'melee' && (w.hands ?? 1) === 1)?.uid;
       set({ pendingAttack: { ...pa, dualMode: on, weaponUid: on ? (mainUid ?? pa.weaponUid) : pa.weaponUid } });
     },
@@ -2059,8 +2059,8 @@ export function createCombatSlice(get: Get, set: Set) {
     attackRoll: () => {
       const { battle, pendingAttack: pa } = get();
       if (!battle || !pa || pa.result) return;
-      const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
-      const target = battle.combatants.find((c) => c.id === pa.targetId);
+      const attacker = inBattleId(battle, pa.attackerId);
+      const target = inBattleId(battle, pa.targetId);
       if (!attacker || !target) return;
       applyIncomingMeleeAdvantage(get, attacker, target); // +1 Avantage si cible Sonnée (LDB États l.123), avant le jet
       const r = resolveAttack(get, attacker, target, pa.location ?? undefined, pa.fromCharge, pa.intoCrowd, pa.heldGround, pa.weaponUid, pa.withhold); // charge montée → Force+Taille de la monture aux dégâts (LDB 14 l.223) ; pa.withhold = Retenir ses coups (AA)
@@ -2077,10 +2077,10 @@ export function createCombatSlice(get: Get, set: Set) {
     attackConfirm: () => {
       const { battle, pendingAttack: pa } = get();
       if (!battle || !pa || !pa.result) return;
-      const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
-      const target = battle.combatants.find((c) => c.id === pa.targetId);
+      const attacker = inBattleId(battle, pa.attackerId);
+      const target = inBattleId(battle, pa.targetId);
       // Tir dévié dans la mêlée (LDB 14 l.136) : la touche est appliquée à l'allié intercalé, pas à la cible.
-      const victim = pa.victimId ? battle.combatants.find((c) => c.id === pa.victimId) ?? target : target;
+      const victim = pa.victimId ? inBattleId(battle, pa.victimId) ?? target : target;
       const wasChain = !!pa.cleave; // cette attaque faisait-elle partie d'un balayage en cours ?
       const dualBefore = get().pendingDualStrike; // données de la 1ʳᵉ frappe (présentes quand on confirme la 2ᵉ)
       set({ pendingAttack: null });
@@ -2203,7 +2203,7 @@ export function createCombatSlice(get: Get, set: Set) {
     siegeAimCommit: (pt: Pt) => {
       const { battle, pendingSiegeAim: sa } = get();
       if (!battle || battle.over || !sa) return;
-      const gunner = battle.combatants.find((c) => c.id === sa.gunnerId);
+      const gunner = inBattleId(battle, sa.gunnerId);
       set({ pendingSiegeAim: null, battle: { ...battle, selectedAttack: undefined, preview: null } }); // referme le placeur
       if (!gunner || isOutOfAction(gunner) || !canTakeAction(gunner) || battle.acted) return;
       const aim = battle.combatants
@@ -2217,8 +2217,8 @@ export function createCombatSlice(get: Get, set: Set) {
     cleaveAttack: (targetId: string) => {
       const { battle, pendingCleave: pc } = get();
       if (!battle || !pc) return;
-      const attacker = battle.combatants.find((c) => c.id === pc.attackerId);
-      const target = battle.combatants.find((c) => c.id === targetId);
+      const attacker = inBattleId(battle, pc.attackerId);
+      const target = inBattleId(battle, targetId);
       if (!attacker || !target) return;
       if (pc.count >= bonus(effectiveChar(attacker, 'CC'))) return; // borné à BCC enchaînements (LDB 14 l.12)
       if (!cleaveTargets(battle, attacker, pc.hitIds).some((t) => t.id === targetId)) return; // cible invalide (non adjacente / déjà frappée)
@@ -2228,8 +2228,8 @@ export function createCombatSlice(get: Get, set: Set) {
     dualStrikeAttack: (targetId: string, skipGate = false) => {
       const { battle, pendingDualStrike: ds } = get();
       if (!battle || !ds) return;
-      const attacker = battle.combatants.find((c) => c.id === ds.attackerId);
-      const target = battle.combatants.find((c) => c.id === targetId);
+      const attacker = inBattleId(battle, ds.attackerId);
+      const target = inBattleId(battle, targetId);
       if (!attacker || !target || isOutOfAction(target)) return;
       const off = attacker.weapons.find((w) => w.uid === ds.offWeaponUid);
       if (!off) { set({ pendingDualStrike: null }); return; }
@@ -2267,7 +2267,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const { battle, pendingCascade: pc } = get();
       const step = pc?.participants[pc.cursor];
       if (!battle || !pc || step?.jet !== 'fumble' || !step.fumble?.result) return;
-      const c = battle.combatants.find((x) => x.id === step.actorId);
+      const c = inBattleId(battle, step.actorId);
       if (c) applyOups(get, set, c, step.fumble.weapon, step.fumble.result);
       // La Maladresse est l'étape COURANTE de la cascade combat → enchaîner le curseur (sa clôture reprend l'IA).
       get().cascadeNext();
@@ -2298,8 +2298,8 @@ export function createCombatSlice(get: Get, set: Set) {
       // « Appliquer » : applique le résultat puis REPREND le tour de l'IA suspendu.
       const { battle, pendingDefense: pd } = get();
       if (!battle || !pd || !pd.result) return;
-      const attacker = battle.combatants.find((c) => c.id === pd.attackerId);
-      const defender = battle.combatants.find((c) => c.id === pd.defenderId);
+      const attacker = inBattleId(battle, pd.attackerId);
+      const defender = inBattleId(battle, pd.defenderId);
       set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
       if (attacker && defender) {
         const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
@@ -2583,7 +2583,7 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!battle) return;
       const healer = activeCombatant(battle);
       if (!healer || !controlsCombatant(get(), healer) || !hasHealSkill(healer) || battle.acted || !canTakeAction(healer)) return;
-      const target = battle.combatants.find((c) => c.id === targetId);
+      const target = inBattleId(battle, targetId);
       if (!target || !availableHealModes(target).includes(mode)) return;
       const skillValue = testValue(healer, 'guerison');
       set({
@@ -3097,7 +3097,7 @@ export function createCombatSlice(get: Get, set: Set) {
     frenzyConfirm: () => {
       const { battle, pendingFrenzy: pf } = get();
       if (!battle || !pf || !pf.result) return;
-      const c = battle.combatants.find((x) => x.id === pf.combatantId);
+      const c = inBattleId(battle, pf.combatantId);
       set({ pendingFrenzy: null });
       if (!c) return;
       // Issue = source UNIQUE avec la popin (describeFrenzy).

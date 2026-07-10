@@ -11,6 +11,7 @@ import { combatDistance } from './footprint';
 import type { GameState } from './store';
 import { currentTargetingMode, type HoverTargeting, type TilePreview } from './targetingModes';
 import { controlsCombatant } from './netOwnership';
+import { inBattleId } from './combatOrParty';
 import { canPreemptRanged } from '../engine/combatFeatures/dispatch';
 import type { Pt } from './path';
 
@@ -40,9 +41,9 @@ export function cursorActor(get: () => GameState): Combatant | undefined {
   const s = get();
   const battle = s.battle;
   if (!battle || battle.over) return undefined;
-  const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+  const active = inBattleId(battle, battle.order[battle.turn]);
   if (active && controlsCombatant(s, active) && active.pos) return active;
-  if (s.preemptAiming) { const sh = battle.combatants.find((c) => c.id === s.preemptAiming); if (sh?.pos) return sh; }
+  if (s.preemptAiming) { const sh = inBattleId(battle, s.preemptAiming); if (sh?.pos) return sh; }
   return undefined;
 }
 
@@ -54,7 +55,7 @@ export function preemptShooterIds(get: () => GameState): string[] {
   const battle = s.battle;
   if (!battle || battle.over || !s.pendingRoundStart) return [];
   return battle.order.filter((id) => {
-    const c = battle.combatants.find((x) => x.id === id);
+    const c = inBattleId(battle, id);
     return !!c && controlsCombatant(s, c) && canPreemptRanged(c) && !c.loseNextAction;
   });
 }

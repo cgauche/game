@@ -31,6 +31,7 @@ import { isOutOfAction, loseWounds, applyZeroWounds, isMagicallyAsleep, wakeSlee
 import { bonus, effectiveChar } from '../../engine/characteristics';
 import { combatDistance } from '../footprint';
 import { pushBackTiles } from '../combatGeometry';
+import { inBattleId } from '../combatOrParty';
 
 // ── Helpers propres aux sauvegardes, DÉPLACÉS depuis combatFlow (ré-exporté via le baril pour applyCast / tests) ──
 
@@ -38,7 +39,7 @@ import { pushBackTiles } from '../combatGeometry';
 export function martyrGuardOf(battle: BattleState, target: Combatant): Combatant | null {
   const id = (target.activeEffects ?? []).find((e) => e.martyrGuard)?.martyrGuard;
   if (!id || id === target.id) return null;
-  const priest = battle.combatants.find((c) => c.id === id);
+  const priest = inBattleId(battle, id);
   return priest && !isOutOfAction(priest) && !priest.dead ? priest : null;
 }
 

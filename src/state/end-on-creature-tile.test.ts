@@ -11,6 +11,7 @@ import { sizeFootprint } from './footprint';
 import type { Combatant } from '../engine/types';
 import type { BattleState } from './store';
 import type { SizeCategory } from '../engine/size';
+import { inBattleId } from './combatOrParty';
 
 /**
  * INVARIANT (LDB 85 l.373-374 vs Frappe Mortelle) : on TRAVERSE la case d'une créature plus petite
@@ -108,7 +109,7 @@ describe('intégration store — un héros ne peut pas FINIR sur la case d\'un e
     useGame.setState({ battle: { ...b, turn: b.order.indexOf(H.id), action: null, movementUsed: 0, acted: false } });
 
     const battle = useGame.getState().battle!;
-    const hero = battle.combatants.find((c) => c.id === H.id)!;
+    const hero = inBattleId(battle, H.id)!;
 
     // TRANSIT : l'ennemi plus petit ne bloque pas le passage (LDB 85) — il est absent de `occupied`.
     expect(occupied(battle, hero).has('8,10')).toBe(false);

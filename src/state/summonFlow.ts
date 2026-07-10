@@ -17,6 +17,7 @@ import type { Get, Set as SetFn } from './flowTypes';
 import { Pt } from './path';
 import { Scene, isWalkable } from './scene';
 import { occupied } from './combatGeometry';
+import { inBattleId } from './combatOrParty';
 import { spawnEnemy } from './spawn';
 import { grantTrait } from '../engine/grantedTraits';
 import { resolveFormula, slBonus, type GameOp } from '../engine/ops';
@@ -117,7 +118,7 @@ export function purgeExpiredSummons(battle: BattleState, round: number): string[
     if (!c.summon) return false;
     if (c.summon.expiresAtRound != null && round >= c.summon.expiresAtRound) return true;
     if (c.summon.despawnIfSummonerDown) {
-      const s = battle.combatants.find((x) => x.id === c.summon!.byId);
+      const s = inBattleId(battle, c.summon!.byId);
       if (!s || isOutOfAction(s)) return true;
     }
     return false;

@@ -23,6 +23,7 @@ import { cargoOverload } from '../engine/seaVoyage';
 import { exposedCrew } from '../engine/shipCritical';
 import { crewRoleValue, crewTalentDR, moraleBand } from '../engine/crewMorale';
 import { placementPenalty } from './shipPostes';
+import { inBattleId } from './combatOrParty';
 import { findVehicleById, findCrewRoleById } from '../data';
 import type { RNG } from '../engine/dice';
 import type { Combatant } from '../engine/types';
@@ -175,13 +176,13 @@ function deriveManeuver(ship: Combatant, nav: { sl: number; roll?: number; targe
  */
 export function rollShipManeuver(get: Get, shipId: string, helmsmanId?: string): ManeuverResult | null {
   const battle = get().battle;
-  const ship = battle?.combatants.find((c) => c.id === shipId);
+  const ship = inBattleId(battle, shipId);
   if (!battle || !ship) return null;
   const { skillId } = shipManeuverParams(ship);
   const crew = (ship.crewIds ?? [])
-    .map((id) => battle.combatants.find((c) => c.id === id))
+    .map((id) => inBattleId(battle, id))
     .filter((c): c is Combatant => !!c);
-  const helm = helmsmanId ? battle.combatants.find((c) => c.id === helmsmanId) : bestHelmsman(crew, skillId);
+  const helm = helmsmanId ? inBattleId(battle, helmsmanId) : bestHelmsman(crew, skillId);
   const nav = helm ? rollTest(testValue(helm, skillId), 'intermediaire', battleRng()) : undefined;
   return deriveManeuver(ship, { sl: nav?.sl ?? 0, roll: nav?.roll, target: nav?.target, success: nav?.success }, helm?.name);
 }
@@ -207,7 +208,7 @@ export function bonusShipManeuver(ship: Combatant, prev: ManeuverResult): Maneuv
  * M÷2 plancher). Renvoie les cases avancées. Logue le succès (via `shipTurn`) ou l'échec.
  */
 export function applyShipManeuver(get: Get, shipId: string, result: ManeuverResult, turnSteps: number): number {
-  const ship = get().battle?.combatants.find((c) => c.id === shipId);
+  const ship = inBattleId(get().battle, shipId);
   if (result.success) get().shipTurn(shipId, turnSteps); // vire + re-mappe les arcs + logue le nouveau cap
   else get().log(`${result.helmsman ?? "L'équipage"} rate la manœuvre de ${ship?.name ?? shipId} (DR ${result.dr}) — le cap tient.`);
   return get().shipAdvance(shipId, result.movement);

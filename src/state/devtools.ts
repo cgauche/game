@@ -1,6 +1,6 @@
 import { useGame, SCREENS } from './store';
 import { portRepairVessel, portCareenVessel, portInstallUpgrade } from './seaVoyageFlow';
-import { actorIn } from './combatOrParty';
+import { actorIn, inBattleId } from './combatOrParty';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
 import { setAiTrace } from './ai';
 import { pushCombatStep } from './combatEffects';
@@ -277,7 +277,7 @@ export function buildApi() {
         return '✓ survol effacé';
       }
       const pt = typeof idOrXY === 'string'
-        ? g().battle?.combatants.find((c) => c.id === idOrXY)?.pos ?? find(idOrXY)?.pos
+        ? inBattleId(g().battle, idOrXY)?.pos ?? find(idOrXY)?.pos
         : idOrXY;
       if (!pt) return '✗ cible introuvable (combattant ou entité)';
       hook({ ...pt });
@@ -298,8 +298,8 @@ export function buildApi() {
     aim: (id: string) => {
       const b = g().battle;
       if (!b) return '✗ pas de combat';
-      const active = b.combatants.find((c) => c.id === b.order[b.turn]);
-      const target = b.combatants.find((c) => c.id === id);
+      const active = inBattleId(b, b.order[b.turn]);
+      const target = inBattleId(b, id);
       if (!active || !target) return '✗ actif ou cible introuvable';
       return hoverTargeting(() => useGame.getState(), active, target);
     },
@@ -370,7 +370,7 @@ export function buildApi() {
       const b = g().battle;
       if (!b || b.over) return '✗ pas de combat en cours';
       const idx = b.order.indexOf(id);
-      const c = b.combatants.find((x) => x.id === id);
+      const c = inBattleId(b, id);
       if (idx < 0 || !c) return `✗ « ${id} » absent de l'ordre d'initiative`;
       if (isOutOfAction(c)) return `✗ ${c.name} est hors de combat`;
       useGame.setState({
@@ -389,7 +389,7 @@ export function buildApi() {
      *  vécu en recette. Combattant simple (ni coque ni crew) : téléportation directe inchangée. */
     place: (id: string, pt: { x: number; y: number }) => {
       const b = g().battle;
-      const c = b?.combatants.find((x) => x.id === id);
+      const c = inBattleId(b, id);
       if (!b || !c || !c.pos) return '✗ combattant introuvable (combat uniquement — hors combat : goto)';
       const hull = c.postes?.length ? c : b.combatants.find((h) => h.postes?.some((p) => p.crewIds?.includes(c.id)));
       if (!hull?.pos) {
@@ -402,7 +402,7 @@ export function buildApi() {
       const crewIds = new Set<string>();
       for (const p of hull.postes ?? []) for (const cid of p.crewIds ?? []) crewIds.add(cid);
       const movers = [hull, ...[...crewIds]
-        .map((cid) => b.combatants.find((x) => x.id === cid))
+        .map((cid) => inBattleId(b, cid))
         .filter((x): x is Combatant => !!x?.pos && x.id !== hull.id)];
       const moved = movers.map((m) => {
         m.pos = { x: m.pos!.x + delta.x, y: m.pos!.y + delta.y };
@@ -418,7 +418,7 @@ export function buildApi() {
      *  ensuite avec `__wfrp.aim('cible')` qu'elle (re)tombe — ou sort — de l'arc. */
     turnShip: (shipId: string, side: 'tribord' | 'babord' | number = 'tribord') => {
       const b = g().battle;
-      const ship = b?.combatants.find((x) => x.id === shipId);
+      const ship = inBattleId(b, shipId);
       if (!b || !ship) return '✗ navire introuvable (combat uniquement)';
       const before = g().facing[shipId];
       if (!before) return `✗ ${ship.name} n'a pas de cap (facing) — pas un navire orienté ?`;
@@ -431,7 +431,7 @@ export function buildApi() {
      *  'tribord'/'babord' (90°) ou crans. Contrairement à `turnShip` (triche), ce virage PEUT échouer. */
     maneuver: (shipId: string, side: 'tribord' | 'babord' | number = 'tribord', helmsmanId?: string) => {
       const b = g().battle;
-      const ship = b?.combatants.find((x) => x.id === shipId);
+      const ship = inBattleId(b, shipId);
       if (!b || !ship) return '✗ navire introuvable (combat uniquement)';
       const before = g().facing[shipId];
       const r = maneuverShip(() => useGame.getState(), shipId, typeof side === 'number' ? side : side === 'tribord' ? 2 : -2, helmsmanId);
@@ -511,7 +511,7 @@ export function buildApi() {
     dealDamage: (id: string, n = 5) => {
       const s = g();
       if (!s.battle || s.battle.over) return '✗ pas de combat en cours';
-      const target = s.battle.combatants.find((c) => c.id === id);
+      const target = inBattleId(s.battle, id);
       if (!target) return `✗ « ${id} » introuvable dans le combat — voir __wfrp.battle()`;
       const caster = s.battle.combatants.find((c) => c.kind === 'hero' && !isOutOfAction(c)) ?? target;
       const lines = applyOps(target, [{ op: 'wounds', amount: n }], { caster });
@@ -519,7 +519,7 @@ export function buildApi() {
         battle: { ...s.battle, log: [...s.battle.log, ev('info', `Recette : ${n} Dégâts infligés à ${target.name}.`), ...lines.map((l) => ev('info', l))] },
       });
       checkBattleOver(() => useGame.getState(), useGame.setState);
-      const after = useGame.getState().battle?.combatants.find((c) => c.id === id);
+      const after = inBattleId(useGame.getState().battle, id);
       return `✓ ${target.name} : ${after?.wounds.current ?? target.wounds.current}/${target.wounds.max} PB — ${useGame.getState().battle?.over ?? 'combat en cours'}`;
     },
 
@@ -640,7 +640,7 @@ export function buildApi() {
       const s = g();
       const b = s.battle;
       if (!b || b.over) return '✗ pas de combat en cours';
-      const enemy = b.combatants.find((c) => c.id === enemyId);
+      const enemy = inBattleId(b, enemyId);
       if (!enemy) return `✗ ennemi « ${enemyId} » introuvable`;
       const heroes = b.combatants.filter((c) => c.kind === 'hero' && !isOutOfAction(c));
       const target = heroId
@@ -696,8 +696,8 @@ export function buildApi() {
     bladeTrap: (defenderId: string, attackerId: string, defSL = 4) => {
       const b = g().battle;
       if (!b) return '✗ pas en combat';
-      const defender = b.combatants.find((c) => c.id === defenderId);
-      const attacker = b.combatants.find((c) => c.id === attackerId);
+      const defender = inBattleId(b, defenderId);
+      const attacker = inBattleId(b, attackerId);
       if (!defender || !attacker) return `✗ défenseur/attaquant introuvable (${defenderId}/${attackerId})`;
       const weapon = attacker.weapons?.[0];
       if (!weapon) return `✗ ${attacker.name} n'a pas d'arme active`;
@@ -735,8 +735,8 @@ export function buildApi() {
     fear: (heroId: string, enemyId: string, indice = 2) => {
       const b = g().battle;
       if (!b || b.over) return '✗ pas de combat en cours';
-      const hero = b.combatants.find((c) => c.id === heroId);
-      const enemy = b.combatants.find((c) => c.id === enemyId);
+      const hero = inBattleId(b, heroId);
+      const enemy = inBattleId(b, enemyId);
       if (!hero || !enemy) return `✗ héros/source introuvable (${heroId}/${enemyId})`;
       if (!hero.pos || !enemy.pos) return '✗ positions inconnues';
       hero.psychState = [
@@ -823,7 +823,7 @@ export function buildApi() {
       const sr = s as unknown as Record<string, unknown>;
       const open = Object.keys(sr).filter((k) => /^pending/.test(k) && (Array.isArray(sr[k]) ? (sr[k] as unknown[]).length > 0 : sr[k] != null));
       const b = s.battle;
-      const act = b && !b.over ? b.combatants.find((c) => c.id === b.order[b.turn]) : undefined;
+      const act = b && !b.over ? inBattleId(b, b.order[b.turn]) : undefined;
       const key = pickActiveModalKey(s);
       return {
         cadence: rule('combat-cadence'),
@@ -877,7 +877,7 @@ export function buildApi() {
           const s = g();
           const b = s.battle;
           if (!b || b.over) return { done: true, msg: b?.over ? `✓ combat terminé (${b.over})` : '✓ pas de combat en cours' };
-          const c = b.combatants.find((x) => x.id === b.order[b.turn]);
+          const c = inBattleId(b, b.order[b.turn]);
           if (!c || !aiDriven(s, c)) return { done: true, msg: `✓ tour de ${c?.name ?? '—'} (piloté)` };
           return { done: false, msg: '' };
         };

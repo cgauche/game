@@ -116,7 +116,7 @@ import { endShanty, resolveShipUnits } from './shipCrew';
 import { beginShipwreck } from './shipwreck';
 import { isInanimate, isStructure, structureAimCell, ramVsNonDoor } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
-import { actorIn } from './combatOrParty';
+import { actorIn, inBattleId } from './combatOrParty';
 import { followsCharacterRules } from '../engine/relations';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
@@ -197,7 +197,7 @@ import { cadenceAutoCombat } from '../engine/cadence';
 // ---------------------------------------------------------------------------
 
 export function activeCombatant(battle: BattleState): Combatant | undefined {
-  return battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+  return inBattleId(battle, battle.order[battle.turn]);
 }
 
 // --- Effets de scène/campagne extraits → combatEffects.ts (baril) ---
@@ -312,7 +312,7 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
   // — mêlée (bélier, Force) ET distance, donc AVANT le early-return ranged-only ci-dessous.
   const required = warMachineCrewRequired(w);
   if (required > 0 && active.mannedPoste) {
-    const crew = (active.mannedPoste.crewIds ?? []).map((id) => b?.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+    const crew = (active.mannedPoste.crewIds ?? []).map((id) => inBattleId(b, id)).filter((c): c is Combatant => !!c);
     if (warMachineCrewPenalty(exposedCrew(crew).length, required).unusable)
       return { reason: 'sous-effectif', detail: `${active.name} : Équipe trop réduite pour servir ${w.name}.` };
   }
@@ -356,7 +356,7 @@ export function strayShotVictim(res: AttackResult, attacker: Combatant, target: 
   if (res.hit || !res.attackerDetail) return null;
   if (res.attackerRoll > res.attackerDetail.target + 20) return null; // n'aurait pas touché même sans le −20
   const allies = (target.engagedWith ?? [])
-    .map((id) => battle.combatants.find((c) => c.id === id))
+    .map((id) => inBattleId(battle, id))
     .filter((c): c is Combatant => !!c && c.kind === attacker.kind && !isOutOfAction(c));
   return allies[0] ?? null;
 }
@@ -504,7 +504,7 @@ export function attackEnv(
     // « Tir dans un corps à corps » (LDB 14 l.133) : si désactivée, pas de −20 NI d'artefact d'aperçu
     // (`inMelee` reste false → pas de tir égaré non plus).
     const inMelee = !!rule('combat-ranged-melee-penalty') && (target.engagedWith ?? []).some((id) => {
-      const ally = battle.combatants.find((c) => c.id === id);
+      const ally = inBattleId(battle, id);
       return !!ally && ally.kind === attacker.kind;
     });
     if (inMelee && !opts?.intoCrowd) env.push({ label: 'Tir dans la mêlée', value: -20 }); // « Tirer dans le tas » REMPLACE ce −20 par le bonus (l.136)
@@ -840,7 +840,7 @@ export function disengageOutcome(winner: 'attacker' | 'defender' | 'tie'): 'succ
 export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
   const battle = get().battle!;
   const foes = (mover.engagedWith ?? [])
-    .map((id) => battle.combatants.find((c) => c.id === id))
+    .map((id) => inBattleId(battle, id))
     .filter((c): c is Combatant => !!c && !isOutOfAction(c));
   // Désengagement GRATUIT du plus grand (LDB 85 l.373-374) : une créature plus grande que TOUS ses
   // adversaires Engagés les écarte et se déplace librement, sans Test ni sacrifice d'Avantage.
@@ -1086,7 +1086,7 @@ export function fearedSourceTowards(battle: BattleState, active: Combatant, dest
   if (!active.pos || isPsychImmune(active)) return null;
   for (const p of active.psychState ?? []) {
     if (p.type !== 'peur' || (p.calmeDR ?? 0) >= (p.indice ?? 1)) continue;
-    const src = battle.combatants.find((c) => c.id === p.sourceId);
+    const src = inBattleId(battle, p.sourceId);
     if (src?.pos && !isOutOfAction(src) && chebyshev(dest, src.pos) < chebyshev(active.pos, src.pos)) return src;
   }
   return null;
@@ -1436,7 +1436,7 @@ function applyCritAndFinalize(
   log: string[], ctx: DeviationCtx, woundsBefore: number, crit?: CriticalResolved, suppressReveal?: boolean,
 ): boolean {
   const lethal = applyCriticalToTarget(target, location, isCoupCritique, overkill, log, set, { ctx, prerolled: crit, suppressReveal, get });
-  if (lethal) finalizeHeroDeath(get, set, target, 'hit', woundsBefore, get().battle?.combatants.find((c) => c.id === ctx.attackerId));
+  if (lethal) finalizeHeroDeath(get, set, target, 'hit', woundsBefore, inBattleId(get().battle, ctx.attackerId));
   return lethal;
 }
 
@@ -1504,7 +1504,7 @@ export function applyOpposedCritical(
 ): void {
   const loc = critWoundLocation(battleRng(), victim.bodyShape); // LDB 18 l.53 : Coup Critique → 1d100 frais (pas l'inversion de touche)
   // B. de Sauvagerie (LDB 41) : l'attaquant à l'origine du double tire deux lancers de Critique.
-  const attacker = ctx.attackerId ? get().battle?.combatants.find((c) => c.id === ctx.attackerId) : undefined;
+  const attacker = ctx.attackerId ? inBattleId(get().battle, ctx.attackerId) : undefined;
   const heroConcerned = victim.kind === 'hero' || attacker?.kind === 'hero';
   const c2: DeviationCtx = { ...ctx, attackerKind: attacker?.kind, critTwice: attacker ? hasActiveFlag(attacker, 'critRollTwice') : undefined };
   if (victim.kind === 'enemy') {
@@ -1527,7 +1527,7 @@ export function applyOpposedCritical(
  *  tir individuel (`applyAttackResult`) ET le PILONNAGE INDIRECT (`siegeAimCommit`). Évite la re-duplication. */
 export function battleAreaTargets(get: Get): (indice: number) => AreaTargets {
   const battle = get().battle!;
-  return areaTargets(battle.combatants, sceneMetresPerTile(get().scene), (ship) => (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c));
+  return areaTargets(battle.combatants, sceneMetresPerTile(get().scene), (ship) => (ship.crewIds ?? []).map((id) => inBattleId(battle, id)).filter((c): c is Combatant => !!c));
 }
 
 /** Rayon (cases) de l'aire d'une pièce indirecte servie par `gunner` (munition CHARGÉE prise en compte —
@@ -2158,7 +2158,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
       if (hasQuality(weapon, QUALITY_IDS.ArmeDEquipe) && c.mannedPoste) {
         const servants = exposedCrew((c.mannedPoste.crewIds ?? [])
           .filter((id) => id !== c.id)
-          .map((id) => battle.combatants.find((x) => x.id === id))
+          .map((id) => inBattleId(battle, id))
           .filter((x): x is Combatant => !!x));
         for (const s of servants) {
           const sLost = woundsFromHit(weapon, s, 'brasD', effectiveWeaponDamage(weapon, sb) + units);
@@ -2518,7 +2518,7 @@ export function aiAvailableFreeAttack(get: Get, set: SetFn, actor: Combatant): v
  *  → s'arrête au niveau). Appelée par le hook `freeAttack` quand `runCombatFlow` exécute le `do`/`grantFreeAttack`
  *  (le Test préalable a déjà réussi en amont, c'est un nœud Flow). */
 function applyTalentFreeAttack(get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'grantFreeAttack' }>, fa: FreeAttackFreeze): void {
-  const target = get().battle?.combatants.find((c) => c.id === fa.targetId);
+  const target = inBattleId(get().battle, fa.targetId);
   if (!target || isOutOfAction(actor) || isOutOfAction(target) || !actor.pos || !target.pos) return;
   if ((actor.weapons[0]?.type ?? 'melee') !== 'melee') return; // attaque d'arme de mêlée (l'arme tenue)
   const uses = actor.freeAttacksThisTurn ?? {};
@@ -2796,8 +2796,8 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
   const battle = get().battle;
   if (!battle) return;
   if (dev.mode === 'melee') {
-    const attacker = battle.combatants.find((c) => c.id === dev.attackerId);
-    const target = battle.combatants.find((c) => c.id === dev.targetId);
+    const attacker = inBattleId(battle, dev.attackerId);
+    const target = inBattleId(battle, dev.targetId);
     if (attacker && target) {
       applyAttackResult(get, set, attacker, target, dev.weapon, dev.res, deviate, deviate ? undefined : dev.crit);
       autoCleave(get, set, attacker, target, dev.res); // balayage de l'ennemi plus grand sur les AUTRES héros
@@ -2812,7 +2812,7 @@ export function resolveDeviation(get: Get, set: SetFn, dev: PendingDeviation, de
     return;
   }
   // mode 'self' (opposé/tir/magie) : auto-contenu — pas de ré-entrée d'attaque, pas de tail.
-  const target = battle.combatants.find((c) => c.id === dev.targetId);
+  const target = inBattleId(battle, dev.targetId);
   if (!target) return;
   const log: string[] = [];
   if (deviate) deflectCrit(target, dev.location, dev.deflectExtraWounds, log); // −1 PA, Critique ignoré, + Blessures recalculées
@@ -2852,7 +2852,7 @@ export function aiCreatureFreeAttacks(get: Get, set: SetFn, enemy: Combatant): b
     // cette dérogation (« voir page 163 ») → elle est verrouillée comme tout grappleur (LOT B), pas ici.
     if (atks.some((a) => a.kind === 'tentacules')) {
       for (const fid of [...(enemy.grapplingWith ?? [])]) {
-        const foe = battle.combatants.find((c) => c.id === fid);
+        const foe = inBattleId(battle, fid);
         if (!foe || isOutOfAction(foe) || !areGrappling(enemy, foe)) continue;
         const line = resolveGrappleOpposed(get, enemy, foe);
         const b = get().battle; if (!b) break;
@@ -2928,7 +2928,7 @@ export function resumeManeuverDefense(get: Get, set: SetFn, resume: { attackerId
   checkBattleOver(get, set);
   const battle = get().battle;
   if (!battle || battle.over) return;
-  const attacker = battle.combatants.find((c) => c.id === resume.attackerId);
+  const attacker = inBattleId(battle, resume.attackerId);
   if (attacker && !isOutOfAction(attacker)) {
     if (!resume.free) aiAvailableFreeAttack(get, set, attacker); // manœuvre-ACTION (Regard/Étreinte) → libres d'Arme (Frénésie) après l'Action
     if (aiCreatureFreeAttacks(get, set, attacker)) return; // enchaîne la file (peut rouvrir une cascade)
@@ -3147,8 +3147,8 @@ export function routeEnemyCast(get: Get, set: SetFn): void {
   const pc = get().pendingCast;
   const battle = get().battle;
   if (!pc?.result || !battle) return;
-  const caster = battle.combatants.find((c) => c.id === pc.casterId);
-  const target = battle.combatants.find((c) => c.id === pc.targetId);
+  const caster = inBattleId(battle, pc.casterId);
+  const target = inBattleId(battle, pc.targetId);
   const spell = effectiveSpellOf(pc);
   if (!caster || !target || !spell) return;
   // Seul un Sort qui ABOUTIT se dissipe (cast réussi, DR ≥ NI) ; pas une Prière ; pas un Critique
@@ -3248,7 +3248,7 @@ export type PlacingZone = { source: 'cast' | 'siege'; label: string; casterId: s
 export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'pendingSiegeAim' | 'battle'>): PlacingZone | null {
   const pc = s.pendingCast;
   if (pc?.zone?.placing && !pc.zone.center) {
-    const caster = s.battle?.combatants.find((c) => c.id === pc.casterId);
+    const caster = inBattleId(s.battle, pc.casterId);
     const spell = effectiveSpellOf(pc);
     return {
       source: 'cast', label: spell?.label ?? pc.spellId, casterId: pc.casterId, radius: pc.zone.radius,
@@ -3265,7 +3265,7 @@ export function placingZoneOf(s: Pick<GameState, 'pendingCast' | 'pendingSiegeAi
 /** La case `pt` est-elle une POSE valide pour la zone en cours ? Portée depuis l'ancre + Ligne
  *  de Vue vers le point (LDB 46 l.170/202) — partagé par le gabarit (couleur) et le clic. */
 export function placedZoneValidAt(get: Get, pz: PlacingZone, pt: Pt): boolean {
-  const caster = get().battle?.combatants.find((c) => c.id === pz.casterId);
+  const caster = inBattleId(get().battle, pz.casterId);
   if (!caster?.pos) return false;
   if (pz.rangeTiles != null && chebyshev(caster.pos, pt) > pz.rangeTiles) return false;
   return !castSightBlocked(get, caster.pos, pt);
@@ -3287,7 +3287,7 @@ export function castCommitZone(get: Get, set: SetFn, pt: Pt): void {
   const pc = get().pendingCast;
   const battle = get().battle;
   if (!pc?.zone || !pc.result || !battle) return;
-  const caster = battle.combatants.find((c) => c.id === pc.casterId);
+  const caster = inBattleId(battle, pc.casterId);
   const spell = effectiveSpellOf(pc);
   if (!caster?.pos || !spell) return;
   const res = pc.result;
@@ -3535,8 +3535,8 @@ export function counterspellCandidates(
 export function applyCounterspellOutcome(get: Get, set: SetFn, counter: Combatant, out: CounterspellOutcome): boolean {
   const pc = get().pendingCast;
   if (!pc?.result || pc.result.dispelled) return false;
-  const caster = get().battle?.combatants.find((c) => c.id === pc.casterId);
-  const target = get().battle?.combatants.find((c) => c.id === pc.targetId);
+  const caster = inBattleId(get().battle, pc.casterId);
+  const target = inBattleId(get().battle, pc.targetId);
   const spell = effectiveSpellOf(pc);
   if (!caster || !target || !spell) return false;
   const res = pc.result;
@@ -3565,7 +3565,7 @@ export function applyCounterspellOutcome(get: Get, set: SetFn, counter: Combatan
 export function applyCounterspell(get: Get, set: SetFn, counter: Combatant): boolean {
   const pc = get().pendingCast;
   if (!pc?.result || pc.result.dispelled) return false;
-  const caster = get().battle?.combatants.find((c) => c.id === pc.casterId);
+  const caster = inBattleId(get().battle, pc.casterId);
   const spell = effectiveSpellOf(pc);
   if (!caster || !spell || !isDispellableSpell(spell)) return false;
   if (counter.kind === caster.kind || counter.dispelledThisRound) return false;
@@ -4409,7 +4409,7 @@ function victoryConditionMet(vc: VictoryCondition | undefined, battle: BattleSta
       return battle.combatants.some((c) => c.kind === kind && !c.inert && !isOutOfAction(c) && c.pos && inRect(c.pos, vc.rect));
     }
     case 'woundsThreshold': {
-      const target = battle.combatants.find((c) => c.id === vc.targetId);
+      const target = inBattleId(battle, vc.targetId);
       if (!target?.wounds || target.wounds.max <= 0) return false;
       return target.wounds.current / target.wounds.max < vc.belowPercent / 100;
     }
@@ -4423,7 +4423,7 @@ function victoryConditionMet(vc: VictoryCondition | undefined, battle: BattleSta
  *  est déjà hors d'action (mort/coulée) — `isOutOfAction` couvre alors seule la fin de rencontre. */
 function resolveSurrenderThreshold(battle: BattleState, vc: VictoryCondition | undefined): string[] {
   if (vc?.type !== 'woundsThreshold') return [];
-  const target = battle.combatants.find((c) => c.id === vc.targetId);
+  const target = inBattleId(battle, vc.targetId);
   if (!target?.wounds || target.wounds.max <= 0 || isOutOfAction(target)) return [];
   if (target.wounds.current / target.wounds.max >= vc.belowPercent / 100) return [];
   target.outOfRencontre = true;
@@ -4467,10 +4467,10 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
   const campaignHull = vessel ? battle.combatants.find((c) => c.creatureId === vessel.vehicleId && c.bodyShape === 'vehicule') : undefined;
   if (campaignHull && isOutOfAction(campaignHull)) {
     const aboardIds = (campaignHull.crewIds ?? [])
-      .map((id) => battle.combatants.find((c) => c.id === id))
+      .map((id) => inBattleId(battle, id))
       .filter((c): c is Combatant => !!c && c.kind === 'hero' && !c.dead)
       .map((c) => c.id);
-    const anyOverboardAlive = aboardIds.some((id) => battle.combatants.find((c) => c.id === id)?.exitReason === 'naufrage');
+    const anyOverboardAlive = aboardIds.some((id) => inBattleId(battle, id)?.exitReason === 'naufrage');
     if (aboardIds.length && anyOverboardAlive) {
       openCombatEndCascade(get, set); // maladie/Corruption de fin de combat inline (aucun héros interactif)
       finalizeBattle(get, set);       // writeback party (Blessures/États/morts) AVANT la nage
@@ -4596,7 +4596,7 @@ function lockedGauntletHolds(wielder: Combatant, drop: Weapon, round: number): b
 export function applyBladeTrap(get: Get, set: SetFn, defender: Combatant, bt: BladeTrapFreeze, defenderSL: number): void {
   const battle = get().battle;
   if (!battle) return;
-  const attacker = battle.combatants.find((c) => c.id === bt.attackerId);
+  const attacker = inBattleId(battle, bt.attackerId);
   if (!attacker || isOutOfAction(attacker)) return;
   const drop = attacker.weapons.find((w) => w.uid === bt.weaponUid);
   if (!drop) return;
@@ -4642,8 +4642,8 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
   const pbt = step.bladeTrap;
   if (!pbt) return;
   const battle = get().battle;
-  const defender = battle?.combatants.find((c) => c.id === pbt.defenderId);
-  const attacker = battle?.combatants.find((c) => c.id === pbt.attackerId);
+  const defender = inBattleId(battle, pbt.defenderId);
+  const attacker = inBattleId(battle, pbt.attackerId);
   if (!defender || !attacker) return;
   if (step.chosen !== 'trap') {
     // Coup Critique normal sur la défense (le défenseur place le Critique sur l'attaquant).
@@ -4707,7 +4707,7 @@ export function advanceTurn(get: Get, set: SetFn) {
   const battle = get().battle!; // non-null garanti par combatAdvanceBlocked ci-dessus
   // La Charge ne vaut que pour le tour où elle a lieu (Cornes LDB 85, Épuisante LDB 62 l.319) :
   // consommée au passage au combattant suivant (filet de sécurité, l'IA la consomme aussi en chemin).
-  const prevActive = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+  const prevActive = inBattleId(battle, battle.order[battle.turn]);
   if (prevActive?.chargedThisTurn) prevActive.chargedThisTurn = false;
   if (prevActive?.freeAttacksThisTurn) prevActive.freeAttacksThisTurn = undefined; // Attaques gratuites de manœuvre : 1/tour (compteur remis à zéro)
   fireTurnEndTriggers(get, set, prevActive); // effets de bord « fin de tour » authorés (inerte sans donnée)
@@ -4756,17 +4756,17 @@ export function advanceTurn(get: Get, set: SetFn) {
       if (heroRoundLines.length) pushReveal(set, { kind: 'round', title: tr('cf.roundEndTitle', { n: round - 1 }), lines: heroRoundLines, severity: 'minor' }); // (entretien HÉROS — auto-fermée)
       // Maniement de deux armes : le −10 défensif expire au DÉBUT du prochain Tour de son porteur. Si ce
       // porteur est order[0] (il rejoue en premier), c'est ICI (le franchissement de Round) que son Tour démarre.
-      const firstNext = battle.combatants.find((c) => c.id === battle.order[0]);
+      const firstNext = inBattleId(battle, battle.order[0]);
       if (firstNext) firstNext.dualStrikeDefensePenalty = false;
       set({ battle: { ...battle, turn: 0, round } });
       resolveRoundBoundary(get, set);
       return;
     }
-    const next = battle.combatants.find((c) => c.id === battle.order[turn]);
+    const next = inBattleId(battle, battle.order[turn]);
     if (next && !isOutOfAction(next)) break;
   }
   // Tour suivant dans le MÊME Round. La posture « Sur la défensive » expire (LDB Combat l.118).
-  const newActive = battle.combatants.find((c) => c.id === battle.order[turn]);
+  const newActive = inBattleId(battle, battle.order[turn]);
   let movementUsed = 0;
   let acted = false;
   if (newActive) {
@@ -4812,7 +4812,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   //        Un héros à Destin → SUSPEND (pendingFateSave 'slow', re-entre ici après résolution ; le sauvé est
   //        éjecté → filtré) ; sinon mort finalisée (annonce différée + onSlain). Une fois tous résolus, on purge.
   const doomedBleed = (battle.bleedDoomed ?? [])
-    .map((d) => ({ c: battle.combatants.find((x) => x.id === d.id), line: d.deathLine }))
+    .map((d) => ({ c: inBattleId(battle, d.id), line: d.deathLine }))
     .filter((d): d is { c: Combatant; line: string } => !!d.c && !isOutOfAction(d.c));
   const bleedFateHero = doomedBleed.find((d) => d.c.kind === 'hero' && (d.c.fate ?? 0) > 0);
   if (bleedFateHero) { set({ pendingFateSave: { heroId: bleedFateHero.c.id, source: 'slow' } }); return; }
@@ -4983,7 +4983,7 @@ export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue |
   // Peur ACTIVE (DR cumulé < Indice) non encore testée ce Round → Test étendu (cumul vers l'Indice).
   for (const p of state) {
     if (p.type === 'peur' && (p.calmeDR ?? 0) < (p.indice ?? 0) && p.lastTestRound !== battle.round) {
-      const src = battle.combatants.find((x) => x.id === p.sourceId);
+      const src = inBattleId(battle, p.sourceId);
       return { kind: 'peur', sourceId: p.sourceId!, sourceName: src?.name ?? '', indice: p.indice ?? 1, prevDR: p.calmeDR ?? 0 };
     }
   }
@@ -5006,7 +5006,7 @@ function psychStepFor(get: Get, set: SetFn, c: Combatant, collect: (get: Get, c:
   // Sans Peur (Ennemi) (LDB 10 l.864) : face à une NOUVELLE Peur/Terreur de l'ennemi spécifié, « un
   // seul Test de Calme Accessible (+20) » pour l'ignorer. Pas sur les re-tests d'une Peur déjà subie
   // (entrée psychState existante → Test étendu normal +0) ni sur les Traits ciblés.
-  const sourceFoe = !isCible ? get().battle?.combatants.find((x) => x.id === t.sourceId) : undefined;
+  const sourceFoe = !isCible ? inBattleId(get().battle, t.sourceId) : undefined;
   const isNewSource = !(c.psychState ?? []).some((p) => p.type === 'peur' && p.sourceId === t.sourceId);
   const sansPeur = !!sourceFoe && isNewSource && sansPeurVs(c, sourceFoe);
   // Sans Peur force Accessible (+20) ; sinon la difficulté déclarée (défaut Intermédiaire +0).
@@ -5129,7 +5129,7 @@ registerCascadeApplier(
       // sinon son nom), puis remise à zéro du compteur. `gainPhobieIfThreshold` porte la garde de la règle.
       if (brise > 0 && res.failCondition === COND.brise) {
         hero.briseFromTerreur = (hero.briseFromTerreur ?? 0) + brise;
-        const foe = battle?.combatants.find((x) => x.id === cp.sourceId);
+        const foe = inBattleId(battle, cp.sourceId);
         const gained = gainPhobieIfThreshold(hero, hero.briseFromTerreur, foe?.groups?.[0] ?? cp.sourceName ?? '');
         if (gained) {
           hero.psychTraits = [...(hero.psychTraits ?? []), gained.phobie];
@@ -5299,7 +5299,7 @@ function runShipAI(get: Get, set: SetFn, ship: Combatant): void {
 export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over) return;
-  const enemy = battle.combatants.find((c) => c.id === enemyId);
+  const enemy = inBattleId(battle, enemyId);
   if (!enemy || isOutOfAction(enemy)) return advanceTurn(get, set);
   // Couche MER (navire-unité) : une coque IA agit en UNITÉ via des Tests d'équipage (manœuvre/bordée), pas comme
   // une créature (ni psychologie, ni marche de fantassin). Branche DÉDIÉE — `chooseEnemyAction` n'a aucun candidat naval.
@@ -5378,7 +5378,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       if (stacks(enemy, action.name) >= before) break; // dépense inopérante → on n'insiste pas (anti-boucle dure)
     } else if (action.kind === 'grapple' && action.resolution === 'break') {
       const targetId = action.targetId; // capture AVANT la closure (narrowing perdu sur un `let` réassigné)
-      const foe = battle.combatants.find((c) => c.id === targetId);
+      const foe = inBattleId(battle, targetId);
       if (!foe) break;
       clearGrapple(enemy, foe);
       removeCondition(enemy, COND.empetre, stacks(enemy, COND.empetre)); // se défait de l'*Empêtré* lié (LDB 14 l.161)
@@ -5394,7 +5394,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   // précède immédiatement (pas de pollution par aiApproachPlan/peek de Frénésie). `top` vide si flag off.
   AI_TURN_LOG.push({ round: battle.round, id: enemy.id, name: enemy.name, action: describeAiAction(action), top: consumeAiRanking() });
   if (AI_TURN_LOG.length > 400) AI_TURN_LOG.shift();
-  const targetOf = (id: string) => battle.combatants.find((c) => c.id === id)!;
+  const targetOf = (id: string) => inBattleId(battle, id)!;
   const canAct = canTakeAction(enemy); // Sonné : pas d'Action — déplacement seul (LDB États l.123)
 
   // Attaque (mêlée ou tir, selon l'arme active) puis fin de tour — cadence préservée.
@@ -5611,7 +5611,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
       // MÊME mutation KIND-AGNOSTIQUE (`serveAtPoste`) que l'action joueur et l'author-time. Coûte l'Action. Re-garde
       // la staleness : disparu, ou déjà rejoint pendant la décision → passe la main (pas de double-ajout).
       if (!canAct) return advanceTurn(get, set);
-      const hull = battle.combatants.find((c) => c.id === action.hullId);
+      const hull = inBattleId(battle, action.hullId);
       const poste = hull?.postes?.find((p) => p.item.uid === action.posteUid);
       if (!poste || (poste.crewIds ?? []).includes(enemy.id)) return advanceTurn(get, set);
       serveAtPoste(enemy, poste, battle.combatants);

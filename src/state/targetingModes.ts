@@ -35,6 +35,7 @@ import { spellOps } from './flow';
 import { placeCombatant } from './spawn';
 import { mountOf, mountMovement, attackGeomOf, combatGeomOf, pickAttackWeapon } from './mount';
 import { pilotedByHuman } from './netOwnership';
+import { inBattleId } from './combatOrParty';
 import { afterApproach } from './combatDirector';
 import { ev } from './combatLog';
 import { t } from '../i18n';
@@ -322,7 +323,7 @@ function cleaveAffordance(get: Get, _active: Combatant, target: Combatant): Hove
   const s = get();
   const battle = s.battle!;
   const pc = s.pendingCleave!;
-  const atk = battle.combatants.find((c) => c.id === pc.attackerId);
+  const atk = inBattleId(battle, pc.attackerId);
   if (!atk || !cleaveTargets(battle, atk, pc.hitIds).some((c) => c.id === target.id)) return { kind: 'none' };
   const weapon = firedWeapon(atk, target, undefined, battle.combatants); // MÊME résolution que la chaîne (resolveAttack, aucun weaponUid)
   return { kind: 'ok', line: 'solid', title: 'Frappe Mortelle', targetName: target.name, skill: attackTestLabel(weapon, 'melee'), base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
@@ -333,7 +334,7 @@ function dualAffordance(get: Get, _active: Combatant, target: Combatant): HoverT
   const s = get();
   const battle = s.battle!;
   const ds = s.pendingDualStrike!;
-  const atk = battle.combatants.find((c) => c.id === ds.attackerId);
+  const atk = inBattleId(battle, ds.attackerId);
   const off = atk?.weapons.find((w) => w.uid === ds.offWeaponUid);
   if (!atk || !off || !dualStrikeTargets(battle, atk, off).some((c) => c.id === target.id)) return { kind: 'none' };
   return { kind: 'ok', line: 'solid', title: 'Deux armes', targetName: target.name, skill: attackTestLabel(off, 'melee'), base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
@@ -349,7 +350,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   const battle = get().battle;
   const scene = get().scene;
   if (!battle) return;
-  const target = battle.combatants.find((c) => c.id === id);
+  const target = inBattleId(battle, id);
   if (!target) return;
   // Pièce de siège : un clic REJOINT l'équipe (chef/renfort) au lieu d'attaquer l'engin inerte — MÊME chemin que le
   // bouton hotbar (`battleManPoste`) et l'IA (`serveAtPoste`). `serveTargetPoste` = source unique de la cible.
@@ -422,8 +423,8 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
   // Tap 2 : COMMIT. Choix cavalier/monture (LDB 14 l.219) AVANT toute résolution — on n'ouvre la
   // modale qu'une fois (skipMountChoice évite la ré-entrée après le choix).
   if (!opts?.skipMountChoice) {
-    const rider = target.mountId ? target : battle.combatants.find((c) => c.id === target.riderId);
-    const mount = target.riderId ? target : battle.combatants.find((c) => c.id === target.mountId);
+    const rider = target.mountId ? target : inBattleId(battle, target.riderId);
+    const mount = target.riderId ? target : inBattleId(battle, target.mountId);
     if (rider && mount && rider.kind !== 'hero' && mount.kind !== 'hero' && !isOutOfAction(rider) && !isOutOfAction(mount)) {
       set({ pendingMountTarget: { riderId: rider.id, mountId: mount.id } });
       return;
@@ -543,7 +544,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
 function castClickCommit(get: Get, set: Set, active: Combatant, id: string): void {
   const battle = get().battle;
   if (!battle || !battle.selectedSpellId) return;
-  const target = battle.combatants.find((c) => c.id === id);
+  const target = inBattleId(battle, id);
   if (!target) return;
   // Sort de ZONE : un token n'est pas une cible (la zone se pose après le jet) → modale.
   if (castZoneSpell(get, set, active, battle.selectedSpellId)) return;
@@ -601,7 +602,7 @@ function pushCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void {
   const snapshot = (battle.movementUsed ?? 0) === 0 ? captureMoveSnapshot(battle, get().facing) : battle.moveSnapshot ?? null;
   const delta = { x: pt.x - active.pos.x, y: pt.y - active.pos.y };
   const movers = [hull, ...(poste.crewIds ?? [])
-    .map((id) => battle.combatants.find((c) => c.id === id))
+    .map((id) => inBattleId(battle, id))
     .filter((c): c is Combatant => !!c?.pos)];
   for (const m of movers) {
     const from = { ...m.pos! };
@@ -615,7 +616,7 @@ function pushCommitTile(get: Get, set: Set, active: Combatant, pt: Pt): void {
   // assener la porte le même Round une fois au contact).
   for (const id of poste.crewIds ?? []) {
     if (id === active.id) continue;
-    const c = get().battle!.combatants.find((x) => x.id === id);
+    const c = inBattleId(battle, id);
     if (c) c.loseNextMovement = true;
   }
   const log = [...battle.log, ev('move', t('cs.pushEngine', { name: active.name, weapon: hull.name, n: dist, s: dist > 1 ? 's' : '' }), active.id)];
@@ -634,7 +635,7 @@ function castCommitTile(get: Get, set: Set, active: Combatant, _pt: Pt): void {
 
 /** Pose la zone en cours sur la case d'un combattant cliqué (cast-zone / siège). */
 function placingCommitCombatant(get: Get, _set: Set, _active: Combatant, id: string): void {
-  const t = get().battle?.combatants.find((c) => c.id === id);
+  const t = inBattleId(get().battle, id);
   if (t?.pos) get().battleClickTile({ ...t.pos });
 }
 
@@ -654,7 +655,7 @@ const HEAL_MODE: TargetingMode = {
   id: 'heal', affordance: healAffordance,
   candidates: (get, active) => healableTargets(active, (get().battle?.combatants ?? []).filter((c) => c.kind === active.kind), { adjacency: true }),
   commitCombatant: (get, _set, _active, id) => {
-    const target = get().battle?.combatants.find((c) => c.id === id);
+    const target = inBattleId(get().battle, id);
     if (!target) return;
     const mode = combatHealModes(target)[0]; // mode par défaut au ciblage-carte ; la modale permet de basculer
     if (mode) get().battleHeal(id, mode);
@@ -679,7 +680,7 @@ const CLEAVE_MODE: TargetingMode = {
     const s = get();
     const battle = s.battle;
     const pc = s.pendingCleave;
-    const atk = battle && pc && battle.combatants.find((c) => c.id === pc.attackerId);
+    const atk = battle && pc && inBattleId(battle, pc.attackerId);
     return battle && pc && atk ? cleaveTargets(battle, atk, pc.hitIds) : [];
   },
   commitCombatant: (get, _set, _active, id) => { get().cleaveAttack(id); },
@@ -690,7 +691,7 @@ const DUAL_MODE: TargetingMode = {
     const s = get();
     const battle = s.battle;
     const ds = s.pendingDualStrike;
-    const atk = battle && ds && battle.combatants.find((c) => c.id === ds.attackerId);
+    const atk = battle && ds && inBattleId(battle, ds.attackerId);
     const off = atk && ds && atk.weapons.find((w) => w.uid === ds.offWeaponUid);
     return battle && atk && off ? dualStrikeTargets(battle, atk, off) : [];
   },

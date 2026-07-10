@@ -6,6 +6,7 @@
 import type { GameState } from './store';
 import type { Combatant } from '../engine/types';
 import { modalOwnerOf } from './modalArbiter';
+import { inBattleId } from './combatOrParty';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 
 export { modalOwnerOf } from './modalArbiter';
@@ -15,7 +16,7 @@ export function seatOwns(s: GameState, seat: number, combatantId: string | undef
   if (!combatantId) return seat === 0;
   // Bac-à-sable MJ : un combattant NON-héros (ennemi/monde) est conduit par le siège MJ (`gmSeat`), pas
   // par `ownership` (réservé aux héros) — les intents de son tour/ses modales remontent donc au MJ.
-  const c = s.battle?.combatants.find((x) => x.id === combatantId);
+  const c = inBattleId(s.battle, combatantId);
   if (c && c.kind === 'enemy' && s.net.gmSeat != null) return seat === s.net.gmSeat;
   return (s.net.ownership[combatantId] ?? 0) === seat;
 }
@@ -88,7 +89,7 @@ export function controlsActive(state: GameState): boolean {
   const b = state.battle;
   if (!b || b.over) return true;
   const activeId = b.order[b.turn];
-  const active = b.combatants.find((c) => c.id === activeId);
+  const active = inBattleId(b, activeId);
   if (!active) return true;
   if (active.kind !== 'hero') {
     // Actif non-héros : conduit par le siège MJ (bac-à-sable) → affordances si le siège LOCAL porte le rôle

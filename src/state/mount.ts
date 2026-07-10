@@ -19,6 +19,7 @@ import { meleeWarMachineHullOf, isMeleeWarMachine } from './siegePush';
 import { structureImmune } from '../engine/structures';
 import type { Pt } from './path';
 import type { BattleState } from './store';
+import { inBattleId } from './combatOrParty';
 
 /** Ce combattant chevauche-t-il une monture (= cavalier) ? */
 export const isRider = (c: Combatant): boolean => !!c.mountId;
@@ -46,7 +47,7 @@ export function insertByInitiative(orderIds: string[], combatants: Combatant[], 
 
 /** La monture chevauchée par `rider` (ou undefined). */
 export const mountOf = (battle: BattleState, rider: Combatant): Combatant | undefined =>
-  rider.mountId ? battle.combatants.find((c) => c.id === rider.mountId) : undefined;
+  rider.mountId ? inBattleId(battle, rider.mountId) : undefined;
 
 /** Géométrie de COMBAT d'un combattant, à partir d'une liste brute de combattants (utilisable hors
  *  `BattleState` complet, ex. `firedWeapon`). */
@@ -140,7 +141,7 @@ export const mountedCombatDistance = (battle: BattleState, a: Combatant, b: Comb
   combatDistance(combatGeomOf(battle, a), combatGeomOf(battle, b));
 /** Le cavalier porté par `mount` (ou undefined). */
 export const riderOf = (battle: BattleState, mount: Combatant): Combatant | undefined =>
-  mount.riderId ? battle.combatants.find((c) => c.id === mount.riderId) : undefined;
+  mount.riderId ? inBattleId(battle, mount.riderId) : undefined;
 
 /** Distance de Chebyshev entre une case et l'empreinte d'un combattant (0 = sur l'empreinte). */
 function tileToFootprint(c: Combatant, x: number, y: number): number {

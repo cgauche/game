@@ -21,6 +21,7 @@ import { purgeExpiredSummons } from '../summonFlow';
 import { fireTriggers } from '../triggeredEffects';
 import { collectRoundEndTestSteps } from './triggeredTest';
 import { humanControlled } from '../netOwnership';
+import { inBattleId } from '../combatOrParty';
 import { traitAuras } from '../../engine/traits/dispatch';
 import { outnumberCountBonus } from '../../engine/combatFeatures/dispatch';
 import { chebyshev } from '../path';
@@ -116,7 +117,7 @@ registerCombatHook({
     for (const c of battle.combatants) {
       if (isOutOfAction(c) || (c.advantage ?? 0) <= 0) continue;
       const foes = (c.engagedWith ?? []).filter((id) => {
-        const e = battle.combatants.find((x) => x.id === id);
+        const e = inBattleId(battle, id);
         return !!e && e.kind !== c.kind && !isOutOfAction(e);
       }).length;
       // Maîtrise du combat (LDB 10) : on compte pour 1+niveau personnes au calcul du surnombre.

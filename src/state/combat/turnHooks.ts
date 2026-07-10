@@ -25,6 +25,7 @@ import { rollTest } from '../../engine/tests';
 import { describeTestRoll } from '../../engine/ops';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../../engine/types';
 import { humanControlled } from '../netOwnership';
+import { inBattleId } from '../combatOrParty';
 import { reconcileAdvantageToPool, campSpend } from './advantagePool';
 import { mountMovement, riderFearSize } from '../mount';
 import { losClear } from '../lineOfSight';
@@ -172,7 +173,7 @@ export function resolvePsychAI(get: Get, set: SetFn, enemy: Combatant): void {
   if (!battle || !scene || !enemy.pos) return;
   // Belliqueux (LDB 85 p.338) : immunité psy tant qu'il a plus d'Avantages que son adversaire ENGAGÉ.
   const engagedFoesAdv = (enemy.engagedWith ?? [])
-    .map((id) => battle.combatants.find((x) => x.id === id))
+    .map((id) => inBattleId(battle, id))
     .filter((e): e is Combatant => !!e && e.kind !== enemy.kind && !isOutOfAction(e))
     .map((e) => e.advantage ?? 0);
   if (isPsychImmune(enemy, engagedFoesAdv.length ? Math.max(...engagedFoesAdv) : undefined)) return; // Immunité (Psychologie) / Frénésie / Détermination temp / Belliqueux
@@ -265,7 +266,7 @@ registerCombatHook({
     if (adv < 1) return;
     // Adversaires en COMBAT RAPPROCHÉ (Engagés, vivants) non déjà couverts par une Haine ACTIVE.
     const foes = (enemy.engagedWith ?? [])
-      .map((id) => battle.combatants.find((x) => x.id === id))
+      .map((id) => inBattleId(battle, id))
       .filter((f): f is Combatant => !!f && f.kind !== enemy.kind && !isOutOfAction(f));
     const hated = (enemy.psychState ?? []).filter((p) => p.type === 'haine' && p.active === true && p.cible);
     const uncovered = foes.filter((f) => !hated.some((p) => groupMatch(p.cible!, f.groups ?? [])));

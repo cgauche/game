@@ -12,6 +12,7 @@ import type { Dir8 } from './dir8';
 import { Scene, isWalkable } from './scene';
 import { Pt, MoveEnv, tileKey } from './path';
 import { footprintTiles, footprintN, occupiesTile } from './footprint';
+import { inBattleId } from './combatOrParty';
 import { sizeGap } from '../engine/size';
 import { requiredTerrains } from '../engine/ops';
 import { isOutOfAction } from '../engine/conditions';
@@ -49,7 +50,7 @@ export function occupied(battle: BattleState, mover: Combatant | string): Set<st
   }
   // BARRIÈRES (zones authorées/sorts) : leurs cases sont infranchissables pour le mover gaté — point
   // d'injection UNIQUE → tout déplacement (reachable joueur, IA, poussée, téléport) les respecte.
-  const moverC = typeof mover === 'string' ? battle.combatants.find((c) => c.id === mover) : mover;
+  const moverC = typeof mover === 'string' ? inBattleId(battle, mover) : mover;
   for (const t of barrierTilesFor(battle.zones, moverC)) s.add(`${t.x},${t.y}`);
   return s;
 }
@@ -224,7 +225,7 @@ export const smokeOf = (battle: BattleState): Pt[] => losBlockingTiles(battle.zo
 export function applyZoneCrossings(get: Get, mover: Combatant, path: Pt[]): void {
   const battle = get().battle;
   if (!battle?.zones?.length || !path.length) return;
-  const lines = crossZones(battle.zones, mover, path, (id) => (id ? battle.combatants.find((c) => c.id === id) : undefined), battleRng());
+  const lines = crossZones(battle.zones, mover, path, (id) => (id ? inBattleId(battle, id) : undefined), battleRng());
   for (const l of lines) battle.log.push(ev('condition', l, mover.id));
   if (lines.length) bus.emit(EVT.SCENE_DIRTY);
 }

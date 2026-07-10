@@ -5,6 +5,7 @@ import { canTakeAction, isOutOfAction } from '../engine/conditions';
 import { isEngaged } from '../engine/engagement';
 import { canStrikeFirst } from '../engine/qualities/dispatch';
 import { hasFreeWeaponAttack } from './combatManeuvers';
+import { inBattleId } from './combatOrParty';
 
 /**
  * Le héros actif a-t-il ENCORE une option UTILE ce tour ? (R6 du diagnostic lisibilité-combat). Sert au
@@ -21,7 +22,7 @@ export function hasMeaningfulOption(active: Combatant, battle: BattleState): boo
   // Désengagement GRATUIT (Avantage strictement supérieur à tous les foes Engagés, LDB 15 l.87) ?
   if (isEngaged(active)) {
     const foes = (active.engagedWith ?? [])
-      .map((id) => battle.combatants.find((c) => c.id === id))
+      .map((id) => inBattleId(battle, id))
       .filter((c): c is Combatant => !!c && !isOutOfAction(c));
     if (foes.length > 0 && active.advantage > Math.max(0, ...foes.map((f) => f.advantage))) return true;
   }

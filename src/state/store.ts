@@ -66,7 +66,7 @@ import { CAMPAIGN_START } from '../engine/clock';
 import { TIME_COST } from '../engine/timeCost';
 import { outOfCombatUpkeep } from './outOfCombatUpkeep';
 import { checkPartyWiped } from './partyWipe';
-import { actorIn, touchActors } from './combatOrParty';
+import { actorIn, inBattleId, touchActors } from './combatOrParty';
 import { FLOWS, buildRollFlowActions, type RollFlowActionsMap } from './rollFlowSpecs';
 import { gainCorruption, applyMutation } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
@@ -1354,14 +1354,14 @@ export const useGame = create<GameState>((set, get) => ({
     const next = rotateDir8(cur, turnSteps);
     set({ facing: { ...facing, [shipId]: next } });
     // Re-mappe TOUS les arcs de bordée d'un coup : firedAttackBlock / targeting relisent facing[shipId].
-    const ship = battle?.combatants.find((c) => c.id === shipId);
+    const ship = inBattleId(battle, shipId);
     get().log(`${ship?.name ?? shipId} vire de bord — nouveau cap : ${next}.`);
     bus.emit(EVT.SCENE_DIRTY);
   },
   shipAdvance: (shipId, cases) => {
     const { facing, battle, scene } = get();
     const dir = facing[shipId];
-    const hull = battle?.combatants.find((c) => c.id === shipId);
+    const hull = inBattleId(battle, shipId);
     if (!battle || !hull?.pos || !dir) return 0;
     const d = DIR8_DELTA[dir];
     const w = scene?.dimensions.w ?? Infinity, h = scene?.dimensions.h ?? Infinity;
@@ -1384,7 +1384,7 @@ export const useGame = create<GameState>((set, get) => ({
       // Coque + équipage À BORD translatés du MÊME delta (formation rigide) ; les postes (sans `pos`) suivent la
       // coque. MÊME patron de commit que le mouvement de combat (combatSlice : ANIM_MOVE).
       const movers = [hull, ...(hull.crewIds ?? [])
-        .map((id) => battle.combatants.find((c) => c.id === id))
+        .map((id) => inBattleId(battle, id))
         .filter((c): c is Combatant => !!c?.pos)];
       for (const m of movers) {
         const from = { ...m.pos! };
@@ -2098,7 +2098,7 @@ export const useGame = create<GameState>((set, get) => ({
     const ca = pt.combatAdvantage;
     const battle = ca ? get().battle : null;
     if (ca && battle) {
-      const c = battle.combatants.find((x) => x.id === ca.combatantId);
+      const c = inBattleId(battle, ca.combatantId);
       if (c && effSuccess && (c.advantage ?? 0) < ca.cap) campGain(get, c, 1);
       set({ battle: { ...battle, acted: true, action: null } });
     }
@@ -2184,7 +2184,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   setPosteAmmo: (shipId, posteUid, ammoUid) => {
     const b = get().battle;
-    const ship = b?.combatants.find((c) => c.id === shipId);
+    const ship = inBattleId(b, shipId);
     const poste = ship?.postes?.find((p) => p.item.uid === posteUid);
     if (!b || !poste) return;
     // Le poste est PARTAGÉ par référence avec `mannedPoste` du chef (serveChef) → muter la même instance

@@ -26,6 +26,19 @@ export function actorIn(state: GameState, id: string): Combatant | undefined {
   return (state.battle?.combatants ?? state.party).find((c) => c.id === id);
 }
 
+/**
+ * Combattant EN COMBAT (`battle.combatants`) par id — distinct d'`actorIn` (combat OU groupe).
+ * `battle` prend le type du champ `GameState['battle']` (nullable) : la plupart des call-sites tiennent
+ * déjà un `battle` non-null en main (narrowed en amont), mais accepter le nullable rend la migration
+ * mécanique (`inBattleId(battle, id)` remplace `battle.combatants.find(...)` sans changer les gardes
+ * d'appel) plutôt que d'imposer un narrowing supplémentaire à chaque site. `id` accepte aussi
+ * `undefined` (plusieurs sites cherchent un id OPTIONNEL, ex. `sourceId?`) — même repli honnête que
+ * `.find` sur une valeur absente : ne matche jamais, retourne `undefined`.
+ */
+export function inBattleId(battle: GameState['battle'], id: string | undefined): Combatant | undefined {
+  return id == null ? undefined : battle?.combatants.find((c) => c.id === id);
+}
+
 /** Patch Zustand pour re-render après mutation EN PLACE d'un acteur (Chance/Résilience) : combat → `battle`, sinon `party`. */
 export function touchActors(state: GameState): Partial<GameState> {
   return state.battle ? { battle: { ...state.battle } } : { party: [...state.party] };
@@ -55,16 +68,16 @@ export function combatantClickActs(get: Get, combatant: Pick<Combatant, 'id'>): 
   // Le store (`preemptRangedShot`) valide portée/Ligne de Vue/état ; ici on n'ouvre l'affordance que sur un adversaire.
   const aiming = get().preemptAiming;
   if (aiming) {
-    const shooter = battle.combatants.find((c) => c.id === aiming);
-    const target = battle.combatants.find((c) => c.id === combatant.id);
+    const shooter = inBattleId(battle, aiming);
+    const target = inBattleId(battle, combatant.id);
     return !!shooter && !!target && target.kind !== shooter.kind && !isOutOfAction(target);
   }
-  const active = battle.combatants.find((c) => c.id === battle.order[battle.turn]);
+  const active = inBattleId(battle, battle.order[battle.turn]);
   if (!active) return false;
   const mode = currentTargetingMode(get);
   if (!mode.commitCombatant) return false; // mode-CASE pur (téléportation) : aucun combattant à cibler
   if (mode.candidates) return mode.candidates(get, active).some((c) => c.id === combatant.id);
-  const target = battle.combatants.find((c) => c.id === combatant.id);
+  const target = inBattleId(battle, combatant.id);
   if (!target) return false;
   // Mode à réticule (attaque/cast/bordée) : la cible est actionnable ⇔ son affordance ≠ 'none' (même
   // prédicat que le clic). Pose de zone (pas d'affordance, mais un commit) : tout combattant cliqué agit

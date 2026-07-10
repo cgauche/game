@@ -38,6 +38,7 @@ import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps
 import { registerCascadeApplier } from '../cascade';
 import { fireTriggers, recoveryGeometry, effectSourcesOf } from '../triggeredEffects';
 import { humanControlled } from '../netOwnership';
+import { inBattleId } from '../combatOrParty';
 import { campSpend } from './advantagePool';
 
 /** Reflète la mutation EN PLACE d'un combattant (États retirés) dans les références party/battle pour
@@ -477,7 +478,7 @@ registerCascadeApplier('triggeredChoice', (get, set, step, hero) => {
   // Le DÉCIDEUR (`hero`) est le `caster` (porteur). La branche vise `choiceTargetId` (la VICTIME, Déstabilisante)
   // si présent, sinon le décideur lui-même (Frappe réactive : Test sur soi). Reconstruit depuis get() — jamais capturé.
   const tid = typeof step.meta?.choiceTargetId === 'string' ? step.meta.choiceTargetId : undefined;
-  const branchTarget = (tid ? get().battle?.combatants.find((c) => c.id === tid) : undefined) ?? hero;
+  const branchTarget = (tid ? inBattleId(get().battle, tid) : undefined) ?? hero;
   const ctx: ExecCtx = { mode: 'combat', get, set, target: branchTarget, caster: hero, label: step.label ?? 'Réaction', ...(freeAttack ? { freeAttack } : {}) };
   if (can) runCombatFlow(ctx, yesFlow ?? EMPTY_FLOW);
   else if (noFlow) runCombatFlow(ctx, noFlow);
