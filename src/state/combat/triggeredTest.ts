@@ -4,7 +4,7 @@
  *
  * Module FEUILLE (chargé par effet de bord depuis combatFlow, qui le `export *`) : il n'importe RIEN
  * de combatFlow. Il REJOINT la voie unifiée existante (`pushCombatStep` → cascade `purpose:'combat'`
- * influençable + `registerCascadeApplier` + `runSpellFlowLines`) au lieu d'inventer un système.
+ * influençable + `registerCascadeApplier` + `runPureFlowLines`) au lieu d'inventer un système.
  *
  * Trois entrées, UN résolveur :
  *  - `resolveFlowTest(ctx, node, after)` — point de décision unique sur un nœud `test` :
@@ -34,7 +34,7 @@ import { buildActorView, combatConditionCtx, flowTestGated } from './flowEval';
 import type { Get, Set as SetFn } from '../flowTypes';
 import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep } from '../pendings';
 import { battleRng } from '../battleRng';
-import { runSpellFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps } from '../combatEffects';
+import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
 import { fireTriggers, recoveryGeometry, effectSourcesOf } from '../triggeredEffects';
 import { humanControlled } from '../netOwnership';
@@ -138,7 +138,7 @@ export function condCtxFor(ctx: ExecCtx): ConditionCtx {
  *  `onSuccess`/`onFail` sur `c` (référent = lui-même), `ctx.sl = t.sl` alimentant les échelles `valuePerSL`
  *  (« chaque DR supprime un État Sonné supplémentaire »). Renvoie le journal de la BRANCHE (string[] tissé
  *  au bon canal : return cascade `{ journal }` / file inline).
- *  - Branche PURE (Mâchoires/Venin : feuilles `do`/`if`) → `runSpellFlowLines` (string[] rendu inline).
+ *  - Branche PURE (Mâchoires/Venin : feuilles `do`/`if`) → `runPureFlowLines` (string[] rendu inline).
  *  - Branche IMPURE (op adossée à un hook : `grantFreeAttack` → frappe gratuite, `interruptFocus` →
  *    interruption de Focalisation, `breakBlade` → désarmement/bris de Piège-lame) → `runCombatFlow` (le
  *    do-loop y résout les hooks injectés), qui EMPILENT leur propre conséquence (frappe / Imparfaite / étape
@@ -154,7 +154,7 @@ export function applyTriggeredTestBranch(
     runCombatFlow({ mode: 'combat', get: exec.get, set: exec.set, target: c, caster: c, label: 'Effet', opsCtx: { sl: t.sl }, ...(exec.freeAttack ? { freeAttack: exec.freeAttack } : {}), ...(exec.bladeTrap ? { bladeTrap: exec.bladeTrap } : {}) }, branch);
     return [];
   }
-  return runSpellFlowLines(c, c, branch, { rng: battleRng(), caster: c, sl: t.sl });
+  return runPureFlowLines(c, c, branch, { rng: battleRng(), caster: c, sl: t.sl });
 }
 
 /** SOURCE UNIQUE du squelette d'étape `triggeredTest` d'un Test SIMPLE (non opposé) : convention RAW-correcte
@@ -350,7 +350,7 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
   }
   // `exec` (get/set [+ freeAttack/bladeTrap]) TOUJOURS fourni : une branche IMPURE (à hook : interruptFocus /
   // la success freeAttack / le breakBlade de Piège-lame) est routée vers `runCombatFlow` par
-  // `applyTriggeredTestBranch` (cf. flowHasImpureOp) ; une branche PURE retombe sur `runSpellFlowLines`
+  // `applyTriggeredTestBranch` (cf. flowHasImpureOp) ; une branche PURE retombe sur `runPureFlowLines`
   // (inchangé). `freeAttack`/`bladeTrap` ne sont joints que s'ils existent.
   const exec = { get: ctx.get, set: ctx.set, ...(ctx.freeAttack ? { freeAttack: ctx.freeAttack } : {}), ...(btFreeze ? { bladeTrap: btFreeze } : {}) };
   // Ennemi OU héros rapide/auto : jet INLINE + branche + continuation ; ligne de parité.

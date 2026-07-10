@@ -8,7 +8,7 @@ import { hasArcaneTalent, metalAPAt, domainMissileMods, domainOnHitEffects, doma
 import { groupsFor } from './groups';
 import { evaluateMissile } from './magic';
 import { hasCondition, stacks, addCondition } from './conditions';
-import { runSpellFlowLines } from '../state/combatEffects';
+import { runPureFlowLines } from '../state/combatEffects';
 import { applyTriggeredEffects } from '../state/triggeredEffects';
 import type { Get } from '../state/flowTypes';
 
@@ -16,7 +16,7 @@ import type { Get } from '../state/flowTypes';
  *  les vues d'acteur du lanceur/cible). `caster` adverse = camp ≠ (hero vs enemy). `domainId` = id STABLE. */
 const applyDomain = (caster: Combatant, target: Combatant, domainId: string, rng: RNG = seq([])): string[] => {
   const lines: string[] = [];
-  for (const eff of domainOnHitEffects({ domainId })) lines.push(...runSpellFlowLines(target, caster, eff.flow, { rng, caster }));
+  for (const eff of domainOnHitEffects({ domainId })) lines.push(...runPureFlowLines(target, caster, eff.flow, { rng, caster }));
   return lines;
 };
 
@@ -132,7 +132,7 @@ describe('Riders « à la touche » data-driven (Feu / Lumière / Mort / Vie) �
 describe('Cieux — arc d’Azyr (LDB 48 l.87) : géométrie on:{near} + bypass métal', () => {
   // « se dirigent vers toutes les autres cibles dans les 2 mètres, à l’exception de ceux possédant le
   //   Talent Magie des Arcanes (Cieux), infligeant un nombre de Dégâts égal à votre BFM ». L’effet est
-  //   une GÉOMÉTRIE (`on:{near:'victim',radiusMeters:2}`) résolue par `applyTriggeredEffects` (≠ runSpellFlowLines
+  //   une GÉOMÉTRIE (`on:{near:'victim',radiusMeters:2}`) résolue par `applyTriggeredEffects` (≠ runPureFlowLines
   //   direct des autres riders) : il faut un `battle` (positions) pour exercer le ciblage de zone + le bypass.
   const at = (over: Partial<Combatant>, x: number, y: number): Combatant =>
     mk({ ...over, pos: { x, y } } as Partial<Combatant>);

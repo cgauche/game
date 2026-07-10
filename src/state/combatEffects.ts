@@ -435,11 +435,11 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
 }
 
 /**
- * Exécute un Flow EN COMBAT contre une CIBLE (et le lanceur/porteur pour les feuilles `on:'caster'`) en
- * accumulant son journal dans un `string[]` RENDU — variante PURE de `runCombatFlow` pour les sites qui
- * tissent ces lignes INLINE dans leur propre journal à une position précise (effets de manœuvre, traits/
- * atouts onHit, branches de Test), sans `get`/`set`. Couvre `seq`/`do`/`if` (Condition `compare` lue sur
- * `target`/`caster` + `sl`/`location`/`woundsDealt`/`attackKind` du contexte d'incantation).
+ * Walker PUR d'un Flow d'EFFET DÉCLENCHÉ (traits/talents/atouts/États/psychologie/manœuvres/Attributs de
+ * Domaine — JAMAIS les sorts, qui passent par `runCastFlow`→`runCombatFlow`) : exécute `seq`/`do`/`if`
+ * contre une CIBLE (et le lanceur/porteur pour les feuilles `on:'caster'`), accumulant son journal dans
+ * un `string[]` RENDU, sans `get`/`set`. Couvre la Condition `compare` lue sur `target`/`caster` +
+ * `sl`/`location`/`woundsDealt`/`attackKind` du contexte d'incantation.
  *
  * GARDE-FOU anti-jet-silencieux (calque `flattenFlow:280`) : un nœud `test` LÈVE — un Test EN COMBAT est
  * interactif/cadence-aware (étape de cascade ou jet inline avec branche honorée), résolu par
@@ -447,7 +447,7 @@ export function runFlow(get: Get, set: SetFn, flow: Flow, label = 'Effet'): void
  * PROUVÉS sans nœud `test` au 1ᵉʳ niveau (un trigger `test` top-level est routé en amont par `testRouter`,
  * une branche de Test n'en contient pas) ; si un `test` enfoui apparaît un jour (Lot 4), l'erreur le rend
  * détectable au lieu de redevenir un jet silencieux. */
-export function runSpellFlowLines(target: Combatant, caster: Combatant | undefined, flow: Flow, ctx: OpsCtx): string[] {
+export function runPureFlowLines(target: Combatant, caster: Combatant | undefined, flow: Flow, ctx: OpsCtx): string[] {
   const lines: string[] = [];
   const walk = (f: Flow): void => {
     switch (f.kind) {
@@ -470,7 +470,7 @@ export function runSpellFlowLines(target: Combatant, caster: Combatant | undefin
         else if (f.else) walk(f.else);
         break;
       case 'test':
-        throw new Error('runSpellFlowLines: un nœud `test` est cadence-aware — utiliser runCombatFlow/resolveFlowTest.');
+        throw new Error('runPureFlowLines: un nœud `test` est cadence-aware — utiliser runCombatFlow/resolveFlowTest.');
     }
   };
   walk(flow);

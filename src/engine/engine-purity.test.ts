@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
  * couche `state` (`state/flow`) ne fait qu'INSTANCIER la feuille générique sur l'union `Effect`.
  *
  * Les fichiers de TEST sont exclus du scan : ils exercent légitimement le runtime `state`/`ui`/`gameIso`
- * (`runSpellFlowLines`, `applyTriggeredEffects`, `combatantVisuals`…) — ce sont des consommateurs, pas
+ * (`runPureFlowLines`, `applyTriggeredEffects`, `combatantVisuals`…) — ce sont des consommateurs, pas
  * le moteur.
  */
 

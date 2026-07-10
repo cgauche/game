@@ -81,7 +81,7 @@ l.16-35 : aucun champ éditable ne doit retomber en `kind:'json'`).
 
 `SpellData.effects?: Flow` (`src/state/flow.ts`) est le **Flow ÉDITABLE** (do/si/test) dont les
 feuilles sont des `EffectOp` (`{type:'ops', on:'target'|'caster', ops: GameOp[]}`) — SOURCE UNIQUE
-des effets appliqués à l'incantation (`runCombatFlow`/`runSpellFlowLines`, `src/state/combatFlow.ts`).
+des effets appliqués à l'incantation (`runCombatFlow`/`runPureFlowLines`, `src/state/combatFlow.ts`).
 Rien d'autre ne porte d'effet mécanique : plus de champs `summon`/`polymorph`/`lifeSteal`/
 `persistentZone` séparés — tout est en `GameOp` dans le Flow (`summon`, `polymorph`, `lifeSteal`,
 `zone`, `push`, `teleport`, `chain`, `wounds`, `condition`, `charMod`… — cf. `src/engine/ops.ts`).
@@ -152,7 +152,7 @@ automatiquement en `narratif` (repli) — c'est le signal qu'il reste à curer.
 ## Gardes
 
 - `npx vitest run src/state/spell-flow-completeness.test.ts` — chaque sort porte un `effects: Flow`
-  valide (feuilles `EffectOp` uniquement) ET `runSpellFlowLines` exécute réellement ses ops
+  valide (feuilles `EffectOp` uniquement) ET `runPureFlowLines` exécute réellement ses ops
   (Blessures + État) ; vérifie aussi qu'il y a ≥ 220 sorts `curated`.
 - `npx vitest run src/engine/spellspec.test.ts` — classification `spellSupport` (mécanique/partiel/
   narratif).

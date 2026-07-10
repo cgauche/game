@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { runSpellFlowLines } from './combatFlow';
+import { runPureFlowLines } from './combatFlow';
 import { flowEffects, spellOps, type Flow } from './flow';
 import { spells } from '../data';
 import type { Combatant } from '../engine/types';
@@ -7,7 +7,7 @@ import type { Combatant } from '../engine/types';
 /**
  * PREUVE DE COMPLÉTUDE — « peut-on créer TOUS les sorts via le système Flow/EffectOp ? ».
  * Réponse démontrée : chaque sort de la base porte ses EFFETS dans `SpellData.effects` — un Flow dont
- * les feuilles `do` sont des EffectOp (`{type:'ops', on, ops}`) — et l'exécuter par `runSpellFlowLines`
+ * les feuilles `do` sont des EffectOp (`{type:'ops', on, ops}`) — et l'exécuter par `runPureFlowLines`
  * applique réellement ces ops. Les effets ont MIGRÉ des specs engine-curées vers la donnée app-owned
  * (éditable dans le Compendium) ; la spec ne garde que les métadonnées de résolution. Si un jour un sort
  * ne « rentrait » pas, c'est le système (Flow/EffectOp) qu'on généraliserait — ce gate l'attraperait.
@@ -33,11 +33,11 @@ describe('Complétude : tout sort porte ses effets dans un Flow exécutable (Spe
     }
   });
 
-  it('runSpellFlowLines EXÉCUTE réellement les ops d’un sort sur la cible (wounds + condition)', () => {
+  it('runPureFlowLines EXÉCUTE réellement les ops d’un sort sur la cible (wounds + condition)', () => {
     const target = { id: 't', name: 'Cible', kind: 'enemy', dead: false, wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], armour: { corps: 0 } } as unknown as Combatant;
     // un « sort » minimal : 6 Blessures + En flammes — exprimé en Flow EffectOp.
     const flow: Flow = { kind: 'seq', steps: [{ kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'wounds', amount: 6 }, { op: 'condition', name: 'en-flammes' }] } }] };
-    const lines = runSpellFlowLines(target, undefined, flow, { label: 'Test' });
+    const lines = runPureFlowLines(target, undefined, flow, { label: 'Test' });
     expect(target.wounds.current).toBe(14); // wounds ignore BE/PA → 20 − 6
     expect(target.conditions.some((c) => c.name === 'en-flammes')).toBe(true);
     expect(lines.length).toBeGreaterThan(0); // journal produit

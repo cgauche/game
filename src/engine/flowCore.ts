@@ -58,7 +58,7 @@ export interface EffectOp {
 
 /** OpsCtx d'une FEUILLE EffectOp : le contexte de l'appelant SURCHARGÉ par les champs bakés de la feuille
  *  (`untilTime` → durée d'horloge, `label` → source). SOURCE UNIQUE — tous les exécuteurs d'EffectOp
- *  (handler de scène `ops`, `runCombatFlow`, `runSpellFlowLines`, runner de consommable) DOIVENT l'appliquer,
+ *  (handler de scène `ops`, `runCombatFlow`, `runPureFlowLines`, runner de consommable) DOIVENT l'appliquer,
  *  sinon une branche suspendue perdrait sa durée (charMod permanent au lieu de « 2d10 minutes »). */
 export function leafOpsCtx<C extends { defaultUntilTime?: number; label?: string }>(base: C, e: EffectOp): C {
   if (e.untilTime == null && e.label == null) return base;
@@ -455,7 +455,7 @@ export type EffectTrigger =
 /** Effet DÉCLENCHÉ authoré (donnée éditable) : un Flow d'ops appliqué à `on` quand `trigger` se produit.
  *  GÉNÉRIQUE — porté indifféremment par `TraitData.effects` (Toile, Sang corrosif…) ET `QualityData.effects`
  *  (Atout d'arme : « à la touche, 1d10 + Empêtré »). Même vocabulaire que les sorts (réutilise
- *  `runSpellFlowLines`/`applyOps`) → plus de handler en dur. `on` : le porteur lui-même (`self`), la victime
+ *  `runPureFlowLines`/`applyOps`) → plus de handler en dur. `on` : le porteur lui-même (`self`), la victime
  *  touchée (`victim`), ou les adversaires Engagés du porteur (`engaged`). */
 /** CIBLE(S) d'un effet déclenché : le porteur (`self`), la victime touchée (`victim`), les adversaires
  *  Engagés (`engaged`), les adversaires que le porteur EMPOIGNE actuellement (`grappled`, = ses
@@ -594,11 +594,11 @@ export function flowHasTest<E = EffectOp>(flow: Flow<E>): boolean {
 /** Ops IMPURES résolues par le do-loop de `runCombatFlow` (`grantFreeAttack` → frappe gratuite ;
  *  `interruptFocus` → interruption de Focalisation ; `breakBlade` ; `delayed` → file `scheduledEffects`
  *  via `scheduleDelayedOps`) : `applyOps` les laisse inertes. Source UNIQUE pour router une branche de
- *  `test` contenant l'une d'elles vers l'exécuteur IMPUR plutôt que `runSpellFlowLines` (qui les avalerait). */
+ *  `test` contenant l'une d'elles vers l'exécuteur IMPUR plutôt que `runPureFlowLines` (qui les avalerait). */
 const HOOK_BACKED_OPS = new Set(['grantFreeAttack', 'interruptFocus', 'breakBlade', 'delayed']);
 
 /** Le Flow porte-t-il une op IMPURE adossée à un hook de `runCombatFlow` (cf. `HOOK_BACKED_OPS`) ? Si oui,
- *  son exécution doit passer par `runCombatFlow` (le hook y vit), jamais par `runSpellFlowLines`. */
+ *  son exécution doit passer par `runCombatFlow` (le hook y vit), jamais par `runPureFlowLines`. */
 export function flowHasImpureOp<E = EffectOp>(flow: Flow<E>): boolean {
   switch (flow.kind) {
     case 'do': { const e = flow.effect; return isEffectOp(e) && e.ops.some((o) => HOOK_BACKED_OPS.has(o.op)); }
@@ -606,6 +606,31 @@ export function flowHasImpureOp<E = EffectOp>(flow: Flow<E>): boolean {
     case 'if': return flowHasImpureOp(flow.then) || (flow.else ? flowHasImpureOp(flow.else) : false);
     case 'test': return flowHasImpureOp(flow.success) || flowHasImpureOp(flow.fail);
     case 'choice': return flowHasImpureOp(flow.yes) || (flow.no ? flowHasImpureOp(flow.no) : false);
+  }
+}
+
+/** Ops de `HOOK_BACKED_OPS` interdites HORS branche `success`/`fail` d'un nœud `test` dans un Flow d'effet
+ *  DÉCLENCHÉ (`effects: TriggeredEffect[]`, traits/talents/atouts/États/psychologie…) — EXCLUT
+ *  `grantFreeAttack`, légitime top-level (résolu par `resolveFreeAttacks`, cf. `flowHasFreeAttack`, ex.
+ *  Frappe réactive). `interruptFocus`/`breakBlade`/`delayed` n'ont de hook que dans le do-loop de
+ *  `runCombatFlow` AVEC son contexte de branche de Test résolue ; placées ailleurs, `applyTriggeredEffects`
+ *  (walker `runPureFlowLines`) les avale en silence (`applyOps` les laisse inertes). */
+const STRAY_IMPURE_OPS = new Set([...HOOK_BACKED_OPS].filter((op) => op !== 'grantFreeAttack'));
+
+/** Le Flow porte-t-il une op de `STRAY_IMPURE_OPS` EN DEHORS d'une branche `success`/`fail` de `test` ?
+ *  `inTestBranch` (interne, propagé par la récursion) reste vrai tant qu'on n'est pas ressorti d'un nœud
+ *  `test` — vérité utilisée par la garde de bien-formation des données (`effects` déclenchés). */
+export function flowHasImpureOpOutsideTest<E = EffectOp>(flow: Flow<E>, inTestBranch = false): boolean {
+  switch (flow.kind) {
+    case 'do': {
+      if (inTestBranch) return false;
+      const e = flow.effect;
+      return isEffectOp(e) && e.ops.some((o) => STRAY_IMPURE_OPS.has(o.op));
+    }
+    case 'seq': return flow.steps.some((s) => flowHasImpureOpOutsideTest(s, inTestBranch));
+    case 'if': return flowHasImpureOpOutsideTest(flow.then, inTestBranch) || (flow.else ? flowHasImpureOpOutsideTest(flow.else, inTestBranch) : false);
+    case 'test': return flowHasImpureOpOutsideTest(flow.success, true) || flowHasImpureOpOutsideTest(flow.fail, true);
+    case 'choice': return flowHasImpureOpOutsideTest(flow.yes, inTestBranch) || (flow.no ? flowHasImpureOpOutsideTest(flow.no, inTestBranch) : false);
   }
 }
 

@@ -1,12 +1,12 @@
 /**
  * Effets DÉCLENCHÉS génériques (`TriggeredEffect`) — preuve que le MÊME système flow+déclencheur sert
  * les Traits de créature (Toile) ET les Atouts d'arme (Immobilisante), via UN dispatcher (`fireTriggers`)
- * réutilisant l'exécuteur des sorts (`runSpellFlowLines`). Plus de handler en dur par trait/atout.
+ * réutilisant l'exécuteur des sorts (`runPureFlowLines`). Plus de handler en dur par trait/atout.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fireTriggers, applyTriggeredEffects } from './triggeredEffects';
 import './combatFlow'; // effet de bord : installe le routeur de Test + l'applier triggeredTest
-import { runSpellFlowLines } from './combatEffects';
+import { runPureFlowLines } from './combatEffects';
 import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { resetRule } from '../engine/policy';
@@ -101,7 +101,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
 
   it('op loseTurn : pose les drapeaux lus au début du Round', () => {
     const c = mk();
-    runSpellFlowLines(c, c, { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'loseTurn' }] } }, { rng: makeRNG(1), caster: c });
+    runPureFlowLines(c, c, { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'loseTurn' }] } }, { rng: makeRNG(1), caster: c });
     expect(c.loseNextAction).toBe(true);
     expect(c.loseNextMovement).toBe(true);
   });
@@ -157,7 +157,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     };
     const attacker = mk({ id: 'a' });
     const victim = mk({ id: 'v', wounds: { current: 15, max: 15 } });
-    runSpellFlowLines(victim, attacker, flow, { rng: makeRNG(3), caster: attacker });
+    runPureFlowLines(victim, attacker, flow, { rng: makeRNG(3), caster: attacker });
     expect(victim.wounds.current).toBeLessThan(15); // 1d10 Dégâts appliqués (ignore BE/PA par défaut)
     expect(empetre(victim)?.value).toBe(1);
   });

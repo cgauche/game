@@ -4,7 +4,7 @@
  * (`TraitData.effects` — Toile, Sang corrosif…) ET par les ATOUTS de son arme (`QualityData.effects` —
  * un Atout « à la touche : 1d10 + Empêtré »). Il REMPLACE les handlers en dur dispersés.
  *
- * Réutilise `runSpellFlowLines` (le MÊME vocabulaire d'ops que les sorts, variante pure de
+ * Réutilise `runPureFlowLines` (le MÊME vocabulaire d'ops que les sorts, variante pure de
  * `runCombatFlow` → zéro duplication). Pur côté effets (ops via applyOps) ; mute les combattants en
  * place et renvoie le journal. Le référent des formules « (X) » est le PORTEUR (`caster` = la créature
  * qui frappe) — donc « Force de la source » = sa Force.
@@ -28,7 +28,7 @@ import { smokeOf, combatantsWithinRadius } from './combatGeometry';
 import { traitById, qualityById, findManeuverById, findTalentById, findConditionById, findPsychologyById, refLabel } from '../data';
 import { difficultyFromLabel, rollTest } from '../engine/tests';
 import { rawCombatTestBase } from '../engine/skills';
-import { runSpellFlowLines } from './combatEffects';
+import { runPureFlowLines } from './combatEffects';
 import { combatConditionCtx, flowTestGated } from './combat/flowEval';
 import { resolveTestDifficulty } from './flow';
 import { RNG, defaultRNG } from '../engine/dice';
@@ -203,7 +203,7 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
    *  onWoundLoss/onKill/onStartled/onRoundStart/Domaine + manœuvres) ; INERTE tant qu'aucune donnée de
    *  trigger ne porte un nœud Flow `test` au 1ᵉʳ niveau (seul Mâchoires d'acier en a un, `onGainCondition`,
    *  câblé via le hook du store). Absent → pas de routage (les flows non-`test` passent par
-   *  `runSpellFlowLines`, qui rend le `string[]` tissé inline par l'appelant). */
+   *  `runPureFlowLines`, qui rend le `string[]` tissé inline par l'appelant). */
   set?: SetFn;
   /** Pose le drapeau `deferInteractiveTest` sur la résolution d'un Test routé : un héros MANUEL ne pousse
    *  PAS son étape ICI (la cascade n'est pas ouverte au moment où le hook `end-of-round` diffuse) — elle
@@ -215,7 +215,7 @@ export interface TriggerCtx { victim?: Combatant; weapon?: Weapon; rng?: RNG; ma
  *  (after-aware : un `test` enfoui sous `if`/`seq` suspend en empaquetant le reste). Injecté par la
  *  brique `state/combat/triggeredTest.ts` (inversion de dépendance : ce module reste pur, sans import de
  *  la brique → pas de cycle). Absent ⇒ aucun routage : un nœud `test` non routé tombe sur
- *  `runSpellFlowLines`, qui LÈVE (plus jamais de branche succès silencieuse). `opsCtx` porte le contexte
+ *  `runPureFlowLines`, qui LÈVE (plus jamais de branche succès silencieuse). `opsCtx` porte le contexte
  *  de la touche (`woundsDealt`/`sl`/`location`/`attackKind`) lu par les Conditions `if` du Flow. */
 type TestRouter = (get: Get, set: SetFn, target: Combatant, actor: Combatant, flow: Flow, opsCtx?: OpsCtx) => void;
 let testRouter: TestRouter | undefined;
@@ -223,7 +223,7 @@ export function setTriggeredTestRouter(fn: TestRouter): void { testRouter = fn; 
 
 /** Résolution INLINE d'un nœud `test` TOP-LEVEL sans routeur cadence-aware (entretien HORS COMBAT) —
  *  jumeau store-free de la branche NON-interactive de `resolveFlowTest` : jet du Test (`combatTestPenalty`
- *  comme un Test simple), puis branche `success`/`fail` jouée par `runSpellFlowLines` (mêmes ops). Un `test`
+ *  comme un Test simple), puis branche `success`/`fail` jouée par `runPureFlowLines` (mêmes ops). Un `test`
  *  ENFOUI (hors top-level) LÈVE — un tel cas exige la voie cadence-aware (jamais de branche succès muette). */
 function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx): string[] {
   if (flow.kind !== 'test') throw new Error('resolveInlineFlowTest: nœud non-`test` (un test enfoui exige un routeur cadence-aware).');
@@ -242,7 +242,7 @@ function resolveInlineFlowTest(c: Combatant, flow: Flow, ctx: OpsCtx): string[] 
   const rng = ctx.rng ?? defaultRNG;
   const res = rollTest(base, difficulty, rng, combatTestPenalty(c));
   const branch = res.success ? flow.success : flow.fail;
-  return [describeTestRoll(c.name, skillLabel, difficulty, res), ...runSpellFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
+  return [describeTestRoll(c.name, skillLabel, difficulty, res), ...runPureFlowLines(c, c, branch, { ...ctx, rng, caster: c, sl: res.sl })];
 }
 
 /** Écart d'Avantage de `actor` avec ses adversaires ENGAGÉS : `max(0, meilleur Avantage ennemi engagé −
@@ -296,7 +296,7 @@ export function recoveryGeometry(get: Get, actor: Combatant): { hiddenFromFoes: 
 }
 
 /** CŒUR d'application : applique une LISTE d'effets `TriggeredEffect` de `actor` correspondant à
- *  `trigger`, chacun via `runSpellFlowLines` aux cibles résolues (`on`). Source UNIQUE : utilisé par
+ *  `trigger`, chacun via `runPureFlowLines` aux cibles résolues (`on`). Source UNIQUE : utilisé par
  *  `fireTriggers` (effets de traits/atouts) ET par les manœuvres (effets du profil de manœuvre).
  *  Un effet dont le Flow est un nœud `test` ET pour lequel `ctx.set` + le routeur sont fournis (hook
  *  `onGainCondition`) est ROUTÉ vers la voie cadence-aware (jamais la branche succès silencieuse). */
@@ -336,7 +336,7 @@ export function applyTriggeredEffects(
       // `if`/`seq` : Venin/Hurlement/2 enchants) routé vers la voie cadence-aware (héros manuel → cascade
       // influençable ; ennemi/auto → inline) plutôt qu'avalé silencieusement — seulement si l'appelant
       // fournit `set` + un routeur installé. Un Flow `test` non routé (pas de `set`) atteindrait
-      // `runSpellFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
+      // `runPureFlowLines`, qui LÈVE (jamais de branche succès muette). Le contexte de la touche
       // (`woundsDealt`/`margin→sl`/`location`/`attackKind`) voyage dans l'opsCtx pour les Conditions `if`.
       const flowCtx: OpsCtx = { rng, caster: actor, sl: ctx.margin, woundsDealt: ctx.woundsDealt, indice: ctx.indice, stacks: ctx.stacks, engagedAdvantageGap: gap, engagedAdvantageLead: lead, foeInLoS, location: ctx.location, attackKind: ctx.attackKind, startleCause: ctx.startleCause, hiddenFromFoes: geom?.hiddenFromFoes, engaged: geom?.engaged, nearestFoeDist: geom?.nearestFoeDist };
       if (flowHasTest(eff.flow)) {
@@ -361,7 +361,7 @@ export function applyTriggeredEffects(
         lines.push(...resolveInlineFlowTest(t, eff.flow, flowCtx));
         continue;
       }
-      lines.push(...runSpellFlowLines(t, actor, eff.flow, flowCtx));
+      lines.push(...runPureFlowLines(t, actor, eff.flow, flowCtx));
     }
   }
   return lines;

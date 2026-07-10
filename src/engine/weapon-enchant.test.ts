@@ -4,7 +4,7 @@ import { recomputeLoadout, parseDamage } from './items';
 import { isMagicWeapon } from './qualities/dispatch';
 import { applyOps } from './ops';
 import { endOfRound } from './conditions';
-import { runSpellFlowLines } from '../state/combatEffects';
+import { runPureFlowLines } from '../state/combatEffects';
 import type { Combatant, ItemInstance, Weapon } from './types';
 import type { TriggeredEffect, Flow } from './flowCore';
 
@@ -62,7 +62,7 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     expect(isMagicWeapon(fighter.weapons[0])).toBe(true);
     // L'onHit est replié sur l'arme (weapon.onHitEffects) ; exécuté par le dispatcher → 2 États sur la cible.
     const victim = dummy({ id: 'v' });
-    runSpellFlowLines(victim, fighter, fighter.weapons[0].onHitEffects![0].flow, {});
+    runPureFlowLines(victim, fighter, fighter.weapons[0].onHitEffects![0].flow, {});
     expect(victim.conditions.map((c) => c.name).sort()).toEqual(['en-flammes', 'a-terre'].sort());
   });
 

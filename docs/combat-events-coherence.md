@@ -63,7 +63,7 @@ Traits + Atouts + États, chacun tagué `key`/`cap`) et ne joue que les Flows à
 **Trait/État** de créature qui riposte `onCharged`/`onHit` fonctionne comme un talent, sans chemin
 spécifique.
 
-**Reste à faire pour « un seul bus » complet** : #315 (exécuteur unique — `runSpellFlowLines` à
+**Reste à faire pour « un seul bus » complet** : #315 (exécuteur unique — `runPureFlowLines` à
 supprimer + garde de double-exécution) et #316 (le bus n'est pas encore l'unique porte — sites qui
 appellent leur mécanique directement plutôt que via `emitCombatEvent` ; cibles machinerie 7bis
 `onAttackResolved`/`onCastResolved`/`onMiscast`, orphelines).

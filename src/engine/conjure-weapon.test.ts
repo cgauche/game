@@ -4,7 +4,7 @@ import { endOfRound } from './conditions';
 import { effectiveWeaponDamage } from './weaponDamage';
 import { damageString } from './items';
 import { conjureFormOptions } from './conjuredWeapons';
-import { runSpellFlowLines } from '../state/combatEffects';
+import { runPureFlowLines } from '../state/combatEffects';
 import { bonus } from './characteristics';
 import type { Combatant } from './types';
 import type { TriggeredEffect } from './flowCore';
@@ -112,7 +112,7 @@ describe('grantWeapon — variantes de domaine (stats fixes du Sort)', () => {
     // L'onHit de l'arme invoquée est replié sur l'arme active (weapon.onHitEffects), appliqué par le dispatcher.
     const eff = c.weapons[0].onHitEffects![0];
     const victim = mage();
-    runSpellFlowLines(victim, c, eff.flow, {});
+    runPureFlowLines(victim, c, eff.flow, {});
     expect(victim.conditions.some((x) => x.name === 'en-flammes')).toBe(true);
   });
 });

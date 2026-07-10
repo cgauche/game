@@ -5,7 +5,7 @@
  * le `ConditionCtx` de combat et le calcul de gate vivent ICI (plus de copie par site).
  *
  * Module FEUILLE : n'importe RIEN de combatFlow/combatEffects (que des briques engine + le modèle `flow`)
- * → aucun cycle. Réutilisé par `combatEffects` (runSpellFlowLines), `triggeredEffects` (resolveInlineFlowTest)
+ * → aucun cycle. Réutilisé par `combatEffects` (runPureFlowLines), `triggeredEffects` (resolveInlineFlowTest)
  * et `combat/triggeredTest` (resolveFlowTest / simpleTriggeredTestStep).
  */
 import { type Combatant, type CharKey, CHAR_KEYS } from '../../engine/types';
