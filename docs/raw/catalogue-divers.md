@@ -12,7 +12,7 @@
 
 *Pages PDF 40-52*
 
-## <span id="page-39-0"></span>DES SIGNES DANS LE CIEL SIGNES ASTRAUX ET ASTROLOGIE • •
+## <span id="page-39-0" data-folio="38"></span>DES SIGNES DANS LE CIEL SIGNES ASTRAUX ET ASTROLOGIE • •
 
 Les peuples du Vieux Monde ont toujours été fascinés par le ciel nocturne. Bien avant l'histoire écrite, on murmurait déjà que les êtres qui avaient refait le monde étaient descendus des étoiles. Il n'était donc pas si difficile d'en conclure que si les étoiles avaient eu une telle importance par le passé, elles devaient sûrement influencer le futur aussi. Ainsi les premières tribus d'humains scrutaient-elles le ciel alors que les érudits nains et les sorciers elfes faisaient de même depuis longtemps (chaque peuple à sa manière, bien sûr).
 
@@ -39,7 +39,7 @@ Les astromanciens du Collège Céleste savent observer le ciel et, à travers la
 Certaines personnes croient dur comme fer à l'astrologie et s'en remettent aux étoiles pour les guider dans toutes leurs décisions. D'autres pensent que la disposition des corps célestes ne peut avoir aucun impact sur leur destin. Mais dans l'Empire, même le sceptique le plus entêté connaît son signe astrologique, sa signification et certains des traits qui lui sont communément associés. Ainsi, alors que pour certains, il ne s'agit que d'un simple sujet de conversation, pour d'autres, les signes astraux décident de leur vie tout entière.
 
 
-## <span id="page-40-0"></span>**SIGNES ASTROLOGIQUES ET CRÉATION DE PERSONNAGE**
+## <span id="page-40-0" data-folio="39"></span>**SIGNES ASTROLOGIQUES ET CRÉATION DE PERSONNAGE**
 
 Cette section est un système optionnel pour déterminer le thème astral d'un Personnage à sa création. Si vous le préférez, vous êtes donc libres d'ignorer complètement cette étape : certaines personnes façonnent leur propre destin ou, plus exactement, voient celui-ci influencé par des forces autres que les astres. Pour d'autres, en revanche, la position des étoiles au moment de leur naissance laisse une empreinte durable.
 
@@ -77,7 +77,7 @@ Si vous avez l'intention d'utiliser ce système, vous pouvez le faire après l'�
 \*NdT : nous avons respecté la traduction de la version anglaise qui parle de « Bonesaw ». Néanmoins, les vétérans de Warhammer pourront l'identifier au « Grimoire » qui est l'interprétation de Bonesaw de la V2, et utiliser le terme qu'ils préfèrent.
 
 
-<span id="page-41-0"></span>
+<span id="page-41-0" data-folio="40"></span>
 
 ## **LES SIGNES**
 
@@ -402,7 +402,7 @@ Les natifs de Cackelfax le Coq ont de grandes ambitions et le regard tourné ver
 La Scie à Os est le signe des philosophes : ce qu'ils recherchent par-dessus tout est le savoir. Ils consacrent leur vie à explorer et à expérimenter. Cependant, contrairement à d'autres signes tout aussi curieux, les natifs de la Scie à Os ne veulent pas garder les connaissances qu'ils amassent, et ne sont pas repliés sur eux-mêmes non plus. Les personnes nées sous le signe de la Scie à Os souhaitent diffuser leur savoir le plus possible. Cela peut toutefois les faire passer pour des je-sais-tout autoritaires, plutôt que pour des érudits passionnés par les secrets de l'univers.
 
 
-## <span id="page-48-0"></span>**L'Étoile du Sorcier**
+## <span id="page-48-0" data-folio="47"></span>**L'Étoile du Sorcier**
 
 **Signe de la Magie Nom classique :** Solkios **Ascendant :** hiver
 
@@ -439,7 +439,7 @@ Les maîtres astrologues peuvent gagner leur vie de différentes manières. Cert
 Le degré de croyance en tout cela varie d'une personne à l'autre. Les gens très riches et superstitieux peuvent avoir un astrologue à portée de main pour calculer le thème astral de leur enfant quelques heures après sa naissance. Les plus pauvres paient des mystiques et des astrologues itinérants (ou des arnaqueurs qui prétendent l'être) pour qu'ils leur prédisent le moment le plus propice pour planter leurs semis ou partir à la pêche.
 
 
-## <span id="page-49-0"></span>**Dans l'art**
+## <span id="page-49-0" data-folio="48"></span>**Dans l'art**
 
 L'importance culturelle de l'astrologie fait que son imagerie est omniprésente dans la vie de tous les jours des habitants de l'Empire, quelle que soit leur classe sociale. Dans les campagnes, les sanctuaires de Rhya sont décorés de représentations du Chaudron de Rhya, ainsi que des traditionnelles fleurs, spirales et gerbes de blé. Il n'est pas rare que les proches des soldats humains et nains leur offrent un pendentif ayant la forme du Fourreau de Grungni lorsqu'ils partent au combat, pour les protéger.
 
@@ -499,7 +499,7 @@ Dans les villes franches, loin du pouvoir impérial, il existe une classe émerg
 D'autres individus parmi cette classe moyenne émergente, en particulier ceux qui souhaitent échapper à leurs origines rurales et à leur basse naissance, rejettent toute forme de superstition comme relevant d'absurdités de manants ou des vices aristocratiques coûteux. Ils sont modernes, avant-gardistes et ne s'intéressent pas à la magie. Au-delà des murs de leurs villes, les mutants et les forces du Chaos peuvent bien menacer l'Empire : à l'abri derrière leurs remparts, l'argent leur offre le luxe de l'empirisme.
 
 
-## <span id="page-51-0"></span>**Étapes facultatives**
+## <span id="page-51-0" data-folio="50"></span>**Étapes facultatives**
 
 Si, pour la plupart des Joueurs, choisir un signe astrologique à la création d'un Personnage peut suffire, d'autres pourraient vouloir aller plus loin. Cela peut également aider à déterminer certains aspects d'un Personnage qui ne sont pas directement liés aux mécaniques de jeu, comme sa personnalité, sa place dans le monde et sa vision des choses. Si vous cherchez de l'inspiration, vous pouvez donc choisir un ascendant et jusqu'à cinq demeures célestes.
 
@@ -544,7 +544,7 @@ Si tout ne paraît pas clair dès le début, ce n'est pas grave. Certaines chose
 
 *Pages PDF 94-98*
 
-## <span id="page-93-0"></span>ANNEXE I TROUBLES PSYCHOLOGIQUES • •
+## <span id="page-93-0" data-folio="92"></span>ANNEXE I TROUBLES PSYCHOLOGIQUES • •
 
 Le quotidien dans le Vieux Monde est éprouvant et les aventures sinistres et périlleuses que vivent les Personnages peuvent laisser des traces. Les règles suivantes peuvent permettre aux Personnages d'obtenir de nouveaux Traits Psychologiques (**WFJDR**, page 190) au cours de la partie. Ces règles comprennent également des options pour rendre la vie des Personnages plus dramatique à l'apparition de ces Traits Psychologiques. Comme il s'agit d'un sujet sensible, assurez-vous de discuter de ces règles avec votre groupe avant de les utiliser, et souvenez-vous des *Règles du jeu* (**WFJDR**, page 151). Lorsqu'un Trait Psychologique est joué de sorte à rendre encore plus tragique la vie du Personnage, accordez-lui la même valeur qu'à la poursuite de sa Motivation (**WFJDR**, page 34).
 
@@ -684,7 +684,7 @@ Dortoirs, Les ...........................72 Dragomas le Dragon ...............41
 
 ## [T2 11] APPENDICE I - L’entraînement et les mentors
 
-*Pages PDF 140-160*
+*Folio 142+*
 
 #### **L'entraînement**
 
@@ -727,7 +727,7 @@ Si quelqu'un mentionne le nom d'Etelka Herzen, ou montre à Hieronymus le *Docum
 
 Hieronymus peut transformer tout Personnage Lettré en Sorcier novice, ou entraîner un novice pour le faire devenir un véritable Sorcier (**WFJDR**, p. 60). Si vous jugez que c'est pertinent pour votre campagne, il peut également former tout Personnage capable de lancer des sorts qui suit une autre Carrière. Il peut également enseigner des Compétences de Sorcier à tout Personnage capable de les apprendre, et transmettre les sorts de Magie mineure et de Magie des Arcanes qu'il connaît, mais il ne pourra enseigner aucun sort du Domaine des Cieux, puisque l'Ordre Céleste exige que quiconque souhaite apprendre les sorts de ce domaine suive les cours de l'université d'Altdorf.
 
-
+<span id="page-141-0" data-folio="142"></span>
 Si personne dans le groupe n'est sorcier, vous pouvez autoriser l'un des aventuriers à devenir son apprenti. Ce Personnage doit cependant avoir assez de points d'expérience pour changer de Carrière, et devra convaincre Hieronymus qu'il fera un excellent élève. Pour ce faire, il lui faudra une Intelligence de 30 au minimum et la réussite d'un Test de **Charme Intermédiaire (+0)**.
 
 Si vous avez besoin d'un Personnage en remplacement, Schiller pourrait se joindre au groupe, mais réfléchissez bien avant d'accepter un autre lanceur de sort si le groupe en a déjà un. Une puissance trop grande dans un domaine entraîne souvent une faiblesse dans un autre, et les épreuves à traverser au cours de cette campagne demandent tout un éventail de compétences.
@@ -756,8 +756,8 @@ Le Personnage qui porte cette bague de protection contre les morts-vivants ne su
 
 **Domaine des Cieux :** Arc de T'Essla, Bouclier céruléen, Comète de Cassandora
 
-
-#### <span id="page-142-0"></span>**Hans Peter Schiller**
+<span id="page-142-0" data-folio="143"></span>
+#### **Hans Peter Schiller**
 
 Hans Peter est un homme mince de taille moyenne aux cheveux noirs et bouclés et aux yeux marron. Il a l'air plutôt détendu, bien que sous cette façade se cache une grande soif de connaissance... et donc de pouvoir.
 
@@ -801,8 +801,8 @@ Max acceptera de former tout Personnage méritant qui possède une Intelligence 
 
 S'il le souhaite, n'importe quel aventurier peut faire un Test de **Sociabilité Accessible (+20)** pour tenter de faire ami-ami avec un ou plusieurs des chats errants de Max. Bien évidemment, Max restera leur favori.
 
+<span id="page-143-0" data-folio="144"></span>
 
-<span id="page-143-0"></span>
 
 #### **Maxmillian Schnippmesser**
 
@@ -838,7 +838,7 @@ S'ils livrent le coffret comme convenu, les Personnages laisseront une bonne imp
 
 Luigi pourrait se prendre d'affection pour un ou plusieurs des aventuriers sans s'y attendre : il aime les personnes serviles, mais il respecte et admire celles qui font preuve de courage, qui rient dans les situations critiques, et qui sont bourrées de talent. Il acceptera de former tout Personnage éligible aux Carrières de coupe-jarret ou de rançonneur (**WFJDR**, p. 106) et pourra enseigner aux autres Personnages toute Compétence tirée de la Carrière de rançonneur qui figure également dans leur Carrière. Si un Personnage non Roublard impressionne ou amuse particulièrement Luigi, il pourra apprendre auprès de lui une ou deux Compétences de rançonneur, même si celles-ci ne se trouvent pas dans la liste de Compétences de sa Carrière. Tous les entraînements suivent les règles établies au *Chapitre 6 : Entre deux Aventures*, dans le Livre de Règles de **WFJDR**.
 
-
+<span id="page-144-0" data-folio="145"></span>
 #### **Luigi Belladonna**
 
 Luigi est de taille moyenne et a les cheveux gris. Il affiche également un léger embonpoint, mais personne n'a jamais pu le lui faire remarquer deux fois. Ses bajoues semblent toujours garder un peu de nourriture en réserve, voire une paire de chaussettes, et ses yeux bruns lui donnent un regard sévère et impitoyable. Son discours n'est qu'un murmure rauque, ce qui force ses interlocuteurs à se pencher vers lui pour entendre ce qu'il leur raconte. Luigi ne se répète jamais, et n'élève jamais la voix. Il n'en a pas besoin : c'est à son audience de prêter l'oreille. Il choisit bien ses mots et parle de manière formelle, signe d'une éducation et de pensées complexes qu'on ne s'imagine pas forcément retrouver chez un criminel. Ses vêtements sont composés des plus belles soies et laines, et ses cheveux sont élégamment gominés. Ses petits doigts potelés sont ornés de bagues en or et en diamant. Il a l'air en tous points d'un marchand prospère, jouissant d'une fortune gagnée et non héritée.
@@ -875,7 +875,7 @@ Luigi ne va nulle part sans ses deux « petits » cousins, Carlo et Furio. Ces d
 
 **Possessions :** gourdin, dague, veste de cuir
 
-
+<span id="page-145-0" data-folio="146"></span>
 | A                                                                | J                                             |
 |------------------------------------------------------------------|-----------------------------------------------|
 | Adeptes (Les)23                                                  | Joyeux Drille (Le)15                          |
@@ -938,7 +938,7 @@ Luigi ne va nulle part sans ses deux « petits » cousins, Carlo et Furio. Ces d
 | I                                                                |                                               |
 | Il y a quelque chose en bas12                                    |                                               |
 
-
+<span id="page-146-0" data-folio="147"></span>
 | T                                     | U                                |  |
 |---------------------------------------|----------------------------------|--|
 | Tempête (La)87                        | Une Interruption malpolie39      |  |
@@ -1002,7 +1002,7 @@ Luigi ne va nulle part sans ses deux « petits » cousins, Carlo et Furio. Ces d
 | Ingénieur nain37                      | Zombies37                        |  |
 |                                       |                                  |  |
 
-
+<span id="page-147-0" data-folio="148"></span>
 **Mort sur le Reik :** Aide de jeux 1 **Mort sur le Reik :** Aide de jeux 2
 
  C'est votre dernier avertissement ! Livrez les marchandises à la Grange Rouge avant Le coucher du soleil ce soir !
@@ -1013,7 +1013,7 @@ Luigi ne va nulle part sans ses deux « petits » cousins, Carlo et Furio. Ces d
 
 À: Loorbeer et Kuhn Nos agents rappor tent que la cible se dirige vers vous en compagnie du groupe évoqué lors de notre dernière réunion. Les premières tentatives de contact ont été peu fructueuses. Assurez-vous que nous ne perdions plus la trace de notre magot en établissant des rappor ts réguliers de la manière usuelle. N'oubliez pas que la paume pourpre a déjà été transmise. Le Temps des Changements est proche! L'Arch Lumen
 
-
+<span id="page-148-0" data-folio="149"></span>
 **Mort sur le Reik :** Aide de jeux 8
 
 **Mort sur le Reik :** Aide de jeux 4 **Mort sur le Reik :** Aide de jeux 6
@@ -1024,7 +1024,7 @@ L es cieux s'emplirent d'innombrables étoiles filantes, dont certaines eurent l
 
 F ort de mon expérience lors de la nuit de Hexenstag, je fus cette fois-ci en mesure de calculer la trajectoire d'une étoile filante particulièrement grande, qui semblait être tombée de Morrslieb elle-même. D'après mes estimations, l'étoile a dû choir sur les plateaux de Talabecland, près de la source de la rivière Narn.
 
-
+<span id="page-149-0" data-folio="150"></span>
 **Mort sur le Reik :** Aide de jeux 7 **Mort sur le Reik :** Aide de jeux 10
 
 La sagesse est de mise. Le moment viendra où les ennemis du Chaos baisseront la garde : le regard rivé sur l'horizon, se croyant à l'abri dans leur forteresse, ils ne verront pas les ombres tapies dans leur dos. C'est alors que le Grand Changeur causera l'éveil de la lune déformée, et l'aimée de Morr s'éclaircira la gorge pour cracher sur l'Empire. Les faibles craindront de se rendre là où sa salive tombera, mais un grand pouvoir sera accordé à ceux qui iront la recueillir.
@@ -1035,14 +1035,14 @@ Cher ami,
 
 Nous ne pouvons plus nous permettre de laisser cette situation s'éterniser. Le Cercle intérieur a des choses bien plus importantes à faire que de courir après un Magister Impedimentae en cavale. Ceci est notre dernier avertissement. Amenez les 20 000 Couronnes d'or à Altdorf avant la fin de la semaine ; à moins que vous ne préfériez les délivrer en personne à Middenheim. N'essayez pas de vous enfuir, ou nous ferons en sorte que vous viviez juste assez longtemps pour supplier qu'on vous achève. À très bientôt...
 
-
+<span id="page-150-0" data-folio="151"></span>
 **Mort sur le Reik :** Aide de jeux 12
 
 **Mort sur le Reik :** Aide de jeux 18 **Mort sur le Reik :** Aide de jeux 17
 
 pas notre affaire de savoir pourquoi mes employeurs sont si désireux de parler à ces gens. Bien que, comme je l 'ai dit, je ne puisse pas nommer leur ordre secret, ils n'en restent pas moins puissants et influents, même s'ils sont d 'un genre douteux. Par conséquent, et parce qu'ils m'ont aidé par le passé, je suis certain que leur bonne considération pourrait être utile à nos deux familles. Si vous les localisez, ils doivent être envoyés à Middenheim, au capitaine Scharlach, à <sup>l</sup> 'Enseigne des Clés croisées, sur Hoffen Strasse. J'espère que toi et ta chère Karoline vous portez bien, Albrecht Oldenhaller.
 
-
+<span id="page-151-0" data-folio="152"></span>
 ### CHRONOLOGIE DE L'AVENTURE
 
 | Jour | Date | Position des aventuriers | Lieu/Événement                                                                                                                               |
@@ -1065,36 +1065,36 @@ pas notre affaire de savoir pourquoi mes employeurs sont si désireux de parler 
 | 31   |      |                          | Après une courte pause dans la ville, le groupe part<br>vers le nord en quête de l'observatoire de Dagmar von<br>Wittgenstein.               |
 | 36   |      |                          | Les adeptes arrivent à la Tour à signaux, de préférence<br>peu de temps avant les aventuriers.                                               |
 
-
+<span id="page-152-0" data-folio="153"></span>
 #### **Mort sur le Reik :** Maison d'Elvyra
 
-
+<span id="page-153-0" data-folio="154"></span>
 **Mort sur le Reik :** La Cuvette du Diable
 
 **Mort sur le Reik :** La grange rouge
 
 **Mort sur le Reik :** Grissenwald
 
-
+<span id="page-154-0" data-folio="155"></span>
 **Mort sur le Reik :** Ferme typique
 
-
+<span id="page-155-0" data-folio="156"></span>
 **Mort sur le Reik :** La vieille mine
 
 **Mort sur le Reik :** La Tour d'Etelka
 
-
+<span id="page-156-0" data-folio="157"></span>
 **Mort sur le Reik :** Unterbaum et ses environs
 
 **Mort sur le Reik :** Temple de Sigmar
 
-
+<span id="page-157-0" data-folio="158"></span>
 **Mort sur le Reik :** Wittgendorf
 
-
+<span id="page-158-0" data-folio="159"></span>
 **Mort sur le Reik :** La Tour à signaux
 
-
+<span id="page-159-0" data-folio="160"></span>
 *Au moment convenu, nous émergerons de nos repaires secrets et nous mettrons à genoux les villes et cités de l'Empire. Le Chaos envahira cette terre, et nous, les Serviteurs élus, nous nous couvrirons de gloire devant SES yeux. Gloire à Tzeentch, Changeur de Voies ! Njawrr'thakh Lzimbarr Tzeentch !*
 
 **Mort sur le Reik** est le second volume de la version intégrale ou « Director's cut », révisée et mise à jour, de L'Ennemi Intérieur, l'une des campagnes de jeu de rôles les plus estimées.
@@ -1106,9 +1106,9 @@ pas notre affaire de savoir pourquoi mes employeurs sont si désireux de parler 
 
 ## [T2C 7] CHAPITRE 5 - Navigation fluviale
 
-*Pages PDF 28-33*
+*Folio 29+*
 
-## <span id="page-27-0"></span>CHAPITRE 5 NAVIGATION FLUVIALE
+## CHAPITRE 5 NAVIGATION FLUVIALE
 
 Dans **Mort sur le Reik**, les aventuriers passent une grande partie de leur temps à naviguer sur le fleuve dans une barge commerciale. Le MJ peut partir du principe que les Personnages arrivent toujours à destination sans encombre, mais il peut être plus intéressant de jouer au moins quelques trajets en détail, en utilisant les règles suivantes et en imaginant quels problèmes et accidents ils pourraient rencontrer.
 
@@ -1148,8 +1148,8 @@ Le seul facteur météorologique qui impacte la vitesse de mouvement d'un bateau
 - 4. Un Test de **Navigation Accessible (+20)** doit être effectué pour retirer la voile avant que le bateau ne soit renversé. Si le Test échoue, la voile et le gréement tombent, le bateau se renverse et commence à prendre l'eau. Les Personnages peuvent faire un seul Test de **Navigation Accessible (+20)** par Round pour essayer de redresser le bateau ; chaque Test échoué ajoute un malus de -5 au Test suivant. S'il n'est pas redressé, le bateau coule en un nombre de tours égal à son Bonus d'Endurance.
 - 5. Un Test de **Navigation Accessible (+20)** est nécessaire pour éviter que la voile et le gréement subissent des dégâts. Si le Test échoue, traitez le résultat comme un Coup Critique au gréement (voir plus bas). Le bateau dérive, hors de contrôle, à 25 % de sa vitesse normale, sans compter la force et la direction du vent qu'il faudra aussi ajouter. Les Tests de **Navigation** pour tenter de diriger le bateau subissent un malus de -20.
 
-
-## <span id="page-28-0"></span>**DÉGÂTS INFLIGÉS AU BATEAU**
+<span id="page-28-0" data-folio="29"></span>
+## **DÉGÂTS INFLIGÉS AU BATEAU**
 
 Tout bateau peut subir des dégâts, comme n'importe quel Personnage. Il a un Bonus d'Endurance, qui modifient les dégâts qu'il reçoit, et des points de Blessure, qui indiquent combien il peut en perdre.
 
@@ -1201,8 +1201,8 @@ Il y a un trou dans le bateau, qui commence à prendre l'eau. Il coule en un nom
 
 Si le bateau dispose d'une cale, et que cette dernière est touchée, tous les Personnages qui s'y trouvent doivent faire un Test d'**Initiative** ou subir +5 Dégâts à cause des éclats d'échardes. À part ça, le bateau n'est pas affecté.
 
-
-### <span id="page-29-0"></span>**S'échouer**
+<span id="page-29-0" data-folio="30"></span>
+### **S'échouer**
 
 Dans certaines circonstances, il est possible qu'un bateau s'échoue ; les chances que cela arrive sont données quand un danger se présente. Quand un bateau s'échoue, il s'arrête soudainement et sa coque subit 12 Dégâts. Il doit être tiré afin d'être remis à l'eau. Pour un bateau chargé, cette tâche nécessite un Test de **Force** avec un malus égal au nombre total de Points d'Encombrement du bateau et de sa cargaison. N'importe quel Personnage ou animal de trait peut contribuer à la tâche, tant qu'il y a assez de cordes pour tout le monde (il est préférable que les Personnages qui aident ne soient pas déjà encombrés par des armures lourdes, des sacs à dos, etc.)
 
@@ -1232,8 +1232,8 @@ Voyager par le fleuve, c'est parfois être confronté à des dangers particulier
 
 De fortes pluies dans les montagnes où le fleuve prend sa source ont provoqué une coulée de débris en aval. Des arbres déracinés et d'autres objets lourds flottent le long du fleuve, et les Personnages doivent agir vite pour éviter les dégâts d'une collision : si le Test de **Navigation** échoue, le bateau subit deux coups à la coque et prend +10 Dégâts par coup.
 
-
-<span id="page-30-0"></span>Là où le cours d'eau est étroit ou l'eau est peu profonde, les débris se sont peut-être agglomérés et forment un barrage qui doit être dégagé avant de continuer. Ces obstacles ont une Endurance de 1d10 × 10 et 2d10 de Blessures. Essayer de foncer dessus en utilisant le bateau comme un bélier inflige +10 Dégâts au barrage ainsi qu'à la coque du bateau. Pour dégager le barrage à la main (si la profondeur de l'eau le permet), il faut déblayer 3d10 objets. Chaque élément a 4d10 Points d'Encombrement.
+<span id="page-30-0" data-folio="31"></span>
+Là où le cours d'eau est étroit ou l'eau est peu profonde, les débris se sont peut-être agglomérés et forment un barrage qui doit être dégagé avant de continuer. Ces obstacles ont une Endurance de 1d10 × 10 et 2d10 de Blessures. Essayer de foncer dessus en utilisant le bateau comme un bélier inflige +10 Dégâts au barrage ainsi qu'à la coque du bateau. Pour dégager le barrage à la main (si la profondeur de l'eau le permet), il faut déblayer 3d10 objets. Chaque élément a 4d10 Points d'Encombrement.
 
 ### **Rochers et eaux peu profondes**
 
@@ -1273,8 +1273,8 @@ Certaines des cordes qui contrôlaient les voiles rompent, à cause d'une négli
 
 Un vent de côté soudain change la direction de la voile : le tangon pivote violemment à travers le pont. Les Personnages qui étaient sur son chemin doivent réussir un Test d'**Esquive Intermédiaire (+0)** afin de l'éviter, ou subir 5 Dégâts. Les Personnages percutés par le tangon doivent réussir un Test d'**Athlétisme Intermédiaire (+0)** pour ne pas être éjectés dans l'eau.
 
-
-
+<span id="page-31-0" data-folio="32"></span>
+<span id="page-32-0" data-folio="33"></span>
 #### EMBARCATIONS DE L'EMPIRE
 
 | Objet                 | Coût<br>(CO) | Encombr.** | Chargem. | Disponibilité | Force<br>motrice | Mouv. | Endurance | Points de<br>Blessure | Longueur<br>(mètres) |
@@ -1289,14 +1289,16 @@ Un vent de côté soudain change la direction de la voile : le tangon pivote vio
 
 \*\*Ici, Encombrement veut dire le poids et le volume du bateau. Le Chargement est le nombre de Points d'Encombrement que le bateau peut
 
+<span id="page-33-0" data-folio="34"></span>
+
 
 ## [T2C 9] CHAPITRE 7 - Compagnons de voyage
 
-*Pages PDF 38-49*
+*Folio 39+*
 
 ## CHAPITRE 7
 
-<span id="page-37-0"></span>
+
 
 # COMPAGNONS DE VOYAGE
 
@@ -1334,7 +1336,7 @@ La vie d'un escroc professionnel n'est pas chose aisée, mais Grugor a porté l'
 
 **Possessions :** dague, faux documents, plan pour quitter la ville, sélection de « potions », vêtements élaborés.
 
-
+<span id="page-38-0" data-folio="39"></span>
 #### LIEBERUNG EST PERDU ? Début de Mort sur le Reik
 
 Dans **L'Ennemi dans l'Ombre - Compagnon**, un début alternatif à **L'Ennemi dans l'Ombre** a été présenté. Intitulée *In Media Fuite !*, cette introduction va droit au but : nos Personnages sont à bord d'une diligence volée poursuivie par des patrouilleurs routiers qui hurlent « Kastor Lieberung, vous êtes en état d'arrestation ». Cette introduction plutôt brusque a permis aux joueurs de se plonger directement dans l'action, en attribuant l'identité vitale de Kastor Lieberung à l'un des Personnages.
@@ -1363,8 +1365,8 @@ Peut-être que les personnages essaieront de se servir de la lettre de Kastor s'
 
 *« Non mais, franchement. J'en ai vu des tentatives désespérées pour quitter le groupe en mon temps, mais simuler sa propre mort ? À d'autres, Kastor.»*
 
-
-### <span id="page-39-0"></span>**PILLEURS DE TOMBES**
+<span id="page-39-0" data-folio="40"></span>
+### **PILLEURS DE TOMBES**
 
 Les Personnages sont approchés par deux voyageurs qui portent une grande caisse. Ils se présentent sous le nom de Hans et Hannes, expliquent qu'ils doivent atteindre rapidement la prochaine ville et proposent aux personnages 5 Couronnes d'or pour les transporter, eux et la caisse. Cette caisse mesure environ 1,80 m sur 60 cm par 60 cm et porte les mentions « Fragile », « Maintenir droit », « Ne pas faire tomber », etc. Les voyageurs sont très nerveux à l'idée de laisser quiconque s'en approcher.
 
@@ -1398,8 +1400,8 @@ Le pillage de tombes n'est pas une vocation pour la plupart des gens, mais Hans 
 
 **Possessions :** bâche, cadavre, cape à capuche, marteau et 2d10 clous de cercueil, pelle, pied-de-biche
 
-
-### <span id="page-40-0"></span>**CHASSEURS**
+<span id="page-40-0" data-folio="41"></span>
+### **CHASSEURS**
 
 Les chasseurs proposent un service demandé en permanence : ils fournissent de la nourriture tout au long de l'année. Le gibier capturé par les chasseurs, qui risquent leur vie dans les profondeurs des vastes forêts du Reikland, constitue une source précieuse de viande pour les paysans qui peuvent rarement s'offrir un repas plus coûteux. Quelques-uns se spécialisent dans l'acquisition de délices à la mode pour les plus riches, ou encore dans l'escorte de groupes de nobles malchanceux lors de parties de chasse soigneusement mises en scène. En période de vaches maigres, beaucoup se tournent vers le braconnage et risquent le courroux de propriétaires terriens en chassant le faisan, le cerf ou le sanglier sur leurs domaines protégés.
 
@@ -1436,8 +1438,8 @@ Comme tant de chasseurs avant lui, Klaus a commencé sa vie en tant que braconni
 
 \*Les Blessures supplémentaires du Talent Dur à Cuire ont déjà été incluses dans le profil.
 
-
-### <span id="page-41-0"></span>**NOBLES**
+<span id="page-41-0" data-folio="42"></span>
+### **NOBLES**
 
 Les nobles qui voyagent se répartissent généralement en deux catégories : ceux qui partent avec un cortège pour les affaires familiales et les jeunes héritiers qui se sont lancés dans l'aventure et d'autres activités. Un exemple pour chaque catégorie est donné ci-dessous.
 
@@ -1473,7 +1475,7 @@ Le bon baron a vécu une tout autre vie autrefois, mais peu de choses durent ét
 
 **Possessions :** bague en saphir fin (30 CO), cortège de gardes et de serviteurs, habit de cour, rapière avec filigrane en argent fin (25 CO)
 
-
+<span id="page-42-0" data-folio="43"></span>
 #### **Qu'ils s'encanaillent !**
 
 Les petits nobles et les jeunes héritiers seront là pour s'amuser, à l'image des deux jeunes hommes pleins d'entrain de l'incident *Hourra pour Henry* dans **L'Ennemi dans l'Ombre - Campagne**  page 37. En plus de s'adonner au jeu consistant à boire jusqu'à en vomir, ils peuvent décider de lancer un de leurs gardes du corps contre un client de l'auberge qui ne se doute de rien (comme l'un des Personnages) pour parier avec acharnement sur l'issue du combat avant de faire pleuvoir de l'or sur le vainqueur ; ce combat n'est pas armé et d'autres gardes du corps veillent à ce que personne n'intervienne de part et d'autre. D'autres paris peuvent porter sur le temps pendant lequel un paysan parvient à rester conscient lorsqu'il est maintenu la tête dans un seau de bière, sur le nombre de personnes qu'ils peuvent désensorceler en seulement dix minutes, ou encore sur la possibilité d'arroser toutes les personnes présentes dans la pièce avec une seule bouteille de vin mousseux sans même se lever de leur siège. Les nobles ne se soucient guère de ceux qu'ils contrarient ou humilient, pourvu qu'ils s'amusent. De plus, ils seront en compagnie d'un ou plusieurs gardes du corps (gardes, spadassins et/ou duellistes) qui veilleront à ce que personne ne les dérange.
@@ -1504,8 +1506,8 @@ Bruckesel n'est sûr que de deux choses : la quantité minimale d'impact nécess
 
 **Possessions :** bâton de combat, foi inébranlable dans le baron Sigismund, cotte de mailles, marteau de guerre
 
-
-### <span id="page-43-0"></span>**GLADIATEURS**
+<span id="page-43-0" data-folio="44"></span>
+### **GLADIATEURS**
 
 Un forain accompagné d'une troupe de gladiateurs s'est installé dans une auberge. Il y a délimité une arène temporaire avec des cordes et met au défi tous les participants d'affronter son champion. Il peut s'agir d'un combat à mort, remporté dès la première manche (le premier combattant à subir une ou plusieurs Blessures perd) ou se déroulant jusqu'aux « blessures honorables » (le premier combattant à tomber à 3 Points de Blessure ou moins est déclaré perdant).
 
@@ -1539,8 +1541,8 @@ Lorsqu'un répurgateur a commencé à donner des coups de botte pour enfoncer la
 
 en bois brut d'un enfant
 
-
-### <span id="page-44-0"></span>**DÉBARDEURS**
+<span id="page-44-0" data-folio="45"></span>
+### **DÉBARDEURS**
 
 Les aventuriers croiseront des débardeurs dans les villes de toutes tailles pendant leur voyage. S'il est rare de les rencontrer dans des auberges en bord de fleuve, ils constituent l'écrasante majorité de la clientèle que l'on retrouve dans les tavernes des quais plus rustres. En plus d'offrir la possibilité de recruter des PNJ ou de remplacer des Personnages morts, ils peuvent impliquer les Personnages dans une bagarre de bar, en leur lançant des insultes imagées comme « *Mon ami dit qu'il n'aime pas ta tête* ».
 
@@ -1572,8 +1574,8 @@ Hilma Bootschlecht sait que certaines personnes se retirent plus tôt que d'autr
 
 **Possessions :** contacts avec l'entreprise commerciale Kliendorfer, gaffe, gants de cuir
 
-
-### <span id="page-45-0"></span>**BLANCS-BECS**
+<span id="page-45-0" data-folio="46"></span>
+### **BLANCS-BECS**
 
 De temps à autre, on peut avoir l'impression que les Personnages sont les seuls à s'être aventurés dans le monde en quête d'aventure, ou à avoir eu une telle vie. Ce n'est pas toujours le cas, mais la plupart des tentatives de recherche d'aventure pour le plaisir se terminent par une tragédie prévisible. Cependant, ici et là, les Personnages peuvent rencontrer de telles personnes qui bravent les dangers du Vieux Monde à la recherche de risque et d'excitation, et qui les trouvent bien trop souvent.
 
@@ -1607,7 +1609,7 @@ Les cuisiniers sont généralement dehors tôt dans la journée afin de se préc
 
 Bien qu'il ne se déplace pas directement parmi les grands de ce monde, le cuisinier d'une maison riche ou noble entend tout autant de choses que n'importe quel autre serviteur. Si ce n'est plus, car les informations sont collectées et distillées à travers les ragots constants de la salle réservée aux serviteurs. Cependant, ils sont aussi loyaux envers leur employeur que n'importe quel autre serviteur et n'apprécieront pas qu'on leur demande ouvertement des informations, à moins qu'ils ne se soient disputés avec leur employeur.
 
-
+<span id="page-46-0" data-folio="47"></span>
 #### PARTOUT SAUF ICI
 
 Avaloi est convaincue que sa situation a été orchestrée et qu'il ne s'agit pas d'une coïncidence. La position de sa mère ayant engendré beaucoup d'ennemis, le meurtre de son père était trop opportun. De plus, elle refuse de croire qu'aucun membre de sa famille ne viendra la chercher... Elle a fait profil bas pendant un certain temps, au cas où les ennemis de sa famille l'auraient suivie jusque dans l'Empire, mais elle commence maintenant à se lasser de la vue, du goût et surtout des odeurs.
@@ -1638,8 +1640,8 @@ Fille d'un prince marchand ruiné et devenu chef cuisinier assassiné, Avaloi s'
 
 tablier, 1d10 pistoles d'argent
 
-
-### <span id="page-47-0"></span>**SORCIERS**
+<span id="page-47-0" data-folio="48"></span>
+### **SORCIERS**
 
 Dans les différentes régions de l'Empire, devenir sorcier est une vocation respectable, voire militaire, à la manière des plaideurs ou des médecins. Cependant, ce respect est tempéré par la quantité non négligeable de peur suscitée, surtout dans les petites villes et villages de l'Empire.
 
@@ -1679,8 +1681,8 @@ l'obscurité **Domaine de la Bête :** La lance d'Ambre, Langue bestiale,
 
 Maître de la bête, Vol du Destin
 
-
-### <span id="page-48-0"></span>**MÉDECINS**
+<span id="page-48-0" data-folio="49"></span>
+### **MÉDECINS**
 
 En raison de leurs occupations, les aventuriers ont régulièrement besoin d'une assistance médicale. Toute ville de taille moyenne ou grande abritera un ou plusieurs médecins, et une grande ville pourra disposer de plusieurs officines et cabinets, ainsi qu'une maison de guilde.
 
@@ -1716,12 +1718,14 @@ Doktor Schnee vient d'entrer dans l'âge mûr et était auparavant titulaire à 
 
 **Possessions :** bandages, licence de guilde, livre (Remèdes), outils professionnels (remèdes), potion de guérison, 3d10 pistoles d'argent
 
+<span id="page-49-0" data-folio="50"></span>
+
 
 ## [T2C 14] CHAPITRE 12 - Naufrageurs, contrebandiers et pirates
 
-*Pages PDF 79-84*
+*Folio 80+*
 
-## <span id="page-78-0"></span>CHAPITRE 12 NAUFRAGEURS, CONTREBANDIERS ET PIRATES
+## CHAPITRE 12 NAUFRAGEURS, CONTREBANDIERS ET PIRATES
 
 Les dangers fluviaux ne proviennent pas tous de la nature ou des monstres locaux. Les naufrageurs, les contrebandiers et les pirates opèrent dans de nombreux endroits, parfois même avec le soutien tacite des autorités locales, et peuvent être aussi dangereux que n'importe quel autre ennemi.
 
@@ -1745,7 +1749,7 @@ Alors que le navire des Personnages s'apprête à aborder un tronçon périlleux
 
 S'il est défié, le faux nautonier tente de s'enfuir, laissant les Personnages se débrouiller seuls pour traverser la zone dangereuse. En revanche, si la supercherie n'est pas découverte, le naufrageur guide le bateau directement sur les rochers ou le banc de sable (causant des dommages comme décrit à la page 30), sautant par-dessus bord à la dernière minute. Les naufrageurs entoureront alors le bateau comme décrit ci-dessus.
 
-
+<span id="page-79-0" data-folio="80"></span>
 ### **Dangers artificiels**
 
 Certains naufrageurs vont jusqu'à créer leurs propres dangers si la rivière ne leur offre rien. Les versions les plus rudimentaires consistent en des récifs artificiels faits de rochers et d'autres débris déversés dans la rivière ; les versions plus sophistiquées comprennent des barrières en rondins amovibles, parfois équipées de pointes de fer ou de lourdes chaînes qui peuvent être posées en travers de la rivière pour bloquer le passage. À moins que les naufrageurs ne travaillent avec un baron du crime local, ces pièges sont généralement éliminés par la Patrouille fluviale dès qu'ils sont signalés. Cependant, étant donné qu'ils n'apparaissent pas sur les cartes fluviales et que les habitants ne les connaissent pas ou choisissent de ne rien dire, ils peuvent réserver de mauvaises surprises aux navigateurs imprudents.
@@ -1782,7 +1786,7 @@ Dès son plus jeune âge, Bathilda a fait preuve d'une grande cruauté. Renvoyé
 
 **Possessions :** épée, grand sac, pied-de-biche, pochon de dents humaines, bourse contenant 22/5
 
-
+<span id="page-80-0" data-folio="81"></span>
 #### **Dederick Ritter**
 
 Peu d'entre eux ont opté volontairement pour la vie de naufrageur. Dederick n'a pas vraiment eu le choix après que la barge qu'il pilotait s'est accrochée à un récif, coulant avec les 3 000 Couronnes de la meilleure eau-de-vie de Kemperbad qu'il transportait pour l'entreprise commerciale Kliendorfer. Ce qui aurait dû être une simple affaire pour ses assureurs s'est transformé en une fuite nocturne jusqu'à Weissbruck, une auberge en flammes et trois corps laissés dans le sillage de Dederick. Aujourd'hui, il gagne sa vie comme il le doit, son ancien équipage et quelques nouvelles recrues, certaines plus désespérées que d'autres, tirant le meilleur parti de la situation en transmettant leur malheur aux autres.
@@ -1811,8 +1815,8 @@ Le commandement d'Altdorf de la Patrouille fluviale subit une pression croissant
 
 D'autres suggèrent que personne ne le trouve car il n'existe pas. Selon eux, il n'est peut-être qu'un slogan et une excuse pour la violence, dont le nom et la réputation sont utilisés par plusieurs équipages de pirates différents.
 
-
-### <span id="page-81-0"></span>**PIRATES**
+<span id="page-81-0" data-folio="82"></span>
+### **PIRATES**
 
 Les pirates des rivières constituent une menace constante sur les voies navigables de l'Empire, malgré les efforts de la Patrouille fluviale. La plupart de ceux qui se lancent dans la piraterie le font par désespoir. Incapables de se nourrir et de nourrir leur famille grâce à un travail honnête pour une raison ou une autre, ils ont dû faire un choix. Ces équipages comptent généralement cinq à dix personnes et agissent à partir d'une seule barge. Il est peu probable qu'ils soient des tueurs, préférant menacer et tromper leurs victimes, et ils attaquent rarement les navires dont les défenses sont évidentes.
 
@@ -1848,7 +1852,7 @@ Boris a nettoyé des porcheries pendant douze ans. Un jour, alors qu'il transpor
 
 #### ACCROCHE D'AVENTURE : DU LARD OU DU COCHON
 
-
+<span id="page-82-0" data-folio="83"></span>
 #### **Reginhard Vieth**
 
 Reginhard Vieth a fait enfermer plus de pirates que la plupart des gens n'en verront jamais, les traînant dans les cellules sous le château Reikguard ou laissant la rivière emporter leurs corps. Pourquoi n'aurait-il pas été autorisé à garder un peu de leur butin pour lui ? Le salaire d'un patrouilleur fluvial était une somme dérisoire comparée à l'argent et aux marchandises qu'il pouvait dérober à ses proies. De telles pensées rongeaient Reginhard, jusqu'à ce qu'un marchand ingrat de trop soit témoin de la nouvelle vie de Vieth et de ses plus loyaux officiers : ils étaient bien déterminés à commencer une nouvelle vie de l'autre côté de la loi. Aujourd'hui, Vieth est la terreur de son tronçon des voies navigables de l'Empire et la honte de ses camarades patrouilleurs fluviaux.
@@ -1889,8 +1893,8 @@ Si les Personnages ne parviennent pas à repousser l'attaque ou à couper les li
 
 Marisella Gurt est une adoratrice de Stromfels qui est convaincue que Reginhard Vieth est l'incarnation de ce dieu interdit depuis qu'elle a aperçu son aileron. À présent, cette femme hante chacun de ses pas, et il veut à tout prix se débarrasser d'elle et des autres adeptes. En réalité, il est tellement désespéré qu'il est prêt à épargner les Personnages de tout vol ou dégât s'ils arrivent à trouver un moyen de la convaincre que Vieth n'est rien de plus qu'un pirate honnête.
 
-
-### <span id="page-83-0"></span>**CONTREBANDIERS**
+<span id="page-83-0" data-folio="84"></span>
+### **CONTREBANDIERS**
 
 Partout où les marchandises sont transportées et taxées, il y a ceux qui gagnent leur vie en évitant ces taxes, et les rivières sont les artères du commerce dans le Vieux Monde. De plus, d'autres s'arrangeront toujours pour transporter des cargaisons illégales et peu recommandables si la rémunération est suffisamment élevée.
 
@@ -1938,12 +1942,14 @@ Sorte de vilain petit canard de sa famille, Sophie est issue de l'illustre (et e
 
 20 Couronnes d'or
 
+<span id="page-84-0" data-folio="85"></span>
+
 
 ## [Altdorf 10] L’Espionnage à Altdorf
 
 *Pages PDF 212-216*
 
-# <span id="page-211-0"></span>• L'ESPIONNAGE À ALTDORF •
+# <span id="page-211-0" data-folio="209"></span>• L'ESPIONNAGE À ALTDORF •
 
 À Altdorf, des personnes puissantes prennent des décisions qui peuvent mettre à genoux des provinces entières, rompre de très anciennes alliances, et vaincre des armées du jour au lendemain. Il n'est pas étonnant que la cité soit un nid d'espions : on y pratique des activités clandestines, allant du sabotage au trafic d'intérêt, en passant par l'espionnage industriel.
 
@@ -2122,7 +2128,7 @@ Les religions de l'Empire gardent un œil sur ce qu'il se passe à Altdorf. Cert
 Les autres cultes s'intéressent à ces secrets, mais ne sont pas très actifs en espionnage. Les fidèles de Ranald adorent les secrets et fréquentent parfois des espions. Les prêtres de Morr reçoivent des renseignements de la Chambre noire et du Untersuchung sur la nécromancie.
 
 
-# <span id="page-214-0"></span>**ESPIONS ÉTRANGERS À ALTDORF**
+# <span id="page-214-0" data-folio="212"></span>**ESPIONS ÉTRANGERS À ALTDORF**
 
 L'Empire est bien évidemment la nation la plus puissante du Vieux Monde. Pour défendre leurs intérêts et tirer profit des forces de l'Empire, les autres nations envoient leurs agents à Altdorf.
 
@@ -2247,7 +2253,7 @@ Les Personnages sont engagés par un agent de Naggaroth qui se fait passer pour 
 
 # ANNEXE I ACTIVITÉS • •
 
-# <span id="page-221-0"></span>**ACTIVITÉS À ALTDORF**
+# <span id="page-221-0" data-folio="219"></span>**ACTIVITÉS À ALTDORF**
 
 La cité d'Altdorf est surnommée « Couronne de l'Empire » pour une bonne raison. C'est un centre de foi, de culture, de commerce et de puissance militaire. Elle offre donc aux Personnages tout le loisir de s'adonner à différentes activités entre deux aventures. Dans la section suivante se trouve une liste d'Activités potentielles pour les Personnages. Elles fonctionnent avec les règles de **WFJDR**, p. 195.
 
@@ -2593,7 +2599,7 @@ Société impériale
 
 ## CHAPITRE 8 :
 
-<span id="page-64-0"></span>
+<span id="page-64-0" data-folio="64"></span>
 
 # LES MUTANTS DANS L'EMPIRE
 
@@ -2628,7 +2634,7 @@ Certains mutants déclarent la guerre à la société, comprenant que le monde e
 Les mutants qui peuvent passer pour normaux restent actifs dans la vie quotidienne, même s'ils organisent des rituels secrets et mettent à exécution leurs plans pour saper l'Empire et le Vieux Monde. Ceux qui ne peuvent plus montrer leur visage ont tendance à vivre dans les temples de culte cachés, jouant le rôle de gardiens, et comptant sur leurs collègues cultistes pour la nourriture et les autres nécessités.
 
 
-### <span id="page-65-0"></span>**Mutants Bandits et Sauvages**
+### <span id="page-65-0" data-folio="65"></span>**Mutants Bandits et Sauvages**
 
 Pour de nombreux mutants malchanceux, en particulier ceux des zones rurales, le seul espoir de survie est de se perdre dans les forêts dès les premiers signes de mutation. Ceux qui vivent assez longtemps rencontrent souvent d'autres mutants, subsistant grâce à la récupération et au banditisme. On estime que les trois quarts des « attaques d'hommes-bêtes» le long des routes de l'Empire et autour des villages et des fermes isolés sont en réalité le fait de mutants. La vérité est impossible à déterminer.
 

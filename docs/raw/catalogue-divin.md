@@ -49,7 +49,7 @@ Les différents pays et races du Vieux Monde ont tous leurs propres divinités. 
 
 # LES DIEUX DU REIKLAND
 
-<span id="page-204-0"></span>Comme toutes les grandes provinces, le Reikland offre tout un panel de dieux provinciaux, certains bénéficiant même de petits cultes raffinés. Le tableau suivant donne un exemple pour certains d'entre eux.
+<span id="page-204-0" data-folio="203"></span>Comme toutes les grandes provinces, le Reikland offre tout un panel de dieux provinciaux, certains bénéficiant même de petits cultes raffinés. Le tableau suivant donne un exemple pour certains d'entre eux.
 
 | Dieu                        | Sphère            | Adorateurs                               | Offrandes                                       | Remarques                                                                                                                        |
 |-----------------------------|-------------------|------------------------------------------|-------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
@@ -88,7 +88,7 @@ Les cultes entretiennent des sites sacrés à travers le Vieux Monde, et beaucou
 Les sanctuaires et chapelles sont des affaires plus modestes, de la taille d'une maison d'une seule pièce ou encore plus petites. Il n'y a en principe pas de religieux à temps plein, bien qu'elles puissent être sous la responsabilité d'un temple voisin ou – en particulier dans les zones rurales – d'un prêtre itinérant qui voyage de village et d'un sanctuaire à l'autre. En l'absence d'un prêtre, les villageois du coin prient de façon autonome, laissent de petites offrandes et maintiennent le sanctuaire en bon état.
 
 
-<span id="page-205-0"></span>
+<span id="page-205-0" data-folio="204"></span>
 
 # OPTION : PETITES PRIÈRES
 
@@ -128,7 +128,7 @@ Bien que fortement controversé à l'époque, le Grand Conclave est à présent 
 
 # **LE CULTE DE MANANN, DIEU DE LA MER**
 
-<span id="page-206-0"></span>**Siège du pouvoir :** Marienburg, le Wasteland **Chef du Culte :** Matriarche de la Mer
+<span id="page-206-0" data-folio="205"></span>**Siège du pouvoir :** Marienburg, le Wasteland **Chef du Culte :** Matriarche de la Mer
 
 **Principaux ordres :** Ordre de l'Albatros, Ordre du Marinier **Festivités majeures :** équinoxe de printemps, équinoxe
 
@@ -171,7 +171,7 @@ l'un des nombreux saints de Manann.
 
 # **LE CULTE DE MORR, DIEU DE LA MORT**
 
-<span id="page-207-0"></span>**Siège du Pouvoir :** Luccini, Tilée
+<span id="page-207-0" data-folio="206"></span>**Siège du Pouvoir :** Luccini, Tilée
 
 **Chef du Culte :** *Custode del Portale* (Gardien du portail)
 
@@ -218,7 +218,7 @@ Les pénitences de Morr impliquent en général la chasse aux nécromants et la 
 
 *Pages PDF 209*
 
-# <span id="page-208-0"></span>**LE CULTE DE MYRMIDIA, DÉESSE DE LA STRATÉGIE**
+# <span id="page-208-0" data-folio="207"></span>**LE CULTE DE MYRMIDIA, DÉESSE DE LA STRATÉGIE**
 
 **Siège du Pouvoir :** Magritta, Estalie
 
@@ -265,7 +265,7 @@ Les pénitences de Myrmidia sont en général de nature martiale. Un cultiste pe
 
 # **LE CULTE DE RANALD, DIEU DE LA RUSE**
 
-<span id="page-209-0"></span>**Siège du Pouvoir :** Aucun officiel
+<span id="page-209-0" data-folio="208"></span>**Siège du Pouvoir :** Aucun officiel
 
 **Chef du Culte :** Aucun officiel, bien que courent des rumeurs
 
@@ -312,7 +312,7 @@ Les pénitences de Ranald impliquent généralement un vol dans des endroits ver
 
 # **LE CULTE DE RHYA, DÉESSE DE LA FERTILITÉ**
 
-<span id="page-210-0"></span>**Siège du Pouvoir :** aucun siège officiel
+<span id="page-210-0" data-folio="209"></span>**Siège du Pouvoir :** aucun siège officiel
 
 **Chef du Culte :** aucun **Principaux ordres :** aucun
 
@@ -355,7 +355,7 @@ Les pénitences de Rhya peuvent impliquer de replanter des zones dévastées, d'
 
 *Pages PDF 212*
 
-# <span id="page-211-0"></span>**LE CULTE DE SHALLYA, DÉESSE DE LA MISÉRICORDE**
+# <span id="page-211-0" data-folio="210"></span>**LE CULTE DE SHALLYA, DÉESSE DE LA MISÉRICORDE**
 
 **Siège du Pouvoir :** Couronne, Bretonnie **Chef du Culte :** la Grande Matriarche
 
@@ -400,7 +400,7 @@ Les pénitences établies par Shallya impliquent toujours d'aider les malades, l
 
 # **LE CULTE DE SIGMAR, DIEU DE L'EMPIRE**
 
-<span id="page-212-0"></span>**Siège du Pouvoir :** Altdorf, Reikland **Chef du Culte :** le Grand Théogoniste
+<span id="page-212-0" data-folio="211"></span>**Siège du Pouvoir :** Altdorf, Reikland **Chef du Culte :** le Grand Théogoniste
 
 **Principaux ordres :** Ordre de l'Enclume, Ordre de la Flamme purificatrice, Ordre du Marteau d'argent, Ordre de la Torche **Festivités majeures :** le Jour de Sigmar (28e Sigmarzeit) **Livres sacrés populaires :** *Le Livre de Sigmar, Deus Sigmar, Le Geistbuch*
 
@@ -433,7 +433,7 @@ Les adeptes sigmarites peuvent se voir ordonner de détruire des cellules d'ador
 
 # **LE CULTE DE TAAL, DIEU DE LA NATURE**
 
-<span id="page-213-0"></span>**Siège du Pouvoir :** Talabheim, Talabecland
+<span id="page-213-0" data-folio="212"></span>**Siège du Pouvoir :** Talabheim, Talabecland
 
 **Chef du Culte :** le Hiérarque
 
@@ -484,7 +484,7 @@ Les pénitences de Taal impliquent en général l'élimination des monstres mala
 
 # **LE CULTE D'ULRIC, DIEU DE LA GUERRE**
 
-<span id="page-214-0"></span>**Siège du Pouvoir :** Middenheim, Middenland
+<span id="page-214-0" data-folio="213"></span>**Siège du Pouvoir :** Middenheim, Middenland
 
 **Chef du Culte :** Ar-Ulric
 
@@ -531,7 +531,7 @@ Les pénitences établies par Ulric sont presque toujours des Tests de force, de
 
 # **LE CULTE DE VERENA, DÉESSE DE LA SAGESSE**
 
-<span id="page-215-0"></span>**Siège du Pouvoir :** aucun **Chef du Culte :** aucun
+<span id="page-215-0" data-folio="214"></span>**Siège du Pouvoir :** aucun **Chef du Culte :** aucun
 
 **Principaux ordres :** l'Ordre des Porteurs de la Balance, l'Ordre des Gardiens du Savoir, L'Ordre des Mystères, l'Ordre de la Lumière éternelle
 
@@ -568,7 +568,7 @@ Les pénitences établies par Verena impliquent en général la récupération o
 
 *Pages PDF 217*
 
-# <span id="page-216-0"></span>**LES DIEUX ANCÊTRES NAINS**
+# <span id="page-216-0" data-folio="215"></span>**LES DIEUX ANCÊTRES NAINS**
 
 Les nains vénèrent leurs ancêtres, valorisant avant tout la tradition. Même si le Temps des dieux ancêtres remonte à plusieurs milliers d'années, les nains conservent toujours des registres de cette époque au cœur de leurs plus anciennes forteresses. Beaucoup de noms proviennent de cette époque, formant un vaste panthéon, mais trois dieux ancêtres bénéficient d'une importance particulière et sont connus de tous les nains : Grimnir, Grungni et Valaya, tous trois ancêtres de la race naine. En plus des dieux ancêtres, les nains vénèrent également les fondateurs des clans locaux en tant que divinités gardiennes.
 
@@ -651,7 +651,7 @@ Les halflings n'ont pas réellement de clergé, et ils ne construisent évidemme
 
 *Pages PDF 219*
 
-# <span id="page-218-0"></span>**LES DIEUX DU CHAOS**
+# <span id="page-218-0" data-folio="217"></span>**LES DIEUX DU CHAOS**
 
 Les Puissances de la Ruine du Chaos constituent la principale menace existentielle du Vieux Monde, mais demeurent en grande partie un mystère. Le simple fait de rechercher de telles connaissances sans l'autorisation du Culte de Sigmar est passible de la peine de mort. Réclamer une telle permission rarement accordée entraîne un examen minutieux de votre personne et de vos motivations.
 
@@ -697,7 +697,7 @@ Les prêtres Bienheureux peuvent tout de même faire annuler les infractions aux
 Les MJ peuvent avertir les Joueurs avant qu'ils ne commettent des infractions, en particulier s'ils sont nouveaux à Warhammer Fantasy.
 
 
-### <span id="page-219-0"></span>**Péché et Colère divine**
+### <span id="page-219-0" data-folio="218"></span>**Péché et Colère divine**
 
 Il est risqué de faire appel à votre divinité quand vous avez agi de façon contraire à sa volonté. Chaque fois que vous effectuez un Test de Prière, si le dé des unités est inférieur ou égal à votre total actuel de Points de Péché, vous subirez la Colère des dieux, même si le Test de Prière est réussi.
 
@@ -755,7 +755,7 @@ Si un Personnage se comporte de façon particulièrement pieuse, en achevant par
 | 151+    | Appelé à rendre des comptes : vous êtes convoqué devant votre dieu pour affronter le jugement dernier. À moins<br>que vous n'ayez des Points de Destin, vous ne reviendrez jamais. Si vous dépensez un Point de Destin, vous êtes<br>renvoyé à un moment choisi par le MJ, et vous subissez également les effets de Je te chasse (ci-dessus).                                                            |  |  |  |
 
 
-<span id="page-221-0"></span>
+<span id="page-221-0" data-folio="220"></span>
 
 # SERVITEURS DIVINS
 
@@ -980,7 +980,7 @@ Votre cible gagne +10 en Endurance.
 Votre cible gagne +10 en Initiative
 
 
-<span id="page-223-0"></span>
+<span id="page-223-0" data-folio="222"></span>
 
 # DÉNOMINATION
 
@@ -1048,7 +1048,7 @@ Votre cible se retrouve immédiatement trempée d'eau salée, et titube comme su
 Les voiles du vaisseau ciblé s'emplissent de vents favorables, l'entraînant rapidement en toute sécurité vers sa destination.
 
 
-<span id="page-224-0"></span>Tant que ce Miracle est actif, le voilier se déplace à sa vitesse maximale, peu importe le vent, la marée ou le courant. Tous les Tests effectués pour diriger le vaisseau gagnent un bonus de +10.
+<span id="page-224-0" data-folio="223"></span>Tant que ce Miracle est actif, le voilier se déplace à sa vitesse maximale, peu importe le vent, la marée ou le courant. Tous les Tests effectués pour diriger le vaisseau gagnent un bonus de +10.
 
 # **Visage de l'homme noyé**
 
@@ -1127,7 +1127,7 @@ Vos Prières passionnées incitent Myrmidia à protéger vos alliés avec des fi
 Vos Prières exaltantes inspirent la discipline et la coordination à l'intérieur de vos rangs. Les cibles affectées gagnent +1 Talent Coude-à-coude.
 
 
-### <span id="page-225-0"></span>**Lance de Myrmidia**
+### <span id="page-225-0" data-folio="224"></span>**Lance de Myrmidia**
 
 **Portée :** Vous **Cible :** Vous
 
@@ -1216,7 +1216,7 @@ Vous énoncez une énigme complexe concernant la réalité de ce qui ne peut êt
 Existe-t-il quelque chose qui ne peut être vu ? Vous posez l'énigme à Ranald, qui envoie en réponse un Serviteur divin sous la forme d'un chat. Cet envoyé ressemble à un chat normal et en possède les capacités, mais ne peut être blessé en aucune façon. Pendant que le Miracle est actif, vous percevez tout ce que le chat perçoit – ce qu'il voit, entend, touche – et
 
 
-<span id="page-226-0"></span>vous contrôlez son Mouvement. Vos sens sont aiguisés comme ceux d'un chat, mais vous n'avez accès à aucun de vos propres Talents, tels que Vision nocturne. Pendant que le Miracle est actif, vous ne pouvez rien percevoir à travers vos propres sens, ce qui vous rend vulnérable.
+<span id="page-226-0" data-folio="225"></span>vous contrôlez son Mouvement. Vos sens sont aiguisés comme ceux d'un chat, mais vous n'avez accès à aucun de vos propres Talents, tels que Vision nocturne. Pendant que le Miracle est actif, vous ne pouvez rien percevoir à travers vos propres sens, ce qui vous rend vulnérable.
 
 
 ## [LDB 43] Miracles de Rhya
@@ -1311,7 +1311,7 @@ Vos Prières sincères à Shallya accordent à la cible la force de résister. L
 En posant vos mains sur l'affligé, vous implorez Shallya de le débarrasser d'une corruption récemment contractée. La cible perd 1 Point de Corruption, et peut perdre un Point supplémentaire pour chaque +2 DR obtenue. Cependant, les dieux du Chaos n'aiment pas être ainsi rejetés. Si une tentative pour invoquer le Miracle se traduit par une Maladresse, vous 
 
 
-<span id="page-227-0"></span>et votre cible gagnez 1d10 Points de Corruption, en plus des autres effets. Ce Miracle doit être déclenché dans l'heure qui suit le moment où la cible a gagné un Point de Corruption.
+<span id="page-227-0" data-folio="226"></span>et votre cible gagnez 1d10 Points de Corruption, en plus des autres effets. Ce Miracle doit être déclenché dans l'heure qui suit le moment où la cible a gagné un Point de Corruption.
 
 ### **Larmes de Shallya**
 
@@ -1374,7 +1374,7 @@ Vous faites appel à Sigmar pour protéger de l'influence du Chaos tous ceux qui
 Vos Prières emplissent vos alliés désignés d'un féroce mépris pour les ennemis de Sigmar. Tous les alliés affectés reçoivent le Trait Psychologique *Haine* à l'égard des peaux-vertes, des morts-vivants et de tout ce qui est associé au Chaos.
 
 
-# <span id="page-228-0"></span>**Miracles de Taal**
+# <span id="page-228-0" data-folio="227"></span>**Miracles de Taal**
 
 # **Bondissant comme un cerf**
 
@@ -1475,7 +1475,7 @@ Vous faites appel à Ulric pour qu'il manifeste son mépris pour les faibles, le
 Vous rugissez des Prières en hommage à Blitzbeil, la hache assoiffée d'Ulric. Si vous portez une hache, elle est considérée comme Magique, cause + DR Dégâts supplémentaires et toutes les cibles vivantes frappées doivent réussir un Test de **Résistance Intermédiaire (+0)** ou gagner un État *Sonné*. De plus, les cibles frappées perdent tous les États *Hémorragique* alors que leur sang gèle ; de même, les attaques de votre hache ne peuvent pas causer d'État *Hémorragique*.
 
 
-### <span id="page-229-0"></span>**Peau de loup d'hiver**
+### <span id="page-229-0" data-folio="228"></span>**Peau de loup d'hiver**
 
 **Portée :** Contact **Cible :** 1
 
@@ -1544,7 +1544,7 @@ En demandant à Verena d'être votre témoin, la véracité de vos paroles est �
 
 ### MIDDENHEIM CULTES DU CHAOS • •
 
-<span id="page-136-0"></span>Malgré sa taille et son activité, et quelles que soient les rumeurs selon lesquelles ses dirigeants sont trop indulgents envers la magie noire, Middenheim accueille plusieurs cultes interdits. Les répurgateurs sigmarites peinent à y mener leurs affaires et sont ostracisés par les citoyens. D'un autre côté, l'attitude traditionnellement généreuse de Middenheim envers la sorcellerie aide la ville à se protéger du Chaos. Les sorciers locaux sont tellement reconnaissants de cette tolérance qu'ils s'efforcent d'éradiquer eux-mêmes les sorciers noirs.
+<span id="page-136-0" data-folio="134"></span>Malgré sa taille et son activité, et quelles que soient les rumeurs selon lesquelles ses dirigeants sont trop indulgents envers la magie noire, Middenheim accueille plusieurs cultes interdits. Les répurgateurs sigmarites peinent à y mener leurs affaires et sont ostracisés par les citoyens. D'un autre côté, l'attitude traditionnellement généreuse de Middenheim envers la sorcellerie aide la ville à se protéger du Chaos. Les sorciers locaux sont tellement reconnaissants de cette tolérance qu'ils s'efforcent d'éradiquer eux-mêmes les sorciers noirs.
 
 Une autre raison pour expliquer le manque de sectes du Chaos dans la ville est, ironiquement, le succès fulgurant de la Main Pourpre de Tzeentch. Ce culte puissant s'est immiscé si profondément dans la haute société de Middenheim qu'il craint que des cultes moins importants n'attirent l'attention sur ses activités. Les membres de la Main Pourpre de Middenheim guettent les signes de rivaux et s'efforcent de les exposer.
 
@@ -1567,7 +1567,7 @@ Chaque domaine a son propre groupe d'agents et est installé dans un tiers de la
 Ces cultistes hauts placés, qu'on appelle des *Magistri*, contrôlent les ordres. Il s'agit de spécialistes (tels que des sorciers, des lettrés ou des assassins) ou des membres de longue date qui ont obtenu des positions d'autorité et d'influence dans la ville (comme des membres de guilde ou des échevins pour l'une des nombreuses Komissionen de Middenheim).
 
 
-### <span id="page-137-0"></span>**Le Cercle intérieur**
+### <span id="page-137-0" data-folio="135"></span>**Le Cercle intérieur**
 
 Trois personnages louches du Cercle intérieur, généralement appelé le Triumvirat, supervisent tous les faits et gestes du culte. En partie pour des raisons de sécurité, et en partie parce que les cultistes sont obsédés par la discrétion, les communications entre les trois *Ordo* et le Cercle intérieur sont limitées au strict minimum. Le M*agistri* utilise des pigeons voyageurs pour envoyer des messages brefs et codés entre les *Ordo*, mais aucun des trois conseillers intérieurs ne connaît l'identité des deux autres.
 
@@ -1622,7 +1622,7 @@ Les dirigeants sont choisis selon des concepts vagues comme le volontariat et la
 Le meneur du culte reçoit le titre de Maître du Changement. De nombreux individus ont dirigé le culte au fil des ans, mais ils ont tous porté ce titre. Le Maître du Changement organise les activités du culte dans sa sphère d'influence.
 
 
-### <span id="page-138-0"></span>**Le plan de la Couronne Rouge**
+### <span id="page-138-0" data-folio="136"></span>**Le plan de la Couronne Rouge**
 
 Pour la Couronne Rouge, Middenheim est un point stratégique idéal. Les forêts alentour abritent de nombreux hommes-bêtes. Même si ces hardes sont dispersées, elles seraient redoutables si elles étaient unies par un meneur puissant.
 
@@ -1647,7 +1647,7 @@ La structure du culte est semblable à celle d'une religion révélée, et ses i
 > Un sorcier accompli de Tzeentch est responsable des livres dans l'auberge. Il passe la majorité de son temps à méditer, et n'émerge de ses transes que pour vérifier les notes dans ses livres ou informer ses subalternes d'une nouvelle opportunité. Ses projets à long terme sont un secret entre lui et les entités qui communient avec lui lors de ses transes.
 
 
-### <span id="page-139-0"></span>**KHORNE**
+### <span id="page-139-0" data-folio="137"></span>**KHORNE**
 
 Khorne le Dieu du Sang est communément vénéré par les guerriers du Chaos et les hommes-bêtes. Il s'agit d'un dieu du massacre arbitraire, mais également de l'honneur martial et du talent personnel. Peu de cultes sont dévoués à Khorne : c'est un maître sévère et son adoration se résume au type de carnage erratique que la civilisation ne tolère pas. Malgré tout, certains individus de l'Empire s'intéressent aux cultes de Khorne. Pour certaines communautés de la campagne du Middenland, Khorne est un dieu de la guerre plus honnête qu'Ulric, et il a même des adeptes dans Middenheim.
 
@@ -1680,7 +1680,7 @@ Les agents de la Communauté œuvrent dans le Morrspark tandis que de petits gro
 0 Herr Doktor Sesselweiss veut partir. Après avoir grandement profité de son association avec la Communauté, il suspecte leur cercle intérieur de commettre des actes sinistres. Le problème est que le culte lui a envoyé plusieurs cadavres pour ses recherches. S'il entendait parler de courageux aventuriers dans Middenheim, il pourrait leur donner des indices sur les actes sinistres de la Communauté, du moment qu'il ne se retrouve pas impliqué.
 
 
-### <span id="page-140-0"></span>**SLANEESH**
+### <span id="page-140-0" data-folio="138"></span>**SLANEESH**
 
 Sans compter les villes de Bretonnie célèbres pour leurs débauches, aucun endroit du Vieux Monde ne comprend un culte de Slaanesh avec autant d'influence politique que Middenheim. Habituellement, le pouvoir et la politique importent peu aux adeptes du Prince du Chaos. Après tout, d'après les cultistes, si au final tout doit être englouti par le Chaos, l'important c'est de s'amuser en attendant.
 
@@ -1711,7 +1711,7 @@ Pour le culte d'Ulric, les Fils sont une opposition radicale et dangereuse, et i
 Les Fils sont principalement populaires dans le Middenland, où leur existence est formellement interdite, mais on peut les trouver ailleurs. Ceux qui déclarent avoir du sang ulricain à l'extérieur du Middenland prétendent descendre d'une tribu Teutogen connue ou avoir rencontré le dieu en personne. Cependant, les Fils d'Ulric originaires du Middenland ne respectent pas ces allégations, et les considèrent même comme des hérésies à punir.
 
 
-<span id="page-141-0"></span>
+<span id="page-141-0" data-folio="139"></span>
 
 ### **Porteurs du Sang**
 
@@ -1734,7 +1734,7 @@ Après sa deuxième mort, la malédiction de Babrakkos semblait levée. Pourtant
 De nos jours, les fidèles de Babrakkos se montrent plus subtils : ils attisent lentement la volonté de la chose-liche en répandant son iconographie et ses pratiques sous une forme déguisée. Ils fabriquent des icônes consacrées à leur seigneur sous la forme d'inoffensifs croissants de lune qu'ils offrent à des porteurs involontaires.
 
 
-<span id="page-142-0"></span>Les cultistes enseignent des incantations à la chose-liche à leurs enfants ou à leurs disciples ou protégés. Ils souhaitent également collecter plusieurs artefacts considérés comme typiques de la vie dans la ville, car la croyance veut que la volonté de Babrakkos soit attirée par ce genre de totems. Ils ont obtenu le Voile Déchiré du Temple de Shallya, et prévoient de récupérer les Mâchoires du loup blanc vaincu par Artur, une peau de panthère de la *Magnum Odenhaus Pantera* et la Coupe des Mets.
+<span id="page-142-0" data-folio="140"></span>Les cultistes enseignent des incantations à la chose-liche à leurs enfants ou à leurs disciples ou protégés. Ils souhaitent également collecter plusieurs artefacts considérés comme typiques de la vie dans la ville, car la croyance veut que la volonté de Babrakkos soit attirée par ce genre de totems. Ils ont obtenu le Voile Déchiré du Temple de Shallya, et prévoient de récupérer les Mâchoires du loup blanc vaincu par Artur, une peau de panthère de la *Magnum Odenhaus Pantera* et la Coupe des Mets.
 
 Il est peu probable que les efforts des Mangeurs du Monde suffisent à aider à la réincarnation de la Première Menace, mais les signes d'activités de morts-vivants sont de plus en plus courants dans et aux alentours de Middenheim, probablement à cause d'eux.
 
@@ -1759,7 +1759,7 @@ Le groupe se réunit souvent dans la taverne du Voile Déchiré dans le Neumarkt
 Cependant, la société a des projets secrets. Les membres qui prouvent leur loyauté sont prudemment exposés à d'autres mystères qui entretiennent des magies plus sombres. Pour les membres éminents de la société, il n'est pas inapproprié pour un sorcier de pratiquer la nécromancie ou d'invoquer des démons s'ils le souhaitent. Même si le Serment de Volans n'est pas un groupe de cultistes du Chaos au sens traditionnel, ils ne répugnent pas à marchander avec des pouvoirs sombres si cela leur permet d'acquérir davantage de savoir magique.
 
 
-<span id="page-143-0"></span>
+<span id="page-143-0" data-folio="141"></span>
 
 ### **« Magister » Hugo Vallonvert**
 
@@ -1802,7 +1802,7 @@ Si elle parvient à faire en sorte que ses lieutenants écoutent ses idées, les
 **Talents** : Baratiner, Béni (Ulric), Chat de gouttière, Destinée (*Morr deviendra ton ami lorsque tu seras abandonné et seul*), Dur à cuire (+4 points de Blessure déjà ajoutés au profil), Ergoteur, Ferveur ardente, Lire/Écrire, Nomade, Orateur, Sociable, Visions sacrées
 
 
-<span id="page-144-0"></span>
+<span id="page-144-0" data-folio="142"></span>
 
 ### **Le vieil Otto**
 
@@ -1845,7 +1845,7 @@ Les Nouveaux Millénaristes ont récemment lancé une campagne de financement af
 
 *Pages PDF 217-221*
 
-# <span id="page-216-0"></span>CULTES INTERDITS ET GROUPES EXTRÉMISTES • •
+# <span id="page-216-0" data-folio="214"></span>CULTES INTERDITS ET GROUPES EXTRÉMISTES • •
 
 Il y a beaucoup de cultes profanes et d'organisations extrémistes à Altdorf. La plupart sont des groupes fractionnés et éphémères : vendus aux répurgateurs aussitôt formés. Cependant, un certain nombre d'entre eux arrivent à échapper à l'attention de ceux qui voudraient les persécuter.
 
@@ -1871,7 +1871,7 @@ Le Magister Magistri de la Main Pourpre d'Altdorf est un espion accompli de la C
 
 ### UN TIENS VAUT MIEUX QUE DEUX TU L'AURAS
 
-- <span id="page-217-0"></span>0 Une femme mystérieuse approche les Personnages et leur demande s'ils peuvent assister à une réunion brustelliste pour y débusquer d'éventuels cultistes du Chaos. Elle leur promet une généreuse récompense pour tous les hérétiques qu'ils démasqueront. Bien qu'elle prétende vouloir débarrasser la ville de la corruption, elle est en réalité à la recherche de nouvelles recrues.
+- <span id="page-217-0" data-folio="215"></span>0 Une femme mystérieuse approche les Personnages et leur demande s'ils peuvent assister à une réunion brustelliste pour y débusquer d'éventuels cultistes du Chaos. Elle leur promet une généreuse récompense pour tous les hérétiques qu'ils démasqueront. Bien qu'elle prétende vouloir débarrasser la ville de la corruption, elle est en réalité à la recherche de nouvelles recrues.
 - 0 Le chef de l'Ordo Impedimentae d'Altdorf est un Ostlander très décontracté appelé Gustav Proll. Il a élaboré un plan cynique pour lever des fonds à travers une nouvelle cause charitable : L'Équipe d'Altdorfers Patriotes pour Vêtir les Moches et les Mal Habillés. Tout l'argent collecté sert à financer la Main Pourpre.
 
 # **La Couronne Rouge**
@@ -1910,7 +1910,7 @@ Depuis, c'est comme ça qu'il prend toutes ses décisions, et il trouve l'expér
 - 10. Allez vous recueillir sur la tombe de la Domplatz
 
 
-# <span id="page-218-0"></span>**Le Culte du Cadavre Exquis**
+# <span id="page-218-0" data-folio="216"></span>**Le Culte du Cadavre Exquis**
 
 Ce culte de Slaanesh tire profit de la faiblesse de personnes à la recherche de perfection physique. Il était jadis basé à Bögenhafen, mais le Magus Marlene l'a déplacé à Altdorf quand les Répurgateurs ont commencé à s'approcher dangereusement.
 
@@ -1945,7 +1945,7 @@ Mais Katarina sent un vent de rébellion monter en elle : elle cherche à suppla
 Le porteur de ce bouton argenté peut infliger +1 État *En flammes* à sa cible rien qu'en la touchant. Si le porteur est en combat, ou si la cible résiste, il doit faire un Test opposé de **Corps à corps (Bagarre)** (généralement opposé à la Compétence Corps à corps ou Esquive de la cible). Le bouton est une source de Corruption Mineure.
 
 
-# <span id="page-219-0"></span>**La Communauté Tinéenne**
+# <span id="page-219-0" data-folio="217"></span>**La Communauté Tinéenne**
 
 La Communauté Tinéenne est un réseau de médecins dont l'objectif affiché est de partager le savoir médical et mettre au jour de nouvelles connaissances. Mais à l'insu de la plupart de ses membres, le Cercle intérieur de la communauté est dédié au culte de Nurgle. Sous la direction d'un Nordlander mystérieux qui signe ses lettres par « Docteur Festus », la Communauté pratique des expériences médicales immorales. Ses membres sont capables de créer des maladies pour pouvoir les guérir plus tard.
 
@@ -1977,7 +1977,7 @@ Mais le culte se déchire petit à petit. Une faction, appelée la Propension L�
 - 0 Les Personnages intransigeants dans leur combat contre le Chaos et autres forces du mal peuvent se faire courtiser par le Culte du Brasier vengeur. Comment réagiront-ils quand ils découvriront que l'obsession pour la pureté exigée par le culte est beaucoup plus austère (pour ne pas dire tyrannique) qu'ailleurs ?
 
 
-# <span id="page-220-0"></span>**Le Culte de l'Illumination**
+# <span id="page-220-0" data-folio="218"></span>**Le Culte de l'Illumination**
 
 La Grande Union d'Altdorf pour la Promotion de l'Art, de la Réthorique, de la Science, et de l'Entreprise est un club très exclusif pour les personnes de talent. Ses membres comprennent certains des meilleurs artistes, ingénieurs et entrepreneurs de la ville.
 
@@ -2028,3 +2028,5 @@ VÉRIFIÉ — aucune correction nécessaire. Les deux entrées [MDG 10] et [MDG 
 [MDG 11] — Pages PDF 92-96 conformes (ligne 1) ✓. Cartouche Siège/Chef/Ordres/Festivités/Livres/Symboles transcrit exactement (l.5-15) ✓. 4 COMMANDEMENTS (l.62-78) fidèles, dont la contrainte Force-d'abord (l.74) ✓. Pénitences (l.80-82) ✓. Restriction Talent Invocation≥2 / Béni≥5 (l.142) ✓. Bénédictions (l.146) ✓. 7 Miracles : stats et effets conformes (Faire fi + table d10 l.150-165, Flairer le sang l.167-171, Lame de fond l.173-179 IC 15, Mal de mer l.181-189, Malédiction maîtresse cruelle l.191-199, Sacrifice l.201-209 double Indice Voie d'eau, Vents de tempête l.211-219) ✓.
 
 Note : la carrière complète « Prêtre de Stromfels » (statbloc d'Évolution, l.85-138) n'est PAS reprise dans le catalogue divin (hors focus religion-Miracles) — non un défaut, mais signalé si un catalogue carrières doit l'ingérer ultérieurement.
+
+<!-- /MDG-INTEGRATION -->

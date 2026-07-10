@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`equipement.md`](equipement.md).
 >
-> **Chapitres source :** `LDB 57` · `LDB 59` · `LDB 60` · `LDB 61` · `LDB 62` · `LDB 63` · `LDB 64` · `LDB 65` · `LDB 66` · `LDB 67` · `LDB 68` · `LDB 69` · `LDB 70` · `LDB 71` · `LDB 72` · `LDB 73` · `LDB 74` · `LDB 75` · `AA 1`.
+> **Chapitres source :** `LDB 57` · `LDB 59` · `LDB 60` · `LDB 61` · `LDB 62` · `LDB 63` · `LDB 64` · `LDB 65` · `LDB 66` · `LDB 67` · `LDB 68` · `LDB 69` · `LDB 70` · `LDB 71` · `LDB 72` · `LDB 73` · `LDB 74` · `LDB 75` · `AA 1` · `AA 2` · `AA 3` · `AA 4` · `AA 5` · `AA 6` · `AA 7` · `AA 8` · `AA 9` · `AA 10` · `AA 11` · `AA 12` · `AA 13`.
 
 ---
 
@@ -35,7 +35,7 @@ Pour ceux qui découvrent Warhammer Fantasy, souvenezvous qu'il y a 12 sous dans
 Ne vous souciez pas de tout comprendre des pièces au départ. Un moyen facile de tout garder en tête est de transposer tous les montants en sous et d'y penser dans votre devise locale réelle pour vous faire une idée des chiffres. Donc, vous pouvez penser qu'un sou de cuivre correspond à 1 €, qu'une pistole d'argent vaut aux alentours de 12 € et qu'une couronne vaut 240 €. Ce n'est pas tout à fait exact, mais cela vous aide à comprendre la monnaie, jusqu'à ce que vous y soyez habitué. Donc, si quelqu'un vous offre un travail pour 10 pistoles, pensez à 120 €, qui n'est pas négligeable. Mais si quelqu'un vous offre un travail pour 10 CO, 2400 € est bien plus tentant !
 
 
-# <span id="page-290-0"></span>**Le coût de la vie**
+# <span id="page-290-0" data-folio="289"></span>**Le coût de la vie**
 
 En arpentant l'Empire, les aventuriers remplissent probablement leurs bourses de pièces de ces trois valeurs, pauvres un jour, et incroyablement riches le lendemain. Cependant, en dehors des aventures, la plupart des vies sont centrées sur un seul type de pièces déterminé par le Statut social (voir page 49).
 
@@ -78,7 +78,7 @@ Altdorf est peut-être la capitale actuelle du Reikland et de l'Empire, mais les
 
 *Pages PDF 292*
 
-# <span id="page-291-0"></span>**FAIRE SON MARCHÉ**
+# <span id="page-291-0" data-folio="290"></span>**FAIRE SON MARCHÉ**
 
 Une fois que vous commencez à jouer, la disponibilité de certaines marchandises les plus rares est limitée. Après tout, il est dur de trouver un clavecin dans un hameau composé de cinq maisons, mais pas si compliqué dans les échoppes et marchés de la capitale impériale, Altdorf.
 
@@ -112,7 +112,7 @@ Si vous échouez à un Test de Disponibilité pour des objets Limités ou Rares,
 Si un objet est en stock, il revient au MJ de déterminer combien de pièces sont disponibles. En règle générale, les villages possèdent un seul objet en stock, les villes possèdent 1d10 objets, et les cités en possèdent autant que le MJ le juge approprié. Ces quantités sont généralement doublées pour les objets communs, et divisées par deux pour les Rares (arrondi à l'entier supérieur).
 
 
-# <span id="page-292-0"></span>**Marchandage**
+# <span id="page-292-0" data-folio="291"></span>**Marchandage**
 
 Les habitants de l'Empire aiment les bonnes affaires, et des foules d'acheteurs enthousiastes se pressent chaque jour sur les places de la ville à la recherche des meilleures offres. Quand vous achetez des biens, il y a deux Compétences principales pour le Test : Évaluation et Marchandage.
 
@@ -169,7 +169,7 @@ Une Possession sans aucun Défaut, et avec plus d'Atouts que d'Encombrement est 
 Une Possession est appelée Possession de Qualité si elle possède plus d'Atouts que de Défauts. Pour chaque Atout d'objet de la Possession, doublez son prix et baissez sa disponibilité d'un cran.
 
 
-<span id="page-293-0"></span>**Exemple :** *une pelle qui possède les Atouts Raffiné et Solide coûte quatre fois le prix listé, et voit sa disponibilité passer de Commune à Rare.*
+<span id="page-293-0" data-folio="292"></span>**Exemple :** *une pelle qui possède les Atouts Raffiné et Solide coûte quatre fois le prix listé, et voit sa disponibilité passer de Commune à Rare.*
 
 ### **Léger**
 
@@ -224,7 +224,7 @@ Une conception inconfortable et une fabrication maladroite. Augmente l'Encombrem
 
 *Pages PDF 295*
 
-# <span id="page-294-0"></span>**ENCOMBREMENT**
+# <span id="page-294-0" data-folio="293"></span>**ENCOMBREMENT**
 
 Même le plus vaillant des nains ne peut porter qu'un nombre limité de Possessions. Pour vous aider à tenir les comptes de ce que vous portez, tous les objets sont indiqués comme pesant un certain nombre de Points d'Encombrement (parfois abrégé en « Enc »), en général entre 0-3, où 0 indique un objet insignifiant facilement transportable, et 3 représente quelque chose de difficile à soulever. Le nombre de Points d'Encombrement que vous pouvez gérer sans pénalité est déterminé par votre Bonus de Force + votre Bonus d'Endurance. Ainsi, les humains moyens commencent à jouer en étant capables de gérer environ 6 Points d'Encombrement.
 
@@ -381,7 +381,7 @@ Le Bonus de Force est abrégé en BF dans les Tableaux des armes.
 
 # MUNITIONS
 
-<span id="page-297-0"></span>
+<span id="page-297-0" data-folio="296"></span>
 
 | Arme                            | Prix | Enc | Disponibilité              | Allonge / Portée | Dégâts | Atouts et Défauts              |
 |---------------------------------|------|-----|----------------------------|------------------|--------|--------------------------------|
@@ -427,7 +427,7 @@ Les Personnages sans compétence ajoutent le Défaut d'Arme Dangereuse à leurs 
 N'importe quelle Arme à une Main avec l'Atout Défensive peut être utilisée avec Corps à corps (Parade). Quand vous utilisez Corps à corps (Parade), une arme peut être utilisée pour opposer une attaque sans la pénalité de main gauche normale de -20 (voir page 161).
 
 
-# <span id="page-298-0"></span>**Allonge d'arme**
+# <span id="page-298-0" data-folio="297"></span>**Allonge d'arme**
 
 Les longueurs des armes sont progressivement plus grandes, comme suit.
 
@@ -578,7 +578,7 @@ Les armes Rapides sont conçues pour frapper avec une telle rapidité que parer 
 De plus, tous les Tests de Corps à corps pour se défendre contre des armes Rapides subissent une pénalité de -10 si votre adversaire utilise une arme sans l'Atout Rapide ; les autres Compétences défendent normalement. Deux adversaires avec des armes Rapides combattent dans l'ordre d'Initiative (l'un par rapport à l'autre) normalement. Une arme Rapide ne peut jamais être aussi Lente (Lente prend le dessus).
 
 
-### <span id="page-300-0"></span>**Taille**
+### <span id="page-300-0" data-folio="299"></span>**Taille**
 
 Les armes de Taille possèdent de lourdes lames qui peuvent entamer les armures avec une horrifiante facilité. Si vous touchez un adversaire, vous Endommagez de 1 Point une pièce d'armure ou un Bouclier frappé tout en blessant la cible.
 
@@ -649,7 +649,7 @@ Vous subissez toujours les Blessures normales (et étant donné que vos PA sont 
 
 # ARMURES
 
-<span id="page-301-0"></span>
+<span id="page-301-0" data-folio="300"></span>
 
 | Armure              | Prix | Enc | Disponibilité | Pénalité            | Emplacements | PA | Atouts et Défauts            |
 |---------------------|------|-----|---------------|---------------------|--------------|----|------------------------------|
@@ -709,7 +709,7 @@ L'armure possèdent de petits Points faibles où une lame peut facilement se gli
 
 # OPTION : ARMURE, RÈGLES RAPIDES
 
-<span id="page-302-0"></span>Pour ceux qui souhaitent des règles rapides et simples pour les armures, utiliser ce qui suit. Les Armures sont séparées en trois groupes : Légères, Moyennes et Lourdes. Les Légères sont principalement en cuir, les Moyennes en maille et les Lourdes en plate.
+<span id="page-302-0" data-folio="301"></span>Pour ceux qui souhaitent des règles rapides et simples pour les armures, utiliser ce qui suit. Les Armures sont séparées en trois groupes : Légères, Moyennes et Lourdes. Les Légères sont principalement en cuir, les Moyennes en maille et les Lourdes en plate.
 
 | Armure         | Prix | Enc | Disponibilité | Pénalité                                  | Emplacements | PA | Atouts et Défauts            |
 |----------------|------|-----|---------------|-------------------------------------------|--------------|----|------------------------------|
@@ -767,7 +767,7 @@ dos.
 
 *Pages PDF 304*
 
-# <span id="page-303-0"></span>**VÊTEMENTS ET ACCESSOIRES**
+# <span id="page-303-0" data-folio="302"></span>**VÊTEMENTS ET ACCESSOIRES**
 
 Les styles de vêtements varient beaucoup dans l'Empire. En règle générale, les petites gens portent des tuniques simples avec des braies ou des blouses. Les citoyens de classe moyenne préfèrent les manches bouffantes et les crevés, accompagnés de chapeaux, de bas et de robes. Les élites affichent des capes, des fourrures et des chapeaux tape-à-l'œil, surmontés d'énormes plumes extravagantes – ce n'est jamais trop !
 
@@ -845,7 +845,7 @@ Les chambres et les repas de piètre qualité coûtent la moitié des prix list�
 **Chambre d'auberge :** convient à 2 invités. Les grandes chambres coûtent le double du prix et conviennent à 4 invités.
 
 
-<span id="page-304-0"></span>
+<span id="page-304-0" data-folio="303"></span>
 
 
 ## [LDB 67] Outils et nécessaires
@@ -913,7 +913,7 @@ La majorité des outils sont considérés comme des armes Improvisées quand ils
 | Télescope                 | 5CO  | 0   | Rare          |
 
 
-<span id="page-305-0"></span>**Nécessaire de déguisement :** comprend suffisamment d'accessoires pour quatre déguisements (par exemple des perruques et du maquillage) ainsi que des éléments pour changer votre apparence, utilisés par ceux qui possèdent la Compétence Divertissement (Interprétation) (par exemple de la cire, du faux sang et des prothèses).
+<span id="page-305-0" data-folio="304"></span>**Nécessaire de déguisement :** comprend suffisamment d'accessoires pour quatre déguisements (par exemple des perruques et du maquillage) ainsi que des éléments pour changer votre apparence, utilisés par ceux qui possèdent la Compétence Divertissement (Interprétation) (par exemple de la cire, du faux sang et des prothèses).
 
 **Outils de crochetage :** un assortiment de petits outils aux formes variées nécessaire pour utiliser la Compétence Crochetage sans pénalité.
 
@@ -963,7 +963,7 @@ La presse à imprimer est une invention récente de l'Empire, donc la plupart de
 **Livre, Magie :** les grimoires de Sorts sont en général rédigés par des Sorciers, et leurs couvertures sont souvent fermées par des serrures. Parfois, les grimoires sont même protégés par des 
 
 
-<span id="page-306-0"></span>alarmes ou des protections magiques. Transporter un grimoire de Sorts peut être taxé d'hérésie à moins que le propriétaire Sorcier ne soit diplômé de l'un des Collèges de Magie.
+<span id="page-306-0" data-folio="305"></span>alarmes ou des protections magiques. Transporter un grimoire de Sorts peut être taxé d'hérésie à moins que le propriétaire Sorcier ne soit diplômé de l'un des Collèges de Magie.
 
 **Livre, Médecine :** les textes médicaux peuvent aussi bien être manuscrits qu'imprimés, en fonction du prestige de l'auteur médecin. Les illustrations sont courantes, et incluent généralement des dessins d'autopsies détaillés et des procédures expliquées.
 
@@ -1012,7 +1012,7 @@ Les Outils professionnels sont nécessaires si vous souhaitez utiliser un Test d
 
 *Pages PDF 308*
 
-# <span id="page-307-0"></span>**ANIMAUX ET VÉHICULES**
+# <span id="page-307-0" data-folio="306"></span>**ANIMAUX ET VÉHICULES**
 
 Les animaux sont utilisés à tous les niveaux de la société dans l'Empire. Voir le Chapitre 12 : Bestiaire pour des exemples de profils d'animaux. Comme pour les Sacs et contenants (voir page 301), tous les véhicules indiquent le nombre de Points d'Encombrement qu'ils peuvent transporter (Contenu).
 
@@ -1083,7 +1083,7 @@ Les drogues récréatives, bien qu'elles ne soient pas illégales dans la majeur
 **Fleur de lune :** ce tranquillisant est une mousse séchée qui pousse seulement sur les feuilles de la forêt Laurelorn. Les elfes utilisent la Fleur de lune pour traiter la Peste noire, octroyant un bonus de +30 à tous les Tests associés pour résister à la maladie, mais elle n'a aucun effet sur les autres races. Les autres peuvent inhaler les vapeurs en faisant 
 
 
-<span id="page-308-0"></span>bouillir la mousse et s'ils ratent un Test de **Force Mentale Très difficile (-30)** gagnent un État *Inconscient*. Sur un succès, ils reçoivent un bonus de +20 aux Tests de Calme et gagnent 1 État *Exténué*. La Fleur de lune est utilisée comme anesthésique par les médecins réputés et onéreux. Durée : 1d10 + 5 heures.
+<span id="page-308-0" data-folio="307"></span>bouillir la mousse et s'ils ratent un Test de **Force Mentale Très difficile (-30)** gagnent un État *Inconscient*. Sur un succès, ils reçoivent un bonus de +20 aux Tests de Calme et gagnent 1 État *Exténué*. La Fleur de lune est utilisée comme anesthésique par les médecins réputés et onéreux. Durée : 1d10 + 5 heures.
 
 **Lotus noir :** cette plante mortelle pousse dans les jungles des Terres du Sud, et elle est utilisée pour empoisonner les lames. Les victimes qui subissent au moins 1 Point de Blessure d'une lame recouverte de sa sève subissent immédiatement 2 États *Empoisonné*s. Combattu avec un Test de **Résistance Complexe (-10)**.
 
@@ -1132,7 +1132,7 @@ Les herbes médicinales peuvent être achetées ou cueillies dans la nature (voi
 
 *Pages PDF 310*
 
-# <span id="page-309-0"></span>**PROTHÈSES**
+# <span id="page-309-0" data-folio="308"></span>**PROTHÈSES**
 
 Que ce soit à cause d'une maladie, de la guerre ou de la malchance, il est assez courant dans l'Empire de perdre une partie de son corps. Pour ces malheureux, toute une variété d'alternatives est proposée. Toutes les prothèses ont un Encombrement de 0 quand elles sont portées.
 
@@ -1212,7 +1212,7 @@ Si les Joueurs souhaitent acheter quelque chose qui n'est pas inclus dans cette 
 **Instrument :** divers instruments sont inclus dans cette catégorie. Le prix et l'encombrement standard correspondent aux instruments de taille moyenne (exemple, mandoline, corne de cocher, petit tambour). Les petits instruments coûtent la moitié du prix et compte pour 0 Point d'Encombrement (par exemple, pipeau, flûte à bec, tambourin). Les plus grands 
 
 
-<span id="page-310-0"></span>instruments coûtent le double du prix et comptent pour 2 Points d'Encombrement (par exemple harpe, luth, grand tambour).
+<span id="page-310-0" data-folio="309"></span>instruments coûtent le double du prix et comptent pour 2 Points d'Encombrement (par exemple harpe, luth, grand tambour).
 
 **Lampe à huile :** contient assez de combustible pour 4 heures d'utilisation standard, ou 8 heures avec une petite flamme équivalente à une bougie.
 
@@ -1253,9 +1253,79 @@ Les Hommes de main sont des Mercenaires, des compagnons, des amis, des animaux f
 | Scribe                 | 2/–            | 6/–               | 2CO 8/–           | Traduit également 1-2 autres langues courantes                        |
 
 
-## [AA 1] WH - V4 - Aux Armes
+## [AA 1] CRÉDITS
 
-*Pages PDF 1-147*
+*Folio 3+*
+
+# CRÉDITS
+
+**Design et écriture :** Dave Allen, Eoin Burke, Pádraig Murphy, Ciarán O'Brien, Dylan Owen,
+
+Clive Oldfield, Anthony Ragan, Simon Wileman
+
+**Illustration :** Mauro Alocci, Benoît Blary, Alessandro Boer, Domenico Cava, Álvaro Jiménez Hernández, Dániel Kovács, Antonio De Luca, Yugin Maffioli, Sam Manley, Andrea Tentori Montalto, JG O'Donoghue, Scott Purdy
+
+**Couverture :** Sam Manley **Maquette :** Mary Lillis
+
+**Corrections :** Lynne M. Meyer, Christopher Walz **Relecteur :** Eoin Burke, Lynne M. Meyer
+
+**Équipe de création :** Dave Allen, Emmet Byrne, David F Chapman, Walt Ciechanowski, Tim Cox, Zak Dale-Clutterbuck, Runesael Flynn, Dániel Kovács, Tim Huckelbery, Elaine Lithgow, TS Luikart, Dominic McDowall, Sam Manley, Pádraig Murphy, Ceíre O'Donoghue, JG O'Donoghue et Christopher Walz
+
+**Directeur créatif :** Emmet Byrne **Éditeur :** Dominic McDowall
+
+Cubicle 7 Entertainment Ltd, Units 5&6, Block C, Balbriggan Business Campus, Balbriggan, Co. Dublin, Ireland.
+
+**Traduction VF :** Caroline Hammer et Valérie Laproye **Relecture :** Aline et Denis Méric, Baccs, Florent 'Loye' Lacour, T. Nym Robillard et André-Pierre Tayot **Maquette :** Aline Méric et Florrent
+
+**Un grand merci à Games Workshop et Cubicle 7**
+
+Toute reproduction, totale ou partielle, de ce livre ainsi que son traitement informatique et sa transcription, sous n'importe quelle forme et par n'importe quel moyen électronique, photocopie, enregistrement ou autre, sont rigoureusement interdits sans l'autorisation préalable et écrite du titulaire du copyright et de l'éditeur.
+
+Warhammer Fantasy Roleplay 4e édition © Copyright Games Workshop Limited 2025. Cette édition est © Games Workshop Limited 2025. Les logos de Games Workshop,Warhammer Fantasy Roleplay 4e édition, Warhammer, le jeu de rôle, GW, Games Workshop, Warhammer, The Game of Fantasy Battle, le logo de la comète à deux queues et tous les symboles associés, logos, emblèmes, devises, noms, races et insignes raciaux, véhicules, lieux, unités, personnages, illustrations et images issus du monde de Warhammer et de l'univers du jeu de rôle Warhammer sont ®, ™ et/ou © de Games Workshop Ltd 2025, enregistrés selon les lois en vigueur au Royaume-Uni et dans les autres pays du monde et utilisés uniquement sous licence. Cubicle 7 Entertainment et le logo Cubicle 7 Entertainment sont des marques déposées de Cubicle 7 Entertainment Limited. Tous droits réservés.
+
+> Traduction française Khaos Project © 2025 Tous droits réservés, © copyright Games Workshop. La reproduction de cet ouvrage même partielle est formellement interdite, sous toutes ses formes. Imprimé en Europe.
+
+Publié par Khaos Project SAS, 4 allée de la cotonnière, 76570 PAVILLY
+
+<span id="page-5-0" data-folio="3"></span>
+## SOMMAIRE
+
+| I<br>AUX ARMES !                                                                                                      | VI<br>LE CULTE DE MYRMIDIA                                                                           | IX<br>LE COMBAT MONTÉ                                                                                                                             |
+|-----------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| Une introduction et un guide des guerriers du<br>Vieux Monde.                                                         | Une présentation de Myrmidia, déesse de la<br>stratégie et de la guerre, de ses adeptes et sa foi.   | Des règles mises à jour et clarifiées pour combattre<br>à cheval ou sur des bêtes plus exotiques.                                                 |
+| Introduction 5<br>En garde ! 5                                                                                        | Une foi en guerre 61<br>Le culte dans l'Empire 65<br>Figures importantes du culte myrmidéen 66       | Soin aux animaux 105<br>Règles étendues de combat monté 105<br>Le dressage 106                                                                    |
+| II<br>DES SOLDATS<br>EN TOUT GENRE                                                                                    | Croyances 69<br>Commandements de Myrmidia 70<br>Relations avec les autres cultes 71                  | Ma province pour un cheval ! 108<br>Les montures exotiques 108                                                                                    |
+| La vie militaire dans l'Empire, les expériences des<br>soldats et de nouvelles Carrières militaires.                  | Les adorateurs 73<br>L'initiation 73<br>Les ordres mineurs de Myrmidia 75                            | X<br>LES INTÉRIMAIRES DE L'AVENTURE<br>Un guide sur les intermédiaires, leur utilisation en<br>jeu, et des tableaux pour générer des PNJ uniques. |
+| Les armées de l'Empire 6<br>Uniformes et équipement 8<br>La vie quotidienne 8<br>En campagne 8                        | Les zélotes de Myrmidia 75<br>Les temples 76<br>Les reliques sacrées 77<br>Prêtre de Myrmidia 78     | Embaucher des gros bras 110<br>Embaucher des cerveaux 110                                                                                         |
+| Nouvelles Carrières 9<br>III<br>LES CHEVALIERS DE L'EMPIRE                                                            | Miracles de Myrmidia 79<br>UNE APPROCHE                                                              | Profils de mercenaires 113<br>L'ARTILLERIE ET LES DÉGÂTS                                                                                          |
+| Un guide des ordres de chevalerie du Vieux                                                                            | VII<br>ALTERNATIVE DES BLESSURES                                                                     | XI<br>INFLIGÉS AUX STRUCTURES                                                                                                                     |
+| Monde, de leur culture et de nouvelles Carrières.                                                                     | Une mise à jour des règles sur les Blessures<br>Critiques et les dommages.                           | Un guide des engins de siège et des règles mises<br>à jour sur les dommages aux structures.                                                       |
+| Les Possessions d'un chevalier 29<br>Carrières 31<br>Chevalier errant 31                                              | Blessures, Blessures Critiques et mort 80<br>Blessures 80                                            | Exemples de Structures 118<br>Les attaques contre les Structures 120                                                                              |
+| Chevalier du Loup Blanc 32<br>Chevalier du Soleil flamboyant 34<br>Chevalier Panthère 36                              | Blessures Critiques 80<br>La mort 82                                                                 | Les armes de siège 122<br>Nouveaux Atouts et Défauts d'arme 125                                                                                   |
+| IV<br>LES CHIENS DE GUERRE                                                                                            | VIII<br>LA RÉSERVE DE L'INTENDANT                                                                    | XII<br>LA POURSUITE DE L'EXCELLENCE                                                                                                               |
+| Un guide sur les mercenaires, leur rôle dans les<br>guerres du Vieux Monde, et de nouvelles Carrières.                | Une collection de pièces d'équipement pour tout<br>soldat un tant soit peu fortuné.                  | Des règles développées pour les poursuites.                                                                                                       |
+| Les mercenaires 40                                                                                                    | Le fardeau d'un soldat87<br>Nouveaux Atouts et Défauts 89                                            | Rompre le combat 127<br>Les Poursuites 127<br>Les Poursuites complexes 128                                                                        |
+| Le pays des mercenaires 41<br>Origines 41                                                                             | L'Atout Protectrice 90<br>Les armes de base 90                                                       | Les obstacles 130                                                                                                                                 |
+| Le rôle des mercenaires 42<br>Carrières 44                                                                            | Les boucliers 92<br>Les armes de cavalerie 93<br>Les armes d'escrime 93                              | ANNEXE I : AVANTAGE DE GROUPE<br>Avantage de groupe 133                                                                                           |
+| V<br>LA TILÉE ET LES<br>PERSONNAGES TILÉENS                                                                           | Les armes de bagarre 94<br>Les fléaux 95<br>Les armes de parade 95                                   | ANNEXE II : ACTIVITÉS<br>DE GUERRIER                                                                                                              |
+| Un guide des terres de Tilée, une chronologie de<br>son histoire et les règles de création de Personnages<br>tiléens. | Les armes d'hast 96<br>Les armes à deux mains97<br>Les munitions 98<br>Les armes à poudre à canon 99 | Activités de guerrier 137<br>ANNEXE III : NOUVEAUX TALENTS                                                                                        |
+| La Tilée, ses terres et son peuple 50<br>Les mercenaires tiléens dans l'Empire 55                                     | Les armes à poudre noire101<br>Munitions à poudre noire 102                                          | ET TALENTS MIS À JOUR                                                                                                                             |
+
+Les armes d'ingénierie........................... 103
+
+Créer des Personnages tiléens.................. 55 Chronologie de la Tilée ........................... 57 Nouveaux Talents et Talents mis à jour... 140
+
+Index...................................................... 142
+
+<span id="page-6-0" data-folio="4"></span>
+<span id="page-7-0" data-folio="5"></span>
+
+
+## [AA 2] INTRODUCTION
+
+*Folio 6+*
+
+# • INTRODUCTION •
 
 ## **AUX ARMES !**
 
@@ -1277,7 +1347,7 @@ Dans tous les cas, elles ne doivent être appliquées que si le MJ accepte de le
 
 À la fin du livre se trouve un résumé des Talents nécessitant d'être repensés à la lumière des autres modifications de règles. Par exemple, le Talent Fuite ! aura plus d'utilité avec les nouvelles règles de Poursuite qu'il n'en a dans le **Livre de Règles WFJDR**, et le Talent Commandant d'équipe est entièrement nouveau pour la Carrière d'artilleur. Ces Talents sont compilés dans l'annexe, plutôt que dispersés dans l'ouvrage.
 
-
+<span id="page-8-0" data-folio="6"></span>
 ## DES SOLDATS EN TOUT GENRE • •
 
 *Uri et Hans discutent de leur nouveau capitaine de troupe. Bien qu'aristocrate, elle ne connaît rien à la tactique, Mais c'est une personne honorable, ils en conviennent. Maintenant, par la racine, Uri et Hans mangent les pissenlits.*
@@ -1292,7 +1362,7 @@ Le fantassin constitue le gros des forces impériales. Loin de la noblesse des o
 
 Les régiments standard, dotés de hallebardes, armes de poing, épées, piques et lances, recrutent généralement ceux qui ne sont pas doués pour autre chose. Ces troupes peuvent être formées rapidement, surtout en cas d'urgence, et leurs pertes peuvent être remplacées sans grosses difficultés. Les régiments plus exclusifs, comprenant les archers et les guerriers maniant des épées à deux mains, peuvent déjà posséder leur équipement avec les aptitudes associées lorsqu'ils sont recrutés.
 
-
+<span id="page-9-0" data-folio="7"></span>
 ## **Lever une armée**
 
 Les armées de l'Empire sont levées au nom des Provinces et des grandes cités, mais pas toujours directement. De nombreux nobles, villes, cultes et autres groupes d'intérêt ont de bonnes raisons de lever des régiments s'ils en ont les moyens ; après tout, malgré les prétentions de l'Empire au progrès, le pouvoir politique découle généralement de l'exercice de la puissance militaire.
@@ -1323,7 +1393,7 @@ Le passé d'un régiment constitue la clé de son prestige. Nombre d'entre eux s
 
 La loyauté féroce des soldats envers leur régiment est surtout visible lorsqu'ils sont confrontés à ceux d'un rival. Ce sentiment exacerbé s'exprime lors de tournois tels que les concours de tir à l'arc, la lutte et le middenball, mais aussi lors d'activités moins formelles. Lorsque des guerriers de différents régiments se rencontrent, cela se termine presque toujours par une bagarre sanglante. Heureusement, les soldats sont enclins à suivre les règles implicites et sont généralement trop rusés pour dégainer leurs armes.
 
-
+<span id="page-10-0" data-folio="8"></span>
 ## **Uniformes et équipement**
 
 De nombreuses recrues débutent leur carrière militaire relativement bien équipées. Les régiments leur fournissent leur matériel ou leur prêtent l'argent nécessaire à l'achat d'équipement, étant entendu que cette somme sera prélevée sur leur futur salaire, avec des intérêts. Souvent, cet équipement est de mauvaise qualité, prélevé sur des camarades décédés ou volé à l'ennemi. Bien sûr, il n'est dans l'intérêt de personne d'équiper les soldats avec des armes qui risquent de se briser, mais de nombreux articles plus courants sont susceptibles d'avoir le Défaut *Bâclé*. La plupart des uniformes fournis aux nouvelles recrues peuvent avoir connu des jours meilleurs et présenter le Défaut *Laid*.
@@ -1352,7 +1422,7 @@ La vie est rude durant les campagnes. Les armées doivent parcourir des centaine
 
 Les soldats affichent une attitude cynique et un humour sardonique qui leur sont propres, et c'est ce type d'expérience qui leur permet d'établir des relations avec d'autres soldats, parfois même avec des ennemis mortels, mieux qu'avec des civils.
 
-
+<span id="page-11-0" data-folio="9"></span>
 ## **Désertion**
 
 Bien que les soldats impériaux jurent de servir sans faillir pendant toute la durée de leur service, les désertions ne sont pas rares. Les déserteurs peuvent vivre correctement, utilisant l'argent qu'ils ont économisé pour s'installer dans un coin tranquille du Vieux Monde, ou au-delà. Certains regrettent leur décision, deviennent des hors-la-loi ou des criminels, ou rejoignent des compagnies de mercenaires, incapables d'échapper à la vie de soldat. D'autres, bien sûr, deviennent des aventuriers.
@@ -1388,7 +1458,7 @@ Les nouvelles Carrières de Warhammer Fantasy Roleplay ont tendance à utiliser 
 
 Bien qu'il y ait dix options pour progresser dans une Carrière, seules huit doivent être améliorées, comme l'explique le **Livre de Règles** WFJDR, avec pour but d'offrir un peu plus de variété dans l'approche d'une Carrière, en particulier dans les premiers niveaux.
 
-
+<span id="page-12-0" data-folio="10"></span>
 Elfe sylvain, haut elfe, halfling, humain
 
 *En alliant à égalité la force et l'habileté, vous apportez finesse et précision sur le champ de bataille.*
@@ -1447,7 +1517,7 @@ Voyageur aguerri
 
 selle et harnais, insigne de son rang
 
-
+<span id="page-13-0" data-folio="11"></span>
 Bien que considérés comme quelque peu dépassés par les gens des villes habitués à la poudre noire et aux armures rutilantes, les archers reçoivent plus de considération dans les campagnes, où les paysans les considèrent comme les leurs.
 
 Les archers constituent les plus légères troupes de fantassins, souvent utilisées comme éclaireurs ou chargées du ravitaillement. Ils sont plus susceptibles de vivre de la terre, ce qui signifie qu'ils disposent de la meilleure nourriture. Les archers sont réputés agir de leur propre initiative et être en mesure de se déplacer durant la bataille même sur les terrains les plus difficiles. Une armée en territoire ennemi se repose bien plus sur ses archers que les autres troupes ne l'admettront jamais.
@@ -1470,7 +1540,7 @@ Les archers humains ne doivent jamais être sous-estimés, mais les plus redouta
 
 Les elfes de la forêt sont connus pour leurs formations d'archers, qui utilisent le terrain à leur avantage, et dont les succès dépendent plus de la précision de chacun, plutôt que des volées massives de flèches. On leur attribue de tels prodiges d'archerie que les récits de leurs hauts faits sont difficiles à croire. Ils ne participent jamais aux tournois humains, car il n'y sont jamais conviés. Contrairement à leurs cousins les elfes sylvains, les hauts elfes sont réputés pour leurs archers alignés en rangs serrés dont les innombrables traits de flèches assombriraient le ciel.
 
-
+<span id="page-14-0" data-folio="12"></span>
 *En utilisant une arme à feu, vous infligez à distance la mort à vos ennemis, ou du moins, vous leur insufflez la peur de Sigmar.*
 
 L'arquebusier est un nouveau venu dans l'Armée Impériale. Même s'ils sont présents depuis quelques centaines d'années, les autres corps militaires ne leur font pas complètement confiance. Malgré cela, grâce aux progrès technologiques, ils se révèlent de plus en plus efficaces sur le champ de bataille, et les régiments d'arquebusiers sont de plus en plus nombreux dans les Armées Impériales.
@@ -1525,7 +1595,7 @@ Voyageur aguerri
 
 selle et harnais, insigne de rang
 
-
+<span id="page-15-0" data-folio="13"></span>
 *« Ils sont peu fiables, prétentieux et laissent derrière eux une odeur pestilentielle. Et leurs armes ne valent pas mieux. »*
 
 > – Holger Kass, 1er bataillon de hallebardiers de Bögenhafen
@@ -1546,7 +1616,7 @@ Il s'agit d'une troupe d'arquebusiers dangereusement précis, ayant combattu dan
 
 Les arquebusiers de Ferlangen se sont attirés, même chez les Ostlanders pourtant têtus, une réputation de ténacité, de ne jamais abandonner la ligne de tir et d'envoyer des volées de feu vers les ennemis en approche. Leur refus de céder le flanc aux Skaelings maraudeurs durant les trois jours de la Guerre des Os éparpillés leur a valu le surnom de Briseurs de Crânes, car, à court de poudre noire le dernier jour, ils ont utilisé leurs armes comme des armes contondantes.
 
-
+<span id="page-16-0" data-folio="14"></span>
 *Vous introduisez les grosses armes à feu dans le combat. Vous entretenez, vous utilisez le matériel d'artillerie et vous connaissez les meilleurs moyens d'utiliser la poudre noire.*
 
 L'Empire est fier de son artillerie, réputée pour le spectacle impressionnant qui frappe de terreur le cœur de tous ses ennemis. Toutefois, les régiments d'artillerie ne détiennent pas le glamour des ordres de chevalerie ou des joueurs d'épée. C'est un dur labeur consistant à soulever de lourds poids, aller chercher, porter et entreprendre de pénibles excavations. Malgré cela, ils sont indispensables dans l'effort de guerre de l'Empire, et les artilleurs se considèrent euxmêmes comme les héros de l'ombre des armées impériales.
@@ -1593,7 +1663,7 @@ Orientation, Tireur embusqué
 
 **Talents :** Cœur vaillant, Exaltant, Orateur, Voyageur aguerri **Possessions :** carte, cheval de guerre léger avec selle et harnais, insigne de rang, lettre de marque, pièce d'artillerie et affût
 
-
+<span id="page-17-0" data-folio="15"></span>
 *« J'ai combattu dans beaucoup de guerres, j'ai été attaquée par des hommes-bêtes affamés, torturée par des peaux-vertes, vu l'air lui-même déformé par les démons. Mais je n'ai jamais été sous le feu du canon, grâce à Sigmar. »*
 
 – Ludmilla Krabbe
@@ -1628,7 +1698,7 @@ De nombreuses missions diplomatiques ont quitté Altdorf et Nuln pour se rendre 
 
 Les nains ne sont pas les seuls à créer des armes à poudre noire aussi fantastiques. L'École impériale d'ingénieurs d'Altdorf expérimente sans cesse des innovations. Le Canon à répétition feu d'enfer est une variante impériale du canon orgue. Il ne tire que de trois canons à la fois, mais il est disposé en triangle de trois rangées de trois. Cela signifie qu'il peut tirer trois fois avant d'avoir besoin d'être rechargé. Malheureusement, l'arme est notoirement peu fiable et a tendance à s'enrayer ou pire, à des moments cruciaux.
 
-
+<span id="page-18-0" data-folio="16"></span>
 ## **CARTOGRAPHE**
 
 Elfe sylvain, halfling, haut elfe, humain, nain
@@ -1681,7 +1751,7 @@ Studieux
 
 Travailleur qualifié (Cartographe) **Possessions :** étude, théodolite
 
-
+<span id="page-19-0" data-folio="17"></span>
 Personne n'a plus besoin de cartes que les militaires. Leur demande de toutes celles qu'ils peuvent obtenir est insatiable et ils ont assez d'argent pour en commander davantage. De nombreux cartographes de l'Empire apprennent leur métier dans l'armée, qu'ils soient employés directement dans les rangs ou sous contrat. L'artillerie est le corps d'armée qui apprécie le plus les bonnes cartes, qui lui permettent de cibler avec plus de précision avec ses engins de destruction.
 
 Les cartographes plus expérimentés se lassent généralement d'un mode de vie aussi périlleux et nombre d'entre eux s'établissent en tant que professionnels urbains en acceptant des travaux moins intéressants, mais souvent plus lucratifs, commandés par de riches propriétaires terriens, des entreprises et des gouvernements. Alors qu'un noble exige traditionnellement des portraits de sa famille aux meilleurs artistes qu'il peut s'offrir, les marchands en herbe sont tout aussi susceptibles de demander des relevés de leurs possessions et de leurs routes commerciales, et chaque ville a besoin d'une grande carte des lieux exposée à l'Hôtel de ville.
@@ -1700,7 +1770,7 @@ La découverte d'anciens relevés peut également engendrer des aventures, et le
 
 0 N'importe qui peut prétendre avoir civilisé un bout de terre dans les Principautés frontalières. Mais pour s'y imposer en tant que noble, il faut prouver ses dires en dressant une carte précise, même si l'on n'a pas pris la peine de s'y débarrasser de tous les peaux-vertes et autres monstres. Une expédition cartographique musclée pourrait faire d'une pierre deux coups.
 
-
+<span id="page-20-0" data-folio="18"></span>
 *Réputé extrêmement fiable, vous êtes le pilier de l'infanterie, et ce n'est pas à prendre à la légère.*
 
 Soutien de toutes les armées impériales, les hallebardiers se retrouvent dans les armées de tout l'Empire, et au-delà. Ils sont réputés fiables et endurants, et, arborant leurs armes imposantes massés en rangs serrés sur le champ de bataille, ils forment une vision redoutable. Le hallebardier puise son courage dans le combat en groupe d'unités très soudées, dans lesquelles ils bénéficient de l'allonge de la hallebarde sans trop souffrir de son manque de maniabilité.
@@ -1757,7 +1827,7 @@ aguerri
 
 insigne de rang, lettre de marque
 
-
+<span id="page-21-0" data-folio="19"></span>
 *« La meilleure des manœuvres possibles avec une hallebarde, je l'ai apprise d'un vétéran tiléen. Regardez avec attention. Prenez la pâte, ajoutez la sauce, quelques tronçons de saucisse, un peu de fromage, et placez la lame de votre arme dans le feu, comme ça, quelque minutes jusqu'à ce que la croûte soit brun doré. »*
 
 > – Holger Kass, 1er bataillon de hallebardiers de Bögenhafen
@@ -1782,7 +1852,7 @@ Le régiment enrôle, a priori, seulement les meilleurs et les plus courageux pa
 
 La Garde d'Averheim de Kragsburg est, de façon inhabituelle, un régiment créé par des nobles, fonctionnant comme une compagnie de mercenaires. Les autres aristocrates affichent leur désapprobation, mais « le Duc Déloyal » von Kragsburg s'y retrouve. Le régiment est, en définitive, bien entraîné et entretenu, bénéficiant d'une excellente réputation sur le champ de bataille. Il a reçu les honneurs de bataille dans tout l'Empire et bien au-delà. Une telle unité ne manque pas de clients prêts à payer.
 
-
+<span id="page-22-0" data-folio="20"></span>
 *Maniant avec habileté votre dangereuse zweihänder, vous êtes la crème des fantassins de l'Empire.*
 
 Ces joueurs d'épée forment l'élite emblématique de l'infanterie des Armées impériales, crainte de tous les fantassins de l'Empire. Ils délaissent le bouclier pour brandir d'énormes épées zweihänder, pour garantir des combats courts et mortels où qu'ils aillent. Leurs immenses épées à deux mains étant peu maniables, les joueurs d'épée se doivent d'être athlétiques et véloces. Pour les mêmes raisons, ils s'alignent en formations plus flexibles que les autres fantassins.
@@ -1827,7 +1897,7 @@ Ces joueurs d'épée forment l'élite emblématique de l'infanterie des Armées 
 
 – Serment des joueur d'épées de Carroburg
 
-
+<span id="page-23-0" data-folio="21"></span>
 *« Les joueurs d'épée sont bien trop suffisants. Ils ne reculent pas face à l'ennemi, et alors ? Ce n'est pas comme si nous autres, nous passions notre temps à décamper, n'est-ce pas ? La première chose que l'on m'a enseignée chez les hallebardiers, c'est de ne pas fuir. Et on ne passe pas notre temps à le brailler sans cesse. »*
 
 > – Holger Kass, 1er bataillon de hallebardiers de Bögenhafen
@@ -1848,7 +1918,7 @@ Les joueurs d'épée de Carroburg jouissent d'une réputation d'implacabilité e
 
 En rejoignant les rangs une recrue doit prêter serment à Sigmar et à l'Empire de ne jamais reculer d'un pas face à l'ennemi. Ce serment est pris à la lettre et très sérieusement. Alors que d'autres joueurs d'épée possèdent des tactiques comprenant des mouvements de retraite, ce n'est pas le cas pour ceux de Carroburg. Leur obstination sur le champ de bataille semble se répercuter sur leur attitude face à beaucoup d'aspect de leur vie.
 
-
+<span id="page-24-0" data-folio="22"></span>
 ## **SUIVEUR DE CAMP**
 
 Elfe sylvain, halfling, haut elfe, humain, nain
@@ -1897,7 +1967,7 @@ Nomade **Possessions :** chapeau de qualité, tente
 
 **Compétences :** Commandement, Évaluation, **Talents :** Cœur vaillant, Exaltant, Obstiné, Orateur **Possessions :** cercle de suiveurs de camp, cheval avec selle et harnais
 
-
+<span id="page-25-0" data-folio="23"></span>
 Les suiveurs de camp ont une réputation variable. Beaucoup sont simplement d'honnêtes commerçants qui gagnent leur vie en approvisionnant les soldats. La présence d'une armée à proximité est un marché tout trouvé pour leurs denrées, et il est logique qu'ils s'y tiennent, pour des raisons de sécurité et de profit. D'autres ne sont pas aussi honnêtes, profitant de la naïveté des recrues et de la rareté des biens pour s'enrichir ou refiler des marchandises de mauvaise qualité. Ces charlatans mesquins vivent d'expédients, bien sûr, car l'exploitation de personnes lourdement armées et belliqueuses n'est pas toujours le plan le plus judicieux pour faire des affaires.
 
 D'autres sont des commerçants et des artisans spécialisés qui fournissent de nombreux services essentiels au fonctionnement d'une armée, des forgerons aux armuriers en passant par les tailleurs et les cordonniers. Les armées emploient généralement leur propre main-d'œuvre pour bon nombre de ces tâches, mais un artisan qualifié jouissant d'une bonne réputation peut demander une prime, surtout lorsque la qualité de son travail peut être une question de vie ou de mort. Les réputations, bonnes ou mauvaises, circulent rapidement au sein d'une armée et les soldats vétérans sont des clients exigeants.
@@ -1917,6 +1987,12 @@ Le caractère impitoyable du camp n'est jamais aussi évident qu'au lendemain d'
 - 0 Le capitaine Rudolf Ratzenberger entretient une querelle secrète avec sa rivale, le capitaine Felice Fullermann, depuis qu'elle l'a battu en duel pour la Coupe du Régiment. Il a besoin de quelqu'un qui puisse fouiner et trouver quelque chose de déshonorant. Tout ce qui est un tant soit peu scandaleux fera l'affaire, même s'il faut recourir à la ruse.
 - 0 L'ennemi semble tout savoir sur nous et semble connaître nos mouvements à l'avance. Quelqu'un doit transmettre ces données. Nous avons besoin que vous fassiez circuler les rumeurs et les fausses informations dans le camp, de manière à localiser précisément l'origine des fuites.
 
+<span id="page-26-0" data-folio="24"></span>
+
+
+## [AA 3] LES CHEVALIERS DE L'EMPIRE
+
+*Folio 25+*
 
 # • LES CHEVALIERS DE L'EMPIRE •
 
@@ -1944,7 +2020,7 @@ La plupart des chevaliers sont issus de la noblesse. En effet, les classes supé
 
 Les ordres de chevalerie varient considérablement en taille et en puissance, avec bien souvent une structure similaire. Le grand maître supervise un cercle intérieur de chevaliers vétérans ou privilégiés qui dirigent l'ordre. En dessous d'eux se trouvent les chevaliers commandeurs ou précepteurs qui commandent leurs propres unités, servies par les écuyers qui aspirent eux-mêmes à devenir chevaliers.
 
-
+<span id="page-27-0" data-folio="25"></span>
 La plupart des différences viennent des cultures et des coutumes. Les ordres tels que les Chevaliers du Sang de Sigmar sont des organisations monastiques étroitement structurées, entièrement régies par la hiérarchie. D'autres profitent d'une chaîne de commandement plus souple : chaque chevalier est libre de vivre comme il l'entend, seulement tenu de respecter les valeurs de l'ordre, de préserver sa réputation et de participer au rassemblement lorsque le grand maître l'appelle au combat.
 
 La majorité des chevaliers disposent d'un revenu personnel provenant de leurs terres et de leurs biens, qu'ils utilisent pour payer leur équipement et leurs serviteurs. D'autres bénéficient du patronage de la noblesse ou, dans le cas des templiers, des caisses du culte.
@@ -1969,7 +2045,7 @@ Les chevaliers sont des personnes importantes, bien trop occupées et haut plac�
 
 De nombreuses Carrières peuvent faire partie d'un ordre chevaleresque. Les Personnages qui suivent ces Carrières ne seront peut-être jamais considérés comme des chevaliers, mais ils font tout de même partie d'une organisation puissante. Les Carrières appropriées en fonction de l'ordre sont les suivantes : Apothicaire, Artisan, Artiste, Bailli, Batelier, Bourgeois, Cavalier, Chasseur, Cocher, Conseiller, Éclaireur, Émissaire, Enquêteur, Érudit, Espion, Garde, Intendant, Juriste, Marin, Médecin, Messager, Prêtre, Serviteur, Soldat.
 
-
+<span id="page-28-0" data-folio="26"></span>
 ### ORDRES DE CHEVALERIE LE L'EMPIRE
 
 Les Joueurs peuvent choisir un ordre de chevalerie dans cette liste qui correspond à la manière dont ils envisagent leur Personnage. Il existe pourtant beaucoup d'autres ordres, et le fait que certains des ordres ci-dessous portent plusieurs noms différents peut prêter à confusion, mais ceux de la liste sont probablement connus de tout habitant du Vieux Monde quelque peu intéressé par les affaires militaires ou l'Histoire.
@@ -1994,7 +2070,7 @@ Les Joueurs peuvent choisir un ordre de chevalerie dans cette liste qui correspo
 
 26
 
-
+<span id="page-29-0" data-folio="27"></span>
 | Ordre                  | Affiliation            | Spécificité                                                                                                                                                                                                                                                                                                                                             |  |  |  |  |
 |------------------------|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|--|--|
 | Épée Brillante         | Séculier               | Fondé par un chevalier paria qui avait récupéré le croc runique du Solland alors qu'il était perdu depuis<br>des siècles. Ses membres affirment être les descendants de l'Ordre de l'Épée du Sud, tombé depuis, les<br>champions du Solland depuis l'époque de Sigmar.                                                                                  |  |  |  |  |
@@ -2015,7 +2091,7 @@ Les Joueurs peuvent choisir un ordre de chevalerie dans cette liste qui correspo
 
 III Les chevaliers de <sup>l</sup> 'empire
 
-
+<span id="page-30-0" data-folio="28"></span>
 | Ordre                                    | Affiliation                                   | Spécificité                                                                                                                                                                                                                                                  |  |  |  |
 |------------------------------------------|-----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|--|
 | Lion d'Or                                | Séculier                                      | Célèbres pour leur loyauté envers l'Empire, les Lions d'Or sont implacables au combat. L'ordre fait don<br>de la majorité de sa richesse à d'autres, mais entretient tout de même une petite écurie de demigriffons<br>pour son cercle intérieur.            |  |  |  |
@@ -2035,7 +2111,7 @@ III Les chevaliers de <sup>l</sup> 'empire
 
 28
 
-
+<span id="page-31-0" data-folio="29"></span>
 ## **Les chevaliers comme aventuriers**
 
 Un chevalier indépendant mène une vie qui ressemble beaucoup à celle du reste d'un groupe d'aventuriers. Mais quid du cas où vous jouez un membre d'un ordre de chevalerie, lié par des obligations envers vos camarades et votre commandant ?
@@ -2074,7 +2150,7 @@ S'occuper de cette bête magnifique n'est pas une mince affaire. En campagne ou 
 
 **Facultatif :** Champion, Coriace, Élite, Endurant, Intelligent, Se cabrer
 
-
+<span id="page-32-0" data-folio="30"></span>
 **Les demigriffons**
 
 Au sein de certains ordres de chevalerie, des chevaliers du cercle intérieur sont assez courageux pour monter des demigriffons au combat. Ils doivent prouver qu'ils sont dignes de cette monture en s'aventurant dans la forêt et en capturant eux-mêmes l'une de ces bêtes terrifiantes. Même s'il est dressé, un demigriffon reste un animal capricieux et féroce. À la bataille, il frappe rapidement avec ses serres et son bec tandis que son cavalier porte des coups d'estoc à l'ennemi avec une hallebarde de cavalerie.
@@ -2093,7 +2169,7 @@ Le seigneur Gottfried Bundebad est un ancien chevalier commandeur grisonnant, qu
 
 Il est en train de monter une petite unité de chevaliers et de guerriers pour l'accompagner dans la Forêt des Ombres pour vaincre la tribu de gobelins des Grappes d'Yeux. Quand ils rapporteront la tête du seigneur de guerre Gritl, personne ne doutera plus de la puissance de sa nouvelle bande.
 
-
+<span id="page-33-0" data-folio="31"></span>
 *Vous menez une vie de chevalier, mais sans avoir d'obligations envers un ordre de chevalerie et sans bénéficier de la protection.*
 
 Tous les chevaliers n'appartiennent pas nécessairement à un ordre. Certains sont adoubés par un noble de manière indépendante, d'autres se déclarent eux-mêmes chevaliers et d'autres encore quittent leur ordre (ou en sont expulsés…) pour suivre leur propre voie. Ces guerriers sont appelés des chevaliers « errants » et se battent pour l'argent, pour l'honneur ou pour leurs propres raisons. Certains sont des mercenaires endurcis ou même ne valent pas beaucoup mieux que des bandits. D'autres sont les champions des opprimés ou les héros de l'ombre altruistes du peuple.
@@ -2136,7 +2212,7 @@ Les chevaliers errants sont des gens aussi divers que leurs origines. Ils porten
 
 **Possessions :** compagnie de chevaliers, écuyer
 
-
+<span id="page-34-0" data-folio="32"></span>
 Humain
 
 *Vous incarnez la férocité et la force du dieu du combat, des loups et de l'hiver.*
@@ -2183,7 +2259,7 @@ Mais les fidèles d'Ulric n'aiment pas se contenter de monter la garde passiveme
 
 **Compétences :** Savoir (Au choix), Signes secrets (Ulric) **Talents :** Endurci, Exaltant, Imperturbable, Volonté de fer **Possessions :** compagnie de Chevaliers du Loup Blanc, Novice
 
-
+<span id="page-35-0" data-folio="33"></span>
 Les Loups Blancs sont célèbres pour leur férocité au combat, leur loyauté inébranlable les uns envers les autres et une tendance à l'impétuosité. Ils sont davantage dans leur élément quand ils mettent des ennemis en pièces que quand ils doivent défiler sur le terrain de parade ou s'embourber dans les questions politiques, ce qui veut dire qu'ils se contentent généralement de suivre les ordres de leur grand maître pourvu que cela les mène à une bataille glorieuse.
 
 Chaque grand maître supervise une salle capitulaire incluant plusieurs compagnies de bataille. Ces compagnies adoptent des couleurs spécifiques dans leur blason. Par exemple, la compagnie rouge est établie à Altdorf tandis que la compagnie bleue a son quartier général à l'extérieur de la cité de Middenheim. Chaque compagnie consacre une unité de ses meilleurs guerriers à la protection du Grand Temple d'Ulric à Middenheim. Il existe souvent une rivalité amicale entre les compagnies de bataille, qui s'affrontent lors de compétitions informelles pouvant être des tournois de lutte, de combat à la hache et de prouesses de chasse ou de force.
@@ -2214,7 +2290,7 @@ Les Loups Blancs préfèrent chevaucher au combat tête nue, en maniant un grand
 
 Les généraux ont toujours hâte de déployer les Loups Blancs, car leur férocité et leur bravoure sont dévastatrices pour n'importe quelle armée ennemie. Mais ils sont impulsifs. Quand leur sang s'échauffe, ils font fi de toute prudence et chargent dans la mêlée.
 
-
+<span id="page-36-0" data-folio="34"></span>
 ## **CHEVALIER DU SOLEIL FLAMBOYANT**
 
 Humain
@@ -2267,7 +2343,7 @@ Les Soleils flamboyants sont connus pour leur étude de la stratégie et des tac
 
 – Cristobál Cardana, Chevalier du Soleil flamboyant
 
-
+<span id="page-37-0" data-folio="35"></span>
 La structure de commandement du Soleil flamboyant est composée d'un grand maître dans l'Empire qui supervise des groupes appelés des komturies un peu partout sur ce territoire. Chacun de ces groupes de combat très soudés est commandé par un hochmeister, qui mène ses chevaliers au combat et les choisit avec soin pour remplir des missions spécifiques. Il existe de petits sous-ordres de croisade, notamment les Chevaliers de la Couronne et les Chevaliers du Bouclier Étincelant, qui ont respectivement leur salle capitulaire à Magritta et dans le port des épices de Copher. Chaque sous-ordre est chargé d'incarner les valeurs spirituelles de l'ordre principal, mais avec certaines altérations conçues pour le rendre plus admirable aux yeux des différentes cultures au sein desquelles il opère. Ainsi les Chevaliers du Champ Verdoyant ne sont chevaliers que de nom, car il s'agit en réalité de forestiers d'élite basés à Talabheim.
 
 #### **Histoire**
@@ -2296,7 +2372,7 @@ Les chevaliers de l'ordre portent des armures laquées noires décorées d'or po
 
 Les Soleils flamboyants sont fiers de leur polyvalence et de leur ingéniosité au combat. Avant tout affrontement, ils étudient la disposition de leurs ennemis, la configuration du terrain et toute circonstance inhabituelle. Puis ils déploient les armes et les tactiques convenant le mieux à la situation. Cela peut nécessiter de l'inventivité ou de l'improvisation, par exemple en changeant d'arme en plein milieu du combat ou en utilisant des boucliers réfléchissants pour aveugler l'ennemi.
 
-
+<span id="page-38-0" data-folio="36"></span>
 *Vous avez fait serment de garantir la loyauté envers l'Empire et de le défendre contre le Chaos.*
 
 Les Chevaliers Panthères sont l'ordre séculier le plus répandu dans l'Empire, et seule la Reiksguard les dépasse en puissance. Ils ne servent la cause d'aucune province en particulier et apportent un soutien militaire à tout général ou dirigeant qui mérite leur assistance.
@@ -2345,7 +2421,7 @@ L'ordre est renommé pour ses prouesses au combat, pour sa haine fanatique des m
 
 **Talents :** Désarmer, Exaltant, Frappe blessante, Volonté de fer **Possessions :** écuyer, une grande unité ou plusieurs petites unités de Chevaliers Panthères
 
-
+<span id="page-39-0" data-folio="37"></span>
 Les Chevaliers Panthères ont des douzaines de salles capitulaires, toutes placées sous le commandement du grand maître, le baron Heinrich von Torlichheim. Certains régiments adoptent des noms de compagnie et des tactiques qui leur sont propres, notamment le régiment des Crocs sortis, connu pour combattre avec un zèle toujours grandissant, l'escadron de la Griffe de la Panthère, qui se bat courageusement aux côtés des nains, et les Chats sauvages, qui utilisent leurs lances de cavalerie pour tenir les ennemis volants à distance.
 
 #### **Histoire**
@@ -2381,7 +2457,7 @@ Les Chevaliers Panthères sont très fiers de leur apparence sur la place d'arme
 
 Les Chevaliers Panthères emploient des tactiques de cavalerie de choc classiques, en chargeant puis en combattant à l'épée et au bouclier pour vaincre leur ennemi. Ils sont connus pour leurs manœuvres d'une fluidité impeccable, où chaque régiment se déplace comme un seul homme. Même si ce sont des guerriers accomplis, ils n'aiment pas se battre à pied.
 
-
+<span id="page-40-0" data-folio="38"></span>
 ## Notes de réflexion sur un harnois médiocre des umgi
 
 La première chose que remarque n'importe quel forgeron dawi en observant une armure créée par les umgi, c'est qu'elle est extrêmement fine et flexible. L'acier de plusieurs plastrons que j'ai examinés faisait à peine l'épaisseur de l'ongle du gros orteil et je pouvais le prendre dans mes mains et le plier sans effort. Malgré cette fragilité apparente, l'acier était bien forgé et trempé : même après avoir subi des chocs importants, il reprenait sa forme d'origine. La mince feuille ne pouvait pas résister aux mêmes avanies que des pièces d'armure équivalentes produites par des forgerons dawi, mais nous ne devons pas juger les armures des umgi uniquement sur leur solidité. La radinerie et l'incompétence peuvent expliquer certains défauts de ces armures, mais l'acier doit être fin et léger afin que la frêle carrure d'umgi sur laquelle il est porté puisse en supporter le poids.
@@ -2398,7 +2474,13 @@ Les modèles de heaume portés par les hominets chevaliers sont d'une variété 
 
 ce nom sont doublés de cuir rembourré dur, moins confortable, mais bien plus résistance et donnant une meilleure absorption des chocs. La visière du heaume se relève en retirant une goupille de chaque côté. Ces goupilles se perdent souvent lors d'un combat, ce qui compromet la protection du heaume. Les heaumes des Brise-Fer dawi ne souffrent pas de ce défaut car nos forgerons savent qu'il est important de prendre le temps de fabriquer une vraie charnière. La plaque faciale, aussi appelée masque, couvre la visière et les plaques des joues. Le grand nombre de morceaux de métal nécessaires pour former un seul et unique casque compromet gravement sa solidité et son intégrité. Seuls les aveugles parmi vous auront raté le fait qu'un forgeron impérial a ajouté des décorations sophistiquées proclamant son allégeance envers l'ami des nains Sigmar. Admirable, mais pourquoi des ornementations si excessivement recherchées, là où une inscription runique soignée aurait rempli la même fonction sans affaiblir la résistance de la structure ? Quant au cimier ridicule, mieux vaut ne pas s'attarder dessus.
 
+<span id="page-41-0" data-folio="39"></span>
+<span id="page-42-0" data-folio="40"></span>
 
+
+## [AA 4] LES CHIENS DE GUERRE
+
+*Folio 41+*
 
 # • LES CHIENS DE GUERRE •
 
@@ -2420,7 +2502,7 @@ Cela peut être pratique pour ceux prêts à les embaucher, car même s'ils coû
 
 Les mercenaires les plus ambitieux de l'Empire gravitent autour de Kislev ou des Principautés frontalières pour faire fortune. Quelques rares chanceux reviennent avec beaucoup d'histoires de lieux exotiques et de bravoure, mais la plupart disparaissent pour toujours.
 
-
+<span id="page-43-0" data-folio="41"></span>
 ## **LE PAYS DES MERCENAIRES**
 
 Les mercenaires sont si demandés dans le Vieux Monde (et au-delà) que des compagnies se sont formées un peu partout. Il existe même des mercenaires nains, même si, sans surprise, leurs tarifs sont élevés. Mais lorsque la plupart des citoyens du Vieux Monde entendent le mot mercenaire, ils pensent aux compagnies professionnelles composées des soldats de Tilée.
@@ -2445,7 +2527,7 @@ Au printemps, les « Aigles de Rémas » écrasèrent l'armée du Comte Noir à 
 
 Mais au lieu de renvoyer ses hommes chez eux, Rienzi les garda à son service. Les offres affluaient depuis les autres cités-États et Rienzi savait reconnaître une activité rentable quand il s'en présentait une.
 
-
+<span id="page-44-0" data-folio="42"></span>
 L'armée de mercenaires partit à la rencontre des tribus d'orcs. Rienzi monta sa tente d'un côté d'une rivière puissante depuis lequel il pouvait observer les campements ennemis. Il remarqua que divers contingents d'orcs se battaient parfois entre eux, que d'ailleurs, toute l'armée était manifestement déchirée par des dissensions et que seule l'intervention personnelle du grand seigneur de guerre orc maintenait son unité.
 
 Rienzi décida que plutôt que de combattre les orcs, les Aigles allaient se contenter d'embaucher la moitié de cette armée pour combattre l'autre moitié. Ainsi, quel que soit le camp vainqueur, les Tiléens ne pouvaient pas perdre et le butin récolté par la moitié victorieuse paierait son coût d'embauche.
@@ -2472,7 +2554,7 @@ Tobaro, bâtie dans des falaises donnant directement sur la mer Tiléenne et ave
 
 Sartosa est un cas unique car ses habitants servent comme corsaires mercenaires (les « chiens de guerre des mers ») une saison, puis s'attaquent à leurs clients en tant que pirates l'année suivante.
 
-
+<span id="page-45-0" data-folio="43"></span>
 Luccini embauche des bateaux sartosiens pour protéger son commerce et ses côtes contre les corsaires arabéens, tandis que, selon les rumeurs, Marienburg paierait ces bateaux pour harceler les navires commerciaux de Magritta et de Bilbali. Même si Sartosa semble anarchique, une règle ferme y est toujours appliquée : ne jamais attaquer les bateaux pilotés par d'autres capitaines sartosiens. C'est mauvais pour les affaires. La dernière personne à avoir violé cette loi, le capitaine bretonnien Guillaume « le Borgne », a fini par être capturé par les autres capitaines. Il est maintenant surnommé « Will l'Aveugle ».
 
 #### **Dans l'Empire**
@@ -2495,7 +2577,7 @@ Du moins c'est ainsi que les choses sont censées fonctionner, mais la corruptio
 
 Les prêtres de Myrmidia s'attendent à recevoir quelques couronnes pour leurs services d'intermédiaire, mais ils savent que tous ceux qui en ont besoin ne peuvent pas se permettre de payer leur prix. Si un client n'a pas d'or, ils acceptent un troc : quelques moutons ou têtes de bétail, une part des récoltes ou un serment de service. Voire même quelques sous de cuivre tant que la cause semble noble. Les Myrmidéens font aussi commerce d'informations, donc si un acheteur leur apporte des rapports crédibles sur de nouvelles tactiques ou stratégies, cela peut remplacer l'argent.
 
-
+<span id="page-46-0" data-folio="44"></span>
 *Vous comptez sur votre vitesse pour trouver l'ennemi, distinguer vos alliés de ses éclaireurs et frapper sans prévenir là où il s'y attend le moins.*
 
 Comme elles comptent moins de cavalerie lourde que l'Empire, les armées de mercenaires tiléens se reposent sur des cavaliers rapides aux armes légères pour leur fournir une puissance de frappe mobile. Plutôt que de charger frontalement, tête baissée, sur les piques de l'ennemi, les cavaliers légers tiléens, appelés des *stradioti* dans leur langue, préfèrent frapper sur les flancs ou, idéalement, à l'arrière, là où le train de bagages de l'ennemi est une cible très tentante.
@@ -2546,7 +2628,7 @@ cavalerie, page
 
 **Possessions :** cheval de guerre, paire de pistolets avec poudre et munitions ou arc avec carquois de 10 flèches, plastron, vêtements flamboyants
 
-
+<span id="page-47-0" data-folio="45"></span>
 Même si les *stradioti* peuvent venir de n'importe quelle partie de la Tilée (généralement les petites villes et l'arrière-pays des grandes cités-États), les premiers et les plus fameux apparurent et prospérèrent dans les villages des montagnes de la chaîne des monts Appucini et les petits territoires de l'ouest des Principautés Frontalières.
 
 Une vie passée à effectuer des raids et à se défendre contre les raids des autres, que ce soient des humains, des gobelins ou des hommes-bêtes, a engendré des guerriers montés qui frappent leur cible rapidement, causent autant de confusion et de panique que possible puis repartent à cheval avant que l'ennemi puisse réagir. Les cavaliers légers des terres désertiques d'Arabie ont à peu près les mêmes stratégies que les *stradioti* tiléens et beaucoup de compagnies de cavaliers arabéens travaillent avec des commandants mercenaires. Les cavaliers ungols des steppes du nord jouent également un rôle similaire dans les armées de Kislev et leurs compagnies, appelées des *rota*, peuvent travailler comme groupe de mercenaires.
@@ -2569,7 +2651,7 @@ Il rit tandis que ses petits-enfants poussent des cris et des exclamations.
 
 *Mais on n'a jamais retrouvé Alvazzo. Plus tard, j'ai entendu dire qu'il avait fait un excellent repas pour le chef des orcs, en tant que plat principal. Et je ne donne pas tort aux orcs. Quand vous êtes mercenaire, vous voulez être payé et un accord est un accord. »*
 
-
+<span id="page-48-0" data-folio="46"></span>
 *La discipline et l'entraînement. Si vous gardez votre sangfroid et faites face à l'ennemi, aucune force sur un champ de bataille, pas même les chevaliers impériaux les plus lourds, ne peut arrêter une phalange de piquiers.*
 
 Toutes les villes et villages du Vieux Monde ont leur milice, un effectif d'habitants armés qui peut être rassemblé rapidement pour défendre les maisons et les champs ou se battre au service de son seigneur pendant quelques semaines. Cependant, leur manque de discipline et leur désir de rentrer chez eux, où ils ont une famille et un métier civil, limite l'utilité de ces hommes lors des longues campagnes ou face à des cavaliers avec armes et armure lourdes.
@@ -2621,7 +2703,7 @@ résistant
 
 **Possessions :** bâton de rang, brassards et jambières d'acier, cheval de guerre léger, étendard de l'unité, porte-étendard, uniforme de qualité
 
-
+<span id="page-49-0" data-folio="47"></span>
 Les piquiers se sont développés à partir des milices tiléennes quand une infanterie est devenue nécessaire sur le long terme pour pouvoir s'opposer à une cavalerie en armure, ou à des gobelins chevaucheurs de loups. En formation de grand rectangle avec les trois premiers rangs de piques pointées vers l'extérieur tandis que les autres restent levées bien haut pour protéger contre les flèches, la phalange de piquiers est un spectacle impressionnant. Rares sont les bêtes qui chargent volontairement une forêt de pointes de lance tournées vers eux et les soldats à pieds doivent esquiver plusieurs attaquants avant même d'arriver au contact d'un piquier.
 
 Mais la phalange a des faiblesses. Peu manœuvrable, elle ne peut ni tourner rapidement ni faire volte-face. S'ils sont attaqués sur les flancs ou, pire, par derrière, les piquiers risquent de paniquer et de perdre toute discipline, ce qui peut facilement se révéler fatal. C'est pourquoi ils sont généralement placés au cœur d'un dispositif, avec leurs côtés vulnérables protégés par la cavalerie et les arbalétriers.
@@ -2651,7 +2733,7 @@ Tilée, 1711 CI. Depuis le sommet d'une colline, entouré par sa garde personnel
 - *« Monsieur ? Nous nous rendons ? »* demanda l'homme déboussolé.
 - *« Non, idiot, »* cria le Comte, *« c'est une offre de mission ! Si vous ne pouvez pas les battre, achetez-les ! »*
 
-
+<span id="page-50-0" data-folio="48"></span>
 ## **SPÉCIALISTE DE SIÈGE**
 
 Halfling, haut elfe, humain, nain
@@ -2706,7 +2788,7 @@ qualifié (Ingénierie), Vigilance
 
 – Berndt Lance-de-lave, -1778 CI
 
-
+<span id="page-51-0" data-folio="49"></span>
 *« N'oubliez pas que lorsque vous construisez un mur derrière lequel vous abriter, vous construisez également un piège. Si le mur est solide et flanqué de tours, l'ennemi sera piégé, mais si le mur est pris, alors les autres murs vont piéger vos défenseurs sur place et rendre les conditions idéales pour un massacre. »*
 
 #### – Attribué à Magnus le Pieux, 2302 CI
@@ -2733,8 +2815,13 @@ Dans l'Empire, les spécialistes de siège sont surtout des nains en raison de l
 
 Pendant sa campagne de conquête, Borgio l'Assiégeant voulait un nouveau modèle de régiment. Il exigea des tireurs pouvant abattre les défenseurs sur les murs des remparts tout en résistant aux tirs de projectiles dans leur direction. Il voulait que les mêmes hommes soient capables de tenir les remparts d'un château pour le défendre contre une attaque, de fournir un tir de couverture aux sapeurs et aux mineurs, d'occuper les tours de siège et d'être des combattants endurants face à une sortie ennemie. Les arbalétriers de Braganza, équipés d'armures lourdes et de pavois, se sont révélés à la hauteur de la tâche, même si leur grande expertise se voit à leurs prix élevés.
 
-
+<span id="page-52-0" data-folio="50"></span>
 50
+
+
+## [AA 5] LA TILÉE ET LES PERSONNAGES TILÉENS
+
+*Folio 51+*
 
 # LA TILÉE ET LES PERSONNAGES TILÉENS • •
 
@@ -2750,7 +2837,7 @@ Peut-être est-ce l'influence des antiques ruines elfiques sous les fondations d
 
 Mais la Tilée a ses propres périls, le principal étant les pirates sauvages de Sartosa au large de la côte sud. Que ce soit en attaquant les navires de toutes les nations ou les faisant naufrager sur les rochers, les Sartosiens considèrent tous les autres comme des proies. Ils sont parfois embauchés par un commerçant pour attaquer les affaires d'un rival, mais sont prompts à changer de camp si l'opportunité se présente. Il n'est dès lors pas étonnant que beaucoup de rumeurs affirment que Sartosa est un centre majeur du culte de Stromfels, le dieu requin que les Tiléens appellent *Stromfalo*.
 
-
+<span id="page-53-0" data-folio="51"></span>
 | Cité       | Type de gouvernement                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Dirigeant actuel                                                                                                                                                                    |  |  |
 |------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|--|
 | Luccini    | Principauté. Traditionnellement, les princes dirigeants affirment descendre<br>de l'un des jumeaux fondateurs de la ville, Lucan et Luccina. Beaucoup<br>de guerres civiles ont eu lieu entre ces deux dynasties.                                                                                                                                                                                                                                                                                                                           | Lorenzo Lupo, qui prétend<br>descendre à la fois de Lucan<br>et de Luccina                                                                                                          |  |  |
@@ -2762,7 +2849,7 @@ Mais la Tilée a ses propres périls, le principal étant les pirates sauvages d
 | Trantio    | Principauté. Depuis que Marco Colombo a vaincu la république<br>corrompue qui avait renversé le prince Orlando, les princes de la cité<br>doivent être des maîtres marchands autant que des dirigeants royaux.                                                                                                                                                                                                                                                                                                                              | Prince marchand Ettore Rinaldo                                                                                                                                                      |  |  |
 | Verezzo    | République. Les diverses familles marchandes sont divisées en factions<br>représentées par diverses couleurs de vote (les Rouges, les Verts, les<br>Bleus et les Jaunes). Le chef actuel de la faction des Jaunes est un prince<br>marchand nommé Groccolo, mais quand l'or qu'il avait levé pour payer<br>une grande force de mercenaires a disparu, l'armée s'est mutinée. Malgré<br>ce coup du sort, les Jaunes s'accrochent au pouvoir, mais Bastino Batta<br>des Rouges devient de plus en plus populaire parmi les princes marchands. | Les Jaunes                                                                                                                                                                          |  |  |
 
-
+<span id="page-54-0" data-folio="52"></span>
 ## INDEX GÉOGRAPHIQUE DE TILÉE
 
 **Taille :** 1 = hameau, 2 = village, 3 = ville, 4 = grande ville. **R = Richesse** (voir page 71 de **Mort sur le Reik - Compagnon**). **Garnison/Milice :** une garnison est composée de soldats professionnels en poste de manière permanente et disponibles la majeure partie du temps. Une milice est levée parmi la population locale et n'est disponible que de manière saisonnière. La lettre après le nombre représente la qualité de la force armée : **a = soldats bien formés**, bien entraînés et bien équipés ; **b = troupes ordinaires** avec un entraînement et un équipement moyens, **c = troupes mal équipées**, qui doivent peut-être fournir leur propre équipement, généralement de mauvaise qualité.
@@ -2784,7 +2871,7 @@ Les garnisons et les milices des villes et villages tiléens ont tendance à com
 | Ravola      | 3      | Dolchellata<br>Belladonna                            | 9 500  | 3 | Vin                                                                          | 30b/300c                        | Meilleurs vignobles de Tilée                                                                                                                                                        |
 | Toscania    | 2      | Dolchellata<br>Belladonna                            | 365    | 1 | Métal                                                                        | 50b/135c                        | Un comptoir de commerce<br>nain a été établi ici                                                                                                                                    |
 
-
+<span id="page-55-0" data-folio="53"></span>
 | Emplacement       | Taille | Dirigeant                                          | Pop    | R | Production                                 | Garnison/<br>Milice           | Notes                                                                                           |
 |-------------------|--------|----------------------------------------------------|--------|---|--------------------------------------------|-------------------------------|-------------------------------------------------------------------------------------------------|
 | Udolpho           | 1      | Melmoth<br>Udolpho                                 | 100    | 2 | Subsistance                                | –/5a                          | Terres honnies de tous car<br>supposées hantées                                                 |
@@ -2805,7 +2892,7 @@ Les garnisons et les milices des villes et villages tiléens ont tendance à com
 | Zorastra          | 3      | Le Triumvirat                                      | 6 250  | 3 | Commerce, laine,<br>poisson salé, vivres   | 35a, 75b/300c                 | Une ville portuaire célèbre<br>pour ses défenses maritimes                                      |
 | SARTOSA           | 3      | La Princesse des<br>Pirates                        | 15 500 | 3 | Commerce (en quelque<br>sorte)             | 550b,<br>1 600c/–             | Repaire hors-la-loi et<br>anarchique de pirates                                                 |
 
-
+<span id="page-56-0" data-folio="54"></span>
 | Emplacement | Taille | Dirigeant                               | Pop    | R                                                                                                              | Production                                                   | Garnison/<br>Milice                                                                                                     | Notes                                                                                        |
 |-------------|--------|-----------------------------------------|--------|----------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
 | TOBARO      | 4      | Prince Tibaldus<br>Marsarius di<br>Vela | 35 000 | Commerce, pierre,<br>350a,<br>poisson salé, produits<br>4<br>500b/400b,<br>de luxe (argent,<br>800c<br>gemmes) |                                                              | Isolée de son arrière-pays par<br>les monts Abasko et rendue<br>quasi-inatteignable via la mer<br>à cause du Pic du Fol |                                                                                              |
@@ -2836,7 +2923,7 @@ Si vous utilisez les règles de commerce de **Mort sur le Reik - Compagnon**, le
 | Automne   | 0,5 CO  | 2 CO             | 5 CO | 0,5 CO          |  |
 | Hiver     | 1 CO    | 3 CO             | 5 CO | 1 CO            |  |
 
-
+<span id="page-57-0" data-folio="55"></span>
 ## **LES MERCENAIRES TILÉENS DANS L'EMPIRE**
 
 Les mercenaires tiléens servent dans l'Empire depuis l'Ère des Guerres, dont les incessants conflits civils leur fournissaient constamment du travail. À une époque où même les Grandes Provinces s'effondraient, seuls les Comtes Électeurs et les nobles les plus puissants sous leur commandement disposaient d'assez d'or pour embaucher des troupes réellement professionnelles. Ces soldats étaient capables de balayer les milices rebelles ou les serviteurs de barons bandits rêvant de gloire, ainsi que de protéger les électeurs contre les mercenaires des autres électeurs. Les plus grandes villes libres les imitèrent et embauchèrent leurs propres mercenaires pour soutenir les factions ayant leurs faveurs, ou garantir leur propre neutralité.
@@ -2861,7 +2948,7 @@ Les règles données dans ces pages représentent des Personnages tiléens nés 
 
 Les Personnages venant de Luccini peuvent, s'ils le désirent, remplacer l'un de leurs Talents de départ par Destinée (voir *La Destinée en Tilée*). Les Personnages elfes, halflings et nains utilisent les règles telles qu'indiquées dans le *chapitre 2* de **WFJDR**.
 
-
+<span id="page-58-0" data-folio="56"></span>
 ## LA DESTINÉE EN TILÉE
 
 Le rituel de la Destinée est une coutume impériale qui n'est pas pratiquée en Tilée, sauf dans une région : la ville de Luccini, qui abrite le siège du culte de Morr, et ses environs. Les érudits pensent que les mercenaires de Luccini revenant du Reikland ont rapporté ce rite avec eux, car beaucoup avaient épousé des Reiklanders en route. Maintenant, les enfants fêtant leur dixième anniversaire sont souvent emmenés par leurs parents au Grand Mausolée de Luccini, où les *Veggenti*, un ordre de femmes mystiques vénérant Morr, prononcent leur destin cryptique.
@@ -2887,7 +2974,7 @@ Ambrogio, Antonius, Balsamo, Bartolomeo, Bonanno, Brancaleone, Ettore, Franchino
 
 Acciaioli, Acerbi, Albano, Alberti, d'Amoto, Barbacia, Barbigia, Barbolini, Bellegno, Bianco, Boccole, Calbo, Calcagnini, Calvis, Capello, Corbo, Fabbro, Figino, Filago, Filiarchi, Fiolo, Firavanti, Foscari, Fulci, Guerra, Malatesta, Marsillach, Molino, Pentangeli, Rosso, Udolpho, Vitelli, Zeluco
 
-
+<span id="page-59-0" data-folio="57"></span>
 ## CHRONOLOGIE DE LA TILÉE
 
 L'Histoire des cités-États querelleuses de Tilée est consignée dans plusieurs chroniques compilées au fil des siècles. Les disputes et les rivalités anciennes entres cités sont si complexes que ces chroniques se contredisent fréquemment les unes les autres, par exemple quand les deux camps affirment avoir gagné une même bataille. Quand un prince tyrannique a été renversé et une république proclamée pour le remplacer, ou encore quand un seigneur de guerre ambitieux a pris le pouvoir et s'est revendiqué prince d'une ville, les chroniques ont été savamment révisées en faveur du nouveau régime. Pour toutes ces raisons, l'Histoire tiléenne est un sujet compliqué et déroutant. Toutes les dates sont données dans le calendrier sigmarite de l'Empire, conformément à l'usage parmi les historiens du Vieux Monde.
@@ -2954,7 +3041,7 @@ Des mercenaires tiléens se battent des deux côtés dans les guerres civiles ra
 
 Une série de conflits sans vainqueur clair éclatent entre les barons bretonniens et les mercenaires employés par le prince de Miragliano. Les escarmouches ont lieu dans les contreforts des montagnes Irrana, près de la petite ville de Ravola célèbre pour ses vignobles.
 
-
+<span id="page-60-0" data-folio="58"></span>
 #### **1425 CI**
 
 Le prince de Miragliano organise une conférence diplomatique pour mettre un terme aux querelles entre les propriétaires terriens tiléens et les barons bretonniens. Le baron du Bors de Bretonnie défie le veneur tiléen Etto le Fougueux à la joute. Lors du tournoi de Ravola qui en découle, la fine fleur de la chevalerie bretonnienne est battue à plate couture par les chevaliers tiléens, ce qui met fin aux prétentions bretonniennes sur les domaines de Tilée.
@@ -3021,7 +3108,7 @@ Piggalo Ier de Tobaro meurt en tombant dans la mer depuis la falaise pendant l'i
 
 L'année des quatre tyrannies de Tilée.
 
-
+<span id="page-61-0" data-folio="59"></span>
 ### **Ère des Lumières**
 
 ### **2000 CI**
@@ -3086,7 +3173,7 @@ Une armée de squelettes arborant la bannière en loques d'Ennio Mordini marche 
 
 Otranto Udolpho, un sorcier dissident, tente de conquérir le domaine Udolpho à la tête d'une armée composée de morts-vivants et d'un régiment de démonettes. À Luccini, le cadavre d'Ernezio Porcurio est retrouvé à l'intérieur d'une cave sans fenêtres, verrouillée de l'intérieur, sous son château. Aucune trace du tueur ne peut être trouvée.
 
-
+<span id="page-62-0" data-folio="60"></span>
 #### **2430 CI**
 
 Melmoth Udolpho vend son âme à Slaanesh en échange de la promesse de ne plus jamais s'ennuyer.
@@ -3143,6 +3230,12 @@ Après plusieurs défaites et humiliations, le régiment exsangue formé par Leo
 
 Poggio, prince de Pavona et septième mari de Lucrezzia Belladonna, meurt après avoir consommé trois bouteilles d'un vin de qualité douteuse.
 
+<span id="page-63-0" data-folio="61"></span>
+
+
+## [AA 6] LE CULTE DE MYRMIDIA
+
+*Folio 62+*
 
 # • LE CULTE DE MYRMIDIA •
 
@@ -3162,7 +3255,7 @@ Myrmidia prodigue du réconfort au soldat à la veille de la bataille, mais donn
 
 **Symboles sacrés courants :** une lance derrière un bouclier, un aigle.
 
-
+<span id="page-64-0" data-folio="62"></span>
 Les statues de la déesse la représentent sous la forme d'une femme dans toute la force de sa jeunesse qui se tient droite, la tête haute, revêtue de la panoplie traditionnelle de Rémas à l'âge classique, un casque à plumes et une cuirasse de bronze sous laquelle ses muscles sont visibles. Elle s'appuie sur une lance et porte un bouclier frappé d'un aigle, qui symbolise son esprit acéré et sa vision d'ensemble des batailles. Un lion repose souvent à ses pieds, ce qui montre qu'elle peut soumettre même l'ennemi le plus puissant grâce à ses faits d'armes.
 
 Myrmidia n'aime ni la force brute, ni la violence aveugle. Elle est la déesse tutélaire de l'art et de la science de la guerre, reconnaissant à la fois l'élégance du combat singulier et la vision globale de la grande stratégie. Elle récompense ceux qui livrent leurs guerres avec honneur. Elle encourage la poursuite de la sagesse dans l'art de la guerre et donne aux commandants un brio tactique sur le champ de bataille et aux combattants individuels la vivacité des bottes.
@@ -3183,7 +3276,7 @@ Le folklore tiléen affirme que tous les habitants du sud du Vieux Monde sont le
 
 *Bellona Myrmidia*, texte principal de la branche tiléenne du culte, affirme que le dirigeant de la cité s'appelait lui aussi Tylos et qu'il passa un pacte avec une déesse de la civilisation, de la beauté et de l'honneur, qui l'aida à élever sa ville jusqu'à la grandeur. Mais cette déesse abandonna Tylos car il était orgueilleux et jaloux, et la cité fut détruite peu après. Selon ce texte, cette déesse était un avatar de Myrmidia et à cette époque, elle était pacifiste comme sa sœur, Shallya.
 
-
+<span id="page-65-0" data-folio="63"></span>
 #### DIFFÉRENCES ESSENTIELLES DANS LA THÉOLOGIE MYRMIDÉENNE SELON LES TILÉENS ET SELON LES ESTALIENS
 
 | Sujet                                                                              | Tiléens                                                                                                                                                                | Estaliens                                                                                                                                                                                                     |
@@ -3205,7 +3298,7 @@ Encouragée par ses expériences, Myrmidia abandonna ses principes pacifistes et
 
 Selon *Bellona Myrmidia*, pendant cette période, Myrmidia fut charmée par un noble estalien nommé Ottokar et grâce à son affection et à sa faveur, il en vint à régner sur Magritta. Pendant qu'elle était en campagne, il se révéla être un tyran cruel et, craignant ses représailles à son retour, il organisa l'assassinat de la déesse. Myrmidia fut terrassée par une fléchette empoisonnée, mais Ottokar fut puni pour sa cruauté. L'histoire raconte qu'il fut maudit par Shallya, Verena et Morr et condamné à perdre la santé et l'esprit sans jamais recevoir de mort miséricordieuse.
 
-
+<span id="page-66-0" data-folio="64"></span>
 ## **La tradition estalienne**
 
 Les Magrittois sont en farouche désaccord avec la théologie enseignée à Rémas. Ils conspuent le récit reman comme une simple fable ; après tout, les Tiléens sournois ne sontils pas connus pour leurs duperies ? Myrmidia n'est-elle pas née de l'union de Morr et de Verena, fille de la mort et de la justice ? Les Estaliens certifient la primauté des prêtres de l'Archecclesiastium et enseignent que leur autorité est cautionnée par le *Bellum strategia*, un texte aux fragiles pages jaunies conservé sous clé dans la bibliothèque de leur temple. Ils affirment que c'est à Magritta que Myrmidia descendit des cieux pour la première fois, atterrissant sur le rocher même sur lequel est construit l'Archecclesiastium. Dans les entrailles du temple, une empreinte de son pas est visible sur la pierre sacrée.
@@ -3230,7 +3323,7 @@ Ces objets rares, pour lesquels les antiquaires sont prêts à payer des fortune
 
 Les théologiens de l'Empire prennent soin de ne pas susciter le courroux des suivants d'un dieu, mais beaucoup d'entre eux doutent secrètement de l'existence d'un ancien empire dans le sud et vont jusqu'à suggérer que les légendes sur Myrmidia ne sont que de pâles copies des légendes sur Sigmar, qui contredisent des faits connus de l'histoire des royaumes au sud au lieu de les confirmer.
 
-
+<span id="page-67-0" data-folio="65"></span>
 ## **Le culte dans l'Empire**
 
 Les Myrmidéens ont peu d'influence dans l'Empire. Les méthodes de guerre de la déesse n'ont ni la férocité directe d'Ulric ni la ferveur patriotique de Sigmar. Elle est considérée comme une « divinité d'officier » qui n'a pas grand-chose à offrir au soldat ordinaire. La plupart des myrmidéens sont vus avec un mélange de suspicion et de curiosité, même si les Chevaliers du Soleil flamboyant sont respectés dans tout l'Empire car célèbres pour avoir été le premier ordre de chevalerie à avoir prêté allégeance à Magnus le Pieux pendant la Grande Guerre contre le Chaos.
@@ -3253,7 +3346,7 @@ Il existe un nombre surprenant d'adorateurs particulièrement fervents de Myrmid
 
 Les Myrmidons se tournent vers la déesse pour qu'elle les exalte. Ces familles et d'autres nobles liés au Solland encouragent souvent leurs fils à rejoindre les rangs des Chevaliers du Soleil flamboyant. Des rumeurs affirment que ce groupe aurait également des liens d'obligation envers la famille Lietdorf de l'Averland, même si le degré auquel les Lietdorf doivent leur prospérité aux Myrmidons ou vice versa n'est pas clair.
 
-
+<span id="page-68-0" data-folio="66"></span>
 ## **FIGURES IMPORTANTES DU CULTE MYRMIDÉEN**
 
 #### **Allurian (-3567 CI à -967 CI)**
@@ -3270,7 +3363,7 @@ Berndt Lance-de-lave vécut pendant la guerre de la Vengeance, où les nains com
 
 Beaucoup de myrmidéens ne jurent que par *L'art de la guerre naine* de Berndt, même s'il n'est pas autant révéré qu'Allurian. Son texte est vu comme une réponse à l'œuvre de l'elfe et il en consacre d'énormes parties à pinailler et à se plaindre au sujet des lacunes occasionnelles d'Allurian plutôt que de fournir ses propres alternatives réalistes. Cela dit, ses défenseurs suggèrent qu'une synthèse des réflexions d'Allurian et de la critique de Berndt fait de l'érudit qui s'y livre un maître stratège disposant d'une vraie polyvalence.
 
-
+<span id="page-69-0" data-folio="67"></span>
 #### **La Jouvencelle Noire (Environ 30 CI en prêtant foi aux légendes)**
 
 Le « *Livre des transgressions* » du *Bellona Myrmidia* raconte l'histoire de la Jouvencelle Noire. Elle fut sauvée par Myrmidia et pour la remercier, elle l'avertit d'une embuscade qui l'attendait. Myrmidia envoya ses forces attaquer ces ennemis par les flancs, ce qui entraîna le Massacre des Trois Gorges.
@@ -3303,7 +3396,7 @@ Mordini était l'un des commandants de mercenaires les plus renommés de l'ère 
 
 Fabriano ordonna à Ennio de marcher sur Organza, envoyant le mercenaire à la mort dans une embuscade soigneusement préparée. Cinq ans plus tard, une armée de squelettes vêtus de cottes de mailles sortit des montagnes sous la bannière en loques de Mordini. Ils pulvérisèrent les armées de Lumbrusco et rasèrent la ville. Des bruits courent selon lesquels Mordini a à présent refortifié la cité et y a établi une cour de morts-vivants.
 
-
+<span id="page-70-0" data-folio="68"></span>
 #### **Borgio l'Assiégeant (2452 CI à 2503 CI)**
 
 Borgio, le prince de Miragliano, fut surnommé « l'Assiégeant » en raison de ses nombreuses campagnes militaires couronnées de succès. Tout au long de sa vie, il combattit toutes les principautés majeures de Tilée.
@@ -3324,7 +3417,7 @@ Marmalodi est un prêtre myrmidéen de Tobaro qui est devenu un expert reconnu e
 
 Le style de Marmalodi est brusque et insensible, et les myrmidéens davantage portés sur la politique ont le sentiment qu'il constitue une mauvaise figure représentative pour le culte. Ils en veulent pour preuve sa recommandation de construire des portes de forteresse d'un mètre vingt de hauteur maximum afin de contrer les attaques des géants et des ogres, qui est un cas typique de ce qui arrive quand la stratégie militaire est placée avant d'autres considérations évidentes. Ce manque de recul a fait de Giovanni un personnage ridiculisé par des villes comme Verezzo et Miragliano.
 
-
+<span id="page-71-0" data-folio="69"></span>
 ## **CROYANCES**
 
 Les préceptes du culte de Myrmidia sont en grande partie dérivés du *Livre de la guerre*, qui raconte douze grandes batailles livrées à l'âge classique avec un commentaire détaillé. Myrmidia est la déesse du champ de bataille, qui inspire le brio tactique et engendre une guerre honorable. Ceux qui vouent leur vie à Myrmidia prisent trois traits principaux au-dessus de tout autre : l'honneur, la connaissance et le sens esthétique.
@@ -3351,7 +3444,7 @@ Quelques rares théologiens audacieux affirment que Ranald, qui doit sa divinit�
 
 À l'exception discutable de Taal et de Rhya, aucun autre dieu majeur ne partage une aussi grande partie de son propre domaine avec d'autres. Dans l'Empire, les théologiens les plus étroits d'esprit soutiennent que cela fait de Myrmidia une divinité assez inutile, qui n'est pas digne d'être vénérée. Évidemment, les myrmidéens ne sont pas d'accord et rétorquent que leur déesse a un domaine à la fois étendu et précis.
 
-
+<span id="page-72-0" data-folio="70"></span>
 ## **COMMANDEMENTS DE MYRMIDIA**
 
 Davantage que pour beaucoup de divinités, les commandements de Myrmidia sont accompagnés de réserves et d'exceptions. Plusieurs contradictions semblent présentes dans la pratique de la foi myrmidéenne. La tromperie fait partie du domaine de Myrmidia, mais l'honneur aussi ; la miséricorde en fait partie, mais l'absence de pitié également. Pour suivre ses commandements sans offenser la déesse, il faut comprendre leurs subtilités.
@@ -3380,7 +3473,7 @@ Cela dit, dans certains cas, la déesse a retiré sa faveur à un myrmidéen qui
 
 Encore un commandement suscitant des débats, car les myrmidéens font remarquer que de nombreux combattants sont des conscrits issus de populations non consentantes, mal entraînés, trompés par de la propagande, des halflings ou faibles pour beaucoup d'autres raisons. Le commandement est donc compris comme s'appliquant aux non-combattants. Quelques myrmidéens radicaux tentent de concevoir des plans de bataille minimisant l'implication des troupes levées à la hâte, même si la déesse n'a pas tendance à punir les myrmidéens plus pragmatiques qui admettent qu'accomplir une telle prouesse est au-delà de leurs capacités.
 
-
+<span id="page-73-0" data-folio="71"></span>
 ## **SUPERSTITIONS DU CULTE**
 
 En plus des commandements, plusieurs superstitions sont communes à tout le culte. Elles ont tendance à être associées à sa branche tiléenne et sont considérées comme assez rustiques et inutiles par les myrmidéens d'Estalie.
@@ -3407,7 +3500,7 @@ Les ulricains plus réfléchis estiment davantage la figure de Myrmidia, car les
 
 Les sigmarites ont tendance à apprécier la stratégie myrmidéenne et font souvent des visites très remarquées dans les temples myrmidéens pour feuilleter des exemplaires de *L'art de la guerre naine* de Lance-de-lave dans la bibliothèque et rappeler aux prêtres leurs victoires conjointes passées.
 
-
+<span id="page-74-0" data-folio="72"></span>
 Dans beaucoup de cas, cette démonstration d'intérêts partagés et d'alliance historique est faite de bonne foi. De nombreux prêtres sigmarites estiment réellement leurs homologues myrmidéens et tirent des avantages d'une réflexion sur leurs principes stratégiques. D'autres ne s'intéressent pas tant que cela à la déesse et à son culte, mais savent qu'encourager la foi en Myrmidia frustre les ulricains. Un courant minoritaire, mais en expansion au sein du culte de Sigmar voit les myrmidéens comme des intrus dont le culte ne devrait pas être reconnu dans l'Empire. Ses membres sont inspirés par les écrits provocateurs du professeur Pfaff, un expert en théologie de l'université d'Altdorf. Selon lui, Sigmar est le seul dieu convenable pour l'humanité car il est le seul à avoir vécu en tant que mortel. Il conteste l'idée que ce soit également le cas pour Myrmidia et son chauvinisme s'attire de plus en plus de soutien au sein du culte officiel. Même s'il n'est ni assez grand ni assez influent pour menacer le culte de Myrmidia pour l'instant, ce mouvement gagne en puissance.
 
 ## **Myrmidia et Handrich**
@@ -3422,7 +3515,7 @@ Officiellement, le culte myrmidéen ne fréquente pas les suivants de Ranald et 
 
 Certains myrmidéens estiment avoir des choses en commun avec la pensée ranaldienne. Ranald est un dieu de la tromperie et la ruse bien mise en œuvre est une partie incontournable de l'enseignement myrmidéen. Des myrmidéens modérés font également remarquer que comme leur propre déesse, Ranald s'oppose à l'injustice. Cependant, Myrmidia est souvent vue comme une déesse d'officiers et son culte considère le ressentiment des ranaldiens envers l'aristocratie comme vulgaire.
 
-
+<span id="page-75-0" data-folio="73"></span>
 ## **Myrmidia et Solkan**
 
 Solkan est une divinité mal connue dont le domaine est la vengeance. Cela peut paraître étrange, mais son culte a des points communs avec celui de Myrmidia, notamment être représenté par des symboles solaires et avoir son centre spirituel à Rémas.
@@ -3451,7 +3544,7 @@ L'initiation au sein du culte de Myrmidia n'implique presque jamais de rite de c
 
 Le meilleur membre de chaque escadrille est élevé au rang de Premier aigle, et à ce stade, il peut devenir un prêtre à part entière. Mais tout d'abord, il doit accomplir une tâche qui l'en rend digne aux yeux de Myrmidia, une épreuve d'héroïsme, de force ou d'intelligence. Ce n'est qu'une fois que le premier aigle a réussi cette tâche qu'il est oint prêtre et rejoint les rangs de l'ordre qu'il a choisi.
 
-
+<span id="page-76-0" data-folio="74"></span>
 ## **L'Ordre de l'Aigle**
 
 *Bellona Myrmidia* affirme que la déesse prend la forme d'un aigle pour partir en reconnaissance des positions ennemies et c'est de cette légende que l'Ordre de l'Aigle tire son nom. Sa responsabilité principale est la gestion quotidienne des temples du culte. Il compte dans ses rangs ceux qui se consacrent aux idéaux de la déesse dans leurs tâches quotidiennes : les entraîneurs au combat, les archivistes, les artisans forgeant les armes et les armures du culte. Les prières quotidiennes de l'ordre louent les héros tombés au combat et ses sermons inspirent des prouesses de vaillance parmi ceux qui s'apprêtent à partir à la guerre. Un adepte de l'Ordre de l'Aigle peut devoir quitter son temple pour parcourir les couloirs poussiéreux d'une bibliothèque à moitié oubliée afin d'y chercher du savoir militaire obscur, ou pour mener une expédition dans les terres sauvages afin de récupérer une épée sacrée ou un fragment d'armure magique perdu sur un champ de bataille dissimulé là depuis longtemps.
@@ -3474,7 +3567,7 @@ En Estalie, l'Ordre de la Lance Vertueuse est chargé de superviser le travail e
 
 Il existe deux ordres directement affiliés à celui de la Lance Vertueuse, l'Ordre du Titan impitoyable et l'Ordre du Bouclier Étoilé. Ce sont de petits groupes ou des chevaliers ermites qui passent la plupart de leur temps en retraite solitaire.
 
-
+<span id="page-77-0" data-folio="75"></span>
 ## **Les ordres mineurs de Myrmidia**
 
 Au fil des siècles, le culte s'est scindé en divers ordres mineurs, dont la plupart n'existent qu'en Tilée et en Estalie. Mais deux de ces ordres se sont étendus jusqu'à l'Empire.
@@ -3507,7 +3600,7 @@ Les fanatiques de Myrmidia Perfecta croient que l'incarnation d'origine de la d�
 
 Le débat sur le fait de savoir si Myrmidia s'est manifestée sur terre à Rémas ou à Magritta divise le culte selon les frontières culturelles comme géographiques. Même si la plupart des membres du culte considèrent cette fracture comme une divergence d'opinions entre amis, certains extrémistes vont plus loin.
 
-
+<span id="page-78-0" data-folio="76"></span>
 Les Remasiens croient que lorsque Myrmidia partit former son empire, les habitants de l'Estalie s'opposèrent activement à elle et qu'elle envahit leurs terres pour soumettre les hérétiques. Et ils affirment qu'en conséquence, l'Estalie devrait être vassale de la Tilée et payer un lourd tribut en services et en trésors. Pour réduire l'influence estalienne au sein du culte, les membres de cette secte travaillent à s'assurer que les postes importants au sein de la religion ne soient occupés que par des Tiléens, et ils ont recours à la politique, aux pots-de-vin, à la diffamation, à la traîtrise et même au meurtre pour atteindre leurs objectifs.
 
 Pour leur part, les Magrittois ont quasiment la même opinion, mais pensent que ce sont les Tiléens qui résistèrent à Myrmidia et que c'est l'Estalie qui devrait bénéficier de leur asservissement. Ils veillent à ce que les postes importants du culte soient occupés par des Estaliens.
@@ -3530,7 +3623,7 @@ Di Marco a des plans ambitieux pour augmenter le nombre de convertis au sein de 
 
 Mais les efforts de Lorenzo pour promouvoir l'influence myrmidéenne au sein de l'Empire sont entravés par les divisions au sein du culte. L'Ordre de l'Aigle jure fidélité à un grand aigle de Tilée et suit les préceptes de la religion édictés dans *Bellona Myrmidia*. En revanche, les templiers prennent leurs ordres de Magritta et suivent les préceptes indiqués dans *Bellum strategia*. Les supérieurs de Lorenzo veulent donc qu'il impose leurs valeurs aux Chevaliers du Soleil flamboyant, alors qu'il sait que les templiers vont résister à cette manœuvre.
 
-
+<span id="page-79-0" data-folio="77"></span>
 Cette architecture est exotique pour les gens de l'Empire. Dans les grandes villes riches, les murs du temple sont construits en marbre blanc, importé de Tilée. Cependant, la plupart des temples de l'Empire sont bâtis avec des matériaux locaux, à savoir du bois ou du granit, blanchis à la chaux.
 
 Le centre de dévotion envers Myrmidia est le terrain d'entraînement, où les adeptes du culte montrent leur foi par des démonstrations d'excellence. L'entraînement réjouit Myrmidia autant que les prières, et le fracas des armes et l'aboiement des ordres est aussi doux à ses oreilles que les chœurs et la musique sacrée.
@@ -3553,7 +3646,7 @@ Comme l'éducation est très importante pour le culte, la plupart des temples ab
 
 Les autres bâtiments sont les quartiers des prêtres et les baraquements des défenseurs du temple.
 
-
+<span id="page-80-0" data-folio="78"></span>
 *Vous prisez l'honneur, l'obéissance et l'excellence martiale et tactique, pour suivre l'exemple de votre déesse protectrice, Myrmidia*.
 
 Les prêtres de Myrmidia de l'Ordre de la Lance Vertueuse et de l'Ordre de la Furie aident à organiser les rassemblements du culte, à répandre ses enseignements et à mener ses cérémonies. Ils sont souvent recherchés comme conseillers par les généraux et les commandants de mercenaires, surtout en Tilée et en Estalie.
@@ -3605,7 +3698,7 @@ peur (Au choix), Seigneur de guerre
 
 **Possessions :** relique religieuse (myrmidéenne)
 
-
+<span id="page-81-0" data-folio="79"></span>
 ## **MIRACLES DE MYRMIDIA**
 
 Voici plusieurs Miracles myrmidéens qui peuvent être utilisés en plus de ceux présentés dans le chapitre 7 de **WFJDR**.
@@ -3694,12 +3787,17 @@ Vous incarnez Myrmidia sous son aspect le plus furieux.
 
 Vous gagnez le Trait de créature Terreur 1.
 
-
+<span id="page-82-0" data-folio="80"></span>
 ## UNE APPROCHE ALTERNATIVE DES BLESSURES • •
 
 Ce chapitre présente une approche optionnelle des Blessures, des Blessures Critiques et de la mort, différente de celle présentée dans le livre de règles. Si le MJ et les Joueurs préfèrent utiliser ce système, il remplace alors les informations données en pages 172-178 de **WFJDR**.
 
 Le but de ce système alternatif est de réduire la complexité de celui de base pour gérer les blessures et la mort, et d'ajouter des choix tactiques concernant les Localisations sur lesquelles diriger les coups ou porter des pièces d'armure plus lourdes.
+
+
+## [AA 7] MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE
+
+*Folio 81+*
 
 # MISES À JOUR DE L'ÉTAT *HÉMORRAGIQUE*
 
@@ -3729,7 +3827,7 @@ Il existe deux manières de générer une Blessure Critique. L'une consiste à i
 
 Si pendant une attaque, un Personnage obtient un double sur son Test de Corps à Corps ou de Projectiles (ou sur son Test de Capacité de Combat ou de Capacité de Tir si vous n'utilisez pas de Compétence) et réussit ce Test, il a alors infligé des Blessures Critiques, même s'il reste des Blessures à son adversaire.
 
-
+<span id="page-83-0" data-folio="81"></span>
 N'inversez pas votre jet d'attaque pour connaître la Localisation de votre coup comme vous le feriez pour un coup normal. Au lieu de cela, lancez de nouveau 1d100 pour savoir où votre coup touche. Puis lancez encore 1d100 et reportez-vous à la ligne concernée dans le tableau des Blessures Critiques pour cette Localisation.
 
 #### **Infliger un Coup Critique en ayant fait tomber son adversaire à 0 Blessure**
@@ -3754,7 +3852,7 @@ Si un Coup Critique fait tomber un adversaire à moins de 0 Blessure, il ne déc
 
 *Cette fois, Ibrit ajoute 80 au nombre généré par le jet dans le tableau des Blessures Critiques car il inflige 8 Blessures à un adversaire qui est déjà à 0 Blessure. Il obtient 48. 48 + 80 = 128. Hugo subit une main mutilée en plus de son épaule droite luxée et la situation devient vraiment très grave pour l'intrépide aventurier.*
 
-
+<span id="page-84-0" data-folio="82"></span>
 #### RETENIR VOS COUPS
 
 Les règles partent du principe que vous voulez infliger toutes les Blessures Critiques que vous pouvez. Cependant, vous pourriez désirer maîtriser un adversaire sans le tuer. Dans ce cas, vous devez déclarer que vous Retenez vos coups avant de faire le jet pour toucher votre ennemi, ce qui veut dire que vous utilisez le plat de votre lame ou une technique vous permettant d'éviter de blesser gravement votre opposant. Dans ce cas, vous infligez tout de même des Blessures, mais vous n'infligez de Blessure Critique que si votre adversaire tombe à 0 Blessure.
@@ -3779,7 +3877,7 @@ De plus, si vous possédez l'État *Inconscient*, n'importe quel ennemi doté d'
 
 Les Blessures Critiques sont toujours invalidantes pour un Personnage, mais elles ne sont pas assez graves pour qu'il en meure. Se contusionner un orteil est déplaisant, mais ne blesse pas de manière significative. Les Blessures triviales ont une valeur en Blessures de « T » dans les tableaux ciaprès. Elles n'infligent pas de Blessures supplémentaires à un Personnage et elles ne sont pas comptées dans le nombre de Blessures Critiques nécessaires pour tuer un Personnage.
 
-
+<span id="page-85-0" data-folio="83"></span>
 ## TABLEAU DES BLESSURES CRITIQUES À LA TÊTE
 
 | Résultat   | Description                     | Blessures | Effets supplémentaires                                                                                                                                                                                                                                                          |  |  |  |
@@ -3805,7 +3903,7 @@ Les Blessures Critiques sont toujours invalidantes pour un Personnage, mais elle
 | 95-99      | Mâchoire mutilée                | 5         | Le coup vous fracasse totalement la mâchoire : il vous détruit la langue et fait voler vos<br>dents. Vous recevez 4 États Hémorragique et 3 États Sonné. Vous subissez le Traumatisme<br>Fracture (Majeure) et vous perdez votre langue et 1d10 dents – Amputation (Difficile). |  |  |  |
 | 00 ou plus | Crâne fracassé                  | Mort      | Votre tête est écrasée et vous vous écroulez, mort sur le coup.                                                                                                                                                                                                                 |  |  |  |
 
-
+<span id="page-86-0" data-folio="84"></span>
 ### TABLEAU DES BLESSURES CRITIQUES AU BRAS
 
 | Résultat    | Description             | Blessures | Effets supplémentaires                                                                                                                                                                                                                                                                                                                                                                                      |  |
@@ -3831,7 +3929,7 @@ Les Blessures Critiques sont toujours invalidantes pour un Personnage, mais elle
 | 131-135     | Tendons coupés          | 5         | Le coup rend votre bras inutilisable de manière permanente – Amputation (Très Difficile). Vous recevez 3 États<br>Hémorragique et 1 État Sonné. Vous devez réussir un Test de Résistance Difficile (–20) sous peine de subir<br>l'État Inconscient.                                                                                                                                                         |  |
 | 136 ou plus | Démembrement<br>brutal  | Mort      | Votre bras est tranché et vous mourez presque instantanément à cause du choc et de la perte de sang.                                                                                                                                                                                                                                                                                                        |  |
 
-
+<span id="page-87-0" data-folio="85"></span>
 ### TABLEAU DES BLESSURES CRITIQUES AU TORSE
 
 | Résultat    | Description                  | Blessures | Effets supplémentaires                                                                                                                                                                                                                                                                                                                                                                |  |  |  |
@@ -3857,7 +3955,7 @@ Les Blessures Critiques sont toujours invalidantes pour un Personnage, mais elle
 | 111-115     | Hémorragie<br>interne        | 5         | Gagnez 1 État Hémorragique qui ne peut être retiré que par Chirurgie. Vous contractez une Infection<br>du sang (voir Maladies et Infections en page 186 de WFJDR).                                                                                                                                                                                                                    |  |  |  |
 | 116 ou plus | Éventré                      | Mort      | Vous êtes littéralement coupé en deux. Les deux parties de votre corps atterrissent de façon<br>parfaitement aléatoire au sol, et tout Personnage situé à moins de 2 mètres est recouvert de sang.                                                                                                                                                                                    |  |  |  |
 
-
+<span id="page-88-0" data-folio="86"></span>
 ## TABLEAU DES BLESSURES CRITIQUES À LA JAMBE
 
 | Résultat    | Description                  | Blessures | Effets supplémentaires                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |  |  |  |  |
@@ -3883,6 +3981,12 @@ Les Blessures Critiques sont toujours invalidantes pour un Personnage, mais elle
 | 121-125     | Tendon coupé                 | 5         | Votre jambe cède sous le poids de votre corps. Vous gagnez 2 États Hémorragique, 2 États Sonné et 1 État<br>À Terre et vous perdez l'usage de votre jambe – Amputation (Très Difficile).                                                                                                                                                                                                                                                                                                            |  |  |  |  |
 | 126 ou plus | Bassin fracassé              | Mort      | Le coup fracasse votre bassin, coupant une jambe. Vous mourez instantanément à cause du choc traumatique.                                                                                                                                                                                                                                                                                                                                                                                           |  |  |  |  |
 
+<span id="page-89-0" data-folio="87"></span>
+
+
+## [AA 8] LA RÉSERVE DE L'INTENDANT
+
+*Folio 88+*
 
 # • LA RÉSERVE DE L'INTENDANT •
 
@@ -3896,7 +4000,7 @@ Le petit Aldy Champdété, un colporteur halfling, suit des régiments un peu pa
 
 Les soldats, en particulier les vétérans expérimentés ou plus astucieux, transportent bien plus d'équipement à la guerre qu'une lame aiguisée et une armure brillante. Les longues journées de marche et les nuits tendues passées à guetter les assaillants peuvent être rendues bien plus supportables avec quelques accessoires indispensables et un peu de confort matériel.
 
-
+<span id="page-90-0" data-folio="88"></span>
 **Boussole :** cette boussole rudimentaire n'est en fait qu'une aiguille en métal en équilibre sur un axe. Les érudits ne sont pas tous d'accord sur la nature de cet appareil. Certains le soupçonnent d'avoir une affinité avec la matière même du Chaos. D'autres suggèrent qu'il pourrait être attiré vers un énorme bloc de malepierre quelque part dans les steppes septentrionales. Mais l'objet est fiable et incroyablement utile pour s'orienter.
 
 **Cartouchière :** une cartouchière est une ceinture de cuir portée en bandoulière, avec environ une douzaine de petits récipients, généralement en bois, accrochés dessus. Ces récipients peuvent être remplis d'une dose bien précise de poudre noire pour pouvoir ensuite charger une arquebuse plus rapidement et plus facilement.
@@ -3935,7 +4039,7 @@ Les soldats, en particulier les vétérans expérimentés ou plus astucieux, tra
 
 **Réchaud multicuisson du capitaine Braun :** toute une gamme d'équipements dotés de nouveaux gadgets semble émerger des forges de Nuln chaque année. Cette lourde boîte en fer, créée par le célèbre inventeur appelé le capitaine Braun, est dotée de plusieurs compartiments internes pour permettre de cuire plusieurs repas différents à la fois. Son inventeur affirme même que vous pouvez poursuivre la cuisson en vous déplaçant, bien que la boîte chauffe tout de même un peu. Les avantages principaux de cet appareil sont qu'il a besoin de beaucoup moins de combustible pour chauffer, qu'il garde la chaleur plus longtemps et qu'il réduit considérablement les signes révélateurs de la présence d'un 
 
-
+<span id="page-91-0" data-folio="89"></span>
 feu. Certains cuisiniers ne jurent que par cette invention tandis que d'autres trouvent que la transporter partout est un effort inutile et qu'un feu en plein air marcherait tout aussi bien.
 
 **Sous-vêtements en soie :** les petits luxes aident à réduire le stress et la pénibilité de la vie militaire. Des sous-vêtements cousus dans la meilleure soie de Cathay, pour le terrain de parade comme en campagne, sont l'un de ces petits luxes. Ils réduisent également les frottements.
@@ -3978,7 +4082,7 @@ Si vous l'emportez, votre adversaire subit l'État *À Terre* (s'il est monté, 
 
 **Portée Extrême :** comme pour Portée Courte à Longue, mais réduit les Dégâts de l'arme de (Indice).
 
-
+<span id="page-92-0" data-folio="90"></span>
 ## **L'Atout Protectrice**
 
 L'Atout *Protectrice* a été modifié pour le rendre plus facile à utiliser en combat au corps à corps.
@@ -4011,7 +4115,7 @@ Les armes de base sont celles maniées à une main et nécessitant relativement 
 
 **Masse :** la masse classique est composée d'un manche de métal et d'une lourde tête pourvue d'ailettes ou de pics. Même si elle est moins maniable qu'une épée, elle inflige des coups écrasants.
 
-
+<span id="page-93-0" data-folio="91"></span>
 |                   |      |          | TABLEAU DES ARMES DE BASE |             |        |                                            |
 |-------------------|------|----------|---------------------------|-------------|--------|--------------------------------------------|
 | Arme              | Prix | Enc      | Disponibilité             | Allonge     | Dégâts | Atouts et Défauts                          |
@@ -4036,7 +4140,7 @@ Les armes de base sont celles maniées à une main et nécessitant relativement 
 
 **Pique d'armes :** les pioches grossières sont à peine plus qu'un pic de métal au bout d'un bâton, mais les armes mieux fabriquées sont forgées dans de l'acier. Les pioches sont peu maniables, mais sont bien conçues pour fendre les armures.
 
-
+<span id="page-94-0" data-folio="92"></span>
 ## **LES BOUCLIERS**
 
 Les profils des armes de base en page 294 de **WFJDR** incluent les boucliers, mais certaines différences pratiques méritent d'être abordées plus en détail. Bien que les boucliers aient leur propre section ici, ils s'utilisent tout de même avec la Compétence Corps à Corps (Base).
@@ -4062,7 +4166,7 @@ Si celui qui manie le pavois reste à 1 mètre maximum derrière le pavois, ce d
 | Bouclier (targe)      | 18/2      | 0   | Commune       | Personnelle | +BF +1 | Défensive, Inoffensive, Protectrice 1 |
 | Pavois                | 3 CO 15/– | 4   | Rare          | N/A         | +BF +2 | Défensive, Protectrice 5              |
 
-
+<span id="page-95-0" data-folio="93"></span>
 ## **LES ARMES DE CAVALERIE**
 
 Les armes de cavalerie sont traditionnellement utilisées pour le combat monté. Les lances de cavalerie sont spécialement conçues pour être utilisées sur le dos d'un cheval (ou d'un demigriffon) qui charge. Les marteaux à bec-de-corbin et les sabres ont tendance à être maniés par les troupes de cavaliers, mais davantage par coutume que par réelle nécessité.
@@ -4104,7 +4208,7 @@ Les armes d'escrime sont très proches des armes de base et peuvent très bien �
 | Fleuret      | 5 CO | 1   | Limitée       | Moyenne | +BF +3 | Empaleuse, Inoffensive,<br>Précise, Rapide |
 | Rapière      | 5 CO | 1   | Limitée       | Longue  | +BF +4 | Empaleuse, Rapide                          |
 
-
+<span id="page-96-0" data-folio="94"></span>
 ## **LES ARMES DE BAGARRE**
 
 Une partie de l'intérêt des armes de bagarre vient du fait que beaucoup d'entre elles peuvent être bricolées à partir d'objets adéquats, faute de mieux, ou séparées en des composants qui semblent inoffensifs.
@@ -4138,7 +4242,7 @@ Un Personnage équipé d'un gantelet verrouillé ne lâche pas l'objet tenu dans
 | Mains nues               | N/A  | 0   | –             | Personnelle | +BF +0 | Inoffensive                                          |  |  |  |
 | Matraque                 | 1/–  | 0   | Rare          | Personnelle | +BF +1 | Assommante, Déséquilibrée, Inoffensive               |  |  |  |
 
-
+<span id="page-97-0" data-folio="95"></span>
 étrangleur en réussissant un Test étendu de **Métier (Cirier, Ingénieur, Tailleur ou Tanneur) Intermédiaire (+0)** qui nécessite un total de 5 DR.
 
 **Matraque :** une matraque bien fabriquée est composée d'une gaine de cuir ou de tissu remplie de sable, de balles de mousquet, de tiges de fer ou d'autres petits objets lourds du même type. Faute de mieux, il est possible de créer une matraque à partir de matériaux adaptés rassemblés dans un environnement urbain. Un Personnage qui se trouve dans une taverne, une boutique ou un lieu urbain peut se fabriquer une matraque en réussissant un Test étendu de **Métier (Charpentier, Forgeron, Ingénieur, Tailleur ou Tanneur) Intermédiaire (+0)** qui nécessite un total de 15 DR.
@@ -4174,7 +4278,7 @@ Toute arme à une main dotée de l'Atout *Défensive* peut être utilisée avec 
 | (2M) Filet lesté            | 1 CO 10/– | 1   | Rare          | Courte      | +BF +0 | À Enroulement, Défensive, Immobilisante,<br>Inoffensive, Lente, Protectrice 1 |  |  |  |
 | Main gauche                 | 1 CO      | 0   | Rare          | Très courte | +BF +2 | Défensive                                                                     |  |  |  |
 
-
+<span id="page-98-0" data-folio="96"></span>
 | TABLEAU DES ARMES D'HAST      |      |     |               |              |        |                                                 |  |  |  |
 |-------------------------------|------|-----|---------------|--------------|--------|-------------------------------------------------|--|--|--|
 | Arme                          | Prix | Enc | Disponibilité | Allonge      | Dégâts | Atouts et Défauts                               |  |  |  |
@@ -4207,7 +4311,7 @@ Une arme d'hast est tout bonnement une arme en partie composée d'un hast, c'est
 
 **Bâton :** les bâtons sont des morceaux de bois droits presque aussi hauts que celui qui en manie un. On les ramasse plus qu'on ne les fabrique. Le prix indiqué suppose que l'acheteur a besoin de l'arme rapidement, mais si un Personnage se trouve dans un environnement boisé, il peut se procurer lui-même un bâton en réussissant un Test étendu de **Survie en extérieur Intermédiaire (+0)** qui nécessite un total de 20 DR.
 
-
+<span id="page-99-0" data-folio="97"></span>
 **Hache d'armes :** la hache d'armes peut prendre de nombreuses formes, mais la plus répandue inclut une tête coiffée d'un pic court pour les coups d'estoc, une tête de hache d'un côté pour trancher et une tête de marteau de l'autre côté pour infliger des coups contondants.
 
 **Hallebarde :** l'arme typique des forces de l'Empire. Elle peut être employée soit comme une lance, soit comme une hache.
@@ -4234,7 +4338,7 @@ Les armes à deux mains sont encombrantes et privent l'utilisateur de la possibi
 
 **Zweihänder et zweihänder flamberge :** les célèbres régiments de joueurs d'épée de l'Empire sont armés d'énormes lames d'acier, aussi longues que beaucoup d'armes d'hast. Certains maîtres armuriers rendent même leurs épées encore plus mortelles en leur ajoutant des ondulations et des bords dentelés. Ces armes sont appelées des flamberges et les blessures qu'elles infligent peuvent être plus profondes à cause de leur puissance pour les coups tranchants.
 
-
+<span id="page-100-0" data-folio="98"></span>
 ## TABLEAU DES ARMES À DEUX MAINS
 
 | Arme                         | Prix  | Enc | Disponibilité | Allonge    | Dégâts | Atouts et Défauts                   |
@@ -4272,7 +4376,7 @@ Les bâtons pointus et les cailloux peuvent être utilisés comme munitions par 
 
 Un Personnage qui se trouve dans un lieu boisé peut se procurer un bâton pointu droit en réussissant un Test étendu de **Survie en extérieur Intermédiaire (+0)** qui nécessite un total de 10 DR. Cependant, méfiance, car comme elles n'ont pas été taillées par un fabricant de flèches professionnel, les flèches improvisées ont tendance à provoquer des Maladresses.
 
-
+<span id="page-101-0" data-folio="99"></span>
 ## **LES ARMES À POUDRE À CANON**
 
 La poudre à canon, aussi appelée poudre noire, a été inventée par les nains. Au début, elle servait uniquement à faire exploser les rochers particulièrement solides rencontrés par les mineurs nains. Mais leurs ingénieurs ont vite compris les autres usages possibles de la poudre à canon. Naturellement, la substance capable de faire voler des éclats de roche à une vitesse suffisante pour blesser ou tuer des mineurs imprudents allait se révéler utile sur le champ de bataille, et ils employèrent des prototypes de canon à la guerre dès la bataille du Lac Noir en -370 CI.
@@ -4301,7 +4405,7 @@ La poudre noire est la seule forme de propulseur couramment usitée, même si le
 
 Certains murmurent que la poudre noire a été inspirée par la poudre souillée par la malepierre présente dans certains tunnels sous les Montagnes du Milieu, mais ces rumeurs sont rarement propagées à grande échelle. Les nains fabriquent une forme de poudre noire qui brûle de manière très fiable et permet donc des tirs plus réguliers et plus précis.
 
-
+<span id="page-102-0" data-folio="100"></span>
 La poudre est généralement stockée dans une petite bourse ou une corne et est versée dans le canon de l'arme. Les soldats expérimentés peuvent verser directement à peu près la bonne dose de poudre, mais la plupart commencent par mesurer la poudre dans un récipient prévu à cet effet, qui en contient juste assez pour un tir.
 
 La plupart des munitions prennent la forme de balles de plomb de divers calibres et tailles, généralement rangées dans de petits sacs huilés pour empêcher la corrosion qui pourrait dégrader le canon d'une arme à feu. Certaines armes ont des canons très étroits, comme par exemple le long fusil du Hochland, et sont conçues pour les tirs de précision. La plupart des armes à poudre noire militaires sont pourvues de canons bien plus larges que les balles qu'elles sont conçues pour tirer, sacrifiant la précision au profit d'une recharge et d'un tir plus rapides.
@@ -4314,7 +4418,7 @@ Dans l'Empire, les armes à poudre noire sont toutes chargées par le canon, en 
 
 Il existe des variantes par région et par régiment de ces pratiques. Des matériaux de bourre, qui peuvent par exemple être du coton, du feutre ou du papier, sont employés pour s'assurer que les gaz qui s'échappent propulsent la balle vers l'avant avec autant de force que possible. La bourre est généralement ajoutée à la fois avant et après la balle pour garantir un tir précis, et certains vétérans portent un emporte-pièce à bourre sur eux pour couper des tampons de bourre faisant toujours la même taille, qui donnent une meilleure précision.
 
-
+<span id="page-103-0" data-folio="101"></span>
 ## **LES ARMES À POUDRE NOIRE**
 
 **Arquebuse :** une arme à feu à deux mains simple, qui est normalement soit à rouet, soit à silex. Des milliers d'arquebuses sont usitées par les armées de l'Empire.
@@ -4352,7 +4456,7 @@ Il existe des variantes par région et par régiment de ces pratiques. Des maté
 
 <sup>\*</sup> Uniquement si l'arme est maniée à deux mains
 
-
+<span id="page-104-0" data-folio="102"></span>
 **Hallebarde-arquebuse :** sur le même principe que la hache-arquebuse, cette arme sert à la fois de hallebarde et d'arquebuse. Le canon de l'arme à feu est intégré dans la hampe de la hallebarde. Si elle est maniée comme hallebarde alors qu'elle est chargée, une Maladresse décharge l'arme sur quiconque a le malheur de se tenir juste derrière l'utilisateur.
 
 **Haquebute :** l'haquebute est à peine plus qu'un canon à échelle réduite, un modèle très ancien souvent dépourvu d'innovations telles que la mire, la gâchette ou même la poignée ou la crosse. Les premières haquebutes tiraient des munitions de taille similaire ou inférieure à celles utilisées pour les armes à poudre noire modernes, mais celles qui sont encore employées actuellement dans l'Empire sont généralement des armes à canon large gardées par des nobles qui veulent impressionner les visiteurs. Cependant, la taille conséquente de ces reliques les rend utiles là où le calibre des nouveaux modèles peut laisser à désirer.
@@ -4383,7 +4487,7 @@ Il existe des variantes par région et par régiment de ces pratiques. Des maté
 | Petites munitions et poudre<br>(12)     | 3/3  | 0   | Commune                   | Comme l'arme                          | –       | Tir de zone +3                         |
 | Poudre imprégnée<br>d'Aqshy (12)        | 1 CO | 0   | Exotique                  | +10                                   | +2      | Empaleuse, Perforante                  |
 
-
+<span id="page-105-0" data-folio="103"></span>
 ## **LES ARMES D'INGÉNIERIE**
 
 **Arquebuse à répétition :** une arquebuse à répétition emploie une méthode astucieuse, impliquant souvent des mécanismes d'horlogerie ou d'autres rouages complexes, pour placer de nouvelles munitions en position de tir chaque fois que l'arme est déchargée. Deux arquebuses à répétition sont rarement identiques, même si la plupart comportent des mécanismes rotatifs.
@@ -4406,7 +4510,7 @@ Il existe des variantes par région et par régiment de ces pratiques. Des maté
 
 Mais ces munitions ne peuvent pas être chargées très à l'avance car leur mèche doit être allumée avant de les introduire dans le mortier à main. Quand vous chargez la bombe explosive ou la bombe incendiaire, vous devez décider combien de Rounds dure la mèche que vous avez utilisée pour la munition.
 
-
+<span id="page-106-0" data-folio="104"></span>
 Avec une mèche de la durée d'un Round, elle explose à la fin du Round actuel, avec une mèche de la durée de deux Rounds, elle explose à la fin du Round suivant. La munition explose au moment déterminé que vous ayez ou non tiré avec l'arme. Vous devez le garder en tête car le MJ n'est pas obligé de vous le rappeler avant que l'instant fatidique n'arrive.
 
 **Cartouche en papier :** ce sont des paquets préremplis de munitions, de poudre et de bourre, qui facilitent grandement la recharge des armes à poudre noire. Les Tests effectués pour recharger une arme du type approprié avec ces munitions bénéficient d'un bonus de +10.
@@ -4427,6 +4531,12 @@ Si vous envisagez d'avoir recours à un grappin pour vous faufiler discrètement
 
 **Poudre imprégnée d'***Aqshy* **:** destinée aux aventuriers très braves ou très stupides, cette poudre est fabriquée à partir de sable du désert de Néhékhara, imprégné d'une quantité supplémentaire d'*Aqshy* par des moyens connus uniquement du Collège Flamboyant d'Altdorf. Elle a davantage de puissance explosive que la poudre normale, mais use les canons bien plus rapidement que la poudre ordinaire. Tout Test raté incluant un 8 ou un 9 sur le dé des dizaines ou celui des unités est considéré comme une Maladresse quand vous utilisez cette poudre.
 
+<span id="page-107-0" data-folio="105"></span>
+
+
+## [AA 9] LE COMBAT MONTÉ
+
+*Folio 106+*
 
 # • LE COMBAT MONTÉ •
 
@@ -4454,7 +4564,7 @@ Une monture est un animal qui possède au moins le Trait Dressé (Monture). Cert
 
 Une monture possède à la fois un Mouvement et une Action. N'importe quel cavalier peut dépenser son Mouvement pour diriger les déplacements de sa monture. Pour plus de simplicité, il est possible de considérer que le cavalier possède l'Attribut Mouvement de sa monture lorsqu'il la chevauche. Un cavalier peut dépenser une Action pour diriger l'Action de sa monture.
 
-
+<span id="page-108-0" data-folio="106"></span>
 Cela peut nécessiter un Test si l'animal n'est pas dressé. Le Personnage monté peut par exemple éperonner sa bête pour qu'elle effectue l'Action Course. Un Personnage possédant le Talent Cavalier émérite peut diriger l'Action d'une monture sans effectuer de Test et sans dépenser d'Action.
 
 #### **Attaquer et se défendre**
@@ -4494,7 +4604,7 @@ Beaucoup de montures sont capables d'infliger Peur ou Terreur en raison de leur 
 
 Une bête de selle représente un gros investissement et beaucoup de gens malavisés ont acheté sans le savoir une bête au caractère exécrable inadaptée pour la tâche qu'elle devait accomplir. Un Test de **Dressage Intermédiaire (+0)** vous indiquera quel type de dressage un animal a reçu exactement et donc quels Traits Dressé il possède (ou non). La Difficulté de ce Test peut augmenter si la monture a été droguée ou est influencée d'une manière ou d'une autre.
 
-
+<span id="page-109-0" data-folio="107"></span>
 Ceux qui possèdent la Compétence Dressage peuvent utiliser l'Activité correspondante pour apprendre de nouvelles compétences à une monture, ce qui lui confère de nouveaux Traits Dressé.
 
 Le Trait Dressé définit les Compétences qu'une créature a apprises. Comme mentionné plus haut, la plupart des montures doivent au minimum posséder Dressé (Monture), mais les Traits ci-dessous peuvent également être utiles.
@@ -4532,7 +4642,7 @@ Si nécessaire, vous pouvez utiliser le tableau ci-dessous pour déterminer la L
 | 79-89    | Patte arrière gauche |
 | 90-00    | Patte arrière droite |
 
-
+<span id="page-110-0" data-folio="108"></span>
 ## **MA PROVINCE POUR UN CHEVAL !**
 
 Beaucoup de chevaliers se sont déjà retrouvés sans leur bête de selle et forcés de patauger dans la boue avec la piétaille. Au vu des avantages dont bénéficie un ennemi monté, il peut être très utile de retirer le destrier de l'équation, ce qui est possible en utilisant les méthodes indiquées ci-dessous.
@@ -4571,7 +4681,7 @@ Les chevaux sont de loin les montures les plus fréquentes, du moins dans le Vie
 
 Un chevalier demigriffon est le parangon de la vaillance chevaleresque. Seuls les plus grands chevaliers des ordres les plus importants de l'Empire ont une chance de dompter une telle créature, et beaucoup perdent leur vie ou leurs membres en essayant. Même ceux qui réussissent en ressortent généralement avec de nouvelles cicatrices, mais les portent comme un insigne honneur. Un demigriffon est la meilleure monture qu'un chevalier puisse jamais espérer chevaucher au combat, et déployer un détachement de bonne taille de chevaliers demigriffons est une telle démonstration de force que des armées ennemies se sont déjà rendues avant même qu'une seule serre ait eu le temps de faire verser le sang.
 
-
+<span id="page-111-0" data-folio="109"></span>
 Les chevaliers qui réussissent l'exploit de dompter une telle bête gagnent le respect de tous et les ordres de chevalerie connus pour avoir compté de tels membres sont d'autant plus honorés par leurs camarades des autres ordres.
 
 De temps à autre, des compagnies entières de ces guerriers et de leurs montures sont constituées en piochant dans tous les ordres de chevalerie de l'Empire, généralement sur initiative de l'Empereur lors d'une période très difficile, c'est pourquoi même les chevaliers demigriffons venant d'ordres rivaux depuis des siècles entretiennent une relation de fraternité et d'expériences partagées.
@@ -4615,7 +4725,7 @@ Le demigriffon décrit en page 318 de **WFJDR** est un jeune spécimen. Une cré
 
 **Possessions :** barde
 
-
+<span id="page-112-0" data-folio="110"></span>
 ## LES INTÉRIMAIRES DE L'AVENTURE • •
 
 Les aventuriers voyagent dans le monde entier et se retrouvent souvent en territoire inconnu. Les locaux peuvent refuser d'adresser la parole à un étranger qui n'inclut pas une prière à Taal dans chaque phrase. Ou le groupe peut devoir traverser une forêt dense ou une chaîne de montagnes sans avoir l'expérience nécessaire. Les aventuriers peuvent presque toujours se tourner vers quelqu'un pour les aider à gérer les habitants ou la géographie du lieu, pour le bon prix évidemment.
@@ -4644,7 +4754,7 @@ Embaucher une personne dotée de connaissances spécialisées coûte généralem
 
 Par exemple, les juristes professionnels font payer ce que la plupart des aventuriers considéreraient comme de grosses quantités d'or dès lors qu'il s'agit de quelque chose de plus compliqué que rédiger un simple document juridique, et les traducteurs et historiens professionnels ne sont pas beaucoup moins chers. Quant à ceux qui sortent des Collèges de Magie, les embaucher est un luxe que seule l'aristocratie peut se permettre.
 
-
+<span id="page-113-0" data-folio="111"></span>
 Une alternative plus économique, mais moins fiable, consiste à embaucher un étudiant. Les universités de l'Empire demandent beaucoup d'argent en échange de leurs enseignements, et beaucoup de ceux qui les suivent sautent sur l'occasion de gagner de l'argent afin de payer leurs dettes. Les Collèges de Magie encouragent même les élèves à accepter du travail « indépendant » (mais étroitement surveillé au cas où ils succomberaient à la tentation, bien sûr) afin de développer une meilleure compréhension de leurs pouvoirs et de leurs capacités.
 
 Les étudiants sont bien moins savants que leurs professeurs ou même que les diplômés, mais très souvent, ils en savent assez pour aider les aventuriers qui les embauchent. Quand un apprenti magicien déchiffre un code magique qui protège un trésor inestimable, l'employeur se moque de savoir s'il a un peu massacré la prononciation des glyphes anciens.
@@ -4667,7 +4777,7 @@ Qu'un mercenaire soit là pour transporter les vêtements de rechange d'un noble
 
 Si leurs gages sont en retard ou inférieurs à ceux prévus, que ce soit à cause d'un malheureux revers de fortune ou d'une avarice délibérée, les mercenaires sont tout à fait en droit de partir et de trouver des employeurs plus fiables. S'ils se sentent particulièrement offensés par l'incapacité de leur employeur à payer à temps, beaucoup de serviteurs n'hésitent pas à prendre la tangente avec des objets de valeur en compensation ! Il est donc essentiel de s'assurer que les coûts à long terme pourront être couverts avant d'embaucher quelqu'un.
 
-
+<span id="page-114-0" data-folio="112"></span>
 Pour beaucoup d'aventuriers, en particulier ceux qui viennent de débuter leur Carrière ou ceux dont le groupe ne compte pas d'héritier noble ou de riche marchand, cela peut transformer les mercenaires en investissement bien trop onéreux. Pour se payer les services d'un employé pendant plus d'une semaine ou deux, ces malheureux doivent travailler dur ou avoir de la chance afin d'accumuler suffisamment d'argent ou de biens à troquer. Une complication soudaine, par exemple devoir payer un médecin pour qu'il sauve la vie d'un membre du groupe, pourrait engloutir toutes les économies d'aventuriers peu expérimentés.
 
 *« Gratuit pour ceux qui peuvent se le permettre. Hors de prix pour ceux qui ne le peuvent pas ! »*
@@ -4688,7 +4798,7 @@ Mais une bonne réputation a aussi ses inconvénients. Le groupe a plus de chanc
 
 Et si le nouveau que le groupe vient d'embaucher faisait partie d'un culte dont les Personnages ont suscité le courroux ? Il peut sembler loyal et serviable en surface pendant des semaines ou même des mois, tout en récoltant des informations sur les faiblesses du groupe et sur ses actions pour faire un rapport à ses maîtres, ou en trafiquant des preuves pour le faire accuser d'un crime horrible, ou encore simplement en attendant le moment idéal pour trancher la gorge des Personnages dans leur sommeil…
 
-
+<span id="page-115-0" data-folio="113"></span>
 ## **PROFILS DE MERCENAIRES**
 
 Utilisez les règles suivantes pour étoffer un PNJ mercenaire :
@@ -4729,7 +4839,7 @@ Prenez en compte les circonstances dans lesquelles les aventuriers ont embauché
 
 **Possessions :** arc et 10 flèches, besace contenant une boîte à amadou et une couverture, bourse, cape, carte, chemise de mailles, cheval de selle avec selle et harnais, dague, épée, fontes de selle avec 2 semaines de vivres, vêtement
 
-
+<span id="page-116-0" data-folio="114"></span>
 |   | JURISTE – ARGENT 3 |    |    |    |    |    |     |     |    |        |    |  |  |
 |---|--------------------|----|----|----|----|----|-----|-----|----|--------|----|--|--|
 | M | CC                 | CT | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B  |  |  |
@@ -4782,7 +4892,7 @@ Prenez en compte les circonstances dans lesquelles les aventuriers ont embauché
 
 **Possessions :** bourse, besace contenant un nécessaire d'écriture et 5 feuilles de parchemin, dague, livre, vêtement
 
-
+<span id="page-117-0" data-folio="115"></span>
 ## DIFFÉRENTS MERCENAIRES
 
 Les mercenaires sont différents les uns des autres en termes de capacités. Faites un jet dans le tableau des variantes pour savoir si le mercenaire possède des bonus ou des pénalités qui modifient son profil de base. Les mercenaires n'ont pas forcément l'air d'être particulièrement compétents ou incompétents pour leur employeur au premier abord, mais le MJ peut donner des indices appropriés si les Personnages font passer des « entretiens d'embauche » à leurs mercenaires.
@@ -4849,7 +4959,7 @@ Les mercenaires sont différents les uns des autres en termes de capacités. Fai
 
 **Talents :** générez 3 Talents de départ aléatoires supplémentaires comme pour un nouveau Personnage.
 
-
+<span id="page-118-0" data-folio="116"></span>
 ## PARTICULARITÉS PHYSIQUES
 
 Les mercenaires ont tendance à avoir un peu roulé leur bosse et à avoir connu certaines épreuves dans leur vie. Faites un jet dans le tableau Particularités physiques pour savoir quelles marques cette existence a laissées sur le mercenaire. Le cas échéant, les mercenaires subissent les pénalités dues à une amputation décrites en page 180 de **WFJDR**.
@@ -4897,7 +5007,7 @@ La plupart des mercenaires se montrent raisonnables dans leur travail car ils sa
 | 90-95 | A le sentiment que même si le travail est important, il<br>passe après les expériences intéressantes et peut très bien<br>abandonner son poste s'il est exposé à une distraction<br>suffisante.                            |
 | 96-00 | Dès que l'employeur a le dos tourné, ce mercenaire arrête<br>de travailler.                                                                                                                                                |
 
-
+<span id="page-119-0" data-folio="117"></span>
 ## TRAITS DE PERSONNALITÉ
 
 Les mercenaires peuvent se révéler un peu excentriques et difficiles à vivre, même si certains sont sociables et font d'excellents compagnons de voyage. Faites un jet dans le tableau Traits de personnalité pour déterminer le caractère du mercenaire.
@@ -4926,6 +5036,12 @@ Les mercenaires peuvent se révéler un peu excentriques et difficiles à vivre,
 | 93-96 | Insolent et se moque de tous ceux qui l'entourent. Pense que les gens qui sont offensés devraient arrêter de pleurnicher pour rien.<br>Cependant, il est lui-même très susceptible et trouve intolérables les taquineries même les plus gentilles envers lui.                                                                                                                                                                                                            |
 | 97-00 | Imperturbable face au danger et aux épreuves. A déjà tout vu et son regard infiniment blasé le prouve.                                                                                                                                                                                                                                                                                                                                                                   |
 
+<span id="page-120-0" data-folio="118"></span>
+
+
+## [AA 10] L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES
+
+*Folio 119+*
 
 # L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES • •
 
@@ -4949,7 +5065,7 @@ L'ENC des Structures indique le nombre de points d'Encombrement qui s'appliquent
 
 Nous partons du principe que quand quelqu'un tire depuis une position défensive, il s'en sert activement comme d'un couvert, par exemple en s'accroupissant derrière les platsbords d'un bateau ou en plongeant derrière les créneaux du rempart d'un château. Sauf si les cibles sur une Structure subissent l'État *Surpris* ou se comportent d'une manière qui ne leur fournirait pas de couvert, la Difficulté indiquée est la Difficulté par défaut pour un assaillant quand il tente de tirer sur un Personnage. D'autres modificateurs, par exemple la portée ou la taille de la cible, peuvent affecter cette Difficulté si le MJ le décide.
 
-
+<span id="page-121-0" data-folio="119"></span>
 ### TABLEAU DES STRUCTURES COURANTES
 
 | Structure                | ENC | Limite<br>d'Encombrement | Endurance        | Bless<br>ures | Pénalité de Couvert  |
@@ -4991,7 +5107,7 @@ Nous partons du principe que quand quelqu'un tire depuis une position défensive
 
 **Clôture en clayonnage :** les clôtures en clayonnage sont tressées avec de minces branches de saule. Elles sont faciles à fabriquer et résistantes si leur tressage est bon. Cependant, elles conviennent davantage pour des enclos d'animaux que pour des fortifications. Elles restent employées comme couvert par ceux qui n'ont pas le temps de trouver autre chose ou qui ne disposent pas d'une meilleure alternative.
 
-
+<span id="page-122-0" data-folio="120"></span>
 **Diligence :** une diligence est un véhicule fermé à quatre roues, tiré par 2 à 6 chevaux. Les riches ont tendance à les utiliser pour les voyages sur de longues distances, et l'Empire abrite plusieurs compagnies de diligences qui exploitent des lignes régulières.
 
 **Herse :** une grille de fer qui peut être abaissée pour protéger l'entrée principale d'une forteresse.
@@ -5028,7 +5144,7 @@ Les armes comme les épées et les dagues ne sont pas conçues pour tailler une 
 
 Chaque Structure possède un score d'Endurance qui modifie les Dégâts subis et un score de Blessures qui indique la quantité de Dégâts qu'elle peut encaisser. À noter que les murs sont traités de manière légèrement différente car le profil donné ne représente qu'une bande de mur de 5 mètres de long, donc même si cette partie est détruite, la majorité de la Structure peut rester intacte.
 
-
+<span id="page-123-0" data-folio="121"></span>
 Les Structures n'ont pas de Localisations des Dégâts, mais si quelqu'un tire sur une cible qui se met à couvert dans ou derrière la Structure et qu'il rate son tir, le projectile peut toucher la Structure. Pour savoir si cela se produit, déterminez le nombre de Degrés d'échec impliqués dans le tir raté.
 
 | Degrés d'échec | Effet                                                                              |  |  |
@@ -5053,7 +5169,7 @@ Infliger des Coups Critiques à une Structure est bien plus difficile que pour u
 | 91-95      | Enfoncée                | 3         | Un énorme trou s'ouvre dans la Structure. Les Personnages qui se trouvent sur ou dans<br>la Structure sont frappés par des débris volant dans les airs et subissent une quantité de<br>Dégâts égale au Bonus d'Endurance de la Structure elle-même. La Structure ne fournit<br>plus de couvert à ceux qui sont dessus ou dedans.                                                                                                                                                                                                                                                                                                                     |  |  |  |
 | 96 ou plus | Effondrement            | Détruite  | La Structure entière s'écroule. Les Personnages qui l'utilisaient comme couvert sont<br>frappés par des débris volant dans les airs et subissent une quantité de Dégâts égale au<br>Bonus d'Endurance de la Structure elle-même. Les Personnages qui se trouvent sur ou<br>dans la Structure doivent effectuer un Test d'Athlétisme Intermédiaire (+0) pour savoir<br>s'ils chutent puis subir des Dégâts comme s'ils avaient été touchés par une arme avec<br>une Force égale aux Blessures restantes de la Structure. Toute pièce d'artillerie (ou autre<br>équipement lourd) tombe de la Structure et n'est plus utilisable avant d'être réparée. |  |  |  |
 
-
+<span id="page-124-0" data-folio="122"></span>
 #### **Réparer les Structures**
 
 Les Dégâts infligés aux Structures peuvent être réparés de manière permanente en réussissant un Test de **Métier (Charpentier) Accessible (+20)** (si la Structure est principalement composée de bois) ou de **Métier (Maçon) Accessible (+20)** (si la Structure est principalement composée de pierre). Chaque Test réussi prend 1d10 heures de travail et restaure 1d10 Blessures de la Structure.
@@ -5084,7 +5200,7 @@ Les balistes sont relativement simples à utiliser. Vous pouvez tenter un Test d
 
 **Canon à répétition :** le canon à répétition ressemble à une arquebuse à répétition, avec une manivelle circulaire complexe et des leviers. C'est en réalité un barillet comprenant sept canons, un au milieu et six autres regroupés autour en une forme hexagonale. Cette arme est 
 
-
+<span id="page-125-0" data-folio="123"></span>
 mortelle pour ceux qui se trouvent devant, mais peut aussi se révéler dangereuse pour un utilisateur inexpérimenté.
 
 Chaque fois qu'elle tire, celui qui la manie doit effectuer un Test de **Résistance Accessible (+20)** et subit 1 Blessure par Degré d'échec car l'arme s'enfonce violemment dans son épaule. En cas d'Échec Stupéfiant, l'utilisateur subit un Coup Critique à l'épaule ; utilisez le tableau Blessures Critiques au bras en ajustant les détails si nécessaire pour représenter une blessure à l'épaule.
@@ -5121,7 +5237,7 @@ Les canons à répétition emploient des balles du même calibre qu'une arme à 
 
 <sup>\*</sup> Recharger une arme dotée de l'Atout *Salve* est un processus laborieux. L'Indice de Recharge ne recharge pas totalement l'arme, mais il augmente de 1 l'Indice de *Salve* chaque fois qu'il est atteint (donc une batterie tonnerre de feu vide tombe à *Salve* 0 et nécessite Recharge 6 pour atteindre *Salve* 1, et 9 fois Recharge 6 avant d'être totalement chargée à *Salve* 9).
 
-
+<span id="page-126-0" data-folio="124"></span>
 |                                           |           |     |                          | TABLEAU DES MUNITIONS DE SIÈGE |           |                                         |
 |-------------------------------------------|-----------|-----|--------------------------|--------------------------------|-----------|-----------------------------------------|
 | Arme                                      | Prix      | Enc | Disponibilité            | Portée                         | Dégâts    | Atouts et Défauts                       |
@@ -5151,7 +5267,7 @@ Les canons à répétition emploient des balles du même calibre qu'une arme à 
 
 <sup>\*\*</sup> Une bombe incendiaire n'inflige pas de Dégâts, mais confère à toutes les cibles affectées DR +1 États *En flammes*.
 
-
+<span id="page-127-0" data-folio="125"></span>
 #### **Nouveaux Atouts et Défauts d'arme Arme d'équipe**
 
 Une arme possédant le Défaut *Arme d'équipe* est si imposante, lourde et complexe qu'elle ne fonctionne bien que si elle est gérée par une équipe et non par une seule personne. Tous les membres de cette équipe doivent posséder la Compétence Projectiles appropriée pour participer au maniement de l'arme. Cependant, ils peuvent nommer l'un d'entre eux pour effectuer le Test de Projectiles pertinent visant à savoir à quel point l'arme est efficace quand elle est déclenchée.
@@ -5181,7 +5297,7 @@ Si une arme dotée du Défaut *Arme d'équipe* subit un Incident de tir, tous le
 
 *Exemple 2 : Von Meinkopt essaie de tirer avec un grand canon sans l'aide d'autres membres d'équipe. Il peut utiliser son impressionnante Compétence Projectiles (Ingénierie) de 92 pour tirer avec l'arme. Cependant, comme il est le seul membre d'équipe pour une arme dotée d'Arme d'équipe 4, elle double son temps de recharge (de 8 à 16) et reçoit le Défaut Imprécise. L'arme devrait aussi recevoir le Défaut Dangereuse, mais comme elle le possède déjà, la Compétence Projectiles (Ingénierie) de von Meinkopt subit une pénalité de -10 quand il fait tirer le canon.*
 
-
+<span id="page-128-0" data-folio="126"></span>
 ### **Salve**
 
 Une arme dotée de l'Atout *Salve* peut projeter des munitions soit une par une, soit par volées. Le nombre de fois où un personnage peut tirer avec l'arme est indiqué par l'Indice de *Salve*. Chaque fois que quelqu'un tire avec l'arme, réduisez de 1 l'Indice de *Salve*. L'arme n'a besoin d'être rechargée que lorsqu'elle tombe à *Salve* 0.
@@ -5203,7 +5319,7 @@ Si l'arme subit un Incident de tir à n'importe quel moment du processus, déter
 | 8-9             | Pour chaque Indice de Salve restant, tous<br>les membres de l'équipe subissent les<br>Dégâts à une Localisation tirée au hasard<br>en utilisant le dé des unités comme DR<br>pour toucher. La pièce d'artillerie est<br>détruite.                                                                                            |  |
 | 10              | Pour chaque Indice de Salve restant, un<br>tir part dans une direction tirée au hasard<br>sur une distance d'1d100 mètres. Tout<br>Personnage qui se tient entre la machine<br>et les points où les tirs atterrissent doit<br>réussir un Test d'Esquive Très Difficile (–30)<br>pour éviter d'être touché par un projectile. |  |
 
-
+<span id="page-129-0" data-folio="127"></span>
 ## LA POURSUITE DE L'EXCELLENCE • •
 
 Les Poursuites peuvent être des moments excitants dans les jeux de rôle. **Le Livre de Règles WFJDR** aborde les Poursuites de manière assez détaillée, mais certains points doivent être clarifiés, en particulier quand les Personnages cessent le combat et qu'une Poursuite débute, ou quand beaucoup de participants à une même Poursuite se trouvent à des distances diverses et courent à des vitesses différentes.
@@ -5227,7 +5343,7 @@ Les Poursuites sont décrites en page 166 du **Livre de Règles WFJDR**, mais no
 - **3. Actualiser la Distance :** on compare le DR le plus petit obtenu par la Cible au plus haut DR obtenu par le Poursuivant, et la différence est ajoutée à la Distance si la Cible l'a emporté et retranchée de cette même Distance si c'est le Poursuivant qui l'a emporté. Si les résultats sont égaux, la Distance reste la même.
 - **4. Déterminer l'issue :** si la Distance est réduite à 0 ou moins, le Poursuivant a rejoint la Cible ! Cette dernière a alors la possibilité, pour ce Round, de sacrifier le plus lent de son groupe (si elle est en groupe) afin de ralentir le Poursuivant pour que les autres poursuivent leur fuite, ou n'importe quel membre du groupe de la Cible peut se porter volontaire pour s'arrêter et affronter le Poursuivant. Si le Poursuivant est en groupe, il décide de qui s'arrête pour l'affronter et qui continue la Poursuite. Si la Distance atteint 10+, le Poursuivant a perdu sa Cible et la Poursuite s'achève.
 
-
+<span id="page-130-0" data-folio="128"></span>
 **Modificateurs de Mouvement :** si certains des Personnages participant à la Poursuite possèdent un Mouvement supérieur, ils gagnent autant de DR bonus que la différence de Mouvement. Ainsi, si vous avez Mouvement 5 et que vous poursuivez un Personnage ayant Mouvement 4, vous gagnez +1 DR sur le Test.
 
 ## **Les Poursuites complexes**
@@ -5256,7 +5372,7 @@ Les Poursuivants peuvent être traités comme un même grand groupe s'ils ont to
 
 Les Personnages dont l'Attribut Mouvement est de 3 ou moins subissent des pénalités sur leurs Tests d'Athlétisme pour les Poursuites complexes. Les Personnages dotés de Mouvement 3 doivent effectuer des Tests d'**Athlétisme Intermédiaire (+0)**. Les Personnages dotés de Mouvement 2 doivent effectuer des Tests d'**Athlétisme Difficile (–20)**. Les Personnages dotés de Mouvement 1 doivent effectuer des Tests d'**Athlétisme Très Difficile (–30)**.
 
-
+<span id="page-131-0" data-folio="129"></span>
 |  | TABLEAU DE PROGRESSION D'UN PERSONNAGE |  |  |
 |--|----------------------------------------|--|--|
 |--|----------------------------------------|--|--|
@@ -5278,7 +5394,7 @@ Les Personnages dont l'Attribut Mouvement est de 3 ou moins subissent des pénal
 
 Pendant une Poursuite, un Personnage qui subit l'État *À Terre* ou *Empêtré* ou perd la capacité de se déplacer librement pour toute autre raison perd sa prochaine occasion d'effectuer un Test pour augmenter sa Distance. Au lieu de cela, il passe son temps à se libérer, et peut devoir effectuer un Test pour cela.
 
-
+<span id="page-132-0" data-folio="130"></span>
 ## **Les obstacles**
 
 Le MJ peut décider de placer des obstacles sur le chemin des Personnages. Les caisses de laine, les flaques de boue, les grilles fermées, les troupeaux de bétail de passage et tout autre péril peuvent compliquer une Poursuite, à la fois pour la Cible et pour les Poursuivants.
@@ -5309,7 +5425,7 @@ Ce nombre de Rounds est déterminé par le MJ pour chaque participant individuel
 
 Les participants (ou leurs montures ou animaux de trait) subissent un État *Exténué* chaque fois qu'ils ratent leur Test de Résistance. Les animaux veulent passer au pas dès qu'ils reçoivent un État *Exténué*, mais il est possible de les persuader de continuer à galoper en réussissant un Test d'**Emprise sur les animaux Intermédiaire (+0)**, un Test de **Chevaucher Complexe (–10)** ou un Test de **Conduite d'attelage Difficile (–20)**.
 
-
+<span id="page-133-0" data-folio="131"></span>
 ## TABLEAU DES OBSTACLES
 
 | Obstacle                                                   | Perçu                                                                                                                                                                  | Test po<br>ur négocier                                                                                                   | Conséquences d'un échec sur le test                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |  |
@@ -5330,7 +5446,7 @@ Les participants (ou leurs montures ou animaux de trait) subissent un État *Ext
 | Charrette laissée<br>sans surveillance<br>remplie de choux | Automatiquement                                                                                                                                                        | Test d'Escalade<br>Intermédiaire (+0)                                                                                    | Le participant glisse vers l'arrière en tentant d'escalader la charrette, faisant tomber un torrent<br>de choux. Il doit réussir un Test d'Initiative Accessible (+20) sous peine de subir l'État Surpris.<br>L'obstacle devient deux obstacles, une charrette laissée sans surveillance et une pile de choux<br>éparpillés.                                                                                                                                                                                                                                                                                               |  |
 | Pile de choux<br>éparpillés                                | Automatiquement                                                                                                                                                        | Test d'Athlétisme Difficile (–20)                                                                                        | Le participant trébuche sur les choux. Il subit une chute d'1 mètre et l'État À Terre.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |  |
 
-
+<span id="page-134-0" data-folio="132"></span>
 ## **TABLEAU D'ÉPUISEMENT**
 
 | Rounds | À pied                                         | Monté                                                    | Véhicule                                                          |
@@ -5358,6 +5474,12 @@ Que se passe-t-il si un guerrier rompt le combat, mais que son opposant veut tou
 | Utiliser Esquive    | La Cible commence avec une avance de 1 Distance.                                                                                                                                                                                                          | La Cible commence avec une avance de 1 Distance.                                                                                                                                                                                                                                                                                                                                                |
 | Fuir                | Si l'adversaire saisit l'occasion de porter une attaque gratuite, la<br>Cible commence avec une avance de 3. Si l'adversaire renonce<br>à son attaque gratuite pour pouvoir poursuivre tout de suite la<br>Cible, la Cible commence avec une avance de 1. | La Cible doit effectuer un Test d'Athlétisme comme décrit dans<br>la partie Effectuer un test et actualiser la Distance de la section<br>Les Poursuites complexes. Le résultat de ce Test détermine sa<br>Distance initiale. Si l'adversaire a saisi l'occasion de porter<br>une attaque gratuite, la Cible peut ajouter +2 DR à son Test<br>d'Athlétisme pour déterminer la Distance initiale. |
 
+<span id="page-135-0" data-folio="133"></span>
+
+
+## [AA 11] ANNEXE I AVANTAGES DE GROUPE
+
+*Folio 134+*
 
 # ANNEXE I : AVANTAGES DE GROUPE • •
 
@@ -5383,7 +5505,7 @@ Un combattant obtient un Avantage à chaque fois qu'il remporte un Test opposé 
 - 0 **Gagnant :** chaque fois que vous remportez un Test opposé que vous avez déclenché au cours d'un combat, gagnez +1 Avantage.
 - 0 **Prendre le dessus :** si vous blessez un opposant sans engager de Test opposé, gagnez +1 Avantage. Vous ne pouvez gagner qu'un seul Avantage de cette manière, peu importe le nombre d'opposants blessés par votre action.
 
-
+<span id="page-136-0" data-folio="134"></span>
 ## LES BÉNÉFICES DES AVANTAGES
 
 Les Avantages des réserves d'Avantages des deux camps peuvent être dépensés pour obtenir les effets suivants au tour d'un Joueur ou d'une créature. Vous n'êtes pas obligé de consulter qui que ce soit avant de dépenser un ou plusieurs Avantages, mais la courtoisie est toujours préférable.
@@ -5402,7 +5524,7 @@ Les Avantages des réserves d'Avantages des deux camps peuvent aussi être dépe
 
 Le MJ devrait évaluer le conflit à la fin du Round. Si un camp comporte un plus grand nombre de combattants, il est dominant et l'autre est défavorisé. Si le nombre de combattants des deux camps est identique, désignez comme dominant le camp qui détient l'avantage tactique, par exemple qui se trouve en position surélevée ou qui encercle ses adversaires. Une fois que vous avez pris cette décision, transférez 1 Avantage de la réserve d'Avantages du camp défavorisé vers celle du camp dominant. Si la réserve d'Avantages du camp défavorisé ne contient pas d'Avantage, la réserve du camp dominant gagne 1 Avantage.
 
-
+<span id="page-137-0" data-folio="135"></span>
 #### **Remplir les réserves d'Avantages dès le départ**
 
 Beaucoup de MJ se contentent de faire démarrer les deux réserves d'Avantages à zéro et d'y accumuler des points en fonction des actions des combattants. Mais, en tant que règle facultative, vous pouvez aussi représenter le positionnement tactique initial et les situations favorables en accordant des Avantages à l'une et/ou l'autre des deux réserves quand le combat commence. Accorder un ou plusieurs Avantages à un camp bénéficiant de l'élément de surprise est souvent moins compliqué que d'infliger l'État *Surpris* à plusieurs adversaires.
@@ -5437,7 +5559,7 @@ Le Trait de créature suivant a été modifié pour correspondre à ces règles 
 
 Le corps de la créature est maintenu par d'ignobles magies, fondamentalement instables dans le plan matériel. À la fin de chaque Round, le MJ doit sélectionner au hasard une créature possédant le Trait Instable. Si la réserve d'Avantages du camp opposé est plus élevée que celle de la créature, la créature perd un nombre de Blessures égal à la différence entre les deux. Si elle tombe à 0 Blessure de cette manière, les magies la maintenant entière cèdent et elle « meurt ».
 
-
+<span id="page-138-0" data-folio="136"></span>
 #### **Actions modifié e s n combat**
 
 Vous pouvez effectuer les Actions suivantes en combat.
@@ -5456,6 +5578,12 @@ Charger vous confère à présent un bonus de +10 sur le premier Test de **Corps
 
 **Spéciale :** les Actions spéciales sont les Actions venant de Compétences ou de Talents comme Empoigner, intimider quelqu'un, lancer un Sort, utiliser le Talent Maniement de deux armes ou arrêter le saignement d'une blessure avec des bandages.
 
+<span id="page-139-0" data-folio="137"></span>
+
+
+## [AA 12] ANNEXE II ACTIVITÉS DE GUERRIER
+
+*Folio 138+*
 
 # ANNEXE II : ACTIVITÉS DE GUERRIER • •
 
@@ -5486,7 +5614,7 @@ Après avoir entrepris cette Activité, effectuez un Test de **Corps à Corps Co
 
 Votre adversaire ne peut ni utiliser ses Talents ni ajouter ses Augmentations de Compétence quand il se défend contre cette attaque. Après avoir résolu l'attaque, si vous remportez le Test, vous subissez 1d10 Dégâts qui ignorent l'Armure. Si votre adversaire remporte le Test, il vous inflige un Coup Critique car la manœuvre risquée vous expose et vous rend vulnérable.
 
-
+<span id="page-140-0" data-folio="138"></span>
 ## **Méthode Alcatani**
 
 #### **Guerriers devant posséder au moins deux rangs dans le Talent Coude-à-coude**
@@ -5517,7 +5645,7 @@ La mission est dangereuse. Effectuez un Test de **Corps à Corps** ou de **Proje
 
 Consultez le tableau en page 139 pour générer les détails d'une mission aléatoire.
 
-
+<span id="page-141-0" data-folio="139"></span>
 ## GÉNÉRATEUR DE MISSION
 
 Pour obtenir l'objet, faites un jet dans le Tableau de lieu pour savoir où vous devez aller puis dans le Tableau d'objectif pour voir ce que vous devez faire et dans le Tableau de personnalité pour découvrir qui vous emploie pour accomplir cette tâche.
@@ -5600,6 +5728,12 @@ Pour obtenir l'objet, faites un jet dans le Tableau de lieu pour savoir où vous
 | 91-95  | Un général commandant une armée.      |
 | 96-100 | Un émissaire impérial.                |
 
+<span id="page-142-0" data-folio="140"></span>
+
+
+## [AA 13] ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR
+
+*Folio 141+*
 
 # ANNEXE III : NOUVEAUX TALENTS ET TALENTS MIS À JOUR • •
 
@@ -5657,7 +5791,7 @@ Vous êtes formé à effectuer des mouvements simples pour distraire ou surprend
 
 Vous êtes un expert pour frapper vos ennemis aux endroits les plus vulnérables. Quand vous effectuez un lancer dans un tableau de Blessures Critiques, lancez les dés deux fois et choisissez le résultat que vous préférez.
 
-
+<span id="page-143-0" data-folio="141"></span>
 #### **Fuite !**
 
 **Maxi :** Bonus d'Agilité
@@ -5698,7 +5832,7 @@ Vous pouvez recharger avec facilité les armes à distance. Ajoutez un DR égal 
 
 Vous êtes habitué aux combats désespérés, capable de retourner même les situations les plus désastreuses à votre avantage. Si vous gagnez le Test opposé de **Corps à Corps**, au lieu de gagner +1 Avantage, vous pouvez prendre 1 Avantage dans la réserve d'Avantages du camp opposé et l'ajouter à la vôtre. Dans ce cas, vous ne pouvez infliger aucun Dégât, même si c'était votre Tour dans le Round.
 
-
+<span id="page-144-0" data-folio="142"></span>
 ## **INDEX**
 
 | A                                             |  |
@@ -5857,7 +5991,7 @@ vous précède ............................................. 111
 | Ordres mineurs de Myrmidia, les 75   |  |
 |                                      |  |
 
-
+<span id="page-145-0" data-folio="143"></span>
 | P                                               |  |  |  |  |
 |-------------------------------------------------|--|--|--|--|
 | Particularités physiques 116                    |  |  |  |  |
@@ -5940,6 +6074,8 @@ Tableau des munitions à poudre noire ...... 102
 | Valets de la Mort, les 11                |
 | Z                                        |
 | Zélotes de Myrmidia, les 75              |
+
+<span id="page-146-0" data-folio="144"></span>
 
 ---
 
@@ -6076,3 +6212,5 @@ Tableau des munitions à poudre noire ...... 102
 | 3 | N/A | N/A | Temps de Recharge doublé |
 | 2 | N/A | Temps de recharge doublé | Reçoit le Défaut Imprécise |
 | 1 | Temps de recharge doublé | Reçoit le Défaut Imprécise | Reçoit le Défaut Dangereuse |
+
+<!-- /MDG-INTEGRATION -->

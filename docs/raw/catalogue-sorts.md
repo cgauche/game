@@ -48,7 +48,7 @@ Les Sorts mineurs, ou tours de magie comme les Collèges préfèrent souvent les
 Même si les Collèges de Magie ferment généralement les yeux sur leur utilisation, vu leur peu de puissance, les Répurgateurs ne se montrent pas toujours aussi compréhensifs.
 
 
-# <span id="page-241-0"></span>**Les Sorts mineurs**
+# <span id="page-241-0" data-folio="240"></span>**Les Sorts mineurs**
 
 Pour les rares humains bénis – ou maudits, selon votre point de vue – l'étincelle de la magie se manifeste généralement autour de la puberté, et presque toujours avant vingt-cinq ans. Les premiers signes sont souvent de petits effets, des dons, des tours de magie, ou similaires, indiquant que le Sorcier en herbe devrait probablement être entraîné pour le bien de tous.
 
@@ -250,7 +250,7 @@ Vous purifiez toute l'eau à l'intérieur d'un réceptacle, un flacon d'eau, une
 Vous faites pourrir un volume de matières organiques de la taille approximative d'un poing. Les denrées alimentaires périssent, les vêtements se désagrègent, le cuir se racornit (perdant 1 PA à 1 Localisation), etc. Comme le MJ le décide.
 
 
-### <span id="page-243-0"></span>**Repères**
+### <span id="page-243-0" data-folio="242"></span>**Repères**
 
 **NI :** 0 **Portée :** Vous **Cible :** Vous
 
@@ -555,7 +555,7 @@ créature Infravision (voir page 340).
 
 *Pages PDF 247-255*
 
-# <span id="page-246-0"></span>**MAGIE DES COULEURS**
+# <span id="page-246-0" data-folio="245"></span>**MAGIE DES COULEURS**
 
 Vous trouverez ci-après huit listes de huit Sorts, chacune appartenant à une Couleur de Magie.
 
@@ -620,7 +620,7 @@ Vous gagnez +20 aux Tests d'Emprise sur les animaux et Dressage. Tant que ce Sor
 **Durée :** (Bonus de Force Mentale) jours
 
 
-<span id="page-247-0"></span>Votre souffle s'embrase et vos yeux prennent une lueur ambre alors que *Ghur* s'instille en vous. Votre regard et vos mots persuadent 1 créature possédant le trait Bestial que vous êtes le chef de sa meute, et elle combattra jusqu'à la mort pour vous protéger. Tant qu'elle sera sous votre contrôle, elle suivra vos instructions, comprenant instinctivement des instructions simples. Si la créature est libérée du Sort – parce que la durée est écoulée ou parce que le Sort a été dissipé – elle conservera suffisamment de respect et de crainte résiduels pour ne pas vous attaquer, à moins d'y être contrainte. Vos alliés pourraient ne pas avoir cette chance.
+<span id="page-247-0" data-folio="246"></span>Votre souffle s'embrase et vos yeux prennent une lueur ambre alors que *Ghur* s'instille en vous. Votre regard et vos mots persuadent 1 créature possédant le trait Bestial que vous êtes le chef de sa meute, et elle combattra jusqu'à la mort pour vous protéger. Tant qu'elle sera sous votre contrôle, elle suivra vos instructions, comprenant instinctivement des instructions simples. Si la créature est libérée du Sort – parce que la durée est écoulée ou parce que le Sort a été dissipé – elle conservera suffisamment de respect et de crainte résiduels pour ne pas vous attaquer, à moins d'y être contrainte. Vos alliés pourraient ne pas avoir cette chance.
 
 ### **Peau de chasseur**
 
@@ -689,7 +689,7 @@ Un éclair crépitant jaillit du bout de vos doigts, frappant votre cible. Il s'
 Vous vous enfermez dans une cage crépitante d'étincelles d'électricité et d'*Azyr*. Pour la durée du Sort, gagnez + DR PA à toutes les Localisations contre les Attaques de Corps à corps. Si vous êtes attaqué par une arme en métal –dagues, épées ou lances avec une pointe métal – votre attaquant subit un nombre de Dégâts égal à votre Bonus de Force Mentale.
 
 
-### <span id="page-248-0"></span>**Comète de Cassandora**
+### <span id="page-248-0" data-folio="247"></span>**Comète de Cassandora**
 
 **NI :** 10
 
@@ -796,7 +796,7 @@ Vous focalisez *Aqshy* en une majestueuse couronne de feu inspirant autour de vo
 Pour chaque +2 DR, vous pouvez augmenter la valeur de Peur de +1, ou prendre de nouveau le Talent Seigneur de guerre. De plus, gagnez un bonus de +10 à toutes les tentatives pour Focaliser et Incanter avec *Aqshy* tant que le Sort est actif.
 
 
-### <span id="page-249-0"></span>**Grands feux d'***U'Zhul*
+### <span id="page-249-0" data-folio="248"></span>**Grands feux d'***U'Zhul*
 
 **NI :** 10
 
@@ -873,7 +873,7 @@ Si une cible possède les Traits de créature Démoniaque ou Mort-vivant, les So
 Vous envoyez depuis vos mains un halo purificateur de *Hysh*, affectant toutes les créatures à l'intérieur de la Zone d'Effet dont l'Endurance est inférieure à votre Force Mentale. Les cibles possédant les Traits de créature Mort-vivant ou Démoniaque gagnent le Trait de créature Instable (voir page 340). Si elles possèdent déjà le Trait Instable, elles sont réduites à 0 Point de Blessures.
 
 
-#### <span id="page-250-0"></span>**Clarté d'esprit**
+#### <span id="page-250-0" data-folio="249"></span>**Clarté d'esprit**
 
 **NI :** 6
 
@@ -978,7 +978,7 @@ Vous enveloppez une arme non magique de lourdes bandes de *Chamon*, ce qui amél
 Vous focalisez *Chamon* dans un objet métallique non magique, tel qu'une arme ou une pièce d'armure. L'objet se 
 
 
-<span id="page-251-0"></span>répand sur le sol sous forme de métal fondu, refroidissant presque instantanément. S'il est tenu, l'objet est lâché. S'il est porté, le porteur subit une frappe équivalente à celle d'un *Projectile magique*, avec un nombre de Dégâts égal à votre Bonus de Force Mentale qui ignore le Bonus d'Endurance. Bien que l'objet soit détruit, le métal conserve sa valeur de base, et peut être utilisé ensuite par un forgeron comme matière première.
+<span id="page-251-0" data-folio="250"></span>répand sur le sol sous forme de métal fondu, refroidissant presque instantanément. S'il est tenu, l'objet est lâché. S'il est porté, le porteur subit une frappe équivalente à celle d'un *Projectile magique*, avec un nombre de Dégâts égal à votre Bonus de Force Mentale qui ignore le Bonus d'Endurance. Bien que l'objet soit détruit, le métal conserve sa valeur de base, et peut être utilisé ensuite par un forgeron comme matière première.
 
 # **Écaille d'acier**
 
@@ -1056,7 +1056,7 @@ Le Vent améthyste de *Shyish* transporte la poussière et le bruissement incess
 affectées par des Sorts du Domaine de la Mort sont drainées de leur force vitale, et demeurent affaiblies et léthargiques. Vous pouvez assigner +1 État *Exténué* à chaque cible vivante affectée par un Sort de ce Domaine. Une cible peut n'avoir qu'un seul État *Exténué* gagné de cette façon à la fois.
 
 
-<span id="page-252-0"></span>**Composants :** les os des créatures conscientes sont très répandus dans la magie d'Améthyste, ainsi que les symboles de mort, y compris le bois ou les clous provenant d'un cercueil, les fluides d'embaumement, les sabliers, les pièces en argent et la poussière de cimetière, le tout soigneusement présenté ou gravé. Les pierres précieuses, matériaux et fleurs de couleur violette (en particulier les roses) sont aussi fréquents.
+<span id="page-252-0" data-folio="251"></span>**Composants :** les os des créatures conscientes sont très répandus dans la magie d'Améthyste, ainsi que les symboles de mort, y compris le bois ou les clous provenant d'un cercueil, les fluides d'embaumement, les sabliers, les pièces en argent et la poussière de cimetière, le tout soigneusement présenté ou gravé. Les pierres précieuses, matériaux et fleurs de couleur violette (en particulier les roses) sont aussi fréquents.
 
 # **Caresse de** *Laniph*
 
@@ -1234,7 +1234,7 @@ Vous invoquez de délicats brins d'*Ulgu* dans l'esprit de votre cible, faisant 
 Vous créez un Portail d'Ombre d'*Ulgu* à travers l'Aethyr. Vous disparaissez de votre emplacement actuel et apparaissez immédiatement à une distance en mètres pouvant être égale jusqu'à votre Force Mentale. Tous les ennemis *Engagés* avec vous au moment de votre disparition ou réapparition gagnent l'État *Surpris*.
 
 
-<span id="page-254-0"></span>
+<span id="page-254-0" data-folio="253"></span>
 
 # **Le Domaine de la Vie**
 
@@ -1304,7 +1304,7 @@ Ce Sort peut uniquement cibler un carré de terre (même très petit). Vous fait
 Tant que le Sort est actif, quiconque tente de traverser la zone à pied sans posséder le Talent Magie des Arcanes (Vie) doit réussir un Test d'**Agilité Difficile (-20)**. Un échec signifie qu'il gagne 1 État *Hémorragique* et un État *Empêtré*, qui utilise votre Force Mentale pour sa Force. Une fois le Sort terminé, la végétation persiste mais perd ses propriétés surnaturelles.
 
 
-#### <span id="page-255-0"></span>**Graisse de la terre**
+#### <span id="page-255-0" data-folio="254"></span>**Graisse de la terre**
 
 **NI :** 4
 
@@ -1403,7 +1403,7 @@ Vous marmonnez des mots de pouvoir au-dessus d'une potion d'herbe spécialement 
 Vous lancez un Sort sur une décoction déjà prête, lui conférant des propriétés magiques. Si cette dernière est bue alors que le Sort est actif, la cible est guérie d'un nombre de Points de Blessure équivalent à votre Bonus de Force Mentale, ainsi que d'une maladie. Pour chaque DR+2 que vous obtenez, vous pouvez guérir une Maladie supplémentaire.
 
 
-### <span id="page-256-0"></span>**Séparer les branches**
+### <span id="page-256-0" data-folio="255"></span>**Séparer les branches**
 
 **NI :** 0
 
@@ -1490,7 +1490,7 @@ L'ingrédient de ce Sort doit être quelque chose appartenant à la cible, une P
 Vous fixez votre regard sur une unique cible, qui doit également vous regarder. Effectuez un Test opposé d'**Intimidation/ Calme**, en ajoutant à votre résultat le DR obtenu à votre Test d'Incantation. Votre adversaire subit 1 État *Exténué* par DR+2 d'écart avec vous. Si vous l'emportez de plus de DR+6, votre adversaire subit un État *Brisé*.
 
 
-#### <span id="page-257-0"></span>**Menace rampante**
+#### <span id="page-257-0" data-folio="256"></span>**Menace rampante**
 
 **NI :** 6
 
@@ -1590,7 +1590,7 @@ Vous hurlez les paroles du Sort. Un crâne énorme, noir et entouré de flammes 
 Vous envoyez les flux complexes de *Dhar* vers vos cibles, leur insufflant une irrésistible énergie. Un nombre de cibles équivalent à votre Bonus d'Intelligence qui possèdent le Trait de créature Mort-vivant gagnent une Action ou un Mouvement gratuits – vous choisissez l'un ou l'autre, qui sera appliqué à *toutes* les cibles – au moment de lancer le Sort. Pour chaque DR+2 obtenu, vous pouvez affecter un nombre de cibles supplémentaires équivalent à votre Bonus d'Intelligence.
 
 
-### <span id="page-258-0"></span>**Réanimation**
+### <span id="page-258-0" data-folio="257"></span>**Réanimation**
 
 **NI :** 8
 
@@ -1683,7 +1683,7 @@ La responsabilité la plus importante d'un MJ est de s'assurer que tout le monde
 **Vous êtes le dirigeant.** Encouragez l'intérêt pour le jeu en vous assurant que tout le monde a une chance de participer, et que la partie se déroule sans heurts. Rappelez aux Joueurs que les discussions au sujet des règles ont lieu en dehors de
 
 
-<span id="page-260-0"></span>la partie, et rappelez-vous que vous devez être capable de continuer à mener la partie pour atteindre un amusement optimal ! Soyez réfléchi et respectueux de vos Joueurs. Tenez compte du contenu des scénarios qui pourrait être désagréable pour certaines personnes, par exemple la violence explicite, le sexe ou l'horreur. Vérifiez qu'il n'y a pas de souci avant que ces sujets ne débarquent durant la partie. Légitimez votre autorité en étant juste avec tout le monde, cohérent dans la façon dont vous appliquez les règles, et menez la meilleure partie Bénie de Sigmar de ce côté-ci des Montagnes du Bord du Monde.
+<span id="page-260-0" data-folio="259"></span>la partie, et rappelez-vous que vous devez être capable de continuer à mener la partie pour atteindre un amusement optimal ! Soyez réfléchi et respectueux de vos Joueurs. Tenez compte du contenu des scénarios qui pourrait être désagréable pour certaines personnes, par exemple la violence explicite, le sexe ou l'horreur. Vérifiez qu'il n'y a pas de souci avant que ces sujets ne débarquent durant la partie. Légitimez votre autorité en étant juste avec tout le monde, cohérent dans la façon dont vous appliquez les règles, et menez la meilleure partie Bénie de Sigmar de ce côté-ci des Montagnes du Bord du Monde.
 
 # **Conseils généraux**
 
@@ -1724,7 +1724,7 @@ Plus vous jouerez de parties de Warhammer Fantasy, plus les règles deviendront 
 Avant de commencer votre première partie de Warhammer Fantasy, les Joueurs auront besoin de créer des Personnages, ou de choisir l'un des prétirés fournis dans la **Boîte d'Initiation Warhammer Fantasy**. Les Personnages prêts à l'emploi constituent déjà un groupe sur le départ, mais si vos Joueurs veulent créer les leurs, vous devrez les guider pendant le processus.
 
 
-<span id="page-261-0"></span>La création de Personnage peut prendre un certain temps ; il peut donc être utile d'y consacrer la première séance de jeu, alors informez vos Joueurs à l'avance pour gérer leurs attentes. Vous pouvez les guider à travers chaque étape de la création de leur Personnage, mais les Joueurs possédant leur propre livre de règles peuvent considérablement accélérer les choses. Guidez les nouveaux sur la façon dont les différentes parties de leur Personnage seront utilisées en jeu, et encouragez les Joueurs à coordonner leurs choix afin qu'ils puissent former un groupe aux Compétences plus étendues. Une bonne répartition des Classes vous offre, à vous et aux Joueurs, beaucoup plus d'options pendant la partie. Si le groupe ne possède pas de lanceurs de Sorts, par exemple, vous ne pouvez pas mener d'aventures qui nécessitent que les Joueurs interprètent des indices magiques.
+<span id="page-261-0" data-folio="260"></span>La création de Personnage peut prendre un certain temps ; il peut donc être utile d'y consacrer la première séance de jeu, alors informez vos Joueurs à l'avance pour gérer leurs attentes. Vous pouvez les guider à travers chaque étape de la création de leur Personnage, mais les Joueurs possédant leur propre livre de règles peuvent considérablement accélérer les choses. Guidez les nouveaux sur la façon dont les différentes parties de leur Personnage seront utilisées en jeu, et encouragez les Joueurs à coordonner leurs choix afin qu'ils puissent former un groupe aux Compétences plus étendues. Une bonne répartition des Classes vous offre, à vous et aux Joueurs, beaucoup plus d'options pendant la partie. Si le groupe ne possède pas de lanceurs de Sorts, par exemple, vous ne pouvez pas mener d'aventures qui nécessitent que les Joueurs interprètent des indices magiques.
 
 Encouragez les Joueurs à impliquer d'autres Personnages dans le passé du leur et émettez des suggestions pour les aider. Cela contribue à lier le groupe et il sera plus facile pour eux de choisir une Ambition de groupe. Évitez de créer une bande de desperados disparates qui refuseront de travailler ensemble et ne coopéreront jamais. Cela devient vite pénible et peut conduire à des expériences de jeu insatisfaisantes.
 
@@ -1751,7 +1751,7 @@ Ensuite, vous décrivez où se trouvent les Personnages et ce qui se passe autou
 Les Joueurs réagiront à la scène d'ouverture et interprèteront ce qui se passe, souvent d'une manière que nous, MJ, pourrions qualifier « d'intéressante ». En tant que MJ, vous connaissez déjà l'intrigue de l'aventure, mais les Joueurs devront la découvrir, avec peut-être un faux départ ou deux. Ne paniquez pas s'ils partent dans la mauvaise direction – ils arriveront à la fin et vous vous amuserez beaucoup en cours de route.
 
 
-<span id="page-262-0"></span>Résolvez donc leurs actions immédiates en écoutant attentivement comment ils réagissent à l'intrigue générale pour vous donner le temps de réfléchir à la prochaine partie. Assurez-vous que chaque Joueur ait la possibilité de participer – demander à tous les Joueurs n'ayant pas encore participé ce que leur Personnage va faire.
+<span id="page-262-0" data-folio="261"></span>Résolvez donc leurs actions immédiates en écoutant attentivement comment ils réagissent à l'intrigue générale pour vous donner le temps de réfléchir à la prochaine partie. Assurez-vous que chaque Joueur ait la possibilité de participer – demander à tous les Joueurs n'ayant pas encore participé ce que leur Personnage va faire.
 
 #### **3. Décrivez les conséquences des actions des Joueurs**
 
@@ -1840,7 +1840,7 @@ C'est à vous de décider à quel point vous voulez qu'elles représentent un pr
 | 10   | Attaqués ! : les Personnages sont attaqués pendant leur voyage. Il peut s'agir d'une rencontre malheureuse dans<br>la zone qu'ils traversent (des hommes-bêtes dans la forêt profonde, par exemple) ou de quelque chose prévu par<br>leurs adversaires (des voyous Engagés pour empêcher les Personnages d'atteindre leur destination). S'ils ratent un<br>Test de Perception Accessible (+20), ils peuvent même tomber dans une embuscade !                                                         |  |  |  |
 
 
-<span id="page-265-0"></span>Vous pouvez aussi donner aux Joueurs l'opportunité d'éviter les événements désagréables grâce à un Test réussi de Perception ou de Survie en extérieur, ou n'importe quel autre Test justifié. S'ils voyagent dans des transports payants, vous pouvez décider que cela leur permet d'éviter les difficultés.
+<span id="page-265-0" data-folio="264"></span>Vous pouvez aussi donner aux Joueurs l'opportunité d'éviter les événements désagréables grâce à un Test réussi de Perception ou de Survie en extérieur, ou n'importe quel autre Test justifié. S'ils voyagent dans des transports payants, vous pouvez décider que cela leur permet d'éviter les difficultés.
 
 # **Après la partie**
 
@@ -1870,7 +1870,7 @@ Récompenser les Joueurs par des Points de Destin ou de Résilience est égaleme
 
 ## [EDO 11] APPENDICE 2 - Nouvelles règles
 
-*Pages PDF 144-148*
+*Folio 145+*
 
 # APPENDICE 2 : NOUVELLES RÈGLES
 
@@ -1925,8 +1925,8 @@ Les accents des PNJ de la campagne de **L'Ennemi Intérieur** sont normalement s
 
 Donc, en supposant que vous aimiez imiter différents accents, c'est à vous de décider à quoi ressemble celui d'une personne originaire du Middenland dans vos parties, ou 
 
-
-<span id="page-144-0"></span>du Stirland, ou du Nordland. Attribuez les accents que vous préférez à chacune des provinces et des grandes villes, et vous êtes prêt à jouer. Si vous cherchez des directives sur la façon de procéder, consultez le tableau ci-après, qui n'est proposé qu'à titre indicatif.
+<span id="page-144-0" data-folio="145"></span>
+du Stirland, ou du Nordland. Attribuez les accents que vous préférez à chacune des provinces et des grandes villes, et vous êtes prêt à jouer. Si vous cherchez des directives sur la façon de procéder, consultez le tableau ci-après, qui n'est proposé qu'à titre indicatif.
 
 | Accents     | Comment choisir son accent                                 |  |  |  |
 |-------------|------------------------------------------------------------|--|--|--|
@@ -1998,7 +1998,7 @@ Ces deux nouveaux symptômes peuvent être ajoutés à n'importe quelle maladie 
 
 Votre raison bascule, avec des moments de clarté remplacés soudain par des accès de délire, d'hallucinations et de terreur. Faites un Test de **Force Mentale Intermédiaire (+0)** toutes les heures et consultez le tableau suivant.
 
-
+<span id="page-145-0" data-folio="146"></span>
 | 1d10 | Effet                                                                                                                                                                                                                                                           |
 |------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1-2  | Épisode lucide : vous vivez une période de calme<br>reposant. Tous les États que vous avez précédemment<br>acquis à cause de votre délire sont supprimés.                                                                                                       |
@@ -2036,8 +2036,8 @@ La campagne de **L'Ennemi Intérieur** propose des situations particulièrement 
 
 Si vous ne souhaitez pas utiliser ces Difficultés extrêmes, remplacez simplement Presque Impossible (−40) et Impossible (−50) dans ce livre par Très Difficile (−30).
 
-
-<span id="page-146-0"></span>Cette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).
+<span id="page-146-0" data-folio="147"></span>
+Cette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).
 
 Quelques guérisseurs utilisent des cataplasmes cicatrisants pour réduire le gonflement, surtout s'il y a une plaie visible sur laquelle ils peuvent être appliqués. Un Test étendu de **Guérison Complexe (-10)** réussi, nécessitant +5 DR et un cataplasme de guérison par Test, réduit le gonflement de (2d10 + le Bonus d'Endurance du patient) heures. Chaque Test dure 10 minutes.
 
@@ -2101,7 +2101,7 @@ La créature est un blob amorphe. Il divise par deux toutes les Blessures subies
 
 La créature héberge la maladie indiquée, et elle peut la transmettre au toucher. Dans ce cas, la victime doit tester s'il y a Contraction, mais le Test est de 2 niveaux plus difficile que la normale. Si la maladie est contractée, son incubation est changée en « Instantanée ».
 
-
+<span id="page-147-0" data-folio="148"></span>
 #### **Décérébré**
 
 La créature est stupide, ne vivant qu'en suivant ses bas instincts ou par compulsion magique. Elle n'a pas d'Initiative, d'Intelligence, de Force Mentale ou de Sociabilité et n'a jamais besoin de les Tester. Pour le calcul des Blessures, on utilise son Bonus de Force chaque fois que le Bonus de Force Mentale est requis. Comme elle n'a pas d'Initiative, elle joue toujours en dernier dans n'importe quel tour.
@@ -2133,6 +2133,8 @@ Tout démon portant l'anneau peut ignorer le Trait de créature Instable et ne p
 Les mortels portant l'anneau gagnent à la place tous les effets du sort Aura ordinaire.
 
 Malheureusement, comme l'anneau est maintenant, et depuis de nombreuses années, imprégné des énergies démoniaques de Gideon, il est dangereux. Pour chaque mois pendant lequel il est porté par un mortel, un Test de **Résistance** à une exposition mineure à la Corruption doit être effectué. Cette souillure ne peut être supprimée que par de rares rituels et sorts de du Domaine de la Lumière.
+
+<span id="page-148-0" data-folio="149"></span>
 
 ---
 
@@ -2210,3 +2212,5 @@ Vous hurlez à tous ceux à bord de votre vaisseau de se taire et vous fermez le
 **Cible :** Un navire **Durée :** Un Round
 
 Ce Sort est une variante d'une création du seigneur astromancien Wilfried-Gotthelm Niezlib, qui cherchait à l'utiliser pour prouver ses théories concernant le mouvement des corps célestes. Il s'est ensuite rendu compte que cette magie avait des applications plus concrètes et l'a modifiée pour déterminer le moment exact auquel un bateau doit tirer une bordée. Le lanceur peut calculer le roulis du vaisseau, la distance par rapport à la cible, le poids des boulets de canon et la puissance de chaque tir. Pendant toute la durée du Sort, les Tests effectués pour tirer avec un canon bénéficient de +1 DR.
+
+<!-- /MDG-INTEGRATION -->

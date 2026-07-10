@@ -4,7 +4,7 @@
 > par une fiche `docs/raw/`) ou explicitement **hors-règle** (narratif). Un chapitre `⬜` = trou.
 > Recourir à la source pour un point = un défaut de l'Atlas à corriger ici. Régénéré par
 > `node scripts/raw/coverage.mjs`.
-**Couverture (profondeur) : ✅ 124 couverts · 🟡 4 effleurés · ⬜ 24 trous** sur 152 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅1·🟡0·⬜11 · ZI ✅1·🟡0·⬜13 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅3·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · Altdorf ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅10·🟡0·⬜0.
+**Couverture (profondeur) : ✅ 149 couverts · 🟡 4 effleurés · ⬜ 0 trous** sur 153 chapitres-règles (hors artefacts OCR). ✅ = une fiche propriétaire le traite (≥3 refs) ; 🟡 = seulement cité en renvoi ; ⬜ = absent. Par livre : LDB ✅71·🟡2·⬜0 · ADE I ✅2·🟡0·⬜0 · ADE II ✅6·🟡0·⬜0 · AA ✅13·🟡0·⬜0 · ZI ✅14·🟡0·⬜0 · Middenheim ✅5·🟡0·⬜0 · EDO ✅3·🟡0·⬜0 · EDOC ✅3·🟡1·⬜0 · T2 ✅1·🟡0·⬜0 · T2C ✅7·🟡1·⬜0 · T3 ✅4·🟡0·⬜0 · Altdorf ✅3·🟡0·⬜0 · Ubersreik ✅2·🟡0·⬜0 · NADAJ ✅5·🟡0·⬜0 · MDG ✅10·🟡0·⬜0.
 
 
 ## LDB — ✅ 71 · 🟡 2 · ⬜ 0
@@ -24,9 +24,9 @@
 | 10 | Talents | ✅ | 63 (tests.md ×36) |
 | 11 | *(artefact OCR)* | 🟡 | 4 (reconciliation.md ×2) |
 | 12 | Tests | ✅ | 46 (tests.md ×41) |
-| 13 | Combat | ✅ | 146 (combat.md ×130) |
+| 13 | Combat | ✅ | 147 (combat.md ×131) |
 | 14 | *(artefact OCR)* | ✅ | 142 (combat.md ×123) |
-| 15 | Déplacement | ✅ | 95 (combat.md ×77) |
+| 15 | Déplacement | ✅ | 99 (combat.md ×77) |
 | 16 | États | ✅ | 54 (etats.md ×30) |
 | 17 | Destin et Résistance | ✅ | 53 (destin.md ×27) |
 | 18 | Traumatisme | ✅ | 136 (traumatisme.md ×90) |
@@ -127,44 +127,44 @@
 | 08 | Le théâtre de la guerre | ✅ | 69 (combat.md ×69) |
 | 09 | Annexe I | ✅ |  |
 
-## AA — ✅ 1 · 🟡 0 · ⬜ 11
+## AA — ✅ 13 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | CRÉDITS | ✅ | 320 (combat.md ×319) |
-| 02 | INTRODUCTION | ➖ hors-règle | |
-| 03 | LES CHEVALIERS DE L'EMPIRE | ⬜ |  |
-| 04 | LES CHIENS DE GUERRE | ⬜ |  |
-| 05 | LA TILÉE ET LES PERSONNAGES TILÉENS | ⬜ |  |
-| 06 | LE CULTE DE MYRMIDIA | ⬜ |  |
-| 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ⬜ |  |
-| 08 | LA RÉSERVE DE L'INTENDANT | ⬜ |  |
-| 09 | LE COMBAT MONTÉ | ⬜ |  |
-| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ⬜ |  |
-| 11 | ANNEXE I AVANTAGES DE GROUPE | ⬜ |  |
-| 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ⬜ |  |
-| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ⬜ |  |
+| 02 | INTRODUCTION | ✅ |  |
+| 03 | LES CHEVALIERS DE L'EMPIRE | ✅ |  |
+| 04 | LES CHIENS DE GUERRE | ✅ |  |
+| 05 | LA TILÉE ET LES PERSONNAGES TILÉENS | ✅ |  |
+| 06 | LE CULTE DE MYRMIDIA | ✅ |  |
+| 07 | MISES À JOUR DE L'ÉTAT HÉMORRAGIQUE | ✅ |  |
+| 08 | LA RÉSERVE DE L'INTENDANT | ✅ |  |
+| 09 | LE COMBAT MONTÉ | ✅ |  |
+| 10 | L'ARTILLERIE ET LES DÉGÂTS INFLIGÉS AUX STRUCTURES | ✅ |  |
+| 11 | ANNEXE I AVANTAGES DE GROUPE | ✅ |  |
+| 12 | ANNEXE II ACTIVITÉS DE GUERRIER | ✅ |  |
+| 13 | ANNEXE III NOUVEAUX TALENTS ET TALENTS MIS À JOUR | ✅ |  |
 
-## ZI — ✅ 1 · 🟡 0 · ⬜ 13
+## ZI — ✅ 14 · 🟡 0 · ⬜ 0
 
 | Ch. | Titre | État | refs (propriétaire) |
 |---|---|---|---|
 | 00 | Index | ➖ hors-règle | |
 | 01 | TROIS EXPÉDITIONS | ✅ | 34 (combat.md ×31) |
-| 02 | Griffon | ⬜ |  |
-| 03 | Dragon | ⬜ |  |
-| 04 | « L'abominable » Halagrundsor | ⬜ |  |
-| 05 | Amibe | ⬜ |  |
-| 06 | Cockatrice | ⬜ |  |
-| 07 | Chimère | ⬜ |  |
-| 08 | Grand taurus | ⬜ |  |
-| 09 | Trégara | ⬜ |  |
-| 10 | Macareux à bec tranchant | ⬜ |  |
-| 11 | Chat sauvage | ⬜ |  |
-| 12 | Il Potente Granchio | ⬜ |  |
-| 13 | Sirène | ⬜ |  |
-| 14 | Expéditions prévues | ⬜ |  |
+| 02 | Griffon | ✅ |  |
+| 03 | Dragon | ✅ |  |
+| 04 | « L'abominable » Halagrundsor | ✅ |  |
+| 05 | Amibe | ✅ |  |
+| 06 | Cockatrice | ✅ |  |
+| 07 | Chimère | ✅ |  |
+| 08 | Grand taurus | ✅ |  |
+| 09 | Trégara | ✅ |  |
+| 10 | Macareux à bec tranchant | ✅ |  |
+| 11 | Chat sauvage | ✅ |  |
+| 12 | Il Potente Granchio | ✅ |  |
+| 13 | Sirène | ✅ |  |
+| 14 | Expéditions prévues | ✅ |  |
 
 ## Middenheim — ✅ 5 · 🟡 0 · ⬜ 0
 

@@ -1,21 +1,63 @@
 // Construit les catalogues de l'Atlas (docs/raw/catalogue-*.md) en CONCATÉNANT verbatim les chapitres
 // de DONNÉES de la SOURCE Marker propre (tables intactes), LDB + suppléments. Chaque chapitre est cité
 // `<ABBR> NN` → crédité au niveau chapitre par coverage.mjs/reconcile.mjs. Re-run après toute ré-extraction.
+// Contrainte : tout bloc `<!-- MDG-INTEGRATION -->` du fichier existant est un correctif MANUEL
+// (compense une perte connue de l'extraction Marker pour un livre non encore couvert par DOMAINS,
+// ex. MDG) — préservé tel quel par extractPreservedBlocks/appendPreservedBlocks, JAMAIS régénéré.
 // node scripts/raw/build-catalogs.mjs
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { chapterFile as chapterFileLib } from './_lib.mjs'
+
+const BLOCK_START = /^<!-- ([A-Z0-9_-]+-INTEGRATION) -->/
+const blockEnd = (tag) => new RegExp(`^<!-- /${tag} -->\\s*$`)
+
+// Extrait les blocs préservés (délimités par `<!-- X-INTEGRATION -->` … `<!-- /X-INTEGRATION -->`,
+// précédés d'un séparateur `---` isolé) d'un catalogue EXISTANT. Si un bloc n'a pas encore de
+// marqueur de fin (ancien format, courait jusqu'à l'EOF), on le ferme ici — auto-guérison au premier run.
+function extractPreservedBlocks(path) {
+  if (!existsSync(path)) return []
+  const lines = readFileSync(path, 'utf8').split('\n')
+  const blocks = []
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(BLOCK_START)
+    if (!m) continue
+    const tag = m[1]
+    let start = i
+    for (let j = i - 1; j >= Math.max(0, i - 5); j--) {
+      if (lines[j].trim() === '---') { start = j; break }
+    }
+    const endRe = blockEnd(tag)
+    let end = lines.length - 1
+    let closed = false
+    for (let j = i + 1; j < lines.length; j++) {
+      if (endRe.test(lines[j])) { end = j; closed = true; break }
+    }
+    const body = lines.slice(start, end + 1)
+    if (!closed) body.push(`<!-- /${tag} -->`)
+    blocks.push(body.join('\n'))
+    i = end
+  }
+  return blocks
+}
+
+function appendPreservedBlocks(content, blocks) {
+  if (!blocks.length) return content
+  return content.replace(/\n+$/, '\n') + '\n' + blocks.join('\n\n') + '\n'
+}
 
 // Domaines → chapitres de DONNÉES par livre (repérés au canal titre).
 const DOMAINS = [
   { file: 'catalogue-creatures.md', titre: 'Bestiaire — profils de créature', rules: 'bestiaire.md',
-    inc: [['LDB', [76, 77, 78, 79, 80, 82, 83, 84, 85]], ['Middenheim', [4]], ['ZI', [1]],
+    inc: [['LDB', [76, 77, 78, 79, 80, 82, 83, 84, 85]], ['Middenheim', [4]],
+          ['ZI', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]],
           ['ADE II', [1, 2]], ['EDO', [11]], ['EDOC', [7]], ['T2C', [13]], ['T3', [10, 11]]] },
   { file: 'catalogue-sorts.md', titre: 'Sorts — listes complètes', rules: 'magie.md',
     inc: [['LDB', [47, 48, 49, 50, 51]], ['EDO', [11]]] },
   { file: 'catalogue-divin.md', titre: 'Religion — dieux, bénédictions & miracles', rules: 'religion.md',
     inc: [['LDB', [24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43]], ['Middenheim', [7]], ['Altdorf', [11]]] },
   { file: 'catalogue-equipement.md', titre: 'Équipement — objets, prix & Encombrement', rules: 'equipement.md',
-    inc: [['LDB', [57, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]], ['AA', [1]]] },
+    inc: [['LDB', [57, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]],
+          ['AA', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]]] },
   { file: 'catalogue-carrieres.md', titre: 'Carrières — détails par niveau', rules: 'carrieres.md',
     inc: [['LDB', [6, 7, 8]], ['ADE I', [7, 8]], ['ADE II', [1]], ['Middenheim', [8, 9, 10]]] },
   { file: 'catalogue-divers.md', titre: 'Règles diverses des suppléments', rules: '00-index.md',
@@ -41,7 +83,10 @@ for (const dom of DOMAINS) {
     `> **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)\n` +
     `> des livres autorisés. Système & règles : voir [\`${dom.rules}\`](${dom.rules}).\n>\n` +
     `> **Chapitres source :** ${refs.join(' · ')}.\n\n---\n`
-  writeFileSync(`docs/raw/${dom.file}`, header + parts.join('\n') + '\n')
-  log.push(`${dom.file} : ${refs.length} ch., ${Math.round((header + parts.join('')).length / 1024)} Ko${missing.length ? ' · MANQUE ' + missing.join(', ') : ''}`)
+  const path = `docs/raw/${dom.file}`
+  const preserved = extractPreservedBlocks(path)
+  const body = appendPreservedBlocks(header + parts.join('\n') + '\n', preserved)
+  writeFileSync(path, body)
+  log.push(`${dom.file} : ${refs.length} ch., ${Math.round(body.length / 1024)} Ko${missing.length ? ' · MANQUE ' + missing.join(', ') : ''}${preserved.length ? ` · ${preserved.length} bloc(s) préservé(s)` : ''}`)
 }
 console.log(log.join('\n'))

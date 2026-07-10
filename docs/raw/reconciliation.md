@@ -4,8 +4,8 @@
 > (réfs `LDB NN l.X` dans `src/`) absentes de l'Atlas. **Sens B** = règles que l'Atlas décrit
 > hors du code. Tolérance ligne = ±20.
 
-**Sens A — code → Atlas** : 0 chapitre(s) cités par le code & absents de l'Atlas · 4 chapitre(s) couverts avec des lignes non pinées.
-**Sens B — Atlas → code** : 159 marqueur(s) « (non implémenté) » · 23 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
+**Sens A — code → Atlas** : 0 chapitre(s) cités par le code & absents de l'Atlas · 5 chapitre(s) couverts avec des lignes non pinées.
+**Sens B — Atlas → code** : 158 marqueur(s) « (non implémenté) » · 23 chapitre(s) LDB cités par l'Atlas jamais référencés dans le code.
 
 ## A1 — Chapitres appelés par le CODE, ABSENTS de l'Atlas (trous durs)
 
@@ -14,30 +14,36 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 ## A2 — Lignes appelées par le CODE non pinées par l'Atlas (chapitre couvert, règle peut-être survolée)
 
 ### LDB 46 — 10/30 ligne(s) code hors couverture (propriétaire : docs\raw\magie.md)
-- l.185 — `src/state/combatSlice.ts:2845` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
-- l.188 — `src/data/index.ts:504` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
-- l.193 — `src/state/combatFlow.ts:1896` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
-- l.194 — `src/engine/ops.ts:595` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
+- l.185 — `src/state/combatSlice.ts:2989` — // Focalisation CRITIQUE (LDB 46 l.185-186) : le sort est lançable au prochain Round
+- l.188 — `src/data/index.ts:511` — *  (Chamon/Azyr ignorent le métal, Ghur le cuir, LDB 46 l.188). Remplace la devinette par regex sur le nom. */
+- l.193 — `src/state/combatFlow.ts:1916` — // Interruption de Focalisation (LDB 46 l.193-194) : Dégâts subis pendant qu'on focalise
+- l.194 — `src/engine/ops.ts:599` — /** Marqueur IMPUR de la branche d'ÉCHEC du Test de Calme d'interruption de Focalisation (LDB 46 l.194) :
 - l.199 — `src/engine/magic.ts:165` — * « Repousser les Vents » (LDB 46 l.199) : −1 DR aux Tests d'Incantation et de
 - l.201 — `src/engine/engine.test.ts:699` — it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
 - l.202 — `src/engine/magic.ts:539` — *  Contre-sort (LDB 46 l.202 : « le lanceur tient le rôle attaquant »). Source unique. */
 - l.204 — `src/engine/conditions.ts:464` — *  DISSIPATION (LDB 46 l.204-207, `engine/dispel`). Renvoie les effets retirés (pour le journal). */
-- l.205 — `src/state/combatSlice.ts:2905` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
-- l.207 — `src/engine/tests.ts:206` — *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
+- l.205 — `src/state/combatSlice.ts:3049` — // Réussite (DR cumulé ≥ NI, LDB 46 l.205) : retire les effets du sort de tous ses porteurs.
+- l.207 — `src/engine/tests.ts:218` — *  œuvre de concert (Test étendu, Tests de groupe hors combat, Dissipation à plusieurs LDB 46 l.207…). */
 
 ### LDB 10 — 6/21 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
-- l.310 — `src/engine/types.ts:820` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
-- l.364 — `src/engine/types.ts:1295` — /** Distraire (LDB 10 l.364 / AA l.4395) : distrait par un adversaire → ne peut gagner AUCUN Avantage
-- l.365 — `src/state/combatFlow.ts:4271` — *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
+- l.310 — `src/engine/types.ts:819` — /** Aura magique DÉTECTÉE (Talent Détection d'artefact, LDB 10 l.310-312 : « vous sentez que
+- l.364 — `src/engine/types.ts:1335` — /** Distraire (LDB 10 l.364 / AA l.4395) : distrait par un adversaire → ne peut gagner AUCUN Avantage
+- l.365 — `src/state/combatFlow.ts:4343` — *  Réutilisé par la Chirurgie (infection post-opératoire, LDB 10 l.365) : Chance/Résilience + auto-succès
 - l.569 — `src/engine/grimoire.ts:11` — *    inclusives — aucun sort inclus au Talent, LDB 10 l.569).
 - l.859 — `src/state/granted-traits.test.ts:122` — it('Sans Peur POSSÉDÉ ciblé (LDB 10 l.859) : immunise vs l’Ennemi spécifié seulement', async () => {
 - l.864 — `src/engine/psychology.ts:74` — *  NB : « Sans Peur (Ennemi) » (LDB 10 l.864) ne supprime PLUS la source ici (ce n'était pas RAW : le
 
+### LDB 15 — 4/20 ligne(s) code hors couverture (propriétaire : docs\raw\combat.md)
+- l.500 — `src/state/pursuitFlow.ts:38` — /** Distance de départ (LDB 15 l.500-504 : 1 = presque à portée … 8 = presque hors de portée). */
+- l.512 — `src/state/pursuitFlow.ts:12` — * adversaires (PNJ) roulent en clôture de manche. On compare (LDB 15 l.512-515) le DR le plus BAS des
+- l.518 — `src/scenes/test-scenarios/95-poursuite-terrestre.ts:44` — // Secours si rattrapés (Distance ≤ 0, LDB 15 l.518) — mêmes brigands, cachés tant que la fuite tient.
+- l.520 — `src/state/pursuitFlow.ts:147` — get().log(p.partyRole === 'fleeing' ? 'Le groupe a semé ses poursuivants — fuite réussie (LDB 15 l.520).' : 'La proie s\'est échappée — la poursuite est perdue 
+
 ### LDB 11 — 2/2 ligne(s) code hors couverture (propriétaire : docs\raw\equipement.md)
 - l.143 — `src/state/vision.ts:11` — * Lanterne 20 m — `LDB 74 l.72`, `LDB 75 l.15`) et la Vision nocturne (20 m/niv — `LDB 11 l.143-147`)
-- l.147 — `src/data/index.ts:803` — /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
+- l.147 — `src/data/index.ts:810` — /** Portée de vision dans le noir, en cases (Vision nocturne 20 m/niv = 10 — `LDB 11 l.147` ;
 
-### LDB 12 — 1/21 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
+### LDB 12 — 1/23 ligne(s) code hors couverture (propriétaire : docs\raw\tests.md)
 - l.229 — `src/engine/activities.ts:223` — /** Test COMBINÉ (LDB 12 l.229) : UN jet confronté aux DEUX premières `skills` (Infiltration Discrétion+
 
 ## B1 — Règles décrites par l'Atlas marquées « (non implémenté) »
@@ -92,7 +98,6 @@ _Aucun. Tout chapitre LDB référencé dans le code est cité par au moins une f
 - **docs\raw\combat.md** L1200 — - Effet spécial du **Gantelet verrouillé** (conserve l'objet, −20 transitoire au lieu de lâcher) : `(non implémenté)` — l'objet existe comme donnée mais sa règle anti-lâcher n'est pas câblée.
 - **docs\raw\combat.md** L1278 — **Implemente** : sous-système Empoignade `(non implémenté)` — il n'existe ni flux ni manœuvre « grapple/Empoignade » (rien dans `src/state/rollFlows.ts`, `src/data/maneuvers.json`, ni `src/engine/ops.
 - **docs\raw\combat.md** L1434 — - Trait **Redoutable** : présent en **donnée** (`src/data/frenchy-traits.json` id `redoutable`, description verbatim ; assigné à de nombreuses créatures de `creatures.json`) mais **le minimum d'Avanta
-- **docs\raw\combat.md** L1662 — - Escalade : `(non implémenté)` — aucune mécanique de grimpe (½ vitesse / Test Escalade) dans `src/`.
 - **docs\raw\combat.md** L1664 — - Chute : `src/state/combatEffects.ts` (effet `fall`) — `3 * m + d10() − BonusEndurance`, plancher 0, PA ignorés ; `loseWounds` ; `addCondition(c, 'a-terre')` si `lost > be`. Réduction de chute volont
 - **docs\raw\combat.md** L1754 — **Implemente** : `(non implémenté)` — la procédure de Poursuite de LDB 15 (Distance abstraite, comparaison DR le plus faible des fuyards vs DR le plus haut des poursuivants, modificateur de M en DR bo
 - **docs\raw\combat.md** L1830 — **Implemente** : `src/engine/encumbrance.ts` (`encumbrancePenalties` — paliers tier 0–3 : −1 M / min 3 / −10 Ag / +1 Fat ; −2 M / min 2 / −20 Ag / +2 Fat ; immobilisé au-delà de ×3 ; `effectiveMovemen

@@ -20,6 +20,7 @@
     "issues:export": "node scripts/ops/export-issues.mjs",
     "raw:coverage": "node scripts/raw/coverage.mjs",
     "raw:reconcile": "node scripts/raw/reconcile.mjs",
+    "raw:catalogs": "node scripts/raw/build-catalogs.mjs",
     "lint": "eslint .",
     "relay:dev": "npm --prefix server run dev",
     "relay:deploy": "npm --prefix server run deploy",

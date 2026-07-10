@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`bestiaire.md`](bestiaire.md).
 >
-> **Chapitres source :** `LDB 76` · `LDB 77` · `LDB 78` · `LDB 79` · `LDB 80` · `LDB 82` · `LDB 83` · `LDB 84` · `LDB 85` · `Middenheim 4` · `ZI 1` · `ADE II 1` · `ADE II 2` · `EDO 11` · `EDOC 7` · `T2C 13` · `T3 10` · `T3 11`.
+> **Chapitres source :** `LDB 76` · `LDB 77` · `LDB 78` · `LDB 79` · `LDB 80` · `LDB 82` · `LDB 83` · `LDB 84` · `LDB 85` · `Middenheim 4` · `ZI 1` · `ZI 2` · `ZI 3` · `ZI 4` · `ZI 5` · `ZI 6` · `ZI 7` · `ZI 8` · `ZI 9` · `ZI 10` · `ZI 11` · `ZI 12` · `ZI 13` · `ZI 14` · `ADE II 1` · `ADE II 2` · `EDO 11` · `EDOC 7` · `T2C 13` · `T3 10` · `T3 11`.
 
 ---
 
@@ -14,7 +14,7 @@
 
 # • BESTIAIRE •
 
-<span id="page-311-0"></span>*« L'adversité face au monstre fait l'homme. La prospérité de l'homme fait le monstre. »*
+<span id="page-311-0" data-folio="310"></span>*« L'adversité face au monstre fait l'homme. La prospérité de l'homme fait le monstre. »*
 
 – Albertus Zweistein, Professeur middenlander
 
@@ -61,7 +61,7 @@ Les Traits standard de créature vous permettent de mieux diversifier vos PNJ. L
 
 *Pages PDF 313-315*
 
-# <span id="page-312-0"></span>**LES PEUPLES DU REIKLAND**
+# <span id="page-312-0" data-folio="311"></span>**LES PEUPLES DU REIKLAND**
 
 **Le Chapitre 2 : Personnage** présente les principales populations du Reikland. Cette section explique comment créer rapidement des PNJ équivalents, et introduit également les ogres.
 
@@ -112,7 +112,7 @@ nocturne **Facultatif :** À distance +9 (150), Arboricole, Furtif, Lanceur de S
 Magique, Pisteur, Résistance magique
 
 
-# <span id="page-313-0"></span>**Ogre**
+# <span id="page-313-0" data-folio="312"></span>**Ogre**
 
 Grands, bruyants, brutaux et extrêmement violents, les ogres sont animés par le besoin de remplir leur énorme ventre musclé. Ils manquent d'astuce ou d'intelligence pour le faire avec subtilité, optant d'emblée pour la force dans la plupart des situations.
 
@@ -141,7 +141,7 @@ Personne ne sait pourquoi, mais les halflings et les ogres s'entendent bien. Bea
 Cependant, cette relation ne fonctionne pas toujours. Golgfag Mange'homme, le capitaine d'un groupe de mercenaires du très inventif nom de Mange'hommes de Golgfag, employait notoirement un petit clan de halflings aux cuisines, pour lui et ses hommes après les grandes victoires. Jusqu'à ce que Golgfag réalise que les cuisiniers avaient meilleur goût que la nourriture qu'ils préparaient…
 
 
-# <span id="page-314-0"></span>**Exemples**
+# <span id="page-314-0" data-folio="313"></span>**Exemples**
 
 Voici deux exemples de PNJ humains créés en utilisant juste les Traits de créature et les Caractéristiques aléatoires.
 
@@ -166,7 +166,7 @@ Pol pensait qu'il suivrait les traces de ses parents, dirigeant la boulangerie B
 **Traits :** Arme +5, Coriace, Intelligent, Lanceur de Sorts (Sorcellerie), Préjugé (sigmarites), Rusé
 
 
-<span id="page-315-0"></span>Le Bestiaire présente les Caractéristiques sous forme d'un nombre rond, comme 20, 25 ou 30. En pratique, bien entendu, les nombres varient considérablement d'un individu à un autre. Si vous souhaitez créer des Caractéristiques aléatoires, soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. Si une Caractéristique vaut 5, lancez juste 1d10 pour la rendre aléatoire.
+<span id="page-315-0" data-folio="314"></span>Le Bestiaire présente les Caractéristiques sous forme d'un nombre rond, comme 20, 25 ou 30. En pratique, bien entendu, les nombres varient considérablement d'un individu à un autre. Si vous souhaitez créer des Caractéristiques aléatoires, soustrayez -10 et ajoutez 2d10. Une Caractéristique de 30 se traduit donc par 2d10+20. Si une Caractéristique vaut 5, lancez juste 1d10 pour la rendre aléatoire.
 
 Cette méthode peut aussi être utilisée pour créer des PJ à partir de races généralement réservées aux PNJ, en utilisant les Caractéristiques aléatoires et en ajoutant une Carrière appropriée, créant, par exemple, un Soldat ogre, un Ingénieur skaven ou un Noble vampire. Cela demandera bien sûr une petite adaptation des règles pour fonctionner, mais si vous désirez jouer avec ce genre de personnages, ce n'est pas bien difficile à faire.
 
@@ -202,7 +202,7 @@ Les chevaux sont élevés pour différents usages, servant de montures rapides a
 **Facultatif :** Armure, Dressé (Divertir, Dompté, Guerre, Magie, Monture, Trait)
 
 
-# <span id="page-316-0"></span>**Chien**
+# <span id="page-316-0" data-folio="315"></span>**Chien**
 
 Les chiens sont élevés pour une myriade de raisons à travers le Vieux Monde. Alors que les toutous choyés des courtisans d'Altdorf ne sont une menace que pour la dignité d'un Joueur, les espèces plus grandes, y compris celles élevées pour la guerre ou les combats de chiens, peuvent représenter une menace considérable.
 
@@ -235,7 +235,7 @@ Arpentant les étendues sauvages du Reikland, les Ours sont solitaires et géné
 **Facultatif :** Affamé, Dressé (Divertir, Dompté, Guerre), Infecté, Parasité, Taille (Énorme), Territorial
 
 
-# <span id="page-317-0"></span>**Pigeon**
+# <span id="page-317-0" data-folio="316"></span>**Pigeon**
 
 Les pigeons sont élevés dans tout le Reikland pour transporter des messages de toutes sortes. Récemment, ils ont gagné en renommée pour le transport de chargements plus mortels, car l'oiseau facilement accessible est devenu populaire parmi les Ingénieurs, qui les utilisent pour déployer leurs « bombes-pigeons » à des degrés divers de réussite.
 
@@ -268,7 +268,7 @@ Les rats s'infiltrent partout et sont particulièrement répandus dans les cité
 **Facultatif :** Belliqueux, Dressé (Dompté, Guerre, Magie, Monture), Frénésie, Infecté, Parasité, Taille (Grande), Territorial
 
 
-# <span id="page-318-0"></span>**Serpent**
+# <span id="page-318-0" data-folio="317"></span>**Serpent**
 
 On trouve des serpents dans tout l'Empire, en particulier dans les forêts profondes. La plupart sont inoffensifs, mais certains utilisent un venin mortel ou enserrent leurs victimes jusqu'à ce qu'elles meurent par suffocation. Comme beaucoup de créatures du Vieux Monde, ils peuvent atteindre des proportions gigantesques, représentant un réel danger même pour le plus fort des mercenaires.
 
@@ -294,7 +294,7 @@ Ces créatures reptiliennes à huit pattes sont solitaires et insaisissables. Co
 Rarement rencontrés aujourd'hui, les basilics sont des ennemis des plus dangereux. Leurs glandes et leurs organes sont très prisés des Sorciers et Alchimistes. Des chasseurs opportunistes écoutent donc souvent les rumeurs sur la présence de basilics dans les espaces sauvages du Vorbergland, et bien peu en reviennent.
 
 
-# <span id="page-319-0"></span>**Bête des marais**
+# <span id="page-319-0" data-folio="318"></span>**Bête des marais**
 
 Animées par des lanceurs de Sorts à partir d'immondices des marais et des tourbières, les Bêtes des marais ne sont que des automates parfaitement stupides créés par magie. Vaguement humanoïdes, ils sont constitués de boue, d'os, de branches et de mucus, et nécessitent d'importantes quantités de magie pour conserver leur intégrité. Parfois, ils sont animés par des Sorciers spécialisés dans la Magie de Jade pour servir de gardes du corps ou pour accomplir une tâche spécifique nécessitant de la force brute ou un meurtre aveugle. Ils s'animent parfois de façon autonome, engendrés dans des bassins d'eau stagnante où le flux de Magie a été corrompu. Le Collège de Jade d'Altdorf conserve une vingtaine de ces créatures comme bêtes de somme, qui effectuent des corvées pour les Magisters supérieurs, maintenues par la focalisation incessante de douzaines d'apprentis.
 
@@ -321,7 +321,7 @@ Avec leur tête d'aigle et leur corps de lion, les demigriffons sont de puissant
 **Facultatif :** Dressé (Dompté, Garde, Guerre, Monture, Trait)
 
 
-# <span id="page-320-0"></span>**Dragon**
+# <span id="page-320-0" data-folio="319"></span>**Dragon**
 
 Les dragons régnaient sur les cieux bien avant que les anciennes races n'arpentent le monde connu. Même si les dragons d'aujourd'hui ne sont plus que l'ombre de leurs frères, ils demeurent parmi les créatures connues les plus puissantes de l'Empire.
 
@@ -354,7 +354,7 @@ Les Fimirs sont des créatures reptiliennes discrètes, pourvues d'un seul œil.
 – Oleg Grauhof, Marchand reiklander, avant d'être pendu pour le meurtre de sa femme
 
 
-# <span id="page-321-0"></span>**Géant**
+# <span id="page-321-0" data-folio="320"></span>**Géant**
 
 Les géants sont des créatures solitaires qui évitent généralement la civilisation. La plupart chassent dans les endroits éloignés et montagneux entourant l'Empire ou se cachent dans des grottes et des ruines oubliées, loin des peuples plus petits, bien qu'ils migrent parfois dans les contreforts à la recherche de nourriture. Ils ont la réputation d'être belliqueux et féroces, à cause de leur taille impressionnante, de leur régime alimentaire à base de bétail et de leur association avec des armées peaux-vertes en maraude qui les asservissent. En réalité, beaucoup de géants ont un bon fond, sont en proie à des crises de colère et défendent farouchement leur vie privée, mais ne sont pas nécessairement hostiles aux autres.
 
@@ -383,7 +383,7 @@ nocturne, Vol 80
 **Facultatif :** Dressé (Dompté, Garde, Guerre, Magie, Monture)
 
 
-# <span id="page-322-0"></span>**Hippogriffe**
+# <span id="page-322-0" data-folio="321"></span>**Hippogriffe**
 
 Particulièrement féroces et territoriaux, les hippogriffes possèdent une tête et des ailes d'aigle, le buste d'un lion et l'arrière-train d'un cheval. Issus le plus souvent des Montagnes Grises, ils attaquent sans provocation, presque imprudents dans leur fureur, déchirant la chair en lambeaux pour la dévorer plus tard. Leur rage est telle que des troupeaux entiers de bétails peuvent être anéantis par un seul hippogriffe, qui s'enfuit ensuite avec ses proies préférées, abandonnant les restes aux charognards.
 
@@ -414,7 +414,7 @@ Régénération, Taille (Énorme), Souffle +10 (Feu), Vision nocturne
 **Facultatif :** Belliqueux, Territorial, Venin
 
 
-# <span id="page-323-0"></span>**Jabberslythe**
+# <span id="page-323-0" data-folio="322"></span>**Jabberslythe**
 
 Le Jabberslythe est une ancienne créature du Chaos qui se cache dans les profondeurs des forêts les plus sombres. Créature démente, le Jabberslythe est un ignoble mélange de crapaud, de dragon de vase et d'insecte, le tout irrigué par un sang noir corrosif qui jaillit à la moindre blessure. Pire encore, tous ceux qui regardent cette horreur perdent l'esprit, baragouinant, se griffant les yeux et riant hystériquement, faisant d'eux des proies faciles pour le Jabberslythe. De plus, il dispose d'une langue collante capable de fouetter et de ramener son prochain repas dans sa gueule béante. En accord avec son apparence, la créature se déplace de façon gauche et balourde, et possède même des ailes, bien trop petites pour réussir à soulever son impressionnant gabarit.
 
@@ -447,7 +447,7 @@ Heureusement assez rares, les manticores sont féroces à l'extrême, animées p
 – Adhemar Fitztancred, Gardien Gris, conteur et menteur
 
 
-# <span id="page-324-0"></span>**Pégase**
+# <span id="page-324-0" data-folio="323"></span>**Pégase**
 
 Les pégases sont de magnifiques chevaux blancs pourvus d'ailes de cygne. Ce sont des voltigeurs acharnés et inépuisables qui se déplacent en grandes hordes dans les hautes montagnes, semblant prendre beaucoup de plaisir à virevolter dans les courants d'air chaud tourbillonnants. Les pégases font de parfaits destriers et beaucoup de guerriers ou d'éclaireurs ont tenté d'en capturer un. Ils sont très intelligents, et certains pensent qu'ils ne se laissent capturer que s'ils le veulent bien, ce qui a fait naître toutes sortes de légendes romantiques fantaisistes insistant sur le fait que seuls les plus dignes ou les plus vertueux pouvaient être choisis.
 
@@ -492,7 +492,7 @@ Les squigs sont de grandes créatures fongoïdes, en général de forme ronde, q
 gaz), Taille (Minuscule-Énorme)
 
 
-# <span id="page-325-0"></span>**Troll**
+# <span id="page-325-0" data-folio="324"></span>**Troll**
 
 Les trolls sont des créatures sales et immondes qui infestent tous les coins du Vieux Monde. Prompts à s'adapter à leur environnement, quel que soit leur type, ils sont tous énormes et imposants. Sombres et mus par leurs pulsions alimentaires, ils aiment tout de même amasser des biens et leur repaire peut renfermer des trésors composés d'objets utiles et de valeur… et des restes macabres de leurs repas.
 
@@ -550,7 +550,7 @@ Les orcs sont mauvais, brutaux, belliqueux et presque immunisés contre la doule
 – Gurkk Chop'crâne, Chef orc
 
 
-# <span id="page-327-0"></span>**Gobelin**
+# <span id="page-327-0" data-folio="326"></span>**Gobelin**
 
 L'instinct de conservation d'un gobelin, rachitique, malveillant, mais également agile et intelligent, ne doit jamais être sous-estimé. Ces créatures sont néanmoins lâches, et se regroupent donc facilement si le nombre leur procure un avantage écrasant. Les gobelins rejoignent souvent les armées d'orcs – pas toujours par choix – s'appropriant opportunément une partie du butin de guerre pendant que les autres prennent part au plus gros du combat.
 
@@ -580,7 +580,7 @@ Créatures écervelées s'apparentant à des chiots excités et incontrôlables,
 
 *Pages PDF 329-332*
 
-# <span id="page-328-0"></span>**LES MORTS SANS REPOS**
+# <span id="page-328-0" data-folio="327"></span>**LES MORTS SANS REPOS**
 
 Ni vivants ni vraiment morts, les morts-vivants sont des cadavres animés d'êtres autrefois vivants, qui se sont vus accorder une parodie de vie impie par le biais de la cruelle et obscure discipline de la nécromancie.
 
@@ -611,7 +611,7 @@ La plupart des vampires dissimulent leur besoin de sang sous une apparence de ci
 **Facultatif :** Corruption (Mineure), Frénésie, Pisteur, Rage, Territorial, Vol
 
 
-# <span id="page-329-0"></span>**Fantôme**
+# <span id="page-329-0" data-folio="328"></span>**Fantôme**
 
 Les fantômes sont les esprits d'âmes tourmentées, mortes alors que leurs affaires terrestres n'étaient pas réglées. Tout comme les squelettes et les zombies, les fantômes peuvent être invoqués par des vampires ou des nécromanciens, ou peuvent hanter des régions imprégnées de *Dhar*. Dans des cas exceptionnels, des esprits particulièrement déterminés peuvent se frayer un chemin depuis le Royaume de Morr pour poursuivre leurs propres affaires, bien que de tels événements attirent rapidement l'attention du Culte de Morr ou des Magisters de l'Ordre d'Améthyste.
 
@@ -646,7 +646,7 @@ Quand la terre restitue les morts, il n'y a pas que les humains qui se relèvent
 **Facultatif :** Corruption (Mineure), Infecté, Insensible à la douleur, Perturbant, Territorial
 
 
-# <span id="page-330-0"></span>**Spectre de cairn**
+# <span id="page-330-0" data-folio="329"></span>**Spectre de cairn**
 
 Les spectres de cairn sont des esprits particulièrement puissants, les restes spectraux d'aspirants nécromanciens qui ont cherché à prolonger leur existence grâce à la magie sombre. De leur vivant, ils étaient obstinés ; dans la mort, leur volonté malveillante les pousse à exercer une terrible vengeance sur les âmes ardentes des vivants. Beaucoup de ces spectres hantent les cairns couverts de brume qui parsèment le paysage de l'Empire, tels que les Hägercrybs déchues.
 
@@ -687,7 +687,7 @@ Pour refléter la nature osseuse des Squelettes, vous pouvez imposer une pénali
 – Hubert Karter, Pilleur de tombes
 
 
-# <span id="page-331-0"></span>**Vampire**
+# <span id="page-331-0" data-folio="330"></span>**Vampire**
 
 Les vampires se considèrent comme les rois de la nuit. Beaucoup peuvent passer pour des humains, certains opérant même durant de longues périodes parmi les vivants. Malgré leur apparence extérieure humaine, aucun cœur ne bat sous leur peau pâle, et *au lieu* des faims de mortels, ils souffrent d'une soif incessante de sang. Les vampires du Vieux Monde sont en fin de compte tous issus de lignées anciennes, apparues il y a des millénaires dans le Sud. Beaucoup sont extrêmement fiers de leur héritage, des traits et traditions qui les différencient des autres. Les vampires de lignées différentes sont souvent de grands rivaux, mais ils sont assez intelligents pour se rassembler quand cela devient nécessaire pour faire face aux ennemis les plus importants.
 
@@ -714,7 +714,7 @@ Comme les squelettes, les zombies sont des créatures mortes-vivantes réanimée
 Perturbant, Territorial
 
 
-<span id="page-332-0"></span>
+<span id="page-332-0" data-folio="331"></span>
 
 # MORTS TOURMENTÉS
 
@@ -748,7 +748,7 @@ Les chamanes-brays sont nés avec la capacité de manier les pouvoirs du Chaos, 
 **Facultatif :** Infecté, Maladie (Vérole du Tanneur), Mutation, Parasité, Taille (Grande)
 
 
-# <span id="page-333-0"></span>**Gor**
+# <span id="page-333-0" data-folio="332"></span>**Gor**
 
 Les gors, les hommes-bêtes les plus courants, hantent presque chaque forêt du Vieux Monde. Leur apparence varie considérablement, mais tous allient des traits bestiaux et humains, souvent avec la tête et les jambes d'un bouc et le torse et les bras d'un humain. La seule caractéristique commune à tous les Gors est une grande paire de cornes – les plus grandes sont les meilleures, car elles indiquent le statut parmi les hommes-bêtes –, un trait qui les différencie des ungors et des changepeaux.
 
@@ -781,7 +781,7 @@ Les ungors possèdent des cornes vestigiales ou très courtes, et ils sont donc 
 **Facultatif :** À distance +7 (25), Armure 1, Corruption (Mineure), Infecté, Maladie (Vérole du Tanneur), Mutation, Parasité, Taille (Petite)
 
 
-# <span id="page-334-0"></span>**Cultistes, les égarés et les damnés**
+# <span id="page-334-0" data-folio="333"></span>**Cultistes, les égarés et les damnés**
 
 Comme une poutre pourrie dissimulée derrière un mur blanchi à la chaux, un terrible ennemi se cache au cœur de l'Empire. Dans chaque province, dans chaque ville, des hommes et des femmes se laissent dévoyer par les leurres subtils du Chaos, attirés par la promesse du pouvoir, de la connaissance, de la force ou de la liberté.
 
@@ -820,7 +820,7 @@ L'un des destins les plus tragiques pour un humain est de succomber à l'influen
 
 *Pages PDF 336-339*
 
-# <span id="page-335-0"></span>**Guerrier du Chaos**
+# <span id="page-335-0" data-folio="334"></span>**Guerrier du Chaos**
 
 Énormes brutes lourdement cuirassées, affublées de pointes et d'impressionnants symboles de leurs dieux, les guerriers du Chaos ne sont clairement plus des humains. Plus rien ne subsiste de leur existence passée, et ils n'existent que pour servir leur sombre maître, et rien d'autre.
 
@@ -831,7 +831,7 @@ Alors que la plupart des guerriers du Chaos sont des maraudeurs couverts de gloi
 — Phitzer, Sorcière wissenlander
 
 
-# <span id="page-336-0"></span>**Démons, les armées baragouinantes**
+# <span id="page-336-0" data-folio="335"></span>**Démons, les armées baragouinantes**
 
 Les démons sont des horreurs blasphématoires issues des Royaumes du Chaos, la volonté impie incarnée de leurs dieux. Dans le Reikland, les démons n'apparaissent que s'ils sont convoqués par les cultistes des Puissances de la Ruine. Même si leur présence demeure éphémère, tant le royaume matériel abhorre leur existence, les ravages qu'ils causent sont si profonds qu'aucun de ceux qui rencontrent des démons n'oublient jamais le traumatisme engendré par cette expérience.
 
@@ -858,7 +858,7 @@ Comme toutes les créatures du Prince de la Souffrance et du Plaisir, les démon
 **Traits :** Arme +9, Champion, Corruption (Modérée), Démoniaque 8+, Instable, Perturbant, Peur 2, Vision nocturne
 
 
-# <span id="page-337-0"></span>**Princes démons**
+# <span id="page-337-0" data-folio="336"></span>**Princes démons**
 
 Le but ultime de tous les champions du Chaos est l'apothéose : accéder au rang de Prince démon à part entière et servir leur maître pour l'éternité dans les Royaumes du Chaos. Personnalités imposantes et de grande puissance, les Princes démons sont de terribles ennemis que même les plus grands héros de l'Empire rechignent à affronter.
 
@@ -891,7 +891,7 @@ Conscients de la position délicate qu'ils occupent, se régalant dans les entra
 – Kristiana Fellger, Égoutier à la retraite
 
 
-# <span id="page-338-0"></span>**Guerrier des clans**
+# <span id="page-338-0" data-folio="337"></span>**Guerrier des clans**
 
 La plupart des skavens sont originaires de l'un de leurs nombreux et obscurs clans qui se chamaillent constamment pour des raisons diplomatiques, se poignardent dans le dos, ou encore déclarent la guerre aux autres. Ils agissent généralement sous les ordres de skavens de statuts supérieurs, mais cherchent toujours un moyen d'obtenir une meilleure position, le plus souvent par trahison. Ils revêtent habituellement du cuir moisi ou des vêtements sales, avec des bouts de métal rouillé et terni leur servant d'armure. Les guerriers des clans sont souvent envoyés comme éclaireurs ou pillards pour récupérer des denrées, chercher des malepierres ou rafler des esclaves.
 
@@ -928,7 +928,7 @@ Les combattants d'élite des skavens sont les vermines de choc : plus grands, pl
 
 *Pages PDF 340-355*
 
-# <span id="page-339-0"></span>**TRAITS DE CRÉATURE**
+# <span id="page-339-0" data-folio="338"></span>**TRAITS DE CRÉATURE**
 
 Voici les Traits de créature. Utilisez-les pour créer des PNJ personnalisés.
 
@@ -1689,7 +1689,7 @@ Ce livre de règles de la quatrième édition de **Warhammer Fantasy le jeu de r
 
 *Pages PDF 118-121*
 
-### <span id="page-117-0"></span>MIDDENHEIM • BESTIAIRE •
+### <span id="page-117-0" data-folio="115"></span>MIDDENHEIM • BESTIAIRE •
 
 ### **PRÉDATEUR SANGLANT**
 
@@ -1700,7 +1700,7 @@ Le dernier élémentaire ainsi formé est une créature humanoïde gigantesque, 
 corrompant la Source). **Hurlement de la Bête indomptable :** le hurlement du prédateur sanglant effraie tous ceux qui l'entendent. Lors de son tour, le prédateur peut dépenser 1 Avantage pour effectuer une attaque gratuite de hurlement contre ses ennemis. Toute cible vivante qui se trouve à un nombre de mètres égal à l'Initiative de la créature (45) gagne immédiatement 3 États *Assourdi*. De plus, chaque cible doit effectuer un Test de **Calme Difficile (-10)**, et gagne 3 États *Brisé* en cas d'échec. Un Personnage qui réussit ce test une fois est immunisé contre cette capacité jusqu'à la fin de la rencontre.
 
 
-### <span id="page-118-0"></span>**ENFANT D'ULRIC**
+### <span id="page-118-0" data-folio="116"></span>**ENFANT D'ULRIC**
 
 « Enfant d'Ulric » est un terme utilisé dans tout l'Empire pour désigner les humains capables de se transformer entièrement ou partiellement en loup. La plupart peuvent prendre la forme d'un hybride terrifiant : une puissante créature à tête de loup et couverte de fourrure, pourtant toujours capable de se tenir debout.
 
@@ -1730,7 +1730,7 @@ Pour ajouter à la confusion, il existe de nombreux synonymes pour les Enfants d
 Et pour couronner le tout, une minorité notable des Fils d'Ulric manifestent les capacités d'Enfants d'Ulric. Certains supputent que les descendants d'Ulric ont sans doute hérité des pouvoirs de métamorphose de leur père divin. Pour d'autres, il est simplement plus rassurant de se dire béni d'un dieu que d'admettre être un monstre mutant.
 
 
-<span id="page-119-0"></span>
+<span id="page-119-0" data-folio="117"></span>
 
 ### **SPECTRE**
 
@@ -1763,34 +1763,11 @@ Pisteur, Taille (Grande),Vision nocturne **Options :** Belliqueux, Béni (Ulric)
 Furtif, Increvable, Rapide
 
 
-## [ZI 1] WH - V4 - Le zoo impérial
+## [ZI 1] TROIS EXPÉDITIONS
 
-*Pages PDF 1-147*
+*Folio 6+*
 
-### Le Zoo Impérial
-
-achez tout d'abord, cher lecteur, chère lectrice, que ce livre n'est pas celui que j'avais l'intention d'écrire. Et pourtant, le voici. À l'origine, ce sont la Société
-
-zoologique impériale et les professeurs du Département de bestiarologie de l'Université d'Altdorf qui ont fait appel à ma plume. Ils m'ont demandé de leur écrire une encyclopédie digne de figurer dans leur cursus qui présenterait en détail certaines des créatures les plus remarquables de l'Empire et d'ailleurs.
-
-Mais ce livre-là, ils l'ont brûlé.
-
-Je réponds au nom de Theodosius Schreiber, mais mes rares amis m'appellent Theo. Ce que vous tenez entre les mains est une compilation brute d'extraits de mon journal, de notes et de croquis qui détaillent diverses créatures du Vieux Monde. Autrement dit, il s'agit du fruit des observations que j'ai pu mener sur le terrain au cours de plusieurs expéditions financées par mes illustres mécènes, en vue de publier mon chef-d'œuvre (aujourd'hui malheureusement réduit en cendres). Si vous vous demandez ce qui a bien pu me pousser à organiser ce volume d'une manière si brouillonne, je vous prie de bien vouloir mettre vos interrogations de côté pour le moment. Je vous assure que tout s'éclaircira avant la fin de cet ouvrage.
-
-Si ce projet a vu le jour, c'est avant tout grâce à la proposition intrigante de l'un des factotums du Zoo Impérial, Vera Warnicke. Jadis une chasseuse de primes de renom, elle a choisi de mettre à profit ses talents non plus à la capture de personnes, mais de créatures. Une fois, elle m'a d'ailleurs avoué, après un léger grognement sarcastique, que garder des monstres dangereux en vie lui rapportait bien plus que s'assurer de la mort de criminels dangereux. Si elle m'a contacté, c'est grâce à mon ouvrage court, mais réputé, sur les montures à travers l'Empire. Bien que celuici traitât principalement de chevaux, j'ai cru comprendre que le vice-chancelier de l'Université d'Altdorf avait été particulièrement charmé par mon rapport sur l'histoire et les mythes qui entouraient les demigriffons. Warnicke m'a retrouvé dans une taverne d'Altdorf et m'a demandé si cela m'intéresserait de suivre la même approche pour écrire un bestiaire qui répertorierait plus de créatures, en particulier celles dont disposait le Zoo Impérial. Bien que flatté, je lui ai répondu qu'une telle entreprise demanderait beaucoup de temps, de ressources et d'observations. Je le confesse : je ne m'étais pas préparé à ce qu'elle prenne mes conditions au sérieux.
-
-Warnicke a réuni un groupe pour m'accompagner dans ce qui allait devenir trois expéditions scientifiques. Au départ, je ne savais rien de mes compagnons de route. Mais les années que nous avons passé à voyager ensemble, ainsi que les innombrables dangers auxquels nous avons fait face, ont forgé des liens qui, je l'espère, sauront résister à l'épreuve du temps. Malgré mes efforts, je n'ai rien trouvé de mieux que la lettre de Warnycke pour vous les présenter.
-
-Bien que j'aie essayé de vous fournir tout le contexte dont vous pourriez avoir besoin, je suis certain que les entrées des créatures sauront s'expliquer d'elles-mêmes. J'ai globalement organisé ces entrées par régions, en fonction de l'endroit où le plus de gens ont accepté de me parler des créatures en question. Par conséquent, le texte suit le même chemin que nos voyages. J'y ai inclus des notes que m'ont données mes compagnons, ainsi que la transcription de quelques-unes de mes conversations avec Vasya. Si j'en crois les gérants de l'Imprimerie Eschenburg & Epple, leur ingéniosité et leurs presses dernier cri devraient être capables d'en restituer tout le charme.
-
-Si vous souhaitez lire nos expériences les plus inhabituelles, rendez-vous dans les *Appendices*. Vous y trouverez aussi un chapitre débordant de connaissances d'apothicaire écrit par Jorunn Gromsdottir qui, je l'espère, saura piquer votre curiosité.
-
-Je devrais sans doute vous avertir, cher lecteur, chère lectrice : ce livre renferme des vérités gênantes sur l'Empire et le Vieux Monde. C'est pourquoi je m'attends à ce qu'ils le brûlent également.
-
-Profitez de cet ouvrage tant que vous le pouvez. À votre place, je rangerais mon exemplaire loin des yeux indiscrets.
-
-
-# **TROIS EXPÉDITIONS**
+## **TROIS EXPÉDITIONS**
 
 – EN QUÊTE DE –
 
@@ -1800,78 +1777,80 @@ Profitez de cet ouvrage tant que vous le pouvez. À votre place, je rangerais mo
 
 <sup>S</sup>U<sup>R</sup> <sup>C</sup> <sup>O</sup> <sup>M</sup> <sup>M</sup> <sup>A</sup>N<sup>D</sup> <sup>E</sup> <sup>D</sup><sup>U</sup> «
 
+<span id="page-8-0" data-folio="6"></span>
+*Herr Schreiber,*
 
-Herr Schreiber,
+*Préparez vos affaires, mon cher érudit : la route vous appelle. Votre équipe expéditionnaire est au complet.*
 
-Préparez vos affaires, mon cher érudit : la route vous appelle. Votre équipe expéditionnaire est au complet.
+*J'ai bien pris vos suggestions en compte et je m'en suis servie pour préparer au mieux votre expédition. Maintenant que j'ai pu les rencontrer et voir ce qu'ils valaient, j'ai l'honneur de vous présenter vos compagnons de route :*
 
-J'ai bien pris vos suggestions en compte et je m'en suis servie pour préparer au mieux votre expédition. Maintenant que j'ai pu les rencontrer et voir ce qu'ils valaient, j'ai l'honneur de vous présenter vos compagnons de route:
+<span id="page-9-0" data-folio="7"></span>
+*détail.*
+
+*Puisse Morr ne pas poser les yeux sur vous,*
+
+<span id="page-10-0" data-folio="8"></span>
+<span id="page-11-0" data-folio="9"></span>
 
 
-Puisse Morr ne pas poser les yeux sur vous,
+<span id="page-12-0" data-folio="10"></span>
 
 
+### **Grand cerf**
 
-<span id="page-11-0"></span>
-
-
-<span id="page-12-0"></span>
-
-# GRAND CERF
-
-a Grande Forêt porte bien son nom : c'est la région boisée la plus vaste de tout l'Empire. Elle s'étend des rives du Reik aux frontières méridionales de
+La Grande Forêt porte bien son nom : c'est la région boisée la plus vaste de tout l'Empire. Elle s'étend des rives du Reik aux frontières méridionales de
 
 Kislev et recouvre une bonne partie du territoire impérial, dont la totalité du Grand Duché du Talabecland. À l'ombre de ses frondaisons rôde plus d'un danger : des tribus de peaux-vertes, d'innombrables hommes-bêtes et d'insatiables bandits, pour ne citer qu'eux. Pour résister à ces malfaiteurs, les braves citoyens de l'Empire doivent s'en remettre à leur courage. Cependant, il arrive aussi que le courroux de Taal lui-même se déchaîne et se manifeste sous la forme de son animal sacré : le grand cerf.
 
-Les grands cerfs sont des créatures imposantes. Ils peuvent mesurer plus de trois mètres de long et près de deux mètres au garrot et peser plus de quatre cents kilos. Chacun arbore une paire de bois gigantesques dont le nombre de ramifications peut aller de six à quatorze, en fonction de l'individu. Chaque paire est unique, mais toutes sont immanquablement magnifiques, et assez acérées pour perforer une armure. Si l'on en croit une vieille légende du culte de Taal, c'est le dieu luimême, impressionné par la fierté des premiers grands cerfs, qui leur a offert ces bois si semblables aux siens. Chaque année, au beau milieu de l'hiver, les grands cerfs muent et se défont de leurs bois morts. Ils se voient donc obligés d'avoir recours à leurs sabots pour se défendre. Certains chasseurs du Hochland m'ont néanmoins juré que les cerfs se pourvoient de crocs aiguisés le temps que leurs refaits ne poussent au printemps. Malgré leur taille et leurs bois impressionnants, des villageois du Middenland et du Hochland m'ont assuré que même les bosquets les plus denses ne sauraient ralentir leur course. Pour citer leurs paroles : « la forêt semble s'écarter sur le passage des enfants de Taal. »
+Les grands cerfs sont des créatures imposantes. Ils peuvent mesurer plus de trois mètres de long et près de deux mètres au garrot et peser plus de quatre cents kilos. Chacun arbore une paire de bois gigantesques dont le nombre de ramifications peut aller de six à quatorze, en fonction de l'individu. Chaque paire est unique, mais toutes sont immanquablement magnifiques, et assez acérées pour perforer une armure. Si l'on en croit une vieille légende du culte de Taal, c'est le dieu luimême, impressionné par la fierté des premiers grands cerfs, qui leur a offert ces bois si semblables aux siens. Chaque année, au beau milieu de l'hiver, les grands cerfs muent et se défont de leurs bois morts. Ils se voient donc obligés d'avoir recours à leurs sabots pour se défendre. Certains chasseurs du Hochland m'ont néanmoins juré que les cerfs se pourvoient de crocs aiguisés le temps que leurs refaits ne poussent au printemps. Malgré leur taille et leurs bois impressionnants, des villageois du Middenland et du Hochland m'ont assuré que même les bosquets les plus denses ne sauraient ralentir leur course. Pour citer leurs paroles : *« la forêt semble s'écarter sur le passage des enfants de Taal. »*
 
 Les gens de Talabheim professent que les grands cerfs ont été désignés par Taal pour garder la Grande Forêt, et qu'ils lui servent d'yeux dans toutes les autres forêts du Vieux Monde. Ils racontent de nombreuses histoires, certaines inspirantes, d'autres étranges. Tout le monde s'accorde à croire que les grands cerfs attaquent sans la moindre pitié quiconque ose souiller les régions boisées, ce qui en fait des ennemis jurés des hommes-bêtes. D'aucuns disent qu'ils peuvent survivre en se nourrissant uniquement d'eau ; certains récits soutiennent même que boire l'eau d'une rivière soigne toutes leurs blessures comme par miracle. C'est, en tout cas, ce que les villageois ont déduit à force de les apercevoir près du Talabec et du Stir. Ces mêmes villageois soutiennent d'ailleurs sans la moindre hésitation que les grands cerfs haïssent les serpents au plus haut point, et peuvent se donner beaucoup de mal pour en tuer un seul, même s'il faut pour cela ignorer une menace plus importante. J'ai ouï dire du bout des lèvres que les grands cerfs adorent le son de la flûte de pan. Certains chasseurs élus par Taal seraient même capables de les appeler. Mais malheur à quiconque ose convoquer un grand cerf sans une bonne raison.
 
 J'ai aperçu plusieurs grands cerfs au cours de mes voyages. Leur haine des hommes-bêtes ne fait pas l'ombre d'un doute. Cela dit, je soupçonne qu'elle est surtout due au fait que ces immondes créatures les chassent régulièrement, et non à un quelconque devoir sacré. Ceux que j'ai pu observer ne m'ont, d'ailleurs, pas porté à croire qu'ils appréciaient particulièrement les humains.
 
-# **CRAND CERF** Ag Dex Int FM Soc
+#### GRAND CERF **M CC CT F E I Ag Dex Int FM Soc B** 7 45 - 45 40 30 30 - 20 40 - 32
 
-Compétences: Corps à corps (Bois) 55
+**Compétences :** Corps à corps (Bois) 55
 
-Traits: Bestial, Foulée, Taille (Grande), Vision nocturne
+**Traits :** Bestial, Foulée, Taille (Grande), Vision nocturne
 
-Traits d'attaque: Arme (Bois) +8, Cornes (Bois) +8
+**Traits d'attaque :** Arme (Bois) +8, Cornes (Bois) +8
 
-Lames de Taal: lorsqu'un grand cerf se bat avec ses bois, ceux-ci ont les Atouts Empaleuse et Perforante.
+**Lames de Taal :** lorsqu'un grand cerf se bat avec ses bois, ceux-ci ont les Atouts Empaleuse et Perforante.
 
-Facultatif: Animosité (Serpents), Béni (Taal), Immunité
+**Facultatif :** Animosité (Serpents), Béni (Taal), Immunité
 
 (Poison), Régénération
 
 #### L'OMBRE DU FLEUVE
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 9 | 55 | -  | 55 | 50 | 40 | 40 | -   | 40  | 55 | 60  | 40 |
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
+|---|----|----|----|----|----|----|-----|-----|--------|----|----|
+| 9 | 55 | -  | 55 | 50 | 40 | 40 | -   | 40  | 55     | 60 | 40 |
 
-Compétences: Corps à corps (Bois) 75
+**Compétences :** Corps à corps (Bois) 75
 
-Talents: Affinité avec les animaux
+**Talents :** Affinité avec les animaux
 
-Traits: Béni (Kurnous [Taal]), Foulée, Furtif, Immunité Psychologique, Infravision, Magique, Miracles (Kurnous [Taal]), Protection 7+, Redoutable, Taille (Grande)
+**Traits :** Béni (Kurnous [Taal]), Foulée, Furtif, Immunité Psychologique, Infravision, Magique, Miracles (Kurnous
 
-Traits d'attaque: Arme (Bois) +10, Cornes (Bois) +10
+[Taal]), Protection 7+, Redoutable, Taille (Grande) **Traits d'attaque :** Arme (Bois) +10, Cornes (Bois) +10
 
-Lames de Kurnous: lorsque l'Ombre du fleuve se bat avec ses bois, ceux-ci ont les Atouts Empaleuse, Perforante et
+**Lames de Kurnous :** lorsque l'Ombre du fleuve se bat avec ses bois, ceux-ci ont les Atouts Empaleuse, Perforante et
 
 Rapide.
 
+<span id="page-13-0" data-folio="11"></span>
+<span id="page-14-0" data-folio="12"></span>
 
 
-<span id="page-14-0"></span>
+### **Araignée et gobelin des forêts**
 
-# ARAIGNÉE ET GOBELIN DES FORÊTS
+Au tréfonds des forêts les plus sombres de l'Empire rôdent des araignées géantes : l'une des menaces les plus courantes, mais les plus terribles du
 
-u tréfonds des forêts les plus sombres de l'Empire rôdent des araignées géantes : l'une des menaces les plus courantes, mais les plus terribles du
+Vieux Monde. Il est certes possible de voir des araignées de taille inhabituelle un peu partout… mais celles-ci sont généralement à peine plus grosses que des rats. Les arachnides qui tissent leur toile dans les forêts, eux, sont des prédateurs anormalement énormes, rusés et cruels. D'aucuns soutiennent que les Puissances de la Ruine ont béni ces monstres il y a fort longtemps. Leur corps mesure souvent près de deux mètres de long et pas moins de trois mètres de large si l'on compte leurs pattes. Un voyageur assez infortuné pour rencontrer les araignées géantes de plusieurs régions remarquera que leurs couleurs, marques et autres traits peuvent être très variés. Les araignées du nord ont généralement une fourrure noire ou brune, tandis que celles du sud sont plutôt grises. Toutes ces sous-espèces se parent cependant de marquages iridescents aux nuances de bleu, de vert et de rouge.
 
-Vieux Monde. Il est certes possible de voir des araignées de taille inhabituelle un peu partout... mais celles-ci sont généralement à peine plus grosses que des rats. Les arachnides qui tissent leur toile dans les forêts, eux, sont des prédateurs anormalement énormes, rusés et cruels. D'aucuns soutiennent que les Puissances de la Ruine ont béni ces monstres il y a fort longtemps. Leur corps mesure souvent près de deux mètres de long et pas moins de trois mètres de large si l'on compte leurs pattes. Un voyageur assez infortuné pour rencontrer les araignées géantes de plusieurs régions remarquera que leurs couleurs, marques et autres traits peuvent être très variés. Les araignées du nord ont généralement une fourrure noire ou brune, tandis que celles du sud sont plutôt grises. Toutes ces sous-espèces se parent cependant de marquages iridescents aux nuances de bleu, de vert et de rouge.
-
-J'ai affronté une arachnarok, il y a bien longtemps J'ai en de la chance de m'en sortir. Cela fait plusieurs siècles que je chasse, et j'ai tué nombre d'araignées géantes. Ce sont des créatures rusées, mais elles ne tardent pas à s'enfuir face à un adversaire trop puissant, et elles ont très peur du feu. Les arachnaroks, elles, ne craignent rien de ce monde. Celle que j'ai affrontée avait attendu la mit pour tisser silenciensement un réseau de toiles, dont chaque fil était plus épais que les bras de Ghorshkov, entre les arbres au nord d'un village. Juste avant le lever du jour, elle l'a attaqué par le sud. Elle a a détruit quelques maisons, et a pris le temps de pourser son cri devant des gens terrifiés qui sortaient des autres habitations. La plupart se sont bien entendu enfuis vers le nord. Nous sommes venus en aide aux humains pour honorer un vieux serment, et l'arachnarok nous attendait. Beaucoup de valeureux Eonirs ont perdu la vie ce jour-là. Elle ne s'est enfuie que lorsque nous avons crevé plusieurs de ses yeux. Hélas, nous étions arrivés trop tard pour sauver la majorité des villageois. Contrairement à la toile des autres araignées, celle des arachnarous est imprégnée de leur poison.
+J'ai affronté une arachnarok, il y a bien longtemps. J'ai eu de la chance de m'en sortir. Cela fait plusieurs siècles que je chasse, et j'ai tué nombre d'araignées géantes. Ce sont des créatures rusées, mais elles ne tardent pas à s'enfuir face à un adversaire trop puissant, et elles ont très peur du feu. Les arachnaroks, elles, ne craignent rien de ce monde. Celle que j'ai affrontée avait attendu la nuit pour tisser silencieusement un réseau de toiles, dont chaque fil était plus épais que les bras de Ghorshkov, entre les arbres au nord d'un village. Juste avant le lever du jour, elle l'a attaqué par le sud. Elle a a détruit quelques maisons, et a pris le temps de pousser son cri devant des gens terrifiés qui sortaient des autres habitations. La plupart se sont bien entendu enfuis vers le nord. Nous sommes venus en aide aux humains pour honorer un vieux serment, et l'arachnarok nous attendait. Beaucoup de valeureux Éonirs ont perdu la vie ce jour-là. Elle ne s'est enfuie que lorsque nous avons crevé plusieurs de ses yeux. Hélas, nous étions arrivés trop tard pour sauver la majorité des villageois. Contrairement à la toile des autres araignées, celle des arachnaroks est imprégnée de leur poison.
 
 Les araignées géantes tissent des toiles collantes et résistantes pour capturer leurs proies. Elles emballent leurs victimes dans d'épais cocons pour s'en repaître à loisir. Les habitants de plusieurs villages m'ont affirmé qu'elles consommaient régulièrement du coton et des moutons pour reconstituer leurs réserves de cette substance. Leurs mandibules ressemblent à des pinces. Elles sont assez puissantes pour perforer l'acier, et, comme beaucoup le savent, sont enduites de toxines mortelles. En cas de morsure, seule l'intervention éclair d'un soigneur accompli pourra éviter la mort de la victime. Les araignées géantes ont entre six et dix yeux sans paupières, chacun composé de myriades de facettes, ce qui les rend très difficiles à surprendre. Elles sont rapides, mais restent très furtives dans les régions boisées les plus denses : elles se déplacent sans bruit au-dessus de la cime des arbres et s'aident des vents forts et du bruissement des feuilles pour camoufler leur présence.
 
@@ -1879,10 +1858,10 @@ De toutes les sous-espèces identifiées qui arpentent les forêts de l'Empire, 
 
 Aussi terrifiantes les mangeuses d'hommes soient-elles, elles ne sont pas les plus redoutables des araignées. Cet honneur, si je puis me permettre, revient aux titans des bois profonds, les prédateurs gigantesques connus sous le nom « d'arachnaroks ». À en croire les Middenlanders, ce nom est tiré d'un conte norsque antique. Les arachnaroks sont apparemment plus grosses que des maisons, et rien, à part un barrage concentré de tirs de canons, ne pourrait les arrêter. Les récits qui vantent leur voracité sont légion. S'ils disent vrai, les arachnaroks sont tout à fait capables de dévorer des hardes entières d'hommes-bêtes, ou des créatures aussi immenses que des géants. Heureusement, elles sont aussi rares que des dragons, et bien peu affirment en avoir aperçu.
 
--198-
+> † C †
 
-
-### ARACHNAROK
+<span id="page-15-0" data-folio="13"></span>
+#### ARACHNAROK
 
 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B   |
 |---|----|----|----|----|----|----|-----|-----|--------|----|-----|
@@ -1914,20 +1893,20 @@ Aussi terrifiantes les mangeuses d'hommes soient-elles, elles ne sont pas les pl
 
 *Lorsqu'elles font face à un adversaire particulièrement dangereux ou irritant, les araignées géantes se retirent souvent dans les arbres, d'où elles crachent leur soie collante sur leurs ennemis à l'aide de leur Capacité de Tir.*
 
+<span id="page-16-0" data-folio="14"></span>
+Bien que cela me répugne d'inclure de tels êtres dans un ouvrage sur les diverses créatures qui peuplent le Vieux Monde, je ne peux pas, en bonne conscience,
 
-ien que cela me répugne d'inclure de tels êtres dans un ouvrage sur les diverses créatures qui peuplent le Vieux Monde, je ne peux pas, en bonne conscience,
-
-présenter les araignées géantes sans mentionner leurs pseudo maîtres: les gobelins des forêts. Les gobelins sont des couards traîtres et perfides qui ne cherchent qu'à vivre plus longtemps que leurs congénères. C'est pourquoi ils se battent toujours aux côtés de leurs grands cousins, les orques (ou, s'ils ont le choix, à l'abri derrière eux), et ce depuis les balbutiements de l'Histoire. Les orques forcent les gobelins à faire toutes les corvées qu'eux-mêmes n'ont pas envie de remplir, soit tout ce qui ne se rapporte pas directement à la guerre. Cela ne fait que rendre les gobelins plus aigris encore. Pour les gobelins, un bon ennemi est un ennemi en sous-nombre et à leur merci. Ils sont particulièrement doués pour tendre des embuscades, et pour prendre la fuite, lorsque la situation les dépasse (ce qui arrive souvent).
+présenter les araignées géantes sans mentionner leurs pseudo maîtres : les gobelins des forêts. Les gobelins sont des couards traîtres et perfides qui ne cherchent qu'à vivre plus longtemps que leurs congénères. C'est pourquoi ils se battent toujours aux côtés de leurs grands cousins, les orques (ou, s'ils ont le choix, à l'abri derrière eux), et ce depuis les balbutiements de l'Histoire. Les orques forcent les gobelins à faire toutes les corvées qu'eux-mêmes n'ont pas envie de remplir, soit tout ce qui ne se rapporte pas directement à la guerre. Cela ne fait que rendre les gobelins plus aigris encore. Pour les gobelins, un bon ennemi est un ennemi en sous-nombre et à leur merci. Ils sont particulièrement doués pour tendre des embuscades, et pour prendre la fuite, lorsque la situation les dépasse (ce qui arrive souvent).
 
 À une époque, il y a maintenant des millénaires, un grand nombre de tribus gobelines ont décidé qu'elles en avaient assez d'être maltraitées par les orques et s'en sont allées. Beaucoup disparurent dans les sombres grottes des montagnes (si vous voulez en savoir plus sur ces détraqués, rendez-vous p. 26). Quelques gobelins se sont installés près des cours d'eau et ont fini par devenir les vermines aujourd'hui connues comme les « gobelins de rivière » du Reik. De nos jours, ils envahissent régulièrement les bateaux sans protection la nuit pour emporter avec eux tout ce qui (et tous ceux qui) n'est pas bien attaché au pont. Les autres ont disparu dans les profondeurs des forêts. Là, sans doute dans l'espoir de survivre face aux innombrables prédateurs des bois, ils ont retrouvé leur véritable nature et ont déniché des monstres plus puissants qu'eux avec qui s'allier : des araignées très, très grosses.
 
-Les gobelins des forêts semblent avoir une relation étrange et complexe avec les araignées géantes des bois profonds. Elles leur servent à la fois de montures, d'animaux de compagnie, et de source de nourriture et de poison. Ils semblent même révérer les arachnaroks comme des sortes de divinités. Dans son ouvrage phare, La Menace verdâtre, le professeur Albrecht Zweistein a écrit que les gobelins des forêts vénéraient une déesse-araignée qu'ils connaissaient sous de nombreux noms, tous hauts en couleur, comme « la Dévoreuse de l'Au-delà ». J'ai personnellement pu observer au moins une tribu de gobelins des forêts, dont le chef était un prêtre écumant et cinglé à la langue violette et étrangement gonflée, possédant des pouvoirs magiques. Je ne suis cependant pas théologien. C'est pourquoi je m'en remets aux nombreux prêtres qui m'ont tous ardemment soutenu qu'il n'y avait aucune chance qu'une telle « déessearaignée » existe. Je doute que cette affirmation apporte le moindre réconfort aux innombrables personnes sacrifiées en son nom.
+Les gobelins des forêts semblent avoir une relation étrange et complexe avec les araignées géantes des bois profonds. Elles leur servent à la fois de montures, d'animaux de compagnie, et de source de nourriture et de poison. Ils semblent même révérer les arachnaroks comme des sortes de divinités. Dans son ouvrage phare, *La Menace verdâtre*, le professeur Albrecht Zweistein a écrit que les gobelins des forêts vénéraient une déesse-araignée qu'ils connaissaient sous de nombreux noms, tous hauts en couleur, comme « la Dévoreuse de l'Au-delà ». J'ai personnellement pu observer au moins une tribu de gobelins des forêts, dont le chef était un prêtre écumant et cinglé à la langue violette et étrangement gonflée, possédant des pouvoirs magiques. Je ne suis cependant pas théologien. C'est pourquoi je m'en remets aux nombreux prêtres qui m'ont tous ardemment soutenu qu'il n'y avait aucune chance qu'une telle « déessearaignée » existe. Je doute que cette affirmation apporte le moindre réconfort aux innombrables personnes sacrifiées en son nom.
 
 Les gobelins des forêts frappent rapidement du haut de leurs redoutables montures, qui sont en général considérablement plus dangereuses qu'eux. Les voyageurs feraient bien de ne pas les sous-estimer. Nous
 
 avons appris que beaucoup des villages qui bordent le Talabec vivent constamment dans la peur des pillards gobelins qui les attaquent occasionnellement. Il existe des tribus mineures dans tout l'Empire. En effet, certaines ont même élu domicile dans les forêts du Reikland, principalement la Reikwald. Cependant, les tribus les plus impressionnantes se trouvent dans les Principautés frontalières, dans la Grande Forêt, et, surtout, dans la Drakwald. Les gobelins des forêts sont extrêmement minces et agiles de leurs dix doigts. Ils ont la peau verte, un long nez pointu, et des dents acérées. Leurs yeux brillent constamment d'une lueur malsaine. Ils se parent de peintures de guerre, de bouts d'ossements et de plumes colorées, qu'ils s'enfoncent souvent directement dans la peau. Les gobelins des forêts ont tendance à préférer les armes qui leur permettent de rester aussi loin de leurs ennemis que possible, comme les lances et les flèches, qu'ils trempent dans le venin de leur monture.
 
-
+<span id="page-17-0" data-folio="15"></span>
 #### GOBELIN DES FORÊTS
 
 | M | CC CT |    | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B  |
@@ -1942,7 +1921,7 @@ avons appris que beaucoup des villages qui bordent le Talabec vivent constamment
 
 **Bravoure d'emprunt :** les gobelins des forêts rencontrés hors de leur tribu seront invariablement montés sur des araignées géantes. Il s'agit généralement soit d'éclaireurs, soit d'un groupe de 3 à 10 pillards. Les gobelins des forêts montés sur des araignées ignorent les effets de leur Trait Effrayé (Elfes).
 
-### CHAMANE GOBELIN DES FORÊTS
+#### CHAMANE GOBELIN DES FORÊTS
 
 | M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
 |---|-------|----|----|----|----|----|-----|-----|--------|----|----|
@@ -1980,12 +1959,12 @@ D'un claquement de doigts, le chamane invoque une nuée d'araignées minuscules.
 
 **Toile surprise :** fonctionne exactement de la même manière que le Miracle de Taal *Enchevêtrement* (voir **WFJDR**, p. 227), si ce n'est qu'il prend la forme de masses de toile d'araignée argentée.
 
+<span id="page-18-0" data-folio="16"></span>
 
-<span id="page-18-0"></span>
 
-# LOUP GÉANT
+### **Loup géant**
 
-es loups sont des animaux rusés et les créatures sacrées d'Ulric. La plupart des loups de l'Empire ont une fourrure grise ou noire, mais pas ceux qui ont
+Les loups sont des animaux rusés et les créatures sacrées d'Ulric. La plupart des loups de l'Empire ont une fourrure grise ou noire, mais pas ceux qui ont
 
 reçu la bénédiction du dieu de l'hiver : ces derniers arborent le lustre des neiges hivernales, ce qui donne à leur fourrure un blanc luminescent. Les loups évitent les communautés humaines et préfèrent rester cachés dans les bois. Mais même lorsque la faim les tiraille, ils n'ont rien des monstres qui réveillent les hommes en sursaut, la nuit ; ceux dont les hurlements résonnent entre les collines et mettent tous les sens des villageois terrifiés en alerte. Non, ces rugissements à glacer le sang sont ceux des loups géants, des bêtes plus imposantes et plus féroces que n'importe quelle bête sauvage. Ils sont plus grands que les mieux bâtis des halflings, et chacune de leurs foulées est deux fois plus longue que celle d'un homme. Leurs yeux sont des flammes vacillantes jaunes ou vertes qui luisent au-dessus de crocs aussi longs que des couteaux de chasse. Et chacun est habité d'une faim insatiable.
 
@@ -1995,11 +1974,11 @@ Il est possible de croiser de petites meutes dans la Forêt des Ombres ou au plu
 
 Certaines des hordes de peaux-vertes ont réussi à dompter des loups géants et à les chevaucher au combat. On entend même des rumeurs délirantes selon lesquelles des légions entières de « hobgobelins » rôderaient à l'est des Montagnes du Bord du Monde. Ce ne sont que des racontars d'aventuriers. Allez donc voir Lugubre, le loup géant borgne qui réside dans le Zoo, lorsqu'il déchiquète saucisses et boudins. Vous comprendrez vite que le monde entier ne suffirait pas à subvenir aux besoins d'une armée de bêtes si voraces.
 
-He sont rusés, Schreiber. Bien plus que les hommes ne le pensent. (À l'exception, peut-être, des Ostlanders et des Hochlanders, qui ont appris une partie de la vérité. Mais à quel coût?) He ont leur propre langue, et leur voix porte sur des distances incommensurables. Cela leur permet de confourner, voire d'embusquer, ceux qui se risquent à les chasser. Une poignée des miens ont appris leur langue, non sans difficulté. L'esprit des loups géants est aussi ignoble que leur odeur. He sont assez intelligents pour créer de faux antres afin de perdre leurs enuemis, tout en camouflant leurs véritables repaires. Les peaux-vertes ne les ont jamais domptés: ils ont simplement fait front commun. Et encore, je n'ai aucun doute que lorsque les provisions viennent à manquer, quelques gobelins disparaissent.
+Ils sont rusés, Schreiber. Bien plus que les hommes ne le pensent. (À l'exception, peut-être, des Ostlanders et des Hochlanders, qui ont appris une partie de la vérité. Mais à quel coût ?) Ils ont leur propre langue, et leur voix porte sur des distances incommensurables. Cela leur permet de contourner, voire d'embusquer, ceux qui se risquent à les chasser. Une poignée des miens ont appris leur langue, non sans difficulté. L'esprit des loups géants est aussi ignoble que leur odeur. Ils sont assez intelligents pour créer de faux antres afin de perdre leurs ennemis, tout en camouflant leurs véritables repaires. Les peaux-vertes ne les ont jamais domptés : ils ont simplement fait front commun. Et encore, je n'ai aucun doute que lorsque les provisions viennent à manquer, quelques gobelins disparaissent.
 
-Je connais l'homme de Kislev. Kapayev. Il a emmené des monstres pour l'arène, da? Un jour, c'était quelque chose spécial. Isoup géant à deux têtes. Raukos on l'a appelé. Bête magnifique. Quand une tête dormait, l'autre veillait. Alerte et agile. Kapayev l'a fait combattre beaucoup d'autres monstres. Mais comme toujours, Raukos a triomphé. Les gens disait à Kapayev, de le faire combattre contre un champion, un bon combattant. Homme, ogre, beau spectacle. Belle fin pour une belle bête. Mais Kapayev n'a pas écouté. Raukos ne dormait jamais, mais un jour, Kapayev, lui s'est endormi. Quand on a découvert son cadavre, ce n'était pas beau à voir, et Raukos avait disparu. Domnage. Je voudrais combattre Raukos. Quelle bête superbe! Peut-être que j'aurais de la chance pendant ce voyage et nous le trouverons, da?
+Je connais l'homme de Kislev. Kapayev. Il a emmené des monstres pour l'arène, da ? Un jour, c'était quelque chose spécial. Loup géant à deux têtes. Raukos on l'a appelé. Bête magnifique. Quand une tête dormait, l'autre veillait. Alerte et agile. Kapayev l'a fait combattre beaucoup d'autres monstres. Mais comme toujours, Raukos a triomphé. Les gens disait à Kapayev, de le faire combattre contre un champion, un bon combattant. Homme, ogre, beau spectacle. Belle fin pour une belle bête. Mais Kapayev n'a pas écouté. Raukos ne dormait jamais, mais un jour, Kapayev, lui s'est endormi. Quand on a découvert son cadavre, ce n'était pas beau à voir, et Raukos avait disparu. Dommage. Je voudrais combattre Raukos. Quelle bête superbe ! Peut-être que j'aurais de la chance pendant ce voyage et nous le trouverons, da ?
 
-
+<span id="page-19-0" data-folio="17"></span>
 | GRAND LOUP |
 |------------|
 |------------|
@@ -2018,7 +1997,7 @@ Je connais l'homme de Kislev. Kapayev. Il a emmené des monstres pour l'arène, 
 
 *Les meutes de loups géants comptent généralement entre 4 et 7 membres. En hiver, ils peuvent former des meutes plus conséquentes.*
 
-### RAUKOS
+#### RAUKOS
 
 | M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
 |---|-------|---|----|----|----|----|-----|-----|--------|----|----|
@@ -2036,18 +2015,18 @@ Vision nocturne
 
 **Une meute à lui seul :** Raukos gagne une attaque gratuite par tour. De plus, il compte comme 2 créatures : pour être en supériorité numérique à 2 contre 1, ses adversaires doivent être 4 ; si Raukos se bat contre un seul adversaire, il est en supériorité numérique à 2 contre 1.
 
+<span id="page-20-0" data-folio="18"></span>
 
-<span id="page-20-0"></span>
 
-# RAZORGOR
+### **Razorgor**
 
-es forêts de l'Empire abritent nombre de créatures effroyables et dangereuses. Pourtant, aucune n'est aussi vorace, ni aussi infâme, que les terrifiants
+Les forêts de l'Empire abritent nombre de créatures effroyables et dangereuses. Pourtant, aucune n'est aussi vorace, ni aussi infâme, que les terrifiants
 
 razorgors. S'ils ressemblent vaguement à des sangliers gigantesques à moitié dépecés, leur nature Chaotique ne fait aucun doute. Chacun est immonde à sa manière. Leur corps est couvert de touffes de crin sombre et dru, de protubérances osseuses, de cornes torses, de masses de muscles mal formés et bien souvent d'autres mutations disgracieuses et perturbantes. Des crocs irréguliers sont plantés dans leur bouche béante, et chaque razorgor possède au moins une paire de défenses capables d'éventrer un ours. Ils les aiguisent souvent sur des rochers pour s'assurer qu'elles restent aussi meurtrières. On raconte que leur odeur n'est pas sans rappeler celle d'une fosse commune, mêlée au fumier le plus nauséabond imaginable. Même les plus expérimentés des guerriers peuvent avoir des haut-le-cœur en leur présence.
 
-M'en parlez pas. Ah! J'en suis encore dégoûté aujourd'hui, des années plus tard. Cette puanteur. Un très bon steak, ruiné. Une seule bouffée et je vomis. Un bon combattant, par contre. Sauvage, mais aucune stratégie. Pas très fûté. Pour attaquer, ils foncent toujours droit devant. Pratique pour les piéger, si tu es malin. Mais il faut l'être vraiment, da? Personne n'offrirait autant d'or pour cueillir des fleurs.
+<sup>M</sup>'en parlez pas. Ah ! J'en suis encore dégoûté aujourd'hui, des années plus tard. Cette puanteur. Un très bon steak, ruiné. Une seule bouffée et je vomis. Un bon combattant, par contre. Sauvage, mais aucune stratégie. Pas très fûté. Pour attaquer, ils foncent toujours droit devant. Pratique pour les piéger, si tu es malin. Mais il faut l'être vraiment, da ? Personne n'offrirait autant d'or pour cueillir des fleurs.
 
-J'AI ENTENDU DIRE QUE LE « FEU INTÉRIEUR » DEL RALORGORI ELT EN FAIT UNE JUBITANCE ACIDE ET INFLAMMABLE QUI LEUR COULE DANI LEI INTEITINI. IL PARAÎT AUIJI QUE DEI ALCHIMILTEI PEU JCRUPULEUX ONT RÉUIJI À L'EXTRAIRE ET À EN DIJTILLER UN FEU ALCHIMIQUE LIQUIDE DANGEREUJEMENT CHAOTIQUE DU NOM DE « RALORMIAMME ».
+J'ai entendu dire que le « feu intérieur razorgors est en fait une substance acide et » des inflammable qui leur coule dans les intestins. Il paraît aussi que des alchimistes peu scrupuleux ont réussi à l'extraire et à en distiller un feu alchimique liquide dangereusement chaotique du nom de « razorflamme ».
 
 Les razorgors sont incroyablement belliqueux et voraces. Ils attaquent tout ce qui bouge et se battent jusqu'à la mort de toute créature qu'ils rencontrent. Une fois leur adversaire tué, ils l'engloutissent sans état d'âme. Ils avalent tout : peau, chair, entrailles, sang et ossements. Selon de nombreux rapports (pas uniquement de villageois, mais aussi de quelques soldats impériaux), un razorgor est capable de tuer un chevalier en armure et de l'engloutir tout entier, avec sa monture caparaçonnée, en bien moins d'une minute. On dit qu'un feu insatiable brûle en eux ; un feu qui consume tout ce qu'ils avalent, sans exception, et dont on pourrait voir la lueur à travers leurs yeux de braise injectés de sang.
 
@@ -2055,7 +2034,7 @@ Les razorgors sont généralement des monstres solitaires, mais il arrive qu'ils
 
 Les razorgors qui parviennent à rassasier leur feu intérieur deviendraient apparemment de plus en plus gros et robustes avec le temps. À l'heure où j'écris ces lignes, le plus tristement célèbre de tous les razorgors de l'Empire est le Vieux Dosde-pus du Hochland : un monstre gigantesque à la peau pâle dont le dos suppurant est orné d'une énorme bosse de muscles biscornus et d'os dentelés. Il a dévoré des chasseurs, des caravanes, des détachements entiers de patrouilleurs routiers et même un petit contingent de chevaliers de la Reiksguard, qui avaient été envoyés pour l'occire. La comtesse électrice Élise IX, du Grand Duché de Talabheim, a offert le poids de la bosse de ce monstre en or à quiconque pourra mettre fin à ses déprédations une fois pour toutes. Cette somme est estimée à au moins plusieurs centaines de couronnes. Pour l'instant, cette offre des plus alléchantes n'a servi qu'à régulièrement pourvoir le monstre en nourriture.
 
-
+<span id="page-21-0" data-folio="19"></span>
 | M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
 |---|-------|---|----|----|----|----|-----|-----|--------|---|----|
 | 7 | 45    | - | 55 | 45 | 33 | 35 | -   | 5   | 30     | - | 32 |
@@ -2080,282 +2059,40 @@ Les razorgors qui parviennent à rassasier leur feu intérieur deviendraient app
 
 **La bosse d'os :** des os à la fois souples et durs comme le fer se sont propagés depuis la bosse du Vieux Dos-depus sur tout son corps. Ceci l'a rendu plus lent, mais aussi incroyablement coriace.
 
+<span id="page-22-0" data-folio="20"></span>
 
-<span id="page-22-0"></span>
 
-# GRIFFON
+## [ZI 2] Griffon
 
-ien peu de créatures sont aussi impressionnantes (dans tous les sens du terme) que les griffons. Leur allure majestueuse et leur férocité légendaire sont
+*Folio 21+*
+
+## **Griffon**
+
+Bien peu de créatures sont aussi impressionnantes (dans tous les sens du terme) que les griffons. Leur allure majestueuse et leur férocité légendaire sont
 
 célèbres dans tout le Vieux Monde. La tête, les pattes avant et les ailes de ces gros prédateurs rappellent celles de rapaces, tandis que leurs pattes arrière sont celles de chats sauvages. Aux yeux des citoyens de l'Empire, les griffons sont des créatures sacrées. L'étendard qui les représente accompagne d'ailleurs nos armées au combat depuis des milliers d'années. Il arrive parfois que des nobles riches et puissants se procurent un griffon pour en faire leur monture. La plupart paient cette décision de leur vie, car il est impossible de « dompter » un tel prédateur. Pourtant, les récits faisant état de leur loyauté sans faille et de leur vive intelligence sont légion, ce qui rend la vérité un peu trouble. Il est vrai que le majestueux Griffe Mortelle, la monture de l'empereur Karl Franz I, est célèbre pour sa nature loyale. Si vous êtes particulièrement chanceux, vous pourrez peut-être mettre la main sur un ticket pour assister à son spectacle annuel au Zoo Impérial.
 
 Les griffons sont des tueurs précis et agiles, qui ne reculent devant rien pour venir à bout de leurs proies. Leur bec crochu et leurs griffes acérées n'ont aucun mal à démembrer un homme. En effet, leurs serres sont si énormes que les artisans les évident pour en faire des gobelets. Les chasseurs de l'Ostermark jurent qu'une flèche dont l'empennage est fait de leurs plumes atteindra toujours sa cible. La couleur des griffons varie beaucoup d'un individu à l'autre : certains évoquent même la brillance des oiseaux rares et les marques inhabituelles des chats sauvages des terres lointaines de l'Est.
 
-CERTAINEJ LÉGENDEJ HAINEJ JUGGÈRENT
-
-QUE LEJ GRIPTONJ LANGUEL LEJ
-
-QUE LEJ GRIPTONJ LANGUEL LEJ
-
-QUE LEJ GRIPTONJ LANGUEL LEJ
-
-MONTAGHEJ OÙ L'ON POPURAIT TROUVER DE
-
-L'ON OU DEJ PIERREJ PRÉCIEULEJ. NOI-DIJANT.
-
-À MON AVIJ, ILJ 1007 LIMPLEMENT ATTIRÉJ
-
-OLIGHAMOS, THEJINAS LANGUEL LEJ
-
-OLIGHAMOS LEJ ANGUEL LEJ
-
-OLIGHAMOS LEJ ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
-
-ON ANGUEL LEJ
+Certaines légendes naines suggèrent que les griffons protègent les montagnes où l'on pourrait trouver de l'or ou des pierres précieuses. Soi-disant. À mon avis, ils sont simplement attirés par les objets qui brillent, comme des oiseaux. Leurs oeufs pourraient presque être en or massif, vu ce que les nobles de l'Empire paient pour les obtenir. Je peux tout de même leur accorder raison sur un point, schreiber : rien ne vaut un bon steak de cheval.
 
 Griffe Mortelle, par exemple, arbore exactement les mêmes rayures que les « tygres » de la lointaine Inja, ou Ind. Le cri perçant d'un griffon en chasse peut faire fuir une armée, et hanter les rescapés toute leur vie. Plusieurs chasseurs que nous avons croisés nous ont avoué l'entendre dans leurs cauchemars, alors que leur dernière rencontre remontait à des décennies. Les griffons sont des adversaires rusés. Lorsqu'ils sont cernés, ils sont prompts à se replier, mais seulement pour fondre à nouveau sur leurs ennemis et les massacrer. Beaucoup de récits soutiennent que les griffons préfèrent mourir plutôt que subir une défaite. C'est l'une des raisons pour lesquelles ils sont devenus l'un des symboles de notre glorieux Empire. L'elfe qui m'a accompagné m'a appris que leur nom elfique se traduit par « perfection sauvage ».
 
 Les griffons préfèrent faire leurs nids en hauteur, dans les sommets des hautes chaînes, comme les Montagnes du Bord du Monde. Cependant, ils s'aventurent souvent dans les plaines pour chasser. Ils raffoleraient, apparemment, de la viande de cheval, et la préféreraient à celle de n'importe quelle autre créature, surtout pour nourrir leurs petits. Cela fait plusieurs siècles que la portion nord-est de la Grande Forêt se fait appeler le Bois du griffon. Aujourd'hui encore, il est possible d'en apercevoir plonger depuis les sommets pour chasser les chevaux sauvages du Veld de l'Ostermark.
 
-### -+ 9% +-
+#### † C †
 
-orsque mes compagnons et moi avons accepté notre expédition, il nous a été expressément demandé d'observer les habitudes des griffons dans leur
+Lorsque mes compagnons et moi avons accepté notre expédition, il nous a été expressément demandé d'observer les habitudes des griffons dans leur
 
 milieu naturel, afin d'adapter au mieux le traitement offert à Griffe Mortelle. Nous avons donc pu en apprendre plus sur les griffons. Je les trouve d'ailleurs bien plus perspicaces qu'on ne pourrait l'imaginer. Cependant, nous en avons tiré davantage de connaissances sur les ténèbres tapies aux frontières de l'Empire. Référez-vous aux *Appendices* (p. 97) pour le récit de ce qui nous est arrivé.
 
+<span id="page-23-0" data-folio="21"></span>
+<span id="page-24-0" data-folio="22"></span>
 
 
-<span id="page-24-0"></span>
+### **Gueule d'effroi**
 
-# Gueule d'effroi
-
-e tous les dangers mortels qui peuplent notre monde périlleux, aucun n'est plus pernicieux que la cupidité. La quête infinie de profits entraîne
+De tous les dangers mortels qui peuplent notre monde périlleux, aucun n'est plus pernicieux que la cupidité. La quête infinie de profits entraîne
 
 bien des décisions irréfléchies, mais vous trouverez toujours quelqu'un pour vous dire que qui ne tente rien n'a rien, et qu'il faut prendre des risques pour réussir. Si c'est le cas, alors les trésors que recèle la Route de l'Ivoire vers la distante Cathay doivent mener au succès, car c'est la terreur des marchands ellemême qui la hante. Un terrible prédateur né des désolations putrides des Terres Sombres : la gueule d'effroi. Vous ne verrez pas une gueule d'effroi vous foncer dessus : vous sentirez la terre remuer sous vos pieds, et vous comprendrez que votre fin est proche.
 
@@ -2363,17 +2100,17 @@ bien des décisions irréfléchies, mais vous trouverez toujours quelqu'un pour 
 
 Les gueules d'effroi sont de gigantesques serpents (certains nains soutiennent que « vers » serait plus approprié) dont l'immense gueule circulaire est remplie de dents crochues recourbées vers l'intérieur. Leur corps est couvert d'écailles grises ou verdâtres, elles-mêmes enduites d'une bave gluante et nauséabonde. Celle-ci leur permet de glisser dans la terre à très grande vitesse, mais aussi de souiller la hache de ceux qui essaient de les éliminer. Les gueules d'effroi attaquent généralement leurs cibles par en dessous : elles émergent soudain du sol pour avaler toutes crues les créatures plus petites. Elles sont tout aussi capables de s'attaquer aux créatures plus grosses, auquel cas elles se taillent un chemin à travers chair et os pour les dévorer de l'intérieur.
 
-Les histoires s'accordaient sur ces détails, au moins. Après cela, les nains nous ont rappelé que les gueules d'effroi sont des créatures des désolations du Chaos, et qu'il n'en existe pas deux pareilles. Leur peau semble encline à pourrir et se décomposer, si bien que beaucoup sont couvertes de plaies ouvertes et suppurantes. La majorité des gueules d'effroi est atteinte de mutations contre nature. Certaines (paraît-il) crachent la même substance qui recouvre leur peau au visage de leurs proies. D'autres auraient apparemment un sang acide capable de faire fondre la chair. De très rares spécimens grossissent jusqu'à atteindre une taille titanesque, et pourraient avaler un chariot blindé d'un seul claquement de mâchoires. Toutes les histoires concordent : à moins de chercher une mort glorieuse, il est bien plus sage d'éviter de rencontrer la moindre gueule d'effroi.
+Les histoires s'accordaient sur ces détails, au moins. Après cela, les nains nous ont rappelé que les gueules d'effroi sont des créatures des désolations du Chaos, et qu'il n'en existe pas deux pareilles. Leur peau semble encline à pourrir et se décomposer, si bien que beaucoup sont couvertes de plaies ouvertes et suppurantes. La majorité des gueules d'effroi est atteinte de mutations contre nature. Certaines (paraît-il) crachent la même substance qui recouvre leur peau au visage de leurs proies. D'autres auraient apparemment un sang acide capable de faire fondre la chair. De très rares spécimens grossissent jusqu'à atteindre une taille titanesque, et pourraient avaler un chariot blindé d'un seul claquement de mâchoires. Toutes les histoires concordent : à moins de chercher une mort glorieuse, il est bien plus sage d'éviter de rencontrer la moindre gueule d'effroi .
 
-#### -+ %% +-
+#### † C †
 
-n soir, j'ai demandé s'il était seulement possible de défaire une telle créature. Les guerriers dans l'assemblée m'ont tous affirmé que si on lui
+Un soir, j'ai demandé s'il était seulement possible de défaire une telle créature. Les guerriers dans l'assemblée m'ont tous affirmé que si on lui
 
-infligeait assez de dégâts, une gueule d'effroi s'en irait. Une poignée d'entre eux avait vu des caravanes particulièrement bien équipées se servir de canons pour les abattre. Puis un rire discordant retentit, et tous les clients de la taverne se turent pour se tourner vers un tueur couturé et armé de la plus grosse hache que j'aie jamais vue. Il déposa sa chope, puis déclara : « Ouais, un canon, ça peut le faire. Mais le meilleur moyen de tuer une de ces bestioles, c'est de se laisser avaler... et de la découper de l'intérieur. » Il me semble important de noter que la peau du nain était presque intégralement couverte de ce qui ressemblait à des brûlures. Lorsque j'ai posé des questions à son sujet, j'ai appris qu'il s'agissait de Belegol Peau-de-fer, un tueur célèbre qui avait « échoué » à de multiples reprises (échoué à trouver la mort, bien entendu). Et oui, il était sérieux.
+infligeait assez de dégâts, une gueule d'effroi s'en irait. Une poignée d'entre eux avait vu des caravanes particulièrement bien équipées se servir de canons pour les abattre. Puis un rire discordant retentit, et tous les clients de la taverne se turent pour se tourner vers un tueur couturé et armé de la plus grosse hache que j'aie jamais vue. Il déposa sa chope, puis déclara : *« Ouais, un canon, ça peut le faire. Mais le meilleur moyen de tuer une de ces bestioles, c'est de se laisser avaler… et de la découper de l'intérieur. »* Il me semble important de noter que la peau du nain était presque intégralement couverte de ce qui ressemblait à des brûlures. Lorsque j'ai posé des questions à son sujet, j'ai appris qu'il s'agissait de Belegol Peau-de-fer, un tueur célèbre qui avait « échoué » à de multiples reprises (échoué à trouver la mort, bien entendu). Et oui, il était sérieux.
 
-Certains membres de mon Ordre pensent que les queules d'effroi viennent à l'origine des Terres Reculées de Khuresh. Ils ont retrouvé des légendes épouvantables qui mentionnaient les mythiques Reines sanguinaires des nagas. Elles racontent que les gueules d'effroi ont été créées (je répète, créées) pour empêcher les occidentaux de voyager vers l'est. Jusque-là, on ne s'en était pas inquiétés et on traitait ces légendes de rumeurs infondées. Seulement, il y a à peine quelques années, on a découvert un culte dédié à ces horreurs en Sylvanie... Un culte ayant tenté de mener un terrible rituel censé invoquer une gueule d'effroi au beau milieu de l'Empire.
+*Certains membres de mon Ordre pensent que les gueules d'effroi viennent à l'origine des Terres Reculées de Khuresh. Ils ont retrouvé des légendes épouvantables qui mentionnaient les mythiques Reines sanguinaires des nagas. Elles racontent que les gueules d'effroi ont été créées (je répète, créées) pour empêcher les occidentaux de voyager vers l'est. Jusque-là, on ne s'en était pas inquiétés et on traitait ces légendes de rumeurs infondées. Seulement, il y a à peine quelques années, on a découvert un culte dédié à ces horreurs en Sylvanie… Un culte ayant tenté de mener un terrible rituel censé invoquer une gueule d'effroi au beau milieu de l'Empire.* 
 
-
+<span id="page-25-0" data-folio="23"></span>
 | M | CC CT |    | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B  |
 |---|-------|----|----|----|----|----|-----|-----|----|--------|----|
 | 3 | 45    | 30 | 55 | 55 | 15 | 20 | -   | 15  | 35 | -      | 36 |
@@ -2392,34 +2129,26 @@ Une fois avalée, la victime est lentement digérée : elle subit un État *Emp�
 
 **Facultatif :** Cornes (Épines dorsales crochues) +9, Infecté, Sang corrosif, Taille (Énorme *ou* Monstrueuse)
 
-# NOUVEAU TRAIT DE CRÉATURE : FOUISSEMENT
+### NOUVEAU TRAIT DE CRÉATURE : FOUISSEMENT
 
 **Fouissement :** cette créature peut se déplacer en creusant un tunnel dans la terre ou la pierre à une vitesse inimaginable. Pour se déplacer, elle peut creuser dans le sol sur une distance en mètres égale à son Indice. Lorsqu'elle fouit, elle ignore tout obstacle, personnage ou terrain difficile sur son passage. À la fin de son déplacement, elle peut choisir de sortir de terre ou de rester enfouie. Elle peut se servir de ce mode de déplacement pour *Charger*. Si elle commence son tour sous terre, elle doit se déplacer par fouissement.
 
 Pour attaquer une cible enfouie, calculez la distance au sol comme d'habitude, mais augmentez la Portée de 2 niveaux. Ainsi, un tir à Portée Moyenne passerait à Portée Extrême, tandis qu'un tir à Portée Longue ou Extrême serait impossible.
 
+<span id="page-26-0" data-folio="24"></span>
 
-<span id="page-26-0"></span>
 
-# RHINOX
+### **Rhinox**
 
-ans les hauteurs des chaînes de montagnes du Vieux Monde errent des brutes hirsutes et irascibles. D'énormes bêtes à quatre pattes dont
+Dans les hauteurs des chaînes de montagnes du Vieux Monde errent des brutes hirsutes et irascibles. D'énormes bêtes à quatre pattes dont
 
-le lourd museau est surmonté d'immenses cornes : les rhinox. Leur amour du froid et leur nature belliqueuse, qui les pousse à charger sur-le-champ tout ce qui s'aventure à moins d'un jet de pierre d'eux, leur ont attiré les faveurs d'Ulric. Les troupeaux de rhinox qui vivent près des Montagnes du Bord du Monde sont souvent chassés par des trappeurs nains. D'après ceux-ci, la nature grincheuse des bêtes est accentuée par une très mauvaise vue. Ils vont souvent jusqu'à dire que « tout ce qui s'aventure à moins d'un jet de pierre » correspond sans doute à tout ce qu'ils peuvent voir.
+le lourd museau est surmonté d'immenses cornes : les rhinox. Leur amour du froid et leur nature belliqueuse, qui les pousse à charger sur-le-champ tout ce qui s'aventure à moins d'un jet de pierre d'eux, leur ont attiré les faveurs d'Ulric. Les troupeaux de rhinox qui vivent près des Montagnes du Bord du Monde sont souvent chassés par des trappeurs nains. D'après ceux-ci, la nature grincheuse des bêtes est accentuée par une très mauvaise vue. Ils vont souvent jusqu'à dire que *« tout ce qui s'aventure à moins d'un jet de pierre »* correspond sans doute à tout ce qu'ils peuvent voir.
 
 Puisque les rhinox vivent dans des régions où la neige et les blizzards sont fréquents, leurs problèmes de vue les gênent moins que ce que l'on pourrait croire. Ils ont également développé un odorat extrêmement fin pour compenser. Un rhinox affamé peut flairer l'antre d'une créature malchanceuse ou un feuillage comestible (ce sont des omnivores voraces), même à travers les couches de neige les plus épaisses. Ils semblent par ailleurs détester les fleurs au plus haut point et ne reculent devant rien pour piétiner les rares pousses qui bourgeonnent dans les hauteurs enneigées. Peut-être leur douce odeur perturbe-t-elle leur odorat surdéveloppé.
 
 On ignore toujours si les rhinox sont insensibles à la peur, ou s'ils sont seulement très, très stupides. Peut-être un peu des deux. Après tout, on ne manque pas d'histoires de rhinox qui attaquent agressivement des affleurements rocheux de forme inhabituelle, qui essaient de courir sur l'eau, et qui mettent occasionnellement leurs congénères en pièces sans raison apparente. Les nains disent qu'il est difficile de savoir lequel, entre le granite et le crâne d'un rhinox, est le plus dur. J'ai entendu parler d'un rhinox
 
-LET L'TEAKL DE RHINOX JOHT ÉTONHAMMENT
-JUCCULENTS, MAIS C'EST JURTOUT POUR LEURS
-CORNES QU'ILS JOHT CHASSÉS. ON LEUR ATTRIBUE
-D'INHOMBRABLES PROPRIÉTÉS THÉRAPEUTIQUES.
-CERTAINS DISENT QUE SA POUDRE PEUT JOIGHER
-H'IMPORTE QUOI, DES RHUMATISMES À LA COURANTE
-GALOPANTE. JE HE JUIS PAS DUPE, MAIS COMME LE
-DIT LE PROVERBE, « LORSQUE L'ARGENT PARLE, LA
-VÉRITÉ SE TAIT ».
+Les steaks de rhinox sont étonnamment succulents, mais c'est surtout pour leurs cornes qu'ils sont chassés. On leur attribue d'innombrables propriétés thérapeutiques. Certains disent que sa poudre peut soigner n'importe quoi, des rhumatismes à la courante galopante. Je ne suis pas dupe, mais comme le dit le proverbe, « lorsque l'argent parle, la vérité se tait ».
 
 particulièrement craint et maudit, le hargneux Brise-Krag. Il aurait apparemment enfoncé la porte d'un Karak (les histoires ne s'accordent pas sur la forteresse en question) à l'aide de son crâne dur comme du « gromil ». Malgré la prime considérable que le Haut Roi des nains a mise sur son crâne quasiment impénétrable, Brise-Krag arpente toujours les hauts vallons du Bord du Monde, où il piétine tout sur son passage.
 
@@ -2429,7 +2158,7 @@ Les ogres se servent parfois des rhinox comme de bêtes de somme. Ils trouvent l
 
 l'amusante (et apparemment quasi mythique) histoire de la première fois qu'un rhinox a transporté de lourdes charges dans les Montagnes des Larmes. Un jour, un gnoblar (des cousins des gobelins, tous des vauriens) particulièrement habile du nom de Ma « La Larve » eut une révélation « brillante » : avec l'aide d'une grosse créature, il pourrait récupérer plus de trésors sur le champ de bataille. La suite ne fut qu'une succession d'erreurs digne d'une comédie dont les acteurs étaient une sélection des plus dangereuses créatures des Royaumes ogres. Chaque nouveau monstre finissait par expulser, écrabouiller ou engloutir les « assistants » de Ma pendant qu'ils essayaient de lui attacher un harnais improvisé. Après d'innombrables échecs, « La Larve » réussit finalement à faire accepter le harnais à un jeune rhinox. La créature n'était sans doute pas assez intelligente pour comprendre comment s'échapper, ni assez belliqueuse pour faire payer sa témérité au gnoblar.
 
-
+<span id="page-27-0" data-folio="25"></span>
 | M | CC CT |   | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B  |
 |---|-------|---|----|----|----|----|-----|-----|----|--------|----|
 | 6 | 45    | - | 55 | 50 | 23 | 30 | -   | 10  | 10 | -      | 32 |
@@ -2452,34 +2181,32 @@ Cornes +13\*
 
 **Trop buté pour mourir :** Brise-Krag ignore les effets du premier Dégât Critique qu'il subit à chaque combat.
 
+<span id="page-28-0" data-folio="26"></span>
+**26**
 
-<span id="page-28-0"></span>
+### **Squig et gobelin de la nuit**
 
-# Souig et gobelin de la nuit
-
-es squigs font partie des créatures les plus étranges du Vieux Monde. Ils sont, en essence, des champignons ambulants dotés d'un très mauvais
+Les squigs font partie des créatures les plus étranges du Vieux Monde. Ils sont, en essence, des champignons ambulants dotés d'un très mauvais
 
 caractère, d'une paire d'yeux perçants et d'une mâchoire béante pleine de crocs aussi longs que des dagues. Ils seraient bien plus dangereux s'ils se montraient en plus doués de la moindre capacité de réflexion. Si vous parvenez à les observer sans qu'ils remarquent votre présence, vous les verrez souvent baver, immobiles, ou sautiller dans tous les sens et essayer d'engloutir tout ce qui passe à leur portée.
 
 L'apparence des squigs peut énormément varier. Beaucoup semblent d'ailleurs capables de s'adapter à leur environnement. Par exemple, la verdure des prairies, qui bordent le Bief bleu, recouvre les squigs d'herbage, ce qui les rend particulièrement dangereux pour le bétail de l'Averland et les halflings imprudents. Mais ceux qui hantent les cauchemars des soldats impériaux sont les squigs des cavernes, qui surgissent de grottes ténébreuses enfouies sous les Montagnes du Bord du Monde. Eux aussi sont de couleurs variées, mais la plupart vont de l'orange vif au rouge profond.
 
-Les prêtres de Taal que j'ai interrogés à leur sujet m'ont juré que le dieu de la Nature n'avait absolument rien à voir avec les squigs, et que ceux-ci n'étaient « pas de son ressort ». Quelques-uns ont émis l'hypothèse qu'ils étaient liés à la Grande Gueule des ogres et à son insatiable faim. Pour les Maîtres nains du savoir à qui j'ai pu parler à Karak Kadrin, cependant, leur origine remonte à un combat mythique entre Grimnir et Gork (ou Mork, ils n'en savaient rien et n'en avaient clairement rien à faire) : ils auraient apparemment poussé aux endroits où le sang du dieu peau-verte aurait été versé sur le champ de bataille. Peut-être est-ce là la raison pour laquelle les squigs accompagnent si souvent les tribus des peaux-vertes dégénérées que nous connaissons sous le nom de gobelins de la nuit.
+Les prêtres de Taal que j'ai interrogés à leur sujet m'ont juré que le dieu de la Nature n'avait absolument rien à voir avec les squigs, et que ceux-ci n'étaient « pas de son ressort ». Quelquesuns ont émis l'hypothèse qu'ils étaient liés à la Grande Gueule des ogres et à son insatiable faim. Pour les Maîtres nains du savoir à qui j'ai pu parler à Karak Kadrin, cependant, leur origine remonte à un combat mythique entre Grimnir et Gork (ou Mork, ils n'en savaient rien et n'en avaient clairement rien à faire) : ils auraient apparemment poussé aux endroits où le sang du dieu peau-verte aurait été versé sur le champ de bataille. Peut-être est-ce là la raison pour laquelle les squigs accompagnent si souvent les tribus des peaux-vertes dégénérées que nous connaissons sous le nom de gobelins de la nuit.
 
--+ 9% +-
+> † C †
 
+<span id="page-29-0" data-folio="27"></span>
+L'huile de squig est un lubrifiant remarquable. On s'en sert pour l'entretien de toutes sortes de dispositifs complexes et autres armes à feu. Elle a quelques propriétés très utiles, dont l'une des plus pratiques est qu'elle n'est pas inflammable. Les gobelins de la nuit, par contre, Ils ne constituent que de bonnes cibles. Rien d'autre.
 
-THAIRING HE THE BILLY SO SHUH'N REMARQUABLE. ON J'EN JERT POUR ad lataol lathol ad haltarthail LAMAR LARTUR TO LOXALOMO> LAITILOGILIO à peu. Elle a suelsuel propriétél trèl Landiabad trad ann, amod 'salla ELT QU'ELLE N'ELT PAI INFLAMMABLE. LEI GOBELINS DE LA HUIT, PAR CONTRE, ILT HE CONTITUENT QUE DE BONNET CIBLES. RIEN D'AUTRE.
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B   |  |  |  |
+|---|-------|---|----|----|----|----|-----|-----|--------|---|-----|--|--|--|
+| 4 | 55*   | - | 50 | 30 | 10 | 40 | -   | 5   | 15     | - | 60* |  |  |  |
 
-|   |     |   |    |    |    |    |   |   | FM |    |     |  |  |  |
-|---|-----|---|----|----|----|----|---|---|----|----|-----|--|--|--|
-| 4 | 55* | - | 50 | 30 | 10 | 40 | - | 5 | 15 | -3 | 60* |  |  |  |
+**Traits :** Bestial, Bond, Infecté, Infravision, Nuée\* **Traits d'attaque :** Arme (Gueule pleine de crocs) +9
 
-Traits: Bestial, Bond, Infecté, Infravision, Nuée\* Traits d'attaque: Arme (Gueule pleine de crocs) +9
-
-
-### Le Zoo Impéria
-
-e vous prie de m'excuser une nouvelle fois, mais tout comme pour les araignées géantes et les gobelins des forêts, je ne peux pas parler
+<span id="page-30-0" data-folio="28"></span>
+Je vous prie de m'excuser une nouvelle fois, mais tout comme pour les araignées géantes et les gobelins des forêts, je ne peux pas parler
 
 des squigs sans mentionner les seules créatures qui en font réellement usage. Les gobelins de la nuit sont sans doute les membres les plus cruels de leur espèce à l'esprit déjà bien tordu. Ce sont des conspirateurs retors dépourvus de la moindre conscience morale. Ce sont eux qui ont investi la majorité des antiques karak des nains au fil des siècles. Dire que les nains les « haïssent » est un incroyable euphémisme. À Karak Kadrin, les nains m'ont montré des quantités astronomiques de livres des rancunes, remplis exclusivement des déprédations des gobelins de la nuit. Ces volumes étaient accompagnés d'autres, plus gros encore, remplis de suggestions d'actes de représailles tout bonnement horribles.
 
@@ -2487,35 +2214,47 @@ Les gobelins de la nuit chassent les squigs depuis des éons. Ils s'en servent a
 
 Les gobelins de la nuit revètent des tuniques souillées et sales, et s'équipent d'armes rouillées et bardées de crochets. Il n'est pas rare de les voir manier des filets barbelés pour capturer leurs ennemis et les torturer par la suite. Plusieurs redoutables vétérans nains m'ont d'ailleurs solennellement juré qu'ils portaient toujours au moins une bonne dague pour « abréger leurs souffrances ou celles de leurs camarades » s'ils venaient à être capturés vivants par des gobelins de la nuit. Je ne peux pas vous expliquer à quel point cette découverte m'a perturbé.
 
-vant notre départ, Warnicke nous avait prévenus que le Zoo Impérial nous offrirait une récompense généreuse si nous leur ramenions quelques squigs
+Avant notre départ, Warnicke nous avait prévenus que le Zoo Impérial nous offrirait une récompense généreuse si nous leur ramenions quelques squigs
 
 pour leur collection. Durant notre séjour à Karak Kadrin, nous avons pu monter quelques excursions et capturer assez de squigs miniatures, tous de la taille d'une miche de pain, pour remplir une cage. Lorsque nous avons quitté la forteresse, nous en avions onze. Au fil des mois, alors que nous longions le Stir, ils ont finalement décidé que la maigre pitance que nous leur offrions ne leur suffisait plus. Peu après Wurtbad, ils se sont retournés les uns contre les autres. À notre arrivée à Altdorf, nous avons légué trois squigs de la taille de halflings au Zoo, et leur avons fortement recommandé de les placer dans des cages séparées.
 
-#### **GOBELIN DE LA NUIT**
+#### GOBELIN DE LA NUIT
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 4 | 30 | 35 | 30 | 35 | 20 | 35 | 30  | 30  | 20 | 20  | 11 |
+| M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
+|---|-------|----|----|----|----|----|-----|-----|--------|----|----|
+| 4 | 30    | 35 | 30 | 35 | 20 | 35 | 30  | 30  | 20     | 20 | 11 |
 
-Compétences: Projectiles (Arc) 45, Projectiles (Entraves) 45 Traits: Animosité (Peaux-vertes), Effrayé (Elfes), Haine (Nains), Infecté, Infravision
+**Compétences :** Projectiles (Arc) 45, Projectiles (Entraves) 45 **Traits :** Animosité (Peaux-vertes), Effrayé (Elfes), Haine (Nains), Infecté, Infravision
 
-Traits d'attaque : À distance (Arc court) +5 (20), Arme (Lames rouillées) +7
+**Traits d'attaque :** À distance (Arc court) +5 (20), Arme (Lames rouillées) +7
 
-Certains gobelins de la nuit se servent de filets pour capturer leurs ennemis afin que leurs congénères les passent à tabac et les torturent plus tard. Ceux-là ont le Trait d'attaque À distance (Filet 3) +0 (6).
+Certains gobelins de la nuit se servent de filets pour capturer leurs ennemis afin que leurs congénères les passent à tabac et les torturent plus tard. Ceux-là ont le Trait d'attaque **À distance (Filet 3) +0 (6)**.
 
-Quelques gobelins de la nuit essaient de guider des squigs au combat en les chevauchant. Ce qui finit généralement mal. Ces chevaucheurs de squigs ont la Compétence Chevaucher (Squig) 40. Pour diriger leur monture, ils doivent effectuer un Test de Chevaucher Difficile (-20). En cas de réussite, ils peuvent sélectionner une cible et l'attaquer, ou entreprendre une Action. En cas d'échec, ils ne peuvent que se cramponner. En cas de Maladresse, leur monture les projette en l'air avant de les gober tout crus.
+*Quelques gobelins de la nuit essaient de guider des squigs au combat en les chevauchant. Ce qui finit généralement mal. Ces chevaucheurs de squigs ont la Compétence Chevaucher (Squig) 40. Pour diriger leur monture, ils doivent effectuer un Test de Chevaucher Difficile (-20). En cas de réussite, ils peuvent sélectionner une cible et l'attaquer, ou entreprendre une Action. En cas d'échec, ils ne peuvent que se cramponner. En cas de Maladresse, leur monture les projette en l'air avant de les gober tout crus.*
 
-#### Facultatif: Furtif
+#### **Facultatif :** Furtif
 
-Avant que la tribu ne parte au combat, certains de ses membres peuvent recevoir « l'honneur » d'ingurgiter une boisson brassée à base de bonnets de fou. Une fois que leurs yeux commencent à sortir de leurs orbites et qu'ils parviennent à peine à se contrôler, leurs congénères savent que la boisson fait effet. Les horreurs qui en résultent sont connues sous le nom de fanatiques gobelins de la nuit. Leurs camarades les maintiennent en place jusqu'à ce que l'ennemi s'approche, puis les relâchent. Les fanatiques déchaînés se mettent alors à tournoyer en direction de leur ennemi en bavant, armés de gigantesques boulets métalliques attachés au bout d'une chaîne. Les fanatiques gobelins de la nuit gagnent +10 en Force, ont 16 Blessures et gagnent le Trait Frénésie. Ils gagnent aussi la Compétence Corps à corps (Deux-mains) 40. Leur boulet est une arme à deux mains. Il a les Atouts À Enroulement et Percutante, ainsi que le Défaut Dangereuse. Entre les mains des fanatiques, il inflige +10 Dégâts.
+*Avant que la tribu ne parte au combat, certains de ses membres peuvent recevoir « l'honneur » d'ingurgiter une boisson brassée à base de bonnets de fou. Une fois que leurs yeux commencent à sortir de leurs orbites et qu'ils parviennent à peine à se contrôler, leurs congénères savent que la boisson fait effet. Les horreurs qui en résultent sont connues sous le nom de fanatiques gobelins de la nuit. Leurs camarades les maintiennent en place jusqu'à ce que l'ennemi s'approche, puis les relâchent. Les fanatiques déchaînés se mettent alors à tournoyer en direction de leur ennemi en bavant, armés de gigantesques boulets métalliques attachés au bout d'une chaîne.* Les fanatiques gobelins de la nuit gagnent +10 en Force, ont 16 Blessures et gagnent le Trait Frénésie. Ils gagnent aussi la Compétence Corps à corps (Deux-mains) 40. Leur boulet est une arme à deux mains. Il a les Atouts À Enroulement et Percutante, ainsi que le Défaut Dangereuse. Entre les mains des fanatiques, il inflige +10 Dégâts.
+
+<span id="page-31-0" data-folio="29"></span>
+### FILETS
+
+Les filets font partie du groupe d'armes à Entraves. Si un gobelin réussit une attaque avec son filet, sa cible gagne un État *Empêtré*. Pour s'en débarrasser, elle doit effectuer un **Test de Force Intermédiaire (+0)** et obtenir un nombre de DR égal à l'Indice du filet. Les DR ne sont pas cumulatifs ; si la cible ne parvient pas à se dépêtrer, elle gagne un État *Empêtré* supplémentaire.
+
+Les filets barbelés infligent automatiquement des Dégâts qui ignorent l'armure à toute cible qui se débat, qu'elle parvienne à se dépêtrer ou non.
+
+Le bruit court que les cruels elfes de Naggaroth utilisent des filets ensorcelés qui se battent activement contre leur cible, ou qui se dotent de barbelés magiques qui mordent la chair de leur victime, ce qui rend toute évasion impossible.
+
+<span id="page-32-0" data-folio="30"></span>
 
 
+## [ZI 3] Dragon
 
-<span id="page-32-0"></span>
+*Folio 31+*
 
-# DRAGON
+## **Dragon**
 
-e toutes les créatures qui peuplent le Vieux Monde, aucune n'est aussi impressionnante que les dragons. Ils sont aussi l'une des plus vieilles espèces à y
+De toutes les créatures qui peuplent le Vieux Monde, aucune n'est aussi impressionnante que les dragons. Ils sont aussi l'une des plus vieilles espèces à y
 
 vivre : ils étaient déjà vénérables bien avant que Sigmar ne récupère Ghal-Maraz. Certaines légendes elfiques racontent que les dragons étaient les serviteurs des mythiques Grands Anciens. D'autres les décrivent plutôt comme leurs ennemis et la cause de leur chute. Aujourd'hui, il ne reste que peu de ces puissants reptiles. Le battement de leurs ailes s'est fait rare dans l'Empire. Et encore heureux : même s'ils ne peuvent pas décimer des armées entières, les plus faibles d'entre eux restent de formidables adversaires. Les effets de leur célèbre souffle sont aussi variés que leur apparence, mais suffisent à écraser la plupart de leurs ennemis. Et c'est sans compter leurs griffes et leurs dents plus aiguisées qu'une épée ensorcelée, et leur peau bardée d'écailles capable d'amortir un boulet de canon.
 
@@ -2527,9 +2266,9 @@ Bien que je n'aie guère de source crédible, il semblerait que certains cultes 
 
 #### DRAGON DE LA FORÊT
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В   |
-|---|----|----|----|----|----|----|-----|-----|----|-----|-----|
-| 6 | 65 | 60 | 65 | 65 | 60 | 35 | 15  | 65  | 85 | 45  | 104 |
+| M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B   |
+|---|-------|----|----|----|----|----|-----|-----|--------|----|-----|
+| 6 | 65    | 60 | 65 | 65 | 60 | 35 | 15  | 65  | 85     | 45 | 104 |
 
 **Compétences :** Corps à corps (Griffes semblables à des racines) 75, Discrétion (Rurale) 65 (+6 DR grâce à Arboricole et Furtif)
 
@@ -2537,41 +2276,41 @@ Bien que je n'aie guère de source crédible, il semblerait que certains cultes 
 
 **Traits d'attaque :** Arme (Griffes semblables à des racines) +11, Attaque caudale +9, Morsure +12, Souffle (Soporifique) +10
 
-La bêtise les perdra: le Souffle soporifique ignore les Points d'Armure. Toute cible blessée par cette attaque doit effectuer un Test de Force Mentale Difficile (-20). En cas d'échec, elle gagne le Trait Stupide pendant un nombre de Rounds égal au Bonus d'Endurance du dragon.
+**La bêtise les perdra :** le Souffle soporifique ignore les Points d'Armure. Toute cible blessée par cette attaque doit effectuer un Test de **Force Mentale Difficile (-20)**. En cas d'échec, elle gagne le Trait Stupide pendant un nombre de Rounds égal au Bonus d'Endurance du dragon.
 
-La forêt est mon bouclier: dans une région boisée, lorsqu'il est entouré d'arbres, un dragon de la forêt ne sera jamais en infériorité numérique. De plus, ses écailles caméléonesques alternent entre l'apparence de l'écorce et celle des feuilles: toutes les attaques à distance qui le prennent pour cible subissent un malus de -20. Si ce malus fait échouer une attaque qui aurait autrement réussi, celle-ci touche à la place une nouvelle cible, déterminée au hasard par le MJ. Il peut s'agir soit de l'un des arbres qui entourent le dragon, soit de l'un des adversaires *Engagés* contre lui.
+**La forêt est mon bouclier :** dans une région boisée, lorsqu'il est entouré d'arbres, un dragon de la forêt ne sera jamais en infériorité numérique. De plus, ses écailles caméléonesques alternent entre l'apparence de l'écorce et celle des feuilles : toutes les attaques à distance qui le prennent pour cible subissent un malus de -20. Si ce malus fait échouer une attaque qui aurait autrement réussi, celle-ci touche à la place une nouvelle cible, déterminée au hasard par le MJ. Il peut s'agir soit de l'un des arbres qui entourent le dragon, soit de l'un des adversaires *Engagés* contre lui.
 
-Facultatif: Dressé (Monture), Lanceur de Sorts (Jade), Magique, Venin
+**Facultatif :** Dressé (Monture), Lanceur de Sorts ( Jade), Magique, Venin
 
-30
+**30**
 
+<span id="page-33-0" data-folio="31"></span>
+*Les dragons sont des créatures profondément magiques. Je pense que s'ils sont si différents les uns des autres, c'est parce qu'ils ne subsistent pas grâce au même Vent, vous savez, les courants de puissance mystique qui parcourent le monde. Aujourd'hui, les Vents soufflent bien moins fort que par le passé. C'est sans doute pour cela que les dragons dorment. Si cela venait à changer, nous risquerions de nous rendre compte qu'il reste bien plus de dragons que nous ne l'imaginions.*
 
-Le Zoo Impérial
-
-Les dragons sont des créatures profondément magiques. Je pense que s'ils sont si différents les uns des autres, c'est parce qu'ils ne subsistent pas grâce au même Vent, vous savez, les courants de puissance mystique qui parcourent le monde. Aujourd'hui, les Vents soufflent bien moins fort que par le passé. C'est sans doute pour cela que les dragons dorment. Si cela venait à changer, nous risquerions de nous rendre compte qu'il reste bien plus de dragons que nous ne l'imaginions.
-
-Aucun dragon n'est plus présent dans les contes du Reikland que Caledair, la Faux de Feu. Pourquoi? Parce qu'il chassait dans les plaines du Vorberglans une époque dont les natns et les elses d'âge moyen (et les sorciers, je suppose) se souviennent encore Il existe un nombre presque infini de récits des exploits de Caledair, et la plupart sont horribles. Mon préféré, cependant, est un peu différent. Un jour, alors qu'il volait au-dessus du Dorbergland Sud pendant les moissons, le dragon fut attiré par une odeur qu'il n'avait encore jamais sentie. Il se posa dans les champs, terrorisant sans doute les pauvres fermiers, et exigea que sa curiosité soit immédiatement assouvie. Ce qu'il avait senti était en fait la légendaire Ernwald (la fameuse pomme de Stimmigen), et lorsque les fermiers lui apportèrent quelques tonneaux, il en fut tout simplement ravi. Une fois son festin termini, il promit qu'il ne Brûlerait jamais les champs aux alentours de Stimmigen, à condition que deux grosses cuves d'Ernwald l'attendent à chaque saison des récoltes. Cela fait plus d'un siècle que personne n'a revu Caledair. Pourtant, aujourd'hui encore, deux grandes cuves de pommes franchement cueillies attendent dans une clairière près du verger Exerciald. Et pour être sans de ne pas s'attirer les foudres de la Faux de Feu, les fermiers renouvellent les pommes tout au long de la saison. Depuis, chaque tonneau de pommes d'Ernwald est marqué du « Sceau d'approbation du dragon ».
+Aucun dragon n'est plus présent dans les contes du Reikland que Caledair, la Faux de Feu. Pourquoi ? Parce qu'il chassait dans les plaines du Vorbergland à une époque dont les nains et les elfes d'âge moyen (et les sorciers, je suppose) se souviennent encore. Il existe un nombre presque infini de récits des exploits de Caledair, et la plupart sont horribles. Mon préféré, cependant, est un peu différent. Un jour, alors qu'il volait au-dessus du Vorbergland Sud pendant les moissons, le dragon fut attiré par une odeur qu'il n'avait encore jamais sentie. Il se posa dans les champs, terrorisant sans doute les pauvres fermiers, et exigea que sa curiosité soit immédiatement assouvie. Ce qu'il avait senti était en fait la légendaire Ernwald (la fameuse pomme de Stimmigen), et lorsque les fermiers lui apportèrent quelques tonneaux, il en fut tout simplement ravi. Une fois son festin terminé, il promit qu'il ne brûlerait jamais les champs aux alentours de Stimmigen, à condition que deux grosses cuves d'Ernwald l'attendent à chaque saison des récoltes. Cela fait plus d'un siècle que personne n'a revu Caledair. Pourtant, aujourd'hui encore, deux grandes cuves de pommes fraîchement cueillies attendent dans une clairière près du verger Ernwald. Et pour être sûrs de ne pas s'attirer les foudres de la Faux de Feu, les fermiers renouvellent les pommes tout au long de la saison. Depuis, chaque tonneau de pommes d'Ernwald est marqué du « Sceau d'approbation du dragon ».
 
 #### CALEDAIR - LA FAUX DE FEU
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В   |
-|---|----|----|----|----|----|----|-----|-----|----|-----|-----|
-| 6 | 90 | 75 | 75 | 95 | 60 | 30 | 15  | 75  | 90 | 45  | 344 |
+| M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B   |
+|---|-------|----|----|----|----|----|-----|-----|--------|----|-----|
+| 6 | 90    | 75 | 75 | 95 | 60 | 30 | 15  | 75  | 90     | 45 | 344 |
 
 **Compétences :** Corps à corps (Griffes recouvertes de gromril) 110, Évaluation 95, Intimidation 95 (+3 DR grâce à Menaçant), Langue (Magick) 105
 
-Talents: Diction instinctive, Menaçant 3
+**Talents :** Diction instinctive, Menaçant 3
+
+M
 
 **Traits :** Armure 6 (15), Endurant, Immunité (Feu), Immunité Psychologique, Lanceur de Sorts (Feu), Magique, Redoutable 3, Taille (Monstrueuse), Vision nocturne, Vol 90
 
 **Traits d'attaque :** Arme (Griffes recouvertes de gromril) +12, Attaque caudale +11, Morsure +13, Souffle (Feu) +20
 
-Griffes « volées » : les nains ont des livres des rancunes entiers dédiés à Caledair. Mais rien ne les a plus outrés que lorsque le dragon a acquis du gromril pour en recouvrir ses griffes. Les griffes de Caledair ignorent totalement les Points d'Armure.
+**Griffes « volées » :** les nains ont des livres des rancunes entiers dédiés à Caledair. Mais rien ne les a plus outrés que lorsque le dragon a acquis du gromril pour en recouvrir ses griffes. Les griffes de Caledair ignorent totalement les Points d'Armure.
 
+<span id="page-34-0" data-folio="32"></span>
+### **Vouivre**
 
-# VOUIVRE
-
-<span id="page-34-0"></span>es vouivres, ou wyverns, sont des monstres de mauvais augure qui rôdent dans les hauteurs des Montagnes du Bord du Monde. Elles vivent dans
+Les vouivres, ou wyverns, sont des monstres de mauvais augure qui rôdent dans les hauteurs des Montagnes du Bord du Monde. Elles vivent dans
 
 des grottes sombres et humides, dont elles ne sortent que lorsque la faim les y pousse, pour chasser dans les collines et les plaines à l'est des montagnes. Ce sont des reptiles charognards ailés qui ne ressemblent à des dragons que lorsqu'on les observe de loin. Elles sont généralement bien plus petites qu'eux et n'ont pas de pattes avant. Elles sont solidement bâties, comme des taureaux à écailles et leur caractère est aussi mauvais que leur vue. Les plus dangereux des seigneurs de guerre orques chevauchent parfois des vouivres qu'ils ont personnellement dressées, ou au moins battues jusqu'à ce qu'elles se laissent faire. Les nains racontent de nombreuses histoires amusantes dans lesquelles une vouivre se retourne contre son maître à un moment « inopportun », comme en plein milieu d'un duel.
 
@@ -2579,19 +2318,19 @@ D'aucuns soutiennent que certaines vouivres sont, en fait, des créatures rusée
 
 VOUIVRE
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 4 | 55 | -  | 60 | 55 | 15 | 45 | -   | 10  | 50 | -   | 84 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B  |
+|---|-------|---|----|----|----|----|-----|-----|----|--------|----|
+| 4 | 55    | - | 60 | 55 | 15 | 45 | -   | 10  | 50 | -      | 84 |
 
-Traits: Armure 2 (7), Bestial, Taille (Énorme), Vol 90
+**Traits :** Armure 2 (7), Bestial, Taille (Énorme), Vol 90
 
-Traits d'attaque : Arme (Crocs) +10 (Infecté), Attaque
+**Traits d'attaque :** Arme (Crocs) +10 (Infecté), Attaque
 
 caudale +12 (Venin)
 
-Malveillance de la vouivre : un ennemi qui gagne un État Surpris à cause d'une vouivre doit effectuer un Test de Force Mentale. En cas d'échec, il succombe à la malédiction. Une cible maudite subit un malus de -10 à tous ses Tests et est incapable de se servir de ses Points de Chance. La malédiction dure jusqu'à ce que la vouivre qui l'a infligée meure, ou jusqu'à ce que la cible ait subi 5 Blessures ou plus.
+**Malveillance de la vouivre :** un ennemi qui gagne un État *Surpris* à cause d'une vouivre doit effectuer un Test de **Force Mentale**. En cas d'échec, il succombe à la malédiction. Une cible maudite subit un malus de -10 à tous ses Tests et est incapable de se servir de ses Points de Chance. La malédiction dure jusqu'à ce que la vouivre qui l'a infligée meure, ou jusqu'à ce que la cible ait subi 5 Blessures ou plus.
 
-Facultatif: Cornes, Dressé (Dompté, Garder, Guerre, Magie, Monture), Redoutable, Souffle (Poison) +10
+**Facultatif :** Cornes, Dressé (Dompté, Garder, Guerre, Magie, Monture), Redoutable, Souffle (Poison) +10
 
 Peut perdre Bestial et réduire sa Taille à Grande pour gagner un bonus de +20 en I, Int et Soc, réduire ses B à 42 et gagner Discrétion (Rurale) 65
 
@@ -2599,53 +2338,41 @@ Certains ont décrit des monstres rapides et filiformes qui ne pourraient jamais
 
 On prétend que l'ombre d'une vouivre porte malheur à tous ceux qu'elle recouvre. En effet, elle a annoncé le malheur de nombreux fermiers : s'ils peuvent la voir, cela signifie que leur troupeau aura bientôt un ou deux moutons en moins. Certains soutiennent que la « Malédiction de la vouivre » est bien réelle, et qu'il ne s'agit pas d'une superstition de paysans. Ils jurent qu'un guerrier voit sa chance l'abandonner jusqu'à ce qu'il ait « assez souffert » ou réussi à s'en débarrasser en tuant la vouivre qui la lui a infligée.
 
-Les vouivres ne résident pas que dans les hauteurs. Certaines ont élu domicile dans les ténèlores du coeur de la Forêt des Ombres, et au moins quelques autres, font leur nid dans les falaises qui dominent la Mer des Griffes. Ce sont des monstres infâmes, affreux et disgracieux. En plus du poison mortel que peut inoculer leur queue, leur morsure peut porter sa propre maladie. Je n'ai jamais en affaire à une vouivre particulièrement rusée, mais je ne trouverais pas leur existence en ce monde très surprenante.
+Les vouivres ne résident pas que dans les hauteurs. Certaines ont élu domicile dans les ténèbres du cœur de la Forêt des Ombres, et au moins quelques autres font leur nid dans les falaises qui dominent la Mer des Griffes. Ce sont des monstres infâmes, affreux et disgracieux. En plus du poison mortel que peut inoculer leur queue, leur morsure peut porter sa propre maladie. Je n'ai jamais eu affaire à une vouivre particulièrement rusée, mais je ne trouverais pas leur existence en ce monde très surprenante.
+
+<span id="page-35-0" data-folio="33"></span>
+Le venin de vouivre est difficile à extraire. Pas seulement parce que ces bêtes ne s'en sépareront jamais d'elles-mêmes, mais aussi parce qu'il perd rapidement de sa puissance une fois exposé à l'air libre. Heureusement, les plus habiles peuvent extraire le sac venimeux de la queue d'une vouivre sans le percer. Les propriétés médicinales de ce venin le rendent efficace pour alléger certaines douleurs. Cependant, d'après mon expérience, la plupart de ceux qui cherchent à s'en procurer ne sont pas à la recherche d'un médicament.
+
+<span id="page-36-0" data-folio="34"></span>
 
 
-LE VENIN DE VOUIVRE ELT DIRFICILE À
-EXTRAIRE. PAJ JEULEMENT PARCE QUE
-CEJ BÊTEJ NE J'EN JÉPARERONT JAMAIJ
-D'ELLEJ-MÊMEJ, MAIJ AUJJI PARCE QU'IL PERD
-RAPIDEMENT DE JA PUIJJANCE UNE MOIJ
-EXPOJÉ À L'AIR LIBRE. HEUREUJEMENT, LEJ
-PLUJ HABILEJ PEUVENT EXTRAIRE LE JAC
-VENIMEUX DE LA QUEUE D'UNE VOUIVRE JANJ
-LE PERCER. LEJ PROPRIÉTEJ MÉDICINALEJ
-DE CE VENIN LE RENDENT ERMICACE POUR
-ALLÉGER CERTAINEJ DOULEURJ. CEPENDANT,
-D'APRÈJ MON EXPÉRIENCE, LA PLUPART DE
-CEUX QUI CHERCHENT À J'EN PROCURER
-NE JONT PAJ À LA RECHERCHE D'UN
-MÉDICAMENT.
+## [ZI 4] « L'abominable » Halagrundsor
 
+*Folio 35+*
 
-<span id="page-36-0"></span>
+## **« L'abominable » Halagrundsor**
 
-# « L'ABOMINABLE » HALAGRUNDSOR
-
-lors que le séjour de notre groupe expéditionnaire à Karak Kadrin touchait à sa fin, un patrouilleur nain me prit à part pour me faire une proposition
+Alors que le séjour de notre groupe expéditionnaire à Karak Kadrin touchait à sa fin, un patrouilleur nain me prit à part pour me faire une proposition
 
 intrigante. Il venait d'une autre forteresse, et je m'étais très vite plu en sa compagnie. Pour des raisons qui deviendront évidentes plus tard, je vais l'appeler « Sourire d'argent ». Je l'avais rencontré dans une taverne, un soir, et m'étais immédiatement bien entendu avec lui. Les nuits suivantes, nous avions souvent bu ensemble. C'était généralement moi qui payais, mais je ne m'en offusquais pas, puisque ses histoires en valaient toujours la peine. Il était, et de très loin, le nain le plus enjoué que je n'avais jamais rencontré. Même les tueurs de Karak Kadrin le trouvaient un peu étrange. Enfin, d'après Jorunn, préférer l'air libre et le ciel bleu aux chambres de pierre traditionnelles rend tous les patrouilleurs suspects aux yeux des siens.
 
-Sourire d'argent savait que j'étais fasciné par les géants. Il faut dire que j'avais interrogé beaucoup de tueurs à leur sujet, et que ses camarades patrouilleurs et lui-même n'y avaient pas échappé. Mais malgré toutes les histoires d'êtres gigantesques qui circulent dans l'Empire, on ne sait, finalement, presque rien sur eux. La plupart de ces histoires les décrivent comme des ivrognes rustres et gargantuesques qui se délectent du carnage qu'ils provoquent et qui accompagnent souvent les Waaaghs! des peaux-vertes. D'autres parlent plutôt d'eux comme de créatures timides, qui préfèrent éviter de rencontrer des inconnus s'ils le peuvent. Bien entendu, les rapports des tueurs étaient tous des récits sinistres des ravages qu'ils étaient capables d'accomplir, des nombreux torts qu'ils avaient causés à leur peuple, et de la nécessité de tous les exterminer, sans exception. Les patrouilleurs, bien que plus taciturnes (à part Sourire d'argent), partageaient l'avis des tueurs.
+Sourire d'argent savait que j'étais fasciné par les géants. Il faut dire que j'avais interrogé beaucoup de tueurs à leur sujet, et que ses camarades patrouilleurs et lui-même n'y avaient pas échappé. Mais malgré toutes les histoires d'êtres gigantesques qui circulent dans l'Empire, on ne sait, finalement, presque rien sur eux. La plupart de ces histoires les décrivent comme des ivrognes rustres et gargantuesques qui se délectent du carnage qu'ils provoquent et qui accompagnent souvent les Waaaghs ! des peaux-vertes. D'autres parlent plutôt d'eux comme de créatures timides, qui préfèrent éviter de rencontrer des inconnus s'ils le peuvent. Bien entendu, les rapports des tueurs étaient tous des récits sinistres des ravages qu'ils étaient capables d'accomplir, des nombreux torts qu'ils avaient causés à leur peuple, et de la nécessité de tous les exterminer, sans exception. Les patrouilleurs, bien que plus taciturnes (à part Sourire d'argent), partageaient l'avis des tueurs.
 
 Alors imaginez ma surprise lorsque mon ami patrouilleur me demanda si je souhaitais en rencontrer un.
 
-Sourire d'argent me fit promettre de ne rien révéler sur lui, comme son vrai nom et certains détails de la rencontre, si je venais à en publier un rapport. Ce que je peux vous dire est que je fis une petite excursion de plusieurs jours sans mes compagnons de route, restés à Karak Kadrin. Pendant le trajet, nous parlâmes de beaucoup de choses, mais Sourire d'argent ne voulait rien révéler de notre destination. « *Un peu de patience, Schreiber. Tu verras bientôt.* »
+Sourire d'argent me fit promettre de ne rien révéler sur lui, comme son vrai nom et certains détails de la rencontre, si je venais à en publier un rapport. Ce que je peux vous dire est que je fis une petite excursion de plusieurs jours sans mes compagnons de route, restés à Karak Kadrin. Pendant le trajet, nous parlâmes de beaucoup de choses, mais Sourire d'argent ne voulait rien révéler de notre destination. *« Un peu de patience, Schreiber. Tu verras bientôt. »*
 
-Un matin, après quelques jours de marche, j'entendis des bruits semblant provenir d'un campement, établi dans le vallon boisé vers lequel nous nous dirigions. Sourire d'argent était évidemment déjà au courant, puisqu'il ne parut pas surpris. Nous fûmes approchés par deux gardes taciturnes, des Reiklanders,
+Un matin, après quelques jours de marche, j'entendis des bruits semblant provenir d'un campement, établi dans le vallon boisé vers lequel nous nous dirigions. Sourire d'argent était évidemment déjà au courant, puisqu'il ne parut pas surpris. Nous fûmes approchés par deux gardes taciturnes, des Reiklanders, à en juger par leurs uniformes. Mon guide échangea quelques mots avec eux, puis les gardes haussèrent les épaules et nous laissèrent passer. Nous arrivâmes finalement à une clairière bien plus accueillante que je ne l'aurais crue. Elle était bordée d'un ruisseau d'eau de fonte et dominée par un immense pavillon sommaire cousu de ce qui ressemblait à un assemblage disparate de voiles, de tentes de facture humaine et fabriquées avec des peaux de plusieurs créatures, à poils longs mais non identifiables. À notre approche, un être à peine moins grand qu'une maison à colombages émergea du pavillon. Le géant, qui portait admirablement bien ce nom, était vêtu d'habits dépareillés marqués de plusieurs blasons et ornements différents. Son crâne était rasé et sa barbe était décorée d'une série de simples tresses. Lorsque la lumière du soleil matinal frappa son visage, il plissa les yeux, leva son énorme main en guise de protection, et eut un mouvement de recul. Dans son autre main, il tenait une chope artisanale de la taille d'un petit tonneau. La clairière était constellée de soldats humains. Ils n'avaient pas vraiment l'air de craindre le géant, mais je remarquai tout de même qu'ils gardaient leurs distances avec lui.
 
-à en juger par leurs uniformes. Mon guide échangea quelques mots avec eux, puis les gardes haussèrent les épaules et nous laissèrent passer. Nous arrivâmes finalement à une clairière bien plus accueillante que je ne l'aurais crue. Elle était bordée d'un ruisseau d'eau de fonte et dominée par un immense pavillon sommaire cousu de ce qui ressemblait à un assemblage disparate de voiles, de tentes de facture humaine et fabriquées avec des peaux de plusieurs créatures, à poils longs mais non identifiables. À notre approche, un être à peine moins grand qu'une maison à colombages émergea du pavillon. Le géant, qui portait admirablement bien ce nom, était vêtu d'habits dépareillés marqués de plusieurs blasons et ornements différents. Son crâne était rasé et sa barbe était décorée d'une série de simples tresses. Lorsque la lumière du soleil matinal frappa son visage, il plissa les yeux, leva son énorme main en guise de protection, et eut un mouvement de recul. Dans son autre main, il tenait une chope artisanale de la taille d'un petit tonneau. La clairière était constellée de soldats humains. Ils n'avaient pas vraiment l'air de craindre le géant, mais je remarquai tout de même qu'ils gardaient leurs distances avec lui.
-
-Le géant nous salua d'une voix grondante, si profonde qu'elle fit vibrer mes os : « Ah, Sourire d'argent. Juste à temps pour boire un coup! C'est qui que t'as ramené? C'est pas un sorcier, j'espère! T'es pas un sorcier, petit, hein? » Je m'empressai de lui assurer que je n'en étais pas un. « Ouf. Tant mieux. J'aime pas les sorciers. Toujours à te mettre des trucs, des bestioles dans la tête. Allez, viens boire un coup, alors. »
+Le géant nous salua d'une voix grondante, si profonde qu'elle fit vibrer mes os : *« Ah, Sourire d'argent. Juste à temps pour boire un coup ! C'est qui que t'as ramené ? C'est pas un sorcier, j'espère ! T'es pas un sorcier, petit, hein ? »* Je m'empressai de lui assurer que je n'en étais pas un. *« Ouf. Tant mieux. J'aime pas les sorciers. Toujours à te mettre des trucs, des bestioles dans la tête. Allez, viens boire un coup, alors. »*
 
 Le géant s'assit avec nous sur des tonneaux disposés dans la clairière, sans doute à ces fins. Par l'ouverture de son pavillon, je vis qu'il était plein de toutes sortes de tonnelets, de barils et même de quelques barriques, tous contenant des boissons alcoolisées de tous types et de toutes qualités. J'y aperçus aussi plusieurs carcasses suspendues dont l'odeur me fit tourner l'estomac, malgré la distance qui nous en séparait.
 
-« Moi, j'suis Halagrundsor, l'bominab'. Destructeur de... pas grand-chose. Mais ennemi juré de toutes les boissons que tu peux penser. » Il ricana d'un grondement sourd et Sourire d'argent s'esclaffa avec lui. Ce qui s'ensuivit fut l'une des conversations les plus étranges de ma vie. Le géant était apparemment une sorte d'agent à disposition des marchands humains qui transportaient leurs denrées le long des Montagnes du Bord du Monde. Ou, pour citer ses propres paroles : « Je fais gaffe aux verts, quoi. Les orques, ils font que gueuler "Wa, Wa, Wa" tout le temps. Y te laissent jamais le temps de boire tranquille. Et les p'tits malades des cavernes, là. Les détraqués de la lune. Je les ai vus torturer un ours, une fois. Comme ça, pour rien. Du coup j'en ai écrabouillé quelques-uns. Tous des p'tits vicelards. Moi, je
+*« Moi, j'suis Halagrundsor, l'bominab'. Destructeur de… pas grand-chose. Mais ennemi juré de toutes les boissons que tu peux penser. »* Il ricana d'un grondement sourd et Sourire d'argent s'esclaffa avec lui. Ce qui s'ensuivit fut l'une des conversations les plus étranges de ma vie. Le géant était apparemment une sorte d'agent à disposition des marchands humains qui transportaient leurs denrées le long des Montagnes du Bord du Monde. Ou, pour citer ses propres paroles : *« Je fais gaffe aux verts, quoi. Les orques, ils font que gueuler "Wa, Wa, Wa" tout le temps. Y te laissent jamais le temps de boire tranquille. Et les p'tits malades des cavernes, là. Les détraqués de la lune. Je les ai vus torturer un ours, une fois. Comme ça, pour rien. Du coup j'en ai écrabouillé quelques-uns. Tous des p'tits vicelards. Moi, je* 
 
-34
+**34**
 
-
+<span id="page-37-0" data-folio="35"></span>
 *les surveille et je dis ce que j'ai vu et entendu à des gens qu'en ont quèk'chose à faire. Y a des marchands zumains qui sont bien contents de mon boulot. Y me filent plein de trucs à boire, t'as vu ? »*
 
 Il nous raconta sa vie dans les montagnes, ses voyages dans les terres désolées de l'Est et ses précieux souvenirs de certaines des meilleures boissons qu'il avait goûtées. Je lui demandai enfin comment Sourire d'argent et lui s'étaient rencontrés. Halagrundsor sourit à pleines dents (partiellement gâtées). *« Bah c'est un patrouilleur, son boulot c'est de savoir qui c'est qui veut tuer ses potes, nan ? J'sais bien que mes semblab's sont pas les plus sympas. Y en a qui sont carrément tordus. Mais moi, j'suis pas comme ça. Tu m'files un peu d'bibine, un peu d'grignottaille, j'te laisse tranquille. Pas vrai ? »*
@@ -2670,108 +2397,104 @@ Ce fut une expérience mémorable.
 
 **Possessions :** grosse chope lourdement renforcée (arme simple), assortiment de pièces de toutes origines d'une valeur de 6d10 pistoles, collection d'alcool sans pareille
 
+<span id="page-38-0" data-folio="36"></span>
 
-<span id="page-38-0"></span>
 
-# BROCHET DU STIR
+### **Brochet du Stir**
 
-ui, de tous les citoyens impériaux, n'a jamais entendu l'une de ces histoires abracadabrantes sur les résidents écailleux de nos nombreux cours
+Qui, de tous les citoyens impériaux, n'a jamais entendu l'une de ces histoires abracadabrantes sur les résidents écailleux de nos nombreux cours
 
 d'eau ? En effet, dans les tavernes des quais, rares sont les nuits où le sujet des poissons, des anguilles et de leur taille n'est pas abordé. De tous les récits que j'ai entendus, ceux qui vantent la taille parfois monstrueuse des brochets du Stir sont peutêtre les plus cohérents. Ils mentionnent immanquablement des monstres dangereux et rusés, passés maîtres dans l'art d'échapper aux cannes à pêche, et qui peuvent vivre très, très longtemps.
 
-Les brochets du Stir sont, en effet, de très gros poissons. La taille moyenne de ces monstres d'un gris verdâtre est de plus de 3,50 mètres. Certains rapports fiables (et témoins crédibles) notent que certaines bêtes particulièrement célèbres atteignent les 6 mètres, et que leur poids se compte en tonnes! C'est ici, hélas, que les spéculations se mettent à s'emballer. Certaines rumeurs parlent de brochets du Stir qui auraient atteint 7 mètres. Non, 8 mètres! Non, 10 mètres à l'âge de cinq ans... Ces affabulations peuvent durer des heures, voire des jours, dans les tavernes fréquentées par des pêcheurs. Le plus gros brochet du Stir jamais pêché (soi-disant) était un monstre gargantuesque appelé « le Général », qui mesurait 12 mètres de long. Mais hélas, il fut regrettablement frit et consommé (arêtes comprises) par l'ensemble de la population de trois villages avant qu'un zoologue impérial ne puisse attester de sa taille record.
+Les brochets du Stir sont, en effet, de très gros poissons. La taille moyenne de ces monstres d'un gris verdâtre est de plus de 3,50 mètres. Certains rapports fiables (et témoins crédibles) notent que certaines bêtes particulièrement célèbres atteignent les 6 mètres, et que leur poids se compte en tonnes ! C'est ici, hélas, que les spéculations se mettent à s'emballer. Certaines rumeurs parlent de brochets du Stir qui auraient atteint 7 mètres. Non, 8 mètres ! Non, 10 mètres à l'âge de cinq ans… Ces affabulations peuvent durer des heures, voire des jours, dans les tavernes fréquentées par des pêcheurs. Le plus gros brochet du Stir jamais pêché (soi-disant) était un monstre gargantuesque appelé « le Général », qui mesurait 12 mètres de long. Mais hélas, il fut regrettablement frit et consommé (arêtes comprises) par l'ensemble de la population de trois villages avant qu'un zoologue impérial ne puisse attester de sa taille record.
 
 Malheureusement, les brochets du Stir ont été trop pêchés, et sont maintenant presque éteints dans la majeure partie du grand Stir. Des « brochets du Stir » peuvent être rencontrés dans d'autres cours ou plans d'eau, mais sont systématiquement plus petits. Les brochets du Stir ne sont pas tant pêchés pour la saveur de leur chair, mais parce que leurs petits (que l'on appelle « brochetons ») auraient apparemment de nombreuses propriétés médicinales. Rien de tel que s'étaler de la purée d'entrailles de poisson cru sur le visage pour redonner de l'éclat à son teint.
 
-VOUT POUVET RIRE, TCHREIBER, MAIT II JAVAIT EU
-UH TOU DE CUIVRE À CHAQUE MOIT QUE QUELQU'UH
-MAVAIT DEMANDÉ UH BROCHETOH MAIT, LA PINCE
-DE MET TRETTET TERAIT EN OR MATTIM. QUELLET
-PROPRIÉTÉT ONT VRAIMENT LET JEUNET BROCHETT
-UN HTIR ? DITONT QU'AVEC UH PEU DE JEL,
-LA MAIM.
+Vous pouvez rire, schreiber, mais si j'avais eu un sou de cuivre à chaque fois que quelqu'un m'avait demandé un brocheton frais, la pince de mes tresses serait en or massif. Quelles propriétés ont vraiment les jeunes brochets du Stir ? Disons qu'avec un peu de sel, ils sont très efficaces pour soigner la faim.
 
-Les histoires des plus immenses brochets du Stir viennent en majorité des embranchements orientaux du fleuve. Quelle surprise, vous entends-je commenter, de tels récits auraient-ils pu naître ailleurs ? Ceci n'est que pure spéculation, mais réfléchissez-y quelques instants : le Stir longe le tristement célèbre Bois mort, où reposent les ruines calcinées de la cauchemardesque Mordheim, l'ancienne capitale de l'Ostermark. Apparemment, on pourrait encore y trouver la substance dangereuse et prohibée connue comme « pierre distordante », et en quantités astronomiques. Or, on sait que les propriétés de transformation de cette pierre sont ahurissantes. Alors, comment aurait-elle pu ne pas avoir d'effet sur la faune fluviale ?
+*Les histoires des plus immenses brochets du Stir viennent en majorité des embranchements orientaux du fleuve. Quelle surprise, vous entends-je commenter, de tels récits auraient-ils pu naître ailleurs ? Ceci n'est que pure spéculation, mais réfléchissez-y quelques instants : le Stir longe le tristement célèbre Bois mort, où reposent les ruines calcinées de la cauchemardesque Mordheim, l'ancienne capitale de l'Ostermark. Apparemment, on pourrait encore y trouver la substance dangereuse et prohibée connue comme « pierre distordante », et en quantités astronomiques. Or, on sait que les propriétés de transformation de cette pierre sont ahurissantes. Alors, comment aurait-elle pu ne pas avoir d'effet sur la faune fluviale ?*
 
-#### **BROCHET DU STIR**
+#### BROCHET DU STIR
 
-| М | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 8 | 45 | -  | 52 | 50 | 32 | 38 | -   | 14  | 50 | -   | 40 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|---|----|
+| 8 | 45    | - | 52 | 50 | 32 | 38 | -   | 14  | 50     | - | 40 |
 
-**Traits**: À sang froid, Amphibie, Armure 1 (6), Bestial, Taille (Grande), Vision nocturne
+**Traits :** À sang froid, Amphibie, Armure 1 (6), Bestial, Taille (Grande), Vision nocturne
 
-Traits d'attaque : Arme (Queue mortelle) +9, Attaque caudale +9, Morsure +8
+**Traits d'attaque :** Arme (Queue mortelle) +9, Attaque caudale +9, Morsure +8
 
-Il a eu de la chance, c'est tout : les brochets du Stir qui ont vécu assez longtemps pour devenir énormes et pour gagner un surnom, comme « le Vieux Borgne », « Arrachehameçon » ou « le Duc insaisissable », semblent protégés par Manann lui-même. Tous ces brochets du Stir ont 3 Points de Chance.
+**Il a eu de la chance, c'est tout :** les brochets du Stir qui ont vécu assez longtemps pour devenir énormes et pour gagner un surnom, comme « le Vieux Borgne », « Arrachehameçon » ou « le Duc insaisissable », semblent protégés par Manann lui-même. Tous ces
 
-Queue agile: les brochets du Stir peuvent effectuer une attaque caudale par Round sans dépenser d'Avantage.
+**Queue agile :** les brochets du Stir peuvent effectuer une attaque caudale par Round sans dépenser d'Avantage.
+
+brochets du Stir ont 3 Points de Chance.
 
 **Facultatif :** Affamé, Belliqueux, Protection 9+, Taille (Énorme), Territorial
 
-36
+**36**
 
+<span id="page-39-0" data-folio="37"></span>
+### **Bilan de la première expédition**
 
-# <span id="page-39-0"></span>BILAN DE LA PREMIÈRE EXPÉDITION
+Après plusieurs bonnes semaines à Karak Kadrin, nos hôtes nous aidèrent à trouver des couchettes sur une barge qui allait suivre le Stir septentrional vers l'ouest.
 
-près plusieurs bonnes semaines à Karak Kadrin, nos hôtes nous aidèrent à trouver des couchettes sur une barge qui allait suivre le Stir septentrional vers l'ouest.
-
-Apparemment, ces voyages sont très rares, puisque la plupart des gens préfèrent passer par un autre chemin. Ce qui ne me surprend guère, étant donné que la première communauté majeure en aval des Montagnes du Bord du Monde est la « capitale » de la Sylvanie, Waldenhof. Je n'avais jamais vu un lieu si sombre et menaçant. Des murs de pierre grise, des gargouilles au regard torve, et une morosité ambiante furent tout ce que Waldenhof eut à offrir à mes yeux. Devant l'linsistance de Ghorshkov, et à l'assentiment unanime des riverains, nous étions « passés à midi pour être loin au coucher du soleil. » Le marais maudit de Hel Fenn, au sud de la rivière, n'était pas beaucoup plus agréable à contempler. Lorsque nous l'atteignîmes, le village d'Essen nous fit l'effet d'une bouffée d'air frais (malgré sa réputation de « ville la plus hantée de tout l'Empire », qui me paraît légèrement excessive).
+Apparemment, ces voyages sont très rares, puisque la plupart des gens préfèrent passer par un autre chemin. Ce qui ne me surprend guère, étant donné que la première communauté majeure en aval des Montagnes du Bord du Monde est la « capitale » de la Sylvanie, Waldenhof. Je n'avais jamais vu un lieu si sombre et menaçant. Des murs de pierre grise, des gargouilles au regard torve, et une morosité ambiante furent tout ce que Waldenhof eut à offrir à mes yeux. Devant l'linsistance de Ghorshkov, et à l'assentiment unanime des riverains, nous étions « *passés à midi pour être loin au coucher du soleil. »* Le marais maudit de Hel Fenn, au sud de la rivière, n'était pas beaucoup plus agréable à contempler. Lorsque nous l'atteignîmes, le village d'Essen nous fit l'effet d'une bouffée d'air frais (malgré sa réputation de « ville la plus hantée de tout l'Empire », qui me paraît légèrement excessive).
 
 À ce moment, notre Ostermarker, d'ordinaire si volubile, n'avait pas pipé mot depuis plusieurs jours. Il contemplait le village depuis le pont de la barge, le visage impénétrable. Et il n'était pas le seul : les squigs, normalement rétifs, restaient parfaitement immobiles dans leur cage, à regarder fixement la forêt. Kistiane lui demanda s'il allait bien. Il hocha lentement la tête.
 
-Je ne suis pas venu ici depuis longtemps. Je connaissais l'homme, un bûcheron, qui vivait ici. Il travaillait dans le Bois mort, dangereux, même près de la lisière. Mais il avait une femme pêcheuse et des enfants. Chaque semaine, il allait dans la forêt avec d'autres hommes. Mais jamais trop loin. C'est dangereux d'aller trop loin dans le bois, dangereux de laisser les familles sans protection. Un jour, les autres hommes sont revenus sans lui. Ils ont dit que le bûcheron s'était sacrifié pour les sauver de quelque chose dans la forêt, mais sans vouloir dire de quoi. La femme l'a accepté. Elle devait élever les enfants et le village aide toujours la famille d'un brave homme, da ?
+*Je ne suis pas venu ici depuis longtemps. Je connaissais l'homme, un bûcheron, qui vivait ici. Il travaillait dans le Bois mort, dangereux, même près de la lisière. Mais il avait une femme pêcheuse et des enfants. Chaque semaine, il allait dans la forêt avec d'autres hommes. Mais jamais trop loin. C'est dangereux d'aller trop loin dans le bois, dangereux de laisser les familles sans protection. Un jour, les autres hommes sont revenus sans lui. Ils ont dit que le bûcheron s'était sacrifié pour les sauver de quelque chose dans la forêt, mais sans vouloir dire de quoi. La femme l'a accepté. Elle devait élever les enfants et le village aide toujours la famille d'un brave homme, da ?*
 
-Moins d'un an plus tard, pendant Geheimnisnacht, le village a allumé une bougie pour les morts. Essen est toujours illuminée à Geheimnisnacht. Le bûcheron est revenu, mais complètement changé. Pas mort-vivant. Pire. Il a ramené des « amis » du Bois mort. Les amis ont parcouru le village, et massacré en hurlant. Le bûcheron est allé dans la maison des hommes qu'il avait « sauvé », et a tout brûlé. Puis il est allé chercher sa femme et ses enfants, pour former à nouveau une famille.
+*Moins d'un an plus tard, pendant Geheimnisnacht, le village a allumé une bougie pour les morts. Essen est toujours illuminée à Geheimnisnacht. Le bûcheron est revenu, mais complètement changé. Pas mort-vivant. Pire. Il a ramené des « amis » du Bois mort. Les amis ont parcouru le village, et massacré en hurlant. Le bûcheron est allé dans la maison des hommes qu'il avait « sauvé », et a tout brûlé. Puis il est allé chercher sa femme et ses enfants, pour former à nouveau une famille.*
 
-Pendant que la femme distrayait le bûcheron, le garçon aidait ses sœurs à s'enfuir. Quand le garçon est revenu, la mère était morte. Le bûcheron pleurait sur le cadavre de la femme qu'il avait massacré. Le garçon a pris un gros caillou et a brisé le crâne du bûcheron. Quand les amis du bûcheron sont venus voir ce qui se passait, le garçon s'est caché sous les cadavres, et il a survécu. »
+*Pendant que la femme distrayait le bûcheron, le garçon aidait ses sœurs à s'enfuir. Quand le garçon est revenu, la mère était morte. Le bûcheron pleurait sur le cadavre de la femme qu'il avait massacré. Le garçon a pris un gros caillou et a brisé le crâne du bûcheron. Quand les amis du bûcheron sont venus voir ce qui se passait, le garçon s'est caché sous les cadavres, et il a survécu. »*
 
-Ghorshkov se tut. Je pense que Kistiane avait déjà deviné, mais elle finit quand même par demander : « Vasya, qu'est-il arrivé aux enfants ? »
+Ghorshkov se tut. Je pense que Kistiane avait déjà deviné, mais elle finit quand même par demander : « *Vasya, qu'est-il arrivé aux enfants ? »*
 
 Il esquissa alors un sourire radieux sous son épaisse moustache tombante.
 
-« Les autres familles qui ont perdu des enfants, ont adopté les filles. Le garçon a été adopté par l'oncle. Il est devenu un très bon gladiateur, da ? »
+*« Les autres familles qui ont perdu des enfants, ont adopté les filles. Le garçon a été adopté par l'oncle. Il est devenu un très bon gladiateur, da ? »*
 
-La suite de notre voyage de retour vers Altdorf fut longue, mais sans histoire. Mes pensées furent occupées par nos cicatrices : celle sur ma jambe, celles des mains de Jorunn, celle, particulièrement vilaine, qui parcourait le dos de Ghorshkov... mais aussi celles qui ne se laissent pas voir facilement.
+La suite de notre voyage de retour vers Altdorf fut longue, mais sans histoire. Mes pensées furent occupées par nos cicatrices : celle sur ma jambe, celles des mains de Jorunn, celle, particulièrement vilaine, qui parcourait le dos de Ghorshkov… mais aussi celles qui ne se laissent pas voir facilement.
 
 #### CHOSES DU BOIS MORT
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 5 | 50 | 30 | 45 | 50 | 30 | 50 | 20  | 10  | 40 | 10  | 23 |
+| M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
+|---|-------|----|----|----|----|----|-----|-----|--------|----|----|
+| 5 | 50    | 30 | 45 | 50 | 30 | 50 | 20  | 10  | 40     | 10 | 23 |
 
-**Compétences :** Discrétion (Rurale) 60 (+5 DR grâce à Furtif)
+**Compétences :** Discrétion (Rurale) 60 (+5 DR grâce à Furtif )
 
-**Traits**: Corruption (Modérée), Corruption mentale (Totalement déséquilibré et 2 autres lancers), Endurant, Furtif, Mutation 3, Peur 2, Rage, Redoutable, Vision nocturne
+**Traits :** Corruption (Modérée), Corruption mentale (Totalement déséquilibré et 2 autres lancers), Endurant, Furtif, Mutation 3, Peur 2, Rage, Redoutable, Vision nocturne
 
-Traits d'attaque: Arme (Armes rouillées ou griffes) +8
+**Traits d'attaque :** Arme (Armes rouillées ou griffes) +8
 
-Choc des retrouvailles: la première fois qu'une personne reconnaît ce que la « chose » était, elle doit effectuer un Test de Force Mentale Complexe (-10). En cas d'échec, elle gagne un État Assommé.
+**Choc des retrouvailles :** la première fois qu'une personne reconnaît ce que la « chose » était, elle doit effectuer un Test de **Force Mentale Complexe (-10)**. En cas d'échec, elle gagne un État *Assommé*.
 
-Facultatif: Affamé, Cornes, Insensible à la douleur, Langue préhensile, Morsure, Pisteur, Sang corrosif, Taille (Grande), Tentacules
+**Facultatif :** Affamé, Cornes, Insensible à la douleur, Langue préhensile, Morsure, Pisteur, Sang corrosif, Taille (Grande), Tentacules
 
-Les gens qui se perdent dans les profondeurs du Bois mort, qu'ils y soient entrés volontairement ou non, en reviennent parfois. Mais ils sont toujours une caricature ignoble et distordue de la personne qu'ils étaient, mutés et déformés par la corruption qui imprègne le sol. Ils essaient souvent de retrouver les gens qu'ils connaissaient, ce qui mène généralement à des résultats particulièrement horrifiants.
+*Les gens qui se perdent dans les profondeurs du Bois mort, qu'ils y soient entrés volontairement ou non, en reviennent parfois. Mais ils sont toujours une caricature ignoble et distordue de la personne qu'ils étaient, mutés et déformés par la corruption qui imprègne le sol. Ils essaient souvent de retrouver les gens qu'ils connaissaient, ce qui mène généralement à des résultats particulièrement horrifiants.*
+
+<span id="page-40-0" data-folio="38"></span>
 
 
-<span id="page-40-0"></span>
+### **Le premier incident Le griffon et les hommes-rats**
 
-# LE PREMIER INCIDENT LE GRIFFON ET LES HOMMES-RATS
+Au cours des premiers mois, notre expédition le long du Talabec se déroula globalement sans histoire. Nos activités se résumaient principalement à des
 
-u cours des premiers mois, notre expédition le long du Talabec se déroula globalement sans histoire. Nos activités se résumaient principalement à des
+excursions dans des villages un peu plus éloignés de la rivière pour glaner des informations, et à un bon nombre de soirées arrosées dans des tavernes sur la rive. Nous passâmes plusieurs semaines « mémorables » au pied des Collines hurlantes, dans la partie sud de la Drakwald. Ceci me convainquit fermement de ne plus jamais mettre les pieds dans cette région. Nous eûmes, à une occasion, un petit souci, car une bande de benêts avait essayé de nous soulager de nos possessions et, sans doute, de notre vie. Le jeune maître Massenbach finit presque embroché : c'est lui qu'ils trouvèrent en premier, seul et très concentré sur quelque fleur des champs qu'il avait décidé de dessiner. Les brigands avaient dû le juger inoffensif et s'imaginer qu'ils ne risqueraient rien. (Ghorshkov luimême dit qu'Erich « *devrait vivre dans la peur d'être massacré par un snotling.* ») Heureusement, nous autres savions nous débrouiller. La preuve, Ghorshkov fut clairement satisfait de ce combat, et je ne suis pas sûr d'avoir vu Chantenuit manquer le moindre tir. Après coup, l'elfe m'interpella pour me faire part de son malaise. Non pas à cause des bandits que nous avions tués, mais des signes que son expérience de la vie forestière avait décelés dans la Drakwald. « *Il y a trop de pistes, Schreiber. Ces terres ont vu passer bien trop d'hommes-bêtes. Ces vauriens étaient trop peu nombreux pour s'attaquer à eux, alors ils ont sauté sur l'occasion quand ils nous ont vus.* » Après cette observation des plus rassurantes, nous décidâmes de ne pas nous aventurer trop loin de la rivière. Chantenuit partait occasionnellement en reconnaissance dans la forêt, mais revenait avec une mine chaque fois plus sombre.
 
-excursions dans des villages un peu plus éloignés de la rivière pour glaner des informations, et à un bon nombre de soirées arrosées dans des tavernes sur la rive. Nous passâmes plusieurs semaines « mémorables » au pied des Collines hurlantes, dans la partie sud de la Drakwald. Ceci me convainquit fermement de ne plus jamais mettre les pieds dans cette région. Nous eûmes, à une occasion, un petit souci, car une bande de benêts avait essayé de nous soulager de nos possessions et, sans doute, de notre vie. Le jeune maître Massenbach finit presque embroché : c'est lui qu'ils trouvèrent en premier, seul et très concentré sur quelque fleur des champs qu'il avait décidé de dessiner. Les brigands avaient dû le juger inoffensif et s'imaginer qu'ils ne risqueraient rien. (Ghorshkov luimême dit qu'Erich « devrait vivre dans la peur d'être massacré par un snotling. ») Heureusement, nous autres savions nous débrouiller. La preuve, Ghorshkov fut clairement satisfait de ce combat, et je ne suis pas sûr d'avoir vu Chantenuit manquer le moindre tir. Après coup, l'elfe m'interpella pour me faire part de son malaise. Non pas à cause des bandits que nous avions tués, mais des signes que son expérience de la vie forestière avait décelés dans la Drakwald. « Il y a trop de pistes, Schreiber. Ces terres ont vu passer bien trop d'hommes-bêtes. Ces vauriens étaient trop peu nombreux pour s'attaquer à eux, alors ils ont sauté sur l'occasion quand ils nous ont vus. » Après cette observation des plus rassurantes, nous décidâmes de ne pas nous aventurer trop loin de la rivière. Chantenuit partait occasionnellement en reconnaissance dans la forêt, mais revenait avec une mine chaque fois plus sombre.
+Nous finîmes par prendre la direction du nord, le long du haut Talabec, afin de rejoindre l'un des avant-postes les plus reculés de l'Empire : Fortenhaf. Là-bas, nous rencontrâmes un trappeur qui affirma avoir vu un griffon faire son nid anormalement bas, dans les collines au pied des Montagnes du Bord du Monde. Ceci ne nous parut pas invraisemblable, surtout au vu du nom que la forêt de cette région porte depuis des années : le Bois du griffon. Le trappeur, aussi étonnant que cela puisse paraître, était à la fois honnête et serviable, et nous guida vers une butte rocheuse d'où nous avons pu étudier le griffon à distance (et donc relativement en sécurité).
 
-Nous finîmes par prendre la direction du nord, le long du haut Talabec, afin de rejoindre l'un des avant-postes les plus reculés de l'Empire: Fortenhaf. Là-bas, nous rencontrâmes un trappeur qui affirma avoir vu un griffon faire son nid anormalement bas, dans les collines au pied des Montagnes du Bord du Monde. Ceci ne nous parut pas invraisemblable, surtout au vu du nom que la forêt de cette région porte depuis des années : le Bois du griffon. Le trappeur, aussi étonnant que cela puisse paraître, était à la fois honnête et serviable, et nous guida vers une butte rocheuse d'où nous avons pu étudier le griffon à distance (et donc relativement en sécurité).
-
-La première fois que nous le vîmes fut incroyablement exaltante, et, pour être honnête, tout aussi terrifiante. Dieux, quelle créature magnifique... Ses plumes étaient d'un blanc éclatant, avec des marques bleu étincelant, et se fondaient dans un arrière-train brun-roux, presque doré. Nous nous fîmes tout petits et étudiâmes ses allées et venues pendant plusieurs jours, tandis que Massenbach dessinait sans relâche, comme un forcené. Il débordait d'inspiration. Et qui étions-nous pour le juger ? Le griffon nous fit tous de l'effet, même à Gromsdottir, même si elle ne l'admettra jamais. Au bout d'une semaine, nous ne le vîmes plus quitter son nid. Chantenuit émit l'hypothèse qu'il s'agissait d'une femelle, et qu'elle s'apprêtait à couver. Nous décidâmes de nous en aller le lendemain, car aucun d'entre nous, pas même Ghorshkov, n'avait la moindre envie de se frotter à une griffonne, encore moins si elle défendait son nid.
+La première fois que nous le vîmes fut incroyablement exaltante, et, pour être honnête, tout aussi terrifiante. Dieux, quelle créature magnifique… Ses plumes étaient d'un blanc éclatant, avec des marques bleu étincelant, et se fondaient dans un arrière-train brun-roux, presque doré. Nous nous fîmes tout petits et étudiâmes ses allées et venues pendant plusieurs jours, tandis que Massenbach dessinait sans relâche, comme un forcené. Il débordait d'inspiration. Et qui étions-nous pour le juger ? Le griffon nous fit tous de l'effet, même à Gromsdottir, même si elle ne l'admettra jamais. Au bout d'une semaine, nous ne le vîmes plus quitter son nid. Chantenuit émit l'hypothèse qu'il s'agissait d'une femelle, et qu'elle s'apprêtait à couver. Nous décidâmes de nous en aller le lendemain, car aucun d'entre nous, pas même Ghorshkov, n'avait la moindre envie de se frotter à une griffonne, encore moins si elle défendait son nid.
 
 Cette nuit-là, nous fûmes réveillés par des rugissements, les cris perçants du griffon se mêlant à des hurlements stridents qui résonnaient dans les ténèbres. Des lueurs vertes inquiétantes illuminèrent brièvement les collines, comme des éclairs tombés des cieux, puis le silence se fit. L'aube venue, la griffonne n'était plus là et son nid était vide. Les pierres qui entouraient son aire étaient couvertes d'un sang nauséabond et portaient d'innombrables traces de griffes. Chantenuit annonça que le nid avait été un véritable champ de bataille et que nombre d'agresseurs étaient tombés. Pourtant, pas un cadavre n'était en vue, seuls quelques morceaux de métal et des lambeaux de tissu.
 
-Les traces menaient vers l'est, dans les montagnes. Notre elfe remarqua plusieurs paires d'empreintes aussi grosses que celles d'ogres, mais qui ne ressemblaient en rien à leurs bottes, ni à leurs pieds nus. Ils semblaient transporter une lourde charge. Nous aurions pu faire demi-tour, mais nous en décidâmes autrement. Warnicke n'avait clairement pas engagé des gens sensés. Nous suivîmes la piste pendant deux jours et parvînmes à une ouverture caverneuse cachée derrière un pan effondré de montagne. L'odeur fut la première à nous atteindre. Elle était indescriptible. Elle semblait à la fois évoquer le champ de bataille, la transpiration, les excréments, le sang et la terre souillée les plus rances qui soient. C'était l'odeur de la peur, et de la misère. Non loin de l'entrée du tunnel, Chantenuit prit quelques sentinelles par surprise. C'étaient des hommes-bêtes rachitiques, avec une tête et une queue de rat. Gromsdottir annonça ce que nous pensions tous, sans oser nous l'avouer : c'étaient les « mythiques » skavens. Nous nous enfonçâmes dans le tunnel. Ce que nous y trouvâmes... Sigmar soit loué, je ne vais pas, je ne peux pas, écrire tout ce que nous vîmes. Vous me croiriez fou.
+Les traces menaient vers l'est, dans les montagnes. Notre elfe remarqua plusieurs paires d'empreintes aussi grosses que celles d'ogres, mais qui ne ressemblaient en rien à leurs bottes, ni à leurs pieds nus. Ils semblaient transporter une lourde charge. Nous aurions pu faire demi-tour, mais nous en décidâmes autrement. Warnicke n'avait clairement pas engagé des gens sensés. Nous suivîmes la piste pendant deux jours et parvînmes à une ouverture caverneuse cachée derrière un pan effondré de montagne. L'odeur fut la première à nous atteindre. Elle était indescriptible. Elle semblait à la fois évoquer le champ de bataille, la transpiration, les excréments, le sang et la terre souillée les plus rances qui soient. C'était l'odeur de la peur, et de la misère. Non loin de l'entrée du tunnel, Chantenuit prit quelques sentinelles par surprise. C'étaient des hommes-bêtes rachitiques, avec une tête et une queue de rat. Gromsdottir annonça ce que nous pensions tous, sans oser nous l'avouer : c'étaient les « mythiques » skavens. Nous nous enfonçâmes dans le tunnel. Ce que nous y trouvâmes… Sigmar soit loué, je ne vais pas, je ne peux pas, écrire tout ce que nous vîmes. Vous me croiriez fou.
 
-38
+**38**
 
-
+<span id="page-41-0" data-folio="39"></span>
 Limitons-nous à cela : nous trouvâmes la griffonne enchaînée dans une sorte d'atelier. Son tortionnaire était un skaven bizarrement bouffi et armé d'un fouet. Il se laissait porter dans un howdah, un
 
 palanquin primitif, sur le dos d'un homme-rat surmusclé plus énorme que tous les ogres que j'ai vus de ma vie. Une horde d'autres hommes-rats se pressait autour de celui-ci, occupés par leurs propres ignobles corvées. Nous les prîmes par surprise dans un combat qui aurait mérité une saga à lui seul. Honnêtement, nous n'aurions pas pu prévaloir sans les arts de Kistiane. Le soutien d'un sorcier de l'Ordre de Jade n'est pas une chose à prendre à la légère. Les skavens se mirent très vite à fuir, terrifiés, devant un Ghorshkov déchaîné qui riait à gorge déployée en les massacrant par dizaines, alors que ses quelques entailles étaient soignées sous leurs yeux horrifiés. Le gigantesque homme-rat ne tomba qu'après de nombreux coups et flèches. J'occis son cavalier hurlant, mais pas avant qu'il ne donne un ordre à ses serviteurs. Alors même que nous pensions que nous avions gagné, une abomination s'extirpa des ténèbres. Elle était ignoble. Son corps n'était qu'une masse de sutures et de tissu cicatriciel. Ses griffes étaient fausses. Sa chair se fondait à des machineries étranges et épouvantables. Lorsqu'elle rugit de ses innombrables bouches, je sentis le regard de Morr se poser sur moi.
@@ -2786,8 +2509,8 @@ Les skavens ne nous laissèrent pas filer si facilement. Ils envoyèrent des mon
 
 de Karak Kadrin, qui étaient très intéressés par notre histoire. Ils nous menèrent finalement devant nul autre qu'Ungrim Poing-de-fer, le Roi tueur en personne, qui nous interrogea longuement. Il se montra cependant courtois, même envers Chantenuit. Je pense que notre récit, ainsi que la présence de Jorunn, lui donnèrent une meilleure opinion de nous. Il nous « demanda » d'être ses invités d'honneur à Karak Kadrin pendant qu'il « réglait quelques affaires ». Il monta immédiatement une expédition militaire, dans laquelle figuraient de nombreux tueurs et partit à la caverne. Les nains nous avouèrent plus tard que le Roi et ses guerriers avaient massacré un nombre incalculable de skavens, puis avaient fait s'effondrer la caverne tout entière. Jorunn m'apprit que des rumeurs feutrées avaient vu le jour après le retour des nains, et qu'ils lui avaient fait part de l'importance de détruire *« tous les chemins tortueux menant à Karak Ungor. »* À son retour, le Roi parut très content de nos informations. En guise de récompense, il nous offrit quelques présents en gage de son estime, et nous fit visiter sa forteresse. Par la suite, j'eus plusieurs conversations fascinantes avec lui. Il m'expliqua, entre autres, la nature de certaines des innombrables monstruosités qu'il avait occises en son temps. Il m'offrit même gracieusement la permission de relater quelques-unes de ses inestimables expériences dans ce livre.
 
-
-
+<span id="page-42-0" data-folio="40"></span>
+<span id="page-43-0" data-folio="41"></span>
 #### CHEF DE MEUTE DU CLAN MOULDER
 
 | M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
@@ -2806,7 +2529,7 @@ de Karak Kadrin, qui étaient très intéressés par notre histoire. Ils nous me
 
 **Facultatif :** Furtif, Maladie (Fièvre du rongeur), Mutation
 
-### RAT OGRE BRISEUR D'OS
+#### RAT OGRE BRISEUR D'OS
 
 | M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
 |---|-------|----|----|----|----|----|-----|-----|--------|----|----|
@@ -2854,16 +2577,20 @@ Perforante.
 
 **Facultatif :** À sang-froid, Affamé, Constricteur, Foulée, Increvable, Magique, Maladie (Divers), Morsure, Mutation, Parasité, Protection (7-9), Rage, Résistance à la Magie (1- 3), Sang corrosif, Souffle (Poison) +9, Taille (Monstrueuse)
 
+<span id="page-44-0" data-folio="42"></span>
+<span id="page-45-0" data-folio="43"></span>
 
 
-<span id="page-45-0"></span>
+<span id="page-46-0" data-folio="44"></span>
 
 
-<span id="page-46-0"></span>
+## [ZI 5] Amibe
 
-# AMIBE
+*Folio 45+*
 
-amper le long des rives des cours d'eau de l'Empire serait assurément bien plus plaisant si l'on ne courait pas le risque de voir une horreur informe,
+## **Amibe**
+
+Camper le long des rives des cours d'eau de l'Empire serait assurément bien plus plaisant si l'on ne courait pas le risque de voir une horreur informe,
 
 généralement connue des riverains sous le nom de « diable gluant », faire fondre notre visage alors que l'on somnole. Malheureusement, on sait que ces créatures, dont la désignation correcte est « amibes », menacent les rives de nombre de nos cours d'eau. Elles semblent avoir une préférence particulière pour les nombreux marais et zones humides du Reik, mais on les rencontre parfois dans les endroits les plus improbables. Peu d'obstacles peuvent barrer la route à leurs corps informes, qui se montrent capables d'infiltrer même les plus infimes des fissures.
 
@@ -2875,11 +2602,11 @@ La surface entière d'une amibe exsude un acide digestif puissant capable de dis
 
 Quelle que soit la véracité de cette histoire, je recommanderais fortement à quiconque se trouve à Altdorf d'éviter de grimper dans des diligences inconnues aux fenêtres couvertes par des rideaux et à l'apparence étrangement robuste.
 
-MALHEUREULEMENT, LES JÉCRÉTIONS thamadidan thanhaivad labima lad LATIBATES THOL LALIAUSLAD LATABIH L'UN JOÉCIMEN VIVANT. CERTAINJ JOAILUERS HAIRS CHIRM CARILLIROL ambe à disposition pour hettoyer Campaithe Las Pièces ancienhes. ELLES RETIRENT INTÉGRALEMENT LES terhitures organiques, he laistant que les gemmes et les pièces porgées. LEJ CAIJJEJ EN VERRE IMPÉNÉTRABLEJ natifitéel dons gardes fet awibet en cage, et les mécahismes astucieux QUI PERMETTENT DE LES SCELLER, ad Tamāw-Xna ha thantituho> REMARQUABLES OUVRAGES D'INGÉNIERIE.
+Malheureusement, les sécrétions des amibes deviennent rapidement inertes lorsqu'elles sont extraites d'un spécimen vivant. Certains joailliers nains gardent une petite amibe à disposition pour nettoyer parfaitement les pièces anciennes. Elles retirent intégralement les ternissures organiques, ne laissant que les gemmes et les pièces forgées. Les caisses en verre impénétrables utilisées pour garder les amibes en cage, et les mécanismes astucieux qui permettent de les sceller, constituent en eux-mêmes de remarquables ouvrages d'ingénierie.
 
-44
+**44**
 
-
+<span id="page-47-0" data-folio="45"></span>
 #### AMIBE
 
 | M | CC CT |   | F  | E  | I | Ag | Dex | Int |   | FM Soc | B  |
@@ -2916,24 +2643,24 @@ MALHEUREULEMENT, LES JÉCRÉTIONS thamadidan thanhaivad labima lad LATIBATES THO
 
 **Gelée de l'enfer :** voir Amibe, à gauche.
 
+<span id="page-48-0" data-folio="46"></span>
 
-<span id="page-48-0"></span>
 
-# **A**MPHISBAENA
+### **Amphisbaena**
 
-e Vieux Monde comporte de nombreuses créatures venimeuses, et les terres de l'Empire abritent assurément toutes sortes de reptiles. Peu sont
+Le Vieux Monde comporte de nombreuses créatures venimeuses, et les terres de l'Empire abritent assurément toutes sortes de reptiles. Peu sont
 
 aussi rares ou aussi étranges que l'amphisbaena, celui que l'on surnomme le « Serpent des prophètes ». L'amphisbaena est un énorme serpent à deux têtes, une à chaque extrémité de son corps, et toutes deux dotées de l'un des poisons les plus mortels connus des alchimistes. On raconte que leurs yeux brillent comme des lampes scintillantes dans l'obscurité, éclairant les alentours et attirant les créatures imprudentes vers leur trépas. En effet, les amphisbaenas pourraient être à l'origine des contes de « feux follets » qui poussent certains à se perdre dans les marais. Ils possèdent souvent des écailles étonnamment colorées, beaucoup affichant des motifs asymétriques pourpres et bleu ciel brillants sur toute leur longueur. Bien qu'étant des animaux à sang froid, comme de nombreux reptiles, il semblerait que le froid ne les affecte pas comme les autres serpents. Des témoins ont pu voir des amphisbaenas sur des pics montagneux gelés, ainsi que dans des marais fétides. Cela en a poussé certains à rechercher le cuir de l'amphisbaena. Selon ses partisans, le porter directement contre la peau, sous ses autres vêtements, est efficace contre le froid.
 
-la « Mort du Hoble », couramment addelée LE BRITE-COEUR, COMITTITUE L'UM DEL POITOMI LES PLUS JUBTILS, LES PLUS MORTELS ET LES PLUT COÛTEUX, ET ELT OBTEHU À PARTIR D'UN WELANGE LETAL DES VEHINS DE L'AMPHISBAENA ET DU JABBERSLYHE. LES ARCHIVES DE MON JUNEAU TO A THOUSAGE THE PROPERTY ÉTAIENT AUTREPOIL BIEN PLUL COMMUNI, WAIT TOHT DEVENUET BEAUCOUD DATE BARET TUITE À LEUR CHATTE EXCETTIVE EH RAITOH DE LEURT HOMBREUTET PROPRIÉTÉT (QUE CELLET-CI JOIENT RÉELLEJ OU PURE PANTAIJIES. ON DIT QU'ACQUÉRIR UN AMPHILBAENA VIVANT EST THE LYCHE EXCELLINEMENT DIRECTE THAT PARLER DE L'ENTRETIEN QU'IL HÉCELITE, MAIL UH JERDEHT VIVAHT DEUT OFFRIR UHE JOURCE COHTTANTE DE VEHIN JAHT QU'IL TOIT HÉCETTAIRE DE LE TUER.
+La « Mort du noble », couramment appelée le Brise-coeur, constitue l'un des poisons les plus subtils, les plus mortels et les plus coûteux, et est obtenu à partir d'un mélange létal des venins de l'amphisbaena et du jabberslyhe. Les archives de mon peuple indiquent que les amphisbaenas étaient autrefois bien plus communs, mais sont devenues beaucoup plus rares suite à leur chasse excessive en raison de leurs nombreuses propriétés (que cellesci soient réelles ou pure fantaisie). On dit qu'acquérir un amphisbaena vivant est une tâche excessivement difficile, sans parler de l'entretien qu'il nécessite, mais un serpent vivant peut offrir une source constante de venin sans qu'il soit nécessaire de le tuer.
 
 Le « Serpent des prophètes » ayant une « tête » à la place de la « queue », n'aurait « pas de début, et donc pas de fin » ; du moins, c'est ce qu'exprime le Sage Malbor dans son célèbre tome ésotérique, *Contemplations*. C'est toutefois à son venin tristement célèbre que la créature doit son surnom. Distiller sous une forme extrêmement diluée, le poison de l'amphisbaena permettrait de produire des visions d'un passé caché et d'un avenir inconnu. Au sein des cercles d'érudits, on débat toujours pour déterminer si ces visions constituent une réalité ou des hallucinations. Certains prophètes et, selon la rumeur, certains sorciers de village, affirment que le poison est efficace. Manger la chair de l'amphisbaena, en particulier si on l'a soi-même chassé et tué sous la pleine lumière de Mannslieb, offrirait le pouvoir de résister au « monde invisible » et, peut-être, aux morts-vivants.
 
 Les villageois des marais du Furdienst affirment que les amphisbaenas éprouvent une haine virulente envers les pieuvres des tourbières. Ils racontent d'étranges histoires de cadavres de pieuvres des tourbières ne comportant qu'une ou deux blessures par morsure, clairement infligées par un reptile de grande taille. Bien que nul n'affirme avoir déjà observé un combat de ce type, tous ont la ferme conviction que l'amphisbaena est capable de détecter le mal que renferment les « diables à tentacules des marais » et les pourchasse sans pitié. Sans surprise, compte tenu de la haine extrême qu'ils vouent aux pieuvres des tourbières, ils n'apprécient guère ceux qui aspirent à chasser l'amphisbaena.
 
-« On débat toujours » c'est un sacré euphémisme, Theo. J'ai vu des sorciers se battre en duel à ce sujet. On raconte que le fait de boire certaines substances toxiques vous donnera assurément des « visions », mais leur caractère providentiel est au minimum douteux, sans parler de leurs effets délétères sur la santé. Maître Owkris, de l'Ordre d'Ambre, a parfois formulé des présages dont il affirme qu'ils proviennent de la consommation de « liqueur de serpent des prophètes ». Le fait que ceux-ci se soient concrétisés a pour le moins consterné l'Ordre Céleste.
+*« On débat toujours » c'est un sacré euphémisme, Theo. J'ai vu des sorciers se battre en duel à ce sujet. On raconte que le fait de boire certaines substances toxiques vous donnera assurément des « visions », mais leur caractère providentiel est au minimum douteux, sans parler de leurs effets délétères sur la santé. Maître Owkris, de l'Ordre d'Ambre, a parfois formulé des présages dont il affirme qu'ils proviennent de la consommation de « liqueur de serpent des prophètes ». Le fait que ceux-ci se soient concrétisés a pour le moins consterné l'Ordre Céleste.*
 
-
+<span id="page-49-0" data-folio="47"></span>
 | M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
 |---|-------|---|----|----|----|----|-----|-----|--------|----|----|
 | 4 | 50    | - | 45 | 40 | 35 | 40 | -   | 30  | 45     | 10 | 32 |
@@ -2946,18 +2673,18 @@ Les villageois des marais du Furdienst affirment que les amphisbaenas éprouvent
 
 **Facultatifs :** Amphibie, Arboricole, Haine (Pieuvres des tourbières), Limicole, Magique, Taille (Énorme)
 
+<span id="page-50-0" data-folio="48"></span>
 
-<span id="page-50-0"></span>
 
-# TROLL DES RIVIÈRES
+### **Troll des rivières**
 
-es trolls, comme vous l'expliquera n'importe quel enfant de l'Empire, sont des créatures effroyablement grandes et étonnamment stupides,
+Les trolls, comme vous l'expliquera n'importe quel enfant de l'Empire, sont des créatures effroyablement grandes et étonnamment stupides,
 
-dotées d'un appétit immense, et mangeant absolument de tout. Un troll avalera littéralement *n'importe quoi*, du moins c'est ce que l'on raconte. Bien qu'ayant assurément une préférence pour la chair et les os, il consommera sans sourciller du bois, de la pierre ou de l'acier; tout ce qu'il parvient à fourrer dans sa gueule, en vérité. Peut-être en raison de leurs habitudes alimentaires, les trolls possèdent des sucs digestifs extrêmement puissants, capables, si on leur en laisse le temps, de digérer à peu près n'importe quoi. Cela s'avère particulièrement dangereux pour leurs ennemis, car les trolls semblent en mesure de vomir le contenu de leur estomac à volonté, provoquant des blessures horribles (et vraiment dégoûtantes).
+dotées d'un appétit immense, et mangeant absolument de tout. Un troll avalera littéralement *n'importe quoi*, du moins c'est ce que l'on raconte. Bien qu'ayant assurément une préférence pour la chair et les os, il consommera sans sourciller du bois, de la pierre ou de l'acier ; tout ce qu'il parvient à fourrer dans sa gueule, en vérité. Peut-être en raison de leurs habitudes alimentaires, les trolls possèdent des sucs digestifs extrêmement puissants, capables, si on leur en laisse le temps, de digérer à peu près n'importe quoi. Cela s'avère particulièrement dangereux pour leurs ennemis, car les trolls semblent en mesure de vomir le contenu de leur estomac à volonté, provoquant des blessures horribles (et vraiment dégoûtantes).
 
 La caractéristique la plus célèbre (et fréquemment déplorée) des trolls est leur capacité à guérir de presque n'importe quelle blessure à une rapidité stupéfiante, au bout de quelques secondes à peine. Cette régénération est si puissante qu'elle permet à des membres tranchés de repousser. Les récits de trolls étant parvenus à se régénérer à partir de quelques traces de sang et lambeaux de chair ne manquent pas. Le feu semble être la seule chose dont les trolls ne parviennent pas facilement à guérir.
 
-LE JANG DE TROLL EST PRÉCIEUX, ET UTILITÉ DAHL UHE GRANDE VARIÈTÉ DE lalasyld ta holinaud ad lhoitod ; LAUSIMIHYND THOITSOSHOS TARTUR CEPENDANT, BEAUCOUP HÉJITENT À LE TRAHIPORTER, DE CRAINTE QU'IL HE DEVIENHE DO LANDS UP « ATLICH » HA SANAND voyage. touterols, l'acide de troll, une LABVIG LAG AAHSAHSAR LÁRT ASHATLBUL UTILISATEURS DE MAGIE, MORGERONS ET IHGÉHIEURS, EST BIEH PLUS PRISÉ EHCÔRE. IL EST EXTRÊMEMENT DIMMICILE À TRANSPORTER DE MANIÈRE JÉCURIJÉE. CE QUI NE MAIT QU'AUGMENTER JA VALEUR. PETITE MIJE EN GARDE: MON PEUPLE APPELLE JOUVEN'T CEUX LAJ AIHMIAD AD AIOV AJ ILIOHS THO IUS " TUBURS DE TROLLS ", ET À RAISON. CEUX QUI CHERCHENT LA MORT CHERCHENT LES TROLLS.
+Le sang de troll est précieux, et utilisé dans une grande variété de potions de guérison et diverses autres concoctions alchimiques ; cependant, beaucoup hésitent à le transporter, de crainte qu'il ne devienne quelque peu « hostile » au cours du voyage. Toutefois, l'acide de troll, une substance très recherchée des divers utilisateurs de magie, forgerons et ingénieurs, est bien plus prisé encore. Il est extrêmement difficile à transporter de manière sécurisée, ce qui ne fait qu'augmenter sa valeur. Petite mise en garde : mon peuple appelle souvent ceux qui ont choisi la voie de Grimnir les tueurs de Trolls », et à raison. Ceux qui cherchent la mort cherchent les trolls.
 
 Dans son ouvrage très populaire intitulé *Chasser les chasseurs*, Sorge Krause, pisteur réputé, a avancé pour la première fois ce qu'il appelle sa « théorie de l'évitement des marais ». Sa thèse, qu'il explore çà et là à travers ses nombreux ouvrages sur la chasse, peut être résumée comme suit : les marais sont horribles ; tout ce qui s'y trouve aspire à vous dévorer, mais a très mauvais goût ; ne mettez jamais les pieds dans les marais. Ayant passé de nombreuses soirées à boire avec Sorge, je tiens de source sûre que les trolls (et les pieuvres des tourbières) constituent en réalité la principale motivation derrière cette théorie.
 
@@ -2965,53 +2692,51 @@ Il existe de nombreuses espèces de trolls, ceux-ci paraissant démontrer une gr
 
 autre, les cours d'eau et les marais de l'Empire subissent les ravages causés par les trolls. Ma détestation provient peutêtre du fait que, comme beaucoup de citoyens de l'Empire, j'aime m'imaginer que nos cours d'eau offrent l'un des modes de transport les plus « sûrs ». Les trolls des rivières mettent à mal cette notion, arrachant en pleine nuit les voyageurs à leurs barges et les condamnant à un sort terrible. Ou peut-être est-ce simplement dû à leur aspect infâme. La couleur de leur peau varie du vert herbeux au bleu bilieux, mais absolument tous empestent la végétation en décomposition, le poisson putride et la vase rance. Ces trolls aiment que leur viande soit « affinée par l'eau » et stockent régulièrement des cadavres de tous types dans des marécages ou les immobilisent sous l'eau, sous des rochers suffisamment lourds.
 
-Aussi dangereux que soient les trolls, ils le sont encore beaucoup plus en raison de leurs matriarches, heureusement rares (Sigmar soit loué !), les sorcières trolls. Malfaisantes, cruelles et dotées d'une intelligence inquiétante, ces sorcières émergent parfois des profondeurs des marais les plus traîtres pour mener leurs semblables dans des offensives en période de vaches maigres, bien qu'elles puissent également être stimulées par une Waaagh! de peaux-vertes. Les sorcières trolls des rivières pratiquent des arts mystiques obscurs et l'on raconte qu'elles maudissent leurs ennemis à coups d'invectives trolls effroyables, bien qu'incohérentes. Celles-ci sont peut-être inintelligibles, mais elles seraient, semble-t-il, d'une grande efficacité. Pire encore, les sorcières trolls sont des créatures immenses, dépassant largement leurs homologues masculins. Il n'y a pas assez de couronnes d'or dans tout le Reikland pour me convaincre d'étudier les pratiques d'accouplement des trolls.
+Aussi dangereux que soient les trolls, ils le sont encore beaucoup plus en raison de leurs matriarches, heureusement rares (Sigmar soit loué !), les sorcières trolls. Malfaisantes, cruelles et dotées d'une intelligence inquiétante, ces sorcières émergent parfois des profondeurs des marais les plus traîtres pour mener leurs semblables dans des offensives en période de vaches maigres, bien qu'elles puissent également être stimulées par une Waaagh ! de peaux-vertes. Les sorcières trolls des rivières pratiquent des arts mystiques obscurs et l'on raconte qu'elles maudissent leurs ennemis à coups d'invectives trolls effroyables, bien qu'incohérentes. Celles-ci sont peut-être inintelligibles, mais elles seraient, semble-t-il, d'une grande efficacité. Pire encore, les sorcières trolls sont des créatures immenses, dépassant largement leurs homologues masculins. Il n'y a pas assez de couronnes d'or dans tout le Reikland pour me convaincre d'étudier les pratiques d'accouplement des trolls.
 
-
-Te Zoo Impérial
-
-Ha! Schreiber a laissé à Vasya le soin d'expliquer toute la vérité. Il me l'a lu sans mentionner qu'il détestait les trolls parce qu'ils avaient mangé ses bottes préférées. Quand nous avons descendu le Reik pour aller au Zoo, nous avons aidé des patrouilleurs fluviaux qui avaient un petit problème. Ils nous ont emmenés dans les profondeurs du marais Grootscher. Un genre d'endroit que Krause nous a dit d'éviter, da ? Beaucoup de choses se passent, nous avons trouvé de mauraises personnes, et leur avons réglé leur compte. Sans importance. Ce qui l'est, c'est un très gros combat contre des frères trolls des marais, très laids, et puants, mais très bons combattants. Difficiles à déchiffrer. Pourquoi? Parce qu'ils ne savent pas eux-mêmes ce qu'ils vont faire. Comment le savoir alors ? Très dangereux. L'un des frères a craché sur Schreiber et sur moi. Très douloureux, comme si j'avais mis un bras dans le feu, da ? Couvre bras, jambes de Schreiber. Il a une grosse blessure, mais notre scribe est solide comme le fer. Tranche net la tête du troll. Chantenuit attache la jambe de l'autre à une grosse bûche et nous partons. Les trolls sont vaincus, mais pas morts. Difficile de conserver un feu dans les manais, peut-être que les trolls des rivières sont plus malins que les autres trolls, da? Finalement, la charmante Kistiane nous a remis d'aplomb, mais aucune magie n'a pu sauver les bottes de Schreiber du vomi de troll. »
-
-TROLL DES RIVIÈRES
+<span id="page-51-0" data-folio="49"></span>
+Ha ! Schreiber a laissé à Vasya le soin d'expliquer toute la vérité. Il me l'a lu sans mentionner qu'il détestait les trolls parce qu'ils avaient mangé ses bottes préférées. Quand nous avons descendu le Reik pour aller au Zoo, nous avons aidé des patrouilleurs fluviaux qui avaient un petit problème. Ils nous ont emmenés dans les profondeurs du marais Grootscher. Un genre d'endroit que Krause nous a dit d'éviter, da ? Beaucoup de choses se passent, nous avons trouvé de mauvaises personnes, et leur avons réglé leur compte. Sans importance. Ce qui l'est, c'est un très gros combat contre des frères trolls des marais, très laids, et puants, mais très bons combattants. Difficiles à déchiffrer. Pourquoi ? Parce qu'ils ne savent pas eux-mêmes ce qu'ils vont faire. Comment le savoir alors ? Très dangereux. L'un des frères a craché sur Schreiber et sur moi. Très douloureux, comme si j'avais mis un bras dans le feu, da ? Couvre bras, jambes de Schreiber. Il a une grosse blessure, mais notre scribe est solide comme le fer. Tranche net la tête du troll. Chantenuit attache la jambe de l'autre à une grosse bûche et nous partons. Les trolls sont vaincus, mais pas morts. Difficile de conserver un feu dans les marais, peut-être que les trolls des rivières sont plus malins que les autres trolls, da ? Finalement, la charmante Kistiane nous a remis d'aplomb, mais aucune magie n'a pu sauver les bottes de Schreiber du vomi de troll. »
 
 J'adorais ces bottes.
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 6 | 40 | 15 | 55 | 55 | 20 | 15 | 15  | 20  | 20 | 5   | 34 |
+#### TROLL DES RIVIÈRES
 
-Traits: Amphibie, Armure 2 (7), Increvable, Infecté, Limicole, Redoutable, Régénération, Stupide, Taille (Grande), Vision nocturne
+| M | CC CT |    | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B  |
+|---|-------|----|----|----|----|----|-----|-----|----|--------|----|
+| 6 | 40    | 15 | 55 | 55 | 20 | 15 | 15  | 20  | 20 | 5      | 34 |
 
-Traits d'attaque: Arme (Merlin grossier) +9, Morsure +8, Vomissement +9
+**Traits :** Amphibie, Armure 2 (7), Increvable, Infecté, Limicole, Redoutable, Régénération, Stupide, Taille (Grande), Vision nocturne
 
-Rempli de poisson et pire encore : un troll des rivières peut effectuer sa première attaque de Vomissement dans un combat sans dépenser d'Avantage. (Il a tout ce qu'il faut comme... munitions.)
+**Traits d'attaque :** Arme (Merlin grossier) +9, Morsure +8, Vomissement +9
 
-Odeur de pourriture : l'odeur infâme d'un troll des rivières est capable de vous submerger. Toutes les cibles vivantes situées à un nombre de mètres inférieur ou égal au Bonus d'Endurance du troll des rivières subissent une pénalité de -10 à tous les Tests. Cette pénalité ne se cumule pas si plusieurs Odeurs de pourriture sont présentes.
+**Rempli de poisson et pire encore :** un troll des rivières peut effectuer sa première attaque de Vomissement dans un combat sans dépenser d'Avantage. (Il a tout ce qu'il faut comme… munitions.)
 
-Facultatifs: Affamé, Bestial, Endurant, Frénésie, Furtif, Insensible à la douleur
+**Odeur de pourriture :** l'odeur infâme d'un troll des rivières est capable de vous submerger. Toutes les cibles vivantes situées à un nombre de mètres inférieur ou égal au Bonus d'Endurance du troll des rivières subissent une pénalité de -10 à tous les Tests. Cette pénalité ne se cumule pas si plusieurs Odeurs de pourriture sont présentes.
+
+**Facultatifs :** Affamé, Bestial, Endurant, Frénésie, Furtif, Insensible à la douleur
 
 #### SORCIÈRE TROLL DES RIVIÈRES
 
-|   |    |    |    |    |    |    |    |    |    | Soc |    |
-|---|----|----|----|----|----|----|----|----|----|-----|----|
-| 5 | 50 | 35 | 65 | 65 | 20 | 15 | 15 | 45 | 50 | 10  | 92 |
+| M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
+|---|-------|----|----|----|----|----|-----|-----|--------|----|----|
+| 5 | 50    | 35 | 65 | 65 | 20 | 15 | 15  | 45  | 50     | 10 | 92 |
 
-Compétences: Focalisation (Shyish) 80, Langage (Magick) 75 Traits: Amphibie, Armure 3 (9), Immunité Psychologique, Increvable, Infecté, Infravision, Insensible à la douleur, Lanceur de Sorts (Sorcellerie), Limicole, Redoutable 2, Régénération, Taille (Énorme)
+**Compétences :** Focalisation (*Shyish*) 80, Langage (Magick) 75 **Traits :** Amphibie, Armure 3 (9), Immunité Psychologique, Increvable, Infecté, Infravision, Insensible à la douleur, Lanceur de Sorts (Sorcellerie), Limicole, Redoutable 2, Régénération, Taille (Énorme)
 
-Traits d'attaque : Arme (Bâton en bois mort) +10, Morsure +9, Vomissement +14
+**Traits d'attaque :** Arme (Bâton en bois mort) +10, Morsure +9, Vomissement +14
 
-Vomissement abondant : une sorcière troll des rivières mangera tout ce qu'elle trouvera dans les marais, aussi infect et misérable que ce soit. Elle effectue sa première attaque de Vomissement dans un combat sans dépenser d'Avantage, et sa bile inflige les Dégâts exceptionnels indiqués ci-dessus, en plus de ses effets normaux.
+**Vomissement abondant :** une sorcière troll des rivières mangera tout ce qu'elle trouvera dans les marais, aussi infect et misérable que ce soit. Elle effectue sa première attaque de Vomissement dans un combat sans dépenser d'Avantage, et sa bile inflige les Dégâts exceptionnels indiqués ci-dessus, en plus de ses effets normaux.
 
-Odeur accablante : même si cela est difficile à croire, les sorcières trolls des rivières sentent encore pire que leurs homologues masculins. Ceux qui se retrouvent exposés à cette puanteur ahurissante pour la première fois doivent passer un Test de Force Mentale, sans quoi ils se voient infliger l'État Assommé. En dehors de cela, elle fonctionne exactement comme l'Odeur de pourriture du troll des rivières.
+**Odeur accablante :** même si cela est difficile à croire, les sorcières trolls des rivières sentent encore pire que leurs homologues masculins. Ceux qui se retrouvent exposés à cette puanteur ahurissante pour la première fois doivent passer un Test de **Force Mentale**, sans quoi ils se voient infliger l'État *Assommé*. En dehors de cela, elle fonctionne exactement comme l'Odeur de pourriture du troll des rivières.
 
-Facultatifs: Affamé, Endurant, Lanceur de Sorts (Mort)
+**Facultatifs :** Affamé, Endurant, Lanceur de Sorts (Mort)
+
+<span id="page-52-0" data-folio="50"></span>
 
 
-<span id="page-52-0"></span>
+### **Sangsue caméléon**
 
-# SANGSUE CAMÉLÉON
-
-e toutes les étranges créatures qui peuplent l'aile des Curiosités de la nature du Zoo Impérial, aucune n'est aussi célèbre, ni aussi incomprise, que
+De toutes les étranges créatures qui peuplent l'aile des Curiosités de la nature du Zoo Impérial, aucune n'est aussi célèbre, ni aussi incomprise, que
 
 la sangsue caméléon. En surface, elles ressemblent à de simples sangsues géantes parées de couleurs étranges, les plus petites mesurant la largeur d'une main et les plus grandes approchant la longueur d'un pas. Elles chassent le long des rives des cours d'eau, sans doute pour garder humide leur peau sensible. Comme toutes les sangsues, ce sont des buveuses de sang. Dénuées d'yeux, elles recourent à d'autres sens, des organes étranges capables de détecter la chaleur et le mouvement, pour localiser leurs proies. En dehors de ces quelques similarités, elles sont bien différentes des autres sangsues. Plutôt que d'attraper leurs proies de manière furtive comme le font les sangsues plus communes, les sangsues caméléons les attirent grâce à leur extraordinaire capacité à créer des hallucinations captivantes reflétant les désirs profonds de leur cible. Leur morsure est indolore, et la victime captivée ne remarque pas le moment où la créature fixe sur elle sa gueule circulaire aux dents aiguisées et commence à se nourrir. Il est possible de survivre à l'attaque d'une seule sangsue caméléon, car elle est bien vite rassasiée et abandonne sa proie. Mais ces créatures chassent en groupes de trois ou plus, atteignant parfois une dizaine, ce qui peut facilement mener à une mort « plaisante ». Les autres prédateurs, y compris certains trolls des rivières sacrément intelligents, ont appris qu'une victime captivée par une illusion de sangsue caméléon constituait une proie facile, et ils peuvent donc établir leur tanière à proximité.
 
@@ -3021,57 +2746,55 @@ récolter les glandes de sangsues caméléons. Ils les utilisent pour créer des
 
 Alors que nous voyagions le long du Reik, nous avons rencontré quelques riverains qui ont juré que les sangsues caméléons pouvaient en réalité créer des illusions (des apparitions perceptibles par tous) qui allaient au-delà des simples hallucinations causées par leurs émanations. Un nautonier d'Essel a affirmé que les sangsues caméléons étaient bien plus intelligentes qu'on ne le pensait généralement et se montraient capables de prendre l'apparence du terrain ou même de personnes quelconques. Les sangsues caméléons en captivité au Zoo Impérial n'ont jamais démontré cette capacité. Mais il faut dire que ces créatures choyées et bien nourries n'en ont sans doute jamais ressenti le besoin.
 
-### SANGSUE CAMÉLÉON
+#### SANGSUE CAMÉLÉON
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В |
-|---|----|----|----|----|----|----|-----|-----|----|-----|---|
-| 3 | 28 | -  | 25 | 30 | 30 | 30 | -   | 5   | 25 | -   | 8 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B |
+|---|-------|---|----|----|----|----|-----|-----|--------|---|---|
+| 3 | 28    | - | 25 | 30 | 30 | 30 | -   | 5   | 25     | - | 8 |
 
-Compétences: Discrétion (Rurale) 60
+**Compétences :** Discrétion (Rurale) 60
 
-Traits: Amphibie, Bestial, Immunité Psychologique,
+**Traits :** Amphibie, Bestial, Immunité Psychologique,
 
 Limicole, Taille (Petite)
 
-Traits d'attaque : Arme (Morsure de dents aiguisées) +5
+**Traits d'attaque :** Arme (Morsure de dents aiguisées) +5
 
-Nuage hallucinogène : une sangsue caméléon exsude un nuage qui affecte les mammifères situés à une distance en mètres inférieure ou égale à son Bonus d'Endurance. Toutes les créatures exposées doivent réussir un Test d'Endurance Difficile (-20), sans quoi elles se retrouvent en proie à une vision puissante de quelqu'un ou de quelque chose qu'elles aiment ou désirent profondément et qu'elles ont perdu. Celles qui parviennent à y échapper ne peuvent pas être affectées par la même sangsue caméléon pendant une journée. Celles qui échouent y succombent pendant trois Rounds, plus un nombre de Rounds supplémentaires égal aux DR qui leur manquaient pour réussir. Par exemple, un échec de -3 DR entraîne 6 Rounds de douce illusion. Celles qui sont affectées sont considérées à tous points de vue comme victimes de l'État Inconscient jusqu'à ce qu'elles se rétablissent.
+**Nuage hallucinogène :** une sangsue caméléon exsude un nuage qui affecte les mammifères situés à une distance en mètres inférieure ou égale à son Bonus d'Endurance. Toutes les créatures exposées doivent réussir un Test d'**Endurance Difficile (–20)**, sans quoi elles se retrouvent en proie à une vision puissante de quelqu'un ou de quelque chose qu'elles aiment ou désirent profondément et qu'elles ont perdu. Celles qui parviennent à y échapper ne peuvent pas être affectées par la même sangsue caméléon pendant une journée. Celles qui échouent y succombent pendant trois Rounds, plus un nombre de Rounds supplémentaires égal aux DR qui leur manquaient pour réussir. Par exemple, un échec de –3 DR entraîne 6 Rounds de douce illusion. Celles qui sont affectées sont considérées à tous points de vue comme victimes de l'État *Inconscient* jusqu'à ce qu'elles se rétablissent.
 
-Morsure indolore: après avoir réussi à toucher une cible, une sangsue caméléon se collera à elle et aspirera ensuite 1 Blessure en sang par Round (en ignorant les Points d'Armure et d'Endurance). Une sangsue caméléon cherchera à aspirer 1d10 Blessures jusqu'à ce qu'elle soit satisfaite, puis se retirera pour aller digérer ailleurs. Il est possible de retirer une sangsue caméléon en train de se nourrir en réussissant un Test opposé de Force, mais cela inflige automatiquement une Blessure supplémentaire ainsi que l'État Hémorragique à sa cible. Frotter du sel sur une sangsue caméléon la fera immédiatement lâcher son étreinte et s'enfuir.
+**Morsure indolore :** après avoir réussi à toucher une cible, une sangsue caméléon se collera à elle et aspirera ensuite 1 Blessure en sang par Round (en ignorant les Points d'Armure et d'Endurance). Une sangsue caméléon cherchera à aspirer 1d10 Blessures jusqu'à ce qu'elle soit satisfaite, puis se retirera pour aller digérer ailleurs. Il est possible de retirer une sangsue caméléon en train de se nourrir en réussissant un Test opposé de **Force**, mais cela inflige automatiquement une Blessure supplémentaire ainsi que l'État *Hémorragique* à sa cible. Frotter du sel sur une sangsue caméléon la fera immédiatement lâcher son étreinte et s'enfuir.
 
 **Facultatifs :** Infecté, Intelligence +20 et Lanceur de Sorts (Illusion uniquement. Réussite automatique sur le Lancer avec +5 DR si nécessaire.)
 
+<span id="page-53-0" data-folio="51"></span>
+Je connais un marchand qui vend, disons, des expériences inhabituelles. Il possède des marchandises pour tous les goûts, et la Bave fait assurément partie de son catalogue. Mais il m'a un jour expliqué quelque chose d'intrigant : la qualité et les effets de la Bave pourraient varier grandement selon comment la sangsue caméléon se nourrit. Apparemment, les variations sont si importantes qu'il existerait des « experts » de la Bave et des marchands qui se spécialisent dans des « variétés » particulières de l'hallucinogène. Quand je lui ai demandé quels repas provoquaient ce type de changements, il est devenu nerveux et a changé de sujet.
 
-Je connais un marchand qui vend, disons, des expériences inhabituelles. Il possède des marchandises pour tous les goûts, et la Bave fait assurément partie de son catulogue. Mais il m'a un jour expliqué quelque chose d'intrigant: la qualité et les effets de la Bave pourraient varier grandement selon comment la sangsue caméléon se nourrit Apparemment, les variations sont si importantes qu'il existerait des « experts » de la Bave et des marchands qui se spécialisent dans des « variétés » particulières de l'hallucinogène. Quand je lui ai demandé quels repas provoquaient ce type de changements, il est devenu nerveux et a changé de sujet.
+*Au sein des cercles de savants, le débat continue de faire rage pour savoir si les « dons » de la sangsue caméléon relèvent simplement de la science naturelle, ou s'ils sont affectés par les Vents de Magie. Un groupe d'érudits de l'Université d'Altdorf, dirigé par le professeur Hans Pfaff, <sup>s</sup>'est penché sérieusement sur la question. Assurément, si les hallucinations qu'elles provoquent dépassent le simple effet chimique, si elles peuvent en réalité produire des images visibles par toutes les personnes présentes, cela suggère fortement qu'elles seraient capables de canaliser le Vent gris d'une manière ou d'une autre. Les preuves crédibles à ce sujet s'avèrent particulièrement difficiles à obtenir, ce qui, je dois bien l'admettre non sans un certain amusement, est assurément fidèle à la nature d'Ulgu !*
 
-Au sein des cercles de savants, le débat continue de faire rage pour savoir si les « dons » de la sangsue caméléon relèvent simplement de la science naturelle, ou s'ils sont affectés par les Vents de Magie. Un groupe d'érudits de l'Université d'Altdorf, dirigé par le professeur Hans Pfaff, s'est penché sérieusement sur la question. Assurément, si les hallucinations qu'elles provoquent dépassent le simple effet chimique, si elles peuvent en réalité produire des images visibles par toutes les personnes présentes, cela suggère fortement qu'elles seraient capables de canaliser le Vent gris d'une manière ou d'une autre. Les preuves crédibles à ce sujet s'avèrent particulièrement difficiles à obtenir, ce qui, je dois bien l'admettre non sans un certain amusement, est assurément fidèle à la nature d'Ulqu!
+<span id="page-54-0" data-folio="52"></span>
 
 
-<span id="page-54-0"></span>
+### **Ver des marais**
 
-# VER DES MARAIS
-
-e plus puissant des serpents du Vieux Monde, le ver des marais est une créature immense, dont les plus petits spécimens atteignent une longueur équivalente
+Le plus puissant des serpents du Vieux Monde, le ver des marais est une créature immense, dont les plus petits spécimens atteignent une longueur équivalente
 
 à trois bons mètres à l'âge adulte. De nombreuses vieilles histoires évoquent des vers des marais atteignant trente mètres ou plus de la tête à la queue. Si ces titans continuent de ramper dans les marais de l'Empire, ils sont clairement devenus des créatures insaisissables, aucun spécimen aussi grand n'ayant été observé depuis de nombreuses générations. Peut-être à cause de leur taille massive, les vers des marais ne sont présents que dans les sols marécageux auxquels ils doivent leur nom et évitent les terres sèches, sur lesquelles il leur est difficile de se mouvoir. Le Zoo Impérial a déployé des efforts considérables pour créer un « marais clos » adapté à Dame Écailles, que les enfants d'Altdorf adorent. Je dois bien admettre que je ne considère plus les cochons ou les serpents de la même manière après l'avoir vue en broyer et en dévorer plusieurs au cours de l'un de ses repas bimensuels.
 
 Certaines légendes très obscures associent les vers des marais à la Foi antique, la religion ancienne qui dominait autrefois les terres où l'Empire se trouve à présent. On trouve encore des représentations de serpents enroulés sans fin sur certains des menhirs les plus anciens associés à la Foi antique, qui demeurent encore aujourd'hui, accumulant lentement la mousse et le lichen dans les profondeurs de nos forêts. On raconte que les fidèles de Rhya et de Taal pratiquent encore certains rites qui associent les serpents à la fertilité. Lorsque je les ai interrogés à ce sujet, plusieurs prêtres m'ont affirmé que je me trompais et ont ensuite refusé de m'adresser la parole. Sentant qu'il y avait là plus que ce qu'ils ne voulaient m'en dire, j'ai commencé à discrètement mener l'enquête alors que nous voyagions le long du Reik.
 
-J'ai découvert d'étranges histoires qui se murmurent et affirment que cette croyance n'avait pas disparu, comme certains voudraient le faire croire. Une « herboriste » particulièrement intéressante d'Uhland m'a parlé d'un ancien schisme dans la foi, qui a donné naissance à la fois à des factions inoffensives et à d'autres totalement corrompues. On m'avait déjà évoqué avec effroi (et en faisant le signe du marteau pour repousser le mal) l'existence d'une créature appelée le « Ver pâle », en laissant supposer qu'il s'agirait d'une sorte de ver des marais. C'était une affirmation assez étonnante, car ces créatures ont presque toujours des écailles aux pointillés bruns ou verts, avec des motifs bigarrés qui leur permettent de se fondre dans la végétation des marais. Lorsque j'ai interrogé l'herboriste à ce sujet, elle est devenue ellemême assez pâle et a répondu que « certains croient à tort que la douleur est une nécessité pour garantir la prospérité ». Puis, comme les prêtres avant elle, a refusé d'en dire plus.
+J'ai découvert d'étranges histoires qui se murmurent et affirment que cette croyance n'avait pas disparu, comme certains voudraient le faire croire. Une « herboriste » particulièrement intéressante d'Uhland m'a parlé d'un ancien schisme dans la foi, qui a donné naissance à la fois à des factions inoffensives et à d'autres totalement corrompues. On m'avait déjà évoqué avec effroi (et en faisant le signe du marteau pour repousser le mal) l'existence d'une créature appelée le « Ver pâle », en laissant supposer qu'il s'agirait d'une sorte de ver des marais. C'était une affirmation assez étonnante, car ces créatures ont presque toujours des écailles aux pointillés bruns ou verts, avec des motifs bigarrés qui leur permettent de se fondre dans la végétation des marais. Lorsque j'ai interrogé l'herboriste à ce sujet, elle est devenue ellemême assez pâle et a répondu que *« certains croient à tort que la douleur est une nécessité pour garantir la prospérité »*. Puis, comme les prêtres avant elle, a refusé d'en dire plus.
 
-ans une petite boutique à Schilderheim, j'ai découvert une sculpture étrange qui me semblait représenter un ver des marais. Elle comportait
+Dans une petite boutique à Schilderheim, j'ai découvert une sculpture étrange qui me semblait représenter un ver des marais. Elle comportait
 
 certaines marques que j'avais fini par associer à la Foi antique, mais elle était étrangement déformée. Des sortes de longues protubérances, semblables à des tentacules, entouraient sa gueule. Lorsque je l'ai interrogée à ce sujet, la marchande a promis de se renseigner pour moi, auprès du propriétaire. Lorsque je suis revenu le jour suivant, la sculpture avait disparu et la marchande s'est montrée particulièrement fermée à la discussion. Elle a ignoré mes demandes et a rapidement menacé d'appeler le Guet si je ne déguerpissais pas sur-le-champ.
 
-### VER DES MARAIS
+#### VER DES MARAIS
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 3 | 50 | -  | 60 | 55 | 10 | 30 | -   | 30  | 45 | -   | 80 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|---|----|
+| 3 | 50    | - | 60 | 55 | 10 | 30 | -   | 30  | 45     | - | 80 |
 
-Compétences: Discrétion (Rural) 50 (+3 DR grâce à Furtif)
-
-Traits: À sang-froid, Armure 2 (7), Bestial, Furtif,
+**Compétences :** Discrétion (Rural) 50 (+3 DR grâce à Furtif) **Traits :** À sang-froid, Armure 2 (7), Bestial, Furtif,
 
 Infravision, Limicole, Taille (Énorme)
 
@@ -3079,21 +2802,23 @@ Infravision, Limicole, Taille (Énorme)
 
 **Enroulements infinis :** le ver des marais est extrêmement long et est capable d'empoigner simultanément jusqu'à cinq cibles de Tailles inférieures.
 
-Facultatifs: Insensible à la douleur, Taille (Monstrueuse), 4 x Tentacules +10, Terreur 1
+**Facultatifs :** Insensible à la douleur, Taille (Monstrueuse), 4 x Tentacules +10, Terreur 1
 
-52
+**52**
 
+<span id="page-55-0" data-folio="53"></span>
+<span id="page-56-0" data-folio="54"></span>
+**54**
 
+### **Le déchiqueteur de cadavres de Carroburg**
 
-# LE DÉCHIQUETEUR DE CADAVRES DE CARROBURG
-
-n vieux proverbe sylvanien affirme que « Seul le Mal persiste. Tout le reste finit par disparaître. » Bien que je soupçonne qu'ils avaient autre chose à l'esprit la
+Un vieux proverbe sylvanien affirme que *« Seul le Mal persiste. Tout le reste finit par disparaître. »* Bien que je soupçonne qu'ils avaient autre chose à l'esprit la
 
 première fois qu'ils l'ont prononcé, les Sylvaniens auraient très bien pu parler de l'hydre connue sous le nom de déchiqueteur de cadavres de Carroburg. Ce monstre rôde depuis des siècles entre le Furdienst et les Landes Miroirs du Middenland, bien qu'ayant été « tué » à plusieurs reprises. Les hydres sont des monstruosités reptiliennes qui errent dans les marais lugubres de l'Empire, consommant tout ce qu'elles attrapent. Elles sont célèbres pour leurs multiples têtes, leur appétit vorace et, dans certains cas notoires, pour leur refus apparent de rester mortes.
 
 Le déchiqueteur de cadavres est une bête à l'agressivité légendaire, qui refuse de reculer quel que soit l'ennemi auquel elle fait face. Selon certains récits, il s'en serait pris à des bandes d'ogres et de chevaliers chevauchant des demigriffons, et aurait une fois tenté de dévorer un char à vapeur impérial. Il ravage rapidement la zone aux alentours de la tanière qu'il s'est choisie, finissant par consommer toutes les autres formes de vie qui ne prennent pas la fuite. Sa préférence pour les marais pourrait être directement liée à son immense appétit, ceux de l'Empire regorgeant d'animaux sauvages. Sans surprise, Krause note que le déchiqueteur de cadavres est une autre excellente raison d'éviter les marais. En dehors de l'Empire, on retrouve souvent des hydres dans les cavernes montagneuses, bien que la manière dont elles parviennent à s'y nourrir demeure quelque peu mystérieuse. Peut-être apprécient-elles le goût des squigs des cavernes.
 
-Au sein de mon Ordre, la rare capacité qu'auraient certaines hydres à revenir d'entre les morts est largement acceptée. Quant à savoir pourquoi certaines en sont capables tandis que d'autres périssent, il s'agit là d'un secret difficile à percer et dont beaucoup d'érudits paieraient cher pour connaître la réponse. Peut-être ces créatures sont-elles en mesure de se régénérer à partir de très peu de sang. Sans doute ont-elles un lien plus puissant avec le Vent d'Améthyste que n'importe quelle autre bête vivante. Voilà en tout cas ce que je puis affirmer : le corps du déchiqueteur de cadavres a été amené au Collège de Jade il y a un siècle de cela et il y demeure encore, et ce même si la bête est « revenue » une vingtaine d'années plus tard, puis cinq ans après, puis sept ans après et ainsi de suite.
+*Au sein de mon Ordre, la rare capacité qu'auraient certaines hydres à revenir d'entre les morts est largement acceptée. Quant à savoir pourquoi certaines en sont capables tandis que d'autres périssent, il <sup>s</sup>'agit là d'un secret difficile à percer et dont beaucoup d'érudits paieraient cher pour connaître la réponse. Peut-être ces créatures sont-elles en mesure de se régénérer à partir de très peu de sang. Sans doute ont-elles un lien plus puissant avec le Vent d'Améthyste que n'importe quelle autre bête vivante. Voilà en tout cas ce que je puis affirmer : le corps du déchiqueteur de cadavres a été amené au Collège de Jade il y a un siècle de cela et il y demeure encore, et ce même si la bête est « revenue » une vingtaine d'années plus tard, puis cinq ans après, puis sept ans après et ainsi de suite.*
 
 Bien que les hydres récupèrent rapidement de leurs blessures si elles ne sont pas tuées, la capacité à revenir d'entre les morts s'avère heureusement rare. Le fléau pourpre de Zhufbar chasse dans les marais autour du Lac Noir et des Montagnes du Bord du Monde depuis plus de mille ans. Comme le déchiqueteur de cadavres, le fléau a été « confirmé éradiqué » par des guerriers, des mercenaires et de nombreux tueurs. Et pourtant, il continue de revenir causer des massacres. Certains érudits ont suggéré avec prudence, de peur d'éveiller la colère des nains, l'idée selon laquelle les hydres pourraient peut-être produire des descendants ressemblant en tous points à leur géniteur. J'ai discuté directement et à plusieurs occasions avec deux tueurs ayant combattu le fléau pourpre « jusqu'à la mort », et tous deux affirment qu'il s'agissait de la même bête, qui était revenue.
 
@@ -3101,33 +2826,33 @@ Les hydres semblent particulièrement sujettes aux mutations, les comptes-rendus
 
 #### LE DÉCHIQUETEUR DE CADAVRES
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 6 | 65 | -  | 60 | 65 | 15 | 30 | -   | 20  | 35 | -   | 84 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|---|----|
+| 6 | 65    | - | 60 | 65 | 15 | 30 | -   | 20  | 35     | - | 84 |
 
-Compétence: Corps à corps (Dents) 75
+**Compétence :** Corps à corps (Dents) 75
 
-Talent: Charge berserk 3
+**Talent :** *Charge berserk* 3
 
-Traits: Armure 3 (9), Bestial, Limicole, Perturbant (Écailles changeant de couleur), Redoutable, Régénération, Taille (Énorme), Territorial, Vision nocturne
+**Traits :** Armure 3 (9), Bestial, Limicole, Perturbant (Écailles changeant de couleur), Redoutable, Régénération, Taille (Énorme), Territorial, Vision nocturne
 
-Traits d'attaque : Arme (Dents) +10, Constricteur, Morsure (Gueule cachée) +12
+**Traits d'attaque :** Arme (Dents) +10, Constricteur, Morsure (Gueule cachée) +12
 
-Sept regards perçants : le déchiqueteur de cadavres ne peut pas être en infériorité numérique (WFJDR p.162) ni Surpris.
+**Sept regards perçants :** le déchiqueteur de cadavres ne peut pas être en infériorité numérique (**WFJDR** p.162) ni *Surpris*.
+
+<span id="page-57-0" data-folio="55"></span>
 
 
-<span id="page-57-0"></span>
+<span id="page-58-0" data-folio="56"></span>
 
 
-<span id="page-58-0"></span>
+### **Pégase noir**
 
-# PÉGASE NOIR
+Bien qu'il soit toujours dangereux d'avancer des généralités sur un peuple entier, il faut bien admettre qu'il est difficile de trouver un Bretonnien qui
 
-ien qu'il soit toujours dangereux d'avancer des généralités sur un peuple entier, il faut bien admettre qu'il est difficile de trouver un Bretonnien qui
+n'aime pas les chevaux. Bien sûr, il doit y avoir des exceptions, mais je pense que les personnes concernées évitent de le faire savoir, pour éviter d'être reniées par leurs proches. On raconte que les habitants du Duché de Couronne apprendraient à monter à cheval avant même d'apprendre à marcher ; une rumeur que nombre de voyageurs, y compris un Couronnien, m'ont confirmée, après avoir traversé les Montagnes Grises en passant par la Brèche de Gisoreux. En effet, beaucoup affirment que les éleveurs de chevaux du Duché de Couronne produisent les meilleurs destriers que le Vieux Monde peut offrir. Des clients de plusieurs tavernes de Gisoreux m'ont assuré que les Couronniens étaient tous déterminés à élever les étalons les plus rapides possible, les courses étant une véritable obsession dans tout le duché. Malheureusement, un tel entêtement peut mener au désastre et j'ai découvert ici les racines d'une histoire bien plus sinistre…
 
-n'aime pas les chevaux. Bien sûr, il doit y avoir des exceptions, mais je pense que les personnes concernées évitent de le faire savoir, pour éviter d'être reniées par leurs proches. On raconte que les habitants du Duché de Couronne apprendraient à monter à cheval avant même d'apprendre à marcher ; une rumeur que nombre de voyageurs, y compris un Couronnien, m'ont confirmée, après avoir traversé les Montagnes Grises en passant par la Brèche de Gisoreux. En effet, beaucoup affirment que les éleveurs de chevaux du Duché de Couronne produisent les meilleurs destriers que le Vieux Monde peut offrir. Des clients de plusieurs tavernes de Gisoreux m'ont assuré que les Couronniens étaient tous déterminés à élever les étalons les plus rapides possible, les courses étant une véritable obsession dans tout le duché. Malheureusement, un tel entêtement peut mener au désastre et j'ai découvert ici les racines d'une histoire bien plus sinistre...
-
-De nombreuses créatures féroces rôdent dans les hauteurs des Montagnes Grises et des Sœurs Blanches, au nord. Un vieux trappeur m'a juré « sur la Dame elle-même, monsieur » (un serment assurément sérieux pour un Bretonnien) qu'il avait aperçu un squig colossal, « aussi gros qu'une maison », sauter entre deux des plus petits pics des Sœurs Blanches. Selon de nombreux récits, de légendaires et terribles basilics rôdent encore dans les hautes vallées (laissant derrière eux, on l'espère, des statues de peauxvertes). Parmi les bêtes qui errent dans les hauteurs, celles qui intéressent le plus les Bretonniens sont celles qui pourraient être équipées d'une selle, s'il venait à quelqu'un l'envie de les monter. Les plus célèbres d'entre elles se trouvent être des ennemis mortels réciproques : les nobles pégases et les féroces hippogriffes.
+De nombreuses créatures féroces rôdent dans les hauteurs des Montagnes Grises et des Sœurs Blanches, au nord. Un vieux trappeur m'a juré *« sur la Dame elle-même, monsieur »* (un serment assurément sérieux pour un Bretonnien) qu'il avait aperçu un squig colossal, *« aussi gros qu'une maison »*, sauter entre deux des plus petits pics des Sœurs Blanches. Selon de nombreux récits, de légendaires et terribles basilics rôdent encore dans les hautes vallées (laissant derrière eux, on l'espère, des statues de peauxvertes). Parmi les bêtes qui errent dans les hauteurs, celles qui intéressent le plus les Bretonniens sont celles qui pourraient être équipées d'une selle, s'il venait à quelqu'un l'envie de les monter. Les plus célèbres d'entre elles se trouvent être des ennemis mortels réciproques : les nobles pégases et les féroces hippogriffes.
 
 Comme le savent certainement mes lecteurs, les pégases sont des chevaux magnifiques dotés d'immenses ailes emplumées. Un chevalier souhaitant monter une créature aussi intelligente doit l'élever alors qu'elle n'est encore qu'un poulain. Il s'agit assurément d'un projet coûteux et et accaparant, mais qui permet au bout du compte de disposer d'une monture volante et loyale. Les pégases sont à ce point convoités que certains seigneurs possèdent des unités entières de chevaliers montés sur ceux-ci. Boralis et Corana, le couple du Zoo Impérial, sont assurément des créatures merveilleuses et amicales, aussi gourmandes de pommes que tous les chevaux que j'ai rencontrés.
 
@@ -3137,53 +2862,51 @@ Les pégases et les hippogriffes s'affrontent parmi les pics des Montagnes Grise
 
 Les créatures ainsi obtenues étaient aussi rapides qu'un hippogriffe : des pégases aux couleurs sombres avec de grandes ailes semblables à celles d'une chauve-souris et des cornes en dents de scie irrégulières. Malheureusement, il s'agissait également de chasseurs cruels et rusés, aimant tendre des embuscades dévastatrices aux ennemis imprudents ou affaiblis. Ces pégases « déchus » ou « noirs » s'en prirent bien vite à leurs éleveurs et, au bout du compte, furent poussés vers le nord, de l'autre côté de la mer. On dit qu'aucun ne vivrait aujourd'hui à l'intérieur des frontières de la Bretonnie, mais il existe des cavernes dans les montagnes qui recèlent de nombreux secrets. Selon des rumeurs persistantes, certains éleveurs pratiqueraient encore des activités infâmes que l'on évite de mentionner à portée de voix d'un chevalier.
 
+<span id="page-59-0" data-folio="57"></span>
+<span id="page-60-0" data-folio="58"></span>
+<span id="page-61-0" data-folio="59"></span>
 
 
+### **Noctecorbe**
 
-<span id="page-61-0"></span>
+Alors que nous séjournions dans la ville de Gisoreux, capitale du Duché de Gisoreux, j'ai remarqué une pratique des plus étranges. À l'extérieur de chaque
 
-# Te Zoo Impérial
-
-# NOCTECORBE
-
-lors que nous séjournions dans la ville de Gisoreux, capitale du Duché de Gisoreux, j'ai remarqué une pratique des plus étranges. À l'extérieur de chaque
-
-maison, tous les deux ou trois jours, les occupants placent une nouvelle torche, généralement dans un support en céramique. Je n'ai jamais vu quiconque les utiliser; on se contente de les entretenir régulièrement. Les habitants sont des gens tout à fait charmants, amicaux envers les voyageurs, et j'ai noué de bonnes relations avec plusieurs d'entre eux, c'est pourquoi j'ai fini par les interroger au sujet des torches. Je dois bien admettre que je n'étais aucunement préparé à entendre ce qu'ils m'ont raconté.
+maison, tous les deux ou trois jours, les occupants placent une nouvelle torche, généralement dans un support en céramique. Je n'ai jamais vu quiconque les utiliser ; on se contente de les entretenir régulièrement. Les habitants sont des gens tout à fait charmants, amicaux envers les voyageurs, et j'ai noué de bonnes relations avec plusieurs d'entre eux, c'est pourquoi j'ai fini par les interroger au sujet des torches. Je dois bien admettre que je n'étais aucunement préparé à entendre ce qu'ils m'ont raconté.
 
 Les Duchés de Gisoreux, d'Artois et de Bastogne étaient autrefois tourmentés par des créatures terribles appelées les noctecorbes. Ressemblant davantage à des monstres qu'à des rapaces déformés, les noctecorbes descendaient en volées rapides déchiquetant les imprudents, réduisant leurs victimes à l'état d'ossements en moins de trente secondes. Ces créatures semblables à des oiseaux craignaient la lumière, n'attaquant que lorsqu'aucune des lunes n'apparaissait dans le ciel, mais rien d'autre ne les effrayait. La dévastation qu'ils causaient était si terrible que le Duc de Gisoreux finit par ordonner que de nouvelles torches soient placées régulièrement devant chaque maison dans toute la ville. Il donna également comme ordre strict de ne pas les utiliser pour quoi que ce soit d'autre, afin qu'elles soient prêtes à être utilisées en cas de nécessité pour repousser une attaque de noctecorbes.
 
 Tout cela me paraissait tout à fait sensé, et c'est ce que je leur répondis, mais je remarquai également que je n'avais jamais entendu parler des noctecorbes ou d'attaques de ce genre. Cela me semblait être le type d'informations dont mon groupe aurait certainement eu vent. Mes nouveaux amis de Gisorieux acquiescèrent et me racontèrent que le légendaire seigneur Thorpas aurait soi-disant anéanti la dernière volée de
 
-#### **VOLÉE DE NOCTECORBES**
+#### VOLÉE DE NOCTECORBES
 
-|   | CC  |    |    |    |    |    |   |    |    |    |     |
-|---|-----|----|----|----|----|----|---|----|----|----|-----|
-| 2 | 55* | 20 | 42 | 45 | 60 | 24 | - | 14 | 38 | 10 | 75* |
+| M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B   |
+|---|-------|----|----|----|----|----|-----|-----|--------|----|-----|
+| 2 | 55*   | 20 | 42 | 45 | 60 | 24 | -   | 14  | 38     | 10 | 75* |
 
-Traits: Effrayé (Lumière), Infravision, Nuée\*, Peur 2, Taille (Petite), Vol 100
+**Traits :** Effrayé (Lumière), Infravision, Nuée\*, Peur 2, Taille (Petite), Vol 100
 
-Traits d'attaque : Arme (Serres) +8, Morsure (Becs vicieux) +6
+**Traits d'attaque :** Arme (Serres) +8, Morsure (Becs vicieux) +6
 
-Meurtre ailé: toutes les attaques de la nuée de noctecorbes ont les Atouts Empaleuse et Perforante.
+**Meurtre ailé :** toutes les attaques de la nuée de noctecorbes ont les Atouts Empaleuse et Perforante.
 
-Facultatifs: Infecté, Instable, Magique
+**Facultatifs :** Infecté, Instable, Magique
 
 noctecorbes il y a de cela cinq siècles. Apparemment, le décret du Duc n'avait jamais été abrogé, et les chevaliers bretonniens, désireux de bien faire comprendre aux paysans quelle était leur place, vérifiaient de temps à autre que ces torches étaient toujours bien en place. Ce fut le bon moment pour une tournée de boissons et je crus l'affaire close, mais je me trompais.
 
-L'une des personnes avec lesquelles je buvais, un tonnelier dénommé Ferragus, m'approcha discrètement après que les autres se furent retirés pour la soirée. Il me raconta les croyances de certains selon laquelle les noctecorbes étaient encore bien présents, et qu'ils étaient simplement devenus beaucoup plus rusés, tuant leurs victimes sans être détectés dans les profondeurs de la Forêt d'Arden ou dans les vallons de montagnes solitaires au milieu des Montagnes Grises. Pire encore, après avoir bu plusieurs coupes, il marmonna une histoire perturbante au sujet d'un culte secret de sorciers qui invoquerait des volées de noctecorbes pour attaquer ses ennemis. Tous les chevaliers bretonniens avec lesquels je me suis entretenu ont qualifié cette dernière histoire de « sottises de paysan ». La réaction des villageois me sembla quant à elle plus révélatrice. Ils refusèrent totalement d'en parler, répondant qu'il valait mieux ne pas discuter de ce genre de choses maléfiques, au risque d'attirer leur attention.
+L'une des personnes avec lesquelles je buvais, un tonnelier dénommé Ferragus, m'approcha discrètement après que les autres se furent retirés pour la soirée. Il me raconta les croyances de certains selon laquelle les noctecorbes étaient encore bien présents, et qu'ils étaient simplement devenus beaucoup plus rusés, tuant leurs victimes sans être détectés dans les profondeurs de la Forêt d'Arden ou dans les vallons de montagnes solitaires au milieu des Montagnes Grises. Pire encore, après avoir bu plusieurs coupes, il marmonna une histoire perturbante au sujet d'un culte secret de sorciers qui invoquerait des volées de noctecorbes pour attaquer ses ennemis. Tous les chevaliers bretonniens avec lesquels je me suis entretenu ont qualifié cette dernière histoire de *« sottises de paysan »*. La réaction des villageois me sembla quant à elle plus révélatrice. Ils refusèrent totalement d'en parler, répondant qu'il valait mieux ne pas discuter de ce genre de choses maléfiques, au risque d'attirer leur attention.
 
-Il y a de puissants sorciers au Collège d'Ambre capables de lancer un enchantement terrible invoquant une nuée mystique de sombres rapaces pour ravager leurs ennemis. Il est possible que des sorciers en Bretonnie aient accès à un rituel similaire. La paysannerie bretonnienne, ignorante de ces choses-là, pourrait croire qu'il s'agit de noctecorbes. Cela dit, si ces noctecorbes existent, on raconte que des rituels anciens permettent de lier ces créatures, mais ils sont périlleux.
+*Il y a de puissants sorciers au Collège d'Ambre capables de lancer un enchantement terrible invoquant une nuée mystique de sombres rapaces pour ravager leurs ennemis. Il est possible que des sorciers en Bretonnie aient accès à un rituel similaire. La paysannerie bretonnienne, ignorante de ces choses-là, pourrait croire qu'il s'agit de noctecorbes. Cela dit, si ces noctecorbes existent, on raconte que des rituels anciens permettent de lier ces créatures, mais ils sont périlleux.*
 
+<span id="page-62-0" data-folio="60"></span>
+**60**
 
-<span id="page-62-0"></span>
+### **Preyton**
 
-# PREYTON
-
-a Forêt d'Arden jouit d'une terrible réputation qui s'étend au-delà des frontières de la Bretonnie. À l'instar de la Forêt des Ombres ou de la Drakwald,
+La Forêt d'Arden jouit d'une terrible réputation qui s'étend au-delà des frontières de la Bretonnie. À l'instar de la Forêt des Ombres ou de la Drakwald,
 
 les profondeurs de la Forêt d'Arden sont remplies de mutants, d'hommes-bêtes à tête de cerf et de choses bien pires encore. La forêt s'étend sur cinq duchés différents, mais seules ses bordures extérieures abritent d'importantes communautés. On raconte que les quelques villages situés à l'intérieur de la forêt seraient si isolés que des générations entières y vivent et y meurent sans jamais rencontrer d'étranger.
 
-À vrai dire, c'est l'une des terreurs légendaires de la Forêt d'Arden qui est partiellement responsable de notre excursion en Bretonnie. Le preyton est une bête tristement célèbre, à l'aspect flétri et bouillant de rage. Féroce et impitoyable, détruisant tout ce qui l'entoure, il n'est pas sans rappeler les razorgors. Mais contrairement à ces sangliers venus tout droit des enfers, les
+À vrai dire, c'est l'une des terreurs légendaires de la Forêt d'Arden qui est partiellement responsable de notre excursion en Bretonnie. Le preyton est une bête tristement célèbre, à l'aspect flétri et bouillant de rage. Féroce et impitoyable, détruisant tout ce qui l'entoure, il n'est pas sans rappeler les razorgors. Mais contrairement à ces sangliers
 
 eux des cadavres déchiquetés, dont ils ne prennent même pas la peine de se nourrir. Ce sont des créatures torses, dont les pattes avant et le corps évoquent un cerf difforme et couvert d'écailles, et dont l'arrière-train se termine par des pattes courbées et des griffes de lion. Leur tête équine est arbore des ramures acérées et noircies, des yeux rouges furieux et leur gueule est garnie de plusieurs rangées de crocs dentelés. Ils portent des ailes déchiquetées semblables à celles d'un grand rapace, mais volent rarement au-dessus de la canopée de la forêt, préférant traquer leurs proies sous les arbres.
 
@@ -3191,7 +2914,7 @@ Regimius Braun, un prêtre de Taal, m'a narré une sombre histoire au sujet des 
 
 monstres sont créés lors de rituels
 
-
+<span id="page-63-0" data-folio="61"></span>
 cerf géant. Leur existence n'est que douleur intense et souvenirs épars de revenant, qui leur laissent constamment entrevoir ce qu'ils étaient autrefois, les poussant à une folie destructrice. Si Chantenuit ne se trompe pas au sujet des cerfs géants, le récit du prêtre est fortement suspect. Malheureusement, obtenir des informations fiables sur les preytons s'est avéré une entreprise frustrante. Nous avons passé plus d'un mois à Gisoreux, à la recherche d'un guide. Lorsqu'ils ont appris que nous comptions nous rendre quelque temps à l'intérieur de la Forêt d'Arden pour y mener des recherches, la plupart des gens que nous avons rencontrés se sont d'abord esclaffés. Après avoir réalisé que le reste du groupe et moi-même étions tout à fait sérieux, ils ont immédiatement prié leur Dame pour le salut de nos âmes, tout en nous suppliant de renoncer à cette folie.
 
 Nous avons finalement trouvé un village avec une palissade solide le long de la bordure est de la forêt, et c'est là que nous avons rencontré le seigneur Carloman, un chevalier du royaume. Seigneur Carloman était un être courtois, qui se montra intrigué lors de notre rencontre, et particulièrement décontenancé par Kistiane (je pense qu'il la soupçonnait d'être une « Damoiselle du Graal », c'est-à-dire, je suppose, l'une des servantes de la déesse des Bretonniens, et ce bien qu'elle affirme le contraire) et par Chantenuit, dont la capacité à traverser sans le moindre bruit les feuillages les plus épais de la forêt l'a grandement impressionné. Le seigneur Carloman m'a expliqué tout ce qu'il savait au sujet des preytons. Il en avait même combattu un, autrefois. Il a fourni suffisamment d'informations pour satisfaire la plupart des demandes des zoologistes. Le seigneur Carloman affirma qu'il avait entendu des histoires semblables à celle de Braun, mais que la bête qu'il avait combattue n'était pas une créature mort-vivante, quelles que fussent les vérités que ces histoires aient pu contenir par ailleurs. J'ai retranscrit ici ses derniers mots au sujet des preytons, car j'y ai souvent réfléchi depuis.
@@ -3212,102 +2935,86 @@ Nous avons finalement trouvé un village avec une palissade solide le long de la
 
 **Facultatifs :** Mutation, Parasité
 
+<span id="page-64-0" data-folio="62"></span>
 
-<span id="page-64-0"></span>
 
+<span id="page-65-0" data-folio="63"></span>
+Pour des raisons inconnues des érudits, les Montagnes Grises abritent de nombreuses grandes espèces aviaires en plus des grands aigles. Veangthur l'Érudit, de l'Université d'Altdorf, a suggéré dans son ouvrage phare, *Modèles remarquables, naturels ou non*, que la chaîne de montagnes pourrait avoir une propriété, encore non identifiée, qui entrainerait la croissance prodigieuse des oiseaux. Les faucons et les pies-grièches, bien qu'ils n'égalent pas les dimensions impressionnantes des grands aigles, peuvent atteindre de très grandes tailles, avec des envergures moyennes approchant les cinq ou six mètres. Les Bretonniens tiennent les faucons en haute estime, en raison de leur extraordinaire bravoure. J'ai entendu plusieurs récits remarquables qui illustrent le courage dont ils font preuve. De manière notable, ils attaquent fréquemment les hippogriffes qui osent pénétrer sur leur territoire, repoussant même ces prédateurs bien plus imposants avec une détermination remarquable. J'ai rencontré un négociant nain de Karak Azgaraz qui m'a juré que certains elfes chevauchaient les plus grands faucons au combat, une rumeur que les elfes de la Forêt de Loren, trop secrets, n'ont jamais daigné confirmer (ni même nier).
 
-Pour des raisons inconnues des érudits, les Montagnes Grises abritent de nombreuses grandes espèces aviaires en plus des grands aigles. Veangthur l'Érudit, de l'Université d'Altdorf, a suggéré dans son ouvrage phare, Modèles remarquables, naturels ou non, que la chaîne de montagnes pourrait avoir une propriété, encore non identifiée, qui entrainerait la croissance prodigieuse des oiseaux. Les faucons et les pies-grièches, bien qu'ils n'égalent pas les dimensions impressionnantes des grands aigles, peuvent atteindre de très grandes tailles, avec des envergures moyennes approchant les cinq ou six mètres. Les Bretonniens tiennent les faucons en haute estime, en raison de leur extraordinaire bravoure. J'ai entendu plusieurs récits remarquables qui illustrent le courage dont ils font preuve. De manière notable, ils attaquent fréquemment les hippogriffes qui osent pénétrer sur leur territoire, repoussant même ces prédateurs bien plus imposants avec une détermination remarquable. J'ai rencontré un négociant nain de Karak Azgaraz qui m'a juré que certains elfes chevauchaient les plus grands faucons au combat, une rumeur que les elfes de la Forêt de Loren, trop secrets, n'ont jamais daigné confirmer (ni même nier).
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B  |
+|---|-------|---|----|----|----|----|-----|-----|----|--------|----|
+| 2 | 65    | - | 55 | 43 | 35 | 40 | -   | 45  | 45 | 25     | 68 |
 
-| GRAND   | MICIE   |
-|---------|---------|
-| CINAINI | Allalic |
+**Compétences :** Perception 85
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 2 | 65 | -  | 55 | 43 | 35 | 40 | -   | 45  | 45 | 25  | 68 |
-
-Compétences: Perception 85
-
-Traits: Armure 1 (5), Taille (Énorme), Vision nocturne,
+**Traits :** Armure 1 (5), Taille (Énorme), Vision nocturne,
 
 Vol 120
 
-Traits d'attaque : Arme (Serres) +10, Morsure (Bec) +9 Éclair tombé d'un ciel clair : toutes les attaques du grand
+**Traits d'attaque :** Arme (Serres) +10, Morsure (Bec) +9 **Éclair tombé d'un ciel clair :** toutes les attaques du grand
 
 aigle ont les Atouts Rapide et Perforante.
 
-Facultatifs: Rage, Régénération, Langue (Au choix) 50
+**Facultatifs :** Rage, Régénération, Langue (*Au choix*) 50
 
-# FAUCON DES MONTAGNES GRISES
+| FAUCON DES MONTAGNES GRISES |       |   |    |    |    |    |     |     |        |   |    |
+|-----------------------------|-------|---|----|----|----|----|-----|-----|--------|---|----|
+| M                           | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
+| 2                           | 35    | - | 35 | 40 | 45 | 50 | -   | 20  | 55     | - | 32 |
 
-|   |    |    |    |    | 7000 |    |     |     |    |     |    |
-|---|----|----|----|----|------|----|-----|-----|----|-----|----|
-| M | CC | CT | F  | E  | I    | Ag | Dex | Int | FM | Soc | В  |
-| 2 | 35 | -  | 35 | 40 | 45   | 50 | -   | 20  | 55 | -   | 32 |
+**Traits :** Bestial, Taille (Grande), Territorial, Vision nocturne, Vol 100
 
-Traits: Bestial, Taille (Grande), Territorial, Vision nocturne, Vol 100
-
-Traits d'attaque : Arme (Serres) +7, Morsure (Bec) +6
-Facultatifs : Dressé (Dompté, Guerre, Magie, Monture),
+**Traits d'attaque :** Arme (Serres) +7, Morsure (Bec) +6 **Facultatifs :** Dressé (Dompté, Guerre, Magie, Monture),
 
 Frénésie
 
-Si mes lointains cousins choisissent de ne pas se prononcer sur un sujet, c'est assurément qu'ils ont leurs raisons. J'ajouterai ceci : les Montagnes Grises ne sont pas le scul endroit où résident de puissants rapaces. Dans les profondeurs de la Laurelorn, on trouve de merveilleux bosquets avec des arbres anciens qui abritent les heomreths, que vous appelleriez sans doute « hiboux géants », Schreiber. Ce sont des créatures anciennes, d'une grande
+Si mes lointains cousins choisissent de ne pas se prononcer sur un sujet, c'est assurément qu'ils ont leurs raisons. J'ajouterai ceci : les Montagnes Grises ne sont pas le seul endroit où résident de puissants rapaces. Dans les profondeurs de la Laurelorn, on trouve de merveilleux bosquets avec des arbres anciens qui abritent les heomreths, que vous appelleriez sans doute « hiboux géants », Schreiber. Ce sont des créatures anciennes, d'une grande
 
-des créatures anciennes, d'une grand sagosse et aux dons mystiques, mais bien souvent insondables.
+sagesse et aux dons mystiques, mais bien souvent insondables.
 
-Te Zoo Impérial
+#### HEOMRETH
 
-#### **HEOMRETH**
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|----|----|
+| 2 | 55    | - | 40 | 45 | 30 | 45 | -   | 50  | 45     | 20 | 64 |
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 2 | 55 | 4  | 40 | 45 | 30 | 45 |     | 50  | 45 | 20  | 64 |
+**Compétences :** Discrétion (Rurale) 75 (+4 DR grâce à Furtif ), Langue (Elthárin) 60, Savoir (*Au choix*) 80
 
-**Compétences :** Discrétion (Rurale) 75 (+4 DR grâce à Furtif), Langue (Elthárin) 60, Savoir (*Au choix*) 80
+**Traits :** Arboricole, Armure 1 (5), Furtif, Infravision, Taille (Énorme), Vol 80
 
-**Traits:** Arboricole, Armure 1 (5), Furtif, Infravision, Taille (Énorme), Vol 80
+**Traits d'attaque :** Arme (Serres) +9
 
-Traits d'attaque: Arme (Serres) +9
-
-Facultatifs: Béni (Verena), Miracles (Verena), Peur,
+**Facultatifs :** Béni (Verena), Miracles (Verena), Peur,
 
 Protection 8+
 
+<span id="page-66-0" data-folio="64"></span>
 
-<span id="page-66-0"></span>
 
-# COCKATRICE
+## [ZI 6] Cockatrice
 
-ifforme et repoussante, la cockatrice est la plus infâme des aberrations : une créature qui aurait jadis été « bénie » par les Puissances de la Ruine,
+*Folio 65+*
+
+## **Cockatrice**
+
+Difforme et repoussante, la cockatrice est la plus infâme des aberrations : une créature qui aurait jadis été « bénie » par les Puissances de la Ruine,
 
 abandonnée depuis longtemps et parfaitement misérable, mais toujours extrêmement dangereuse. Les chevaliers de Bretonnie considèrent que rare sont les créatures aussi capables de mettre à l'épreuve un guerrier. Lorsqu'ils chassent ces bêtes, les plus sages d'entre eux portent des casques qui les rendent presque aveugles, car ceux qui croisent le regard maudit d'une cockatrice sont aussitôt transformés en pierre.
 
 Une cockatrice ressemble à un grand oiseau difforme, avec un bec à crocs dentelés, ce qui est peu commun chez les rapaces. Leur corps est couvert de plumes et de fourrure, mais de manière inégale et désordonnée. On y trouve fréquemment des zones nues et des couleurs aberrantes qui n'existent pas dans la nature. Elles ont une queue semblable à un serpent, recouverte d'écailles et au bout de laquelle se trouvent des serres griffues et acérées comme celles qui ornent leurs pattes. Du moins, c'est à cela que ressemble le spécimen empaillé et présenté au Musée des Triomphes, dans les environs de Montfort. La conservatrice m'a assuré qu'il s'agissait d'une authentique représentante de cette répugnante espèce, et je n'ai pas douté de sa sincérité. Elle a également souligné que les chevaliers avaient remarqué le « sifflement » résonnant qui émanait de la bête au combat. Ce son était suffisamment distinct pour permettre aux chevaliers qui se privent de leur vue de viser leur proie.
 
-Lors d'une soirée, j'ai rencontré une ravissance bretonnienne, la fille d'un chevalier assez emportant, si je me souviens bien. Elle m'a raconté une histoire fascinante à propos d'une cockatrice que son père avait combattue dans sa jeunesse Apparemment, les cockatrices sont des créatures couardes, d'où leur préférence pour la charogne, mais lorsqu'elles se retrouvent acculées, elles se déchament. Son père faillit succomper à la rage enattendue de la bête, mais, soudainement, elle a fui, poussant des braillements de terreur. Qu'est-ce qui avait à ce point effragé cette chose infame? Une simple hermene, qui avait quitte sa tanière, contrariée par l'escarmouche. Dous cherchez à tuer une cockatrice? Pensez à investir dans une cape en hermine.
+Lors d'une soirée, j'ai rencontré une ravissante bretonnienne, la fille d'un chevalier assez important, si je me souviens bien. Elle m'a raconté une histoire fascinante à propos d'une cockatrice que son père avait combattue dans sa jeunesse. Apparemment, les cockatrices sont des créatures couardes, d'où leur préférence pour la charogne, mais lorsqu'elles se retrouvent acculées, elles se déchaînent. Son père faillit succomber à la rage inattendue de la bête, mais, soudainement, elle a fui, poussant des braillements de terreur. Qu'est-ce qui avait à ce point effrayé cette chose infâme ? Une simple hermine, qui avait quitté sa tanière, contrariée par l'escarmouche. Vous cherchez à tuer une cockatrice ? Pensez à investir dans une cape en hermine.
 
 Les cockatrices dominaient autrefois les montagnes de Bretonnie, émergeant régulièrement de leurs infâmes cavernes pour rôder aux abords des champs de bataille : elles se nourrissent en effet de charognes et aiment piller les morts.
 
-D'après certains comptes-rendus, elles cracheraient de l'acide ou du venin, comme si leur regard pétrifiant ne les rendait pas déjà suffisamment dangereuses. Même les plus vieux récits des Bretonniens n'évoquent jamais un temps qui précéderait l'existence de ce fléau, bien que certains, très anciens, affirment que la cockatrice serait arrivée « sur les ailes du Grand Orage, depuis le nord, il y a bien longtemps ». En vérité, cela n'a rien de surprenant, car les tribus de la Bretonnie ont refusé l'appel de Sigmar. Ce n'est qu'avec l'avènement de leur premier Roi, Gilles le Breton, près de mille ans plus tard, qu'ils ont commencé à écrire leur histoire, dont une grande partie venait de la tradition orale. Après l'unification de la Bretonnie et l'adoption formelle des « Décrets de la chevalerie », de nombreux jeunes chevaliers bretonniens eurent besoin de se mesurer à des ennemis dignes d'eux. Les cockatrices remplirent alors ce rôle. La population de ces bêtes dans les Sœurs Blanches et les Montagnes Grises fut bien vite décimée. On trouve toutefois encore des statues marquant leur passage dans de nombreuses vallées ombragées et l'on raconte qu'elles rôdent entre les rochers du Massif d'Orquemont, au centre de la Bretonnie.
+D'après certains comptes-rendus, elles cracheraient de l'acide ou du venin, comme si leur regard pétrifiant ne les rendait pas déjà suffisamment dangereuses. Même les plus vieux récits des Bretonniens n'évoquent jamais un temps qui précéderait l'existence de ce fléau, bien que certains, très anciens, affirment que la cockatrice serait arrivée *« sur les ailes du Grand Orage, depuis le nord, il y a bien longtemps »*. En vérité, cela n'a rien de surprenant, car les tribus de la Bretonnie ont refusé l'appel de Sigmar. Ce n'est qu'avec l'avènement de leur premier Roi, Gilles le Breton, près de mille ans plus tard, qu'ils ont commencé à écrire leur histoire, dont une grande partie venait de la tradition orale. Après l'unification de la Bretonnie et l'adoption formelle des « Décrets de la chevalerie », de nombreux jeunes chevaliers bretonniens eurent besoin de se mesurer à des ennemis dignes d'eux. Les cockatrices remplirent alors ce rôle. La population de ces bêtes dans les Sœurs Blanches et les Montagnes Grises fut bien vite décimée. On trouve toutefois encore des statues marquant leur passage dans de nombreuses vallées ombragées et l'on raconte qu'elles rôdent entre les rochers du Massif d'Orquemont, au centre de la Bretonnie.
 
 Selon moi, l'idée selon laquelle il pourrait y avoir, dans une même chaîne de montagnes, deux bêtes capables de transformer leurs ennemis en pierre mais n'ayant, apparemment, aucun lien entre elles, défie l'entendement. Les basilics reptiliens au poison virulent dans l'est des Montagnes Grises ne ressemblent aucunement aux cockatrices semblables à des oiseaux de l'ouest des Montagnes Grises. Le Chaos est pourtant toujours insidieux, et qui sait quel infâme lien de parenté unit ces deux espèces ?
 
-LET CEMPRET D'UNE COCKATRICE BRÛLÉE 10MT
-PARTICULIÈREMENT PRIJÉET DET ALCHIMITTET,
-CAR ON RACONTE QU'ELLET POJJÈDENT DET
-PROPRIÉTÉT TRANSMORMATRICET RARET.
-J'AI ENTENDU DET RUMEURT PLUT JOMBRET,
-JUGGÉRANT QU'IL ETT POJJIBLE DE JCULPTER
-LEURT JERRET AVANT POUR CRÉER DET
-DAGUET TERRIBLET QUI PRODUITENT LEUR
-PROPRE VENIN. JE N'AI JAMAIT RIEN VU DE TEL.
-CELA JEMBLE PLAUTIBLE, BIEN QUE JE DOUTE
-QUE CE GENRE DE PROPRIÉTÉ PUITSE
-DURRE ÉTERNELLEMENT
+Les cendres d'une cockatrice brûlée sont particulièrement prisées des alchimistes, car on raconte qu'elles possèdent des propriétés transformatrices rares. J'ai entendu des rumeurs plus sombres, suggérant qu'il est possible de sculpter leurs serres avant pour créer des dagues terribles qui produisent leur propre venin. Je n'ai jamais rien vu de tel. Cela semble plausible, bien que je doute que ce genre de propriété puisse durer éternellement.
 
-
-### COCKATRICE
+<span id="page-67-0" data-folio="65"></span>
+#### COCKATRICE
 
 | M | CC CT |    | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B  |
 |---|-------|----|----|----|----|----|-----|-----|----|--------|----|
@@ -3323,18 +3030,20 @@ DURRE ÉTERNELLEMENT
 
 **65**
 
+<span id="page-68-0" data-folio="66"></span>
 
-<span id="page-68-0"></span>
 
-# CHIMÈRE
+## [ZI 7] Chimère
 
-a terrible chimère à trois têtes est un véritable monstre du Chaos. Créatures difformes qui ne vivent que pour tuer, les chimères ne verront jamais
+*Folio 67+*
 
-l'intérieur d'un zoo, impérial ou autre. Ce sont des horreurs faites chair ; certains affirment en effet qu'elles sont formées de Chaos pur et ne naissent pas réellement au sens matériel du terme. Je peux comprendre que l'on puisse embrasser ce genre de croyances, dans la mesure où s'interroger trop sérieusement sur la lignée potentielle d'une chimère revient à courtiser la folie. Mes compagnons et moi-même n'avions certainement jamais eu pour but de rechercher cette bête, mais « Ranald fera comme il lui plait », comme l'on dit à Altdorf.
+## **Chimère**
 
-Bien qu'il n'existe pas deux chimères identiques, elles ont toute une similarité frappante : trois têtes distinctes. En règle générale, l'une est léonine, une autre est celle d'un grand rapace et la troisième celle d'un dragon. Certains récits évoquent des chimères à têtes d'ours, de félins, de reptiles, d'insectes ou
+La terrible chimère à trois têtes est un véritable monstre du Chaos. Créatures difformes qui ne vivent que pour tuer, les chimères ne verront jamais
 
-encore de crocodiles (une liste inépuisable), mais elles possèdent toujours au moins une tête de dragon. Les trois têtes agissent généralement de concert, bien que l'on ait assurément entendu parler de « disputes » ponctuées de grognements entre les têtes. D'après ma propre expérience malencontreuse, je peux vous affirmer que les têtes d'au moins une chimère étaient capables de traquer indépendamment plusieurs ennemis à la fois.
+l'intérieur d'un zoo, impérial ou autre. Ce sont des horreurs faites chair ; certains affirment en effet qu'elles sont formées de Chaos pur et ne naissent pas réellement au sens matériel du terme. Je peux comprendre que l'on puisse embrasser ce genre de croyances, dans la mesure où s'interroger trop sérieusement sur la lignée potentielle d'une chimère revient à courtiser la folie. Mes compagnons et moi-même n'avions certainement jamais eu pour but de rechercher cette bête, mais « *Ranald fera comme il lui plaît »*, comme l'on dit à Altdorf.
+
+Bien qu'il n'existe pas deux chimères identiques, elles ont toute une similarité frappante : trois têtes distinctes. En règle générale, l'une est léonine, une autre est celle d'un grand rapace et la troisième celle d'un dragon. Certains récits évoquent des chimères à têtes d'ours, de félins, de reptiles, d'insectes ou encore de crocodiles (une liste inépuisable), mais elles possèdent toujours au moins une tête de dragon. Les trois têtes agissent généralement de concert, bien que l'on ait assurément entendu parler de « disputes » ponctuées de grognements entre les têtes. D'après ma propre expérience malencontreuse, je peux vous affirmer que les têtes d'au moins une chimère étaient capables de traquer indépendamment plusieurs ennemis à la fois.
 
 Le corps d'une chimère est généralement semblable à celui d'un énorme chat difforme, avec de larges pattes munies de griffes incurvées, bien que j'aie également entendu parler de chimères au corps similaire à celui d'un gigantesque taureau. La redoutée bête de l'Oblast, qui dévaste régulièrement les terres de Kislev et traque ses proies pendant des jours, aurait un corps immense évoquant un ours au poil gris et hirsute, surmonté des têtes d'un grand faucon, d'un sanglier aux défenses massives et d'un dragon crachant de la glace. Les chimères volent à l'aide de grandes ailes, dont la forme varie également : certaines faites de cuir, d'autres couvertes de plumes. Elles possèdent une longue queue, qui peut s'achever par une lame osseuse, un dard de scorpion, ou même une quatrième tête poussant des grognements.
 
@@ -3342,77 +3051,73 @@ Tous les comptes-rendus au sujet des chimères soulignent leur nature imprévisi
 
 J'ai combattu de nombreux ennemis terribles au cours de ma vie, dont certains que je préférerais oublier, mais le rugissement à trois gorges discordant de la chimère hantera mes cauchemars jusqu'à ce que je me tienne devant Morr. Selon mon expérience, on ne combat pas réellement une chimère, on s'efforce plutôt d'y survivre.
 
-+ 98 +
+> † C †
 
+<span id="page-69-0" data-folio="67"></span>
+Notre séjour en Bretonnie s'achevant, notre groupe se préparait à revenir dans l'Empire en passant par le Défilé de la Hache. Nous passâmes notre dernière nuit dans une célèbre auberge, *Le Poisson tressé*, qui propose les meilleures truites grillées imaginables et offre une vue extraordinaire sur les Montagnes Grises. Plusieurs pics splendides captèrent mon attention, et j'admirai le soleil couchant enflammer leurs sommets en un cercle d'or. Lorsque j'attirai l'attention de mes amis, ils
 
-Notre séjour en Bretonnie s'achevant, notre groupe se préparait à revenir dans l'Empire en passant par le Défilé de la Hache. Nous passâmes notre dernière nuit dans une célèbre auberge, Le Poisson tressé, qui propose les meilleures truites grillées imaginables et offre une vue extraordinaire sur les Montagnes Grises. Plusieurs pics splendides captèrent mon attention, et j'admirai le soleil couchant enflammer leurs sommets en un cercle d'or. Lorsque j'attirai l'attention de mes amis, ils
+regardèrent tous ce spectacle avec admiration, à l'exception de Jorunn, qui me dévisagea avec une expression étrange. « *Ces pics, Schreiber, sont ceux qui entourent Karak Ziflin, ma forteresse. »* Je lui répondis que je les trouvais splendides et lui demandai quand elle comptait y retourner. « *Un jour. Ce vin n'est pas mauvais, pour de la piquette humaine. »*
 
-regardèrent tous ce spectacle avec admiration, à l'exception de Jorunn, qui me dévisagea avec une expression étrange. « Ces pics, Schreiber, sont ceux qui entourent Karak Ziflin, ma forteresse. » Je lui répondis que je les trouvais splendides et lui demandai quand elle comptait y retourner. « Un jour. Ce vin n'est pas mauvais, pour de la piquette humaine. »
+#### CHIMÈRE
 
-#### **CHIMÈRE**
-
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 6 | 65 | 55 | 63 | 52 | 50 | 54 | -   | 24  | 40 | -   | 80 |
+| M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
+|---|-------|----|----|----|----|----|-----|-----|--------|---|----|
+| 6 | 65    | 55 | 63 | 52 | 50 | 54 | -   | 24  | 40     | - | 80 |
 
 **Traits :** Armure 2 (7), Bestial, Corruption (Mineure), Magique, Rage, Redoutable 2, Taille (Énorme), Terreur 1, Territorial, Vision nocturne, Vol 80
 
 **Traits d'attaque :** Arme (Griffes) +10, Morsure +10, Souffle (Feu) +12
 
-Nous vous voyons: une chimère ne peut être ni Surprise, ni en infériorité numérique au combat.
+**Nous vous voyons :** une chimère ne peut être ni *Surprise,* ni en infériorité numérique au combat.
 
-Facultatifs: Attaque caudale +10, Cornes +10, Dressé (Magie, Monture), Furtif, Infecté, Langue préhensile +10, Mutation, Sang corrosif, Venin
+**Facultatifs :** Attaque caudale +10, Cornes +10, Dressé (Magie, Monture), Furtif, Infecté, Langue préhensile +10, Mutation, Sang corrosif, Venin
 
 #### LA BÊTE DE L'OBLAST
 
-|   |    |    |    |    |    |    |   |    |    | Soc |    |  |  |  |
-|---|----|----|----|----|----|----|---|----|----|-----|----|--|--|--|
-| 6 | 75 | 63 | 71 | 65 | 42 | 38 | - | 32 | 40 | -   | 92 |  |  |  |
+| M | CC CT |    | F  | E  | I  | Ag | Dex | Int |    | FM Soc | B  |  |  |  |
+|---|-------|----|----|----|----|----|-----|-----|----|--------|----|--|--|--|
+| 6 | 75    | 63 | 71 | 65 | 42 | 38 | -   | 32  | 40 | -      | 92 |  |  |  |
 
 **Compétences :** Corps à corps (Griffes incurvées) 95, Pistage 62 (bonus de +4 DR grâce au Trait Pisteur)
 
-Talents: Endurci 2, Impitoyable 2
+**Talents :** Endurci 2, Impitoyable 2
 
 **Traits :** Armure 3 (9), Bestial, Corruption (Mineure), Magique, Pisteur, Rage, Redoutable 2, Taille (Énorme), Terreur 1, Territorial, Vision nocturne, Vol 80
 
 **Traits d'attaque :** Arme (Griffes incurvées) +12, Morsure +12, Souffle (Froid) +14
 
-**Nous vous voyons :** la bête de l'Oblast ne peut être ni *Surprise*, ni en infériorité numérique au combat.
+**Nous vous voyons :** la bête de l'Oblast ne peut être ni *Surprise,* ni en infériorité numérique au combat.
 
 **Mâchoires broyantes :** la morsure de la bête de l'Oblast possède les Atouts Taille et Perforante.
 
-Le Zoo Impérial
-
 Notre voyage se déroula sans accroc et nous traversâmes les montagnes sans incident. À Helmgart, nous découvrîmes que ni Chantenuit ni Ghorshkov n'avaient posé les yeux sur le célèbre Drakenberg, et nous prîmes donc la décision de suivre l'un des embranchements de la rivière Bögen qui nous rapprocherait de la montagne. Nous campâmes le long de la rivière, à l'ombre de la montagne.
 
-La nuit était calme, sauf la rivière. Ce joli pic étrange se dressait au-dessus de nous. Vous racontiez une belle histoire, Schreiber, je m'en souviens. Chantenuit nous a offert une chanson, jolie mais je n'ai pas compris les paroles. Pas d'avertissement. Pas de cri. Rien jusqu'à ce que ça nous tombe dessus. Ça vient des ténèbres et Kistiane explose en flammes. Soudain, un rugissement comme rien de connu. La peur faite voix. Mon esprit me dit de courir, mais mon cœur est obstiné, da ? Ca a atterri au milieu du camp : nous apercevons des crocs et des griffes malfaisantes. Sa tête d'oiseau plonge et j'entends Erich crier. Je l'ai pensé mort. C'est sur nous tous à présent. Il frappe vers vous, vers moi, sa queue transperce la jambe de Chantenuit. Du sang partout. Je suis un ancien gladiateur, alors j'attaque, quoi faire d'autre? Ça n'a pas aimé ma hache. Ça criait de ses trois gorges, puis Jorunn coupe la face de lion. Furieux. Enragé que nous osions riposter, da? Je vois sa patte vous toucher et du sang gicler. Puis j'entends un doux son, la voix de Kistiane. Des lances de lumière verte déchire les ailes. Je vois des flèches jaillir du dos. Chantenuit me donne une bonne prise. Je saute dessus, attrape mon arme, et enfonce ma hache aussi profondément que possible dans sa colonne vertébrale. Je frappe à plusieurs reprises. Je ne sais pas combien, mais je me souviens de la morsure de la tête de dragon. Je me rappelle qu'ensuite, vous et Gromsdottir, vous essayez de m'empêcher de me vider de mon sang, en me tirant loin de la chimère morte. Grands dieux! Un glorieux combat, da?
+La nuit était calme, sauf la rivière. Ce joli pic étrange se dressait au-dessus de nous. Vous racontiez une belle histoire, Schreiber, je m'en souviens. Chantenuit nous a offert une chanson, jolie mais je n'ai pas compris les paroles. Pas <sup>d</sup>'avertissement. Pas de cri. Rien jusqu'à ce que ça nous tombe dessus. Ça vient des ténèbres et Kistiane explose en flammes. Soudain, un rugissement comme rien de connu. La peur faite voix. Mon esprit me dit de courir, mais mon cœur est obstiné, da ? Ça a atterri au milieu du camp : nous apercevons des crocs et des griffes malfaisantes. Sa tête d'oiseau plonge et j'entends Erich crier. Je l'ai pensé mort. <sup>C</sup>'est sur nous tous à présent. Il frappe vers vous, vers moi, sa queue transperce la jambe de Chantenuit. Du sang partout. Je suis un ancien gladiateur, alors j'attaque, quoi faire <sup>d</sup>'autre ? Ça n'a pas aimé ma hache. Ça criait de ses trois gorges, puis Jorunn coupe la face de lion. Furieux. Enragé que nous osions riposter, da ? Je vois sa patte vous toucher et du sang gicler. Puis j'entends un doux son, la voix de Kistiane. Des lances de lumière verte déchire les ailes. Je vois des flèches jaillir du dos. Chantenuit me donne une bonne prise. Je saute dessus, attrape mon arme, et enfonce ma hache aussi profondément que possible dans sa colonne vertébrale. Je frappe à plusieurs reprises. Je ne sais pas combien, mais je me souviens de la morsure de la tête de dragon. Je me rappelle qu'ensuite, vous et Gromsdottir, vous essayez de m'empêcher de me vider de mon sang, en me tirant loin de la chimère morte. Grands dieux ! Un glorieux combat, da ?
 
 Nous avons évidemment survécu, quoique de justesse. Reportezvous aux *Appendices* pour le récit de notre convalescence.
 
+<span id="page-70-0" data-folio="68"></span>
 
-<span id="page-70-0"></span>
 
-# LE SECOND INCIDENT CE QUI SE PASSE À WHEBURG
+### **Le second incident Ce qui se passe à Wheburg**
 
-a chimère avait salement abîmé notre groupe, laissant plusieurs d'entre nous grièvement blessés, et Erich presque mort. Kistiane était gravement
+La chimère avait salement abîmé notre groupe, laissant plusieurs d'entre nous grièvement blessés, et Erich presque mort. Kistiane était gravement
 
 brûlée et avait perdu momentanément tous ses cheveux d'or. Vasya avait presque été taillé en pièces. La jambe droite de Chantenuit était salement amochée, ce qui irrita particulièrement l'elfe à la grâce naturelle. Seule Jorunn avait échappé aux blessures graves, bien qu'ayant subi une vilaine coupure. En ce qui me concerne, il est heureux que je manie la plume comme l'épée de la main droite, car la bête avait arraché l'annulaire et l'auriculaire de ma main gauche. Cela étant, Shallya et Sigmar avaient tous deux été de notre côté, sinon le combat aurait pu prendre une tournure bien plus funeste. Les compétences de Jorunn et de Kistiane permirent au moins de stabiliser le reste d'entre nous.
 
-Le matin suivant, Ranald nous adressa un clin d'œil, une patrouille fluviale impériale tombant sur notre campement en bord de rivière. J'espère ne jamais oublier la tête que fit le Capitaine lorsque Vasya a crié : « Hé, les gars, vous avez faim ? » Une Jorunn furieuse menaça de tuer Ghorshkov s'il rouvrait ses blessures, réduisant ainsi à néant tout le travail qu'elle avait fourni, tandis qu'il sautillait, faisant le récit de notre combat avec la chimère aux patrouilleurs fluviaux admiratifs. La patrouille était impressionnée et le Capitaine déclara que nous recevrions tous une prime considérable à Wheburg pour les têtes de la chimère. Bien que cela ne soit pas strictement « dans les règles », le capitaine Krause et son équipe constatèrent l'état dans lequel nous nous trouvions et acceptèrent de nous amener à Wheburg, avec nos trophées. Je n'ai sans doute pas besoin de préciser que je m'assurai qu'une partie appropriée de notre prime fut « reversée » à la patrouille fluviale impériale, faisant confiance au capitaine Krause pour se charger des détails. Même ainsi, mon groupe se trouva à Wheburg en possession d'une bourse pleine de couronnes. Le récit de notre vaillant combat se répandit bientôt en ville comme un feu de forêt au Wissenland. Wheburg est une ville agréable même lorsque l'on est sans le sou, mais elle est extrêmement plaisante si l'on a de l'argent à dépenser. Qui plus est, dès que les occupants d'une taverne découvraient que nous avions vaincu la chimère, ils s'assuraient que nous n'ayons jamais à payer nos boissons.
+Le matin suivant, Ranald nous adressa un clin d'œil, une patrouille fluviale impériale tombant sur notre campement en bord de rivière. J'espère ne jamais oublier la tête que fit le Capitaine lorsque Vasya a crié : *« Hé, les gars, vous avez faim ? »* Une Jorunn furieuse menaça de tuer Ghorshkov s'il rouvrait ses blessures, réduisant ainsi à néant tout le travail qu'elle avait fourni, tandis qu'il sautillait, faisant le récit de notre combat avec la chimère aux patrouilleurs fluviaux admiratifs. La patrouille était impressionnée et le Capitaine déclara que nous recevrions tous une prime considérable à Wheburg pour les têtes de la chimère. Bien que cela ne soit pas strictement « dans les règles », le capitaine Krause et son équipe constatèrent l'état dans lequel nous nous trouvions et acceptèrent de nous amener à Wheburg, avec nos trophées. Je n'ai sans doute pas besoin de préciser que je m'assurai qu'une partie appropriée de notre prime fut « reversée » à la patrouille fluviale impériale, faisant confiance au capitaine Krause pour se charger des détails. Même ainsi, mon groupe se trouva à Wheburg en possession d'une bourse pleine de couronnes. Le récit de notre vaillant combat se répandit bientôt en ville comme un feu de forêt au Wissenland. Wheburg est une ville agréable même lorsque l'on est sans le sou, mais elle est extrêmement plaisante si l'on a de l'argent à dépenser. Qui plus est, dès que les occupants d'une taverne découvraient que nous avions vaincu la chimère, ils s'assuraient que nous n'ayons jamais à payer nos boissons.
 
-Nous avons installé Erich dans une charmante chapelle-infirmerie de Shallya, après avoir versé une généreuse contribution. La jambe de Lynathryn nécessitait l'attention d'un chirurgien talentueux, l'adepte de la chasse ayant clairement fait comprendre que toute tentative d'amputation provoquerait un bain de sang, et pas le sien. Heureusement, l'attitude discrète et réfléchie du doktor Spalten
-
-et la promesse qu'il fit que Chantenuit marcherait à nouveau sans difficulté d'ici deux mois nous rassurèrent tous. Kistiane décida qu'elle aimait avoir les cheveux courts, s'exclamant en riant « Combien de femmes peuvent se vanter d'avoir eu une chimère pour coiffeuse ? » Et Ghorshkov ? Il déclara simplement qu'il aurait besoin d'une grande quantité de bière pour remplacer tout le sang qu'il avait perdu.
+Nous avons installé Erich dans une charmante chapelle-infirmerie de Shallya, après avoir versé une généreuse contribution. La jambe de Lynathryn nécessitait l'attention d'un chirurgien talentueux, l'adepte de la chasse ayant clairement fait comprendre que toute tentative d'amputation provoquerait un bain de sang, et pas le sien. Heureusement, l'attitude discrète et réfléchie du doktor Spalten et la promesse qu'il fit que Chantenuit marcherait à nouveau sans difficulté d'ici deux mois nous rassurèrent tous. Kistiane décida qu'elle aimait avoir les cheveux courts, s'exclamant en riant *« Combien de femmes peuvent se vanter d'avoir eu une chimère pour coiffeuse ? »* Et Ghorshkov ? Il déclara simplement qu'il aurait besoin d'une grande quantité de bière pour remplacer tout le sang qu'il avait perdu.
 
 C'est donc ainsi que nous passâmes notre séjour à Wheburg ; à récupérer de nos blessures, à boire, à jouer, à nous délecter de mets raffinés, à parier, à visiter des maisons de bonne et de mauvaise réputation, à boire et à reboire encore. Je m'efforçai d'écrire entre deux moments de loisir et incitai mes compatriotes à retranscrire leurs pensées dans des entrées destinées au livre du Zoo, dont vous trouverez des reproductions directes tout au long de cet ouvrage. Nous fûmes invités à toutes sortes de fêtes, rencontrâmes plusieurs nobles, de manière publique et clandestine ; des officiers impériaux de haut rang ; et enfin des érudits, une fois diffusée la rumeur de notre travail pour le Zoo Impérial. Ghorshkov dut raconter une dizaine de versions ou plus de notre combat contre la chimère, ainsi que d'autres anecdotes tirées de nos voyages au cours des deux dernières années. Dans l'ensemble, ce fut une période très agréable.
 
-u bout d'un certain temps, je remarquai une tendance récurrente lors de mes innombrables conversations avec des officiers impériaux, d'autres
+Au bout d'un certain temps, je remarquai une tendance récurrente lors de mes innombrables conversations avec des officiers impériaux, d'autres
 
 érudits et certains nobles, qui posèrent tous des questions au sujet des hommes-bêtes et de ce que j'avais pu « découvrir » lors de nos voyages. Faisant remarquer qu'il s'agissait de créatures non naturelles, je répondis que je n'avais que peu de détails à partager. Je n'ai certainement dévoilé publiquement aucun des événements de l'Annexe précédente (*Le premier incident*), me contentant de relever le fait que les hommes-bêtes semblaient assurément s'être multipliés dans les forêts et leur activité s'être intensifiée dernièrement.
 
-Tous acquiescèrent, mais ce n'était pas la réponse qu'ils attendaient. On me demanda à voix basse s'il était possible que des humains deviennent sauvages, semblables à des bêtes ; ces questions étaient toujours formulées sous l'apparence de la simple curiosité. J'ai finalement découvert que plusieurs attaques inhabituelles s'étaient produites dans tout le Vorbergland, de Bögenhafen à Eilhart. Des gens avaient été massacrés, leurs membres déchiquetés, même ceux qui étaient
+Tous acquiescèrent, mais ce n'était pas la réponse qu'ils attendaient. On me demanda à voix basse s'il était possible que des humains deviennent sauvages, semblables à des bêtes ; ces questions étaient toujours formulées sous l'apparence de la simple curiosité. J'ai finalement découvert que plusieurs attaques inhabituelles s'étaient produites dans tout le Vorbergland, de Bögenhafen à Eilhart. Des gens avaient été massacrés, leurs membres déchiquetés, même ceux qui étaient 
 
-
+<span id="page-71-0" data-folio="69"></span>
 abrités en sécurité derrière les hauts murs d'une auberge-relais alors que les bâtiments étaient restés inviolés. D'autres avaient disparu. On n'avait découvert aucun corps ni indice d'un acte criminel, ils s'étaient simplement évanouis sans laisser de trace.
 
 Avais-je connaissance d'hommes-bêtes agissant de la sorte ? Je dus bien reconnaître que non, du moins, dans un premier temps…
@@ -3427,12 +3132,8 @@ Le cadavre sur la table ressemblait à celui d'un grand loup massif, mais il ét
 
 Il me fallut plus de volonté pour masquer ma révulsion qu'il ne m'en avait fallu pour me maîtriser face à une chimère, les terribles soupçons qui m'assaillirent immédiatement m'amenant à rejouer dans ma tête les conversations des semaines précédentes, comprenant avec une clarté soudaine et éblouissante ce qui se trouvait devant moi. Je ris pourtant doucement et répondis, face au regard perçant de Steirlich-Olmn, *« Quel joli costume ! Vous pratiquez la taxidermie, mon Seigneur ? »* Il eut une expression de léger dégoût et de déception, mais la masqua subtilement. *« Pas vraiment, mais cela a demandé beaucoup d'efforts, n'est-ce pas ? »*
 
-
-## Le Zoo Impérial
-
-Il nous fit sortir peu après. Je refusai de répondre aux
-
-questions de Kistiane avant que nous ayons regagné notre chambre à Wheburg. Ce que je n'avais pas dit au seigneur Steirlich-Olmn, c'est que j'avais en effet entendu parler de ces métamorphes déformés, les peaux-de-loup. Bien qu'ils ressemblent aux légendaires Enfants d'Ulric dont on raconte qu'ils sont naturellement capables de se transformer en loups, ce sont des êtres souillés par le Chaos et nés d'une terrible malédiction : des monstres déambulant sous une apparence humaine, jusqu'à ce que Morrslieb les fasse émerger de leur prison de chair. La bête qui se trouve à l'intérieur se libère alors à coups de griffes de sa forme humaine ; une terrible créature-loup qui se tient debout et sème la dévastation à travers le monde pour l'amusement des dieux du Chaos, uniquement vêtue des lambeaux de son ancien corps.
+<span id="page-72-0" data-folio="70"></span>
+Il nous fit sortir peu après. Je refusai de répondre aux questions de Kistiane avant que nous ayons regagné notre chambre à Wheburg. Ce que je n'avais pas dit au seigneur Steirlich-Olmn, c'est que j'avais *en effet* entendu parler de ces métamorphes déformés, les peaux-de-loup. Bien qu'ils ressemblent aux légendaires Enfants d'Ulric dont on raconte qu'ils sont naturellement capables de se transformer en loups, ce sont des êtres souillés par le Chaos et nés d'une terrible malédiction : des monstres déambulant sous une apparence humaine, jusqu'à ce que Morrslieb les fasse émerger de leur prison de chair. La bête qui se trouve à l'intérieur se libère alors à coups de griffes de sa forme humaine ; une terrible créature-loup qui se tient debout et sème la dévastation à travers le monde pour l'amusement des dieux du Chaos, uniquement vêtue des lambeaux de son ancien corps.
 
 La plupart des érudits qui acceptent d'évoquer ces choses affirment que les peaux-de-loup sont des créatures maudites et désespérées, des pions involontaires des Puissances de la Ruine. Mais je connais l'existence d'une taverne d'érudits, La Fourrure maudite à Altdorf, qui jouit d'une sombre réputation et démontre un penchant pour les savoirs obscurs. J'y ai discuté jadis avec un voyageur tourmenté, qui avait évoqué indirectement un culte qu'il appelait la Lune Imprévisible, lequel se consacrait à « atteindre une sombre transcendance » grâce à des rites terribles qui transformeraient les adeptes en peaux-de-loup.
 
@@ -3442,177 +3143,183 @@ Je ne lui ai pas dit que lorsque la bête avait suffisamment massacré, l'humain
 
 Je soupçonne qu'il le savait déjà.
 
-Je dirai ceci: je n'ai rien détecté avec ma Vision dans la cave du seigneur Steirlich-Olmn. Rien: aucune trace des Vents, comme s'ils avaient été scellés par magie. Je sais que vous avez essayé de prudemment faire part de vos soupçons auprès des autorités de Wheburg, mais en l'absence d'un noble prendre au sérieux. Vous souvenez-vous de quoi que ce soit? Je ne pense pas que vous ayez été sobre jusqu'à notre départ pour Altdorf.
+**70**
+
+*Je dirai ceci : je n'ai rien détecté avec ma Vision dans la cave du seigneur Steirlich-Olm aucune trace des Vents, comme s'ils avaient été n. Rien : scellés par magie. Je sais que vous avez essayé de prudemment faire part de vos soupçons auprès des autorités de Wheburg, mais en l'absence d'u pour confirmer vos dires, il était imposs n noble prend ible de vous re au sérieux. Vous souvenez-vous de quoi que ce soit ? Je ne pense pas que vous ayez été sobre jusqu'à notre départ pour Altdorf.*
 
 #### CULTISTE DE LA LUNE IMPRÉVISIBLE
 
-| 19 | M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|----|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-|    | 4 | 30 | 40 | 40 | 45 | 30 | 30 | 40  | 35  | 40 | 30  | 20 |
+| M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
+|---|-------|----|----|----|----|----|-----|-----|--------|----|----|
+| 4 | 30    | 40 | 40 | 45 | 30 | 30 | 40  | 35  | 40     | 30 | 20 |
 
-Compétences: Calme 50, Corps à corps (Base) 40, Discrétion (Rurale) 40, Emprise sur les animaux 50, Escalade 45, Intuition 40, Perception 40, Piégeage 50, Projectiles (Arc) 50, Ragot 40, Recherche 45, Résistance 55, Résistance à l'alcool 55, Savoir (Bêtes 45, Peaux-de-loup 45), Signes secrets (Chasseur) 45, Survie en extérieur 45
+**Compétences :** Calme 50, Corps à corps (Base) 40, Discrétion (Rurale) 40, Emprise sur les animaux 50, Escalade 45, Intuition 40, Perception 40, Piégeage 50, Projectiles (Arc) 50, Ragot 40, Recherche 45, Résistance 55, Résistance à l'alcool 55, Savoir (Bêtes 45, Peaux-de-loup 45), Signes secrets (Chasseur) 45, Survie en extérieur 45
 
-Talents: Dur à Cuire, Tir précis 2\*
+**Talents :** Dur à Cuire, Tir précis 2\*
 
-Traits : Armure 1 (5), Corruption mentale (Bête intérieure)
-Traits d'attaque : À distance (Arc long) +10\* (100), Arme
+**Traits :** Armure 1 (5), Corruption mentale (Bête intérieure) **Traits d'attaque :** À distance (Arc long) +10\* (100), Arme
 
 (Dague) +6
 
-Possessions: arc long avec des flèches à l'aspect sinistre,
+**Possessions :** arc long avec des flèches à l'aspect sinistre,
 
 tatouage de Morrslieb
 
 #### PEAU-DE-LOUP
 
-|   |    |   |    |    |    |    |    |    | FM |    |    |
-|---|----|---|----|----|----|----|----|----|----|----|----|
-| 7 | 60 | - | 54 | 58 | 55 | 48 | 30 | 35 | 50 | 30 | 25 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|----|----|
+| 7 | 60    | – | 54 | 58 | 55 | 48 | 30  | 35  | 50     | 30 | 25 |
 
 **Traits :** Armure 1 (6), Endurant, Foulée, Frénésie, Increvable, Magique, Peur 2, Pisteur, Redoutable, Régénération, Vision nocturne
 
-Traits d'attaque: Arme (Griffes) +10, Morsure +9
+**Traits d'attaque :** Arme (Griffes) +10, Morsure +9
 
-Rage infinie : un peau-de-loup est toujours dans un état
+**Rage infinie :** un peau-de-loup est *toujours* dans un état
 
-de Frénésie.
+de *Frénésie*.
 
-Facultatifs: Affamé, Infecté, Mutation
+**Facultatifs :** Affamé, Infecté, Mutation
+
+<span id="page-73-0" data-folio="71"></span>
+<span id="page-74-0" data-folio="72"></span>
+<span id="page-75-0" data-folio="73"></span>
 
 
+<span id="page-76-0" data-folio="74"></span>
 
 
-<span id="page-75-0"></span>
+## [ZI 8] Grand taurus
 
+*Folio 75+*
 
-# GRAND TAURUS
+## **Grand taurus**
 
-<span id="page-76-0"></span>e vous ai déjà parlé brièvement des Terres Sombres, cette région au soleil impitoyable, battue par des vents cinglants et d'âcres cendres, qui se trouve à
+Je vous ai déjà parlé brièvement des Terres Sombres, cette région au soleil impitoyable, battue par des vents cinglants et d'âcres cendres, qui se trouve à
 
 l'est de l'Empire, au-delà des Montagnes du Bord du Monde. Rares sont les créatures qui choisiraient de plein gré d'élire domicile sur ces terres maudites. Encore plus rares sont celles qui seraient capables de prospérer dans les plaines désolées du Désert foudroyé, où seules des peaux-vertes osent s'aventurer, ou aux alentours des jets de cendres toxiques de la Désolation d'Azgorh. Pourtant, il y prospère au moins une créature, que certains érudits décrivent comme l'un des prédateurs les plus dangereux du Vieux Monde. Un monstre qui personnifie presque les Terres Sombres : le grand taurus.
 
-Les grands taurus sont des créatures de feu et de rage. D'après les nains, ils sont natifs des Terres Sombres. Ils ressemblent à d'énormes taureaux ailés dont la peau rouge profond brûle en permanence de la chaleur d'une gigantesque forge. Leur apparence est perpétuellement voilée par un nuage tourbillonnant de fumée qui s'enroule autour d'eux. Leur gueule bardée de crocs ne laisse pas échapper un souffle, mais des flammes, et où qu'ils aillent, leurs sabots ardents laissent des traces calcinées sur la terre. Aucune des créatures osant arpenter les Terres Sombres n'est à l'abri de leur courroux, car ce sont des tueurs sauvages, à jamais animés par la haine, qui attaquent tout ce qui bouge. Bien qu'il leur arrive de se repaître de leurs victimes, ils laissent généralement
-
-d'innombrables cadavres à moitié calcinés derrière eux, sacrifices involontaires pour apaiser leur éternelle furie ne serait-ce que momentanément.
+Les grands taurus sont des créatures de feu et de rage. D'après les nains, ils sont natifs des Terres Sombres. Ils ressemblent à d'énormes taureaux ailés dont la peau rouge profond brûle en permanence de la chaleur d'une gigantesque forge. Leur apparence est perpétuellement voilée par un nuage tourbillonnant de fumée qui s'enroule autour d'eux. Leur gueule bardée de crocs ne laisse pas échapper un souffle, mais des flammes, et où qu'ils aillent, leurs sabots ardents laissent des traces calcinées sur la terre. Aucune des créatures osant arpenter les Terres Sombres n'est à l'abri de leur courroux, car ce sont des tueurs sauvages, à jamais animés par la haine, qui attaquent tout ce qui bouge. Bien qu'il leur arrive de se repaître de leurs victimes, ils laissent généralement d'innombrables cadavres à moitié calcinés derrière eux, sacrifices involontaires pour apaiser leur éternelle furie ne serait-ce que momentanément.
 
 Une prêtresse de Verena m'a raconté une vieille histoire sur les grands taurus. D'après elle, les dieux eux-même auraient donné naissance à ces monstruosités, afin de punir un territoire jadis fertile tombé dans la décadence. Nul ne connait les méfaits réellement commis par la population pour s'attirer la colère de ses dieux, mais toutes les versions s'accordent à dire que leur transgression était impardonnable. L'accusation la plus courante voudrait qu'ils aient abandonné leurs anciens dieux pour se tourner vers les Puissances de la Ruine, qu'ils auraient jeté ceux ne voulant pas les suivre dans un volcan en activité, et que celuici serait entré si violemment en éruption qu'il aurait explosé. Les terres environnantes auraient été rasées sur plusieurs centaines de milles, pour devenir les déserts que nous connaissons aujourd'hui. Puis, du cœur encore ardent du volcan serait sorti le premier grand taurus, émissaire du courroux démesuré d'une divinité bafouée, afin de ne laisser aucun survivant.
 
 Si je n'ai pas parlé des grands taurus plus tôt, c'est parce que je n'avais pas l'intention de les mentionner du tout, les nains se montrant particulièrement réticents à l'idée de nous parler de ces « taureaux de feu » durant notre séjour à Karak Kadrin. Ils ont cependant insisté sur le fait qu'aucune de ces créatures n'avait jamais été rencontrée ailleurs que dans les Terres Sombres. J'avais déjà beaucoup de créatures à étudier, et j'ai donc décidé de ne pas m'en soucier. Puis nous sommes allés au sud. Nous avons découvert que les villages du Sud du Wissenland étaient effrayés, car leurs terres étaient dévastées par une créature qu'ils appelaient « le Taureau écarlate des Montagnes Noires ». Je veux bien faire preuve d'ouverture d'esprit, mais j'ai beaucoup de mal à croire que cet « énorme taureau de feu ailé » puisse être un nouveau monstre venu de nulle part dans le seul but de ravager l'Empire. Il apparaît donc que les grands taurus peuvent bien quitter les Terres Sombres. Mais qui sait ce qui a pu pousser celui-ci à le faire ? Au grand dam de Ghorshkov, nous ne l'avons pas rencontré sur notre route vers Karak Hirn. Nous avons, cependant, vu les ruines calcinées d'un village qu'il avait détruit.
 
-her karak der montagner du bord du HOHDE OHT EHORMÉMENT JOURFERT À CAUTE DET GRANDT TAURUT, TCHREIBER. CET XUBAUOJUOG GOAT HEIB THOL LAIHEVUOL THEY Y LUX THINH THE HAND ACCEPTENT DE HOUS EN PARLER. IL PARAÎT QU'UNE PETITE FIOLE DE JANG DE GRAND TAURUL LURAIT À ALLUMER UN FEU DE CAMP MOHUMENTAL, MÊME EN PLEIN CŒUR AYTHOU BY A THINEST DE LA HORTCH. DE PLUS, LEURS YEUX RESSEMBLENT À DU AMMOS THALLALLIUR THE HOILUM HE LATEM DU VIF-ARGENT APRÈS LEUR MORT. OH LEUR LATAIBUE DE HOMBREULES PROPRIÉTÉS MYSTIQUES LIÉES, BILARREMENT, AU MEU.
+Les karak des Montagnes du Bord du Monde ont énormément souffert à cause des grands taurus, schreiber. Ces souvenirs sont bien trop douloureux pour que les nains qui y vivent acceptent de nous en parler. Il paraît qu'une petite fiole de sang de grand taurus suffit à allumer un feu de camp monumental, même en plein cœur du plus dur des hivers de la Norsca. De plus, leurs yeux ressemblent à du métal en fusion et ruissellent comme du vif-argent après leur mort. On leur attribue de nombreuses propriétés mystiques liées, bizarrement, au feu.
 
+**74**
 
-Les grands taurus sont clairement des êtres d'Aqshy, le Vent de Feu. Or, ce Vent souffle très fort sur les Terres Sombres. Je pense qu'ils en ont besoin pour survivre et que c'est pour cela qu'ils ne quittent pas ces étendues désolées. Ce « Taureau écarlate » est arrivé bien trop loin des Terres Sombres. Je ne vois que deux explications : ou bien il a trouvé quelque chose assez puissant en Aqshy, suffisant pour le garder en vie, ou bien il a été invoqué. Je crains que l'une comme l'autre ne soient guère rassurantes.
+<span id="page-77-0" data-folio="75"></span>
+*Les grands taurus sont clairement des êtres d'Aqshy, le Vent de Feu. Or, ce Vent souffle très fort sur les Terres Sombres. Je pense qu'ils en ont besoin pour survivre et que c'est pour cela qu'ils ne quittent pas ces étendues désolées. Ce « Taureau écarlate » est arrivé bien trop loin des Terres Sombres. Je ne vois que deux explications : ou bien il a trouvé quelque chose assez puissant en Aqshy, suffisant pour le garder en vie, ou bien il a été invoqué. Je crains que l'une comme l'autre ne soient guère rassurantes.*
 
-#### **GRAND TAURUS**
+#### GRAND TAURUS
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 6 | 55 | 40 | 63 | 52 | 32 | 35 | -   | 30  | 48 | -   | 80 |
+| M |    | CC CT | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
+|---|----|-------|----|----|----|----|-----|-----|--------|---|----|
+| 6 | 55 | 40    | 63 | 52 | 32 | 35 | -   | 30  | 48     | - | 80 |
 
 **Traits :** Bestial, Foulée, Immunité (Feu, Magie flamboyante), Infravision, Magique, Redoutable, Taille (Énorme), Territorial, Vol 80
 
 **Traits d'attaque :** Arme (Sabots ardents) +11, Cornes +11, Souffle (Feu) +10
 
-Corps de flammes: à la fin de chaque Round de combat, toutes les cibles *Engagées* avec un grand taurus subissent 1d10 Blessures. Ces Blessures peuvent être réduites par le Bonus d'Endurance et les Points d'Armure de la cible, mais ne peuvent pas tomber en dessous de 1. De plus, le Bonus d'Endurance d'un grand taurus est doublé (et passe donc à 10) contre les attaques et les armes *non magiques*.
+**Corps de flammes :** à la fin de chaque Round de combat, toutes les cibles *Engagées* avec un grand taurus subissent 1d10 Blessures. Ces Blessures peuvent être réduites par le Bonus d'Endurance et les Points d'Armure de la cible, mais ne peuvent pas tomber en dessous de 1. De plus, le Bonus d'Endurance d'un grand taurus est doublé (et passe donc à 10) contre les attaques et les armes *non magiques*.
 
-Rage sanguinaire : les grands taurus sont toujours sujets à la Frénésie et à la Haine d'absolument tout.
+**Rage sanguinaire :** les grands taurus sont toujours sujets à la *Frénésie* et à la *Haine* d'*absolument tout*.
 
-Facultatif: Armure 3 (8), Dressé (Monture)
+**Facultatif :** Armure 3 (8), Dressé (Monture)
+
+<span id="page-78-0" data-folio="76"></span>
 
 
-# TRÉGARA
+## [ZI 9] Trégara
 
-<span id="page-78-0"></span>Bord du Monde, ou que le mur quasiment infranchissable des Montagnes Grises, mais les passes qui les traversent sont rares et traîtresses. À en croire les nains, avant l'arrivée de Sigmar, la chaîne était parsemée de cavernes instables creusées par les gobelins. Les nains s'en sont débarrassés il y a fort longtemps, dans des expéditions concertées. Aujourd'hui, les montagnes sont toujours dangereuses, notamment à cause de leurs pics abrupts et de leurs chemins escarpés, mais arborent aussi de magnifiques pâturages d'altitude.
+*Folio 77+*
+
+## **Trégara**
+
+Bord du Monde, ou que le mur quasiment infranchissable des Montagnes Grises, mais les passes qui les traversent sont rares et traîtresses. À en croire les nains, avant l'arrivée de Sigmar, la chaîne était parsemée de cavernes instables creusées par les gobelins. Les nains s'en sont débarrassés il y a fort longtemps, dans des expéditions concertées. Aujourd'hui, les montagnes sont toujours dangereuses, notamment à cause de leurs pics abrupts et de leurs chemins escarpés, mais arborent aussi de magnifiques pâturages d'altitude.
 
 Près du centre des Montagnes Noires se trouve le royaume nain de Karak Hirn, la « Forteresse du Cor ». Elle tire son nom de l'énorme sommet creux qui surmonte le cœur de l'édifice et qui émet régulièrement un son tonitruant lorsque le vent s'y engouffre. Il y a bien longtemps que les nains ont maîtrisé cette merveille jadis naturelle : ils y ont installé de nombreux dispositifs qui leur permettent de rediriger ou de modifier le son à l'envi. Elle peut servir de signal à des communautés avoisinantes, d'appel aux armes, ou de semonce pour faire fuir les prédateurs bestiaux. Selon les standards des nains, Karak Hirn n'est pas riche ; selon ceux des humains, cependant, elle est plus que prospère. C'est l'un des rares royaumes nains dont certaines des cités sont exposées à l'air libre, même si elles se trouvent dans des endroits relativement inaccessibles. Les nains de Karak Hirn font régulièrement du commerce avec l'Empire et les audacieux Tiléens. C'est par leur royaume que nous comptions traverser les montagnes pour rejoindre les Principautés Frontalières, puis Barak Varr, afin d'y prendre un bateau en direction de Remas. Cet itinéraire serait impossible à suivre pour la plupart des voyageurs : les nains laissent rarement des étrangers traverser leurs domaines. La plupart doivent donc emprunter le dangereux Col du Feu noir. Cependant, nous avions gardé les symboles de l'estime du roi Poing-de-fer de Karak Kadrin, et étions accompagnés de Jorunn. Nous espérions donc nous attirer leur bienveillance.
 
 Heureusement, les nains ont impassiblement accepté notre requête et nous ont autorisés à entrer dans leur forteresse. Je les ai trouvés austères, mais relativement accueillants (très certainement grâce à la présence de Jorunn). Il n'a pas fallu longtemps pour que les tavernes apprennent ce que nous étions venus faire. Et le soir même, j'ai fait la rencontre de plusieurs longues-barbes, qui m'ont
 
-MOI HOM PLUL, JE MAVAIL JAMAIL ENTEMBU PARLER DEL
-TRÉGARAL. ILL HE DONVENT PAL ÊTRE TRÈL RÉPANDUL DANLL
-LEL MONTAGNEL GRILEL. IL PARAÎT QUE L'UN DE LEURL ORGANEL
-PRODUIT UN ICHOR DURCILLANT QUI LEUR PERMET DE RÉPARER LEUR
-CARAPACE EN UN RIEN DE TEMPL. QUELQUEL MAINL ONT RÉULLI À
-DILTILLER CE « JUL DE TRÉGARA » ET CERTAINL PATROUILLEURL
-EN ENDUILENT APPAREMMENT LEURL CARREAUX POUR MIEUX
-PERCER LA PEAU UN PEU TROP CORIACE DE CERTAINEL
+Moi non plus, je n'avais jamais entendu parler des trégaras. Ils ne doivent pas être très répandus dans les Montagnes Grises. Il paraît que l'un de leurs organes produit un ichor durcissant qui leur permet de réparer leur carapace en un rien de temps. Quelques nains ont réussi à distiller ce « jus de trégara » et certains patrouilleurs en enduisent apparemment leurs carreaux pour mieux percer la peau un peu trop coriace de certaines créatures.
 
-tapoté de leurs longues pipes en insistant pour que mon livre serve à « r'mettre quelqu' choses au clair ». Lorsque je leur ai demandé s'ils parlaient des skavens, j'ai reçu quelques regards et hochements de tête approbateurs. Le doyen des nains présents dans la taverne, si j'ai bien compris, était Drumin Norgrimling. Il avait énormément de récits passionnants à raconter, mais aucun ne m'a autant fasciné que la raison pour laquelle il pensait que Karak Hirn n'avait pas de problème d'hommes-rats : « Ces saletés de vermines sapent les karak de l'ouest, mais ils ne viennent pas nous casser les pieds. Y a trop de trégaras. »
+tapoté de leurs longues pipes en insistant pour que mon livre serve à « *r'mettre quelqu' choses au clair »*. Lorsque je leur ai demandé s'ils parlaient des skavens, j'ai reçu quelques regards et hochements de tête approbateurs. Le doyen des nains présents dans la taverne, si j'ai bien compris, était Drumin Norgrimling. Il avait énormément de récits passionnants à raconter, mais aucun ne m'a autant fasciné que la raison pour laquelle il pensait que Karak Hirn n'avait pas de problème d'hommes-rats : « *Ces saletés de vermines sapent les karak de l'ouest, mais ils ne viennent pas nous casser les pieds. Y a trop de trégaras. »*
 
-Les trégaras sont, comme j'ai fini par l'apprendre, les plus gros insectes dont j'ai jamais entendu parler. Et ils ont apparemment un goût très prononcé pour la viande de skaven. Ils ressemblent à une sorte de croisement entre une mante religieuse et un énorme bernard-l'ermite, exception faite que leur carapace couleur pierre fait intégralement partie de leur corps. La paroi extérieure de leur coquille imite le plafond des cavernes naturelles où ils vivent, ce qui peut les rendre pratiquement indétectables. De plus, les trégaras ne dégagent pas la moindre odeur : même leurs fluides sont inodores. Ceci les aide sans doute beaucoup à ne pas se faire repérer par les skavens. Ils ne peuvent rien voir du tout, puisqu'ils n'ont pas d'yeux, mais leur comportement indique qu'ils peuvent clairement percevoir les cavernes où ils se trouvent. Les nains pensent que les trégaras sont très sensibles aux vibrations de la pierre et qu'ils s'en servent pour localiser leurs proies. Lorsque l'une d'elles arrive à leur portée, les trégaras l'attrapent avec les pinces qui ornent leurs longs membres antérieurs. Ils se servent ensuite de leurs mâchoires à la force phénoménale pour l'achever au plus vite. Quelle est leur puissance ? Laissez-moi vous répéter les paroles de Norgrimling: « J'en ai vu un découper le crâne d'un rat ogre d'un seul coup de mâchoires, comme si c'était une pâtisserie. »
+Les trégaras sont, comme j'ai fini par l'apprendre, les plus gros insectes dont j'ai jamais entendu parler. Et ils ont apparemment un goût très prononcé pour la viande de skaven. Ils ressemblent à une sorte de croisement entre une mante religieuse et un énorme bernard-l'ermite, exception faite que leur carapace couleur pierre fait intégralement partie de leur corps. La paroi extérieure de leur coquille imite le plafond des cavernes naturelles où ils vivent, ce qui peut les rendre pratiquement indétectables. De plus, les trégaras ne dégagent pas la moindre odeur : même leurs fluides sont inodores. Ceci les aide sans doute beaucoup à ne pas se faire repérer par les skavens. Ils ne peuvent rien voir du tout, puisqu'ils n'ont pas d'yeux, mais leur comportement indique qu'ils peuvent clairement percevoir les cavernes où ils se trouvent. Les nains pensent que les trégaras sont très sensibles aux vibrations de la pierre et qu'ils s'en servent pour localiser leurs proies. Lorsque l'une d'elles arrive à leur portée, les trégaras l'attrapent avec les pinces qui ornent leurs longs membres antérieurs. Ils se servent ensuite de leurs mâchoires à la force phénoménale pour l'achever au plus vite. Quelle est leur puissance ? Laissez-moi vous répéter les paroles de Norgrimling : « *J'en ai vu un découper le crâne d'un rat ogre d'un seul coup de mâchoires, comme si c'était une pâtisserie. »*
 
-# TRÉGARA M CC CT F E I Ag Dex Int FM Soc B 6 38 45 42 47 38 15 18 32 10 30
+#### TRÉGARA **M CC CT F E I Ag Dex Int FM Soc B** 6 38 - 45 42 47 38 15 18 32 10 30
 
-**Compétences :** Discrétion (Souterrains) 68 (+3 DR grâce au Trait Furtif)
+**Compétences :** Discrétion (Souterrains) 68 (+3 DR grâce au Trait Furtif )
 
-**Traits:** Armure 3 (7), Furtif, Grimpant, Taille (Grande), Territorial
+**Traits :** Armure 3 (7), Furtif, Grimpant, Taille (Grande), Territorial
 
 **Traits d'attaque :** Arme (Pinces antérieures) +8, Morsure (Mandibules acérées) +9
 
-Pinces antérieures : si un trégara attaque une cible à l'aide de ses pinces et parvient à la toucher, celle-ci gagne automatiquement un État *Empêtré*. Le trégara peut ensuite entamer une *Empoignade* s'il le souhaite. Un trégara ne peut pas *Empêtrer* plus de deux adversaires à la fois.
+**Pinces antérieures :** si un trégara attaque une cible à l'aide de ses pinces et parvient à la toucher, celle-ci gagne automatiquement un État *Empêtré*. Le trégara peut ensuite entamer une *Empoignade* s'il le souhaite. Un trégara ne peut pas *Empêtrer* plus de deux adversaires à la fois.
 
-**Sens des vibrations:** les trégaras détectent automatiquement toutes les créatures physiques dans un rayon de 4 x leur Bonus d'Initiative en mètres, et ne peuvent pas être *Surpris*.
+**Sens des vibrations :** les trégaras détectent automatiquement toutes les créatures physiques dans un rayon de 4 x leur Bonus d'Initiative en mètres, et ne peuvent pas être *Surpris*.
 
-Mandibules acérées : la morsure d'un trégara a les Atouts Empaleuse et Perforante.
+**Mandibules acérées :** la morsure d'un trégara a les Atouts Empaleuse et Perforante.
 
-Facultatif: Insensible à la douleur, Sang corrosif
+**Facultatif :** Insensible à la douleur, Sang corrosif
+
+<span id="page-79-0" data-folio="77"></span>
 
 
-# MACAREUX À BEC TRANCHANT
+## [ZI 10] Macareux à bec tranchant
 
-<span id="page-79-0"></span>l'est de la Tilée et des Monts Apuccini se trouve la Baie des Larmes, séparée du Golfe Noir par la Péninsule Noire (notons un certain manque
+*Folio 78+*
+
+## **Macareux à bec tranchant**
+
+Al'est de la Tilée et des Monts Apuccini se trouve la Baie des Larmes, séparée du Golfe Noir par la Péninsule Noire (notons un certain manque
 
 d'imagination). La baie est vraiment très belle, bordée de falaises argentées et de grottes marines aux formes élégantes. Nous l'avons aperçue de loin lors de notre trajet entre Barak Varr et Remas. Malheureusement pour les visiteurs en herbe, la baie a maintes et maintes fois prouvé qu'elle portait bien son nom, car ses falaises servent de domicile à des milliers de macareux à bec tranchant. Ces énormes rapaces côtiers sont omnivores et armés de becs crochus incroyablement tranchants. Un macareux isolé est un prédateur hardi, n'hésitant jamais à attaquer un voyageur isolé, ou à massacrer les blessés en lisière d'un champ de bataille. Heureusement, il suffit de lui tenir tête avec un peu d'assurance pour le faire fuir. Le problème, c'est qu'ils n'attaquent jamais seuls, mais plutôt en volées de dix à vingt individus et qu'ils semblent alors ne plus avoir peur de rien en groupe. Il y a plusieurs années, j'ai vu une volée déchiqueter une bande de mercenaires ogres en moins d'une minute. Les ogres ont fini par mourir de leurs blessures et les oiseaux ont eu droit à un véritable festin.
 
 Les macareux se nourrissent principalement de poissons, mais ils aiment aussi les charognes, bref tout ce qu'ils peuvent trouver. Leurs colonies sont faciles à repérer : elles émettent une odeur atroce, qui évoque un mélange répugnant de poisson pourri, de sang putride, de guano et de plumes en décomposition, portant sur des kilomètres. Les marins des environs savent toujours où les oiseaux vont pêcher, et ne s'aventurent jamais dans leurs eaux de chasse. La Baie des Larmes est très célèbre pour ses nombreuses colonies de macareux à bec tranchant, mais ce n'est pas le seul endroit du Vieux Monde où l'on peut en trouver. Certains ont été aperçus dans la Mer tiléenne et près des falaises occidentales de l'Estalie. D'après Chantenuit, quelques-uns font même leur nid au nord de l'Empire, parmi les falaises surplombant la Mer des Griffes. Heureusement, ils préfèrent de loin la mer aux rivières, sans quoi ils représenteraient une menace bien plus importante pour les riverains des nombreux cours d'eau de l'Empire.
 
-Les macareux à bec tranchant sont déjà dangereux en eux-mêmes, mais ils ont aussi la mauvaise manie de manger très salement. Le sang qu'ils répandent attire souvent d'autres créatures monstrueuses, qui attendent plus ou moins patiemment de prendre part au festin. Des prédateurs bien plus dangereux que les rapaces viennent parfois rôder à la limite de leur territoire et apprennent vite à reconnaître les cris rauques particuliers qui signalent un mets de choix. En Tilée, les macareux à bec tranchant portent malheur. Cette réputation a pris une ampleur telle que, si j'en crois la signora Rosella Vanvitelli, ils en sont même devenus un symbole de haine. L'une des coutumes de la Tilée est la
+Les macareux à bec tranchant sont déjà dangereux en eux-mêmes, mais ils ont aussi la mauvaise manie de manger très salement. Le sang qu'ils répandent attire souvent d'autres créatures monstrueuses, qui attendent plus ou moins patiemment de prendre part au festin. Des prédateurs bien plus dangereux que les rapaces viennent parfois rôder à la limite de leur territoire et apprennent vite à reconnaître les cris rauques particuliers qui signalent un mets de choix. En Tilée, les macareux à bec tranchant portent malheur. Cette réputation a pris une ampleur telle que, si j'en crois la signora Rosella Vanvitelli, ils en sont même devenus un symbole de haine. L'une des coutumes de la Tilée est la « vendetta », une sorte d'hostilité formelle dont le statut ressemble à celui d'une rancune naine, à l'exception qu'elle peut être annulée ou redéclarée à n'importe quel moment. Or, il n'est pas rare pour un Prince Marchand d'en déclarer une en éclaboussant la porte de son rival du sang d'un macareux, voire d'y déposer une carcasse entière. Ceci a entraîné un marché plus ou moins clandestin de macareux à bec tranchant frais, qui ne sont pas faciles à se procurer. Les prix ont alors monté en flèche et, les Tiléens étant ce qu'ils sont, on trouve maintenant du « sang contrefait ». Pour compliquer la situation, divers groupes de mercenaires et de criminels en quête de notoriété se sont mis à adopter une imagerie qui évoque ces charognards, ce que certains revendeurs clandestins avaient fait avant eux. Il arrive que ces groupes soient liés, mais ils n'ont généralement rien à voir les uns avec les autres. Ceci mène régulièrement à des quiproquos dangereux (ou hilarants).
 
-« vendetta », une sorte d'hostilité formelle dont le statut ressemble à celui d'une rancune naine, à l'exception qu'elle peut être annulée ou redéclarée à n'importe quel moment. Or, il n'est pas rare pour un Prince Marchand d'en déclarer une en éclaboussant la porte de son rival du sang d'un macareux, voire d'y déposer une carcasse entière. Ceci a entraîné un marché plus ou moins clandestin de macareux à bec tranchant frais, qui ne sont pas faciles à se procurer. Les prix ont alors monté en flèche et, les Tiléens étant ce qu'ils sont, on trouve maintenant du « sang contrefait ». Pour compliquer la situation, divers groupes de mercenaires et de criminels en quête de notoriété se sont mis à adopter une imagerie qui évoque ces charognards, ce que certains revendeurs clandestins avaient fait avant eux. Il arrive que ces groupes soient liés, mais ils n'ont généralement rien à voir les uns avec les autres. Ceci mène régulièrement à des quiproquos dangereux (ou hilarants).
-
-JE TIENT À PRÉCITER QUE LE MARCHÉ HOIR DE MACAREUX À BEC TRANCHANT ETT BIEN PLUT ACTIF QUE THEO HE LE LAILJE ENTENPRE ET QUE LET PÉHALITÉT ENCOURUET JI L'ON JE MAIT ATTRAPER JOHT PARTICULIÈREMENT LOURDET.
-
-CET CHAROGHARDI HE JOHT PAJ UTILET QUE POUR LET VENDETTAJ: CERTAINI JORCIERJEN ONT BEJOHN POUR MENER LEURJ RITUELJ. IL PARÂÎT QUE CEJ PRATIQUET PEUVENT MENER À DET RÉJULTATJ CATAJTROPHIQUET JI L'ON JUBLITITUE LE JANG PAR DU MAUX.
-
-LET JORCIERJ HE MONT PREUVE D'AUXUNE PITIÉ ENVERJ LET MAULTAIRES.
+Je tiens à préciser que le marché noir de macareux à bec tranchant est bien plus actif que Theo ne le laisse entendre et que les pénalités encourues si l'on se fait attraper sont particulièrement lourdes. Ces charognards ne sont pas utiles que pour les vendettas : certains sorciers en ont besoin pour mener leurs rituels. Il paraît que ces pratiques peuvent mener à des résultats catastrophiques si l'on substitue le sang par du faux. Les sorciers ne font preuve d'aucune pitié envers les faussaires.
 
 #### MACAREUX À BEC TRANCHANT
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 2 | 38 | 1  | 22 | 34 | 30 | 24 | -   | 10  | 24 | -   | 11 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|---|----|
+| 2 | 38    | - | 22 | 34 | 30 | 24 | -   | 10  | 24     | - | 11 |
 
-Traits: Bestial, Endurant, Nerveux, Taille (Petite), Vision nocturne, Vol 90
+**Traits :** Bestial, Endurant, Nerveux, Taille (Petite), Vision nocturne, Vol 90
 
-Traits d'attaque: Arme (Bec crochu) +7
+**Traits d'attaque :** Arme (Bec crochu) +7
 
-Volée de rasoirs : une volée de macareux à bec tranchant a le Trait Nuée, ce qui leur octroie plusieurs effets, dont l'Immunité Psychologique, une Capacité de Combat de 48 et une valeur de Blessures de 55. De plus, tout adversaire *Engagé* avec un macareux perd automatiquement 1 Blessure (qui ignore son Bonus d'Endurance et ses PA) à la fin de chaque Round.
+**Volée de rasoirs :** une volée de macareux à bec tranchant a le Trait Nuée, ce qui leur octroie plusieurs effets, dont l'Immunité Psychologique, une Capacité de Combat de 48 et une valeur de Blessures de 55. De plus, tout adversaire *Engagé* avec un macareux perd automatiquement 1 Blessure (qui ignore son Bonus d'Endurance et ses PA) à la fin de chaque Round.
 
-Si un macareux à bec tranchant inflige au moins 1 Dégât à une cible, celle-ci doit effectuer un Test de **Résistance Accessible** (+20). En cas d'échec, elle gagne un État *Hémorragique*.
+Si un macareux à bec tranchant inflige au moins 1 Dégât à une cible, celle-ci doit effectuer un Test de **Résistance Accessible (+20)**. En cas d'échec, elle gagne un État *Hémorragique*.
 
-Facultatif: Affamé, Infecté, Nuée (Volée de rasoirs)
+**Facultatif :** Affamé, Infecté, Nuée (Volée de rasoirs)
+
+<span id="page-80-0" data-folio="78"></span>
 
 
-<span id="page-80-0"></span>
+### **Créatures fantastiques des Terres du Sud**
 
-# Créatures fantastiques des Terres du Sud
-
-e capharnaum qui tient lieu de communauté marchande d'Aldium est l'un des seuls endroits des Principautés Frontalières qui m'évoque le moindre
+Le capharnaum qui tient lieu de communauté marchande d'Aldium est l'un des seuls endroits des Principautés Frontalières qui m'évoque le moindre
 
 bon souvenir. Lorsque nous l'avons vue, toujours debout, malgré les revers de fortune incessants qui balaient la région, je me suis senti submergé par une vague de réconfort inattendue. À Aldium, nous avons rejoint une caravane marchande en direction de Barak Varr. La « Porte de la mer » est vraiment unique, même pour un karak. Les nains l'ont directement creusée dans les falaises du Golfe Noir, non pas pour en faire une forteresse (même si c'en est bien une), mais un port. Les marchés de Barak Varr sont admirables, car leurs étals servent d'étape à des biens de tout le Vieux Monde. Je me risquerais même à dire qu'il est possible d'y trouver, surtout dans les ruelles sombres, des objets rares et de grande valeur qui n'auraient jamais pu voir la lumière du jour ailleurs, y compris à Marienburg. Je pense qu'Erich et Kistiane auraient volontiers passé quelques semaines de plus à Barak Varr, mais la forteresse n'était pas du tout au goût de Lynathryn. Nous n'avons pas eu de mal à trouver un bateau de bonne réputation en partance pour la Tilée.
 
 Le grand port de la République de Remas a été construit par les elfes, il y a bien longtemps. Puis il est tombé en ruine lorsqu'ils sont partis du Vieux Monde pour se réfugier sur la distante Ulthuan. Alors que nous achevions de contourner la côte méridionale, j'ai enfin pu poser les yeux sur Remas : sa beauté m'a coupé le souffle. Un pont colossal enjambe l'étroite entrée du port. Sur le pont sont érigés des tours, des maisons et de véritables palais, tous bâtis sur plusieurs étages et penchés selon des angles improbables, occasionnellement soutenus par des contreforts d'une taille impressionnante. Le pont sert de connexion entre les deux moitiés de la ville. J'ai par la suite appris que les maisons des Prince Marchands du Conseil des Cinquante régissant Remas avaient toutes établi leur siège sur « Il Ponte Eterno ». Le grand port est assez immense pour contenir l'intégralité de la flotte de Remas (qui est tout sauf petite). Quant à ses nautoniers, je n'ai nul doute sur le fait qu'ils gagnent bien leur vie : des morceaux titanesques de maçonnerie effondrée affleurent dans toute la baie et rendent toute navigation dangereuse. Je peine à imaginer la splendeur de Remas lorsqu'elle a été construite par les elfes. Aujourd'hui encore, les ruines effondrées que les Tiléens ont laissées en place sont tout simplement magnifiques.
 
-Alors que nous voguions vers le quai, je me suis tourné vers Ghorshkov pour lui indiquer notre véritable destination : un énorme bâtiment allongé, tapi au beau milieu de la cité et visible depuis le port. Le Cirque des valeureux, le Triomphe de Leonardo, le Zoo écarlate, la Grande Fosse, pour n'en citer que quelques uns, et le plus gros amphithéâtre de gladiateurs et de spectacles du Vieux Monde, le Grand Colisée de Remas. Vasya le regardait déjà. Il s'est tourné vers moi pour me sourire. Je ne l'avais jamais vu si près de pleurer. « La Maison de la Gloire, Schreiber. Jamais je n'aurais pensé la voir. » Même les plus grands érudits ne connaissent pas son âge. Les archives tiléennes sont, après tout, notoirement fantaisistes. Tous les historiens renommés s'accordent sur la date de sa rénovation par le fameux Leonardo da Miragliano, en 2006 CI. Une grande partie des dispositifs astucieux, que le brillant Leonardo a intégrés dans le Grand Colisée, est encore utilisée aujourd'hui, cinq siècles plus tard.
+Alors que nous voguions vers le quai, je me suis tourné vers Ghorshkov pour lui indiquer notre véritable destination : un énorme bâtiment allongé, tapi au beau milieu de la cité et visible depuis le port. Le Cirque des valeureux, le Triomphe de Leonardo, le Zoo écarlate, la Grande Fosse, pour n'en citer que quelques uns, et le plus gros amphithéâtre de gladiateurs et de spectacles du Vieux Monde, le Grand Colisée de Remas. Vasya le regardait déjà. Il s'est tourné vers moi pour me sourire. Je ne l'avais jamais vu si près de pleurer. *« La Maison de la Gloire, Schreiber. Jamais je n'aurais pensé la voir. »* Même les plus grands érudits ne connaissent pas son âge. Les archives tiléennes sont, après tout, notoirement fantaisistes. Tous les historiens renommés s'accordent sur la date de sa rénovation par le fameux Leonardo da Miragliano, en 2006 CI. Une grande partie des dispositifs astucieux, que le brillant Leonardo a intégrés dans le Grand Colisée, est encore utilisée aujourd'hui, cinq siècles plus tard.
 
-Nous nous sommes vite retrouvés devant la Casa di Ruggisce, invitations officielles en main. C'est la « Maison des Rugissements » qui s'occupe de toutes les « bestia » pour le Grand Colisée. Les réceptionnistes nous ont prestement menés au bureau de Rosella Vanvitelli, la « Procuratore Extraordinari » de la maison (c'est, du moins, ce qui était écrit sur sa porte). La signorina Vanvitelli s'est avérée être une femme pleine de vie, à la beauté saisissante. Elle était ravie que nous ayons accepté son invitation et nous a accueillis avec effusion (elle a même immédiatement demandé à l'un de ses assistants d'apporter du vin). Notre long voyage ayant été motivé par les merveilles que sa dernière expédition avait rapportées, elle ne nous fit pas attendre bien longtemps avant de déclarer en plaisantant : « Je sais que je suis magnifique, mais ce n'est pas moi que vous êtes venus voir, n'est-ce pas ? »
+Nous nous sommes vite retrouvés devant la Casa di Ruggisce, invitations officielles en main. C'est la « Maison des Rugissements » qui s'occupe de toutes les « bestia » pour le Grand Colisée. Les réceptionnistes nous ont prestement menés au bureau de Rosella Vanvitelli, la « Procuratore Extraordinari » de la maison (c'est, du moins, ce qui était écrit sur sa porte). La signorina Vanvitelli s'est avérée être une femme pleine de vie, à la beauté saisissante. Elle était ravie que nous ayons accepté son invitation et nous a accueillis avec effusion (elle a même immédiatement demandé à l'un de ses assistants d'apporter du vin). Notre long voyage ayant été motivé par les merveilles que sa dernière expédition avait rapportées, elle ne nous fit pas attendre bien longtemps avant de déclarer en plaisantant : *« Je sais que je suis magnifique, mais ce n'est pas moi que vous êtes venus voir, n'est-ce pas ? »*
 
-La Casa di Ruggisce est à deux pas du Grand Colisée. Les cages de la Maison des Rugissements sont connectées à l'amphithéâtre par de vastes tunnels souterrains, ce qui permet d'emmener diverses créatures directement dans l'arène. Les cages de la Maison font partie des plus solides que je n'ai jamais vues. Vanvitelli a commenté, d'un hochement de tête à Jorunn, qu'elles étaient « bien évidemment » de facture naine. Elle nous a menés à travers une courte succession de galeries débouchant dans une immense salle souterraine, sous la Maison. Elle nous a expliqué que par endroits, le réseau s'enfonçait à plus de vingt mètres sous terre. Enfin, elle nous a guidés jusqu'à un balcon renforcé dominant plusieurs grosses cages. Puis, d'une unique révérence théâtrale, elle s'est retournée et nous a montré la salle : « Mon plus grand triomphe. »
+La Casa di Ruggisce est à deux pas du Grand Colisée. Les cages de la Maison des Rugissements sont connectées à l'amphithéâtre par de vastes tunnels souterrains, ce qui permet d'emmener diverses créatures directement dans l'arène. Les cages de la Maison font partie des plus solides que je n'ai jamais vues. Vanvitelli a commenté, d'un hochement de tête à Jorunn, qu'elles étaient « bien évidemment » de facture naine. Elle nous a menés à travers une courte succession de galeries débouchant dans une immense salle souterraine, sous la Maison. Elle nous a expliqué que par endroits, le réseau s'enfonçait à plus de vingt mètres sous terre. Enfin, elle nous a guidés jusqu'à un balcon renforcé dominant plusieurs grosses cages. Puis, d'une unique révérence théâtrale, elle s'est retournée et nous a montré la salle : « *Mon plus grand triomphe. »*
 
-78
+**78**
 
-
+<span id="page-81-0" data-folio="79"></span>
 Dans la lumière vacillante de lampes forgées par des nains se tenait un énorme reptile bipède. Il mesurait au moins cinq mètres de haut. Il a immédiatement tourné la tête vers nous, soufflant une bouffée d'air par les narines. Ses yeux brûlaient d'une lueur prédatrice et ses dents monstrueuses scintillaient dans la pénombre. Son corps tout entier semblait bâti pour la vitesse et sa mâchoire aurait facilement pu couper un ogre en deux. Le monstre qui nous regardait haineusement depuis sa cage était le plus fabuleux de toutes les créatures de la Lustrie et des lointaines Terres du Sud : le lézard du tonnerre, le carnosaure.
 
 Sous le choc, j'ai demandé à Vanvitelli comment elle avait pu accomplir un tel exploit, alors même que mes compagnons laissaient échapper des exclamations émerveillées. Elle a mis son bras autour de mes épaules et m'a fait un clin d'œil : *« À votre avis ? Avec de l'argent. »* Le Conseil des Cinquante, voyezvous, est mené par un triumvirat de Princes Marchands élus chaque année, soi-disant au hasard, parmi ses membres. Les intérêts de la République de Remas pour l'année sont alors fortement influencés par les préférences de ses triumvirs. Vanvitelli avait attendu, qu'une année, deux des triumvirs soient particulièrement particulièrement amateurs du Grand Colisée. Elle les avait alors convaincus de toute la gloire qui les attendrait s'ils acceptaient de financer une expédition dans les Terres du Sud pour en ramener quelques créatures merveilleuses pour la science, pour l'art et pour le spectacle. Elle n'était pas encline à nous raconter les difficultés de l'expédition et a préféré nous parler de l'immense succès qu'elle avait représenté, et des sommes monumentales que les monstres rapportaient à Remas. Au cours des deux mois que j'ai passés en sa compagnie, je l'ai très rarement vue démoralisée. L'une de ces rares occurrences était lorsque nous avons parlé du véritable coût de son expédition : *« J'ai perdu tant d'hommes, signore Schreiber. À cause de la jungle. Des maladies. Des Al Saurim. D'eux. »*
@@ -3621,7 +3328,7 @@ L'unique difficulté dont elle a accepté de me parler en détail était assez c
 
 **79**
 
-# STÉGADON
+#### STÉGADON
 
 | M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B   |
 |---|-------|---|----|----|----|----|-----|-----|--------|----|-----|
@@ -3635,34 +3342,38 @@ L'unique difficulté dont elle a accepté de me parler en détail était assez c
 
 **Facultatif :** Dressé (Garder, Guerre, Monture), Endurant, Taille (Monstrueuse), Territorial
 
+<span id="page-82-0" data-folio="80"></span>
+ Au cours de notre séjour à Remas, nous avons assisté à plusieurs exhibitions de créatures des Terres du Sud. Leur nourrissage, en particulier, était toujours complet. Voir un carnosaure pourchasser et dévorer un taureau en pleine course dans une jungle artificielle est une expérience unique. Tandis que les autres s'affairaient à explorer Remas, Chantenuit appréciait surtout ses visites des ruines entourant la cité. Erich était fasciné et griffonnait frénétiquement pendant des heures. J'ai vite perdu le compte de ses innombrables et excellents croquis. Quant à moi, j'ai rempli tout un carnet de notes et autres observations pour l'Université d'Altdorf et le Zoo Impérial. Quelques unes de mes découvertes étaient tout simplement fascinantes. Il paraît que certaines de ces créatures seraient remontées jusqu'aux Badlands et qu'une poignée d'entre elles auraient même atteint les Principautés Frontalières !
 
-### Le Zoo Impérial
+Quelles créatures extraordinaires ! J'espère très sincèrement ne jamais en rencontrer une en liberté.
 
-Au cours de notre séjour à Remas, nous avons assisté
-
-à plusieurs exhibitions de créatures des Terres du Sud. Leur nourrissage, en particulier, était toujours complet. Voir un carnosaure pourchasser et dévorer un taureau en pleine course dans une jungle artificielle est une expérience unique. Tandis que les autres s'affairaient à explorer Remas, Chantenuit appréciait surtout ses visites des ruines entourant la cité. Erich était fasciné et griffonnait frénétiquement pendant des heures. J'ai vite perdu le compte de ses innombrables et excellents croquis. Quant à moi, j'ai rempli tout un carnet de notes et autres observations pour l'Université d'Altdorf et le Zoo Impérial. Quelques unes de mes découvertes étaient tout simplement fascinantes. Il paraît que certaines de ces créatures seraient remontées jusqu'aux Badlands et qu'une poignée d'entre elles auraient même atteint les Principautés Frontalières!
-
-Quelles créatures extraordinaires! J'espère très sincèrement ne jamais en rencontrer une en liberté.
+**80**
 
 #### CORNU
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 7 | 42 | -  | 42 | 45 | 25 | 30 | -   | 15  | 35 | 1   | 30 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|---|----|
+| 7 | 42    | - | 42 | 45 | 25 | 30 | -   | 15  | 35     | - | 30 |
 
-**Traits**: À sang-froid, Armure 2 (6), Bestial, Foulée, Taille (Grande), Territorial
+**Traits :** À sang-froid, Armure 2 (6), Bestial, Foulée, Taille (Grande), Territorial
 
-Traits d'attaque: Cornes +9, Morsure +8
+**Traits d'attaque :** Cornes +9, Morsure +8
 
-Facultatif: Arboricole, Belliqueux, Dressé (Dompté, Garder, Guerre, Monture), Furtif, Limicole, Stupide
+**Facultatif :** Arboricole, Belliqueux, Dressé (Dompté, Garder, Guerre, Monture), Furtif, Limicole, Stupide
 
-Vanvitelli, elle comprend ce que je veux faire. Elle m'appelle bestiarii kislevite'. Elle veut dire: nous pouvons gagner beaucoup d'argent. Je lui ai répondu que cela me plaisait. Mais bon, tu sais, je l'aurais fait pour rien. Combattre dans la Maison de la Gloire... Mon rêve devient réalité! Un gros lézard ramené des Terres du Sud. Plus petit que le premier, mais dangereux quand même. Ils l'appellent Cornu : des dents acérées, avec, bizarrement, des cornes pointues. Rapide, Mortel. Il chasse habituellement en meute. Mais pas là. Bonne nouvelle pour Vasya, da ? Nous avons fait un combat spectacle. Talent nordique contre furie du Sud !'Très bon public. Les Tiléens savent encourager. Très bon combat. Jy ai gagné une bonne cicatrice, un souvenir du Grand Colisée, da ? Mais je n'ai pas réussi à le tuer. Dommage.
+Vanvitelli, elle comprend ce que je veux faire. Elle m'appelle 'bestiarii kislevite'. Elle veut dire : 'nous pouvons gagner beaucoup d'argent. Je lui ai répondu que cela me plaisait. Mais bon, tu sais, je l'aurais fait pour rien. Combattre dans la Maison de la Gloire… Mon rêve devient réalité ! Un gros lézard ramené des Terres du Sud. Plus petit que le premier, mais dangereux quand même. Ils l'appellent Cornu : des dents acérées, avec, bizarrement, des cornes pointues. Rapide. Mortel. Il chasse habituellement en meute. Mais pas là. Bonne nouvelle pour Vasya, da ? Nous avons fait un combat spectacle. 'Talent nordique contre furie du Sud !'Très bon public. Les Tiléens savent encourager. Très bon combat. J'y ai gagné une bonne cicatrice, un souvenir du Grand Colisée, da ? Mais je n'ai pas réussi à le tuer. Dommage.
+
+<span id="page-83-0" data-folio="81"></span>
+<span id="page-84-0" data-folio="82"></span>
 
 
+## [ZI 11] Chat sauvage
 
-# CHAT SAUVAGE
+*Folio 83+*
 
-<span id="page-84-0"></span>e toutes les créatures que j'ai aperçues (ou dont j'ai entendu parler) au cours de mes voyages, peu font preuve d'autant de grâce que l'un des animaux
+## **Chat sauvage**
+
+De toutes les créatures que j'ai aperçues (ou dont j'ai entendu parler) au cours de mes voyages, peu font preuve d'autant de grâce que l'un des animaux
 
 les plus communs : les chats. De nombreuses fermes et petites communautés de l'Empire se sont tournées vers eux pour régler leurs problèmes de rats, une mission que les félins accomplissent souvent avec brio. Les chats sont aussi extrêmement populaires en Tilée et la Casa di Ruggisce n'y fait pas exception. Cependant, ce ne sont pas de simples chats de ferme qui font battre le cœur des méridionaux. Les Tiléens préfèrent les créatures mortelles qui font aussi preuve de grâce et de compétence, car c'est ce qui fait d'elles de bons « gladiatore ».
 
@@ -3672,62 +3383,68 @@ Les grands chats tiléens ressemblent beaucoup à ceux de l'Empire. Leur fourrur
 
 La plupart du temps, les grands chats évitent les communautés humaines. Ils préfèrent de loin vivre dans la forêt ou dans les montagnes. Si l'occasion se présente, cependant, il peut leur arriver de repartir avec un poulet ou un mouton arraché à une ferme isolée. Bien que cela soit rare, il peut aussi arriver qu'un chat sauvage malade ou souillé par le Chaos représente une menace pour les voyageurs imprudents.
 
-#### **CHAT SAUVAGE**
+#### CHAT SAUVAGE
 
-| M |    |    |    |    |    |   |    |    |   |    |
-|---|----|----|----|----|----|---|----|----|---|----|
-| 6 | 41 | 43 | 32 | 45 | 55 | - | 10 | 44 | - | 14 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|---|----|
+| 6 | 41    | - | 43 | 32 | 45 | 55 | -   | 10  | 44     | - | 14 |
 
 **Compétences :** Discrétion (Rurale) 75 (+5 DR grâce à Arboricole)
 
-**Traits:** Arboricole, Bestial, Déstabilisant, Foulée, Nerveux, Pisteur, Vision nocturne
+**Traits :** Arboricole, Bestial, Déstabilisant, Foulée, Nerveux, Pisteur, Vision nocturne
 
-Traits d'attaque: Arme (Griffes) +7, Morsure +6
+**Traits d'attaque :** Arme (Griffes) +7, Morsure +6
 
 **Déstabilisant :** en présence d'une créature *Déstabilisante*, une créature Instable compte ses Avantages à la fin de chaque Round comme si elle en avait deux de moins. Ses Avantages ne sont pas perdus, seulement ignorés.
 
-Facultatif: Dressé (Dompté), Infecté, Magique, Mutation, Parasité, Protection 9+
+**Facultatif :** Dressé (Dompté), Infecté, Magique, Mutation, Parasité, Protection 9+
 
 #### LION DE GUERRE DE CHRACE
 
-|   |   |    |    |    |    |    |    | Dex          |    |    |    |    |
-|---|---|----|----|----|----|----|----|--------------|----|----|----|----|
-| 8 | 3 | 55 | 10 | 52 | 48 | 38 | 42 | , <b>-</b> ( | 35 | 50 | 30 | 36 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|----|----|
+| 8 | 55    | - | 52 | 48 | 38 | 42 | -   | 35  | 50     | 30 | 36 |
 
-**Compétences :** Corps à corps (Griffes) 65, Discrétion (Rurale) 62 (+4 DR grâce à Furtif)
+**Compétences :** Corps à corps (Griffes) 65, Discrétion (Rurale) 62 (+4 DR grâce à Furtif )
 
-Traits: Armure 2 (6), Foulée, Furtif, Pisteur, Rage, Redoutable 2, Taille (Grande), Vision nocturne
+**Traits :** Armure 2 (6), Foulée, Furtif, Pisteur, Rage, Redoutable 2, Taille (Grande), Vision nocturne
 
-Traits d'attaque: Arme (Griffes) +10, Morsure +9
+**Traits d'attaque :** Arme (Griffes) +10, Morsure +9
 
 **Don de Rahagra :** les armes naturelles des lions de guerre de Chrace ont les Atouts Perforante et Rapide.
 
-**Facultatif:** Champion, Endurant, Insensible à la douleur, Magique
+**Facultatif :** Champion, Endurant, Insensible à la douleur, Magique
 
-
-T'ai un jour accepté une mission diplomatique à Marienburg pour ma reine. Je n'aime pas la
+<span id="page-85-0" data-folio="83"></span>
+J'ai un jour accepté une mission diplomatique
 
 utiles que la langue d'un diplomate, surtout si
 
-Son rugiesement semblable au son d'une cloche
+Son rugissement semblable au son d'une cloche
 
-en présence de sa maîtresse, pien entendu.
+en présence de sa maîtresse, bien entendu.
 
-
-# IL POTENTE GRANCHIO
-
-<span id="page-86-0"></span>n soir, une petite heure avant le coucher du soleil, Erich et moi étions en train de siroter un verre de vin, dans un bureau tranquille que les dignitaires
-
-de la Casa di Ruggisce avaient généreusement mis à notre disposition pendant notre séjour dans leur belle cité. Soudain, nous avons entendu une clameur assourdissante, puis le bruit d'une foule en pleine course. Mon tiléen laisse beaucoup à désirer, aussi me suis-je tourné vers Erich, qui a demandé ce qui se passait par la fenêtre. La réponse nous est venue, hurlée et répétée par plusieurs voix en même temps. Erich s'est retourné, perplexe. Il a traduit : « Ce maudit crabe a encore frappé. » Avant que j'aie pu lui poser la moindre question, Rosella est apparue à notre porte et nous a interpellés : « Ah, bene! J'espérais vous trouver ici, tous les deux. Emportez vos carnets. Vous en aurez besoin! » Alors que nous nous dirigions vers le port, elle nous a expliqué qu'un monstre marin avait attaqué un vaisseau de Remas juste au nord de Sartosa et que la majorité de son équipage était portée disparue. Dans ce genre de situation, les autorités et les partis intéressés ne manquent jamais de consulter la signorina Vanvitelli ou ses collègues de la Casa di Ruggisce : ils sont, après tout, reconnus par beaucoup comme les plus grands experts de toutes les créatures monstrueuses qui arpentent la Tilée. Rosella nous a glissé, discrètement, qu'il s'agissait en fait d'un accord officieux de longue date entre la Casa et le Conseil des Cinquante. Le véritable objectif de ces « consultations » était de calmer l'agitation des citoyens, de leur dire que le monstre s'en était sans doute déjà allé (ce qui est généralement le cas) et d'écouter les histoires des survivants en quête d'informations. Et, bien entendu, lorsque les Tiléens commencent à parler de ce genre de choses, toutes sortes d'histoires se mettent à affluer. Elle a tapoté mon carnet et m'a fait un clin d'œil : « Je vais m'assurer que Renzo reste avec vous pour tout vous traduire. Ooh, ce soir, vous en prendrez plein les oreilles, signore Schreiber!»
-
-Rosella avait raison. Cette nuit-là, j'ai entendu assez de récits sensationnalistes sur la mer et les monstres qui l'habitent pour remplir plusieurs carnets. J'ai entendu des rapports du naufrageur monstrueux connu sous le nom de béhémoth, de requins gigantesques de la taille de galions, du kraken malveillant qui terrorisait les mêmes ports pendant plusieurs semaines d'affilée, de l'effroyable dévoreuse noire qui pouvait engloutir des navires de pêche entiers... et beaucoup, beaucoup de récits des horreurs perpétrées par « Il Potente Granchio ». Le crabe puissant (ou géant) avait en fait démantelé le vaisseau récemment perdu, avant de repêcher des eaux ses marins pour les dévorer.
-
-l'avais déjà entendu parler de créatures comme Il Potente Granchio, principalement dans les tavernes des quais d'Altdorf et de Marienburg. Dans l'Empire, on les appelle « léviathans ». Ce sont des créatures gigantesques, qui ressemblent à un croisement entre un énorme bernard-l'ermite et un homard, et mesurant près de six mètres de large. Leur carapace est plus dure que l'acier trempé ; flèches et armes à feu de petite taille ne leur font même pas une égratignure. Leurs pinces sont aisément capables de couper un chevalier bretonnien et son destrier caparaçonné en deux. Comme ce sont des créatures des profondeurs, elles font rarement surface, mais elles sont extrêmement dangereuses pour tous les vaisseaux qu'elles croisent. Pour certains, elles sont les messagères du courroux de Manann, envoyées pour punir ceux qui lui ont déplu. Les marins lui font parfois des offrandes pour se protéger de leur fureur. Dans certains ports désespérés, on parle même de véritables cultes voués à des léviathans précis. Pour ma part, je pense qu'il s'agit uniquement de bêtes destructrices particulièrement dangereuses. Le meilleur conseil de la Casa di Ruggisce, en cas de rencontre en pleine mer, est de jeter toute marchandise « mangeable » par-dessus bord et de filer à toute allure pour s'échapper. Quelques marins m'ont parlé de tirages au sort et de « nobles » sacrifices pour ralentir leur poursuite : une poignée de vies contre toutes les autres. Une terrible décision, mais peut-être une décision compréhensible. Puisse Sigmar nous garder d'avoir à vivre une telle situation.
-
-Kadon, un sorcier d'antan, passé maître dans les arts arcaniques qui visent à plier les créatures magiques à sa volonté, a juré que les léviathans étaient hors de tout contrôle. Il a écrit que leur esprit était trop incompréhensible et leur volonté trop puissante pour que l'on puisse avoir la moindre emprise sur eux. Néanmoins, il aurait apparemment découvert la clé de leur invocation. En appeler à une créature que vous ne pouvez ni contrôler, ni renvoyer est d'une témérité sans précédent. Cependant, je me vois forcée de me demander si certains marchands ne trouveraient pas l'idée d'une attaque « fortuite » d'Il Potente Granchio sur leurs rivaux plutôt intéressante. Je crois que votre cynisme a commencé à déteindre sur moi, Theo.
+<span id="page-86-0" data-folio="84"></span>
 
 
-# LÉVIATHAN
+## [ZI 12] Il Potente Granchio
+
+*Folio 85+*
+
+## **Il Potente Granchio**
+
+Un soir, une petite heure avant le coucher du soleil, Erich et moi étions en train de siroter un verre de vin, dans un bureau tranquille que les dignitaires
+
+de la Casa di Ruggisce avaient généreusement mis à notre disposition pendant notre séjour dans leur belle cité. Soudain, nous avons entendu une clameur assourdissante, puis le bruit d'une foule en pleine course. Mon tiléen laisse beaucoup à désirer, aussi me suis-je tourné vers Erich, qui a demandé ce qui se passait par la fenêtre. La réponse nous est venue, hurlée et répétée par plusieurs voix en même temps. Erich s'est retourné, perplexe. Il a traduit : *« Ce maudit crabe a encore frappé. »* Avant que j'aie pu lui poser la moindre question, Rosella est apparue à notre porte et nous a interpellés : *« Ah, bene ! J'espérais vous trouver ici, tous les deux. Emportez vos carnets. Vous en aurez besoin ! »* Alors que nous nous dirigions vers le port, elle nous a expliqué qu'un monstre marin avait attaqué un vaisseau de Remas juste au nord de Sartosa et que la majorité de son équipage était portée disparue. Dans ce genre de situation, les autorités et les partis intéressés ne manquent jamais de consulter la signorina Vanvitelli ou ses collègues de la Casa di Ruggisce : ils sont, après tout, reconnus par beaucoup comme les plus grands experts de toutes les créatures monstrueuses qui arpentent la Tilée. Rosella nous a glissé, discrètement, qu'il s'agissait en fait d'un accord officieux de longue date entre la Casa et le Conseil des Cinquante. Le véritable objectif de ces « consultations » était de calmer l'agitation des citoyens, de leur dire que le monstre s'en était sans doute déjà allé (ce qui est généralement le cas) et d'écouter les histoires des survivants en quête d'informations. Et, bien entendu, lorsque les Tiléens commencent à parler de ce genre de choses, toutes sortes d'histoires se mettent à affluer. Elle a tapoté mon carnet et m'a fait un clin d'œil : *« Je vais m'assurer que Renzo reste avec vous pour tout vous traduire. Ooh, ce soir, vous en prendrez plein les oreilles, signore Schreiber ! »*
+
+Rosella avait raison. Cette nuit-là, j'ai entendu assez de récits sensationnalistes sur la mer et les monstres qui l'habitent pour remplir plusieurs carnets. J'ai entendu des rapports du naufrageur monstrueux connu sous le nom de béhémoth, de requins gigantesques de la taille de galions, du kraken malveillant qui terrorisait les mêmes ports pendant plusieurs semaines d'affilée, de l'effroyable dévoreuse noire qui pouvait engloutir des navires de pêche entiers… et beaucoup, beaucoup de récits des horreurs perpétrées par « Il Potente Granchio ». Le crabe puissant (ou géant) avait en fait démantelé le vaisseau récemment perdu, avant de repêcher des eaux ses marins pour les dévorer.
+
+J'avais déjà entendu parler de créatures comme Il Potente Granchio, principalement dans les tavernes des quais d'Altdorf et de Marienburg. Dans l'Empire, on les appelle « léviathans ». Ce sont des créatures gigantesques, qui ressemblent à un croisement entre un énorme bernard-l'ermite et un homard, et mesurant près de six mètres de large. Leur carapace est plus dure que l'acier trempé ; flèches et armes à feu de petite taille ne leur font même pas une égratignure. Leurs pinces sont aisément capables de couper un chevalier bretonnien et son destrier caparaçonné en deux. Comme ce sont des créatures des profondeurs, elles font rarement surface, mais elles sont extrêmement dangereuses pour tous les vaisseaux qu'elles croisent. Pour certains, elles sont les messagères du courroux de Manann, envoyées pour punir ceux qui lui ont déplu. Les marins lui font parfois des offrandes pour se protéger de leur fureur. Dans certains ports désespérés, on parle même de véritables cultes voués à des léviathans précis. Pour ma part, je pense qu'il s'agit uniquement de bêtes destructrices particulièrement dangereuses. Le meilleur conseil de la Casa di Ruggisce, en cas de rencontre en pleine mer, est de jeter toute marchandise « mangeable » par-dessus bord et de filer à toute allure pour s'échapper. Quelques marins m'ont parlé de tirages au sort et de « nobles » sacrifices pour ralentir leur poursuite : une poignée de vies contre toutes les autres. Une terrible décision, mais peut-être une décision compréhensible. Puisse Sigmar nous garder d'avoir à vivre une telle situation.
+
+*Kadon, un sorcier d'antan, passé maître dans les arts arcaniques qui visent à plier les créatures magiques à sa volonté, a juré que les léviathans étaient hors de tout contrôle. Il a écrit que leur esprit était trop incompréhensible et leur volonté trop puissante pour que l'on puisse avoir la moindre emprise sur eux. Néanmoins, il aurait apparemment découvert la clé de leur invocation. En appeler à une créature que vous ne pouvez ni contrôler, ni renvoyer est d'une témérité sans précédent. Cependant, je me vois forcée de me demander si certains marchands ne trouveraient pas l'idée d'une attaque « fortuite » d'Il Potente Granchio sur leurs rivaux plutôt intéressante. Je crois que votre cynisme a commencé à déteindre sur moi, Theo.*
+
+<span id="page-87-0" data-folio="85"></span>
+#### LÉVIATHAN
 
 | M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B   |
 |---|-------|---|----|----|----|----|-----|-----|--------|---|-----|
@@ -3761,10 +3478,16 @@ Kadon, un sorcier d'antan, passé maître dans les arts arcaniques qui visent à
 
 s'y déplacer avec un Mouvement de 8.
 
+<span id="page-88-0" data-folio="86"></span>
 
-# SIRÈNE
 
-<span id="page-88-0"></span>l'ouest de Remas, de l'autre côté de la Mer Tiléenne, se trouve l'archipel de Carvorna. C'est presque un mur de défense naturel protégeant Tobaro, la
+## [ZI 13] Sirène
+
+*Folio 87+*
+
+## **Sirène**
+
+Al'ouest de Remas, de l'autre côté de la Mer Tiléenne, se trouve l'archipel de Carvorna. C'est presque un mur de défense naturel protégeant Tobaro, la
 
 plus excentrée des cités-États tiléennes. Au cœur de Tobaro se dresse la cité du même nom ; mais les plus patriotiques préfèrent parfois l'appeler Vedenza. Similaire à Barak Varr dans sa façon de se dresser à même le littoral, au pied des Monts Abasko, elle a été construite directement dans la paroi d'une falaise. Comme Barak Var, elle est parcourue d'un réseau de cavernes souterraines creusées par l'érosion, que les elfes ont d'abord étendu, puis abandonné. Les Tiléens, non contents de construire leurs majestueuses tours à son sommet, ont donc pu s'installer dans toute la falaise.
 
@@ -3774,32 +3497,31 @@ Les sirènes sont des créatures tristement célèbres. En dessous du torse, leu
 
 L'attribut le plus vanté, ou le plus craint, des sirènes est leur voix. Lorsqu'elles s'en servent pour chanter, elles peuvent abolir la volonté de leurs proies et les forcer à abandonner tout objectif qui pourrait les motiver afin de les pousser à se rapprocher d'elles. Tandis que certaines s'en servent uniquement pour chasser, d'autres semblent chanter par pur plaisir, que ce soit parce qu'elles n'ont que faire du mal que leur chanson peut causer ou parce que le funeste destin de marins à la dérive et de navires échoués les amuse.
 
-Les fidèles de Manann racontent que les premières sirènes sont nées d'une rencontre galante entre le dieu de la mer et un esprit de l'eau particulièrement puissant. Cependant, Manann ignorait que la naïade portait aussi Stromfels, le terrible dieu requin des pirates et des naufrageurs, dans son cœur. Ainsi, les sirènes tirent toutes des traits différents de chacun de leurs deux « pères », ce qui explique leur immense variété. Une chose est sûre : certains naufrageurs audacieux n'hésitent pas à faire usage de sirènes dès qu'ils en ont l'occasion. Les familles de navigateurs les combattent sans relâche depuis des siècles... ou les encouragent à saboter leurs rivaux, si vous croyez les récits cyniques que j'ai entendus dans les tavernes de Porto, le quartier du port de Vedenza.
+Les fidèles de Manann racontent que les premières sirènes sont nées d'une rencontre galante entre le dieu de la mer et un esprit de l'eau particulièrement puissant. Cependant, Manann ignorait que la naïade portait aussi Stromfels, le terrible dieu requin des pirates et des naufrageurs, dans son cœur. Ainsi, les sirènes tirent toutes des traits différents de chacun de leurs deux « pères », ce qui explique leur immense variété. Une chose est sûre : certains naufrageurs audacieux n'hésitent pas à faire usage de sirènes dès qu'ils en ont l'occasion. Les familles de navigateurs les combattent sans relâche depuis des siècles… ou les encouragent à saboter leurs rivaux, si vous croyez les récits cyniques que j'ai entendus dans les tavernes de Porto, le quartier du port de Vedenza.
 
 #### SIRÈNE
 
-| M | CC | CT   | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|------|----|----|----|----|-----|-----|----|-----|----|
-| 2 | 35 | 1-10 | 49 | 33 | 42 | 49 | 35  | 30  | 52 | 35  | 15 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|----|----|
+| 2 | 35    | - | 49 | 33 | 42 | 49 | 35  | 30  | 52     | 35 | 15 |
 
-Traits: Amphibie, Infravision
-Traits d'attaque: Arme (Griffes) +7
+**Traits :** Amphibie, Infravision **Traits d'attaque :** Arme (Griffes) +7
 
-Chant de la sirène: quiconque entend une sirène chanter doit effectuer un Test de Force Mentale Complexe (-10). En cas d'échec, il est séduit et devient incapable d'entreprendre la moindre action, sauf pour se rapprocher de la source de la chanson. De plus, il compte comme s'il avait l'État *Inconscient* (même s'il est bien réveillé, et sans doute bien baveux).
+**Chant de la sirène :** quiconque entend une sirène chanter doit effectuer un Test de **Force Mentale Complexe (-10)**. En cas d'échec, il est séduit et devient incapable d'entreprendre la moindre action, sauf pour se rapprocher de la source de la chanson. De plus, il compte comme s'il avait l'État *Inconscient* (même s'il est bien réveillé, et sans doute bien baveux).
 
-Cependant, s'il s'était préparé, par exemple en se bouchant les oreilles à l'aide de cire, le Test de Force Mentale devient Facile (+40). Si une victime séduite est attaquée, elle peut immédiatement effectuer un nouveau Test.
+Cependant, s'il s'était préparé, par exemple en se bouchant les oreilles à l'aide de cire, le Test de **Force Mentale** devient **Facile (+40)**. Si une victime séduite est attaquée, elle peut immédiatement effectuer un nouveau Test.
 
 **Née de l'eau :** les sirènes peuvent respirer sous l'eau et s'y déplacer avec un Mouvement de 8.
 
-**Facultatif:** Armure 1-3, Insensible à la douleur, Morsure, Perturbant, Peur 1-2, 2 x Tentacules +5
+**Facultatif :** Armure 1-3, Insensible à la douleur, Morsure, Perturbant, Peur 1-2, 2 x Tentacules +5
+
+<span id="page-89-0" data-folio="87"></span>
+<span id="page-90-0" data-folio="88"></span>
+### **Wyrm des mers**
 
 
 
-# WYRM DES MERS
-
-<span id="page-90-0"></span>e n'était y Vedenza, de récits o
-
-e n'était pas le hasard qui nous avait menés à Vedenza, mes compagnons et moi. C'était une série de récits que j'avais entendus de la bouche d'un vieux
+Ce n'était pas le hasard qui nous avait menés à Vedenza, mes compagnons et moi. C'était une série de récits que j'avais entendus de la bouche d'un vieux
 
 marin, le soir où les nouvelles de l'attaque d'Il Potente Granchio avaient atteint Remas. Au nord de Tobaro et au sud des monts Irrana se trouvent les Marais putrides, aussi connus sous le nom de « Marécages des zombies ». Et oui, l'endroit est aussi morne et désolé que son nom le laisse imaginer. Le marin m'a dit que les vaillants citoyens de Tobaro et de Miragliano pensaient que les Marais putrides étaient un repaire de skavens. Il paraît d'ailleurs que les Miraglianais se battent régulièrement contre les ignobles hommes-rats. Pour eux, l'idée que les skavens ne sont qu'un mythe est inconcevable et incroyablement prétentieuse de la part de l'Empire. Il en est de même pour les habitants de Vedenza, qui les affrontent aussi fréquemment, bien que ce ne soit pas toujours sur un champ de bataille conventionnel.
 
@@ -3809,65 +3531,63 @@ L'histoire du marin qui m'a motivé à m'y rendre en personne s'est déroulée i
 
 Ils ont donc relâché le wyrm des mers dans les tunnels, où il a pu se nourrir à l'envi. Quelques semaines plus tard, le monstre rassasié est revenu dormir dans les profondeurs de la Mer Tiléenne, repu qu'il était après son énorme festin de chair d'hommes-rats.
 
-Les wyrms des mers sont des êtres terriblement dangereux et incroyablement anciens. On dit qu'ils sont à moitié dragons et à moitié serpents de mer. Malgré leur nature de créatures des profondeurs, les histoires disent qu'ils n'ont aucune difficulté à vivre sur la terre ferme pendant des périodes assez longues. Leur corps est couvert d'écailles verdâtres argentées et ressemble à celui d'anguilles particulièrement musclées, si ce n'est qu'ils ont quatre petits membres armés de griffes acérées. Les wyrms des mers ne se servent pas souvent de leurs membres pour se déplacer : ils se propulsent plutôt grâce à un mouvement ondulatoire qui leur procure à la fois une vitesse surprenante sous l'eau et une démarche preste (et terrifiante) sur terre. L'appétit d'un wyrm des mers rend insignifiant celui des ogres : ils sont toujours en train de manger, dévorant des quantités astronomiques de n'importe quelle viande qu'ils peuvent attraper à l'aide de leur mâchoire bardée de crocs. Leurs blessures ne les ralentissent presque pas et guérissent à une vitesse alarmante. Quelques sources érudites anciennes émettent l'hypothèse que la croissance des wyrms des mers est lente, mais qu'elle ne s'arrête jamais totalement. Si c'est le cas, les plus vieux des wyrms des mers doivent être tout bonnement monumentaux. Bien peu affirment l'avoir vu, mais tous les habitants de Vedenza sont formels : Silak le borgne est bien
+Les wyrms des mers sont des êtres terriblement dangereux et incroyablement anciens. On dit qu'ils sont à moitié dragons et à moitié serpents de mer. Malgré leur nature de créatures des profondeurs, les histoires disent qu'ils n'ont aucune difficulté à vivre sur la terre ferme pendant des périodes assez longues. Leur corps est couvert d'écailles verdâtres argentées et ressemble à celui d'anguilles particulièrement musclées, si ce n'est qu'ils ont quatre petits membres armés de griffes acérées. Les wyrms des mers ne se servent pas souvent de leurs membres pour se déplacer : ils se propulsent plutôt grâce à un mouvement ondulatoire qui leur procure à la fois une vitesse surprenante sous l'eau et une démarche preste (et terrifiante) sur terre. L'appétit d'un wyrm des mers rend insignifiant celui des ogres : ils sont toujours en train de manger, dévorant des quantités astronomiques de n'importe quelle viande qu'ils peuvent attraper à l'aide de leur mâchoire bardée de crocs. Leurs blessures ne les ralentissent presque pas et guérissent à une vitesse alarmante. Quelques sources érudites anciennes émettent l'hypothèse que la croissance des wyrms des mers est lente, mais qu'elle ne s'arrête jamais totalement. Si c'est le cas, les plus vieux des wyrms des mers doivent être tout bonnement monumentaux. Bien peu affirment l'avoir vu, mais tous les habitants de Vedenza sont formels : Silak le borgne est bien réel.
 
-### WYRM DES MERS
+#### WYRM DES MERS
 
-|   |    |   |    |    |    |    |   |    |    | Soc |    |
-|---|----|---|----|----|----|----|---|----|----|-----|----|
-| 6 | 62 | - | 65 | 60 | 45 | 26 | - | 15 | 38 | 10  | 84 |
+| M | CC CT |   | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
+|---|-------|---|----|----|----|----|-----|-----|--------|----|----|
+| 6 | 62    | - | 65 | 60 | 45 | 26 | -   | 15  | 38     | 10 | 84 |
 
-**Traits**: Affamé, Amphibie, Armure 3 (9), Immunité Psychologique, Infravision, Insensible à la douleur, Redoutable 2, Régénération, Taille (Énorme)
+**Traits :** Affamé, Amphibie, Armure 3 (9), Immunité Psychologique, Infravision, Insensible à la douleur, Redoutable 2, Régénération, Taille (Énorme)
 
 **Traits d'attaque :** Arme (Gueule bardée de crocs) +11, Attaque caudale +13, Morsure (Gueule bardée de crocs) +11
 
-Fléau des baleines : toutes les attaques que le wyrm des mers porte à l'aide de sa gueule bardée de crocs ont le Trait Venin (Complexe).
+**Fléau des baleines :** toutes les attaques que le wyrm des mers porte à l'aide de sa gueule bardée de crocs ont le Trait Venin (Complexe).
 
-Facultatif: Infecté, Taille (Monstrueuse)
+**Facultatif :** Infecté, Taille (Monstrueuse)
 
-88
+**88**
 
+<span id="page-91-0" data-folio="89"></span>
+<span id="page-92-0" data-folio="90"></span>
+### **Dragon barbelé**
 
-
-# DRAGON BARBELÉ
-
-<span id="page-92-0"></span>'ai écrit plus tôt que les nains de Karak Kadrin m'avaient généreusement raconté une grande partie de leurs savoirs bestiarologiques (je suppose
+J'ai écrit plus tôt que les nains de Karak Kadrin m'avaient généreusement raconté une grande partie de leurs savoirs bestiarologiques (je suppose
 
 que leur nature de tueurs et le fait que j'achetais leur bière n'y ont pas été pour rien). Certains de leurs rapports étaient plus fantaisistes que d'autres et beaucoup trop parlaient de créatures souillées par le Chaos. S'il est vrai que de telles monstruosités impliquent de très bonnes histoires, elles sont toutes uniques et donc difficiles à étudier ou à catégoriser. Il y avait toutefois une créature qui sortait du lot. Une sur laquelle j'avais entendu de nombreux récits et qui posait problème aux nains depuis la nuit des temps ; une horreur de leur dédale de galeries souterraines, appelée « Ungdrin Ankor ». Puisqu'il s'agit d'une créature des profondeurs, je ne m'attendais pas du tout à en voir une, et encore moins à devoir l'affronter. Hélas, le Vieux Monde est doté d'un sens de l'humour bien cruel : alors que nous visitions une zone éloignée de Trafuro, nous avons fini par tomber sur un dragon barbelé.
 
 Les dragons barbelés sont d'énormes créatures ophidiennes qui règnent généralement sur des cavernes sans lumière situées très loin de la surface de ce monde. Là-bas, ils n'ont pas de rivaux et seule une faim insatiable leur tient compagnie. Ils passent donc leur vie à chasser inlassablement tout ce qu'ils peuvent se mettre sous la dent. Lorsqu'ils pénètrent dans un karak, ils y causent des dégâts considérables et massacrent tous ceux qu'ils voient. Ils ne s'en vont que lorsqu'ils se sont complètement gavés de chair fraîche. Ils n'ont pas l'air de faire la différence entre les forteresses encore habitées par les nains et celles investies par les peaux-vertes ou les skavens, ce qui ne manque pas d'amuser les tueurs. La véritable nature des dragons barbelés cause de nombreuses dissensions parmi les maîtres du savoir des nains. Malgré leur nom, une partie d'entre eux soutient qu'ils n'ont rien de dragons, mais qu'ils s'apparentent plutôt à des wyrms ou à des grands serpents de mer. Pour eux, ils auraient pu être coincés loin de l'océan, puis mutés par les énergies sombres des profondeurs. Une autre école dit que ce sont bien des dragons, mais qu'ils ont en effet été corrompus par leur environnement et sont devenus étranges.
 
-Le monstre que nous avons rencontré n'était peut-être pas un dragon, mais honnêtement, cela n'aurait fait aucune différence à mes yeux. Il avait des écailles pâles, mais pas blanches, comme ce mot le laisse généralement entendre. C'était comme s'il n'avait pas de couleur. Chacune de ses écailles était relevée et avait des arêtes tranchantes qui déchiquetaient les membres de la Garde des Profondeurs de Vedenza. Les nains affirment que certains dragons barbelés ont des écailles presque indestructibles, parce qu'ils mangent du minerai de gromril pour fortifier leur
-
-armure. Leurs membres peuvent se plier dans des positions peu naturelles, sans doute pour mieux se contorsionner dans les passages étroits.
+Le monstre que nous avons rencontré n'était peut-être pas un dragon, mais honnêtement, cela n'aurait fait aucune différence à mes yeux. Il avait des écailles pâles, mais pas blanches, comme ce mot le laisse généralement entendre. C'était comme s'il n'avait pas de couleur. Chacune de ses écailles était relevée et avait des arêtes tranchantes qui déchiquetaient les membres de la Garde des Profondeurs de Vedenza. Les nains affirment que certains dragons barbelés ont des écailles presque indestructibles, parce qu'ils mangent du minerai de gromril pour fortifier leur armure. Leurs membres peuvent se plier dans des positions peu naturelles, sans doute pour mieux se contorsionner dans les passages étroits.
 
 Celui que nous avons affronté se déplaçait de façon imprévisible. Voir ses griffes mal ajustées et enchevêtrées se plier dans tous les sens était extrêmement perturbant. Leur venin est tellement acide qu'il peut faire fondre la pierre. Les nains pensent que les dragons barbelés s'en servent pour marquer leur territoire et écarter ainsi leurs rivaux. Un sergent de la Garde des Profondeurs avec qui je me suis lié d'amitié, Siro Melagari, nous a parlé d'un dragon barbelé particulièrement rusé et malveillant, le fantasma. Cette créature pouvait projeter un gaz toxique provoquant des crises de terreur si intenses qu'il était possible d'en mourir. Fort heureusement, celui que nous avons combattu n'était pas capable d'une telle prouesse.
 
-#### + 98 +-
+#### † C †
 
 La caverne centrale de Trafuro, celle où a été construit le Palazzo in Profondita, est remplie de stalactites et de stalagmites, que les elfes d'antan ont sculptées pour en faire de magnifiques statues. La première fois que je les ai découvertes, j'étais descendu seul dans les galeries pour suivre les rumeurs de la dévastation causée par Silak le borgne. J'ai été très étonné de me rendre compte que les statues n'avaient non seulement rien perdu de leur beauté, mais qu'elles avaient été de surcroît préservées par leur environnement souterrain. La description que j'en ai faite à Chantenuit et aux autres les a convaincus de venir les voir avec moi.
 
 #### DRAGON BARBELÉ
 
-| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM | Soc | В  |
-|---|----|----|----|----|----|----|-----|-----|----|-----|----|
-| 5 | 48 | 38 | 62 | 76 | 34 | 45 | -   | 10  | 44 | 5   | 96 |
+| M | CC | CT | F  | E  | I  | Ag | Dex | Int | FM Soc |   | B  |
+|---|----|----|----|----|----|----|-----|-----|--------|---|----|
+| 5 | 48 | 38 | 62 | 76 | 34 | 45 | -   | 10  | 44     | 5 | 96 |
 
-Talents: Combattant en espace clos
+**Talents :** Combattant en espace clos
 
-**Traits**: Armure 5 (12), Furtif, Grimpant, Infravision, Redoutable, Taille (Énorme)
+**Traits :** Armure 5 (12), Furtif, Grimpant, Infravision, Redoutable, Taille (Énorme)
 
-Traits d'attaque : Arme (Griffes recourbées) +11, Morsure +11
+**Traits d'attaque :** Arme (Griffes recourbées) +11, Morsure +11
 
-Rage frénétique: lorsqu'un dragon barbelé est blessé au combat, il devient immédiatement sujet à une *Frénésie* impossible à calmer qui lui confère deux attaques de Corps à corps gratuites par Round.
+**Rage frénétique :** lorsqu'un dragon barbelé est blessé au combat, il devient immédiatement sujet à une *Frénésie* impossible à calmer qui lui confère deux attaques de Corps à corps gratuites par Round.
 
 **Ecailles rasoir :** chaque fois qu'un dragon barbelé est attaqué par un adversaire *Engagé* avec lui, celui-ci subit 1d10 Blessures. Ces Blessures peuvent être réduites par le Bonus d'Endurance et les Points d'Armure jusqu'à un minimum de 1.
 
-Fonte des roches : la morsure d'un dragon barbelé a le Trait Venin et l'Atout Perforante.
+**Fonte des roches :** la morsure d'un dragon barbelé a le Trait Venin et l'Atout Perforante.
 
-Facultatif: Corruption (Mineure), Infecté, Protection 8+
+**Facultatif :** Corruption (Mineure), Infecté, Protection 8+
 
-
+<span id="page-93-0" data-folio="91"></span>
 Tobaronais effrayés. Les membres de la Garde des Profondeurs le suivaient, engoncés dans leurs armures sombres, cherchant à l'abattre. Nous aurions pu les laisser se débrouiller, mais Ghorshkov a chargé sans un moment d'hésitation, nous entraînant au combat avec lui.
 
 Ce fut un affrontement brutal, mais, honnêtement, même contre une telle créature, nous avions l'avantage. Le dragon était en infériorité numérique, cerné par guerriers compétents, et dans un espace beaucoup plus vaste que les galeries auxquelles il était habitué. L'homme qui dirigeait les membres de la Garde des Profondeurs, le sergent Melagari, nous avoua plus tard qu'il avait été grandement réconforté par notre renfort inattendu. Il rallia très vite ses hommes pour tirer parti de notre arrivée. Le monstre ne périt pas facilement. Il devint fou de rage, se débattit violemment et occit nombre de braves soldats de la Garde des Profondeurs. Pourtant, il finit par succomber.
@@ -3896,30 +3616,28 @@ Si vous voulez tout savoir, Lynathryn a beaucoup aimé les statues.
 
 **Fonte des roches :** la morsure du fantasma a l'Atout Perforante et le Trait Venin.
 
+<span id="page-94-0" data-folio="92"></span>
 
-<span id="page-94-0"></span>
 
-# LE DERNIER INCIDENT MOINDRES MAUX
+### **Le dernier incident Moindres maux**
 
-otre assistance lors du combat contre le dragon barbelé n'était pas passée inaperçue dans Vedenza. Pas plus, comme nous en vînmes rapidement à
+Notre assistance lors du combat contre le dragon barbelé n'était pas passée inaperçue dans Vedenza. Pas plus, comme nous en vînmes rapidement à
 
 l'apprendre, qu'elle n'avait échappé au Conseil des Larmes. Les Tobaronais nous accueillirent en héros et, tout comme à Wheburg après la chimère, nous n'eûmes plus à payer nos boissons où que ce fût dans la cité. Nous fûmes invités à plusieurs réceptions à Scogliera, le quartier de luxe construit dans la paroi de la falaise, avec ses rues taillées à même la corniche et ses maisons entassées le long de la roche. J'eus une discussion particulièrement mémorable sur les créatures marines avec les héritiers de plusieurs maisons de navigateurs, dont Dacia Ferazzo, le chef de sa famille.
 
 Nous aurions dû partir sur-le-champ, comme nous l'avions prévu.
 
-Le sergent Melagari avait accompli son devoir et avait présenté un rapport des événements à ses supérieurs. Mais il avait beaucoup vanté nos exploits. Après quelques jours, nous fûmes convoqués par le seigneur Piero Riina, le ministre de l'Intérieur du Conseil des Larmes. L'invitation s'était voulue amicale, mais était portée par une troupe de gardes lourdement armés. Refuser n'était clairement pas une option. Néanmoins, le seigneur Riina fut assez courtois. Il entama même la conversation en nous offrant une petite bourse pleine de couronnes impériales « pour récompenser notre courage » (ou, plus vraisemblablement, pour que nous soyons plus enclins à écouter ce qu'il avait à dire). Il avait une proposition.
+Le sergent Melagari avait accompli son devoir et avait présenté un rapport des événements à ses supérieurs. Mais il avait beaucoup vanté nos exploits. Après quelques jours, nous fûmes convoqués par le seigneur Piero Riina, le ministre de l'Intérieur du Conseil des Larmes. L'invitation s'était voulue amicale, mais était portée par une troupe de gardes lourdement armés. Refuser n'était clairement pas une option. Néanmoins, le seigneur Riina fut assez courtois. Il entama même la conversation en nous offrant une petite bourse pleine de couronnes impériales *« pour récompenser notre courage »* (ou, plus vraisemblablement, pour que nous soyons plus enclins à écouter ce qu'il avait à dire). Il avait une proposition.
 
-Les quartiers de Vedenza étaient divisés en districts plus petits, et ceux de Trafuro étaient particulièrement variés. Longtemps auparavant, bien avant la première attaque des skavens sur la ville, Trafuro était bien plus développé et s'étendait loin sous les Monts Abasko. Depuis, la Guilde des ingénieurs tobaronais et la Garde des Profondeurs a rassemblé la plupart des habitants, afin de mieux protéger les « frontières » de la cité. Cependant, il restait quelques communautés établies au-delà de la protection de Vedenza. Le seigneur Riina nous expliqua que l'une d'elles, Molto, se comportait étrangement depuis peu. Lorsqu'elles étaient interrogées, les familles de mineurs, qui constituaient la majeure partie de la population, juraient systématiquement que tout allait bien. Cependant, quelques patrouilles de la Garde des Profondeurs qui s'y étaient rendues sans prévenir avaient disparu sans laisser de trace. Le seigneur Riina craignait la présence « d'influences malveillantes ». Il fit preuve de beaucoup de tact lorsqu'il nous en parla (son Reikspiel était impeccable), mais
-
-nous comprîmes clairement qu'il soupçonnait l'implication d'un culte des Puissances de la Ruine. Il nous demanda de nous rendre à Molto, en nous servant de notre projet comme couverture pour voir si nous pouvions déterminer ce qui s'y passait, s'il s'y passait réellement quoi que ce fût. En échange, il nous offrit une généreuse compensation financière, ainsi que l'accès à plusieurs des livres rares de bestiarologie que Vedenza avait accumulés au fil du temps. Il nous proposa aussi, lorsque nous serions prêts, de nous aider à trouver des couchettes sur l'un des nombreux navires marchands de Tobaro qui pourraient nous mener directement à Marienburg, si nous n'y voyions pas d'inconvénient.
+Les quartiers de Vedenza étaient divisés en districts plus petits, et ceux de Trafuro étaient particulièrement variés. Longtemps auparavant, bien avant la première attaque des skavens sur la ville, Trafuro était bien plus développé et s'étendait loin sous les Monts Abasko. Depuis, la Guilde des ingénieurs tobaronais et la Garde des Profondeurs a rassemblé la plupart des habitants, afin de mieux protéger les « frontières » de la cité. Cependant, il restait quelques communautés établies au-delà de la protection de Vedenza. Le seigneur Riina nous expliqua que l'une d'elles, Molto, se comportait étrangement depuis peu. Lorsqu'elles étaient interrogées, les familles de mineurs, qui constituaient la majeure partie de la population, juraient systématiquement que tout allait bien. Cependant, quelques patrouilles de la Garde des Profondeurs qui s'y étaient rendues sans prévenir avaient disparu sans laisser de trace. Le seigneur Riina craignait la présence « d'influences malveillantes ». Il fit preuve de beaucoup de tact lorsqu'il nous en parla (son Reikspiel était impeccable), mais nous comprîmes clairement qu'il soupçonnait l'implication d'un culte des Puissances de la Ruine. Il nous demanda de nous rendre à Molto, en nous servant de notre projet comme couverture pour voir si nous pouvions déterminer ce qui s'y passait, s'il s'y passait réellement quoi que ce fût. En échange, il nous offrit une généreuse compensation financière, ainsi que l'accès à plusieurs des livres rares de bestiarologie que Vedenza avait accumulés au fil du temps. Il nous proposa aussi, lorsque nous serions prêts, de nous aider à trouver des couchettes sur l'un des nombreux navires marchands de Tobaro qui pourraient nous mener directement à Marienburg, si nous n'y voyions pas d'inconvénient.
 
 Nous n'y vîmes, bien entendu, pas d'inconvénient.
 
 Et c'est ainsi que nous nous retrouvâmes très vite dans les « rues » dénuées de lumière de Molto, à surveiller des maisonnettes de plain pied en pierre grise ressemblant à des tombeaux, et à nous demander si Le Passereau égaré, l'unique taverne du village, servait quoi que ce soit valant la peine d'être bu. Je trouvai les habitants de Molto particulièrement hésitants et prudents lorsqu'ils nous parlaient, un comportement qui allait à l'encontre de celui de tous les autres Tiléens que nous avions rencontrés. Certes, nous étions des étrangers, et Erich devait constamment nous servir d'interprète. Mais même après avoir compris que nous étions ceux qui avaient récemment aidé à abattre un dragon barbelé, ils ne montrèrent qu'une tiède réaction. Quelque chose ne tournait pas rond à Molto, mais c'était très subtil : c'était une courte pause avant de répondre, un bref regard fuyant avant d'ouvrir la bouche. Ce ne fut qu'au bout de plusieurs jours qu'un homme se décida enfin à nous approcher furtivement, en marge de la communauté, alors que nous nous apprêtions à rentrer à Scogliera.
 
-Le mineur se présenta sous le nom de Sandro et nous dit qu'il avait peur pour son fils, Orazio. Il dit que tous les augures indiquaient que le garçon était un « segnato ». Erich dut poser plusieurs questions avant de comprendre, mais il nous expliqua finalement que cela signifiait « marqué », ou, peutêtre, « élu ». Sandro nous expliqua que le Cercle de Fer (les représentants de la Guilde des mineurs à Molto) identifiait les personnes « choisies » à l'aide de plusieurs signes. Il avait entendu parler de notre bravoure, et était venu nous trouver dans l'espoir que nous sauvions son Orazio. Il était aussi terrifié à l'idée que sa requête, si elle venait à s'ébruiter, attire des représailles sur sa famille. Après quelques questions plus approfondies, nous apprîmes que les « élus » étaient emmenés
+Le mineur se présenta sous le nom de Sandro et nous dit qu'il avait peur pour son fils, Orazio. Il dit que tous les augures indiquaient que le garçon était un « segnato ». Erich dut poser plusieurs questions avant de comprendre, mais il nous expliqua finalement que cela signifiait « marqué », ou, peutêtre, « élu ». Sandro nous expliqua que le Cercle de Fer (les représentants de la Guilde des mineurs à Molto) identifiait les personnes « choisies » à l'aide de plusieurs signes. Il avait entendu parler de notre bravoure, et était venu nous trouver dans l'espoir que nous sauvions son Orazio. Il était aussi terrifié à l'idée que sa requête, si elle venait à s'ébruiter, attire des représailles sur sa famille. Après quelques questions plus approfondies, nous apprîmes que les « élus » étaient emmenés 
 
-
+<span id="page-95-0" data-folio="93"></span>
 dans les tunnels les plus profonds de la mine par le Cercle de Fer et qu'on ne les revoyait plus jamais. Sandro était persuadé que ce destin attendait Orazio d'ici une nuit ou deux, pas plus. Nous acceptâmes de lui apporter notre aide.
 
 Ghorshkov émit l'hypothèse que le mineur nous tendait un piège, le même dans lequel avaient dû tomber les Gardes des Profondeurs disparus avant nous. Chantenuit pensait que la peur de Sandro était évidente et qu'elle « semblait authentique », mais ajouta qu'il ne fallait tout de même pas écarter les doutes de Vasya. Nous décidâmes finalement de suivre les représentants du Cercle de Fer lorsqu'ils emmèneraient le garçon, mais de nous attendre à un piège et d'agir en conséquence.
@@ -3928,7 +3646,7 @@ Ce n'était pas un piège. Les mineurs, terrifiés, avaient conclu un pacte épo
 
 Ô Sigmar, dieu parmi les dieux, prête-moi ta force, car les blessures de mon cœur me déchirent encore. Je ne veux pas écrire ce qui s'ensuivit. Puissent ces événements n'être qu'un cauchemar dont je finirai un jour par m'éveiller.
 
-### CHEVALIER MORT-VIVANT (REVENANT)
+#### CHEVALIER MORT-VIVANT (REVENANT)
 
 | M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
 |---|-------|----|----|----|----|----|-----|-----|--------|----|----|
@@ -3948,7 +3666,7 @@ Ce n'était pas un piège. Les mineurs, terrifiés, avaient conclu un pacte épo
 
 Lorsqu'ils vinrent, nous n'avions pas encore quitté Vedenza. Les ignobles hommes-rats. Les skavens trois fois maudits. Nous pensions que si les habitants de Molto étaient prudents, c'était parce qu'ils avaient peur que nous ayons vent de leur marché. Mais nous n'avions pas compris la nature de leur accord. La protection des chevaliers revenants ne s'était pas limitée à Molto. Les skavens nous tombèrent dessus quelques nuits plus tard, alors que nous fêtions encore notre victoire contre les morts-vivants. Lorsque nous entendîmes les premiers cris, nous crûmes qu'il s'agissait de fêtards un brin trop enthousiastes. Il fallut que le nombre et le volume de cris se fassent plus importants avant que nous ne comprenions que quelque chose clochait. Lorsque je titubai hors d'une taverne de Trafuro appréciée de la Garde des Profondeurs, je fus accueilli par une horde de Tobaronais en panique. Ils me dépassèrent à toute vitesse, et fuirent en direction de Scogliera et de la mer.
 
-
+<span id="page-96-0" data-folio="94"></span>
 Derrière eux, au bout de la rue, à l'extrémité de la caverne où je me trouvais, la lumière vacillante de Trafuro fut soudain déchirée par un éclair de flammes vertes ardentes. Malgré sa fugacité, je pus apercevoir des ombres grouillantes d'hommes-bêtes à tête de rat. Cette vision me dessaoula sur-le-champ. Je dégainai immédiatement ma rapière et hurlai « *Skavens !* » dans la taverne. Ghorshkov fut à mes côtés en quelques secondes à peine, mes autres compagnons, ainsi que le sergent Melagari, le suivant de près.
 
 Au vu du flot incessant de skavens qui se déversait depuis Molto, nous comprîmes vite que nous n'avions pas affaire à un simple raid. Le quartier était envahi par des hordes d'hommes-rats équipés de lames, mais aussi d'autres dispositifs plus étranges, comme des sortes d'armes à feu dont la vision nous effara. Ils étaient si nombreux et si rapides que si nous avions essayé de prendre la fuite, ils nous auraient rattrapés en un rien de temps. Parmi les lignes des skavens, une immense silhouette se frayait stoïquement un passage. Elle éjectait les hommes-rats plus petits qui la gênaient sans même les regarder. Elle leva le bras et je réalisai, pris d'horreur, que ce membre avait été remplacé par ce qui ressemblait à un canon. Une saccade de cliquetis retentit dans Trafuro. Le bras de la chose cracha un torrent de projectiles sur un groupe de Gardes des Profondeurs ralliés à la hâte. Les hommes furent taillés en pièces. Vasya se fendit d'un grand sourire. *« Pour moi, da ? »*
@@ -3971,14 +3689,14 @@ Les guerriers des clans qui se sont distingués au service du clan Skryre manien
 
 **Pistolet à malepierre** : la version skaven des pistolets humains, « améliorés » selon leurs standards. Un pistolet à malepierre a les Atouts À Poudre noire, Dévastatrice, Empaleuse, Perforante, et les Défauts Dangereuse et Recharge 1. Puisque les balles qu'il tire sont incrustées de malepierre, les cibles qu'il blesse doivent effectuer un Test de **Corruption (Mineure)**.
 
-
+<span id="page-97-0" data-folio="95"></span>
 Mais cela ne suffisait pas. Le tapis de corps que nous laissions sur le sol de la caverne ne faisait que s'épaissir, mais ils étaient si nombreux qu'ils parvenaient tout de même à nous faire reculer. La horde semblait être menée par un skaven musclé armé d'une énorme hallebarde parcourue d'éclairs crépitants d'énergies surnaturelles. Le sergent Melagari se précipita sur lui, mais fut brûlé et assommé par une décharge d'énergie libérée par la lame de l'homme-rat.
 
 Puis une voix s'éleva au-delà du vacarme de la bataille. Une voix que j'en étais venu à chérir plus que toute autre. Kistiane se tenait sur le toit de l'une des masures de pierre de Trafuro. Une lueur dansait autour de ses mains. Elle tourna la tête vers moi. Son regard croisa le mien et elle esquissa le sourire le plus pâle et le plus triste que j'aie jamais vu. Puis elle fit s'effondrer le plafond de la caverne sur elle, et sur la masse innombrable d'hommesrats. Des éclairs de lumière émeraude s'échappèrent de ses mains et firent exploser des défauts de la voûte, que seuls ses arts pouvaient révèler. Les skavens eurent à peine le temps de hurler avant d'être complètement réduits en miettes par une avalanche de plusieurs tonnes de roches brisées. Tout comme elle.
 
 Ainsi périt Kistiane Brockdorf, druidesse de l'Ordre de Jade. Ma bien-aimée, et la personne la plus brave que j'aie jamais connue.
 
-### TECHNOMAGE DU CLAN SKRYRE
+#### TECHNOMAGE DU CLAN SKRYRE
 
 | M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
 |---|-------|----|----|----|----|----|-----|-----|--------|----|----|
@@ -3994,7 +3712,7 @@ Ainsi périt Kistiane Brockdorf, druidesse de l'Ordre de Jade. Ma bien-aimée, e
 
 *Les technomages qui mènent le clan Skryre au combat mêlent la sorcellerie à la technologie skaven. Ils sont capables de créer des dispositifs pratiques et mortels, quoique hautement instables.*
 
-### « PROTOTYPE » DU CLAN SKRYRE
+#### « PROTOTYPE » DU CLAN SKRYRE
 
 | M | CC CT |    | F  | E  | I  | Ag | Dex | Int | FM Soc |    | B  |
 |---|-------|----|----|----|----|----|-----|-----|--------|----|----|
@@ -4010,18 +3728,18 @@ Ainsi périt Kistiane Brockdorf, druidesse de l'Ordre de Jade. Ma bien-aimée, e
 
 *Un rat ogre « modifié par Skryre », pas encore au point pour une « production » à grande échelle.*
 
+<span id="page-98-0" data-folio="96"></span>
+<span id="page-99-0" data-folio="97"></span>
 
 
-<span id="page-99-0"></span>
+<span id="page-100-0" data-folio="98"></span>
+### **Précieuses entrailles**
 
+ *« Un bon chasseur se fait payer d'avance. On ne tue pas des monstres par charité. »*
 
-# Précieuses entrailles
+– Sorge Krause
 
-<span id="page-100-0"></span>« Un bon chasseur se fait payer d'avance. On ne tue pas des monstres par charité. »
-
-- Sorge Krause
-
-l'exception notable des dragons et de leurs légendaires trésors, la plupart des bêtes féroces qui peuplent le Vieux Monde ne gardent pas des
+Al'exception notable des dragons et de leurs légendaires trésors, la plupart des bêtes féroces qui peuplent le Vieux Monde ne gardent pas des
 
 coffres entiers de butin dans leur tanière. Toutefois, quelques créatures sont assez intelligentes pour comprendre qu'amasser des richesses permet d'attirer plus de proies. Elles sont souvent bien plus rusées et dangereuses que la majorité des monstres que les aventuriers pourraient rencontrer.
 
@@ -4031,16 +3749,18 @@ Le vrai trésor, c'est peut-être plutôt la créature que vous venez d'affronte
 
 Vous trouverez ci-après quelques règles concernant l'étrange marché, pouvant s'avérer lucratif, des « pièces de monstre » qui se développe dans l'Empire et d'autres pays du Vieux Monde. Elles couvrent spécifiquement les organes de créatures prélevés pour d'autres raisons que la préparation du prochain repas. Le plus souvent, on sera intéressé par leurs propriétés inhabituelles, même si parfois infondées. Comme le dit si bien Gromsdottir, la valeur est le produit de la demande, même si cette dernière repose sur des faits discutables.
 
+**98**
+
 #### HAUTE GASTRONOMIE
 
 Les règles qui régissent les créatures chassées pour leur chair sont déjà détaillées pour les Personnages dans la Carrière Chasseur. Il s'agit en effet du métier qu'ils exercent pendant l'Activité *Revenus*. Par exemple, le rhinox est considéré comme un « monstre » par de nombreuses personnes, mais sa viande est très prisée. Cependant, chasser un tel animal n'est pas une mince affaire. C'est une créature dangereuse dont la traque est longue et exige bien des ressources, car elle vit haut dans les montagnes, loin de toute civilisation ; il faut saler ou fumer la viande avant de pouvoir la transporter, les marchands prennent leur part, etc. C'est pourquoi un steak de rhinox dans une taverne d'Altdorf coûte une petite fortune, tandis que la plupart des chasseurs sont relativement pauvres.
 
-AN'ELT-CE AN MAIT ANE LES ENTRAILLES D'UN TUDY, HAIL + CTATTANA THOU SALTHOM DÉPEND DE PLUSIEURS MACTEURS : LA RARETÉ de l'amimal, les propriétés de ses organes. le danger de la challe, la logiltique DE LA COMJERVATION ET DU TRAMJEORT... CEPENDANT, IL HE FAUT PAJ QUBLIER QUE LA ALIGAS TIBMBE THO'H THAD TAB TABOUTA de véritable monjtre. Ils deuvent je raconter des histoires improbables AUTOUR DU MEU, PEUT-ÊTRE MÊME ALLER AU A HU RIOV HA'D T'LA IUR AS AUGA LIAM, OOL L'ÉTAT JAUVAGE ET D'EN JORTIR VIVANT ? VICAME CHUMCE ONE OU TE DEODAITE. VIHTI' AUAHO UH ALCHIMISTE ÉRUDIT, FORT DE THE THE THE THE THE THE THE THE HU Á BMAITAR , LETUBIRÀTIM THOITSOSHOS roturier avec des légendes plein la tête QUE LE MOIE D'UNE COCKATRICE GUÉRIRA TOUT TET MAUX, CROYEL-VOUS QUE CELUI-CI VA and the troited in a sagnemed CERTAINS DE CES ALCHIMISTES SERAIENT BIEN incapables de maire la dimpérence entre UHE CORNE DE RHINOX ET LEUR PROPRE HEL, THE TAN HELT PAI LA QUETTION. LET GEHT HU AUQA ƏHUTAQA ƏHU AƏYAQ Á LTÂRA THOL remède mythique, et les monstres LATTRA AUL LAHTYM LAG THOL
+Qu'est-ce qui fait que les entrailles d'un monstre sont précieuses ? Eh bien, tout dépend de plusieurs facteurs : la rareté de l'animal, les propriétés de ses organes, le danger de la chasse, la logistique de la conservation et du transport... Cependant, il ne faut pas oublier que la plupart des gens n'ont jamais croisé de véritable monstre. Ils peuvent se raconter des histoires improbables autour du feu, peut-être même aller au zoo, mais pour ce qui est d'en voir un à l'état sauvage et d'en sortir vivant ? Aucune chance que ça se produise. Ainsi, quand un alchimiste érudit, fort de tous ses titres prestigieux et de ses concoctions mystérieuses, affirme à un roturier avec des légendes plein la tête que le foie d'une cockatrice guérira tous ses maux, croyez-vous que celui-ci va demander des explications ? D'autant que certains de ces alchimistes seraient bien incapables de faire la différence entre une corne de rhinox et leur propre nez, mais là n'est pas la question. Les gens sont prêts à payer une fortune pour un remède mythique, et les monstres sont des mythes sur pattes.
 
+<span id="page-101-0" data-folio="99"></span>
+### **Qu'est-ce que ça vaut ?**
 
-# **Qu'est-ce que ça vaut ?**
-
-### **Coût de base**
+#### **Coût de base**
 
 Le coût de base des pièces de monstres brutes est déterminé par la rareté et la dangerosité de la bête en question. Toutes les créatures sont considérées comme étant « plutôt » dangereuses, mais celles qui possèdent des capacités inhabituelles valent deux fois plus que la moyenne. Bien entendu, certains monstres sont si répugnants que personne n'envisagerait de faire quoi que ce soit de leurs cadavres, sauf peut-être les brûler. Ainsi, le foie de skaven peut avoir une certaine utilité alchimique (en dehors de la fonction qu'il remplissait pour son propriétaire d'origine), mais aucun chercheur n'a encore eu le courage de s'y intéresser.
 
@@ -4052,7 +3772,7 @@ L'unité de mesure de base est 1 point d'Encombrement. On considère que les par
 | 80 sc                                                      | 10 /-   | 1 CO | 3 CO     | 5+ CO  |  |
 |                                                            |         |      |          |        |  |
 
-# **Dangerosité**
+#### **Dangerosité**
 
 Certains monstres sont si redoutables que les chasseurs sont en droit d'exiger une prime de risque. À l'inverse, d'autres bêtes sont relativement inoffensives, et le prix diminue en conséquence. Les valeurs attribuées à chaque créature reflètent la menace qu'elle représente pour l'habitant moyen du Vieux Monde. Elles ne doivent pas servir pour préparer des rencontres pour vos Joueurs. En effet, la dangerosité réelle des monstres varie d'un groupe à un autre, et les circonstances d'un tel affrontement doivent également être prises en compte. Un rhinox qui charge en direction de héros équipés d'armes à poudre noire en pleine prairie constitue, au mieux, une menace modérée. Cependant, si le même animal était rencontré dans une clairière au beau milieu de la nuit, la situation risquerait de tourner au désastre pour les aventuriers.
 
@@ -4064,7 +3784,7 @@ Multipliez le coût de base par point d'Encombrement par le nombre donné ci-des
 | x 0,5                                        | x 1         | X 2       | X 3      |  |
 |                                              |             |           |          |  |
 
-# **Quantité exploitable**
+### **Quantité exploitable**
 
 La quantité de matière exploitable potentielle sur un cadavre d'animal dépend de la taille de ce dernier.
 
@@ -4074,82 +3794,83 @@ La quantité de matière exploitable potentielle sur un cadavre d'animal dépend
 - 0 Énorme 8 Enc
 - 0 Monstrueuse 16 Enc
 
-# **Quelles pièces ?**
+### **Quelles pièces ?**
 
 Ce n'est pas tout de tuer un monstre, il faut encore savoir identifier les parties qui intéresseront les acheteurs potentiels. Il peut s'agir d'un ou plusieurs organes ou bien de son sang qui auraient, selon la rumeur, des propriétés médicinales. Les Personnages doivent faire un Test de **Savoir** approprié pour déterminer ce qui doit être conservé sur le cadavre qui gît à leurs pieds.
 
 Ainsi, un Test de **Savoir (Bêtes ou Remèdes)** permet de reconnaître les parties prisées chez la plupart des créatures. Un Test de **Métier (Empoisonneur)** ou similaire peut être effectué s'il s'agit d'une espèce vénéneuse, venimeuse ou les deux ! **Savoir (Magie)** peut également être utilisé pour les créatures qui possèdent des propriétés « mystiques » susceptibles d'intéresser les sorciers. Si le Test est réussi, le Personnage aura une bonne idée des morceaux à conserver, qu'importe son DR. Pour chaque Degré d'échec, diminuez d'un cran la quantité exploitable qui peut être prélevée sur le paragraphe Quantité exploitable. Par exemple, si un groupe est perplexe quant aux organes prisés sur une bête Énorme et obtient -2 DR sur son Test de Savoir, il ne pourra collecter que 2 points d'Encombrement de parties du monstre.
 
+<span id="page-102-0" data-folio="100"></span>
+#### **Tableau de dangerosité et de prix**
 
-# Tableau de dangerosité et de prix
+| Créature                              | Rareté       | Taille normale<br>(Encombrement) Dangerosité |                            | Coût par     | Page     | Utilisations supposées                                                                                          |
+|---------------------------------------|--------------|----------------------------------------------|----------------------------|--------------|----------|-----------------------------------------------------------------------------------------------------------------|
+| Amibe                                 | Limitée      | Moyenne                                      | Inquiétante                | Enc<br>10 /- | 44       | La gelée d'amibe est hautement inflammable                                                                      |
+| Amphisbaena                           | Exotique     | Grande                                       | Inoffensive                | 1 CO 10 /-   | 46       | On peut mélanger le venin des deux têtes pour guérir                                                            |
+|                                       |              |                                              |                            |              |          | de n'importe quel poison                                                                                        |
+| Arachnarok                            | Limitée      | Monstrueuse                                  | Menaçante                  | 1 CO         | 12       | Les filières peuvent être broyées pour former une colle<br>particulièrement résistante                          |
+| Bête de l'Oblast                      | Unique       | Énorme                                       | Mortelle                   | 15 CO        | 67       | Vaincre une grande chimère est un excellent moyen de                                                            |
+| Brise-Krag                            | Unique       | Énorme                                       | Menaçante                  | 10 CO        | 25       | se faire connaître, en bien comme en mal<br>La corne broyée d'un grand rhinox guérit tous les maux              |
+| Brochet du stir                       | Commune      | Grande                                       | Inoffensive                | 40 sc        | 36       | On peut prédire l'avenir en jetant ses écailles dans l'eau                                                      |
+| Caledair, la Faux de Feu              | Unique       | Monstrueuse                                  | Mortelle                   | 15 CO        | 31       | Infinité d'usages pour les sorciers et les alchimistes                                                          |
+| Carnosaure                            | Exotique     | Énorme                                       | Menaçante                  | 6 CO         | 81       | Son rugissement serait un remède contre la couardise<br>Les dents, les défenses et les cornes sont sublimes une |
+| Gueule d'effroi                       | Exotique     | Grande                                       | Menaçante                  | 6 CO         | 22       | fois polies                                                                                                     |
+| Chat sauvage                          | Commune      | Moyenne                                      | Inquiétante                | 80 sc        | 82       | Sa fourrure est très prisée                                                                                     |
+| Chimère                               | Exotique     | Énorme                                       | Mortelle                   | 9 CO         | 66       | Sa fourrure inspire la crainte chez les animaux qui lui<br>ressemblent                                          |
+|                                       |              |                                              |                            |              |          | Boire dans leur crâne permet de voir et d'entendre les                                                          |
+| Choses du Bois mort                   | Exotique     | Moyenne                                      | Inquiétante                | 3 CO         | 37       | morts                                                                                                           |
+| Cockatrice                            | Exotique     | Grande                                       | Menaçante                  | 6 CO         | 64       | Ses yeux étourdissent quiconque croise son regard<br>Les pointes de flèche faites avec ses dents percent        |
+| Cornu                                 | Rare         | Grande                                       | Inquiétante                | 1 CO         | 80       | n'importe quelle armure                                                                                         |
+| Déchiqueteur de cadavres de Carroburg | Unique       | Énorme                                       | Mortelle                   | 15 CO        | 54       | Les écailles d'une telle créature permettent de fabriquer                                                       |
+|                                       |              |                                              |                            |              |          | une cape qui rend son porteur presque invisible<br>Les plaies provoquées par ses écailles ne guérissent         |
+| Dragon barbelé                        | Exotique     | Énorme                                       | Mortelle                   | 9 CO         | 90       | jamais                                                                                                          |
+| Dragon de la forêt                    | Exotique     | Énorme                                       | Mortelle                   | 9 CO         | 30       | Ses écailles permettent de fabriquer une cape qui rend                                                          |
+| Fantasma                              | Unique       | Énorme                                       | Mortelle                   | 15 CO        | 91       | son porteur impossible à pister<br>Le cœur d'un grand dragon barbelé est un rubis pur                           |
+|                                       |              |                                              |                            |              |          | Les flèches dont l'empennage est fait de ses plumes                                                             |
+| Faucon des Montagnes Grises           | Rare         | Grande                                       | Inquiétante                | 1 CO         | 63       | atteignent toujours leur cible                                                                                  |
+| Géant                                 | Rare         | Énorme                                       | Menaçante                  | 2 CO         | 34       | Les ongles de pied de géant constituent des boucliers<br>invincibles                                            |
+|                                       |              |                                              |                            |              |          | Un cataplasme préparé à partir de ses yeux macérés                                                              |
+| Grand aigle                           | Exotique     | Énorme                                       | Menaçante                  | 6 CO         | 63       | permet de guérir la cécité                                                                                      |
+| Grand cerf<br>Grand taurus            | Rare<br>Rare | Grande<br>Énorme                             | Inquiétante<br>Menaçante   | 1 CO<br>2 CO | 10<br>74 | Cataplasme pour plus de longévité et de vitalité<br>La corne de taurus immunise contre le feu                   |
+| Griffon                               | Rare         | Énorme                                       | Inquiétante                | 1 CO         | 20       | Plumes porte-bonheur                                                                                            |
+| Heomreth                              | Exotique     | Énorme                                       | Mortelle                   | 9 CO         | 63       | Il est impossible de mentir quand on tient sa serre dans                                                        |
+| Il Potente Granchio                   | Unique       | Monstrueuse                                  | Mortelle                   | 15 CO        | 84       | la main<br>Sa carapace serait faite de pierres précieuses                                                       |
+|                                       |              |                                              |                            |              |          | Les os sculptés de léviathan confèrent des pouvoirs                                                             |
+| Léviathan                             | Exotique     | Monstrueuse                                  | Mortelle                   | 9 CO         | 85       | surnaturels                                                                                                     |
+| Lion de guerre de Chrace              | Unique       | Grande                                       | Menaçante                  | 10 CO        | 82       | Une amulette confectionnée avec ses griffes permet<br>d'éloigner les animaux plus faibles                       |
+| Loup géant                            | Limitée      | Moyenne                                      | Inquiétante                | 10 /-        | 16       | Sa fourrure est un signe de la faveur d'Ulric                                                                   |
+| Peau-de-loup                          | Exotique     | Moyenne                                      | Inquiétante                | 3 CO         | 70       | La malédiction d'un peau-de-loup peut être levée en                                                             |
+|                                       |              |                                              |                            |              |          | écorchant vif une autre de ces créatures<br>On dit qu'un couteau fabriqué à partir de son bec peut couper       |
+| Macareux à bec tranchant              | Limitée      | Petite                                       | Inoffensive                | 5 /-         | 77       | n'importe quoi et ignore les PA des armures non-magiques                                                        |
+| Mangeuse d'hommes de la Drakwald      | Limitée      | Grande                                       | Menaçante                  | 1 CO         | 13       | Ses glandes venimeuses produisent un poison                                                                     |
+|                                       |              |                                              |                            |              |          | indétectable<br>Une fois réduits en poudre, le bec et les serres arrêtent                                       |
+| Noctecorbe                            | Rare         | Petite                                       | Inquiétante                | 1 CO         | 59       | tout saignement                                                                                                 |
+| Ombre du fleuve                       | Unique       | Grande                                       | Menaçante                  | 10 CO        | 10       | Aurait un goût unique conféré par Taal                                                                          |
+| Pégase noir                           | Exotique     | Grande                                       | Menaçante                  | 6 CO         | 56       | Un oreiller de plumes apporte un sommeil léger aux                                                              |
+|                                       |              |                                              |                            |              |          | âmes fautives<br>La lame d'une épée dont la poignée a été taillée dans                                          |
+| Preyton                               | Exotique     | Grande                                       | Inquiétante                | 3 CO         | 60       | son bois sera toujours tranchante                                                                               |
+| Rat ogre briseur d'os                 | Exotique     | Énorme                                       | Menaçante                  | 6 CO         | 41       | Il est possible de prélever de la malepierre à partir de sa                                                     |
+|                                       |              |                                              |                            |              |          | chair et de son sang<br>Ingérer le foie d'un loup à deux têtes permet de doubler                                |
+| Raukos                                | Unique       | Grande                                       | Menaçante                  | 10 CO        | 17       | son espérance de vie                                                                                            |
+| Razorgor                              | Limitée      | Grande                                       | Inquiétante                | 10 /-        | 18       | Son estomac peut être durci pour contenir n'importe                                                             |
+|                                       |              |                                              |                            |              |          | quel liquide<br>Les os broyés de revenant permettent de ranimer                                                 |
+| Revenant                              | Rare         | Moyenne                                      | Inquiétante                | 1 CO         | 93       | temporairement n'importe quel cadavre                                                                           |
+| Rhinox                                | Limitée      | Grande                                       | Inquiétante                | 10 /-        | 24       | La queue d'un rhinox éloigne les mouches                                                                        |
+| Sangsue caméléon                      | Limitée      | Petite                                       | Inoffensive                | 5 /-         | 50       | Permet de créer une potion pour prendre l'apparence de                                                          |
+|                                       |              |                                              |                            |              |          | quelqu'un d'autre<br>Une mèche de cheveux de sirène permet de respirer                                          |
+| Sirène                                | Rare         | Moyenne                                      | Inquiétante                | 1 CO         | 86       | sous l'eau                                                                                                      |
+| Sorcière troll des rivières           | Rare         | Énorme                                       | Menaçante                  | 2 CO         | 49       | Le filet d'une sorcière peut capturer et dissiper                                                               |
+| Squig                                 | Limitée      | Moyenne                                      | Inoffensive                | 5 /-         | 26       | n'importe quelle malédiction<br>Les crottes de squig sont un excellent engrais                                  |
+| Stégadon                              | Exotique     | Énorme                                       | Menaçante                  | 6 CO         | 79       | Ses plaques seraient impénétrables                                                                              |
+| Trégara                               | Rare         | Grande                                       | Inquiétante                | 1 CO         | 76       | Son urine serait un répulsif pour les rats                                                                      |
+| Troll des rivières<br>Ver des marais  | Rare<br>Rare | Grande<br>Énorme                             | Inquiétante<br>Inquiétante | 1 CO<br>1 CO | 48<br>52 | Consommer sa chair permet de régénérer un membre<br>Sa peau permet de confectionner des vêtements raffinés      |
+|                                       | Unique       |                                              |                            |              |          | Le sang d'un grand razorgor provoque un état de                                                                 |
+|                                       |              | Énorme                                       | Menaçante                  | 10 CO        | 19       |                                                                                                                 |
+| Vieux Dos-de-pus                      |              |                                              |                            |              |          | Frénésie                                                                                                        |
+| Vouivre                               | Rare         | Énorme                                       | Menaçante                  | 2 CO         | 32       | Le venin de sa queue serait capable de tuer n'importe<br>quelle créature                                        |
 
-| Créature                              | Rareté                      | Taille normale (Encombrement) | Dangerosité              | Coût par<br>Enc                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Page                                 | Utilisations supposées                                                                                          |
-|---------------------------------------|-----------------------------|-------------------------------|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| Amibe                                 | Limitée                     | Moyenne Moyenne               | Inquiétante              | 10 /-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 44                                   | La gelée d'amibe est hautement inflammable                                                                      |
-| Amphisbaena                           | Exotique                    | Grande                        | Inoffensive              | 1 CO 10 /-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | 46                                   | On peut mélanger le venin des deux têtes pour guérir                                                            |
-|                                       | Baotique                    |                               |                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                      | de n'importe quel poison  Les filières peuvent être broyées pour former une colle                               |
-| Arachnarok                            | Limitée                     | Monstrueuse                   | Menaçante                | 1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 12                                   | particulièrement résistante                                                                                     |
-| Bête de l'Oblast                      | Unique                      | Énorme                        | Mortelle                 | 15 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 67                                   | Vaincre une grande chimère est un excellent moyen de                                                            |
-| Brise-Krag                            | Unique                      | Énorme                        | Menaçante                | 10 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 25                                   | se faire connaître, en bien comme en mal  La corne broyée d'un grand rhinox guérit tous les maux                |
-| Brochet du stir                       | Commune                     | Grande                        | Inoffensive              | 40 sc                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 36                                   | On peut prédire l'avenir en jetant ses écailles dans l'eau                                                      |
-| Caledair, la Faux de Feu              | Unique                      | Monstrueuse<br>Énorme         | Mortelle                 | 15 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 31                                   | Infinité d'usages pour les sorciers et les alchimistes                                                          |
-| Carnosaure                            | Exotique                    |                               | Menaçante                | 6 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 81                                   | Son rugissement serait un remède contre la couardise<br>Les dents, les défenses et les cornes sont sublimes une |
-| Gueule d'effroi                       | Exotique                    | Grande                        | Menaçante                | 6 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 22                                   | fois polies                                                                                                     |
-| Chat sauvage                          | Commune                     | Moyenne                       | Inquiétante              | 80 sc                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 82                                   | Sa fourrure est très prisée Sa fourrure inspire la crainte chez les animaux qui lui                             |
-| Chimère                               | Exotique                    | Énorme                        | Mortelle                 | 9 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 66                                   | ressemblent                                                                                                     |
-| Choses du Bois mort                   | Exotique                    | Moyenne                       | Inquiétante              | 3 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 37                                   | Boire dans leur crâne permet de voir et d'entendre les                                                          |
-| Cockatrice                            | Exotique                    | Grande                        | Menaçante                | 6 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 64                                   | Ses yeux étourdissent quiconque croise son regard                                                               |
-| Cornu                                 | Rare                        | Grande                        |                          | 1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 80                                   | Les pointes de flèche faites avec ses dents percent                                                             |
-| Comu                                  | Naie                        |                               | Inquiétante              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | 80                                   | n'importe quelle armure                                                                                         |
-| Déchiqueteur de cadavres de Carroburg | Unique                      | Énorme                        | Mortelle                 | 15 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 54                                   | Les écailles d'une telle créature permettent de fabriquer<br>une cape qui rend son porteur presque invisible    |
-| Dragon barbelé                        | Exotique                    | Énorme                        | Mortelle                 | 9 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 90                                   | Les plaies provoquées par ses écailles ne guérissent                                                            |
-|                                       |                             |                               |                          | Control of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the last of the las | Name and Address of the Owner, where | jamais Ses écailles permettent de fabriquer une cape qui rend                                                   |
-| Dragon de la forêt                    | Exotique                    | Énorme                        | Mortelle                 | 9 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 30                                   | son porteur impossible à pister                                                                                 |
-| Fantasma                              | Unique                      | Énorme                        | Mortelle                 | 15 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 91                                   | Le cœur d'un grand dragon barbelé est un rubis pur                                                              |
-| Faucon des Montagnes Grises           | Rare                        | Grande                        | Inquiétante              | 1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 63                                   | Les flèches dont l'empennage est fait de ses plumes atteignent toujours leur cible                              |
-| Géant                                 | Rare                        | Énorme                        | Menaçante                | 2 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 34                                   | Les ongles de pied de géant constituent des boucliers                                                           |
-| Geall                                 | Kare                        |                               | ivienaçante              | 200                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | 34                                   | invincibles                                                                                                     |
-| Grand aigle                           | Exotique                    | Énorme                        | Menaçante                | 6 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 63                                   | Un cataplasme préparé à partir de ses yeux macérés permet de guérir la cécité                                   |
-| Grand cerf                            | Rare                        | Grande                        | Inquiétante              | 1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 10                                   | Cataplasme pour plus de longévité et de vitalité                                                                |
-| Grand taurus Griffon                  | Rare<br>Rare                | Énorme<br>Énorme              | Menaçante<br>Inquiétante | 2 CO<br>1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | 74<br>20                             | La corne de taurus immunise contre le feu Plumes porte-bonheur                                                  |
-|                                       | Participation of the second |                               |                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                      | Il est impossible de mentir quand on tient sa serre dans                                                        |
-| Heomreth                              | Exotique                    | Énorme                        | Mortelle                 | 9 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 63                                   | la main                                                                                                         |
-| Il Potente Granchio                   | Unique                      | Monstrueuse                   | Mortelle                 | 15 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 84                                   | Sa carapace serait faite de pierres précieuses  Les os sculptés de léviathan confèrent des pouvoirs             |
-| Léviathan                             | Exotique                    | Monstrueuse                   | Mortelle                 | 9 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 85                                   | surnaturels                                                                                                     |
-| Lion de guerre de Chrace              | Unique                      | Grande                        | Menaçante                | 10 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 82                                   | Une amulette confectionnée avec ses griffes permet                                                              |
-| Loup géant                            | Limitée                     | Moyenne                       | Inquiétante              | 10 /-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 16                                   | d'éloigner les animaux plus faibles  Sa fourrure est un signe de la faveur d'Ulric                              |
-| Peau-de-loup                          | Exotique                    | Moyenne                       | Inquiétante              | 3 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 70                                   | La malédiction d'un peau-de-loup peut être levée en                                                             |
-| Teau de Rup                           | Exotique                    |                               |                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | 70                                   | écorchant vif une autre de ces créatures On dit qu'un couteau fabriqué à partir de son bec peut couper          |
-| Macareux à bec tranchant              | Limitée                     | Petite                        | Inoffensive              | 5 /-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 77                                   | n'importe quoi et ignore les PA des armures non-magiques                                                        |
-| Mangeuse d'hommes de la Drakwald      | Limitée                     | Grande                        | Menaçante                | 1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 13                                   | Ses glandes venimeuses produisent un poison                                                                     |
-|                                       |                             |                               |                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                      | indétectable  Une fois réduits en poudre, le bec et les serres arrêtent                                         |
-| Noctecorbe                            | Rare                        | Petite                        | Inquiétante              | 1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 59                                   | tout saignement                                                                                                 |
-| Ombre du fleuve                       | Unique                      | Grande                        | Menaçante                | 10 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 10                                   | Aurait un goût unique conféré par Taal                                                                          |
-| Pégase noir                           | Exotique                    | Grande                        | Menaçante                | 6 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 56                                   | Un oreiller de plumes apporte un sommeil léger aux âmes fautives                                                |
-| Preyton                               | Exotique                    | Grande                        | Inquiétante              | 3 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 60                                   | La lame d'une épée dont la poignée a été taillée dans                                                           |
-| 9                                     |                             |                               |                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                      | son bois sera toujours tranchante  Il est possible de prélever de la malepierre à partir de sa                  |
-| Rat ogre briseur d'os                 | Exotique                    | Énorme                        | Menaçante                | 6 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 41                                   | chair et de son sang                                                                                            |
-| Raukos                                | Unique                      | Grande                        | Menaçante                | 10 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 17                                   | Ingérer le foie d'un loup à deux têtes permet de doubler                                                        |
-|                                       | 1                           |                               |                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                      | son espérance de vie Son estomac peut être durci pour contenir n'importe                                        |
-| Razorgor                              | Limitée                     | Grande                        | Inquiétante              | 10 /-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 18                                   | quel liquide                                                                                                    |
-| Revenant                              | Rare                        | Moyenne                       | Inquiétante              | 1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 93                                   | Les os broyés de revenant permettent de ranimer                                                                 |
-| Rhinox                                | Limitée                     | Grande                        | Inquiétante              | 10 /-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 24                                   | temporairement n'importe quel cadavre  La queue d'un rhinox éloigne les mouches                                 |
-| Sangsue caméléon                      | Limitée                     | Petite                        | Inoffensive              | 5 /-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 50                                   | Permet de créer une potion pour prendre l'apparence de                                                          |
-| Sangsuc Camercum                      | Limitee                     | 1 cute                        | monensive                | 37-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | 30                                   | quelqu'un d'autre                                                                                               |
-| Sirène                                | Rare                        | Moyenne                       | Inquiétante              | 1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 86                                   | Une mèche de cheveux de sirène permet de respirer sous l'eau                                                    |
-| Sorcière troll des rivières           | Rare                        | Énorme                        | Menaçante                | 2 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 49                                   | Le filet d'une sorcière peut capturer et dissiper                                                               |
-|                                       |                             |                               | Inoffensive              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                      | n'importe quelle malédiction                                                                                    |
-| Squig<br>Stégadon                     | Limitée<br>Exotique         | Moyenne<br>Énorme             | Menaçante                | 5 /-<br>6 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | 26<br>79                             | Les crottes de squig sont un excellent engrais Ses plaques seraient impénétrables                               |
-| Trégara                               | Rare                        | Grande                        | Inquiétante              | 1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 76                                   | Son urine serait un répulsif pour les rats                                                                      |
-| Troll des rivières Ver des marais     | Rare                        | Grande<br>Éporme              | Inquiétante              | 1 CO<br>1 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | 48<br>52                             | Consommer sa chair permet de régénérer un membre                                                                |
-|                                       | Rare                        | Énorme                        | Inquiétante              |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                      | Sa peau permet de confectionner des vêtements raffinés<br>Le sang d'un grand razorgor provoque un état de       |
-| Vieux Dos-de-pus                      | Unique                      | Énorme                        | Menaçante                | 10 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | 19                                   | Frénésie                                                                                                        |
-| Vouivre                               | Rare                        | Énorme                        | Menaçante                | 2 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 32                                   | Le venin de sa queue serait capable de tuer n'importe                                                           |
-| 337                                   | ъ.                          | 6                             |                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |                                      | quelle créature  Toucher un wyrm des mers permet de dissiper toute                                              |
-| Wyrm des mers                         | Exotique                    | Énorme                        | Menaçante                | 6 CO                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | 88                                   | illusion                                                                                                        |
-
-
-# **Degré de conservation**
+<span id="page-103-0" data-folio="101"></span>
+### **Degré de conservation**
 
 La valeur potentielle d'un spécimen donné est fortement affectée par le temps écoulé depuis sa mort et la manière dont son cadavre a été préservé depuis.
 
@@ -4163,21 +3884,21 @@ Il est bien plus difficile de conserver les organes réputés pour leur venin ou
 
 **Pourri** : les pièces sont rances et viciées. Seules les parties Exotiques et Uniques ont encore de la valeur lorsqu'elles sont pourries. Les parties non conservées deviennent Pourries en 5 jours. Après 7 jours, les parties Pourries n'ont plus aucune valeur et se transforment en un amas de viande impure et infestée de larves.
 
-| MODIFICATEUR DE PRIX |          |          |                             |
-|----------------------|----------|----------|-----------------------------|
-| Frais                | Conservé | Faisandé | Pourri                      |
-| X 2                  | Standard | Moitié   | 1/8 (Exotique<br>seulement) |
+| MODIFICATEUR DE PRIX |          |          |                             |  |
+|----------------------|----------|----------|-----------------------------|--|
+| Frais                | Conservé | Faisandé | Pourri                      |  |
+| X 2                  | Standard | Moitié   | 1/8 (Exotique<br>seulement) |  |
 
 **Remarque** : les sorciers peuvent utiliser le sort *Conservation* pour maintenir indéfiniment 1 à 2 points d'Encombrement de parties à l'État *Conservé*. Si un sorcier mal avisé tentait de préserver ainsi davantage de pièces, cela provoquerait des perturbations dans les Vents de Magie et la probable disparition des propriétés ésotériques qui font l'intérêt de ces produits pour la plupart des acheteurs.
 
 On a tous vécu cela : épuisé après une longue traque dans un endroit inconnu, la précieuse marchandise qui pourrit peu à peu dans une charrette et aucun acheteur à l'horizon. Dans une telle situation, il faut agir, et vite. Si aucun alchimiste ou apothicaire de renom ne travaille dans la région, cherchez des chasseurs ou des pêcheurs. Ils connaîtront généralement un savant ou un préparateur de cataplasmes qui <sup>s</sup>'intéresse aux créatures étranges qui finissent dans leurs pièges ou leurs filets. Si tout échoue et qu'il vous reste encore la majeure partie d'un cadavre de monstre, vous pouvez toujours tenter d'amener votre charrette au marché et de laisser les enfants et les curieux payer quelques sous de cuivre pour admirer la dépouille. Cette pratique est réprouvée par bien des gens, mais la nouvelle de l'existence de telles attractions se répand rapidement et pourrait bien arriver jusqu'aux oreilles d'une personne ayant un intérêt légitime pour de tels cadavres.
 
-
-### **Exemple :**
+<span id="page-104-0" data-folio="102"></span>
+#### **Exemple :**
 
 Nos héros ont eu le... plaisir, dira-t-on, de croiser la route d'une cockatrice et de survivre à cette rencontre. Il s'agit d'une créature Exotique, Grande et particulièrement Menaçante. Le coût de base pour des pièces de cockatrice utilisables est ainsi de 6 CO et son corps contient l'équivalent de 4 points d'Encombrement de composants, pour une valeur totale de 24 CO. Les héros réussissent leur Test de **Savoir** haut la main et apprennent donc que la majeure partie de la valeur de la créature réside dans ses terribles yeux, ses serres venimeuses et, étrangement, les cendres du reste de son corps. Malheureusement, ils sont hauts dans les Montagnes Grises, loin de toute civilisation et sans le matériel nécessaire pour bien conserver la dépouille. Bien déterminés à tirer profit de leur mésaventure, les Personnages mettent 6 jours à transporter tant bien que mal le cadavre jusqu'à une ville où il pourrait trouver preneur. La marchandise est désormais *Pourrie*, mais puisqu'il s'agit d'une créature Exotique, leurs efforts n'ont pas été vain. S'ils arrivent à trouver rapidement le bon acheteur, ils pourraient encore gagner jusqu'à 3 CO, même s'il est probable que le prix soit sujet à négociations.
 
-# **Recherche d'un acheteur**
+### **Recherche d'un acheteur**
 
 À moins que les Personnages ne sachent exactement où aller ou à qui parler suite à des aventures précédentes, ils devront trouver un « marché » qui voudra bien de leur nouvelle « marchandise » inhabituelle. Il sera souvent impossible de dénicher un acheteur potentiel dans un village ou une ville, tout simplement parce que personne ne sera intéressé, mais il y a toujours quelqu'un à la recherche de chair exotique dans les cités de l'Empire.
 
@@ -4193,10 +3914,10 @@ Sachez que si vous cherchez à vendre des pièces de monstres réputées pour ê
 
 Selon les circonstances, la vente de parties de monstres peut être traitée comme une Activité. Il est également possible de créer un acheteur spécifique ou d'utiliser un PNJ approprié et de jouer la transaction avec toutes ses discussions, contrepropositions et négociations.
 
+<span id="page-105-0" data-folio="103"></span>
+### **Potions et onguents**
 
-# POTIONS ET ONGUENTS
-
-<span id="page-105-0"></span>e nombreux sorciers trouvent une utilité aux parties de différents monstres, généralement comme composants pour lancer des sorts ou créer des objets
+De nombreux sorciers trouvent une utilité aux parties de différents monstres, généralement comme composants pour lancer des sorts ou créer des objets
 
 magiques. Toutefois, les yeux, les os, la bile et le sang de ces créatures servent aussi à préparer des remèdes traditionnels et des concoctions alchimiques depuis plus longtemps encore. Les alchimistes financent souvent des chasses pour ces ingrédients précieux. Grâce à leur domaine d'expertise bien précis, ils sont également en mesure de fournir le matériel nécessaire pour conserver les parties désirées.
 
@@ -4204,34 +3925,34 @@ Malheureusement, ces potions exigent souvent les organes des monstres les plus r
 
 Vous trouverez ci-après une sélection de poisons, de mixtures et d'onguents que les herboristes et apothicaires de talent peuvent préparer.
 
-### **POTIONS**
+### **Potions**
 
 Les termes « potion » et « mixture » sont utilisés de manière interchangeable. Cependant, en règle générale, les mixtures sont des mélanges d'ingrédients végétaux brassés et distillés de façon bien spécifique, tandis que le mot « potion » est réservé aux mélanges composés, partiellement ou en totalité, de sang, d'organes ou de viscères prélevés sur des animaux. Cette nuance échappe à bien des gens, mais ceux qui ont appris leur métier à Altdorf mettent un point d'honneur à la respecter.
 
 Les potions sont généralement préparées avec la Compétence Métier (Alchimiste), ou avec la Compétence Métier (Apothicaire) avec une pénalité de -20. Une potion préparée dans les règles de l'art et avec des composants Frais peut être conservée pendant un an dans une fiole ou une bouteille hermétiquement fermée. Les potions créées avec des composants Conservés tiennent six mois, tandis que celles réalisées avec des composants Faisandés ne seront bonnes qu'un mois. Les composants Pourris sont souvent inutilisables pour la préparation de potions.
 
-#### **ONGUENTS**
+#### **Onguents**
 
 Les onguents sont très similaires aux cataplasmes préparés par les herboristes et les apothicaires. Cependant, les cataplasmes sont généralement préparés à partir de plantes que l'on fait tremper et appliqués directement sur une blessure ou une plaie, tandis que les onguents prennent souvent la forme d'une crème ou d'une pâte contenant des tissus, du sang ou d'autres composants d'origine animale.
 
 Les onguents préparés avec des composants Frais ou Conservés peuvent être gardés pendant un mois avant de perdre leurs effets, ou de devenir toxiques. Ceux réalisés avec des composants Faisandés tiennent une semaine, alors que les composants Pourris sont inutilisables.
 
-Les onguents peuvent être appliqués directement sur une plaie ou bien étalés sur une arme ou une armure, selon leur effet. L'application d'un onguent sur une arme ne nécessite généralement pas de Test. Cependant, pour étaler un onguent sur une arme tranchante ou perçante en une Action pendant un combat, un Personnage doit réussir un Test de Corps à corps Intermédiaire (+0). En cas d'échec de -5 DR ou plus, l'aventurier s'est blessé pendant la procédure et a été exposé à l'onguent, comme s'il avait été touché par une arme recouverte de cette substance. Un onguent permet d'enduire une arme ou trois carreaux ou flèches.
+Les onguents peuvent être appliqués directement sur une plaie ou bien étalés sur une arme ou une armure, selon leur effet. L'application d'un onguent sur une arme ne nécessite généralement pas de Test. Cependant, pour étaler un onguent sur une arme tranchante ou perçante en une Action pendant un combat, un Personnage doit réussir un Test de **Corps à corps Intermédiaire (+0)**. En cas d'échec de -5 DR ou plus, l'aventurier s'est blessé pendant la procédure et a été exposé à l'onguent, comme s'il avait été touché par une arme recouverte de cette substance. Un onguent permet d'enduire une arme ou trois carreaux ou flèches.
 
 La préparation d'onguents exige la Compétence Métier (Alchimiste), mais les Personnages qui possèdent la Compétence Métier (Herboriste) peuvent s'y essayer avec une pénalité de -20.
 
-### PRÉPARATIONS CRUES
+#### **Préparations crues**
 
-Leur nom ne laisse pas de place à l'imagination: les préparations crues doivent être mâchées, avalées, bues ou ingérées telles quelles pour qu'elles fassent effet. Il arrive que certaines personnes cuisinent de tels composants, mais cela ne sert qu'à en améliorer le goût ou en faciliter l'ingestion. Les préparations crues exigent des composants Frais. Elles se conservent rarement plus d'un jour ou deux avant de devenir inutilisables, même en cas de cuisson. Aucune Compétence particulière n'est requise pour créer ou consommer une préparation crue, si ce n'est la connaissance des parties de l'animal qu'il faut ingérer. Les Compétences Métier (Cuisinier) et Métier (Empoisonneur) permettent à un Personnage de dissimuler le goût parfois désagréable des composants, que ce soit pour de bonnes ou de mauvaises raisons.
+Leur nom ne laisse pas de place à l'imagination : les préparations crues doivent être mâchées, avalées, bues ou ingérées telles quelles pour qu'elles fassent effet. Il arrive que certaines personnes cuisinent de tels composants, mais cela ne sert qu'à en améliorer le goût ou en faciliter l'ingestion. Les préparations crues exigent des composants Frais. Elles se conservent rarement plus d'un jour ou deux avant de devenir inutilisables, même en cas de cuisson. Aucune Compétence particulière n'est requise pour créer ou consommer une préparation crue, si ce n'est la connaissance des parties de l'animal qu'il faut ingérer. Les Compétences Métier (Cuisinier) et Métier (Empoisonneur) permettent à un Personnage de dissimuler le goût parfois désagréable des composants, que ce soit pour de bonnes ou de mauvaises raisons.
 
-
-# **Poisons**
+<span id="page-106-0" data-folio="104"></span>
+#### **Poisons**
 
 Les poisons sont utilisés dans le monde entier, c'est pourquoi beaucoup d'éminentes personnes emploient un goûteur chargé de contrôler leur nourriture et leurs boissons avant qu'elles ne consomment quoi que ce soit. Ce poste à haut risque est souvent occupé pendant une courte durée, mais quelques malheureux se retrouvent goûteurs officiels le restant de leur vie.
 
 La plupart des poisons sont créés à partir de composants végétaux, mais certains nécessitent le venin de différentes créatures. L'effort supplémentaire requis pour prélever de tels composants est parfois justifié, car les antidotes pour ces poisons sont tout aussi difficiles à préparer. La Compétence Métier (Empoisonneur) est utilisée pour appliquer ces poisons, déterminer la dose requise, en dissimuler le goût et ainsi de suite. La Compétence Métier (Alchimiste ou Apothicaire) peut également servir, mais uniquement pour la création de poisons.
 
-# **Baiser de la vouivre**
+#### **Baiser de la vouivre**
 
 **Préparation :** Onguent
 
@@ -4239,7 +3960,7 @@ La plupart des poisons sont créés à partir de composants végétaux, mais cer
 
 Ce puissant poison, qui agit au contact, utilise du venin directement extrait du dard situé au bout de la queue d'une vouivre. Les personnes qui subissent une Blessure à cause d'une lame, d'une flèche ou d'un carreau recouvert de baiser de la vouivre doivent réussir un Test de **Résistance**, sous peine de recevoir immédiatement 5 Blessures supplémentaires qui ignorent l'Endurance et l'Armure. Le baiser de la vouivre se dissipe rapidement à l'air libre. Une arme traitée avec ce produit doit être utilisée dans un délai de 2+1d10 Rounds, avant que le poison ne s'évapore sans danger.
 
-# **Boursoufleur**
+#### **Boursoufleur**
 
 **Préparation :** Potion, onguent, préparation crue
 
@@ -4251,7 +3972,7 @@ Une arme traitée avec ce produit doit être utilisée dans l'heure, avant que l
 
 Quand une arme recouverte de boursoufleur inflige au moins 1 Blessure, elle applique automatiquement 1d10 Blessures supplémentaires. Toute personne ayant la malchance d'ingérer du boursoufleur doit faire un Test de **Résistance Difficile (-20)** ou subir immédiatement une Blessure Critique au niveau du torse.
 
-# **Long sommeil**
+#### **Long sommeil**
 
 **Préparation :** Potion
 
@@ -4265,10 +3986,10 @@ Les apothicaires du Vieux Monde ont longtemps été associés à la pratique hon
 
 Cette confusion est moins répandue dans les régions civilisées de l'Empire. Cependant, les apothicaires qui s'essayent à la préparation de potions et d'onguents alchimiques le font à leurs propres risques, car la distinction entre un professionnel médical digne de confiance et un sorcier dissident est alors très floue. Si un apothicaire prévoit de créer régulièrement de telles concoctions, il serait bien avisé de devenir un alchimiste agréé (voir **Vents de Magie**) et de demander la protection des Collèges de Magie ou de la Guilde des Sorciers et des Alchimistes de Middenheim.
 
-
+<span id="page-107-0" data-folio="105"></span>
 La victime doit alors faire un Test de **Résistance Difficile (-20)**. En cas d'échec, elle ne se réveillera jamais. La plupart des témoins mettront ce décès sur le compte d'un arrêt cardiaque. Nul ne sait combien de grands nobles, de généraux et d'autres dignitaires sont morts du long sommeil au fil des années, mais ce nombre est certainement plus élevé qu'on ne le pense.
 
-# **Sibilance**
+#### **Sibilance**
 
 **Préparation :** Potion
 
@@ -4278,11 +3999,11 @@ La sibilance est elle aussi difficile à détecter, même si elle n'est pas popu
 
 À la fin de chaque heure, la victime peut tenter de faire un Test de **Résistance Intermédiaire (+0)** pour annuler cet effet. En cas de succès, elle ne subit plus d'État *Exténué* supplémentaire lié au poison. Cependant, les États *Exténué* qu'elle possède déjà persistent jusqu'à son prochain repos.
 
-# **Antidotes**
+### **Antidotes**
 
 Depuis la découverte des poisons, on cherche des antidotes pour se protéger de leurs effets indésirables. Il existe un antidote pour la plupart des poisons, mais encore faut-il savoir lequel utiliser. Cela nécessite de bonnes connaissances dans l'art du poison, et bien des apothicaires sont devenus eux-mêmes des empoisonneurs à force de chercher comment les combattre.
 
-# **Potion à deux têtes**
+#### **Potion à deux têtes**
 
 **Préparation :** Potion, onguent, préparation crue **Composant essentiel :** Sang d'amphisbaena (1 Enc)
 
@@ -4290,7 +4011,7 @@ Selon la croyance populaire, un mélange de venin d'amphisbaena extrait de chaqu
 
 Une préparation de sang d'amphisbaena confère un bonus de +40 pour résister aux effets de n'importe quel poison.
 
-## **Remède de Lurek**
+#### **Remède de Lurek**
 
 **Préparation :** Potion
 
@@ -4300,7 +4021,7 @@ Nommée en l'honneur d'un célèbre diplomate de l'Âge des Trois Empereurs, ré
 
 Dans la minute qui suit l'ingestion, les pénalités de Caractéristique dues à des Tests de **Résistance à l'alcool** échoués ou à l'État *Ivre,* ainsi que décrit dans **WFJDR** p. 129. Le buveur subit alors un État *Exténué* pendant un nombre d'heures égal à 10 moins son Bonus d'Endurance. Cette pénalité ne pourra disparaître qu'avec du temps et du repos.
 
-# **Solvant à bézoard**
+#### **Solvant à bézoard**
 
 **Préparation :** Potion
 
@@ -4308,18 +4029,18 @@ Dans la minute qui suit l'ingestion, les pénalités de Caractéristique dues à
 
 Le solvant à bézoard est une préparation extrêmement utile, dont le nom est tiré de concrétions trouvées dans l'estomac des chèvres et qui seraient capables de guérir de n'importe quel poison. En réalité, ces pierres n'ont aucun effet par ellesmêmes, ni l'efficacité souhaitée sauf lorsqu'on les combine avec de puissants pouvoirs magiques.
 
-
+<span id="page-108-0" data-folio="106"></span>
 Le solvant à bézoard est un mélange d'alcool et d'autres liquides conservés dans un estomac de chèvre pendant une nuit, avant d'être introduit dans une potion. Il n'est d'aucune utilité en l'état, mais il suffit d'y verser une goutte de n'importe quel poison pour en faire un antidote à cette substance. Cette capacité est bien entendu très pratique, mais elle est limitée par sa spécificité. En effet, l'antidote n'est efficace que si une goutte du poison particulier à traiter est utilisée. Les poisons similaires, même des mixtures fraîchement préparées avec les mêmes ingrédients, ne fonctionneront pas. Il faut prendre exactement le même poison issu de la même préparation.
 
 Cela ne pose pas de problème lorsqu'il s'agit de traiter la morsure d'un animal venimeux, car il est souvent possible de capturer la créature concernée et d'en extraire le venin. Cependant, il est plus difficile de soigner les empoisonnements criminels, car le coupable ne conserve généralement pas de preuves aussi flagrantes qu'un échantillon du poison utilisé. Quand une goutte du poison ciblé est ajoutée à une potion de solvant à bézoard, celle-ci ne doit pas être utilisée pour en traiter un autre. L'incorporation d'autres substances toxiques ne fait que rendre le mélange légèrement néfaste.
 
 **106**
 
-# **Concoctions utiles**
+#### **Concoctions utiles**
 
 Vous trouverez ci-après différentes concoctions utilisées dans le Vieux Monde. Le secret de leur création est le fruit de longues recherches et reste jalousement gardé. Cependant, de nombreuses recettes sont transmises à travers les contes populaires et les pratiques des sorciers de village. Quelques préparations ont été officialisées par les alchimistes d'Altdorf, de Middenheim et d'ailleurs, mais la plupart des sorciers agréés estiment que la fabrication de tels mélanges est indigne d'une personne de leur rang.
 
-# **Acide de troll**
+#### **Acide de troll**
 
 **Préparation :** Potion, préparation crue **Composant essentiel :** Bile de troll (1 Enc)
 
@@ -4327,7 +4048,7 @@ Les sécrétions particulièrement caustiques du système digestif d'un troll so
 
 La « potion » d'acide de troll est en réalité composée de bile pure. Tout le travail réside dans la préparation d'un contenant assez résistant pour accueillir ce liquide agressif. Pour utiliser sa forme « brute », il faut avoir un troll particulièrement énervé à portée de main ou bien avoir préalablement extrait la vésicule biliaire ou l'estomac de l'un d'entre eux pour s'en servir de récipient. Selon les mythes populaires, ce serait une pratique très risquée, car les trolls sont censés pouvoir se régénérer à partir du moindre lambeau de chair qui n'a pas été brûlé.
 
-# **Bouclier de la forge**
+#### **Bouclier de la forge**
 
 **Préparation :** Onguent
 
@@ -4335,10 +4056,10 @@ La « potion » d'acide de troll est en réalité composée de bile pure. Tout l
 
 Cette substance gélatineuse, dérivée de la bave de gueule d'effroi, est parfois utilisée par les nains quand ils doivent manipuler des matériaux particulièrement chauds ou bien s'occuper d'un dragon. En effet, il suffit de recouvrir son équipement et son propre corps avec cet onguent pour se préserver temporairement des effets néfastes du feu. Un flacon de bouclier de la forge confère 4 PA contre les Dégâts de feu de toutes sortes, y compris ceux d'origine magique, et immunise contre l'État *En flammes*. En revanche, l'utilisateur subit aussi une pénalité de -20 à l'Agilité et l'Initiative, car il doit veiller constamment à ne pas perdre l'équilibre à cause du produit 
 
-
+<span id="page-109-0" data-folio="107"></span>
 glissant dont il est recouvert. Le contenu d'un flacon agit pendant une heure, mais il peut être éliminé avant ce délai en frottant avec de l'alcool.
 
-# **Camouflarbre**
+#### **Camouflarbre**
 
 **Préparation :** Onguent
 
@@ -4350,7 +4071,7 @@ Malgré son nom, le camouflarbre est efficace dans n'importe quel environnement 
 
 Quand un individu se recouvre entièrement de camouflarbre, il bénéficie d'un bonus de +40 pour tous les Tests de **Discrétion** basés sur la vue. Une utilisation plus modeste, par exemple en se limitant au visage et aux mains, confère un bonus de +10 et ne consomme qu'un quart de dose.
 
-# **Dernier souffle**
+#### **Dernier souffle**
 
 **Préparation :** Potion
 
@@ -4360,7 +4081,7 @@ Si on déverse cette potion dans la gorge d'un cadavre frais de moins d'un jour,
 
 **107**
 
-
+<span id="page-110-0" data-folio="108"></span>
 #### **Esprit clair Préparation :** Potion
 
 **Composant essentiel :** Sang de cornu (1 Enc)
@@ -4369,7 +4090,7 @@ Cette potion, rare en raison de la difficulté à rassembler les ingrédients n�
 
 Après avoir ingéré cette potion, le consommateur gagne le Trait de créature À sang-froid et peut inverser les Tests échoués basés sur la Force Mentale. S'il reçoit un État *Surpris*, ce dernier n'est pas perdu lors de la première occasion (en général, à la fin du Round ou si la victime est attaquée).
 
-# **Feu de Carroburg**
+#### **Feu de Carroburg**
 
 **Préparation :** Potion
 
@@ -4385,7 +4106,7 @@ Après avoir bu cette potion, l'utilisateur gagne le Trait de créature Souffle 
 
 Étant donné le coût de la potion et ses inconvénients non négligeables, les cracheurs de feu de Carroburg ont décidé de s'en tenir à leurs méthodes éprouvées pour leurs spectacles.
 
-# **Feu liquide**
+#### **Feu liquide**
 
 **Préparation :** Potion
 
@@ -4393,7 +4114,7 @@ Après avoir bu cette potion, l'utilisateur gagne le Trait de créature Souffle 
 
 Le sang de grand taurus traité par un procédé alchimique est mis en bouteille dans de petites fioles hermétiquement fermées. Lorsqu'il est déversé, il prend feu et brûle pendant un certain temps sur *n'importe quelle surface*, même un sol gelé ou un marais, mais il finira par s'éteindre en l'absence de combustible. Ce liquide est généralement trop rare et précieux pour être utilisé comme une arme, mais si c'est le cas, il est considéré comme une bombe incendiaire (**WFJDR**, p. 295). Cependant, les États *En flammes* dus à cette attaque *ne peuvent pas* être annulés pendant 3 Rounds, même si la cible est complètement plongée dans l'eau.
 
-### **Fléau de la sorcière**
+#### **Fléau de la sorcière**
 
 **Préparation :** Potion
 
@@ -4401,7 +4122,7 @@ Le sang de grand taurus traité par un procédé alchimique est mis en bouteille
 
 La gueule d'effroi est une créature terrifiante qui a inspiré des récits plus impressionnants les uns que les autres. Cette créature aurait ainsi dévoré de l'intérieur de nombreux monstres pourtant plus redoutables. Leur voracité est si grande qu'ils ne consomment pas seulement la chair, mais aussi l'essence des Vents de Magie qui réside dans leur victime.
 
-
+<span id="page-111-0" data-folio="109"></span>
 C'est cette particularité qui permet aux alchimistes de créer la potion du nom de fléau de la sorcière. Préparée à partir de dents broyées, elle confère une protection modérée contre la magie. Après ingestion, l'utilisateur gagne le Trait de créature Résistance à la Magie 3, qui réduit de 3 le DR de tout sort qui l'affecte. Cet effet dure une heure.
 
 Il est possible de consommer plusieurs doses à la fois, chacune augmentant de 1 la valeur de Résistance à la Magie et prolongeant d'une heure la durée de l'effet. On raconte que cette protection pourrait devenir permanente en buvant suffisamment de potions de fléau de la sorcière. C'est cependant une pratique peu judicieuse. L'utilisateur doit faire un Test de **Résistance Intermédiaire (+0)** pour chaque dose ingérée après la première. En cas d'échec, il commence à sécréter la bave visqueuse et toxique qui recouvre chaque gueule d'effroi. Il subit un État *Empoisonné* par Round, tout comme quiconque le touche sans prendre les précautions qui s'imposent, par exemple en portant des gants épais. Cet effet dure pendant dix Rounds. Si l'utilisateur est encore vivant, la potion se dissipe et tous les États *Empoisonné* liés à sa consommation disparaissent.
@@ -4412,13 +4133,13 @@ Il est possible de consommer plusieurs doses à la fois, chacune augmentant de 1
 
 Le preyton est une créature habitée par un état de rage permanent, que de nombreux mythes tentent d'expliquer. Cependant, une chose est sûre : il est extrêmement facile d'extraire cette fureur de son corps. Quand une personne boit cette potion, elle entre immédiatement dans un État de *Frénésie* (**WFJDR**, p. 190), qui dure 1d10 Rounds et ne peut pas être calmée avant ce délai.
 
-# **Liqueur de serpent du prophète**
+#### **Liqueur de serpent du prophète**
 
 **Préparation :** Potion, onguent, préparation crue **Composant essentiel :** Venin d'amphisbaena (1 Enc)
 
 Ce breuvage extrêmement puissant a été distillé avec de petites quantités de venin d'amphisbaena, et permettrait à celui qui l'ingère d'avoir des visions précises d'événements passés et futurs. L'utilisateur n'a plus aucun contrôle sur ce qu'il perçoit, si tant est qu'il perçoive quoi que ce soit. Les informations obtenues ainsi sont laissées à la discrétion du MJ. Il doit effectuer un Test de **Résistance à l'alcool**. En cas de succès, grâce aux avenirs potentiels qui défilent devant lui, il pourra dépenser un point de Chance dans l'heure qui suit pour inverser les dés de n'importe quel Test échoué.
 
-# **Malveillance**
+#### **Malveillance**
 
 **Préparation :** Potion
 
@@ -4426,7 +4147,7 @@ Ce breuvage extrêmement puissant a été distillé avec de petites quantités d
 
 Ce breuvage légendaire serait préparé en mélangeant du sang de chimère avec de nombreux ingrédients exotiques et de la bière naine extra forte. Cette substance transforme alors le sang de celui qui l'ingère en une arme mortelle. Son buveur doit effectuer un Test de **Résistance Complexe (-10)**. En cas de succès, il obtient le Trait de créature Sang corrosif pendant 3+DR Rounds. S'il échoue, il subit deux États *Empoisonné*. Toute créature possédant le Trait de créature Bestial mordant l'utilisateur et recevant des Dégâts en conséquence ne le mordra plus pendant le combat, mais elle pourra toujours attaquer avec d'autres méthodes.
 
-# **Poudre de veine**
+#### **Poudre de veine**
 
 **Préparation :** Potion, onguent
 
@@ -4440,8 +4161,8 @@ Cependant, la poudre de veine peut être dangereuse, quelle que soit la façon d
 
 Les potions de poudre de veine ont une fonction alternative bien moins connue, dans les combats contre les vampires et autres morts-vivants. En effet, il est impossible pour un vampire ou un monstre avec le Trait de créature Vampirique de se nourrir du sang d'une personne sous l'effet de la poudre de veine. Ils ne récupèrent pas de Blessures lorsqu'ils mordent des victimes ayant récemment ingéré une potion de poudre de veine.
 
-
-# **Protection du cerf**
+<span id="page-112-0" data-folio="110"></span>
+#### **Protection du cerf**
 
 **Préparation :** Potion
 
@@ -4451,7 +4172,7 @@ Cette potion, préparée à partir des organes d'un grand cerf, est souvent cons
 
 Le grand cerf est considéré comme une créature sacrée dans de nombreuses cultures, surtout chez les Éonirs de la Laurelorn et leurs cousins d'Athel Loren. Les personnes connues pour préparer cette potion sont souvent condamnées à mort par les elfes sylvains qui ont vent de leur existence.
 
-# **Razorflamme**
+#### **Razorflamme**
 
 **110**
 
@@ -4465,7 +4186,7 @@ Un onguent de razorflamme peut être étalé sur n'importe quelle arme puis enfl
 
 L'utilisation de la razorflamme comme une arme est perçue comme une hérésie par de nombreuses religions du Vieux Monde, en particulier par le culte de Morr, qui a pu constater directement les pitoyables vestiges spirituels qui s'échappent des personnes tuées de cette manière. Dans certaines provinces, quiconque est surpris en possession d'une fiole de cette substance est condamnée au bûcher. La razorflamme confisquée est bien entendu utilisée pour en allumer le feu.
 
-# **Sang-douleur**
+#### **Sang-douleur**
 
 **Préparation :** Potion, préparation crue **Composant essentiel :** Bile de squig (1 Enc)
 
@@ -4475,58 +4196,60 @@ Veuillez noter que cette préparation n'empêche pas son utilisateur de subir un
 
 Vous êtes toujours à me demander des formules invraisemblables, Theo ! Une potion pour cracher du feu, un acide qui fera fondre n'importe quel métal... <sup>L</sup>'alchimie a bien d'autres utilités, vous savez. Ce n'est pas très glorieux, mais figurez-vous que certaines amibes peuvent être raffinées pour produire un enduit très efficace pour calfeutrer un navire. Nombre de maladies peuvent être soignées en identifiant le bon mélange... Mais pas toutes.
 
+<span id="page-113-0" data-folio="111"></span>
+#### **Sang de la mer Préparation :** Potion
 
-#### Sang de la mer Préparation: Potion
-
-Composant essentiel: Sang de wyrm des mers (1 Enc)
+**Composant essentiel :** Sang de wyrm des mers (1 Enc)
 
 Le sang de la mer est un des « remèdes » les plus tristement célèbres du Vieux Monde. Son ingrédient principal, qui est à l'origine de son nom, est du sang extrait du foie d'un wyrm des mers adulte, ainsi que des fragments d'autres organes. Il possède d'incroyables capacités régénératives, mais il se distingue aussi par sa toxicité très élevée. L'utilisateur subit immédiatement 3 États *Empoisonné* auxquels il est impossible de résister initialement. Il récupère autant de Blessures que son Bonus d'Endurance et obtient le Trait de créature Régénération. C'est alors à Ranald de choisir si la régénération agira plus rapidement que l'effet du poison. Quand tous les États *Empoisonné* sont dissipés, le Trait de créature Régénération disparaît également.
 
-# POISONS, ANTIDOTES ET CONCOCTIONS
+#### **Poisons, antidotes et concoctions**
 
-| Article                              | Coût       | Disponibilité | Formes             |  |  |  |  |
-|--------------------------------------|------------|---------------|--------------------|--|--|--|--|
-| POISONS                              |            |               |                    |  |  |  |  |
-| Baiser de la<br>vouivre              | 12 CO      | Exotique      | Onguent            |  |  |  |  |
-| Boursoufleur                         | 3 CO       | Rare          | Potion, onguent    |  |  |  |  |
-| Long sommeil                         | 3 CO       | Rare          | Potion             |  |  |  |  |
-| Sibilance                            | 1 CO 10 /- | Rare          | Potion             |  |  |  |  |
-|                                      | ANTIDOTES  |               |                    |  |  |  |  |
-| Potion à deux<br>têtes               | 4 CO 10 /- | Exotique      | Potion,<br>onguent |  |  |  |  |
-| Remède de<br>Lurek                   | 1 CO       | Limitée       | Potion             |  |  |  |  |
-| Solvant à<br>bézoard                 | 10 /-      | Limitée       | Potion             |  |  |  |  |
-|                                      | CONCO      | CTIONS        |                    |  |  |  |  |
-| Acide de troll                       | 3 CO       | Rare          | Potion             |  |  |  |  |
-| Bouclier de la forge                 | 18 CO      | Rare          | Onguent            |  |  |  |  |
-| Camouflarbre                         | 3 CO       | Rare          | Onguent            |  |  |  |  |
-| Dernier<br>souffle                   | 15 CO      | Exotique      | Potion             |  |  |  |  |
-| Esprit clair                         | 3 CO       | Rare          | Potion             |  |  |  |  |
-| Feu de<br>Carroburg                  | 1 CO 10 /- | Rare          | Potion             |  |  |  |  |
-| Feu liquide                          | 6 CO       | Rare          | Potion             |  |  |  |  |
-| Fléau de la<br>sorcière              | 36 CO      | Rare          | Potion             |  |  |  |  |
-| Furie du preyton                     | 9 CO       | Rare          | Potion,<br>onguent |  |  |  |  |
-| Liqueur de<br>serpent du<br>prophète | 4 CO 10 /- | Rare          | Potion,<br>onguent |  |  |  |  |
-| Malveillance                         | 27 CO      | Rare          | Potion             |  |  |  |  |
-| Poudre de veine                      | 1 CO       | Rare          | Potion, onguent    |  |  |  |  |
-| Protection du cerf                   | 3 CO       | Rare          | Potion             |  |  |  |  |
-| Razorflamme                          | 1 CO 10 /- | Rare          | Potion, onguent    |  |  |  |  |
-| Sang-douleur                         | 1 CO       | Rare          | Potion             |  |  |  |  |
-| Sang de la mer                       | 18 CO      | Rare          | Potion             |  |  |  |  |
+| Article                              | Coût       | Disponibilité | Formes             |  |  |
+|--------------------------------------|------------|---------------|--------------------|--|--|
+| POISONS                              |            |               |                    |  |  |
+| Baiser de la<br>vouivre              | 12 CO      | Exotique      | Onguent            |  |  |
+| Boursoufleur                         | 3 CO       | Rare          | Potion,<br>onguent |  |  |
+| Long sommeil                         | 3 CO       | Rare          | Potion             |  |  |
+| Sibilance                            | 1 CO 10 /- | Rare          | Potion             |  |  |
+|                                      |            | ANTIDOTES     |                    |  |  |
+| Potion à deux<br>têtes               | 4 CO 10 /- | Exotique      | Potion,<br>onguent |  |  |
+| Remède de<br>Lurek                   | 1 CO       | Limitée       | Potion             |  |  |
+| Solvant à<br>bézoard                 | 10 /-      | Limitée       | Potion             |  |  |
+|                                      |            | CONCOCTIONS   |                    |  |  |
+| Acide de troll                       | 3 CO       | Rare          | Potion             |  |  |
+| Bouclier de la<br>forge              | 18 CO      | Rare          | Onguent            |  |  |
+| Camouflarbre                         | 3 CO       | Rare          | Onguent            |  |  |
+| Dernier<br>souffle                   | 15 CO      | Exotique      | Potion             |  |  |
+| Esprit clair                         | 3 CO       | Rare          | Potion             |  |  |
+| Feu de<br>Carroburg                  | 1 CO 10 /- | Rare          | Potion             |  |  |
+| Feu liquide                          | 6 CO       | Rare          | Potion             |  |  |
+| Fléau de la<br>sorcière              | 36 CO      | Rare          | Potion             |  |  |
+| Furie du<br>preyton                  | 9 CO       | Rare          | Potion,<br>onguent |  |  |
+| Liqueur de<br>serpent du<br>prophète | 4 CO 10 /- | Rare          | Potion,<br>onguent |  |  |
+| Malveillance                         | 27 CO      | Rare          | Potion             |  |  |
+| Poudre de<br>veine                   | 1 CO       | Rare          | Potion,<br>onguent |  |  |
+| Protection du<br>cerf                | 3 CO       | Rare          | Potion             |  |  |
+| Razorflamme                          | 1 CO 10 /- | Rare          | Potion,<br>onguent |  |  |
+| Sang-douleur                         | 1 CO       | Rare          | Potion             |  |  |
+| Sang de la mer                       | 18 CO      | Rare          | Potion             |  |  |
 
+<span id="page-114-0" data-folio="112"></span>
+### **Armes et armures**
 
-# ARMES ET ARMURES
-
-<span id="page-114-0"></span>es épées trempées dans du sang de dragon aux flèches à l'empennage en plumes de griffon, les créatures du Vieux Monde fournissent de nombreux
+Des épées trempées dans du sang de dragon aux flèches à l'empennage en plumes de griffon, les créatures du Vieux Monde fournissent de nombreux
 
 composants utiles pour produire des armes et munitions magiques. Certains objets doivent être créés par magie, tandis que d'autres ne nécessitent qu'un artisan expérimenté et doté de la Compétence Métier appropriée.
 
-# ARTICLES ORDINAIRES
+### **Articles ordinaires**
 
-Les règles pour la création d'objets communs, telles les armes et armures, sont détaillées dans **WFJDR**, pages 196-197. Les objets suivants sont suffisamment rares pour n'être presque jamais disponibles à l'achat ; il faut ainsi solliciter un artisan compétent pour les fabriquer. Un bon point de départ pour une aventure! Outre les exigences habituelles, les composants plus exotiques prélevés sur des monstres dangereux devraient généralement être fournis par les Personnages eux-mêmes.
+Les règles pour la création d'objets communs, telles les armes et armures, sont détaillées dans **WFJDR**, pages 196-197. Les objets suivants sont suffisamment rares pour n'être presque jamais disponibles à l'achat ; il faut ainsi solliciter un artisan compétent pour les fabriquer. Un bon point de départ pour une aventure ! Outre les exigences habituelles, les composants plus exotiques prélevés sur des monstres dangereux devraient généralement être fournis par les Personnages eux-mêmes.
 
-### Armure de plates du léviathan
+#### **Armure de plates du léviathan**
 
-Type: Armure de plates
+**Type :** Armure de plates
+
+**112**
 
 **Composant essentiel :** Écailles ou carapace de léviathan (1 Enc par point d'Enc d'armure à créer)
 
@@ -4534,24 +4257,20 @@ Le terme « léviathan » désigne toutes sortes de grandes créatures marines, 
 
 Quoi qu'il en soit, l'armure forgée à partir de ce matériau est très prisée, en particulier lorsqu'on a réussi à en dissiper l'odeur de poisson pourri. Bien qu'elle soit très volumineuse, elle surprend par sa légèreté, ce qui paraît pourtant logique puisqu'il s'agit de la couche superficielle d'une créature qui passe son existence à flotter. L'armure de plates du léviathan pèse 1 point d'Enc de moins que l'armure de plates en métal classique.
 
-#### Dague funeste
+#### **Dague funeste**
 
-Type: Dague
+**Type :** Dague
 
-Composant essentiel: Serre de cockatrice (1 Enc)
+**Composant essentiel :** Serre de cockatrice (1 Enc)
 
 Coqueluche des assassins et des gladiateurs sans scrupules, les dagues funestes sont souvent fabriquées à partir d'une serre de cockatrice. Elles servent rarement, car elles sont fragiles et cassantes, mais elles suintent naturellement un poison mortel.
 
-Les victimes qui subissent au moins 1 Blessure à cause d'une dague funeste reçoivent immédiatement un État *Empoisonné* auquel il est possible de résister avec un Test de **Résistance Complexe** (-10). Chaque fois que la lame est utilisée, le MJ doit lancer un d10 en secret. Sur un 1, le poison s'est épuisé et la dague se brisera à sa prochaine utilisation. Les dagues funestes sont illégales dans toutes les provinces de l'Empire.
+Les victimes qui subissent au moins 1 Blessure à cause d'une dague funeste reçoivent immédiatement un État *Empoisonné* auquel il est possible de résister avec un Test de **Résistance Complexe (-10)**. Chaque fois que la lame est utilisée, le MJ doit lancer un d10 en secret. Sur un 1, le poison s'est épuisé et la dague se brisera à sa prochaine utilisation. Les dagues funestes sont illégales dans toutes les provinces de l'Empire.
 
-LET GENT QUI HE COMMAILTENT QUE
-THATIC AM MINH THANTITARIT
-ROU DE THANHOTÀ TLA JI'UR LICARAR
-ANTON ARTHURA PAUAILLER HORA HORA HORA PAUAILLER AUTRE
-LACAR LIAL AU DE HABIE HABIE TACH LICARA LIAMAL THOM LACAR LIAMAL THOM LACAR AUTRA HOITAROCAROCHI'U, TEATHA HOITAROCAROCHI'U, TEATHA HABIE LACAR LIAMAL LAL LAL LAL LAL LAL LAL LAL LAL LAL
+Les gens qui ne connaissent que peu l'artisanat nain me disent parfois qu'il est étonnant de voir un forgeron nain travailler autre chose que du métal ou, au pire, du bois de chêne bien sec. Je sais alors qu'ils n'ont jamais approfondi le sujet. En effet, l'incorporation de parties animales utiles dans les armes est une pratique ancestrale et respectable.
 
-
-### **Lame à poignée en bois de cerf**
+<span id="page-115-0" data-folio="113"></span>
+#### **Lame à poignée en bois de cerf**
 
 **Type :** Arme simple
 
@@ -4563,7 +4282,7 @@ Les cerfs, même les grands cerfs, perdent leur ramure chaque année. Malgré to
 
 Si la ramure a été obtenue par la violence, une épée montée sur cette poignée infligera toujours un État *Hémorragique* à la fois à son utilisateur et à sa victime, chaque fois qu'elle inflige une Blessure Critique. Cette lame porte en elle l'écho de la violence infligée l'une des créatures élues de Taal, et elle se comporte en conséquence.
 
-### **Surin de l'aigle**
+#### **Surin de l'aigle**
 
 **Type :** Dague
 
@@ -4571,7 +4290,7 @@ Si la ramure a été obtenue par la violence, une épée montée sur cette poign
 
 Les nains des Montagnes Grises prélèvent de temps à autre la serre d'un grand aigle particulièrement majestueux qu'ils ont abattu, pour en faire une arme. Les « lames » façonnées par les forgerons nains à partir de ces serres sont exceptionnelles, mais leur principal intérêt est de contrarier les elfes sylvains d'Athel Loren.
 
-### **Trempe au sang de dragon**
+#### **Trempe au sang de dragon**
 
 **Type :** N'importe quelle arme de corps à corps
 
@@ -4581,30 +4300,30 @@ Il ne s'agit pas tout à fait d'une arme, mais plutôt d'une substance qui peut 
 
 On raconte que certains matériaux travaillés par les meilleurs forgerons nains et elfes ne peuvent être trempés qu'avec du sang de dragon. Si tel est le cas, ce secret n'est connu d'aucun artisan humain.
 
-
-### **MUNITIONS**
+<span id="page-116-0" data-folio="114"></span>
+### **Munitions**
 
 Les flèches et carreaux incorporent souvent des parties de créatures rares pour plus d'efficacité. Outre l'application classique de poison dérivé de venins toxiques, d'autres méthodes peuvent produire des résultats intéressants.
 
-### Empennage de griffon
+#### **Empennage de griffon**
 
-Type: Flèches ou carreaux
+**Type :** Flèches ou carreaux
 
 **Composant essentiel :** Plumes de griffon (12 munitions par 1 Enc de composant)
 
 Souvent créés par les maîtres-fléchiers d'Ostermark et utilisés par les chasseurs les plus compétents, ces projectiles très prisés agissent comme des flèches elfiques.
 
-#### Pointes barbelées
+#### **Pointes barbelées**
 
-Type: Flèches ou carreaux
+**Type :** Flèches ou carreaux
 
 **Composant essentiel :** Écailles de dragon barbelé (12 munitions par 1 Enc de composant)
 
 Les écailles acérées recouvrant les dragons barbelés sauvages qui rôdent dans les tunnels les plus profonds du Vieux Monde permettent de créer des pointes redoutables pour des carreaux ou des flèches. Elles sont incroyablement aiguisées et lorsqu'elles sont endommagées, le tranchant disparaît pour révéler une nouvelle pointe tout aussi affûtée. Les attaques effectuées avec ces munitions et qui infligent au moins une Blessure appliquent également un État *Hémorragique*.
 
-### Sève de trégara
+#### **Sève de trégara**
 
-Type: Flèches ou carreaux
+**Type :** Flèches ou carreaux
 
 **Composant essentiel :** Sève de trégara (6 munitions par 1 Enc de composant)
 
@@ -4612,30 +4331,30 @@ La substance utilisée par les trégaras pour réparer leur coquille est conserv
 
 #### PRIX DES ARMES ET MUNITIONS
 
-| Objet                             | Coût          | Туре                 | Disponibilité |  |  |  |
+| Objet                             | Coût          | Type                 | Disponibilité |  |  |  |
 |-----------------------------------|---------------|----------------------|---------------|--|--|--|
 | ARMES                             |               |                      |               |  |  |  |
 | Dague funeste                     | 8 CO          | Dague                | Exotique      |  |  |  |
 | Lame à poignée<br>en bois de cerf | 6 CO          | Arme<br>simple       | Rare          |  |  |  |
 | Surin de l'aigle                  | 8 CO          | Dague                | Rare          |  |  |  |
-| Trempe au sang de dragon          | 20 CO/<br>Enc | Spécial              | Exotique      |  |  |  |
+| Trempe au sang de<br>dragon       | 20 CO/<br>Enc | Spécial              | Exotique      |  |  |  |
 | MUNITIONS                         |               |                      |               |  |  |  |
-| Empennage de griffon (12)         | 1 CO          | Flèches/<br>carreaux | Rare          |  |  |  |
-| Pointes barbelées (12)            | 3 CO          | Flèches/<br>carreaux | Rare          |  |  |  |
+| Empennage de<br>griffon (12)      | 1 CO          | Flèches/<br>carreaux | Rare          |  |  |  |
+| Pointes barbelées<br>(12)         | 3 CO          | Flèches/<br>carreaux | Rare          |  |  |  |
 | Sève de trégara (6)               | 4 CO          | Flèches/<br>carreaux | Rare          |  |  |  |
 
+<span id="page-117-0" data-folio="115"></span>
+### **Objets magiques**
 
-# **OBJETS MAGIQUES**
+La conception d'un objet magique se rapproche de la fabrication d'un objet commun, mais elle nécessite différentes compétences. Les règles qui régissent
 
-<span id="page-117-0"></span>a conception d'un objet magique se rapproche de la fabrication d'un objet commun, mais elle nécessite différentes compétences. Les règles qui régissent
-
-la création d'armes, armures ou autres objets magiques sont détaillées dans Archives de l'Empire Volume II. Vous trouverez cependant quelques exemples d'objets dans ce chapitre, ainsi que les règles de base pour en créer de nouveaux dans l'encart Artisan sorcier ci-contre.
+la création d'armes, armures ou autres objets magiques sont détaillées dans **Archives de l'Empire Volume II**. Vous trouverez cependant quelques exemples d'objets dans ce chapitre, ainsi que les règles de base pour en créer de nouveaux dans l'encart *Artisan sorcier* ci-contre.
 
 La Difficulté du Test de **Savoir (Magick)** peut être diminuée en cherchant des composants particulièrement méconnus et exotiques, comme la bile d'un géant ou la peau d'un razorgor. Une fois l'Activité *Artisanat* terminée, vous pouvez passer à l'étape suivante.
 
 La création d'un objet magique nécessite de partir de matériaux bruts. Il est impossible d'enchanter de manière permanente une armure ou une arme existante, car la magie doit être insufflée dans l'objet pendant sa fabrication.
 
-### ARMES
+### **Armes**
 
 La notion d'objets magiques est si communément associée aux armes qu'on pourrait penser qu'il n'existe pas d'autres types d'objets arcaniques. L'Empire rassemble plusieurs armes magiques, dont les plus connues sont de loin Ghal-Maraz, le marteau de l'Empereur hérité de Sigmar, et les Crocs runiques portés par les Comtes Électeurs. Outre ces armes légendaires, une grande variété d'épées, de marteaux et autres instruments de mort se trouve entre les mains de nobles (et de quelques vagabonds particulièrement chanceux) de l'Empire.
 
@@ -4643,22 +4362,22 @@ La notion d'objets magiques est si communément associée aux armes qu'on pourra
 
 Pour créer un objet magique, un Personnage doit posséder la Compétence Savoir (Magick) et le Talent Magie des Arcanes (Domaine). Ce n'est pas une affaire à prendre à la légère, car en dehors des armureries de nations puissantes comme l'Empire, les objets magiques sont rares et en posséder un ne manquera pas d'attirer une attention malvenue.
 
-Pendant une Activité *Artisanat*, la création d'un objet magique nécessite normalement 20 DR sur le Test étendu (WFJDR, page 196). Pour créer un objet qui demande une autre Compétence Métier, comme une épée magique qui exige Métier (Forgeron), le Sorcier doit réaliser un Test de Savoir (Magick) Très Difficile (-30) et un Test de Métier approprié dont la Difficulté dépend de la rareté de l'objet en question. Par exemple, les armes simples sont Communes et requièrent un Test de Métier Accessible (+20).
+Pendant une Activité *Artisanat*, la création d'un objet magique nécessite normalement 20 DR sur le Test étendu (**WFJDR**, page 196). Pour créer un objet qui demande une autre Compétence Métier, comme une épée magique qui exige Métier (Forgeron), le Sorcier doit réaliser un Test de **Savoir (Magick) Très Difficile (-30)** et un Test de **Métier** approprié dont la Difficulté dépend de la rareté de l'objet en question. Par exemple, les armes simples sont Communes et requièrent un Test de **Métier Accessible (+20)**.
 
 Un Sorcier et un artisan approprié peuvent collaborer sur la conception d'un artefact en se concentrant chacun sur leur propre domaine d'expertise. Dans ce cas, les deux Personnages doivent utiliser une Activité *Artisanat* pour travailler ensemble.
 
 Quand le Personnage a effectué les deux Tests, ajoutez le plus faible DR obtenu sur les deux Tests pour le cumul du Test étendu. Quand vous avez atteint le nombre de DR requis, l'objet est terminé. Le DR requis pour créer un objet magique est généralement de 20, mais vous pouvez vous faciliter la tâche en rassemblant les bons composants. C'est ce que reflète le DR indiqué pour chaque objet.
 
-#### Broyeur d'os
+#### **Broyeur d'os**
 
-Type: Marteau de guerre DR nécessaires: 18
+**Type :** Marteau de guerre **DR nécessaires :** 18
 
-Composant essentiel: Os de stégadon (3 Enc)
+**Composant essentiel :** Os de stégadon (3 Enc)
 
 La tête de ce marteau a été forgée avec les os réduits en poudre d'une grande créature, dont le cri se fait entendre à chaque coup porté. Si le marteau est utilisé pour tuer un ennemi, ce son devient assourdissant. Les créatures vivantes dans un rayon de 10 mètres, à l'exception de l'utilisateur du marteau, doivent effectuer un Test de **Résistance Intermédiaire (+0)** ou subir un État *Assourdi* et 1d10 Blessures qui ignorent l'armure, mais pas le Bonus d'Endurance.
 
-
-# **Silence**
+<span id="page-118-0" data-folio="116"></span>
+#### **Silence**
 
 **Type :** Arme simple (Épée) ou dague
 
@@ -4672,7 +4391,7 @@ Une fois forgée, la lame se distingue par son tranchant redoutable et obtient l
 
 Si la mèche de cheveux utilisée pour fabriquer cette arme a été donnée de plein gré, il n'y a aucun autre effet. Toutefois, si elle a été prise par la force, l'utilisateur ne pourra pas utiliser le Talent Chanceux tant qu'il tient ou porte Silence.
 
-# **Vision de vie**
+#### **Vision de vie**
 
 **Type :** Bouclier **DR nécessaires :** 14
 
@@ -4682,11 +4401,11 @@ Ce bouclier est créé à partir de la poudre de cadavres de revenant. Il confè
 
 Cependant, cette capacité a aussi l'inconvénient de compliquer l'identification des ennemis dans le feu de l'action. De nombreux contes parlent de guerriers équipés de ce bouclier qui se sont ensuite retournés contre leurs compagnons et criaient des encouragements à leurs propres victimes.
 
-# **Vêtements et armures**
+#### **Vêtements et armures**
 
 Les armures magiques sont plus répandues, mais il existe plusieurs exemples de vêtements arcaniques qui n'offrent pour seule protection que les pouvoirs qu'ils confèrent.
 
-# **Cape du Loup**
+#### **Cape du Loup**
 
 **Type :** Cape
 
@@ -4698,7 +4417,7 @@ La Cape du Loup a été cousue et imbibée de magie à partir de la dépouille d
 
 La Cape du Loup a l'apparence d'une peau de loup classique, mais en y regardant de plus près, on constate la présence d'écailles nacrées sous la fourrure. Le porteur de cette cape provoque *Peur 2* chez les loups, les lions, les chèvres et les chimères. En toute logique, si d'autres exemplaires de cet objet venaient à être créés, l'effet porterait sur les animaux composant la chimère en question.
 
-# **Gants de l'étrangleur**
+#### **Gants de l'étrangleur**
 
 **Type :** Gants
 
@@ -4708,12 +4427,12 @@ La Cape du Loup a l'apparence d'une peau de loup classique, mais en y regardant 
 
 Ces gants sont dotés de la puissance brute du géant dont les ligaments ont été cousus pour former ces sinistres accessoires. Porter une paire de gants de l'étrangleur confère la force d'une créature plus grande. Dans le cadre de Tests opposés de **Force** et de jets similaires uniquement, la Taille du porteur est supérieure d'une catégorie à sa Taille réelle. Cela lui permettra généralement de l'emporter sur des adversaires de Taille similaire. Reportez-vous à **WFJDR**, p. 342, pour plus d'informations sur les effets de la Taille sur ces Tests.
 
-
-# **Objets inhabituels**
+<span id="page-119-0" data-folio="117"></span>
+#### **Objets inhabituels**
 
 Les armes et armures magiques font couler beaucoup d'encre, mais les sorciers utilisent également toutes sortes d'objets arcaniques.
 
-### **Dernière gorgée**
+#### **Dernière gorgée**
 
 **Type :** Tasse
 
@@ -4727,7 +4446,7 @@ Ces objets sont créés en liant *Shyish* au crâne de certains types de morts-v
 
 Cependant, c'est après que les ennuis commencent. En effet, du point de vue des esprits avec lesquels l'utilisateur a interagi, un autre esprit était en train de parler avec eux avant de subitement disparaître et reprendre une forme physique. Ce phénomène a donné lieu à de nombreux malentendus, notamment l'idée que le crâne permettrait de ramener les morts à la vie. Il est arrivé à maintes reprises que le propriétaire de cet objet soit hanté par de plus en plus d'esprits qui finissent par devenir malveillants face à son refus de partager le secret de la « résurrection ».
 
-### **Pierre assoiffée**
+#### **Pierre assoiffée**
 
 **Type :** Rubis, souvent enchâssé dans une bague ou une amulette
 
@@ -4737,103 +4456,86 @@ Cependant, c'est après que les ennuis commencent. En effet, du point de vue des
 
 Créée grâce à un procédé magique perfectionné par un duc bretonnien, cette pierre semble absorber le sang versé dessus. En échange, elle confère à son porteur le Trait de créature Protection 9+ pendant 1d10 Tours. Cependant, cette pierre est insatiable. Si le porteur subit un État *Hémorragique*, il doit réaliser immédiatement un Test de **Résistance Intermédiaire (+0)**. En cas d'échec, le rubis s'agrippe à sa peau comme une sangsue pour se nourrir. L'État *Hémorragique* ne pourra être levé qu'après avoir arraché la pierre avec un Test de **Force Accessible (+20)**.
 
+<span id="page-120-0" data-folio="118"></span>
+### **Postface**
 
-# POSTFACE
-
-<span id="page-120-0"></span>Après notre périple en Tilée, mes compagnons survivants et moi-même montames à bord d'un navire rapide à destination de Marienburg. Ce voyage se déroula sans anicroche, mais je n'aurais sans doute rien remarqué dans le cas contraire tant j'étais submergé par le chagrin. Quand nous arrivames au grand port de commerce, Lynathryn annonça son intention de retourner dans la forêt de Laurelorn. Je demandai à l'else quand je croiserdi à nouveau son chemin. Il me regarda pendant un long instant avec ses si beaux yeux avant de répondre. « Je ne pense pas que nous nous reversons, Theodosius Schreiber. J'ai pu constater à maintes reprises le déclin inélectable de ce monde. Je pars faire mon rapport à la Reine, puil j'attendrai la fin dans mon foyer tant cher. >> Je tentai un trait d'esprit pour rendre des adieux moins déchirants. « É de quelle fin s'agit-il? »
+Après notre périple en Tilée, mes compagnons survivants et moi-même montâmes à bord d'un navire rapide à destination de Marienburg. Ce voyage se déroula sans anicroche, mais je n'aurais sans doute rien remarqué dans le cas contraire tant j'étais submergé par le chagrin. Quand nous arrivâmes au grand port de commerce, Lynathryn annonça son intention de retourner dans la forêt de Laurelorn. Je demandai à l'elfe quand je croiserai à nouveau son chemin. Il me regarda pendant un long instant avec ses si beaux yeux avant de répondre. « Je ne pense pas que nous nous reverrons, Theodosius Schreiber. J'ai pu constater à maintes reprises le déclin inéluctable de ce monde. Je pars faire mon rapport à la Reine, puis j'attendrai la fin dans mon foyer tant chéri. » Je tentai un trait d'esprit pour rendre ces adieux moins déchirants. «Et de quelle fin s'agit-il ? »
 
 Le chasseur esquissa un sourire plus triste encore. « La fin de tout. »
 
-Je commençai à rédiger les derniers chapitres du livre demandé par le Zoo Ampérial alors que notre embarcation remontait le Reik jusqu'à Altdorf. Ce fut aussi long que pénible, car le cœur n'y était pas. Les membres de la faculté du zoo et de l'université d'Altdorf furent ravis de nous revoir et de nous couvrir de questions sur le voyage et nos aventures en Tilés. Seule l'arnicke eut la décence d'exprimer ses condoléances pour Kistiane.
+Je commençai à rédiger les derniers chapitres du livre demandé par le Zoo Impérial alors que notre embarcation remontait le Reik jusqu'à Altdorf. Ce fut aussi long que pénible, car le cœur n'y était pas. Les membres de la faculté du zoo et de l'université d'Altdorf furent ravis de nous revoir et de nous couvrir de questions sur le voyage et nos aventures en Tilée. Seule Warnicke eut la décence d'exprimer ses condoléances pour Kistiane.
 
-Deux semaines après notre retour à
-Altdorf, je fus réveillé tard dans la nuit
-par des coups à la porte. Il s'agissait de
-Ghorshkov, qui se tenait maculé de sang
-devant mes appartements. Il expliqua
-avoir été impliqué dans une « petite
-bagarre » et qu'il était temps pour lui
-de prendre longé. De l'invitai à chercher
-parmi mes affaires des vêtements qui
-pourraient lui convenir, ou à défait, une
-vieille cape qui pourrait être découpée à cet
+Deux semaines après notre retour à Altdorf, je fus réveillé tard dans la nuit par des coups à la porte. Il s'agissait de Ghorshkov, qui se tenait maculé de sang devant mes appartements. Il expliqua avoir été impliqué dans une « petite bagarre » et qu'il était temps pour lui de prendre congé. Je l'invitai à chercher parmi mes affaires des vêtements qui pourraient lui convenir, ou à défaut, une vieille cape qui pourrait être découpée à cet
 
 effet. Alors qu'il retirait sa tunique écarlate, je pus voir clairement son dos à la lumière de la lanterne. Ses anciennes cicatrices avaient changé. Elles avaient maintenant une tout autre apparence.
 
-« Où vas-tu? », demandai-je doucement.
+« Où vas-tu ? », demandai-je doucement.
 
 « Nord », répondit-il.
 
-« Ainsi, tu retournes en Ostermark? Ou peut-être à Kislev? »
+« Ainsi, tu retournes en Ostermark ? Ou peut-être à Kislev ? »
 
 « Je vais vers le nord. »
 
-Mes yeux allerent de mon bureau, sur legiel mon épée reposait dans son fourreau, à la marque sur son dos. Je n'eus pas le courage de faire le nécessaire, que Sigmar me pardonne. Il finit par trouver une vieille chemise qu'il pouvait à peine enfiler. « Theo, vous êtes un bon guerrier et un très bon ami. Si vous me croisez sur un champ de bataille un jour, partez en courant, da? »
+Mes yeux allèrent de mon bureau, sur lequel mon épée reposait dans son fourreau, à la marque sur son dos. Je n'eus pas le courage de faire le nécessaire, que Sigmar me pardonne. Il finit par trouver une vieille chemise qu'il pouvait à peine enfiler. « Theo, vous êtes un bon guerrier et un très bon ami. Si vous me croisez sur un champ de bataille un jour, partez en courant, da ? »
 
-Il partit sans un regard.
+Il partit sans un regard. J'appris peu après qu'il avait massacré six hommes pendant cette « petite bagarre ».
 
-J'appris peu après qu'il avait massacré
-six hommes pendant cette « petite
-bagarre ».
+Jorunn avait eu du mal à avancer pendant notre voyage, la faute, selon elle, à des articulations douloureuses. Elle était si raide par moments qu'Erich était obligé de lui masser les membres pour leur redonner un semblant de mobilité. La nécessité l'avait rendu habile dans l'art de la guérison au fil des années et de nos aventures. Jorunn promit de terminer le chapitre qu'elle me devait, mais ajouta qu'il lui faudrait quelques semaines. Je lui répondis de prendre son temps. J'avais décidé de l'associer à un nouvel ouvrage que je prévoyais de rédiger : un volume plus pragmatique que le tome hautement théorique et abstrait commandé par le Zoo, l'université et Herr Massenbach.
 
-Jorunn avait eu du mal à avancer pendant notre voyage, la faute, selon elle, à des articulations douloureuses. Elle était si raide par moments qu' (rich était obligé de lui masser les membres pour leur redonner un semblant de mobilité. La nécessité l'avait rendu habile dans l'art de la guérison au fil des années et de nos aventures. Jorunn promit de terminer le chapitre gli elle me devait, mais apouta qu'il lu faudrait quelques semaines. Je lui répondis de prendre son temps. J'abais décidé de l'associer à un nouvel ouvrage que je prévoyais de rédiger : un volume plus pragmatique que le tome hautement théorique et abstrait commandé par le Zoo, l'université et Herr Massenbach.
-
-
-Je finis par rendre le livre demandé. professeurs qui avaient lu la dernière ébauche furent très impressionnés, mais aussi vivement perturbés par certains passages, en particulier le chapitre dédie aux skavens. Quoi qu'il en soit, ils s'engagèrent à tout publier en l'état. Plus de trois mille exemplaires furent produits par l'imprimerie de l'université d'Altdorf. Le jour de sa sortie, Warnicke me convoqua au zoo et me reget dans son bureau. Elle révéla que la totalité du tirage avait été confisquée par des agents de la Kommission des Archives impériales, accompagnés de plusieurs répurgateurs. Als avaient apparemment quelques questions à me poser, mais Warnicke prétendit ne pas connaître mon lieu de
+<span id="page-121-0" data-folio="119"></span>
+Je finis par rendre le livre demandé. Les professeurs qui avaient lu la dernière ébauche furent très impressionnés, mais aussi vivement perturbés par certains passages, en particulier le chapitre dédié aux skavens. Quoi qu'il en soit, ils s'engagèrent à tout publier en l'état. Plus de trois mille exemplaires furent produits par l'imprimerie de l'université d'Altdorf. Le jour de sa sortie, Warnicke me convoqua au zoo et me reçut dans son bureau. Elle révéla que la totalité du tirage avait été confisquée par des agents de la Kommission des Archives impériales, accompagnés de plusieurs répurgateurs. Ils avaient apparemment quelques questions à me poser, mais Warnicke prétendit ne pas connaître mon lieu de résidence.
 
 Par un coup du sort, un message m'attendait lorsque je retournai à mes appartements. Jorunn avait envoyé une estafette :
 
-« J'ai fini. Viens le chercher. »
+« J'ai fini. Viens le chercher. » Jorunn louait une chambre au-dessus d'une petite boutique d'apothicaire tenue par l'un de ses collègues. Elle ne m'accueillit pas à la porte, mais celleci était déverrouillée. Son chapitre m'attendait sur son bureau ; l'écriture était nette et élégante, et les pages avaient été reliées. Un message à mon attention s'y trouvait également.
 
-Jorunn louait une chambre au dessus
-d'une petite boutique d'apothicaire
-tenue par l'un de ses collègues. Elle ne
-m'accueillit pas à la porte, mais celleci était déverrouillée. Son chapitre
-m'attendait sur son bureau; l'écriture était
-nette et élégante, et les pages avaient été
-reliées. Un message à mon attention s'y
-trouvait également.
-
-« Je respecte toujours mes serments. Ne sous pas triste, Theo. J'ai enfin trouvé un remède. »
+« Je respecte toujours mes serments. Ne sois pas triste, Theo. J'ai enfin trouvé un remède. »
 
 Son corps gisait sur le lit. Des cristaux de couleur pourpre jaillissaient des articulations des mains et des jambes, et des éclats avaient même percé un œil. C'était une apothicaire de talent, j'espère donc que le remède de son choix lui avait apporté une fin paisible.
 
-Crich arriva peu après. In voyant ses mains couvertes de bandages et midilées par le sang midé et cristallisé de Jorunn, je me demandai pendant combien de temps il l'avait aidée à garder son secret.
+Erich arriva peu après. En voyant ses mains couvertes de bandages et mutilées par le sang muté et cristallisé de Jorunn, je me demandai pendant combien de temps il l'avait aidée à garder son secret.
 
-« Veux-tu la ramener chez elle avec moi? », dis-je seulement.
+« Veux-tu la ramener chez elle avec moi ? », dis-je seulement.
 
 « Bien entendu », répondit-il en pleurant.
 
-J'écris ces lignes dans le grand hall des maîtres du savoir de Karak Ziflin. Les nains m'ont bien accusilli. Na m'ont donné le temps et l'espace dont j'ai besoin pour finir ce livre. J'ai rassemblé les sublimes esquisses d'Aich, mes journaux de voyage rudimentaires, mes notes et les commentaires de mes amis pour former le volume qui se trouve devant vous. La dernière œuvre de Jorunn Gromsdottin y est jointe.
+J'écris ces lignes dans le grand hall des maîtres du savoir de Karak Ziflin. Les nains m'ont bien accueilli. Ils m'ont donné le temps et l'espace dont j'ai besoin pour finir ce livre. J'ai rassemblé les sublimes esquisses d'Erich, mes journaux de voyage rudimentaires, mes notes et les commentaires de mes amis pour former le volume qui se trouve devant vous. La dernière œuvre de Jorunn Gromsdottir y est jointe.
 
 J'espère que cet ouvrage vous paraîtra enrichissant.
 
-Nombreux sont ceux qui tiennent à taire la vérité. Toute fois, je pense que l'ombre qui recouvre le Vieux Monde se fait de plus en plus pesante et que nous avons le devoir de combattre l'ignorance et la tromperie. Trich a coupé les ponts avec son père et compte prêter serment au culte de Shallya. Quant à moi, je prévois de retrouver ma famille et les responsabilités que j'avais abandonnées.
+Nombreux sont ceux qui tiennent à taire la vérité. Toutefois, je pense que l'ombre qui recouvre le Vieux Monde se fait de plus en plus pesante et que nous avons le devoir de combattre l'ignorance et la tromperie. Erich a coupé les ponts avec son père et compte prêter serment au culte de Shallya. Quant à moi, je prévois de retrouver ma famille et les responsabilités que j'avais abandonnées.
 
-Si j'espère que cette décision m'aidera à avoir un véritable impact sur l'ordre du monde, elle a aussi l'avantage de me permettre de publier ce prochain volume sans craindre la censure. Je connais un éditeur incorruptible à Altdorff et il est bien plus difficile de mettre des bâtons dans les roues d'un noble que dans celles d'un scribe miséreux.
+Si j'espère que cette décision m'aidera à avoir un véritable impact sur l'ordre du monde, elle a aussi l'avantage de me permettre de publier ce prochain volume sans craindre la censure. Je connais un éditeur incorruptible à Altdorf, et il est bien plus difficile de mettre des bâtons dans les roues d'un noble que dans celles d'un scribe miséreux.
 
-Tous ces mensonges m'épuisent
+Tous ces mensonges m'épuisent.
 
 Par Sigmar, je ne les tolérerai plus jamais.
 
 Baron Tobias « Theo » Ulster von Loningbruck
 
+<span id="page-122-0" data-folio="120"></span>
 
-# EXPÉDITIONS PRÉVUES
 
-e livre présente une sélection de créatures du Vieux Monde à travers les textes de Theodosius « Theo » Schreiber. Celui-ci
+## [ZI 14] Expéditions prévues
 
-<span id="page-122-0"></span>détaille les bêtes rencontrées par ses camarades et lui-même au cours de leurs expéditions, avec le point de vue de chaque membre du groupe et les témoignages de citoyens apeurés. Si toutes les informations compilées par Herr Schreiber ne sont pas strictement exactes, elles reflètent les histoires et légendes racontées au sujet de ces créatures.
+*Folio 121+*
+
+## **Expéditions prévues**
+
+Ce livre présente une sélection de créatures du Vieux Monde à travers les textes de Theodosius « Theo » Schreiber. Celui-ci
+
+détaille les bêtes rencontrées par ses camarades et lui-même au cours de leurs expéditions, avec le point de vue de chaque membre du groupe et les témoignages de citoyens apeurés. Si toutes les informations compilées par Herr Schreiber ne sont pas strictement exactes, elles reflètent les histoires et légendes racontées au sujet de ces créatures.
 
 Après avoir lu le récit de ces expéditions, vous aurez peut-être envie de partir vous-même à l'aventure. Toutefois, avant d'aller explorer les recoins les plus sauvages et les plus reculés de l'Empire, il est important de bien se préparer.
 
-### **EMPLOYEURS ÉMINENTS**
+#### **Employeurs éminents**
 
 S'il existe bien des manières de former un groupe d'aventuriers, une technique éprouvée consiste à trouver un employeur qui aurait grand besoin des services de vagabonds aguerris. Pour une partie centrée sur les créatures du Vieux Monde, plusieurs possibilités s'offrent à vous.
 
 #### LE ZOO IMPÉRIAL
 
-Le grand Jardin zoologique impérial d'Altdorf se trouve sur la colline Goellner. Il abrite de nombreuses plantes étranges et exotiques ainsi que des créatures provenant, entre autres, du Vieux Monde. Un haut mur de pierre avec de solides portes en bois entoure et protège les jardins. Un avis griffonné à la hâte, cloué sur une des portes, indique : « Recherche, œufs de griffon et de dragon, prix élevés ». Personne ne sait s'il s'agit d'une demande de la direction ou d'une farce extrêmement malveillante.
+Le grand Jardin zoologique impérial d'Altdorf se trouve sur la colline Goellner. Il abrite de nombreuses plantes étranges et exotiques ainsi que des créatures provenant, entre autres, du Vieux Monde. Un haut mur de pierre avec de solides portes en bois entoure et protège les jardins. Un avis griffonné à la hâte, cloué sur une des portes, indique : « *Recherche, œufs de griffon et de dragon, prix élevé*s ». Personne ne sait s'il s'agit d'une demande de la direction ou d'une farce extrêmement malveillante.
 
 Depuis la porte, un long couloir muré mène à la maison du gardien au centre du complexe, qui donne accès à tous les enclos. On y trouve des zedoncs d'Arabie, des tiguanes de Lustrie, des pégases de Bretonnie, des mürs de Tilée, des bordles d'Estalie, des baffins venus de l'autre côté du Grand Océan et même des créatures reptiliennes de Lustrie. Griffe-de-Mort, la célèbre monture de combat de l'Empereur, est parfois installée ici. Malheureusement, il arrive que ce puissant griffon, impatient de reprendre la campagne, dévore les autres créatures. Le dragon impérial est également accueilli ici de temps en temps, mais il n'apprécie pas du tout cette situation, qu'il juge indigne.
 
@@ -4841,7 +4543,7 @@ Le Zoo Impérial lui-même est un employeur de choix pour les aventuriers en her
 
 Les arènes de gladiateurs ont toujours besoin de nouvelles créatures, même si c'est moins valorisant que de travailler pour un institut de zoologie renommé. En Tilée, cette pratique est des plus respectable, notamment quand le commanditaire est aussi prestigieux que le Grand Colisée de Remas.
 
-#### Chair fraîche
+#### **Chair fraîche**
 
 Pour calculer la valeur d'une créature vivante, utilisez les chiffres fournis aux pages 99-101 pour établir une estimation basée sur la quantité de parties exploitables que cette bête fournirait si elle était dépecée et conservée dans sa totalité. Afin de prendre en compte la difficulté supplémentaire liée à l'obligation de garder l'animal en vie, vous pouvez multiplier cette valeur par 10, voire plus en cas de voyage maritime.
 
@@ -4849,31 +4551,31 @@ Ainsi, selon cette méthode, un griffon, qui est une créature Rare (1 CO par En
 
 Certaines créatures valent bien plus en vie que la somme de leurs parties, et leur prix est alors laissé à l'appréciation du MJ. Les frais encourus pour la capture, la mise en cage et le transport de ces bêtes sont très élevés, et ces coûts doivent être répartis entre tous les participants. En dépit de toutes ces contraintes, les parties pendant lesquelles les Personnages amassent une petite fortune en pistant et capturant des animaux dangereux promettent d'être palpitantes, du moins sur le court terme.
 
-
-### **Recherché mort ou mort**
+<span id="page-123-0" data-folio="121"></span>
+#### **Recherché mort ou mort**
 
 Si l'idée de transporter des créatures dangereuses, de les nourrir et de les garder captives sans y laisser un membre semble trop pénible, il est toujours possible de les ramener en petits morceaux. Comme nous l'avons vu précédemment, de nombreux monstres comportent des ingrédients alchimiques utiles et un apothicaire nanti pourrait ainsi recruter les Personnages dans ce but. De même, le Collège Doré, qui a officialisé nombre de pratiques alchimiques, a sans cesse besoin de composants inédits et inhabituels.
 
-### **Héros locaux**
+#### **Héros locaux**
 
 Enfin, les Personnages ont toujours la possibilité de tuer des monstres dangereux pour de l'argent. Aux quatre coins de l'Empire, des communautés sont harcelées par des créatures venues du fond des bois. La milice étant trop éloignée ou indifférente aux malheurs de petits villages, ceux-ci doivent souvent compter sur les services de mercenaires et autres guerriers errants. Ces missions sont généralement utilisées comme de courtes distractions au sein d'une longue campagne, mais il est aussi possible d'en faire une aventure à part entière avec un peu d'imagination. Et si ces créatures étaient chassées de leur habitat naturel par quelque chose de plus redoutable ? Ou peut-être que des nobles de la région ont libéré ces animaux afin de pouvoir les chasser, au mépris des problèmes que cela posera à la population locale ? Il existe de nombreux moyens de proposer bien plus qu'une simple traque au monstre.
 
-# **Jamais sans ma carte**
+#### **Jamais sans ma carte**
 
 La carte fournie au dos de ce livre suffit amplement pour créer des expéditions intéressantes dans les contrées sauvages de l'Empire. Si vous souhaitez plus de détails, vous trouverez des informations sur la Grande Province du Reikland dans le **Livre de base WFJDR** et la **Boîte d'initiation WFJDR**. Middenheim et sa région sont présentées dans **Middenheim : La Cité du Loup Blanc**, et la cité de Salzenmund, dans le Nordland, est décrite dans le livre du même nom. De prochains produits de la gamme **WFJDR** couvriront des horizons plus exotiques encore.
 
-# **Maintenir l'intérêt**
+#### **Maintenir l'intérêt**
 
 Voici un conseil qui sera valable pour n'importe quelle campagne : il suffit d'axer le récit sur les Personnages pour que tout semble intéressant, comme par magie. Quand une partie est organisée autour des aventuriers, de leurs buts et de leurs conflits personnels, les Joueurs passeront certainement un bon moment. Le Vieux Monde a beau être sombre et périlleux, tout le monde veut connaître son quart d'heure de gloire, que ce soit en arrachant la victoire au dernier instant ou en mourant tragiquement alors que la rédemption était si proche.
 
-# **Avant de commencer**
+#### **Avant de commencer**
 
 Vous trouverez dans les pages suivantes les feuilles de Personnages prétirés, avec leurs secrets, leurs drames et leur personnalité propre. Ces Personnages prêts à jouer représentent chaque membre des expéditions dont vous avez découvert les exploits. Ils sont particulièrement adaptés aux groupes qui souhaitent battre la campagne pour capturer des créatures et les ramener au Zoo Impérial.
 
+<span id="page-124-0" data-folio="122"></span>
+#### **ERICH MASSENBACH** ARTISTE
 
-### **ERICH MASSENBACH** ARTISTE
-
-<span id="page-124-0"></span>**Nom :** Erich Massenbach **Âge :** 21 **Race :** Humain **Statut :** Argent 3 **Carrière :** Artiste **Joueur : Niveau de Carrière :** Artiste
+**Nom :** Erich Massenbach **Âge :** 21 **Race :** Humain **Statut :** Argent 3 **Carrière :** Artiste **Joueur : Niveau de Carrière :** Artiste
 
 |              |    |    |    | CARACTÉRISTIQUES |    |    |     |     |    |        | DESTIN      |   | RÉSILIENCE                          |                          |        | EXPÉRIENCE               |
 |--------------|----|----|----|------------------|----|----|-----|-----|----|--------|-------------|---|-------------------------------------|--------------------------|--------|--------------------------|
@@ -4882,7 +4584,7 @@ Vous trouverez dans les pages suivantes les feuilles de Personnages prétirés, 
 | Augmentation |    |    | 5  |                  | 5  |    | 5   |     |    | 5      |             |   | MOUVEMENT                           |                          |        |                          |
 | Courantes    | 24 | 29 | 36 | 38               | 43 | 29 | 44  | 31  | 30 | 41     | Mouvement   | 4 | Marche                              | 8                        | Course | 16                       |
 
-### COMPÉTENCES DE BASE
+#### COMPÉTENCES DE BASE
 
 | Nom                   | Carac. |    |    | Aug. Comp. |  |
 |-----------------------|--------|----|----|------------|--|
@@ -4923,7 +4625,7 @@ Vous commencez avec 3d10 pistoles d'argent
 
 = 240 sous de cuivre (sc)
 
-### COMP. GROUPÉES ET AVANCÉES
+#### COMP. GROUPÉES ET AVANCÉES
 
 | Nom                  |     | Carac. |    | Aug. Comp. |  |
 |----------------------|-----|--------|----|------------|--|
@@ -4937,7 +4639,7 @@ Vous commencez avec 3d10 pistoles d'argent
 |                      |     |        |    |            |  |
 |                      |     |        |    |            |  |
 
-# POSSESSIONS
+#### POSSESSIONS
 
 | Dague                 | Outils professionnels        |
 |-----------------------|------------------------------|
@@ -4960,7 +4662,7 @@ Vous commencez avec 3d10 pistoles d'argent
 | Oreille absolue     | 1            | Vous avez une belle voix                              |  |  |  |  |
 | Sens aiguisé (Ouïe) | 1            | Erich entend des bruits<br>imperceptibles             |  |  |  |  |
 
-### ARMURE
+#### ARMURE
 
 | Nom                 | Localisation | Enc | PA | Atouts / Défauts |  |  |
 |---------------------|--------------|-----|----|------------------|--|--|
@@ -4986,7 +4688,7 @@ Vous commencez avec 3d10 pistoles d'argent
 
 Total 4
 
-# BLESSURES
+#### BLESSURES
 
 | BF          | 3  |
 |-------------|----|
@@ -4995,22 +4697,20 @@ Total 4
 | Dur à cuire |    |
 | Blessures   | 12 |
 
-
+<span id="page-125-0" data-folio="123"></span>
 #### APPARENCE ET PERSONNALITÉ
 
-«À cheval donné, on ne regarde pas les dents. Avec ma taille, je n'ai de toute façon pas beaucoup de choix en matière de destrier.
+*« À cheval donné, on ne regarde pas les dents. Avec ma taille, je n'ai de toute façon pas beaucoup de choix en matière de destrier. »*
 
-Si Erich pouvait passer sa vie entière sans jamais remettre un pied à la campagne, il accepterait sans hésiter. Pour ce beau jeune homme élégant à la sensibilité d'artiste, une cité comme Altdorf offre bien plus de perspectives que le plus spectaculaire des panoramas dans les montagnes. Malgré tout, il compte bien profiter au mieux de la situation, d'autant que cette expédition est l'occasion de découvrir toute une foule de sujets intéressants pour ses œuvres. Pendant ses études d'illustrateur, Erich a été fasciné par les animaux représentés dans les bestiaires publiés de temps à autre à Altdorf. Il pensait tout naturellement que ces croquis étaient fidèles à la réalité. Mais après avoir vu certaines de ces créatures de ses propres yeux, il commence à se demander si les artistes qu'il admirait tant avaient déjà observé les bêtes qu'ils prétendaient dépeindre!
+Si Erich pouvait passer sa vie entière sans jamais remettre un pied à la campagne, il accepterait sans hésiter. Pour ce beau jeune homme élégant à la sensibilité d'artiste, une cité comme Altdorf offre bien plus de perspectives que le plus spectaculaire des panoramas dans les montagnes. Malgré tout, il compte bien profiter au mieux de la situation, d'autant que cette expédition est l'occasion de découvrir toute une foule de sujets intéressants pour ses œuvres. Pendant ses études d'illustrateur, Erich a été fasciné par les animaux représentés dans les bestiaires publiés de temps à autre à Altdorf. Il pensait tout naturellement que ces croquis étaient fidèles à la réalité. Mais après avoir vu certaines de ces créatures de ses propres yeux, il commence à se demander si les artistes qu'il admirait tant avaient déjà observé les bêtes qu'ils prétendaient dépeindre !
 
-#### HISTORIQUE
-
-Fils d'un riche marchand de Tahme, Erich n'a jamais manqué de rien dans la vie, sauf peut-être d'inspiration et d'un remède à l'ennui. C'était un négociant médiocre, mais ses dons d'artiste étaient indéniables. Son père lui a ordonné d'accompagner l'expédition du Zoo Impérial, en partie parce qu'elle est financée par sa famille et qu'il souhaite garder un œil sur la façon dont son argent est dépensé, mais surtout car il espère que cette aventure sera l'occasion pour son fils de se forger le caractère et de découvrir le monde. Erich n'a accepté qu'à condition que certaines de ses illustrations figurent dans le livre final... Et aussi parce que son père a menacé de le déshériter s'il
-
-01-09
+Fils d'un riche marchand de Tahme, Erich n'a jamais manqué de rien dans la vie, sauf peut-être d'inspiration et d'un remède à l'ennui. C'était un négociant médiocre, mais ses dons d'artiste étaient indéniables. Son père lui a ordonné d'accompagner l'expédition du Zoo Impérial, en partie parce qu'elle est financée par sa famille et qu'il souhaite garder un œil sur la façon dont son argent est dépensé, mais surtout car il espère que cette aventure sera l'occasion pour son fils de se forger le caractère et de découvrir le monde. Erich n'a accepté qu'à condition que certaines de ses illustrations figurent dans le livre final... Et aussi parce que son père a menacé de le déshériter s'il refusait.
 
 Tête
 
 25-44
+
+01-09
 
 Bras droit
 
@@ -5018,26 +4718,26 @@ Bras droit
 
 90-00
 
-lambe droite
-
 Bouclier
 
 #### SECRETS
 
 Votre grand secret est indissociable de votre Personnage, mais vous pouvez en choisir d'autres. Vous commencez avec 1d10 pistoles d'argent en plus par secret supplémentaire choisi.
 
-- Grand secret: vous êtes un pacifiste convaincu et vous détestez toute forme de violence. Vous essayez toujours d'éviter les combats, que ce soit par de belles paroles ou une bourse bien remplie. En cas de confrontation, vous allez vous défendre et protéger les innocents à proximité, sans jamais attaquer. Vous appartenez à un ordre ranaldien du nom de la Confrérie. Vous haïssez les marchands cupides. Vous essayez toujours de déjouer leurs projets, de préférence de manière humiliante.
+- <sup>0</sup> **Grand secret :** vous êtes un pacifiste convaincu et vous détestez toute forme de violence. Vous essayez toujours d'éviter les combats, que ce soit par de belles pa- roles ou une bourse bien remplie. En cas de confrontation, vous allez vous dé- fendre et protéger les innocents à proximité, sans jamais attaquer. <sup>0</sup> Vous appartenez à un ordre ranaldien du nom de la Confrérie. Vous haïssez les
+- marchands cupides. Vous essayez toujours de déjouer leurs projets, de préférence
+- de manière humiliante. 0 Si l'alcool et les autres stimulants ne représentent pas un problème particulier, il vous est tout simplement impossible de résister à l'appel des confiseries. Si vous ne
+- pouvez pas en acheter, vous allez tenter d'en voler. <sup>0</sup> Vos pigments de peinture favoris sont tous enrichis par un additif bien spécifique : le sang de halfling. Vous devez en ajouter régulièrement de petites quantités pour
+- éviter que le matériel ne devienne inutilisable. <sup>0</sup> Vous avez fui Tahme après avoir été accusé d'un crime assez grave pour que des chasseurs de primes soient à vos trousses. Qu'avez-vous donc fait à ce marchand ? HISTORIQUE Ou peut-être êtes-vous innocent ?
 
-- de manière humiliante. Si l'alcool et les autres stimulants ne représentent pas un problème particulier, il vous est tout simplement impossible de résister à l'appel des confiseries. Si vous ne pouvez pas en acheter, vous allez tenter d'en voler. Vos pigments de peinture favoris sont tous enrichis par un additif bien spécifique : le sang de halfling. Vous devez en ajouter régulièrement de petites quantités pour éviter que le matériel ne devienne inutilisable. Vous avez fui Tahme après avoir été accusé d'un crime assez grave pour que des chasseurs de primes soient à vos trousses. Qu'avez-vous donc fait à ce marchand? Ou peut-être êtes-vous innocent ?
-
-**NOTES** 
+NOTES
 
 #### POINTS D'ARMURE (PA)
 
-**NOTES** 
+NOTES
 
-
-# **JORUNN GROMSDOTTIR**
+<span id="page-126-0" data-folio="124"></span>
+### **JORUNN GROMSDOTTIR**
 
 APOTHICAIRE
 
@@ -5101,7 +4801,7 @@ APOTHICAIRE
 
 CO
 
-### COMP. GROUPÉES ET AVANCÉES
+#### COMP. GROUPÉES ET AVANCÉES
 
 | Nom                   |     | Carac. |    | Aug. Comp. |
 |-----------------------|-----|--------|----|------------|
@@ -5119,7 +4819,7 @@ CO
 |                       |     |        |    |            |
 |                       |     |        |    |            |
 
-# POSSESSIONS
+#### POSSESSIONS
 
 | Vêtements             | Livre (à moitié rédigé) |
 |-----------------------|-------------------------|
@@ -5131,7 +4831,7 @@ CO
 |                       | Canne à pêche           |
 |                       |                         |
 
-### TALENTS
+#### TALENTS
 
 | Nom                   | Nbre<br>pris | Description                                             |  |  |
 |-----------------------|--------------|---------------------------------------------------------|--|--|
@@ -5143,7 +4843,7 @@ CO
 | Vision nocturne       | 1            | Vous voyez bien dans l'obscurité<br>d'origine naturelle |  |  |
 |                       |              |                                                         |  |  |
 
-### ARMURE
+#### ARMURE
 
 | Nom           | Localisation | Enc | PA | Atouts / Défauts |
 |---------------|--------------|-----|----|------------------|
@@ -5167,7 +4867,7 @@ CO
 | Enc. max    | 14 |
 | Total       | 7  |
 
-# BLESSURES
+#### BLESSURES
 
 | BF          | 2  |
 |-------------|----|
@@ -5176,7 +4876,7 @@ CO
 | Dur à cuire |    |
 | Blessures   | 17 |
 
-
+<span id="page-127-0" data-folio="125"></span>
 #### APPARENCE ET PERSONNALITÉ
 
 *« Passez-moi le flacon. Non, pas celui-ci ! Vous voulez qu'on rejoigne tous nos ancêtres, ma parole ? Pendant que je mélange tout ça, allez chercher le foie de cette fichue chose. Ça ne devrait pas être bien difficile, elle en a trois. »*
@@ -5187,7 +4887,7 @@ Jorunn était autrefois relativement aimable, pour une naine. Mais depuis qu'une
 
 Jorunn est originaire de la forteresse naine de Karak Ziflin, dans les Montagnes Grises. Douée d'une intelligence exceptionnelle et d'un esprit scientifique bien plus développé que chez la plupart de ses semblables, Jorunn apprit d'abord la médecine. Elle décida cependant de partir pour acquérir plus de connaissances que ce que son foyer ne pouvait lui offrir. Elle alla à Kislev, où elle fut l'apprentie d'une guérisseuse pendant un temps. Les deux femmes mirent en commun leurs compétences en herboristerie et en soin des plaies. Après plusieurs années de collaboration, la guérisseuse tenta soudain d'assassiner Jorunn. Terrifiée et confuse, celle-ci n'eut pas d'autre choix que de se défendre et de tuer son ancien mentor. Alors qu'elle fuyait vers le sud pour rejoindre l'Empire, elle découvrit qu'elle avait été infectée par une maladie étrange. Elle a consacré les dernières années au développement de ses connaissances en travaillant avec différents apothicaires, médecins et érudits.
 
-### SECRETS
+#### SECRETS
 
 Votre grand secret est indissociable de votre Personnage, mais vous pouvez en choisir d'autres. Vous commencez avec 1d10 pistoles d'argent en plus par secret supplémentaire choisi.
 
@@ -5199,12 +4899,12 @@ Votre grand secret est indissociable de votre Personnage, mais vous pouvez en ch
 
 #### NOTES
 
-### POINTS D'ARMURE (PA)
+#### POINTS D'ARMURE (PA)
 
 NOTES
 
-
-# **LYNATHRYN CHANTENUIT**
+<span id="page-128-0" data-folio="126"></span>
+### **LYNATHRYN CHANTENUIT**
 
 CHASSEUR
 
@@ -5307,10 +5007,10 @@ Cape Vêtements Dague Bourse
 | Dur à cuire | 3  |           |  |
 | Blessures   | 15 |           |  |
 
-
+<span id="page-129-0" data-folio="127"></span>
 #### APPARENCE ET PERSONNALITÉ
 
-« J'ai parcouru cette contrée à l'époque où l'aïeul de votre aïeul respirait encore, et j'ai bandé on arc pour la défendre face aux Puissances de la Ruine. J'irai où bon me semble. »
+*« J'ai parcouru cette contrée à l'époque où l'aïeul de votre aïeul respirait encore, et j'ai bandé mon arc pour la défendre face aux Puissances de la Ruine. J'irai où bon me semble. »*
 
 Si Lynathryn est petit pour un elfe, il est un peu plus petit que la moyenne des adultes humains et se déplace aussi doucement qu'une feuille qui tombe. Cet elfe a quitté la Laurelorn le cœur rempli de joie, car il lui tardait de découvrir le royaume que Magnus le Pieux avait entrepris de rebâtir après la Grande Guerre contre le Chaos. Depuis, chaque jour lui apporte son lot de hameaux sordides, de paysans affamés et de seaux d'immondices jetés dans sa direction. Il a ainsi de plus en plus de mal à trouver le sourire. Mais tout ne peut pas être si terrible, non ? Peut-être suffit-il de se dégourdir les jambes et d'aller découvrir d'autres régions occupées par les hommes. Une expédition devrait faire parfaitement l'affaire.
 
@@ -5318,38 +5018,34 @@ Si Lynathryn est petit pour un elfe, il est un peu plus petit que la moyenne des
 
 Lynathryn fut éclaireur et chasseur pour les Éonirs de la Laurelorn pendant plusieurs siècles. Vétéran de la Grande Guerre contre le Chaos il y a seulement deux cents ans de cela, il partait en éclaireur sur le front et, bien souvent, derrière les lignes ennemies. Cet épisode changea Lynathryn à tout jamais. Ce conflit fut atroce, mais il permit de former une alliance bigarrée d'elfes, d'humains et même de nains contre leur ennemi commun. Lynathryn en tira une disposition inhabituellement aimable envers les autres races, même si elle est parfois interprétée comme de la condescendance. C'est en raison de cette expérience, aussi limitée soit-elle, avec les humains de l'Empire, que la Reine choisit de le renvoyer par-delà leur forêt pour découvrir l'état du monde. Lynathryn, quant à lui, est ravi d'avoir l'occasion de voir ce que les citoyens impériaux ont accompli avec la paix que les elfes ont participé à instaurer, au prix de tant de sacrifices.
 
-01-09
-
 Tête
 
 25-44
 
-1
+01-09
+
+Bouclier
 
 90-00
 
-Bouclies
-
-#### **SECRETS**
+#### SECRETS
 
 Votre grand secret est indissociable de votre Personnage, mais vous pouvez en choisir d'autres. Vous commencez avec 1d10 pistoles d'argent en plus par secret supplémentaire choisi.
 
-Grand secret: vous n'avez fait part de votre théorie à personne, mais vous pensez que ce monde est définitivement condamné. Cette perspective vous emplit d'une angoisse parfois insoutenable. Vous obtenez le Symptôme Malaise pendant 1d10 heures à chaque échec à un Test dérivé de votre Force Mentale. Vous prenez toujours le temps d'apprécier de belles œuvres d'art, et vous n'hésiterez pas à vous infiltrer dans un musée fermé ou le palais d'un noble pour satisfaire ce désir. Vous respectez Kurnous, mais vous vénérez aussi Anath Raema, la déesse elfe de la chasse sauvage. Vous sacrifiez une proie glorieuse sur trois à la grande chasseresse au cours d'un rituel sanglant.
+- <sup>0</sup> **Grand secret :** vous n'avez fait part de votre théorie à personne, mais vous pensez que ce monde est définitivement condamné. Cette perspective vous emplit d'une
+- angoisse parfois insoutenable. Vous obtenez le Symptôme *Malaise* pendant 1d10 heures à chaque échec à un Test dérivé de votre Force Mentale. <sup>0</sup> Vous prenez toujours le temps d'apprécier de belles œuvres d'art, et vous n'hésite- rez pas à vous infiltrer dans un musée fermé ou le palais d'un noble pour satisfaire
+- ce désir. 0 Vous respectez Kurnous, mais vous vénérez aussi Anath Raema, la déesse elfe de la chasse sauvage. Vous sacrifiez une proie glorieuse sur trois à la grande chasseresse
+- au cours d'un rituel sanglant. <sup>0</sup> Les rapaces sont votre animal fétiche et vous refusez qu'on leur fasse du mal en votre présence. Vous méprisez les fauconniers et vous cherchez toujours à libérer leurs oiseaux.
+- <sup>0</sup> La crédulité des hommes est irrésistible. Vous mentez systématiquement et ou- vertement aux humains que vous ne connaissez pas, même si cela risque de se retourner ensuite contre vous.
 
-Les rapaces sont votre animal fétiche et vous refusez qu'on leur fasse du mal en votre présence. Vous méprisez les fauconniers et vous cherchez toujours à libérer leurs oiseaux.
-
-La crédulité des hommes est irrésistible. Vous mentez systématiquement et ou-
-
-- leurs oiscatus. La crédulité des hommes est irrésistible. Vous mentez systématiquement et ouvertement aux humains que vous ne connaissez pas, même si cela risque de se retourner ensuite contre vous.
-
-**NOTES** 
+NOTES
 
 #### POINTS D'ARMURE (PA)
 
-**NOTES** 
+NOTES
 
-
-# **THEODOSIUS SCHREIBER** ÉRUDIT
+<span id="page-130-0" data-folio="128"></span>
+#### **THEODOSIUS SCHREIBER** ÉRUDIT
 
 **Nom :** Theodosius Schreiber **Âge :** 29 **Race :** Humain **Statut :** Argent 2
 
@@ -5370,7 +5066,7 @@ La crédulité des hommes est irrésistible. Vous mentez systématiquement et ou
 
 EXPÉRIENCE Actuelle Dépensée **Totale** 0 1000 1000
 
-### MOUVEMENT
+#### MOUVEMENT
 
 Mouvement 4 Marche 8 Course 16
 
@@ -5404,7 +5100,7 @@ Mouvement 4 Marche 8 Course 16
 | Subornation           | Soc | 27     |    | 27         |
 | Survie en extérieur   | Int | 47     |    | 47         |
 
-### COMP. GROUPÉES ET AVANCÉES
+#### COMP. GROUPÉES ET AVANCÉES
 
 |     |    |              | Aug. Comp. |
 |-----|----|--------------|------------|
@@ -5418,11 +5114,11 @@ Mouvement 4 Marche 8 Course 16
 |     |    |              |            |
 |     |    | Carac.<br>47 | 3          |
 
-# POSSESSIONS
+#### POSSESSIONS
 
 Vêtements Dague Bourse Besace Nécessaire d'écriture 30 parchemins Livres de référence Sac à dos Alcool
 
-# TALENTS
+#### TALENTS
 
 | Nom                 | Nbre<br>pris | Description                                                                    |  |  |
 |---------------------|--------------|--------------------------------------------------------------------------------|--|--|
@@ -5478,7 +5174,7 @@ CO
 | Enc. max     | 6 |  |  |
 | 3<br>Total   |   |  |  |
 
-### BLESSURES
+#### BLESSURES
 
 | BF          | 3  |
 |-------------|----|
@@ -5487,7 +5183,7 @@ CO
 | Dur à cuire |    |
 | Blessures   | 14 |
 
-
+<span id="page-131-0" data-folio="129"></span>
 #### APPARENCE ET PERSONNALITÉ
 
 *« Mon accent ? Je ne sais vraiment pas de quoi vous voulez parler. Maintenant, ou bien vous cessez de cacher la lumière pour que je voie ce que j'écris, ou bien nous sortons tous les deux prendre l'air. »*
@@ -5517,12 +5213,12 @@ Votre grand secret est indissociable de votre Personnage, mais vous pouvez en ch
 
 NOTES
 
-### POINTS D'ARMURE (PA)
+#### POINTS D'ARMURE (PA)
 
 NOTES
 
-
-# **VASYA GHORSHKOV**
+<span id="page-132-0" data-folio="130"></span>
+### **VASYA GHORSHKOV**
 
 GLADIATEUR
 
@@ -5587,7 +5283,7 @@ Vous commencez avec 2d10 pistoles d'argent
 |                            |     |        |    |            |  |
 |                            |     |        |    |            |  |
 
-### COMP. GROUPÉES ET AVANCÉES
+#### COMP. GROUPÉES ET AVANCÉES
 
 | Vêtements<br>Bourse<br>Cape<br>Bandages |           |                                               |
 |-----------------------------------------|-----------|-----------------------------------------------|
@@ -5611,7 +5307,7 @@ Réflexes foudroyants 1 +5 Ag (inclus) Très fort 1 +5 F (inclus)
 |                     |              |     |    |                  |  |  |  |  |
 |                     |              |     |    |                  |  |  |  |  |
 
-### ARMES
+#### ARMES
 
 | Nom   | Groupe | Enc | Portée/Allonge | Dégâts | Atouts / Défauts                      |
 |-------|--------|-----|----------------|--------|---------------------------------------|
@@ -5628,7 +5324,7 @@ Réflexes foudroyants 1 +5 Ag (inclus) Très fort 1 +5 F (inclus)
 | CO |           | Enc. max     | 8 |  |  |  |
 |    |           | Total        | 5 |  |  |  |
 
-# BLESSURES
+#### BLESSURES
 
 | BF          | 4  |
 |-------------|----|
@@ -5638,7 +5334,7 @@ Réflexes foudroyants 1 +5 Ag (inclus) Très fort 1 +5 F (inclus)
 | Blessures   | 19 |
 |             |    |
 
-
+<span id="page-133-0" data-folio="131"></span>
 #### APPARENCE ET PERSONNALITÉ
 
 *« Theo, vous et vos jolis mots semblent sortis d'un livre. Très malins. Mais peuvent-ils battre la hache de Vasya ? »*
@@ -5665,12 +5361,12 @@ une autre affaire... Vous subissez une pénalité de -10 pour les Tests de Calme
 
 #### NOTES
 
-### POINTS D'ARMURE (PA)
+#### POINTS D'ARMURE (PA)
 
 NOTES
 
-
-# **KISTIANE BROCKDORF**
+<span id="page-134-0" data-folio="132"></span>
+### **KISTIANE BROCKDORF**
 
 SORCIER
 
@@ -5727,7 +5423,7 @@ Vous commencez avec 3d10 pistoles d'argent
 
 = 240 sous de cuivre (sc)
 
-### COMP. GROUPÉES ET AVANCÉES
+#### COMP. GROUPÉES ET AVANCÉES
 
 | Nom                          |     | Carac. |    | Aug. Comp. |  |
 |------------------------------|-----|--------|----|------------|--|
@@ -5740,7 +5436,7 @@ Vous commencez avec 3d10 pistoles d'argent
 |                              |     |        |    |            |  |
 |                              |     |        |    |            |  |
 
-### POSSESSIONS
+#### POSSESSIONS
 
 Licence magique Tente Sac à dos Nécessaire d'écriture 10 parchemins Grimoire contenant : Don de Vie, Régénération et
 
@@ -5758,7 +5454,7 @@ Explosion
 | Oreille absolue          | 1            | +1 DR aux Tests de Langue                            |  |  |  |
 | Perspicace               | 1            | +5 Int, déjà inclus                                  |  |  |  |
 
-# ARMURE
+#### ARMURE
 
 | Nom | Localisation | Enc | PA | Atouts / Défauts |  |  |
 |-----|--------------|-----|----|------------------|--|--|
@@ -5784,7 +5480,7 @@ Explosion
 |           |  | Total        | 4 |  |
 |           |  |              |   |  |
 
-# BLESSURES
+#### BLESSURES
 
 | BF          | 2  |
 |-------------|----|
@@ -5793,14 +5489,12 @@ Explosion
 | Dur à cuire |    |
 | Blessures   | 12 |
 
-
-## **PERSONNAGE**
-
-4,0000000000000000000000000000000000000
+<span id="page-135-0" data-folio="133"></span>
+#### **PERSONNAGE**
 
 #### APPARENCE ET PERSONNALITÉ
 
-« La sangsue caméléon est plutôt attachante, vous savez. J'ai essayé d'en garder une pendant un moment, mais je n'arrêtais pas de la perdre!»
+*« La sangsue caméléon est plutôt attachante, vous savez. J'ai essayé d'en garder une pendant un moment, mais je n'arrêtais pas de la perdre ! »*
 
 Kistiane est plutôt grande pour une humaine. Elle affiche un sourire joyeux et un enthousiasme à toute épreuve, que les autres personnes trouvent soit adorables, soit franchement épuisants. Elle est fascinée par les propriétés étranges de différentes créatures, en particulier les plus rares, quelle que soit leur dangerosité. Elle n'a pas un esprit scientifique très développé, ce qui est étonnant pour un sorcier. Elle préfère parler des « impressions » laissées par les bêtes et des remous qu'elles provoquent dans les Vents de Magie. Kistiane est persuadée que la magie peut être mise à contribution d'une meilleure manière dans l'Empire, pour le bien de tous les citoyens. Elle rechigne à utiliser des sorts offensifs, et son désarroi est palpable quand elle est contrainte d'y recourir.
 
@@ -5812,54 +5506,52 @@ Kistiane est la fille d'une famille prospère d'Altdorf qui a découvert avec ch
 
 Votre grand secret est indissociable de votre Personnage, mais vous pouvez en choisir d'autres. Vous commencez avec 1d10 pistoles d'argent en plus par secret supplémentaire choisi.
 
-- Grand secret : la noblesse a été une source de problèmes sans fin pour votre famille. Vous faites de votre mieux pour le cacher, mais la vérité est que vous ne supportez plus cette classe sociale. Vous avez Animosité (Nobles).
-- vous vénérez ouvertement un ancien avatar de Rhya, et vous êtes absolument persuadée que Sigmar n'est pas un dieu.
+- <sup>0</sup> **Grand secret :** la noblesse a été une source de problèmes sans fin pour votre fa- mille. Vous faites de votre mieux pour le cacher, mais la vérité est que vous ne
+- supportez plus cette classe sociale. Vous avez Animosité (Nobles). <sup>0</sup> Vous vénérez ouvertement un ancien avatar de Rhya, et vous êtes absolument
+- persuadée que Sigmar n'est pas un dieu. <sup>0</sup> Vous craignez d'utiliser de la magie destructrice, pas parce qu'elle vous paraît ré- pugnante ou immorale, mais parce que lorsque vous en faites, vous trouvez cela merveilleux.
+- 0 Vous compatissez avec les malheurs des mutants dans l'Empire, et vous tentez de les aider discrètement à condition qu'ils ne vénèrent pas les Puissances de la Ruine.
+- 0 Vous désirez apprendre le secret de l'invocation d'une bête des marais, mais le Collège de Jade est avare en informations sur ce sujet. Avec une telle créature, vous pourriez prendre votre revanche sur nombre de détracteurs à Altdorf.
 
-  Vous craignez d'utiliser de la magie destructrice, pas parce qu'elle vous paraît répugnante ou immorale, mais parce que lorsque vous en faites, vous trouvez cela recertailleux.
-- Vous compatissez avec les malheurs des mutants dans l'Empire, et vous tentez de les aider discrètement à condition qu'ils ne vénèrent pas les Puissances de la
-- Vous désirez apprendre le secret de l'invocation d'une bête des marais, mais le Collège de Jade est avare en informations sur ce sujet. Avec une telle créature, vous pourriez prendre votre revanche sur nombre de détracteurs à Altdorf.
-
-| N | / N | TES |
-|---|-----|-----|
-| 1 |     | 1 1 |
-|   |     |     |
+|  | NOTES |
+|--|-------|
+|  |       |
 
 #### POINTS D'ARMURE (PA)
 
-#### **SORTS**
+#### SORTS
 
-| Nom            | NI | Portée    | Cible      | Durée      | Effet                                                                                                                                                                |
-|----------------|----|-----------|------------|------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Amitié animale | 0  | 1 mètre   | 1          | 1 heure    | Crée un lien d'amitié avec une créature plus petite                                                                                                                  |
-| Drain          | 0  | Contact   | 1          | Instantané | Inflige Dégâts+0 qui ignorent les PA. Vous guérissez 1 Blessure                                                                                                      |
-| Lumière        | 0  | Vous      | Vous       | 43 minutes | Crée une lumière semblable à celle d'une torche. La luminosité peut être limitée à celle d'une bougie                                                                |
-| Repères        | 0  | Vous      | Vous       | Instantané | Savoir la direction du nord                                                                                                                                          |
-| Forêt d'épines | 6  | 43 mètres | ZdE de 4 m | 4 Rounds   | Test d'Agilité Difficile (-20) requis pour traverser la zone. En cas d'échec, la victime subit l'État <i>Empêtré</i> (FM au lieu de F) et l'État <i>Hémorragique</i> |
+| Nom            | NI | Portée    | Cible      | Durée      | Effet                                                                                                                                                     |
+|----------------|----|-----------|------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Amitié animale | 0  | 1 mètre   | 1          | 1 heure    | Crée un lien d'amitié avec une créature plus petite                                                                                                       |
+| Drain          | 0  | Contact   | 1          | Instantané | Inflige Dégâts+0 qui ignorent les PA. Vous guérissez 1 Blessure                                                                                           |
+| Lumière        | 0  | Vous      | Vous       | 43 minutes | Crée une lumière semblable à celle d'une torche. La luminosité peut être<br>limitée à celle d'une bougie                                                  |
+| Repères        | 0  | Vous      | Vous       | Instantané | Savoir la direction du nord                                                                                                                               |
+| Forêt d'épines | 6  | 43 mètres | ZdE de 4 m | 4 Rounds   | Test d'Agilité Difficile (-20) requis pour traverser la zone. En cas d'échec, la<br>victime subit 1 État Empêtré (FM au lieu de F) et 1 État Hémorragique |
+
+<span id="page-136-0" data-folio="134"></span>
 
 
-<span id="page-136-0"></span>
-
-# **Traits de créature**
+### **Traits de créature**
 
 **WFJDR** contient de nombreux Traits de créature, c'est-à-dire des capacités associées à des créatures qui leur confèrent une aptitude, une particularité ou un comportement bien spécifique. Il peut être difficile d'en tenir compte en plein combat, c'est pourquoi quelques modifications ont été apportées à la manière dont ils sont présentés dans Le Zoo Impérial.
 
-# **En armure et dangereux**
+#### **En armure et dangereux**
 
 Vous verrez que le Trait Armure inclut désormais un second chiffre entre parenthèses, après le nombre de PA offert par l'armure. Il s'agit de la somme de l'Indice du Trait Armure de la créature et de son Bonus d'Endurance. Ce chiffre est indiqué pour plus de clarté, car il est généralement soustrait aux Dégâts subis.
 
-# **Traits et Traits d'attaque**
+### **Traits et Traits d'attaque**
 
 Vous remarquerez aussi qu'une nouvelle catégorie a été ajoutée aux encadrés de statistiques : les Traits d'attaque. Cette décision a été prise pour plus de facilité : les Traits d'attaque sont tout simplement des Traits de créature qui permettent à ce monstre d'effectuer une attaque ou une action particulière. Ils ont été déplacés dans leur propre catégorie pour vous aider à identifier rapidement ce dont un adversaire est capable. Il est tout de même recommandé de consulter tous les Traits, car la plupart d'entre eux peuvent avoir un impact considérable sur le comportement d'une bête en plein combat.
 
-# **Un rhinox compétent ?**
+### **Un rhinox compétent ?**
 
 Vous remarquerez qu'un grand nombre de créatures présentées dans ce livre ont des Compétences. Dans le cadre de créatures animales, elles sont généralement limitées aux Compétences simples comme Corps à corps ou Discrétion. Elles représentent le talent inné et la détermination brute plutôt qu'un entraînement en tant que tel. Elles permettent aux ennemis de rester une menace pour les Personnages qui ont dépensé beaucoup de PX pour s'améliorer dans l'art du combat.
 
-# **Référence rapide**
+### **Référence rapide**
 
 Dans les pages suivantes, vous trouverez un tableau de référence rapide qui résume tous les Traits de créature dans **WFJDR**. Vous pouvez le garder à portée de main pendant une rencontre.
 
-# **Grands prédateurs**
+#### **Grands prédateurs**
 
 **Le Zoo Impérial** présente un nouveau Trait de créature : Redoutable. Les créatures avec le Trait Redoutable sont particulièrement terrifiantes. Ce sont de véritables monstruosités, dont la simple présence bannit toute possibilité de prendre le dessus en combat.
 
@@ -5869,17 +5561,17 @@ Cependant, il ne suffit pas de frapper plus fort et plus souvent pour offrir une
 
 Les créatures ayant le Trait Redoutable sont particulièrement dangereuses, il vaut donc mieux utiliser ce Trait avec précaution. Ainsi, si un monstre présente plus de niveaux de Redoutable qu'il n'y a de Personnages, vous pourriez diminuer ou supprimer ce Trait.
 
-# **Nouveau Trait de créature : Redoutable**
+#### **Nouveau Trait de créature : Redoutable**
 
 Cette créature est particulièrement dangereuse, si bien qu'il est presque impossible de réellement prendre le dessus sur elle. Si, au début de son tour, la créature n'a pas autant d'Avantages que son *Indice* de Redoutable le voudrait (par défaut, 1), elle gagne immédiatement tous les Avantages qui lui manquent. Si la créature est sous l'effet d'un État *Empêtré*, *Inconscient* ou *Surpris*, elle ne gagne pas d'Avantage.
 
-# **Nouveau Trait de créature : Fouissement**
+#### **Nouveau Trait de créature : Fouissement**
 
 Cette créature peut se déplacer en creusant un tunnel dans la terre ou la pierre à une vitesse inimaginable. Pour se déplacer, elle peut creuser dans le sol sur une distance en mètres égale à son *Indice*. Lorsqu'elle fouit, elle ignore tout obstacle, personnage ou terrain difficile sur son passage. À la fin de son déplacement, elle peut choisir de sortir de terre ou de rester enfouie. Elle peut se servir de ce mode de déplacement pour Charger. Si elle commence son tour sous terre, elle doit se déplacer par fouissement.
 
 Pour attaquer une cible enfouie, calculez la distance au sol comme d'habitude, mais augmentez la Portée de 2 niveaux. Ainsi, un tir à Portée Moyenne passerait à Portée Extrême, tandis qu'un tir à Portée Longue ou Extrême serait impossible.
 
-
+<span id="page-137-0" data-folio="135"></span>
 | Trait                                        | Description                                                                                                                                                                                                                                                                                                                     |                                                                                                         |  |
 |----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|--|
 | À distance (Indice) (Portée)<br>À sang-froid | La créature possède une arme à distance. L'arme cause autant de Dégâts que l'Indice du Trait.<br>La créature peut inverser tous ses Tests de Force Mentale échoués.                                                                                                                                                             |                                                                                                         |  |
@@ -5909,7 +5601,7 @@ Pour attaquer une cible enfouie, calculez la distance au sol comme d'habitude, m
 |                                              | Rapporter : l'animal peut rapporter de petits objets<br>quand on le lui demande.                                                                                                                                                                                                                                                | Revenir à la maison : l'animal retournera chez lui s'il<br>est relâché ou perdu.                        |  |
 |                                              | Trait : l'animal est entraîné à tirer une charrette, une diligence, etc.                                                                                                                                                                                                                                                        |                                                                                                         |  |
 
-
+<span id="page-138-0" data-folio="136"></span>
 | Trait                               | Description                                                                                                                                                                                                                  |
 |-------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Effrayé (Cible)                     | La créature a Peur (0) de la Cible. Voir WFJDR, p. 190, pour les règles concernant la Peur.                                                                                                                                  |
@@ -5961,7 +5653,7 @@ Pour attaquer une cible enfouie, calculez la distance au sol comme d'habitude, m
 |                                     | gratuite avec son Trait Arme ou commencer une Empoignade (WFJDR, p. 163).                                                                                                                                                    |
 |                                     |                                                                                                                                                                                                                              |
 
-
+<span id="page-139-0" data-folio="137"></span>
 | Trait                 | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 |-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Limicole              | La créature ne subit pas de pénalité de Mouvement pour se mouvoir sur un terrain marécageux.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -5990,7 +5682,7 @@ Pour attaquer une cible enfouie, calculez la distance au sol comme d'habitude, m
 | Sang corrosif         | Chaque fois que la créature subit des Blessures, tous les Personnages qui sont Engagés avec elle reçoivent<br>1d10 Points de Blessure modifiés par le BE et les PA, avec un minimum de 1.                                                                                                                                                                                                                                                                                                                                                                                                            |
 | Se cabrer             | Pour une action de Mouvement, la créature peut effectuer une attaque de Piétinement si elle est plus<br>grande que son adversaire. Les Dégâts infligés sont égaux au BF+0.                                                                                                                                                                                                                                                                                                                                                                                                                           |
 
-
+<span id="page-140-0" data-folio="138"></span>
 | Trait                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |  |
 |-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--|
 | Souffle (Indice) (Type) | Coût : 2 points d'Avantage. Portée 20+Bonus d'Endurance en mètres. Tous les personnages situés à<br>une distance en mètres égale au BF de cette cible sont touchés, ainsi que tous les Personnages entre<br>la créature et la cible. Effectuez un Test opposé de Capacité de Tir/Esquive contre toutes les cibles<br>affectées. Toutes les cibles qui échouent subissent un montant de Dégâts égal à son Indice. Voir WFJDR<br>p. 341 pour connaître les différents types de souffles.                                                                                                                                                                                                                 |  |
@@ -6010,117 +5702,114 @@ Pour attaquer une cible enfouie, calculez la distance au sol comme d'habitude, m
 | Vol (Indice)            | La créature peut utiliser son Mouvement pour voler sur une distance en mètres égale à l'Indice du Trait.<br>Elle peut utiliser ce Mouvement pour Charger. Si elle commence son Tour dans les airs, elle doit choisir<br>le Vol pour son Mouvement. Si elle ne peut pas voler, le MJ décide de quelle hauteur elle tombe (voir<br>WFJDR, p. 166). Quand un Personnage cible cette créature, la distance augmente de 1. Quand elle vole,<br>elle subit une pénalité de -20 à toutes les tentatives de combat à distance.                                                                                                                                                                                 |  |
 | Vomissement             | Coût : 3 points d'Avantage. En tant qu'attaque gratuite, choisissez 1 cible que la créature peut voir à une<br>distance en mètres égale à son BE. Toutes les cibles à moins de deux mètres sont également touchées.<br>La créature effectue un Test opposé de Capacité de Tir/Esquive contre toutes les cibles affectées (un<br>jet opposé pour chaque cible). Le Test est généralement Facile (+40) pour elle à cause de la distance<br>rapprochée, et Intermédiaire (+0) pour ses adversaires. Toutes les cibles qui échouent subissent une<br>somme de Dégâts égale à son BE +4 et reçoivent l'État Assommé. Toutes les Armures et les Armes<br>portées par les cibles affectées subissent 1 Dégât. |  |
 
-
-
-# CRÉATURES
-
-| Λ                                       |  |  |
+<span id="page-141-0" data-folio="139"></span>
+<span id="page-142-0" data-folio="140"></span>
+| Amibe45                                 |  |  |
 |-----------------------------------------|--|--|
-| Amibe                                   |  |  |
-| Amphisbaena                             |  |  |
+| Amphisbaena47                           |  |  |
 | Arachnarok13                            |  |  |
 |                                         |  |  |
-| В                                       |  |  |
+| B                                       |  |  |
 | Bête de l'Oblast, La67                  |  |  |
 | Brise-Krag25                            |  |  |
-| Brochet du Stir                         |  |  |
+| Brochet du Stir36                       |  |  |
 |                                         |  |  |
 | C                                       |  |  |
 | Caledair, la Faux de Feu31              |  |  |
 | Carnosaure81                            |  |  |
-| Chamane gobelin des forêts              |  |  |
+| Chamane gobelin des forêts15            |  |  |
 | Chat sauvage82                          |  |  |
 | Chef de meute du clan Moulder41         |  |  |
 | Chevalier mort-vivant (Revenant)93      |  |  |
 | Chimère67                               |  |  |
-| Choses du Bois mort                     |  |  |
-| Cockatrice                              |  |  |
-| Cornu                                   |  |  |
+| Choses du Bois mort37                   |  |  |
 |                                         |  |  |
+| Cockatrice65                            |  |  |
+| Cornu80                                 |  |  |
 | Cultiste de la Lune Imprévisible70      |  |  |
 | D                                       |  |  |
 | Déchiqueteur de cadavres, Le54          |  |  |
-| Dragon barbelé                          |  |  |
-| Dragon de la forêt                      |  |  |
-| 274gon de 14 1010t                      |  |  |
+| Dragon barbelé90                        |  |  |
+|                                         |  |  |
+| Dragon de la forêt30                    |  |  |
 | E                                       |  |  |
 | Expérience chimérique du clan Moulder41 |  |  |
 |                                         |  |  |
 | F                                       |  |  |
 | Fantasma, Le91                          |  |  |
-| Faucon des Montagnes Grises             |  |  |
-| Filets                                  |  |  |
+| Faucon des Montagnes Grises63           |  |  |
+| Filets29                                |  |  |
 |                                         |  |  |
 | G                                       |  |  |
-| Gobelin de la nuit                      |  |  |
-| Gobelin des forêts                      |  |  |
+| Gobelin de la nuit28                    |  |  |
+| Gobelin des forêts15                    |  |  |
 | Grand aigle63                           |  |  |
 | Grand cerf10                            |  |  |
-| Grand taurus                            |  |  |
-| Griffon                                 |  |  |
-| Gueule d'effroi                         |  |  |
+| Grand taurus75                          |  |  |
+| Griffon21                               |  |  |
+| Gueule d'effroi23                       |  |  |
 |                                         |  |  |
-| Н                                       |  |  |
+| H                                       |  |  |
 | Halagrundsor, « L'abominable »35        |  |  |
 | Heomreth63                              |  |  |
 |                                         |  |  |
 
-|                                         | I            |
-|-----------------------------------------|--------------|
-| Il Potente Granchio                     | 85           |
-|                                         |              |
-|                                         |              |
-| Jetsam, la gelée intelligente           | 45           |
-|                                         | L            |
-| I áriathan                              | 85           |
-|                                         |              |
-|                                         | 82           |
-| Loup géant                              | 17           |
-|                                         | M            |
-| Macareux à hec tranchant                | 77           |
-|                                         | rakwald13    |
-| iviangeuse u nommes de la D             | 14KW4IU13    |
-|                                         | N            |
-| Noctecorbes                             | 59           |
-|                                         |              |
-|                                         | 0            |
-| Ombre du fleuve, L'                     | 10           |
-|                                         | D            |
-| D 1.1                                   | P            |
-|                                         | 70           |
-|                                         | 57           |
-| Preyton                                 | 61           |
-|                                         | R            |
-| Dat a sup luion 12                      |              |
-|                                         | 41           |
-|                                         | 41           |
-|                                         | 17           |
-|                                         | 19           |
-| Rhinox                                  | 25           |
-|                                         | S            |
-| C                                       |              |
-|                                         | 50           |
-| Sirène                                  | 86           |
-|                                         | 49           |
-|                                         | de la nuit27 |
-| Stégadon                                | 79           |
-|                                         | Т            |
-| T. 1 1 1 C1                             |              |
-|                                         | 95           |
-|                                         | 76           |
-|                                         | 49           |
-| Troupe du clan Skryre                   | 94           |
-|                                         | V            |
-| V . 1                                   |              |
-|                                         | 52           |
-|                                         | 19           |
-| Vouivre                                 | 32           |
-|                                         | W            |
-| Wyrm des mers                           | 88           |
-| V V V I I I I I I I I I I I I I I I I I |              |
+| I                                          |
+|--------------------------------------------|
+| Il Potente Granchio85                      |
+|                                            |
+| J                                          |
+| Jetsam, la gelée intelligente45            |
+| L                                          |
+|                                            |
+| Léviathan85                                |
+| Lion de guerre de Chrace82                 |
+| Loup géant17                               |
+| M                                          |
+|                                            |
+| Macareux à bec tranchant77                 |
+| Mangeuse d'hommes de la Drakwald13         |
+| N                                          |
+| Noctecorbes59                              |
+|                                            |
+| O                                          |
+| Ombre du fleuve, L'10                      |
+|                                            |
+| P                                          |
+| Peau-de-loup70                             |
+| Pégases noirs57                            |
+| Preyton61                                  |
+|                                            |
+| R                                          |
+| Rat ogre briseur d'os41                    |
+| Rat loup41                                 |
+| Raukos17                                   |
+| Razorgor19                                 |
+| Rhinox25                                   |
+|                                            |
+| S                                          |
+| Sangsue caméléon50                         |
+| Sirène86                                   |
+| Sorcière troll des rivières49              |
+| Squig des cavernes et gobelin de la nuit27 |
+| Stégadon79                                 |
+|                                            |
+| T                                          |
+| Technomage du clan Skryre95                |
+| Trégara76                                  |
+| Troll des rivières49                       |
+| Troupe du clan Skryre94                    |
+|                                            |
+| V                                          |
+| Ver des marais52                           |
+| Vieux Dos-de-pus, Le19                     |
+| Vouivre32                                  |
+| W                                          |
+|                                            |
+|                                            |
 
-
-# **Index**
+<span id="page-143-0" data-folio="141"></span>
+### **Index**
 
 | A                                 | G                                     |  |
 |-----------------------------------|---------------------------------------|--|
@@ -6198,6 +5887,10 @@ Furie du Preyton............................... 107
 | Vision de vie 116                     |  |  |  |
 |                                       |  |  |  |
 
+<span id="page-144-0" data-folio="142"></span>
+<span id="page-145-0" data-folio="143"></span>
+<span id="page-146-0" data-folio="144"></span>
+
 
 ## [ADE II 1] Mercenaires ogres dans le Vieux Monde
 
@@ -6222,7 +5915,7 @@ Les ogres finissent souvent par être attirés par la carrière de mercenaire, c
 Ceux qui deviennent des bandits ou des pillards, s'en tenant à un mode de vie qui prévaut sur leurs terres, finissent par s'attirer les foudres des autorités des différents pays du Vieux Monde qui les pourchassent dans le seul but de les éliminer. Des bandes de mercenaires ogres se spécialisent même dans la traque (et la consommation) de leurs propres congénères. Cela étant, certains ogres mercenaires n'hésitent pas à se lancer dans des pillages s'ils pensent pouvoir s'en tirer. Bénéficier d'« *un combat contre un repas* » est une tentation à laquelle peu d'entre eux résistent si la mission semble faisable. Cependant, ils sont assez perspicaces quant à la manière dont les autorités locales sont susceptibles de réagir, c'est pourquoi ils planifient leurs activités en conséquence.
 
 
-<span id="page-8-0"></span>Les contrats des mercenaires sont négociés et leur durée est généralement limitée, ce qui permet aux ogres de passer à autre chose s'ils en ressentent le besoin. Les mercenaires itinérants trouveront presque toujours un nouveau combat à mener, alors que les sédentaires n'auront pas l'occasion de se battre aussi souvent. L'une des principales raisons pour lesquelles les ogres sont prêts à travailler pour les peaux-vertes est leur propension à se battre constamment. Mais ils s'en méfient tout de même, car ils ne respectent pas toujours leur part du marché. Dans le langage des ogres, les orcs et les gobelins ne *« savent pas toujours bien servir à table »*.
+<span id="page-8-0" data-folio="7"></span>Les contrats des mercenaires sont négociés et leur durée est généralement limitée, ce qui permet aux ogres de passer à autre chose s'ils en ressentent le besoin. Les mercenaires itinérants trouveront presque toujours un nouveau combat à mener, alors que les sédentaires n'auront pas l'occasion de se battre aussi souvent. L'une des principales raisons pour lesquelles les ogres sont prêts à travailler pour les peaux-vertes est leur propension à se battre constamment. Mais ils s'en méfient tout de même, car ils ne respectent pas toujours leur part du marché. Dans le langage des ogres, les orcs et les gobelins ne *« savent pas toujours bien servir à table »*.
 
 Dans l'Empire, les mercenaires ogres sont souvent connus sous le nom de Mangeurs d'hommes, d'après un mercenaire tristement célèbre du même nom. Les Mangeurs d'hommes voyagent généralement seuls ou en petits groupes. Il leur est ainsi possible de subvenir à leurs besoins plus facilement, car trouver de la nourriture pour une « poignée de gaillards » s'avère plus simple que pour une grande tribu. De plus, ils ont appris il y a fort longtemps que les minus deviennent terriblement nerveux lorsque trop d'ogres se rassemblent au même endroit. Et qui dit clients craintifs dit pas de travail, ce qui n'arrange pas leurs affaires et mène à des assiettes vides : un vrai désastre pour un ogre digne de ce nom.
 
@@ -6235,7 +5928,7 @@ Cette capacité d'adaptation s'avère très utile lorsqu'il s'agit de trouver du
 Les autres espèces du Vieux Monde ne comprennent pas à quel point l'obsession des ogres pour la nourriture est intense. Elle régit leur vie et détermine leur rythme de sommeil. Alors même qu'un ogre est en train de finir son repas, il pense déjà au prochain et peut devenir anxieux quant aux détails de son acquisition. Les ogres ne naissent pas seulement avec une petite fringale : ils sont littéralement affamés. Ce n'est pas un hasard si le dieu ogre, la Gueule, est un estomac sans fond. Les mercenaires ogres les plus malins apprennent rapidement à minimiser l'expression de leur faim en présence de minus, car ils se rendent bien compte que cette attitude rend tout le monde nerveux. Ils précisent alors qu'ils ont juste *« un petit creux »*. Bien sûr, il leur arrive de vouloir mettre délibérément les minus mal à l'aise, une tactique de négociation que de nombreux ogres utilisent à leur avantage.
 
 
-## <span id="page-9-0"></span>**UNE INDEMNISATION SAVOUREUSE**
+## <span id="page-9-0" data-folio="8"></span>**UNE INDEMNISATION SAVOUREUSE**
 
 Ce n'est un secret pour personne : entretenir des mercenaires ogres coûte cher. Ces derniers demandent souvent des salaires élevés et des repas réguliers, ainsi que le droit d'obtenir des « rations de combat » après la bataille. Mais il arrive que certaines de ces « rations » ne soient pas tout à fait mortes lorsque les ogres commencent leur moisson. Les soldats expérimentés savent qu'il vaut mieux achever leurs amis avant que les ogres ne viennent les chercher.
 
@@ -6260,7 +5953,7 @@ Les prix indiqués ne comprennent pas la nourriture, qui représente un supplém
 | Garde du corps | 8/–          | 1 CO 6/–        | 8 CO              | Peut détecter la nourriture empoisonnée, mais a<br>tendance à finir le plat          |  |
 
 
-## <span id="page-10-0"></span>**S'en mettre plein les joues**
+## <span id="page-10-0" data-folio="9"></span>**S'en mettre plein les joues**
 
 Les commandants inexpérimentés trouvent que les mercenaires ogres sont, au mieux, très difficiles à gérer. Ces derniers ont tendance à se quereller, se montrent particulièrement paresseux, aiment s'attirer des ennuis, menacer les autres et déclencher des bagarres, entre autres. Aussi grand et menaçant que puisse être un minus, il lui est pratiquement impossible d'intimider un ogre pour le forcer à faire quelque chose qui ne l'intéresse pas. À moins qu'ils ne viennent de vivre une ou plusieurs batailles sanglantes et qu'ils ne soient (temporairement) en train de se délecter de leurs « rations de combat », les ogres n'hésitent pas à demander des provisions supplémentaires. Pour y remédier, de nombreux commandants engagent un capitaine ogre accompagné de ses troupes : de cette manière, ils ne traitent qu'avec un seul ogre à la fois, en espérant pouvoir préserver leurs propres soldats. Les officiers les plus avisés apprennent également à tourner les « priorités » de leurs mercenaires ogres à leur avantage. Par exemple, les stratèges myrmidiens emploient des ruses qui consistent à suggérer qu'un régiment ennemi pourrait se préparer à attaquer les chariots de ravitaillement. Ainsi, les ogres font presque invariablement tout leur possible pour chercher l'ennemi en question dans le but de l'anéantir.
 
@@ -6338,7 +6031,7 @@ Un mercenaire à la retraite convainc un Graissus Dents d'Or, sceptique, que l'o
 Des nuées de skavens font irruption depuis les égouts de Nuln. Des héros improbables et plusieurs mercenaires, dont la bande du célèbre capitaine ogre Hrothyogg, protègent la ville d'une ruine totale. Faisant fi des exigences habituelles, Hrothyogg accepte une bonne quantité de poudre noire de Nuln en guise de paiement.
 
 
-## <span id="page-12-0"></span>**De couteaux et d'épées**
+## <span id="page-12-0" data-folio="11"></span>**De couteaux et d'épées**
 
 L'équipement des ogres est généralement aussi démesuré qu'eux. Une épée humaine ressemble davantage à une dague entre leurs mains de géants et ils sont presque incapables de manier une lame taillée pour un halfling. Les mercenaires ogres sont fréquemment très bien armés et beaucoup portent un véritable un arsenal létal. Ils ont tendance à mettre leur équipement à rude épreuve, s'attachant rarement à une pièce en particulier. En raison de leur manque d'intérêt pour l'artisanat, ils ont tendance à négliger l'entretien de leur matériel. Ils utilisent une arme jusqu'à ce qu'elle se brise, puis s'en débarrassent sans y accorder la moindre importance.
 
@@ -6357,7 +6050,7 @@ I
 
 ## **L'art sacré du combat de gladiateurs**
 
-<span id="page-13-0"></span>I
+<span id="page-13-0" data-folio="12"></span>I
 
 Seule une coutume ogre est parvenue au-delà des Montagnes des Larmes : le combat de gladiateurs. Avant la naissance de l'Empire, lorsque les humains sont entrés en contact avec les ogres, ils pratiquaient déjà des sports violents, mais il s'agissait seulement de combats impliquant des animaux ou de l'appâtage des ours. Les ogres avaient alors développé le combat de gladiateurs comme un moyen de décider qui était le plus fort des deux opposants destinés au commandement d'une tribu. Cette activité leur permettait également de vénérer leur divinité des gladiateurs, la Gueule.
 
@@ -6388,7 +6081,7 @@ La vallée d'Osséine est ouverte à tous les ogres de passage, pour autant qu'i
 Les commandants, ou toute autre personne ayant de l'argent à dépenser, qui souhaitent faire parvenir une offre aux habitants de la vallée d'Osséine peuvent s'adresser à Edelard Bénibière (dit « Ed »), le halfling qui gère le Sanglier de Cuivre, une taverne fréquentée par les mercenaires ogres à Nuln.
 
 
-#### <span id="page-14-0"></span>**La Taverne des Dents Rouges**
+#### <span id="page-14-0" data-folio="13"></span>**La Taverne des Dents Rouges**
 
 Les villes de l'Empire ne manquent pas de tavernes, mais peu de ces établissements exigus sont en mesure d'accueillir des ogres, et encore moins de les sustenter. La taverne des Dents Rouges a été construite par son propriétaire, Ruggero Oeildacier, dans un style tiléen, avec plusieurs grandes salles ouvertes contenant des boxes massifs, mais relativement peu de tables. Cet ancien mercenaire était jadis un gladiateur prospère. Au cours de ses deux premières carrières, il a combattu aux côtés des ogres et, à quelques occasions mémorables, contre eux. Il sait donc à quel point ils peuvent se montrer généreux lorsqu'il s'agit d'acheter à boire et à manger.
 
@@ -6448,7 +6141,7 @@ Ogresse tout à fait quelconque, Ugrik s'est fait connaître après avoir attaqu
 **Traits :** À Distance (Arc +8), Arme (Massue +9), Armure 3 **Possessions :** arme simple (massue à tête de boulet de canon), pansière, arme simple (massue), arc avec 12 flèches, 2d10 sous de cuivre
 
 
-## <span id="page-16-0"></span>VOUS REPRENDREZ BIEN UN MORCEAU ? PERSONNAGES JOUEURS OGRES • •
+## <span id="page-16-0" data-folio="15"></span>VOUS REPRENDREZ BIEN UN MORCEAU ? PERSONNAGES JOUEURS OGRES • •
 
 
 ## [ADE II 2] Les ogres
@@ -6468,7 +6161,7 @@ Les ogres sont bruyants, goulus, vantards, fougueux, colériques et belliqueux. 
 Les ogres sont bien connus pour leur propension à voyager, ce qui fait qu'on peut facilement les trouver aux quatre coins du monde, combattant dans des groupes de mercenaires d'une vingtaine à quelques centaines d'individus, voire plus. Contrairement à la croyance populaire, les ogres s'intègrent plutôt bien dans la plupart des sociétés qu'ils rencontrent, assimilant les coutumes et les traditions locales avec une facilité qui est probablement due à un manque d'imagination.
 
 
-## <span id="page-17-0"></span>**Histoire des ogres**
+## <span id="page-17-0" data-folio="16"></span>**Histoire des ogres**
 
 Il y a plusieurs milliers d'années, les ogres vivaient dans les steppes orientales, de l'autre côté des Montagnes du Bord du Monde. Ce peuple simple passait la plupart de son temps à commercer et à guerroyer. Son territoire était bordé de nations humaines qui voyaient certains avantages à travailler avec les ogres, notamment en raison de leur force prodigieuse. À la naissance de l'Empire, Sigmar les a d'ailleurs considérés comme d'excellents guerriers. Bien que mutuellement bénéfiques, ces relations étaient souvent entachées de suspicion. Certains trouvaient que leurs alliés ogres avaient appris trop de choses et étaient devenus un peu trop puissants grâce à ces arrangements. D'aucuns disent que c'est cette méfiance qui poussa un puissant sorcier à attaquer les ogres, tandis que d'autres pensent que cet acte avait pour seul but de venger les nombreuses personnes que les ogres avaient tuées et dévorées au combat. Quelle que soit la véritable version, un terrible châtiment s'abattit sur les ogres, qui les changea à jamais.
 
@@ -6556,7 +6249,7 @@ De nombreuses théories tarabiscotées sur les origines des halflings et des ogr
 Les ogres et les halflings semblent partager un lien qui leur permet de forger des amitiés avec une certaine aisance. Cependant, il existe bel et bien des tensions dans leurs relations : si les ogres semblent avoir une tendance naturelle à se lier d'amitié avec ces gens de petite taille, il est également entendu qu'ils ne trouvent aucune viande plus savoureuse qu'un gigot de halfling cuit à point.
 
 
-## <span id="page-19-0"></span>**PERSONNAGES OGRES**
+## <span id="page-19-0" data-folio="18"></span>**PERSONNAGES OGRES**
 
 La création de Personnages ogres suit les mêmes étapes que celles présentées dans **Warhammer Fantasy le Jeu de Rôle** (**WFJDR** p. 24) avec les ajouts suivants.
 
@@ -6667,7 +6360,7 @@ La race des ogres présente autant de variété que les humains, ses diverses cu
 **Spadassin :** bien que les ogres soient des spadassins nés, ils poussent souvent le vice un peu trop loin et ont tendance à tuer, puis à manger leurs victimes au lieu de se contenter de les frapper. La plupart des ogres ne considèrent même pas cette activité comme une carrière à proprement parler, mais plutôt comme une façon naturelle de faire les choses : « *Tu me payes un repas si je tape quelqu'un ? Ça roule, je m'occupe de qui ?* »
 
 
-## <span id="page-21-0"></span>**Attributs**
+## <span id="page-21-0" data-folio="20"></span>**Attributs**
 
 Pour générer les attributs de votre ogre, suivez les mêmes étapes que celles décrites dans **WFJDR** (p. 33) en vous basant sur le Tableau des attributs des ogres suivant.
 
@@ -6724,7 +6417,7 @@ Vous êtes consumé par le besoin de vous adonner à un vice particulier et souf
 Vous éprouvez le besoin constant de vous adonner à votre Vice, vers lequel vos pensées s'égarent en permanence. Vous devez vous y abandonner totalement et de manière malsaine. Par exemple, si votre Vice est lié à la nourriture, vous ne vous contentez pas de prendre un simple repas, mais vous vous transformez en un véritable goinfre qui se met à manger tout ce qu'il peut jusqu'à ce qu'il soit ballonné et en devienne malade. Chaque fois que vous êtes confronté à la Cible de votre Vice, vous devez vous soumettre à un Test de **Psychologie** (**WFJDR** p. 190). En cas d'échec, vous devez immédiatement vous laisser aller à votre Vice, en renonçant à vos autres actions ou devoirs. Vous ne serez satisfait qu'une fois que vous aurez perdu connaissance et gagnerez alors un État *Exténué*. À la fin de chaque Round, vous pouvez ensuite tenter un autre Test de Psychologie pour mettre fin à cet État. Vous subissez également -20 à tous les Tests de Sociabilité envers les Personnages qui ont été témoins de votre folie furieuse, car ils sont révulsés par votre comportement. Pour chaque jour complet que vous passez sans vous adonner à votre Vice, vous gagnez un cumul de -20 à tous les Tests de Psychologie jusqu'à ce que vous y soyez soumis.
 
 
-## <span id="page-22-0"></span>**Détails physiques**
+## <span id="page-22-0" data-folio="21"></span>**Détails physiques**
 
 Comme pour toutes les Races, vous pouvez soit déterminer les détails suivants de manière aléatoire, soit choisir parmi les éléments disponibles.
 
@@ -6790,7 +6483,7 @@ Traditionnellement, les noms des ogres sont formés à partir d'un certain nombr
 #### 2E PARTIE D'UN NOM OGRE
 
 
-## <span id="page-24-0"></span>**Titres des ogres et noms de clan**
+## <span id="page-24-0" data-folio="23"></span>**Titres des ogres et noms de clan**
 
 Si certains ogres accordent beaucoup d'importance à leur nom, pour la plupart, il s'agit simplement d'un son qui leur permet de se reconnaître. En revanche, les appellations et les titres obtenus au cours de leur vie sont bien plus importants.
 
@@ -6892,7 +6585,7 @@ Il n'en demeure pas moins que tous les ogres sans exception ont au fond d'eux un
 Un ogre est aussi loyal qu'un humain, vous pouvez donc vous reporter aux questions soulevées dans **WFJDR** (p. 43) et y répondre comme pour n'importe quel autre Personnage.
 
 
-#### <span id="page-26-0"></span>**Pourquoi partir à l'aventure ?**
+#### <span id="page-26-0" data-folio="25"></span>**Pourquoi partir à l'aventure ?**
 
 Le plus souvent : l'envie de voyager, l'avidité, la faim, mais surtout l'envie de voyager. Les ogres ont envie de prendre la route, alors il n'est pas difficile de trouver une bonne justification pour laisser son ancienne vie derrière soi. Peut-être que votre ogre veut aller voir les Montagnes des Larmes ? Ou prendre la mer ? Ou serait-il possible que votre ogresse souhaite simplement s'enrichir ? Quoi qu'il en soit, un Joueur ogre ne devrait pas avoir trop de mal à trouver une bonne raison de partir à l'aventure.
 
@@ -6933,7 +6626,7 @@ Les Personnages ogres progressent au même titre que n'importe quel autre Person
 **Sergent :** il n'est pas rare de voir des bandes d'ogres en devenir se disputer le commandement des groupes de mercenaires. Ils sont généralement prêts à tout pour faire leurs preuves, ce qui les rend extrêmement dangereux. Certains empruntent la voie la plus sûre au sein d'une armée établie, mais la plupart sont des mercenaires nomades.
 
 
-<span id="page-27-0"></span>
+<span id="page-27-0" data-folio="26"></span>
 
 ## **EXEMPLES DE PERSONNAGES OGRES**
 
@@ -6988,7 +6681,7 @@ Pourtant, de nombreux nobles commencent à s'intéresser à ce « savoir-faire �
 **Possessions :** craie, cape, vêtements, dague, licence de Guilde, chapeau, justaucorps de cuir, repas, bourse, besace, chiffons, outils professionnels (forgeron)
 
 
-## <span id="page-28-0"></span>**À L'ATTENTION DU MENEUR DE JEU**
+## <span id="page-28-0" data-folio="27"></span>**À L'ATTENTION DU MENEUR DE JEU**
 
 Les points suivants sont des conseils pour les Meneurs de Jeu qui souhaitent ajouter des ogres à leurs campagnes de **Warhammer Fantasy le Jeu de Rôle**. Pour commencer, nous pensons que c'est une excellente idée (sinon nous n'aurions pas publié ce supplément). Dans la mesure du possible, essayez de présenter tous les problèmes potentiels liés aux ogres de manière positive !
 
@@ -7017,7 +6710,7 @@ Les ogres sont grands. À vrai dire, ils sont même énormes. Si l'on considère
 Dans la mesure du possible, essayez de tourner la taille d'un ogre en dérision. Nul besoin d'exclure votre Joueur ogre de certaines scènes juste parce qu'il ne peut pas entrer dans une pièce. Au lieu de cela, proposez-lui de se déplacer à quatre pattes ou décrivez la manière dont il se tord le cou et traîne les pieds dans une boutique naine exiguë. Assurez-vous de bien expliquer cette situation au Joueur avant qu'il ne choisisse de créer un Personnage ogre, sinon il pourrait très vite être agacé par son sort dans le Vieux Monde. Il est indispensable de s'assurer que tout le monde est prêt à relever les défis qui pourraient survenir lors d'un voyage en compagnie d'un ogre.
 
 
-## <span id="page-29-0"></span>DE L'IMPORTANCE DE LA TAILLE
+## <span id="page-29-0" data-folio="28"></span>DE L'IMPORTANCE DE LA TAILLE
 
 Les règles de Taille sont quelque peu complexes, mais savoir comment les utiliser est crucial pour les Joueurs ogres et les MJ. Les différences telles que le plus grand nombre de blessures que peuvent recevoir les ogres sont abordées précédemment dans la section Création de Personnage. Les principales règles à prendre en compte la taille d'un ogre sont résumées ci-dessous. Vous trouverez plus de détails dans **WFJDR** (p. 342).
 
@@ -7112,7 +6805,7 @@ Toutefois, les ogres forgent et utilisent leurs propres armes et armures, notamm
 <sup>\*\*</sup>Les massues des ogres sont toujours personnalisées en fonction des préférences de leur utilisateur. Voir la description des armes.
 
 
-## <span id="page-31-0"></span>**Description des Armes**
+## <span id="page-31-0" data-folio="30"></span>**Description des Armes**
 
 Certaines armes ogres ont des règles spéciales en plus de leurs Atouts et de leurs Défauts.
 
@@ -7161,7 +6854,7 @@ Qu'elle soit faite de métal, de bois dur, d'os ou de cuir, la pansière d'un og
 
 ### UN LOURD FARDEAU
 
-<span id="page-32-0"></span>Les ogres sont immenses et par extension, leur matériel est bien plus grand que celui des humains. La version ogre de la plupart des possessions vaut deux fois l'Encombrement classique et coûte deux fois plus cher. De plus, les ogres doivent manger et boire au moins deux fois plus qu'un humain en une journée. Cependant, ils ne ressentent aucun effet des drogues et des poisons, à moins qu'on leur administre deux fois la dose standard. En contrepartie, un ogre peut porter deux fois l'Encombrement normal d'un humain : (Bonus de Force + Bonus d'Endurance) × 2.
+<span id="page-32-0" data-folio="31"></span>Les ogres sont immenses et par extension, leur matériel est bien plus grand que celui des humains. La version ogre de la plupart des possessions vaut deux fois l'Encombrement classique et coûte deux fois plus cher. De plus, les ogres doivent manger et boire au moins deux fois plus qu'un humain en une journée. Cependant, ils ne ressentent aucun effet des drogues et des poisons, à moins qu'on leur administre deux fois la dose standard. En contrepartie, un ogre peut porter deux fois l'Encombrement normal d'un humain : (Bonus de Force + Bonus d'Endurance) × 2.
 
 Un ogre subit une pénalité de -20 à tous les Tests lorsqu'il tente d'utiliser des possessions qui ne sont pas prévues pour sa taille, en plus de trouver certaines choses impossibles à faire. Par exemple, un doigt d'ogre ne peut tout simplement pas presser la détente d'un pistolet à répétition humain.
 
@@ -7184,7 +6877,7 @@ Attention : ces ingrédients ne sont pas pris en compte dans la réduction du ri
 Enfin, les ogres peuvent apprendre la Compétence Langue (Magick) si elle est disponible pour leur Carrière. Ils peuvent l'utiliser pour les Tests d'Incantation, comme tout autre lanceur de sorts. Cependant, la magie des ogres est bien plus instinctive qu'intellectuelle (après tout, ils font appel à leurs entrailles même dans ces moments-là). Les lanceurs de sorts ogres utilisent l'Endurance au lieu de l'Intelligence pour leur Compétence Langue (Magick).
 
 
-## <span id="page-33-0"></span>**Le Domaine de la Gueule**
+## <span id="page-33-0" data-folio="32"></span>**Le Domaine de la Gueule**
 
 Parfois appelé Gastromancie ou simplement Magie des Entrailles, le Domaine de la Gueule n'est disponible que pour les ogres (voir la Carrière Boucher ogre p. 37). Cette magie met en avant une faim intense, des festins sanglants et une énergie effrénée. Chaque fois qu'un boucher ogre réussit à lancer un sort du Domaine de la Gueule, l'offrande qu'il consomme peut lui permettre de restaurer sa propre santé. Lancez 1d10. Si le résultat est un 10, ou s'il est égal ou supérieur au NI du sort lancé, sans modification de Focalisation et sans utiliser un Grimoire, le Boucher récupère un nombre de Blessures égal au NI non modifié du sort.
 
@@ -7276,7 +6969,7 @@ Les dents de la Gueule sont acérées et elles n'abandonnent pas leurs proies fa
 Vous avalez une minuscule quantité de bile de troll ou une substance similaire, avant d'absorber et de distiller les immenses pouvoirs de régénération de cette créature que vous transmettez à une autre personne. Votre cible gagne le Trait de créature Régénération (**WFJDR** p. 341). Les ogres ne subissent aucun effet supplémentaire pour ce sort, mais les autres Races peuvent être moins chanceuses. Tout Personnage autre qu'un ogre qui récupère des Blessures sous l'effet de ce sort doit se soumettre à un Test de **Résistance Accessible (+20)**. En cas d'échec, la chair qui se forme sur les blessures prend une apparence verdâtre ou d'un bleu tacheté, qui ressemble fortement à la peau d'un troll. Cet effet est particulièrement marqué si le sort est à l'origine de la repousse d'un membre. Il n'implique pas une mutation, mais il est susceptible d'être perçu comme tel par toute personne qui le voit et d'entraîner quelques conséquences désagréables.
 
 
-## <span id="page-35-0"></span>**Rhinox**
+## <span id="page-35-0" data-folio="34"></span>**Rhinox**
 
 Les rhinox sont de grandes et puissantes créatures qui ont élu domicile dans les sommets enneigés. La chair de ces bêtes têtues et dangereuses enveloppe leur robuste squelette, ce qui en fait un met de choix pour les ogres. Ils ne leur servent pas seulement à se nourrir (comme la plupart des choses que les ogres rencontrent), mais font également office de montures. Leur force prodigieuse leur permet notamment de supporter tous les ogres, sauf les plus grands. Il arrive que les rhinox soient montés au combat par les ogres suffisamment habiles (ou chanceux) pour les apprivoiser.
 
@@ -7305,7 +6998,7 @@ Chaque fois qu'un ogre peut apprendre la Compétence Chevaucher (Cheval), il est
 — Herbert Toadsmugel, sergent mercenaire, Blitztruppen de Baumann
 
 
-<span id="page-36-0"></span>
+<span id="page-36-0" data-folio="35"></span>
 
 ## **MANGEUR D'HOMMES**
 
@@ -7356,7 +7049,7 @@ h **Chair fraîche — Bronze 3**
 Seigneur de guerre **Possessions :** pansière éprouvée au combat, contrat de mercenaire
 
 
-<span id="page-37-0"></span>Les gardiens de troupeaux de rhinox sont les rares ogres qui parviennent à penser à leur avenir, tout en se remplissant la panse sur le moment. Lorsqu'ils sont en possession de quelques rhinox, la plupart des ogres estiment qu'ils doivent immédiatement se mettre quelque chose sous la dent. Les gardiens de troupeaux, quant à eux, préfèrent préserver une partie de leurs rhinox au lieu de les dévorer sur place. Leurs tâches comprennent l'élevage et le soin aux animaux, ainsi que la lutte contre les autres ogres s'approchant un peu trop près des enclos ou des pâturages en quête de leur prochain repas. Ils négocient de beaux mâles pour la reproduction et sont toujours à la recherche de nouvelles bêtes à intégrer à leur troupeau.
+<span id="page-37-0" data-folio="36"></span>Les gardiens de troupeaux de rhinox sont les rares ogres qui parviennent à penser à leur avenir, tout en se remplissant la panse sur le moment. Lorsqu'ils sont en possession de quelques rhinox, la plupart des ogres estiment qu'ils doivent immédiatement se mettre quelque chose sous la dent. Les gardiens de troupeaux, quant à eux, préfèrent préserver une partie de leurs rhinox au lieu de les dévorer sur place. Leurs tâches comprennent l'élevage et le soin aux animaux, ainsi que la lutte contre les autres ogres s'approchant un peu trop près des enclos ou des pâturages en quête de leur prochain repas. Ils négocient de beaux mâles pour la reproduction et sont toujours à la recherche de nouvelles bêtes à intégrer à leur troupeau.
 
 Dans les Montagnes des Larmes, leurs talents rendent les gardiens de troupeau indispensables, car les bêtes qu'ils élèvent sont utilisées pour le travail et la guerre, en plus de servir de nourriture. Ce poste est extrêmement convoité, car il est accordé uniquement aux ogres se montrant capables de capturer, d'élever et d'entretenir ces bêtes, en plus de maîtriser leur propre appétit.
 
@@ -7405,7 +7098,7 @@ Dans les Montagnes des Larmes, leurs talents rendent les gardiens de troupeau in
 Très peu de gardiens de rhinox parviennent jusqu'à l'Empire. Quand c'est le cas, c'est toujours après avoir perdu leur troupeau à cause de la gloutonnerie des tribus qu'ils croisent en cours de route. Certains changent de carrière pour se tourner vers une activité plus recherchée (ils deviennent généralement mercenaires), mais d'autres parviennent à trouver du travail en s'occupant de bêtes moins imposantes. Pourtant, tous se languissent des créatures qu'ils ont autrefois élevées, à la fois par nostalgie de leur foyer et pour le respect que leur conférait leur ancien statut. Ceux qui arrivent à conserver quelques rhinox dans les plaines de l'Empire sont respectés par leurs pairs et très prisés en tant que cavalerie lourde. Par conséquent, ils dorment rarement sur leurs deux oreilles en compagnie d'autres ogres.
 
 
-## <span id="page-38-0"></span>**BOUCHER OGRE** Ogre
+## <span id="page-38-0" data-folio="37"></span>**BOUCHER OGRE** Ogre
 
 Dans l'histoire des ogres, il fut un temps où le rôle du boucher était tout à fait prosaïque : il concernait seulement la préparation rudimentaire de la viande à la demande du mangeur. Cependant, depuis l'arrivée de la Gueule, cette fonction a pris une dimension inédite au sein de la société ogre. Chez les ogres des Montagnes des Larmes, le statut de boucher se situe quelque part entre celui de prêtre et de mystique. Leur foi est éprouvée dans la préparation de la viande : la pendaison d'une carcasse, la découpe de la chair ou encore le versement du sang sont pour eux ce que la prière et l'encens sont aux shalléens les plus dévots. Même si certains se tournent vers d'autres religions, la Gueule est la seule divinité qui compte vraiment, faisant appel au cœur (ou plutôt aux tripes) de chaque ogre.
 
@@ -7456,7 +7149,7 @@ Les bouchers ogres sont choisis dès leur plus jeune âge pour être éveillés 
 
 ## [EDO 11] APPENDICE 2 - Nouvelles règles
 
-*Pages PDF 144-148*
+*Folio 145+*
 
 # APPENDICE 2 : NOUVELLES RÈGLES
 
@@ -7511,8 +7204,8 @@ Les accents des PNJ de la campagne de **L'Ennemi Intérieur** sont normalement s
 
 Donc, en supposant que vous aimiez imiter différents accents, c'est à vous de décider à quoi ressemble celui d'une personne originaire du Middenland dans vos parties, ou 
 
-
-<span id="page-144-0"></span>du Stirland, ou du Nordland. Attribuez les accents que vous préférez à chacune des provinces et des grandes villes, et vous êtes prêt à jouer. Si vous cherchez des directives sur la façon de procéder, consultez le tableau ci-après, qui n'est proposé qu'à titre indicatif.
+<span id="page-144-0" data-folio="145"></span>
+du Stirland, ou du Nordland. Attribuez les accents que vous préférez à chacune des provinces et des grandes villes, et vous êtes prêt à jouer. Si vous cherchez des directives sur la façon de procéder, consultez le tableau ci-après, qui n'est proposé qu'à titre indicatif.
 
 | Accents     | Comment choisir son accent                                 |  |  |  |
 |-------------|------------------------------------------------------------|--|--|--|
@@ -7584,7 +7277,7 @@ Ces deux nouveaux symptômes peuvent être ajoutés à n'importe quelle maladie 
 
 Votre raison bascule, avec des moments de clarté remplacés soudain par des accès de délire, d'hallucinations et de terreur. Faites un Test de **Force Mentale Intermédiaire (+0)** toutes les heures et consultez le tableau suivant.
 
-
+<span id="page-145-0" data-folio="146"></span>
 | 1d10 | Effet                                                                                                                                                                                                                                                           |
 |------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1-2  | Épisode lucide : vous vivez une période de calme<br>reposant. Tous les États que vous avez précédemment<br>acquis à cause de votre délire sont supprimés.                                                                                                       |
@@ -7622,8 +7315,8 @@ La campagne de **L'Ennemi Intérieur** propose des situations particulièrement 
 
 Si vous ne souhaitez pas utiliser ces Difficultés extrêmes, remplacez simplement Presque Impossible (−40) et Impossible (−50) dans ce livre par Très Difficile (−30).
 
-
-<span id="page-146-0"></span>Cette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).
+<span id="page-146-0" data-folio="147"></span>
+Cette Difficulté est réduite d'1 niveau pour chaque Blessure subie par le patient avant que le Test ne soit effectué. Ainsi, si un patient subit 5 Blessures, le Test est Intermédiaire (+0).
 
 Quelques guérisseurs utilisent des cataplasmes cicatrisants pour réduire le gonflement, surtout s'il y a une plaie visible sur laquelle ils peuvent être appliqués. Un Test étendu de **Guérison Complexe (-10)** réussi, nécessitant +5 DR et un cataplasme de guérison par Test, réduit le gonflement de (2d10 + le Bonus d'Endurance du patient) heures. Chaque Test dure 10 minutes.
 
@@ -7687,7 +7380,7 @@ La créature est un blob amorphe. Il divise par deux toutes les Blessures subies
 
 La créature héberge la maladie indiquée, et elle peut la transmettre au toucher. Dans ce cas, la victime doit tester s'il y a Contraction, mais le Test est de 2 niveaux plus difficile que la normale. Si la maladie est contractée, son incubation est changée en « Instantanée ».
 
-
+<span id="page-147-0" data-folio="148"></span>
 #### **Décérébré**
 
 La créature est stupide, ne vivant qu'en suivant ses bas instincts ou par compulsion magique. Elle n'a pas d'Initiative, d'Intelligence, de Force Mentale ou de Sociabilité et n'a jamais besoin de les Tester. Pour le calcul des Blessures, on utilise son Bonus de Force chaque fois que le Bonus de Force Mentale est requis. Comme elle n'a pas d'Initiative, elle joue toujours en dernier dans n'importe quel tour.
@@ -7720,12 +7413,14 @@ Les mortels portant l'anneau gagnent à la place tous les effets du sort Aura or
 
 Malheureusement, comme l'anneau est maintenant, et depuis de nombreuses années, imprégné des énergies démoniaques de Gideon, il est dangereux. Pour chaque mois pendant lequel il est porté par un mortel, un Test de **Résistance** à une exposition mineure à la Corruption doit être effectué. Cette souillure ne peut être supprimée que par de rares rituels et sorts de du Domaine de la Lumière.
 
+<span id="page-148-0" data-folio="149"></span>
+
 
 ## [EDOC 7] Chapitre 4 - Montures et véhicules
 
 *Pages PDF 23-31*
 
-## <span id="page-22-0"></span>CHAPITRE 4 : MONTURES ET VÉHICULES
+## <span id="page-22-0" data-folio="22"></span>CHAPITRE 4 : MONTURES ET VÉHICULES
 
 Étant donné la nature précaire des routes et la distance à parcourir pour se déplacer entre les grandes villes et les villages de l'Empire, il n'est pas surprenant que peu de voyageurs choisissent de se déplacer à pied. Les chevaux, les animaux de trait, les charrettes et les diligences bruyantes sont monnaie courante le long des routes et des chemins de traverse entre les îlots de civilisation.
 
@@ -7841,7 +7536,7 @@ Les plus grands chevaux de guerre, parfois appelés « destriers », sont monté
 |--|--|-----------------------------|--|
 |--|--|-----------------------------|--|
 
-<span id="page-25-0"></span>
+<span id="page-25-0" data-folio="25"></span>
 
 | Animal                            | Mouvement | Pas (mètres) | Trot (mètres) | Petit galop (mètres) |
 |-----------------------------------|-----------|--------------|---------------|----------------------|
@@ -7896,7 +7591,7 @@ L'animal perd un fer. Le cavalier doit réussir un Test de **Chevaucher Complexe
 Une sangle de selle arrachée, un harnais en morceaux ou un étrier perdu, une partie de la sellerie de votre monture a été endommagée, ce qui rend le voyage plus difficile.
 
 
-<span id="page-26-0"></span>Le cavalier doit effectuer un Test de **Chevaucher Complexe (-10)** ou tomber (d'une hauteur de 2 mètres). Jusqu'à ce que la partie abîmée soit réparée, tous les futurs Tests de **Chevaucher** subissent une pénalité de -20.
+<span id="page-26-0" data-folio="26"></span>Le cavalier doit effectuer un Test de **Chevaucher Complexe (-10)** ou tomber (d'une hauteur de 2 mètres). Jusqu'à ce que la partie abîmée soit réparée, tous les futurs Tests de **Chevaucher** subissent une pénalité de -20.
 
 ### TRAÎNÉ AU SOL
 
@@ -7975,7 +7670,7 @@ Un animal peut être forcé à se déplacer au pas de course lorsqu'il tire un v
 - 4. Avec la peinture, les dorures, les belles sculptures et autres frivolités, il n'y a pas de limite à ce que vous pouvez dépenser pour une diligence. En effet, en la matière, le moindre sou dépensé ne l'est que pour souligner le statut de son propriétaire ou même le rehausser. L'ostentation et l'auto-promotion sont des fins en soi, et seul un pingre se contenterait d'une diligence ordinaire.
 
 
-<span id="page-28-0"></span>Un Échec Stupéfiant (-6 DR) du conducteur au Test de **Conduite d'attelage** nécessite un jet sur le tableau des Problèmes de véhicules. Un Échec Impressionnant ou pire sur n'importe quel Test de Résistance d'un animal impose un État *Exténué* supplémentaire, et un Échec Stupéfiant coûte à la bête 1d10 Blessures en plus (modifié par le Bonus d'Endurance, avec un minimum de 1).
+<span id="page-28-0" data-folio="28"></span>Un Échec Stupéfiant (-6 DR) du conducteur au Test de **Conduite d'attelage** nécessite un jet sur le tableau des Problèmes de véhicules. Un Échec Impressionnant ou pire sur n'importe quel Test de Résistance d'un animal impose un État *Exténué* supplémentaire, et un Échec Stupéfiant coûte à la bête 1d10 Blessures en plus (modifié par le Bonus d'Endurance, avec un minimum de 1).
 
 La plupart de ces mésaventures entraînent un accident si le véhicule se déplace à une vitesse supérieure à celle de la marche. Les occupants d'un véhicule qui subit un accident, prennent 2d10 Blessures modifiées par le Bonus d'Endurance et les Points d'Armure, avec un minimum de 1. Les véhicules accidentés doivent être réparés par quelqu'un possédant une Compétence appropriée, telle que Métier (Charpentier) ou Métier (Charron) (voir page 30.) Les roues de secours peuvent être installées par toute personne avec un Test de **Conduite d'attelage** ou de **Métier** approprié.
 
@@ -8032,7 +7727,7 @@ Bien que le Tableau des localisations des coups dans le **Livre de Règles** fon
 Certains résultats de ce tableau peuvent s'avérer peu pratiques ou bizarres en raison de l'orientation de l'animal ou de la différence de taille entre l'animal et l'attaquant. Dans ces cas, traitez tout résultat peu concluant comme un coup au corps à la place.
 
 
-<span id="page-29-0"></span>*Exemple : Harbull fixe un terrifiant Chevalier du Chaos monté sur un destrier cauchemardesque, qui fonce sur lui. Il tente d'arrêter la course de la bête avec sa fronde, mais obtient un 84 pour la localisation : jambe arrière gauche. Bien qu'il soit possible que le coup de Harbull touche un endroit aussi improbable, le MJ décide qu'un tel tir n'est pas logique, et décide que le corps a été touché à la place.*
+<span id="page-29-0" data-folio="29"></span>*Exemple : Harbull fixe un terrifiant Chevalier du Chaos monté sur un destrier cauchemardesque, qui fonce sur lui. Il tente d'arrêter la course de la bête avec sa fronde, mais obtient un 84 pour la localisation : jambe arrière gauche. Bien qu'il soit possible que le coup de Harbull touche un endroit aussi improbable, le MJ décide qu'un tel tir n'est pas logique, et décide que le corps a été touché à la place.*
 
 ### **Attaques sur les Véhicules**
 
@@ -8082,9 +7777,9 @@ La plupart des auberges relais ont un forgeron à résidence ou à proximité qu
 
 ## [T2C 13] CHAPITRE 11 - Règles du commerce
 
-*Pages PDF 70-78*
+*Folio 71+*
 
-## <span id="page-69-0"></span>CHAPITRE 11 RÈGLES DU COMMERCE
+## CHAPITRE 11 RÈGLES DU COMMERCE
 
 Les routes et les voies navigables de l'Empire sont animées par le commerce, et dans **Mort sur le Reik**, les Personnages ont de nombreuses occasions d'y participer. Les règles suivantes sont conçues pour vous aider à vous y retrouver.
 
@@ -8100,7 +7795,7 @@ Toute action commerciale comporte trois étapes de base : acheter un bien à bas
 
 Dans la plupart des cas, le transporteur achète une cargaison à un endroit et la revend à un autre, au lieu d'être simplement payé pour la transporter. Il s'agit principalement d'une manière de protéger le marchand : après tout, payer un équipage inconnu
 
-
+<span id="page-70-0" data-folio="71"></span>
 à la fois ses honoraires et ses marchandises ! Lorsque les Personnages arrivent à un endroit et sont à la recherche d'une cargaison, ils veulent savoir quatre choses : la disponibilité, la nature, la quantité et le prix.
 
 ### **1. Disponibilité des biens**
@@ -8147,7 +7842,7 @@ Si un lieu est indiqué dans l'Index géographique comme tirant sa Richesse du C
 
 Pour des raisons de praticité, les prix sont entièrement exprimés en Couronnes d'or afin de faciliter les calculs. Naturellement, les marchands indiqueront leurs prix en Bronze, Argent et Or, vous pouvez donc les convertir si vous le souhaitez (**WFJDR**, p. 288). Mais pour les personnes plus à l'aise avec les décimales, tout exprimer en Couronnes comme ici est plus facile à utiliser.
 
-
+<span id="page-71-0" data-folio="72"></span>
 #### TABLEAU DES CARGAISONS
 
 Lorsque vous devez générer une cargaison aléatoire, il suffit de lancer un d100 et de consulter le tableau ci-dessous. Comme la disponibilité de certains biens varie tout au long de l'année, utilisez la ligne correspondant à la saison en cours pour déterminer le résultat.
@@ -8187,8 +7882,8 @@ Le vin et l'eau-de-vie sont des cas particuliers, car leur qualité varie consid
 | 8-9 | Excellent | 6 CO               |
 | 10  | Supérieur | 12 CO              |
 
-
-#### <span id="page-72-0"></span>**Types de cargaisons**
+<span id="page-72-0" data-folio="73"></span>
+#### **Types de cargaisons**
 
 **Armement :** armes et armures raffinées pouvant servir à une milice ou une armée permanente. Disponibles partout où le travail des métaux figure dans la colonne Produits. Ils sont particulièrement recherchés au printemps, période typique des campagnes militaires, mais ils sont malheureusement demandés en permanence. Il s'agit généralement d'armes simples, d'armures en cuir ou de carreaux, les articles plus exotiques (et dangereux) comme les canons et la poudre noire étant transportés par des barges spécialisées. L'expédition d'Armement est parfaitement légale, mais les patrouilleurs fluviaux ne peuvent s'empêcher de s'intéresser à qui, exactement, vous avez l'intention de fournir ces équipements.
 
@@ -8226,7 +7921,7 @@ Un Emplacement n'a généralement pas de demande pour une marchandise qu'il prod
 
 De plus, les Personnages ne peuvent jamais vendre une cargaison à l'emplacement où ils l'ont achetée. En effet, si un acheteur était disponible, le marchand local le mieux informé l'aurait trouvé ! Les Personnages doivent se déplacer pour tenter de trouver un acheteur pour les biens qu'ils ont achetés ou attendre au moins une semaine avant de tenter de les vendre à l'emplacement actuel.
 
-
+<span id="page-73-0" data-folio="74"></span>
 Une fois que les Personnages sont arrivés dans un port prometteur, ils peuvent commencer à chercher un acheteur pour leur cargaison. Il peut s'agir d'un marchand local, qui acheminera les marchandises vers leurs détaillants finaux, ou de sociétés et de particuliers de la ville. Pour calculer les chances de trouver un acheteur, multipliez la Taille de l'Emplacement par 10, en ajoutant +30 si l'Emplacement dispose du Commerce dans la colonne « Produits ». Lancez un d100 : si le résultat est inférieur ou égal au chiffre final, un acheteur est trouvé. Un échec indique qu'il n'y a pas de demande pour la taille de la cargaison que les Personnages essaient de vendre. S'ils le souhaitent, ils peuvent proposer la moitié de la cargaison à la place : lancez à nouveau le dé en l'opposant au nombre précédemment obtenu. Si cette deuxième tentative échoue, c'est qu'il n'y a tout simplement aucun marchand intéressé à un prix raisonnable.
 
 Si un acheteur est trouvé, il fait une offre pour la cargaison sur la base du tableau ci-dessous. C'est ce qu'on appelle la Mise à prix.
@@ -8263,7 +7958,7 @@ Si les règles telles qu'elles sont présentées peuvent être utilisées pour g
 
 Chaque fois que les Personnages s'arrêtent dans une auberge prometteuse, ils peuvent effectuer un Test de **Ragot Complexe** (-10). S'ils réussissent, lancez un d100 pour déterminer un emplacement à l'aide de l'index géographique des pages suivantes, puis lancez un dé sur le Tableau des rumeurs, p. 78, afin de générer une rumeur commerciale. Chaque rumeur constitue une indication du type de marchandise qui pourrait être très demandée à cet emplacement. Vous pouvez laisser les joueurs essayer de deviner de quelle marchandise il s'agit (la colonne des Biens est réservée au MJ). Si les Personnages trouvent la marchandise qui correspond à une certaine rumeur, ils peuvent en vendre autant qu'ils le souhaitent pour le double du prix de base correspondant à cette cargaison.
 
-
+<span id="page-74-0" data-folio="75"></span>
 #### INDEX GÉOGRAPHIQUE DE LA GRANDE PRINCIPAUTÉ DU REIKLAND (2512 CI)
 
 | d100  | Emplacement          | Taille | Dirigeant                                          | Pop       | R | Produits                       | Garnison /<br>Milice | Commentaires                                                        |
@@ -8299,7 +7994,7 @@ Chaque fois que les Personnages s'arrêtent dans une auberge prometteuse, ils pe
 | 41    | DIESDORF             | 2      | Empereur                                           | 210       | 2 | Vivres                         | -/25c                |                                                                     |
 | 42-45 | EILHART              | 3      | Graf Johann von<br>Hardenburg                      | 3 200     | 3 | Vivres, Vin                    | 25b/125c             |                                                                     |
 
-
+<span id="page-75-0" data-folio="76"></span>
 | d100  | Emplacement | Taille | Dirigeant                                               | Pop   | R | Produits                                            | Garnison /<br>Milice | Commentaires                                                                        |
 |-------|-------------|--------|---------------------------------------------------------|-------|---|-----------------------------------------------------|----------------------|-------------------------------------------------------------------------------------|
 | 46-49 | GRÜNBURG    | 3      | Empereur                                                | 2 900 | 2 | Commerce                                            | 25b/100c             | Bac, Construction de<br>bateaux                                                     |
@@ -8329,7 +8024,7 @@ Chaque fois que les Personnages s'arrêtent dans une auberge prometteuse, ils pe
 | 82    | WEISSBRUCK  | 2      | Empereur (dirigé et<br>détenu par la famille<br>Gruber) | 359   | 2 | Commerce,<br>Produits de<br>luxe                    | -                    | Bac, maison éclusière<br>sur le canal d'Altdorf                                     |
 | 83    | Wittgendorf | 2      | Baronne Ingrid<br>von Wittgenstein                      | 150   | 1 | Subsistance                                         | 25b/-                |                                                                                     |
 
-
+<span id="page-76-0" data-folio="77"></span>
 ### INDEX GÉOGRAPHIQUE DE LA *FREISTADT* DE BÖGENHAFEN (2512 CI)
 
 | d100  | Emplacement           | Taille | Dirigeant                       | Pop    | R | Produits               | Garnison/<br>Milice | Commentaires                                                            |
@@ -8361,7 +8056,7 @@ Chaque fois que les Personnages s'arrêtent dans une auberge prometteuse, ils pe
 
 La lettre qui suit le chiffre indique la qualité du soldat. **a**=soldats correctement entraînés, bien formés et équipés. **b**=troupes moyennes, moyennement entraînées et équipées. **c**=troupes peu entraînées, éventuellement tenues d'apporter leur propre équipement, généralement ancien et/ou de mauvaise qualité.
 
-
+<span id="page-77-0" data-folio="78"></span>
 |       | TABLEAU DES RUMEURS COMMERCIALES                                                                                                                                                                                                                                                                                                                                           |                                                                          |
 |-------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
 | D100  | Rumeur                                                                                                                                                                                                                                                                                                                                                                     | Biens                                                                    |
@@ -8386,6 +8081,8 @@ La lettre qui suit le chiffre indique la qualité du soldat. **a**=soldats corre
 | 91-95 | Une naine forgeron a emménagé : pourquoi a-t-elle choisi ce coin ? Elle forge comme une folle depuis<br>et vend tout ce qu'elle fait pour presque rien. Certains disent que ses pots sont maudits, mais j'en ai un<br>et il ne fuit qu'un tout petit peu !                                                                                                                 | Métal                                                                    |
 | 96-00 | Vous êtes au courant ? Une bande de puînés et de gaspilleurs déshérités se préparent pour un voyage<br>vers les Principautés frontalières. On dit qu'ils remplissent à ras-bord leurs chariots de marchandises.                                                                                                                                                            | Armement, Vivres,<br>Produits de luxe, Bois,<br>Vin ou Eau-de-vie, Laine |
 
+<span id="page-78-0" data-folio="79"></span>
+
 
 ## [T3 10] Fiches de PNJ
 
@@ -8393,7 +8090,7 @@ La lettre qui suit le chiffre indique la qualité du soldat. **a**=soldats corre
 
 # ANNEXE I FICHES DE PNJ
 
-<span id="page-116-0"></span>
+<span id="page-116-0" data-folio="114"></span>
 
 ## **LE CHANCELIER : JOSEF SPARSAM**
 
@@ -8483,7 +8180,7 @@ Tout ce que Sparsam sait de Frau Kenner, c'est qu'elle vient le voir une fois pa
 La majorité de ces PNJ sont incroyablement riches et appartiennent à la haute société. Ils sont aussi suffisamment intelligents pour savoir qu'il vaut mieux éviter de se promener dans Middenheim couverts de bijoux ou avec une bourse bien remplie à la ceinture, si l'on ne veut pas attirer sur soi des attentions malveillantes. Les possessions listées dans ces fiches représentent ce que les PNJ portent généralement sur leur personne à la cour ou lors de leurs apparitions en public (où leur sécurité est assurée), comme au moment du Carnaval, par exemple.
 
 
-<span id="page-118-0"></span>
+<span id="page-118-0" data-folio="116"></span>
 
 ### **LE CHAMPION DU GRAF : DIETER SCHMIEDEHAMMER**
 
@@ -8581,7 +8278,7 @@ Peu importe le nombre de fois qu'il répète ces phrases, le ton de Dieter ne va
 Si les Personnages peuvent guérir Dieter de cet état d'hypnose (voir *Vos paupières sont lourdes...* p. 87), ils gagneront un allié exerçant une certaine influence. L'un d'entre eux pourrait également vaincre Dieter en combat pour prendre sa place en tant que Champion du Graf (voir p. 38).
 
 
-<span id="page-120-0"></span>
+<span id="page-120-0" data-folio="118"></span>
 
 ### **LE MÉNESTREL DE LA COUR : RALLANE LAFAREL**
 
@@ -8668,7 +8365,7 @@ Il n'a pas d'objectif purement personnel (à part garder son travail, qu'il aime
 **Les Seigneurs des Lois :** Rallane ne les connaît pas, mais pense qu'il doit s'agir d'hommes compétents ; il n'aimerait probablement pas leur formalisme. Il croit qu'ils sont trop ennuyeux pour être malhonnêtes.
 
 
-<span id="page-122-0"></span>
+<span id="page-122-0" data-folio="120"></span>
 
 | LA «<br>PRINCESSE   | » | : |
 |---------------------|---|---|
@@ -8756,7 +8453,7 @@ La plupart de ces PNJ ne possèdent pas de Traits de combat dans leurs profils. 
 Vous pouvez cependant, si vous le souhaitez, ajouter aux profils des PNJ toute arme ou armure, ou tout Trait que vous jugez approprié. La plupart des PNJ possèdent des Compétences de combat ; ainsi, si vous souhaitez voir des personnages de la cour tailler en pièces une bande de cultistes ou une horde de skavens, cela est parfaitement faisable.
 
 
-<span id="page-124-0"></span>
+<span id="page-124-0" data-folio="122"></span>
 
 | LE CHAPERON           | : |
 |-----------------------|---|
@@ -8804,7 +8501,7 @@ Hildegarde est presque toujours avec la Princesse, et leurs appartements dans le
 La fonction principale d'Hildegarde est de compliquer la tâche aux Personnages qui voudraient rencontrer la Princesse, en particulier s'ils désirent s'entretenir seul à seul avec elle. Il faudra faire preuve d'une ingéniosité considérable pour réussir à se débarrasser d'elle pendant un moment : une distraction irrésistible (des grenouilles chanteuses, par exemple), ou la promesse d'une telle distraction pourrait la convaincre de s'éloigner de sa protégée (qui *déteste* les créatures gluantes) pendant une heure.
 
 
-<span id="page-125-0"></span>Hildegarde connaît très bien Middenheim et la famille du Graf, mais son savoir se résume à une accumulation d'anecdotes personnelles. La majorité de ce qu'elle croit savoir repose en réalité sur des ragots peu fiables. Selon la progression des Personnages dans l'aventure, le MJ peut se servir des commérages d'Hildegarde afin d'éveiller chez les Personnages des soupçons utiles ou nuisibles à leur enquête.
+<span id="page-125-0" data-folio="123"></span>Hildegarde connaît très bien Middenheim et la famille du Graf, mais son savoir se résume à une accumulation d'anecdotes personnelles. La majorité de ce qu'elle croit savoir repose en réalité sur des ragots peu fiables. Selon la progression des Personnages dans l'aventure, le MJ peut se servir des commérages d'Hildegarde afin d'éveiller chez les Personnages des soupçons utiles ou nuisibles à leur enquête.
 
 Hildegarde est très protectrice envers la famille Todbringer, et face à une argumentation plausible démontrant que le Graf est en danger, elle pourrait accepter d'aider les Personnages.
 
@@ -8855,7 +8552,7 @@ Si les Personnages découvrent le secret d'Hildegarde, ils peuvent essayer d'en 
 
 ### **LES MIDDENMARSHALLS**
 
-<span id="page-126-0"></span>Les trois Middenmarshalls forment le haut commandement militaire de la ville, et chacun est responsable d'un aspect particulier de cette charge. Bien que les forces militaires de Middenheim soient placées sous le contrôle direct du graf Boris, les Marshalls se chargent des affaires militaires courantes et ne consultent le Graf que lorsqu'une décision importante doit être prise ou qu'une affaire sort de l'ordinaire.
+<span id="page-126-0" data-folio="124"></span>Les trois Middenmarshalls forment le haut commandement militaire de la ville, et chacun est responsable d'un aspect particulier de cette charge. Bien que les forces militaires de Middenheim soient placées sous le contrôle direct du graf Boris, les Marshalls se chargent des affaires militaires courantes et ne consultent le Graf que lorsqu'une décision importante doit être prise ou qu'une affaire sort de l'ordinaire.
 
 ### **Le Commandant de la Garde Ulrich Schutzmann**
 
@@ -8953,7 +8650,7 @@ Le devoir des Marshalls est de protéger la ville des menaces militaires. Les me
 
 ### **LES SORCIERS**
 
-<span id="page-129-0"></span>Les sorciers les plus influents de Middenheim sont Albrecht Helseher, le Grand Sorcier de la Grande Guilde des Sorciers de Middenheim, et Janna Eberhauer, sa Suppléante. Ils sont consultés par le graf Boris et par ses autres conseillers sur des sujets pour lesquels la connaissance de la magie peut être importante, en particulier pour tout ce qui concerne la sécurité de la cité.
+<span id="page-129-0" data-folio="127"></span>Les sorciers les plus influents de Middenheim sont Albrecht Helseher, le Grand Sorcier de la Grande Guilde des Sorciers de Middenheim, et Janna Eberhauer, sa Suppléante. Ils sont consultés par le graf Boris et par ses autres conseillers sur des sujets pour lesquels la connaissance de la magie peut être importante, en particulier pour tout ce qui concerne la sécurité de la cité.
 
 #### ALBRECHT HELSEHER - SEIGNEUR SORCIER (OR 2)
 
@@ -8980,7 +8677,7 @@ Le devoir des Marshalls est de protéger la ville des menaces militaires. Les me
 Helseher est un Seigneur sorcier de l'Ordre Doré. C'est un jeune sexagénaire, grand, émacié et ascétique à la longue et épaisse crinière noire et lustrée, sans aucune touche de gris malgré son âge, et aux yeux perçants d'un bleu incroyablement vif. Ses yeux, et ses longs doigts délicats, mais puissants, sont ses traits les plus distinctifs. Il fait toujours forte impression auprès des gens qu'il rencontre. Quand il ne porte pas la tenue de cérémonie de son ordre, Helseher s'habille humblement, préférant des vêtements fluides, soit noirs, soit gris, qui lui permettent une grande liberté de mouvement. Ses recherches se concentrent davantage sur le domaine de l'abstrait que sur la « *vraie vie* », et il quitte rarement son logement ou ses bureaux au sein de la guilde. Il est donc rarement aperçu par les habitants de la cité, qui voient en lui un homme mystérieux à redouter plutôt qu'à aimer.
 
 
-<span id="page-130-0"></span>
+<span id="page-130-0" data-folio="128"></span>
 
 ### **JANNA EBERHAUER, SUPPLÉANTE DU GRAND SORCIER**
 
@@ -9066,7 +8763,7 @@ Même si les Personnages deviennent amis avec les sorciers, ceux-ci ne mettront 
 **Les Seigneurs des Lois :** ils apprécient Wasmeier, qui est un confrère, mais ne connaissent ni Ehrlich ni Hoflich. Ils les jugent toutefois responsables de l'impôt-parchemin. Wasmeier leur a dit qu'il s'y était opposé, mais que le vote des deux autres l'avait emporté et qu'il n'osait pas rompre les rangs et protester publiquement.
 
 
-<span id="page-132-0"></span>
+<span id="page-132-0" data-folio="130"></span>
 
 ### **LE GRAND PRÊTRE AR-ULRIC JARRICK VALGEIR**
 
@@ -9165,7 +8862,7 @@ Les gardes du Palais n'ont aucun souvenir des visiteurs s'étant présentés il 
 Si les Personnages récupèrent les lettres, Ar-Ulric les aidera au cours de leur audience avec le graf Boris, si elle a lieu. D'ici là, il les aidera du mieux qu'il pourra et d'une autre manière : en les soignant et en les faisant rencontrer d'autres PNJ principaux, par exemple. Sa position et ses devoirs ne lui permettent pas de les accompagner en public, et il leur fera jurer de ne rien divulguer en leur faisant prêter un serment sacré dans le Temple d'Ulric.
 
 
-<span id="page-134-0"></span>
+<span id="page-134-0" data-folio="132"></span>
 
 ### **LA FAVORITE : EMMANUELLE SCHLAGEN**
 
@@ -9248,7 +8945,7 @@ Si Emmanuelle s'enfuit, Ar-Ulric risque de paniquer, le graf Boris ouvrira une e
 **Les Seigneurs des Lois :** elle en a entendu parler par Ar-Ulric, mais ne les connaît pas personnellement. Elle les considère comme des hommes compétents qui font leur travail correctement.
 
 
-<span id="page-136-0"></span>
+<span id="page-136-0" data-folio="134"></span>
 
 ### **LE CHEVALIER ÉTERNEL : SIEGFRIED PRUNKVOLL**
 
@@ -9328,7 +9025,7 @@ Siegfried n'est absolument pas conscient que la plupart des autres PNJ le trouve
 **Les Seigneurs des Lois :** aucun contact, mais ce sont sûrement des personnes érudites et dignes, bien que livresques et ennuyeuses.
 
 
-<span id="page-138-0"></span>
+<span id="page-138-0" data-folio="136"></span>
 
 #### ALLAVANDREL FANMARIS - MAÎTRE DE LA CHASSE (ARGENT 3)
 
@@ -9414,7 +9111,7 @@ Pendant la semaine du Carnaval, le principal objectif d'Allavandrel est de conse
 **Les Seigneurs des Lois :** il ne les fréquente pas. Il ne les connaît que de réputation, mais imagine qu'ils doivent être plutôt guindés.
 
 
-<span id="page-140-0"></span>
+<span id="page-140-0" data-folio="138"></span>
 
 ### **LE KOMMISSION CONVENOR : GOTTHARD WALLENSTEIN**
 
@@ -9495,7 +9192,7 @@ Comme la plupart des cultes du Chaos, le Sceptre de Jade opère en secret. Il re
 S'il est confronté à la preuve de l'un ou l'autre de ces secrets, Gotthard n'hésitera pas à soudoyer, supplier, flatter, offrir des « faveurs » indicibles et faire tout ce qui est en son pouvoir pour s'en sortir, ou du moins, pour gagner du temps afin d'organiser le meurtre des Personnages. Ces derniers peuvent le mettre à contribution en le sauvant de divers ennemis : cultistes rivaux de Slaanesh, agents de la Main Pourpre, répurgateurs, et même un groupe de skavens à la recherche d'autres malepierres des von Wittgenstein. Il dispose de ressources et de contacts considérables en ville, mais les Personnages feraient mieux d'y réfléchir à deux fois avant de former une alliance avec lui : dès qu'il découvrira que quelqu'un connaît ses secrets, il essaiera invariablement de le faire tuer.
 
 
-<span id="page-142-0"></span>
+<span id="page-142-0" data-folio="140"></span>
 
 |   | LUIGI PAVAROTTI - ARNAQUEUR (ARGENT 2) |    |    |    |    |    |     |     |    |     |    |  |  |  |  |
 |---|----------------------------------------|----|----|----|----|----|-----|-----|----|-----|----|--|--|--|--|
@@ -9584,7 +9281,7 @@ Bien que cette tactique ne les débarrasse pas complètement d'Hildegarde, elle 
 
 ### **LES DAMES DE LA COUR**
 
-<span id="page-144-0"></span>Les Dames de la cour forment un tout, bien qu'elles soient différentes les unes des autres dans leur caractère et leur personnalité. Elles assistent aux audiences de la cour, en apportant une touche d'élégance et de beauté où qu'elles aillent. Elles peuvent également escorter les diplomates en visite à Middenheim et ont mené des missions diplomatiques par le passé. On les voit souvent à la cour et lors de cérémonies officielles, mais il est impossible de s'approcher d'elles en temps normal.
+<span id="page-144-0" data-folio="142"></span>Les Dames de la cour forment un tout, bien qu'elles soient différentes les unes des autres dans leur caractère et leur personnalité. Elles assistent aux audiences de la cour, en apportant une touche d'élégance et de beauté où qu'elles aillent. Elles peuvent également escorter les diplomates en visite à Middenheim et ont mené des missions diplomatiques par le passé. On les voit souvent à la cour et lors de cérémonies officielles, mais il est impossible de s'approcher d'elles en temps normal.
 
 Natasha est une courtisane ambitieuse et de talent. Elle mesure près d'1 m 80, a des cheveux blond platine et des yeux d'un bleu polaire. Elle est d'une beauté glaciale, avec une préférence pour les tons noirs, bleu foncé et argentés dans ses tenues, ce qui contraste énormément avec la couleur de ses cheveux. Elle se comporte de manière très formelle et respectueuse. Natasha voue un culte amoral au pouvoir dans lequel l'argent n'a d'importance qu'en tant que moyen de contrôler les autres. Elle aimerait avoir plus d'influence à la cour que ce qu'elle n'a actuellement, et quitte rarement le Palais.
 
@@ -9707,7 +9404,7 @@ Natasha rêve d'étendre son influence, et pourrait faire semblant d'être plus 
 
 ### **LES SEIGNEURS DES LOIS**
 
-<span id="page-147-0"></span>Les trois Seigneurs des Lois sont nommés par le graf Boris et ont pour responsabilité de traiter toutes les affaires législatives à Middenheim. Ils font attention à rester à l'écart des autres sur le plan personnel, afin de préserver leur impartialité et de désamorcer les accusations d'influence et de corruption. On les croise parfois lors de cérémonies officielles, mais ils sont généralement inapprochables par la majorité de la population. Il est possible d'envoyer à leur bureau des requêtes par écrit concernant des propositions de loi, mais aucune audience ne sera accordée. Ils s'habillent tous de vêtements de qualité, bien que sombres, et portent des broches en filigrane d'or en forme de balances, tout comme leur insigne.
+<span id="page-147-0" data-folio="145"></span>Les trois Seigneurs des Lois sont nommés par le graf Boris et ont pour responsabilité de traiter toutes les affaires législatives à Middenheim. Ils font attention à rester à l'écart des autres sur le plan personnel, afin de préserver leur impartialité et de désamorcer les accusations d'influence et de corruption. On les croise parfois lors de cérémonies officielles, mais ils sont généralement inapprochables par la majorité de la population. Il est possible d'envoyer à leur bureau des requêtes par écrit concernant des propositions de loi, mais aucune audience ne sera accordée. Ils s'habillent tous de vêtements de qualité, bien que sombres, et portent des broches en filigrane d'or en forme de balances, tout comme leur insigne.
 
 ### **Reiner Ehrlich**
 
@@ -9842,7 +9539,7 @@ Jarmund et Kalzbad savent seulement que tous les membres du culte doivent souten
 
 *Pages PDF 151*
 
-# <span id="page-150-0"></span>ANNEXE II DOPPELGÄNGER • •
+# <span id="page-150-0" data-folio="148"></span>ANNEXE II DOPPELGÄNGER • •
 
 ### **MAL DANS TA PEAU**
 
@@ -10176,3 +9873,5 @@ Vrisk Gratte-le-Fer est l'Archiseigneur des mers du clan Skorbut. Il a touché l
 **Les Crocs de Port de l'Échine (navire) :** Équipage 75 · Roue à aubes M (É) 5 (25) · Man – · Taille 60 · E 55 · B 200 · Contenance 1 000. 10 canons navals à malefoudre sur le pont. **Roue à aubes :** les Tests de Navigation utilisent l'Intimidation du capitaine plutôt que Voile ou Ramer ; pour passer en marche arrière, le capitaine effectue un Test de **Commandement** ou d'**Intimidation Intermédiaire (+0)**. *(`MDG 16 l.523-527`)*
 
 **Canon naval à malefoudre (artillerie skaven) :** Enc 80 · Portée 200 · Dégâts +15 · Atouts et Défauts : À Poudre noire, Arme d'équipe 4, Dangereuse, Malepierre, Recharge 8, ZAP ! **ZAP ! :** ces armes réduisent les PA de 1 et ignorent les PA venant d'une armure en métal. *(`MDG 16 l.534-536`)*
+
+<!-- /MDG-INTEGRATION -->

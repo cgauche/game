@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`carrieres.md`](carrieres.md).
 >
-> **Chapitres source :** `LDB 6` · `LDB 7` · `LDB 8` · `ADE I 7` · `ADE I 8` · `ADE II 1` · `Middenheim 8` · `Middenheim 9` · `Middenheim 10` · `MDG 9` · `MDG 11`.
+> **Chapitres source :** `LDB 6` · `LDB 7` · `LDB 8` · `ADE I 7` · `ADE I 8` · `ADE II 1` · `Middenheim 8` · `Middenheim 9` · `Middenheim 10`.
 
 ---
 
@@ -21,7 +21,7 @@
 
 *Pages PDF 48-50*
 
-# <span id="page-47-0"></span>• CLASSES ET CARRIÈRES •
+# <span id="page-47-0" data-folio="46"></span>• CLASSES ET CARRIÈRES •
 
 *« Eh bien, je joue un Personnage sans aucune classe et qui vendrait sa grand-mère pour progresser dans sa carrière, tu vois, exactement le type de gars que je croise régulièrement dans mon boulot. »*
 
@@ -42,7 +42,7 @@ Votre Carrière correspond à votre travail lorsque vous n'êtes pas en expédit
 Les résumés et illustrations correspondant aux huit Carrières de la Classe que vous avez choisie devraient vous donner une bonne idée de celle qui vous convient. On peut considérer que les Carrières sont interprétables et vous êtes encouragé à les utiliser au mieux afin qu'elles fassent partie intégrante de ce qui définit votre Personnage.
 
 
-# <span id="page-48-0"></span>**Niveaux de Carrière**
+# <span id="page-48-0" data-folio="47"></span>**Niveaux de Carrière**
 
 Chaque Carrière possède quatre Niveaux, chacun étant meilleur que le précédent. Si vous jetez un œil à Apothicaire, vous pouvez voir que les quatre Niveaux sont :
 
@@ -105,7 +105,7 @@ Chaque Augmentation de Compétence ajoute +1 à votre niveau de Compétences. Ai
 Les règles complètes régissant l'utilisation de vos Compétences sont détaillées dans le **Chapitre 4 : Compétences et Talents**. Comme pour les Augmentations de Caractéristique, il n'y a pas de limite maximum au nombre d'Augmentations de Compétence qui peut être acheté.
 
 
-# <span id="page-49-0"></span>AUGMENTATIONS HORS CARRIÈRE
+# <span id="page-49-0" data-folio="48"></span>AUGMENTATIONS HORS CARRIÈRE
 
 Il est probable qu'à un moment ou un autre, les Personnages vont souhaiter Augmenter des Caractéristiques et des Compétences qui ne sont pas indiquées dans leur Carrière. Si le MJ est d'accord, cela ne pose aucun problème, mais, dans ce cas, le coût en est doublé. De plus, le MJ peut exiger que vous trouviez un mentor qui puisse vous enseigner cette formation inhabituelle.
 
@@ -158,7 +158,7 @@ Pour compléter une Carrière, vous devez avoir acquis le nombre d'Augmentations
 Si vous avez achevé votre Niveau de Carrière actuel, vous pouvez passer au Niveau de Carrière suivant, ou à n'importe quel Niveau de Carrière inférieur pour 100 PX. Donc, si vous achevé Chasseur (Chasseur Niveau 2), vous pouvez passer à Pisteur (Chasseur Niveau 3) ou à Traqueur (Chasseur Niveau 1) pour 100 PX, mais pas à Maître de la Chasse (Chasseur Niveau 4).
 
 
-<span id="page-50-0"></span>Avec l'accord du MJ, vous pouvez également sauter des Niveaux de Carrière, fait normalement expliqué par des événements dans le jeu. Par exemple : un Héritier (Noble niveau 1) hérite d'une importante propriété pendant la partie. De ce fait, le MJ lui offre Noble seigneur (Noble niveau 4) comme potentiel changement de Niveau de Carrière. Comme d'habitude, changer pour ce Niveau de Carrière coûte 100 PX si vous avez achevé votre Niveau de Carrière actuel, ou 200 PX si ce n'est pas le cas.
+<span id="page-50-0" data-folio="49"></span>Avec l'accord du MJ, vous pouvez également sauter des Niveaux de Carrière, fait normalement expliqué par des événements dans le jeu. Par exemple : un Héritier (Noble niveau 1) hérite d'une importante propriété pendant la partie. De ce fait, le MJ lui offre Noble seigneur (Noble niveau 4) comme potentiel changement de Niveau de Carrière. Comme d'habitude, changer pour ce Niveau de Carrière coûte 100 PX si vous avez achevé votre Niveau de Carrière actuel, ou 200 PX si ce n'est pas le cas.
 
 ### **Changer pour une nouvelle Carrière**
 
@@ -205,7 +205,7 @@ La distinction la plus importante d'un Statut apparaît au travers de ses Échel
 **Échelon Or :** il est réservé aux dirigeants de la société, à ceux qui leur servent de conseillers directs, de protecteurs et de garants de l'ordre ; auxquels il faut ajouter les riches. Atteindre une telle position demande de la persévérance, de la réussite et plus qu'un peu de chance. Tous ceux qui appartiennent à l'Échelon Or sont riches, respectés, et d'un Statut bien supérieur à ceux appartenant aux Échelons Argent et Bronze.
 
 
-<span id="page-51-0"></span>**Échelon Argent :** ce sont des personnes parmi les plus aisées et celles qui exercent des professions demandant des compétences bien précises et une excellente expertise. Les commerçants, les artisans et les marchands forment le haut de cet Échelon alors que le reste est occupé par les prestataires de service. Ces personnes mènent des vies plutôt humbles, mais restent tout à fait respectables. Les personnes appartenant à l'Échelon Argent ont un Statut supérieur à celles de l'Échelon Bronze.
+<span id="page-51-0" data-folio="50"></span>**Échelon Argent :** ce sont des personnes parmi les plus aisées et celles qui exercent des professions demandant des compétences bien précises et une excellente expertise. Les commerçants, les artisans et les marchands forment le haut de cet Échelon alors que le reste est occupé par les prestataires de service. Ces personnes mènent des vies plutôt humbles, mais restent tout à fait respectables. Les personnes appartenant à l'Échelon Argent ont un Statut supérieur à celles de l'Échelon Bronze.
 
 **Échelon Bronze :** c'est à cet Échelon que se retrouvent les paysans et ceux qui exercent les professions les plus modestes ne nécessitant aucune compétence particulière. Les criminels, les bons à rien et ceux dont la vie est réduite à pas grand-chose font également partie de l'Échelon Bronze.
 
@@ -242,7 +242,7 @@ Le Statut va influencer nombre de situations qui auront un impact sur votre Pers
 Le Statut possède un impact important sur le Charme dans le sens où ceux qui disposent d'un Statut élevé obtiennent ce qu'ils veulent, alors que ceux qui ont un Statut inférieur éprouvent des difficultés à asseoir leur influence. Dans la plupart des
 
 
-<span id="page-52-0"></span>circonstances, ceux de l'Échelon supérieur obtiennent un bonus de +10 à leur Test de Charme lorsque ce dernier a pour cible des personnes appartenant à un Échelon inférieur. De la même façon, les personnes appartenant à un Échelon inférieur subissent une pénalité de -10 lorsqu'ils doivent influencer des personnes d'Échelon supérieur. Le MJ peut décider, plus rarement, d'appliquer ces modificateurs à ceux qui sont de Standing différent au sein d'un même Échelon.
+<span id="page-52-0" data-folio="51"></span>circonstances, ceux de l'Échelon supérieur obtiennent un bonus de +10 à leur Test de Charme lorsque ce dernier a pour cible des personnes appartenant à un Échelon inférieur. De la même façon, les personnes appartenant à un Échelon inférieur subissent une pénalité de -10 lorsqu'ils doivent influencer des personnes d'Échelon supérieur. Le MJ peut décider, plus rarement, d'appliquer ces modificateurs à ceux qui sont de Standing différent au sein d'un même Échelon.
 
 Si la cible d'une tentative de Charme est atypique, tout risque de se dérouler de manière totalement différente. Un individu qui « Brave le Statut » n'applique aucun modificateur, alors que celui qui a des « Opinions extrêmes » inverse les modificateurs (-10 à la place de +10, par exemple).
 
@@ -330,7 +330,7 @@ Voici la façon dont les différentes informations sur chaque Carrière sont pr�
 - **Aventure :** quelques trucs et astuces pour permettre à ceux qui embrassent cette Carrière de partir sur les chemins de l'aventure.
 
 
-<span id="page-54-0"></span>*Charismatique et beau parleur, vous défendez votre cause face à l'ordre établi.*
+<span id="page-54-0" data-folio="53"></span>*Charismatique et beau parleur, vous défendez votre cause face à l'ordre établi.*
 
 Les Agitateurs font pression pour diverses causes politiques, en utilisant des affiches, en manifestant et en prenant la parole en public. Ils gagnent la sympathie et le soutien des populations les plus pauvres, mais doivent faire attention à ne pas attirer l'attention des Sigmarites ou des nains, très conservateurs. Les Agitateurs les plus dangereux parviennent à mettre à mal l'autorité de nobles, de villes, et même quelquefois de provinces entières. Les Pamphlétaires placardent des tracts sur les panneaux d'affichage ou les distribuent sur les places de marché.
 
@@ -387,7 +387,7 @@ Intimidation, Perception **Talents :** Combat déloyal, Fuite !, Menteur, Pas de
 **Compétences :** Chevaucher (Cheval), Savoir (Héraldique) **Talents :** Affable, Grand orateur, Intrigant, Savoir-vivre (au choix) **Possessions :** 3 Pamphlétaires, mécène, presse à imprimer, chapeau impressionnant
 
 
-<span id="page-55-0"></span>
+<span id="page-55-0" data-folio="54"></span>
 
 # **ARTISAN**
 
@@ -450,7 +450,7 @@ Perception, Savoir (Région), Ragot **Talents :** Costaud, Doigts de fée, Négo
 **Possessions :** guilde, vêtement de qualité
 
 
-<span id="page-56-0"></span>*Ambitieux et socialement mobile, vous êtes le ciment qui unit la société urbaine.*
+<span id="page-56-0" data-folio="55"></span>*Ambitieux et socialement mobile, vous êtes le ciment qui unit la société urbaine.*
 
 Les Bourgeois satisfont les florissants centres de commerce et la demande de travailleurs. Ils remplissent divers rôles pour les artisans privés ou les conseils municipaux : banquiers, employés, camelots, aubergistes, vendeurs de journaux, valets d'écurie, tenanciers d'échoppe, garde-barrières, nettoyeurs, et bien d'autres. Leurs taux de rémunération varient : certains peuvent marchander pour une commission supplémentaire, tandis que les employés civils comme les lampistes et les gardebarrières reçoivent des salaires fixes. Ils ont peu d'opportunités de promotion, mais ceux qui ont de la détermination, du bon sens et de la chance peuvent éventuellement être propriétaires ou tenir leur propre affaire.
 
@@ -501,7 +501,7 @@ Sociable
 **Talents :** Affable, Grand orateur, Intrigant, Présence imposante **Possessions :** chaîne officielle, diligence et valet de pied, vêtements de qualité, grand hôtel particulier avec jardins et serviteurs
 
 
-<span id="page-57-0"></span>*Astucieux autant que méfiant, vous enquêtez au cœur des crimes afin d'y trouver des réponses.*
+<span id="page-57-0" data-folio="56"></span>*Astucieux autant que méfiant, vous enquêtez au cœur des crimes afin d'y trouver des réponses.*
 
 La plupart des Enquêteurs interviennent dans des affaires de vol de propriété privée, de personnes disparues ou de meurtres, même si certains enquêtent sur les gros titres des journaux ou encore sur les cas de chantage pour se faire un peu de « bonus ». Parmi les techniques d'enquête, on trouve le pistage des empreintes de pied, les recoupements, les déductions logiques, et, si nécessaire, les fouilles illégales. Alors que les Enquêteurs laïcs agissent à la limite de la loi pour des institutions comme les chambres de commerce, les enquêteurs religieux, pour la plupart au service de Sigmar et de Verena, suivent un code éthique très strict.
 
@@ -572,7 +572,7 @@ crochetage, veste en cuir
 **Possessions :** longue vue, réseau d'informateurs
 
 
-# <span id="page-58-0"></span>**MARCHAND** Halfling, Haut elfe, Humain, Nain
+# <span id="page-58-0" data-folio="57"></span>**MARCHAND** Halfling, Haut elfe, Humain, Nain
 
 *Vous êtes malin, vous savez parfaitement compter, vous achetez à bas prix et revendez au plus fort, et vous gagnez plus d'argent que la plupart n'en verront jamais.*
 
@@ -633,7 +633,7 @@ Vivacité
 domaine, 2 entrepôts, 1000 CO, vêtements de qualité
 
 
-<span id="page-59-0"></span>*Vous vivez dans la rue et vous subsistez grâce à la charité des autres, vous servant de votre charisme et de votre force de persuasion.*
+<span id="page-59-0" data-folio="58"></span>*Vous vivez dans la rue et vous subsistez grâce à la charité des autres, vous servant de votre charisme et de votre force de persuasion.*
 
 La rumeur, que l'on entend principalement dans les campagnes, prétendant que les rues d'Altdorf sont pavées d'or n'est qu'une moquerie cruelle envers ses Mendiants. Ils ne peuvent que se reposer sur la générosité des étrangers, et récupèrent les détritus issus de la fange de la ville, alors que certains dandys fanfarons n'hésitent pas à leur donner, sourire aux lèvres, quelques piécettes pour les faire déguerpir. Les lois ne leur accordent que peu de protection, et la garde n'a pas beaucoup de sympathie pour les vagabonds.
 
@@ -690,7 +690,7 @@ vivre (Criminels)
 Ceux qui vivent dans la rue ne peuvent changer qu'en la quittant. Certains Mendiants n'hésiteront pas à abandonner les caniveaux derrière eux dès qu'une opportunité de partir à l'aventure se présentera à eux, tant qu'ils ne sont pas utilisés comme chair à canon. Ceux qui n'ont pas les moyens d'engager un porteur peuvent employer un autre mendiant, sachant que la débrouillardise de ces derniers est d'un grand secours lorsqu'on se retrouve affamé et sans le sou. Et, si jamais les choses tournent mal, il n'est pas bien compliqué de retourner à une vie de mendicité.
 
 
-<span id="page-60-0"></span>*Vous êtes les garants de la paix et vous maintenez l'ordre parmi la populace pour que votre ville ne sombre pas dans l'anarchie.*
+<span id="page-60-0" data-folio="59"></span>*Vous êtes les garants de la paix et vous maintenez l'ordre parmi la populace pour que votre ville ne sombre pas dans l'anarchie.*
 
 Les Miliciens sont employés par les autorités locales afin de patrouiller les rues de l'Empire. La plupart ne sont autres que des gardiens de la paix engagés volontaires et bien peu connaissent les lois qu'ils sont censés faire appliquer. La corruption est endémique, et de nombreux Miliciens s'engagent auprès des autorités dans le seul but de blesser les autres ou encore de venir en aide aux gangs de criminels du coin. Certains arrivent à tripler leurs soldes en fermant ainsi les yeux.
 
@@ -2954,7 +2954,7 @@ tempête et huile
 **Possessions :** flottille de bateaux de transport fluvial avec un équipage de Naufrageurs, tonnelet de bière, menottes
 
 
-<span id="page-100-0"></span>*Vous pilotez des navires sur les eaux parmi les plus traîtres du Vieux Monde.*
+<span id="page-100-0" data-folio="99"></span>*Vous pilotez des navires sur les eaux parmi les plus traîtres du Vieux Monde.*
 
 Les Nautoniers sont des guides de rivières spécialisés qui connaissent sur le bout des doigts les rivières de la région. Ils sont très nombreux près des portions de rivières les plus dangereuses de l'Empire et n'hésitent pas à demander de fortes sommes pour accomplir une mission, même si certains pensent que la tâche est plutôt facile. D'autres estiment que ce n'est pas cher payé comparé à une cargaison perdue.
 
@@ -3005,7 +3005,7 @@ Savoir (Épaves) **Talents :** Pied marin, Pilote, Sens aiguisé (Vue), Très fo
 **Talents :** Nageur endurant, Persévérant, Sixième sens, Vivacité **Possessions :** canotier, petit bateau de transport fluvial
 
 
-<span id="page-101-0"></span>*Infatigable et sûr de vous, vous patrouillez les rivières sans relâche, pourchassant les hors-la-loi et les fauteurs de troubles.*
+<span id="page-101-0" data-folio="100"></span>*Infatigable et sûr de vous, vous patrouillez les rivières sans relâche, pourchassant les hors-la-loi et les fauteurs de troubles.*
 
 Le son d'un clairon sur une rivière annonce l'arrivée de la Patrouille fluviale impériale, groupe d'intervention armé aussi réputé pour les brutes qui la composent que pour son efficacité. La plupart des auberges et villages riverains leur gardent précieusement une place au mouillage, car, sans leur présence, les eaux resteraient sous la coupe de dangereux criminels. Ces patrouilles, surchargées de travail, se concentrent sur les crimes les plus horribles, et se contentent de résoudre les délits mineurs avec des amendes ponctuelles. Sur les principales routes de commerce, elles possèdent des navires plus importants dirigés par des Abordeurs entraînés à repousser des menaces plus importantes, comme les peaux-vertes ou les trolls.
 
@@ -3064,7 +3064,7 @@ l'orientation
 grade
 
 
-<span id="page-102-0"></span>*Peu scrupuleux et charmant, vous séparez les imbéciles de leur argent ; et Dieu merci, les imbéciles ne manquent pas…*
+<span id="page-102-0" data-folio="101"></span>*Peu scrupuleux et charmant, vous séparez les imbéciles de leur argent ; et Dieu merci, les imbéciles ne manquent pas…*
 
 Un Charlatan opère dans la confiance, mais fait son beurre de la trahison. En s'attaquant aux faiblesses émotionnelles et psychologiques, les Charlatans proposent à leur « cible » un prix trop beau pour être vrai. Les privilèges sociaux ne fournissent pas de protection, et même les citoyens les plus nobles peuvent tomber dans les filets d'un Charlatan talentueux. Le manque de scrupule, allié à un don pour le mensonge, profite aussi aux Charlatans.
 
@@ -3125,7 +3125,7 @@ Sociable
 **Possessions :** nécessaire d'écriture, sceau falsifié
 
 
-<span id="page-103-0"></span>*Débrouillard et intéressé, vous gagnez votre vie en vendant des marchandises illicites dans les bas-fonds de la ville.*
+<span id="page-103-0" data-folio="102"></span>*Débrouillard et intéressé, vous gagnez votre vie en vendant des marchandises illicites dans les bas-fonds de la ville.*
 
 Les Entremetteurs guident les gens vers les établissements offrant une variété de services illégaux et immoraux. Bien que beaucoup d'humains et de nains s'opposent à ce genre d'activités, la plupart des halflings et hauts elfes sont parfaitement neutres en ce qui concerne les repaires de drogués, les bordels et autres maisons du vice.
 
@@ -3188,7 +3188,7 @@ Savoir (Loi) **Talents :** Affable, Escroquer, Négociateur, Savoir-vivre
 réseau d'Entremetteurs
 
 
-# <span id="page-104-0"></span>**HORS-LA-LOI**
+# <span id="page-104-0" data-folio="103"></span>**HORS-LA-LOI**
 
 Elfe sylvain, Halfling, Haut Elfe, Humain, Nain
 
@@ -3251,7 +3251,7 @@ mortel, Volonté de fer
 **Possessions :** « fief » de Chefs de bande, antre
 
 
-<span id="page-105-0"></span>*Vous bravez la menace de la nécromancie, volant les morts pour remplir vos propres poches.*
+<span id="page-105-0" data-folio="104"></span>*Vous bravez la menace de la nécromancie, volant les morts pour remplir vos propres poches.*
 
 Le trafic de corps et de membres est lucratif, avec une forte demande des universités et médecins pour des cadavres frais. Outre le marché scientifique, des corps sont parfois enterrés avec toutes sortes d'objets de valeur sous les stèles funéraires des tombeaux des Jardins de Morr. Parce que leur travail est évidemment illégal et sacrilège, les Pilleurs de tombes opèrent généralement sous le couvert des ténèbres. Les Trafiquants de cadavres sont réputés supprimer l'intermédiaire et choisir les mendiants et autres infortunés directement dans les rues. Les Pilleurs de tombes évitent les risques juridiques du pillage des morts récents, et se rendent à la place dans les ruines et antiques tumulus, risquant d'y croiser les morts sans repos et les brigands. Étrangement, certains Chasseurs de trésors victorieux se voient acclamés en héros, leurs trésors vendus à l'aristocratie qui les exhibe ensuite. On raconte même que la grande fortune de l'un des ordres de chevalerie provenait de plusieurs de ses membres qui avaient pillé une tombe étrangère.
 
@@ -3310,7 +3310,7 @@ Trappeur
 **Possessions :** sac de couchage, cartes, tente, outils de la profession (Ingénieur), nécessaire d'écriture
 
 
-<span id="page-106-0"></span>*Vous êtes membre d'un gang criminel organisé, collectant les dettes et extorquant de l'argent aux plus faibles.*
+<span id="page-106-0" data-folio="105"></span>*Vous êtes membre d'un gang criminel organisé, collectant les dettes et extorquant de l'argent aux plus faibles.*
 
 Les Rançonneurs extorquent de l'argent aux citoyens et aux marchands respectueux de la loi, fournissant une « protection » ou tout autre « service » frauduleux similaire. Si les « honoraires » ne sont pas payés dans les temps, les victimes, leurs familles et leur gagne-pain courent un risque considérable. Des gangs importants soudoient ou intimident les autorités locales pour qu'elles ignorent leurs activités – leurs Coupe-jarret sont toujours prêts à tuer – ou pire – pour que leurs affaires continuent de bien fonctionner. Les Coupe-jarret sont employés pour collecter des dettes de toutes sortes, en particulier celles résultant de paris perdus ou de prêts à taux élevés. Dans un monde gangréné par la pauvreté, la promesse de richesse facile est un attrait que de nombreux imbéciles sont incapables d'ignorer. Plus la corruption est organisée, plus les organisations qui les dirigent sont vastes et complexes. Alors que les plus petits trafics sont gérés par de petits gangs dont le territoire se limite à un immeuble ou deux, les plus grands peuvent comprendre des cités et même des régions entières, et les Barons du crime qui les dirigent peuvent exercer un pouvoir extraordinaire.
 
@@ -3367,7 +3367,7 @@ Les Coupe-jarret et les Rançonneurs sont toujours prêts à recourir aux menace
 **Possessions :** chefs de gangs subalternes, réseau d'Informateurs, vêtements et chapeau de qualité
 
 
-<span id="page-107-0"></span>*Expert avisé en objets de valeur, vous achèterez tout, légal ou non, et inverserez la situation pour ramasser un joli profit.*
+<span id="page-107-0" data-folio="106"></span>*Expert avisé en objets de valeur, vous achèterez tout, légal ou non, et inverserez la situation pour ramasser un joli profit.*
 
 Un Receleur achète les butins des Voleurs et les revend pour faire du profit, souvent à ceux qui ignorent que les biens sont volés. Les Receleurs brillants travaillent parfois comme prêteurs sur gages, importateurs et autres marchands. D'autres préfèrent rester itinérants, trafiquant uniquement des objets transportables. Bien que le Receleur moyen revende des marchandises et des objets de valeur, on trouve aussi des spécialistes bien informés qui se concentrent sur les informations et savoirs interdits. Certains Receleurs déplacent les objets volés à travers l'Empire. Une peinture volée à Altdorf est plus facile à vendre à Talabheim à une clientèle ignorant le cambriolage. Quand des objets prestigieux disparaissent, les Receleurs sont aussi les premiers à être consultés par ceux qui cherchent à les acquérir. Certains Receleurs prennent même des commissions à leurs clients, pour les mettre en contact avec ceux qui peuvent voler sur demande.
 
@@ -3422,7 +3422,7 @@ assommante
 fer **Possessions :** gros bras, réseau d'Informateurs, entrepôt
 
 
-# <span id="page-108-0"></span>**SORCIER DISSIDENT** Humain
+# <span id="page-108-0" data-folio="107"></span>**SORCIER DISSIDENT** Humain
 
 *Volontaire et ambitieux, vous vous évertuez à maîtriser la magie sans licence officielle.*
 
@@ -3467,7 +3467,7 @@ h **Ensorceleur – Bronze 1**
 résistant **Possessions :** robes, crâne
 
 
-<span id="page-109-0"></span>*Vous volez les autres dans le but de remplir vos propres poches, et vous êtes plutôt doué pour ça.*
+<span id="page-109-0" data-folio="108"></span>*Vous volez les autres dans le but de remplir vos propres poches, et vous êtes plutôt doué pour ça.*
 
 Les Voleurs dérobent toutes sortes de richesses et de biens à leurs prochains. Du plus humble tire-laine au plus rusé des cambrioleurs, l'idée d'une journée de travail honnête en échange d'un salaire respectable n'est rien de plus qu'une mauvaise blague. Les Voleurs s'organisent souvent en gangs avec des Charlatans, des Rançonneurs et des Receleurs pour s'enrichir. Les querelles acharnées entre ces organisations illicites sont réputées durer des années, ou même des décennies. Les Voleurs les plus humbles ciblent des individus, leur faisant les poches ou guettant leurs victimes dans des ruelles infestées de rats. Les Cambrioleurs évitent la confrontation en entrant par effraction dans les entreprises et les résidences, emportant des objets transportables de valeur. Les Voleurs les plus ambitieux étudient leurs cibles pendant des jours voire des semaines, allant même jusqu'à infiltrer les établissements cibles pour avoir une meilleure connaissance de la configuration des lieux. Travaillant avec d'autres Cambrioleurs professionnels, de tels experts peuvent organiser des braquages auxquels leurs pairs inférieurs ne peuvent que rêver.
 
@@ -3528,7 +3528,7 @@ Souplesse féline
 **Possessions :** vêtements sombres, grappin, masque *ou* écharpes
 
 
-<span id="page-110-0"></span>*Vous êtes un fonctionnaire local jouissant de la confiance des dirigeants de la région pour administrer efficacement et fermement leurs terres.*
+<span id="page-110-0" data-folio="109"></span>*Vous êtes un fonctionnaire local jouissant de la confiance des dirigeants de la région pour administrer efficacement et fermement leurs terres.*
 
 Les Nobles confient aux Baillis le soin de collecter les taxes issues de leurs terres. Certains Baillis sont respectés et honnêtes, et il ne se passe pas une semaine sans qu'ils se rendent dans un temple de Sigmar. D'autres sont des tyrans qui jouissent du pouvoir conféré par leur seigneur sur leurs propriétés et possessions pour faire usage de menaces et de violences lors de l'exercice de leur profession. Les Baillis en exercice depuis longtemps deviennent souvent de fidèles serviteurs de la famille dirigeante et disposent d'avantages en nature conséquents. Les Préfets bénéficient d'un champ d'action plus important et ont de plus grandes responsabilités. Ils assurent le maintien de l'ordre au niveau des frontières du territoire de leur seigneur et résolvent les conflits, qu'ils aient pour origine des histoires de bétail ou des limites de propriétés agricoles.
 
@@ -3585,7 +3585,7 @@ de fer
 d'office
 
 
-<span id="page-111-0"></span>
+<span id="page-111-0" data-folio="110"></span>
 
 # **CHASSEUR**
 
@@ -3644,7 +3644,7 @@ L'amputation de deux doigts est l'une des peines les plus répandues appliquée 
 **Possessions :** cheval de selle avec selle et harnais, chenil avec chiens de chasse
 
 
-<span id="page-112-0"></span>*Intrépide et plein de ressources, vous guidez les autres à travers les dangereuses contrées sauvages du Vieux Monde*
+<span id="page-112-0" data-folio="111"></span>*Intrépide et plein de ressources, vous guidez les autres à travers les dangereuses contrées sauvages du Vieux Monde*
 
 Dans une population ou l'illettrisme est très répandu et où les cartes sont très rares, connaître la région dans laquelle on se trouve peut, pour les voyageurs, faire la différence entre la vie et la mort. Les Éclaireurs sont des experts dans l'art de trouver des trajets sécurisés au travers des coins les plus reculés et des routes boueuses de l'Empire. Les guides locaux vont accompagner leurs clients, les prévenant des dangers éventuels, partageant avec eux les ragots des villages et leur montrant les meilleurs endroits permettant de trouver de la nourriture. Les Éclaireurs les plus expérimentés resteront le plus souvent invisibles aux yeux de leurs employeurs, car ils seront toujours en amont à explorer les pistes à venir, et à tenter de repérer les éventuels dangers. Alors que la plupart des Éclaireurs demeurent sur des terres avec lesquelles ils sont familiers, certains se spécialisent dans l'escorte sur des terres non encore cartographiées. Certains Explorateurs vont quelquefois même jusqu'à s'aventurer sur des territoires dangereux et hostiles afin de compléter les blancs de leurs cartes. La majorité des Éclaireurs n'affronteront pas eux-mêmes les dangers, préférant se replier en toute discrétion pour prévenir leurs compagnons et faire en sorte que leur employeur ne se retrouve pas démuni face à la menace approchante.
 
@@ -3689,7 +3689,7 @@ Voyageur aguerri **Possessions :** arc et dix flèches, chemise de mailles
 **Compétences :** Langue (au choix), Métier (Cartographe) **Talents :** Dur à cuire, Linguistique, Persévérant, Savant (Région) **Possessions :** sélection de cartes, outils de la profession (Cartographe)
 
 
-<span id="page-113-0"></span>*Botanistes de grand talent qui bénéficient de la munificence de Rhya afin de créer des remèdes soignant de nombreuses affections.*
+<span id="page-113-0" data-folio="112"></span>*Botanistes de grand talent qui bénéficient de la munificence de Rhya afin de créer des remèdes soignant de nombreuses affections.*
 
 Les médicaments concoctés par les Apothicaires sont hors de prix et rarement disponibles dans l'arrière-pays reiklander. C'est pourquoi les paysans se tournent régulièrement vers le pouvoir de guérison des plantes, ramassées, traitées et administrées par les Herboristes. La transmission du savoir des Herboristes s'opère en grande majorité de façon orale, ce qui fait que, bien souvent, les dénominations des maladies vont varier d'un village à l'autre. Les Herbalistes de renom, parmi les plus expérimentés, sont dépêchés en cas de maladies mystérieuses ou particulièrement résistantes. Les Herboristes passent une grande partie de leur temps à rendre visite à ceux qui sont malades, cherchant à diagnostiquer l'affection dont ils sont atteints avant d'aller quérir les herbes nécessaires à l'élaboration du traitement. Certains Herboristes exercent leur profession moins honorablement et sont recherchés par ceux qui ne peuvent pas s'offrir certaines substances illicites onéreuses. Même s'il s'agit d'un stéréotype erroné, il existe une blague récurrente dans la profession qui dit que les Herboristes halflings ne s'intéressent qu'à l'herbe à pipe et à la racine du Destin.
 
@@ -3740,7 +3740,7 @@ l'alcool, Ragot, Savoir (Région)
 Travailleur qualifié (Herboriste) **Possessions :** poney et charrette
 
 
-<span id="page-114-0"></span>*C'est dans les profondeurs les plus sombres de la terre que, jour après jour, vous cassez de la pierre, un travail éreintant s'il en est.*
+<span id="page-114-0" data-folio="113"></span>*C'est dans les profondeurs les plus sombres de la terre que, jour après jour, vous cassez de la pierre, un travail éreintant s'il en est.*
 
 De nombreux Prospecteurs ont entendu des histoires sur la présence d'or dans les collines de Skaag, mais la pratique du minage dans ces tunnels sombres et dangereux est un travail très éprouvant. Les Mineurs, experts dans la fabrication de soutènements et dans l'extraction des filons de minerai qu'ils récupèrent pour revente, sont très vigilants quant aux dangers inattendus qui pourraient survenir à cause des gaz générés par les peaux-vertes. Ils sont très endurants, aussi bien physiquement que mentalement. Les Prospecteurs travaillent généralement sur commande, et possèdent une licence d'exploitation qui leur permet de partager leurs découvertes avec le seigneur local. Certaines fortunes de la noblesse se sont construites sur les richesses tirées des mines de leurs terres, et, bien souvent, les Mineurs qui travaillent dans ces exploitations sont des criminels ou des débiteurs forcés d'y travailler. Les carriers qui taillent dans la pierre à ciel ouvert ont un travail moins dangereux que ceux qui exercent sous terre, mais les accidents restent fréquents et les hommes-bêtes, susceptibles d'attaquer depuis la lisière des forêts proches, représentent un danger de tous les instants.
 
@@ -3785,7 +3785,7 @@ h **Prospecteur – Bronze 2**
 **Compétences :** Charme, Commandement **Talents :** Ergoteur, Escroquer, Lire/Écrire, Obstiné **Possessions :** équipe de mineurs, nécessaire d'écriture
 
 
-<span id="page-115-0"></span>*Vous possédez un certain talent pour voir le futur, ou pour convaincre les autres que c'est le cas…*
+<span id="page-115-0" data-folio="114"></span>*Vous possédez un certain talent pour voir le futur, ou pour convaincre les autres que c'est le cas…*
 
 Les gens, qui cherchent des réponses dans ce monde dangereux, se tournent vers les Mystiques lorsqu'ils souhaitent avoir un aperçu de leur futur. Les caravanes itinérantes de Strigany sont monnaie courante dans le Reikland, et de nombreux habitants vont rassembler le maximum de piécettes possibles afin de se faire prédire la bonne fortune, mais également acheter des charmes et des philtres d'amour. Les Mystiques sont généralement astucieux et intuitifs, ce qui leur permet de deviner les envies et les peurs de ceux qui viennent les voir et de leur donner juste assez de réponses pour être crédibles. Les Mystiques doivent être prudents, car ils marchent sur une ligne bien ténue entre supercherie et sorcellerie hérétique. Les Mystiques font preuve de leurs capacités de bien des façons différentes : les chiromanciens et les voyants sont très nombreux chez les Strigany, mais un elfe sylvain aura plutôt tendance à interpréter les différents signes et symboles qu'il trouvera dans la nature environnante ou à s'inspirer de ses rêves et autres visions. De nombreux cultes disposent de leurs propres Prophètes et Sages, chacun prédisant le futur au travers des paradigmes de leurs croyances respectives.
 
@@ -3846,7 +3846,7 @@ Obstiné, Perception de la magie
 **Possessions :** outils de la profession (Astrologie)
 
 
-<span id="page-116-0"></span>*D'une grande sagesse et nimbé d'une aura de mystère, vous guidez votre communauté grâce à une antique magie transmise de génération en génération*.
+<span id="page-116-0" data-folio="115"></span>*D'une grande sagesse et nimbé d'une aura de mystère, vous guidez votre communauté grâce à une antique magie transmise de génération en génération*.
 
 Les Répurgateurs utilisent le terme « Sorcier de village » pour désigner toute personne utilisant illégalement la magie, mais cela n'a pas toujours été le cas. Autrefois, les Sorciers de village étaient des membres très respectés des communautés rurales et pratiquaient une magie plus ancienne encore que les forêts. Mais des décennies de persécution, engendrées par l'émergence des Collèges de Magie, ont réduit leur nombre à quelques survivants, dispersés à travers le monde et totalement brisés. Ils se terrent désormais dans les endroits les plus calmes du Vieux Monde, dans leurs huttes fumantes et leurs masures grinçantes sises à la frontière entre les zones civilisées et les étendues sauvages. La plupart des Sorciers de village ont décidé de vivre en solitaires afin de se protéger des visiteurs indésirables. Mais leurs talents sont connus de tous les habitants du coin. Ils gardent pour eux les secrets leur permettant de se protéger du mal, mais, très souvent, on les sollicite pour bénéficier de leur savoir en herboristerie, ou pour aider à un accouchement, ou encore pour se voir administrer des soins.
 
@@ -3905,7 +3905,7 @@ Outils de la profession (Herboriste)
 cérémonie et couronne de fleurs
 
 
-<span id="page-117-0"></span>*Vous constituez le cœur de la vie rurale et travaillez les terres pour nourrir les populations.*
+<span id="page-117-0" data-folio="116"></span>*Vous constituez le cœur de la vie rurale et travaillez les terres pour nourrir les populations.*
 
 Le très fertile Empire de Sigmar regorge de cultures, de bétail et de tout un tas d'autres biens facilement commercialisables. C'est pourquoi il y a toujours beaucoup de travail à effectuer sur ces terres. Les Villageois représentent la grande majorité de la population de l'Empire et occupent beaucoup de rôles importants, dont ceux de fermiers, charbonniers, bûcherons, meuniers, bergers et bien d'autres encore. La plupart des Villageois dépendent du domaine d'une noble famille, où l'administration des tâches quotidiennes est assurée par un Bailli. Les affaires du village sont le plus souvent gérées par un conseil, composé à parts égales de fermiers et de commerçants et dirigé par un Doyen. Un Échevin ou un Doyen peuvent exercer une influence considérable au niveau local en supervisant les nombreuses décisions concernant les terres environnantes.
 
@@ -3968,7 +3968,7 @@ qualifié (au choix)
 
 *Pages PDF 88-92*
 
-## <span id="page-87-0"></span>ANNEXE I • CARRIÈRES •
+## <span id="page-87-0" data-folio="87"></span>ANNEXE I • CARRIÈRES •
 
 Cette annexe présente plusieurs nouvelles Carrières à disposition des nains, des elfes sylvains et des halflings. Ces Carrières suivent les règles habituelles : il est possible de les choisir à la création du Personnage ou lors d'un changement de Carrière.
 
@@ -3991,7 +3991,7 @@ Un Personnage nain peut choisir de devenir Patrouilleur des karak dès sa créat
 Un Personnage elfe sylvain peut choisir de devenir Rôdeur fantôme dès sa création. S'il tire sa Carrière au hasard et tombe sur Chasseur de primes (voir **WFJDR** p. 30-31), il peut à la place choisir de devenir Rôdeur fantôme.
 
 
-<span id="page-88-0"></span>
+<span id="page-88-0" data-folio="88"></span>
 
 ## **Chevaucheur de blaireau**
 
@@ -4048,7 +4048,7 @@ Noctambule
 Les Chevaucheurs de blaireau sont trop peu nombreux pour former une unité de cavalerie : aucun n'a jamais été aperçu en dehors du Moot, après tout. Cependant, depuis le Désastre de la Semaine de la Tourte de 2 409 CI, tout le monde s'accorde à dire qu'une telle unité ne doit plus jamais être formée. En effet, au cours de cette fête fatidique, la commission de la parade ne s'est pas rendu compte qu'elle venait de parquer ensemble plus d'une douzaine de blaireaux adultes tout près les uns des autres au plus fort de leur saison des amours. Résultat des courses : trois halflings morts et d'innombrables pâtisseries réduites en miettes. Aujourd'hui, les Chevaucheurs de blaireau sont des figures solitaires qui arpentent le Moot tels des Chevaliers en quête, en plus petits et plus courtauds. Puisqu'ils n'ont aucune organisation réglementaire, qu'ils voyagent beaucoup et qu'ils ont souvent dû changer de métier, les Chevaucheurs de blaireau disposent de compétences variées peu en rapport avec le combat monté. Mais les halflings sont ingénieux, et finissent toujours par trouver un moyen d'exploiter celles-ci.
 
 
-<span id="page-89-0"></span>Aux yeux de ceux qui ne connaissent pas leurs coutumes, les halflings n'ont qu'une puissance militaire limitée : ils préfèrent en effet les milices aux armées régulières. Ainsi, malgré sa frontière commune avec la Sylvanie, le pays où les morts ne connaissent jamais le repos, le Moot n'entretient pas d'armée à proprement parler. Ceci n'empêche pas ses villages d'être aussi paisibles et idylliques que possible, ce qui ne manque jamais d'abasourdir les voyageurs de passage. Cette paisibilité est en grande partie due au travail des Gardechamps. Ces halflings courageux patrouillent le long des frontières du Moot, et se servent de leur connaissance poussée du terrain et de leurs tactiques rusées de guérilla pour mettre en déroute les visiteurs clandestins. Les Gardechamps sont avant tout des halflings du peuple, des visages amicaux qui rassurent les citoyens en répétant que tout va bien. Ils connaissent toutes les familles qui vivent près de leurs itinéraires (et quelles pâtisseries elles sont susceptibles d'offrir à un Gardechamps qui patrouillerait complètement par hasard devant leur porte à l'heure du thé).
+<span id="page-89-0" data-folio="89"></span>Aux yeux de ceux qui ne connaissent pas leurs coutumes, les halflings n'ont qu'une puissance militaire limitée : ils préfèrent en effet les milices aux armées régulières. Ainsi, malgré sa frontière commune avec la Sylvanie, le pays où les morts ne connaissent jamais le repos, le Moot n'entretient pas d'armée à proprement parler. Ceci n'empêche pas ses villages d'être aussi paisibles et idylliques que possible, ce qui ne manque jamais d'abasourdir les voyageurs de passage. Cette paisibilité est en grande partie due au travail des Gardechamps. Ces halflings courageux patrouillent le long des frontières du Moot, et se servent de leur connaissance poussée du terrain et de leurs tactiques rusées de guérilla pour mettre en déroute les visiteurs clandestins. Les Gardechamps sont avant tout des halflings du peuple, des visages amicaux qui rassurent les citoyens en répétant que tout va bien. Ils connaissent toutes les familles qui vivent près de leurs itinéraires (et quelles pâtisseries elles sont susceptibles d'offrir à un Gardechamps qui patrouillerait complètement par hasard devant leur porte à l'heure du thé).
 
 |  |  | Schéma de progression du Gardechamps |
 |--|--|--------------------------------------|
@@ -4095,7 +4095,7 @@ Tout le monde tient les Gardechamps en haute estime, et leur emploi du temps est
 Les Gardechamps qui patrouillent le long des frontières sont au cœur de l'action. Le Moot est un endroit fertile et prospère, une terre convoitée par toutes sortes de bandits, de peaux-vertes et de nobles qui se croient au-dessus des frontières provinciales. Ces intrus se rendent rapidement compte que le pays n'est pas aussi vulnérable qu'il en a l'air, et la plupart finissent par fuir précipitamment sous une pluie de pierres lancées avec précision par des Gardechamps camouflés. Les morts-vivants sont angoissants, et afin que personne ne doive les côtoyer trop longtemps, aucun Gardechamps n'est posté plus d'une semaine par mois le long de la frontière avec la Sylvanie. En effet, même en temps de « paix » avec les Comtes vampires de Sylvanie, la plupart des patrouilles ont la garantie de tomber sur au moins un groupe de zombis pourrissants qui rôde près de la frontière. À cause de ce devoir peu engageant, mais très nécessaire, les Gardechamps vétérans surprennent souvent les autres aventuriers (surtout les Prêtres et les Répurgateurs, oui, oui) par leur expérience face à la nécromancie.
 
 
-<span id="page-90-0"></span>Les forteresses naines isolées dans les montagnes sont difficiles d'accès : elles sont cernées de terrains dangereux, tant en surface qu'en sous-sol. Des routes entières peuvent être rendues impraticables par un glissement de terrain ; un pont jusque-là sûr peut soudain s'effondrer sous les rongements incessants des « *raki* » (skavens en khazalid). Chaque année, les peaux-vertes envahissent et s'approprient un peu plus du réseau souterrain des nains. La sûreté des routes doit être préservée, et un nouveau chemin doit être tracé lorsque l'ancien devient trop dangereux ; tel est le devoir des Patrouilleurs des karak. Ces nains endurcis ne doivent leur survie qu'à leur capacité à se préparer : il n'est pas facile de trouver de la compagnie ou du confort dans les tunnels sombres et les passes secrètes des montagnes, et ne parlons pas des chances de se voir apporter de l'aide en cas de danger. Selon l'itinéraire, il peut leur être nécessaire de franchir un abîme d'un bond, escalader une falaise abrupte, ou traverser une immense étendue d'eau (parfois usées, voire de lave). Le moindre buisson, la moindre ombre peut cacher son lot de dangers mortels. S'il veut survivre, un Patrouilleur des karak doit être coriace et savoir s'adapter : il doit savoir enchaîner chasse, reconnaissance et combat, voire même réparation d'un pont en plein milieu de son expédition.
+<span id="page-90-0" data-folio="90"></span>Les forteresses naines isolées dans les montagnes sont difficiles d'accès : elles sont cernées de terrains dangereux, tant en surface qu'en sous-sol. Des routes entières peuvent être rendues impraticables par un glissement de terrain ; un pont jusque-là sûr peut soudain s'effondrer sous les rongements incessants des « *raki* » (skavens en khazalid). Chaque année, les peaux-vertes envahissent et s'approprient un peu plus du réseau souterrain des nains. La sûreté des routes doit être préservée, et un nouveau chemin doit être tracé lorsque l'ancien devient trop dangereux ; tel est le devoir des Patrouilleurs des karak. Ces nains endurcis ne doivent leur survie qu'à leur capacité à se préparer : il n'est pas facile de trouver de la compagnie ou du confort dans les tunnels sombres et les passes secrètes des montagnes, et ne parlons pas des chances de se voir apporter de l'aide en cas de danger. Selon l'itinéraire, il peut leur être nécessaire de franchir un abîme d'un bond, escalader une falaise abrupte, ou traverser une immense étendue d'eau (parfois usées, voire de lave). Le moindre buisson, la moindre ombre peut cacher son lot de dangers mortels. S'il veut survivre, un Patrouilleur des karak doit être coriace et savoir s'adapter : il doit savoir enchaîner chasse, reconnaissance et combat, voire même réparation d'un pont en plein milieu de son expédition.
 
 *« Des guides ? Oui, bon, je suppose que vous pouvez nous appeler comme ça… Sauf qu'un guide, ça doit pas courir sur vingt lieues, nager sur dix autres, combattre un ogre affamé et escalader le Pic de Karak Norn, tout ça avant le p'tit déj'. Maintenant, tu paies, mon petit gars, ou par Grimnir, je te jure que ta caravane va livrer ses marchandises à titre posthume ! »*
 
@@ -4142,7 +4142,7 @@ et routes naines) **Possessions :** 4 apprentis Coureurs des forts, cartes, souv
 de nombreux voyages
 
 
-<span id="page-91-0"></span>Les forêts antiques et mortelles du Vieux Monde sont un véritable refuge pour bandits et autres dangereux parias. Elles regorgent de prédateurs naturels comme des ours, des loups et des araignées géantes. Et si ces dangers ne sont pas suffisants pour pousser les voyageurs à y écourter leur séjour, alors les créatures contre nature qui y résident aussi, comme les infâmes trolls, les hardes d'hommes-bêtes ou même les morts-vivants, le seront peut-être. Mais les Rôdeurs fantômes sont sans doute la plus mortelle de toutes ces menaces. Si les hauts elfes d'Ulthuan admirent et respectent la beauté de la nature, les elfes sylvains, eux, sont renommés pour la férocité dont ils peuvent faire preuve pour défendre leurs terres. Les Rôdeurs fantômes l'illustrent parfaitement. La détermination et le savoir-faire avec lesquels ces maîtres archers traquent tout ce qui menace la nature terrifieraient n'importe qui, si leur vitesse et leur silence presque surnaturels ne les rendaient pas pratiquement indécelables. L'harmonie des Rôdeurs fantômes avec la nature est telle que celle-ci semble presque cacher les traces de leur passage aux yeux indiscrets. Ils sont tellement
+<span id="page-91-0" data-folio="91"></span>Les forêts antiques et mortelles du Vieux Monde sont un véritable refuge pour bandits et autres dangereux parias. Elles regorgent de prédateurs naturels comme des ours, des loups et des araignées géantes. Et si ces dangers ne sont pas suffisants pour pousser les voyageurs à y écourter leur séjour, alors les créatures contre nature qui y résident aussi, comme les infâmes trolls, les hardes d'hommes-bêtes ou même les morts-vivants, le seront peut-être. Mais les Rôdeurs fantômes sont sans doute la plus mortelle de toutes ces menaces. Si les hauts elfes d'Ulthuan admirent et respectent la beauté de la nature, les elfes sylvains, eux, sont renommés pour la férocité dont ils peuvent faire preuve pour défendre leurs terres. Les Rôdeurs fantômes l'illustrent parfaitement. La détermination et le savoir-faire avec lesquels ces maîtres archers traquent tout ce qui menace la nature terrifieraient n'importe qui, si leur vitesse et leur silence presque surnaturels ne les rendaient pas pratiquement indécelables. L'harmonie des Rôdeurs fantômes avec la nature est telle que celle-ci semble presque cacher les traces de leur passage aux yeux indiscrets. Ils sont tellement
 
 **Schéma de progression du Rôdeur fantôme**
 
@@ -4199,7 +4199,7 @@ Pour les Rôdeurs fantômes, la forêt est sacrée par-dessus tout. Ils ne tolè
 
 ## ANNEXE II • ARMES •
 
-<span id="page-92-0"></span>Les pages qui suivent présentent de nouvelles armes typiques des elfes sylvains, des nains et des halflings. Bien que ces armes se trouvent majoritairement entre les mains de membres de leur espèce d'origine, rien n'empêche un autre Personnage bien entraîné de les utiliser. Remarque : la Disponibilité dans les tables ci-dessous indique la facilité de se procurer chaque arme dans une région où son peuple d'origine est fortement représenté. De plus, certaines armes ne sont presque jamais proposées aux étrangers, qui doivent donc se les procurer d'une autre manière.
+<span id="page-92-0" data-folio="92"></span>Les pages qui suivent présentent de nouvelles armes typiques des elfes sylvains, des nains et des halflings. Bien que ces armes se trouvent majoritairement entre les mains de membres de leur espèce d'origine, rien n'empêche un autre Personnage bien entraîné de les utiliser. Remarque : la Disponibilité dans les tables ci-dessous indique la facilité de se procurer chaque arme dans une région où son peuple d'origine est fortement représenté. De plus, certaines armes ne sont presque jamais proposées aux étrangers, qui doivent donc se les procurer d'une autre manière.
 
 #### ARMES DE CORPS À CORPS DES ÉONIRS
 
@@ -4467,7 +4467,7 @@ Les ogres finissent souvent par être attirés par la carrière de mercenaire, c
 Ceux qui deviennent des bandits ou des pillards, s'en tenant à un mode de vie qui prévaut sur leurs terres, finissent par s'attirer les foudres des autorités des différents pays du Vieux Monde qui les pourchassent dans le seul but de les éliminer. Des bandes de mercenaires ogres se spécialisent même dans la traque (et la consommation) de leurs propres congénères. Cela étant, certains ogres mercenaires n'hésitent pas à se lancer dans des pillages s'ils pensent pouvoir s'en tirer. Bénéficier d'« *un combat contre un repas* » est une tentation à laquelle peu d'entre eux résistent si la mission semble faisable. Cependant, ils sont assez perspicaces quant à la manière dont les autorités locales sont susceptibles de réagir, c'est pourquoi ils planifient leurs activités en conséquence.
 
 
-<span id="page-8-0"></span>Les contrats des mercenaires sont négociés et leur durée est généralement limitée, ce qui permet aux ogres de passer à autre chose s'ils en ressentent le besoin. Les mercenaires itinérants trouveront presque toujours un nouveau combat à mener, alors que les sédentaires n'auront pas l'occasion de se battre aussi souvent. L'une des principales raisons pour lesquelles les ogres sont prêts à travailler pour les peaux-vertes est leur propension à se battre constamment. Mais ils s'en méfient tout de même, car ils ne respectent pas toujours leur part du marché. Dans le langage des ogres, les orcs et les gobelins ne *« savent pas toujours bien servir à table »*.
+<span id="page-8-0" data-folio="7"></span>Les contrats des mercenaires sont négociés et leur durée est généralement limitée, ce qui permet aux ogres de passer à autre chose s'ils en ressentent le besoin. Les mercenaires itinérants trouveront presque toujours un nouveau combat à mener, alors que les sédentaires n'auront pas l'occasion de se battre aussi souvent. L'une des principales raisons pour lesquelles les ogres sont prêts à travailler pour les peaux-vertes est leur propension à se battre constamment. Mais ils s'en méfient tout de même, car ils ne respectent pas toujours leur part du marché. Dans le langage des ogres, les orcs et les gobelins ne *« savent pas toujours bien servir à table »*.
 
 Dans l'Empire, les mercenaires ogres sont souvent connus sous le nom de Mangeurs d'hommes, d'après un mercenaire tristement célèbre du même nom. Les Mangeurs d'hommes voyagent généralement seuls ou en petits groupes. Il leur est ainsi possible de subvenir à leurs besoins plus facilement, car trouver de la nourriture pour une « poignée de gaillards » s'avère plus simple que pour une grande tribu. De plus, ils ont appris il y a fort longtemps que les minus deviennent terriblement nerveux lorsque trop d'ogres se rassemblent au même endroit. Et qui dit clients craintifs dit pas de travail, ce qui n'arrange pas leurs affaires et mène à des assiettes vides : un vrai désastre pour un ogre digne de ce nom.
 
@@ -4480,7 +4480,7 @@ Cette capacité d'adaptation s'avère très utile lorsqu'il s'agit de trouver du
 Les autres espèces du Vieux Monde ne comprennent pas à quel point l'obsession des ogres pour la nourriture est intense. Elle régit leur vie et détermine leur rythme de sommeil. Alors même qu'un ogre est en train de finir son repas, il pense déjà au prochain et peut devenir anxieux quant aux détails de son acquisition. Les ogres ne naissent pas seulement avec une petite fringale : ils sont littéralement affamés. Ce n'est pas un hasard si le dieu ogre, la Gueule, est un estomac sans fond. Les mercenaires ogres les plus malins apprennent rapidement à minimiser l'expression de leur faim en présence de minus, car ils se rendent bien compte que cette attitude rend tout le monde nerveux. Ils précisent alors qu'ils ont juste *« un petit creux »*. Bien sûr, il leur arrive de vouloir mettre délibérément les minus mal à l'aise, une tactique de négociation que de nombreux ogres utilisent à leur avantage.
 
 
-## <span id="page-9-0"></span>**UNE INDEMNISATION SAVOUREUSE**
+## <span id="page-9-0" data-folio="8"></span>**UNE INDEMNISATION SAVOUREUSE**
 
 Ce n'est un secret pour personne : entretenir des mercenaires ogres coûte cher. Ces derniers demandent souvent des salaires élevés et des repas réguliers, ainsi que le droit d'obtenir des « rations de combat » après la bataille. Mais il arrive que certaines de ces « rations » ne soient pas tout à fait mortes lorsque les ogres commencent leur moisson. Les soldats expérimentés savent qu'il vaut mieux achever leurs amis avant que les ogres ne viennent les chercher.
 
@@ -4505,7 +4505,7 @@ Les prix indiqués ne comprennent pas la nourriture, qui représente un supplém
 | Garde du corps | 8/–          | 1 CO 6/–        | 8 CO              | Peut détecter la nourriture empoisonnée, mais a<br>tendance à finir le plat          |  |
 
 
-## <span id="page-10-0"></span>**S'en mettre plein les joues**
+## <span id="page-10-0" data-folio="9"></span>**S'en mettre plein les joues**
 
 Les commandants inexpérimentés trouvent que les mercenaires ogres sont, au mieux, très difficiles à gérer. Ces derniers ont tendance à se quereller, se montrent particulièrement paresseux, aiment s'attirer des ennuis, menacer les autres et déclencher des bagarres, entre autres. Aussi grand et menaçant que puisse être un minus, il lui est pratiquement impossible d'intimider un ogre pour le forcer à faire quelque chose qui ne l'intéresse pas. À moins qu'ils ne viennent de vivre une ou plusieurs batailles sanglantes et qu'ils ne soient (temporairement) en train de se délecter de leurs « rations de combat », les ogres n'hésitent pas à demander des provisions supplémentaires. Pour y remédier, de nombreux commandants engagent un capitaine ogre accompagné de ses troupes : de cette manière, ils ne traitent qu'avec un seul ogre à la fois, en espérant pouvoir préserver leurs propres soldats. Les officiers les plus avisés apprennent également à tourner les « priorités » de leurs mercenaires ogres à leur avantage. Par exemple, les stratèges myrmidiens emploient des ruses qui consistent à suggérer qu'un régiment ennemi pourrait se préparer à attaquer les chariots de ravitaillement. Ainsi, les ogres font presque invariablement tout leur possible pour chercher l'ennemi en question dans le but de l'anéantir.
 
@@ -4583,7 +4583,7 @@ Un mercenaire à la retraite convainc un Graissus Dents d'Or, sceptique, que l'o
 Des nuées de skavens font irruption depuis les égouts de Nuln. Des héros improbables et plusieurs mercenaires, dont la bande du célèbre capitaine ogre Hrothyogg, protègent la ville d'une ruine totale. Faisant fi des exigences habituelles, Hrothyogg accepte une bonne quantité de poudre noire de Nuln en guise de paiement.
 
 
-## <span id="page-12-0"></span>**De couteaux et d'épées**
+## <span id="page-12-0" data-folio="11"></span>**De couteaux et d'épées**
 
 L'équipement des ogres est généralement aussi démesuré qu'eux. Une épée humaine ressemble davantage à une dague entre leurs mains de géants et ils sont presque incapables de manier une lame taillée pour un halfling. Les mercenaires ogres sont fréquemment très bien armés et beaucoup portent un véritable un arsenal létal. Ils ont tendance à mettre leur équipement à rude épreuve, s'attachant rarement à une pièce en particulier. En raison de leur manque d'intérêt pour l'artisanat, ils ont tendance à négliger l'entretien de leur matériel. Ils utilisent une arme jusqu'à ce qu'elle se brise, puis s'en débarrassent sans y accorder la moindre importance.
 
@@ -4602,7 +4602,7 @@ I
 
 ## **L'art sacré du combat de gladiateurs**
 
-<span id="page-13-0"></span>I
+<span id="page-13-0" data-folio="12"></span>I
 
 Seule une coutume ogre est parvenue au-delà des Montagnes des Larmes : le combat de gladiateurs. Avant la naissance de l'Empire, lorsque les humains sont entrés en contact avec les ogres, ils pratiquaient déjà des sports violents, mais il s'agissait seulement de combats impliquant des animaux ou de l'appâtage des ours. Les ogres avaient alors développé le combat de gladiateurs comme un moyen de décider qui était le plus fort des deux opposants destinés au commandement d'une tribu. Cette activité leur permettait également de vénérer leur divinité des gladiateurs, la Gueule.
 
@@ -4633,7 +4633,7 @@ La vallée d'Osséine est ouverte à tous les ogres de passage, pour autant qu'i
 Les commandants, ou toute autre personne ayant de l'argent à dépenser, qui souhaitent faire parvenir une offre aux habitants de la vallée d'Osséine peuvent s'adresser à Edelard Bénibière (dit « Ed »), le halfling qui gère le Sanglier de Cuivre, une taverne fréquentée par les mercenaires ogres à Nuln.
 
 
-#### <span id="page-14-0"></span>**La Taverne des Dents Rouges**
+#### <span id="page-14-0" data-folio="13"></span>**La Taverne des Dents Rouges**
 
 Les villes de l'Empire ne manquent pas de tavernes, mais peu de ces établissements exigus sont en mesure d'accueillir des ogres, et encore moins de les sustenter. La taverne des Dents Rouges a été construite par son propriétaire, Ruggero Oeildacier, dans un style tiléen, avec plusieurs grandes salles ouvertes contenant des boxes massifs, mais relativement peu de tables. Cet ancien mercenaire était jadis un gladiateur prospère. Au cours de ses deux premières carrières, il a combattu aux côtés des ogres et, à quelques occasions mémorables, contre eux. Il sait donc à quel point ils peuvent se montrer généreux lorsqu'il s'agit d'acheter à boire et à manger.
 
@@ -4693,7 +4693,7 @@ Ogresse tout à fait quelconque, Ugrik s'est fait connaître après avoir attaqu
 **Traits :** À Distance (Arc +8), Arme (Massue +9), Armure 3 **Possessions :** arme simple (massue à tête de boulet de canon), pansière, arme simple (massue), arc avec 12 flèches, 2d10 sous de cuivre
 
 
-## <span id="page-16-0"></span>VOUS REPRENDREZ BIEN UN MORCEAU ? PERSONNAGES JOUEURS OGRES • •
+## <span id="page-16-0" data-folio="15"></span>VOUS REPRENDREZ BIEN UN MORCEAU ? PERSONNAGES JOUEURS OGRES • •
 
 
 ## [Middenheim 8] ANNEXE I
@@ -4702,7 +4702,7 @@ Ogresse tout à fait quelconque, Ugrik s'est fait connaître après avoir attaqu
 
 ### ANNEXE I • MIDDENBALL •
 
-<span id="page-145-0"></span>Le Middenball est un sport en équipes populaire dans le nord de l'Empire, et qui gagne constamment de nouveaux adeptes dans le Vieux Monde. Ses origines remontent aux exercices d'entraînement au combat des Teutogens anciens, appelés « *Muddibal* » dans les documents datant de l'époque de Sigmar. Le jeu est parfois appelé Snotball, car une pratique courante consiste à utiliser des snotlings au lieu d'une balle après des attaques de peaux-vertes. Bien que les puristes soutiennent qu'il s'agit là de la seule manière correcte de pratiquer ce jeu, il est difficile de se procurer des snotlings et l'on utilise donc plus couramment une balle en cuir.
+<span id="page-145-0" data-folio="143"></span>Le Middenball est un sport en équipes populaire dans le nord de l'Empire, et qui gagne constamment de nouveaux adeptes dans le Vieux Monde. Ses origines remontent aux exercices d'entraînement au combat des Teutogens anciens, appelés « *Muddibal* » dans les documents datant de l'époque de Sigmar. Le jeu est parfois appelé Snotball, car une pratique courante consiste à utiliser des snotlings au lieu d'une balle après des attaques de peaux-vertes. Bien que les puristes soutiennent qu'il s'agit là de la seule manière correcte de pratiquer ce jeu, il est difficile de se procurer des snotlings et l'on utilise donc plus couramment une balle en cuir.
 
 La popularité du jeu a explosé à la suite du Carnaval de 2412 CI. Le graf Dieter en était un grand amateur, mais il estima que des règles devaient être mises en place pour le rendre plus compétitif. Le jeu continue de susciter un énorme engouement à Middenheim. Malheureusement, les matches tendent à attirer des hooligans, qui les considèrent comme un prétexte pour se défouler.
 
@@ -4764,7 +4764,7 @@ Le simple fait de mentionner des règles irrite les puristes, qui se souviennent
 - 0 S'il s'avère nécessaire d'enterrer un joueur décédé en cours de jeu, cela doit se faire sans entraver le bon déroulement de la partie.
 
 
-### <span id="page-146-0"></span>**Règles de base pour les matches rapides**
+### <span id="page-146-0" data-folio="144"></span>**Règles de base pour les matches rapides**
 
 Pour les matches rapides, par exemple ceux qui n'impliquent pas de personnages importants, utilisez les règles suivantes.
 
@@ -4936,7 +4936,7 @@ Si à n'importe quel moment du match tous les joueurs d'une équipe donnée se r
 
 *Pages PDF 151-157*
 
-### <span id="page-150-0"></span>ANNEXE II • CRÉATION DE PERSONNAGE •
+### <span id="page-150-0" data-folio="148"></span>ANNEXE II • CRÉATION DE PERSONNAGE •
 
 Les règles de création de Personnage du Livre de Règles de **Warhammer Fantasy le Jeu de Rôle** sont pensées pour des personnages originaires du Reikland. Même si les habitants des provinces du nord de l'Empire ont beaucoup en commun avec leurs voisins du sud, leur culture est très différente. Afin de représenter cette différence, les personnages nordiques n'ont pas accès aux mêmes Talents et Compétences lors de leur création. Lorsque vous créez un personnage du nord de l'Empire, vous pouvez choisir 3 Compétences qui recevront chacune 5 Augmentations, et 3 Compétences qui recevront chacune 3 Augmentations. Si votre Carrière ou votre origine vous demande de choisir entre plusieurs Talents ou spécialisations, sélectionnez-en un seul. Les Talents aléatoires sont déterminés grâce au tableau des Talents aléatoires (voir **WFJDR**, p. 36). Si vous tombez sur un Talent que vous aviez déjà, vous pouvez relancer.
 
@@ -4982,7 +4982,7 @@ Dans cette section, vous trouverez des règles pour créer un Personnage de Midd
 |            | Villageois         | 50-54        | 46-50        | 44-48      |
 
 
-### <span id="page-151-0"></span>**Classe et Carrière**
+### <span id="page-151-0" data-folio="149"></span>**Classe et Carrière**
 
 Globalement, les Middenlanders ont le même type d'occupation que les Reiklanders, mais la vie des nordlanders est un peu plus liée à la mer. Les Middenheimers ont très peu de chances d'entreprendre une Carrière liée à un cours d'eau, mais ils peuvent quand même devenir Contrebandiers ou Débardeurs. Ces métiers profitent souvent des opportunités apportées par les routes commerciales qui passent par la cité.
 
@@ -5034,7 +5034,7 @@ Certaines Carrières, comme Frère Loup, peuvent proposer plus de 8 Compétences
 |            | Prêtre guerrier      | 100          | 100          | 100        |
 
 
-<span id="page-152-0"></span>*J'aurais pas cru qu'y fallait savoir compter pour réussir dans le milieu. Moi, j'ai pas commencé à filouter pour compter des thunes ! Mais si t'oublies de payer une toute petite miette de la part de l'Homme, d'un coup, t'existes plus aux yeux de personne à Middenheim. Tiens, d'ailleurs… tu recrutes ?*
+<span id="page-152-0" data-folio="150"></span>*J'aurais pas cru qu'y fallait savoir compter pour réussir dans le milieu. Moi, j'ai pas commencé à filouter pour compter des thunes ! Mais si t'oublies de payer une toute petite miette de la part de l'Homme, d'un coup, t'existes plus aux yeux de personne à Middenheim. Tiens, d'ailleurs… tu recrutes ?*
 
 *— Gerdon Salzwed, receleur sans emploi*
 
@@ -5061,7 +5061,7 @@ Les Petits Rois sont toujours à la recherche d'enfants solitaires et persécut�
 Au Middenland et au Nordland, comme dans beaucoup des Provinces du sud de l'Empire, la venue d'un Augure de Morr le jour du dixième anniversaire d'un enfant pour prédire la nature de sa mort relève de la tradition. Cependant, cette tradition n'y est pas autant prise au sérieux : aux yeux des résidents, Morr est encore un nouveau venu au panthéon, et les Augures ne passent que rarement dans les communautés isolées. Ainsi, pour représenter le fait qu'il n'a jamais été auguré ou que cette expérience n'a aucune importance à ses yeux, tout Personnage du nord de l'Empire peut remplacer son Talent Destinée par un Talent Aléatoire. Les Middenheimers, qui ont facilement accès à un oratoire de Morr dans le Morrspark, ont toujours le Talent Destinée.
 
 
-### <span id="page-153-0"></span>**HASSO SCHROETER**
+### <span id="page-153-0" data-folio="151"></span>**HASSO SCHROETER**
 
 Hasso est né dans une famille d'artisans, pauvre mais respectable du quartier de la Venelle. Chanteur de talent depuis sa plus tendre enfance, il a vite commencé à s'accompagner d'un vieux luth qui traînait dans la maison de sa famille. Une très bonne décision, puisqu'il était mauvais dans tout le reste à l'école.
 
@@ -5094,7 +5094,7 @@ Les Personnages originaires de Middenheim ont grandi dans une cité gigantesque 
 *— Hasso Schroeter, saltimbanque mésestimé*
 
 
-<span id="page-154-0"></span>*Je m'ai acheté des épingles à linge à un batelier à Carroburg. C'était pas donné, mais j'savais que les gens à Norderingen allaient me les racheter plus cher. Et v'là-t'y pas qu'à peine sortis de la Drakwald, mes potes se font descendre par des gobelins ! J'ai jamais de chance. Je m'en suis sortie, mais j'ai passé trois jours dans le Schadensumpf, j'ai perdu la moitié de mes épingles et je m'ai faite bouffer par les moustiques. Et tout ça pour qu'on me dise que Norderingen était fermée à cause de quelques cas de vérole cérébrale ! Du coup je suis viendue à la cité, j'ai payé de l'argent que j'avais pas pour entrer, et bien sûr, ici, tout le monde a déjà des épingles à linge.*
+<span id="page-154-0" data-folio="152"></span>*Je m'ai acheté des épingles à linge à un batelier à Carroburg. C'était pas donné, mais j'savais que les gens à Norderingen allaient me les racheter plus cher. Et v'là-t'y pas qu'à peine sortis de la Drakwald, mes potes se font descendre par des gobelins ! J'ai jamais de chance. Je m'en suis sortie, mais j'ai passé trois jours dans le Schadensumpf, j'ai perdu la moitié de mes épingles et je m'ai faite bouffer par les moustiques. Et tout ça pour qu'on me dise que Norderingen était fermée à cause de quelques cas de vérole cérébrale ! Du coup je suis viendue à la cité, j'ai payé de l'argent que j'avais pas pour entrer, et bien sûr, ici, tout le monde a déjà des épingles à linge.*
 
 *— Kat Sperber, colporteur en colère*
 
@@ -5123,7 +5123,7 @@ Les habitants du Middenland ont bien plus en commun avec leurs ancêtres Teutoge
 **Talents** : Destinée ou Talent aléatoire supplémentaire, Menaçant ou Guerrier né, 3 Talents aléatoires
 
 
-### <span id="page-155-0"></span>**THERESIA KLEIST**
+### <span id="page-155-0" data-folio="153"></span>**THERESIA KLEIST**
 
 La famille de Theresia s'est mise à naviguer les eaux froides de la Mer des Griffes il y a de nombreuses générations. Ils ont fait du troc et du commerce avec les hommes sauvages de la Norsca, mais toujours en gardant une main libre pour se battre : ils savaient que le peuple des étendues glaciales et escarpées du Nord pouvait sombrer dans une rage traîtresse et sanguinaire à la moindre occasion. Ainsi, depuis son plus jeune âge, Theresia a appris les arts de la nage, de la voile, du commerce et du combat.
 
@@ -5154,7 +5154,7 @@ Aux yeux de la plupart des étrangers, l'archétype du nordlander est un vieux l
 *— Theresia Kleist, marin à court de patience*
 
 
-<span id="page-156-0"></span>*Ulric est votre unique source d'inspiration : vous avez décidé de surmonter les difficultés de la vie par la pratique d'une forme d'extrême autonomie.*
+<span id="page-156-0" data-folio="154"></span>*Ulric est votre unique source d'inspiration : vous avez décidé de surmonter les difficultés de la vie par la pratique d'une forme d'extrême autonomie.*
 
 On ne croise que peu de Flagellants dans le nord de l'Empire. Les zélotes qui suivent Sigmar ne s'y plaisent pas : personne ne les prend au sérieux, et ils ont du mal à trouver des compagnons de route. Le peu de Flagellants qui arpentent les routes des provinces du nord sont souvent raillés, et pas admirés comme ailleurs dans l'Empire.
 
@@ -5219,7 +5219,7 @@ Loups
 
 *Pages PDF 158-163*
 
-### <span id="page-157-0"></span>ANNEXE III MIDDENHEIM ET LES ÉVÉNEMENTS FUTURS • •
+### <span id="page-157-0" data-folio="155"></span>ANNEXE III MIDDENHEIM ET LES ÉVÉNEMENTS FUTURS • •
 
 ### ATTENTION SPOILER !
 
@@ -5256,7 +5256,7 @@ La révélation de Wasmeier a laissé un énorme vide, et les membres du culte s
 Si le groupe a joué **Mort sur le Reik**, il est probable qu'il soit venu à Middenheim dans l'espoir de retrouver le noble renégat Gotthard von Wittgenstein. Il joue également un rôle dans les dernières phases de la campagne de **L'Ennemi Intérieur**. S'il est en cavale dans la ville et mijote quelque chose, il vaudrait 
 
 
-<span id="page-158-0"></span>mieux que les Personnages perdent complètement sa trace. Si Gotthard échappe aux Personnages, vous pouvez le réintroduire comme antagoniste plus tard.
+<span id="page-158-0" data-folio="156"></span>mieux que les Personnages perdent complètement sa trace. Si Gotthard échappe aux Personnages, vous pouvez le réintroduire comme antagoniste plus tard.
 
 En tant que président de la Guilde des Marchands et Convenor de la Komission pour les Métiers et le Commerce, Gotthard se fait plusieurs ennemis en ville, cible de choix pour les saynètes satiriques tels que celles de l'Âne Rieur. Vous pouvez les utiliser pour suggérer que Gotthard Wallenstein est un méchant, sans pour autant révéler aux Personnages qu'il s'agit de Wittgenstein incognito.
 
@@ -6471,3 +6471,5 @@ contact, Guerrier né, Pilote
 
 10 munitions
 
+
+<!-- /MDG-INTEGRATION -->

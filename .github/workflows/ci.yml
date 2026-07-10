@@ -23,6 +23,8 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run docs:check
+      - name: Fraîcheur des catalogues Atlas RAW
+        run: npm run raw:catalogs && git diff --exit-code -- 'docs/raw/catalogue-*.md'
       - run: npm run raw:coverage
       - run: npm run raw:reconcile
       - run: npm --prefix server ci
