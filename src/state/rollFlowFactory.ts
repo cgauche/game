@@ -29,6 +29,7 @@ import { gainCorruption } from './corruptionFlow';
 
 import type { Get, Set } from './flowTypes';
 import { bumpSL, evaluateTest, maxForcedRoll, forcedTR, bestForcedRoll, type TestResult } from '../engine/tests';
+import { TestOutcome } from '../engine/testOutcome';
 
 /** Champs communs à tous les objets `pending*` gérés par la fabrique. */
 export interface PendingBase {
@@ -103,13 +104,11 @@ export interface RollFlowLens<P extends PendingBase, Slot extends PendingBase = 
  * courant. La fabrique en DÉRIVE le gating des verbes d'influence (`failed = !outcome(slot).won`) :
  * un flux ne déclare plus un prédicat `failed` SÉPARÉ, qui pouvait DIVERGER de l'issue (bug `activity` :
  * la narration lisait `combinedLevel`, l'ancien `failed` lisait skill-1 → Chance/Résilience mal gatées).
+ *
+ * SCELLÉE (#275 Décision 2, `TestOutcome`, `engine/testOutcome.ts`) — un flux ne peut plus renvoyer un
+ * littéral `{won, sl}` forgé : seul `TestOutcome.seal(...)` construit cette issue.
  */
-export interface RollOutcome {
-  /** Le jet a-t-il RÉUSSI (issue réelle) ? Lu sur un jet EXISTANT — le « a-t-il été lancé ? » reste `rolled`. */
-  won: boolean;
-  /** Degré de Réussite courant (« de combien »). */
-  sl: number;
-}
+export type RollOutcome = TestOutcome;
 
 export interface RollFlowSpec<P extends PendingBase, Slot extends PendingBase = P> {
   /** Clé du pending dans le store (ex. `'pendingTrample'`). */

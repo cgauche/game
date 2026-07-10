@@ -23,9 +23,11 @@ import type { PendingActivity } from './interludeFlow';
 import { applyLedgerReresolve, type PendingRest, type NightEntry } from './restFlow';
 import type { Combatant, Weapon } from '../engine/types';
 import type { Get, Set } from './flowTypes';
-import { makeRollFlow, type RollFlowHandlers, type RollOutcome, type RollFlowLens, type PendingBase } from './rollFlowFactory';
+import { makeRollFlow, type RollFlowHandlers, type RollFlowLens, type PendingBase } from './rollFlowFactory';
+import { TestOutcome } from '../engine/testOutcome';
+import type { RollBreakdown } from '../engine/combat';
 import { battleRng } from './battleRng';
-import { actorIn, touchActors } from './combatOrParty';
+import { actorIn, inBattleId, touchActors } from './combatOrParty';
 import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
   castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
@@ -190,24 +192,31 @@ function activityWon(p: PendingActivity): boolean {
   return p.combinedLevel != null ? p.combinedLevel === 'full' : p.success;
 }
 
-// ── Fabriques d'ISSUE CANONIQUE (cf. `RollOutcome`) — les DEUX formes récurrentes, écrites UNE fois.
+// ── Fabriques d'ISSUE CANONIQUE (cf. `TestOutcome`) — les DEUX formes récurrentes, écrites UNE fois.
 //    Chaque flux passe SON champ de résultat ; les cas particuliers (attaque/opposition/DR de Course/
 //    Focalisation…) gardent leur `outcome` explicite en dessous. ──
 
+/** Choke-point PARTAGÉ du scellement (#275 Décision 2) : reconstruit le `TestResult` minimal exigé par
+ *  `TestOutcome.seal` depuis les formes hétérogènes de résultat des flux — `isDouble` n'est jamais tracé
+ *  ICI (non lu par `TestOutcome`, cf. `engine/testOutcome.ts`). `detail` transite TEL QUEL quand le flux
+ *  possède un vrai `RollBreakdown` (attaque/défense/piétinement…) — jamais fabriqué de toutes pièces. */
+const sealOutcome = (won: boolean, sl: number, roll = 0, target = 0, detail?: RollBreakdown): TestOutcome =>
+  TestOutcome.seal({ roll, target, success: won, sl, isDouble: false }, detail);
+
 /** Issue d'un Test dont le résultat est déjà un `{ success, sl }` (jet simple ou opposé résolu) : la
  *  réussite RÉELLE + son Degré. Couvre défense/désengagement/agrippe/battement/manœuvre/psy/dissipation… */
-const testOutcome = (r: { success?: boolean; sl?: number } | null | undefined): RollOutcome =>
-  ({ won: !!r?.success, sl: r?.sl ?? 0 });
+const testOutcome = (r: { roll?: number; target?: number; success?: boolean; sl?: number } | null | undefined): TestOutcome =>
+  sealOutcome(!!r?.success, r?.sl ?? 0, r?.roll ?? 0, r?.target ?? 0);
 
 /** Issue d'un Test dont on lit le d100 BRUT (réussite propre = `roll ≤ cible`, LDB 12) + son DR — les
  *  flux qui gatent la Chance sur le jet propre (soin/rechargement/évaluation/marchandage/corruption…). */
-const rollOutcome = (roll: number | null | undefined, target: number, sl: number | null | undefined): RollOutcome =>
-  ({ won: (roll ?? 0) <= target, sl: sl ?? 0 });
+const rollOutcome = (roll: number | null | undefined, target: number, sl: number | null | undefined): TestOutcome =>
+  sealOutcome((roll ?? 0) <= target, sl ?? 0, roll ?? 0, target);
 
 /** Issue d'un Test dont le résultat est un `{ roll, target, sl }` SANS champ `success` (réussite propre
  *  = `roll ≤ cible`) : incantation, enfoncement de porte, Test d'équipage — un résultat absent = échec. */
-const cleanRollOutcome = (r: { roll: number; target: number; sl?: number } | null | undefined): RollOutcome =>
-  ({ won: !!r && r.roll <= r.target, sl: r?.sl ?? 0 });
+const cleanRollOutcome = (r: { roll: number; target: number; sl?: number } | null | undefined): TestOutcome =>
+  sealOutcome(!!r && r.roll <= r.target, r?.sl ?? 0, r?.roll ?? 0, r?.target ?? 0);
 
 /** Réussite forcée d'un Test BINAIRE (Résilience « Je ne faillirai pas ! », LDB 17 l.73) : renvoie le
  *  `{ success, roll, target, sl }` forcé — avant le jet (pas de résultat → dé 01), ou après un échec
@@ -382,7 +391,7 @@ export const FLOWS = {
     },
     // Issue CANONIQUE : l'attaquant l'emporte (`attackerDetail.success`). La 2ᵉ frappe du Maniement de
     // deux armes est un jet IMPOSÉ (d100 inversé) — ni relance ni Pacte : `won:true` verrouille son gating.
-    outcome: (p) => ({ won: !!p.dualSecond || !!p.result?.attackerDetail?.success, sl: p.result?.attackerDetail?.sl ?? 0 }),
+    outcome: (p) => sealOutcome(!!p.dualSecond || !!p.result?.attackerDetail?.success, p.result?.attackerDetail?.sl ?? 0, p.result?.attackerDetail?.roll ?? 0, p.result?.attackerDetail?.target ?? 0, p.result?.attackerDetail),
     bonus: {
       guard: (p) => !!p.result?.attackerDetail,
       derive: (s, p, actor) => {
@@ -407,7 +416,7 @@ export const FLOWS = {
         if (pa.result || !pa.chargeUndo || !battle) { if (!pa.result) set({ pendingAttack: null }); return; } // dé lancé → engagé (pas d'undo)
         const u = pa.chargeUndo;
         for (const c of battle.combatants) { const p = u.pos[c.id]; if (p) c.pos = { ...p }; } // restaure TOUS (un grand a pu en déplacer d'autres)
-        const attacker = battle.combatants.find((c) => c.id === pa.attackerId);
+        const attacker = inBattleId(battle, pa.attackerId);
         if (attacker) { attacker.gainedAdvThisRound = u.gainedAdvBefore; attacker.chargedThisTurn = u.chargedBefore; if (u.advGained) campSpend(get, attacker, u.advGained); } // rend le +1 Avantage de la charge
         set({ facing: { ...u.facing }, battle: { ...battle, movementUsed: u.movementUsed, movedPreAction: u.movedPreAction, action: null, reachable: new Map(), preview: null }, pendingAttack: null });
         bus.emit(EVT.SCENE_DIRTY);
@@ -622,7 +631,7 @@ export const FLOWS = {
       return { result: { oppose, resisted: o.winner !== 'attacker', margin: Math.max(0, castT.sl - oppose.sl) } };
     },
     // Issue CANONIQUE : la cible RÉSISTE au sort (`resisted`) ; sinon le lanceur l'emporte → SA Chance (héros défenseur).
-    outcome: (part) => ({ won: !!part.result?.resisted, sl: part.result?.oppose.sl ?? 0 }),
+    outcome: (part) => sealOutcome(!!part.result?.resisted, part.result?.oppose.sl ?? 0, part.result?.oppose.roll ?? 0, part.result?.oppose.target ?? 0),
     // `resist` : « résister aux sorts » = la menace 'Magie' du talent (tag posé par openCastOpposition).
     caps: { forced: true, resist: true },
     bonus: {
@@ -991,7 +1000,7 @@ export const FLOWS = {
       // Sprinter (LDB 10) : « Votre Attribut de Mouvement compte comme plus élevé de 1 lorsque vous Courez. »
       return { result: resolveRun(testValue(actor, actor.mountId ? 'chevaucher' : 'athletisme'), mountMovement(s.battle, actor) + runMovementBonus(actor), battleRng()) };
     },
-    outcome: (p) => ({ won: !!p.result?.success, sl: p.result?.dr ?? 0 }),
+    outcome: (p) => sealOutcome(!!p.result?.success, p.result?.dr ?? 0, p.result?.roll ?? 0, p.result?.target ?? 0),
     // Chance « +1 DR » (LDB 17 l.26) s'applique à TOUT Test : sur une Course, +1 DR ALLONGE la distance.
     // Le porteur du DR est `dr`/`bonusCases` (PAS `sl`) → dérive BESPOKE (pas lentillée). Le DR de Course est
     // en MÈTRES (LDB 15 l.82), converti en cases comme `resolveRun` (÷2 arrondi, la CONSTANTE réelle — pas +2) :
@@ -1038,7 +1047,7 @@ export const FLOWS = {
     actor: (s, e) => s.party.find((h) => h.id === e.actorId),
     resolve: () => null, // aucun jet initial : seule la relance (opReroll) agit sur une ligne du PV
     reresolve: (_s, e, actor) => (e.d ? applyLedgerReresolve(actor, e, evaluateTest(battleRng().int(1, 100), e.d.target)) : null),
-    outcome: (e) => ({ won: !!e.d?.success, sl: e.d?.sl ?? 0 }),
+    outcome: (e) => sealOutcome(!!e.d?.success, e.d?.sl ?? 0, e.d?.roll ?? 0, e.d?.target ?? 0, e.d),
   }),
 
   /** CHANSON DE MARIN (Talent, MDG 09 l.32-40) : Test de **Divertissement (Chant)** du chanteur — la
@@ -1078,7 +1087,7 @@ export const FLOWS = {
       if (!spell) return null;
       return { result: resolveFocus(actor, spell, battleRng()) };
     },
-    outcome: (p) => ({ won: (p.result?.dr ?? -1) > 0, sl: p.result?.dr ?? 0 }), // DR nul = raté (aucun DR gagné → rejouable)
+    outcome: (p) => sealOutcome((p.result?.dr ?? -1) > 0, p.result?.dr ?? 0, p.result?.roll ?? 0, p.result?.target ?? 0), // DR nul = raté (aucun DR gagné → rejouable)
     bonus: {
       derive: (_s, p) => ({ result: { ...p.result!, dr: p.result!.dr + 1, log: `${p.result!.log} (+1 DR)` } }),
     },
@@ -1205,7 +1214,7 @@ export const FLOWS = {
     // Issue CANONIQUE = `activityWon` (la MÊME source que la narration/l'Appliquer) : combiné `full`
     // seulement (un `partial` = ÉCHEC GLOBAL RAW), tenue tenue (opposition), ou simple réussi. Le gating
     // Chance/Pacte/Résilience en DÉRIVE — plus de prédicat `failed` séparé qui lisait skill-1 (bug corrigé).
-    outcome: (p) => ({ won: activityWon(p), sl: p.sl ?? 0 }),
+    outcome: (p) => sealOutcome(activityWon(p), p.sl ?? 0, p.roll ?? 0, p.target ?? 0),
     bonus: {
       // Chance « +1 DR » (LDB 17 l.26/84 : un Degré de plus ne transforme JAMAIS un échec en réussite).
       derive: (_s, p) => {
@@ -1296,7 +1305,7 @@ export const FLOWS = {
       const netSL = Math.max(0, actorT.sl);
       return { roll: actorT, netSL, success: p.requireSl != null ? actorT.success && netSL >= p.requireSl : actorT.success };
     },
-    outcome: (p) => ({ won: !!p.success, sl: p.netSL ?? 0 }),
+    outcome: (p) => sealOutcome(!!p.success, p.netSL ?? 0, p.roll?.roll ?? 0, p.roll?.target ?? 0),
     bonus: { derive: (_s, p) => ({ netSL: p.netSL + 1, success: p.requireSl != null ? (p.netSL + 1 >= p.requireSl) : p.success }) },
   }),
 
