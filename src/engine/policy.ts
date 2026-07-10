@@ -647,6 +647,16 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: '« [le bélier/la baliste sont] dotés de roues pour se déplacer sur le champ de bataille » (ADE II ch.08 l.256/258) sans chiffrer de vitesse : plafond MAISON (en cases) d’une poussée d’équipage — mouvement SIMPLE, aucun Test.',
   },
   {
+    id: 'sea-shipwreck-swim',
+    label: 'Naufrage en mer : Difficulté du Test de Natation',
+    ref: 'MDG 13 l.522 — noyade Natation Complexe (–10) ; naufrage en pleine mer non chiffré, valeur maison',
+    group: 'Voyage',
+    kind: 'mode',
+    default: 'complexe',
+    options: ['facile', 'accessible', 'intermediaire', 'complexe', 'difficile', 'tresDifficile'],
+    hint: 'Quand le navire de campagne coule (Blessures à 0, MDG 13 l.674), chaque héros à bord tente un Test de Natation (LDB 09 l.372) pour rejoindre la côte ; échec = noyade (LDB 18 l.344). La Difficulté d’un naufrage en pleine mer n’est pas chiffrée : ancrage le plus proche = la noyade du Tourbillon (Natation Complexe –10, MDG 13 l.522). Défaut Complexe.',
+  },
+  {
     id: 'sea-chart-orientation-dr',
     label: 'Carte marine : bonus d’Orientation',
     ref: 'MDG 15 l.290 — 2 ports désignés : toute route = maison',

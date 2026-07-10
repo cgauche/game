@@ -3443,8 +3443,9 @@
                 "traitId": "infravision"
               },
               {
-                "op": "narrative",
-                "text": "Peau de chasseur : vous gagnez aussi le Talent Sens aiguisé (Odorat) — arbitrage MJ."
+                "op": "grantTalent",
+                "talentId": "sens-aiguise",
+                "spec": "Odorat"
               }
             ]
           }
@@ -4697,6 +4698,9 @@
       "kind": "instant"
     },
     "desc": "Vous croquez bruyamment quelques os tout en grommelant une malédiction visant un ennemi proche. Broyeur d'os est un Projectile magique avec des Dégâts de +4 qui ignore les Points d'Armure de votre cible, mais pas son Bonus d'Endurance. De plus, si votre attaque inflige une Blessure Critique, ajoutez +20 au lancer sur le Tableau des Blessures Critiques approprié, pour en déterminer la gravité. ",
+    "missile": true,
+    "damage": 4,
+    "ignorePA": true,
     "effects": {
       "kind": "seq",
       "steps": [
@@ -4720,9 +4724,6 @@
       "page": 32
     },
     "family": "arcane",
-    "missile": true,
-    "damage": 4,
-    "ignorePA": true,
     "curated": true
   },
   {
@@ -18268,11 +18269,12 @@
           "kind": "do",
           "effect": {
             "type": "ops",
-            "on": "target",
+            "on": "caster",
             "ops": [
               {
-                "op": "narrative",
-                "text": "Bienfait de Bel Shanaar : pendant 1 jour, tous les Tests d'Orientation du sorcier (ou impliquant le sorcier dans un Test d'équipage) bénéficient de +2 DR."
+                "op": "skillDRBonus",
+                "skill": "orientation",
+                "bonus": 2
               }
             ]
           }

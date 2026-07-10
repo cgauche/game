@@ -275,6 +275,27 @@ describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.420)', () => {
       const party = [hero({ rations: 0 }), { ...hero({ rations: 0 }), dead: true }];
       const m = provisioningManifest(party, 100, 3);
       expect(m.rationsRequises).toBe(3); // un seul héros vivant compté
+      expect(m.souls).toBe(1);
+    });
+
+    it('#245 — l’équipage PNJ compte dans la population (eau ET vivres)', () => {
+      const party = [hero({ rations: 6 }), hero({ rations: 6 })]; // 2 héros, 12 rations portées
+      // 10 marins PNJ embarqués, 30 jours de vivres de cale.
+      const m = provisioningManifest(party, 1000, 3, { count: 10, provisions: 30 });
+      expect(m.souls).toBe(12); // 2 héros + 10 PNJ
+      expect(m.eauRequiseLitres).toBe(12 * 3 * 3); // souls × jours × 3 L (médiane) = 108
+      expect(m.rationsRequises).toBe(2 * 3 + 10 * 3); // héros (6) + équipage (30) = 36
+      expect(m.rationsDispo).toBe(12 + 30); // rations portées + vivres de cale = 42
+      expect(m.suffisant).toBe(true);
+    });
+
+    it('#245 — vivres de cale insuffisants pour l’équipage → manifeste en déficit', () => {
+      const party = [hero({ rations: 10 })];
+      const m = provisioningManifest(party, 1000, 5, { count: 8, provisions: 5 }); // équipage requiert 40, cale 5
+      expect(m.souls).toBe(9);
+      expect(m.rationsRequises).toBe(5 + 40);
+      expect(m.rationsDispo).toBe(10 + 5); // 15 < 45
+      expect(m.suffisant).toBe(false);
     });
   });
 

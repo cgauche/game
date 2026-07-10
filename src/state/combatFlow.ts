@@ -113,6 +113,7 @@ import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, s
 import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
 import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
 import { endShanty, resolveShipUnits } from './shipCrew';
+import { beginShipwreck } from './shipwreck';
 import { isInanimate, isStructure, structureAimCell, ramVsNonDoor } from '../engine/structures';
 import { rollStructureCritical, structureCollapseLog, type StructureCriticalResolved } from '../engine/structureCritical';
 import { actorIn } from './combatOrParty';
@@ -4438,6 +4439,26 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
   if (surrendered.length) {
     set({ battle: { ...battle, log: [...battle.log, ...evLines(surrendered, 'detail')] } });
     bus.emit(EVT.SCENE_DIRTY);
+  }
+  // NAUFRAGE du NAVIRE DE CAMPAGNE (MDG 13 l.674) : détecté AVANT le calcul victoire/défaite — si la coque
+  // du groupe a coulé sous ses héros (équipage passé par-dessus bord vivant, `resolveShipUnits`), l'issue
+  // n'est ni victoire ni défaite mais une SÉQUENCE de survie (Natation → échouage, `beginShipwreck`),
+  // quelle que soit la situation côté ennemis (on peut couler ET avoir coulé l'adversaire).
+  const vessel = get().vessel;
+  const campaignHull = vessel ? battle.combatants.find((c) => c.creatureId === vessel.vehicleId && c.bodyShape === 'vehicule') : undefined;
+  if (campaignHull && isOutOfAction(campaignHull)) {
+    const aboardIds = (campaignHull.crewIds ?? [])
+      .map((id) => battle.combatants.find((c) => c.id === id))
+      .filter((c): c is Combatant => !!c && c.kind === 'hero' && !c.dead)
+      .map((c) => c.id);
+    const anyOverboardAlive = aboardIds.some((id) => battle.combatants.find((c) => c.id === id)?.exitReason === 'naufrage');
+    if (aboardIds.length && anyOverboardAlive) {
+      openCombatEndCascade(get, set); // maladie/Corruption de fin de combat inline (aucun héros interactif)
+      finalizeBattle(get, set);       // writeback party (Blessures/États/morts) AVANT la nage
+      set({ battle: null });
+      beginShipwreck(get, set, { aboardIds });
+      return true;
+    }
   }
   // Un engin INERTE (affût servi, immune) ne compte JAMAIS comme un combattant vivant — ni côté allié
   // (`kind:'hero'`) ni côté ennemi : la victoire/défaite se joue sur les créatures (l'équipage), pas l'objet.

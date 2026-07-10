@@ -2,6 +2,9 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from '../../state/store';
 import { testScenarios } from './index';
 import { seedBattleRng } from '../../state/battleRng';
+import { findSpell } from '../../data';
+import { knowsCastingSkill, isArcaneSpell, isMagicMissile } from '../../engine/magic';
+import { spellEffectOps } from '../../engine/flowCore';
 
 const scen = testScenarios.find((s) => s.id === 'voyage-maritime')!;
 const get = () => useGame.getState();
@@ -61,6 +64,29 @@ describe('Scénario Voyage maritime — enregistrement & carte', () => {
     expect(marienburg.port).toBeTruthy();
     expect(marienburg.port!.lighthouse).toBe(true);
     expect(scen.extraScenes?.some((s) => s.id === 'test-mer-arrivee')).toBe(true);
+  });
+});
+
+describe('Scénario Voyage maritime — beat de Magie des mers (lancer en mer)', () => {
+  const navi = scen.makeParty().find((h) => h.id === 'mar-navi')!;
+
+  it('le Navigateur est un Astromancien : il maîtrise l’incantation et connaît Bienfait de Bel Shanaar', () => {
+    expect(knowsCastingSkill(navi, 'langue', 'magick')).toBe(true); // incantation des Arcanes
+    expect(knowsCastingSkill(navi, 'focalisation')).toBe(true); // Test étendu de Focalisation
+    expect(navi.spells).toContain('bienfait-de-bel-shanaar'); // runtime = id de sort
+    const sp = findSpell('Bienfait de Bel Shanaar')!;
+    expect(sp.domainId).toBe('cieux');
+    expect(isArcaneSpell(sp)).toBe(true); // → bouton « ✨ Focaliser »
+    expect(isMagicMissile(sp)).toBe(false); // non offensif → lançable en mer, hors combat
+  });
+
+  it('Bienfait de Bel Shanaar a un effet MÉCANIQUE : +2 DR aux Tests d’Orientation (skillDRBonus)', () => {
+    const sp = findSpell('Bienfait de Bel Shanaar')!;
+    const ops = spellEffectOps(sp.effects);
+    const dr = ops.find((o) => o.op === 'skillDRBonus') as { op: string; skill: string; bonus: number } | undefined;
+    expect(dr).toBeTruthy();
+    expect(dr!.skill).toBe('orientation');
+    expect(dr!.bonus).toBe(2);
   });
 });
 

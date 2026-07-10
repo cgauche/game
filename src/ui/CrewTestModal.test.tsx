@@ -3,45 +3,39 @@
  * de VOYAGE est à résolution forcée (le flux `crewTest` ne déclare pas `cancel`) : l'annuler figerait
  * la boucle de traversée (`runSeaDays` ne reprendrait jamais). #211.
  *
- * Le store est MOCKÉ (env `node` : `renderToStaticMarkup` + zustand ne lisent que l'état INITIAL,
- * cf. les autres tests d'UI qui rendent des composants sans store) — on injecte l'état lu par la modale.
+ * Corps PUR testé en props (patron `ShipDossierView`/`ShipDossier` — cf. docs/architecture.md) :
+ * pas de mock du store, robuste sous `isolate:false` (aucun `vi.mock` requis par cette suite).
  */
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import type { PendingCrewTest } from '../state/pendings';
+import type { BattleState } from '../state/store';
+import { CrewTestModalView } from './CrewTestModal';
 
-const h = vi.hoisted(() => ({ state: {} as Record<string, unknown>, noop: () => {} }));
-const noop = h.noop;
+const noop = () => {};
 
-vi.mock('../state/store', () => ({
-  useGame: Object.assign((sel: (s: Record<string, unknown>) => unknown) => sel(h.state), {
-    getState: () => h.state,
-    setState: h.noop,
-  }),
-}));
+const pending = (over: Partial<PendingCrewTest>): PendingCrewTest => ({
+  shipId: 'ship1', testTypeId: 'progression', moraleScore: 0, participants: [], ...over,
+});
 
-import { CrewTestModal } from './CrewTestModal';
-
-function setState(pending: Record<string, unknown>, battle: Record<string, unknown> | null) {
-  h.state = {
-    pendingCrewTest: pending, battle, party: [], net: { mode: 'local' },
-    crewTestRoll: noop, crewTestReroll: noop, crewTestBonusSL: noop, crewTestDarkPact: noop,
-    crewTestForceSuccess: noop, crewTestConfirm: noop, crewTestCancel: noop,
-  };
-}
-
-const pending = (over: Record<string, unknown>) => ({ shipId: 'ship1', testTypeId: 'progression', moraleScore: 0, participants: [], ...over });
+const render = (p: PendingCrewTest, battle: BattleState | null) =>
+  renderToStaticMarkup(
+    <CrewTestModalView
+      p={p} battle={battle} party={[]} owns={() => true}
+      roll={noop} reroll={noop} bonus={noop} darkPact={noop} force={noop}
+      confirm={noop} cancel={noop} cont={noop}
+    />
+  );
 
 describe('CrewTestModal — annulation réservée au COMBAT (#211)', () => {
   it('Test de VOYAGE : aucune action « Annuler » (résolution forcée)', () => {
-    setState(pending({ voyage: { kind: 'progression', shipName: 'La Cogue' } }), null);
-    const html = renderToStaticMarkup(<CrewTestModal />);
+    const html = render(pending({ voyage: { kind: 'progression', shipName: 'La Cogue' } }), null);
     expect(html).toContain('La Cogue'); // la modale rend bien
     expect(html).not.toContain('Annuler');
   });
 
   it('Test de COMBAT : « Annuler » présent (Action défaisable)', () => {
-    setState(pending({}), { combatants: [{ id: 'ship1', name: 'Le Loup' }] });
-    const html = renderToStaticMarkup(<CrewTestModal />);
+    const html = render(pending({}), { combatants: [{ id: 'ship1', name: 'Le Loup' }] } as unknown as BattleState);
     expect(html).toContain('Le Loup');
     expect(html).toContain('Annuler');
   });

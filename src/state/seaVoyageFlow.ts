@@ -34,7 +34,7 @@ import { dayIndex } from './upkeep';
 import { placeById, type WorldMap, type MapPlace, type MapRoute } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { PendingCrewTest, ShipManeuverParticipant } from './pendings';
-import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss, resolveShoreLeaveDesertion } from './shipCrew';
+import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss, resolveShoreLeaveDesertion, shipboardSouls } from './shipCrew';
 import { applyEffects, applyEffectsLoot } from './combatEffects';
 import type { Effect } from './scene';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
@@ -69,13 +69,14 @@ import { addCondition } from '../engine/conditions';
 import { findWhirlpool } from '../engine/seaPerils';
 import {
   rollBoardEvent, rollPortEvent, rollDaysToNextEvent, applyManannFactor, addManann, MANANN_BASE,
-  removeCargo, cargoTotalEnc, resolveFastVoyage, FAST_VOYAGE_PALIERS,
+  removeCargo, cargoTotalEnc, cargoOverload, resolveFastVoyage, FAST_VOYAGE_PALIERS,
   type SeaEventDef, type ManannMood, type PortProfile,
 } from '../engine/seaVoyage';
 import { navalMoveMod, navalTestTypeDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
 import { seaAutoResolves, voyageDayEntry, type VoyageOrders, type VoyageCadence } from './voyageCadence';
 import { crewRoleValue } from '../engine/crewMorale';
+import { beginShipwreck } from './shipwreck';
 import type { NightEntry } from './restFlow';
 import { subtract, toMoney, type Money } from '../engine/money';
 import { rollShipCritical } from '../engine/shipCritical';
@@ -194,6 +195,32 @@ export function vesselManann(vessel: CampaignVessel | null): ManannMood {
   return vessel?.manann ?? { ...MANANN_BASE, applied: [...MANANN_BASE.applied] };
 }
 
+/** Facteur de Moral de disette (MDG 14 l.171). */
+const FOOD_SHORTAGE_FACTOR = 'nourriture-insuffisante';
+
+/**
+ * VIVRES de l'équipage PNJ sur `days` jour(s) (MDG 14 l.238 : « rations de mer de la cale ») : l'effectif
+ * nominal (`shipboardSouls().crew`) consomme une ration/jour de `vessel.provisions`. À court → le facteur
+ * de Moral `nourriture-insuffisante` (−2d10, l.171) est ACTIVÉ pour le prochain recalcul hebdomadaire ;
+ * couvert → il est retiré (réapprovisionné). `provisions` absent = ravitaillement d'équipage réputé assuré
+ * (décision de périmètre de `waterLitres`) → aucune consommation, aucun facteur. Mute `vessel`. #245. */
+function consumeCrewProvisions(get: Get, set: Set, days: number): string[] {
+  const vessel = get().vessel;
+  if (!vessel) return [];
+  const crew = shipboardSouls(get).crew;
+  const need = crew * Math.max(0, days);
+  if (vessel.provisions == null || need <= 0) return []; // ravitaillement réputé assuré / pas d'équipage PNJ
+  const left = Math.max(0, vessel.provisions - need);
+  const short = vessel.provisions < need;
+  const factors = short
+    ? (vessel.morale.factors.includes(FOOD_SHORTAGE_FACTOR) ? vessel.morale.factors : [...vessel.morale.factors, FOOD_SHORTAGE_FACTOR])
+    : vessel.morale.factors.filter((f) => f !== FOOD_SHORTAGE_FACTOR);
+  set({ vessel: { ...vessel, provisions: left, morale: { ...vessel.morale, factors } } });
+  return [short
+    ? `Vivres d'équipage ÉPUISÉS — la ration de base n'est plus assurée (Moral : la disette pèsera au conseil de bord, MDG 14 l.171).`
+    : `Vivres d'équipage : −${need} (reste ${left} jour${left > 1 ? 's' : ''}-homme).`];
+}
+
 /** Le navire de campagne, ses données de type et sa COQUE de trajet (Blessures PERSISTÉES, #30). */
 function voyageShip(get: Get): { vessel: CampaignVessel; hull: Combatant } | null {
   const vessel = get().vessel;
@@ -207,6 +234,7 @@ function voyageShip(get: Get): { vessel: CampaignVessel; hull: Combatant } | nul
   if (vessel.wounds) hull.wounds = { ...hull.wounds, current: Math.min(vessel.wounds.current, hull.wounds.max) };
   hull.upgrades = vessel.upgrades ? [...vessel.upgrades] : undefined;
   hull.saboteurDR = vessel.saboteurDR;
+  hull.cargoEnc = cargoTotalEnc(vessel.cargo ?? []); // #243 — surcharge (cargoOverload) sur la manœuvre de trajet
   return { vessel, hull };
 }
 
@@ -242,7 +270,9 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; label: stri
   // Forcer le rythme (MDG 13 l.95-107) : le bonus de M du jour n'est acquis que si le Test de
   // Voile/Ramer du jour a été RÉUSSI ('won' — posé par la boucle à l'étape Progression).
   const pace = sea.paceToday === 'won' ? sea.forcePace ?? 0 : 0;
-  const baseM = (sail ? vd!.sail!.m : vd?.oars?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0) + pace;
+  // Surcharge de la cale (MDG 12 l.72-74) : −1/−2/−3 M par palier d'Encombrement supplémentaire.
+  const overloadM = cargoOverload(cargoTotalEnc(vessel?.cargo ?? []), vd?.capacity ?? 0).mMod;
+  const baseM = (sail ? vd!.sail!.m : vd?.oars?.m ?? 0) + navalMoveMod(traits) + fouling.mMod + (sea.eventMMod ?? 0) + (vessel?.crabs ? -1 : 0) + pace + overloadM;
   const aspect = windAspect(sea.heading, sea.windFrom);
   const cell = windEffect(sea.weather.vent, aspect, shipHasNavalTrait(traits, 'clinfoc'));
   const m = windAdjustedM(Math.max(0, baseM), cell, sail);
@@ -469,16 +499,22 @@ function finalizeFastVoyage(get: Get, set: Set): void {
     return;
   }
   applyFastPalier(get, set, fast.palierId);
+  // NAUFRAGE (MDG 13 l.674) : un palier de voyage rapide a pu couler la coque → survie, jamais l'accostage.
+  const sunk = get().vessel;
+  if (sunk && (sunk.wounds?.current ?? 1) <= 0) { beginShipwreck(get, set); return; }
   patchSea(get, set, { fast: { ...fast, pendingFinalize: false } });
-  // Eau douce des tonneaux (MDG 14 l.242) : consommation d'équipage médiane × jours — MÊME couture que
-  // le détaillé (`finishSeaDay`), le voyage rapide ne tirant pas la Température jour par jour.
+  // Eau douce des tonneaux (MDG 14 l.242) : POPULATION EMBARQUÉE (héros + effectif PNJ, `shipboardSouls`)
+  // × régime médian × jours — MÊME couture que le détaillé (`finishSeaDay`), le voyage rapide ne tirant pas
+  // la Température jour par jour.
   const vessel = get().vessel;
   const patch: Partial<CampaignVessel> = { lastVoyageMilles: plan.km };
   if (vessel?.waterLitres != null) {
-    const crew = get().party.filter((h) => !h.dead).length;
-    patch.waterLitres = Math.max(0, vessel.waterLitres - crew * dailyWaterLitres('mediane') * fast.days);
+    const souls = shipboardSouls(get).total;
+    patch.waterLitres = Math.max(0, vessel.waterLitres - souls * dailyWaterLitres('mediane') * fast.days);
   }
   if (vessel) set({ vessel: { ...vessel, ...patch } });
+  // Vivres de l'équipage PNJ sur toute la traversée rapide (MÊME couture que le détaillé).
+  log(get, set, consumeCrewProvisions(get, set, fast.days));
   const to = get().worldMap ? placeById(get().worldMap!, plan.toPlaceId) : undefined;
   set({ travelPlan: null });
   // Jours écoulés : franchissement par la couture UNIQUE `advanceTime` (entretien quotidien : faim/soif,
@@ -497,6 +533,9 @@ export function runSeaDays(get: Get, set: Set): void {
   while (guard++ < 200) {
     const plan = get().travelPlan;
     if (!plan?.sea || plan.interrupted || get().pendingCrewTest || get().pendingSteamSave) return;
+    // NAUFRAGE (MDG 13 l.674) : coque à 0 (Tourbillon/Collision/usure) → séquence de survie, jamais la
+    // suite de la traversée sur une épave.
+    if (plan.vehicle && plan.vehicle.wounds.current <= 0) { beginShipwreck(get, set); return; }
     const sea = plan.sea;
     const rng = battleRng();
     // VOYAGE RAPIDE (MDG 15 l.21-37) : ce plan ne déroule JAMAIS la journée par étape — le palier
@@ -707,17 +746,20 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
     } else lines.push('Les rats rôdent dans la cale (rien à gâter — pour l\'instant).');
   }
 
-  // Eau douce (ch.13 l.209-213 + ch.14 l.242) : consommation par bande de Température, si le navire
-  // suit ses tonneaux (`vessel.waterLitres`). La Soif elle-même suit la décision de périmètre de
-  // `provisions.ts` (volet Soif non simulé) : à sec, on AVERTIT.
+  // Eau douce (ch.13 l.209-213 + ch.14 l.242) : consommation par bande de Température × POPULATION EMBARQUÉE
+  // (héros + effectif PNJ nominal, `shipboardSouls` — MDG 14 l.238 : « l'équipage … a besoin de beaucoup
+  // d'eau »), si le navire suit ses tonneaux (`vessel.waterLitres`). La Soif elle-même suit la décision de
+  // périmètre de `provisions.ts` (volet Soif non simulé) : à sec, on AVERTIT.
   const vessel0 = get().vessel;
   if (vessel0?.waterLitres != null) {
-    const crew = get().party.filter((h) => !h.dead).length;
-    const need = crew * dailyWaterLitres(sea.weather.temperature);
+    const souls = shipboardSouls(get).total;
+    const need = souls * dailyWaterLitres(sea.weather.temperature);
     const left = Math.max(0, vessel0.waterLitres - need);
     set({ vessel: { ...vessel0, waterLitres: left } });
-    lines.push(left > 0 ? `Eau douce : −${need} L (reste ${left} L).` : 'Les tonneaux d\'eau douce sont À SEC — trouvez de l\'eau (MDG ch.14).');
+    lines.push(left > 0 ? `Eau douce : −${need} L (${souls} à bord, reste ${left} L).` : 'Les tonneaux d\'eau douce sont À SEC — trouvez de l\'eau (MDG ch.14).');
   }
+  // Vivres de l'équipage PNJ (MDG 14 l.238/250) : l'effectif nominal mange sur les rations de mer de la cale.
+  lines.push(...consumeCrewProvisions(get, set, 1));
 
   // Scorbut (MDG 14 l.230) : « pour chaque mois passé sans nourriture correcte » — Test de Résistance
   // Intermédiaire (+0), Facile (+40) avec la soupe de chou fermenté. Les rations de bord ne sont pas

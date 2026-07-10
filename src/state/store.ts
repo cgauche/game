@@ -16,7 +16,11 @@ import type { CombatCursor, ScreenDir } from './combatCursor';
 import { applyShipCollision } from './shipCollision';
 import type { ConjureForm } from '../engine/conjuredWeapons';
 import type { OvercastAxis } from '../engine/overcast';
-import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal } from './combatFlow';
+import { findFreeTile, removeEntity, checkTriggers, fireScheduledEffects, applyEffects, applyEffectsLoot, runFlow, assignGearAt, harvestVictoryCreature, pushReveal, activeCombatant as activeCombatantOf } from './combatFlow';
+import { t } from '../i18n';
+import { planClimb } from './climbMove';
+import { climbMovementCost } from '../engine/movement';
+import { controlsCombatant } from './netOwnership';
 export { activeCombatant, entityPickables, trampleTarget } from './combatFlow';
 import { EMPTY_FLOW, type Flow } from './flow';
 import type { MoveSnapshot } from './combatGeometry';
@@ -90,7 +94,7 @@ export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
 import { councilPay as councilPayFlow, councilClose as councilCloseFlow } from './shipCrew';
 import type { PendingCouncil } from './shipCrew';
 export type { PendingCouncil } from './shipCrew';
-import { Scene, Dialogue, Effect, isWalkable, type VictoryCondition } from './scene';
+import { Scene, Dialogue, Effect, isWalkable, sceneMetresPerTile, heightAt, type VictoryCondition } from './scene';
 import { placeCombatant } from './spawn';
 import { chebyshev, Pt } from './path';
 import { exploreStepDest, povStepDest, spawnFacing } from './exploreNav';
@@ -636,6 +640,11 @@ export interface GameState extends RollFlowActionsMap {
   loadProject: (scenes: Scene[], entryId: string, worldMap?: import('./worldMap').WorldMap | null) => void;
   transitionTo: (sceneId: string, entry?: string, pos?: Pt) => void;
   moveParty: (pt: Pt) => void;
+  /** ESCALADE d'une arête `WallSeg.climb` (LDB 15 l.52-57) : `from` (case basse, adjacente) → `to` (case
+   *  haute). Exploration = le groupe ; combat = le héros actif. `ladder` monte d'office (pas de Test) au
+   *  coût du Mouvement à ½ vitesse ; `surface` déclenche un Test d'Escalade influençable (cascade RollShell)
+   *  dont l'échec fait chuter, et consomme l'Action en combat (LDB 13 l.86-88). Geste EXPLICITE (overlay). */
+  climbAcross: (from: Pt, to: Pt) => void;
   /** Pas clavier d'exploration : déplace le groupe d'UNE surface voisine connectée dans la direction
    *  ÉCRAN poussée (flèches) — rampes/tabliers gérés par `exploreStepDest` (zéro ambiguïté de z). */
   stepPartyDir: (dir: ScreenDir) => void;
@@ -1235,6 +1244,11 @@ export interface CampaignVessel {
   /** Eau douce embarquée (litres — tonneau : 145 L, MDG ch.14 l.242). Absent = ravitaillement réputé
    *  assuré (même décision de périmètre que la Soif, cf. provisions.ts). */
   waterLitres?: number;
+  /** VIVRES de l'équipage PNJ embarqués (rations de mer de la cale, en jours-homme — MDG 14 l.238/250).
+   *  L'effectif nominal en consomme une/jour à `shipboardSouls().crew` ; à court → facteur de Moral
+   *  `nourriture-insuffisante` (−2d10, MDG 14 l.171). Absent = ravitaillement d'équipage réputé assuré
+   *  (même décision de périmètre que `waterLitres`). #245. */
+  provisions?: number;
   /** Milles de la DERNIÈRE traversée accomplie — vente à un port PRODUCTEUR : « Si le bateau a
    *  parcouru plus de 100 milles » (MDG 15 l.366). Absent = navire à quai depuis sa mise à l'eau. */
   lastVoyageMilles?: number;
@@ -1662,6 +1676,37 @@ export const useGame = create<GameState>((set, get) => ({
         set({ pendingInteract: null });
         get().interactEntity(pi);
       }
+    }
+  },
+
+  climbAcross: (from, to) => {
+    const { scene, mode, battle } = get();
+    if (!scene) return;
+    // Grimpeur (LDB 15 l.57) : porté par le meneur (exploration) ou le héros actif (combat).
+    const mover = mode === 'battle' ? (battle ? activeCombatantOf(battle) : undefined) : get().party.find((h) => !h.dead && h.wounds.current > 0);
+    const hasGrimpeur = !!mover?.talents?.some((tl) => tl.talentId === 'grimpeur' && tl.times > 0);
+    const plan = planClimb(scene, from, to, hasGrimpeur, mode === 'battle' ? mover?.id : undefined);
+    if (!plan) return; // arête non grimpable → refus silencieux (aucun marqueur ne s'y affiche)
+    if (plan.kind === 'impossible') {
+      get().log(t('climb.tooHard', { name: mover?.name ?? 'Le grimpeur' }));
+      return;
+    }
+    if (mode === 'exploration') {
+      if (!isWalkable(scene, to.x, to.y, to.z ?? 0)) return;
+      get().moveParty(to); // monte (optimiste) ; l'échec du Test fera chuter au pied via l'Effet `fall`
+      if (plan.kind === 'test') runFlow(get, set, plan.flow);
+      return;
+    }
+    if (mode === 'battle') {
+      if (!battle || battle.over || !mover || !controlsCombatant(get(), mover)) return;
+      const metres = Math.abs(heightAt(scene, to.x, to.y, to.z ?? 0) - heightAt(scene, from.x, from.y, from.z ?? 0));
+      const cost = climbMovementCost(metres, sceneMetresPerTile(scene)); // ½ vitesse (LDB 15 l.53)
+      placeCombatant(mover, scene, to); // hisse (optimiste) ; échec du Test → `fall` au pied
+      // `surface` = Test requis → consomme l'Action (LDB 13 l.86-88) ; `ladder` = sans Test → Mouvement seul.
+      const acted = plan.kind === 'test' ? true : battle.acted;
+      set({ battle: { ...battle, acted, action: null, movementUsed: (battle.movementUsed ?? 0) + cost, movedPreAction: battle.movedPreAction || !battle.acted, reachable: new Map(), preview: null } });
+      bus.emit(EVT.SCENE_DIRTY);
+      if (plan.kind === 'test') runFlow(get, set, plan.flow);
     }
   },
 

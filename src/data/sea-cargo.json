@@ -357,6 +357,33 @@
     },
     "dumpingPctOfBase": 25
   },
+  "overload": {
+    "_source": "MDG ch.12 l.70-75 (Contenance) — « Un navire chargé d'une cargaison supérieure à cette valeur subit des pénalités à sa vitesse et à sa manœuvrabilité. » Degré d'Encombrement supplémentaire → effet. `fromPct` = seuil STRICT (>) en % de la Contenance ; `mMod`/`manoeuvreDR` = −M et −DR Manœuvre. `hardCapPct` 150 = « Impossible de prendre la mer ».",
+    "hardCapPct": 150,
+    "paliers": [
+      {
+        "id": "surcharge-1",
+        "fromPct": 100,
+        "label": "Surchargé",
+        "mMod": -1,
+        "manoeuvreDR": -1
+      },
+      {
+        "id": "surcharge-2",
+        "fromPct": 120,
+        "label": "Fortement surchargé",
+        "mMod": -2,
+        "manoeuvreDR": -2
+      },
+      {
+        "id": "surcharge-3",
+        "fromPct": 140,
+        "label": "Dangereusement surchargé",
+        "mMod": -3,
+        "manoeuvreDR": -3
+      }
+    ]
+  },
   "opportunite": {
     "investMaxEnc": true,
     "test": {

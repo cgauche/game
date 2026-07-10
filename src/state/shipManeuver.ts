@@ -19,6 +19,7 @@ import { DIFFICULTY_MODIFIERS } from '../engine/types';
 import { testValue, partyBest } from '../engine/skills';
 import { resolveShipManeuver, type ShipManeuverOutcome } from '../engine/shipNavigation';
 import { navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR } from '../engine/navalTraits';
+import { cargoOverload } from '../engine/seaVoyage';
 import { exposedCrew } from '../engine/shipCritical';
 import { crewRoleValue, crewTalentDR, moraleBand } from '../engine/crewMorale';
 import { placementPenalty } from './shipPostes';
@@ -136,6 +137,9 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
   const place = vd?.capacity
     ? placementPenalty((ship.postes ?? []).flatMap((p) => (p.side ? [{ side: p.side, weight: p.item.enc }] : [])), vd.capacity)
     : { m: 0, man: 0, navDR: 0 };
+  // SURCHARGE de la cale (MDG ch.12 l.70-75, DISTINCT du déséquilibre de bord) : −1/−2/−3 M ET DR Manœuvre par
+  // palier d'Encombrement supplémentaire (`ship.cargoEnc` recopié de `CampaignVessel.cargo`). Cumulée aux autres.
+  const overload = vd?.capacity ? cargoOverload(ship.cargoEnc ?? 0, vd.capacity) : null;
   // « Lissage » → op `moveMod` (M +1, l.293) ; « Peu maniable » → op `skillDRBonus` (Voile/Ramer, −1/niveau,
   // l.173, DISTINCT du Man) — lus en GameOp (`naval-traits.json`, langue unique) sur Traits+Améliorations.
   // #221 : op `skillDRBonus` ciblée par `testType` (ex. « manoeuvre ») — agnostique de skillId, cumulée.
@@ -145,8 +149,8 @@ export function shipManeuverParams(ship: Combatant): ManeuverParams {
   const navalTraits = [...(vd?.traits ?? []), ...(ship.upgrades ?? [])];
   const mult = navalMoveMult(navalTraits);
   return {
-    baseM: Math.round(((baseM + navalMoveMod(navalTraits) + place.m) * mult.num) / mult.den),
-    manoeuvre: (vd?.manoeuvre ?? 0) + place.man,
+    baseM: Math.round(((baseM + navalMoveMod(navalTraits) + place.m + (overload?.mMod ?? 0)) * mult.num) / mult.den),
+    manoeuvre: (vd?.manoeuvre ?? 0) + place.man + (overload?.manoeuvreDR ?? 0),
     extraDR: navalSkillTestDR(navalTraits, skillId) + navalTestTypeDR(navalTraits, 'manoeuvre') + place.navDR,
     skillId,
   };

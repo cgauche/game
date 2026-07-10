@@ -3,7 +3,7 @@ import { useGame } from '../state/store';
 import type { CampaignVessel } from '../state/store';
 import type { Combatant } from '../engine/types';
 import { findVehicleById } from '../data';
-import { findCargoById, findManannFactor, cargoTotalEnc } from '../engine/seaVoyage';
+import { findCargoById, findManannFactor, cargoTotalEnc, cargoOverload, overloadMaxEnc } from '../engine/seaVoyage';
 import { foulingEffects } from '../engine/seaNavigation';
 import { moraleBand, weeklyCrewWageBrass, findMoraleFactor } from '../engine/crewMorale';
 import { provisioningManifest } from '../engine/provisions';
@@ -28,10 +28,10 @@ const RIG_LABEL: Record<string, string> = { avirons: 'Avirons', voile: 'Voile', 
 /** Humeur de Manann (MDG ch.15) → ton par SIGNE : favorable = ok, courroucée = danger, neutre = neutral. */
 const manannTone = (score: number): GaugeTone => (score > 0 ? 'ok' : score < 0 ? 'danger' : 'neutral');
 
-/** Surcharge de soute : fraction de la Contenance occupée → ton (pleine = danger, proche = warn). */
+/** Surcharge de soute (MDG 12 l.70-75) : au-delà de la Contenance = surcharge (danger), proche = warn. */
 const cargoTone = (enc: number, cap: number): GaugeTone => {
   const frac = cap > 0 ? enc / cap : 0;
-  return frac >= 1 ? 'danger' : frac >= 0.8 ? 'warn' : 'ok';
+  return frac > 1 ? 'danger' : frac >= 0.8 ? 'warn' : 'ok';
 };
 
 /** Coque : fraction de Blessures restantes → ton (basse = danger, entamée = warn). */
@@ -67,6 +67,10 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu' 
   const capacity = vd.ship.capacity;
   const cargo = vessel.cargo ?? [];
   const cargoEnc = cargoTotalEnc(cargo);
+  // Surcharge de la cale (MDG 12 l.70-75) : palier d'assiette + marques de jauge (120/140/150 % de la Contenance).
+  const overload = cargoOverload(cargoEnc, capacity);
+  const cargoMax = overloadMaxEnc(capacity); // domaine de la jauge = plafond dur (150 %)
+  const cargoMarks = [Math.round(capacity), Math.round(capacity * 1.2), Math.round(capacity * 1.4)];
 
   const manann = vessel.manann;
   const manannScore = manann?.score ?? 0;
@@ -75,10 +79,13 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu' 
   const foulLevel = vessel.fouling?.level ?? 0;
   const criticals = vessel.criticals ?? [];
 
-  // Autonomie en eau (jours) : `provisioningManifest` donne l'eau requise/jour de l'équipage joueur
-  // (constat #241 : seuls les héros consomment) — autonomie = eau embarquée ÷ besoin quotidien.
-  const dailyWater = provisioningManifest(party, vessel.waterLitres, 1).eauRequiseLitres;
+  // POPULATION EMBARQUÉE (#245) : héros + effectif PNJ nominal présent (`ship.crew − crewLost`).
+  const crewCount = Math.max(0, (vd.ship.crew ?? 0) - (vessel.crewLost ?? 0));
+  // Autonomie en eau (jours) : eau requise/jour de TOUTE la population embarquée — autonomie = eau ÷ besoin.
+  const dailyWater = provisioningManifest(party, vessel.waterLitres, 1, { count: crewCount, provisions: vessel.provisions }).eauRequiseLitres;
   const autonomyDays = vessel.waterLitres != null && dailyWater > 0 ? Math.floor(vessel.waterLitres / dailyWater) : null;
+  // Autonomie en vivres d'équipage (jours) : rations de cale ÷ effectif PNJ.
+  const provisionDays = vessel.provisions != null && crewCount > 0 ? Math.floor(vessel.provisions / crewCount) : null;
 
   const weeklyWageBrass = weeklyCrewWageBrass(vessel.crew);
 
@@ -125,10 +132,11 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu' 
               <NotchGauge
                 label="Soute"
                 value={cargoEnc}
-                max={capacity}
+                max={cargoMax}
+                marks={cargoMarks}
                 stacked
                 tone={cargoTone}
-                format={(v, m) => `${v} / ${m} Enc`}
+                format={(v) => `${v} / ${capacity} Enc${overload.palierId ? ` — ${overload.label} (${overload.ratioPct} %)` : ''}`}
               />
             </section>
 
@@ -145,9 +153,14 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu' 
                 </div>
               )}
               {vessel.saboteurDR ? <p className="port-hint">Sabotage actif : <b>{vessel.saboteurDR} DR</b> aux Tests d’équipage (MDG ch.14).</p> : null}
+              <p className="port-hint">À bord : <b>{party.filter((h) => !h.dead).length} héros + {crewCount} d’équipage</b> (MDG 14 l.238).</p>
               <p className="port-hint">
                 Eau douce : <b>{vessel.waterLitres != null ? `${vessel.waterLitres} L` : 'ravitaillement réputé assuré'}</b>
                 {autonomyDays != null ? ` · autonomie ~${autonomyDays} jour(s)` : ''}
+              </p>
+              <p className="port-hint">
+                Vivres d’équipage : <b>{vessel.provisions != null ? `${vessel.provisions} jour(s)-homme` : 'ravitaillement réputé assuré'}</b>
+                {provisionDays != null ? ` · autonomie ~${provisionDays} jour(s)` : ''}
               </p>
               <p className="port-hint">Dernière traversée : <b>{vessel.lastVoyageMilles != null ? `${vessel.lastVoyageMilles} milles` : 'à quai depuis la mise à l’eau'}</b></p>
             </section>
@@ -171,7 +184,8 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu' 
           <div className="layout-sidebar port-trade">
             <section className="panel port-section">
               <h3>Cale</h3>
-              <NotchGauge label="Soute" value={cargoEnc} max={capacity} stacked tone={cargoTone} format={(v, m) => `${v} / ${m} Enc`} />
+              <NotchGauge label="Soute" value={cargoEnc} max={cargoMax} marks={cargoMarks} stacked tone={cargoTone} format={(v) => `${v} / ${capacity} Enc${overload.palierId ? ` — ${overload.label} (${overload.ratioPct} %)` : ''}`} />
+              {overload.palierId && <p className="port-hint">Surcharge : <b>{overload.mMod} M</b>, <b>{overload.manoeuvreDR} DR Manœuvre</b> (MDG ch.12 l.70-75).{!overload.canSail && ' Impossible de prendre la mer.'}</p>}
               {cargo.length === 0 ? (
                 <p className="port-hint">La cale est vide.</p>
               ) : (

@@ -61,8 +61,13 @@ const EVENTS = seaEventsJson as unknown as {
   fastVoyage: { paliers: FastVoyagePalier[] };
 };
 
+/** Palier de SURCHARGE de la cale (MDG ch.12 l.70-75) : `fromPct` = seuil strict (>) en % de la Contenance,
+ *  `mMod`/`manoeuvreDR` = −M et −DR Manœuvre appliqués au navire. */
+export interface OverloadPalier { id: string; fromPct: number; label: string; mMod: number; manoeuvreDR: number }
+
 const CARGO = seaCargoJson as unknown as {
   cargoes: CargoDef[];
+  overload: { hardCapPct: number; paliers: OverloadPalier[] };
   buy: { availabilityMultiplier: number; merchantSkill: { d10: number; plus: number }; bigPortSkill: { d10: number; plus: number }; partialPurchaseSellerDR: number; surplusSellerDR: number };
   sell: {
     offerPrice: { sum: number; pct: number }[];
@@ -87,6 +92,47 @@ export const CARGOES = CARGO.cargoes;
 export const OPPORTUNITE = CARGO.opportunite;
 export const findCargoById = (id: string): CargoDef | undefined => CARGO.cargoes.find((c) => c.id === id);
 export const findManannFactor = (id: string): ManannFactor | undefined => EVENTS.manann.factors.find((f) => f.id === id);
+
+// ── Surcharge de la cale (MDG ch.12 l.70-75) ──────────────────────────────────────────────────────
+
+/** Plafond DUR de charge (% de la Contenance) : au-delà « Impossible de prendre la mer » (MDG 12 l.75). */
+export const OVERLOAD_HARD_CAP_PCT: number = CARGO.overload.hardCapPct;
+
+/** État de SURCHARGE d'une cale : palier RAW atteint + effets, et `canSail` = false au-delà du plafond dur. */
+export interface CargoOverload {
+  /** Charge en % de la Contenance (affichage). */
+  ratioPct: number;
+  /** id du palier atteint (`null` = charge ≤ Contenance, aucun effet). */
+  palierId: string | null;
+  label: string;
+  /** −M appliqué au navire (MDG 12 l.72-74). */
+  mMod: number;
+  /** −DR Manœuvre appliqué au navire (MDG 12 l.72-74). */
+  manoeuvreDR: number;
+  /** `false` au-delà du plafond dur (> 150 % — MDG 12 l.75 : impossible de prendre la mer). */
+  canSail: boolean;
+}
+
+/** Palier de surcharge d'une cale chargée à `enc` Enc pour une Contenance `capacity` (MDG 12 l.70-75).
+ *  Seuils STRICTS (fraction non arrondie pour éviter le faux palier aux bornes). PUR. */
+export function cargoOverload(enc: number, capacity: number): CargoOverload {
+  const ratio = capacity > 0 ? enc / capacity : 0;
+  let chosen: OverloadPalier | null = null;
+  for (const p of CARGO.overload.paliers) if (ratio > p.fromPct / 100) chosen = p; // paliers croissants → dernier franchi
+  return {
+    ratioPct: Math.round(ratio * 100),
+    palierId: chosen?.id ?? null,
+    label: chosen?.label ?? 'Charge nominale',
+    mMod: chosen?.mMod ?? 0,
+    manoeuvreDR: chosen?.manoeuvreDR ?? 0,
+    canSail: ratio <= OVERLOAD_HARD_CAP_PCT / 100,
+  };
+}
+
+/** Enc maximum EMBARQUABLE avant le plafond dur (MDG 12 l.75) — Contenance × 150 %. PUR. */
+export function overloadMaxEnc(capacity: number): number {
+  return Math.floor(capacity * OVERLOAD_HARD_CAP_PCT / 100);
+}
 
 // ── Humeur de Manann (l.83-125) ──────────────────────────────────────────────────────────────────
 

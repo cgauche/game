@@ -460,6 +460,7 @@ export const fr = {
   'cs.shameOvercome': '{name} surmonte sa honte (FM 🎲 {roll}/{target}) et attaque {foe} malgré la Bénédiction de Protection.',
   'cs.shameBlocked': '{name} ne peut se résoudre à frapper {foe} (Bénédiction de Protection) — il doit choisir une autre cible ou une autre Action.',
   'cs.standUp': '{name} se relève.',
+  'climb.tooHard': '{name} ne peut escalader cette paroi : elle est bien trop difficile sans le Talent Grimpeur.',
   'cs.manPoste': '{name} prend en main {weapon}.',
   'cs.joinPoste': '{name} rejoint l’équipe de {weapon}.',
   'cs.leavePoste': '{name} quitte {weapon}.',

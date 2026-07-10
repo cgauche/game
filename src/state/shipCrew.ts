@@ -125,6 +125,22 @@ export function shipMoraleScore(get: Get, ship: Combatant): number {
  * marins déjà retirés de la campagne par Embrigadement (MDG 15 l.245, `CampaignVessel.crewLost`). Les
  * morts/inconscients de combat (Éclats, critiques « Équipage ») alimentent aussi le déficit. Lit l'état persistant
  * du vaisseau de campagne comme `shipMoraleScore` (keyé `creatureId === vehicleId`). */
+/**
+ * POPULATION EMBARQUÉE qui consomme eau et vivres (MDG 14 l.238 : « l'équipage … a besoin de beaucoup d'eau
+ * et de nourriture pour rester en forme ») — SOURCE CANONIQUE unique : les héros (PJ à bord) PLUS l'effectif
+ * PNJ NOMINAL encore présent (`ship.crew − crewLost`, MÊME agrégat que le Manque de bras / la désertion /
+ * l'Embrigadement). Le roster salarié (`vessel.crew`, #216) REMPLIT ces postes nominaux — jamais des corps EN
+ * SUS (la caractéristique Équipage du type EST le complément entier, MDG 12 l.85) → jamais additionné, sous
+ * peine de double compte. `heroes`/`crew` séparés pour le manifeste (les héros mangent leurs rations, l'équipage
+ * ses vivres de cale). PUR (lit le store). */
+export function shipboardSouls(get: Get): { heroes: number; crew: number; total: number } {
+  const heroes = get().party.filter((h) => !h.dead).length;
+  const vessel = get().vessel;
+  const nominal = vessel ? findVehicleById(vessel.vehicleId)?.ship?.crew ?? 0 : 0;
+  const crew = Math.max(0, nominal - (vessel?.crewLost ?? 0));
+  return { heroes, crew, total: heroes + crew };
+}
+
 export function shipUndercrew(get: Get, ship: Combatant, combatants: Combatant[]): UndercrewPenalty {
   const nominal = findVehicleById(ship.creatureId ?? '')?.ship?.crew ?? 0;
   const exposed = exposedCrew((ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c)).length;

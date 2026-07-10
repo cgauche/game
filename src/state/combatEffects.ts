@@ -41,6 +41,7 @@ import { isWeatherWarded, exposureTarget, type ExposureKind } from '../engine/ex
 import { findSpellById } from '../data/index';
 import { toBrass, fromBrass } from '../engine/money';
 import { Effect, setDoorOpen } from './scene';
+import { placeCombatant } from './spawn';
 import { type Flow, type FlowTest, type EffectOp, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, leafOpsCtx, EMPTY_FLOW, spellOps } from './flow';
 import { inRect, combatantsWithinRadius } from './combatGeometry';
 import { startCascade, registerCascadeApplier } from './cascade';
@@ -873,6 +874,10 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
         const knocked = !wasDown && hasCondition(c, 'a-terre');
         return t('eff.fallTarget', { name: c.name, lost, aterre: knocked ? t('eff.fragATerre') : '' });
       });
+      // `to` ramène le faller au PIED (chute → il retombe en bas, LDB 15) : le GROUPE hors combat, ou
+      // les combattants nommés en combat (escalade ratée → hisse annulée par `placeCombatant`).
+      const sc = env.get().scene;
+      if (e.to && env.get().battle && sc) for (const c of targets) placeCombatant(c, sc, e.to);
       if (targets.length) {
         env.set({ ...touchActors(env.get()), ...(e.to && !env.get().battle ? { partyPos: e.to } : {}) });
         env.log(t('eff.fall', { m, lines: lines.join(' · ') }));
@@ -1221,6 +1226,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
           ...(e.hullMax != null ? { wounds: { current: e.hullCurrent ?? e.hullMax, max: e.hullMax } } : {}),
           ...(e.saboteurDR != null ? { saboteurDR: e.saboteurDR } : {}),
           ...(e.waterLitres != null ? { waterLitres: Math.max(0, e.waterLitres) } : {}),
+          ...(e.provisions != null ? { provisions: Math.max(0, e.provisions) } : {}),
           ...(e.crew && e.crew.length ? { crew: e.crew.filter((h) => h.roleId && h.count > 0) } : {}),
         },
       });
@@ -1270,6 +1276,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       else if (e.hullCurrent != null && vessel.wounds) { next.wounds = { ...vessel.wounds, current: e.hullCurrent }; parts.push(`coque ${next.wounds.current}/${next.wounds.max}`); }
       if (e.saboteurDR != null) { next.saboteurDR = clampSaboteurDR(e.saboteurDR); parts.push(`sabotage ${next.saboteurDR} DR`); }
       if (e.waterLitres != null) { next.waterLitres = Math.max(0, e.waterLitres); parts.push(`eau ${next.waterLitres} L`); }
+      if (e.provisions != null) { next.provisions = Math.max(0, e.provisions); parts.push(`vivres ${next.provisions} j`); }
       if (e.crew && e.crew.length) { next.crew = e.crew.filter((h) => h.roleId && h.count > 0); parts.push(`équipage ${next.crew.reduce((s, h) => s + h.count, 0)}`); }
       if (!parts.length) { env.log('Ajustement du navire : aucun champ fourni — sans effet.'); return; }
       env.set({ vessel: next });

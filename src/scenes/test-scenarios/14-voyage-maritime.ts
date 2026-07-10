@@ -45,6 +45,11 @@ function crew(): Combatant[] {
   navi.shipRole = 'navigateur';
   skill(navi, 'orientation', 55);
   skill(navi, 'savoir', 40, 'oceans'); // bonus d'Orientation au phare (MDG ch.13 l.335)
+  // Astromancien de bord (Magie des mers, MDG 02 l.176) : lance Bienfait de Bel Shanaar (Domaine des
+  // Cieux, MDG 02 l.238) en mer — +2 DR aux Tests d'Orientation qui l'impliquent (Test d'équipage compris).
+  skill(navi, 'langue', 40, 'magick');
+  skill(navi, 'focalisation', 40);
+  navi.spells = ['bienfait-de-bel-shanaar'];
   navi.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.48 };
 
   const vigie = createHero({ speciesId: 'humains-reiklander', careerId: 'eclaireur', name: 'Vigie Perla', motivation: 'Test', rng: makeRNG(4804), id: 'mar-vigie' });
@@ -69,7 +74,9 @@ const departPort = buildScene({
     'Salzenmund, port de départ. Ouvrez la carte du monde et prenez la route MARITIME de Marienburg (480 milles) ' +
     'en mode « Mer » : votre cogue appareille (state.vessel). Chaque jour de mer = météo/vent, Test d’équipage de ' +
     'Progression puis d’Orientation, entretien de la coque le soir (elle part endommagée), et une halte de nuit. ' +
-    'À l’approche de Marienburg, la vigie guette le phare. À l’accostage, l’écran Port ouvre réparation et commerce.',
+    'À l’approche de Marienburg, la vigie guette le phare. À l’accostage, l’écran Port ouvre réparation et commerce. ' +
+    'Le Navigateur est aussi Astromancien : depuis sa fiche → « Sorts », il peut Focaliser puis lancer Bienfait de Bel ' +
+    'Shanaar (Domaine des Cieux) en mer pour gagner +2 DR à ses Tests d’Orientation.',
 });
 
 const arrivePort = buildScene({
@@ -124,7 +131,7 @@ export const scenario: TestScenario = {
     'à l’atterrage (Perception), entretien de coque le soir (part endommagée), haltes de nuit, puis ACCOSTAGE au ' +
     'Grand Port (écran Port : réparer/caréner/commerce). Équipage = les PJ, chacun à son rôle (Capitaine/Timonier/' +
     'Navigateur/Vigie).',
-  partyNote: 'Équipage : Capitaine Brenner (Commandement) · Timonière Hilda (Voile/Charpentier) · Navigateur Ansmann (Orientation) · Vigie Perla (Perception)',
+  partyNote: 'Équipage : Capitaine Brenner (Commandement) · Timonière Hilda (Voile/Charpentier) · Navigateur Ansmann (Orientation + Astromancien : Bienfait de Bel Shanaar) · Vigie Perla (Perception)',
   makeParty: crew,
   scene: departPort,
   extraScenes: [arrivePort],

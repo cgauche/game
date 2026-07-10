@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../state/store';
 import { findVehicleById, NAVAL_TRAITS, findNavalPortById, crewRoles, type NavalPortData } from '../data';
-import { findCargoById, type PortProfile } from '../engine/seaVoyage';
+import { findCargoById, cargoOverload, cargoTotalEnc, type PortProfile } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { foulingEffects } from '../engine/seaNavigation';
@@ -240,13 +240,17 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
           <div className="layout-sidebar port-trade">
             <section className="panel port-section">
               <h3>Acheter — offres de l’escale</h3>
-              <p className="port-hint">Cale libre : <b>{port.freeEnc} Enc</b></p>
+              <p className="port-hint">
+                Cale libre : <b>{port.freeEnc} Enc</b>
+                {port.maxLoadEnc > port.freeEnc && <> · surcharge possible jusqu’à <b>+{port.maxLoadEnc - port.freeEnc} Enc</b> (jusqu’à 150 %, MDG ch.12)</>}
+              </p>
               {port.offers.length === 0 && <p className="port-hint">Aucune cargaison à vendre dans ce port (production « minimum vital » ou stock épuisé).</p>}
               <div className="panel-grid">
                 {port.offers.map((o) => {
-                  const want = buyEnc[o.cargoId] ?? Math.min(o.enc, port.freeEnc);
+                  const want = buyEnc[o.cargoId] ?? Math.min(o.enc, Math.max(port.freeEnc, 1));
                   const estCost = toMoney({ gold: Math.round(want * o.basePrice) });
                   const affordable = canAfford(money, estCost);
+                  const wouldOverload = want > port.freeEnc; // achat qui pousse en zone de surcharge (#243)
                   return (
                     <div key={o.cargoId} className="market-offer">
                       <div className="market-offer-head">
@@ -255,18 +259,18 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                       </div>
                       <div className={`market-offer-buy ${affordable ? '' : 'unaffordable'}`}>
                         <input
-                          type="number" min={1} max={Math.min(o.enc, port.freeEnc)} value={want}
-                          onChange={(e) => setBuyEnc((s) => ({ ...s, [o.cargoId]: Math.max(1, Math.min(o.enc, port.freeEnc, Number(e.target.value) || 1)) }))}
+                          type="number" min={1} max={Math.min(o.enc, port.maxLoadEnc)} value={want}
+                          onChange={(e) => setBuyEnc((s) => ({ ...s, [o.cargoId]: Math.max(1, Math.min(o.enc, port.maxLoadEnc, Number(e.target.value) || 1)) }))}
                         />
                         <span className="market-offer-total">Total ≈ <Coins money={estCost} /></span>
                         <button
                           type="button"
                           className="btn small"
-                          disabled={isGuest || port.freeEnc <= 0 || !affordable}
-                          title={affordable ? 'Estimation avant Marchandage' : 'Bourse insuffisante'}
+                          disabled={isGuest || port.maxLoadEnc <= 0 || !affordable}
+                          title={!affordable ? 'Bourse insuffisante' : wouldOverload ? 'Embarquer en surcharge (pénalités d’assiette, MDG ch.12)' : 'Estimation avant Marchandage'}
                           onClick={() => buy(o.cargoId, want)}
                         >
-                          Acheter
+                          {wouldOverload ? 'Surcharger' : 'Acheter'}
                         </button>
                       </div>
                     </div>

@@ -11,6 +11,7 @@ import {
   type Allure, ALLURE_LABEL, availableAllures, partyFullyMounted, partyMounts,
 } from '../engine/mountTravel';
 import { rationCount, provisioningManifest } from '../engine/provisions';
+import { cargoOverload, cargoTotalEnc } from '../engine/seaVoyage';
 import { findVehicleById } from '../data';
 import { formatMoney, canAfford } from '../engine/money';
 import { Coins } from './Coins';
@@ -279,6 +280,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const seaRig: 'voile' | 'avirons' = vesselData?.ship?.sail ? 'voile' : 'avirons';
   const seaSteam = !!vessel && shipHasNavalTrait([...(vesselData?.ship?.traits ?? []), ...(vessel.upgrades ?? [])], 'propulsion-a-vapeur');
   const seaPaceChoices = seaSteam || !(vesselData?.ship?.sail || vesselData?.ship?.oars) ? [0] : [0, 1, 2].filter((b) => b === 0 || forcePaceDifficulty(b, seaRig) != null);
+  // Surcharge de la cale (MDG 12 l.70-75) : >150 % = « Impossible de prendre la mer » → appareillage bloqué.
+  const seaOverload = vessel && vesselData?.ship ? cargoOverload(cargoTotalEnc(vessel.cargo ?? []), vesselData.ship.capacity) : null;
+  // Population embarquée pour le manifeste d'avitaillement (#245) : héros + effectif PNJ nominal présent.
+  const seaCrewCount = vessel ? Math.max(0, (vesselData?.ship?.crew ?? 0) - (vessel.crewLost ?? 0)) : 0;
 
   // Estimations du trajet sélectionné (mêmes formules que le flux — RAW l.207-224).
   const base = baseHoursPerDay(map);
@@ -297,7 +302,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
 
   // Avitaillement au départ EN MER (#241) : le groupe qui appareille sans vivres/eau le SAIT.
   const seaDaysEstimated = mode === 'mer' && selRoute && seaM > 0 ? Math.max(1, Math.ceil(selRoute.km / (18 * seaM))) : 0;
-  const provisions = mode === 'mer' && seaDaysEstimated > 0 ? provisioningManifest(party, vessel?.waterLitres, seaDaysEstimated) : null;
+  const provisions = mode === 'mer' && seaDaysEstimated > 0 ? provisioningManifest(party, vessel?.waterLitres, seaDaysEstimated, { count: seaCrewCount, provisions: vessel?.provisions }) : null;
 
   const fmtDuration = (p: NonNullable<typeof plan>) =>
     p.days <= 1 ? `≈ ${Math.max(1, Math.round(p.travelMinutes / 60))} h` : `${p.days} jours (${hours} h de route/jour)`;
@@ -644,7 +649,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               <span className={`wm-provision-item ${provisions.eauDispoLitres != null && provisions.eauDispoLitres < provisions.eauRequiseLitres ? 'short' : ''}`}>
                 Eau {provisions.eauDispoLitres != null ? `${provisions.eauDispoLitres} L` : '—'}/{provisions.eauRequiseLitres} L
               </span>
-              {!provisions.suffisant && <span className="wm-provision-item short">Avitaillement insuffisant pour {provisions.joursEstimes} jour(s) estimé(s).</span>}
+              {!provisions.suffisant && <span className="wm-provision-item short">Avitaillement insuffisant pour {provisions.joursEstimes} jour(s) estimé(s) ({provisions.souls} à bord).</span>}
+              {seaOverload?.palierId && <span className="wm-provision-item short">Cale surchargée à {seaOverload.ratioPct} % : {seaOverload.label}{seaOverload.canSail ? ` (${seaOverload.mMod} M, ${seaOverload.manoeuvreDR} DR Manœuvre)` : ' — impossible de prendre la mer'}.</span>}
             </div>
           )}
           {mode === 'mer' && vessel ? <ShipRolesPanel /> : rule('travel-etapes') && <TravelRolesPanel />}
@@ -653,9 +659,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             <button
               type="button"
               className="btn btn-primary"
-              disabled={(mode === 'mer' ? !vessel || seaM <= 0 : kmh <= 0 || !affordable) || isGuest}
+              disabled={(mode === 'mer' ? !vessel || seaM <= 0 || (seaOverload != null && !seaOverload.canSail) : kmh <= 0 || !affordable) || isGuest}
               title={isGuest ? 'L’hôte décide des départs.'
                 : mode === 'mer' && (!vessel || seaM <= 0) ? 'Aucun navire de campagne en état de prendre la mer.'
+                : mode === 'mer' && seaOverload != null && !seaOverload.canSail ? `Cale surchargée à ${seaOverload.ratioPct} % — impossible de prendre la mer (MDG ch.12). Allégez la cale.`
                 : mode === 'mer' && provisions && !provisions.suffisant ? 'Le navire appareille sans provisions suffisantes.'
                 : mode !== 'mer' && kmh <= 0 ? 'Le groupe est trop chargé pour avancer — allégez les sacs.'
                 : mode !== 'mer' && !affordable ? `Bourse insuffisante (${cost ? formatMoney(cost) : ''})`

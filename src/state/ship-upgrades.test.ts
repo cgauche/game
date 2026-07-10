@@ -38,3 +38,31 @@ describe('spawn — Blindage (Amélioration d’instance) → PA de coque', () =
     expect(shipManeuverParams(hull2).baseM).toBe(12);
   });
 });
+
+describe('SURCHARGE de la cale (MDG 12 l.70-75) → shipManeuverParams (M ET Man)', () => {
+  const at = { x: 0, y: 0 };
+  // cogue : Contenance 300, M voile 5, Man −1 DR.
+  it('cale sous la Contenance → aucun effet de surcharge', () => {
+    const hull = spawnEnemy('cogue', undefined, 'ov-0', at);
+    hull.cargoEnc = 300; // 100 % pile
+    const p = shipManeuverParams(hull);
+    expect(p.baseM).toBe(5);
+    expect(p.manoeuvre).toBe(-1);
+  });
+
+  it('> 100 % (palier 1) → −1 M et −1 DR Manœuvre cumulés', () => {
+    const hull = spawnEnemy('cogue', undefined, 'ov-1', at);
+    hull.cargoEnc = 330; // 110 %
+    const p = shipManeuverParams(hull);
+    expect(p.baseM).toBe(4); // 5 − 1
+    expect(p.manoeuvre).toBe(-2); // −1 (Cogue) − 1 (surcharge)
+  });
+
+  it('> 140 % (palier 3) → −3 M et −3 DR Manœuvre', () => {
+    const hull = spawnEnemy('cogue', undefined, 'ov-3', at);
+    hull.cargoEnc = 450; // 150 %
+    const p = shipManeuverParams(hull);
+    expect(p.baseM).toBe(2); // 5 − 3
+    expect(p.manoeuvre).toBe(-4); // −1 − 3
+  });
+});

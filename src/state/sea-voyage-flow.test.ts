@@ -463,6 +463,44 @@ describe('Traversée RAPIDE — un seul Test de Rude épreuve (MDG 15 l.21-37, C
     expect(get().vessel!.waterLitres).toBeLessThan(1000); // eau des tonneaux consommée (comme le détaillé)
   });
 
+  // Manann élevé → palier de voyage rapide BÉNIN (aucune perte d’équipage) : la population de consommation
+  // reste l’effectif nominal, sans bruit d’un crewLost aléatoire du palier.
+  const benign = { manann: { score: 1000, applied: [] } };
+
+  it('#245 — l’eau se consomme sur TOUTE la population (3 héros + 15 PNJ de la cogue) sur 7 jours', () => {
+    set({ vessel: { ...get().vessel!, ...benign, waterLitres: 1000 } }); // party = 3 héros, cogue = 15 PNJ nominaux → 18 âmes
+    get().startTravel('r1', 'mer', { fast: true });
+    driveFast();
+    // 18 âmes × 3 L (médiane) × 7 jours = 378 L.
+    expect(get().vessel!.waterLitres).toBe(1000 - 18 * 3 * 7);
+  });
+
+  it('#245 — l’effectif nominal perdu (crewLost) réduit la population qui consomme', () => {
+    set({ vessel: { ...get().vessel!, ...benign, waterLitres: 1000, crewLost: 10 } }); // 15 − 10 = 5 PNJ → 3 + 5 = 8 âmes
+    get().startTravel('r1', 'mer', { fast: true });
+    driveFast();
+    expect(get().vessel!.waterLitres).toBe(1000 - 8 * 3 * 7);
+  });
+
+  it('#245 — l’équipage mange les vivres de cale ; à court → facteur de Moral « nourriture-insuffisante »', () => {
+    // 15 PNJ × 7 jours = 105 rations requises. Vivres de cale 50 < 105 → disette.
+    set({ vessel: { ...get().vessel!, ...benign, waterLitres: 1000, provisions: 50 } });
+    get().startTravel('r1', 'mer', { fast: true });
+    driveFast();
+    const v = get().vessel!;
+    expect(v.provisions).toBe(0); // épuisés
+    expect(v.morale.factors).toContain('nourriture-insuffisante'); // pèsera au recalcul hebdomadaire (MDG 14 l.171)
+  });
+
+  it('#245 — vivres de cale suffisants → aucun facteur de disette, stock décrémenté', () => {
+    set({ vessel: { ...get().vessel!, ...benign, waterLitres: 1000, provisions: 200, morale: { score: 75, lastMoraleWeek: 0, factors: ['nourriture-insuffisante'] } } });
+    get().startTravel('r1', 'mer', { fast: true });
+    driveFast();
+    const v = get().vessel!;
+    expect(v.provisions).toBe(200 - 15 * 7); // 105 consommés
+    expect(v.morale.factors).not.toContain('nourriture-insuffisante'); // réapprovisionné → facteur retiré
+  });
+
   it('palier DÉSASTREUX (Humeur de Manann effondrée) : équipage manquant, cargaison perdue, coque meurtrie, 3 Critiques', () => {
     set({ vessel: {
       ...get().vessel!, manann: { score: -1000, applied: [] }, // dizaine −100 → résultat ≤ 0 quel que soit le d10/DR

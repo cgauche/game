@@ -27,6 +27,7 @@ import { CreatureProfile, OptionalTraitsPicker, SpellsField } from './OptionalTr
 import { propRefPatch } from './propDefaults';
 import { KIND_LABEL, Sel, ROOF_STYLES, ROOF_MATERIALS, deleteSel, renameEntry, addMember, removeMember, patchMember, effectZoneRect, flowEffects, SIEGE_ENGINES, setPosteCrew, setPosteSide, setPosteEngine, patchWall } from './editorState';
 import type { FireArc } from '../../engine/types';
+import { DIFFICULTY_LABELS } from '../../engine/types';
 import { WhenEditor } from './ConditionEditor';
 import { RefField } from '../compendium/RefField';
 import { Icon } from '../Icon';
@@ -440,6 +441,29 @@ export function Inspector({
                   nullable
                 />
                 <p className="hint">Posée, l'arête tient (bloque vue + passage) jusqu'à être abattue en combat ; elle devient alors une brèche franchissable. « — (aucun) — » = pas de structure. La HAUTEUR d'un rempart se peint désormais à l'outil <Icon id="map-tool/height" size="sm" /> (hauteur des cases qu'il borde), plus de réglage par segment.</p>
+                <div className="ed-field">
+                  <span>Escaladable</span>
+                  <div className="row-flex">
+                    <button className={`btn small ${selW.climb ? '' : 'btn-primary'}`} title="Arête non grimpable" onClick={() => patchSelW({ climb: undefined })}>Non</button>
+                    <button className={`btn small ${selW.climb?.kind === 'ladder' ? 'btn-primary' : ''}`} title="Échelle / surface facile : pas de Test (LDB 15 l.53)" onClick={() => patchSelW({ climb: { kind: 'ladder' } })}>Échelle</button>
+                    <button className={`btn small ${selW.climb?.kind === 'surface' ? 'btn-primary' : ''}`} title="Paroi à prises : Test d'Escalade (LDB 15 l.57)" onClick={() => patchSelW({ climb: { kind: 'surface', ...(selW.climb?.kind === 'surface' ? selW.climb : {}) } })}>Paroi</button>
+                  </div>
+                </div>
+                {selW.climb?.kind === 'surface' && (
+                  <>
+                    <div className="ed-field">
+                      <span>Difficulté du Test</span>
+                      <select value={selW.climb.difficulty ?? 'intermediaire'} onChange={(e) => patchSelW({ climb: { ...selW.climb!, difficulty: e.target.value as import('../../engine/types').Difficulty } })}>
+                        {Object.entries(DIFFICULTY_LABELS).map(([k, lbl]) => (<option key={k} value={k}>{lbl}</option>))}
+                      </select>
+                    </div>
+                    <label className="ed-check">
+                      <input type="checkbox" checked={!!selW.climb.requiresGrimpeur} onChange={(e) => patchSelW({ climb: { ...selW.climb!, requiresGrimpeur: e.target.checked || undefined } })} />
+                      Talent Grimpeur requis (LDB 15 l.57)
+                    </label>
+                  </>
+                )}
+                <p className="hint">Une arête escaladable borde deux surfaces de hauteurs différentes (falaise) : cliquer le marqueur pointillé grimpe vers la case d'en face. « Non » = mur/porte ordinaire.</p>
               </Fold>
               <div className="insp-actions">
                 <button className="btn small danger" onClick={removeSel}>

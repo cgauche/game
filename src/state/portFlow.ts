@@ -25,6 +25,7 @@ import { weeklyCrewWageBrass } from '../engine/crewMorale';
 import {
   rollCargoAvailability, rollMerchantSkill, buySellerDR, cargoBasePrice, rollRandomCargo,
   sellChance, offerPricePct, sellRelation, dumpingPricePct, cargoTotalEnc, findCargoById,
+  cargoOverload, overloadMaxEnc,
   type PortProfile, type CargoLot,
 } from '../engine/seaVoyage';
 import { seasonOfMonth } from '../engine/travelStages';
@@ -49,8 +50,11 @@ export interface PortState {
    *  catalogue pour l'en-tête du hub. Absent = port authoré sans référence de catalogue. */
   ref?: string;
   port: PortProfile;
-  /** Contenance libre du navire (Enc) — plafond d'embarquement (l.325). */
+  /** Contenance libre NOMINALE du navire (Enc) — headroom sans surcharge (l.325). */
   freeEnc: number;
+  /** Enc embarquable avant le plafond DUR de surcharge (Contenance × 150 %, MDG 12 l.75) — au-delà de
+   *  `freeEnc` = zone de surcharge (l'achat avertit, #243). */
+  maxLoadEnc: number;
   offers: PortOffer[];
 }
 
@@ -66,12 +70,21 @@ export function currentPort(get: Get): { placeId: string; label: string; ref?: s
   return { placeId: place.id, label: place.label, ref: place.port.ref, port: place.port, cosmopolite: !!place.port.cosmopolite };
 }
 
-/** Contenance libre du navire (Contenance − cargaison embarquée). */
+/** Contenance libre NOMINALE du navire (Contenance − cargaison embarquée, min 0) — headroom SANS surcharge. */
 export function vesselFreeEnc(get: Get): number {
   const vessel = get().vessel;
   if (!vessel) return 0;
   const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
   return Math.max(0, capacity - cargoTotalEnc(vessel.cargo ?? []));
+}
+
+/** Enc EMBARQUABLE avant le plafond DUR de surcharge (MDG 12 l.75 : Contenance × 150 % − cargaison). Au-delà de
+ *  la Contenance nominale = zone de SURCHARGE (paliers d'assiette, `cargoOverload`) — l'achat y AVERTIT (#243). */
+export function vesselMaxLoadEnc(get: Get): number {
+  const vessel = get().vessel;
+  if (!vessel) return 0;
+  const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
+  return Math.max(0, overloadMaxEnc(capacity) - cargoTotalEnc(vessel.cargo ?? []));
 }
 
 /** Génère les offres d'ACHAT de l'escale (l.319-331) : Production + Surplus (Enc = (Taille+Richesse+
@@ -102,7 +115,7 @@ export function openPort(get: Get, set: Set): void {
       surplus: (port.surplus?.[cargoId] ?? 0) > 0,
     });
   }
-  set({ port: { placeId: cur.placeId, label: cur.label, ref: cur.ref, port, freeEnc: vesselFreeEnc(get), offers } });
+  set({ port: { placeId: cur.placeId, label: cur.label, ref: cur.ref, port, freeEnc: vesselFreeEnc(get), maxLoadEnc: vesselMaxLoadEnc(get), offers } });
 }
 
 export function closePort(_get: Get, set: Set): void {
@@ -115,16 +128,17 @@ function bargainPct(winnerNegotiator: boolean, netSL: number): number {
 }
 
 /** ACHAT d'une cargaison (l.319-349) : prix = Enc × prix de base, modulé par le Marchandage opposé
- *  (vendeur NPC +DR de lot partiel/Surplus, l.339-341). Débité, ajouté à la cale (Enc plafonné par la
- *  Contenance libre). Rafraîchit l'offre restante. */
+ *  (vendeur NPC +DR de lot partiel/Surplus, l.339-341). Débité, ajouté à la cale (Enc plafonné par le
+ *  plafond DUR de surcharge, MDG 12 l.75 : Contenance × 150 %). Un achat au-delà de la Contenance nominale
+ *  AVERTIT du palier de surcharge atteint (#243). Rafraîchit l'offre restante. */
 export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): void {
   const st = get().port;
   const vessel = get().vessel;
   if (!st || !vessel) return;
   const offer = st.offers.find((o) => o.cargoId === cargoId);
   if (!offer) return;
-  const want = Math.max(0, Math.min(Math.floor(enc), offer.enc, vesselFreeEnc(get)));
-  if (want <= 0) { log(get, set, ['La cale est pleine ou la cargaison épuisée — rien à embarquer.']); return; }
+  const want = Math.max(0, Math.min(Math.floor(enc), offer.enc, vesselMaxLoadEnc(get)));
+  if (want <= 0) { log(get, set, ['La cale a atteint le maximum absolu (surcharge de 150 %) ou la cargaison est épuisée — rien à embarquer.']); return; }
   const partial = want < offer.enc;
   const rng = battleRng();
   const best = partyAssisted(get().party, 'marchandage');
@@ -148,12 +162,17 @@ export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   const cost = toMoney({ gold: price });
   if (!canAfford(get().money, cost)) { log(get, set, [`La bourse ne couvre pas ${price} CO de ${offer.label}.`]); return; }
   const cargo: CargoLot = { cargoId, enc: want, basePriceGold: offer.basePrice };
+  const nextCargo = [...(vessel.cargo ?? []), cargo];
   set({
     money: subtract(get().money, cost)!,
-    vessel: { ...vessel, cargo: [...(vessel.cargo ?? []), cargo] },
-    port: { ...st, freeEnc: st.freeEnc - want, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, enc: o.enc - want } : o).filter((o) => o.enc > 0) },
+    vessel: { ...vessel, cargo: nextCargo },
+    port: { ...st, freeEnc: Math.max(0, st.freeEnc - want), maxLoadEnc: st.maxLoadEnc - want, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, enc: o.enc - want } : o).filter((o) => o.enc > 0) },
   });
   log(get, set, [`${want} Enc de ${offer.label} embarqués — ${bargainLine} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`]);
+  // Surcharge de la cale (MDG 12 l.70-75) : au-delà de la Contenance nominale, avertir du palier d'assiette.
+  const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
+  const over = cargoOverload(cargoTotalEnc(nextCargo), capacity);
+  if (over.palierId) log(get, set, [`Cale SURCHARGÉE (${over.ratioPct} % de la Contenance) : ${over.label} — ${over.mMod} M, ${over.manoeuvreDR} DR Manœuvre (MDG 12 l.70-75).`]);
 }
 
 /** VENTE d'un lot de cargaison (l.351-397) : trouver un acheteur (relation du port au bien),
@@ -209,9 +228,13 @@ export function portSellCargo(get: Get, set: Set, cargoIndex: number): void {
     bargainLine = `${best.actor.name} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}${chance.sellerDR ? `, vendeur ${chance.sellerDR > 0 ? '+' : ''}${chance.sellerDR} DR` : ''}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
   }
   const gross = Math.max(0, Math.round(sellEnc * lot.basePriceGold * (offerPct / 100) * (1 + bargainPctVal / 100)));
+  const nextCargo = sellEnc >= lot.enc ? (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex) : (vessel.cargo ?? []).map((l, i) => i === cargoIndex ? { ...l, enc: l.enc - sellEnc } : l);
+  const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
+  const freed = cargoTotalEnc(nextCargo);
   set({
     money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
-    vessel: { ...vessel, cargo: sellEnc >= lot.enc ? (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex) : (vessel.cargo ?? []).map((l, i) => i === cargoIndex ? { ...l, enc: l.enc - sellEnc } : l) },
+    vessel: { ...vessel, cargo: nextCargo },
+    port: { ...st, freeEnc: Math.max(0, capacity - freed), maxLoadEnc: Math.max(0, overloadMaxEnc(capacity) - freed) },
   });
   log(get, set, [`${sellEnc} Enc de ${label} vendus (prix d’offre ${offerPct} % du base — ${bargainLine}) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
 }
@@ -227,9 +250,13 @@ export function portDumpCargo(get: Get, set: Set, cargoIndex: number): void {
   const label = findCargoById(lot.cargoId)?.label ?? lot.cargoId;
   if (pct == null) { log(get, set, [`${label} : ce port ne rachète pas les cargaisons à brader (ni « commerce » ni Demande, MDG 15 l.399).`]); return; }
   const gross = Math.max(0, Math.round(lot.enc * lot.basePriceGold * (pct / 100)));
+  const nextCargo = (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex);
+  const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
+  const freed = cargoTotalEnc(nextCargo);
   set({
     money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),
-    vessel: { ...vessel, cargo: (vessel.cargo ?? []).filter((_, i) => i !== cargoIndex) },
+    vessel: { ...vessel, cargo: nextCargo },
+    port: { ...st, freeEnc: Math.max(0, capacity - freed), maxLoadEnc: Math.max(0, overloadMaxEnc(capacity) - freed) },
   });
   log(get, set, [`${lot.enc} Enc de ${label} bradés (${pct} % du prix de base) : ${formatMoney(fromBrass(gross * PA_PER_CO))}.`]);
 }

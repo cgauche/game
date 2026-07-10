@@ -73,6 +73,24 @@ export function resolveLadderClimb(
 }
 
 /**
+ * Surface d'escalade trop difficile pour qui ne possède pas le Talent Grimpeur (LDB 15 l.57) : gate PUR,
+ * partagé par `resolveSurfaceClimb` (moteur) et la résolution de scène (`state/climbMove`).
+ */
+export function surfaceClimbImpossible(requiresGrimpeur: boolean, hasGrimpeur: boolean): boolean {
+  return requiresGrimpeur && !hasGrimpeur;
+}
+
+/**
+ * Coût en CASES de Mouvement pour gravir `metres` de hauteur à la MOITIÉ de la vitesse (LDB 15 l.53 :
+ * « vous vous déplacez à la moitié de votre vitesse »). Une case = `metresPerTile` m ; à ½ vitesse,
+ * franchir `metres` de dénivelé dépense `2·metres` de budget de Marche, soit `2·metres/metresPerTile`
+ * cases (arrondi supérieur — un dénivelé entamé coûte une case pleine). Pur.
+ */
+export function climbMovementCost(metres: number, metresPerTile: number): number {
+  return Math.ceil((2 * Math.max(0, metres)) / metresPerTile);
+}
+
+/**
  * Escalade d'une surface À PRISES, deux mains libres (LDB 15 l.57) : « en utilisant votre Action du tour et
  * en réussissant un Test d'Escalade. Votre vitesse (de monte ou de descente) est (½ Mouvement + DR) mètres.
  * La difficulté du Test est définie par le MJ… Certaines escalades seront bien trop compliquées pour la
@@ -85,7 +103,7 @@ export function resolveSurfaceClimb(
   rng: RNG = defaultRNG,
   opts: { difficulty?: import('./types').Difficulty; requiresGrimpeur?: boolean; hasGrimpeur?: boolean } = {},
 ): { success: boolean; roll: number; target: number; dr: number; metres: number; impossible: boolean } {
-  if (opts.requiresGrimpeur && !opts.hasGrimpeur) {
+  if (surfaceClimbImpossible(!!opts.requiresGrimpeur, !!opts.hasGrimpeur)) {
     return { success: false, roll: 0, target: 0, dr: 0, metres: 0, impossible: true };
   }
   const t = rollTest(escalade, opts.difficulty ?? 'intermediaire', rng);

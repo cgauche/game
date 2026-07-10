@@ -367,7 +367,7 @@ export type Effect =
    *  reçoit/achète un bateau (don d'un patron, chantier). `vehicleId` = un navire de `vehicles.json`
    *  (facette `ship`) ; Moral et Blessures de coque INITIAUX authorés (coque neuve = pas de `wounds`).
    *  Le navire survit aux jours et aux combats (le voyage maritime et le Port en repartent). */
-  | { type: 'setVessel'; vehicleId: string; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; waterLitres?: number; crew?: import('../engine/crewMorale').CrewHire[] }
+  | { type: 'setVessel'; vehicleId: string; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; waterLitres?: number; provisions?: number; crew?: import('../engine/crewMorale').CrewHire[] }
   /** Fait varier l'HUMEUR DE MANANN du navire de campagne (MDG ch.15 l.83-125) — à poser sur une
    *  bénédiction de prêtre, un sacrifice ou tout événement narratif d'auteur. `factorId` = un facteur
    *  du tableau « EFFET SUR L'HUMEUR DE MANANN » (`sea-events.json`, appliqué UNE SEULE FOIS par
@@ -379,7 +379,7 @@ export type Effect =
    *  `setVessel` (remplacement total : effacerait Humeur de Manann/dégâts/Moral accumulés). À poser
    *  sur un événement narratif qui touche PARTIELLEMENT le navire (ex. démasquage d'un saboteur qui
    *  remet `saboteurDR` à 0 sans réinitialiser le reste). Sans navire de campagne → no-op journalisé. */
-  | { type: 'adjustVessel'; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; waterLitres?: number; crew?: import('../engine/crewMorale').CrewHire[] }
+  | { type: 'adjustVessel'; name?: string; morale?: number; hullCurrent?: number; hullMax?: number; saboteurDR?: number; waterLitres?: number; provisions?: number; crew?: import('../engine/crewMorale').CrewHire[] }
   | { type: 'endDialogue' };
 
 export interface DialogueChoice {
@@ -697,6 +697,40 @@ export interface WallSeg {
    *  comme un mur nu (`window` n'est lu par AUCUNE règle de combat : ni `wallIsOpen`, ni `vision`, ni
    *  `isWalkable`). N'affecte que l'apparence iso + POV (nuit : vitre ambrée émissive). */
   window?: boolean;
+  /** ESCALADABLE (LDB 15 l.52-57) : l'arête sépare deux surfaces de hauteurs différentes (une FALAISE au
+   *  sens `surfaceLink` — infranchissable à pied) qu'un Personnage peut GRIMPER. `ladder` = échelle ou
+   *  surface facile (pas de Test, LDB 15 l.53) ; `surface` = paroi à prises (Test d'Escalade, l.57).
+   *  Bloque toujours passage+vue comme un mur PLEIN (une falaise n'est pas une ouverture) : la grimpe est
+   *  un geste EXPLICITE, pas un franchissement de pathfinding. Résolu par `state/climbMove`. */
+  climb?: WallClimb;
+}
+
+/** Nature d'une arête grimpable (`WallSeg.climb`). */
+export interface WallClimb {
+  kind: 'ladder' | 'surface';
+  /** Surface uniquement — difficulté du Test d'Escalade. LDB 15 l.57 la laisse « définie par le MJ » ;
+   *  sans MJ (règle 7) c'est un arbitrage ÉDITABLE par arête. Absent = `intermediaire` (défaut moteur). */
+  difficulty?: import('../engine/types').Difficulty;
+  /** Surface uniquement — paroi « bien trop compliquée » sans le Talent Grimpeur (LDB 15 l.57). */
+  requiresGrimpeur?: boolean;
+}
+
+/** Le segment ESCALADABLE sur l'arête (x,y,side,z), ou undefined. */
+export function climbAt(scene: Pick<Scene, 'walls'>, x: number, y: number, side: WallSide, z = 0): WallSeg | undefined {
+  return scene.walls?.find((w) => !!w.climb && w.x === x && w.y === y && w.side === side && (w.z ?? 0) === z);
+}
+
+/** Segment ESCALADABLE sur l'arête CANONIQUE (cardinale) séparant deux cases adjacentes `a`/`b`, ou
+ *  undefined (non adjacentes cardinales, ou pas de grimpe posée). Réutilise `edgeOf` (arête canonique
+ *  partagée avec `wallBetween`). PUR. */
+export function climbEdgeBetween(
+  scene: Pick<Scene, 'walls'>,
+  a: { x: number; y: number; z?: number },
+  b: { x: number; y: number; z?: number },
+): WallSeg | undefined {
+  const e = edgeOf(a.x, a.y, b.x, b.y);
+  if (!e) return undefined;
+  return climbAt(scene, e.x, e.y, e.side, a.z ?? 0);
 }
 
 /** Clé de flag d'état d'une porte (`scene.flags`) — `true` = OUVERTE, `false` = FERMÉE (override runtime

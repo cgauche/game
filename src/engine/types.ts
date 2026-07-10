@@ -1002,6 +1002,10 @@ export interface Combatant {
    *  d'équipage de VOYAGE (Progression, Orientation… `seaVoyageFlow.openVoyageCrewTest`, #214) — en voyage,
    *  la valeur vient de `CampaignVessel.saboteurDR`, recopiée sur la coque de trajet (`voyageShip`). */
   saboteurDR?: number;
+  /** Coque/navire : Encombrement de la CARGAISON en cale (MDG 12 l.68-75) — recopié de `CampaignVessel.cargo`
+   *  sur la coque de trajet/combat, source de la SURCHARGE (−M/−DR Manœuvre par palier, `cargoOverload`).
+   *  Absent = cale vide (aucune surcharge). #243. */
+  cargoEnc?: number;
   /** Coque : QUART du dernier chant de marin (index `gameTime ÷ 4 h`) — « Une seule chanson de marin peut
    *  être chantée lors de chaque quart » (MDG 09 l.40). Posé par `battleSingShanty`. */
   lastShantyQuart?: number;

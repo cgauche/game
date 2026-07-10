@@ -40,6 +40,7 @@ import { propLayerObjs, figurantLayerObjs, interactHaloObjs, combatantObjs, part
 import { sortByDepth, mergeByDepth, type StageObj } from './stage/objs';
 import { CulledScene } from './stage/CulledScene';
 import { DoorOverlays } from './stage/DoorOverlays';
+import { ClimbOverlays } from './stage/ClimbOverlays';
 import { SiegeHitAreas } from './stage/SiegeHitAreas';
 import { EnemyMoveTelegraph, EnemyAimTelegraph, EnemyAoeTelegraph } from './stage/Telegraphs';
 import { ZdeTemplate } from './stage/ZdeTemplate';
@@ -236,6 +237,7 @@ export function IsoStage() {
         <CulledScene objs={objs} dims={dims} cam={cam} zoom={zoom} activeZ={activeZ}
           fog={{ explored: exploredSet }} />
         <DoorOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
+        <ClimbOverlays scene={scene} dims={dims} activeZ={activeZ} visible={visible} ctrls={doorCtrls} />
         {battle && <SiegeHitAreas scene={scene} battle={battle} dims={dims} activeZ={activeZ} visible={visible} />}
         <EnemyMoveTelegraph actorMove={actorMove} dims={dims} footN={activeMoveN} lift={liftOf} />
         <EnemyAimTelegraph targeting={targeting} anchor={reticleAnchor} />

@@ -38,6 +38,13 @@ export const schema = z.strictObject({
     sellerDR: z.strictObject({ noProduce: z.number(), demand: z.number(), produces: z.number(), surplus: z.number() }),
     dumpingPctOfBase: z.number(),
   }),
+  overload: z.strictObject({
+    _source: z.string(),
+    hardCapPct: z.number(),
+    paliers: z.array(
+      z.strictObject({ id: z.string(), fromPct: z.number(), label: z.string(), mMod: z.number(), manoeuvreDR: z.number() }),
+    ),
+  }),
   opportunite: z.strictObject({
     investMaxEnc: z.boolean(),
     test: z.strictObject({

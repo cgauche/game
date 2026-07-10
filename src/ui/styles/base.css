@@ -51,6 +51,7 @@
   --iso-active-halo: #ffe066; /* carte : contour de case active / position du groupe */
   --iso-door-open: #caa14a; /* carte : overlay de porte ouverte */
   --iso-door-closed: #d4534a; /* carte : overlay de porte fermée */
+  --iso-climb: #d8c48a; /* carte : marqueur d'arête escaladable (pointillés) */
   --iso-invalid: #777777; /* visée : gabarit hors portée / hors Ligne de Vue */
   --iso-threat: #d11a1a; /* combat : télégraphe de zone ennemi */
   --iso-fauna: #0d0d0d; /* carte : faune d'ambiance (mouches, corbeau) */

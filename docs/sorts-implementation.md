@@ -6,7 +6,7 @@
 > (effet journalisé verbatim). « curé » = spec complète dans SpellData (spells.json).
 
 ## Bénédiction (5)
-**Synthèse** : 416 sorts — ✅ 77 mécaniques · 🟡 127 partiels · 📜 212 narratifs (arbitrage MJ) · 278 specs curées.
+**Synthèse** : 416 sorts — ✅ 79 mécaniques · 🟡 126 partiels · 📜 211 narratifs (arbitrage MJ) · 278 specs curées.
 
 
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
@@ -282,7 +282,7 @@
 | La lance d'Ambre | 🟡 | oui | La lance d’Ambre : traverse en ligne droite, ignore les PA de cuir/fourrure et frappe chaque cible suivante avec −1 Dégât, jusqu’à n’infliger aucune Blessure — arbitrage MJ. |
 | Langue bestiale | 📜 | oui | Langue bestiale : vous parlez aux créatures Bestial (+20 en Emprise sur les animaux et Dressage) mais ne pouvez parler aucune langue civilisée ni incanter tant que le Sort dure — arbitrage MJ. |
 | Maître de la bête | 📜 | oui | Maître de la bête : une créature Bestial vous considère comme son chef de meute et obéit à vos instructions simples pour la durée ; libérée, elle garde assez de crainte pour ne pas vous attaquer — arbitrage MJ. |
-| Peau de chasseur | 🟡 | oui | Peau de chasseur : vous gagnez aussi le Talent Sens aiguisé (Odorat) — arbitrage MJ. |
+| Peau de chasseur | ✅ | oui |  |
 | Serres d'ambre | 🟡 | oui | Serres d’ambre : vos attaques à mains nues (Bagarre) deviennent magiques et infligent des Dégâts égaux à votre BFM — arbitrage MJ pour la valeur de Dégâts. |
 | Vol du Destin | 🟡 | oui | Vol du Destin : pour votre Action, un Test d’Emprise sur les animaux (+20) déplace la volée sur une autre cible à portée — arbitrage MJ. |
 
@@ -291,7 +291,7 @@
 | Sort | État | Curé | Reste à mécaniser (journalisé en jeu) |
 |---|---|---|---|
 | Arc de T'Essla | ✅ | oui |  |
-| Bienfait de Bel Shanaar | 📜 | oui | Bienfait de Bel Shanaar : pendant 1 jour, tous les Tests d'Orientation du sorcier (ou impliquant le sorcier dans un Test d'équipage) bénéficient de +2 DR. |
+| Bienfait de Bel Shanaar | ✅ | oui |  |
 | Bouclier céruléen | 📜 | oui | Bouclier céruléen : +DR PA à toutes les Localisations contre les attaques de Corps à corps ; un attaquant à l’arme métallique subit BFM Dégâts — arbitrage MJ. |
 | Comète de Cassandora | 🟡 | oui | Comète de Cassandora : impact à la fin du prochain Round ; un Test de Perception ajuste (ou un échec fait dériver) le point de chute de BInit m par DR — arbitrage MJ. |
 | Ironie du Destin | 🟡 | oui | Ironie du Destin : les alliés de la ZdE (hors Magie des Arcanes (Cieux)) partagent une réserve unique de Points de Chance pour la durée du Sort, réallouée à la fin — arbitrage MJ. |

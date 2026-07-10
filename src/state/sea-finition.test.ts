@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { seedBattleRng } from './battleRng';
 import { buildSeaPlan } from './seaVoyageFlow';
+import { vesselFreeEnc, vesselMaxLoadEnc } from './portFlow';
 import { seaActivityBlocked } from './seaActivities';
 import { activityById } from '../engine/activities';
 import { toBrass, PA_PER_CO } from '../engine/money';
@@ -188,6 +189,27 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
     get().portSellCargo(0);
     // Trouvé un acheteur (port « commerce » : bonnes chances) → lot vendu, ou pas (RNG) mais l'appel ne casse pas.
     expect((get().vessel!.cargo ?? []).length).toBeLessThanOrEqual(cargoLen);
+  });
+
+  it('#243 — headroom nominal vs plafond dur de surcharge (Cogue : Contenance 300, dur 450)', () => {
+    set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'bois', enc: 290, basePriceGold: 1 }] } });
+    expect(vesselFreeEnc(get)).toBe(10); // 300 − 290 (nominal)
+    expect(vesselMaxLoadEnc(get)).toBe(160); // 450 − 290 (surcharge possible)
+    set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'bois', enc: 440, basePriceGold: 1 }] } });
+    expect(vesselFreeEnc(get)).toBe(0); // au-delà de la Contenance : plus de headroom nominal
+    expect(vesselMaxLoadEnc(get)).toBe(10); // 450 − 440
+  });
+
+  it('#243 — l’achat au-delà de la Contenance surcharge (jusqu’à 150 %) et l’avertit ; jamais au-delà du plafond dur', () => {
+    seedBattleRng(2);
+    set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'bois', enc: 290, basePriceGold: 1 }] }, money: { gold: 100000, silver: 0, brass: 0 } as never });
+    get().openPort();
+    const offer = get().port!.offers[0]; // production/surplus copieux (Taille 4 + Richesse 4 × d10 × 10)
+    get().portBuyCargo(offer.cargoId, 1000); // demande énorme → clampée au plafond dur (450 − 290 = 160)
+    const enc = (get().vessel!.cargo ?? []).reduce((s, l) => s + l.enc, 0);
+    expect(enc).toBeLessThanOrEqual(450); // jamais au-delà du maximum absolu (150 %)
+    expect(enc).toBeGreaterThan(300); // a bien SURchargé (au-delà de la Contenance nominale)
+    expect(get().journal.some((l) => /SURCHARG/i.test(l))).toBe(true); // achat en zone de surcharge → avertissement
   });
 
   it('portDumpCargo brade à ¼ du prix de base dans un port « commerce »', () => {

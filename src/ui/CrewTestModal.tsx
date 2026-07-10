@@ -1,10 +1,12 @@
-import { useGame } from '../state/store';
+import { useGame, type BattleState } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { canReroll } from '../engine/fortune';
 import { easeDifficulty } from '../engine/tests';
 import { findCrewRoleById, findCrewTestTypeById } from '../data';
 import { crewRoleValue, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { maneuverCrewTotal } from '../state/shipManeuver';
+import type { PendingCrewTest } from '../state/pendings';
+import type { Combatant } from '../engine/types';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
@@ -30,6 +32,32 @@ export function CrewTestModal() {
   const cancel = useGame((s) => s.crewTestCancel);
   const cont = useGame((s) => s.crewTestContinue);
   if (!p) return null;
+  const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
+  return (
+    <CrewTestModalView
+      p={p} battle={battle} party={party} owns={owns}
+      roll={roll} reroll={reroll} bonus={bonus} darkPact={darkPact} force={force}
+      confirm={confirm} cancel={cancel} cont={cont}
+    />
+  );
+}
+
+/** Corps PUR (props) — testable en rendu statique sans mocker le store (l'environnement de test est
+ *  `node`, sans DOM : les sélecteurs de store ne s'hydratent pas sous `renderToStaticMarkup`). */
+export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus, darkPact, force, confirm, cancel, cont }: {
+  p: PendingCrewTest;
+  battle: BattleState | null;
+  party: Combatant[];
+  owns: (id: string) => boolean;
+  roll: (id: string) => void;
+  reroll: (id: string) => void;
+  bonus: (id: string) => void;
+  darkPact: (id: string) => void;
+  force: (id: string) => void;
+  confirm: () => void;
+  cancel: () => void;
+  cont: () => void;
+}) {
   const resolved = p.resolved; // VOYAGE : phase RÉSOLU — dénouement SUR PLACE + « Continuer »
   // En VOYAGE (7b, hors combat), l'équipage = le groupe et la coque vit dans le plan de traversée —
   // le nom voyage sur le pending (`voyage.shipName`) ; en combat, le pool est la bataille.
@@ -37,7 +65,6 @@ export function CrewTestModal() {
   const ship = battle?.combatants.find((c) => c.id === p.shipId) ?? (p.voyage ? { name: p.voyage.shipName } : undefined);
   const testType = findCrewTestTypeById(p.testTypeId);
   if (!ship || !testType) return null;
-  const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
 
   const allRolled = p.participants.every((x) => x.result);
   const unrolled = p.participants.filter((x) => x.interactive && !x.result && owns(x.id));
