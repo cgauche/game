@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { t, interpolate, getLocale } from './index';
+import { fr } from './messages/fr';
 import { CHAR_LABELS, DIFFICULTY_LABELS, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS } from '../engine/types';
 import { DEFENSE_LABEL, FREE_ATTACK_LABEL } from '../engine/combat';
 import { CIBLE_LABEL } from '../engine/psychology';
@@ -39,5 +40,12 @@ describe('i18n — primitive t() + catalogue FR (seam, docs/i18n-seam.md)', () =
     // CIBLE_LABEL DÉRIVE désormais de psychology.json (donnée app-owned, comme etats.json), pas du catalogue t().
     expect(CIBLE_LABEL.animosite.label).toBe(psychologyLabel('animosite'));
     expect(CIBLE_LABEL.haine.icon).toBe('flag/anger'); // icône du registre <Icon>, portée par la donnée
+  });
+
+  it('garde `out.*` : aucune clé ne re-imprime le jet (roll/sl/drow, ou {target} en paire avec {roll}) — #295 Lot 0 Décision 1b/ceinture', () => {
+    const offenders = Object.entries(fr)
+      .filter(([k]) => k.startsWith('out.'))
+      .filter(([, v]) => /\{(roll|sl|drow)\}/.test(v) || (/\{target\}/.test(v) && /\{roll\}/.test(v)));
+    expect(offenders).toEqual([]);
   });
 });

@@ -35,7 +35,7 @@ import type { Get, Set } from './flowTypes';
 import type { GameState } from './store';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, CHAR_LABELS } from '../engine/types';
-import type { PairedSense } from '../engine/ops';
+import type { PairedSense, GameOp } from '../engine/ops';
 import type { CascadeStep, CascadeStepMeta, ShipManeuverParticipant } from './pendings';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatOrParty';
@@ -48,6 +48,7 @@ import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { rollCrewRole, forceCrewRole, maneuverCrewTotal, type CrewRoleRoll } from './shipManeuver';
 import { findSkillById } from '../data';
+import { t, type OutKey, type OutVars } from '../i18n';
 
 /** Les 4 classes déclaratives (mandat #275). Pilotent la POLICY, jamais le call-site. */
 export type RollClass = 'hero-test' | 'enemy' | 'subi' | 'batch';
@@ -100,6 +101,50 @@ export function composeRollLabel(actor: Combatant | undefined, action: string, t
   const skillLabel = test.skill ? (findSkillById(test.skill)?.label ?? test.skill) : test.char ? CHAR_LABELS[test.char] : undefined;
   const detail = skillLabel ? `${skillLabel} ${DIFFICULTY_LABELS[difficulty]}` : undefined;
   return `${actor ? `${actor.name} — ` : ''}${action}${detail ? ` (${detail})` : ''}`;
+}
+
+/**
+ * TITRE d'un jet — SOURCE UNIQUE (#295 Lot 0, Décision 1a). Promotion de `composeRollLabel` : résout
+ * l'acteur depuis les ids DÉCLARÉS (`resolveMonoSide`, même résolution que la construction de l'étape)
+ * puis compose. Les appelants (modales/pending) affichent `pending.title`/`step.label` — plus AUCUN ne
+ * réassemble `${actor} — ${action} (${skill})` à la main.
+ */
+export function rollTitle(get: Get, req: RollRequest): string {
+  const { actor } = resolveMonoSide(get, req);
+  return composeRollLabel(actor, req.test.label, req.test, req.difficulty);
+}
+
+/**
+ * Conséquence d'une étape DÉJÀ appliquée (#295 Lot 0, Décision 1b) — soit un effet mécanique (`ops`,
+ * montant RÉEL rendu depuis le `GameOp` appliqué), soit une note narrative (`say`, clé `out.*` SANS
+ * placeholder de jet — cf. garde i18n `i18n.test.ts`). AUCUN accès à roll/target/sl/won : la
+ * duplication d'outcome (`${roll}/${target}`, « réussi (DR X) ») est INEXPRIMABLE par construction.
+ */
+export type Consequence =
+  | { ops: GameOp[] }
+  | { say: OutKey; vars?: OutVars };
+
+/** Ligne d'un `GameOp` DÉJÀ appliqué — le montant est un LITTÉRAL résolu par l'applier (jamais une
+ *  `Formula` à re-tirer ici : `resultLine` ne reçoit ni cible ni RNG, cf. Décision 1b). Étend au fil
+ *  des Lots de migration (#295 Lot 1) — un `op` sans formatteur reste silencieux (`''`), jamais un crash. */
+function opConsequenceLine(op: GameOp): string {
+  switch (op.op) {
+    case 'wounds': return typeof op.amount === 'number' && op.amount > 0 ? t('out.consWounds', { n: op.amount }) : '';
+    case 'heal': return typeof op.amount === 'number' && op.amount > 0 ? t('out.consHeal', { n: op.amount }) : '';
+    default: return '';
+  }
+}
+
+/**
+ * Rend la ou les conséquences d'une étape DÉJÀ dénouée — LA rangée « ce qui s'est passé », jamais un
+ * re-print du jet (Décision 1b). `cons` vide ⇒ `''` : le verdict ✓/✗ ±DR reste porté par la rangée de
+ * jet (`RollLine`) seule.
+ */
+export function resultLine(cons: Consequence[]): string {
+  return cons
+    .map((c) => ('say' in c ? t(c.say, c.vars) : c.ops.map(opConsequenceLine).filter(Boolean).join(' ')))
+    .filter((s) => s.length > 0)
+    .join(' ');
 }
 
 /** Résout le côté d'un jet MONO (`hero-test`/`enemy`/`subi` non-`batch`) en acteur + éventuelle valeur
@@ -257,7 +302,7 @@ export function openRoll(get: Get, set: Set, req: RollRequest, kind: string, met
     runCascadeImmediate(get, set, [step]);
     return;
   }
-  startCascade(get, set, { title: req.test.label, purpose: 'test', steps: [step] });
+  startCascade(get, set, { title: rollTitle(get, req), purpose: 'test', steps: [step] });
 }
 
 /** Reconstruit l'issue SCELLÉE (`TestOutcome`) d'une étape déjà résolue — lecture PARTAGÉE pour les

@@ -18,17 +18,25 @@
 import type { Get, Set } from './flowTypes';
 import type { Combatant } from '../engine/types';
 import type { CascadeStep, PendingCascade, CascadeRoll } from './pendings';
+import type { Consequence } from './rollSeam';
+import { resultLine } from './rollSeam';
 import { actorIn } from './combatOrParty';
 import { rollTest } from '../engine/tests';
 import { battleRng } from './battleRng';
 
 /**
- * Conséquence d'une étape, appliquée à la VALIDATION. Mute le héros (via get/set), renvoie les lignes
- * de journal et d'éventuelles étapes à INSÉRER juste après l'étape courante (dépendance). Vit dans le
- * registre — pas dans le pending (coop). `step.result` est garanti non-null si `step.target != null`.
- * `ctx` donne les étapes DÉJÀ jouées (`ctx.steps[0..index-1]` committées) : une escalade cumulative
- * (Exposition au froid : 1ᵉʳ échec → −10 CT/Ag/Dex, 2ᵉ → reste, 3ᵉ → Blessures) lit le nombre
- * d'échecs précédents de CE héros — c'est cette dépendance qui rend la séquence séquentielle.
+ * Conséquence d'une étape, appliquée à la VALIDATION. Mute le héros (via get/set), renvoie les
+ * conséquences (rendues par `resultLine`, #295 Lot 0) et d'éventuelles étapes à INSÉRER juste après
+ * l'étape courante (dépendance). Vit dans le registre — pas dans le pending (coop). `step.result` est
+ * garanti non-null si `step.target != null`. `ctx` donne les étapes DÉJÀ jouées
+ * (`ctx.steps[0..index-1]` committées) : une escalade cumulative (Exposition au froid : 1ᵉʳ échec →
+ * −10 CT/Ag/Dex, 2ᵉ → reste, 3ᵉ → Blessures) lit le nombre d'échecs précédents de CE héros — c'est
+ * cette dépendance qui rend la séquence séquentielle.
+ *
+ * `journal` : @deprecated canal STRING LIBRE toléré en fallback transitoire (#295 Lot 0, Décision 1c —
+ * « union dépréciée `journal` tolérée par `commitStep` ») tant que les ~51 appliers existants n'ont pas
+ * migré vers `consequences` (#295 Lot 1). AUCUN nouvel applier ne doit l'utiliser — `commitStep` ne le
+ * lit QUE si `consequences` est absent (repli, jamais les deux mélangés).
  */
 export type CascadeApplier = (
   get: Get,
@@ -36,17 +44,16 @@ export type CascadeApplier = (
   step: CascadeStep,
   hero: Combatant | undefined,
   ctx: { steps: CascadeStep[]; index: number },
-) => { journal?: string[]; insert?: CascadeStep[] } | void;
+) => { journal?: string[]; consequences?: Consequence[]; insert?: CascadeStep[] } | void;
 
-/** Issue COURTE d'un kind pour la modale (préview AVANT validation, ex. « X récupère des Blessures »,
- *  « X contracte la maladie ») — la CONSÉQUENCE, pas « X réussit ». Co-localisée avec l'`apply` (qui
- *  produit la ligne chiffrée au journal à la validation), donc ajouter un kind ne touche JAMAIS l'UI. */
-export type CascadeDescriber = (success: boolean, name: string) => string;
-
-/** Une entrée de registre : la conséquence appliquée (`apply`) + son libellé d'issue (`describe`). */
+/** Une entrée de registre : la conséquence appliquée (`apply`) + son libellé d'issue FALLBACK
+ *  (préview avant validation, ex. « X récupère des Blessures ») — @deprecated `describe` (ex-
+ *  `CascadeDescriber`, #295 Lot 0 Décision 1c : type nommé SUPPRIMÉ, forme structurelle tolérée en
+ *  transition tant que `CascadeModal` lit `.describe` pour son repli « réussit »/« échoue », migré au
+ *  Lot 2). Ajouter un kind ne touche JAMAIS l'UI. */
 export interface CascadeKind {
   apply: CascadeApplier;
-  describe?: CascadeDescriber;
+  describe?: (success: boolean, name: string) => string;
 }
 
 /** Registre par `kind` — source unique extensible (+1 entrée par nature d'étape : `apply` + `describe`).
@@ -54,7 +61,7 @@ export interface CascadeKind {
 export const cascadeAppliers: Record<string, CascadeKind> = {};
 
 /** Enregistre (ou remplace) la conséquence d'un `kind` d'étape de cascade (+ son issue de modale). */
-export function registerCascadeApplier(kind: string, apply: CascadeApplier, describe?: CascadeDescriber): void {
+export function registerCascadeApplier(kind: string, apply: CascadeApplier, describe?: CascadeKind['describe']): void {
   cascadeAppliers[kind] = { apply, describe };
 }
 
@@ -108,7 +115,10 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   const step = steps[i];
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
   const out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
-  const journal = out?.journal ?? [];
+  // `consequences` (#295 Lot 0) prime : rendu par `resultLine` en UNE ligne. Repli `journal` (canal
+  // string libre @deprecated, cf. `CascadeApplier`) tant qu'un applier n'a pas migré (#295 Lot 1) —
+  // jamais les deux mélangés (un applier migré ne renvoie plus `journal`).
+  const journal = out?.consequences ? [resultLine(out.consequences)].filter((l) => l.length > 0) : (out?.journal ?? []);
   for (const l of journal) get().log(l);
   // L'étape VALIDÉE garde sa conséquence (`outcome`) pour rester LISIBLE dans la pile à l'écran. Une
   // étape d'AFFICHAGE porte son contenu d'avance (`outcome` pré-rempli) avec un applier muet → on le

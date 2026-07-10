@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { registerCascadeApplier } from './cascade';
+import { registerCascadeApplier, type CascadeApplier } from './cascade';
 import { setGmSeat } from './netFlow';
-import { openRoll, type RollRequest } from './rollSeam';
+import { openRoll, rollTitle, resultLine, type RollRequest, type Consequence } from './rollSeam';
 import { modalOwnerOf } from './modalArbiter';
 import { seatOwns } from './netOwnership';
 import type { Combatant } from '../engine/types';
@@ -126,5 +126,56 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     expect(useGame.getState().pendingCascade).toBeTruthy();
     expect(useGame.getState().pendingCascade!.participants[0].result).toBeTruthy(); // agrégat déjà résolu (écart 2)
     expect(applied).toHaveLength(0); // I surface a validé son étape ; M surface attend l'action « Continuer » du joueur
+  });
+
+  it('rollTitle : dérive le titre depuis les ids (acteur/compétence/difficulté) — un seul composeur', () => {
+    useGame.setState({ party: [hero()] });
+    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'E', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
+    expect(rollTitle(useGame.getState, req)).toBe('Héros — Résistance (Résistance Intermédiaire (+0))');
+  });
+
+  it('rollTitle : côté worldSide (aucun acteur) — pas de préfixe d\'acteur', () => {
+    useGame.setState({ party: [] });
+    const req: RollRequest = { side: { worldSide: 'ship', shipId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
+    expect(rollTitle(useGame.getState, req)).toBe('Désertion');
+  });
+
+  it('mono : startCascade pose pending.title = rollTitle(...), pas req.test.label nu', () => {
+    useGame.setState({ party: [hero()] });
+    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'E', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
+    openRoll(useGame.getState, useGame.setState, req, 'seam-hero');
+    expect(useGame.getState().pendingCascade!.title).toBe(rollTitle(useGame.getState, req));
+    expect(useGame.getState().pendingCascade!.title).not.toBe(req.test.label);
+  });
+});
+
+describe('resultLine — dénouement sans roll/target/sl/won (#295 Lot 0, Décision 1b)', () => {
+  it('cons vide ⇒ chaîne vide (le verdict reste porté par la rangée de jet)', () => {
+    expect(resultLine([])).toBe('');
+  });
+
+  it('{ops} rend le montant RÉEL depuis le GameOp déjà appliqué', () => {
+    const cons: Consequence[] = [{ ops: [{ op: 'wounds', amount: 3 }] }];
+    expect(resultLine(cons)).toBe('3 Blessure(s) perdue(s).');
+  });
+
+  it('{say} résout la clé i18n out.* (sans placeholder de jet)', () => {
+    const cons: Consequence[] = [{ say: 'out.consHeal', vars: { n: 2 } }];
+    expect(resultLine(cons)).toBe('2 Blessure(s) récupérée(s).');
+  });
+
+  it('type : resultLine ne prend PAS roll/target/sl/won — la duplication d\'outcome est INEXPRIMABLE', () => {
+    // @ts-expect-error — Consequence ne porte ni roll ni target ni sl ni won (Décision 1b).
+    const bad: Consequence = { roll: 12, target: 40, sl: 2, won: true };
+    void bad;
+  });
+
+  it('type : un applier migré ne peut plus renvoyer un string[] libre en `consequences`', () => {
+    // @ts-expect-error — `consequences` est `Consequence[]`, pas `string[]` (le canal `journal` libre est déprécié).
+    const applier: CascadeApplier = (_get, _set, step) => {
+      void step;
+      return { consequences: ['réussi !'] };
+    };
+    void applier;
   });
 });

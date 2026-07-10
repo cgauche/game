@@ -365,6 +365,12 @@ export const fr = {
   'out.healBleed': "{n} pion(s) d'Hémorragie stoppé(s) sur {name}.",
   'out.healHarm': 'Le soin blesse {name} ({n} PB).',
   'out.healNone': 'Le soin de {name} reste sans effet.',
+
+  // Conséquences post-jet (`resultLine`, #295 Lot 0, docs/plans/2026-07-10-conception-composeur-affichage-jets.md
+  // Décision 1b) — SANS roll/target/sl/won (montant déjà résolu, la rangée de jet porte seule le verdict).
+  'out.consWounds': '{n} Blessure(s) perdue(s).',
+  'out.consHeal': '{n} Blessure(s) récupérée(s).',
+
   'out.corruptHold': '{name} contient sa Corruption — pour cette fois.',
   'out.corruptThreatens': '{name} échoue — une mutation menace de se développer…',
   'out.corruptRepel': "{name} repousse l'Influence corruptrice.",
