@@ -172,6 +172,38 @@ pas rejouable après coup sur une traversée déjà en cours au pas.
   « Annuler dépl. » (post-commit, tant qu'aucune Action n'a été prise) défait aussi une poussée
   commise au clavier, comme au clic (`src/state/push-keyboard-commit.test.ts`).
 
+- **Combat naval — l'arc de bordée d'une pièce montée (`weapon.mountSide`)** : `firedAttackBlock`
+  refuse le tir avec `reason:'arc'` si la cible n'est pas dans l'arc du bord monté, calculé depuis le
+  cap de la COQUE support (`shipOfCrew` → `get().facing[ship.id]`), pas celui du servant
+  (`src/state/combatFlow.ts:331-341`). Tribord/babord pointent PERPENDICULAIREMENT au cap (rotation de
+  2 crans de 45°, `arcDir8`/`mountedWeaponBears`, `src/state/shipPostes.ts:128-146`) : une cible dans
+  l'axe proue-poupe est TOUJOURS hors arc tribord/babord, quelle que soit la distance. Diagnostic à
+  l'écran : `aim('cible')` → `{invalid, reason:'arc'}` = géométrie, pas munition/portée ; re-vérifier
+  après un `turnShip`/`maneuver` du navire.
+- **Combat naval — `aim('<coque>')` n'est (quasi) jamais une attaque directe** : une coque composite
+  (`postes` non vide) est routée par `attackAffordance` vers « Servir »/« Renfort » (poste libre
+  ADJACENT et acteur non déjà en poste) ou `none` — jamais vers un réticule d'attaque
+  (`src/state/targetingModes.ts:236-241`, `serveTargetPoste`/`servablePostes`,
+  `src/state/shipPostes.ts:339-361`). En pratique, un héros DÉJÀ posté (`mannedPoste` renseigné) tombe
+  systématiquement sur `none` (`serveTargetPoste` refuse tant qu'on sert déjà une pièce) : la coque
+  ennemie n'est donc pas une cible d'`aim()`, seuls ses membres d'équipage embarqués (`crewIds`) le
+  sont. Dégâts à la coque = la Bordée, action du TOUR DE NAVIRE (mode `battery`, `batteryAffordance`,
+  `src/state/targetingModes.ts:174-186`), un flux de ciblage SÉPARÉ de l'attaque personnelle.
+- **Combat naval — `place('id',{x,y})` ne réinitialise PAS `battle.action`/l'arme choisie** (vérifié
+  empiriquement sur `src/state/devtools.ts:390-414` : la fonction mute `pos` puis
+  `useGame.setState({ battle: { ...b } })` sans toucher `action`/`selectedAttack`) — repositionner une
+  coque/un servant PUIS re-choisir l'arme, ou l'inverse, donne le MÊME résultat avec ce helper de
+  triche. Le mouvement RÉEL (clic-pour-se-déplacer, hors `place()`) remet lui `battle.action` à `null`
+  (ex. `src/state/store.ts:1707`) — un réflexe distinct, à ne pas confondre avec la triche `place()`.
+- **Combat naval — cibler un membre d'équipage d'une coque composite** : les sous-tokens SVG
+  superposés d'un poste (chef + servants sur la même case) n'ont pas de bbox fiable au clic. Méthode
+  fiable : le PORTRAIT du roster HUD (frise/dock, bas d'écran) route par `battleClickEntity` — MÊME
+  ciblage que cliquer le pion sur la carte (`src/ui/CampaignView.tsx:142-166`, `onStripPortrait`/
+  `onDockPortrait`) — puis ouvre la modale Attaque. La modale PRÉSÉLECTIONNE l'arme PERSONNELLE du
+  servant, jamais l'arme de poste (`personalWeaponsOf` exclut explicitly l'arme du poste servi de
+  l'auto-choix, `src/state/mount.ts:104-121`) : RE-sélectionner l'arme de poste dans le `<select>`
+  « Arme » de la modale (`src/ui/jetProps/useAttackJetProps.tsx:171-184`) avant de lancer le jet.
+
 ## Piège du *closure-sync*
 
 Lire le DOM dans le **même** `evaluate` que `talk()` lit l'état AVANT le re-rendu React —

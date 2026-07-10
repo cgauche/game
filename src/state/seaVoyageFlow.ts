@@ -137,10 +137,13 @@ export interface SeaVoyageState {
    *  (won OU lost) = le rythme a été forcé → Test d'Épuisement Complexe (−10) au soir (l.111). */
   paceToday?: 'won' | 'lost';
   /** LONGS VOYAGES TRÈS RAPIDES (MDG 15 l.21-37) : présent = traversée RAPIDE (résolue en UN Test de
-   *  Rude épreuve, JAMAIS la boucle jour par jour). `palierId`/`roll`/`result` : cran du d10 calculé ;
-   *  `pendingFinalize` = le palier reste à appliquer (après un abordage ancré éventuel — `finalizeFastVoyage`
-   *  est ré-entrant). */
-  fast?: { days: number; weeks: number; palierId?: string; roll?: number; result?: number; pendingFinalize?: boolean };
+   *  Rude épreuve, JAMAIS la boucle jour par jour). `palierId`/`roll`/`result`/`crewDR`/`manannTens` : cran du
+   *  d10 calculé (persisté pour narrer au moment RÉEL de l'application, jamais avant) ; `pendingFinalize` =
+   *  le palier reste à appliquer (après un abordage ancré éventuel — `finalizeFastVoyage` est ré-entrant). */
+  fast?: {
+    days: number; weeks: number; palierId?: string; roll?: number; result?: number; crewDR?: number;
+    manannTens?: number; pendingFinalize?: boolean;
+  };
 }
 
 /** Instantané d'un jour de mer pour l'ÉCRAN DE TRAVERSÉE (`SeaVoyageScreen`) : rose des vents + jauges
@@ -429,17 +432,16 @@ export function startFastVoyage(
 }
 
 /** Calcule le palier du voyage rapide (`resolveFastVoyage`) depuis le DR de Rude épreuve + l'Humeur de
- *  Manann + les semaines en mer, le PERSISTE sur `sea.fast` (application différée) et le raconte. */
+ *  Manann + les semaines en mer et le PERSISTE sur `sea.fast` — jamais raconté ici : une embuscade ANCRÉE
+ *  peut interrompre AVANT que le palier ne s'applique (#212), et narrer « Voyage désastreux » pendant que
+ *  l'écran de combat dément les pertes ment au joueur sur le timing. La narration part avec l'application
+ *  réelle, dans `finalizeFastVoyage`. */
 function computeFastPalier(get: Get, set: Set, crewDR: number): void {
   const fast = get().travelPlan?.sea?.fast;
   if (!fast) return;
   const mood = vesselManann(get().vessel);
   const { roll, manannTens, result, palier } = resolveFastVoyage(crewDR, mood.score, fast.weeks, battleRng());
-  patchSea(get, set, { fast: { ...fast, palierId: palier.id, roll, result, pendingFinalize: true } });
-  tell(get, set, [
-    `Voyage rapide — d10 ${roll} − ${fast.weeks} semaine(s) ${crewDR >= 0 ? '+' : ''}${crewDR} DR (Rude épreuve) ${manannTens >= 0 ? '+' : ''}${manannTens} (dizaine d'Humeur de Manann) = ${result} → ${palier.label}.`,
-    palier.desc,
-  ]);
+  patchSea(get, set, { fast: { ...fast, palierId: palier.id, roll, result, crewDR, manannTens, pendingFinalize: true } });
 }
 
 /** Applique les conséquences d'un palier de voyage rapide (l.33-37) : équipage PNJ manquant (couture
@@ -484,8 +486,9 @@ function applyFastPalier(get: Get, set: Set, palierId?: string): void {
 
 /** Achève une traversée rapide (RÉ-ENTRANT) : une embuscade ANCRÉE (#212) non déclenchée INTERROMPT
  *  d'abord (le reste s'achève en rapide APRÈS le combat, via `resumeTravel` → `runSeaDays`) ; sinon
- *  applique le palier, avance de N jours (couture unique `advanceTime` → faim/soif/maladies/paie
- *  d'équipage), consomme l'eau des tonneaux (comme le détaillé) et accoste (`openPortAt`). */
+ *  RACONTE puis applique le palier (MÊME geste — jamais avant, cf. `computeFastPalier`), avance de N
+ *  jours (couture unique `advanceTime` → faim/soif/maladies/paie d'équipage), consomme l'eau des
+ *  tonneaux (comme le détaillé) et accoste (`openPortAt`). */
 function finalizeFastVoyage(get: Get, set: Set): void {
   const plan = get().travelPlan;
   const fast = plan?.sea?.fast;
@@ -497,6 +500,15 @@ function finalizeFastVoyage(get: Get, set: Set): void {
     tell(get, set, ['La traversée rapide est rompue : une voile hostile surgit sans que la vigie l\'ait vue venir (Surprise) !']);
     openAuthoredSeaAmbush(get, set, route, false); // reprise post-combat → ce finalize s'exécute à nouveau (ambushFired le saute)
     return;
+  }
+  const palier = FAST_VOYAGE_PALIERS.find((p) => p.id === fast.palierId);
+  if (palier) {
+    const crewDR = fast.crewDR ?? 0;
+    const manannTens = fast.manannTens ?? 0;
+    tell(get, set, [
+      `Voyage rapide — d10 ${fast.roll} − ${fast.weeks} semaine(s) ${crewDR >= 0 ? '+' : ''}${crewDR} DR (Rude épreuve) ${manannTens >= 0 ? '+' : ''}${manannTens} (dizaine d'Humeur de Manann) = ${fast.result} → ${palier.label}.`,
+      palier.desc,
+    ]);
   }
   applyFastPalier(get, set, fast.palierId);
   // NAUFRAGE (MDG 13 l.674) : un palier de voyage rapide a pu couler la coque → survie, jamais l'accostage.
@@ -1013,7 +1025,7 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
     }
     case 'voyage-rapide': {
       // VOYAGE RAPIDE (MDG 15 l.28) : le DR du Test de Rude épreuve alimente le tableau. Le palier est
-      // CALCULÉ ici (affiché SUR PLACE via `crewTestConfirm`) ; son APPLICATION est différée à
+      // CALCULÉ et PERSISTÉ ici, jamais raconté — sa narration part avec son APPLICATION, différée à
       // `finalizeFastVoyage` (relancé par « Continuer » → `runSeaDays`), après un abordage ancré éventuel.
       computeFastPalier(get, set, total);
       break;

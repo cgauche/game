@@ -446,7 +446,7 @@ describe('Traversée RAPIDE — un seul Test de Rude épreuve (MDG 15 l.21-37, C
     expect(p?.voyage?.kind).toBe('voyage-rapide'); // l’UNIQUE Test canonique (modale existante)
     for (const part of p!.participants) if (!part.result) get().crewTestRoll(part.id);
     get().crewTestConfirm();
-    expect(get().pendingCrewTest?.resolved).toBeTruthy(); // le palier s’affiche SUR PLACE
+    expect(get().pendingCrewTest?.resolved).toBeTruthy(); // le palier est CALCULÉ ici, raconté seulement à l'application (finalize)
     get().crewTestContinue(); // « Continuer » finalise (jours écoulés + accostage)
   }
 
@@ -568,11 +568,17 @@ describe('Traversée rapide × embuscade ANCRÉE (#212) : interruption puis repr
     expect(get().travelPlan!.sea!.ambushFired).toBe(true);
     expect(get().travelPlan!.interrupted).toBe(true);
     expect(get().travelPlan!.sea!.fast!.pendingFinalize).toBe(true); // le palier reste à appliquer
+    // Timing (docs/plans/…) : à l'interruption, seule la narration d'embuscade part — le texte du palier
+    // (« Voyage rapide — … ») ne doit PAS précéder son application (l'écran de combat le démentirait).
+    expect(get().journal.some((l) => l.includes('voile hostile surgit'))).toBe(true);
+    expect(get().journal.some((l) => l.startsWith('Voyage rapide —'))).toBe(false);
     // Combat gagné → reprise : la traversée s’achève en rapide (arrivée), sans rejouer l’embuscade.
     set({ battle: null });
     get().resumeTravel();
     expect(get().travelPlan).toBeNull(); // accosté
     expect(get().pendingShoreLeave).toBeTruthy();
+    // Post-combat : la narration du palier part ENFIN, avec son application (même geste).
+    expect(get().journal.some((l) => l.startsWith('Voyage rapide —'))).toBe(true);
   });
 });
 
