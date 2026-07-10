@@ -9,18 +9,18 @@ const bow: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat
 
 describe('Nuée — Trait Essaim (LDB 85 l.199-200)', () => {
   it('build au spawn : ×5 PB, +10 CC, immunité Psychologie, flag swarm', () => {
-    const c = statblockToCombatant({ name: 'Nuée de rats', char: { CC: 35, F: 30, E: 30, B: 5 }, traits: [{ id: 'nuee' }, { id: 'taille', arg: 'Petite' }] }, 'x', { x: 0, y: 0 });
+    const c = statblockToCombatant({ name: 'Nuée de rats', char: { 'capacite-de-combat': 35, force: 30, endurance: 30, B: 5 }, traits: [{ id: 'nuee' }, { id: 'taille', arg: 'Petite' }] }, 'x', { x: 0, y: 0 });
     expect(c.swarm).toBe(true);
     expect(c.psychImmune).toBe(true);
     expect(c.wounds.max).toBe(25); // 5 × 5 (PB d'une créature type)
-    expect(c.characteristics.CC).toBe(45); // 35 + 10
+    expect(c.characteristics['capacite-de-combat']).toBe(45); // 35 + 10
   });
 
   it('sans le trait : ni swarm ni ×5', () => {
-    const c = statblockToCombatant({ name: 'Rat', char: { CC: 35, B: 5 }, traits: [{ id: 'taille', arg: 'Petite' }] }, 'x', { x: 0, y: 0 });
+    const c = statblockToCombatant({ name: 'Rat', char: { 'capacite-de-combat': 35, B: 5 }, traits: [{ id: 'taille', arg: 'Petite' }] }, 'x', { x: 0, y: 0 });
     expect(c.swarm).toBeUndefined();
     expect(c.wounds.max).toBe(5);
-    expect(c.characteristics.CC).toBe(35);
+    expect(c.characteristics['capacite-de-combat']).toBe(35);
   });
 
   it('+40 au tir CONTRE une nuée, et la Taille de la cible est ignorée', () => {

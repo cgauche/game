@@ -7,15 +7,15 @@ import { restRecovery, needsRecoveryRoll } from './rest';
 import { addCondition, stacks } from './conditions';
 
 const chars = (E = 30): Characteristics => ({
-  CC: 30, CT: 30, F: 30, E, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30,
+  'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: E, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30,
 });
 
 const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
 
-function hero(opts: { E?: number; rations?: number; brouet?: boolean } = {}): Combatant {
+function hero(opts: { endurance?: number; rations?: number; brouet?: boolean } = {}): Combatant {
   return {
     id: 'h', name: 'Gunnar', kind: 'hero',
-    characteristics: chars(opts.E),
+    characteristics: chars(opts.endurance),
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     items: Array.from({ length: opts.rations ?? 0 }, (_, i) => ration(`r${i}`)),
@@ -57,19 +57,19 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
   });
 
   it('1ᵉʳ échec → −10 F et E (effectiveChar) ; 2ᵉ échec → dégâts ignorant les PA (min 1) + −10 ailleurs', () => {
-    const c = hero({ rations: 0, E: 30 });
+    const c = hero({ rations: 0, endurance: 30 });
     dailyFoodUpkeep(c, 30, 3, fixed(95)); // j1
     dailyFoodUpkeep(c, 30, 3, fixed(95)); // j2 : Test raté → 1ᵉʳ échec
     expect(c.hunger?.failures).toBe(1);
-    expect(effectiveChar(c, 'F')).toBe(20);
-    expect(effectiveChar(c, 'E')).toBe(20);
-    expect(effectiveChar(c, 'Ag')).toBe(30); // pas encore
+    expect(effectiveChar(c, 'force')).toBe(20);
+    expect(effectiveChar(c, 'endurance')).toBe(20);
+    expect(effectiveChar(c, 'agilite')).toBe(30); // pas encore
     dailyFoodUpkeep(c, 30, 3, fixed(95)); // j3
     const d4 = dailyFoodUpkeep(c, 30, 3, fixed(95)); // j4 : 2ᵉ échec
     expect(c.hunger?.failures).toBe(2);
     expect(d4.damage).toBe(7); // d10 forcé à 10 − BE 3 = 7
-    expect(effectiveChar(c, 'Ag')).toBe(20);
-    expect(hungerCharPenalties(c, 'Int')).toEqual([-10]);
+    expect(effectiveChar(c, 'agilite')).toBe(20);
+    expect(hungerCharPenalties(c, 'intelligence')).toEqual([-10]);
   });
 
   it('les Tests sont de plus en plus difficiles : −10 par Test déjà tenté (l.418)', () => {
@@ -87,13 +87,13 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
     const c = hero({ rations: 0 });
     dailyFoodUpkeep(c, 30, 3, fixed(95));
     dailyFoodUpkeep(c, 30, 3, fixed(95));
-    expect(effectiveChar(c, 'F')).toBe(20);
+    expect(effectiveChar(c, 'force')).toBe(20);
     c.items!.push(ration('r9'));
     const r = dailyFoodUpkeep(c, 30, 3, makeRNG(1));
     expect(r.ate).toBe(true);
     expect(r.log.join(' ')).toContain('mange enfin à sa faim');
     expect(isStarving(c)).toBe(false);
-    expect(effectiveChar(c, 'F')).toBe(30);
+    expect(effectiveChar(c, 'force')).toBe(30);
   });
 
   it('Brouet (LDB 10 l.113) : 1 ration couvre 2 jours, Test de faim tous les 3 jours', () => {
@@ -132,13 +132,13 @@ describe('dailyFoodUpkeep — rations (LDB p.302) et faim (LDB 18 l.422)', () =>
   });
 
   it('applyFaimTest : verrouiller un échec compte le Test + applique les pénalités (l.422)', () => {
-    const c = hero({ rations: 0, E: 30 });
+    const c = hero({ rations: 0, endurance: 30 });
     c.hunger = { days: 2, tests: 0, failures: 0 };
     const r1 = applyFaimTest(c, false, 3, fixed(95)); // 1ᵉʳ échec → −10 F/E
     expect(c.hunger?.tests).toBe(1);
     expect(c.hunger?.failures).toBe(1);
     expect(r1.damage).toBe(0);
-    expect(effectiveChar(c, 'F')).toBe(20);
+    expect(effectiveChar(c, 'force')).toBe(20);
     const r2 = applyFaimTest(c, false, 3, fixed(95)); // 2ᵉ échec → −10 autres + 1d10 − BE
     expect(c.hunger?.failures).toBe(2);
     expect(r2.damage).toBe(7); // d10 forcé 10 − BE 3
@@ -187,20 +187,20 @@ describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.420)', () => {
     expect(c.thirst?.days).toBe(1);
     expect(c.thirst?.failures).toBe(1);
     expect(w.damage).toBe(0);
-    expect(effectiveChar(c, 'Int')).toBe(20);
-    expect(effectiveChar(c, 'FM')).toBe(20);
-    expect(effectiveChar(c, 'Soc')).toBe(20);
-    expect(effectiveChar(c, 'F')).toBe(30); // F reste intacte au 1ᵉʳ échec
+    expect(effectiveChar(c, 'intelligence')).toBe(20);
+    expect(effectiveChar(c, 'force-mentale')).toBe(20);
+    expect(effectiveChar(c, 'sociabilite')).toBe(20);
+    expect(effectiveChar(c, 'force')).toBe(30); // F reste intacte au 1ᵉʳ échec
   });
 
   it('2ᵉ échec : −10 aux autres Caractéristiques + 1d10 − BE (min 1) Dégâts', () => {
-    const c = hero({ E: 30 });
+    const c = hero({ endurance: 30 });
     dailyWaterUpkeep(c, false, 30, 3, fixed(95)); // j1 : 1ᵉʳ échec
     const w2 = dailyWaterUpkeep(c, false, 30, 3, fixed(95)); // j2 : Test plus dur, 2ᵉ échec
     expect(c.thirst?.failures).toBe(2);
     expect(w2.damage).toBe(7); // d10 forcé 10 − BE 3
-    expect(effectiveChar(c, 'F')).toBe(20); // « toutes les autres » désormais touchées
-    expect(thirstCharPenalties(c, 'CC')).toEqual([-10]);
+    expect(effectiveChar(c, 'force')).toBe(20); // « toutes les autres » désormais touchées
+    expect(thirstCharPenalties(c, 'capacite-de-combat')).toEqual([-10]);
   });
 
   it('Tests de plus en plus durs (−10 cumulatif, l.418)', () => {
@@ -222,7 +222,7 @@ describe('dailyWaterUpkeep — Soif / privation d’eau (LDB 18 l.420)', () => {
   });
 
   it('applySoifTest : applique le résultat différé', () => {
-    const c = hero({ E: 30 });
+    const c = hero({ endurance: 30 });
     const r1 = applySoifTest(c, false, 3, fixed(95)); // 1ᵉʳ échec
     expect(c.thirst?.failures).toBe(1);
     expect(r1.damage).toBe(0);

@@ -18,7 +18,7 @@ import { effectiveMovement } from './encumbrance';
 function hero(p: Partial<Combatant> = {}): Combatant {
   return {
     id: 'h', name: 'Cobaye', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 42, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 35, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 42, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 35, sociabilite: 30 },
     wounds: { current: 10, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [],
@@ -91,11 +91,11 @@ describe('mutationKindFor — d100 corps/esprit par espèce (data-driven, ids ST
 describe('effets de mutation lus à la volée', () => {
   it('charMods permanents → effectiveChar (base, cumulable avec un buff magique)', () => {
     const c = hero();
-    attachMutation(c, { id: 'corpulent', label: 'Corpulent', desc: '', kind: 'physique', roll: 8, passive: [{ op: 'charMod', char: 'F', mod: 5 }, { op: 'charMod', char: 'E', mod: 5 }, { op: 'moveMod', mod: -1 }] });
-    expect(effectiveChar(c, 'F')).toBe(35);
-    c.activeEffects = [{ label: 'Puissance', char: 'F', bonus: 10, duration: { scale: 'rounds', left: 3 } }];
-    expect(effectiveChar(c, 'F')).toBe(45); // base mutée 35 + buff 10 (pas d'écrasement)
-    expect(effectiveChar(c, 'E')).toBe(c.characteristics.E + 5); // Corpulent E+5 via le collecteur (base + delta)
+    attachMutation(c, { id: 'corpulent', label: 'Corpulent', desc: '', kind: 'physique', roll: 8, passive: [{ op: 'charMod', char: 'force', mod: 5 }, { op: 'charMod', char: 'endurance', mod: 5 }, { op: 'moveMod', mod: -1 }] });
+    expect(effectiveChar(c, 'force')).toBe(35);
+    c.activeEffects = [{ label: 'Puissance', char: 'force', bonus: 10, duration: { scale: 'rounds', left: 3 } }];
+    expect(effectiveChar(c, 'force')).toBe(45); // base mutée 35 + buff 10 (pas d'écrasement)
+    expect(effectiveChar(c, 'endurance')).toBe(c.characteristics.endurance + 5); // Corpulent E+5 via le collecteur (base + delta)
   });
   it('movement → effectiveMovement', () => {
     const c = hero();
@@ -112,9 +112,9 @@ describe('effets de mutation lus à la volée', () => {
   it('mods de Tests : compétence nommée + Tests d\'une caractéristique (testValue)', () => {
     const c = hero({ skills: [{ skillId: 'pistage', advances: 5 } as never, { skillId: 'charme', advances: 0 } as never] });
     attachMutation(c, { id: 'groin-poilu', label: 'Groin poilu', desc: '', kind: 'physique', roll: 93, passive: [{ op: 'skillMod', skill: 'pistage', mod: 10 }] });
-    attachMutation(c, { id: 'visage-inverse', label: 'Visage inversé', desc: '', kind: 'physique', roll: 53, passive: [{ op: 'testMod', amount: -20, char: 'Soc' }] });
+    attachMutation(c, { id: 'visage-inverse', label: 'Visage inversé', desc: '', kind: 'physique', roll: 53, passive: [{ op: 'testMod', amount: -20, char: 'sociabilite' }] });
     expect(passiveSkillSum(c, 'pistage')).toBe(10); // compétence nommée → collecteur passif (Σ, intrinsèque)
-    expect(passiveTestMod(c, 'Soc')).toBe(-20); // Tests char-qualifiés (Visage inversé) → collecteur passif
+    expect(passiveTestMod(c, 'sociabilite')).toBe(-20); // Tests char-qualifiés (Visage inversé) → collecteur passif
     expect(testValue(c, 'charme')).toBe(30 - 20); // Soc 30, Tests de Sociabilité −20 (bout en bout)
   });
   it('attachMutation pousse les Traits dérivés (créature + psychologie)', () => {

@@ -11,7 +11,7 @@ import { openAttackCascade, doAttack, runPreemptShots } from './combatFlow';
 import { seedBattleRng } from './battleRng';
 import type { Combatant, ItemInstance, Weapon } from '../engine/types';
 
-const CHARS = (dex: number) => ({ CC: 45, CT: 45, F: 35, E: 35, I: 30, Ag: 30, Dex: dex, Int: 30, FM: 30, Soc: 30 });
+const CHARS = (dex: number) => ({ 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: dex, intelligence: 30, 'force-mentale': 30, sociabilite: 30 });
 const ARM = () => ({ tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 });
 const SWORD = (uid: string): Weapon => ({ uid, name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [], hand: 'main', hands: 1 } as unknown as Weapon);
 const SWORD_ITEM = (uid: string): ItemInstance => ({ uid, name: 'Épée', kind: 'melee', qualities: [] } as unknown as ItemInstance);

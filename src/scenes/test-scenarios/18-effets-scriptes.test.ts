@@ -34,7 +34,7 @@ describe('Scénario « Effets scriptés » : moteurs orphelins câblés à un d�
     const p = useGame.getState().party.find((h) => !hasTalent(h, 'Béni'))!;
     expect(p).toBeTruthy(); // au moins un non-Béni chez les pré-tirés
     const sk = p.skills.find((s) => s.skillId === 'priere');
-    if (sk) sk.advances = 200; else p.skills.push({ skillId: 'priere', characteristic: 'Soc', advances: 200 } as SkillInstance);
+    if (sk) sk.advances = 200; else p.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 200 } as SkillInstance);
     p.xp = 0;
     useGame.setState({ party: [...useGame.getState().party] });
     const autel = scene.entities.find((e) => e.id === 'autel')!;
@@ -46,7 +46,7 @@ describe('Scénario « Effets scriptés » : moteurs orphelins câblés à un d�
 
   it('ambitionLost : le dialogue du messager anéantit une Ambition → Trauma (Calme Accessible échoué)', () => {
     const hero = useGame.getState().party[0];
-    hero.characteristics = { ...hero.characteristics, FM: 10 }; // Calme Accessible (+20) → cible basse, échec garanti à la graine 1
+    hero.characteristics = { ...hero.characteristics, 'force-mentale': 10 }; // Calme Accessible (+20) → cible basse, échec garanti à la graine 1
     useGame.setState({ party: [...useGame.getState().party] });
     seedBattleRng(1);
     const choice = scene.dialogues.find((d) => d.id === 'dlg-messager')!.nodes[0].choices[0];

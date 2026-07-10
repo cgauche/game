@@ -2220,7 +2220,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const attacker = inBattleId(battle, pc.attackerId);
       const target = inBattleId(battle, targetId);
       if (!attacker || !target) return;
-      if (pc.count >= bonus(effectiveChar(attacker, 'CC'))) return; // borné à BCC enchaînements (LDB 14 l.12)
+      if (pc.count >= bonus(effectiveChar(attacker, 'capacite-de-combat'))) return; // borné à BCC enchaînements (LDB 14 l.12)
       if (!cleaveTargets(battle, attacker, pc.hitIds).some((t) => t.id === targetId)) return; // cible invalide (non adjacente / déjà frappée)
       set({ pendingAttack: { attackerId: attacker.id, targetId, location: null, result: null, cleave: true } });
     },
@@ -2239,7 +2239,7 @@ export function createCombatSlice(get: Get, set: Set) {
       // gatée (la main directrice a déjà consommé le Test le cas échéant), la 2ᵉ frappe joue le Test ICI. Échec →
       // l'objet de la 2nde main glisse (`disarm`), la 2ᵉ frappe est renoncée. `skipGate` : Test déjà PASSÉ (reprise).
       if (!skipGate && attackHandGate(attacker, off.uid) && !attackHandGate(attacker)) {
-        const base = effectiveChar(attacker, 'Dex'); // Dextérité effective — +20 « Accessible » via la Difficulté
+        const base = effectiveChar(attacker, 'dexterite'); // Dextérité effective — +20 « Accessible » via la Difficulté
         set({ pendingHandGate: {
           attackerId: attacker.id, actorName: attacker.name, hand: 'off',
           skillValue: base, difficulty: 'accessible', target: base + DIFFICULTY_MODIFIERS['accessible'],
@@ -2589,7 +2589,7 @@ export function createCombatSlice(get: Get, set: Set) {
       set({
         pendingHeal: {
           healerId: healer.id, healerName: healer.name, targetId: target.id, targetName: target.name,
-          mode, intBonus: bonus(effectiveChar(healer, 'Int')),
+          mode, intBonus: bonus(effectiveChar(healer, 'intelligence')),
           skillValue, difficulty: 'intermediaire', target: skillValue, roll: null, success: false, sl: 0,
         },
         battle: { ...battle, action: null },
@@ -3025,7 +3025,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const mine = domainsOf(active);
       const supporters = battle.combatants.filter((c) => c.id !== active.id && c.kind === active.kind && !isOutOfAction(c)
         && actorHasSkill(c, 'langue', 'magick') && [...domainsOf(c)].some((d) => mine.has(d))).length;
-      const cap = bonus(effectiveChar(active, 'Int')); // Langue (Magick) = Intelligence ; plafond du Soutien
+      const cap = bonus(effectiveChar(active, 'intelligence')); // Langue (Magick) = Intelligence ; plafond du Soutien
       const supBonus = assistBonus(supporters, cap);
       const value = testValue(active, 'langue', undefined, 'magick') + supBonus;
       set({ pendingDispel: {

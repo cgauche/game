@@ -8,7 +8,7 @@ const scene = () =>
   ({ id: 's', nom: '', description: '', dimensions: { w: 12, h: 12 }, layers: [{ z: 0, tiles: Array(144).fill('herbe') }], entities: [], dialogues: [], triggers: [], encounters: [], flags: {} } as never);
 
 function setup(broken: boolean, enemyPos = { x: 9, y: 5 }) {
-  const hero = { id: 'h', kind: 'hero', name: 'H', pos: { x: 5, y: 5 }, movement: 4, weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }], conditions: broken ? [{ name: 'brise', value: 1 }] : [], characteristics: { FM: 40 }, skills: [], wounds: { current: 10, max: 10 }, advantage: 0, engagedWith: [], psychState: [] } as unknown as Combatant;
+  const hero = { id: 'h', kind: 'hero', name: 'H', pos: { x: 5, y: 5 }, movement: 4, weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }], conditions: broken ? [{ name: 'brise', value: 1 }] : [], characteristics: { 'force-mentale': 40 }, skills: [], wounds: { current: 10, max: 10 }, advantage: 0, engagedWith: [], psychState: [] } as unknown as Combatant;
   const enemy = { id: 'e', kind: 'enemy', name: 'E', pos: enemyPos, conditions: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
   useGame.setState({ battle: { combatants: [hero, enemy], order: ['h', 'e'], baseOrder: ['h', 'e'], turn: 0, action: null, movementUsed: 0, acted: false, reachable: new Map(), over: false, round: 1, log: [] } as never, scene: scene() });
   return { hero, enemy };

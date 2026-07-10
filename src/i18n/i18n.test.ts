@@ -8,7 +8,7 @@ import { psychologyLabel } from '../data';
 
 describe('i18n — primitive t() + catalogue FR (seam, docs/i18n-seam.md)', () => {
   it('résout une clé en texte FR', () => {
-    expect(t('char.CC')).toBe('Capacité de Combat');
+    expect(t('char.capacite-de-combat')).toBe('Capacité de Combat');
     expect(t('difficulty.difficile')).toBe('Difficile (−20)');
   });
 
@@ -23,8 +23,8 @@ describe('i18n — primitive t() + catalogue FR (seam, docs/i18n-seam.md)', () =
   });
 
   it('les maps de labels DÉRIVENT du catalogue (source unique, parité verbatim)', () => {
-    expect(CHAR_LABELS.CC).toBe(t('char.CC'));
-    expect(CHAR_LABELS.Soc).toBe('Sociabilité');
+    expect(CHAR_LABELS['capacite-de-combat']).toBe(t('char.capacite-de-combat'));
+    expect(CHAR_LABELS.sociabilite).toBe('Sociabilité');
     expect(DIFFICULTY_LABELS.tresFacile).toBe(t('difficulty.tresFacile'));
     expect(DIFFICULTY_LABELS.intermediaire).toBe('Intermédiaire (+0)');
     // Difficultés extrêmes EDO (App.2) : labels dérivés du catalogue comme les autres.

@@ -35,7 +35,7 @@ import drunkennessJson from '../data/drunkenness.json';
 // en-tête) — même patron que `soberUp`/`hangover` ci-dessous (« la source rend, l'appelant applique »).
 
 /** Caractéristiques pénalisées par l'Ivresse (LDB 09 l.475). */
-export const DRUNK_CARACS: CharKey[] = ['CC', 'CT', 'Ag', 'Dex', 'Int'];
+export const DRUNK_CARACS: CharKey[] = ['capacite-de-combat', 'capacite-de-tir', 'agilite', 'dexterite', 'intelligence'];
 
 /** État d'ivresse d'un personnage (absent = sobre). */
 export interface DrunkState {

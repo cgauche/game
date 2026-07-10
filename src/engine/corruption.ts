@@ -101,7 +101,7 @@ export function corruptionGain(level: ExposureLevel, success: boolean, dr: numbe
  *  « Vous pouvez gagner un nombre de Points de Corruption supplémentaires égal à votre niveau d'Âme
  *  pure avant d'avoir à effectuer un Test pour savoir si vous êtes corrompu » → seuil +niveau. */
 export function corruptionThresholdExceeded(c: Combatant): boolean {
-  return (c.corruption ?? 0) > bonus(effectiveChar(c, 'FM')) + bonus(effectiveChar(c, 'E')) + talentCorruptionThreshold(c);
+  return (c.corruption ?? 0) > bonus(effectiveChar(c, 'force-mentale')) + bonus(effectiveChar(c, 'endurance')) + talentCorruptionThreshold(c);
 }
 
 /** « PROFANE » au sens de la Protection de Phâ (LDB 48 p.249) : créature ayant le Trait Mort-vivant OU
@@ -111,7 +111,7 @@ export function isProfane(c: Combatant): boolean {
   const traits = c.traits ?? [];
   if (traits.some((t) => t.id === 'mort-vivant' || t.id === 'demoniaque')) return true;
   if ((c.mutations?.length ?? 0) > 0) return true;
-  return (c.corruption ?? 0) > bonus(effectiveChar(c, 'FM')) + bonus(effectiveChar(c, 'E'));
+  return (c.corruption ?? 0) > bonus(effectiveChar(c, 'force-mentale')) + bonus(effectiveChar(c, 'endurance'));
 }
 
 // ---------------------------------------------------------------------------
@@ -132,7 +132,7 @@ export function mutationKindFor(species: string | undefined, roll: number): 'phy
 export function mutationLimitExceeded(c: Combatant): boolean {
   const phys = (c.mutations ?? []).filter((m) => m.kind === 'physique').length;
   const ment = (c.mutations ?? []).filter((m) => m.kind === 'mentale').length;
-  return phys > bonus(effectiveChar(c, 'E')) || ment > bonus(effectiveChar(c, 'FM'));
+  return phys > bonus(effectiveChar(c, 'endurance')) || ment > bonus(effectiveChar(c, 'force-mentale'));
 }
 
 /** Attache une mutation au personnage : donnée + traits dérivés (créature/psychologie). RNG seedable

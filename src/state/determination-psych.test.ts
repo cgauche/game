@@ -42,17 +42,17 @@ describe('Immunité psy → AUCUN modificateur de combat psy (psychDRAdjust, LDB
 });
 
 describe('Détermination « ignorer modifs de critique » (LDB 17 l.64) annule les pénalités de trauma', () => {
-  const trauma = () => C({ traumas: [{ ops: [{ op: 'charMod', char: 'F', mod: -30 }, { op: 'skillMod', skill: 'esquive', mod: -20 }, { op: 'moveScale', num: 1, den: 2 }] } as never] });
+  const trauma = () => C({ traumas: [{ ops: [{ op: 'charMod', char: 'force', mod: -30 }, { op: 'skillMod', skill: 'esquive', mod: -20 }, { op: 'moveScale', num: 1, den: 2 }] } as never] });
   it('actif : pénalités normales', () => {
     const c = trauma();
-    expect(traumaCharPenalties(c, 'F')).toEqual([-30]);
+    expect(traumaCharPenalties(c, 'force')).toEqual([-30]);
     expect(traumaDodgePenalty(c)).toBe(-20);
     expect(traumaMovementHalved(c)).toBe(true);
   });
   it('ignoreCritMods : toutes les pénalités de trauma sont annulées', () => {
     const c = trauma();
     c.activeEffects = [{ label: 'D', bonus: 0, duration: { scale: 'rounds', left: 1 }, ignoreCritMods: true } as never];
-    expect(traumaCharPenalties(c, 'F')).toEqual([]);
+    expect(traumaCharPenalties(c, 'force')).toEqual([]);
     expect(traumaDodgePenalty(c)).toBe(0);
     expect(traumaMovementHalved(c)).toBe(false);
   });
@@ -60,14 +60,14 @@ describe('Détermination « ignorer modifs de critique » (LDB 17 l.64) annule l
 
 describe('Détermination annule aussi les pénalités de MALADIE (kind `maladie`, gating dans le collecteur)', () => {
   // Fièvre (LDB 20 l.135) = −10 aux Tests Physiques/Sociaux ; `characteristics` requis (le collecteur itère ses clés).
-  const sick = () => C({ characteristics: { F: 30, Soc: 30 } as never, diseases: [{ phase: 'active', symptoms: [{ symptomId: 'fievre' }] } as never] });
+  const sick = () => C({ characteristics: { force: 30, sociabilite: 30 } as never, diseases: [{ phase: 'active', symptoms: [{ symptomId: 'fievre' }] } as never] });
   it('actif : fièvre = −10 (via le pool passif non-cumul)', () => {
-    expect(traumaCharPenalties(sick(), 'F')).toEqual([-10]);
+    expect(traumaCharPenalties(sick(), 'force')).toEqual([-10]);
   });
   it('ignoreCritMods : la pénalité de maladie est annulée (comme un trauma)', () => {
     const c = sick();
     c.activeEffects = [{ label: 'D', bonus: 0, duration: { scale: 'rounds', left: 1 }, ignoreCritMods: true } as never];
-    expect(traumaCharPenalties(c, 'F')).toEqual([]);
+    expect(traumaCharPenalties(c, 'force')).toEqual([]);
   });
 });
 

@@ -124,7 +124,7 @@ describe('__wfrp — autres commandes de recette', () => {
 });
 
 describe('__wfrp.place — piège composite (coque à postes / membre de crew)', () => {
-  const CHARS = { CC: 30, CT: 30, F: 40, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  const CHARS = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 40, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
   const mkPoste = (crewIds: string[]): ShipPoste => ({ item: itemFromTrappingById('belier-ade2')!, crewIds });
   const mkHull = (poste: ShipPoste, pos = { x: 5, y: 5 }): Combatant =>
     ({ id: 'hull', name: 'Bélier (poste)', kind: 'enemy', pos, conditions: [], weapons: [],

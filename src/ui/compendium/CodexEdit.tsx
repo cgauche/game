@@ -689,7 +689,7 @@ function TriggeredEffectsField({ value, onChange, label = 'effets déclenchés (
   );
 }
 
-const STAT_LABEL: Record<NonNullable<ManeuverDef['stat']>, string> = { CC: 'CC (mêlée)', CT: 'CT (distance)' };
+const STAT_LABEL: Record<NonNullable<ManeuverDef['stat']>, string> = { 'capacite-de-combat': 'CC (mêlée)', 'capacite-de-tir': 'CT (distance)' };
 const ADV_MODE_LABEL: Record<NonNullable<ManeuverDef['advantageMode']>, string> = {
   fixed: 'Coût fixe', variable: 'Au choix (+1 DR/Av)', all: 'Tout l’Avantage',
 };

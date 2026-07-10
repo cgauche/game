@@ -52,7 +52,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
   it('Récupération du Brisé : héros Brisé (non Engagé) → étape de Test (Calme) ; succès retire ≥ 1 Brisé', () => {
     seedBattleRng(2); // seed donnant une réussite du Calme (le −10 du Brisé lui-même s'applique, LDB 16 l.55)
     const { H } = setup();
-    H.characteristics.FM = 95; // Calme élevé → Test réussi malgré le −10 de l'État Brisé
+    H.characteristics['force-mentale'] = 95; // Calme élevé → Test réussi malgré le −10 de l'État Brisé
     addCondition(H, COND.brise, 2);
 
     openRoundEndCascade(useGame.getState, useGame.setState);
@@ -109,7 +109,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
   it('Empoisonné : la validation de l’étape applique le retrait (E élevé → Résistance réussie + Exténué)', () => {
     seedBattleRng(5); // graine où le Test (cible 85) réussit (roll 9)
     const { H } = setup();
-    H.characteristics.E = 90; // Endurance élevée → Test de Résistance réussi
+    H.characteristics.endurance = 90; // Endurance élevée → Test de Résistance réussi
     addCondition(H, COND.empoisonne, 1);
 
     openRoundEndCascade(useGame.getState, useGame.setState);
@@ -127,7 +127,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
   it('Sonné data-driven : héros → étape triggeredTest ; succès → Sonné vidé + 1 Exténué (RAW l.123-127)', () => {
     seedBattleRng(5);
     const { H } = setup();
-    H.characteristics.E = 90; // Résistance haute → réussite
+    H.characteristics.endurance = 90; // Résistance haute → réussite
     addCondition(H, COND.sonne, 1);
 
     openRoundEndCascade(useGame.getState, useGame.setState);
@@ -142,7 +142,7 @@ describe('Upkeep de fin de Round — héros en cascade, ennemis en silence', () 
 
   it('Sonné : caveat RAW « 1 Exténué si pas déjà » — déjà Exténué → la Résistance vide le Sonné SANS empiler d’Exténué (l.127)', () => {
     const { H } = setup();
-    H.characteristics.E = 90;
+    H.characteristics.endurance = 90;
     addCondition(H, COND.sonne, 1);
     addCondition(H, COND.extenue, 1); // DÉJÀ Exténué
     // Résolution INLINE (hors cascade) avec un jet réussi forcé → on isole le caveat sur l’Exténué.

@@ -21,7 +21,7 @@ const onHitFlow = (ops: unknown[]): TriggeredEffect =>
 const mage = (p: Partial<Combatant> = {}): Combatant =>
   ({
     id: 'mage', name: 'Magister', kind: 'hero',
-    characteristics: { CC: 40, CT: 30, F: 30, E: 30, I: 35, Ag: 40, Dex: 45, Int: 40, FM: 45, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 35, agilite: 40, dexterite: 45, intelligence: 40, 'force-mentale': 45, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], items: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...p,
@@ -30,13 +30,13 @@ const mage = (p: Partial<Combatant> = {}): Combatant =>
 describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', () => {
   it('crée un OBJET `conjured` en inventaire, tenu en tête de c.weapons, Dégâts FIXES = BFM', () => {
     const c = mage(); // FM 45 → BFM 4
-    applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['magique'] }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' }, qualities: ['magique'] }],
       { label: 'Arme aethyrique', defaultDurationRounds: 4 });
     expect(c.items?.some((it) => it.conjured && it.name === 'Arme aethyrique')).toBe(true); // objet réel
     expect(c.weapons[0].name).toBe('Arme aethyrique'); // arme directrice
     expect(c.weapons[0].qualities.some((q) => q.id === 'magique')).toBe(true);
     expect(damageString(c.weapons[0].damage)).toBe('+4'); // BFM, pas de +BF
-    expect(effectiveWeaponDamage(c.weapons[0], bonus(c.characteristics.F))).toBe(4);
+    expect(effectiveWeaponDamage(c.weapons[0], bonus(c.characteristics.force))).toBe(4);
   });
 
   it('formes proposées : toutes les armes réelles des Spé connues, « Arme simple » incluse (≠ junk)', () => {
@@ -50,7 +50,7 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
   it('forme LIBRE : clone le profil d’une arme RÉELLE de la Spé de Corps à corps choisie', () => {
     const c = mage({ skills: [{ skillId: 'corps-a-corps', spec: 'escrime', advances: 10 }] as Combatant['skills'] });
     const opt = conjureFormOptions(c)[0]; // arme réelle d'Escrime issue de la base (Rapière…)
-    applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['magique'], chooseForm: true }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' }, qualities: ['magique'], chooseForm: true }],
       { label: 'Arme aethyrique', defaultDurationRounds: 4, conjureForm: opt });
     expect(c.weapons[0].subType?.toLowerCase()).toBe('escrime'); // Groupe = la Spé choisie (profil réel)
     expect(c.weapons[0].name).toContain('Arme aethyrique');
@@ -59,7 +59,7 @@ describe('grantWeapon — objet temporaire (Arme aethyrique, Dégâts = BFM)', (
 
   it('vit dans un SET dédié actif, retiré à l’expiration (set + objet + restauration)', () => {
     const c = mage();
-    applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, qualities: ['magique'] }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' }, qualities: ['magique'] }],
       { label: 'Arme aethyrique', defaultDurationRounds: 1 });
     const conjuredUid = c.items?.find((it) => it.conjured)?.uid; // le SET dédié tient l'arme invoquée
     const conjuredSet = (c.loadouts ?? []).find((l) => l.main === conjuredUid);
@@ -95,7 +95,7 @@ describe('grantNaturalWeapon — armes naturelles accordées (Dent et griffe)', 
 describe('grantWeapon — variantes de domaine (stats fixes du Sort)', () => {
   it('Faux de Shyish : Armes d’hast à 2 mains, Dégâts = BFM+3', () => {
     const c = mage(); // BFM 4
-    applyOps(c, [{ op: 'grantWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'FM' }, damagePlus: 3, subType: 'armes-d-hast', reach: 'Longue', hands: 2, qualities: ['magique'] }],
+    applyOps(c, [{ op: 'grantWeapon', name: 'Faux de Shyish', damage: { bonusOf: 'force-mentale' }, damagePlus: 3, subType: 'armes-d-hast', reach: 'Longue', hands: 2, qualities: ['magique'] }],
       { label: 'La Faux de Shyish', defaultDurationRounds: 4 });
     expect(c.weapons[0].name).toBe('Faux de Shyish');
     expect(c.weapons[0].hands).toBe(2);

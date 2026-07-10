@@ -11,7 +11,7 @@ const seq = (...vals: number[]): RNG => {
   return { int: (min, max) => Math.min(max, Math.max(min, vals[i++ % vals.length])) };
 };
 
-const CHARS = { CC: 40, CT: 40, F: 40, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const target = (): Combatant =>
   ({ id: 't', name: 'Cible', kind: 'enemy', characteristics: CHARS, wounds: { current: 10, max: 10 }, conditions: [], skills: [], bodyShape: 'humanoide' } as unknown as Combatant);
 
@@ -68,7 +68,7 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
       { op: 'disarm' },
       {
         op: 'maxWeaponHands', hands: 1,
-        durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'E' }, factor: -1 } }] },
+        durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] },
       },
     ]);
   });
@@ -88,19 +88,19 @@ describe('#38 — Système ALTERNATIF de Blessures Critiques (Aux Armes)', () =>
   it('« Cheville tordue » (AA jambe 21-25, l.2610) : -10 Ag pendant 1d10 Rounds — STRUCTURÉ (charMod)', () => {
     const r = resolveAACritical(target(), 'jambeG', seq(23), 0);
     expect(r.name).toBe('Cheville tordue');
-    expect(r.ops).toEqual([{ op: 'wounds', amount: 1 }, { op: 'charMod', char: 'Ag', mod: -10, durationRounds: { dice: { n: 1, sides: 10 } } }]);
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 1 }, { op: 'charMod', char: 'agilite', mod: -10, durationRounds: { dice: { n: 1, sides: 10 } } }]);
   });
 
   it('« Genou tordu » (AA jambe 51-55, l.2614) : -20 Ag pendant 1d10 Rounds — STRUCTURÉ (charMod)', () => {
     const r = resolveAACritical(target(), 'jambeG', seq(53), 0);
     expect(r.name).toBe('Genou tordu');
-    expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'charMod', char: 'Ag', mod: -20, durationRounds: { dice: { n: 1, sides: 10 } } }]);
+    expect(r.ops).toEqual([{ op: 'wounds', amount: 2 }, { op: 'charMod', char: 'agilite', mod: -20, durationRounds: { dice: { n: 1, sides: 10 } } }]);
   });
 
   it("« Orteil contusionné » (AA jambe 01-10, l.2608) : Résistance échouée → -10 Ag 1 Round (« jusqu'à la fin du prochain Round », convention drunkIgnore) — STRUCTURÉ", () => {
     const r = resolveAACritical(target(), 'jambeG', seq(5, 90), 0); // loc 5 → ligne ; test 90 > cible 50 (E30+20) → échec
     expect(r.name).toBe('Orteil contusionné');
-    expect(r.ops).toEqual([{ op: 'charMod', char: 'Ag', mod: -10, durationRounds: 1 }]);
+    expect(r.ops).toEqual([{ op: 'charMod', char: 'agilite', mod: -10, durationRounds: 1 }]);
   });
 
   it("« Perte d'équilibre » (AA jambe 11-20, l.2609) : Test d'ATHLÉTISME (pas Résistance) — resist.skill", () => {

@@ -13,7 +13,7 @@ import type { Scene } from './scene';
 const combatant = (over: Partial<Combatant>): Combatant =>
   ({
     id: 'A', name: 'A', kind: 'hero',
-    characteristics: { CC: 50, CT: 50, F: 35, E: 35, I: 30, Ag: 35, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 50, 'capacite-de-tir': 50, force: 35, endurance: 35, initiative: 30, agilite: 35, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 14, max: 14 }, advantage: 0, conditions: [],
     weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, reach: 'Moyenne', qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -131,7 +131,7 @@ describe('previewAttack — parité aperçu ↔ résolution (R4)', () => {
   });
 
   it('issue #202 — buff de Caractéristique (Bénédiction de Bataille +10 CC) : target INCHANGÉ, base amputé, ligne étiquetée uncapped', () => {
-    const a = combatant({ id: 'A', activeEffects: [{ label: 'Bénédiction de Bataille', char: 'CC', bonus: 10 }] as never });
+    const a = combatant({ id: 'A', activeEffects: [{ label: 'Bénédiction de Bataille', char: 'capacite-de-combat', bonus: 10 }] as never });
     const b = combatant({ id: 'B', kind: 'enemy', pos: { x: 1, y: 0 } });
     const withoutBuff = previewAttack(mkGet([combatant({ id: 'A' }), b]), combatant({ id: 'A' }), b);
     const withBuff = previewAttack(mkGet([a, b]), a, b);

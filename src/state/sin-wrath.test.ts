@@ -18,7 +18,7 @@ function priestParty(sin: number) {
   const ally = all.find((h) => h.name === 'Sigmund Reikhardt')!;
   const priere = priest.skills.find((s) => s.skillId === 'priere');
   if (priere) priere.advances = Math.max(priere.advances, 5);
-  else priest.skills.push({ skillId: 'priere', characteristic: 'Soc', advances: 5 });
+  else priest.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 5 });
   priest.sinPoints = sin;
   return { priest, ally, party: [priest, ally] as Combatant[] };
 }

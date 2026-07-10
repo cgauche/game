@@ -725,9 +725,9 @@ export interface ManeuverDef {
   /** Gestion de l'Avantage dépensé : `fixed` = `advantageCost` (défaut) ; `variable` = le joueur
    *  CHOISIT (Regard : +1 DR par Avantage, LDB 85 l.238) ; `all` = dépense tout (Hurlement, l.135). */
   advantageMode?: 'fixed' | 'variable' | 'all';
-  /** Caractéristique du jet de l'attaquant (CC mêlée / CT distance·zone) ; absent = AUCUN jet
-   *  d'attaquant (Hurlement : chaque cible teste sa Résistance). */
-  stat?: 'CC' | 'CT';
+  /** Caractéristique du jet de l'attaquant (capacite-de-combat mêlée / capacite-de-tir distance·zone) ;
+   *  absent = AUCUN jet d'attaquant (Hurlement : chaque cible teste sa Résistance). */
+  stat?: 'capacite-de-combat' | 'capacite-de-tir';
   /** Défense opposée : Esquive / Parade, Initiative (Regard), Résistance/auto sans opposition. */
   defense?: 'esquive' | 'parade' | 'init' | 'resist' | 'auto';
   /** Mode de ciblage (le résolveur en dérive la géométrie moteur). `self` = capacité SUR SOI (pas de

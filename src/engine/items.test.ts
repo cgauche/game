@@ -182,7 +182,7 @@ describe('activeLoadout', () => {
 
 describe('recomputeLoadout piloté par loadout', () => {
   const heroWith = (items: ItemInstance[], lo?: { loadouts: any[]; activeLoadoutId: string }): Combatant =>
-    ({ id: 'h', name: 'H', kind: 'hero', characteristics: { F: 30, E: 30 } as any, items,
+    ({ id: 'h', name: 'H', kind: 'hero', characteristics: { force: 30, endurance: 30 } as any, items,
        talents: [], skills: [], conditions: [], wounds: { current: 10, max: 10 }, advantage: 0, ...lo } as unknown as Combatant);
   const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
     ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, ...p } as ItemInstance);
@@ -225,7 +225,7 @@ describe('recomputeLoadout piloté par loadout', () => {
 
 describe('warMachineResolveChar (DÉRIVÉ, via recomputeLoadout) — bélier → Force (ADE II ch.08 l.233)', () => {
   const heroWith = (items: ItemInstance[], lo?: { loadouts: any[]; activeLoadoutId: string }): Combatant =>
-    ({ id: 'h', name: 'H', kind: 'hero', characteristics: { F: 30, E: 30 } as any, items,
+    ({ id: 'h', name: 'H', kind: 'hero', characteristics: { force: 30, endurance: 30 } as any, items,
        talents: [], skills: [], conditions: [], wounds: { current: 10, max: 10 }, advantage: 0, ...lo } as unknown as Combatant);
   const w = (uid: string, name: string, p: Partial<ItemInstance> = {}): ItemInstance =>
     ({ uid, name, kind: 'melee', qualities: [], enc: 1, equipped: true, ...p } as ItemInstance);
@@ -234,7 +234,7 @@ describe('warMachineResolveChar (DÉRIVÉ, via recomputeLoadout) — bélier →
     const belier = w('bel', 'Bélier', { kind: 'melee', weaponGroup: 'machine-de-guerre', hands: 2 });
     const c = heroWith([belier], { loadouts: [{ id: 'l', name: 'B', main: 'bel' }], activeLoadoutId: 'l' });
     recomputeLoadout(c);
-    expect(c.weapons.find((x) => x.name === 'Bélier')?.resolveChar).toBe('F');
+    expect(c.weapons.find((x) => x.name === 'Bélier')?.resolveChar).toBe('force');
   });
 
   it('arme à DISTANCE du même Groupe (Baliste ADE II) → PAS de resolveChar (Projectiles normal)', () => {
@@ -254,7 +254,7 @@ describe('warMachineResolveChar (DÉRIVÉ, via recomputeLoadout) — bélier →
 
 describe('machine de guerre (Qualité `equipe` — ADE II ch.08 l.233) : jamais en loadout SOLO', () => {
   const heroWith = (items: ItemInstance[], lo?: { loadouts: any[]; activeLoadoutId: string }): Combatant =>
-    ({ id: 'h', name: 'H', kind: 'hero', characteristics: { F: 30, E: 30 } as any, items,
+    ({ id: 'h', name: 'H', kind: 'hero', characteristics: { force: 30, endurance: 30 } as any, items,
        talents: [], skills: [], conditions: [], wounds: { current: 10, max: 10 }, advantage: 0, ...lo } as unknown as Combatant);
 
   it('belier-ade2 (subType armes-de-siege) en `items` équipé : PAS d’arme dérivée — Mains nues seulement', () => {
@@ -384,7 +384,7 @@ describe('couches d’armure (LDB 63) — armourLayer / equipConflicts', () => {
 describe('items — recomputeLoadout / encombrement', () => {
   it('recomputeLoadout dérive armes ET armure actives des objets ÉQUIPÉS', () => {
     const c = {
-      characteristics: { F: 30, E: 30 },
+      characteristics: { force: 30, endurance: 30 },
       items: [
         item({ name: 'Hache', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
         item({ name: 'Plastron', kind: 'armor', pa: 2, locs: ['corps'], equipped: true }),
@@ -409,7 +409,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   });
   it('amputation de main : arme à deux mains exclue de la dotation ; Merveille PORTÉE la rétablit (LDB 18 l.352 / 73)', () => {
     const c = {
-      characteristics: { F: 30, E: 30 },
+      characteristics: { force: 30, endurance: 30 },
       traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }] }],
       items: [item({ name: 'Espadon', kind: 'melee', damage: { plusBF: true, flat: 5 }, subType: 'deux-mains', equipped: true })],
     } as unknown as Combatant;
@@ -420,14 +420,14 @@ describe('items — recomputeLoadout / encombrement', () => {
     expect(c.weapons.map((w) => w.name)).toContain('Espadon'); // prothèse portée → arme à 2 mains de nouveau utilisable
   });
   it('Crochet porté (prothèse) fournit une arme « Dague » (+BF+2, LDB 73)', () => {
-    const c = { characteristics: { F: 30, E: 30 }, items: [{ ...itemFromTrapping('Crochet')!, equipped: true }] } as unknown as Combatant;
+    const c = { characteristics: { force: 30, endurance: 30 }, items: [{ ...itemFromTrapping('Crochet')!, equipped: true }] } as unknown as Combatant;
     recomputeLoadout(c);
     const cr = c.weapons.find((w) => w.name === 'Crochet');
     expect(damageString(cr!.damage)).toBe('+BF+2');
   });
   it('amputation de main : loadout Arc (2 mains) exclu → Mains nues ; loadout Arbalète de poing (1 main) utilisable', () => {
     const c = {
-      characteristics: { F: 30, E: 30 },
+      characteristics: { force: 30, endurance: 30 },
       traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] }],
       items: [
         item({ uid: 'arc', name: 'Arc long', kind: 'ranged', subType: 'Arc', hands: 2, equipped: true }),
@@ -444,7 +444,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   });
   it('amputation de la main SECONDAIRE (brasG) : le bouclier (slot off) tombe ; l’arme directrice reste (LDB 18)', () => {
     const c = {
-      characteristics: { F: 30, E: 30 },
+      characteristics: { force: 30, endurance: 30 },
       traumas: [{ label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }] }],
       items: [
         item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
@@ -459,7 +459,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   });
   it('amputation de la main DIRECTRICE (brasD) : arme directrice conservée (−20, adaptation) ; la 2e arme (slot off) tombe', () => {
     const c = {
-      characteristics: { F: 30, E: 30 },
+      characteristics: { force: 30, endurance: 30 },
       traumas: [{ label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] }],
       items: [
         item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
@@ -474,7 +474,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   });
   it('amputation des DEUX mains : Mains nues seulement', () => {
     const c = {
-      characteristics: { F: 30, E: 30 },
+      characteristics: { force: 30, endurance: 30 },
       traumas: [
         { label: 'Main', location: 'brasD', ops: [{ op: 'maxWeaponHands', hands: 1 }] },
         { label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }] },
@@ -488,7 +488,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   });
   it('auto-prune : un slot pointant vers une arme DÉTRUITE (Incident de Tir / usure) est vidé', () => {
     const c = {
-      characteristics: { F: 30, E: 30 },
+      characteristics: { force: 30, endurance: 30 },
       items: [item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true, destroyed: true })],
       loadouts: [{ id: 'l1', name: 'X', main: 'ep' }],
       activeLoadoutId: 'l1',
@@ -499,7 +499,7 @@ describe('items — recomputeLoadout / encombrement', () => {
   });
   it('Merveille d’ingénierie (cancels all) sur la main secondaire amputée : le bouclier reste utilisable (LDB 73)', () => {
     const c = {
-      characteristics: { F: 30, E: 30 },
+      characteristics: { force: 30, endurance: 30 },
       traumas: [{ label: 'Main', location: 'brasG', ops: [{ op: 'maxWeaponHands', hands: 1 }], prosthesis: [{ trappingId: 'merveille-d-ingenierie', cancels: 'all' }] }],
       items: [
         item({ uid: 'ep', name: 'Épée', kind: 'melee', damage: { plusBF: true, flat: 4 }, equipped: true }),
@@ -519,10 +519,10 @@ describe('items — recomputeLoadout / encombrement', () => {
     expect(totalEncumbrance(carried)).toBe(2);
   });
   it("maxEncumbrance = Bonus de Force + Bonus d'Endurance (LDB)", () => {
-    expect(maxEncumbrance({ characteristics: { F: 35, E: 42 } } as unknown as Combatant)).toBe(3 + 4);
+    expect(maxEncumbrance({ characteristics: { force: 35, endurance: 42 } } as unknown as Combatant)).toBe(3 + 4);
   });
   it('maxEncumbrance : +2 par niveau de Costaud (LDB talents)', () => {
-    const c = { characteristics: { F: 30, E: 30 }, talents: [{ talentId: 'costaud', times: 1 }] } as unknown as Combatant;
+    const c = { characteristics: { force: 30, endurance: 30 }, talents: [{ talentId: 'costaud', times: 1 }] } as unknown as Combatant;
     expect(maxEncumbrance(c)).toBe(3 + 3 + 2); // BF+BE + Costaud×2
   });
   it('totalEncumbrance : une armure ÉQUIPÉE (portée) compte −1 ; arme tenue et armure rangée non (LDB Enc. l.22)', () => {
@@ -564,7 +564,7 @@ describe('totalEncumbrance — qualités d’artisanat (LDB 60 l.56/91)', () => 
 
 describe('Dégâts d’armure (LDB 63 l.52-55)', () => {
   const heroWith = (items: ItemInstance[]): Combatant =>
-    ({ characteristics: { F: 30, E: 30 }, items, armour: emptyArmour() }) as unknown as Combatant;
+    ({ characteristics: { force: 30, endurance: 30 }, items, armour: emptyArmour() }) as unknown as Combatant;
 
   it('recomputeLoadout dérive la PA NETTE des dégâts (pa − damageTaken, plancher 0)', () => {
     const c = heroWith([item({ kind: 'armor', pa: 3, locs: ['corps'], equipped: true, damageTaken: 1 })]);
@@ -627,7 +627,7 @@ describe('Munitions & rechargement', () => {
       items: [{ ...itemFromTrapping('Tromblon')!, equipped: true }],
       weapons: [],
       armour: emptyArmour(),
-      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     } as unknown as Combatant;
     recomputeLoadout(c);
     const tromblon = c.weapons.find((w) => w.name === 'Tromblon')!;
@@ -654,7 +654,7 @@ describe('Munitions & rechargement', () => {
       items: [{ ...itemFromTrapping('Arc')!, equipped: true }],
       weapons: [],
       armour: emptyArmour(),
-      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     } as unknown as Combatant;
     recomputeLoadout(c);
     const arc = c.weapons.find((w) => w.name === 'Arc')!;
@@ -666,7 +666,7 @@ describe('Munitions & rechargement', () => {
 // #222 — hydratation d'un poste d'artillerie : la base est RÉSOLUE du catalogue au spawn, l'état d'instance
 // préservé ; l'ancienne forme (item copié) est MIGRÉE ; une réf inconnue échoue franchement (fail-fast).
 describe('hydratePoste (#222) — réf catalogue → arme hydratée, migration de l’ancienne forme, fail-fast', () => {
-  const chef = { characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, weapons: [] } as unknown as Combatant;
+  const chef = { characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, weapons: [] } as unknown as Combatant;
 
   it('forme NEUVE : `{ trappingId }` → item complet du catalogue, arme dérivée FONCTIONNELLE', () => {
     const p = hydratePoste({ trappingId: 'canon-moyen', side: 'tribord', crewIds: ['g1'] });

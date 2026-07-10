@@ -50,7 +50,7 @@ import { applyStarEffect } from './creation';
  *  Caractéristique + avances. (≠ re-lookup par libellé — multilangue-safe.) */
 export function skillCharacteristicById(id: string): CharKey {
   const data = findSkillById(id);
-  return data?.characteristic ?? 'Dex'; // CharKey stable portée par la donnée (repli prudent)
+  return data?.characteristic ?? 'dexterite'; // CharKey stable portée par la donnée (repli prudent)
 }
 
 /** Ramène une valeur de spec issue d'un ROUND-TRIP par libellé d'affichage (`advancementLabel`/

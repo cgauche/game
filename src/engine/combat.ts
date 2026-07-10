@@ -143,7 +143,7 @@ export function combatValue(c: Combatant, kind: 'melee' | 'ranged', weapon?: Wea
   // Résolution ALTERNATIVE déclarée par l'arme (bélier → Force, ADE II ch.08 l.233) : Caractéristique BRUTE,
   // aucune Compétence associée (comme l'Empoignade, `rollGrappleForce`) — court-circuite CC/CT et la Spé du Groupe.
   if (weapon?.resolveChar) return effectiveChar(c, weapon.resolveChar);
-  const charKey = kind === 'melee' ? 'CC' : 'CT';
+  const charKey = kind === 'melee' ? 'capacite-de-combat' : 'capacite-de-tir';
   // #193 : pénalité de récupération « Tests effectués avec ce bras » (Épaule luxée, LDB/AA) — scopée à
   // l'arme tenue dans CETTE main (`weaponHand`), jamais l'autre. Inerte si `weapon` absent (créature sans
   // arme, Piétinement…) ou si aucun effet ne porte `testModHand`.
@@ -223,7 +223,7 @@ export function defenseValue(c: Combatant, mode: DefenseMode, weapon?: Weapon, s
   const mobilityPenalty = Math.min(agilityTestPenalty(c), traumaDodgePenalty(c));
   // #193 : pénalité de récupération « Tests impliquant cette jambe » (Genou démis, LDB/AA) — Esquive EST
   // classée « déplacement » (SkillData.movement), même catégorie que l'État À Terre/Empêtré.
-  return effectiveChar(c, 'Ag') + (sk?.advances ?? 0) + mobilityPenalty + activeCharTestMod(c, 'Ag', { movement: true });
+  return effectiveChar(c, 'agilite') + (sk?.advances ?? 0) + mobilityPenalty + activeCharTestMod(c, 'agilite', { movement: true });
 }
 
 /** Détail d'un jet (pour l'affichage : base, modificateurs, cible, d100 et DR). */
@@ -404,7 +404,7 @@ export function attackModifiers(
   // opposées), jamais ici (un ±10 sur la cible fausserait la probabilité ET le DR, contra RAW).
   if (opts.kind === 'ranged') {
     // Portée RÉSOLUE à l'usage (jet `{bf}` → BF×N ; mètres fixes inchangés) + modificateur de la munition tirée.
-    const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'F')));
+    const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force')));
     if (opts.distanceTiles != null && rangeM != null) {
       const m0 = rangeBandModifier(opts.distanceTiles, rangeM);
       // Tireur embusqué (LDB 10) : aucune pénalité à Longue distance, moitié à Portée extrême.
@@ -630,7 +630,7 @@ export function rollDisengageAttack(foe: Combatant, rng: RNG = defaultRNG): Test
  *  Valeur = caractéristique de Force + Avantage×10 + pénalités d'États (`baseTestMods`), sans Atout
  *  d'arme (c'est une lutte au corps à corps, pas une frappe portée). Partagé flux joueur + IA. */
 export function rollGrappleForce(c: Combatant, rng: RNG = defaultRNG): TestResult {
-  return rollTest(effectiveChar(c, 'F'), 'intermediaire', rng, baseTestMods(c));
+  return rollTest(effectiveChar(c, 'force'), 'intermediaire', rng, baseTestMods(c));
 }
 
 /** Attaque gratuite « dans le dos » lors d'une Fuite (LDB 15-Dépl l.101,107) : Test de Corps
@@ -869,7 +869,7 @@ export function rangedDefenseModes(
   const modes = new Set<'parade' | 'esquive'>();
   if (isEngagedWith(attacker, defender.id)) modes.add('parade'); // tireur Engagé (l.70) : toute Corps à corps
   else if (los && rangedOpposeWeapon(defender.weapons)) modes.add('parade'); // bouclier Protectrice 2+ en Ligne de Vue (l.307)
-  const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'F')));
+  const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force')));
   if (distanceTiles != null && rangeM != null && rangeBandName(distanceTiles, rangeM) === 'Bout portant')
     modes.add('esquive'); // Bout Portant (l.62)
   return [...modes];
@@ -905,7 +905,7 @@ export function resolveRanged(
   defense?: { mode: 'parade' | 'esquive'; parryWeapon?: Weapon; dodgeMod?: number },
 ): AttackResult {
   const atkVal = combatValue(attacker, 'ranged', weapon);
-  const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'F')));
+  const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force')));
   if (distanceTiles != null && rangeM != null && rangeBandModifier(distanceTiles, rangeM) == null)
     return { hit: false, attackerRoll: 0, netSL: 0, critical: false, advantageTo: null, defenderDefeated: false, log: `${attacker.name} : cible hors de portée.` };
   const mods = attackModifiers(attacker, defender, weapon, { kind: 'ranged', location, distanceTiles, env });
@@ -1046,10 +1046,10 @@ function applyHit(
     };
   }
   // Charge montée (LDB 14 l.223) : DÉGÂTS calculés avec la Force (Bonus) et la Taille de la MONTURE.
-  let sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'F'))) + damageSBBonus(attacker); // +1 BF en Frénésie via `sbBonus` (psychology.json, LDB 21 l.34)
+  let sb = (dmgProxy ? dmgProxy.sb : bonus(effectiveChar(attacker, 'force'))) + damageSBBonus(attacker); // +1 BF en Frénésie via `sbBonus` (psychology.json, LDB 21 l.34)
   // Tueur (LDB 10) : « utilisez le Bonus d'Endurance de votre adversaire comme votre Bonus de Force
   // s'il est plus élevé ; déterminez toujours ce point avant toute autre règle ».
-  if (isSlayer(attacker)) sb = Math.max(sb, bonus(effectiveChar(defender, 'E')));
+  if (isSlayer(attacker)) sb = Math.max(sb, bonus(effectiveChar(defender, 'endurance')));
   const dmgSize = dmgProxy?.size ?? attacker.size; // Taille servant aux règles de DÉGÂTS (Atouts conférés + ×N)
   // COQUE de navire (MDG ch.13) : petites armes sans effet sur le vaisseau (l.605) ; corps à corps mitigé
   // par le TABLEAU DE COMPARAISON DES TAILLES (l.618-637), qui « remplace les modificateurs normaux » de
@@ -1168,15 +1168,15 @@ function miss(
  * PUR (RNG injecté).
  */
 export function initiativeOrder(combatants: Combatant[], rng?: RNG): Combatant[] {
-  const initOf = (c: Combatant) => c.initiative ?? baseWithTraits(c, 'I');
-  const agOf = (c: Combatant) => baseWithTraits(c, 'Ag');
+  const initOf = (c: Combatant) => c.initiative ?? baseWithTraits(c, 'initiative');
+  const agOf = (c: Combatant) => baseWithTraits(c, 'agilite');
   const tieTest = new Map<Combatant, TestResult>();
   if (rng) {
     const groupKey = (c: Combatant) => `${initOf(c)}|${agOf(c)}`;
     const groupSize = new Map<string, number>();
     for (const c of combatants) groupSize.set(groupKey(c), (groupSize.get(groupKey(c)) ?? 0) + 1);
     // Roulé dans l'ordre d'ENTRÉE, uniquement pour les égalités exactes → consommation RNG minimale et déterministe.
-    for (const c of combatants) if ((groupSize.get(groupKey(c)) ?? 0) > 1) tieTest.set(c, rollTest(effectiveChar(c, 'Ag'), 'intermediaire', rng));
+    for (const c of combatants) if ((groupSize.get(groupKey(c)) ?? 0) > 1) tieTest.set(c, rollTest(effectiveChar(c, 'agilite'), 'intermediaire', rng));
   }
   return [...combatants].sort((a, b) => {
     const ia = initOf(a), ib = initOf(b);

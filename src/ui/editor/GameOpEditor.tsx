@@ -12,7 +12,7 @@ import { Formula, GameOp } from '../../engine/ops';
 import { CHAOS_ALIGN_LABELS, ChaosAlign, EXPOSURE_LABELS, ExposureLevel } from '../../engine/corruption';
 import { CHAR_LABELS, CharKey } from '../../engine/types';
 import { SizeCategory, SIZE_LABEL } from '../../engine/size';
-import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel, findCrewTestTypeById } from '../../data';
+import { etats, talentConcrete, findTalent, qualityRefLabel, refLabel, findCrewTestTypeById, CHAR_ABR } from '../../data';
 import { RefField } from '../compendium/RefField';
 import { slugId } from '../../data/slug';
 import { splitLabel } from '../../engine/statEntry';
@@ -200,8 +200,8 @@ export const shapeOf = (f: Formula | undefined): FormulaShape =>
 export function formulaForShape(s: FormulaShape, current: Formula | undefined): Formula {
   if (s === shapeOf(current)) return current as Formula; // déjà la bonne forme → inchangée (pas de clobber)
   if (s === 'lit') return typeof current === 'number' ? current : 1;
-  if (s === 'bonus') return { bonusOf: 'F' };
-  if (s === 'char') return { charOf: 'F' };
+  if (s === 'bonus') return { bonusOf: 'force' };
+  if (s === 'char') return { charOf: 'force' };
   if (s === 'rolled') return { rolled: true };
   if (s === 'times') return { times: { of: { dice: { n: 1, sides: 10 } }, factor: 10 } }; // « 1d10 × 10 » (LDB 71)
   return { dice: { n: 1, sides: 10 } };
@@ -209,14 +209,14 @@ export function formulaForShape(s: FormulaShape, current: Formula | undefined): 
 
 /** CharKey portée par une Formula de carac. (Bonus/Valeur) — défaut F pour le sélecteur. */
 const charOfFormula = (f: Formula | undefined): CharKey =>
-  f && typeof f === 'object' ? ('bonusOf' in f ? f.bonusOf : 'charOf' in f ? f.charOf : 'F') : 'F';
+  f && typeof f === 'object' ? ('bonusOf' in f ? f.bonusOf : 'charOf' in f ? f.charOf : 'force') : 'force';
 
 /** Résumé court d'une Formula (lecture sans perte dans les résumés d'op). */
 export function formulaSummary(f: Formula | undefined): string {
   if (f == null) return '0';
   if (typeof f === 'number') return String(f);
-  if ('bonusOf' in f) return `B${f.bonusOf}`;
-  if ('charOf' in f) return f.charOf;
+  if ('bonusOf' in f) return `B${CHAR_ABR[f.bonusOf]}`;
+  if ('charOf' in f) return CHAR_ABR[f.charOf];
   if ('rolled' in f) return 'dé';
   if ('indiceOf' in f) return 'Indice';
   if ('stacks' in f) return 'pions';
@@ -306,7 +306,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'removeCondition': return { op: 'removeCondition' };
     case 'endPsych': return { op: 'endPsych', type: 'frenesie' };
     case 'sbBonus': return { op: 'sbBonus', amount: 1 };
-    case 'charMod': return { op: 'charMod', char: 'F', mod: -10 };
+    case 'charMod': return { op: 'charMod', char: 'force', mod: -10 };
     case 'ap': return { op: 'ap', amount: 1 };
     case 'testMod': return { op: 'testMod', amount: -10 };
     case 'ignoreStatePenalties': return { op: 'ignoreStatePenalties' };
@@ -321,7 +321,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'arrowWard': return { op: 'arrowWard', radius: 5 };
     case 'domeWard': return { op: 'domeWard', radius: 5 };
     case 'attackWardFM': return { op: 'attackWardFM' };
-    case 'grantWeapon': return { op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' } };
+    case 'grantWeapon': return { op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' } };
     case 'grantNaturalWeapon': return { op: 'grantNaturalWeapon', name: 'Griffes', damage: 3 };
     case 'grantFreeAttack': return { op: 'grantFreeAttack', weapon: 'held', when: 'immediate', cost: { advantageOrMovement: true } };
     case 'grantTrait': return { op: 'grantTrait', traitId: 'armure' };
@@ -335,7 +335,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'reduceDiseaseDays': return { op: 'reduceDiseaseDays', days: 1 };
     case 'diseaseTestMod': return { op: 'diseaseTestMod', amount: 10 };
     case 'suppressSymptom': return { op: 'suppressSymptom', symptomId: 'bubons' };
-    case 'actGate': return { op: 'actGate', char: 'FM' };
+    case 'actGate': return { op: 'actGate', char: 'force-mentale' };
     case 'delayed': return { op: 'delayed', afterHours: 1, ops: [] };
     case 'preventInfection': return { op: 'preventInfection' };
     case 'cureCriticalWound': return { op: 'cureCriticalWound', count: 1 };
@@ -351,10 +351,10 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'giveTrapping': return { op: 'giveTrapping', custom: 'Ration' };
     case 'perRound': return { op: 'perRound', ops: [] };
     case 'summon': return { op: 'summon', ref: 'Loup', count: 1, allyOfCaster: true };
-    case 'zone': return { op: 'zone', shape: 'disc', radiusMeters: { bonusOf: 'FM' } };
-    case 'push': return { op: 'push', meters: { bonusOf: 'FM' } };
-    case 'teleport': return { op: 'teleport', meters: { bonusOf: 'FM' } };
-    case 'chain': return { op: 'chain', maxBounces: { bonusOf: 'FM' }, hopMeters: { bonusOf: 'FM' } };
+    case 'zone': return { op: 'zone', shape: 'disc', radiusMeters: { bonusOf: 'force-mentale' } };
+    case 'push': return { op: 'push', meters: { bonusOf: 'force-mentale' } };
+    case 'teleport': return { op: 'teleport', meters: { bonusOf: 'force-mentale' } };
+    case 'chain': return { op: 'chain', maxBounces: { bonusOf: 'force-mentale' }, hopMeters: { bonusOf: 'force-mentale' } };
     case 'polymorph': return { op: 'polymorph', ref: 'Ours' };
     case 'transform': return { op: 'transform', tag: 'forme', ops: [] };
     case 'endTransform': return { op: 'endTransform', tag: 'forme' };
@@ -362,7 +362,7 @@ export function newOp(op: GameOp['op'] | string): GameOp {
     case 'light': return { op: 'light', radiusTiles: 5 };
     case 'skillMod': return { op: 'skillMod', skill: 'esquive', mod: -10 };
     case 'skillDRBonus': return { op: 'skillDRBonus', skill: 'calme', bonus: 1 };
-    case 'charDRBonus': return { op: 'charDRBonus', char: 'Soc', bonus: 1 };
+    case 'charDRBonus': return { op: 'charDRBonus', char: 'sociabilite', bonus: 1 };
     case 'crewTestMod': return { op: 'crewTestMod', mod: 10 };
     case 'moveScale': return { op: 'moveScale', num: 1, den: 2 };
     case 'moveMod': return { op: 'moveMod', mod: -1 };
@@ -567,7 +567,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
                 )}
                 {/* Se libérer (LDB 16 l.61 / Filets, Zoo Impérial p.29) — escapeStrength (Test opposé) et
                     escapeThreshold (Test à seuil) sont MUTUELLEMENT EXCLUSIFS (cf. resolveRecoverTest). */}
-                <label className="dr"><input type="checkbox" checked={o.escapeStrength != null} onChange={(e) => upd({ escapeStrength: e.target.checked ? { charOf: 'F' } : undefined, escapeThreshold: e.target.checked ? undefined : o.escapeThreshold })} /> Force d'évasion (opposée)</label>
+                <label className="dr"><input type="checkbox" checked={o.escapeStrength != null} onChange={(e) => upd({ escapeStrength: e.target.checked ? { charOf: 'force' } : undefined, escapeThreshold: e.target.checked ? undefined : o.escapeThreshold })} /> Force d'évasion (opposée)</label>
                 {o.escapeStrength != null && <FormulaField label="Force" value={o.escapeStrength} min={0} onChange={(escapeStrength) => upd({ escapeStrength, escapeThreshold: undefined })} />}
                 <label className="dr"><input type="checkbox" checked={o.escapeThreshold != null} onChange={(e) => upd({ escapeThreshold: e.target.checked ? 3 : undefined, escapeStrength: e.target.checked ? undefined : o.escapeStrength })} /> Seuil de DR (Test non opposé)</label>
                 {o.escapeThreshold != null && <FormulaField label="Seuil (DR)" value={o.escapeThreshold} min={0} onChange={(escapeThreshold) => upd({ escapeThreshold, escapeStrength: undefined })} />}
@@ -676,7 +676,7 @@ function OpFields({ op, onChange }: { op: GameOp; onChange: (o: GameOp) => void 
         {op.op === 'teleport' && (
           <>
             <FormulaField label="Distance (m)" value={o.meters} min={0} onChange={(meters) => upd({ meters })} />
-            <label className="dr"><input type="checkbox" checked={o.perSL != null} onChange={(e) => upd({ perSL: e.target.checked ? { every: 2, metersFormula: { bonusOf: 'FM' } } : undefined })} /> bonus par DR</label>
+            <label className="dr"><input type="checkbox" checked={o.perSL != null} onChange={(e) => upd({ perSL: e.target.checked ? { every: 2, metersFormula: { bonusOf: 'force-mentale' } } : undefined })} /> bonus par DR</label>
             {o.perSL != null && (
               <>
                 <label className="dr">tous les<input type="number" min={1} title="DR" value={o.perSL.every ?? 2} onChange={(e) => upd({ perSL: { ...o.perSL, every: Math.max(1, Number(e.target.value) || 1) } })} /> DR</label>

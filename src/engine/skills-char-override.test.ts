@@ -6,7 +6,7 @@ import type { Combatant } from './types';
 /** Combattant nu : seules les caractéristiques comptent (pas d'avances, états, passifs). */
 const c = () =>
   ({
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 35, Int: 50, FM: 60, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 35, intelligence: 50, 'force-mentale': 60, sociabilite: 30 },
     skills: [], conditions: [], items: [], activeEffects: [], liveTraits: [],
   }) as unknown as Combatant;
 
@@ -31,11 +31,11 @@ describe('testValue — Intimidation : caractéristique alternative (LDB 09 l.26
     expect(testValue(c(), 'intimidation')).toBe(30);
   });
   it('FM : Force Mentale', () => {
-    setRule('test-intimidation-char', 'FM');
+    setRule('test-intimidation-char', 'force-mentale');
     expect(testValue(c(), 'intimidation')).toBe(60);
   });
   it('Int : Intelligence', () => {
-    setRule('test-intimidation-char', 'Int');
+    setRule('test-intimidation-char', 'intelligence');
     expect(testValue(c(), 'intimidation')).toBe(50);
   });
   it('max : la meilleure des trois (F/FM/Int) → FM ici', () => {

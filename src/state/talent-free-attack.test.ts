@@ -78,7 +78,7 @@ describe('Talents d’attaque déclenchée (grantFreeAttack en donnée)', () => 
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.talents = [...(H.talents ?? []), { talentId: 'frappe-reactive', times: 1 }];
-    H.characteristics.I = 99; // Test d'Initiative Intermédiaire quasi-garanti
+    H.characteristics.initiative = 99; // Test d'Initiative Intermédiaire quasi-garanti
 
     resolveFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
     // 1) Étape de CHOIX opt-in `triggeredChoice` (aucune frappe en silence).
@@ -110,7 +110,7 @@ describe('Talents d’attaque déclenchée (grantFreeAttack en donnée)', () => 
       useGame.getState().seedRng(2);
       const { H, E } = setup();
       H.talents = [...(H.talents ?? []), { talentId: 'frappe-reactive', times: 1 }];
-      H.characteristics.I = 99; // Test d'Initiative quasi-garanti
+      H.characteristics.initiative = 99; // Test d'Initiative quasi-garanti
       resolveFreeAttacks(useGame.getState, useGame.setState, H, 'onCharged', E);
       // Cadence auto : pas de cascade — choix + Test résolus inline (comme un ennemi).
       expect(useGame.getState().pendingCascade).toBeNull();

@@ -6,7 +6,7 @@ import type { BattleState } from './store';
 const hero = (over: Partial<Combatant> = {}): Combatant =>
   ({
     id: 'H', name: 'H', kind: 'hero',
-    characteristics: { CC: 40, CT: 40, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
     weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
     armour: {}, skills: [], talents: [], movement: 4, pos: { x: 0, y: 0 }, ...over,

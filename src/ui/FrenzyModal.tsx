@@ -33,8 +33,8 @@ export function FrenzyModal() {
     actor: c,
     row: {
       combatant: c,
-      d: r ? testBreakdown('Force Mentale', effectiveChar(c, 'FM'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }) : undefined,
-      pending: testPending('Force Mentale', effectiveChar(c, 'FM')),
+      d: r ? testBreakdown('Force Mentale', effectiveChar(c, 'force-mentale'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }) : undefined,
+      pending: testPending('Force Mentale', effectiveChar(c, 'force-mentale')),
     },
     rolled,
     fortune: c.fortune ?? 0,

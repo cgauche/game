@@ -29,7 +29,7 @@ const hero = (over: Partial<Combatant> = {}): Combatant =>
     kind: 'hero',
     career: 'C1',
     careerLevel: 1,
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 10, max: 10 },
     advantage: 0,
     conditions: [],
@@ -79,13 +79,13 @@ const C1: CareerLevelData[] = [
     label: 'N1', career: 'C1', level: 1,
     skills: A(['Charme', 'Savoir (Au choix)']),
     talents: A(['Sens aiguisé (Au choix)', 'Baratiner']),
-    trappings: [], characteristics: ['F', 'E', 'Soc'], status: 'Bronze 1',
+    trappings: [], characteristics: ['force', 'endurance', 'sociabilite'], status: 'Bronze 1',
   },
   {
     label: 'N2', career: 'C1', level: 2,
     skills: A(['Ragot', 'Savoir (Au choix)']),
     talents: A(['Sens aiguisé (Au choix)', 'Sociable']),
-    trappings: [], characteristics: ['Ag'], status: 'Bronze 2',
+    trappings: [], characteristics: ['agilite'], status: 'Bronze 2',
   },
 ];
 
@@ -94,7 +94,7 @@ describe('disponibilité par niveaux (LDB 07 l.67/78/100)', () => {
     expect(skillSlots(C1, 1).map((s) => s.entry)).toEqual(['Charme', 'Savoir (Au choix)']);
     expect(skillSlots(C1, 2).map((s) => s.entry)).toEqual(['Charme', 'Savoir (Au choix)', 'Ragot', 'Savoir (Au choix)']);
     expect(talentSlots(C1, 2).map((s) => s.entry)).toEqual(['Sens aiguisé (Au choix)', 'Sociable']);
-    expect(availableChars(C1, 2)).toEqual(['F', 'E', 'Soc', 'Ag']);
+    expect(availableChars(C1, 2)).toEqual(['force', 'endurance', 'sociabilite', 'agilite']);
   });
 });
 

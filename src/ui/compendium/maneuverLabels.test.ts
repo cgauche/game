@@ -3,10 +3,10 @@ import { formatManeuverMeasure } from './maneuverLabels';
 
 describe('formatManeuverMeasure', () => {
   it('bonus de carac seul → « (Bonus de X) m »', () => {
-    expect(formatManeuverMeasure({ bonusOf: 'E' })).toBe('(Bonus de Endurance) m');
+    expect(formatManeuverMeasure({ bonusOf: 'endurance' })).toBe('(Bonus de Endurance) m');
   });
   it('bonus + constante → « (Bonus de X) + N m »', () => {
-    expect(formatManeuverMeasure({ bonusOf: 'E', plus: 20 })).toBe('(Bonus de Endurance) + 20 m');
+    expect(formatManeuverMeasure({ bonusOf: 'endurance', plus: 20 })).toBe('(Bonus de Endurance) + 20 m');
   });
   it('constante seule → « N m »', () => {
     expect(formatManeuverMeasure({ plus: 20 })).toBe('20 m');

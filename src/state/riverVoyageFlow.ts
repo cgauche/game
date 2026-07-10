@@ -265,7 +265,7 @@ export function buildRiverDayCascade(get: Get, set: Set, route: MapRoute, to: { 
 
   // 2. AGILITÉ de rame (l.17) : échec → −20 % ; Échec spectaculaire (−6 DR) → ÷2.
   if (pilot) steps.push(riverStep('river-agility', 'riverAgility', pilot.actor.id, 'Agilité de rame', 'travel/rowboat',
-    'Agilité', testValue(pilot.actor, undefined, 'Ag'), ROWING_AGILITY_DIFFICULTY));
+    'Agilité', testValue(pilot.actor, undefined, 'agilite'), ROWING_AGILITY_DIFFICULTY));
 
   // 3. NAVIGATION de l'étape (l.15) : barreur seul (Voile) / meilleur rameur (Ramer), +Savoir (l.13).
   //    La difficulté DÉPEND de l'état de dérive à ce moment — RÉÉVALUÉE dans l'applier après la réparation.
@@ -435,7 +435,7 @@ registerCascadeApplier('riverCapsize', (get, set, step) => {
   if (step.result.success) return { consequences: freeCons(['Voile affalée à temps — le chavirage est évité.']) };
   const j = ['Trop tard — le bateau chavire !'];
   const rng = battleRng();
-  const be = capsizeSinkTurns(get().travelPlan!.vehicle!.characteristics?.E ?? 0);
+  const be = capsizeSinkTurns(get().travelPlan!.vehicle!.characteristics?.endurance ?? 0);
   const pilotValue = Number(step.base ?? 0) + Number(step.meta?.savoir ?? 0);
   const r = resolveCapsizeRighting(pilotValue, be, rng);
   j.push(`Redressement (${be} Round(s), Navigation Accessible +20, −5 cumulatif) : ${r.rounds.map((x) => `${x.roll}/${x.target}${x.success ? '✓' : ''}`).join(' · ')}`);
@@ -591,14 +591,14 @@ function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoy
     // gréement/superstructure OFFRE un Test d'Initiative pour ÉVITER les +5 Dégâts (et l'Empêtré, l.78).
     const victim = get().party.find((h) => !h.dead);
     if (victim && crit.initiativeTest && humanControlled(get(), victim)) {
-      const base = testValue(victim, undefined, 'I');
+      const base = testValue(victim, undefined, 'initiative');
       insert.push({
         id: `${idPrefix}-splinter`, kind: 'riverSplinterDodge', actorId: victim.id, icon: 'ui/warning',
         label: `Critique au ${location} — éclats`, rollLabel: 'Initiative', base, target: Math.max(1, Math.min(99, base)),
         result: null, interactive: true, meta: { dmg: crit.splinterDamage, conditionId: crit.conditionId ?? '', location },
       });
     } else if (victim) {
-      const dodge = crit.initiativeTest ? rollTest(testValue(victim, undefined, 'I'), 'intermediaire', rng) : null;
+      const dodge = crit.initiativeTest ? rollTest(testValue(victim, undefined, 'initiative'), 'intermediaire', rng) : null;
       if (dodge?.success) {
         tell([`Critique au ${location} — ${victim.name} esquive les éclats (Initiative ${dodge.roll}/${dodge.target}).`]);
       } else {
@@ -627,7 +627,7 @@ function bestShipwright(get: Get): { actor: Combatant; value: number } | null {
  *  réparation temporaire (Métier Construction de bateaux/Charpentier, Complexe — l.113-117), INFLUENÇABLE
  *  (#270, `riverHoleRepair`) si le réparateur est piloté par un humain — sinon inline. */
 function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => void, idPrefix: string): CascadeStep[] {
-  const minutes = holeSinkMinutes(plan.vehicle!.characteristics?.E ?? 0); // « coule en E minutes » (l.103)
+  const minutes = holeSinkMinutes(plan.vehicle!.characteristics?.endurance ?? 0); // « coule en E minutes » (l.103)
   const repair = bestShipwright(get);
   if (repair && humanControlled(get(), repair.actor)) {
     tell([`Coque percée (le bateau coule en ~${minutes} min, l.103) — calfatage d'urgence en cours…`]);
@@ -690,14 +690,14 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
     if (skilled) {
       j.push(`${peril.label} — le barreur connaît le passage et l'évite (Navigation, l.136).`);
     } else if (pilot && humanControlled(get(), pilot)) {
-      const base = testValue(pilot, undefined, 'Ag');
+      const base = testValue(pilot, undefined, 'agilite');
       insert.push({
         id: `${step.id}-detect`, kind: 'riverPerilDetect', actorId: pilot.id, icon: 'nautical/snag', label: `${peril.label} — détection`,
         rollLabel: 'Agilité', base, target: Math.max(1, Math.min(99, base)), result: null, interactive: true,
         meta: { perilId: peril.id },
       });
     } else {
-      const detect = pilot ? rollTest(testValue(pilot, undefined, 'Ag'), 'intermediaire', rng) : { success: false };
+      const detect = pilot ? rollTest(testValue(pilot, undefined, 'agilite'), 'intermediaire', rng) : { success: false };
       j.push(`${peril.label} — détection (Agilité +0) : ${'roll' in detect ? (detect as TestResult).roll : '—'} → ${detect.success ? 'évité.' : 'impact !'}`);
       if (!detect.success) {
         const impact = resolveRiverImpact(peril.onHit, rng);
@@ -720,7 +720,7 @@ export function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): 
   const coque = get().travelPlan!.vehicle!;
   damageVesselHull(get, set, coque, echouageDamage());
   const { difficulty, encTxt } = echouageDifficulty(get);
-  const force = partyAssisted(get().party, undefined, 'F');
+  const force = partyAssisted(get().party, undefined, 'force');
   const t = force ? rollTest(force.value, difficulty, battleRng()) : null;
   tell([`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99)${t ? ` — renflouage (Force ${DIFFICULTY_LABELS[difficulty]}${encTxt}) : ${t.roll}/${t.target} → ${t.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}` : '.'}`]);
 }
@@ -741,7 +741,7 @@ function echouageDifficulty(get: Get): { difficulty: Difficulty; encTxt: string 
  *  devient une étape-jet INFLUENÇABLE (`riverEchouageForce`) si l'acteur est piloté par un humain —
  *  sinon délègue à `applyEchouage` (chemin IA/synchrone inchangé). */
 function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: string[]): CascadeStep[] {
-  const force = partyAssisted(get().party, undefined, 'F');
+  const force = partyAssisted(get().party, undefined, 'force');
   if (!force || !humanControlled(get(), force.actor)) {
     applyEchouage(get, set, (l) => j.push(...l));
     return [];

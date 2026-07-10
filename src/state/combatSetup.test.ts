@@ -6,7 +6,7 @@ import type { Combatant } from '../engine/types';
 
 describe('combatSetup — rollInitiative : DÉFAUT RAW = fixed-i (LDB 13 l.29, tri par Initiative sans dé)', () => {
   const c = (over: Partial<Combatant> = {}) =>
-    ({ characteristics: { I: 40 }, liveTraits: [], talents: [], ...over }) as unknown as Combatant;
+    ({ characteristics: { initiative: 40 }, liveTraits: [], talents: [], ...over }) as unknown as Combatant;
 
   it('= Initiative de base (profil+traits), SANS dé + Combat instinctif (0 sans le talent)', () => {
     expect(rollInitiative(c(), makeRNG(5))).toBe(40);
@@ -21,7 +21,7 @@ describe('combatSetup — rollInitiative : DÉFAUT RAW = fixed-i (LDB 13 l.29, t
 
 describe('rollInitiative — méthodes ALÉATOIRES optionnelles (combat-init-method, LDB 13 l.40)', () => {
   afterEach(() => resetRule('combat-init-method'));
-  const ci = () => ({ characteristics: { I: 45, Ag: 30 }, liveTraits: [], talents: [], activeEffects: [] }) as unknown as Combatant;
+  const ci = () => ({ characteristics: { initiative: 45, agilite: 30 }, liveTraits: [], talents: [], activeEffects: [] }) as unknown as Combatant;
 
   it('roll-i (option aléatoire) : 1d10 + Initiative', () => {
     setRule('combat-init-method', 'roll-i');

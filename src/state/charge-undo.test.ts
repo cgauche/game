@@ -9,7 +9,7 @@ import type { Combatant } from '../engine/types';
  * lancé (misclic). `attackCancel` restaure alors positions, Mouvement, Avantage (+1 de charge rendu) et
  * `chargedThisTurn`. Une fois le dé lancé (`result` posé), la charge est ENGAGÉE (RAW LDB 15) → pas d'undo.
  */
-const chars = { CC: 40, CT: 30, F: 40, E: 40, I: 40, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const chars = { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
 
 function setup(): void {

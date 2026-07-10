@@ -10,7 +10,7 @@ const shield = (indice: number): Weapon =>
 
 // Un combattant réel porte Caractéristiques + Compétences (CC/Parade, Ag/Esquive) : le stub est COMPLET pour
 // que la sélection de mode (`bestRangedDefense`) puisse scorer chaque mode — un défenseur creux n'existe pas.
-const chars = { CC: 35, CT: 35, F: 35, E: 35, I: 30, Ag: 45, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const chars = { 'capacite-de-combat': 35, 'capacite-de-tir': 35, force: 35, endurance: 35, initiative: 30, agilite: 45, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const combatant = (id: string, kind: 'hero' | 'enemy', over: Partial<Combatant>): Combatant =>
   ({ id, name: id, kind, characteristics: chars, conditions: [], engagedWith: [], skills: [], talents: [],
      weapons: [], advantage: 0, size: 'moyenne', wounds: { current: 20, max: 20 },
@@ -70,7 +70,7 @@ describe('bestRangedDefense — meilleure défense AUTO contre un tir', () => {
 });
 
 describe('resolveRanged — tir DÉFENDU = Test OPPOSÉ (cœur combineOpposed partagé avec la mêlée)', () => {
-  const chars = { CC: 35, CT: 55, F: 35, E: 35, I: 30, Ag: 45, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  const chars = { 'capacite-de-combat': 35, 'capacite-de-tir': 55, force: 35, endurance: 35, initiative: 30, agilite: 45, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
   const base = (id: string, kind: 'hero' | 'enemy', over: Partial<Combatant> = {}): Combatant =>
     ({ id, name: id, kind, characteristics: chars, conditions: [], engagedWith: [], skills: [], talents: [],
        weapons: [], advantage: 0, size: 'moyenne', wounds: { current: 20, max: 20 },

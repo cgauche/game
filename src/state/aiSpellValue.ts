@@ -56,7 +56,7 @@ export function hitProbability(attacker: Combatant, target: Combatant, weapon: W
 export function expectedDamage(attacker: Combatant, target: Combatant, weapon: Weapon, kind: 'melee' | 'ranged', distanceTiles?: number, env?: ModLine[]): number {
   const p = hitProbability(attacker, target, weapon, kind, distanceTiles, env);
   if (!Number.isFinite(p)) return NaN;
-  const bf = bonus(effectiveChar(attacker, 'F'));
+  const bf = bonus(effectiveChar(attacker, 'force'));
   const totalDamage = finite(effectiveWeaponDamage(weapon, Number.isFinite(bf) ? bf : 0) + AVG_DR, NaN);
   if (!Number.isFinite(totalDamage)) return NaN;
   return p * safeWounds(weapon, target, totalDamage);
@@ -114,9 +114,9 @@ const missingWounds = (c: Combatant): number => Math.max(0, c.wounds.max - c.wou
 function missileComponent(caster: Combatant, target: Combatant | null, spell: SpellData): number {
   const md = missileDamage(spell);
   if (!md) return 0;
-  const bfm = finite(bonus(effectiveChar(caster, 'FM')), 0);
+  const bfm = finite(bonus(effectiveChar(caster, 'force-mentale')), 0);
   let dmg = md.damage + bfm + AVG_DR;
-  if (target) dmg -= (md.ignoreBE ? 0 : finite(bonus(effectiveChar(target, 'E')), 0)) + (md.ignorePA ? 0 : bodyPA(target));
+  if (target) dmg -= (md.ignoreBE ? 0 : finite(bonus(effectiveChar(target, 'endurance')), 0)) + (md.ignorePA ? 0 : bodyPA(target));
   return Math.max(0, dmg);
 }
 
@@ -127,7 +127,7 @@ function damageOpOutput(op: GameOp, caster: Combatant, target: Combatant | null)
     if (target && op.onlyGroups && !op.onlyGroups.some((g) => groupMatch(g, target.groups ?? []))) return 0;
     let dmg = finite(formulaExpectation(op.amount, caster), 0) + slBonus(MED_DR, op.perSL);
     // RAW (ops.ts:170-174) : `wounds` IGNORE BE+PA par DÉFAUT — on ne déduit que si explicitement `false`.
-    if (target) dmg -= (op.ignoreTB === false ? finite(bonus(effectiveChar(target, 'E')), 0) : 0) + (op.ignoreAP === false ? bodyPA(target) : 0);
+    if (target) dmg -= (op.ignoreTB === false ? finite(bonus(effectiveChar(target, 'endurance')), 0) : 0) + (op.ignoreAP === false ? bodyPA(target) : 0);
     return Math.max(op.min ?? 0, dmg);
   }
   if (op.op === 'reduceToZero') return target ? Math.max(0, target.wounds.current) : 0;
@@ -319,8 +319,8 @@ export function oppositionDiscount(spell: SpellData, caster: Combatant, target: 
   if (!opp) return 1;
   if (opp.kind === 'resist') return 0.5;
   if (!target) return 0.5;
-  const cc = effectiveChar(caster, 'CC');
-  const def = Math.max(effectiveChar(target, 'CC'), effectiveChar(target, 'Ag'));
+  const cc = effectiveChar(caster, 'capacite-de-combat');
+  const def = Math.max(effectiveChar(target, 'capacite-de-combat'), effectiveChar(target, 'agilite'));
   if (!Number.isFinite(cc) || !Number.isFinite(def)) return 0.5;
   return Math.max(0.1, Math.min(0.95, 0.5 + (cc - def) / 200));
 }

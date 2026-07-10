@@ -11,7 +11,7 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
     id: 'c',
     name: 'C',
     kind: 'enemy',
-    characteristics: { CC: 40, CT: 40, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 },
     advantage: 0,
     conditions: [],

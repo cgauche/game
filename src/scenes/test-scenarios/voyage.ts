@@ -14,7 +14,7 @@ import type { TestScenario } from './_shared';
  * embuscade), le Voyage par ÉTAPES EDOC (postes d'Activité PERSISTANTS par héros + règle `travel-etapes`
  * activable au panneau Règles maison) et l'Entre-deux-aventures (interlude d'Activités à l'arrivée).
  */
-const skill = (c: Combatant, skillId: string, advances: number, spec?: string, characteristic: SkillInstance['characteristic'] = 'Int') => {
+const skill = (c: Combatant, skillId: string, advances: number, spec?: string, characteristic: SkillInstance['characteristic'] = 'intelligence') => {
   const ex = c.skills.find((s) => s.skillId === skillId && s.spec === spec);
   if (ex) ex.advances = Math.max(ex.advances, advances);
   else c.skills.push({ skillId, spec, characteristic, advances } as SkillInstance);
@@ -39,7 +39,7 @@ function groupe(): Combatant[] {
   // Érudit — Établir des cartes (Métier Cartographe) : Test étendu cumulé ; PX pour l'Apprentissage (interlude).
   const aldric = createHero({ speciesId: 'humains-reiklander', careerId: 'erudit', name: 'Aldric (test)', motivation: 'Test', rng: makeRNG(2403), id: 'aldric' });
   aldric.travelRole = 'etablir-cartes';
-  skill(aldric, 'metier', 70, 'Cartographe', 'Dex');
+  skill(aldric, 'metier', 70, 'Cartographe', 'dexterite');
   aldric.xp = 300;
   aldric.appearance = { species: 'humains-reiklander', sex: 'M', build: 0.5 };
 

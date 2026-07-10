@@ -20,7 +20,7 @@ const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, f
 function foeAt(id: string, x: number, y: number): Combatant {
   return {
     id, name: id, kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12, base: 12 },
     advantage: 0, conditions: [], weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4, pos: { x, y },
@@ -42,7 +42,7 @@ function castable(over: Partial<CastableSpell> & { id?: string } = {}): Castable
 // ════════════════════════════════════════════════════════════════════════════════════════════════
 describe('opValue / spellActionValue — un sort de dégâts vaut des Blessures, missile ou pas', () => {
   const caster = (): Combatant => ({
-    id: 'e', name: 'e', kind: 'enemy', characteristics: { CC: 40, CT: 40, F: 40, E: 40, I: 40, Ag: 40, Dex: 40, Int: 60, FM: 60, Soc: 40 },
+    id: 'e', name: 'e', kind: 'enemy', characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 60, 'force-mentale': 60, sociabilite: 40 },
     wounds: { current: 12, max: 12, base: 12 }, advantage: 0, conditions: [], weapons: [], armour: {} as never, skills: [], talents: [], movement: 4, pos: { x: 0, y: 0 },
   } as Combatant);
   const enemy = (): Combatant => foeAt('h', 3, 0);
@@ -150,11 +150,11 @@ describe('chooseEnemyAction — sorts (énumération op-driven)', () => {
   });
 
   it('buff de ZONE (bénéfique) → castArea sur les alliés (jadis ignoré : le bloc ZdE scorait sur les ennemis)', () => {
-    const C = { CC: 45, CT: 40, F: 45, E: 40, I: 40, Ag: 40, Dex: 40, Int: 40, FM: 40, Soc: 40 } as Combatant['characteristics'];
+    const C = { 'capacite-de-combat': 45, 'capacite-de-tir': 40, force: 45, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 40, 'force-mentale': 40, sociabilite: 40 } as Combatant['characteristics'];
     const e = mk('e', 'enemy', { x: 5, y: 5 }, { weapons: [MELEE], characteristics: C });
     const foe = mk('h', 'hero', { x: 5, y: 14 }, { characteristics: C }); // ennemi très loin (rien à frapper/approcher d'utile)
     const ally = mk('a', 'enemy', { x: 5, y: 6 }, { weapons: [MELEE], characteristics: C }); // allié armé adjacent
-    const buff = castable({ id: 'prouesses', shape: { area: { radius: 2 } }, range: null, data: spellData({ id: 'prouesses', effects: doOps([{ op: 'charMod', char: 'CC', mod: 20 }]) }) });
+    const buff = castable({ id: 'prouesses', shape: { area: { radius: 2 } }, range: null, data: spellData({ id: 'prouesses', effects: doOps([{ op: 'charMod', char: 'capacite-de-combat', mod: 20 }]) }) });
     const a = chooseEnemyAction(input(e, [foe], { spells: [buff], squad: [ally] }));
     expect(a.kind).toBe('castArea'); // le buff de zone couvre soi + l'allié armé → bénéfice marginal > 0
     if (a.kind === 'castArea') expect(a.spell).toBe('prouesses');

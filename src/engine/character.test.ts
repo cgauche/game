@@ -100,13 +100,13 @@ describe('createHero — applique compétences et talents raciaux', () => {
       careerId: 'soldat', // Caractéristiques de carrière : CC, F, E (Recrue)
       name: 'T',
       rng: makeRNG(3),
-      manualChars: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
-      charAdvancesAlloc: { CC: 5 },
+      manualChars: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
+      charAdvancesAlloc: { 'capacite-de-combat': 5 },
       careerTalent: 'Infatigable', // PAS Guerrier né (+5 CC), pour isoler les Augmentations
       speciesTalentsResolved: ['Affable', 'Destinée'], // pas de tirages → déterministe
     });
-    expect(manual.charAdvances?.CC).toBe(5);
-    expect(manual.characteristics.CC).toBe(35);
+    expect(manual.charAdvances!['capacite-de-combat']).toBe(5);
+    expect(manual.characteristics['capacite-de-combat']).toBe(35);
   });
 
   it('« +5 Caractéristique de départ » passif (Affable → Soc +5 via charMod), sans Augmentation comptée', () => {
@@ -114,15 +114,15 @@ describe('createHero — applique compétences et talents raciaux', () => {
       speciesId: REIK,
       careerId: 'soldat',
       name: 'T',
-      manualChars: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
-      charAdvancesAlloc: { CC: 5 },
+      manualChars: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
+      charAdvancesAlloc: { 'capacite-de-combat': 5 },
       speciesTalentsResolved: ['Affable', 'Destinée'],
       rng: makeRNG(3),
     });
     // La valeur brute reste 30 (passif non cuit) ; baseWithTalents lit le charMod du talent.
-    expect(hero.characteristics.Soc).toBe(30); // base INCHANGÉE
-    expect(baseWithTalents(hero, 'Soc')).toBe(35); // base + passif Affable = 35
-    expect(hero.charAdvances?.Soc ?? 0).toBe(0);
+    expect(hero.characteristics.sociabilite).toBe(30); // base INCHANGÉE
+    expect(baseWithTalents(hero, 'sociabilite')).toBe(35); // base + passif Affable = 35
+    expect(hero.charAdvances?.sociabilite ?? 0).toBe(0);
   });
 
   it('talent de carrière = talent d\'espèce → times 2 (LDB 05 l.502) ; Blessures avec Dur à cuire', () => {
@@ -130,8 +130,8 @@ describe('createHero — applique compétences et talents raciaux', () => {
       speciesId: REIK,
       careerId: 'soldat', // Recrue propose « Dur à cuire »
       name: 'T',
-      manualChars: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
-      charAdvancesAlloc: { CC: 5 },
+      manualChars: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
+      charAdvancesAlloc: { 'capacite-de-combat': 5 },
       careerTalent: 'Dur à cuire',
       speciesTalentsResolved: ['Affable', 'Destinée', 'Dur à cuire'],
       rng: makeRNG(3),

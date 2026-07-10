@@ -61,8 +61,8 @@ describe('Fièvre Cérébrale Pourpre — EDO App.2 p.145', () => {
     const byChar: Record<string, number> = {};
     for (const m of mods) byChar[m.char] = (byChar[m.char] ?? 0) + m.mod;
     // Convulsions passive (−10 sur CC/CT/F/E/Ag/Dex) + Fièvre passive (−10 sur CC/CT/F/E/Ag/Dex/Soc)
-    expect(byChar['CC']).toBe(-20);
-    expect(byChar['Soc']).toBe(-10); // fièvre seule
+    expect(byChar['capacite-de-combat']).toBe(-20);
+    expect(byChar['sociabilite']).toBe(-10); // fièvre seule
   });
 
   it("tick jour 1 — Toxine (Très Facile) réussit ; Persistant (Difficile) réussit → guérison", () => {

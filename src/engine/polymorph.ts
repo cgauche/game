@@ -29,7 +29,7 @@ export function polymorphOps(target: Combatant, ref: string): GameOp[] {
   if (!cr) return [{ op: 'narrative', text: `Forme bestiale : « ${ref} » introuvable au bestiaire — arbitrage MJ.` }];
   const ops: GameOp[] = [];
   // F/E/Ag/Dex de la créature, par DIFFÉRENCE (effectiveChar = base + bonus = valeur de la créature).
-  for (const k of ['F', 'E', 'Ag', 'Dex'] as const) {
+  for (const k of ['force', 'endurance', 'agilite', 'dexterite'] as const) {
     const v = cr.char[k];
     if (typeof v === 'number') {
       const diff = v - baseWithTraits(target, k);

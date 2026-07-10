@@ -11,7 +11,7 @@ import { applyBladeTrap } from './combatFlow';
 import type { Combatant } from '../engine/types';
 import type { BladeTrapFreeze } from './pendings';
 
-const chars = { CC: 40, CT: 30, F: 40, E: 40, I: 40, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const chars = { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 40, endurance: 40, initiative: 40, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 
 function setup(withGauntlet: boolean): { attacker: Combatant; defender: Combatant } {
   const attacker = {

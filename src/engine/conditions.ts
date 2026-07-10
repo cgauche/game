@@ -507,7 +507,7 @@ export function tickDurations(c: Combatant): string[] {
  * un État **Exténué**. Pur ; mute `c`, renvoie le journal.
  */
 export function nightmareCheck(c: Combatant, rng: RNG = defaultRNG, out?: { base: number; result: TestResult }[]): string[] {
-  const calme = effectiveChar(c, 'FM') + (c.skills?.find((s) => s.skillId === 'calme')?.advances ?? 0);
+  const calme = effectiveChar(c, 'force-mentale') + (c.skills?.find((s) => s.skillId === 'calme')?.advances ?? 0);
   const res = rollTest(calme, 'facile', rng); // Calme Facile (+40), palier canonique
   out?.push({ base: calme, result: res });
   if (res.success) return [t('cond.nightmareNone', { name: c.name })];
@@ -587,7 +587,7 @@ export function endState(c: Combatant): EndState | null {
 export function inDeathCondition(c: Combatant): boolean {
   if (c.dead || c.outOfRencontre) return false;
   if (c.suffocationCountdown != null && c.suffocationCountdown <= 0) return true;
-  const be = bonus(effectiveChar(c, 'E'));
+  const be = bonus(effectiveChar(c, 'endurance'));
   // Variante Aux Armes (l.2517) : mort par accumulation de Blessures Critiques. Même formule et même clause
   // « sauf s'il est soigné d'une Blessure Critique » que le LDB 18 l.34 (les Critiques « T » n'ont pas
   // incrémenté le compteur, cf. applyCriticalToTarget) → on route la clause de compte par la primitive AA dédiée.
@@ -632,7 +632,7 @@ export function loseWounds(c: Combatant, amount: number): number {
 export function tickDeath(c: Combatant): string[] {
   const log: string[] = [];
   if (c.dead || c.outOfRencontre || c.inert || usesSuddenDeath(c) || c.bodyShape === 'vehicule') return log; // un OBJET INERTE (affût, 0 PB permanent) et une coque ne « meurent » pas par la cascade Inconscient→mort (cf. isOutOfAction)
-  const be = bonus(effectiveChar(c, 'E'));
+  const be = bonus(effectiveChar(c, 'endurance'));
   if (c.wounds.current > 0) {
     c.roundsAtZero = 0;
     return log;

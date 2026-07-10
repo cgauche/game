@@ -31,7 +31,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "CC",
+                "char": "capacite-de-combat",
                 "mod": 10
               }
             ]
@@ -123,7 +123,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "Soc",
+                "char": "sociabilite",
                 "mod": 10
               }
             ]
@@ -260,7 +260,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "FM",
+                "char": "force-mentale",
                 "mod": 10
               }
             ]
@@ -355,7 +355,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "Dex",
+                "char": "dexterite",
                 "mod": 10
               }
             ]
@@ -402,7 +402,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "Ag",
+                "char": "agilite",
                 "mod": 10
               }
             ]
@@ -492,7 +492,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "CT",
+                "char": "capacite-de-tir",
                 "mod": 10
               }
             ]
@@ -584,7 +584,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "F",
+                "char": "force",
                 "mod": 10
               }
             ]
@@ -631,7 +631,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "Int",
+                "char": "intelligence",
                 "mod": 10
               }
             ]
@@ -812,7 +812,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "E",
+                "char": "endurance",
                 "mod": 10
               }
             ]
@@ -859,7 +859,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "I",
+                "char": "initiative",
                 "mod": 10
               }
             ]
@@ -973,7 +973,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -984,7 +984,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous créez de petits bruits, discrets et indistincts qui résonnent comme s'ils émanaient d'un endroit particulier situé à portée, sans tenir compte de la Ligne de Vue. Les bruits peuvent évoquer quelque chose de spécifique, tel que des bruits de pas, des murmures ou le hurlement d'un animal, mais rien assez distinct pour pouvoir transmettre un message.\n\nTant que le Sort est actif, vous pouvez contrôler les sons en réussissant un Test de Focalisation Accessible (+20). Un succès vous permet de déplacer les sons jusqu'à un autre point à portée, ou d'augmenter ou diminuer le volume sonore.",
@@ -1073,7 +1073,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "days"
     },
@@ -1112,7 +1112,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -1251,7 +1251,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "La cible gagne un État Aveuglé, puis un autre État Aveuglé au début de chaque round pour la durée du Sort.",
@@ -1300,7 +1300,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous téléportez un petit objet – pas plus gros que votre poing – proche de votre personne entre vos mains.",
@@ -1338,7 +1338,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -1349,7 +1349,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -1394,7 +1394,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous allumez une petite flamme qui vacille dans la paume de votre main. Elle ne vous brûlera pas, mais elle émettra de la chaleur et enflammera des objets inflammables, comme le ferait une flamme naturelle.",
@@ -1432,7 +1432,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -1471,7 +1471,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -1514,7 +1514,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -1525,7 +1525,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous projetez votre voix vers un point situé à une distance en mètres égale à votre Force Mentale, sans tenir compte de la Ligne de vue. Votre voix résonne depuis ce point, et tous ceux à portée de voix l'entendront.",
@@ -1569,7 +1569,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -1614,7 +1614,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "E"
+        "bonusOf": "endurance"
       },
       "unit": "hours"
     },
@@ -1785,7 +1785,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -1803,7 +1803,7 @@
         {
           "kind": "test",
           "test": {
-            "characteristic": "Dex",
+            "characteristic": "dexterite",
             "difficulty": "accessible"
           },
           "success": {
@@ -1891,7 +1891,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous touchez votre adversaire, le plongeant dans un profond sommeil. Si la cible possède un État À Terre, elle gagne l'État Inconscient lorsqu'elle s'endort. Elle reste inconsciente pour la durée du Sort, bien que les bruits forts, le fait de la déplacer ou de la bousculer la réveille instantanément. Si votre cible se tient debout ou assise quand elle est affectée, elle commence à se réveiller en touchant le sol, gagnant l'État À Terre, mais en demeurant consciente.\n\nSi votre cible ne résiste pas et qu'elle est suffisamment fatiguée, elle plongera dans un profond sommeil réparateur lorsque le Sort prendra fin.",
@@ -1908,7 +1908,7 @@
                 "op": "condition",
                 "name": "inconscient",
                 "durationRounds": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "onlyIfCondition": "a-terre"
               },
@@ -1949,7 +1949,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous touchez le sol et de l'eau en jaillit au rythme de 1 demi-litre par round, jusqu'à un total de votre Bonus d'Initiative en litres.",
@@ -1987,7 +1987,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -1998,7 +1998,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       },
       "unit": "minutes"
     },
@@ -2043,7 +2043,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous créez une arme de Corps à corps dont les Dégâts sont égaux à votre Bonus de Force Mentale. Elle peut prendre n'importe quelle forme et peut donc utiliser n'importe quelle Compétence de Corps à corps que vous possédez. L'arme est considérée comme Magique.",
@@ -2060,7 +2060,7 @@
                 "op": "grantWeapon",
                 "name": "Arme aethyrique",
                 "damage": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "qualities": [
                   "magique"
@@ -2105,7 +2105,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous gagnez +1 PA à toutes les Localisations en vous enveloppant dans un nuage de magie protectrice.",
@@ -2143,7 +2143,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -2167,10 +2167,10 @@
               {
                 "op": "chain",
                 "maxBounces": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "hopMeters": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               }
             ]
@@ -2202,7 +2202,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -2245,13 +2245,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Tous les projectiles constitués de matière organique, comme des flèches en bois, sont automatiquement détruits s'ils entrent dans la Zone d'Effet, n'infligeant aucun Dégât à leur cible. Les projectiles constitués uniquement de matière non organique, comme les couteaux de lancer ou les munitions de pistolet, ne sont pas affectés.",
@@ -2267,7 +2267,7 @@
               {
                 "op": "arrowWard",
                 "radius": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               }
             ]
@@ -2297,7 +2297,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous vous entourez d'une bande de magie protectrice. Tant que le Sort est actif, ajoutez +(Bonus de Force Mentale) DR quand vous tentez de dissiper un Sort.",
@@ -2335,7 +2335,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -2369,7 +2369,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -2387,7 +2387,7 @@
         {
           "kind": "test",
           "test": {
-            "characteristic": "Dex",
+            "characteristic": "dexterite",
             "difficulty": "intermediaire"
           },
           "success": {
@@ -2426,7 +2426,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -2477,13 +2477,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous créez un dôme d'énergie magique au-dessus des têtes, bloquant les attaques de l'extérieur. Quiconque se trouve dans la Zone d'Effet gagne le Trait de créature Protection (6+) (voir page 341) contre les Attaques magiques ou à distance provenant de l'extérieur du dôme. Les personnes à l'intérieur peuvent attaquer des cibles situées à l'extérieur du dôme normalement, et le dôme ne gêne pas le déplacement.",
@@ -2499,7 +2499,7 @@
               {
                 "op": "domeWard",
                 "radius": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               }
             ]
@@ -2529,7 +2529,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "En vous recouvrant de magie, vous devenez effrayant et intimidant. Gagnez Peur 1. Pour chaque +3 DR, vous pouvez augmenter votre valeur de Peur de 1.",
@@ -2572,7 +2572,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -2602,7 +2602,7 @@
                   "amount": 1
                 },
                 "escapeStrength": {
-                  "charOf": "Int"
+                  "charOf": "intelligence"
                 }
               }
             ]
@@ -2632,7 +2632,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous pouvez voler, en vous faisant pousser des ailes, en montant sur une colonne de lumière magique, ou toute autre méthode. Gagnez le Trait de créature Vol (Agilité) (voir page 343).",
@@ -2649,7 +2649,7 @@
                 "op": "grantTrait",
                 "traitId": "vol",
                 "indice": {
-                  "charOf": "Ag"
+                  "charOf": "agilite"
                 }
               }
             ]
@@ -2673,7 +2673,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -2681,7 +2681,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
@@ -2715,7 +2715,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous vous enveloppez de magie, qui tourbillonne autour de vous, perturbant vos ennemis. Tant que le Sort est actif, vous gagnez le Trait de créature Perturbant (voir page 341).",
@@ -2753,7 +2753,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -2761,13 +2761,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous créez un pont d'énergie magique, d'une longueur et d'une largeur maximales en mètres égales à votre Bonus de Force Mentale. Pour chaque +2 DR, vous pouvez augmenter la longueur ou la largeur d'un nombre de mètres égal à votre Bonus de Force Mentale.",
@@ -2809,7 +2809,7 @@
       "kind": "area",
       "span": "radius",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
@@ -2841,7 +2841,7 @@
               {
                 "op": "push",
                 "meters": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               }
             ]
@@ -2871,7 +2871,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous vous enveloppez d'une magie protectrice, gagnez le Trait de créature Protection (9+) (voir page 341).",
@@ -2916,7 +2916,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous vous imprégnez de magie, donnant à votre sang une puissance effroyable. Vous gagnez le Trait de créature Sang corrosif (voir page 341).",
@@ -3005,12 +3005,12 @@
               {
                 "op": "teleport",
                 "meters": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "perSL": {
                   "every": 2,
                   "metersFormula": {
-                    "bonusOf": "FM"
+                    "bonusOf": "force-mentale"
                   }
                 }
               }
@@ -3041,7 +3041,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous gagnez le Trait de créature Terreur 1 (voir page 343).",
@@ -3086,7 +3086,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous renforcez votre Seconde vue pour aider vos sens ordinaires. Tant que le Sort est actif, vous gagnez le Trait de créature Infravision (voir page 340).",
@@ -3130,7 +3130,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -3189,7 +3189,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous faites appel à la puissance sauvage de Ghur pour vous imprégner, vous abandonnant à ses délices sauvages. Gagnez les Traits de créature suivants (voir page 338) : Arboricole, Arme (Bonus de Force +2), Armure 2, Belliqueux, Grand, Magique, Morsure (Bonus de Force +1), Peur 1, Rage. Tant que le Sort est actif, vous êtes incapable d'utiliser toutes vos Compétences Langue ou Savoir.",
@@ -3259,7 +3259,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -3318,7 +3318,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -3358,7 +3358,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -3369,7 +3369,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "days"
     },
@@ -3415,7 +3415,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous vous couvrez d'un manteau chatoyant de Ghur. Tant que le Sort est actif, gagnez un bonus de +20 en Endurance et les Traits de créature Peur 1 et Infravision (voir pages 341 et 340), ainsi que le Talent Sens aiguisé (Odorat).",
@@ -3430,7 +3430,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "E",
+                "char": "endurance",
                 "mod": 20
               },
               {
@@ -3475,7 +3475,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vos ongles se transforment en serres acérées de cristal ambre. Les attaques à mains nues effectuées en utilisant Corps à corps (Bagarre) sont considérées comme magiques, possèdent une valeur de Dégâts égale à votre Bonus de Force Mentale et infligent +1 État Hémorragique chaque fois qu'elles entraînent la perte des Blessures.",
@@ -3539,7 +3539,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -3547,13 +3547,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "La volée attaque farouchement quiconque se trouve dans la Zone d'Effet et qui ne possède pas le Talent Magie des Arcanes (Bête), infligeant +7 Dégâts à la fin du Round. La volée reste en jeu pour la durée du Sort. Pour votre Action, vous pouvez effectuer un Test d'Emprise sur les animaux Accessible (+20) pour déplacer la volée sur une autre cible à portée. Tant qu'elles se trouvent dans la Zone d'Effet, toutes les créatures gagnent +1 État Aveuglé.",
@@ -3583,7 +3583,7 @@
                 "op": "zone",
                 "shape": "disc",
                 "radiusMeters": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "perRound": [
                   {
@@ -3620,7 +3620,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -3675,7 +3675,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous vous enfermez dans une cage crépitante d'étincelles d'électricité et d'Azyr. Pour la durée du Sort, gagnez + DR PA à toutes les Localisations contre les Attaques de Corps à corps. Si vous êtes attaqué par une arme en métal –dagues, épées ou lances avec une pointe métal – votre attaquant subit un nombre de Dégâts égal à votre Bonus de Force Mentale.",
@@ -3714,7 +3714,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "I"
+        "charOf": "initiative"
       },
       "unit": "m"
     },
@@ -3722,7 +3722,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       }
     },
     "duration": {
@@ -3779,13 +3779,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Tous les alliés situés dans la Zone d'Effet, hormis ceux qui possèdent le Talent Magie des Arcanes (Cieux), forment une unique réserve pour leurs Points de Chance. Tous peuvent piocher dans la réserve, premier arrivé, premier servi. Quand le Sort prend fin, vous réallouez les Points de Chance, aussi équitablement que possible.",
@@ -3830,7 +3830,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       }
     },
     "desc": "Gagnez +1 Point de Chance. Pour chaque +2 DR, gagnez +1 Point de Chance supplémentaire. Tous ces Points inutilisés à la fin de la Durée du Sort sont perdus.",
@@ -3881,7 +3881,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       }
     },
     "desc": "Gagnez +DR Points de Chance. Pour chaque +2 DR, gagnez +1 Point de Chance supplémentaire. Tous ces Points inutilisés à la fin de la Durée du Sort sont perdus.",
@@ -3936,7 +3936,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       }
     },
     "desc": "Gagnez +1 Point de Destin. Si ce Point de Destin n'a pas été utilisé à la fin de la Durée du Sort, il est perdu.",
@@ -3977,7 +3977,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -3988,7 +3988,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       }
     },
     "desc": "Tant que le Sort est actif, vous pouvez dépenser des Points de Chance pour forcer un adversaire à relancer ses Tests.",
@@ -4133,7 +4133,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -4141,13 +4141,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Votre voix profonde résonne, faisant écho à la passion fougueuse d'Aqshy. Les alliés affectés perdent tout État Brisé et État Exténué, et gagnent +1 Talent Coude-à-coude, Sans peur et Cœur vaillant tant que le Sort est actif.",
@@ -4210,7 +4210,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous focalisez Aqshy en une majestueuse couronne de feu inspirant autour de votre front. Gagnez le Trait Peur 1 et +1 Talent Seigneur de guerre tant que le Sort est actif.\n\nPour chaque +2 DR, vous pouvez augmenter la valeur de Peur de +1, ou prendre de nouveau le Talent Seigneur de guerre. De plus, gagnez un bonus de +10 à toutes les tentatives pour Focaliser et Incanter avec Aqshy tant que le Sort est actif.",
@@ -4233,7 +4233,7 @@
                 "skill": "all",
                 "mod": 10,
                 "rounds": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               },
               {
@@ -4262,7 +4262,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -4270,13 +4270,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous projetez un grand souffle explosif d'Aqshy sur un ennemi. Ce dernier explose en un brasier furieux, d'une chaleur aussi intense que celle d'une forge. Il s'agit d'un Projectile magique avec Dégâts +10 qui ignore les PA et inflige +2 État En flammes et l'État À Terre. Quiconque situé dans la Zone d'Effet autour de cette cible subit +5 Dégâts qui ignorent les PA, et doit réussir un Test d'Esquive ou gagner également un État En flammes. Le Sort cesse de se comporter comme un Projectile magique alors que le feu continue de brûler dans la Zone d'Effet pour la durée du Sort. Quiconque se trouve dans la Zone d'Effet au début d'un Round subit 1d10+6 Dégâts, qui ignorent les PA et gagne +1 État En flammes.",
@@ -4315,7 +4315,7 @@
                 "op": "zone",
                 "shape": "disc",
                 "radiusMeters": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "perRound": [
                   {
@@ -4367,7 +4367,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous vous enroulez dans une cape ardente d'Aqshy, qui concentre les flammes sous forme d'Égide. Vous êtes complètement immunisé aux Dégâts de feu non magiques, y compris les attaques de souffle des monstres et ignorez tout État En flammes que vous subissez. Vous recevez le Trait de créature Protection (9+) (voir page 341) contre les attaques de feu magiques, y compris les Sorts du Domaine du Feu.",
@@ -4406,7 +4406,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -4417,7 +4417,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous enveloppez une épée de flammes magiques. L'arme possède Dégâts +6 et l'Atout Percutante (voir page 298), et quiconque est frappé par la lame gagne +1 État En flammes. Si les porteurs ne possèdent pas le Talent Magie des Arcanes (Feu), et obtiennent une maladresse lors d'une attaque avec l'Épée ardente, ils gagnent +1 État En flammes.",
@@ -4499,7 +4499,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -4510,7 +4510,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous focalisez une traînée ardente d'Aqshy pour créer un mur de flammes. Le Mur de feu est large d'un nombre de mètres égal à votre Bonus de Force Mentale, et épais de 1 mètre. Pour chaque +2 DR, vous pouvez allonger la longueur du Mur de feu d'un nombre de mètres égal à votre Bonus de Force Mentale. Quiconque traverse le mur de feu gagne 1 État En flammes et subit une frappe avec un nombre de Dégâts égal à votre Bonus de Force Mentale, traitée comme un Projectile magique.",
@@ -4527,19 +4527,19 @@
                 "op": "zone",
                 "shape": "wall",
                 "lengthMeters": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "lengthPerSL": {
                   "every": 2,
                   "metersFormula": {
-                    "bonusOf": "FM"
+                    "bonusOf": "force-mentale"
                   }
                 },
                 "onCross": [
                   {
                     "op": "wounds",
                     "amount": {
-                      "bonusOf": "FM"
+                      "bonusOf": "force-mentale"
                     },
                     "ignoreTB": false,
                     "ignoreAP": false
@@ -4573,7 +4573,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -4581,13 +4581,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous concentrez d'intenses flammes pour consumer le vice et la corruption dans une zone. Tout ce qui est inflammable s'embrase, et toutes les créatures dans la zone gagnent +DR État En flammes. Si l'endroit renferme une Influence corruptrice, telle que Dhar, une malepierre ou un objet empreint de Chaos, il va également se consumer et noircir en brûlant. Ce Sort peut être maintenu au delà de la durée du Sort en effectuant un Test de Focalisation Intermédiaire (+0) par rounds consécutifs. Le temps précis nécessaire pour éliminer l'Influence corruptrice sera déterminé par votre MJ. Pour vous donner une idée approximative, une petite quantité (plus petite qu'un gland) de malepierre, ou un objet souillé de Chaos mineur nécessite 10-Bonus de Force Mentale rounds (minimum 1 Round). Une plus grande quantité de malepierre – de la taille d'un poing – ou un objet empreint de Chaos plus puissant peut nécessiter le double de temps. Un puissant Artefact du Chaos peut demander des heures, voire plus… Voir page 182 pour plus de détails sur les Influences corruptrices.",
@@ -4642,7 +4642,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous dévorez une tête entière, y compris la cervelle et tout ce qui s'ensuit. Votre prodigieux intestin distille l'essence cauchemardesque du malheureux crâne et la projette autour de vous en une horrible vague nauséabonde. Vous gagnez le Trait de créature Peur 2 (WFJDR p. 341). Ceux qui connaissaient l'ancien propriétaire de la tête dévorée doivent se soumettre à tous les Tests de Calme avec une pénalité de -20 pour résister à la Peur.",
@@ -4686,7 +4686,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -4740,13 +4740,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous trempez votre lame favorite dans le sang d'un ennemi fraîchement tombé, ce qui vous donne plus de puissance et éveille la soif de sang chez vos alliés. Toutes les créatures de votre choix dans la Zone d'Effet gagnent le Trait de Créature Vampirique (WFJDR p. 343) pour la durée de ce sort. La cible n'a pas besoin de mordre ses adversaires pour bénéficier des avantages de ce Trait, il lui suffit de les blesser au corps à corps. Elle peut également bénéficier de soins provenant d'autres sources. Si une créature souhaite résister à ce sort, elle peut tenter un Test de Résistance Difficile (-20) pour en ignorer les effets.\n\nPendant la durée de ce sort, le sang des ennemis jaillit vers les personnes affectées, coulant le long de leurs lames, sur leurs bras et dans leurs bouches. Les ogres ne sont pas gênés par cet effet (la plupart s'en délectent), mais les autres créatures trouvent généralement cette situation fort déstabilisante. Lorsque le sort prend fin, les non-ogres qui ont blessé au moins un adversaire au corps à corps tandis qu'ils étaient sous l'effet du sort doivent réussir un Test de Calme Intermédiaire (+0) ou gagner l'État Sonné. De plus, s'ils blessent un adversaire qui possède les Traits de créature Infecté ou Maladie, tout Test effectué pour en éviter les effets négatifs subit une pénalité de -30.",
@@ -4789,7 +4789,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -4800,7 +4800,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous dévorez le cœur d'une bête puissante, puis projetez sa force et sa puissance sur une créature proche. Pendant la durée du sort, votre cible ajoute +2 à son Bonus de Force pour les Dégâts qu'elle inflige ou pour d'autres Tests de Force appropriés.Cependant, lorsque le sort prend fin, elle se retrouve envahie par une faim intense et doit immédiatement se gaver d'un repas conséquent ou gagner un État Exténué.\n\nSi la cible souhaite rejeter votre don, elle peut tenter un Test de Calme Complexe (-10) pour en ignorer les effets.",
@@ -4815,7 +4815,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "F",
+                "char": "force",
                 "mod": 20
               },
               {
@@ -4886,7 +4886,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -4894,13 +4894,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous dévorez la meilleure partie d'une grande bête, ce qui provoque l'apparition d'un fragment de la Gueule elle-même. Le sol se fend en deux, dévoilant un millier de dents grinçantes et affamées. Le gouffre est sans fond, sa faim est infinie, ses dents sont des lames de rasoir et le bruit de ses mâchoires rugissantes ressemble à s'y méprendre au grincement du verre sur la pierre.\n\nQuiconque se trouve dans la zone affectée doit immédiatement effectuer un Test d'Esquive Intermédiaire (+0) pour se dégager. En cas de réussite, les cibles subissent +8 Dégâts à une Localisation choisie au hasard, lorsqu'elles s'extraient de la Gueule. Ces Dégâts sont réduits de 1 pour chaque DR obtenu au Test d'Esquive.\n\nQuiconque échoue au Test chute immédiatement dans la Gueule, qui entame le processus méthodique consistant à avaler sa victime vivante. Cette dernière subit immédiatement +10 Dégâts à un emplacement choisi au hasard et gagne 3 États Empêtré. Les tentatives de suppression de ces États sont opposées à la Force de 60 de la Gueule. La victime ne peut pas s'échapper tant qu'elle ne s'est pas débarrassée de ses 3 États Empêtré. À la fin de chacun de leurs tours, les créatures à l'intérieur de la Gueule subissent à nouveau +10 Dégâts à un emplacement choisi au hasard.\n\nLes dents de la Gueule sont acérées et elles n'abandonnent pas leurs proies facilement. Une fois que le sort prend fin, la Gueule disparaît, mais elle tente d'emporter les parties du corps qui se trouvent encore entre ses crocs. Si une créature se trouve à l'intérieur de la Gueule à ce moment précis, elle subit immédiatement une Blessure Critique à un emplacement choisi au hasard.",
@@ -4939,7 +4939,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "E"
+        "charOf": "endurance"
       },
       "unit": "m"
     },
@@ -4950,7 +4950,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "charOf": "E"
+        "charOf": "endurance"
       }
     },
     "desc": "Vous avalez une minuscule quantité de bile de troll ou une substance similaire, avant d'absorber et de distiller les immenses pouvoirs de régénération de cette créature que vous transmettez à une autre personne. Votre cible gagne le Trait de créature Régénération (WFJDR p. 341). Les ogres ne subissent aucun effet supplémentaire pour ce sort, mais les autres Races peuvent être moins chanceuses. Tout Personnage autre qu'un ogre qui récupère des Blessures sous l'effet de ce sort doit se soumettre à un Test de Résistance Accessible (+20). En cas d'échec, la chair qui se forme sur les blessures prend une apparence verdâtre ou d'un bleu tacheté, qui ressemble fortement à la peau d'un troll. Cet effet est particulièrement marqué si le sort est à l'origine de la repousse d'un membre. Il n'implique pas une mutation, mais il est susceptible d'être perçu comme tel par toute personne qui le voit et d'entraîner quelques conséquences désagréables. ",
@@ -4996,7 +4996,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
@@ -5053,7 +5053,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "Int"
+        "charOf": "intelligence"
       },
       "unit": "minutes"
     },
@@ -5099,7 +5099,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -5144,7 +5144,7 @@
     "family": "arcane",
     "opposed": {
       "kind": "resist",
-      "char": "FM"
+      "char": "force-mentale"
     },
     "curated": true
   },
@@ -5157,7 +5157,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "Int"
+        "bonusOf": "intelligence"
       },
       "unit": "m"
     },
@@ -5209,7 +5209,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -5264,7 +5264,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -5288,13 +5288,13 @@
               {
                 "op": "heal",
                 "amount": {
-                  "bonusOf": "Int"
+                  "bonusOf": "intelligence"
                 }
               },
               {
                 "op": "heal",
                 "amount": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               }
             ]
@@ -5362,7 +5362,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Un voile de Hysh recouvre votre esprit, permettant une accélération de vos pensées. Vous gagnez un Bonus de +20 en Initiative et en Intelligence.",
@@ -5377,12 +5377,12 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "I",
+                "char": "initiative",
                 "mod": 20
               },
               {
                 "op": "charMod",
-                "char": "Int",
+                "char": "intelligence",
                 "mod": 20
               }
             ]
@@ -5411,13 +5411,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous invoquez une aura protectrice de pure lumière sacrée. Les créatures profanes – celles ayant les Traits de créature Mort-vivant ou Démoniaque, des mutations ou celles ayant plus de Corruption que leurs Bonus de Force Mentale et Bonus d'Endurance combinés – ne peuvent pas entrer dans la Zone d'Effet. Toutes celles déjà à l'intérieur de la Zone gagnent l'État Brisé jusqu'à ce qu'elles la quittent. Les créatures à l'intérieur de la Zone ne peuvent pas gagner de Points de Corruption tant que le Sort est actif.",
@@ -5473,7 +5473,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous enveloppez une arme non magique de lourdes bandes de Chamon, ce qui améliore sa puissance. Pour la durée du Sort, l'arme est considérée comme Magique et gagne un bonus au Dégâts égal à votre Bonus de Force Mentale, et l'Atout Incassable (voir page 298). Pour chaque +3 DR, vous pouvez aussi ajouter +1 Atout ou retirer 1 Défaut de l'arme, tant que le Sort est actif.",
@@ -5493,7 +5493,7 @@
                   "incassable"
                 ],
                 "damageBonus": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               },
               {
@@ -5522,7 +5522,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -5576,7 +5576,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "E"
+        "bonusOf": "endurance"
       }
     },
     "desc": "Les rafales sauvages de Chamon tourbillonnent autour de vous, déviant les coups et interceptant les projectiles et les Attaques magiques. Gagnez le Trait de créature Protection (9+) (voir page 341) contre toutes les attaques et Sorts vous prenant pour cible. Chaque frappe évitée avec succès augmente l'efficacité de Protection de 1, jusqu'à un maximum de Protection (3+).",
@@ -5620,7 +5620,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -5631,7 +5631,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -5678,7 +5678,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -5725,7 +5725,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous touchez un objet non magique composé de métal qui devient instantanément chaud au toucher lorsque vous y faites entrer Chamon. Vous pouvez plier et tordre l'objet avec un Test de Force Accessible (+20). Si vous voulez effectuer une modification plus complexe, vous pouvez faire un Test de Métier (Forgeron ou similaire) Accessible (+20) à la place.",
@@ -5764,7 +5764,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -5772,13 +5772,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "En faisant appel au vent Doré, vous modifiez la densité des biens de votre cible, augmentant ou diminuant leur poids. Pour la durée du Sort, choisissez l'un des effets suivants pour quiconque se trouve dans la Zone d'Effet :\n\n• Considéré comme Surchargé de deux paliers supplémentaires\n\n• N'est pas considéré comme Surchargé\n\nVoir page 293 pour plus de détails sur l'Encombrement.",
@@ -5817,7 +5817,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -5825,13 +5825,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous arrachez Chamon des métaux portés par vos ennemis, et de la terre elle-même, transformant brièvement la chair de vos ennemis en métal. Il s'agit d'un Projectile magique affectant tout ce qui se trouve dans la Zone d'Effet, avec une valeur de Dégâts égale à votre Bonus de Force Mentale ; le Sort ignore le Bonus d'Endurance et inflige +1 État Aveuglé, +1 État Assourdi et +1 État Sonné, qui persistent tous pour la durée du Sort. Toutes les cibles affectées gagnent +1 PA issu de l'or qui entoure leur corps, mais souffrent également de Suffocation (voir page 181). Si les cibles meurent pendant que le Sort est actif, elles sont enfermées de façon permanente dans une carapace de métaux communs, un macabre rappel des risques de la sorcellerie.",
@@ -5848,21 +5848,21 @@
                 "op": "condition",
                 "name": "aveugle",
                 "durationRounds": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               },
               {
                 "op": "condition",
                 "name": "assourdi",
                 "durationRounds": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               },
               {
                 "op": "condition",
                 "name": "sonne",
                 "durationRounds": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               },
               {
@@ -5955,7 +5955,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "En touchant le corps d'une créature récemment décédée (la journée précédente), vous rappelez brièvement son âme. Pour la durée du Sort, vous pouvez communiquer avec elle, bien qu'elle ne puisse rien faire d'autre que parler. Elle n'est pas forcée de vous répondre, mais elle ne ment pas.",
@@ -6000,7 +6000,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous invoquez une faux magique, qui peut être portée en combat, utilisant la Compétence Corps à corps (Arme d'hast). Elle agit comme une faux banale avec une valeur de Dégâts égale à votre Bonus de Force Mentale +3. Les ennemis possédant le Trait de créature Mort-vivant ne reçoivent pas d'Avantage quand ils sont Engagés en combat avec vous.",
@@ -6017,7 +6017,7 @@
                 "op": "grantWeapon",
                 "name": "Faux de Shyish",
                 "damage": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "damagePlus": 3,
                 "subType": "armes-d-hast",
@@ -6071,7 +6071,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous confectionnez un voile composé de brins fins de magie violette. Gagnez +(Bonus de Force Mentale) PA à toutes les Localisations, et le Trait de créature Peur 1 (voir page 341). Pour chaque +2 DR, vous pouvez augmenter l'Indice de Peur de 1.",
@@ -6087,7 +6087,7 @@
               {
                 "op": "ap",
                 "amount": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               },
               {
@@ -6168,13 +6168,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -6214,7 +6214,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -6293,7 +6293,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -6301,7 +6301,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
@@ -6351,7 +6351,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -6422,7 +6422,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -6430,13 +6430,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       }
     },
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -6482,7 +6482,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "Int"
+        "bonusOf": "intelligence"
       },
       "unit": "minutes"
     },
@@ -6529,7 +6529,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous enroulez votre cible dans un linceul d'Ulgu. Elle devient alors invisible et ne peut pas être perçue par les sens ordinaires. Le Sort trompe automatiquement quiconque ne possède pas le Talent Seconde vue. Ceux qui le possèdent doivent réussir un Test de Perception Intermédiaire (+0) pour remarquer que quelqu'un est à proximité, bien qu'ils ne soient pas capables de discerner l'emplacement exact. Pour ce faire, ils doivent dissiper le Linceul d'Invisibilité. La cible est toujours perceptible par les autres sens, et le Sort prend fin si elle attire l'attention sur elle en faisant des bruits forts ou en attaquant quelqu'un.",
@@ -6568,7 +6568,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -6576,13 +6576,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous invoquez une masse tourbillonnante de brume traversée d'ombres troublantes qui perturbent les sens. Tous ceux pris à l'intérieur de la brume qui ne possèdent pas le Talent Magie des Arcanes (Ombre) sont affectés par le Miasme, gagnant +1 État Aveuglé, +1 État Assourdi et +1 État Exténué, qui persistent pour la durée du Sort. Toute personne atteinte tentant de se déplacer doit réussir un Test de Perception Intermédiaire (+0), ou gagner un État À Terre. Si le Sort est dissipé alors qu'il est encore actif, toute personne affectée par le Sort doit réussir un Test d'Initiative Facile (+40), ou gagner un État Sonné.",
@@ -6599,21 +6599,21 @@
                 "op": "condition",
                 "name": "aveugle",
                 "durationRounds": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               },
               {
                 "op": "condition",
                 "name": "assourdi",
                 "durationRounds": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               },
               {
                 "op": "condition",
                 "name": "extenue",
                 "durationRounds": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               },
               {
@@ -6642,7 +6642,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -6653,7 +6653,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous enroulez des tentacules d'ombre d'Ulgu autour du cou de vos ennemis. En supposant qu'ils aient besoin de respirer, ils gagnent +1 État Exténué, ne peuvent pas parler et sont soumis aux règles de la Suffocation (voir page 181).",
@@ -6678,7 +6678,7 @@
                 "skill": "all",
                 "blocked": true,
                 "rounds": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 }
               },
               {
@@ -6716,7 +6716,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -6756,7 +6756,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -6792,7 +6792,7 @@
               {
                 "op": "teleport",
                 "meters": {
-                  "charOf": "FM"
+                  "charOf": "force-mentale"
                 }
               }
             ]
@@ -6817,7 +6817,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       },
       "unit": "km"
     },
@@ -6864,7 +6864,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -6944,12 +6944,12 @@
               {
                 "op": "teleport",
                 "meters": {
-                  "charOf": "FM"
+                  "charOf": "force-mentale"
                 },
                 "perSL": {
                   "every": 2,
                   "metersFormula": {
-                    "charOf": "FM"
+                    "charOf": "force-mentale"
                   }
                 }
               }
@@ -6982,7 +6982,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous faites en sorte que la peau de la cible devienne dure et rugueuse comme l'écorce d'un arbre. Tant qu'elle est affectée par le Sort, la cible gagne +2 à son Bonus d'Endurance, mais subit une pénalité de -10 en Agilité et Dextérité.",
@@ -6997,17 +6997,17 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "E",
+                "char": "endurance",
                 "mod": 20
               },
               {
                 "op": "charMod",
-                "char": "Ag",
+                "char": "agilite",
                 "mod": -10
               },
               {
                 "op": "charMod",
-                "char": "Dex",
+                "char": "dexterite",
                 "mod": -10
               }
             ]
@@ -7032,7 +7032,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -7040,13 +7040,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Ce Sort peut uniquement cibler un carré de terre (même très petit). Vous faites jaillir un amas dense de ronces et de vignes grimpantes qui recouvre la Zone d'Effet.\n\nTant que le Sort est actif, quiconque tente de traverser la zone à pied sans posséder le Talent Magie des Arcanes (Vie) doit réussir un Test d'Agilité Difficile (-20). Un échec signifie qu'il gagne 1 État Hémorragique et un État Empêtré, qui utilise votre Force Mentale pour sa Force. Une fois le Sort terminé, la végétation persiste mais perd ses propriétés surnaturelles.",
@@ -7076,7 +7076,7 @@
                 "op": "zone",
                 "shape": "disc",
                 "radiusMeters": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "onCross": [
                   {
@@ -7118,7 +7118,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "days"
     },
@@ -7168,7 +7168,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Votre cible gagne le Trait de créature Régénération (voir page 341).",
@@ -7211,13 +7211,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Pour lancer ce Sort, vous devez être debout et pieds nus, en contact direct avec la terre. Pour la durée du Sort, toutes les créatures également en contact direct avec la terre à l'intérieur de la Zone d'Effet guérissent d'un nombre de Blessures égal à votre Bonus de Force Mentale au début de chaque round.",
@@ -7247,13 +7247,13 @@
                 "op": "zone",
                 "shape": "disc",
                 "radiusMeters": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "perRound": [
                   {
                     "op": "heal",
                     "amount": {
-                      "bonusOf": "FM"
+                      "bonusOf": "force-mentale"
                     }
                   }
                 ]
@@ -7284,13 +7284,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous créez une atmosphère propice à la bienveillance et à la gentillesse. Tous les Tests de Sociabilité effectués dans la Zone d'Effet bénéficient d'un bonus de +10, et les Trait Psychologique Animosité et Trait Psychologique Haine n'ont aucun effet.",
@@ -7336,7 +7336,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "days"
     },
@@ -7382,7 +7382,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -7429,7 +7429,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous marmonnez des mots de pouvoir au-dessus d'une potion d'herbe spécialement préparée et la transformez magiquement en un philtre d'une grande puissance. Si cette potion est ingérée alors que le Sort est toujours actif, la cible peut choisir d'oublier un individu de façon permanente.",
@@ -7475,7 +7475,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous lancez un Sort sur une décoction déjà prête, lui conférant des propriétés magiques. Si cette dernière est bue alors que le Sort est actif, la cible est guérie d'un nombre de Points de Blessure équivalent à votre Bonus de Force Mentale, ainsi que d'une maladie. Pour chaque DR+2 que vous obtenez, vous pouvez guérir une Maladie supplémentaire.",
@@ -7520,7 +7520,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -7560,7 +7560,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -7615,7 +7615,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "days"
     },
@@ -7655,7 +7655,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -7666,7 +7666,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "En poignardant une représentation grossière de votre cible – une poupée ou un mannequin, vous lui infligez une douleur paralysante. Lorsque le Sort est lancé avec succès, choisissez quel endroit vous poignardez :\n\n• Jambe : la jambe devient inutilisable, comme si elle avait été amputée (voir page 180). Si la cible était en train de courir, elle subit un État À Terre et des Dégâts de chute\n\n• Bras : le bras devient inutilisable, comme s'il avait été amputé (voir page 180). Si la cible tenait quelque chose à la main, elle le lâche automatiquement\n\n• Corps : la cible souffre d'agonie, subit +1 État Exténué, et doit réussir un Test Difficile (-20) de Résistance ou subir l'État À Terre\n\n• Tête : la cible gagne 1 État Sonné, et doit réussir un Test Accessible (+20) de Résistance ou subir un État Inconscient qui dure le temps de la durée du Sort\n\nTant que le Sort est effectif, vous pouvez, pour votre Action, effectuer un Test de Focalisation en poignardant de nouveau la poupée pour choisir une nouvelle Localisation.",
@@ -7705,7 +7705,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "km"
     },
@@ -7716,7 +7716,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "days"
     },
@@ -7760,7 +7760,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -7811,7 +7811,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -7822,7 +7822,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous invoquez une nuée de créatures rampantes et envahissantes qui vont venir harceler vos adversaires. Chaque cible affectée se retrouve Engagée par une nuée de rats géants, d'araignées géantes ou de serpents. Utilisez les caractéristiques classiques du type de créature correspondant, en lui ajoutant le Trait Nuée. Pour votre Action, vous pouvez effectuer un Test d'Emprise sur les animaux Intermédiaire (+0) afin d'envoyer une nuée, ou plus, attaquer une autre cible.\n\nLorsque le Sort s'arrête, les nuées restantes disparaissent dans les ombres.",
@@ -7881,7 +7881,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -7892,7 +7892,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Votre Sort perturbe Dhar, maintenant le démon ciblé en vie et le draine vers vous. Une cible qui possède le Trait de Créature Démoniaque et qui a une Force Mentale inférieure à la vôtre subit un nombre de Blessures égal à votre Bonus de Force Mentale, en ignorant le Bonus d'Endurance et les PA. De plus, vous pouvez augmenter l'une de vos Caractéristiques de +10 pendant la durée du Sort alors que vous absorbez les énergies profanes.",
@@ -7908,7 +7908,7 @@
               {
                 "op": "wounds",
                 "amount": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "onlyGroups": [
                   "demon"
@@ -7940,7 +7940,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -7987,7 +7987,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -7998,7 +7998,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous focalisez des relents de Dhar, provoquant une brève déchirure dans la réalité. Un Démon Mineur apparaît immédiatement par cette déchirure (référez-vous à la page 335 pour y trouver deux exemples : Sanguinaires de Khorne et Démonette de Slaanesh). Effectuez un Test opposé de Focalisation (Dhar)/Force Mentale avec le démon. Sur un succès, ce dernier répondra favorablement à un ordre que vous lui donnerez, littéralement, avant de disparaître (en partant du principe qu'il puisse accomplir ce que vous lui avez demandé avant la fin du Sort). Sur un échec, le démon attaque sur le champ.",
@@ -8057,13 +8057,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -8103,7 +8103,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -8175,7 +8175,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -8222,7 +8222,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -8230,7 +8230,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
@@ -8263,7 +8263,7 @@
                 "op": "summon",
                 "ref": "zombie",
                 "count": {
-                  "bonusOf": "FM"
+                  "bonusOf": "force-mentale"
                 },
                 "countPerSL": {
                   "every": 1,
@@ -8294,7 +8294,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -8302,7 +8302,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
@@ -8370,7 +8370,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous canalisez le pouvoir de transformation du Chaos dans votre propre chair, sacrifiant temporairement votre forme mortelle sur l'autel de la volonté de votre dieu. Votre corps est déformé, prenant les aspects d'un démon loyal à votre dieu protecteur. Lancez 1d10 sur le Tableau de la page 78, et appliquez le Trait pertinent pour toute la durée du Sort. Pour chaque +2 DR, vous pouvez à la fois prolonger la durée et refaire un jet sur le Tableau. Si vous obtenez le Trait Démoniaque et que vous êtes réduit à 0 Blessure, votre âme est aspirée dans les Royaumes du Chaos, comme décrit dans les règles des Traits de créature.\n\n| 1d10 | Nurgle | Slaanesh | Tzeentch | Indivisible |\n| --- | --- | --- | --- | --- |\n| 1 | Grand | Démoniaque (6) | Souffle +9 (Feu) | Démoniaque (8) |\n| 2 | Souffle +7 (Corrosion et Poison) | Perturbant (Allure étrange) | Démoniaque (9) | Démoniaque (8) |\n| 3 | Démoniaque (7) | Peur (3) | Éthéré | Élite |\n| 4 | Maladie (Pourriture de Nurgle) | Frénésie | Peur (3) | Rapide |\n| 5 | Perturbant (Puanteur) | Immunité Psychologique | Vol (9) | Peur (3) |\n| 6 | Peur (3) | Mutation (jet sous le Tableau) | Magique | Vol (8) |\n| 7 | Parasité | Insensible à la douleur | Résistance à la Magie (2) | Rage |\n| 8 | Mutation (jet sous le Tableau) | Regard pétrifiant | Mutation (jet sous le Tableau) | Cornes +10 |\n| 9 | Régénération | Langue préhensile +6 (6 mètres) | Mutation (jet sous le Tableau) | Magique |\n| 10 | Vomissement | Venin | Lanceur de Sorts (au choix) | Attaque caudale (+10) |",
@@ -8415,7 +8415,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Le lanceur de sorts imprègne la Cible (peut-être lui-même) avec un vernis corrompu d'Ulgu infusé par Dhar, l'enveloppant dans une aura de dissimulation. Tant que le Sort est en vigueur, la Cible apparaît sans défaut, ni tache. Les cicatrices, les difformités et, surtout, les Mutations sont indétectables, sauf par des moyens divins. Si les vices évidents sont cachés, les Cibles peuvent paraître étranges ou excentriques, trop débordantes de vie ou anormalement séduisantes. La réussite d'un Test de Perception Difficile (-20) révèle que quelque chose ne va pas, mais sans révéler quoi. Pour les Personnages possédant le Talent Seconde vue, le Test est Intermédiaire (+0), et s'ils le réussissent, ils se rendront compte qu'un Sort est en place, mais pas ce qu'il dissimule.",
@@ -8453,7 +8453,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -8512,7 +8512,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -8523,7 +8523,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vos mots ignobles et profanes déchirent le tissu de la réalité, creusant une brèche dans le monde, au travers de laquelle les serviteurs des Dieux Sombres sont libres de passer. Un portail déchiqueté vers l'Aethyr apparaît.\n\nÀ la fin de chaque round, un démon mineur traverse le portail depuis les Royaumes du Chaos. Ces démons ne sont pas sous votre contrôle, mais sont susceptibles de vous défendre et d’attaquer vos ennemis, si telle est la volonté de votre maître impie. Les démons invoqués dépendent de votre Domaine du Chaos : démonettes de Slaanesh, porte-peste de Nurgle, horreurs de Tzeentch, sanguinaires de Khorne, et, pour les sorciers du Chaos Indivisible, des furies du Chaos. Pendant toute la durée du sort, tous les démons qu’il invoque sont immunisés aux effets du Trait de créature Instable.\n\nPour chaque +5 DR de Surincantation, vous pouvez augmenter le rythme d’arrivée des démons de +1.\n\nLes créatures vivantes doivent réussir un Test de Résistance Accessible (+20) à la fin de chaque Round où elles voient la déchirure, ou gagner +1 Corruption. Toute créature vivante assez stupide ou malchanceuse pour entrer dans la faille choit dans les Royaumes du Chaos et est immédiatement tuée, à moins qu’un Point de Destin ne soit dépensé. Dans ce cas, elle est renvoyée dans la réalité, peut-être sauvée par une Puissance quelconque dans un but encore inachevé.\n\nSi vous ratez l’Incantation de ce Sort, les démons qui traversent les Royaumes du Chaos appartiennent à une divinité rivale et peuvent être immédiatement hostiles à leur invocateur !",
@@ -8619,7 +8619,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -8627,7 +8627,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
@@ -8681,7 +8681,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       },
       "unit": "km"
     },
@@ -8728,7 +8728,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "km"
     },
@@ -8774,7 +8774,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -8782,13 +8782,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous appelez les Dieux Sombres du Chaos à vous aider en pratiquant une petite déchirure dans l'Aethyr. Tous les Sorts lancés dans un rayon de quelques mètres du point ciblé par le Sort voient leur NI réduit de moitié. Toute personne se trouvant dans la Zone d’Effet doit réussir un Test de Résistance Accessible (+20) à la fin de chaque Round ou gagner +1 Point de Corruption. Quiconque lance un Sort dans la Zone d’Effet fait son Test avec une Difficulté Accessible (+20).",
@@ -8871,7 +8871,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -8882,7 +8882,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Votre magie s'insinue au plus profond de votre cible, lui faisant prendre conscience de tous ses rêves brisés. La Caractéristique d'Initiative de la cible passe à 10, si elle n'était pas déjà inférieure, alors que son esprit se referme. Pendant le Tour de la cible, ses déplacements sont faits au hasard et déterminés par le MJ, pendant que le personnage se lamente sur ce qu'est devenue sa vie, racontant de façon obscène, en agitant les mains en l'air, la façon dont les choses auraient dû se passer. De plus, la cible ne peut effectuer une action que si elle réussit un Test de Calme Intermédiaire (+0) ; sur un échec, la cible est trop occupée à ressasser tout ce qui s'est passé pour entreprendre quoi que ce soit d'autre.",
@@ -8920,7 +8920,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -8931,7 +8931,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous focalisez des filaments résultant du mélange contre nature de certains Vents de Magie que vous envoyez directement dans l'esprit de votre cible, pervertissant ses motivations, sapant ses envies et attisant les braises du mécontentement. La cible ne peut plus utiliser de Talents, ni ajouter ses Augmentations de Compétences lorsqu'elle effectue un Test de Compétence, ce qui signifie que les Tests effectués par cette dernière le sont à partir de la Caractéristique non modifiée.",
@@ -8975,7 +8975,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Ce Sort est l'un des plus simples et des plus pratiques dans l’arsenal d’un sorcier de Tzeentch. Un tourbillon de feu jaune est invoqué à partir de l’Aethyr et enveloppe le corps du Lanceur, le protégeant des coups et des projectiles. Tant que le Sort est en vigueur, le Lanceur bénéficie du Trait de créature Protection 9+.",
@@ -9020,7 +9020,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       },
       "unit": "days"
     },
@@ -9059,7 +9059,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Int"
+        "charOf": "intelligence"
       },
       "unit": "m"
     },
@@ -9131,7 +9131,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Int"
+        "charOf": "intelligence"
       },
       "unit": "m"
     },
@@ -9139,7 +9139,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       }
     },
     "duration": {
@@ -9185,7 +9185,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Int"
+        "charOf": "intelligence"
       },
       "unit": "m"
     },
@@ -9237,7 +9237,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Int"
+        "charOf": "intelligence"
       },
       "unit": "m"
     },
@@ -9307,7 +9307,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Int"
+        "charOf": "intelligence"
       },
       "unit": "m"
     },
@@ -9318,7 +9318,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous invoquez un torrent de feu magique, qui crache, crépite et brûle sans aucun combustible matériel. Ce feu n'a aucune propriété physique et ne brûle pas, n’endommage pas et n’émet pas de chaleur. Toutes les créatures vivantes et les démons qui peuvent le percevoir peuvent choisir de relancer chaque Test une fois, comme s’ils avaient dépensé un Point de Chance, même s’ils ont réussi le Test. Chaque fois, ils doivent réussir un Test de Résistance Intermédiaire (+0) ou gagner +1 Point de Corruption. Les Personnages portant la marque de Tzeentch sont immunisés à cette Corruption. Le Test pour résister au gain de Corruption ne peut pas être relancé en utilisant l’effet de ce Sort.",
@@ -9356,7 +9356,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Int"
+        "charOf": "intelligence"
       },
       "unit": "m"
     },
@@ -9403,7 +9403,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Int"
+        "charOf": "intelligence"
       },
       "unit": "m"
     },
@@ -9456,7 +9456,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "days"
     },
@@ -9505,7 +9505,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "F"
+        "bonusOf": "force"
       },
       "unit": "m"
     },
@@ -9516,7 +9516,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Int"
+        "bonusOf": "intelligence"
       }
     },
     "desc": "Alors que votre langue émet les motifs sonores déformés de ce Sort blasphématoire, deux voix semblent sortir de votre gorge, en une harmonie impie et contre nature. Vos mots renferment une signification supplémentaire pour ceux qui sont affectés par le Sort, même si les Cibles ne peuvent pas se souvenir de ce qui a été dit. Elles en conservent un sentiment obsédant de pressentiment, comme si elles avaient oublié quelque chose de très important concernant leur propre avenir.\n\nLes Cibles vivantes affectées par le Sort doivent faire un Test opposé d'Intelligence. Si la Cible perd, elle gagne 1 État Sonné, +1 État Sonné supplémentaire pour chaque DR d’écart. En cas de Maladresse, elle gagne l’État Inconscient, et +1 Point de Corruption.\n\nUne fois que tous les États ont été retirés, les Cibles affectées doivent réussir un Test de Résistance Accessible (+20), ou gagner +1 Corruption. Si elles obtiennent une Maladresse, elles gagnent immédiatement 1 Mutation mentale, et ne peuvent pas prendre d’Ambition à court terme pendant les 1d10 semaines suivantes.",
@@ -9554,7 +9554,7 @@
     "family": "chaos",
     "opposed": {
       "kind": "resist",
-      "char": "Int"
+      "char": "intelligence"
     },
     "curated": true
   },
@@ -9609,7 +9609,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Int"
+        "charOf": "intelligence"
       },
       "unit": "m"
     },
@@ -9617,13 +9617,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Sur votre ordre, des liens de feu aethyrique s'élèvent de la terre, puis s’enroulent autour de votre Cible, l’enveloppant dans un cocon d’énergie magique. Les Cibles affectées gagnent l’État À Terre et sont considérées comme impuissantes pour toute la durée du Sort. Lorsque la Transformation de Tzeentch prend fin, la Cible doit faire un Test de Résistance Intermédiaire (+0), auquel vous opposez votre Compétence Langue (Magick). Si elle perd, elle gagne +1 Point de Corruption, +1 Point supplémentaire pour chaque DR d’écart.",
@@ -9665,7 +9665,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       },
       "unit": "m"
     },
@@ -9676,7 +9676,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Sur votre ordre, des liens de feu aethyrique s'élèvent de la terre, puis s'enroulent autour de votre Cible, l'enveloppant dans un cocon d'énergie magique. Les Cibles affectées gagnent l'État *À Terre* et sont considérées comme impuissantes pour toute la durée du Sort. Lorsque la Transformation de Tzeentch prend fin, la Cible doit faire un Test de **Résistance Intermédiaire (+0),** auquel vous opposez votre Compétence Langue (Magick). Si elle perd, elle gagne +1 Point de Corruption, +1 Point supplémentaire pour chaque DR d'écart.",
@@ -9719,7 +9719,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       },
       "unit": "km"
     },
@@ -9825,7 +9825,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "minutes"
     },
@@ -9865,7 +9865,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -9876,7 +9876,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Votre cible se retrouve immédiatement trempée d'eau salée, et titube comme sur le pont tanguant d'un vaisseau en pleine tempête. Ses cheveux sont balayés par des vents spectraux, et les embruns lui lacèrent la peau. Elle gagne les États Aveuglé, Assourdi et Exténué et doit effectuer un Test d'Agilité Accessible (+20) pour utiliser son Mouvement. Sur un échec, elle gagne aussi l'État À Terre.",
@@ -9927,7 +9927,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "I"
+        "bonusOf": "initiative"
       },
       "unit": "km"
     },
@@ -9976,7 +9976,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -9987,7 +9987,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous implorez Manann de noyer vos ennemis. Les poumons de votre cible se remplissent d'eau salée sans discontinuer tant que le Miracle est actif. Ses cheveux flottent autour de sa tête comme si elle était immergée. Votre cible gagne l'État Exténué et est sujet aux règles de Noyade et de Suffocation (page 181) pendant que le Miracle est actif. Quand le Miracle prend fin, votre cible doit effectuer un Test de Résistance Difficile (-20). Sur un échec, elle subit également un État À Terre.",
@@ -10037,7 +10037,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "duration": {
@@ -10141,7 +10141,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "hours"
     },
@@ -10187,7 +10187,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Morr œuvre à travers vous, franchissant le Portail pour révéler sa présence à vos ennemis. Votre visage prend un aspect cadavérique et vous gagnez Peur 1.",
@@ -10316,7 +10316,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -10327,7 +10327,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vos Prières passionnées inspirent à vos alliés un mépris féroce de leurs ennemis. Tous les alliés affectés reçoivent le Trait Psychologique Haine à l'égard de tous ceux qui les engagent en combat.",
@@ -10370,7 +10370,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -10381,7 +10381,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vos Prières passionnées incitent Myrmidia à protéger vos alliés avec des filaments de lumière vive et scintillante, repoussant les frappes ennemies. Toutes les cibles affectées gagnent +1 PA à toutes les Localisations.",
@@ -10420,7 +10420,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -10431,7 +10431,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vos Prières exaltantes inspirent la discipline et la coordination à l'intérieur de vos rangs. Les cibles affectées gagnent +1 Talent Coude-à-coude.",
@@ -10474,7 +10474,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -10484,7 +10484,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Si vous portez une lance, elle gagne l'Atout Percutante, et est considérée comme Magique.",
@@ -10527,7 +10527,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -10537,7 +10537,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous faites appel à Myrmidia pour envoyer un Serviteur divin vous accordant la connaissance de vos ennemis. Un aigle spectral se manifeste, planant dans le ciel au-dessus. L'aigle ressemble et possède les capacités d'un aigle normal, mais ne peut pas physiquement affecter le monde, ou être blessé en aucune manière. Pendant que le Miracle est actif, vous pouvez voir à travers les yeux de l'aigle et contrôler son vol, surveillant le champ de bataille et espionnant vos ennemis. Votre vision est perçante, mais vous n'avez accès à aucun de vos propres Talents, tels que Vision nocturne. Pendant que vous regardez à travers les yeux de l'aigle, vous ne pouvez pas le faire par vos propres yeux, ce qui vous laisse potentiellement vulnérable.",
@@ -10720,13 +10720,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Sachant que la situation est désespérée, vous priez pour que vos forces ne subissent pas une déroute désastreuse. Tant que le Miracle est actif, n'importe lequel de vos alliés peut rompre le combat sans permettre à l'ennemi de gagner 1 Avantage et de porter une attaque gratuite (voir Fuite).",
@@ -10765,7 +10765,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -10816,13 +10816,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Sachant que la victoire ne peut être obtenue que si vos forces tiennent leur position, vous invoquez Myrmidia pour qu'elle ôte toute idée de retraite de l'esprit de vos alliés. Tant que le Miracle est actif, vos alliés ne reçoivent pas d'État Brisé.",
@@ -10908,7 +10908,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       }
     },
     "duration": {
@@ -10959,7 +10959,7 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "charOf": "FM"
+        "charOf": "force-mentale"
       }
     },
     "duration": {
@@ -10978,12 +10978,12 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "CC",
+                "char": "capacite-de-combat",
                 "mod": 10
               },
               {
                 "op": "charMod",
-                "char": "CT",
+                "char": "capacite-de-tir",
                 "mod": 10
               }
             ]
@@ -11058,7 +11058,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Ag"
+        "bonusOf": "agilite"
       }
     },
     "desc": "Vous faites appel à Ranald pour permettre à votre cible de gérer les énigmes de la réalité. Votre cible gagne +10 en Agilité, +10 en Discrétion et + 1 Talent Souplesse féline pour la durée du Miracle.",
@@ -11073,7 +11073,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "Ag",
+                "char": "agilite",
                 "mod": 10
               },
               {
@@ -11212,7 +11212,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "minutes"
     },
@@ -11252,7 +11252,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -11263,7 +11263,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous énoncez une énigme complexe concernant la réalité de ce qui ne peut être perçu. Les cibles affectées par ce Miracle peuvent passer inaperçues, à condition qu'elles n'attirent pas l'attention sur elles, en touchant, attaquant, appelant quelqu'un, lançant un Sort, ou en faisant du bruit. Vous pouvez invoquer ce Miracle uniquement si personne ne vous regarde directement.",
@@ -11302,7 +11302,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -11312,7 +11312,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Existe-t-il quelque chose qui ne peut être vu? Vous posez l'énigme à Ranald, qui envoie en réponse un Serviteur divin sous la forme d'un chat. Cet envoyé ressemble à un chat normal et en possède les capacités, mais ne peut être blessé en aucune façon. Pendant que le Miracle est actif, vous percevez tout ce que le chat perçoit – ce qu'il voit, entend, touche – et vous contrôlez son Mouvement. Vos sens sont aiguisés comme ceux d'un chat, mais vous n'avez accès à aucun de vos propres Talents, tels que Vision nocturne. Pendant que le Miracle est actif, vous ne pouvez rien percevoir à travers vos propres sens, ce qui vous rend vulnérable.",
@@ -11415,7 +11415,7 @@
               {
                 "op": "heal",
                 "amount": {
-                  "bonusOf": "Soc"
+                  "bonusOf": "sociabilite"
                 }
               },
               {
@@ -11451,7 +11451,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Posant les mains à terre, vous psalmodiez une Prière pour Rhya réclamant son aide pour mieux comprendre son Royaume. Ce Miracle peut seulement être invoqué à l'extérieur, en dehors des zones habitées. Vous ressentez la présence et le passage de toutes les créatures conscientes dans un rayon de (Sociabilité) mètres. Chaque +2 DR étend la zone d'effet de +(Sociabilité) mètres.",
@@ -11538,7 +11538,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -11595,7 +11595,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "hours"
     },
@@ -11698,7 +11698,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "minutes"
     },
@@ -11741,7 +11741,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -11752,7 +11752,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vos Prières sincères à Shallya accordent à la cible la force de résister. La cible ne ressent aucune douleur, et ne subit aucune pénalité causée par les États.",
@@ -11897,7 +11897,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -11908,7 +11908,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous entonnez des Prières sur le besoin de Shallya de supporter la douleur du monde. Vous recevez tous les Dégâts subis en principe par vos cibles. Si vous prenez des Dégâts à cause de ce Miracle, votre Bonus d'Endurance est doublé pour le calcul des Points de Blessure subis à cause de ces Dégâts.",
@@ -11946,7 +11946,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -11954,7 +11954,7 @@
       "kind": "area",
       "span": "radius",
       "meters": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "excludesCaster": true
     },
@@ -12018,7 +12018,7 @@
       "kind": "area",
       "span": "radius",
       "meters": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "excludesCaster": true
     },
@@ -12085,7 +12085,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Alors que vous hurlez des Prières au nom de Sigmar, le feu sacré de la vertu vous imprègne. Tous les alliés dans votre Ligne de Vue retirent instantanément tout État Brisé, et gagnent le Talent Sans peur pendant que le Miracle est actif. Ce qui persiste tant qu'ils restent dans votre Ligne de vue. Toutes les peaux-vertes dans votre Ligne de Vue sont sujet à Peur 1.",
@@ -12139,7 +12139,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous psalmodiez des bénédictions sur la puissance de Sigmar. Si vous portez un marteau, il est considéré comme Magique, inflige +(Bonus de Sociabilité) Dégâts et toute cible frappée reçoit l'État En flammes et l'État À Terre.",
@@ -12158,7 +12158,7 @@
                   "magique"
                 ],
                 "damageBonus": {
-                  "bonusOf": "Soc"
+                  "bonusOf": "sociabilite"
                 },
                 "onHitEffects": [
                   {
@@ -12213,7 +12213,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous faites appel à Sigmar pour protéger de l'influence du Chaos tous ceux qui se trouvent près de vous. Tous les Sorts qui ciblent quelque chose ou quelqu'un dans les (Bonus de Sociabilité) mètres subissent une pénalité de -20 aux Tests de Langue (Magick), en plus de toute autre pénalité. Pour chaque +2 DR, vous pouvez augmenter la zone d'effet d'un nombre de mètres égal à votre Bonus de Sociabilité.",
@@ -12229,12 +12229,12 @@
               {
                 "op": "castWard",
                 "radius": {
-                  "bonusOf": "Soc"
+                  "bonusOf": "sociabilite"
                 },
                 "perSL": {
                   "every": 2,
                   "radiusFormula": {
-                    "bonusOf": "Soc"
+                    "bonusOf": "sociabilite"
                   }
                 }
               }
@@ -12260,7 +12260,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -12271,7 +12271,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vos Prières emplissent vos alliés désignés d'un féroce mépris pour les ennemis de Sigmar. Tous les alliés affectés reçoivent le Trait Psychologique Haine à l'égard des peaux-vertes, des morts-vivants et de tout ce qui est associé au Chaos.",
@@ -12327,7 +12327,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous chantez pour Père Taal, et il vous accorde sa faveur, vous accordant vitesse et agilité. Vous gagnez +1 Mouvement et +1 Talent Bonnes jambes. De plus, vous réussissez automatiquement tous les Tests d'Athlétisme pour sauter avec au moins 0 DR ; si vous obtenez moins, augmentez le DR à 0.",
@@ -12376,7 +12376,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous faites appel à Taal pour qu'il vous accorde la puissance féroce de son royaume. Gagnez les Traits de créature Morsure (Bonus de Force +3) et Arme (Bonus de Force +4). Ces attaques sont Magiques.",
@@ -12427,7 +12427,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -12457,7 +12457,7 @@
                   "amount": 1
                 },
                 "escapeStrength": {
-                  "charOf": "FM"
+                  "charOf": "force-mentale"
                 }
               },
               {
@@ -12493,7 +12493,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "hours"
     },
@@ -12537,7 +12537,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -12548,7 +12548,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous psalmodiez lentement une Prière, et Taal répond avec un animal convenant à la zone environnante. Ce dernier agira selon vos souhaits pour la durée du Miracle. Voir Les bêtes du Reikland page 314 pour des exemples d'animaux qui peuvent être invoqués.",
@@ -12608,7 +12608,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "hours"
     },
@@ -12655,7 +12655,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous criez rageusement des Prières et le froid d'Ulric répond. Vos yeux prennent une lueur bleu acier et l'air autour de vous devient anormalement froid. Vous insufflez Peur 1 (voir page 190) à tous les ennemis et tous ceux qui se trouvent dans un rayon de (Sociabilité) mètres de vous perdent -1 Avantage au début de chaque round, car ils sont gelés jusqu'aux os.",
@@ -12699,7 +12699,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -12710,7 +12710,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous psalmodiez frénétiquement des Prières et la férocité d'Ulric se répand. Les cibles gagnent le Trait de créature Frénésie.",
@@ -12749,7 +12749,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -12760,7 +12760,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous hurlez pour obtenir l'aide d'Ulric, et il envoie un Serviteur divin inférieur sous la forme d'un loup blanc. Le loup combat vos ennemis pendant la durée du Miracle, avant de retourner aux Terrains de Chasse d'Ulric dans un hurlement fantomatique effrayant. Le loup blanc possède les statistiques d'un Loup (voir page 315) avec les Trait de créature Frénésie, Trait de créature Magique et Trait de créature Taille (Grande).",
@@ -12823,7 +12823,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -12885,7 +12885,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous rugissez des Prières en hommage à Blitzbeil, la hache assoiffée d'Ulric. Si vous portez une hache, elle est considérée comme Magique, cause + DR Dégâts supplémentaires et toutes les cibles vivantes frappées doivent réussir un Test de Résistance Intermédiaire (+0) ou gagner un État Sonné. De plus, les cibles frappées perdent tout État Hémorragique alors que leur sang gèle ; de même, les attaques de votre hache ne peuvent pas causer d'État Hémorragique.",
@@ -12972,7 +12972,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "hours"
     },
@@ -13011,7 +13011,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -13022,7 +13022,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous faites appel à Verena, sollicitant son jugement sur un suspect présumé. Si votre cible a commis un crime et affirme que non, alors qu'il est affecté par ce Miracle, il gagne un État Empêtré qui ne peut pas être retiré pendant toute la durée du Miracle. Si vous avez faussement accusé la cible, Verena est contrariée par votre manque de sagesse : vous gagnez +1 Point de Péché et devez immédiatement effectuer un lancer sur le tableau de la Colère des dieux.",
@@ -13071,7 +13071,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous priez Verena de guider votre lame pour terrasser l'injustice. Si vous portez une épée, elle ignore les PA et est considérée comme Magique. De plus, si les adversaires frappés sont des criminels (ce qui est déterminé par le MJ), ils doivent réussir un Test de Résistance Accessible (+20) ou subir un État Inconscient qui dure pendant un nombre de rounds au moins égal à votre Bonus de Sociabilité. Si n'importe quel crime est perpétré contre les adversaires inconscients, vous subissez +1 Point de Péché par crime.",
@@ -13157,7 +13157,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous marmonnez des Prières sur les perceptions aiguisées de Verena, capable de percer la vérité de toutes choses. Vous pouvez effectuer un Test de Perception Intermédiaire (+0) pour percer à jour les Sorts et les Miracles impliquant une illusion ou une mauvaise direction. Vous pouvez aussi effectuer un Test d'Intuition Accessible (+20) pour savoir si un Personnage qui vous parle est en train de mentir. Remarque : cela ne vous dira que si le Personnage pense dire la vérité, cela ne vous alertera pas s'il se trompe.",
@@ -13196,7 +13196,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -13249,7 +13249,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous faites appel à Verena pour vous apporter sagesse et connaissance. Vous gagnez un bonus de +20 à tous les Tests d'Intelligence pendant que ce Miracle est actif. Vos pupilles se dilatent considérablement et votre regard devient perçant et inquiétant : gagnez +1 Talent Menaçant et +1 Talent Sens aiguisé (Vue).",
@@ -13264,7 +13264,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "Int",
+                "char": "intelligence",
                 "mod": 20
               },
               {
@@ -13303,7 +13303,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "En demandant à Verena d'être votre témoin, la véracité de vos paroles est évidente pour tous. Pour la durée du Miracle, à condition que vous ne disiez que la vérité, tous les auditeurs croiront ce que vous dites. Évidemment, cela ne signifie pas nécessairement qu'ils seront d'accord avec vos conclusions.",
@@ -13342,7 +13342,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "charOf": "Soc"
+        "charOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -13350,7 +13350,7 @@
       "kind": "area",
       "span": "radius",
       "meters": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "excludesCaster": true
     },
@@ -13407,7 +13407,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "m"
     },
@@ -13415,14 +13415,14 @@
       "kind": "area",
       "span": "radius",
       "meters": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "excludesCaster": true
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "D'un claquement de doigts, le chamane invoque une nuée d'araignées minuscules. Celles-ci sortent de sa robe souillée et se ruent sur ses ennemis pour les mordre pendant leur course. Toute créature qui se trouve dans la Zone d'Effet subit 1 Blessure qui ignore le Bonus d'Endurance et les PA. Chaque tranche de 2 DR ajoute 1 Blessure supplémentaire. Tout le long de la prière, toute créature qui se trouve dans la Zone d'Effet subit un malus de -10 à tous ses Tests : le déferlement d'araignées mystiques qui courent sur sa peau l'empêche de se concentrer.",
@@ -13474,7 +13474,7 @@
       "kind": "area",
       "span": "radius",
       "meters": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "excludesCaster": true
     },
@@ -13501,7 +13501,7 @@
                   "amount": 1
                 },
                 "escapeStrength": {
-                  "charOf": "FM"
+                  "charOf": "force-mentale"
                 }
               },
               {
@@ -15484,7 +15484,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },
@@ -15492,13 +15492,13 @@
       "kind": "area",
       "span": "diameter",
       "meters": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous maudissez les lames, griffes et dents de ceux qui vous entourent pour entraîner des blessures infectées. Pour la durée du sort, chaque Personnage dans la zone d'effet compte comme possédant le Trait de créature Infecté.",
@@ -17428,7 +17428,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous pouvez psalmodier cette prière pour apaiser un fort courant. L'Indice M (voir p. 112-113) d'un Détroit ou d'un Tourbillon tombe à 0 tant que le Miracle fait effet.",
@@ -17474,7 +17474,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "days"
     },
@@ -17567,7 +17567,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous pouvez psalmodier cette prière à l'adresse d'un navire que vous pouvez voir. Le bateau subit –1 M et –1 DR sur sa caractéristique Man.",
@@ -17614,7 +17614,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous appelez les calamités sur les ennemis de Manann. Si l'équipage du navire ciblé est composé d'êtres qui ne méritent pas le respect de Manann (des suivants du Chaos, des adorateurs de Stromfels, des orcs et des gobelins, des skavens ou des membres d'équipage dont le score d'Humeur de Manann est négatif), il subit une malédiction. Ajoutez 2 aux Dégâts de tous les coups reçus par l'équipage tant que le Miracle fait effet.",
@@ -17704,7 +17704,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       }
     },
     "desc": "Vous pouvez psalmodier cette prière à l'adresse d'une créature marine, ce qui lui fait oublier sa rage et sa faim tant que le Miracle fait effet. Pendant toute la durée du Miracle, la créature n'effectue aucune action hostile si elle ne subit ni Dégâts ni États nuisibles.",
@@ -17750,7 +17750,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "Soc"
+        "bonusOf": "sociabilite"
       },
       "unit": "minutes"
     },
@@ -17797,7 +17797,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "F"
+        "bonusOf": "force"
       },
       "unit": "days"
     },
@@ -17933,7 +17933,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "F"
+        "bonusOf": "force"
       },
       "unit": "hours"
     },
@@ -17980,7 +17980,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "F"
+        "bonusOf": "force"
       },
       "unit": "days"
     },
@@ -18072,7 +18072,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "charOf": "F"
+        "charOf": "force"
       },
       "unit": "minutes"
     },
@@ -18120,7 +18120,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -18213,7 +18213,7 @@
     "duration": {
       "kind": "rounds",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       }
     },
     "desc": "Vous tirez sur le *Ghyran* entourant la zone ciblée et vous le faites tourner sur lui-même. L'eau se met à bouillonner et un tourbillon se forme dans la zone ciblée. Les tourbillons sont décrits en page 113. Ce Sort crée une zone de rotation lente, mais des DR peuvent être dépensés pour agrandir le tourbillon en suivant les règles de Surincantation.\n\n### SURINCANTATION DE TOURBILLON\n\n| DR | Taille du tourbillon |\n|---|---|\n| 5 | Tourbillon |\n| 8 | Puissant vortex |\n| 13 | Maelstrom |\n| 21 ou plus | Maelstrom primordial |",
@@ -18306,7 +18306,7 @@
     "duration": {
       "kind": "clock",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "minutes"
     },
@@ -18347,7 +18347,7 @@
     "range": {
       "kind": "distance",
       "value": {
-        "bonusOf": "FM"
+        "bonusOf": "force-mentale"
       },
       "unit": "m"
     },

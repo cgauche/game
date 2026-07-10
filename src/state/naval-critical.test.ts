@@ -15,7 +15,7 @@ import type { Combatant } from '../engine/types';
 const ship = () => vehicleCombatant(findVehicleById('cogue')!)!; // hull E45/B50, rig 'voile'
 const setStub = (() => {}) as never;
 const sailor = (id: string): Combatant => ({
-  id, name: id, kind: 'npc', characteristics: { CC: 31, CT: 31, F: 31, E: 31, I: 31, Ag: 36, Dex: 36, Int: 31, FM: 31, Soc: 36 },
+  id, name: id, kind: 'npc', characteristics: { 'capacite-de-combat': 31, 'capacite-de-tir': 31, force: 31, endurance: 31, initiative: 31, agilite: 36, dexterite: 36, intelligence: 31, 'force-mentale': 31, sociabilite: 36 },
   skills: [], talents: [], traits: [], conditions: [], activeEffects: [], liveTraits: [], weapons: [],
   armour: { corps: 0 }, wounds: { current: 13, max: 13, base: 13 }, advantage: 0,
 }) as unknown as Combatant;

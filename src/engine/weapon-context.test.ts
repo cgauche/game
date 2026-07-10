@@ -20,7 +20,7 @@ const fleau = (): Weapon => ({
   damage: { plusBF: true, flat: 5 }, qualities: [{ id: 'perturbante' }, { id: 'a-enroulement' }],
 });
 
-const CHARS = { CC: 55, CT: 35, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 55, 'capacite-de-tir': 35, force: 40, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const combatant = (p: Partial<Combatant>): Combatant => ({
   id: 'c', name: 'X', kind: 'hero', characteristics: CHARS,
   wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
@@ -49,7 +49,7 @@ describe('43.1c — Lance de cavalerie hors Charge → Arme improvisée (LDB 62 
   });
   it('résolution seedée (DR 0) : lance NON chargée = BF+1 (5) ; chargée = BF+6 + Percutante (13)', () => {
     const atk = combatant({ id: 'a', pos: { x: 0, y: 0 } });
-    const def = combatant({ id: 'd', kind: 'enemy', pos: { x: 1, y: 0 }, characteristics: { ...CHARS, CC: 5 } });
+    const def = combatant({ id: 'd', kind: 'enemy', pos: { x: 1, y: 0 }, characteristics: { ...CHARS, 'capacite-de-combat': 5 } });
     // funnel pré-appliqué (ce que `firedWeapon` produit selon `chargedThisTurn`).
     const impro = resolveMelee(atk, def, effectiveWeapon(lance(), { charged: false }), makeRNG(6), { defense: 'none' });
     const full = resolveMelee({ ...atk, chargedThisTurn: true } as Combatant, def, effectiveWeapon(lance(), { charged: true }), makeRNG(6), { defense: 'none' });

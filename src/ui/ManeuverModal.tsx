@@ -37,9 +37,9 @@ export function ManeuverModal() {
   const r = pm.result;
   const rolled = !!r;
   // Jet d'attaquant : CC (mêlée) ou CT (distance/zone) ; Vomi → Facile (+40) à courte distance (l.376).
-  const stat = a.stat ?? 'CT';
-  const base = combatValue(attacker, stat === 'CC' ? 'melee' : 'ranged');
-  const label = stat === 'CC' ? 'Capacité de Combat' : 'Capacité de Tir';
+  const stat = a.stat ?? 'capacite-de-tir';
+  const base = combatValue(attacker, stat === 'capacite-de-combat' ? 'melee' : 'ranged');
+  const label = stat === 'capacite-de-combat' ? 'Capacité de Combat' : 'Capacité de Tir';
   const difficulty = pm.kind === 'vomi' ? 'facile' : 'intermediaire'; // Vomi : +40 à courte distance (l.376)
   // Regard (Avantage variable, l.238) : sélecteur PRÉ-JET 1..Avantage → +N DR sur la marge.
   const variable = a.advantageMode === 'variable';

@@ -46,7 +46,7 @@ export function conditionMeta(name: string): CondMeta {
 }
 
 const BUFF_CHAR_ICON: Partial<Record<CharKey, IconId>> = {
-  CC: 'char/cc', CT: 'char/ct', F: 'char/f', E: 'char/e', Ag: 'char/ag', Int: 'char/int', FM: 'char/fm', Soc: 'char/soc',
+  'capacite-de-combat': 'char/cc', 'capacite-de-tir': 'char/ct', force: 'char/f', endurance: 'char/e', agilite: 'char/ag', intelligence: 'char/int', 'force-mentale': 'char/fm', sociabilite: 'char/soc',
 };
 function buffIcon(e: ActiveEffect): IconId {
   return (e.char && BUFF_CHAR_ICON[e.char]) || 'action/cast'; // buff sans carac = effet de sort/bénédiction

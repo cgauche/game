@@ -56,11 +56,11 @@ describe('résolution au lancement depuis le Flow', () => {
     const w = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     useGame.setState({ party: [w] as Combatant[] });
     const ours = findCreatureById('ours')!;
-    expect(typeof ours.char.F).toBe('number');
+    expect(typeof ours.char.force).toBe('number');
     applyCast(useGame.getState, useGame.setState, w, w, findSpell('Forme bestiale')!, ok(2), false, false);
     const after = useGame.getState().party.find((h) => h.id === w.id)!;
     // F/E/Ag/Dex atteignent la valeur de la créature (charMod différentiel auto-restitué à l'expiration).
-    expect(effectiveChar(after, 'F')).toBe(ours.char.F);
+    expect(effectiveChar(after, 'force')).toBe(ours.char.force);
     expect((after.activeEffects ?? []).some((e) => e.char != null)).toBe(true);
   });
 

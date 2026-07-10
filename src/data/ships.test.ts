@@ -11,7 +11,7 @@ describe('Navires MDG (ch.12) — profils en donnée', () => {
   it('18 navires (table EXEMPLES DE BATEAUX complète), chacun avec coque (E/B/rig) + facette ship complète', () => {
     expect(ships.length).toBe(18);
     for (const s of ships) {
-      expect(s.hull?.char.E).toBeGreaterThan(0);
+      expect(s.hull?.char.endurance).toBeGreaterThan(0);
       expect(s.hull?.char.B).toBeGreaterThan(0);
       expect(['avirons', 'voile', 'mixte']).toContain(s.hull?.rig);
       expect(s.hull?.propulsion).toBe('maritime');
@@ -28,14 +28,14 @@ describe('Navires MDG (ch.12) — profils en donnée', () => {
   });
 
   it('valeurs verbatim (Caraque E55/B90, Croiseur B275)', () => {
-    expect(ships.find((s) => s.id === 'caraque')!.hull!.char).toEqual({ E: 55, B: 90 });
+    expect(ships.find((s) => s.id === 'caraque')!.hull!.char).toEqual({ endurance: 55, B: 90 });
     expect(ships.find((s) => s.id === 'croiseur')!.hull!.char.B).toBe(275);
   });
 
   it('Bateau-trésor cathayen : ligne verbatim de la table (MDG ch.12 l.103)', () => {
     const bt = ships.find((s) => s.id === 'bateau-tresor-cathayen')!;
     expect(bt.purchase!.price.gold).toBe(10000);
-    expect(bt.hull!.char).toEqual({ E: 50, B: 400 });
+    expect(bt.hull!.char).toEqual({ endurance: 50, B: 400 });
     expect(bt.hull!.rig).toBe('voile');
     expect(bt.ship!).toMatchObject({ crew: 220, manoeuvre: 0, lengthM: 130, capacity: 4000, sail: { m: 9, crew: 200 } });
   });
@@ -45,7 +45,7 @@ describe('Navires MDG (ch.12) — profils en donnée', () => {
     const c = vehicleCombatant(cogue)!;
     expect(c.bodyShape).toBe('vehicule');
     expect(c.wounds.max).toBe(50);
-    expect(c.characteristics.E).toBe(45);
+    expect(c.characteristics.endurance).toBe(45);
     // un coup à d100=15 sur un voilier touche le Gréement (MDG ch.13)
     expect(shipHitLocation(cogue.hull!.rig!, 15)).toBe('greement');
   });

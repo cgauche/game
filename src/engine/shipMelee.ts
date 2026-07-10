@@ -69,7 +69,7 @@ export function shipHull(target: Combatant): { size: ShipSize; tb: number } | nu
   if (target.bodyShape !== 'vehicule') return null;
   const lengthM = findVehicleById(target.creatureId ?? '')?.ship?.lengthM;
   if (lengthM == null) return null;
-  return { size: shipSizeFromLength(lengthM), tb: bonus(effectiveChar(target, 'E')) };
+  return { size: shipSizeFromLength(lengthM), tb: bonus(effectiveChar(target, 'endurance')) };
 }
 
 /** Ajustement d'un COUP PERSONNEL contre une coque (MDG ch.13) — consommé par `applyHit` :

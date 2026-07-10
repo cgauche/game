@@ -12,7 +12,7 @@ function priest(): Combatant {
   const p = makePregens().find((h) => h.name === 'Frère Anselm')!;
   const sk = p.skills.find((s) => s.skillId === 'priere');
   if (sk) sk.advances = Math.max(sk.advances, 5);
-  else p.skills.push({ skillId: 'priere', characteristic: 'Soc', advances: 5 } as never);
+  else p.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 5 } as never);
   return p as Combatant;
 }
 

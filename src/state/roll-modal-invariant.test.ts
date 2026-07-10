@@ -168,9 +168,9 @@ function behavioralFloor(): void {
     seedBattleRng(2);
     const { H, E } = freshCombat();
     E.traits = [{ id: 'souffle', value: 14, arg: 'Feu' }];
-    E.advantage = 2; E.characteristics.CT = 85; E.characteristics.E = 40; E.pos = { x: 5, y: 5 };
+    E.advantage = 2; E.characteristics['capacite-de-tir'] = 85; E.characteristics.endurance = 40; E.pos = { x: 5, y: 5 };
     H.pos = { x: 5, y: 8 };
-    H.characteristics.Ag = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive'); H.conditions = [];
+    H.characteristics.agilite = 1; H.skills = H.skills.filter((s) => s.skillId !== 'esquive'); H.conditions = [];
     set({ battle: { ...get().battle!, acted: true } });
     aiCreatureFreeAttacks(get, set, E);
     expect(get().pendingCascade?.participants.some((s) => s.kind === 'maneuverDefense' && s.actorId === H.id), 'défense de manœuvre doit REMONTER').toBeTruthy();
@@ -179,7 +179,7 @@ function behavioralFloor(): void {
   {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'C', rng: makeRNG(1) });
     hero.aiControlled = silence; // volet (d) : ré-silençage réel
-    hero.characteristics.E = 1; hero.characteristics.FM = 1; hero.corruption = 5; // seuil 0 → dépassé
+    hero.characteristics.endurance = 1; hero.characteristics['force-mentale'] = 1; hero.corruption = 5; // seuil 0 → dépassé
     set({ party: [hero], battle: null, pendingCorruption: null, net: { ...get().net, gmSeat: undefined } });
     gainCorruption(get, set, hero, 1);
     expect(get().pendingCorruption, 'seuil de Corruption doit REMONTER').toBeTruthy();
@@ -223,7 +223,7 @@ describe('Surfaçage « remonte-à-un-humain » — flip local (c)', () => {
   it('le même ennemi NON assigné → Test déclenché résolu INLINE (aucune cascade)', () => {
     seedBattleRng(5);
     const { E } = freshCombat();
-    E.characteristics.E = 90; // Résistance réussie → retrait inline
+    E.characteristics.endurance = 90; // Résistance réussie → retrait inline
     E.talents = [...(E.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
     set({ net: { ...get().net, gmSeat: undefined } });
     addCondition(E, COND.sonne, 2);
@@ -234,7 +234,7 @@ describe('Surfaçage « remonte-à-un-humain » — flip local (c)', () => {
     const { H, E } = freshCombat();
     E.pos = { x: 10, y: 10 }; H.pos = { x: 11, y: 10 }; // adjacents (mêlée)
     E.weapons = [buildWeapon({ name: 'Épée', attackKind: 'arme', damage: { plusBF: true, flat: 4 } })];
-    E.characteristics.CC = 20; // CC basse → un double ≥ 22 rate = Maladresse (LDB 14 l.48)
+    E.characteristics['capacite-de-combat'] = 20; // CC basse → un double ≥ 22 rate = Maladresse (LDB 14 l.48)
     set({ net: { ...get().net, gmSeat: 0 }, pendingCascade: null }); // rôle MJ → E est CONDUIT (controlsCombatant(E)=vrai)
     // Graine DÉTERMINISTE produisant une Maladresse de E (double raté) — via le VRAI résolveur d'attaque.
     let seed = 0;
@@ -255,7 +255,7 @@ describe('Surfaçage « remonte-à-un-humain » — flip local (c)', () => {
   it('un HÉROS `aiControlled` → Test déclenché résolu INLINE (contrôleur ≠ humain)', () => {
     seedBattleRng(5);
     const { H } = freshCombat();
-    H.aiControlled = true; H.characteristics.E = 90;
+    H.aiControlled = true; H.characteristics.endurance = 90;
     H.talents = [...(H.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
     set({ net: { ...get().net, gmSeat: undefined } });
     addCondition(H, COND.sonne, 2);

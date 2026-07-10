@@ -35,7 +35,7 @@ describe('structureCombatant (Combatant à PV calqué sur la coque)', () => {
     expect(c.id).toBe('structure-porte');
     expect(c.name).toBe('Porte');
     expect(c.bodyShape).toBe('structure');
-    expect(c.characteristics.E).toBe(20); // BE 2 × 10 ⇒ bonus(E) = 2
+    expect(c.characteristics.endurance).toBe(20); // BE 2 × 10 ⇒ bonus(E) = 2
     expect(c.wounds).toEqual({ current: 8, max: 8, base: 8 });
     expect(c.psychImmune).toBe(true);
     expect(c.movement).toBe(0);
@@ -44,7 +44,7 @@ describe('structureCombatant (Combatant à PV calqué sur la coque)', () => {
 
   it('Mur en pierre : BE 12 → E 120, Bl 40, Atout Impénétrable', () => {
     const c = struct('mur-en-pierre');
-    expect(c.characteristics.E).toBe(120);
+    expect(c.characteristics.endurance).toBe(120);
     expect(c.wounds.max).toBe(40);
     expect(c.traits).toEqual([{ id: 'impenetrable-structure' }]);
   });

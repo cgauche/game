@@ -16,7 +16,7 @@ import type { GameState } from './store';
  * est piloté par l'IA (`aiDriven`) en jeu manuel, là où un héros du groupe reste manuel.
  */
 
-const CHARS = (CT = 70) => ({ CC: 35, CT, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 });
+const CHARS = (CT = 70) => ({ 'capacite-de-combat': 35, 'capacite-de-tir': CT, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 });
 
 const mkActor = (id: string, kind: 'hero' | 'npc' | 'enemy', pos: { x: number; y: number }, weapons: Weapon[] = []): Combatant =>
   ({ id, name: id, kind, characteristics: CHARS(), wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],

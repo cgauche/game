@@ -128,6 +128,6 @@ describe('Prêtre de Stromfels (MDG 11 l.85-137)', () => {
     const levels = levelsForCareer('pretre-de-stromfels');
     expect(levels.map((l) => l.label)).toEqual(['Initié', 'Prêtre de Stromfels', 'Prêtre pirate', 'Prêtre terreur des mers']);
     expect(levels.map((l) => l.status)).toEqual(['Argent 2', 'Argent 3', 'Argent 4', 'Argent 5']);
-    expect(levels.map((l) => l.characteristics)).toEqual([['CC', 'F', 'I'], ['Soc'], ['Ag'], ['CT']]);
+    expect(levels.map((l) => l.characteristics)).toEqual([['capacite-de-combat', 'force', 'initiative'], ['sociabilite'], ['agilite'], ['capacite-de-tir']]);
   });
 });

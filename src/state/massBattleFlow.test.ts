@@ -520,7 +520,7 @@ describe('Activité SOUTENABLE — Planification (l.81 : « peut aider au Test �
     return pregenParty(PREGEN.soldat, PREGEN.chasseur).map((h) =>
       h.skills.some((s) => s.skillId === 'savoir' && s.spec === 'Guerre')
         ? h
-        : { ...h, skills: [...h.skills, { skillId: 'savoir', spec: 'Guerre', characteristic: 'Int' as const, advances: 5 }] });
+        : { ...h, skills: [...h.skills, { skillId: 'savoir', spec: 'Guerre', characteristic: 'intelligence' as const, advances: 5 }] });
   }
 
   it('deux PJ postés → SOUTIEN (heroIds=2, support.count ≥ 1)', () => {

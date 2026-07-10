@@ -52,8 +52,8 @@ describe('zone de soin (op:heal) — Sang de la Terre', () => {
   it('rend (BFM) Blessures à qui stationne dans la zone, sans dépasser le max', () => {
     const caster = makePregens().find((h) => h.name === 'Wilhelmina Faust')!; // BFM connu via ses caracs
     const victim = { ...caster, id: 'v', name: 'V', wounds: { current: 5, max: 30 } } as Combatant;
-    const bfm = Math.floor(caster.characteristics.FM / 10);
-    const log = applyOps(victim, [{ op: 'heal', amount: { bonusOf: 'FM' } }], { caster, label: 'Sang de la Terre' });
+    const bfm = Math.floor(caster.characteristics['force-mentale'] / 10);
+    const log = applyOps(victim, [{ op: 'heal', amount: { bonusOf: 'force-mentale' } }], { caster, label: 'Sang de la Terre' });
     expect(victim.wounds.current).toBe(5 + bfm);
     expect(log.join(' ')).toContain('regagne');
   });

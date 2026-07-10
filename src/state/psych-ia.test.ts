@@ -47,7 +47,7 @@ describe('Psychologie IA (Peur/Terreur au début du tour)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.size = 'enorme'; // gap 2 → Terreur 2
-    E.characteristics.FM = 10; // Test de Calme raté → Brisé
+    E.characteristics['force-mentale'] = 10; // Test de Calme raté → Brisé
     resolvePsychAI(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
     expect(e.conditions.some((c) => c.name === 'brise')).toBe(true);

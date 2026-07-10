@@ -14,7 +14,7 @@ import type { BattleState } from './store';
 const at = (kind: 'hero' | 'enemy', id: string, x: number, y: number, over: Partial<Combatant> = {}): Combatant =>
   ({
     id, name: id, kind,
-    characteristics: { CC: 40, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 20, max: 20 }, advantage: 0, conditions: [],
     weapons: [{ name: 'Patte', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -72,8 +72,8 @@ describe('Piétinement en combat (store)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.size = 'grande';
-    H.characteristics.CC = 85;
-    H.characteristics.F = 45;
+    H.characteristics['capacite-de-combat'] = 85;
+    H.characteristics.force = 45;
     H.advantage = 2;
     const before = E.wounds.current;
     // Modale : battleTrample ouvre SANS tirer ; trampleRoll tire ; trampleConfirm applique (gratuit).
@@ -94,8 +94,8 @@ describe('Piétinement en combat (store)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.size = 'grande';
-    H.characteristics.CC = 85;
-    H.characteristics.F = 45;
+    H.characteristics['capacite-de-combat'] = 85;
+    H.characteristics.force = 45;
     H.advantage = 2;
     H.resilience = 2;
     E.wounds = { current: 200, max: 200, base: 200 } as Combatant['wounds']; // survit au Critique (pas de victoire parasite)
@@ -125,7 +125,7 @@ describe('Piétinement en combat (store)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.size = 'grande';
-    H.characteristics.CC = 1; // rate quasiment à coup sûr
+    H.characteristics['capacite-de-combat'] = 1; // rate quasiment à coup sûr
     H.advantage = 2;
     const before = E.wounds.current;
     useGame.getState().battleTrample(E.id);
@@ -157,8 +157,8 @@ describe('Piétinement en combat (store)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     E.size = 'enorme';
-    E.characteristics.CC = 85;
-    E.characteristics.F = 45;
+    E.characteristics['capacite-de-combat'] = 85;
+    E.characteristics.force = 45;
     E.advantage = 2;
     H.size = 'moyenne';
     H.wounds = { current: 50, max: 50, base: 50 } as Combatant['wounds'];

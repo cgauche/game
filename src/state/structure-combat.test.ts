@@ -185,7 +185,7 @@ describe('Structures de siège — CHEMIN DE CLIC joueur (overlay d’arête →
     // Héros au CONTACT de l'ancrage (2,2), arme de mêlée, Combat/Force élevés → traverse les 8 Bl (BE 2).
     const sword = itemFromTrappingById('arme-simple')!; sword.equipped = true;
     H.items = [sword]; H.loadouts = undefined; H.activeLoadoutId = undefined; recomputeLoadout(H);
-    H.characteristics.CC = 80; H.characteristics.F = 60;
+    H.characteristics['capacite-de-combat'] = 80; H.characteristics.force = 60;
     H.pos = { x: 1, y: 2 };
     expect(wallBetween(useGame.getState().scene!, 2, 2, 3, 2)).toBe(true); // porte intacte : bloque
     const giveTurn = () => { const b = useGame.getState().battle!; useGame.setState({ battle: { ...b, turn: b.order.indexOf(H.id), action: null, movementUsed: 99, acted: false } }); };

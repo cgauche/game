@@ -195,7 +195,7 @@ registerHitModifier({
       if (priest) {
         const loc = res.location ?? 'corps';
         const raw = res.damage ?? res.woundsLost;
-        const taken = Math.max(0, raw - 2 * bonus(effectiveChar(priest, 'E')) - Math.max(0, priest.armour[loc] ?? 0));
+        const taken = Math.max(0, raw - 2 * bonus(effectiveChar(priest, 'endurance')) - Math.max(0, priest.armour[loc] ?? 0));
         if (taken > 0) {
           loseWounds(priest, taken);
           if (priest.wounds.current <= 0) applyZeroWounds(priest);

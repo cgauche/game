@@ -16,7 +16,7 @@ import { resetRule, setRule } from '../engine/policy';
 import type { Combatant } from '../engine/types';
 
 const hero = (over: Partial<Combatant>): Combatant =>
-  ({ id: 'h', kind: 'hero', name: 'H', pos: { x: 5, y: 5 }, conditions: [], characteristics: { FM: 50 }, skills: [], wounds: { current: 10, max: 10 },
+  ({ id: 'h', kind: 'hero', name: 'H', pos: { x: 5, y: 5 }, conditions: [], characteristics: { 'force-mentale': 50 }, skills: [], wounds: { current: 10, max: 10 },
      psychState: [{ type: 'peur', sourceId: 'e', indice: 2, calmeDR: 0 }], ...over } as unknown as Combatant);
 const mover = (over: Partial<Combatant>): Combatant =>
   ({ id: 'e', kind: 'enemy', name: 'Spectre', pos: { x: 6, y: 5 }, conditions: [], wounds: { current: 10, max: 10 }, ...over } as unknown as Combatant);
@@ -66,7 +66,7 @@ describe('approachFearTrigger — source de Peur qui s’approche (LDB 21 l.29)'
 
   it('héros MANUEL : Calme RÉUSSI → pas de Brisé', () => {
     seedBattleRng(1);
-    const h = hero({ characteristics: { FM: 100 } as never });
+    const h = hero({ characteristics: { 'force-mentale': 100 } as never });
     run([h], mover({ pos: { x: 6, y: 5 } }), { x: 9, y: 5 });
     const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
     useGame.getState().cascadeRoll(step.id);

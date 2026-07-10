@@ -99,8 +99,8 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
 
   it('au-delà du seuil → MODALE de Test de Résistance (kind seuil) ; échec acquitté → mutation + révélation 🧬', () => {
     const { a, party } = party2();
-    a.characteristics.E = 1; // BE 0
-    a.characteristics.FM = 30; // BFM 3
+    a.characteristics.endurance = 1; // BE 0
+    a.characteristics['force-mentale'] = 30; // BFM 3
     a.corruption = 4; // seuil = BFM(3) + BE(0) = 3 → dépassé au prochain gain
     a.resilience = 0; // sans Résilience, pas de « Je te renie ! » (LDB 17 l.71) → mutation directe
     useGame.setState({ party });
@@ -125,8 +125,8 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
 
   it('align de la SOURCE → la mutation est tirée sur la table EDOC alignée (l\'éditeur de niveau le pose)', () => {
     const { a, party } = party2();
-    a.characteristics.E = 1; // BE 0
-    a.characteristics.FM = 30; // BFM 3
+    a.characteristics.endurance = 1; // BE 0
+    a.characteristics['force-mentale'] = 30; // BFM 3
     a.corruption = 4; // seuil dépassé au prochain gain
     a.resilience = 0; // mutation directe
     useGame.setState({ party });
@@ -149,8 +149,8 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
 
   it('seuil RÉUSSI (acquitté) : Corruption contenue, aucune mutation', () => {
     const { a, party } = party2();
-    a.characteristics.E = 1; // BE 0 → seuil = BFM seul
-    a.characteristics.FM = 30;
+    a.characteristics.endurance = 1; // BE 0 → seuil = BFM seul
+    a.characteristics['force-mentale'] = 30;
     a.corruption = 4;
     useGame.setState({ party });
     gainCorruption(useGame.getState, useGame.setState, a, 1);
@@ -163,8 +163,8 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
 
   it('limites dépassées → damné + hors-jeu (dead)', () => {
     const { a, party } = party2();
-    a.characteristics.E = 1; // BE 0 → 1 mutation physique suffit
-    a.characteristics.FM = 1; // BFM 0 → 1 mutation mentale suffit ; perte de Corruption = 0
+    a.characteristics.endurance = 1; // BE 0 → 1 mutation physique suffit
+    a.characteristics['force-mentale'] = 1; // BFM 0 → 1 mutation mentale suffit ; perte de Corruption = 0
     a.corruption = 5; // seuil = 0 → dépassé
     a.resilience = 1; // AVEC Résilience : la mutation est suspendue (« Je te renie ! ») → on choisit de SUBIR
     useGame.setState({ party });
@@ -182,7 +182,7 @@ describe('gainCorruption : seuil → mutation → limites (l.80-95)', () => {
 
   it('PNJ (pas de modale) : seuil auto-résolu — la mutation tombe sans pendingCorruption', () => {
     const { a, party } = party2();
-    const npc = { ...a, id: 'npc-1', kind: 'enemy', characteristics: { ...a.characteristics, E: 1, FM: 1 }, corruption: 5, resilience: 0, mutations: [] } as unknown as Combatant;
+    const npc = { ...a, id: 'npc-1', kind: 'enemy', characteristics: { ...a.characteristics, endurance: 1, 'force-mentale': 1 }, corruption: 5, resilience: 0, mutations: [] } as unknown as Combatant;
     useGame.setState({ party, battle: { combatants: [npc], log: [] } as never });
     gainCorruption(useGame.getState, useGame.setState, npc, 1);
     expect(useGame.getState().pendingCorruption).toBeNull();
@@ -234,8 +234,8 @@ describe('Effet ops { op: corruption } (gain direct via ops generiques)', () => 
 
   it('align voyage jusqu\'a gainCorruption : seuil declenche la table EDOC nurgle', () => {
     const { a, party } = party2();
-    a.characteristics.E = 1; // BE 0
-    a.characteristics.FM = 30; // BFM 3
+    a.characteristics.endurance = 1; // BE 0
+    a.characteristics['force-mentale'] = 30; // BFM 3
     a.corruption = 4; // seuil depasse au prochain gain
     a.resilience = 0; // mutation directe
     useGame.setState({ party });
@@ -260,7 +260,7 @@ describe('Effet ops { op: corruption } (gain direct via ops generiques)', () => 
 // encore `kind === 'hero'` — reconditionné sur `followsCharacterRules` (engine/relations.ts), le MÊME
 // prédicat que le reste de la boucle de fin de combat/Corruption (#143).
 describe('corruptionTarget — #152 : reconditionné sur followsCharacterRules (pas kind===\'hero\')', () => {
-  const e30 = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  const e30 = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
   const npcPersonnage = (p: Partial<Combatant>): Combatant =>
     ({
       id: 'npc', name: 'PNJ', kind: 'enemy', followsCharacterRules: true,

@@ -37,7 +37,7 @@
       "max": 30,
       "name": "Murmures mortels",
       "test": {
-        "characteristic": "FM",
+        "characteristic": "force-mentale",
         "difficulty": "accessible",
         "onFail": [
           {

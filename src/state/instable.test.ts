@@ -9,7 +9,7 @@ import type { Combatant } from '../engine/types';
  * est calculée par le dispatcher sur la `battle` ; le flux est `if gap>0 → wounds {gap} ; if PB<=0 → banish`.
  */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
-  id: 'u', name: 'Zombie', kind: 'enemy', characteristics: { E: 30 }, skills: [], talents: [], traits: [],
+  id: 'u', name: 'Zombie', kind: 'enemy', characteristics: { endurance: 30 }, skills: [], talents: [], traits: [],
   conditions: [], activeEffects: [], liveTraits: [], weapons: [], armour: { corps: 4 }, // PA 4 : doit être IGNORÉ (perte directe)
   wounds: { current: 8, max: 8, base: 8 }, advantage: 0, engagedWith: [],
   ...over,

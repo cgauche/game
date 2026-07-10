@@ -11,7 +11,7 @@ import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
 
 const MELEE: Weapon = { name: 'Griffes', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-const C = { CC: 40, CT: 30, F: 40, E: 40, I: 40, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const C = { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const scene = emptyScene(16, 16);
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {

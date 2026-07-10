@@ -16,7 +16,7 @@ import type { Combatant } from '../engine/types';
  * aucun code par-nom de discipline.
  */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
-  id: 'x', name: 'X', kind: 'enemy', characteristics: { CC: 30, E: 40 }, skills: [], talents: [], traits: [],
+  id: 'x', name: 'X', kind: 'enemy', characteristics: { 'capacite-de-combat': 30, endurance: 40 }, skills: [], talents: [], traits: [],
   conditions: [], activeEffects: [], liveTraits: [], weapons: [], armour: { corps: 0 },
   wounds: { current: 10, max: 10, base: 10 }, advantage: 0,
   ...over,
@@ -72,12 +72,12 @@ describe('Dressé (Magie) — ignore Nerveux en présence de MAGIE seulement (LD
 
 describe('Dressé (Guerre) — passive +10 CC (charMod, LDB 85 l.89) quand la discipline est EN DIRECT', () => {
   it('liveTrait dresse-guerre → +10 CC via le collecteur passif', () => {
-    const c = mk({ characteristics: { CC: 30 } as never, liveTraits: [{ id: 'dresse-guerre' }] as never });
-    expect(effectiveChar(c, 'CC')).toBe(40);
+    const c = mk({ characteristics: { 'capacite-de-combat': 30 } as never, liveTraits: [{ id: 'dresse-guerre' }] as never });
+    expect(effectiveChar(c, 'capacite-de-combat')).toBe(40);
   });
   it('sans la discipline → CC de base', () => {
-    const c = mk({ characteristics: { CC: 30 } as never });
-    expect(effectiveChar(c, 'CC')).toBe(30);
+    const c = mk({ characteristics: { 'capacite-de-combat': 30 } as never });
+    expect(effectiveChar(c, 'capacite-de-combat')).toBe(30);
   });
 });
 

@@ -11,7 +11,7 @@ import type { Combatant, ItemInstance, Weapon } from './types';
 function hero(over: Partial<Combatant> = {}): Combatant {
   return {
     id: 'h', name: 'H', kind: 'hero',
-    characteristics: { CC: 40, CT: 40, F: 40, E: 40, I: 40, Ag: 40, Dex: 40, Int: 40, FM: 40, Soc: 40 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 40, 'force-mentale': 40, sociabilite: 40 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4, items: [],
@@ -25,7 +25,7 @@ const wpn = (groupLabel: string, type: Weapon['type'] = 'melee'): Weapon =>
 describe('combatValue — Spécialisation de Corps à corps (LDB 09 l.44)', () => {
   // `spec` = id de Groupe d'arme STABLE (Phase 3 : plus de libellé FR — cf. `SkillData.specsSource`).
   const sk = (spec: string, advances: number) =>
-    ({ skillId: 'corps-a-corps', spec, characteristic: 'CC', advances } as Combatant['skills'][number]);
+    ({ skillId: 'corps-a-corps', spec, characteristic: 'capacite-de-combat', advances } as Combatant['skills'][number]);
 
   it('les Augmentations comptent quand la Spé correspond au Groupe de l’arme', () => {
     const c = hero({ skills: [sk('base', 20)] });
@@ -66,7 +66,7 @@ describe('combatValue — Spécialisation de Corps à corps (LDB 09 l.44)', () =
 
 describe('combatValue — Spécialisation de Projectiles (LDB 62 l.225/234)', () => {
   const sk = (spec: string, advances: number) =>
-    ({ skillId: 'projectiles', spec, characteristic: 'CT', advances } as Combatant['skills'][number]);
+    ({ skillId: 'projectiles', spec, characteristic: 'capacite-de-tir', advances } as Combatant['skills'][number]);
 
   it('les Augmentations comptent pour le bon Groupe à distance', () => {
     const c = hero({ skills: [sk('arc', 18)] });
@@ -90,13 +90,13 @@ describe('combatValue — Spécialisation de Projectiles (LDB 62 l.225/234)', ()
 
 describe('combatValue — résolution ALTERNATIVE déclarée par l\'arme (bélier → Force, ADE II ch.08 l.233)', () => {
   it('weapon.resolveChar court-circuite CC (mêlée) et ignore toute Spé de Corps à corps', () => {
-    const c = hero({ skills: [{ skillId: 'corps-a-corps', spec: 'base', characteristic: 'CC', advances: 30 }], characteristics: { ...hero().characteristics, CC: 40, F: 55 } });
-    const belier: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [], resolveChar: 'F' };
+    const c = hero({ skills: [{ skillId: 'corps-a-corps', spec: 'base', characteristic: 'capacite-de-combat', advances: 30 }], characteristics: { ...hero().characteristics, 'capacite-de-combat': 40, force: 55 } });
+    const belier: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [], resolveChar: 'force' };
     expect(combatValue(c, 'melee', belier)).toBe(55); // Force brute (55), PAS CC+Spé (40+30=70)
   });
 
   it('sans resolveChar, une arme de mêlée résout normalement sur CC (non-régression)', () => {
-    const c = hero({ characteristics: { ...hero().characteristics, CC: 40, F: 55 } });
+    const c = hero({ characteristics: { ...hero().characteristics, 'capacite-de-combat': 40, force: 55 } });
     const epee: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
     expect(combatValue(c, 'melee', epee)).toBe(40);
   });
@@ -104,7 +104,7 @@ describe('combatValue — résolution ALTERNATIVE déclarée par l\'arme (bélie
 
 describe('Arme inhabituelle — maîtrise requise (ACE Annexe I p.219 « Entraînement avec une arme inhabituelle »)', () => {
   const sk = (spec: string, advances: number) =>
-    ({ skillId: 'corps-a-corps', spec, characteristic: 'CC', advances } as Combatant['skills'][number]);
+    ({ skillId: 'corps-a-corps', spec, characteristic: 'capacite-de-combat', advances } as Combatant['skills'][number]);
   const item: ItemInstance = {
     uid: 'u1', trappingId: 'couteau-de-harald', name: 'Couteau de Harald', kind: 'melee',
     qualities: [], enc: 0, equipped: true, requiresMastery: true,
@@ -137,7 +137,7 @@ describe('Arme inhabituelle — maîtrise requise (ACE Annexe I p.219 « Entraî
 // `recoverDisabledLimb` scope le testMod{char:'CC'} à la main du membre (weaponHand) — PAS l'autre main.
 describe('combatValue/defenseValue — testMod{char} scopé par main (#193, weaponHand)', () => {
   const withPenalty = (hand: 'main' | 'off') => hero({
-    activeEffects: [{ label: 'Épaule luxée (récupération)', bonus: 0, duration: { scale: 'permanent' }, testMod: -10, testModChar: 'CC', testModHand: hand }],
+    activeEffects: [{ label: 'Épaule luxée (récupération)', bonus: 0, duration: { scale: 'permanent' }, testMod: -10, testModChar: 'capacite-de-combat', testModHand: hand }],
   });
 
   it("pénalise l'attaque/parade avec l'arme tenue dans LA main visée (main)", () => {
@@ -162,8 +162,8 @@ describe('combatValue/defenseValue — testMod{char} scopé par main (#193, weap
 describe('defenseValue — Esquive scopée par movementOnly (#193)', () => {
   it('Esquive (Test de déplacement) subit le malus', () => {
     const c = hero({
-      activeEffects: [{ label: 'Genou démis (récupération)', bonus: 0, duration: { scale: 'permanent' }, testMod: -10, testModChar: 'Ag', testModMovementOnly: true }],
-      skills: [{ skillId: 'esquive', characteristic: 'Ag', advances: 0 }],
+      activeEffects: [{ label: 'Genou démis (récupération)', bonus: 0, duration: { scale: 'permanent' }, testMod: -10, testModChar: 'agilite', testModMovementOnly: true }],
+      skills: [{ skillId: 'esquive', characteristic: 'agilite', advances: 0 }],
     });
     expect(defenseValue(c, 'esquive')).toBe(30); // Ag 40 − 10
   });

@@ -61,7 +61,7 @@ const scene = buildScene({
         {
           statblock: {
             name: 'Sorcier mutant',
-            char: { M: 4, CC: 30, CT: 30, F: 30, E: 30, I: 40, Ag: 30, Dex: 30, Int: 40, FM: 45, Soc: 30 },
+            char: { M: 4, 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 40, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 45, sociabilite: 30 },
             traits: [{ id: 'arme', value: 4, arg: 'dague' }, { id: 'lanceur-de-sorts', arg: 'sorcellerie' }, { id: 'corruption', arg: 'Mineure' }],
             spells: ['flechette'], // id de sort (CustomStatblock.spells = string[] d'ids)
           },
@@ -89,7 +89,7 @@ export const scenario: TestScenario = {
   makeParty: () => {
     const heroes = makeShowcaseParty().map((c, i) => mutate(c, LOTS[i] ?? [])); // 4 héros mutés
     const ans = pregenParty(PREGEN.pretre)[0];
-    const shallya = makePriest(ans, 'h-shallya', 'Sœur Greta, Prêtresse de Shallya', 'shallya', { Soc: 66, FM: 60, F: 40, E: 44 });
+    const shallya = makePriest(ans, 'h-shallya', 'Sœur Greta, Prêtresse de Shallya', 'shallya', { sociabilite: 66, 'force-mentale': 60, force: 40, endurance: 44 });
     return [...heroes, shallya];
   },
   scene,

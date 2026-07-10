@@ -16,7 +16,7 @@ import type { Combatant } from '../engine/types';
 const dummy = (p: Partial<Combatant> = {}): Combatant =>
   ({
     id: 'x', name: 'X', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 35, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 35, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...p,
@@ -76,7 +76,7 @@ describe('op grantTrait (ops) + expiration de fin de Round', () => {
 
   it('Envol : Vol (Agilité) — l’Indice est l’Agilité du lanceur ; expire en fin de Round', () => {
     const c = dummy({}); // Ag 35
-    applyOps(c, [{ op: 'grantTrait', traitId: 'vol', indice: { charOf: 'Ag' } }], {
+    applyOps(c, [{ op: 'grantTrait', traitId: 'vol', indice: { charOf: 'agilite' } }], {
       label: 'Envol', defaultDurationRounds: 1,
     });
     expect(hasTrait(c.traits, 'vol')).toBe(true);

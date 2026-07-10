@@ -56,7 +56,7 @@ describe('spawnEnemy — arme d’AUTHORING (weapon:) vs arme de TRAIT : pas de 
     // Régression #145 : l'arme de RENDU (weaponFromLabel, sans reload) était PRÉPENDÉE devant celle du
     // Trait (avec Recharge), et l'IA prenait la 1re → Recharge ennemie (#126) inerte. `weapon:` ne doit
     // plus s'ajouter quand un Trait produit déjà une arme du même type.
-    const sb = { name: 'Tireur', char: { M: 4, CC: 36, CT: 43, F: 39, E: 32, B: 12 }, traits: [
+    const sb = { name: 'Tireur', char: { M: 4, 'capacite-de-combat': 36, 'capacite-de-tir': 43, force: 39, endurance: 32, B: 12 }, traits: [
       { id: 'a-distance', value: 9, arg: 'arbalete', range: 60 }, { id: 'arme', value: 7, arg: 'arme-simple' },
     ] } as any;
     const c = spawnEnemy(undefined, sb, 'e-tireur', { x: 0, y: 0 }, { weapon: 'Arbalète' });
@@ -71,7 +71,7 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
 
   it('« – » du livre = caractéristique INEXISTANTE → 0, pas 30 (Loup : CT –)', () => {
     const c = creatureToCombatant(findCreature('Loup')!, 'e1', at);
-    expect(c.characteristics.CT).toBe(0);
+    expect(c.characteristics['capacite-de-tir']).toBe(0);
   });
 
   it('Pieuvre des tourbières : arme Tentacules +9 dérivée du trait compté', () => {
@@ -93,11 +93,11 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
     const base = creatureToCombatant(wolf, 'e1', at);
     const big = creatureToCombatant(wolf, 'e1', at, { optionals: [{ id: 'taille', arg: 'Grande' }] });
     expect(big.size).toBe('grande');
-    expect(big.characteristics.F).toBe(base.characteristics.F + 10);
-    expect(big.characteristics.E).toBe(base.characteristics.E + 10);
-    expect(big.characteristics.Ag).toBe(base.characteristics.Ag - 5);
+    expect(big.characteristics.force).toBe(base.characteristics.force + 10);
+    expect(big.characteristics.endurance).toBe(base.characteristics.endurance + 10);
+    expect(big.characteristics.agilite).toBe(base.characteristics.agilite - 5);
     // Blessures recalculées par la formule de Taille (le B imprimé valait pour la taille de base)
-    const bf = Math.floor(big.characteristics.F / 10), be = Math.floor(big.characteristics.E / 10), bfm = Math.floor(big.characteristics.FM / 10);
+    const bf = Math.floor(big.characteristics.force / 10), be = Math.floor(big.characteristics.endurance / 10), bfm = Math.floor(big.characteristics['force-mentale'] / 10);
     expect(big.wounds.max).toBe((bf + 2 * be + bfm) * 2); // Grande = ×2 (LDB 85)
   });
 
@@ -123,13 +123,13 @@ describe('creatureToCombatant — fidélité du profil du bestiaire (LDB 76/78)'
     });
     it('« Si une Caractéristique vaut 5, lancez juste 1d10 » (Pieuvre : Int 5) ; « – » reste 0', () => {
       const p = creatureToCombatant(findCreature('Pieuvre des tourbières')!, 'enemy-0', at, { randomChars: true });
-      expect(p.characteristics.Int).toBeGreaterThanOrEqual(1);
-      expect(p.characteristics.Int).toBeLessThanOrEqual(10);
-      expect(p.characteristics.CT).toBe(0); // inexistante : pas tirée
+      expect(p.characteristics.intelligence).toBeGreaterThanOrEqual(1);
+      expect(p.characteristics.intelligence).toBeLessThanOrEqual(10);
+      expect(p.characteristics['capacite-de-tir']).toBe(0); // inexistante : pas tirée
     });
     it('Blessures recalculées par la formule (le B imprimé valait pour le profil rond)', () => {
       const c = creatureToCombatant(mutant, 'enemy-0', at, { randomChars: true });
-      const bf = Math.floor(c.characteristics.F / 10), be = Math.floor(c.characteristics.E / 10), bfm = Math.floor(c.characteristics.FM / 10);
+      const bf = Math.floor(c.characteristics.force / 10), be = Math.floor(c.characteristics.endurance / 10), bfm = Math.floor(c.characteristics['force-mentale'] / 10);
       expect(c.wounds.max).toBe(bf + 2 * be + bfm); // Mutant : Taille Moyenne
     });
   });
@@ -164,9 +164,9 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
     const c = creatureToCombatant(eusapia, 'e1', at);
     const langue = c.skills.find((s) => s.skillId === 'langue' && s.spec === 'magick')!;
     expect(langue.advances).toBe(63 - 48); // « Langue (Magick) 63 », Int 48
-    expect(c.characteristics.Int + langue.advances).toBe(63);
+    expect(c.characteristics.intelligence + langue.advances).toBe(63);
     const foc = c.skills.find((s) => s.skillId === 'focalisation' && s.spec === 'bete')!; // id domaine, AFFICHE « Ghur »
-    expect(c.characteristics.FM + foc.advances).toBe(68); // « Focalisation (Ghur) 68 », FM 53
+    expect(c.characteristics['force-mentale'] + foc.advances).toBe(68); // « Focalisation (Ghur) 68 », FM 53
   });
 
   it('talents portés (Magie des Arcanes (Bête), Magie mineure…) et 12 sorts de la donnée', () => {
@@ -192,7 +192,7 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
 
   it('statbloc personnalisé : skills/talents portés par CustomStatblock (mêmes règles)', () => {
     const c = statblockToCombatant(
-      { name: 'Sorcier custom', char: { Int: 48, FM: 53 }, skills: [{ id: 'langue', spec: 'magick', value: 63 }, { id: 'esquive', value: 48 }], talents: [{ id: 'menacant' }] },
+      { name: 'Sorcier custom', char: { intelligence: 48, 'force-mentale': 53 }, skills: [{ id: 'langue', spec: 'magick', value: 63 }, { id: 'esquive', value: 48 }], talents: [{ id: 'menacant' }] },
       'e1', at,
     );
     expect(c.skills.find((s) => s.skillId === 'langue')!.advances).toBe(15);
@@ -200,9 +200,9 @@ describe('PNJ de campagne — compétences/talents/sorts de la donnée (Eusapia 
   });
 
   it('skillsFromBook : ref structurée (id + value) → SkillInstance ; id inconnu du catalogue → ignoré', () => {
-    const chars = { CC: 45 } as any;
+    const chars = { 'capacite-de-combat': 45 } as any;
     const [cc] = skillsFromBook([{ id: 'corps-a-corps', spec: 'bagarre', value: 50 }], chars);
-    expect(cc).toMatchObject({ skillId: 'corps-a-corps', characteristic: 'CC', advances: 5 });
+    expect(cc).toMatchObject({ skillId: 'corps-a-corps', characteristic: 'capacite-de-combat', advances: 5 });
     expect(skillsFromBook([{ id: 'competence-inexistante', value: 50 }], chars)).toEqual([]); // rien d'inventé
   });
 });

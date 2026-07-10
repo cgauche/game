@@ -151,7 +151,7 @@ function downgradeTornMuscle(t: Trauma, leftDays: number): string | null {
 function fractureSequela(t: Trauma): Trauma | null {
   const pen = t.severity === 'majeur' ? -10 : -5;
   if (t.location === 'tete') return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'skillMod', skill: 'langue', mod: pen }], desc: 'Sur un échec, vous subirez une pénalité permanente à tous vos Tests de Langue s’il s’agit d’une blessure à la tête mal guérie.' };
-  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'charMod', char: 'Ag', mod: pen }], desc: 'Sur un échec, vous subirez une pénalité permanente à tous vos Tests d’Agilité pour une blessure au Bras, à la Jambe ou au Torse.' };
+  return { label: `Fracture mal ressoudée (${t.location})`, location: t.location, ops: [{ op: 'charMod', char: 'agilite', mod: pen }], desc: 'Sur un échec, vous subirez une pénalité permanente à tous vos Tests d’Agilité pour une blessure au Bras, à la Jambe ou au Torse.' };
 }
 
 /** Difficulté du Test de fin de fracture (LDB 18 l.300/309) selon la sévérité. */
@@ -341,7 +341,7 @@ export function consolidateAmputations(c: Combatant): string[] {
   if (teeth.length) {
     const total = teeth.reduce((s, t) => s + (t.count ?? 1), 0);
     const soc = -Math.floor(total / 2);
-    const ops: GameOp[] = soc < 0 ? [{ op: 'charMod', char: 'Soc', mod: soc }] : [];
+    const ops: GameOp[] = soc < 0 ? [{ op: 'charMod', char: 'sociabilite', mod: soc }] : [];
     kept.push({ label: teethFiche.label, traumaId: teethFiche.id, location: 'tete', count: total, ...(ops.length ? { ops } : {}), prosthesis: teethFiche.prosthesis!.map((p) => ({ ...p })), desc: teethFiche.desc });
   }
   c.traumas = kept;
@@ -548,7 +548,7 @@ export function recoverDisabledLimb(c: Combatant, idx = 0): { penalty: import('.
   if (!t) return { penalty: [], log: [`${c.name} : aucun membre à rééduquer.`] };
   c.traumas = (c.traumas ?? []).filter((x) => x !== t);
   const hand = armLocationHand(t.location);
-  const penalty = (t.recoveryPenalty ?? []).map((o) => (hand && o.op === 'testMod' && o.char === 'CC' ? { ...o, weaponHand: hand } : { ...o }));
+  const penalty = (t.recoveryPenalty ?? []).map((o) => (hand && o.op === 'testMod' && o.char === 'capacite-de-combat' ? { ...o, weaponHand: hand } : { ...o }));
   return { penalty, log: [`${c.name} : usage du membre récupéré (${t.label}, ${t.location}).`] };
 }
 
@@ -798,7 +798,7 @@ export function passiveMods(c: Combatant): PassiveMod[] {
   // Qualités d'objet équipées (LDB 60), producteurs sans cycle (wearPenalty est une feuille) : objet Laid →
   // −Soc aux Tests sociaux (testMod char-qualifié) ; port d'armure → −N% par compétence (skillMod, intrinsèque).
   const soc = wornSocialMod(c);
-  if (soc) out.push({ op: { op: 'testMod', amount: soc, char: 'Soc' }, kind: 'intrinsèque' });
+  if (soc) out.push({ op: { op: 'testMod', amount: soc, char: 'sociabilite' }, kind: 'intrinsèque' });
   out.push(...qualityWearMods(c));
   // Objets PORTÉS (equipped) ou TENUS (arme du loadout actif `c.weapons`) : leur `passive: GameOp[]`
   // (skillMod des Bésicles…) émis kind 'intrinsèque' — comme les mutations. Les objets RANGÉS (inside) ne

@@ -99,7 +99,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
   it('héros gagne (Force écrasante) : l’adversaire est désarmé ; BRISÉE ssi marge nette ≥ 6 (Stupéfiant)', () => {
     seedBattleRng(7);
     const { H, A } = setup();
-    H.characteristics.F = 90;  // Force écrasante → le défenseur l’emporte
+    H.characteristics.force = 90;  // Force écrasante → le défenseur l’emporte
     const weapon = bladedWeapon('atk-blade');
     A.weapons = [weapon];
 
@@ -126,7 +126,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
   it('Succès Stupéfiant (marge nette ≥ 6 via gros bonus defSL) : la lame est BRISÉE', () => {
     seedBattleRng(7);
     const { H, A } = setup();
-    H.characteristics.F = 90;
+    H.characteristics.force = 90;
     const weapon = bladedWeapon('atk-blade');
     A.weapons = [weapon];
 
@@ -148,7 +148,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
   it('Succès Stupéfiant sur une lame INCASSABLE : NON brisée (arrachée seulement)', () => {
     seedBattleRng(7);
     const { H, A } = setup();
-    H.characteristics.F = 90;
+    H.characteristics.force = 90;
     const weapon = bladedWeapon('atk-blade', ['incassable']);
     A.weapons = [weapon];
 
@@ -165,10 +165,10 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
   it('héros perd (Force minime) : RIEN (l’adversaire garde sa lame)', () => {
     seedBattleRng(7);
     const { H, A } = setup();
-    H.characteristics.F = 1; // Force minime → le défenseur perd
+    H.characteristics.force = 1; // Force minime → le défenseur perd
     const weapon = bladedWeapon('atk-blade');
     A.weapons = [weapon];
-    A.characteristics.F = 80;
+    A.characteristics.force = 80;
 
     openTrapChoice(H, A, weapon, 0);
     const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
@@ -188,7 +188,7 @@ describe('Piège-lame — Test opposé de Force CADENCE-AWARE (op breakBlade, d�
     try {
       seedBattleRng(7);
       const { H, A } = setup();
-      H.characteristics.F = 90;
+      H.characteristics.force = 90;
       const weapon = bladedWeapon('atk-blade');
       A.weapons = [weapon];
 

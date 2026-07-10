@@ -99,12 +99,12 @@ export function spellCost(c: Combatant, spell: SpellData): number | null {
   if (fam === 'chaos') return 100;
   const known = knownCount(c, fam);
   if (fam === 'mineure') {
-    const band = Math.max(1, bonus(effectiveChar(c, 'FM')));
+    const band = Math.max(1, bonus(effectiveChar(c, 'force-mentale')));
     if (known < band) return 0; // inclus au Talent (LDB 10 l.587)
     return 50 * Math.ceil(known / band);
   }
   if (fam === 'arcane') {
-    const band = Math.max(1, bonus(effectiveChar(c, 'Int')));
+    const band = Math.max(1, bonus(effectiveChar(c, 'intelligence')));
     return 100 * Math.max(1, Math.ceil(known / band));
   }
   // Invocation

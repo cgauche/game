@@ -254,7 +254,7 @@ export function resolveFrenzyEntry(fm: number, rng: RNG = defaultRNG): { success
 /** Valeur de Calme : Force Mentale effective + avances de la compétence Calme (« Sang-froid »). */
 export function calmeValue(c: Combatant): number {
   const adv = c.skills.find((s) => s.skillId === 'calme')?.advances ?? 0;
-  return effectiveChar(c, 'FM') + adv;
+  return effectiveChar(c, 'force-mentale') + adv;
 }
 
 /** Un Round de Test ÉTENDU de Calme contre la Peur (LDB 21 l.27) : cumule le DR jusqu'à l'Indice.
@@ -364,7 +364,7 @@ export function gainPhobieIfThreshold(
   cause: string,
 ): { phobie: PsychTrait; resetCounter: true } | null {
   if (!rule('psych-acquisition-optional')) return null;
-  if (cumulativeBriseFromTerreur < bonus(effectiveChar(c, 'FM'))) return null;
+  if (cumulativeBriseFromTerreur < bonus(effectiveChar(c, 'force-mentale'))) return null;
   // Phobie = Peur 1 sur la source (même convention que parsePsychTraits, LDB 21 l.84-87).
   return { phobie: { type: 'phobie', cible: cause, indice: 1 }, resetCounter: true };
 }

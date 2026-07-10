@@ -21,12 +21,12 @@ beforeEach(() => {
 describe('Effet inflictHunger (LDB 18 l.417-422)', () => {
   it('1 jour affamé → 1ᵉʳ échec : −10 en Force et en Endurance (via le pool de faim)', () => {
     const party = makePregens().slice(0, 1);
-    const baseF = effectiveChar(party[0], 'F');
+    const baseF = effectiveChar(party[0], 'force');
     useGame.setState({ party });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictHunger', days: 1, target: 'hero', heroId: party[0].id }]);
     const h = useGame.getState().party[0];
     expect(h.hunger?.failures).toBe(1);
-    expect(effectiveChar(h, 'F')).toBe(baseF - 10); // 1ᵉʳ échec = −10 F/E (hungerCharPenalties)
+    expect(effectiveChar(h, 'force')).toBe(baseF - 10); // 1ᵉʳ échec = −10 F/E (hungerCharPenalties)
   });
 
   it('2 jours → 2ᵉ échec : Dégâts encaissés (1d10 ignorant les PA, min 1) sur tout le groupe', () => {
@@ -149,12 +149,12 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
 describe('Effet inflictThirst (LDB 18 l.417-422, miroir de la Faim)', () => {
   it('1 jour assoiffé → 1ᵉʳ échec : −10 Intelligence/FM/Sociabilité (via le pool de soif)', () => {
     const party = makePregens().slice(0, 1);
-    const baseInt = effectiveChar(party[0], 'Int');
+    const baseInt = effectiveChar(party[0], 'intelligence');
     useGame.setState({ party });
     applyEffects(useGame.getState, useGame.setState, [{ type: 'inflictThirst', days: 1, target: 'hero', heroId: party[0].id }]);
     const h = useGame.getState().party[0];
     expect(h.thirst?.failures).toBe(1);
-    expect(effectiveChar(h, 'Int')).toBe(baseInt - 10);
+    expect(effectiveChar(h, 'intelligence')).toBe(baseInt - 10);
   });
 
   it('2 jours → 2ᵉ échec : Dégâts encaissés (1d10 ignorant les PA, min 1) sur tout le groupe', () => {

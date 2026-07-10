@@ -78,7 +78,7 @@ describe('Boucle de jeu (store)', () => {
   it('setItemSkin pose le skin sur l’objet ET le propage à l’arme active (recomputeLoadout)', () => {
     const hero = {
       id: 'h1', name: 'Test', kind: 'hero',
-      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
       weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       items: [{ uid: 'w1', name: 'Épée bâtarde', kind: 'melee', damage: { plusBF: true, flat: 5 }, qualities: [], enc: 1, equipped: true } as ItemInstance],
@@ -144,7 +144,7 @@ describe('Boucle de jeu (store)', () => {
   // (étape de séquence 'deviation', AUCUN effet de bord) ; la décision rejoue l'application UNE seule fois.
   function mkDeviationSetup() {
     seedBattleRng(424242); // table des Critiques déterministe (branche « Subir »)
-    const chars = { CC: 40, CT: 30, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+    const chars = { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 40, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
     const enemy = {
       id: 'e1', name: 'Brute', kind: 'enemy', characteristics: chars, wounds: { current: 20, max: 20 },
       advantage: 0, conditions: [], movement: 4, skills: [], talents: [], engagedWith: [], pos: { x: 1, y: 0 },
@@ -213,7 +213,7 @@ describe('Boucle de jeu (store)', () => {
   // CascadeModal via useAttackJetProps ; ses conséquences s'empilent DANS la même séquence (une fenêtre).
   function mkAttackSeq(res: AttackResult) {
     seedBattleRng(20260615);
-    const chars = { CC: 45, CT: 30, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+    const chars = { 'capacite-de-combat': 45, 'capacite-de-tir': 30, force: 40, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
     const hero = {
       id: 'h1', name: 'Hardi', kind: 'hero', characteristics: chars, wounds: { current: 15, max: 15 },
       advantage: 0, conditions: [], movement: 4, skills: [], talents: [], engagedWith: [], pos: { x: 0, y: 0 },
@@ -256,7 +256,7 @@ describe('Boucle de jeu (store)', () => {
 
   // ── Phase C2a — qualité d'outil sur les Tests HORS COMBAT (Pratique/Peu Fiable/Bâclé) ──
   it('Effect.test : outil résolu par trappingId (id catalogue) vers pendingTest.itemUid', () => {
-    const chars = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 55, Int: 30, FM: 30, Soc: 30 };
+    const chars = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 55, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
     const hero = {
       id: 'h1', name: 'Lest', kind: 'hero', characteristics: chars, wounds: { current: 10, max: 10 },
       advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
@@ -265,14 +265,14 @@ describe('Boucle de jeu (store)', () => {
       items: [{ uid: 't1', name: 'Marteau', trappingId: 'marteau', kind: 'trapping', qualities: [{ id: 'pratique' }], enc: 0, equipped: false }],
     } as unknown as Combatant;
     useGame.setState({ party: [hero] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'Dex', tool: 'marteau', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'dexterite', tool: 'marteau', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.itemUid).toBe('t1');
     expect(pt.isDouble).toBe(false); // amorcé à false (pas encore lancé)
   });
 
   it('Effect.test : outil custom (sans trappingId) résolu par repli nom', () => {
-    const chars = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 55, Int: 30, FM: 30, Soc: 30 };
+    const chars = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 55, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
     const hero = {
       id: 'h1', name: 'Lest', kind: 'hero', characteristics: chars, wounds: { current: 10, max: 10 },
       advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
@@ -281,14 +281,14 @@ describe('Boucle de jeu (store)', () => {
       items: [{ uid: 't2', name: 'Rossignols', kind: 'trapping', qualities: [], enc: 0, equipped: false }],
     } as unknown as Combatant;
     useGame.setState({ party: [hero] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'Dex', tool: 'Rossignols', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'dexterite', tool: 'Rossignols', requireSL: 0 }, EMPTY_FLOW, EMPTY_FLOW));
     expect(useGame.getState().pendingTest!.itemUid).toBe('t2');
   });
 
   it('testRoll peuple pendingTest.isDouble (booléen, pour la casse Bâclé)', () => {
     const hero = {
       id: 'h1', name: 'Lest', kind: 'hero',
-      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 50, Int: 30, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 50, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
     } as unknown as Combatant;
@@ -308,7 +308,7 @@ describe('Boucle de jeu (store)', () => {
   function mkToolTest(quality: string, over: Partial<import('./store').PendingTest>): Combatant {
     const hero = {
       id: 'h1', name: 'Lest', kind: 'hero',
-      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 50, Int: 30, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 50, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       items: [{ uid: 't1', name: 'Outil', kind: 'melee', qualities: quality ? [parseQualityInstance(quality)!] : [], enc: 0, equipped: false }],
@@ -575,7 +575,7 @@ describe('Boucle de jeu (store)', () => {
 
   it('incanter un Projectile magique résout l’incantation et consomme l’action', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
-    hero.characteristics.Int = 90; // assurer le lancement (NI 0)
+    hero.characteristics.intelligence = 90; // assurer le lancement (NI 0)
     hero.spells = ['flechette'];
     useGame.setState({ party: [hero] });
     useGame.getState().startScene(testScene);
@@ -603,7 +603,7 @@ describe('Boucle de jeu (store)', () => {
 
   it('une Bénédiction de bonus pose un effet actif temporisé sur la cible', () => {
     const pretre = createHero({ speciesId: 'humains-reiklander', careerId: 'pretre', name: 'Prêtre', rng: makeRNG(8) });
-    pretre.characteristics.Soc = 95; // assurer la réussite de la Prière
+    pretre.characteristics.sociabilite = 95; // assurer la réussite de la Prière
     pretre.spells = ['benediction-de-bataille'];
     useGame.setState({ party: [pretre] });
     useGame.getState().startScene(testScene);
@@ -620,14 +620,14 @@ describe('Boucle de jeu (store)', () => {
     const after = st.battle!.combatants.find((c) => c.id === heroC.id)!;
     const failed = st.battle!.log.some((l) => l.text.includes('échoue'));
     if (!failed) {
-      expect(after.activeEffects?.some((e) => e.char === 'CC' && e.bonus === 10)).toBe(true);
+      expect(after.activeEffects?.some((e) => e.char === 'capacite-de-combat' && e.bonus === 10)).toBe(true);
     }
     expect(st.battle!.acted).toBe(true);
   });
 
   it('une attaque de héros adjacent retire des Blessures', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
-    hero.characteristics.CC = 70; // CC élevée + seed fixe → touche déterministe
+    hero.characteristics['capacite-de-combat'] = 70; // CC élevée + seed fixe → touche déterministe
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2); // RNG de combat contrôlé : seed 2 ⇒ touche avec dégâts (cf. recherche)
     useGame.getState().startScene(testScene);
@@ -862,7 +862,7 @@ describe('Boucle de jeu (store)', () => {
 
   it('Engagé : une attaque de mêlée pose le lien des deux côtés (LDB 13-Combat l.174-175)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
-    hero.characteristics.CC = 70;
+    hero.characteristics['capacite-de-combat'] = 70;
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
@@ -1221,7 +1221,7 @@ describe('Boucle de jeu (store)', () => {
     const E = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     H.engagedWith = [E.id];
     E.engagedWith = [H.id];
-    E.characteristics.CC = 90; // le coup dans le dos (+20) touche à coup sûr → Test de Calme
+    E.characteristics['capacite-de-combat'] = 90; // le coup dans le dos (+20) touche à coup sûr → Test de Calme
     H.wounds = { current: 40, max: 40, base: 40 } as never;
     const eAdvBefore = E.advantage;
     const turn = st.battle!.order.indexOf(H.id);
@@ -1253,7 +1253,7 @@ describe('Boucle de jeu (store)', () => {
 
   it('attaque en DIAGONALE : un ennemi diagonalement adjacent est à portée de mêlée (distance Chebyshev)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(3) });
-    hero.characteristics.CC = 70;
+    hero.characteristics['capacite-de-combat'] = 70;
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
@@ -1283,15 +1283,15 @@ describe('Avancement par PX (store) — câblage moteur', () => {
       species: 'humains-reiklander',
       career: 'agitateur', // Niveau 1 « Pamphlétaire » : caracs CT/Int/Soc, comp. Charme/Ragot, talent Sociable
       careerLevel: 1,
-      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 12, max: 12 },
       advantage: 0,
       conditions: [],
       weapons: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       skills: [
-        { skillId: 'charme', characteristic: 'Soc', advances: 0 }, // in-carrière
-        { skillId: 'esquive', characteristic: 'Ag', advances: 0 }, // hors-carrière
+        { skillId: 'charme', characteristic: 'sociabilite', advances: 0 }, // in-carrière
+        { skillId: 'esquive', characteristic: 'agilite', advances: 0 }, // hors-carrière
       ],
       talents: [],
       movement: 4,
@@ -1311,15 +1311,15 @@ describe('Avancement par PX (store) — câblage moteur', () => {
 
   it('buyCharAdvance in-carrière (CT) : +1 valeur, +1 augmentation, coût 25', () => {
     set1(mkHero({ xp: 1000 }));
-    useGame.getState().buyCharAdvance('h', 'CT');
-    expect(h0().characteristics.CT).toBe(31);
-    expect(h0().charAdvances!.CT).toBe(1);
+    useGame.getState().buyCharAdvance('h', 'capacite-de-tir');
+    expect(h0().characteristics['capacite-de-tir']).toBe(31);
+    expect(h0().charAdvances!['capacite-de-tir']).toBe(1);
     expect(h0().xp).toBe(975);
   });
 
   it('buyCharAdvance hors-carrière (CC) : coût doublé (50)', () => {
     set1(mkHero({ xp: 1000 }));
-    useGame.getState().buyCharAdvance('h', 'CC');
+    useGame.getState().buyCharAdvance('h', 'capacite-de-combat');
     expect(h0().xp).toBe(950);
   });
 
@@ -1327,12 +1327,12 @@ describe('Avancement par PX (store) — câblage moteur', () => {
     set1(
       mkHero({
         xp: 1000,
-        characteristics: { CC: 30, CT: 30, F: 30, E: 39, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+        characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 39, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
         wounds: { current: 12, max: 12 },
       }),
     );
-    useGame.getState().buyCharAdvance('h', 'E'); // 39→40 : BE 3→4, Blessures = BF + 2·BE + BFM = 3 + 8 + 3 = 14
-    expect(h0().characteristics.E).toBe(40);
+    useGame.getState().buyCharAdvance('h', 'endurance'); // 39→40 : BE 3→4, Blessures = BF + 2·BE + BFM = 3 + 8 + 3 = 14
+    expect(h0().characteristics.endurance).toBe(40);
     expect(h0().wounds.max).toBe(14);
     expect(h0().wounds.current).toBe(14);
   });
@@ -1412,9 +1412,9 @@ describe('Avancement par PX (store) — câblage moteur', () => {
     set1(mkHero({ xp: 1000, career: 'soldat' })); // Recrue : Guerrier né in-carrière
     useGame.getState().buyTalent('h', 'guerrier-ne');
     // La valeur brute reste inchangée (passif non cuit) ; baseWithTalents lit le charMod du talent.
-    expect(h0().characteristics.CC).toBe(30); // base INCHANGÉE
-    expect(baseWithTalents(h0(), 'CC')).toBe(35); // base + passif Guerrier né = 35
-    expect(h0().charAdvances?.CC ?? 0).toBe(0); // « ne compte pas comme des Augmentations »
+    expect(h0().characteristics['capacite-de-combat']).toBe(30); // base INCHANGÉE
+    expect(baseWithTalents(h0(), 'capacite-de-combat')).toBe(35); // base + passif Guerrier né = 35
+    expect(h0().charAdvances!['capacite-de-combat'] ?? 0).toBe(0); // « ne compte pas comme des Augmentations »
     expect(h0().xp).toBe(900);
   });
 
@@ -1537,7 +1537,7 @@ describe('Fouille / butin par objet cherchable (store)', () => {
         id: 'a',
         name: 'A',
         kind: 'hero',
-        characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+        characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
         wounds: { current: 12, max: 12 },
         advantage: 0,
         conditions: [],
@@ -1612,7 +1612,7 @@ describe('Fenêtre de loot (pendingLoot) — capture, attribution, révélation'
   beforeEach(() => reset());
   const looter = (over: Partial<Combatant> = {}): Combatant =>
     ({ id: 'a', name: 'A', kind: 'hero', xp: 0, wounds: { current: 12, max: 12 }, conditions: [],
-      characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 40, Ag: 30, Dex: 30, Int: 40, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 40, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 30, sociabilite: 30 },
       weapons: [], armour: {}, items: [], skills: [], talents: [], movement: 4, ...over }) as unknown as Combatant;
 
   function lootScene() {
@@ -1756,7 +1756,7 @@ describe('Utiliser un consommable en combat (store)', () => {
       id: 'h',
       name: 'H',
       kind: 'hero',
-      characteristics: { CC: 30, CT: 30, F: 30, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, // BE = 3
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, // BE = 3
       wounds: { current: 5, max: 12 },
       advantage: 0,
       conditions: [],
@@ -1790,7 +1790,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   it('Potion de guérison : soigne du Bonus d’Endurance, consomme l’objet, coûte l’Action', () => {
     const h = combatHero({
       wounds: { current: 5, max: 12 },
-      items: [potion('p1', 'Potion de guérison', { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'E' } }] } })],
+      items: [potion('p1', 'Potion de guérison', { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'endurance' } }] } })],
     });
     useGame.setState({ mode: 'battle', battle: mkBattle(h) });
     useGame.getState().battleUseItem('p1');
@@ -1815,7 +1815,7 @@ describe('Utiliser un consommable en combat (store)', () => {
   it('Action déjà consommée : aucune utilisation (objet conservé)', () => {
     const h = combatHero({
       wounds: { current: 5, max: 12 },
-      items: [potion('p3', 'Potion de guérison', { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'E' } }] } })],
+      items: [potion('p3', 'Potion de guérison', { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'endurance' } }] } })],
     });
     useGame.setState({ mode: 'battle', battle: mkBattle(h, { acted: true }) });
     useGame.getState().battleUseItem('p3');
@@ -2481,7 +2481,7 @@ describe('Munitions & rechargement (héros, LDB Armes/Tests)', () => {
     H.wounds.current = 25;
     H.wounds.max = 25;
     E.pos = { x: 0, y: 0 }; // adjacents
-    E.characteristics.F = 60; // gros frappeur → la touche inflige des Blessures
+    E.characteristics.force = 60; // gros frappeur → la touche inflige des Blessures
     const atk = { roll: 5, target: 80, success: true, sl: 7, isDouble: false };
     const weapon: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] } as Weapon;
     // Touche subie SANS défense opposable (cas imposé RAW) → doit interrompre le rechargement.
@@ -2943,7 +2943,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
     expect(toBrass(st.money)).toBeLessThan(before); // débité
   });
 
-  const negotiator = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: { Soc: 40 }, skills: [], talents: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
+  const negotiator = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: { sociabilite: 40 }, skills: [], talents: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
 
   it('startBargain : crée un pendingBargain (marchand = bargainSkill de l’archétype) (#2c)', () => {
     useGame.setState({ party: [negotiator()], scene: merchantScene() });
@@ -3040,7 +3040,7 @@ describe('Marchand — openMerchant / buyItem / vente au panier (#2)', () => {
     expect(buyAt(1.5)).toBeGreaterThan(buyAt(1)); // +50 % → coûte plus cher
   });
 
-  const appraiser = (): Combatant => ({ id: 'h', name: 'H', characteristics: { Int: 40 }, skills: [], talents: [], items: [{ uid: 'm', name: 'Épée', kind: 'melee', qualities: [{ id: 'de-plaies-atroces' }], enc: 1, equipped: false, identified: false }], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
+  const appraiser = (): Combatant => ({ id: 'h', name: 'H', characteristics: { intelligence: 40 }, skills: [], talents: [], items: [{ uid: 'm', name: 'Épée', kind: 'melee', qualities: [{ id: 'de-plaies-atroces' }], enc: 1, equipped: false, identified: false }], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
 
   it('appraiseItem : crée un pendingAppraise sur l’objet non identifié (#2e)', () => {
     useGame.setState({ party: [appraiser()], scene: merchantScene() });
@@ -3151,7 +3151,7 @@ describe('viewMode (vue du dessus)', () => {
 describe('Marché — règles optionnelles (market-mode / market-guild)', () => {
   beforeEach(() => reset());
   afterEach(() => { resetRule('market-mode'); resetRule('market-guild'); });
-  const hero = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: { Soc: 35 }, skills: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
+  const hero = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: { sociabilite: 35 }, skills: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
   const merchantScene = () => {
     const sc = emptyScene(4, 4); sc.id = 'm';
     sc.entities.push({ id: 'pnj', kind: 'personnage', pos: { x: 0, y: 0 }, merchant: { archetype: 'armurier' } });

@@ -15,7 +15,7 @@ function seq(values: number[]): RNG {
 const victim = (E = 30): Combatant =>
   ({
     name: 'V',
-    characteristics: { CC: 30, CT: 30, F: 30, E, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: E, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 0, max: 12 },
     conditions: [],
     skills: [],
@@ -54,8 +54,8 @@ describe('rollCritical — résolution d’une Blessure critique (LDB 18-Traumat
       const r = rollCritical(victim(), 'corps', makeRNG(s));
       const frac = r.traumas.find((t) => t.label.startsWith('Fracture'));
       if (frac) {
-        expect(frac.ops).toContainEqual({ op: 'charMod', char: 'F', mod: -30 });
-        expect(frac.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -30 });
+        expect(frac.ops).toContainEqual({ op: 'charMod', char: 'force', mod: -30 });
+        expect(frac.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -30 });
         return;
       }
     }
@@ -109,8 +109,8 @@ describe('permanentAmputations — séquelles permanentes par id de fiche (LDB 1
     expect(pied.ops?.some((o) => o.op === 'moveScale')).toBe(true);
     expect(pied.ops).toContainEqual({ op: 'skillMod', skill: 'esquive', mod: -20 });
     const [orteil] = permanentAmputations(['orteil-ampute'], 'jambeD');
-    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -1 });
-    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -1 });
+    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -1 });
+    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-combat', mod: -1 });
   });
   it('bras (DROIT ou GAUCHE) main amputée : interdit d’arme à 2 mains, AUCUN charMod (−20 = contextuel à l’arme, #101 LDB 18 l.263)', () => {
     for (const loc of ['brasD', 'brasG'] as const) {
@@ -129,14 +129,14 @@ describe('permanentAmputations — séquelles permanentes par id de fiche (LDB 1
   it('tête : « Coup défigurant » cumule œil (−5 Soc) + nez (−20 Soc)', () => {
     const s = permanentAmputations(['nez-ampute', 'oeil-perdu'], 'tete');
     expect(s.map((x) => x.label).sort()).toEqual(['Nez amputé', 'Œil perdu']);
-    expect(s.find((x) => x.label === 'Nez amputé')!.ops).toContainEqual({ op: 'charMod', char: 'Soc', mod: -20 });
+    expect(s.find((x) => x.label === 'Nez amputé')!.ops).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -20 });
   });
   it('tête : « Mâchoire mutilée » cumule langue (parole échoue) + dents (1d10=4 → 2 paires → −2 Soc)', () => {
     const s = permanentAmputations(['langue-amputee', 'dents-perdues'], 'tete', seq([4]));
     expect(s.find((x) => x.label === 'Langue amputée')!.ops).toContainEqual({ op: 'skillMod', skill: 'langue', mod: -100 });
     const dents = s.find((x) => x.traumaId === 'dents-perdues')!;
     expect(dents.count).toBe(4);
-    expect(dents.ops).toContainEqual({ op: 'charMod', char: 'Soc', mod: -2 }); // 4 dents = 2 paires
+    expect(dents.ops).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -2 }); // 4 dents = 2 paires
   });
 
   it('rollCritical (jambe) : pose la plaie chirurgicale ET la séquelle permanente de mobilité', () => {
@@ -161,7 +161,7 @@ describe('#195 — variantes d’amputation de la table JAMBE (LDB 18)', () => {
   // → durationRounds: 2 (arbitrage maison tagué). E30 → cible 50.
   it('Orteil contusionné : Résistance ratée → charMod Ag −10 à durée 2 Rounds (arbitrage maison)', () => {
     const r = rollCritical(victim(30), 'jambeD', seq([5, 60])); // 5 = crit ; 60 > 50 → Résistance ratée
-    expect(r.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -10, durationRounds: 2 });
+    expect(r.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -10, durationRounds: 2 });
   });
   it('Orteil contusionné : Résistance réussie → aucune pénalité d’Agilité', () => {
     const r = rollCritical(victim(30), 'jambeD', seq([5, 40])); // 40 ≤ 50 → réussite
@@ -170,7 +170,7 @@ describe('#195 — variantes d’amputation de la table JAMBE (LDB 18)', () => {
   it('l’entrée porte une note maison traçant la valeur `durationRounds` (règle stricte 7)', () => {
     const e = CRITICAL_TABLES.jambeD.find((x) => x.id === 'orteil-contusionne')!;
     expect(e.maison).toBeTruthy();
-    expect(e.resist?.onFail?.[0]).toMatchObject({ op: 'charMod', char: 'Ag', mod: -10, durationRounds: 2 });
+    expect(e.resist?.onFail?.[0]).toMatchObject({ op: 'charMod', char: 'agilite', mod: -10, durationRounds: 2 });
   });
 
   // « Tendon rompu » (71-75) : « Votre jambe devient inutilisable (voir Membres Amputés) » = disable DIRECT,
@@ -192,8 +192,8 @@ describe('#195 — variantes d’amputation de la table JAMBE (LDB 18)', () => {
     const r = rollCritical(victim(30), 'jambeD', seq([92, 70, 5])); // 92 crit ; 70 vs cible 50 → DR −2 ; 5 = 1d10 échéance
     const orteil = r.traumas.find((t) => t.traumaId === 'orteil-ampute')!;
     expect(orteil.count).toBe(3); // 1 + 2 DR
-    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -3 });
-    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -3 });
+    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -3 });
+    expect(orteil.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-combat', mod: -3 });
     expect(r.ops.some((o) => o.op === 'condition' && o.name === 'a-terre')).toBe(true);
     expect(r.ops.some((o) => o.op === 'condition' && o.name === 'sonne')).toBe(true);
     const plaie = r.traumas.find((t) => t.needsSurgery && t.label === 'Amputation')!;

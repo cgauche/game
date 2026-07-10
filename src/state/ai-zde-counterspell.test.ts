@@ -34,7 +34,7 @@ describe('ZdE ennemie — fenêtre de Contre-sort (parité missile, chemin PARTA
     h.wounds = { ...h.wounds, max: 99, current: 99 };
     const sk = h.skills.find((s) => s.skillId === 'langue');
     if (sk) sk.advances = Math.max(sk.advances, 30);
-    else h.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 30 } as never);
+    else h.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 30 } as never);
     h.spells = ['flechette', ...(h.spells ?? [])];
     return h;
   }
@@ -46,8 +46,8 @@ describe('ZdE ennemie — fenêtre de Contre-sort (parité missile, chemin PARTA
   function setupZoneAwaitingCounter() {
     const e = spawnEnemy('Bandit de Grand Chemin', undefined, 'caster', { x: 5, y: 5 });
     e.kind = 'enemy';
-    e.characteristics.Int = 60; e.characteristics.FM = 60;
-    e.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 40 } as never];
+    e.characteristics.intelligence = 60; e.characteristics['force-mentale'] = 60;
+    e.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 40 } as never];
     const spell = findSpell('Explosion')!; // Projectile magique à ZdE
     e.spells = [spell.id];
     const h1 = dispeller(8, 8, 'h1');

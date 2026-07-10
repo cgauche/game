@@ -12,7 +12,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
 
   function hero(name: string, soc: number, traits: { type: string; cible: string }[] = []) {
     const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name, rng: makeRNG(1) });
-    h.characteristics.Soc = soc;
+    h.characteristics.sociabilite = soc;
     h.skills = []; // pas d'avances → testValue = Soc brut
     h.psychTraits = traits as never;
     return h;
@@ -43,7 +43,7 @@ describe('Test de Sociabilité vs groupe haï (dialogue) — malus psy appliqué
   it('Test NON-social (Force) vs un groupe → aucun malus psy', () => {
     const a = hero('Gotrek', 50, [{ type: 'animosite', cible: 'Elfe' }]);
     useGame.setState({ party: [a] });
-    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'F', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
+    runFlow(useGame.getState, useGame.setState, testFlow({ characteristic: 'force', vsGroups: ['Elfe'] }, EMPTY_FLOW, EMPTY_FLOW));
     const pt = useGame.getState().pendingTest!;
     expect(pt.psychMod ?? 0).toBe(0); // F n'est pas un Test de Sociabilité
   });

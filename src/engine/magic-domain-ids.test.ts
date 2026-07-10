@@ -14,7 +14,7 @@ import { eligibleTalent } from './grimoire';
 function mage(p: Partial<Combatant> = {}): Combatant {
   return {
     id: 'm', name: 'Mage', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 42, FM: 40, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 42, 'force-mentale': 40, sociabilite: 30 },
     wounds: { current: 10, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], spells: [], xp: 1000,
@@ -69,10 +69,10 @@ describe('mage Bête — Focalisation ET Talent lanceur matchent un Sort Bête (
   });
 
   it('la Focalisation (Ghur) [id bete] est trouvée pour un Sort Bête', () => {
-    const c = mage({ skills: [{ skillId: 'focalisation', spec: 'bete', characteristic: 'FM', advances: 5 }] as never });
+    const c = mage({ skills: [{ skillId: 'focalisation', spec: 'bete', characteristic: 'force-mentale', advances: 5 }] as never });
     expect(focusSkillFor(c, beteSpell)).toBeTruthy();
     // Une Focalisation d'un AUTRE Vent (Aqshy → feu) ne matche pas un Sort Bête.
-    const feuMage = mage({ skills: [{ skillId: 'focalisation', spec: 'feu', characteristic: 'FM', advances: 5 }] as never });
+    const feuMage = mage({ skills: [{ skillId: 'focalisation', spec: 'feu', characteristic: 'force-mentale', advances: 5 }] as never });
     expect(focusSkillFor(feuMage, beteSpell)).toBeFalsy();
   });
 

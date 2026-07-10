@@ -107,7 +107,7 @@ describe('damageWeapon / destroyWeapon', () => {
 function hero(items: Combatant['items']): Combatant {
   return {
     id: 'h', name: 'T', kind: 'hero',
-    characteristics: { CC: 40, CT: 40, F: 40, E: 40, I: 40, Ag: 40, Dex: 40, Int: 40, FM: 40, Soc: 40 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 40, 'force-mentale': 40, sociabilite: 40 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4, items,

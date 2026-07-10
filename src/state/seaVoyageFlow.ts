@@ -922,14 +922,14 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
   if (daysAtSea % 30 === 0) {
     const patients = get().party.filter((h) => !h.dead && !(h.diseases ?? []).some((d) => d.name === 'scorbut'));
     if (patients.length) {
-      const test: RollRequest['test'] = { skill: 'resistance', char: 'E', label: 'Scorbut' };
+      const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance', label: 'Scorbut' };
       const steps: CascadeStep[] = patients.map((h) => {
         const soup = (h.items ?? []).some((it) => itemCapability(it, 'scurvyGuard'));
         const diff: Difficulty = soup ? 'facile' : 'intermediaire';
         return {
           id: `sea-scorbut-${h.id}`, kind: 'sea-scorbut', actorId: h.id,
           label: composeRollLabel(h, 'Scorbut', test, diff), rollLabel: 'Scorbut',
-          base: testValue(h, 'resistance', 'E'), target: effectiveTarget(h, test, diff),
+          base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, test, diff),
           result: null, interactive: true, meta: { soup },
         };
       });
@@ -943,7 +943,7 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
   const week = Math.floor(dayIndex(get().gameTime) / 7);
   const vessel1 = get().vessel;
   if (vessel1 && week > (vessel1.fouling?.lastWeek ?? -1) && daysAtSea >= 7) {
-    const hullE = findVehicleById(vessel1.vehicleId)?.hull?.char.E ?? 40;
+    const hullE = findVehicleById(vessel1.vehicleId)?.hull?.char.endurance ?? 40;
     const r = rollWeeklyFouling(hullE, vessel1.fouling?.level ?? 0, rng);
     set({ vessel: { ...get().vessel!, fouling: { level: r.level, lastWeek: week } } });
     if (r.gained) lines.push(`Salissures : la coque s'encrasse (niveau ${r.level} — ${foulingEffects(r.level).desc})`);
@@ -972,7 +972,7 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
   if (tdef.exposure && expCount > 0) {
     for (const h of get().party) {
       if (h.dead) continue;
-      const r = exposureNight(h, expCount, testValue(h, 'resistance', 'E'), rng, { kind: tdef.exposure, difficulty: tdef.difficulty });
+      const r = exposureNight(h, expCount, testValue(h, 'resistance', 'endurance'), rng, { kind: tdef.exposure, difficulty: tdef.difficulty });
       evening.push(`${h.name} — Exposition (${tdef.label}, ${expCount} Test${expCount > 1 ? 's' : ''} de Résistance ${DIFFICULTY_LABELS[tdef.difficulty ?? 'intermediaire']}) : ${r.rolls.map((x) => `${x.roll}/${x.target}`).join(' · ')}${r.failures ? '' : ' — tient le coup.'}`);
       evening.push(...r.log);
       expireExposureEffects(h, get().gameTime + MINUTES_PER_DAY); // dissipation après 24 h (purge #T3)
@@ -990,11 +990,11 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
     const diff = exhaustionDifficulty(true);
     const patients = get().party.filter((h) => !h.dead);
     if (patients.length) {
-      const test: RollRequest['test'] = { skill: 'resistance', char: 'E', label: 'Épuisement' };
+      const test: RollRequest['test'] = { skill: 'resistance', char: 'endurance', label: 'Épuisement' };
       const steps: CascadeStep[] = patients.map((h) => ({
         id: `sea-epuisement-${h.id}`, kind: 'sea-epuisement', actorId: h.id,
         label: composeRollLabel(h, 'Épuisement', test, diff), rollLabel: 'Épuisement',
-        base: testValue(h, 'resistance', 'E'), target: effectiveTarget(h, test, diff),
+        base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, test, diff),
         result: null, interactive: true,
       }));
       const resolved = runCascadeImmediate(get, set, steps);
@@ -1152,7 +1152,7 @@ export function resolveVoyageCrewTest(get: Get, set: Set, p: PendingCrewTest, to
       const progress = c.progress + Math.max(0, total + w.manDR);
       // Chaque manche au centre coûte des Dégâts de collision (IC du Tourbillon, l.526).
       const hull = get().travelPlan!.vehicle!;
-      const dmg = Math.max(0, w.ic - Math.floor((hull.characteristics?.E ?? 0) / 10));
+      const dmg = Math.max(0, w.ic - Math.floor((hull.characteristics?.endurance ?? 0) / 10));
       damageVesselHull(get, set, hull, dmg);
       tell(get, set, [`${w.label} : l'eau tournoyante broie la coque (${dmg} Blessures) — évasion ${progress}/${c.need} DR.`]);
       if (progress >= c.need) {
@@ -1296,7 +1296,7 @@ function openSteamSave(get: Get, set: Set, failDamage: string, rng: RNG): void {
   const eng = engineerOf(get().party);
   if (!eng) return;
   const dmg = Math.max(1, rollDiceExpr(failDamage, rng)); // « (1 minimum) » sur les Dégâts
-  const value = testValue(eng, undefined, 'I'); // Test d'INITIATIVE (Difficulté par défaut : Intermédiaire +0)
+  const value = testValue(eng, undefined, 'initiative'); // Test d'INITIATIVE (Difficulté par défaut : Intermédiaire +0)
   set({
     pendingSteamSave: {
       actorId: eng.id, actorName: eng.name, skillValue: value, difficulty: 'intermediaire',
@@ -1471,7 +1471,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       // « le bateau se heurte à un rocher » (Rocher IC 47, ch.13 l.497) : Dégâts = IC + M, − BE de coque.
       if (!ship) break;
       const eff = effectiveSeaM(get);
-      const dmg = Math.max(0, 47 + (eff.m ?? 1) - Math.floor((ship.characteristics?.E ?? 0) / 10));
+      const dmg = Math.max(0, 47 + (eff.m ?? 1) - Math.floor((ship.characteristics?.endurance ?? 0) / 10));
       damageVesselHull(get, set, ship, dmg);
       tell(get, set, [`Collision : la coque encaisse ${dmg} Blessures (Rocher IC 47, MDG ch.13 l.446/497).`]);
       if (d100(rng) <= 20) { // 20 % d'Échouage (l.497)

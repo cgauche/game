@@ -49,7 +49,7 @@ describe('warMachineFireWeapon — bake le malus PLAT, ORTHOGONAL à la Recharge
   const belier = (): Weapon => ({
     name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne',
     qualities: [{ id: 'siege' }, { id: 'belier' }, { id: 'devastatrice' }, { id: 'percutante' }, { id: 'equipe', value: 6 }],
-    resolveChar: 'F',
+    resolveChar: 'force',
   });
 
   it('Équipe au complet (6/6) : arme INCHANGÉE (aucun crewTeamPenalty)', () => {

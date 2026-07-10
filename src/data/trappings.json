@@ -5932,7 +5932,7 @@
     "consumable": {
       "kind": "test",
       "test": {
-        "characteristic": "E",
+        "characteristic": "endurance",
         "difficulty": "tresDifficile",
         "label": "Bave"
       },
@@ -5986,7 +5986,7 @@
             "ops": [
               {
                 "op": "charMod",
-                "char": "F",
+                "char": "force",
                 "mod": 10
               },
               {
@@ -6079,7 +6079,7 @@
     "consumable": {
       "kind": "test",
       "test": {
-        "characteristic": "E",
+        "characteristic": "endurance",
         "skill": "resistance",
         "difficulty": "complexe",
         "unlessImmune": "poison",
@@ -6138,22 +6138,22 @@
           },
           {
             "op": "charMod",
-            "char": "F",
+            "char": "force",
             "mod": 10
           },
           {
             "op": "charMod",
-            "char": "E",
+            "char": "endurance",
             "mod": 10
           },
           {
             "op": "charMod",
-            "char": "Ag",
+            "char": "agilite",
             "mod": 10
           },
           {
             "op": "charMod",
-            "char": "CC",
+            "char": "capacite-de-combat",
             "mod": 10
           },
           {
@@ -6167,22 +6167,22 @@
               },
               {
                 "op": "charMod",
-                "char": "CC",
+                "char": "capacite-de-combat",
                 "mod": -20
               },
               {
                 "op": "charMod",
-                "char": "E",
+                "char": "endurance",
                 "mod": -20
               },
               {
                 "op": "charMod",
-                "char": "F",
+                "char": "force",
                 "mod": -20
               },
               {
                 "op": "charMod",
-                "char": "Ag",
+                "char": "agilite",
                 "mod": -20
               }
             ]
@@ -6242,7 +6242,7 @@
       "else": {
         "kind": "test",
         "test": {
-          "characteristic": "FM",
+          "characteristic": "force-mentale",
           "difficulty": "tresDifficile",
           "label": "Fleur de lune"
         },
@@ -6355,7 +6355,7 @@
                   "then": {
                     "kind": "test",
                     "test": {
-                      "characteristic": "E",
+                      "characteristic": "endurance",
                       "skill": "resistance",
                       "difficulty": "complexe",
                       "unlessImmune": "poison",
@@ -6418,27 +6418,27 @@
           {
             "op": "testMod",
             "amount": 10,
-            "char": "E"
+            "char": "endurance"
           },
           {
             "op": "testMod",
             "amount": 10,
-            "char": "FM"
+            "char": "force-mentale"
           },
           {
             "op": "testMod",
             "amount": -10,
-            "char": "Ag"
+            "char": "agilite"
           },
           {
             "op": "testMod",
             "amount": -10,
-            "char": "I"
+            "char": "initiative"
           },
           {
             "op": "testMod",
             "amount": -10,
-            "char": "Int"
+            "char": "intelligence"
           }
         ]
       }
@@ -6496,7 +6496,7 @@
           },
           {
             "op": "actGate",
-            "char": "FM"
+            "char": "force-mentale"
           }
         ]
       }
@@ -6685,7 +6685,7 @@
             {
               "op": "heal",
               "amount": {
-                "bonusOf": "E"
+                "bonusOf": "endurance"
               }
             }
           ]
@@ -6948,7 +6948,7 @@
                   "then": {
                     "kind": "test",
                     "test": {
-                      "characteristic": "E",
+                      "characteristic": "endurance",
                       "skill": "resistance",
                       "difficulty": "complexe",
                       "onlyGroups": [

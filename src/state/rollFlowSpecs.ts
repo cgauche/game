@@ -776,7 +776,7 @@ export const FLOWS = {
     resolve: (s, r, actor, _get, forced, p) => {
       if (!actor || !p) return null;
       const value = testValue(actor, 'corps-a-corps'); // Bagarre (CC + avances)
-      const bf = bonus(effectiveChar(actor, 'F'));
+      const bf = bonus(effectiveChar(actor, 'force'));
       if (forced) {
         // Résilience « Je ne faillirai pas ! » : DR maximal (dé MEILLEUR) → dégâts max (LDB 17 l.73).
         const die = bestForcedRoll(value);
@@ -792,7 +792,7 @@ export const FLOWS = {
       // Chance « +1 DR » : +1 au DR → +1 dégât (avant réduction par le BE).
       derive: (s, r, actor, p) => {
         if (!r.result || !p) return null;
-        const bf = bonus(effectiveChar(actor, 'F'));
+        const bf = bonus(effectiveChar(actor, 'force'));
         const sl = r.result.sl + 1;
         return { result: { ...r.result, sl, damage: Math.max(0, sl + bf - p.doorBE) } };
       },
@@ -924,7 +924,7 @@ export const FLOWS = {
     caps: { forced: true },
     resolve: (_s, p, actor) => {
       if (!actor) return null;
-      return { result: rollManeuverAttacker(actor, 'CC', battleRng()) };
+      return { result: rollManeuverAttacker(actor, 'capacite-de-combat', battleRng()) };
     },
     outcome: (p) => testOutcome(p.result),
     // Test de CC NON opposé. Résilience (dé PAR DÉFAUT = DR max, l.103) + Chance « +1 DR » par `bumpSL`
@@ -964,7 +964,7 @@ export const FLOWS = {
     caps: { forced: true },
     resolve: (_s, p, actor) => {
       if (!actor) return null;
-      const stat = creatureAttacks(actor.traits ?? []).find((a) => a.kind === p.kind)?.stat ?? 'CT';
+      const stat = creatureAttacks(actor.traits ?? []).find((a) => a.kind === p.kind)?.stat ?? 'capacite-de-tir';
       return { result: rollManeuverAttacker(actor, stat, battleRng(), maneuverAttackerDifficulty(p.kind)) };
     },
     outcome: (p) => testOutcome(p.result),
@@ -976,8 +976,8 @@ export const FLOWS = {
       applyRoll: (_s, _slot, _actor, _get, tr) => ({ result: tr }),
       dieTarget: (p, actor) => {
         if (p.result?.target != null) return p.result.target;
-        const stat = creatureAttacks(actor.traits ?? []).find((a) => a.kind === p.kind)?.stat ?? 'CT';
-        return combatValue(actor, stat === 'CC' ? 'melee' : 'ranged') + DIFFICULTY_MODIFIERS[maneuverAttackerDifficulty(p.kind)];
+        const stat = creatureAttacks(actor.traits ?? []).find((a) => a.kind === p.kind)?.stat ?? 'capacite-de-tir';
+        return combatValue(actor, stat === 'capacite-de-combat' ? 'melee' : 'ranged') + DIFFICULTY_MODIFIERS[maneuverAttackerDifficulty(p.kind)];
       },
     },
   }),
@@ -1148,7 +1148,7 @@ export const FLOWS = {
     resolve: (s, p, actor, _get, forced) => {
       if (!s.battle || !actor) return null;
       if (forced) return forcedBinaryResult(p.result); // Résilience (LDB 17 l.73)
-      return { result: resolveFrenzyEntry(effectiveChar(actor, 'FM'), battleRng()) };
+      return { result: resolveFrenzyEntry(effectiveChar(actor, 'force-mentale'), battleRng()) };
     },
     outcome: (p) => testOutcome(p.result),
   }),
@@ -1180,7 +1180,7 @@ export const FLOWS = {
       if (!actor) return null;
       // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : avant le jet (choisit 01) OU après un échec.
       if (forced) return forcedBinaryResult(p.result);
-      return simpleTestResultResolve((_p, a) => effectiveChar(a, 'FM'), 'accessible')(s, p, actor);
+      return simpleTestResultResolve((_p, a) => effectiveChar(a, 'force-mentale'), 'accessible')(s, p, actor);
     },
     outcome: (p) => testOutcome(p.result),
   }),

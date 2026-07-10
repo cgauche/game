@@ -38,7 +38,7 @@ describe("Atouts d'arme (LDB Les armes)", () => {
       id: 'a',
       name: 'a',
       kind: 'enemy',
-      characteristics: { CC: cc, CT: cc, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': cc, 'capacite-de-tir': cc, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
@@ -89,7 +89,7 @@ describe('Découpe de la résolution de mêlée (split attaquant/défenseur)', (
       id: 'x',
       name: 'x',
       kind: 'enemy',
-      characteristics: { CC: cc, CT: cc, F: 30, E: 30, I: 30, Ag: 35, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': cc, 'capacite-de-tir': cc, force: 30, endurance: 30, initiative: 30, agilite: 35, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
@@ -148,7 +148,7 @@ describe('Sur la défensive (+20 en défense, LDB Combat l.118)', () => {
       id: 'c',
       name: 'c',
       kind: 'enemy',
-      characteristics: { CC: cc, CT: cc, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': cc, 'capacite-de-tir': cc, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 20, max: 20 },
       advantage: 0,
       conditions: [],
@@ -188,7 +188,7 @@ describe('États en combat (LDB ch.16)', () => {
     expect(cannotDefend(t)).toBe(true);
   });
   it('Empoisonné : endOfRound n’applique PLUS les dégâts (migrés en données — effects onRoundEnd → wounds {stacks})', () => {
-    const c = { name: 'x', conditions: [], characteristics: { E: 30 }, skills: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
+    const c = { name: 'x', conditions: [], characteristics: { endurance: 30 }, skills: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
     addCondition(c, 'empoisonne', 2);
     endOfRound(c);
     // Dégâts de poison désormais data-driven (etats.json + fireConditionEffects, cf. state/etat-perround.test) :
@@ -199,7 +199,7 @@ describe('États en combat (LDB ch.16)', () => {
     const c = {
       name: 'x',
       conditions: [],
-      characteristics: { E: 70 },
+      characteristics: { endurance: 70 },
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       wounds: { current: 20, max: 20 },
     } as unknown as Combatant;
@@ -212,7 +212,7 @@ describe('États en combat (LDB ch.16)', () => {
       name: 'x',
       conditions: [],
       skills: [],
-      characteristics: { E: 50 },
+      characteristics: { endurance: 50 },
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
       wounds: { current: 10, max: 10 },
     } as unknown as Combatant;
@@ -229,7 +229,7 @@ describe('Avantage en combat (LDB Déplacement l.37 : +10 par point)', () => {
     id: 'c',
     name: 'c',
     kind: 'enemy',
-    characteristics: { CC: cc, CT: cc, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': cc, 'capacite-de-tir': cc, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 10, max: 10 },
     advantage,
     conditions: [],
@@ -296,11 +296,11 @@ describe('Bonus & Blessures', () => {
     expect(bonus(40)).toBe(4);
   });
   it('Blessures = BF + 2×BE + BFM', () => {
-    const chars = { F: 35, E: 40, FM: 30 } as Characteristics;
+    const chars = { force: 35, endurance: 40, 'force-mentale': 30 } as Characteristics;
     expect(maxWounds(chars)).toBe(3 + 2 * 4 + 3); // 14
   });
   it('Halfling (Petit) = 2×BE + BFM', () => {
-    const chars = { F: 30, E: 40, FM: 30 } as Characteristics;
+    const chars = { force: 30, endurance: 40, 'force-mentale': 30 } as Characteristics;
     expect(maxWounds(chars, 'petite')).toBe(2 * 4 + 3); // 11
   });
 });
@@ -372,7 +372,7 @@ describe('Dégâts d’arme (parsing via effectiveWeaponDamage)', () => {
 });
 
 function dummy(name: string, chars: Partial<Characteristics>, wounds: number, weapon: Weapon): Combatant {
-  const base: Characteristics = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  const base: Characteristics = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
   return {
     id: name,
     name,
@@ -393,8 +393,8 @@ describe('Résolution de mêlée', () => {
   it('produit un résultat cohérent et déterministe avec une graine', () => {
     const rng = makeRNG(42);
     const sword: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [] };
-    const a = dummy('Attaquant', { CC: 60, F: 40 }, 15, sword);
-    const d = dummy('Défenseur', { CC: 25, E: 30 }, 12, sword);
+    const a = dummy('Attaquant', { 'capacite-de-combat': 60, force: 40 }, 15, sword);
+    const d = dummy('Défenseur', { 'capacite-de-combat': 25, endurance: 30 }, 12, sword);
     const res = resolveMelee(a, d, sword, rng);
     expect(typeof res.hit).toBe('boolean');
     if (res.hit) {
@@ -440,8 +440,8 @@ describe('Test opposé (départage canon)', () => {
 describe('Coup Critique au niveau moteur (LDB 18-Traumatisme : double uniquement)', () => {
   it('le moteur ne marque le critique que sur un double — l’OVERKILL est posé par le store (sur PB courants)', () => {
     const heavy: Weapon = { name: 'Maillet', type: 'melee', damage: { plusBF: true, flat: 20 }, qualities: [] };
-    const a = dummy('Brute', { CC: 90, F: 40 }, 20, heavy);
-    const d = dummy('Frêle', { CC: 20, E: 20 }, 3, heavy); // Blessures max 3
+    const a = dummy('Brute', { 'capacite-de-combat': 90, force: 40 }, 20, heavy);
+    const d = dummy('Frêle', { 'capacite-de-combat': 20, endurance: 20 }, 3, heavy); // Blessures max 3
     const res = resolveMelee(a, d, heavy, makeRNG(1), { defense: 'none' });
     expect(res.hit).toBe(true);
     expect(res.woundsLost!).toBeGreaterThan(d.wounds.max); // gros coup → overkill géré par le STORE, plus par applyHit
@@ -452,7 +452,7 @@ describe('Coup Critique au niveau moteur (LDB 18-Traumatisme : double uniquement
 
 // --- Magie -----------------------------------------------------------------
 function caster(chars: Partial<Characteristics>, skills: SkillInstance[] = [], wounds = 12): Combatant {
-  const base: Characteristics = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  const base: Characteristics = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
   return {
     id: 'c',
     name: 'Mage',
@@ -510,15 +510,15 @@ describe('Magie — analyse des descriptions', () => {
 
 describe('Magie — valeur d’incantation', () => {
   it('Langue (Magick) = Int + avances', () => {
-    const c = caster({ Int: 40 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 15 }]);
+    const c = caster({ intelligence: 40 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }]);
     expect(castingValue(c, 'langue', 'magick')).toBe(55);
   });
   it('Prière = Soc + avances', () => {
-    const c = caster({ Soc: 35 }, [{ skillId: 'priere', characteristic: 'Soc', advances: 10 }]);
+    const c = caster({ sociabilite: 35 }, [{ skillId: 'priere', characteristic: 'sociabilite', advances: 10 }]);
     expect(castingValue(c, 'priere')).toBe(45);
   });
   it('sans la compétence, la Caractéristique seule est utilisée', () => {
-    const c = caster({ Int: 33 });
+    const c = caster({ intelligence: 33 });
     expect(castingValue(c, 'langue', 'magick')).toBe(33);
   });
 });
@@ -526,13 +526,13 @@ describe('Magie — valeur d’incantation', () => {
 describe('Magie — résolution de l’incantation', () => {
   it('un Sort réussi mais avec DR < NI n’est pas lancé', () => {
     // Valeur 95 → réussite quasi certaine, mais DR max ~9 < NI 20.
-    const c = caster({ Int: 95 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 1 }]);
+    const c = caster({ intelligence: 95 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 1 }]);
     const spell: SpellLike = { ...ARCANE, cn: 20 };
     const res = resolveCasting(c, spell, makeRNG(3));
     expect(res.cast).toBe(false);
   });
   it('cohérence : lancé ⇔ réussite et DR ≥ NI', () => {
-    const c = caster({ Int: 60 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 1 }]);
+    const c = caster({ intelligence: 60 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 1 }]);
     for (let seed = 0; seed < 20; seed++) {
       const res = resolveCasting(c, FLECHETTE, makeRNG(seed));
       const success = res.roll <= res.target;
@@ -540,7 +540,7 @@ describe('Magie — résolution de l’incantation', () => {
     }
   });
   it('une Prière réussie est lancée sans seuil de NI', () => {
-    const c = caster({ Soc: 99 }, [{ skillId: 'priere', characteristic: 'Soc', advances: 1 }]);
+    const c = caster({ sociabilite: 99 }, [{ skillId: 'priere', characteristic: 'sociabilite', advances: 1 }]);
     const res = resolveCasting(c, PRIERE, makeRNG(2));
     expect(res.cast).toBe(res.roll <= res.target);
   });
@@ -548,8 +548,8 @@ describe('Magie — résolution de l’incantation', () => {
 
 describe('Magie — Projectile magique', () => {
   it('Dégâts = Dégâts du sort + DR + BFM, Localisation = jet inversé', () => {
-    const c = caster({ Int: 80, FM: 40 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 1 }]);
-    const target = caster({ E: 30 }, [], 15);
+    const c = caster({ intelligence: 80, 'force-mentale': 40 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 1 }]);
+    const target = caster({ endurance: 30 }, [], 15);
     const spell: SpellLike = { ...FLECHETTE, damage: 4 };
     const res = resolveMagicMissile(c, target, spell, makeRNG(5));
     if (res.hit) {
@@ -562,7 +562,7 @@ describe('Magie — Projectile magique', () => {
 
 describe('Magie — Focalisation', () => {
   it('cumule un DR positif sur réussite', () => {
-    const c = caster({ FM: 90 }, [{ skillId: 'focalisation', spec: 'Aqshy', characteristic: 'FM', advances: 1 }]);
+    const c = caster({ 'force-mentale': 90 }, [{ skillId: 'focalisation', spec: 'Aqshy', characteristic: 'force-mentale', advances: 1 }]);
     const res = resolveFocus(c, ARCANE, makeRNG(4));
     expect(res.dr).toBeGreaterThanOrEqual(0);
     if (res.roll <= 90) expect(res.dr).toBe(Math.max(0, Math.floor(90 / 10) - Math.floor(res.roll / 10)));
@@ -571,46 +571,46 @@ describe('Magie — Focalisation', () => {
 
 describe('Magie — effets actifs (buffs temporisés)', () => {
   it('effectiveChar applique le meilleur bonus, sans cumul', () => {
-    const c = caster({ CC: 35 });
+    const c = caster({ 'capacite-de-combat': 35 });
     c.activeEffects = [
-      { label: 'A', char: 'CC', bonus: 10, duration: { scale: 'rounds', left: 6 } },
-      { label: 'B', char: 'CC', bonus: 20, duration: { scale: 'rounds', left: 6 } },
+      { label: 'A', char: 'capacite-de-combat', bonus: 10, duration: { scale: 'rounds', left: 6 } },
+      { label: 'B', char: 'capacite-de-combat', bonus: 20, duration: { scale: 'rounds', left: 6 } },
     ];
-    expect(effectiveChar(c, 'CC')).toBe(55); // 35 + max(10,20)
+    expect(effectiveChar(c, 'capacite-de-combat')).toBe(55); // 35 + max(10,20)
   });
   it('endOfRound décrémente et dissipe les effets expirés', () => {
-    const c = caster({ CC: 35 });
-    const eff: ActiveEffect = { label: 'Bénédiction de Bataille', char: 'CC', bonus: 10, duration: { scale: 'rounds', left: 1 } };
+    const c = caster({ 'capacite-de-combat': 35 });
+    const eff: ActiveEffect = { label: 'Bénédiction de Bataille', char: 'capacite-de-combat', bonus: 10, duration: { scale: 'rounds', left: 1 } };
     c.activeEffects = [eff];
     endOfRound(c);
     expect(c.activeEffects.length).toBe(0);
-    expect(effectiveChar(c, 'CC')).toBe(35);
+    expect(effectiveChar(c, 'capacite-de-combat')).toBe(35);
   });
   // Pénalités (omission-majeure corrigée) : meilleur bonus + pire pénalité, sommés.
   it('effectiveChar applique le meilleur bonus ET la pire pénalité (l.168)', () => {
-    const c = caster({ Ag: 40 });
+    const c = caster({ agilite: 40 });
     c.activeEffects = [
-      { label: 'buff', char: 'Ag', bonus: 10, duration: { scale: 'rounds', left: 6 } },
-      { label: 'autre buff', char: 'Ag', bonus: 20, duration: { scale: 'rounds', left: 6 } },
-      { label: 'Écorce', char: 'Ag', bonus: -10, duration: { scale: 'rounds', left: 6 } },
+      { label: 'buff', char: 'agilite', bonus: 10, duration: { scale: 'rounds', left: 6 } },
+      { label: 'autre buff', char: 'agilite', bonus: 20, duration: { scale: 'rounds', left: 6 } },
+      { label: 'Écorce', char: 'agilite', bonus: -10, duration: { scale: 'rounds', left: 6 } },
     ];
-    expect(effectiveChar(c, 'Ag')).toBe(50); // 40 + max(10,20) + min(-10) = 40+20-10
+    expect(effectiveChar(c, 'agilite')).toBe(50); // 40 + max(10,20) + min(-10) = 40+20-10
   });
   it('effectiveChar garde la pénalité la PIRE entre deux malus', () => {
-    const c = caster({ Dex: 45 });
+    const c = caster({ dexterite: 45 });
     c.activeEffects = [
-      { label: 'a', char: 'Dex', bonus: -10, duration: { scale: 'rounds', left: 6 } },
-      { label: 'b', char: 'Dex', bonus: -20, duration: { scale: 'rounds', left: 6 } },
+      { label: 'a', char: 'dexterite', bonus: -10, duration: { scale: 'rounds', left: 6 } },
+      { label: 'b', char: 'dexterite', bonus: -20, duration: { scale: 'rounds', left: 6 } },
     ];
-    expect(effectiveChar(c, 'Dex')).toBe(25); // 45 + 0 - 20
+    expect(effectiveChar(c, 'dexterite')).toBe(25); // 45 + 0 - 20
   });
 });
 
 describe('Magie — correctifs de fidélité (audit)', () => {
   // B1 — Projectile ignorant le Bonus d'Endurance : le BE n'est pas déduit.
   it('B1 : un Projectile « ignore le Bonus d’Endurance » ne déduit pas le BE', () => {
-    const c = caster({ Int: 80, FM: 30 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 1 }]);
-    const target = caster({ E: 39 }, [], 20); // BE 3
+    const c = caster({ intelligence: 80, 'force-mentale': 30 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 1 }]);
+    const target = caster({ endurance: 39 }, [], 20); // BE 3
     const spell: SpellLike = {
       label: 'Vortex d’âmes',
       type: 'Magie des Arcanes',
@@ -632,11 +632,11 @@ describe('Magie — correctifs de fidélité (audit)', () => {
   // A4 (cascade #T3) — durées d'HORLOGE (LDB 47) : minutes/heures/jours/« lever du soleil », depuis la
   // durée STRUCTURÉE. (L'échelle Rounds est portée par `{kind:'rounds'}`, hors de durationClockMinutes.)
   it('durationClockMinutes : clock littéral/(Bonus de X)/(X), untilDawn ; null hors-horloge', () => {
-    const c = caster({ FM: 45, Int: 38 }); // BFM 4 ; Int 38
+    const c = caster({ 'force-mentale': 45, intelligence: 38 }); // BFM 4 ; Int 38
     expect(durationClockMinutes({ kind: 'clock', value: 1, unit: 'hours' }, c, 0)).toBe(60);
-    expect(durationClockMinutes({ kind: 'clock', value: { bonusOf: 'FM' }, unit: 'days' }, c, 0)).toBe(4 * 24 * 60);
-    expect(durationClockMinutes({ kind: 'clock', value: { bonusOf: 'FM' }, unit: 'minutes' }, c, 0)).toBe(4);
-    expect(durationClockMinutes({ kind: 'clock', value: { charOf: 'Int' }, unit: 'minutes' }, c, 0)).toBe(38); // carac PLEINE
+    expect(durationClockMinutes({ kind: 'clock', value: { bonusOf: 'force-mentale' }, unit: 'days' }, c, 0)).toBe(4 * 24 * 60);
+    expect(durationClockMinutes({ kind: 'clock', value: { bonusOf: 'force-mentale' }, unit: 'minutes' }, c, 0)).toBe(4);
+    expect(durationClockMinutes({ kind: 'clock', value: { charOf: 'intelligence' }, unit: 'minutes' }, c, 0)).toBe(38); // carac PLEINE
     // « Jusqu'au lever du soleil » : prochaine aube (05:00) ; à l'aube pile → un cycle entier.
     expect(durationClockMinutes({ kind: 'untilDawn' }, c, 0)).toBe(5 * 60);
     expect(durationClockMinutes({ kind: 'untilDawn' }, c, 5 * 60)).toBe(24 * 60);
@@ -649,23 +649,23 @@ describe('Magie — correctifs de fidélité (audit)', () => {
 
 describe('Magie — compétences Avancées (gating)', () => {
   it('knowsCastingSkill exige au moins 1 augmentation', () => {
-    const sansSkill = caster({ Int: 80 });
-    const zero = caster({ Int: 80 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 0 }]);
-    const ok = caster({ Int: 80 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 1 }]);
+    const sansSkill = caster({ intelligence: 80 });
+    const zero = caster({ intelligence: 80 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 0 }]);
+    const ok = caster({ intelligence: 80 }, [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 1 }]);
     expect(knowsCastingSkill(sansSkill, 'langue', 'magick')).toBe(false);
     expect(knowsCastingSkill(zero, 'langue', 'magick')).toBe(false);
     expect(knowsCastingSkill(ok, 'langue', 'magick')).toBe(true);
   });
   it('un Sort est refusé sans la compétence Avancée (pas de repli sur la Caractéristique)', () => {
-    const c = caster({ Int: 95 }); // aucune compétence Langue
+    const c = caster({ intelligence: 95 }); // aucune compétence Langue
     const res = resolveCasting(c, FLECHETTE, makeRNG(1));
     expect(res.cast).toBe(false);
     expect(res.log).toContain('ne maîtrise pas');
   });
   it('Talents liés au Test (LDB 10 l.20) : +1 DR par acquisition sur Test d’incantation RÉUSSI (Diction instinctive)', () => {
-    const skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'Int' as const, advances: 10 }];
-    const sans = caster({ Int: 80 }, skills);
-    const avec = caster({ Int: 80 }, skills);
+    const skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence' as const, advances: 10 }];
+    const sans = caster({ intelligence: 80 }, skills);
+    const avec = caster({ intelligence: 80 }, skills);
     avec.talents = [{ talentId: 'diction-instinctive', times: 2 }];
     expect(castTestTalentDR(avec, 'langue', 'magick')).toBe(2);
     expect(castTestTalentDR(sans, 'langue', 'magick')).toBe(0);
@@ -678,15 +678,15 @@ describe('Magie — compétences Avancées (gating)', () => {
   });
 
   it('un Talent lié à une AUTRE Langue ne booste pas l’incantation (Langue (Magick) exigé)', () => {
-    const c = caster({ Int: 80 });
+    const c = caster({ intelligence: 80 });
     c.talents = [{ talentId: 'linguistique', times: 3 }]; // test data : « Langue (Toutes) » ? — ne doit pas matcher Magick
     expect(castTestTalentDR(c, 'langue', 'magick')).toBe(0);
   });
 
   it('Harmonisation aethyrique ×N : +N DR aux Tests de Focalisation réussis (LDB 10 l.20)', () => {
-    const skills = [{ skillId: 'focalisation', spec: 'Aqshy', characteristic: 'FM' as const, advances: 5 }];
-    const sans = caster({ FM: 85 }, skills);
-    const avec = caster({ FM: 85 }, skills);
+    const skills = [{ skillId: 'focalisation', spec: 'Aqshy', characteristic: 'force-mentale' as const, advances: 5 }];
+    const sans = caster({ 'force-mentale': 85 }, skills);
+    const avec = caster({ 'force-mentale': 85 }, skills);
     avec.talents = [{ talentId: 'harmonisation-aethyrique', times: 3 }];
     for (let seed = 1; seed <= 6; seed++) {
       const a = resolveFocus(sans, ARCANE, makeRNG(seed));
@@ -697,9 +697,9 @@ describe('Magie — compétences Avancées (gating)', () => {
   });
 
   it('Dissipation (LDB 46 l.201-202) : Test opposé — gagné → dissipé ; perdu → le Sort garde le DR NET', () => {
-    const langue = (adv: number) => [{ skillId: 'langue', spec: 'magick', characteristic: 'Int' as const, advances: adv }];
+    const langue = (adv: number) => [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence' as const, advances: adv }];
     // contre-lanceur écrasant (valeur 99 clampée) vs jet d'incantation médiocre figé (DR 1)
-    const fort = caster({ Int: 89 }, langue(10));
+    const fort = caster({ intelligence: 89 }, langue(10));
     const castT = { roll: 40, target: 50, success: true, sl: 1, isDouble: false };
     let dispelCount = 0;
     for (let seed = 1; seed <= 12; seed++) {
@@ -712,7 +712,7 @@ describe('Magie — compétences Avancées (gating)', () => {
     }
     expect(dispelCount).toBeGreaterThan(6); // valeur 99 vs DR 1 : la dissipation domine
     // contre-lanceur nul : jamais dissipé sur un DR adverse élevé
-    const nul = caster({ Int: 10 }, langue(0));
+    const nul = caster({ intelligence: 10 }, langue(0));
     const fortCast = { roll: 11, target: 95, success: true, sl: 8, isDouble: false };
     for (let seed = 1; seed <= 8; seed++) expect(resolveCounterspell(nul, fortCast, makeRNG(seed)).dispelled).toBe(false);
   });
@@ -723,7 +723,7 @@ describe('Magie — compétences Avancées (gating)', () => {
   });
 
   it('le Trait « Lanceur de Sorts » (LDB 85 : « La créature peut lancer des Sorts ») dispense de la Compétence', () => {
-    const c = caster({ Int: 95 }); // statbloc de bestiaire : aucune Compétence
+    const c = caster({ intelligence: 95 }); // statbloc de bestiaire : aucune Compétence
     c.traits = [{ id: 'lanceur-de-sorts', arg: 'Sorcellerie' }];
     expect(knowsCastingSkill(c, 'langue', 'magick')).toBe(true);
     const res = resolveCasting(c, FLECHETTE, makeRNG(1));

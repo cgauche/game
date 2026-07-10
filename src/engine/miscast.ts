@@ -51,7 +51,7 @@ export interface MiscastResult {
  *  « échec à −4 DR ou moins → Inconscient EN PLUS »). Transformée en nœud de Flow `test` par `mkTest`. */
 interface NestedTest {
   skill?: string;
-  characteristic?: 'FM';
+  characteristic?: 'force-mentale';
   difficulty: Difficulty;
   /** Ops appliqués au lanceur sur un ÉCHEC du Test (« ou Sonné »). */
   onFail: GameOp[];
@@ -199,7 +199,7 @@ function expandOps(jsonOps: JsonOp[], sin: number): GameOp[] {
 function expandNestedTest(t: JsonNestedTest): NestedTest {
   const result: NestedTest = {
     ...(t.skill ? { skill: t.skill } : {}),
-    ...(t.characteristic ? { characteristic: t.characteristic as 'FM' } : {}),
+    ...(t.characteristic ? { characteristic: t.characteristic as 'force-mentale' } : {}),
     difficulty: t.difficulty as Difficulty,
     onFail: expandOps(t.onFail, 0), // test onFail ops never reference sin
   };

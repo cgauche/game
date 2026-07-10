@@ -23,7 +23,7 @@ import type { GameState } from './store';
  */
 
 const CHARS = (CT = 75) =>
-  ({ CC: 30, CT, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 });
+  ({ 'capacite-de-combat': 30, 'capacite-de-tir': CT, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 });
 
 const mkGunner = (id: string, kind: 'hero' | 'npc' | 'enemy', pos: { x: number; y: number }, CT = 75): Combatant =>
   ({
@@ -38,7 +38,7 @@ const mkCrewman = (id: string, alive = true): Combatant =>
 
 const mkEnemy = (id: string, x: number, y: number, E = 30, wounds = 40): Combatant =>
   ({ id, name: id, kind: 'enemy', pos: { x, y }, conditions: [], weapons: [], skills: [], talents: [],
-    characteristics: { ...CHARS(0), E }, wounds: { current: wounds, max: wounds }, advantage: 0,
+    characteristics: { ...CHARS(0), endurance: E }, wounds: { current: wounds, max: wounds }, advantage: 0,
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 } }) as unknown as Combatant;
 
 /** Emplacement AU SOL : une SceneEntity NON-navire qui PORTE la pièce (`postes`) — SANS `crewIds` au niveau
@@ -91,9 +91,9 @@ describe('(B) Tir — le chef sert la pièce et touche la cible (resolveAttack, 
     seedBattleRng(1);
     const poste = mkPoste('baliste', ['gunner', 's1']);
     const gunner = mkGunner('gunner', 'hero', { x: 5, y: 5 }, 80);
-    gunner.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'CT', advances: 0 }] as never;
+    gunner.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
     const s1 = mkCrewman('s1');
-    s1.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'CT', advances: 0 }] as never; // équipe COMPLÈTE et qualifiée (2/2)
+    s1.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never; // équipe COMPLÈTE et qualifiée (2/2)
     const cible = mkEnemy('cible', 8, 5, 30, 60);
     const all = [mkEmplacement(poste), gunner, s1, cible];
     applyShipPostes(all);
@@ -111,7 +111,7 @@ describe('(B) Tir — le chef sert la pièce et touche la cible (resolveAttack, 
 describe('(C) Sous-effectif — la pénalité d’Arme d’équipe s’applique au sol (crewedFireWeapon)', () => {
   // Équipage CONFORME au RAW (AA l.3900) : les servants comptés possèdent la Projectiles du Groupe (baliste =
   // Arbalète) — la seule variable testée ici est leur PRÉSENCE physique (vivant/à terre), pas la compétence.
-  const arb = () => [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'CT', advances: 0 }] as never;
+  const arb = () => [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 0 }] as never;
 
   it('baliste (Indice 2) servie en sous-effectif → recharge ×2 + Arme d’équipe retirée (firedWeapon ⊃ crewedFireWeapon)', () => {
     const poste = mkPoste('baliste', ['chef', 's1']); // baliste : arme-d-equipe Indice 2, Recharge 3, Dégâts 12
@@ -154,7 +154,7 @@ describe('(D) Recharge — Test étendu rechargeant l’emplacement au sol (batt
     const item = itemFromTrappingById('baliste')!; // Recharge 3, Indice 2
     const poste: ShipPoste = { item, crewIds: ['chef', 's1'], loaded: false, reloadProgress: 2 };
     const chef = mkGunner('chef', 'hero', { x: 5, y: 5 }, 80);
-    chef.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'CT', advances: 20 }] as never;
+    chef.skills = [{ skillId: 'projectiles', spec: 'arbalete', characteristic: 'capacite-de-tir', advances: 20 }] as never;
     const s1 = mkCrewman('s1');
     const emplacement = mkEmplacement(poste);
     useGame.setState({

@@ -64,12 +64,12 @@
       },
       {
         "op": "charMod",
-        "char": "F",
+        "char": "force",
         "mod": -30
       },
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": -30
       }
     ],
@@ -88,12 +88,12 @@
       },
       {
         "op": "charMod",
-        "char": "F",
+        "char": "force",
         "mod": -30
       },
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": -30
       }
     ],
@@ -171,12 +171,12 @@
     "ops": [
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": -1
       },
       {
         "op": "charMod",
-        "char": "CC",
+        "char": "capacite-de-combat",
         "mod": -1
       }
     ],
@@ -255,7 +255,7 @@
     "ops": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -20
       }
     ],
@@ -273,7 +273,7 @@
     "ops": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -5
       },
       {
@@ -299,7 +299,7 @@
     "ops": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -5
       },
       {
@@ -332,12 +332,12 @@
     "ops": [
       {
         "op": "charMod",
-        "char": "CC",
+        "char": "capacite-de-combat",
         "mod": -30
       },
       {
         "op": "charMod",
-        "char": "CT",
+        "char": "capacite-de-tir",
         "mod": -30
       },
       {

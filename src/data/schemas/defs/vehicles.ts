@@ -57,7 +57,7 @@ export const schema = z.array(
     }).optional(),
     /** Facette COQUE (entité à PV, `bodyShape` toujours `'vehicule'` dans les 22 entrées observées). */
     hull: z.strictObject({
-      char: z.strictObject({ E: z.number(), B: z.number() }),
+      char: z.strictObject({ endurance: z.number(), B: z.number() }),
       bodyShape: z.literal('vehicule'),
       propulsion: z.enum(['terrestre', 'fluvial', 'maritime']),
       rig: z.enum(['avirons', 'voile', 'mixte']).optional(),

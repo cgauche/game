@@ -184,7 +184,7 @@ export function ActionBar() {
       const left = cleaveTargets(battle, atk, pendingCleave.hitIds).length;
       return {
         icon: <Icon id="action/attack" />, title: 'Frappe Mortelle',
-        badge: left ? `enchaînement ${pendingCleave.count + 1}/${bonus(effectiveChar(atk, 'CC'))}` : 'plus d’adversaire à portée',
+        badge: left ? `enchaînement ${pendingCleave.count + 1}/${bonus(effectiveChar(atk, 'capacite-de-combat'))}` : 'plus d’adversaire à portée',
         exit: { label: 'Terminer', onClick: cleaveEnd, primary: !left },
       };
     }

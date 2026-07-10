@@ -17,7 +17,7 @@ const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, f
 function caster(id: string, pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
   return {
     id, name: id, kind: 'enemy', pos,
-    characteristics: { CC: 40, CT: 40, F: 40, E: 40, I: 40, Ag: 40, Dex: 40, Int: 60, FM: 60, Soc: 60 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 60, 'force-mentale': 60, sociabilite: 60 },
     wounds: { current: 12, max: 12, base: 12 }, advantage: 0, conditions: [], weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4, ...opts,
@@ -27,7 +27,7 @@ function caster(id: string, pos: { x: number; y: number }, opts: Partial<Combata
 function foeAt(id: string, x: number, y: number, opts: Partial<Combatant> = {}): Combatant {
   return {
     id, name: id, kind: 'hero',
-    characteristics: { CC: 35, CT: 35, F: 35, E: 35, I: 35, Ag: 35, Dex: 35, Int: 35, FM: 35, Soc: 35 },
+    characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 35, force: 35, endurance: 35, initiative: 35, agilite: 35, dexterite: 35, intelligence: 35, 'force-mentale': 35, sociabilite: 35 },
     wounds: { current: 12, max: 12, base: 12 }, advantage: 0, conditions: [], weapons: [MELEE],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4, pos: { x, y }, ...opts,
@@ -52,7 +52,7 @@ function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnIn
 // 1. BUFF de combat = bénéfice MARGINAL réel (op charMod), pas une liste de carac
 // ════════════════════════════════════════════════════════════════════════════════════════════════
 describe('opValue — un buff de combat vaut son bénéfice marginal (armé > 0, désarmé ≈ 0)', () => {
-  const buff = { op: 'charMod', char: 'CC', mod: 10 } as never;
+  const buff = { op: 'charMod', char: 'capacite-de-combat', mod: 10 } as never;
   it('combattant ARMÉ : +10 CC améliore l’EV d’attaque → valeur > 0', () => {
     const e = caster('e', { x: 0, y: 0 });
     const armed = caster('a', { x: 1, y: 0 }, { weapons: [MELEE] });
@@ -121,7 +121,7 @@ describe('chooseEnemyAction — soin & anti-spam (op-driven)', () => {
 
   it('Unicité buff : buff déjà ACTIF → ne réapplique pas → attaque', () => {
     const e = caster('e', { x: 5, y: 5 }, { weapons: [MELEE] });
-    const buffSelf = castable({ id: 'benediction', shape: 'self', range: 0, active: true, data: spellData({ id: 'benediction', effects: doOps([{ op: 'charMod', char: 'CC', mod: 10 }], 'caster') }) });
+    const buffSelf = castable({ id: 'benediction', shape: 'self', range: 0, active: true, data: spellData({ id: 'benediction', effects: doOps([{ op: 'charMod', char: 'capacite-de-combat', mod: 10 }], 'caster') }) });
     const h = foeAt('h', 5, 6);
     expect(chooseEnemyAction(input(e, [h], { spells: [buffSelf] }))).toEqual({ kind: 'melee', targetId: 'h' });
   });

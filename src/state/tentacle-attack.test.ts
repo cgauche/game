@@ -79,8 +79,8 @@ describe('Attaque gratuite de Tentacule (store)', () => {
   it('frappe gratuite : modale standard, Action préservée, 1/tour, Empêtré sur Dégâts', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
-    H.characteristics.CC = 95;
-    H.characteristics.F = 45;
+    H.characteristics['capacite-de-combat'] = 95;
+    H.characteristics.force = 45;
     const before = E.wounds.current;
     // Chemin d'attaque UNIFIÉ : on arme l'attaque Tentacule puis on clique l'ennemi (adjacent → frappe directe).
     useGame.getState().battleSelectAttack('tentacule');

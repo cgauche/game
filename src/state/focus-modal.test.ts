@@ -18,9 +18,9 @@ describe('Focalisation en modale (store)', () => {
 
   it('battleFocusSpell ouvre pendingFocus sans tirer ; focusRoll tire ; focusConfirm cumule le DR + consomme l’Action', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'sorcier', name: 'Mage', rng: makeRNG(3) });
-    hero.characteristics.FM = 80;
+    hero.characteristics['force-mentale'] = 80;
     hero.spells = ['arme-aethyrique'];
-    if (!hero.skills.some((s) => s.skillId === 'focalisation')) hero.skills.push({ skillId: 'focalisation', advances: 20, characteristic: 'FM' } as never);
+    if (!hero.skills.some((s) => s.skillId === 'focalisation')) hero.skills.push({ skillId: 'focalisation', advances: 20, characteristic: 'force-mentale' } as never);
     useGame.setState({ party: [hero] });
     useGame.getState().seedRng(2);
     useGame.getState().startScene(testScene);
@@ -58,10 +58,10 @@ describe('Focalisation en modale (store)', () => {
     const enemy = st.battle!.combatants.find((c) => c.kind === 'enemy')!;
     // Dote l'ennemi d'un sort arcanique focalisable + la Compétence de Focalisation (DONNÉE, pas un nom).
     enemy.spells = ['carreau'];
-    enemy.characteristics.FM = 80;
+    enemy.characteristics['force-mentale'] = 80;
     enemy.skills = [...(enemy.skills ?? []),
-      { skillId: 'focalisation', advances: 30, characteristic: 'FM' } as never,
-      { skillId: 'langue', spec: 'magick', advances: 30, characteristic: 'Int' } as never];
+      { skillId: 'focalisation', advances: 30, characteristic: 'force-mentale' } as never,
+      { skillId: 'langue', spec: 'magick', advances: 30, characteristic: 'intelligence' } as never];
     // Donne le TOUR à l'ennemi (acted:false → il peut agir).
     const turn = st.battle!.order.indexOf(enemy.id);
     useGame.setState({ battle: { ...st.battle!, turn, action: null, acted: false, combatants: [...st.battle!.combatants] } });

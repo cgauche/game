@@ -18,7 +18,7 @@ import type { Combatant } from '../engine/types';
 const hero = (p: Partial<Combatant> = {}): Combatant =>
   ({
     id: 'a', name: 'A', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 43, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 43, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [],
     talents: [
       { talentId: 'resistance', spec: 'corruption', times: 1 },
@@ -144,7 +144,7 @@ describe('Résistance (Magie) — opposition à un Sort (« résister aux sorts 
         casterId: foe.id, targetId: a.id, spellId: 'fauche-demon', missile: false, focused: false,
         result: { cast: true, roll: 30, target: 70, sl: 6, isCritical: false, isFumble: false, log: 'x' },
       } as never,
-      pendingCastOpposition: { participants: [{ id: a.id, interactive: true, result: null }], kind: 'resist', char: 'FM', menace: 'magie' } as never,
+      pendingCastOpposition: { participants: [{ id: a.id, interactive: true, result: null }], kind: 'resist', char: 'force-mentale', menace: 'magie' } as never,
     });
     useGame.getState().oppositionResist(a.id);
     const part = useGame.getState().pendingCastOpposition!.participants[0];

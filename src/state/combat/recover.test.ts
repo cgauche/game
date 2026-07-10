@@ -8,7 +8,7 @@ import type { Combatant } from '../../engine/types';
  * fin du `if state === empetre … else athletisme` dupliqué. Pin de la résolution (skill/opposé/source).
  */
 const mk = (over: Partial<Combatant>): Combatant =>
-  ({ id: 'c', name: 'C', kind: 'enemy', conditions: [], skills: [], characteristics: { F: 40, Ag: 35 } as never,
+  ({ id: 'c', name: 'C', kind: 'enemy', conditions: [], skills: [], characteristics: { force: 40, agilite: 35 } as never,
      wounds: { current: 10, max: 10 }, ...over } as unknown as Combatant);
 
 describe('resolveRecoverTest (LDB 16 l.61/77) — données EtatData.recover', () => {
@@ -30,7 +30,7 @@ describe('resolveRecoverTest (LDB 16 l.61/77) — données EtatData.recover', ()
 
   it('Empêtré + source VIVANTE (sans escapeStrength) : opposé contre la Force de la source', () => {
     const c = mk({ conditions: [{ name: 'empetre', value: 1, sourceId: 's' }] });
-    const src = mk({ id: 's', name: 'Toile', characteristics: { F: 62 } as never });
+    const src = mk({ id: 's', name: 'Toile', characteristics: { force: 62 } as never });
     const r = resolveRecoverTest(c, 'empetre', { combatants: [c, src] })!;
     expect(r.opposed).toBe(true);
     expect(r.opponentValue).toBe(62); // Force de la source vivante

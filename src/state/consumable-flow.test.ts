@@ -39,7 +39,7 @@ beforeEach(() => {
 describe('belladone (LDB 72 l.18) — Test au boire RESTREINT au buveur, sommeil différé, État d’horloge', () => {
   it('bout en bout : modale du BUVEUR → échec → sommeil programmé à +150 min → Inconscient 1d10+4 h → dissipé', () => {
     // h1 a une meilleure Résistance que h2 — le Test doit pourtant viser h2 (c'est LUI qui boit).
-    const h1 = hero('h1', { characteristics: { ...hero('x').characteristics, E: 60 } });
+    const h1 = hero('h1', { characteristics: { ...hero('x').characteristics, endurance: 60 } });
     const h2 = hero('h2');
     giveItem(h2, 'belladone', 'bel1');
     useGame.setState({ party: [h1, h2] });
@@ -150,7 +150,7 @@ describe('racine-de-mandragore (LDB 71 l.35) — gate d’action par Round (actG
 
   it('applier actGate : échec du Test → étape de CHOIX ; « garder le Mouvement » consomme l’Action de la battle', () => {
     const h = hero('h1');
-    h.activeEffects = [{ label: 'Racine de mandragore', bonus: 0, duration: { scale: 'clock', until: 99999 }, actGate: { char: 'FM' } }];
+    h.activeEffects = [{ label: 'Racine de mandragore', bonus: 0, duration: { scale: 'clock', until: 99999 }, actGate: { char: 'force-mentale' } }];
     useGame.setState({ party: [h], battle: battleWith(h), mode: 'battle' });
     const get = useGame.getState;
     const set = useGame.setState;

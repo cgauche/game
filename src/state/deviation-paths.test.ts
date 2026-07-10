@@ -16,7 +16,7 @@ import type { Combatant, Weapon } from '../engine/types';
 import type { AttackResult } from '../engine/combat';
 import { emptyScene } from './scene';
 
-const CHARS = { CC: 45, CT: 45, F: 40, E: 35, I: 30, Ag: 30, Dex: 30, Int: 40, FM: 30, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 40, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 30, sociabilite: 30 };
 
 const mk = (kind: Combatant['kind'], id: string, over: Partial<Combatant> = {}): Combatant =>
   ({

@@ -56,7 +56,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.traits = [{ id: 'souffle', value: 15, arg: 'Feu' }];
-    H.characteristics.CT = 90; // touche déterministe vs Esquive
+    H.characteristics['capacite-de-tir'] = 90; // touche déterministe vs Esquive
     H.advantage = 3;
     const before = E.wounds.current;
     activate('souffle', E.id);
@@ -81,7 +81,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.traits = [{ id: 'hurlement-fantomatique' }];
-    H.characteristics.I = 40;
+    H.characteristics.initiative = 40;
     H.advantage = 4;
     const before = E.wounds.current;
     useGame.getState().battleManeuverArea('hurlement');
@@ -95,7 +95,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.traits = [{ id: 'etreinte-glaciale' }];
-    H.characteristics.CC = 90;
+    H.characteristics['capacite-de-combat'] = 90;
     H.advantage = 2;
     activate('etreinte', E.id);
     const pm = useGame.getState().pendingManeuver;
@@ -112,9 +112,9 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.traits = [{ id: 'regard-petrifiant' }];
-    H.characteristics.CT = 95;
+    H.characteristics['capacite-de-tir'] = 95;
     H.advantage = 6;
-    E.characteristics.I = 1;
+    E.characteristics.initiative = 1;
     E.skills = E.skills.filter((s) => s.skillId !== 'initiative');
     activate('regard', E.id);
     expect(useGame.getState().pendingManeuver!.avantageSpent).toBe(1); // défaut variable = 1
@@ -144,7 +144,7 @@ describe('FLOWS.maneuver — manœuvre de créature par modale (store)', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup();
     H.traits = [{ id: 'souffle', value: 15, arg: 'Feu' }];
-    H.characteristics.CT = 1; // raterait sans Résilience
+    H.characteristics['capacite-de-tir'] = 1; // raterait sans Résilience
     H.advantage = 3;
     H.resilience = 1;
     const before = E.wounds.current;

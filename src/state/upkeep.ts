@@ -74,7 +74,7 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
       restoreSuppressedPsych(h, fx); // Traits psy suspendus (Baume, LDB 42) restitués
       // Blessures max dérivées : un buff F/E/FM ou un `attrMod{wounds}` (Bonnet de fou) expiré recale
       // max + courants (perte du +4 à la dissipation — « l'utilisateur perd 1d10 PB » est une op `delayed` à part).
-      if (fx.some((e) => e.attrMods?.wounds || e.char === 'F' || e.char === 'E' || e.char === 'FM')) refreshWounds(h);
+      if (fx.some((e) => e.attrMods?.wounds || e.char === 'force' || e.char === 'endurance' || e.char === 'force-mentale')) refreshWounds(h);
     }
     // États à durée d'HORLOGE (op `condition.durationHours` — Belladone : sommeil « 1d10+4 heures ») :
     // dissipés à l'échéance, même canal de purge que les effets actifs (LDB 72 l.18).
@@ -130,18 +130,18 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
         ? (spec) => opts.onDeferTest!({ heroId: h.id, kind: spec.kind, label: spec.label, base: spec.base, target: spec.base + DIFFICULTY_MODIFIERS[spec.difficulty] + (spec.penalty ?? 0), meta: spec.meta })
         : undefined;
       // 1. Nourriture (LDB 18 l.417-422).
-      const r = dailyFoodUpkeep(h, testValue(h, 'resistance', 'E'), bonus(effectiveChar(h, 'E')), battleRng(), defer);
+      const r = dailyFoodUpkeep(h, testValue(h, 'resistance', 'endurance'), bonus(effectiveChar(h, 'endurance')), battleRng(), defer);
       if (r.rationConsumed) rations++;
       if (r.damage > 0) loseWounds(h, r.damage);
       lines.push(...r.log);
       // 1bis. Eau / Soif (LDB 18 l.420) — accès à l'eau calculé plus haut (`hasWater`).
-      const w = dailyWaterUpkeep(h, hasWater, testValue(h, 'resistance', 'E'), bonus(effectiveChar(h, 'E')), battleRng(), defer);
+      const w = dailyWaterUpkeep(h, hasWater, testValue(h, 'resistance', 'endurance'), bonus(effectiveChar(h, 'endurance')), battleRng(), defer);
       if (w.damage > 0) loseWounds(h, w.damage);
       lines.push(...w.log);
       // 1ter. Dessoûlage (LDB 09 l.485) : une nuit sans boire dégrise. Deux Tests de Résistance à l'alcool
       //       Intermédiaires fixent la dissipation (10−DR h) et la gueule de bois (Exténué 5−DR h, horloge).
       if (h.drunk) {
-        const alc = testValue(h, 'resistance-a-l-alcool', 'E');
+        const alc = testValue(h, 'resistance-a-l-alcool', 'endurance');
         const sr = soberUp(h, get().gameTime, rollTest(alc, 'intermediaire', battleRng()).sl, rollTest(alc, 'intermediaire', battleRng()).sl);
         lines.push(...sr.log);
         if (sr.hangover) addClockCondition(h, sr.hangover.name, sr.hangover.value, sr.hangover.until);

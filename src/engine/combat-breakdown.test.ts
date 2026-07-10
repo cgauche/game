@@ -10,7 +10,7 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
     id: 'x',
     name: 'X',
     kind: 'enemy',
-    characteristics: { CC: 50, CT: 50, F: 30, E: 30, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 50, 'capacite-de-tir': 50, force: 30, endurance: 30, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 },
     advantage: 0,
     conditions: [],
@@ -54,7 +54,7 @@ describe('attackModifiers : pénalité de main secondaire (LDB 14 l.181)', () =>
 });
 
 describe('parade : pénalité de main secondaire + exception Parade/Défensive (LDB 62 l.192)', () => {
-  const parrySpec = { skillId: 'corps-a-corps', spec: 'parade', characteristic: 'CC', advances: 0 } as any;
+  const parrySpec = { skillId: 'corps-a-corps', spec: 'parade', characteristic: 'capacite-de-combat', advances: 0 } as any;
   const offShield: Weapon = { name: 'Bouclier', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'defensive' }], hand: 'off', hands: 1 };
   it('parade main secondaire : bouclier Défensive + spé Parade → AUCUNE pénalité', () => {
     const mods = defenseModifiers(mk({ skills: [parrySpec] }), 'parade', 0, offShield);
@@ -154,7 +154,7 @@ describe('Taille — Frappe Mortelle (cleave) + Piétinement (LDB 85 l.299/320-3
     expect(resolveMeleePassive(mk(), mk(), sword, hit).cleave).toBeFalsy();
   });
   it('resolveTrample : attaque CC qui se résout', () => {
-    const r = resolveTrample(mk({ size: 'enorme', characteristics: { ...mk().characteristics, CC: 60 } }), mk({ size: 'moyenne' }), makeRNG(3));
+    const r = resolveTrample(mk({ size: 'enorme', characteristics: { ...mk().characteristics, 'capacite-de-combat': 60 } }), mk({ size: 'moyenne' }), makeRNG(3));
     expect(typeof r.hit).toBe('boolean');
   });
 });
@@ -219,7 +219,7 @@ describe('AttackResult — détail des jets (breakdown) pour la modale', () => {
 });
 
 describe('attackTestLabel — libellé du Test SUIT combatValue, ne ment jamais (#203)', () => {
-  const belier: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], resolveChar: 'F' };
+  const belier: Weapon = { name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [], resolveChar: 'force' };
   it('arme à Résolution alternative (bélier → Force, ADE II ch.08 l.233) → libellé de la Carac', () => {
     expect(attackTestLabel(belier, 'melee')).toBe('Force');
   });
@@ -231,7 +231,7 @@ describe('attackTestLabel — libellé du Test SUIT combatValue, ne ment jamais 
   });
   it('resolveMeleePassive avec un bélier : le breakdown affiche « Force », pas « Corps à corps »', () => {
     const hit = evaluateTest(20, 60);
-    const r = resolveMeleePassive(mk({ characteristics: { ...mk().characteristics, F: 60 } }), mk(), belier, hit);
+    const r = resolveMeleePassive(mk({ characteristics: { ...mk().characteristics, force: 60 } }), mk(), belier, hit);
     expect(r.attackerDetail!.label).toBe('Force');
   });
 });

@@ -2,7 +2,7 @@
   {
     "id": "art",
     "label": "Art",
-    "characteristic": "Dex",
+    "characteristic": "dexterite",
     "type": "base",
     "specs": [
       {
@@ -63,7 +63,7 @@
   {
     "id": "athletisme",
     "label": "Athlétisme",
-    "characteristic": "Ag",
+    "characteristic": "agilite",
     "type": "base",
     "specs": [],
     "desc": "Il s'agit de votre capacité à courir, sauter, à vous déplacer avec rapidité et grâce, et à effectuer toute activité physique générale. Référez-vous à Déplacement (voir page 164) pour plus de détails sur l'utilisation de l'Athlétisme en mouvement de combat.",
@@ -76,7 +76,7 @@
   {
     "id": "calme",
     "label": "Calme",
-    "characteristic": "FM",
+    "characteristic": "force-mentale",
     "type": "base",
     "specs": [],
     "desc": "La Compétence Calme vous permet de rester serein sous la pression, de résister à la peur quand vous affrontez l'horreur, et à vous en tenir à vos convictions.\n\nLe Calme est en général utilisé pour résister aux autres Compétences – Charme, Intimidation et autres Compétences similaires –, mais vous devrez peut-être aussi faire un Test de Calme face à quelque chose qui vous oblige à agir contre votre volonté. Le Calme est aussi la principale Compétence utilisée pour résister aux effets de la Psychologie (voir page 190).",
@@ -88,7 +88,7 @@
   {
     "id": "charme",
     "label": "Charme",
-    "characteristic": "Soc",
+    "characteristic": "sociabilite",
     "type": "base",
     "specs": [],
     "desc": "Le Charme incite les gens à avoir une bonne opinion de vous, de vos points de vue et des actions proposées.\n\nRéussir un Test opposé de Charme/Calme vous permet d'influencer l'attitude d'une ou plusieurs cibles, jusqu'à un maximum égal à votre Bonus de Sociabilité + DR, affectant en premier la cible ayant la Force Mentale la plus faible. Si une cible est favorable à votre Charme, le Test sera incontesté.\n\nVotre MJ peut vous autoriser à utiliser le Charme en Combat, s'il pense que vos ennemis pourraient être sensibles à votre façon d'implorer pour votre vie ou à des arguments persuasifs pour faire cesser les violences (bonne chance pour charmer un gobelin !)\n\nSi vous utilisez Charme comme Action, calculez normalement le nombre de cibles potentielles. Si vous vous en servez pour vous défendre, l'Action n'affecte que votre adversaire. Sur un succès, les cibles charmées ne vous attaqueront pas pendant ce Round et vous gagnez +1 Avantage normalement. Vous pouvez répéter l'action sur plusieurs Rounds jusqu'à ce que vous arrêtiez ou échouiez, après quoi vos paroles n'auront plus aucune incidence.",
@@ -100,7 +100,7 @@
   {
     "id": "chevaucher",
     "label": "Chevaucher",
-    "characteristic": "Ag",
+    "characteristic": "agilite",
     "type": "base",
     "specs": [
       {
@@ -162,7 +162,7 @@
   {
     "id": "commandement",
     "label": "Commandement",
-    "characteristic": "Soc",
+    "characteristic": "sociabilite",
     "type": "base",
     "specs": [],
     "desc": "C'est une indication de votre capacité à diriger les autres et à vous faire respecter. Le plus souvent associée à des situations martiales, un meneur déterminé peut toutefois réagir rapidement lors d'un incendie ou autre catastrophe, et les nobles utilisent fréquemment la Compétence pour commander leurs subordonnés.\n\nUn Test de Commandement réussi vous permet de donner des ordres à un nombre de cibles égal à votre Bonus de Sociabilité + DR. Si les cibles sont vos subordonnés directs – un noble commandant un serf ou un sergent dirigeant ses troupes – les ordres ne rencontrent aucune opposition. S'il n'y a pas de hiérarchie en place, ou que l'ordre est particulièrement exigeant – comme ordonner à vos soldats de charger la tête d'une hydre – le Test est opposé au Calme de vos cibles.\n\nEn combat, vous pouvez utiliser Commandement pour encourager vos subalternes. Un Test de Commandement réussi confère un bonus de +10 à tous les Tests de Psychologie jusqu'à la fin du prochain Round (voir page 190).\n\nPar ailleurs, Commandement peut être utilisé pour transférer un Avantage à des alliés capables de vous entendre ; après un Test de Commandement réussi, vous pouvez transférer un Avantage à un allié de votre choix, et +1 Avantage par DR obtenu, qui peut de nouveau être alloué aux alliés de votre choix à portée de voix.",
@@ -174,7 +174,7 @@
   {
     "id": "conduite-d-attelage",
     "label": "Conduite d'attelage",
-    "characteristic": "Ag",
+    "characteristic": "agilite",
     "type": "base",
     "specs": [],
     "desc": "La Conduite d'attelage vous permet de conduire les véhicules – le plus souvent de simples chariots et de lourdes diligences, sans parler des créations plus « expérimentales » des Ingénieurs impériaux – sur les routes de l'Empire avec aussi peu d'incidents que possible.\n\nDans des circonstances normales, si vous possédez la Compétence Conduite d'attelage, aucun Test n'est nécessaire. Si les conditions sont moins idéales – peut-être la route est-elle en mauvais état ou si la météo est détestable –, un Test de Conduite d'attelage est nécessaire. Si vous ne possédez pas la Compétence Conduite d'attelage, un Test sera peut-être nécessaire pour effectuer des manœuvres même basiques. Un Échec Stupéfiant à un Test de Conduite d'attelage signifie que quelque chose de grave s'est produit. Faites un lancer sur le tableau suivant :\n\n| 1d10 | Résultat |\n| --- | --- |\n| 1–2 | Harnais cassé : un cheval (ou équivalent) se libère ; réduisez la vitesse en fonction. |\n| 3–5 | Cahots de la route : les passagers subissent 1 Point de Blessure et la marchandise fragile pourrait être endommagée. |\n| 6–8 | Roue brisée : réussissez un Test de Conduite d'attelage à chaque Round pour éviter l'accident. Les véhicules à deux roues avec une Roue brisée se retrouvent automatiquement Accidentés. |\n| 9–10 | Essieu cassé : le véhicule devient incontrôlable et se retrouve Accidenté. |\n\nAccident : Les occupants de véhicules Accidentés subissent généralement 2d10 Points de Blessure modifiées par le Bonus d'Endurance et les PA, sauf si le véhicule roulait doucement (déterminé par le MJ). Les véhicules Accidentés doivent être réparés par quelqu'un possédant la Compétence de Métier appropriée, comme Métier (Charpentier) ou Métier (Charron). Une roue de secours peut être installée par n'importe qui avec un Test de Conduite d'attelage ou un Test du Métier approprié.\n\nEn combat, la Conduite d'attelage peut être utilisée si les circonstances le permettent – par exemple, si le groupe se trouve dans une diligence attaquée par des hors-la-loi, et que vous souhaitiez percuter un ennemi ou les distancer (voir page 165).",
@@ -186,7 +186,7 @@
   {
     "id": "corps-a-corps",
     "label": "Corps à corps",
-    "characteristic": "CC",
+    "characteristic": "capacite-de-combat",
     "type": "base",
     "specsSource": "weaponGroupsMelee",
     "desc": "La Compétence Corps à corps représente l'entraînement spécifique que vous avez reçu avec un seul type d'armes de combat rapproché. Chaque Spécialisation de Corps à corps indique un entraînement à une classe d'arme spécifique. Si vous n'avez pas la Spécialisation appropriée pour une arme que vous souhaitez utiliser, référez-vous au Chapitre 11 : Guide de l'équipement pour consulter les statistiques de l'arme et savoir quelles pénalités vous subirez. Voir Chapitre 5 : Règles pour plus d'informations sur les combats et l'utilisation de la Compétence Corps à corps.",
@@ -198,7 +198,7 @@
   {
     "id": "crochetage",
     "label": "Crochetage",
-    "characteristic": "Dex",
+    "characteristic": "dexterite",
     "type": "avancée",
     "specs": [],
     "desc": "Vous connaissez les mécanismes de verrouillage et comment les ouvrir sans avoir besoin de vos propres clefs. Crocheter une serrure demande souvent un Test étendu, dont le nombre de DR nécessaire pour ouvrir la serrure dépend de sa complexité.",
@@ -214,7 +214,7 @@
   {
     "id": "discretion",
     "label": "Discrétion",
-    "characteristic": "Ag",
+    "characteristic": "agilite",
     "type": "base",
     "specs": [
       {
@@ -239,7 +239,7 @@
   {
     "id": "divertissement",
     "label": "Divertissement",
-    "characteristic": "Soc",
+    "characteristic": "sociabilite",
     "type": "base",
     "specs": [
       {
@@ -293,7 +293,7 @@
   {
     "id": "dressage",
     "label": "Dressage",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "avancée",
     "combatSubstitute": {
       "role": "both",
@@ -335,7 +335,7 @@
   {
     "id": "emprise-sur-les-animaux",
     "label": "Emprise sur les animaux",
-    "characteristic": "FM",
+    "characteristic": "force-mentale",
     "type": "base",
     "specs": [],
     "desc": "Il s'agit de votre aptitude à vous lier d'amitié, à calmer rapidement ou à asservir les animaux.\n\nUn Test réussi d'Emprise sur les animaux vous permet d'influencer le comportement d'un ou plusieurs animaux, jusqu'à un maximum égal à votre Bonus de Force Mentale + DR. Si les cibles animales sont naturellement dociles, ce Test peut être incontesté, mais il est généralement opposé à la Force Mentale de la cible.\n\nEn combat, vous pouvez utiliser Emprise sur les animaux lorsque vous affrontez des animaux. Si vous réussissez, aucune cible affectée ne vous attaquera durant ce Round et vous gagnez +1 Avantage. Vous pouvez le faire pendant autant de Rounds successifs que vous le souhaitez, jusqu'à ce que vous décidiez d'arrêter ou ratiez un Test d'Emprise sur les animaux. Après quoi l'instinct de la créature reprend le dessus et vous n'avez plus d'influence.",
@@ -347,7 +347,7 @@
   {
     "id": "escalade",
     "label": "Escalade",
-    "characteristic": "F",
+    "characteristic": "force",
     "type": "base",
     "specs": [],
     "desc": "Il s'agit de votre capacité à grimper sur des surfaces lisses ou verticales. Si le temps n'est pas un problème, et que l'escalade est relativement facile, quiconque possède la Compétence Escalade est automatiquement considéré comme capable d'escalader n'importe quelle petite hauteur raisonnable.\n\nDans tous les autres cas, référez-vous à la page 165 qui gère aussi l'Escalade pendant le combat. Vous pouvez même vous retrouver à escalader de grands adversaires, même si dans ce cas la notion de prudence reste discutable.",
@@ -360,7 +360,7 @@
   {
     "id": "escamotage",
     "label": "Escamotage",
-    "characteristic": "Dex",
+    "characteristic": "dexterite",
     "type": "avancée",
     "specs": [],
     "desc": "Cette Compétence vous permet de faire les poches, d'escamoter des objets, et d'effectuer de petits tours de prestidigitation, ainsi que de tricher aux jeux de hasard. Cette Compétence est en général opposée à la Compétence Perception de votre cible ; une réussite signifie que vous avez pris l'objet, fait les poches, ou échangé les cartes, tandis qu'un Succès Minime peut suggérer que vos mauvais coups ont rendu votre adversaire méfiant.\n\nVous pouvez aussi utiliser Escamotage pour « aider » votre Compétence Pari quand vous jouez à un jeu de hasard approprié. Avant chaque Round (ou équivalent, en fonction du jeu en question), vous pouvez tenter un Test d'Escamotage (qui sera opposé si les autres se méfient). Sur un succès, vous pouvez inverser votre Test de Pari pour le Round si cela entraîne un succès. Sur un échec, vos adversaires peuvent ne pas être franchement ravis...\n\nEscamotage et combat se mélangent rarement, bien que des Joueurs inventifs puissent être capables de créer une diversion spectaculaire avec l'accord du MJ, peut-être même gagner un Avantage en faisant surgir une dague de nulle part, surprenant un ennemi superstitieux.",
@@ -372,7 +372,7 @@
   {
     "id": "esquive",
     "label": "Esquive",
-    "characteristic": "Ag",
+    "characteristic": "agilite",
     "type": "base",
     "specs": [],
     "desc": "L'Esquive est votre capacité à éviter les objets, en esquivant, plongeant ou en vous déplaçant rapidement. Elle est beaucoup utilisée pour éviter les chutes de pierre, les coups portés, les pièges inattendus, etc.\n\nEn combat, l'Esquive est généralement utilisée pour résister aux attaques ou éviter les Dégâts. Référez-vous au Chapitre 5 : Règles pour plus d'informations à ce sujet.",
@@ -385,7 +385,7 @@
   {
     "id": "evaluation",
     "label": "Évaluation",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "avancée",
     "specs": [],
     "desc": "Évaluation vous permet de déterminer la valeur d'artefacts rares, de marchandises inhabituelles et d'œuvres d'art. Tout le monde est supposé connaître la valeur relative d'objets ordinaires, mais une utilisation réussie d'Évaluation vous permet de déterminer la valeur d'objets étranges et spécifiques. Un Test d'Évaluation réussi peut aussi vous indiquer si les marchandises (ou pièces) que vous analysez sont contrefaites – ce Test est généralement opposé au DR du Test d'Art ou de Métier du faussaire. Votre MJ peut appliquer des modificateurs basés sur la rareté ou la méconnaissance de l'objet, ou sur les Compétences spécifiques de votre Personnage ou son passé.",
@@ -397,7 +397,7 @@
   {
     "id": "focalisation",
     "label": "Focalisation",
-    "characteristic": "FM",
+    "characteristic": "force-mentale",
     "type": "avancée",
     "specsSource": "winds",
     "desc": "La Compétence Focalisation mesure votre capacité à faire appel et à contrôler les différents Vents de la Magie. Elle est uniquement utilisée avec les règles sur la magie. Voir le Chapitre 8 : Magie pour plus d'informations.\n\nFocalisation est une Compétence très particulière, en cela qu'elle est à la fois Groupée, permettant les Spécialisations, mais aussi non Groupée pour ceux qui ne sont pas correctement formés à focaliser la magie.",
@@ -409,7 +409,7 @@
   {
     "id": "hypnotisme",
     "label": "Hypnotisme",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "avancée",
     "specs": [],
     "desc": "Grâce à cette Compétence, vous pouvez mettre en transe un autre Personnage. Tant qu'elle est hypnotisée, la cible n'a conscience que de votre voix : elle répond à vos questions honnêtement, et peut se rappeler des souvenirs qu'elle a réprimés à cause d'un traumatisme ou oubliés à cause d'un sortilège. De plus, vous pouvez lui suggérer des ordres au niveau inconscient. La cible les mettra à exécution jusqu'à la fin de la séance.\n\nPour que l'hypnose fonctionne, l'attention du sujet doit être focalisée sur l'hypnotiseur pendant au moins une minute. Pendant ce temps, l'hypnotiseur met son sujet en transe en lui parlant d'une voix douce et monotone. Il peut utiliser un pendule s'il le souhaite. Si le sujet coopère, le Test d'Hypnotisme est simple. Sinon, il peut faire un Test de Force Mentale pour y résister.\n\nSur un Test d'Hypnotisme réussi, le sujet entre en transe. Un sujet volontaire reste en transe jusqu'à la fin de la séance d'hypnose. Un sujet contraint a droit à un Test de Calme par Round, opposé à la Compétence d'Hypnotisme de l'hypnotiseur. Si son succès n'est que Minime, il sort de la transe, mais subit un État Sonné.",
@@ -421,7 +421,7 @@
   {
     "id": "guerison",
     "label": "Guérison",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "avancée",
     "specs": [],
     "desc": "Cette Compétence signifie que vous êtes formé à soigner les blessures et les maladies. Un Test de Guérison réussi vous permet de faire l'une des choses suivantes :\n\n-   Diagnostiquer une pathologie, une infection ou une maladie.\n-   Traîter une maladie (voir page 186)\n-   Guérir un nombre de Points de Blessure égal à votre Bonus d'Intelligence + DR (Remarque : un patient ne peut bénéficier que d'un jet de Guérison après chaque rencontre). Si des liquides stériles ou des pansements et des cataplasmes appropriés sont utilisés, aucune Infection ne se développera suite à la blessure (voir page 181).\n-   Arrêter un État Hémorragique (chaque DR retire un État Hémorragique supplémentaire).\n\nUn échec à un Test de Guérison peut potentiellement provoquer des Blessures si le total de votre Bonus d'Intelligence + DR est inférieur à 0. Sur un Échec Stupéfiant, votre patient contractera également une Infection mineure (voir page 187).\n\nSi vous vous occupez d'une personne malade, un Test de Guérison réussi vous protège de la maladie pour ce jour. Chaque DR empêche également un autre Personnage qui rencontre le patient ce même jour de contracter la maladie. Pour chaque journée complète pendant laquelle le patient reste à vos bons soins, la durée de la maladie est réduite de 1, jusqu'à un minimum de 1. Pour plus d'informations, voir Maladie et Infection au Chapitre 5 : Règles.\n\nCertaines blessures nécessitent de la Chirurgie ; voir le Talent Chirurgie pour plus de détails. Pour plus d'informations sur la façon de guérir les blessures, référez-vous au Chapitre 5 : Règles.\n\nVotre MJ peut appliquer des modificateurs aux Tests de Guérison pour illustrer la virulence de la maladie, le caractère approprié des conditions et du matériel, ou le stress dû à votre situation. Si vous guérissez quelqu'un pendant un combat, les Tests seront très probablement Intermédiaires (+0).",
@@ -433,7 +433,7 @@
   {
     "id": "intimidation",
     "label": "Intimidation",
-    "characteristic": "F",
+    "characteristic": "force",
     "type": "base",
     "combatSubstitute": {
       "role": "both",
@@ -449,10 +449,10 @@
   {
     "id": "intuition",
     "label": "Intuition",
-    "characteristic": "I",
+    "characteristic": "initiative",
     "type": "base",
     "combatAdvantage": {
-      "cap": "Int"
+      "cap": "intelligence"
     },
     "specs": [],
     "desc": "La Compétence Intuition vous permet de percevoir ce qui vous entoure, de remarquer quand quelque chose ne va pas, et de ressentir quand des gens vous cachent quelque chose. Une utilisation réussie de la Compétence Intuition vous donne des renseignements subtils et implicites concernant votre environnement, déterminés par votre MJ. Cela peut être une information, comme savoir si quelqu'un est convaincu de la véracité de ses propos, quelle est l'attitude générale envers le noble local, ou est-ce que les intentions des gens du coin, si serviables, sont aussi pures qu'elles le paraissent. Si quelqu'un essaye activement de dissimuler ses intentions, il peut résister à votre Intuition avec Calme ou Divertissement (Interprétation).\n\nEn combat, un Test d'Intuition réussi peut être utilisé pour vous donner +1 Avantage puisque vous évaluez l'environnement et vos adversaires. Vous pouvez continuer à renforcer votre Avantage lors des tours suivants à condition que vous soyez capable d'observer vos cibles et que vous ne soyez pas interrompu (en étant attaqué par exemple) ; de cette façon vous pouvez gagner un maximum d'Avantages égal à votre Bonus d'Intelligence.",
@@ -464,7 +464,7 @@
   {
     "id": "langue",
     "label": "Langue",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "avancée",
     "specs": [
       {
@@ -565,7 +565,7 @@
   {
     "id": "marchandage",
     "label": "Marchandage",
-    "characteristic": "Soc",
+    "characteristic": "sociabilite",
     "type": "base",
     "specs": [],
     "desc": "Marchandage vous permet d'obtenir de meilleures offres lorsque vous négociez avec autrui. En général, Marchandage est utilisé pour savoir si vous faites, ou non, une bonne affaire, la plupart du temps grâce à un Test opposé de Marchandage. De façon plus spécifique, cette Compétence peut être utilisée quand vous parcourez les échoppes pour trouver les meilleurs prix. Pour plus d'informations à ce sujet, référez-vous au Chapitre 11 : Guide de l'équipement.",
@@ -577,7 +577,7 @@
   {
     "id": "metier",
     "label": "Métier",
-    "characteristic": "Dex",
+    "characteristic": "dexterite",
     "type": "avancée",
     "specs": [
       {
@@ -779,7 +779,7 @@
   {
     "id": "musicien",
     "label": "Musicien",
-    "characteristic": "Dex",
+    "characteristic": "dexterite",
     "type": "avancée",
     "specs": [
       {
@@ -828,7 +828,7 @@
   {
     "id": "natation",
     "label": "Natation",
-    "characteristic": "F",
+    "characteristic": "force",
     "type": "avancée",
     "specs": [],
     "desc": "C'est votre capacité à nager dans l'eau sans vous noyer. Si vous possédez la Compétence Natation, vous êtes automatiquement en mesure de nager librement sans effectuer de Test. Mais si vous vous trouvez dans des courants difficiles, en course- poursuite, ou que vous fuyez un requin géant envoyé par Stromfels, le dieu de la Noyade, un Test sera nécessaire. Il peut être modifié par les conditions de l'eau, ou par l'encombrement de vos vêtements, de votre armure, ou autre équipement.\n\nNatation est utilisée en combat, uniquement s'il vous arrive de combattre dans l'eau. Alors, elle remplace des Compétences telles que l'Athlétisme pour déterminer le Mouvement. Si une vitesse déterminée est nécessaire, vous nagez à la moitié de votre Caractéristique de Mouvement, en utilisant les règles normales pour se déplacer qui se trouvent à la page 164.",
@@ -841,7 +841,7 @@
   {
     "id": "orientation",
     "label": "Orientation",
-    "characteristic": "I",
+    "characteristic": "initiative",
     "type": "base",
     "specs": [],
     "desc": "L'Orientation vous permet de trouver votre chemin dans la nature en utilisant des repères, des corps stellaires ou des cartes. Posséder la Compétence Orientation signifie que vous savez à peu près où vous vous trouvez, et pouvez déterminer votre chemin grâce à des repères bien connus sans effectuer de Test. Un Test est nécessaire uniquement si vous êtes désorienté ou que vous voyagez loin des sentiers battus. Une réussite vous indique alors la bonne direction ou vous permet d'éviter les mésaventures.\n\nSi vous parcourez un long trajet, votre MJ peut vous demander d'effectuer un Test d'Orientation étendu, modifié par les conditions météo, les repères visibles, et l'accès à des informations géographiques fiables. Le DR nécessaire pour réussir dépend de la distance à laquelle se trouve la destination, et chaque Test représente entre une heure et une journée de voyage, en fonction de la nature du trajet.",
@@ -853,7 +853,7 @@
   {
     "id": "pari",
     "label": "Pari",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "base",
     "specs": [],
     "desc": "Cette Compétence vous permet d'évaluer la probabilité qu'un pari porte ses fruits, et de participer avec succès à différents jeux de hasard.\n\nLors d'un pari, tous les Joueurs effectuent un Test de Pari – en appliquant tous les modificateurs appropriés pour leur connaissance du jeu – et le Joueur qui obtient le DR le plus haut l'emporte. En cas d'égalité, tous les Joueurs ayant les scores les plus faibles se retirent, et les Joueurs restants effectuent un autre Test de Pari, en répétant ce processus jusqu'à ce qu'un Joueur l'emporte.\n\nSi vous souhaitez influencer le jeu par des procédés moins honnêtes, voir Escamotage.",
@@ -865,7 +865,7 @@
   {
     "id": "perception",
     "label": "Perception",
-    "characteristic": "I",
+    "characteristic": "initiative",
     "type": "base",
     "hearing": true,
     "specs": [],
@@ -878,7 +878,7 @@
   {
     "id": "piegeage",
     "label": "Piégeage",
-    "characteristic": "Dex",
+    "characteristic": "dexterite",
     "type": "avancée",
     "specs": [],
     "desc": "Du simple piège, ou piège-à-loup, aux appareils les plus spectaculaires tels que l'Enduit-voleur de Von Grizzel, il est peu probable que les Joueurs s'aventurent loin dans le Vieux Monde sans rencontrer de pièges. La Compétence Piégeage mesure votre capacité à poser et désarmer des pièges de toutes sortes. Quiconque la possède est automatiquement considéré comme capable d'activer et de désarmer des pièges avec suffisamment de temps. Un Test n'est en principe nécessaire que si vous essayez d'utiliser la Compétence rapidement ou sous la pression, ou si le piège est particulièrement complexe. Un échantillon de pièges simples se trouve dans le Chapitre 11 : Guide de l'équipement.\n\nPoser ou désarmer la plupart des pièges nécessite un Test de Piégeage Accessible (+20%), mais des appareils plus complexes peuvent nécessiter un Test étendu, demandant plusieurs DR sur plusieurs Rounds.",
@@ -890,7 +890,7 @@
   {
     "id": "pistage",
     "label": "Pistage",
-    "characteristic": "I",
+    "characteristic": "initiative",
     "type": "avancée",
     "specs": [],
     "desc": "Vous êtes capable de suivre des traces subtiles laissées par d'autres. Pistage est utilisé pour suivre des traces difficiles dans la nature. Il ne s'agit pas d'une Compétence pour traquer un ensemble d'empreintes de pieds dans la neige, car un simple Test de Perception suffit pour cela. Pistage implique des connaissances et une sensibilisation plus profonde permettant de reconnaître les signes subtils du passage d'une proie. Vous pouvez aussi tenter de dissimuler vos traces, auquel cas votre Compétence Pistage est opposée au Test de Pistage de votre poursuivant.\n\nUn Test étendu de Pistage est souvent nécessaire pour suivre une piste, dont la Difficulté est modifiée par la fraîcheur des traces, et par l'état du terrain : une terre humide trahit mieux le passage qu'un sol pierreux. Le MJ peut aussi utiliser les règles de Poursuite pour déterminer si vous réussissez à traquer une proie en fuite (voir page 166).",
@@ -902,10 +902,10 @@
   {
     "id": "priere",
     "label": "Prière",
-    "characteristic": "Soc",
+    "characteristic": "sociabilite",
     "type": "avancée",
     "combatAdvantage": {
-      "cap": "Soc"
+      "cap": "sociabilite"
     },
     "specs": [],
     "desc": "Il s'agit de votre capacité à invoquer ou à communier avec une divinité. Pour plus d'informations sur l'utilisation de la Compétence Prière dans l'espoir d'une intervention divine, voir le Chapitre 7 : Religions et Croyances.\n\nEn combat, si votre MJ estime que c'est approprié compte tenu de votre situation et de votre foi, vous pouvez utiliser Prière pour méditer et vous concentrer. Chaque Round que vous passez à prier en combat – réussissant un Test de Prière – vous gagnez +1 Avantage. De cette façon, vous pouvez gagner des Avantages supplémentaires, jusqu'à un maximum égal à votre Bonus de Sociabilité. De plus, si vos ennemis comprennent votre langue et connaissent (ou craignent) votre divinité, le MJ peut vous permettre d'utiliser Prière au lieu de la Compétence Intimidation.",
@@ -917,7 +917,7 @@
   {
     "id": "projectiles",
     "label": "Projectiles",
-    "characteristic": "CT",
+    "characteristic": "capacite-de-tir",
     "type": "avancée",
     "specsSource": "weaponGroupsRanged",
     "desc": "Bien que tout le monde puisse lancer une simple pierre en utilisant la Capacité de Tir, il faut de l'entraînement et de la pratique pour utiliser des armes comme des arcs et des pistolets. Chaque Spécialisation de Projectiles représente un groupe particulier d'armes à distance. Si vous ne possédez pas la Spécialisation Projectiles pour une arme dont vous souhaitez user, référez-vous au Chapitre 11 : Guide de l'équipement pour voir quelles pénalités vous subirez en l'utilisant. Voir le Chapitre 5 : Règles pour plus de détails sur le combat à distance.",
@@ -929,7 +929,7 @@
   {
     "id": "ragot",
     "label": "Ragot",
-    "characteristic": "Soc",
+    "characteristic": "sociabilite",
     "type": "base",
     "specs": [],
     "desc": "Cette Compétence vous permet de dénicher rapidement des informations utiles et intéressantes, et de répandre vos propres rumeurs. Un Test de Ragot réussi signifie que vous avez trouvé un renseignement utile, que votre MJ peut vous transmettre, au sujet de la région. Chaque DR vous offre soit un renseignement supplémentaire, soit la possibilité de répandre une rumeur auprès d'un nombre d'individus égal à votre Bonus de Sociabilité. Le temps nécessaire pour un Test de Ragot dépend combien les Joueurs sont circonspects, et comment la région est peuplée, ce qui est décidé par le MJ.\n\nIl est peu probable que Ragot puisse être utile en combat, mais si votre attaquant se trouve être de la région et que vous savez quelque chose de vraiment croustillant...",
@@ -941,7 +941,7 @@
   {
     "id": "ramer",
     "label": "Ramer",
-    "characteristic": "F",
+    "characteristic": "force",
     "type": "base",
     "specs": [],
     "desc": "Il s'agir de votre adresse à manier une pagaie et à diriger un bateau sur l'eau. La Compétence Ramer est généralement utilisée lors des courses-poursuites, pour traverser des rapides, éviter désespérément des pieuvres des tourbières, ou pour des prouesses inhabituelles, ou dangereuses, similaires. Quiconque possède la Compétence est automatiquement considéré comme capable de filer habilement sur un étang ou une rivière calme sans Test. Ceux qui ne possèdent pas la Compétence peuvent devoir effectuer un Test, sauf pour les manœuvres de base.",
@@ -953,7 +953,7 @@
   {
     "id": "recherche",
     "label": "Recherche",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "avancée",
     "specs": [],
     "desc": "Il s'agit de votre habileté à dénicher les connaissances utiles et souvent obscures des bibliothèques et autres mines d'informations. Recherche nécessite de posséder le Talent Lire/Écrire (voir page 140).\n\nLe simple fait de posséder la Compétence Recherche indique que vous pouvez trouver des informations simples dans une bibliothèque clairement indexée sans Test en disposant d'assez de temps. Si vous recherchez une information spécifique moins bien connue, ou si vous êtes pressé, vous devrez effectuer un Test de Recherche Étendu, dont la Difficulté est modifiée par la taille de la bibliothèque, et le DR cible dépend de l'obscurité du sujet.\n\nRecherche n'a pas d'utilité au combat, sauf peut-être si l'on déniche un manuel utile sur les techniques de combat à l'épée.",
@@ -965,7 +965,7 @@
   {
     "id": "representation",
     "label": "Représentation",
-    "characteristic": "Ag",
+    "characteristic": "agilite",
     "type": "avancée",
     "specs": [
       {
@@ -1011,7 +1011,7 @@
   {
     "id": "resistance",
     "label": "Résistance",
-    "characteristic": "E",
+    "characteristic": "endurance",
     "type": "base",
     "specs": [],
     "desc": "La Compétence Résistance est sollicitée quand vous devez supporter des conditions difficiles, faire face à la privation, attendre sans bouger pendant une longue période de temps, ou survivre dans des environnements hostiles. Plus spécifiquement, les Tests de Résistance servent à résister ou à vous remettre de différents États (voir page 167) et vous aident à récupérer vos Points de Blessure perdus. Référez-vous au Chapitre 5 : Règles pour plus d'informations à ce sujet.",
@@ -1023,7 +1023,7 @@
   {
     "id": "resistance-a-l-alcool",
     "label": "Résistance à l'alcool",
-    "characteristic": "E",
+    "characteristic": "endurance",
     "type": "base",
     "specs": [],
     "desc": "Il s'agit de votre capacité à consommer de l'alcool sans que cela n'obscurcisse votre jugement ou ne vous rende déraisonnable.\n\nAprès chaque boisson alcoolisée, faites un Test de Résistance à l'alcool, modifié par la puissance de la boisson. Pour chaque Test auquel vous échouez, vous subissez une pénalité de -10 à vos CC, CT, Ag, Dex et Int, jusqu'à un maximum de -30 par Caractéristique. Si vous échouez à un nombre de Tests égal à votre Bonus d'Endurance, vous êtes Ivre. Faites un lancer sur le tableau suivant pour en connaître les conséquences :\n\n| 1d10 | Ivre |\n| --- | --- |\n| 1–2 | « Bravoure du Marienburgher ! » : Gagnez un bonus de +20 à votre Compétence Calme. |\n| 3–4 | « Vous êtes mon meilleur ami ! » : Ignorez tous vos Préjugés et toutes vos Animosités existantes (voir page 190). |\n| 5–6 | « Pourquoi est-ce que la pièce tourne ? » : À votre tour, vous pouvez soit effectuer un Mouvement, soit une Action, mais pas les deux (voir page 157). |\n| 7–8 | « Je vais tous vous prendre un par un ! » : Gagnez Animosité (Tout le monde !) (voir page 190). |\n| 9–10 | « Comment je suis arrivé là ? » : Vous vous réveillez le lendemain, avec une gueule de bois de tous les diables et peu de souvenirs de ce qui s'est passé. Le MJ et les autres Joueurs qui étaient avec vous combleront les lacunes embarrassantes si vous cherchez à le savoir. Réussissez un Test de Résistance à l'alcool ou gagnez un État Empoisonné (voir page 168). |\n\nAprès une heure passée sans boire, effectuez un Test de Résistance à l'alcool Intermédiaire (+0). Les effets de l'ivresse se dissiperont après 10-DR heures, et tous les modificateurs de Caractéristiques disparaîtront après ce délai. Une fois tous les effets dissipés, effectuez un nouveau Test de Résistance à l'alcool Intermédiaire (+0). Vous avez à présent la gueule de bois, qui correspond à l'État Exténué et ne peut pas être retiré pendant 5 – DR heures.\n\nVous pouvez dépenser 1 Point de Détermination pour ignorer les modificateurs négatifs de l'ivresse jusqu'à la fin du prochain Round (voir page 171).",
@@ -1035,10 +1035,10 @@
   {
     "id": "savoir",
     "label": "Savoir",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "avancée",
     "combatAdvantage": {
-      "cap": "Int"
+      "cap": "intelligence"
     },
     "specs": [
       {
@@ -1280,7 +1280,7 @@
   {
     "id": "signes-secrets",
     "label": "Signes secrets",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "avancée",
     "specs": [
       {
@@ -1338,7 +1338,7 @@
   {
     "id": "soin-aux-animaux",
     "label": "Soin aux animaux",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "avancée",
     "specs": [],
     "desc": "La Compétence Soin aux animaux vous permet de vous occuper des animaux et de les soigner quand ils tombent malades ou sont blessés.\n\nPosséder une seule Augmentation en Soin aux animaux signifie que vous pouvez garder les animaux en bonne santé sans avoir besoin de faire de Test. Vous pouvez également effectuer un Test de Soin aux animaux pour identifier et résoudre des problèmes avec les animaux tels que :\n\n-   Déceler une maladie.\n-   Comprendre les raisons de la désobéissance ou de l'inconfort.\n-   Déterminer les spécificités de l'animal.\n-   Guérir un nombre de blessures égal au Bonus d'Intelligence + DR (Remarque : un animal ne peut bénéficier que d'un lancer de Guérison après chaque rencontre)\n-   Stopper un État Hémorragique.\n-   Préparer l'animal pour une démonstration.\n\nEn combat, vous pouvez évaluer un animal ennemi avec un Test de Soin aux animaux. Sur un succès, vous, et tous ceux que vous en informez, gagnez +10 pour toucher lorsque vous attaquez cet animal – ou quiconque l'utilise comme monture – jusqu'à la fin de votre prochain tour, car vous remarquez un harnachement détaché, une boiterie causée par une blessure mineure, ou mettez en lumière n'importe quelle autre faiblesse ou vulnérabilité. Soin aux animaux ne peut fournir qu'un maximum de +10 pour toucher par animal, quel que soit le nombre de Tests effectués pour déceler une faiblesse.",
@@ -1350,7 +1350,7 @@
   {
     "id": "subornation",
     "label": "Subornation",
-    "characteristic": "Soc",
+    "characteristic": "sociabilite",
     "type": "base",
     "specs": [],
     "desc": "Il s'agit de votre capacité à juger de la probabilité qu'une personne accepte ou non un pot-de-vin, et de la meilleure façon de lui présenter la chose pour qu'elle l'accepte.\n\nUn Test de Subornation réussi vous indique si une cible peut être soudoyée. Si oui, votre MJ détermine secrètement le prix de sa coopération en utilisant le Revenu de la cible (voir page 52), en augmentant le montant en fonction de son honnêteté habituelle et du risque encouru en acceptant le pot-de-vin. Puis vous estimez ce montant cible et le MJ vous indiquera si le prix est supérieur, inférieur ou égal. Chaque DR obtenu lors de votre Test de Subornation vous offre une estimation supplémentaire. À la fin de ce processus, vous déterminez combien d'argent offrir, en vous basant sur les informations obtenues.\n\nEn combat, vous pouvez utiliser ainsi Subornation pour essayer d'arrêter le combat, mais considérez le Test comme Difficile (-20) à cause du stress de la situation. Si votre cible n'est pas réceptive, vous ne pouvez pas offrir de pot-de-vin, ou si votre cible ne parle pas votre langue, vos tentatives pathétiques de l'acheter resteront vaines. Évidemment, s'ils ont l'avantage du nombre, qu'est-ce qui pourrait les empêcher de prendre tout votre argent ?",
@@ -1362,10 +1362,10 @@
   {
     "id": "survie-en-exterieur",
     "label": "Survie en extérieur",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "type": "base",
     "combatAdvantage": {
-      "cap": "Int"
+      "cap": "intelligence"
     },
     "specs": [],
     "desc": "La Compétence Survie en extérieur est utilisée pour la survie dans la nature, et comprend la capacité de pêcher, de chasser, de rechercher de la nourriture, de faire un feu et de construire un abri. Les voyageurs expérimentés sont doués pour repérer les signes d'un changement de météo et les excréments de nombreuses bêtes dangereuses.\n\nQuand vous campez, faites un Test de Survie en extérieur, modifié par la rudesse des conditions – par exemple, un Test est Intermédiaire (+0) s'il pleut, Difficile (-20) lors d'une tempête. Un Test réussi indique que vous pouvez vous procurer de la nourriture et un abri pour la nuit. Chaque DR vous permet de procurer l'équivalent pour un Personnage de plus. Si le Test échoue, vous devez faire un Test de Résistance Intermédiaire (+0) ou recevoir l'État Exténué. Si vous subissez un Échec Stupéfiant, quelque chose de fâcheux est arrivé, déterminé par le MJ ; peut-être votre camp est-il attaqué pendant la nuit ?\n\nQuand vous combattez dans la nature sauvage, vous pouvez effectuer un Test de Survie en extérieur pour recevoir +1 Avantage, de la même façon qu'avec Intuition, pour un nombre maximum d'Avantages égal à votre Bonus d'Intelligence, car vous repérez les terrains dangereux ou intéressants pour les utiliser à votre Avantage.",
@@ -1377,7 +1377,7 @@
   {
     "id": "voile",
     "label": "Voile",
-    "characteristic": "Ag",
+    "characteristic": "agilite",
     "type": "avancée",
     "specs": [
       {

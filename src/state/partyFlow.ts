@@ -381,7 +381,7 @@ export function buyTalent(get: Get, set: Set, heroId: string, talentId: string, 
       msg = `${clone.name} : Talent ${talentLabel} (−${r.cost} PX).`;
       // Magie mineure (LDB 10 l.587) : BFM sorts inclus au Talent — à choisir (0 PX, Avancement).
       if (castingKindOf(talentId) === 'mineure') {
-        const q = bonus(effectiveChar(clone, 'FM'));
+        const q = bonus(effectiveChar(clone, 'force-mentale'));
         if (q > 0) msg += ` ${q} sorts de Magie mineure inclus — à mémoriser (Avancement).`;
       }
       return clone;

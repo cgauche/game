@@ -685,7 +685,7 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
   const purseOk = !sel || toBrass(money) >= sel.tutorMinBrass;
   // Caractéristique du Test = celle du Maxi du Talent, sinon Int (même dérivation que le flux).
   const talent = sel ? findTalentById(sel.id) : undefined;
-  const ck: CharKey = talent?.max && typeof talent.max !== 'number' ? talent.max.bonusOf : 'Int';
+  const ck: CharKey = talent?.max && typeof talent.max !== 'number' ? talent.max.bonusOf : 'intelligence';
   const prejet = sel
     ? optionPending(
         CHAR_LABELS[ck],

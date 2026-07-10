@@ -48,7 +48,7 @@ describe('CharacterCreator (assistant) — rendu statique', () => {
     const { rail } = CharZones({ d: withCareer(newDraft(7), 'soldat'), setD: () => {} });
     const html = renderToStaticMarkup(<>{rail}</>);
     expect(html).toContain('Augmentations gratuites');
-    expect(html).toContain(CHAR_LABELS.CC); // Soldat : Capacité de Combat est de carrière → ligne présente
+    expect(html).toContain(CHAR_LABELS['capacite-de-combat']); // Soldat : Capacité de Combat est de carrière → ligne présente
     expect(html).toContain('class="stepper"'); // contrôle d'allocation réellement rendu
   });
 

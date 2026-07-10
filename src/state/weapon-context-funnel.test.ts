@@ -8,7 +8,7 @@ import type { AttackResult } from '../engine/combat';
 // La MÊME arme transformée sert la touche/les Dégâts (resolveAttack) ET la Maladresse sur un RATÉ
 // (attackConfirm/IA re-dérivent via firedWeapon → attackerFumbled/dangerousNine voient la Dangereuse).
 
-const CHARS = { CC: 50, CT: 35, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 50, 'capacite-de-tir': 35, force: 40, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const fleau: Weapon = { name: 'Fléau', type: 'melee', subType: 'fleau', reach: 'Moyenne', uid: 'fl', damage: { plusBF: true, flat: 5 }, qualities: [{ id: 'perturbante' }] };
 const lance: Weapon = { name: 'Lance de cavalerie', type: 'melee', subType: 'cavalerie', reach: 'Très longue', uid: 'la', damage: { plusBF: true, flat: 6 }, qualities: [{ id: 'empaleuse' }, { id: 'percutante' }] };
 

@@ -350,7 +350,7 @@ function openBattlePending(get: Get, set: Set, o: {
   const diffMod = DIFFICULTY_MOD(o.difficulty) + (o.mod ?? 0);
   const target = Math.max(1, Math.min(99, o.skillValue + diffMod));
   const combined = o.combined
-    ? { skill2: o.combined.skillId ? refLabel('skills', { id: o.combined.skillId, spec: o.combined.spec }) : CHAR_LABELS[o.char ?? 'Int'], skillValue2: o.combined.value, target2: Math.max(1, Math.min(99, o.combined.value + diffMod)) }
+    ? { skill2: o.combined.skillId ? refLabel('skills', { id: o.combined.skillId, spec: o.combined.spec }) : CHAR_LABELS[o.char ?? 'intelligence'], skillValue2: o.combined.value, target2: Math.max(1, Math.min(99, o.combined.value + diffMod)) }
     : {};
   const pa: PendingActivity = {
     heroId: o.actor.id, kind: 'catalog', activityId: o.def.id, battle: o.battle,
@@ -743,7 +743,7 @@ export function confirmBattleActivity(get: Get, set: Set, pa: PendingActivity): 
     // Rassemblement (l.122) : Test de Résistance de guérison sur le héros acteur (pas l'armée).
     const hero = get().party.find((h) => h.id === pa.heroId);
     if (hero) {
-      const be = bonus(effectiveChar(hero, 'E'));
+      const be = bonus(effectiveChar(hero, 'endurance'));
       const heal = pa.success ? rallyHealAmount(pa.sl, be) : 0;
       if (heal > 0) {
         // HÉROS (pas la coque) : `applyOps` direct sur un clone, comme `armyWithMightDelta` ci-dessus.

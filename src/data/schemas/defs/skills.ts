@@ -10,7 +10,10 @@ export const file = 'skills.json';
 
 /** 10 Caractéristiques (LDB) — cf. `engine/types.ts::CharKey`. Dupliqué ici (`common.ts` gelé) ;
  *  candidat à mutualisation (`charKeySchema`) avec talents/spells/etats qui le redéfinissent aussi. */
-const charKeySchema = z.enum(['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Int', 'FM', 'Soc']);
+const charKeySchema = z.enum([
+  'capacite-de-combat', 'capacite-de-tir', 'force', 'endurance', 'initiative', 'agilite', 'dexterite',
+  'intelligence', 'force-mentale', 'sociabilite',
+]);
 
 /** `SpecsSource` (`src/data/index.ts:222`) — registre partagé `SPEC_SOURCES` d'où dérive le pool de
  *  spécialisations quand `specs[]` est absent. Constaté sur skills.json : `weaponGroupsMelee`/

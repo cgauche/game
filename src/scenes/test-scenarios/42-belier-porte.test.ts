@@ -60,7 +60,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
     expect(belier).toBeTruthy();
     expect(belier.type).toBe('melee');
-    expect(belier.resolveChar).toBe('F');
+    expect(belier.resolveChar).toBe('force');
     expect(belier.weaponGroup).toBe('machine-de-guerre');
     expect(belier.qualities.map((q) => q.id).sort()).toEqual(['belier', 'devastatrice', 'equipe', 'percutante', 'siege'].sort());
     const w = firedWeapon(soldat, porte, belier.uid, useGame.getState().battle!.combatants);
@@ -72,10 +72,10 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
     // La CC et la Force DIVERGENT volontairement (ADE II ch.08 l.233 : « utilise Force ») pour désambiguïser :
     // si le moteur résolvait encore sur CC, la valeur de Test observée serait TRÈS différente.
-    soldat.characteristics.CC = 20;
-    soldat.characteristics.F = 65;
+    soldat.characteristics['capacite-de-combat'] = 20;
+    soldat.characteristics.force = 65;
     expect(combatValue(soldat, 'melee', belier)).toBe(65); // Force brute, aucune Spé n'entre en jeu
-    expect(combatValue(soldat, 'melee', belier)).not.toBe(effectiveChar(soldat, 'CC'));
+    expect(combatValue(soldat, 'melee', belier)).not.toBe(effectiveChar(soldat, 'capacite-de-combat'));
   });
 
   it('une touche RÉUSSIE contre la porte lui inflige des Blessures (Atout Bélier + Siège, ×2 dégâts structure)', () => {
@@ -88,14 +88,14 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
     placeCombatant(soldat, scene, soldat.pos);
     ram.pos = { x: 6, y: 5 };
     placeCombatant(ram, scene, ram.pos);
-    soldat.characteristics.F = 90; // Test quasi-garanti (Force très haute), aucune Spé requise (raw characteristic)
+    soldat.characteristics.force = 90; // Test quasi-garanti (Force très haute), aucune Spé requise (raw characteristic)
     seedBattleRng(1);
     // weaponUid EXPLICITE (Bélier) : le Soldat garde SON arme personnelle en plus du poste servi (kind-agnostique,
     // comme un canonnier qui garde sa dague) — l'auto-sélection `attackWeapon` prendrait sinon sa propre arme.
     const belier = soldat.weapons.find((w) => w.name === 'Bélier')!;
     const r = resolveAttack(() => useGame.getState(), soldat, porte, undefined, false, false, false, belier.uid);
     expect(r).not.toBeNull();
-    expect(r!.weapon.resolveChar).toBe('F'); // le jet qui vient de se résoudre était bien un Test de Force
+    expect(r!.weapon.resolveChar).toBe('force'); // le jet qui vient de se résoudre était bien un Test de Force
     expect(r!.res.hit).toBe(true); // Force 90 → Test quasi-garanti
     expect(r!.res.woundsLost ?? 0).toBeGreaterThan(0); // la porte encaisse RÉELLEMENT (Atout Siège ×2 dégâts structure)
   });
@@ -239,7 +239,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
 
   it("après avoir POUSSÉ la formation jusqu'à la porte (2 poussées, cap 2), le bélier l'assène (Force + Blessures)", () => {
     const { soldat, ram, porte } = startBelier();
-    soldat.characteristics.F = 90; // Test quasi-garanti (indépendant de la mobilité testée ici)
+    soldat.characteristics.force = 90; // Test quasi-garanti (indépendant de la mobilité testée ici)
     const pushBy = (dy: number) => {
       setActive(soldat.id);
       useGame.getState().battlePushEngine();

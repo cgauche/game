@@ -130,7 +130,7 @@ export function applyLedgerReresolve(hero: Combatant, entry: NightEntry, tr: imp
   if (!d || !entry.reKind) return null;
   const nd: RollBreakdown = { ...d, roll: tr.roll, success: tr.success, sl: tr.sl };
   if (entry.reKind === 'recovery') {
-    const be = bonus(effectiveChar(hero, 'E'));
+    const be = bonus(effectiveChar(hero, 'endurance'));
     const heal = (r: { success: boolean; sl: number }) => (r.success ? Math.max(0, r.sl) + be : 0); // volet a (LDB 18 l.380)
     const delta = heal(tr) - heal(d);
     if (delta !== 0) hero.wounds.current = Math.max(0, Math.min(hero.wounds.max, hero.wounds.current + delta));
@@ -374,14 +374,14 @@ registerCascadeApplier('forcedMarch', (_get, _set, step, hero) => {
 
 registerCascadeApplier('faim', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  const r = applyFaimTest(hero, step.result.success, bonus(effectiveChar(hero, 'E')), battleRng());
+  const r = applyFaimTest(hero, step.result.success, bonus(effectiveChar(hero, 'endurance')), battleRng());
   if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.422)
   return { journal: r.log };
 }, (ok, n) => (ok ? `${n} supporte la faim.` : `${n} souffre de la faim.`));
 
 registerCascadeApplier('soif', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  const r = applySoifTest(hero, step.result.success, bonus(effectiveChar(hero, 'E')), battleRng());
+  const r = applySoifTest(hero, step.result.success, bonus(effectiveChar(hero, 'endurance')), battleRng());
   if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.420)
   return { journal: r.log };
 }, (ok, n) => (ok ? `${n} supporte la soif.` : `${n} souffre de la soif.`));
@@ -423,7 +423,7 @@ registerCascadeApplier('contagion', (_get, _set, step, hero) => {
 
 /** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
 function calmeVal(c: Combatant): number {
-  return effectiveChar(c, 'FM') + (c.skills?.find((s) => s.skillId === 'calme')?.advances ?? 0);
+  return effectiveChar(c, 'force-mentale') + (c.skills?.find((s) => s.skillId === 'calme')?.advances ?? 0);
 }
 
 /** Icône d'étape de cascade par `kind` de Test d'entretien différé. */

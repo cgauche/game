@@ -84,7 +84,7 @@ export function combatHighlightObjs(
       if (!c?.pos) return null;
       const weapon = attackWeapon(c.weapons, false);
       if (!weapon || weapon.type !== 'ranged') return null; // structure/décor sans arme (porte…) — pas de bande (#203 régression)
-      const rangeM = effectiveWeaponRange(weapon, selectedAmmo(c, weapon)?.ammoRangeMod, () => bonus(effectiveChar(c, 'F')));
+      const rangeM = effectiveWeaponRange(weapon, selectedAmmo(c, weapon)?.ammoRangeMod, () => bonus(effectiveChar(c, 'force')));
       return rangeM != null ? { pos: c.pos, rangeM } : null;
     })(),
   };

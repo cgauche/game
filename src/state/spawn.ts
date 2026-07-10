@@ -89,7 +89,7 @@ export function entitySize(ent: { ref?: string; statblock?: CustomStatblock }): 
 /** Nuée au spawn (LDB 85 l.200) : ×5 PB (« cinq fois plus de PB qu'une créature type ») + 10 CC sur
  *  les PB/carac. déjà calculés. Le B mono-créature du bestiaire reste, c'est lui qu'on multiplie. */
 function applySwarmBuild(chars: Characteristics, wounds: number): { chars: Characteristics; wounds: number } {
-  chars.CC += 10;
+  chars['capacite-de-combat'] += 10;
   return { chars, wounds: wounds * 5 };
 }
 
@@ -238,7 +238,7 @@ export function creatureToCombatant(creature: CreatureData, id: string, pos: { x
   // livre ET la formule par Taille, aucune des deux ne reprend la main.
   const swapWounds = swaps.map((s) => s.wounds).find((w): w is number => w != null);
   let wounds = swapWounds ?? (typeof creature.char.B === 'number' && !profileChanged ? creature.char.B : maxWounds(charsEff, size));
-  if (swapWounds == null && traitBonusWoundsBE(optTraits)) wounds += bonus(charsEff.E); // Endurant facultatif : +BE Blessures (LDB 85)
+  if (swapWounds == null && traitBonusWoundsBE(optTraits)) wounds += bonus(charsEff.endurance); // Endurant facultatif : +BE Blessures (LDB 85)
   const skills = [...bookSkills, ...skillsFromBook(swapSkillRefs, chars)]; // swap : dérivée sur le profil FINAL (post-Taille)
   const swarm = isSwarm(traits);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // ×5 PB + 10 CC (la nuée = 5 créatures)
@@ -298,7 +298,7 @@ export function statblockToCombatant(sb: CustomStatblock, id: string, pos: { x: 
   let wounds = typeof sb.char.B === 'number' && !sb.randomChars ? (sb.char.B as number) : maxWounds(charsEff, size);
   // Endurant (LDB 85 p.339) : +Bonus d'Endurance Blessures (sur la formule — un B explicite du
   // statbloc est réputé final, comme au bestiaire).
-  if ((typeof sb.char.B !== 'number' || sb.randomChars) && traitBonusWoundsBE(traits)) wounds += Math.floor(charsEff.E / 10);
+  if ((typeof sb.char.B !== 'number' || sb.randomChars) && traitBonusWoundsBE(traits)) wounds += Math.floor(charsEff.endurance / 10);
   const swarm = isSwarm(traits);
   if (swarm) ({ chars, wounds } = applySwarmBuild(chars, wounds)); // Nuée : ×5 PB + 10 CC (l.200)
   const movement = typeof sb.char.M === 'number' ? (sb.char.M as number) : 4; // traits → liveTraits (effectiveMovement)

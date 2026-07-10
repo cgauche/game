@@ -31,8 +31,8 @@ describe('Contre-sort à plusieurs (flux multi parallèle)', () => {
     const enemies = b.combatants.filter((c) => c.kind === 'enemy');
     enemies.slice(1).forEach((e) => (e.dead = true));
     const E = enemies[0];
-    E.characteristics.Int = 48; E.characteristics.FM = 53;
-    E.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 15 }];
+    E.characteristics.intelligence = 48; E.characteristics['force-mentale'] = 53;
+    E.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 15 }];
     E.spells = ['carreau'];
     heroes.forEach((h, i) => { h.pos = { x: 10, y: 10 + i }; h.wounds = { ...h.wounds, max: 99, current: 99 }; });
     E.pos = { x: 12, y: 10 }; // ≤ FM mètres de chaque héros

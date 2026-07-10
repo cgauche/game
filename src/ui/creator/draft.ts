@@ -428,8 +428,8 @@ export function pettySpellQuota(d: CreatorDraft): number {
   const all = [...resolvedSpeciesTalents(d), ...(d.careerTalent ? [d.careerTalent] : [])];
   // Libellés d'authoring → id stable (la donnée des carrières/espèces porte le libellé) pour le lookup par DONNÉE.
   if (!all.some((t) => castingKindOf(findTalent(splitLabel(t).name)?.id ?? '') === 'mineure')) return 0;
-  let fm = draftChars(d).FM + (d.charAdvancesAlloc.FM ?? 0);
-  for (const t of all) if (talentCharBonus(t) === 'FM') fm += 5;
+  let fm = draftChars(d)['force-mentale'] + (d.charAdvancesAlloc['force-mentale'] ?? 0);
+  for (const t of all) if (talentCharBonus(t) === 'force-mentale') fm += 5;
   return bonus(fm);
 }
 

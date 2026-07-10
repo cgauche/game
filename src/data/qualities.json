@@ -66,7 +66,7 @@
             "test": {
               "skill": "resistance",
               "opposed": {
-                "attacker": "F",
+                "attacker": "force",
                 "attackerLabel": "Force"
               }
             },
@@ -221,7 +221,7 @@
                     "value": 1,
                     "unlessCondition": "empetre",
                     "escapeStrength": {
-                      "charOf": "F"
+                      "charOf": "force"
                     }
                   }
                 ]
@@ -522,10 +522,10 @@
           "yes": {
             "kind": "test",
             "test": {
-              "characteristic": "F",
+              "characteristic": "force",
               "skill": "athletisme",
               "opposed": {
-                "attacker": "F",
+                "attacker": "force",
                 "attackerSkill": "athletisme",
                 "attackerLabel": "Force/Athlétisme"
               }
@@ -927,7 +927,7 @@
       {
         "op": "testMod",
         "amount": -10,
-        "char": "Soc"
+        "char": "sociabilite"
       }
     ]
   },

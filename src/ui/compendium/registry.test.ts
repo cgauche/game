@@ -5,6 +5,7 @@ import { isEditableCategory } from './CodexEdit';
 import { creatures, etats, trappings, findTraitById, WATER_EXPOSURE } from '../../data';
 import { setDataset } from '../../data/overrides';
 import { CHAR_KEYS } from '../../engine/types';
+import { CHAR_ABR } from '../../data';
 
 /** Toutes les lignes 'ref' (cross-réf) d'une fiche, sections + onglets confondus. */
 const refLabelsOf = (item: CodexItem): string[] =>
@@ -156,7 +157,7 @@ describe('Codex registry — statbloc bestiaire compact', () => {
     const items = categoryByKey('creatures')!.items;
     for (const it of items) {
       expect(it.statblock, it.label).toBeTruthy();
-      expect(it.statblock!.profile.map((f) => f.label)).toEqual(['M', ...CHAR_KEYS, 'B']);
+      expect(it.statblock!.profile.map((f) => f.label)).toEqual(['M', ...CHAR_KEYS.map((k) => CHAR_ABR[k]), 'B']);
       for (const f of it.statblock!.profile) expect(f.value, `${it.label} ${f.label}`).toBeTruthy();
     }
     const withTraits = items.find((i) => i.statblock!.traits.length > 0)!;

@@ -19,7 +19,7 @@ const scene = () =>
 const getFn = (battle: unknown, scn: unknown) => () => ({ battle, scene: scn } as never);
 
 function broken(over: Partial<Combatant>): Combatant {
-  return { id: 'h', kind: 'hero', name: 'H', pos: { x: 1, y: 1 }, conditions: [{ name: 'brise', value: 2 }], characteristics: { FM: 80 }, skills: [], engagedWith: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
+  return { id: 'h', kind: 'hero', name: 'H', pos: { x: 1, y: 1 }, conditions: [{ name: 'brise', value: 2 }], characteristics: { 'force-mentale': 80 }, skills: [], engagedWith: [], wounds: { current: 10, max: 10 } } as unknown as Combatant;
 }
 const foe = (over: Partial<Combatant>): Combatant => ({ id: 'e', kind: 'enemy', name: 'E', pos: { x: 9, y: 9 }, conditions: [], wounds: { current: 10, max: 10 }, ...over } as unknown as Combatant);
 

@@ -14,7 +14,7 @@ import type { Combatant } from './types';
 const dummy = (p: Partial<Combatant> = {}): Combatant =>
   ({
     id: 'x', name: 'Mage', kind: 'hero',
-    characteristics: { CC: 40, CT: 30, F: 30, E: 30, I: 35, Ag: 40, Dex: 45, Int: 40, FM: 40, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 35, agilite: 40, dexterite: 45, intelligence: 40, 'force-mentale': 40, sociabilite: 30 },
     wounds: { current: 14, max: 14 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...p,
@@ -25,9 +25,9 @@ describe('polymorphOps — Forme bestiale (Ours)', () => {
     const ours = findCreatureById('ours')!;
     const c = dummy({});
     applyOps(c, polymorphOps(c, 'ours'), { label: 'Forme bestiale', defaultDurationRounds: 3 });
-    expect(effectiveChar(c, 'F')).toBe(ours.char.F); // 55
-    expect(effectiveChar(c, 'E')).toBe(ours.char.E); // 45
-    expect(effectiveChar(c, 'Ag')).toBe(ours.char.Ag); // 25
+    expect(effectiveChar(c, 'force')).toBe(ours.char.force); // 55
+    expect(effectiveChar(c, 'endurance')).toBe(ours.char.endurance); // 45
+    expect(effectiveChar(c, 'agilite')).toBe(ours.char.agilite); // 25
     expect(hasTraitKey(c.traits, 'morsure')).toBe(true); // Trait de l'Ours accordé
     expect(hasTraitKey(c.traits, 'bestial')).toBe(false); // Bestial exclu
   });
@@ -36,8 +36,8 @@ describe('polymorphOps — Forme bestiale (Ours)', () => {
     const c = dummy({});
     applyOps(c, polymorphOps(c, 'Ours'), { label: 'Forme bestiale', defaultDurationRounds: 1 });
     endOfRound(c); // 1 Round écoulé → l'effet expire
-    expect(effectiveChar(c, 'F')).toBe(30); // base restaurée
-    expect(effectiveChar(c, 'Ag')).toBe(40);
+    expect(effectiveChar(c, 'force')).toBe(30); // base restaurée
+    expect(effectiveChar(c, 'agilite')).toBe(40);
     expect(hasTraitKey(c.traits, 'morsure')).toBe(false); // Trait retiré
   });
 });

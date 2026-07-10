@@ -33,7 +33,7 @@ export function woundsFromHit(weapon: Weapon, target: Combatant, location: HitLo
   }
   // Robuste (LDB 10) : « Vous réduisez tous les Dégâts subis de 1 par niveau […] toujours un minimum de 1 Blessure ».
   totalDamage -= talentDamageReduction(target);
-  const tb = bonus(effectiveChar(target, 'E'));
+  const tb = bonus(effectiveChar(target, 'endurance'));
   // PA effectifs = armure portée/naturelle + PA temporisés de sort + PA conférés par l'arme d'opposition
   // (`extraAP`), Perforante déduite. `location` ABSENTE (STRUCTURE inanimée, ADE II ch.08 : pas de
   // Localisation) → aucune armure de pièce (une structure a 0 PA partout) : le terme d'armure vaut 0.

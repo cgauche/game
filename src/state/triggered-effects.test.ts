@@ -20,7 +20,7 @@ import type { Flow } from './flow';
 
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
   id: 'c', name: 'C', kind: 'enemy',
-  characteristics: { CC: 35, CT: 25, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 25, FM: 25, Soc: 25 },
+  characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 25, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 25, 'force-mentale': 25, sociabilite: 25 },
   wounds: { current: 15, max: 15 }, advantage: 0, conditions: [], skills: [], talents: [],
   weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
   ...over,
@@ -36,7 +36,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
     const prey = mk({ id: 'pr' });
     fireTriggers(noBattle(), spider, 'onHit', { victim: prey });
     expect(empetre(prey)?.value).toBe(1);
-    expect(empetre(prey)?.escapeStrength).toBe(spider.characteristics.F); // {charOf:'F'} résolu vs l’attaquant
+    expect(empetre(prey)?.escapeStrength).toBe(spider.characteristics.force); // {charOf:'F'} résolu vs l’attaquant
   });
 
   it('ATOUT Immobilisante : l’arme qui touche pose Empêtré — MÊME chemin que le trait', () => {
@@ -73,7 +73,7 @@ describe('fireTriggers — Traits et Atouts sur le même système flow+déclench
 
   it('TRAIT Sang corrosif : onWoundLoss → les Engagés subissent 1d10 (BE+PA, min 1)', () => {
     const acid = mk({ id: 'ac', traits: [{ id: 'sang-corrosif' }] });
-    const foe = mk({ id: 'fo', engagedWith: ['ac'], characteristics: { ...mk().characteristics, E: 80 } }); // BE élevé → mitigation forte
+    const foe = mk({ id: 'fo', engagedWith: ['ac'], characteristics: { ...mk().characteristics, endurance: 80 } }); // BE élevé → mitigation forte
     const get = () => ({ battle: { combatants: [acid, foe] } }) as never;
     const before = foe.wounds.current;
     fireTriggers(get, acid, 'onWoundLoss', { rng: makeRNG(1) });
@@ -237,7 +237,7 @@ describe('Affamé — Test de trigger onKill routé (cadence-aware)', () => {
     const hungry = enemies[0];
     enemies.slice(1).forEach((e) => (e.dead = true));
     hungry.traits = [...(hungry.traits ?? []), { id: 'affame' }];
-    hungry.characteristics.FM = 1; // FM minimale → Test Accessible (+20) échoué → festoie (loseTurn)
+    hungry.characteristics['force-mentale'] = 1; // FM minimale → Test Accessible (+20) échoué → festoie (loseTurn)
     useGame.setState({ battle: { ...b }, pendingCascade: null, pendingReveals: [], pendingLogQueue: [] });
 
     fireTriggers(useGame.getState, hungry, 'onKill', { rng: makeRNG(1), set: useGame.setState });

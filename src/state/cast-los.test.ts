@@ -34,7 +34,7 @@ function wallScene() {
 function setup() {
   const w = wiz();
   w.pos = { x: 2, y: 0 };
-  w.characteristics.FM = 40; // Carreau (FM mètres) → 20 cases : tout le plateau est À PORTÉE
+  w.characteristics['force-mentale'] = 40; // Carreau (FM mètres) → 20 cases : tout le plateau est À PORTÉE
   const seen = spawnEnemy('Bandit de Grand Chemin', undefined, 'e-vu', { x: 16, y: 0 });
   const hidden = spawnEnemy('Bandit de Grand Chemin', undefined, 'e-cache', { x: 16, y: 4 });
   const battle = {
@@ -89,7 +89,7 @@ describe('castSpell — Ligne de Vue (LDB 46 l.170)', () => {
 describe('castSpell — Portée (LDB 47) : refus VISIBLE en combat (B4)', () => {
   it('cible hors de portée → message dans le FEED de combat, pas de modale', () => {
     const { w, seen } = setup();
-    w.characteristics.FM = 2; // Carreau = FM/2 → 1 case ; e-vu est à 14 cases (LdV dégagée en y=0)
+    w.characteristics['force-mentale'] = 2; // Carreau = FM/2 → 1 case ; e-vu est à 14 cases (LdV dégagée en y=0)
     castSpell(useGame.getState, useGame.setState, w, seen, 'carreau');
     expect(useGame.getState().pendingCast).toBeNull();
     expect(useGame.getState().battle!.log.map((e) => e.text).join('\n')).toMatch(/hors de portée/i);

@@ -78,7 +78,7 @@ describe('Entrée en Frénésie du héros — modale (Test de FM)', () => {
   it('frenzyConfirm sur échec → pas frenzied mais Action consommée', () => {
     const { H } = setup();
     H.traits = [{ id: 'frenesie' }];
-    H.characteristics.FM = 1; // Test de FM raté quasi sûr
+    H.characteristics['force-mentale'] = 1; // Test de FM raté quasi sûr
     useGame.getState().seedRng(3);
     useGame.getState().battleFrenzy();
     useGame.getState().frenzyRoll();

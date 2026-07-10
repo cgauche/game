@@ -148,7 +148,7 @@ export function resolveWeaponArea(
   const tz = quals.find((r) => r.caps?.areaFire);
   if (tz) {
     const indice = tz.indice ?? 1;
-    const rangeM = effectiveWeaponRange(weapon, selectedAmmo(hit.attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(hit.attacker, 'F'))); // Portée résolue (BF) + modificateur de munition
+    const rangeM = effectiveWeaponRange(weapon, selectedAmmo(hit.attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(hit.attacker, 'force'))); // Portée résolue (BF) + modificateur de munition
     const band = rangeM != null ? rangeBandName(hit.distanceTiles, rangeM) : 'Bout portant';
     if (band === 'Bout portant' && target) {
       // +Indice aux DÉGÂTS sur la cible seule (≠ +Indice Blessures brut). La cible a déjà encaissé `damage` ;

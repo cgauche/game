@@ -38,5 +38,5 @@ export function markResistanceUsed(c: Combatant, spec: string): void {
 
 /** DR de l'auto-succès : « utilisez votre Bonus d'Endurance comme DR pour le Test » (LDB 10). */
 export function resistanceForcedSL(c: Combatant): number {
-  return bonus(effectiveChar(c, 'E'));
+  return bonus(effectiveChar(c, 'endurance'));
 }

@@ -20,16 +20,16 @@ function wiz() {
 }
 
 describe('parsing ZdE / portée (engine/magic)', () => {
-  const caster = { characteristics: { FM: 42, I: 30, Soc: 30, CC: 0, CT: 0, F: 0, E: 0, Ag: 0, Dex: 0, Int: 0 }, skills: [], talents: [], conditions: [], wounds: { current: 1, max: 1 }, advantage: 0, movement: 4, weapons: [], armour: {} } as never as Combatant;
+  const caster = { characteristics: { 'force-mentale': 42, initiative: 30, sociabilite: 30, 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 0, agilite: 0, dexterite: 0, intelligence: 0 }, skills: [], talents: [], conditions: [], wounds: { current: 1, max: 1 }, advantage: 0, movement: 4, weapons: [], armour: {} } as never as Combatant;
   it('aire { diamètre (Bonus de FM) } → diamètre BFM, rayon en cases ⌊d/2/2⌋', () => {
-    expect(zdeDiameterMeters({ kind: 'area', span: 'diameter', meters: { bonusOf: 'FM' } }, caster)).toBe(4);
-    expect(zdeRadiusTiles({ kind: 'area', span: 'diameter', meters: { bonusOf: 'FM' } }, caster)).toBe(1);
+    expect(zdeDiameterMeters({ kind: 'area', span: 'diameter', meters: { bonusOf: 'force-mentale' } }, caster)).toBe(4);
+    expect(zdeRadiusTiles({ kind: 'area', span: 'diameter', meters: { bonusOf: 'force-mentale' } }, caster)).toBe(1);
     expect(zdeRadiusTiles({ kind: 'special', text: 'ZdE (Spécial)' }, caster)).toBeNull(); // mur/lieu : non chiffrable
     expect(zdeRadiusTiles({ kind: 'count', n: 1 }, caster)).toBeNull(); // cible dénombrée : pas une ZdE
   });
   it('portée : distance littérale / (Caractéristique) / self / touch', () => {
     expect(spellRangeTiles({ kind: 'distance', value: 6, unit: 'm' }, caster)).toBe(3);
-    expect(spellRangeTiles({ kind: 'distance', value: { charOf: 'FM' }, unit: 'm' }, caster)).toBe(21); // 42 m → 21 cases
+    expect(spellRangeTiles({ kind: 'distance', value: { charOf: 'force-mentale' }, unit: 'm' }, caster)).toBe(21); // 42 m → 21 cases
     expect(spellRangeTiles({ kind: 'self' }, caster)).toBe(0);
     expect(spellRangeTiles({ kind: 'touch' }, caster)).toBe(1);
     expect(spellRangeTiles(null, caster)).toBeNull();
@@ -45,7 +45,7 @@ describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.29/44)', () => {
   function setupBattle() {
     const w = wiz();
     w.pos = { x: 2, y: 2 };
-    w.characteristics.FM = 40; // BFM 4 → ZdE diamètre 4 m → rayon 1 case ; portée (FM) m → 20 cases
+    w.characteristics['force-mentale'] = 40; // BFM 4 → ZdE diamètre 4 m → rayon 1 case ; portée (FM) m → 20 cases
     const e1 = spawnEnemy('Bandit de Grand Chemin', undefined, 'e1', { x: 6, y: 6 });
     const e2 = spawnEnemy('Bandit de Grand Chemin', undefined, 'e2', { x: 7, y: 6 });
     const e3 = spawnEnemy('Bandit de Grand Chemin', undefined, 'e3', { x: 12, y: 12 }); // hors zone
@@ -100,7 +100,7 @@ describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.29/44)', () => {
 
   it('pose hors de portée → refus journalisé, la pose RESTE en cours ; zone VIDE → autorisée (Action consommée)', () => {
     const { w } = setupBattle();
-    w.characteristics.FM = 8; // portée (FM) mètres → 4 cases
+    w.characteristics['force-mentale'] = 8; // portée (FM) mètres → 4 cases
     useGame.getState().battleClickTile({ x: 9, y: 9 });
     const pc = useGame.getState().pendingCast!;
     useGame.setState({ pendingCast: { ...pc, result: okCast(4) as never } });

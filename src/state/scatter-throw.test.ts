@@ -9,7 +9,7 @@ import type { AttackResult } from '../engine/combat';
 // Câblage de la Dispersion (LDB 14 l.144-151) : un TIR DE LANCER raté dévie (journal de Dispersion),
 // un tir d'ARC raté reste un simple échec sans déviation (Portée FIXE ≠ Portée `{bf}`).
 
-const CHARS = { CC: 40, CT: 45, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 40, 'capacite-de-tir': 45, force: 40, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 
 const hero = (p: Partial<Combatant>): Combatant =>
   ({

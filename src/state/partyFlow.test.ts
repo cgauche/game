@@ -19,7 +19,7 @@ function heroWithArmeSimple(): Combatant {
   const it = itemFromTrappingById('arme-simple')!;
   it.equipped = true;
   const hero = {
-    id: 'h1', name: 'Test', kind: 'hero', characteristics: { F: 30, E: 30 } as Combatant['characteristics'],
+    id: 'h1', name: 'Test', kind: 'hero', characteristics: { force: 30, endurance: 30 } as Combatant['characteristics'],
     items: [it], talents: [], skills: [], conditions: [], advantage: 0, wounds: { current: 10, max: 10 },
   } as unknown as Combatant;
   recomputeLoadout(hero);

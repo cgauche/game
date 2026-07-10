@@ -5,7 +5,7 @@ import { slugId } from '../data/slug';
 import type { Combatant } from '../engine/types';
 
 const mk = (): Combatant => ({
-  id: 'x', name: 'X', kind: 'enemy', characteristics: { E: 40 }, skills: [], talents: [], traits: [],
+  id: 'x', name: 'X', kind: 'enemy', characteristics: { endurance: 40 }, skills: [], talents: [], traits: [],
   conditions: [], activeEffects: [], liveTraits: [], weapons: [], armour: { corps: 5 },
   wounds: { current: 10, max: 10, base: 10 }, advantage: 0,
 }) as unknown as Combatant;
@@ -47,7 +47,7 @@ describe('En Flammes — dégâts par-round en DONNÉES (effects onRoundEnd → 
   });
 
   it('3 pions : +1 par État en plus AVANT réduction ; d10=4, BE=7, PAmin=0 → (4+2)−7 = −1 → plancher 1', () => {
-    const c = mk(); c.characteristics = { E: 70 } as never; c.armour = { corps: 0 } as never;
+    const c = mk(); c.characteristics = { endurance: 70 } as never; c.armour = { corps: 0 } as never;
     addCondition(c, COND.enFlammes); addCondition(c, COND.enFlammes); addCondition(c, COND.enFlammes);
     const before = c.wounds.current;
     fireConditionEffects((get as (c: Combatant) => unknown)(c) as never, c, 'onRoundEnd', { rng: fixedD10(4) });
@@ -55,7 +55,7 @@ describe('En Flammes — dégâts par-round en DONNÉES (effects onRoundEnd → 
   });
 
   it('PAmin = la Localisation la MOINS protégée (pas le Corps) ; corps=5 mais tête=1 → PA=1', () => {
-    const c = mk(); c.characteristics = { E: 0 } as never; // BE=0
+    const c = mk(); c.characteristics = { endurance: 0 } as never; // BE=0
     c.armour = { tete: 1, corps: 5 } as never;
     addCondition(c, COND.enFlammes);
     const before = c.wounds.current;

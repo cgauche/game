@@ -12,7 +12,10 @@ import { sourceRefSchema } from '../common';
 
 export const file = 'tavernGames.json';
 
-const charKeySchema = z.enum(['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Int', 'FM', 'Soc']);
+const charKeySchema = z.enum([
+  'capacite-de-combat', 'capacite-de-tir', 'force', 'endurance', 'initiative', 'agilite', 'dexterite',
+  'intelligence', 'force-mentale', 'sociabilite',
+]);
 
 export const schema = z.array(
   z.strictObject({

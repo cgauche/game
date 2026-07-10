@@ -286,7 +286,7 @@ export const scenario: TestScenario = {
     for (const tid of ['baliste', 'canon-petit'])
       for (const ref of projForPiece(tid))
         if (!gunner0.skills.some((s) => s.skillId === ref.id && s.spec === ref.spec))
-          gunner0.skills.push({ skillId: ref.id, spec: ref.spec, characteristic: 'CT', advances: 20 });
+          gunner0.skills.push({ skillId: ref.id, spec: ref.spec, characteristic: 'capacite-de-tir', advances: 20 });
     return party;
   },
   scene,

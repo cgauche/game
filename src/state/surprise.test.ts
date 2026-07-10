@@ -18,8 +18,8 @@ describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-
   it('applySurprise : le camp embusqué qui perd le Test opposé Perception vs Discrétion → Surpris', () => {
     setRule('combat-cadence', 'rapide'); // héros auto-résolu inline (pas de cascade différée à piloter)
     seedBattleRng(1);
-    const LOW = { CC: 5, CT: 5, F: 5, E: 5, I: 5, Ag: 5, Dex: 5, Int: 5, FM: 5, Soc: 5 } as never;
-    const HIGH = { CC: 90, CT: 90, F: 90, E: 90, I: 90, Ag: 90, Dex: 90, Int: 90, FM: 90, Soc: 90 } as never;
+    const LOW = { 'capacite-de-combat': 5, 'capacite-de-tir': 5, force: 5, endurance: 5, initiative: 5, agilite: 5, dexterite: 5, intelligence: 5, 'force-mentale': 5, sociabilite: 5 } as never;
+    const HIGH = { 'capacite-de-combat': 90, 'capacite-de-tir': 90, force: 90, endurance: 90, initiative: 90, agilite: 90, dexterite: 90, intelligence: 90, 'force-mentale': 90, sociabilite: 90 } as never;
     const hero = C({ id: 'h', kind: 'hero', characteristics: LOW }); // Perception faible
     const enemy = C({ id: 'e', kind: 'enemy', characteristics: HIGH }); // Discrétion forte (embusqueur)
     useGame.setState({ battle: { combatants: [hero, enemy], order: ['h', 'e'], turn: -1, round: 1, log: [], over: null } as never, pendingLogQueue: [] });
@@ -31,7 +31,7 @@ describe('Surprise — établissement & comportement (LDB 13 l.52-81 / 16 l.130-
   });
 
   it('effectiveMovement = 0 quand Surpris (LDB 16 l.132)', () => {
-    const c = C({ characteristics: { F: 30, E: 30 } as never, conditions: [{ name: 'surpris', value: 1 }] });
+    const c = C({ characteristics: { force: 30, endurance: 30 } as never, conditions: [{ name: 'surpris', value: 1 }] });
     expect(effectiveMovement(c)).toBe(0);
   });
 

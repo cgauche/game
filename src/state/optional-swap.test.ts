@@ -42,12 +42,12 @@ describe('optionals composés — application au spawn (moteur)', () => {
     const wolf = creatureToCombatant(c, 'w1', at, { optionals: [swap] });
     expect(hasTraitKey(wolf.traits, 'bestial')).toBe(false);
     expect(hasTraitKey(wolf.traits, 'territorial')).toBe(false);
-    expect(wolf.characteristics.Soc).toBe(15); // Soc « – » (0) + 15
+    expect(wolf.characteristics.sociabilite).toBe(15); // Soc « – » (0) + 15
     expect(wolf.size).toBe('grande');
     // Sans la variante : Bestial reste et Soc demeure inexistante (0).
     const plain = creatureToCombatant(c, 'w0', at);
     expect(hasTraitKey(plain.traits, 'bestial')).toBe(true);
-    expect(plain.characteristics.Soc).toBe(0);
+    expect(plain.characteristics.sociabilite).toBe(0);
   });
 
   it('Griffon : la variante retire Bestial et octroie +20 Soc (Taille inchangée)', () => {
@@ -55,7 +55,7 @@ describe('optionals composés — application au spawn (moteur)', () => {
     const swap = c.optionals.find((o): o is OptionalSwap => isOptionalNote(o) && o.note === 'swap')!;
     const g = creatureToCombatant(c, 'g1', at, { optionals: [swap] });
     expect(hasTraitKey(g.traits, 'bestial')).toBe(false);
-    expect(g.characteristics.Soc).toBe(20); // Soc « – » (0) + 20
+    expect(g.characteristics.sociabilite).toBe(20); // Soc « – » (0) + 20
     expect(g.size).toBe('enorme'); // Trait Taille (Énorme) conservé
   });
 
@@ -64,9 +64,9 @@ describe('optionals composés — application au spawn (moteur)', () => {
     const swap = c.optionals.find((o): o is OptionalSwap => isOptionalNote(o) && o.note === 'swap')!;
     const v = creatureToCombatant(c, 'v1', at, { optionals: [swap] });
     expect(hasTraitKey(v.traits, 'bestial')).toBe(false);
-    expect(v.characteristics.I).toBe(35); // I 15 imprimé + 20
-    expect(v.characteristics.Int).toBe(30); // Int 10 imprimé + 20
-    expect(v.characteristics.Soc).toBe(20); // Soc « – » (0) + 20
+    expect(v.characteristics.initiative).toBe(35); // I 15 imprimé + 20
+    expect(v.characteristics.intelligence).toBe(30); // Int 10 imprimé + 20
+    expect(v.characteristics.sociabilite).toBe(20); // Soc « – » (0) + 20
     expect(v.size).toBe('grande'); // Taille (Énorme) → Grande
     expect(v.wounds.max).toBe(42); // B imprimé (84) remplacé par la variante
     expect(v.skills.some((s) => s.skillId === 'discretion' && s.spec === 'rurale')).toBe(true);

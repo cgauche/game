@@ -45,12 +45,12 @@ describe('battleSelfManeuver — Métamorphose (activation joueur)', () => {
 
   it('transforme : delta RAW appliqué, Traits + apparence, Action + prochaine consommées (2 actions)', () => {
     const { H } = setup();
-    const cc0 = effectiveChar(H, 'CC'), dex0 = effectiveChar(H, 'Dex'), soc0 = effectiveChar(H, 'Soc');
+    const cc0 = effectiveChar(H, 'capacite-de-combat'), dex0 = effectiveChar(H, 'dexterite'), soc0 = effectiveChar(H, 'sociabilite');
     useGame.getState().battleSelfManeuver('forme-hybride-ulric');
     const h = live(H.id);
-    expect(effectiveChar(h, 'CC')).toBe(cc0 + 10); // delta du tableau (Middenheim p.116)
-    expect(effectiveChar(h, 'Dex')).toBe(dex0 - 10);
-    expect(effectiveChar(h, 'Soc')).toBe(soc0 - 20);
+    expect(effectiveChar(h, 'capacite-de-combat')).toBe(cc0 + 10); // delta du tableau (Middenheim p.116)
+    expect(effectiveChar(h, 'dexterite')).toBe(dex0 - 10);
+    expect(effectiveChar(h, 'sociabilite')).toBe(soc0 - 20);
     expect(hasTraitKey(h.traits, 'peur')).toBe(true);
     expect(liveMorphRef(h)).toBe('enfant-d-ulric'); // apparence hybride
     expect(useGame.getState().battle!.acted).toBe(true); // Action de CE tour consommée
@@ -60,13 +60,13 @@ describe('battleSelfManeuver — Métamorphose (activation joueur)', () => {
 
   it('toggle : reprendre la forme humaine restaure le profil de base', () => {
     const { H } = setup();
-    const cc0 = effectiveChar(H, 'CC'), dex0 = effectiveChar(H, 'Dex');
+    const cc0 = effectiveChar(H, 'capacite-de-combat'), dex0 = effectiveChar(H, 'dexterite');
     useGame.getState().battleSelfManeuver('forme-hybride-ulric');
     useGame.setState({ battle: { ...useGame.getState().battle!, acted: false } }); // tour suivant
     useGame.getState().battleSelfManeuver('forme-humaine-ulric');
     const h = live(H.id);
-    expect(effectiveChar(h, 'CC')).toBe(cc0);
-    expect(effectiveChar(h, 'Dex')).toBe(dex0);
+    expect(effectiveChar(h, 'capacite-de-combat')).toBe(cc0);
+    expect(effectiveChar(h, 'dexterite')).toBe(dex0);
     expect(hasTraitKey(h.traits, 'peur')).toBe(false);
     expect(liveMorphRef(h)).toBeUndefined();
     expect(applicableIds(h)).toEqual(['forme-hybride-ulric']); // de retour hors de la forme
@@ -74,9 +74,9 @@ describe('battleSelfManeuver — Métamorphose (activation joueur)', () => {
 
   it('une manœuvre non applicable est refusée (garde d’état de forme)', () => {
     const { H } = setup();
-    const cc0 = effectiveChar(H, 'CC');
+    const cc0 = effectiveChar(H, 'capacite-de-combat');
     useGame.getState().battleSelfManeuver('forme-humaine-ulric'); // pas transformé → no-op
-    expect(effectiveChar(live(H.id), 'CC')).toBe(cc0);
+    expect(effectiveChar(live(H.id), 'capacite-de-combat')).toBe(cc0);
     expect(useGame.getState().battle!.acted).toBe(false); // aucune Action gaspillée
   });
 });

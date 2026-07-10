@@ -19,14 +19,14 @@ import type { GameState } from './store';
  */
 
 const CHARS = (over: Partial<Record<string, number>> = {}) =>
-  ({ CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30, ...over });
+  ({ 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30, ...over });
 
 /** Commandant (héros) — porte le Talent + une Compétence de Commandement (Soc). */
 const mkCommander = (id: string, pos: { x: number; y: number }, over: Partial<Record<string, number>> = {}, withTalent = true): Combatant =>
   ({
     id, name: id, kind: 'hero', characteristics: CHARS(over),
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], weapons: [],
-    skills: [{ skillId: 'commandement', characteristic: 'Soc', advances: 30 }],
+    skills: [{ skillId: 'commandement', characteristic: 'sociabilite', advances: 30 }],
     talents: withTalent ? [{ talentId: 'commandant-d-equipe', times: 1 }] : [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos, loaded: true,
   }) as unknown as Combatant;
@@ -41,7 +41,7 @@ const mkChief = (id: string, pos: { x: number; y: number }, over: Partial<Record
 
 const mkEnemy = (id: string, x: number, y: number): Combatant =>
   ({ id, name: id, kind: 'enemy', pos: { x, y }, conditions: [], weapons: [], skills: [], talents: [],
-    characteristics: CHARS({ CT: 0 }), wounds: { current: 60, max: 60 }, advantage: 0,
+    characteristics: CHARS({ 'capacite-de-tir': 0 }), wounds: { current: 60, max: 60 }, advantage: 0,
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 } }) as unknown as Combatant;
 
 /** Emplacement portant la baliste, servie par le chef `crewIds[0]`. */
@@ -108,7 +108,7 @@ describe('(C) battleAidTeam — Test de Commandement réussi pose teamCommanderI
   it('succès (seed) → chief.teamCommanderId = id du commandant ; Action consommée', () => {
     seedBattleRng(1);
     const poste = mkPoste('baliste', ['chief', 's1']);
-    const commander = mkCommander('cmd', { x: 9, y: 6 }, { Soc: 80 }); // Commandement ≈ 99 → réussite quasi certaine
+    const commander = mkCommander('cmd', { x: 9, y: 6 }, { sociabilite: 80 }); // Commandement ≈ 99 → réussite quasi certaine
     const chief = mkChief('chief', { x: 7, y: 6 });
     const all = [mkEmplacement(poste), commander, chief];
     applyShipPostes(all);
@@ -135,9 +135,9 @@ describe('(C) battleAidTeam — Test de Commandement réussi pose teamCommanderI
 describe('(D) Substitution — l’équipe tire au score de Projectiles du commandant', () => {
   const setup = (commanderPos: { x: number; y: number }, opts: { dead?: boolean } = {}) => {
     const poste = mkPoste('baliste', ['chief', 's1']);
-    const commander = mkCommander('cmd', commanderPos, { CT: 75 }); // CT/Projectiles HAUT
+    const commander = mkCommander('cmd', commanderPos, { 'capacite-de-tir': 75 }); // CT/Projectiles HAUT
     if (opts.dead) commander.dead = true;
-    const chief = mkChief('chief', { x: 6, y: 5 }, { CT: 30 }); // CT/Projectiles BAS
+    const chief = mkChief('chief', { x: 6, y: 5 }, { 'capacite-de-tir': 30 }); // CT/Projectiles BAS
     chief.teamCommanderId = 'cmd'; // aidé précédemment
     const foe = mkEnemy('foe', 9, 5);
     const all = [mkEmplacement(poste, { x: 6, y: 5 }), commander, chief, foe];

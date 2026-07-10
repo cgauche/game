@@ -16,7 +16,7 @@ import type { Combatant, Characteristics, BodyShape } from './types';
 import type { TraitList } from './statEntry';
 import { emptyArmour } from './items';
 
-const ZERO_CHARS: Characteristics = { CC: 0, CT: 0, F: 0, E: 0, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 };
+const ZERO_CHARS: Characteristics = { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 0, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 };
 
 /** Profil à PV d'un objet DESTRUCTIBLE (structure/véhicule). `e` = Endurance PLEINE (la structure passe
  *  `BE × 10` — sa table ADE II donne le Bonus ; le véhicule passe `hull.char.E`). Absent ⇒ objet inerte
@@ -52,7 +52,7 @@ export function inanimateCombatant(s: InanimateSpec): Combatant {
     name: s.name,
     kind: 'npc',
     creatureId: s.refId,
-    characteristics: { ...ZERO_CHARS, E: s.hull?.e ?? 0 },
+    characteristics: { ...ZERO_CHARS, endurance: s.hull?.e ?? 0 },
     wounds: { current: max, max, base: max },
     advantage: 0,
     conditions: [],

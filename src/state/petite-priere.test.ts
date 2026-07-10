@@ -18,7 +18,7 @@ const reward = flowFromEffects([{ type: 'giveXp', amount: 50 }]);
 function laypersonSurePray(): Combatant {
   const p = makePregens().find((h) => !hasTalent(h as Combatant, 'Béni'))! as Combatant;
   const sk = p.skills.find((s) => s.skillId === 'priere');
-  if (sk) sk.advances = 200; else p.skills.push({ skillId: 'priere', characteristic: 'Soc', advances: 200 } as never);
+  if (sk) sk.advances = 200; else p.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 200 } as never);
   p.xp = 0;
   return p;
 }

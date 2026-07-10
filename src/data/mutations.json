@@ -28,12 +28,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "F",
+        "char": "force",
         "mod": 5
       },
       {
         "op": "charMod",
-        "char": "E",
+        "char": "endurance",
         "mod": 5
       },
       {
@@ -59,7 +59,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Dex",
+        "char": "dexterite",
         "mod": 10
       }
     ],
@@ -81,12 +81,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "F",
+        "char": "force",
         "mod": -10
       },
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": 5
       }
     ],
@@ -124,7 +124,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": 5
       }
     ],
@@ -204,7 +204,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": 10
       }
     ],
@@ -227,7 +227,7 @@
       {
         "op": "testMod",
         "amount": -20,
-        "char": "Soc"
+        "char": "sociabilite"
       }
     ],
     "appearance": {
@@ -248,7 +248,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": -10
       },
       {
@@ -438,12 +438,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -5
       },
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": -5
       }
     ],
@@ -460,17 +460,17 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 10
       },
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -5
       },
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -5
       }
     ],
@@ -498,12 +498,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": -5
       },
       {
         "op": "charMod",
-        "char": "Dex",
+        "char": "dexterite",
         "mod": -5
       }
     ],
@@ -520,12 +520,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -5
       },
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": -5
       }
     ],
@@ -542,7 +542,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": -10
       }
     ],
@@ -570,12 +570,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 10
       },
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -10
       }
     ],
@@ -592,7 +592,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -10
       }
     ],
@@ -620,7 +620,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -10
       }
     ],
@@ -637,12 +637,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": -10
       },
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": 10
       }
     ],
@@ -670,12 +670,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": -5
       },
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -5
       }
     ],
@@ -692,12 +692,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 10
       },
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": -10
       }
     ],
@@ -714,7 +714,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": -10
       }
     ],
@@ -731,12 +731,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -20
       },
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 10
       }
     ],
@@ -765,7 +765,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "CC",
+        "char": "capacite-de-combat",
         "mod": 10
       },
       {
@@ -786,12 +786,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": 5
       },
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -5
       }
     ],
@@ -808,7 +808,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -20
       },
       {
@@ -835,7 +835,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -40
       },
       {
@@ -882,12 +882,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -20
       },
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -10
       },
       {
@@ -919,12 +919,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -5
       },
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -10
       },
       {
@@ -955,12 +955,12 @@
       },
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -5
       },
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -5
       }
     ],
@@ -989,7 +989,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -10
       }
     ],
@@ -1011,12 +1011,12 @@
       },
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": -20
       },
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -20
       }
     ],
@@ -1039,7 +1039,7 @@
       },
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 10
       }
     ],
@@ -1136,12 +1136,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -10
       },
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 10
       }
     ],
@@ -1163,7 +1163,7 @@
       },
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": 10
       }
     ],
@@ -1181,12 +1181,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": -10
       },
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": 10
       }
     ],
@@ -1410,7 +1410,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": 10
       }
     ],
@@ -1789,7 +1789,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "CT",
+        "char": "capacite-de-tir",
         "mod": -20
       }
     ],
@@ -2302,12 +2302,12 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Dex",
+        "char": "dexterite",
         "mod": -10
       },
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -10
       },
       {

@@ -22,7 +22,7 @@ const onHitFlow = (ops: unknown[]): TriggeredEffect =>
 const dummy = (p: Partial<Combatant> = {}): Combatant =>
   ({
     id: 'x', name: 'X', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 45 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 45 },
     wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...p,
@@ -55,7 +55,7 @@ describe('augmentWeapon — enchantement porté par l’arme, replié dans c.wea
     const priest = dummy({}); // BSoc 4
     const fighter = wielder(weaponItem('w', 'Épée', '+BF+4'), { id: 'f' });
     applyOps(fighter, [{
-      op: 'augmentWeapon', addQualities: ['magique'], damageBonus: { bonusOf: 'Soc' },
+      op: 'augmentWeapon', addQualities: ['magique'], damageBonus: { bonusOf: 'sociabilite' },
       onHitEffects: [onHitFlow([{ op: 'condition', name: 'en-flammes' }, { op: 'condition', name: 'a-terre' }])],
     }], { label: 'Marteau ardent de Sigmar', caster: priest, defaultDurationRounds: 4 });
     expect(effectiveWeaponDamage(fighter.weapons[0], 3)).toBe(3 + 4 + 4); // BF 3 + arme 4 + BSoc 4 du prêtre

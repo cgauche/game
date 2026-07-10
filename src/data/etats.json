@@ -316,7 +316,7 @@
       }
     ],
     "recover": {
-      "characteristic": "F",
+      "characteristic": "force",
       "opposedBy": "source"
     },
     "gating": {
@@ -790,7 +790,7 @@
                     "op": ">=",
                     "value": {
                       "who": "target",
-                      "char": "E",
+                      "char": "endurance",
                       "factor": 0.5
                     }
                   },
@@ -833,7 +833,7 @@
                     "op": ">=",
                     "value": {
                       "who": "target",
-                      "char": "E"
+                      "char": "endurance"
                     }
                   },
                   {

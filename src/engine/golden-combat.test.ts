@@ -6,7 +6,7 @@ import type { Characteristics, Combatant, Weapon } from './types';
 
 /** Fixture combattant déterministe (pas d'aléa de création). */
 function mk(name: string, chars: Partial<Characteristics>, weapon: Weapon, armourCorps = 0): Combatant {
-  const base: Characteristics = { CC: 40, CT: 40, F: 35, E: 35, I: 30, Ag: 35, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  const base: Characteristics = { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 35, endurance: 35, initiative: 30, agilite: 35, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
   return {
     id: name, name, kind: 'enemy',
     characteristics: { ...base, ...chars },
@@ -31,8 +31,8 @@ describe('Golden master — combat (iso-comportement du registre de qualités)',
     for (const q of QSETS) {
       for (const defense of ['parade', 'esquive', 'none'] as const) {
         for (let seed = 1; seed <= 25; seed++) {
-          const atk = mk('A', { CC: 55, F: 40 }, { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: q.map((s) => parseQualityInstance(s)!) });
-          const def = mk('D', { CC: 45, E: 35 }, { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'defensive' }] }, 2);
+          const atk = mk('A', { 'capacite-de-combat': 55, force: 40 }, { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: q.map((s) => parseQualityInstance(s)!) });
+          const def = mk('D', { 'capacite-de-combat': 45, endurance: 35 }, { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 4 }, qualities: [{ id: 'defensive' }] }, 2);
           out.push(`${q.join(',')}|${defense}|${seed}=${ser(resolveMelee(atk, def, atk.weapons[0], makeRNG(seed), { defense }))}`);
         }
       }
@@ -44,8 +44,8 @@ describe('Golden master — combat (iso-comportement du registre de qualités)',
     const out: string[] = [];
     for (const q of [[], ['Perforante'], ['Pointue'], ['Empaleuse']]) {
       for (let seed = 1; seed <= 25; seed++) {
-        const atk = mk('A', { CT: 55 }, { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 50, qualities: q.map((s) => parseQualityInstance(s)!) });
-        const def = mk('D', { E: 35 }, { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }, 2);
+        const atk = mk('A', { 'capacite-de-tir': 55 }, { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 50, qualities: q.map((s) => parseQualityInstance(s)!) });
+        const def = mk('D', { endurance: 35 }, { name: 'Épée', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }, 2);
         out.push(`${q.join(',')}|${seed}=${ser(resolveRanged(atk, def, atk.weapons[0], makeRNG(seed), 10))}`);
       }
     }

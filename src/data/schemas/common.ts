@@ -116,7 +116,10 @@ export const difficultySchema = z.enum([
  * dans ~10 defs (`domains`/`maneuvers`/`qualities`/`talents`/`etats`/`spells`/`species`/`careerLevels`…)
  * avant cette promotion.
  */
-export const charKeySchema = z.enum(['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Int', 'FM', 'Soc']);
+export const charKeySchema = z.enum([
+  'capacite-de-combat', 'capacite-de-tir', 'force', 'endurance', 'initiative', 'agilite', 'dexterite',
+  'intelligence', 'force-mentale', 'sociabilite',
+]);
 
 /** `DiceSpec` (`src/engine/dice.ts`) — jet `{n, sides, plus?}`, partagé par `CountSpec.roll` et `Formula.dice`. */
 export const diceSpecSchema = z.strictObject({ n: z.number(), sides: z.number(), plus: z.number().optional() });

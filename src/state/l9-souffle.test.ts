@@ -30,15 +30,15 @@ describe('Souffle — délégation à l’attaque de zone du Trait (LDB 47 p.244
     useGame.getState().seedRng(2);
     const b = useGame.getState().battle!;
     const caster = b.combatants.find((c) => c.name === 'W')!;
-    caster.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 10 });
+    caster.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 10 });
     caster.talents.push({ talentId: 'magie-des-arcanes', spec: 'Feu', times: 1 });
-    caster.characteristics.E = 60; // BE 6 → Dégâts du Souffle
-    caster.characteristics.CT = 100;
+    caster.characteristics.endurance = 60; // BE 6 → Dégâts du Souffle
+    caster.characteristics['capacite-de-tir'] = 100;
     caster.pos = { x: 10, y: 10 };
     const foes = b.combatants.filter((c) => c.kind === 'enemy');
     const T = foes[0];
     T.pos = { x: 12, y: 10 };
-    T.characteristics.Ag = 5;
+    T.characteristics.agilite = 5;
     T.skills = T.skills.filter((s) => s.skillId !== 'esquive');
     foes.slice(1).forEach((e) => { e.pos = { x: 30, y: 30 }; }); // hors zone
     return { caster, T };

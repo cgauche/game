@@ -13,7 +13,7 @@ import type { Combatant } from './types';
 
 const C = (id: string, p?: Partial<Combatant>): Combatant => ({
   id, name: id, kind: 'hero',
-  characteristics: { CC: 40, CT: 30, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+  characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 40, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
   wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], movement: 4, skills: [], talents: [],
   engagedWith: [], pos: { x: 0, y: 0 }, size: 'moyenne', weapons: [], items: [],
   armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -82,17 +82,17 @@ describe('grappleTierMod — bonus de tiers +20 / +10 (LDB 14 l.169)', () => {
 
 describe('Empoignade — option Dégâts en DONNÉE (GRAPPLE.win.damage) : BF + DR, tous les PA IGNORÉS (LDB 14 l.161)', () => {
   it('Dégâts = BF + DR (ctx.sl), le Bonus d’Endurance est déduit, les PA sont ignorés', () => {
-    const actor = C('actor', { characteristics: { CC: 40, CT: 30, F: 50, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as Combatant['characteristics'] });
-    const target = C('target', { characteristics: { CC: 40, CT: 30, F: 40, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as Combatant['characteristics'] });
+    const actor = C('actor', { characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 50, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as Combatant['characteristics'] });
+    const target = C('target', { characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 40, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as Combatant['characteristics'] });
     const before = target.wounds.current;
     applyOps(target, GRAPPLE.win.damage, { caster: actor, sl: 3 }); // BF(5) + DR(3) = 8, − BE(3) = 5
     expect(before - target.wounds.current).toBe(5);
   });
   it('une cible BLINDÉE subit AUTANT qu’une cible nue (PA ignorés)', () => {
-    const actor = C('actor', { characteristics: { CC: 40, CT: 30, F: 50, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as Combatant['characteristics'] });
-    const naked = C('naked', { characteristics: { CC: 40, CT: 30, F: 40, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as Combatant['characteristics'] });
+    const actor = C('actor', { characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 50, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as Combatant['characteristics'] });
+    const naked = C('naked', { characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 40, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as Combatant['characteristics'] });
     const armoured = C('armoured', {
-      characteristics: { CC: 40, CT: 30, F: 40, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as Combatant['characteristics'],
+      characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 40, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as Combatant['characteristics'],
       armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 },
     });
     const dn = naked.wounds.current; applyOps(naked, GRAPPLE.win.damage, { caster: actor, sl: 3 });

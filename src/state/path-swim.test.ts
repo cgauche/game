@@ -23,7 +23,7 @@ const SWIM = { blocked: new Set<string>(), swim: EAU };
 
 const mk = (traits: { id: string }[]): Combatant => ({
   id: 'm', name: 'Bête', kind: 'enemy', pos: { x: 0, y: 0 },
-  characteristics: { CC: 30, CT: 0, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+  characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 0, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
   movement: 6, wounds: { current: 20, max: 20, base: 20 }, weapons: [], skills: [], talents: [],
   traits, conditions: [],
 } as unknown as Combatant);

@@ -35,8 +35,8 @@ export function WardModal() {
     actor: attacker,
     row: {
       combatant: attacker,
-      d: r ? testBreakdown('Force Mentale', effectiveChar(attacker, 'FM'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'accessible') : undefined,
-      pending: testPending('Force Mentale', effectiveChar(attacker, 'FM'), undefined, 'accessible'),
+      d: r ? testBreakdown('Force Mentale', effectiveChar(attacker, 'force-mentale'), { roll: r.roll, target: r.target, sl: r.sl, success: r.success }, 'accessible') : undefined,
+      pending: testPending('Force Mentale', effectiveChar(attacker, 'force-mentale'), undefined, 'accessible'),
     },
     rolled,
     freeReroll: freeRerollOf(attacker),

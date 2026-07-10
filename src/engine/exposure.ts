@@ -80,12 +80,12 @@ export interface ExposureRoll {
 export type ExposureKind = 'froid' | 'chaleur';
 
 const FIRST_FAIL: Record<ExposureKind, CharKey[]> = {
-  froid: ['CT', 'Ag', 'Dex'],
-  chaleur: ['Int', 'FM'],
+  froid: ['capacite-de-tir', 'agilite', 'dexterite'],
+  chaleur: ['intelligence', 'force-mentale'],
 };
 const SECOND_FAIL: Record<ExposureKind, CharKey[]> = {
-  froid: ['CC', 'F', 'E', 'I', 'Int', 'FM', 'Soc'],
-  chaleur: ['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Soc'],
+  froid: ['capacite-de-combat', 'force', 'endurance', 'initiative', 'intelligence', 'force-mentale', 'sociabilite'],
+  chaleur: ['capacite-de-combat', 'capacite-de-tir', 'force', 'endurance', 'initiative', 'agilite', 'dexterite', 'sociabilite'],
 };
 
 /** Nombre de Tests d'une nuit dehors selon sévérité et abri — cadence RAW (LDB 18 l.328 : 4h/2h),

@@ -9,7 +9,7 @@ import { makeRNG } from './dice';
 const user = (over: Partial<Combatant> = {}): Combatant =>
   ({
     name: 'X',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 5, max: 20, base: 20 }, conditions: [], activeEffects: [], ...over,
   }) as unknown as Combatant;
 
@@ -78,7 +78,7 @@ describe('consommables — catalogue migré (LDB 71/72/67 + T2C, donnée réelle
     expect(f.kind).toBe('if');
     const g = f as Extract<Flow, { kind: 'if' }>;
     expect(g.cond).toEqual({ kind: 'compare', subject: { who: 'target', field: 'woundsCurrent' }, op: '>=', value: 1 });
-    expect(consumableOps(f)).toEqual([{ op: 'heal', amount: { bonusOf: 'E' } }]);
+    expect(consumableOps(f)).toEqual([{ op: 'heal', amount: { bonusOf: 'endurance' } }]);
     expect(isConsumable(itemFromTrappingById('potion-de-guerison')!)).toBe(true);
   });
   it('necessaire-antipoison : « Un Test de Guérison réussi … retire tous les États Empoisonné » (LDB 67 l.13)', () => {

@@ -11,7 +11,7 @@ import type { Combatant } from '../engine/types';
 const hull = (id: string, creatureId: string, E: number, pb: number): Combatant =>
   ({
     id, name: id, kind: 'npc', creatureId, bodyShape: 'vehicule',
-    characteristics: { CC: 0, CT: 0, F: 0, E, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 },
+    characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: E, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 },
     wounds: { current: pb, max: pb, base: pb }, advantage: 0, conditions: [], weapons: [],
     armour: { corps: 0 }, skills: [], talents: [],
   }) as unknown as Combatant;

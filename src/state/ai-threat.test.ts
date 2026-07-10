@@ -21,7 +21,7 @@ const MELEE: Weapon = { name: 'Épée', type: 'melee', damage: { plusBF: true, f
 const RANGED: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 60, qualities: [] };
 const FISTS: Weapon = { name: 'Mains nues', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] };
 
-const CHARS = { CC: 45, CT: 45, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 40, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 40, sociabilite: 30 };
 const ARMOUR = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
@@ -71,7 +71,7 @@ describe('Lot 3 — ciblage par MENACE (targetThreat) ≠ PV le plus bas', () =>
 
 describe('Lot 3 — killSecure : achève une cible à portée', () => {
   it('à dégâts attendus ≥ PB restants, l’IA frappe la cible ACHEVABLE plutôt qu’une cible plus menaçante mais non finissable', () => {
-    const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [MELEE], characteristics: { ...CHARS, F: 45 } });
+    const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [MELEE], characteristics: { ...CHARS, force: 45 } });
     // finissable : 2 PB, au contact → un coup d'épée (+BF+4) le tue (killSecure).
     const finishable = mk('finishable', 'hero', { x: 10, y: 11 }, { wounds: { current: 2, max: 12 }, weapons: [FISTS] });
     // tank : pleine vie + grosse menace, au contact aussi — mais pas finissable ce tour.

@@ -43,8 +43,8 @@ describe('ZdE ennemie — télégraphe visuel actorAoe (pose pendant le télégr
     // Lanceur IA fort (DR ≥ NI d'Explosion d'un seul jet), deux héros COLLÉS → un centre couvre les deux.
     const e = spawnEnemy('Bandit de Grand Chemin', undefined, 'caster', { x: 5, y: 5 });
     e.kind = 'enemy';
-    e.characteristics.Int = 70; e.characteristics.FM = 70;
-    e.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 60 } as never];
+    e.characteristics.intelligence = 70; e.characteristics['force-mentale'] = 70;
+    e.skills = [{ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 60 } as never];
     const spell = findSpell('Explosion')!; // Projectile magique à ZdE
     e.spells = [spell.id];
     e.advantage = 0; e.movement = 4; e.pos = { x: 5, y: 5 };

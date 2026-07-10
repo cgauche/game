@@ -995,7 +995,7 @@ export function applyActiveEffect(target: Combatant, effect: ActiveEffect) {
     target.activeEffects.push(effect);
   }
   // Les Blessures dérivent de F/E/FM (LDB 85) → un buff de ces caractéristiques recale les PB max + courants.
-  if (effect.char === 'F' || effect.char === 'E' || effect.char === 'FM') refreshWounds(target);
+  if (effect.char === 'force' || effect.char === 'endurance' || effect.char === 'force-mentale') refreshWounds(target);
 }
 
 /** Ligne de journal d'un Test résolu inline — SOURCE UNIQUE du format « X — Test de Y Difficulté :
@@ -1055,7 +1055,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
           break;
         }
         // Défaut : ignore BE+PA. `ignoreTB:false` → déduit le Bonus d'Endurance ; `ignoreAP:false` → déduit les PA.
-        const tb = o.ignoreTB === false ? bonus(effectiveChar(target, 'E')) : 0;
+        const tb = o.ignoreTB === false ? bonus(effectiveChar(target, 'endurance')) : 0;
         // `apFrom:'least'` → PA de la Localisation la moins protégée (En Flammes) ; sinon le Corps.
         const totalAP = o.apFrom === 'least'
           ? Math.max(0, Math.min(...Object.values(target.armour)))
@@ -1945,7 +1945,7 @@ export function applyOps(target: Combatant, ops: GameOp[], ctx: OpsCtx = {}): st
       case 'intoxicate': {
         // Boisson alcoolisée (LDB 09 l.475) : un échec de Résistance à l'alcool → −10 aux CC/CT/Ag/Dex/Int,
         // Ivresse (1d10) au seuil BE. Le Test lui-même est le nœud `test` du Flow de consommable (branche fail).
-        const be = bonus(effectiveChar(target, 'E'));
+        const be = bonus(effectiveChar(target, 'endurance'));
         const { log, drunkOps } = applyAlcoholTest(target, false, be, rng);
         lines.push(...log);
         // La MÉCANIQUE du résultat d'Ivresse (Bravoure/meilleur ami/belligérant, `drunkenness.json`)

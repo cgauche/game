@@ -15,7 +15,7 @@ import type { TriggeredEffect } from './flow';
  */
 
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
-  id: 'd', name: 'Démon', kind: 'enemy', characteristics: { E: 40 }, skills: [], talents: [], traits: [],
+  id: 'd', name: 'Démon', kind: 'enemy', characteristics: { endurance: 40 }, skills: [], talents: [], traits: [],
   conditions: [], activeEffects: [], liveTraits: [], weapons: [], armour: { corps: 0 },
   wounds: { current: 0, max: 12, base: 12 }, advantage: 0,
   ...over,

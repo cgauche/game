@@ -13,7 +13,7 @@ import type { Weapon } from './types';
 function hero(p: Partial<Combatant> = {}): Combatant {
   return {
     id: 'h', name: 'Cobaye', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 45, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 38, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 45, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 38, sociabilite: 30 },
     wounds: { current: 10, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [],
@@ -25,9 +25,9 @@ describe('resolveFormula', () => {
   it('littéral, (Bonus de X), (X) pleine, dés (RNG seedable)', () => {
     const c = hero(); // FM 38 → BFM 3 ; E 45 → BE 4
     expect(resolveFormula(7, c)).toBe(7);
-    expect(resolveFormula({ bonusOf: 'FM' }, c)).toBe(3);
-    expect(resolveFormula({ bonusOf: 'E' }, c)).toBe(4);
-    expect(resolveFormula({ charOf: 'FM' }, c)).toBe(38);
+    expect(resolveFormula({ bonusOf: 'force-mentale' }, c)).toBe(3);
+    expect(resolveFormula({ bonusOf: 'endurance' }, c)).toBe(4);
+    expect(resolveFormula({ charOf: 'force-mentale' }, c)).toBe(38);
     const rng = makeRNG(42);
     const v = resolveFormula({ dice: { n: 1, sides: 10, plus: 2 } }, c, rng);
     expect(v).toBeGreaterThanOrEqual(3);
@@ -37,8 +37,8 @@ describe('resolveFormula', () => {
   });
 
   it('(Bonus de X) se résout contre la caractéristique EFFECTIVE (buffs compris)', () => {
-    const c = hero({ activeEffects: [{ label: 'Buff', char: 'FM', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
-    expect(resolveFormula({ bonusOf: 'FM' }, c)).toBe(4); // 38+10 → 48 → bonus 4
+    const c = hero({ activeEffects: [{ label: 'Buff', char: 'force-mentale', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
+    expect(resolveFormula({ bonusOf: 'force-mentale' }, c)).toBe(4); // 38+10 → 48 → bonus 4
   });
 });
 
@@ -141,9 +141,9 @@ describe('applyOps — opérations unitaires', () => {
   });
 
   it('condition : ajout avec valeur en formule (Bonus de FM du référent caster)', () => {
-    const caster = hero({ id: 'c', name: 'Lanceur', characteristics: { ...hero().characteristics, FM: 52 } });
+    const caster = hero({ id: 'c', name: 'Lanceur', characteristics: { ...hero().characteristics, 'force-mentale': 52 } });
     const c = hero();
-    applyOps(c, [{ op: 'condition', name: 'hemorragique', value: { bonusOf: 'FM' } }], { caster });
+    applyOps(c, [{ op: 'condition', name: 'hemorragique', value: { bonusOf: 'force-mentale' } }], { caster });
     expect(c.conditions.find((x) => x.name === 'hemorragique')?.value).toBe(5);
   });
 
@@ -161,30 +161,30 @@ describe('applyOps — opérations unitaires', () => {
     const lines = applyOps(
       c,
       [
-        { op: 'charMod', char: 'Ag', mod: -10 },
-        { op: 'charMod', char: 'Dex', mod: -10 },
+        { op: 'charMod', char: 'agilite', mod: -10 },
+        { op: 'charMod', char: 'dexterite', mod: -10 },
       ],
       { label: 'Écorce', defaultDurationRounds: 6 },
     );
     expect(c.activeEffects).toHaveLength(2);
-    expect(c.activeEffects![0]).toMatchObject({ label: 'Écorce', char: 'Ag', bonus: -10, duration: { scale: 'rounds', left: 6 } });
+    expect(c.activeEffects![0]).toMatchObject({ label: 'Écorce', char: 'agilite', bonus: -10, duration: { scale: 'rounds', left: 6 } });
     expect(lines).toHaveLength(1);
     expect(lines[0]).toBe('Cobaye : Écorce (-10 Agilité, -10 Dextérité, 6 rounds).');
   });
 
   it('sourceSpell : marque les ActiveEffect POSÉS du sort (NI/identité), pas les pré-existants (Dissipation LDB 46)', () => {
-    const c = hero({ activeEffects: [{ label: 'Vieux buff', char: 'FM', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
+    const c = hero({ activeEffects: [{ label: 'Vieux buff', char: 'force-mentale', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
     const spell = { spellId: 'ecorce', ni: 4, casterId: 'mage-1', label: 'Écorce' };
-    applyOps(c, [{ op: 'charMod', char: 'Ag', mod: -10 }], { label: 'Écorce', defaultDurationRounds: 6, sourceSpell: spell });
+    applyOps(c, [{ op: 'charMod', char: 'agilite', mod: -10 }], { label: 'Écorce', defaultDurationRounds: 6, sourceSpell: spell });
     const old = c.activeEffects!.find((e) => e.label === 'Vieux buff')!;
-    const posed = c.activeEffects!.find((e) => e.char === 'Ag')!;
+    const posed = c.activeEffects!.find((e) => e.char === 'agilite')!;
     expect(old.spell).toBeUndefined(); // pré-existant : non marqué
     expect(posed.spell).toEqual(spell); // posé par CE sort : marqué (identité + NI)
   });
 
   it('charMod : durée permanente par défaut → « durée hors combat » au journal', () => {
     const c = hero();
-    const lines = applyOps(c, [{ op: 'charMod', char: 'E', mod: 20 }], { label: 'Armure' });
+    const lines = applyOps(c, [{ op: 'charMod', char: 'endurance', mod: 20 }], { label: 'Armure' });
     expect(c.activeEffects![0].duration).toEqual({ scale: "permanent" });
     expect(lines[0]).toMatch(/durée hors combat/);
   });
@@ -212,11 +212,11 @@ describe('applyOps — opérations unitaires', () => {
   });
 
   it('maxWeaponHands : formule « 1d10 − BE » plancher à 1 (minimum de 1, « Choc au bras » l.2557)', () => {
-    const c = hero({ characteristics: { ...hero().characteristics, E: 45 } }); // BE 4
+    const c = hero({ characteristics: { ...hero().characteristics, endurance: 45 } }); // BE 4
     const rng: RNG = { int: () => 1 }; // 1d10 tiré au plus bas (1) − BE 4 → négatif → plancher 1
     applyOps(c, [{
       op: 'maxWeaponHands', hands: 1,
-      durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'E' }, factor: -1 } }] },
+      durationRounds: { sum: [{ dice: { n: 1, sides: 10 } }, { times: { of: { bonusOf: 'endurance' }, factor: -1 } }] },
     }], { rng });
     expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 1 });
   });
@@ -248,12 +248,12 @@ describe('applyOps — opérations unitaires', () => {
   // lus par combatValue/defenseValue/testValue (cf. weapon-spec.test.ts pour la consommation).
   it("testMod : weaponHand/movementOnly COPIÉS sur l'ActiveEffect (testModHand/testModMovementOnly)", () => {
     const c = hero();
-    applyOps(c, [{ op: 'testMod', char: 'CC', amount: -10, weaponHand: 'main' }], { defaultDurationRounds: 9999 });
-    applyOps(c, [{ op: 'testMod', char: 'Ag', amount: -10, movementOnly: true }], { defaultDurationRounds: 9999 });
+    applyOps(c, [{ op: 'testMod', char: 'capacite-de-combat', amount: -10, weaponHand: 'main' }], { defaultDurationRounds: 9999 });
+    applyOps(c, [{ op: 'testMod', char: 'agilite', amount: -10, movementOnly: true }], { defaultDurationRounds: 9999 });
     expect(c.activeEffects).toHaveLength(2);
-    expect(c.activeEffects![0]).toMatchObject({ testMod: -10, testModChar: 'CC', testModHand: 'main' });
+    expect(c.activeEffects![0]).toMatchObject({ testMod: -10, testModChar: 'capacite-de-combat', testModHand: 'main' });
     expect(c.activeEffects![0].testModMovementOnly).toBeUndefined();
-    expect(c.activeEffects![1]).toMatchObject({ testMod: -10, testModChar: 'Ag', testModMovementOnly: true });
+    expect(c.activeEffects![1]).toMatchObject({ testMod: -10, testModChar: 'agilite', testModMovementOnly: true });
     expect(c.activeEffects![1].testModHand).toBeUndefined();
   });
 
@@ -266,7 +266,7 @@ describe('applyOps — opérations unitaires', () => {
   describe('charMod : durationHours/durationMinutes (#153)', () => {
     it('durationHours → ActiveEffect à durée CLOCK (until = ctx.now + heures×60), indépendant de defaultDurationRounds', () => {
       const c = hero();
-      applyOps(c, [{ op: 'charMod', char: 'Ag', mod: -10, durationHours: 240 }], { now: 1000, defaultDurationRounds: 3 });
+      applyOps(c, [{ op: 'charMod', char: 'agilite', mod: -10, durationHours: 240 }], { now: 1000, defaultDurationRounds: 3 });
       expect(c.activeEffects).toHaveLength(1);
       expect(c.activeEffects![0].duration).toEqual({ scale: 'clock', until: 1000 + 240 * 60 });
     });
@@ -274,13 +274,13 @@ describe('applyOps — opérations unitaires', () => {
     it('durationHours en Formula (1d10 × 24, « 1d10 jours ») résolue au seed', () => {
       const c = hero();
       const rng: RNG = { int: () => 1 }; // 1d10 au plus bas → 1 jour = 24 h = 1440 min
-      applyOps(c, [{ op: 'charMod', char: 'Ag', mod: -10, durationHours: { times: { of: { dice: { n: 1, sides: 10 } }, factor: 24 } } }], { now: 0, rng });
+      applyOps(c, [{ op: 'charMod', char: 'agilite', mod: -10, durationHours: { times: { of: { dice: { n: 1, sides: 10 } }, factor: 24 } } }], { now: 0, rng });
       expect(c.activeEffects![0].duration).toEqual({ scale: 'clock', until: 1440 });
     });
 
     it('sans durationRounds/durationHours → comportement INCHANGÉ (durée du ctx)', () => {
       const c = hero();
-      applyOps(c, [{ op: 'charMod', char: 'Ag', mod: -10 }], { defaultDurationRounds: 5 });
+      applyOps(c, [{ op: 'charMod', char: 'agilite', mod: -10 }], { defaultDurationRounds: 5 });
       expect(c.activeEffects![0].duration).toEqual({ scale: 'rounds', left: 5 });
     });
   });
@@ -347,11 +347,11 @@ describe('applyOps — opérations unitaires', () => {
 describe('applyActiveEffect — non-cumul (LDB l.168)', () => {
   it('meilleur bonus conservé, pire pénalité conservée, bonus+pénalité coexistent', () => {
     const c = hero();
-    applyActiveEffect(c, { label: 'A', char: 'FM', bonus: 10, duration: { scale: 'rounds', left: 3 } });
-    applyActiveEffect(c, { label: 'B', char: 'FM', bonus: 20, duration: { scale: 'rounds', left: 2 } });
-    applyActiveEffect(c, { label: 'C', char: 'FM', bonus: 5, duration: { scale: 'rounds', left: 9 } });
-    applyActiveEffect(c, { label: 'D', char: 'FM', bonus: -10, duration: { scale: 'rounds', left: 1 } });
-    const fm = c.activeEffects!.filter((e) => e.char === 'FM');
+    applyActiveEffect(c, { label: 'A', char: 'force-mentale', bonus: 10, duration: { scale: 'rounds', left: 3 } });
+    applyActiveEffect(c, { label: 'B', char: 'force-mentale', bonus: 20, duration: { scale: 'rounds', left: 2 } });
+    applyActiveEffect(c, { label: 'C', char: 'force-mentale', bonus: 5, duration: { scale: 'rounds', left: 9 } });
+    applyActiveEffect(c, { label: 'D', char: 'force-mentale', bonus: -10, duration: { scale: 'rounds', left: 1 } });
+    const fm = c.activeEffects!.filter((e) => e.char === 'force-mentale');
     expect(fm).toHaveLength(2); // un bonus (le meilleur : B +20) + une pénalité (D -10)
     expect(fm.find((e) => e.bonus > 0)).toMatchObject({ label: 'B', bonus: 20 });
     expect(fm.find((e) => e.bonus < 0)).toMatchObject({ label: 'D', bonus: -10 });
@@ -359,7 +359,7 @@ describe('applyActiveEffect — non-cumul (LDB l.168)', () => {
 
   it('buff de F/E/FM recale les Blessures max (LDB 85)', () => {
     const c = hero({ wounds: { current: 10, max: 12, base: 12 } });
-    applyActiveEffect(c, { label: 'Vigueur', char: 'E', bonus: 10, duration: { scale: 'rounds', left: 6 } });
+    applyActiveEffect(c, { label: 'Vigueur', char: 'endurance', bonus: 10, duration: { scale: 'rounds', left: 6 } });
     expect(c.wounds.max).toBeGreaterThan(12); // E 45→55 : BE 4→5 → +2 PB (2×BE)
   });
 });

@@ -6,7 +6,7 @@ import type { RNG } from './dice';
 import type { Combatant } from './types';
 
 const C = (over: Partial<Combatant>): Combatant =>
-  ({ id: 'c', name: 'C', kind: 'hero', conditions: [], skills: [], characteristics: { E: 90 }, wounds: { current: 20, max: 20 }, advantage: 3, armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, ...over } as unknown as Combatant);
+  ({ id: 'c', name: 'C', kind: 'hero', conditions: [], skills: [], characteristics: { endurance: 90 }, wounds: { current: 20, max: 20 }, advantage: 3, armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, ...over } as unknown as Combatant);
 
 describe('Finitions d\'États (LDB 16)', () => {
   it('subir un État quel qu\'il soit → perte de TOUT Avantage (l.15)', () => {

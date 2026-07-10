@@ -63,7 +63,7 @@ describe('Contrôle de la Frénésie (LDB 10 l.251-255) — fin de Round, opt-in
   it('Oui → Test de Calme influençable poussé dans la MÊME cascade ; succès → fin de Frénésie + Exténué', () => {
     const { H } = setup();
     (H.psychState ??= []).push({ type: 'frenesie' });
-    H.characteristics.FM = 95; // Calme très élevé → réussite
+    H.characteristics['force-mentale'] = 95; // Calme très élevé → réussite
     openRoundEndCascade(useGame.getState, useGame.setState);
     const p = useGame.getState().pendingCascade!;
     const choice = p.participants.find((s) => s.kind === 'triggeredChoice')!;

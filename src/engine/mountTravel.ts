@@ -169,7 +169,7 @@ export function resolveMountIncident(entry: TravelTableEntry, mount: PartyMount,
     case 'perte-d-un-fer': {
       // Test de Chevaucher Complexe (-10) du cavalier, ou chute de 2 mètres (l.166 / l.171).
       const saddleMod = mount.item.mountInjury === 'sangle-cassee' ? -20 : 0; // sellerie déjà abîmée (l.174)
-      const base = testValue(mount.hero, 'chevaucher', 'Ag') + saddleMod;
+      const base = testValue(mount.hero, 'chevaucher', 'agilite') + saddleMod;
       const t = rollTest(Math.max(0, base), 'complexe', rng);
       out.riderTest = testDetail('Chevaucher', Math.max(0, base), t);
       if (!t.success) {

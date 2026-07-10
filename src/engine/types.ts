@@ -2,35 +2,47 @@
 import { t } from '../i18n';
 import type { Duration } from './duration';
 
-/** Les 10 Caractéristiques. Ids OPAQUES GELÉS (déjà des slugs FR figés dans données/saves — pas de
- *  renommage) : l'affichage (abréviation/libellé) vient de `characteristics.json`/`CHAR_LABELS`,
- *  jamais du littéral de la clé — une clé ne se rend JAMAIS telle quelle à l'écran. */
+/** Les 10 Caractéristiques. id STABLE = slug plein (convention du repo — #311, `CC`/`CT`/… était
+ *  l'exception qui invitait l'imitation) : l'affichage (abréviation/libellé) vient de
+ *  `characteristics.json`/`CHAR_LABELS`, jamais du littéral de la clé — une clé ne se rend JAMAIS
+ *  telle quelle à l'écran. */
 export type CharKey =
-  | 'CC' // Capacité de Combat
-  | 'CT' // Capacité de Tir
-  | 'F' // Force
-  | 'E' // Endurance
-  | 'I' // Initiative
-  | 'Ag' // Agilité
-  | 'Dex' // Dextérité
-  | 'Int' // Intelligence
-  | 'FM' // Force Mentale
-  | 'Soc'; // Sociabilité
+  | 'capacite-de-combat'
+  | 'capacite-de-tir'
+  | 'force'
+  | 'endurance'
+  | 'initiative'
+  | 'agilite'
+  | 'dexterite'
+  | 'intelligence'
+  | 'force-mentale'
+  | 'sociabilite';
 
-export const CHAR_KEYS: CharKey[] = ['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Int', 'FM', 'Soc'];
+export const CHAR_KEYS: CharKey[] = [
+  'capacite-de-combat',
+  'capacite-de-tir',
+  'force',
+  'endurance',
+  'initiative',
+  'agilite',
+  'dexterite',
+  'intelligence',
+  'force-mentale',
+  'sociabilite',
+];
 
 // Libellés FR dérivés du catalogue i18n (source unique des textes — cf. docs/i18n-seam.md).
 export const CHAR_LABELS: Record<CharKey, string> = {
-  CC: t('char.CC'),
-  CT: t('char.CT'),
-  F: t('char.F'),
-  E: t('char.E'),
-  I: t('char.I'),
-  Ag: t('char.Ag'),
-  Dex: t('char.Dex'),
-  Int: t('char.Int'),
-  FM: t('char.FM'),
-  Soc: t('char.Soc'),
+  'capacite-de-combat': t('char.capacite-de-combat'),
+  'capacite-de-tir': t('char.capacite-de-tir'),
+  force: t('char.force'),
+  endurance: t('char.endurance'),
+  initiative: t('char.initiative'),
+  agilite: t('char.agilite'),
+  dexterite: t('char.dexterite'),
+  intelligence: t('char.intelligence'),
+  'force-mentale': t('char.force-mentale'),
+  sociabilite: t('char.sociabilite'),
 };
 
 export type Characteristics = Record<CharKey, number>;
@@ -129,11 +141,11 @@ export interface VehicleData {
    *  (bêtes qui tirent, réf `montures.json`) — requis pour l'allure forcée EDOC 07 l.229 (« pas de
    *  course ») ; `count` = nombre de bêtes (Tests de Résistance sur échec du conducteur). */
   travel?: { movement: number; draft?: { montureId: string; count: number }; classes: VehicleTravelClass[] };
-  /** Facette COQUE (entité à PV). `char.E` = Endurance, `char.B` = Blessures. `bodyShape` = 'vehicule'.
+  /** Facette COQUE (entité à PV). `char.endurance` = Endurance, `char.B` = Blessures. `bodyShape` = 'vehicule'.
    *  `rig` = gréement (avirons/voile/mixte) → colonne de Localisation des Dégâts (MDG ch.13).
    *  `locationTable`/`criticalTable` = réfs de tables data-driven (branchées aux dalles fluvial/maritime). */
   hull?: {
-    char: { E: number; B: number };
+    char: { endurance: number; B: number };
     bodyShape: 'vehicule';
     propulsion: Propulsion;
     rig?: 'avirons' | 'voile' | 'mixte';

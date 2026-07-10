@@ -14,7 +14,7 @@ import { retreatAdvantageCost, keptAdvantageOnDisengage, canDisengageWithLessAdv
 import type { TestResult } from '../../engine/tests';
 
 // Chars de base (BF/BE = 4) — suffisant pour combatValue/effectiveChar sans surprise.
-const CHARS = { CC: 45, CT: 35, F: 40, E: 40, I: 30, Ag: 35, Dex: 30, Int: 30, FM: 40, Soc: 30 } as const;
+const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 35, force: 40, endurance: 40, initiative: 30, agilite: 35, dexterite: 30, intelligence: 30, 'force-mentale': 40, sociabilite: 30 } as const;
 
 const mk = (id: string, kind: Combatant['kind'], over: Partial<Combatant> = {}): Combatant =>
   ({
@@ -111,8 +111,8 @@ describe('Distraire (LDB 10 l.364 / AA l.4395)', () => {
   it('les valeurs de Test lisent Ag/Athlétisme (attaquant) et FM/Calme (défenseur)', () => {
     const a = mk('h', 'hero', { skills: [{ skillId: 'athletisme', advances: 10 }] as never });
     const e = mk('e', 'enemy', { skills: [{ skillId: 'calme', advances: 5 }] as never });
-    expect(distraireAttackValue(a)).toBe(CHARS.Ag + 10);
-    expect(distraireDefenseValue(e)).toBe(CHARS.FM + 5);
+    expect(distraireAttackValue(a)).toBe(CHARS.agilite + 10);
+    expect(distraireDefenseValue(e)).toBe(CHARS['force-mentale'] + 5);
   });
 });
 

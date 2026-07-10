@@ -597,7 +597,7 @@ type EffectHandlerMap = {
  */
 export function applyFall(c: Combatant, metres: number, rng: RNG): void {
   const m = Math.max(0, metres);
-  const be = Math.floor(effectiveChar(c, 'E') / 10);
+  const be = Math.floor(effectiveChar(c, 'endurance') / 10);
   const lost = Math.max(0, 3 * m + d10(rng) - be);
   loseWounds(c, lost);
   if (lost > be) addCondition(c, 'a-terre');
@@ -919,7 +919,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       for (const c of heroes) {
         c.hunger = c.hunger ?? { days: 0, tests: 0, failures: 0 };
         c.hunger.days += n;
-        const be = Math.floor(effectiveChar(c, 'E') / 10);
+        const be = Math.floor(effectiveChar(c, 'endurance') / 10);
         let damage = 0;
         for (let i = 0; i < n; i++) {
           const r = applyFaimTest(c, false, be, battleRng());
@@ -941,7 +941,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const n = Math.max(1, e.days ?? 1);
       const lines: string[] = [];
       for (const c of heroes) {
-        const be = Math.floor(effectiveChar(c, 'E') / 10);
+        const be = Math.floor(effectiveChar(c, 'endurance') / 10);
         let damage = 0;
         for (let i = 0; i < n; i++) {
           const r = applySoifTest(c, false, be, battleRng());
@@ -969,7 +969,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const lines: string[] = [];
       for (const c of heroes) {
         if (isWeatherWarded(c)) { lines.push(`${c.name} ignore ${kind === 'froid' ? 'le froid et les intempéries' : 'la chaleur'} (protection magique).`); continue; }
-        const resVal = testValue(c, 'resistance', 'E');
+        const resVal = testValue(c, 'resistance', 'endurance');
         const target = kind === 'froid' ? exposureTarget(c, resVal) : Math.max(0, resVal);
         for (let i = 0; i < count; i++) {
           steps.push({
@@ -994,7 +994,7 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       let whoId = '';
       const who = env.mutateHero(e.heroId, (h) => {
         whoId = h.id;
-        const be = Math.floor(effectiveChar(h, 'E') / 10);
+        const be = Math.floor(effectiveChar(h, 'endurance') / 10);
         // Amputation : séquelle PERMANENTE choisie par localisation (bras → main/bras ; jambe → membre
         // inférieur ; tête → œil, choix d'éditeur) — ids de fiche `traumas.json`, plus de texte parsé.
         const ampSequel = e.location === 'tete' ? 'oeil-perdu' : e.location === 'brasG' || e.location === 'brasD' ? 'main-bras-ampute' : 'membre-inferieur-ampute';

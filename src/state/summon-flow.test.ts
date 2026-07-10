@@ -11,7 +11,7 @@ import type { Scene } from './scene';
 const caster = (over: Partial<Combatant> = {}): Combatant =>
   ({
     id: 'necro', name: 'Nécromancien', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 40, FM: 40, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 40, sociabilite: 30 },
     wounds: { current: 20, max: 20 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     pos: { x: 5, y: 5 }, ...over,
@@ -36,7 +36,7 @@ describe('applySummon', () => {
   it('Réanimation : invoque BFM + DR créatures alliées, placées et insérées dans l’ordre', () => {
     const c = caster(); // BFM = 4
     const h = harness(c, battle([c]));
-    const lines = applySummon(h.get, h.set, c, { ref: 'Zombie', count: { bonusOf: 'FM' }, countPerSL: { every: 1, amount: 1 }, allyOfCaster: true, despawnIfCasterDown: true }, { sl: 2, rounds: null, label: 'Réanimation' });
+    const lines = applySummon(h.get, h.set, c, { ref: 'Zombie', count: { bonusOf: 'force-mentale' }, countPerSL: { every: 1, amount: 1 }, allyOfCaster: true, despawnIfCasterDown: true }, { sl: 2, rounds: null, label: 'Réanimation' });
     const summons = h.state().battle.combatants.filter((x: Combatant) => x.summon);
     expect(summons.length).toBe(4 + 2); // BFM(4) + DR(2)
     expect(summons.every((s: Combatant) => s.kind === 'hero')).toBe(true); // camp du lanceur héros

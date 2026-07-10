@@ -20,7 +20,7 @@ import type { Combatant } from '../engine/types';
 const hero = (p: Partial<Combatant>): Combatant =>
   ({
     id: 'h', name: 'H', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 35, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 35, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     items: ['r1', 'r2', 'r3'].map((uid) => ({ uid, name: 'Ration', trappingId: 'ration', kind: 'misc' as const, qualities: [], enc: 0, equipped: false })),
@@ -78,7 +78,7 @@ describe('#T3 — cascade d’horloge (maladies/convalescence/purge sur franchis
     const t0 = 12 * 60;
     const c = hero({});
     // Buff posé comme le ferait applyCast pour une durée « 1 heure » : durée d horloge (untilTime, sans sentinelle).
-    applyOps(c, [{ op: 'charMod', char: 'F', mod: 10 }], {
+    applyOps(c, [{ op: 'charMod', char: 'force', mod: 10 }], {
       label: 'Tour de force', defaultUntilTime: t0 + 60,
     });
     useGame.setState({ party: [c], gameTime: t0, lastUpkeepDay: 0 });

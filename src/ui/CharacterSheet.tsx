@@ -449,7 +449,7 @@ function FicheBody({ hero, section }: { hero: Combatant; section: 'profil' | 'co
     if (it.kind === 'melee' || it.kind === 'ranged') {
       // Dégâts résolus (« +BF+4 (7) ») + Allonge/Portée via le composeur partagé `weaponStatParts`
       // (BF du héros injecté, comme au combat) ; les qualités restent gérées ici (masquage non-identifié).
-      return [...weaponStatParts(it, charBonus(hero.characteristics, 'F')), quals].filter(Boolean).join(' · ');
+      return [...weaponStatParts(it, charBonus(hero.characteristics, 'force')), quals].filter(Boolean).join(' · ');
     }
     if (it.kind === 'armor')
       return [it.pa != null && `PA ${it.pa}`, (it.locs ?? []).map((l) => LOC_SHORT[l]).join(', '), `couche ${armourLayer(it)}`]

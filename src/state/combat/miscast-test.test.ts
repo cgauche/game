@@ -123,7 +123,7 @@ describe('Maladresse — Test imbriqué routé cadence-aware (Lot 4d)', () => {
   it('(b) lanceur ENNEMI : jet INLINE (pas de cascade), branche d’échec appliquée tout de suite', () => {
     const seed = seedYieldingTest('enemy');
     const { E } = setup();
-    E.characteristics.E = 1; // Résistance minimale → échec quasi sûr → Sonné posé inline
+    E.characteristics.endurance = 1; // Résistance minimale → échec quasi sûr → Sonné posé inline
     seedBattleRng(seed);
     applyMiscast(useGame.getState, useGame.setState, E, 'colere');
 

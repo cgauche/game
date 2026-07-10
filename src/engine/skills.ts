@@ -25,13 +25,13 @@ import { maxBy } from './pick';
  *  sont portées par la DONNÉE — `SkillInstance.characteristic` — lue par effectiveSkillCharKey en amont,
  *  pas ici : aucun sniff d'espèce dans le moteur.) */
 function altCharKey(c: Combatant, skillId: string, ck: CharKey): CharKey {
-  if (ck === 'Dex' && skillId === 'metier' && rule('test-metier-int')) return 'Int';
+  if (ck === 'dexterite' && skillId === 'metier' && rule('test-metier-int')) return 'intelligence';
   if (skillId === 'intimidation') {
     const mode = rule('test-intimidation-char') as string;
-    if (mode === 'FM' || mode === 'Int') return mode;
+    if (mode === 'force-mentale' || mode === 'intelligence') return mode;
     if (mode === 'max') {
-      const f = effectiveChar(c, 'F'), fm = effectiveChar(c, 'FM'), i = effectiveChar(c, 'Int');
-      return f >= fm && f >= i ? 'F' : fm >= i ? 'FM' : 'Int';
+      const f = effectiveChar(c, 'force'), fm = effectiveChar(c, 'force-mentale'), i = effectiveChar(c, 'intelligence');
+      return f >= fm && f >= i ? 'force' : fm >= i ? 'force-mentale' : 'intelligence';
     }
   }
   return ck;
@@ -52,7 +52,7 @@ export function effectiveSkillCharKey(
   skillId: string | undefined,
   opts: { explicit?: CharKey; spec?: string; fallback?: CharKey } = {},
 ): CharKey {
-  const { explicit, spec, fallback = 'Dex' } = opts;
+  const { explicit, spec, fallback = 'dexterite' } = opts;
   if (explicit) return explicit;
   const sk = skillId ? c.skills.find((s) => s.skillId === skillId && (spec == null || s.spec === spec)) : undefined;
   let ck: CharKey = sk?.characteristic ?? (skillId ? skillCharKeyById(skillId) : undefined) ?? fallback;
@@ -78,7 +78,7 @@ export function testValue(c: Combatant, skill?: string, characteristic?: CharKey
   const ck = effectiveSkillCharKey(c, skill, { explicit: characteristic, spec });
   const base = effectiveChar(c, ck);
   const states = testStatePenalty(c, skill);
-  const enc = ck === 'Ag' ? agilityTestPenalty(c) : 0; // charge : couche d'ÉTAT orthogonale (≠ passif d'élément)
+  const enc = ck === 'agilite' ? agilityTestPenalty(c) : 0; // charge : couche d'ÉTAT orthogonale (≠ passif d'élément)
   const traumaSkill = traumaSkillPenalty(c, skill, sense); // séquelle permanente (fracture Langue l.300 ; Surdité l.363)
   // Passifs INTRINSÈQUES d'élément (Σ), tous via le collecteur unifié : compétence nommée + port d'armure
   // (`passiveSkillSum` : Groin poilu +10 Pistage, −N% en X du port d'armure) + mods de Test char-qualifiés
@@ -158,8 +158,8 @@ export function socialPsychLabel(tester: Combatant, targetGroups: string[]): str
 /** Un Test (compétence ou caractéristique) relève-t-il de la **Sociabilité** (LDB 21 : malus psy −20/−10) ?
  *  Vrai si la caractéristique sous-jacente est `Soc` (Charme, Marchandage, Intimidation, Commérage…). */
 export function isSocialTest(skill?: string, characteristic?: CharKey): boolean {
-  if (characteristic) return characteristic === 'Soc';
-  if (skill) return skillCharKeyById(skill) === 'Soc';
+  if (characteristic) return characteristic === 'sociabilite';
+  if (skill) return skillCharKeyById(skill) === 'sociabilite';
   return false;
 }
 

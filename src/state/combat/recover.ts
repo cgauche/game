@@ -52,7 +52,7 @@ export function resolveRecoverTest(
     const src = cond?.sourceId && battle ? battle.combatants.find((c) => c.id === cond.sourceId && !isOutOfAction(c)) : undefined;
     if (cond?.escapeThreshold != null) { requireSl = cond.escapeThreshold; }
     else if (cond?.escapeStrength != null) { opposed = true; opponentValue = cond.escapeStrength; opponentName = src?.name ?? 'l’entrave'; }
-    else if (src) { opposed = true; opponentValue = testValue(src, undefined, 'F'); opponentName = src.name; }
+    else if (src) { opposed = true; opponentValue = testValue(src, undefined, 'force'); opponentName = src.name; }
     entangleOnFail = cond?.entangleOnFail;
     struggleDamage = cond?.struggleDamage;
   }

@@ -18,7 +18,7 @@ const hero = (over: Partial<Combatant> = {}): Combatant =>
     id: 'h',
     name: 'H',
     kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 13, max: 13 },
     advantage: 0,
     conditions: [],
@@ -35,16 +35,16 @@ const hero = (over: Partial<Combatant> = {}): Combatant =>
 
 describe('« +5 à votre Caractéristique de départ » (LDB 10 — ne compte pas comme Augmentation)', () => {
   it('mapping addCharacteristic → clé courte pour les 10 talents', () => {
-    expect(talentCharBonus('Guerrier né')).toBe('CC');
-    expect(talentCharBonus('Tireur de précision')).toBe('CT');
-    expect(talentCharBonus('Très fort')).toBe('F');
-    expect(talentCharBonus('Très résistant')).toBe('E');
-    expect(talentCharBonus('Vivacité')).toBe('I');
-    expect(talentCharBonus('Réflexes foudroyants')).toBe('Ag');
-    expect(talentCharBonus('Doigts de fée')).toBe('Dex');
-    expect(talentCharBonus('Perspicace')).toBe('Int');
-    expect(talentCharBonus('Imperturbable')).toBe('FM');
-    expect(talentCharBonus('Affable')).toBe('Soc');
+    expect(talentCharBonus('Guerrier né')).toBe('capacite-de-combat');
+    expect(talentCharBonus('Tireur de précision')).toBe('capacite-de-tir');
+    expect(talentCharBonus('Très fort')).toBe('force');
+    expect(talentCharBonus('Très résistant')).toBe('endurance');
+    expect(talentCharBonus('Vivacité')).toBe('initiative');
+    expect(talentCharBonus('Réflexes foudroyants')).toBe('agilite');
+    expect(talentCharBonus('Doigts de fée')).toBe('dexterite');
+    expect(talentCharBonus('Perspicace')).toBe('intelligence');
+    expect(talentCharBonus('Imperturbable')).toBe('force-mentale');
+    expect(talentCharBonus('Affable')).toBe('sociabilite');
     expect(talentCharBonus('Baratiner')).toBe(null);
     // addCharacteristic non-Caractéristique (Blessure, Chance…) → pas de +5.
     expect(talentCharBonus('Dur à cuire')).toBe(null);
@@ -54,9 +54,9 @@ describe('« +5 à votre Caractéristique de départ » (LDB 10 — ne compte pa
     const h = hero({ talents: [{ talentId: 'tres-fort', times: 1 }] });
     applyTalentAcquisition(h, 'tres-fort'); // id stable du Talent — le talent est déjà dans la liste
     // La valeur brute reste 30 (non cuite) ; le passif charMod la porte — baseWithTalents = 35.
-    expect(h.characteristics.F).toBe(30); // base INCHANGÉE (passif, plus cuit)
-    expect(baseWithTalents(h, 'F')).toBe(35); // base + passif talent = 35
-    expect(h.charAdvances?.F ?? 0).toBe(0);
+    expect(h.characteristics.force).toBe(30); // base INCHANGÉE (passif, plus cuit)
+    expect(baseWithTalents(h, 'force')).toBe(35); // base + passif talent = 35
+    expect(h.charAdvances?.force ?? 0).toBe(0);
   });
   it('Véloce : +1 Mouvement via passif moveMod (LDB 10)', () => {
     const h = hero({ talents: [{ talentId: 'veloce', times: 1 }] });

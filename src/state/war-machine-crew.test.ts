@@ -12,7 +12,7 @@ import type { GameState } from './store';
  * `siege-emplacement.test.ts` : recharge ×2 + Défaut ajouté). Ici : −20 plat si incomplète, INUTILISABLE
  * si < moitié — AUCUNE recharge doublée, AUCUN Défaut ajouté (vérifié explicitement ci-dessous).
  */
-const CHARS = (F = 30) => ({ CC: 30, CT: 30, F, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 });
+const CHARS = (F = 30) => ({ 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: F, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 });
 
 const mkGunner = (id: string, kind: 'hero' | 'npc', pos: { x: number; y: number }): Combatant =>
   ({ id, name: id, kind, characteristics: CHARS(), wounds: { current: 12, max: 12 }, advantage: 0,
@@ -26,7 +26,7 @@ const mkCrewman = (id: string, alive = true): Combatant =>
 
 const mkEnemy = (id: string, x: number, y: number): Combatant =>
   ({ id, name: id, kind: 'enemy', pos: { x, y }, conditions: [], weapons: [], skills: [], talents: [],
-    characteristics: { ...CHARS(0), E: 30 }, wounds: { current: 30, max: 30 }, advantage: 0,
+    characteristics: { ...CHARS(0), endurance: 30 }, wounds: { current: 30, max: 30 }, advantage: 0,
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 } }) as unknown as Combatant;
 
 const mkEmplacement = (poste: ShipPoste, pos = { x: 5, y: 7 }): Combatant =>
@@ -52,7 +52,7 @@ describe('firedWeapon — bélier ADE II (Équipe 6) : −20 plat en sous-effect
     applyShipPostes(all);
     const w = firedWeapon(chef, mkEnemy('cible', 6, 5), poste.item.uid, all);
     expect(w.crewTeamPenalty).toBeUndefined();
-    expect(w.resolveChar).toBe('F'); // Force, pas CC
+    expect(w.resolveChar).toBe('force'); // Force, pas CC
     expect(w.reload).toBe(0); // ADE II n'a AUCUNE Recharge (≠ AA) — rien à doubler
   });
 

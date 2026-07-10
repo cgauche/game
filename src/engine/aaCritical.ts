@@ -88,10 +88,10 @@ export function resolveAACritical(
   rng: RNG = defaultRNG,
   overkill = 0,
 ): CriticalResolved {
-  const be = bonus(effectiveChar(target, 'E'));
+  const be = bonus(effectiveChar(target, 'endurance'));
   const roll = Math.max(1, d100(rng) + aaCriticalOffset(overkill));
   const entry = findTableEntry(AA_TABLES[location], roll);
-  const resistVal = effectiveChar(target, 'E') + (target.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+  const resistVal = effectiveChar(target, 'endurance') + (target.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
   const ops: GameOp[] = [];
   // Blessures supplémentaires (colonne Blessures, l.2482) : PB perdus, sans re-déclencher de Critique.
   if (typeof entry.blessures === 'number' && entry.blessures > 0) ops.push({ op: 'wounds', amount: entry.blessures });

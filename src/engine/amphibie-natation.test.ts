@@ -9,7 +9,7 @@ import type { Combatant } from './types';
  */
 const mk = (traits: { id: string }[], ag: number): Combatant => ({
   id: 'c', name: 'Bête', kind: 'enemy',
-  characteristics: { CC: 30, CT: 0, F: 30, E: 30, I: 30, Ag: ag, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+  characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 0, force: 30, endurance: 30, initiative: 30, agilite: ag, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
   movement: 6, wounds: { current: 20, max: 20 }, weapons: [], skills: [], talents: [], traits,
 } as unknown as Combatant);
 

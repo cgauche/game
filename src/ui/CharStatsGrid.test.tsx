@@ -51,14 +51,14 @@ describe('CharStatsGrid (rendu — markup unifié .char-stats)', () => {
   });
 
   it('le libellé court suit la DONNÉE (CHAR_ABR), jamais la clé littérale — altère le dataset réel', () => {
-    const original = CHAR_ABR.CC;
+    const original = CHAR_ABR['capacite-de-combat'];
     try {
-      CHAR_ABR.CC = 'ZZ';
+      CHAR_ABR['capacite-de-combat'] = 'ZZ';
       const html = renderToStaticMarkup(<CharStatsGrid value={(k) => `VAL_${k}`} />);
       expect(html).toContain('>ZZ</span>');
       expect(html).not.toContain('>CC</span>');
     } finally {
-      CHAR_ABR.CC = original;
+      CHAR_ABR['capacite-de-combat'] = original;
     }
   });
 });

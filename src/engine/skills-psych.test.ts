@@ -3,7 +3,7 @@ import { socialPsychMod, socialPsychLabel, isSocialTest, partyBest } from './ski
 import type { Combatant } from './types';
 
 function mk(opts: Partial<Combatant>): Combatant {
-  return { id: 'c', name: 'c', kind: 'enemy', advantage: 0, conditions: [], characteristics: { Soc: 40 } as never, psychState: [], psychTraits: [], groups: [], weapons: [], armour: {} as never, skills: [], talents: [], movement: 4, wounds: { current: 10, max: 10 }, ...opts } as Combatant;
+  return { id: 'c', name: 'c', kind: 'enemy', advantage: 0, conditions: [], characteristics: { sociabilite: 40 } as never, psychState: [], psychTraits: [], groups: [], weapons: [], armour: {} as never, skills: [], talents: [], movement: 4, wounds: { current: 10, max: 10 }, ...opts } as Combatant;
 }
 
 describe('socialPsychMod — pénalités de Sociabilité psy (LDB 21, P3)', () => {
@@ -49,8 +49,8 @@ describe('socialPsychMod — pénalités de Sociabilité psy (LDB 21, P3)', () =
 
 describe('isSocialTest — un Test est-il de Sociabilité ? (LDB 21)', () => {
   it('Caractéristique Soc → vrai', () => {
-    expect(isSocialTest(undefined, 'Soc')).toBe(true);
-    expect(isSocialTest(undefined, 'F')).toBe(false);
+    expect(isSocialTest(undefined, 'sociabilite')).toBe(true);
+    expect(isSocialTest(undefined, 'force')).toBe(false);
   });
   it('Compétence basée sur Soc (Charme, Marchandage) → vrai ; autre → faux', () => {
     expect(isSocialTest('charme')).toBe(true);
@@ -61,10 +61,10 @@ describe('isSocialTest — un Test est-il de Sociabilité ? (LDB 21)', () => {
 
 describe('partyBest — modificateur par acteur (sélection avec malus psy intégré)', () => {
   it('choisit le membre dont la valeur EFFECTIVE (avec malus) est la meilleure', () => {
-    const a = mk({ id: 'a', name: 'A', characteristics: { Soc: 50 } as never, psychTraits: [{ type: 'animosite', cible: 'Elfe' }] }); // 50 − 20 = 30
-    const b = mk({ id: 'b', name: 'B', characteristics: { Soc: 40 } as never }); // 40, pas de malus
+    const a = mk({ id: 'a', name: 'A', characteristics: { sociabilite: 50 } as never, psychTraits: [{ type: 'animosite', cible: 'Elfe' }] }); // 50 − 20 = 30
+    const b = mk({ id: 'b', name: 'B', characteristics: { sociabilite: 40 } as never }); // 40, pas de malus
     const mod = (c: Combatant) => socialPsychMod(c, ['Elfe']);
-    const best = partyBest([a, b], undefined, 'Soc', mod);
+    const best = partyBest([a, b], undefined, 'sociabilite', mod);
     expect(best?.actor.id).toBe('b'); // B (40) > A (30 après malus) malgré la Soc brute plus basse
     expect(best?.value).toBe(40);
   });

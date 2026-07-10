@@ -9,7 +9,7 @@ import type { Combatant } from './types';
  *   qui joue en premier, et ainsi de suite. S'il y a encore égalité, demandez un Test opposé d'Agilité. »
  */
 const c = (id: string, I: number, Ag: number): Combatant =>
-  ({ id, name: id, initiative: I, characteristics: { I, Ag }, liveTraits: [], activeEffects: [] }) as unknown as Combatant;
+  ({ id, name: id, initiative: I, characteristics: { initiative: I, agilite: Ag }, liveTraits: [], activeEffects: [] }) as unknown as Combatant;
 const ids = (cs: Combatant[]) => cs.map((x) => x.id);
 
 describe('initiativeOrder — tri RAW (LDB 13 l.31)', () => {

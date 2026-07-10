@@ -9,7 +9,7 @@ import { resolveMelee } from '../engine/combat';
 import { makeRNG } from '../engine/dice';
 import { emptyScene } from './scene';
 
-const CHARS = { CC: 45, CT: 45, F: 40, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 40, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 
 const hero = (p: Partial<Combatant>): Combatant =>
   ({

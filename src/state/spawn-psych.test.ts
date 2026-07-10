@@ -8,7 +8,7 @@ import { findCreature, findCreatureById } from '../data';
 describe('spawn — propriétés psychologiques', () => {
   it('statbloc « Terreur 2 » → causesTerreur ; « Immunité Psychologique » → psychImmune', () => {
     const c = statblockToCombatant(
-      { name: 'X', char: { F: 30, E: 30, FM: 30 }, traits: [{ id: 'terreur', value: 2 }, { id: 'immunite-psychologique' }] },
+      { name: 'X', char: { force: 30, endurance: 30, 'force-mentale': 30 }, traits: [{ id: 'terreur', value: 2 }, { id: 'immunite-psychologique' }] },
       'x',
       { x: 0, y: 0 },
     );
@@ -16,8 +16,8 @@ describe('spawn — propriétés psychologiques', () => {
     expect(c.psychImmune).toBe(true);
   });
   it('statbloc « Peur 4 » → causesPeur ; sans trait psy → champs absents', () => {
-    expect(statblockToCombatant({ name: 'Y', char: { FM: 30 }, traits: [{ id: 'peur', value: 4 }] }, 'y', { x: 0, y: 0 }).causesPeur).toBe(4);
-    const plain = statblockToCombatant({ name: 'Z', char: { FM: 30 } }, 'z', { x: 0, y: 0 });
+    expect(statblockToCombatant({ name: 'Y', char: { 'force-mentale': 30 }, traits: [{ id: 'peur', value: 4 }] }, 'y', { x: 0, y: 0 }).causesPeur).toBe(4);
+    const plain = statblockToCombatant({ name: 'Z', char: { 'force-mentale': 30 } }, 'z', { x: 0, y: 0 });
     expect(plain.causesPeur).toBeUndefined();
     expect(plain.causesTerreur).toBeUndefined();
   });

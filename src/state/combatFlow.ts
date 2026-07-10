@@ -328,7 +328,7 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
   // plus PROCHE que la bande minimale de l'arme — machines à distance : pas de Bout Portant (l.253) ;
   // trébuchet/mortier : rien sous la Portée Courte (l.251). DONNÉE générique `w.minRangeBand` (pas un flag par-machine).
   if (w.minRangeBand) {
-    const rangeM = effectiveWeaponRange(w, selectedAmmo(active, w)?.ammoRangeMod, () => bonus(effectiveChar(active, 'F')));
+    const rangeM = effectiveWeaponRange(w, selectedAmmo(active, w)?.ammoRangeMod, () => bonus(effectiveChar(active, 'force')));
     if (rangeM != null && belowMinRangeBand(distanceTiles, rangeM, w.minRangeBand))
       return { reason: 'portee-min', detail: `${w.name} ne peut pas tirer d'aussi près (${rangeBandName(distanceTiles, rangeM) ?? 'trop proche'}).` };
   }
@@ -379,7 +379,7 @@ export function crowdEligible(battle: BattleState, attacker: Combatant, target: 
  *  doivent choisir une cible ou une Action différente » (rien n'est consommé). */
 export function attackWardGate(attacker: Combatant, target: Combatant, rng: RNG = battleRng()): { allowed: boolean; lines: string[] } {
   if (!hasActiveFlag(target, 'attackWardFM')) return { allowed: true, lines: [] };
-  const t = rollTest(effectiveChar(attacker, 'FM'), 'accessible', rng);
+  const t = rollTest(effectiveChar(attacker, 'force-mentale'), 'accessible', rng);
   if (t.success) {
     return { allowed: true, lines: [tr('cs.shameOvercome', { name: attacker.name, roll: t.roll, target: t.target, foe: target.name })] };
   }
@@ -432,7 +432,7 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
     // Embusqueur (Discrétion, FIGÉE comme attaquant opposé) vs guetteur (Perception, le défenseur qui jette).
     const flow = testFlow(
       { skill: 'perception', difficulty: 'intermediaire', label: 'Surprise',
-        opposed: { attacker: 'Ag', attackerSkill: 'discretion', attackerLabel: 'Discrétion', attackerBonusSL: sneakDR } },
+        opposed: { attacker: 'agilite', attackerSkill: 'discretion', attackerLabel: 'Discrétion', attackerBonusSL: sneakDR } },
       EMPTY_FLOW, // le guetteur résiste → pas de Surprise
       onLose,
     );
@@ -584,7 +584,7 @@ export function resolveAttack(
   // Charge montée (LDB 14 l.223) : pour les DÉGÂTS, on substitue la Force (Bonus) et la Taille de la monture.
   // Combat monté (l.225) : un défenseur à cheval subit −20 à l'Esquive (sauf Acrobaties équestres) → dodgeMod.
   const chargeMount = fromCharge ? mountOf(battle, attacker) : undefined;
-  const dmgProxy = chargeMount ? { sb: bonus(effectiveChar(chargeMount, 'F')), size: chargeMount.size } : undefined;
+  const dmgProxy = chargeMount ? { sb: bonus(effectiveChar(chargeMount, 'force')), size: chargeMount.size } : undefined;
   return { res: resolveMelee(attacker, target, weapon, battleRng(), { defense: bestDefenseMode(target), location, env, dodgeMod: sc.dodgeMod + mountedDodgePenalty(target), dmgProxy, withhold, flankRear }), weapon };
 }
 
@@ -657,7 +657,7 @@ export function previewAttack(
     : combatDistance(attacker, target);
   // Estimation de dégâts (R4) : dégâts d'arme (Force incluse) et encaissé de la cible. Le `soak` est dérivé
   // de `woundsFromHit` (oracle) avec un dégât large → capture exactement PA + réduction d'armure (Perforante…).
-  const dmg = effectiveWeaponDamage(weapon, bonus(effectiveChar(attacker, 'F')));
+  const dmg = effectiveWeaponDamage(weapon, bonus(effectiveChar(attacker, 'force')));
   const base = combatValue(attacker, kind, weapon);
   const loc = location ?? 'corps';
   const soak = (dmg + 20) - woundsFromHit(weapon, target, loc, dmg + 20);
@@ -667,12 +667,12 @@ export function previewAttack(
   const distanceTiles = kind === 'ranged' ? dist : undefined;
   const mods = attackModifiers(attacker, target, weapon, { kind, location, distanceTiles, env });
   const target0 = base + combineMods(mods);
-  const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'F'))); // Portée résolue (jet `{bf}` → BF×N) + modificateur de la munition sélectionnée ; null = hors bande
+  const rangeM = effectiveWeaponRange(weapon, selectedAmmo(attacker, weapon)?.ammoRangeMod, () => bonus(effectiveChar(attacker, 'force'))); // Portée résolue (jet `{bf}` → BF×N) + modificateur de la munition sélectionnée ; null = hors bande
   const inRange = kind === 'ranged' ? (rangeM != null && rangeBandModifier(dist, rangeM) != null) : dist <= reachTiles(weapon);
   // Décomposition affichée (issue #202) : sépare de `base` les contributions volatiles étiquetées de la
   // Caractéristique résolue (Bénédiction de Bataille, séquelle…) — `combatValue`/`target` restent identiques
   // (charLines `uncapped`, cf. `combineMods`).
-  const charKey = weapon.resolveChar ?? (kind === 'melee' ? 'CC' : 'CT');
+  const charKey = weapon.resolveChar ?? (kind === 'melee' ? 'capacite-de-combat' : 'capacite-de-tir');
   const charLines = volatileCharLines(attacker, charKey);
   const base2 = base - charLines.reduce((s, l) => s + l.value, 0);
   const mods2 = [...charLines, ...mods];
@@ -2009,7 +2009,7 @@ export function inFiringBand(shooter: Combatant, target: Combatant, weapon: Weap
   if (!shooter.pos || !target.pos) return true;
   const d = combatDistance(shooter, target);
   if (weapon.type === 'ranged') {
-    const rm = effectiveWeaponRange(weapon, selectedAmmo(shooter, weapon)?.ammoRangeMod, () => bonus(effectiveChar(shooter, 'F')));
+    const rm = effectiveWeaponRange(weapon, selectedAmmo(shooter, weapon)?.ammoRangeMod, () => bonus(effectiveChar(shooter, 'force')));
     return rm != null && rangeBandModifier(d, rm) != null;
   }
   return d <= reachTiles(weapon);
@@ -2104,7 +2104,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
   const log: string[] = [`${c.name} — Maladresse ! ${r.label}`];
   // Bâclé : l'arme casse sur toute Maladresse (Test raté + double, LDB 60 l.82) — sauvegarde Solide possible.
   if (hasQuality(weapon, QUALITY_IDS.Bacle)) wearActiveWeapon(c, weapon, true);
-  const sb = bonus(effectiveChar(c, 'F'));
+  const sb = bonus(effectiveChar(c, 'force'));
   const units = r.roll % 10;
   switch (r.kind) {
     case 'selfWound':
@@ -2127,7 +2127,7 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
     case 'trauma': {
       c.criticalWounds = (c.criticalWounds ?? 0) + 1; // « compte comme une Blessure critique » (l.41)
       const leg: HitLocation = battleRng().int(0, 1) === 0 ? 'jambeG' : 'jambeD'; // « se tord la cheville »
-      c.traumas = [...(c.traumas ?? []), traumaById(dechirureFractureFicheId('dechirure', 'mineur', leg), { be: bonus(effectiveChar(c, 'E')) }, leg)];
+      c.traumas = [...(c.traumas ?? []), traumaById(dechirureFractureFicheId('dechirure', 'mineur', leg), { be: bonus(effectiveChar(c, 'endurance')) }, leg)];
       log.push(tr('cf.fumbleTear', { leg: leg === 'jambeG' ? tr('cf.legLeft') : tr('cf.legRight') }));
       break;
     }
@@ -2306,7 +2306,7 @@ export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title
   const attacker = actorIn(get(), pa.attackerId);
   const hand = !skipGate && attacker ? attackHandGate(attacker, pa.weaponUid) : null; // `skipGate` : gate déjà PASSÉ (reprise `handGateConfirm`) → pas de re-test
   if (attacker && hand) {
-    const base = effectiveChar(attacker, 'Dex'); // Dextérité effective (LDB) — +20 « Accessible » via la Difficulté
+    const base = effectiveChar(attacker, 'dexterite'); // Dextérité effective (LDB) — +20 « Accessible » via la Difficulté
     set({ pendingHandGate: {
       attackerId: attacker.id, actorName: attacker.name, hand,
       skillValue: base, difficulty: 'accessible', target: base + DIFFICULTY_MODIFIERS['accessible'],
@@ -2327,7 +2327,7 @@ export function openAttackCascade(get: Get, set: SetFn, pa: PendingAttack, title
 export function aiHandGate(get: Get, set: SetFn, attacker: Combatant, weaponUid?: string): boolean {
   const gHand = attackHandGate(attacker, weaponUid);
   if (!gHand) return true;
-  const gt = rollTest(effectiveChar(attacker, 'Dex'), 'accessible', battleRng());
+  const gt = rollTest(effectiveChar(attacker, 'dexterite'), 'accessible', battleRng());
   const bg = get().battle;
   if (!gt.success) {
     applyOps(attacker, [{ op: 'disarm' }], { rng: battleRng(), location: gHand === 'off' ? 'brasG' : 'brasD' });
@@ -2399,7 +2399,7 @@ export function autoCleave(get: Get, set: SetFn, attacker: Combatant, primaryTar
   // Frappe Mortelle (option, hors Taille) : enchaîner seulement après avoir TUÉ en un coup (LDB 14 l.9).
   const fm = !sizeCleave && !!rule('combat-frappe-mortelle') && isOutOfAction(primaryTarget);
   if (!sizeCleave && !fm) return;
-  const bcc = bonus(effectiveChar(attacker, 'CC'));
+  const bcc = bonus(effectiveChar(attacker, 'capacite-de-combat'));
   if (bcc < 1) return;
   const hitIds = [primaryTarget.id];
   // Cible primaire tuée → l'attaquant se déplace sur sa case avant d'enchaîner (l.10).
@@ -2447,7 +2447,7 @@ export function maybeHeroCleave(get: Get, set: SetFn, attacker: Combatant, targe
     displaceSmaller(get, attacker); // dégage les plus petits sous l'empreinte (85 l.373-374)
   }
   const battle = get().battle!;
-  const bcc = bonus(effectiveChar(attacker, 'CC'));
+  const bcc = bonus(effectiveChar(attacker, 'capacite-de-combat'));
   const remaining = cleaveTargets(battle, attacker, hitIds);
   // Frappe Mortelle : la poursuite EXIGE d'avoir tué la cible enchaînée (LDB 14 l.9) ; la Taille enchaîne sur une touche.
   const fmStop = fm && wasChain && !isOutOfAction(target);
@@ -2644,7 +2644,7 @@ function applyFreeAttack(get: Get, set: SetFn, attacker: Combatant, target: Comb
  *  zone via le RÉSOLVEUR GÉNÉRIQUE. `centerOverride` = point d'impact imposé du sort « Souffle » (LDB 47).
  *  Clôt par `checkBattleOver`. */
 export function applyAreaAttack(get: Get, set: SetFn, attacker: Combatant, a: CreatureAttack, centerOverride?: Combatant): boolean {
-  const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng(), maneuverAttackerDifficulty(a.kind));
+  const atk = rollManeuverAttacker(attacker, a.stat ?? 'capacite-de-tir', battleRng(), maneuverAttackerDifficulty(a.kind));
   const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage, centerOverride);
   if (!suspended) checkBattleOver(get, set); // la cascade de défense (héros) porte son propre checkBattleOver à la fermeture
   return suspended;
@@ -2660,7 +2660,7 @@ export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: Creatu
   // PASSE explicitement (chosenTarget) → la proie tirée = la proie touchée, sans ré-dériver.
   const foes = battle.combatants.filter((c) => c.kind !== attacker.kind && !isOutOfAction(c) && !!c.pos);
   const target = foes.length ? foes.reduce((p, c) => (chebyshev(attacker.pos!, p.pos!) <= chebyshev(attacker.pos!, c.pos!) ? p : c)) : undefined;
-  const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng());
+  const atk = rollManeuverAttacker(attacker, a.stat ?? 'capacite-de-tir', battleRng());
   const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage, target);
   if (!suspended) checkBattleOver(get, set);
   return suspended;
@@ -2707,7 +2707,7 @@ export function applyGaze(get: Get, set: SetFn, attacker: Combatant): boolean {
   const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === 'regard');
   if (!a) return false;
   const spent = attacker.advantage; // l'IA met tout (min 1)
-  const atk = rollManeuverAttacker(attacker, a.stat ?? 'CT', battleRng());
+  const atk = rollManeuverAttacker(attacker, a.stat ?? 'capacite-de-tir', battleRng());
   const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, atk, spent);
   set({ battle: { ...get().battle!, acted: true } }); // Regard = Action de la créature (l.238)
   if (!suspended) checkBattleOver(get, set); // héros influençable → checkBattleOver à la fermeture de la cascade
@@ -2722,7 +2722,7 @@ export function applyChillGrasp(get: Get, set: SetFn, attacker: Combatant): bool
   if (!battle || !battle.combatants.some((c) => c.kind !== attacker.kind && !isOutOfAction(c) && c.pos && combatDistance(attacker, c) <= 1)) return false;
   const a = creatureAttacks(attacker.traits ?? []).find((x) => x.kind === 'etreinte');
   if (!a) return false;
-  const atk = rollManeuverAttacker(attacker, a.stat ?? 'CC', battleRng());
+  const atk = rollManeuverAttacker(attacker, a.stat ?? 'capacite-de-combat', battleRng());
   const suspended = resolveManeuver(get, set, attacker, a.def, a.indice, atk, a.avantage);
   set({ battle: { ...get().battle!, acted: true } }); // Étreinte = Action de la créature (l.112)
   if (!suspended) checkBattleOver(get, set); // héros influençable → checkBattleOver à la fermeture de la cascade
@@ -2760,7 +2760,7 @@ export function aiMaybeSpecialAction(get: Get, set: SetFn, enemy: Combatant): bo
 function aiBattement(get: Get, set: SetFn, enemy: Combatant, foe: Combatant): boolean {
   const battle = get().battle;
   if (!battle) return false;
-  const atk = rollManeuverAttacker(enemy, 'CC', battleRng());
+  const atk = rollManeuverAttacker(enemy, 'capacite-de-combat', battleRng());
   const line = resolveBattement(get, enemy, foe, atk);
   set({ battle: { ...get().battle!, acted: true, action: null, log: [...get().battle!.log, ev('attack', line, enemy.id, foe.id)] } });
   bus.emit(EVT.SCENE_DIRTY);
@@ -3105,7 +3105,7 @@ export function castSpell(
   // `range` null = portée non chiffrable (« le lanceur », « au toucher », spécial) → pas de gate.
   if (get().battle && caster.pos && target.pos && caster.id !== target.id) {
     const range = breathSpell
-      ? Math.max(1, Math.ceil((bonus(effectiveChar(caster, 'E')) + 20) / 2))
+      ? Math.max(1, Math.ceil((bonus(effectiveChar(caster, 'endurance')) + 20) / 2))
       : spellRangeTiles(spell.range, caster);
     if (range != null && combatDistance(caster, target) > range) {
       castRefused(get, set, caster, tr('cf.castOutOfRange', { spell: spell.label, range }));
@@ -3522,7 +3522,7 @@ export function counterspellCandidates(
     if (!knowsCastingSkill(c, 'langue', 'magick')) return false;
     if (c.id === target.id) return true;
     if (!c.pos || !target.pos) return false;
-    if (combatDistance(c, target) > Math.max(1, Math.floor(effectiveChar(c, 'FM') / 2))) return false;
+    if (combatDistance(c, target) > Math.max(1, Math.floor(effectiveChar(c, 'force-mentale') / 2))) return false;
     return !scene || losClear(scene, c.pos, target.pos, smokeOf(battle));
   });
 }
@@ -3716,7 +3716,7 @@ export function applyCast(
         const priest = martyrGuardOf(battle, t);
         if (priest) {
           const raw = mres.damage ?? mres.woundsLost;
-          const taken = Math.max(0, raw - 2 * bonus(effectiveChar(priest, 'E')) - Math.max(0, priest.armour[mres.location ?? 'corps'] ?? 0));
+          const taken = Math.max(0, raw - 2 * bonus(effectiveChar(priest, 'endurance')) - Math.max(0, priest.armour[mres.location ?? 'corps'] ?? 0));
           if (taken > 0) {
             loseWounds(priest, taken);
             if (priest.wounds.current <= 0) applyZeroWounds(priest);
@@ -3924,7 +3924,7 @@ export function applyCast(
           // Indice = Bonus d'Endurance du lanceur (RAW : « Dégâts = Bonus d'Endurance »). Coût d'Avantage 0
           // (le sort EST l'activation).
           const sDef = (type && findManeuverById(`souffle-${norm(type)}`)) || findManeuverById('souffle-feu')!;
-          const indice = bonus(effectiveChar(caster, 'E'));
+          const indice = bonus(effectiveChar(caster, 'endurance'));
           applyAreaAttack(get, set, caster, {
             kind: 'souffle', label: sDef.label, bonus: indice, indice, def: sDef,
             trigger: 'free', avantage: 0, aoe: true, magic: true, ...(type ? { type } : {}),
@@ -4178,7 +4178,7 @@ interface CombatEndDiseaseTest { disease: string; difficulty: Difficulty; label:
 /** Valeur de Résistance d'un héros pour les Tests de Contraction (E + avances de Résistance) — figée à la
  *  décision pour rester stable entre la pose de l'étape et sa résolution. */
 function combatEndResistVal(c: Combatant): number {
-  return effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+  return effectiveChar(c, 'endurance') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
 }
 
 /**
@@ -4665,7 +4665,7 @@ registerCascadeApplier('bladeTrap', (get, set, step) => {
   // double-jet. `runCombatFlow` route le Test (héros manuel → cascade influençable ; ennemi/auto → inline).
   const bt: BladeTrapFreeze = { attackerId: attacker.id, weaponUid: pbt.weapon.uid!, defSL: pbt.defSL, attackerSL: 0 };
   const flow = testFlow(
-    { characteristic: 'F', label: 'Piège-lame', opposed: { attacker: 'F', attackerLabel: 'Force', bonusSL: pbt.defSL } },
+    { characteristic: 'force', label: 'Piège-lame', opposed: { attacker: 'force', attackerLabel: 'Force', bonusSL: pbt.defSL } },
     { kind: 'do', effect: { type: 'ops', on: 'target', ops: [{ op: 'breakBlade' }] } },
     EMPTY_FLOW,
   );
@@ -5318,7 +5318,7 @@ export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
     const guided = battle.combatants.some(
       (a) => a.kind === enemy.kind && a.id !== enemy.id && !isOutOfAction(a) && !isStupid(a.traits) && a.pos && chebyshev(a.pos, enemy.pos!) <= 1,
     );
-    if (!guided && !rollTest(effectiveChar(enemy, 'Int'), 'facile', battleRng()).success) {
+    if (!guided && !rollTest(effectiveChar(enemy, 'intelligence'), 'facile', battleRng()).success) {
       battle.log.push(ev('detail', tr('cf.stupid', { name: enemy.name }), enemy.id));
       set({ battle: { ...battle } });
       return advanceTurn(get, set);

@@ -18,7 +18,7 @@ import type { AttackResult } from '../engine/combat';
 
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
   id: 'c', name: 'C', kind: 'enemy',
-  characteristics: { CC: 35, CT: 25, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 25, FM: 25, Soc: 25 },
+  characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 25, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 25, 'force-mentale': 25, sociabilite: 25 },
   wounds: { current: 15, max: 15 }, advantage: 0, conditions: [], skills: [], talents: [],
   weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
   ...over,
@@ -49,7 +49,7 @@ describe('effets onHit de manœuvre (data) appliqués par applyFreeAttackEffects
     const foe = mk({ id: 'f' });
     applyFreeAttackEffects(get, kraken, foe, 'tentacules', hit);
     expect(empetre(foe)?.value).toBe(1);
-    expect(empetre(foe)?.escapeStrength).toBe(kraken.characteristics.F);
+    expect(empetre(foe)?.escapeStrength).toBe(kraken.characteristics.force);
   });
 
   it('sans Dégâts (woundsLost 0) : pas d’effet de manœuvre', () => {
@@ -69,7 +69,7 @@ describe('effets onHit des manœuvres de zone/action (data) — appliqués par l
     const jab = mk({ traits: [{ id: 'langue-prehensile', value: 6 }] }); const foe = mk({ id: 'f' });
     fire('langue', jab, foe);
     expect(empetre(foe)?.value).toBe(1);
-    expect(empetre(foe)?.escapeStrength).toBe(jab.characteristics.F);
+    expect(empetre(foe)?.escapeStrength).toBe(jab.characteristics.force);
   });
 
   it('Regard pétrifiant → Sonné échelonné sur la marge (1 par 2 DR, via valuePerSL ← ctx.sl)', () => {
@@ -109,7 +109,7 @@ describe('Hurlement fantomatique — Test de trigger enfoui routé (cadence-awar
     vi.clearAllTimers();
     const b = useGame.getState().battle!;
     const H = b.combatants.find((c) => c.kind === 'hero')!;
-    H.characteristics.E = 90; H.wounds.max = 100; H.wounds.current = 100; // Résistance réussie (pas de Brisé)
+    H.characteristics.endurance = 90; H.wounds.max = 100; H.wounds.current = 100; // Résistance réussie (pas de Brisé)
     const enemies = b.combatants.filter((c) => c.kind === 'enemy');
     const banshee = enemies[0];
     enemies.slice(1).forEach((e) => (e.dead = true));

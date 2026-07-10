@@ -306,8 +306,8 @@ export function selectedAttackOption(active: Combatant, battle: BattleState, for
  *  bonus d'attaquant propre à la manœuvre (Vomissement : Facile +40 à courte distance, LDB 85 l.376) ;
  *  Intermédiaire par défaut. Hurlement n'a PAS de jet d'attaquant (chaque cible teste sa Résistance)
  *  → `stat` absent : `rollManeuverAttacker` n'est jamais appelé pour lui. */
-export function rollManeuverAttacker(attacker: Combatant, stat: 'CC' | 'CT', rng: RNG, difficulty: Difficulty = 'intermediaire'): TestResult {
-  return rollTest(combatValue(attacker, stat === 'CC' ? 'melee' : 'ranged'), difficulty, rng);
+export function rollManeuverAttacker(attacker: Combatant, stat: 'capacite-de-combat' | 'capacite-de-tir', rng: RNG, difficulty: Difficulty = 'intermediaire'): TestResult {
+  return rollTest(combatValue(attacker, stat === 'capacite-de-combat' ? 'melee' : 'ranged'), difficulty, rng);
 }
 
 /** Difficulté du jet d'ATTAQUANT propre à une manœuvre (seul le Vomissement dévie du +0 : Facile +40
@@ -336,7 +336,7 @@ const tilesOf = (meters: number | null): number | null => (meters == null ? null
  *  'auto' = meilleure réaction ; 'esquive'/'parade' = explicite. */
 function defenderRoll(tgt: Combatant, defense: ManeuverDef['defense']): TestResult | null {
   if (!defense || defense === 'resist') return null;
-  if (defense === 'init') return rollTest(effectiveChar(tgt, 'I'), 'intermediaire', battleRng()); // Regard, opposé à l'Initiative (LDB 85)
+  if (defense === 'init') return rollTest(effectiveChar(tgt, 'initiative'), 'intermediaire', battleRng()); // Regard, opposé à l'Initiative (LDB 85)
   const mode = defense === 'auto' ? bestDefenseMode(tgt) : defense;
   return rollTest(defenseValue(tgt, mode), 'intermediaire', battleRng());
 }
@@ -405,7 +405,7 @@ export function resolveManeuver(
   // Cibles AFFECTÉES + émissions propres à la géométrie (identiques à avant).
   let affected: Combatant[];
   if (def.targeting === 'zone') {
-    const rangeTiles = tilesOf(measureMeters(def.range, attacker)) ?? Math.max(1, Math.ceil(bonus(effectiveChar(attacker, 'E')) / 2));
+    const rangeTiles = tilesOf(measureMeters(def.range, attacker)) ?? Math.max(1, Math.ceil(bonus(effectiveChar(attacker, 'endurance')) / 2));
     const foes = combatantsWithinRadius(attacker.pos!, rangeTiles, battle.combatants, alive);
     const center = chosenTarget && alive(chosenTarget) && chebyshev(attacker.pos!, chosenTarget.pos!) <= rangeTiles
       ? chosenTarget : foes[0] ?? null; // `foes` est trié par distance (combatantsWithinRadius) → le plus proche d'abord
@@ -417,7 +417,7 @@ export function resolveManeuver(
     affected = combatantsWithinRadius(center.pos!, blast, battle.combatants, alive);
     // Fumée (souffle-fumee) : la zone bloque les Lignes de vue pendant BE Rounds — GÉOMÉTRIE moteur (pas un GameOp).
     if (def.id === 'souffle-fumee') {
-      const dur = Math.max(1, bonus(effectiveChar(attacker, 'E')));
+      const dur = Math.max(1, bonus(effectiveChar(attacker, 'endurance')));
       const tiles = smokeZone(attacker.pos!, center.pos!, blast);
       const zones = [...(get().battle!.zones ?? []), { label: t('manv.smokeZone'), tiles, rounds: dur, blocksLoS: true }];
       lines.push(t('manv.smoke', { dur }));
@@ -425,7 +425,7 @@ export function resolveManeuver(
     }
   } else if (def.targeting === 'allFoes') {
     // Hurlement (l.135) : tous les ennemis VIVANTS (≠ Mort-vivant) à Initiative mètres — filtre de Groupe moteur.
-    const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'I') / 2));
+    const radius = Math.max(1, Math.ceil(effectiveChar(attacker, 'initiative') / 2));
     affected = combatantsWithinRadius(attacker.pos!, radius, battle.combatants, (c) => alive(c) && !hasTraitKey(c.traits, 'mort-vivant'));
     emitAoe(get, attacker.pos, radius, def.kind, def.label);
   } else {
@@ -463,13 +463,13 @@ export function resolveManeuver(
 /** Valeur de Test de la RÉACTION opposée à une manœuvre pour `tgt` (mirroir de `defenderRoll`) : Initiative
  *  (Regard pétrifiant), sinon Esquive/Parade (`auto` = la meilleure). Portée par l'étape de cascade (base/target). */
 function maneuverDefenseValue(tgt: Combatant, defense: NonNullable<ManeuverDef['defense']>): number {
-  if (defense === 'init') return effectiveChar(tgt, 'I');
+  if (defense === 'init') return effectiveChar(tgt, 'initiative');
   const mode = defense === 'auto' ? bestDefenseMode(tgt) : (defense === 'resist' ? 'esquive' : defense);
   return defenseValue(tgt, mode);
 }
 /** Libellé du cadre de jet de la réaction (« Initiative » / « Esquive » / « Parade ») — dépend de `tgt` pour `auto`. */
 function maneuverDefenseLabel(tgt: Combatant, defense: NonNullable<ManeuverDef['defense']>): string {
-  if (defense === 'init') return CHAR_LABELS.I;
+  if (defense === 'init') return CHAR_LABELS.initiative;
   const mode = defense === 'auto' ? bestDefenseMode(tgt) : (defense === 'resist' ? 'esquive' : defense);
   return DEFENSE_LABEL[mode];
 }
@@ -600,10 +600,10 @@ export function resolveDistraire(attacker: Combatant, foe: Combatant, atk: TestR
 /** Valeur de Test d'Athlétisme (Distraire, attaquant) / de Calme (défenseur) — Force Mentale + avances de
  *  la Compétence. SOURCE des jets de `resolveDistraire`. Pur. */
 export function distraireAttackValue(c: Combatant): number {
-  return effectiveChar(c, 'Ag') + (c.skills.find((s) => s.skillId === 'athletisme')?.advances ?? 0);
+  return effectiveChar(c, 'agilite') + (c.skills.find((s) => s.skillId === 'athletisme')?.advances ?? 0);
 }
 export function distraireDefenseValue(c: Combatant): number {
-  return effectiveChar(c, 'FM') + (c.skills.find((s) => s.skillId === 'calme')?.advances ?? 0);
+  return effectiveChar(c, 'force-mentale') + (c.skills.find((s) => s.skillId === 'calme')?.advances ?? 0);
 }
 
 /** Adversaires ÉLIGIBLES au Battement de `attacker` (LDB 10 l.103) — SOURCE UNIQUE : gate de la hotbar,

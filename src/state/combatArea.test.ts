@@ -14,7 +14,7 @@ import type { TriggeredEffect } from './flow';
 // ── Fabriques minimales ────────────────────────────────────────────────────────────────────────────────
 const foe = (id: string, x: number, y: number, wounds = 20, E = 30): Combatant =>
   ({ id, name: id, kind: 'enemy', pos: { x, y }, wounds: { current: wounds, max: wounds }, advantage: 0,
-    characteristics: { CC: 30, CT: 30, F: 30, E, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: E, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, conditions: [], traits: [], talents: [], skills: [], weapons: [] }) as unknown as Combatant;
 
 const shooter = (id = 'tireur', x = 0, y = 0): Combatant =>
@@ -134,7 +134,7 @@ describe('resolveWeaponArea — Explosion (rayon Indice m, États propagés)', (
 describe('resolveWeaponArea — cible NAVIRE → équipage exposé (Éclats-like)', () => {
   const ship = (id: string): Combatant =>
     ({ id, name: id, kind: 'enemy', bodyShape: 'vehicule', pos: { x: 9, y: 5 }, crewIds: ['m1', 'm2', 'm3'],
-      wounds: { current: 50, max: 50 }, advantage: 0, characteristics: { CC: 0, CT: 0, F: 0, E: 0, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 },
+      wounds: { current: 50, max: 50 }, advantage: 0, characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 0, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 },
       armour: { corps: 0 }, conditions: [], traits: [], talents: [], skills: [], weapons: [] }) as unknown as Combatant;
 
   it('Tir de zone → jusqu’à Indice marins exposés (pas le rayon métrique, dégénéré à 10 m/case)', () => {

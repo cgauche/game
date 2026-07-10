@@ -11,7 +11,7 @@ import type { Combatant } from '../engine/types';
 const hero = (p: Partial<Combatant>): Combatant =>
   ({
     id: 'a', name: 'A', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 40, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 40, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], skills: [], talents: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...p,
@@ -50,7 +50,7 @@ describe('Fin de combat — infection post-critique (LDB 20 l.72) & persistance 
 
   it('héros E 30 ayant subi un critique : Test +60 raté → contracte une Infection Mineure (l.72)', () => {
     seedBattleRng(4); // 1er d100 = 93 > cible 90 (E 30 + 60) → échec garanti
-    const combatant = hero({ id: 'a', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, tookCriticalThisFight: true });
+    const combatant = hero({ id: 'a', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, tookCriticalThisFight: true });
     setBattle([combatant]);
     useGame.setState({ party: [hero({ id: 'a' })] });
     resolveCombatEnd();
@@ -59,7 +59,7 @@ describe('Fin de combat — infection post-critique (LDB 20 l.72) & persistance 
 
   it('blessure PANSÉE pendant le combat (Guérison/bandage) → pas d’Infection post-critique (LDB 18 l.382)', () => {
     seedBattleRng(4); // ce seed ferait ÉCHOUER le Test +60 (E 30) sans pansement
-    const combatant = hero({ id: 'a', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, tookCriticalThisFight: true, woundDressed: true });
+    const combatant = hero({ id: 'a', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, tookCriticalThisFight: true, woundDressed: true });
     setBattle([combatant]);
     useGame.setState({ party: [hero({ id: 'a' })] });
     resolveCombatEnd();
@@ -79,7 +79,7 @@ describe('Fin de combat — infection post-critique (LDB 20 l.72) & persistance 
 describe('Fin de combat — règle « Utilisation des Maladies » (disease-mode, LDB 20 l.36)', () => {
   beforeEach(() => { seedBattleRng(4); useGame.setState({ mode: 'exploration', journal: [], pendingCascade: null }); });
   afterEach(() => resetRule('disease-mode'));
-  const e30 = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  const e30 = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 
   it("'off' : pas d'Infection Mineure post-critique, flag tookCriticalThisFight consommé", () => {
     setRule('disease-mode', 'off');
@@ -124,7 +124,7 @@ describe('Fin de combat — règle « Utilisation des Maladies » (disease-mode,
 describe('Fin de combat — prédicat personnage-vs-créature (#143, followsCharacterRules)', () => {
   beforeEach(() => { useGame.setState({ mode: 'exploration', journal: [], pendingCascade: null }); });
 
-  const e30 = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+  const e30 = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
   const enemy = (p: Partial<Combatant>): Combatant =>
     ({
       id: 'e', name: 'E', kind: 'enemy',

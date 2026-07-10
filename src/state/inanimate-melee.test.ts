@@ -42,7 +42,7 @@ describe('Véhicule-coque attaqué en mêlée — inerte comme une structure (is
     expect(veh.bodyShape).toBe('vehicule');
     expect(isInanimate(veh)).toBe(true);
     const atk = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'A', rng: makeRNG(1) });
-    atk.characteristics.CC = 90; // touche quasi-certaine → coup résolu
+    atk.characteristics['capacite-de-combat'] = 90; // touche quasi-certaine → coup résolu
     const res = resolveMelee(atk, veh, hache(), makeRNG(2));
     expect(res.hit).toBe(true);
     expect(res.defenderDetail).toBeUndefined(); // coque inerte : ni Parade ni Esquive

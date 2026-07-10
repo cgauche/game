@@ -56,7 +56,7 @@ describe('summarizeEffects', () => {
     expect(single.visible[0].count).toBeUndefined();
   });
   it('place les buffs après les malus et expose leur durée + bonus', () => {
-    const r = summarizeEffects([cond('sonne')], [buff('Bénédiction de Bataille', 10, 2, 'CC')], 5);
+    const r = summarizeEffects([cond('sonne')], [buff('Bénédiction de Bataille', 10, 2, 'capacite-de-combat')], 5);
     expect(r.visible.map((c) => c.kind)).toEqual(['malus', 'buff']);
     expect(r.visible[1].rounds).toBe(2);
     expect(r.visible[1].bonus).toBe(10);

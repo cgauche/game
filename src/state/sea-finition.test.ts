@@ -132,7 +132,7 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     const heroes = get().party;
     // Un cartographe hors pair : Métier (Cartographe) à 90.
     (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 60 } as never];
-    (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, Dex: 40 };
+    (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, dexterite: 40 };
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
     get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie' } });
     const owner = get().party[0];
@@ -154,7 +154,7 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     const heroes = get().party;
     // Même cartographe hors pair que le test précédent, jet déterministe (roll 73 ≤ cible 99).
     (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as never];
-    (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, Dex: 60 };
+    (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, dexterite: 60 };
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
     const before = toBrass(get().money);
     get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie', stashGold: 50 } });
@@ -170,7 +170,7 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     seedBattleRng(3);
     const heroes = get().party;
     (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as never];
-    (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, Dex: 60 };
+    (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, dexterite: 60 };
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
     get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie' } });
     expect(get().bank.find((b) => b.heroId === heroes[0].id && b.kind === 'stash')).toBeUndefined();

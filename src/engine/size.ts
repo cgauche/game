@@ -139,7 +139,7 @@ export function stepSize(size: SizeCategory | undefined, steps: number): SizeCat
  * Générique (carac. complètes OU statbloc partiel : une carac. absente part de `def`, défaut 30).
  * Retourne un NOUVEL objet (les autres carac. inchangées). Outil de construction d'une variante.
  */
-export function resizeBySteps<T extends { F?: number; E?: number; Ag?: number }>(chars: T, steps: number, def = 30): T {
+export function resizeBySteps<T extends { force?: number; endurance?: number; agilite?: number }>(chars: T, steps: number, def = 30): T {
   if (!steps) return { ...chars };
-  return { ...chars, F: (chars.F ?? def) + 10 * steps, E: (chars.E ?? def) + 10 * steps, Ag: (chars.Ag ?? def) - 5 * steps };
+  return { ...chars, force: (chars.force ?? def) + 10 * steps, endurance: (chars.endurance ?? def) + 10 * steps, agilite: (chars.agilite ?? def) - 5 * steps };
 }

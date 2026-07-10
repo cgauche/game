@@ -11,7 +11,7 @@ import { Icon } from './Icon';
  *  badge `.is-score` — décomposition disponible SANS inventer la valeur d'un d10 non conservé dans
  *  l'état (méthodes `roll-i`/`roll-bi`, LDB 13 l.40). */
 function initiativeTitle(c: Combatant): string {
-  const base = baseWithTraits(c, 'I');
+  const base = baseWithTraits(c, 'initiative');
   const talent = talentInitiativeBonus(c);
   const talentPart = talent ? ` + Instinctif(${talent})` : '';
   switch (rule('combat-init-method')) {

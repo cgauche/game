@@ -25,7 +25,7 @@ describe('structureCombatant (adaptateur destructible — ADE II ch.08)', () => 
   it('Porte : BE 2 → E 20, Blessures 8, Atout Résistant, forme structure', () => {
     const c = structureCombatant(findStructureById('porte')!);
     expect(c.bodyShape).toBe('structure');
-    expect(c.characteristics.E).toBe(20); // BE 2 × 10
+    expect(c.characteristics.endurance).toBe(20); // BE 2 × 10
     expect(c.wounds.max).toBe(8);
     expect(c.traits?.some((t) => t.id === 'resistant')).toBe(true);
   });
@@ -36,7 +36,7 @@ describe('vehicleCombatant (adaptateur destructible — MDG ch.12-13)', () => {
     const v = findVehicleById('barge')!;
     const c = vehicleCombatant(v)!;
     expect(c.bodyShape).toBe('vehicule');
-    expect(c.characteristics.E).toBe(v.hull!.char.E); // 45
+    expect(c.characteristics.endurance).toBe(v.hull!.char.endurance); // 45
     expect(c.wounds.max).toBe(v.hull!.char.B);        // 60
     expect(c.footprint).toBe(v.ship!.footprint);       // empreinte de grille (2)
   });
@@ -47,7 +47,7 @@ describe('inanimateCombatant — engin de siège INERTE (AA p.122-123)', () => {
     const c = inanimateCombatant({ id: 'e', name: 'Baliste', refId: 'baliste', bodyShape: 'engin', inert: true });
     expect(c.inert).toBe(true);
     expect(c.wounds.max).toBe(0);
-    expect(c.characteristics.E).toBe(0);
+    expect(c.characteristics.endurance).toBe(0);
     expect(c.bodyShape).toBe('engin');
     expect(c.psychImmune).toBe(true);
     expect(c.movement).toBe(0);

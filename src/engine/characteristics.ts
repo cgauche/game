@@ -96,7 +96,7 @@ export function effectiveArmourAt(c: Combatant, location: keyof Combatant['armou
  * (et « (2×BE)+BFM » pour les Halflings, qui ont le talent Petit).
  */
 export function maxWounds(chars: Characteristics, size: SizeCategory = 'moyenne'): number {
-  return woundsForSize(bonus(chars.F), bonus(chars.E), bonus(chars.FM), size);
+  return woundsForSize(bonus(chars.force), bonus(chars.endurance), bonus(chars['force-mentale']), size);
 }
 
 /** Σ des `charMod` passifs de TALENT (× `times`) pour la Caractéristique `key` — lecture LOCALE
@@ -123,12 +123,12 @@ function talentCharModSum(c: Combatant, key: CharKey): number {
 export function effectiveMaxWounds(c: Combatant): number {
   const size = effectiveSize(c.size);
   const base = c.wounds.base ?? c.wounds.max;
-  const eff = woundsForSize(bonus(effectiveChar(c, 'F')), bonus(effectiveChar(c, 'E')), bonus(effectiveChar(c, 'FM')), size);
+  const eff = woundsForSize(bonus(effectiveChar(c, 'force')), bonus(effectiveChar(c, 'endurance')), bonus(effectiveChar(c, 'force-mentale')), size);
   // Référence = base au spawn : characteristics + liveTraitCharMods (créatures) + talentCharMods (héros).
   // Les mutations viennent APRÈS la création → elles restent dans le delta pour affecter effectiveMaxWounds.
-  const rawF = c.characteristics.F + (traitCharMods(c.liveTraits).F ?? 0) + talentCharModSum(c, 'F');
-  const rawE = c.characteristics.E + (traitCharMods(c.liveTraits).E ?? 0) + talentCharModSum(c, 'E');
-  const rawFM = c.characteristics.FM + (traitCharMods(c.liveTraits).FM ?? 0) + talentCharModSum(c, 'FM');
+  const rawF = c.characteristics.force + (traitCharMods(c.liveTraits).force ?? 0) + talentCharModSum(c, 'force');
+  const rawE = c.characteristics.endurance + (traitCharMods(c.liveTraits).endurance ?? 0) + talentCharModSum(c, 'endurance');
+  const rawFM = c.characteristics['force-mentale'] + (traitCharMods(c.liveTraits)['force-mentale'] ?? 0) + talentCharModSum(c, 'force-mentale');
   const raw = woundsForSize(bonus(rawF), bonus(rawE), bonus(rawFM), size);
   // Modif. de Blessures PLATS d'effets actifs (op `attrMod{wounds}` exécutée — Bonnet de fou « +4
   // Blessures », LDB 71 l.20) : sommés au delta, repris/rendus par `refreshWounds` (pose + expiration).

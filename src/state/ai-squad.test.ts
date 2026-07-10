@@ -20,7 +20,7 @@ const RANGED: Weapon = { name: 'Arc', type: 'ranged', damage: { plusBF: false, f
 // danger exploitable entre deux cases d'approche voisines (≠ Arc range 60 où tout est « Bout portant »).
 const SHORTBOW: Weapon = { name: 'Fronde', type: 'ranged', damage: { plusBF: false, flat: 9 }, range: 6, qualities: [] };
 
-const CHARS = { CC: 45, CT: 45, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 40, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 40, sociabilite: 30 };
 const ARMOUR = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {

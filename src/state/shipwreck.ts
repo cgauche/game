@@ -106,7 +106,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
   if (!swimmers.some((h) => humanControlled(get(), h))) {
     const lines: string[] = [];
     for (const h of swimmers) {
-      const value = testValue(h, 'natation', 'F');
+      const value = testValue(h, 'natation', 'force');
       const t = rollTest(value, diff, rng);
       lines.push(`${h.name} — Natation (${DIFFICULTY_LABELS[diff]}) : ${t.roll}/${t.target} → ${t.success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`);
       if (t.success) { h.outOfRencontre = false; h.exitReason = undefined; } else h.dead = true;
@@ -122,7 +122,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
   // dédié requis dans le store (générique, `dispatchCascadeDone` n'a rien à router).
   const meta = { shoreId: shore?.id ?? '', journalMark };
   const steps: CascadeStep[] = swimmers.map((h) => {
-    const value = testValue(h, 'natation', 'F');
+    const value = testValue(h, 'natation', 'force');
     const target = Math.max(1, Math.min(99, value + DIFFICULTY_MODIFIERS[diff]));
     const human = humanControlled(get(), h);
     const result = human ? null : (() => { const t = rollTest(value, diff, rng); return { roll: t.roll, target: t.target, sl: t.sl, success: t.success }; })();

@@ -256,7 +256,7 @@ registerCombatHook({
  *  (aucun tirage RNG consommé → franchissement de Round iso-comportement). */
 /** Seuil de « se-fatiguer » : Bonus d'Endurance Rounds d'effort cumulés (min 1) avant un Test (LDB 16 l.97). */
 function fatigueThreshold(c: Combatant): number {
-  return Math.max(1, bonus(effectiveChar(c, 'E')));
+  return Math.max(1, bonus(effectiveChar(c, 'endurance')));
 }
 /** Conséquence d'un Test de Résistance « se-fatiguer » (LDB 16 l.97) — partagée par le hook (ENNEMIS)
  *  et l'applier (HÉROS). */

@@ -48,7 +48,7 @@ describe('Fuite intégrée à la modale (store)', () => {
     const b = useGame.getState().battle!;
     const H = b.combatants.find((c) => c.kind === 'hero')!;
     const E = b.combatants.find((c) => c.kind === 'enemy')!;
-    E.characteristics.CC = 90; // le coup dans le dos (+20) touche à coup sûr
+    E.characteristics['capacite-de-combat'] = 90; // le coup dans le dos (+20) touche à coup sûr
     H.wounds = { current: 40, max: 40, base: 40 } as never;
     H.engagedWith = [E.id];
     E.engagedWith = [H.id];

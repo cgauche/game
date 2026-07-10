@@ -5,7 +5,7 @@ import type { Combatant } from './types';
 function mk(conditions: { name: string; value: number }[] = []): Combatant {
   return {
     movement: 4,
-    characteristics: { F: 30, E: 30 } as never,
+    characteristics: { force: 30, endurance: 30 } as never,
     conditions,
     items: [],
     talents: [],

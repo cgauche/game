@@ -21,7 +21,7 @@ import { findCreatureById } from '../../data';
 function mk(over: Partial<Combatant> = {}): Combatant {
   return {
     id: 'c', name: 'C', kind: 'enemy',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4,
@@ -31,11 +31,11 @@ function mk(over: Partial<Combatant> = {}): Combatant {
 
 describe('dispatch — parsing et prédicats (LDB 85)', () => {
   it('modificateurs de profil : Élite, Coriace, Brutal, Rapide, Rusé', () => {
-    expect(traitCharMods([{ id: 'elite' }])).toEqual({ CC: 20, CT: 20, FM: 20 });
-    expect(traitCharMods([{ id: 'coriace' }, { id: 'brutal' }])).toEqual({ E: 20, FM: 10, Ag: -10, F: 10 });
+    expect(traitCharMods([{ id: 'elite' }])).toEqual({ 'capacite-de-combat': 20, 'capacite-de-tir': 20, 'force-mentale': 20 });
+    expect(traitCharMods([{ id: 'coriace' }, { id: 'brutal' }])).toEqual({ endurance: 20, 'force-mentale': 10, agilite: -10, force: 10 });
     expect(traitMovementMod([{ id: 'brutal' }])).toBe(-1);
     expect(traitMovementMod([{ id: 'rapide' }])).toBe(1);
-    expect(traitCharMods([{ id: 'ruse' }])).toEqual({ Soc: 10, Int: 10, I: 10 });
+    expect(traitCharMods([{ id: 'ruse' }])).toEqual({ sociabilite: 10, intelligence: 10, initiative: 10 });
     expect(traitBonusWoundsBE([{ id: 'endurant' }])).toBe(true);
   });
   it('sauvegardes : Démoniaque 8+, Protection 9', () => {
@@ -47,7 +47,7 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
     expect(canCounterOnDefenseWin({ traits: [{ id: 'champion' }] } as never, undefined)).toBe(true); // Champion : sans condition d'arme
     // Perturbant : l'aura (−20 à BE m) vit en DONNÉE (`TraitData.aura`), projetée par le hook générique.
     const aura = traitAuras([{ id: 'perturbant' }])[0];
-    expect(aura?.rangeChar).toBe('E');
+    expect(aura?.rangeChar).toBe('endurance');
     expect(aura?.passive).toEqual([{ op: 'testMod', amount: -20 }]);
     expect(isUnstable([{ id: 'instable' }])).toBe(true);
   });
@@ -81,17 +81,17 @@ describe('dispatch — parsing et prédicats (LDB 85)', () => {
 
 describe('spawn — profil dérivé des statblocks d’éditeur (LDB 77 « ajoutez les Traits »)', () => {
   it('Élite +20 CC/CT/FM, Brutal −1 M — appliqués en DIRECT (characteristics = base, effectiveChar = final)', () => {
-    const c = statblockToCombatant({ name: 'Vétéran', char: { CC: 30, CT: 30, FM: 30, M: 4 }, traits: [{ id: 'elite' }, { id: 'brutal' }] } as any, 'e1', { x: 0, y: 0 });
-    expect(c.characteristics.CC).toBe(30); // BASE (les traits ne sont plus cuits dans characteristics)
+    const c = statblockToCombatant({ name: 'Vétéran', char: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, 'force-mentale': 30, M: 4 }, traits: [{ id: 'elite' }, { id: 'brutal' }] } as any, 'e1', { x: 0, y: 0 });
+    expect(c.characteristics['capacite-de-combat']).toBe(30); // BASE (les traits ne sont plus cuits dans characteristics)
     expect(c.liveTraits).toEqual([{ id: 'elite' }, { id: 'brutal' }]);
-    expect(effectiveChar(c, 'CC')).toBe(50); // 30 + Élite 20 (en direct via le collecteur passif)
-    expect(effectiveChar(c, 'FM')).toBe(50);
-    expect(effectiveChar(c, 'F')).toBe(40); // Brutal +10 F
+    expect(effectiveChar(c, 'capacite-de-combat')).toBe(50); // 30 + Élite 20 (en direct via le collecteur passif)
+    expect(effectiveChar(c, 'force-mentale')).toBe(50);
+    expect(effectiveChar(c, 'force')).toBe(40); // Brutal +10 F
     expect(effectiveMovement(c)).toBe(3); // Brutal −1 M
   });
   it('Endurant : +BE Blessures (formule)', () => {
-    const sans = statblockToCombatant({ name: 'A', char: { E: 30 }, traits: [] } as any, 'e2', { x: 0, y: 0 });
-    const avec = statblockToCombatant({ name: 'B', char: { E: 30 }, traits: [{ id: 'endurant' }] } as any, 'e3', { x: 0, y: 0 });
+    const sans = statblockToCombatant({ name: 'A', char: { endurance: 30 }, traits: [] } as any, 'e2', { x: 0, y: 0 });
+    const avec = statblockToCombatant({ name: 'B', char: { endurance: 30 }, traits: [{ id: 'endurant' }] } as any, 'e3', { x: 0, y: 0 });
     expect(avec.wounds.max - sans.wounds.max).toBe(3);
   });
   it('bestiaire : trait de profil INHÉRENT non ré-appliqué (profil imprimé FINAL → zéro double-compte)', () => {
@@ -100,7 +100,7 @@ describe('spawn — profil dérivé des statblocks d’éditeur (LDB 77 « ajout
     const def = findCreatureById('bella-la-noire')!;
     const c = creatureToCombatant(def, 'b', { x: 0, y: 0 });
     expect(c.liveTraits).toBeUndefined(); // traits inhérents PAS « en direct »
-    expect(effectiveChar(c, 'F')).toBe(def.char.F as number); // 41 = imprimé ; Brutal +10 NON re-compté (sinon 51)
+    expect(effectiveChar(c, 'force')).toBe(def.char.force as number); // 41 = imprimé ; Brutal +10 NON re-compté (sinon 51)
   });
   it('Fabriqué → immunité psychologique ; Mutation → mutation tirée (graine stable)', () => {
     const c = statblockToCombatant({ name: 'Golem', char: {}, traits: [{ id: 'fabrique' }, { id: 'mutation' }] } as any, 'e4', { x: 0, y: 0 });
@@ -133,13 +133,13 @@ describe('câblages moteur', () => {
     expect(isPsychImmune(c)).toBe(false); // sans contexte d'adversaire, le trait est inerte
   });
   it('Insensible à la douleur : pénalités de Critique ignorées (hors amputations)', () => {
-    const t = { label: 'Déchirure musculaire (Majeure)', location: 'jambeG', ops: [{ op: 'charMod', char: 'Ag', mod: -10 }] } as any;
+    const t = { label: 'Déchirure musculaire (Majeure)', location: 'jambeG', ops: [{ op: 'charMod', char: 'agilite', mod: -10 }] } as any;
     const douillet = mk({ traumas: [t] });
     const stoique = mk({ traumas: [t], traits: [{ id: 'insensible-a-la-douleur' }] });
-    expect(traumaCharPenalties(douillet, 'Ag')).toEqual([-10]);
-    expect(traumaCharPenalties(stoique, 'Ag')).toEqual([]);
+    expect(traumaCharPenalties(douillet, 'agilite')).toEqual([-10]);
+    expect(traumaCharPenalties(stoique, 'agilite')).toEqual([]);
     // … mais une AMPUTATION reste pénalisante (LDB 85 p.340).
-    const ampute = mk({ traumas: [{ label: 'Amputation (Doigt)', location: 'brasD', ops: [{ op: 'charMod', char: 'CC', mod: -5 }] } as any], traits: [{ id: 'insensible-a-la-douleur' }] });
-    expect(traumaCharPenalties(ampute, 'CC')).toEqual([-5]);
+    const ampute = mk({ traumas: [{ label: 'Amputation (Doigt)', location: 'brasD', ops: [{ op: 'charMod', char: 'capacite-de-combat', mod: -5 }] } as any], traits: [{ id: 'insensible-a-la-douleur' }] });
+    expect(traumaCharPenalties(ampute, 'capacite-de-combat')).toEqual([-5]);
   });
 });

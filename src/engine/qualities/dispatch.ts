@@ -136,7 +136,7 @@ export function craftTestDRAdjust(w: QualityCarrier | undefined, success: boolea
 export function qualitySocMod(w: QualityCarrier | undefined): number {
   let d = 0;
   for (const r of resolveQualities(w))
-    for (const op of passiveOf(r.id)) if (op.op === 'testMod' && op.char === 'Soc') d += op.amount;
+    for (const op of passiveOf(r.id)) if (op.op === 'testMod' && op.char === 'sociabilite') d += op.amount;
   return d;
 }
 

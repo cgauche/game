@@ -99,13 +99,13 @@ export function applyTalentAcquisition(hero: Combatant, talentId: string, spec?:
 }
 
 /** Points de Blessure supplémentaires : BE par acquisition d'un talent « Blessure » (Dur à cuire).
- *  Le BE utilisé est `baseWithTalents(hero,'E')` pour inclure un éventuel +5 E de « Très résistant ». */
+ *  Le BE utilisé est `baseWithTalents(hero,'endurance')` pour inclure un éventuel +5 E de « Très résistant ». */
 export function extraWounds(hero: Combatant): number {
   let n = 0;
   for (const t of hero.talents ?? []) {
     for (const op of findTalentById(t.talentId)?.passive ?? []) {
       if (op.op === 'attrMod' && op.attr === 'wounds') {
-        // Dur à cuire = +Bonus d'Endurance par acquisition : mod-formule `{bonusOf:'E'}` résolu sur
+        // Dur à cuire = +Bonus d'Endurance par acquisition : mod-formule `{bonusOf:'endurance'}` résolu sur
         // baseWithTalents (inclut le +5 E de Très résistant si possédé), pas sur la valeur brute.
         const per = typeof op.mod === 'number' ? op.mod : 'bonusOf' in op.mod ? bonus(baseWithTalents(hero, op.mod.bonusOf)) : 0;
         n += per * (t.times ?? 1);
@@ -121,9 +121,9 @@ export function extraWounds(hero: Combatant): number {
 export function heroMaxWounds(hero: Combatant): number {
   const chars = {
     ...hero.characteristics,
-    F: baseWithTalents(hero, 'F'),
-    E: baseWithTalents(hero, 'E'),
-    FM: baseWithTalents(hero, 'FM'),
+    force: baseWithTalents(hero, 'force'),
+    endurance: baseWithTalents(hero, 'endurance'),
+    'force-mentale': baseWithTalents(hero, 'force-mentale'),
   };
   return maxWounds(chars, hero.size ?? 'moyenne') + extraWounds(hero);
 }

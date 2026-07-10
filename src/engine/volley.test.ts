@@ -4,7 +4,7 @@ import type { RNG } from './dice';
 import type { Combatant, ShipPoste } from './types';
 
 const gunner = (id: string, over: Partial<Combatant> = {}): Combatant =>
-  ({ id, name: id, kind: 'npc', characteristics: { CC: 0, CT: 0, F: 0, E: 0, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 }, conditions: [], wounds: { current: 10, max: 10, base: 10 }, items: [], ...over }) as unknown as Combatant;
+  ({ id, name: id, kind: 'npc', characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 0, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 }, conditions: [], wounds: { current: 10, max: 10, base: 10 }, items: [], ...over }) as unknown as Combatant;
 
 /** Pièce d'artillerie : Dégâts plats `flat`, qualités optionnelles, servie par `crewIds`. */
 const poste = (crewIds: string[], flat = 14, qualities: { id: string; value?: number }[] = []): ShipPoste =>
@@ -13,7 +13,7 @@ const poste = (crewIds: string[], flat = 14, qualities: { id: string; value?: nu
 const ship = (): Combatant => ({ id: 'ship', name: 'Navire', kind: 'npc', bodyShape: 'vehicule', conditions: [], weapons: [] }) as unknown as Combatant;
 
 const hull = (E: number, armourCorps = 0, wounds = 90): Combatant =>
-  ({ id: 'target', name: 'Coque', kind: 'enemy', bodyShape: 'vehicule', characteristics: { CC: 0, CT: 0, F: 0, E, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 }, armour: { corps: armourCorps }, conditions: [], wounds: { current: wounds, max: 90, base: 90 } }) as unknown as Combatant;
+  ({ id: 'target', name: 'Coque', kind: 'enemy', bodyShape: 'vehicule', characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: E, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 }, armour: { corps: armourCorps }, conditions: [], wounds: { current: wounds, max: 90, base: 90 } }) as unknown as Combatant;
 
 const fixed = (n: number): RNG => ({ int: () => n }) as unknown as RNG;
 

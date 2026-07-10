@@ -9,7 +9,7 @@ import type { Combatant } from '../../engine/types';
 const combatant = (over: Partial<Combatant>): Combatant =>
   ({
     id: 'x', name: 'X', kind: 'enemy',
-    characteristics: { E: 1 }, skills: [], talents: [], conditions: [], activeEffects: [], liveTraits: [],
+    characteristics: { endurance: 1 }, skills: [], talents: [], conditions: [], activeEffects: [], liveTraits: [],
     wounds: { current: 10, max: 10, base: 10 }, advantage: 0,
     ...over,
   }) as unknown as Combatant;
@@ -35,7 +35,7 @@ describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.97)', () => {
 
   it('sous le seuil (Bonus d’Endurance Rounds) : accumule sans Test ni État', () => {
     setRule('combat-se-fatiguer', true);
-    const c = combatant({ characteristics: { E: 35 } as never, effortRounds: 0 }); // BE=3 → seuil 3
+    const c = combatant({ characteristics: { endurance: 35 } as never, effortRounds: 0 }); // BE=3 → seuil 3
     runCombatHooks('onRoundEnd', ctx([c]));
     expect(c.effortRounds).toBe(1);
     expect(hasCondition(c, COND.extenue)).toBe(false);
@@ -53,7 +53,7 @@ describe('roundHooks — se-fatiguer (combat-se-fatiguer, LDB 16 l.97)', () => {
   it('au seuil, Test de Résistance réussi (DR obtenu) → délai repoussé de DR Rounds, pas 1+DR (LDB 16 l.97)', () => {
     setRule('combat-se-fatiguer', true);
     seedBattleRng(9); // 1ᵉʳ d100 = 20 → cible 40 (E) : réussite, DR = 2
-    const c = combatant({ characteristics: { E: 40 } as never, effortRounds: 3 }); // BE=4 → seuil 4 (atteint après incrément)
+    const c = combatant({ characteristics: { endurance: 40 } as never, effortRounds: 3 }); // BE=4 → seuil 4 (atteint après incrément)
     runCombatHooks('onRoundEnd', ctx([c]));
     expect(hasCondition(c, COND.extenue)).toBe(false);
     expect(c.effortRounds).toBe(2); // 4 (seuil atteint) − DR(2) — PAS 4 − (1+2) = 1

@@ -48,7 +48,7 @@ describe('Traits psy ciblés en combat — cascade de DÉBUT de Round (LDB 21)',
     const { H, E } = setup();
     H.psychTraits = [{ type: 'animosite', cible: 'Mort-vivant' }];
     E.groups = ['Mort-vivant'];
-    H.characteristics.FM = 1; // Test de Calme raté quasi sûr
+    H.characteristics['force-mentale'] = 1; // Test de Calme raté quasi sûr
     openRoundStartPsych(useGame.getState, useGame.setState);
     const c = useGame.getState().pendingCascade;
     expect(c?.purpose).toBe('combat');
@@ -82,7 +82,7 @@ describe('Traits psy ciblés en combat — cascade de DÉBUT de Round (LDB 21)',
     const { H, E } = setup();
     E.psychTraits = [{ type: 'haine', cible: 'Humain' }];
     H.groups = ['Humain'];
-    E.characteristics.FM = 1; // échec quasi sûr
+    E.characteristics['force-mentale'] = 1; // échec quasi sûr
     resolvePsychAI(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
     expect((e.psychState ?? []).some((p) => p.type === 'haine' && p.cible === 'Humain' && p.active)).toBe(true);

@@ -33,7 +33,7 @@ const secondsPerRound = (): number => Number(rule('combat-round-seconds'));
 
 /** Souffle retenable sans Test (LDB 18 l.345) : Bonus d'Endurance × 10 secondes. Pur. */
 export function breathHoldSeconds(c: Combatant): number {
-  return Math.max(0, bonus(effectiveChar(c, 'E'))) * 10;
+  return Math.max(0, bonus(effectiveChar(c, 'endurance'))) * 10;
 }
 
 /** Anticipation d'une privation d'air (plongée volontaire, apnée préparée) : pose le crédit de souffle
@@ -60,7 +60,7 @@ export function suffocationTick(c: Combatant): string[] {
       : `${c.name} n'a plus d'air — la suffocation commence.`];
   }
   const lines: string[] = [];
-  const be = Math.max(1, bonus(effectiveChar(c, 'E')));
+  const be = Math.max(1, bonus(effectiveChar(c, 'endurance')));
   if (c.wounds.current > 0) {
     loseWounds(c, 1);
     lines.push(`${c.name} suffoque (−1 PB).`);

@@ -19,7 +19,7 @@ import type { Disease } from './disease';
 const makeTarget = (over: Partial<Combatant> = {}): Combatant =>
   ({
     name: 'X',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 10, max: 20, base: 20 },
     conditions: [],
     activeEffects: [],
@@ -106,7 +106,7 @@ describe('bave (LDB 71 l.18)', () => {
   it("Test d'Endurance Très difficile (-30) au boire ; échec → narrative verbatim (rien d'inventé au-delà du texte)", () => {
     const f = itemFromTrappingById('bave')!.consumable! as Extract<Flow, { kind: 'test' }>;
     expect(f.kind).toBe('test');
-    expect(f.test.characteristic).toBe('E');
+    expect(f.test.characteristic).toBe('endurance');
     expect(f.test.difficulty).toBe('tresDifficile');
     expect(consumableOps(f.fail)).toEqual([{ op: 'narrative', text: 'perdu dans un fantasme très réaliste, que le MJ doit gérer. Durée : 1d10 minutes.' }]);
   });
@@ -115,7 +115,7 @@ describe('bave (LDB 71 l.18)', () => {
 describe('bonnet-de-fou (LDB 71 l.20)', () => {
   it('« +10 en Force, +4 Blessures et le Talent Frénésie » + perte 1d10 PB à la dissipation (delayed afterDuration)', () => {
     const ops = consumableOps(itemFromTrappingById('bonnet-de-fou')!.consumable);
-    expect(ops).toContainEqual({ op: 'charMod', char: 'F', mod: 10 });
+    expect(ops).toContainEqual({ op: 'charMod', char: 'force', mod: 10 });
     expect(ops).toContainEqual({ op: 'attrMod', attr: 'wounds', mod: 4 });
     expect(ops).toContainEqual({ op: 'grantTalent', talentId: 'frenesie' });
     const delayed = ops.find((o) => o.op === 'delayed') as Extract<import('./ops').GameOp, { op: 'delayed' }>;
@@ -138,12 +138,12 @@ describe('delice-de-ranald (LDB 71 l.24)', () => {
   it('+1 M, +10 F/E/Ag/CC pendant 3 h ; puis −2 M, −20 CC/E/F/Ag (delayed afterHours 3, pénalité 21 h — « Durée : 1 jour » = l\'épisode)', () => {
     const ops = consumableOps(itemFromTrappingById('delice-de-ranald')!.consumable);
     expect(ops).toContainEqual({ op: 'moveMod', mod: 1 });
-    for (const char of ['F', 'E', 'Ag', 'CC']) expect(ops).toContainEqual({ op: 'charMod', char, mod: 10 });
+    for (const char of ['force', 'endurance', 'agilite', 'capacite-de-combat']) expect(ops).toContainEqual({ op: 'charMod', char, mod: 10 });
     const delayed = ops.find((o) => o.op === 'delayed') as Extract<import('./ops').GameOp, { op: 'delayed' }>;
     expect(delayed.afterHours).toBe(3);
     expect(delayed.forHours).toBe(21);
     expect(delayed.ops).toContainEqual({ op: 'moveMod', mod: -2 });
-    for (const char of ['CC', 'E', 'F', 'Ag']) expect(delayed.ops).toContainEqual({ op: 'charMod', char, mod: -20 });
+    for (const char of ['capacite-de-combat', 'endurance', 'force', 'agilite']) expect(delayed.ops).toContainEqual({ op: 'charMod', char, mod: -20 });
     expect(itemFromTrappingById('delice-de-ranald')!.consumableDuration).toEqual({ hours: 3 });
   });
 });
@@ -157,7 +157,7 @@ describe('fleur-de-lune (LDB 71 l.26-29)', () => {
   it('autres races : Test de FM Très difficile — raté → Inconscient (1d10+5 h) ; réussi → +20 Calme + 1 Exténué', () => {
     const f = itemFromTrappingById('fleur-de-lune')!.consumable! as Extract<Flow, { kind: 'if' }>;
     const test = f.else as Extract<Flow, { kind: 'test' }>;
-    expect(test.test.characteristic).toBe('FM');
+    expect(test.test.characteristic).toBe('force-mentale');
     expect(test.test.difficulty).toBe('tresDifficile');
     expect(consumableOps(test.fail)).toEqual([{ op: 'condition', name: 'inconscient', durationHours: { dice: { n: 1, sides: 10, plus: 5 } } }]);
     expect(consumableOps(test.success)).toEqual([
@@ -171,12 +171,12 @@ describe('mystracine (LDB 71 l.33) — testMod char-qualifiés (ext. I) appliqu�
   it('« +10 aux Tests d\'Endurance et de Force Mentale, mais une pénalité de -10 aux Tests d\'Agilité, d\'Initiative et d\'Intelligence »', () => {
     const c = makeTarget();
     drinkPure(c, 'mystracine');
-    expect(testValue(c, undefined, 'E')).toBe(35 + 10);
-    expect(testValue(c, undefined, 'FM')).toBe(30 + 10);
-    expect(testValue(c, undefined, 'Ag')).toBe(30 - 10);
-    expect(testValue(c, undefined, 'I')).toBe(30 - 10);
-    expect(testValue(c, undefined, 'Int')).toBe(30 - 10);
-    expect(testValue(c, undefined, 'F')).toBe(30); // les autres caracs ne bougent pas
+    expect(testValue(c, undefined, 'endurance')).toBe(35 + 10);
+    expect(testValue(c, undefined, 'force-mentale')).toBe(30 + 10);
+    expect(testValue(c, undefined, 'agilite')).toBe(30 - 10);
+    expect(testValue(c, undefined, 'initiative')).toBe(30 - 10);
+    expect(testValue(c, undefined, 'intelligence')).toBe(30 - 10);
+    expect(testValue(c, undefined, 'force')).toBe(30); // les autres caracs ne bougent pas
   });
   it('Durée « 1d10 x 10 minutes » (Formula times)', () => {
     expect(itemFromTrappingById('mystracine')!.consumableDuration).toEqual({ minutes: { times: { of: { dice: { n: 1, sides: 10 } }, factor: 10 } } });
@@ -188,9 +188,9 @@ describe('mystracine (LDB 71 l.33) — testMod char-qualifiés (ext. I) appliqu�
 describe("testMod.movementOnly — portée « Tests impliquant cette jambe » (#193)", () => {
   it('pénalise un Test de déplacement (Athlétisme, movement:true) mais pas un autre Test d’Agilité (Discrétion)', () => {
     const c = makeTarget();
-    c.activeEffects = [{ label: 'Genou démis (récupération)', bonus: 0, duration: { scale: 'permanent' }, testMod: -10, testModChar: 'Ag', testModMovementOnly: true }];
-    expect(testValue(c, 'athletisme', 'Ag')).toBe(30 - 10);
-    expect(testValue(c, 'discretion', 'Ag')).toBe(30); // Discrétion n'est pas classée « déplacement »
+    c.activeEffects = [{ label: 'Genou démis (récupération)', bonus: 0, duration: { scale: 'permanent' }, testMod: -10, testModChar: 'agilite', testModMovementOnly: true }];
+    expect(testValue(c, 'athletisme', 'agilite')).toBe(30 - 10);
+    expect(testValue(c, 'discretion', 'agilite')).toBe(30); // Discrétion n'est pas classée « déplacement »
   });
 });
 
@@ -200,7 +200,7 @@ describe('racine-de-mandragore (LDB 71 l.35)', () => {
     drinkPure(c, 'racine-de-mandragore');
     expect(c.activeEffects!.some((e) => e.moveScale?.num === 1 && e.moveScale?.den === 2)).toBe(true);
     expect(c.activeEffects!.some((e) => e.skillMods?.calme === 20)).toBe(true);
-    expect(c.activeEffects!.some((e) => e.actGate?.char === 'FM')).toBe(true);
+    expect(c.activeEffects!.some((e) => e.actGate?.char === 'force-mentale')).toBe(true);
   });
 });
 

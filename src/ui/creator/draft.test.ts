@@ -48,7 +48,7 @@ function readyDraft() {
   }
   return {
     ...d,
-    charAdvancesAlloc: { CC: 5 }, // Soldat : CC est de carrière
+    charAdvancesAlloc: { 'capacite-de-combat': 5 }, // Soldat : CC est de carrière
     fateSplit: { fate: Math.ceil(sp.fate.extra / 2), resilience: Math.floor(sp.fate.extra / 2) },
     speciesPlus5: sp.skills.slice(0, 3).map((a) => advancementLabel('skills', a)),
     speciesPlus3: sp.skills.slice(3, 6).map((a) => advancementLabel('skills', a)),
@@ -145,7 +145,7 @@ describe('careerCharKeys (Augmentations de carrière)', () => {
     // La donnée EST déjà en abréviations : chaque clé doit être un CharKey valide (régression #566 :
     // un mapping libellé→clé renvoyait `undefined` pour tout → liste vide).
     for (const k of keys) expect(CHAR_KEYS).toContain(k);
-    expect(keys).toContain('CC'); // Soldat : Capacité de Combat est de carrière
+    expect(keys).toContain('capacite-de-combat'); // Soldat : Capacité de Combat est de carrière
     expect(keys).toEqual(draftLevel(d)!.characteristics);
   });
 });
@@ -160,7 +160,7 @@ describe('validation des étapes', () => {
   it('Caractéristiques : réassignation = permutation stricte des dix jets', () => {
     const d = { ...readyDraft(), charMode: 'reassigned' as const };
     expect(validateStep(d, 'chars')).toBeNull();
-    const bad = { ...d, assignment: { ...d.assignment, CC: d.assignment.CT } };
+    const bad = { ...d, assignment: { ...d.assignment, 'capacite-de-combat': d.assignment['capacite-de-tir'] } };
     expect(validateStep(bad, 'chars')).toMatch(/une seule fois/);
   });
   it('Compétences : 40 augmentations, max 10, 3+3 compétences d\'espèce, talent choisi', () => {
@@ -211,7 +211,7 @@ describe('Magie mineure à la création (LDB 10 l.587) — BFM sorts inclus au T
     }
     return {
       ...base,
-      charAdvancesAlloc: { FM: 5 },
+      charAdvancesAlloc: { 'force-mentale': 5 },
       skillAdvances: Object.fromEntries(level.skills.map((a) => [advancementLabel('skills', a), 5])),
       specChoices,
       careerTalent: 'Magie mineure',
@@ -277,9 +277,9 @@ describe('signe astral (ADE2 ch.03) — étape, tirage, PX et effet', () => {
     const base = readyDraft();
     const a = buildHero(base, 'h-nostar');
     const b = buildHero({ ...base, star: 'wymund-l-anachorete' }, 'h-star'); // id ; +2 Soc, +2 I, -3 Int
-    expect(b.characteristics.Soc - a.characteristics.Soc).toBe(2);
-    expect(b.characteristics.I - a.characteristics.I).toBe(2);
-    expect(b.characteristics.Int - a.characteristics.Int).toBe(-3);
+    expect(b.characteristics.sociabilite - a.characteristics.sociabilite).toBe(2);
+    expect(b.characteristics.initiative - a.characteristics.initiative).toBe(2);
+    expect(b.characteristics.intelligence - a.characteristics.intelligence).toBe(-3);
     expect(b.star).toBe('wymund-l-anachorete');
   });
 });

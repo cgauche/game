@@ -116,7 +116,7 @@ export function overspeedRow(baseM: number, m: number): OverspeedRow | null {
 /** Test d'Endurance du NAVIRE en survitesse : échec → Dégâts `damage + X`, « X est égal au nombre de
  *  Degrés de Réussite négatifs générés sur un Test de Résistance raté » (l.142). PUR (RNG injecté). */
 export function rollOverspeedDamage(hull: Combatant, row: OverspeedRow, rng: RNG = defaultRNG): { roll: number; target: number; success: boolean; damage: number } {
-  const t = rollTest(effectiveChar(hull, 'E'), row.difficulty, rng);
+  const t = rollTest(effectiveChar(hull, 'endurance'), row.difficulty, rng);
   return { roll: t.roll, target: t.target, success: t.success, damage: t.success ? 0 : row.damage + Math.max(0, -t.sl) };
 }
 

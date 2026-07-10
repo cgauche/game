@@ -14,7 +14,7 @@ const seq = (...vals: number[]): RNG => {
 
 const hull = (E: number): Combatant => ({
   id: 'coque', name: 'Coque', kind: 'enemy',
-  characteristics: { CC: 0, CT: 0, F: 0, E, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 },
+  characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: E, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 },
   movement: 0, wounds: { current: 50, max: 50 }, weapons: [], skills: [], talents: [],
 } as unknown as Combatant);
 
@@ -103,7 +103,7 @@ describe('Phares & clochers (MDG ch.13 l.333-351)', () => {
   it('bonus d’Orientation : phare = premier chiffre de Savoir (Océans) (l.335) ; clocher = +2 DR forfaitaires (l.351)', () => {
     const nav = {
       ...hull(30), id: 'nav',
-      characteristics: { CC: 0, CT: 0, F: 0, E: 0, I: 0, Ag: 0, Dex: 0, Int: 30, FM: 0, Soc: 0 },
+      characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 0, initiative: 0, agilite: 0, dexterite: 0, intelligence: 30, 'force-mentale': 0, sociabilite: 0 },
       skills: [{ skillId: 'savoir', spec: 'oceans', advances: 6 }],
     } as unknown as Combatant;
     expect(savoirOceansBonus(nav)).toBe(3); // Int 30 + 6 avances = 36 → +3

@@ -34,7 +34,7 @@ const seaMap: WorldMap = {
 
 /** Fixe la valeur de Natation d'un héros par sa Force (Natation non possédée → carac F, cf. `testValue`). */
 function swim(h: Combatant, f: number): Combatant {
-  return { ...h, characteristics: { ...(h.characteristics ?? {}), F: f } as never };
+  return { ...h, characteristics: { ...(h.characteristics ?? {}), force: f } as never };
 }
 
 /** Héros Inconscient : ne peut PAS nager → noyade DÉTERMINISTE (chemin sans jet dans `beginShipwreck`). */

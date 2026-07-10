@@ -77,7 +77,7 @@ export function compareEquip(item: ItemInstance, hero: Combatant): EquipComparis
       const nr = REACH_RANK[item.reach ?? ''] ?? -1;
       rows.push({ label: 'Allonge', current: cur?.reach ?? '—', next: item.reach ?? '—', trend: trendOf(nr - cr) });
     } else {
-      const bf = () => bonus(effectiveChar(hero, 'F')); // BF du porteur, évalué SEULEMENT pour une Portée de jet `{bf}`
+      const bf = () => bonus(effectiveChar(hero, 'force')); // BF du porteur, évalué SEULEMENT pour une Portée de jet `{bf}`
       const curR = effectiveRange(cur?.range, bf), nextR = effectiveRange(item.range, bf);
       rows.push({ label: 'Portée', current: curR != null ? `${curR} m` : '—', next: nextR != null ? `${nextR} m` : '—', trend: trendOf((nextR ?? 0) - (curR ?? 0)) });
     }

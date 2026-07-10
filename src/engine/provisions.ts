@@ -98,7 +98,7 @@ export function isDeprived(c: Combatant): boolean {
  *  d'`effectiveChar` (kind `faim`, même privation) : 1ᵉʳ échec → −10 Int/FM/Soc ; dès le 2ᵉ → −10 le reste. */
 export function thirstCharPenalties(c: Combatant, key: CharKey): number[] {
   const f = c.thirst?.failures ?? 0;
-  const first = key === 'Int' || key === 'FM' || key === 'Soc';
+  const first = key === 'intelligence' || key === 'force-mentale' || key === 'sociabilite';
   if (f >= 1 && first) return [-10];
   if (f >= 2 && !first) return [-10];
   return [];
@@ -114,8 +114,8 @@ export function feedFromMeal(c: Combatant): void {
  *  d'`effectiveChar` : 1ᵉʳ échec → −10 Force et Endurance ; dès le 2ᵉ → −10 toutes les autres. */
 export function hungerCharPenalties(c: Combatant, key: CharKey): number[] {
   const f = c.hunger?.failures ?? 0;
-  if (f >= 1 && (key === 'F' || key === 'E')) return [-10];
-  if (f >= 2 && key !== 'F' && key !== 'E') return [-10];
+  if (f >= 1 && (key === 'force' || key === 'endurance')) return [-10];
+  if (f >= 2 && key !== 'force' && key !== 'endurance') return [-10];
   return [];
 }
 

@@ -60,7 +60,7 @@ export function StatblockEditor({ stat, onChange }: { stat: CustomStatblock; onC
   // Blessures de la formule (LDB 85), recalculées en live depuis F/E/FM + la Taille (explicite ou dérivée
   // d'un Trait « Taille (X) », sinon Moyenne) — sert de placeholder au champ « B » laissé vide.
   const size = stat.size ?? sizeFromTraits(stat.traits ?? []) ?? 'moyenne';
-  const formulaWounds = woundsForSize(bonus(stat.char.F ?? 30), bonus(stat.char.E ?? 30), bonus(stat.char.FM ?? 30), size);
+  const formulaWounds = woundsForSize(bonus(stat.char.force ?? 30), bonus(stat.char.endurance ?? 30), bonus(stat.char['force-mentale'] ?? 30), size);
   /** Champ Blessures optionnel : vide → `char.B` retiré (formule au spawn) ; rempli → surcharge fixe. */
   const setB = (raw: string) => {
     const char = { ...stat.char };

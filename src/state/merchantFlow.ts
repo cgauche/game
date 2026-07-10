@@ -182,7 +182,7 @@ export function searchAvailability(get: Get, set: Set): void {
   if (!arch) return;
   const restockPeriod = (ent?.merchant?.restockDays ?? arch.restockDays ?? 1) * MINUTES_PER_DAY;
   // Test de Ragot du groupe (Soutien LDB 12) — Intermédiaire (+0), le RAW ne chiffre pas la difficulté.
-  const best = partyAssisted(get().party, 'ragot', 'Soc');
+  const best = partyAssisted(get().party, 'ragot', 'sociabilite');
   const res = best ? rollTest(best.value, 'intermediaire', battleRng()) : null;
   const gossipDay = !!res?.success;
   get().advanceTime(MINUTES_PER_DAY); // « journée entière » — l'horloge cascade normalement (#T3)
@@ -527,7 +527,7 @@ export function startBargain(get: Get, set: Set, mode: 'buy' | 'sell'): void {
   if (m.bargainLocked) return; // VERROU PARTAGÉ : a refusé/renié un marché (achat OU vente) → plus de négociation jusqu'au réassort
   if (mode === 'buy' ? m.bargainBuy : m.bargainSell) return; // 1 marchandage par MODE et par visite (achat ≠ vente)
   const arch = MERCHANTS[m.archetype];
-  const best = partyAssisted(get().party, 'marchandage', 'Soc'); if (!best) return; // Soutien (LDB 12) : conseillers du groupe
+  const best = partyAssisted(get().party, 'marchandage', 'sociabilite'); if (!best) return; // Soutien (LDB 12) : conseillers du groupe
   const negotiator = hasBargainBonus(best.actor); // Négociateur → registre de talents (plus de name-match)
   set({ pendingBargain: {
     playerId: best.actor.id, playerName: best.actor.name,
@@ -564,7 +564,7 @@ export const DETECT_TALENT = "Détection d'artefact";
 export function bestDetector(party: Combatant[]): { actor: Combatant; value: number } | null {
   const holders = party.filter((h) => !h.dead && h.talents.some((t) => t.talentId === slugId(DETECT_TALENT) && (t.times ?? 1) >= 1));
   if (!holders.length) return null;
-  const best = partyAssisted(holders, 'intuition', 'I'); // Soutien (LDB 12)
+  const best = partyAssisted(holders, 'intuition', 'initiative'); // Soutien (LDB 12)
   return best ? { actor: best.actor, value: best.value } : null;
 }
 
@@ -575,7 +575,7 @@ function openAppraise(
   target: { itemUid?: string; gear?: { scope: 'loot' | 'victory'; index: number } },
   itemName: string, mode: 'evaluate' | 'detect', trappingId?: string,
 ): void {
-  const best = mode === 'detect' ? bestDetector(get().party) : partyAssisted(get().party, 'evaluation', 'Int'); // Soutien (LDB 12)
+  const best = mode === 'detect' ? bestDetector(get().party) : partyAssisted(get().party, 'evaluation', 'intelligence'); // Soutien (LDB 12)
   if (!best) return;
   const t = trappingId ? findTrappingById(trappingId) : undefined;
   set({ pendingAppraise: {

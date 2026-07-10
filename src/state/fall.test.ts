@@ -24,7 +24,7 @@ describe('Effet fall — chute', () => {
 
   it('inflige 3/m + 1d10 réduits par le BE (pas les PA), et pose À Terre si > BE', () => {
     const h = loneHero();
-    const be = bonus(h.characteristics.E);
+    const be = bonus(h.characteristics.endurance);
     const before = h.wounds.current;
     applyEffects(useGame.getState, useGame.setState, [{ type: 'fall', target: 'party', metres: 4 }] as Effect[]);
     const lost = before - useGame.getState().party[0].wounds.current;

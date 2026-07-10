@@ -16,7 +16,7 @@
     "id": "acrobaties-equestres",
     "label": "Acrobaties équestres",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Tests d'Esquive à cheval, Chevaucher (Cheval)",
@@ -54,7 +54,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": 5
       }
     ]
@@ -63,7 +63,7 @@
     "id": "affinite-avec-les-animaux",
     "label": "Affinité avec les animaux",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": {
       "raw": "Emprise sur les animaux",
@@ -104,7 +104,7 @@
     "id": "ame-pure",
     "label": "Âme pure",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": null,
     "desc": "Votre âme est pure, très résistante aux déprédations du Chaos. Vous pouvez gagner un nombre de Points de Corruption supplémentaires égal à votre niveau d'Âme pure avant d'avoir à effectuer un Test pour savoir si vous êtes corrompu.",
@@ -122,7 +122,7 @@
     "id": "artilleur",
     "label": "Artilleur",
     "max": {
-      "bonusOf": "Dex"
+      "bonusOf": "dexterite"
     },
     "test": null,
     "desc": "Vous pouvez recharger avec facilité les armes à Poudre noire. Ajoutez un DR égal à votre niveau d'Artilleur à n'importe quel Test étendu pour recharger une arme à Poudre noire.",
@@ -144,7 +144,7 @@
     "id": "artiste",
     "label": "Artiste",
     "max": {
-      "bonusOf": "Dex"
+      "bonusOf": "dexterite"
     },
     "test": {
       "raw": "Art (Au choix)",
@@ -215,7 +215,7 @@
     "id": "assaut-feroce",
     "label": "Assaut féroce",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Corps à corps quand vous effectuez des attaques supplémentaires",
@@ -261,7 +261,7 @@
     "id": "attirant",
     "label": "Attirant",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Test de Charme pour influencer ceux qui vous trouvent attirant.",
@@ -284,7 +284,7 @@
     "id": "baratiner",
     "label": "Baratiner",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Charme pour Baratiner",
@@ -307,7 +307,7 @@
     "id": "battement",
     "label": "Battement",
     "max": {
-      "bonusOf": "CC"
+      "bonusOf": "capacite-de-combat"
     },
     "combat": {
       "battement": true
@@ -363,7 +363,7 @@
     "id": "bon-marcheur",
     "label": "Bon marcheur",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Tests d'Athlétisme pour traverser le Terrain",
@@ -412,7 +412,7 @@
     "id": "bonnes-jambes",
     "label": "Bonnes jambes",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": {
       "raw": "Athlétisme (Saut)",
@@ -435,7 +435,7 @@
     "id": "bricoleur",
     "label": "Bricoleur",
     "max": {
-      "bonusOf": "Dex"
+      "bonusOf": "dexterite"
     },
     "test": {
       "raw": "Tests de Métier pour réparer des objets cassés",
@@ -458,7 +458,7 @@
     "id": "brouet",
     "label": "Brouet",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": {
       "raw": "Tests de Résistance pour résister à la faim",
@@ -494,7 +494,7 @@
     "id": "cavalier-emerite",
     "label": "Cavalier émérite",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Chevaucher (Cheval) pendant les combats",
@@ -526,7 +526,7 @@
     "id": "chanceux",
     "label": "Chanceux",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": null,
     "desc": "On prétend que lorsque vous êtes né, Ranald a souri. Votre maximum de Points de Chance est à présent égal à votre nombre actuel de Points de Destin, plus le nombre de fois que vous avez pris Chanceux.",
@@ -548,7 +548,7 @@
     "id": "charge-berserk",
     "label": "Charge berserk",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": {
       "raw": "Corps à corps sur un Round lorsque vous effectuez une Charge berserk",
@@ -574,7 +574,7 @@
     "id": "chat-de-gouttiere",
     "label": "Chat de gouttière",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Discrétion (Urbaine)",
@@ -598,7 +598,7 @@
     "id": "chirurgie",
     "label": "Chirurgie",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Tests de Guérison en dehors des Rounds de combat ; quand vous avez le temps de le faire correctement.",
@@ -624,7 +624,7 @@
     "id": "claquer-le-fouet",
     "label": "Claquer le fouet",
     "max": {
-      "bonusOf": "Dex"
+      "bonusOf": "dexterite"
     },
     "test": {
       "raw": "Tests de Conduite d'attelage ou de Chevaucher quand vous Fuyez ou lors d'une Course.",
@@ -647,7 +647,7 @@
     "id": "coeur-vaillant",
     "label": "Cœur vaillant",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": {
       "raw": "Tests de Calme pour retirer les États Brisé",
@@ -673,7 +673,7 @@
     "id": "combat-deloyal",
     "label": "Combat déloyal",
     "max": {
-      "bonusOf": "CC"
+      "bonusOf": "capacite-de-combat"
     },
     "test": {
       "raw": "Corps à corps (Bagarre)",
@@ -699,7 +699,7 @@
     "id": "combat-instinctif",
     "label": "Combat instinctif",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": null,
     "desc": "Vous réagissez aussi vite que l'éclair. Votre Initiative est plus élevée de 10 pour déterminer l'Initiative de Combat pour chaque niveau que vous possédez dans ce Talent.",
@@ -717,7 +717,7 @@
     "id": "combattant-au-contact",
     "label": "Combattant au contact",
     "max": {
-      "bonusOf": "Dex"
+      "bonusOf": "dexterite"
     },
     "test": {
       "raw": "Corps à corps quand vous combattez au contact ou que vous allez au contact",
@@ -740,7 +740,7 @@
     "id": "combattant-en-espace-clos",
     "label": "Combattant en espace clos",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Esquive dans des environnements clos",
@@ -763,7 +763,7 @@
     "id": "concocter",
     "label": "Concocter",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Savoir (Apothicaire)",
@@ -786,7 +786,7 @@
     "id": "contorsionniste",
     "label": "Contorsionniste",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Représentation et Agilité quand vous vous aidez de Contorsionniste",
@@ -796,7 +796,7 @@
           "manual": true
         },
         {
-          "char": "Ag",
+          "char": "agilite",
           "manual": true
         }
       ]
@@ -813,7 +813,7 @@
     "id": "controle-de-la-frenesie",
     "label": "Contrôle de la Frénésie",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": {
       "raw": "Tests de Corps à corps quand vous êtes en Frénésie",
@@ -878,7 +878,7 @@
     "id": "cooperatif",
     "label": "Coopératif",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Tests sociaux pour influencer un supérieur",
@@ -896,7 +896,7 @@
     "id": "commandant-d-equipe",
     "label": "Commandant d'équipe",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "combat": {
       "commandTeam": true
@@ -922,13 +922,13 @@
     "id": "costaud",
     "label": "Costaud",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": {
       "raw": "Tests de Force quand vous soulevez",
       "matches": [
         {
-          "char": "F",
+          "char": "force",
           "manual": true
         }
       ]
@@ -948,7 +948,7 @@
     "id": "coude-a-coude",
     "label": "Coude-à-coude",
     "max": {
-      "bonusOf": "CC"
+      "bonusOf": "capacite-de-combat"
     },
     "test": {
       "raw": "Corps à corps quand vous vous trouvez à côté d'un allié avec Coude-à-coude",
@@ -977,7 +977,7 @@
     "id": "coup-puissant",
     "label": "Coup puissant",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": null,
     "desc": "Vous savez comment frapper fort ! Vous infligez votre niveau de Coup puissant en Dégâts supplémentaires avec des armes de Corps à corps.",
@@ -1008,7 +1008,7 @@
     "id": "desarmer",
     "label": "Désarmer",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Tests de Corps à corps concernant ce Talent",
@@ -1044,7 +1044,7 @@
     "id": "detection-d-artefact",
     "label": "Détection d'artefact",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Tests d'Intuition pour détecter des artefacts magiques",
@@ -1067,7 +1067,7 @@
     "id": "determine",
     "label": "Déterminé",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": null,
     "desc": "Vous lancez des attaques avec une détermination acharnée. Ajoutez votre niveau de Talent Déterminé à votre Bonus de Force quand vous Chargez.",
@@ -1085,7 +1085,7 @@
     "id": "diction-instinctive",
     "label": "Diction instinctive",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Langue (Magick) quand vous faites une Incantation",
@@ -1108,7 +1108,7 @@
     "id": "discret",
     "label": "Discret",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "N'importe quel Test impliquant Filature",
@@ -1126,7 +1126,7 @@
     "id": "distraire",
     "label": "Distraire",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "combat": {
       "distraire": true
@@ -1177,7 +1177,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Dex",
+        "char": "dexterite",
         "mod": 5
       }
     ]
@@ -1199,7 +1199,7 @@
     "id": "doue-en-calcul",
     "label": "Doué en calcul",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Évaluation, Pari",
@@ -1224,7 +1224,7 @@
     "id": "dur-a-cuire",
     "label": "Dur à cuire",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": null,
     "desc": "Vous gagnez autant de Points de Blessure supplémentaires que votre Bonus d'Endurance. Si ce dernier augmente, le nombre de Points de Blessure conféré par Dur à cuire augmente également.",
@@ -1239,7 +1239,7 @@
         "op": "attrMod",
         "attr": "wounds",
         "mod": {
-          "bonusOf": "E"
+          "bonusOf": "endurance"
         }
       }
     ]
@@ -1248,7 +1248,7 @@
     "id": "effraction",
     "label": "Effraction",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": {
       "raw": "Corps à corps quand vous forcez ou brisez des objets inanimés",
@@ -1271,7 +1271,7 @@
     "id": "effrayant",
     "label": "Effrayant",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": null,
     "desc": "Toute personne saine d'esprit réfléchit à deux fois avant de vous approcher. Si vous le souhaitez, vous avez un Indice de Peur de 1 (voir page 190). Ajoutez +1 à cet Indice par nombre de fois supplémentaires que vous avez pris ce Talent.",
@@ -1289,7 +1289,7 @@
     "id": "endurci",
     "label": "Endurci",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": null,
     "desc": "Il en faut beaucoup pour vous achever. Vous pouvez ignorer le Point de Blessure perdu à cause d'un État Hémorragique. Chaque niveau dans ce Talent vous permet d'ignorer le Point de Blessure perdu à cause d'un État Hémorragique supplémentaire.",
@@ -1340,7 +1340,7 @@
     "id": "ergoteur",
     "label": "Ergoteur",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Tests de Charme quand vous argumentez ou débattez",
@@ -1363,13 +1363,13 @@
     "id": "escroquer",
     "label": "Escroquer",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Intelligence (Escroquerie)",
       "matches": [
         {
-          "char": "Int",
+          "char": "intelligence",
           "manual": true
         }
       ]
@@ -1386,7 +1386,7 @@
     "id": "exaltant",
     "label": "Exaltant",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Commandement pendant la guerre",
@@ -1409,7 +1409,7 @@
     "id": "faire-la-manche",
     "label": "Faire la manche",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Charme (Mendicité)",
@@ -1432,7 +1432,7 @@
     "id": "feinte",
     "label": "Feinte",
     "max": {
-      "bonusOf": "CC"
+      "bonusOf": "capacite-de-combat"
     },
     "test": {
       "raw": "Corps à corps (Escrime) pour les Feintes",
@@ -1456,7 +1456,7 @@
     "id": "ferveur-ardente",
     "label": "Ferveur ardente",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Charme quand vous parlez pour défendre votre cause",
@@ -1479,7 +1479,7 @@
     "id": "flagellant",
     "label": "Flagellant",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": {
       "raw": "Tout Test pour résister aux Puissances de la Ruine",
@@ -1503,7 +1503,7 @@
     "id": "flairer-les-ennuis",
     "label": "Flairer les ennuis",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "N'importe quel Test pour repérer les perturbateurs",
@@ -1521,7 +1521,7 @@
     "id": "frappe-assommante",
     "label": "Frappe assommante",
     "max": {
-      "bonusOf": "CC"
+      "bonusOf": "capacite-de-combat"
     },
     "test": {
       "raw": "Tests de Corps à corps lorsque vous effectuez une Frappe assommante",
@@ -1547,7 +1547,7 @@
     "id": "frappe-blessante",
     "label": "Frappe blessante",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": null,
     "desc": "Vous êtes un expert pour frapper vos ennemis aux endroits les plus vulnérables. Vous infligez votre niveau de Frappe blessante en Blessures supplémentaires quand vous causez une Blessure Critique.",
@@ -1565,7 +1565,7 @@
     "id": "frappe-precise",
     "label": "Frappe précise",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": null,
     "desc": "Vous êtes doué pour frapper votre ennemi exactement là où vous le voulez, que ce soit à Distance ou au Corps à corps. Vous pouvez modifier votre résultat de la Localisation jusqu'à +/-10 par nombre de fois où vous avez pris ce Talent. Donc, si vous avez pris deux fois ce Talent et obtenez la Localisation 34, Bras droit, vous pouvez le modifier en 14, Bras gauche, ou en 54, Corps (voir page 159).",
@@ -1580,13 +1580,13 @@
     "id": "frappe-reactive",
     "label": "Frappe réactive",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Tests d'Initiative pour tout ce qui concerne ce Talent",
       "matches": [
         {
-          "char": "I",
+          "char": "initiative",
           "manual": true
         }
       ]
@@ -1609,7 +1609,7 @@
           "yes": {
             "kind": "test",
             "test": {
-              "characteristic": "I",
+              "characteristic": "initiative",
               "difficulty": "intermediaire",
               "label": "Frappe réactive"
             },
@@ -1658,7 +1658,7 @@
     "id": "fuite",
     "label": "Fuite !",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Athlétisme quand vous Fuyez",
@@ -1684,7 +1684,7 @@
     "id": "grand-orateur",
     "label": "Grand orateur",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Charme (Foule)",
@@ -1707,7 +1707,7 @@
     "id": "grimpeur",
     "label": "Grimpeur",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": {
       "raw": "Escalade",
@@ -1740,7 +1740,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "CC",
+        "char": "capacite-de-combat",
         "mod": 5
       }
     ]
@@ -1749,7 +1749,7 @@
     "id": "guide-fluvial",
     "label": "Guide fluvial",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "N'importe quel Test de Savoir concernant les questions fluviales",
@@ -1772,13 +1772,13 @@
     "id": "haine",
     "label": "Haine",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": {
       "raw": "Force Mentale (Groupe à combattre)",
       "matches": [
         {
-          "char": "FM",
+          "char": "force-mentale",
           "manual": true
         }
       ]
@@ -1841,7 +1841,7 @@
     "id": "haine-sacree",
     "label": "Haine sacrée",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": null,
     "desc": "Vos Prières exhalent la haine que vous éprouvez pour vos ennemis blasphématoires. Vous infligez +1 Dégâts avec des Miracles pour chaque niveau dans ce Talent.",
@@ -1856,7 +1856,7 @@
     "id": "harmonisation-aethyrique",
     "label": "Harmonisation aethyrique",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Focalisation (Au choix)",
@@ -1881,7 +1881,7 @@
     "id": "identite-secrete",
     "label": "Identité secrète",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Tests de Divertissement (Interprétation) pour appuyer vos identités secrètes",
@@ -1905,7 +1905,7 @@
     "id": "imitation",
     "label": "Imitation",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Tests de Divertissement (Interprétation) où les accents sont importants",
@@ -1940,7 +1940,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 5
       }
     ]
@@ -1949,7 +1949,7 @@
     "id": "impitoyable",
     "label": "Impitoyable",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": null,
     "combat": {
@@ -1974,7 +1974,7 @@
     "id": "inebranlable",
     "label": "Inébranlable",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": {
       "raw": "Tests de Calme pour résister à la panique de la Poudre noire",
@@ -1997,7 +1997,7 @@
     "id": "infatigable",
     "label": "Infatigable",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": {
       "raw": "Ramer et Natation",
@@ -2022,7 +2022,7 @@
     "id": "insignifiant",
     "label": "Insignifiant",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Discrétion quand vous êtes à la vue de tous",
@@ -2045,13 +2045,13 @@
     "id": "intrigant",
     "label": "Intrigant",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Tests d'Intelligence pour tout ce qui concerne ce Talent",
       "matches": [
         {
-          "char": "Int",
+          "char": "intelligence",
           "manual": true
         }
       ]
@@ -2084,7 +2084,7 @@
     "id": "lecture-rapide",
     "label": "Lecture rapide",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Recherche et Langue si la vitesse de lecture est importante Vous lisez les livres à une cadence effrénée.",
@@ -2107,7 +2107,7 @@
     "id": "linguistique",
     "label": "Linguistique",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Langue (toutes)",
@@ -2143,7 +2143,7 @@
     "id": "lire-sur-les-levres",
     "label": "Lire sur les lèvres",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Tests de Perception pour tout ce qui concerne ce Talent",
@@ -2166,7 +2166,7 @@
     "id": "loup-de-mer",
     "label": "Loup de mer",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Voile (tout vaisseau capable de naviguer en mer)",
@@ -2189,7 +2189,7 @@
     "id": "machoires-d-acier",
     "label": "Mâchoires d'acier",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": {
       "raw": "Tests de Résistance pour résister à l'État Sonné",
@@ -2322,7 +2322,7 @@
     "id": "mains-agiles",
     "label": "Mains agiles",
     "max": {
-      "bonusOf": "Dex"
+      "bonusOf": "dexterite"
     },
     "test": {
       "raw": "Escamotage, Corps à corps (Bagarre) pour toucher un adversaire",
@@ -2349,7 +2349,7 @@
     "id": "maitre-artisan",
     "label": "Maître artisan",
     "max": {
-      "bonusOf": "Dex"
+      "bonusOf": "dexterite"
     },
     "test": {
       "raw": "Métier (Au choix)",
@@ -2557,7 +2557,7 @@
     "id": "maitre-en-deguisement",
     "label": "Maître en déguisement",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Divertissement (Interprétation) lorsque vous êtes quelqu'un d'autre",
@@ -2581,7 +2581,7 @@
     "id": "maitrise-des-des",
     "label": "Maîtrise des dés",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Pari et Escamotage quand vous jouez à un jeu de dés",
@@ -2608,7 +2608,7 @@
     "id": "maitrise-du-combat",
     "label": "Maîtrise du combat",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": null,
     "desc": "Vous avez accumulé des années d'expérience au combat, ce qui vous permet de tenir facilement les combattants les plus faibles à distance. Pour chaque fois que vous avez ce Talent, vous comptez comme une personne supplémentaire lors du calcul pour déterminer si l'un des camps dépasse l'autre en nombre. Ce Talent n'entre en jeu que lorsque vous êtes dépassé en nombre. Voir page 162 pour les règles concernant ce cas.",
@@ -2626,7 +2626,7 @@
     "id": "maniement-de-deux-armes",
     "label": "Maniement de deux armes",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Corps à corps ou Projectiles si vous attaquez avec deux armes",
@@ -2658,7 +2658,7 @@
     "id": "marinier",
     "label": "Marinier",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Tests de Voile pour les navires fluviaux.",
@@ -2681,7 +2681,7 @@
     "id": "menacant",
     "label": "Menaçant",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": {
       "raw": "Intimidation",
@@ -2703,7 +2703,7 @@
     "id": "menteur",
     "label": "Menteur",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Charme quand vous mentez",
@@ -2726,7 +2726,7 @@
     "id": "nageur-endurant",
     "label": "Nageur endurant",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": {
       "raw": "Natation",
@@ -2761,7 +2761,7 @@
     "id": "negociateur",
     "label": "Négociateur",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Marchandage",
@@ -2802,7 +2802,7 @@
     "id": "noctambule",
     "label": "Noctambule",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": {
       "raw": "Charme et Ragot lors des fêtes, Résistance à l'alcool",
@@ -2825,7 +2825,7 @@
     "id": "nomade",
     "label": "Nomade",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Tests de Discrétion en environnement Rural",
@@ -2848,7 +2848,7 @@
     "id": "numismate",
     "label": "Numismate",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Évaluation pour établir la valeur de pièces",
@@ -2871,7 +2871,7 @@
     "id": "obstine",
     "label": "Obstiné",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": null,
     "desc": "Vous êtes la quintessence de la détermination et de la résolution. Ajoutez votre niveau d'Obstiné au maximum de votre réserve de Détermination.",
@@ -2893,7 +2893,7 @@
     "id": "oeil-du-chasseur",
     "label": "Œil du chasseur",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "N'importe quel Test pour traquer ou capturer du gibier",
@@ -2911,7 +2911,7 @@
     "id": "orateur",
     "label": "Orateur",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": null,
     "desc": "Vous êtes un orateur de talent et savez comment galvaniser d'importants groupes de personnes. Référez-vous au tableau suivant pour voir combien de personnes vous pouvez influencer avec votre Compétence Charme (voir page 119) quand vous parlez en public.\n\n| Talent pris | Nombre de personnes influencées |\n| --- | --- |\n| 1 | Normal x 5 |\n| 2 | Normal x 10 |\n| 3 | Normal x 20 |\n| 4 | Normal x 50 |\n| 5 | Normal x 100 |\n| 6 | Normal x 200 |\n| 7 | Normal x 500 |\n| 8 | Normal x 1000 |\n| 9 | Toutes celles qui peuvent entendre votre voix d'or |",
@@ -2926,7 +2926,7 @@
     "id": "oreille-absolue",
     "label": "Oreille absolue",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Divertissement (Chant), Langue (Langues tonales, telles que l'elthárin, le cathayan, le Magick)",
@@ -2960,7 +2960,7 @@
     "id": "pansement-de-fortune",
     "label": "Pansement de fortune",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Guérison pendant les Rounds de combat",
@@ -2984,7 +2984,7 @@
     "id": "pas-de-cote",
     "label": "Pas de côté",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Tests d'Esquive pour activer ce Talent",
@@ -3007,7 +3007,7 @@
     "id": "pecheur",
     "label": "Pêcheur",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Tout Test concernant la pêche",
@@ -3025,7 +3025,7 @@
     "id": "perception-de-la-magie",
     "label": "Perception de la magie",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Tests d'Intuition pour détecter les Sorciers",
@@ -3048,7 +3048,7 @@
     "id": "perseverant",
     "label": "Persévérant",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": {
       "raw": "Tests de Résistance pour supporter les difficultés",
@@ -3082,7 +3082,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": 5
       }
     ]
@@ -3104,7 +3104,7 @@
     "id": "pharmacologie",
     "label": "Pharmacologie",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Métier (Apothicaire)",
@@ -3128,7 +3128,7 @@
     "id": "pied-marin",
     "label": "Pied marin",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": {
       "raw": "Tout Tests pour résister au mal de mer",
@@ -3146,7 +3146,7 @@
     "id": "pilote",
     "label": "Pilote",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Tests de Ramer ou de Voile pendant que vous naviguez sur des eaux peu sûres",
@@ -3173,7 +3173,7 @@
     "id": "porte-bouclier",
     "label": "Porte-Bouclier",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": {
       "raw": "N'importe quel Test pour vous défendre avec un bouclier",
@@ -3201,7 +3201,7 @@
     "id": "presence-imposante",
     "label": "Présence imposante",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Commandement",
@@ -3223,7 +3223,7 @@
     "id": "prevoyant",
     "label": "Prévoyant",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": null,
     "desc": "Vous êtes habitué à anticiper les besoins des autres comme les vôtres. Un nombre de fois par séance égal à votre niveau de Prévoyant, vous pouvez sortir de votre sac à dos (ou similaire) l'équipement nécessaire à la situation actuelle, tant que son Encombrement est de 0, qu'il est crédible que vous l'ayez acheté récemment, et qu'il ne soit pas trop invraisemblable. Cela peut être n'importe quoi, de la flasque d'alcool pour fortifier un camarade blessé au sifflet bon marché, absolument nécessaire pour un saltimbanque de passage. Chaque fois que vous le faites, vous devez déduire le coût de l'objet sorti de votre sac pour compenser l'argent dépensé plus tôt. ",
@@ -3238,7 +3238,7 @@
     "id": "rat-d-egout",
     "label": "Rat d'égout",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Tests de Discrétion dans les souterrains",
@@ -3261,7 +3261,7 @@
     "id": "rechargement-rapide",
     "label": "Rechargement rapide",
     "max": {
-      "bonusOf": "Dex"
+      "bonusOf": "dexterite"
     },
     "test": null,
     "desc": "Vous pouvez recharger les armes à distance avec facilité. Vous ajoutez un DR égal à votre niveau de Rechargement rapide à n'importe quel Test pour recharger une arme à distance.",
@@ -3294,7 +3294,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": 5
       }
     ]
@@ -3303,7 +3303,7 @@
     "id": "renversement",
     "label": "Renversement",
     "max": {
-      "bonusOf": "CC"
+      "bonusOf": "capacite-de-combat"
     },
     "test": {
       "raw": "Corps à corps quand vous vous défendez",
@@ -3334,7 +3334,7 @@
     "id": "resistance",
     "label": "Résistance",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": {
       "raw": "Tous ceux pour résister à la Menace associée",
@@ -3381,7 +3381,7 @@
     "id": "resistance-a-la-magie",
     "label": "Résistance à la Magie",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": null,
     "desc": "Vous êtes très résistant à la magie. Le DR de tout Sort vous affectant est réduit de 2 par point que vous possédez dans ce Talent. Le DR d'un Sort est uniquement modifié par le plus haut score du Talent Résistance à la Magie dans la zone de sa cible. De plus, vous ne pourrez jamais apprendre les Talents Béni, Invocation, Magie des Arcanes, Magie mineure et Sorcier !.",
@@ -3399,7 +3399,7 @@
     "id": "riposte",
     "label": "Riposte",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Corps à corps quand vous vous défendez",
@@ -3426,7 +3426,7 @@
     "id": "robuste",
     "label": "Robuste",
     "max": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "test": null,
     "desc": "Vous êtes un dur à cuire et vous encaissez les Dégâts. Vous réduisez tous les Dégâts subis de 1 par nombre de fois où vous avez pris le Talent Robuste, même si les Dégâts ne peuvent normalement pas être réduits. Mais vous subissez toujours un minimum de 1 Blessure de n'importe quelle source de Dégâts.",
@@ -3444,7 +3444,7 @@
     "id": "sans-peur",
     "label": "Sans peur",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": {
       "raw": "Calme pour vous opposer à l'Intimidation, la Peur et la Terreur de votre Ennemi",
@@ -3565,7 +3565,7 @@
     "id": "savant",
     "label": "Savant",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Savoir (Savoir choisi)",
@@ -3798,7 +3798,7 @@
     "id": "savoir-vivre",
     "label": "Savoir-vivre",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Charme et Ragot (Groupe Social)",
@@ -3863,7 +3863,7 @@
     "id": "seconde-vue",
     "label": "Seconde vue",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "N'importe quel Test pour détecter les Vents de Magie",
@@ -3881,7 +3881,7 @@
     "id": "seigneur-de-guerre",
     "label": "Seigneur de guerre",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Tests de Commandement pendant la guerre",
@@ -3904,7 +3904,7 @@
     "id": "sens-aiguise",
     "label": "Sens aiguisé",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Perception (Sens)",
@@ -3948,7 +3948,7 @@
     "id": "sens-de-l-orientation",
     "label": "Sens de l'orientation",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Orientation",
@@ -3970,7 +3970,7 @@
     "id": "sixieme-sens",
     "label": "Sixième sens",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Test d'Intuition impliquant votre Sixième sens",
@@ -3993,7 +3993,7 @@
     "id": "sociable",
     "label": "Sociable",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Tests de Ragot avec les voyageurs",
@@ -4016,7 +4016,7 @@
     "id": "sorcier",
     "label": "Sorcier !",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": null,
     "desc": "Vous êtes un lanceur de Sorts autodidacte qui a compris peu à peu comment utiliser la magie, par tâtonnements. Ajoutez Langue (Magick) à n'importe quelle Carrière que vous entamez ; si elle est déjà comprise dans votre Carrière, vous pouvez, à la place, acheter la Compétence pour 5 PX de moins par Augmentation. De plus, vous pouvez dépenser un Point de Résilience pour lancer (et mémoriser) un Sort provenant de n'importe quel Domaine de Magie, pour 0 PX. Vous pouvez le faire un nombre de fois égal à votre Niveau dans ce Talent.",
@@ -4038,7 +4038,7 @@
     "id": "souplesse-feline",
     "label": "Souplesse féline",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Athlétisme quand vous tombez",
@@ -4061,7 +4061,7 @@
     "id": "sprinter",
     "label": "Sprinter",
     "max": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "test": {
       "raw": "Tests d'Athlétisme pour Courir",
@@ -4087,7 +4087,7 @@
     "id": "studieux",
     "label": "Studieux",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Recherche",
@@ -4110,7 +4110,7 @@
     "id": "suborneur",
     "label": "Suborneur",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Subornation",
@@ -4159,7 +4159,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "CT",
+        "char": "capacite-de-tir",
         "mod": 5
       }
     ]
@@ -4203,7 +4203,7 @@
     "id": "tir-precis",
     "label": "Tir précis",
     "max": {
-      "bonusOf": "CT"
+      "bonusOf": "capacite-de-tir"
     },
     "test": null,
     "desc": "Vous êtes un tireur exceptionnel et savez où atteindre un ennemi pour lui causer un maximum de Dégâts. Votre niveau de Tir précis équivaut à des dégâts supplémentaires pour toutes les armes à distance.",
@@ -4221,7 +4221,7 @@
     "id": "tir-rapide",
     "label": "Tir rapide",
     "max": {
-      "bonusOf": "Ag"
+      "bonusOf": "agilite"
     },
     "test": {
       "raw": "Projectiles quand vous effectuez un Tir rapide",
@@ -4247,7 +4247,7 @@
     "id": "tir-sur",
     "label": "Tir sûr",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": null,
     "desc": "Vous savez comment trouver les points faibles de l'armure d'une cible. Quand vous la touchez, vous pouvez ignorer un nombre de PA égal à votre Niveau de Tir sûr.",
@@ -4265,7 +4265,7 @@
     "id": "tour-des-souvenirs",
     "label": "Tour des souvenirs",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": null,
     "desc": "Une technique de mémorisation initiée par le Culte de Verena, d'après ce que l'on prétend, tirée des pratiques elfiques enseignées par les Maîtres du savoir de Hoeth, Tour des souvenirs vous permet de vous rappeler parfaitement une série d'événements en les mémorisant dans une tour imaginaire. Vous pouvez vous souvenir d'une série d'événements d'une longueur égale à votre Intelligence sans avoir besoin d'effectuer de Test. Pour chaque tranche de 10 éléments supplémentaires que vous tentez de mémoriser, vous devez effectuer un Test d'Intelligence dont la Difficulté augmente pour vous en souvenir correctement, en partant de Très facile (+60) pour 10+, Facile (+40) pour 20+, Accessible (+20) pour 30+, etc. Au-delà de son utilité évidente pour le Pari, car ce Talent ajoute un Bonus de +20 à +60, selon l'utilité de la mémorisation lors du jeu en cours, le MJ peut, si nécessaire, appliquer des Bonus aux autres Tests. Chaque fois que vous prenez ce Talent, vous pouvez vous rappeler une série supplémentaire d'événements, sans avoir à en oublier une précédemment mémorisée. ",
@@ -4280,7 +4280,7 @@
     "id": "trappeur",
     "label": "Trappeur",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Tests de Perception pour repérer des pièges, Piégeage",
@@ -4306,7 +4306,7 @@
     "id": "travailleur-qualifie",
     "label": "Travailleur qualifié",
     "max": {
-      "bonusOf": "Dex"
+      "bonusOf": "dexterite"
     },
     "test": {
       "raw": "Tous les Tests étendus appropriés de Métier.",
@@ -4518,7 +4518,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "F",
+        "char": "force",
         "mod": 5
       }
     ]
@@ -4538,7 +4538,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "E",
+        "char": "endurance",
         "mod": 5
       }
     ]
@@ -4547,7 +4547,7 @@
     "id": "tricheur",
     "label": "Tricheur",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Pari et Escamotage quand vous jouez à un jeu de cartes",
@@ -4605,7 +4605,7 @@
     "id": "vigilance",
     "label": "Vigilance",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Perception pendant les combats au Corps à corps",
@@ -4633,7 +4633,7 @@
     "id": "vision-nocturne",
     "label": "Vision nocturne",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Tests de Perception dans des conditions de faible luminosité",
@@ -4656,7 +4656,7 @@
     "id": "visions-sacrees",
     "label": "Visions sacrées",
     "max": {
-      "bonusOf": "I"
+      "bonusOf": "initiative"
     },
     "test": {
       "raw": "Test d'Intuition quand vous vous trouvez sur un sol sacré",
@@ -4690,7 +4690,7 @@
     "passive": [
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": 5
       }
     ]
@@ -4699,7 +4699,7 @@
     "id": "volonte-de-fer",
     "label": "Volonté de fer",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": {
       "raw": "Tests de Calme pour s'opposer à Intimidation",
@@ -4722,7 +4722,7 @@
     "id": "voyageur-aguerri",
     "label": "Voyageur aguerri",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "N'importe quel Test concernant les particularités locales",
@@ -4760,13 +4760,13 @@
     "id": "vice",
     "label": "Vice",
     "max": {
-      "bonusOf": "FM"
+      "bonusOf": "force-mentale"
     },
     "test": {
       "raw": "Force Mentale (Résister à la cible)",
       "matches": [
         {
-          "char": "FM",
+          "char": "force-mentale",
           "manual": true
         }
       ]
@@ -4814,7 +4814,7 @@
     "id": "chanson-de-marin",
     "label": "Chanson de marin",
     "max": {
-      "bonusOf": "Int"
+      "bonusOf": "intelligence"
     },
     "test": {
       "raw": "Divertissement (Chant)",
@@ -4840,7 +4840,7 @@
     "id": "commandant-emerite",
     "label": "Commandant émérite",
     "max": {
-      "bonusOf": "Soc"
+      "bonusOf": "sociabilite"
     },
     "test": {
       "raw": "Commandement",

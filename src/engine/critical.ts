@@ -44,7 +44,7 @@ export function permanentAmputations(sequels: string[], location: HitLocation, r
       const n = location === 'tete' ? d10(rng) : 1; // « 1d10 dents » (la perte structurelle est multiple ; sinon 1).
       t.count = n;
       const soc = -Math.floor(n / 2); // −1 Sociabilité par PAIRE (l.338) : 1 dent = 0, 3 dents = −1, 4 = −2…
-      if (soc < 0) t.ops = [{ op: 'charMod', char: 'Soc', mod: soc }];
+      if (soc < 0) t.ops = [{ op: 'charMod', char: 'sociabilite', mod: soc }];
     }
     return t;
   });
@@ -52,7 +52,7 @@ export function permanentAmputations(sequels: string[], location: HitLocation, r
 
 /** Valeur de Résistance d'un Coup Critique (LDB 18) : Endurance effective + Avances de Résistance. SOURCE UNIQUE. */
 export function critResistValue(c: Combatant): number {
-  return effectiveChar(c, 'E') + (c.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+  return effectiveChar(c, 'endurance') + (c.skills.find((s) => s.skillId === 'resistance')?.advances ?? 0);
 }
 
 /**
@@ -173,7 +173,7 @@ export function rollCritical(
   // BIFURCATION du système ALTERNATIF Aux Armes (l.2441-2627) : tables + décalage +10/Blessure propres.
   // `twice` (Sauvagerie) reste au chemin LDB (l'Atout ne coexiste pas avec la variante AA).
   if (!twice && rule('combat-aa-blessures') === 'aa') return resolveAACritical(target, location, rng, overkill);
-  const be = bonus(effectiveChar(target, 'E'));
+  const be = bonus(effectiveChar(target, 'endurance'));
   const reduction = overkill > be ? 20 : 0; // l.30 : overkill > BE → -20 (résultat moins sévère)
   const raw = twice ? Math.max(d100(rng), d100(rng)) : d100(rng);
   const roll = Math.max(1, raw - reduction);

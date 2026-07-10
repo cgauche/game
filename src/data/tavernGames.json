@@ -16,7 +16,7 @@
     "label": "L'Alvatafl",
     "skill": "savoir",
     "spec": "Art de la Guerre",
-    "characteristic": "Int",
+    "characteristic": "intelligence",
     "mode": "opposed",
     "desc": "à chaque tour, faites un Test d'Intelligence ou de Savoir (Art de la Guerre) Intermédiaire (+0) ; ajoutez ensuite votre Bonus d'Intelligence au nombre de DR. Le total obtenu par le joueur elfe indique combien de pièces naines sont prises ce tour. Le total obtenu par le joueur nain est divisé par quatre (arrondi au supérieur) pour indiquer combien de pièces elfes sont prises ce tour. Sinon, le premier camp à prendre plus de la moitié des pièces de son adversaire l'emporte.",
     "source": {
@@ -28,7 +28,7 @@
     "id": "bras-de-fer",
     "label": "Le bras de fer",
     "skill": null,
-    "characteristic": "F",
+    "characteristic": "force",
     "mode": "extended",
     "target": 10,
     "desc": "faites un Test opposé étendu de Force Intermédiaire (+0) ; à chaque tour, ajoutez votre Bonus de Force au nombre de DR que vous avez obtenus. Le gagnant de chaque tour gagne +1 Avantage, pouvant être utilisé dans le cadre de cette partie de bras de fer, en suivant les règles normales. Le premier Personnage qui atteint au moins 10 DR est le vainqueur. Pour chaque Bonus d'Endurance tours qui passent sans que personne n'ait gagné, vous gagnez + 1 État Exténué (que vous pourrez récupérer après 5 minutes de repos).",
@@ -41,7 +41,7 @@
     "id": "bete-tailleurs",
     "label": "La Bête parmi les Tailleurs",
     "skill": "projectiles",
-    "characteristic": "CT",
+    "characteristic": "capacite-de-tir",
     "mode": "opposed",
     "desc": "vous avez droit à trois coups pour abattre les 16 quilles. Pour chaque coup, faites un Test de Capacité de Tir Très facile (+60) et ajoutez votre Bonus de Capacité de Tir au nombre de DR obtenus. Le total est le nombre de quilles que vous abattez. Si vous obtenez un Critique, vous renversez toutes les quilles. La difficulté des Tests qui suivent le premier dépend du nombre de quilles à abattre.",
     "source": {
@@ -66,7 +66,7 @@
     "id": "cerevis",
     "label": "Le Cerevis",
     "skill": "pari",
-    "characteristic": "I",
+    "characteristic": "initiative",
     "mode": "opposed",
     "desc": "à chaque tour de Cerevis, chaque joueur effectue un Test combiné d'Initiative et de Pari Accessible (+20). Le joueur qui a obtenu le moins de DR à son Test de Pari perd le tour, et doit marquer une chouette. En cas d'échec du Test d'Initiative, le joueur utilise accidentellement le nom correct d'une des cartes et doit prendre une grosse gorgée. Pour chaque 3 Tests d'Initiative auxquels vous échouez et pour chaque 2 chouettes que vous effacez, faites un Test de Résistance à l'alcool Intermédiaire (+0).",
     "source": {

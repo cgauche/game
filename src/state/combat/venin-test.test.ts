@@ -74,7 +74,7 @@ describe('Venin — nœud Flow test routé cadence-aware (gates argDifficulty/un
     seedBattleRng(1); // jet élevé → Résistance échouée → Empoisonné
     const { snake, prey } = setup();
     snake.traits = [...(snake.traits ?? []), { id: 'venin', arg: 'Difficile' }];
-    prey.characteristics.E = 1; // Résistance minimale → échec quasi certain
+    prey.characteristics.endurance = 1; // Résistance minimale → échec quasi certain
 
     fireTriggers(useGame.getState, snake, 'onHit', { victim: prey, woundsDealt: 4, rng: makeRNG(1), set: useGame.setState });
 
@@ -89,7 +89,7 @@ describe('Venin — nœud Flow test routé cadence-aware (gates argDifficulty/un
     seedBattleRng(1);
     const { snake, prey } = setup();
     snake.traits = [...(snake.traits ?? []), { id: 'venin', arg: 'Difficile' }];
-    prey.characteristics.E = 1;
+    prey.characteristics.endurance = 1;
     prey.traits = [...(prey.traits ?? []), { id: 'immunite', arg: 'Poison' }]; // Immunité (Poison)
 
     fireTriggers(useGame.getState, snake, 'onHit', { victim: prey, woundsDealt: 4, rng: makeRNG(1), set: useGame.setState });

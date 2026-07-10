@@ -21,7 +21,7 @@ const seq = (...vals: number[]): RNG => {
   return { int: (min, max) => Math.min(max, Math.max(min, vals[i++ % vals.length])) };
 };
 
-const CHARS = { CC: 40, CT: 40, F: 40, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const mk = (over: Partial<Combatant> = {}): Combatant =>
   ({ id: 't', name: 'Cible', kind: 'enemy', characteristics: CHARS, wounds: { current: 10, max: 10 }, conditions: [], skills: [], bodyShape: 'humanoide', size: 'moyenne', weapons: [], items: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, ...over } as unknown as Combatant);
 

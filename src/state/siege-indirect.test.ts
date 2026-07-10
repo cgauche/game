@@ -22,7 +22,7 @@ import type { GameState, BattleState } from './store';
  */
 
 const CHARS = (CT = 75) =>
-  ({ CC: 30, CT, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 });
+  ({ 'capacite-de-combat': 30, 'capacite-de-tir': CT, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 });
 
 const mkGunner = (id: string, pos: { x: number; y: number }, CT = 75): Combatant =>
   ({
@@ -37,7 +37,7 @@ const mkCrewman = (id: string): Combatant =>
 
 const mkEnemy = (id: string, x: number, y: number, E = 0, wounds = 50): Combatant =>
   ({ id, name: id, kind: 'enemy', pos: { x, y }, conditions: [], weapons: [], skills: [], talents: [],
-    characteristics: { ...CHARS(0), E }, wounds: { current: wounds, max: wounds }, advantage: 0,
+    characteristics: { ...CHARS(0), endurance: E }, wounds: { current: wounds, max: wounds }, advantage: 0,
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 } }) as unknown as Combatant;
 
 const mkEmplacement = (poste: ShipPoste, pos = { x: 0, y: 0 }): Combatant =>
@@ -175,7 +175,7 @@ describe('(e) Routage live — placeur de case + pilonnage via la modale de tir 
     seedBattleRng(7);
     const poste = mkPoste('mortier', ['gunner']);
     const gunner = mkGunner('gunner', { x: 0, y: 0 }, 90);
-    gunner.skills = [{ skillId: 'projectiles', spec: 'poudre-noire', characteristic: 'CT', advances: 30 }] as never;
+    gunner.skills = [{ skillId: 'projectiles', spec: 'poudre-noire', characteristic: 'capacite-de-tir', advances: 30 }] as never;
     gunner.items = [itemFromTrappingById('bombe-de-mortier')!]; // munition Explosion 5 en inventaire (selectedAmmo)
     const e1 = mkEnemy('e1', 9, 0);
     const e2 = mkEnemy('e2', 11, 0);

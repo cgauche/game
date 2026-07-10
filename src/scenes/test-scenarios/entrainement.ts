@@ -24,7 +24,7 @@ import type { TestScenario } from './_shared';
 /** Cible inerte : M 0 (ne bouge pas), beaucoup de Blessures (encaisse) → on observe le tir/ciblage. */
 const MANNEQUIN: CustomStatblock = {
   name: "Mannequin d'entraînement",
-  char: { M: 0, CC: 5, CT: 0, F: 20, E: 35, I: 5, Ag: 5, Dex: 5, Int: 5, FM: 5, Soc: 5, B: 40 },
+  char: { M: 0, 'capacite-de-combat': 5, 'capacite-de-tir': 0, force: 20, endurance: 35, initiative: 5, agilite: 5, dexterite: 5, intelligence: 5, 'force-mentale': 5, sociabilite: 5, B: 40 },
   traits: [],
 };
 

@@ -96,7 +96,7 @@ describe('embuscade — Scene produite par buildScene', () => {
     const chef = s.entities.find((e) => e.id === 'enemy-enc-mutants-0');
     expect(chef).toMatchObject({ ref: 'mutant', anim: 'standing', pos: { x: 17, y: 6 } });
     expect(chef?.statblock?.name).toBe('Knud Cratinx');
-    expect(chef?.statblock?.char.CT).toBe(43);
+    expect(chef?.statblock?.char['capacite-de-tir']).toBe(43);
     // Arme de rendu DÉRIVÉE du Trait (À distance (arbalète)) — plus de `weapon:` d'authoring redondant
     // avec le Trait de combat (dédoublonnage #145, cf. `renderWeaponsFromTraits`).
     expect(chef?.statblock?.traits).toContainEqual({ id: 'a-distance', value: 9, arg: 'arbalete', range: 60 });

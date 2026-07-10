@@ -5,16 +5,16 @@
  */
 export const fr = {
   // Caractéristiques (LDB) — migré de engine/types.ts (CHAR_LABELS).
-  'char.CC': 'Capacité de Combat',
-  'char.CT': 'Capacité de Tir',
-  'char.F': 'Force',
-  'char.E': 'Endurance',
-  'char.I': 'Initiative',
-  'char.Ag': 'Agilité',
-  'char.Dex': 'Dextérité',
-  'char.Int': 'Intelligence',
-  'char.FM': 'Force Mentale',
-  'char.Soc': 'Sociabilité',
+  'char.capacite-de-combat': 'Capacité de Combat',
+  'char.capacite-de-tir': 'Capacité de Tir',
+  'char.force': 'Force',
+  'char.endurance': 'Endurance',
+  'char.initiative': 'Initiative',
+  'char.agilite': 'Agilité',
+  'char.dexterite': 'Dextérité',
+  'char.intelligence': 'Intelligence',
+  'char.force-mentale': 'Force Mentale',
+  'char.sociabilite': 'Sociabilité',
   // Difficultés de Test (LDB 12) — migré de engine/types.ts (DIFFICULTY_LABELS).
   'difficulty.tresFacile': 'Très facile (+60)',
   'difficulty.facile': 'Facile (+40)',

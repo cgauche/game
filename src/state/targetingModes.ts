@@ -180,7 +180,7 @@ function batteryAffordance(get: Get, active: Combatant, target: Combatant): Hove
   const postes = bearingPostes(active, side); // sur ce bord ET chargées (pas en cours de recharge)
   if (!postes.length) return { kind: 'invalid', reason: 'arc' };
   const mpt = get().scene?.metresPerTile ?? 2;
-  const gbf = () => bonus(effectiveChar(active, 'F')); // paresseux : la portée navale est fixe (number) → BF jamais évalué
+  const gbf = () => bonus(effectiveChar(active, 'force')); // paresseux : la portée navale est fixe (number) → BF jamais évalué
   const maxRange = Math.max(...postes.map((p) => effectiveRange(p.item.range, gbf) ?? 0)); // mètres — la plus longue pièce du bord
   if (maxRange && combatDistance(active, target) * mpt > maxRange) return { kind: 'invalid', reason: 'range' };
   return { kind: 'ok', line: 'dashed', title: `Bordée ${side}`, targetName: target.name, skill: 'Tir de batterie', base: 0, mod: 0, dmg: null, preview: { kind: 'attack', targetId: target.id } };
@@ -204,7 +204,7 @@ function castAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
   if (target.id !== active.id) {
     // Souffle : la portée suit le TRAIT (BE+20 m), pas le champ Portée — même calcul que castSpell.
     const range = spell.breathAttack
-      ? Math.max(1, Math.ceil((bonus(effectiveChar(active, 'E')) + 20) / 2))
+      ? Math.max(1, Math.ceil((bonus(effectiveChar(active, 'endurance')) + 20) / 2))
       : spellRangeTiles(spell.range, active);
     if (range != null && combatDistance(active, target) > range) return { kind: 'invalid', reason: 'range' };
     if (castSightBlocked(get, active.pos!, target.pos!)) return { kind: 'invalid', reason: 'los' };
@@ -223,7 +223,7 @@ function castAffordance(get: Get, active: Combatant, target: Combatant): HoverTa
     base: pv.base,
     mod: pv.target - pv.base,
     // Dégâts d'un Projectile AVANT DR (evaluateMissile : sort + DR + BFM) — parité arme (Force incluse).
-    dmg: dmg ? dmg.damage + bonus(effectiveChar(active, 'FM')) : null,
+    dmg: dmg ? dmg.damage + bonus(effectiveChar(active, 'force-mentale')) : null,
     preview: { kind: 'attack', targetId: target.id }, // l'incantation consomme l'Action (jauges)
   };
 }

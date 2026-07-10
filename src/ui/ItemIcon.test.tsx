@@ -41,7 +41,7 @@ describe('ItemIcon', () => {
   });
 
   it('consommable (Flow structuré) → icône item/consumable', () => {
-    const potion = mk({ kind: 'misc', name: 'Potion de guérison', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'E' } }] } } });
+    const potion = mk({ kind: 'misc', name: 'Potion de guérison', consumable: { kind: 'do', effect: { type: 'ops', ops: [{ op: 'heal', amount: { bonusOf: 'endurance' } }] } } });
     expect(html(potion)).toContain(iconSvg('item/consumable'));
   });
 

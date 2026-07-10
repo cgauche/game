@@ -377,7 +377,7 @@ export function openCatalogActivity(get: Get, set: Set, heroId: string, activity
       get().log(`Le tuteur demande ${formatMoney(fromBrass(tutorBrass))} — la bourse ne suit pas.`);
       return;
     }
-    const ck: CharKey = t.max && typeof t.max !== 'number' ? t.max.bonusOf : 'Int'; // Maxi « Bonus de X » → carac
+    const ck: CharKey = t.max && typeof t.max !== 'number' ? t.max.bonusOf : 'intelligence'; // Maxi « Bonus de X » → carac
     const fails = st.learnFails?.[t.id] ?? 0; // clé = id stable du Talent
     skillValue = effectiveChar(h, ck) + 10 * fails;
     skillLabel = `${CHAR_LABELS[ck]}${fails ? ` (+${fails * 10} d'acharnement)` : ''}`;

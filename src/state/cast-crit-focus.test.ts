@@ -115,7 +115,7 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
     const w = wiz();
     w.talents = w.talents.filter((t) => t.talentId !== 'harmonisation-aethyrique'); // le pré-tiré l'a déjà
     w.spells = ['armure-aethyrique', ...(w.spells ?? [])];
-    w.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 8 } as never);
+    w.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
     useGame.setState({ party: [w] as Combatant[] });
     useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'armure-aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'Focalisation critique !' } } });
     useGame.getState().focusConfirm();
@@ -128,7 +128,7 @@ describe('Focalisation CRITIQUE (l.185-186)', () => {
   it('Harmonisation aethyrique : pas de contrecoup sur la Focalisation Critique', () => {
     const w = wiz();
     w.spells = ['armure-aethyrique'];
-    w.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 8 } as never);
+    w.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 8 } as never);
     w.talents.push({ talentId: 'harmonisation-aethyrique', times: 1 });
     useGame.setState({ party: [w] as Combatant[] });
     useGame.setState({ pendingFocus: { casterId: w.id, spellId: 'armure-aethyrique', result: { dr: 0, isCritical: true, isFumble: false, roll: 33, log: 'crit' } } });
@@ -176,7 +176,7 @@ describe('Interruption de Focalisation (l.194) — cadence-aware', () => {
 
   it('héros MANUEL : Calme RATÉ (cascadeRoll+Next) → DR perdus + Imparfaite Mineure', () => {
     const w = wiz();
-    w.characteristics.FM = 1; // Calme ~imbattable à rater
+    w.characteristics['force-mentale'] = 1; // Calme ~imbattable à rater
     w.focus = { spell: 'armure-aethyrique', dr: 3 };
     inCombat(w);
     checkFocusInterruption(useGame.getState, useGame.setState, w);
@@ -191,8 +191,8 @@ describe('Interruption de Focalisation (l.194) — cadence-aware', () => {
 
   it('héros MANUEL : Calme RÉUSSI → concentration maintenue, DR conservés, aucune Imparfaite', () => {
     const w = wiz();
-    w.characteristics.FM = 100;
-    w.skills.push({ skillId: 'calme', characteristic: 'FM', advances: 20 } as never);
+    w.characteristics['force-mentale'] = 100;
+    w.skills.push({ skillId: 'calme', characteristic: 'force-mentale', advances: 20 } as never);
     w.focus = { spell: 'armure-aethyrique', dr: 3 };
     inCombat(w);
     checkFocusInterruption(useGame.getState, useGame.setState, w);
@@ -206,7 +206,7 @@ describe('Interruption de Focalisation (l.194) — cadence-aware', () => {
 
   it('ENNEMI focaliseur frappé → Test de Calme résolu INLINE (jamais d’étape de cascade)', () => {
     const foe = { ...wiz(), id: 'caster-foe', name: 'Sorcier ennemi', kind: 'enemy' } as Combatant;
-    foe.characteristics.FM = 1; // Calme raté → conséquence inline
+    foe.characteristics['force-mentale'] = 1; // Calme raté → conséquence inline
     foe.focus = { spell: 'armure-aethyrique', dr: 2 };
     const w = wiz();
     inCombat(w, foe);

@@ -4,15 +4,15 @@ import { encumbrancePenalties, effectiveMovement, agilityTestPenalty } from './e
 
 // F=30,E=30 → BF+BE = 3+3 = 6 → capacité d'Encombrement = 6 (LDB p.295).
 const chars = (F = 30, E = 30): Characteristics => ({
-  CC: 30, CT: 30, F, E, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30,
+  'capacite-de-combat': 30, 'capacite-de-tir': 30, force: F, endurance: E, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30,
 });
 
-function combatant(opts: { F?: number; E?: number; movement?: number; enc?: number }): Combatant {
+function combatant(opts: { force?: number; endurance?: number; movement?: number; enc?: number }): Combatant {
   const enc = opts.enc ?? 0;
   const items: ItemInstance[] = enc > 0 ? [{ uid: 'x', name: 'charge', kind: 'misc', qualities: [], enc, equipped: false }] : [];
   return {
     id: 'c', name: 'Test', kind: 'hero',
-    characteristics: chars(opts.F, opts.E),
+    characteristics: chars(opts.force, opts.endurance),
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     items, skills: [], talents: [], movement: opts.movement ?? 4,
@@ -48,9 +48,9 @@ describe('encumbrancePenalties — paliers du Livre de base (p.295)', () => {
 
   it('la capacité dérive bien de BF + BE', () => {
     // F=40,E=20 → 4+2 = 6 ; enc 7 dépasse → palier 1
-    expect(encumbrancePenalties(combatant({ F: 40, E: 20, enc: 7 })).tier).toBe(1);
+    expect(encumbrancePenalties(combatant({ force: 40, endurance: 20, enc: 7 })).tier).toBe(1);
     // F=50,E=50 → 5+5 = 10 ; enc 10 = limite → palier 0
-    expect(encumbrancePenalties(combatant({ F: 50, E: 50, enc: 10 })).tier).toBe(0);
+    expect(encumbrancePenalties(combatant({ force: 50, endurance: 50, enc: 10 })).tier).toBe(0);
   });
 });
 

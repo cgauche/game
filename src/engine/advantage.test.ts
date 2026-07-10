@@ -5,7 +5,7 @@ import type { Combatant } from './types';
 
 const c = (advantage: number) => ({ advantage }) as Combatant;
 const ci = (advantage: number, I: number) =>
-  ({ advantage, characteristics: { I }, conditions: [], weapons: [], activeEffects: [], liveTraits: [] }) as unknown as Combatant;
+  ({ advantage, characteristics: { initiative: I }, conditions: [], weapons: [], activeEffects: [], liveTraits: [] }) as unknown as Combatant;
 
 describe('gainAdvantage — plafond « Limiter les Avantages » (LDB 14 l.198)', () => {
   afterEach(() => resetRule('combat-advantage-cap'));

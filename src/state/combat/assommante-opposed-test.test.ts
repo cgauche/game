@@ -60,7 +60,7 @@ describe('Assommante — nœud Flow test OPPOSÉ (Force figée vs Résistance, r
   it('(a) victime HÉROS MANUEL : étape triggeredTest OPPOSÉE influençable (Force attaquant figée dans meta.opposed)', () => {
     seedBattleRng(7);
     const { H, wielder } = setup();
-    wielder.characteristics.F = 55;
+    wielder.characteristics.force = 55;
 
     // onHit à la TÊTE → l'Atout Assommante teste Force(attaquant) vs Résistance(victime).
     fireTriggers(useGame.getState, wielder, 'onHit', { victim: H, weapon: assommante(), location: 'tete', rng: makeRNG(1), set: useGame.setState });
@@ -82,8 +82,8 @@ describe('Assommante — nœud Flow test OPPOSÉ (Force figée vs Résistance, r
   it('(a) HÉROS : cascadeRoll+cascadeNext → l’issue (Sonné ou non) SUIT resolveOpposed(jetDéfenseur, Force figée)', () => {
     seedBattleRng(3);
     const { H, wielder } = setup();
-    wielder.characteristics.F = 60;
-    H.characteristics.E = 30; // Résistance basse → l’attaquant l’emporte probablement
+    wielder.characteristics.force = 60;
+    H.characteristics.endurance = 30; // Résistance basse → l’attaquant l’emporte probablement
 
     fireTriggers(useGame.getState, wielder, 'onHit', { victim: H, weapon: assommante(), location: 'tete', rng: makeRNG(1), set: useGame.setState });
     const step = useGame.getState().pendingCascade!.participants.find((s) => s.kind === 'triggeredTest')!;
@@ -105,11 +105,11 @@ describe('Assommante — nœud Flow test OPPOSÉ (Force figée vs Résistance, r
     // On ALIGNE la Résistance du héros sur la Force de l’attaquant (même cible effective) → même DR → ÉGALITÉ
     // stricte → resolveOpposed = 'tie' → l’attaquant ne REMPORTE pas → la victime RÉSISTE (RAW LDB 62 l.268).
     const { H, wielder } = setup();
-    wielder.characteristics.F = 50;
-    const fTarget = testValue(wielder, undefined, 'F'); // cible effective de la Force de l’attaquant
+    wielder.characteristics.force = 50;
+    const fTarget = testValue(wielder, undefined, 'force'); // cible effective de la Force de l’attaquant
     // Aligne la cible de Résistance du héros sur celle de la Force de l’attaquant (compense les avances de
     // compétence : Résistance = E + avances) → cibles strictement égales.
-    H.characteristics.E += fTarget - testValue(H, 'resistance');
+    H.characteristics.endurance += fTarget - testValue(H, 'resistance');
     expect(testValue(H, 'resistance')).toBe(fTarget);
 
     // seed POSÉ ICI (après le spawn qui consomme le RNG d’initiative) : la 1ʳᵉ consommation est le jet de
@@ -137,8 +137,8 @@ describe('Assommante — nœud Flow test OPPOSÉ (Force figée vs Résistance, r
   it('(b) victime ENNEMIE : jet INLINE + Sonné si l’attaquant l’emporte (pas de cascade)', () => {
     seedBattleRng(5);
     const { wielder, prey } = setup();
-    wielder.characteristics.F = 90; // Force élevée
-    prey.characteristics.E = 1;     // Résistance minimale → l’attaquant l’emporte
+    wielder.characteristics.force = 90; // Force élevée
+    prey.characteristics.endurance = 1;     // Résistance minimale → l’attaquant l’emporte
 
     fireTriggers(useGame.getState, wielder, 'onHit', { victim: prey, weapon: assommante(), location: 'tete', rng: makeRNG(1), set: useGame.setState });
 
@@ -152,8 +152,8 @@ describe('Assommante — nœud Flow test OPPOSÉ (Force figée vs Résistance, r
   it('(c) touche AILLEURS qu’à la Tête : aucun Test (la Condition `location:tete` ne passe pas)', () => {
     seedBattleRng(5);
     const { wielder, prey } = setup();
-    wielder.characteristics.F = 90;
-    prey.characteristics.E = 1;
+    wielder.characteristics.force = 90;
+    prey.characteristics.endurance = 1;
 
     fireTriggers(useGame.getState, wielder, 'onHit', { victim: prey, weapon: assommante(), location: 'corps', rng: makeRNG(1), set: useGame.setState });
 

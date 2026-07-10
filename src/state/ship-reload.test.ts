@@ -10,9 +10,9 @@ import { seedBattleRng } from './battleRng';
  */
 const gunner = (): Combatant =>
   ({ id: 'gunner', name: 'Artilleur', kind: 'hero',
-    characteristics: { CC: 30, CT: 70, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 70, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], fortune: 0, resilience: 0,
-    skills: [{ skillId: 'projectiles', spec: 'poudre-noire', characteristic: 'CT', advances: 20 }], talents: [], weapons: [],
+    skills: [{ skillId: 'projectiles', spec: 'poudre-noire', characteristic: 'capacite-de-tir', advances: 20 }], talents: [], weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
 
 /** Un poste de canon (Recharge 6) qui A TIRÉ : déchargé, à 5 DR de recharge cumulés (proche de la cible). */
@@ -75,9 +75,9 @@ describe('battleShipReload — Test étendu de recharge d’un poste (MDG ch.12 
 describe('cycle bordée → recharge → re-bordée (MDG ch.12-14)', () => {
   const gunnerPJ = (): Combatant =>
     ({ id: 'gunner', name: 'Artilleur', kind: 'hero',
-      characteristics: { CC: 30, CT: 80, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 80, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
       wounds: { current: 10, max: 10 }, advantage: 0, conditions: [], fortune: 0, resilience: 0,
-      skills: [{ skillId: 'projectiles', spec: 'poudre-noire', characteristic: 'CT', advances: 30 }], talents: [], weapons: [],
+      skills: [{ skillId: 'projectiles', spec: 'poudre-noire', characteristic: 'capacite-de-tir', advances: 30 }], talents: [], weapons: [],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, movement: 4, pos: { x: 5, y: 5 } }) as unknown as Combatant;
   const onePoste = (): ShipPoste =>
     ({ side: 'tribord', loaded: true, crewIds: ['gunner'],
@@ -88,7 +88,7 @@ describe('cycle bordée → recharge → re-bordée (MDG ch.12-14)', () => {
       wounds: { current: 50, max: 50, base: 50 } }) as unknown as Combatant;
   const foe = (): Combatant =>
     ({ id: 'target', name: 'Cogue', kind: 'enemy', bodyShape: 'vehicule', creatureId: 'knarr', pos: { x: 9, y: 5 },
-      characteristics: { CC: 0, CT: 0, F: 0, E: 40, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 },
+      characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 40, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 },
       wounds: { current: 90, max: 90, base: 90 }, advantage: 0, conditions: [], weapons: [], armour: { corps: 0 }, skills: [], talents: [], crewIds: [] }) as unknown as Combatant;
 
   it('une pièce qui a tiré ne re-tire pas ; elle redevient prête après un Test de recharge réussi', () => {

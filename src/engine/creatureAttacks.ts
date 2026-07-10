@@ -35,9 +35,9 @@ export interface CreatureAttack {
   trigger: AttackTrigger;
   /** Coût en Avantage de l'Attaque gratuite (dérivé de `def.advantageCost`). */
   avantage: number;
-  /** Caractéristique du jet d'attaquant (CC mêlée / CT distance·zone) ; absent = pas de jet
-   *  d'attaquant (Hurlement : chaque cible teste sa Résistance). */
-  stat?: 'CC' | 'CT';
+  /** Caractéristique du jet d'attaquant (capacite-de-combat mêlée / capacite-de-tir distance·zone) ;
+   *  absent = pas de jet d'attaquant (Hurlement : chaque cible teste sa Résistance). */
+  stat?: 'capacite-de-combat' | 'capacite-de-tir';
   /** Gestion de l'Avantage dépensé : `fixed` (défaut) / `variable` (Regard) / `all` (Hurlement). */
   advantageMode?: 'fixed' | 'variable' | 'all';
   /** Attaque de ZONE (Souffle/Vomi) — dérivé de `def.targeting === 'zone'`. */

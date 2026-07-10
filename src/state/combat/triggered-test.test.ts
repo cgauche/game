@@ -82,7 +82,7 @@ describe('Mâchoires d’acier — effet onGainCondition cadence-aware (brique t
   it('héros MANUEL : cascadeRoll + cascadeNext retire 1 + DR États Sonné (Résistance réussie)', () => {
     seedBattleRng(5);
     const { H } = setup();
-    H.characteristics.E = 90; // Endurance élevée → Test de Résistance réussi
+    H.characteristics.endurance = 90; // Endurance élevée → Test de Résistance réussi
     H.talents = [...(H.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
 
     addCondition(H, COND.sonne, 2);
@@ -98,7 +98,7 @@ describe('Mâchoires d’acier — effet onGainCondition cadence-aware (brique t
   it('ENNEMI avec Mâchoires gagne Sonné → résolu INLINE (jamais d’étape de cascade)', () => {
     seedBattleRng(5);
     const { E } = setup();
-    E.characteristics.E = 90; // Résistance réussie → retrait inline
+    E.characteristics.endurance = 90; // Résistance réussie → retrait inline
     E.talents = [...(E.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
 
     addCondition(E, COND.sonne, 2); // ennemi → branche inline (jamais de cascade)
@@ -126,7 +126,7 @@ describe('Mâchoires d’acier — effet onGainCondition cadence-aware (brique t
     try {
       seedBattleRng(5);
       const { H } = setup();
-      H.characteristics.E = 90;
+      H.characteristics.endurance = 90;
       H.talents = [...(H.talents ?? []), { talentId: 'machoires-d-acier', times: 1 }];
 
       addCondition(H, COND.sonne, 2);

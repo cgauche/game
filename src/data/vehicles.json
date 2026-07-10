@@ -38,7 +38,7 @@
     },
     "hull": {
       "char": {
-        "E": 45,
+        "endurance": 45,
         "B": 50
       },
       "bodyShape": "vehicule",
@@ -70,7 +70,7 @@
     },
     "hull": {
       "char": {
-        "E": 45,
+        "endurance": 45,
         "B": 60
       },
       "bodyShape": "vehicule",
@@ -126,7 +126,7 @@
     },
     "hull": {
       "char": {
-        "E": 45,
+        "endurance": 45,
         "B": 60
       },
       "bodyShape": "vehicule",
@@ -170,7 +170,7 @@
     },
     "hull": {
       "char": {
-        "E": 35,
+        "endurance": 35,
         "B": 10
       },
       "bodyShape": "vehicule",
@@ -220,7 +220,7 @@
     },
     "hull": {
       "char": {
-        "E": 25,
+        "endurance": 25,
         "B": 10
       },
       "bodyShape": "vehicule",
@@ -304,7 +304,7 @@
     },
     "hull": {
       "char": {
-        "E": 25,
+        "endurance": 25,
         "B": 10
       },
       "bodyShape": "vehicule",
@@ -341,7 +341,7 @@
     },
     "hull": {
       "char": {
-        "E": 35,
+        "endurance": 35,
         "B": 10
       },
       "bodyShape": "vehicule",
@@ -378,7 +378,7 @@
     },
     "hull": {
       "char": {
-        "E": 40,
+        "endurance": 40,
         "B": 20
       },
       "bodyShape": "vehicule",
@@ -419,7 +419,7 @@
     },
     "hull": {
       "char": {
-        "E": 45,
+        "endurance": 45,
         "B": 90
       },
       "bodyShape": "vehicule",
@@ -460,7 +460,7 @@
     },
     "hull": {
       "char": {
-        "E": 60,
+        "endurance": 60,
         "B": 120
       },
       "bodyShape": "vehicule",
@@ -513,7 +513,7 @@
     },
     "hull": {
       "char": {
-        "E": 40,
+        "endurance": 40,
         "B": 30
       },
       "bodyShape": "vehicule",
@@ -558,7 +558,7 @@
     },
     "hull": {
       "char": {
-        "E": 50,
+        "endurance": 50,
         "B": 60
       },
       "bodyShape": "vehicule",
@@ -599,7 +599,7 @@
     },
     "hull": {
       "char": {
-        "E": 45,
+        "endurance": 45,
         "B": 50
       },
       "bodyShape": "vehicule",
@@ -689,7 +689,7 @@
     },
     "hull": {
       "char": {
-        "E": 55,
+        "endurance": 55,
         "B": 90
       },
       "bodyShape": "vehicule",
@@ -730,7 +730,7 @@
     },
     "hull": {
       "char": {
-        "E": 65,
+        "endurance": 65,
         "B": 100
       },
       "bodyShape": "vehicule",
@@ -781,7 +781,7 @@
     },
     "hull": {
       "char": {
-        "E": 75,
+        "endurance": 75,
         "B": 180
       },
       "bodyShape": "vehicule",
@@ -832,7 +832,7 @@
     },
     "hull": {
       "char": {
-        "E": 75,
+        "endurance": 75,
         "B": 275
       },
       "bodyShape": "vehicule",
@@ -876,7 +876,7 @@
     },
     "hull": {
       "char": {
-        "E": 75,
+        "endurance": 75,
         "B": 220
       },
       "bodyShape": "vehicule",
@@ -920,7 +920,7 @@
     },
     "hull": {
       "char": {
-        "E": 55,
+        "endurance": 55,
         "B": 100
       },
       "bodyShape": "vehicule",
@@ -961,7 +961,7 @@
     },
     "hull": {
       "char": {
-        "E": 60,
+        "endurance": 60,
         "B": 80
       },
       "bodyShape": "vehicule",
@@ -1006,7 +1006,7 @@
     },
     "hull": {
       "char": {
-        "E": 45,
+        "endurance": 45,
         "B": 60
       },
       "bodyShape": "vehicule",
@@ -1043,7 +1043,7 @@
     },
     "hull": {
       "char": {
-        "E": 50,
+        "endurance": 50,
         "B": 400
       },
       "bodyShape": "vehicule",

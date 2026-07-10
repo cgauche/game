@@ -8,7 +8,7 @@ import type { Combatant, Weapon } from '../engine/types';
 // T3 — ennemi qui TIRE sur un héros : la modale de défense (pendingDefense) s'ouvre UNIQUEMENT si le
 // RAW autorise une défense contre le tir (Protectrice 2+/Bout Portant/tireur Engagé), sinon résolution
 // simple (false). Arc portée 60 m → Bout Portant si dist×2 ≤ 6, soit ≤ 3 tuiles.
-const chars = { CC: 35, CT: 50, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const chars = { 'capacite-de-combat': 35, 'capacite-de-tir': 50, force: 35, endurance: 35, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const mk = (id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, weapons: Weapon[]): Combatant =>
   ({ id, name: id, kind, characteristics: chars, conditions: [], engagedWith: [], skills: [], talents: [],
      weapons, advantage: 0, size: 'moyenne', pos, wounds: { current: 18, max: 18 },

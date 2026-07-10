@@ -17,7 +17,7 @@ function casterParty() {
   // Garantit que le Prêtre peut tenter la Prière (Compétence avancée ≥ 1 avance, LDB 09).
   const priere = priest.skills.find((s) => s.skillId === 'priere');
   if (priere) priere.advances = Math.max(priere.advances, 5);
-  else priest.skills.push({ skillId: 'priere', characteristic: 'Soc', advances: 5 });
+  else priest.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 5 });
   return { priest, ally, party: [priest, ally] as Combatant[] };
 }
 
@@ -79,7 +79,7 @@ describe('Incantation hors combat (couture D)', () => {
     wiz.spells = ['arme-aethyrique', ...(wiz.spells ?? [])];
     const foc = wiz.skills.find((s) => s.skillId === 'focalisation');
     if (foc) foc.advances = Math.max(foc.advances, 5);
-    else wiz.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 5 });
+    else wiz.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 5 });
     useGame.setState({ party: [wiz], battle: null, pendingFocus: null });
     useGame.getState().seedRng(3);
 

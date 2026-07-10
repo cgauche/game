@@ -7,10 +7,10 @@ import { applyOps } from '../engine/ops';
 function hero(p: Partial<Combatant>): Combatant {
   return {
     id: 'h1', name: 'Héros', kind: 'hero',
-    characteristics: { CC: 40, CT: 40, F: 80, E: 40, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 80, endurance: 40, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
-    skills: [{ skillId: 'athletisme', characteristic: 'Ag', advances: 20 }], talents: [], fortune: 0, resilience: 0,
+    skills: [{ skillId: 'athletisme', characteristic: 'agilite', advances: 20 }], talents: [], fortune: 0, resilience: 0,
     pos: { x: 1, y: 1 }, ...p,
   } as Combatant;
 }
@@ -56,9 +56,9 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
   });
 
   it('Empêtré : Test OPPOSÉ de Force contre la source ; succès → se libère', () => {
-    const h = hero({ id: 'h', characteristics: { CC: 40, CT: 40, F: 80, E: 40, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 } as any,
+    const h = hero({ id: 'h', characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 80, endurance: 40, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as any,
       conditions: [{ name: 'empetre', value: 1, sourceId: 'pieuvre' }] });
-    const src = enemy({ id: 'pieuvre', name: 'Pieuvre', characteristics: { CC: 30, CT: 30, F: 20, E: 30, I: 20, Ag: 20, Dex: 20, Int: 20, FM: 20, Soc: 20 } as any });
+    const src = enemy({ id: 'pieuvre', name: 'Pieuvre', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 20, endurance: 30, initiative: 20, agilite: 20, dexterite: 20, intelligence: 20, 'force-mentale': 20, sociabilite: 20 } as any });
     setBattle([h, src], 'h');
     useGame.getState().battleRecoverState('empetre');
     const sr = useGame.getState().pendingStateRecovery!;
@@ -96,10 +96,10 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
   it('Empêtré de sort (escapeStrength) : Test OPPOSÉ contre la Force d’entrave FIGÉE (FM du lanceur)', () => {
     // Lanceur : Force Mentale 55 → la Force d'entrave figée doit valoir 55 (charOf FM), pas sa Force.
     const caster = enemy({ id: 'sorcier', name: 'Sorcier',
-      characteristics: { CC: 30, CT: 30, F: 25, E: 30, I: 30, Ag: 30, Dex: 30, Int: 40, FM: 55, Soc: 30 } as any });
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 25, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 55, sociabilite: 30 } as any });
     const h = hero({ id: 'h', conditions: [] });
     // L'op `condition` Empêtré avec escapeStrength = FM du lanceur (Enchevêtrement de Taal).
-    applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'FM' } }], { caster });
+    applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'force-mentale' } }], { caster });
     expect(h.conditions.find((c) => c.name === 'empetre')?.escapeStrength).toBe(55);
     setBattle([h], 'h'); // pas de source vivante dans le combat → sans escapeStrength, ce serait un Test simple
     useGame.getState().battleRecoverState('empetre');
@@ -111,9 +111,9 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
   it('escapeStrength PRIORITAIRE sur la Force de la source vivante', () => {
     // La source vivante a Force 80 ; l'entrave figée (sort) vaut FM 30 → c'est la valeur figée qui prime.
     const caster = enemy({ id: 'src', name: 'Liane',
-      characteristics: { CC: 30, CT: 30, F: 80, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as any });
+      characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 80, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as any });
     const h = hero({ id: 'h', conditions: [] });
-    applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'FM' } }], { caster });
+    applyOps(h, [{ op: 'condition', name: 'empetre', value: 1, escapeStrength: { charOf: 'force-mentale' } }], { caster });
     // L'op ne pose pas de sourceId — on simule une entrave dont la source serait aussi présente :
     h.conditions.find((c) => c.name === 'empetre')!.sourceId = 'src';
     setBattle([h, caster], 'h');
@@ -148,7 +148,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
   it('Filet BARBELÉ (Zoo Impérial p.29) : Dégâts ignorant l’armure à CHAQUE tentative — RÉUSSIE', () => {
     // Endurance quasi nulle (BE 0) : isole le seul comportement testé (ignore l'ARMURE, PAS l'Endurance).
     const h = hero({ id: 'h', wounds: { current: 12, max: 12 },
-      characteristics: { CC: 40, CT: 40, F: 80, E: 1, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 } as any,
+      characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 80, endurance: 1, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as any,
       armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 },
       conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true, struggleDamage: 1 }] });
     setBattle([h], 'h');
@@ -163,7 +163,7 @@ describe('Récupération d’État — flux combat (LDB 16 l.61/77)', () => {
 
   it('Filet BARBELÉ (Zoo Impérial p.29) : Dégâts ignorant l’armure à CHAQUE tentative — RATÉE', () => {
     const h = hero({ id: 'h', wounds: { current: 12, max: 12 },
-      characteristics: { CC: 40, CT: 40, F: 80, E: 1, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30 } as any,
+      characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 80, endurance: 1, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as any,
       armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 },
       conditions: [{ name: 'empetre', value: 1, escapeThreshold: 3, entangleOnFail: true, struggleDamage: 1 }] });
     setBattle([h], 'h');

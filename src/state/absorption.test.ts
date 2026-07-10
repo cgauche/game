@@ -24,7 +24,7 @@ import type { SizeCategory } from '../engine/size';
 /** Combattant minimal — F 45 → Bonus de Force 4 (la « monnaie » de l'Absorption). */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
   id: 'c', name: 'C', kind: 'enemy',
-  characteristics: { CC: 35, CT: 25, F: 45, E: 35, I: 30, Ag: 30, Dex: 30, Int: 25, FM: 25, Soc: 25 },
+  characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 25, force: 45, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 25, 'force-mentale': 25, sociabilite: 25 },
   wounds: { current: 20, max: 30 }, advantage: 0, conditions: [], skills: [], talents: [],
   weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, items: [],
   ...over,
@@ -75,7 +75,7 @@ describe('Absorption (EDO p.147) — engloutissement de fin de Round, data-drive
     const v = prey('v', 'moyenne', 0, {
       grapplingWith: ['beast'], conditions: [{ name: 'empetre', value: 4 }, { name: 'digere', value: 1 }],
       wounds: { current: 20, max: 20 }, armour: { tete: 5, brasG: 5, brasD: 5, corps: 5, jambeG: 5, jambeD: 5 },
-      characteristics: { CC: 35, CT: 25, F: 35, E: 55, I: 30, Ag: 30, Dex: 30, Int: 25, FM: 25, Soc: 25 }, // BE 5
+      characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 25, force: 35, endurance: 55, initiative: 30, agilite: 30, dexterite: 30, intelligence: 25, 'force-mentale': 25, sociabilite: 25 }, // BE 5
     });
     fireTriggers(get(b, v), b, 'onRoundEnd', { rng: makeRNG(1) });
     expect(v.wounds.current).toBe(16); // 20 − 4 (BF), PA 5 et BE 5 IGNORÉS
@@ -98,7 +98,7 @@ describe('Absorption (EDO p.147) — engloutissement de fin de Round, data-drive
     const v = prey('v', 'moyenne', 0, {
       grapplingWith: ['beast'], wounds: { current: 20, max: 20 },
       armour: { tete: 4, brasG: 4, brasD: 4, corps: 4, jambeG: 4, jambeD: 4 },
-      characteristics: { CC: 35, CT: 25, F: 35, E: 55, I: 30, Ag: 30, Dex: 30, Int: 25, FM: 25, Soc: 25 },
+      characteristics: { 'capacite-de-combat': 35, 'capacite-de-tir': 25, force: 35, endurance: 55, initiative: 30, agilite: 30, dexterite: 30, intelligence: 25, 'force-mentale': 25, sociabilite: 25 },
     });
     // onWoundLoss émis sur la créature (cf. combatFlow) avec les PB réellement perdus ce coup = 7.
     fireTriggers(get(b, v), b, 'onWoundLoss', { rng: makeRNG(1), woundsDealt: 7 });

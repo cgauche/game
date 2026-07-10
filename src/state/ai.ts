@@ -307,11 +307,11 @@ export function pickDoctrine(enemy: Combatant, _squad: Combatant[] = [], heroes:
   const stupid = isStupid(traits);
   // Intelligence effective (garde NaN : caractéristiques absentes sur un combattant de test → on traite
   // comme « non chiffrable », donc aucun signal Int — la classification tombe sur les autres signaux/standard).
-  const int = finite(effectiveChar(enemy, 'Int'), NaN);
+  const int = finite(effectiveChar(enemy, 'intelligence'), NaN);
   const hasInt = Number.isFinite(int);
   const hasSpells = (enemy.spells?.length ?? 0) > 0;
   const hasRangedWeapon = enemy.weapons.some((w) => w.type === 'ranged');
-  const ag = finite(effectiveChar(enemy, 'Ag'), NaN);
+  const ag = finite(effectiveChar(enemy, 'agilite'), NaN);
   // SIGNAL « groupe » data-driven (≠ folder.includes fragile, ≠ nom en dur) : on matche les `groups`
   // (ids auto-dérivés en donnée : racial, carrière, catégorie bestiaire) contre des CATÉGORIES d'id, via
   // `groupMatch` (appartenance STRICTE par id). Un combattant martial appartient à un groupe militaire ;
@@ -558,7 +558,7 @@ export function chooseEnemyAction(input: EnemyTurnInput): EnemyAction {
   // Extrême (Portée ×3 — rangeBandModifier null), un lanceur pas au-delà de la portée du sort.
   // Sans portée chiffrée (arme sans `range`, sort spécial) : pas de gate (stubs/exotiques).
   const fpDist = (h: Combatant) => footprintChebyshev(pos, footprintN(enemy), h.pos!, footprintN(h));
-  const ebf = () => bonus(effectiveChar(enemy, 'F')); // BF du tireur → résout les Portées de jet `{bf}` (paresseux : ignoré pour une portée fixe)
+  const ebf = () => bonus(effectiveChar(enemy, 'force')); // BF du tireur → résout les Portées de jet `{bf}` (paresseux : ignoré pour une portée fixe)
   const maxWeaponRange = enemy.weapons.reduce((m, w) => { const r = w.type === 'ranged' ? effectiveWeaponRange(w, selectedAmmo(enemy, w)?.ammoRangeMod, ebf) : null; return r != null ? Math.max(m, r) : m; }, 0);
   const shootPool = maxWeaponRange > 0 ? shootableHeroes.filter((h) => rangeBandModifier(fpDist(h), maxWeaponRange) != null) : shootableHeroes;
   // Frénésie (LDB 21 l.34) : la seule Action est un Test de Capacité de Combat / Athlétisme — ni tir ni sort.

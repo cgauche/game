@@ -31,11 +31,11 @@ describe('Hurlement fantomatique — Test de Résistance influençable (héros m
     const enemies = b.combatants.filter((c) => c.kind === 'enemy');
     enemies.slice(1).forEach((e) => (e.dead = true));
     const E = enemies[0];
-    E.traits = [{ id: 'hurlement-fantomatique' }]; E.advantage = 4; E.characteristics.I = 40; // portée 20 m
+    E.traits = [{ id: 'hurlement-fantomatique' }]; E.advantage = 4; E.characteristics.initiative = 40; // portée 20 m
     E.pos = { x: 5, y: 5 };
     for (const h of b.combatants.filter((c) => c.kind === 'hero')) {
       h.wounds = { current: 40, max: 40, base: 40 } as Combatant['wounds'];
-      h.characteristics.E = 1; // Résistance minime → échec quasi certain → Brisé attendu sur validation
+      h.characteristics.endurance = 1; // Résistance minime → échec quasi certain → Brisé attendu sur validation
       h.skills = h.skills.filter((s) => s.skillId !== 'resistance');
       h.conditions = [];
     }

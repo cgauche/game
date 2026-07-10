@@ -41,13 +41,13 @@ describe('Défense de manœuvre de zone — cascade influençable (héros) vs si
     const h1 = b.combatants.find((c) => c.name === 'H1')!;
     const h2 = b.combatants.find((c) => c.name === 'H2')!;
     // Ennemi à Souffle (Feu) : range = BE+20 m (large), blast = BF (de la cible-centre).
-    E.traits = [{ id: 'souffle', value: 14, arg: 'Feu' }]; E.advantage = 2; E.characteristics.CT = 85; E.characteristics.E = 40;
+    E.traits = [{ id: 'souffle', value: 14, arg: 'Feu' }]; E.advantage = 2; E.characteristics['capacite-de-tir'] = 85; E.characteristics.endurance = 40;
     E.pos = { x: 5, y: 5 };
     // Deux héros à portée, adjacents entre eux (dans le blast), NON adjacents à l'ennemi (pas de Piétinement).
     for (const h of [h1, h2]) {
       h.wounds = { current: 40, max: 40, base: 40 } as Combatant['wounds'];
       h.armour = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
-      h.characteristics.Ag = 1; h.characteristics.F = 30; // BF 3 → blast 2 cases ; Ag 1 → Esquive quasi nulle → l'attaquant l'emporte
+      h.characteristics.agilite = 1; h.characteristics.force = 30; // BF 3 → blast 2 cases ; Ag 1 → Esquive quasi nulle → l'attaquant l'emporte
       h.skills = h.skills.filter((s) => s.skillId !== 'esquive');
       h.conditions = []; // PAS Surpris → PEUT se défendre → étape de cascade influençable
     }
@@ -120,9 +120,9 @@ describe('Défense de manœuvre de zone — cascade influençable (héros) vs si
   it('défenseur IA (un HÉROS active la zone sur des ENNEMIS) : reste SILENCIEUX (aucune cascade)', () => {
     const { h1 } = setup();
     // Donne le Souffle au HÉROS et fais-le souffler : ses cibles sont des ENNEMIS → pas d'influence, silence.
-    h1.traits = [{ id: 'souffle', value: 14, arg: 'Feu' }]; h1.advantage = 2; h1.characteristics.CT = 85;
+    h1.traits = [{ id: 'souffle', value: 14, arg: 'Feu' }]; h1.advantage = 2; h1.characteristics['capacite-de-tir'] = 85;
     const enemy = useGame.getState().battle!.combatants.find((c) => c.kind === 'enemy' && !c.dead)!;
-    enemy.pos = { x: 5, y: 10 }; enemy.characteristics.Ag = 1; // dans le blast du héros, esquive faible
+    enemy.pos = { x: 5, y: 10 }; enemy.characteristics.agilite = 1; // dans le blast du héros, esquive faible
     const a = creatureAttacks(h1.traits).find((x) => x.kind === 'souffle')!;
     const before = enemy.wounds.current;
     const suspended = applyAreaAttack(useGame.getState, useGame.setState, h1, a);

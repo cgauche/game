@@ -13,7 +13,7 @@ const applyDrunkOps = (c: Combatant, ops: import('./ops').GameOp[] | undefined) 
 function hero(E = 30): Combatant {
   return {
     id: 'h', name: 'Gunnar', kind: 'hero',
-    characteristics: { CC: 40, CT: 40, F: 30, E, I: 30, Ag: 40, Dex: 40, Int: 40, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 30, endurance: E, initiative: 30, agilite: 40, dexterite: 40, intelligence: 40, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], activeEffects: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     items: [], skills: [], talents: [], traits: [], psychTraits: [], movement: 4,
@@ -36,7 +36,7 @@ describe('Ivresse — Résistance à l’alcool (LDB 09 l.471-487)', () => {
     applyAlcoholTest(c, false, 5, makeRNG(1)); // 1 échec → −10 (BE 3, toujours sobre à ce stade car BE=3? E30→BE3)
     expect(drunkPenalty(c)).toBe(-10);
     for (const k of DRUNK_CARACS) expect(drunkCharPenalties(c, k)).toEqual([-10]);
-    expect(drunkCharPenalties(c, 'F')).toEqual([]); // F non touchée
+    expect(drunkCharPenalties(c, 'force')).toEqual([]); // F non touchée
     applyAlcoholTest(c, false, 5, makeRNG(1)); // 2
     applyAlcoholTest(c, false, 5, makeRNG(1)); // 3
     applyAlcoholTest(c, false, 5, makeRNG(1)); // 4 → plafond
@@ -46,16 +46,16 @@ describe('Ivresse — Résistance à l’alcool (LDB 09 l.471-487)', () => {
   it('la pénalité entre dans effectiveChar (pool non-cumul)', () => {
     const c = hero();
     applyAlcoholTest(c, false, 5, makeRNG(1));
-    expect(effectiveChar(c, 'CC')).toBe(30); // 40 − 10
-    expect(effectiveChar(c, 'F')).toBe(30); // inchangée
+    expect(effectiveChar(c, 'capacite-de-combat')).toBe(30); // 40 − 10
+    expect(effectiveChar(c, 'force')).toBe(30); // inchangée
   });
 
   it('Détermination (flag drunkIgnore) : ignore les malus d’ivresse 1 Round', () => {
     const c = hero();
     applyAlcoholTest(c, false, 5, makeRNG(1)); // −10 CC
-    expect(effectiveChar(c, 'CC')).toBe(30);
+    expect(effectiveChar(c, 'capacite-de-combat')).toBe(30);
     c.activeEffects = [...(c.activeEffects ?? []), { label: 'Détermination', bonus: 0, duration: { scale: 'rounds', left: 1 }, drunkIgnore: true }];
-    expect(effectiveChar(c, 'CC')).toBe(40); // malus ignoré
+    expect(effectiveChar(c, 'capacite-de-combat')).toBe(40); // malus ignoré
   });
 
   it('seuil d’Ivresse : échecs ≥ Bonus d’Endurance → 1d10 sur le Tableau', () => {

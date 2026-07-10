@@ -44,7 +44,7 @@ function unstable(c: Combatant): boolean {
 /** Valeur de Résistance « brute » (E effective + augmentations de Résistance) — formule partagée
  *  repos/entretien (les pénalités d'État ne s'appliquent pas à un Test de récupération passif). */
 export function restResistVal(c: Combatant): number {
-  return effectiveChar(c, 'E') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
+  return effectiveChar(c, 'endurance') + (c.skills?.find((s) => s.skillId === 'resistance')?.advances ?? 0);
 }
 
 /**
@@ -58,7 +58,7 @@ export function restResistVal(c: Combatant): number {
 export function dailyDiseaseUpkeep(c: Combatant, rng: RNG = defaultRNG, caredFor = false, defer?: UpkeepDeferTest): string[] {
   if (c.dead || !c.diseases?.length) return [];
   const malaiseStart = activeMalaiseCount(c);
-  const log = tickDisease(c, MINUTES_PER_DAY, rng, restResistVal(c), defer, bonus(effectiveChar(c, 'E')));
+  const log = tickDisease(c, MINUTES_PER_DAY, rng, restResistVal(c), defer, bonus(effectiveChar(c, 'endurance')));
   if (caredFor) {
     for (const dz of c.diseases ?? []) {
       // −1 JOUR supplémentaire par maladie active, minimum 1 jour restant (LDB 09-Compétences).
@@ -150,7 +150,7 @@ export function needsRecoveryRoll(c: Combatant): boolean {
  */
 export function applyRecoveryDay(c: Combatant, recoveryRoll: { sl: number; success: boolean } | null): { wokeUp: boolean } {
   if (c.dead || c.outOfRencontre || unstable(c)) return { wokeUp: false };
-  const be = bonus(effectiveChar(c, 'E'));
+  const be = bonus(effectiveChar(c, 'endurance'));
   // Faim & Soif (18 l.418) : un héros PRIVÉ (affamé OU assoiffé) ne récupère ni PB ni Exténué naturellement.
   const starving = isDeprived(c);
   // Maladies (LDB 20) : l'Exténué « collant » du malaise (l.153) reste ; chaque « blessé » bloque 1 PB (l.110).

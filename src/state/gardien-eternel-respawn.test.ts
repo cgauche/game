@@ -21,7 +21,7 @@ const CANCEL_FLAG = 'ghur-source-securisee';
 
 const guardian = (over: Partial<Combatant> = {}): Combatant => ({
   id: 'gardien', name: 'Prédateur sanglant', kind: 'enemy', creatureId: GUARD_CREATURE,
-  characteristics: { CC: 56, CT: 0, F: 75, E: 62, I: 45, Ag: 49, Dex: 15, Int: 0, FM: 0, Soc: 0 },
+  characteristics: { 'capacite-de-combat': 56, 'capacite-de-tir': 0, force: 75, endurance: 62, initiative: 45, agilite: 49, dexterite: 15, intelligence: 0, 'force-mentale': 0, sociabilite: 0 },
   wounds: { current: 0, max: 104, base: 104 }, advantage: 0, conditions: [], skills: [], talents: [],
   traits: [{ id: 'gardien-eternel' }], weapons: [], armour: { corps: 0 }, pos: { x: 6, y: 6 }, dead: true,
   ...over,

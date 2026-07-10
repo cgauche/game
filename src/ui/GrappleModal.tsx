@@ -44,7 +44,7 @@ export function GrappleModal() {
   // Rangée TÉMOIN : Force du foe, figée (jamais relancée).
   const foeRow = {
     combatant: foe,
-    row: { combatant: foe, d: pd.atk ? testBreakdown('Force', effectiveChar(foe, 'F'), pd.atk) : undefined },
+    row: { combatant: foe, d: pd.atk ? testBreakdown('Force', effectiveChar(foe, 'force'), pd.atk) : undefined },
     rolled,
     interactive: false as const,
   };
@@ -52,7 +52,7 @@ export function GrappleModal() {
   const actorRow = {
     combatant: actor,
     actor,
-    row: { combatant: actor, d: pd.def ? testBreakdown('Force', effectiveChar(actor, 'F'), pd.def) : undefined },
+    row: { combatant: actor, d: pd.def ? testBreakdown('Force', effectiveChar(actor, 'force'), pd.def) : undefined },
     rolled,
     rollLabel: 'Lancer (Force)',
     onRoll: roll,

@@ -13,15 +13,15 @@ const hero = (over: Partial<Combatant> = {}): Combatant =>
     species: 'humains-reiklander',
     career: 'agitateur',
     careerLevel: 1,
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 },
     advantage: 0,
     conditions: [],
     weapons: [],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [
-      { skillId: 'charme', characteristic: 'Soc', advances: 0 }, // in-carrière
-      { skillId: 'esquive', characteristic: 'Ag', advances: 0 }, // hors-carrière
+      { skillId: 'charme', characteristic: 'sociabilite', advances: 0 }, // in-carrière
+      { skillId: 'esquive', characteristic: 'agilite', advances: 0 }, // hors-carrière
     ],
     talents: [],
     movement: 4,
@@ -41,8 +41,8 @@ describe('buildAdvancementView — coûts & in-carrière depuis careerLevels.jso
 
   it('Caractéristiques : CT in-carrière (coût 25), CC hors-carrière (coût ×2 = 50)', () => {
     const v = buildAdvancementView(hero());
-    const ct = v.chars.find((c) => c.key === 'CT')!;
-    const cc = v.chars.find((c) => c.key === 'CC')!;
+    const ct = v.chars.find((c) => c.key === 'capacite-de-tir')!;
+    const cc = v.chars.find((c) => c.key === 'capacite-de-combat')!;
     expect(ct.inCareer).toBe(true);
     expect(ct.nextCost).toBe(25);
     expect(ct.value).toBe(30);
@@ -143,7 +143,7 @@ describe('buildAdvancementView — match d\'entité possédée par id+spec (Issu
   });
 
   it('Compétence à spec wildcard possédée : ownedAdvances lu par id+spec (Savoir (Empire))', () => {
-    const v = buildAdvancementView(hero({ career: 'erudit', careerLevel: 1, skills: [{ skillId: 'savoir', spec: 'empire', characteristic: 'Int', advances: 3 }] }));
+    const v = buildAdvancementView(hero({ career: 'erudit', careerLevel: 1, skills: [{ skillId: 'savoir', spec: 'empire', characteristic: 'intelligence', advances: 3 }] }));
     const open = v.skillSlotsOpen.find((s) => s.group === 'Savoir');
     expect(open).toBeTruthy();
     const empire = open!.options.find((o) => o.spec === 'empire');

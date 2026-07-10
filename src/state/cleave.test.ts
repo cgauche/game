@@ -19,7 +19,7 @@ const at = (kind: 'hero' | 'enemy', id: string, x: number, y: number, over: Part
     id,
     name: id,
     kind,
-    characteristics: { CC: 40, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 },
     advantage: 0,
     conditions: [],
@@ -81,8 +81,8 @@ describe('Balayage en combat (store)', () => {
     // Un seul ennemi actif (Énorme, CC élevée pour des touches fiables) ; les autres écartés.
     enemies.slice(1).forEach((e) => (e.dead = true));
     E.size = 'enorme';
-    E.characteristics.CC = 80;
-    E.characteristics.F = 45;
+    E.characteristics['capacite-de-combat'] = 80;
+    E.characteristics.force = 45;
     E.pos = { x: 10, y: 10 };
     E.weapons = [{ name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }];
     const [H1, H2] = heroes;
@@ -113,8 +113,8 @@ describe('Balayage en combat (store)', () => {
     const E = enemies[0];
     enemies.slice(1).forEach((e) => (e.dead = true));
     E.size = 'moyenne'; // PAS plus grand → balayage de Taille INACTIF (res.cleave = false)
-    E.characteristics.CC = 90;
-    E.characteristics.F = 50;
+    E.characteristics['capacite-de-combat'] = 90;
+    E.characteristics.force = 50;
     E.pos = { x: 10, y: 10 };
     E.weapons = [{ name: 'Gourdin', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [] }];
     const [primary, h2] = heroes;
@@ -146,8 +146,8 @@ describe('Balayage en combat (store)', () => {
     const [E1, E2] = enemies;
     enemies.slice(2).forEach((e) => (e.dead = true));
     H.size = 'grande';
-    H.characteristics.CC = 85;
-    H.characteristics.F = 45;
+    H.characteristics['capacite-de-combat'] = 85;
+    H.characteristics.force = 45;
     H.pos = { x: 10, y: 10 };
     E1.pos = { x: 9, y: 10 };
     E2.pos = { x: 11, y: 10 };
@@ -184,7 +184,7 @@ describe('Balayage en combat (store)', () => {
     // Le héros peut avoir des talents charMod (+5 CC via guerrier-né…) : vider les talents pour
     // isoler ce test du quota et rendre BCC=2 déterministe (CC=25 brut, effectiveChar=25, BCC=2).
     H.talents = [];
-    H.characteristics.CC = 25; // BCC = 2 (bonus(25) = 2, sans passif talent)
+    H.characteristics['capacite-de-combat'] = 25; // BCC = 2 (bonus(25) = 2, sans passif talent)
     H.pos = { x: 10, y: 10 };
     E1.pos = { x: 11, y: 10 };
     useGame.setState({
@@ -207,7 +207,7 @@ describe('Balayage en combat (store)', () => {
     const E = enemies[0];
     enemies.slice(1).forEach((e) => (e.dead = true)); // un seul ennemi actif
     E.size = 'enorme'; // empreinte 3×3
-    E.characteristics.CC = 40; // BCC = 4
+    E.characteristics['capacite-de-combat'] = 40; // BCC = 4
     E.pos = { x: 0, y: 0 };
     const [deadPrimary, small] = heroes;
     deadPrimary.dead = true; // cible primaire DÉJÀ hors de combat → l’Énorme se recale sur sa case

@@ -7,7 +7,7 @@ const w = (uid: string, name: string): unknown =>
 
 const hero = (): Combatant =>
   ({
-    id: 'h', name: 'H', kind: 'hero', characteristics: { F: 30, E: 30 },
+    id: 'h', name: 'H', kind: 'hero', characteristics: { force: 30, endurance: 30 },
     conditions: [], wounds: { current: 12, max: 12 }, advantage: 0,
     items: [w('e', 'Épée'), w('ha', 'Hache')],
     loadouts: [{ id: 'lo-epee', name: 'Épée', main: 'e' }, { id: 'lo-hache', name: 'Hache', main: 'ha' }],

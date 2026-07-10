@@ -7688,10 +7688,10 @@
       "name": "Nuée de rats",
       "char": {
        "M": 4,
-       "CC": 30,
-       "F": 25,
-       "E": 30,
-       "Ag": 40,
+       "capacite-de-combat": 30,
+       "force": 25,
+       "endurance": 30,
+       "agilite": 40,
        "B": 5
       },
       "traits": [
@@ -7716,10 +7716,10 @@
       "name": "Nuée de rats",
       "char": {
        "M": 4,
-       "CC": 30,
-       "F": 25,
-       "E": 30,
-       "Ag": 40,
+       "capacite-de-combat": 30,
+       "force": 25,
+       "endurance": 30,
+       "agilite": 40,
        "B": 5
       },
       "traits": [
@@ -19082,16 +19082,16 @@
       "name": "Dragon des ténèbres",
       "char": {
        "M": 6,
-       "CC": 55,
-       "CT": 45,
-       "F": 55,
-       "E": 55,
-       "I": 50,
-       "Ag": 35,
-       "Dex": 30,
-       "Int": 40,
-       "FM": 60,
-       "Soc": 40,
+       "capacite-de-combat": 55,
+       "capacite-de-tir": 45,
+       "force": 55,
+       "endurance": 55,
+       "initiative": 50,
+       "agilite": 35,
+       "dexterite": 30,
+       "intelligence": 40,
+       "force-mentale": 60,
+       "sociabilite": 40,
        "B": 104
       },
       "traits": [

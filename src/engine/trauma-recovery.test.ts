@@ -9,7 +9,7 @@ import type { RNG } from './dice';
 const C = (over: Partial<Combatant>): Combatant =>
   ({
     id: 'c', name: 'C', kind: 'hero', conditions: [], skills: [],
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 10, max: 10 }, advantage: 0,
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     ...over,
@@ -77,7 +77,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
     tickTraumaRecovery(c, 40, fail, 0);
     expect(c.traumas!.length).toBe(1); // la fracture part, mais une séquelle reste
     expect(c.traumas![0].label).toMatch(/mal ressoudée/);
-    expect(c.traumas![0].ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -5 });
+    expect(c.traumas![0].ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -5 });
     expect(c.traumas![0].recoveryDays).toBeUndefined(); // permanente
   });
 
@@ -115,7 +115,7 @@ describe('Convalescence des Blessures critiques (LDB 18)', () => {
 
   it('fracture à la TÊTE mal ressoudée → séquelle de Langue permanente (l.300/309)', () => {
     const t = tk('fracture', 'majeur', 'tete', { be: 4, d10: 5 });
-    const c = C({ traumas: [t], skills: [{ skillId: 'langue', spec: 'reikspiel', advances: 20, characteristic: 'Int' } as never] });
+    const c = C({ traumas: [t], skills: [{ skillId: 'langue', spec: 'reikspiel', advances: 20, characteristic: 'intelligence' } as never] });
     const fail: RNG = { int: () => 95 };
     tickTraumaRecovery(c, 50, fail, 0); // fin de convalescence, Test raté
     const seq = c.traumas![0];

@@ -48,7 +48,7 @@ describe('Psychologie de combat héros — cascade de Round (Peur/Terreur)', () 
   it('Terreur : openRoundStartPsych ouvre la cascade ; cascadeRoll+cascadeNext applique le Brisé', () => {
     useGame.getState().seedRng(2);
     const { H, E } = setup('enorme'); // gap 2 → Terreur 2
-    H.characteristics.FM = 10; // Test de Calme raté → Brisé
+    H.characteristics['force-mentale'] = 10; // Test de Calme raté → Brisé
     openRoundStartPsych(useGame.getState, useGame.setState);
     const c = useGame.getState().pendingCascade;
     expect(c).toBeTruthy();

@@ -26,7 +26,7 @@ function castable(over: Partial<CastableSpell> & { id?: string } = {}): Castable
   return { id: over.id ?? data.id, data, cn: over.cn ?? data.cn ?? 0, range: over.range ?? null, shape: over.shape ?? 'single', landProb: over.landProb ?? 1, focusState: over.focusState ?? 'none', active: over.active ?? false };
 }
 
-const CHARS = { CC: 45, CT: 45, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 40, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 40, sociabilite: 30 };
 const ARMOUR = { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 };
 
 function mk(id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }, opts: Partial<Combatant> = {}): Combatant {
@@ -54,7 +54,7 @@ const tidOf = (a: EnemyAction): string | undefined =>
 describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)', () => {
   it('un LOUP (Bestial, Int animale, mêlée seule) → meute', () => {
     const loup = mk('loup', 'enemy', { x: 0, y: 0 }, {
-      traits: [{ id: 'bestial' } as never], characteristics: { ...CHARS, Int: 14 }, weapons: [MELEE],
+      traits: [{ id: 'bestial' } as never], characteristics: { ...CHARS, intelligence: 14 }, weapons: [MELEE],
     });
     expect(pickDoctrine(loup, [])).toBe('meute');
   });
@@ -65,7 +65,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
   });
 
   it('un MAGE (possède des sorts, Int vive) → artillerie', () => {
-    const mage = mk('mage', 'enemy', { x: 0, y: 0 }, { spells: ['carreau'], weapons: [], characteristics: { ...CHARS, Int: 40 } });
+    const mage = mk('mage', 'enemy', { x: 0, y: 0 }, { spells: ['carreau'], weapons: [], characteristics: { ...CHARS, intelligence: 40 } });
     expect(pickDoctrine(mage, [])).toBe('artillerie');
   });
 
@@ -80,7 +80,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
   });
 
   it('un TIRAILLEUR (arme à distance + Agilité haute) → tirailleurs', () => {
-    const skirm = mk('skirm', 'enemy', { x: 0, y: 0 }, { weapons: [RANGED], characteristics: { ...CHARS, Ag: 45 } });
+    const skirm = mk('skirm', 'enemy', { x: 0, y: 0 }, { weapons: [RANGED], characteristics: { ...CHARS, agilite: 45 } });
     expect(pickDoctrine(skirm, [])).toBe('tirailleurs');
   });
 
@@ -102,7 +102,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
   it('OVERRIDE `aiDoctrine` HONORÉ en PRIORITÉ (court-circuite la sélection auto)', () => {
     // Un loup (signaux → meute) FORCÉ en embuscade par la donnée : l'override gagne.
     const loup = mk('loup', 'enemy', { x: 0, y: 0 }, {
-      traits: [{ id: 'bestial' } as never], characteristics: { ...CHARS, Int: 14 }, weapons: [MELEE], aiDoctrine: 'embuscade',
+      traits: [{ id: 'bestial' } as never], characteristics: { ...CHARS, intelligence: 14 }, weapons: [MELEE], aiDoctrine: 'embuscade',
     });
     expect(pickDoctrine(loup, [])).toBe('embuscade');
     // EMBUSCADE n'a PAS de signal auto : SEUL l'override la rend sélectionnable.
@@ -111,7 +111,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
   });
 
   it('OVERRIDE invalide ignoré → retombe sur la sélection auto', () => {
-    const mage = mk('mage', 'enemy', { x: 0, y: 0 }, { spells: ['carreau'], weapons: [], characteristics: { ...CHARS, Int: 40 }, aiDoctrine: 'inexistant' });
+    const mage = mk('mage', 'enemy', { x: 0, y: 0 }, { spells: ['carreau'], weapons: [], characteristics: { ...CHARS, intelligence: 40 }, aiDoctrine: 'inexistant' });
     expect(pickDoctrine(mage, [])).toBe('artillerie');
   });
 
@@ -142,7 +142,7 @@ describe('pickDoctrine — classification par signaux DATA (pas de nom en dur)',
 // ════════════════════════════════════════════════════════════════════════════════════════════════
 describe('Doctrines — comportements distincts vs standard', () => {
   it('TIRAILLEUR garde la distance : en portée de tir, il TIRE (ne charge pas au contact)', () => {
-    const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [RANGED], characteristics: { ...CHARS, Ag: 45 }, movement: 4 });
+    const e = mk('e', 'enemy', { x: 10, y: 10 }, { weapons: [RANGED], characteristics: { ...CHARS, agilite: 45 }, movement: 4 });
     const h = mk('h', 'hero', { x: 10, y: 14 }); // à portée, LdV dégagée
     expect(pickDoctrine(e, [])).toBe('tirailleurs');
     const a = chooseEnemyAction(input(e, [h]));
@@ -161,10 +161,10 @@ describe('Doctrines — comportements distincts vs standard', () => {
     const missileSp = castable({ id: 'carreau', range: 30 });
     const common: Partial<EnemyTurnInput> = { spells: [areaSp, missileSp] };
     // STANDARD (Int 20) ET ARTILLERIE (Int 40) : même décision ZdE (valeur op-driven, pas de poids de doctrine).
-    const plain = mk('plain', 'enemy', { x: 10, y: 10 }, { weapons: [], characteristics: { ...CHARS, Int: 20 } });
+    const plain = mk('plain', 'enemy', { x: 10, y: 10 }, { weapons: [], characteristics: { ...CHARS, intelligence: 20 } });
     expect(pickDoctrine(plain, [])).toBe('standard');
     expect(chooseEnemyAction(input(plain, [h1, h2], common)).kind).toBe('castArea');
-    const arty = mk('arty', 'enemy', { x: 10, y: 10 }, { weapons: [], spells: ['carreau'], characteristics: { ...CHARS, Int: 40 } });
+    const arty = mk('arty', 'enemy', { x: 10, y: 10 }, { weapons: [], spells: ['carreau'], characteristics: { ...CHARS, intelligence: 40 } });
     expect(pickDoctrine(arty, [])).toBe('artillerie');
     expect(chooseEnemyAction(input(arty, [h1, h2], common)).kind).toBe('castArea');
   });
@@ -172,7 +172,7 @@ describe('Doctrines — comportements distincts vs standard', () => {
   it('MEUTE prend la proie au FLANC/DOS (flankRear renforcé)', () => {
     // Héros orienté au NORD ; l'ennemi vient du sud. Au contact, la case de DOS (sud) est gratuite.
     const e = mk('e', 'enemy', { x: 10, y: 14 }, {
-      traits: [{ id: 'bestial' } as never], characteristics: { ...CHARS, Int: 14 }, weapons: [MELEE], movement: 6,
+      traits: [{ id: 'bestial' } as never], characteristics: { ...CHARS, intelligence: 14 }, weapons: [MELEE], movement: 6,
     });
     const h = mk('h', 'hero', { x: 10, y: 10 });
     expect(pickDoctrine(e, [])).toBe('meute');

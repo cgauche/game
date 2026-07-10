@@ -11,7 +11,7 @@ import type { Combatant } from '../engine/types';
  */
 const mk = (over: Partial<Combatant> = {}): Combatant => ({
   id: 'm', name: 'Mage', kind: 'enemy',
-  characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 40, FM: 40, Soc: 30 },
+  characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 40, sociabilite: 30 },
   skills: [], talents: [], traits: [], conditions: [], activeEffects: [],
   ...over,
 }) as unknown as Combatant;

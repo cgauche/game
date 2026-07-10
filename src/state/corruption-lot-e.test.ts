@@ -22,7 +22,7 @@ beforeEach(() => {
 describe('Âme pure (LDB 10) — seuil de Corruption +niveau', () => {
   it('le talent relève le seuil BFM+BE du nombre de niveaux', () => {
     const h = hero();
-    const base = bonus(h.characteristics.FM) + bonus(h.characteristics.E);
+    const base = bonus(h.characteristics['force-mentale']) + bonus(h.characteristics.endurance);
     h.corruption = base + 1;
     expect(corruptionThresholdExceeded(h)).toBe(true);
     h.talents = [...h.talents, { talentId: 'ame-pure', times: 2 }];
@@ -36,8 +36,8 @@ describe('« Je te renie ! » (LDB 17 l.71)', () => {
   /** Franchit le seuil : le Test de Résistance est désormais une MODALE (kind 'seuil') —
    *  on lance puis on FORCE l'échec (déterministe) avant d'acquitter. */
   function corruptPastThreshold(h: Combatant): void {
-    h.characteristics.E = 1;
-    h.characteristics.FM = 1;
+    h.characteristics.endurance = 1;
+    h.characteristics['force-mentale'] = 1;
     h.corruption = 10; // largement au-delà du seuil (BFM+BE = 0)
     gainCorruption(useGame.getState, useGame.setState, h, 1);
     expect(useGame.getState().pendingCorruption?.kind).toBe('seuil'); // le jet est VISIBLE

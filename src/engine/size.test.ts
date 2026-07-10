@@ -89,15 +89,15 @@ describe('Agrandir/Réduire — « Utiliser les Tailles » (LDB 85 l.276-277)', 
     expect(stepSize(undefined, 1)).toBe('grande'); // défaut Moyenne +1
   });
   it('resizeBySteps : +10 F, +10 E, −5 Ag PAR catégorie (inverse en réduction)', () => {
-    const base = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } as Characteristics;
+    const base = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } as Characteristics;
     const up2 = resizeBySteps(base, 2);
-    expect(up2.F).toBe(50); // +10 ×2
-    expect(up2.E).toBe(50);
-    expect(up2.Ag).toBe(20); // −5 ×2
-    expect(up2.CC).toBe(30); // inchangé
+    expect(up2.force).toBe(50); // +10 ×2
+    expect(up2.endurance).toBe(50);
+    expect(up2.agilite).toBe(20); // −5 ×2
+    expect(up2['capacite-de-combat']).toBe(30); // inchangé
     const down1 = resizeBySteps(base, -1);
-    expect(down1.F).toBe(20);
-    expect(down1.Ag).toBe(35); // +5
+    expect(down1.force).toBe(20);
+    expect(down1.agilite).toBe(35); // +5
     expect(resizeBySteps(base, 0)).toEqual(base); // no-op
   });
 });

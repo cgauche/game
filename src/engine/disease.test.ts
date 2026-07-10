@@ -167,10 +167,10 @@ describe('disease — cycle de vie (LDB 20, sourcé)', () => {
     const c = sick({ diseases: [contractDisease('blessure-purulente', seq([]), { incubation: 0, duration: 5 })!] });
     const ops = diseasePassiveOps(c).filter((o): o is Extract<GameOp, { op: 'charMod' }> => o.op === 'charMod');
     const modOf = (char: string) => ops.filter((o) => o.char === char).map((o) => o.mod);
-    expect(modOf('F')).toEqual([-10]);
-    expect(modOf('Soc')).toEqual([-10]);
-    expect(modOf('Int')).toEqual([]); // Mental non touché
-    expect(modOf('FM')).toEqual([]);
+    expect(modOf('force')).toEqual([-10]);
+    expect(modOf('sociabilite')).toEqual([-10]);
+    expect(modOf('intelligence')).toEqual([]); // Mental non touché
+    expect(modOf('force-mentale')).toEqual([]);
   });
 
   describe('rollContraction (post-critique +60, Chirurgie +20)', () => {

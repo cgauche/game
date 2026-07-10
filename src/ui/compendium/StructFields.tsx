@@ -14,7 +14,7 @@ import type { DiseaseSymptom } from '../../engine/disease';
 import { formatDice, parseDice } from '../../engine/dice';
 import type { CombatFeature, CastingKind } from '../../engine/combatFeatures/types';
 import type { AdvancementRef, TrappingRef, Ref, CountSpec, DomainData, HarvestRarity, HarvestDanger, TalentTest, TestMatch, SpecEntry } from '../../data';
-import { specEntryId, specEntryLabel } from '../../data';
+import { specEntryId, specEntryLabel, CHAR_ABR } from '../../data';
 import { slugId } from '../../data/slug';
 import { ConditionEditor } from '../editor/ConditionEditor';
 import { isOptionalNote, type TraitInstance, type OptionalEntry } from '../../engine/statEntry';
@@ -364,7 +364,7 @@ export function CharKeysField({ value, onChange }: { value: CharKey[] | undefine
         {CHAR_KEYS.map((k) => (
           <label className="ed-check" key={k}>
             <input type="checkbox" checked={set.has(k)} onChange={(e) => toggle(k, e.target.checked)} />
-            <span>{k} — {CHAR_LABELS[k]}</span>
+            <span>{CHAR_ABR[k]} — {CHAR_LABELS[k]}</span>
           </label>
         ))}
       </div>
@@ -447,7 +447,7 @@ export function DomainEffectsField(
     <div className="ed-field">
       <span>attributs du domaine (LDB 48 — bonus d'incantation conditionnel / mitigation de Projectile / ops au lanceur)</span>
       <div className="ed-subfield">
-        <label className="dr"><input type="checkbox" checked={!!castBonus} onChange={(e) => onCastBonus(e.target.checked ? { perCondition: '', radiusStat: 'FM', bonus: 10 } : undefined)} /> Bonus d'incantation conditionnel</label>
+        <label className="dr"><input type="checkbox" checked={!!castBonus} onChange={(e) => onCastBonus(e.target.checked ? { perCondition: '', radiusStat: 'force-mentale', bonus: 10 } : undefined)} /> Bonus d'incantation conditionnel</label>
         {castBonus && (
           <div className="tf-row">
             <label className="dr">par État
@@ -461,7 +461,7 @@ export function DomainEffectsField(
             </label>
             <label className="dr">rayon B-carac.
               <select value={castBonus.radiusStat} onChange={(e) => onCastBonus({ ...castBonus, radiusStat: e.target.value as CharKey })}>
-                {CHAR_KEYS.map((k) => <option key={k} value={k}>{k}</option>)}
+                {CHAR_KEYS.map((k) => <option key={k} value={k}>{CHAR_LABELS[k]}</option>)}
               </select>
             </label>
             <label className="dr">bonus<input type="number" value={castBonus.bonus} onChange={(e) => onCastBonus({ ...castBonus, bonus: Number(e.target.value) || 0 })} /></label>

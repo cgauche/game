@@ -104,7 +104,7 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
     useGame.getState().seedRng(5);
     const { E } = setupBattle();
     E.traits = [{ id: 'frenesie' }];
-    E.characteristics.FM = 99; // réussite quasi certaine
+    E.characteristics['force-mentale'] = 99; // réussite quasi certaine
     aiMaybeFrenzy(useGame.getState, useGame.setState, E);
     expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(true);
   });
@@ -112,7 +112,7 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
   it('aiMaybeFrenzy : aucun adversaire vivant en LdV → pas de Frénésie', () => {
     const { H, E } = setupBattle();
     E.traits = [{ id: 'frenesie' }];
-    E.characteristics.FM = 99;
+    E.characteristics['force-mentale'] = 99;
     (H as Combatant).dead = true;
     aiMaybeFrenzy(useGame.getState, useGame.setState, E);
     expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(false);
@@ -120,7 +120,7 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
 
   it('aiMaybeFrenzy : ennemi NON capable → pas de Frénésie', () => {
     const { E } = setupBattle();
-    E.characteristics.FM = 99; // mais aucun trait/talent « Frénésie »
+    E.characteristics['force-mentale'] = 99; // mais aucun trait/talent « Frénésie »
     aiMaybeFrenzy(useGame.getState, useGame.setState, E);
     expect(isFrenzied(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!)).toBe(false);
   });
@@ -132,8 +132,8 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
     useGame.getState().seedRng(5);
     const { H, E } = setupBattle();
     E.traits = [{ id: 'frenesie' }];
-    E.characteristics.FM = 99; E.characteristics.Int = 60; // FM → entrerait sinon en Frénésie ; Int → incantation fiable
-    E.skills = [{ skillId: 'langue', spec: 'magick', advances: 40, characteristic: 'Int' } as never];
+    E.characteristics['force-mentale'] = 99; E.characteristics.intelligence = 60; // FM → entrerait sinon en Frénésie ; Int → incantation fiable
+    E.skills = [{ skillId: 'langue', spec: 'magick', advances: 40, characteristic: 'intelligence' } as never];
     E.spells = ['flechette']; // Projectile magique (NI 0 → fiable), offensif
     E.weapons = []; // DÉSARMÉ → aucune mêlée concurrente ; le sort est la seule action
     E.pos = { x: 10, y: 7 }; H.pos = { x: 10, y: 10 }; // héros en LdV, à 3 cases (en portée du sort, hors mêlée)
@@ -147,7 +147,7 @@ describe('Frénésie IA — entrée auto & attaque libre', () => {
     useGame.getState().seedRng(5);
     const { E } = setupBattle();
     E.traits = [{ id: 'frenesie' }];
-    E.characteristics.FM = 99;
+    E.characteristics['force-mentale'] = 99;
     E.spells = []; // rien à préparer
     useGame.setState({ battle: { ...useGame.getState().battle! } });
     expect(useGame.getState().aiWouldCast(E.id)).toBe(false);

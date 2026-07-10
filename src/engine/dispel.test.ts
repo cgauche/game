@@ -10,7 +10,7 @@ import { dispellableSpellsOn, dissipateSpell } from './dispel';
 function mk(id: string, p: Partial<Combatant> = {}): Combatant {
   return {
     id, name: id, kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 45, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 38, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 45, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 38, sociabilite: 30 },
     wounds: { current: 10, max: 12 }, advantage: 0, conditions: [], movement: 4,
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [],
@@ -19,7 +19,7 @@ function mk(id: string, p: Partial<Combatant> = {}): Combatant {
 }
 
 // Pose un sort durable (charMod) sur une cible, marqué à l'incantation (OpsCtx.sourceSpell).
-function cast(target: Combatant, spell: { spellId: string; ni: number; casterId: string; label: string }, char: 'FM' | 'F' = 'FM', mod = 10) {
+function cast(target: Combatant, spell: { spellId: string; ni: number; casterId: string; label: string }, char: 'force-mentale' | 'force' = 'force-mentale', mod = 10) {
   applyOps(target, [{ op: 'charMod', char, mod }], { label: spell.label, defaultDurationRounds: 5, sourceSpell: spell });
 }
 
@@ -37,14 +37,14 @@ describe('dispel — énumération des sorts permanents actifs', () => {
   it('distingue deux sorts/lanceurs différents avec leur NI propre', () => {
     const a = mk('a');
     cast(a, { spellId: 'ecorce', ni: 4, casterId: 'mage1', label: 'Écorce' });
-    cast(a, { spellId: 'haine', ni: 7, casterId: 'mage2', label: 'Vol' }, 'FM', -10);
+    cast(a, { spellId: 'haine', ni: 7, casterId: 'mage2', label: 'Vol' }, 'force-mentale', -10);
     const list = dispellableSpellsOn([a]);
     expect(list).toHaveLength(2);
     expect(list.map((d) => d.ni).sort()).toEqual([4, 7]);
   });
 
   it('ignore les effets non magiques (sans marque de sort)', () => {
-    const a = mk('a', { activeEffects: [{ label: 'Drogue', char: 'F', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
+    const a = mk('a', { activeEffects: [{ label: 'Drogue', char: 'force', bonus: 10, duration: { scale: 'rounds', left: 3 } }] });
     expect(dispellableSpellsOn([a])).toHaveLength(0);
   });
 });
@@ -54,7 +54,7 @@ describe('dispel — retrait à la dissipation', () => {
     const a = mk('a'), b = mk('b');
     const ecorce = { spellId: 'ecorce', ni: 4, casterId: 'mage', label: 'Écorce' };
     cast(a, ecorce); cast(b, ecorce);
-    cast(a, { spellId: 'benediction', ni: 0, casterId: 'pretre', label: 'Bénédiction' }, 'F', 20); // autre sort sur a (carac F ≠ FM → coexiste)
+    cast(a, { spellId: 'benediction', ni: 0, casterId: 'pretre', label: 'Bénédiction' }, 'force', 20); // autre sort sur a (carac F ≠ FM → coexiste)
     const cleaned = dissipateSpell([a, b], 'ecorce', 'mage');
     expect(cleaned).toBe(2); // a et b nettoyés
     expect((a.activeEffects ?? []).some((e) => e.spell?.spellId === 'ecorce')).toBe(false);

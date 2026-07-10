@@ -12,17 +12,17 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -3
       }
     ],
@@ -45,17 +45,17 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "F",
+        "char": "force",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": -3
       }
     ],
@@ -78,17 +78,17 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "CT",
+        "char": "capacite-de-tir",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "CC",
+        "char": "capacite-de-combat",
         "mod": -3
       }
     ],
@@ -111,17 +111,17 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "E",
+        "char": "endurance",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -3
       }
     ],
@@ -144,17 +144,17 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "Dex",
+        "char": "dexterite",
         "mod": -3
       }
     ],
@@ -177,17 +177,17 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": -3
       }
     ],
@@ -210,17 +210,17 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "CC",
+        "char": "capacite-de-combat",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -3
       }
     ],
@@ -243,17 +243,17 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -3
       }
     ],
@@ -276,7 +276,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": -3
       },
       {
@@ -303,7 +303,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": -3
       },
       {
@@ -331,7 +331,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": -3
       },
       {
@@ -358,7 +358,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": -3
       },
       {
@@ -385,17 +385,17 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "Dex",
+        "char": "dexterite",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "CC",
+        "char": "capacite-de-combat",
         "mod": -3
       }
     ],
@@ -418,7 +418,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "I",
+        "char": "initiative",
         "mod": -3
       },
       {
@@ -445,7 +445,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "FM",
+        "char": "force-mentale",
         "mod": -3
       },
       {
@@ -473,7 +473,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "E",
+        "char": "endurance",
         "mod": -3
       },
       {
@@ -500,7 +500,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "Ag",
+        "char": "agilite",
         "mod": -3
       },
       {
@@ -527,7 +527,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": -3
       },
       {
@@ -554,17 +554,17 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "Int",
+        "char": "intelligence",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "Soc",
+        "char": "sociabilite",
         "mod": 2
       },
       {
         "op": "charMod",
-        "char": "CC",
+        "char": "capacite-de-combat",
         "mod": -3
       }
     ],
@@ -613,7 +613,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "F",
+        "char": "force",
         "mod": -3
       },
       {
@@ -644,7 +644,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "F",
+        "char": "force",
         "mod": -3
       },
       {
@@ -675,7 +675,7 @@
     "effect": [
       {
         "op": "charMod",
-        "char": "F",
+        "char": "force",
         "mod": -5
       },
       {

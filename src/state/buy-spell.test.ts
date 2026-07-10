@@ -21,7 +21,7 @@ describe('buySpell', () => {
     // Prémisse contrôlée (les stats des pré-tirés évoluent avec la création) : BFM 2, et
     // Wilhelmina connaît déjà 2 sorts mineurs (Fléchette, Choc) = ses BFM inclus au Talent.
     // Le suivant est PAYANT : « Jusqu'à BFM ×1 » (bande inclusive) = 50 PX (LDB 10 l.591).
-    w.characteristics.FM = 25;
+    w.characteristics['force-mentale'] = 25;
     w.xp = 60;
     useGame.setState({ party: [w] as Combatant[] });
     useGame.getState().buySpell(w.id, 'drain');

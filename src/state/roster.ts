@@ -2,6 +2,7 @@ import { Combatant } from '../engine/types';
 import { Money } from '../engine/money';
 import type { CreatorDraft } from '../ui/creator/draft';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
+import { remapCharKeysDeep } from './charKeyMigration';
 import { t } from '../i18n';
 
 /** Roster persistant (localStorage) des personnages créés via le créateur.
@@ -35,7 +36,10 @@ export function rosterLoad(): RosterEntry[] {
     if (!raw) return [];
     const arr: unknown = JSON.parse(raw);
     if (!Array.isArray(arr)) return [];
-    return arr.filter(
+    // Le roster localStorage n'est PAS un doc versionné (liste nue, sans `version`) — le renommage
+    // CharKey→slugs (#311) s'applique donc en repli IDEMPOTENT à chaque lecture (aucun ancien token
+    // restant après un 1er passage → no-op), plutôt que via `migrateDoc` (réservé au format `EXPORT_VERSION`).
+    return (remapCharKeysDeep(arr) as unknown[]).filter(
       (e): e is RosterEntry =>
         !!e && typeof e === 'object' && typeof (e as RosterEntry).hero?.id === 'string',
     );
@@ -68,13 +72,15 @@ export function rosterUpdate(hero: Combatant): void {
 }
 
 const EXPORT_KIND = 'wfrp4-hero';
-export const EXPORT_VERSION = 1;
+export const EXPORT_VERSION = 2;
 
-/** Migrations SÉQUENTIELLES de l'export roster (vide : v1 = version courante, aucune montée en
- *  version encore nécessaire). À CHAQUE bump d'`EXPORT_VERSION`, ajouter ici l'entrée `vN → vN+1`
- *  — sinon les exports antérieurs sont refusés (jamais acceptés en silence avec des champs
- *  manquants). Chaînée par `migrateDoc` (primitive générique, `migrateDoc.ts`). */
-export const ROSTER_MIGRATIONS: MigrationMap = {};
+/** Migrations SÉQUENTIELLES de l'export roster. À CHAQUE bump d'`EXPORT_VERSION`, ajouter ici
+ *  l'entrée `vN → vN+1` — sinon les exports antérieurs sont refusés (jamais acceptés en silence
+ *  avec des champs manquants). Chaînée par `migrateDoc` (primitive générique, `migrateDoc.ts`). */
+export const ROSTER_MIGRATIONS: MigrationMap = {
+  // v1 → v2 : renommage CharKey → slugs pleins (#311) — même remap que `saves.ts` MIGRATIONS[2].
+  1: (doc) => ({ ...doc, version: 2, hero: remapCharKeysDeep(doc.hero) }),
+};
 
 /** Sérialise un héros (avec sa Richesse) en chaîne portable — sauvegarde, transfert d'appareil,
  *  ou partage pour rejoindre la coop d'un ami. Format taggé pour une réimportation robuste. */

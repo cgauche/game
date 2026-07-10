@@ -168,7 +168,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     if (!o.optionId) continue; // tirage aléatoire sans identité réelle : jamais acquérable ainsi
     if (knows(o.optionId, o.spec)) continue;
     if (skills.some((r) => !r.known && r.skillId === o.optionId && (r.spec ?? '') === (o.spec ?? ''))) continue;
-    const characteristic = findSkillById(o.optionId)?.characteristic ?? 'Int';
+    const characteristic = findSkillById(o.optionId)?.characteristic ?? 'intelligence';
     skills.push({ skillId: o.optionId, name: o.name, spec: o.spec, characteristic, advances: 0, known: false, inCareer: true, nextCost: advanceCost(0, 'skill', true) });
   }
   // Emplacements de Compétence « (Au choix) » non désignés → choix de spec (désigner/apprendre).
@@ -186,7 +186,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
         display: specLabel('skills', o.optionId!, spec),
         ownedAdvances: hero.skills.find((s) => s.skillId === o.optionId && (s.spec ?? '') === spec)?.advances ?? 0,
       }));
-    const characteristic = findSkillById(o.optionId)?.characteristic ?? 'Int';
+    const characteristic = findSkillById(o.optionId)?.characteristic ?? 'intelligence';
     skillSlotsOpen.push({ slotKey: slot.key, entry: slot.entry, group: o.name, groupId: o.optionId, characteristic, options, nextCost: advanceCost(0, 'skill', true) });
   }
 

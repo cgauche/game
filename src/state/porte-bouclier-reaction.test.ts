@@ -15,7 +15,7 @@ import type { Scene } from './scene';
  * Réaction à coût d'Avantages de RÉSERVE : coût/cadence en donnée, débit par `campSpend`, effet par les
  * coutures existantes (poussée + désengagement / Dégâts).
  */
-const chars = { CC: 50, CT: 30, F: 45, E: 40, I: 40, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const chars = { 'capacite-de-combat': 50, 'capacite-de-tir': 30, force: 45, endurance: 40, initiative: 40, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const SHIELD: Weapon = { name: 'Bouclier', uid: 'sh1', type: 'melee', damage: { plusBF: true, flat: 0, bare: true }, qualities: [{ id: 'protectrice', value: 2 }] } as never;
 const SWORD: Weapon = { name: 'Épée', uid: 'sw1', type: 'melee', damage: { plusBF: true, flat: 2, bare: false }, qualities: [] } as never;
 

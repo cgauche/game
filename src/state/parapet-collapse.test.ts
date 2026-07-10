@@ -48,7 +48,7 @@ describe('Effondrement de passerelle quand la structure portante est abattue', (
     const onPara = foes[0];   // sur la passerelle, au-dessus de la herse
     const elsewhere = foes[1]; // sur la passerelle, AILLEURS (pas au-dessus)
     onPara.pos = { x: EDGE.x, y: EDGE.y, z: 1 };  // (2,2) z=1 = directement au-dessus de l'arête E
-    onPara.characteristics = { ...onPara.characteristics, E: 30 }; // BE 3 → chute de 4 m garantit l'À Terre
+    onPara.characteristics = { ...onPara.characteristics, endurance: 30 }; // BE 3 → chute de 4 m garantit l'À Terre
     elsewhere.pos = { x: 10, y: 5, z: 1 };
     // Re-fige le battle (objets combattants mutés) et le RNG (d10 de chute déterministe).
     useGame.setState({ battle: { ...useGame.getState().battle!, combatants: [...useGame.getState().battle!.combatants] } });

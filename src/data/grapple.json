@@ -13,7 +13,7 @@
       {
         "op": "wounds",
         "amount": {
-          "bonusOf": "F"
+          "bonusOf": "force"
         },
         "perSL": {
           "every": 1,

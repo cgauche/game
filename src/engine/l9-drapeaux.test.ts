@@ -20,7 +20,7 @@ function seq(values: number[]): RNG {
 function mk(over: Partial<Combatant> = {}): Combatant {
   return {
     id: 'c', name: 'Cobaye', kind: 'hero', size: 'moyenne', advantage: 0,
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 40, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 40, sociabilite: 30 },
     conditions: [], skills: [], talents: [], traits: [], groups: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     movement: 4, wounds: { current: 12, max: 12 },
@@ -40,7 +40,7 @@ describe('activeFlags — drapeaux portés par un ActiveEffect (Jalon 2.6 L9)', 
     const c = mk();
     c.activeEffects = [
       { label: 'Bénédiction de Chance', bonus: 0, duration: { scale: 'rounds', left: 6 }, freeReroll: true },
-      { label: 'Autre buff', bonus: 10, char: 'CC', duration: { scale: 'rounds', left: 6 } },
+      { label: 'Autre buff', bonus: 10, char: 'capacite-de-combat', duration: { scale: 'rounds', left: 6 } },
     ];
     expect(consumeActiveFlag(c, 'freeReroll')).toBe('Bénédiction de Chance');
     expect(c.activeEffects).toHaveLength(1);
@@ -88,7 +88,7 @@ describe('Sommeil — « Si la cible possède un État À Terre, elle gagne Inco
     const caster = mk({ id: 'w', name: 'Sorcier' });
     const target = mk({ id: 't', name: 'Cible' });
     addCondition(target, 'a-terre');
-    applyOps(target, [{ op: 'condition', name: 'inconscient', durationRounds: { bonusOf: 'FM' }, onlyIfCondition: 'a-terre' }], { caster, label: 'Sommeil' });
+    applyOps(target, [{ op: 'condition', name: 'inconscient', durationRounds: { bonusOf: 'force-mentale' }, onlyIfCondition: 'a-terre' }], { caster, label: 'Sommeil' });
     expect(hasCondition(target, 'inconscient')).toBe(true);
     expect(target.conditions.find((x) => x.name === 'inconscient')?.roundsLeft).toBe(4); // BFM 40 → 4
   });
@@ -96,7 +96,7 @@ describe('Sommeil — « Si la cible possède un État À Terre, elle gagne Inco
     const caster = mk({ id: 'w' });
     const target = mk({ id: 't' });
     applyOps(target, [
-      { op: 'condition', name: 'inconscient', durationRounds: { bonusOf: 'FM' }, onlyIfCondition: 'a-terre' },
+      { op: 'condition', name: 'inconscient', durationRounds: { bonusOf: 'force-mentale' }, onlyIfCondition: 'a-terre' },
       { op: 'condition', name: 'a-terre', unlessCondition: 'a-terre' },
     ], { caster, label: 'Sommeil' });
     expect(hasCondition(target, 'inconscient')).toBe(false);
@@ -166,18 +166,18 @@ describe('Baume pour un esprit blessé — « Tous les Traits Psychologiques son
 
 describe("N'écoutez point la Sorcière — « −20 aux Tests de Langue (Magick) […] dans les (BSoc) mètres » (LDB 42)", () => {
   it('op castWard : pose l’aura au rayon BSoc, élargie de +BSoc par +2 DR', () => {
-    const priest = mk({ id: 'p', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 40 } as Combatant['characteristics'] });
+    const priest = mk({ id: 'p', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 40 } as Combatant['characteristics'] });
     applyOps(priest, [
-      { op: 'castWard', radius: { bonusOf: 'Soc' }, perSL: { every: 2, radiusFormula: { bonusOf: 'Soc' } } },
+      { op: 'castWard', radius: { bonusOf: 'sociabilite' }, perSL: { every: 2, radiusFormula: { bonusOf: 'sociabilite' } } },
     ], { caster: priest, label: 'N’écoutez point la Sorcière', defaultDurationRounds: 4, sl: 4 });
     const eff = priest.activeEffects?.find((e) => e.castWard);
     expect(eff?.castWard?.radiusMeters).toBe(4 + 2 * 4); // BSoc 4 + 2 paliers (+2 DR) × BSoc
     expect(eff?.duration).toEqual({ scale: "rounds", left: 4 });
   });
   it('sans DR excédentaire : rayon de base seul', () => {
-    const priest = mk({ id: 'p', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 40 } as Combatant['characteristics'] });
+    const priest = mk({ id: 'p', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 40 } as Combatant['characteristics'] });
     applyOps(priest, [
-      { op: 'castWard', radius: { bonusOf: 'Soc' }, perSL: { every: 2, radiusFormula: { bonusOf: 'Soc' } } },
+      { op: 'castWard', radius: { bonusOf: 'sociabilite' }, perSL: { every: 2, radiusFormula: { bonusOf: 'sociabilite' } } },
     ], { caster: priest, label: 'N’écoutez point la Sorcière', defaultDurationRounds: 4, sl: 0 });
     expect(priest.activeEffects?.find((e) => e.castWard)?.castWard?.radiusMeters).toBe(4);
   });

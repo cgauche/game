@@ -23,14 +23,14 @@ describe('canReroll — Chance : relance 1×/Test sur jet propre raté (LDB ch.1
 const ranger = (CT = 50): Combatant =>
   ({
     name: 'Tir',
-    characteristics: { CC: 40, CT, F: 35, E: 35, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': CT, force: 35, endurance: 35, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     advantage: 0, conditions: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     wounds: { current: 10, max: 10 }, skills: [],
   }) as unknown as Combatant;
 const cible = (E = 30): Combatant =>
   ({
     name: 'Cible',
-    characteristics: { CC: 30, CT: 30, F: 30, E, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: E, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     advantage: 0, conditions: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     wounds: { current: 10, max: 10 }, skills: [],
   }) as unknown as Combatant;
@@ -56,9 +56,9 @@ describe('rederivePassiveAttack — +1 DR (re-dérive un tir figé sans relancer
 const mage = (Int = 30): Combatant =>
   ({
     name: 'Mage',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int, FM: 35, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: Int, 'force-mentale': 35, sociabilite: 30 },
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 }, wounds: { current: 10, max: 10 },
-    skills: [{ name: 'Langue', spec: 'Magick', characteristic: 'Int', advances: 1 }],
+    skills: [{ name: 'Langue', spec: 'Magick', characteristic: 'intelligence', advances: 1 }],
   }) as unknown as Combatant;
 const dart: SpellLike = { label: 'Fléchette', type: 'Sort des Arcanes', cn: 3, desc: 'Projectile magique. Dégâts +4.' };
 

@@ -47,7 +47,7 @@ export function makePriest(base: Combatant, id: string, name: string, cult: stri
   p.id = id; p.name = name;
   setChars(p, chars);
   p.fate = 3; p.fortune = 3;
-  boostSkill(p, 'Prière', undefined, 'Soc', 50);
+  boostSkill(p, 'Prière', undefined, 'sociabilite', 50);
   addTalents(p, [`Béni (${cult})`, `Invocation (${cult})`]);
   p.spells = [...blessingsOf(cult), ...miraclesOf(cult)]; // roster COMPLET du culte (data-driven)
   return p;
@@ -64,11 +64,11 @@ export function makeSorceress(id: string, name: string, pos: { x: number; y: num
   const sorc = clone(pregenParty(PREGEN.sorcier)[0]);
   sorc.id = id;
   sorc.name = name;
-  setChars(sorc, { Int: 75, FM: 70, Ag: 58, Dex: 52, I: 62, E: 45 });
+  setChars(sorc, { intelligence: 75, 'force-mentale': 70, agilite: 58, dexterite: 52, initiative: 62, endurance: 45 });
   sorc.wounds = { current: 18, max: 18, base: 18 };
   sorc.fate = 4; sorc.fortune = 4; sorc.resilience = 3; sorc.resolve = 3;
-  boostSkill(sorc, 'Langue', 'magick', 'Int', 55);
-  for (const dom of domains) boostSkill(sorc, 'Focalisation', dom, 'FM', 40);
+  boostSkill(sorc, 'Langue', 'magick', 'intelligence', 55);
+  for (const dom of domains) boostSkill(sorc, 'Focalisation', dom, 'force-mentale', 40);
   addTalents(sorc, ['Magie mineure', ...domains.map((d) => `Magie des Arcanes (${d})`), 'Nécromancie']);
   sorc.spells = [
     ...spellsOf('Magie mineure'),
@@ -87,7 +87,7 @@ export function makeSorceress(id: string, name: string, pos: { x: number; y: num
 export function makeFlagellant(base: Combatant, id: string, name: string, cult: string, chars: Partial<Record<CharKey, number>>, pos: { x: number; y: number }): Combatant {
   const f = makePriest(base, id, name, cult, chars);
   addTalents(f, ['Frénésie']);
-  boostSkill(f, 'Corps à corps', "Armes d'hast", 'CC', 45);
+  boostSkill(f, 'Corps à corps', "Armes d'hast", 'capacite-de-combat', 45);
   const axe = itemFromTrappingById('hache-d-armes');
   if (axe) {
     f.items = [...(f.items ?? []), axe] as ItemInstance[];

@@ -13,7 +13,7 @@ export function advantageCap(): number {
  *  plafond fixe ; si « Plafond = Bonus d'Initiative » est actif (LDB 14 l.197), le Bonus
  *  d'Initiative du combattant prime (plafond par combattant). */
 export function advantageCapFor(c: Combatant): number {
-  return rule('combat-advantage-cap-bi') ? bonus(effectiveChar(c, 'I')) : advantageCap();
+  return rule('combat-advantage-cap-bi') ? bonus(effectiveChar(c, 'initiative')) : advantageCap();
 }
 
 /** Gain d'Avantage CENTRALISÉ (héros ET ennemis) : clamp au plafond effectif du combattant. Les

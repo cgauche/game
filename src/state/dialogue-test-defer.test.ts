@@ -23,7 +23,7 @@ function makeDialogue(withFlow: boolean): Dialogue {
         choices: [{
           text: 'Tenter',
           next: 'n2',
-          ...(withFlow ? { flow: { kind: 'test', test: { characteristic: 'F', label: 'Force' }, success: setFlag('gagne'), fail: setFlag('perd') } as Flow } : {}),
+          ...(withFlow ? { flow: { kind: 'test', test: { characteristic: 'force', label: 'Force' }, success: setFlag('gagne'), fail: setFlag('perd') } as Flow } : {}),
         }],
       },
       { id: 'n2', text: 'Suite', choices: [] },

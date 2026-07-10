@@ -14,7 +14,7 @@ describe('Enfoncer une porte à plusieurs (objet BE/B, jets indépendants)', () 
   function heroes() {
     const mk = (name: string, seed: number) => {
       const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name, rng: makeRNG(seed) });
-      h.fortune = 2; h.resilience = 2; h.characteristics.F = 45; // Bonus de Force 4
+      h.fortune = 2; h.resilience = 2; h.characteristics.force = 45; // Bonus de Force 4
       return h;
     };
     const a = mk('A', 1), b = mk('B', 2);
@@ -63,7 +63,7 @@ describe('Enfoncer une porte à plusieurs (objet BE/B, jets indépendants)', () 
   it('Fast DR : le dé forcé vise le DR MAXIMAL (dizaines de la cible), PAS 1', () => {
     setRule('test-fast-sl', true); // règle optionnelle : sur une réussite, DR = dizaines du jet
     const [a] = heroes();
-    a.characteristics.CC = 65; // Bagarre (Corps à corps) → cible ~65 (dizaines 6)
+    a.characteristics['capacite-de-combat'] = 65; // Bagarre (Corps à corps) → cible ~65 (dizaines 6)
     useGame.setState({ party: [a] });
     useGame.getState().startForceDoor({ label: 'Porte', doorBE: 0, doorB: 80, heroIds: [a.id] });
     useGame.getState().forceDoorForceSuccess(a.id); // « Je ne faillirai pas ! »

@@ -17,6 +17,7 @@ import {
   calendarMonths, calendarIntercalary, calendarWeekdays, calendarPhases, weather, symptoms, symptomLabel,
   isNamed, specIdsOf, specLabel,
   vehicles, celestialHouses, groups, psychologies, seaShanties, crewRoles, crewTestTypes, NAVAL_TRAITS, findTrappingById, structures,
+  CHAR_ABR,
 } from '../../data';
 // #157 (audit d'exposition Codex) : catalogues app-owned chargés par un module dédié plutôt que la
 // façade `index.ts` — réutilisés TELS QUELS (même patron que `POWER_ESTIMATE` etc. ci-dessous, déjà
@@ -318,7 +319,7 @@ export function raceCharSection(s: (typeof species)[number]): CodexSection {
   const rows: CodexRow[] = CHAR_KEYS.map((k) => {
     const base = s.baseChar?.[k] ?? 20;
     const diff = base - 20;
-    return { t: 'kv', k, v: diff !== 0 ? `${base} (${diff > 0 ? '+' : ''}${diff})` : String(base) };
+    return { t: 'kv', k: CHAR_ABR[k], v: diff !== 0 ? `${base} (${diff > 0 ? '+' : ''}${diff})` : String(base) };
   });
   return { title: 'Caractéristiques de base', layout: 'grid', rows };
 }
@@ -383,13 +384,13 @@ export function raceFicheTabs(s: (typeof species)[number]): CodexTab[] {
  *  LDB 76, Schéma des Profils) + Blessures (valeur livre `char.B` si imprimée, sinon formule
  *  BF+2×BE+BFM × Taille, LDB 85) + traits en chips cross-réf. Zéro logique par-créature. */
 function creatureStatblock(c: (typeof creatures)[number]): NonNullable<CodexItem['statblock']> {
-  const cell = (k: string, v: number | null | undefined): CodexFact => ({ label: k, value: v != null ? String(v) : '–' });
+  const cell = (label: string, v: number | null | undefined): CodexFact => ({ label, value: v != null ? String(v) : '–' });
   const size = sizeFromTraits(c.traits) ?? 'moyenne';
   const wounds = typeof c.char.B === 'number'
     ? c.char.B
-    : woundsForSize(bonus(c.char.F ?? 0), bonus(c.char.E ?? 0), bonus(c.char.FM ?? 0), size);
+    : woundsForSize(bonus(c.char.force ?? 0), bonus(c.char.endurance ?? 0), bonus(c.char['force-mentale'] ?? 0), size);
   return {
-    profile: [cell('M', c.char.M), ...CHAR_KEYS.map((k) => cell(k, c.char[k])), { label: 'B', value: String(wounds) }],
+    profile: [cell('M', c.char.M), ...CHAR_KEYS.map((k) => cell(CHAR_ABR[k], c.char[k])), { label: 'B', value: String(wounds) }],
     traits: refRows('traits', traitLabels(c.traits)),
   };
 }
@@ -1132,7 +1133,7 @@ const CODEX_SPECS: CodexCategorySpec[] = [
       meta: facts(
         fact('Prix', priceLabel(v.purchase?.price)), fact('Disponibilité', v.purchase?.availability ?? null),
         fact('Enc', v.enc), fact('Mouvement (voyage)', v.travel?.movement),
-        fact('Endurance', v.hull?.char.E), fact('Blessures', v.hull?.char.B),
+        fact('Endurance', v.hull?.char.endurance), fact('Blessures', v.hull?.char.B),
       ),
     })),
   },
@@ -1446,7 +1447,7 @@ export function combatantSections(c: Combatant): CodexSection[] {
   const ch = c.characteristics;
   const charRows: CodexRow[] = [
     { t: 'kv', k: 'M', v: String(c.movement), kref: { category: 'characteristics', label: 'Mouvement' } },
-    ...CHAR_KEYS.map((k) => ({ t: 'kv', k, v: ch[k] > 0 || c.kind === 'hero' ? String(ch[k]) : '–', kref: { category: 'characteristics', label: CHAR_LABELS[k] } } as CodexRow)),
+    ...CHAR_KEYS.map((k) => ({ t: 'kv', k: CHAR_ABR[k], v: ch[k] > 0 || c.kind === 'hero' ? String(ch[k]) : '–', kref: { category: 'characteristics', label: CHAR_LABELS[k] } } as CodexRow)),
     { t: 'kv', k: 'Taille', v: SIZE_LABEL[effectiveSize(c.size)] }, // Taille : pas une caractéristique → pas de lien Codex
   ];
   const skillRows: CodexRow[] = (c.skills ?? []).map((s) =>

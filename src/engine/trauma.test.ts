@@ -18,7 +18,7 @@ function c(traumas: Combatant['traumas']): Combatant {
 function fullCombatant(over: Partial<Combatant> = {}): Combatant {
   return {
     id: 'h', name: 'T', kind: 'hero',
-    characteristics: { CC: 40, CT: 40, F: 40, E: 40, I: 40, Ag: 40, Dex: 40, Int: 40, FM: 40, Soc: 40 },
+    characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 40, 'force-mentale': 40, sociabilite: 40 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4, items: [],
@@ -40,8 +40,8 @@ describe('traumaFromKind (LDB 18-Traumatisme)', () => {
   });
   it('Fracture Torse → F/Ag −30 + Mouvement ÷2', () => {
     const t = tk('fracture', 'majeur', 'corps');
-    expect(t.ops).toContainEqual({ op: 'charMod', char: 'F', mod: -30 });
-    expect(t.ops).toContainEqual({ op: 'charMod', char: 'Ag', mod: -30 });
+    expect(t.ops).toContainEqual({ op: 'charMod', char: 'force', mod: -30 });
+    expect(t.ops).toContainEqual({ op: 'charMod', char: 'agilite', mod: -30 });
     expect(t.ops?.some((o) => o.op === 'moveScale')).toBe(true);
     expect(t.label).toBe('Fracture (Majeure)');
   });
@@ -123,9 +123,9 @@ describe('Prothèses — annulation de la séquelle d’amputation de jambe (LDB
   });
 
   it('Nez doré annule le −20 Sociabilité de l’amputation du nez (charPenalty, LDB 73)', () => {
-    const nez: Trauma = { label: 'Nez amputé', traumaId: 'nez-ampute', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -20 }], prosthesis: [{ trappingId: 'nez-dore', cancels: 'all' }] };
-    expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [] }), 'Soc')).toEqual([-20]);
-    expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [item('nez-dore')] }), 'Soc')).toEqual([]);
+    const nez: Trauma = { label: 'Nez amputé', traumaId: 'nez-ampute', location: 'tete', ops: [{ op: 'charMod', char: 'sociabilite', mod: -20 }], prosthesis: [{ trappingId: 'nez-dore', cancels: 'all' }] };
+    expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [] }), 'sociabilite')).toEqual([-20]);
+    expect(traumaCharPenalties(fullCombatant({ traumas: [nez], items: [item('nez-dore')] }), 'sociabilite')).toEqual([]);
   });
 });
 
@@ -141,7 +141,7 @@ describe('consolidateAmputations — cumul doigts (l.251) & dents (l.338) ; pén
     expect(f.ops?.some((o) => o.op === 'charMod')).toBeFalsy(); // pénalité −5/doigt portée par amputationCombatPenalty
     const d = (c.traumas ?? []).find((t) => t.traumaId === 'dents-perdues')!;
     expect(d.count).toBe(3);
-    expect(d.ops).toContainEqual({ op: 'charMod', char: 'Soc', mod: -1 }); // floor(3/2) = 1 paire
+    expect(d.ops).toContainEqual({ op: 'charMod', char: 'sociabilite', mod: -1 }); // floor(3/2) = 1 paire
   });
 
   it('deux pertes de doigts (même main) fusionnent en count 2, SANS charMod', () => {
@@ -172,8 +172,8 @@ describe('consolidateAmputations — cumul doigts (l.251) & dents (l.338) ; pén
 });
 
 describe('escalateSensoryLoss — cumul deux yeux/oreilles (LDB 18 l.360/363)', () => {
-  const eye = (): Trauma => ({ label: 'Œil perdu', traumaId: 'oeil-perdu', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'vue' }] });
-  const ear = (): Trauma => ({ label: 'Oreille perdue', traumaId: 'oreille-perdue', location: 'tete', ops: [{ op: 'charMod', char: 'Soc', mod: -5 }, { op: 'senseLoss', sense: 'ouie' }] });
+  const eye = (): Trauma => ({ label: 'Œil perdu', traumaId: 'oeil-perdu', location: 'tete', ops: [{ op: 'charMod', char: 'sociabilite', mod: -5 }, { op: 'senseLoss', sense: 'vue' }] });
+  const ear = (): Trauma => ({ label: 'Oreille perdue', traumaId: 'oreille-perdue', location: 'tete', ops: [{ op: 'charMod', char: 'sociabilite', mod: -5 }, { op: 'senseLoss', sense: 'ouie' }] });
   it('un seul œil : pas de cécité', () => {
     const c = fullCombatant({ traumas: [eye()] });
     expect(escalateSensoryLoss(c)).toHaveLength(0);
@@ -184,8 +184,8 @@ describe('escalateSensoryLoss — cumul deux yeux/oreilles (LDB 18 l.360/363)', 
     escalateSensoryLoss(c);
     const cec = (c.traumas ?? []).find((t) => t.label === 'Cécité')!;
     expect(cec.ops).toContainEqual({ op: 'skillMod', skill: 'esquive', mod: -30 });
-    expect(cec.ops).toContainEqual({ op: 'charMod', char: 'CC', mod: -30 });
-    expect(cec.ops).toContainEqual({ op: 'charMod', char: 'CT', mod: -30 });
+    expect(cec.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-combat', mod: -30 });
+    expect(cec.ops).toContainEqual({ op: 'charMod', char: 'capacite-de-tir', mod: -30 });
     expect(escalateSensoryLoss(c)).toHaveLength(0); // pas de doublon
     expect((c.traumas ?? []).filter((t) => t.label === 'Cécité')).toHaveLength(1);
   });
@@ -207,9 +207,9 @@ describe('traumaMovementHalved', () => {
 describe('traumas — câblage moteur', () => {
   it('Fracture Torse réduit Force et Agilité de 30 (effectiveChar)', () => {
     const cc = fullCombatant({ traumas: [tk('fracture', 'mineur', 'corps')] });
-    expect(effectiveChar(cc, 'F')).toBe(10);  // 40 − 30
-    expect(effectiveChar(cc, 'Ag')).toBe(10);
-    expect(effectiveChar(cc, 'CC')).toBe(40); // non touché
+    expect(effectiveChar(cc, 'force')).toBe(10);  // 40 − 30
+    expect(effectiveChar(cc, 'agilite')).toBe(10);
+    expect(effectiveChar(cc, 'capacite-de-combat')).toBe(40); // non touché
   });
   it('Trauma de jambe réduit le Mouvement effectif de moitié', () => {
     const cc = fullCombatant({ traumas: [tk('fracture', 'mineur', 'jambeG')] });
@@ -245,7 +245,7 @@ describe('traumaSkillPenalty — Surdité restreinte aux Tests auditifs (LDB 18 
   });
   it('Cécité reste inconditionnelle (compétences nommées CC/CT/Esquive/Chevaucher, pas de restriction de sens)', () => {
     const c = fullCombatant({ traumas: [traumaById('cecite', undefined, 'tete')] });
-    expect(traumaCharPenalties(c, 'CC')).toEqual([-30]);
+    expect(traumaCharPenalties(c, 'capacite-de-combat')).toEqual([-30]);
     expect(traumaDodgePenalty(c)).toBe(-30);
   });
 });

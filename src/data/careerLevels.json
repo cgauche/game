@@ -85,9 +85,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "Int",
-      "Soc"
+      "capacite-de-tir",
+      "intelligence",
+      "sociabilite"
     ],
     "status": "Bronze 1"
   },
@@ -157,7 +157,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Bronze 2"
   },
@@ -220,7 +220,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Bronze 3"
   },
@@ -282,7 +282,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Bronze 5"
   },
@@ -374,9 +374,9 @@
       }
     ],
     "characteristics": [
-      "F",
-      "E",
-      "Dex"
+      "force",
+      "endurance",
+      "dexterite"
     ],
     "status": "Bronze 2"
   },
@@ -451,7 +451,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -518,7 +518,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 3"
   },
@@ -570,7 +570,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -653,9 +653,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "Int",
-      "Soc"
+      "agilite",
+      "intelligence",
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -735,7 +735,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 2"
   },
@@ -801,7 +801,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Argent 5"
   },
@@ -865,7 +865,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 1"
   },
@@ -956,9 +956,9 @@
       }
     ],
     "characteristics": [
-      "I",
-      "Ag",
-      "Int"
+      "initiative",
+      "agilite",
+      "intelligence"
     ],
     "status": "Argent 1"
   },
@@ -1038,7 +1038,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 2"
   },
@@ -1100,7 +1100,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Argent 3"
   },
@@ -1151,7 +1151,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 5"
   },
@@ -1248,9 +1248,9 @@
       }
     ],
     "characteristics": [
-      "FM",
-      "Ag",
-      "Soc"
+      "force-mentale",
+      "agilite",
+      "sociabilite"
     ],
     "status": "Argent 2"
   },
@@ -1331,7 +1331,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 5"
   },
@@ -1401,7 +1401,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Or 1"
   },
@@ -1468,7 +1468,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Or 3"
   },
@@ -1552,9 +1552,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "Ag",
-      "Soc"
+      "endurance",
+      "agilite",
+      "sociabilite"
     ],
     "status": "Bronze 0"
   },
@@ -1628,7 +1628,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Bronze 2"
   },
@@ -1695,7 +1695,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Bronze 4"
   },
@@ -1748,7 +1748,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 2"
   },
@@ -1832,9 +1832,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "Soc"
+      "capacite-de-combat",
+      "force",
+      "sociabilite"
     ],
     "status": "Bronze 3"
   },
@@ -1913,7 +1913,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -1982,7 +1982,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 3"
   },
@@ -2044,7 +2044,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -2143,9 +2143,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "CT",
-      "FM"
+      "capacite-de-combat",
+      "capacite-de-tir",
+      "force-mentale"
     ],
     "status": "Bronze 3"
   },
@@ -2220,7 +2220,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Argent 1"
   },
@@ -2286,7 +2286,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 2"
   },
@@ -2342,7 +2342,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Argent 3"
   },
@@ -2422,9 +2422,9 @@
       }
     ],
     "characteristics": [
-      "F",
-      "I",
-      "Dex"
+      "force",
+      "initiative",
+      "dexterite"
     ],
     "status": "Argent 1"
   },
@@ -2497,7 +2497,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 3"
   },
@@ -2563,7 +2563,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 5"
   },
@@ -2621,7 +2621,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 2"
   },
@@ -2702,9 +2702,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "I",
-      "Ag"
+      "endurance",
+      "initiative",
+      "agilite"
     ],
     "status": "Argent 2"
   },
@@ -2774,7 +2774,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 4"
   },
@@ -2837,7 +2837,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -2900,7 +2900,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 3"
   },
@@ -2995,9 +2995,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "I",
-      "Ag"
+      "capacite-de-combat",
+      "initiative",
+      "agilite"
     ],
     "status": "Argent 3"
   },
@@ -3077,7 +3077,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 5"
   },
@@ -3150,7 +3150,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Or 1"
   },
@@ -3203,7 +3203,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 3"
   },
@@ -3289,9 +3289,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "Ag",
-      "Soc"
+      "endurance",
+      "agilite",
+      "sociabilite"
     ],
     "status": "Argent 2"
   },
@@ -3370,7 +3370,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 4"
   },
@@ -3434,7 +3434,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Or 2"
   },
@@ -3492,7 +3492,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 5"
   },
@@ -3583,9 +3583,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "FM",
-      "Soc"
+      "agilite",
+      "force-mentale",
+      "sociabilite"
     ],
     "status": "Bronze 3"
   },
@@ -3668,7 +3668,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 3"
   },
@@ -3740,7 +3740,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Or 1"
   },
@@ -3798,7 +3798,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 4"
   },
@@ -3887,9 +3887,9 @@
       }
     ],
     "characteristics": [
-      "F",
-      "E",
-      "FM"
+      "force",
+      "endurance",
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -3974,7 +3974,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 3"
   },
@@ -4039,7 +4039,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 1"
   },
@@ -4095,7 +4095,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 3"
   },
@@ -4186,9 +4186,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "I",
-      "Dex"
+      "capacite-de-combat",
+      "initiative",
+      "dexterite"
     ],
     "status": "Or 1"
   },
@@ -4278,7 +4278,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 3"
   },
@@ -4353,7 +4353,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 5"
   },
@@ -4417,7 +4417,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 7"
   },
@@ -4495,9 +4495,9 @@
       }
     ],
     "characteristics": [
-      "F",
-      "E",
-      "Ag"
+      "force",
+      "endurance",
+      "agilite"
     ],
     "status": "Argent 1"
   },
@@ -4567,7 +4567,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 3"
   },
@@ -4636,7 +4636,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 5"
   },
@@ -4692,7 +4692,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 1"
   },
@@ -4780,9 +4780,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "Ag"
+      "capacite-de-combat",
+      "force",
+      "agilite"
     ],
     "status": "Argent 2"
   },
@@ -4875,7 +4875,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 4"
   },
@@ -4935,7 +4935,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Or 1"
   },
@@ -4988,7 +4988,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 2"
   },
@@ -5086,9 +5086,9 @@
       }
     ],
     "characteristics": [
-      "F",
-      "I",
-      "Ag"
+      "force",
+      "initiative",
+      "agilite"
     ],
     "status": "Argent 3"
   },
@@ -5173,7 +5173,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 5"
   },
@@ -5236,7 +5236,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 2"
   },
@@ -5292,7 +5292,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 4"
   },
@@ -5382,9 +5382,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "Ag"
+      "capacite-de-combat",
+      "endurance",
+      "agilite"
     ],
     "status": "Argent 1"
   },
@@ -5469,7 +5469,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 2"
   },
@@ -5537,7 +5537,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Argent 3"
   },
@@ -5587,7 +5587,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 5"
   },
@@ -5672,9 +5672,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "E"
+      "capacite-de-combat",
+      "force",
+      "endurance"
     ],
     "status": "Bronze 4"
   },
@@ -5758,7 +5758,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 2"
   },
@@ -5822,7 +5822,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 5"
   },
@@ -5870,7 +5870,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 2"
   },
@@ -5966,9 +5966,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "E"
+      "capacite-de-combat",
+      "force",
+      "endurance"
     ],
     "status": "Bronze 3"
   },
@@ -6049,7 +6049,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 1"
   },
@@ -6112,7 +6112,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 3"
   },
@@ -6164,7 +6164,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 5"
   },
@@ -6256,9 +6256,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "FM"
+      "capacite-de-combat",
+      "endurance",
+      "force-mentale"
     ],
     "status": "Bronze 2"
   },
@@ -6332,7 +6332,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Argent 2"
   },
@@ -6395,7 +6395,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 3"
   },
@@ -6445,7 +6445,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 4"
   },
@@ -6535,9 +6535,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "FM"
+      "capacite-de-combat",
+      "endurance",
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -6613,7 +6613,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 3"
   },
@@ -6675,7 +6675,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 5"
   },
@@ -6746,7 +6746,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 1"
   },
@@ -6840,9 +6840,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "Ag",
-      "Int"
+      "capacite-de-tir",
+      "agilite",
+      "intelligence"
     ],
     "status": "Argent 1"
   },
@@ -6919,7 +6919,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 3"
   },
@@ -6982,7 +6982,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Argent 5"
   },
@@ -7040,7 +7040,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 1"
   },
@@ -7125,9 +7125,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "Ag"
+      "capacite-de-combat",
+      "endurance",
+      "agilite"
     ],
     "status": "Bronze 2"
   },
@@ -7210,7 +7210,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 1"
   },
@@ -7279,7 +7279,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 4"
   },
@@ -7339,7 +7339,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 1"
   },
@@ -7430,9 +7430,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "FM"
+      "capacite-de-combat",
+      "force",
+      "force-mentale"
     ],
     "status": "Bronze 2"
   },
@@ -7510,7 +7510,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Bronze 2"
   },
@@ -7575,7 +7575,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Bronze 2"
   },
@@ -7625,7 +7625,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Bronze 2"
   },
@@ -7711,9 +7711,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "CC",
-      "E"
+      "agilite",
+      "capacite-de-combat",
+      "endurance"
     ],
     "status": "Argent 1"
   },
@@ -7802,7 +7802,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 3"
   },
@@ -7868,7 +7868,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Argent 5"
   },
@@ -7931,7 +7931,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -8029,9 +8029,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "Ag",
-      "Int"
+      "capacite-de-tir",
+      "agilite",
+      "intelligence"
     ],
     "status": "Bronze 3"
   },
@@ -8114,7 +8114,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Bronze 5"
   },
@@ -8181,7 +8181,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 1"
   },
@@ -8235,7 +8235,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Argent 3"
   },
@@ -8321,9 +8321,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "E",
-      "FM"
+      "capacite-de-tir",
+      "endurance",
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -8409,7 +8409,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 2"
   },
@@ -8477,7 +8477,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 3"
   },
@@ -8530,7 +8530,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 5"
   },
@@ -8623,9 +8623,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "Dex",
-      "FM"
+      "endurance",
+      "dexterite",
+      "force-mentale"
     ],
     "status": "Bronze 1"
   },
@@ -8708,7 +8708,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Bronze 4"
   },
@@ -8770,7 +8770,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 1"
   },
@@ -8830,7 +8830,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 3"
   },
@@ -8913,9 +8913,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "E"
+      "capacite-de-combat",
+      "force",
+      "endurance"
     ],
     "status": "Bronze 0"
   },
@@ -8995,7 +8995,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Bronze 0"
   },
@@ -9055,7 +9055,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Bronze 0"
   },
@@ -9109,7 +9109,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Bronze 0"
   },
@@ -9204,9 +9204,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "E"
+      "capacite-de-combat",
+      "force",
+      "endurance"
     ],
     "status": "Bronze 0"
   },
@@ -9276,7 +9276,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Bronze 0"
   },
@@ -9333,7 +9333,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Bronze 0"
   },
@@ -9389,7 +9389,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Bronze 0"
   },
@@ -9469,9 +9469,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "I",
-      "Ag"
+      "endurance",
+      "initiative",
+      "agilite"
     ],
     "status": "Bronze 3"
   },
@@ -9552,7 +9552,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 1"
   },
@@ -9616,7 +9616,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 3"
   },
@@ -9672,7 +9672,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 5"
   },
@@ -9762,9 +9762,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "E"
+      "capacite-de-combat",
+      "force",
+      "endurance"
     ],
     "status": "Bronze 3"
   },
@@ -9848,7 +9848,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 1"
   },
@@ -9918,7 +9918,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 2"
   },
@@ -9977,7 +9977,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 4"
   },
@@ -10067,9 +10067,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "E",
-      "I"
+      "capacite-de-tir",
+      "endurance",
+      "initiative"
     ],
     "status": "Bronze 5"
   },
@@ -10151,7 +10151,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 2"
   },
@@ -10228,7 +10228,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 4"
   },
@@ -10296,7 +10296,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -10395,9 +10395,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "Ag",
-      "FM"
+      "capacite-de-tir",
+      "agilite",
+      "force-mentale"
     ],
     "status": "Bronze 4"
   },
@@ -10476,7 +10476,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 1"
   },
@@ -10539,7 +10539,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 3"
   },
@@ -10593,7 +10593,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Argent 5"
   },
@@ -10677,9 +10677,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "FM"
+      "capacite-de-combat",
+      "endurance",
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -10769,7 +10769,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 3"
   },
@@ -10834,7 +10834,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 5"
   },
@@ -10888,7 +10888,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -10970,9 +10970,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "Dex",
-      "Soc"
+      "agilite",
+      "dexterite",
+      "sociabilite"
     ],
     "status": "Bronze 3"
   },
@@ -11051,7 +11051,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Bronze 5"
   },
@@ -11113,7 +11113,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 3"
   },
@@ -11171,7 +11171,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Or 1"
   },
@@ -11267,9 +11267,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "Dex",
-      "Int"
+      "endurance",
+      "dexterite",
+      "intelligence"
     ],
     "status": "Bronze 3"
   },
@@ -11343,7 +11343,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -11411,7 +11411,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 3"
   },
@@ -11466,7 +11466,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 1"
   },
@@ -11561,9 +11561,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "FM"
+      "capacite-de-combat",
+      "endurance",
+      "force-mentale"
     ],
     "status": "Bronze 3"
   },
@@ -11647,7 +11647,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Argent 1"
   },
@@ -11715,7 +11715,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 2"
   },
@@ -11771,7 +11771,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 4"
   },
@@ -11861,9 +11861,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "Int",
-      "FM"
+      "endurance",
+      "intelligence",
+      "force-mentale"
     ],
     "status": "Bronze 3"
   },
@@ -11937,7 +11937,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 2"
   },
@@ -12000,7 +12000,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 5"
   },
@@ -12050,7 +12050,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Or 1"
   },
@@ -12139,9 +12139,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "Dex",
-      "Int"
+      "capacite-de-tir",
+      "dexterite",
+      "intelligence"
     ],
     "status": "Bronze 4"
   },
@@ -12217,7 +12217,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 2"
   },
@@ -12281,7 +12281,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Argent 4"
   },
@@ -12340,7 +12340,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 2"
   },
@@ -12426,9 +12426,9 @@
       }
     ],
     "characteristics": [
-      "I",
-      "Dex",
-      "Int"
+      "initiative",
+      "dexterite",
+      "intelligence"
     ],
     "status": "Bronze 4"
   },
@@ -12505,7 +12505,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 3"
   },
@@ -12569,7 +12569,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 1"
   },
@@ -12621,7 +12621,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Or 2"
   },
@@ -12703,9 +12703,9 @@
       }
     ],
     "characteristics": [
-      "Dex",
-      "Int",
-      "FM"
+      "dexterite",
+      "intelligence",
+      "force-mentale"
     ],
     "status": "Bronze 4"
   },
@@ -12784,7 +12784,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 3"
   },
@@ -12848,7 +12848,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 5"
   },
@@ -12903,7 +12903,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Or 1"
   },
@@ -12987,9 +12987,9 @@
       }
     ],
     "characteristics": [
-      "Dex",
-      "Int",
-      "Soc"
+      "dexterite",
+      "intelligence",
+      "sociabilite"
     ],
     "status": "Bronze 1"
   },
@@ -13067,7 +13067,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Bronze 4"
   },
@@ -13131,7 +13131,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 2"
   },
@@ -13179,7 +13179,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Argent 5"
   },
@@ -13262,9 +13262,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "Ag",
-      "FM"
+      "endurance",
+      "agilite",
+      "force-mentale"
     ],
     "status": "Bronze 2"
   },
@@ -13339,7 +13339,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -13410,7 +13410,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -13464,7 +13464,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Or 2"
   },
@@ -13550,9 +13550,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "Int",
-      "FM"
+      "capacite-de-combat",
+      "intelligence",
+      "force-mentale"
     ],
     "status": "Bronze 3"
   },
@@ -13622,7 +13622,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 3"
   },
@@ -13689,7 +13689,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Or 1"
   },
@@ -13744,7 +13744,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 2"
   },
@@ -13830,9 +13830,9 @@
       }
     ],
     "characteristics": [
-      "F",
-      "E",
-      "Ag"
+      "force",
+      "endurance",
+      "agilite"
     ],
     "status": "Argent 1"
   },
@@ -13922,7 +13922,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 2"
   },
@@ -13986,7 +13986,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Argent 3"
   },
@@ -14040,7 +14040,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 5"
   },
@@ -14136,9 +14136,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "Dex",
-      "FM"
+      "agilite",
+      "dexterite",
+      "force-mentale"
     ],
     "status": "Bronze 2"
   },
@@ -14223,7 +14223,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Bronze 3"
   },
@@ -14287,7 +14287,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Bronze 5"
   },
@@ -14340,7 +14340,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 2"
   },
@@ -14423,9 +14423,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "I"
+      "capacite-de-combat",
+      "endurance",
+      "initiative"
     ],
     "status": "Bronze 3"
   },
@@ -14509,7 +14509,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Argent 1"
   },
@@ -14572,7 +14572,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 3"
   },
@@ -14628,7 +14628,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 5"
   },
@@ -14716,9 +14716,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "Ag",
-      "Dex"
+      "endurance",
+      "agilite",
+      "dexterite"
     ],
     "status": "Bronze 2"
   },
@@ -14800,7 +14800,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Bronze 3"
   },
@@ -14866,7 +14866,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Bronze 5"
   },
@@ -14917,7 +14917,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 2"
   },
@@ -15003,9 +15003,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "Dex",
-      "Soc"
+      "agilite",
+      "dexterite",
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -15078,7 +15078,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 3"
   },
@@ -15138,7 +15138,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 5"
   },
@@ -15198,7 +15198,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 2"
   },
@@ -15284,9 +15284,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "I"
+      "capacite-de-combat",
+      "force",
+      "initiative"
     ],
     "status": "Bronze 2"
   },
@@ -15361,7 +15361,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Bronze 3"
   },
@@ -15434,7 +15434,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Bronze 5"
   },
@@ -15493,7 +15493,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 2"
   },
@@ -15580,9 +15580,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "I"
+      "capacite-de-combat",
+      "endurance",
+      "initiative"
     ],
     "status": "Bronze 4"
   },
@@ -15660,7 +15660,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -15727,7 +15727,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 3"
   },
@@ -15779,7 +15779,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 5"
   },
@@ -15864,9 +15864,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "F",
-      "Soc"
+      "capacite-de-tir",
+      "force",
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -15952,7 +15952,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 2"
   },
@@ -16018,7 +16018,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 4"
   },
@@ -16074,7 +16074,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -16165,9 +16165,9 @@
       }
     ],
     "characteristics": [
-      "I",
-      "Dex",
-      "Soc"
+      "initiative",
+      "dexterite",
+      "sociabilite"
     ],
     "status": "Bronze 3"
   },
@@ -16255,7 +16255,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Bronze 5"
   },
@@ -16323,7 +16323,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 2"
   },
@@ -16375,7 +16375,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 4"
   },
@@ -16454,9 +16454,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "Dex",
-      "Soc"
+      "agilite",
+      "dexterite",
+      "sociabilite"
     ],
     "status": "Bronze 1"
   },
@@ -16531,7 +16531,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Bronze 3"
   },
@@ -16591,7 +16591,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -16644,7 +16644,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 3"
   },
@@ -16732,9 +16732,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "E"
+      "capacite-de-combat",
+      "force",
+      "endurance"
     ],
     "status": "Bronze 1"
   },
@@ -16817,7 +16817,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Bronze 2"
   },
@@ -16889,7 +16889,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Bronze 4"
   },
@@ -16943,7 +16943,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 2"
   },
@@ -17031,9 +17031,9 @@
       }
     ],
     "characteristics": [
-      "F",
-      "I",
-      "FM"
+      "force",
+      "initiative",
+      "force-mentale"
     ],
     "status": "Bronze 2"
   },
@@ -17117,7 +17117,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Bronze 3"
   },
@@ -17180,7 +17180,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Argent 1"
   },
@@ -17243,7 +17243,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 5"
   },
@@ -17328,9 +17328,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "E"
+      "capacite-de-combat",
+      "force",
+      "endurance"
     ],
     "status": "Bronze 3"
   },
@@ -17410,7 +17410,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Bronze 5"
   },
@@ -17484,7 +17484,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 3"
   },
@@ -17544,7 +17544,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 5"
   },
@@ -17627,9 +17627,9 @@
       }
     ],
     "characteristics": [
-      "I",
-      "Ag",
-      "Soc"
+      "initiative",
+      "agilite",
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -17707,7 +17707,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Argent 2"
   },
@@ -17769,7 +17769,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 3"
   },
@@ -17825,7 +17825,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -17915,9 +17915,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "FM"
+      "capacite-de-combat",
+      "endurance",
+      "force-mentale"
     ],
     "status": "Bronze 1"
   },
@@ -17998,7 +17998,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Bronze 2"
   },
@@ -18064,7 +18064,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Bronze 3"
   },
@@ -18117,7 +18117,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Bronze 5"
   },
@@ -18203,9 +18203,9 @@
       }
     ],
     "characteristics": [
-      "I",
-      "Ag",
-      "FM"
+      "initiative",
+      "agilite",
+      "force-mentale"
     ],
     "status": "Bronze 1"
   },
@@ -18280,7 +18280,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Bronze 3"
   },
@@ -18346,7 +18346,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Bronze 5"
   },
@@ -18401,7 +18401,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 3"
   },
@@ -18484,9 +18484,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "I",
-      "FM"
+      "capacite-de-combat",
+      "initiative",
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -18561,7 +18561,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 5"
   },
@@ -18631,7 +18631,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Or 1"
   },
@@ -18688,7 +18688,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 3"
   },
@@ -18787,9 +18787,9 @@
       }
     ],
     "characteristics": [
-      "F",
-      "E",
-      "Dex"
+      "force",
+      "endurance",
+      "dexterite"
     ],
     "status": "Bronze 2"
   },
@@ -18868,7 +18868,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Bronze 4"
   },
@@ -18935,7 +18935,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 1"
   },
@@ -18991,7 +18991,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 3"
   },
@@ -19084,9 +19084,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "I",
-      "Ag"
+      "endurance",
+      "initiative",
+      "agilite"
     ],
     "status": "Bronze 3"
   },
@@ -19167,7 +19167,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Bronze 5"
   },
@@ -19242,7 +19242,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 1"
   },
@@ -19296,7 +19296,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Argent 5"
   },
@@ -19398,9 +19398,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "F",
-      "E"
+      "capacite-de-tir",
+      "force",
+      "endurance"
     ],
     "status": "Argent 1"
   },
@@ -19476,7 +19476,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 3"
   },
@@ -19542,7 +19542,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 5"
   },
@@ -19594,7 +19594,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Or 1"
   },
@@ -19685,9 +19685,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "I",
-      "Ag"
+      "endurance",
+      "initiative",
+      "agilite"
     ],
     "status": "Bronze 2"
   },
@@ -19762,7 +19762,7 @@
       }
     ],
     "characteristics": [
-      "Dex"
+      "dexterite"
     ],
     "status": "Bronze 4"
   },
@@ -19836,7 +19836,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -19890,7 +19890,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 3"
   },
@@ -19981,9 +19981,9 @@
       }
     ],
     "characteristics": [
-      "F",
-      "E",
-      "FM"
+      "force",
+      "endurance",
+      "force-mentale"
     ],
     "status": "Bronze 2"
   },
@@ -20064,7 +20064,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Bronze 4"
   },
@@ -20133,7 +20133,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Bronze 5"
   },
@@ -20185,7 +20185,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 4"
   },
@@ -20268,9 +20268,9 @@
       }
     ],
     "characteristics": [
-      "I",
-      "Ag",
-      "Soc"
+      "initiative",
+      "agilite",
+      "sociabilite"
     ],
     "status": "Bronze 1"
   },
@@ -20340,7 +20340,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Bronze 2"
   },
@@ -20400,7 +20400,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Bronze 3"
   },
@@ -20452,7 +20452,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Bronze 4"
   },
@@ -20547,9 +20547,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "I",
-      "Dex"
+      "endurance",
+      "initiative",
+      "dexterite"
     ],
     "status": "Bronze 1"
   },
@@ -20628,7 +20628,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Bronze 2"
   },
@@ -20695,7 +20695,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Bronze 3"
   },
@@ -20750,7 +20750,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Bronze 5"
   },
@@ -20827,9 +20827,9 @@
     ],
     "trappings": [],
     "characteristics": [
-      "F",
-      "E",
-      "Ag"
+      "force",
+      "endurance",
+      "agilite"
     ],
     "status": "Bronze 2"
   },
@@ -20906,7 +20906,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Bronze 3"
   },
@@ -20974,7 +20974,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Bronze 4"
   },
@@ -21025,7 +21025,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 2"
   },
@@ -21131,9 +21131,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "CC",
-      "E"
+      "agilite",
+      "capacite-de-combat",
+      "endurance"
     ],
     "status": "Bronze 3"
   },
@@ -21210,7 +21210,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 2"
   },
@@ -21279,7 +21279,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 5"
   },
@@ -21338,7 +21338,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -21445,9 +21445,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "F",
-      "I"
+      "agilite",
+      "force",
+      "initiative"
     ],
     "status": "Argent 1"
   },
@@ -21531,7 +21531,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 2"
   },
@@ -21594,7 +21594,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 1"
   },
@@ -21647,7 +21647,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 3"
   },
@@ -21758,9 +21758,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "I"
+      "capacite-de-combat",
+      "force",
+      "initiative"
     ],
     "status": "Argent 3"
   },
@@ -21845,7 +21845,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 5"
   },
@@ -21906,7 +21906,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Or 2"
   },
@@ -21962,7 +21962,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 4"
   },
@@ -22073,9 +22073,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "I"
+      "capacite-de-combat",
+      "force",
+      "initiative"
     ],
     "status": "Argent 3"
   },
@@ -22154,7 +22154,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 5"
   },
@@ -22217,7 +22217,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 2"
   },
@@ -22270,7 +22270,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Or 3"
   },
@@ -22380,9 +22380,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "I"
+      "capacite-de-combat",
+      "force",
+      "initiative"
     ],
     "status": "Argent 3"
   },
@@ -22473,7 +22473,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 5"
   },
@@ -22537,7 +22537,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 2"
   },
@@ -22590,7 +22590,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 4"
   },
@@ -22698,9 +22698,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "FM",
-      "Int"
+      "capacite-de-combat",
+      "force-mentale",
+      "intelligence"
     ],
     "status": "Argent 2"
   },
@@ -22777,7 +22777,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 3"
   },
@@ -22836,7 +22836,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 4"
   },
@@ -22886,7 +22886,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Argent 5"
   },
@@ -22994,9 +22994,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "CT",
-      "I"
+      "agilite",
+      "capacite-de-tir",
+      "initiative"
     ],
     "status": "Argent 1"
   },
@@ -23074,7 +23074,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Argent 3"
   },
@@ -23137,7 +23137,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Argent 5"
   },
@@ -23197,7 +23197,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -23297,9 +23297,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "CC",
-      "E"
+      "agilite",
+      "capacite-de-combat",
+      "endurance"
     ],
     "status": "Argent 1"
   },
@@ -23375,7 +23375,7 @@
       }
     ],
     "characteristics": [
-      "F"
+      "force"
     ],
     "status": "Argent 3"
   },
@@ -23438,7 +23438,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 5"
   },
@@ -23500,7 +23500,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 1"
   },
@@ -23596,9 +23596,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "CT",
-      "Dex"
+      "agilite",
+      "capacite-de-tir",
+      "dexterite"
     ],
     "status": "Argent 1"
   },
@@ -23672,7 +23672,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 3"
   },
@@ -23736,7 +23736,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 5"
   },
@@ -23795,7 +23795,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 1"
   },
@@ -23894,9 +23894,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "FM"
+      "capacite-de-combat",
+      "force",
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -23970,7 +23970,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 4"
   },
@@ -24036,7 +24036,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Or 1"
   },
@@ -24098,7 +24098,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 2"
   },
@@ -24199,9 +24199,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "F"
+      "capacite-de-combat",
+      "endurance",
+      "force"
     ],
     "status": "Bronze 5"
   },
@@ -24279,7 +24279,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 1"
   },
@@ -24341,7 +24341,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 4"
   },
@@ -24409,7 +24409,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 1"
   },
@@ -24517,9 +24517,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "CT",
-      "F"
+      "capacite-de-combat",
+      "capacite-de-tir",
+      "force"
     ],
     "status": "Argent 1"
   },
@@ -24593,7 +24593,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 3"
   },
@@ -24671,7 +24671,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 5"
   },
@@ -24729,7 +24729,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Or 1"
   },
@@ -24822,9 +24822,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "CC",
-      "Soc"
+      "agilite",
+      "capacite-de-combat",
+      "sociabilite"
     ],
     "status": "Bronze 1"
   },
@@ -24898,7 +24898,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Bronze 4"
   },
@@ -24957,7 +24957,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 1"
   },
@@ -25012,7 +25012,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Argent 4"
   },
@@ -25109,9 +25109,9 @@
       }
     ],
     "characteristics": [
-      "Dex",
-      "I",
-      "Int"
+      "dexterite",
+      "initiative",
+      "intelligence"
     ],
     "status": "Argent 1"
   },
@@ -25187,7 +25187,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 3"
   },
@@ -25252,7 +25252,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 5"
   },
@@ -25305,7 +25305,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 1"
   },
@@ -25402,9 +25402,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "I",
-      "Int"
+      "capacite-de-tir",
+      "initiative",
+      "intelligence"
     ],
     "status": "Argent 1"
   },
@@ -25493,7 +25493,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Argent 3"
   },
@@ -25557,7 +25557,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 5"
   },
@@ -25625,7 +25625,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Or 1"
   },
@@ -25720,9 +25720,9 @@
       }
     ],
     "characteristics": [
-      "CT",
-      "Ag",
-      "Int"
+      "capacite-de-tir",
+      "agilite",
+      "intelligence"
     ],
     "status": "Bronze 3"
   },
@@ -25799,7 +25799,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 3"
   },
@@ -25862,7 +25862,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Argent 5"
   },
@@ -25915,7 +25915,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 1"
   },
@@ -26016,9 +26016,9 @@
       }
     ],
     "characteristics": [
-      "Dex",
-      "Int",
-      "Soc"
+      "dexterite",
+      "intelligence",
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -26088,7 +26088,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 3"
   },
@@ -26147,7 +26147,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 5"
   },
@@ -26197,7 +26197,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Or 1"
   },
@@ -26295,9 +26295,9 @@
       }
     ],
     "characteristics": [
-      "Ag",
-      "Dex",
-      "Soc"
+      "agilite",
+      "dexterite",
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -26370,7 +26370,7 @@
       }
     ],
     "characteristics": [
-      "CC"
+      "capacite-de-combat"
     ],
     "status": "Argent 3"
   },
@@ -26429,7 +26429,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Argent 5"
   },
@@ -26483,7 +26483,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 2"
   },
@@ -26580,9 +26580,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "I"
+      "capacite-de-combat",
+      "force",
+      "initiative"
     ],
     "status": "Bronze 2"
   },
@@ -26660,7 +26660,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Bronze 3"
   },
@@ -26733,7 +26733,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Bronze 5"
   },
@@ -26788,7 +26788,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 2"
   },
@@ -26885,9 +26885,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "E",
-      "I"
+      "capacite-de-combat",
+      "endurance",
+      "initiative"
     ],
     "status": "Bronze 4"
   },
@@ -26964,7 +26964,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Argent 1"
   },
@@ -27025,7 +27025,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Argent 3"
   },
@@ -27077,7 +27077,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 5"
   },
@@ -27170,9 +27170,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "Int",
-      "Soc"
+      "capacite-de-combat",
+      "intelligence",
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -27246,7 +27246,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 5"
   },
@@ -27311,7 +27311,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Or 2"
   },
@@ -27360,7 +27360,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Or 5"
   },
@@ -27458,9 +27458,9 @@
       }
     ],
     "characteristics": [
-      "E",
-      "Ag",
-      "FM"
+      "endurance",
+      "agilite",
+      "force-mentale"
     ],
     "status": "Bronze 2"
   },
@@ -27535,7 +27535,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 1"
   },
@@ -27606,7 +27606,7 @@
       }
     ],
     "characteristics": [
-      "I"
+      "initiative"
     ],
     "status": "Or 1"
   },
@@ -27662,7 +27662,7 @@
       }
     ],
     "characteristics": [
-      "Int"
+      "intelligence"
     ],
     "status": "Or 2"
   },
@@ -27758,9 +27758,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "I",
-      "Int"
+      "capacite-de-combat",
+      "initiative",
+      "intelligence"
     ],
     "status": "Bronze 1"
   },
@@ -27836,7 +27836,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Bronze 3"
   },
@@ -27905,7 +27905,7 @@
       }
     ],
     "characteristics": [
-      "FM"
+      "force-mentale"
     ],
     "status": "Bronze 5"
   },
@@ -27955,7 +27955,7 @@
       }
     ],
     "characteristics": [
-      "E"
+      "endurance"
     ],
     "status": "Argent 2"
   },
@@ -28058,9 +28058,9 @@
       }
     ],
     "characteristics": [
-      "CC",
-      "F",
-      "I"
+      "capacite-de-combat",
+      "force",
+      "initiative"
     ],
     "status": "Argent 2"
   },
@@ -28138,7 +28138,7 @@
       }
     ],
     "characteristics": [
-      "Soc"
+      "sociabilite"
     ],
     "status": "Argent 3"
   },
@@ -28215,7 +28215,7 @@
       }
     ],
     "characteristics": [
-      "Ag"
+      "agilite"
     ],
     "status": "Argent 4"
   },
@@ -28274,7 +28274,7 @@
       }
     ],
     "characteristics": [
-      "CT"
+      "capacite-de-tir"
     ],
     "status": "Argent 5"
   }

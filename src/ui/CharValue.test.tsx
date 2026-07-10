@@ -5,7 +5,7 @@ import { CharValue } from './CharValue';
 
 describe('CharValue — caractéristique isolée', () => {
   it('libellé court + valeur, popover Codex sur le libellé', () => {
-    const html = renderToStaticMarkup(<CharValue charKey="CC" value={45} />);
+    const html = renderToStaticMarkup(<CharValue charKey="capacite-de-combat" value={45} />);
     expect(html).toContain('CC');
     expect(html).toContain('45');
     expect(html).toContain('codex-ref'); // popover de la caractéristique
@@ -13,19 +13,19 @@ describe('CharValue — caractéristique isolée', () => {
   });
 
   it('bonus optionnel affiché « BN »', () => {
-    const html = renderToStaticMarkup(<CharValue charKey="F" value={38} bonus={3} />);
+    const html = renderToStaticMarkup(<CharValue charKey="force" value={38} bonus={3} />);
     expect(html).toContain('B3');
   });
 
   it('le libellé court suit la DONNÉE (CHAR_ABR), jamais la clé littérale — altère le dataset réel', () => {
-    const original = CHAR_ABR.CC;
+    const original = CHAR_ABR['capacite-de-combat'];
     try {
-      CHAR_ABR.CC = 'ZZ';
-      const html = renderToStaticMarkup(<CharValue charKey="CC" value={45} />);
+      CHAR_ABR['capacite-de-combat'] = 'ZZ';
+      const html = renderToStaticMarkup(<CharValue charKey="capacite-de-combat" value={45} />);
       expect(html).toContain('ZZ');
       expect(html).not.toContain('>CC<');
     } finally {
-      CHAR_ABR.CC = original;
+      CHAR_ABR['capacite-de-combat'] = original;
     }
   });
 });

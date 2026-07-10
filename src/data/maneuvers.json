@@ -5,7 +5,7 @@
     "kind": "arme",
     "activation": "action",
     "advantageCost": 0,
-    "stat": "CC",
+    "stat": "capacite-de-combat",
     "defense": "auto",
     "targeting": "melee",
     "effects": [],
@@ -21,7 +21,7 @@
     "kind": "morsure",
     "activation": "free",
     "advantageCost": 1,
-    "stat": "CC",
+    "stat": "capacite-de-combat",
     "defense": "auto",
     "targeting": "melee",
     "effects": [],
@@ -37,7 +37,7 @@
     "kind": "caudale",
     "activation": "free",
     "advantageCost": 1,
-    "stat": "CC",
+    "stat": "capacite-de-combat",
     "defense": "auto",
     "targeting": "melee",
     "effects": [
@@ -87,7 +87,7 @@
     "kind": "cornes",
     "activation": "charge",
     "advantageCost": 0,
-    "stat": "CC",
+    "stat": "capacite-de-combat",
     "defense": "auto",
     "targeting": "melee",
     "effects": [],
@@ -103,7 +103,7 @@
     "kind": "tentacules",
     "activation": "free",
     "advantageCost": 0,
-    "stat": "CC",
+    "stat": "capacite-de-combat",
     "defense": "auto",
     "targeting": "melee",
     "effects": [
@@ -121,7 +121,7 @@
                 "name": "empetre",
                 "grapple": true,
                 "escapeStrength": {
-                  "charOf": "F"
+                  "charOf": "force"
                 },
                 "unlessCondition": "empetre"
               }
@@ -142,11 +142,11 @@
     "kind": "langue",
     "activation": "free",
     "advantageCost": 1,
-    "stat": "CT",
+    "stat": "capacite-de-tir",
     "defense": "esquive",
     "targeting": "ranged",
     "range": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "effects": [
       {
@@ -183,7 +183,7 @@
                     "name": "empetre",
                     "grapple": true,
                     "escapeStrength": {
-                      "charOf": "F"
+                      "charOf": "force"
                     }
                   }
                 ]
@@ -205,7 +205,7 @@
     "kind": "etreinte",
     "activation": "action",
     "advantageCost": 2,
-    "stat": "CC",
+    "stat": "capacite-de-combat",
     "defense": "auto",
     "targeting": "melee",
     "magic": true,
@@ -251,7 +251,7 @@
     "kind": "regard",
     "activation": "action",
     "advantageCost": 1,
-    "stat": "CT",
+    "stat": "capacite-de-tir",
     "defense": "init",
     "targeting": "ranged",
     "advantageMode": "variable",
@@ -337,15 +337,15 @@
     "kind": "souffle",
     "activation": "free",
     "advantageCost": 2,
-    "stat": "CT",
+    "stat": "capacite-de-tir",
     "defense": "esquive",
     "targeting": "zone",
     "range": {
-      "bonusOf": "E",
+      "bonusOf": "endurance",
       "plus": 20
     },
     "blast": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "magic": true,
     "source": {
@@ -401,15 +401,15 @@
     "kind": "souffle",
     "activation": "free",
     "advantageCost": 2,
-    "stat": "CT",
+    "stat": "capacite-de-tir",
     "defense": "esquive",
     "targeting": "zone",
     "range": {
-      "bonusOf": "E",
+      "bonusOf": "endurance",
       "plus": 20
     },
     "blast": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "magic": true,
     "source": {
@@ -465,15 +465,15 @@
     "kind": "souffle",
     "activation": "free",
     "advantageCost": 2,
-    "stat": "CT",
+    "stat": "capacite-de-tir",
     "defense": "esquive",
     "targeting": "zone",
     "range": {
-      "bonusOf": "E",
+      "bonusOf": "endurance",
       "plus": 20
     },
     "blast": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "magic": true,
     "source": {
@@ -542,15 +542,15 @@
     "kind": "souffle",
     "activation": "free",
     "advantageCost": 2,
-    "stat": "CT",
+    "stat": "capacite-de-tir",
     "defense": "esquive",
     "targeting": "zone",
     "range": {
-      "bonusOf": "E",
+      "bonusOf": "endurance",
       "plus": 20
     },
     "blast": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "magic": true,
     "source": {
@@ -606,15 +606,15 @@
     "kind": "souffle",
     "activation": "free",
     "advantageCost": 2,
-    "stat": "CT",
+    "stat": "capacite-de-tir",
     "defense": "esquive",
     "targeting": "zone",
     "range": {
-      "bonusOf": "E",
+      "bonusOf": "endurance",
       "plus": 20
     },
     "blast": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "magic": true,
     "source": {
@@ -670,15 +670,15 @@
     "kind": "souffle",
     "activation": "free",
     "advantageCost": 2,
-    "stat": "CT",
+    "stat": "capacite-de-tir",
     "defense": "esquive",
     "targeting": "zone",
     "range": {
-      "bonusOf": "E",
+      "bonusOf": "endurance",
       "plus": 20
     },
     "blast": {
-      "bonusOf": "F"
+      "bonusOf": "force"
     },
     "magic": true,
     "source": {
@@ -694,11 +694,11 @@
     "kind": "vomi",
     "activation": "free",
     "advantageCost": 3,
-    "stat": "CT",
+    "stat": "capacite-de-tir",
     "defense": "esquive",
     "targeting": "zone",
     "range": {
-      "bonusOf": "E"
+      "bonusOf": "endurance"
     },
     "blast": {
       "plus": 2
@@ -719,7 +719,7 @@
                   {
                     "op": "wounds",
                     "amount": {
-                      "bonusOf": "E"
+                      "bonusOf": "endurance"
                     },
                     "ignoreTB": false,
                     "ignoreAP": false
@@ -932,7 +932,7 @@
     "kind": "etreinte",
     "activation": "action",
     "advantageCost": 0,
-    "stat": "CC",
+    "stat": "capacite-de-combat",
     "defense": "esquive",
     "targeting": "melee",
     "magic": true,
@@ -989,42 +989,42 @@
                 "ops": [
                   {
                     "op": "charMod",
-                    "char": "CC",
+                    "char": "capacite-de-combat",
                     "mod": 10
                   },
                   {
                     "op": "charMod",
-                    "char": "F",
+                    "char": "force",
                     "mod": 10
                   },
                   {
                     "op": "charMod",
-                    "char": "E",
+                    "char": "endurance",
                     "mod": 10
                   },
                   {
                     "op": "charMod",
-                    "char": "I",
+                    "char": "initiative",
                     "mod": 10
                   },
                   {
                     "op": "charMod",
-                    "char": "Ag",
+                    "char": "agilite",
                     "mod": 10
                   },
                   {
                     "op": "charMod",
-                    "char": "Dex",
+                    "char": "dexterite",
                     "mod": -10
                   },
                   {
                     "op": "charMod",
-                    "char": "Int",
+                    "char": "intelligence",
                     "mod": -10
                   },
                   {
                     "op": "charMod",
-                    "char": "Soc",
+                    "char": "sociabilite",
                     "mod": -20
                   },
                   {

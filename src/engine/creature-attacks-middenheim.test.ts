@@ -14,7 +14,7 @@ describe('#60 attaques spéciales du bestiaire de Middenheim', () => {
     expect(atk).toBeDefined();
     expect(atk!.kind).toBe('etreinte');
     expect(atk!.trigger).toBe('action');
-    expect(atk!.stat).toBe('CC');
+    expect(atk!.stat).toBe('capacite-de-combat');
     const ops = JSON.stringify(atk!.def.effects);
     expect(ops).toContain('"name":"sonne"');
     expect(ops).toContain('"valuePerSL"');

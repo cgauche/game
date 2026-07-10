@@ -16,7 +16,7 @@ import type { Combatant, SkillInstance } from '../engine/types';
  * d'activation (choix de chanson + Test de Divertissement (Chant), 1 chanson par quart), fin de
  * chant sur Dégâts (l.38), et « Commandant émérite » (l.50-54) sur les Tests d'équipage.
  */
-const chars = { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const chars = { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 const mk = (id: string, over: Partial<Combatant> = {}): Combatant =>
   ({ id, name: id, kind: 'hero', characteristics: { ...chars },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [], items: [], skills: [], talents: [], weapons: [],
@@ -25,7 +25,7 @@ const mk = (id: string, over: Partial<Combatant> = {}): Combatant =>
 
 describe('Vocabulaire des chansons (ops génériques → ActiveEffect)', () => {
   it('crewTestMod +10 (« Naviguons tous ensemble », MDG 09 l.224) → crewRoleValue du marin +10', () => {
-    const c = mk('m1', { skills: [{ skillId: 'voile', characteristic: 'Ag', advances: 20 } as SkillInstance] });
+    const c = mk('m1', { skills: [{ skillId: 'voile', characteristic: 'agilite', advances: 20 } as SkillInstance] });
     const base = crewRoleValue(c, findCrewRoleById('timonier')!).value;
     applyOps(c, [{ op: 'crewTestMod', mod: 10 }], { label: 'Chanson', rng: makeRNG(1), defaultUntilTime: 100 });
     expect(crewTestModOf(c)).toBe(10);
@@ -42,9 +42,9 @@ describe('Vocabulaire des chansons (ops génériques → ActiveEffect)', () => {
 
   it('charDRBonus Soc (« Camarades d’équipage », l.236) → charDRBonusOf', () => {
     const c = mk('m3');
-    applyOps(c, [{ op: 'charDRBonus', char: 'Soc', bonus: 1 }], { label: 'Chanson', rng: makeRNG(1), defaultUntilTime: 100 });
-    expect(charDRBonusOf(c, 'Soc')).toBe(1);
-    expect(charDRBonusOf(c, 'FM')).toBe(0);
+    applyOps(c, [{ op: 'charDRBonus', char: 'sociabilite', bonus: 1 }], { label: 'Chanson', rng: makeRNG(1), defaultUntilTime: 100 });
+    expect(charDRBonusOf(c, 'sociabilite')).toBe(1);
+    expect(charDRBonusOf(c, 'force-mentale')).toBe(0);
   });
 
   it('ignoreStatePenalties{count:1} (« Les dames de L’Anguille », l.244) : ignore le PIRE État, pas les autres', () => {
@@ -60,11 +60,11 @@ describe('Vocabulaire des chansons (ops génériques → ActiveEffect)', () => {
 
 // ── Flux d'activation (Talent, MDG 09 l.32-40) ──
 const singer = (): Combatant => mk('barde', {
-  characteristics: { ...chars, Soc: 50 },
-  skills: [{ skillId: 'divertissement', spec: 'chant', characteristic: 'Soc', advances: 20 } as SkillInstance],
+  characteristics: { ...chars, sociabilite: 50 },
+  skills: [{ skillId: 'divertissement', spec: 'chant', characteristic: 'sociabilite', advances: 20 } as SkillInstance],
   talents: [{ talentId: 'chanson-de-marin', spec: 'jacques-bret-a-rencontre-notre-acier', times: 1 }],
 });
-const marin = (): Combatant => mk('marin', { skills: [{ skillId: 'voile', characteristic: 'Ag', advances: 10 } as SkillInstance] });
+const marin = (): Combatant => mk('marin', { skills: [{ skillId: 'voile', characteristic: 'agilite', advances: 10 } as SkillInstance] });
 const ship = (over: Partial<Combatant> = {}): Combatant =>
   mk('ship', { kind: 'npc', bodyShape: 'vehicule', creatureId: 'coracle', crewIds: ['barde', 'marin'], ...over });
 
@@ -130,7 +130,7 @@ describe('Flux « Chanson de marin » (Talent, MDG 09 l.32-40)', () => {
       expect((c.activeEffects ?? []).every((e) => e.effectId === shantyId)).toBe(true);
     }
     // DÉCOY : effet ÉTRANGER dont le LIBELLÉ collisionne avec celui de la chanson mais SANS le bon effectId.
-    marinC.activeEffects = [...(marinC.activeEffects ?? []), { label, bonus: 3, char: 'FM', duration: { scale: 'permanent' } } as never];
+    marinC.activeEffects = [...(marinC.activeEffects ?? []), { label, bonus: 3, char: 'force-mentale', duration: { scale: 'permanent' } } as never];
     endShanty(useGame.getState, bard);
     expect((marinC.activeEffects ?? []).some((e) => e.label === label && e.bonus === 3)).toBe(true); // le décoy survit
     expect((marinC.activeEffects ?? []).some((e) => e.effectId === shantyId)).toBe(false); // le vrai effet de chant est parti
@@ -151,7 +151,7 @@ describe('Flux « Chanson de marin » (Talent, MDG 09 l.32-40)', () => {
 describe('« Suivez le capitaine » : captainOps sur le SEUL titulaire du rôle Capitaine (MDG 09 l.246-248)', () => {
   it('applyShantyToCrew pose le +20 Soc sur le capitaine, pas sur les autres', () => {
     seedBattleRng(3);
-    const capitaine = mk('cap', { skills: [{ skillId: 'commandement', characteristic: 'Soc', advances: 20 } as SkillInstance] });
+    const capitaine = mk('cap', { skills: [{ skillId: 'commandement', characteristic: 'sociabilite', advances: 20 } as SkillInstance] });
     const mousse = marin();
     const hull = mk('ship', { kind: 'npc', bodyShape: 'vehicule', creatureId: 'coracle', crewIds: ['cap', 'marin'] });
     useGame.setState({
@@ -159,7 +159,7 @@ describe('« Suivez le capitaine » : captainOps sur le SEUL titulaire du rôle 
       party: [capitaine, mousse], facing: {}, scene: null as never, gameTime: 0,
     });
     applyShantyToCrew(useGame.getState, hull, capitaine, 'suivez-le-capitaine', 2);
-    expect((capitaine.activeEffects ?? []).some((e) => e.testMod === 20 && e.testModChar === 'Soc')).toBe(true);
+    expect((capitaine.activeEffects ?? []).some((e) => e.testMod === 20 && e.testModChar === 'sociabilite')).toBe(true);
     expect((mousse.activeEffects ?? []).length).toBe(0);
     expect(findSeaShantyById('suivez-le-capitaine')!.captainOps).toBeTruthy();
   });
@@ -167,8 +167,8 @@ describe('« Suivez le capitaine » : captainOps sur le SEUL titulaire du rôle 
 
 describe('Commandant émérite (MDG 09 l.50-54) — +niveau DR aux Tests d’équipage', () => {
   const cap = (times: number): Combatant => mk('cap', {
-    characteristics: { ...chars, Soc: 60 },
-    skills: [{ skillId: 'commandement', characteristic: 'Soc', advances: 20 } as SkillInstance],
+    characteristics: { ...chars, sociabilite: 60 },
+    skills: [{ skillId: 'commandement', characteristic: 'sociabilite', advances: 20 } as SkillInstance],
     talents: [{ talentId: 'commandant-emerite', times }],
   });
 
@@ -181,7 +181,7 @@ describe('Commandant émérite (MDG 09 l.50-54) — +niveau DR aux Tests d’éq
   it('rollCrewRole : le +DR ne s’applique QUE sur un jet RÉUSSI (règle LDB 10 l.20)', () => {
     // valeur 80 : succès quasi garanti avec ce seed ; on vérifie sl = DR de base + niveau.
     const c = cap(3);
-    c.characteristics.Soc = 80;
+    c.characteristics.sociabilite = 80;
     const withTalent = rollCrewRole(c, 'capitaine', makeRNG(11))!;
     const sans = { ...c, talents: [] } as Combatant;
     const without = rollCrewRole(sans, 'capitaine', makeRNG(11))!;

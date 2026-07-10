@@ -671,7 +671,7 @@
               {
                 "times": {
                   "of": {
-                    "bonusOf": "E"
+                    "bonusOf": "endurance"
                   },
                   "factor": -1
                 }
@@ -969,7 +969,7 @@
           "recoveryPenalty": [
             {
               "op": "testMod",
-              "char": "CC",
+              "char": "capacite-de-combat",
               "amount": -10
             }
           ]
@@ -1313,7 +1313,7 @@
         },
         {
           "op": "charMod",
-          "char": "Ag",
+          "char": "agilite",
           "mod": -10,
           "durationHours": {
             "times": {
@@ -1690,7 +1690,7 @@
         "onFail": [
           {
             "op": "charMod",
-            "char": "Ag",
+            "char": "agilite",
             "mod": -10,
             "durationRounds": 2
           }
@@ -1713,7 +1713,7 @@
         },
         {
           "op": "charMod",
-          "char": "Ag",
+          "char": "agilite",
           "mod": -10,
           "durationRounds": {
             "dice": {
@@ -1832,7 +1832,7 @@
         },
         {
           "op": "charMod",
-          "char": "Ag",
+          "char": "agilite",
           "mod": -20,
           "durationRounds": {
             "dice": {
@@ -2135,7 +2135,7 @@
           "recoveryPenalty": [
             {
               "op": "testMod",
-              "char": "Ag",
+              "char": "agilite",
               "amount": -10,
               "movementOnly": true
             },

@@ -88,7 +88,7 @@ describe('États récurrents (« un par Round »)', () => {
 function stub(id: string, kind: 'hero' | 'enemy', x: number, wounds = 12): Combatant {
   return {
     id, name: id, kind,
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: wounds, max: 12, base: 12 },
     advantage: 0, conditions: [], weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4, pos: { x, y: 0 },
@@ -160,8 +160,8 @@ describe('Surincantation (LDB 47 l.28-31)', () => {
     });
     const p = useGame.getState().party.find((h) => h.id === priest.id)!;
     const a = useGame.getState().party.find((h) => h.id === ally.id)!;
-    expect(p.activeEffects?.[0]).toMatchObject({ char: 'CC', bonus: 10, duration: { scale: 'rounds', left: 12 } }); // 6 ×2
-    expect(a.activeEffects?.[0]).toMatchObject({ char: 'CC', bonus: 10, duration: { scale: 'rounds', left: 12 } }); // cible étendue
+    expect(p.activeEffects?.[0]).toMatchObject({ char: 'capacite-de-combat', bonus: 10, duration: { scale: 'rounds', left: 12 } }); // 6 ×2
+    expect(a.activeEffects?.[0]).toMatchObject({ char: 'capacite-de-combat', bonus: 10, duration: { scale: 'rounds', left: 12 } }); // cible étendue
     expect(useGame.getState().journal.join('\n')).toMatch(/Surincantation/);
   });
 });

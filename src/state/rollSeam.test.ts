@@ -32,8 +32,8 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
   const hero = (over: Partial<Combatant> = {}): Combatant =>
     ({
       id: 'H', name: 'Héros', kind: 'hero',
-      characteristics: { CC: 40, CT: 40, F: 40, E: 40, I: 40, Ag: 40, Dex: 40, Int: 40, FM: 40, Soc: 40 },
-      skills: [{ skillId: 'resistance', characteristic: 'E', advances: 20 }],
+      characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 40, 'force-mentale': 40, sociabilite: 40 },
+      skills: [{ skillId: 'resistance', characteristic: 'endurance', advances: 20 }],
       conditions: [], talents: [], fortune: 1, resilience: 1,
       ...over,
     }) as unknown as Combatant;
@@ -41,15 +41,15 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
   const enemy = (over: Partial<Combatant> = {}): Combatant =>
     ({
       id: 'E', name: 'Ennemi', kind: 'enemy',
-      characteristics: { CC: 40, CT: 40, F: 40, E: 40, I: 40, Ag: 40, Dex: 40, Int: 40, FM: 40, Soc: 40 },
-      skills: [{ skillId: 'perception', characteristic: 'I', advances: 20 }],
+      characteristics: { 'capacite-de-combat': 40, 'capacite-de-tir': 40, force: 40, endurance: 40, initiative: 40, agilite: 40, dexterite: 40, intelligence: 40, 'force-mentale': 40, sociabilite: 40 },
+      skills: [{ skillId: 'perception', characteristic: 'initiative', advances: 20 }],
       conditions: [], talents: [],
       ...over,
     }) as unknown as Combatant;
 
   it('hero-test, héros piloté-humain, cadence MANUELLE → M (modale influençable)', () => {
     useGame.setState({ party: [hero()] });
-    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'E', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
+    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'endurance', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-hero');
     expect(useGame.getState().pendingCascade).toBeTruthy(); // surfacé, pas résolu d'office
     expect(applied).toHaveLength(0);
@@ -58,7 +58,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
   it('enemy, côté ennemi/monde SOUS siège MJ, manuel → V (étape visible-lançable MJ)', () => {
     useGame.setState({ party: [enemy()] });
     setGmSeat(useGame.getState, useGame.setState, 0);
-    const req: RollRequest = { side: { actorId: 'E' }, test: { skill: 'perception', char: 'I', label: 'Perception' }, difficulty: 'intermediaire', klass: 'enemy' };
+    const req: RollRequest = { side: { actorId: 'E' }, test: { skill: 'perception', char: 'initiative', label: 'Perception' }, difficulty: 'intermediaire', klass: 'enemy' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-enemy');
     expect(useGame.getState().pendingCascade).toBeTruthy(); // surfacé chez le MJ (V)
     expect(applied).toHaveLength(0);
@@ -66,7 +66,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
 
   it('enemy, SANS siège MJ (IA) → I (inline-PV, résolu d’office)', () => {
     useGame.setState({ party: [enemy()] });
-    const req: RollRequest = { side: { actorId: 'E' }, test: { skill: 'perception', char: 'I', label: 'Perception' }, difficulty: 'intermediaire', klass: 'enemy' };
+    const req: RollRequest = { side: { actorId: 'E' }, test: { skill: 'perception', char: 'initiative', label: 'Perception' }, difficulty: 'intermediaire', klass: 'enemy' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-enemy');
     expect(useGame.getState().pendingCascade).toBeNull();
     expect(applied).toHaveLength(1);
@@ -75,7 +75,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
 
   it('subi, porté par un héros SANS MJ → I (jamais M — « subi » n’est jamais une décision du sujet)', () => {
     useGame.setState({ party: [hero()] });
-    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'E', label: 'Scorbut' }, difficulty: 'intermediaire', klass: 'subi' };
+    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'endurance', label: 'Scorbut' }, difficulty: 'intermediaire', klass: 'subi' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-subi');
     expect(useGame.getState().pendingCascade).toBeNull();
     expect(applied).toHaveLength(1);
@@ -102,7 +102,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
   });
 
   it('batch, voyage COMMANDÉE + kind de ROUTINE → I (immédiat, `runCascadeImmediate`)', () => {
-    const crew: Combatant = { id: 'timonier1', name: 'Timonier', kind: 'hero', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, skills: [{ skillId: 'navigation-fluviale', characteristic: 'Int', advances: 30 }], conditions: [], talents: [] } as unknown as Combatant;
+    const crew: Combatant = { id: 'timonier1', name: 'Timonier', kind: 'hero', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, skills: [{ skillId: 'navigation-fluviale', characteristic: 'intelligence', advances: 30 }], conditions: [], talents: [] } as unknown as Combatant;
     useGame.setState({ party: [crew], travelPlan: { routeId: 'r', fromPlaceId: 'a', toPlaceId: 'b', mode: 'sea', hoursPerDay: 8, km: 0, kmDone: 0, interrupted: false, orders: { cadence: 'commande' } } as never });
     const req: RollRequest = {
       side: { participants: [{ id: 'timonier1', roleId: 'timonier', essential: true, result: null }], shipId: 'nef' },
@@ -116,7 +116,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
   });
 
   it('batch, cadence jour-par-jour, sans MJ → M (multi surfacé, agrégat pré-résolu)', () => {
-    const crew: Combatant = { id: 'timonier1', name: 'Timonier', kind: 'hero', characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, skills: [{ skillId: 'navigation-fluviale', characteristic: 'Int', advances: 30 }], conditions: [], talents: [] } as unknown as Combatant;
+    const crew: Combatant = { id: 'timonier1', name: 'Timonier', kind: 'hero', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, skills: [{ skillId: 'navigation-fluviale', characteristic: 'intelligence', advances: 30 }], conditions: [], talents: [] } as unknown as Combatant;
     useGame.setState({ party: [crew] });
     const req: RollRequest = {
       side: { participants: [{ id: 'timonier1', roleId: 'timonier', essential: true, result: null }], shipId: 'nef' },
@@ -130,7 +130,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
 
   it('rollTitle : dérive le titre depuis les ids (acteur/compétence/difficulté) — un seul composeur', () => {
     useGame.setState({ party: [hero()] });
-    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'E', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
+    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'endurance', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
     expect(rollTitle(useGame.getState, req)).toBe('Héros — Résistance (Résistance Intermédiaire (+0))');
   });
 
@@ -142,7 +142,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
 
   it('mono : startCascade pose pending.title = rollTitle(...), pas req.test.label nu', () => {
     useGame.setState({ party: [hero()] });
-    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'E', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
+    const req: RollRequest = { side: { actorId: 'H' }, test: { skill: 'resistance', char: 'endurance', label: 'Résistance' }, difficulty: 'intermediaire', klass: 'hero-test' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-hero');
     expect(useGame.getState().pendingCascade!.title).toBe(rollTitle(useGame.getState, req));
     expect(useGame.getState().pendingCascade!.title).not.toBe(req.test.label);

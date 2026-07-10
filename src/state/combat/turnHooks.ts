@@ -157,7 +157,7 @@ export function aiMaybeFrenzy(get: Get, set: SetFn, enemy: Combatant): void {
   // que charger, la Frénésie passe au tour suivant. Peek déterministe, sans RNG (avant le test FM) → aucune
   // perturbation du flux `battleRng` quand on diffère, golden RNG préservé sinon.
   if (get().aiWouldCast(enemy.id)) return;
-  if (resolveFrenzyEntry(effectiveChar(enemy, 'FM'), battleRng()).success) {
+  if (resolveFrenzyEntry(effectiveChar(enemy, 'force-mentale'), battleRng()).success) {
     (enemy.psychState ??= []).push({ type: 'frenesie' });
     set({ battle: { ...get().battle!, log: [...get().battle!.log, ev('frenzy', t('turn.frenzyEnter', { name: enemy.name }), enemy.id)] } });
   }

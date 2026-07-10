@@ -13,7 +13,7 @@ function reset() {
   useGame.setState({ party: [], scene: null, merchant: null, merchantStocks: {} });
 }
 
-const hero = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: { Soc: 35 }, skills: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
+const hero = (): Combatant => ({ id: 'h', name: 'H', items: [], characteristics: { sociabilite: 35 }, skills: [], wounds: { current: 10, max: 10 }, conditions: [], weapons: [], armour: {} } as unknown as Combatant);
 
 const sceneWith = (merchant: Record<string, unknown>) => {
   const sc = emptyScene(4, 4); sc.id = 'm';

@@ -125,7 +125,7 @@ export function medicAct(get: Get, set: Set, act: HealMode): void {
   } else {
     const best = bestHealerFor(get().party, act);
     if (!best) return;
-    healer = { id: best.actor.id, name: best.actor.name, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'Int')) };
+    healer = { id: best.actor.id, name: best.actor.name, skill: best.value, intBonus: bonus(effectiveChar(best.actor, 'intelligence')) };
   }
 
   if (act === 'surgery' || act === 'recovery') {

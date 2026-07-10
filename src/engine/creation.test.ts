@@ -77,9 +77,9 @@ describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE2 c
     const chars = baseChars();
     const talents: string[] = [];
     applyStarEffect('wymund-l-anachorete', chars, (t) => talents.push(t)); // id STABLE
-    expect(chars.Soc).toBe(32);
-    expect(chars.I).toBe(32);
-    expect(chars.Int).toBe(27);
+    expect(chars.sociabilite).toBe(32);
+    expect(chars.initiative).toBe(32);
+    expect(chars.intelligence).toBe(27);
     expect(talents).toEqual([]);
   });
 
@@ -87,7 +87,7 @@ describe('applyStarEffect — effet d\'un signe aux ATTRIBUTS DE DÉPART (ADE2 c
     const chars = baseChars();
     const talents: string[] = [];
     applyStarEffect('mummit-le-fou', chars, (t) => talents.push(t)); // id STABLE
-    expect(chars.FM).toBe(27);
+    expect(chars['force-mentale']).toBe(27);
     expect(talents).toEqual(['Chanceux']);
   });
 
@@ -156,9 +156,9 @@ describe('répartition de 100 Points (LDB 05 l.385 : min 4, max 18)', () => {
     expect(POINT_BUY_TOTAL).toBe(100);
   });
   it('refus : total ≠ 100, min < 4, max > 18', () => {
-    expect(validatePointBuy({ ...alloc(10), CC: 11 }).ok).toBe(false); // 101
-    expect(validatePointBuy({ ...alloc(10), CC: 3, CT: 17 }).ok).toBe(false); // min
-    expect(validatePointBuy({ ...alloc(10), CC: 19, CT: 1 }).ok).toBe(false); // max
+    expect(validatePointBuy({ ...alloc(10), 'capacite-de-combat': 11 }).ok).toBe(false); // 101
+    expect(validatePointBuy({ ...alloc(10), 'capacite-de-combat': 3, 'capacite-de-tir': 17 }).ok).toBe(false); // min
+    expect(validatePointBuy({ ...alloc(10), 'capacite-de-combat': 19, 'capacite-de-tir': 1 }).ok).toBe(false); // max
   });
 });
 

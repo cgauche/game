@@ -53,7 +53,7 @@ describe('Test Étendu séquentiel (porte DR cumulé)', () => {
   it('Dissipation (LDB 46 l.205) : DR cumulé atteignant le NI retire les effets du sort de ses porteurs', () => {
     const h = hero();
     const cible = { id: 'cible', name: 'Cible', kind: 'hero', conditions: [],
-      activeEffects: [{ label: 'Écorce', char: 'Ag', bonus: -10, duration: { scale: 'rounds', left: 5 },
+      activeEffects: [{ label: 'Écorce', char: 'agilite', bonus: -10, duration: { scale: 'rounds', left: 5 },
         spell: { spellId: 'ecorce', ni: 2, casterId: h.id, label: 'Écorce' } }] } as any;
     useGame.setState({ battle: { round: 1, combatants: [h, cible], log: [] } as any });
     useGame.getState().startExtendedTest({ actorId: h.id, label: 'Dissiper Écorce', skillLabel: 'Langue (Magick)',

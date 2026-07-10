@@ -18,7 +18,7 @@ function buildSeam(weeks = 3): InterludeSeam {
   const a = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Vétéran', rng: makeRNG(1601) });
   a.xp = 300;
   const b = createHero({ speciesId: 'nains', careerId: 'artisan', name: 'Forgeron', rng: makeRNG(1602) });
-  if (!b.skills.some((s) => s.skillId === 'metier')) b.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'Dex', advances: 10 });
+  if (!b.skills.some((s) => s.skillId === 'metier')) b.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'dexterite', advances: 10 });
   useGame.setState({ party: [a, b], battle: null, interlude: null, bank: [], pendingOrders: [], journal: [], money: fromBrass(5000) });
   useGame.getState().startScene(testScene);
   vi.clearAllTimers();

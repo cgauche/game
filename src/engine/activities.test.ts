@@ -151,7 +151,7 @@ describe('learnableTalents — « un Talent en dehors de votre Carrière » (ch.
   });
   it('metierOf : Compétence Métier avec avances seulement', () => {
     expect(metierOf(hero)).toBeUndefined();
-    hero.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'Dex', advances: 5 });
+    hero.skills.push({ skillId: 'metier', spec: 'Forgeron', characteristic: 'dexterite', advances: 5 });
     expect(skillInstanceLabel(metierOf(hero)!)).toBe('Métier (Forgeron)');
   });
 });
@@ -221,8 +221,8 @@ describe('resolveTravelActivity — résolveur PUR par POSTE (un héros désign�
 
   it('compétence « au choix » spec-aware : la MEILLEURE de L’ACTEUR l’emporte (Cartographe vs Dessin)', () => {
     const hero = mk();
-    hero.skills.push({ skillId: 'metier', spec: 'Cartographe', characteristic: 'Dex', advances: 60 });
-    hero.skills.push({ skillId: 'art', spec: 'Dessin', characteristic: 'Dex', advances: 10 });
+    hero.skills.push({ skillId: 'metier', spec: 'Cartographe', characteristic: 'dexterite', advances: 60 });
+    hero.skills.push({ skillId: 'art', spec: 'Dessin', characteristic: 'dexterite', advances: 10 });
     const r = resolveTravelActivity(hero, activityById('etablir-cartes')!, makeRNG(5), { stages: 3 });
     // cible = meilleure des DEUX spec de l'acteur (Cartographe +60 > Dessin +10), Difficulté Intermédiaire (+0).
     const expected = Math.max(
@@ -288,17 +288,17 @@ describe('rôle de marche persistant (travelRole) — « les mêmes au même pos
 
   it('defaultTravelRole : poste où la meilleure compétence du héros est la plus haute', () => {
     const guetteur = mk('G');
-    guetteur.skills.push({ skillId: 'perception', characteristic: 'I', advances: 80 });
+    guetteur.skills.push({ skillId: 'perception', characteristic: 'initiative', advances: 80 });
     expect(defaultTravelRole(guetteur)).toBe('rester-aux-aguets');
     const survivant = mk('S');
-    survivant.skills.push({ skillId: 'survie-en-exterieur', characteristic: 'Int', advances: 80 });
+    survivant.skills.push({ skillId: 'survie-en-exterieur', characteristic: 'intelligence', advances: 80 });
     // Survie alimente Plein air, Approvisionnement et Monter le camp : l'un de ces postes ressort.
     expect(['plein-air', 'approvisionnement', 'monter-camp']).toContain(defaultTravelRole(survivant));
   });
 
   it("l'assignation d'Étape est initialisée depuis les rôles (0 clic) ; travelRole épinglé prime", () => {
     const a = mk('A'), b = mk('B');
-    a.skills.push({ skillId: 'perception', characteristic: 'I', advances: 80 });
+    a.skills.push({ skillId: 'perception', characteristic: 'initiative', advances: 80 });
     b.travelRole = 'recuperer'; // épinglé par le joueur → prime sur l'inférence
     const asg = stageAssignmentFromRoles([a, b]);
     expect(asg[a.id].activityId).toBe('rester-aux-aguets'); // inféré

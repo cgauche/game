@@ -1,6 +1,6 @@
 [
   {
-    "id": "CC",
+    "id": "capacite-de-combat",
     "abr": "CC",
     "label": "Capacité de Combat",
     "type": "roll",
@@ -11,7 +11,7 @@
     }
   },
   {
-    "id": "CT",
+    "id": "capacite-de-tir",
     "abr": "CT",
     "label": "Capacité de Tir",
     "type": "roll",
@@ -22,7 +22,7 @@
     }
   },
   {
-    "id": "F",
+    "id": "force",
     "abr": "F",
     "label": "Force",
     "type": "roll",
@@ -33,7 +33,7 @@
     }
   },
   {
-    "id": "E",
+    "id": "endurance",
     "abr": "E",
     "label": "Endurance",
     "type": "roll",
@@ -44,7 +44,7 @@
     }
   },
   {
-    "id": "I",
+    "id": "initiative",
     "abr": "I",
     "label": "Initiative",
     "type": "roll",
@@ -55,7 +55,7 @@
     }
   },
   {
-    "id": "Ag",
+    "id": "agilite",
     "abr": "Ag",
     "label": "Agilité",
     "type": "roll",
@@ -66,7 +66,7 @@
     }
   },
   {
-    "id": "Dex",
+    "id": "dexterite",
     "abr": "Dex",
     "label": "Dextérité",
     "type": "roll",
@@ -77,7 +77,7 @@
     }
   },
   {
-    "id": "Int",
+    "id": "intelligence",
     "abr": "Int",
     "label": "Intelligence",
     "type": "roll",
@@ -88,7 +88,7 @@
     }
   },
   {
-    "id": "FM",
+    "id": "force-mentale",
     "abr": "FM",
     "label": "Force Mentale",
     "type": "roll",
@@ -99,7 +99,7 @@
     }
   },
   {
-    "id": "Soc",
+    "id": "sociabilite",
     "abr": "Soc",
     "label": "Sociabilité",
     "type": "roll",

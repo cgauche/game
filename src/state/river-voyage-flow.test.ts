@@ -314,7 +314,7 @@ describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExpos
 
   it('un héros peut CONTRACTER la maladie sur échec du Test d\'Exposition (contraction directe, T2C ch.14)', () => {
     launch(false, 45, { riverExposure: { source: 'grande-ville-marais', mode: 'ingestion', chancePct: 100 } });
-    set({ party: get().party.map((h) => ({ ...h, characteristics: { ...h.characteristics, E: 1 } })) });
+    set({ party: get().party.map((h) => ({ ...h, characteristics: { ...h.characteristics, endurance: 1 } })) });
     seedBattleRng(1);
     get().startTravel('r-reik', 'barge');
     drainCascade(); // draine le jour PUIS l'exposition (chaînés)

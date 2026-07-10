@@ -232,7 +232,7 @@ export function giveTrappingLabel(give: { trappingId?: string; custom?: string }
 /** Limite d'Encombrement = Bonus de Force + Bonus d'Endurance, +2 par niveau de Costaud
  *  (LDB ; talent Costaud : « Augmentez les Points d'Encombrement … de votre niveau × 2 »). */
 export function maxEncumbrance(c: Combatant): number {
-  return bonus(baseWithTraits(c, 'F')) + bonus(baseWithTraits(c, 'E')) + talentEncumbranceBonus(c);
+  return bonus(baseWithTraits(c, 'force')) + bonus(baseWithTraits(c, 'endurance')) + talentEncumbranceBonus(c);
 }
 
 /** Encombrement transporté. Les objets PORTÉS sur le corps (armure ET accessoire) voient leur
@@ -405,8 +405,8 @@ export function isWeaponActive(c: Combatant, uid?: string): boolean {
  *  utilisent... Projectiles [Machine de guerre], à l'exception du bélier, qui utilise Force ») — la SEULE
  *  arme de MÊLÉE du Groupe `machine-de-guerre` est le bélier : aucun id en dur, dérivé du Groupe + du type
  *  (comme le décompte d'équipage dérive du Groupe). Lu par `combatValue` (`Weapon.resolveChar`). */
-function warMachineResolveChar(it: Pick<ItemInstance, 'kind' | 'weaponGroup'>): 'F' | undefined {
-  return it.weaponGroup === 'machine-de-guerre' && it.kind === 'melee' ? 'F' : undefined;
+function warMachineResolveChar(it: Pick<ItemInstance, 'kind' | 'weaponGroup'>): 'force' | undefined {
+  return it.weaponGroup === 'machine-de-guerre' && it.kind === 'melee' ? 'force' : undefined;
 }
 
 /** Machine de guerre nécessitant une ÉQUIPE (ADE II ch.08 l.233, Qualité `equipe` ; catégorie `armes-de-siege`) :

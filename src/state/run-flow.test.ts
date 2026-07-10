@@ -53,7 +53,7 @@ describe('runFlow — nœud test (suspension + continuation)', () => {
       kind: 'seq',
       steps: [
         setFlag('avant'),
-        { kind: 'test', test: { characteristic: 'F', label: 'Force' }, success: setFlag('gagne'), fail: setFlag('perd') },
+        { kind: 'test', test: { characteristic: 'force', label: 'Force' }, success: setFlag('gagne'), fail: setFlag('perd') },
         setFlag('apres'), // CONTINUATION : doit s'exécuter APRÈS la branche
       ],
     };
@@ -74,7 +74,7 @@ describe('runFlow — nœud test (suspension + continuation)', () => {
 
   it('resolveTest joue la branche ÉCHEC sur un Test raté', () => {
     useGame.setState({ party: [hero()] });
-    const flow: Flow = { kind: 'test', test: { characteristic: 'F' }, success: setFlag('gagne'), fail: setFlag('perd') };
+    const flow: Flow = { kind: 'test', test: { characteristic: 'force' }, success: setFlag('gagne'), fail: setFlag('perd') };
     runFlow(useGame.getState, useGame.setState, flow);
     useGame.setState({ pendingTest: { ...useGame.getState().pendingTest!, roll: 99, success: false } });
     useGame.getState().resolveTest();

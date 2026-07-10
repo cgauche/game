@@ -66,7 +66,7 @@ describe('Lot 4b — Sort à Test interne (Chute) cadence-aware en contexte d’
     const step = flow.kind === 'seq' ? flow.steps[0] : flow; // seq → 1ʳᵉ étape
     expect(step.kind).toBe('test');
     if (step.kind !== 'test') throw new Error('attendu : nœud Flow `test`');
-    expect(step.test.characteristic).toBe('Dex');
+    expect(step.test.characteristic).toBe('dexterite');
     expect(step.success.kind).toBe('seq'); // réussite = rien (l'objet tient)
     expect(step.fail.kind).toBe('do');     // échec = la branche narrative (« l'objet tombe »)
   });
@@ -96,7 +96,7 @@ describe('Lot 4b — Sort à Test interne (Chute) cadence-aware en contexte d’
   it('VICTIME ennemi → jet INLINE + branche honorée + ligne de parité au journal (aucune cascade)', () => {
     seedBattleRng(5);
     const { W, E } = setup();
-    E.characteristics.Dex = 1; // Dextérité ~imbattable à RATER → la branche échec (narration « l'objet tombe ») s'applique
+    E.characteristics.dexterite = 1; // Dextérité ~imbattable à RATER → la branche échec (narration « l'objet tombe ») s'applique
     frozenCast(W, E);
 
     useGame.getState().castConfirm();

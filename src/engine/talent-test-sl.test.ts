@@ -38,7 +38,7 @@ describe('talentTestSLBonus — règle LDB 10 universelle (matcher structuré te
   });
 
   it('manual (contexte narratif) : Haine ne s’applique JAMAIS automatiquement', () => {
-    expect(talentTestSLBonus(c([{ talentId: 'haine', times: 3 }]), { char: 'FM' })).toBe(0);
+    expect(talentTestSLBonus(c([{ talentId: 'haine', times: 3 }]), { char: 'force-mentale' })).toBe(0);
   });
 
   it('when : Vigilance ne booste Perception que si le contexte (whenHolds) est vrai', () => {
@@ -51,7 +51,7 @@ describe('talentTestSLBonus — règle LDB 10 universelle (matcher structuré te
 
 describe('Intégrité des talent.test.matches (garde de curation)', () => {
   const skillIds = new Set(skills.map((s) => s.id));
-  const CHARS = new Set(['CC', 'CT', 'F', 'E', 'I', 'Ag', 'Dex', 'Int', 'FM', 'Soc']);
+  const CHARS = new Set(['capacite-de-combat', 'capacite-de-tir', 'force', 'endurance', 'initiative', 'agilite', 'dexterite', 'intelligence', 'force-mentale', 'sociabilite']);
   it('chaque match a skill XOR char, et l’id/la Caractéristique résout', () => {
     const bad: string[] = [];
     for (const t of talents) {

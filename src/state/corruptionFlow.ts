@@ -94,7 +94,7 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
 export function applyMutation(get: Get, set: Set, hero: Combatant, test?: { roll: number; target: number }, align?: ChaosAlign): string[] {
   const rng = battleRng();
   const lines: string[] = [];
-  const lost = bonus(effectiveChar(hero, 'FM'));
+  const lost = bonus(effectiveChar(hero, 'force-mentale'));
   hero.corruption = Math.max(0, (hero.corruption ?? 0) - lost);
   const kindRoll = d100(rng);
   const kind = mutationKindFor(hero.species, kindRoll);

@@ -26,11 +26,11 @@ export function rollInitiative(c: Combatant, rng: RNG): number {
   const talent = talentInitiativeBonus(c);
   switch (rule('combat-init-method')) {
     case 'fixed-i':
-      return baseWithTraits(c, 'I') + talent;
+      return baseWithTraits(c, 'initiative') + talent;
     case 'roll-bi':
-      return rng.int(1, 10) + bonus(baseWithTraits(c, 'I')) + bonus(effectiveChar(c, 'Ag')) + talent;
+      return rng.int(1, 10) + bonus(baseWithTraits(c, 'initiative')) + bonus(effectiveChar(c, 'agilite')) + talent;
     default: // 'roll-i'
-      return baseWithTraits(c, 'I') + rng.int(1, 10) + talent;
+      return baseWithTraits(c, 'initiative') + rng.int(1, 10) + talent;
   }
 }
 

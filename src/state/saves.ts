@@ -28,8 +28,9 @@
  */
 import type { RuleValue } from '../engine/policy';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
+import { remapCharKeysDeep } from './charKeyMigration';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 export interface SaveMeta {
   version: number;
@@ -128,6 +129,9 @@ export const MIGRATIONS: MigrationMap = {
     if (!wm || !wm.places?.length) delete data.worldMap;
     return { ...doc, version: 2, data };
   },
+  // v2 → v3 : renommage CharKey → slugs pleins (#311, `CC`/`CT`/`F`/`E`/`I`/`Ag`/`Dex`/`Int`/`FM`/`Soc`
+  // → `capacite-de-combat`/… ) — remappe RÉCURSIVEMENT tout l'état (party/vessel/travelPlan/scene…).
+  2: (doc) => ({ ...doc, version: 3, data: remapCharKeysDeep(doc.data) as Record<string, unknown> }),
 };
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

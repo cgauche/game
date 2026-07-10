@@ -50,7 +50,7 @@ describe('L13 — gates & redirections', () => {
     const { hero, foes } = setup();
     const E = foes[0];
     hero.activeEffects = [{ label: 'Bénédiction de Protection', bonus: 0, duration: { scale: 'rounds', left: 6 }, attackWardFM: true }];
-    E.characteristics.FM = 30; // cible Accessible 50
+    E.characteristics['force-mentale'] = 30; // cible Accessible 50
     const refused = attackWardGate(E, hero, seq([99]));
     expect(refused.allowed).toBe(false);
     expect(refused.lines.join(' ')).toMatch(/ne peut se résoudre|Bénédiction de Protection/);
@@ -65,7 +65,7 @@ describe('L13 — gates & redirections', () => {
     const { hero, foes } = setup();
     const E = foes[0];
     hero.activeEffects = [{ label: 'Bénédiction de Protection', bonus: 0, duration: { scale: 'rounds', left: 6 }, attackWardFM: true }];
-    E.characteristics.FM = 1; // cible 21
+    E.characteristics['force-mentale'] = 1; // cible 21
     // graine dont le 1er d100 rate la cible 21 (cherchée puis rejouée — déterministe par seed).
     let failSeed: number | null = null;
     for (let s = 1; s <= 60; s++) {
@@ -135,7 +135,7 @@ describe('L13 — gates & redirections', () => {
     const { hero, priest, foes } = setup();
     const E = foes[0];
     hero.activeEffects = [{ label: 'Martyr', bonus: 0, duration: { scale: 'rounds', left: 4 }, martyrGuard: priest.id }];
-    priest.characteristics.E = 30; // BE 3 → doublé 6
+    priest.characteristics.endurance = 30; // BE 3 → doublé 6
     priest.armour.corps = 0;
     priest.wounds = { current: 12, max: 12 } as Combatant['wounds'];
     const heroBefore = hero.wounds.current;
@@ -151,8 +151,8 @@ describe('L13 — gates & redirections', () => {
     const E1 = foes[0]; // cible principale, mourante
     const E2 = foes[1]; // voisin — receveur du rebond
     if (!E2) return; // garde : la rencontre doit fournir ≥ 2 ennemis
-    hero.characteristics.FM = 40; // BFM 4 → 4 rebonds max, saut 4 m
-    hero.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'Int', advances: 10 });
+    hero.characteristics['force-mentale'] = 40; // BFM 4 → 4 rebonds max, saut 4 m
+    hero.skills.push({ skillId: 'langue', spec: 'magick', characteristic: 'intelligence', advances: 10 });
     E1.wounds = { current: 1, max: 8 } as Combatant['wounds'];
     E2.pos = { x: 12, y: 10 }; // à 1 case d'E1 (11,10)
     const e2Before = E2.wounds.current;

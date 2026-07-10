@@ -26,7 +26,7 @@ import type { Combatant } from '../engine/types';
 const C = (over: Partial<Combatant>): Combatant =>
   ({
     id: 'X', name: 'X', kind: 'hero',
-    characteristics: { CC: 45, CT: 45, F: 35, E: 35, I: 35, Ag: 35, Dex: 35, Int: 35, FM: 35, Soc: 35 },
+    characteristics: { 'capacite-de-combat': 45, 'capacite-de-tir': 45, force: 35, endurance: 35, initiative: 35, agilite: 35, dexterite: 35, intelligence: 35, 'force-mentale': 35, sociabilite: 35 },
     wounds: { current: 14, max: 14 }, advantage: 0, conditions: [], traumas: [],
     weapons: [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
@@ -125,7 +125,7 @@ const FIXTURES: Record<string, Fix> = {
   opposition: { pid: 'A', make: (win) => ({
     battle: arena(),
     pendingCast: { casterId: 'B', targetId: 'A', spellId: 'drain', missile: false, focused: false, result: { cast: true, roll: 20, target: 45, sl: 2, isCritical: false, isFumble: false, log: '' } },
-    pendingCastOpposition: { kind: 'resist', char: 'FM', participants: [{ id: 'A', interactive: true, result: { oppose: win ? WIN : LOSE, resisted: win, margin: win ? 0 : 2 } }] },
+    pendingCastOpposition: { kind: 'resist', char: 'force-mentale', participants: [{ id: 'A', interactive: true, result: { oppose: win ? WIN : LOSE, resisted: win, margin: win ? 0 : 2 } }] },
   }) },
   cascade: { pid: 'st1', make: (win) => ({
     battle: arena(),

@@ -52,7 +52,7 @@ describe('Battement & Distraire — flux HÉROS (par modale, pas l’IA)', () =>
 
   it('Battement : Action, jet de CC réussi → l’Avantage adverse chute ; l’Action est consommée', () => {
     const { H, E } = setup();
-    H.characteristics.CC = 60;
+    H.characteristics['capacite-de-combat'] = 60;
     H.resilience = 1; // Résilience : réussite garantie (LDB 17 l.73) → issue déterministe (jet du flux forcé)
     engage(H, E); // Engagé (prérequis l.103)
     expect(useGame.getState().battle!.combatants.find((c) => c.id === E.id)!.advantage).toBe(3);
@@ -77,8 +77,8 @@ describe('Battement & Distraire — flux HÉROS (par modale, pas l’IA)', () =>
 
   it('Distraire : Mouvement, Test opposé gagné → distractedRounds=2 ; le Mouvement est consommé, PAS l’Action', () => {
     const { H, E } = setup();
-    H.characteristics.Ag = 95; // Athlétisme très haut → gagne le Test opposé
-    E.characteristics.FM = 5; // Calme (figé à l’ouverture) très bas → perd
+    H.characteristics.agilite = 95; // Athlétisme très haut → gagne le Test opposé
+    E.characteristics['force-mentale'] = 5; // Calme (figé à l’ouverture) très bas → perd
     expect(E.distractedRounds ?? 0).toBe(0);
 
     useGame.getState().battleDistraire(); // OUVRE (fige le Calme du foe), sans tirer l’Athlétisme
@@ -102,7 +102,7 @@ describe('Battement & Distraire — flux HÉROS (par modale, pas l’IA)', () =>
 
   it('Battement échoué (CC très bas) : l’Avantage adverse est PRÉSERVÉ ; l’Action reste consommée', () => {
     const { H, E } = setup();
-    H.characteristics.CC = 1; // échec quasi certain
+    H.characteristics['capacite-de-combat'] = 1; // échec quasi certain
     engage(H, E);
     useGame.getState().battleBattement();
     useGame.getState().battementRoll();

@@ -12,7 +12,7 @@ import { bonus, effectiveChar } from './characteristics';
 
 /** Indice de Collision (MDG ch.13 l.444) = Bonus d'Endurance + Bonus de Blessures restantes. PUR. */
 export function collisionIndex(hull: Combatant): number {
-  return bonus(effectiveChar(hull, 'E')) + bonus(hull.wounds.current);
+  return bonus(effectiveChar(hull, 'endurance')) + bonus(hull.wounds.current);
 }
 
 /** Un navire impliqué dans une collision (vu côté Dégâts : IC, M, facteurs de localisation/manœuvre). */

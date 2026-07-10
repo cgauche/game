@@ -13,7 +13,7 @@ function priest() {
   const p = all.find((h) => h.name === 'Frère Anselm')!;
   const sk = p.skills.find((s) => s.skillId === 'priere');
   if (sk) sk.advances = Math.max(sk.advances, 5);
-  else p.skills.push({ skillId: 'priere', characteristic: 'Soc', advances: 5 });
+  else p.skills.push({ skillId: 'priere', characteristic: 'sociabilite', advances: 5 });
   return p;
 }
 
@@ -35,7 +35,7 @@ describe('gates d\'incantation', () => {
   it('blocage de Focalisation → oocFocusSpell refuse', () => {
     const wiz = makePregens().find((h) => h.name === 'Wilhelmina Faust')!;
     wiz.spells = ['arme-aethyrique'];
-    wiz.skills.push({ skillId: 'focalisation', characteristic: 'FM', advances: 5 } as never);
+    wiz.skills.push({ skillId: 'focalisation', characteristic: 'force-mentale', advances: 5 } as never);
     wiz.castPenalties = [{ label: 'Vue assombrie', skill: 'focalisation', blocked: true, roundsLeft: 3 }];
     useGame.setState({ party: [wiz] as Combatant[] });
     useGame.getState().oocFocusSpell(wiz.id, 'arme-aethyrique');

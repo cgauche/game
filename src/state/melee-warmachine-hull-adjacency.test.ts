@@ -21,7 +21,7 @@ const cannonPoste: ShipPoste = { item: cannonWeapon as never, crewIds: ['chef'] 
 const combatant = (over: Partial<Combatant>): Combatant =>
   ({
     id: 'chef', name: 'Chef', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 50, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 50, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [{ name: 'Bélier', type: 'melee', damage: { plusBF: true, flat: 10 }, reach: 'Moyenne', qualities: [{ id: 'equipe', value: 6 }], weaponGroup: 'machine-de-guerre', uid: 'ram-w' }],
     armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },

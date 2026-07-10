@@ -6,7 +6,7 @@ import type { Combatant } from './types';
 const mkHull = (E: number, wounds: number): Combatant =>
   ({
     id: 'h', name: 'coque', kind: 'npc',
-    characteristics: { CC: 0, CT: 0, F: 0, E, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 },
+    characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: E, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 },
     wounds: { current: wounds, max: wounds }, advantage: 0,
     conditions: [], weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 0,

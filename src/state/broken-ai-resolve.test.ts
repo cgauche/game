@@ -19,7 +19,7 @@ const scene = () =>
 
 const sword = [{ name: 'Épée', type: 'melee', damage: { plusBF: false, flat: 4 }, qualities: [] }];
 
-const CHARS = { CC: 35, CT: 35, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 };
+const CHARS = { 'capacite-de-combat': 35, 'capacite-de-tir': 35, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 };
 /** Ennemi minimal pour la DÉCISION pure : pos + arme de mêlée + caracs + États/Détermination paramétrés.
  *  (Les caracs servent au cœur de scoring atteint quand l'ennemi n'est PAS verrouillé — `pickDoctrine`.) */
 function foe(over: Partial<Combatant>): Combatant {

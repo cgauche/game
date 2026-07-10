@@ -19,7 +19,7 @@ function groupe(): Combatant[] {
   const grunni = pregen(PREGEN.tueur);
   const anselm = pregen(PREGEN.pretre);
   if (!anselm.skills.some((s) => s.skillId === 'guerison')) {
-    anselm.skills.push({ skillId: 'guerison', characteristic: 'Int', advances: 25 }); // sinon pas d'Action Soigner
+    anselm.skills.push({ skillId: 'guerison', characteristic: 'intelligence', advances: 25 }); // sinon pas d'Action Soigner
   }
   const klein = pregen(PREGEN.voleur); // Halfling fragile
   klein.fate = 0;
@@ -158,30 +158,30 @@ const scene = buildScene({
           label: 'Knud Cratinx — chef à la peau écailleuse',
           statblock: {
             name: 'Knud Cratinx',
-            char: { M: 4, CC: 36, CT: 43, F: 39, E: 32, I: 35, Ag: 33, Dex: 29, Int: 33, FM: 35, Soc: 30, B: 12 },
+            char: { M: 4, 'capacite-de-combat': 36, 'capacite-de-tir': 43, force: 39, endurance: 32, initiative: 35, agilite: 33, dexterite: 29, intelligence: 33, 'force-mentale': 35, sociabilite: 30, B: 12 },
             traits: [{ id: 'a-distance', value: 9, arg: 'arbalete', range: 60 }, { id: 'arme', value: 7, arg: 'arme-simple' }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'ecailles-epineuses' }],
           },
         },
         {
           pos: { x: 16, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'chien' } }, anim: 'howl',
           label: 'Mikael — tête de chien, hurle à la mort',
-          statblock: { name: 'Mikael', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 1 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'tete-bestiale-chien' }] },
+          statblock: { name: 'Mikael', char: { M: 4, 'capacite-de-combat': 45, 'capacite-de-tir': 30, force: 35, endurance: 35, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30, B: 1 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'tete-bestiale-chien' }] },
         },
         {
           pos: { x: 14, y: 8 }, ref: 'mutant', appearance: { monster: { jambes: 'chevre' } }, anim: 'feeding',
           label: 'Erik — pattes de chèvre, dévore un cadavre',
-          statblock: { name: 'Erik', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 2 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'pattes-chevre' }] },
+          statblock: { name: 'Erik', char: { M: 4, 'capacite-de-combat': 45, 'capacite-de-tir': 30, force: 35, endurance: 35, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30, B: 2 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'pattes-chevre' }] },
         },
         {
           pos: { x: 15, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'ogive' } }, anim: 'standing',
           label: 'Johann — tête en ogive, panse Mikael',
-          statblock: { name: 'Johann', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 4 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'tete-pointue' }] },
+          statblock: { name: 'Johann', char: { M: 4, 'capacite-de-combat': 45, 'capacite-de-tir': 30, force: 35, endurance: 35, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30, B: 4 }, traits: [{ id: 'arme', value: 7 }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'tete-pointue' }] },
         },
         {
           // « Mutile l'attelage à la hache » → arme dans le Trait (type Grande hache, libellé catalogué → shape).
           pos: { x: 12, y: 7 }, ref: 'mutant', appearance: { monster: { tete: 'minuscule' } }, anim: 'standing',
           label: 'Terenz — crétin, mutile l’attelage',
-          statblock: { name: 'Terenz', char: { M: 4, CC: 45, CT: 30, F: 35, E: 35, I: 30, Ag: 40, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 3 }, traits: [{ id: 'arme', value: 7, arg: 'grande-hache' }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'cretin' }] },
+          statblock: { name: 'Terenz', char: { M: 4, 'capacite-de-combat': 45, 'capacite-de-tir': 30, force: 35, endurance: 35, initiative: 30, agilite: 40, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30, B: 3 }, traits: [{ id: 'arme', value: 7, arg: 'grande-hache' }, { id: 'corruption', arg: 'Mineure' }, { id: 'mutation', arg: 'cretin' }] },
         },
       ],
       onVictory: flowFromEffects([

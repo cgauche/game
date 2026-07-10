@@ -17,7 +17,7 @@ const pen = (c: Combatant, char: string): number[] =>
 function mk(over: Partial<Combatant> = {}): Combatant {
   return {
     id: 'h', name: 'H', kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     wounds: { current: 12, max: 12 }, advantage: 0, conditions: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     skills: [], talents: [], movement: 4,
@@ -46,17 +46,17 @@ describe('Litanie de la Pestilence — les 9 maladies du LDB 20 sont câblées',
 describe('nouveaux symptômes — pénalités (LDB 20 l.99-200)', () => {
   it('bubons : −10 Tests Physiques ET Sociabilité', () => {
     const c = mk({ diseases: [active('peste-noire')] });
-    expect(pen(c, 'F')).toContain(-10);
-    expect(pen(c, 'Soc')).toContain(-10);
+    expect(pen(c, 'force')).toContain(-10);
+    expect(pen(c, 'sociabilite')).toContain(-10);
   });
   it('convulsions : −10 Physiques (pas la Sociabilité)', () => {
     const c = mk({ diseases: [active('fievre-du-rongeur')] });
-    expect(pen(c, 'Ag')).toContain(-10);
+    expect(pen(c, 'agilite')).toContain(-10);
   });
   it('démangeaisons : −10 Sociabilité seulement', () => {
     const c = mk({ diseases: [active('verole-du-tanneur')] });
-    expect(pen(c, 'Soc')).toContain(-10);
-    expect(pen(c, 'F')).toEqual([]);
+    expect(pen(c, 'sociabilite')).toContain(-10);
+    expect(pen(c, 'force')).toEqual([]);
   });
   it('gangrène : compte comme Blessé (bloque 1 PB de guérison) + −10 Soc', () => {
     const c = mk({ diseases: [active('peste-noire')] });

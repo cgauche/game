@@ -131,8 +131,8 @@ describe('Empoignade — store + funnel (LDB 14 l.159/161/169)', () => {
     enemies.slice(1).forEach((e) => (e.dead = true));
     activate(H, E);
     const h = live(H.id), e = live(E.id);
-    h.characteristics = { ...h.characteristics, F: 40 } as never; // BF 4
-    e.characteristics = { ...e.characteristics, E: 30 } as never;  // BE 3
+    h.characteristics = { ...h.characteristics, force: 40 } as never; // BF 4
+    e.characteristics = { ...e.characteristics, endurance: 30 } as never;  // BE 3
     e.armour = { tete: 5, corps: 5, brasG: 5, brasD: 5, jambeG: 5, jambeD: 5 } as never; // PA ignorés
     e.wounds = { current: 20, max: 20 } as never;
     setGrapple(h, e);

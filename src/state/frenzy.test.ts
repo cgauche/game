@@ -40,7 +40,7 @@ describe('Frénésie — immunité psy & fin (→ Exténué)', () => {
     const { H, E } = setup();
     H.size = 'enorme'; // Terreur 2
     (E.psychState ??= []).push({ type: 'frenesie' });
-    E.characteristics.FM = 10;
+    E.characteristics['force-mentale'] = 10;
     resolvePsychAI(useGame.getState, useGame.setState, E);
     const e = useGame.getState().battle!.combatants.find((c) => c.id === E.id)!;
     expect(e.conditions.some((c) => c.name === 'brise')).toBe(false);

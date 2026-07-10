@@ -28,7 +28,7 @@ function seq(values: number[]): RNG {
 function mk(over: Partial<Combatant> = {}): Combatant {
   return {
     id: 'c', name: 'Cobaye', kind: 'enemy', size: 'moyenne', advantage: 0,
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 40, FM: 40, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 40, 'force-mentale': 40, sociabilite: 30 },
     conditions: [], skills: [], talents: [], traits: [], groups: [],
     weapons: [], armour: { tete: 0, brasG: 0, brasD: 0, corps: 0, jambeG: 0, jambeD: 0 },
     movement: 4, wounds: { current: 12, max: 12 },
@@ -143,11 +143,11 @@ describe('Cieux — arc d’Azyr (LDB 48 l.87) : géométrie on:{near} + bypass 
     // voisin en mailles (métal) : l’arc perce les PA métalliques → BFM(4) − BE(2) − 0 = 2 Blessures.
     const nearMail = at({ id: 'n', kind: 'enemy', items: [mail(4)],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 4, jambeG: 0, jambeD: 0 } as Combatant['armour'],
-      characteristics: { ...mk().characteristics, E: 20 } as Combatant['characteristics'] }, 6, 5);
+      characteristics: { ...mk().characteristics, endurance: 20 } as Combatant['characteristics'] }, 6, 5);
     // voisin en cuir (non-métal) : rien n’est percé → BFM(4) − BE(2) − PA(4) = 0, l’armure tient.
     const nearLeather = at({ id: 'l', kind: 'enemy', items: [leather(4)],
       armour: { tete: 0, brasG: 0, brasD: 0, corps: 4, jambeG: 0, jambeD: 0 } as Combatant['armour'],
-      characteristics: { ...mk().characteristics, E: 20 } as Combatant['characteristics'] }, 5, 6);
+      characteristics: { ...mk().characteristics, endurance: 20 } as Combatant['characteristics'] }, 5, 6);
     // voisin avec le Talent (Cieux) : exempté par la Condition Flow `has talent`.
     const nearTalent = at({ id: 't', kind: 'enemy',
       talents: [{ talentId: 'magie-des-arcanes', spec: 'cieux', times: 1 }] as Combatant['talents'] }, 4, 5);

@@ -11,7 +11,7 @@ import type { Scene, SceneEntity, CustomStatblock } from './scene';
  * déclenchent à la rencontre. Depuis le fold cascade : c'est UNE cascade `purpose:'test'` à N étapes
  * (une par héros concerné, `kind:'encounterPsych'`) — plus N modales enchaînées. On vérifie ce contrat.
  */
-const TERREUR2: CustomStatblock = { name: 'Spectre', char: { F: 30, E: 30, FM: 30 }, traits: [{ id: 'terreur', value: 2 }] };
+const TERREUR2: CustomStatblock = { name: 'Spectre', char: { force: 30, endurance: 30, 'force-mentale': 30 }, traits: [{ id: 'terreur', value: 2 }] };
 const ELFE: CustomStatblock = { name: 'Elfe', char: { B: 10 }, groups: ['elfe'] };
 
 function ent(over: Partial<SceneEntity> & Pick<SceneEntity, 'id'>): SceneEntity {
@@ -29,7 +29,7 @@ function scene(entities: SceneEntity[]): Scene {
 /** Héros au Calme bas (FM 1, 0 avance) → Test simple raté de façon déterministe (cible basse). */
 function timoreux(name: string, fm = 1) {
   const h = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name, rng: makeRNG(1) });
-  h.characteristics.FM = fm;
+  h.characteristics['force-mentale'] = fm;
   h.skills = []; // pas d'avance de Calme → calmeValue = FM brut
   return h;
 }

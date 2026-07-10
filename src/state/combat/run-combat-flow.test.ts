@@ -28,7 +28,7 @@ function flow(pre: number, success: number, fail: number, post: number): Flow {
     kind: 'seq',
     steps: [
       wounds(pre),
-      { kind: 'test', test: { characteristic: 'F', label: 'Force' }, success: wounds(success), fail: wounds(fail) },
+      { kind: 'test', test: { characteristic: 'force', label: 'Force' }, success: wounds(success), fail: wounds(fail) },
       wounds(post), // CONTINUATION
     ],
   };
@@ -92,7 +92,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
   it('HÉROS manuel : cascadeRoll+cascadeNext joue la BRANCHE puis la continuation (Force élevée → succès)', () => {
     seedBattleRng(5);
     const { H } = setup();
-    H.characteristics.F = 90; // Force élevée → Test réussi (branche success = −5)
+    H.characteristics.force = 90; // Force élevée → Test réussi (branche success = −5)
     const before = live(H.id).wounds.current;
 
     runCombatFlow({ mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Flux' }, flow(3, 5, 99, 7));
@@ -107,7 +107,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
   it('ENNEMI : test enfoui → INLINE (branche + after), aucune étape de cascade', () => {
     seedBattleRng(5);
     const { E } = setup();
-    E.characteristics.F = 90; // Force élevée → succès inline (branche success = −5)
+    E.characteristics.force = 90; // Force élevée → succès inline (branche success = −5)
     const before = live(E.id).wounds.current;
 
     runCombatFlow({ mode: 'combat', get: useGame.getState, set: useGame.setState, target: E, caster: E, label: 'Flux' }, flow(3, 5, 99, 7));
@@ -124,7 +124,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
     try {
       seedBattleRng(5);
       const { H } = setup();
-      H.characteristics.F = 90;
+      H.characteristics.force = 90;
       const before = live(H.id).wounds.current;
 
       runCombatFlow({ mode: 'combat', get: useGame.getState, set: useGame.setState, target: H, caster: H, label: 'Flux' }, flow(3, 5, 99, 7));
@@ -147,7 +147,7 @@ describe('runCombatFlow — test enfoui + continuation after (combat)', () => {
   it('CONTEXTE CAST : test enfoui APPEND à la cascade `cast` ouverte (une seule cascade enrichie)', () => {
     seedBattleRng(5);
     const { H } = setup();
-    H.characteristics.F = 90; // Force élevée → branche succès (−5) à la validation
+    H.characteristics.force = 90; // Force élevée → branche succès (−5) à la validation
     const before = live(H.id).wounds.current;
 
     // Un vrai applyCast ouvre cette cascade `jet:'cast'` AVANT de jouer les effets du sort.

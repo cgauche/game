@@ -7,7 +7,7 @@ const mk = (over: Partial<Combatant> = {}): Combatant =>
   ({
     name: 'C',
     kind: 'hero',
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 }, // BE=3
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, // BE=3
     wounds: { current: 10, max: 12 },
     conditions: [],
     skills: [],
@@ -82,7 +82,7 @@ describe('Modèle de mort (LDB 18-Traumatisme)', () => {
 describe("OBJET INERTE (affût d'artillerie) — immune à la cascade de Blessures (0 PB permanent)", () => {
   const engin = (over: Partial<Combatant> = {}): Combatant =>
     mk({ inert: true, bodyShape: 'engin', wounds: { current: 0, max: 0 },
-      characteristics: { CC: 0, CT: 0, F: 0, E: 0, I: 0, Ag: 0, Dex: 0, Int: 0, FM: 0, Soc: 0 }, ...over } as unknown as Partial<Combatant>);
+      characteristics: { 'capacite-de-combat': 0, 'capacite-de-tir': 0, force: 0, endurance: 0, initiative: 0, agilite: 0, dexterite: 0, intelligence: 0, 'force-mentale': 0, sociabilite: 0 }, ...over } as unknown as Partial<Combatant>);
   it("inert allié (kind:'hero') à 0 PB : applyZeroWounds ne pose PAS À Terre", () => {
     const e = engin({ kind: 'hero' });
     applyZeroWounds(e);

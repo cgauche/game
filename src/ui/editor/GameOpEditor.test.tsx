@@ -25,15 +25,15 @@ describe('GameOpEditor — Formule sans perte (correction du bug num()→0)', ()
 
   it('opSummary lit chaque forme de Formula (littéral / Bonus / Valeur / Dés)', () => {
     expect(opSummary({ op: 'wounds', amount: 5 })).toContain('5 Blessure');
-    expect(opSummary({ op: 'wounds', amount: { bonusOf: 'FM' } })).toContain('BFM Blessure');
-    expect(opSummary({ op: 'wounds', amount: { charOf: 'FM' } })).toContain('FM Blessure');
+    expect(opSummary({ op: 'wounds', amount: { bonusOf: 'force-mentale' } })).toContain('BFM Blessure');
+    expect(opSummary({ op: 'wounds', amount: { charOf: 'force-mentale' } })).toContain('FM Blessure');
     expect(opSummary({ op: 'heal', amount: { dice: { n: 1, sides: 10, plus: 2 } } })).toContain('1d10+2');
   });
 
   it('formulaSummary couvre les 4 formes (jamais « 0 » pour une formule réelle)', () => {
     expect(formulaSummary(7)).toBe('7');
-    expect(formulaSummary({ bonusOf: 'F' })).toBe('BF');
-    expect(formulaSummary({ charOf: 'Int' })).toBe('Int');
+    expect(formulaSummary({ bonusOf: 'force' })).toBe('BF');
+    expect(formulaSummary({ charOf: 'intelligence' })).toBe('Int');
     expect(formulaSummary({ dice: { n: 2, sides: 6 } })).toBe('2d6');
   });
 
@@ -42,8 +42,8 @@ describe('GameOpEditor — Formule sans perte (correction du bug num()→0)', ()
     // Rester sur « dice » renvoie la MÊME référence (aucune coercition en nombre).
     expect(shapeOf(dice)).toBe('dice');
     expect(formulaForShape('dice', dice)).toBe(dice);
-    expect(shapeOf({ charOf: 'FM' })).toBe('char');
-    expect(formulaForShape('char', { charOf: 'FM' })).toEqual({ charOf: 'FM' });
+    expect(shapeOf({ charOf: 'force-mentale' })).toBe('char');
+    expect(formulaForShape('char', { charOf: 'force-mentale' })).toEqual({ charOf: 'force-mentale' });
     // Bascule littéral→nombre conserve la valeur littérale ; vers une forme structurée → défaut valide.
     expect(formulaForShape('lit', 4)).toBe(4);
     expect(formulaForShape('dice', 4)).toEqual({ dice: { n: 1, sides: 10 } });
@@ -77,7 +77,7 @@ describe('GameOpEditor — menu « + op » COMPLET', () => {
 
 describe('GameOpEditor — éditeur pour TOUTE op (dédié ou repli JSON)', () => {
   it('grantWeapon (sans éditeur dédié) rend un repli JSON montrant ses params', () => {
-    const ops: GameOp[] = [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'FM' }, plusBF: false }];
+    const ops: GameOp[] = [{ op: 'grantWeapon', name: 'Arme aethyrique', damage: { bonusOf: 'force-mentale' }, plusBF: false }];
     const html = renderToStaticMarkup(<GameOpEditor ops={ops} onChange={() => {}} />);
     expect(html).toContain('(JSON)'); // repli JSON présent
     expect(html).toContain('Arme aethyrique'); // params lisibles dans le textarea

@@ -17,7 +17,7 @@ import type { Combatant, Weapon } from '../engine/types';
 
 const foe = (id: string, over: Partial<Combatant> = {}): Combatant =>
   ({ id, name: id, kind: 'enemy', pos: { x: 0, y: 0 }, wounds: { current: 10, max: 10 }, advantage: 0,
-    characteristics: { CC: 30, CT: 30, F: 30, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 },
+    characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 },
     armour: {} as never, conditions: [], traits: [], talents: [], skills: [], weapons: [] as Weapon[], ...over }) as unknown as Combatant;
 
 function mountBattle(combatants: Combatant[]) {
@@ -103,7 +103,7 @@ describe('Filet lesté (Aux Armes p.95) — Immobilisante à Force FIGÉE (55), 
   });
 
   it('à la touche : escapeStrength = 55 FIGÉ, indépendant de la Force de l’attaquant (ici F=90)', () => {
-    const atk = foe('duelliste', { characteristics: { CC: 30, CT: 30, F: 90, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } });
+    const atk = foe('duelliste', { characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 90, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } });
     const tgt = foe('cible');
     const get = mountBattle([atk, tgt]);
     const w: Weapon = { name: 'Filet lesté', type: 'melee', damage: { plusBF: true, flat: 0 }, qualities: [{ id: 'immobilisante-fixe' }] };
@@ -116,7 +116,7 @@ describe('Filet lesté (Aux Armes p.95) — Immobilisante à Force FIGÉE (55), 
 
 describe('Non-régression — Immobilisante GÉNÉRIQUE (LDB p.298, fouet/lasso) et Constricteur (trait)', () => {
   it('Immobilisante générique : escapeStrength = Force DU PORTEUR (charOf F), pas figée', () => {
-    const atk = foe('archer', { characteristics: { CC: 30, CT: 30, F: 47, E: 30, I: 30, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30 } });
+    const atk = foe('archer', { characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 47, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 } });
     const tgt = foe('cible');
     const get = mountBattle([atk, tgt]);
     const fouet = findTrappingById('fouet')!;
