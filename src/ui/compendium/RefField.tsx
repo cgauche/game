@@ -1,10 +1,13 @@
 /**
- * Picker DEV de RÉFÉRENCE unifié au Codex — UN composant, 3 modes, configuré par (catégorie, champ) :
- *  - `liste`  : `Ref[]` = {id, value?} (sorts d'une créature, Bénédictions/Miracles d'un dieu, Qualités
- *               d'une possession) — choix dans le dataset cible, LIBELLÉ affiché mais `id` STABLE stocké ;
- *  - `single` : UN `<select>` (sous-type d'arme, classe d'une carrière, espèce/carrière d'un pré-tiré…) ;
- *  - `vocab`  : `<input list>` + `<datalist>` des valeurs DISTINCTES d'un champ (refChar/refCareer/subType…)
- *               → pioche OU saisie libre.
+ * Picker DEV de RÉFÉRENCE unifié au Codex — UN composant, 4 modes, configuré par (catégorie, champ) :
+ *  - `liste`    : `Ref[]` = {id, value?} (sorts d'une créature, Bénédictions/Miracles d'un dieu, Qualités
+ *                 d'une possession) — choix dans le dataset cible, LIBELLÉ affiché mais `id` STABLE stocké ;
+ *  - `single`   : UN `<select>` (sous-type d'arme, classe d'une carrière, espèce/carrière d'un pré-tiré…) ;
+ *  - `freeText` : `single` + `<input list>`/`<datalist>` (au lieu d'un `<select>` strict) — pioche par
+ *                 LIBELLÉ (id stocké) OU saisie libre hors catalogue (objet/outil CUSTOM, valeur brute
+ *                 conservée, résolue côté runtime par un repli `name`) ;
+ *  - `vocab`    : `<input list>` + `<datalist>` des valeurs DISTINCTES d'un champ (refChar/refCareer/subType…)
+ *                 → pioche OU saisie libre (mais la LISTE elle-même vient d'un champ, pas d'ids de dataset).
  * On stocke partout l'`id` (ou la valeur de `valueKey`) — multilangue-safe (cf.
  * [[game-ids-internes-libelles-display-multilangue]]). Le composant est « bête » : il reçoit sa `cfg`.
  */
@@ -13,7 +16,7 @@ import { datasetArray, type DatasetKey } from '../../data/overrides';
 
 /** Config d'un champ-réf, par (catégorie, champ). Dataset réel (liste/single) OU vocabulaire d'un champ. */
 export type RefFieldCfg =
-  | { ds: DatasetKey; value?: boolean; single?: boolean; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name'; spec?: boolean }
+  | { ds: DatasetKey; value?: boolean; single?: boolean; freeText?: boolean; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name'; spec?: boolean }
   | { vocabFrom: string };
 
 /**
@@ -76,6 +79,7 @@ export function RefField(
   { cfg: RefFieldCfg; categoryKey?: string; fieldKey?: string; value: unknown; onChange: (v: unknown) => void; nullable?: boolean },
 ) {
   if (isVocab(cfg)) return <VocabField label={fieldKey} vocabFrom={cfg.vocabFrom} value={value} onChange={onChange} nullable={nullable} />;
+  if (cfg.freeText) return <FreeRefField label={fieldKey} cfg={cfg} value={value} onChange={onChange} />;
   if (cfg.single) return <SingleRefField label={fieldKey} cfg={cfg} value={value} onChange={onChange} nullable={nullable} />;
   return <ListRefField label={fieldKey} cfg={cfg} value={value} onChange={onChange} />;
 }
@@ -121,6 +125,33 @@ function SingleRefField(
             onChange={(e) => emit(id, e.target.value || undefined)} />
         )}
       </div>
+    </div>
+  );
+}
+
+/** Mode `single` + `freeText` : `<input list>` + `<datalist>` du dataset — pioche par LIBELLÉ (id
+ *  stocké) OU saisie libre hors catalogue (objet/outil CUSTOM, valeur brute conservée telle quelle,
+ *  résolue côté runtime par un repli `name`). Calque le patron `hasItem`/`test.tool` existant. */
+function FreeRefField(
+  { label, cfg, value, onChange }:
+  { label?: string; cfg: { ds: DatasetKey; valueKey?: 'id' | 'label' | 'abr'; labelOf?: 'label' | 'name' }; value: unknown; onChange: (v: unknown) => void },
+) {
+  const options = useOptions(cfg);
+  const cur = typeof value === 'string' ? value : '';
+  const dlId = `dl-free-${cfg.ds}`;
+  const shown = options.find((o) => o.v === cur)?.label ?? cur;
+  return (
+    <div className="ed-field">
+      <span>{label}<em className="de-hint"> (réf {cfg.ds}, ou saisie libre)</em></span>
+      <input
+        list={dlId} defaultValue={shown} key={cur}
+        onChange={(e) => {
+          const v = e.target.value.trim();
+          const match = options.find((o) => o.label.toLowerCase() === v.toLowerCase());
+          onChange(match ? match.v : v || undefined);
+        }}
+      />
+      <datalist id={dlId}>{options.map((o) => <option key={o.v} value={o.label} />)}</datalist>
     </div>
   );
 }

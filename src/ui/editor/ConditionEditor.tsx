@@ -9,7 +9,8 @@ import type { TemporalCondition } from '../../state/scene';
 import { HIT_LOCATION_LABELS, type HitLocation } from '../../engine/types';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import type { Camp, Relation } from '../../engine/relations';
-import { trappings, findTrappingById, findTrappingByLabel } from '../../data';
+import { findTrappingById } from '../../data';
+import { RefField } from '../compendium/RefField';
 
 /** Libellé d'affichage d'un `trappingId` (objet catalogué) — repli sur l'id brut (objet CUSTOM par nom). */
 const trappingLabelOrId = (id?: string): string => (id ? findTrappingById(id)?.label ?? id : '');
@@ -152,7 +153,7 @@ function TimeWindowFields({ window: w, onChange }: { window: TemporalCondition; 
   };
   const field = (key: 'afterHour' | 'afterMinute' | 'beforeHour' | 'beforeMinute', max: number, title: string) => (
     <input
-      type="number" min={0} max={max} title={title} style={{ width: '3.2em' }}
+      type="number" min={0} max={max} title={title} className="dr"
       value={w[key] ?? ''}
       onChange={(e) => set({ [key]: e.target.value === '' ? undefined : Number(e.target.value) })}
     />
@@ -178,16 +179,14 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
       {cond.kind === 'time' && <TimeWindowFields window={cond.window} onChange={(window) => onChange({ kind: 'time', window })} />}
       {cond.kind === 'hasItem' && (
         <>
-          <input
-            className="cond-flag" list="dl-cond-trapping"
-            // L'objet catalogué se choisit par LIBELLÉ (datalist) mais on stocke son `id` ; un nom hors
-            // catalogue (objet CUSTOM) est stocké tel quel → repli `it.name` côté runtime (evalCondition).
-            defaultValue={trappingLabelOrId(cond.trappingId)} key={cond.trappingId}
-            placeholder="objet (catalogue ou nom custom)"
-            onChange={(e) => { const v = e.target.value.trim(); onChange({ kind: 'hasItem', trappingId: findTrappingByLabel(v)?.id ?? v, count: cond.count }); }}
+          {/* L'objet catalogué se choisit par LIBELLÉ mais on stocke son `id` ; un nom hors catalogue
+              (objet CUSTOM) est stocké tel quel → repli `it.name` côté runtime (evalCondition). */}
+          <RefField
+            cfg={{ ds: 'trappings', freeText: true }}
+            value={cond.trappingId}
+            onChange={(v) => onChange({ kind: 'hasItem', trappingId: (v as string) ?? '', count: cond.count })}
           />
-          <datalist id="dl-cond-trapping">{trappings.map((t) => <option key={t.id} value={t.label} />)}</datalist>
-          <label className="dr">×<input type="number" min={1} style={{ width: '3em' }} value={cond.count ?? 1} onChange={(e) => onChange({ kind: 'hasItem', trappingId: cond.trappingId, count: Math.max(1, Number(e.target.value) || 1) })} /></label>
+          <label className="dr">×<input type="number" min={1} value={cond.count ?? 1} onChange={(e) => onChange({ kind: 'hasItem', trappingId: cond.trappingId, count: Math.max(1, Number(e.target.value) || 1) })} /></label>
         </>
       )}
       {cond.kind === 'money' && (
@@ -195,7 +194,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           {(['gold', 'silver', 'brass'] as const).map((k) => (
             <label className="dr" key={k}>
               {k === 'gold' ? 'CO' : k === 'silver' ? 'pa' : 'sc'}
-              <input type="number" min={0} style={{ width: '3.4em' }} value={cond.atLeast[k] ?? ''} onChange={(e) => onChange({ kind: 'money', atLeast: { ...cond.atLeast, [k]: e.target.value === '' ? undefined : Number(e.target.value) } })} />
+              <input type="number" min={0} value={cond.atLeast[k] ?? ''} onChange={(e) => onChange({ kind: 'money', atLeast: { ...cond.atLeast, [k]: e.target.value === '' ? undefined : Number(e.target.value) } })} />
             </label>
           ))}
         </span>
@@ -229,7 +228,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
             <option value="actor">donnée d’un acteur</option>
           </select>
           {typeof cond.value === 'number' ? (
-            <input type="number" style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Number(e.target.value) || 0 })} />
+            <input type="number" className="dr" value={cond.value} onChange={(e) => onChange({ ...cond, value: Number(e.target.value) || 0 })} />
           ) : (
             <>
               <select className="cond-kind" value={cond.value.who} onChange={(e) => onChange({ ...cond, value: { who: e.target.value as ActorRef, field: (cond.value as { field: ActorField }).field } })}>
@@ -247,7 +246,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
-          <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} /> DR
+          <input type="number" min={0} className="dr" value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} /> DR
         </span>
       )}
       {cond.kind === 'nearestFoe' && (
@@ -255,7 +254,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
-          <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} /> cases
+          <input type="number" min={0} className="dr" value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} /> cases
         </span>
       )}
       {cond.kind === 'capability' && (
@@ -267,7 +266,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           <select className="cond-kind" value={cond.op ?? '>='} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
-          <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value ?? 1} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} />
+          <input type="number" min={0} className="dr" value={cond.value ?? 1} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} />
         </span>
       )}
       {cond.kind === 'location' && (
@@ -290,7 +289,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
-          <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} />
+          <input type="number" min={0} className="dr" value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} />
         </span>
       )}
       {cond.kind === 'engagedAdvantageGap' && (
@@ -298,7 +297,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
-          <input type="number" min={0} style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} />
+          <input type="number" min={0} className="dr" value={cond.value} onChange={(e) => onChange({ ...cond, value: Math.max(0, Number(e.target.value) || 0) })} />
         </span>
       )}
       {cond.kind === 'engagedAdvantageLead' && (
@@ -306,7 +305,7 @@ export function ConditionEditor({ cond, onChange }: { cond: Condition; onChange:
           <select className="cond-kind" value={cond.op} onChange={(e) => onChange({ ...cond, op: e.target.value as CompareOp })}>
             {COMPARE_OPS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
-          <input type="number" style={{ width: '3.4em' }} value={cond.value} onChange={(e) => onChange({ ...cond, value: Number(e.target.value) || 0 })} />
+          <input type="number" className="dr" value={cond.value} onChange={(e) => onChange({ ...cond, value: Number(e.target.value) || 0 })} />
         </span>
       )}
       {cond.kind === 'relation' && (

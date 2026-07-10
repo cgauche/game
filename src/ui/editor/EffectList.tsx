@@ -41,7 +41,7 @@ function CrewRosterFields({ e, upd }: { e: any; upd: (patch: any) => void }) {
           <select value={h.roleId} onChange={(ev) => upd({ crew: (e.crew ?? []).map((x: { roleId: string; count: number }, j: number) => (j === i ? { ...x, roleId: ev.target.value } : x)) })}>
             {crewRoles.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
           </select>
-          <label className="dr">×<input type="number" min={1} style={{ width: '3.6em' }} value={h.count} onChange={(ev) => upd({ crew: (e.crew ?? []).map((x: { roleId: string; count: number }, j: number) => (j === i ? { ...x, count: Math.max(1, Number(ev.target.value) || 1) } : x)) })} /></label>
+          <label className="dr">×<input type="number" min={1} value={h.count} onChange={(ev) => upd({ crew: (e.crew ?? []).map((x: { roleId: string; count: number }, j: number) => (j === i ? { ...x, count: Math.max(1, Number(ev.target.value) || 1) } : x)) })} /></label>
           <button type="button" className="btn small" onClick={() => upd({ crew: (e.crew ?? []).filter((_: unknown, j: number) => j !== i) })}>Retirer</button>
         </div>
       ))}
@@ -260,14 +260,15 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         )}
         {effect.type === 'giveTrapping' && (
           <>
-            <input list="dl-trappings-give" placeholder="Objet de catalogue (sinon nom custom hors-base)"
-              value={e.trappingId ? (trappingsData.find((t) => t.id === e.trappingId)?.label ?? e.trappingId) : (e.custom ?? '')}
-              onChange={(ev) => {
-                const v = ev.target.value;
-                const t = trappingsData.find((x) => x.label.toLowerCase() === v.toLowerCase());
-                upd(t ? { trappingId: t.id, custom: undefined } : { custom: v || undefined, trappingId: undefined });
-              }} />
-            <datalist id="dl-trappings-give">{trappingsData.map((t) => <option key={t.id} value={t.label} />)}</datalist>
+            <RefField
+              cfg={{ ds: 'trappings', freeText: true }}
+              value={e.trappingId ?? e.custom}
+              onChange={(v) => {
+                const val = v as string | undefined;
+                const known = val ? trappingsData.some((t) => t.id === val) : false;
+                upd(known ? { trappingId: val, custom: undefined } : { custom: val, trappingId: undefined });
+              }}
+            />
             <input
               placeholder="Qualités magiques ajoutées (virgules, ex. De plaies atroces)"
               value={(e.qualities ?? []).join(', ')}
@@ -306,7 +307,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             {e.target === 'hero' && (
               <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
             )}
-            <label className="dr">Jours affamés <input type="number" min={1} style={{ width: '3.2em' }} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <label className="dr">Jours affamés <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
           </div>
         )}
         {effect.type === 'inflictThirst' && (
@@ -318,7 +319,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             {e.target === 'hero' && (
               <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
             )}
-            <label className="dr">Jours assoiffés <input type="number" min={1} style={{ width: '3.2em' }} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <label className="dr">Jours assoiffés <input type="number" min={1} value={e.days ?? 1} onChange={(ev) => upd({ days: Math.max(1, Number(ev.target.value) || 1) })} /></label>
           </div>
         )}
         {effect.type === 'exposureNight' && (
@@ -334,7 +335,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             {e.target === 'hero' && (
               <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
             )}
-            <label className="dr">Tests <input type="number" min={1} style={{ width: '3.2em' }} value={e.count ?? 2} onChange={(ev) => upd({ count: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <label className="dr">Tests <input type="number" min={1} value={e.count ?? 2} onChange={(ev) => upd({ count: Math.max(1, Number(ev.target.value) || 1) })} /></label>
           </div>
         )}
         {effect.type === 'inflictTrauma' && (
@@ -396,7 +397,7 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               <option value="peur">Peur</option>
               <option value="terreur">Terreur</option>
             </select>
-            <label className="dr">Indice <input type="number" min={1} style={{ width: '3.2em' }} value={e.indice ?? 1} onChange={(ev) => upd({ indice: Math.max(1, Number(ev.target.value) || 1) })} /></label>
+            <label className="dr">Indice <input type="number" min={1} value={e.indice ?? 1} onChange={(ev) => upd({ indice: Math.max(1, Number(ev.target.value) || 1) })} /></label>
             <input placeholder="Source (apparition, présage…)" value={e.label ?? ''} onChange={(ev) => upd({ label: ev.target.value })} />
             <select value={e.target ?? 'party'} onChange={(ev) => upd({ target: ev.target.value })}>
               <option value="party">Tout le groupe</option>
@@ -517,13 +518,13 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             </select>
             <input placeholder="Nom du navire (ex. « Le Cormoran » — vide = nom du type)" value={e.name ?? ''} onChange={(ev) => upd({ name: ev.target.value || undefined })} />
             <div className="tf-row">
-              <label className="dr">Moral initial <input type="number" min={0} max={100} style={{ width: '3.6em' }} value={e.morale ?? 75} onChange={(ev) => upd({ morale: Math.max(0, Math.min(100, Number(ev.target.value) || 0)) })} /></label>
-              <label className="dr">Coque max (vide = intacte) <input type="number" min={1} style={{ width: '3.6em' }} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>
+              <label className="dr">Moral initial <input type="number" min={0} max={100} value={e.morale ?? 75} onChange={(ev) => upd({ morale: Math.max(0, Math.min(100, Number(ev.target.value) || 0)) })} /></label>
+              <label className="dr">Coque max (vide = intacte) <input type="number" min={1} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>
               {e.hullMax != null && (
-                <label className="dr">Coque actuelle <input type="number" min={0} style={{ width: '3.6em' }} value={e.hullCurrent ?? e.hullMax} onChange={(ev) => upd({ hullCurrent: Math.max(0, Number(ev.target.value) || 0) })} /></label>
+                <label className="dr">Coque actuelle <input type="number" min={0} value={e.hullCurrent ?? e.hullMax} onChange={(ev) => upd({ hullCurrent: Math.max(0, Number(ev.target.value) || 0) })} /></label>
               )}
-              <label className="dr">Sabotage DR (vide = aucun, MDG 14 l.45-47) <input type="number" min={-5} max={0} style={{ width: '3.6em' }} value={e.saboteurDR ?? ''} onChange={(ev) => upd({ saboteurDR: ev.target.value === '' ? undefined : Math.max(-5, Math.min(0, Number(ev.target.value) || 0)) })} /></label>
-              <label className="dr">Eau douce L (vide = ravitaillement réputé assuré) <input type="number" min={0} style={{ width: '4em' }} value={e.waterLitres ?? ''} onChange={(ev) => upd({ waterLitres: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
+              <label className="dr">Sabotage DR (vide = aucun, MDG 14 l.45-47) <input type="number" min={-5} max={0} value={e.saboteurDR ?? ''} onChange={(ev) => upd({ saboteurDR: ev.target.value === '' ? undefined : Math.max(-5, Math.min(0, Number(ev.target.value) || 0)) })} /></label>
+              <label className="dr">Eau douce L (vide = ravitaillement réputé assuré) <input type="number" min={0} value={e.waterLitres ?? ''} onChange={(ev) => upd({ waterLitres: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
             </div>
             <CrewRosterFields e={e} upd={upd} />
           </>
@@ -533,11 +534,11 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             <div className="mini-title">Navire de campagne courant — champs vides = INCHANGÉS (#233)</div>
             <input placeholder="Nom du navire (vide = inchangé)" value={e.name ?? ''} onChange={(ev) => upd({ name: ev.target.value || undefined })} />
             <div className="tf-row">
-              <label className="dr">Moral (vide = inchangé) <input type="number" min={0} max={100} style={{ width: '3.6em' }} value={e.morale ?? ''} onChange={(ev) => upd({ morale: ev.target.value === '' ? undefined : Math.max(0, Math.min(100, Number(ev.target.value) || 0)) })} /></label>
-              <label className="dr">Coque max (vide = inchangée) <input type="number" min={1} style={{ width: '3.6em' }} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>
-              <label className="dr">Coque actuelle (vide = inchangée) <input type="number" min={0} style={{ width: '3.6em' }} value={e.hullCurrent ?? ''} onChange={(ev) => upd({ hullCurrent: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
-              <label className="dr">Sabotage DR (vide = inchangé, MDG 14 l.45-47) <input type="number" min={-5} max={0} style={{ width: '3.6em' }} value={e.saboteurDR ?? ''} onChange={(ev) => upd({ saboteurDR: ev.target.value === '' ? undefined : Math.max(-5, Math.min(0, Number(ev.target.value) || 0)) })} /></label>
-              <label className="dr">Eau douce L (vide = inchangée) <input type="number" min={0} style={{ width: '4em' }} value={e.waterLitres ?? ''} onChange={(ev) => upd({ waterLitres: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
+              <label className="dr">Moral (vide = inchangé) <input type="number" min={0} max={100} value={e.morale ?? ''} onChange={(ev) => upd({ morale: ev.target.value === '' ? undefined : Math.max(0, Math.min(100, Number(ev.target.value) || 0)) })} /></label>
+              <label className="dr">Coque max (vide = inchangée) <input type="number" min={1} value={e.hullMax ?? ''} onChange={(ev) => upd({ hullMax: ev.target.value === '' ? undefined : Math.max(1, Number(ev.target.value)) })} /></label>
+              <label className="dr">Coque actuelle (vide = inchangée) <input type="number" min={0} value={e.hullCurrent ?? ''} onChange={(ev) => upd({ hullCurrent: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
+              <label className="dr">Sabotage DR (vide = inchangé, MDG 14 l.45-47) <input type="number" min={-5} max={0} value={e.saboteurDR ?? ''} onChange={(ev) => upd({ saboteurDR: ev.target.value === '' ? undefined : Math.max(-5, Math.min(0, Number(ev.target.value) || 0)) })} /></label>
+              <label className="dr">Eau douce L (vide = inchangée) <input type="number" min={0} value={e.waterLitres ?? ''} onChange={(ev) => upd({ waterLitres: ev.target.value === '' ? undefined : Math.max(0, Number(ev.target.value) || 0) })} /></label>
             </div>
             <CrewRosterFields e={e} upd={upd} />
           </>
@@ -559,8 +560,8 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
                   <option value={1}>+</option>
                   <option value={-1}>−</option>
                 </select>
-                <label className="dr">Fixe <input type="number" min={0} style={{ width: '3.6em' }} value={e.delta?.flat ?? 0} onChange={(ev) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), flat: Math.max(0, Number(ev.target.value) || 0) } })} /></label>
-                <label className="dr">d10 <input type="number" min={0} style={{ width: '3.6em' }} value={e.delta?.d10 ?? 0} onChange={(ev) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), d10: Math.max(0, Number(ev.target.value) || 0) } })} /></label>
+                <label className="dr">Fixe <input type="number" min={0} value={e.delta?.flat ?? 0} onChange={(ev) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), flat: Math.max(0, Number(ev.target.value) || 0) } })} /></label>
+                <label className="dr">d10 <input type="number" min={0} value={e.delta?.d10 ?? 0} onChange={(ev) => upd({ delta: { ...(e.delta ?? { flat: 0, d10: 0, sign: 1 }), d10: Math.max(0, Number(ev.target.value) || 0) } })} /></label>
               </div>
             )}
           </>
@@ -662,18 +663,18 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
             {e.target === 'hero' && (
               <input placeholder="id du héros (vide = 1ᵉʳ)" value={e.heroId ?? ''} onChange={(ev) => upd({ heroId: ev.target.value || undefined })} />
             )}
-            <label className="dr">Hauteur (m) <input type="number" min={0} style={{ width: '3.2em' }} value={e.metres ?? 0} onChange={(ev) => upd({ metres: Number(ev.target.value) })} /></label>
+            <label className="dr">Hauteur (m) <input type="number" min={0} value={e.metres ?? 0} onChange={(ev) => upd({ metres: Number(ev.target.value) })} /></label>
             <label className="dr">
               <input type="checkbox" checked={!!e.to} onChange={(ev) => upd({ to: ev.target.checked ? { x: 0, y: 0, z: 0 } : undefined })} /> Reposer le groupe
             </label>
             {e.to && (
-              <label className="dr">→ <input type="number" style={{ width: '3.2em' }} value={e.to.x} onChange={(ev) => upd({ to: { ...e.to, x: Number(ev.target.value) } })} />,<input type="number" style={{ width: '3.2em' }} value={e.to.y} onChange={(ev) => upd({ to: { ...e.to, y: Number(ev.target.value) } })} /> z<input type="number" style={{ width: '3em' }} value={e.to.z ?? 0} onChange={(ev) => upd({ to: { ...e.to, z: Number(ev.target.value) } })} /></label>
+              <label className="dr">→ <input type="number" value={e.to.x} onChange={(ev) => upd({ to: { ...e.to, x: Number(ev.target.value) } })} />,<input type="number" value={e.to.y} onChange={(ev) => upd({ to: { ...e.to, y: Number(ev.target.value) } })} /> z<input type="number" value={e.to.z ?? 0} onChange={(ev) => upd({ to: { ...e.to, z: Number(ev.target.value) } })} /></label>
             )}
           </div>
         )}
         {effect.type === 'setDoor' && (
           <div className="tf-row">
-            <label className="dr">Porte <input type="number" style={{ width: '3.2em' }} value={e.x ?? 0} onChange={(ev) => upd({ x: Number(ev.target.value) })} />,<input type="number" style={{ width: '3.2em' }} value={e.y ?? 0} onChange={(ev) => upd({ y: Number(ev.target.value) })} /></label>
+            <label className="dr">Porte <input type="number" value={e.x ?? 0} onChange={(ev) => upd({ x: Number(ev.target.value) })} />,<input type="number" value={e.y ?? 0} onChange={(ev) => upd({ y: Number(ev.target.value) })} /></label>
             <select value={e.side ?? 'N'} onChange={(ev) => upd({ side: ev.target.value })}>
               <option value="N">arête N</option>
               <option value="E">arête E</option>
@@ -684,8 +685,8 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
         {effect.type === 'zoneBlast' && (
           <div className="test-fields">
             <div className="tf-row">
-              <label className="dr">Centre <input type="number" style={{ width: '3.2em' }} value={e.center?.x ?? 0} onChange={(ev) => upd({ center: { x: Number(ev.target.value), y: e.center?.y ?? 0 } })} />,<input type="number" style={{ width: '3.2em' }} value={e.center?.y ?? 0} onChange={(ev) => upd({ center: { x: e.center?.x ?? 0, y: Number(ev.target.value) } })} /></label>
-              <label className="dr">Rayon <input type="number" min={0} style={{ width: '3.2em' }} value={e.radius ?? 0} onChange={(ev) => upd({ radius: Number(ev.target.value) })} /></label>
+              <label className="dr">Centre <input type="number" value={e.center?.x ?? 0} onChange={(ev) => upd({ center: { x: Number(ev.target.value), y: e.center?.y ?? 0 } })} />,<input type="number" value={e.center?.y ?? 0} onChange={(ev) => upd({ center: { x: e.center?.x ?? 0, y: Number(ev.target.value) } })} /></label>
+              <label className="dr">Rayon <input type="number" min={0} value={e.radius ?? 0} onChange={(ev) => upd({ radius: Number(ev.target.value) })} /></label>
             </div>
             <GameOpEditor ops={e.ops ?? []} onChange={(ops) => upd({ ops })} />
           </div>

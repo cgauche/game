@@ -700,7 +700,12 @@ button.insp-row.active {
   font-size: 11px;
   color: var(--muted);
 }
-.tf-row .dr input {
+/* Largeur par défaut d'un input numérique compact `.dr` (rangée `.dr Label <input>`, ou `input.dr` posé
+   directement sur un input SANS libellé attenant) — NON scopée à `.tf-row` : couvre aussi les rangées
+   `.cond-time`/`.cond-node` de ConditionEditor et remplace les ~30 `style={{width:'…'}}` inline qui
+   redisaient la même chose. */
+.dr input,
+input.dr {
   width: 44px;
 }
 .branch {

@@ -191,10 +191,11 @@ fait DANS la primitive, pas dans une nième copie.
 | Rangée « influencer le jet » (Chance/Pacte/Résilience/Détermination) | `InfluenceRow` (+ `ResilienceButton`/`DeterminationButton`) | `src/ui/InfluenceRow.tsx` |
 | En-tête A→B d'une modale de combat | `VsHeader` | `src/ui/VsHeader.tsx` |
 | Affichage d'un personnage (HUD/modale/picker) | `PortraitTile` / `CharFrame` | `src/ui/PortraitTile.tsx` |
+| Champ de **filtre/recherche** de liste (catalogue, palette, sélecteur) — état + filtre pur | `SearchFilterField` (widget) + `useFilteredList`/`filterByLabel` (état/pur) | `src/ui/SearchFilterField.tsx` |
 | Lookup d'une table d100 par fourchette `[min,max]` | `findTableEntry` | `src/engine/tables.ts` |
 | Modificateurs de combat « brut » (Avantage×10 + État) | `baseTestMods` | `src/engine/combat.ts` |
 | Libellé d'attaque gratuite de créature (`freeKind`) | `FREE_ATTACK_LABEL` | `src/engine/combat.ts` |
-| Combattant par id (combat ou groupe) | `actorIn` | `src/state/combatOrParty.ts` |
+| Combattant par id — **combat ou groupe** (`actorIn`) vs **en combat seulement** (`inBattleId`) | `actorIn` / `inBattleId` | `src/state/combatOrParty.ts` |
 | **Tout EFFET mécanique** (soin, État, octroi, dégâts, corruption…) — *réflexe avant tout type ad hoc* | **`GameOp[]`** exécuté par `applyOps(target, ops, ctx)` (`ctx.caster` = référent des `Formula`) | `src/engine/ops.ts` |
 | Éditer une **liste de `GameOp[]`** (sorts, effets déclenchés, **PASSIFS** de trait/mutation/qualité, **consommables**) | `GameOpEditor` (liste) — repris par `EffectList`/`FlowEditor` | `src/ui/editor/GameOpEditor.tsx` |
 | Modificateur **PASSIF** d'un élément (trait/mutation/qualité/trauma/maladie/faim/sort) | `passiveMods(c)` collecteur UNIQUE + `passive: GameOp[]` en donnée | `src/engine/trauma.ts` |

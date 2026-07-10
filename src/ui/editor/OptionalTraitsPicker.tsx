@@ -7,10 +7,11 @@
  *    (l'auteur complète l'Indice/la Cible : « Armure 2 », « Haine (Sigmarites) ») ;
  *  - sorts connus (la donnée bestiaire n'en liste pas — choix d'auteur, datalist sur spells.json).
  */
-import { CreatureData, spells, findSpell, refLabel, traits } from '../../data';
+import { CreatureData, traits } from '../../data';
 import { CHAR_KEYS } from '../../engine/types';
 import { traitLabels, parseTraitInstance, formatTrait, optionalLabel } from '../../engine/traits/dispatch';
 import { isOptionalNote, type TraitInstance, type OptionalEntry } from '../../engine/statEntry';
+import { RefField } from '../compendium/RefField';
 
 /** Traits Standard de créature (LDB 76 l.28-31) — « ajoutés à la liste Facultative de TOUTES les
  *  créatures » : dérivés de la DONNÉE (`traits.json`, drapeau `standard`), pas d'une liste en dur. */
@@ -109,31 +110,20 @@ export function OptionalTraitsPicker({
 }
 
 /** Sorts connus d'un ennemi (IDS de spells.json) — l'IA incante les Projectiles magiques connus
- *  (combatFlow). UX inchangée (saisie comma-text par LIBELLÉ via datalist) mais STOCKE des ids
- *  (multilangue) : affichage id→libellé (`refLabel`), saisie libellé→id (`findSpell`). Partagé :
- *  spawn `ref` (Inspector) et statbloc. */
+ *  (combatFlow). Le contrat externe reste `string[]` d'ids (multilangue) ; adapté aux `RefEntry[]`
+ *  de `RefField` (mode `liste`, `ds: 'spells'`) à la frontière. Partagé : spawn `ref` (Inspector) et
+ *  statbloc. */
 export function SpellsField({ value, onChange }: { value: string[] | undefined; onChange: (v: string[] | undefined) => void }) {
+  const list = (value ?? []).map((id) => ({ id }));
   return (
-    <label className="ed-field">
-      Sorts connus (séparés par des virgules — l'IA lance les Projectiles magiques, ex. « Fléchette »)
-      <input
-        value={(value ?? []).map((id) => refLabel('spells', { id })).join(', ')}
-        list="ed-spells-list"
-        placeholder="aucun"
-        onChange={(e) => {
-          const list = e.target.value
-            .split(',')
-            .map((s) => findSpell(s.trim())?.id)
-            .filter((x): x is string => !!x);
-          onChange(list.length ? list : undefined);
-        }}
-      />
-      <datalist id="ed-spells-list">
-        {/* dédoublonné par libellé : spells.json répète certains noms (clés React uniques). */}
-        {Array.from(new Map(spells.map((s) => [s.label, s])).values()).map((s) => (
-          <option key={s.label} value={s.label}>{s.type}{s.subType ? ` — ${s.subType}` : ''}</option>
-        ))}
-      </datalist>
-    </label>
+    <RefField
+      cfg={{ ds: 'spells' }}
+      fieldKey="Sorts connus (LDB 76 — l'IA lance les Projectiles magiques connus)"
+      value={list}
+      onChange={(v) => {
+        const ids = (v as { id: string }[]).map((r) => r.id);
+        onChange(ids.length ? ids : undefined);
+      }}
+    />
   );
 }

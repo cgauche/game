@@ -292,7 +292,7 @@ export function CharacterCreator() {
       </header>
 
       {editing && !editing.lossless && (
-        <p className="hint" style={{ margin: '4px 12px', color: 'var(--gold)' }}>
+        <p className="hint warn-text" style={{ margin: '4px 12px' }}>
           <Icon id="ui/warning" size="sm" /> Brouillon d'origine indisponible : race, carrière, identité et apparence sont repris, mais
           les tirages, allocations et Talents sont à revoir étape par étape avant d'enregistrer.
         </p>
@@ -308,7 +308,7 @@ export function CharacterCreator() {
         <button className="btn" disabled={step === 0} onClick={() => setStep(step - 1)}>
           ← Précédent
         </button>
-        <span className="hint wizard-hint" style={{ color: err ? 'var(--gold)' : undefined }}>
+        <span className={`hint wizard-hint${err ? ' warn-text' : ''}`}>
           {err ?? ''}
         </span>
         {step < ids.length - 1 ? (
@@ -762,7 +762,7 @@ function StarZones({ d, setD }: StepProps): { rail: ReactNode; main: ReactNode }
         <>
           <p className="hint" style={{ margin: '2px 0 0' }}>{[sign.signe, sign.dates, sign.dieux && `Dieu : ${sign.dieux}`].filter(Boolean).join(' · ')}</p>
           {!!sign.effect?.length && <ul className="trapping-list">{sign.effect.map((o, i) => <li key={i}>{opSummary(o)}</li>)}</ul>}
-          <p className="hint" style={{ margin: '4px 0 0', color: xp ? 'var(--gold)' : undefined }}>{xp ? `Tirage gardé : +${xp} PX` : 'Choix libre : +0 PX'}</p>
+          <p className={`hint${xp ? ' warn-text' : ''}`} style={{ margin: '4px 0 0' }}>{xp ? `Tirage gardé : +${xp} PX` : 'Choix libre : +0 PX'}</p>
           {grantChoice && grantOpts.length > 0 && (
             <label>
               {splitLabel(grantChoice).name}

@@ -36,6 +36,7 @@ import type { IconId } from './icons';
 import { PendingRollLine, type PendingRoll } from './RollLine';
 import { testPending, optionPending, difficultyMods } from './breakdown';
 import { Prose, mdToText } from './Prose';
+import { SearchFilterField, useFilteredList } from './SearchFilterField';
 import { t } from '../i18n';
 
 /** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — dérivés de la DONNÉE éditable (`qualities.json`,
@@ -575,11 +576,7 @@ function TrappingSelect({ options, value, onChange, detail }: {
   onChange: (v: string) => void;
   detail?: (id: string) => string;
 }) {
-  const [search, setSearch] = useState('');
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
-  }, [options, search]);
+  const { search, setSearch, filtered } = useFilteredList(options, (o) => o.label);
   const families = useMemo(() => {
     const m = new Map<string, typeof filtered>();
     for (const o of filtered) {
@@ -591,13 +588,7 @@ function TrappingSelect({ options, value, onChange, detail }: {
   }, [filtered]);
   return (
     <>
-      <input
-        className="interlude-search"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Filtrer le catalogue…"
-        aria-label="Filtrer le catalogue"
-      />
+      <SearchFilterField className="interlude-search" value={search} onChange={setSearch} placeholder="Filtrer le catalogue…" ariaLabel="Filtrer le catalogue" />
       <select className="interlude-select" value={value} onChange={(e) => onChange(e.target.value)} size={Math.min(8, Math.max(3, filtered.length))}>
         {families.map(([fam, list]) => (
           <optgroup key={fam} label={fam}>
@@ -686,11 +677,7 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
   const activity = useGame((s) => s.interludeActivity);
   const options = useMemo(() => learnableTalents(hero), [hero]);
   const [label, setLabel] = useState('');
-  const [search, setSearch] = useState('');
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return q ? options.filter((o) => o.label.toLowerCase().includes(q)) : options;
-  }, [options, search]);
+  const { search, setSearch, filtered } = useFilteredList(options, (o) => o.label);
   const sel: LearnOption | undefined = options.find((o) => o.label === label);
   const xp = hero.xp ?? 0;
   const failCount = sel ? fails?.[sel.id] ?? 0 : 0;
@@ -727,7 +714,7 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
         </button>
       }
     >
-      <input className="interlude-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Filtrer les talents…" aria-label="Filtrer les talents" />
+      <SearchFilterField className="interlude-search" value={search} onChange={setSearch} placeholder="Filtrer les talents…" ariaLabel="Filtrer les talents" />
       <select className="interlude-select" value={label} onChange={(e) => setLabel(e.target.value)} size={Math.min(8, Math.max(3, filtered.length))}>
         {filtered.map((o) => (
           <option key={o.label} value={o.label} title={mdToText(findTalent(o.label)?.desc ?? '')}>

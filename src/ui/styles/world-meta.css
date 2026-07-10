@@ -45,6 +45,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  flex-wrap: wrap;
 }
 .worldmap-head h2 {
   margin: 0;
@@ -54,6 +55,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 .worldmap-canvas {
   position: relative; /* ancre les commandes de zoom */
@@ -204,19 +207,12 @@
   .port-purse { margin-left: 0; }
 }
 
-/* ── Éditeur de carte du monde (#T2) ─────────────────────────────────────────── */
-.wme-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 95;
+/* ── Éditeur de carte du monde (#T2) — coquille `ScreenShell` (voile+en-tête ⇒ classes worldmap-*),
+   `.wme-shell` n'ajoute que le fond opaque (l'éditeur masque tout le jeu, pas un voile translucide). ── */
+.wme-shell {
   background: var(--bg, #0e1118);
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
-  gap: 8px;
   overflow: auto;
 }
-.wme-overlay > .bar h3 { margin: 0; }
 .wme-body {
   flex: 1;
   min-height: 0;

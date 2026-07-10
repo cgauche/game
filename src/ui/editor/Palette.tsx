@@ -7,6 +7,8 @@
 import { useState, type ReactNode } from 'react';
 import type { Scene, Terrain } from '../../state/scene';
 import { Icon } from '../Icon';
+import { OptionChooser } from '../OptionChooser';
+import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import { TERRAINS } from '../../state/terrain';
 import { TERRAIN_VIZ } from '../../gameIso/catalog/terrain';
 import { PROPS } from '../../gameIso/catalog/decor';
@@ -111,12 +113,8 @@ export function Palette({
     }
   };
 
-  const match = (label: string) => label.toLowerCase().includes(search.toLowerCase());
   const searchBox = (placeholder: string) => (
-    <div className="pal-search-row">
-      <Icon id="ui/search" size="sm" />
-      <input className="pal-search" placeholder={placeholder} value={search} onChange={(e) => setSearch(e.target.value)} />
-    </div>
+    <SearchFilterField icon className="pal-search" placeholder={placeholder} value={search} onChange={setSearch} />
   );
 
   return (
@@ -144,16 +142,18 @@ export function Palette({
         {family === 'tile' && tool.mode === 'tile' && (
           <>
             <div className="mini-title">Pinceau</div>
-            <div className="row-flex">
-              {[1, 3, 5].map((n) => (
-                <button key={n} className={`btn small ${brush === n && !terrainRect ? 'btn-primary' : ''}`} onClick={() => { setBrush(n); setTerrainRect(false); }}>
-                  {n}×{n}
-                </button>
-              ))}
-              <button className={`btn small ${terrainRect ? 'btn-primary' : ''}`} title="Glisser pour remplir un rectangle" onClick={() => setTerrainRect(!terrainRect)}>
-                ▭ Rect
-              </button>
-            </div>
+            <OptionChooser
+              layout="seg"
+              options={[
+                ...[1, 3, 5].map((n) => ({
+                  key: String(n),
+                  label: `${n}×${n}`,
+                  selected: brush === n && !terrainRect,
+                  onSelect: () => { setBrush(n); setTerrainRect(false); },
+                })),
+                { key: 'rect', label: '▭ Rect', title: 'Glisser pour remplir un rectangle', selected: terrainRect, onSelect: () => setTerrainRect(!terrainRect) },
+              ]}
+            />
             <div className="mini-title">Terrains</div>
             <div className="terrain-palette">
               {TERRAIN_IDS.map((t) => (
@@ -177,18 +177,16 @@ export function Palette({
         {family === 'wall' && tool.mode === 'wall' && (
           <>
             <div className="mini-title">Type de cloison</div>
-            <div className="row-flex">
-              {WALL_PAINTS.map((wp) => (
-                <button
-                  key={wp.paint}
-                  className={`btn small ${tool.paint === wp.paint ? 'btn-primary' : ''}`}
-                  title={wp.label}
-                  onClick={() => setTool({ mode: 'wall', paint: wp.paint })}
-                >
-                  {wp.icon} {wp.label}
-                </button>
-              ))}
-            </div>
+            <OptionChooser
+              layout="seg"
+              options={WALL_PAINTS.map((wp) => ({
+                key: wp.paint,
+                label: <>{wp.icon} {wp.label}</>,
+                title: wp.label,
+                selected: tool.paint === wp.paint,
+                onSelect: () => setTool({ mode: 'wall', paint: wp.paint }),
+              }))}
+            />
             <p className="hint">
               {tool.paint === 'wall' || tool.paint === 'door'
                 ? 'Cliquez PRÈS d’une arête de case : l’arête surlignée prend la cloison/porte. Re-cliquer l’efface.'
@@ -201,21 +199,20 @@ export function Palette({
         {family === 'height' && tool.mode === 'height' && (
           <>
             <div className="mini-title">Pinceau</div>
-            <div className="row-flex">
-              {[1, 3, 5].map((n) => (
-                <button key={n} className={`btn small ${brush === n ? 'btn-primary' : ''}`} onClick={() => setBrush(n)}>
-                  {n}×{n}
-                </button>
-              ))}
-            </div>
+            <OptionChooser
+              layout="seg"
+              options={[1, 3, 5].map((n) => ({ key: String(n), label: `${n}×${n}`, selected: brush === n, onSelect: () => setBrush(n) }))}
+            />
             <div className="mini-title">Hauteur (mètres)</div>
-            <div className="row-flex">
-              {HEIGHT_PRESETS.map((p) => (
-                <button key={p.label} className={`btn small ${tool.metres === p.metres ? 'btn-primary' : ''}`} onClick={() => setTool({ mode: 'height', metres: p.metres })}>
-                  {p.label} <span className="chip">{p.metres > 0 ? '+' : ''}{p.metres} m</span>
-                </button>
-              ))}
-            </div>
+            <OptionChooser
+              layout="seg"
+              options={HEIGHT_PRESETS.map((p) => ({
+                key: p.label,
+                label: <>{p.label} <span className="chip">{p.metres > 0 ? '+' : ''}{p.metres} m</span></>,
+                selected: tool.metres === p.metres,
+                onSelect: () => setTool({ mode: 'height', metres: p.metres }),
+              }))}
+            />
             <label className="mini-title" style={{ display: 'block' }}>
               Sur mesure
               <input type="number" step={0.5} value={tool.metres} onChange={(e) => setTool({ mode: 'height', metres: Number(e.target.value) })} style={{ width: '5rem', marginLeft: '0.5rem' }} />
@@ -229,7 +226,7 @@ export function Palette({
             <div className="mini-title">Personnage à poser</div>
             {searchBox('espèce…')}
             <div className="pal-list">
-              {[{ id: '', label: 'Villageois' }, ...creatureSpeciesOptions()].filter((o) => match(o.label)).map((o) => (
+              {filterByLabel([{ id: '', label: 'Villageois' }, ...creatureSpeciesOptions()], (o) => o.label, search).map((o) => (
                 <button
                   key={o.id || '__villageois'}
                   className={`pal-item${(tool.ref ?? '') === o.id ? ' active' : ''}`}
@@ -248,7 +245,7 @@ export function Palette({
             <div className="mini-title">Décor à poser</div>
             {searchBox('décor…')}
             <div className="pal-list">
-              {Object.values(PROPS).filter((p) => match(p.label)).map((p) => (
+              {filterByLabel(Object.values(PROPS), (p) => p.label, search).map((p) => (
                 <button
                   key={p.id}
                   className={`pal-item${tool.ref === p.id ? ' active' : ''}`}
@@ -294,17 +291,14 @@ export function Palette({
         {family === 'zone' && tool.mode === 'zone' && (
           <>
             <div className="mini-title">Type de zone</div>
-            <div className="stack">
-              <button className={`pal-item${tool.zone === 'trigger' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'trigger' })}>
-                <Icon id="map-tool/zone" size="sm" /> Trigger — déclenche des effets quand le groupe y entre
-              </button>
-              <button className={`pal-item${tool.zone === 'rest' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'rest' })}>
-                <Icon id="rest/camp" size="sm" /> Zone de repos — offre de repos locale (auberge/maison/camp)
-              </button>
-              <button className={`pal-item${tool.zone === 'effect' ? ' active' : ''}`} onClick={() => setTool({ mode: 'zone', zone: 'effect' })}>
-                <Icon id="ui/warning" size="sm" /> Piège / hasard — Dégâts ou États à la traversée / au stationnement
-              </button>
-            </div>
+            <OptionChooser
+              layout="seg"
+              options={[
+                { key: 'trigger', label: <><Icon id="map-tool/zone" size="sm" /> Trigger — déclenche des effets quand le groupe y entre</>, selected: tool.zone === 'trigger', onSelect: () => setTool({ mode: 'zone', zone: 'trigger' }) },
+                { key: 'rest', label: <><Icon id="rest/camp" size="sm" /> Zone de repos — offre de repos locale (auberge/maison/camp)</>, selected: tool.zone === 'rest', onSelect: () => setTool({ mode: 'zone', zone: 'rest' }) },
+                { key: 'effect', label: <><Icon id="ui/warning" size="sm" /> Piège / hasard — Dégâts ou États à la traversée / au stationnement</>, selected: tool.zone === 'effect', onSelect: () => setTool({ mode: 'zone', zone: 'effect' }) },
+              ]}
+            />
             <p className="hint">Glissez sur la carte pour dessiner le rectangle. Effets / lieux de repos s'éditent ensuite ({tool.zone === 'trigger' ? 'panneau Logique' : 'inspecteur'}).</p>
           </>
         )}
@@ -327,7 +321,7 @@ export function Palette({
             <div className="mini-title">Créature à placer</div>
             {searchBox('créature…')}
             <div className="pal-list">
-              {enemyCreatures.filter((c) => match(c.label)).map((c) => (
+              {filterByLabel(enemyCreatures, (c) => c.label, search).map((c) => (
                 <button key={c.id} className={`pal-item${(encRef || enemyCreatures[0]?.id) === c.id ? ' active' : ''}`} onClick={() => setEncRef(c.id)}>
                   {c.label}
                 </button>
@@ -342,7 +336,7 @@ export function Palette({
             <div className="mini-title">Pièce d'artillerie à poser</div>
             {searchBox('engin de siège…')}
             <div className="pal-list">
-              {SIEGE_ENGINES.filter((t) => match(t.label)).map((t) => (
+              {filterByLabel(SIEGE_ENGINES, (t) => t.label, search).map((t) => (
                 <button
                   key={t.id}
                   className={`pal-item${tool.trappingId === t.id ? ' active' : ''}`}

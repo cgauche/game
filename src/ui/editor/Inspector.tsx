@@ -30,6 +30,7 @@ import type { FireArc } from '../../engine/types';
 import { DIFFICULTY_LABELS } from '../../engine/types';
 import { WhenEditor } from './ConditionEditor';
 import { RefField } from '../compendium/RefField';
+import { SearchFilterField, filterByLabel } from '../SearchFilterField';
 import { Icon } from '../Icon';
 import type { IconIdInput } from '../icons';
 
@@ -943,10 +944,9 @@ function SceneProps({
   resizeScene: (w: number, h: number) => void;
 }) {
   const [filter, setFilter] = useState('');
-  const f = filter.toLowerCase();
-  const ents = scene.entities.filter((e) => `${e.label ?? ''} ${e.ref ?? ''} ${e.id}`.toLowerCase().includes(f));
-  const roofs = (scene.roofs ?? []).filter((r) => `${r.label ?? ''} ${r.style} ${r.id}`.toLowerCase().includes(f));
-  const entries = Object.entries(scene.entryPoints ?? {}).filter(([name]) => name.toLowerCase().includes(f));
+  const ents = filterByLabel(scene.entities, (e) => `${e.label ?? ''} ${e.ref ?? ''} ${e.id}`, filter);
+  const roofs = filterByLabel(scene.roofs ?? [], (r) => `${r.label ?? ''} ${r.style} ${r.id}`, filter);
+  const entries = filterByLabel(Object.entries(scene.entryPoints ?? {}), ([name]) => name, filter);
   return (
     <>
       <div className="insp-head">
@@ -1061,10 +1061,7 @@ function SceneProps({
         </div>
       </Fold>
       <Fold title={`Contenu (${scene.entities.length + (scene.roofs ?? []).length})`}>
-        <div className="pal-search-row">
-          <Icon id="ui/search" size="sm" />
-          <input className="pal-search" placeholder="filtrer…" value={filter} onChange={(e) => setFilter(e.target.value)} />
-        </div>
+        <SearchFilterField icon className="pal-search" placeholder="filtrer…" value={filter} onChange={setFilter} />
         <div className="stack insp-content">
           {roofs.map((r) => (
             <button key={r.id} className="listrow insp-row" onClick={() => setSel({ type: 'roof', id: r.id })}>

@@ -8,6 +8,8 @@ import { navalPorts, findNavalPortById } from '../../data';
 import { resolvePortRef } from '../../state/worldMap';
 import { EffectList } from './EffectList';
 import { Icon, IconG } from '../Icon';
+import { ScreenShell } from '../ScreenShell';
+import { Prose } from '../Prose';
 
 /** Libellés des Tailles de communauté (T2C ch.11 l.44-50, indices 1-4). */
 const TAILLE_LABELS = ['Hameau', 'Village', 'Ville', 'Grande ville'];
@@ -122,10 +124,12 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
   };
 
   return (
-    <div className="wme-overlay">
-      <header className="bar">
-        <h3><Icon id="nav/campaign" size="sm" /> Carte du monde — {m.nom}</h3>
-        <div className="editor-toolbar">
+    <ScreenShell
+      title={<><Icon id="nav/campaign" size="sm" /> Carte du monde — {m.nom}</>}
+      onClose={() => { setMap(m); onClose(); }}
+      className="wme-shell"
+      actions={
+        <>
           <button className="btn small" onClick={() => addPlace({ x: 50, y: 50 })}>+ Lieu</button>
           <button
             className={`btn small ${linkFrom ? 'btn-primary' : ''}`}
@@ -139,10 +143,9 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
           <button className="btn small" onClick={() => { setMap(null); onClose(); }} title="Le projet n'offrira plus de voyage">
             Retirer la carte du projet
           </button>
-          <button className="btn small btn-primary" onClick={() => { setMap(m); onClose(); }}>✓ Fermer</button>
-        </div>
-      </header>
-
+        </>
+      }
+    >
       <div className="wme-body">
         <div className="wme-canvas">
           <svg
@@ -351,7 +354,7 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                         <div className="ed-hint">
                           Résolu du catalogue : Taille {def.taille}, Richesse {def.richesse}
                           {def.dirigeant ? ` — ${def.dirigeant}` : ''}
-                          {def.desc ? ` — ${def.desc}` : ''}
+                          {def.desc ? <> — <Prose md={def.desc} /></> : null}
                         </div>
                       ) : null;
                     })()}
@@ -577,6 +580,6 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
           )}
         </aside>
       </div>
-    </div>
+    </ScreenShell>
   );
 }

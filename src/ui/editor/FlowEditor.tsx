@@ -15,7 +15,7 @@ import { Icon } from '../Icon';
 import { DIFFICULTY_LABELS, Difficulty } from '../../engine/types';
 import { isSocialTest } from '../../engine/skills';
 import { RefField } from '../compendium/RefField';
-import { refLabel, trappings, findTrappingById, findTrappingByLabel } from '../../data';
+import { refLabel } from '../../data';
 import {
   EffectFields,
   Ctx,
@@ -27,9 +27,6 @@ import {
   closeDetails,
 } from './EffectList';
 import { ConditionEditor, condSummary } from './ConditionEditor';
-
-/** Libellé d'affichage d'un trappingId (objet catalogué) — repli sur l'id brut (objet CUSTOM par nom). */
-const trappingLabelOrId = (id?: string): string => (id ? findTrappingById(id)?.label ?? id : '');
 
 /** Normalise un Flow en liste de blocs éditables (un `seq` expose ses étapes ; sinon bloc unique). */
 function asSteps(flow: Flow): Flow[] {
@@ -65,15 +62,8 @@ function TestFields({ test, onChange }: { test: FlowTest; onChange: (t: FlowTest
           ))}
         </select>
         <label className="dr">DR≥<input type="number" value={test.requireSL ?? 0} onChange={(e) => upd({ requireSL: Number(e.target.value) })} /></label>
-        {/* Outil : picker catalogue (stocke l'id) avec repli nom pour les objets CUSTOM — calque le
-            pattern hasItem de ConditionEditor (defaultValue + key pour afficher le libellé au montage). */}
-        <input
-          list="dl-test-tool"
-          defaultValue={trappingLabelOrId(test.tool)} key={test.tool}
-          placeholder="Outil (catalogue ou nom custom)"
-          onChange={(e) => { const v = e.target.value.trim(); upd({ tool: (findTrappingByLabel(v)?.id ?? v) || undefined }); }}
-        />
-        <datalist id="dl-test-tool">{trappings.map((t) => <option key={t.id} value={t.label} />)}</datalist>
+        {/* Outil : picker catalogue (stocke l'id) avec repli nom pour les objets CUSTOM. */}
+        <RefField cfg={{ ds: 'trappings', freeText: true }} value={test.tool} onChange={(v) => upd({ tool: v as string | undefined })} />
       </div>
       {isSocialTest(test.skill, test.characteristic) && (
         <div className="tf-row">
