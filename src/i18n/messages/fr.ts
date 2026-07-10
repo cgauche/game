@@ -370,6 +370,9 @@ export const fr = {
   // Décision 1b) — SANS roll/target/sl/won (montant déjà résolu, la rangée de jet porte seule le verdict).
   'out.consWounds': '{n} Blessure(s) perdue(s).',
   'out.consHeal': '{n} Blessure(s) récupérée(s).',
+  // Passthrough narratif générique (#295 Lot 1) : `text` est COMPOSÉ par l'applier (jamais un gabarit avec
+  // {roll}/{target}/{sl} — la ligne de jet visible au-dessus porte déjà le verdict).
+  'out.free': '{text}',
 
   'out.corruptHold': '{name} contient sa Corruption — pour cette fois.',
   'out.corruptThreatens': '{name} échoue — une mutation menace de se développer…',

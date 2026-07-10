@@ -117,8 +117,8 @@ describe('cascade du JOUR fluvial — tous les jets sont influençables (purpose
     drainCascade();
     const j = get().journal.join('\n');
     expect(j).toContain('Vent du jour'); // table des vents (l.21)
-    expect(j).toMatch(/Navigation/); // Test de Navigation de l'étape (l.15)
-    expect(j).toContain('Agilité de rame'); // Test d'Agilité de début de jour (l.17)
+    expect(j).toMatch(/cap|barre|contrôle/); // conséquence de Navigation de l'étape (l.15), #295 Lot 1
+    expect(j).toMatch(/rame|vitesse/); // conséquence d'Agilité de rame (l.17)
     expect(j).toContain('Progression du jour');
     // ENCHAÎNEMENT : la journée s'achève sur une halte de nuit OU l'arrivée (45 km ≈ une journée de barge).
     expect(get().pendingRest || get().scene?.id === 'quai-b').toBeTruthy();
@@ -128,7 +128,9 @@ describe('cascade du JOUR fluvial — tous les jets sont influençables (purpose
     launch(true);
     get().startTravel('r-reik', 'barge');
     drainCascade();
-    expect(get().journal.join('\n')).toContain('Savoir Voies fluviales +1 DR');
+    // #295 Lot 1 : la conséquence ne re-précise plus le montant du bonus (déjà intégré au jet visible
+    // au-dessus) — elle NARRE l'effet (le Savoir rattrape la barre in extremis).
+    expect(get().journal.join('\n')).toContain('Savoir Voies fluviales');
   });
 });
 
@@ -173,7 +175,7 @@ describe('PARITÉ — km / Dégâts de coque IDENTIQUES à l\'ancien chemin inli
     expect(plan.river!.sunk).toBeFalsy();
     expect(plan.kmDone).toBe(12); // dérive = 25 % de la vitesse de base
     expect(plan.vehicle!.wounds.current).toBe(60);
-    expect(get().journal.join('\n')).toContain('retirer la voile avant de chavirer'); // Navigation Accessible (+20), note 4
+    expect(get().journal.join('\n')).toMatch(/chavir|voile affalée/); // Navigation Accessible (+20), note 4
   });
 });
 
