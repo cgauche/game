@@ -15,7 +15,7 @@
  */
 import landCargoJson from '../data/land-cargo.json';
 import { d10, d100, roll as rollDice, type RNG, defaultRNG } from './dice';
-import { findTableEntry } from './tables';
+import { findTableEntry, findTableEntryIndex } from './tables';
 import type { Difficulty } from './types';
 import type { Season } from './travelStages';
 import { type CargoDef, rollSeasonalCargo, cargoBasePrice } from './cargo';
@@ -117,7 +117,7 @@ export function rollRandomLandCargo(season: Season, rng: RNG = defaultRNG): Land
  *  (CO par 10 Enc). `bonusEchelons` (Kemperbad, l.95) monte le résultat de N crans dans le tableau. PUR. */
 export function rollWineQuality(rng: RNG = defaultRNG, bonusEchelons = 0): { roll: number; label: string; price: number } {
   const roll = d10(rng);
-  let idx = LAND.wineQuality.findIndex((w) => roll >= w.min && roll <= w.max);
+  let idx = findTableEntryIndex(LAND.wineQuality, roll);
   if (idx < 0) idx = 0;
   idx = Math.min(LAND.wineQuality.length - 1, idx + Math.max(0, bonusEchelons));
   const tier = LAND.wineQuality[idx];

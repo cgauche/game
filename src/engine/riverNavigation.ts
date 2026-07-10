@@ -30,7 +30,7 @@ import riverCriticalsJson from '../data/river-criticals.json';
 import riverPerilsJson from '../data/river-perils.json';
 import { findTableEntry } from './tables';
 import { d10, d100, rollExpr, type RNG, defaultRNG } from './dice';
-import { rollTest } from './tests';
+import { rollTest, difficultyFromModifier } from './tests';
 import { bonus } from './characteristics';
 import { testValue } from './skills';
 import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from './types';
@@ -171,18 +171,6 @@ export function riverDriftKm(baseKmPerDay: number): number {
  *  de 10 → crans (chaque cran = 10, `DIFFICULTY_MODIFIERS`). PUR. */
 export function navDifficultyWithPenalty(flatPenalty: number): Difficulty {
   return difficultyFromModifier(DIFFICULTY_MODIFIERS[NAV_BASE_DIFFICULTY] + flatPenalty);
-}
-
-/** Difficulté dont le modificateur est le plus proche (≤) de `mod` (échelle `DIFFICULTY_MODIFIERS`). PUR.
- *  Source unique pour composer une difficulté à partir d'un modificateur plat RAW (−10/−20/−30/+20). */
-export function difficultyFromModifier(mod: number): Difficulty {
-  let best: Difficulty = 'intermediaire';
-  let bestDelta = Infinity;
-  for (const [key, m] of Object.entries(DIFFICULTY_MODIFIERS) as [Difficulty, number][]) {
-    const delta = Math.abs(m - mod);
-    if (delta < bestDelta) { best = key; bestDelta = delta; }
-  }
-  return best;
 }
 
 // ── Chavirage (note 4, l.40) ─────────────────────────────────────────────────────────────────────

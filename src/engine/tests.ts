@@ -38,6 +38,18 @@ export function easeDifficulty(base: Difficulty, steps: number): Difficulty {
   return DIFFICULTY_LADDER[Math.max(0, Math.min(DIFFICULTY_LADDER.length - 1, i - steps))];
 }
 
+/** Difficulté dont le modificateur est le plus proche de `mod` (échelle `DIFFICULTY_MODIFIERS`). PUR.
+ *  Source unique pour composer une difficulté à partir d'un modificateur plat RAW (−10/−20/−30/+20…). */
+export function difficultyFromModifier(mod: number): Difficulty {
+  let best: Difficulty = 'intermediaire';
+  let bestDist = Infinity;
+  for (const key of Object.keys(DIFFICULTY_MODIFIERS) as Difficulty[]) {
+    const dist = Math.abs(DIFFICULTY_MODIFIERS[key] - mod);
+    if (dist < bestDist) { bestDist = dist; best = key; }
+  }
+  return best;
+}
+
 export interface TestResult {
   roll: number;
   target: number; // valeur effective après difficulté

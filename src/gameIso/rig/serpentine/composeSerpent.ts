@@ -12,6 +12,7 @@ import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
 import { SERPENT_SPECIES } from '../creatures';
+import { sortByZ } from '../composite';
 
 export type SerpentBoneId = 'corps' | 'cou' | 'tete';
 type SBone = FKBone & { z: number };
@@ -115,15 +116,14 @@ export function resolveSerpentFromProps(
   const world = worldTransformsG(sk, pose) as Record<SerpentBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const art: Record<SerpentBoneId, string> = { corps: coil(p), cou: neck(), tete: headFor(p, view) };
-  return (Object.keys(sk) as SerpentBoneId[])
+  return sortByZ((Object.keys(sk) as SerpentBoneId[])
     .map((id) => ({
       id,
       matrix: world[id],
       scale: [1, 1] as [number, number],
       z: sk[id].z,
       parts: [{ svg: applyTokenMap(art[id], tmap), layer: 0 }],
-    }))
-    .sort((a, b) => a.z - b.z);
+    })));
 }
 
 /** Props par défaut (serpent générique) — repli si une espèce n'est pas dans le registre. */

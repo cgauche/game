@@ -191,8 +191,8 @@ export function rollCourseChange(rng: RNG = defaultRNG, bonus = 0): CourseChange
  *  les distances divisées par 2 (l.351). PUR. */
 export function lighthouseSpotDifficulty(milles: number, clocher = false): Difficulty | null {
   const d = clocher ? milles * DATA.phares.clocher.distanceDiviseur : milles;
-  const row = DATA.phares.voirLaLumiere.find((r) => d >= r.min && d <= r.max);
-  return row?.difficulty ?? null;
+  const row = findTableEntry(DATA.phares.voirLaLumiere, d);
+  return d > row.max ? null : row.difficulty;
 }
 
 /** Bonus d'ORIENTATION une fois le repère perçu : phare → « premier chiffre » de Savoir (Océans)

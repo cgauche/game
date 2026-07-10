@@ -13,6 +13,7 @@ import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
 import { SQUIG_SPECIES } from '../creatures';
+import { sortByZ } from '../composite';
 
 export type SquigBoneId = 'corps' | 'machoire';
 type SBone = FKBone & { z: number };
@@ -98,13 +99,12 @@ export function resolveSquigFromProps(
   const world = worldTransformsG(sk, pose) as Record<SquigBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const art: Record<SquigBoneId, string> = { corps: body(p, view), machoire: jaw(p, view) };
-  return (Object.keys(sk) as SquigBoneId[])
+  return sortByZ((Object.keys(sk) as SquigBoneId[])
     .filter((id) => art[id])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,
       parts: [{ svg: applyTokenMap(art[id], tmap), layer: 0 }],
-    }))
-    .sort((a, b) => a.z - b.z);
+    })));
 }
 
 export const SQUIG_DEFAULT: SquigProps = {

@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest';
 import type { RNG } from './dice';
 import { createHero } from './character';
 import { makeRNG } from './dice';
+import { difficultyFromModifier } from './tests';
 import {
   rollRiverWind, tickRiverWind, riverWindEffect, savoirVoiesFluvialesBonus, riverPilotSkill,
   riverControlKept, rowingAgilityFactor, riverDayKm, riverDriftKm, navDifficultyWithPenalty,
-  difficultyFromModifier, resolveCapsizeRighting, capsizeSinkTurns, holeSinkMinutes,
+  resolveCapsizeRighting, capsizeSinkTurns, holeSinkMinutes,
   riverCritical, resolveRiverImpact, rollBarrage, echouageDamage, findRiverPeril, RIVER_PERILS,
 } from './riverNavigation';
 

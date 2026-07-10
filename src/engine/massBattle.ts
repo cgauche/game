@@ -16,8 +16,8 @@
 import {
   massBattlePowerEstimate, massBattleMightModifiers, massBattleWarMachines, massBattleStructures, massBattleHazards,
 } from '../data';
-import { rollTest, type TestResult } from './tests';
-import { DIFFICULTY_MODIFIERS, type Difficulty } from './types';
+import { rollTest, difficultyFromModifier, type TestResult } from './tests';
+import { type Difficulty } from './types';
 import { RNG, defaultRNG } from './dice';
 import { findTableEntry } from './tables';
 
@@ -161,19 +161,6 @@ export function resolveClash(
 /** Arrondi à la dizaine la plus proche (l.71 : « arrondie à la dizaine la plus proche »). */
 export function roundToTen(n: number): number {
   return Math.round(n / 10) * 10;
-}
-
-/** Difficulté (bande la plus proche) d'un modificateur brut de Test — mappe l'écart de Puissance sur
- *  l'échelle de Difficulté du jeu (le Test de Commandement du Discours inspirant est joué avec une
- *  Difficulté, pas un modificateur libre). */
-export function difficultyFromModifier(mod: number): Difficulty {
-  let best: Difficulty = 'intermediaire';
-  let bestDist = Infinity;
-  for (const key of Object.keys(DIFFICULTY_MODIFIERS) as Difficulty[]) {
-    const dist = Math.abs(DIFFICULTY_MODIFIERS[key] - mod);
-    if (dist < bestDist) { bestDist = dist; best = key; }
-  }
-  return best;
 }
 
 /** Difficulté du Test de Commandement du Discours inspirant (l.71) : « une Difficulté déterminée par la

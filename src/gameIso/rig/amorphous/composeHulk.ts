@@ -12,6 +12,7 @@ import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
 import { HULK_SPECIES } from '../creatures';
+import { sortByZ } from '../composite';
 
 export type HulkBoneId = 'corps' | 'brasG' | 'brasD';
 type HBone = FKBone & { z: number };
@@ -91,12 +92,11 @@ export function resolveHulkFromProps(
   const world = worldTransformsG(sk, pose) as Record<HulkBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const art: Record<HulkBoneId, string> = { corps: blob(p, view), brasG: arm(-1), brasD: arm(1) };
-  return (Object.keys(sk) as HulkBoneId[])
+  return sortByZ((Object.keys(sk) as HulkBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,
       parts: [{ svg: applyTokenMap(art[id], tmap), layer: 0 }],
-    }))
-    .sort((a, b) => a.z - b.z);
+    })));
 }
 
 export const HULK_DEFAULT: HulkProps = {

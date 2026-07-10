@@ -40,17 +40,24 @@ describe('Gabarit NAVIRE — rendu via le système de plans (réutilisé, pas du
 });
 
 describe('routage : un véhicule à coque → gabarit navire (resolveRender, data-driven)', () => {
-  it('résout par id ET par label vers le plan navire + gréement comme espèce', async () => {
+  it('résout par ID SEUL vers le plan navire + gréement comme espèce', async () => {
     const { resolveRender } = await import('../bodyPlan');
     const byId = resolveRender(undefined, undefined, 'cogue'); // voile, 25 m
     expect(byId.kind).toBe('plan');
     expect(byId.plan).toBe('navire');
     expect(byId.species).toBe('voile'); // gréement → silhouette
     expect(byId.scale).toBeGreaterThan(1); // 25 m → > 1
-    const byLabel = resolveRender(undefined, undefined, 'Langskip'); // mixte
-    expect(byLabel.plan).toBe('navire');
-    expect(byLabel.species).toBe('mixte');
+    const byId2 = resolveRender(undefined, undefined, 'langskip'); // mixte
+    expect(byId2.plan).toBe('navire');
+    expect(byId2.species).toBe('mixte');
     // un transport SANS coque (chariot) n'est pas un navire → résolution normale (bipède par défaut).
     expect(resolveRender(undefined, undefined, 'chariot').plan).not.toBe('navire');
+  });
+
+  it('un LABEL de véhicule (ids stables uniquement, doctrine ids) ne résout PAS le plan navire', async () => {
+    const { resolveRender } = await import('../bodyPlan');
+    // « Langskip » est le LABEL (affichage) de l'id `langskip` — passer le label ne doit PAS
+    // matcher la coque (jumelle du garde `pickBackend.tsx:161-162` : la ref doit être un id stable).
+    expect(resolveRender(undefined, undefined, 'Langskip').plan).not.toBe('navire');
   });
 });

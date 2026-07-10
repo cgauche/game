@@ -14,6 +14,7 @@ import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
 import { CRAB_SPECIES } from '../creatures';
+import { sortByZ } from '../composite';
 
 export type CrabBoneId = 'corps' | 'pinceG' | 'pinceD';
 type CBone = FKBone & { z: number };
@@ -117,12 +118,11 @@ export function resolveCrabFromProps(
   const world = worldTransformsG(sk, pose) as Record<CrabBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const art: Record<CrabBoneId, string> = { corps: carapace(p, view), pinceG: claw(-1), pinceD: claw(1) };
-  return (Object.keys(sk) as CrabBoneId[])
+  return sortByZ((Object.keys(sk) as CrabBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,
       parts: [{ svg: applyTokenMap(art[id], tmap), layer: 0 }],
-    }))
-    .sort((a, b) => a.z - b.z);
+    })));
 }
 
 export const CRAB_DEFAULT: CrabProps = {

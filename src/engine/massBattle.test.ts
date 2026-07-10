@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import type { RNG } from './dice';
+import { difficultyFromModifier } from './tests';
 import {
   mightFromRelation, estimateMightFromAspects, warMachineMight, normalizeMights,
   mightReduction, rollMightTest, resolveClash,
-  battleOutcome, isDestroyed, inspireDifficulty, difficultyFromModifier, roundToTen,
+  battleOutcome, isDestroyed, inspireDifficulty, roundToTen,
   battleHazard, clampMight, MIGHT_MODIFIERS, POWER_ESTIMATE,
   WAR_MACHINES, STRUCTURES, BATTLE_HAZARDS,
   rallyHealAmount, initHoldState, resolveHoldRound, holdEnemyBonus, INSPIRE_BONUS,

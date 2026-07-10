@@ -6,7 +6,7 @@ import { isOutOfAction } from '../engine/conditions';
 import { AnimatedRigToken } from './AnimatedRigToken';
 import { RigToken } from './RigToken';
 import { AnimatedPlanToken } from './AnimatedPlanToken';
-import { enemyRigProfile, entityRigProfileFor, rendersFromOwnInventory } from './rig/enemyProfile';
+import { enemyRigProfile, entityRigProfileFor, rendersFromOwnInventory, refOf } from './rig/enemyProfile';
 import { resolveRender, planById } from './rig/bodyPlan';
 import { structureAppearance } from './catalog/structures';
 import { isStructure } from '../engine/structures';
@@ -150,7 +150,7 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   const ent = subject.ent;
   const id = `e-${ent.id}`;
   const seed = ent.appearance?.seed ?? hashSeed(ent.id);
-  const refName = ent.ref ?? ent.label ?? 'villageois';
+  const refName = refOf(ent);
   // Résolution UNIQUE par la donnée (espèce explicite de l'entité + trait Nuée du record), par id.
   const r = resolveRender(ent.appearance?.species, findCreatureById(refName)?.traits, refName);
   // Garde DEV : un personnage dont la `ref` n'est PAS un id de créature valide ET sans espèce explicite

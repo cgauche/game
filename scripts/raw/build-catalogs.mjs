@@ -2,24 +2,8 @@
 // de DONNÉES de la SOURCE Marker propre (tables intactes), LDB + suppléments. Chaque chapitre est cité
 // `<ABBR> NN` → crédité au niveau chapitre par coverage.mjs/reconcile.mjs. Re-run après toute ré-extraction.
 // node scripts/raw/build-catalogs.mjs
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
-
-const BASE = 'Source'
-const BOOK = {
-  'LDB': 'Warhammer v4 - Livre de base version corrigée',
-  'ADE I': "Warhammer v4 - Les archives de l'Empire volume 1",
-  'ADE II': "Warhammer v4 - Les archives de l'Empire volume 2",
-  'AA': 'WH - V4 - Aux Armes',
-  'ZI': 'WH - V4 - Le zoo impérial',
-  'Middenheim': 'Warhammer v4 - Middenheim la cité du Loup Blanc',
-  'EDO': "Warhammer v4 - 1.0 L'ennemi dans l'Ombre",
-  'EDOC': "Warhammer v4 - 1.0 L'ennemi dans l'Ombre Compagnon",
-  'T2C': 'Warhammer v4 - 2.0 Mort sur le Reik Compagnon',
-  'T3': 'Warhammer v4 - 3.0 Le Pouvoir Derriere le Trone',
-  'T2': 'Warhammer v4 - 2.0 Mort sur le Reik',
-  'Altdorf': "Warhammer v4 - Aldorf la Couronne de l'Empire",
-}
+import { readFileSync, writeFileSync } from 'node:fs'
+import { chapterFile as chapterFileLib } from './_lib.mjs'
 
 // Domaines → chapitres de DONNÉES par livre (repérés au canal titre).
 const DOMAINS = [
@@ -39,12 +23,9 @@ const DOMAINS = [
 ]
 
 function chapterFile(abbr, nn) {
-  const dir = BOOK[abbr]; if (!dir) return null
-  const pad = String(nn).padStart(2, '0')
-  let f
-  try { f = readdirSync(join(BASE, dir)).find((x) => x.startsWith(pad + ' - ') && x.endsWith('.md')) } catch { return null }
-  if (!f) return null
-  return { title: f.replace(/^\d+ - /, '').replace(/\.md$/, ''), text: readFileSync(join(BASE, dir, f), 'utf8').trim() }
+  const c = chapterFileLib(abbr, nn)
+  if (!c) return null
+  return { title: c.file.replace(/^\d+ - /, '').replace(/\.md$/, ''), text: readFileSync(c.path, 'utf8').trim() }
 }
 
 const log = []

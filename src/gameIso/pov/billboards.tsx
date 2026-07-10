@@ -30,7 +30,7 @@ import {
   footAnchor,
   keepClosest,
 } from './billboardCore';
-import { entityRigProfileFor } from '../rig/enemyProfile';
+import { entityRigProfileFor, refOf } from '../rig/enemyProfile';
 import { RigSprite } from '../rig/composeRig';
 import { CLIPS, sampleClip } from '../rig/anim/clips';
 import { resolveRender, planById, type BodyPlan } from '../rig/bodyPlan';
@@ -130,7 +130,7 @@ export function buildPovBillboards(scene: Scene, cam: CamPose, visible: Set<stri
     const z = e.z ?? 0;
     if (!visible.has(`${e.pos.x},${e.pos.y},${z}`)) continue; // 1) culling LdV/brouillard
     // Résolution de rendu UNIQUE (même dérivation que `pickBackend`) : rig humanoïde ou gabarit.
-    const refName = e.ref ?? e.label ?? 'villageois';
+    const refName = refOf(e);
     const r = resolveRender(e.appearance?.species, findCreatureById(refName)?.traits, refName);
     const a = footAnchor(scene, cam, e.pos.x, e.pos.y, z, ENT_H_M, r.scale); // 2-3) ancre + échelle + culls
     if (!a) continue;

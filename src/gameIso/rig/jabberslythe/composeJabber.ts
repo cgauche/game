@@ -14,6 +14,7 @@ import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
 import { JABBER_SPECIES } from '../creatures';
+import { sortByZ } from '../composite';
 
 export type JabberBoneId = 'corps' | 'aileG' | 'aileD' | 'cou' | 'tete';
 type JBone = FKBone & { z: number };
@@ -121,12 +122,11 @@ export function resolveJabberFromProps(
   const world = worldTransformsG(sk, pose) as Record<JabberBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const art: Record<JabberBoneId, string> = { corps: body(p, view), aileG: wing(true, view), aileD: wing(false, view), cou: neck(), tete: head(p, view) };
-  return (Object.keys(sk) as JabberBoneId[])
+  return sortByZ((Object.keys(sk) as JabberBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,
       parts: [{ svg: applyTokenMap(art[id], tmap), layer: 0 }],
-    }))
-    .sort((a, b) => a.z - b.z);
+    })));
 }
 
 export const JABBER_DEFAULT: JabberProps = {

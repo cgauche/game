@@ -13,6 +13,7 @@ import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
 import { SPECTRE_SPECIES } from '../creatures';
+import { sortByZ } from '../composite';
 
 export type SpectreBoneId = 'corps' | 'tete' | 'brasG' | 'brasD';
 type SBone = FKBone & { z: number };
@@ -129,12 +130,11 @@ export function resolveSpectreFromProps(
     brasG: prof ? `<g opacity="0.45">${arm(-1)}</g>` : arm(-1),
     brasD: prof ? `<g transform="rotate(-24)">${arm(1)}</g>` : arm(1),
   };
-  return (Object.keys(sk) as SpectreBoneId[])
+  return sortByZ((Object.keys(sk) as SpectreBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,
       parts: [{ svg: applyTokenMap(art[id], tmap), layer: 0 }],
-    }))
-    .sort((a, b) => a.z - b.z);
+    })));
 }
 
 export const SPECTRE_DEFAULT: SpectreProps = {

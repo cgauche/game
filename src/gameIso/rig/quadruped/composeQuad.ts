@@ -15,6 +15,7 @@ import {
 import { quadParts } from './quadParts';
 import { applyEyes } from '../parts/eyes';
 import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, QUAD_DEATH } from './quadPose';
+import { sortByZ } from '../composite';
 
 const LEG_REF_TH = 9; // épaisseur de réf d'un os porteur (haut) → léger scale x des membres
 
@@ -47,7 +48,7 @@ export function resolveQuadFromProps(
   if (eyes && parts.tete) parts.tete = applyEyes(parts.tete, eyes);
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const legW = 0.7 + 0.4 * p.girth; // pattes plus épaisses pour les bêtes trapues
-  return (Object.keys(parts) as QuadBoneId[])
+  return sortByZ((Object.keys(parts) as QuadBoneId[])
     .filter((id) => parts[id])
     .map((id) => {
       const b = sk[id];
@@ -62,8 +63,7 @@ export function resolveQuadFromProps(
         z: b.z,
         parts: [{ svg: applyTokenMap(parts[id]!, tmap), layer: 0 }],
       };
-    })
-    .sort((a, b) => a.z - b.z);
+    }));
 }
 
 export const quadrupedPlan: BodyPlan = {

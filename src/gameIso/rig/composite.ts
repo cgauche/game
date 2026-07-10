@@ -20,6 +20,12 @@ export interface CompositeLayer {
   z: (b: ResolvedBone) => number;
 }
 
+/** Tri peintre INTRA-corps (os d'UN SEUL composeur non-bipède) — SOURCE UNIQUE, à réutiliser en fin
+ *  de tout `compose*` non-bipède au lieu de recopier `.sort((a,b) => a.z - b.z)`. */
+export function sortByZ(bones: ResolvedBone[]): ResolvedBone[] {
+  return bones.sort((a, b) => a.z - b.z);
+}
+
 /** Concatène les os de toutes les couches (placés + ré-étiquetés en z), UN SEUL tri peintre. */
 export function composeComposite(layers: CompositeLayer[]): ResolvedBone[] {
   const out: ResolvedBone[] = [];

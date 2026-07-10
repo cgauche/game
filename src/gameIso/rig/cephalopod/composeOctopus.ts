@@ -12,6 +12,7 @@ import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
 import { OCTOPUS_SPECIES } from '../creatures';
+import { sortByZ } from '../composite';
 
 export type OctoBoneId = 'tentacules' | 'corps';
 type OBone = FKBone & { z: number };
@@ -101,12 +102,11 @@ export function resolveOctopusFromProps(
   const world = worldTransformsG(sk, pose) as Record<OctoBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const art: Record<OctoBoneId, string> = { tentacules: tentacles(view), corps: mantle(p, view) };
-  return (Object.keys(sk) as OctoBoneId[])
+  return sortByZ((Object.keys(sk) as OctoBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,
       parts: [{ svg: applyTokenMap(art[id], tmap), layer: 0 }],
-    }))
-    .sort((a, b) => a.z - b.z);
+    })));
 }
 
 export const OCTOPUS_DEFAULT: OctopusProps = {

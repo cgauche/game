@@ -12,6 +12,7 @@ import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
 import { BIRD_SPECIES } from '../creatures';
+import { sortByZ } from '../composite';
 
 export type BirdBoneId = 'corps' | 'tete';
 type BBone = FKBone & { z: number };
@@ -186,12 +187,11 @@ export function resolveBirdFromProps(
     ? (view === 'front' ? theroBodyFront(p) : view === 'back' ? theroBodyBack(p) : theroBodyProfile(p))
     : (view === 'front' ? bodyFront(p) : view === 'back' ? bodyBack(p) : bodyProfile(p));
   const art: Record<BirdBoneId, string> = { corps: body, tete: p.theropod ? theroHead(view) : head(p, view) };
-  return (Object.keys(sk) as BirdBoneId[])
+  return sortByZ((Object.keys(sk) as BirdBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,
       parts: [{ svg: applyTokenMap(art[id], tmap), layer: 0 }],
-    }))
-    .sort((a, b) => a.z - b.z);
+    })));
 }
 
 export const BIRD_DEFAULT: BirdProps = {

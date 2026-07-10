@@ -12,6 +12,7 @@ import { worldTransformsG, type FKBone, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap } from '../palette';
 import { bonesToSvg } from '../renderBones';
 import { SPIDER_SPECIES } from '../creatures';
+import { sortByZ } from '../composite';
 
 export type SpiderBoneId = 'corps' | 'abdomen';
 type SBone = FKBone & { z: number };
@@ -110,12 +111,11 @@ export function resolveSpiderFromProps(
   const world = worldTransformsG(sk, pose) as Record<SpiderBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
   const art: Record<SpiderBoneId, string> = { corps: cephalo(view), abdomen: abdomen(p, view) };
-  return (Object.keys(sk) as SpiderBoneId[])
+  return sortByZ((Object.keys(sk) as SpiderBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,
       parts: [{ svg: applyTokenMap(art[id], tmap), layer: 0 }],
-    }))
-    .sort((a, b) => a.z - b.z);
+    })));
 }
 
 export const SPIDER_DEFAULT: SpiderProps = {

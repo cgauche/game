@@ -8,3 +8,10 @@
 export function findTableEntry<T extends { min: number; max: number }>(table: T[], roll: number): T {
   return table.find((e) => roll >= e.min && roll <= e.max) ?? table[table.length - 1];
 }
+
+/** Variante INDEX de `findTableEntry` — pour les appelants qui doivent ensuite décaler l'entrée
+ *  trouvée dans la table (crans de bonus/malus). Repli à −1 si aucune entrée ne couvre `roll` (le
+ *  repli, contrairement à `findTableEntry`, est laissé à l'appelant). */
+export function findTableEntryIndex<T extends { min: number; max: number }>(table: T[], roll: number): number {
+  return table.findIndex((e) => roll >= e.min && roll <= e.max);
+}

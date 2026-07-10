@@ -245,9 +245,13 @@ export function entityRigProfile(
  *  `buildPovBillboards` (POV) : mêmes seed / refName / apparence / équipement. Avant, l'objet d'options
  *  (12 champs) était RECOPIÉ à la main aux deux sites et POV avait oublié `enrolled` → un membre de
  *  rencontre portait son équipement de combat en iso mais mains libres en POV. Une seule source. */
+export function refOf(ent: Pick<SceneEntity, 'ref' | 'label'>): string {
+  return ent.ref ?? ent.label ?? 'villageois';
+}
+
 export function entityRigProfileFor(ent: SceneEntity, enrolled?: boolean): EnemyRigProfile | null {
   const seed = ent.appearance?.seed ?? hashSeed(ent.id);
-  const refName = ent.ref ?? ent.label ?? 'villageois';
+  const refName = refOf(ent);
   return entityRigProfile(refName, seed, {
     species: ent.appearance?.species, tenue: ent.appearance?.tenue, monster: ent.appearance?.monster,
     features: ent.appearance?.features, weapon: ent.weapon, colors: ent.appearance?.colors,

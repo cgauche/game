@@ -38,12 +38,13 @@ import { rollTest, type TestResult } from '../engine/tests';
 import { testValue } from '../engine/skills';
 import { addCondition } from '../engine/conditions';
 import { d100, rollExpr, type RNG } from '../engine/dice';
+import { difficultyFromModifier } from '../engine/tests';
 import {
   rollRiverWind, tickRiverWindDay, riverWindEffect, riverPilotSkill, savoirVoiesFluvialesBonus,
   rowingAgilityFactor, ROWING_AGILITY_DIFFICULTY, riverDayKm, riverDriftKm, navDifficultyWithPenalty,
   riverControlKept, resolveCapsizeRighting, capsizeSinkTurns, holeSinkMinutes, riverCritical, findRiverPeril,
   resolveRiverImpact, rollBarrage, rollBarrageClearing, echouageDamage, NAV_BASE_DIFFICULTY, TACK_DIFFICULTY,
-  DRIFT_NAV_PENALTY, OUT_OF_CONTROL, CAPSIZE, TEMPORARY_REPAIR, difficultyFromModifier,
+  DRIFT_NAV_PENALTY, OUT_OF_CONTROL, CAPSIZE, TEMPORARY_REPAIR,
   type RiverWindForceId, type RiverWindDirId,
 } from '../engine/riverNavigation';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';

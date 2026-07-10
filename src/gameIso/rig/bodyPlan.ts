@@ -14,7 +14,7 @@ import type { EquipCtx } from './parts/equipment';
 import { bonesToSvg } from './renderBones';
 import { PLAN_LIST } from './plans/_registry.generated';
 import { defById, speciesScale } from './creatures';
-import { findCreatureById, findTrappingById, vehicles } from '../../data';
+import { findCreatureById, findTrappingById, findVehicleById, vehicles } from '../../data';
 import { isSwarm } from '../../engine/traits/dispatch';
 
 /** Identifiant de gabarit — chaîne libre dérivée des `plans/defs/` (data-driven : chaque plan
@@ -106,8 +106,12 @@ export function resolveRender(species: string | undefined, traits: import('../..
   // Véhicule À COQUE (navire) → gabarit `navire`, DATA-DRIVEN : le gréement (`hull.rig`) devient l'« espèce »
   // qui pilote la silhouette, l'échelle vient de la longueur (`ship.lengthM`). Prioritaire (un nom de
   // vaisseau ne tombe pas sur la résolution créature).
-  const veh = vehicles.find((v) => v.hull && (v.id === idOrName || v.label === idOrName));
-  if (veh) return { kind: 'plan', plan: 'navire', species: veh.hull!.rig ?? 'mixte', scale: Math.max(0.7, Math.min(2.4, (veh.ship?.lengthM ?? 20) / 20)) };
+  const veh = findVehicleById(idOrName);
+  if (veh?.hull) return { kind: 'plan', plan: 'navire', species: veh.hull.rig ?? 'mixte', scale: Math.max(0.7, Math.min(2.4, (veh.ship?.lengthM ?? 20) / 20)) };
+  // Garde DEV : une ref de véhicule irrésoluble par ID mais qui correspondrait par LABEL (jumelle
+  // de pickBackend.tsx:161-162) — les refs de véhicule doivent être des ids stables, pas un libellé.
+  if (import.meta.env.DEV && !veh && vehicles.some((v) => v.hull && v.label === idOrName))
+    console.warn(`[bodyPlan] resolveRender : ref « ${idOrName} » ne résout PAS par id à un véhicule à coque (seul un LABEL correspond) — utilise l'id stable du véhicule.`);
   const rec = findCreatureById(idOrName);
   // Nuée NON typée (aucune espèce de forme) → forme GÉNÉRIQUE (DEFAULT_FORM de composeSwarm via ''),
   // jamais la 1re forme du registre (speciesNames() alimente le picker d'éditeur, pas ce défaut).
