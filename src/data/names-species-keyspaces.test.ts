@@ -1,8 +1,8 @@
 /**
  * Garde croisée des DEUX espaces de clés « race » (issue #163). Le repo porte deux conventions
  * de nommage de race, DISTINCTES par dessein :
- *  - espace « données de personnage » (`species.refChar`) : `Haut Elfe`, `Elfe Sylvain`… — clé de
- *    `names.json`, `careers.json`, `eyes.json`, `hairs.json`, `characteristics.json`, `details.json` ;
+ *  - espace « données de personnage » (`species.refChar`/`species.refCareer`) : `Haut Elfe`, `Elfe
+ *    Sylvain`… — clé de `names.json`, `careers.json`, `eyes.json`, `hairs.json`, `details.json` ;
  *  - espace « rig » (id d'apparence, sûr pour nom de fichier) : `Haut-Elfe`, `Elfe sylvain`… — id de
  *    `raceAppearance.json` et des defs de `src/gameIso/rig/`.
  * `speciesRace.json` (via `baseSpeciesOf`) EST le pont species→rig. Les deux espaces se ressemblent

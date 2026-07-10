@@ -219,8 +219,8 @@ même commit, puis `npm run gen` (régénère `_registry.generated.ts`) — sino
 
 Deux conventions de nommage de race coexistent, **par dessein**, DÉCOUPLÉES :
 
-- **espace « données de personnage »** (`species.refChar`, ex. `Haut Elfe`, `Elfe Sylvain`) — clé de
-  `names.json`, `careers.json`, `eyes.json`, `hairs.json`, `characteristics.json`, `details.json`.
+- **espace « données de personnage »** (`species.refChar`/`species.refCareer`, ex. `Haut Elfe`, `Elfe
+  Sylvain`) — clé de `names.json`, `careers.json`, `eyes.json`, `hairs.json`, `details.json`.
 - **espace « rig »** (id d'apparence, sûr pour nom de fichier, ex. `Haut-Elfe`, `Elfe sylvain`) — id
   de `raceAppearance.json` et des defs de `src/gameIso/rig/`.
 

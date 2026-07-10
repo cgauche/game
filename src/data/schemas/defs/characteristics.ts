@@ -28,13 +28,6 @@ export const schema = z.array(
     label: z.string(),
     type: z.enum(['roll', 'wounds', 'extra', 'mv', 'points', '']),
     desc: z.string(),
-    /** Valeur/formule de base par FAMILLE d'espèce (clé = label FR, ex. "Humain", "Ogre"…) — un
-     *  nombre (la plupart des attributs) ou une formule texte (ex. Blessure : "BF+(2 × BE)+BFM").
-     *  Aucun consommateur dans `src` : la valeur réelle par espèce vient de `SpeciesData.baseChar`.
-     *  Ses clés ne correspondent déjà plus à `SpeciesData.family` (« Humain » vs « Humains », « Haut
-     *  Elfe » vs « Hauts elfes »…) et `family` lui-même n'est qu'un libellé de groupage d'affichage,
-     *  pas un id — ni ce champ ni les ids de `base` ne sont couverts par cette passe. */
-    base: z.record(z.string(), z.union([z.number(), z.string()])),
     source: sourceRefSchema,
   }),
 );
