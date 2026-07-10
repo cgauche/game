@@ -8,6 +8,7 @@ import type { PendingBladeTrap } from './pendings';
 import { bus, EVT } from './bus';
 import { ev } from './combatLog';
 import { isOutOfAction, addCondition } from '../engine/conditions';
+import { applyOps } from '../engine/ops';
 import { parseQualityInstance } from '../engine/qualities/normalize';
 import { formatImperial } from '../engine/clock';
 import { testScenarios } from '../scenes/test-scenarios';
@@ -47,6 +48,7 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.modal()        → modale(s) ouvertes ; __wfrp.roll()/confirm()/cancel() → pilote LA modale
  *                           (convention <flux>Roll/Confirm/Cancel ; reveals/Round ont leur verbe propre)
  *   __wfrp.killEnemies()  → élimine tous les ennemis du combat et déclenche la victoire (flux normal)
+ *   __wfrp.dealDamage('id', n) → inflige n Dégâts (op wounds, VRAI pipeline : armure de coque, reddition/naufrage)
  *   __wfrp.combatEnd({…}) → arme les conséquences de fin de combat (critique infectant + exposition
  *                           Corruption) puis termine le combat en LAISSANT la cascade ouverte (influençable)
  *   __wfrp.healParty()    → groupe à neuf (PB max, états/critiques/maladies purgés)
@@ -499,6 +501,24 @@ export function buildApi() {
         useGame.getState().cascadeFinish();
       }
       return `✓ ${slain.length} ennemi(s) éliminé(s) — ${useGame.getState().battle?.over ?? 'combat en cours'}`;
+    },
+
+    /** RECETTE : inflige `n` Dégâts (op `wounds`, VRAI pipeline `applyOps`) à un combattant du combat — armure
+     *  de coque/PA appliquée, États dérivés, puis `checkBattleOver` (reddition/naufrage/victoire). Sert à
+     *  éprouver l'issue navale sans jouer chaque tir. `n` par défaut 5. */
+    dealDamage: (id: string, n = 5) => {
+      const s = g();
+      if (!s.battle || s.battle.over) return '✗ pas de combat en cours';
+      const target = s.battle.combatants.find((c) => c.id === id);
+      if (!target) return `✗ « ${id} » introuvable dans le combat — voir __wfrp.battle()`;
+      const caster = s.battle.combatants.find((c) => c.kind === 'hero' && !isOutOfAction(c)) ?? target;
+      const lines = applyOps(target, [{ op: 'wounds', amount: n }], { caster });
+      useGame.setState({
+        battle: { ...s.battle, log: [...s.battle.log, ev('info', `Recette : ${n} Dégâts infligés à ${target.name}.`), ...lines.map((l) => ev('info', l))] },
+      });
+      checkBattleOver(() => useGame.getState(), useGame.setState);
+      const after = useGame.getState().battle?.combatants.find((c) => c.id === id);
+      return `✓ ${target.name} : ${after?.wounds.current ?? target.wounds.current}/${target.wounds.max} PB — ${useGame.getState().battle?.over ?? 'combat en cours'}`;
     },
 
     /** RECETTE : ARME les conséquences de fin de combat (LDB 18/19/20) puis termine le combat par le

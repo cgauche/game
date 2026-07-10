@@ -363,6 +363,11 @@ export function ActionBar() {
   // « Servir cette pièce » (MDG ch.12) : pièce de siège adjacente que le héros peut REJOINDRE — chef si non servie,
   // sinon support d'équipe (KIND-AGNOSTIQUE — même source que l'IA). On n'offre « Servir » que s'il ne sert pas DÉJÀ.
   const canServePoste = isHero && !active.mannedPoste && servablePostes(active, battle.combatants).length > 0;
+  // SOUTIEN d'une pièce (MDG 12) : membre d'équipe qui n'est PAS le chef (`crewIds[0]`) — il occupe la pièce
+  // mais c'est le chef qui fait feu. Sa barre offre son arme perso (abordage) + « Quitter » ; on affiche en plus
+  // un chip STATIQUE pour que le rôle ne soit pas muet. (Bascule de chef = hors périmètre : passerait par un
+  // ré-ordonnancement de `crewIds`, non exposé aujourd'hui.)
+  const isRenfort = isHero && !!active.mannedPoste && active.mannedPoste.crewIds?.[0] !== active.id;
   // « Pousser » (ADE II ch.08 l.258) : chef d'un engin de siège MOBILE à roues → il peut le déplacer (mouvement
   // simple, aucun jet). Gate d'affordance = SOURCE UNIQUE `pushSlot` (visible/sous-effectif) ; DÉSACTIVÉ si
   // l'Équipe présente est sous la moitié requise, MÊME seuil que le tir sous-effectif (parité bouton de tir).
@@ -578,11 +583,14 @@ export function ActionBar() {
           />
           <div className="ab-actor-side">
             {/* Le NOM n'est plus affiché (dispo au survol du portrait / du pion). */}
-            {(assailliN >= 2 || (isHero && battle.fearGate === 'failed')) && (
+            {(assailliN >= 2 || (isHero && battle.fearGate === 'failed') || isRenfort) && (
               <div className="ab-actor-top">
                 {assailliN >= 2 && <span className="ab-assailli" title={`${assailliN} ennemis au contact`}><Icon id="action/attack" size="sm" /> ×{assailliN}</span>}
                 {isHero && battle.fearGate === 'failed' && (
                   <span className="ab-assailli" title="Test de Calme d'approche raté : impossible de se rapprocher de la source de sa Peur ce Tour"><Icon id="flag/fear" size="sm" /> Cloué</span>
+                )}
+                {isRenfort && (
+                  <span className="ab-assailli" title="Vous soutenez la pièce (bonus de servant) ; c'est le chef de pièce qui fait feu — vous gardez votre arme pour l'abordage"><Icon id="action/serve-engine" size="sm" /> Renfort de pièce (le chef fait feu)</span>
                 )}
               </div>
             )}

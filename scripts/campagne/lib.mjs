@@ -128,7 +128,7 @@ function doorSide(foot, door) {
  *  réfs par LIBELLÉ (créatures/compétences/sorts/traits des rencontres et des flows) sont normalisées
  *  en ids stables SUR LE SPEC avant compilation. `hidden` (défaut false = VISIBLE, RAW : le groupe voit
  *  ses adversaires) pose `combat.hiddenUntilCombat` sur les entités enrôlées. */
-export function scene({ id, nom, description = '', ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, entities = [], buildings = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
+export function scene({ id, nom, description = '', ambiance = 'exterieur', weather, music, startMessage, rows, base, legend, metresPerTile, entities = [], buildings = [], dialogues = [], triggers = [], encounters = [], entryPoints, flags = {} }) {
   const spec = {
     id,
     nom,
@@ -163,6 +163,7 @@ export function scene({ id, nom, description = '', ambiance = 'exterieur', weath
     flags,
   };
   if (legend) spec.legend = legend;
+  if (metresPerTile != null) spec.metresPerTile = metresPerTile; // échelle de la scène (MER = 4 m/case) — forwardée au MapSpec (sinon défaut 2 m/case)
   if (weather) spec.weather = weather;
   if (music) spec.music = music;
   if (startMessage) spec.startMessage = startMessage;

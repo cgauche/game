@@ -260,7 +260,7 @@ function attackAffordance(get: Get, active: Combatant, target: Combatant): Hover
       : { kind: 'none' };
   // === MÊLÉE (Arme + gratuites) : approche-puis-frappe — chemin réel + réticule au survol (le clic commet) ;
   // l'aperçu est calculé depuis la case d'ARRIVÉE (modificateurs honnêtes au contact). L'Allonge suit l'option.
-  const plan = attackPlan(get, active, target, { reach: option.reach, forceMelee: option.forceMelee });
+  const plan = attackPlan(get, active, target, { reach: option.reach, forceMelee: option.forceMelee, weaponUid: option.weaponUid });
   if (plan.kind === 'blocked') {
     const p = previewAttack(get, active, target, undefined, { weaponUid: option.weaponUid });
     return { kind: 'invalid', reason: p.blocked ? 'los' : p.kind === 'melee' && isEngaged(active) ? 'engaged' : 'range' };
@@ -382,7 +382,7 @@ function attackClickCommit(get: Get, set: Set, active: Combatant, id: string, op
     return;
   }
   // === MÊLÉE : approche-puis-frappe (le SEUL exécuteur charge/moveAttack du jeu) ===
-  const plan = attackPlan(get, active, target, { reach: option.reach, forceMelee: option.forceMelee });
+  const plan = attackPlan(get, active, target, { reach: option.reach, forceMelee: option.forceMelee, weaponUid: option.weaponUid });
   // L'Action dépensée interdit le DÉPLACEMENT combiné pour une attaque qui COÛTE l'Action (Arme hors
   // Frénésie) → frappe directe seulement. Une attaque GRATUITE (Morsure/Caudale/Tentacule, ou l'Arme en
   // attaque libre de Frénésie → `cost.action===false`) PEUT s'approcher (charge) même l'Action dépensée

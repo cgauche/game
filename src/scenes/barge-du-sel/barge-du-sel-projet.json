@@ -1,0 +1,868 @@
+{
+ "schema": 2,
+ "scenes": [
+  {
+   "id": "barge-du-sel-quai",
+   "nom": "Le quai de la Barge du Sel",
+   "description": "Un petit quai de chargement. La Louve grise attend, amarrée, la cale pleine de sel à livrer à l'îlot voisin.",
+   "dimensions": {
+    "w": 12,
+    "h": 8
+   },
+   "ambiance": "exterieur",
+   "layers": [
+    {
+     "z": 0,
+     "tiles": [
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau"
+     ]
+    }
+   ],
+   "entities": [
+    {
+     "id": "start",
+     "kind": "heroStart",
+     "pos": {
+      "x": 2,
+      "y": 3
+     }
+    },
+    {
+     "id": "p0",
+     "kind": "prop",
+     "pos": {
+      "x": 2,
+      "y": 6
+     },
+     "label": "Appareiller vers l’îlot",
+     "interact": {
+      "flow": {
+       "kind": "seq",
+       "steps": [
+        {
+         "kind": "do",
+         "effect": {
+          "type": "openWorldMap"
+         }
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "dialogues": [],
+   "triggers": [
+    {
+     "id": "barge-du-sel-depart",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 8
+     },
+     "once": true,
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setVessel",
+         "vehicleId": "loup-imperial",
+         "name": "La Louve grise",
+         "morale": 70,
+         "hullCurrent": 120,
+         "hullMax": 120,
+         "crew": [
+          {
+           "roleId": "mousse",
+           "count": 2
+          }
+         ]
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setObjective",
+         "id": "barge-du-sel-mission",
+         "text": "Convoyer le sel jusqu'à l'îlot, malgré les pirates qui infestent la route."
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "journal",
+         "text": "La Louve grise appareille, la cale pleine de sel, deux matelots à son bord."
+        }
+       }
+      ]
+     }
+    }
+   ],
+   "encounters": [],
+   "flags": {}
+  },
+  {
+   "id": "barge-du-sel-embuscade",
+   "nom": "Voile noire à mi-route — une cogue pirate attaque",
+   "description": "Une cogue pirate coupe la route de la Louve grise en pleine mer.",
+   "dimensions": {
+    "w": 22,
+    "h": 14
+   },
+   "ambiance": "exterieur",
+   "layers": [
+    {
+     "z": 0,
+     "tiles": [
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau"
+     ]
+    }
+   ],
+   "entities": [
+    {
+     "id": "start",
+     "kind": "heroStart",
+     "pos": {
+      "x": 4,
+      "y": 6
+     }
+    },
+    {
+     "id": "louve-grise",
+     "kind": "personnage",
+     "ref": "loup-imperial",
+     "pos": {
+      "x": 4,
+      "y": 6
+     },
+     "facing": "E",
+     "label": "La Louve grise",
+     "crewIds": [],
+     "postes": [
+      {
+       "trappingId": "canon-moyen",
+       "uid": "poste-1",
+       "side": "tribord",
+       "crewIds": []
+      }
+     ]
+    },
+    {
+     "id": "cogue-pirate",
+     "kind": "personnage",
+     "ref": "cogue",
+     "pos": {
+      "x": 16,
+      "y": 6
+     },
+     "facing": "O",
+     "label": "La cogue pirate",
+     "crewIds": [
+      "pirate-1",
+      "pirate-2"
+     ],
+     "postes": [],
+     "upgrades": [
+      {
+       "id": "renforce",
+       "value": 1
+      }
+     ]
+    },
+    {
+     "id": "pirate-1",
+     "kind": "personnage",
+     "ref": "pirate-fluvial",
+     "pos": {
+      "x": 15,
+      "y": 5
+     },
+     "label": "Pirate"
+    },
+    {
+     "id": "pirate-2",
+     "kind": "personnage",
+     "ref": "pirate-fluvial",
+     "pos": {
+      "x": 15,
+      "y": 7
+     },
+     "label": "Pirate"
+    },
+    {
+     "id": "chef-pirate-1",
+     "kind": "personnage",
+     "ref": "chef-pirate",
+     "pos": {
+      "x": 17,
+      "y": 6
+     },
+     "label": "Le chef des pirates"
+    }
+   ],
+   "dialogues": [],
+   "triggers": [],
+   "encounters": [
+    {
+     "id": "enc-embuscade-sel",
+     "members": [
+      {
+       "entityId": "louve-grise",
+       "side": "ally"
+      },
+      {
+       "entityId": "cogue-pirate",
+       "side": "enemy"
+      },
+      {
+       "entityId": "pirate-1",
+       "side": "enemy"
+      },
+      {
+       "entityId": "pirate-2",
+       "side": "enemy"
+      },
+      {
+       "entityId": "chef-pirate-1",
+       "side": "enemy"
+      }
+     ],
+     "onVictory": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setFlag",
+         "flag": "sel_embuscade_vaincue"
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "giveXp",
+         "amount": 100
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "giveMoney",
+         "gold": 10
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setObjective",
+         "id": "barge-du-sel-mission",
+         "text": "Rallier l'îlot avec le sel — la cogue pirate écartée."
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "journal",
+         "text": "La cogue pirate amène son pavillon à mi-coque et rompt le combat."
+        }
+       }
+      ]
+     },
+     "victoryCondition": {
+      "type": "woundsThreshold",
+      "targetId": "cogue-pirate",
+      "belowPercent": 40
+     }
+    }
+   ],
+   "flags": {},
+   "weather": "brouillard",
+   "entryPoints": {
+    "arrivee": {
+     "x": 4,
+     "y": 6
+    }
+   }
+  },
+  {
+   "id": "barge-du-sel-ilot",
+   "nom": "L’îlot du sel",
+   "description": "Un petit îlot rocheux où la cargaison de sel doit être débarquée.",
+   "dimensions": {
+    "w": 12,
+    "h": 6
+   },
+   "ambiance": "exterieur",
+   "layers": [
+    {
+     "z": 0,
+     "tiles": [
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "sable",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau"
+     ]
+    }
+   ],
+   "entities": [
+    {
+     "id": "start",
+     "kind": "heroStart",
+     "pos": {
+      "x": 2,
+      "y": 2
+     }
+    }
+   ],
+   "dialogues": [],
+   "triggers": [
+    {
+     "id": "barge-du-sel-arrivee",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 12,
+      "h": 6
+     },
+     "once": true,
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "clearObjective"
+        }
+       },
+       {
+        "kind": "do",
+        "effect": {
+         "type": "journal",
+         "text": "La Louve grise accoste à l'îlot, la cale toujours pleine de sel."
+        }
+       }
+      ]
+     }
+    }
+   ],
+   "encounters": [],
+   "flags": {}
+  }
+ ],
+ "worldMap": {
+  "id": "carte-barge-du-sel",
+  "nom": "La Barge du Sel",
+  "places": [
+   {
+    "id": "quai-du-sel",
+    "label": "Le quai de départ",
+    "pos": {
+     "x": 20,
+     "y": 60
+    },
+    "scene": "barge-du-sel-quai",
+    "icon": "scenario/port"
+   },
+   {
+    "id": "ilot-du-sel",
+    "label": "L’îlot du sel",
+    "pos": {
+     "x": 60,
+     "y": 40
+    },
+    "scene": "barge-du-sel-ilot",
+    "icon": "scenario/port"
+   }
+  ],
+  "routes": [
+   {
+    "id": "route-quai-ilot",
+    "a": "quai-du-sel",
+    "b": "ilot-du-sel",
+    "km": 30,
+    "modes": [
+     "mer"
+    ],
+    "sea": true,
+    "seaHeading": "nord",
+    "ambush": {
+     "scene": "barge-du-sel-embuscade",
+     "encounter": "enc-embuscade-sel",
+     "at": 0.5
+    }
+   }
+  ]
+ }
+}

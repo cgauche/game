@@ -322,7 +322,12 @@ scenes.push(scene({
   weather: 'brouillard',
   base: 'eau',
   legend: { '=': 'planches' },
-  metresPerTile: 10,
+  // Grille d'ABORDAGE = échelle PERSON-scale 2 m/case. metresPerTile≥4 fait basculer `isMerScene`
+  // (src/state/scene.ts) → modèle navire-UNITÉ (équipage passager, tour de coque, Bordée) qui exige une IA de
+  // manœuvre de coque ennemie ABSENTE (runEnemyAI ne pilote pas les vehicule → la coque reste immobile) et met
+  // la bordée hors de portée sans manœuvre d'approche. À 2 m/case : l'équipage combat individuellement, les
+  // héros SERVENT les pièces, l'abordage se joue (reachTiles LDB 15 = 1 case fixe). L'échelle mer est réservée
+  // aux scènes de TRAVERSÉE jusqu'à ce que l'IA navale existe.
   rows: seaRows(22, 14, [{ x: 3, y: 5, w: 4, h: 4 }, { x: 15, y: 5, w: 3, h: 3 }]),
   entities: [
     hero(4, 6),
@@ -479,7 +484,12 @@ scenes.push(scene({
   weather: 'tempete',
   base: 'eau',
   legend: { '=': 'planches' },
-  metresPerTile: 10,
+  // Grille d'ABORDAGE = échelle PERSON-scale 2 m/case. metresPerTile≥4 fait basculer `isMerScene`
+  // (src/state/scene.ts) → modèle navire-UNITÉ (équipage passager, tour de coque, Bordée) qui exige une IA de
+  // manœuvre de coque ennemie ABSENTE (runEnemyAI ne pilote pas les vehicule → la coque reste immobile) et met
+  // la bordée hors de portée sans manœuvre d'approche. À 2 m/case : l'équipage combat individuellement, les
+  // héros SERVENT les pièces, l'abordage se joue (reachTiles LDB 15 = 1 case fixe). L'échelle mer est réservée
+  // aux scènes de TRAVERSÉE jusqu'à ce que l'IA navale existe.
   rows: seaRows(22, 14, [{ x: 3, y: 5, w: 4, h: 4 }, { x: 15, y: 5, w: 3, h: 3 }]),
   entities: [
     hero(4, 6),

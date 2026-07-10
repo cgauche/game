@@ -1094,7 +1094,7 @@ export type AttackPlan =
 /** Ce qu'un clic sur CET ennemi ferait : attaque directe (Allonge / tir), Charge implicite
  *  (non Engagé + Mouvement intact + mêlée, portée de Course — LDB 15 l.74-77), ou
  *  rejoindre-et-attaquer dans la Marche restante (pas une Charge → pas de bonus). Pure-store. */
-export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?: { reach?: number; forceMelee?: boolean }): AttackPlan {
+export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?: { reach?: number; forceMelee?: boolean; weaponUid?: string }): AttackPlan {
   const battle = get().battle!;
   const scene = get().scene!;
   // Géométrie de COMBAT (LDB 14) : un cavalier mesure reach/adjacence depuis l'empreinte de sa MONTURE
@@ -1112,13 +1112,20 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
     ? combatDistance(mountOf(battle, active) ?? active, tgtGeom) <= opts.reach
     : !!meleeWeaponInRange(battle, active, target);
   if (inMeleeRange) return { kind: 'attack' };
-  // L'arme du SET ACTIF décide : une arme à distance présente → tir. Gate PRÉ-clic (parité sort) :
-  // sans Ligne de Vue (LDB 13 l.123) ou au-delà de la bande Extrême (Portée ×3), refuser AVANT la
-  // modale — sinon « Lancer » fabrique un raté garanti qui consomme l'Action. Les gates de la
-  // résolution restent (défense en profondeur). Le gate de RESSOURCE (Recharge/munition) est porté
-  // par `firedAttackBlock` (concern orthogonal), rejoué par le clic ET le survol sur ce `{kind:'attack'}`.
-  if (!opts?.forceMelee && assertAttackWeapon(active.weapons, false).type === 'ranged') {
-    const p = previewAttack(get, active, target);
+  // L'arme du SET ACTIF décide : quand l'option ÉPINGLE une arme (`weaponUid` → pièce de poste servie, canon
+  // OU bélier), on tranche par SON type ; sinon repli sur l'arme par défaut du set (`assertAttackWeapon` sur
+  // TOUTES les armes tenues — poste inclus). Ne PAS passer par `personalWeaponsOf` ici : un chef qui ne porte
+  // QUE la pièce servie (bélier, #210) n'a aucune arme personnelle et ferait échouer l'invariant mains-nues.
+  // `assertAttackWeapon(active.weapons)` seul masquait le canon d'un poste RANGED (arme d'équipe, MDG 12) : le
+  // tir joueur retombait sur une arme perso de mêlée et refusait « hors de portée » (#BUG-A). Gate PRÉ-clic
+  // (parité sort) : sans Ligne de Vue (LDB 13 l.123) ou au-delà de la bande Extrême (Portée ×3), refuser AVANT
+  // la modale — sinon « Lancer » fabrique un raté garanti qui consomme l'Action. Les gates de la résolution
+  // restent (défense en profondeur). Le gate de RESSOURCE (Recharge/munition) est porté par `firedAttackBlock`
+  // (concern orthogonal), rejoué par le clic ET le survol sur ce `{kind:'attack'}`.
+  const decisive = (opts?.weaponUid ? active.weapons.find((w) => w.uid === opts.weaponUid) : undefined)
+    ?? assertAttackWeapon(active.weapons, false);
+  if (!opts?.forceMelee && decisive.type === 'ranged') {
+    const p = previewAttack(get, active, target, undefined, { weaponUid: opts?.weaponUid });
     if (p.blocked) return { kind: 'blocked', reason: 'Pas de ligne de vue (cible masquée).' };
     if (!p.inRange) return { kind: 'blocked', reason: 'Cible hors de portée.' };
     return { kind: 'attack' };

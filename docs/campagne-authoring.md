@@ -36,7 +36,10 @@ Câblé par des **Effects** (`src/state/scene.ts`), jamais en dur :
   `findManannFactor()`, `src/engine/seaVoyage.ts`), jamais un delta brut anonyme.
 - `saboteurDR` (dans `[-5,0]`) — malus discret aux Tests d'équipage de COMBAT ; s'authore SUR le
   `setVessel`. Effet de combat SEULEMENT : le pipeline de voyage ne lit aucun `GameOp`.
-- `crew` — roster SALARIÉ (`{ roleId, count }`, `roleId` de `src/data/crew-roles.json`, barème `wage`).
+- `crew` — roster SALARIÉ (`{ roleId, count }`, barème `wage`). `roleId` ∈ ids RÉELS de
+  `src/data/crew-roles.json` : `capitaine` · `timonier` · `vigie` · `mousse` · `navigateur` · `artilleur` ·
+  `cuisinier` · `chirurgien` · `chansonnier`. **Aucun id `matelot`** : le rang-et-fichier (marin de base) est
+  le `mousse` — ne pas inventer de rôle générique, prendre l'id existant.
 
 **Bridge campagne ⇄ combat** : au DÉBUT du combat, toute coque spawnée dont `creatureId === vessel.vehicleId`
 repart de l'état persisté (`src/state/combatSlice.ts`) ; à la FIN, ses dégâts sont réécrits dans le navire
@@ -57,9 +60,11 @@ persistance — chaque combat spawn une coque fraîche.
 
 ## 4. Catalogues navals (data-driven, éditables)
 
-- `src/data/naval-traits.json` — Traits de coque (blindage, bélier…) et **améliorations d'INSTANCE**
-  (`upgrades: NavalTraitRef[]` sur l'entité-coque, ex. `proue-idole-de-stromfels`), validées par
-  `findNavalTrait()`.
+- `src/data/naval-traits.json` — catalogue UNIQUE des Traits de coque (blindage, bélier…) ET des
+  améliorations d'INSTANCE (ex. `proue-idole-de-stromfels`). `upgrades: NavalTraitRef[]` sur l'entité-coque
+  accepte l'id de l'un OU l'autre kind : `findNavalTrait()`/`navalPassiveOps()` sont KIND-AGNOSTIQUES (ils
+  résolvent tout id du catalogue et lisent son `passive` — un Trait intrinsèque posé en amélioration
+  d'instance est licite, ex. `renforce` — MDG p.97 — sur la coque pirate de la Barge du Sel).
 - `src/data/naval-ports.json` — Index des ports (Taille/Richesse/Production/Surplus/Demande RAW).
 - `src/data/crew-roles.json` — rôles d'équipage salarié (`wage` hebdomadaire) ; `src/data/crew-test-types.json`
   — types de Tests d'équipage (`progression`, `manoeuvre`, `perception`, `orientation`…).
@@ -89,6 +94,16 @@ l.258) ; une position de scène DISTINCTE prime toujours (placement d'auteur res
 (`cogue`/`langskip`/`loup-imperial`) passe en `encounters[].enemies[]` terse comme en `entities` BRUTES.
 Une coque RICHE (équipage exposé `crewIds`, artillerie `postes`, améliorations `upgrades`) se pose en
 `entities` + s'enrôle via `encounters[].members` (plus expressif que le terse).
+
+**Échelle & modèle de combat naval — `metresPerTile` toggle `isMerScene`.** `metresPerTile≥4`
+(`isMerScene`, `src/state/scene.ts`) bascule le combat naval en modèle NAVIRE-UNITÉ (équipage passager hors
+`order`, tour de coque, action Bordée/Manœuvre — `combatOrder`/`isPassengerInBattle`). En dessous (défaut
+2 m/case, PERSON-scale) : l'équipage combat individuellement, les héros SERVENT les pièces (`Servir <pièce>`)
+et l'abordage se joue à la case (`reachTiles`, LDB 15 : 1 case = 2 m fixe, indépendant de `metresPerTile`).
+Les grilles d'ABORDAGE restent à 2 m/case : le modèle MER exige une IA de manœuvre de coque ENNEMIE qui
+n'existe pas encore (`runEnemyAI` ne pilote aucun `bodyShape:'vehicule'` → la coque adverse ne s'avance ni ne
+vire), et la bordée (portée en mètres) tombe hors d'atteinte sans manœuvre d'approche. L'échelle mer vaut
+pour les scènes de TRAVERSÉE ; réserver le modèle navire-unité au jour où l'IA navale existe.
 
 ## 8. Objectifs de victoire (`EncounterDef.victoryCondition`)
 
