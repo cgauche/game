@@ -67,10 +67,11 @@ Trois points d'enregistrement, dans cet ordre :
    rôle en une phrase) et incrémenter le compte en tête de fichier (« Le **RAW** du projet = ces
    **N livres** »). Si le livre a des chapitres purement narratifs/de cadre (gazetteer), documenter
    le partage règles/cadre ici ou dans `CLAUDE.md`.
-3. **`CLAUDE.md`** (§ *Sources VF*) — ajouter l'entrée abrév + dossier + périmètre autorisé dans la
-   liste **RÈGLES & STATS**, ou dans **SCÉNARIOS / CONTENU de campagne** si le livre n'apporte aucune
-   règle mécanique (comme Ubersreik). Préciser si l'extraction est *curée à la main* (cas de tous
-   les livres post-`all-data.json` — voir § 5) et le tag `source.book` attendu dans `src/data/*.json`.
+3. **`CLAUDE.md`** (§ *Sources VF*) — ajouter l'entrée abrév + dossier + **périmètre par passage** dans
+   la liste **RÈGLES & STATS** de `docs/sources-vf.md` (arbitrage 2026-07-10 : tout livre FR peut fournir
+   des règles ; un livre dont aucune règle n'est extraite reste simplement listé parmi les volumes
+   scénario, comme Ubersreik). La curation est toujours *à la main* (voir § 5) ; préciser le tag
+   `source.book` attendu dans `src/data/*.json`.
 
 `docs/raw/00-index.md` liste séparément le compte de livres en tête (« consolidées depuis les N
 livres autorisés ») — **vérifier qu'il reste synchronisé** avec `sources.md` à chaque ajout (cf.
@@ -105,12 +106,10 @@ créer une nouvelle si le livre introduit un domaine inédit (le combat naval de
 
 ## 5. Curation de la donnée dans `src/data/*.json`
 
-**Il n'y a plus de migration `build:data`** (retirée — elle régénérait `src/data/*.json` depuis
-`Source/all-data.json` et écrasait les données curées à la main, ex. apparence des créatures).
 `src/data/*.json` est la **source app-owned**, commitée, éditable au Compendium. Toute donnée
 mécanique tirée d'un nouveau livre s'ajoute **à la main** (ou via l'éditeur en jeu), jamais par
-re-seed automatique — c'est le chemin suivi par AA, ZI, MDG et ACE (Altdorf, annexe Activités
-uniquement).
+re-seed automatique — c'est le chemin suivi par AA, ZI, MDG, ACE, MSLRC et NADJ (périmètres :
+`docs/sources-vf.md`).
 
 - Chaque entrée mécanique tagge sa provenance avec un champ `source: { book: "<ABRÉV>", page: N }`
   (vu tel quel dans `src/data/traits.json`, `naval-traits.json`, `creatures.json`, `activities.json`,

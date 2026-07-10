@@ -114,10 +114,12 @@ la **ligne** a dérivé.
 Livres de RÈGLES autorisés (chemins exacts, périmètres, chapitres clés : **`docs/sources-vf.md`**) :
 **LDB** (livre de base) · **ADE I/II** (Archives de l'Empire) · **EDO/EDOC** (T1 + Compagnon) ·
 **Middenheim** · **AA** (Aux Armes) · **ZI** (Zoo Impérial) · **MDG** (Mer des Griffes) ·
-**ACE** (Altdorf — UNIQUEMENT l'Annexe I « Activités », le reste = contenu). Les Tomes 1-3 et
-suppléments = **CONTENU de campagne**, pas des règles. `src/data/*.json` est la **SOURCE
-app-owned** (commitée, éditable au Compendium) ; la migration `build:data` est RETIRÉE — la
-donnée AA/ZI/MDG/ACE est curée à la main, taguée à sa `source`.
+**ACE** (Altdorf, Annexe I) · **MSLRC** (Compagnon T2, navigation fluviale/personnalisation/maladies d'eau) ·
+**NADJ** (gnomes, jeux de taverne) — chacun pour son périmètre. **Arbitrage 2026-07-10 : tout livre FR de
+`Source/` peut fournir des règles** (même ~90 % scénario, il en porte souvent quelques-unes) — le périmètre
+s'établit par PASSAGE, documenté dans `docs/sources-vf.md`, au MÊME standard : verbatim citable, réf
+chap/ligne, extraction FR présente (sans extraction, pas de mécanique). `src/data/*.json` est la **SOURCE
+app-owned** (commitée, éditable au Compendium), curée à la main, chaque entrée taguée à sa `source`.
 
 ## Pile technique
 
@@ -192,7 +194,7 @@ fait DANS la primitive, pas dans une nième copie.
 | Lookup d'une table d100 par fourchette `[min,max]` | `findTableEntry` | `src/engine/tables.ts` |
 | Modificateurs de combat « brut » (Avantage×10 + État) | `baseTestMods` | `src/engine/combat.ts` |
 | Libellé d'attaque gratuite de créature (`freeKind`) | `FREE_ATTACK_LABEL` | `src/engine/combat.ts` |
-| Combattant par id (combat ou groupe) | `actorIn` / `inBattle` | `src/state/combatOrParty.ts` |
+| Combattant par id (combat ou groupe) | `actorIn` | `src/state/combatOrParty.ts` |
 | **Tout EFFET mécanique** (soin, État, octroi, dégâts, corruption…) — *réflexe avant tout type ad hoc* | **`GameOp[]`** exécuté par `applyOps(target, ops, ctx)` (`ctx.caster` = référent des `Formula`) | `src/engine/ops.ts` |
 | Éditer une **liste de `GameOp[]`** (sorts, effets déclenchés, **PASSIFS** de trait/mutation/qualité, **consommables**) | `GameOpEditor` (liste) — repris par `EffectList`/`FlowEditor` | `src/ui/editor/GameOpEditor.tsx` |
 | Modificateur **PASSIF** d'un élément (trait/mutation/qualité/trauma/maladie/faim/sort) | `passiveMods(c)` collecteur UNIQUE + `passive: GameOp[]` en donnée | `src/engine/trauma.ts` |
@@ -223,8 +225,7 @@ génération des sprites de bestiaire depuis l'art officiel (lecture d'image par
 
 - **Closure synchrone en test Playwright** : détail dans `docs/recette-navigateur.md` — ne jamais
   lire le DOM dans le même `evaluate` que l'action qui change l'état React.
-- `src/data/*.json` sont la SOURCE app-owned commitée (rien à régénérer après un `git clone` — la
-  migration `build:data` depuis `Source/all-data.json` a été retirée car elle écrasait les données curées).
+- `src/data/*.json` sont la SOURCE app-owned commitée : rien à régénérer après un `git clone`.
 - Il n'y a PLUS d'inventaire de GROUPE (`store.inventory`/`giveItem` supprimés) : tout objet va
   sur un héros (`Combatant.items`) via `giveTrapping` (réel ou custom). Butin d'équipement
   attribuable par portrait à l'écran de victoire (`pendingVictory.gear`).

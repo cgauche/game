@@ -15,7 +15,13 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 > remplace l'ancien OCR pymupdf4llm) → les **n° de ligne** des anciennes réfs `l.<ligne>` ont **dérivé**
 > (le **chapitre** reste juste, la **ligne** est approximative) ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`.
 
-## RÈGLES & STATS (règle 1 — seules sources autorisées)
+## RÈGLES & STATS — périmètres documentés (règle 1)
+
+> **Arbitrage utilisateur 2026-07-10** : « Tous les livres contiennent des règles. Parfois c'est plus
+> 90 % scénario, mais souvent il y a quelques règles. » — la dichotomie livre-de-règles / livre-de-contenu
+> ne se juge PAS au niveau du livre : le périmètre s'établit **par passage**, documenté ici, au même
+> standard partout (verbatim citable `l.<ligne>`, extraction FR dans `Source/` obligatoire — un livre sans
+> extraction ne peut pas fournir de mécanique vérifiable). La VO reste interdite.
 
 - **LDB** = `Source/Warhammer v4 - Livre de base version corrigée/` — chapitres `NN - Titre.md` ;
   les commentaires de code `LDB <n> l.<ligne>` pointent ces fichiers. Chapitres clés :
@@ -35,27 +41,38 @@ CC/CT/F/E…). Au moindre doute, **lire le `.md` et citer** `LDB <chap> l.<ligne
 - **AA** (Aux Armes / *Up in Arms*) = `Source/WH - V4 - Aux Armes/` — supplément combat & armes (autorisé 2026-06-14 ;
   source des talents que frenchy.bzh référence : Fusilier, Officier de Siège, etc.).
 - **ZI** (Zoo Impérial / *The Imperial Zoo*) = `Source/WH - V4 - Le zoo impérial/` — créatures exotiques + le trait
-  **Redoutable** (*Grim*) (autorisé 2026-06-14). NB : AA/ZI ne sont PAS dans `all-data.json` → leur donnée est
-  **curée à la main directement dans `src/data/*.json`** (commitée, éditable au Codex), chaque entrée taguée à sa
-  `source`, pas par `build:data`.
+  **Redoutable** (*Grim*) (autorisé 2026-06-14). Donnée **curée à la main directement dans
+  `src/data/*.json`** (commitée, éditable au Codex), chaque entrée taguée à sa `source`.
 - **MDG** (La Mer des Griffes / *Sea of Claws*) = `Source/WH - V4 - La Mer de Griffe/` — **cadre côtier + règles navales**
   (autorisé 2026-06-22) : navires & construction/artillerie (ch.12), navigation/manœuvres/**combat naval** + dégâts &
   Critiques sur navire (ch.13), tests d'équipage & moral (ch.14), longs voyages/commerce/**activités & maladies en mer**
   (ch.15), classe **Côtier** (8 carrières, ch.9) + carrières norses (ch.7), cultes **Manann/Stromfels** + miracles
-  (ch.10-11), magie des mers (ch.2), **bestiaire marin** + capitaines nommés (ch.16). Comme AA/ZI : extraction curée, pas `build:data`.
+  (ch.10-11), magie des mers (ch.2), **bestiaire marin** + capitaines nommés (ch.16). Comme AA/ZI : extraction curée à la main.
 - **ACE** (Altdorf – Couronne de l'Empire) = `Source/Warhammer v4 - Aldorf la Couronne de l'Empire/` — **UNIQUEMENT
   l'Annexe I « Activités à Altdorf » (ch.12)** : 5 Activités « entre deux aventures » gated par lieu (Pénitence,
   Entraînement à une arme inhabituelle, Tester des objets magiques, Mécénat, Recherche universitaire) — cf. `activities.json`
-  (`source.book: "ACE"`, `where: ["altdorf"]`). Le reste du livre reste **CONTENU de campagne**, pas des règles.
-  Comme AA/ZI/MDG : extraction curée à la main, pas `build:data`.
-- `Source/all-data.json` = ancienne extraction (LDB/ADE1/ADE2 + EDO/Middenheim/EDOC). **La migration
-  `build:data` a été RETIRÉE** (elle régénérait `src/data/*.json` et écrasait les données curées —
-  apparence des créatures, etc.). `src/data/*.json` est désormais la **SOURCE app-owned** (commitée,
-  éditée dans le Compendium) ; tout nouveau contenu s'ajoute à la main / via l'éditeur, plus par re-seed.
+  (`source.book: "ACE"`, `where: ["altdorf"]`). Le reste du livre = contenu de campagne (tout passage de
+  règle supplémentaire s'ajoute au périmètre ici, arbitrage 2026-07-10). Comme AA/ZI/MDG : extraction curée à la main.
+- **MSLRC** (Mort sur le Reik – Compagnon, T2C) = `Source/Warhammer v4 - 2.0 Mort sur le Reik Compagnon/`
+  (19 chapitres extraits) — autorisé 2026-07-10 (#277). Périmètre constaté : **ch.5 « Navigation
+  fluviale »** (tables de `river-navigation.json`/`river-perils.json`, critiques fluviaux
+  `river-criticals.json`), **ch.10 « Personnalisation »** (8 traits navals d'aménagement de
+  `naval-traits.json` : bouteur, murs blindés, coque de course, safran, plat-bord, allègement, gréement de
+  course, fourquines), **ch.13 « Bestiaire fluvial »** (créatures), **ch.14 « Maladies transmises par
+  l'eau »** (maladies/symptômes/états, `water-exposure.json`), véhicules fluviaux. Curation à la main.
+- **NADJ** (Nuits agitées & dures journées) = `Source/Warhammer v4 - Nuits agitees & dures journées/` —
+  autorisé 2026-07-10 (arbitrage par-passage). Périmètre constaté : **appendice I « Gnomes »**
+  (espèce jouable, `species.json`), **« Jeux de taverne »** (`tavernGames.json`), 3 entrées `gods.json`,
+  1 talent, 1 trapping.
+- **Tomes de campagne (règles ponctuelles)** : **MSR** (T2 base) — 1 statbloc (`creatures.json`) ;
+  **PDT** (T3 base) — 1 entrée de compétence (`skills.json`). Admis par l'arbitrage 2026-07-10, chaque
+  entrée taguée à sa `source`.
+- `src/data/*.json` est la **SOURCE app-owned** (commitée, éditée dans le Compendium) ; tout contenu
+  s'ajoute à la main / via l'éditeur.
   EDO/EDOC/Middenheim sont AUSSI des livres de scénario (cf. ci-dessous) ; seule leur **donnée extraite**
   entre dans les règles, pas leur prose narrative.
 
-## SCÉNARIOS / CONTENU de campagne (PAS pour les règles)
+## Volumes majoritairement SCÉNARIO (règles ponctuelles admises — voir arbitrage ci-dessus)
 
 - Tome 1 : `Source/Warhammer v4 - 1.0 L'ennemi dans l'Ombre/` + `… L'ennemi dans l'Ombre Compagnon/`.
 - Tome 2 : `Source/Warhammer v4 - 2.0 Mort sur le Reik/` + `… Mort sur le Reik Compagnon/`.

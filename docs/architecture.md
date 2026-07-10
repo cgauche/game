@@ -7,7 +7,7 @@
 ## Arborescence
 
 ```
-Source/                     Livres WFRP4 en .md (+ all-data.json dormant : la migration build:data est retirée)
+Source/                     Livres WFRP4 en .md (vérité citable, FR uniquement)
 src/data/                   NOTRE base APP-OWNED (JSON commité, éditable dans le Compendium) + index.ts (accès typé), pregens.ts
                             EXCEPTIONS manuscrites (tables verbatim sourcées) : criticals.ts, oups.ts,
                             mutations.ts (Tableaux de Corruption LDB 19). Les métadonnées de résolution

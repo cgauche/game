@@ -35,8 +35,7 @@ npm install
 npm run dev          # serveur de développement
 ```
 
-`src/data/*.json` sont la source app-owned (commitée, éditée dans le Compendium) — il n'y a plus de
-migration `build:data` depuis `all-data.json` (elle écrasait les données curées).
+`src/data/*.json` sont la source app-owned (commitée, éditée dans le Compendium), curée à la main.
 
 Autres scripts : `npm test` (tests du moteur), `npm run build` (build de production),
 `npm run typecheck`.

@@ -34,7 +34,7 @@ describe('speciesSkillAdvanceMap — 3×+5 / 3×+3 (LDB l.510)', () => {
   });
 });
 
-describe('rollRandomTalent — Tableau des Talents aléatoires (table d100 de all-data.json)', () => {
+describe('rollRandomTalent — Tableau des Talents aléatoires (table d100)', () => {
   it('renvoie un talent de la table', () => {
     const t = rollRandomTalent(makeRNG(1), new Set());
     expect(typeof t).toBe('string');

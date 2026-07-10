@@ -18,8 +18,7 @@ npm run dev     # http://localhost:5173
 `scripts/git-hooks/post-commit` (ferme automatiquement les issues GitHub citées dans le
 message de commit via `fixes/closes/corrige/ferme #N`, cf. commentaire de tête du script).
 
-`src/data/*.json` est la **SOURCE app-owned** : rien à régénérer après le clone (la migration
-`build:data` depuis `Source/all-data.json` a été retirée, cf. CLAUDE.md).
+`src/data/*.json` est la **SOURCE app-owned** : rien à régénérer après le clone.
 
 Le canari hebdomadaire (`.github/workflows/canari.yml`, cron lundi 06:00 UTC) exécute
 exactement ce chemin en CI — `npm ci` puis `npm run gen`, `typecheck`, `lint`, `test`, `build`,

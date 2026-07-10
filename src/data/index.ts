@@ -1,7 +1,7 @@
 /**
- * Accès typé à NOTRE base de jeu — désormais APP-OWNED et ÉDITABLE (éditeur de données DEV in-app,
- * écran 'dataEditor'). Les *.json de ce dossier sont la SOURCE CANONIQUE app-owned, éditée à la main :
- * aucune migration ne les régénère depuis Source/all-data.json (cela écraserait les données curées).
+ * Accès typé à NOTRE base de jeu — APP-OWNED et ÉDITABLE (éditeur de données DEV in-app,
+ * écran 'dataEditor'). Les *.json de ce dossier sont la SOURCE CANONIQUE app-owned, curée à la main :
+ * aucune migration ne les régénère.
  */
 import type { EntityAppearance } from '../engine/authoringAppearance';
 import { slugId } from './slug';
