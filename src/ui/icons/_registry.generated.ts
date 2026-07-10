@@ -177,6 +177,7 @@ export type IconIdGenerated =
   | 'merchant/haggle'
   | 'nautical/rock'
   | 'nautical/snag'
+  | 'nautical/swim'
   | 'nautical/tack'
   | 'nautical/whirlpool'
   | 'nautical/wind'

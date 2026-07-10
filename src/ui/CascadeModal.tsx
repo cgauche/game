@@ -26,6 +26,14 @@ import { FLOWS } from '../state/rollFlowSpecs';
 import type { CascadeStep, CascadeRoll } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 
+/** Une étape-JET est PRÉSENTABLE avec son acteur (comportement historique) OU sans acteur quand
+ *  elle est MONDIALE (`worldOwner`, seam #275 Décision 3 — désertion/Moral, aucun `actorId` par
+ *  conception) : rendre `null` dans ce second cas privait TOUS les sièges — y compris l'owner
+ *  (MJ) — de la modale (#P0-2). Exporté pour test direct (pas de harnais de rendu React ici). */
+export function jetStepPresentable(step: CascadeStep, actor: Combatant | undefined): boolean {
+  return !!actor || !!step.worldOwner;
+}
+
 /**
  * CASCADE de jets SÉQUENTIELS (nuit / voyage) — c'est LA coquille de jet partagée `RollShell`,
  * paramétrée comme `DefenseModal` : plusieurs RANGÉES de jet avec portraits (`RollShell rows`). Chaque
@@ -221,15 +229,19 @@ export function CascadeModal() {
     );
   }
 
-  // JET : étape influençable (comportement historique) — requiert l'acteur.
+  // JET : étape influençable (comportement historique — requiert l'acteur) OU étape MONDIALE
+  // (`worldOwner`, seam #275 Décision 3 — désertion/Moral) : aucun acteur PRÉSENTABLE par
+  // conception, l'ownership est déjà routée en amont (sentinel `WORLD_STEP_OWNER`, ne pas y
+  // toucher ICI) — rendu générique (titre = `cur.label` déjà composé par le seam, pas de portrait).
   const actor = actorOf(cur);
-  if (!actor) return null;
+  if (!jetStepPresentable(cur, actor)) return null;
   const res = cur.result;
   const rolled = cur.target == null ? true : !!res;
   const failed = !!res && !res.success;
   const curPending: PanelRow = { combatant: actor, pending: pendingOf(cur) };
   // Issue de l'étape COURANTE = case journal proéminente (les figées gardent leur note compacte).
-  const ocText = res ? (cascadeAppliers[cur.kind]?.describe?.(res.success, actor.name) ?? (res.success ? `${actor.name} réussit.` : `${actor.name} échoue.`)) : null;
+  const actorName = actor?.name ?? '';
+  const ocText = res ? (cascadeAppliers[cur.kind]?.describe?.(res.success, actorName) ?? (res.success ? `${actorName} réussit.` : `${actorName} échoue.`)) : null;
   const ocEv: CombatEventKind = res?.success ? 'heal' : 'condition';
   // Peur de COMBAT = Test ÉTENDU (LDB 21 l.27) : barre de DR cumulé vers l'Indice (#23). Après le jet,
   // on montre le cumul MIS À JOUR (prevDR + DR du jet) ; avant, l'état d'entrée (prevDR).
@@ -240,30 +252,32 @@ export function CascadeModal() {
   const forcedDie = FLOWS.cascade.picker?.(cur, actor);
   // Résistance (Menace) (LDB 10) : étape taguée `menace` + spec du talent disponible (non consommée
   // cette séance) + issue encore défavorable → auto-succès offert (avant le jet ou après un échec).
-  const resistAvail = cur.menace != null && availableResistance(actor, cur.menace) != null && (!res || !res.success);
+  const resistAvail = !!actor && cur.menace != null && availableResistance(actor, cur.menace) != null && (!res || !res.success);
 
   // Rangée INTERACTIVE de l'étape COURANTE : pré-jet en attente puis résultat, porteuse du cycle
-  // d'influence (Chance/+1 DR/Pacte/Résilience/forcedRoll/resist/Détermination).
+  // d'influence (Chance/+1 DR/Pacte/Résilience/forcedRoll/resist/Détermination) — étape MONDIALE
+  // (`worldOwner`, `actor` absent) : cycle d'influence NUL (Chance/Pacte/Résilience/Détermination
+  // sont des ressources de HÉROS), seul « Lancer » reste actionnable pour le siège owner.
   const curRow: RollRowData = {
     actor,
     row: res ? { combatant: actor, d: breakdown(cur, res) } : curPending,
     rolled,
     onRoll: () => roll(cur.id),
-    fortune: actor.fortune ?? 0,
+    fortune: actor?.fortune ?? 0,
     freeReroll: freeRerollOf(actor),
     rerollable: !!res && canReroll(failed, !!cur.rerolled),
     onReroll: () => reroll(cur.id),
     onBonusSL: () => bonusSL(cur.id),
-    darkPactable: !!res && failed && actor.kind === 'hero',
+    darkPactable: !!res && failed && actor?.kind === 'hero',
     onDarkPact: () => darkPact(cur.id),
-    resilience: actor.resilience ?? 0,
+    resilience: actor?.resilience ?? 0,
     onForce: () => force(cur.id),
     forceShow: rolled && !res?.success,
     resist: resistAvail ? { menace: cur.menace!, onResist: () => resistAct(cur.id) } : undefined,
     // Résilience : dé CHOISI sur une Peur de combat étendue (le DR gagné suit le dé, LDB 17 l.73).
     forcedRoll: forcedDie ? { ...forcedDie, onSet: (r) => setForcedRoll(cur.id, r) } : undefined,
     // Psychologie (rencontre OU combat) : Détermination (immunité, LDB 17 l.62) AVANT le jet.
-    determination: !res && (cur.encounterPsych || cur.combatPsych) ? { resolve: actor.resolve ?? 0, onResolve: () => determine(cur.id) } : undefined,
+    determination: actor && !res && (cur.encounterPsych || cur.combatPsych) ? { resolve: actor.resolve ?? 0, onResolve: () => determine(cur.id) } : undefined,
   };
 
   const jetActions: RollAction[] = [
@@ -302,7 +316,7 @@ export function CascadeModal() {
       /* Rangées : validées FIGÉES (témoins) + courante interactive (pré-jet en attente, post-jet résolue). */
       rows={[...witnessRows(doneRows), curRow]}
       /* Issue de l'étape COURANTE = case journal proéminente, sous les rangées (>1 rangée → postRollExtra). */
-      postRollExtra={res && ocText ? <JournalLine className="rm-journal" event={ev(ocEv, ocText, actor.id)} combatants={pool} /> : undefined}
+      postRollExtra={res && ocText ? <JournalLine className="rm-journal" event={ev(ocEv, ocText, actor?.id)} combatants={pool} /> : undefined}
       actions={jetActions}
       disableEscClose
     />

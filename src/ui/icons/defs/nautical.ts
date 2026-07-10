@@ -50,4 +50,16 @@ export const icons: IconFamily = [
       `<path ${F} d="M8 15 L6 11 L9.5 8 L12 10 L15 7 L18 11 L16 15 Z"/>` +
       `<path ${K} d="M3 18 C5.5 16.3 8 16.3 10.5 18 C13 19.7 15.5 19.7 18 18 C19 17.3 20 17 21 17"/>`,
   },
+  {
+    id: 'nautical/swim',
+    label: 'Natation',
+    // Nageur en crawl (tête + bras tendu) au-dessus d'une ligne de vaguelettes.
+    svg:
+      `<circle ${F} cx="7" cy="7" r="1.7"/>` +
+      `<path ${K} d="M9 9 L15.5 6.5"/>` +
+      `<path ${K} d="M9 9 L12.5 14"/>` +
+      `<path ${K} d="M12.5 14 L8 16.5"/>` +
+      `<path ${K} d="M12.5 14 L18 15.5"/>` +
+      `<path ${K} d="M3 20 C5.5 18.3 8 18.3 10.5 20 C13 21.7 15.5 21.7 18 20 C19 19.3 20 19 21 19"/>`,
+  },
 ];
