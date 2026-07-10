@@ -1032,6 +1032,35 @@ export const FLOWS = {
    *  de jet par rôle ; l'issue par type (Rude épreuve → Moral, l.110) vit dans `crewTestConfirm`. */
   crewTest: makeRollFlow<PendingCrewTest, ShipManeuverParticipant>(crewRoleFlowSpec('pendingCrewTest')),
 
+  /** Étape-PARTICIPANTS d'une CASCADE (batch multi — Test d'équipage MDG ch.14, seam de jet #275
+   *  Décision 4 cran 1) : UNE rangée par contributeur de l'étape COURANTE
+   *  (`pendingCascade.participants[cursor].participants`) — MÊME jet par rôle que `crewRoleFlowSpec`
+   *  (`shipManeuver`/`battery`/`crewTest`, ingrédients réutilisés tels quels : `rollCrewRole`/
+   *  `forceCrewRole`/`cleanRollOutcome`/`bumpResultSL`), seule la LOCALISATION des slots diverge (au
+   *  cursor, pas au top-level du pending). L'AGRÉGAT (`step.aggregate`) est calculé par
+   *  `cascade.commitStep` à la validation de l'étape — ce flux ne fait QUE le jet individuel. */
+  cascadeCrew: makeRollFlow<PendingCascade, ShipManeuverParticipant>({
+    key: 'pendingCascade',
+    multi: {
+      slots: (p) => p.participants[p.cursor]?.participants ?? [],
+      idOf: (r) => r.id,
+      replace: (p, parts) => ({
+        ...p,
+        participants: p.participants.map((st, i) => (i === p.cursor ? { ...st, participants: parts } : st)),
+      }),
+    },
+    rolled: (r) => !!r.result,
+    actor: (s, r) => actorIn(s, r.id),
+    caps: { forced: true },
+    resolve: (_s, r, actor, _get, forced) => {
+      if (!actor) return null;
+      const rr = forced ? forceCrewRole(actor, r.roleId, r.cumul, r.sense) : rollCrewRole(actor, r.roleId, battleRng(), r.cumul, r.sense);
+      return rr ? { result: rr } : null;
+    },
+    outcome: (r) => cleanRollOutcome(r.result),
+    bonus: { derive: (_s, r) => bumpResultSL(r) },
+  }),
+
   /** PROCÈS-VERBAL de repos (bilan multi-jours) — jets de ROUTINE résolus en lot, INFLUENÇABLES après
    *  coup ligne à ligne (LDB 17 l.21-27) : la Chance RELANCE un jet de HÉROS raté (LDB 12 l.40 : 1× max),
    *  la conséquence est recalculée en DELTA (`applyLedgerReresolve`) pour les seules lignes recalculables
@@ -1535,6 +1564,7 @@ export const FLOW_VERBS = {
   shipManeuver: { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
   shipBattery:  { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
   crewTest:     { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
+  cascadeCrew:  { kind: 'multi', verbs: ['roll', 'reroll', 'bonusSL', 'forceSuccess', 'darkPact'], coop: true },
   // PV de repos : seule la RELANCE est exposée — sur un jet de routine RATÉ, un +1 DR ne peut pas
   // renverser l'échec (LDB 17 l.84), donc rien d'autre à influencer après coup que la relance (l.21-27).
   restLedger:   { kind: 'multi', verbs: ['reroll'] },
@@ -1552,7 +1582,7 @@ const FLOW_HANDLERS = {
   activity: FLOWS.activity, bargain: FLOWS.bargain, appraise: FLOWS.appraise, shanty: FLOWS.shanty,
   counterspell: FLOWS.counterspell, cascade: FLOWS.cascade, opposition: FLOWS.castOpposition, extendedTest: FLOWS.extendedTest,
   forceDoor: FLOWS.forceDoor, shipManeuver: FLOWS.shipManeuver, shipBattery: FLOWS.battery, crewTest: FLOWS.crewTest,
-  restLedger: FLOWS.restLedger,
+  cascadeCrew: FLOWS.cascadeCrew, restLedger: FLOWS.restLedger,
 } satisfies Record<keyof typeof FLOW_VERBS, RollFlowHandlers>;
 
 /** Un flux → ses délégués (Mono ou Multi selon `kind`) ; verbes lus depuis `FLOW_VERBS`. */

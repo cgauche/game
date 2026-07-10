@@ -1063,6 +1063,11 @@ export interface CascadeRoll {
  *  s'importent déjà l'un l'autre) n'aient pas à se réimporter en cycle. */
 export const WORLD_STEP_OWNER = '__world-step__';
 
+/** Agrégation d'une étape À PARTICIPANTS (batch multi — Test d'équipage, seam de jet #275 Décision 4
+ *  cran 1). Canonique ICI (neutre, comme `WORLD_STEP_OWNER` ci-dessus) : `rollSeam.ts` importe déjà
+ *  `CascadeStep` depuis ce module — la définir là-bas et l'importer ICI créerait un cycle. */
+export type CascadeAggregate = 'best' | 'opposed' | 'summed-dr';
+
 export interface CascadeStep extends RollParticipant {
   /** Nature de la conséquence (clé de `cascadeAppliers`). Ex. 'recovery' | 'nightmare' | 'exposure'. */
   kind: string;
@@ -1134,6 +1139,15 @@ export interface CascadeStep extends RollParticipant {
   chosen?: string;
   /** Clé choisie d'office par « Tout lancer » / résolution immédiate (défaut = `options[0]`). */
   defaultChoice?: string;
+  /** Étape À PARTICIPANTS (batch multi — Test d'équipage MDG ch.14, seam de jet #275 Décision 4 cran 1) :
+   *  UNE rangée par contributeur (`ShipManeuverParticipant`, résolue via le flux `cascadeCrew` — MÊME
+   *  jet par rôle que `crewRoleFlowSpec`), influençable INDÉPENDAMMENT. Prête quand tous les
+   *  participants INTERACTIFS ont `result` (`stepReady`) ; `commitStep` agrège alors (`aggregate`,
+   *  défaut `summed-dr`) dans `step.result` avant d'invoquer l'applier — l'applier lit `step.result`
+   *  comme une étape mono, kind-agnostique. `target`/`base` restent absents (aucun jet PROPRE à l'étape). */
+  participants?: ShipManeuverParticipant[];
+  /** Agrégation de `participants` (défaut `summed-dr`, Test d'équipage MDG ch.14 l.13). */
+  aggregate?: CascadeAggregate;
 }
 /**
  * CASCADE séquentielle influençable (régime choisi par l'utilisateur pour les jets de NUIT et de

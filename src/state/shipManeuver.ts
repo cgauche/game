@@ -81,6 +81,29 @@ export function maneuverCrewTotal(
   return total;
 }
 
+/** Agrège les jets d'une étape/pending À PARTICIPANTS (batch multi, MDG ch.14) selon `aggregate` —
+ *  PARTAGÉ par le seam de jet (`rollSeam.buildBatchStep`, surface I) et la cascade (`cascade.commitStep`,
+ *  surfaces M/V — `CascadeStep.participants`, seam de jet #275 Décision 4 cran 1). PUR : `'best'` = le
+ *  meilleur DR l'emporte (porte forcée), `'opposed'` = le total net d'une marge adverse (contresort),
+ *  `'summed-dr'` (défaut) = la somme MDG ch.14 l.13 (`maneuverCrewTotal`, Test d'équipage). */
+export function aggregateCrewRolls(
+  rolled: { roleId: string; result: CrewRoleRoll | null }[],
+  aggregate: 'best' | 'opposed' | 'summed-dr' = 'summed-dr',
+  opts: { essentialRoleId?: string; moraleScore?: number; extraDR?: number; undercrew?: { dr: number; capSuccesMinime: boolean }; opposeSl?: number } = {},
+): { sl: number; success: boolean } {
+  if (aggregate === 'best') {
+    const best = rolled.reduce<CrewRoleRoll | null>((m, p) => (p.result && (!m || p.result.sl > m.sl) ? p.result : m), null);
+    const sl = best?.sl ?? 0;
+    return { sl, success: sl > 0 };
+  }
+  const total = maneuverCrewTotal(rolled, opts.essentialRoleId, opts.moraleScore ?? 0, opts.undercrew, opts.extraDR ?? 0);
+  if (aggregate === 'opposed') {
+    const sl = total - (opts.opposeSl ?? 0);
+    return { sl, success: sl > 0 };
+  }
+  return { sl: total, success: total >= 1 };
+}
+
 /** `ManeuverResult` d'un Test d'ÉQUIPAGE : le total d'équipage tient lieu de DR de Navigation ; le virage RÉUSSIT
  *  si le DR FINAL (équipage + Man + extra) ≥ 1 (MDG ch.14 l.13 « si le total est de 1 DR ou plus, succès » — règle
  *  d'équipage, distincte du `dr ≥ 0` du barreur unique ch.13). Le déplacement suit la Progression. PUR. */

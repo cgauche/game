@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { startCascade, registerCascadeApplier, stepInteraction, stepReady, buildConsequenceSteps } from './cascade';
-import type { CascadeStep } from './pendings';
+import type { CascadeStep, ShipManeuverParticipant } from './pendings';
 
 /**
  * CASCADE séquentielle influençable (jets de NUIT / VOYAGE) — cœur générique. 3ᵉ consommateur de la
@@ -186,6 +186,35 @@ describe('Cascade séquentielle influençable', () => {
     const committed = useGame.getState().pendingCascade!.participants[0];
     expect(committed.committed).toBe(true);
     expect(committed.outcome).toEqual(['Sonné appliqué (Assommante)']); // contenu pré-posé NON effacé
+  });
+
+  it('étape « batch » (participants — seam de jet #275 Décision 4 cran 1) : agrège les contributeurs à la validation', () => {
+    useGame.getState().seedRng(11);
+    const h1 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Timonier', rng: makeRNG(2) });
+    const h2 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Vigie', rng: makeRNG(3) });
+    useGame.setState({ party: [h1, h2] });
+    registerCascadeApplier('crew-batch', (_g, _s, step) => {
+      applied.push({ kind: step.kind, success: !!step.result?.success });
+      return { journal: [`${step.label} → DR ${step.result?.sl}`] };
+    });
+    const participants: ShipManeuverParticipant[] = [
+      { id: h1.id, label: 'Timonier — Timonier', roleId: 'timonier', essential: true, interactive: true, result: null },
+      { id: h2.id, label: 'Vigie — Vigie', roleId: 'vigie', essential: false, interactive: true, result: null },
+    ];
+    const batch: CascadeStep = { id: 'progression', kind: 'crew-batch', label: 'Progression', participants, result: null, interactive: true };
+    startCascade(useGame.getState, useGame.setState, { title: 'Voyage', purpose: 'test', steps: [batch] });
+    expect(stepInteraction(useGame.getState().pendingCascade!.participants[0])).toBe('batch');
+    expect(stepReady(useGame.getState().pendingCascade!.participants[0])).toBe(false); // aucun participant lancé
+    useGame.getState().cascadeNext(); // batch pas prêt → no-op (aucun participant lancé)
+    expect(applied).toHaveLength(0);
+    useGame.getState().cascadeCrewRoll(h1.id);
+    expect(stepReady(useGame.getState().pendingCascade!.participants[0])).toBe(false); // h2 pas encore lancé
+    useGame.getState().cascadeCrewRoll(h2.id);
+    expect(stepReady(useGame.getState().pendingCascade!.participants[0])).toBe(true);
+    useGame.getState().cascadeNext(); // agrège (essentiel ×2, MDG ch.14 l.19) puis applique
+    expect(applied).toHaveLength(1);
+    expect(useGame.getState().pendingCascade).toBeNull();
+    expect(useGame.getState().journal.some((l) => l.startsWith('Progression → DR'))).toBe(true);
   });
 
   it('buildConsequenceSteps : groupes non vides → étapes d’affichage (outcome pré-posé), vides ignorés', () => {

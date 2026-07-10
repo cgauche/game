@@ -21,10 +21,12 @@ import { CriticalBody } from './RevealModal';
 import { JournalLine } from './NarratedLine';
 import { Icon } from './Icon';
 import { ev, type CombatEventKind } from '../state/combatLog';
-import { cascadeAppliers, stepInteraction } from '../state/cascade';
+import { cascadeAppliers, stepInteraction, stepReady } from '../state/cascade';
 import { FLOWS } from '../state/rollFlowSpecs';
 import type { CascadeStep, CascadeRoll } from '../state/pendings';
 import type { Combatant } from '../engine/types';
+import { crewRoleValue } from '../engine/crewMorale';
+import { findCrewRoleById } from '../data';
 
 /** Une étape-JET est PRÉSENTABLE avec son acteur (comportement historique) OU sans acteur quand
  *  elle est MONDIALE (`worldOwner`, seam #275 Décision 3 — désertion/Moral, aucun `actorId` par
@@ -50,6 +52,11 @@ export function CascadeModal() {
   const pursuit = useGame((s) => s.pursuit); // manche de poursuite (purpose:'pursuite') — porte partyRole/encounter
   const pursuitAbandon = useGame((s) => s.pursuitAbandon);
   const pendingCast = useGame((s) => s.pendingCast); // étape-jet `cast` : hôte la situation d'incantation (réactif, pas de hook conditionnel)
+  const crewRoll = useGame((s) => s.cascadeCrewRoll); // étape « batch » — un jet par rôle (seam #275 Décision 4 cran 1)
+  const crewReroll = useGame((s) => s.cascadeCrewReroll);
+  const crewBonusSL = useGame((s) => s.cascadeCrewBonusSL);
+  const crewDarkPact = useGame((s) => s.cascadeCrewDarkPact);
+  const crewForce = useGame((s) => s.cascadeCrewForceSuccess);
   const roll = useGame((s) => s.cascadeRoll);
   const reroll = useGame((s) => s.cascadeReroll);
   const bonusSL = useGame((s) => s.cascadeBonusSL);
@@ -224,6 +231,49 @@ export function CascadeModal() {
           </>
         }
         actions={[continueAction]}
+        disableEscClose
+      />
+    );
+  }
+
+  // BATCH : Test d'équipage MULTI (participants — seam de jet #275 Décision 4 cran 1) — patron
+  // `ForceDoorModal` (frappe PARALLÈLE) : chaque contributeur lance SON rôle indépendamment, son
+  // propre cycle Chance/+1 DR/Pacte/Résilience ; « Continuer » n'agit QUE quand `stepReady` (tous les
+  // interactifs ont un `result` — les témoins PNJ, `interactive:false`, ne freinent jamais).
+  if (interaction === 'batch') {
+    const rows: RollRowData[] = cur.participants!.flatMap((part) => {
+      const partActor = pool.find((c) => c.id === part.id);
+      if (!partActor) return [];
+      const role = findCrewRoleById(part.roleId);
+      const res = part.result;
+      const val = role ? crewRoleValue(partActor, role, part.sense).value : 0;
+      const row = res
+        ? { combatant: partActor, d: { label: role?.label ?? part.roleId, base: val, modifier: res.target - val, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl } }
+        : { combatant: partActor, pending: { label: role?.label ?? part.roleId, base: val, mods: [] } };
+      return [{
+        key: part.id,
+        actor: partActor,
+        row,
+        rolled: !!res,
+        interactive: part.interactive !== false,
+        onRoll: () => crewRoll(part.id),
+        rerollable: !!res && canReroll(res.roll > res.target, !!part.rerolled),
+        onReroll: () => crewReroll(part.id),
+        onBonusSL: () => crewBonusSL(part.id),
+        darkPactable: partActor.kind === 'hero' && !!res && res.roll > res.target,
+        onDarkPact: () => crewDarkPact(part.id),
+        onForce: () => crewForce(part.id),
+        forceShow: !!res,
+      }];
+    });
+    const ready = stepReady(cur);
+    return (
+      <RollShell
+        title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
+        subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        rolled={ready}
+        rows={rows}
+        actions={ready ? [continueAction] : []}
         disableEscClose
       />
     );

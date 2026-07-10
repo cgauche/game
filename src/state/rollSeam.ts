@@ -36,7 +36,7 @@ import type { GameState } from './store';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
-import type { CascadeStep, CascadeStepMeta, ShipManeuverParticipant } from './pendings';
+import type { CascadeStep, CascadeStepMeta, ShipManeuverParticipant, CascadeAggregate } from './pendings';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatOrParty';
 import { startCascade, runCascadeImmediate } from './cascade';
@@ -46,15 +46,17 @@ import { battleRng } from './battleRng';
 import { humanControlled, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
-import { rollCrewRole, forceCrewRole, maneuverCrewTotal, type CrewRoleRoll } from './shipManeuver';
+import { rollCrewRole, forceCrewRole, aggregateCrewRolls, type CrewRoleRoll } from './shipManeuver';
 import { findSkillById } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
 
 /** Les 4 classes déclaratives (mandat #275). Pilotent la POLICY, jamais le call-site. */
 export type RollClass = 'hero-test' | 'enemy' | 'subi' | 'batch';
 
-/** Agrégation d'un jet multi (porte/contresort/équipage) — SEULE variation de la famille multi. */
-export type RollAggregate = 'best' | 'opposed' | 'summed-dr';
+/** Agrégation d'un jet multi (porte/contresort/équipage) — SEULE variation de la famille multi.
+ *  Canonique dans `pendings.ts` (`CascadeAggregate`, ré-exportée ici pour compat des call-sites du
+ *  seam) : `CascadeStep.participants` (Décision 4 cran 1) porte la MÊME union. */
+export type RollAggregate = CascadeAggregate;
 
 /** DESCRIPTION déclarative d'un jet. Le call-site remplit ceci et RIEN d'autre. */
 export interface RollRequest {
@@ -249,28 +251,13 @@ function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: Cascade
     return { ...p, result: roll };
   });
   const aggregate = req.aggregate ?? 'summed-dr';
-  let sl: number;
-  let success: boolean;
-  if (aggregate === 'best') {
-    const best = rolled.reduce<CrewRoleRoll | null>((m, p) => (p.result && (!m || p.result.sl > m.sl) ? p.result : m), null);
-    sl = best?.sl ?? 0;
-    success = sl > 0;
-  } else {
-    const essentialRoleId = typeof meta?.essentialRoleId === 'string' ? meta.essentialRoleId : undefined;
-    const moraleScore = typeof meta?.moraleScore === 'number' ? meta.moraleScore : 0;
-    const extraDR = typeof meta?.extraDR === 'number' ? meta.extraDR : 0;
-    const undercrewDR = typeof meta?.undercrewDR === 'number' ? meta.undercrewDR : undefined;
-    const undercrew = undercrewDR != null ? { dr: undercrewDR, capSuccesMinime: !!meta?.capSuccesMinime } : undefined;
-    const total = maneuverCrewTotal(rolled, essentialRoleId, moraleScore, undercrew, extraDR);
-    if (aggregate === 'opposed') {
-      const opposeSl = typeof meta?.opposeSl === 'number' ? meta.opposeSl : 0;
-      sl = total - opposeSl;
-      success = sl > 0;
-    } else {
-      sl = total;
-      success = total >= 1; // « si le total est de 1 DR ou plus, succès » (MDG ch.14 l.13, `shipManeuver.ts:85`)
-    }
-  }
+  const essentialRoleId = typeof meta?.essentialRoleId === 'string' ? meta.essentialRoleId : undefined;
+  const moraleScore = typeof meta?.moraleScore === 'number' ? meta.moraleScore : 0;
+  const extraDR = typeof meta?.extraDR === 'number' ? meta.extraDR : 0;
+  const undercrewDR = typeof meta?.undercrewDR === 'number' ? meta.undercrewDR : undefined;
+  const undercrew = undercrewDR != null ? { dr: undercrewDR, capSuccesMinime: !!meta?.capSuccesMinime } : undefined;
+  const opposeSl = typeof meta?.opposeSl === 'number' ? meta.opposeSl : 0;
+  const { sl, success } = aggregateCrewRolls(rolled, aggregate, { essentialRoleId, moraleScore, extraDR, undercrew, opposeSl });
   return {
     id: kind,
     kind,

@@ -23,6 +23,7 @@ import { resultLine } from './rollSeam';
 import { actorIn } from './combatOrParty';
 import { rollTest } from '../engine/tests';
 import { battleRng } from './battleRng';
+import { aggregateCrewRolls, rollCrewRole } from './shipManeuver';
 
 /**
  * Conséquence d'une étape, appliquée à la VALIDATION. Mute le héros (via get/set), renvoie les
@@ -66,21 +67,54 @@ export function registerCascadeApplier(kind: string, apply: CascadeApplier, desc
 }
 
 /** Type d'INTERACTION d'une étape, inféré de ses champs (zéro migration des étapes-jet existantes) :
- *  un Test (`target`), un choix du joueur (`options`), ou un pur affichage (ni l'un ni l'autre). */
-export function stepInteraction(step: CascadeStep): 'jet' | 'choix' | 'affichage' {
+ *  un Test (`target`), un batch multi (`participants` — seam de jet #275 Décision 4 cran 1, UNE rangée
+ *  par contributeur), un choix du joueur (`options`), ou un pur affichage (aucun des trois). */
+export function stepInteraction(step: CascadeStep): 'jet' | 'batch' | 'choix' | 'affichage' {
   if (step.target != null) return 'jet';
+  if (step.participants != null) return 'batch';
   if (step.options != null) return 'choix';
   return 'affichage';
 }
 
-/** L'étape est-elle prête à être validée ? jet → lancée (`result`) ; choix → tranchée (`chosen`) ;
- *  affichage → toujours (rien à résoudre avant la conséquence). */
+/** L'étape est-elle prête à être validée ? jet → lancée (`result`) ; batch → TOUS les participants
+ *  INTERACTIFS ont un `result` (les témoins — marins PNJ, `interactive:false` — sont auto-roulés à
+ *  l'ouverture, jamais un frein) ; choix → tranchée (`chosen`) ; affichage → toujours. */
 export function stepReady(step: CascadeStep): boolean {
   switch (stepInteraction(step)) {
     case 'jet': return !!step.result;
+    case 'batch': return step.participants!.every((p) => p.interactive === false || !!p.result);
     case 'choix': return step.chosen != null;
     case 'affichage': return true;
   }
+}
+
+/** Agrège une étape « batch » PRÊTE (`stepReady`) en un `CascadeRoll` scalaire — même vocabulaire
+ *  `result` qu'une étape mono, pour que l'applier `cascadeAppliers[kind]` reste kind-agnostique du
+ *  nombre de contributeurs (seam de jet #275 Décision 4 cran 1). `meta` porte les paramètres de
+ *  formule SÉRIALISABLES (Moral, Manque de bras, sabotage — mêmes clés que `rollSeam.buildBatchStep`,
+ *  `meta.essentialRoleId`/`moraleScore`/`extraDR`/`undercrewDR`/`capSuccesMinime`/`opposeSl`). */
+function aggregateBatchStep(step: CascadeStep): CascadeRoll {
+  const meta = step.meta;
+  const essentialRoleId = typeof meta?.essentialRoleId === 'string' ? meta.essentialRoleId : undefined;
+  const moraleScore = typeof meta?.moraleScore === 'number' ? meta.moraleScore : 0;
+  const extraDR = typeof meta?.extraDR === 'number' ? meta.extraDR : 0;
+  const undercrewDR = typeof meta?.undercrewDR === 'number' ? meta.undercrewDR : undefined;
+  const undercrew = undercrewDR != null ? { dr: undercrewDR, capSuccesMinime: !!meta?.capSuccesMinime } : undefined;
+  const opposeSl = typeof meta?.opposeSl === 'number' ? meta.opposeSl : 0;
+  const { sl, success } = aggregateCrewRolls(step.participants!, step.aggregate ?? 'summed-dr', { essentialRoleId, moraleScore, extraDR, undercrew, opposeSl });
+  return { roll: 0, target: 0, sl, success };
+}
+
+/** Lance d'office les participants SANS influence (pilotes automatiques — `resolveRemainingCascade`/
+ *  `runCascadeImmediate`) : même jet par rôle que la modale (`rollCrewRole`, MDG ch.14), simplement
+ *  sans le cycle Chance/Résilience du flux `cascadeCrew`. */
+function rollBatchParticipants(get: Get, step: CascadeStep) {
+  const s = get();
+  return step.participants!.map((p) => {
+    if (p.result) return p;
+    const crew = actorIn(s, p.id);
+    return { ...p, result: crew ? rollCrewRole(crew, p.roleId, battleRng(), p.cumul, p.sense) : null };
+  });
 }
 
 /** Pose le choix du joueur sur l'étape « choix » COURANTE (valide que `key ∈ options`). Analogue de
@@ -112,7 +146,11 @@ export function startCascade(
 /** Applique la conséquence d'une étape + ses insertions ; renvoie le tableau d'étapes mis à jour et
  *  les lignes de journal. Partagé par les deux pilotes (interactif et immédiat). */
 function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMerge = false): { steps: CascadeStep[]; journal: string[] } {
-  const step = steps[i];
+  // Étape « batch » (participants — seam de jet #275 Décision 4 cran 1) : AGRÈGE les contributeurs
+  // (déjà tous résolus, `stepReady`) en UN `CascadeRoll` scalaire — l'applier lit `step.result` comme
+  // n'importe quelle étape mono, kind-agnostique du nombre de rangées.
+  let step = steps[i];
+  if (step.participants && !step.result) step = { ...step, result: aggregateBatchStep(step) };
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
   const out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
   // `consequences` (#295 Lot 0) prime : rendu par `resultLine` en UNE ligne. Repli `journal` (canal
@@ -131,7 +169,7 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   // encore posés dans le pending).
   const live = liveMerge ? get().pendingCascade?.participants : undefined;
   const base = live && live.length >= steps.length && live[i]?.id === step.id ? live : steps;
-  let next = base.map((x, k) => (k === i ? { ...x, committed: true, outcome: shown } : x));
+  let next = base.map((x, k) => (k === i ? { ...x, ...(step.result ? { result: step.result } : {}), committed: true, outcome: shown } : x));
   if (out?.insert?.length) next = [...next.slice(0, i + 1), ...out.insert, ...next.slice(i + 1)];
   return { steps: next, journal };
 }
@@ -175,6 +213,8 @@ export function resolveRemainingCascade(get: Get, set: Set): void {
       const t = rollTest(st.target!, 'intermediaire', battleRng());
       const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       steps = steps.map((x, k) => (k === i ? { ...x, result } : x));
+    } else if (stepInteraction(st) === 'batch') {
+      steps = steps.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(get, st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
       // « Tout résoudre » ne TRANCHE pas un CHOIX du joueur (dévier/subir, piéger…) : on s'arrête dessus.
       set({ pendingCascade: { ...p, participants: steps, cursor: i, log } });
@@ -209,6 +249,8 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[]): C
       const t = rollTest(st.target!, 'intermediaire', battleRng());
       const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       cur = cur.map((x, k) => (k === i ? { ...x, result } : x));
+    } else if (stepInteraction(st) === 'batch') {
+      cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(get, st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
       const key = st.defaultChoice ?? st.options![0]?.key;
       if (key != null) cur = cur.map((x, k) => (k === i ? { ...x, chosen: key } : x));
