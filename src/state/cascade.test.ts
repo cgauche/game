@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { startCascade, registerCascadeApplier, stepInteraction, stepReady, buildConsequenceSteps } from './cascade';
+import { spyApplier } from './cascadeTestKit';
 import type { CascadeStep, ShipManeuverParticipant } from './pendings';
 
 /**
@@ -16,10 +17,8 @@ describe('Cascade séquentielle influençable', () => {
     applied.length = 0;
     useGame.setState({ battle: null, pendingCascade: null, journal: [] });
     // Conséquence synthétique : enregistre l'étape validée + une ligne de journal.
-    registerCascadeApplier('tally', (_get, _set, step) => {
-      applied.push({ kind: step.kind, success: !!step.result?.success });
-      return { journal: [`${step.label} → ${step.result?.success ? 'réussi' : 'raté'}`] };
-    });
+    spyApplier('tally', applied, (step) => ({ kind: step.kind, success: !!step.result?.success }),
+      (step) => ({ journal: [`${step.label} → ${step.result?.success ? 'réussi' : 'raté'}`] }));
   });
 
   function hero() {
@@ -63,12 +62,9 @@ describe('Cascade séquentielle influençable', () => {
   it('une conséquence peut INSÉRER des étapes suivantes (dépendance abri → Exposition)', () => {
     useGame.getState().seedRng(5);
     const h = hero();
-    registerCascadeApplier('shelter', (_get, _set, step) => {
-      applied.push({ kind: step.kind, success: !!step.result?.success });
+    spyApplier('shelter', applied, (step) => ({ kind: step.kind, success: !!step.result?.success }),
       // Abri raté → 2 jets d'Exposition insérés ; réussi → aucun.
-      const insert = step.result?.success ? [] : [step1Insert(h.id, 'expo-a'), step1Insert(h.id, 'expo-b')];
-      return { insert };
-    });
+      (step) => ({ insert: step.result?.success ? [] : [step1Insert(h.id, 'expo-a'), step1Insert(h.id, 'expo-b')] }));
     function step1Insert(actorId: string, id: string): CascadeStep {
       return { id, kind: 'tally', actorId, label: id, rollLabel: 'Résistance', base: 40, target: 40, result: null, interactive: true };
     }
@@ -123,11 +119,9 @@ describe('Cascade séquentielle influençable', () => {
 
   it('étape « choix » : no-op sans choix, puis l’option pilote la conséquence + insertion', () => {
     const h = hero();
-    registerCascadeApplier('pick', (_g, _s, step) => {
-      applied.push({ kind: step.kind, success: step.chosen === 'devier' });
-      return step.chosen === 'devier' ? { insert: [{ id: 'suite', kind: 'note', actorId: h.id, interactive: true }] } : {};
-    });
-    registerCascadeApplier('note', (_g, _s, step) => { applied.push({ kind: step.kind, success: true }); return { journal: [`${step.id}`] }; });
+    spyApplier('pick', applied, (step) => ({ kind: step.kind, success: step.chosen === 'devier' }),
+      (step) => (step.chosen === 'devier' ? { insert: [{ id: 'suite', kind: 'note', actorId: h.id, interactive: true }] } : {}));
+    spyApplier('note', applied, (step) => ({ kind: step.kind, success: true }), (step) => ({ journal: [`${step.id}`] }));
     const choix: CascadeStep = { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'devier', label: 'Dévier' }, { key: 'subir', label: 'Subir' }], interactive: true };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [choix] });
     useGame.getState().cascadeNext(); // pas de choix → no-op
@@ -143,7 +137,7 @@ describe('Cascade séquentielle influençable', () => {
 
   it('étape « affichage » : validée sans jet ni choix', () => {
     const h = hero();
-    registerCascadeApplier('note', (_g, _s, step) => { applied.push({ kind: 'note', success: true }); return { journal: [`${step.id}`] }; });
+    spyApplier('note', applied, () => ({ kind: 'note', success: true }), (step) => ({ journal: [`${step.id}`] }));
     const aff: CascadeStep = { id: 'd', kind: 'note', actorId: h.id, interactive: true };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [aff] });
     useGame.getState().cascadeNext(); // affichage → acquitté directement, cascade finalisée
@@ -154,8 +148,8 @@ describe('Cascade séquentielle influençable', () => {
   it('« Tout résoudre » résout les étapes auto mais S\'ARRÊTE sur un CHOIX (pas d\'auto-tranche)', () => {
     useGame.getState().seedRng(7);
     const h = hero();
-    registerCascadeApplier('pick', (_g, _s, step) => { applied.push({ kind: 'pick', success: step.chosen === 'a' }); return {}; });
-    registerCascadeApplier('note', (_g, _s) => { applied.push({ kind: 'note', success: true }); return {}; });
+    spyApplier('pick', applied, (step) => ({ kind: 'pick', success: step.chosen === 'a' }));
+    spyApplier('note', applied, () => ({ kind: 'note', success: true }));
     const steps: CascadeStep[] = [
       step('s1', h.id), // jet (tally) — auto-résolu
       { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'a', label: 'A' }, { key: 'b', label: 'B' }], interactive: true }, // CHOIX → STOP
@@ -176,7 +170,7 @@ describe('Cascade séquentielle influençable', () => {
   it('étape « affichage » : contenu pré-posé (outcome) PRÉSERVÉ par un applier muet', () => {
     const h = hero();
     registerCascadeApplier('reveal', () => {}); // applier MUET (mutation seule, aucun journal)
-    registerCascadeApplier('note', (_g, _s) => { applied.push({ kind: 'note', success: true }); return {}; });
+    spyApplier('note', applied, () => ({ kind: 'note', success: true }));
     const steps: CascadeStep[] = [
       { id: 'r', kind: 'reveal', actorId: h.id, outcome: ['Sonné appliqué (Assommante)'], interactive: true }, // affichage
       { id: 'd', kind: 'note', actorId: h.id, interactive: true },
@@ -193,10 +187,8 @@ describe('Cascade séquentielle influençable', () => {
     const h1 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Timonier', rng: makeRNG(2) });
     const h2 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Vigie', rng: makeRNG(3) });
     useGame.setState({ party: [h1, h2] });
-    registerCascadeApplier('crew-batch', (_g, _s, step) => {
-      applied.push({ kind: step.kind, success: !!step.result?.success });
-      return { journal: [`${step.label} → DR ${step.result?.sl}`] };
-    });
+    spyApplier('crew-batch', applied, (step) => ({ kind: step.kind, success: !!step.result?.success }),
+      (step) => ({ journal: [`${step.label} → DR ${step.result?.sl}`] }));
     const participants: ShipManeuverParticipant[] = [
       { id: h1.id, label: 'Timonier — Timonier', roleId: 'timonier', essential: true, interactive: true, result: null },
       { id: h2.id, label: 'Vigie — Vigie', roleId: 'vigie', essential: false, interactive: true, result: null },
@@ -239,7 +231,7 @@ describe('Cascade séquentielle influençable', () => {
       set({ pendingCascade: { ...pc, participants: [...pc.participants, { id: 'appended', kind: 'note', actorId: h.id, outcome: ['conséquence ajoutée'], interactive: true }] } });
       return {};
     });
-    registerCascadeApplier('note', (_g, _s) => { applied.push({ kind: 'note', success: true }); return {}; });
+    spyApplier('note', applied, () => ({ kind: 'note', success: true }));
     const trig: CascadeStep = { id: 't', kind: 'trigger', actorId: h.id, outcome: ['déclencheur'], interactive: true };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [trig] });
     useGame.getState().cascadeNext(); // valide 'trigger' → APPEND 'appended' ; le pending NE se ferme PAS

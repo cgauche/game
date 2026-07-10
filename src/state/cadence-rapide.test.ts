@@ -2,7 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
-import { startCascade, registerCascadeApplier } from './cascade';
+import { startCascade } from './cascade';
+import { spyApplier } from './cascadeTestKit';
 import { tickCombatAuto } from './combatAuto';
 import { setRule, resetRule } from '../engine/policy';
 import type { CascadeStep } from './pendings';
@@ -17,7 +18,7 @@ describe('Cadence Rapide — auto-résolution des cascades par le driver', () =>
   beforeEach(() => {
     applied.length = 0;
     useGame.setState({ battle: null, pendingCascade: null, journal: [], net: { ...useGame.getState().net, mode: 'local' } });
-    registerCascadeApplier('tally', (_g, _s, step) => { applied.push(step.id); return { journal: [step.id] }; });
+    spyApplier('tally', applied, (step) => step.id, (step) => ({ journal: [step.id] }));
   });
   afterEach(() => resetRule('combat-cadence'));
 
@@ -58,7 +59,7 @@ describe('Auto-combat — choix de cascade tranché par le défaut authoré', ()
   beforeEach(() => {
     chosen.length = 0;
     useGame.setState({ battle: null, pendingCascade: null, net: { ...useGame.getState().net, mode: 'local' } });
-    registerCascadeApplier('tally-choix', (_g, _s, step) => { chosen.push(step.chosen); return {}; });
+    spyApplier('tally-choix', chosen, (step) => step.chosen);
     setRule('combat-cadence', 'auto');
   });
   afterEach(() => resetRule('combat-cadence'));

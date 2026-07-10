@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { registerCascadeApplier, type CascadeApplier } from './cascade';
+import { type CascadeApplier } from './cascade';
+import { spyApplier } from './cascadeTestKit';
 import { setGmSeat } from './netFlow';
 import { openRoll, rollTitle, resultLine, type RollRequest, type Consequence } from './rollSeam';
 import { modalOwnerOf } from './modalArbiter';
@@ -22,10 +23,8 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     useGame.setState({ battle: null, party: [], pendingCascade: null, journal: [], travelPlan: null } as never);
     setGmSeat(useGame.getState, useGame.setState, null);
     for (const kind of ['seam-hero', 'seam-enemy', 'seam-subi', 'seam-batch']) {
-      registerCascadeApplier(kind, (_get, _set, step) => {
-        applied.push({ kind: step.kind, success: !!step.result?.success, sl: step.result?.sl ?? 0 });
-        return { journal: [`${step.label} → ${step.result?.success ? 'réussi' : 'raté'}`] };
-      });
+      spyApplier(kind, applied, (step) => ({ kind: step.kind, success: !!step.result?.success, sl: step.result?.sl ?? 0 }),
+        (step) => ({ journal: [`${step.label} → ${step.result?.success ? 'réussi' : 'raté'}`] }));
     }
   });
 
@@ -108,14 +107,18 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
       side: { participants: [{ id: 'timonier1', roleId: 'timonier', essential: true, result: null }], shipId: 'nef' },
       test: { label: 'Progression' }, difficulty: 'intermediaire', klass: 'batch',
     };
+    // `cascadeAppliers['progression']` est désormais le VRAI applier de mer (#275 Décision 4 cran 2, `seaVoyageFlow.ts`)
+    // — il lit `travelPlan.sea`, absent de ce plan SYNTHÉTIQUE ; ce test isole la POLICY de la porte (surface I),
+    // pas la conséquence métier réelle → double localement le kind pour ne pas dépendre de `seaVoyageFlow`.
+    spyApplier('progression', applied, (step) => ({ kind: step.kind, success: !!step.result?.success, sl: step.result?.sl ?? 0 }));
     openRoll(useGame.getState, useGame.setState, req, 'progression');
-    // 'progression' ∈ SEA_ROUTINE_KINDS + cadence COMMANDÉE ⇒ autoV ⇒ I : résolu et appliqué d'office.
+    // 'progression' ∈ SEA_ROUTINE_KINDS + cadence COMMANDÉE ⇒ autoV ⇒ I : résolu et appliqué d'office
+    // (`cascade.rollBatchParticipants` auto-roule le contributeur, `aggregateBatchStep` agrège au commit).
     expect(useGame.getState().pendingCascade).toBeNull();
-    // (l'applier 'progression' réel n'est pas enregistré ici — la porte a tenté `cascadeAppliers['progression']`,
-    // absent en Ronde 0 : `commitStep` no-op silencieusement sur un kind non enregistré, cf. `cascade.ts:110`.)
+    expect(applied).toHaveLength(1);
   });
 
-  it('batch, cadence jour-par-jour, sans MJ → M (multi surfacé, agrégat pré-résolu)', () => {
+  it('batch, cadence jour-par-jour, sans MJ → M (multi surfacé, étape À PARTICIPANTS non résolue — #275 Décision 4 cran 2)', () => {
     const crew: Combatant = { id: 'timonier1', name: 'Timonier', kind: 'hero', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, skills: [{ skillId: 'navigation-fluviale', characteristic: 'intelligence', advances: 30 }], conditions: [], talents: [] } as unknown as Combatant;
     useGame.setState({ party: [crew] });
     const req: RollRequest = {
@@ -124,8 +127,11 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     };
     openRoll(useGame.getState, useGame.setState, req, 'seam-batch');
     expect(useGame.getState().pendingCascade).toBeTruthy();
-    expect(useGame.getState().pendingCascade!.participants[0].result).toBeTruthy(); // agrégat déjà résolu (écart 2)
-    expect(applied).toHaveLength(0); // I surface a validé son étape ; M surface attend l'action « Continuer » du joueur
+    const step = useGame.getState().pendingCascade!.participants[0];
+    expect(step.result).toBeFalsy(); // pas d'agrégat pré-résolu — UNE rangée par contributeur, à lancer
+    expect(step.participants).toHaveLength(1);
+    expect(step.participants![0].result).toBeNull(); // le contributeur n'a pas encore lancé (flux `cascadeCrew`)
+    expect(applied).toHaveLength(0); // rien appliqué tant que l'étape n'est pas validée
   });
 
   it('rollTitle : dérive le titre depuis les ids (acteur/compétence/difficulté) — un seul composeur', () => {

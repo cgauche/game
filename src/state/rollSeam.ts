@@ -22,14 +22,13 @@
  *     à l'hôte (sinon) — couture la PLUS PETITE (aucune extension d'`intentAllowedFor`, le repli
  *     générique `seatOwns(s, seat, owner)` suffit déjà). `batch` (agrégat, pas de `worldOwner`) reste
  *     hors de cet écart — cf. 2.
- *  2. **`batch` n'utilise PAS `CascadeStep.participants`.** Cette extension est EXPLICITEMENT Ronde 2
- *     (brief : « pas l'extension participants, c'est ronde 2 »). En Ronde 0, `openRoll('batch', …)`
- *     résout l'AGRÉGAT des contributeurs immédiatement (rôle par rôle, `rollCrewRole`/`forceCrewRole`,
- *     MDG ch.14) et pose une étape UNIQUE dont le `result` porte l'agrégat — la modale montre le
- *     TOTAL ; « une rangée par PJ » exige `CascadeStep.participants` (Décision 4), scope Ronde 2.
- *     Les paramètres de formule que `RollRequest` ne porte pas (Moral du navire, Manque de bras,
- *     sabotage — `maneuverCrewTotal`, `shipManeuver.ts:67`) transitent par `meta` (seule voie
- *     SÉRIALISABLE existante, `CascadeStepMeta`) quand le call-site les fournit ; par défaut 0/absent.
+ *  2. **`batch` utilise `CascadeStep.participants`.** FERMÉ Ronde 2 cran 2 : `buildBatchStep` pose une
+ *     étape À PARTICIPANTS non résolue (une rangée par contributeur, flux `cascadeCrew`) — l'AGRÉGAT
+ *     (`step.aggregate`, MDG ch.14) est calculé par `cascade.commitStep`/`aggregateBatchStep` à la
+ *     VALIDATION, kind-agnostique du nombre de contributeurs. Les paramètres de formule que `RollRequest`
+ *     ne porte pas (Moral du navire, Manque de bras, sabotage — `maneuverCrewTotal`, `shipManeuver.ts:67`)
+ *     transitent par `meta` (seule voie SÉRIALISABLE, `CascadeStepMeta`) quand le call-site les fournit ;
+ *     par défaut 0/absent.
  */
 import type { Get, Set } from './flowTypes';
 import type { GameState } from './store';
@@ -42,11 +41,9 @@ import { actorIn } from './combatOrParty';
 import { startCascade, runCascadeImmediate } from './cascade';
 import { testValue, partyBest, partyAssisted } from '../engine/skills';
 import { getTestPolicy } from '../engine/testPolicy';
-import { battleRng } from './battleRng';
 import { humanControlled, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
-import { rollCrewRole, forceCrewRole, aggregateCrewRolls, type CrewRoleRoll } from './shipManeuver';
 import { findSkillById } from '../data';
 import { t, type OutKey, type OutVars } from '../i18n';
 
@@ -239,30 +236,22 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
   };
 }
 
-/** Résout l'AGRÉGAT `batch` (Décision Ronde 0, écart 2 ci-dessus) : chaque contributeur lance SON rôle
- *  (`rollCrewRole`, MDG ch.14), sommé (`summed-dr`, essentiel ×2 via `maneuverCrewTotal`), ou réduit au
- *  meilleur (`best`)/à une marge d'opposition (`opposed`) — puis scellé en UNE étape `CascadeStep`. */
+/** Résout le côté `batch` en étape À PARTICIPANTS (seam de jet #275 Décision 4 cran 1/2, FERME l'écart
+ *  2 de la Ronde 0) : UNE rangée par contributeur (`CascadeStep.participants`), non résolue — le jet de
+ *  chaque contributeur vit dans la modale (flux `cascadeCrew`, `rollFlowSpecs.ts:1042`) ou, en surface I,
+ *  dans `cascade.rollBatchParticipants` (`runCascadeImmediate`). L'AGRÉGAT (`step.aggregate` + `step.meta`
+ *  essentiel/Moral/manque de bras/sabotage) est calculé par `cascade.commitStep`/`aggregateBatchStep` à la
+ *  VALIDATION de l'étape — ce constructeur ne lance plus rien lui-même (avant : agrégat pré-résolu d'office,
+ *  la modale ne montrait que le TOTAL — Ronde 0, écart 2 documenté ci-dessus). */
 function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: CascadeStepMeta): CascadeStep {
   const participants = 'participants' in req.side ? req.side.participants : [];
-  const s = get();
-  const rolled = participants.map((p) => {
-    const crew = actorIn(s, p.id);
-    const roll: CrewRoleRoll | null = crew ? rollCrewRole(crew, p.roleId, battleRng(), p.cumul, p.sense) : null;
-    return { ...p, result: roll };
-  });
-  const aggregate = req.aggregate ?? 'summed-dr';
-  const essentialRoleId = typeof meta?.essentialRoleId === 'string' ? meta.essentialRoleId : undefined;
-  const moraleScore = typeof meta?.moraleScore === 'number' ? meta.moraleScore : 0;
-  const extraDR = typeof meta?.extraDR === 'number' ? meta.extraDR : 0;
-  const undercrewDR = typeof meta?.undercrewDR === 'number' ? meta.undercrewDR : undefined;
-  const undercrew = undercrewDR != null ? { dr: undercrewDR, capSuccesMinime: !!meta?.capSuccesMinime } : undefined;
-  const opposeSl = typeof meta?.opposeSl === 'number' ? meta.opposeSl : 0;
-  const { sl, success } = aggregateCrewRolls(rolled, aggregate, { essentialRoleId, moraleScore, extraDR, undercrew, opposeSl });
+  void get;
   return {
     id: kind,
     kind,
     label: req.test.label,
-    result: { roll: 0, target: 0, sl, success },
+    participants,
+    aggregate: req.aggregate ?? 'summed-dr',
     interactive: true,
     meta,
   };
