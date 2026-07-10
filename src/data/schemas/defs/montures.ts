@@ -5,13 +5,14 @@
  * 8 entrées toutes {id,label,trappingIds,m,e,trot} — inventaire exhaustif par script).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'montures.json';
 
 export const schema = z.strictObject({
   id: z.string(),
   label: z.string(),
-  source: z.strictObject({ book: z.string(), page: z.number() }),
+  source: sourceRefSchema,
   entries: z.array(
     z.strictObject({
       id: z.string(),

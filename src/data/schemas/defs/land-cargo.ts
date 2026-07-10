@@ -6,7 +6,7 @@
  * (verbatim des tableaux), présente en tête du JSON.
  */
 import { z } from 'zod';
-import { difficultySchema } from '../common';
+import { difficultySchema, freeSourceNoteSchema } from '../common';
 
 export const file = 'land-cargo.json';
 
@@ -14,7 +14,7 @@ const seasonRange = z.tuple([z.number(), z.number()]);
 const seasonPrice = z.strictObject({ printemps: z.number(), ete: z.number(), automne: z.number(), hiver: z.number() });
 
 export const schema = z.strictObject({
-  _source: z.string(),
+  _source: freeSourceNoteSchema,
   cargoes: z.array(
     z.strictObject({
       id: z.string(),

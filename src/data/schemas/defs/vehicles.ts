@@ -6,6 +6,7 @@
  * 22/25, `ship` 20/25, `travel` 3/25, `deck` 1/25).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'vehicles.json';
 
@@ -39,7 +40,7 @@ export const schema = z.array(
     label: z.string(),
     /** `IconId` du registre `src/ui/icons/` (famille `travel/*`) — typé `string` côté engine (règle 3). */
     icon: z.string().optional(),
-    source: z.strictObject({ book: z.string(), page: z.number() }).optional(),
+    source: sourceRefSchema.optional(),
     /** Encombrement de l'objet véhicule (LDB 61) — `null` = ne se porte pas (généralement, diligence…). */
     enc: z.union([z.number(), z.null()]).optional(),
     desc: z.string().optional(),

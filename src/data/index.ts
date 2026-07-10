@@ -4,6 +4,7 @@
  * aucune migration ne les régénère.
  */
 import type { EntityAppearance } from '../engine/authoringAppearance';
+import type { SourceRef } from './schemas/common';
 import { slugId } from './slug';
 import { norm } from '../lib/normalize';
 import characteristicsJson from './characteristics.json';
@@ -122,7 +123,7 @@ export interface WaterExposureData {
   rollModPerNegativeSL: number;
   modifiers: WaterExposureModifier[];
   diseases: { min: number; max: number; disease: string; rerollUnlessWounded?: boolean }[];
-  source: { book: string; page: number };
+  source: SourceRef;
 }
 export const WATER_EXPOSURE = waterExposureJson as WaterExposureData;
 
@@ -148,7 +149,7 @@ export interface SpeciesData {
   skills: AdvancementRef[];
   /** Talents d'espèce (`AdvancementRef[]` : {ref}, {choice} « A ou B », {random} « N aléatoire », {wildcard}). */
   talents: AdvancementRef[];
-  source: { book: string; page: number };
+  source: SourceRef;
   /** Racial de Groupe ÉDITABLE (Traits psy ciblés, LDB 21) — surcharge la dérivation par label
    *  (`engine/groups`). Absent = racial auto-dérivé du `label` d'espèce. */
   group?: string;
@@ -164,7 +165,7 @@ export interface ClassData {
   /** Possessions de départ (`TrappingRef` : id du catalogue + quantité, ou `{text}` flavor hors catalogue). */
   trappings: TrappingRef[];
   desc: string;
-  source: { book: string; page: number };
+  source: SourceRef;
 }
 export interface CareerData {
   /** id STABLE (slug du libellé) — cible de `Combatant.career`, `CareerLevelData.career`, pregens. */
@@ -179,7 +180,7 @@ export interface CareerData {
    *  d'espèce (`SpeciesData.refCareer`). null = carrière INDISPONIBLE pour cette espèce (l.360). */
   rand: Record<string, number | null>;
   desc: string;
-  source: { book: string; page: number };
+  source: SourceRef;
 }
 export interface CareerLevelData {
   label: string;
@@ -263,7 +264,7 @@ export interface SkillData {
    *  valeur `spec` d'une instance DOIT être un id de `specs[]` (garde-fou `refs-migrated.test.ts`). */
   specsOpen?: boolean;
   desc: string;
-  source: { book: string; page: number };
+  source: SourceRef;
   /** Test « impliquant un déplacement » (LDB 16 l.37/85) : ciblé par les pénalités d'État À Terre /
    *  Empêtré (`movementOnly`). Classification de COMPÉTENCE portée par la DONNÉE (éditable au Codex),
    *  lue par `engine/conditions.testStatePenalty` — plus de liste d'ids en dur. */
@@ -342,7 +343,7 @@ export interface TalentData {
   specsOpen?: boolean;
   /** Borne haute de plage d100 sur le Tableau des Talents aléatoires (null = hors table). */
   rand?: number | null;
-  source: { book: string; page: number };
+  source: SourceRef;
   /** Effets MÉCANIQUES authorés (déclencheur → ops du Flow) — Talents « effet sur événement » (Assaut
    *  féroce `onHit`, Frappe réactive `onCharged`…), appliqués par `state/triggeredEffects` exactement comme
    *  les traits. Type-only (le moteur reste pur). Édité au Codex par `TriggeredEffectsField`. */
@@ -482,7 +483,7 @@ export interface TrappingData {
   /** `null` = objet sans prix numérique fixe (RAW « ND »/« Variable »/« – » : Mains nues, Arme
    *  improvisée, Rocher, Bijoux, Licence de Guilde, Filet…). */
   price: { gold: number; silver: number; bronze: number } | null;
-  source: { book: string; page: number };
+  source: SourceRef;
   /** Arme DÉRIVÉE conférée tant que l'objet est ÉQUIPÉ (prothèse-arme, LDB 73 : le Crochet « est
    *  considéré comme une Dague » en mêlée). Lue par recomputeLoadout : ajouter une prothèse-arme =
    *  remplir ce champ dans la donnée, plus de name-match `i.name === 'Crochet'`. */
@@ -554,7 +555,7 @@ export interface CreatureData {
   /** Sorts connus (`Ref` par id de sort). */
   spells: Ref[];
   desc: string | null;
-  source: { book: string; page: number };
+  source: SourceRef;
   /** Apparence par défaut UNIFIÉE (plan P2) — UN seul bloc éditable porté par l'enregistrement :
    *  espèce, tenue, parts monstrueux, couleurs, coiffure, sexe/carrure, yeux. Le rig la lit comme
    *  couche de défaut (sous une éventuelle surcharge de scène). Même format que `EntityAppearance`
@@ -583,7 +584,7 @@ export interface StatusData {
   id: string;
   label: string;
   desc: string;
-  source: { book: string; page: number };
+  source: SourceRef;
   /** Modificateurs PASSIFS continus (pénalité de Test, `incomingAttackMod`, `sbBonus`…) en `GameOp[]`, lus
    *  par `passiveMods` (kind `etat` : pool non-cumul, le pire seul, LDB 16 l.20). MÊME éditeur GameOpEditor. */
   passive?: import('../engine/ops').GameOp[];
@@ -742,7 +743,7 @@ export interface ManeuverDef {
    *  vocabulaire que les sorts (Flow d'ops), exécutés par `applyTriggeredEffects`. */
   effects?: import('../state/flow').TriggeredEffect[];
   desc?: string;
-  source?: { book: string; page: number };
+  source?: SourceRef;
   /** Pertinence de BASE pour le scoreur d'attaque (clic droit joueur ET décision IA) : POIDS ÉDITABLE,
    *  plus haut = choisie plus volontiers. Combinée aux bonus situationnels AUTO (dégâts attendus,
    *  multi-cible, état onHit applicable). Défaut 1 ; 0 = jamais auto-choisie (reste manuelle). */
@@ -833,7 +834,7 @@ export interface TraitData {
    *  = un seul id. */
   specsMulti?: boolean;
   desc: string;
-  source: { book: string; page: number };
+  source: SourceRef;
   /** Effets MÉCANIQUES authorés (déclencheur → ops du Flow) — Traits « effet sur événement » (Toile,
    *  Sang corrosif, Régénération…) appliqués par `state/triggeredEffects`, plus de handler en dur.
    *  Type-only (le moteur reste pur : la donnée référence le Flow sans en dépendre à l'exécution). */
@@ -943,7 +944,7 @@ export interface SymptomData {
   id: string;
   label: string;
   desc: string;
-  source?: { book: string; page: number };
+  source?: SourceRef;
   passive?: import('../engine/ops').GameOp[];
   severePassive?: import('../engine/ops').GameOp[];
   onTick?: { difficulty: import('../engine/types').Difficulty; onFail: import('../engine/ops').GameOp[] };
@@ -957,7 +958,7 @@ export interface DomainData {
   id: string;
   label: string;
   desc?: string;
-  source?: { book: string; page: number };
+  source?: SourceRef;
   /** Vent de Magie (Couleur) du Domaine, EXTRAIT du `desc` (« Domaine du Feu (Aqshy) », LDB 48) — source
    *  d'AFFICHAGE de la Compétence Focalisation (spécialisée par Vent) et clé de `findDomainByWind`. Les 8
    *  Domaines élémentaires + Dhar en portent un ; les Domaines dérivés (Sorcellerie/Nécromancie/
@@ -1069,7 +1070,7 @@ export interface SpellData {
    * de `state` (pureté préservée). Absent = aucun effet mécanique (narratif).
    */
   effects?: import('../state/flow').Flow;
-  source: { book: string; page: number };
+  source: SourceRef;
 }
 
 /** Signe astral (ADE2) : table d100 (`rand` = borne haute cumulée), flavor + effet de création. */
@@ -1093,7 +1094,7 @@ export interface StarData {
    *  partageant `rand:100`. Absent = pas de sous-tirage (signe simple). */
   sub?: [number, number];
   desc: string | null;
-  source: { book: string; page: number };
+  source: SourceRef;
 }
 /** Demeure céleste (ADE2 ch.03 l.502-512) : section du ciel gouvernée par un signe — thème astral
  *  facultatif de la création (flavor pur). `desc` = VERBATIM de la source ; `rand` = borne haute 1d10. */
@@ -1103,7 +1104,7 @@ export interface CelestialHouseData {
   label: string;
   rand: number;
   desc: string;
-  source: { book: string; page: number };
+  source: SourceRef;
 }
 /** Lieu (Glorieux Reikland, LDB) : hiérarchie par `parent` (label d'un autre lieu). */
 export interface LocationData {
@@ -1115,7 +1116,7 @@ export interface LocationData {
   prefix: string | null;
   suffix: string | null;
   desc: string | null;
-  source: { book: string; page: number };
+  source: SourceRef;
 }
 /** Ouvrage WFRP4 référencé (bibliographie). `desc` = présentation en texte/Markdown (règle 5). */
 export interface BookData {
@@ -1298,7 +1299,7 @@ export interface NavalTraitData {
   /** Libellé VERBATIM de BASE (sans Indice) — affichage seul, résolu par `findNavalTrait(id)?.label`. */
   label: string;
   kind: 'trait' | 'amelioration';
-  source?: { book: string; page: number };
+  source?: SourceRef;
   desc: string;
   /** Coût/Poids d'installation (Améliorations seulement) — cf. `NavalInstall`. */
   install?: NavalInstall;
@@ -1344,7 +1345,7 @@ export interface NavalPortData {
   dirigeant?: string;
   /** Colonne Notes, verbatim Markdown. */
   desc?: string;
-  source: { book: string; page: number };
+  source: SourceRef;
 }
 export const navalPorts = navalPortsJson as NavalPortData[];
 const navalPortById = new Map(navalPorts.map((p) => [p.id, p]));
@@ -1364,7 +1365,7 @@ export interface SeaShantyData {
   crewOps?: import('../engine/ops').GameOp[];
   captainOps?: import('../engine/ops').GameOp[];
   note?: string;
-  source: { book: string; page: number };
+  source: SourceRef;
 }
 export const seaShanties = seaShantiesJson as SeaShantyData[];
 const seaShantyById = new Map(seaShanties.map((s) => [s.id, s]));
@@ -1379,7 +1380,7 @@ export function findSeaShantyById(id: string): SeaShantyData | undefined {
 export interface CrewWage {
   daily: { gold: number; silver: number; bronze: number };
   weekly: { gold: number; silver: number; bronze: number };
-  source?: { book: string; page: number };
+  source?: SourceRef;
   maison?: string;
 }
 export interface CrewRoleData {
@@ -1491,7 +1492,7 @@ export interface GodData {
    *  lanceur. SOURCE d'identité (le grimoire compare par id) ; le `subType` du sort ne sert qu'à l'affichage. */
   chaosSpells?: Ref[];
   desc?: string;
-  source?: { book: string; page: number };
+  source?: SourceRef;
   /** VERROU de Péché du culte (MDG 11 l.142, Stromfels : « retire à un suivant la capacité d'utiliser le
    *  Talent *Invocation* s'il possède au moins deux Points de Péché et celle d'utiliser le Talent *Béni*
    *  s'il possède au moins cinq Points de Péché ») — seuil de Points de Péché à partir duquel le dieu

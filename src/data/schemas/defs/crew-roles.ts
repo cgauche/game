@@ -5,6 +5,7 @@
  * (Poudre noire), Chansonnier = Divertissement (Chant)).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'crew-roles.json';
 
@@ -22,7 +23,7 @@ export const schema = z.array(
     wage: z.strictObject({
       daily: money,
       weekly: money,
-      source: z.strictObject({ book: z.string(), page: z.number() }).optional(),
+      source: sourceRefSchema.optional(),
       maison: z.string().optional(),
     }).optional(),
   }),

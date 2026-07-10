@@ -7,7 +7,7 @@
  * `install` 20/26 ; `ranked` 4/26 ; `passive` 8/26 ; `ram` 1/26 ; `deckCover` 3/26 ; `maison` 1/26).
  */
 import { z } from 'zod';
-import { gameOpSchema } from '../common';
+import { gameOpSchema, sourceRefSchema } from '../common';
 
 export const file = 'naval-traits.json';
 
@@ -32,7 +32,7 @@ export const schema = z.array(
     id: z.string(),
     label: z.string(),
     kind: z.enum(['trait', 'amelioration']),
-    source: z.strictObject({ book: z.string(), page: z.number() }).optional(),
+    source: sourceRefSchema.optional(),
     desc: z.string(),
     install: navalInstallSchema.optional(),
     ranked: z.boolean().optional(),

@@ -4,7 +4,7 @@
  * (note de provenance en tête de fichier, absente du chemin LDB).
  */
 import { z } from 'zod';
-import { gameOpSchema, difficultySchema } from '../common';
+import { gameOpSchema, difficultySchema, freeSourceNoteSchema } from '../common';
 import { critEscalationSchema, amputationSchema } from './criticals';
 
 export const file = 'aa-criticals.json';
@@ -38,7 +38,7 @@ const aaEntrySchema = z.strictObject({
 
 export const schema = z.strictObject({
   /** Note de provenance/périmètre (Système ALTERNATIF optionnel) — display-only, jamais parsée. */
-  _source: z.string(),
+  _source: freeSourceNoteSchema,
   tete: z.array(aaEntrySchema),
   bras: z.array(aaEntrySchema),
   corps: z.array(aaEntrySchema),

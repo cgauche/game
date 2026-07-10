@@ -4,7 +4,7 @@
  * seul consommateur. `_source` = note de traçabilité libre (non lue par le moteur).
  */
 import { z } from 'zod';
-import { difficultySchema } from '../common';
+import { difficultySchema, freeSourceNoteSchema } from '../common';
 
 export const file = 'river-navigation.json';
 
@@ -23,7 +23,7 @@ const riverWindEffect = z.strictObject({
 });
 
 export const schema = z.strictObject({
-  _source: z.string().optional(),
+  _source: freeSourceNoteSchema.optional(),
   windForces: z.array(bandRow),
   windDirections: z.array(bandRow),
   windTickThreshold: z.number(),

@@ -25,6 +25,18 @@ export const sourceRefSchema = z.strictObject({
   page: z.number(),
 });
 
+/** Vue TS de `sourceRefSchema` — SEULE forme à importer côté `src/data/index.ts` (jamais `{ book:
+ *  string; page: number }` inline, F20). */
+export type SourceRef = z.infer<typeof sourceRefSchema>;
+
+/**
+ * Note de provenance LIBRE `_source` — texte display-only jamais parsé (traçabilité de tableau
+ * verbatim, périmètre d'extraction…), distincte de `sourceRefSchema` (réf structurée book+page).
+ * Vue sur 5 datasets (`aa-criticals.json`, `land-cargo.json`, `sea-cargo.json` `overload._source`,
+ * `river-navigation.json`, `river-perils.json`) — requise ou `.optional()` selon le dataset.
+ */
+export const freeSourceNoteSchema = z.string();
+
 /**
  * Recette de détail de surface (`DetailRecipe`, `src/gameIso/detail/types.ts`) — portée par le champ
  * optionnel `detail` de 3 datasets d'apparence (`roofMaterials.json`, `reliefMaterials.json`,

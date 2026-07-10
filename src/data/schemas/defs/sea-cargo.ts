@@ -6,7 +6,7 @@
  * `{ dice }` (Vin maritime : 3d10, tiré une fois à l'achat).
  */
 import { z } from 'zod';
-import { difficultySchema } from '../common';
+import { difficultySchema, freeSourceNoteSchema } from '../common';
 
 export const file = 'sea-cargo.json';
 
@@ -39,7 +39,7 @@ export const schema = z.strictObject({
     dumpingPctOfBase: z.number(),
   }),
   overload: z.strictObject({
-    _source: z.string(),
+    _source: freeSourceNoteSchema,
     hardCapPct: z.number(),
     paliers: z.array(
       z.strictObject({ id: z.string(), fromPct: z.number(), label: z.string(), mMod: z.number(), manoeuvreDR: z.number() }),
