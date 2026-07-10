@@ -119,40 +119,46 @@ describe('#58 — commerce de cargaison terrestre (T2C ch.11)', () => {
     expect(typeof after.wineEvalOk).toBe('boolean');
   });
 
-  it('rumeur commerciale (l.180) : un bien visé par la rumeur du Lieu se vend au DOUBLE du prix de base', () => {
+  it('rumeur commerciale (l.180) : le bien se vend au DOUBLE au Lieu DÉSIGNÉ par la rumeur du board (#99)', () => {
     // Paramètres à intermédiaire ENTIER (enc 100 × base 1 × mise 100 % × Marchandage ±10/20 %) → doublage exact.
+    // T2C ch.11 l.180 : la rumeur désigne UN EMPLACEMENT (index géographique) — le double s'applique LÀ-BAS,
+    // jamais au lieu où la rumeur a été entendue (le verrou antérieur figeait l'ancien modèle local, contraire au RAW).
     const mkt = { taille: 4, richesse: 3, produits: ['vivres', 'commerce'] }; // mise à prix = 100 % du base
     const lot: CargoLot = { cargoId: 'vivres', enc: 100, basePriceGold: 1 };
-    const rum = { min: 1, max: 100, biens: ['vivres'], text: 'Forte demande de vivres.' };
-    // Baseline SANS rumeur.
-    useGame.setState({ caravanCargo: [lot], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [], rumour: null } } as never);
+    const rum = { placeId: 'A', biens: ['vivres'], mult: 2, text: 'Forte demande de vivres.', heardDay: 0 };
+    // Baseline SANS rumeur au board.
+    useGame.setState({ caravanCargo: [lot], tradeRumours: [], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [] } } as never);
     seedBattleRng(2);
     const b0 = toBrass(get().money);
     get().landSellCargo(0);
     const base = toBrass(get().money) - b0;
-    // Même graine, MÊME état, AVEC une rumeur qui vise « vivres ».
-    useGame.setState({ caravanCargo: [lot], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [], rumour: rum } } as never);
+    // Même graine, MÊME état, avec une rumeur du BOARD qui désigne CE Lieu (placeId 'A').
+    useGame.setState({ caravanCargo: [lot], tradeRumours: [rum], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [] } } as never);
     seedBattleRng(2);
     const b1 = toBrass(get().money);
     get().landSellCargo(0);
     const withRumour = toBrass(get().money) - b1;
     expect(base).toBeGreaterThan(0);
-    expect(withRumour).toBe(base * 2); // prix doublé (l.180)
+    expect(withRumour).toBe(base * 2); // prix doublé AU lieu désigné (l.180)
   });
 
-  it('rumeur commerciale : un bien NON visé n’est pas doublé', () => {
+  it('rumeur commerciale : un bien NON visé n’est pas doublé — ni un Lieu NON désigné', () => {
     const mkt = { taille: 4, richesse: 3, produits: ['vivres', 'commerce'] };
     const lot: CargoLot = { cargoId: 'metal', enc: 100, basePriceGold: 1 };
-    const rum = { min: 1, max: 100, biens: ['vivres'], text: 'Forte demande de vivres.' }; // ne vise PAS le métal
-    useGame.setState({ caravanCargo: [lot], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [], rumour: null } } as never);
+    // Deux rumeurs au board : l'une vise d'autres biens ICI, l'autre vise CE bien AILLEURS — aucune ne double.
+    const rums = [
+      { placeId: 'A', biens: ['vivres'], mult: 2, text: 'Forte demande de vivres.', heardDay: 0 },
+      { placeId: 'B', biens: ['metal'], mult: 2, text: 'Le métal s’arrache à B.', heardDay: 0 },
+    ];
+    useGame.setState({ caravanCargo: [lot], tradeRumours: [], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [] } } as never);
     seedBattleRng(2);
     const b0 = toBrass(get().money);
     get().landSellCargo(0);
     const base = toBrass(get().money) - b0;
-    useGame.setState({ caravanCargo: [lot], landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [], rumour: rum } } as never);
+    useGame.setState({ caravanCargo: [lot], tradeRumours: rums, landMarket: { placeId: 'A', label: 'X', market: mkt, offers: [] } } as never);
     seedBattleRng(2);
     const b1 = toBrass(get().money);
     get().landSellCargo(0);
-    expect(toBrass(get().money) - b1).toBe(base); // pas de doublage (bien hors rumeur)
+    expect(toBrass(get().money) - b1).toBe(base); // pas de doublage (bien hors rumeur locale, Lieu hors rumeur du bien)
   });
 });

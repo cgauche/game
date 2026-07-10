@@ -3190,7 +3190,10 @@
     "combat": {
       "shieldAdvantage": true,
       "aa": {
-        "shieldAdvantage": false
+        "shieldAdvantage": false,
+        "advantageDefenseReaction": {
+          "cost": 2
+        }
       }
     }
   },

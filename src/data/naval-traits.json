@@ -585,7 +585,7 @@
     "id": "sabord",
     "label": "Sabord",
     "kind": "amelioration",
-    "deckCover": true,
+    "deckCover": "totale",
     "install": {
       "cost": {
         "bands": [
@@ -683,7 +683,7 @@
     "id": "murs-blindes",
     "label": "Murs blindés",
     "kind": "amelioration",
-    "deckCover": true,
+    "deckCover": "totale",
     "install": {
       "cost": {
         "bands": [
@@ -725,5 +725,253 @@
       "page": 65
     },
     "desc": "Les murs d'une cabine ou de toute autre superstructure sont blindés à l'aide de plaques de fer. Tout Personnage ou PNJ situé derrière un mur blindé bénéficie d'une couverture totale rendant les tirs de projectiles contre lui Très Difficile."
+  },
+  {
+    "id": "coque-de-course",
+    "label": "Coque de course",
+    "kind": "amelioration",
+    "passive": [
+      {
+        "op": "moveScale",
+        "num": 2,
+        "den": 1
+      }
+    ],
+    "install": {
+      "cost": {
+        "per": "10m",
+        "bands": [
+          {
+            "value": 220
+          }
+        ]
+      },
+      "weightEnc": {
+        "per": "10m",
+        "bands": [
+          {
+            "value": -50
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 65
+    },
+    "desc": "Comme tout le monde le sait, les nobles les plus riches sont de fervents passionnés de concours et de paris. Dans le but de surpasser leurs pairs, certains propriétaires de bateaux nantis ont dépensé sans compter dans la recherche et l'artisanat afin de concevoir une coque de bateau parfaitement taillée pour la vitesse. Une coque de course est lisse comme le verre et possède une forme ingénieusement pensée pour réduire la traînée au strict minimum, ce qui permet au bateau de se déplacer avec une rapidité équivalente à deux fois sa vitesse de Mouvement normale.\n\nCependant, un bateau doté d'une coque de course est difficile à manier, et nécessite de faire un Test de **Navigation Complexe (–10)** toutes les heures. Si le résultat est un Échec Minime (0 ou -1 DR) ou Normal (-2 ou -3 DR), la vitesse de Mouvement n'excède pas la vitesse normale du bateau ; si c'est un Échec Impressionnant (–4 ou -5 DR), la vitesse de Mouvement normale est réduite de moitié ; si c'est un Échec Stupéfiant (–6 DR), la coque est endommagée et le bateau ne peut plus aller plus vite que la moitié de sa vitesse de Mouvement normale jusqu'à ce qu'il soit réparé pour un prix égal à la moitié du coût de la coque (mentionné précédemment).\n\nLes réparations ordinaires effectuées sur une coque de course coûtent le double du prix mentionné p. 30, et nécessitent un savoir-faire avancé : tous les Tests nécessaires pour réparer le bateau sont un degré de difficulté au-dessus de la normale."
+  },
+  {
+    "id": "safran",
+    "label": "Safran",
+    "kind": "amelioration",
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 25
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 50
+          },
+          {
+            "min": "petite",
+            "value": 120
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 20
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 40
+          },
+          {
+            "min": "petite",
+            "value": 80
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 65
+    },
+    "desc": "Un safran permet de mieux diriger un bateau, mais nécessite la présence d'un barreur athlétique pour le manier en raison de la résistance accrue de l'eau. Tous les Tests de **Navigation** réalisés pour diriger le bateau doivent s'accompagner d'un Test de **Force** ; si le Personnage réussit le Test de **Force**, les DR de celui-ci peuvent être additionnés à ceux du Test de **Navigation**. Il n'y a pas de pénalité si le résultat de ce Test de **Force** supplémentaire est un Échec normal. Cependant, un Échec Stupéfiant ou une Maladresse résultera en un violent mouvement du gouvernail qui enverra le malheureux barreur par-dessus bord !"
+  },
+  {
+    "id": "plat-bord",
+    "label": "Plat-bord",
+    "kind": "amelioration",
+    "deckCover": "moyenne",
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 15
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 30
+          },
+          {
+            "min": "petite",
+            "value": 45
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 20
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 35
+          },
+          {
+            "min": "petite",
+            "value": 60
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 66
+    },
+    "desc": "La coque est surélevée au-dessus du pont, environ à hauteur de taille pour un personnage humain. En plus d'empêcher les vagues hautes de noyer le pont du bateau, le plat-bord offre une couverture moyenne à un Personnage ou PNJ s'accroupissant sur le pont (**WFJDR**, p. 161) et les tirs de projectiles contre lui sont rendus Difficiles."
+  },
+  {
+    "id": "allegement",
+    "label": "Allégement",
+    "kind": "amelioration",
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 50
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 150
+          },
+          {
+            "min": "petite",
+            "value": 250
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": -15
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": -45
+          },
+          {
+            "min": "petite",
+            "value": -80
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 66
+    },
+    "desc": "Un bateau peut être débarrassé de toutes ses cabines et superstructures afin de le rendre plus léger ou de maximiser l'espace de chargement. Réaliser ce procédé sur un bateau standard coûte le prix indiqué ci-dessus ; construire un bateau dénué de cabines ou superstructures coûte 75 % du prix d'un bateau normal. Le poids du bateau est réduit comme indiqué ci-dessus, et l'espace de chargement est augmenté de 75 % par rapport à la capacité normale."
+  },
+  {
+    "id": "greement-de-course",
+    "label": "Gréement de course",
+    "kind": "amelioration",
+    "install": {
+      "cost": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 30
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 60
+          },
+          {
+            "min": "petite",
+            "value": 120
+          }
+        ]
+      },
+      "weightEnc": {
+        "bands": [
+          {
+            "max": "minuscule",
+            "value": 15
+          },
+          {
+            "min": "tres-petite",
+            "max": "tres-petite",
+            "value": 25
+          },
+          {
+            "min": "petite",
+            "value": 50
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 66
+    },
+    "desc": "En plus d'avoir développé la coque de course (voir ci-avant), les propriétaires de bateaux nantis de l'Empire, ou plutôt, les talentueux constructeurs de bateaux à leur service, ont inventé un système de voiles et de gréements pensé spécifiquement pour la vitesse, au détriment d'une certaine solidité. Un gréement de course accorde un bonus de vitesse de Mouvement de +10 % par rapport à la valeur indiquée dans le Tableau des vents (p. 28), mais seulement en cas de vent arrière ou de vent de côté. En cas de vent contraire, le malus à la vitesse de Mouvement est réduit de -5 %. Le gréement de course inclut un clinfoc (voir ci-avant), et les avantages des deux ne sont pas cumulables.\n\nCependant, cette rapidité a un prix. Ce gréement de course complexe nécessite un équipage expérimenté pour le manier, ce qui impose un malus de –10 à tous les Tests de **Navigation**, pour piloter le bateau. De plus, tous les coups infligés au gréement causent le double de Dégâts."
+  },
+  {
+    "id": "fourquines",
+    "label": "Fourquines",
+    "kind": "amelioration",
+    "install": {
+      "cost": {
+        "per": "unite",
+        "bands": [
+          {
+            "value": 1
+          }
+        ]
+      },
+      "weightEnc": {
+        "per": "unite",
+        "bands": [
+          {
+            "value": 1
+          }
+        ]
+      }
+    },
+    "source": {
+      "book": "mort-sur-le-reik-compagnon",
+      "page": 68
+    },
+    "desc": "Des baguettes terminées par une fourche, fixées au plat-bord d'un bateau afin de servir d'appui au canon d'un fusil long à Poudre noire, comme un tromblon, un fusil du Hochland, un pistolet à répétition ou une mitrailleuse. La visée est facilitée (+10 aux jets d'attaque), mais une action est nécessaire pour replacer l'arme sur la fourquine après avoir rechargé."
   }
 ]

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
-import { buildRiverPlan, runRiverDays, hasBatelier } from './riverVoyageFlow';
+import { buildRiverPlan, runRiverDays, hasBatelier, applyEchouage } from './riverVoyageFlow';
 import { seedBattleRng } from './battleRng';
 import { createHero, skillCharacteristicById } from '../engine/character';
 import { makeRNG } from '../engine/dice';
@@ -233,6 +233,42 @@ describe('barrage fluvial (l.128) — forcer au bélier OU déblayer à la main'
     expect(j).toMatch(/déblayé à la main/);
     expect(j).toMatch(/objets/);
     expect(j).toMatch(/progression du jour −/);
+  });
+});
+
+describe('renflouage à l\'échouage (l.99) — l\'Enc de la CARGAISON entre dans le malus de Force', () => {
+  function strand(cargoEnc: number): string {
+    launch();
+    const plan = buildRiverPlan(get, 'r-reik', 'A', 'B', get().worldMap!.routes[0])!;
+    set({
+      travelPlan: plan,
+      caravanCargo: cargoEnc > 0 ? [{ cargoId: 'vin', enc: cargoEnc, basePriceGold: 10 }] : [],
+      journal: [],
+    });
+    seedBattleRng(7);
+    const lines: string[] = [];
+    applyEchouage(get, set, (l) => lines.push(...l));
+    return lines.join('\n');
+  }
+
+  it('à VIDE (barge sans Enc propre, convoi vide) → renflouage sur Intermédiaire, aucune ligne de malus', () => {
+    const j = strand(0);
+    expect(j).toContain('s\'échoue');
+    expect(j).not.toMatch(/malus −/);
+  });
+
+  it('CHARGÉE lourdement → malus = Enc totale (bateau + cargaison), l.99', () => {
+    expect(strand(80)).toMatch(/malus −80 Enc : 0 bateau \+ 80 cargaison/);
+  });
+
+  it('cargaison légère ≠ cargaison lourde → malus DIFFÉRENT (l\'Enc suivie)', () => {
+    expect(strand(20)).toMatch(/malus −20 Enc/);
+    expect(strand(120)).toMatch(/malus −120 Enc/);
+  });
+
+  it('la coque encaisse 12 Dégâts à l\'échouage (l.99), cargaison ou non', () => {
+    strand(50);
+    expect(get().travelPlan!.vehicle!.wounds.current).toBe(48); // 60 − 12
   });
 });
 

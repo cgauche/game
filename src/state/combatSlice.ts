@@ -18,7 +18,7 @@ import { continueRiverDayAfterCascade } from './riverVoyageFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
-import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from './combatFlow';
+import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from './combatFlow';
 import { hasBattement, hasDistraire } from '../engine/combatFeatures/dispatch';
 import { losClear } from './lineOfSight';
 import { smokeOf, captureMoveSnapshot } from './combatGeometry';
@@ -97,6 +97,7 @@ import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
 import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
+import { continuePursuitRound, pursuitAbandon } from './pursuitFlow';
 import { checkPartyWiped } from './partyWipe';
 import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
 
@@ -226,6 +227,7 @@ export function createCombatSlice(get: Get, set: Set) {
     if (done && checkPartyWiped(get, set)) return;
     if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
     else if (done?.purpose === 'travelDay') { if (get().travelPlan?.river) continueRiverDayAfterCascade(get, set); else travelFlow.continueTravelDayAfterCascade(get, set); }
+    else if (done?.purpose === 'pursuite') continuePursuitRound(get, set, done); // manche de poursuite terrestre close → résoudre puis rouvrir/dénouer (state/pursuitFlow)
     else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
     else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
     else if (done?.maneuverResume) resumeManeuverDefense(get, set, done.maneuverResume); // défense de manœuvre de zone close → reprendre le tour de la créature (attaques gratuites restantes / avance)
@@ -2196,6 +2198,12 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!pd || pd.result) return; // choix d'arme de parade avant le jet seulement
       set({ pendingDefense: { ...pd, parryWeaponUid: uid ?? undefined } });
     },
+    // Réaction de Porte-Bouclier (variante AA l.4428) déclarée avant l'Appliquer : 'damage'/'push' ou effacée.
+    defenseSetShieldReaction: (kind: 'damage' | 'push' | null) => {
+      const pd = get().pendingDefense;
+      if (!pd) return;
+      set({ pendingDefense: { ...pd, shieldReaction: kind ?? undefined } });
+    },
     // Cycle unifié (spec `defense`) : jet initial = résolution pure (`atk` figé) ; Chance/Pacte ici,
     // Résilience (forceSuccess/setForcedRoll) plus bas. PAS de `cancel` : le RAW n'offre aucun « Subir »
     // volontaire (mêlée = Test opposé, LDB 13 l.123) → une fois offerte, la défense est obligatoire.
@@ -2208,6 +2216,9 @@ export function createCombatSlice(get: Get, set: Set) {
       set({ pendingDefense: null }); // null AVANT la reprise → ré-entrance/double-advance impossibles
       if (attacker && defender) {
         const suspended = applyAttackResult(get, set, attacker, defender, pd.weapon, pd.result);
+        // Réaction de Porte-Bouclier (variante AA l.4428) déclarée pour cette défense : débite la réserve et
+        // applique l'effet APRÈS l'attaque (poussée+désengagement ou Dégâts). Cadence 1×/Round vérifiée dans le helper.
+        if (pd.shieldReaction && pd.mode === 'parade') applyShieldReaction(get, set, defender, attacker, pd.shieldReaction, (pd.parryWeaponUid ? defender.weapons.find((w) => w.uid === pd.parryWeaponUid) : defender.weapons[0]));
         if (suspended) {
           // Déviation Critique du héros : `applyAttackResult` a EMPILÉ l'étape 'deviation' APRÈS l'étape
           // défense courante. Avancer le curseur dessus (comme la Maladresse plus bas) — sinon, en
@@ -2804,6 +2815,7 @@ export function createCombatSlice(get: Get, set: Set) {
     cascadeNext: () => dispatchCascadeDone(advanceCascade(get, set)),
     cascadeResolveAll: () => resolveRemainingCascade(get, set), // → BILAN (la modale reste ouverte)
     cascadeFinish: () => dispatchCascadeDone(finalizeCascade(get, set)),
+    pursuitAbandon: () => pursuitAbandon(get, set), // poursuite terrestre : le groupe renonce (state/pursuitFlow)
     // Détermination (LDB 17 l.62) sur une étape de PSYCHOLOGIE : `cascadeDetermine` est désormais GÉNÉRÉ
     // par la fabrique (verbe `determine` de `FLOWS.cascade`, corps dans `rollFlowSpecs.ts`) — même nom,
     // même comportement (immunité temporaire, `step.immune`), plus de snowflake hand-codé ici.

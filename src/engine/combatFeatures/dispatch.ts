@@ -181,6 +181,16 @@ export function shieldAdvantageLevel(c: Combatant, parryWeapon: Weapon | undefin
   return levelSum(c, (d) => !!d.shieldAdvantage);
 }
 
+/** Réaction défensive à coût d'Avantages de réserve (Porte-Bouclier variante AA l.4428) : coût en
+ *  Avantages (0 = capacité absente) de la réaction offerte quand on se défend au Bouclier. Bouclier requis
+ *  (`isShieldItem`, source UNIQUE du prédicat). GÉNÉRIQUE — tout talent déclarant `advantageDefenseReaction`.
+ *  Présent uniquement en mode « Avantage de groupe » (champ sous `aa`, fusionné par `effectiveFeature`). */
+export function shieldReactionCost(c: Combatant, parryWeapon: Weapon | undefined): number {
+  if (!parryWeapon || !isShieldItem(parryWeapon)) return 0;
+  for (const { def } of featuresOf(c)) if (def.advantageDefenseReaction) return def.advantageDefenseReaction.cost;
+  return 0;
+}
+
 /** Contre-attaque sur Test opposé de DÉFENSE gagné en mêlée — lue en DONNÉES, traits ET talents
  *  confondus (capacité GÉNÉRIQUE `counterOnDefenseWin`). Champion (LDB 85) : sans condition d'arme.
  *  Riposte (LDB 10) : exige une arme de PARADE Rapide (`counterRequiresFastParry`). */

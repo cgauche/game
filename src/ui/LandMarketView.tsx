@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGame } from '../state/store';
 import { findLandCargoById } from '../engine/landCargo';
 import { cargoTotalEnc } from '../engine/cargo';
+import { placeById } from '../state/worldMap';
 import { canAfford, toMoney } from '../engine/money';
 import { Coins } from './Coins';
 
@@ -15,6 +16,8 @@ import { Coins } from './Coins';
 export function LandMarketView() {
   const market = useGame((s) => s.landMarket);
   const cargo = useGame((s) => s.caravanCargo);
+  const rumours = useGame((s) => s.tradeRumours);
+  const worldMap = useGame((s) => s.worldMap);
   const money = useGame((s) => s.money);
   const close = useGame((s) => s.closeLandMarket);
   const buy = useGame((s) => s.landBuyCargo);
@@ -40,13 +43,21 @@ export function LandMarketView() {
       </div>
 
       <div className="port-body">
-        {market.rumour && (
+        {rumours.length > 0 && (
           <section className="panel port-section">
-            <h3>Rumeur au marché</h3>
-            <p>{market.rumour.text}</p>
-            <p className="port-hint">
-              Forte demande : {market.rumour.biens.map((id) => findLandCargoById(id)?.label ?? id).join(', ')} — ces biens se vendent au double du prix de base ici (T2C ch.11 l.180).
-            </p>
+            <h3>Rumeurs de commerce</h3>
+            <ul className="port-hint">
+              {rumours.map((r, i) => {
+                const here = r.placeId === market.placeId;
+                const dest = worldMap ? placeById(worldMap, r.placeId)?.label ?? r.placeId : r.placeId;
+                const biens = r.biens.map((id) => findLandCargoById(id)?.label ?? id).join(', ');
+                return (
+                  <li key={i}>
+                    {biens} se vendent au double à <b>{dest}</b>{here ? ' — c’est ici : vendez ces biens (T2C ch.11 l.180).' : '.'}
+                  </li>
+                );
+              })}
+            </ul>
           </section>
         )}
         <div className="layout-sidebar port-trade">

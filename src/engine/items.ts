@@ -561,7 +561,7 @@ export function hydratePoste(a: AuthoredShipPoste): ShipPoste {
   };
   const poste: ShipPoste = { item };
   if (a.side) poste.side = a.side;
-  if (a.sabord) poste.sabord = a.sabord;
+  if (a.cover) poste.cover = a.cover;
   if (a.crewIds) poste.crewIds = a.crewIds;
   if (a.loaded != null) poste.loaded = a.loaded;
   if (a.reloadProgress != null) poste.reloadProgress = a.reloadProgress;

@@ -429,6 +429,16 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
               <label className="ed-field">Distance (km)
                 <input type="number" min={1} value={selRoute.km} onChange={(e) => updRoute(selRoute.id, { km: Math.max(1, Number(e.target.value) || 1) })} />
               </label>
+              <label className="ed-field">Sens (route à sens unique : n'est offerte que depuis ce lieu ; le retour passe par une autre route)
+                <select
+                  value={selRoute.from ?? ''}
+                  onChange={(e) => updRoute(selRoute.id, { from: e.target.value || undefined })}
+                >
+                  <option value="">— les deux sens —</option>
+                  <option value={selRoute.a}>Depuis {placeById(m, selRoute.a)?.label ?? selRoute.a}</option>
+                  <option value={selRoute.b}>Depuis {placeById(m, selRoute.b)?.label ?? selRoute.b}</option>
+                </select>
+              </label>
               <div className="mini-title">Modes de voyage</div>
               {(['pied', ...TRAVEL_VEHICLES.map((v) => v.id)] as TravelMode[]).map((mode) => (
                 <label key={mode} className="ed-check">

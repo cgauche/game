@@ -32,6 +32,7 @@ import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import { travelSpeed } from '../engine/travel';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById } from '../data';
+import { cargoTotalEnc } from '../engine/cargo';
 import { partyAssisted } from '../engine/skills';
 import { rollTest, type TestResult } from '../engine/tests';
 import { testValue } from '../engine/skills';
@@ -608,18 +609,21 @@ function resolveRiverPerilConsequence(get: Get, set: Set, peril: NonNullable<Ret
 
 /** S'ÉCHOUER (l.97-99) : le bateau s'arrête, sa coque subit 12 Dégâts ; on le renfloue par un Test de Force
  *  « avec un malus égal au nombre total de Points d'Encombrement du bateau et de sa cargaison » (l.99). Le
- *  malus est l'Encombrement PROPRE du bateau (champ réel `VehicleData.enc`), converti en difficulté (chaque
- *  10 Enc ≈ un cran de −10 via `difficultyFromModifier`) ; degrade sur Intermédiaire si l'Enc du bateau est
- *  inconnu (barges LDB : `enc` null). L'Enc de la CARGAISON n'est pas suivie pendant la descente → résidu noté. */
-function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): void {
+ *  malus = Enc PROPRE du bateau (`VehicleData.enc`) + Enc de la CARGAISON du convoi (`caravanCargo`, la cale
+ *  fluviale du commerce T2C ch.11), converti en difficulté (chaque 10 Enc ≈ un cran de −10 via
+ *  `difficultyFromModifier`) ; degrade sur Intermédiaire si aucun Enc n'est connu (barge LDB `enc` null +
+ *  convoi vide). Le RAW ne prévoit AUCUN délestage pour se renflouer (l.97-105 muets) → non modélisé. */
+export function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): void {
   const coque = get().travelPlan!.vehicle!;
   coque.wounds.current = Math.max(0, coque.wounds.current - echouageDamage());
   const boatEnc = findVehicleById(coque.creatureId ?? '')?.enc ?? 0;
-  const difficulty = boatEnc > 0 ? difficultyFromModifier(-boatEnc) : 'intermediaire';
+  const cargoEnc = cargoTotalEnc(get().caravanCargo ?? []);
+  const totalEnc = boatEnc + cargoEnc;
+  const difficulty = totalEnc > 0 ? difficultyFromModifier(-totalEnc) : 'intermediaire';
   const force = partyAssisted(get().party, undefined, 'F');
   const t = force ? rollTest(force.value, difficulty, battleRng()) : null;
   set({ travelPlan: { ...get().travelPlan! } });
-  const encTxt = boatEnc > 0 ? ` (malus −${boatEnc} Enc du bateau, l.99)` : '';
+  const encTxt = totalEnc > 0 ? ` (malus −${totalEnc} Enc : ${boatEnc} bateau + ${cargoEnc} cargaison, l.99)` : '';
   tell([`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99)${t ? ` — renflouage (Force ${DIFFICULTY_LABELS[difficulty]}${encTxt}) : ${t.roll}/${t.target} → ${t.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}` : '.'}`]);
 }
 

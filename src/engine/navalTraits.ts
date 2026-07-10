@@ -20,7 +20,7 @@
  */
 import { findNavalTrait } from '../data';
 import type { GameOp } from './ops';
-import type { DeckPosteSlot, NavalTraitRef } from './types';
+import type { DeckCoverClass, DeckPosteSlot, NavalTraitRef } from './types';
 
 /** Indice (niveau) du Trait naval `id` dans une liste de réfs : `value` de la réf (défaut 1 si présent sans
  *  Indice explicite), absent → 0. PUR. Source UNIQUE de lecture de l'Indice (plus de parsing de libellé). */
@@ -66,6 +66,16 @@ export function navalMoveMod(traits: NavalTraitRef[] | undefined): number {
   return navalPassiveOps(traits).reduce((n, op) => (op.op === 'moveMod' ? n + op.mod : n), 0);
 }
 
+/** Facteur MULTIPLICATIF du Mouvement — op `moveScale` (MÊME op que la séquelle/sort ; T2C ch.10 l.27 :
+ *  **Coque de course** « une rapidité équivalente à deux fois sa vitesse de Mouvement normale » → 2/1). Produit
+ *  de tous les `moveScale` collectés (défaut neutre 1/1). Appliqué APRÈS les `moveMod` (ordre canonique
+ *  d'`effectiveMovement`, ops.ts l.745) là où le M de manœuvre se calcule (`shipManeuverParams`). PUR. */
+export function navalMoveMult(traits: NavalTraitRef[] | undefined): { num: number; den: number } {
+  let num = 1, den = 1;
+  for (const op of navalPassiveOps(traits)) if (op.op === 'moveScale') { num *= op.num; den *= op.den; }
+  return { num, den };
+}
+
 /** Bonus de DR (négatif = malus) à un Test de Compétence `skillId` conféré par le Trait **Peu maniable** & co —
  *  op `skillDRBonus` (MÊME op qu'un Trait de personnage ; MDG ch.12 l.173 : −1 DR/niveau aux Tests de
  *  Voile/Ramer). Lu par la manœuvre comme `extraDR` du Test de Navigation. Ne matche QUE les ops portant un
@@ -99,21 +109,36 @@ export function belierRam(traits: NavalTraitRef[] | undefined): { ic: number; ap
   return { ic: 0, ap: 0 };
 }
 
-/** La coque offre-t-elle un COUVERT à ses postes ? — vrai si l'un de ses Traits/Améliorations porte le champ de
- *  domaine `deckCover` du catalogue (ex. **Sabord**, MDG ch.12 l.364). DATA-DRIVEN (pas de nom littéral codé).
- *  PUR. Booléen à passer à `effectiveDeckPostes`. */
-export function hasDeckCover(traits: NavalTraitRef[] | undefined): boolean {
-  return (traits ?? []).some((ref) => findNavalTrait(ref.id)?.deckCover === true);
+/** Ordre croissant du couvert de pont (pire → meilleur pour le défenseur) — parallèle à `coverModifier`
+ *  (`state/lineOfSight.ts`) sans dépendance state→engine. */
+const DECK_COVER_ORDER: (DeckCoverClass | 'none')[] = ['none', 'imparfaite', 'moyenne', 'totale'];
+const bestDeckCover = (a: DeckCoverClass | 'none', b: DeckCoverClass | 'none'): DeckCoverClass | 'none' =>
+  DECK_COVER_ORDER.indexOf(b) > DECK_COVER_ORDER.indexOf(a) ? b : a;
+
+/** COUVERT de pont conféré par les Traits/Améliorations d'une coque — champ de domaine `deckCover` GRADUÉ
+ *  (`DeckCoverClass`, migré du booléen) : **Sabord** et **Murs blindés** = `totale` (MDG ch.12 l.364 / T2C ch.10
+ *  l.85), **Plat-bord** = `moyenne` (T2C ch.10 l.111, « couverture moyenne … tirs Difficiles »). Retourne le
+ *  MEILLEUR couvert offert (`none` si aucun). DATA-DRIVEN (pas de nom littéral codé). PUR. */
+export function navalDeckCover(traits: NavalTraitRef[] | undefined): DeckCoverClass | 'none' {
+  let best: DeckCoverClass | 'none' = 'none';
+  for (const ref of traits ?? []) {
+    const dc = findNavalTrait(ref.id)?.deckCover;
+    if (dc) best = bestDeckCover(best, dc);
+  }
+  return best;
 }
 
 /**
- * Couvert des postes selon l'Amélioration **Sabord** (MDG ch.12 l.362-364, `deckCover` en donnée) : « Si un
- * navire ne dispose pas de Sabords, les tirs doivent nécessairement être effectués depuis le pont. Le pont ne
- * fournit aucun couvert, alors qu'un Sabord donne une couverture totale. » → une coque à Sabord couvre TOUS ses
- * emplacements (`sabord:true`). PUR — nouvelle liste (n'altère pas le gabarit de type), consommée par le rendu
- * du Pont (couvert total via `coverModifier`). Sans Sabord : inchangé. `hasSabord` se dérive de
- * `shipHasNavalTrait([...ship.traits, ...Combatant.upgrades], 'sabord')` (id, pas le libellé). */
-export function effectiveDeckPostes(postes: DeckPosteSlot[], hasSabord: boolean): DeckPosteSlot[] {
-  if (!hasSabord) return postes;
-  return postes.map((p) => (p.sabord ? p : { ...p, sabord: true }));
+ * Couvert des postes selon les Améliorations de la coque (MDG ch.12 l.362-364 / T2C ch.10 l.85,111,727,
+ * `deckCover` GRADUÉ en donnée) : « Le pont ne fournit aucun couvert, alors qu'un Sabord donne une couverture
+ * totale » (Sabord/Murs blindés → `totale`), le **Plat-bord** une « couverture moyenne » (→ `moyenne`, moindre).
+ * `cover` = le niveau de pont, `undefined` = aucune Amélioration couvrante. Stampe le MEILLEUR entre le couvert
+ * propre au poste (gun-port authoré) et celui de la coque, sans altérer le gabarit de type (copie ; identité si
+ * rien à stamper). Consommé par le rendu du Pont via `coverModifier`. PUR. */
+export function effectiveDeckPostes(postes: DeckPosteSlot[], cover: DeckCoverClass | 'none'): DeckPosteSlot[] {
+  if (cover === 'none') return postes;
+  return postes.map((p) => {
+    const eff = bestDeckCover(p.cover ?? 'none', cover);
+    return eff === (p.cover ?? 'none') ? p : { ...p, cover: eff as DeckCoverClass };
+  });
 }

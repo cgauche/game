@@ -174,6 +174,7 @@ export function installAmount(
   if (part === 'modele') return null;
   const base = bandValue(part.bands, size);
   if (part.per === '5m') return base * Math.max(1, Math.ceil(lengthM / 5));
+  if (part.per === '10m') return base * Math.max(1, Math.ceil(lengthM / 10)); // T2C ch.10 « pour 10 mètres » (Coque de course l.23)
   if (part.per === 'unite') return base * Math.max(1, units);
   return base;
 }

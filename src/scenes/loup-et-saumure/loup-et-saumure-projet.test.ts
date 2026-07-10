@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
-import { parseProject } from '../../state/worldMap';
+import { parseProject, routesFrom } from '../../state/worldMap';
 import { validateScene, type Warning } from '../../state/validateScene';
 import type { Scene } from '../../state/scene';
 import { findCreatureById, findVehicleById, findNavalTrait, findCrewRoleById } from '../../data';
@@ -36,7 +36,7 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     ]);
   });
 
-  it('CARTE DU MONDE : Salzenmund ⇄ Erengrad, DEUX routes maritimes (aller/retour), chacune avec son embuscade', () => {
+  it('CARTE DU MONDE : Salzenmund ⇄ Erengrad, DEUX routes maritimes à SENS UNIQUE (aller/retour), chacune avec son embuscade', () => {
     const wm = doc.worldMap!;
     expect(wm.places.map((p) => p.id)).toEqual(['salzenmund', 'erengrad']);
     for (const p of wm.places) {
@@ -50,8 +50,22 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     expect(wm.routes).toHaveLength(2);
     expect(wm.routes.every((r) => r.sea)).toBe(true);
     expect(wm.routes.every((r) => r.km === 550)).toBe(true); // 550 milles RAW (synopsis de référence)
-    const ambushScenes = wm.routes.map((r) => r.ambush?.scene).sort();
-    expect(ambushScenes).toEqual(['ls-abordage-cogue', 'ls-abordage-olg']);
+    // Les deux routes sont DISCERNABLES par le SENS (`from`) : depuis chaque port une seule est offerte au
+    // clic (`routesFrom`), donc l'embuscade tirée est DÉTERMINISTE — aller = Dent de Manann, retour = Olg.
+    const aller = wm.routes.find((r) => r.from === 'salzenmund')!;
+    const retour = wm.routes.find((r) => r.from === 'erengrad')!;
+    expect(aller?.ambush?.scene).toBe('ls-abordage-cogue');
+    expect(aller?.ambush?.encounter).toBe('enc-cogue');
+    expect(retour?.ambush?.scene).toBe('ls-abordage-olg');
+    expect(retour?.ambush?.encounter).toBe('enc-olg');
+  });
+
+  it('ROUTAGE DÉTERMINISTE (#237) : depuis chaque port, `routesFrom` n’offre que la route de CE sens (zéro hasard de clic)', () => {
+    const wm = doc.worldMap!;
+    const fromSalz = routesFrom(wm, 'salzenmund');
+    const fromEren = routesFrom(wm, 'erengrad');
+    expect(fromSalz.map((r) => r.ambush?.encounter)).toEqual(['enc-cogue']); // aller → la Dent de Manann, JAMAIS Olg
+    expect(fromEren.map((r) => r.ambush?.encounter)).toEqual(['enc-olg']);   // retour → Olg, JAMAIS la cogue
   });
 
   it('validateScene(projet + carte du monde) ne lève AUCUNE erreur', () => {
@@ -253,6 +267,44 @@ describe('Le Loup et la Saumure — projet de données (naval, zéro code applic
     expect(vc).toEqual({ type: 'woundsThreshold', targetId: 'cogue', belowPercent: 50 });
     // targetId référence une VRAIE entité-coque de la scène.
     expect(cogue.entities.some((e) => e.id === 'cogue')).toBe(true);
+  });
+
+  it('REDDITION (#215/#237) : enc-olg porte woundsThreshold sur la coque « serpent-de-sel » — le texte de pavillon devient VRAI', () => {
+    const olg = project.find((s) => s.id === 'ls-abordage-olg')!;
+    const vc = olg.encounters.find((e) => e.id === 'enc-olg')!.victoryCondition;
+    expect(vc, 'victoryCondition câblée sur enc-olg (le trou du #237)').toBeTruthy();
+    expect(vc).toEqual({ type: 'woundsThreshold', targetId: 'serpent-de-sel', belowPercent: 50 });
+    expect(olg.entities.some((e) => e.id === 'serpent-de-sel')).toBe(true);
+  });
+
+  it('ROUTAGE (#237) : les DEUX embuscades RENDENT AU VOYAGE (aucune transition en dur dans leur onVictory)', () => {
+    for (const [sceneId, encId] of [['ls-abordage-cogue', 'enc-cogue'], ['ls-abordage-olg', 'enc-olg']] as const) {
+      const enc = project.find((s) => s.id === sceneId)!.encounters.find((e) => e.id === encId)!;
+      const eff: Effect[] = [];
+      walkFlow(enc.onVictory, eff);
+      // Une transition en dur court-circuiterait le sens du voyage (bug #237 : Olg → épilogue à l'aller).
+      expect(eff.some((e) => e.type === 'transition'), `${encId} ne doit pas transitionner en dur`).toBe(false);
+    }
+  });
+
+  it('ÉPILOGUE (#237) : joué à l’ARRIVÉE de RETOUR à Salzenmund, gaté par la livraison du fret (ls_fret_livre)', () => {
+    // Le fret est LIVRÉ en atteignant Erengrad (trigger d'arrivée pose ls_fret_livre).
+    const erengrad = project.find((s) => s.id === 'ls-quai-erengrad')!;
+    const setsFret = erengrad.triggers.some((t) => {
+      const eff: Effect[] = []; walkFlow(t.flow, eff);
+      return eff.some((e) => e.type === 'setFlag' && e.flag === 'ls_fret_livre');
+    });
+    expect(setsFret, 'l’arrivée à Erengrad pose ls_fret_livre').toBe(true);
+    // Au quai de Salzenmund, un trigger d'arrivée GATÉ par ls_fret_livre bascule vers l'épilogue — au DÉPART
+    // (flag absent) il ne se déclenche pas : le même quai sert l'ouverture et la clôture.
+    const salz = project.find((s) => s.id === 'ls-quai-salzenmund')!;
+    const epilogueTrig = salz.triggers.find((t) => {
+      const eff: Effect[] = []; walkFlow(t.flow, eff);
+      return eff.some((e) => e.type === 'transition' && e.scene === 'ls-epilogue-salzenmund');
+    });
+    expect(epilogueTrig, 'trigger d’épilogue sur le quai de Salzenmund').toBeTruthy();
+    expect(epilogueTrig!.when).toEqual({ kind: 'flag', expr: 'ls_fret_livre' });
+    expect(epilogueTrig!.once).toBe(true);
   });
 
   it('DÉMASQUAGE de Kramer (#233) : la réussite d’Intuition à la nuit du chat lève le sabotage (adjustVessel saboteurDR 0)', () => {

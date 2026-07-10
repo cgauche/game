@@ -834,7 +834,35 @@
      ]
     }
    ],
-   "triggers": [],
+   "triggers": [
+    {
+     "id": "ls-retour-epilogue",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "w": 16,
+      "h": 8
+     },
+     "once": true,
+     "when": {
+      "kind": "flag",
+      "expr": "ls_fret_livre"
+     },
+     "flow": {
+      "kind": "seq",
+      "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "transition",
+         "scene": "ls-epilogue-salzenmund",
+         "entry": "retour"
+        }
+       }
+      ]
+     }
+    }
+   ],
    "encounters": [],
    "flags": {},
    "weather": "brouillard",
@@ -1390,14 +1418,6 @@
          "type": "journal",
          "text": "La Dent de Manann amène son pavillon à mi-coque — la cogue se rend. Des épaves flottent : Séquestre à faire valoir à quai."
         }
-       },
-       {
-        "kind": "do",
-        "effect": {
-         "type": "transition",
-         "scene": "ls-quai-erengrad",
-         "entry": "arrivee"
-        }
        }
       ]
      },
@@ -1838,6 +1858,13 @@
      "flow": {
       "kind": "seq",
       "steps": [
+       {
+        "kind": "do",
+        "effect": {
+         "type": "setFlag",
+         "flag": "ls_fret_livre"
+        }
+       },
        {
         "kind": "do",
         "effect": {
@@ -2395,20 +2422,17 @@
          "type": "journal",
          "text": "Olg Blóðsalt tombe. Le Serpent-de-Sel amène pavillon — la prise à armer, ~40 survivants à répartir sur deux coques."
         }
-       },
-       {
-        "kind": "do",
-        "effect": {
-         "type": "transition",
-         "scene": "ls-epilogue-salzenmund",
-         "entry": "retour"
-        }
        }
       ]
      },
      "threat": {
       "camp": "enemies",
       "tier": "dangereuse"
+     },
+     "victoryCondition": {
+      "type": "woundsThreshold",
+      "targetId": "serpent-de-sel",
+      "belowPercent": 50
      }
     }
    ],
@@ -2712,6 +2736,7 @@
   "routes": [
    {
     "id": "route-salzenmund-erengrad-aller",
+    "from": "salzenmund",
     "a": "salzenmund",
     "b": "erengrad",
     "km": 550,
@@ -2727,6 +2752,7 @@
    },
    {
     "id": "route-salzenmund-erengrad-retour",
+    "from": "erengrad",
     "a": "salzenmund",
     "b": "erengrad",
     "km": 550,

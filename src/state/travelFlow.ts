@@ -192,6 +192,7 @@ export function startTravel(
   const from = placeOfScene(worldMap, scene.id);
   const route = worldMap.routes.find((r) => r.id === routeId);
   if (!from || !route || (route.a !== from.id && route.b !== from.id)) return;
+  if (route.from != null && route.from !== from.id) return; // route à sens unique : pas dans ce sens
   // « En selle » suit les mêmes chemins qu'à pied (mode IMPLICITE des routes `pied`) — règle
   // `travel-allures` (EDOC ch.4) et chaque héros vivant en selle (EDOC 07 l.140).
   if (mode === 'monture' && (!rule('travel-allures') || !partyFullyMounted(party))) return;

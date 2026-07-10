@@ -133,6 +133,8 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     }
     case 'giveXp': return `${e.amount ?? 0} PX (groupe)`;
     case 'restoreFortune': return `Regagner la Chance`;
+    case 'sessionEnd': return `Fin de séance (Ambitions / Motivation)`;
+    case 'openCharacterCreator': return `Créer un personnage (assistant)`;
     case 'inflictNightmares': return `Cauchemars${e.heroId ? ` → ${e.heroId}` : ''}`;
     case 'inflictDisease': return `Maladie : ${e.disease || '?'}`;
     case 'inflictHunger': return `Faim ×${e.days ?? 1} → ${e.target === 'hero' ? (e.heroId || '1ᵉʳ héros') : 'groupe'}`;
@@ -162,6 +164,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'mealParty': return `Repas du groupe`;
     case 'interlude': return `Interlude : ${e.weeks ?? 1} semaine(s)`;
     case 'startCombat': return `Combat : ${e.encounter || '?'}`;
+    case 'startPursuit': return `Poursuite (${e.partyRole === 'pursuing' ? 'groupe poursuit' : 'groupe fuit'}) — Distance ${e.distance ?? 4}, ${(e.foes ?? []).length} adversaire(s)${e.encounter ? ` → ${e.encounter}` : ''}`;
     case 'startMassBattle': {
       const b: MassBattleSpec = e.battle ?? {};
       const rounds = b.plannedRounds ?? 1;
@@ -696,6 +699,45 @@ export function EffectFields({ effect, onChange, ctx }: { effect: Effect; onChan
               </option>
             ))}
           </select>
+        )}
+        {effect.type === 'startPursuit' && (
+          <div className="eff-subfields">
+            <label>Rôle du groupe
+              <select value={e.partyRole ?? 'fleeing'} onChange={(ev) => upd({ partyRole: ev.target.value })}>
+                <option value="fleeing">Le groupe fuit</option>
+                <option value="pursuing">Le groupe poursuit</option>
+              </select>
+            </label>
+            <label>Distance de départ (1-8)
+              <input type="number" min={1} max={9} value={e.distance ?? 4} onChange={(ev) => upd({ distance: Number(ev.target.value) })} />
+            </label>
+            <label>Seuil d'évasion (défaut 10)
+              <input type="number" min={2} value={e.escapeAt ?? 10} onChange={(ev) => upd({ escapeAt: Number(ev.target.value) })} />
+            </label>
+            <label>Compétence de Mouvement (id)
+              <input value={e.skill ?? ''} placeholder="athletisme / chevaucher / conduite-d-attelage" onChange={(ev) => upd({ skill: ev.target.value })} />
+            </label>
+            <label>Rencontre au rattrapage
+              <select value={e.encounter ?? ''} onChange={(ev) => upd({ encounter: ev.target.value })}>
+                <option value="">— aucune (dénouement narratif) —</option>
+                {ctx.encounters.map((en) => <option key={en.id} value={en.id}>{en.id}</option>)}
+              </select>
+            </label>
+            <div className="eff-list-head">Adversaires
+              <button type="button" className="btn small" onClick={() => upd({ foes: [...(e.foes ?? []), { label: 'Adversaire', movement: 4, skill: 40 }] })}>+ adversaire</button>
+            </div>
+            {(e.foes ?? []).map((f: { label: string; movement: number; skill: number }, i: number) => {
+              const patchFoe = (patch: Partial<typeof f>) => upd({ foes: (e.foes ?? []).map((x: typeof f, k: number) => (k === i ? { ...x, ...patch } : x)) });
+              return (
+                <div key={i} className="eff-row">
+                  <input value={f.label} placeholder="Nom" onChange={(ev) => patchFoe({ label: ev.target.value })} />
+                  <input type="number" title="Mouvement" value={f.movement} onChange={(ev) => patchFoe({ movement: Number(ev.target.value) })} />
+                  <input type="number" title="Test de Mouvement" value={f.skill} onChange={(ev) => patchFoe({ skill: Number(ev.target.value) })} />
+                  <button type="button" className="btn small" onClick={() => upd({ foes: (e.foes ?? []).filter((_: typeof f, k: number) => k !== i) })}>×</button>
+                </div>
+              );
+            })}
+          </div>
         )}
         {effect.type === 'startMassBattle' && (
           <MassBattleFields battle={e.battle ?? {}} onChange={(battle) => upd({ battle })} ctx={ctx} />

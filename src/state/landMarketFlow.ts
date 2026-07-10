@@ -14,16 +14,18 @@
  * `cargo.ts`. Le Marchandage (Test opposé ±10 %/±20 %) réutilise le MÊME patron que `portFlow`.
  */
 import { battleRng } from './battleRng';
-import { placeOfScene } from './worldMap';
+import { placeOfScene, placeById } from './worldMap';
+import { dayIndex } from './upkeep';
 import { partyAssisted, partyBest, testValue } from '../engine/skills';
 import { opposedTest, SL_ASTOUNDING, rollTest } from '../engine/tests';
 import { d100 } from '../engine/dice';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, subtract, toMoney } from '../engine/money';
 import {
-  type LandMarketProfile, type RumourRow, rollFindMerchant, rollCargoQuantity, rollRandomLandCargo, landCargoBasePrice,
+  type LandMarketProfile, rollFindMerchant, rollCargoQuantity, rollRandomLandCargo, landCargoBasePrice,
   findLandCargoById, sellDemandTarget, sellOfferPct, landDumpingPct, rollMerchantSkill, partialSurchargePct, minCargoEnc,
-  wineEvalDifficulty, wineEvalReveal, rollTradeRumour, rumourMatches, gossipRule,
+  wineEvalDifficulty, wineEvalReveal, rollTradeRumour, gossipRule,
+  type TradeRumour, tradeRumourMult,
 } from '../engine/landCargo';
 import { type CargoLot, cargoTotalEnc } from '../engine/cargo';
 import { seasonOfMonth } from '../engine/travelStages';
@@ -46,16 +48,13 @@ export interface LandOffer {
 }
 
 /** État MARCHÉ TERRESTRE ouvert (généré une fois à l'arrivée — les d100 de disponibilité ne se re-tirent pas
- *  par rendu, comme l'écran Port). */
+ *  par rendu, comme l'écran Port). La rumeur commerciale n'est PAS ici : elle vit sur le board persistant
+ *  `store.tradeRumours` (T2C ch.11 l.180 : elle vise un AUTRE Lieu), consultée dans l'écran Marché. */
 export interface LandMarketState {
   placeId: string;
   label: string;
   market: LandMarketProfile;
   offers: LandOffer[];
-  /** Rumeur commerciale entendue à l'arrivée (Test de Ragot réussi, T2C ch.11 l.176-180) : signale les biens
-   *  très recherchés — ils se vendent au DOUBLE de leur prix de base à ce Lieu (MAISON, cf. #99). `null`/absent
-   *  = pas de rumeur. */
-  rumour?: RumourRow | null;
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
@@ -97,20 +96,40 @@ export function openLandMarket(get: Get, set: Set): void {
   if (find.localFound) for (const id of market.produits.filter((p) => p !== 'commerce' && p !== 'subsistance')) addOffer(id);
   // « Commerce » (l.32-34) : une cargaison ALÉATOIRE de la table saisonnière en plus.
   if (find.randomFound) addOffer(rollRandomLandCargo(season, rng).id);
-  // Rumeurs commerciales (T2C ch.11 l.176-180) : Test de Ragot Complexe (−10) au marché ; sur un succès, une
-  // rumeur signale les biens très recherchés → ils s'y vendent le DOUBLE (T2C ch.11 l.180). Roulé APRÈS les
-  // offres pour ne pas déplacer leur flux RNG. MAISON (T2C ch.11 l.180) : le RAW pointe un AUTRE Lieu, tiré au
-  // d100 via l'index géographique du Reikland — l'arène n'a ni index géographique multi-lieux ni board de
-  // rumeurs persistant (mécanisme complet tracé par #99, ne pas dupliquer ici) ; ici la rumeur vaut pour le
-  // Lieu COURANT.
-  let rumour: RumourRow | null = null;
+  set({ landMarket: { placeId: cur.placeId, label: cur.label, market, offers } });
+  // Rumeurs commerciales (T2C ch.11 l.176-180) : Test de Ragot Complexe (−10) au marché ; sur un succès, on
+  // tire un AUTRE Emplacement puis une rumeur (Tableau des rumeurs) → les biens visés s'y vendent au DOUBLE
+  // du prix de base (l.180). Roulé APRÈS les offres pour ne pas déplacer leur flux RNG. L'« index géographique
+  // du Reikland » (l.180) est ici la liste des Lieux de la carte porteurs d'un `market` (aucun catalogue neuf).
   const gossip = partyBest(get().party, 'ragot');
   if (gossip) {
     const g = rollTest(gossip.value, gossipRule.difficulty, rng, gossipRule.mod);
-    if (g.success) rumour = rollTradeRumour(rng);
+    if (g.success) generateTradeRumour(get, set, cur.placeId, rng);
   }
-  set({ landMarket: { placeId: cur.placeId, label: cur.label, market, offers, rumour } });
-  if (rumour) log(get, set, [`Rumeur au marché : forte demande locale — ${rumour.biens.map((id) => findLandCargoById(id)?.label ?? id).join(', ')} s'y vendent le double (T2C ch.11 l.180).`]);
+}
+
+/** Génère une RUMEUR CROSS-LIEU (T2C ch.11 l.180) : tire un AUTRE Lieu à `market` de la carte, puis une
+ *  rumeur (Tableau des rumeurs) désignant les biens qui s'y vendent au double. Ajoutée au board persistant
+ *  `store.tradeRumours` (dédupliquée : même Lieu + mêmes biens ne s'empile pas). Le RAW ne donne aucune
+ *  échéance ni consommation par vente (« autant qu'ils le souhaitent ») → elle demeure sur le board. */
+function generateTradeRumour(get: Get, set: Set, currentPlaceId: string, rng: import('../engine/dice').RNG): void {
+  const map = get().worldMap;
+  const targets = (map?.places ?? []).filter((p) => p.market && p.id !== currentPlaceId);
+  if (targets.length === 0) return; // pas d'autre Lieu de commerce connu → aucune rumeur à raccrocher
+  const target = targets[rng.int(0, targets.length - 1)];
+  const row = rollTradeRumour(rng);
+  const board = get().tradeRumours ?? [];
+  if (board.some((r) => r.placeId === target.id && r.biens.join(',') === row.biens.join(','))) return; // doublon
+  const rumour: TradeRumour = {
+    placeId: target.id,
+    biens: row.biens,
+    mult: 2, // l.180 : « le double du prix de base »
+    text: row.text,
+    heardDay: dayIndex(get().gameTime),
+  };
+  set({ tradeRumours: [...board, rumour] });
+  const biensTxt = rumour.biens.map((id) => findLandCargoById(id)?.label ?? id).join(', ');
+  log(get, set, [`Rumeur au marché : ${biensTxt} se vendraient le double à ${target.label} (T2C ch.11 l.180).`]);
 }
 
 /** ÉVALUATION de la qualité SECRÈTE d'un lot de Vin/Eau-de-vie proposé (l.95) : Test d'Évaluation, difficulté
@@ -220,9 +239,10 @@ export function landSellCargo(get: Get, set: Set, cargoIndex: number): void {
     else if (buyerSL > sellerSL) bargainPctVal = -bargainPct(false, netSL); // l'acheteur le baisse
     bargainLine = `${best.actor.name} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}) : ${bargainPctVal === 0 ? 'sans effet' : bargainPctVal > 0 ? `+${bargainPctVal} %` : `${bargainPctVal} %`}.`;
   }
-  // Rumeur commerciale (l.180) : une rumeur du Lieu courant qui vise ce bien le fait vendre au DOUBLE du base.
-  const rumourHit = !!st.rumour && rumourMatches(st.rumour, lot.cargoId);
-  const rumourMult = rumourHit ? 2 : 1;
+  // Rumeur commerciale (l.180) : une rumeur du board visant CE Lieu et CE bien le fait vendre au DOUBLE du
+  // base. Non consommée (« autant qu'ils le souhaitent ») → elle reste sur le board.
+  const rumourMult = tradeRumourMult(get().tradeRumours ?? [], st.placeId, lot.cargoId);
+  const rumourHit = rumourMult > 1;
   const gross = Math.max(0, Math.round(sellEnc * lot.basePriceGold * (offerPct / 100) * (1 + bargainPctVal / 100) * rumourMult));
   set({
     money: fromBrass(toBrass(get().money) + gross * PA_PER_CO),

@@ -61,7 +61,7 @@ import { sizeGap } from '../engine/size';
 import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
 import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
 import { fireTriggers, applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps } from './triggeredEffects';
-import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   isStupid,
@@ -119,7 +119,7 @@ import { actorIn } from './combatOrParty';
 import { followsCharacterRules } from '../engine/relations';
 import type { ShipRig } from '../engine/combat';
 import { norm } from '../lib/normalize';
-import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, damageArmour, deviatableArmourAt, buildWeapon } from '../engine/items';
+import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
 import { hasCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
 import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
@@ -2159,6 +2159,58 @@ export function applyOups(get: Get, set: SetFn, c: Combatant, weapon: Weapon, r:
 export function resolveEnemyFumble(get: Get, set: SetFn, enemy: Combatant, weapon: Weapon, res: AttackResult): void {
   if (!aiDriven(get(), enemy) || !attackerFumbled(res, weapon, enemy)) return;
   applyOups(get, set, enemy, weapon, rollOups(weapon, battleRng()));
+}
+
+/**
+ * Réaction de Porte-Bouclier — variante « Avantage de groupe » (AA l.4428, VERBATIM : « une fois par Round,
+ * vous pouvez dépenser 2 Avantages soit pour causer des Dégâts quand vous êtes attaqué comme s'il s'agissait
+ * de votre Action, soit pour pousser votre adversaire sur 2 mètres dans la direction directement opposée à
+ * vous et ne plus être considéré comme Engagé »). Brique GÉNÉRALE de réaction à coût d'Avantages : le coût et
+ * l'éligibilité viennent de la DONNÉE (`shieldReactionCost`), jamais d'un dispatch par nom. Débite la réserve
+ * (`campSpend`), marque la cadence 1×/Round, puis applique l'effet via les coutures existantes (poussée
+ * `pushAway` + désengagement `disengageFrom` ; Dégâts `resolveMeleePassive` — même voie que la Riposte).
+ */
+export function applyShieldReaction(get: Get, set: SetFn, defender: Combatant, attacker: Combatant, kind: 'damage' | 'push', parryWeapon: Weapon | undefined): void {
+  const battle = get().battle;
+  if (!battle || isOutOfAction(defender)) return;
+  const cost = shieldReactionCost(defender, parryWeapon);
+  if (cost <= 0 || defender.usedShieldReactionRound || spendableAdvantage(get, defender) < cost) return;
+  campSpend(get, defender, cost);
+  defender.usedShieldReactionRound = true;
+  const log = [...battle.log];
+  if (kind === 'push') {
+    if (defender.pos && attacker.pos && !isOutOfAction(attacker)) {
+      const tiles = Math.max(1, Math.round(2 / sceneMetresPerTile(get().scene))); // 2 m RAW → cases
+      const r = pushAway(get().scene!, defender.pos, attacker.pos, tiles, { blocked: occupied(battle, attacker) });
+      if (r.pushed > 0) {
+        const from = { ...attacker.pos };
+        placeCombatant(attacker, get().scene, r.dest);
+        bus.emit(EVT.ANIM_MOVE, { id: attacker.id, path: [{ ...r.dest }] });
+        applyZoneCrossings(get, attacker, [...tilesBetween(from, r.dest), { ...r.dest }]);
+      }
+    }
+    disengageFrom(defender, attacker); // « ne plus être considéré comme Engagé »
+    log.push(ev('condition', tr('cf.shieldReactionPush', { name: defender.name, foe: attacker.name }), defender.id, attacker.id));
+  } else {
+    // « causer des Dégâts comme s'il s'agissait de son Action » : une frappe de mêlée (arme principale) vers
+    // l'attaquant, résolue passivement — même voie que la Riposte, surfacée au journal (jet dans le log).
+    const weapon = defender.weapons.find((w) => !isUnarmed(w)) ?? defender.weapons[0];
+    const atk = rollMeleeAttacker(defender, attacker, weapon, battleRng());
+    const res = resolveMeleePassive(defender, attacker, weapon, atk);
+    if (res.hit && res.woundsLost) {
+      attacker.wounds.current = Math.max(0, attacker.wounds.current - res.woundsLost);
+      if (attacker.wounds.current <= 0 && !attacker.dead && !hasCondition(attacker, COND.inconscient)) applyZeroWounds(attacker);
+      if (isOutOfAction(attacker)) {
+        clearEngagementOf(battle.combatants, attacker.id);
+        clearPsychOf(battle.combatants, attacker.id);
+      }
+    }
+    log.push(ev('damage', tr('cf.shieldReactionDamage', { name: defender.name, foe: attacker.name }), defender.id, attacker.id));
+    log.push(ev(res.hit ? 'damage' : 'attack', res.log, defender.id, attacker.id));
+  }
+  set({ battle: { ...get().battle!, log } });
+  bus.emit(EVT.SCENE_DIRTY);
+  checkBattleOver(get, set);
 }
 
 /** Ouvre la modale de défense réactive si l'attaque est : attaquant PILOTÉ PAR L'IA → défenseur PILOTÉ
@@ -4733,6 +4785,7 @@ export function resolveRoundBoundary(get: Get, set: SetFn): void {
   for (const c of battle.combatants) {
     if (!groupAdvantage() && !isOutOfAction(c) && c.advantage > 0 && !c.gainedAdvThisRound) c.advantage -= 1;
     c.gainedAdvThisRound = false;
+    c.usedShieldReactionRound = false; // Porte-Bouclier (variante AA l.4428) : « une fois par Round »
     if (c.distractedRounds) c.distractedRounds = c.distractedRounds > 1 ? c.distractedRounds - 1 : undefined; // Distraire (LDB 10 l.364) : expire en fin de Round
     c.dispelledThisRound = undefined; // Dissipation : « un seul Sort chaque Round » (LDB 46 l.202)
   }

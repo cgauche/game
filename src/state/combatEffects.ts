@@ -44,6 +44,7 @@ import { Effect, setDoorOpen } from './scene';
 import { type Flow, type FlowTest, type EffectOp, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, leafOpsCtx, EMPTY_FLOW, spellOps } from './flow';
 import { inRect, combatantsWithinRadius } from './combatGeometry';
 import { startCascade, registerCascadeApplier } from './cascade';
+import { startGroundPursuit } from './pursuitFlow';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
 import { loseWounds, addCondition, hasCondition } from '../engine/conditions';
 import { touchActors, actorIn } from './combatOrParty';
@@ -786,6 +787,16 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       }
     },
   },
+  sessionEnd: {
+    group: 'Récompenses', label: 'Fin de séance (Ambitions/Motivation — LDB 05/17)', icon: 'journal/detail',
+    make: () => ({ type: 'sessionEnd' }),
+    apply: (_e, env) => { env.get().openSessionEnd(); }, // ouvre l'écran de fin de séance existant (SessionEndModal → endSession)
+  },
+  openCharacterCreator: {
+    group: 'Récompenses', label: 'Créer un personnage (assistant)', icon: 'ui/add',
+    make: () => ({ type: 'openCharacterCreator' }),
+    apply: (_e, env) => { env.get().setEditingHero(null); env.get().setScreen('creator'); }, // assistant existant (src/ui/creator), nouveau héros
+  },
   restoreFortune: {
     group: 'Récompenses', label: 'Regagner la Chance (début de session, max = Destin)', icon: 'resource/fortune',
     make: () => ({ type: 'restoreFortune' }),
@@ -1273,6 +1284,17 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
     make: () => ({ type: 'startCombat', encounter: '' }),
     apply: (e, env) => { env.get().startCombat(e.encounter); },
     refs: (e, ctx) => ctx.encounterIds.has(e.encounter) ? [] : [{ level: 'error', message: `Effet → rencontre inexistante « ${e.encounter} »` }],
+  },
+  startPursuit: {
+    group: 'Combat & social', label: 'Poursuite terrestre (LDB 15)', icon: 'travel/foot',
+    make: () => ({ type: 'startPursuit', partyRole: 'fleeing', distance: 4, skill: 'athletisme', foes: [{ label: 'Poursuivant', movement: 4, skill: 40 }], encounter: '' }),
+    apply: (e, env) => { startGroundPursuit(env.get, env.set, { partyRole: e.partyRole, distance: e.distance, escapeAt: e.escapeAt, skill: e.skill, foes: e.foes, encounter: e.encounter || undefined }); },
+    refs: (e, ctx) => {
+      const issues: EffectRefIssue[] = [];
+      if (!e.foes?.length) issues.push({ level: 'error', message: 'Poursuite : aucun adversaire' });
+      if (e.encounter && !ctx.encounterIds.has(e.encounter)) issues.push({ level: 'error', message: `Poursuite → rencontre inexistante « ${e.encounter} »` });
+      return issues;
+    },
   },
   startMassBattle: {
     group: 'Combat & social', label: 'Combat de masse (Puissance de Bataille)', icon: 'map-tool/start-flag',

@@ -19,7 +19,7 @@ const navalTraitRefSchema = z.strictObject({ id: z.string(), value: z.number().o
 const deckPosteSlotSchema = z.strictObject({
   pos: z.strictObject({ x: z.number(), y: z.number() }),
   side: z.enum(['proue', 'tribord', 'poupe', 'babord']),
-  sabord: z.boolean().optional(),
+  cover: z.enum(['imparfaite', 'moyenne', 'totale']).optional(),
 });
 
 const shipDeckSchema = z.strictObject({

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { spawnEnemy } from './spawn';
+import { shipManeuverParams } from './shipManeuver';
 
 /**
  * Améliorations d'INSTANCE (MDG ch.12) appliquées au spawn : un navire-instance = type + `upgrades[]`
@@ -25,5 +26,15 @@ describe('spawn — Blindage (Amélioration d’instance) → PA de coque', () =
     const hull = spawnEnemy('cogue', undefined, 'h-lissage', at, { upgrades: [{ id: 'lissage' }] });
     expect(hull.upgrades).toEqual([{ id: 'lissage' }]);
     expect(hull.armour.corps).toBe(0); // Lissage agit sur le M, pas sur les PA
+  });
+
+  it('« Coque de course » → 2×M de manœuvre, op moveScale APPLIQUÉE dans shipManeuverParams (T2C ch.10 l.27)', () => {
+    // cogue à voile : M de base 5 ; Coque de course multiplie APRÈS les moveMod additifs → 10.
+    expect(shipManeuverParams(spawnEnemy('cogue', undefined, 'h-nue2', at)).baseM).toBe(5);
+    const hull = spawnEnemy('cogue', undefined, 'h-course', at, { upgrades: [{ id: 'coque-de-course' }] });
+    expect(shipManeuverParams(hull).baseM).toBe(10);
+    // combinée à Lissage (moveMod +1) : (5 + 1) × 2 = 12 — l'additif précède le facteur (ordre canonique).
+    const hull2 = spawnEnemy('cogue', undefined, 'h-course-liss', at, { upgrades: [{ id: 'coque-de-course' }, { id: 'lissage' }] });
+    expect(shipManeuverParams(hull2).baseM).toBe(12);
   });
 });

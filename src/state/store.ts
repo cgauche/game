@@ -367,6 +367,11 @@ export interface GameState extends RollFlowActionsMap {
   /** CASCADE séquentielle influençable (jets de NUIT / VOYAGE) : une étape à la fois (`FLOWS.cascade`),
    *  conséquence par `kind` + avancée du curseur dans `cascadeNext` (state/cascade.ts). */
   pendingCascade: PendingCascade | null;
+  /** POURSUITE TERRESTRE en cours (LDB 15) : Distance/adversaires persistés entre les manches (chaque
+   *  manche est une cascade `purpose:'pursuite'`, cf. state/pursuitFlow). `null` hors poursuite. */
+  pursuit: import('./pursuitFlow').PursuitState | null;
+  /** Abandon de la poursuite terrestre (le groupe renonce à fuir/traquer). */
+  pursuitAbandon: () => void;
   /** Incantation OPPOSÉE (`spec.opposed`) : chaque CIBLE oppose son Test (FM/Int) à l'incantation
    *  figée (`pendingCast.result`) — multijet DANS la modale de cast (cible IA = rangée témoin
    *  auto-roulée, cible héros = interactive). `oppositionConfirm` agrège → `pendingCast.opposedOutcome`
@@ -614,6 +619,11 @@ export interface GameState extends RollFlowActionsMap {
   /** Fin de séance (LDB 05 Ambitions + LDB 17 Détermination) : octroie les PX d'Ambition, regagne la
    *  Détermination selon la Motivation, puis restaure la Chance. Alimenté par l'écran de fin de séance. */
   endSession: (rewards: import('./partyFlow').SessionRewards) => void;
+  /** Écran de fin de séance (`SessionEndModal`) ouvert par l'Effet `sessionEnd` (#83) — le menu de jeu
+   *  le pilote encore par état local ; ce flag EN PLUS permet à un beat de campagne authoré de l'ouvrir. */
+  sessionEndOpen: boolean;
+  openSessionEnd: () => void;
+  closeSessionEnd: () => void;
   /** Entraîne une prothèse portée par dépense de PX (Fausse jambe → réapprendre l'Esquive, 200 PX, LDB 73). */
   trainProsthesis: (heroId: string, uid: string) => void;
   /** Change de Carrière/Niveau (validation LDB 07 l.137 / LDB 08 : complétion, +100 hors Classe). */
@@ -1045,6 +1055,8 @@ export interface GameState extends RollFlowActionsMap {
   defenseSetMode: (mode: DefenseMode, subSkillId?: string) => void;
   /** Choisit l'arme de parade (uid d'ItemInstance ; null = main principale) — avant le jet de défense. */
   defenseSetParryWeapon: (uid: string | null) => void;
+  /** Déclare/efface la réaction de Porte-Bouclier (variante AA l.4428) pour cette défense au Bouclier. */
+  defenseSetShieldReaction: (kind: 'damage' | 'push' | null) => void;
   // defense{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap).
   defenseConfirm: () => void;
   /** « Je te renie ! » (LDB 17 l.71) : résout le choix (true = refuser la mutation, 1 Résilience). */
@@ -1157,6 +1169,11 @@ export interface GameState extends RollFlowActionsMap {
   /** Cargaison TERRESTRE/FLUVIALE transportée par le groupe (convoi/chariot — T2C ch.11). Persiste au
    *  niveau GROUPE (pas de Contenance de coque, à la différence du navire). */
   caravanCargo: import('../engine/cargo').CargoLot[];
+  /** Board de RUMEURS COMMERCIALES persistant (T2C ch.11 l.180) : chaque rumeur désigne un AUTRE Lieu où
+   *  des biens se vendent au double. Entendues aux marchés (Ragot Complexe −10), consultées dans l'écran
+   *  Marché, appliquées à la vente au Lieu désigné. Persiste au niveau GROUPE (sauvegardé, remis à zéro en
+   *  nouvelle partie via l'état initial). */
+  tradeRumours: import('../engine/landCargo').TradeRumour[];
   /** Écran MARCHÉ TERRESTRE ouvert (commerce de cargaison à un Lieu `market` de la carte — T2C ch.11) :
    *  offres d'achat générées à l'arrivée. `null` = fermé. */
   landMarket: import('./landMarketFlow').LandMarketState | null;
@@ -1257,6 +1274,7 @@ export const useGame = create<GameState>((set, get) => ({
   lastUpkeepDay: dayIndex(CAMPAIGN_START),
   vessel: null,
   caravanCargo: [],
+  tradeRumours: [],
   landMarket: null,
   worldMap: campaignWorldMap,
   worldMapOpen: false,
@@ -1533,6 +1551,8 @@ export const useGame = create<GameState>((set, get) => ({
   removeSpellComponent: (heroId, spellId) => partyFlow.removeSpellComponent(get, set, heroId, spellId),
   setHeroBackground: (heroId, patch) => partyFlow.setHeroBackground(get, set, heroId, patch),
   endSession: (rewards) => partyFlow.endSession(get, set, rewards),
+  openSessionEnd: () => set({ sessionEndOpen: true }),
+  closeSessionEnd: () => set({ sessionEndOpen: false }),
   trainProsthesis: (heroId, uid) => partyFlow.trainProsthesis(get, set, heroId, uid),
   changeCareer: (heroId, newCareer, newLevel) => partyFlow.changeCareer(get, set, heroId, newCareer, newLevel),
   creditPartyMoney: (m, note) => partyFlow.creditPartyMoney(get, set, m, note),

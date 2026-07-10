@@ -504,6 +504,8 @@ export const fr = {
   'cf.critDespiteLoss': "{name} place un Critique malgré l'échange perdu.",
   'cf.critOnDefense': '{name} place un Critique sur sa défense.',
   'cf.riposte': '{name} contre-attaque et inflige {n} Blessure(s) en défendant.',
+  'cf.shieldReactionPush': '{name} pousse {foe} de son bouclier (2 m) et se désengage.',
+  'cf.shieldReactionDamage': '{name} riposte du bouclier comme si c’était son Action.',
   'cf.vomitStun': '{name} vomit (Nausée) : Sonné.',
   'cf.wardTestFail': '{name} — Test de Force Mentale Accessible (+20) : 🎲 {roll}/{target} → échec.',
   'cf.handGateFail': '{name} — Main ensanglantée, Test de Dextérité Accessible (+20) : 🎲 {roll}/{target} → échec : l’arme lui glisse des doigts.',

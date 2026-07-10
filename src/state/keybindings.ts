@@ -114,8 +114,14 @@ export const KEYBINDINGS: KeyBinding[] = [
   },
   // Valider/annuler le curseur — AVANT end-turn/clear-preview : avec un curseur posé, Entrée commet
   // et Échap désélectionne ; sans curseur, Entrée finit le tour et Échap purge l'aperçu (1er match).
+  // PAS `notWhenControlFocused` (#199) : un `combatCursor` n'existe QUE si une flèche a déjà été
+  // pressée (bindings `cursor-*`, gardés par `curOrPreempt`) — on est donc DÉJÀ dans un flux clavier,
+  // jamais dans le cas « Tab a posé le focus sur un bouton, Entrée doit l'activer » que la garde protège
+  // ailleurs. Sans ce retrait, le focus RÉSIDUEL d'un bouton de barre d'action cliqué à la souris (ex.
+  // « Pousser ») pour ENTRER dans le mode-CASE masquait `cursor-commit` : Entrée retombait sur
+  // l'activation native du bouton encore focalisé (qui ferme le mode, aucune poussée commise).
   {
-    id: 'cursor-commit', codes: ['Enter', 'NumpadEnter'], label: 'Curseur : valider', notWhenControlFocused: true,
+    id: 'cursor-commit', codes: ['Enter', 'NumpadEnter'], label: 'Curseur : valider',
     when: (s) => curOrPreempt(s) && !!s.combatCursor,
     run: (g) => g().commitCursor(),
   },

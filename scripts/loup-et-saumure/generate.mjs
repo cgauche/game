@@ -92,6 +92,15 @@ scenes.push(scene({
     '~~~~~~~~~~~~~~~~',
     '~~~~~~~~~~~~~~~~',
   ],
+  // Trigger d'ARRIVÉE de RETOUR (patron obj-erengrad) : au premier pas sur le quai, si le fret a été livré
+  // à Erengrad (`ls_fret_livre`), on bascule vers l'épilogue. Au DÉPART (Acte 0) le flag est absent → il ne
+  // se déclenche pas : ce même quai sert l'ouverture ET la clôture, l'épilogue n'arrive qu'après la livraison.
+  triggers: [
+    {
+      id: 'ls-retour-epilogue', rect: { x: 0, y: 0, w: 16, h: 8 }, once: true, when: flagWhen('ls_fret_livre'),
+      flow: flowOf([{ type: 'transition', scene: 'ls-epilogue-salzenmund', entry: 'retour' }]),
+    },
+  ],
   entities: [
     hero(2, 4),
     NPC('kohler', 5, 3, 'Baron Ludolf Köhler', { facing: 'S', dialogueId: 'dlg-kohler', appearance: KOHLER_APPEARANCE }),
@@ -348,7 +357,9 @@ scenes.push(scene({
         { type: 'giveMoney', gold: 15 },
         OBJ('Rallier Erengrad avec le fret — la Dent de Manann écartée.'),
         { type: 'journal', text: 'La Dent de Manann amène son pavillon à mi-coque — la cogue se rend. Des épaves flottent : Séquestre à faire valoir à quai.' },
-        { type: 'transition', scene: 'ls-quai-erengrad', entry: 'arrivee' },
+        // Pas de transition en dur : l'abordage n'est qu'une INTERRUPTION de la traversée. Le combat gagné,
+        // le voyage REPREND (bouton carte « voyage interrompu ») vers SA destination (Erengrad) — accostage
+        // naturel (relâche à terre, événement de port). Le sens du trajet décide de la destination, jamais l'ennemi.
       ]),
     },
   ],
@@ -379,8 +390,13 @@ scenes.push(scene({
     '~~~~~~~~~~~~~~~~',
   ],
   // Objectif d'acte II posé à l'ARRIVÉE (premier pas sur le quai — `checkTriggers` sur le rect de scène).
+  // Le même pas pose `ls_fret_livre` : le fret d'armes de Köhler EST livré en atteignant Erengrad — flag
+  // qui gâche (gate) l'épilogue de retour à Salzenmund (« l'épilogue n'arrive qu'après la livraison »).
   triggers: [
-    { id: 'obj-erengrad', rect: { x: 0, y: 0, w: 16, h: 8 }, once: true, flow: flowOf([OBJ('Vendre la laine kislevite et découvrir qui en veut à la cargaison.')]) },
+    { id: 'obj-erengrad', rect: { x: 0, y: 0, w: 16, h: 8 }, once: true, flow: flowOf([
+      { type: 'setFlag', flag: 'ls_fret_livre' },
+      OBJ('Vendre la laine kislevite et découvrir qui en veut à la cargaison.'),
+    ]) },
   ],
   entities: [
     hero(2, 4),
@@ -481,6 +497,10 @@ scenes.push(scene({
   encounters: [
     {
       id: 'enc-olg',
+      // Reddition à mi-coque (#215), comme la Dent de Manann : le Serpent-de-Sel amène son pavillon quand
+      // la coque `serpent-de-sel` tombe sous 50 % de ses Blessures — la victoire = la reddition (texte VRAI),
+      // pas le naufrage. `targetId` référence la coque ENNEMIE réelle enrôlée dans cette scène.
+      victoryCondition: { type: 'woundsThreshold', targetId: 'serpent-de-sel', belowPercent: 50 },
       members: [
         { entityId: 'grimm2', side: 'ally' },
         { entityId: 'aldo-crew-2', side: 'ally' },
@@ -496,7 +516,9 @@ scenes.push(scene({
         { type: 'giveXp', amount: 250 },
         { type: 'giveMoney', gold: 40 },
         { type: 'journal', text: 'Olg Blóðsalt tombe. Le Serpent-de-Sel amène pavillon — la prise à armer, ~40 survivants à répartir sur deux coques.' },
-        { type: 'transition', scene: 'ls-epilogue-salzenmund', entry: 'retour' },
+        // Pas de transition en dur : l'abordage n'INTERROMPT que la traversée. Le voyage REPREND vers SA
+        // destination (Salzenmund) et accoste ; l'épilogue se joue à l'ARRIVÉE au quai, gaté par la livraison
+        // du fret (`ls_fret_livre`, trigger de `ls-quai-salzenmund`) — jamais court-circuité par l'aller.
       ]),
     },
   ],
@@ -571,16 +593,17 @@ const worldMap = {
   ],
   routes: [
     {
-      id: 'route-salzenmund-erengrad-aller',
+      // Route de l'ALLER, À SENS UNIQUE (`from: salzenmund`) : elle n'est offerte au clic QUE depuis
+      // Salzenmund (`routesFrom`) — le joueur y rencontre DÉTERMINISTEMENT la Dent de Manann, jamais Olg.
+      id: 'route-salzenmund-erengrad-aller', from: 'salzenmund',
       a: 'salzenmund', b: 'erengrad', km: 550, modes: ['mer'], sea: true, seaHeading: 'nord',
       ambush: { scene: 'ls-abordage-cogue', encounter: 'enc-cogue' },
     },
     {
-      // DEUXIÈME route entre les MÊMES lieux — le schéma l'ACCEPTE (`MapRoute.id` est la seule clé ; `a`/`b`
-      // ne sont pas contraints à l'unicité) : porte l'embuscade d'Olg au RETOUR. Le moteur ne restreint pas
-      // une route au SENS de trajet — les deux sont offertes dans les deux sens ; le scénario suppose que le
-      // joueur reprend la seconde au retour, l'engin ne l'IMPOSE PAS.
-      id: 'route-salzenmund-erengrad-retour',
+      // Route du RETOUR, À SENS UNIQUE (`from: erengrad`) : offerte QUE depuis Erengrad — le retour porte
+      // DÉTERMINISTEMENT l'embuscade d'Olg. Deux routes entre les mêmes ports, mais discernables par le SENS :
+      // depuis chaque port, une seule est cliquable, donc l'embuscade tirée ne dépend plus du hasard du clic.
+      id: 'route-salzenmund-erengrad-retour', from: 'erengrad',
       a: 'salzenmund', b: 'erengrad', km: 550, modes: ['mer'], sea: true, seaHeading: 'sud',
       ambush: { scene: 'ls-abordage-olg', encounter: 'enc-olg' },
     },

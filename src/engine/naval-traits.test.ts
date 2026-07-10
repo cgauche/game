@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shipHasNavalTrait, navalTraitLevel, navalPassiveOps, navalMoveMod, navalSkillTestDR, navalTestTypeDR, hullArmourBonus, belierRam, hasDeckCover, effectiveDeckPostes } from './navalTraits';
+import { shipHasNavalTrait, navalTraitLevel, navalPassiveOps, navalMoveMod, navalMoveMult, navalSkillTestDR, navalTestTypeDR, hullArmourBonus, belierRam, navalDeckCover, effectiveDeckPostes } from './navalTraits';
 import { resolveCollision } from './collision';
 import { installCost } from './shipBuild';
 import navalTraitsData from '../data/naval-traits.json';
@@ -168,10 +168,10 @@ describe('Améliorations T2C ch.10 (Personnalisation) — MÊME canal que MDG, e
     // combiné à Lissage (+1) : les moveMod se somment sur le canal unique.
     expect(navalMoveMod([{ id: 'bouteur' }, { id: 'lissage' }])).toBe(0);
   });
-  it('Murs blindés → deckCover (couverture totale, comme Sabord) sur le canal hasDeckCover', () => {
-    expect(hasDeckCover([{ id: 'murs-blindes' }])).toBe(true);
+  it('Murs blindés → deckCover totale (comme Sabord) sur le canal navalDeckCover', () => {
+    expect(navalDeckCover([{ id: 'murs-blindes' }])).toBe('totale');
     const postes = findVehicleById('cogue')!.deck!.postes!;
-    expect(effectiveDeckPostes(postes, hasDeckCover([{ id: 'murs-blindes' }])).every((p) => p.sabord === true)).toBe(true);
+    expect(effectiveDeckPostes(postes, navalDeckCover([{ id: 'murs-blindes' }])).every((p) => p.cover === 'totale')).toBe(true);
   });
   it('coût d’installation posé sur les bandes de Taille (canal installCost EXISTANT) — pas de duplication d’un chantier', () => {
     // Une grande barge (25 m → petite) : Bouteur 120 CO / 95 Enc ; Murs blindés 300 CO / 160 Enc (T2C ch.10).
@@ -182,24 +182,72 @@ describe('Améliorations T2C ch.10 (Personnalisation) — MÊME canal que MDG, e
   });
 });
 
-describe('Sabord → couvert des postes (MDG ch.12 l.362-364), data-driven', () => {
-  const postes = findVehicleById('cogue')!.deck!.postes!; // 3 emplacements, aucun sabord par défaut
+describe('Sabord/Plat-bord → couvert GRADUÉ des postes (MDG ch.12 l.362-364, T2C ch.10 l.85/111), data-driven', () => {
+  const postes = findVehicleById('cogue')!.deck!.postes!; // 3 emplacements, aucun couvert par défaut
 
-  it('hasDeckCover lit le champ `deckCover` du catalogue (Sabord → vrai ; autre / absent → faux)', () => {
-    expect(hasDeckCover([{ id: 'sabord' }])).toBe(true);
-    expect(hasDeckCover([{ id: 'lissage' }, { id: 'belier' }])).toBe(false);
-    expect(hasDeckCover(undefined)).toBe(false);
+  it('navalDeckCover lit le champ `deckCover` gradué (Sabord → totale ; Plat-bord → moyenne ; autre/absent → none)', () => {
+    expect(navalDeckCover([{ id: 'sabord' }])).toBe('totale');
+    expect(navalDeckCover([{ id: 'plat-bord' }])).toBe('moyenne');
+    expect(navalDeckCover([{ id: 'lissage' }, { id: 'belier' }])).toBe('none');
+    expect(navalDeckCover(undefined)).toBe('none');
   });
 
-  it('sans Sabord : tir depuis le pont, aucun couvert (postes inchangés)', () => {
-    const eff = effectiveDeckPostes(postes, hasDeckCover([]));
+  it('couvert PARTIEL (Plat-bord, moyenne) distinct du couvert TOTAL (Sabord/Murs, totale) — bonus moindre', () => {
+    // T2C l.111 « couverture moyenne … Difficiles » (−20) ≠ l.85/l.727 « couverture totale … Très Difficile » (−30).
+    expect(navalDeckCover([{ id: 'plat-bord' }])).not.toBe(navalDeckCover([{ id: 'sabord' }]));
+    // Cumul : le MEILLEUR couvert l'emporte (Plat-bord + Sabord → totale).
+    expect(navalDeckCover([{ id: 'plat-bord' }, { id: 'sabord' }])).toBe('totale');
+  });
+
+  it('sans Amélioration couvrante : tir depuis le pont, aucun couvert (postes inchangés)', () => {
+    const eff = effectiveDeckPostes(postes, navalDeckCover([]));
     expect(eff).toBe(postes); // identité : aucune copie inutile
-    expect(eff.every((p) => !p.sabord)).toBe(true);
+    expect(eff.every((p) => !p.cover)).toBe(true);
   });
 
-  it('Amélioration Sabord : TOUS les emplacements passent à couvert total (sabord:true)', () => {
-    const eff = effectiveDeckPostes(postes, hasDeckCover([{ id: 'sabord' }]));
-    expect(eff.every((p) => p.sabord === true)).toBe(true);
-    expect(postes.every((p) => !p.sabord)).toBe(true); // le gabarit de TYPE n'est pas muté (copie)
+  it('Amélioration Sabord : TOUS les emplacements passent à couvert total (cover:totale)', () => {
+    const eff = effectiveDeckPostes(postes, navalDeckCover([{ id: 'sabord' }]));
+    expect(eff.every((p) => p.cover === 'totale')).toBe(true);
+    expect(postes.every((p) => !p.cover)).toBe(true); // le gabarit de TYPE n'est pas muté (copie)
+  });
+
+  it('Amélioration Plat-bord : couvert MOYEN stampé sur tous les emplacements (cover:moyenne)', () => {
+    const eff = effectiveDeckPostes(postes, navalDeckCover([{ id: 'plat-bord' }]));
+    expect(eff.every((p) => p.cover === 'moyenne')).toBe(true);
+  });
+});
+
+describe('navalMoveMult — Coque de course → 2×M, op moveScale (T2C ch.10 l.27)', () => {
+  it('Coque de course → facteur 2/1 ; sans multiplicateur → neutre 1/1', () => {
+    expect(navalMoveMult([{ id: 'coque-de-course' }])).toEqual({ num: 2, den: 1 });
+    expect(navalMoveMult([{ id: 'lissage' }, { id: 'sabord' }])).toEqual({ num: 1, den: 1 });
+    expect(navalMoveMult(undefined)).toEqual({ num: 1, den: 1 });
+  });
+  it('le passif de Coque de course est un moveScale (langue unique, PAS un champ ad hoc)', () => {
+    expect(navalPassiveOps([{ id: 'coque-de-course' }])).toEqual([{ op: 'moveScale', num: 2, den: 1 }]);
+  });
+});
+
+describe('Nouvelles Améliorations T2C ch.10 — résolvent au catalogue + coût d’installation (canal EXISTANT)', () => {
+  it.each(['coque-de-course', 'safran', 'plat-bord', 'allegement', 'greement-de-course', 'fourquines'])(
+    '%s : entrée présente, kind amelioration, source T2C, install chiffré', (id) => {
+      const e = findNavalTrait(id)!;
+      expect(e).toBeDefined();
+      expect(e.kind).toBe('amelioration');
+      expect(e.source?.book).toBe('mort-sur-le-reik-compagnon');
+      expect(e.install).toBeDefined();
+    });
+  it('Coque de course : coût per:10m (T2C « 220 CO pour 10 mètres ») — 20 m de coque → 440 CO, −100 Enc', () => {
+    // shipSizeOfLength(20) = petite ; per:'10m' → ×ceil(20/10)=2 (T2C l.23/25).
+    expect(installCost(findNavalTrait('coque-de-course')!.install!, 20)).toEqual({ gold: 440, enc: -100 });
+  });
+  it('Fourquines : coût à l’unité (T2C « 1 CO la pièce, +1 Enc ») — 3 pièces → 3 CO / 3 Enc', () => {
+    expect(installCost(findNavalTrait('fourquines')!.install!, 15, 3)).toEqual({ gold: 3, enc: 3 });
+  });
+  it('Plat-bord : bandes de Taille (grande barge 30 m → moyenne, band petite+) → 45 CO / 60 Enc (T2C l.107/109)', () => {
+    expect(installCost(findNavalTrait('plat-bord')!.install!, 30)).toEqual({ gold: 45, enc: 60 });
+  });
+  it('Allégement : ALLÈGE la coque — weightEnc NÉGATIF (grande barge → −80 Enc, T2C l.117)', () => {
+    expect(installCost(findNavalTrait('allegement')!.install!, 30)).toEqual({ gold: 250, enc: -80 });
   });
 });

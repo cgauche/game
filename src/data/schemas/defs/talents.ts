@@ -58,6 +58,7 @@ const combatFeatureSchema: z.ZodType<unknown> = z.lazy(() =>
     runBonus: z.boolean().optional(),
     fleeBonus: z.boolean().optional(),
     shieldAdvantage: z.boolean().optional(),
+    advantageDefenseReaction: z.strictObject({ cost: z.number() }).optional(),
     counterOnDefenseWin: z.boolean().optional(),
     counterRequiresFastParry: z.boolean().optional(),
     stealAdvantage: z.boolean().optional(),

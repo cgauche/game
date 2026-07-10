@@ -198,3 +198,29 @@ export function rollTradeRumour(rng: RNG = defaultRNG): RumourRow {
 export function rumourMatches(rumour: RumourRow, cargoId: string): boolean {
   return rumour.biens.includes(cargoId);
 }
+
+/** Rumeur commerciale PERSISTANTE (T2C ch.11 l.180) : à l'Emplacement `placeId` (un AUTRE Lieu, tiré via
+ *  l'index géographique = un Lieu à `market` de la carte du monde), les `biens` sont très demandés et s'y
+ *  vendent au `mult` du prix de base. Entendue sur un Test de Ragot Complexe (−10) ; le RAW ne lui donne
+ *  aucune échéance (« ils peuvent en vendre autant qu'ils le souhaitent ») → non consommée, sans expiration. */
+export interface TradeRumour {
+  placeId: string;
+  biens: string[];
+  mult: number;
+  /** Libellé de la rumeur (Tableau des rumeurs) — affichage. */
+  text: string;
+  /** Jour de campagne où la rumeur a été entendue — affichage. */
+  heardDay: number;
+}
+
+/** Une rumeur du board vise-t-elle la vente de `cargoId` au Lieu `placeId` (l.180) ? PUR. */
+export function tradeRumourApplies(r: TradeRumour, placeId: string, cargoId: string): boolean {
+  return r.placeId === placeId && r.biens.includes(cargoId);
+}
+
+/** Multiplicateur de prix de vente de `cargoId` à `placeId` d'après le board (l.180 : ×2 si une rumeur
+ *  correspond, 1 sinon). PUR. */
+export function tradeRumourMult(board: readonly TradeRumour[], placeId: string, cargoId: string): number {
+  const hit = board.find((r) => tradeRumourApplies(r, placeId, cargoId));
+  return hit ? hit.mult : 1;
+}

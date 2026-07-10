@@ -53,6 +53,8 @@ const STATE_FIELDS = {
   pendingExtendedTest: { init: null, resetOn: [] },
   pendingForceDoor: { init: null, resetOn: [] },
   pendingCascade: { init: null, resetOn: ['scene', 'combatStart'] },
+  pursuit: { init: null, resetOn: ['scene', 'combatStart'] },
+  sessionEndOpen: { init: false, resetOn: ['scene'] },
   pendingCastOpposition: { init: null, resetOn: [] },
   pendingHeal: { init: null, resetOn: ['combatStart'] },
   pendingSurgery: { init: null, resetOn: [] }, // hors-combat, vit DANS l'infirmerie (medic, resetOn []) — purgé avec elle

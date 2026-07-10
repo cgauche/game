@@ -3,7 +3,7 @@ import {
   hasCommerce, availabilityPct, rollFindMerchant, rollCargoQuantity, rollRandomLandCargo,
   rollWineQuality, landCargoBasePrice, wineEvalDifficulty, wineEvalReveal, rollMerchantSkill, sellDemandTarget,
   sellOfferPct, landDumpingPct, rollTradeRumour, rumourMatches, findLandCargoById, minCargoEnc, partialSurchargePct,
-  type LandMarketProfile,
+  tradeRumourApplies, tradeRumourMult, type LandMarketProfile, type TradeRumour,
 } from './landCargo';
 import { cargoTotalEnc, removeCargo } from './cargo';
 import type { RNG } from './dice';
@@ -105,6 +105,19 @@ describe('Commerce terrestre T2C ch.11 — RUMEURS (l.176-303)', () => {
     expect(rum.biens).toEqual(['produits-de-luxe', 'vin', 'vivres']);
     expect(rumourMatches(rum, 'vin')).toBe(true);
     expect(rumourMatches(rum, 'metal')).toBe(false);
+  });
+
+  it('board CROSS-LIEU (l.180) : le prix double UNIQUEMENT au Lieu désigné et pour le bien visé', () => {
+    const board: TradeRumour[] = [
+      { placeId: 'altdorf', biens: ['vin', 'vivres'], mult: 2, text: '…', heardDay: 3 },
+    ];
+    expect(tradeRumourApplies(board[0], 'altdorf', 'vin')).toBe(true);
+    expect(tradeRumourApplies(board[0], 'altdorf', 'metal')).toBe(false); // bien hors rumeur
+    expect(tradeRumourApplies(board[0], 'kemperbad', 'vin')).toBe(false); // autre Lieu
+    expect(tradeRumourMult(board, 'altdorf', 'vin')).toBe(2);
+    expect(tradeRumourMult(board, 'altdorf', 'metal')).toBe(1);
+    expect(tradeRumourMult(board, 'kemperbad', 'vin')).toBe(1);
+    expect(tradeRumourMult([], 'altdorf', 'vin')).toBe(1);
   });
 });
 

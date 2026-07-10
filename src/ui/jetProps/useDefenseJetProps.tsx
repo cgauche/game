@@ -2,6 +2,7 @@ import type { ComponentProps } from 'react';
 import { useGame } from '../../state/store';
 import { FLOWS } from '../../state/rollFlowSpecs';
 import { defenseValue, defenseModifiers, DEFENSE_LABEL, FREE_ATTACK_LABEL, type DefenseMode } from '../../engine/combat';
+import { shieldReactionCost } from '../../engine/combatFeatures/dispatch';
 import { combatSubstitute } from '../../engine/skillCombatApps';
 import { findSkillById } from '../../data/index';
 import { isUnarmed } from '../../engine/items';
@@ -29,6 +30,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const battle = useGame((s) => s.battle);
   const setMode = useGame((s) => s.defenseSetMode);
   const setParry = useGame((s) => s.defenseSetParryWeapon);
+  const setShieldReaction = useGame((s) => s.defenseSetShieldReaction);
   const roll = useGame((s) => s.defenseRoll);
   const reroll = useGame((s) => s.defenseReroll);
   const bonusSL = useGame((s) => s.defenseBonusSL);
@@ -64,6 +66,13 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   const forcedDie = FLOWS.defense.picker?.(pd, defender); // dé choisi (source unique : caps.picker)
   // `pd.modes` (tir) limite les réactions proposées ; absent = mêlée (Parade + Esquive). Filtre seul.
   const allowMode = (m: 'parade' | 'esquive') => !pd.modes || pd.modes.includes(m);
+
+  // Réaction de Porte-Bouclier (variante « Avantage de groupe », AA l.4428) : offerte quand on se défend
+  // au Bouclier (parade), 1×/Round, si la réserve du camp (projetée sur `defender.advantage`) couvre le coût.
+  // Coût + éligibilité viennent de la DONNÉE (`shieldReactionCost`), jamais d'un nom en dur.
+  const reactionCost = pd.mode === 'parade' ? shieldReactionCost(defender, chosenParry) : 0;
+  const canReact = reactionCost > 0 && !defender.usedShieldReactionRound && (defender.advantage ?? 0) >= reactionCost && !rolled;
+  const toggleReaction = (kind: 'damage' | 'push') => setShieldReaction(pd.shieldReaction === kind ? null : kind);
 
   // Rangée [0] = TÉMOIN : l'attaque FIGÉE (jet déjà eu lieu, aucun bouton).
   const attackerRow = {
@@ -146,6 +155,16 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
                 ))}
               </select>
             </div>
+          )}
+          {reactionCost > 0 && (
+            <OptionChooser
+              layout="seg"
+              groupLabel={`Porte-Bouclier (${reactionCost} Av.)`}
+              options={[
+                { key: 'damage', label: 'Dégâts', selected: pd.shieldReaction === 'damage', disabled: !canReact && pd.shieldReaction !== 'damage', title: `Dépenser ${reactionCost} Avantages pour causer des Dégâts comme s’il s’agissait de votre Action (AA — 1×/Round)`, onSelect: () => toggleReaction('damage') },
+                { key: 'push', label: 'Repousser', selected: pd.shieldReaction === 'push', disabled: !canReact && pd.shieldReaction !== 'push', title: `Dépenser ${reactionCost} Avantages pour repousser l’attaquant de 2 m et vous désengager (AA — 1×/Round)`, onSelect: () => toggleReaction('push') },
+              ]}
+            />
           )}
         </div>
         <DeterminationButton combatant={defender} onSpend={(name) => spendResolve(defender.id, name)} />

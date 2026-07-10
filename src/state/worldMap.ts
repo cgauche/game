@@ -48,11 +48,16 @@ export interface RoutePeril {
   effects: Effect[];
 }
 
-/** Route entre deux lieux (`a` ↔ `b`, bidirectionnelle). */
+/** Route entre deux lieux (`a` ↔ `b`, bidirectionnelle par défaut). */
 export interface MapRoute {
   id: string;
   a: string;
   b: string;
+  /** Route À SENS UNIQUE d'INITIATION : présent = elle ne s'emprunte QUE depuis ce lieu (`a` ou `b`) — le
+   *  trajet retour se fait par une AUTRE route. Absent = bidirectionnelle (historique). Sert à rendre
+   *  DISCERNABLES deux routes reliant les mêmes ports (aller/retour, chacune avec son embuscade) : depuis
+   *  un port, seule la route de ce sens est offerte au clic (`routesFrom`), l'embuscade est donc déterministe. */
+  from?: string;
   /** Distance en kilomètres (l.207 : les coûts sont « par kilomètre parcouru »). */
   km: number;
   /** Modes de voyage offerts sur cette route. */
@@ -161,9 +166,10 @@ export function placeById(map: WorldMap, id: string): MapPlace | undefined {
   return map.places.find((p) => p.id === id);
 }
 
-/** Routes partant d'un lieu (les routes sont bidirectionnelles). */
+/** Routes EMPRUNTABLES depuis un lieu : reliées à `placeId`, et — si à sens unique (`from`) — initiables
+ *  depuis lui. Une route `from` reliant les deux mêmes ports que sa jumelle n'est offerte QUE dans son sens. */
 export function routesFrom(map: WorldMap, placeId: string): MapRoute[] {
-  return map.routes.filter((r) => r.a === placeId || r.b === placeId);
+  return map.routes.filter((r) => (r.a === placeId || r.b === placeId) && (r.from == null || r.from === placeId));
 }
 
 /** L'autre extrémité d'une route. */

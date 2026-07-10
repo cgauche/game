@@ -63,6 +63,8 @@ export function CampaignView() {
   const battle = useGame((s) => s.battle);
   const money = useGame((s) => s.money);
   const merchant = useGame((s) => s.merchant);
+  const sessionEndOpen = useGame((s) => s.sessionEndOpen); // Effet `sessionEnd` (#83) : ouvre la même modale
+  const closeSessionEnd = useGame((s) => s.closeSessionEnd);
   const inspectEnabled = useGame((s) => s.inspectEnabled); // option de jeu : inspection des combattants
   const toggleInspect = useGame((s) => s.toggleInspectEnabled);
   const pendingRoundStart = useGame((s) => s.pendingRoundStart);
@@ -209,7 +211,7 @@ export function CampaignView() {
             combat (l'écran tactique se réserve le HUD). Nulle si la pile d'objectifs est vide. */}
         {mode === 'exploration' && <ObjectiveBannerMount />}
         {saveOpen && <SaveLoadModal mode="save" onClose={() => setSaveOpen(false)} />}
-        {sessionOpen && <SessionEndModal onClose={() => setSessionOpen(false)} />}
+        {(sessionOpen || sessionEndOpen) && <SessionEndModal onClose={() => { setSessionOpen(false); closeSessionEnd(); }} />}
         {rulesOpen && <HouseRulesModal onClose={() => setRulesOpen(false)} />}
         {optionsOpen && <OptionsModal onClose={() => setOptionsOpen(false)} />}
         {/* Barre d'actions de lieu : carte / port / marché / repos — rangée qui s'auto-empile

@@ -386,7 +386,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
             const pa = posOf(a), pb = posOf(b);
             const c = routeCurve(pa.x, pa.y, pb.x, pb.y, r.id);
             const sel = r.id === selId;
-            const fromHere = !!here && (r.a === here.id || r.b === here.id);
+            const fromHere = !!here && (r.a === here.id || r.b === here.id) && (r.from == null || r.from === here.id);
             const water = r.modes.includes('barge') && !r.modes.includes('pied');
             return (
               <g

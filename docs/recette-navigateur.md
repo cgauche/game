@@ -33,7 +33,7 @@ côté `devtools.ts` se répercute ICI (source unique, jamais une 2ᵉ liste par
 |---|---|---|
 | `state()` | instantané `{screen, sceneId, partyPos, inDialogue, inCombat, party, money…}` | lecture seule |
 | `entities()` | cartographie des entités de la scène `{id,label,kind,pos,access}` | exclut les entités `hiddenUntilCombat` |
-| `screenPos('id')` | bounding box ÉCRAN (`{x,y,width,height}`) du token `[data-cid="id"]` — COMBAT ET EXPLORATION (même canal `data-cid`, #226) | lecture seule ; `null` si le token n'est pas dans le DOM (hors vue) |
+| `screenPos('id')` | bounding box ÉCRAN (`{x,y,width,height}`) du token `[data-cid="id"]` — COMBAT ET EXPLORATION (même canal `data-cid`, #226) | lecture seule ; `null` si le token n'est pas dans le DOM (hors vue) ; pour un clic, **viser `{x: x+width/2, y: y+height}` (le BAS de la bbox, pied du token) plutôt que le centre géométrique** — un token de grande taille (créature haute) a sa bbox étirée vers le haut, et le centre géométrique tombe hors silhouette (retour vécu en recette, résidu #199) |
 | `talk('id')` | téléporte le groupe à côté de l'entité + l'interpelle (dialogue/marchand) | rien si l'entité n'a ni dialogue ni marchand |
 | `goto('id'\|{x,y,z?})` | place le groupe sur une case (déclenche portes/triggers au pas) | — |
 | `screen('menu'\|'party'\|…)` | navigue vers un écran | id validé contre `SCREENS` (`state/store.ts`) — `throw` immédiat + liste des ids valides si invalide (#211 ; avant : routage silencieux, écran blanc, zéro erreur console) |
@@ -147,6 +147,17 @@ pas rejouable après coup sur une traversée déjà en cours au pas.
   la route. Cette méthode requiert l'outil `browser_run_code_unsafe` (exécution JS côté page pour lire
   `getPointAtLength`/`getScreenCTM`, hors sélecteurs Playwright standards) — ABSENT du set d'outils de
   démarrage : le charger via ToolSearch avant de router un clic de route.
+
+- **Mode Pousser (bélier/engin de siège) au clavier — séquence exacte** (#199) : cliquer le slot
+  « Pousser » de la barre d'action ouvre le mode-CASE (`battle.action === 'push'`) mais laisse ce
+  BOUTON focalisé dans le DOM. `ArrowUp/Down/Left/Right` posent/déplacent `combatCursor` (le **1er
+  appui pose le curseur sur la case de DÉPART elle-même**, coût 0 — `Pousser (0)` à l'aperçu, RIEN
+  ne bouge encore ; il faut un **2e appui** pour quitter cette case et voir un coût > 0). `Entrée`/
+  `NumpadEnter` commet (`commitCursor` → `pushCommitTile`) — fonctionne MÊME si le bouton « Pousser »
+  garde le focus résiduel du clic souris qui a ouvert le mode (corrigé : `cursor-commit` n'a plus la
+  garde `notWhenControlFocused`, `src/state/keybindings.ts`). `Échap` annule le curseur ;
+  « Annuler dépl. » (post-commit, tant qu'aucune Action n'a été prise) défait aussi une poussée
+  commise au clavier, comme au clic (`src/state/push-keyboard-commit.test.ts`).
 
 ## Piège du *closure-sync*
 

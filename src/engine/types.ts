@@ -862,6 +862,11 @@ export interface ItemInstance {
   mountInjury?: import('./mountTravel').MountInjury;
 }
 
+/** Niveau de COUVERT gradué d'un poste de pont (Sabord/Plat-bord/Murs blindés) — mêmes libellés que le
+ *  `CoverClass` du combat (`state/lineOfSight.ts`, ceux au-dessus de `none`) : `moyenne` (−20, tir Difficile,
+ *  Plat-bord) < `totale` (−30, tir Très Difficile, Sabord/Murs blindés). Assignable tel quel à `coverModifier`. */
+export type DeckCoverClass = 'imparfaite' | 'moyenne' | 'totale';
+
 /** Pièce d'artillerie MONTÉE — forme AUTHORÉE/STOCKÉE (donnée de scène, #222). La base (Dégâts/Qualités/Enc/
  *  Portée…) n'est PLUS matérialisée : elle est HYDRATÉE au spawn depuis `trappingId` par `hydratePoste`
  *  (`itemFromTrappingById`/`buildWeapon`, coutures UNIQUES). Ne persiste QUE la réf catalogue + l'état propre
@@ -883,8 +888,10 @@ export interface AuthoredShipPoste {
    *  EMPLACEMENT AU SOL (siège) : ABSENT = pivot libre (tir omni, aucune contrainte d'arc) ; présent =
    *  arc relatif à l'orientation-monde DU CHEF de pièce (pas d'une coque). */
   side?: FireArc;
-  /** Tire à travers un Sabord (Gun Port) → couvert TOTAL aux servants ; sinon depuis le pont (aucun couvert). */
-  sabord?: boolean;
+  /** COUVERT du servant à ce poste (`DeckCoverClass`) : gun-port (Sabord) → `totale`, Plat-bord → `moyenne`,
+   *  Murs blindés → `totale` ; absent = tir depuis le pont, à découvert. Stampé par `effectiveDeckPostes`
+   *  depuis les Améliorations de la coque (ou authoré pour un poste structurellement couvert). */
+  cover?: DeckCoverClass;
   /** Équipage servant la pièce ; `crewIds[0]` = chef de pièce (nominé pour le Test, Arme d'équipe). */
   crewIds?: string[];
   /** Recharge (MDG ch.12 / LDB 62 l.333) — Test ÉTENDU de Projectiles, PAS d'auto-rechargement passif.
@@ -927,8 +934,9 @@ export interface DeckPosteSlot {
   pos: { x: number; y: number };
   /** Côté de montage relatif au cap → arc de bordée (`inFireArc`). */
   side: FireArc;
-  /** L'emplacement perce un Sabord (couvert TOTAL au servant) — sinon tir depuis le pont, à découvert. */
-  sabord?: boolean;
+  /** COUVERT de l'emplacement (`DeckCoverClass`) — gun-port authoré (`totale`) ou stampé par les Améliorations
+   *  de la coque via `effectiveDeckPostes` ; absent = tir depuis le pont, à découvert. */
+  cover?: DeckCoverClass;
 }
 
 /** Facette PONT (couche tactique, §1bis du modèle naval) : le plan PERSON-SCALE du pont d'un TYPE de navire,
@@ -1318,6 +1326,9 @@ export interface Combatant {
   initiative?: number;
   /** A gagné de l'Avantage durant le Round courant (upkeep de fin de Round, LDB Dépl. l.40). */
   gainedAdvThisRound?: boolean;
+  /** Réaction de Porte-Bouclier (variante AA l.4428) déjà employée ce Round : « une fois par Round ».
+   *  Posé par `applyShieldReaction`, purgé au franchissement de Round. */
+  usedShieldReactionRound?: boolean;
   /** Distraire (LDB 10 l.364 / AA l.4395) : distrait par un adversaire → ne peut gagner AUCUN Avantage
    *  (mode groupe : sa réserve) jusqu'à la FIN de ce Round de bataille. Compteur de Rounds restants
    *  décrémenté au franchissement de Round (2 = « jusqu'à la fin du PROCHAIN Round » quand posé en cours

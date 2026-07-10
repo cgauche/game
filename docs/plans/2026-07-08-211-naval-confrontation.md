@@ -351,3 +351,27 @@ avec hash + preuve ; mettre à jour §6bis + mémoire.
   Le traitement = confrontation dédiée en OUVERTURE de vague 4, grille B.1-B.10, attendu re-formulé
   par l'utilisateur en ouverture de session (méthode #211). L'action GitHub sur #224 est EN ATTENTE
   d'un accord utilisateur explicite (une requalification a été refusée le 2026-07-09).
+
+## 7. NUIT DU 2026-07-09→10 — le programme mené de bout en bout (mandat chef de produit)
+
+Mandat user au départ : « un RPG de qualité, l'étalon = une vraie démo » + /goal « mène le programme
+au bout, vide les issues ». Commits de la nuit : `9828b080`/`185f006b`/`582dae8c`/`90bf3b5c`/
+`cc6dc85f`/`9bc49c50` (vague 2), `b27ad7f1` (R1+fixes playtest), `8f1ef63c` (#222), `7e210018`
+(grande ronde : labels/PV/écrans/moteur), `b09c13dc` (ronde écrans 2), `c13f5d7a` (campagne=démo),
+`cda8daeb` (quick-wins+outillage).
+
+FERMÉS cette nuit : #196 #197 #212* #215* #216 #217 #220 #221 #227 #228 #230 #232 #234 #238 #241
+(* = moteur commité, preuve d'écran phase 2 en cours). OUVERTS en route (dette rendue visible) :
+#243 surcharge, #244 naufrage, #245 provisions équipage, #246 Magie des mers vide, #247 arbitrage-MJ
+dans spells. RESTENT à traiter : #212/#215/#237/#239/#229/#233/#240/#223 (preuves phase 2 en vol),
+#198/#199/#210 (code résolu, preuve bélier-porte en vol), #218 #233 #239 #240 #237 #229 (fermetures
+sur preuve), clusters B (#91-Enc/#99 cargaison), C (#83/#95 Effets méta), E (#90), D (#89), F (#82),
+#242 (labelF affichage), #85 (résidu mercenaires terrestres = question de périmètre), lot curation
+(#243-#247), panel personas FINAL, récap #211, #178 (daté 13/07).
+
+Décisions de conception notables : cadence commandée = couche PARTAGÉE voyageCadence (mer+fluvial,
+liste FERMÉE d'interruptions) ; PV des jets = MultiRollList promue sur l'atome canonique + Chance à
+la ligne (LDB 17 l.26) ; endState + exitReason (4 états de fin distincts) ; garde-robe id→id
+(slugId mort) ; validateurs id-only ; conseil de bord cadence-aware à cœur pur ; inspection = mode
+existant enrichi ; recrutement à quai construit (aucune avance = vérité moteur) ; formation auto
+des servants au spawn (position d'auteur prime) ; désertion RAW consommée à la relâche.

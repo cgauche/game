@@ -1279,8 +1279,8 @@ export interface InstallBand { min?: ShipSize; max?: ShipSize; value: number }
  *  du modèle embarqué (Embarcation de bord). `weightEnc` absent = aucun poids (Lissage). Donnée consommée
  *  par le chantier construction/réparation navale (lot systèmes) — aucune valeur codée en dur. */
 export interface NavalInstall {
-  cost: { bands: InstallBand[]; per?: '5m' | 'unite' } | 'modele';
-  weightEnc?: { bands: InstallBand[]; per?: '5m' | 'unite' } | 'modele';
+  cost: { bands: InstallBand[]; per?: '5m' | '10m' | 'unite' } | 'modele';
+  weightEnc?: { bands: InstallBand[]; per?: '5m' | '10m' | 'unite' } | 'modele';
 }
 export interface NavalTraitData {
   /** id STABLE (slug) — la clé d'appariement avec `ship.traits`/`Combatant.upgrades` (`NavalTraitRef.id`). */
@@ -1300,9 +1300,10 @@ export interface NavalTraitData {
   /** Bélier (MDG ch.12 l.221) : bonus de COLLISION (géométrie proue/frontale) — sous-système navire hors
    *  vocabulaire combattant (≠ `ap` qui mitige TOUT) → injecté dans `resolveCollision` via `belierRam`. */
   ram?: { ic: number; ap: number };
-  /** Sabord (MDG ch.12 l.364) : la Coque offre un COUVERT total à ses postes — géométrie de Pont, consommée
-   *  par `effectiveDeckPostes`/le rendu du Pont. Sous-système navire, hors vocabulaire combattant. */
-  deckCover?: boolean;
+  /** Couvert de pont GRADUÉ (`DeckCoverClass`) offert par l'Amélioration à ses postes — Sabord/Murs blindés
+   *  = `totale` (MDG ch.12 l.364 / T2C ch.10 l.85), Plat-bord = `moyenne` (T2C ch.10 l.111). Géométrie de Pont,
+   *  consommée par `effectiveDeckPostes`/le rendu du Pont. Sous-système navire, hors vocabulaire combattant. */
+  deckCover?: import('../engine/types').DeckCoverClass;
   /** #221 : même champ `maison` que `TraumaFiche` (`src/data/schemas/defs/traumas.ts:32`). */
   maison?: string;
 }

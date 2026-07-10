@@ -72,6 +72,12 @@ export interface CombatFeature {
   /** Porte-Bouclier (LDB 10 p.144) : +niveau Avantage quand on se défend au Bouclier et qu'on PERD le
    *  Test opposé (consolation d'une situation désespérée — pas sur une défense gagnée). */
   shieldAdvantage?: boolean;
+  /** Réaction défensive à coût d'Avantages de réserve (Porte-Bouclier variante « Avantage de groupe »,
+   *  AA l.4428) : quand on se défend au Bouclier, 1×/Round, dépenser `cost` Avantages soit pour causer des
+   *  Dégâts « comme s'il s'agissait de son Action », soit pour repousser l'attaquant de 2 m et se
+   *  désengager. Déclarée en DONNÉE (sous `aa` = active en mode Avantage de groupe) ; offerte par le chooser
+   *  de défense (`shieldReactionCost`), débitée par `campSpend`, résolue par `applyShieldReaction`. */
+  advantageDefenseReaction?: { cost: number };
   /** Contre-attaque en gagnant un Test opposé de défense en mêlée (Champion LDB 85 sans condition d'arme ;
    *  Riposte LDB 10 avec `counterRequiresFastParry`). GÉNÉRIQUE : tout talent/trait qui le déclare contre. */
   counterOnDefenseWin?: boolean;

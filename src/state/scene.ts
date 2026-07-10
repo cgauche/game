@@ -336,10 +336,27 @@ export type Effect =
    *  possède la Compétence Prière). Exaucée → le `reward` (Flow authoré : bonus, don, flag…) s'applique ;
    *  sinon rien. Cible : `heroId`, sinon le premier héros vivant non Béni. Sans effet hors du toggle. */
   | { type: 'petitePriere'; heroId?: string; reward: Flow }
+  /** FIN DE SÉANCE (LDB 05 Ambitions l.793-841 + LDB 17 Détermination l.81) : ouvre l'écran de fin de
+   *  séance EXISTANT (`SessionEndModal`) où le MJ/les joueurs cochent les Ambitions accomplies et les
+   *  Motivations suivies — l'octroi (PX +50/+500, Détermination, Chance restaurée) passe par `endSession`
+   *  (state/partyFlow), déjà câblé derrière cette modale. À poser en fin de chapitre par l'auteur (#83). */
+  | { type: 'sessionEnd' }
+  /** CRÉATION DE PERSONNAGE (#83) : ouvre l'assistant EXISTANT (`src/ui/creator/`) pour un NOUVEAU héros
+   *  (comme le bouton « + » de l'écran Groupe) — un remplaçant scénarisé, un compagnon rejoignant le groupe.
+   *  Navigue vers l'écran `creator` (`setEditingHero(null)` + `setScreen('creator')`). */
+  | { type: 'openCharacterCreator' }
   /** « Entre deux aventures » (LDB 22-23, Jalon 5) : ouvre l'interlude — Événement d100 par héros,
    *  min(3, semaines) Activités chacun, puis Argent à gaspiller et le temps passe. À poser en fin
    *  de chapitre par l'auteur de campagne. */
   | { type: 'interlude'; weeks?: number }
+  /** Poursuite TERRESTRE jouable (LDB 15 l.87-109) — à poser sur un trigger/dialogue (« ils prennent la
+   *  fuite », « rattrapez-les ! »). `partyRole` : le groupe FUIT (défaut) ou POURSUIT ; l'autre camp est
+   *  décrit par `foes` (Mouvement + valeur de Test de Mouvement de chaque adversaire). `distance` de départ
+   *  (1-8, l.500-504), `escapeAt` = seuil d'évasion (défaut 10, l.520). `skill` = Compétence de Mouvement
+   *  testée (id : Athlétisme à pied / Chevaucher / Conduite d'attelages). `encounter` = rencontre ouverte au
+   *  RATTRAPAGE (Distance ≤ 0 → combat). Jouée manche par manche par la cascade influençable (state/pursuitFlow),
+   *  MÊME dramaturgie que la poursuite navale (MDG ch.13). */
+  | { type: 'startPursuit'; partyRole?: 'fleeing' | 'pursuing'; distance: number; escapeAt?: number; skill: string; foes: import('./pursuitFlow').PursuitFoe[]; encounter?: string }
   /** Ouvre les JEUX DE TAVERNE (NADJ ch.16, option `tavern-games`) — à poser sur un choix de dialogue
    *  d'aubergiste (« Une partie ? ») ou une entité de taverne. Sans effet si l'option est éteinte. */
   | { type: 'openTavernGames' }

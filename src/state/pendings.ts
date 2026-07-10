@@ -745,6 +745,10 @@ export interface PendingDefense {
   free?: boolean;
   freeKind?: string;
   prevActed?: boolean;
+  /** Réaction de Porte-Bouclier (variante AA l.4428) déclarée par le défenseur pour CETTE défense au
+   *  Bouclier : 'damage' = causer des Dégâts « comme s'il s'agissait de son Action » ; 'push' = repousser
+   *  l'attaquant de 2 m et se désengager. Appliquée à l'Appliquer (`applyShieldReaction`), coût débité alors. */
+  shieldReaction?: 'damage' | 'push';
 }
 /** Désengagement en attente (LDB 15-Dépl l.84-109) : un MENU de choix (phase 'choice') —
  *  Sacrifier l'Avantage / Esquiver / Fuir / Renoncer — puis le Test d'Esquive (phase 'esquive'). */
@@ -1140,8 +1144,9 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
   /** Finalisation : 'night' (bilan de repos), 'travel' (halte → reprise), 'travelDay' (jets du JOUR de
    *  voyage — fluvial/… : à la clôture, le store recalcule la progression du jour puis enchaîne halte/
    *  arrivée via le handler du domaine), 'test' (autonome), 'combat' (conséquences d'un jet de combat —
-   *  fermeture simple, pas de reprise). */
-  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat';
+   *  fermeture simple, pas de reprise), 'pursuite' (manche de poursuite terrestre — à la clôture le store
+   *  résout la manche puis rouvre une manche ou dénoue, cf. state/pursuitFlow). */
+  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite';
   /** HALTE de voyage : la finalisation REPREND la route (continueTravelAfterNight). */
   travelHalt?: boolean;
   /** Cascade de PEUR de FIN de Round (combat) : à sa fermeture, le store ré-appelle `resolveRoundBoundary`
