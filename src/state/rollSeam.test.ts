@@ -3,6 +3,8 @@ import { useGame } from './store';
 import { registerCascadeApplier } from './cascade';
 import { setGmSeat } from './netFlow';
 import { openRoll, type RollRequest } from './rollSeam';
+import { modalOwnerOf } from './modalArbiter';
+import { seatOwns } from './netOwnership';
 import type { Combatant } from '../engine/types';
 
 /**
@@ -87,6 +89,16 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     openRoll(useGame.getState, useGame.setState, req, 'seam-subi');
     expect(useGame.getState().pendingCascade).toBeTruthy();
     expect(applied).toHaveLength(0);
+  });
+
+  it('worldSide sans acteur, en COOP avec gmSeat ≠ hôte → l’étape est OWNÉE par le MJ (delta 1)', () => {
+    useGame.setState({ party: [] });
+    setGmSeat(useGame.getState, useGame.setState, 1); // gmSeat ≠ hôte (0)
+    const req: RollRequest = { side: { worldSide: 'ship', shipId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
+    openRoll(useGame.getState, useGame.setState, req, 'seam-subi');
+    const owner = modalOwnerOf(useGame.getState());
+    expect(seatOwns(useGame.getState(), 1, owner ?? undefined)).toBe(true); // le MJ possède l'étape
+    expect(seatOwns(useGame.getState(), 0, owner ?? undefined)).toBe(false); // l'hôte ne la possède plus
   });
 
   it('batch, voyage COMMANDÉE + kind de ROUTINE → I (immédiat, `runCascadeImmediate`)', () => {

@@ -75,7 +75,7 @@ import {
 import { navalMoveMod, navalTestTypeDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
 import { seaAutoResolves, voyageDayEntry, type VoyageOrders, type VoyageCadence } from './voyageCadence';
-import { crewRoleValue } from '../engine/crewMorale';
+import { crewRoleValue, moraleBand } from '../engine/crewMorale';
 import { beginShipwreck } from './shipwreck';
 import type { NightEntry } from './restFlow';
 import { subtract, toMoney, type Money } from '../engine/money';
@@ -83,9 +83,11 @@ import { rollShipCritical } from '../engine/shipCritical';
 import type { ShipCritKey } from '../data/shipCriticals';
 import { contractDisease } from '../engine/disease';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
-import type { PendingSteamSave } from './pendings';
+import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
+import { openRoll, resolveSurface, composeRollLabel, effectiveTarget, type RollRequest } from './rollSeam';
+import { registerCascadeApplier, startCascade, runCascadeImmediate } from './cascade';
 
 /** Crise NAVALE en cours (un Test d'équipage par manche jusqu'à l'issue). */
 export type SeaCrisis =
@@ -620,18 +622,27 @@ export function runSeaDays(get: Get, set: Set): void {
         // FORCER LE RYTHME (MDG 13 l.95-107) : Test de Voile/Ramer du jour AVANT la Progression —
         // « pour bénéficier du bonus de Mouvement, un Test de Voile ou de Ramer doit être réussi ».
         // Au niveau JOUR, UN Test représente la journée (même abstraction que la Progression) ; « ce
-        // Test n'est pas un Test de Navigation » (l.97) → jet direct du meilleur PJ, soutenu (LDB 12).
+        // Test n'est pas un Test de Navigation » (l.97) → jet du meilleur PJ, soutenu (LDB 12) — seam de
+        // jet (#275 Ronde 1) : `klass:'hero-test'` (Test de SKILL, PAS un `batch` — la machinerie de
+        // rôle `rollCrewRole` ne s'applique pas ici). Côté `partyBest` (le plus qualifié tente) : la
+        // porte résout l'acteur + la valeur SOUTENUE (`partyAssisted`, LDB 12) elle-même — ce site ne
+        // calcule plus rien, il ne fait plus que garder ses conditions RAW propres (vapeur/voiles/avirons).
         const vd = findVehicleById(plan.vehicle!.creatureId ?? '')?.ship;
         // Vapeur : M 4 constant, ni voiles ni avirons à forcer (MDG ch.12 l.311).
         if (sea.forcePace && sea.paceToday == null && (vd?.sail || vd?.oars) && !shipHasNavalTrait(hullTraits(plan.vehicle!), 'propulsion-a-vapeur')) {
           const rig: 'voile' | 'avirons' = vd?.sail ? 'voile' : 'avirons';
           const diff = forcePaceDifficulty(sea.forcePace, rig);
-          const best = diff ? partyAssisted(get().party, rig === 'voile' ? 'voile' : 'ramer') : null;
-          if (diff && best) {
-            const t = rollTest(best.value, diff, rng);
-            patchSea(get, set, { paceToday: t.success ? 'won' : 'lost' });
-            tell(get, set, [`${best.actor.name} — Forcer le rythme (${rig === 'voile' ? 'Voile' : 'Ramer'} ${DIFFICULTY_LABELS[diff]}) : ${t.roll}/${t.target} → ${t.success ? `+${sea.forcePace} M aujourd'hui.` : 'le navire garde son allure.'}`]);
-            eff = effectiveSeaM(get); // le +M du jour entre dans le M effectif
+          if (diff) {
+            openRoll(get, set, {
+              side: { partyBest: { skill: rig === 'voile' ? 'voile' : 'ramer' } },
+              test: { skill: rig === 'voile' ? 'voile' : 'ramer', label: 'Forcer le rythme' },
+              difficulty: diff, klass: 'hero-test',
+            }, 'sea-force-pace', { forcePace: sea.forcePace });
+            // Surfacé (M) : la porte a ouvert une modale → suspend, l'applier `sea-force-pace` reprend
+            // `runSeaDays` à la validation. Inline (I) ou aucun PJ éligible (no-op silencieux, seam) :
+            // on continue directement (`paceToday` est posé si le Test a tourné, `eff` recalcule).
+            if (get().pendingCascade) return;
+            eff = effectiveSeaM(get); // le +M du jour entre dans le M effectif si le Test a réussi
           }
         }
         patchSea(get, set, { step: 'crise' });
@@ -699,14 +710,22 @@ export function runSeaDays(get: Get, set: Set): void {
       case 'events': {
         // 8. Événement de bord tous les 1d10 jours (ch.15 l.89).
         let days = sea.daysToEvent - 1;
+        let firing: { event: SeaEventDef; roll: number; mood: ManannMood } | null = null;
         if (days <= 0) {
           const mood = vesselManann(get().vessel);
           const { roll, event } = rollBoardEvent(mood.score, rng);
-          tell(get, set, [`Événement de bord (d100 ${roll} · Humeur de Manann ${mood.score >= 0 ? '+' : ''}${mood.score}) — ${event.label}`]);
-          resolveBoardEvent(get, set, event, rng);
+          firing = { event, roll, mood };
           days = rollDaysToNextEvent(rng);
         }
+        // `step`/`daysToEvent` avancent AVANT `resolveBoardEvent` (peut surfacer la Prière d'un Présage,
+        // seam #275 Ronde 1) : sans quoi une reprise re-déclencherait CE même tirage d'événement (le
+        // garde `days <= 0` retomberait sur le même `sea.daysToEvent` non consommé).
         patchSea(get, set, { daysToEvent: days, step: 'entretien' });
+        if (firing) {
+          tell(get, set, [`Événement de bord (d100 ${firing.roll} · Humeur de Manann ${firing.mood.score >= 0 ? '+' : ''}${firing.mood.score}) — ${firing.event.label}`]);
+          resolveBoardEvent(get, set, firing.event, rng);
+          if (get().pendingCascade) return; // Prière surfacée — l'applier `sea-priere` reprend `runSeaDays`
+        }
         break;
       }
       case 'entretien': {
@@ -727,6 +746,75 @@ export function runSeaDays(get: Get, set: Set): void {
     }
   }
 }
+
+// ── Seam de jet (#275 Ronde 1) — appliers des sites migrés vers `openRoll` ───────────────────────
+
+/** Forcer le rythme (MDG 13 l.95-107, `klass:'hero-test'`) : pose `paceToday`, le +M du jour se lit
+ *  ensuite par `effectiveSeaM` (inchangé). `tell()` (pas `{journal}`) : la ligne doit rejoindre le
+ *  RECAP du jour (`sea.lines` → `TravelRecapDay.lines`, lu par la halte de nuit) comme AVANT la
+ *  migration — `commitStep` ne pousse le retour d'un applier qu'au journal (`get().log`, PAS `sea.lines`).
+ *  Reprise de la boucle SEULEMENT si l'étape a été SURFACÉE (le call-site inline reprend lui-même dans
+ *  le même call-frame, cf. `case 'progression'` ci-dessus) — différée (`setTimeout`, patron
+ *  `combatAuto.ts:99`) car `advanceCascade`/`finalizeCascade` n'ont pas encore nettoyé LEUR
+ *  `pendingCascade` à cet instant (encore dans leur propre `commitStep`) : une reprise synchrone ici
+ *  pourrait ouvrir une nouvelle cascade que leur `set({pendingCascade:null})` de clôture, encore à
+ *  venir, écraserait. */
+registerCascadeApplier('sea-force-pace', (get, set, step) => {
+  if (!step.result) return;
+  const won = step.result.success;
+  const forcePace = Number(step.meta?.forcePace ?? 0);
+  patchSea(get, set, { paceToday: won ? 'won' : 'lost' });
+  tell(get, set, [`${step.label} : ${step.result.roll}/${step.result.target} → ${won ? `+${forcePace} M aujourd'hui.` : 'le navire garde son allure.'}`]);
+  if (get().pendingCascade) setTimeout(() => runSeaDays(get, set), 0);
+});
+
+/** Prière d'un Présage (ch.15 l.236, `klass:'hero-test'`) : bon présage → il faut RÉUSSIR pour
+ *  l'appliquer ; mauvais présage → RÉUSSIR l'évite (`manannD >= 0 ? success : !success`, logique
+ *  inchangée). `tell()` pour la même raison recap que `sea-force-pace` ci-dessus. Reprise de la
+ *  boucle : même garde différée que `sea-force-pace`. */
+registerCascadeApplier('sea-priere', (get, set, step) => {
+  if (!step.result) return;
+  const manannD = Number(step.meta?.manannD ?? 0);
+  const moraleD = Number(step.meta?.moraleD ?? 0);
+  const success = step.result.success;
+  tell(get, set, [`${step.label} : ${step.result.roll}/${step.result.target} → ${success ? 'Manann est apaisé/honoré.' : 'la prière se perd dans les embruns.'}`]);
+  const apply = manannD >= 0 ? success : !success;
+  if (apply) {
+    if (manannD) tellManann(get, set, manannD);
+    const ship = get().travelPlan?.vehicle;
+    if (moraleD && ship) {
+      const delta = Math.sign(moraleD) * rollDice(Math.abs(moraleD), 10, battleRng());
+      for (const l of applyShipMoraleDelta(get, set, ship, delta)) tell(get, set, [l]);
+    }
+  }
+  if (get().pendingCascade) setTimeout(() => runSeaDays(get, set), 0);
+});
+
+/** Scorbut (MDG 14 l.230, `klass:'subi'`) : conséquence + texte IDENTIQUES à l'ancien inline — seule la
+ *  RÉSOLUTION du jet change de couture (cascade au lieu de `rollTest` direct). `hero` = l'acteur de
+ *  l'étape (résolu par `commitStep` via `step.actorId`, `cascade.ts:109`). */
+registerCascadeApplier('sea-scorbut', (get, set, step, hero) => {
+  if (!step.result || !hero) return;
+  const soup = !!step.meta?.soup;
+  const success = step.result.success;
+  const line = `${hero.name} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : ${step.result.roll}/${step.result.target} → ${success ? 'tient bon.' : 'CONTRACTÉ.'}`;
+  if (!success) {
+    const d = contractDisease('scorbut', battleRng());
+    if (d) hero.diseases = [...(hero.diseases ?? []), d];
+  }
+  set({ party: [...get().party] });
+  return { journal: [line] };
+});
+
+/** Épuisement (MDG 13 l.109-111, `klass:'subi'`) : même patron que Scorbut ci-dessus. */
+registerCascadeApplier('sea-epuisement', (get, set, step, hero) => {
+  if (!step.result || !hero) return;
+  const success = step.result.success;
+  const line = `${hero.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[exhaustionDifficulty(true)]}) : ${step.result.roll}/${step.result.target} → ${success ? 'tient bon.' : '+1 Exténué.'}`;
+  if (!success) addCondition(hero, 'extenue');
+  set({ party: [...get().party] });
+  return { journal: [line] };
+});
 
 /** Applique les MILLES du jour depuis le total du Test de Progression (±10 %/DR, ch.15 l.78). */
 function applySeaProgress(get: Get, set: Set, progressionDR: number): void {
@@ -775,20 +863,30 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
 
   // Scorbut (MDG 14 l.230) : « pour chaque mois passé sans nourriture correcte » — Test de Résistance
   // Intermédiaire (+0), Facile (+40) avec la soupe de chou fermenté. Les rations de bord ne sont pas
-  // de la nourriture fraîche → le mois EN MER compte.
+  // de la nourriture fraîche → le mois EN MER compte. Seam de jet (#275 Ronde 1, Décision « boucles
+  // subi par-héros ») : UNE cascade à N étapes (patron `shipwreck.ts` 22c74b5d) au lieu de N
+  // `startCascade` — mais toujours résolue INLINE ici (`runCascadeImmediate`), quel que soit
+  // `resolveSurface` : le V (siège MJ voit/lance) exige de scinder `finishSeaDay` en continuation
+  // (même contrainte que le remplacement FSM, Décision 4/Ronde 2) — non fait ici pour éviter la
+  // contorsion sur une fonction de ~150 lignes ; AVEU documenté, à fermer en Ronde 2.
   const daysAtSea = sea.daysAtSea + 1;
   if (daysAtSea % 30 === 0) {
-    for (const h of get().party) {
-      if (h.dead || (h.diseases ?? []).some((d) => d.name === 'scorbut')) continue;
-      const soup = (h.items ?? []).some((it) => itemCapability(it, 'scurvyGuard'));
-      const t = rollTest(testValue(h, 'resistance', 'E'), soup ? 'facile' : 'intermediaire', rng);
-      lines.push(`${h.name} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : ${t.roll}/${t.target} → ${t.success ? 'tient bon.' : 'CONTRACTÉ.'}`);
-      if (!t.success) {
-        const d = contractDisease('scorbut', rng); // maladies.json — cycle/symptômes par la machinerie EXISTANTE
-        if (d) h.diseases = [...(h.diseases ?? []), d];
-      }
+    const patients = get().party.filter((h) => !h.dead && !(h.diseases ?? []).some((d) => d.name === 'scorbut'));
+    if (patients.length) {
+      const test: RollRequest['test'] = { skill: 'resistance', char: 'E', label: 'Scorbut' };
+      const steps: CascadeStep[] = patients.map((h) => {
+        const soup = (h.items ?? []).some((it) => itemCapability(it, 'scurvyGuard'));
+        const diff: Difficulty = soup ? 'facile' : 'intermediaire';
+        return {
+          id: `sea-scorbut-${h.id}`, kind: 'sea-scorbut', actorId: h.id,
+          label: composeRollLabel(h, 'Scorbut', test, diff), rollLabel: 'Scorbut',
+          base: testValue(h, 'resistance', 'E'), target: effectiveTarget(h, test, diff),
+          result: null, interactive: true, meta: { soup },
+        };
+      });
+      const resolved = runCascadeImmediate(get, set, steps);
+      lines.push(...resolved.flatMap((s) => s.outcome ?? []));
     }
-    set({ party: [...get().party] });
   }
 
   // Salissures hebdomadaires (ch.13 l.148) : « chaque semaine qu'un navire passe en mer sans
@@ -836,16 +934,23 @@ function finishSeaDay(get: Get, set: Set, rng: RNG): void {
   // ÉPUISEMENT (MDG 13 l.109-111) : le rythme a été FORCÉ aujourd'hui (réussi OU non) → chaque PJ
   // (l'équipage = les PJ, MDG 14 l.39) teste Résistance Complexe (−10) sous peine d'Exténué. Le Test
   // de base des Périodes de travail (Accessible +20) est absorbé par l'abstraction d'équipage PNJ —
-  // il n'est joué que quand le joueur CHOISIT de forcer (décision documentée).
+  // il n'est joué que quand le joueur CHOISIT de forcer (décision documentée). Seam de jet (#275 Ronde
+  // 1) : même patron « UNE cascade à N étapes, toujours résolue inline » que Scorbut ci-dessus — même
+  // aveu documenté (V/siège MJ non câblé, Ronde 2).
   if (sea.paceToday) {
     const diff = exhaustionDifficulty(true);
-    for (const h of get().party) {
-      if (h.dead) continue;
-      const t = rollTest(testValue(h, 'resistance', 'E'), diff, rng);
-      evening.push(`${h.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[diff]}) : ${t.roll}/${t.target} → ${t.success ? 'tient bon.' : '+1 Exténué.'}`);
-      if (!t.success) addCondition(h, 'extenue');
+    const patients = get().party.filter((h) => !h.dead);
+    if (patients.length) {
+      const test: RollRequest['test'] = { skill: 'resistance', char: 'E', label: 'Épuisement' };
+      const steps: CascadeStep[] = patients.map((h) => ({
+        id: `sea-epuisement-${h.id}`, kind: 'sea-epuisement', actorId: h.id,
+        label: composeRollLabel(h, 'Épuisement', test, diff), rollLabel: 'Épuisement',
+        base: testValue(h, 'resistance', 'E'), target: effectiveTarget(h, test, diff),
+        result: null, interactive: true,
+      }));
+      const resolved = runCascadeImmediate(get, set, steps);
+      evening.push(...resolved.flatMap((s) => s.outcome ?? []));
     }
-    set({ party: [...get().party] });
   }
 
   const miles = sea.milesToday;
@@ -1269,21 +1374,26 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       const manannD = typeof (event.params?.manannD10) === 'number' ? (event.params!.manannD10 as number) : 0;
       const moraleD = typeof (event.params?.moraleD10) === 'number' ? (event.params!.moraleD10 as number) : 0;
       const pd = event.params?.prayerDifficulty as Difficulty | undefined;
-      let apply = true;
-      if (pd) {
-        const priest = partyAssisted(get().party, 'priere');
-        if (priest) {
-          const t = rollTest(priest.value, pd, rng);
-          tell(get, set, [`${priest.actor.name} — Prière : ${t.roll}/${t.target} → ${t.success ? 'Manann est apaisé/honoré.' : 'la prière se perd dans les embruns.'}`]);
-          apply = manannD >= 0 ? t.success : !t.success; // bon présage : il faut réussir ; mauvais : réussir l'évite
-        }
+      // Garde IDENTIQUE à l'ancienne (« un prêtre existe-t-il ? ») — la porte résoudra ELLE-MÊME
+      // l'acteur/la valeur soutenue via `partyBest` ; ce simple test d'existence ne duplique pas ce
+      // calcul (mandat coordinateur : le call-site ne calcule plus la VALEUR, juste la CONDITION RAW).
+      if (pd && partyAssisted(get().party, 'priere')) {
+        // seam de jet (#275 Ronde 1) : `klass:'hero-test'` (le prêtre agit). La logique de présage
+        // (bon/mauvais présage, `tellManann`/`applyShipMoraleDelta`) migre dans l'applier `sea-priere`
+        // via `meta` SÉRIALISABLE (coop) — TOUJOURS `return` : surfacé → suspend ; inline → l'applier a
+        // déjà tout appliqué (rien à refaire ici).
+        openRoll(get, set, {
+          side: { partyBest: { skill: 'priere' } },
+          test: { skill: 'priere', label: 'Prière' },
+          difficulty: pd, klass: 'hero-test',
+        }, 'sea-priere', { manannD, moraleD });
+        return;
       }
-      if (apply) {
-        if (manannD) tellManann(get, set, manannD);
-        if (moraleD && ship) {
-          const delta = Math.sign(moraleD) * rollDice(Math.abs(moraleD), 10, rng);
-          for (const l of applyShipMoraleDelta(get, set, ship, delta)) tell(get, set, [l]);
-        }
+      // Pas de Test de Prière requis, ou aucun prêtre : bon/mauvais présage s'applique d'office (RAW l.236).
+      if (manannD) tellManann(get, set, manannD);
+      if (moraleD && ship) {
+        const delta = Math.sign(moraleD) * rollDice(Math.abs(moraleD), 10, rng);
+        for (const l of applyShipMoraleDelta(get, set, ship, delta)) tell(get, set, [l]);
       }
       break;
     }
@@ -1610,8 +1720,46 @@ export function resolveShoreLeave(get: Get, set: Set, allow: boolean): void {
   log(get, set, [allow
     ? 'Vous autorisez l\'équipage à faire relâche à terre.'
     : 'Vous refusez à l\'équipage la permission de faire relâche à terre.']);
-  // Désertion à la relâche ACCORDÉE (MDG 14 l.192-202) — retour de permission = moment du tirage.
-  if (allow) { const d = resolveShoreLeaveDesertion(get, set, battleRng()); if (d.length) log(get, set, d); }
+  // Désertion à la relâche ACCORDÉE (MDG 14 l.192-202) — retour de permission = moment du tirage. Seam
+  // de jet (#275 Ronde 1, delta « désertion ») : `klass:'subi'`, côté `worldSide` (aucun `actorId` — un
+  // marin PNJ n'est pas un `Combatant`) ; `meta.baseValue` = le SEUIL d100 posé par la bande de Moral
+  // (obligation `rollSeam.ts` : un côté sans acteur DOIT le fournir, sinon `buildMonoStep` poserait
+  // `base=0`). Le RÉSULTAT MÉCANIQUE (nombre de déserteurs) reste la boucle d100/marin INCHANGÉE,
+  // exécutée dans l'applier `sea-desertion` — même patron que `rollShipCritical` dans les appliers
+  // d'Affaler/Ouragan (une conséquence peut tirer SES PROPRES dés, indépendants du jet d'étape qui l'a
+  // déclenchée) : l'étape n'est que le VECTEUR de visibilité MJ (owner MJ, delta 1), pas la source des
+  // départs — sans quoi UN d100 représentatif ne pourrait jamais rejouer N tirages indépendants.
+  const vessel = get().vessel;
+  const threshold = allow && vessel ? moraleBand(vessel.morale.score).desertionRoll : 0;
+  if (threshold) {
+    openRoll(get, set, {
+      side: { worldSide: 'ship', shipId: vessel!.vehicleId },
+      test: { label: 'Désertion' },
+      difficulty: 'intermediaire', klass: 'subi',
+    }, 'sea-desertion', { baseValue: threshold, toPlaceId: p.to.id });
+    if (get().pendingCascade) return; // surfacé (V, MJ voit/lance) — l'applier `sea-desertion` reprend la suite
+    return; // inline : l'applier a DÉJÀ enchaîné `resolvePortArrival`/`transitionTo` (cf. ci-dessous)
+  }
   resolvePortArrival(get, set, p.to.port, battleRng(), allow);
   get().transitionTo(p.to.scene, p.to.entry);
 }
+
+/** Désertion (MDG 14 l.192-202, `klass:'subi'`) : la boucle d100/marin réelle (INCHANGÉE, même seuil,
+ *  mêmes tirages via `battleRng()`) vit ICI — l'étape `sea-desertion` n'est que le vecteur de visibilité
+ *  MJ. Enchaîne `resolvePortArrival`/`transitionTo` (repris de `resolveShoreLeave`) : DIFFÉRÉ si surfacée
+ *  (même garde que `sea-force-pace`/`sea-priere` — `resolvePortArrival` peut ouvrir SA PROPRE cascade,
+ *  `openEmbrigadementRecovery`, pendant que `advanceCascade` est encore dans son propre `commitStep`). */
+registerCascadeApplier('sea-desertion', (get, set, step) => {
+  if (!step.result) return;
+  const journal = resolveShoreLeaveDesertion(get, set, battleRng());
+  const toPlaceId = String(step.meta?.toPlaceId ?? '');
+  const finish = () => {
+    const to = toPlaceId ? placeById(get().worldMap as WorldMap, toPlaceId) : undefined;
+    if (!to) return;
+    resolvePortArrival(get, set, to.port, battleRng(), true);
+    get().transitionTo(to.scene, to.entry);
+  };
+  if (get().pendingCascade) setTimeout(finish, 0);
+  else finish();
+  return { journal };
+});

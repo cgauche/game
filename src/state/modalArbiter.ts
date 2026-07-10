@@ -15,6 +15,7 @@
  * `pickActiveModalKey` et `modalOwnerOf` sont DÉRIVÉS du registre — rien d'autre à toucher.
  */
 import type { GameState } from './store';
+import { WORLD_STEP_OWNER } from './pendings';
 
 /** État partiel accepté par l'arbitre (les tests passent des objets minces). */
 export type ArbiterState = Partial<GameState>;
@@ -114,9 +115,13 @@ export const MODAL_DEFS = [
   // CASCADE séquentielle (jets de nuit/voyage) : l'étape COURANTE a son héros → modale chez son
   // propriétaire (coop : chaque contrôleur influence ses propres jets, l'un après l'autre).
   { key: 'cascade', when: (s) => !!s.pendingCascade, owner: (s) => {
-    // Étape de GROUPE (enfoncer une porte) → '*' (chacun pilote ses héros) ; sinon le héros de l'étape.
+    // Étape de GROUPE (enfoncer une porte) → '*' (chacun pilote ses héros) ; étape MONDE sans acteur
+    // (`worldOwner`, seam #275 Décision 3 — désertion/Moral) → sentinel routé au siège MJ par
+    // `netOwnership.seatOwns` ; sinon le héros de l'étape.
     const cur = s.pendingCascade?.participants[s.pendingCascade.cursor];
-    return cur?.groupOwner ? '*' : cur?.actorId;
+    if (cur?.groupOwner) return '*';
+    if (!cur?.actorId && cur?.worldOwner) return WORLD_STEP_OWNER;
+    return cur?.actorId;
   }, auto: { mode: 'partial' } },
   // (L'incantation n'a PLUS d'entrée propre : la situation « lancer un sort » (jet → opposition de
   //  cible → Contre-sort → Surincantation/pose de zone → Critique → effets) est une étape `jet:'cast'`

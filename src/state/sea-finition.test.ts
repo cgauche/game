@@ -49,10 +49,25 @@ function freshState() {
 }
 
 /** Déroule la journée maritime jusqu'à une SUSPENSION (halte, Activités en mer), en roulant tous les
- *  Tests d'équipage rencontrés — garde-fou 40 modales (crises/événements possibles). */
-function runOneSeaDay() {
+ *  Tests d'équipage rencontrés — garde-fou 40 modales (crises/événements possibles). Drive aussi les
+ *  étapes `pendingCascade` mono du seam de jet (#275 Ronde 1 — Forcer le rythme/Prière, `klass:'hero-test'`
+ *  surfacées en modale influençable pour un groupe piloté-humain, cadence manuelle) : leur applier
+ *  reprend `runSeaDays` en DIFFÉRÉ (`setTimeout`, cf. `seaVoyageFlow.ts` — évite qu'`advanceCascade`
+ *  n'écrase une cascade fraîchement rouverte pendant son propre `commitStep`) → `await tick()` entre
+ *  deux pas pour laisser ce `setTimeout` s'exécuter, comme un vrai clic UI l'espacerait. */
+const tick = () => new Promise<void>((r) => setTimeout(r, 0));
+
+async function runOneSeaDay() {
   for (let i = 0; i < 40; i++) {
     if (get().pendingRest || get().pendingSeaActivities) break;
+    const casc = get().pendingCascade;
+    if (casc) {
+      const cur = casc.participants[casc.cursor];
+      if (cur && !cur.result) get().cascadeRoll(cur.id);
+      get().cascadeNext();
+      await tick();
+      continue;
+    }
     const p = get().pendingCrewTest;
     if (!p) break;
     for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
@@ -71,10 +86,10 @@ describe('#27 Forcer le rythme (MDG 13 l.95-107)', () => {
     expect(plain.sea!.forcePace).toBeUndefined();
   });
 
-  it('une journée à rythme forcé → Test de Voile puis Test d’Épuisement (Complexe −10) par PJ', () => {
+  it('une journée à rythme forcé → Test de Voile puis Test d’Épuisement (Complexe −10) par PJ', async () => {
     seedBattleRng(1); // jour 1 navigable (ni Encalminé ni Affaler) → la Voile/le rythme se joue
     get().startTravel('r1', 'mer', { seaPace: 1 });
-    runOneSeaDay();
+    await runOneSeaDay();
     // Le recap du jour (halte de nuit) porte la journée ENTIÈRE — le journal, capé à 40 lignes,
     // évince les lignes précoces comme « Forcer le rythme ».
     const day = get().pendingRest!.travelDay!.lines.join('\n');
@@ -86,11 +101,11 @@ describe('#27 Forcer le rythme (MDG 13 l.95-107)', () => {
 describe('#28 Température en mer (MDG 13 l.203-225) — câblée au jour', () => {
   beforeEach(freshState);
 
-  it('la journée en mer consomme de l’eau selon la bande de Température (tonneaux suivis)', () => {
+  it('la journée en mer consomme de l’eau selon la bande de Température (tonneaux suivis)', async () => {
     seedBattleRng(3);
     set({ vessel: { ...get().vessel!, waterLitres: 500 } });
     get().startTravel('r1', 'mer');
-    runOneSeaDay();
+    await runOneSeaDay();
     // Une journée entière est passée : l'eau a été consommée (crew × litres de la bande).
     expect(get().vessel!.waterLitres).toBeLessThan(500);
     expect(get().journal.join('\n')).toMatch(/Eau douce|À SEC/);
@@ -100,13 +115,13 @@ describe('#28 Température en mer (MDG 13 l.203-225) — câblée au jour', () =
 describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
   beforeEach(freshState);
 
-  it('la semaine de 8 jours ouvre la modale d’Activités (déclencheur hebdomadaire)', () => {
+  it('la semaine de 8 jours ouvre la modale d’Activités (déclencheur hebdomadaire)', async () => {
     seedBattleRng(3);
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
     // On amorce au 7ᵉ jour révolu : la journée suivante franchit la 8ᵉ → pendingSeaActivities.
     set({ travelPlan: { ...plan, kmDone: 40, sea: { ...plan.sea!, daysAtSea: 7 } } });
     get().resumeTravel();
-    runOneSeaDay();
+    await runOneSeaDay();
     // Soit la modale d'Activités s'ouvre (8ᵉ jour), soit l'arrivée/halte (selon les milles) — mais
     // sur 550 milles à ~40 milles restants elle ne peut pas arriver : la modale doit s'ouvrir.
     expect(get().pendingSeaActivities).toBeTruthy();

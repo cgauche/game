@@ -1057,6 +1057,12 @@ export interface CascadeRoll {
  * est snapshoté/transmis). Une étape SANS `target` est un simple passage (rare) ; les notes en clair
  * vont dans `PendingCascade.log`, pas en étapes.
  */
+/** Sentinel d'owner d'une étape `worldOwner` (seam de jet #275 Décision 3 — désertion, Moral) : aucun
+ *  `actorId` à router — `netOwnership.seatOwns` le reconnaît pour router au siège MJ (`gmSeat`) quand
+ *  il existe, à l'hôte sinon. Vit ICI (neutre) pour que `modalArbiter.ts` et `netOwnership.ts` (qui
+ *  s'importent déjà l'un l'autre) n'aient pas à se réimporter en cycle. */
+export const WORLD_STEP_OWNER = '__world-step__';
+
 export interface CascadeStep extends RollParticipant {
   /** Nature de la conséquence (clé de `cascadeAppliers`). Ex. 'recovery' | 'nightmare' | 'exposure'. */
   kind: string;
@@ -1074,6 +1080,10 @@ export interface CascadeStep extends RollParticipant {
    *  l'owner '*' (chacun pilote ses héros) au lieu de `actorId` (une étape forceDoor n'a pas d'acteur
    *  unique). Absent sur les autres `kind` → repli sur `actorId` (identique à aujourd'hui). */
   groupOwner?: boolean;
+  /** Étape SUBIE par le siège MONDE (côté `worldSide` du seam de jet, #275 Décision 3 — désertion,
+   *  Moral, périls sans acteur unique) : aucun `actorId`, l'arbitre route l'owner au siège MJ (`gmSeat`)
+   *  quand il existe, à l'hôte sinon (`netOwnership.seatOwns` via le sentinel `WORLD_STEP_OWNER`). */
+  worldOwner?: boolean;
   /** Libellé du Test affiché (« Résistance », « Calme », « Survie en extérieur »…). */
   rollLabel?: string;
   /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage. */

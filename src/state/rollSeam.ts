@@ -8,21 +8,20 @@
  * cadence` (Décision 3) via les prédicats EXISTANTS (`humanControlled`/`pilotedByHuman`/`cadenceAuto`/
  * `seaAutoResolves`) et choisit la surface :
  *   M = modale influençable (`startCascade`, propriétaire = l'acteur humain) ;
- *   V = étape visible-lançable MJ (`startCascade`, propriétaire = le siège `gmSeat` via `actorId` —
- *       cf. écart documenté ci-dessous pour `worldSide`) ;
+ *   V = étape visible-lançable MJ (`startCascade`, propriétaire = le siège `gmSeat` — un `actorId`
+ *       d'ennemi EN BATAILLE via `seatOwns` (`netOwnership.ts:19`), un côté `worldSide` sans acteur via
+ *       le marqueur `CascadeStep.worldOwner` + le sentinel `WORLD_STEP_OWNER` (`pendings.ts`), Ronde 1) ;
  *   I = inline-PV (`runCascadeImmediate`, aucune influence, conséquence appliquée d'office).
  * AUCUN call-site n'est migré en Ronde 0 (substrat seul, DoD #275 Ronde 0) : ce module n'est câblé nulle
  * part hors de ses propres tests et de `testOutcome.ts`.
  *
  * ÉCARTS documentés vs le doc de conception (justifiés, à réconcilier aux rondes suivantes) :
- *  1. **`worldSide` → propriétaire MJ non routé.** Le doc (Décision 3) veut `worldSide → gmSeat`
- *     directement. La résolution RÉELLE de l'owner d'une étape de cascade vit dans `modalArbiter.ts`
- *     (`owner(s) = cur?.groupOwner ? '*' : cur?.actorId`) et `netOwnership.seatOwns` (routage gmSeat
- *     UNIQUEMENT si `actorId` référence un combattant `kind:'enemy'` EN BATAILLE) — ni l'un ni l'autre
- *     n'est dans le périmètre de fichiers de cette Ronde. Une étape `worldSide` sans `actorId` retombe
- *     donc sur le routage EXISTANT (propriétaire par défaut = siège hôte), pas sur `gmSeat`. Sans
- *     conséquence en Ronde 0 (0 call-site) ; à fermer quand un site `worldSide` migre réellement
- *     (Ronde 1+, en étendant `modalArbiter`/`netOwnership` — hors périmètre ici).
+ *  1. **`worldSide` → propriétaire MJ.** FERMÉ Ronde 1 : `buildMonoStep` marque `worldOwner:true` sur
+ *     une étape `worldSide` sans `actorId` ; `modalArbiter.ts` (entrée `cascade`) route ce marqueur vers
+ *     le sentinel `WORLD_STEP_OWNER`, que `netOwnership.seatOwns` résout au siège `gmSeat` (existant) ou
+ *     à l'hôte (sinon) — couture la PLUS PETITE (aucune extension d'`intentAllowedFor`, le repli
+ *     générique `seatOwns(s, seat, owner)` suffit déjà). `batch` (agrégat, pas de `worldOwner`) reste
+ *     hors de cet écart — cf. 2.
  *  2. **`batch` n'utilise PAS `CascadeStep.participants`.** Cette extension est EXPLICITEMENT Ronde 2
  *     (brief : « pas l'extension participants, c'est ronde 2 »). En Ronde 0, `openRoll('batch', …)`
  *     résout l'AGRÉGAT des contributeurs immédiatement (rôle par rôle, `rollCrewRole`/`forceCrewRole`,
@@ -35,19 +34,20 @@
 import type { Get, Set } from './flowTypes';
 import type { GameState } from './store';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
-import { DIFFICULTY_MODIFIERS } from '../engine/types';
+import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense } from '../engine/ops';
 import type { CascadeStep, CascadeStepMeta, ShipManeuverParticipant } from './pendings';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatOrParty';
 import { startCascade, runCascadeImmediate } from './cascade';
-import { testValue } from '../engine/skills';
+import { testValue, partyBest, partyAssisted } from '../engine/skills';
 import { getTestPolicy } from '../engine/testPolicy';
 import { battleRng } from './battleRng';
 import { humanControlled, pilotedByHuman } from './netOwnership';
 import { cadenceAuto } from '../engine/cadence';
 import { seaAutoResolves } from './voyageCadence';
 import { rollCrewRole, forceCrewRole, maneuverCrewTotal, type CrewRoleRoll } from './shipManeuver';
+import { findSkillById } from '../data';
 
 /** Les 4 classes déclaratives (mandat #275). Pilotent la POLICY, jamais le call-site. */
 export type RollClass = 'hero-test' | 'enemy' | 'subi' | 'batch';
@@ -57,12 +57,18 @@ export type RollAggregate = 'best' | 'opposed' | 'summed-dr';
 
 /** DESCRIPTION déclarative d'un jet. Le call-site remplit ceci et RIEN d'autre. */
 export interface RollRequest {
-  /** Le côté qui teste : un acteur (héros/PNJ), le siège MONDE (ennemi/subi), ou des participants (batch). */
+  /** Le côté qui teste : un acteur DÉJÀ désigné (héros/PNJ), le MEILLEUR PJ du groupe pour une
+   *  compétence/carac (« le plus qualifié tente », résolu ICI via `partyAssisted`/`partyBest` —
+   *  jamais recalculé au call-site), le siège MONDE (ennemi/subi sans acteur), ou des participants (batch). */
   side:
     | { actorId: string }
+    | { partyBest: { skill?: string; char?: CharKey; assisted?: boolean } }
     | { worldSide: 'enemy' | 'ship'; shipId?: string }
     | { participants: ShipManeuverParticipant[]; shipId: string };
-  /** Le TEST déclaré (réf structurée — passe telle quelle à `testValue`). */
+  /** Le TEST déclaré (réf structurée — passe telle quelle à `testValue`). `label` = le NOM DE L'ACTION
+   *  SEUL (« Forcer le rythme », « Prière », « Désertion »…) — jamais un template pré-assemblé avec le
+   *  nom de l'acteur/la compétence/la difficulté : la porte COMPOSE l'affichage complet (`composeRollLabel`)
+   *  depuis les ids (doctrine labels : le call-site déclare, l'affichage se dérive en UN endroit). */
   test: { skill?: string; char?: CharKey; spec?: string; sense?: PairedSense; menace?: string; label: string };
   difficulty: Difficulty;
   klass: RollClass;
@@ -75,18 +81,56 @@ type Surface = 'M' | 'V' | 'I';
 
 /** Cible EFFECTIVE (difficulté déjà appliquée) d'un Test skill/char — même arithmétique que
  *  `rollTest` (`clamp(value+DIFFICULTY_MODIFIERS[difficulty], policy)`, `engine/tests.ts:59`), sans
- *  dupliquer `clamp` (privée à `tests.ts`, hors périmètre de cette Ronde). `baseOverride` (via `meta`)
- *  couvre les côtés `worldSide` sans acteur (aucune `testValue` à calculer) — cf. écart documenté 1. */
-function effectiveTarget(actor: Combatant | undefined, test: RollRequest['test'], difficulty: Difficulty, baseOverride?: number): number {
+ *  dupliquer `clamp` (privée à `tests.ts`, hors périmètre de cette Ronde). `baseOverride` couvre les
+ *  côtés SANS acteur (`worldSide` — via `meta.baseValue`) ou dont la valeur EST l'acteur+valeur choisis
+ *  par la porte (`partyBest`) — RÉSERVÉ à ces deux cas (extension mandat coordinateur) : un côté
+ *  `actorId` calcule TOUJOURS `testValue` ICI, jamais un `meta.baseValue` du call-site. */
+export function effectiveTarget(actor: Combatant | undefined, test: RollRequest['test'], difficulty: Difficulty, baseOverride?: number): number {
   const value = baseOverride ?? (actor ? testValue(actor, test.skill, test.char, test.spec, test.sense) : 0);
   const policy = getTestPolicy();
   return Math.max(policy.targetMin, Math.min(policy.targetMax, value + DIFFICULTY_MODIFIERS[difficulty]));
 }
 
+/** COMPOSE l'affichage complet d'une étape mono depuis les ids déclarés — SOURCE UNIQUE (mandat
+ *  coordinateur) : plus un call-site n'assemble `${actor.name} — ${action} (${skill} ${difficulté})` à
+ *  la main. `action` = `req.test.label` (nom seul) ; le détail (compétence/carac + difficulté) est
+ *  omis si le Test ne porte ni compétence ni caractéristique (ex. Désertion — cible posée par
+ *  `meta.baseValue`, aucun Test de compétence réel à nommer). */
+export function composeRollLabel(actor: Combatant | undefined, action: string, test: RollRequest['test'], difficulty: Difficulty): string {
+  const skillLabel = test.skill ? (findSkillById(test.skill)?.label ?? test.skill) : test.char ? CHAR_LABELS[test.char] : undefined;
+  const detail = skillLabel ? `${skillLabel} ${DIFFICULTY_LABELS[difficulty]}` : undefined;
+  return `${actor ? `${actor.name} — ` : ''}${action}${detail ? ` (${detail})` : ''}`;
+}
+
+/** Résout le côté d'un jet MONO (`hero-test`/`enemy`/`subi` non-`batch`) en acteur + éventuelle valeur
+ *  DÉJÀ CALCULÉE (mandat coordinateur — le call-site ne calcule plus rien) :
+ *   - `actorId` : l'acteur désigné, valeur = `testValue` (calculée par `effectiveTarget`, pas ici) ;
+ *   - `partyBest` : le meilleur PJ du groupe pour la compétence/carac (`partyAssisted` par défaut —
+ *     LDB 12, soutien — `assisted:false` pour `partyBest` nu), valeur DÉJÀ résolue (inclut le soutien) ;
+ *   - `worldSide` : aucun acteur — `meta.baseValue` (seuil posé par le call-site, ex. désertion d100). */
+function resolveMonoSide(get: Get, req: RollRequest, meta?: CascadeStepMeta): { actorId?: string; actor?: Combatant; baseValue?: number } {
+  if ('actorId' in req.side) {
+    return { actorId: req.side.actorId, actor: actorIn(get(), req.side.actorId) };
+  }
+  if ('partyBest' in req.side) {
+    const { skill, char, assisted } = req.side.partyBest;
+    const picked = assisted === false ? partyBest(get().party, skill, char) : partyAssisted(get().party, skill, char);
+    if (!picked) return {};
+    return { actorId: picked.actor.id, actor: picked.actor, baseValue: picked.value };
+  }
+  return { baseValue: typeof meta?.baseValue === 'number' ? meta.baseValue : undefined };
+}
+
 /** Policy `klass × contrôleur × cadence` (Décision 3, table COMPLÈTE) — adossée aux prédicats
  *  EXISTANTS, jamais au `kind`. `autoC` (Rapide/Auto global) domine partout ; `autoV` (voyage COMMANDÉE
  *  + `kind` de routine, `seaAutoResolves`) route ensuite ; le reste dépend de la classe + du contrôle. */
-function resolveSurface(get: Get, req: RollRequest, kind: string): Surface {
+/** EXPORTÉ pour les call-sites qui bâtissent une cascade à PLUSIEURS étapes `subi` d'un même geste
+ *  (scorbut/épuisement — Résistance PAR héros, `seaVoyageFlow.ts`) : `CascadeStep.participants`
+ *  (Décision 4, Ronde 2) n'existe pas encore, donc `openRoll` (mono/batch) ne peut pas porter N étapes
+ *  indépendantes. La policy `subi` ne dépend PAS de `req.side` (cf. ci-dessous) → un seul appel avec un
+ *  `side` `worldSide` de convenance donne la MÊME surface que N appels `openRoll` individuels — source
+ *  UNIQUE de policy (jamais dupliquée), pas de nouveau chemin. */
+export function resolveSurface(get: Get, req: RollRequest, kind: string): Surface {
   const s = get();
   const autoC = cadenceAuto();
   const autoV = seaAutoResolves(s.travelPlan?.orders, kind);
@@ -105,7 +149,7 @@ function resolveSurface(get: Get, req: RollRequest, kind: string): Surface {
     return gmSeat != null ? 'V' : 'I';
   }
 
-  const actor = 'actorId' in req.side ? actorIn(s, req.side.actorId) : undefined;
+  const actor = resolveMonoSide(get, req).actor;
 
   if (req.klass === 'enemy') {
     if (actor && pilotedByHuman(s, actor) && gmSeat != null) return 'V';
@@ -127,17 +171,19 @@ function resolveSurface(get: Get, req: RollRequest, kind: string): Surface {
  *  prêt pour `startCascade`/`runCascadeImmediate` — calque `openSkillTest` (`combatEffects.ts:313-397`)
  *  réduit au cas générique (pas de candidats/Soutien/mod social : hors périmètre du seam Ronde 0). */
 function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeStepMeta): CascadeStep {
-  const actorId = 'actorId' in req.side ? req.side.actorId : undefined;
-  const actor = actorId ? actorIn(get(), actorId) : undefined;
-  const baseOverride = typeof meta?.baseValue === 'number' ? meta.baseValue : undefined;
-  const target = effectiveTarget(actor, req.test, req.difficulty, baseOverride);
+  const { actorId, actor, baseValue } = resolveMonoSide(get, req, meta);
+  const target = effectiveTarget(actor, req.test, req.difficulty, baseValue);
   return {
     id: kind,
     kind,
     actorId,
-    label: req.test.label,
+    // Côté `worldSide` sans acteur (désertion, Moral, périls…) : marque l'étape MONDE — l'arbitre
+    // (`modalArbiter.ts`) route son owner au siège MJ via le sentinel `WORLD_STEP_OWNER`
+    // (`netOwnership.seatOwns`), à l'hôte sinon (écart 1 documenté en tête de fichier, fermé Ronde 1).
+    ...(!actorId && 'worldSide' in req.side ? { worldOwner: true } : {}),
+    label: composeRollLabel(actor, req.test.label, req.test, req.difficulty),
     rollLabel: req.test.label,
-    base: baseOverride ?? (actor ? testValue(actor, req.test.skill, req.test.char, req.test.spec, req.test.sense) : 0),
+    base: baseValue ?? (actor ? testValue(actor, req.test.skill, req.test.char, req.test.spec, req.test.sense) : 0),
     target,
     result: null,
     interactive: true,
@@ -201,6 +247,10 @@ function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: Cascade
  * (`registerCascadeApplier(kind, applier)`, `cascade.ts:57`).
  */
 export function openRoll(get: Get, set: Set, req: RollRequest, kind: string, meta?: CascadeStepMeta): void {
+  // Côté `partyBest` sans candidat (aucun PJ éligible à la compétence/carac visée) : rien à ouvrir —
+  // même garde que l'ancien `if (best)` des call-sites (mandat coordinateur : la porte résout, donc
+  // c'est ICI que le silence se décide, plus au call-site).
+  if ('partyBest' in req.side && !resolveMonoSide(get, req).actor) return;
   const surface = resolveSurface(get, req, kind);
   const step = req.klass === 'batch' ? buildBatchStep(get, req, kind, meta) : buildMonoStep(get, req, kind, meta);
   if (surface === 'I') {

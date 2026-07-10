@@ -746,4 +746,29 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
     expect(get().pendingShoreLeave).toBeNull();
     expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(true); // tiré APRÈS le choix
   });
+
+  it('seam de jet (#275 Ronde 1) — Désertion : SANS siège MJ résout INLINE (même journée, événement de port tiré direct)', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, step: 'nuit', milesToday: 5 } } });
+    runSeaDays(get, set);
+    resolveShoreLeave(get, set, true);
+    expect(get().pendingCascade).toBeNull(); // 'I' (inline) — aucun siège MJ
+    expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(true);
+  });
+
+  it('seam de jet (#275 Ronde 1, delta 1) — Désertion : AVEC siège MJ ≠ hôte, l\'étape SURFACE et est OWNÉE par le MJ', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, step: 'nuit', milesToday: 5 } } });
+    runSeaDays(get, set);
+    resolveShoreLeave(get, set, true);
+    expect(get().pendingCascade).toBeTruthy(); // 'V' — surfacé au siège MJ, pas résolu d'office
+    expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(false); // suspendu AVANT la suite
+    const { modalOwnerOf } = await import('./modalArbiter');
+    const { seatOwns } = await import('./netOwnership');
+    const owner = modalOwnerOf(get());
+    expect(seatOwns(get(), 1, owner ?? undefined)).toBe(true);
+    expect(seatOwns(get(), 0, owner ?? undefined)).toBe(false);
+  });
 });

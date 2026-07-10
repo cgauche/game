@@ -10,9 +10,14 @@ import { inBattleId } from './combatOrParty';
 import { cadenceAuto, cadenceAutoCombat } from '../engine/cadence';
 
 export { modalOwnerOf } from './modalArbiter';
+import { WORLD_STEP_OWNER } from './pendings';
+export { WORLD_STEP_OWNER } from './pendings';
 
 /** Le siège possède-t-il ce combattant ? (héros non attribué → hôte, siège 0). */
 export function seatOwns(s: GameState, seat: number, combatantId: string | undefined): boolean {
+  // Étape MONDE sans acteur (désertion, Moral…) : le siège MJ la possède quand il existe, l'hôte sinon
+  // (bac-à-sable MJ — même politique que l'ennemi `kind:'enemy'` ci-dessous, étendue au hors-combat).
+  if (combatantId === WORLD_STEP_OWNER) return s.net.gmSeat != null ? seat === s.net.gmSeat : seat === 0;
   if (!combatantId) return seat === 0;
   // Bac-à-sable MJ : un combattant NON-héros (ennemi/monde) est conduit par le siège MJ (`gmSeat`), pas
   // par `ownership` (réservé aux héros) — les intents de son tour/ses modales remontent donc au MJ.
