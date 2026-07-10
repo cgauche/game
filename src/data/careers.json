@@ -2,6 +2,7 @@
   {
     "id": "agitateur",
     "label": "Agitateur",
+    "labelF": "Agitatrice",
     "class": "citadins",
     "rand": {
       "Humain": 1,
@@ -25,6 +26,7 @@
   {
     "id": "artisan",
     "label": "Artisan",
+    "labelF": "Artisane",
     "class": "citadins",
     "rand": {
       "Humain": 3,
@@ -48,6 +50,7 @@
   {
     "id": "bourgeois",
     "label": "Bourgeois",
+    "labelF": "Bourgeoise",
     "class": "citadins",
     "rand": {
       "Humain": 6,
@@ -70,6 +73,7 @@
   {
     "id": "enqueteur",
     "label": "Enquêteur",
+    "labelF": "Enquêtrice",
     "class": "citadins",
     "rand": {
       "Humain": 7,
@@ -92,6 +96,7 @@
   {
     "id": "marchand",
     "label": "Marchand",
+    "labelF": "Marchande",
     "class": "citadins",
     "rand": {
       "Humain": 8,
@@ -115,6 +120,7 @@
   {
     "id": "mendiant",
     "label": "Mendiant",
+    "labelF": "Mendiante",
     "class": "citadins",
     "rand": {
       "Humain": 10,
@@ -138,6 +144,7 @@
   {
     "id": "milicien",
     "label": "Milicien",
+    "labelF": "Milicienne",
     "class": "citadins",
     "rand": {
       "Humain": 11,
@@ -160,6 +167,7 @@
   {
     "id": "ratier",
     "label": "Ratier",
+    "labelF": "Ratière",
     "class": "citadins",
     "rand": {
       "Humain": 13,
@@ -206,6 +214,7 @@
   {
     "id": "conseiller",
     "label": "Conseiller",
+    "labelF": "Conseillère",
     "class": "courtisans",
     "rand": {
       "Humain": 15,
@@ -273,6 +282,7 @@
   {
     "id": "espion",
     "label": "Espion",
+    "labelF": "Espionne",
     "class": "courtisans",
     "rand": {
       "Humain": 18,
@@ -295,6 +305,7 @@
   {
     "id": "intendant",
     "label": "Intendant",
+    "labelF": "Intendante",
     "class": "courtisans",
     "rand": {
       "Humain": 19,
@@ -340,6 +351,7 @@
   {
     "id": "serviteur",
     "label": "Serviteur",
+    "labelF": "Servante",
     "class": "courtisans",
     "rand": {
       "Humain": 23,
@@ -363,6 +375,7 @@
   {
     "id": "cavalier",
     "label": "Cavalier",
+    "labelF": "Cavalière",
     "class": "guerriers",
     "rand": {
       "Humain": 25,
@@ -386,6 +399,7 @@
   {
     "id": "chevalier",
     "label": "Chevalier",
+    "labelF": "Chevalière",
     "class": "guerriers",
     "rand": {
       "Humain": 26,
@@ -430,6 +444,7 @@
   {
     "id": "gladiateur",
     "label": "Gladiateur",
+    "labelF": "Gladiatrice",
     "class": "guerriers",
     "rand": {
       "Humain": 29,
@@ -453,6 +468,7 @@
   {
     "id": "mangeur-d-hommes",
     "label": "Mangeur d'hommes",
+    "labelF": "Mangeuse d'hommes",
     "class": "guerriers",
     "rand": {
       "Humain": null,
@@ -475,6 +491,7 @@
   {
     "id": "pretre-guerrier",
     "label": "Prêtre guerrier",
+    "labelF": "Prêtresse guerrière",
     "class": "guerriers",
     "rand": {
       "Humain": 30,
@@ -497,6 +514,7 @@
   {
     "id": "soldat",
     "label": "Soldat",
+    "labelF": "Soldate",
     "class": "guerriers",
     "rand": {
       "Humain": 34,
@@ -520,6 +538,7 @@
   {
     "id": "chevaucheur-de-blaireau",
     "label": "Chevaucheur de blaireau",
+    "labelF": "Chevaucheuse de blaireau",
     "class": "guerriers",
     "rand": {
       "Humain": null,
@@ -542,6 +561,7 @@
   {
     "id": "spadassin",
     "label": "Spadassin",
+    "labelF": "Spadassine",
     "class": "guerriers",
     "rand": {
       "Humain": 35,
@@ -565,6 +585,7 @@
   {
     "id": "tueur",
     "label": "Tueur",
+    "labelF": "Tueuse",
     "class": "guerriers",
     "rand": {
       "Humain": null,
@@ -587,6 +608,7 @@
   {
     "id": "chasseur-de-primes",
     "label": "Chasseur de primes",
+    "labelF": "Chasseuse de primes",
     "class": "itinerants",
     "rand": {
       "Humain": 36,
@@ -609,6 +631,7 @@
   {
     "id": "rodeur-fantome",
     "label": "Rôdeur fantôme",
+    "labelF": "Rôdeuse fantôme",
     "class": "itinerants",
     "rand": {
       "Humain": null,
@@ -631,6 +654,7 @@
   {
     "id": "cocher",
     "label": "Cocher",
+    "labelF": "Cochère",
     "class": "itinerants",
     "rand": {
       "Humain": 37,
@@ -653,6 +677,7 @@
   {
     "id": "colporteur",
     "label": "Colporteur",
+    "labelF": "Colporteuse",
     "class": "itinerants",
     "rand": {
       "Humain": 38,
@@ -676,6 +701,7 @@
   {
     "id": "flagellant",
     "label": "Flagellant",
+    "labelF": "Flagellante",
     "class": "itinerants",
     "rand": {
       "Humain": 40,
@@ -698,6 +724,7 @@
   {
     "id": "frere-loup",
     "label": "Frère Loup",
+    "labelF": "Sœur Louve",
     "class": "itinerants",
     "rand": {
       "Humain": null,
@@ -720,6 +747,7 @@
   {
     "id": "messager",
     "label": "Messager",
+    "labelF": "Messagère",
     "class": "itinerants",
     "rand": {
       "Humain": 41,
@@ -743,6 +771,7 @@
   {
     "id": "patrouilleur-des-karak",
     "label": "Patrouilleur des karak",
+    "labelF": "Patrouilleuse des karak",
     "class": "itinerants",
     "rand": {
       "Humain": null,
@@ -765,6 +794,7 @@
   {
     "id": "patrouilleur-routier",
     "label": "Patrouilleur routier",
+    "labelF": "Patrouilleuse routière",
     "class": "itinerants",
     "rand": {
       "Humain": 42,
@@ -809,6 +839,7 @@
   {
     "id": "repurgateur",
     "label": "Répurgateur",
+    "labelF": "Répurgatrice",
     "class": "itinerants",
     "rand": {
       "Humain": 43,
@@ -876,6 +907,7 @@
   {
     "id": "boucher-ogre",
     "label": "Boucher Ogre",
+    "labelF": "Bouchère Ogre",
     "class": "lettres",
     "rand": {
       "Humain": null,
@@ -898,6 +930,7 @@
   {
     "id": "erudit",
     "label": "Érudit",
+    "labelF": "Érudite",
     "class": "lettres",
     "rand": {
       "Humain": 48,
@@ -921,6 +954,7 @@
   {
     "id": "ingenieur",
     "label": "Ingénieur",
+    "labelF": "Ingénieure",
     "class": "lettres",
     "rand": {
       "Humain": 49,
@@ -1010,6 +1044,7 @@
   {
     "id": "pretre",
     "label": "Prêtre",
+    "labelF": "Prêtresse",
     "class": "lettres",
     "rand": {
       "Humain": 58,
@@ -1032,6 +1067,7 @@
   {
     "id": "sorcier",
     "label": "Sorcier",
+    "labelF": "Sorcière",
     "class": "lettres",
     "rand": {
       "Humain": 59,
@@ -1054,6 +1090,7 @@
   {
     "id": "batelier",
     "label": "Batelier",
+    "labelF": "Batelière",
     "class": "riverains",
     "rand": {
       "Humain": 61,
@@ -1076,6 +1113,7 @@
   {
     "id": "contrebandier",
     "label": "Contrebandier",
+    "labelF": "Contrebandière",
     "class": "riverains",
     "rand": {
       "Humain": 62,
@@ -1098,6 +1136,7 @@
   {
     "id": "debardeur",
     "label": "Débardeur",
+    "labelF": "Débardeuse",
     "class": "riverains",
     "rand": {
       "Humain": 64,
@@ -1164,6 +1203,7 @@
   {
     "id": "naufrageur",
     "label": "Naufrageur",
+    "labelF": "Naufrageuse",
     "class": "riverains",
     "rand": {
       "Humain": 70,
@@ -1186,6 +1226,7 @@
   {
     "id": "nautonier",
     "label": "Nautonier",
+    "labelF": "Nautonière",
     "class": "riverains",
     "rand": {
       "Humain": 71,
@@ -1208,6 +1249,7 @@
   {
     "id": "patrouilleur-fluvial",
     "label": "Patrouilleur fluvial",
+    "labelF": "Patrouilleuse fluviale",
     "class": "riverains",
     "rand": {
       "Humain": 73,
@@ -1230,6 +1272,7 @@
   {
     "id": "charlatan",
     "label": "Charlatan",
+    "labelF": "Charlatane",
     "class": "roublards",
     "rand": {
       "Humain": 74,
@@ -1253,6 +1296,7 @@
   {
     "id": "entremetteur",
     "label": "Entremetteur",
+    "labelF": "Entremetteuse",
     "class": "roublards",
     "rand": {
       "Humain": 76,
@@ -1298,6 +1342,7 @@
   {
     "id": "pilleur-de-tombes",
     "label": "Pilleur de tombes",
+    "labelF": "Pilleuse de tombes",
     "class": "roublards",
     "rand": {
       "Humain": 81,
@@ -1320,6 +1365,7 @@
   {
     "id": "ranconneur",
     "label": "Rançonneur",
+    "labelF": "Rançonneuse",
     "class": "roublards",
     "rand": {
       "Humain": 82,
@@ -1342,6 +1388,7 @@
   {
     "id": "receleur",
     "label": "Receleur",
+    "labelF": "Receleuse",
     "class": "roublards",
     "rand": {
       "Humain": 83,
@@ -1364,6 +1411,7 @@
   {
     "id": "sorcier-dissident",
     "label": "Sorcier dissident",
+    "labelF": "Sorcière dissidente",
     "class": "roublards",
     "rand": {
       "Humain": 84,
@@ -1387,6 +1435,7 @@
   {
     "id": "voleur",
     "label": "Voleur",
+    "labelF": "Voleuse",
     "class": "roublards",
     "rand": {
       "Humain": 87,
@@ -1432,6 +1481,7 @@
   {
     "id": "chasseur",
     "label": "Chasseur",
+    "labelF": "Chasseuse",
     "class": "ruraux",
     "rand": {
       "Humain": 90,
@@ -1455,6 +1505,7 @@
   {
     "id": "eclaireur",
     "label": "Éclaireur",
+    "labelF": "Éclaireuse",
     "class": "ruraux",
     "rand": {
       "Humain": 91,
@@ -1478,6 +1529,7 @@
   {
     "id": "gardien-de-troupeaux-de-rhinox",
     "label": "Gardien de troupeaux de rhinox",
+    "labelF": "Gardienne de troupeaux de rhinox",
     "class": "ruraux",
     "rand": {
       "Humain": null,
@@ -1523,6 +1575,7 @@
   {
     "id": "mineur",
     "label": "Mineur",
+    "labelF": "Mineuse",
     "class": "ruraux",
     "rand": {
       "Humain": 93,
@@ -1568,6 +1621,7 @@
   {
     "id": "sorcier-de-village",
     "label": "Sorcier de village",
+    "labelF": "Sorcière de village",
     "class": "ruraux",
     "rand": {
       "Humain": 95,
@@ -1590,6 +1644,7 @@
   {
     "id": "villageois",
     "label": "Villageois",
+    "labelF": "Villageoise",
     "class": "ruraux",
     "rand": {
       "Humain": 100,
@@ -1613,6 +1668,7 @@
   {
     "id": "cavalier-leger",
     "label": "Cavalier Léger",
+    "labelF": "Cavalière Légère",
     "class": "guerriers",
     "rand": {
       "Humain": 25,
@@ -1635,6 +1691,7 @@
   {
     "id": "chevalier-errant",
     "label": "Chevalier Errant",
+    "labelF": "Chevalière Errante",
     "class": "guerriers",
     "rand": {
       "Humain": 26,
@@ -1657,6 +1714,7 @@
   {
     "id": "chevalier-du-soleil-flamboyant",
     "label": "Chevalier du Soleil flamboyant",
+    "labelF": "Chevalière du Soleil flamboyant",
     "class": "guerriers",
     "rand": {
       "Humain": 26,
@@ -1679,6 +1737,7 @@
   {
     "id": "chevalier-du-loup-blanc",
     "label": "Chevalier du Loup Blanc",
+    "labelF": "Chevalière du Loup Blanc",
     "class": "guerriers",
     "rand": {
       "Humain": 26,
@@ -1701,6 +1760,7 @@
   {
     "id": "chevalier-panthere",
     "label": "Chevalier Panthère",
+    "labelF": "Chevalière Panthère",
     "class": "guerriers",
     "rand": {
       "Humain": 26,
@@ -1723,6 +1783,7 @@
   {
     "id": "pretre-de-myrmidia",
     "label": "Prêtre de Myrmidia",
+    "labelF": "Prêtresse de Myrmidia",
     "class": "guerriers",
     "rand": {
       "Humain": 30,
@@ -1745,6 +1806,7 @@
   {
     "id": "archer",
     "label": "Archer",
+    "labelF": "Archère",
     "class": "guerriers",
     "rand": {
       "Humain": 34,
@@ -1767,6 +1829,7 @@
   {
     "id": "hallebardier",
     "label": "Hallebardier",
+    "labelF": "Hallebardière",
     "class": "guerriers",
     "rand": {
       "Humain": 34,
@@ -1789,6 +1852,7 @@
   {
     "id": "arquebusier",
     "label": "Arquebusier",
+    "labelF": "Arquebusière",
     "class": "guerriers",
     "rand": {
       "Humain": 34,
@@ -1811,6 +1875,7 @@
   {
     "id": "joueur-d-epee",
     "label": "Joueur d'épée",
+    "labelF": "Joueuse d'épée",
     "class": "guerriers",
     "rand": {
       "Humain": 34,
@@ -1833,6 +1898,7 @@
   {
     "id": "piquier",
     "label": "Piquier",
+    "labelF": "Piquière",
     "class": "guerriers",
     "rand": {
       "Humain": 34,
@@ -1877,6 +1943,7 @@
   {
     "id": "suiveur-de-camp",
     "label": "Suiveur de Camp",
+    "labelF": "Suiveuse de Camp",
     "class": "itinerants",
     "rand": {
       "Humain": 38,
@@ -1921,6 +1988,7 @@
   {
     "id": "artilleur",
     "label": "Artilleur",
+    "labelF": "Artilleuse",
     "class": "lettres",
     "rand": {
       "Humain": 49,
@@ -1943,6 +2011,7 @@
   {
     "id": "artilleur-de-navire",
     "label": "Artilleur de navire",
+    "labelF": "Artilleuse de navire",
     "class": "cotiers",
     "rand": {
       "Humain": 61,
@@ -1965,6 +2034,7 @@
   {
     "id": "chansonnier",
     "label": "Chansonnier",
+    "labelF": "Chansonnière",
     "class": "cotiers",
     "rand": {
       "Humain": 62,
@@ -2010,6 +2080,7 @@
   {
     "id": "naufrageur-cotier",
     "label": "Naufrageur (Côtier)",
+    "labelF": "Naufrageuse (Côtier)",
     "class": "cotiers",
     "rand": {
       "Humain": 67,
@@ -2033,6 +2104,7 @@
   {
     "id": "nautonier-cotier",
     "label": "Nautonier (Côtier)",
+    "labelF": "Nautonière (Côtier)",
     "class": "cotiers",
     "rand": {
       "Humain": 68,
@@ -2056,6 +2128,7 @@
   {
     "id": "officier",
     "label": "Officier",
+    "labelF": "Officière",
     "class": "cotiers",
     "rand": {
       "Humain": 70,
@@ -2078,6 +2151,7 @@
   {
     "id": "pretre-marin-de-manann",
     "label": "Prêtre marin de Manann",
+    "labelF": "Prêtresse marine de Manann",
     "class": "cotiers",
     "rand": {
       "Humain": 71,
@@ -2100,6 +2174,7 @@
   {
     "id": "ratisseur-de-plages",
     "label": "Ratisseur de plages",
+    "labelF": "Ratisseuse de plages",
     "class": "cotiers",
     "rand": {
       "Humain": 73,
@@ -2123,6 +2198,7 @@
   {
     "id": "pretre-de-stromfels",
     "label": "Prêtre de Stromfels",
+    "labelF": "Prêtresse de Stromfels",
     "class": "cotiers",
     "rand": {
       "Humain": null,

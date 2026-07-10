@@ -11,6 +11,7 @@ import { Money } from '../engine/money';
 import { Coins } from './Coins';
 import { CharCard } from './CharCard';
 import { CharacterSheet } from './CharacterSheet';
+import { Modal } from './Modal';
 import { Icon } from './Icon';
 import { OrnateFrame, Fleuron } from './Ornaments';
 import { t } from '../i18n';
@@ -120,9 +121,7 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
     onClose();
   };
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="picker-title">{t('party.campaign.pick.title')}</h3>
+    <Modal variant="plain" className="picker-modal" title={t('party.campaign.pick.title')} onClose={onClose} backdropClose>
         <div className="pregen-list">
           <div className="pregen-row">
             <span className="campaign-row-name"><Icon id="scenario/arena" size="sm" /> {t('campaign.builtin')}</span>
@@ -158,8 +157,7 @@ function CampaignSelect({ currentName, onClose }: { currentName: string | null; 
         <button className="btn" onClick={onClose}>
           {t('party.campaign.pick.close')}
         </button>
-      </div>
-    </div>
+    </Modal>
   );
 }
 
@@ -464,9 +462,7 @@ export function PartyPicker({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <h3 className="picker-title">{title ?? t('picker.title', { n: party.length })}</h3>
+    <Modal variant="plain" className="picker-modal" title={title ?? t('picker.title', { n: party.length })} onClose={onClose} backdropClose>
         <div className="sheet-tabs">
           <button className={`tab ${tab === 'roster' ? 'on' : ''}`} onClick={() => setTab('roster')}>
             {t('picker.tab.roster')}
@@ -532,7 +528,6 @@ export function PartyPicker({
         <button className="btn" onClick={onClose}>
           {t('picker.done')}
         </button>
-      </div>
-    </div>
+    </Modal>
   );
 }

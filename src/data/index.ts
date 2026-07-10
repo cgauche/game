@@ -170,6 +170,9 @@ export interface CareerData {
   /** id STABLE (slug du libellé) — cible de `Combatant.career`, `CareerLevelData.career`, pregens. */
   id: string;
   label: string;
+  /** Forme féminine d'AFFICHAGE (le LDB n'imprime que le masculin — féminisation standard MAISON) ;
+   *  absent = forme épicène (identique au masculin). Lu par `careerLabelFor` (bord UI). */
+  labelF?: string;
   /** `id` de la Classe (`ClassData.id`) — réf d'entité, ≠ libellé. */
   class: string;
   /** Tableau des Classes et Carrières aléatoires (LDB 05 l.197+) : borne haute d100 par colonne
@@ -180,6 +183,8 @@ export interface CareerData {
 }
 export interface CareerLevelData {
   label: string;
+  /** Forme féminine d'AFFICHAGE du niveau (MAISON, cf. `CareerData.labelF`) ; absent = épicène. */
+  labelF?: string;
   /** `id` de la Carrière (`CareerData.id`) — réf d'entité, ≠ libellé. */
   career: string;
   level: number;
@@ -1589,6 +1594,18 @@ const CAREER_BY_ID = new Map(careers.map((c) => [c.id, c]));
 /** Résout une Carrière par son `id` STABLE. Le libellé ne sert qu'à l'affichage. */
 export function findCareerById(id: string | undefined): CareerData | undefined {
   return id ? CAREER_BY_ID.get(id) : undefined;
+}
+/** Choix d'AFFICHAGE masculin/féminin (source unique) : `labelF` si sexe F et disponible, sinon
+ *  `label`. Le sexe vit dans l'apparence cosmétique (`Combatant.appearance.sex`), jamais dans le moteur. */
+export function displayLabelForSex(sex: 'M' | 'F' | undefined, label: string, labelF?: string): string {
+  return sex === 'F' && labelF ? labelF : label;
+}
+/** Libellé de Carrière à AFFICHER pour un personnage (forme féminine si sexe F). Bord UI — le
+ *  retour est du texte d'affichage, JAMAIS une clé. */
+export function careerLabelFor(c: { career?: string; appearance?: { sex?: 'M' | 'F' } }): string {
+  const career = findCareerById(c.career);
+  if (!career) return c.career ?? '';
+  return displayLabelForSex(c.appearance?.sex, career.label, career.labelF);
 }
 const CLASS_BY_ID = new Map(classes.map((c) => [c.id, c]));
 /** Résout une Classe par son `id` STABLE (= `CareerData.class`). */

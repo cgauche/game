@@ -103,11 +103,11 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
   });
 
   const actions: RollAction[] = resolved
-    ? [{ key: 'continue', label: 'Continuer', kind: 'primary', onClick: cont, when: 'always' }]
+    ? [{ key: 'continue', label: 'Continuer', onClick: cont, when: 'always' }]
     : [
-        ...(!p.voyage ? [{ key: 'cancel', label: 'Annuler', kind: 'ghost' as const, onClick: cancel, when: 'always' as const }] : []),
-        ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, kind: 'primary' as const, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
-        { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'always', disabled: !allRolled },
+        ...(!p.voyage ? [{ key: 'cancel', label: 'Annuler', onClick: cancel, when: 'always' as const }] : []),
+        ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
+        { key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'always', disabled: !allRolled },
       ];
 
   return (

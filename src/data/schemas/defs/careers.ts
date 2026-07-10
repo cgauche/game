@@ -15,6 +15,9 @@ export const schema = z.array(
     /** id STABLE (slug du libellé) — cible de `Combatant.career`, `CareerLevelData.career`, pregens. */
     id: z.string(),
     label: z.string(),
+    /** Forme féminine d'AFFICHAGE — le LDB n'imprime QUE le masculin (fiches ch. 07-08), donc
+     *  féminisation standard FR MAISON ; omis = forme épicène (identique au masculin). */
+    labelF: z.string().optional(),
     /** `id` de la Classe (`ClassData.id`). */
     class: z.string(),
     /** Clé = libellé d'espèce (`SpeciesData.label`, ex. « Humain », « Haut Elfe »…) → borne haute

@@ -50,6 +50,11 @@
   margin: 0;
   font-size: 18px;
 }
+.worldmap-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .worldmap-canvas {
   position: relative; /* ancre les commandes de zoom */
   flex: 1;
@@ -191,7 +196,6 @@
 .sea-act-intro { font-size: 12.5px; color: var(--muted); margin-bottom: 8px; }
 .sea-act-hero { padding: 10px 12px; }
 .sea-act-hero h4 { margin: 0 0 8px; display: flex; align-items: center; gap: 6px; font-size: 14px; }
-.sea-act-choices { display: flex; gap: 6px; flex-wrap: wrap; }
 .sea-act-detail { margin-top: 8px; font-size: 12.5px; }
 .sea-act-invest { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 13px; }
 .sea-act-invest input { width: 84px; }

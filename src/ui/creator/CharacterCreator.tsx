@@ -19,6 +19,8 @@ import {
   careersForSpecies,
   classes,
   findCareerById,
+  careerLabelFor,
+  displayLabelForSex,
   findSpeciesById,
   findClassById,
   findSkill,
@@ -485,7 +487,7 @@ export function CareerZones({ d, setD }: StepProps): { rail: ReactNode; main: Re
         <CharacterPreview appearance={pickAppearance(sp.id, d.sex)} career={d.careerId} size="md" ambiance="panel" />
         <div>
           <h2>
-            <CodexRef category="careers" label={career?.label ?? d.careerId}>{career?.label ?? d.careerId}</CodexRef>{' '}
+            <CodexRef category="careers" label={career?.label ?? d.careerId}>{careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } })}</CodexRef>{' '}
             {career?.class && (
               <span className="hint">(<CodexRef category="classes" label={findClassById(career.class)?.label ?? career.class}>{findClassById(career.class)?.label ?? career.class}</CodexRef>)</span>
             )}
@@ -1225,8 +1227,8 @@ export function RecapZones({ d }: { d: CreatorDraft }): { rail: ReactNode; main:
         <div className="recap-id">
           <h2>{d.name.trim() || 'Aventurier'}</h2>
           <p>
-            <CodexRef category="races" label={speciesLabel}>{speciesLabel}</CodexRef>, {draftLevel(d)?.label} (
-            <CodexRef category="careers" label={careerLabel}>{careerLabel}</CodexRef>) · {draftLevel(d)?.status}
+            <CodexRef category="races" label={speciesLabel}>{speciesLabel}</CodexRef>, {displayLabelForSex(d.sex, draftLevel(d)?.label ?? '', draftLevel(d)?.labelF)} (
+            <CodexRef category="careers" label={careerLabel}>{displayLabelForSex(d.sex, careerLabel, career?.labelF)}</CodexRef>) · {draftLevel(d)?.status}
           </p>
           <p className="recap-meta">
             {hero?.details?.age ? `${hero.details.age} ans · ` : ''}

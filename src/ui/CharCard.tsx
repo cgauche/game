@@ -4,7 +4,7 @@ import { isUnarmed, damageString } from '../engine/items';
 import { CharacterPreview } from './CharacterPreview';
 import { OrnateFrame } from './Ornaments';
 import { Icon } from './Icon';
-import { speciesSingular, findSpeciesById, findCareerById, levelsForCareer } from '../data';
+import { speciesSingular, findSpeciesById, careerLabelFor, levelsForCareer } from '../data';
 import { CharStatsGrid } from './CharStatsGrid';
 import { ZONES } from './EquipmentPanel';
 import { SkillChip, TalentChip, EntityRef } from './EntityChip';
@@ -35,7 +35,7 @@ function CharIdentity({ hero }: { hero: Combatant }) {
       {/* Race/carrière en texte simple : la zone parente est elle-même cliquable (ouvre la fiche)
           → pas de CodexRef imbriqué (conflit de clic) ; le survol-info vit sur la fiche. */}
       <span className="char-sub">
-        {speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)} · {findCareerById(hero.career)?.label ?? hero.career}
+        {speciesSingular(findSpeciesById(hero.species)?.label ?? hero.species)} · {careerLabelFor(hero)}
         {hero.careerLevel ? ` (niv. ${hero.careerLevel})` : ''}
       </span>
       {status && <span className="char-status">Statut {status}</span>}

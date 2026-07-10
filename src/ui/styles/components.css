@@ -207,7 +207,7 @@
 .modal.wide {
   width: min(760px, 94vw);
 }
-.picker-title {
+.picker-modal > h3 {
   margin: 0 0 10px;
   color: var(--gold2);
   font-size: 20px;

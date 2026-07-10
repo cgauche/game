@@ -32,7 +32,7 @@ import {
 } from '../engine/careerSlots';
 import { careerSkillAdditions, careerTalentAdditions, baseWithTalents } from '../engine/talentEffects';
 import { rule } from '../engine/policy';
-import { levelsForCareer, findSkillById, findCareerById, findClassById, careers, refLabel, specLabel } from '../data';
+import { levelsForCareer, findSkillById, findCareerById, findClassById, careers, refLabel, specLabel, displayLabelForSex } from '../data';
 
 export interface CharAdvanceRow {
   key: CharKey;
@@ -258,7 +258,7 @@ export function buildAdvancementView(hero: Combatant): AdvancementView {
     xp: hero.xp ?? 0,
     career,
     careerLevel,
-    levelLabel: cur?.label ?? career,
+    levelLabel: cur ? displayLabelForSex(hero.appearance?.sex, cur.label, cur.labelF) : career,
     status: cur?.status ?? '',
     completed,
     changeCost,

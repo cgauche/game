@@ -15,7 +15,10 @@ export type CoverClass = 'none' | 'imparfaite' | 'moyenne' | 'totale';
 
 const COVER_MOD: Record<CoverClass, number> = { none: 0, imparfaite: -10, moyenne: -20, totale: -30 };
 export const coverModifier = (c: CoverClass): number => COVER_MOD[c];
-const worst = (a: CoverClass, b: CoverClass): CoverClass => (COVER_MOD[b] < COVER_MOD[a] ? b : a);
+/** Retient le couvert le PLUS protecteur des deux (modificateur le plus bas). Source unique de la
+ *  fusion terrain × couvert de pont (`DeckCoverClass ⊂ CoverClass`, cf. combatFlow `attackEnv`). */
+export const worstCover = (a: CoverClass, b: CoverClass): CoverClass => (COVER_MOD[b] < COVER_MOD[a] ? b : a);
+const worst = worstCover;
 
 /** Couvert d'un terrain partiel. */
 const TERRAIN_COVER: Record<string, CoverClass> = { bois: 'imparfaite' };

@@ -93,6 +93,7 @@
   },
   {
     "label": "Agitateur",
+    "labelF": "Agitatrice",
     "career": "agitateur",
     "level": 2,
     "skills": [
@@ -162,6 +163,7 @@
   },
   {
     "label": "Fauteur de Troubles",
+    "labelF": "Fauteuse de Troubles",
     "career": "agitateur",
     "level": 3,
     "skills": [
@@ -286,6 +288,7 @@
   },
   {
     "label": "Apprenti Artisan",
+    "labelF": "Apprentie Artisane",
     "career": "artisan",
     "level": 1,
     "skills": [
@@ -379,6 +382,7 @@
   },
   {
     "label": "Artisan",
+    "labelF": "Artisane",
     "career": "artisan",
     "level": 2,
     "skills": [
@@ -453,6 +457,7 @@
   },
   {
     "label": "Maître artisan",
+    "labelF": "Maîtresse artisane",
     "career": "artisan",
     "level": 3,
     "skills": [
@@ -519,6 +524,7 @@
   },
   {
     "label": "Maître de guilde",
+    "labelF": "Maîtresse de guilde",
     "career": "artisan",
     "level": 4,
     "skills": [
@@ -570,6 +576,7 @@
   },
   {
     "label": "Employé",
+    "labelF": "Employée",
     "career": "bourgeois",
     "level": 1,
     "skills": [
@@ -654,6 +661,7 @@
   },
   {
     "label": "Bourgeois",
+    "labelF": "Bourgeoise",
     "career": "bourgeois",
     "level": 2,
     "skills": [
@@ -733,6 +741,7 @@
   },
   {
     "label": "Conseiller municipal",
+    "labelF": "Conseillère municipale",
     "career": "bourgeois",
     "level": 3,
     "skills": [
@@ -955,6 +964,7 @@
   },
   {
     "label": "Enquêteur",
+    "labelF": "Enquêtrice",
     "career": "enqueteur",
     "level": 2,
     "skills": [
@@ -1034,6 +1044,7 @@
   },
   {
     "label": "Maître Enquêteur",
+    "labelF": "Maîtresse Enquêtrice",
     "career": "enqueteur",
     "level": 3,
     "skills": [
@@ -1146,6 +1157,7 @@
   },
   {
     "label": "Négociant",
+    "labelF": "Négociante",
     "career": "marchand",
     "level": 1,
     "skills": [
@@ -1244,6 +1256,7 @@
   },
   {
     "label": "Marchand",
+    "labelF": "Marchande",
     "career": "marchand",
     "level": 2,
     "skills": [
@@ -1324,6 +1337,7 @@
   },
   {
     "label": "Maître Marchand",
+    "labelF": "Maîtresse Marchande",
     "career": "marchand",
     "level": 3,
     "skills": [
@@ -1393,6 +1407,7 @@
   },
   {
     "label": "Prince Marchand",
+    "labelF": "Princesse Marchande",
     "career": "marchand",
     "level": 4,
     "skills": [
@@ -1459,6 +1474,7 @@
   },
   {
     "label": "Indigent",
+    "labelF": "Indigente",
     "career": "mendiant",
     "level": 1,
     "skills": [
@@ -1544,6 +1560,7 @@
   },
   {
     "label": "Mendiant",
+    "labelF": "Mendiante",
     "career": "mendiant",
     "level": 2,
     "skills": [
@@ -1617,6 +1634,7 @@
   },
   {
     "label": "Maître Mendiant",
+    "labelF": "Maîtresse Mendiante",
     "career": "mendiant",
     "level": 3,
     "skills": [
@@ -1683,6 +1701,7 @@
   },
   {
     "label": "Roi des Mendiants",
+    "labelF": "Reine des Mendiants",
     "career": "mendiant",
     "level": 4,
     "skills": [
@@ -1821,6 +1840,7 @@
   },
   {
     "label": "Milicien",
+    "labelF": "Milicienne",
     "career": "milicien",
     "level": 2,
     "skills": [
@@ -1899,6 +1919,7 @@
   },
   {
     "label": "Sergent de la Milice",
+    "labelF": "Sergente de la Milice",
     "career": "milicien",
     "level": 3,
     "skills": [
@@ -2029,6 +2050,7 @@
   },
   {
     "label": "Chasseur de Rat",
+    "labelF": "Chasseuse de Rat",
     "career": "ratier",
     "level": 1,
     "skills": [
@@ -2129,6 +2151,7 @@
   },
   {
     "label": "Ratier",
+    "labelF": "Ratière",
     "career": "ratier",
     "level": 2,
     "skills": [
@@ -2203,6 +2226,7 @@
   },
   {
     "label": "Égoutier",
+    "labelF": "Égoutière",
     "career": "ratier",
     "level": 3,
     "skills": [
@@ -2268,6 +2292,7 @@
   },
   {
     "label": "Exterminateur",
+    "labelF": "Exterminatrice",
     "career": "ratier",
     "level": 4,
     "skills": [
@@ -2323,6 +2348,7 @@
   },
   {
     "label": "Artiste Apprenti",
+    "labelF": "Artiste Apprentie",
     "career": "artiste",
     "level": 1,
     "skills": [
@@ -2601,6 +2627,7 @@
   },
   {
     "label": "Assistant",
+    "labelF": "Assistante",
     "career": "conseiller",
     "level": 1,
     "skills": [
@@ -2683,6 +2710,7 @@
   },
   {
     "label": "Conseiller",
+    "labelF": "Conseillère",
     "career": "conseiller",
     "level": 2,
     "skills": [
@@ -2752,6 +2780,7 @@
   },
   {
     "label": "Consultant",
+    "labelF": "Consultante",
     "career": "conseiller",
     "level": 3,
     "skills": [
@@ -2814,6 +2843,7 @@
   },
   {
     "label": "Chancelier",
+    "labelF": "Chancelière",
     "career": "conseiller",
     "level": 4,
     "skills": [
@@ -2876,6 +2906,7 @@
   },
   {
     "label": "Escrimeur",
+    "labelF": "Escrimeuse",
     "career": "duelliste",
     "level": 1,
     "skills": [
@@ -3052,6 +3083,7 @@
   },
   {
     "label": "Maître duelliste",
+    "labelF": "Maîtresse duelliste",
     "career": "duelliste",
     "level": 3,
     "skills": [
@@ -3124,6 +3156,7 @@
   },
   {
     "label": "Champion de Justice",
+    "labelF": "Championne de Justice",
     "career": "duelliste",
     "level": 4,
     "skills": [
@@ -3407,6 +3440,7 @@
   },
   {
     "label": "Ambassadeur",
+    "labelF": "Ambassadrice",
     "career": "emissaire",
     "level": 4,
     "skills": [
@@ -3464,6 +3498,7 @@
   },
   {
     "label": "Informateur",
+    "labelF": "Informatrice",
     "career": "espion",
     "level": 1,
     "skills": [
@@ -3556,6 +3591,7 @@
   },
   {
     "label": "Espion",
+    "labelF": "Espionne",
     "career": "espion",
     "level": 2,
     "skills": [
@@ -3638,6 +3674,7 @@
   },
   {
     "label": "Agent secret",
+    "labelF": "Agente secrète",
     "career": "espion",
     "level": 3,
     "skills": [
@@ -3709,6 +3746,7 @@
   },
   {
     "label": "Maître Espion",
+    "labelF": "Maîtresse Espionne",
     "career": "espion",
     "level": 4,
     "skills": [
@@ -3766,6 +3804,7 @@
   },
   {
     "label": "Gardien",
+    "labelF": "Gardienne",
     "career": "intendant",
     "level": 1,
     "skills": [
@@ -3856,6 +3895,7 @@
   },
   {
     "label": "Intendant",
+    "labelF": "Intendante",
     "career": "intendant",
     "level": 2,
     "skills": [
@@ -3940,6 +3980,7 @@
   },
   {
     "label": "Sénéchal",
+    "labelF": "Sénéchale",
     "career": "intendant",
     "level": 3,
     "skills": [
@@ -4004,6 +4045,7 @@
   },
   {
     "label": "Gouverneur",
+    "labelF": "Gouverneure",
     "career": "intendant",
     "level": 4,
     "skills": [
@@ -4059,6 +4101,7 @@
   },
   {
     "label": "Héritier",
+    "labelF": "Héritière",
     "career": "noble",
     "level": 1,
     "skills": [
@@ -4241,6 +4284,7 @@
   },
   {
     "label": "Magnat",
+    "labelF": "Magnate",
     "career": "noble",
     "level": 3,
     "skills": [
@@ -4315,6 +4359,7 @@
   },
   {
     "label": "Noble Seigneur",
+    "labelF": "Noble Dame",
     "career": "noble",
     "level": 4,
     "skills": [
@@ -4458,6 +4503,7 @@
   },
   {
     "label": "Serviteur",
+    "labelF": "Servante",
     "career": "serviteur",
     "level": 2,
     "skills": [
@@ -4596,6 +4642,7 @@
   },
   {
     "label": "Régisseur",
+    "labelF": "Régisseuse",
     "career": "serviteur",
     "level": 4,
     "skills": [
@@ -4651,6 +4698,7 @@
   },
   {
     "label": "Apprenti Cavalier",
+    "labelF": "Apprentie Cavalière",
     "career": "cavalier",
     "level": 1,
     "skills": [
@@ -4740,6 +4788,7 @@
   },
   {
     "label": "Cavalier",
+    "labelF": "Cavalière",
     "career": "cavalier",
     "level": 2,
     "skills": [
@@ -4832,6 +4881,7 @@
   },
   {
     "label": "Sergent de Cavalerie légère",
+    "labelF": "Sergente de Cavalerie légère",
     "career": "cavalier",
     "level": 3,
     "skills": [
@@ -4891,6 +4941,7 @@
   },
   {
     "label": "Officier de Cavalerie Légère",
+    "labelF": "Officière de Cavalerie Légère",
     "career": "cavalier",
     "level": 4,
     "skills": [
@@ -4943,6 +4994,7 @@
   },
   {
     "label": "Ecuyer",
+    "labelF": "Écuyère",
     "career": "chevalier",
     "level": 1,
     "skills": [
@@ -5042,6 +5094,7 @@
   },
   {
     "label": "Chevalier",
+    "labelF": "Chevalière",
     "career": "chevalier",
     "level": 2,
     "skills": [
@@ -5126,6 +5179,7 @@
   },
   {
     "label": "Chevalier commandeur",
+    "labelF": "Chevalière commandeur",
     "career": "chevalier",
     "level": 3,
     "skills": [
@@ -5188,6 +5242,7 @@
   },
   {
     "label": "Chevalier du Cercle Intérieur",
+    "labelF": "Chevalière du Cercle Intérieur",
     "career": "chevalier",
     "level": 4,
     "skills": [
@@ -5488,6 +5543,7 @@
   },
   {
     "label": "Garde officier",
+    "labelF": "Garde officière",
     "career": "garde",
     "level": 4,
     "skills": [
@@ -5624,6 +5680,7 @@
   },
   {
     "label": "Gladiateur",
+    "labelF": "Gladiatrice",
     "career": "gladiateur",
     "level": 2,
     "skills": [
@@ -5707,6 +5764,7 @@
   },
   {
     "label": "Champion de fosse",
+    "labelF": "Championne de fosse",
     "career": "gladiateur",
     "level": 3,
     "skills": [
@@ -5916,6 +5974,7 @@
   },
   {
     "label": "Mangeur d'hommes",
+    "labelF": "Mangeuse d'hommes",
     "career": "mangeur-d-hommes",
     "level": 2,
     "skills": [
@@ -5996,6 +6055,7 @@
   },
   {
     "label": "Broyeur d'hommes",
+    "labelF": "Broyeuse d'hommes",
     "career": "mangeur-d-hommes",
     "level": 3,
     "skills": [
@@ -6058,6 +6118,7 @@
   },
   {
     "label": "Capitaine mangeur d'hommes",
+    "labelF": "Capitaine mangeuse d'hommes",
     "career": "mangeur-d-hommes",
     "level": 4,
     "skills": [
@@ -6203,6 +6264,7 @@
   },
   {
     "label": "Prêtre Guerrier",
+    "labelF": "Prêtresse Guerrière",
     "career": "pretre-guerrier",
     "level": 2,
     "skills": [
@@ -6276,6 +6338,7 @@
   },
   {
     "label": "Prêtre sergent",
+    "labelF": "Prêtresse sergente",
     "career": "pretre-guerrier",
     "level": 3,
     "skills": [
@@ -6338,6 +6401,7 @@
   },
   {
     "label": "Prêtre capitaine",
+    "labelF": "Prêtresse capitaine",
     "career": "pretre-guerrier",
     "level": 4,
     "skills": [
@@ -6479,6 +6543,7 @@
   },
   {
     "label": "Soldat",
+    "labelF": "Soldate",
     "career": "soldat",
     "level": 2,
     "skills": [
@@ -6554,6 +6619,7 @@
   },
   {
     "label": "Sergent",
+    "labelF": "Sergente",
     "career": "soldat",
     "level": 3,
     "skills": [
@@ -6615,6 +6681,7 @@
   },
   {
     "label": "Officier",
+    "labelF": "Officière",
     "career": "soldat",
     "level": 4,
     "skills": [
@@ -6685,6 +6752,7 @@
   },
   {
     "label": "Taquineur de blaireau",
+    "labelF": "Taquineuse de blaireau",
     "career": "chevaucheur-de-blaireau",
     "level": 1,
     "skills": [
@@ -6780,6 +6848,7 @@
   },
   {
     "label": "Chevaucheur de blaireau",
+    "labelF": "Chevaucheuse de blaireau",
     "career": "chevaucheur-de-blaireau",
     "level": 2,
     "skills": [
@@ -6856,6 +6925,7 @@
   },
   {
     "label": "Sergent blaireau",
+    "labelF": "Sergente blaireau",
     "career": "chevaucheur-de-blaireau",
     "level": 3,
     "skills": [
@@ -6918,6 +6988,7 @@
   },
   {
     "label": "Maître blaireau",
+    "labelF": "Maîtresse blaireau",
     "career": "chevaucheur-de-blaireau",
     "level": 4,
     "skills": [
@@ -7062,6 +7133,7 @@
   },
   {
     "label": "Spadassin",
+    "labelF": "Spadassine",
     "career": "spadassin",
     "level": 2,
     "skills": [
@@ -7144,6 +7216,7 @@
   },
   {
     "label": "Tueur à gages",
+    "labelF": "Tueuse à gages",
     "career": "spadassin",
     "level": 3,
     "skills": [
@@ -7212,6 +7285,7 @@
   },
   {
     "label": "Assassin",
+    "labelF": "Assassine",
     "career": "spadassin",
     "level": 4,
     "skills": [
@@ -7271,6 +7345,7 @@
   },
   {
     "label": "Tueur de Trolls",
+    "labelF": "Tueuse de Trolls",
     "career": "tueur",
     "level": 1,
     "skills": [
@@ -7363,6 +7438,7 @@
   },
   {
     "label": "Tueur de Géants",
+    "labelF": "Tueuse de Géants",
     "career": "tueur",
     "level": 2,
     "skills": [
@@ -7440,6 +7516,7 @@
   },
   {
     "label": "Tueur de Dragons",
+    "labelF": "Tueuse de Dragons",
     "career": "tueur",
     "level": 3,
     "skills": [
@@ -7504,6 +7581,7 @@
   },
   {
     "label": "Tueur de Démons",
+    "labelF": "Tueuse de Démons",
     "career": "tueur",
     "level": 4,
     "skills": [
@@ -7553,6 +7631,7 @@
   },
   {
     "label": "Chasseur de voleurs",
+    "labelF": "Chasseuse de voleurs",
     "career": "chasseur-de-primes",
     "level": 1,
     "skills": [
@@ -7640,6 +7719,7 @@
   },
   {
     "label": "Chasseur de primes",
+    "labelF": "Chasseuse de primes",
     "career": "chasseur-de-primes",
     "level": 2,
     "skills": [
@@ -7728,6 +7808,7 @@
   },
   {
     "label": "Maître Chasseur de primes",
+    "labelF": "Maîtresse Chasseuse de primes",
     "career": "chasseur-de-primes",
     "level": 3,
     "skills": [
@@ -7793,6 +7874,7 @@
   },
   {
     "label": "Chasseur de primes vétéran",
+    "labelF": "Chasseuse de primes vétéran",
     "career": "chasseur-de-primes",
     "level": 4,
     "skills": [
@@ -7855,6 +7937,7 @@
   },
   {
     "label": "Garde forestier",
+    "labelF": "Garde forestière",
     "career": "rodeur-fantome",
     "level": 1,
     "skills": [
@@ -7954,6 +8037,7 @@
   },
   {
     "label": "Rôdeur fantôme",
+    "labelF": "Rôdeuse fantôme",
     "career": "rodeur-fantome",
     "level": 2,
     "skills": [
@@ -8245,6 +8329,7 @@
   },
   {
     "label": "Cocher",
+    "labelF": "Cochère",
     "career": "cocher",
     "level": 2,
     "skills": [
@@ -8330,6 +8415,7 @@
   },
   {
     "label": "Maître cocher",
+    "labelF": "Maîtresse cochère",
     "career": "cocher",
     "level": 3,
     "skills": [
@@ -8397,6 +8483,7 @@
   },
   {
     "label": "Maître des routes",
+    "labelF": "Maîtresse des routes",
     "career": "cocher",
     "level": 4,
     "skills": [
@@ -8449,6 +8536,7 @@
   },
   {
     "label": "Vagabond",
+    "labelF": "Vagabonde",
     "career": "colporteur",
     "level": 1,
     "skills": [
@@ -8543,6 +8631,7 @@
   },
   {
     "label": "Colporteur",
+    "labelF": "Colporteuse",
     "career": "colporteur",
     "level": 2,
     "skills": [
@@ -8625,6 +8714,7 @@
   },
   {
     "label": "Maître colporteur",
+    "labelF": "Maîtresse colporteuse",
     "career": "colporteur",
     "level": 3,
     "skills": [
@@ -8686,6 +8776,7 @@
   },
   {
     "label": "Négociant itinérant",
+    "labelF": "Négociante itinérante",
     "career": "colporteur",
     "level": 4,
     "skills": [
@@ -8830,6 +8921,7 @@
   },
   {
     "label": "Flagellant",
+    "labelF": "Flagellante",
     "career": "flagellant",
     "level": 2,
     "skills": [
@@ -8909,6 +9001,7 @@
   },
   {
     "label": "Pénitent",
+    "labelF": "Pénitente",
     "career": "flagellant",
     "level": 3,
     "skills": [
@@ -8968,6 +9061,7 @@
   },
   {
     "label": "Prophète du destin",
+    "labelF": "Prophétesse du destin",
     "career": "flagellant",
     "level": 4,
     "skills": [
@@ -9021,6 +9115,7 @@
   },
   {
     "label": "Survivant",
+    "labelF": "Survivante",
     "career": "frere-loup",
     "level": 1,
     "skills": [
@@ -9117,6 +9212,7 @@
   },
   {
     "label": "Frère Loup",
+    "labelF": "Sœur Louve",
     "career": "frere-loup",
     "level": 2,
     "skills": [
@@ -9186,6 +9282,7 @@
   },
   {
     "label": "Compagnon Loup",
+    "labelF": "Compagne Louve",
     "career": "frere-loup",
     "level": 3,
     "skills": [
@@ -9242,6 +9339,7 @@
   },
   {
     "label": "Grand Loup",
+    "labelF": "Grande Louve",
     "career": "frere-loup",
     "level": 4,
     "skills": [
@@ -9297,6 +9395,7 @@
   },
   {
     "label": "Coureur",
+    "labelF": "Coureuse",
     "career": "messager",
     "level": 1,
     "skills": [
@@ -9378,6 +9477,7 @@
   },
   {
     "label": "Messager",
+    "labelF": "Messagère",
     "career": "messager",
     "level": 2,
     "skills": [
@@ -9522,6 +9622,7 @@
   },
   {
     "label": "Messager vétéran",
+    "labelF": "Messagère vétéran",
     "career": "messager",
     "level": 4,
     "skills": [
@@ -9577,6 +9678,7 @@
   },
   {
     "label": "Coureur des forts",
+    "labelF": "Coureuse des forts",
     "career": "patrouilleur-des-karak",
     "level": 1,
     "skills": [
@@ -9668,6 +9770,7 @@
   },
   {
     "label": "Patrouilleur des karak",
+    "labelF": "Patrouilleuse des karak",
     "career": "patrouilleur-des-karak",
     "level": 2,
     "skills": [
@@ -9751,6 +9854,7 @@
   },
   {
     "label": "Gardien des routes des karak",
+    "labelF": "Gardienne des routes des karak",
     "career": "patrouilleur-des-karak",
     "level": 3,
     "skills": [
@@ -9820,6 +9924,7 @@
   },
   {
     "label": "Arpenteur des karak",
+    "labelF": "Arpenteuse des karak",
     "career": "patrouilleur-des-karak",
     "level": 4,
     "skills": [
@@ -9878,6 +9983,7 @@
   },
   {
     "label": "Péager",
+    "labelF": "Péagère",
     "career": "patrouilleur-routier",
     "level": 1,
     "skills": [
@@ -9969,6 +10075,7 @@
   },
   {
     "label": "Patrouilleur routier",
+    "labelF": "Patrouilleuse routière",
     "career": "patrouilleur-routier",
     "level": 2,
     "skills": [
@@ -10050,6 +10157,7 @@
   },
   {
     "label": "Sergent Patrouilleur",
+    "labelF": "Sergente Patrouilleuse",
     "career": "patrouilleur-routier",
     "level": 3,
     "skills": [
@@ -10126,6 +10234,7 @@
   },
   {
     "label": "Capitaine Patrouilleur",
+    "labelF": "Capitaine Patrouilleuse",
     "career": "patrouilleur-routier",
     "level": 4,
     "skills": [
@@ -10373,6 +10482,7 @@
   },
   {
     "label": "Sergent Gardechamps",
+    "labelF": "Sergente Gardechamps",
     "career": "gardechamps",
     "level": 3,
     "skills": [
@@ -10489,6 +10599,7 @@
   },
   {
     "label": "Interrogateur",
+    "labelF": "Interrogatrice",
     "career": "repurgateur",
     "level": 1,
     "skills": [
@@ -10574,6 +10685,7 @@
   },
   {
     "label": "Répurgateur",
+    "labelF": "Répurgatrice",
     "career": "repurgateur",
     "level": 2,
     "skills": [
@@ -10663,6 +10775,7 @@
   },
   {
     "label": "Inquisiteur",
+    "labelF": "Inquisitrice",
     "career": "repurgateur",
     "level": 3,
     "skills": [
@@ -10727,6 +10840,7 @@
   },
   {
     "label": "Répurgateur vétéran",
+    "labelF": "Répurgatrice vétéran",
     "career": "repurgateur",
     "level": 4,
     "skills": [
@@ -10780,6 +10894,7 @@
   },
   {
     "label": "Musicien de rues",
+    "labelF": "Musicienne de rues",
     "career": "saltimbanque",
     "level": 1,
     "skills": [
@@ -11004,6 +11119,7 @@
   },
   {
     "label": "Chef de troupe",
+    "labelF": "Cheffe de troupe",
     "career": "saltimbanque",
     "level": 4,
     "skills": [
@@ -11061,6 +11177,7 @@
   },
   {
     "label": "Apprenti Apothicaire",
+    "labelF": "Apprentie Apothicaire",
     "career": "apothicaire",
     "level": 1,
     "skills": [
@@ -11232,6 +11349,7 @@
   },
   {
     "label": "Maître Apothicaire",
+    "labelF": "Maîtresse Apothicaire",
     "career": "apothicaire",
     "level": 3,
     "skills": [
@@ -11354,6 +11472,7 @@
   },
   {
     "label": "Faiseur de bouillie",
+    "labelF": "Faiseuse de bouillie",
     "career": "boucher-ogre",
     "level": 1,
     "skills": [
@@ -11450,6 +11569,7 @@
   },
   {
     "label": "Boucher ogre",
+    "labelF": "Bouchère ogre",
     "career": "boucher-ogre",
     "level": 2,
     "skills": [
@@ -11601,6 +11721,7 @@
   },
   {
     "label": "Maître massacreur",
+    "labelF": "Maîtresse massacreuse",
     "career": "boucher-ogre",
     "level": 4,
     "skills": [
@@ -11656,6 +11777,7 @@
   },
   {
     "label": "Étudiant",
+    "labelF": "Étudiante",
     "career": "erudit",
     "level": 1,
     "skills": [
@@ -11747,6 +11869,7 @@
   },
   {
     "label": "Érudit",
+    "labelF": "Érudite",
     "career": "erudit",
     "level": 2,
     "skills": [
@@ -11820,6 +11943,7 @@
   },
   {
     "label": "Chercheur",
+    "labelF": "Chercheuse",
     "career": "erudit",
     "level": 3,
     "skills": [
@@ -11882,6 +12006,7 @@
   },
   {
     "label": "Professeur",
+    "labelF": "Professeure",
     "career": "erudit",
     "level": 4,
     "skills": [
@@ -11931,6 +12056,7 @@
   },
   {
     "label": "Étudiant Ingénieur",
+    "labelF": "Étudiante Ingénieure",
     "career": "ingenieur",
     "level": 1,
     "skills": [
@@ -12021,6 +12147,7 @@
   },
   {
     "label": "Ingénieur",
+    "labelF": "Ingénieure",
     "career": "ingenieur",
     "level": 2,
     "skills": [
@@ -12096,6 +12223,7 @@
   },
   {
     "label": "Maître Ingénieur",
+    "labelF": "Maîtresse Ingénieure",
     "career": "ingenieur",
     "level": 3,
     "skills": [
@@ -12159,6 +12287,7 @@
   },
   {
     "label": "Ingénieur Agréé",
+    "labelF": "Ingénieure Agréée",
     "career": "ingenieur",
     "level": 4,
     "skills": [
@@ -12217,6 +12346,7 @@
   },
   {
     "label": "Étudiant en Droit",
+    "labelF": "Étudiante en Droit",
     "career": "juriste",
     "level": 1,
     "skills": [
@@ -12381,6 +12511,7 @@
   },
   {
     "label": "Maître du Barreau",
+    "labelF": "Maîtresse du Barreau",
     "career": "juriste",
     "level": 3,
     "skills": [
@@ -12496,6 +12627,7 @@
   },
   {
     "label": "Étudiant en Médecine",
+    "labelF": "Étudiante en Médecine",
     "career": "medecin",
     "level": 1,
     "skills": [
@@ -12658,6 +12790,7 @@
   },
   {
     "label": "Docteur en médecine",
+    "labelF": "Docteure en médecine",
     "career": "medecin",
     "level": 3,
     "skills": [
@@ -13052,6 +13185,7 @@
   },
   {
     "label": "Initié",
+    "labelF": "Initiée",
     "career": "pretre",
     "level": 1,
     "skills": [
@@ -13136,6 +13270,7 @@
   },
   {
     "label": "Prêtre",
+    "labelF": "Prêtresse",
     "career": "pretre",
     "level": 2,
     "skills": [
@@ -13210,6 +13345,7 @@
   },
   {
     "label": "Grand Prêtre",
+    "labelF": "Grande Prêtresse",
     "career": "pretre",
     "level": 3,
     "skills": [
@@ -13280,6 +13416,7 @@
   },
   {
     "label": "Lecteur",
+    "labelF": "Lectrice",
     "career": "pretre",
     "level": 4,
     "skills": [
@@ -13333,6 +13470,7 @@
   },
   {
     "label": "Sorcier novice",
+    "labelF": "Sorcière novice",
     "career": "sorcier",
     "level": 1,
     "skills": [
@@ -13420,6 +13558,7 @@
   },
   {
     "label": "Sorcier",
+    "labelF": "Sorcière",
     "career": "sorcier",
     "level": 2,
     "skills": [
@@ -13489,6 +13628,7 @@
   },
   {
     "label": "Maître Sorcier",
+    "labelF": "Maîtresse Sorcière",
     "career": "sorcier",
     "level": 3,
     "skills": [
@@ -13555,6 +13695,7 @@
   },
   {
     "label": "Seigneur sorcier",
+    "labelF": "Dame sorcière",
     "career": "sorcier",
     "level": 4,
     "skills": [
@@ -13609,6 +13750,7 @@
   },
   {
     "label": "Canotier",
+    "labelF": "Canotière",
     "career": "batelier",
     "level": 1,
     "skills": [
@@ -13696,6 +13838,7 @@
   },
   {
     "label": "Batelier",
+    "labelF": "Batelière",
     "career": "batelier",
     "level": 2,
     "skills": [
@@ -13785,6 +13928,7 @@
   },
   {
     "label": "Chef de bord",
+    "labelF": "Cheffe de bord",
     "career": "batelier",
     "level": 3,
     "skills": [
@@ -13902,6 +14046,7 @@
   },
   {
     "label": "Coureur de rivières",
+    "labelF": "Coureuse de rivières",
     "career": "contrebandier",
     "level": 1,
     "skills": [
@@ -13999,6 +14144,7 @@
   },
   {
     "label": "Contrebandier",
+    "labelF": "Contrebandière",
     "career": "contrebandier",
     "level": 2,
     "skills": [
@@ -14083,6 +14229,7 @@
   },
   {
     "label": "Maître contrebandier",
+    "labelF": "Maîtresse contrebandière",
     "career": "contrebandier",
     "level": 3,
     "skills": [
@@ -14146,6 +14293,7 @@
   },
   {
     "label": "Roi des contrebandiers",
+    "labelF": "Reine des contrebandiers",
     "career": "contrebandier",
     "level": 4,
     "skills": [
@@ -14198,6 +14346,7 @@
   },
   {
     "label": "Porteur",
+    "labelF": "Porteuse",
     "career": "debardeur",
     "level": 1,
     "skills": [
@@ -14282,6 +14431,7 @@
   },
   {
     "label": "Débardeur",
+    "labelF": "Débardeuse",
     "career": "debardeur",
     "level": 2,
     "skills": [
@@ -14365,6 +14515,7 @@
   },
   {
     "label": "Contremaître",
+    "labelF": "Contremaîtresse",
     "career": "debardeur",
     "level": 3,
     "skills": [
@@ -14427,6 +14578,7 @@
   },
   {
     "label": "Maître des docks",
+    "labelF": "Maîtresse des docks",
     "career": "debardeur",
     "level": 4,
     "skills": [
@@ -14932,6 +15084,7 @@
   },
   {
     "label": "Maître d'équipage",
+    "labelF": "Maîtresse d'équipage",
     "career": "marin",
     "level": 3,
     "skills": [
@@ -15051,6 +15204,7 @@
   },
   {
     "label": "Pilleur d'épaves",
+    "labelF": "Pilleuse d'épaves",
     "career": "naufrageur",
     "level": 1,
     "skills": [
@@ -15138,6 +15292,7 @@
   },
   {
     "label": "Naufrageur",
+    "labelF": "Naufrageuse",
     "career": "naufrageur",
     "level": 2,
     "skills": [
@@ -15285,6 +15440,7 @@
   },
   {
     "label": "Capitaine naufrageur",
+    "labelF": "Capitaine naufrageuse",
     "career": "naufrageur",
     "level": 4,
     "skills": [
@@ -15343,6 +15499,7 @@
   },
   {
     "label": "Guide fluvial",
+    "labelF": "Guide fluviale",
     "career": "nautonier",
     "level": 1,
     "skills": [
@@ -15431,6 +15588,7 @@
   },
   {
     "label": "Nautonier",
+    "labelF": "Nautonière",
     "career": "nautonier",
     "level": 2,
     "skills": [
@@ -15575,6 +15733,7 @@
   },
   {
     "label": "Maître nocher",
+    "labelF": "Maîtresse nocher",
     "career": "nautonier",
     "level": 4,
     "skills": [
@@ -15713,6 +15872,7 @@
   },
   {
     "label": "Patrouilleur fluvial",
+    "labelF": "Patrouilleuse fluviale",
     "career": "patrouilleur-fluvial",
     "level": 2,
     "skills": [
@@ -15798,6 +15958,7 @@
   },
   {
     "label": "Abordeur",
+    "labelF": "Abordeuse",
     "career": "patrouilleur-fluvial",
     "level": 3,
     "skills": [
@@ -15863,6 +16024,7 @@
   },
   {
     "label": "Maître abordeur",
+    "labelF": "Maîtresse abordeuse",
     "career": "patrouilleur-fluvial",
     "level": 4,
     "skills": [
@@ -16011,6 +16173,7 @@
   },
   {
     "label": "Charlatan",
+    "labelF": "Charlatane",
     "career": "charlatan",
     "level": 2,
     "skills": [
@@ -16098,6 +16261,7 @@
   },
   {
     "label": "Arnaqueur",
+    "labelF": "Arnaqueuse",
     "career": "charlatan",
     "level": 3,
     "skills": [
@@ -16217,6 +16381,7 @@
   },
   {
     "label": "Prostitué",
+    "labelF": "Prostituée",
     "career": "entremetteur",
     "level": 1,
     "skills": [
@@ -16297,6 +16462,7 @@
   },
   {
     "label": "Entremetteur",
+    "labelF": "Entremetteuse",
     "career": "entremetteur",
     "level": 2,
     "skills": [
@@ -16371,6 +16537,7 @@
   },
   {
     "label": "Souteneur",
+    "labelF": "Souteneuse",
     "career": "entremetteur",
     "level": 3,
     "skills": [
@@ -16430,6 +16597,7 @@
   },
   {
     "label": "Meneur",
+    "labelF": "Meneuse",
     "career": "entremetteur",
     "level": 4,
     "skills": [
@@ -16655,6 +16823,7 @@
   },
   {
     "label": "Chef de bande",
+    "labelF": "Cheffe de bande",
     "career": "hors-la-loi",
     "level": 3,
     "skills": [
@@ -16726,6 +16895,7 @@
   },
   {
     "label": "Roi des bandits",
+    "labelF": "Reine des bandits",
     "career": "hors-la-loi",
     "level": 4,
     "skills": [
@@ -16779,6 +16949,7 @@
   },
   {
     "label": "Trafiquant de cadavres",
+    "labelF": "Trafiquante de cadavres",
     "career": "pilleur-de-tombes",
     "level": 1,
     "skills": [
@@ -16868,6 +17039,7 @@
   },
   {
     "label": "Pilleur de tombes",
+    "labelF": "Pilleuse de tombes",
     "career": "pilleur-de-tombes",
     "level": 2,
     "skills": [
@@ -16951,6 +17123,7 @@
   },
   {
     "label": "Pilleur de tombeaux",
+    "labelF": "Pilleuse de tombeaux",
     "career": "pilleur-de-tombes",
     "level": 3,
     "skills": [
@@ -17013,6 +17186,7 @@
   },
   {
     "label": "Chasseur de trésors",
+    "labelF": "Chasseuse de trésors",
     "career": "pilleur-de-tombes",
     "level": 4,
     "skills": [
@@ -17162,6 +17336,7 @@
   },
   {
     "label": "Rançonneur",
+    "labelF": "Rançonneuse",
     "career": "ranconneur",
     "level": 2,
     "skills": [
@@ -17241,6 +17416,7 @@
   },
   {
     "label": "Chef de gang",
+    "labelF": "Cheffe de gang",
     "career": "ranconneur",
     "level": 3,
     "skills": [
@@ -17314,6 +17490,7 @@
   },
   {
     "label": "Baron du crime",
+    "labelF": "Baronne du crime",
     "career": "ranconneur",
     "level": 4,
     "skills": [
@@ -17373,6 +17550,7 @@
   },
   {
     "label": "Brocanteur",
+    "labelF": "Brocanteuse",
     "career": "receleur",
     "level": 1,
     "skills": [
@@ -17457,6 +17635,7 @@
   },
   {
     "label": "Receleur",
+    "labelF": "Receleuse",
     "career": "receleur",
     "level": 2,
     "skills": [
@@ -17534,6 +17713,7 @@
   },
   {
     "label": "Maître receleur",
+    "labelF": "Maîtresse receleuse",
     "career": "receleur",
     "level": 3,
     "skills": [
@@ -17595,6 +17775,7 @@
   },
   {
     "label": "Professionnel du marché noir",
+    "labelF": "Professionnelle du marché noir",
     "career": "receleur",
     "level": 4,
     "skills": [
@@ -17650,6 +17831,7 @@
   },
   {
     "label": "Ensorceleur",
+    "labelF": "Ensorceleuse",
     "career": "sorcier-dissident",
     "level": 1,
     "skills": [
@@ -17741,6 +17923,7 @@
   },
   {
     "label": "Sorcier dissident",
+    "labelF": "Sorcière dissidente",
     "career": "sorcier-dissident",
     "level": 2,
     "skills": [
@@ -17821,6 +18004,7 @@
   },
   {
     "label": "Devin",
+    "labelF": "Devineresse",
     "career": "sorcier-dissident",
     "level": 3,
     "skills": [
@@ -17939,6 +18123,7 @@
   },
   {
     "label": "Rôdeur",
+    "labelF": "Rôdeuse",
     "career": "voleur",
     "level": 1,
     "skills": [
@@ -18026,6 +18211,7 @@
   },
   {
     "label": "Voleur",
+    "labelF": "Voleuse",
     "career": "voleur",
     "level": 2,
     "skills": [
@@ -18100,6 +18286,7 @@
   },
   {
     "label": "Maître voleur",
+    "labelF": "Maîtresse voleuse",
     "career": "voleur",
     "level": 3,
     "skills": [
@@ -18165,6 +18352,7 @@
   },
   {
     "label": "Cambrioleur",
+    "labelF": "Cambrioleuse",
     "career": "voleur",
     "level": 4,
     "skills": [
@@ -18219,6 +18407,7 @@
   },
   {
     "label": "Percepteur",
+    "labelF": "Perceptrice",
     "career": "bailli",
     "level": 1,
     "skills": [
@@ -18378,6 +18567,7 @@
   },
   {
     "label": "Préfet",
+    "labelF": "Préfète",
     "career": "bailli",
     "level": 3,
     "skills": [
@@ -18447,6 +18637,7 @@
   },
   {
     "label": "Magistrat",
+    "labelF": "Magistrate",
     "career": "bailli",
     "level": 4,
     "skills": [
@@ -18503,6 +18694,7 @@
   },
   {
     "label": "Traqueur",
+    "labelF": "Traqueuse",
     "career": "chasseur",
     "level": 1,
     "skills": [
@@ -18603,6 +18795,7 @@
   },
   {
     "label": "Chasseur",
+    "labelF": "Chasseuse",
     "career": "chasseur",
     "level": 2,
     "skills": [
@@ -18681,6 +18874,7 @@
   },
   {
     "label": "Pisteur",
+    "labelF": "Pisteuse",
     "career": "chasseur",
     "level": 3,
     "skills": [
@@ -18747,6 +18941,7 @@
   },
   {
     "label": "Maître de la Chasse",
+    "labelF": "Maîtresse de la Chasse",
     "career": "chasseur",
     "level": 4,
     "skills": [
@@ -18802,6 +18997,7 @@
   },
   {
     "label": "Coureur des bois",
+    "labelF": "Coureuse des bois",
     "career": "eclaireur",
     "level": 1,
     "skills": [
@@ -18896,6 +19092,7 @@
   },
   {
     "label": "Éclaireur",
+    "labelF": "Éclaireuse",
     "career": "eclaireur",
     "level": 2,
     "skills": [
@@ -19051,6 +19248,7 @@
   },
   {
     "label": "Explorateur",
+    "labelF": "Exploratrice",
     "career": "eclaireur",
     "level": 4,
     "skills": [
@@ -19104,6 +19302,7 @@
   },
   {
     "label": "Voleur de rhinox",
+    "labelF": "Voleuse de rhinox",
     "career": "gardien-de-troupeaux-de-rhinox",
     "level": 1,
     "skills": [
@@ -19207,6 +19406,7 @@
   },
   {
     "label": "Gardien de troupeaux de rhinox",
+    "labelF": "Gardienne de troupeaux de rhinox",
     "career": "gardien-de-troupeaux-de-rhinox",
     "level": 2,
     "skills": [
@@ -19282,6 +19482,7 @@
   },
   {
     "label": "Dompteur de rhinox",
+    "labelF": "Dompteuse de rhinox",
     "career": "gardien-de-troupeaux-de-rhinox",
     "level": 3,
     "skills": [
@@ -19347,6 +19548,7 @@
   },
   {
     "label": "Maître des rhinox",
+    "labelF": "Maîtresse des rhinox",
     "career": "gardien-de-troupeaux-de-rhinox",
     "level": 4,
     "skills": [
@@ -19398,6 +19600,7 @@
   },
   {
     "label": "Cueilleur",
+    "labelF": "Cueilleuse",
     "career": "herboriste",
     "level": 1,
     "skills": [
@@ -19565,6 +19768,7 @@
   },
   {
     "label": "Maître Herboriste",
+    "labelF": "Maîtresse Herboriste",
     "career": "herboriste",
     "level": 3,
     "skills": [
@@ -19692,6 +19896,7 @@
   },
   {
     "label": "Prospecteur",
+    "labelF": "Prospectrice",
     "career": "mineur",
     "level": 1,
     "skills": [
@@ -19784,6 +19989,7 @@
   },
   {
     "label": "Mineur",
+    "labelF": "Mineuse",
     "career": "mineur",
     "level": 2,
     "skills": [
@@ -19864,6 +20070,7 @@
   },
   {
     "label": "Maître Mineur",
+    "labelF": "Maîtresse Mineuse",
     "career": "mineur",
     "level": 3,
     "skills": [
@@ -19932,6 +20139,7 @@
   },
   {
     "label": "Contremaître de la mine",
+    "labelF": "Contremaîtresse de la mine",
     "career": "mineur",
     "level": 4,
     "skills": [
@@ -19983,6 +20191,7 @@
   },
   {
     "label": "Voyant",
+    "labelF": "Voyante",
     "career": "mystique",
     "level": 1,
     "skills": [
@@ -20197,6 +20406,7 @@
   },
   {
     "label": "Prophète",
+    "labelF": "Prophétesse",
     "career": "mystique",
     "level": 4,
     "skills": [
@@ -20248,6 +20458,7 @@
   },
   {
     "label": "Apprenti Sorcier de Village",
+    "labelF": "Apprentie Sorcière de Village",
     "career": "sorcier-de-village",
     "level": 1,
     "skills": [
@@ -20344,6 +20555,7 @@
   },
   {
     "label": "Sorcier de village",
+    "labelF": "Sorcière de village",
     "career": "sorcier-de-village",
     "level": 2,
     "skills": [
@@ -20422,6 +20634,7 @@
   },
   {
     "label": "Maître Sorcier de village",
+    "labelF": "Maîtresse Sorcière de village",
     "career": "sorcier-de-village",
     "level": 3,
     "skills": [
@@ -20543,6 +20756,7 @@
   },
   {
     "label": "Paysan",
+    "labelF": "Paysanne",
     "career": "villageois",
     "level": 1,
     "skills": [
@@ -20621,6 +20835,7 @@
   },
   {
     "label": "Villageois",
+    "labelF": "Villageoise",
     "career": "villageois",
     "level": 2,
     "skills": [
@@ -20697,6 +20912,7 @@
   },
   {
     "label": "Échevin",
+    "labelF": "Échevine",
     "career": "villageois",
     "level": 3,
     "skills": [
@@ -20764,6 +20980,7 @@
   },
   {
     "label": "Doyen",
+    "labelF": "Doyenne",
     "career": "villageois",
     "level": 4,
     "skills": [
@@ -20814,6 +21031,7 @@
   },
   {
     "label": "Cavalier",
+    "labelF": "Cavalière",
     "career": "cavalier-leger",
     "level": 1,
     "skills": [
@@ -20921,6 +21139,7 @@
   },
   {
     "label": "Cavalier Léger",
+    "labelF": "Cavalière Légère",
     "career": "cavalier-leger",
     "level": 2,
     "skills": [
@@ -20997,6 +21216,7 @@
   },
   {
     "label": "Cavalier Léger Lancier",
+    "labelF": "Cavalière Légère Lancière",
     "career": "cavalier-leger",
     "level": 3,
     "skills": [
@@ -21065,6 +21285,7 @@
   },
   {
     "label": "Capitaine Cavalier Léger",
+    "labelF": "Capitaine Cavalière Légère",
     "career": "cavalier-leger",
     "level": 4,
     "skills": [
@@ -21123,6 +21344,7 @@
   },
   {
     "label": "Écuyer",
+    "labelF": "Écuyère",
     "career": "chevalier-errant",
     "level": 1,
     "skills": [
@@ -21231,6 +21453,7 @@
   },
   {
     "label": "Chevalier Errant",
+    "labelF": "Chevalière Errante",
     "career": "chevalier-errant",
     "level": 2,
     "skills": [
@@ -21314,6 +21537,7 @@
   },
   {
     "label": "Capitaine Indépendant",
+    "labelF": "Capitaine Indépendante",
     "career": "chevalier-errant",
     "level": 3,
     "skills": [
@@ -21376,6 +21600,7 @@
   },
   {
     "label": "Chevalier Commandant",
+    "labelF": "Chevalière Commandante",
     "career": "chevalier-errant",
     "level": 4,
     "skills": [
@@ -21541,6 +21766,7 @@
   },
   {
     "label": "Chevalier du Soleil flamboyant",
+    "labelF": "Chevalière du Soleil flamboyant",
     "career": "chevalier-du-soleil-flamboyant",
     "level": 2,
     "skills": [
@@ -21686,6 +21912,7 @@
   },
   {
     "label": "Chevalier du Cercle Intérieur",
+    "labelF": "Chevalière du Cercle Intérieur",
     "career": "chevalier-du-soleil-flamboyant",
     "level": 4,
     "skills": [
@@ -21854,6 +22081,7 @@
   },
   {
     "label": "Chevalier du Loup Blanc",
+    "labelF": "Chevalière du Loup Blanc",
     "career": "chevalier-du-loup-blanc",
     "level": 2,
     "skills": [
@@ -21932,6 +22160,7 @@
   },
   {
     "label": "Sergent Templier",
+    "labelF": "Sergente Templière",
     "career": "chevalier-du-loup-blanc",
     "level": 3,
     "skills": [
@@ -21994,6 +22223,7 @@
   },
   {
     "label": "Commandant de compagnie (cercle intérieur)",
+    "labelF": "Commandante de compagnie (cercle intérieur)",
     "career": "chevalier-du-loup-blanc",
     "level": 4,
     "skills": [
@@ -22046,6 +22276,7 @@
   },
   {
     "label": "Écuyer",
+    "labelF": "Écuyère",
     "career": "chevalier-panthere",
     "level": 1,
     "skills": [
@@ -22157,6 +22388,7 @@
   },
   {
     "label": "Chevalier Panthère",
+    "labelF": "Chevalière Panthère",
     "career": "chevalier-panthere",
     "level": 2,
     "skills": [
@@ -22247,6 +22479,7 @@
   },
   {
     "label": "Chevalier Commandeur",
+    "labelF": "Chevalière Commandeur",
     "career": "chevalier-panthere",
     "level": 3,
     "skills": [
@@ -22310,6 +22543,7 @@
   },
   {
     "label": "Commandant de compagnie (cercle intérieur)",
+    "labelF": "Commandante de compagnie (cercle intérieur)",
     "career": "chevalier-panthere",
     "level": 4,
     "skills": [
@@ -22362,6 +22596,7 @@
   },
   {
     "label": "Premier Aigle",
+    "labelF": "Première Aigle",
     "career": "pretre-de-myrmidia",
     "level": 1,
     "skills": [
@@ -22471,6 +22706,7 @@
   },
   {
     "label": "Prêtre de Myrmidia",
+    "labelF": "Prêtresse de Myrmidia",
     "career": "pretre-de-myrmidia",
     "level": 2,
     "skills": [
@@ -22547,6 +22783,7 @@
   },
   {
     "label": "Prêtre Sergent",
+    "labelF": "Prêtresse Sergente",
     "career": "pretre-de-myrmidia",
     "level": 3,
     "skills": [
@@ -22605,6 +22842,7 @@
   },
   {
     "label": "Prêtre Capitaine",
+    "labelF": "Prêtresse Capitaine",
     "career": "pretre-de-myrmidia",
     "level": 4,
     "skills": [
@@ -22654,6 +22892,7 @@
   },
   {
     "label": "Tireur à l'arc",
+    "labelF": "Tireuse à l'arc",
     "career": "archer",
     "level": 1,
     "skills": [
@@ -22763,6 +23002,7 @@
   },
   {
     "label": "Archer",
+    "labelF": "Archère",
     "career": "archer",
     "level": 2,
     "skills": [
@@ -22840,6 +23080,7 @@
   },
   {
     "label": "Sergent Archer",
+    "labelF": "Sergente Archère",
     "career": "archer",
     "level": 3,
     "skills": [
@@ -22902,6 +23143,7 @@
   },
   {
     "label": "Capitaine Archer",
+    "labelF": "Capitaine Archère",
     "career": "archer",
     "level": 4,
     "skills": [
@@ -22961,6 +23203,7 @@
   },
   {
     "label": "Recrue Hallebardier",
+    "labelF": "Recrue Hallebardière",
     "career": "hallebardier",
     "level": 1,
     "skills": [
@@ -23062,6 +23305,7 @@
   },
   {
     "label": "Hallebardier",
+    "labelF": "Hallebardière",
     "career": "hallebardier",
     "level": 2,
     "skills": [
@@ -23137,6 +23381,7 @@
   },
   {
     "label": "Sergent Hallebardier",
+    "labelF": "Sergente Hallebardière",
     "career": "hallebardier",
     "level": 3,
     "skills": [
@@ -23199,6 +23444,7 @@
   },
   {
     "label": "Capitaine Hallebardier",
+    "labelF": "Capitaine Hallebardière",
     "career": "hallebardier",
     "level": 4,
     "skills": [
@@ -23260,6 +23506,7 @@
   },
   {
     "label": "Recrue Arquebusier",
+    "labelF": "Recrue Arquebusière",
     "career": "arquebusier",
     "level": 1,
     "skills": [
@@ -23357,6 +23604,7 @@
   },
   {
     "label": "Arquebusier",
+    "labelF": "Arquebusière",
     "career": "arquebusier",
     "level": 2,
     "skills": [
@@ -23430,6 +23678,7 @@
   },
   {
     "label": "Sergent Arquebusier",
+    "labelF": "Sergente Arquebusière",
     "career": "arquebusier",
     "level": 3,
     "skills": [
@@ -23493,6 +23742,7 @@
   },
   {
     "label": "Capitaine Arquebusier",
+    "labelF": "Capitaine Arquebusière",
     "career": "arquebusier",
     "level": 4,
     "skills": [
@@ -23551,6 +23801,7 @@
   },
   {
     "label": "Cadet Joueur d'épée",
+    "labelF": "Cadette Joueuse d'épée",
     "career": "joueur-d-epee",
     "level": 1,
     "skills": [
@@ -23651,6 +23902,7 @@
   },
   {
     "label": "Joueur d'épée",
+    "labelF": "Joueuse d'épée",
     "career": "joueur-d-epee",
     "level": 2,
     "skills": [
@@ -23724,6 +23976,7 @@
   },
   {
     "label": "Sergent Joueur d'épée",
+    "labelF": "Sergente Joueuse d'épée",
     "career": "joueur-d-epee",
     "level": 3,
     "skills": [
@@ -23789,6 +24042,7 @@
   },
   {
     "label": "Capitaine Joueur d'épée",
+    "labelF": "Capitaine Joueuse d'épée",
     "career": "joueur-d-epee",
     "level": 4,
     "skills": [
@@ -23953,6 +24207,7 @@
   },
   {
     "label": "Piquier",
+    "labelF": "Piquière",
     "career": "piquier",
     "level": 2,
     "skills": [
@@ -24030,6 +24285,7 @@
   },
   {
     "label": "Chef de File",
+    "labelF": "Cheffe de File",
     "career": "piquier",
     "level": 3,
     "skills": [
@@ -24159,6 +24415,7 @@
   },
   {
     "label": "Arbalétrier",
+    "labelF": "Arbalétrière",
     "career": "specialiste-de-siege",
     "level": 1,
     "skills": [
@@ -24342,6 +24599,7 @@
   },
   {
     "label": "Sapeur",
+    "labelF": "Sapeuse",
     "career": "specialiste-de-siege",
     "level": 3,
     "skills": [
@@ -24419,6 +24677,7 @@
   },
   {
     "label": "Maître de Siège",
+    "labelF": "Maîtresse de Siège",
     "career": "specialiste-de-siege",
     "level": 4,
     "skills": [
@@ -24476,6 +24735,7 @@
   },
   {
     "label": "Ribaud",
+    "labelF": "Ribaude",
     "career": "suiveur-de-camp",
     "level": 1,
     "skills": [
@@ -24570,6 +24830,7 @@
   },
   {
     "label": "Suiveur de Camp",
+    "labelF": "Suiveuse de Camp",
     "career": "suiveur-de-camp",
     "level": 2,
     "skills": [
@@ -24643,6 +24904,7 @@
   },
   {
     "label": "Pillard Chevronné",
+    "labelF": "Pillarde Chevronnée",
     "career": "suiveur-de-camp",
     "level": 3,
     "skills": [
@@ -24701,6 +24963,7 @@
   },
   {
     "label": "Chef de Camp",
+    "labelF": "Cheffe de Camp",
     "career": "suiveur-de-camp",
     "level": 4,
     "skills": [
@@ -24755,6 +25018,7 @@
   },
   {
     "label": "Arpenteur",
+    "labelF": "Arpenteuse",
     "career": "cartographe",
     "level": 1,
     "skills": [
@@ -24929,6 +25193,7 @@
   },
   {
     "label": "Cartographe Reconnu",
+    "labelF": "Cartographe Reconnue",
     "career": "cartographe",
     "level": 3,
     "skills": [
@@ -24993,6 +25258,7 @@
   },
   {
     "label": "Maître Cartographe",
+    "labelF": "Maîtresse Cartographe",
     "career": "cartographe",
     "level": 4,
     "skills": [
@@ -25045,6 +25311,7 @@
   },
   {
     "label": "Apprenti Artilleur",
+    "labelF": "Apprentie Artilleuse",
     "career": "artilleur",
     "level": 1,
     "skills": [
@@ -25143,6 +25410,7 @@
   },
   {
     "label": "Artilleur",
+    "labelF": "Artilleuse",
     "career": "artilleur",
     "level": 2,
     "skills": [
@@ -25231,6 +25499,7 @@
   },
   {
     "label": "Capitaine Artilleur",
+    "labelF": "Capitaine Artilleuse",
     "career": "artilleur",
     "level": 3,
     "skills": [
@@ -25294,6 +25563,7 @@
   },
   {
     "label": "Maître Artilleur",
+    "labelF": "Maîtresse Artilleuse",
     "career": "artilleur",
     "level": 4,
     "skills": [
@@ -25361,6 +25631,7 @@
   },
   {
     "label": "Mousse artilleur",
+    "labelF": "Mousse artilleuse",
     "career": "artilleur-de-navire",
     "level": 1,
     "skills": [
@@ -25457,6 +25728,7 @@
   },
   {
     "label": "Artilleur de navire",
+    "labelF": "Artilleuse de navire",
     "career": "artilleur-de-navire",
     "level": 2,
     "skills": [
@@ -25596,6 +25868,7 @@
   },
   {
     "label": "Maître artilleur",
+    "labelF": "Maîtresse artilleuse",
     "career": "artilleur-de-navire",
     "level": 4,
     "skills": [
@@ -25648,6 +25921,7 @@
   },
   {
     "label": "Chanteur",
+    "labelF": "Chanteuse",
     "career": "chansonnier",
     "level": 1,
     "skills": [
@@ -25750,6 +26024,7 @@
   },
   {
     "label": "Chansonnier",
+    "labelF": "Chansonnière",
     "career": "chansonnier",
     "level": 2,
     "skills": [
@@ -25819,6 +26094,7 @@
   },
   {
     "label": "Capitaine chansonnier",
+    "labelF": "Capitaine chansonnière",
     "career": "chansonnier",
     "level": 3,
     "skills": [
@@ -25877,6 +26153,7 @@
   },
   {
     "label": "Maître chansonnier",
+    "labelF": "Maîtresse chansonnière",
     "career": "chansonnier",
     "level": 4,
     "skills": [
@@ -26212,6 +26489,7 @@
   },
   {
     "label": "Pilleur d'épaves",
+    "labelF": "Pilleuse d'épaves",
     "career": "naufrageur-cotier",
     "level": 1,
     "skills": [
@@ -26310,6 +26588,7 @@
   },
   {
     "label": "Naufrageur",
+    "labelF": "Naufrageuse",
     "career": "naufrageur-cotier",
     "level": 2,
     "skills": [
@@ -26614,6 +26893,7 @@
   },
   {
     "label": "Nautonier",
+    "labelF": "Nautonière",
     "career": "nautonier-cotier",
     "level": 2,
     "skills": [
@@ -26751,6 +27031,7 @@
   },
   {
     "label": "Maître pilote",
+    "labelF": "Maîtresse pilote",
     "career": "nautonier-cotier",
     "level": 4,
     "skills": [
@@ -26897,6 +27178,7 @@
   },
   {
     "label": "Officier",
+    "labelF": "Officière",
     "career": "officier",
     "level": 2,
     "skills": [
@@ -27035,6 +27317,7 @@
   },
   {
     "label": "Amiral",
+    "labelF": "Amirale",
     "career": "officier",
     "level": 4,
     "skills": [
@@ -27083,6 +27366,7 @@
   },
   {
     "label": "Initié",
+    "labelF": "Initiée",
     "career": "pretre-marin-de-manann",
     "level": 1,
     "skills": [
@@ -27182,6 +27466,7 @@
   },
   {
     "label": "Prêtre marin",
+    "labelF": "Prêtresse marine",
     "career": "pretre-marin-de-manann",
     "level": 2,
     "skills": [
@@ -27256,6 +27541,7 @@
   },
   {
     "label": "Prêtre capitaine",
+    "labelF": "Prêtresse capitaine",
     "career": "pretre-marin-de-manann",
     "level": 3,
     "skills": [
@@ -27326,6 +27612,7 @@
   },
   {
     "label": "Seigneur des vagues",
+    "labelF": "Dame des vagues",
     "career": "pretre-marin-de-manann",
     "level": 4,
     "skills": [
@@ -27381,6 +27668,7 @@
   },
   {
     "label": "Récupérateur",
+    "labelF": "Récupératrice",
     "career": "ratisseur-de-plages",
     "level": 1,
     "skills": [
@@ -27478,6 +27766,7 @@
   },
   {
     "label": "Ratisseur de plages",
+    "labelF": "Ratisseuse de plages",
     "career": "ratisseur-de-plages",
     "level": 2,
     "skills": [
@@ -27553,6 +27842,7 @@
   },
   {
     "label": "Dériveur",
+    "labelF": "Dériveuse",
     "career": "ratisseur-de-plages",
     "level": 3,
     "skills": [
@@ -27621,6 +27911,7 @@
   },
   {
     "label": "Maître des plages",
+    "labelF": "Maîtresse des plages",
     "career": "ratisseur-de-plages",
     "level": 4,
     "skills": [
@@ -27670,6 +27961,7 @@
   },
   {
     "label": "Initié",
+    "labelF": "Initiée",
     "career": "pretre-de-stromfels",
     "level": 1,
     "skills": [
@@ -27774,6 +28066,7 @@
   },
   {
     "label": "Prêtre de Stromfels",
+    "labelF": "Prêtresse de Stromfels",
     "career": "pretre-de-stromfels",
     "level": 2,
     "skills": [
@@ -27851,6 +28144,7 @@
   },
   {
     "label": "Prêtre pirate",
+    "labelF": "Prêtresse pirate",
     "career": "pretre-de-stromfels",
     "level": 3,
     "skills": [
@@ -27927,6 +28221,7 @@
   },
   {
     "label": "Prêtre terreur des mers",
+    "labelF": "Prêtresse terreur des mers",
     "career": "pretre-de-stromfels",
     "level": 4,
     "skills": [

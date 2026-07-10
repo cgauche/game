@@ -28,11 +28,12 @@ import { FLOW_VERBS } from '../state/rollFlowSpecs';
  *  Le shell fournit `rolled` globalement si la rangée ne le porte pas. */
 export type RollRowData = RollRowProps & { key?: string | number };
 
-/** Un bouton de la barre d'actions, filtré par phase (`when`). Rendu dans `.modal-actions`. */
+/** Un bouton de la barre d'actions, filtré par phase (`when`). Rendu dans `.modal-actions`. La
+ *  PROÉMINENCE (style) n'est PLUS choisie par l'appelant : elle se DÉDUIT du RÔLE porté par la `key`
+ *  (cf. `actionClass`) — un même verbe a le même poids visuel dans toutes les modales. */
 export interface RollAction {
   key: string;
   label: ReactNode;
-  kind: 'primary' | 'ghost' | 'resource';
   onClick: () => void;
   title?: string;
   disabled?: boolean;
@@ -40,7 +41,17 @@ export interface RollAction {
   when: 'pre' | 'post' | 'always';
 }
 
-const ACTION_CLASS = { primary: 'btn btn-primary', ghost: 'btn btn-ghost', resource: 'btn btn-resource' } as const;
+/** Rôle visuel d'une action DÉDUIT de sa `key` (les appelants ne le choisissent plus) : abandon /
+ *  secondaire = ghost ; ressource (Chance/Destin…) = resource ; tout le reste (validation, progression,
+ *  jet groupé : confirm/apply/next/finish/continue/rollAll/all…) = primary. Source UNIQUE de la
+ *  proéminence des barres de jet — restyler un rôle se fait ICI, jamais au call-site. */
+const ACTION_GHOST_KEYS = new Set(['cancel', 'break', 'ack']);
+const ACTION_RESOURCE_KEYS = new Set<string>();
+function actionClass(key: string): string {
+  if (ACTION_GHOST_KEYS.has(key)) return 'btn btn-ghost';
+  if (ACTION_RESOURCE_KEYS.has(key)) return 'btn btn-resource';
+  return 'btn btn-primary';
+}
 
 /** Commandes de barre NEUTRES (≠ verbes de cadence portés par les RANGÉES) présentes dans les
  *  modales : abandon / validation / progression. Toute AUTRE clé d'action doit être un verbe DÉCLARÉ
@@ -163,7 +174,7 @@ export function RollShell({
         {shownActions.map((a) => (
           <button
             key={a.key}
-            className={ACTION_CLASS[a.kind]}
+            className={actionClass(a.key)}
             disabled={a.disabled}
             title={a.title}
             /* () => a.onClick() : ne PAS passer l'événement React (coop : l'invité sérialise les intents en JSON). */

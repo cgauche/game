@@ -75,8 +75,8 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
     /* « Round suivant » cumule + ouvre le Round suivant ; à la réussite, ferme la cascade.
        « Renoncer » disponible aussi APRÈS le jet (when:'always'). */
     actions: [
-      { key: 'cancel', label: 'Renoncer', kind: 'ghost', onClick: cancel, when: 'always' },
-      { key: 'confirm', label: willSucceed ? <><Icon id="ui/done" size="sm" /> Réussir !</> : 'Round suivant →', kind: 'primary', onClick: () => next(), when: 'post' },
+      { key: 'cancel', label: 'Renoncer', onClick: cancel, when: 'always' },
+      { key: 'confirm', label: willSucceed ? <><Icon id="ui/done" size="sm" /> Réussir !</> : 'Round suivant →', onClick: () => next(), when: 'post' },
     ],
     onCancel: cancel,
   };

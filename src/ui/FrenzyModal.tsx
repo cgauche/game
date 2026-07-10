@@ -50,8 +50,8 @@ export function FrenzyModal() {
   };
 
   const actions: RollAction[] = [
-    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' },
-    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+    { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' },
   ];
 
   return (

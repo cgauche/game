@@ -1,27 +1,4 @@
-/* ===== Marchand (#2) — fenêtre, onglets, familles, comparaison d'achat ===== */
-.merchant-box {
-  width: min(640px, 94vw);
-  max-height: 86vh;
-  display: flex;
-  flex-direction: column;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-top: 4px solid var(--gold);
-  border-radius: 14px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
-  overflow: hidden;
-}
-.merchant-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(180deg, var(--panel2), var(--panel));
-}
-.merchant-title { margin: 0; font-size: 21px; color: var(--gold2); letter-spacing: 0.5px; }
-.merchant-head .purse { color: var(--gold); font-weight: 600; }
-.merchant-head > .btn { margin-left: auto; }
+/* ===== Marchand (#2) — écran plein-champ (ScreenShell), onglets, familles, comparaison d'achat ===== */
 /* Onglets */
 .merchant-tabs {
   display: flex;
@@ -60,6 +37,19 @@
   color: #fff;
 }
 .merchant-body { padding: 12px 16px 16px; overflow-y: auto; }
+/* Négoce en écran plein-champ (`ScreenShell`) — cohérent avec les écrans Port/Marché : onglets et
+ * corps centrés à largeur bornée, corps scrollable dans le voile en colonne. */
+.merchant-overlay .purse { color: var(--gold); font-weight: 600; }
+.merchant-overlay .merchant-tabs { width: min(760px, 96vw); margin: 0 auto; border-bottom: none; }
+.merchant-overlay .merchant-body {
+  width: min(760px, 96vw);
+  margin: 0 auto;
+  flex: 1;
+  min-height: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
 .merch-tab { display: flex; flex-direction: column; }
 /* Sous-onglets : familles d'objets dans l'onglet Acheter */
 .merch-subtabs { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }

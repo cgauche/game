@@ -47,8 +47,8 @@ export function useTestJetProps(): ComponentProps<typeof RollShell> | null {
   const amazing = rule('test-critiques-doubles') ? amazingTestLabel(pt) : null;
   // Barre : « Continuer » post-jet + « Annuler » pré-jet SI le test est annulable (action de COMBAT ;
   // referme la cascade sans dépenser l'Action). Les tests de dialogue/scène n'ont pas `cancellable`.
-  const actions: RollAction[] = [{ key: 'confirm', label: 'Continuer', kind: 'primary', onClick: resolve, when: 'post' }];
-  if (pt.cancellable) actions.unshift({ key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' });
+  const actions: RollAction[] = [{ key: 'confirm', label: 'Continuer', onClick: resolve, when: 'post' }];
+  if (pt.cancellable) actions.unshift({ key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' });
 
   return {
     flowKey: 'test',

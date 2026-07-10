@@ -131,8 +131,8 @@ export function DisengageModal() {
     const rows = needCalme ? [backstabRow, calmeRow] : [backstabRow];
     const rolled = needCalme ? !!calme : true;
     const actions: RollAction[] = needCalme
-      ? [{ key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: fleeConfirm, when: 'post' }]
-      : [{ key: 'ack', label: 'Continuer', kind: 'primary', onClick: fleeAck, when: 'always' }];
+      ? [{ key: 'confirm', label: 'Appliquer', onClick: fleeConfirm, when: 'post' }]
+      : [{ key: 'ack', label: 'Continuer', onClick: fleeAck, when: 'always' }];
 
     return (
       <RollShell
@@ -177,7 +177,7 @@ export function DisengageModal() {
   };
 
   const actions: RollAction[] = [
-    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+    { key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' },
   ];
 
   return (

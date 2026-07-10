@@ -71,8 +71,8 @@ export function BargainModalView({
   const winnerIndex = opposed ? (pb.result!.attackerWins ? 0 : 1) : null;
 
   const actions: RollAction[] = [
-    { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: onCancel, when: 'pre' },
-    { key: 'confirm', label: 'Conclure', kind: 'primary', onClick: onConfirm, when: 'post' },
+    { key: 'cancel', label: 'Annuler', onClick: onCancel, when: 'pre' },
+    { key: 'confirm', label: 'Conclure', onClick: onConfirm, when: 'post' },
   ];
 
   return (

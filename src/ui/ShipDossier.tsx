@@ -11,13 +11,14 @@ import { fromBrass, formatMoney } from '../engine/money';
 import { Icon } from './Icon';
 import { NotchGauge, type GaugeTone } from './NotchGauge';
 import { moraleTone, crewRoleLabel } from './shipStatus';
+import { ScreenShell } from './ScreenShell';
 
 /**
  * DOSSIER DE NAVIRE persistant (#227, attendu C.1) — écran plein-champ du `CampaignVessel` (l'INSTANCE
  * qui survit aux jours et aux combats), ouvert EN et HORS combat depuis le bandeau d'actions. Toutes les
  * données existent déjà sur `vessel` (aucun trou moteur) : c'est l'écran qui les compose avec les
  * primitives partagées (jauges à crans `NotchGauge`, ton de Moral `moraleTone`, résumé d'équipage salarié
- * `ShipCrewWages`). Overlay `.worldmap-overlay` + onglets `.port-tabs` (patron de PortView) ; responsive
+ * `ShipCrewWages`). Coquille plein-champ `ScreenShell` + onglets (patron de PortView) ; responsive
  * ≤900/700/560 via `.layout-sidebar`/`.panel-grid`. La coque reste une JAUGE (pas de silhouette à
  * localisations — arbitrage USER). La fiche de combat `PosteSheet` (postes/manœuvre) reste distincte.
  */
@@ -90,21 +91,19 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu' 
   const weeklyWageBrass = weeklyCrewWageBrass(vessel.crew);
 
   return (
-    <div className="worldmap-overlay port-overlay ship-dossier">
-      <div className="worldmap-head">
-        <h2>
-          <Icon id="travel/sail-ship" size="sm" /> {name}
-          <span className="char-sub"> — {vd.label}{rig ? ` · ${RIG_LABEL[rig] ?? rig}` : ''}</span>
-        </h2>
-        <button type="button" className="btn small" onClick={onClose}>✕ Fermer</button>
-      </div>
-
-      <div className="port-tabs">
+    <ScreenShell
+      className="port-overlay ship-dossier"
+      title={<>
+        <Icon id="travel/sail-ship" size="sm" /> {name}
+        <span className="char-sub"> — {vd.label}{rig ? ` · ${RIG_LABEL[rig] ?? rig}` : ''}</span>
+      </>}
+      onClose={onClose}
+      tabs={<>
         <button type="button" className={`btn small ${tab === 'apercu' ? 'btn-primary' : ''}`} onClick={() => setTab('apercu')}><Icon id="scenario/naval" size="sm" /> Vue d’ensemble</button>
         <button type="button" className={`btn small ${tab === 'cargaison' ? 'btn-primary' : ''}`} onClick={() => setTab('cargaison')}><Icon id="item/misc" size="sm" /> Cargaison</button>
         <button type="button" className={`btn small ${tab === 'equipage' ? 'btn-primary' : ''}`} onClick={() => setTab('equipage')}><Icon id="nav/seat-owner" size="sm" /> Équipage</button>
-      </div>
-
+      </>}
+    >
       <div className="port-body">
         {tab === 'apercu' && (
           <div className="layout-sidebar port-yard">
@@ -255,6 +254,6 @@ export function ShipDossierView({ vessel, party, onClose, initialTab = 'apercu' 
           </div>
         )}
       </div>
-    </div>
+    </ScreenShell>
   );
 }

@@ -76,8 +76,8 @@ export function DistraireModal() {
   );
 
   const actions: RollAction[] = [
-    { key: 'cancel', label: 'Renoncer', kind: 'ghost', onClick: cancel, when: 'pre' },
-    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+    { key: 'cancel', label: 'Renoncer', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' },
   ];
 
   return (

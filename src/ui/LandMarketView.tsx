@@ -5,6 +5,7 @@ import { cargoTotalEnc } from '../engine/cargo';
 import { placeById } from '../state/worldMap';
 import { canAfford, toMoney } from '../engine/money';
 import { Coins } from './Coins';
+import { ScreenShell } from './ScreenShell';
 
 /**
  * ÉCRAN MARCHÉ TERRESTRE (Mort sur le Reik Compagnon ch.11 « Règles du commerce ») — commerce de cargaison à
@@ -32,16 +33,15 @@ export function LandMarketView() {
   const carried = cargoTotalEnc(lots);
 
   return (
-    <div className="worldmap-overlay port-overlay">
-      <div className="worldmap-head">
-        <h2>Marché de {market.label}</h2>
-        <button type="button" className="btn small" onClick={close}>✕ Fermer</button>
-      </div>
-      <div className="port-tabs">
+    <ScreenShell
+      className="port-overlay"
+      title={<>Marché de {market.label}</>}
+      onClose={close}
+      tabs={<>
         <span className="port-purse">Bourse : <b><Coins money={money} /></b></span>
         <span className="port-purse">Convoi : <b>{carried} Enc</b></span>
-      </div>
-
+      </>}
+    >
       <div className="port-body">
         {rumours.length > 0 && (
           <section className="panel port-section">
@@ -123,6 +123,6 @@ export function LandMarketView() {
           </section>
         </div>
       </div>
-    </div>
+    </ScreenShell>
   );
 }

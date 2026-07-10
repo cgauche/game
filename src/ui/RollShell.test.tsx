@@ -33,8 +33,8 @@ const rolledRow = (over: Partial<RollRowData> = {}): RollRowData => ({
 // Les hooks/modales NE fournissent PLUS de « Lancer » : la coquille le hisse dans `.modal-actions`
 // pour le cas mono. Les actions sont donc seulement Annuler (pré) + Appliquer (post).
 const actions: RollAction[] = [
-  { key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: noop, when: 'pre' },
-  { key: 'apply', label: 'Appliquer', kind: 'primary', onClick: noop, when: 'post' },
+  { key: 'cancel', label: 'Annuler', onClick: noop, when: 'pre' },
+  { key: 'apply', label: 'Appliquer', onClick: noop, when: 'post' },
 ];
 
 function render(node: React.ReactElement) {
@@ -160,7 +160,7 @@ describe('RollShell — coquille de jet unifiée', () => {
 
   // ── Garde de vocabulaire d'actions (#211) : la barre d'une modale de jet est verrouillée à
   //    (verbes DÉCLARÉS du flux ∪ commandes neutres). Choke-point unique : `RollShell` + `flowKey`. ──
-  const act = (key: string): RollAction => ({ key, label: key, kind: 'primary', onClick: noop, when: 'always' });
+  const act = (key: string): RollAction => ({ key, label: key, onClick: noop, when: 'always' });
 
   it('(h) garde : actions NEUTRES (cancel/rollAll/confirm) passent pour tout flux', () => {
     expect(() =>

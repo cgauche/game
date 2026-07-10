@@ -179,7 +179,8 @@ fait DANS la primitive, pas dans une nième copie.
 
 | Besoin | Primitive (source unique) | Fichier |
 |---|---|---|
-| Modale de jet (Lancer→Chance→Pacte→Résilience→Appliquer) | `RollShell` (props=contrôles, slots=métier) | `src/ui/RollShell.tsx` |
+| Coquille d'**écran plein-champ** (carte du monde, port/escale, marché, dossier de navire, négoce) — voile + en-tête (titre/actions/fermeture) + corps, a11y de dialogue, onglets `.port-tabs` optionnels | `ScreenShell` (jamais recopier `.worldmap-overlay`/`.worldmap-head`) | `src/ui/ScreenShell.tsx` |
+| Modale de jet (Lancer→Chance→Pacte→Résilience→Appliquer) — la **proéminence** d'une action se DÉDUIT de sa `key` (rôle→style DANS RollShell : `cancel`/`break`/`ack`=ghost, reste=primary) ; les appelants ne portent PLUS de champ de style | `RollShell` (props=contrôles, slots=métier) | `src/ui/RollShell.tsx` |
 | Modale de jet **MULTI** (N contributeurs, influence PAR participant, coop) — *réflexe avant toute « 2e modale multi-jets »* | la MÊME coquille `RollShell` (le **mono = N=1** : plusieurs `RollRow`) + `makeRollFlow` mode `spec.multi` (`RollParticipant` `interactive`/témoin) ; ex. `ForceDoorModal`/Manœuvre | `src/ui/RollShell.tsx`, `src/ui/RollRow.tsx`, `src/state/rollFlowFactory.ts` |
 | Choix d'**options de jet** (Parade/Esquive, menu de désengagement, Calme/Résistance) | `OptionChooser` (`seg`/`grid`/`actions`) | `src/ui/OptionChooser.tsx` |
 | Paire/triplet de **boutons de décision** (Renoncer, Destin, Piège à lame…) | `ChoiceButtons` (= `OptionChooser layout='actions'`) | `src/ui/OptionChooser.tsx` |

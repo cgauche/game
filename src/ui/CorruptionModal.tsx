@@ -66,7 +66,7 @@ export function CorruptionModal() {
   };
 
   const actions: RollAction[] = [
-    { key: 'confirm', label: 'Continuer', kind: 'primary', onClick: resolve, when: 'post' },
+    { key: 'confirm', label: 'Continuer', onClick: resolve, when: 'post' },
   ];
 
   return (

@@ -114,7 +114,7 @@ export function CascadeModal() {
         subtitle={<>Bilan · {p.participants.length} jet{p.participants.length > 1 ? 's' : ''}</>}
         rolled
         rows={witnessRows(allRows)}
-        actions={[{ key: 'finish', label: 'Terminer', kind: 'primary', onClick: () => finish(), when: 'always' }]}
+        actions={[{ key: 'finish', label: 'Terminer', onClick: () => finish(), when: 'always' }]}
       />
     );
   }
@@ -147,7 +147,7 @@ export function CascadeModal() {
   const doneRows = p.participants.slice(0, p.cursor).map(rowOf).filter((r): r is PanelRow => r !== null);
   // Action « Continuer » / « Terminer » (dernière étape) — bouton primaire d'enchaînement, partagé par
   // les étapes AFFICHAGE et CHOIX (conséquences pures, aucun jet à attendre) : `when:'always'`.
-  const continueAction: RollAction = { key: 'next', label: isLast ? 'Terminer' : 'Continuer', kind: 'primary', onClick: () => next(), when: 'always' };
+  const continueAction: RollAction = { key: 'next', label: isLast ? 'Terminer' : 'Continuer', onClick: () => next(), when: 'always' };
 
   // AFFICHAGE : conséquence pure — pas de jet, pas d'influence. Charge RICHE (`reveal`, ex. Coup
   // Critique) → panneau détaillé partagé `CriticalBody` ; sinon contenu pré-posé (`outcome`) en note.
@@ -270,14 +270,13 @@ export function CascadeModal() {
     // « Tout lancer » : tant qu'il reste >1 jet, résout d'un coup le reste (RNG, sans influence) PUIS
     // montre le bilan — bouton PRÉSENT avant ET après le jet (parité `cancelAfterRoll`). Pas d'Échap :
     // la cascade est SUBIE, on ne ferme pas — le bouton est une action explicite, pas une sortie.
-    ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, kind: 'ghost', onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
+    ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants (sans influence)", when: 'always' } as RollAction] : []),
     // Poursuite terrestre (purpose:'pursuite') : renoncer coûte la manche — le groupe qui FUIT se
     // laisse rattraper (combat si une rencontre est fournie, LDB 15 l.518) ; côté poursuivant, la
     // proie s'échappe (state/pursuitFlow.pursuitAbandon porte la vraie conséquence).
     ...(p.purpose === 'pursuite' ? [{
       key: 'break',
       label: pursuit?.partyRole === 'pursuing' ? 'Abandonner la poursuite' : 'Abandonner la fuite',
-      kind: 'ghost',
       onClick: () => pursuitAbandon(),
       title: pursuit?.partyRole === 'pursuing'
         ? 'Le groupe renonce à traquer sa proie — la poursuite est perdue.'
@@ -286,7 +285,7 @@ export function CascadeModal() {
           : 'Le groupe cesse de fuir et fait face.',
       when: 'always',
     } as RollAction] : []),
-    { key: 'next', label: isLast ? 'Terminer' : 'Continuer', kind: 'primary', onClick: () => next(), when: 'post' },
+    { key: 'next', label: isLast ? 'Terminer' : 'Continuer', onClick: () => next(), when: 'post' },
   ];
 
   return (

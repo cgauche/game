@@ -42,6 +42,6 @@ export function useFumbleJetProps(): ComponentProps<typeof RollShell> | null {
         onReroll: () => {},
       },
     ],
-    actions: [{ key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' }],
+    actions: [{ key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' }],
   };
 }

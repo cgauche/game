@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
+import { OptionChooser } from './OptionChooser';
 import { Prose } from './Prose';
 import {
   SEA_ACTIVITIES_INTRO, seaActivitiesCatalog, seaActivityBlocked,
@@ -48,30 +49,23 @@ export function SeaActivitiesModal() {
           return (
             <section key={h.id} className="panel sea-act-hero">
               <h4><CharFrame c={h} variant="identity" size="xs" /> {h.name}</h4>
-              <div className="sea-act-choices">
-                <button
-                  type="button"
-                  className={`btn small ${!chosen ? 'btn-primary' : ''}`}
-                  onClick={() => set(h.id, null)}
-                >
-                  Repos
-                </button>
-                {catalog.map((def) => {
-                  const blocked = seaActivityBlocked(useGame.getState, def);
-                  return (
-                    <button
-                      key={def.id}
-                      type="button"
-                      className={`btn small ${chosen === def.id ? 'btn-primary' : ''}`}
-                      disabled={!!blocked}
-                      title={blocked ?? def.label}
-                      onClick={() => set(h.id, { activityId: def.id })}
-                    >
-                      {def.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <OptionChooser
+                layout="grid"
+                options={[
+                  { key: 'repos', label: 'Repos', primary: !chosen, onSelect: () => set(h.id, null) },
+                  ...catalog.map((def) => {
+                    const blocked = seaActivityBlocked(useGame.getState, def);
+                    return {
+                      key: def.id,
+                      label: def.label,
+                      primary: chosen === def.id,
+                      disabled: !!blocked,
+                      title: blocked ?? def.label,
+                      onSelect: () => set(h.id, { activityId: def.id }),
+                    };
+                  }),
+                ]}
+              />
               {chosen && (
                 <div className="sea-act-detail">
                   <Prose md={catalog.find((d) => d.id === chosen)?.desc ?? ''} />

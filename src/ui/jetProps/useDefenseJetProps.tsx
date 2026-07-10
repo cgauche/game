@@ -117,7 +117,7 @@ export function useDefenseJetProps(): ComponentProps<typeof RollShell> | null {
   };
 
   const actions: RollAction[] = [
-    { key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' },
+    { key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' },
   ];
 
   return {

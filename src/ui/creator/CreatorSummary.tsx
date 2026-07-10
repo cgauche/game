@@ -13,7 +13,7 @@ import { CharacterPreview } from '../CharacterPreview';
 import { Icon } from '../Icon';
 import { CharStatsGrid } from '../CharStatsGrid';
 import { SkillChip, TalentChip } from '../EntityChip';
-import { findCareerById, rigSpeciesId } from '../../data';
+import { careerLabelFor, rigSpeciesId } from '../../data';
 import { CreatorDraft, buildHero, draftSpecies, draftLevel, draftWealth, draftChars, xpTotal, speciesXp, careerXp, charsXp, starXp, stepIds } from './draft';
 
 export function previewHero(d: CreatorDraft): Combatant | null {
@@ -29,7 +29,7 @@ export function CreatorSummary({ d, step }: { d: CreatorDraft; step: number }) {
   const sp = draftSpecies(d);
   const level = draftLevel(d);
   const baseChars = draftChars(d);
-  const careerLabel = findCareerById(d.careerId)?.label ?? d.careerId;
+  const careerLabel = careerLabelFor({ career: d.careerId, appearance: { sex: d.sex } });
   // Repli si le brouillon ne construit aucun héros valide (build échoue) : apparence du brouillon, sans équipement.
   const appearance: Appearance = { species: rigSpeciesId(d.speciesId), sex: d.sex, build: d.build, seed: d.appSeed, colors: d.colors, parts: d.parts };
   const wealth = draftWealth(d);

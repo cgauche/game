@@ -60,8 +60,8 @@ export function ForceDoorModal() {
   });
 
   const actions: RollAction[] = [
-    { key: 'cancel', label: 'Renoncer', kind: 'ghost', onClick: cancel, when: 'always' },
-    { key: 'confirm', label: cede ? 'Enfoncer !' : 'Appliquer le Round', kind: 'primary', onClick: confirm, when: 'always' },
+    { key: 'cancel', label: 'Renoncer', onClick: cancel, when: 'always' },
+    { key: 'confirm', label: cede ? 'Enfoncer !' : 'Appliquer le Round', onClick: confirm, when: 'always' },
   ];
 
   return (

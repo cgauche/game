@@ -157,7 +157,7 @@ import { STEP_MAX_M } from './relief';
 import { placeCombatant } from './spawn';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove, riderFearSize, combatGeomOf, attackGeomOf, meleeWeaponInRange, pickAttackWeaponList } from './mount';
-import { lineOfSightCover, losClear, coverModifier, tilesBetween, tileSeenByFoe } from './lineOfSight';
+import { lineOfSightCover, losClear, coverModifier, worstCover, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste, crewPosteOf } from './shipPostes';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { warMachineFireWeapon, warMachineCrewRequired, warMachineCrewPenalty } from '../engine/warMachineCrew';
@@ -475,7 +475,12 @@ export function attackEnv(
     // commandant — re-validé ICI (vivant + à portée de voix) → un delta sur la base du chef (aperçu ET résolution).
     const tcMod = teamCommandMod(attacker, weapon, battle.combatants);
     if (tcMod) env.push(tcMod);
-    if (los.cover !== 'none') env.push({ label: tr('cf.coverLabel', { cover: los.cover }), value: coverModifier(los.cover) });
+    // Couvert de PONT du défenseur (#248) : un servant à un poste couvert (Sabord/Plat-bord/Murs blindés,
+    // T2C f.66 l.111) reçoit sa classe par le MÊME chemin que le couvert de terrain — le plus protecteur
+    // des deux (`DeckCoverClass ⊂ CoverClass`). `crewPosteOf` couvre tout l'équipage (chef ET support).
+    const posteCover = crewPosteOf(target.id, battle.combatants)?.poste.cover;
+    const cover = posteCover ? worstCover(los.cover, posteCover) : los.cover;
+    if (cover !== 'none') env.push({ label: tr('cf.coverLabel', { cover }), value: coverModifier(cover) });
     // Vision nocturne / Infravision (LDB 85) ou Talent Vision nocturne : annule la pénalité d'obscurité.
     if (sc.concealed && !seesInDark(attacker)) env.push({ label: sc.label || 'Obscurité', value: -10 }); // cible dissimulée : Complexe (LDB 14 l.75)
     else if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod }); // tempête/neige (l.108-116)

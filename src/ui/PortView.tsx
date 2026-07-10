@@ -15,6 +15,7 @@ import { Icon } from './Icon';
 import { NotchGauge } from './NotchGauge';
 import { ChoiceButtons } from './OptionChooser';
 import { moraleTone, ShipCrewWages } from './shipStatus';
+import { ScreenShell } from './ScreenShell';
 
 /** Libellé d'un id de cargaison / marqueur d'Index (`commerce`/`minimum-vital` ne sont pas des cargaisons). */
 const cargoLabel = (id: string): string => id === 'commerce' ? 'Commerce' : id === 'minimum-vital' ? 'Minimum vital' : findCargoById(id)?.label ?? id;
@@ -164,11 +165,11 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
   const hasEscaleEvent = !!(pendingShoreLeave || pendingManannPriest);
 
   return (
-    <div className="worldmap-overlay port-overlay">
-      <div className="worldmap-head">
-        <h2><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vessel.name ?? vd.label}</h2>
-        <button type="button" className="btn small" onClick={close}>✕ Fermer</button>
-      </div>
+    <ScreenShell
+      className="port-overlay"
+      title={<><Icon id="travel/anchor" size="sm" /> Port de {port.label} — {vessel.name ?? vd.label}</>}
+      onClose={close}
+    >
       <PortHeader pp={port.port} catalogue={catalogue} />
       <div className="port-tabs">
         <button type="button" className={`btn small ${tab === 'coque' ? 'btn-primary' : ''}`} onClick={() => setTab('coque')}><Icon id="travel/repair" size="sm" /> Chantier</button>
@@ -308,6 +309,6 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
           />
         )}
       </div>
-    </div>
+    </ScreenShell>
   );
 }

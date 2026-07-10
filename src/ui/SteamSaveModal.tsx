@@ -44,7 +44,7 @@ export function SteamSaveModal() {
     forceShow: rolled && !p.success,
   };
 
-  const actions: RollAction[] = [{ key: 'confirm', label: 'Appliquer', kind: 'primary', onClick: confirm, when: 'post' }];
+  const actions: RollAction[] = [{ key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'post' }];
   const text = !rolled
     ? 'Un jet de vapeur jaillit de la chaudière — Test d’Initiative ou ébouillanté (MDG 12).'
     : p.success ? `${p.actorName} esquive le jet de vapeur.` : `${p.actorName} est ébouillanté par le jet de vapeur !`;

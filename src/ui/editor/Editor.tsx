@@ -21,6 +21,7 @@ import { WorldMap, parseProject } from '../../state/worldMap';
 import { nextEntityId } from '../../state/entityId';
 import { Tool, Sel, Pt, Layers, DEFAULT_LAYERS, deleteSel, moveSel, selPos, pasteEntity, addLayer, removeLayer } from './editorState';
 import { Icon } from '../Icon';
+import { Modal } from '../Modal';
 
 /**
  * Éditeur de niveau v2 — SHELL d'orchestration : toolbar (Fichier/scènes/Tester), Palette
@@ -487,21 +488,24 @@ export function Editor() {
       )}
 
       {advOpen && (
-        <div className="modal-overlay" onClick={() => setAdvOpen(false)}>
-          <div role="dialog" aria-modal="true" className="modal wide" onClick={(e) => e.stopPropagation()}>
-            <h3>Avancé — JSON de la scène (dialogues, triggers, rencontres)</h3>
-            <p className="hint">Filet de sécurité pour l'édition en masse ; le format est celui du schéma de Scène.</p>
-            <textarea className="json-editor" value={advText} onChange={(e) => setAdvText(e.target.value)} />
-            <div className="modal-actions">
-              <button className="btn" onClick={() => setAdvOpen(false)}>
-                Annuler
-              </button>
-              <button className="btn btn-primary" onClick={saveAdvanced}>
-                Appliquer
-              </button>
-            </div>
+        <Modal
+          variant="plain"
+          className="wide"
+          title="Avancé — JSON de la scène (dialogues, triggers, rencontres)"
+          onClose={() => setAdvOpen(false)}
+          backdropClose
+        >
+          <p className="hint">Filet de sécurité pour l'édition en masse ; le format est celui du schéma de Scène.</p>
+          <textarea className="json-editor" value={advText} onChange={(e) => setAdvText(e.target.value)} />
+          <div className="modal-actions">
+            <button className="btn" onClick={() => setAdvOpen(false)}>
+              Annuler
+            </button>
+            <button className="btn btn-primary" onClick={saveAdvanced}>
+              Appliquer
+            </button>
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

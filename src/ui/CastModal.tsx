@@ -148,15 +148,14 @@ export function CastModal() {
   const actions: RollAction[] = [
     // Annuler : « Laisser passer » (Contre-sort) sinon Renoncer (héros lanceur) — pré-jet uniquement.
     ...(csp
-      ? [{ key: 'cancel', label: 'Laisser passer', kind: 'ghost', onClick: cspCancel, when: 'pre' } as RollAction]
+      ? [{ key: 'cancel', label: 'Laisser passer', onClick: cspCancel, when: 'pre' } as RollAction]
       : caster.kind !== 'enemy'
-        ? [{ key: 'cancel', label: 'Annuler', kind: 'ghost', onClick: cancel, when: 'pre' } as RollAction]
+        ? [{ key: 'cancel', label: 'Annuler', onClick: cancel, when: 'pre' } as RollAction]
         : []),
     {
       key: 'confirm',
       label: csp ? (csp.participants.some((p) => p.result?.dispelled) ? 'Appliquer (dissipé)' : 'Appliquer') : placeable ? <><Icon id="map-tool/pin" size="sm" /> Poser la zone</> : 'Appliquer',
       title: placeable && !csp ? "La modale s'efface — clique une case du champ de bataille pour déposer la zone" : undefined,
-      kind: 'primary',
       onClick: csp ? cspConfirm : pcs ? oppConfirm : placeable ? () => placeZone(true) : confirm,
       when: 'post',
     },

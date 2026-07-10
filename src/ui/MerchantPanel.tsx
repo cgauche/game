@@ -17,6 +17,7 @@ import { Prose, mdToText } from './Prose';
 import { CharFrame } from './CharFrame';
 import { TeamPortrait } from './TeamPortrait';
 import { Icon } from './Icon';
+import { ScreenShell } from './ScreenShell';
 
 type MerchantState = NonNullable<ReturnType<typeof useGame.getState>['merchant']>;
 
@@ -546,13 +547,12 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
   };
 
   return (
-    <div className="merchant-panel modal-overlay">
-      <div className="merchant-box">
-        <div className="merchant-head">
-          <h2 className="merchant-title"><Icon id="resource/gold-purse" size="sm" /> Marchand</h2>
-          <span className="purse">Bourse <Coins money={money} /></span>
-          <button className="btn small" onClick={onClose} aria-label="Fermer">✕</button>
-        </div>
+    <ScreenShell
+      className="merchant-overlay"
+      title={<><Icon id="resource/gold-purse" size="sm" /> Marchand</>}
+      onClose={onClose}
+      actions={<span className="purse">Bourse <Coins money={money} /></span>}
+    >
         <div className="merchant-tabs" role="tablist">
           <button className={`mtab ${tab === 'buy' ? 'active' : ''}`} onClick={() => setTab('buy')}>Acheter{cartCount ? <span className="tab-count">{cartCount}</span> : null}</button>
           <button className={`mtab ${tab === 'sell' ? 'active' : ''}`} onClick={() => setTab('sell')}>Vendre{sellable.length ? <span className="tab-count">{sellable.length}</span> : null}</button>
@@ -593,8 +593,7 @@ export function MerchantPanelView({ merchant, party, money, onAddToCart, onDecCa
 
           {tab === 'barter' && renderBarter()}
         </div>
-      </div>
-    </div>
+    </ScreenShell>
   );
 }
 

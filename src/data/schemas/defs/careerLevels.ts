@@ -17,6 +17,9 @@ export const file = 'careerLevels.json';
 export const schema = z.array(
   z.strictObject({
     label: z.string(),
+    /** Forme féminine d'AFFICHAGE du niveau — MAISON (le LDB n'imprime que le masculin) ;
+     *  omis = forme épicène (identique au masculin). */
+    labelF: z.string().optional(),
     /** `id` de la Carrière (`CareerData.id`). */
     career: z.string(),
     level: z.number(),

@@ -22,6 +22,7 @@ import { DIFFICULTY_LABELS } from '../engine/types';
 import { TravelRolesPanel } from './TravelRolesPanel';
 import { ShipRolesPanel } from './ShipRolesPanel';
 import { Icon, IconG } from './Icon';
+import { ScreenShell } from './ScreenShell';
 import { VB_W, VB_H, Z_MIN, Z_MAX, type Viewport, clampViewport, fitViewport } from './worldMapViewport';
 
 /** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
@@ -312,12 +313,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const resumeRoute = travelPlan ? map.routes.find((r) => r.id === travelPlan.routeId) : undefined;
 
   return (
-    <div className="worldmap-overlay">
-      <div className="worldmap-head">
-        <h2><Icon id="nav/campaign" size="sm" /> {map.nom}</h2>
-        <button type="button" className="btn small" onClick={close}>✕ Fermer</button>
-      </div>
-
+    <ScreenShell title={<><Icon id="nav/campaign" size="sm" /> {map.nom}</>} onClose={close}>
       <div className="worldmap-canvas">
         <svg
           ref={svgRef}
@@ -695,6 +691,6 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           </p>
         </div>
       )}
-    </div>
+    </ScreenShell>
   );
 }

@@ -91,8 +91,8 @@ function SurgeryRollFlow() {
   };
   const recovery = kind === 'recovery';
   const actions: RollAction[] = [
-    { key: 'cancel', label: recovery ? 'Arrêter la rééducation' : 'Arrêter l’opération', kind: 'ghost', onClick: cancel, when: 'pre' },
-    { key: 'confirm', label: 'Appliquer la passe', kind: 'primary', onClick: next, when: 'post' },
+    { key: 'cancel', label: recovery ? 'Arrêter la rééducation' : 'Arrêter l’opération', onClick: cancel, when: 'pre' },
+    { key: 'confirm', label: 'Appliquer la passe', onClick: next, when: 'post' },
   ];
   return (
     <RollShell
