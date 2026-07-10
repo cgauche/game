@@ -211,8 +211,7 @@ fait DANS la primitive, pas dans une nième copie.
 
 > Pistes ÉVALUÉES puis ÉCARTÉES (sites trop divergents pour une source unique propre — ne pas
 > « globaliser » de force) : `confirmPending` (les `xConfirm` divergent par leur garde de résultat et
-> réutilisent `battle` localement → un wrapper ne raccourcit rien), `<Tabs>` (3 systèmes de classes
-> distincts + LogicDock replie un dock / MerchantPanel = boutons non mappés), `useMasterDetail`
+> réutilisent `battle` localement → un wrapper ne raccourcit rien), `useMasterDetail`
 > (marchand ⇄ carte divergent après sélection), `<StatChip>`/`itemStatParts` (3 formes de données
 > différentes : chaîne d'`ItemInstance`, `Combatant.weapons` résolues, table par famille). Le sweep
 > `actorIn` dans `store.ts` est aussi écarté : `battle` y reste en portée pour le `set` final.
