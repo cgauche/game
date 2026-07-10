@@ -204,6 +204,26 @@ pas rejouable après coup sur une traversée déjà en cours au pas.
   l'auto-choix, `src/state/mount.ts:104-121`) : RE-sélectionner l'arme de poste dans le `<select>`
   « Arme » de la modale (`src/ui/jetProps/useAttackJetProps.tsx:171-184`) avant de lancer le jet.
 
+## Collecteur d'erreurs de playtest (#304)
+
+Les erreurs d'une soirée de playtest ne remontent que si le joueur les VOIT (console jamais
+consultée hors recette) — `src/ui/errorCollector.ts` capture localement (**zéro réseau**)
+`window.onerror` + `unhandledrejection` + les crashs de rendu interceptés par `SceneErrorBoundary`
+(`componentDidCatch` appelle `recordError`, EN PLUS de `console.error` — comportement de la
+boundary inchangé, y compris la reprise `onRetry`/rechargement). Buffer borné (50 entrées, FIFO) :
+`{message, stack tronquée (2000 car.), scène courante, seed RNG, version (`package.json`), horodatage}`.
+
+- **DEV** : bandeau discret en bas à droite (`src/ui/ErrorCollectorBanner.tsx`, chunk async chargé
+  seulement si `import.meta.env.DEV`) — compteur d'erreurs, clic → panneau listant les entrées +
+  bouton « Exporter » (JSON copié dans le presse-papier + téléchargé), prêt à coller dans une issue.
+- **PROD** : le collecteur reste actif (mêmes capteurs), le bandeau est absent ; export via
+  `window.__wfrp.errors()` (liste) / `window.__wfrp.exportErrors()` (JSON string) — même canal
+  `window.__wfrp` que la recette, mais posé DEV **et** PROD par `installErrorCollector()`
+  (`src/main.tsx`), contrairement au reste de `buildApi()` (`devtools.ts`, DEV uniquement).
+- ⚠ **seed RNG non tracé actuellement** : `battleRng()`/`seedBattleRng` (`src/state/battleRng.ts`)
+  n'exposent pas la graine numérique (RNG opaque) — le champ `seed` de chaque entrée est `null` tant
+  qu'aucune session `state/store` n'instrumente ce point (hors périmètre #304, `src/ui/`).
+
 ## Piège du *closure-sync*
 
 Lire le DOM dans le **même** `evaluate` que `talk()` lit l'état AVANT le re-rendu React —

@@ -1,4 +1,5 @@
 import { Component, ReactNode } from 'react';
+import { recordError } from './errorCollector';
 
 export interface SceneErrorBoundaryProps {
   children: ReactNode;
@@ -35,6 +36,7 @@ export class SceneErrorBoundary extends Component<SceneErrorBoundaryProps, State
 
   componentDidCatch(error: unknown, info: { componentStack: string }): void {
     console.error('SceneErrorBoundary : crash de rendu', error, info.componentStack);
+    recordError(error instanceof Error ? error.message : String(error), error instanceof Error ? error.stack : info.componentStack);
   }
 
   handleRetry = (): void => {

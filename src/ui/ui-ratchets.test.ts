@@ -42,18 +42,16 @@ function assertRatchet(counts: Record<string, number>, baseline: Record<string, 
 const HEX_BASELINE: Record<string, number> = {
   'styles/codex-edit.css': 10,
   'styles/combat-modals.css': 11,
-  'styles/combat-ui.css': 24,
+  'styles/combat-ui.css': 23,
   'styles/compendium.css': 1,
-  'styles/components.css': 1,
   'styles/editor.css': 6,
-  'styles/gauges.css': 1,
   'styles/house-rules.css': 3,
-  'styles/hud.css': 23,
+  'styles/hud.css': 20,
   'styles/mass-battle.css': 3,
   'styles/merchant.css': 3,
   'styles/sheet.css': 6,
   'styles/tavern.css': 1,
-  'styles/world-meta.css': 7,
+  'styles/world-meta.css': 4,
 };
 
 // ── (v) Prix affichés ⇒ `<Coins>`/`formatMoney` : une valeur monétaire interpolée suivie d'une unité
@@ -93,7 +91,9 @@ describe('#236 — cliquets d’hygiène UI', () => {
     const files = walk(UI, (e) => e.endsWith('.css') && e !== 'base.css');
     const counts: Record<string, number> = {};
     for (const f of files) {
-      const n = (readFileSync(f, 'utf8').match(/#[0-9a-fA-F]{3,8}\b/g) || []).length;
+      // Commentaires exclus du scan : un « #304 » de réf de ticket n'est pas une couleur.
+      const css = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      const n = (css.match(/#[0-9a-fA-F]{3,8}\b/g) || []).length;
       if (n > 0) counts[rel(f)] = n;
     }
     assertRatchet(counts, HEX_BASELINE, 'hex hors tokens');

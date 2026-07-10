@@ -19,6 +19,12 @@ const MassBattleView = lazy(() => import('./MassBattleView').then((m) => ({ defa
 const CoopLobby = lazy(() => import('./CoopLobby').then((m) => ({ default: m.CoopLobby })));
 const CompendiumScreen = lazy(() => import('./compendium/CompendiumScreen').then((m) => ({ default: m.CompendiumScreen })));
 const CodexOverlay = lazy(() => import('./compendium/CompendiumScreen').then((m) => ({ default: m.CodexOverlay })));
+// #304 : bandeau DEV du collecteur d'erreurs — chunk async chargé SEULEMENT en dev (garde statique
+// `import.meta.env.DEV`, éliminée au build prod par Vite/Rollup) ; en prod le collecteur reste actif
+// (installErrorCollector dans main.tsx) mais sans bandeau, export via `window.__wfrp.errors()`.
+const ErrorCollectorBanner = import.meta.env.DEV
+  ? lazy(() => import('./ErrorCollectorBanner').then((m) => ({ default: m.ErrorCollectorBanner })))
+  : null;
 
 /** Bannière coop non bloquante : reconnexions en cours (invité comme hôte). */
 function CoopBanner() {
@@ -72,6 +78,11 @@ export function App() {
               sans démonter le jeu/la fiche → musique et contexte préservés (cf. openCodex). */}
           {codexOverlay && <CodexOverlay />}
         </Suspense>
+        {ErrorCollectorBanner && (
+          <Suspense fallback={null}>
+            <ErrorCollectorBanner />
+          </Suspense>
+        )}
       </div>
     </SceneErrorBoundary>
   );
