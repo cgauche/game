@@ -18,6 +18,7 @@ import { woundsFromHit, shipHitLocation, type ShipRig, type ShipLocation } from 
 import { qualitySum, attackDRAdjust } from './qualities/dispatch';
 import { mannedPosteWeapon, selectedAmmo, weaponWithAmmo } from './items';
 import { crewedFireWeapon } from './crewedWeapon';
+import { crewedTeamIndice } from './qualities/dispatch';
 import { exposedCrew } from './shipCritical';
 import type { Combatant, ShipPoste, Weapon, ItemInstance } from './types';
 
@@ -60,21 +61,31 @@ export interface VolleyResult {
  * Résout la volée d'une bordée. `firingShip` = navire tireur ; `postes` = pièces du bord qui porte ; `target` = coque
  * cible ; `rig` = gréement de la CIBLE (colonne de localisation) ; `dr` = DR partagé du Test d'équipage Artilleur ;
  * `crew` = combattants de l'équipage tireur (pour résoudre chef + effectif de chaque pièce). PUR (RNG injecté).
+ *
+ * `opts.merScale` (couche MER, MDG ch.14 l.39 « la performance des Personnages représente celle de tout l'équipage ») :
+ * l'équipage est ABSTRAIT — une pièce du bord qui porte est réputée SERVIE par l'équipage du navire, même sans `crewIds`
+ * posés dessus (le Manque de bras s'exprime au DR du Test d'équipage — `shipUndercrew` —, jamais par une pièce muette).
+ * L'effectif par pièce vaut alors l'Indice PLEIN (aucun sous-effectif par-pièce, déjà porté par le DR d'équipage). Au
+ * Pont (person-scale) le comportement est INCHANGÉ : une pièce sans servant reste muette (les héros SERVENT les pièces).
  */
 export function resolveVolley(
   firingShip: Combatant, postes: ShipPoste[], target: Combatant, rig: ShipRig, dr: number, crew: Combatant[], rng: RNG = defaultRNG,
+  opts: { merScale?: boolean } = {},
 ): VolleyResult {
   const byId = new Map(crew.map((c) => [c.id, c] as const));
+  const shipCrew = exposedCrew(crew); // équipage APTE du navire tireur — représentant abstrait à la Mer
   const shots: VolleyShot[] = [];
   for (const poste of postes) {
     const servants = exposedCrew((poste.crewIds ?? []).map((id) => byId.get(id)).filter((c): c is Combatant => !!c));
-    if (!servants.length) continue; // pièce non servie → ne tire pas (RAW : il faut un équipage)
+    const abstract = !!opts.merScale && !servants.length && shipCrew.length > 0; // équipage abstrait sert la pièce (l.39)
+    if (!servants.length && !abstract) continue; // pièce non servie → ne tire pas (RAW : il faut un équipage)
     let weapon = mannedPosteWeapon(firingShip, poste);
     if (!weapon) continue; // pièce détruite
-    const chef = byId.get((poste.crewIds ?? [])[0]);
+    const chef = byId.get((poste.crewIds ?? [])[0]) ?? (abstract ? shipCrew[0] : undefined);
     const ammo = chef ? selectedAmmo(chef, weapon) : undefined;
     if (ammo) weapon = weaponWithAmmo(weapon, ammo);
-    weapon = crewedFireWeapon(weapon, servants.length); // Recharge×2 / Imprécise / Dangereuse selon l'effectif
+    // À la Mer : effectif = Indice PLEIN (équipage abstrait au complet) → aucun sous-effectif par pièce ; au Pont : réel.
+    weapon = crewedFireWeapon(weapon, abstract ? crewedTeamIndice(weapon) : servants.length); // Recharge×2 / Imprécise / Dangereuse selon l'effectif
     // DR de la pièce = DR partagé + Atouts d'attaque (Imprécise du sous-effectif). « Pour le pire » : un DR négatif
     // RÉDUIT les Dégâts (≠ tir normal où le SL est plancher 0) → on N'écrase PAS le DR à 0.
     const gunDR = dr + attackDRAdjust(weapon);

@@ -203,7 +203,7 @@
    "nom": "Voile noire à mi-route — une cogue pirate attaque",
    "description": "Une cogue pirate coupe la route de la Louve grise en pleine mer.",
    "dimensions": {
-    "w": 22,
+    "w": 24,
     "h": 14
    },
    "ambiance": "exterieur",
@@ -324,10 +324,6 @@
       "eau",
       "eau",
       "eau",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
       "eau",
       "eau",
       "eau",
@@ -336,20 +332,6 @@
       "eau",
       "eau",
       "eau",
-      "planches",
-      "planches",
-      "planches",
-      "eau",
-      "eau",
-      "eau",
-      "eau",
-      "eau",
-      "eau",
-      "eau",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
       "eau",
       "eau",
       "eau",
@@ -358,20 +340,6 @@
       "eau",
       "eau",
       "eau",
-      "planches",
-      "planches",
-      "planches",
-      "eau",
-      "eau",
-      "eau",
-      "eau",
-      "eau",
-      "eau",
-      "eau",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
       "eau",
       "eau",
       "eau",
@@ -380,9 +348,6 @@
       "eau",
       "eau",
       "eau",
-      "planches",
-      "planches",
-      "planches",
       "eau",
       "eau",
       "eau",
@@ -390,10 +355,73 @@
       "eau",
       "eau",
       "eau",
-      "planches",
-      "planches",
-      "planches",
-      "planches",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
+      "eau",
       "eau",
       "eau",
       "eau",
@@ -527,8 +555,8 @@
      "id": "start",
      "kind": "heroStart",
      "pos": {
-      "x": 4,
-      "y": 6
+      "x": 3,
+      "y": 7
      }
     },
     {
@@ -536,12 +564,15 @@
      "kind": "personnage",
      "ref": "loup-imperial",
      "pos": {
-      "x": 4,
-      "y": 6
+      "x": 3,
+      "y": 7
      },
      "facing": "E",
      "label": "La Louve grise",
-     "crewIds": [],
+     "crewIds": [
+      "louve-helm",
+      "louve-gun"
+     ],
      "postes": [
       {
        "trappingId": "canon-moyen",
@@ -599,24 +630,283 @@
         }
        ],
        "ammoUid": "ammo-boulet-et-poudre-1"
+      },
+      {
+       "trappingId": "canon-moyen",
+       "uid": "poste-2",
+       "side": "babord",
+       "crewIds": [],
+       "ammo": [
+        {
+         "uid": "ammo-boulet-et-poudre-3",
+         "trappingId": "boulet-et-poudre",
+         "name": "Boulet et poudre",
+         "kind": "ammo",
+         "reach": null,
+         "range": null,
+         "qualities": [
+          {
+           "id": "a-explosion",
+           "value": 2
+          },
+          {
+           "id": "percutante"
+          }
+         ],
+         "enc": 1,
+         "equipped": false,
+         "desc": null,
+         "subType": "munition-de-siege",
+         "qty": 12
+        },
+        {
+         "uid": "ammo-mitraille-et-poudre-4",
+         "trappingId": "mitraille-et-poudre",
+         "name": "Mitraille et poudre",
+         "kind": "ammo",
+         "damage": {
+          "plusBF": false,
+          "flat": -5
+         },
+         "reach": null,
+         "range": null,
+         "qualities": [
+          {
+           "id": "tir-de-zone",
+           "value": 5
+          }
+         ],
+         "enc": 0,
+         "equipped": false,
+         "desc": null,
+         "subType": "munition-de-siege",
+         "qty": 4,
+         "ammoRangeMod": {
+          "mult": 0.25
+         }
+        }
+       ],
+       "ammoUid": "ammo-boulet-et-poudre-3"
+      },
+      {
+       "trappingId": "pierrier",
+       "uid": "poste-3",
+       "side": "proue",
+       "crewIds": [],
+       "ammo": [
+        {
+         "uid": "ammo-balles-et-poudre-pierrier-5",
+         "trappingId": "balles-et-poudre-pierrier",
+         "name": "Balles et poudre pour 1 tir",
+         "kind": "ammo",
+         "damage": {
+          "plusBF": false,
+          "flat": 1
+         },
+         "reach": null,
+         "range": null,
+         "qualities": [
+          {
+           "id": "empaleuse"
+          },
+          {
+           "id": "perforante"
+          },
+          {
+           "id": "tir-de-zone",
+           "value": 3
+          }
+         ],
+         "enc": 0,
+         "equipped": false,
+         "desc": null,
+         "subType": "munition-de-siege",
+         "qty": 16
+        }
+       ],
+       "ammoUid": "ammo-balles-et-poudre-pierrier-5"
       }
      ]
+    },
+    {
+     "id": "louve-helm",
+     "kind": "personnage",
+     "pos": {
+      "x": 3,
+      "y": 6
+     },
+     "label": "Timonier de la Louve grise",
+     "statblock": {
+      "name": "Timonier de la Louve grise",
+      "char": {
+       "M": 4,
+       "CC": 35,
+       "CT": 40,
+       "F": 33,
+       "E": 35,
+       "Ag": 30,
+       "Dex": 30,
+       "Int": 30,
+       "FM": 30,
+       "Soc": 30,
+       "B": 12
+      },
+      "skills": [
+       {
+        "id": "voile",
+        "value": 55
+       },
+       {
+        "id": "ramer",
+        "value": 45
+       }
+      ]
+     }
+    },
+    {
+     "id": "louve-gun",
+     "kind": "personnage",
+     "pos": {
+      "x": 3,
+      "y": 8
+     },
+     "label": "Canonnier de la Louve grise",
+     "statblock": {
+      "name": "Canonnier de la Louve grise",
+      "char": {
+       "M": 4,
+       "CC": 35,
+       "CT": 40,
+       "F": 33,
+       "E": 35,
+       "Ag": 30,
+       "Dex": 30,
+       "Int": 30,
+       "FM": 30,
+       "Soc": 30,
+       "B": 12
+      },
+      "skills": [
+       {
+        "id": "projectiles",
+        "spec": "poudre-noire",
+        "value": 55
+       }
+      ]
+     }
     },
     {
      "id": "cogue-pirate",
      "kind": "personnage",
      "ref": "cogue",
      "pos": {
-      "x": 16,
-      "y": 6
+      "x": 18,
+      "y": 7
      },
      "facing": "O",
      "label": "La cogue pirate",
      "crewIds": [
       "pirate-1",
-      "pirate-2"
+      "pirate-2",
+      "chef-pirate-1",
+      "cogue-helm",
+      "cogue-gun"
      ],
-     "postes": [],
+     "postes": [
+      {
+       "trappingId": "canon-moyen",
+       "uid": "poste-4",
+       "side": "tribord",
+       "crewIds": [],
+       "ammo": [
+        {
+         "uid": "ammo-boulet-et-poudre-6",
+         "trappingId": "boulet-et-poudre",
+         "name": "Boulet et poudre",
+         "kind": "ammo",
+         "reach": null,
+         "range": null,
+         "qualities": [
+          {
+           "id": "a-explosion",
+           "value": 2
+          },
+          {
+           "id": "percutante"
+          }
+         ],
+         "enc": 1,
+         "equipped": false,
+         "desc": null,
+         "subType": "munition-de-siege",
+         "qty": 12
+        }
+       ],
+       "ammoUid": "ammo-boulet-et-poudre-6"
+      },
+      {
+       "trappingId": "canon-moyen",
+       "uid": "poste-5",
+       "side": "babord",
+       "crewIds": [],
+       "ammo": [
+        {
+         "uid": "ammo-boulet-et-poudre-7",
+         "trappingId": "boulet-et-poudre",
+         "name": "Boulet et poudre",
+         "kind": "ammo",
+         "reach": null,
+         "range": null,
+         "qualities": [
+          {
+           "id": "a-explosion",
+           "value": 2
+          },
+          {
+           "id": "percutante"
+          }
+         ],
+         "enc": 1,
+         "equipped": false,
+         "desc": null,
+         "subType": "munition-de-siege",
+         "qty": 12
+        }
+       ],
+       "ammoUid": "ammo-boulet-et-poudre-7"
+      },
+      {
+       "trappingId": "canon-moyen",
+       "uid": "poste-6",
+       "side": "proue",
+       "crewIds": [],
+       "ammo": [
+        {
+         "uid": "ammo-boulet-et-poudre-8",
+         "trappingId": "boulet-et-poudre",
+         "name": "Boulet et poudre",
+         "kind": "ammo",
+         "reach": null,
+         "range": null,
+         "qualities": [
+          {
+           "id": "a-explosion",
+           "value": 2
+          },
+          {
+           "id": "percutante"
+          }
+         ],
+         "enc": 1,
+         "equipped": false,
+         "desc": null,
+         "subType": "munition-de-siege",
+         "qty": 8
+        }
+       ],
+       "ammoUid": "ammo-boulet-et-poudre-8"
+      }
+     ],
      "upgrades": [
       {
        "id": "renforce",
@@ -629,8 +919,8 @@
      "kind": "personnage",
      "ref": "pirate-fluvial",
      "pos": {
-      "x": 15,
-      "y": 5
+      "x": 18,
+      "y": 6
      },
      "label": "Pirate"
     },
@@ -639,8 +929,8 @@
      "kind": "personnage",
      "ref": "pirate-fluvial",
      "pos": {
-      "x": 15,
-      "y": 7
+      "x": 18,
+      "y": 8
      },
      "label": "Pirate"
     },
@@ -649,10 +939,77 @@
      "kind": "personnage",
      "ref": "chef-pirate",
      "pos": {
-      "x": 17,
-      "y": 6
+      "x": 19,
+      "y": 7
      },
      "label": "Le chef des pirates"
+    },
+    {
+     "id": "cogue-helm",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 5
+     },
+     "label": "Barreur de la cogue",
+     "statblock": {
+      "name": "Barreur de la cogue",
+      "char": {
+       "M": 4,
+       "CC": 35,
+       "CT": 40,
+       "F": 33,
+       "E": 35,
+       "Ag": 30,
+       "Dex": 30,
+       "Int": 30,
+       "FM": 30,
+       "Soc": 30,
+       "B": 12
+      },
+      "skills": [
+       {
+        "id": "voile",
+        "value": 55
+       },
+       {
+        "id": "ramer",
+        "value": 45
+       }
+      ]
+     }
+    },
+    {
+     "id": "cogue-gun",
+     "kind": "personnage",
+     "pos": {
+      "x": 18,
+      "y": 9
+     },
+     "label": "Canonnier de la cogue",
+     "statblock": {
+      "name": "Canonnier de la cogue",
+      "char": {
+       "M": 4,
+       "CC": 35,
+       "CT": 40,
+       "F": 33,
+       "E": 35,
+       "Ag": 30,
+       "Dex": 30,
+       "Int": 30,
+       "FM": 30,
+       "Soc": 30,
+       "B": 12
+      },
+      "skills": [
+       {
+        "id": "projectiles",
+        "spec": "poudre-noire",
+        "value": 55
+       }
+      ]
+     }
     }
    ],
    "dialogues": [],
@@ -680,8 +1037,17 @@
       {
        "entityId": "chef-pirate-1",
        "side": "enemy"
+      },
+      {
+       "entityId": "cogue-helm",
+       "side": "enemy"
+      },
+      {
+       "entityId": "cogue-gun",
+       "side": "enemy"
       }
      ],
+     "surprise": "party",
      "onVictory": {
       "kind": "seq",
       "steps": [
@@ -732,10 +1098,11 @@
    ],
    "flags": {},
    "weather": "brouillard",
+   "metresPerTile": 10,
    "entryPoints": {
     "arrivee": {
-     "x": 4,
-     "y": 6
+     "x": 3,
+     "y": 7
     }
    }
   },

@@ -56,6 +56,16 @@ function seaRows(w, h, footprints) {
   return rows;
 }
 
+/** Compétences NAVALES d'un marin représentant (MDG 14 l.39) — barreur (Voile) / canonnier (Poudre noire) : de
+ *  quoi que la coque MANŒUVRE et FASSE FEU à la couche Mer. Témoin cohérent avec `loup-et-saumure`. */
+const HELM_SKILLS = [{ id: 'voile', value: 55 }, { id: 'ramer', value: 45 }];
+const GUN_SKILLS = [{ id: 'projectiles', spec: 'poudre-noire', value: 55 }];
+/** Marin d'équipage COMPÉTENT (passager, hors rendu à la Mer) — CustomStatblock sourcé (règle stricte 7). */
+function marine(id, x, y, label, skills) {
+  return { id, kind: 'personnage', pos: { x, y }, label,
+    statblock: { name: label, char: { M: 4, CC: 35, CT: 40, F: 33, E: 35, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 12 }, ...(skills ? { skills } : {}) } };
+}
+
 /** Objectif courant (#238, doc §10) — id STABLE UNIQUE : re-poser met à jour le texte et le remonte en tête. */
 const OBJ = (text) => ({ type: 'setObjective', id: 'barge-du-sel-mission', text });
 
@@ -116,29 +126,39 @@ scenes.push(scene({
   weather: 'brouillard',
   base: 'eau',
   legend: { '=': 'planches' },
-  // Grille d'ABORDAGE = échelle PERSON-scale 2 m/case. metresPerTile≥4 fait basculer `isMerScene`
-  // (src/state/scene.ts) → modèle navire-UNITÉ (équipage passager, tour de coque, Bordée) qui exige une IA de
-  // manœuvre de coque ennemie ABSENTE (runEnemyAI ne pilote pas les vehicule → la coque reste immobile) et met
-  // la bordée hors de portée sans manœuvre d'approche. À 2 m/case : l'équipage combat individuellement, les
-  // héros SERVENT les pièces, l'abordage se joue (reachTiles LDB 15 = 1 case fixe). L'échelle mer est réservée
-  // aux scènes de TRAVERSÉE jusqu'à ce que l'IA navale existe.
-  rows: seaRows(22, 14, [{ x: 3, y: 5, w: 4, h: 4 }, { x: 15, y: 5, w: 3, h: 3 }]),
+  // COUCHE MER (10 m/case, MDG ch.13 : 1 point de Distance = 10 m → 1 case). Duel de coques NAVIRE-UNITÉ, témoin
+  // du modèle : l'IA de coque (`runShipAI`) manœuvre la cogue pirate pour aligner sa bordée puis fait feu ; le
+  // joueur joue le tour de la Louve grise. Coques ouvertes à ~150 m (15 cases) → l'approche se JOUE. Cf. loup-et-saumure.
+  metresPerTile: 10,
+  rows: seaRows(24, 14, []),
   entities: [
-    hero(4, 6),
-    hull('louve-grise', 'loup-imperial', 4, 6, 'E', 'La Louve grise', [],
-      [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }])]),
+    hero(3, 7),
+    hull('louve-grise', 'loup-imperial', 3, 7, 'E', 'La Louve grise', ['louve-helm', 'louve-gun'],
+      [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
+       armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
+       armedPoste('pierrier', 'proue', [{ ref: 'balles-et-poudre-pierrier', qty: 16 }])]),
+    marine('louve-helm', 3, 6, 'Timonier de la Louve grise', HELM_SKILLS),
+    marine('louve-gun', 3, 8, 'Canonnier de la Louve grise', GUN_SKILLS),
     // Trait naval du catalogue (`naval-traits.json`, kind:'trait') posé en amélioration d'INSTANCE sur la
     // coque pirate — « Renforcé » (MDG p.97, +10 Endurance/niveau), thématiquement une coque de pirates
-    // renforcée pour l'abordage.
-    hull('cogue-pirate', 'cogue', 16, 6, 'O', 'La cogue pirate', ['pirate-1', 'pirate-2'], [],
+    // renforcée pour l'abordage. Passagers : les pirates + le chef, + un barreur/canonnier compétents.
+    hull('cogue-pirate', 'cogue', 18, 7, 'O', 'La cogue pirate', ['pirate-1', 'pirate-2', 'chef-pirate-1', 'cogue-helm', 'cogue-gun'],
+      [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }]),
+       armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 12 }]),
+       armedPoste('canon-moyen', 'proue', [{ ref: 'boulet-et-poudre', qty: 8 }])],
       [{ id: 'renforce', value: 1 }]),
-    { id: 'pirate-1', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 15, y: 5 }, label: 'Pirate' },
-    { id: 'pirate-2', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 15, y: 7 }, label: 'Pirate' },
-    { id: 'chef-pirate-1', kind: 'personnage', ref: 'chef-pirate', pos: { x: 17, y: 6 }, label: 'Le chef des pirates' },
+    { id: 'pirate-1', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 18, y: 6 }, label: 'Pirate' },
+    { id: 'pirate-2', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 18, y: 8 }, label: 'Pirate' },
+    { id: 'chef-pirate-1', kind: 'personnage', ref: 'chef-pirate', pos: { x: 19, y: 7 }, label: 'Le chef des pirates' },
+    marine('cogue-helm', 18, 5, 'Barreur de la cogue', HELM_SKILLS),
+    marine('cogue-gun', 18, 9, 'Canonnier de la cogue', GUN_SKILLS),
   ],
   encounters: [
     {
       id: 'enc-embuscade-sel',
+      // Surprise navale = avantage de POSITION (couche Mer : pas d'État Surpris sur une coque) : Perception
+      // ratée → la cogue surgit plus près, bordée alignée ; repérée → ~150 m sans avantage (`applyNavalSurprisePosition`).
+      surprise: 'party',
       // Reddition à 40 % de Blessures (VictoryCondition.woundsThreshold, doc §8) : la cogue pirate amène
       // son pavillon avant le naufrage complet.
       victoryCondition: { type: 'woundsThreshold', targetId: 'cogue-pirate', belowPercent: 40 },
@@ -148,6 +168,8 @@ scenes.push(scene({
         { entityId: 'pirate-1', side: 'enemy' },
         { entityId: 'pirate-2', side: 'enemy' },
         { entityId: 'chef-pirate-1', side: 'enemy' },
+        { entityId: 'cogue-helm', side: 'enemy' },
+        { entityId: 'cogue-gun', side: 'enemy' },
       ],
       onVictory: flowOf([
         { type: 'setFlag', flag: 'sel_embuscade_vaincue' },
@@ -160,7 +182,7 @@ scenes.push(scene({
       ]),
     },
   ],
-  entryPoints: { arrivee: { x: 4, y: 6 } },
+  entryPoints: { arrivee: { x: 3, y: 7 } },
 }));
 
 // ════════════════════════════════════════════════════════════════════════════════════════════

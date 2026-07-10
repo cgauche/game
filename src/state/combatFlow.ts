@@ -7,14 +7,14 @@ import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
 import type { LootGear, PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack } from './pendings';
 import { describeReload } from './flowOutcomes';
-import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, type ShipPoste } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
 import { t as tr } from '../i18n'; // alias : `t` est un identifiant local très fréquent ici (cibles/jets)
 import { TEMPO } from './tempo';
 import { beatHold, approachMs, afterApproach } from './combatDirector';
-import { facingToward, type Dir8 } from './dir8';
+import { facingToward, DIR8_ORDER, type Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
 import {
   resolveMelee,
@@ -159,6 +159,10 @@ import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initia
 import { sweepDismountDeaths, mountedAttackMods, mountedDodgePenalty, mountMovement, mountOf, mountUp, mountableNear, movementRemaining, canMove, riderFearSize, combatGeomOf, attackGeomOf, meleeWeaponInRange, pickAttackWeaponList } from './mount';
 import { lineOfSightCover, losClear, coverModifier, worstCover, tilesBetween, tileSeenByFoe } from './lineOfSight';
 import { shipOfCrew, mountedWeaponBears, servingCrewPresent, servablePostes, serveAtPoste, crewPosteOf } from './shipPostes';
+import { isVehicle } from '../engine/vehicle';
+import { targetArc, headingToBear } from './fireArc';
+import { bearingPostes, mostArmedSide } from './shipBattery';
+import { shipHelmsman, maneuverShip } from './shipManeuver';
 import { crewedFireWeapon } from '../engine/crewedWeapon';
 import { warMachineFireWeapon, warMachineCrewRequired, warMachineCrewPenalty } from '../engine/warMachineCrew';
 import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
@@ -5225,11 +5229,81 @@ function aiSelectLoadout(set: SetFn, enemy: Combatant, battle: BattleState): voi
   set({ battle: { ...battle } });
 }
 
+// ── IA DE COQUE (couche MER, navire-unité — MDG ch.13-14) ─────────────────────────────────────────────
+/** Cap le plus court (crans signés d'octant) de `from` vers `to`, BORNÉ à ±2 (90°/manœuvre — RAW-sober : un navire
+ *  ne pivote pas de 180° en un seul Test ; parité avec les options de `ShipManeuverModal`). PUR. */
+function shipTurnToward(from: Dir8, to: Dir8): number {
+  const d = (DIR8_ORDER.indexOf(to) - DIR8_ORDER.indexOf(from) + 8) % 8; // 0..7
+  const signed = d <= 4 ? d : d - 8; // −3..4
+  return Math.max(-2, Math.min(2, signed));
+}
+
+/** Portée NUMÉRIQUE (m) d'une pièce (une portée `{bf}` — arme perso résolue au BF — n'a pas cours pour une pièce de
+ *  navire à portée fixe : traitée comme 0, hors du gate d'engagement naval). PUR. */
+const posteRangeM = (p: ShipPoste): number => (typeof p.item.range === 'number' ? p.item.range : 0);
+
+/** Portée maximale (m) des pièces CHARGÉES d'une coque, tous bords confondus. PUR. */
+function shipMaxPosteRange(ship: Combatant): number {
+  return Math.max(0, ...(ship.postes ?? []).filter((p) => p.loaded !== false).map(posteRangeM));
+}
+
+/** Clôt le tour d'une coque IA (readability : mêmes tenues que le tour ennemi). Ne progresse PAS si la bordée a
+ *  conclu le combat (reddition/naufrage — `checkBattleOver` l'a déjà fermé). */
+function endShipTurn(get: Get, set: SetFn, delay?: number): void {
+  setTimeout(() => { if (!get().battle?.over) advanceTurn(get, set); }, delay ?? beatHold(get, 'enemyAdvance'));
+}
+
+/**
+ * IA d'une COQUE à son tour (échelle MER) — décision RAW-sensée, headless (aucune modale) :
+ *  1. si un bord ARMÉ porte sur une coque adverse ET qu'elle est à portée → BORDÉE (`shipAutoBattery` : Test
+ *     d'équipage des Artilleurs résolu sans modale, mêmes fns pures que le joueur) ;
+ *  2. sinon MANŒUVRE (`maneuverShip`, barreur = meilleur de l'équipage APTE) : virer pour amener le bord le plus
+ *     armé en batterie quand la cible est déjà à portée, sinon fermer la distance cap sur elle (la coque avance
+ *     TOUJOURS le long du cap, MDG ch.13) — l'approche se joue donc sur plusieurs Rounds ;
+ *  3. à défaut de barreur apte → la coque dérive le long de son cap (`shipAdvance`).
+ * Les Tests d'équipage adverses sont auto-résolus par ces mêmes flux ; tout est journalisé (aucun jet silencieux).
+ */
+function runShipAI(get: Get, set: SetFn, ship: Combatant): void {
+  const battle = get().battle!;
+  const scene = get().scene!;
+  const foeKind = ship.kind === 'enemy' ? 'hero' : 'enemy';
+  const targets = battle.combatants.filter((c) => c.kind === foeKind && isVehicle(c) && !isOutOfAction(c) && c.pos);
+  if (!ship.pos || !targets.length) return endShipTurn(get, set);
+  const shipPos = ship.pos;
+  const target = targets.reduce((a, b) => (chebyshev(shipPos, b.pos!) < chebyshev(shipPos, a.pos!) ? b : a));
+  const targetPos = target.pos!;
+  const mpt = sceneMetresPerTile(scene);
+  const heading = get().facing[ship.id] ?? 'N';
+  const bearing = facingToward(shipPos, targetPos);
+  const distMetres = chebyshev(shipPos, targetPos) * mpt;
+  // 1) Le bord qui porte (cap courant) est-il armé ET la cible à portée de ses pièces ? → FEU.
+  const side = targetArc(heading, shipPos, targetPos);
+  const bearingRange = Math.max(0, ...bearingPostes(ship, side).map(posteRangeM));
+  if (bearingRange > 0 && distMetres <= bearingRange && get().shipAutoBattery(ship.id, target.id)) {
+    return endShipTurn(get, set, TEMPO.aimTelegraph);
+  }
+  // 2) MANŒUVRE : aligner le bord le plus armé (si à portée) ou fermer la distance (hors portée).
+  const helm = shipHelmsman(battle.combatants, ship);
+  if (helm) {
+    const primary = mostArmedSide(ship);
+    const inRange = shipMaxPosteRange(ship) > 0 && distMetres <= shipMaxPosteRange(ship);
+    const desired = inRange && primary ? headingToBear(primary, bearing) : bearing;
+    maneuverShip(get, ship.id, shipTurnToward(heading, desired), helm.id); // vire (si Test réussi) + avance ; journalise
+    return endShipTurn(get, set);
+  }
+  // 3) Aucun barreur apte : la coque dérive le long de son cap (approche minimale, MDG ch.13 M÷2 plancher).
+  get().shipAdvance(ship.id, Math.max(1, Math.round(shipMaxPosteRange(ship) / mpt) || 1));
+  endShipTurn(get, set);
+}
+
 export function runEnemyAI(get: Get, set: SetFn, enemyId: string) {
   const { battle, scene } = get();
   if (!battle || !scene || battle.over) return;
   const enemy = battle.combatants.find((c) => c.id === enemyId);
   if (!enemy || isOutOfAction(enemy)) return advanceTurn(get, set);
+  // Couche MER (navire-unité) : une coque IA agit en UNITÉ via des Tests d'équipage (manœuvre/bordée), pas comme
+  // une créature (ni psychologie, ni marche de fantassin). Branche DÉDIÉE — `chooseEnemyAction` n'a aucun candidat naval.
+  if (isVehicle(enemy)) return runShipAI(get, set, enemy);
   // Cycle de tour ennemi (LDB 21/85) en hooks `turnStart` ordonnés (state/combat/turnHooks) : fin de
   // Frénésie 10 → Rage 20 → tentative de Frénésie IA 30 → psychologie 40. La dépendance d'ordre RAW
   // (Frénésie/Rage AVANT la psychologie — la Frénésie en rend immunisé) est encodée par les `order`.

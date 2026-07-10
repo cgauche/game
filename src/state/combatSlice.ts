@@ -15,7 +15,7 @@ import type { CounterParticipant } from './pendings';
 import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
 import { continueRiverDayAfterCascade } from './riverVoyageFlow';
-import { Combatant, HitLocation, DIFFICULTY_MODIFIERS } from '../engine/types';
+import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
 import { activeCombatant, moveEnv, removeEntity, entityPickables, applyEffects, openSkillTest, applyIncomingMeleeAdvantage, firedWeapon, resolveAttack, openAttackCascade, disengageOutcome, startDisengage, startAuContact, startGrapple, resolveGrappleWin, auContactEligible, applyAttackResult, applyShieldReaction, castSpell, applyCast, castWardPenalty, domainCastBonus, applyZoneCrossings, effectiveSpellOf, finishPlayerAction, applyMiscast, useSpellComponent, checkBattleOver, applyCriticalToTarget, resumeEnemyTurn, advanceTurn, resolveRoundBoundary, enterRoundStartPause, runPreemptShots, inFiringBand, maybeRunEnemyTurn, resumeSuspendedAI, resumeManeuverDefense, aiDriven, attackerFumbled, defenderFumbled, applyOups, autoCleave, maybeHeroCleave, cleaveTargets, dualStrikeTargets, resolveDualSecond, overcastTargetCandidates, aiCreatureFreeAttacks, aiAvailableFreeAttack, resolveFreeAttacks, applyFreeAttackEffects, trampleTarget, TRAMPLE_WEAPON, pushReveal, pushCombatStep, aiOvercastPlan, hasFreeWeaponAttack, freeAttackWeapon, applyWail, resolveManeuver, spellSightOf, castZoneSpell, castCommitZone, zoneRadiusTilesAt, commitPlacedZone, counterspellCandidates, applyCounterspell, applyCounterspellOutcome, openCastOpposition, openRoundStartPsych, displaceSmaller, applySurprise, displayedReach, computeRunReach, fearedSourceTowards, frenzyTarget, rollInitiative, handleConditionGained, routeTriggeredTest, freeAttackHookImpl, setFreeAttackHook, applyFocusInterruption, setFocusInterruptHook, applyBladeTrap, setBladeTrapHook, fireTurnStartTriggers, resolveActGates, finishCombatEnd, resolveWeaponArea, areaTargets, battleAreaTargets, siegeBlastRadiusTiles, availableAttacks, aiWouldPrepareSpell, castInfoIsPrayer, startBattement, startDistraire, battementEligible, distraireEligible, resolveBattement, resolveDistraire, battementFoes, distraireFoes, selfManeuversOf, selfManeuverApplicable } from './combatFlow';
@@ -62,15 +62,16 @@ import { spawnEnemy, placeCombatant } from './spawn';
 import { applyShipPostes, autoFormCrews, servingCrewPresent, shipOfCrew, servablePostes, serveAtPoste, leaveChef, isPosteManned } from './shipPostes';
 import { posteHullOf, pushEligible, pushCrewOk, pushMovement, pushReachable } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
-import { crewTestContributors, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
+import { crewTestContributors, shipCrewAssignments, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
 import { resolveVoyageCrewTest, resolveSteamSave, runSeaDays } from './seaVoyageFlow';
-import { rudeEpreuveMoraleDelta } from '../engine/crewMorale';
+import { resolveCrewTestByRoles, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById } from '../data';
 import { findCrewTestTypeById, findCrewRoleById, findVehicleById, findStructureById } from '../data';
 import { structureCombatant } from '../engine/structures';
-import { targetArc } from './fireArc';
-import { bearingPostes } from './shipBattery';
+import { targetArc, headingToBear } from './fireArc';
+import { facingToward } from './dir8';
+import { bearingPostes, mostArmedSide } from './shipBattery';
 import { resolveVolley } from '../engine/volley';
 import type { ShipManeuverParticipant, ShipBatteryParticipant } from './pendings';
 import { isVehicle } from '../engine/vehicle';
@@ -162,6 +163,94 @@ function openCrewTestPending(get: Get, ship: Combatant, testTypeId: string): {
     undercrew: shipUndercrew(get, ship, battle.combatants),
     ...(extraDR ? { extraDR } : {}),
   };
+}
+
+/** Ligne de journal des SERVANTS d'une bordée (MDG ch.14 l.39 — l'équipage s'exprime, jamais un poste muet) : un PJ
+ *  tenant le rôle d'Artilleur DIRIGE la batterie (nominé, l.9) ; sinon l'équipage ABSTRAIT du bord fait feu (couche
+ *  Mer, l.39). PUR (lit les assignations de rôle du navire pour ce Test). */
+function bordeeGunnersLine(get: Get, ship: Combatant, side: FireArc): string {
+  const battle = get().battle;
+  const partyIds = new Set(get().party.map((h) => h.id));
+  const chief = battle
+    ? shipCrewAssignments(ship, battle.combatants, 'batterie').find((a) => a.roleId === 'artilleur' && partyIds.has(a.crew.id))?.crew
+    : undefined;
+  return chief
+    ? t('cs.bordeeGunnersChief', { chief: chief.name, side, ship: ship.name })
+    : t('cs.bordeeGunnersCrew', { side, ship: ship.name });
+}
+
+/**
+ * APPLIQUE une bordée résolue (mutation) — corps PARTAGÉ par le confirm JOUEUR (`shipBatteryConfirm`, DR issu de la
+ * modale des Artilleurs) ET l'auto-pilote NAVIRE (`shipAutoBattery`, DR issu du Test d'équipage headless). Un SEUL
+ * chemin de dégâts : `resolveVolley` (munition + sous-effectif + Dégâts + Critiques, mêmes fns pures que le tir
+ * individuel), Blessures sur la coque, Critiques de navire sur double, effets `onHit` et AIRE (Éclats), Recharge +
+ * consommation de munition. Journalise les servants (l.39) puis la bordée. NE touche PAS au pending ni à `crewActed`
+ * (propres à chaque appelant). Renvoie le nombre de pièces qui ont fait feu.
+ */
+function applyBatteryVolley(get: Get, set: Set, ship: Combatant, target: Combatant, side: FireArc, dr: number): number {
+  const battle = get().battle;
+  if (!battle) return 0;
+  const merScale = isMerScene(get().scene);
+  const postes = bearingPostes(ship, side);
+  const rig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
+  const crew = (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+  const volley = resolveVolley(ship, postes, target, rig, dr, crew, battleRng(), { merScale }); // couche Mer : équipage abstrait sert les pièces
+  target.wounds.current = Math.max(0, target.wounds.current - volley.totalWounds); // mute la coque (pattern combat)
+  const critLines: string[] = [];
+  const targetCrew = (target.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+  const distTiles = ship.pos && target.pos ? chebyshev(ship.pos, target.pos) : 0;
+  for (const s of volley.shots) {
+    if (s.critical) applyCriticalToTarget(target, 'corps', true, 0, critLines, set, { ctx: { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, get });
+    if (s.wounds > 0) critLines.push(...fireTriggers(get, ship, 'onHit', { victim: target, weapon: s.weapon, woundsDealt: s.wounds, location: 'corps', attackType: 'ranged', rng: battleRng(), set }));
+    const area = resolveWeaponArea(get, set,
+      { attacker: ship, primaryTarget: target, weapon: s.weapon, damage: s.damage, location: 'corps', distanceTiles: distTiles },
+      areaTargets(battle.combatants, sceneMetresPerTile(get().scene), () => targetCrew), battleRng());
+    critLines.push(...area.lines);
+  }
+  for (const s of volley.shots) {
+    const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid);
+    if (poste) { poste.loaded = false; poste.reloadProgress = 0; }
+    const chef = poste?.crewIds?.[0] ? battle.combatants.find((c) => c.id === poste.crewIds![0]) : undefined;
+    if (chef && s.ammo) consumeAmmo(chef, s.ammo);
+  }
+  get().log(bordeeGunnersLine(get, ship, side)); // les servants s'expriment (l.39)
+  get().log(t('cs.bordee', { side, ship: ship.name, target: target.name, dr: dr >= 0 ? `+${dr}` : `${dr}`, n: volley.shots.length, wounds: volley.totalWounds, cur: target.wounds.current, max: target.wounds.max }));
+  for (const l of critLines) get().log(l);
+  return volley.shots.length;
+}
+
+/**
+ * SURPRISE NAVALE (couche Mer) traduite en AVANTAGE DE POSITION — PAS de tour gratuit (une coque n'a ni Action ni
+ * psychologie ; l'État Surpris LDB 16 ne s'y transpose pas → arbitrage sobre, maison). L'assaillant NON repéré a eu le
+ * temps de se PLACER : chaque coque ambusher se rapproche à ~portée MOYENNE du canon (75 m, MDG ch.12 l.401) de sa
+ * cible et vire pour amener son bord le plus armé EN BATTERIE. Repérés (Perception réussie, `noSurprise`) → non appelée :
+ * placement authoré (~150 m, aucun avantage). Mute pos + facing.
+ */
+function applyNavalSurprisePosition(get: Get, set: Set, surprisedSide: 'party' | 'enemies'): void {
+  const { battle, scene } = get();
+  if (!battle || !scene) return;
+  const surprisedKind = surprisedSide === 'party' ? 'hero' : 'enemy';
+  const ambushers = battle.combatants.filter((c) => isVehicle(c) && c.kind !== surprisedKind && c.pos);
+  const victims = battle.combatants.filter((c) => isVehicle(c) && c.kind === surprisedKind && c.pos);
+  if (!ambushers.length || !victims.length) return;
+  const mpt = sceneMetresPerTile(scene);
+  const gap = Math.max(1, Math.round(75 / mpt)); // ~portée moyenne du canon (MDG ch.12 l.401)
+  const facing = { ...get().facing };
+  const { w, h } = scene.dimensions;
+  for (const amb of ambushers) {
+    const victim = victims.reduce((a, b) => (chebyshev(amb.pos!, b.pos!) < chebyshev(amb.pos!, a.pos!) ? b : a));
+    // Rapprochement le long de l'axe ambusher→victime, arrêt à ~`gap` cases (jamais plus près, jamais hors bornes).
+    const dx = Math.sign(victim.pos!.x - amb.pos!.x), dy = Math.sign(victim.pos!.y - amb.pos!.y);
+    let nx = amb.pos!.x, ny = amb.pos!.y;
+    while (chebyshev({ x: nx + dx, y: ny + dy }, victim.pos!) >= gap
+      && nx + dx >= 0 && ny + dy >= 0 && nx + dx < w && ny + dy < h) { nx += dx; ny += dy; }
+    if (nx !== amb.pos!.x || ny !== amb.pos!.y) placeCombatant(amb, scene, { x: nx, y: ny });
+    // Bord le plus armé DÉJÀ aligné en batterie sur la victime (l'assaillant a choisi son bord d'attaque).
+    const primary = mostArmedSide(amb);
+    if (primary) facing[amb.id] = headingToBear(primary, facingToward(amb.pos!, victim.pos!));
+    battle.log.push(ev('detail', t('cs.navalSurprise', { ship: amb.name, target: victim.name }), amb.id));
+  }
+  set({ facing, battle: { ...battle } });
 }
 
 /** Avance l'étape-jet d'attaque/Piétinement de la cascade combat à la FIN de la chaîne (plus de
@@ -1092,45 +1181,43 @@ export function createCombatSlice(get: Get, set: Set) {
       const target = battle.combatants.find((c) => c.id === p.targetId);
       if (!ship || !target) { set({ pendingShipBattery: null }); return; }
       const dr = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR); // DR PARTAGÉ (Σ, essentiel ×2, + Moral, + Manque de bras, + sabotage)
-      const postes = bearingPostes(ship, p.side);
-      const rig = findVehicleById(target.creatureId ?? '')?.hull?.rig ?? 'mixte';
-      const crew = (ship.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
-      const volley = resolveVolley(ship, postes, target, rig, dr, crew, battleRng()); // munition + sous-effectif + Dégâts + Critiques (PUR, MÊMES fns que le tir individuel)
       set({ pendingShipBattery: null });
-      target.wounds.current = Math.max(0, target.wounds.current - volley.totalWounds); // mute la coque (pattern combat)
-      const critLines: string[] = [];
-      // Équipage du navire CIBLE (pour l'aire navale : Tir de zone / Explosion balaient le pont, ≠ rayon métrique).
-      const targetCrew = (target.crewIds ?? []).map((id) => battle.combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
-      const distTiles = ship.pos && target.pos ? chebyshev(ship.pos, target.pos) : 0;
-      for (const s of volley.shots) {
-        if (s.critical) // double sur le 1d100 → Critique de navire (ch.13 l.656)
-          applyCriticalToTarget(target, 'corps', true, 0, critLines, set, { ctx: { attackerId: ship.id, attackerKind: ship.kind, weapon: s.weaponName }, get });
-        // EXTENSIBILITÉ (point 4) : chaque touche de coque passe par le MÊME chemin onHit que le tir individuel
-        // → tout Atout à effet `onHit` (États, Venin, Assommante…) se déclenche en bordée SANS code spécifique.
-        if (s.wounds > 0) critLines.push(...fireTriggers(get, ship, 'onHit', { victim: target, weapon: s.weapon, woundsDealt: s.wounds, location: 'corps', attackType: 'ranged', rng: battleRng(), set }));
-        // AIRE : munition à Tir de zone / Explosion → balaie l'ÉQUIPAGE EXPOSÉ du navire cible (résolveur UNIQUE).
-        const area = resolveWeaponArea(get, set,
-          { attacker: ship, primaryTarget: target, weapon: s.weapon, damage: s.damage, location: 'corps', distanceTiles: distTiles },
-          areaTargets(battle.combatants, sceneMetresPerTile(get().scene), () => targetCrew), battleRng());
-        critLines.push(...area.lines);
-      }
-      // Recharge (ch.12 / LDB 62) : chaque pièce qui a tiré est DÉCHARGÉE et le RESTE jusqu'à la fin d'un Test
-      // étendu de recharge (action « Recharger » du navire) — pas d'auto-rechargement passif. La munition
-      // tirée est CONSOMMÉE (stock du poste / besace du chef — `consumeAmmo`, source unique, MDG ch.12 l.410-424).
-      for (const s of volley.shots) {
-        const poste = ship.postes?.find((pp) => pp.item.uid === s.posteUid);
-        if (poste) { poste.loaded = false; poste.reloadProgress = 0; }
-        const chef = poste?.crewIds?.[0] ? battle.combatants.find((c) => c.id === poste.crewIds![0]) : undefined;
-        if (chef && s.ammo) consumeAmmo(chef, s.ammo);
-      }
-      get().log(t('cs.bordee', { side: p.side, ship: ship.name, target: target.name, dr: dr >= 0 ? `+${dr}` : `${dr}`, n: volley.shots.length, wounds: volley.totalWounds, cur: target.wounds.current, max: target.wounds.max }));
-      for (const l of critLines) get().log(l);
+      applyBatteryVolley(get, set, ship, target, p.side, dr); // corps de bordée PARTAGÉ (mêmes fns pures) — cf. shipAutoBattery
       const bB = get().battle!;
       set({ battle: { ...bB, action: null, preview: null, crewActed: withCrewActed(bB.crewActed, p.shipId, p.participants.map((x) => x.id)) } }); // Artilleurs engagés ce Round
       checkBattleOver(get, set);
       bus.emit(EVT.SCENE_DIRTY);
     },
     shipBatteryCancel: () => set({ pendingShipBattery: null }),
+
+    // ── AUTO-PILOTE : bordée HEADLESS (aucun pending) — l'IA de coque (couche Mer) lâche une bordée sur un navire
+    //    ennemi. Le Test d'équipage des Artilleurs se résout SANS modale (`resolveCrewTestByRoles`, équipage abstrait
+    //    l.39 : les rôles nominaux tenus arment les pièces, le Manque de bras est LA pénalité RAW) → DR partagé,
+    //    puis le MÊME corps de bordée que le joueur (`applyBatteryVolley`). Renvoie true si des pièces ont fait feu. ──
+    shipAutoBattery: (shipId: string, targetId: string): boolean => {
+      const battle = get().battle;
+      if (!battle) return false;
+      const ship = battle.combatants.find((c) => c.id === shipId);
+      const target = battle.combatants.find((c) => c.id === targetId);
+      if (!ship || !target || !ship.pos || !target.pos) return false;
+      const side = targetArc(get().facing[ship.id] ?? 'N', ship.pos, target.pos); // bord qui porte (auto-dérivé de la cible)
+      if (!bearingPostes(ship, side).length) return false; // aucune pièce chargée sur ce bord → rien à lâcher
+      const assignments = shipCrewAssignments(ship, battle.combatants, 'batterie'); // équipage abstrait → rôles tenus (Artilleur ★)
+      const undercrew = shipUndercrew(get, ship, battle.combatants);
+      const traits = [...(findVehicleById(ship.creatureId ?? '')?.ship?.traits ?? []), ...(ship.upgrades ?? [])];
+      const extraDR = shipSaboteurDR(ship) + navalTestTypeDR(traits, 'batterie');
+      // DR partagé calé sur le chemin JOUEUR (`maneuverCrewTotal`) : Σ contributions (essentiel ×2) + Moral +
+      // Manque de bras (−2/tranche) + sabotage/traits ; plafonné à un Succès Minime dès qu'une tranche manque (l.55).
+      const crewTest = resolveCrewTestByRoles(assignments, 'batterie', 'intermediaire', shipMoraleScore(get, ship), battleRng(), { extraDR: undercrew.dr + extraDR });
+      const dr = undercrew.capSuccesMinime && crewTest.total > 0 ? 0 : crewTest.total;
+      applyBatteryVolley(get, set, ship, target, side, dr);
+      const bB = get().battle!;
+      const gunners = assignments.map((a) => a.crew.id);
+      set({ battle: { ...bB, crewActed: withCrewActed(bB.crewActed, shipId, gunners) } }); // équipage engagé ce Round (Manque de bras / cumul, l.53)
+      checkBattleOver(get, set);
+      bus.emit(EVT.SCENE_DIRTY);
+      return true;
+    },
 
     // ── TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG ch.14, « Types de Test d'équipage ») — 3ᵉ jumeau de la manœuvre/bordée,
     //    paramétré par `testTypeId`. Câblé en COMBAT : **Rude épreuve** (l.106-114 — « les gens ont peur de ce
@@ -2365,6 +2452,15 @@ export function createCombatSlice(get: Get, set: Set) {
         })
         .filter((c): c is Combatant => !!c);
       const all = [...heroes, ...enemies, ...structures];
+      // COUCHE MER (navire-unité, MDG ch.14) : le groupe EMBARQUE — les PJ tiennent les rôles de leur navire
+      // (l.39 « la performance des Personnages représente celle de tout l'équipage »). On les rattache à la coque
+      // ALLIÉE (celle de campagne si connue, sinon la 1re coque alliée) → PASSAGERS (hors ordre ET hors rendu),
+      // qui s'expriment par les Tests d'équipage (manœuvre / bordée) et n'ont pas de tour individuel person-scale.
+      if (isMerScene(scene)) {
+        const allyHull = all.find((c) => isVehicle(c) && c.kind === 'hero' && (!vessel0 || c.creatureId === vessel0.vehicleId))
+          ?? all.find((c) => isVehicle(c) && c.kind === 'hero');
+        if (allyHull) allyHull.crewIds = [...new Set([...(allyHull.crewIds ?? []), ...heroes.map((h) => h.id)])];
+      }
       // Postes d'artillerie (MDG ch.12-13) : sert chaque poste de coque à son chef de pièce (mannedPoste +
       // octroi du canon dérivé). Après le spawn, sur TOUS les combattants (héros/allié/ennemi indifférent).
       applyShipPostes(all);
@@ -2438,7 +2534,10 @@ export function createCombatSlice(get: Get, set: Set) {
       });
       // Surprise APRÈS la pose du `battle` : le Test du guetteur est cadence-aware (héros manuel → cascade
       // influençable, qui s'OUVRE par-dessus la pause d'ouverture ; embusqué ennemi → inline dans le journal).
-      if (doSurprise) applySurprise(get, set, enc.surprise!);
+      // COUCHE MER : la Surprise ne pose PAS l'État Surpris (une coque n'a ni Action ni psychologie — ce serait un
+      // « tour gratuit de créature ») ; elle se traduit en AVANTAGE DE POSITION (l'assaillant a eu le temps de se
+      // placer : entrée plus PRÈS + bord déjà aligné). Repérés (Perception réussie) → placement authoré (~150 m).
+      if (doSurprise) { if (isMerScene(scene)) applyNavalSurprisePosition(get, set, enc.surprise!); else applySurprise(get, set, enc.surprise!); }
       get().faceAtCombatStart();
       bus.emit(EVT.SCENE_DIRTY);
     },

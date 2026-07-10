@@ -10,7 +10,7 @@
  * (3 octants), conforme à « masser les pièces d'un bord pour lâcher une bordée » (MDG ch.12 l.428) et au
  * « canon tourné vers sa poupe » de l'exemple de poursuite (l.410). [Alternative écartée : quadrant 90°.]
  */
-import { facingToward, DIR8_ORDER, type Dir8 } from './dir8';
+import { facingToward, rotateDir8, DIR8_ORDER, type Dir8 } from './dir8';
 import type { FireArc } from '../engine/types';
 
 export type { FireArc };
@@ -38,4 +38,16 @@ export function targetArc(heading: Dir8, shipPos: Pt, targetPos: Pt): FireArc {
 /** La cible est-elle dans l'arc d'un poste monté sur `gunSide` ? (côté de montage, relatif au cap). PUR. */
 export function inFireArc(gunSide: FireArc, heading: Dir8, shipPos: Pt, targetPos: Pt): boolean {
   return targetArc(heading, shipPos, targetPos) === gunSide;
+}
+
+/** Cap qui met le bord `side` EN BATTERIE sur une cible de relèvement `bearing` (INVERSE de `targetArc` pour un bord
+ *  donné) : travers droit = tribord (relèvement à l'octant +2 vs cap), travers gauche = bâbord (−2), proue = droit
+ *  devant, poupe = droit derrière. Sert à l'IA/à la Surprise pour orienter une coque vers l'alignement d'une bordée. PUR. */
+export function headingToBear(side: FireArc, bearing: Dir8): Dir8 {
+  switch (side) {
+    case 'tribord': return rotateDir8(bearing, -2);
+    case 'babord': return rotateDir8(bearing, 2);
+    case 'poupe': return rotateDir8(bearing, 4);
+    default: return bearing;
+  }
 }

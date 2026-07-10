@@ -46,6 +46,20 @@ export function resolveBattery(
   return { side, postes, crewTest, dr: crewTest.total };
 }
 
+/** Ordre de préférence des bords pour « le plus armé » : les BORDÉES (travers) massent les pièces (MDG ch.12 l.428),
+ *  la proue/poupe sont des postes de CHASSE étroits — départage stable à effectif égal. */
+export const SHIP_ARC_PREF: FireArc[] = ['tribord', 'babord', 'proue', 'poupe'];
+
+/** Le bord le PLUS ARMÉ d'une coque (pièces CHARGÉES), départagé par `SHIP_ARC_PREF`. `null` si aucune pièce chargée. PUR. */
+export function mostArmedSide(ship: Combatant): FireArc | null {
+  const counts = new Map<FireArc, number>();
+  for (const p of ship.postes ?? []) if (p.loaded !== false && p.side) counts.set(p.side, (counts.get(p.side) ?? 0) + 1);
+  let best: FireArc | null = null;
+  let bestN = 0;
+  for (const s of SHIP_ARC_PREF) { const n = counts.get(s) ?? 0; if (n > bestN) { best = s; bestN = n; } }
+  return best;
+}
+
 /** Pièces d'un navire sur le bord `side` qui peuvent FAIRE FEU : montées sur ce bord ET **chargées**
  *  (`loaded !== false` ; une pièce qui a tiré reste muette jusqu'à la FIN de son Test étendu de recharge,
  *  MDG ch.12 / LDB 62 l.333 — pas d'auto-rechargement). PUR — source unique du filtre « le bord qui peut

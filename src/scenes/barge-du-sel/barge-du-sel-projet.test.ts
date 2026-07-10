@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import { parseProject } from '../../state/worldMap';
 import { validateScene, type Warning } from '../../state/validateScene';
-import { sceneMetresPerTile, type Scene, type Effect } from '../../state/scene';
+import { sceneMetresPerTile, isMerScene, type Scene, type Effect } from '../../state/scene';
 import { findCreatureById, findVehicleById, findNavalTrait, findCrewRoleById } from '../../data';
 // @ts-expect-error — outil d'auteur .mjs sans types (lib.mjs) ; on n'exerce que le forward de metresPerTile.
 import { scene as makeScene } from '../../../scripts/campagne/lib.mjs';
@@ -76,13 +76,12 @@ describe('La Barge du Sel — mini-campagne navale (zéro code applicatif)', () 
     expect(missing).toEqual([]);
   });
 
-  it('« La Louve grise » est une coque ALLIÉE armée d’UN canon à tribord, servable en jeu (crewIds vide)', () => {
+  it('« La Louve grise » est une coque ALLIÉE armée de deux bordées + une chasse de proue (crewIds de poste vide)', () => {
     const sc = project.find((s) => s.id === 'barge-du-sel-embuscade')!;
     const louve = sc.entities.find((e) => e.id === 'louve-grise')!;
     expect(findVehicleById(louve.ref!)?.hull, 'la Louve grise est une coque').toBeTruthy();
-    expect(louve.postes).toHaveLength(1);
-    expect(louve.postes![0].side).toBe('tribord');
-    expect(louve.postes![0].crewIds).toEqual([]); // aucun héros connu à l'authoring (#222)
+    expect(louve.postes!.map((p) => p.side)).toEqual(['tribord', 'babord', 'proue']); // deux bordées + chasse de proue
+    for (const p of louve.postes!) expect(p.crewIds).toEqual([]); // équipage ABSTRAIT à la Mer (aucun héros à l'authoring, #222)
   });
 
   it('DOTATION DE BORD (#241) : le canon de la Louve grise porte un coffre à munitions (ammo qty>0) et une sélection (ammoUid) valide', () => {
@@ -174,15 +173,15 @@ describe('La Barge du Sel — mini-campagne navale (zéro code applicatif)', () 
     expect(bad).toEqual([]);
   });
 
-  it('la grille d’ABORDAGE tourne à l’échelle de combat CANONIQUE (2 m/case), pas à l’échelle MER', () => {
-    // Le moteur tactique fixe 1 case = 2 m pour l'Allonge/l'engagement (reachTiles, LDB 15 l.55) ET les bandes
-    // de portée d100 (rangeBandAt). Une échelle MER (metresPerTile≥4) sur une grille d'abordage désynchronise la
-    // bordée (mesurée en mètres, batteryAffordance) des tirs de pièce (2 m/case en dur) et met la bordée hors de
-    // portée (canon 75 m : 12 cases = 120 m à 10 m/case ⇒ refus). L'abordage reste donc à 2 m/case ; l'échelle
-    // mer est réservée aux scènes de TRAVERSÉE.
+  it('l’embuscade tourne à l’échelle MER (10 m/case) — modèle NAVIRE-UNITÉ (MDG ch.13)', () => {
+    // Combat naval OPÉRATIONNEL (couche Mer, plan combat-naval-modele §1bis) : 1 case = 10 m = 1 point de Distance
+    // (MDG ch.13 l.362) → portées canon 50/75/150 m = 5/7,5/15 cases. Les coques agissent en UNITÉ (Tests
+    // d'équipage, équipage passager) ; l'IA de coque manœuvre + fait feu. Les armes PERSO (rangeBandAt 2 m/case) ne
+    // tirent PAS ici : leurs porteurs sont passagers (hors ordre) → l'échelle Mer ne les concerne jamais.
     const embuscade = project.find((s) => s.id === 'barge-du-sel-embuscade')! as any;
-    expect(embuscade.metresPerTile).toBeUndefined(); // défaut = 2 m/case
-    expect(sceneMetresPerTile(embuscade)).toBe(2);
+    expect(embuscade.metresPerTile).toBe(10);
+    expect(sceneMetresPerTile(embuscade)).toBe(10);
+    expect(isMerScene(embuscade)).toBe(true);
   });
 
   it('scene() FORWARDE `metresPerTile` au MapSpec compilé quand une scène (traversée) en demande une', () => {

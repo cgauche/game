@@ -426,7 +426,7 @@ export function ActionBar() {
     // Tour du NAVIRE (couche Mer) : Action = Test d'ÉQUIPAGE. Manœuvrer = le barreur vire le cap (Test de
     // Navigation) puis le navire avance le long du cap (l'éperonnage se résout si une coque est devant).
     // Bordée = Test d'équipage des Artilleurs : on désigne un navire ennemi, le bord qui porte est dérivé de la
-    // cible (`targetArc`) et toutes ses pièces font feu au DR partagé (MDG ch.14 l.128). (IA navire → `shipAI`.)
+    // cible (`targetArc`) et toutes ses pièces font feu au DR partagé (MDG ch.14 l.128). (IA navire → `runShipAI`.)
     slots.push({ id: 'maneuver-ship', disabled: battle.acted, icon: <Icon id="action/steer-ship" />, label: 'Manœuvrer', done: battle.acted, title: `Manœuvrer ${active.name} : le barreur vire le cap (Test de Navigation) ; la coque avance — coûte l'Action du navire`, run: () => battleShipManeuver(active.id) });
     if ((active.postes ?? []).length > 0)
       slots.push({ id: 'battery', cls: battle.action === 'battery' ? 'on' : '', icon: <Icon id="action/aim" />, label: 'Bordée', title: `Lâcher une bordée : désignez un navire ennemi — le DR du Test d'équipage des Artilleurs s'applique à toutes les pièces du bord qui porte (MDG ch.14)`, run: () => selectAction(battle.action === 'battery' ? null : 'battery') });

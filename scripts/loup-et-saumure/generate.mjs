@@ -64,13 +64,18 @@ function seaRows(w, h, footprints) {
   return rows;
 }
 
+/** Compétences NAVALES d'un marin représentant (MDG 14 l.39) : le Timonier tient la Voile, l'Artilleur la
+ *  Poudre noire — de quoi que le navire MANŒUVRE et FASSE FEU à la couche Mer (Tests d'équipage). */
+const HELM_SKILLS = [{ id: 'voile', value: 55 }, { id: 'ramer', value: 45 }];
+const GUN_SKILLS = [{ id: 'projectiles', spec: 'poudre-noire', value: 55 }];
+
 /** Membre d'équipage exposé (MDG ch.14) SANS ref de bestiaire dédiée (aucune créature générique
  *  « marin »/« matelot » au catalogue, cf. journal) : CustomStatblock minimal justifié (règle stricte 7 —
- *  omission documentée, pas un « MJ décide »). */
-function marinDuGrimm(id, x, y, label) {
+ *  omission documentée, pas un « MJ décide »). `skills` (optionnel) : compétences navales du représentant. */
+function marinDuGrimm(id, x, y, label, skills) {
   return {
     id, kind: 'personnage', pos: { x, y }, label,
-    statblock: { name: label, char: { M: 4, CC: 35, CT: 30, F: 33, E: 35, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 12 } },
+    statblock: { name: label, char: { M: 4, CC: 35, CT: 40, F: 33, E: 35, Ag: 30, Dex: 30, Int: 30, FM: 30, Soc: 30, B: 12 }, ...(skills ? { skills } : {}) },
   };
 }
 
@@ -342,30 +347,39 @@ scenes.push(scene({
   weather: 'brouillard',
   base: 'eau',
   legend: { '=': 'planches' },
-  // Grille d'ABORDAGE = échelle PERSON-scale 2 m/case. metresPerTile≥4 fait basculer `isMerScene`
-  // (src/state/scene.ts) → modèle navire-UNITÉ (équipage passager, tour de coque, Bordée) qui exige une IA de
-  // manœuvre de coque ennemie ABSENTE (runEnemyAI ne pilote pas les vehicule → la coque reste immobile) et met
-  // la bordée hors de portée sans manœuvre d'approche. À 2 m/case : l'équipage combat individuellement, les
-  // héros SERVENT les pièces, l'abordage se joue (reachTiles LDB 15 = 1 case fixe). L'échelle mer est réservée
-  // aux scènes de TRAVERSÉE jusqu'à ce que l'IA navale existe.
-  rows: seaRows(22, 14, [{ x: 3, y: 5, w: 4, h: 4 }, { x: 15, y: 5, w: 3, h: 3 }]),
+  // COUCHE MER (10 m/case, MDG ch.13 l.362 : 1 point de Distance = 10 m → 1 case ; portées 50/75/150 m = 5/7,5/15
+  // cases). Le combat se joue en NAVIRE-UNITÉ (équipage passager, tour de coque, Bordée) : l'IA de coque
+  // (`runShipAI`) manœuvre la Dent de Manann pour aligner sa bordée puis fait feu ; le joueur joue le tour du Grimm.
+  // Les coques s'ouvrent à ~150 m (15 cases) : l'approche se JOUE sur plusieurs Rounds.
+  metresPerTile: 10,
+  rows: seaRows(24, 14, []),
   entities: [
-    hero(4, 6),
-    hull('grimm', 'loup-imperial', 4, 6, 'E', 'Le Grimm', ['aldo-crew', 'griet-crew'],
+    hero(3, 7),
+    hull('grimm', 'loup-imperial', 3, 7, 'E', 'Le Grimm', ['aldo-crew', 'griet-crew'],
       [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
        armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
        armedPoste('pierrier', 'proue', [{ ref: 'balles-et-poudre-pierrier', qty: 16 }])]),
-    marinDuGrimm('aldo-crew', 4, 5, 'Frère Aldo (équipage exposé)'),
-    marinDuGrimm('griet-crew', 5, 5, 'Griet (équipage exposé)'),
-    hull('cogue', 'cogue', 16, 6, 'O', 'La Dent de Manann', ['pirate-1', 'pirate-2'],
-      [poste('canon-moyen', 'tribord')]),
-    { id: 'pirate-1', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 15, y: 5 }, label: 'Pirate' },
-    { id: 'pirate-2', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 15, y: 7 }, label: 'Pirate' },
-    { id: 'chef-cogue', kind: 'personnage', ref: 'chef-pirate', pos: { x: 17, y: 6 }, label: 'Le chef de la Dent de Manann' },
+    marinDuGrimm('aldo-crew', 3, 6, 'Frère Aldo (équipage exposé)', HELM_SKILLS),
+    marinDuGrimm('griet-crew', 3, 8, 'Griet (équipage exposé)', GUN_SKILLS),
+    // Dent de Manann — passagers : les pirates + le chef (hors ordre/rendu à la Mer) ET des marins représentants
+    // compétents (barreur/canonnier) pour que la coque manœuvre et fasse feu. Deux bordées + chasse de proue.
+    hull('cogue', 'cogue', 18, 7, 'O', 'La Dent de Manann', ['pirate-1', 'pirate-2', 'chef-cogue', 'cogue-helm', 'cogue-gun'],
+      [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }]),
+       armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 12 }]),
+       armedPoste('canon-moyen', 'proue', [{ ref: 'boulet-et-poudre', qty: 8 }])]),
+    { id: 'pirate-1', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 18, y: 6 }, label: 'Pirate' },
+    { id: 'pirate-2', kind: 'personnage', ref: 'pirate-fluvial', pos: { x: 18, y: 8 }, label: 'Pirate' },
+    { id: 'chef-cogue', kind: 'personnage', ref: 'chef-pirate', pos: { x: 19, y: 7 }, label: 'Le chef de la Dent de Manann' },
+    marinDuGrimm('cogue-helm', 18, 5, 'Barreur de la Dent de Manann', HELM_SKILLS),
+    marinDuGrimm('cogue-gun', 18, 9, 'Canonnier de la Dent de Manann', GUN_SKILLS),
   ],
   encounters: [
     {
       id: 'enc-cogue',
+      // Surprise NAVALE → avantage de POSITION (couche Mer : pas d'État Surpris sur une coque) : si la vigie n'a
+      // pas repéré la voile (Perception ratée → `noSurprise:false`), la Dent de Manann surgit plus PRÈS, bordée
+      // déjà alignée (`applyNavalSurprisePosition`). Repérée → placement authoré (~150 m, aucun avantage).
+      surprise: 'party',
       // Reddition à mi-coque (#215) : la Dent de Manann amène son pavillon quand la coque `cogue` tombe
       // sous 50 % de ses Blessures — la victoire se déclenche à la reddition, pas au naufrage.
       victoryCondition: { type: 'woundsThreshold', targetId: 'cogue', belowPercent: 50 },
@@ -377,6 +391,8 @@ scenes.push(scene({
         { entityId: 'pirate-1', side: 'enemy' },
         { entityId: 'pirate-2', side: 'enemy' },
         { entityId: 'chef-cogue', side: 'enemy' },
+        { entityId: 'cogue-helm', side: 'enemy' },
+        { entityId: 'cogue-gun', side: 'enemy' },
       ],
       onVictory: flowOf([
         { type: 'setFlag', flag: 'ls_cogue_vaincue' },
@@ -390,7 +406,7 @@ scenes.push(scene({
       ]),
     },
   ],
-  entryPoints: { arrivee: { x: 4, y: 6 } },
+  entryPoints: { arrivee: { x: 3, y: 7 } },
 }));
 
 // ════════════════════════════════════════════════════════════════════════════════════════════
@@ -506,31 +522,38 @@ scenes.push(scene({
   weather: 'tempete',
   base: 'eau',
   legend: { '=': 'planches' },
-  // Grille d'ABORDAGE = échelle PERSON-scale 2 m/case. metresPerTile≥4 fait basculer `isMerScene`
-  // (src/state/scene.ts) → modèle navire-UNITÉ (équipage passager, tour de coque, Bordée) qui exige une IA de
-  // manœuvre de coque ennemie ABSENTE (runEnemyAI ne pilote pas les vehicule → la coque reste immobile) et met
-  // la bordée hors de portée sans manœuvre d'approche. À 2 m/case : l'équipage combat individuellement, les
-  // héros SERVENT les pièces, l'abordage se joue (reachTiles LDB 15 = 1 case fixe). L'échelle mer est réservée
-  // aux scènes de TRAVERSÉE jusqu'à ce que l'IA navale existe.
-  rows: seaRows(22, 14, [{ x: 3, y: 5, w: 4, h: 4 }, { x: 15, y: 5, w: 3, h: 3 }]),
+  // COUCHE MER (10 m/case) : duel de coques NAVIRE-UNITÉ. Le langskip d'Olg (rapide, M6 aux avirons) FOND sur le
+  // Grimm : l'IA de coque (`runShipAI`) ferme la distance et lâche ses bordées ; le joueur joue le tour du Grimm.
+  // Poursuite, feu de chasse et collision (éperonnage) se jouent en Distance-points (1 case = 10 m). Cf. scène 1.
+  metresPerTile: 10,
+  rows: seaRows(24, 14, []),
   entities: [
-    hero(4, 6),
-    hull('grimm2', 'loup-imperial', 4, 6, 'E', 'Le Grimm', ['aldo-crew-2', 'griet-crew-2'],
+    hero(3, 7),
+    hull('grimm2', 'loup-imperial', 3, 7, 'E', 'Le Grimm', ['aldo-crew-2', 'griet-crew-2'],
       [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
        armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 12 }, { ref: 'mitraille-et-poudre', qty: 4 }]),
        armedPoste('pierrier', 'poupe', [{ ref: 'balles-et-poudre-pierrier', qty: 16 }])]),
-    marinDuGrimm('aldo-crew-2', 4, 5, 'Frère Aldo (équipage exposé)'),
-    marinDuGrimm('griet-crew-2', 5, 5, 'Griet (équipage exposé)'),
-    // Proue-idole de Stromfels : amélioration d'INSTANCE de la coque (#221).
-    hull('serpent-de-sel', 'langskip', 16, 6, 'O', 'Le Serpent-de-Sel', ['norse-1', 'norse-2'], undefined,
+    marinDuGrimm('aldo-crew-2', 3, 6, 'Frère Aldo (équipage exposé)', HELM_SKILLS),
+    marinDuGrimm('griet-crew-2', 3, 8, 'Griet (équipage exposé)', GUN_SKILLS),
+    // Le Serpent-de-Sel : Proue-idole de Stromfels (amélioration d'INSTANCE, #221) + Bélier de proue par sa
+    // culture d'abordage. Passagers : les Norses + Olg (hors ordre/rendu) ET des marins représentants compétents.
+    hull('serpent-de-sel', 'langskip', 18, 7, 'O', 'Le Serpent-de-Sel', ['norse-1', 'norse-2', 'olg', 'serpent-helm', 'serpent-gun'],
+      [armedPoste('canon-moyen', 'tribord', [{ ref: 'boulet-et-poudre', qty: 10 }]),
+       armedPoste('canon-moyen', 'babord', [{ ref: 'boulet-et-poudre', qty: 10 }]),
+       armedPoste('canon-moyen', 'proue', [{ ref: 'boulet-et-poudre', qty: 8 }])],
       [{ id: 'proue-idole-de-stromfels' }]),
-    { id: 'norse-1', kind: 'personnage', ref: 'maraudeur-du-chaos', pos: { x: 15, y: 5 }, label: 'Norse' },
-    { id: 'norse-2', kind: 'personnage', ref: 'maraudeur-du-chaos', pos: { x: 15, y: 7 }, label: 'Norse' },
-    { id: 'olg', kind: 'personnage', ref: 'olg-blodsalt', pos: { x: 17, y: 6 }, label: 'Olg Blóðsalt', weapon: 'hache-d-armes' },
+    { id: 'norse-1', kind: 'personnage', ref: 'maraudeur-du-chaos', pos: { x: 18, y: 6 }, label: 'Norse' },
+    { id: 'norse-2', kind: 'personnage', ref: 'maraudeur-du-chaos', pos: { x: 18, y: 8 }, label: 'Norse' },
+    { id: 'olg', kind: 'personnage', ref: 'olg-blodsalt', pos: { x: 19, y: 7 }, label: 'Olg Blóðsalt', weapon: 'hache-d-armes' },
+    marinDuGrimm('serpent-helm', 18, 5, 'Barreur du Serpent-de-Sel', HELM_SKILLS),
+    marinDuGrimm('serpent-gun', 18, 9, 'Canonnier du Serpent-de-Sel', GUN_SKILLS),
   ],
   encounters: [
     {
       id: 'enc-olg',
+      // Surprise navale = avantage de POSITION (couche Mer, cf. scène 1) : Perception ratée → le langskip surgit
+      // plus près, bordée alignée ; repéré → ~150 m sans avantage.
+      surprise: 'party',
       // Reddition à mi-coque (#215), comme la Dent de Manann : le Serpent-de-Sel amène son pavillon quand
       // la coque `serpent-de-sel` tombe sous 50 % de ses Blessures — la victoire = la reddition (texte VRAI),
       // pas le naufrage. `targetId` référence la coque ENNEMIE réelle enrôlée dans cette scène.
@@ -543,6 +566,8 @@ scenes.push(scene({
         { entityId: 'norse-1', side: 'enemy' },
         { entityId: 'norse-2', side: 'enemy' },
         { entityId: 'olg', side: 'enemy' },
+        { entityId: 'serpent-helm', side: 'enemy' },
+        { entityId: 'serpent-gun', side: 'enemy' },
       ],
       threat: { camp: 'enemies', tier: 'dangereuse' },
       onVictory: flowOf([
@@ -556,7 +581,7 @@ scenes.push(scene({
       ]),
     },
   ],
-  entryPoints: { arrivee: { x: 4, y: 6 } },
+  entryPoints: { arrivee: { x: 3, y: 7 } },
 }));
 
 // ════════════════════════════════════════════════════════════════════════════════════════════

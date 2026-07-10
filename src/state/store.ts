@@ -995,6 +995,8 @@ export interface GameState extends RollFlowActionsMap {
   battleShipBattery: (shipId: string, targetId: string) => void;
   shipBatteryConfirm: () => void;
   shipBatteryCancel: () => void;
+  /** Bordée HEADLESS (auto-pilote navire, couche Mer) : Test d'équipage des Artilleurs résolu sans modale → volée sur `targetId`. */
+  shipAutoBattery: (shipId: string, targetId: string) => boolean;
   // shipBattery{Roll,Reroll,BonusSL,ForceSuccess,DarkPact} : générés (RollFlowActionsMap, MULTI).
   /** Test d'équipage GÉNÉRIQUE (MDG ch.14) : ouvre la modale multi-jets du type `testTypeId` (Rude épreuve…). */
   battleCrewTest: (shipId: string, testTypeId: string) => void;

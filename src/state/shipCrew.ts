@@ -143,10 +143,16 @@ export function shipboardSouls(get: Get): { heroes: number; crew: number; total:
 
 export function shipUndercrew(get: Get, ship: Combatant, combatants: Combatant[]): UndercrewPenalty {
   const nominal = findVehicleById(ship.creatureId ?? '')?.ship?.crew ?? 0;
-  const exposed = exposedCrew((ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c)).length;
+  // Équipage ABSTRAIT (MDG 14 l.39 : « la performance des Personnages représente celle de tout l'équipage ») → le
+  // complément NOMINAL est réputé PRÉSENT ; seule l'ATTRITION RÉELLE creuse le Manque de bras : les marins NOMMÉS
+  // tombés au combat (Éclats, critique « Équipage ») + les pertes de CAMPAGNE (Embrigadement `crewLost`, MDG 15 l.245).
+  // Un navire authoré avec 2 marins nommés sur 15 n'est donc PAS sous-effectif (les 2 représentent les 15).
+  // (Le cas « scène listant les 15 marins » reste identique : nominal − nommés_morts − crewLost.)
+  const named = (ship.crewIds ?? []).map((id) => combatants.find((c) => c.id === id)).filter((c): c is Combatant => !!c);
+  const deadNamed = named.length - exposedCrew(named).length;
   const vessel = get().vessel;
   const lost = vessel && ship.creatureId === vessel.vehicleId ? (vessel.crewLost ?? 0) : 0;
-  return undercrewPenalty(nominal, Math.max(0, exposed - lost));
+  return undercrewPenalty(nominal, Math.max(0, nominal - lost - deadNamed));
 }
 
 /** MDG ch.14 l.45-47 : « de -1 à -5 DR sur le Test d'équipage ». PUR. */
