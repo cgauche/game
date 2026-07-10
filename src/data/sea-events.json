@@ -733,7 +733,7 @@
       "max": 9999,
       "id": "manne-de-manann",
       "label": "Manne de Manann",
-      "desc": "Manne de Manann. Un banc de stylets saute depuis les vagues et atterrit sur le pont du navire. L'équipage les attrape et en",
+      "desc": "Manne de Manann. Un banc de stylets saute depuis les vagues et atterrit sur le pont du navire. L'équipage les attrape et en rassemble suffisamment pour se nourrir pendant 1d10 jours. Le Moral augmente de 2d10.",
       "kind": "manne",
       "params": {}
     }
@@ -964,7 +964,7 @@
       "max": 21,
       "id": "saturation-de-produits",
       "label": "Saturation de produits",
-      "desc": "Saturation de produits. Les ballots de cargaison s'entassent dans les entrepôts du rivage. Tous les biens mentionnés dans la colonne Production",
+      "desc": "Saturation de produits. Les ballots de cargaison s'entassent dans les entrepôts du rivage. Tous les biens mentionnés dans la colonne Production passent dans la colonne Surplus et gagnent +1. Le nombre de tous les produits déjà mentionnés dans la colonne Surplus double.",
       "kind": "saturation",
       "params": {}
     }
