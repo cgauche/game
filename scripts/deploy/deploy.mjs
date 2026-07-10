@@ -7,9 +7,14 @@
  *   node scripts/deploy/deploy.mjs            # build (Vite) + copie
  *   node scripts/deploy/deploy.mjs --no-build # copie le dist/ existant seulement
  *   node scripts/deploy/deploy.mjs --push     # + git add/commit/push le repo prod
+ *   node scripts/deploy/deploy.mjs --allow-dirty # ignore l'arbre sale (WIP assumé, #299)
  *
  * Prérequis : le repo prod doit être un sibling de Foundry
  *   (PhpstormProjects/cgauche.github.io) avec un remote en écriture.
+ *
+ * `deploy.mjs` lit le WORKING TREE (pas Git) — le build embarque tout fichier présent sur
+ * disque, y compris le WIP non commité d'une autre session (piège documenté CLAUDE.md). Par
+ * défaut : arbre sale → ÉCHEC avec la liste des fichiers ; `--allow-dirty` passe outre.
  */
 import { execSync } from 'node:child_process';
 import { cpSync, rmSync, existsSync, mkdirSync } from 'node:fs';
@@ -24,9 +29,25 @@ const target = join(prodRepo, SUBDIR);
 const dist = join(gameRoot, 'dist');
 const args = process.argv.slice(2);
 
+/** Liste les fichiers sales (modifiés/untracked/staged) de `gameRoot` — `git status --porcelain`. */
+export function dirtyFiles(cwd) {
+  const out = execSync('git status --porcelain', { cwd, encoding: 'utf8' });
+  return out.split('\n').filter((l) => l.trim().length > 0);
+}
+
 if (!existsSync(prodRepo)) {
   console.error(`✗ Repo prod introuvable : ${prodRepo}`);
   process.exit(1);
+}
+
+if (!args.includes('--allow-dirty')) {
+  const dirty = dirtyFiles(gameRoot);
+  if (dirty.length) {
+    console.error(`✗ Arbre de travail sale (${dirty.length} fichier(s)) — deploy.mjs publie le WORKING TREE, pas Git :`);
+    for (const l of dirty) console.error(`  ${l}`);
+    console.error('  → commit/stash ces fichiers, ou relance avec --allow-dirty si c\'est assumé.');
+    process.exit(1);
+  }
 }
 
 if (!args.includes('--no-build')) {

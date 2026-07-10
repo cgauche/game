@@ -27,7 +27,7 @@ import { applySummon } from './summonFlow';
 import { contractDisease, applyContraction, DISEASE_DEFS } from '../engine/disease';
 import { type HealMode } from '../engine/healing';
 import { openMedic } from './medicFlow';
-import { seaWeatherTestMod, openPortAt, vesselManann } from './seaVoyageFlow';
+import { seaWeatherTestMod, openPortAt, vesselManann, setVesselHull } from './seaVoyageFlow';
 import { applyManannFactor, addManann, findManannFactor } from '../engine/seaVoyage';
 import { placeById } from './worldMap';
 import { openScriptedPsych } from './encounterPsychFlow';
@@ -1272,14 +1272,19 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
       const next: typeof vessel = { ...vessel };
       if (e.name?.trim()) { next.name = e.name.trim(); parts.push(`nom « ${e.name.trim()} »`); }
       if (e.morale != null) { next.morale = { ...vessel.morale, score: e.morale }; parts.push(`moral ${e.morale}`); }
-      if (e.hullMax != null) { next.wounds = { current: e.hullCurrent ?? e.hullMax, max: e.hullMax }; parts.push(`coque ${next.wounds.current}/${next.wounds.max}`); }
-      else if (e.hullCurrent != null && vessel.wounds) { next.wounds = { ...vessel.wounds, current: e.hullCurrent }; parts.push(`coque ${next.wounds.current}/${next.wounds.max}`); }
       if (e.saboteurDR != null) { next.saboteurDR = clampSaboteurDR(e.saboteurDR); parts.push(`sabotage ${next.saboteurDR} DR`); }
       if (e.waterLitres != null) { next.waterLitres = Math.max(0, e.waterLitres); parts.push(`eau ${next.waterLitres} L`); }
       if (e.provisions != null) { next.provisions = Math.max(0, e.provisions); parts.push(`vivres ${next.provisions} j`); }
       if (e.crew && e.crew.length) { next.crew = e.crew.filter((h) => h.roleId && h.count > 0); parts.push(`équipage ${next.crew.reduce((s, h) => s + h.count, 0)}`); }
+      // Blessures de coque : valeur ABSOLUE d'auteur → seam `setVesselHull` (#308, pas d'écriture directe
+      // de `vessel.wounds` — resynchronise aussi la copie de travail `travelPlan.vehicle` si active).
+      const hullMax = e.hullMax ?? vessel.wounds?.max ?? env.get().travelPlan?.vehicle?.wounds.max;
+      const hasHullWrite = hullMax != null && (e.hullMax != null || e.hullCurrent != null);
+      const hullCurrent = hasHullWrite ? (e.hullCurrent ?? hullMax) : undefined;
+      if (hasHullWrite) parts.push(`coque ${Math.max(0, Math.min(hullCurrent!, hullMax!))}/${hullMax}`);
       if (!parts.length) { env.log('Ajustement du navire : aucun champ fourni — sans effet.'); return; }
       env.set({ vessel: next });
+      if (hasHullWrite) setVesselHull(env.get, env.set, hullCurrent!, hullMax!);
       env.log(`Ajustement du navire : ${parts.join(', ')}.`);
     },
     refs: () => [],

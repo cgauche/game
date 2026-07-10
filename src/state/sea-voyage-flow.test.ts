@@ -16,6 +16,7 @@ import type { WorldMap } from './worldMap';
 import type { RNG } from '../engine/dice';
 import type { PendingCrewTest } from './pendings';
 import { resumeTravel } from './travelFlow';
+import { applyEffects } from './combatEffects';
 
 /**
  * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15) :
@@ -95,6 +96,14 @@ describe('#296 — state.vessel SOURCE UNIQUE de la coque de trajet (non-diverge
     // Le rechargement a eu lieu AVANT que `runSeaDays` ne reprenne — aucun Dégât ultérieur ne peut avoir
     // déjà écrasé vessel avec l'ancienne valeur (c'était le bug caché du #296).
     expect(get().vessel!.wounds!.current).toBe(intactMax - 15);
+  });
+
+  it('#308 — effet adjustVessel (valeur ABSOLUE d\'auteur) pendant une traversée active : travelPlan.vehicle et vessel restent d\'accord', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: plan });
+    applyEffects(get, set, [{ type: 'adjustVessel', hullCurrent: 12, hullMax: plan.vehicle!.wounds.max }]);
+    expect(get().vessel!.wounds!.current).toBe(12);
+    expect(get().travelPlan!.vehicle!.wounds.current).toBe(12);
   });
 });
 

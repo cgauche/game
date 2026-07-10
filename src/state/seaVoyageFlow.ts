@@ -262,6 +262,21 @@ export function persistHullWounds(get: Get, set: Set): void {
   set({ vessel: { ...vessel, wounds: { current: plan.vehicle.wounds.current, max: plan.vehicle.wounds.max } } });
 }
 
+/** Fixe ABSOLUMENT les Blessures de coque du navire de campagne (effet d'auteur `adjustVessel`, #308) —
+ *  écrit `vessel.wounds` PUIS resynchronise la copie de travail `travelPlan.vehicle` si un voyage est
+ *  actif dessus (sinon la prochaine `persistHullWounds` l'écraserait avec la valeur pré-effet périmée,
+ *  même trou que #296 côté delta). */
+export function setVesselHull(get: Get, set: Set, current: number, max: number): void {
+  const vessel = get().vessel;
+  if (!vessel) return;
+  const wounds = { current: Math.max(0, Math.min(current, max)), max };
+  set({ vessel: { ...vessel, wounds } });
+  const plan = get().travelPlan;
+  if (plan?.vehicle && plan.vehicle.creatureId === vessel.vehicleId) {
+    set({ travelPlan: { ...plan, vehicle: { ...plan.vehicle, wounds: { ...wounds } } } });
+  }
+}
+
 /** Inflige `amount` Dégâts à la coque de TRAJET (`hull`, `travelPlan.vehicle`) et PERSISTE aussitôt sur
  *  `vessel.wounds` (#296) — UNE écriture, jamais un `damageHull` orphelin de sa persistance (c'était le
  *  double chemin : certains sites persistaient au coup par coup, d'autres seulement en fin de jour, la
