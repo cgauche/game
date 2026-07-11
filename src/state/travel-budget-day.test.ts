@@ -118,9 +118,8 @@ describe('#340 — porte d’heure de départ (terre & fleuve, maison ON par dé
   });
 });
 
-describe('#340 — nuit forcée (privation de sommeil, maison OPT-IN)', () => {
-  it('jour calendaire franchi SANS nuit jouée → +1 Exténué « privation de sommeil »', () => {
-    setRule('travel-sleep-forced', true);
+describe('#340 — nuit forcée (privation de sommeil, maison, défaut ON [arbitrage user 2026-07-11])', () => {
+  it('ACTIVÉE PAR DÉFAUT : jour calendaire franchi SANS nuit jouée → +1 Exténué « privation de sommeil »', () => {
     setup(16);
     useGame.setState({ gameTime: CAMPAIGN_START, lastNightDay: dayIndex(CAMPAIGN_START), lastUpkeepDay: dayIndex(CAMPAIGN_START) });
     const before = stacks(get().party[0], 'extenue');
@@ -128,7 +127,8 @@ describe('#340 — nuit forcée (privation de sommeil, maison OPT-IN)', () => {
     expect(stacks(get().party[0], 'extenue')).toBeGreaterThan(before);
   });
 
-  it('désactivée par défaut : franchir un jour sans dormir ne coûte pas d’Exténué', () => {
+  it('débrayable : désactivée, franchir un jour sans dormir ne coûte pas d’Exténué', () => {
+    setRule('travel-sleep-forced', false);
     setup(16);
     useGame.setState({ gameTime: CAMPAIGN_START, lastNightDay: dayIndex(CAMPAIGN_START), lastUpkeepDay: dayIndex(CAMPAIGN_START) });
     const before = stacks(get().party[0], 'extenue');

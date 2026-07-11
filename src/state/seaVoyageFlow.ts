@@ -36,7 +36,10 @@ import type { TravelPlan, TravelRecapDay } from './travelFlow';
 import type { BatchParticipant } from './pendings';
 import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss, resolveShoreLeaveDesertion, shipboardSouls } from './shipCrew';
 import { applyEffects, applyEffectsLoot } from './combatEffects';
-import type { Effect } from './scene';
+import type { Effect, Scene } from './scene';
+import { buildScene } from './mapSpec';
+import type { AuthoredEnemy } from './encounterAuthoring';
+import { registerScene } from './store';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, type CrewTestTypeData } from '../data';
@@ -89,6 +92,17 @@ import type { CampaignVessel } from './store';
 import { openRoll, composeRollLabel, effectiveTarget, resolveSurface, freeCons, type RollRequest, type Consequence } from './rollSeam';
 import { registerCascadeApplier, startCascade, runCascadeImmediate } from './cascade';
 
+/** Navire hostile de l'événement en cours (MDG ch.15 « Cogue pirate » / « Langskip skaeling ») — porté
+ *  sur l'état NAVAL le temps de la confrontation, il DÉRIVE l'abordage GÉNÉRIQUE (`startChaseBoarding`)
+ *  quel que soit le chemin (combat direct, poursuite rattrapée, tribut refusé) et quelle que soit la
+ *  route : `shipRef`/`crewRef`/`chefRef` = ids de `vehicles.json`/`creatures.json` de l'événement. */
+export interface SeaBoarding {
+  shipRef: string;
+  crewRef: string;
+  chefRef?: string;
+  label: string;
+}
+
 /** Crise NAVALE en cours (un Test d'équipage par manche jusqu'à l'issue). */
 export type SeaCrisis =
   | { kind: 'poursuite'; label: string; distance: number; escapeAt: number; foeM: number; foeSkill: number; desc: string }
@@ -128,6 +142,8 @@ export interface SeaVoyageState {
   /** Infestation de rats ACTIVE (Test étendu d'Extermination, MDG 14 l.98 + événements ch.15). */
   infestation?: { label: string; difficulty: Difficulty; need: number; progress: number; spoilPerNight: string };
   crisis?: SeaCrisis;
+  /** Navire hostile en présence (événement `navire-hostile`/`nemesis`) — source de l'abordage dérivé. */
+  boarding?: SeaBoarding;
   /** Embuscade authorée déjà ouverte sur CETTE traversée (#212) — anti-double-feu entre l'ancrage
    *  déterministe (`MapRoute.ambush.at`) et l'abordage de fin de Poursuite (`startChaseBoarding`). */
   ambushFired?: boolean;
@@ -1308,7 +1324,7 @@ registerCascadeApplier('poursuite', (get, set, step) => {
   const j = [`Poursuite — ${c.label} : ${gain >= 0 ? 'le navire creuse l\'écart' : 'le poursuivant gagne du terrain'} (${gain >= 0 ? '+' : ''}${gain} → Distance ${distance}/${c.escapeAt}).`];
   const outcome = pursuitOutcome(distance, c.escapeAt);
   if (outcome === 'escaped') {
-    patchSea(get, set, { crisis: undefined });
+    patchSea(get, set, { crisis: undefined, boarding: undefined });
     j.push('Le poursuivant abandonne : le navire s\'est échappé (MDG ch.13 l.362).');
   } else if (outcome === 'caught') {
     patchSea(get, set, { crisis: undefined });
@@ -1545,14 +1561,68 @@ function openAuthoredSeaAmbush(get: Get, set: Set, route: MapRoute | undefined, 
   return true;
 }
 
-/** Rattrapé par un navire hostile : abordage si la route porte une embuscade AUTHORÉE — la Poursuite a
- *  prévenu (pas de Surprise) ; sinon l'issue reste au récit (rien d'inventé). */
+/** Id de la Scène d'abordage GÉNÉRIQUE (construite à la volée, re-enregistrée à chaque abordage dérivé). */
+const BOARDING_SCENE_ID = 'sea-boarding-generic';
+
+/** Construit la Scène d'abordage GÉNÉRIQUE (ponts bord à bord) à partir du navire hostile de l'événement
+ *  et de la coque de campagne — MÊME machinerie navale que les scènes authorées (`buildScene` + `enemies`
+ *  terse : coque à PV + équipage exposé `crewIds`, cf. `16-embuscade-fluviale`/`ls-abordage-cogue`). La
+ *  coque ennemie porte sa vague d'abordage (`boardingWaveSize` × `crewRef` + `chefRef`) comme équipage
+ *  exposé (MDG ch.14) ; la coque de campagne est le camp allié (le groupe y EMBARQUE au `startCombat`). */
+function buildBoardingScene(playerHullRef: string, playerHullName: string, b: SeaBoarding): Scene {
+  const wave = Math.max(1, Math.round(Number(rule('boardingWaveSize'))));
+  const chef = b.chefRef ? 1 : 0;
+  // Équipage EXPOSÉ de la coque ennemie = la vague (crew + chef) : ids déterministes `enemy-enc-abordage-<i>`
+  // (buildEncounter, index 0 = la coque elle-même → l'équipage commence à 1).
+  const crewIds = Array.from({ length: wave + chef }, (_, i) => `enemy-enc-abordage-${i + 1}`);
+  const enemies: AuthoredEnemy[] = [
+    { ref: b.shipRef, pos: { x: 14, y: 6 }, label: b.label, crewIds },
+    ...Array.from({ length: wave }, (_, i) => ({ ref: b.crewRef, pos: { x: 12, y: 3 + (i % 6) } })),
+    ...(b.chefRef ? [{ ref: b.chefRef, pos: { x: 16, y: 6 } }] : []),
+    { ref: playerHullRef, pos: { x: 3, y: 6 }, side: 'ally' as const, label: playerHullName },
+  ];
+  return buildScene({
+    id: BOARDING_SCENE_ID,
+    nom: `Abordage — ${b.label}`,
+    size: [18, 12],
+    terrain: 'planches',
+    ambiance: 'exterieur',
+    heroStart: [3, 7],
+    startMessage: `${b.label} accoste bord à bord — repoussez l’abordage !`,
+    encounters: [{ id: 'enc-abordage', enemies }],
+  });
+}
+
+/** Ouvre l'abordage GÉNÉRIQUE dérivé de l'événement (`SeaBoarding`) : construit la Scène bord à bord,
+ *  l'enregistre, INTERROMPT la traversée et lance le combat — MÊME couture de suspension/reprise que
+ *  l'embuscade authorée (`openAuthoredSeaAmbush` : `interrupted` + `startCombat` suspend la cascade en
+ *  cours, le teardown de victoire la reprend). Requiert une coque de campagne (le groupe est EN MER).
+ *  Renvoie `false` si aucune coque de campagne n'est connue (impossibilité réelle, non simulable). */
+function openGenericBoarding(get: Get, set: Set, b: SeaBoarding, noSurprise = true): boolean {
+  const plan = get().travelPlan;
+  if (!plan?.sea) return false;
+  const playerHullRef = get().vessel?.vehicleId ?? plan.vehicle?.creatureId;
+  if (!playerHullRef) return false;
+  const playerHullName = get().vessel?.name ?? plan.vehicle?.name ?? 'Notre navire';
+  registerScene(buildBoardingScene(playerHullRef, playerHullName, b));
+  set({ travelPlan: { ...plan, interrupted: true, sea: { ...plan.sea, boarding: undefined } } });
+  get().transitionTo(BOARDING_SCENE_ID, undefined);
+  get().startCombat('enc-abordage', undefined, { noSurprise });
+  return true;
+}
+
+/** Rattrapé par un navire hostile → ABORDAGE (MDG ch.13 l.420). Priorité : embuscade AUTHORÉE de la route
+ *  (SURCHARGE d'auteur, jamais une condition d'existence) ; à défaut, l'abordage se DÉRIVE de l'événement
+ *  lui-même (le navire hostile `sea.boarding` engendre la rencontre GÉNÉRIQUE bord à bord). En dernier
+ *  recours SEULEMENT — événement sans navire nommé (Némésis authorée manquante) ou coque de campagne
+ *  inconnue — l'impossibilité est journalisée HONNÊTEMENT (rien d'inventé, pas de pseudo-récit). */
 function startChaseBoarding(get: Get, set: Set): void {
   const plan = get().travelPlan;
   const route = (get().worldMap as WorldMap | undefined)?.routes.find((r) => r.id === plan?.routeId);
-  if (!openAuthoredSeaAmbush(get, set, route)) {
-    tell(get, set, ['(Aucune rencontre d\'abordage n\'est configurée sur cette route — l\'issue reste au récit.)']);
-  }
+  if (openAuthoredSeaAmbush(get, set, route)) return;
+  const boarding = plan?.sea?.boarding;
+  if (boarding && openGenericBoarding(get, set, boarding)) return;
+  tell(get, set, ['Le navire hostile rompt le contact — aucune donnée d’abordage (coque/équipage) disponible pour cet événement.']);
 }
 
 /** Fuite = COURSE-POURSUITE (ch.13 l.354) : le seuil d'évasion suit la visibilité du jour (l.364-370).
@@ -1570,8 +1640,20 @@ function startSeaPursuit(get: Get, set: Set, info: { label: string; desc: string
  *  d'une SEULE étape de CHOIX — fuir / combattre / se soumettre. L'applier `sea-pirate-hail` reprend
  *  `runSeaDay` à la fermeture. Le pillage (`piratePillagePct`) et le tribut à Stromfels sont RAW-mués
  *  (MDG ch.15 p.131 décrit l'extorsion sans la chiffrer) → paramètre maison + choix joueur. */
+/** Descripteur d'abordage DÉRIVÉ d'un événement de navire hostile — `undefined` si l'événement ne nomme
+ *  ni coque (`ship`) ni équipage type (`crewRef`) : la Némésis (bateau fétiche d'un boss) est authorée,
+ *  pas simulable (retour `undefined` = repli honnête de `startChaseBoarding`). */
+function seaBoardingFromEvent(event: SeaEventDef): SeaBoarding | undefined {
+  const p = event.params ?? {};
+  const shipRef = typeof p.ship === 'string' ? p.ship : undefined;
+  const crewRef = typeof p.crewRef === 'string' ? p.crewRef : undefined;
+  if (!shipRef || !crewRef) return undefined;
+  return { shipRef, crewRef, chefRef: typeof p.chefRef === 'string' ? p.chefRef : undefined, label: event.label };
+}
+
 function openPirateHail(get: Get, set: Set, event: SeaEventDef): void {
   const pillage = Number(rule('piratePillagePct'));
+  patchSea(get, set, { boarding: seaBoardingFromEvent(event) });
   startCascade(get, set, {
     title: 'Cogue pirate', icon: 'nautical/wind', purpose: 'test',
     steps: [{
@@ -1782,7 +1864,9 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       break;
     }
     case 'nemesis':
-      // Némésis : fuite forcée = COURSE-POURSUITE (ch.13 l.354), pas d'extorsion à négocier.
+      // Némésis : fuite forcée = COURSE-POURSUITE (ch.13 l.354), pas d'extorsion à négocier. Bateau fétiche
+      // d'un boss (Wulfrik…) = rencontre AUTHORÉE : pas de descripteur dérivable (clear anti-report périmé).
+      patchSea(get, set, { boarding: undefined });
       startSeaPursuit(get, set, event, 6);
       break;
     case 'navire-hostile':

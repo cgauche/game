@@ -576,15 +576,16 @@ export const OPTIONAL_RULES: OptionalRule[] = [
   },
   {
     // #340 — le canon ne modélise pas la privation de sommeil sur le budget de voyage : règle maison
-    // éditable OPT-IN. Franchir un jour calendaire sans nuit jouée (aucun repos depuis le dernier) coûte
+    // éditable. Franchir un jour calendaire sans nuit jouée (aucun repos depuis le dernier) coûte
     // 1 État Exténué par jour blanc, retiré au prochain vrai sommeil comme tout Exténué (LDB 16).
+    // Défaut ON [arbitrage user 2026-07-11 : « On a aucune règle sur la privation de sommeil ? » → activée].
     id: 'travel-sleep-forced',
     label: 'Privation de sommeil (nuit forcée)',
     ref: 'LDB 18 (Exténué) — privation de sommeil non chiffrée, valeur maison (#340)',
     group: 'Voyage',
     kind: 'flag',
-    default: false,
-    hint: 'Chaque jour calendaire franchi SANS nuit de sommeil jouée inflige 1 État Exténué (« privation de sommeil ») à chaque héros vivant. Il se dissipe au prochain vrai repos. Désactivé par défaut (opt-in).',
+    default: true,
+    hint: 'Chaque jour calendaire franchi SANS nuit de sommeil jouée inflige 1 État Exténué (« privation de sommeil ») à chaque héros vivant. Il se dissipe au prochain vrai repos. Débrayable ici.',
   },
   {
     // #340 — voguer de nuit exige « un équipage suffisant et des installations adéquates », sinon la
@@ -741,6 +742,18 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     max: 100,
     step: 5,
     hint: 'Arbitrage #327 (2026-07-11) : se SOUMETTRE à la Cogue pirate (MDG ch.15) laisse les forbans « fouiller la cale et prendre ce qu’ils veulent » — ce % d’Enc de cargaison du navire est pillé (défaut 100). Le RAW décrit l’extorsion sans la chiffrer → paramètre maison.',
+  },
+  {
+    id: 'boardingWaveSize',
+    label: 'Abordage — nombre d’assaillants qui montent à bord',
+    ref: 'MDG 15 p.131 (« ils approchent… ») — vague d’abordage non chiffrée, valeur maison',
+    group: 'Voyage',
+    kind: 'param',
+    default: 5,
+    min: 1,
+    max: 12,
+    step: 1,
+    hint: 'Un abordage (MDG ch.14/15) dérivé d’un événement de navire hostile engendre une vague d’assaillants de CE nombre (individus de l’équipage type de la coque), plus le chef éventuel — la coque ennemie entière (25/45 marins) est l’effectif du navire, jamais autant de figurants sur le pont. Le RAW décrit l’assaut sans chiffrer la vague → paramètre maison, éditable.',
   },
   {
     id: 'sea-chart-orientation-dr',

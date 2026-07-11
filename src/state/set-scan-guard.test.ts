@@ -24,9 +24,11 @@ import { runSetScan } from '../../scripts/guards/lib/setScan.mjs';
  * nuit — `continueRiverDayAfterCascade` re-tague la cascade en `riverExposure` + fige la progression du
  * jour ; `continueRiverDayAfterExposure` efface ce transient puis reprend la fin du jour) ; +1 reset ad hoc
  * (`travelPlan: null` de garde quand la route/destination a disparu à la reprise post-Exposition).
+ * +1 set() légitime (abordage GÉNÉRIQUE dérivé d'un navire hostile : `openGenericBoarding` INTERROMPT la
+ * traversée + efface `sea.boarding` avant de transitionner vers la Scène d'abordage construite à la volée).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { totalCalls: 702, totalAdHocResets: 283 };
+const BASELINE = { totalCalls: 703, totalAdHocResets: 283 };
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {

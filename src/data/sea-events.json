@@ -493,7 +493,8 @@
       "kind": "navire-hostile",
       "params": {
         "ship": "langskip",
-        "crew": 45
+        "crew": 45,
+        "crewRef": "maraudeur-du-chaos"
       },
       "source": {
         "book": "mer-des-griffes",
@@ -606,7 +607,9 @@
       "params": {
         "ship": "cogue",
         "crew": 25,
-        "greatGuns": 6
+        "greatGuns": 6,
+        "crewRef": "pirate-fluvial",
+        "chefRef": "chef-pirate"
       },
       "source": {
         "book": "mer-des-griffes",
