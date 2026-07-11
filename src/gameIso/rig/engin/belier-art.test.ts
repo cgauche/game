@@ -6,8 +6,22 @@ import { enginPlan } from './composeEngin';
  * #210 Lot 1 — le bélier ADE II a son PROPRE art (`defs/belier.ts`), plus un affût de baliste recyclé.
  */
 describe('art de l’engin `belier` (ADE II ch.08 l.258 : tronc suspendu à un portique à roues)', () => {
-  it('registre auto-chargé : `belier` présent aux côtés de `baliste`/`canon-petit`', () => {
-    expect(ENGIN_ARTS.map((a) => a.id).sort()).toEqual(['baliste', 'belier', 'canon-petit']);
+  it('registre auto-chargé : `belier` présent aux côtés des autres engins (vague d’art complète)', () => {
+    expect(ENGIN_ARTS.map((a) => a.id).sort()).toEqual([
+      'baliste',
+      'batterie-tonnerre-de-feu',
+      'belier',
+      'canon-a-flammes',
+      'canon-a-repetition',
+      'canon-lourd',
+      'canon-petit',
+      'catapulte',
+      'mangonneau',
+      'mortier',
+      'onagre',
+      'pierrier',
+      'trebuchet',
+    ]);
   });
 
   it("composeEngin('belier') ne retombe PAS sur le fallback `canon-petit` (art distinct, résolu par id)", () => {

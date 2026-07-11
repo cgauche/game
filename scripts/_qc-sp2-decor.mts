@@ -6,7 +6,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { Resvg } from '@resvg/resvg-js';
 import { DEFS } from '../src/gameIso/sprites';
-import { PROPS } from '../src/gameIso/catalog/decor';
+import { propSvg } from '../src/gameIso/catalog/decor';
 
 // Ordre MÉLANGÉ (coffre près de caisse pour tester la confusion). Nouveaux = lettre/coffre/cle/bourse/etagere.
 const slugs = ['coffre', 'tonneau', 'lettre', 'caisse', 'bourse', 'cadavre', 'cle', 'etagere'];
@@ -14,8 +14,7 @@ mkdirSync('public/qc', { recursive: true });
 
 const CW = 120, CH = 158;
 const tiles = slugs.map((id, i) => {
-  const p = PROPS[id];
-  const g = p.render({}, { dims: { w: 0, h: 0 } } as any);
+  const g = propSvg(id);
   return `<g transform="translate(${i * CW},0)"><rect width="${CW}" height="${CH}" fill="#46532f"/>${g}` +
     `<text x="8" y="18" font-size="12" fill="#ffffff" opacity="0.5">${i + 1}</text></g>`;
 });
