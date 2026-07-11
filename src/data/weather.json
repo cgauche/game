@@ -188,7 +188,8 @@
       "movementWalkOnly": true,
       "resistanceTest": {
         "difficulty": "accessible",
-        "onFail": "extenue"
+        "onFail": "extenue",
+        "enjeu": "Les Personnages qui se déplacent dans la neige doivent faire un Test de **Résistance Accessible (+20)** ou subir un État *Exténué*."
       },
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",
@@ -205,7 +206,8 @@
       "rangedUseless": true,
       "resistanceTest": {
         "difficulty": "intermediaire",
-        "onFail": "extenue"
+        "onFail": "extenue",
+        "enjeu": "Les Personnages voyageant dans un blizzard doivent faire un Test de **Résistance Intermédiaire (+0)** gagner un État *Exténué.*"
       },
       "source": {
         "book": "ennemi-dans-l-ombre-compagnon",

@@ -53,9 +53,10 @@ export const schema = z.strictObject({
       movementWalkOnly: z.boolean().optional(),
       /** Animaux au Trait Nerveux effrayables par les éclairs (pluie diluvienne). */
       lightningNervous: z.boolean().optional(),
-      /** Test de Résistance de traversée (ou État) — DISTINCT de l'Exposition de fin d'Étape. */
+      /** Test de Résistance de traversée (ou État) — DISTINCT de l'Exposition de fin d'Étape.
+       *  `enjeu` = énoncé VERBATIM de la source (ce que l'échec coûte), rendu sous le titre d'étape. */
       resistanceTest: z
-        .strictObject({ difficulty: difficultySchema, onFail: z.enum(['extenue']) })
+        .strictObject({ difficulty: difficultySchema, onFail: z.enum(['extenue']), enjeu: z.string().optional() })
         .optional(),
       source: sourceRefSchema.optional(),
     }),

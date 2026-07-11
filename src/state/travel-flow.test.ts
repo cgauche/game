@@ -14,9 +14,11 @@ import { buildEncounter } from './encounterAuthoring';
 import { WorldMap } from './worldMap';
 import { CAMPAIGN_START } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
+import { buildWeatherResistanceSteps, buildStageSteps } from './travelPostes';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 const get = () => useGame.getState();
+const set = useGame.setState;
 
 const ration = (uid: string): ItemInstance => ({ uid, name: 'Ration', trappingId: 'ration', kind: 'misc', qualities: [], enc: 0, equipped: false });
 const hero = (p: Partial<Combatant> = {}): Combatant => ({
@@ -261,5 +263,65 @@ describe('#270 — allure forcée (attelage) : gate contrôleur', () => {
     const pc = get().pendingCascade;
     if (pc) expect(pc.participants.some((s) => s.kind === 'landForcedPace')).toBe(false);
     expect(get().journal.join('\n')).toMatch(/Conduite d'attelage \(allure forcée\)/);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+// #341 follow-up — Test de RÉSISTANCE de traversée (Neige l.86 / Blizzard l.127) au démarrage du jour,
+// DISTINCT de l'Exposition de fin d'Étape ; + breakdown de mods sur les rangées BATCH d'activité.
+// ─────────────────────────────────────────────────────────────────────────────────────────────
+describe('#341 — Résistance de traversée Neige/Blizzard (pas BATCH au démarrage du jour)', () => {
+  it('Neige : un pas BATCH par héros voyageant, enjeu VERBATIM EDOC, cible = Résistance + Accessible', () => {
+    const h1 = hero({ id: 'h1' });
+    const h2 = hero({ id: 'h2' });
+    set({ party: [h1, h2] });
+    const steps = buildWeatherResistanceSteps(get, 'neige');
+    expect(steps.length).toBe(1);
+    const step = steps[0];
+    expect(step.kind).toBe('weatherResistance');
+    expect(step.participants?.length).toBe(2); // un jet INDÉPENDANT par héros
+    expect(step.stake).toContain('Résistance Accessible (+20)'); // enjeu verbatim (l.86)
+    const p0 = step.participants![0];
+    expect(p0.target).toBe(Math.min(99, p0.base + 20)); // Accessible +20 baké dans la cible
+    expect(p0.mods?.some((m) => m.value === 20)).toBe(true);
+  });
+
+  it('Blizzard sans Test de traversée pour beau temps : aucune météo clémente ne produit de pas', () => {
+    set({ party: [hero({ id: 'h1' })] });
+    expect(buildWeatherResistanceSteps(get, 'blizzard').length).toBe(1); // Intermédiaire (+0)
+    expect(buildWeatherResistanceSteps(get, 'beau').length).toBe(0);
+    expect(buildWeatherResistanceSteps(get, 'pluie').length).toBe(0);
+  });
+
+  it('échec du Test de Résistance (Neige) → Exténué APPLIQUÉ, ligne DÉRIVÉE (op condition) sur la rangée', () => {
+    const h = hero({ id: 'h' });
+    set({ party: [h], pendingCascade: null, journal: [] });
+    const steps = buildWeatherResistanceSteps(get, 'neige');
+    // Jet FORCÉ en échec (déterministe) : la rangée est prête → cascadeNext commit → applier.
+    steps[0].participants![0].result = { roll: 99, target: steps[0].participants![0].target, sl: -4, success: false };
+    set({ pendingCascade: { title: 'Traversée', icon: 'rest/cold', purpose: 'test', cursor: 0, log: [], participants: steps } as never });
+    get().cascadeNext();
+    const st = get();
+    expect(st.party[0].conditions.some((c) => c.name === 'extenue')).toBe(true);
+    expect(st.journal.join('\n')).toContain('État Exténué subi.'); // opConsequenceLine case condition
+  });
+});
+
+describe('#341 — breakdown de mods sur les rangées BATCH d’activité (source unique avec le mono)', () => {
+  it('Pluie diluvienne : Plein air porte la ligne « Météo » ; carto (Métier=Dex) la ligne « Tests physiques »', () => {
+    setRule('travel-etapes', true);
+    const hOut = hero({ id: 'hOut', travelRole: 'plein-air', skills: [{ skillId: 'survie-en-exterieur', advances: 20 } as never] });
+    const hCarto = hero({ id: 'hCarto', travelRole: 'etablir-cartes', skills: [{ skillId: 'metier', spec: 'Cartographe', advances: 20 } as never] });
+    set({ party: [hOut, hCarto], travelPlan: {
+      routeId: 'r1', fromPlaceId: 'pa', toPlaceId: 'pb', mode: 'pied', hoursPerDay: 6, km: 12, kmDone: 0, interrupted: false,
+      postes: { hOut: { activityId: 'plein-air' }, hCarto: { activityId: 'etablir-cartes' } },
+    } as never });
+    const steps = buildStageSteps(get, set, 'pluie-diluvienne', 'ete');
+    const batch = steps.find((s) => s.kind === 'stagePosteBatch')!;
+    const outPart = batch.participants!.find((p) => p.id === 'hOut')!;
+    const cartoPart = batch.participants!.find((p) => p.id === 'hCarto')!;
+    expect(outPart.mods?.some((m) => typeof m.label === 'string' && m.label.startsWith('Météo'))).toBe(true); // Plein air -20 (l.106)
+    expect(cartoPart.mods?.some((m) => m.label === 'Tests physiques' && m.value === -10)).toBe(true); // pluie diluvienne l.82, carac Dex
+    resetRule('travel-etapes');
   });
 });

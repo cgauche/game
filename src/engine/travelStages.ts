@@ -181,8 +181,9 @@ export interface WeatherCondition {
   movementWalkOnly?: boolean;
   /** Animaux au Trait Nerveux effrayables par les éclairs (Pluie diluvienne l.82). */
   lightningNervous?: boolean;
-  /** Test de Résistance de traversée ou État — DISTINCT de l'Exposition de fin d'Étape (Neige l.86, Blizzard l.127). */
-  resistanceTest?: { difficulty: Difficulty; onFail: 'extenue' };
+  /** Test de Résistance de traversée ou État — DISTINCT de l'Exposition de fin d'Étape (Neige l.86, Blizzard l.127).
+   *  `enjeu` = énoncé VERBATIM (ce que l'échec coûte), surfacé sous le titre du pas de cascade. */
+  resistanceTest?: { difficulty: Difficulty; onFail: 'extenue'; enjeu?: string };
 }
 
 const WEATHER_CONDITION: Record<Weather, WeatherCondition> =

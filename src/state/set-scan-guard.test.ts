@@ -18,9 +18,11 @@ import { runSetScan } from '../../scripts/guards/lib/setScan.mjs';
  * `travelFlow` accumule le budget du jour `addTravelHoursToday`/`markMarchedToday`, pose/lève la porte
  * `pendingDeparture` ; `restFlow` marque la nuit jouée `lastNightDay` ×2) ; +2 resets ad hoc (la porte
  * `pendingDeparture` posée puis effacée à « Attendre l'aube »/au départ diurne — transient de carte).
+ * +1 set() légitime (#341 : l'applier `weatherResistance` ré-émet le groupe après l'Exténué de traversée
+ * Neige/Blizzard — MÊME patron que `stagePosteBatch`).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { totalCalls: 698, totalAdHocResets: 282 };
+const BASELINE = { totalCalls: 699, totalAdHocResets: 282 };
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {

@@ -1499,7 +1499,7 @@ const weatherData = weatherJson as {
     id: string; label: string; desc?: string;
     visibiliteM?: number; rangedMod?: number; rangedUseless?: boolean; powderUseless?: boolean;
     physicalTestMod?: number; movementWalkOnly?: boolean; lightningNervous?: boolean;
-    resistanceTest?: { difficulty: string; onFail: 'extenue' };
+    resistanceTest?: { difficulty: string; onFail: 'extenue'; enjeu?: string };
   }[];
 };
 /** 1 entrée par saison, `ranges` = plages d100 → météo (lecture par `rollStageWeather`). */

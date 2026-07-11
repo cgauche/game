@@ -229,13 +229,15 @@ describe('effets météo TERRESTRES en DONNÉE (EDOC ch.5 « conditions »)', ()
   it('Neige : visibilité 45 m, marche seule, Résistance Accessible ou Exténué', () => {
     expect(weatherVisibiliteM('neige')).toBe(45);
     expect(weatherMovementWalkOnly('neige')).toBe(true);
-    expect(weatherResistanceTest('neige')).toEqual({ difficulty: 'accessible', onFail: 'extenue' });
+    expect(weatherResistanceTest('neige')).toMatchObject({ difficulty: 'accessible', onFail: 'extenue' });
+    expect(weatherResistanceTest('neige')?.enjeu).toContain('Résistance Accessible (+20)'); // enjeu verbatim EDOC l.86
   });
   it('Blizzard : visibilité ~0, tir inutile, marche seule, Résistance Intermédiaire ou Exténué', () => {
     expect(weatherVisibiliteM('blizzard')).toBe(0);
     expect(weatherRangedUseless('blizzard')).toBe(true);
     expect(weatherMovementWalkOnly('blizzard')).toBe(true);
-    expect(weatherResistanceTest('blizzard')).toEqual({ difficulty: 'intermediaire', onFail: 'extenue' });
+    expect(weatherResistanceTest('blizzard')).toMatchObject({ difficulty: 'intermediaire', onFail: 'extenue' });
+    expect(weatherResistanceTest('blizzard')?.enjeu).toContain('Résistance Intermédiaire (+0)'); // enjeu verbatim EDOC l.127
   });
   it('Temps sec / beau : aucun effet de combat/mouvement', () => {
     expect(weatherRangedMod('sec')).toBe(0);

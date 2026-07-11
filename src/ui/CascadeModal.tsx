@@ -142,7 +142,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
         const a = pool.find((c) => c.id === part.id);
         if (!a) return [];
         const res = part.result;
-        const d = res ? { label: part.label ?? a.name, base: part.base, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined;
+        const d = res ? { label: part.label ?? a.name, base: part.base, mods: part.mods, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } : undefined;
         const extendedDr = extendedDrData(part.extendedDrDone, part.extendedDrTarget, res);
         return [{ key: part.id, row: { combatant: a, d, note: partNote(part) }, rolled: true, interactive: false as const, ...(extendedDr ? { extendedDr } : {}) }];
       });
@@ -296,7 +296,7 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
       row: (part, actor, res) => {
         const label = part.label ?? actor.name;
         return res
-          ? { combatant: actor, d: { label, base: part.base, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
+          ? { combatant: actor, d: { label, base: part.base, mods: part.mods, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
           : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [] } };
       },
       // Test ÉTENDU d'une rangée (cartographie de voyage) : DONNÉE seule — `RollRow` rend la barre (site

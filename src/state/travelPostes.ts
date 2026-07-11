@@ -32,14 +32,14 @@ import { freeCons, resultLine, type Consequence } from './rollSeam';
 import { t } from '../i18n';
 import { rule } from '../engine/policy';
 import {
-  stageCount, forageYield, stageExposureDifficulty,
+  stageCount, forageYield, stageExposureDifficulty, weatherPhysicalTestMod, weatherResistanceTest,
   isColdSeason, WEATHER_LABEL, type Weather, type Season,
 } from '../engine/travelStages';
 import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '../engine/exposure';
 import { rationCount } from '../engine/provisions';
 import { itemFromGive, autoStowNewItem } from '../engine/items';
-import { testValue } from '../engine/skills';
-import { DIFFICULTY_MODIFIERS, type Difficulty, type Combatant } from '../engine/types';
+import { testValue, effectiveSkillCharKey } from '../engine/skills';
+import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, type Difficulty, type Combatant } from '../engine/types';
 import { partyWalkSpeed, vehicleTravel, type TravelMode } from '../engine/travel';
 import { partyMounts } from '../engine/mountTravel';
 import type { CascadeStep, CascadeStepMeta, BatchParticipant } from './pendings';
@@ -78,6 +78,25 @@ function freeSkillFromMeta(meta?: CascadeStepMeta): SkillRef | undefined {
  *  Plein air (l.106) / Approvisionnement (l.56) portent leur table météo ; les autres n'en ont pas. */
 function weatherModOf(def: ActivityDef, weather: Weather): number {
   return def.weatherMod?.[weather] ?? 0;
+}
+
+/** Ligne de difficulté (« Accessible +20 ») sans le suffixe « (+20) » du label canonique — la RollLine
+ *  affiche déjà la valeur. Partagée par la rangée d'Activité et le Test de Résistance de traversée. */
+function difficultyModLine(difficulty: Difficulty): { label: string; value: number }[] {
+  const v = DIFFICULTY_MODIFIERS[difficulty];
+  return v !== 0 ? [{ label: DIFFICULTY_LABELS[difficulty].replace(/\s*\(.*\)$/, ''), value: v }] : [];
+}
+
+/** Détail « base + mods » d'une rangée BATCH d'Activité (SOURCE UNIQUE avec le mono) : Difficulté +
+ *  Météo (`weatherMod`, l.106/56) + « Tests physiques » de la pluie diluvienne (l.82). `undefined` si
+ *  aucun mod (rien à détailler). */
+function stageActivityMods(difficulty: Difficulty, weather: Weather, wMod: number, pMod: number): { label: string; value: number }[] | undefined {
+  const mods = [
+    ...difficultyModLine(difficulty),
+    ...(wMod !== 0 ? [{ label: `Météo : ${WEATHER_LABEL[weather]}`, value: wMod }] : []),
+    ...(pMod !== 0 ? [{ label: 'Tests physiques', value: pMod }] : []),
+  ];
+  return mods.length ? mods : undefined;
 }
 
 /**
@@ -132,12 +151,21 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
       // `refLabel` ; base/cible déjà influençables. Test ÉTENDU (Établir des cartes, EDOC l.161) : la
       // rangée porte sa progression cumulée (drDone AVANT ce jet, drTarget = 2 × Étapes) → barre de DR
       // sur SA rangée, persistante (arbitrage user). L'accumulation réelle vit dans `stageAggregate`.
+      // Mods de rangée : Difficulté + Météo (déjà dans `spec.target`) + « Tests physiques » de la pluie
+      // diluvienne (l.82), CE dernier ajouté ici car keyé sur la carac de la compétence utilisée par CE
+      // héros (`effectiveSkillCharKey`) — le −10 s'ajoute au mod météo (recalcul de la cible, borné 1..99).
+      const wMod = weatherModOf(def, weather);
+      const char = spec.used ? effectiveSkillCharKey(hero, spec.used.skillId, { spec: spec.used.spec }) : undefined;
+      const pMod = char ? weatherPhysicalTestMod(weather, char) : 0;
+      const target = Math.max(1, Math.min(99, spec.value + DIFFICULTY_MODIFIERS[def.difficulty ?? 'intermediaire'] + wMod + pMod));
+      const mods = stageActivityMods(def.difficulty ?? 'intermediaire', weather, wMod, pMod);
       batchParts.push({
         id: hero.id,
         label: spec.used ? refLabel('skills', { id: spec.used.skillId, spec: spec.used.spec }) : def.label,
         interactive: true,
         base: spec.value,
-        target: spec.target,
+        target,
+        ...(mods ? { mods } : {}),
         result: null,
         ...(spec.drTarget != null ? { extendedDrDone: plan.extendedProgress ?? 0, extendedDrTarget: spec.drTarget } : {}),
       });
@@ -208,6 +236,50 @@ registerCascadeApplier('stagePosteBatch', (get, set, step) => {
     const lines = cons.map((c) => resultLine([c])).filter((s) => s.length > 0);
     part.outcome = lines; // conséquence SUR SA rangée (le portrait attribue)
     for (const l of lines) get().log(l); // + journal/recap (une ligne par héros, pas d'agrégat)
+  }
+  set({ party: [...get().party] });
+  return { consequences: [] };
+});
+
+/** Test de RÉSISTANCE de traversée (Neige l.86 / Blizzard l.127) au DÉMARRAGE du jour de voyage : UN pas
+ *  BATCH (une rangée par héros voyageant, jets INDÉPENDANTS influençables) — DISTINCT de l'Exposition de
+ *  fin d'Étape. L'ENJEU verbatim (donnée `resistanceTest.enjeu`) est porté sur le pas ; l'échec octroie un
+ *  Exténué (applier `weatherResistance`). Renvoie `[]` si la météo du jour n'impose aucun Test de traversée. */
+export function buildWeatherResistanceSteps(get: Get, weather: Weather): CascadeStep[] {
+  const rt = weatherResistanceTest(weather);
+  if (!rt) return [];
+  const diffMod = DIFFICULTY_MODIFIERS[rt.difficulty];
+  const parts: BatchParticipant[] = [];
+  for (const hero of get().party) {
+    if (hero.dead || hero.outOfRencontre) continue;
+    const base = testValue(hero, 'resistance', 'endurance');
+    const mods = difficultyModLine(rt.difficulty);
+    parts.push({
+      id: hero.id, label: 'Résistance', interactive: true,
+      base, target: Math.max(1, Math.min(99, base + diffMod)),
+      ...(mods.length ? { mods } : {}), result: null,
+    });
+  }
+  if (!parts.length) return [];
+  return [{ id: 'weather-resistance', kind: 'weatherResistance', icon: 'rest/cold',
+    label: `Traversée — ${WEATHER_LABEL[weather]}`, participants: parts, aggregate: 'summed-dr',
+    interactive: true, ...(rt.enjeu ? { stake: rt.enjeu } : {}) }];
+}
+
+/** Test de RÉSISTANCE de traversée (l.86/127) : échec → Exténué (op `condition`, patron #338/#340), ligne
+ *  DÉRIVÉE (`resultLine`/`opConsequenceLine` case condition) SUR SA rangée (le portrait attribue). Succès →
+ *  aucune note (la rangée ✓ ±DR porte le verdict). */
+registerCascadeApplier('weatherResistance', (get, set, step) => {
+  if (!step.participants) return;
+  for (const part of step.participants) {
+    const hero = get().party.find((h) => h.id === part.id);
+    const res = part.result;
+    if (!hero || !res || res.success) { part.outcome = []; continue; }
+    const op: GameOp = { op: 'condition', name: 'extenue', value: 1 }; // EDOC ch.5 l.86/127
+    applyOps(hero, [op]);
+    const line = resultLine([{ ops: [op] }]);
+    part.outcome = line ? [line] : [];
+    if (line) get().log(line);
   }
   set({ party: [...get().party] });
   return { consequences: [] };

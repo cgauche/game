@@ -48,7 +48,7 @@ import { toDate, isTravelDaylight, DAWN_MINUTE, minutesUntilNext } from '../engi
 import { dayIndex } from './upkeep';
 import { seasonOfMonth, rollStageWeather, WEATHER_LABEL, type Season } from '../engine/travelStages';
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
-import { buildStageSteps, type StageContext } from './travelPostes';
+import { buildStageSteps, buildWeatherResistanceSteps, type StageContext } from './travelPostes';
 import { startCascade, registerCascadeApplier } from './cascade';
 import { freeCons } from './rollSeam';
 import { t } from '../i18n';
@@ -603,6 +603,9 @@ function buildTravelDayCascade(
     const w = rollStageWeather(battleRng(), season);
     recapDay.weather = { id: w.weather, roll: w.roll };
     log(get, set, [t('out.stageWeather', { weather: WEATHER_LABEL[w.weather] })]);
+    // Test de Résistance de traversée (Neige/Blizzard, l.86/127) au DÉMARRAGE du jour — un jet PAR héros
+    // (BATCH influençable), avant les Activités ; DISTINCT de l'Exposition de fin d'Étape.
+    steps.push(...buildWeatherResistanceSteps(get, w.weather));
     steps.push(...buildStageSteps(get, set, w.weather, season));
   }
 
