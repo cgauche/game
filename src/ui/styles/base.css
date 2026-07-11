@@ -87,6 +87,15 @@
   --end-rendu-fg: #4a4030;
   --end-hors-bg: #4a5240; /* badge de fin d'aventure : hors service */
   --end-hors-fg: #d8e0cc;
+  --wm-age-spot: #7a5f38; /* carte du monde : taches d'âge du parchemin + cerne des médaillons */
+  --wm-frame-dark: #5a4327; /* carte du monde : filet de cadre brun épais */
+  --wm-frame-gold: #a9842f; /* carte du monde : filet de cadre or fin */
+  --wm-fleuron: #8a6c2f; /* carte du monde : fleurons d'angle */
+  --wm-badge-bg: #efe2bd; /* carte du monde : fond du badge de distance */
+  --wm-ink: #5d4520; /* carte du monde : encre du texte (badge, rose des vents) */
+  --wm-compass-faint: #8a6c3e; /* carte du monde : branches pâles de la rose des vents */
+  --wm-cartouche-bg: #33240f; /* carte du monde : fond du cartouche de nom de lieu */
+  --wm-cartouche-fg: #f1e2bb; /* carte du monde : texte du cartouche de nom de lieu */
   --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
 }
 

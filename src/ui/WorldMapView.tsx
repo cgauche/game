@@ -48,7 +48,7 @@ function routeCurve(ax: number, ay: number, bx: number, by: number, id: string) 
 
 /** Rose des vents décorative (carte ancienne) — 4 branches cardinales bicolores + N. */
 function CompassRose({ x, y }: { x: number; y: number }) {
-  const ink = '#5d4520', faint = '#8a6c3e';
+  const ink = 'var(--wm-ink)', faint = 'var(--wm-compass-faint)';
   const ray = (rot: number, long: boolean) => {
     const r = long ? 5.4 : 3.2;
     return (
@@ -263,15 +263,15 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
       <rect x="0" y="0" width="100" height="64" rx="2.5" fill="url(#wm-parch)" />
       <rect x="0" y="0" width="100" height="64" rx="2.5" filter="url(#wm-grain)" opacity="0.06" />
       {/* Taches d'âge (déterministes) */}
-      <ellipse cx="22" cy="14" rx="6" ry="3.4" fill="#7a5f38" opacity="0.06" />
-      <ellipse cx="80" cy="50" rx="7" ry="4" fill="#7a5f38" opacity="0.05" />
-      <ellipse cx="60" cy="9" rx="4" ry="2.6" fill="#7a5f38" opacity="0.05" />
+      <ellipse cx="22" cy="14" rx="6" ry="3.4" fill="var(--wm-age-spot)" opacity="0.06" />
+      <ellipse cx="80" cy="50" rx="7" ry="4" fill="var(--wm-age-spot)" opacity="0.05" />
+      <ellipse cx="60" cy="9" rx="4" ry="2.6" fill="var(--wm-age-spot)" opacity="0.05" />
       <rect x="0" y="0" width="100" height="64" rx="2.5" fill="url(#wm-vignette)" />
       {/* Cadre orné : filet brun épais + filet or fin + fleurons aux angles */}
-      <rect x="1.4" y="1.4" width="97.2" height="61.2" rx="2" fill="none" stroke="#5a4327" strokeWidth="1.3" />
-      <rect x="3.1" y="3.1" width="93.8" height="57.8" rx="1.4" fill="none" stroke="#a9842f" strokeWidth="0.4" />
+      <rect x="1.4" y="1.4" width="97.2" height="61.2" rx="2" fill="none" stroke="var(--wm-frame-dark)" strokeWidth="1.3" />
+      <rect x="3.1" y="3.1" width="93.8" height="57.8" rx="1.4" fill="none" stroke="var(--wm-frame-gold)" strokeWidth="0.4" />
       {[[5, 6.6], [95, 6.6], [5, 60], [95, 60]].map(([fx, fy], i) => (
-        <text key={i} x={fx} y={fy} textAnchor="middle" fontSize="4" fill="#8a6c2f" opacity="0.8">⚜</text>
+        <text key={i} x={fx} y={fy} textAnchor="middle" fontSize="4" fill="var(--wm-fleuron)" opacity="0.8">⚜</text>
       ))}
     </>
   );
@@ -307,8 +307,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
               partant d'ICI (celles qu'on peut prendre) : les autres restent des traits propres. */}
           {fromHere && (
             <g transform={`translate(${c.lx} ${c.ly}) scale(${1 / view.z})`}>
-              <rect x="-5" y="-2" width="10" height="3" rx="1.5" fill="#efe2bd" opacity="0.88" />
-              <text y="0.15" textAnchor="middle" fontSize="2.1" fill="#5d4520">
+              <rect x="-5" y="-2" width="10" height="3" rx="1.5" fill="var(--wm-badge-bg)" opacity="0.88" />
+              <text y="0.15" textAnchor="middle" fontSize="2.1" fill="var(--wm-ink)">
                 {routeDistanceLabel(r.km, r.sea)}
               </text>
               {/* Badge de mode : barque (voie d'eau) / compas (route carrossable). */}
@@ -344,7 +344,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
       children: (
         <>
           {/* cible de clic/survol généreuse (taille écran constante) */}
-          <circle r="3.4" fill="#000" fillOpacity="0" />
+          <circle r="3.4" fill="transparent" />
           {isHere && <text y="-2.6" textAnchor="middle" fontSize="1.5" fontWeight={700} fill="var(--ok)">✦ Vous êtes ici</text>}
           {(isHere || isDest) && (
             <circle r="2.1" fill="none" stroke={isHere ? 'var(--ok)' : 'var(--accent)'} strokeWidth="0.4" opacity="0.95" />
@@ -352,7 +352,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           {clickable && !isDest && (
             <circle r="2.1" fill="none" stroke="var(--accent)" strokeWidth="0.3" strokeDasharray="0.7 0.55" opacity="0.9" />
           )}
-          <circle r="1.5" fill="url(#wm-medal)" stroke="#7a5f38" strokeWidth="0.22" filter="url(#wm-drop)" />
+          <circle r="1.5" fill="url(#wm-medal)" stroke="var(--wm-age-spot)" strokeWidth="0.22" filter="url(#wm-drop)" />
           {/* `p.icon` = id d'icône (registre src/ui/icons) ; sans icône, drapeau de lieu. */}
           <g style={{ color: '#4a3517' }}>
             <IconG id={p.icon ?? 'nav/entry-point'} x={-1.05} y={-1.05} size={2.1} />
@@ -377,8 +377,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
         return (
           <g key={`lbl-${p.id}`} transform={`translate(${pr.x} ${pr.y}) scale(${1 / view.z})`} style={{ pointerEvents: 'none' }}>
             <g transform="translate(0 3.6)">
-              <rect x={-w / 2} y="-1.9" width={w} height="3" rx="1.5" fill="#33240f" opacity={0.9} stroke={hovered && !isHere && !clickable ? 'var(--gold2)' : 'none'} strokeWidth="0.2" />
-              <text y="0.25" textAnchor="middle" fontSize="2.1" fontWeight={isHere ? 700 : 500} fill="#f1e2bb">{p.label}</text>
+              <rect x={-w / 2} y="-1.9" width={w} height="3" rx="1.5" fill="var(--wm-cartouche-bg)" opacity={0.9} stroke={hovered && !isHere && !clickable ? 'var(--gold2)' : 'none'} strokeWidth="0.2" />
+              <text y="0.25" textAnchor="middle" fontSize="2.1" fontWeight={isHere ? 700 : 500} fill="var(--wm-cartouche-fg)">{p.label}</text>
             </g>
           </g>
         );
@@ -389,6 +389,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
 
   return (
     <ScreenShell title={<><Icon id="nav/campaign" size="sm" /> {map.nom}</>} onClose={close}>
+      <div className="layout-sidebar worldmap-layout">
       <div className="worldmap-canvas">
         <MapCanvas
           className="wm-map"
@@ -402,6 +403,7 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
         />
       </div>
 
+      <aside className="worldmap-side">
       {/* Voyage interrompu : reprise */}
       {travelPlan?.interrupted && resumeDest && (
         <div className="worldmap-panel">
@@ -606,6 +608,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
           </div>
         </div>
       )}
+      </aside>
+      </div>
     </ScreenShell>
   );
 }

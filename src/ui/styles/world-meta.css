@@ -93,15 +93,45 @@
   width: min(900px, 96vw);
   margin: 0 auto;
 }
+/* Phase 3 (#343) : la carte reste la zone principale, le panneau de départ (4 états mutuellement
+   exclusifs — reprise/départ/muet/porte de nuit, tous `.worldmap-panel`) devient une colonne latérale
+   FIXE (compose `.layout-sidebar` — jamais une grille maison). ≤900px : la primitive empile déjà
+   (comportement mobile inchangé, panneau pleine largeur sous la carte). */
+.worldmap-layout {
+  min-height: 0;
+}
+.worldmap-layout > aside.worldmap-side {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (min-width: 901px) {
+  .worldmap-layout {
+    grid-template-columns: minmax(0, 1fr) min(400px, 40vw);
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .worldmap-layout > aside.worldmap-side {
+    position: static;
+    align-self: stretch;
+    overflow-y: auto;
+    min-height: 0;
+  }
+}
+@media (max-width: 900px) {
+  /* Empilement (comportement actuel conservé) : la carte garde la majorité de la hauteur, le
+     panneau ne prend que ce qu'il lui faut, dessous. */
+  .worldmap-layout {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+}
 .worldmap-canvas {
   position: relative; /* ancre les commandes de zoom */
-  flex: 1;
   min-height: 0;
   display: grid;
   place-items: center;
 }
 .worldmap-canvas svg {
-  width: min(96vw, 880px);
+  width: min(100%, 880px);
   max-height: 100%;
   user-select: none;
   touch-action: none; /* zoom/pan au doigt : on gère molette + glisser + pincement nous-mêmes */
@@ -136,7 +166,8 @@
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 12px 14px;
-  width: min(640px, 96vw);
+  width: 100%;
+  max-width: min(640px, 96vw);
   margin: 0 auto;
 }
 .worldmap-panel p { margin: 4px 0; }
