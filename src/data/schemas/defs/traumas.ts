@@ -4,7 +4,7 @@
  * `cosmetic`/`passiveKind`/`maison` : cicatrices post-guérison (LDB 18 l.61/72, #192).
  */
 import { z } from 'zod';
-import { gameOpSchema } from '../common';
+import { gameOpSchema, sourceRefSchema } from '../common';
 
 export const file = 'traumas.json';
 
@@ -30,6 +30,7 @@ export const schema = z.array(
       .enum(['douleur', 'mobilité', 'structurel', 'sensoriel', 'maladie', 'faim', 'magique', 'etat', 'ivresse', 'intrinsèque'])
       .optional(),
     maison: z.string().optional(),
+    source: sourceRefSchema.optional(),
   }),
 );
 

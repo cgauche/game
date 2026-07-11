@@ -10,7 +10,7 @@
  * (les 3 échelons canon sont Bronze/Argent/Or, cf. toutes les autres 383 entrées).
  */
 import { z } from 'zod';
-import { charKeySchema, advancementRefSchema, trappingRefSchema } from '../common';
+import { charKeySchema, advancementRefSchema, trappingRefSchema, sourceRefSchema } from '../common';
 
 export const file = 'careerLevels.json';
 
@@ -31,6 +31,9 @@ export const schema = z.array(
      *  typo « Agent 1 » (cf. anomalie ci-dessus) : gardé z.string() libre (pas d'enum fermée), la
      *  faute de frappe ne doit pas faire échouer le schéma — elle se corrige au JSON, pas ici. */
     status: z.string(),
+    /** Dérivé de `CareerData.source` (#309) : chaque niveau appartient à une Carrière déjà citée ;
+     *  ancre retenue = folio de la Carrière parente (LDB ch.07-08, blocs par Carrière). */
+    source: sourceRefSchema.optional(),
   }),
 );
 

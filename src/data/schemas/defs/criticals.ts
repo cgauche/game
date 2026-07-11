@@ -4,7 +4,7 @@
  * (`src/data/criticals.ts`).
  */
 import { z } from 'zod';
-import { gameOpSchema, difficultySchema, hitLocationSchema } from '../common';
+import { gameOpSchema, difficultySchema, hitLocationSchema, sourceRefSchema } from '../common';
 
 export const file = 'criticals.json';
 
@@ -86,6 +86,7 @@ const critEntrySchema = z.strictObject({
   // Note MAISON (#195) : trace éditable d'une valeur mécanique absente littéralement du texte RAW (règle stricte 7).
   maison: z.string().optional(),
   desc: z.string(),
+  source: sourceRefSchema.optional(),
 });
 
 export const schema = z.strictObject({

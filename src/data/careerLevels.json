@@ -89,7 +89,11 @@
       "intelligence",
       "sociabilite"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 53
+    }
   },
   {
     "label": "Agitateur",
@@ -159,7 +163,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 53
+    }
   },
   {
     "label": "Fauteur de Troubles",
@@ -222,7 +230,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 53
+    }
   },
   {
     "label": "Démagogue",
@@ -284,7 +296,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 53
+    }
   },
   {
     "label": "Apprenti Artisan",
@@ -378,7 +394,11 @@
       "endurance",
       "dexterite"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 54
+    }
   },
   {
     "label": "Artisan",
@@ -453,7 +473,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 54
+    }
   },
   {
     "label": "Maître artisan",
@@ -520,7 +544,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 54
+    }
   },
   {
     "label": "Maître de guilde",
@@ -572,7 +600,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 54
+    }
   },
   {
     "label": "Employé",
@@ -657,7 +689,11 @@
       "intelligence",
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 55
+    }
   },
   {
     "label": "Bourgeois",
@@ -737,7 +773,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 55
+    }
   },
   {
     "label": "Conseiller municipal",
@@ -803,7 +843,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 55
+    }
   },
   {
     "label": "Bourgmestre",
@@ -867,7 +911,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 55
+    }
   },
   {
     "label": "Limier",
@@ -960,7 +1008,11 @@
       "agilite",
       "intelligence"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 56
+    }
   },
   {
     "label": "Enquêteur",
@@ -1040,7 +1092,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 56
+    }
   },
   {
     "label": "Maître Enquêteur",
@@ -1102,7 +1158,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 56
+    }
   },
   {
     "label": "Détective",
@@ -1153,7 +1213,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 56
+    }
   },
   {
     "label": "Négociant",
@@ -1252,7 +1316,11 @@
       "agilite",
       "sociabilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 57
+    }
   },
   {
     "label": "Marchand",
@@ -1333,7 +1401,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 57
+    }
   },
   {
     "label": "Maître Marchand",
@@ -1403,7 +1475,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 57
+    }
   },
   {
     "label": "Prince Marchand",
@@ -1470,7 +1546,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Or 3"
+    "status": "Or 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 57
+    }
   },
   {
     "label": "Indigent",
@@ -1556,7 +1636,11 @@
       "agilite",
       "sociabilite"
     ],
-    "status": "Bronze 0"
+    "status": "Bronze 0",
+    "source": {
+      "book": "livre-de-base",
+      "page": 58
+    }
   },
   {
     "label": "Mendiant",
@@ -1630,7 +1714,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 58
+    }
   },
   {
     "label": "Maître Mendiant",
@@ -1697,7 +1785,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 58
+    }
   },
   {
     "label": "Roi des Mendiants",
@@ -1750,7 +1842,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 58
+    }
   },
   {
     "label": "Recrue de la Milice",
@@ -1836,7 +1932,11 @@
       "force",
       "sociabilite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 59
+    }
   },
   {
     "label": "Milicien",
@@ -1915,7 +2015,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 59
+    }
   },
   {
     "label": "Sergent de la Milice",
@@ -1984,7 +2088,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 59
+    }
   },
   {
     "label": "Capitaine de la Milice",
@@ -2046,7 +2154,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 59
+    }
   },
   {
     "label": "Chasseur de Rat",
@@ -2147,7 +2259,11 @@
       "capacite-de-tir",
       "force-mentale"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 60
+    }
   },
   {
     "label": "Ratier",
@@ -2222,7 +2338,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 60
+    }
   },
   {
     "label": "Égoutier",
@@ -2288,7 +2408,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 60
+    }
   },
   {
     "label": "Exterminateur",
@@ -2344,7 +2468,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 60
+    }
   },
   {
     "label": "Artiste Apprenti",
@@ -2426,7 +2554,11 @@
       "initiative",
       "dexterite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 61
+    }
   },
   {
     "label": "Artiste",
@@ -2499,7 +2631,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 61
+    }
   },
   {
     "label": "Artiste de renom",
@@ -2565,7 +2701,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 61
+    }
   },
   {
     "label": "Maestro",
@@ -2623,7 +2763,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 61
+    }
   },
   {
     "label": "Assistant",
@@ -2706,7 +2850,11 @@
       "initiative",
       "agilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 62
+    }
   },
   {
     "label": "Conseiller",
@@ -2776,7 +2924,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 62
+    }
   },
   {
     "label": "Consultant",
@@ -2839,7 +2991,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 62
+    }
   },
   {
     "label": "Chancelier",
@@ -2902,7 +3058,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 3"
+    "status": "Or 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 62
+    }
   },
   {
     "label": "Escrimeur",
@@ -2999,7 +3159,11 @@
       "initiative",
       "agilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 63
+    }
   },
   {
     "label": "Duelliste",
@@ -3079,7 +3243,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 63
+    }
   },
   {
     "label": "Maître duelliste",
@@ -3152,7 +3320,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 63
+    }
   },
   {
     "label": "Champion de Justice",
@@ -3205,7 +3377,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 3"
+    "status": "Or 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 63
+    }
   },
   {
     "label": "Héraut",
@@ -3293,7 +3469,11 @@
       "agilite",
       "sociabilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 64
+    }
   },
   {
     "label": "Émissaire",
@@ -3372,7 +3552,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 64
+    }
   },
   {
     "label": "Diplomate",
@@ -3436,7 +3620,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 64
+    }
   },
   {
     "label": "Ambassadeur",
@@ -3494,7 +3682,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 5"
+    "status": "Or 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 64
+    }
   },
   {
     "label": "Informateur",
@@ -3587,7 +3779,11 @@
       "force-mentale",
       "sociabilite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 65
+    }
   },
   {
     "label": "Espion",
@@ -3670,7 +3866,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 65
+    }
   },
   {
     "label": "Agent secret",
@@ -3742,7 +3942,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 65
+    }
   },
   {
     "label": "Maître Espion",
@@ -3800,7 +4004,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 4"
+    "status": "Or 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 65
+    }
   },
   {
     "label": "Gardien",
@@ -3891,7 +4099,11 @@
       "endurance",
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 66
+    }
   },
   {
     "label": "Intendant",
@@ -3976,7 +4188,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 66
+    }
   },
   {
     "label": "Sénéchal",
@@ -4041,7 +4257,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 66
+    }
   },
   {
     "label": "Gouverneur",
@@ -4097,7 +4317,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 3"
+    "status": "Or 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 66
+    }
   },
   {
     "label": "Héritier",
@@ -4190,7 +4414,11 @@
       "initiative",
       "dexterite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 67
+    }
   },
   {
     "label": "Noble",
@@ -4280,7 +4508,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 3"
+    "status": "Or 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 67
+    }
   },
   {
     "label": "Magnat",
@@ -4355,7 +4587,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 5"
+    "status": "Or 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 67
+    }
   },
   {
     "label": "Noble Seigneur",
@@ -4419,7 +4655,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 7"
+    "status": "Or 7",
+    "source": {
+      "book": "livre-de-base",
+      "page": 67
+    }
   },
   {
     "label": "Domestique",
@@ -4499,7 +4739,11 @@
       "endurance",
       "agilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 68
+    }
   },
   {
     "label": "Serviteur",
@@ -4569,7 +4813,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 68
+    }
   },
   {
     "label": "Valet",
@@ -4638,7 +4886,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 68
+    }
   },
   {
     "label": "Régisseur",
@@ -4694,7 +4946,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 68
+    }
   },
   {
     "label": "Apprenti Cavalier",
@@ -4784,7 +5040,11 @@
       "force",
       "agilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 69
+    }
   },
   {
     "label": "Cavalier",
@@ -4877,7 +5137,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 69
+    }
   },
   {
     "label": "Sergent de Cavalerie légère",
@@ -4937,7 +5201,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 69
+    }
   },
   {
     "label": "Officier de Cavalerie Légère",
@@ -4990,7 +5258,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 69
+    }
   },
   {
     "label": "Ecuyer",
@@ -5090,7 +5362,11 @@
       "initiative",
       "agilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 70
+    }
   },
   {
     "label": "Chevalier",
@@ -5175,7 +5451,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 70
+    }
   },
   {
     "label": "Chevalier commandeur",
@@ -5238,7 +5518,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 70
+    }
   },
   {
     "label": "Chevalier du Cercle Intérieur",
@@ -5294,7 +5578,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 4"
+    "status": "Or 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 70
+    }
   },
   {
     "label": "Sentinelle",
@@ -5386,7 +5674,11 @@
       "endurance",
       "agilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 71
+    }
   },
   {
     "label": "Garde",
@@ -5471,7 +5763,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 71
+    }
   },
   {
     "label": "Garde d'honneur",
@@ -5539,7 +5835,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 71
+    }
   },
   {
     "label": "Garde officier",
@@ -5589,7 +5889,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 71
+    }
   },
   {
     "label": "Pugiliste",
@@ -5676,7 +5980,11 @@
       "force",
       "endurance"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 72
+    }
   },
   {
     "label": "Gladiateur",
@@ -5760,7 +6068,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 72
+    }
   },
   {
     "label": "Champion de fosse",
@@ -5824,7 +6136,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 72
+    }
   },
   {
     "label": "Légende de la fosse",
@@ -5872,7 +6188,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 72
+    }
   },
   {
     "label": "Chair fraîche",
@@ -5970,7 +6290,11 @@
       "force",
       "endurance"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 35
+    }
   },
   {
     "label": "Mangeur d'hommes",
@@ -6051,7 +6375,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 35
+    }
   },
   {
     "label": "Broyeur d'hommes",
@@ -6114,7 +6442,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 35
+    }
   },
   {
     "label": "Capitaine mangeur d'hommes",
@@ -6166,7 +6498,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 35
+    }
   },
   {
     "label": "Novice (Prêtre Guerrier)",
@@ -6260,7 +6596,11 @@
       "endurance",
       "force-mentale"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 73
+    }
   },
   {
     "label": "Prêtre Guerrier",
@@ -6334,7 +6674,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 73
+    }
   },
   {
     "label": "Prêtre sergent",
@@ -6397,7 +6741,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 73
+    }
   },
   {
     "label": "Prêtre capitaine",
@@ -6447,7 +6795,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 73
+    }
   },
   {
     "label": "Recrue",
@@ -6539,7 +6891,11 @@
       "endurance",
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 74
+    }
   },
   {
     "label": "Soldat",
@@ -6615,7 +6971,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 74
+    }
   },
   {
     "label": "Sergent",
@@ -6677,7 +7037,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 74
+    }
   },
   {
     "label": "Officier",
@@ -6748,7 +7112,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 74
+    }
   },
   {
     "label": "Taquineur de blaireau",
@@ -6844,7 +7212,11 @@
       "agilite",
       "intelligence"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 88
+    }
   },
   {
     "label": "Chevaucheur de blaireau",
@@ -6921,7 +7293,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 88
+    }
   },
   {
     "label": "Sergent blaireau",
@@ -6984,7 +7360,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 88
+    }
   },
   {
     "label": "Maître blaireau",
@@ -7042,7 +7422,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 88
+    }
   },
   {
     "label": "Matamore",
@@ -7129,7 +7513,11 @@
       "endurance",
       "agilite"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 75
+    }
   },
   {
     "label": "Spadassin",
@@ -7212,7 +7600,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 75
+    }
   },
   {
     "label": "Tueur à gages",
@@ -7281,7 +7673,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 75
+    }
   },
   {
     "label": "Assassin",
@@ -7341,7 +7737,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 75
+    }
   },
   {
     "label": "Tueur de Trolls",
@@ -7434,7 +7834,11 @@
       "force",
       "force-mentale"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 76
+    }
   },
   {
     "label": "Tueur de Géants",
@@ -7512,7 +7916,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 76
+    }
   },
   {
     "label": "Tueur de Dragons",
@@ -7577,7 +7985,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 76
+    }
   },
   {
     "label": "Tueur de Démons",
@@ -7627,7 +8039,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 76
+    }
   },
   {
     "label": "Chasseur de voleurs",
@@ -7715,7 +8131,11 @@
       "capacite-de-combat",
       "endurance"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 77
+    }
   },
   {
     "label": "Chasseur de primes",
@@ -7804,7 +8224,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 77
+    }
   },
   {
     "label": "Maître Chasseur de primes",
@@ -7870,7 +8294,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 77
+    }
   },
   {
     "label": "Chasseur de primes vétéran",
@@ -7933,7 +8361,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 77
+    }
   },
   {
     "label": "Garde forestier",
@@ -8033,7 +8465,11 @@
       "agilite",
       "intelligence"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 91
+    }
   },
   {
     "label": "Rôdeur fantôme",
@@ -8116,7 +8552,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 91
+    }
   },
   {
     "label": "Esprit du vent",
@@ -8183,7 +8623,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 91
+    }
   },
   {
     "label": "Courroux de la forêt",
@@ -8237,7 +8681,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 91
+    }
   },
   {
     "label": "Postillon",
@@ -8325,7 +8773,11 @@
       "endurance",
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 78
+    }
   },
   {
     "label": "Cocher",
@@ -8411,7 +8863,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 78
+    }
   },
   {
     "label": "Maître cocher",
@@ -8479,7 +8935,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 78
+    }
   },
   {
     "label": "Maître des routes",
@@ -8532,7 +8992,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 78
+    }
   },
   {
     "label": "Vagabond",
@@ -8627,7 +9091,11 @@
       "dexterite",
       "force-mentale"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 79
+    }
   },
   {
     "label": "Colporteur",
@@ -8710,7 +9178,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 79
+    }
   },
   {
     "label": "Maître colporteur",
@@ -8772,7 +9244,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 79
+    }
   },
   {
     "label": "Négociant itinérant",
@@ -8832,7 +9308,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 79
+    }
   },
   {
     "label": "Zélote",
@@ -8917,7 +9397,11 @@
       "force",
       "endurance"
     ],
-    "status": "Bronze 0"
+    "status": "Bronze 0",
+    "source": {
+      "book": "livre-de-base",
+      "page": 80
+    }
   },
   {
     "label": "Flagellant",
@@ -8997,7 +9481,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Bronze 0"
+    "status": "Bronze 0",
+    "source": {
+      "book": "livre-de-base",
+      "page": 80
+    }
   },
   {
     "label": "Pénitent",
@@ -9057,7 +9545,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Bronze 0"
+    "status": "Bronze 0",
+    "source": {
+      "book": "livre-de-base",
+      "page": 80
+    }
   },
   {
     "label": "Prophète du destin",
@@ -9111,7 +9603,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Bronze 0"
+    "status": "Bronze 0",
+    "source": {
+      "book": "livre-de-base",
+      "page": 80
+    }
   },
   {
     "label": "Survivant",
@@ -9208,7 +9704,11 @@
       "force",
       "endurance"
     ],
-    "status": "Bronze 0"
+    "status": "Bronze 0",
+    "source": {
+      "book": "middenheim",
+      "page": 154
+    }
   },
   {
     "label": "Frère Loup",
@@ -9278,7 +9778,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Bronze 0"
+    "status": "Bronze 0",
+    "source": {
+      "book": "middenheim",
+      "page": 154
+    }
   },
   {
     "label": "Compagnon Loup",
@@ -9335,7 +9839,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Bronze 0"
+    "status": "Bronze 0",
+    "source": {
+      "book": "middenheim",
+      "page": 154
+    }
   },
   {
     "label": "Grand Loup",
@@ -9391,7 +9899,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Bronze 0"
+    "status": "Bronze 0",
+    "source": {
+      "book": "middenheim",
+      "page": 154
+    }
   },
   {
     "label": "Coureur",
@@ -9473,7 +9985,11 @@
       "initiative",
       "agilite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 81
+    }
   },
   {
     "label": "Messager",
@@ -9554,7 +10070,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 81
+    }
   },
   {
     "label": "Estafette",
@@ -9618,7 +10138,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 81
+    }
   },
   {
     "label": "Messager vétéran",
@@ -9674,7 +10198,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 81
+    }
   },
   {
     "label": "Coureur des forts",
@@ -9766,7 +10294,11 @@
       "force",
       "endurance"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 90
+    }
   },
   {
     "label": "Patrouilleur des karak",
@@ -9850,7 +10382,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 90
+    }
   },
   {
     "label": "Gardien des routes des karak",
@@ -9920,7 +10456,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 90
+    }
   },
   {
     "label": "Arpenteur des karak",
@@ -9979,7 +10519,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 90
+    }
   },
   {
     "label": "Péager",
@@ -10071,7 +10615,11 @@
       "endurance",
       "initiative"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 82
+    }
   },
   {
     "label": "Patrouilleur routier",
@@ -10153,7 +10701,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 82
+    }
   },
   {
     "label": "Sergent Patrouilleur",
@@ -10230,7 +10782,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 82
+    }
   },
   {
     "label": "Capitaine Patrouilleur",
@@ -10298,7 +10854,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 82
+    }
   },
   {
     "label": "Garde novice",
@@ -10399,7 +10959,11 @@
       "agilite",
       "force-mentale"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 89
+    }
   },
   {
     "label": "Gardechamps",
@@ -10478,7 +11042,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 89
+    }
   },
   {
     "label": "Sergent Gardechamps",
@@ -10541,7 +11109,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 89
+    }
   },
   {
     "label": "Capitaine Gardechamps",
@@ -10595,7 +11167,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "archives-de-l-empire-1",
+      "page": 89
+    }
   },
   {
     "label": "Interrogateur",
@@ -10681,7 +11257,11 @@
       "endurance",
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 83
+    }
   },
   {
     "label": "Répurgateur",
@@ -10771,7 +11351,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 83
+    }
   },
   {
     "label": "Inquisiteur",
@@ -10836,7 +11420,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 83
+    }
   },
   {
     "label": "Répurgateur vétéran",
@@ -10890,7 +11478,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 83
+    }
   },
   {
     "label": "Musicien de rues",
@@ -10974,7 +11566,11 @@
       "dexterite",
       "sociabilite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 84
+    }
   },
   {
     "label": "Saltimbanque",
@@ -11053,7 +11649,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 84
+    }
   },
   {
     "label": "Troubadour",
@@ -11115,7 +11715,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 84
+    }
   },
   {
     "label": "Chef de troupe",
@@ -11173,7 +11777,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 84
+    }
   },
   {
     "label": "Apprenti Apothicaire",
@@ -11271,7 +11879,11 @@
       "dexterite",
       "intelligence"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 85
+    }
   },
   {
     "label": "Apothicaire",
@@ -11345,7 +11957,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 85
+    }
   },
   {
     "label": "Maître Apothicaire",
@@ -11413,7 +12029,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 85
+    }
   },
   {
     "label": "Apothicaire de Renom",
@@ -11468,7 +12088,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 85
+    }
   },
   {
     "label": "Faiseur de bouillie",
@@ -11565,7 +12189,11 @@
       "endurance",
       "force-mentale"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 37
+    }
   },
   {
     "label": "Boucher ogre",
@@ -11649,7 +12277,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 37
+    }
   },
   {
     "label": "Sage de la Gueule",
@@ -11717,7 +12349,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 37
+    }
   },
   {
     "label": "Maître massacreur",
@@ -11773,7 +12409,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 37
+    }
   },
   {
     "label": "Étudiant",
@@ -11865,7 +12505,11 @@
       "intelligence",
       "force-mentale"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 86
+    }
   },
   {
     "label": "Érudit",
@@ -11939,7 +12583,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 86
+    }
   },
   {
     "label": "Chercheur",
@@ -12002,7 +12650,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 86
+    }
   },
   {
     "label": "Professeur",
@@ -12052,7 +12704,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 86
+    }
   },
   {
     "label": "Étudiant Ingénieur",
@@ -12143,7 +12799,11 @@
       "dexterite",
       "intelligence"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 87
+    }
   },
   {
     "label": "Ingénieur",
@@ -12219,7 +12879,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 87
+    }
   },
   {
     "label": "Maître Ingénieur",
@@ -12283,7 +12947,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 87
+    }
   },
   {
     "label": "Ingénieur Agréé",
@@ -12342,7 +13010,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 87
+    }
   },
   {
     "label": "Étudiant en Droit",
@@ -12430,7 +13102,11 @@
       "dexterite",
       "intelligence"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 88
+    }
   },
   {
     "label": "Juriste",
@@ -12507,7 +13183,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 88
+    }
   },
   {
     "label": "Maître du Barreau",
@@ -12571,7 +13251,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 88
+    }
   },
   {
     "label": "Juge",
@@ -12623,7 +13307,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 88
+    }
   },
   {
     "label": "Étudiant en Médecine",
@@ -12707,7 +13395,11 @@
       "intelligence",
       "force-mentale"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 89
+    }
   },
   {
     "label": "Médecin",
@@ -12786,7 +13478,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 89
+    }
   },
   {
     "label": "Docteur en médecine",
@@ -12850,7 +13546,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 89
+    }
   },
   {
     "label": "Médecin de la cour",
@@ -12905,7 +13605,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 89
+    }
   },
   {
     "label": "Novice (Nonne)",
@@ -12991,7 +13695,11 @@
       "intelligence",
       "sociabilite"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 90
+    }
   },
   {
     "label": "Nonne",
@@ -13069,7 +13777,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 90
+    }
   },
   {
     "label": "Abbesse",
@@ -13133,7 +13845,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 90
+    }
   },
   {
     "label": "Prieure Générale",
@@ -13181,7 +13897,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 90
+    }
   },
   {
     "label": "Initié",
@@ -13266,7 +13986,11 @@
       "agilite",
       "force-mentale"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 91
+    }
   },
   {
     "label": "Prêtre",
@@ -13341,7 +14065,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 91
+    }
   },
   {
     "label": "Grand Prêtre",
@@ -13412,7 +14140,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 91
+    }
   },
   {
     "label": "Lecteur",
@@ -13466,7 +14198,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 91
+    }
   },
   {
     "label": "Sorcier novice",
@@ -13554,7 +14290,11 @@
       "intelligence",
       "force-mentale"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 92
+    }
   },
   {
     "label": "Sorcier",
@@ -13624,7 +14364,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 92
+    }
   },
   {
     "label": "Maître Sorcier",
@@ -13691,7 +14435,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 92
+    }
   },
   {
     "label": "Seigneur sorcier",
@@ -13746,7 +14494,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 92
+    }
   },
   {
     "label": "Canotier",
@@ -13834,7 +14586,11 @@
       "endurance",
       "agilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 93
+    }
   },
   {
     "label": "Batelier",
@@ -13924,7 +14680,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 93
+    }
   },
   {
     "label": "Chef de bord",
@@ -13988,7 +14748,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 93
+    }
   },
   {
     "label": "Capitaine",
@@ -14042,7 +14806,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 93
+    }
   },
   {
     "label": "Coureur de rivières",
@@ -14140,7 +14908,11 @@
       "dexterite",
       "force-mentale"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 94
+    }
   },
   {
     "label": "Contrebandier",
@@ -14225,7 +14997,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 94
+    }
   },
   {
     "label": "Maître contrebandier",
@@ -14289,7 +15065,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 94
+    }
   },
   {
     "label": "Roi des contrebandiers",
@@ -14342,7 +15122,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 94
+    }
   },
   {
     "label": "Porteur",
@@ -14427,7 +15211,11 @@
       "endurance",
       "initiative"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 95
+    }
   },
   {
     "label": "Débardeur",
@@ -14511,7 +15299,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 95
+    }
   },
   {
     "label": "Contremaître",
@@ -14574,7 +15366,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 95
+    }
   },
   {
     "label": "Maître des docks",
@@ -14630,7 +15426,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 95
+    }
   },
   {
     "label": "Alevin",
@@ -14720,7 +15520,11 @@
       "agilite",
       "dexterite"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 96
+    }
   },
   {
     "label": "Femme du fleuve",
@@ -14802,7 +15606,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 96
+    }
   },
   {
     "label": "Sage des rives",
@@ -14868,7 +15676,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 96
+    }
   },
   {
     "label": "Ancienne du fleuve",
@@ -14919,7 +15731,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 96
+    }
   },
   {
     "label": "Marin d'eau douce",
@@ -15007,7 +15823,11 @@
       "dexterite",
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 97
+    }
   },
   {
     "label": "Marin",
@@ -15080,7 +15900,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 97
+    }
   },
   {
     "label": "Maître d'équipage",
@@ -15140,7 +15964,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 97
+    }
   },
   {
     "label": "Capitaine de Navire",
@@ -15200,7 +16028,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 97
+    }
   },
   {
     "label": "Pilleur d'épaves",
@@ -15288,7 +16120,11 @@
       "force",
       "initiative"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 98
+    }
   },
   {
     "label": "Naufrageur",
@@ -15363,7 +16199,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 98
+    }
   },
   {
     "label": "Pirate des rivières",
@@ -15436,7 +16276,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 98
+    }
   },
   {
     "label": "Capitaine naufrageur",
@@ -15495,7 +16339,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 98
+    }
   },
   {
     "label": "Guide fluvial",
@@ -15584,7 +16432,11 @@
       "endurance",
       "initiative"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 99
+    }
   },
   {
     "label": "Nautonier",
@@ -15662,7 +16514,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 99
+    }
   },
   {
     "label": "Pilote",
@@ -15729,7 +16585,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 99
+    }
   },
   {
     "label": "Maître nocher",
@@ -15781,7 +16641,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 99
+    }
   },
   {
     "label": "Recrue fluviale",
@@ -15868,7 +16732,11 @@
       "force",
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 100
+    }
   },
   {
     "label": "Patrouilleur fluvial",
@@ -15954,7 +16822,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 100
+    }
   },
   {
     "label": "Abordeur",
@@ -16020,7 +16892,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 100
+    }
   },
   {
     "label": "Maître abordeur",
@@ -16076,7 +16952,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 100
+    }
   },
   {
     "label": "Filou",
@@ -16169,7 +17049,11 @@
       "dexterite",
       "sociabilite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 101
+    }
   },
   {
     "label": "Charlatan",
@@ -16257,7 +17141,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 101
+    }
   },
   {
     "label": "Arnaqueur",
@@ -16325,7 +17213,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 101
+    }
   },
   {
     "label": "Escroc",
@@ -16377,7 +17269,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 101
+    }
   },
   {
     "label": "Prostitué",
@@ -16458,7 +17354,11 @@
       "dexterite",
       "sociabilite"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 102
+    }
   },
   {
     "label": "Entremetteur",
@@ -16533,7 +17433,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 102
+    }
   },
   {
     "label": "Souteneur",
@@ -16593,7 +17497,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 102
+    }
   },
   {
     "label": "Meneur",
@@ -16646,7 +17554,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 102
+    }
   },
   {
     "label": "Bandit",
@@ -16736,7 +17648,11 @@
       "force",
       "endurance"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 103
+    }
   },
   {
     "label": "Hors-la-loi",
@@ -16819,7 +17735,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 103
+    }
   },
   {
     "label": "Chef de bande",
@@ -16891,7 +17811,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 103
+    }
   },
   {
     "label": "Roi des bandits",
@@ -16945,7 +17869,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 103
+    }
   },
   {
     "label": "Trafiquant de cadavres",
@@ -17035,7 +17963,11 @@
       "initiative",
       "force-mentale"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 104
+    }
   },
   {
     "label": "Pilleur de tombes",
@@ -17119,7 +18051,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 104
+    }
   },
   {
     "label": "Pilleur de tombeaux",
@@ -17182,7 +18118,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 104
+    }
   },
   {
     "label": "Chasseur de trésors",
@@ -17245,7 +18185,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 104
+    }
   },
   {
     "label": "Coupe-jarret",
@@ -17332,7 +18276,11 @@
       "force",
       "endurance"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 105
+    }
   },
   {
     "label": "Rançonneur",
@@ -17412,7 +18360,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 105
+    }
   },
   {
     "label": "Chef de gang",
@@ -17486,7 +18438,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 105
+    }
   },
   {
     "label": "Baron du crime",
@@ -17546,7 +18502,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 105
+    }
   },
   {
     "label": "Brocanteur",
@@ -17631,7 +18591,11 @@
       "agilite",
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 106
+    }
   },
   {
     "label": "Receleur",
@@ -17709,7 +18673,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 106
+    }
   },
   {
     "label": "Maître receleur",
@@ -17771,7 +18739,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 106
+    }
   },
   {
     "label": "Professionnel du marché noir",
@@ -17827,7 +18799,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 106
+    }
   },
   {
     "label": "Ensorceleur",
@@ -17919,7 +18895,11 @@
       "endurance",
       "force-mentale"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 107
+    }
   },
   {
     "label": "Sorcier dissident",
@@ -18000,7 +18980,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 107
+    }
   },
   {
     "label": "Devin",
@@ -18066,7 +19050,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 107
+    }
   },
   {
     "label": "Démoniste",
@@ -18119,7 +19107,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 107
+    }
   },
   {
     "label": "Rôdeur",
@@ -18207,7 +19199,11 @@
       "agilite",
       "force-mentale"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 108
+    }
   },
   {
     "label": "Voleur",
@@ -18282,7 +19278,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 108
+    }
   },
   {
     "label": "Maître voleur",
@@ -18348,7 +19348,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 108
+    }
   },
   {
     "label": "Cambrioleur",
@@ -18403,7 +19407,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 108
+    }
   },
   {
     "label": "Percepteur",
@@ -18488,7 +19496,11 @@
       "initiative",
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 109
+    }
   },
   {
     "label": "Bailli",
@@ -18563,7 +19575,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 109
+    }
   },
   {
     "label": "Préfet",
@@ -18633,7 +19649,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 109
+    }
   },
   {
     "label": "Magistrat",
@@ -18690,7 +19710,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 3"
+    "status": "Or 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 109
+    }
   },
   {
     "label": "Traqueur",
@@ -18791,7 +19815,11 @@
       "endurance",
       "dexterite"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 110
+    }
   },
   {
     "label": "Chasseur",
@@ -18870,7 +19898,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 110
+    }
   },
   {
     "label": "Pisteur",
@@ -18937,7 +19969,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 110
+    }
   },
   {
     "label": "Maître de la Chasse",
@@ -18993,7 +20029,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 110
+    }
   },
   {
     "label": "Coureur des bois",
@@ -19088,7 +20128,11 @@
       "initiative",
       "agilite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 111
+    }
   },
   {
     "label": "Éclaireur",
@@ -19169,7 +20213,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 111
+    }
   },
   {
     "label": "Guide",
@@ -19244,7 +20292,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 111
+    }
   },
   {
     "label": "Explorateur",
@@ -19298,7 +20350,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 111
+    }
   },
   {
     "label": "Voleur de rhinox",
@@ -19402,7 +20458,11 @@
       "force",
       "endurance"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 36
+    }
   },
   {
     "label": "Gardien de troupeaux de rhinox",
@@ -19478,7 +20538,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 36
+    }
   },
   {
     "label": "Dompteur de rhinox",
@@ -19544,7 +20608,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 36
+    }
   },
   {
     "label": "Maître des rhinox",
@@ -19596,7 +20664,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 36
+    }
   },
   {
     "label": "Cueilleur",
@@ -19689,7 +20761,11 @@
       "initiative",
       "agilite"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 112
+    }
   },
   {
     "label": "Herboriste",
@@ -19764,7 +20840,11 @@
     "characteristics": [
       "dexterite"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 112
+    }
   },
   {
     "label": "Maître Herboriste",
@@ -19838,7 +20918,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 112
+    }
   },
   {
     "label": "Herboriste de renom",
@@ -19892,7 +20976,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 112
+    }
   },
   {
     "label": "Prospecteur",
@@ -19985,7 +21073,11 @@
       "endurance",
       "force-mentale"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 113
+    }
   },
   {
     "label": "Mineur",
@@ -20066,7 +21158,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 113
+    }
   },
   {
     "label": "Maître Mineur",
@@ -20135,7 +21231,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 113
+    }
   },
   {
     "label": "Contremaître de la mine",
@@ -20187,7 +21287,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 113
+    }
   },
   {
     "label": "Voyant",
@@ -20272,7 +21376,11 @@
       "agilite",
       "sociabilite"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 114
+    }
   },
   {
     "label": "Mystique",
@@ -20342,7 +21450,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 114
+    }
   },
   {
     "label": "Sage",
@@ -20402,7 +21514,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 114
+    }
   },
   {
     "label": "Prophète",
@@ -20454,7 +21570,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 114
+    }
   },
   {
     "label": "Apprenti Sorcier de Village",
@@ -20551,7 +21671,11 @@
       "initiative",
       "dexterite"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "livre-de-base",
+      "page": 115
+    }
   },
   {
     "label": "Sorcier de village",
@@ -20630,7 +21754,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 115
+    }
   },
   {
     "label": "Maître Sorcier de village",
@@ -20697,7 +21825,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 115
+    }
   },
   {
     "label": "Sage de village",
@@ -20752,7 +21884,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "livre-de-base",
+      "page": 115
+    }
   },
   {
     "label": "Paysan",
@@ -20831,7 +21967,11 @@
       "endurance",
       "agilite"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 116
+    }
   },
   {
     "label": "Villageois",
@@ -20908,7 +22048,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "livre-de-base",
+      "page": 116
+    }
   },
   {
     "label": "Échevin",
@@ -20976,7 +22120,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "livre-de-base",
+      "page": 116
+    }
   },
   {
     "label": "Doyen",
@@ -21027,7 +22175,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "livre-de-base",
+      "page": 116
+    }
   },
   {
     "label": "Cavalier",
@@ -21135,7 +22287,11 @@
       "capacite-de-combat",
       "endurance"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 44
+    }
   },
   {
     "label": "Cavalier Léger",
@@ -21212,7 +22368,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "aux-armes",
+      "page": 44
+    }
   },
   {
     "label": "Cavalier Léger Lancier",
@@ -21281,7 +22441,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 44
+    }
   },
   {
     "label": "Capitaine Cavalier Léger",
@@ -21340,7 +22504,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 44
+    }
   },
   {
     "label": "Écuyer",
@@ -21449,7 +22617,11 @@
       "force",
       "initiative"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 31
+    }
   },
   {
     "label": "Chevalier Errant",
@@ -21533,7 +22705,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "aux-armes",
+      "page": 31
+    }
   },
   {
     "label": "Capitaine Indépendant",
@@ -21596,7 +22772,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 31
+    }
   },
   {
     "label": "Chevalier Commandant",
@@ -21649,7 +22829,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 3"
+    "status": "Or 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 31
+    }
   },
   {
     "label": "Novice",
@@ -21762,7 +22946,11 @@
       "force",
       "initiative"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 32
+    }
   },
   {
     "label": "Chevalier du Soleil flamboyant",
@@ -21847,7 +23035,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 32
+    }
   },
   {
     "label": "Hochmeister",
@@ -21908,7 +23100,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "aux-armes",
+      "page": 32
+    }
   },
   {
     "label": "Chevalier du Cercle Intérieur",
@@ -21964,7 +23160,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 4"
+    "status": "Or 4",
+    "source": {
+      "book": "aux-armes",
+      "page": 32
+    }
   },
   {
     "label": "Novice",
@@ -22077,7 +23277,11 @@
       "force",
       "initiative"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 34
+    }
   },
   {
     "label": "Chevalier du Loup Blanc",
@@ -22156,7 +23360,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 34
+    }
   },
   {
     "label": "Sergent Templier",
@@ -22219,7 +23427,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "aux-armes",
+      "page": 34
+    }
   },
   {
     "label": "Commandant de compagnie (cercle intérieur)",
@@ -22272,7 +23484,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Or 3"
+    "status": "Or 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 34
+    }
   },
   {
     "label": "Écuyer",
@@ -22384,7 +23600,11 @@
       "force",
       "initiative"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 36
+    }
   },
   {
     "label": "Chevalier Panthère",
@@ -22475,7 +23695,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 36
+    }
   },
   {
     "label": "Chevalier Commandeur",
@@ -22539,7 +23763,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "aux-armes",
+      "page": 36
+    }
   },
   {
     "label": "Commandant de compagnie (cercle intérieur)",
@@ -22592,7 +23820,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 4"
+    "status": "Or 4",
+    "source": {
+      "book": "aux-armes",
+      "page": 36
+    }
   },
   {
     "label": "Premier Aigle",
@@ -22702,7 +23934,11 @@
       "force-mentale",
       "intelligence"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "aux-armes",
+      "page": 78
+    }
   },
   {
     "label": "Prêtre de Myrmidia",
@@ -22779,7 +24015,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 78
+    }
   },
   {
     "label": "Prêtre Sergent",
@@ -22838,7 +24078,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "aux-armes",
+      "page": 78
+    }
   },
   {
     "label": "Prêtre Capitaine",
@@ -22888,7 +24132,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 78
+    }
   },
   {
     "label": "Tireur à l'arc",
@@ -22998,7 +24246,11 @@
       "capacite-de-tir",
       "initiative"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 10
+    }
   },
   {
     "label": "Archer",
@@ -23076,7 +24328,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 10
+    }
   },
   {
     "label": "Sergent Archer",
@@ -23139,7 +24395,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 10
+    }
   },
   {
     "label": "Capitaine Archer",
@@ -23199,7 +24459,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 10
+    }
   },
   {
     "label": "Recrue Hallebardier",
@@ -23301,7 +24565,11 @@
       "capacite-de-combat",
       "endurance"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 14
+    }
   },
   {
     "label": "Hallebardier",
@@ -23377,7 +24645,11 @@
     "characteristics": [
       "force"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 14
+    }
   },
   {
     "label": "Sergent Hallebardier",
@@ -23440,7 +24712,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 14
+    }
   },
   {
     "label": "Capitaine Hallebardier",
@@ -23502,7 +24778,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 14
+    }
   },
   {
     "label": "Recrue Arquebusier",
@@ -23600,7 +24880,11 @@
       "capacite-de-tir",
       "dexterite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 16
+    }
   },
   {
     "label": "Arquebusier",
@@ -23674,7 +24958,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 16
+    }
   },
   {
     "label": "Sergent Arquebusier",
@@ -23738,7 +25026,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 16
+    }
   },
   {
     "label": "Capitaine Arquebusier",
@@ -23797,7 +25089,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 16
+    }
   },
   {
     "label": "Cadet Joueur d'épée",
@@ -23898,7 +25194,11 @@
       "force",
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 12
+    }
   },
   {
     "label": "Joueur d'épée",
@@ -23972,7 +25272,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "aux-armes",
+      "page": 12
+    }
   },
   {
     "label": "Sergent Joueur d'épée",
@@ -24038,7 +25342,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 12
+    }
   },
   {
     "label": "Capitaine Joueur d'épée",
@@ -24100,7 +25408,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "aux-armes",
+      "page": 12
+    }
   },
   {
     "label": "Recrue",
@@ -24203,7 +25515,11 @@
       "endurance",
       "force"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 48
+    }
   },
   {
     "label": "Piquier",
@@ -24281,7 +25597,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 48
+    }
   },
   {
     "label": "Chef de File",
@@ -24343,7 +25663,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "aux-armes",
+      "page": 48
+    }
   },
   {
     "label": "Capitaine d'étendard",
@@ -24411,7 +25735,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 48
+    }
   },
   {
     "label": "Arbalétrier",
@@ -24521,7 +25849,11 @@
       "capacite-de-tir",
       "force"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 46
+    }
   },
   {
     "label": "Spécialiste de Siège",
@@ -24595,7 +25927,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 46
+    }
   },
   {
     "label": "Sapeur",
@@ -24673,7 +26009,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 46
+    }
   },
   {
     "label": "Maître de Siège",
@@ -24731,7 +26071,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 46
+    }
   },
   {
     "label": "Ribaud",
@@ -24826,7 +26170,11 @@
       "capacite-de-combat",
       "sociabilite"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 20
+    }
   },
   {
     "label": "Suiveur de Camp",
@@ -24900,7 +26248,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "aux-armes",
+      "page": 20
+    }
   },
   {
     "label": "Pillard Chevronné",
@@ -24959,7 +26311,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 20
+    }
   },
   {
     "label": "Chef de Camp",
@@ -25014,7 +26370,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "aux-armes",
+      "page": 20
+    }
   },
   {
     "label": "Arpenteur",
@@ -25113,7 +26473,11 @@
       "initiative",
       "intelligence"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 22
+    }
   },
   {
     "label": "Cartographe",
@@ -25189,7 +26553,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 22
+    }
   },
   {
     "label": "Cartographe Reconnu",
@@ -25254,7 +26622,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 22
+    }
   },
   {
     "label": "Maître Cartographe",
@@ -25307,7 +26679,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 22
+    }
   },
   {
     "label": "Apprenti Artilleur",
@@ -25406,7 +26782,11 @@
       "initiative",
       "intelligence"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 18
+    }
   },
   {
     "label": "Artilleur",
@@ -25495,7 +26875,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "aux-armes",
+      "page": 18
+    }
   },
   {
     "label": "Capitaine Artilleur",
@@ -25559,7 +26943,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "aux-armes",
+      "page": 18
+    }
   },
   {
     "label": "Maître Artilleur",
@@ -25627,7 +27015,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "aux-armes",
+      "page": 18
+    }
   },
   {
     "label": "Mousse artilleur",
@@ -25724,7 +27116,11 @@
       "agilite",
       "intelligence"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 64
+    }
   },
   {
     "label": "Artilleur de navire",
@@ -25801,7 +27197,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 64
+    }
   },
   {
     "label": "Capitaine d'artillerie",
@@ -25864,7 +27264,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 64
+    }
   },
   {
     "label": "Maître artilleur",
@@ -25917,7 +27321,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 64
+    }
   },
   {
     "label": "Chanteur",
@@ -26020,7 +27428,11 @@
       "intelligence",
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 66
+    }
   },
   {
     "label": "Chansonnier",
@@ -26090,7 +27502,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 66
+    }
   },
   {
     "label": "Capitaine chansonnier",
@@ -26149,7 +27565,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 66
+    }
   },
   {
     "label": "Maître chansonnier",
@@ -26199,7 +27619,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 66
+    }
   },
   {
     "label": "Mousse",
@@ -26299,7 +27723,11 @@
       "dexterite",
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 68
+    }
   },
   {
     "label": "Marin",
@@ -26372,7 +27800,11 @@
     "characteristics": [
       "capacite-de-combat"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 68
+    }
   },
   {
     "label": "Quartier-maître",
@@ -26431,7 +27863,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 68
+    }
   },
   {
     "label": "Bosco",
@@ -26485,7 +27921,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 68
+    }
   },
   {
     "label": "Pilleur d'épaves",
@@ -26584,7 +28024,11 @@
       "force",
       "initiative"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 70
+    }
   },
   {
     "label": "Naufrageur",
@@ -26662,7 +28106,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 70
+    }
   },
   {
     "label": "Pirate",
@@ -26735,7 +28183,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 70
+    }
   },
   {
     "label": "Capitaine pirate",
@@ -26790,7 +28242,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 70
+    }
   },
   {
     "label": "Guide portuaire",
@@ -26889,7 +28345,11 @@
       "endurance",
       "initiative"
     ],
-    "status": "Bronze 4"
+    "status": "Bronze 4",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 72
+    }
   },
   {
     "label": "Nautonier",
@@ -26966,7 +28426,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 72
+    }
   },
   {
     "label": "Pilote",
@@ -27027,7 +28491,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 72
+    }
   },
   {
     "label": "Maître pilote",
@@ -27079,7 +28547,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 72
+    }
   },
   {
     "label": "Enseigne",
@@ -27174,7 +28646,11 @@
       "intelligence",
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 74
+    }
   },
   {
     "label": "Officier",
@@ -27248,7 +28724,11 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 74
+    }
   },
   {
     "label": "Capitaine",
@@ -27313,7 +28793,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 74
+    }
   },
   {
     "label": "Amiral",
@@ -27362,7 +28846,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Or 5"
+    "status": "Or 5",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 74
+    }
   },
   {
     "label": "Initié",
@@ -27462,7 +28950,11 @@
       "agilite",
       "force-mentale"
     ],
-    "status": "Bronze 2"
+    "status": "Bronze 2",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 76
+    }
   },
   {
     "label": "Prêtre marin",
@@ -27537,7 +29029,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 1"
+    "status": "Argent 1",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 76
+    }
   },
   {
     "label": "Prêtre capitaine",
@@ -27608,7 +29104,11 @@
     "characteristics": [
       "initiative"
     ],
-    "status": "Or 1"
+    "status": "Or 1",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 76
+    }
   },
   {
     "label": "Seigneur des vagues",
@@ -27664,7 +29164,11 @@
     "characteristics": [
       "intelligence"
     ],
-    "status": "Or 2"
+    "status": "Or 2",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 76
+    }
   },
   {
     "label": "Récupérateur",
@@ -27762,7 +29266,11 @@
       "initiative",
       "intelligence"
     ],
-    "status": "Bronze 1"
+    "status": "Bronze 1",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 78
+    }
   },
   {
     "label": "Ratisseur de plages",
@@ -27838,7 +29346,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Bronze 3"
+    "status": "Bronze 3",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 78
+    }
   },
   {
     "label": "Dériveur",
@@ -27907,7 +29419,11 @@
     "characteristics": [
       "force-mentale"
     ],
-    "status": "Bronze 5"
+    "status": "Bronze 5",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 78
+    }
   },
   {
     "label": "Maître des plages",
@@ -27957,7 +29473,11 @@
     "characteristics": [
       "endurance"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 78
+    }
   },
   {
     "label": "Initié",
@@ -28062,7 +29582,11 @@
       "force",
       "initiative"
     ],
-    "status": "Argent 2"
+    "status": "Argent 2",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 90
+    }
   },
   {
     "label": "Prêtre de Stromfels",
@@ -28140,7 +29664,11 @@
     "characteristics": [
       "sociabilite"
     ],
-    "status": "Argent 3"
+    "status": "Argent 3",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 90
+    }
   },
   {
     "label": "Prêtre pirate",
@@ -28217,7 +29745,11 @@
     "characteristics": [
       "agilite"
     ],
-    "status": "Argent 4"
+    "status": "Argent 4",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 90
+    }
   },
   {
     "label": "Prêtre terreur des mers",
@@ -28276,6 +29808,10 @@
     "characteristics": [
       "capacite-de-tir"
     ],
-    "status": "Argent 5"
+    "status": "Argent 5",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 90
+    }
   }
 ]

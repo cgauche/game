@@ -9,14 +9,17 @@
 // Module ESM pur, exécutable par `node` nu — consommé par `scripts/data/audit-citations.mjs`
 // (rapport) ET par `src/data/citation-coverage-guard.test.ts` (verrou cliquet).
 
-/** Une entrée cite sa source si `source.book` (forme `sourceRefSchema`, `common.ts:23`) ou
- *  `_source` non vide (forme `freeSourceNoteSchema`, `common.ts:46` — seule survivance documentée
- *  pour `aa-criticals.json`). @param {unknown} item @returns {boolean} */
+/** Une entrée cite sa source si `source.book` (forme `sourceRefSchema`, `common.ts:23`), `_source`
+ *  non vide (forme `freeSourceNoteSchema`, `common.ts:46` — seule survivance documentée pour
+ *  `aa-criticals.json`), ou `maison` non vide top-level : un arbitrage MAISON documenté (rationale +
+ *  réfs dans le texte même, ex. `proue-idole-de-stromfels` #221) EST la source de l'entrée.
+ *  @param {unknown} item @returns {boolean} */
 export function isCitedItem(item) {
   if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
   const rec = /** @type {Record<string, unknown>} */ (item);
   if (rec.source && typeof rec.source === 'object' && !Array.isArray(rec.source) && typeof (/** @type {Record<string, unknown>} */ (rec.source)).book === 'string') return true;
   if (typeof rec._source === 'string' && rec._source.length > 0) return true;
+  if (typeof rec.maison === 'string' && rec.maison.length > 0) return true;
   return false;
 }
 

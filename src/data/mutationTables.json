@@ -103,7 +103,12 @@
         "max": 100,
         "mutation": "choix-du-mj"
       }
-    ]
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 183,
+      "note": "Tableau de Corruption Physique/Mentale, LDB 19 — dernier folio Marker ancré avant les tables (182→183)."
+    }
   },
   {
     "id": "mentale",
@@ -209,7 +214,12 @@
         "max": 100,
         "mutation": "affreusement-nerveux"
       }
-    ]
+    ],
+    "source": {
+      "book": "livre-de-base",
+      "page": 183,
+      "note": "Tableau de Corruption Physique/Mentale, LDB 19 — dernier folio Marker ancré avant les tables (182→183)."
+    }
   },
   {
     "id": "edoc-mental-toute",
@@ -385,7 +395,12 @@
         "max": 100,
         "mutation": "affreusement-nerveux"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-mental-khorne",
@@ -526,7 +541,12 @@
         "max": 100,
         "mutation": "affreusement-nerveux"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-mental-nurgle",
@@ -672,7 +692,12 @@
         "max": 100,
         "mutation": "affreusement-nerveux"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-mental-slaanesh",
@@ -828,7 +853,12 @@
         "max": 100,
         "mutation": "affreusement-nerveux"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-mental-tzeentch",
@@ -974,7 +1004,12 @@
         "max": 100,
         "mutation": "affreusement-nerveux"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-phys-toute",
@@ -1290,7 +1325,12 @@
         "max": 100,
         "mutation": "ailes"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-phys-khorne",
@@ -1536,7 +1576,12 @@
         "max": 100,
         "mutation": "ailes"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-phys-nurgle",
@@ -1762,7 +1807,12 @@
         "max": 100,
         "mutation": "suintement-de-pus"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-phys-slaanesh",
@@ -2008,7 +2058,12 @@
         "max": 100,
         "mutation": "ailes"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-phys-tzeentch",
@@ -2279,7 +2334,12 @@
         "max": 100,
         "mutation": "ailes"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-tete-bestiale-toute",
@@ -2335,7 +2395,12 @@
         "max": 100,
         "mutation": "tete-bestiale-serpent"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-tete-bestiale-khorne",
@@ -2381,7 +2446,12 @@
         "max": 100,
         "mutation": "tete-bestiale-serpent"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-tete-bestiale-nurgle",
@@ -2427,7 +2497,12 @@
         "max": 100,
         "mutation": "tete-bestiale-serpent"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-tete-bestiale-slaanesh",
@@ -2473,7 +2548,12 @@
         "max": 100,
         "mutation": "tete-bestiale-serpent"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   },
   {
     "id": "edoc-tete-bestiale-tzeentch",
@@ -2529,6 +2609,11 @@
         "max": 100,
         "mutation": "tete-bestiale-serpent"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 65,
+      "note": "Mutations Physiques/Tête Bestiale/Mentales par panthéon (Toute-Puissance/Khorne/Nurgle/Slaanesh/Tzeentch), EDOC ch.8 — table continue p.65-71, ancrée au dernier folio Marker connu (pas de folio par sous-table dans l'extraction)."
+    }
   }
 ]

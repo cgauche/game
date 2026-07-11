@@ -4,6 +4,7 @@
  * Inventaire réel (17 tables) : `id`/`label`/`ranges[{min,max,mutation}]` seulement.
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'mutationTables.json';
 
@@ -11,6 +12,7 @@ export const schema = z.array(
   z.strictObject({
     id: z.string(),
     label: z.string(),
+    source: sourceRefSchema.optional(),
     ranges: z.array(
       z.strictObject({
         min: z.number(),

@@ -22,8 +22,9 @@ import { auditDataset, EXEMPT_DATASETS } from '../../scripts/guards/lib/citation
  * SANS mécanique RAW à sourcer (props/groupes/matériaux de rendu, palettes, prégénérés, réf
  * `_source` unique d'`aa-criticals.json`…) — jamais scannés par ce garde.
  *
- * La CURATION (retrouver les folios manquants) est la PHASE 2 du ticket, hors périmètre : ce garde
- * ne fait QUE geler l'état mesuré et bloquer toute HAUSSE.
+ * La CURATION (retrouver les folios manquants) est la PHASE 2 du ticket (#309) : ce garde geler
+ * l'état mesuré et bloque toute HAUSSE — `careerLevels`/`criticals`/`traumas`/`mutationTables`/
+ * `weaponGroups`/`maladies` sont sortis de `BASELINES` (curés à 100%, phase 2, 2026-07-11).
  */
 
 const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
@@ -39,23 +40,16 @@ const BASELINES: Record<string, number> = {
   'calendarMonths.json': 12,
   'calendarPhases.json': 7,
   'calendarWeekdays.json': 8,
-  'careerLevels.json': 384,
   'crew-roles.json': 9,
-  'criticals.json': 80,
   'driving-mishap.json': 4,
   'drunkenness.json': 5,
   'encumbranceTiers.json': 4,
   'grapple.json': 1,
   'interludeEvents.json': 31,
-  'maladies.json': 11,
   'miscast.json': 71,
-  'mutationTables.json': 17,
-  'naval-traits.json': 1,
   'oups.json': 7,
   'peripeties.json': 10,
   'steam-breakdown.json': 6,
-  'traumas.json': 26,
-  'weaponGroups.json': 37,
   'weather.json': 4,
 };
 

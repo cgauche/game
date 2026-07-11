@@ -3,207 +3,388 @@
     "id": "armes-d-hast",
     "label": "Armes d'hast",
     "kind": "weapon",
-    "combat": "melee"
+    "combat": "melee",
+    "source": {
+      "book": "livre-de-base",
+      "page": 296,
+      "note": "Les groupes d'armes de Corps à corps, LDB 62 l.137."
+    }
   },
   {
     "id": "bagarre",
     "label": "Bagarre",
     "kind": "weapon",
-    "combat": "melee"
+    "combat": "melee",
+    "source": {
+      "book": "livre-de-base",
+      "page": 296,
+      "note": "Les groupes d'armes de Corps à corps, LDB 62 l.137."
+    }
   },
   {
     "id": "base",
     "label": "Base",
     "kind": "weapon",
-    "combat": "melee"
+    "combat": "melee",
+    "source": {
+      "book": "livre-de-base",
+      "page": 296,
+      "note": "Les groupes d'armes de Corps à corps, LDB 62 l.137."
+    }
   },
   {
     "id": "cavalerie",
     "label": "Cavalerie",
     "kind": "weapon",
-    "combat": "melee"
+    "combat": "melee",
+    "source": {
+      "book": "livre-de-base",
+      "page": 296,
+      "note": "Les groupes d'armes de Corps à corps, LDB 62 l.137."
+    }
   },
   {
     "id": "deux-mains",
     "label": "Deux-mains",
     "kind": "weapon",
-    "combat": "melee"
+    "combat": "melee",
+    "source": {
+      "book": "livre-de-base",
+      "page": 296,
+      "note": "Les groupes d'armes de Corps à corps, LDB 62 l.137."
+    }
   },
   {
     "id": "escrime",
     "label": "Escrime",
     "kind": "weapon",
-    "combat": "melee"
+    "combat": "melee",
+    "source": {
+      "book": "livre-de-base",
+      "page": 296,
+      "note": "Les groupes d'armes de Corps à corps, LDB 62 l.137."
+    }
   },
   {
     "id": "fleau",
     "label": "Fléau",
     "kind": "weapon",
-    "combat": "melee"
+    "combat": "melee",
+    "source": {
+      "book": "livre-de-base",
+      "page": 296,
+      "note": "Les groupes d'armes de Corps à corps, LDB 62 l.137."
+    }
   },
   {
     "id": "parade",
     "label": "Parade",
     "kind": "weapon",
-    "combat": "melee"
+    "combat": "melee",
+    "source": {
+      "book": "livre-de-base",
+      "page": 296,
+      "note": "Les groupes d'armes de Corps à corps, LDB 62 l.137."
+    }
   },
   {
     "id": "arbalete",
     "label": "Arbalète",
     "kind": "weapon",
-    "combat": "ranged"
+    "combat": "ranged",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "Groupes d'Armes à distance, LDB 62 l.178."
+    }
   },
   {
     "id": "arc",
     "label": "Arc",
     "kind": "weapon",
-    "combat": "ranged"
+    "combat": "ranged",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "Groupes d'Armes à distance, LDB 62 l.178."
+    }
   },
   {
     "id": "entraves",
     "label": "Entraves",
     "kind": "weapon",
-    "combat": "ranged"
+    "combat": "ranged",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "Groupes d'Armes à distance, LDB 62 l.178."
+    }
   },
   {
     "id": "explosifs",
     "label": "Explosifs",
     "kind": "weapon",
-    "combat": "ranged"
+    "combat": "ranged",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "Groupes d'Armes à distance, LDB 62 l.178."
+    }
   },
   {
     "id": "fronde",
     "label": "Fronde",
     "kind": "weapon",
-    "combat": "ranged"
+    "combat": "ranged",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "Groupes d'Armes à distance, LDB 62 l.178."
+    }
   },
   {
     "id": "lancer",
     "label": "Lancer",
     "kind": "weapon",
-    "combat": "ranged"
+    "combat": "ranged",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "Groupes d'Armes à distance, LDB 62 l.178."
+    }
   },
   {
     "id": "ingenierie",
     "label": "Ingénierie",
     "kind": "weapon",
-    "combat": "ranged"
+    "combat": "ranged",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "Groupes d'Armes à distance, LDB 62 l.178."
+    }
   },
   {
     "id": "poudre-noire",
     "label": "Poudre noire",
     "kind": "weapon",
-    "combat": "ranged"
+    "combat": "ranged",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "Groupes d'Armes à distance, LDB 62 l.178."
+    }
   },
   {
     "id": "catapulte",
     "label": "Catapulte",
     "kind": "weapon",
-    "combat": "ranged"
+    "combat": "ranged",
+    "source": {
+      "book": "livre-de-base",
+      "page": 297,
+      "note": "Groupes d'Armes à distance, LDB 62 l.178."
+    }
   },
   {
     "id": "poudre-noire-et-ingenierie",
     "label": "Poudre noire et ingénierie",
-    "kind": "ammo"
+    "kind": "ammo",
+    "source": {
+      "book": "livre-de-base",
+      "page": 296,
+      "note": "Munitions pour poudre noire, LDB 62 l.129."
+    }
   },
   {
     "id": "cuir-souple",
     "label": "Cuir souple",
     "kind": "armour",
-    "material": "leather"
+    "material": "leather",
+    "source": {
+      "book": "livre-de-base",
+      "page": 300
+    }
   },
   {
     "id": "cuir-bouilli",
     "label": "Cuir bouilli",
     "kind": "armour",
-    "material": "leather"
+    "material": "leather",
+    "source": {
+      "book": "livre-de-base",
+      "page": 300
+    }
   },
   {
     "id": "mailles",
     "label": "Mailles",
     "kind": "armour",
-    "material": "metal"
+    "material": "metal",
+    "source": {
+      "book": "livre-de-base",
+      "page": 300
+    }
   },
   {
     "id": "plate",
     "label": "Plate",
     "kind": "armour",
-    "material": "metal"
+    "material": "metal",
+    "source": {
+      "book": "livre-de-base",
+      "page": 300
+    }
   },
   {
     "id": "sacs-et-contenants",
     "label": "Sacs et Contenants",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 301,
+      "note": "Chapitre dédié « Sacs et Contenants » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "vetements-et-accessoires",
     "label": "Vêtements et Accessoires",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 302,
+      "note": "Chapitre dédié « Vêtements et Accessoires » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "nourriture-boisson-et-hebergement",
     "label": "Nourriture, Boisson et Hébergement",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 303,
+      "note": "Chapitre dédié « Nourriture, Boisson et Hébergement » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "outils-et-necessaires",
     "label": "Outils et nécessaires",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 304,
+      "note": "Chapitre dédié « Outils et nécessaires » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "livres-et-documents",
     "label": "Livres et documents",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 305,
+      "note": "Chapitre dédié « Livres et documents » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "outils-professionnels-et-ateliers",
     "label": "Outils professionnels et ateliers",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 305,
+      "note": "Chapitre dédié « Outils professionnels et ateliers » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "animaux-et-vehicules",
     "label": "Animaux et véhicules",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 306,
+      "note": "Chapitre dédié « Animaux et véhicules » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "drogues-et-poisons",
     "label": "Drogues et poisons",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 307,
+      "note": "Chapitre dédié « Drogues et poisons » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "herbes-et-potions",
     "label": "Herbes et potions",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 307,
+      "note": "Chapitre dédié « Herbes et potions » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "protheses",
     "label": "Prothèses",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 308,
+      "note": "Chapitre dédié « Prothèses » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "possessions-diverses",
     "label": "Possessions diverses",
-    "kind": "inventory"
+    "kind": "inventory",
+    "source": {
+      "book": "livre-de-base",
+      "page": 309,
+      "note": "Chapitre dédié « Possessions diverses » (LDB 64-74, un chapitre par catégorie d'inventaire)."
+    }
   },
   {
     "id": "armes-de-siege",
     "label": "Armes de siège",
-    "kind": "weapon"
+    "kind": "weapon",
+    "source": {
+      "book": "aux-armes",
+      "page": 122,
+      "note": "Best-effort : `subType` utilisé par les items de siège (ex. `baliste`, AA p.122) — pas de table de Groupes dédiée trouvée pour ce vocabulaire précis, à re-vérifier."
+    }
   },
   {
     "id": "munitions",
     "label": "Munitions",
-    "kind": "weapon"
+    "kind": "weapon",
+    "source": {
+      "book": "livre-de-base",
+      "page": 296,
+      "note": "LDB 62 l.106, section « Munitions »."
+    }
   },
   {
     "id": "munition-de-siege",
     "label": "Munitions de siège",
-    "kind": "weapon"
+    "kind": "weapon",
+    "source": {
+      "book": "aux-armes",
+      "page": 122,
+      "note": "Best-effort : rattaché au même chapitre d'artillerie (AA ch.10) que `armes-de-siege` — aucune occurrence directe trouvée dans `trappings.json`, à re-vérifier."
+    }
   },
   {
     "id": "machine-de-guerre",
     "label": "Machine de guerre",
     "kind": "weapon",
-    "combat": "ranged"
+    "combat": "ranged",
+    "source": {
+      "book": "archives-de-l-empire-2",
+      "page": 88,
+      "note": "Confirmé par l'item `baliste-ade2` (weaponGroup:machine-de-guerre, source ADE2 p.88)."
+    }
   }
 ]

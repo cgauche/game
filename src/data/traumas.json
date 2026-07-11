@@ -16,7 +16,12 @@
         "mod": -10
       }
     ],
-    "desc": "Un de vos muscles est déchiré, ce qui vous handicape grandement en plus d’être très douloureux. Vous subissez une pénalité de -10 à tous les Tests concernant cette Localisation. Si c’est une Jambe qui est touchée, votre Mouvement est réduit de moitié."
+    "desc": "Un de vos muscles est déchiré, ce qui vous handicape grandement en plus d’être très douloureux. Vous subissez une pénalité de -10 à tous les Tests concernant cette Localisation. Si c’est une Jambe qui est touchée, votre Mouvement est réduit de moitié.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fractures (Mineure/Majeure) + Déchirure musculaire (Mineure), LDB 18 l.192-224."
+    }
   },
   {
     "id": "dechirure-jambe-majeure",
@@ -35,21 +40,36 @@
         "mod": -20
       }
     ],
-    "desc": "L’un de vos muscles, ou un tendon important, a été gravement endommagé, causant une douleur extrême et une sérieuse perte de potentiel du membre en question. Subissez les mêmes effets que pour Déchirure musculaire (Mineure), mais les pénalités passent à -20 pour tous les Tests."
+    "desc": "L’un de vos muscles, ou un tendon important, a été gravement endommagé, causant une douleur extrême et une sérieuse perte de potentiel du membre en question. Subissez les mêmes effets que pour Déchirure musculaire (Mineure), mais les pénalités passent à -20 pour tous les Tests.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "dechirure-autre-mineure",
     "label": "Déchirure musculaire",
     "kind": "dechirure",
     "severity": "mineur",
-    "desc": "Un de vos muscles est déchiré, ce qui vous handicape grandement en plus d’être très douloureux. Vous subissez une pénalité de -10 à tous les Tests concernant cette Localisation."
+    "desc": "Un de vos muscles est déchiré, ce qui vous handicape grandement en plus d’être très douloureux. Vous subissez une pénalité de -10 à tous les Tests concernant cette Localisation.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fractures (Mineure/Majeure) + Déchirure musculaire (Mineure), LDB 18 l.192-224."
+    }
   },
   {
     "id": "dechirure-autre-majeure",
     "label": "Déchirure musculaire",
     "kind": "dechirure",
     "severity": "majeur",
-    "desc": "L’un de vos muscles, ou un tendon important, a été gravement endommagé, causant une douleur extrême et une sérieuse perte de potentiel du membre en question. Subissez les mêmes effets que pour Déchirure musculaire (Mineure), mais les pénalités passent à -20 pour tous les Tests."
+    "desc": "L’un de vos muscles, ou un tendon important, a été gravement endommagé, causant une douleur extrême et une sérieuse perte de potentiel du membre en question. Subissez les mêmes effets que pour Déchirure musculaire (Mineure), mais les pénalités passent à -20 pour tous les Tests.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "fracture-torse-mineure",
@@ -73,7 +93,12 @@
         "mod": -30
       }
     ],
-    "desc": "Pour les blessures au Torse, votre force et votre mobilité seront sérieusement diminuées : subissez une perte de -30 à vos caractéristiques de Force et d’Agilité et votre Mouvement est divisé par deux."
+    "desc": "Pour les blessures au Torse, votre force et votre mobilité seront sérieusement diminuées : subissez une perte de -30 à vos caractéristiques de Force et d’Agilité et votre Mouvement est divisé par deux.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fractures (Mineure/Majeure) + Déchirure musculaire (Mineure), LDB 18 l.192-224."
+    }
   },
   {
     "id": "fracture-torse-majeure",
@@ -97,7 +122,12 @@
         "mod": -30
       }
     ],
-    "desc": "Pour les blessures au Torse, votre force et votre mobilité seront sérieusement diminuées : subissez une perte de -30 à vos caractéristiques de Force et d’Agilité et votre Mouvement est divisé par deux."
+    "desc": "Pour les blessures au Torse, votre force et votre mobilité seront sérieusement diminuées : subissez une perte de -30 à vos caractéristiques de Force et d’Agilité et votre Mouvement est divisé par deux.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fractures (Mineure/Majeure) + Déchirure musculaire (Mineure), LDB 18 l.192-224."
+    }
   },
   {
     "id": "fracture-jambe-mineure",
@@ -116,7 +146,12 @@
         "mod": -20
       }
     ],
-    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés."
+    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fractures (Mineure/Majeure) + Déchirure musculaire (Mineure), LDB 18 l.192-224."
+    }
   },
   {
     "id": "fracture-jambe-majeure",
@@ -135,35 +170,60 @@
         "mod": -20
       }
     ],
-    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés."
+    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fractures (Mineure/Majeure) + Déchirure musculaire (Mineure), LDB 18 l.192-224."
+    }
   },
   {
     "id": "fracture-tete-mineure",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "mineur",
-    "desc": "Pour les coups à la Tête, vous serez contraint de suivre un régime liquide et subirez une pénalité de -30 à tous vos Tests de Langue."
+    "desc": "Pour les coups à la Tête, vous serez contraint de suivre un régime liquide et subirez une pénalité de -30 à tous vos Tests de Langue.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fractures (Mineure/Majeure) + Déchirure musculaire (Mineure), LDB 18 l.192-224."
+    }
   },
   {
     "id": "fracture-tete-majeure",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "majeur",
-    "desc": "Pour les coups à la Tête, vous serez contraint de suivre un régime liquide et subirez une pénalité de -30 à tous vos Tests de Langue."
+    "desc": "Pour les coups à la Tête, vous serez contraint de suivre un régime liquide et subirez une pénalité de -30 à tous vos Tests de Langue.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fractures (Mineure/Majeure) + Déchirure musculaire (Mineure), LDB 18 l.192-224."
+    }
   },
   {
     "id": "fracture-bras-mineure",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "mineur",
-    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés."
+    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fractures (Mineure/Majeure) + Déchirure musculaire (Mineure), LDB 18 l.192-224."
+    }
   },
   {
     "id": "fracture-bras-majeure",
     "label": "Fracture",
     "kind": "fracture",
     "severity": "majeur",
-    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés."
+    "desc": "Vous ne pouvez pas utiliser cette Localisation tant que la fracture n’est pas soignée. En ce qui concerne les Bras et les Jambes, vous êtes contraint de ne plus vous servir que d’un de vos deux membres car l’autre est devenu trop douloureux et devra sans doute être bandé. Utilisez la règle de Bras ou Jambe Sectionnés.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 179,
+      "note": "Fractures (Mineure/Majeure) + Déchirure musculaire (Mineure), LDB 18 l.192-224."
+    }
   },
   {
     "id": "orteil-ampute",
@@ -180,7 +240,12 @@
         "mod": -1
       }
     ],
-    "desc": "La perte d’orteils a un effet sur votre équilibre. Pour chaque orteil perdu, vous subissez une perte définitive de -1 à votre Agilité et à votre Capacité de Combat."
+    "desc": "La perte d’orteils a un effet sur votre équilibre. Pour chaque orteil perdu, vous subissez une perte définitive de -1 à votre Agilité et à votre Capacité de Combat.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "membre-inferieur-ampute",
@@ -207,7 +272,12 @@
         "cancels": "movement"
       }
     ],
-    "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout."
+    "desc": "Réduisez de façon permanente votre Mouvement de moitié, et subissez une pénalité de -20 à tous les Tests qui impliquent la mobilité, comme une Esquive. Utilisez les mêmes règles que pour le pied. De plus, vous ne pouvez pas utiliser le talent Esquive du tout.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "doigt-ampute",
@@ -218,7 +288,12 @@
         "cancels": "all"
       }
     ],
-    "desc": "Avec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée."
+    "desc": "Avec des doigts coupés, votre prise est moins ferme et les risques de Maladresses augmentent lorsque vous utilisez cette main. De plus, vous subissez une pénalité de -5 à tous les Tests qui impliquent cette main par doigt perdu. Une fois que vous avez perdu 4 doigts ou plus, utilisez la règle de la main tranchée.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "main-bras-ampute",
@@ -235,7 +310,12 @@
         "cancels": "all"
       }
     ],
-    "desc": "Vous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d’armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d’Arme effectués avec votre main secondaire."
+    "desc": "Vous recevez une pénalité de -20 à tous les Tests qui utilisent cette main et vous ne pouvez pas utiliser d’armes à deux mains. Cependant, vous pouvez lacer un bouclier sur le bras blessé. Si la main perdue est votre main principale, vous subissez la pénalité habituelle de -20 à tous les Tests d’Arme effectués avec votre main secondaire.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "langue-amputee",
@@ -247,7 +327,12 @@
         "mod": -100
       }
     ],
-    "desc": "Dépourvu de langue, vous ne pouvez plus que marmonner et grommeler, ou vous servir d’un système de signes maison pour communiquer. Tous les Tests de Langue qui impliquent la parole se soldent automatiquement par un échec."
+    "desc": "Dépourvu de langue, vous ne pouvez plus que marmonner et grommeler, ou vous servir d’un système de signes maison pour communiquer. Tous les Tests de Langue qui impliquent la parole se soldent automatiquement par un échec.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "nez-ampute",
@@ -265,7 +350,12 @@
         "cancels": "all"
       }
     ],
-    "desc": "La perte d’un nez rend le visage plutôt effrayant. Votre Sociabilité est réduite de -20 de façon permanente et vous subissez une pénalité de -30 à tous les Tests qui impliquent l’odorat."
+    "desc": "La perte d’un nez rend le visage plutôt effrayant. Votre Sociabilité est réduite de -20 de façon permanente et vous subissez une pénalité de -30 à tous les Tests qui impliquent l’odorat.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "oeil-perdu",
@@ -291,7 +381,12 @@
         "cancels": "all"
       }
     ],
-    "desc": "Même s’il est horrible de perdre un œil, vous apprendrez très vite à compenser. Si vous avez la malchance de perdre vos deux yeux, subissez une pénalité de -30 à tous les Tests en rapport avec la vue, comme les Tests d’Arme, les Tests d’Esquive, les Tests de Chevaucher, et autres. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par orbite vide que les autres peuvent voir."
+    "desc": "Même s’il est horrible de perdre un œil, vous apprendrez très vite à compenser. Si vous avez la malchance de perdre vos deux yeux, subissez une pénalité de -30 à tous les Tests en rapport avec la vue, comme les Tests d’Arme, les Tests d’Esquive, les Tests de Chevaucher, et autres. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par orbite vide que les autres peuvent voir.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "oreille-perdue",
@@ -313,7 +408,12 @@
         "cancels": "all"
       }
     ],
-    "desc": "Perdre une oreille est douloureux, mais on apprend à vivre sans assez vite. Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l’ouïe. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par oreille perdue lorsque les autres voient votre visage."
+    "desc": "Perdre une oreille est douloureux, mais on apprend à vivre sans assez vite. Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l’ouïe. De plus, vous subissez une pénalité de -5 à tous vos Tests de Sociabilité par oreille perdue lorsque les autres voient votre visage.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "dents-perdues",
@@ -324,7 +424,12 @@
         "cancels": "all"
       }
     ],
-    "desc": "La perte de dents peut être disgracieuse et rend la mastication difficile. Pour chaque paire de dents manquante, vous perdez également 1 Point de votre caractéristique de Sociabilité."
+    "desc": "La perte de dents peut être disgracieuse et rend la mastication difficile. Pour chaque paire de dents manquante, vous perdez également 1 Point de votre caractéristique de Sociabilité.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "cecite",
@@ -351,7 +456,12 @@
         "mod": -30
       }
     ],
-    "desc": "Si vous avez la malchance de perdre vos deux yeux, subissez une pénalité de -30 à tous les Tests en rapport avec la vue, comme les Tests d’Arme, les Tests d’Esquive, les Tests de Chevaucher, et autres."
+    "desc": "Si vous avez la malchance de perdre vos deux yeux, subissez une pénalité de -30 à tous les Tests en rapport avec la vue, comme les Tests d’Arme, les Tests d’Esquive, les Tests de Chevaucher, et autres.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "surdite",
@@ -364,7 +474,12 @@
         "sense": "ouie"
       }
     ],
-    "desc": "Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l’ouïe."
+    "desc": "Si vous avez la malchance de perdre vos deux oreilles, subissez une pénalité permanente de -20 à tous les Tests de Perception basés sur l’ouïe.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 180,
+      "note": "Déchirure musculaire (Majeure) + Amputation (séquelles permanentes), LDB 18 l.225-285."
+    }
   },
   {
     "id": "perte-auditive-partielle",
@@ -377,7 +492,12 @@
         "sense": "ouie"
       }
     ],
-    "desc": "Le coup endommage votre oreille, causant une perte auditive permanente. Vous\nsubissez une pénalité de -20 à tout Test ayant un rapport avec l'audition."
+    "desc": "Le coup endommage votre oreille, causant une perte auditive permanente. Vous\nsubissez une pénalité de -20 à tout Test ayant un rapport avec l'audition.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 174,
+      "note": "Entrée issue du Tableau des Critiques à la Tête (LDB 18), section p.174."
+    }
   },
   {
     "id": "cicatrice-spectaculaire",
@@ -392,7 +512,12 @@
       }
     ],
     "maison": "« DR +1 à certains Tests sociaux » : le RAW (LDB 18 l.61) laisse « certains » au contexte. Arbitrage maison : la cicatrice impressionnante sert l'Intimidation (skillMod +10 — convention sociale du jeu, cf. objet Laid -10). Éditable au Compendium.",
-    "desc": "Une fois que la blessure est guérie, l'impressionnante cicatrice vous permet d'obtenir DR +1 à certains Tests sociaux."
+    "desc": "Une fois que la blessure est guérie, l'impressionnante cicatrice vous permet d'obtenir DR +1 à certains Tests sociaux.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 174,
+      "note": "Entrée issue du Tableau des Critiques à la Tête (LDB 18), section p.174."
+    }
   },
   {
     "id": "cicatrice-nez-casse",
@@ -413,6 +538,11 @@
       }
     ],
     "maison": "« DR +1/-1 aux Tests sociaux, en fonction du contexte » : le RAW (LDB 18 l.72) délègue le signe au contexte. Arbitrage maison à périmètre fixe : +10 Intimidation / -10 Charme (convention sociale du jeu, cf. objet Laid -10). Retirée par Chirurgie sur le nez (needsSurgery). Éditable au Compendium.",
-    "desc": "Une fois cette blessure guérie, gagnez DR +1/-1 aux Tests sociaux, en fonction du contexte, jusqu'à ce que Chirurgie soit utilisée sur le nez pour le réparer."
+    "desc": "Une fois cette blessure guérie, gagnez DR +1/-1 aux Tests sociaux, en fonction du contexte, jusqu'à ce que Chirurgie soit utilisée sur le nez pour le réparer.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 174,
+      "note": "Entrée issue du Tableau des Critiques à la Tête (LDB 18), section p.174."
+    }
   }
 ]
