@@ -409,3 +409,32 @@
     overflow: visible;
   }
 }
+
+/* ── ÉCRAN-HUB DE VOYAGE (#333) — VoyageScreen.tsx : ScreenShell + tuiles + chronique + MasterDetail ── */
+.voyage-body { display: flex; flex-direction: column; gap: 12px; padding: 12px; min-width: 0; overflow: auto; }
+.voyage-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 0.95em; }
+.voyage-step { font-weight: 600; }
+.voyage-eta, .voyage-dist { opacity: 0.85; }
+.voyage-progress { flex: 1 0 100%; height: 8px; border-radius: 6px; background: var(--panel-sunken, rgba(0,0,0,0.2)); border: 1px solid var(--border); overflow: hidden; }
+.voyage-progress-fill { height: 100%; background: var(--ok); transition: width 0.3s ease; }
+.voyage-tiles { display: flex; flex-wrap: wrap; gap: 8px; }
+.voyage-tile { display: flex; flex-direction: column; gap: 2px; min-width: 130px; flex: 1 1 130px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); text-align: left; }
+.voyage-tile.clickable { cursor: pointer; }
+.voyage-tile.clickable:hover { border-color: var(--accent); }
+.voyage-tile-label { font-size: 0.8em; opacity: 0.8; }
+.voyage-tile-value { font-weight: 600; }
+.voyage-master { flex: 1 1 auto; }
+.voyage-chronicle { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.voyage-day-card { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; text-align: left; cursor: pointer; }
+.voyage-day-card.active { border-color: var(--accent); }
+.voyage-day-card.current { font-style: italic; }
+.voyage-seal { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); font-weight: 700; font-size: 0.85em; }
+.voyage-day-body { display: flex; flex-direction: column; min-width: 0; }
+.voyage-day-title { font-weight: 600; }
+.voyage-day-summary { font-size: 0.82em; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.voyage-detail { min-width: 0; }
+.voyage-hint { opacity: 0.8; font-style: italic; }
+@media (max-width: 700px) {
+  .voyage-chronicle { flex-direction: row; flex-wrap: wrap; }
+  .voyage-day-card { flex: 1 1 140px; }
+}

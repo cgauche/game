@@ -185,6 +185,17 @@ export function autoPolicyOf(s: ArbiterState): AutoPolicy | null {
 }
 
 /**
+ * L'écran-hub de VOYAGE (`VoyageScreen`, #333) est-il la surface active ? Un voyage EN COURS (non
+ * interrompu, hors recap d'arrivée), en exploration, carte fermée, hors combat → le hub plein-champ
+ * HÉBERGE la cascade du jour (rendue EN SON CENTRE, `CascadeBody embedded`) au lieu d'une modale
+ * flottante (le geste anti-tunnel). `ActiveModal` supprime alors la cascade flottante ; la porte de
+ * consultation (Dossier navire, fiches) reste ouvrable par-dessus (règle GÉNÉRALE, pas par-écran). */
+export function voyageHubActive(s: ArbiterState): boolean {
+  return !!s.travelPlan && !s.travelPlan.interrupted && !s.travelRecap
+    && s.mode === 'exploration' && !s.worldMapOpen && !s.battle;
+}
+
+/**
  * Registre des pendings HORS-modale (#284) : pas d'entrée `MODAL_DEFS`, rendus par un ÉCRAN dédié
  * (`ScreenShell`/panneau de jeu) plutôt qu'une modale de combat — marché/butin/victoire/campagne/
  * ciblage carte… Chaque entrée déclare son OWNER coop, MÊME VOCABULAIRE que `ModalDef.owner`

@@ -144,6 +144,10 @@ export interface TravelPlan {
    *  cascade `travelDay` : `continueTravelDayAfterCascade` le relit et le finalise (le `recap` local du
    *  `while` de `runTravelDays` ne survit pas à la suspension). Transitoire — effacé à la finalisation. */
   recap?: TravelRecap;
+  /** CHRONIQUE du voyage (#333) : les journées/Étapes DÉJÀ closes, accumulées à leur halte de nuit
+   *  (`openRest` porte le `travelDay` finalisé). Alimente le journal de voyage de l'écran-hub
+   *  (`VoyageScreen`) — une carte par jour passé. Vidé avec le plan à l'arrivée. */
+  log?: TravelRecapDay[];
 }
 
 /** Entrées d'une journée de route terrestre, figées au build de la cascade `travelDay` : l'horloge/les

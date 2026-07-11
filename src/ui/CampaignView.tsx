@@ -43,6 +43,8 @@ import { SeaActivitiesModal } from './SeaActivitiesModal';
 import { ManannPriestModal } from './ManannPriestModal';
 import { ShoreLeaveModal } from './ShoreLeaveModal';
 import { TravelRecapModal } from './TravelRecapModal';
+import { VoyageScreen } from './VoyageScreen';
+import { voyageHubActive } from '../state/modalArbiter';
 import { placeOfScene } from '../state/worldMap';
 import { restPlacesHere } from '../state/restFlow';
 import { hoverClickCommits } from './pointerCaps';
@@ -109,6 +111,13 @@ export function CampaignView() {
   const [rulesOpen, setRulesOpen] = useState(false); // panneau « Règles maison » (dont Cadence de combat)
   const [optionsOpen, setOptionsOpen] = useState(false); // écran Options (remap clavier)
   const [dossierOpen, setDossierOpen] = useState(false); // dossier du navire persistant (#227, EN et HORS combat)
+  const [voyageMin, setVoyageMin] = useState(false); // écran-hub de voyage RÉDUIT (#333) — forcé ouvert dès qu'une étape attend
+  const pendingCascade = useGame((s) => s.pendingCascade);
+  // Écran-hub de voyage (#333) : actif tout au long d'un voyage EN COURS (source unique `voyageHubActive`).
+  // Réductible pour consulter la scène, mais FORCÉ ouvert dès qu'une étape attend (sinon l'étape incrustée
+  // serait invisible — l'arbitre a déjà supprimé la modale flottante).
+  const voyageHub = voyageHubActive({ travelPlan, travelRecap, mode, worldMapOpen, battle });
+  const showVoyage = voyageHub && (!voyageMin || !!pendingCascade);
   const [sessionOpen, setSessionOpen] = useState(false); // écran de fin de séance (Ambitions/Détermination)
   const inspected = inspectEnabled && inspectId ? battle?.combatants.find((c) => c.id === inspectId) ?? null : null;
   // Dock : version « vivante » des héros en combat (PB/effets à jour), sinon la party.
@@ -228,6 +237,13 @@ export function CampaignView() {
             <Icon id="travel/sail-ship" size="lg" />
           </button>
         )}
+        {/* Écran-hub de voyage RÉDUIT (#333) : le rouvrir (« on pilote un voyage »). Caché tant qu'une
+            étape attend (le hub est alors forcé ouvert). */}
+        {voyageHub && voyageMin && !pendingCascade && (
+          <button type="button" className="worldmap-btn" onClick={() => setVoyageMin(false)} title="Rouvrir l’écran de voyage">
+            <Icon id="travel/sail-ship" size="lg" />
+          </button>
+        )}
         {/* Carte du monde (#T2) : visible en exploration quand la scène est un lieu connu, ou
             qu'un voyage interrompu attend sa reprise. */}
         {mode === 'exploration' && worldMap && (placeOfScene(worldMap, scene?.id) || travelPlan) && (
@@ -302,6 +318,9 @@ export function CampaignView() {
         {port && mode === 'exploration' && <PortView />}
         {/* Dossier du navire (#227) : plein-champ, monté EN et HORS combat (persistant). */}
         {dossierOpen && vessel && <ShipDossier onClose={() => setDossierOpen(false)} />}
+        {/* Écran-hub de voyage (#333) : plein-champ pendant tout voyage EN COURS ; héberge la cascade
+            du jour EN SON CENTRE (l'arbitre supprime la modale flottante). */}
+        {showVoyage && <VoyageScreen onClose={() => setVoyageMin(true)} />}
         {landMarket && mode === 'exploration' && <LandMarketView />}
         {pendingSeaActivities && mode === 'exploration' && <SeaActivitiesModal />}
         {/* Au port ouvert, ces décisions sont surfacées par l'onglet Escale du hub (#228) — pas de double surface. */}

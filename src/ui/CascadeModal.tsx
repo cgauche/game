@@ -45,6 +45,12 @@ export function jetStepPresentable(step: CascadeStep, actor: Combatant | undefin
  * pas d'« Annuler » / pas d'Échap.
  */
 export function CascadeModal() {
+  return <CascadeBody />;
+}
+
+/** Corps de la cascade — `embedded` (#333) bascule chaque `RollShell` en zone embarquée (sans `Modal`)
+ *  pour l'incrustation dans l'écran-hub de voyage. Défaut `false` = modale flottante (inchangé). */
+export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const battle = useGame((s) => s.battle);
   const party = useGame((s) => s.party);
   const p = useGame((s) => s.pendingCascade);
@@ -126,6 +132,7 @@ export function CascadeModal() {
         rolled
         rows={witnessRows(allRows)}
         actions={[{ key: 'finish', label: 'Terminer', onClick: () => finish(), when: 'always' }]}
+        embedded={embedded}
       />
     );
   }
@@ -145,12 +152,12 @@ export function CascadeModal() {
   // enfoncement de porte (multi PARALLÈLE, rangées par participant), incantation (`CastModal` — s'efface
   // pendant un ciblage CARTE (pickingTargets / pose de zone) pour déférer à la carte).
   const JET_RENDERERS: Record<NonNullable<CascadeStep['jet']>, () => JSX.Element | null> = {
-    attack: () => (attackProps ? <RollShell {...attackProps} /> : null),
-    trample: () => (trampleProps ? <RollShell {...trampleProps} /> : null),
-    defense: () => (defenseProps ? <RollShell {...defenseProps} /> : null),
-    fumble: () => (fumbleProps ? <RollShell {...fumbleProps} /> : null),
-    test: () => (testProps ? <RollShell {...testProps} /> : null),
-    extended: () => (extendedProps ? <RollShell {...extendedProps} /> : null),
+    attack: () => (attackProps ? <RollShell {...attackProps} embedded={embedded} /> : null),
+    trample: () => (trampleProps ? <RollShell {...trampleProps} embedded={embedded} /> : null),
+    defense: () => (defenseProps ? <RollShell {...defenseProps} embedded={embedded} /> : null),
+    fumble: () => (fumbleProps ? <RollShell {...fumbleProps} embedded={embedded} /> : null),
+    test: () => (testProps ? <RollShell {...testProps} embedded={embedded} /> : null),
+    extended: () => (extendedProps ? <RollShell {...extendedProps} embedded={embedded} /> : null),
     disengage: () => <DisengageModal />,
     forceDoor: () => <ForceDoorModal />,
     cast: () => (pendingCast && !pendingCast.pickingTargets && !pendingCast.zone?.placing ? <CastModal /> : null),
@@ -180,6 +187,7 @@ export function CascadeModal() {
           postRollExtra={<CriticalBody entry={rev} actor={revActor} subject={revSubject} />}
           actions={[continueAction]}
           disableEscClose
+          embedded={embedded}
         />
       );
     }
@@ -191,6 +199,7 @@ export function CascadeModal() {
         rows={witnessRows([...doneRows, { combatant: actorOf(cur), note: noteFor(cur) }])}
         actions={[continueAction]}
         disableEscClose
+        embedded={embedded}
       />
     );
   }
@@ -232,6 +241,7 @@ export function CascadeModal() {
         }
         actions={[continueAction]}
         disableEscClose
+        embedded={embedded}
       />
     );
   }
@@ -272,6 +282,7 @@ export function CascadeModal() {
         rows={rows}
         actions={batchActions}
         disableEscClose
+        embedded={embedded}
       />
     );
   }
@@ -361,6 +372,7 @@ export function CascadeModal() {
       rows={[...witnessRows(doneRows), curRow]}
       actions={jetActions}
       disableEscClose
+      embedded={embedded}
     />
   );
 }

@@ -290,7 +290,7 @@ const NIGHT_STAKES: Record<string, string> = {
   forcedMarch: "En prenant en compte les temps de repos, les arrêts nécessaires et une topographie standard, un groupe peut voyager l'équivalent de 6 heures par jour sans avoir besoin de Tests de Résistance. S'il voyage plus rapidement ou plus loin, donnez un État *Exténué* à ceux échouant à ce Test, et un État *Exténué* supplémentaire si le Personnage est Encombré.",
   // Fractures Mineure/Majeure — guérison (LDB 18-Traumatisme l.202/212) — verbatim.
   traumaFracture: "**Guérison :** il faudra 30+1d10 jours pour soigner une fracture. À la fin de cette période, un succès obtenu sur un Test de **Résistance Accessible (+20)** indique que l'os s'est remis correctement et que vous ne subirez aucun effet à long terme. Sur un échec, vous subirez une pénalité permanente de -5 à tous vos Tests d'Agilité pour une blessure au Bras, à la Jambe ou au Torse, ou une pénalité permanente de -5 à tous vos Tests de Langue s'il s'agit d'une blessure à la tête mal guérie.\n\n**Majeure :** la guérison est plus longue de 10 jours. Tous les Tests associés sont **Intermédiaires (+0)**. Les pénalités en cas d'échec augmentent à -10.",
-  // Symptômes Blessé et Toxine — Test de cycle quotidien (LDB 20-Maladies l.145/212) — verbatim.
+  // Symptômes Blessé et Toxine — Test de cycle quotidien (LDB 20-Maladies l.145/212-215) — verbatim.
   diseaseTick: "**Blessé :** Chaque jour, réussissez un Test de **Résistance Accessible (+20)** ou subissez une Blessure Purulente si vous n'en avez pas déjà une.\n\n**Toxine :** Effectuez un Test de **Résistance Très Facile (+60)** tous les jours (en général pendant votre sommeil) ou vous mourrez, peut-être dans votre sommeil, ou en délirant de fièvre, ou encore dans la pire agonie.",
   // Symptôme Gangrène (LDB 20-Maladies l.176) — verbatim.
   diseaseGangrene: "Chaque jour, effectuez un Test de **Résistance Accessible (+20)**. Sur un succès, la *Gangrène* est contenue. Sur un échec, elle empire. Si vous obtenez plus d'échecs que votre Bonus d'Endurance, la Localisation devient totalement inutilisable. Si cela se produit, utilisez les mêmes règles que pour l'Amputation (voir Blessures critiques).",
@@ -638,7 +638,13 @@ export function openRest(get: Get, set: Set, opts?: { places?: RestPlaces; quali
     if (h.dead) continue;
     perHero[h.id] = { lodging: lodgingOptions(places)[0], food: foodOptions(places, h)[0] };
   }
-  set({ pendingRest: { places, quality: opts?.quality ?? 'normale', days: Math.max(1, opts?.days ?? 1), perHero, phase: 'setup', travelHalt: opts?.travelHalt, travelDay: opts?.travelDay, travelMarch: opts?.travelMarch } });
+  // CHRONIQUE de voyage (#333) : une halte de voyage porte le jour FINALISÉ — on l'accumule sur le plan
+  // (même `set` que la modale) pour que l'écran-hub (`VoyageScreen`) en tienne le journal (une carte par
+  // jour passé), source unique (STRUCTURE `TravelRecapDay`, jamais une chaîne recomposée). No-op hors halte.
+  const logPatch = opts?.travelDay && st.travelPlan
+    ? { travelPlan: { ...st.travelPlan, log: [...(st.travelPlan.log ?? []), opts.travelDay] } }
+    : {};
+  set({ ...logPatch, pendingRest: { places, quality: opts?.quality ?? 'normale', days: Math.max(1, opts?.days ?? 1), perHero, phase: 'setup', travelHalt: opts?.travelHalt, travelDay: opts?.travelDay, travelMarch: opts?.travelMarch } });
 }
 
 export function restSet(get: Get, set: Set, heroId: string, patch: Partial<{ lodging: RestLodging; food: RestFood }>): void {
