@@ -346,6 +346,12 @@ export function createCombatSlice(get: Get, set: Set) {
       if (get().battle && checkBattleOver(get, set)) return;
       resumeSuspendedAI(get, set); // combat non terminé → reprendre l'IA (conséquence d'attaque)
     }
+    // Filet STRUCTUREL (#345, ronde 3) : tout PURPOSE non routé ci-dessus qui clôt une cascade pendant
+    // qu'un combat est actif re-vérifie `checkBattleOver` ici — inerte hors combat (`get().battle` gate).
+    // Aucun purpose non-combat ne coexiste avec `battle` AUJOURD'HUI (les branches ci-dessus couvrent tout
+    // le trafic actuel), mais un FUTUR purpose ouvert en combat sans son propre branchement retomberait
+    // silencieusement ici plutôt que de laisser une victoire/défaite différée s'évaporer.
+    else if (get().battle && checkBattleOver(get, set)) return;
   };
   return {
     // Peek du planificateur IA exposé au store (convention feuille « tout via get().xxx ») : le hook de
