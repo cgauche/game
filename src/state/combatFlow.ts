@@ -162,6 +162,7 @@ import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import {
   WEATHER_LABEL, weatherRangedMod, weatherRangedUseless, weatherPowderUseless, weatherPhysicalTestMod,
+  weatherLightningNervous,
   type Weather,
 } from '../engine/travelStages';
 import { weaponGroupKey } from '../engine/weaponGroup';
@@ -453,10 +454,27 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
 /** Météo du JOUR de voyage EN COURS (EDOC ch.5) portée par le plan de voyage — contexte de « conditions
  *  du jour » COMMUN aux Activités de l'Étape ET au combat qui s'ouvre pendant la journée (embuscade sous
  *  l'orage). `undefined` hors voyage terrestre / règle Étapes éteinte. SOURCE unique de lecture. */
-function activeDayWeather(get: Get): Weather | undefined {
+export function activeDayWeather(get: Get): Weather | undefined {
   const plan = get().travelPlan;
   const w = plan?.recap?.days[plan.recap.days.length - 1]?.weather ?? get().pendingRest?.travelDay?.weather;
   return w?.id;
+}
+
+/**
+ * Éclairs de la pluie diluvienne (EDOC ch.5 l.82, #341) : à l'OUVERTURE d'un combat pendant un jour de
+ * voyage sous pluie diluvienne (`lightningNervous` en donnée `weather.json`), chaque créature au Trait
+ * Nerveux est effrayée UNE fois (une seule ouverture de combat par embuscade). MÊME dispatcher que le coup
+ * d'arme à feu (bruits forts, l.1936) : le tonnerre est un bruit fort → `startleCause:'noise'`, donc une
+ * monture Dressée (Guerre) est exemptée par la donnée du Trait Nerveux (aucune branche par-nom ici).
+ */
+export function startleOnStormAtCombatStart(get: Get, set: SetFn): void {
+  const battle = get().battle;
+  if (!battle) return;
+  const dayW = activeDayWeather(get);
+  if (!dayW || !weatherLightningNervous(dayW)) return;
+  for (const c of battle.combatants) {
+    if (!isOutOfAction(c)) emitCombatEvent('onStartled', { get, set, battle, self: c, sink: (line) => battle.log.push(ev('condition', line, c.id)), triggerCtx: { startleCause: 'noise' } });
+  }
 }
 
 /** Une arme tire-t-elle à la POUDRE noire (poudre exposée inutilisable sous la pluie diluvienne, EDOC l.82) ? */
@@ -4553,7 +4571,13 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
     // utilisateur) : cadence-aware (héros manuel → cascade influençable). Si une cascade s'ouvre, on DIFFÈRE
     // la victoire — sa fermeture (`combatEndBoundary`) enchaîne sur `finishCombatEnd`/`finishVictory`.
     openCombatEndCascade(get, set);
-    if (get().pendingCascade?.combatEndBoundary) return true; // l'écran de victoire suit la cascade
+    // On DIFFÈRE la victoire tant qu'une cascade est ouverte — la cascade de fin de combat
+    // (`combatEndBoundary`, dont la fermeture enchaîne `finishCombatEnd`→`finishVictory`) MAIS aussi
+    // toute cascade de SETUP non résolue (Surprise, purpose 'combat') : l'écran de victoire (HORS_MODAL)
+    // ne doit jamais s'empiler sur une modale de cascade (doctrine suspension/reprise, cascade.ts). Une
+    // cascade 'combat' non-boundary se dénoue par `resumeSuspendedAI` (combatSlice), qui relance la boucle
+    // → checkBattleOver re-détecte la victoire, slot libre.
+    if (get().pendingCascade) return true; // l'écran de victoire suit la cascade
     finishVictory(get, set);
     return true;
   }

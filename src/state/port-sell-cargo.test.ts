@@ -139,3 +139,78 @@ describe('portSellCargo — cascade Ragot → acheteur → Marchandage (#275/#27
     expect(gainB).toBe(gainA);
   });
 });
+
+/**
+ * ACHAT au port (`portBuyCargo`, #266) — le Marchandage d'achat est SURFACÉ par la même cascade
+ * `openRoll` (hero-test) que la vente, jamais résolu en silence. Chaque test contrôle l'offre + le parti.
+ */
+function setupBuy(party: Combatant[], offerEnc = 20, basePrice = 10): void {
+  seedBattleRng(1);
+  const port = { taille: 4, richesse: 4, production: [] as string[] } as PortProfile;
+  set({
+    party, scene,
+    battle: null,
+    worldMap: { id: 'm', nom: 'x', places: [{ id: 'P', label: 'Port', pos: { x: 0, y: 0 }, scene: 'scene-P', port }], routes: [] },
+    money: { gold: 5000, silver: 0, brass: 0 },
+    vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] }, cargo: [], lastVoyageMilles: 0 },
+    port: { placeId: 'P', label: 'Port', port, freeEnc: 300, maxLoadEnc: 450, offers: [{ cargoId: 'bois', label: 'Bois', enc: offerEnc, basePrice, surplus: false }] },
+    journal: [],
+    pendingCascade: null,
+  } as never);
+}
+
+describe('portBuyCargo — Marchandage d’achat SURFACÉ par cascade openRoll (#266)', () => {
+  beforeEach(() => setRule('test-auto-bands', 'off'));
+  afterEach(() => resetRule('test-auto-bands'));
+
+  it('groupe VIDE (aucun marchandeur) → achat conclu au PRIX PLEIN, aucun jet ouvert', () => {
+    setupBuy([]);
+    const before = get().money.gold;
+    get().portBuyCargo('bois', 10);
+    expect(get().pendingCascade).toBeNull(); // aucune modale — prix plein, pas de Test
+    expect(get().vessel!.cargo).toEqual([{ cargoId: 'bois', enc: 10, basePriceGold: 10 }]);
+    expect(get().money.gold).toBe(before - 100); // 10 Enc × 10 CO, pct 0
+    expect(get().journal.some((l) => /Aucun marchandeur dans le groupe — prix plein/.test(l))).toBe(true);
+  });
+
+  it('marchandeur présent → le Marchandage OUVRE une cascade (jet SURFACÉ, jamais silencieux)', () => {
+    const hero = makePregens()[0];
+    setSkill(hero, 'marchandage', 90);
+    setupBuy([hero]);
+    get().portBuyCargo('bois', 10);
+    // Le Marchandage doit se résoudre dans la modale AVANT tout embarquement : cale intacte, cascade ouverte.
+    expect(get().pendingCascade).not.toBeNull();
+    expect(get().vessel!.cargo).toHaveLength(0);
+  });
+
+  it('marchandeur compétent (skill 90) → Marchandage joué, cargaison embarquée, remise journalisée', async () => {
+    const hero = makePregens()[0];
+    setSkill(hero, 'marchandage', 90);
+    setupBuy([hero]);
+    const before = get().money.gold;
+    get().portBuyCargo('bois', 10);
+    await drain();
+    expect(get().pendingCascade).toBeNull();
+    expect(get().vessel!.cargo).toHaveLength(1);
+    expect(get().money.gold).toBeLessThan(before);
+    expect(get().journal.some((l) => /Marchandage \(/.test(l))).toBe(true);
+  });
+
+  it('déterminisme seedé : rejouer la MÊME graine + même parti produit le MÊME coût', async () => {
+    const hero = makePregens()[0];
+    setSkill(hero, 'marchandage', 90);
+    setupBuy([hero]);
+    get().portBuyCargo('bois', 10);
+    await drain();
+    const spentA = 5000 - get().money.gold;
+
+    const hero2 = makePregens()[0];
+    setSkill(hero2, 'marchandage', 90);
+    setupBuy([hero2]);
+    get().portBuyCargo('bois', 10);
+    await drain();
+    const spentB = 5000 - get().money.gold;
+
+    expect(spentB).toBe(spentA);
+  });
+});

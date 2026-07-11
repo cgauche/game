@@ -626,11 +626,15 @@ export function buildApi() {
         },
       });
       checkBattleOver(() => useGame.getState(), useGame.setState);
-      // La victoire peut ouvrir une cascade de fin de combat (Tests de Résistance maladie/Corruption) AVANT
-      // l'écran de victoire — recette : on la résout d'office (sans influence) pour atteindre la victoire.
-      if (useGame.getState().pendingCascade?.combatEndBoundary) {
+      // Une cascade peut être ouverte AVANT l'écran de victoire : fin de combat (Tests de Résistance
+      // maladie/Corruption, `combatEndBoundary`) OU cascade de SETUP non résolue (Surprise, purpose
+      // 'combat' — #345, la victoire est désormais différée tant qu'UNE cascade est ouverte). Recette : on
+      // draine d'office (sans influence) TOUTE cascade jusqu'à atteindre la victoire, sinon le drive
+      // resterait bloqué sur une modale. Borne dure (la reprise 'combat' relance la boucle checkBattleOver).
+      for (let guard = 0; useGame.getState().pendingCascade && !useGame.getState().battle?.over && guard < 8; guard++) {
         useGame.getState().cascadeResolveAll();
         useGame.getState().cascadeFinish();
+        if (!useGame.getState().battle?.over) checkBattleOver(() => useGame.getState(), useGame.setState);
       }
       return `✓ ${slain.length} ennemi(s) éliminé(s) — ${useGame.getState().battle?.over ?? 'combat en cours'}`;
     },

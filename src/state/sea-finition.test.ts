@@ -259,6 +259,7 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
     const offer = get().port!.offers[0];
     const before = get().money.gold;
     get().portBuyCargo(offer.cargoId, Math.min(10, offer.enc));
+    await drainPortSellCascade(); // #266 — l'achat marchande par cascade (openRoll), comme la vente
     const vessel = get().vessel!;
     expect((vessel.cargo ?? []).length).toBe(1);
     expect(get().money.gold).toBeLessThanOrEqual(before);
@@ -284,12 +285,13 @@ describe('#30 Écran Port — commerce maritime (MDG 15 l.309-399)', () => {
     expect(vesselMaxLoadEnc(get)).toBe(10); // 450 − 440
   });
 
-  it('#243 — l’achat au-delà de la Contenance surcharge (jusqu’à 150 %) et l’avertit ; jamais au-delà du plafond dur', () => {
+  it('#243 — l’achat au-delà de la Contenance surcharge (jusqu’à 150 %) et l’avertit ; jamais au-delà du plafond dur', async () => {
     seedBattleRng(2);
     set({ vessel: { ...get().vessel!, cargo: [{ cargoId: 'bois', enc: 290, basePriceGold: 1 }] }, money: { gold: 100000, silver: 0, brass: 0 } as never });
     get().openPort();
     const offer = get().port!.offers[0]; // production/surplus copieux (Taille 4 + Richesse 4 × d10 × 10)
     get().portBuyCargo(offer.cargoId, 1000); // demande énorme → clampée au plafond dur (450 − 290 = 160)
+    await drainPortSellCascade(); // #266 — Marchandage d'achat SURFACÉ (cascade openRoll)
     const enc = (get().vessel!.cargo ?? []).reduce((s, l) => s + l.enc, 0);
     expect(enc).toBeLessThanOrEqual(450); // jamais au-delà du maximum absolu (150 %)
     expect(enc).toBeGreaterThan(300); // a bien SURchargé (au-delà de la Contenance nominale)

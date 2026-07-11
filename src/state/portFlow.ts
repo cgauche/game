@@ -17,14 +17,15 @@
  * `engine/seaVoyage.rollMerchantOpposition`, moteur pur) sont chacun une étape routée par la policy
  * M/V/I (`resolveSurface`) — chaque continuation ENCHAÎNE l'étape suivante depuis l'applier de la
  * précédente (patron `merchantFlow.ts` Ragot→réassort ; défère via `setTimeout` si la cascade est
- * encore EN COURS de commit, patron `seaVoyageFlow.ts` `sea-desertion`). ACHAT (`portBuyCargo`) et
- * BRADAGE (`portDumpCargo`) restent SYNCHRONES (`opposedTest` direct) — hors périmètre de ce geste,
- * aucun `rollTest`/`d100` inline n'y est présent (non capté par le garde #274).
+ * encore EN COURS de commit, patron `seaVoyageFlow.ts` `sea-desertion`). ACHAT (`portBuyCargo`, #266)
+ * suit le MÊME patron : le Marchandage d'achat s'ouvre par `openRoll` (hero-test) — SURFACÉ comme la
+ * vente, jamais un jet interne silencieux. Seul le BRADAGE (`portDumpCargo`) reste synchrone (¼ du prix,
+ * aucun Test de Marchandage au RAW, MDG 15 l.399).
  */
 import { battleRng } from './battleRng';
 import { placeOfScene, placeById } from './worldMap';
 import { partyAssisted } from '../engine/skills';
-import { opposedTest, resolveOpposed, SL_ASTOUNDING, type TestResult } from '../engine/tests';
+import { resolveOpposed, SL_ASTOUNDING, type TestResult } from '../engine/tests';
 import { hasBargainBonus } from '../engine/combatFeatures/dispatch';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO, canAfford, subtract, toMoney, priceToMoney } from '../engine/money';
 import { findVehicleById, findCrewRoleById } from '../data';
@@ -137,10 +138,42 @@ function bargainPct(winnerNegotiator: boolean, netSL: number): number {
   return winnerNegotiator || netSL >= SL_ASTOUNDING ? 20 : 10;
 }
 
-/** ACHAT d'une cargaison (l.319-349) : prix = Enc × prix de base, modulé par le Marchandage opposé
- *  (vendeur NPC +DR de lot partiel/Surplus, l.339-341). Débité, ajouté à la cale (Enc plafonné par le
- *  plafond DUR de surcharge, MDG 12 l.75 : Contenance × 150 %). Un achat au-delà de la Contenance nominale
- *  AVERTIT du palier de surcharge atteint (#243). Rafraîchit l'offre restante. */
+/** Finalise l'ACHAT une fois le Marchandage résolu (pct connu) : prix = Enc × prix de base × (1 + pct %),
+ *  débité, cargaison ajoutée à la cale (Enc re-clampé au plafond DUR de surcharge, MDG 12 l.75), offre
+ *  rafraîchie. SOURCE UNIQUE du dénouement, partagée par le chemin SANS marchandeur (prix plein, pct 0)
+ *  et l'applier `PORT_BUY_BARGAIN_KIND`. Renvoie les lignes de journal (refus si bourse insuffisante ou
+ *  état changé ; ligne d'avertissement de surcharge, MDG 12 l.70-75, ajoutée le cas échéant). */
+function finalizePortBuy(get: Get, set: Set, cargoId: string, want: number, basePrice: number, pct: number, bargainLine: string): string[] {
+  const st = get().port;
+  const vessel = get().vessel;
+  if (!st || !vessel) return [];
+  const offer = st.offers.find((o) => o.cargoId === cargoId);
+  if (!offer) return [];
+  const enc = Math.max(0, Math.min(want, offer.enc, vesselMaxLoadEnc(get)));
+  if (enc <= 0) return ['La cale a atteint le maximum absolu (surcharge de 150 %) ou la cargaison est épuisée — rien à embarquer.'];
+  const price = Math.max(0, Math.round(enc * basePrice * (1 + pct / 100)));
+  const cost = toMoney({ gold: price });
+  if (!canAfford(get().money, cost)) return [`La bourse ne couvre pas ${price} CO de ${offer.label} — ${bargainLine}`];
+  const cargo: CargoLot = { cargoId, enc, basePriceGold: basePrice };
+  const nextCargo = [...(vessel.cargo ?? []), cargo];
+  set({
+    money: subtract(get().money, cost)!,
+    vessel: { ...vessel, cargo: nextCargo },
+    port: { ...st, freeEnc: Math.max(0, st.freeEnc - enc), maxLoadEnc: st.maxLoadEnc - enc, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, enc: o.enc - enc } : o).filter((o) => o.enc > 0) },
+  });
+  const lines = [`${enc} Enc de ${offer.label} embarqués — ${bargainLine} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`];
+  // Surcharge de la cale (MDG 12 l.70-75) : au-delà de la Contenance nominale, avertir du palier d'assiette.
+  const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
+  const over = cargoOverload(cargoTotalEnc(nextCargo), capacity);
+  if (over.palierId) lines.push(`Cale SURCHARGÉE (${over.ratioPct} % de la Contenance) : ${over.label} — ${over.mMod} M, ${over.manoeuvreDR} DR Manœuvre (MDG 12 l.70-75).`);
+  return lines;
+}
+
+/** ACHAT d'une cargaison (l.319-349) : prix = Enc × prix de base, modulé par le Marchandage OPPOSÉ (#266)
+ *  — SURFACÉ par `openRoll` (hero-test « Marchandage — achat ») comme la vente, jamais un jet interne.
+ *  Le marchand roule via `rollMerchantOpposition` (moteur pur, appelé par l'applier) ; le vendeur NPC porte
+ *  ses +DR de lot partiel/Surplus (l.339-341). Sans marchandeur dans le groupe, l'achat se conclut au prix
+ *  plein (aucun jet). Débité, ajouté à la cale plafonnée à 150 % (MDG 12 l.75). */
 export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): void {
   const st = get().port;
   const vessel = get().vessel;
@@ -150,40 +183,46 @@ export function portBuyCargo(get: Get, set: Set, cargoId: string, enc: number): 
   const want = Math.max(0, Math.min(Math.floor(enc), offer.enc, vesselMaxLoadEnc(get)));
   if (want <= 0) { log(get, set, ['La cale a atteint le maximum absolu (surcharge de 150 %) ou la cargaison est épuisée — rien à embarquer.']); return; }
   const partial = want < offer.enc;
-  const rng = battleRng();
   const best = partyAssisted(get().party, 'marchandage');
-  const merchant = rollMerchantSkill(!!st.port.cosmopolite, rng);
-  // Test opposé : le vendeur NPC porte ses +DR de vente (lot partiel / Surplus) sur SON DR (l.339-341).
-  const sellerDR = buySellerDR(partial, offer.surplus);
-  const opp = best ? opposedTest(best.value, merchant.value, rng, 'intermediaire', 'intermediaire') : null;
-  let pct = 0; // % appliqué au prix (négatif = remise pour l'acheteur)
-  let bargainLine = 'Aucun marchandeur dans le groupe — prix plein.';
-  if (opp && best) {
-    // +DR de vendeur : ajoutés au DR du NPC (défenseur). Vainqueur re-calculé sur les DR ajustés.
-    const buyerSL = opp.attacker.sl;
-    const npcSL = opp.defender.sl + sellerDR;
-    const buyerWins = buyerSL > npcSL || (buyerSL === npcSL && best.value > merchant.value);
-    const netSL = Math.abs(buyerSL - npcSL);
-    if (buyerWins) pct = -bargainPct(hasBargainBonus(best.actor), netSL); // remise à l'acheteur
-    else if (npcSL > buyerSL) pct = bargainPct(merchant.negotiator, netSL); // le vendeur monte le prix
-    bargainLine = `${best.actor.name} — Marchandage (${opp.attacker.roll} vs ${opp.defender.roll}${sellerDR ? `, vendeur +${sellerDR} DR` : ''}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
+  // Toujours tiré (même sans marchandeur) — parité RNG avec la vente (la porte du seam ne touche pas le rng).
+  const merchant = rollMerchantSkill(!!st.port.cosmopolite, battleRng());
+  if (!best) {
+    log(get, set, finalizePortBuy(get, set, cargoId, want, offer.basePrice, 0, 'Aucun marchandeur dans le groupe — prix plein.'));
+    return;
   }
-  const price = Math.max(0, Math.round(want * offer.basePrice * (1 + pct / 100)));
-  const cost = toMoney({ gold: price });
-  if (!canAfford(get().money, cost)) { log(get, set, [`La bourse ne couvre pas ${price} CO de ${offer.label}.`]); return; }
-  const cargo: CargoLot = { cargoId, enc: want, basePriceGold: offer.basePrice };
-  const nextCargo = [...(vessel.cargo ?? []), cargo];
-  set({
-    money: subtract(get().money, cost)!,
-    vessel: { ...vessel, cargo: nextCargo },
-    port: { ...st, freeEnc: Math.max(0, st.freeEnc - want), maxLoadEnc: st.maxLoadEnc - want, offers: st.offers.map((o) => o.cargoId === cargoId ? { ...o, enc: o.enc - want } : o).filter((o) => o.enc > 0) },
-  });
-  log(get, set, [`${want} Enc de ${offer.label} embarqués — ${bargainLine} Prix payé : ${formatMoney(fromBrass(toBrass(cost)))}.`]);
-  // Surcharge de la cale (MDG 12 l.70-75) : au-delà de la Contenance nominale, avertir du palier d'assiette.
-  const capacity = findVehicleById(vessel.vehicleId)?.ship?.capacity ?? 0;
-  const over = cargoOverload(cargoTotalEnc(nextCargo), capacity);
-  if (over.palierId) log(get, set, [`Cale SURCHARGÉE (${over.ratioPct} % de la Contenance) : ${over.label} — ${over.mMod} M, ${over.manoeuvreDR} DR Manœuvre (MDG 12 l.70-75).`]);
+  // Le vendeur NPC porte ses +DR de vente (lot partiel / Surplus) sur SON DR (l.339-341).
+  const sellerDR = buySellerDR(partial, offer.surplus);
+  openRoll(get, set, {
+    side: { partyBest: { skill: 'marchandage' } },
+    test: { skill: 'marchandage', label: 'Marchandage — achat' },
+    difficulty: 'intermediaire',
+    klass: 'hero-test',
+  }, PORT_BUY_BARGAIN_KIND, { cargoId, want, basePrice: offer.basePrice, merchantValue: merchant.value, merchantNegotiator: merchant.negotiator, sellerDR });
 }
+
+const PORT_BUY_BARGAIN_KIND = 'port-buy-bargain';
+registerCascadeApplier(PORT_BUY_BARGAIN_KIND, (get, set, step) => {
+  if (!step.result) return {};
+  const cargoId = String(step.meta?.cargoId ?? '');
+  const want = Number(step.meta?.want ?? 0);
+  const basePrice = Number(step.meta?.basePrice ?? 0);
+  const merchantValue = Number(step.meta?.merchantValue ?? 0);
+  const merchantNegotiator = !!step.meta?.merchantNegotiator;
+  const sellerDR = Number(step.meta?.sellerDR ?? 0);
+  const actor = step.actorId ? actorIn(get(), step.actorId) : undefined;
+  const heroTR: TestResult = { roll: step.result.roll, target: step.result.target, success: step.result.success, sl: step.result.sl, isDouble: false };
+  const merchantRoll = rollMerchantOpposition(merchantValue, battleRng());
+  const opp = resolveOpposed(heroTR, merchantRoll);
+  const buyerSL = opp.attacker.sl;
+  const npcSL = opp.defender.sl + sellerDR; // +DR du vendeur NPC (l.339-341)
+  const buyerWins = buyerSL > npcSL || (buyerSL === npcSL && heroTR.target > merchantRoll.target);
+  const netSL = Math.abs(buyerSL - npcSL);
+  let pct = 0; // % appliqué au prix (négatif = remise pour l'acheteur)
+  if (buyerWins) pct = -bargainPct(actor ? hasBargainBonus(actor) : false, netSL); // remise à l'acheteur
+  else if (npcSL > buyerSL) pct = bargainPct(merchantNegotiator, netSL); // le vendeur monte le prix
+  const bargainLine = `${actor?.name ?? '?'} — Marchandage (${heroTR.roll} vs ${merchantRoll.roll}${sellerDR ? `, vendeur +${sellerDR} DR` : ''}) : ${pct === 0 ? 'prix inchangé' : pct < 0 ? `remise de ${-pct} %` : `surcoût de ${pct} %`}.`;
+  return { consequences: freeCons(finalizePortBuy(get, set, cargoId, want, basePrice, pct, bargainLine)) };
+});
 
 /** Ouvre la cascade différée si la cascade EN COURS n'a pas fini de committer son étape (patron
  *  `seaVoyageFlow.ts` `sea-desertion`) — sinon exécute directement (chemin inline/immédiat). */

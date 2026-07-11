@@ -8,18 +8,12 @@ import type { Combatant } from '../engine/types';
 import type { PendingCascade } from './pendings';
 
 /**
- * F3 (recette 2026-07-11) — REPRO + DIAGNOSTIC, PAS de fix (l'arbitre `modalArbiter`/`ActiveModal` est le
- * territoire d'un autre codeur). Après une embuscade EXPÉDIÉE (`__wfrp.killEnemies`), la modale « Surprise »
- * restait affichée SOUS l'écran de Victoire (clic intercepté). Ce test reproduit la co-existence AU NIVEAU
- * STATE : un Test de Surprise (`pendingCascade`, purpose 'combat', NON `combatEndBoundary`) encore ouvert
- * quand la mort du dernier ennemi ouvre la Victoire.
- *
- * VERDICT (cf. rendu) : `checkBattleOver` (combatFlow.ts ~4551-4557) ne DIFFÈRE la Victoire QUE pour une
- * cascade `combatEndBoundary`. Une cascade de SETUP (Surprise, ouverte au DÉBUT du combat) n'est pas
- * couverte → `finishVictory` s'ouvre par-dessus. En jeu NORMAL la Surprise se résout à l'ouverture du
- * combat AVANT tout coup, donc Victoire et Surprise ne coexistent jamais : c'est `killEnemies()` (triche)
- * qui saute l'ordre Surprise→combat→victoire. Défaut LATENT réel néanmoins : `finishVictory` s'ouvre
- * au-dessus de N'IMPORTE quelle cascade non résolue, pas seulement `combatEndBoundary`.
+ * F3 (recette 2026-07-11, #345) — VERROU de l'ordonnancement : `checkBattleOver` DIFFÈRE la Victoire tant
+ * qu'UNE cascade est ouverte, pas seulement une cascade `combatEndBoundary`. Une cascade de SETUP
+ * (Surprise, purpose 'combat', ouverte au DÉBUT du combat) encore pendante quand la mort du dernier ennemi
+ * remplit la condition de victoire ne doit PAS voir l'écran de Victoire (HORS_MODAL) s'empiler par-dessus
+ * sa modale (clic intercepté) — doctrine suspension/reprise (cascade.ts). En jeu normal la Surprise se
+ * résout AVANT tout coup ; c'est `killEnemies()` (triche) qui expose la co-existence latente.
  */
 const get = useGame.getState;
 const set = useGame.setState;
@@ -40,7 +34,7 @@ describe('F3 — Surprise (cascade de setup) vs Victoire : ordonnancement de che
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ scene: null, battle: null, pendingVictory: null, pendingCascade: null }); });
   afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); });
 
-  it('mort du dernier ennemi avec une Surprise PENDANTE → Victoire ouverte PAR-DESSUS (les deux coexistent)', () => {
+  it('mort du dernier ennemi avec une Surprise PENDANTE → Victoire DIFFÉRÉE (cascade seule à l\'écran)', () => {
     const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(1) });
     const heroClone = { ...hero, kind: 'hero' as const };
     useGame.setState({
@@ -51,19 +45,18 @@ describe('F3 — Surprise (cascade de setup) vs Victoire : ordonnancement de che
       pendingCascade: surpriseCascade(hero.id),
     });
 
-    checkBattleOver(get, set);
+    const ended = checkBattleOver(get, set);
 
-    // DÉFAUT REPRODUIT : la Victoire s'est ouverte alors que la Surprise (purpose 'combat', non
-    // combatEndBoundary) est TOUJOURS pendante → l'écran de Victoire (HORS_MODAL) et la cascade Surprise
-    // (MODAL) vivent en même temps (empilement z, clic intercepté).
-    expect(get().battle!.over).toBe('victory');
-    expect(get().pendingVictory).toBeTruthy();
+    // FIX #345 : la Victoire est DIFFÉRÉE tant que la Surprise (purpose 'combat', non combatEndBoundary)
+    // est pendante — pas de `battle.over`, pas de `pendingVictory`. La cascade reste la SEULE surface.
+    expect(ended).toBe(true);       // `checkBattleOver` a bien statué (victoire différée), la boucle s'arrête
+    expect(get().battle!.over).toBeNull();
+    expect(get().pendingVictory).toBeNull();
     expect(get().pendingCascade).toBeTruthy();
     expect(get().pendingCascade!.purpose).toBe('combat');
     expect(get().pendingCascade!.participants[0].kind).toBe('surpriseTest');
 
-    // L'arbitre offre bien la cascade Surprise (`pendingVictory` est HORS_MODAL, rendu par un écran séparé,
-    // non masquant côté registre) → confirme la DOUBLE surface simultanée.
+    // L'arbitre n'offre QUE la cascade Surprise (aucun écran de Victoire empilé par-dessus).
     expect(pickActiveModalKey(get())).toBe('cascade');
   });
 });
