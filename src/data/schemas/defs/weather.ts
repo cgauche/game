@@ -1,29 +1,65 @@
 /**
- * Schéma de `weather.json` — table de Météo de voyage par saison (EDOC ch.5), consommé par
- * `src/data/index.ts:1389` et typé par `engine/travelStages.ts` (`Weather`, `WEATHER_LABEL`,
- * `WEATHER_TABLE`). `ranges` = plages d100 croissantes (`max` = borne haute incluse) → `weather`,
- * lookup via `findTableEntry`-like (`rollStageWeather`). `weather` enum = EXACTEMENT
- * `engine/travelStages.ts:46` (`type Weather`).
+ * Schéma de `weather.json` — Météo de voyage TERRESTRE (EDOC ch.5), consommée par
+ * `src/data/index.ts` et typée par `engine/travelStages.ts` (`Weather`, `WEATHER_LABEL`,
+ * `WEATHER_TABLE`, `WeatherCondition`). Deux volets :
+ *  - `seasons` : table de tirage d100 par saison (`ranges.max` = borne haute incluse → `weather`,
+ *    lookup via `rollStageWeather`) ;
+ *  - `conditions` : EFFETS par météo, MÊME vocabulaire de donnée que `sea-weather.json`
+ *    (`visibiliteM`/`rangedMod` étendus des besoins terrestres : `physicalTestMod`, `powderUseless`,
+ *    `rangedUseless`, `movementWalkOnly`, `resistanceTest`, `lightningNervous`).
+ * `weather` enum = EXACTEMENT `engine/travelStages.ts` (`type Weather`).
  */
 import { z } from 'zod';
-import { sourceRefSchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../common';
 
 export const file = 'weather.json';
 
 const weatherIdSchema = z.enum(['sec', 'beau', 'pluie', 'pluie-diluvienne', 'neige', 'blizzard']);
 
-export const schema = z.array(
-  z.strictObject({
-    id: z.string(),
-    label: z.string(),
-    ranges: z.array(
-      z.strictObject({
-        max: z.number(),
-        weather: weatherIdSchema,
-      }),
-    ),
-    source: sourceRefSchema.optional(),
-  }),
-);
+export const schema = z.strictObject({
+  seasons: z.array(
+    z.strictObject({
+      id: z.string(),
+      label: z.string(),
+      ranges: z.array(
+        z.strictObject({
+          max: z.number(),
+          weather: weatherIdSchema,
+        }),
+      ),
+      source: sourceRefSchema.optional(),
+    }),
+  ),
+  /** Liste MAISON des Caractéristiques réputées « physiques » (EDOC ch.5 l.82 ne la définit pas). */
+  physicalTestChars: z.array(z.string()),
+  physicalTestCharsSource: sourceRefSchema.optional(),
+  conditions: z.array(
+    z.strictObject({
+      id: weatherIdSchema,
+      label: z.string(),
+      /** Description VERBATIM (Markdown) de la source — rendue par `<Prose>` (règle 5). */
+      desc: z.string().optional(),
+      /** Visibilité en mètres (0 ≈ nulle) — plafonne la portée du tir en combat. */
+      visibiliteM: z.number().optional(),
+      /** Pénalité aux armes à DISTANCE (combat). */
+      rangedMod: z.number().optional(),
+      /** Armes à distance INUTILES (blizzard). */
+      rangedUseless: z.boolean().optional(),
+      /** Poudre à canon exposée inutilisable (pluie diluvienne). */
+      powderUseless: z.boolean().optional(),
+      /** Pénalité à tous les Tests PHYSIQUES (caracs de `physicalTestChars`). */
+      physicalTestMod: z.number().optional(),
+      /** Mouvement plafonné à la marche (neige/blizzard). */
+      movementWalkOnly: z.boolean().optional(),
+      /** Animaux au Trait Nerveux effrayables par les éclairs (pluie diluvienne). */
+      lightningNervous: z.boolean().optional(),
+      /** Test de Résistance de traversée (ou État) — DISTINCT de l'Exposition de fin d'Étape. */
+      resistanceTest: z
+        .strictObject({ difficulty: difficultySchema, onFail: z.enum(['extenue']) })
+        .optional(),
+      source: sourceRefSchema.optional(),
+    }),
+  ),
+});
 
 export type WeatherData = z.infer<typeof schema>;

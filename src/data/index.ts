@@ -1490,8 +1490,24 @@ export const calendarMonths = calendarMonthsJson as { name: string; days: number
 export const calendarIntercalary = calendarIntercalaryJson as { name: string; afterMonth: number }[];
 export const calendarWeekdays = calendarWeekdaysJson as { name: string }[];
 export const calendarPhases = calendarPhasesJson as { key: string; start: number; label: string; icon: string }[];
-/** Table de Météo de voyage (EDOC ch.5) — 1 entrée par saison, `ranges` = plages d100 → météo. Éditable au Codex. */
-export const weather = weatherJson as { id: string; label: string; ranges: { max: number; weather: string }[] }[];
+/** Table de Météo de voyage TERRESTRE (EDOC ch.5). `seasons` = plages d100 → météo par saison ;
+ *  `conditions` = EFFETS par météo (mêmes formes de donnée que `sea-weather.json`). Éditable au Codex. */
+const weatherData = weatherJson as {
+  seasons: { id: string; label: string; ranges: { max: number; weather: string }[] }[];
+  physicalTestChars: string[];
+  conditions: {
+    id: string; label: string; desc?: string;
+    visibiliteM?: number; rangedMod?: number; rangedUseless?: boolean; powderUseless?: boolean;
+    physicalTestMod?: number; movementWalkOnly?: boolean; lightningNervous?: boolean;
+    resistanceTest?: { difficulty: string; onFail: 'extenue' };
+  }[];
+};
+/** 1 entrée par saison, `ranges` = plages d100 → météo (lecture par `rollStageWeather`). */
+export const weather = weatherData.seasons;
+/** Effets par météo (visibilité, mods de tir, poudre, Tests physiques, plafond de mouvement…). */
+export const weatherConditions = weatherData.conditions;
+/** Caractéristiques réputées « physiques » (liste MAISON, EDOC ch.5 l.82 non chiffrée). */
+export const weatherPhysicalTestChars = weatherData.physicalTestChars;
 export const details = detailsJson as DetailsData;
 export const stars = starsJson as StarData[];
 /** Les 5 demeures célestes (ADE2 ch.03 l.502-512, « Déterminer les demeures célestes ») — ossature

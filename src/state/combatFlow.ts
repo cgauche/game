@@ -160,6 +160,11 @@ import { warMachineFireWeapon, warMachineCrewRequired, warMachineCrewPenalty } f
 import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
+import {
+  WEATHER_LABEL, weatherRangedMod, weatherRangedUseless, weatherPowderUseless, weatherPhysicalTestMod,
+  type Weather,
+} from '../engine/travelStages';
+import { weaponGroupKey } from '../engine/weaponGroup';
 import { moveReachFor, flyReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt } from './path';
 import { chooseEnemyAction, consumeAiRanking, type EnemyAction, type EnemyTurnInput, type CastableSpell, type AiCandTrace } from './ai';
 import { resolveRun } from '../engine/movement';
@@ -445,6 +450,21 @@ export function applySurprise(get: Get, set: SetFn, surprisedSide: 'party' | 'en
  *  « Tirer dans le tas », dodge météo) — l'aperçu n'utilise que `env`/`blocked`. */
 // seesInDark → combatGeometry.ts
 
+/** Météo du JOUR de voyage EN COURS (EDOC ch.5) portée par le plan de voyage — contexte de « conditions
+ *  du jour » COMMUN aux Activités de l'Étape ET au combat qui s'ouvre pendant la journée (embuscade sous
+ *  l'orage). `undefined` hors voyage terrestre / règle Étapes éteinte. SOURCE unique de lecture. */
+function activeDayWeather(get: Get): Weather | undefined {
+  const plan = get().travelPlan;
+  const w = plan?.recap?.days[plan.recap.days.length - 1]?.weather ?? get().pendingRest?.travelDay?.weather;
+  return w?.id;
+}
+
+/** Une arme tire-t-elle à la POUDRE noire (poudre exposée inutilisable sous la pluie diluvienne, EDOC l.82) ? */
+function isBlackPowderWeapon(w: Weapon): boolean {
+  const k = weaponGroupKey(w);
+  return k === 'poudre' || k === 'ingenierie';
+}
+
 export interface AttackEnv { env: ModLine[]; blocked: boolean; inMelee: boolean; crowd: Combatant[]; cm: ModLine | null; sc: ReturnType<typeof sceneCombatModifiers>; flankRear?: boolean; }
 export function attackEnv(
   get: Get,
@@ -456,6 +476,7 @@ export function attackEnv(
   const scene = get().scene!;
   const battle = get().battle!;
   const sc = sceneCombatModifiers(scene, get().gameTime);
+  const dayW = activeDayWeather(get);
   const env: ModLine[] = [];
   // Empoignade (LDB 14 l.169) : un attaquant NON partie à l'Empoignade gagne +20 (cible au plus FAIBLE
   // Avantage des deux Empoignés) ou +10 (au plus FORT) pour la toucher — mêlée comme tir.
@@ -470,6 +491,15 @@ export function attackEnv(
     const losTo = isStructure(target) ? structureAimCell(attacker.pos!, target) : target.pos!;
     const los = lineOfSightCover(scene, attacker.pos!, losTo, occupants, smokeOf(battle));
     if (los.blocked) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc }; // pas de LdV (LDB 13 l.123)
+    // Météo du JOUR (EDOC ch.5) : le tir sous l'orage encaisse la pénalité de temps (Pluie -10 l.76,
+    // Pluie diluvienne -20 l.82), la poudre EXPOSÉE meurt (l.82), le Blizzard rend le tir impossible
+    // (l.127) — MÊME contexte de « conditions du jour » que les Activités de l'Étape.
+    if (dayW) {
+      if (weatherRangedUseless(dayW)) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc };
+      if (weatherPowderUseless(dayW) && isBlackPowderWeapon(weapon)) return { env, blocked: true, inMelee: false, crowd: [], cm: null, sc };
+      const rm = weatherRangedMod(dayW);
+      if (rm) env.push({ label: `Météo : ${WEATHER_LABEL[dayW]}`, value: rm });
+    }
     // Commandant d'équipe (AA l.4373-4379) : un chef de pièce dirigé tire au score de Projectiles de son
     // commandant — re-validé ICI (vivant + à portée de voix) → un delta sur la base du chef (aperçu ET résolution).
     const tcMod = teamCommandMod(attacker, weapon, battle.combatants);
@@ -509,6 +539,12 @@ export function attackEnv(
   }
   // Mêlée : la météo (tempête/neige) pénalise l'attaque ; la neige pénalise aussi l'esquive (dodgeMod).
   if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
+  // Météo du JOUR (EDOC ch.5) : le Corps à corps est un Test de CC (physique) → la pénalité « Tests
+  // physiques » de la pluie diluvienne s'y applique (l.82), MÊME contexte que les Activités du jour.
+  if (dayW) {
+    const pm = weatherPhysicalTestMod(dayW, 'capacite-de-combat');
+    if (pm) env.push({ label: `Météo : ${WEATHER_LABEL[dayW]}`, value: pm });
+  }
   // Flanc/dos (LDB 14 l.91) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —
   // orientation du défenseur AVANT cette attaque (il se retourne vers l'attaquant ENSUITE, applyAttackResult).
   const tFacing = get().facing?.[target.id]; // `facing` peut être absent (état épars / contexte sans orientation)

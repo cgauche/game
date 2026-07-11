@@ -59,6 +59,7 @@ export const schema = z.array(
     freeSkill: z.boolean().optional(),
     extended: z.strictObject({ drPerStage: z.number() }).optional(),
     failExtenue: z.boolean().optional(),
+    weatherMod: z.record(z.string(), z.number()).optional(),
     resolver: z.string().optional(),
     onSuccess: z.array(gameOpSchema).optional(),
     desc: z.string().optional(),

@@ -32,7 +32,7 @@ import { freeCons, resultLine, type Consequence } from './rollSeam';
 import { t } from '../i18n';
 import { rule } from '../engine/policy';
 import {
-  stageCount, pleinAirModifier, forageWeatherModifier, forageYield, stageExposureDifficulty,
+  stageCount, forageYield, stageExposureDifficulty,
   isColdSeason, WEATHER_LABEL, type Weather, type Season,
 } from '../engine/travelStages';
 import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '../engine/exposure';
@@ -74,11 +74,10 @@ function freeSkillFromMeta(meta?: CascadeStepMeta): SkillRef | undefined {
   return typeof id === 'string' ? { skillId: id, spec: typeof meta?.freeSkillSpec === 'string' ? meta.freeSkillSpec : undefined } : undefined;
 }
 
-/** Modificateur météo PAR activité : Plein air (l.141) et Approvisionnement (l.56) seulement. */
+/** Modificateur météo au Test d'une Activité — DONNÉE (`ActivityDef.weatherMod`, plus d'`id` en dur) :
+ *  Plein air (l.106) / Approvisionnement (l.56) portent leur table météo ; les autres n'en ont pas. */
 function weatherModOf(def: ActivityDef, weather: Weather): number {
-  return def.id === 'plein-air' ? pleinAirModifier(weather)
-    : def.id === 'approvisionnement' ? forageWeatherModifier(weather)
-      : 0;
+  return def.weatherMod?.[weather] ?? 0;
 }
 
 /**

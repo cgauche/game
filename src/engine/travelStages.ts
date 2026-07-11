@@ -14,9 +14,9 @@
  */
 import type { RNG } from './dice';
 import { d100 } from './dice';
-import type { Difficulty } from './types';
+import type { CharKey, Difficulty } from './types';
 import { rule } from './policy';
-import { weather } from '../data';
+import { weather, weatherConditions, weatherPhysicalTestChars } from '../data';
 
 /** Les quatre saisons du tableau de Météo (EDOC ch.5 l.44). */
 export type Season = 'printemps' | 'ete' | 'automne' | 'hiver';
@@ -159,22 +159,78 @@ export function isColdSeason(season: Season): boolean {
   return COLD_SEASONS.includes(season);
 }
 
-/**
- * Malus de l'activité Plein Air (EDOC ch.5 l.106) : « Test de Survie en extérieur Intermédiaire (+0),
- * modifié de -10 par degré de temps éloigné de Beau temps ». Le « degré » se compte sur l'ordre de la
- * colonne météo (Beau = 0). Un Plein Air réussi DISPENSE le groupe du Test d'Exposition de l'Étape.
- */
-const WEATHER_DEGREE: Record<Weather, number> = {
-  beau: 0, sec: 1, pluie: 1, 'pluie-diluvienne': 2, neige: 2, blizzard: 3,
-};
-export function pleinAirModifier(weather: Weather): number {
-  return -10 * WEATHER_DEGREE[weather] || 0; // `|| 0` normalise le -0 de JS (beau temps)
+// ── EFFETS de la météo (EDOC ch.5) — DONNÉE (`weather.json` conditions), MÊME vocabulaire que
+//    `sea-weather.json`. Lecture par les readers ci-dessous ; aucun `switch (weather)` en code. ──
+
+/** Effets d'une météo terrestre (donnée `weather.json` conditions). Enrichit `Weather` d'un id lisible. */
+export interface WeatherCondition {
+  id: Weather;
+  label: string;
+  desc?: string;
+  /** Visibilité en mètres (0 ≈ nulle) — plafonne la portée du tir en combat (l.76/82/86/127). */
+  visibiliteM?: number;
+  /** Pénalité aux armes à distance en combat (Pluie -10 l.76, Pluie diluvienne -20 l.82). */
+  rangedMod?: number;
+  /** Armes à distance INUTILES (Blizzard l.127). */
+  rangedUseless?: boolean;
+  /** Poudre à canon exposée inutilisable (Pluie diluvienne l.82). */
+  powderUseless?: boolean;
+  /** Pénalité à tous les Tests physiques (Pluie diluvienne l.82) — caracs de `weatherPhysicalTestChars`. */
+  physicalTestMod?: number;
+  /** Mouvement plafonné à la marche (Neige l.86, Blizzard l.127). */
+  movementWalkOnly?: boolean;
+  /** Animaux au Trait Nerveux effrayables par les éclairs (Pluie diluvienne l.82). */
+  lightningNervous?: boolean;
+  /** Test de Résistance de traversée ou État — DISTINCT de l'Exposition de fin d'Étape (Neige l.86, Blizzard l.127). */
+  resistanceTest?: { difficulty: Difficulty; onFail: 'extenue' };
 }
 
-/** Malus de l'activité Approvisionnement par temps sec (l.56) : « -10, car il est plus difficile de
- *  trouver de l'eau ». Aucun autre temps n'est chiffré pour l'Approvisionnement. */
-export function forageWeatherModifier(weather: Weather): number {
-  return weather === 'sec' ? -10 : 0;
+const WEATHER_CONDITION: Record<Weather, WeatherCondition> =
+  Object.fromEntries(weatherConditions.map((c) => [c.id, c])) as Record<Weather, WeatherCondition>;
+
+/** Effets de la météo `w` (lecture LIVE de la donnée éditable au Codex). */
+export function weatherCondition(w: Weather): WeatherCondition {
+  return (weatherConditions.find((c) => c.id === w) as WeatherCondition | undefined) ?? WEATHER_CONDITION[w] ?? { id: w, label: WEATHER_LABEL[w] };
+}
+
+/** Pénalité aux armes à distance en combat sous la météo `w` (0 si aucune). */
+export function weatherRangedMod(w: Weather): number {
+  return weatherCondition(w).rangedMod ?? 0;
+}
+/** Armes à distance inutiles sous la météo `w` (Blizzard) ? */
+export function weatherRangedUseless(w: Weather): boolean {
+  return !!weatherCondition(w).rangedUseless;
+}
+/** Poudre à canon exposée inutilisable sous la météo `w` (Pluie diluvienne) ? */
+export function weatherPowderUseless(w: Weather): boolean {
+  return !!weatherCondition(w).powderUseless;
+}
+/** Visibilité (mètres) sous la météo `w` — `undefined` si dégagée. */
+export function weatherVisibiliteM(w: Weather): number | undefined {
+  return weatherCondition(w).visibiliteM;
+}
+/** Mouvement plafonné à la marche sous la météo `w` (Neige/Blizzard) ? */
+export function weatherMovementWalkOnly(w: Weather): boolean {
+  return !!weatherCondition(w).movementWalkOnly;
+}
+/** Test de Résistance de traversée (Neige/Blizzard) sous la météo `w` — `undefined` si aucun. */
+export function weatherResistanceTest(w: Weather): WeatherCondition['resistanceTest'] {
+  return weatherCondition(w).resistanceTest;
+}
+/** Animaux Nerveux effrayables par les éclairs sous la météo `w` (Pluie diluvienne) ? */
+export function weatherLightningNervous(w: Weather): boolean {
+  return !!weatherCondition(w).lightningNervous;
+}
+
+/** Une caractéristique est-elle « physique » au sens EDOC l.82 (liste MAISON éditable) ? */
+export function isPhysicalTestChar(char: CharKey): boolean {
+  return (weatherPhysicalTestChars as string[]).includes(char);
+}
+/** Pénalité de la météo `w` à un Test basé sur la caractéristique `char` (Pluie diluvienne -10 aux
+ *  Tests physiques, l.82) — 0 si la météo n'en porte pas ou si `char` n'est pas physique. */
+export function weatherPhysicalTestMod(w: Weather, char: CharKey): number {
+  const mod = weatherCondition(w).physicalTestMod;
+  return mod != null && isPhysicalTestChar(char) ? mod : 0;
 }
 
 /** Méthode d'Approvisionnement (LDB 09 l.565-572, option « Trouver de la nourriture et des herbes »). */

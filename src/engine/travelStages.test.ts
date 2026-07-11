@@ -8,10 +8,12 @@ import { makeRNG } from './dice';
 import {
   seasonOfMonth, isColdSeason,
   weatherFromRoll, rollStageWeather, WEATHER_TABLE,
-  stageCount, stageExposureDifficulty,
-  pleinAirModifier, forageWeatherModifier, forageYield,
+  stageCount, stageExposureDifficulty, forageYield,
+  weatherRangedMod, weatherRangedUseless, weatherPowderUseless, weatherVisibiliteM,
+  weatherMovementWalkOnly, weatherResistanceTest, weatherPhysicalTestMod, weatherLightningNervous,
   type Season,
 } from './travelStages';
+import { activityById } from './activities';
 import { setRule, resetRule } from './policy';
 import { setDataset } from '../data/overrides';
 import { weather } from '../data';
@@ -189,17 +191,56 @@ describe('stageExposureDifficulty (EDOC ch.5 l.73) — difficulté du Test selon
   });
 });
 
-describe('modificateurs météo (Plein Air l.106 / Approvisionnement l.56)', () => {
+describe('modificateurs météo d’Activité — DONNÉE (ActivityDef.weatherMod, EDOC l.106/l.56)', () => {
   it('Plein Air : -10 par degré de temps éloigné de Beau temps', () => {
-    expect(pleinAirModifier('beau')).toBe(0);
-    expect(pleinAirModifier('pluie')).toBe(-10);
-    expect(pleinAirModifier('neige')).toBe(-20);
-    expect(pleinAirModifier('blizzard')).toBe(-30);
+    const wm = activityById('plein-air')!.weatherMod!;
+    expect(wm.beau).toBe(0);
+    expect(wm.pluie).toBe(-10);
+    expect(wm.neige).toBe(-20);
+    expect(wm.blizzard).toBe(-30);
   });
   it('Approvisionnement : -10 par temps sec (eau plus rare), 0 sinon', () => {
-    expect(forageWeatherModifier('sec')).toBe(-10);
-    expect(forageWeatherModifier('beau')).toBe(0);
-    expect(forageWeatherModifier('pluie')).toBe(0);
+    const wm = activityById('approvisionnement')!.weatherMod!;
+    expect(wm.sec).toBe(-10);
+    expect(wm.beau).toBeUndefined();
+    expect(wm.pluie).toBeUndefined();
+  });
+});
+
+describe('effets météo TERRESTRES en DONNÉE (EDOC ch.5 « conditions »)', () => {
+  it('Pluie : visibilité 25 m, tir -10, aucune poudre/mouvement/Résistance', () => {
+    expect(weatherVisibiliteM('pluie')).toBe(25);
+    expect(weatherRangedMod('pluie')).toBe(-10);
+    expect(weatherPowderUseless('pluie')).toBe(false);
+    expect(weatherMovementWalkOnly('pluie')).toBe(false);
+    expect(weatherResistanceTest('pluie')).toBeUndefined();
+  });
+  it('Pluie diluvienne : visibilité ~0, tir -20, poudre morte, Tests physiques -10, éclairs Nerveux', () => {
+    expect(weatherVisibiliteM('pluie-diluvienne')).toBe(0);
+    expect(weatherRangedMod('pluie-diluvienne')).toBe(-20);
+    expect(weatherPowderUseless('pluie-diluvienne')).toBe(true);
+    expect(weatherLightningNervous('pluie-diluvienne')).toBe(true);
+    expect(weatherPhysicalTestMod('pluie-diluvienne', 'force')).toBe(-10);
+    expect(weatherPhysicalTestMod('pluie-diluvienne', 'capacite-de-tir')).toBe(-10);
+    // I / FM / Soc ne sont PAS physiques (liste maison) → aucun malus.
+    expect(weatherPhysicalTestMod('pluie-diluvienne', 'intelligence')).toBe(0);
+    expect(weatherPhysicalTestMod('pluie-diluvienne', 'sociabilite')).toBe(0);
+  });
+  it('Neige : visibilité 45 m, marche seule, Résistance Accessible ou Exténué', () => {
+    expect(weatherVisibiliteM('neige')).toBe(45);
+    expect(weatherMovementWalkOnly('neige')).toBe(true);
+    expect(weatherResistanceTest('neige')).toEqual({ difficulty: 'accessible', onFail: 'extenue' });
+  });
+  it('Blizzard : visibilité ~0, tir inutile, marche seule, Résistance Intermédiaire ou Exténué', () => {
+    expect(weatherVisibiliteM('blizzard')).toBe(0);
+    expect(weatherRangedUseless('blizzard')).toBe(true);
+    expect(weatherMovementWalkOnly('blizzard')).toBe(true);
+    expect(weatherResistanceTest('blizzard')).toEqual({ difficulty: 'intermediaire', onFail: 'extenue' });
+  });
+  it('Temps sec / beau : aucun effet de combat/mouvement', () => {
+    expect(weatherRangedMod('sec')).toBe(0);
+    expect(weatherRangedMod('beau')).toBe(0);
+    expect(weatherPhysicalTestMod('pluie', 'force')).toBe(0);
   });
 });
 

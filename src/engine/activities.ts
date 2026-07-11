@@ -202,6 +202,10 @@ export interface ActivityDef extends TestSpec {
   extended?: { drPerStage: number };
   /** RAW EDOC l.133 : échouer le Test d'une Activité octroie un État Exténué. */
   failExtenue?: boolean;
+  /** Modificateur météo PAR météo (id de `Weather`) au Test de l'Activité — DONNÉE (fini le `def.id ===`
+   *  en dur) : Plein air « -10 par degré de temps éloigné de Beau temps » (EDOC l.106), Approvisionnement
+   *  « -10 par temps sec » (l.56). Absent/météo non listée = 0. */
+  weatherMod?: Record<string, number>;
   /** Résolveur BESPOKE nommé (réutilise une logique existante plutôt que de la dupliquer). */
   resolver?: string;
   /** Effet mécanique de réussite, en `GameOp` (langue UNIQUE des effets, appliquée par `applyOps`). */

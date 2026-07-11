@@ -456,6 +456,23 @@ Ajustements : régions plus au nord → +10 à +30 ; plus au sud → −10 à �
 | **Neige** | Visibilité ≤ 45 m ; max marche ; Test **Résistance Accessible (+20)** ou *Exténué*. |
 | **Blizzard** | Visibilité ≈ 0 ; max marche ; armes à distance inutiles ; Test **Résistance Intermédiaire (+0)** ou *Exténué*. |
 
+> **§ Écarts / état de câblage (#341).** Les effets ci-dessus vivent en DONNÉE (`weather.json`
+> `conditions`, mêmes formes que `sea-weather.json`). **Câblé :** modificateur météo des Activités
+> (`ActivityDef.weatherMod`, plus d'`id` en dur) ; « conditions du jour » en COMBAT ouvert pendant une
+> journée de voyage — le tir encaisse la pénalité de temps (Pluie −10 / Pluie diluvienne −20), la poudre
+> exposée meurt, le Blizzard rend le tir impossible, et le Corps à corps (Test de CC) encaisse le −10
+> « Tests physiques » de la pluie diluvienne, ligne LIBELLÉE « Météo : … » dans le détail du jet
+> (`attackEnv`, `src/state/combatFlow.ts`). « Tests physiques » = liste MAISON éditable
+> (`weather.json` `physicalTestChars` : CC/CT/F/E/Ag/Dex). **Différé (STOP-and-report, seams identifiés) :**
+> (a) mod « Tests physiques » sur les Tests d'ACTIVITÉ non-combat (les rangées BATCH d'Activité n'exposent
+> pas de breakdown de mods — surface UI à créer) ; (b) Tests de Résistance Neige/Blizzard « ou Exténué »
+> au démarrage du jour (données posées, `weatherResistanceTest` ; reste un applier de cascade batch) ;
+> (c) éclairs → montures Nerveux (couture `fireTriggers(onStartled, 'noise')` existante, mais la CADENCE
+> d'un éclair est RAW-indéfinie et il n'y a pas de contexte de combat pendant la marche) ; (d) plafond de
+> visibilité en mètres sur la portée du tir (donnée `visibiliteM` posée ; le cap sur `effectiveWeaponRange`
+> attend la résolution de l'échelle tuile↔mètre). Le Blizzard/la Pluie diluvienne (visibilité ≈ 0) sont
+> déjà neutralisés côté tir par `rangedUseless` / le −20.
+
 ### Option « Attraper Froid »
 
 **Source :** EDOC 08 l.88-92
@@ -547,7 +564,7 @@ Si un participant a un **M supérieur** aux autres, il gagne autant de **DR bonu
 |---|---|
 | `src/engine/travel.ts` | Vitesse de groupe (`partyWalkSpeed`), `travelSpeed` (dont allures EDOC en selle / attelage forcé), `travelPlanCalc`, `transportCost`, `forcedMarchTest`/`applyForcedMarch`, `applyTravelFatigue`. Transports payants lus depuis `src/data/vehicles.json`. |
 | `src/engine/mountTravel.ts` | Montures en voyage (EDOC ch.4, règle optionnelle `travel-allures`) : profils/allures en donnée (`src/data/montures.json`), vitesse M × 1,5/2,5/3 km/h (l.140), endurance des allures 12 h / BE / ½ BE (l.142-144), cascade de sur-endurance (+Exténué, Test de Résistance, effondrement/mort, l.146) et Incidents de monte (l.148-174, `resolveMountIncident`/`resolveMountedDay`). |
-| `src/engine/travelStages.ts` | Système par Étapes EDOC : `stageCount` (bonus lu sur la règle `travel-etapes-count-bonus`), météo (`WEATHER_TABLE`), `stageExposureDifficulty`, `forageYield`, `pleinAirModifier`, `forageWeatherModifier`, saisons (calendrier impérial). |
+| `src/engine/travelStages.ts` | Système par Étapes EDOC : `stageCount` (bonus lu sur la règle `travel-etapes-count-bonus`), météo (`WEATHER_TABLE`), `stageExposureDifficulty`, `forageYield`, saisons (calendrier impérial). EFFETS météo en DONNÉE (`weather.json` `conditions`) : `WeatherCondition`, `weatherRangedMod`, `weatherRangedUseless`, `weatherPowderUseless`, `weatherPhysicalTestMod`, `weatherMovementWalkOnly`, `weatherResistanceTest`, `weatherVisibiliteM`, `weatherLightningNervous`. Le modificateur météo par Activité est désormais DONNÉE (`ActivityDef.weatherMod`). |
 | `src/engine/provisions.ts` | Faim (LDB 18 l.337-343) : consommation/jour, Test Résistance, malus, Brouet. |
 | `src/engine/encumbrance.ts` | `effectiveMovement(c)` (M après pénalités Enc), `encumbrancePenalties()` (tiers + travelFatigue). |
 | `src/state/travelFlow.ts` | Voyage jour par jour, `TravelPlan` + reprise, `TravelRecap`, cascade influençable de marche forcée, sous-système Étapes optionnel ; journée en selle (`resolveMountedTravelDay`) et attelage forcé au pas de course (`forcedPaceDay` : Test de Conduite d'attelage par km, Échec Stupéfiant → `applyVehicleProblem` + Dégâts occupants `occupantOps` en GameOp). |

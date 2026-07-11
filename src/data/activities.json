@@ -17,6 +17,14 @@
     ],
     "difficulty": "intermediaire",
     "failExtenue": true,
+    "weatherMod": {
+      "beau": 0,
+      "sec": -10,
+      "pluie": -10,
+      "pluie-diluvienne": -20,
+      "neige": -20,
+      "blizzard": -30
+    },
     "stageOutcome": "suppressExposure"
   },
   {
@@ -37,6 +45,9 @@
     ],
     "difficulty": "intermediaire",
     "failExtenue": true,
+    "weatherMod": {
+      "sec": -10
+    },
     "resolver": "forage"
   },
   {
