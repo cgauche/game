@@ -68,7 +68,7 @@ import { pursuitOutcome } from '../engine/pursuit';
 import { addCondition } from '../engine/conditions';
 import { findWhirlpool } from '../engine/seaPerils';
 import {
-  rollBoardEvent, rollPortEvent, rollDaysToNextEvent, addManann, MANANN_BASE,
+  rollBoardEvent, rollPortEvent, rollDaysToNextEvent, addManann, MANANN_BASE, seaBoardEventById,
   removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoTotalEnc, cargoOverload, resolveFastVoyage, FAST_VOYAGE_PALIERS,
   type SeaEventDef, type ManannMood, type PortProfile,
 } from '../engine/seaVoyage';
@@ -144,6 +144,9 @@ export interface SeaVoyageState {
     days: number; weeks: number; palierId?: string; roll?: number; result?: number; crewDR?: number;
     manannTens?: number; pendingFinalize?: boolean;
   };
+  /** RECETTE (#332) : événement de bord NOMMÉ forcé au PROCHAIN jour (`__wfrp.forceEncounter`) — court-
+   *  circuite le timer 1d10 et le tirage d100/Manann de `resolveSeaDayEvent`, sans autre effet de setup. */
+  forcedEventId?: string;
 }
 
 /** Instantané d'un jour de mer pour l'ÉCRAN DE TRAVERSÉE (`SeaVoyageScreen`) : rose des vents + jauges
@@ -794,6 +797,16 @@ function resolveSeaDayPerils(get: Get, set: Set, rng: RNG): boolean {
 function resolveSeaDayEvent(get: Get, set: Set, rng: RNG): boolean {
   const plan = get().travelPlan!;
   const sea = plan.sea!;
+  // Recette (#332) : événement NOMMÉ forcé (`forceEncounter`) — court-circuite le timer + le tirage.
+  if (sea.forcedEventId) {
+    const forced = seaBoardEventById(sea.forcedEventId);
+    patchSea(get, set, { forcedEventId: undefined });
+    if (forced) {
+      tell(get, set, [`Événement de bord (forcé) — ${forced.label}`]);
+      resolveBoardEvent(get, set, forced, rng);
+      return !!get().pendingCascade;
+    }
+  }
   let days = sea.daysToEvent - 1;
   let firing: { event: SeaEventDef; roll: number; mood: ManannMood } | null = null;
   if (days <= 0) {

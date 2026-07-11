@@ -169,6 +169,11 @@ export function rollDaysToNextEvent(rng: RNG = defaultRNG): number {
   return d10(rng);
 }
 
+/** Événement de bord NOMMÉ (par `id`, sinon par `kind` — plusieurs événements peuvent partager un kind,
+ *  ex. `navire-hostile` = Langskip skaeling / Cogue pirate). Pour forcer un tirage en recette (#332). */
+export const seaBoardEventById = (idOrKind: string): SeaEventDef | undefined =>
+  EVENTS.boardEvents.find((e) => e.id === idOrKind) ?? EVENTS.boardEvents.find((e) => e.kind === idOrKind);
+
 /** Tire un ÉVÉNEMENT DE BORD (l.89) : d100 + Humeur de Manann du navire. PUR. */
 export function rollBoardEvent(manannScore: number, rng: RNG = defaultRNG): { roll: number; event: SeaEventDef } {
   const roll = d100(rng) + manannScore;

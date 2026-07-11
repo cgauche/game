@@ -1,5 +1,6 @@
 import { useGame, SCREENS } from './store';
 import { portRepairVessel, portCareenVessel, portInstallUpgrade, damageVesselHull, setVesselHull } from './seaVoyageFlow';
+import { seaBoardEventById } from '../engine/seaVoyage';
 import { beginShipwreck } from './shipwreck';
 import { placeOfScene, placeById, type MapRoute } from './worldMap';
 import { routeDistanceLabel } from '../engine/travel';
@@ -74,6 +75,11 @@ import type { Combatant } from '../engine/types';
  *                           l'arrivée ou un combat — MÊME machinerie que le joueur (cascadeResolveAll/
  *                           Finish, restSleep, seaActivitiesConfirm…), juste sans les clics
  *   __wfrp.skipToArrival() → comme `advanceSeaDay` mais ROULE jusqu'à l'ACCOSTAGE (ou interruption)
+ *   __wfrp.advanceRiverDay() → symétrique FLUVIAL d'`advanceSeaDay` : pilote la journée de descente EN
+ *                           COURS (cascade du jour, Exposition hydrique, halte de nuit) jusqu'au jour
+ *                           SUIVANT, l'arrivée ou un combat — MÊME machinerie que le voyage maritime
+ *   __wfrp.forceEncounter(id) → force un événement de bord maritime NOMMÉ (`sea-events.json`, id ou kind
+ *                           ex. 'navire-hostile') au prochain jour — à dérouler avec `advanceSeaDay()`
  *   __wfrp.dealShipDamage(n) → inflige n Dégâts de coque HORS COMBAT (VRAI pipeline `damageVesselHull`/
  *                           `setVesselHull` — SOURCE UNIQUE `state.vessel.wounds`, cf. `docs/recette-
  *                           navigateur.md` § piège des deux copies de coque) ; symétrique de `dealDamage`
@@ -147,7 +153,10 @@ function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number): Promise<strin
         const s = useGame.getState();
         if (s.battle) { resolve('✗ combat en cours (issu du voyage) — voir __wfrp.battle()'); return; }
         const plan = s.travelPlan;
-        if (!plan?.sea) { resolve(sawVoyage ? '✓ voyage terminé (accosté ou interrompu par un événement d\'auteur)' : '✗ aucun voyage maritime en cours'); return; }
+        // Mer OU fleuve : même machinerie de cascade du JOUR (`purpose:'travelDay'`), même halte, même
+        // reprise — `advanceRiverDay` réutilise ce pilote (le fleuve enchaîne en plus la cascade
+        // d'Exposition `purpose:'riverExposure'`, drainée par le bloc générique `if (p)` ci-dessous, #344).
+        if (!plan?.sea && !plan?.river) { resolve(sawVoyage ? '✓ voyage terminé (accosté ou interrompu par un événement d\'auteur)' : '✗ aucun voyage (mer/fleuve) en cours'); return; }
         sawVoyage = true;
         if (n++ >= maxIters) { resolve(`✗ borne atteinte (${maxIters} scrutations, ${seenTravelDays} jour(s) résolu(s)) — voir __wfrp.state()/__wfrp.log()`); return; }
         const p = s.pendingCascade;
@@ -1050,6 +1059,13 @@ export function buildApi() {
      *  combat, échouage, péripétie d'auteur). `n` (scrutations) borne l'anti-boucle infinie. */
     skipToArrival: (n = 4000) => driveSeaVoyage(false, n),
 
+    /** RECETTE #332 : symétrique FLUVIAL d'`advanceSeaDay` — résout la journée de descente EN COURS
+     *  (cascade du jour `travelDay`, cascade d'Exposition hydrique `riverExposure` #344, halte de nuit)
+     *  jusqu'au JOUR SUIVANT, l'arrivée ou un combat, aux DÉFAUTS (aucun clic). MÊME pilote que le voyage
+     *  maritime (`driveSeaVoyage`, machinerie identique) — juste sans les délais/clics. `n` (scrutations)
+     *  borne l'anti-boucle infinie, jamais une durée de descente attendue. */
+    advanceRiverDay: (n = 400) => driveSeaVoyage(true, n),
+
     /** RECETTE #297 : inflige `n` Dégâts de coque HORS COMBAT (VRAI pipeline — `damageVesselHull` si un
      *  voyage est en cours sur le navire de campagne, sinon `setVesselHull` directement au port) —
      *  SOURCE UNIQUE `state.vessel.wounds` (#296 ; le piège des DEUX copies de coque — `vessel.wounds`
@@ -1088,6 +1104,20 @@ export function buildApi() {
       if (!g().vessel) return '✗ aucun navire de campagne (state.vessel)';
       beginShipwreck(() => useGame.getState(), useGame.setState, aboardIds ? { aboardIds } : {});
       return g().vessel === null ? '✓ naufrage déclenché (coque + cargaison perdues) — voir __wfrp.state()/__wfrp.log()' : '✗ naufrage non déclenché (voir __wfrp.state())';
+    },
+
+    /** RECETTE #332 : force un ÉVÉNEMENT DE BORD maritime NOMMÉ (`sea-events.json`) au PROCHAIN jour de
+     *  traversée — court-circuite le timer 1d10 + le tirage d100/Manann de `resolveSeaDayEvent` (le
+     *  garde `sea.forcedEventId`). `id` = id d'événement (`cogue-pirate`) OU son kind (`navire-hostile`,
+     *  premier match). À combiner avec `advanceSeaDay()`/`skipToArrival()` pour LE dérouler sans espérer
+     *  la bande d'Humeur. Rend la désertion/l'abordage observable sans dérouler des semaines de tirages. */
+    forceEncounter: (id = 'navire-hostile') => {
+      const plan = g().travelPlan;
+      if (!plan?.sea) return '✗ aucune traversée maritime en cours (state.travelPlan.sea)';
+      const event = seaBoardEventById(id);
+      if (!event) return `✗ événement « ${id} » introuvable — id ou kind d'événement de bord (sea-events.json)`;
+      useGame.setState({ travelPlan: { ...plan, sea: { ...plan.sea, forcedEventId: id } } });
+      return `✓ « ${event.label} » forcé au prochain jour — dérouler avec __wfrp.advanceSeaDay()`;
     },
 
     /** RECETTE #297 : point ON-PATH (milieu du tracé, `getPointAtLength`/`getScreenCTM`) d'une route de

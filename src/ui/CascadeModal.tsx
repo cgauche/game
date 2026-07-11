@@ -125,7 +125,9 @@ export function CascadeBody({ embedded = false }: { embedded?: boolean } = {}) {
   const extendedDrData = (done: number | undefined, target: number | undefined, res: CascadeRoll | null | undefined): { cum: number; target: number } | undefined => {
     if (target == null) return undefined;
     const gain = res?.success ? Math.max(0, res.sl) : 0;
-    return { cum: (done ?? 0) + gain, target: Number(target) };
+    // Un Test étendu SE TERMINE à la cible (LDB 12 l.197-211) : le cumul affiché est BORNÉ à la cible — un
+    // jet de complétion à gros DR ne déborde pas la barre en « 5/2 »/« 6/2 » (F1). Site UNIQUE du datum.
+    return { cum: Math.min((done ?? 0) + gain, Number(target)), target: Number(target) };
   };
   // Note de conséquence d'une rangée-participant (batch) : `part.outcome` porte l'attribution par le
   // portrait (pas de note agrégée à l'étape) ; ton succès→soin / échec→état.

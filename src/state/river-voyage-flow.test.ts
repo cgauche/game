@@ -307,9 +307,31 @@ describe('exposition hydrique de la descente (T2C ch.14) — l\'Effet waterExpos
       else get().cascadeNext();
     }
     const pc = get().pendingCascade;
-    expect(pc?.purpose).toBe('test');
+    // Purpose DÉDIÉ (#344) : la clôture de l'Exposition reprend la fin du jour (halte différée), au lieu du
+    // purpose générique `test` qui n'a aucune continuation (→ soft-lock quand le Repos la court-circuite).
+    expect(pc?.purpose).toBe('riverExposure');
     expect(pc?.participants.every((s) => s.kind === 'waterExposure')).toBe(true);
     expect(pc?.participants.length).toBe(get().party.filter((h) => !h.dead).length);
+  });
+
+  it('#344 : jour → Exposition → halte de nuit DIFFÉRÉE → jour suivant se ré-arme (aucun soft-lock)', () => {
+    // 24 km (1 jour ne suffit pas : ~plusieurs étapes de descente) avec exposition GARANTIE chaque jour.
+    launch(false, 24, { riverExposure: { source: 'grande-ville-marais', mode: 'ingestion', chancePct: 100 } });
+    seedBattleRng(4);
+    get().startTravel('r-reik', 'barge');
+    expect(get().pendingCascade?.purpose).toBe('travelDay');
+    // Draine la cascade du JOUR puis, ENCHAÎNÉE, la cascade d'Exposition (purpose riverExposure).
+    drainCascade();
+    // La halte de nuit s'est ouverte APRÈS l'Exposition (jamais court-circuitée) — plus aucune cascade pendante.
+    expect(get().pendingCascade).toBeNull();
+    expect(get().pendingRest).toBeTruthy();
+    // La nuit franchie, la journée SUIVANTE se ré-arme (nouvelle cascade travelDay) — le voyage repart.
+    get().restSleep();
+    let guard = 0;
+    while (get().pendingRest && guard++ < 10) get().restContinue();
+    expect(get().pendingCascade?.purpose).toBe('travelDay');
+    expect(get().travelPlan?.river).toBeTruthy();
+    expect(get().travelPlan?.interrupted).toBe(false);
   });
 
   it('un héros peut CONTRACTER la maladie sur échec du Test d\'Exposition (contraction directe, T2C ch.14)', () => {

@@ -177,9 +177,11 @@ appliers du jour.
   console MCP est un buffer PARTAGÉ entre sessions/onglets — `all:true` peut remonter les erreurs
   d'une session PRÉCÉDENTE ; après un clic sensible, lire la console IMMÉDIATEMENT et depuis la
   dernière navigation, jamais en fin de parcours.
-- **Captures d'écran** : SEUL chemin autorisé par l'outil Playwright MCP = `.playwright-mcp/` à la
-  RACINE du repo (gitignoré, `.gitignore:19`) — jamais `%TEMP%` (rejeté « outside allowed roots »),
-  jamais un fichier à la racine du repo hors ce dossier.
+- **Captures d'écran** : le dossier d'atterrissage DÉPEND du serveur Playwright MCP — souvent
+  `.playwright-mcp/` (gitignoré), mais la recette 2026-07-11 a constaté l'écriture à la RACINE du repo
+  (fichier non gitignoré → poison potentiel pour un commit/deploy). NE PAS présumer : vérifier où
+  atterrit la 1ʳᵉ capture, et si c'est hors `.playwright-mcp/`, la DÉPLACER hors du repo (ou dans
+  `.playwright-mcp/`) IMMÉDIATEMENT. `%TEMP%` reste rejeté (« outside allowed roots »).
 - **Jamais de `dispatchEvent`/`MouseEvent` synthétique** pour cliquer un token/bouton — provoque de
   FAUSSES erreurs `setPointerCapture` (l'élément n'a jamais reçu de vrai pointeur). Utiliser les
   VRAIS clics Playwright (`browser_click`, sélecteur `data-cid`/rôle/texte).

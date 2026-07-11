@@ -73,6 +73,29 @@ describe('Voyage — poste Cartographie (Établir des cartes, test étendu)', ()
     expect(Array.isArray(part.outcome)).toBe(true); // conséquence rendue sur SA rangée
   });
 
+  // F1 (recette 2026-07-11) : un Test étendu SE TERMINE à la cible (LDB 12 l.197-211). Une fois la carte
+  // ACHEVÉE, le poste NE re-roule plus (affichage « achevée », zéro accumulation) et la progression est
+  // FIGÉE à la cible — plus de reset qui recommencerait le Test chaque jour et déborderait « 5/2 »/« 6/2 ».
+  it('#F1 : carte ACHEVÉE → progression figée à la cible, poste sans jet à l’Étape suivante', () => {
+    const steps = buildStageSteps(useGame.getState, useGame.setState, 'beau', 'ete');
+    const batch = steps.find((s) => s.kind === 'stagePosteBatch')!;
+    const part = batch.participants!.find((p) => p.id === 'h')!;
+    const drTarget = part.extendedDrTarget as number;
+    // Jet de complétion à GROS DR (dépasse la cible restante) : la carte s'achève ce jour.
+    part.result = { roll: 10, target: part.target, sl: drTarget + 3, success: true };
+    cascadeAppliers['stagePosteBatch'].apply(useGame.getState, useGame.setState, batch, undefined, { steps: [batch], index: 0 });
+    const agg = steps.find((s) => s.kind === 'stageAggregate')!;
+    cascadeAppliers['stageAggregate'].apply(useGame.getState, useGame.setState, agg, undefined, { steps, index: steps.indexOf(agg) });
+    // FIGÉ à la cible (jamais `undefined` → jamais un redémarrage du Test étendu le lendemain).
+    expect(useGame.getState().travelPlan!.extendedProgress).toBe(drTarget);
+    // Étape SUIVANTE : plus de rangée de jet cartographie — un pas d'affichage « déjà achevée ».
+    const next = buildStageSteps(useGame.getState, useGame.setState, 'beau', 'ete');
+    const nextBatch = next.find((s) => s.kind === 'stagePosteBatch');
+    expect(nextBatch?.participants?.some((p) => p.id === 'h') ?? false).toBe(false);
+    const done = next.find((s) => s.kind === 'stagePosteDone');
+    expect(done?.outcome?.[0]).toContain(`${drTarget}/${drTarget} DR`);
+  });
+
   // VERROU RESSERRÉ (vague « lisibilité du voyage » 2/2, arbitrage user 2026-07-11) : `DrBar` n'est
   // IMPORTÉ que par son site unique (`RollRow.tsx`) + les exceptions nommées ci-dessous, chacune avec
   // sa raison. ActivityModal/FocusModal/DispelModal/ReloadModal/useExtendedTestJetProps sont CONVERGÉS

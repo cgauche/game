@@ -81,6 +81,10 @@ export interface RiverVoyageState {
   /** Facteur d'Agilité de rame du jour EN COURS (posé par l'applier `riverAgility`, lu à la clôture pour
    *  les km) — transitoire comme `day`. Défaut 1 (pas de barreur → pas d'étape → facteur neutre). */
   dayAgilityFactor?: number;
+  /** Progression du jour FIGÉE pendant que la cascade d'Exposition hydrique (purpose `riverExposure`) est
+   *  ouverte : la halte de nuit / l'arrivée sont DIFFÉRÉES à sa clôture (`continueRiverDayAfterExposure`,
+   *  #344). Transitoire — jamais persisté au-delà d'une journée. */
+  pendingFinish?: { kmDay: number; dayLines: string[] };
 }
 
 /** Entrées de VITESSE d'une journée fluviale, figées au build de la cascade du jour (vent) et
@@ -351,20 +355,51 @@ export function continueRiverDayAfterCascade(get: Get, set: Set): void {
   // Efface le contexte transitoire du jour (jamais persisté au-delà de la journée).
   set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, day: undefined, dayAgilityFactor: undefined } } });
 
-  // Exposition hydrique du jour (T2C ch.14) — ouvre l'Effet EXISTANT `waterExposure` (cascade `test`).
-  maybeRiverExposure(get, set, route, () => sunk);
+  // Exposition hydrique du jour (T2C ch.14) — ouvre l'Effet EXISTANT `waterExposure` (cascade influençable).
+  // Si elle SURFACE, on DIFFÈRE la halte de nuit à sa clôture : sinon la cascade d'Exposition et la modale
+  // de Repos coexistent, le Repos reprend la route AVANT la résolution de l'Exposition, et celle-ci
+  // (purpose générique `test`) n'a plus de continuation → la journée suivante ne se ré-arme jamais (#344).
+  // Patron du sibling maritime (`seaScorbut`/`seaExhaustion`) : un purpose DÉDIÉ (`riverExposure`) dont la
+  // clôture (`dispatchCascadeDone`) reprend la fin du jour (`continueRiverDayAfterExposure`).
+  if (maybeRiverExposure(get, set, route, () => sunk)) {
+    const pc = get().pendingCascade!;
+    set({
+      pendingCascade: { ...pc, purpose: 'riverExposure' },
+      travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, pendingFinish: { kmDay, dayLines } } },
+    });
+    return;
+  }
 
   finishRiverDay(get, set, to, kmDay, dayLines);
+}
+
+/** Reprise de la FIN du jour fluvial après la cascade d'Exposition hydrique (purpose `riverExposure`,
+ *  posée par `continueRiverDayAfterCascade`) : la halte de nuit / l'arrivée, DIFFÉRÉES le temps du Test de
+ *  Résistance. Rejoue `finishRiverDay` avec la progression du jour FIGÉE (`river.pendingFinish`). */
+export function continueRiverDayAfterExposure(get: Get, set: Set): void {
+  const plan = get().travelPlan;
+  if (!plan?.river) return;
+  const fin = plan.river.pendingFinish;
+  const worldMap = get().worldMap as WorldMap;
+  const route = worldMap?.routes.find((r) => r.id === plan.routeId);
+  const to = worldMap ? placeById(worldMap, plan.toPlaceId) : undefined;
+  set({ travelPlan: { ...get().travelPlan!, river: { ...get().travelPlan!.river!, pendingFinish: undefined } } });
+  if (!route || !to) { set({ travelPlan: null }); return; }
+  finishRiverDay(get, set, to, fin?.kmDay ?? 0, fin?.dayLines ?? []);
 }
 
 /** EXPOSITION HYDRIQUE d'une étape (T2C ch.14, l.5-13) : tirage d'auteur (`MapRoute.riverExposure`) qui
  *  déclenche l'Effet EXISTANT `waterExposure` sur TOUT le groupe (`applyEffects`) — aucune mécanique neuve.
  *  Sauté si le bateau a coulé (plus de fleuve sous les pieds). L'Effet ouvre la cascade influençable. */
-function maybeRiverExposure(get: Get, set: Set, route: MapRoute, sunk: () => boolean): void {
+function maybeRiverExposure(get: Get, set: Set, route: MapRoute, sunk: () => boolean): boolean {
   const ex = route.riverExposure;
-  if (!ex || sunk()) return;
-  if (d100(battleRng()) > Math.max(0, Math.min(100, ex.chancePct))) return;
+  if (!ex || sunk()) return false;
+  if (d100(battleRng()) > Math.max(0, Math.min(100, ex.chancePct))) return false;
+  const before = get().pendingCascade;
   applyEffects(get, set, [{ type: 'waterExposure', mode: ex.mode, source: ex.source, target: 'party' }]);
+  // `true` seulement si l'Effet a bel et bien OUVERT une cascade (héros exposés, `startCascade`) — sinon
+  // (tout le groupe hors d'eau, aucune étape) la fin de jour enchaîne normalement.
+  return !!get().pendingCascade && get().pendingCascade !== before;
 }
 
 function controlLabel(kept: boolean, success: boolean): string {

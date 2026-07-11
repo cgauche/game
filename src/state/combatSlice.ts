@@ -14,7 +14,7 @@ import type { GameState, BattleState } from './store';
 import type { CounterParticipant } from './pendings';
 import { SceneEntity, structureIsDown } from './scene';
 import * as travelFlow from './travelFlow';
-import { continueRiverDayAfterCascade } from './riverVoyageFlow';
+import { continueRiverDayAfterCascade, continueRiverDayAfterExposure } from './riverVoyageFlow';
 import { Combatant, HitLocation, DIFFICULTY_MODIFIERS, type FireArc } from '../engine/types';
 import { creatureAttacks, type AttackKind } from '../engine/creatureAttacks';
 import { battleRng } from './battleRng';
@@ -325,6 +325,10 @@ export function createCombatSlice(get: Get, set: Set) {
       else if (get().travelPlan?.sea) { if (!get().pendingSteamSave) continueSeaDayAfterCascade(get, set); }
       else travelFlow.continueTravelDayAfterCascade(get, set);
     }
+    // Exposition hydrique fluviale (T2C ch.14) surfacée APRÈS le jour (#344) : la clôture reprend la fin du
+    // jour (halte de nuit / arrivée), DIFFÉRÉE le temps du Test de Résistance — sinon le Repos et l'Exposition
+    // se court-circuitent et la journée suivante ne se ré-arme jamais (patron du sibling `seaScorbut`).
+    else if (done?.purpose === 'riverExposure') continueRiverDayAfterExposure(get, set);
     else if (done?.purpose === 'pursuite') continuePursuitRound(get, set, done); // manche de poursuite terrestre close → résoudre puis rouvrir/dénouer (state/pursuitFlow)
     // Entretien-survie maritime surfacé au MJ (#272 résiduel, seam #275) : la clôture enchaîne la phase suivante de la journée.
     else if (done?.purpose === 'seaScorbut') continueSeaDayAfterScorbut(get, set, done.participants);

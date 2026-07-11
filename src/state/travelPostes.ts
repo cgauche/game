@@ -141,6 +141,14 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
     const def = activityById(posting.activityId);
     if (!def) continue;
     const spec = travelActivitySpec(hero, def, { skillMod: weatherModOf(def, weather), stages, freeSkill: posting.freeSkill });
+    // Test étendu DÉJÀ ACHEVÉ (LDB 12 l.197-211 : un Test étendu SE TERMINE à la cible — il ne se relance
+    // PAS chaque jour, sinon le cumul déborde son plafond « 5/2 », « 6/2 » à chaque re-complétion) : le
+    // poste n'a plus d'objet → un pas d'AFFICHAGE « achevée », aucun jet ni accumulation (F1).
+    if (spec.drTarget != null && (plan.extendedProgress ?? 0) >= spec.drTarget) {
+      steps.push({ id: `poste-${hero.id}`, kind: 'stagePosteDone', actorId: hero.id, icon: POSTE_ICON[def.id] ?? 'travel/compass',
+        label: def.label, interactive: true, outcome: [`${def.label} : déjà achevée (${spec.drTarget}/${spec.drTarget} DR).`] });
+      continue;
+    }
     if (spec.target == null) {
       // Activité SANS Test (Récupérer) : pas de rangée de jet — un pas d'affichage dont l'applier applique l'issue.
       const meta: CascadeStepMeta = { activityId: def.id };
@@ -167,7 +175,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
         target,
         ...(mods ? { mods } : {}),
         result: null,
-        ...(spec.drTarget != null ? { extendedDrDone: plan.extendedProgress ?? 0, extendedDrTarget: spec.drTarget } : {}),
+        ...(spec.drTarget != null ? { extendedDrDone: Math.min(plan.extendedProgress ?? 0, spec.drTarget), extendedDrTarget: spec.drTarget } : {}),
       });
     }
   }
@@ -329,7 +337,10 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
   if (mapDR > 0) {
     const drTarget = results.find((r) => r.activityId === 'etablir-cartes')?.drTarget ?? 2 * Number(step.meta?.stages ?? 1);
     const { total, done } = extendedTestStep(plan.extendedProgress ?? 0, { success: true, sl: mapDR }, drTarget, !!rule('test-extended-min-sl'));
-    set({ travelPlan: { ...get().travelPlan!, extendedProgress: done ? undefined : total } });
+    // ACHEVÉ : on FIGE la progression À LA CIBLE (jamais un reset à `undefined` qui RECOMMENCERAIT le Test
+    // étendu le lendemain — LDB 12 : il se termine à la cible) → `buildStageSteps` voit `>= drTarget` et
+    // n'ouvre plus de jet (F1). En cours : le cumul réel `total` (borné à la cible pour l'affichage).
+    set({ travelPlan: { ...get().travelPlan!, extendedProgress: done ? drTarget : total } });
     j.push(done ? `La carte de l'itinéraire est ACHEVÉE (${drTarget}/${drTarget} DR).` : `Cartographie : ${total}/${drTarget} DR.`);
   }
 

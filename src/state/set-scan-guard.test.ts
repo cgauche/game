@@ -20,9 +20,13 @@ import { runSetScan } from '../../scripts/guards/lib/setScan.mjs';
  * `pendingDeparture` posée puis effacée à « Attendre l'aube »/au départ diurne — transient de carte).
  * +1 set() légitime (#341 : l'applier `weatherResistance` ré-émet le groupe après l'Exténué de traversée
  * Neige/Blizzard — MÊME patron que `stagePosteBatch`).
+ * +3 set() légitimes (#344 : l'Exposition hydrique fluviale surfacée APRÈS le jour DIFFÈRE la halte de
+ * nuit — `continueRiverDayAfterCascade` re-tague la cascade en `riverExposure` + fige la progression du
+ * jour ; `continueRiverDayAfterExposure` efface ce transient puis reprend la fin du jour) ; +1 reset ad hoc
+ * (`travelPlan: null` de garde quand la route/destination a disparu à la reprise post-Exposition).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { totalCalls: 699, totalAdHocResets: 282 };
+const BASELINE = { totalCalls: 702, totalAdHocResets: 283 };
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {
