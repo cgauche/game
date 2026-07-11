@@ -20,6 +20,7 @@ import type { Get } from './flowTypes';
 import { currentTargetingMode } from './targetingModes';
 import { hoverTargeting } from './targeting';
 import { isOutOfAction } from '../engine/conditions';
+import type { SeaWind } from '../engine/domainAttributes';
 
 /** Acteur d'une action joueur résolu dans le bon ensemble : file de combat si en combat, sinon le groupe. */
 export function actorIn(state: GameState, id: string): Combatant | undefined {
@@ -55,6 +56,22 @@ export function touchActors(state: GameState): Partial<GameState> {
  * curseur (`cursorCommitIntent`) — les surfaces ne peuvent plus diverger. L'autorisation COOP
  * (`controlsActive`) reste gardée par l'APPELANT.
  */
+/**
+ * Contexte « Magie des mers » (MDG 02 l.178-186, `DomainData.seaModifier`) pour `resolveFocus`/
+ * `resolveCasting` : en mer = en VOYAGE maritime (`travelPlan.mode === 'mer'`) OU en COMBAT
+ * d'abordage sur le NAVIRE DE CAMPAGNE (sa coque, `vessel.vehicleId`, est un combattant du combat
+ * en cours — même détection que la persistance de coque en fin de combat, `combatFlow.ts`
+ * `finishBattle`). `wind` = la météo du jour du voyage maritime (`travelPlan.sea.weather.vent`,
+ * seule source de vent connue de l'état) ; `undefined` hors voyage maritime actif (silence RAW —
+ * `domainSeaIncantationDR` neutralise déjà un vent inconnu).
+ */
+export function seaMagicContext(state: GameState): { atSea: boolean; wind: SeaWind | undefined } {
+  const vessel = state.vessel;
+  const boarding = !!vessel && !!state.battle?.combatants.some((c) => c.creatureId === vessel.vehicleId);
+  const atSea = state.travelPlan?.mode === 'mer' || boarding;
+  return { atSea, wind: atSea ? state.travelPlan?.sea?.weather.vent : undefined };
+}
+
 export function combatantClickActs(get: Get, combatant: Pick<Combatant, 'id'>): boolean {
   const battle = get().battle;
   if (!battle || battle.over) return false;

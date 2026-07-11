@@ -732,7 +732,7 @@ Le « Département des arts magiques maritimes » du collège du baron Henryk (M
 
 **Voir aussi :** [Focalisation (Test étendu)](#focalisation-test-etendu), [Focalisation Critique](#focalisation-critique), [Maladresse de Focalisation](#maladresse-de-focalisation), [Domaine du Feu (Aqshy — Vent Rouge)](#domaine-du-feu-aqshy--vent-rouge)
 
-**Implémente :** non-implémenté (modificateurs environnementaux « en mer » — nécessiterait un contexte naval/météo de scène ; règle de naval-combat MDG hors périmètre actuel du moteur).
+**Implémente :** `resolveFocus()`/`resolveCasting()`/`evaluateCasting()` (`src/engine/magic.ts`) lisent `DomainData.seaModifier` via `domainSea*` (`src/engine/domainAttributes.ts`), gated par un contexte `{ atSea, wind }` fourni par l'appelant (`seaMagicContext()`, `src/state/combatOrParty.ts` — voyage maritime `travelPlan.mode === 'mer'` ou combat d'abordage sur le navire de campagne, vent = météo du jour). Les 4 Domaines (Bête/Feu/Cieux/Vie) sont câblés, y compris l'exception Harmonisation aethyrique de Vie. ⚠ Non modélisé : le bonus Feu « +1 DR si le vaisseau ciblé est en flammes » (l.182) — `resolveFocus()` n'a pas de cible physique à tester (#337).
 
 ---
 

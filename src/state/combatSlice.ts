@@ -40,6 +40,7 @@ import { skillAdvantageCap } from '../engine/skillCombatApps';
 import { findSkillById } from '../data/index';
 import { rule } from '../engine/policy';
 import { resolveMagicMissile, resolveCasting, isArcaneSpell, isMagicMissile, isDispellableSpell, castingValue, castBlockedBy, spellTargetCount } from '../engine/magic';
+import { domainSeaFocusCritMiscastMajeure } from '../engine/domainAttributes';
 import { type OvercastAxis, overcastSourceOf, overcastAxes, extraTargetCapacity, overcastDurationParts } from '../engine/overcast';
 import { resolveOpposed, extendedTestStep, assistBonus } from '../engine/tests';
 import { dispellableSpellsOn, dissipateSpell } from '../engine/dispel';
@@ -81,7 +82,7 @@ import { crewedFireWeapon, crewedReloadStep } from '../engine/crewedWeapon';
 import { exposedCrew } from '../engine/shipCritical';
 import { sceneZonesToBattle } from './zones';
 import { resetFields } from './stateFields';
-import { actorIn, inBattleId } from './combatOrParty';
+import { actorIn, inBattleId, seaMagicContext } from './combatOrParty';
 import { controlsCombatant, pilotedByHuman } from './netOwnership';
 import { nextCursorTile, nextCaseCursorTile, tileModeValidTiles, cursorCommitIntent, type ScreenDir } from './combatCursor';
 import { cycleTarget, cyclePrevTarget, cursorActor } from './targeting';
@@ -2688,7 +2689,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const difficulty = discreetPrayerDifficulty('intermediaire', discreet);
       const res = pc.missile && !unplacedZone
         ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
-        : resolveCasting(caster, spell, battleRng(), difficulty, pc.focused, ward);
+        : resolveCasting(caster, spell, battleRng(), difficulty, pc.focused, ward, seaMagicContext(get()));
       if (sigmar) get().log(t('cs.sigmarWard', { name: caster.name }));
       if (aqshy) get().log(t('cs.aqshyBonus', { name: caster.name, n: aqshy }));
       // Lanceur ENNEMI : Surincantation automatique (LDB 47 l.28-31) — le surplus de DR alloué à
@@ -2985,8 +2986,16 @@ export function createCombatSlice(get: Get, set: Set) {
       if (res.isCritical) {
         caster.focus = { spell: pf.spellId, dr: Math.max(caster.focus.dr, ni) };
         logLines.push(t('cs.focusCrit', { name: caster.name, spell: spell.label }));
-        if (!hasFocusHarmony(caster)) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: compUsed }));
-        else logLines.push(t('cs.focusHarmonized'));
+        // Vie/Ghyran en mer (MDG 02 l.186) : une Focalisation Critique donne une Imparfaite MAJEURE
+        // au lieu de Mineure ; le porteur d'Harmonisation aethyrique n'échappe plus au contrecoup —
+        // il lance quand même sur le tableau des Imparfaites MINEURES (au lieu d'y échapper).
+        const seaMajeure = domainSeaFocusCritMiscastMajeure(spell, seaMagicContext(get()).atSea);
+        if (hasFocusHarmony(caster)) {
+          if (seaMajeure) logLines.push(...applyMiscast(get, set, caster, 'mineure', { componentDowngrade: compUsed }));
+          else logLines.push(t('cs.focusHarmonized'));
+        } else {
+          logLines.push(...applyMiscast(get, set, caster, seaMajeure ? 'majeure' : 'mineure', { componentDowngrade: compUsed }));
+        }
       }
       logLines.push(caster.focus.dr >= ni ? t('cs.focusEnough', { name: caster.name, spell: spell.label }) : t('cs.focusProgress', { dr: caster.focus.dr, ni }));
       // Maladresse en Focalisation → Incantation Imparfaite Majeure (LDB l.190-191 :

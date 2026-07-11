@@ -27,7 +27,7 @@ import { makeRollFlow, type RollFlowHandlers, type RollFlowLens, type PendingBas
 import { TestOutcome } from '../engine/testOutcome';
 import type { RollBreakdown } from '../engine/combat';
 import { battleRng } from './battleRng';
-import { actorIn, inBattleId, touchActors } from './combatOrParty';
+import { actorIn, inBattleId, touchActors, seaMagicContext } from './combatOrParty';
 import {
   TRAMPLE_WEAPON, resolveAttack, firedWeapon, bestDefenseMode, effectiveSpellOf,
   castInfoIsPrayer, disengageOutcome, castWardPenalty, domainCastBonus,
@@ -533,7 +533,7 @@ export const FLOWS = {
       const difficulty = discreetPrayerDifficulty('intermediaire', discreet);
       const res = p.missile
         ? resolveMagicMissile(actor, target, spell, battleRng(), p.focused, ward)
-        : resolveCasting(actor, spell, battleRng(), difficulty, p.focused, ward);
+        : resolveCasting(actor, spell, battleRng(), difficulty, p.focused, ward, seaMagicContext(s));
       return { result: res };
     },
     // Issue CANONIQUE = d100 propre réussi (roll ≤ cible) — relance/Pacte alignés sur le jet propre.
@@ -1101,7 +1101,7 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.casterId),
     caps: { forced: true },
-    resolve: (_s, p, actor, _get, forced) => {
+    resolve: (s, p, actor, _get, forced) => {
       if (!actor) return null;
       if (forced) {
         const base = p.result;
@@ -1114,7 +1114,7 @@ export const FLOWS = {
       }
       const spell = findSpellById(p.spellId);
       if (!spell) return null;
-      return { result: resolveFocus(actor, spell, battleRng()) };
+      return { result: resolveFocus(actor, spell, battleRng(), 'intermediaire', seaMagicContext(s).atSea) };
     },
     outcome: (p) => sealOutcome((p.result?.dr ?? -1) > 0, p.result?.dr ?? 0, p.result?.roll ?? 0, p.result?.target ?? 0), // DR nul = raté (aucun DR gagné → rejouable)
     bonus: {
