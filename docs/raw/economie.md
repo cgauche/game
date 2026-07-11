@@ -398,4 +398,4 @@ Couverture confirmée des refs `LDB XX l.YY` dans le code :
 
 **Règle optionnelle** : `src/engine/policy.ts` (mode marché `simplifie` → pas de Tests de Disponibilité)
 
-**Écart code ↔ RAW détecté** : aucun écart structurel constaté. La logique de Baisse des prix (diviser par 2 → +1 cran Disponibilité acheteur) et le Troc (table de ratios) ne sont **pas implémentés** dans le code actuel — ces mécaniques sont absentes du MerchantPanel (pas de bouton « Baisser le prix » ni de flux Troc). Le commerce de cargaison T2C ch.11 n'est pas non plus implémenté (hors scope de l'implémentation actuelle).
+**Écart code ↔ RAW détecté** : aucun écart structurel constaté. La logique de Baisse des prix (diviser par 2 → +1 cran Disponibilité acheteur) et le Troc (table de ratios) ne sont **pas implémentés** dans le code actuel — ces mécaniques sont absentes du MerchantPanel (pas de bouton « Baisser le prix » ni de flux Troc). Le commerce de cargaison T2C ch.11 **est implémenté** : `src/engine/landCargo.ts` + `src/data/land-cargo.json` + `src/state/landMarketFlow.ts` (lots sur `caravanCargo`), scénario de test `src/scenes/test-scenarios/15-commerce-fluvial.ts`.
