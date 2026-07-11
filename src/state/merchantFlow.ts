@@ -205,11 +205,20 @@ function openStockRevealCascade(
   entityId: string, archetype: string, settlement: Settlement, now: number, restockPeriod: number, gossipDay: boolean, resaleRate: number, buyMarkup: number,
 ): void {
   const arch = MERCHANTS[archetype];
+  // #331 réserve A-bis : PRÉ-POSE le tirage article par article dans `outcome` AVANT validation — la
+  // modale d'affichage ne montrait QUE l'en-tête + « Terminer ». Le tirage est SEEDÉ déterministe
+  // (`computeFreshStockLines`), donc ces lignes affichées == celles que l'applier recompose/persiste.
+  const ent = get().scene?.entities.find((e) => e.id === entityId);
+  const outcome = ent?.merchant && arch
+    ? computeFreshStockLines(get, ent, arch, entityId, settlement, now, restockPeriod, gossipDay)
+        .tested.map((l) => `${l.label} — d100 ${l.test!.roll}/${l.test!.target} ✔ ×${l.qty}`)
+    : undefined;
   const step: CascadeStep = {
     id: `${MERCHANT_STOCK_KIND}:${entityId}:${now}`,
     kind: MERCHANT_STOCK_KIND,
     label: `Réassort — ${arch?.label ?? archetype}`,
     interactive: true,
+    ...(outcome?.length ? { outcome } : {}),
     meta: { entityId, archetype, settlement, now, restockPeriod, gossipDay, resaleRate, buyMarkup },
   };
   startCascade(get, set, { title: 'Réassort marchand', purpose: 'test', steps: [step] });

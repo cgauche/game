@@ -1,6 +1,5 @@
 import { useGame, type BattleState } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
-import { canReroll } from '../engine/fortune';
 import { easeDifficulty } from '../engine/tests';
 import { findCrewRoleById, findCrewTestTypeById } from '../data';
 import { crewRoleValue, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
@@ -8,6 +7,7 @@ import { maneuverCrewTotal } from '../state/shipManeuver';
 import type { PendingCrewTest } from '../state/pendings';
 import type { Combatant } from '../engine/types';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
+import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
 import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
 import { resultLine, freeCons } from '../state/rollSeam';
@@ -65,44 +65,32 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
   if (!ship || !testType) return null;
 
   const allRolled = p.participants.every((x) => x.result);
-  const unrolled = p.participants.filter((x) => x.interactive && !x.result && owns(x.id));
+  const rollAll = rollAllUnrolledRows(p.participants, roll, (x) => !!x.interactive && owns(x.id));
   const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
   const moraleLoss = p.testTypeId === 'rude-epreuve' ? rudeEpreuveMoraleDelta(total) : 0;
   const sign = (n: number) => (n >= 0 ? `+${n}` : `${n}`);
 
-  const rows: RollRowData[] = p.participants.flatMap((part) => {
-    const actor = pool.find((c) => c.id === part.id);
-    if (!actor) return [];
-    const res = part.result;
-    const role = findCrewRoleById(part.roleId);
-    const val = role ? crewRoleValue(actor, role, part.sense).value : 0;
-    const label = `${role?.label ?? part.roleId}${part.essential ? ' ★' : ''}`;
-    // Manque de bras (MDG ch.14 l.53) : marin déjà engagé ce Round → +2 crans de Difficulté (−20), itemisé.
-    const difficulty = part.cumul ? easeDifficulty('intermediaire', -2) : undefined;
-    const row = res
-      ? { combatant: actor, d: testBreakdown(label, val, { roll: res.roll, target: res.target, sl: res.sl }, difficulty) }
-      : { combatant: actor, pending: testPending(label, val, undefined, difficulty) };
-    return [{
-      key: part.id,
-      actor,
-      row,
-      rolled: !!res,
-      interactive: part.interactive && owns(part.id),
-      onRoll: () => roll(part.id),
-      rerollable: !!res && canReroll(res.roll > res.target, !!part.rerolled),
-      onReroll: () => reroll(part.id),
-      onBonusSL: () => bonus(part.id),
-      darkPactable: actor.kind === 'hero' && !!res && res.roll > res.target,
-      onDarkPact: () => darkPact(part.id),
-      onForce: () => force(part.id),
-      forceShow: !!res,
-      extra: res && <div className="cs-outcome ok-text">{resultLine(freeCons([part.essential ? `${sign(res.sl)} DR ×2` : `${sign(res.sl)} DR`]))}</div>,
-    }];
+  // Rangées via le builder mutualisé (#328) : la modale ne fournit QUE la PRÉSENTATION (crew-roles) + ses
+  // actions ; les dérivations d'éligibilité (rerollable/darkPactable/forceShow) vivent dans le builder.
+  const rows: RollRowData[] = buildParticipantRows(p.participants, pool, {
+    onRoll: roll, onReroll: reroll, onBonusSL: bonus, onDarkPact: darkPact, onForce: force,
+    interactiveOf: (part) => !!part.interactive && owns(part.id),
+    row: (part, actor, res) => {
+      const role = findCrewRoleById(part.roleId);
+      const val = role ? crewRoleValue(actor, role, part.sense).value : 0;
+      const label = `${role?.label ?? part.roleId}${part.essential ? ' ★' : ''}`;
+      // Manque de bras (MDG ch.14 l.53) : marin déjà engagé ce Round → +2 crans de Difficulté (−20), itemisé.
+      const difficulty = part.cumul ? easeDifficulty('intermediaire', -2) : undefined;
+      return res
+        ? { combatant: actor, d: testBreakdown(label, val, { roll: res.roll, target: res.target, sl: res.sl }, difficulty) }
+        : { combatant: actor, pending: testPending(label, val, undefined, difficulty) };
+    },
+    extra: (part, _actor, res) => <div className="cs-outcome ok-text">{resultLine(freeCons([part.essential ? `${sign(res.sl)} DR ×2` : `${sign(res.sl)} DR`]))}</div>,
   });
 
   const actions: RollAction[] = [
     { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'always' },
-    ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
+    ...(rollAll ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: rollAll, when: 'pre' as const }] : []),
     { key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'always', disabled: !allRolled },
   ];
 

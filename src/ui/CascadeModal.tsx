@@ -25,8 +25,8 @@ import { stepInteraction, stepReady } from '../state/cascade';
 import { FLOWS } from '../state/rollFlowSpecs';
 import type { CascadeStep, CascadeRoll } from '../state/pendings';
 import type { Combatant } from '../engine/types';
-import { crewRoleValue } from '../engine/crewMorale';
-import { findCrewRoleById } from '../data';
+import { buildParticipantRows, rollAllUnrolledRows } from './buildParticipantRows';
+import { Prose } from './Prose';
 
 /** Une étape-JET est PRÉSENTABLE avec son acteur (comportement historique) OU sans acteur quand
  *  elle est MONDIALE (`worldOwner`, seam #275 Décision 3 — désertion/Moral, aucun `actorId` par
@@ -52,11 +52,11 @@ export function CascadeModal() {
   const pursuit = useGame((s) => s.pursuit); // manche de poursuite (purpose:'pursuite') — porte partyRole/encounter
   const pursuitAbandon = useGame((s) => s.pursuitAbandon);
   const pendingCast = useGame((s) => s.pendingCast); // étape-jet `cast` : hôte la situation d'incantation (réactif, pas de hook conditionnel)
-  const crewRoll = useGame((s) => s.cascadeCrewRoll); // étape « batch » — un jet par rôle (seam #275 Décision 4 cran 1)
-  const crewReroll = useGame((s) => s.cascadeCrewReroll);
-  const crewBonusSL = useGame((s) => s.cascadeCrewBonusSL);
-  const crewDarkPact = useGame((s) => s.cascadeCrewDarkPact);
-  const crewForce = useGame((s) => s.cascadeCrewForceSuccess);
+  const batchRoll = useGame((s) => s.cascadeBatchRoll); // étape « batch » — un Test générique par participant (seam #275 Décision 4 cran 1)
+  const batchReroll = useGame((s) => s.cascadeBatchReroll);
+  const batchBonusSL = useGame((s) => s.cascadeBatchBonusSL);
+  const batchDarkPact = useGame((s) => s.cascadeBatchDarkPact);
+  const batchForce = useGame((s) => s.cascadeBatchForceSuccess);
   const roll = useGame((s) => s.cascadeRoll);
   const reroll = useGame((s) => s.cascadeReroll);
   const bonusSL = useGame((s) => s.cascadeBonusSL);
@@ -104,6 +104,9 @@ export function CascadeModal() {
   };
   const rowOf = (s: CascadeStep): PanelRow | null => {
     const a = actorOf(s);
+    // Étape BATCH committée : sa conséquence (resultLine, #331) se lit SUR PLACE — note SEULE (pas de
+    // RollLine mono factice `base 0` : le batch n'a ni acteur ni cible d'étape, le verdict est agrégé).
+    if (s.participants) return s.outcome?.length ? { combatant: a, note: noteFor(s) } : null;
     if (s.result) return { combatant: a, d: breakdown(s, s.result), note: noteFor(s) }; // jet validé
     if (s.outcome?.length) return { combatant: a, note: noteFor(s) }; // affichage/choix validé : note seule
     return null;
@@ -130,6 +133,10 @@ export function CascadeModal() {
 
   const cur = p.participants[p.cursor];
   if (!cur) return null;
+  // ENJEU surfaçable (#331) : ce que l'échec de l'étape COURANTE coûte, ÉNONCÉ sous le titre AVANT le
+  // jet (le mécanisme est déjà dans l'applier — cf. « on ne sait ni à quoi ça correspond »). Verbatim
+  // Source, porté par la donnée (`step.stake`, posé à la construction par le flux propriétaire).
+  const stakeNote = cur.stake ? <div className="rm-threat"><Icon id="ui/warning" size="sm" /> <Prose md={cur.stake} /></div> : null;
   // ÉTAPE-JET : REGISTRE data-driven du rendu par TYPE de jet (ajouter un type = 1 entrée ici). Les
   // cinq jets RollShell (attaque/défense/Maladresse/Test/Test étendu) sont rendus via leur hook de
   // props dans la MÊME coquille restée montée → jet ET conséquences vivent dans UNE fenêtre jusqu'à
@@ -235,39 +242,36 @@ export function CascadeModal() {
   // propre cycle Chance/+1 DR/Pacte/Résilience ; « Continuer » n'agit QUE quand `stepReady` (tous les
   // interactifs ont un `result` — les témoins PNJ, `interactive:false`, ne freinent jamais).
   if (interaction === 'batch') {
-    const rows: RollRowData[] = cur.participants!.flatMap((part) => {
-      const partActor = pool.find((c) => c.id === part.id);
-      if (!partActor) return [];
-      const role = findCrewRoleById(part.roleId);
-      const res = part.result;
-      const val = role ? crewRoleValue(partActor, role, part.sense).value : 0;
-      const row = res
-        ? { combatant: partActor, d: { label: role?.label ?? part.roleId, base: val, modifier: res.target - val, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl } }
-        : { combatant: partActor, pending: { label: role?.label ?? part.roleId, base: val, mods: [] } };
-      return [{
-        key: part.id,
-        actor: partActor,
-        row,
-        rolled: !!res,
-        interactive: part.interactive !== false,
-        onRoll: () => crewRoll(part.id),
-        rerollable: !!res && canReroll(res.roll > res.target, !!part.rerolled),
-        onReroll: () => crewReroll(part.id),
-        onBonusSL: () => crewBonusSL(part.id),
-        darkPactable: partActor.kind === 'hero' && !!res && res.roll > res.target,
-        onDarkPact: () => crewDarkPact(part.id),
-        onForce: () => crewForce(part.id),
-        forceShow: !!res,
-      }];
+    // Rangées-participants via le builder mutualisé (#328) : la modale ne fournit QUE la PRÉSENTATION
+    // (label/base/mods déjà résolus à la construction, GÉNÉRIQUES) + son bundle d'actions de flux ; les
+    // dérivations d'éligibilité (rerollable/darkPactable/forceShow) vivent dans `buildParticipantRows`.
+    const rows: RollRowData[] = buildParticipantRows(cur.participants!, pool, {
+      onRoll: batchRoll, onReroll: batchReroll, onBonusSL: batchBonusSL, onDarkPact: batchDarkPact, onForce: batchForce,
+      row: (part, actor, res) => {
+        const label = part.label ?? actor.name;
+        return res
+          ? { combatant: actor, d: { label, base: part.base, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl } }
+          : { combatant: actor, pending: { label, base: part.base, mods: part.mods ?? [] } };
+      },
     });
     const ready = stepReady(cur);
+    // Deux « Tout lancer » (#328) : PAR RANGÉES (lance d'un coup les contributeurs restants de CETTE
+    // étape, ≥2 non lancés — mutualisé) et CASCADE (résout d'office tout le reste de la cascade, sans
+    // influence — `cascadeResolveAll`, comme la branche jet).
+    const rollAllRows = rollAllUnrolledRows(cur.participants!, batchRoll);
+    const batchActions: RollAction[] = [
+      ...(rollAllRows ? [{ key: 'rollRows', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: rollAllRows, title: 'Lancer toutes les rangées non encore lancées', when: 'always' } as RollAction] : []),
+      ...(!isLast ? [{ key: 'all', label: <><Icon id="nav/dice" size="sm" /> Tout résoudre</>, onClick: () => resolveAll(), title: "Résoudre d'un coup tous les jets restants de la cascade (sans influence)", when: 'always' } as RollAction] : []),
+      ...(ready ? [continueAction] : []),
+    ];
     return (
       <RollShell
         title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
         subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · ${p.cursor + 1}/${p.participants.length}` : ''}</>}
+        extra={stakeNote ?? undefined}
         rolled={ready}
         rows={rows}
-        actions={ready ? [continueAction] : []}
+        actions={batchActions}
         disableEscClose
       />
     );
@@ -351,10 +355,10 @@ export function CascadeModal() {
       subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · jet ${p.cursor + 1}/${p.participants.length}` : ''}</>}
       /* Test ÉTENDU = barre de DR cumulé (prevDR + DR du jet après coup) : Peur de COMBAT (vers l'Indice)
          OU cartographie de voyage (Établir des cartes, vers `drTarget` = 2 × Étapes — porté par le poste). */
-      extra={peur ? <DrBar cum={peur.prevDR + (res?.success ? Math.max(0, res.sl) : 0)} target={peur.indice} />
+      extra={<>{stakeNote}{peur ? <DrBar cum={peur.prevDR + (res?.success ? Math.max(0, res.sl) : 0)} target={peur.indice} />
         : cur.meta?.extendedDrTarget != null
           ? <DrBar cum={Number(cur.meta.extendedDrDone ?? 0) + (res?.success ? Math.max(0, res.sl) : 0)} target={Number(cur.meta.extendedDrTarget)} />
-          : undefined}
+          : null}</>}
       rolled={rolled}
       /* Rangées : validées FIGÉES (témoins) + courante interactive (pré-jet en attente, post-jet résolue). */
       rows={[...witnessRows(doneRows), curRow]}

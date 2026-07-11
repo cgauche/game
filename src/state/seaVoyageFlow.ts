@@ -33,13 +33,13 @@ import { openRest, placesOfKind } from './restFlow';
 import { dayIndex } from './upkeep';
 import { placeById, type WorldMap, type MapPlace, type MapRoute } from './worldMap';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
-import type { ShipManeuverParticipant } from './pendings';
+import type { BatchParticipant } from './pendings';
 import { crewTestContributors, shipMoraleScore, applyShipMoraleDelta, shipSaboteurDR, applyVesselCrewLoss, resolveShoreLeaveDesertion, shipboardSouls } from './shipCrew';
 import { applyEffects, applyEffectsLoot } from './combatEffects';
 import type { Effect } from './scene';
 import { openEmbrigadementRecovery } from './embrigadementFlow';
 import { vehicleCombatant } from '../engine/vehicle';
-import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait } from '../data';
+import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait, type CrewTestTypeData } from '../data';
 import { installCost, rollSteamBreakdown, steamBreakdownTriggered, type SteamBreakdownEntry } from '../engine/shipBuild';
 import { d10, d100, roll as rollDice, type RNG } from '../engine/dice';
 import { rollTest, isDoubleRoll, extendedTestStep } from '../engine/tests';
@@ -75,7 +75,7 @@ import {
 import { navalMoveMod, navalTestTypeDR, shipHasNavalTrait } from '../engine/navalTraits';
 import { rule } from '../engine/policy';
 import { seaAutoResolves, voyageDayEntry, type VoyageOrders, type VoyageCadence } from './voyageCadence';
-import { crewRoleValue, moraleBand } from '../engine/crewMorale';
+import { crewRoleValue, moraleBand, crewTalentDR } from '../engine/crewMorale';
 import { beginShipwreck } from './shipwreck';
 import type { NightEntry } from './restFlow';
 import { subtract, toMoney, type Money } from '../engine/money';
@@ -351,6 +351,14 @@ function effectiveSeaM(get: Get): { m: number | null; sail: boolean; label: stri
  *  `testTypeId`, un ÉVÉNEMENT peut réutiliser un `testTypeId` sous un AUTRE `kind` (Ouragan → Affaler,
  *  cf. `sea-ouragan-affaler`) pour ne jamais retomber dans la routine auto-résolue (`SEA_ROUTINE_KINDS`
  *  est indexée par `kind`, pas `testTypeId`). */
+/** ENJEU surfaçable (#331) d'un Test d'équipage de voyage : l'échec de CE Test précis coûte quelque
+ *  chose de DÉJÀ implémenté dans l'applier — on l'ÉNONCE (verbatim MDG ch.14, porté par
+ *  `crew-test-types.json`). Un ÉVÉNEMENT peut réutiliser un `testTypeId` sous un autre `kind` (Ouragan →
+ *  Affaler) : l'enjeu reste celui du TYPE de Test. `undefined` = aucun enjeu documenté (rien à afficher). */
+function crewTestStake(testType: CrewTestTypeData | undefined, _kind: string): string | undefined {
+  return testType?.enjeu;
+}
+
 function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: { sense?: PairedSense; extraDR?: number; icon?: string } = {}): CascadeStep | null {
   const plan = get().travelPlan;
   const ship = plan?.vehicle;
@@ -360,25 +368,38 @@ function buildVoyageCrewStep(get: Get, testTypeId: string, kind: string, opts: {
   ship.crewIds = party.map((h) => h.id); // les PJ tiennent les rôles (MDG 14 l.39)
   const contributors = crewTestContributors(ship, party, testTypeId, new Set(party.map((h) => h.id)), opts.sense);
   if (!contributors.length) return null;
-  const essentialRoleId = findCrewTestTypeById(testTypeId)?.essential;
-  const participants: ShipManeuverParticipant[] = contributors.map((a) => ({
-    id: a.crew.id,
-    label: `${findCrewRoleById(a.roleId)?.label ?? a.roleId} — ${a.crew.name}`,
-    interactive: true,
-    roleId: a.roleId,
-    essential: a.roleId === essentialRoleId,
-    ...(opts.sense ? { sense: opts.sense } : {}),
-    result: null,
-  }));
+  const testType = findCrewTestTypeById(testTypeId);
+  const essentialRoleId = testType?.essential;
+  // Le flux propriétaire (naval) RÉSOUT la présentation (label/base) et la cible EFFECTIVE de chaque
+  // participant À LA CONSTRUCTION — le séquenceur/modale génériques n'y liront QUE des champs neutres
+  // (`BatchParticipant`). `bonusSlOnSuccess` = +DR de Talent baké (Commandant émérite, MDG 09 l.54).
+  const participants: BatchParticipant[] = contributors.map((a) => {
+    const role = findCrewRoleById(a.roleId);
+    const base = role ? crewRoleValue(a.crew, role, opts.sense).value : 0;
+    return {
+      id: a.crew.id,
+      label: role?.label ?? a.roleId,
+      interactive: true,
+      essential: a.roleId === essentialRoleId,
+      base,
+      target: effectiveTarget(a.crew, { label: '' }, 'intermediaire', base),
+      bonusSlOnSuccess: role ? crewTalentDR(a.crew, role) : 0,
+      result: null,
+    };
+  });
   const saboteur = shipSaboteurDR(ship); // MDG ch.14 l.45-47 : −1..−5 DR plats, aussi en voyage (#214)
   // #221 : Traits/Améliorations navals ciblant CE type de Test d'équipage (op `skillDRBonus` à `testType`,
   // ex. Proue-idole de Stromfels → Poursuite) — agnostique de la compétence tenue par le représentant.
   const traitDR = navalTestTypeDR(hullTraits(ship), testTypeId);
-  const extraDR = saboteur + traitDR + (opts.extraDR ?? 0);
+  // Le naval verse ses paramètres de formule DÉJÀ chiffrés en `meta` NEUTRE (bande de Moral + sabotage +
+  // traits) — l'agrégat générique (`cascade.aggregateBatchStep`) ne lit QUE `aggregateFlatDR`.
+  const flatDR = moraleBand(shipMoraleScore(get, ship)).crewTestDR + saboteur + traitDR + (opts.extraDR ?? 0);
+  const stake = crewTestStake(testType, kind); // ENJEU surfaçable (#331) : ce que l'échec du Test coûte
   return {
-    id: kind, kind, label: findCrewTestTypeById(testTypeId)?.label ?? testTypeId, icon: opts.icon ?? 'travel/anchor',
+    id: kind, kind, label: testType?.label ?? testTypeId, icon: opts.icon ?? 'travel/anchor',
     participants, aggregate: 'summed-dr', interactive: true,
-    meta: { moraleScore: shipMoraleScore(get, ship), ...(essentialRoleId ? { essentialRoleId } : {}), ...(extraDR ? { extraDR } : {}) },
+    ...(stake ? { stake } : {}),
+    ...(flatDR ? { meta: { aggregateFlatDR: flatDR } } : {}),
   };
 }
 
@@ -538,13 +559,11 @@ function dayEntriesFromStep(get: Get, step: CascadeStep): NightEntry[] {
     const actor = pool.find((c) => c.id === part.id);
     const res = part.result;
     if (!actor || !res) return [];
-    const role = findCrewRoleById(part.roleId);
-    const val = role ? crewRoleValue(actor, role, part.sense).value : res.target;
     return [voyageDayEntry({
       id: `sea-${step.kind}-${get().travelPlan?.sea?.daysAtSea ?? 0}-${part.id}-${i}`,
       actorId: part.id, icon: 'travel/anchor', label: `${step.label}${part.essential ? ' ★' : ''}`,
-      d: { label: role?.label ?? part.roleId, base: val, modifier: res.target - val, target: res.target, roll: res.roll, success: res.roll <= res.target, sl: res.sl },
-      tone: res.roll <= res.target ? 'ok' : 'bad',
+      d: { label: part.label ?? actor.name, base: part.base, modifier: res.target - part.base, target: res.target, roll: res.roll, success: res.success, sl: res.sl },
+      tone: res.success ? 'ok' : 'bad',
     })];
   });
 }

@@ -1,8 +1,8 @@
 import { useGame } from '../state/store';
 import { ownsLocally } from '../state/netFlow';
 import { testValue } from '../engine/skills';
-import { canReroll } from '../engine/fortune';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
+import { buildParticipantRows } from './buildParticipantRows';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
 import { resultLine, freeCons } from '../state/rollSeam';
@@ -33,31 +33,18 @@ export function ForceDoorModal() {
   const allRolled = p.participants.every((x) => x.result);
   const cede = roundDmg >= p.doorB;
 
-  const rows: RollRowData[] = p.participants.flatMap((part) => {
-    const actor = pool.find((c) => c.id === part.id);
-    if (!actor) return [];
-    const res = part.result;
-    const val = testValue(actor, 'corps-a-corps');
-    const row = res
-      ? { combatant: actor, d: testBreakdown('Bagarre', val, { roll: res.roll, target: res.target, sl: res.sl }) }
-      : { combatant: actor, pending: testPending('Bagarre', val) };
-    return [{
-      key: part.id,
-      actor,
-      row,
-      rolled: !!res,
-      interactive: owns(part.id),
-      rollLabel: <><Icon id="action/attack" size="sm" /> Frapper</>,
-      onRoll: () => roll(part.id),
-      rerollable: !!res && canReroll(res.roll > res.target, !!part.rerolled),
-      onReroll: () => reroll(part.id),
-      onBonusSL: () => bonusSL(part.id),
-      darkPactable: actor.kind === 'hero' && !!res && res.roll > res.target,
-      onDarkPact: () => darkPact(part.id),
-      onForce: () => force(part.id),
-      forceShow: !!res,
-      extra: res && <div className={`cs-outcome ${res.damage > 0 ? 'ok-text' : 'muted'}`}>{resultLine(freeCons([res.damage > 0 ? `−${res.damage} Blessure${res.damage > 1 ? 's' : ''}` : 'Rebondit (0 dégât)']))}</div>,
-    }];
+  // Rangées via le builder mutualisé (#328) — présentation « Bagarre » ici, éligibilité dans le builder.
+  const rows: RollRowData[] = buildParticipantRows(p.participants, pool, {
+    onRoll: roll, onReroll: reroll, onBonusSL: bonusSL, onDarkPact: darkPact, onForce: force,
+    interactiveOf: (part) => owns(part.id),
+    rollLabel: <><Icon id="action/attack" size="sm" /> Frapper</>,
+    row: (_part, actor, res) => {
+      const val = testValue(actor, 'corps-a-corps');
+      return res
+        ? { combatant: actor, d: testBreakdown('Bagarre', val, { roll: res.roll, target: res.target, sl: res.sl }) }
+        : { combatant: actor, pending: testPending('Bagarre', val) };
+    },
+    extra: (_part, _actor, res) => <div className={`cs-outcome ${res.damage > 0 ? 'ok-text' : 'muted'}`}>{resultLine(freeCons([res.damage > 0 ? `−${res.damage} Blessure${res.damage > 1 ? 's' : ''}` : 'Rebondit (0 dégât)']))}</div>,
   });
 
   const actions: RollAction[] = [

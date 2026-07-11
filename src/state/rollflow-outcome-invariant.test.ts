@@ -153,7 +153,7 @@ const SKIP: Record<string, string> = {
   shipManeuver: 'Test d’équipage par rôle (MDG ch.14) — fixture de rôle valide lourde ; `outcome` = `cleanRollOutcome` partagé (crewRoleFlowSpec), déjà exercé par la logique numérique de forceDoor',
   shipBattery: 'idem shipManeuver (MÊME crewRoleFlowSpec)',
   crewTest: 'idem shipManeuver (MÊME crewRoleFlowSpec)',
-  cascadeCrew: 'idem shipManeuver — mêmes ingrédients (`rollCrewRole`/`cleanRollOutcome`), seule la localisation des slots diverge (étape de cascade, seam #275 Décision 4 cran 1)',
+  cascadeBatch: 'batch GÉNÉRIQUE (dé-navalisé #328) — `outcome` = `cleanRollOutcome` partagé, jet `rollBatchParticipant` (Test « +0 » sur la cible bakée) ; issue mono-valeur déjà exercée par la logique numérique de forceDoor',
 };
 
 beforeEach(() => {

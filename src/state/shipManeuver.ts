@@ -30,8 +30,8 @@ import type { Combatant } from '../engine/types';
 import type { PairedSense } from '../engine/ops';
 import type { Get } from './flowTypes';
 
-/** Résultat du jet d'UN contributeur à un Test d'équipage de manœuvre (MDG ch.14). */
-export interface CrewRoleRoll { roll: number; target: number; sl: number }
+import type { CrewRoleRoll } from './pendings'; // défini côté pendings (neutre) — cf. quarantaine #328
+export type { CrewRoleRoll };
 
 /** Jet d'UN contributeur à son rôle : Test de la compétence du rôle (MDG ch.14). PUR (RNG injecté). `null` si le
  *  rôle est inconnu. La valeur suit `crewRoleValue` (meilleure compétence du rôle pour ce marin) ; sur un jet

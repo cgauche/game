@@ -266,6 +266,23 @@ function collectContagion(party: Combatant[]): ContagionSpec[] {
 //    — zéro duplication de formule vs la nuit eager (sleepParty/restRecovery). Une défaillance
 //    impacte la suite (escalade Exposition, abri → nombre de jets) → c'est pourquoi c'est séquentiel.
 
+/** ENJEU surfaçable (#331) des étapes de cascade de NUIT, par `kind` — ce que l'ÉCHEC coûte, ÉNONCÉ
+ *  VERBATIM depuis la Source (règle 5 : recollé tel quel, formatage Markdown conservé — rendu par
+ *  `<Prose>`). Le mécanisme est DÉJÀ dans l'applier ; ceci ne fait que le rendre LISIBLE sous le titre
+ *  d'étape (« on ne sait ni à quoi ça correspond, ni le résultat »). Catalogue UNIQUE des kinds de nuit ;
+ *  un kind absent n'affiche rien (surfaçage progressif — les autres restent à documenter). */
+const NIGHT_STAKES: Record<string, string> = {
+  // Nourriture (LDB 18-Traumatisme l.342) — verbatim.
+  faim: "lorsque vous n'avez plus de nourriture, vous devez effectuer un Test de Résistance tous les deux jours. Sur un premier échec, vous subissez une pénalité de –10 en **Force**  et **Endurance**. À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure.",
+  // Eau (LDB 18-Traumatisme l.340) — verbatim.
+  soif: "chaque jour sans eau nécessite un Test de Résistance. Sur un premier échec, vous subissez une pénalité de -10 en **Intelligence***,*  **Force Mentale** et **Sociabilité**. À partir du deuxième échec, toutes les autres Caractéristiques sont réduites de -10 et vous subissez 1d10 Dégâts, qui ignore les PA, avec un minimum de 1 Blessure.",
+};
+
+/** Enjeu d'un `kind` d'étape de nuit (`undefined` = aucun enjeu documenté → rien à afficher). */
+function nightStake(kind: string): string | undefined {
+  return NIGHT_STAKES[kind];
+}
+
 /** Jets d'Exposition au froid pour les campeurs (`count` par campeur) — insérés par l'abri. */
 function buildExposureSteps(party: Combatant[], camperIds: string[], count: number): CascadeStep[] {
   const steps: CascadeStep[] = [];
@@ -525,6 +542,10 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     }
   }
 
+
+  // ENJEU surfaçable (#331) : chaque étape de nuit porte ce que son échec coûte (verbatim Source),
+  // affiché sous le titre d'étape par `CascadeModal` — source UNIQUE `NIGHT_STAKES` par `kind`.
+  for (const st of steps) { const stake = nightStake(st.kind); if (stake) st.stake = stake; }
 
   // Journal : le titre de nuit + tout ce qui s'est ajouté APRÈS l'entretien (tente, récupération sans
   // jet…) — l'entretien lui-même est déjà dans le journal (`runDailyUpkeep`, écriture unique, #216).

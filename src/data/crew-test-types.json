@@ -11,10 +11,11 @@
         "timonier"
       ],
       "essential": "capitaine",
+      "enjeu": "Quand vous déterminez la progression d'un grand navire dans des conditions normales, vous pouvez effectuer un Test d'équipage au lieu d'un Test de Navigation.",
       "source": {
         "book": "mer-des-griffes",
         "page": 122,
-        "note": "ch.14 « Navigation à bord de grands vaisseaux » — Rôles essentiels (l.17-32) + TYPES DE TEST D’ÉQUIPAGE (l.61-71)."
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — Rôles essentiels (l.17-32) + TYPES DE TEST D’ÉQUIPAGE (l.61-71). Enjeu verbatim l.63."
       }
     },
     {
@@ -28,10 +29,11 @@
         "timonier"
       ],
       "essential": "mousse",
+      "enjeu": "Ce genre de Test sert à déterminer la vitesse. Il suit généralement les règles de poursuite et de course en page 109. Ce sont les Mousses qui réduisent la voilure ou qui rament, ils sont donc essentiels pour cette tâche.",
       "source": {
         "book": "mer-des-griffes",
         "page": 122,
-        "note": "ch.14 « Navigation à bord de grands vaisseaux » — Rôles essentiels (l.17-32) + TYPES DE TEST D’ÉQUIPAGE (l.61-71)."
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — Rôles essentiels (l.17-32) + TYPES DE TEST D’ÉQUIPAGE (l.61-71). Enjeu verbatim l.69."
       }
     },
     {
@@ -45,10 +47,11 @@
         "chansonnier"
       ],
       "essential": "timonier",
+      "enjeu": "Chaque fois qu'un vaisseau doit entreprendre un Test de Navigation afin de manœuvrer pour prendre un virage serré ou contourner un obstacle, ce Test peut être remplacé par un Test d'équipage. Le Timonier est le personnage le plus important dans ce cas.",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
-        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130). Enjeu verbatim l.76."
       }
     },
     {
@@ -62,10 +65,11 @@
         "chansonnier"
       ],
       "essential": "vigie",
+      "enjeu": "Chaque fois que les circonstances nécessitent qu'un personnage à bord d'un vaisseau effectue un Test de Perception pour repérer un péril imminent, une terre à l'horizon ou le signal d'un phare, ce Test peut être remplacé par un Test d'équipage.",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
-        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130). Enjeu verbatim l.82."
       }
     },
     {
@@ -79,10 +83,11 @@
         "navigateur"
       ],
       "essential": "navigateur",
+      "enjeu": "S'assurer que le bateau garde le cap est la responsabilité du Navigateur, mais les conseils de ceux qui se trouvent sur le pont l'aident indéniablement.",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
-        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130). Enjeu verbatim l.88."
       }
     },
     {
@@ -96,10 +101,11 @@
         "chansonnier"
       ],
       "essential": "mousse",
+      "enjeu": "Là où un petit navire effectuerait des Tests de Navigation pour éviter les Dégâts résultant de forts vents, un grand vaisseau peut être protégé par une prise de décision rapide de son Capitaine et par les actions promptes de l'équipage.",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
-        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130). Enjeu verbatim l.94."
       }
     },
     {
@@ -113,10 +119,11 @@
         "chansonnier"
       ],
       "essential": "mousse",
+      "enjeu": "Pour régler ce problème, l'équipage doit effectuer un Test étendu d'Extermination des nuisibles. Chaque Test nécessite que l'équipage consacre 1d10 heures à purger la vermine.",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
-        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130). Enjeu verbatim l.100."
       }
     },
     {
@@ -130,10 +137,11 @@
         "chirurgien"
       ],
       "essential": "cuisinier",
+      "enjeu": "Si le total de ce Test donne un ou plusieurs DR négatifs, réduisez le Moral d'un nombre égal au nombre de ces DR en plus des autres conséquences négatives.",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
-        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130). Enjeu verbatim l.110."
       }
     },
     {
@@ -147,10 +155,11 @@
         "navigateur"
       ],
       "essential": "mousse",
+      "enjeu": "Tout Test entrepris pour effectuer des réparations sur le navire peut être remplacé par un Test d'équipage d'Entretien.",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
-        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130). Enjeu verbatim l.120."
       }
     },
     {
@@ -164,10 +173,11 @@
         "timonier"
       ],
       "essential": "artilleur",
+      "enjeu": "Plutôt que de lancer les dés pour toucher pour chaque canon, le Test d'équipage de Tir de batterie peut être effectué et le total de DR s'applique à toutes les armes à feu tournées vers l'ennemi, pour le meilleur et pour le pire.",
       "source": {
         "book": "mer-des-griffes",
         "page": 123,
-        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130)."
+        "note": "ch.14 « Navigation à bord de grands vaisseaux » — TYPES DE TEST D’ÉQUIPAGE (l.74-130). Enjeu verbatim l.128."
       }
     }
   ]

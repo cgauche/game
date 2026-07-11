@@ -72,10 +72,10 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'shipBatteryDarkPact', 'shipBatteryConfirm', 'shipBatteryCancel',
   'battleCrewTest', 'crewTestRoll', 'crewTestReroll', 'crewTestBonusSL', 'crewTestForceSuccess', 'crewTestDarkPact',
   'crewTestConfirm', 'crewTestCancel',
-  // Étape-PARTICIPANTS d'une CASCADE (batch multi — Test d'équipage, seam de jet #275 Décision 4 cran 1) :
-  // MÊME jet par rôle que `crewTest`, localisé au step COURANT de `pendingCascade` — chaque participant
-  // roule SA rangée (routage par possession d'id, comme `crewTest*` ci-dessus).
-  'cascadeCrewRoll', 'cascadeCrewReroll', 'cascadeCrewBonusSL', 'cascadeCrewForceSuccess', 'cascadeCrewDarkPact',
+  // Étape-PARTICIPANTS GÉNÉRIQUE d'une CASCADE (batch multi, seam de jet #275 Décision 4 cran 1) :
+  // Test « +0 » sur la cible bakée du participant, localisé au step COURANT de `pendingCascade` — chaque
+  // participant roule SA rangée (routage par possession d'id, comme `crewTest*` ci-dessus).
+  'cascadeBatchRoll', 'cascadeBatchReroll', 'cascadeBatchBonusSL', 'cascadeBatchForceSuccess', 'cascadeBatchDarkPact',
   'runRoll', 'runReroll', 'runBonusSL', 'runDarkPact', 'runForceSuccess',
   'runConfirm', 'runCancel', 'focusRoll', 'focusReroll', 'focusBonusSL', 'focusDarkPact',
   'focusForceSuccess', 'focusConfirm', 'focusCancel',

@@ -17,13 +17,13 @@
  */
 import type { Get, Set } from './flowTypes';
 import type { Combatant } from '../engine/types';
-import type { CascadeStep, PendingCascade, CascadeRoll } from './pendings';
+import type { RNG } from '../engine/dice';
+import type { CascadeStep, PendingCascade, CascadeRoll, BatchParticipant, CascadeAggregate } from './pendings';
 import type { Consequence } from './rollSeam';
 import { resultLine } from './rollSeam';
 import { actorIn } from './combatOrParty';
-import { rollTest } from '../engine/tests';
+import { rollTest, evaluateTest, bestForcedRoll } from '../engine/tests';
 import { battleRng } from './battleRng';
-import { aggregateCrewRolls, rollCrewRole } from './shipManeuver';
 
 /**
  * Conséquence d'une étape, appliquée à la VALIDATION. Mute le héros (via get/set), renvoie les
@@ -109,33 +109,61 @@ export function stepReady(step: CascadeStep): boolean {
   }
 }
 
+/** Jet d'UN participant batch — GÉNÉRIQUE : d100 contre sa cible EFFECTIVE (`target`, difficulté déjà
+ *  appliquée à la construction), + `bonusSlOnSuccess` sur une réussite (Talent baké par le flux
+ *  propriétaire). PUR (RNG injecté), aucun concept de domaine. */
+export function rollBatchParticipant(p: BatchParticipant, rng: RNG): CascadeRoll {
+  const t = rollTest(p.target, 'intermediaire', rng);
+  return { roll: t.roll, target: t.target, sl: t.sl + (t.success ? (p.bonusSlOnSuccess ?? 0) : 0), success: t.success };
+}
+
+/** Résilience « Je ne faillirai pas ! » (LDB 17 l.73) pour UN participant batch : DR MAXIMAL policy-aware
+ *  sur sa cible (réussite forcée). PUR, générique. */
+export function forceBatchParticipant(p: BatchParticipant): CascadeRoll {
+  const die = bestForcedRoll(p.target);
+  const ev = evaluateTest(die, p.target);
+  return { roll: die, target: p.target, sl: ev.sl + (p.bonusSlOnSuccess ?? 0), success: true };
+}
+
+/** Agrège les jets d'une étape À PARTICIPANTS PRÊTE en un `CascadeRoll` scalaire — GÉNÉRIQUE (aucun
+ *  concept de domaine) : `best` = le meilleur DR l'emporte ; `summed-dr` (défaut) = Σ des DR (les
+ *  participants `essential` comptent DOUBLE, MDG ch.14 l.19) + `flatDR` (modificateur plat versé par le
+ *  flux, plafonné à 0 si `capMinime` — Manque de bras l.55) ; `opposed` = ce total net d'`opposeSl`. PUR. */
+export function aggregateBatchRolls(
+  parts: BatchParticipant[],
+  aggregate: CascadeAggregate = 'summed-dr',
+  opts: { flatDR?: number; capMinime?: boolean; opposeSl?: number } = {},
+): { sl: number; success: boolean } {
+  if (aggregate === 'best') {
+    const sl = parts.reduce((m, p) => (p.result && p.result.sl > m ? p.result.sl : m), -Infinity);
+    const best = Number.isFinite(sl) ? sl : 0;
+    return { sl: best, success: best > 0 };
+  }
+  let total = opts.flatDR ?? 0;
+  for (const p of parts) if (p.result) total += p.essential ? p.result.sl * 2 : p.result.sl;
+  if (opts.capMinime && total > 0) total = 0;
+  if (aggregate === 'opposed') { const sl = total - (opts.opposeSl ?? 0); return { sl, success: sl > 0 }; }
+  return { sl: total, success: total >= 1 };
+}
+
 /** Agrège une étape « batch » PRÊTE (`stepReady`) en un `CascadeRoll` scalaire — même vocabulaire
  *  `result` qu'une étape mono, pour que l'applier `cascadeAppliers[kind]` reste kind-agnostique du
- *  nombre de contributeurs (seam de jet #275 Décision 4 cran 1). `meta` porte les paramètres de
- *  formule SÉRIALISABLES (Moral, Manque de bras, sabotage — mêmes clés que `rollSeam.buildBatchStep`,
- *  `meta.essentialRoleId`/`moraleScore`/`extraDR`/`undercrewDR`/`capSuccesMinime`/`opposeSl`). */
+ *  nombre de contributeurs (seam de jet #275 Décision 4 cran 1). Les paramètres de formule vivent en
+ *  `meta` NEUTRE (`aggregateFlatDR`/`aggregateCapMinime`/`aggregateOpposeSl`), versés à la construction. */
 function aggregateBatchStep(step: CascadeStep): CascadeRoll {
   const meta = step.meta;
-  const essentialRoleId = typeof meta?.essentialRoleId === 'string' ? meta.essentialRoleId : undefined;
-  const moraleScore = typeof meta?.moraleScore === 'number' ? meta.moraleScore : 0;
-  const extraDR = typeof meta?.extraDR === 'number' ? meta.extraDR : 0;
-  const undercrewDR = typeof meta?.undercrewDR === 'number' ? meta.undercrewDR : undefined;
-  const undercrew = undercrewDR != null ? { dr: undercrewDR, capSuccesMinime: !!meta?.capSuccesMinime } : undefined;
-  const opposeSl = typeof meta?.opposeSl === 'number' ? meta.opposeSl : 0;
-  const { sl, success } = aggregateCrewRolls(step.participants!, step.aggregate ?? 'summed-dr', { essentialRoleId, moraleScore, extraDR, undercrew, opposeSl });
+  const flatDR = typeof meta?.aggregateFlatDR === 'number' ? meta.aggregateFlatDR : 0;
+  const capMinime = !!meta?.aggregateCapMinime;
+  const opposeSl = typeof meta?.aggregateOpposeSl === 'number' ? meta.aggregateOpposeSl : 0;
+  const { sl, success } = aggregateBatchRolls(step.participants!, step.aggregate ?? 'summed-dr', { flatDR, capMinime, opposeSl });
   return { roll: 0, target: 0, sl, success };
 }
 
 /** Lance d'office les participants SANS influence (pilotes automatiques — `resolveRemainingCascade`/
- *  `runCascadeImmediate`) : même jet par rôle que la modale (`rollCrewRole`, MDG ch.14), simplement
- *  sans le cycle Chance/Résilience du flux `cascadeCrew`. */
-function rollBatchParticipants(get: Get, step: CascadeStep) {
-  const s = get();
-  return step.participants!.map((p) => {
-    if (p.result) return p;
-    const crew = actorIn(s, p.id);
-    return { ...p, result: crew ? rollCrewRole(crew, p.roleId, battleRng(), p.cumul, p.sense) : null };
-  });
+ *  `runCascadeImmediate`) : même Test générique que la modale (`rollBatchParticipant`), simplement sans
+ *  le cycle Chance/Résilience du flux `cascadeBatch`. */
+function rollBatchParticipants(step: CascadeStep) {
+  return step.participants!.map((p) => (p.result ? p : { ...p, result: rollBatchParticipant(p, battleRng()) }));
 }
 
 /** Pose le choix du joueur sur l'étape « choix » COURANTE (valide que `key ∈ options`). Analogue de
@@ -285,7 +313,7 @@ export function resolveRemainingCascade(get: Get, set: Set): void {
       const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       steps = steps.map((x, k) => (k === i ? { ...x, result } : x));
     } else if (stepInteraction(st) === 'batch') {
-      steps = steps.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(get, st) } : x));
+      steps = steps.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
       // « Tout résoudre » ne TRANCHE pas un CHOIX du joueur (dévier/subir, piéger…) : on s'arrête dessus.
       set({ pendingCascade: { ...p, participants: steps, cursor: i, log } });
@@ -331,7 +359,7 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ct
       const result: CascadeRoll = { roll: t.roll, target: st.target!, sl: t.sl, success: t.success };
       cur = cur.map((x, k) => (k === i ? { ...x, result } : x));
     } else if (stepInteraction(st) === 'batch') {
-      cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(get, st) } : x));
+      cur = cur.map((x, k) => (k === i ? { ...x, participants: rollBatchParticipants(st) } : x));
     } else if (stepInteraction(st) === 'choix' && st.chosen == null) {
       const key = st.defaultChoice ?? st.options![0]?.key;
       if (key != null) cur = cur.map((x, k) => (k === i ? { ...x, chosen: key } : x));

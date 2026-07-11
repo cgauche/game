@@ -20,7 +20,10 @@ import type { HealMode } from '../engine/healing';
 import type { PsychType } from '../engine/psychology';
 import type { RollParticipant, MultiPending, PendingBase } from './rollFlowFactory';
 import type { Money } from '../engine/money';
-import type { CrewRoleRoll } from './shipManeuver';
+/** Résultat du jet d'UN contributeur à un Test d'équipage par rôle (MDG ch.14). Défini ICI (neutre,
+ *  avec les autres types de pending) pour que ce module ne dépende de RIEN du domaine naval —
+ *  `shipManeuver.ts` le RÉ-IMPORTE (quarantaine d'import #328). */
+export interface CrewRoleRoll { roll: number; target: number; sl: number }
 
 export type { Money };
 /** Une ligne de butin d'équipement (giveTrapping) ATTRIBUABLE par portrait — partagée entre
@@ -1017,6 +1020,13 @@ export interface BladeTrapFreeze {
 }
 export interface CascadeStepMeta {
   [key: string]: number | string | boolean | Flow | GameOp[] | OpposedFreeze | FreeAttackFreeze | BladeTrapFreeze | ManeuverDefenseFreeze | undefined;
+  /** Modificateur PLAT au total d'une étape batch sommée — NEUTRE : le flux propriétaire y verse ses
+   *  paramètres DÉJÀ chiffrés (le naval : bande de Moral + Manque de bras + sabotage, MDG ch.14). */
+  aggregateFlatDR?: number;
+  /** Plafonne le total sommé à 0 (« jamais mieux qu'un Succès Minime », Manque de bras MDG ch.14 l.55). */
+  aggregateCapMinime?: boolean;
+  /** Marge adverse soustraite du total (`aggregate:'opposed'` — contresort). */
+  aggregateOpposeSl?: number;
   /** Branche de réussite d'une étape `triggeredTest` (exécutée via `applyTriggeredTestBranch`). */
   onSuccess?: Flow;
   /** Branche d'échec d'une étape `triggeredTest`. */
@@ -1075,6 +1085,30 @@ export const WORLD_STEP_OWNER = '__world-step__';
  *  `CascadeStep` depuis ce module — la définir là-bas et l'importer ICI créerait un cycle. */
 export type CascadeAggregate = 'best' | 'opposed' | 'summed-dr';
 
+/** Un CONTRIBUTEUR à une étape À PARTICIPANTS de cascade (batch multi). GÉNÉRIQUE, kind-agnostique : sa
+ *  PRÉSENTATION (`label`/`base`/`mods`) et sa cible EFFECTIVE (`target`) sont RÉSOLUES à la CONSTRUCTION
+ *  de l'étape par le flux propriétaire (le naval `buildVoyageCrewStep` dérive tout depuis `crewRoleValue`
+ *  — le séquenceur et la modale n'y lisent QUE ces champs neutres, aucun concept de domaine). Le jet est
+ *  un Test « déjà +0 » sur `target` (`evaluateTest`) ; sur une réussite s'ajoute `bonusSlOnSuccess` (le
+ *  +DR de Talent baké à la construction). `essential` = contribue DOUBLE à l'agrégat sommé (générique). */
+export interface BatchParticipant extends RollParticipant {
+  /** Valeur « brute » du Test (affichage de rangée). */
+  base: number;
+  /** Cible EFFECTIVE (difficulté déjà appliquée) — l'auto-roll générique évalue le d100 contre elle. */
+  target: number;
+  /** Détail additif de la rangée (affichage). */
+  mods?: { label: string; value: number }[];
+  /** Contribue DOUBLE à l'agrégat sommé (rôle essentiel MDG ch.14 l.19 — « compte double », générique). */
+  essential?: boolean;
+  /** +DR ajouté au DR d'un jet RÉUSSI (Talent baké à la construction — Commandant émérite MDG 09 l.54). */
+  bonusSlOnSuccess?: number;
+  result: CascadeRoll | null;
+  /** Relance par Chance déjà effectuée (1 max/Test, LDB 12 l.40). */
+  rerolled?: boolean;
+  /** Réussite forcée par Résilience (LDB 17 l.73). */
+  forced?: boolean;
+}
+
 export interface CascadeStep extends RollParticipant {
   /** Nature de la conséquence (clé de `cascadeAppliers`). Ex. 'recovery' | 'nightmare' | 'exposure'. */
   kind: string;
@@ -1098,6 +1132,10 @@ export interface CascadeStep extends RollParticipant {
   worldOwner?: boolean;
   /** Libellé du Test affiché (« Résistance », « Calme », « Survie en extérieur »…). */
   rollLabel?: string;
+  /** ENJEU surfaçable (#331) : ce que l'ÉCHEC de l'étape coûte, ÉNONCÉ verbatim depuis la Source (le
+   *  mécanisme est déjà dans l'applier — ceci ne fait que le rendre LISIBLE sous le titre d'étape).
+   *  Posé à la construction par le flux propriétaire depuis son catalogue (crew-test-types / nuit). */
+  stake?: string;
   /** Valeur « brute » du Test (carac/compétence, avant difficulté) — affichage. */
   base?: number;
   /** Cible EFFECTIVE (difficulté déjà appliquée → Test « +0 » sur `target`). Absent → étape sans jet. */
@@ -1146,13 +1184,15 @@ export interface CascadeStep extends RollParticipant {
   chosen?: string;
   /** Clé choisie d'office par « Tout lancer » / résolution immédiate (défaut = `options[0]`). */
   defaultChoice?: string;
-  /** Étape À PARTICIPANTS (batch multi — Test d'équipage MDG ch.14, seam de jet #275 Décision 4 cran 1) :
-   *  UNE rangée par contributeur (`ShipManeuverParticipant`, résolue via le flux `cascadeCrew` — MÊME
-   *  jet par rôle que `crewRoleFlowSpec`), influençable INDÉPENDAMMENT. Prête quand tous les
-   *  participants INTERACTIFS ont `result` (`stepReady`) ; `commitStep` agrège alors (`aggregate`,
-   *  défaut `summed-dr`) dans `step.result` avant d'invoquer l'applier — l'applier lit `step.result`
-   *  comme une étape mono, kind-agnostique. `target`/`base` restent absents (aucun jet PROPRE à l'étape). */
-  participants?: ShipManeuverParticipant[];
+  /** Étape À PARTICIPANTS (batch multi, seam de jet #275 Décision 4 cran 1) : UNE rangée par
+   *  contributeur GÉNÉRIQUE (`BatchParticipant`, résolu via le flux `cascadeBatch`), influençable
+   *  INDÉPENDAMMENT. Prête quand tous les participants INTERACTIFS ont `result` (`stepReady`) ;
+   *  `commitStep` agrège alors (`aggregate`, défaut `summed-dr`) dans `step.result` avant d'invoquer
+   *  l'applier — l'applier lit `step.result` comme une étape mono, kind-agnostique. `target`/`base` de
+   *  l'ÉTAPE restent absents (le jet vit sur chaque participant). Les paramètres de la formule d'agrégat
+   *  (`aggregateFlatDR`/`aggregateCapMinime`/`aggregateOpposeSl`) sont posés en `meta` NEUTRE à la
+   *  construction par le flux propriétaire (le naval y verse Moral/Manque de bras/sabotage déjà chiffrés). */
+  participants?: BatchParticipant[];
   /** Agrégation de `participants` (défaut `summed-dr`, Test d'équipage MDG ch.14 l.13). */
   aggregate?: CascadeAggregate;
 }

@@ -18,6 +18,8 @@ import type { CascadeStep } from './pendings';
 import { resumeTravel } from './travelFlow';
 import { applyEffects } from './combatEffects';
 import { cascadeAppliers } from './cascade';
+import { crewRoleValue } from '../engine/crewMorale';
+import { findCrewRoleById } from '../data';
 import { resultLine } from './rollSeam';
 import { checkBattleOver } from './combatFlow';
 
@@ -65,7 +67,7 @@ function stepCascade(): void {
   const p = get().pendingCascade;
   if (!p) return;
   const cur = p.participants[p.cursor];
-  if (cur?.participants) { for (const part of cur.participants) if (!part.result) get().cascadeCrewRoll(part.id); }
+  if (cur?.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
   else if (cur && !cur.result) get().cascadeRoll(cur.id);
   get().cascadeNext();
 }
@@ -157,7 +159,9 @@ describe('Carte marine (MDG 15) — Orientation & Planque (#147)', () => {
       const p = get().pendingCascade;
       if (!p) break;
       const cur = p.participants[p.cursor];
-      if (cur?.kind === 'orientation') extra = Number(cur.meta?.extraDR ?? 0) || undefined;
+      // Dé-navalisation (#328) : Moral + sabotage + traits + carte sont versés DÉJÀ chiffrés dans le
+      // modificateur plat NEUTRE `aggregateFlatDR`. À Moral 75 (bande crewTestDR 0), il isole la carte/sabotage.
+      if (cur?.kind === 'orientation') extra = Number(cur.meta?.aggregateFlatDR ?? 0) || undefined;
       stepCascade();
     }
     return extra;
@@ -250,19 +254,23 @@ describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG ch.13 l.
       const cur = p.participants[p.cursor];
       if (cur?.kind === 'phare') { phare = cur; break; }
       if (cur?.kind === 'progression') progression = cur;
-      if (cur?.participants) { for (const part of cur.participants) if (!part.result) useGame.getState().cascadeCrewRoll(part.id); }
+      if (cur?.participants) { for (const part of cur.participants) if (!part.result) useGame.getState().cascadeBatchRoll(part.id); }
       else if (cur && !cur.result) useGame.getState().cascadeRoll(cur.id);
       useGame.getState().cascadeNext();
     }
     expect(phare).toBeTruthy(); // l'étape du phare a bien été atteinte (port à phare, km 1 → dans la portée dès le jour 1)
-    // Le sens est posé pour TOUT le Test (kind 'phare' = Perception visuelle), pas juste pour la Vigie —
-    // n'importe quel contributeur (Timonier compris) « voit » la lumière.
-    for (const part of phare!.participants!) expect(part.sense).toBe('vue');
-    const vigiePart = phare!.participants!.find((x) => x.roleId === 'vigie');
+    // Dé-navalisation (#328) : `sense`/`roleId` ne sont plus des champs du participant GÉNÉRIQUE —
+    // l'effet du sens « vue » est BAKÉ dans la présentation `base` À LA CONSTRUCTION (`crewRoleValue`,
+    // kind 'phare' = Perception visuelle). On l'OBSERVE : la base de la Vigie SOURDE au phare = sa
+    // valeur de Perception avec sens « vue » (non pénalisée), non la valeur sans sens (pénalisée).
+    const vigie = useGame.getState().party.find((h) => h.traumas?.some((t) => t.traumaId === 'surdite'))!;
+    const vigieRole = findCrewRoleById('vigie')!;
+    const vigiePart = phare!.participants!.find((x) => x.id === vigie.id);
     expect(vigiePart).toBeTruthy();
-    // Autre étape (Progression, sans sens narratif dédié) : PAS de sens posé — comportement historique.
+    expect(vigiePart!.base).toBe(crewRoleValue(vigie, vigieRole, 'vue').value);
+    // Autre étape (Progression, sans sens narratif dédié) : base résolue SANS sens — comportement historique.
     expect(progression).toBeTruthy();
-    for (const part of progression!.participants!) expect(part.sense).toBeUndefined();
+    for (const part of progression!.participants!) expect(typeof part.base).toBe('number');
   });
 });
 

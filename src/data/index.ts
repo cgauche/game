@@ -1413,6 +1413,8 @@ export interface CrewTestTypeData {
   label: string;
   roles: string[];
   essential: string;
+  /** ENJEU du Test (#331) : ce que l'échec coûte, verbatim MDG ch.14 — surfacé sous le titre d'étape. */
+  enjeu?: string;
 }
 export const crewRoles = crewRolesJson as CrewRoleData[];
 const crewRoleById = new Map(crewRoles.map((r) => [r.id, r]));

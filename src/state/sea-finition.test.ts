@@ -51,7 +51,7 @@ function freshState() {
 /** Déroule la journée maritime jusqu'à une SUSPENSION (halte, Activités en mer) — la journée est
  *  désormais UNE cascade `purpose:'travelDay'` (#275 Ronde 2 cran 3) : chaque étape est soit MONO
  *  (Forcer le rythme/Prière, `klass:'hero-test'`) soit À PARTICIPANTS (batch, Tests d'équipage MDG
- *  ch.14 — `cascadeCrewRoll` par contributeur). Garde-fou 40 pas (crises/événements possibles).
+ *  ch.14 — `cascadeBatchRoll` par contributeur). Garde-fou 40 pas (crises/événements possibles).
  *  `await tick()` laisse s'exécuter le `setTimeout` de reprise d'un applier surfacé isolément
  *  (Ouragan/Prière — `seaVoyageFlow.ts`), comme un vrai clic UI l'espacerait. */
 const tick = () => new Promise<void>((r) => setTimeout(r, 0));
@@ -62,7 +62,7 @@ async function runOneSeaDay() {
     const casc = get().pendingCascade;
     if (casc) {
       const cur = casc.participants[casc.cursor];
-      if (cur?.participants) { for (const part of cur.participants) if (!part.result) get().cascadeCrewRoll(part.id); }
+      if (cur?.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
       else if (cur && !cur.result) get().cascadeRoll(cur.id);
       get().cascadeNext();
       await tick();

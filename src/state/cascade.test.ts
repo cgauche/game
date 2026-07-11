@@ -5,7 +5,7 @@ import { makeRNG } from '../engine/dice';
 import { startCascade, registerCascadeApplier, stepInteraction, stepReady, buildConsequenceSteps } from './cascade';
 import { freeCons } from './rollSeam';
 import { spyApplier } from './cascadeTestKit';
-import type { CascadeStep, ShipManeuverParticipant } from './pendings';
+import type { CascadeStep, BatchParticipant } from './pendings';
 
 /**
  * CASCADE séquentielle influençable (jets de NUIT / VOYAGE) — cœur générique. 3ᵉ consommateur de la
@@ -190,9 +190,9 @@ describe('Cascade séquentielle influençable', () => {
     useGame.setState({ party: [h1, h2] });
     spyApplier('crew-batch', applied, (step) => ({ kind: step.kind, success: !!step.result?.success }),
       (step) => ({ consequences: freeCons([`${step.label} → DR ${step.result?.sl}`]) }));
-    const participants: ShipManeuverParticipant[] = [
-      { id: h1.id, label: 'Timonier — Timonier', roleId: 'timonier', essential: true, interactive: true, result: null },
-      { id: h2.id, label: 'Vigie — Vigie', roleId: 'vigie', essential: false, interactive: true, result: null },
+    const participants: BatchParticipant[] = [
+      { id: h1.id, label: 'Timonier', essential: true, interactive: true, base: 40, target: 40, result: null },
+      { id: h2.id, label: 'Vigie', essential: false, interactive: true, base: 40, target: 40, result: null },
     ];
     const batch: CascadeStep = { id: 'progression', kind: 'crew-batch', label: 'Progression', participants, result: null, interactive: true };
     startCascade(useGame.getState, useGame.setState, { title: 'Voyage', purpose: 'test', steps: [batch] });
@@ -200,9 +200,9 @@ describe('Cascade séquentielle influençable', () => {
     expect(stepReady(useGame.getState().pendingCascade!.participants[0])).toBe(false); // aucun participant lancé
     useGame.getState().cascadeNext(); // batch pas prêt → no-op (aucun participant lancé)
     expect(applied).toHaveLength(0);
-    useGame.getState().cascadeCrewRoll(h1.id);
+    useGame.getState().cascadeBatchRoll(h1.id);
     expect(stepReady(useGame.getState().pendingCascade!.participants[0])).toBe(false); // h2 pas encore lancé
-    useGame.getState().cascadeCrewRoll(h2.id);
+    useGame.getState().cascadeBatchRoll(h2.id);
     expect(stepReady(useGame.getState().pendingCascade!.participants[0])).toBe(true);
     useGame.getState().cascadeNext(); // agrège (essentiel ×2, MDG ch.14 l.19) puis applique
     expect(applied).toHaveLength(1);

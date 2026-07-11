@@ -22,19 +22,19 @@
  *     à l'hôte (sinon) — couture la PLUS PETITE (aucune extension d'`intentAllowedFor`, le repli
  *     générique `seatOwns(s, seat, owner)` suffit déjà). `batch` (agrégat, pas de `worldOwner`) reste
  *     hors de cet écart — cf. 2.
- *  2. **`batch` utilise `CascadeStep.participants`.** FERMÉ Ronde 2 cran 2 : `buildBatchStep` pose une
- *     étape À PARTICIPANTS non résolue (une rangée par contributeur, flux `cascadeCrew`) — l'AGRÉGAT
- *     (`step.aggregate`, MDG ch.14) est calculé par `cascade.commitStep`/`aggregateBatchStep` à la
- *     VALIDATION, kind-agnostique du nombre de contributeurs. Les paramètres de formule que `RollRequest`
- *     ne porte pas (Moral du navire, Manque de bras, sabotage — `maneuverCrewTotal`, `shipManeuver.ts:67`)
- *     transitent par `meta` (seule voie SÉRIALISABLE, `CascadeStepMeta`) quand le call-site les fournit ;
- *     par défaut 0/absent.
+ *  2. **`batch` utilise `CascadeStep.participants`.** FERMÉ Ronde 2 cran 2, DÉ-NAVALISÉ Ronde batch
+ *     (#328) : `buildBatchStep` pose une étape À PARTICIPANTS GÉNÉRIQUES (`BatchParticipant`, flux
+ *     `cascadeBatch`) — l'AGRÉGAT (`step.aggregate`) est calculé GÉNÉRIQUEMENT par
+ *     `cascade.aggregateBatchStep` à la VALIDATION, kind-agnostique du nombre de contributeurs. Les
+ *     paramètres de formule que `RollRequest` ne porte pas (Moral, Manque de bras, sabotage) transitent
+ *     DÉJÀ CHIFFRÉS par le flux propriétaire via `meta` NEUTRE (`aggregateFlatDR`/`aggregateCapMinime`/
+ *     `aggregateOpposeSl`, `CascadeStepMeta`) ; par défaut 0/absent.
  */
 import type { Get, Set } from './flowTypes';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';
-import type { CascadeStep, CascadeStepMeta, ShipManeuverParticipant, CascadeAggregate } from './pendings';
+import type { CascadeStep, CascadeStepMeta, BatchParticipant, CascadeAggregate } from './pendings';
 import { TestOutcome } from '../engine/testOutcome';
 import { actorIn } from './combatOrParty';
 import { startCascade, runCascadeImmediate } from './cascade';
@@ -63,7 +63,7 @@ export interface RollRequest {
     | { actorId: string }
     | { partyBest: { skill?: string; char?: CharKey; assisted?: boolean } }
     | { worldSide: 'enemy' | 'ship'; shipId?: string }
-    | { participants: ShipManeuverParticipant[]; shipId: string };
+    | { participants: BatchParticipant[]; shipId: string };
   /** Le TEST déclaré (réf structurée — passe telle quelle à `testValue`). `label` = le NOM DE L'ACTION
    *  SEUL (« Forcer le rythme », « Prière », « Désertion »…) — jamais un template pré-assemblé avec le
    *  nom de l'acteur/la compétence/la difficulté : la porte COMPOSE l'affichage complet (`composeRollLabel`)
@@ -242,11 +242,11 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
 
 /** Résout le côté `batch` en étape À PARTICIPANTS (seam de jet #275 Décision 4 cran 1/2, FERME l'écart
  *  2 de la Ronde 0) : UNE rangée par contributeur (`CascadeStep.participants`), non résolue — le jet de
- *  chaque contributeur vit dans la modale (flux `cascadeCrew`, `rollFlowSpecs.ts:1042`) ou, en surface I,
- *  dans `cascade.rollBatchParticipants` (`runCascadeImmediate`). L'AGRÉGAT (`step.aggregate` + `step.meta`
- *  essentiel/Moral/manque de bras/sabotage) est calculé par `cascade.commitStep`/`aggregateBatchStep` à la
- *  VALIDATION de l'étape — ce constructeur ne lance plus rien lui-même (avant : agrégat pré-résolu d'office,
- *  la modale ne montrait que le TOTAL — Ronde 0, écart 2 documenté ci-dessus). */
+ *  chaque contributeur vit dans la modale (flux `cascadeBatch`) ou, en surface I, dans
+ *  `cascade.rollBatchParticipants` (`runCascadeImmediate`). L'AGRÉGAT (`step.aggregate` + `step.meta`
+ *  NEUTRE : `aggregateFlatDR`/`aggregateCapMinime`/`aggregateOpposeSl`) est calculé GÉNÉRIQUEMENT par
+ *  `cascade.aggregateBatchStep` à la VALIDATION — ce constructeur ne lance plus rien lui-même (avant :
+ *  agrégat pré-résolu d'office, la modale ne montrait que le TOTAL — Ronde 0, écart 2 documenté ci-dessus). */
 function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: CascadeStepMeta): CascadeStep {
   const participants = 'participants' in req.side ? req.side.participants : [];
   void get;

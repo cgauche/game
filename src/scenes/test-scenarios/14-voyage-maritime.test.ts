@@ -44,7 +44,7 @@ function sailToPort(maxSteps = 400): string[] {
       const cur = casc.participants[casc.cursor];
       if (cur) {
         kinds.push(cur.kind);
-        if (cur.participants) { for (const part of cur.participants) if (!part.result) get().cascadeCrewRoll(part.id); }
+        if (cur.participants) { for (const part of cur.participants) if (!part.result) get().cascadeBatchRoll(part.id); }
         else if (!cur.result) get().cascadeRoll(cur.id);
       }
       get().cascadeNext();
