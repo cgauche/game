@@ -515,6 +515,11 @@ export interface TrappingData {
    *  appliqués tant que l'objet est PORTÉ ou TENU (collecteur `passiveMods`). Ex. Bésicles → `skillMod`
    *  +20 Langue/Perception (LDB 67). */
   passive?: import('../engine/ops').GameOp[];
+  /** Tarif d'un SERVICE (LDB p.302 : chambre/écurie…), pas un objet possédable — Enc « – » dans la
+   *  source (≠ 0, RAW ne le compte même pas comme non-encombrant). N'entre JAMAIS en stock marchand
+   *  (`computeFreshStockLines`), ni en inventaire (`itemFromTrappingById` refuse bruyamment) ; reste
+   *  la source de PRIX pour son consommateur (référencée par id) et visible au Codex/Compendium. */
+  service?: boolean;
 }
 /** Groupe d'objet (taxonomie `subType` id-ifiée) : Groupe d'ARME (Base, Escrime, Deux-mains, Armes
  *  d'hast…), famille de MUNITION (Arc, Arbalète, Poudre noire…), type d'ARMURE (Plate, Mailles, Cuir

@@ -3653,7 +3653,8 @@
     "source": {
       "book": "livre-de-base",
       "page": 302
-    }
+    },
+    "service": true
   },
   {
     "id": "chambre-privee-nuit",
@@ -3676,7 +3677,8 @@
     "source": {
       "book": "livre-de-base",
       "page": 302
-    }
+    },
+    "service": true
   },
   {
     "id": "ecurie-nuit",
@@ -3699,7 +3701,8 @@
     "source": {
       "book": "livre-de-base",
       "page": 302
-    }
+    },
+    "service": true
   },
   {
     "id": "nourriture-courses-journee",

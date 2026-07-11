@@ -166,6 +166,7 @@ export function itemFromVehicleById(id: string): ItemInstance | null {
 export function itemFromTrappingById(id: string): ItemInstance | null {
   const t = findTrappingById(id);
   if (!t) return itemFromVehicleById(id);
+  if (t.service) throw new Error(`itemFromTrappingById: "${t.id}" est un tarif de service (LDB p.302), pas un objet possédable.`);
   const kind = kindOf(t.type);
   const locs =
     t.loc != null
