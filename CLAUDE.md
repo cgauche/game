@@ -197,6 +197,7 @@ fait DANS la primitive, pas dans une nième copie.
 | En-tête A→B d'une modale de combat | `VsHeader` | `src/ui/VsHeader.tsx` |
 | Affichage d'un personnage (HUD/modale/picker) | `PortraitTile` / `CharFrame` | `src/ui/PortraitTile.tsx` |
 | Champ de **filtre/recherche** de liste (catalogue, palette, sélecteur) — état + filtre pur | `SearchFilterField` (widget) + `useFilteredList`/`filterByLabel` (état/pur) | `src/ui/SearchFilterField.tsx` |
+| **Maître-détail** (liste GAUCHE + détail CENTRE — Codex/Compendium ad hoc, palettes de l'éditeur, pickers…) — *réflexe avant toute 2e composition liste+détail* | `MasterDetail` (gabarit de LAYOUT pur, slots `list`/`detail` : l'état de sélection reste chez l'appelant) | `src/ui/MasterDetail.tsx` |
 | Lookup d'une table d100 par fourchette `[min,max]` | `findTableEntry` | `src/engine/tables.ts` |
 | Modificateurs de combat « brut » (Avantage×10 + État) | `baseTestMods` | `src/engine/combat.ts` |
 | Libellé d'attaque gratuite de créature (`freeKind`) | `FREE_ATTACK_LABEL` | `src/engine/combat.ts` |
@@ -217,8 +218,11 @@ fait DANS la primitive, pas dans une nième copie.
 
 > Pistes ÉVALUÉES puis ÉCARTÉES (sites trop divergents pour une source unique propre — ne pas
 > « globaliser » de force) : `confirmPending` (les `xConfirm` divergent par leur garde de résultat et
-> réutilisent `battle` localement → un wrapper ne raccourcit rien), `useMasterDetail`
-> (marchand ⇄ carte divergent après sélection), `<StatChip>`/`itemStatParts` (3 formes de données
+> réutilisent `battle` localement → un wrapper ne raccourcit rien), `useMasterDetail` — le rejet
+> portait sur le **HOOK D'ÉTAT** partagé (marchand ⇄ carte divergent après sélection) et reste
+> valide ; le **GABARIT DE LAYOUT** (slots liste/détail, aucun état) en a été extrait en primitive
+> sous #330 → voir `MasterDetail` dans la table ci-dessus (périmètre précisé 2026-07-11, le verdict
+> d'origine ne portait que sur l'état) — `<StatChip>`/`itemStatParts` (3 formes de données
 > différentes : chaîne d'`ItemInstance`, `Combatant.weapons` résolues, table par famille). Le sweep
 > `actorIn` dans `store.ts` est aussi écarté : `battle` y reste en portée pour le `set` final.
 

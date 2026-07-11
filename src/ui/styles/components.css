@@ -14,6 +14,7 @@
      .modal-overlay/.modal  cadre de modale partagé (+ .modal-actions/.btn-ghost/.rm-influence)
      .charprev           aperçu « perso en pied » (CharacterPreview) : tailles + ambiances
      .icon               icône SVG maison (primitive <Icon> — src/ui/Icon.tsx, registre src/ui/icons/)
+     .master-detail      maître-détail (liste gauche + détail centre) — primitive MasterDetail.tsx
    Titres de section : réutiliser `.mini-title` (déjà global).                              */
 
 /* ── SURFACE ── */
@@ -374,4 +375,37 @@
 }
 .fx-chip-label {
   font-size: 11px;
+}
+
+/* ── MASTER-DETAIL (primitive MasterDetail.tsx, #330) — liste GAUCHE + détail CENTRE, gabarit de
+   LAYOUT pur (aucun état dedans, cf. doc du composant). ≤700px (breakpoint canon) : empilement,
+   liste en rangée qui s'enroule (pas de scroll horizontal, y compris à 360px). ── */
+.master-detail {
+  display: grid;
+  grid-template-columns: minmax(160px, 240px) 1fr;
+  gap: 12px;
+  align-items: start;
+  min-width: 0;
+}
+.master-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+}
+.master-detail-detail {
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .master-detail {
+    grid-template-columns: 1fr;
+  }
+  .master-detail-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-height: none;
+    overflow: visible;
+  }
 }

@@ -73,6 +73,7 @@ n'exclut pas un usage indirect hors des modules racines déclarés).
 | `RefField` |  |  |  |  |  |  | U | U | U | U | U |  |  |  | U | U |
 | `Prose` |  |  |  |  |  |  | U | U | U | U | U |  |  |  | U | U |
 | `resolveRender/pickBackend` |  | U | U |  | U |  | U | U | U | U | U | U | U | U | U | U |
+| `MasterDetail` |  |  |  |  |  |  |  |  |  | U |  |  |  |  |  |  |
 | `gen-registry (_registry.generated)` |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
 
 ## Primitives jamais adoptées par un système déclaré

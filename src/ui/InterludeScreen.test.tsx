@@ -53,17 +53,20 @@ describe('InterludeScreen — refonte LOT 6', () => {
     expect(html).toContain('Forgeron');
   });
 
-  it('Activités : boutons de volet par héros (gabarit commun) + clôture pour l’hôte', () => {
+  it('Activités : UN héros à la fois (Tabs) + maître-détail (liste des Activités) + clôture pour l’hôte', () => {
     const seam = buildSeam();
     const html = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: 'activities' }} />);
     // plus AUCUNE saisie de libellé exact héritée du POC
     expect(html).not.toContain('nom exact');
-    expect(html).toContain('Revenus…'); // Revenus est un volet comme les autres (gabarit commun)
-    expect(html).toContain('Artisanat…');
-    expect(html).toContain('Apprentissage…');
-    expect(html).toContain('Commande…');
-    expect(html).toContain('Banque…');
-    expect(html).toContain('Identifier…');
+    expect(html).toContain('tab-btn'); // Tabs (primitive UNIQUE) — les onglets SÉLECTIONNENT le héros (#330)
+    expect(html.match(/interlude-hero panel/g)?.length).toBe(1); // UN SEUL volet de héros rendu à la fois
+    expect(html).toContain('master-detail'); // gabarit MasterDetail (liste GAUCHE + détail CENTRE)
+    expect(html).toContain('Revenus'); // Revenus est un volet comme les autres (gabarit commun)
+    expect(html).toContain('Artisanat');
+    expect(html).toContain('Apprentissage');
+    expect(html).toContain('Commande');
+    expect(html).toContain('Banque');
+    expect(html).toContain('Identifier');
     expect(html).toContain('●'); // pips (bandeau)
     expect(html).toContain('Clore l&#x27;interlude…');
   });
@@ -74,6 +77,9 @@ describe('InterludeScreen — refonte LOT 6', () => {
     const html = renderToStaticMarkup(
       <InterludeScreen seam={{ ...seam, phase: 'activities', openPane: { heroId: hero.id, pane: 'revenus' } }} />,
     );
+    expect(html).toContain('master-detail'); // maître-détail (#330) : liste GAUCHE + détail CENTRE
+    expect(html).toContain('interlude-pane-desc'); // la description VERBATIM `<Prose>` (`desc` de activities.json)
+    expect(html).toContain('Cette Activité englobe'); // desc de Revenus — EXISTAIT en donnée, jamais affichée avant #330
     expect(html).toContain('interlude-pane-foot'); // le pied du gabarit
     expect(html).toContain('rm-roll pending'); // la ligne de pré-jet (PendingRollLine)
     expect(html).toContain('Accessible'); // la Difficulté du Test de Revenus (LDB 08)
@@ -89,6 +95,7 @@ describe('InterludeScreen — refonte LOT 6', () => {
     const html = renderToStaticMarkup(
       <InterludeScreen seam={{ ...seam, phase: 'activities', catalog, openPane: { heroId: hero.id, pane: 'convalescence' } }} />,
     );
+    expect(html).toContain('master-detail'); // maître-détail (#330)
     expect(html).toContain('interlude-pane-foot');
     expect(html).toContain('Calme'); // la compétence du Test (chip Codex)
     expect(html).toContain('Très difficile'); // la Difficulté (chip de mod du pré-jet)
@@ -101,6 +108,7 @@ describe('InterludeScreen — refonte LOT 6', () => {
     const html = renderToStaticMarkup(
       <InterludeScreen seam={{ ...seam, phase: 'activities', openPane: { heroId: hero.id, pane: 'bank' } }} />,
     );
+    expect(html).toContain('master-detail'); // maître-détail (#330)
     expect(html).toContain('interlude-pane-foot');
     expect(html).not.toContain('rm-roll pending'); // pas de Test : dépôt direct
     expect(html).toContain('Sans jet');
@@ -163,8 +171,8 @@ describe('InterludeScreen — catalogue d’Activités data-driven (ADE2 + ACE A
     useGame.setState({ worldMap: null });
     const catalog = interludeCatalog(useGame.getState());
     const html = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: 'activities', catalog }} />);
-    expect(html).toContain('Convalescence…');
-    expect(html).not.toContain('Pénitence…');
+    expect(html).toContain('Convalescence');
+    expect(html).not.toContain('Pénitence');
     expect(html).not.toContain('Mécénat');
   });
 
@@ -173,11 +181,11 @@ describe('InterludeScreen — catalogue d’Activités data-driven (ADE2 + ACE A
     useGame.setState({ worldMap: { id: 'w', nom: 'W', places: [{ id: 'altdorf', label: 'Altdorf', pos: { x: 0, y: 0 }, scene: testScene.id }], routes: [] } });
     const catalog = interludeCatalog(useGame.getState());
     const html = renderToStaticMarkup(<InterludeScreen seam={{ ...seam, phase: 'activities', catalog }} />);
-    expect(html).toContain('Convalescence…');
-    expect(html).toContain('Pénitence…');
-    expect(html).toContain('Entraînement avec une arme inhabituelle…');
-    expect(html).toContain('Tester des objets magiques…');
-    expect(html).toContain('Recherche universitaire…');
+    expect(html).toContain('Convalescence');
+    expect(html).toContain('Pénitence');
+    expect(html).toContain('Entraînement avec une arme inhabituelle');
+    expect(html).toContain('Tester des objets magiques');
+    expect(html).toContain('Recherche universitaire');
     expect(html).not.toContain('Mécénat…'); // pas un volet héros : variante d'Opération bancaire (volet Banque)
   });
 });

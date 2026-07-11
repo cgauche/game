@@ -408,6 +408,12 @@
 .interlude-actions { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 0; align-items: center; }
 .interlude-craft-q { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; font-size: 12px; }
 
+/* Maître-détail des Activités (#330, `MasterDetail`) : liste GAUCHE en boutons pleine largeur
+   alignés à gauche (liste de boutons a11y — cf. doc du composant). */
+.interlude-master { margin-top: 8px; }
+.interlude-activity-btn { display: flex; align-items: center; gap: 6px; width: 100%; justify-content: flex-start; text-align: left; }
+.interlude-master-empty { padding: 10px 0; text-align: center; }
+
 .interlude-fx { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
 /* Chips d'États de clôture (EffectChips) posées DANS une phrase du récap → flux inline. */
 .interlude-recap-list .fx-chips { display: inline-flex; vertical-align: middle; }

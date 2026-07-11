@@ -208,6 +208,14 @@
     "verrou": "gameiso-purity.test.ts"
   },
   {
+    "id": "masterDetail",
+    "nom": "MasterDetail",
+    "fichier": "src/ui/MasterDetail.tsx",
+    "concept": "gabarit maître-détail (liste gauche + détail centre), layout pur sans état",
+    "perimetre": "tout écran à sélection dans une liste + détail (interlude, Codex, palettes, pickers)",
+    "verrou": "—"
+  },
+  {
     "id": "genRegistry",
     "nom": "gen-registry (_registry.generated)",
     "fichier": "scripts/gen-registry.mjs",

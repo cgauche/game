@@ -37,6 +37,8 @@ import { PendingRollLine, type PendingRoll } from './RollLine';
 import { testPending, optionPending, difficultyMods } from './breakdown';
 import { Prose, mdToText } from './Prose';
 import { SearchFilterField, useFilteredList } from './SearchFilterField';
+import { MasterDetail } from './MasterDetail';
+import { Tabs } from './Tabs';
 import { t } from '../i18n';
 
 /** Atouts/Défauts d'artisanat (LDB 60 l.55-90) — dérivés de la DONNÉE éditable (`qualities.json`,
@@ -97,17 +99,15 @@ export interface InterludeSeam {
   massBattle?: MassBattleState | null;
 }
 
-/** Volet ouvert d'un héros : outil codé ('revenus'/'craft'/…) OU id d'une Activité du catalogue. */
-type OpenPane = { heroId: string; pane: string } | null;
-
 /**
- * Écran « Entre deux aventures » (LDB 22-23) — refonte UX LOT 6 :
+ * Écran « Entre deux aventures » (LDB 22-23) — refonte UX LOT 6, puis maître-détail #330 :
  * 1. SYNTHÈSE persistante (bandeau sticky, les 3 phases) : une vignette par héros — portrait +
  *    États actifs (CharFrame `full`), Activités restantes (●○), propriétaire coop — + bourse du
  *    groupe. Les conséquences des Événements s'y reflètent immédiatement (lecture du store).
- * 2. VOLETS homogènes : chaque Activité passe par le gabarit unique `ActivityPane` — en-tête
- *    (icône + titre), description `<Prose>`, paramètres, et PIED FIXE : pré-jet (`testPending`/
- *    `optionPending`) + coût `<Coins>` + « Entreprendre » jamais caché par le scroll.
+ * 2. UN héros à la fois (`Tabs` sélectionne) : les Activités du héros ACTIF se posent en
+ *    `MasterDetail` — GAUCHE la liste des Activités (icône + nom), CENTRE le détail au gabarit
+ *    unique `ActivityPane` (description `<Prose>` verbatim, pré-jet `testPending`/`optionPending`,
+ *    coût `<Coins>`, PIED FIXE avec « Entreprendre » jamais caché par le scroll).
  * 3. Clôture RÉCAPITULATIVE confirmée (audit M3).
  *
  * Les lectures de DONNÉES restent dans ce composant racine (props descendantes) ; les enfants
@@ -139,11 +139,13 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
     [seam?.catalog, scene, worldMap, massBattle],
   );
   const [phase, setPhase] = useState<'events' | 'activities' | 'closing'>(seam?.phase ?? 'events');
-  // Volet ouvert (UN seul à la fois, tous héros confondus) — remonté ici pour que la vignette de
-  // synthèse du héros « actif » soit mise en évidence.
-  const [openPane, setOpenPane] = useState<OpenPane>(seam?.openPane ?? null);
+  // Héros ACTIF (les onglets sélectionnent — un seul volet d'Activités rendu à la fois, #330) +
+  // Activité ouverte de ce héros (maître-détail : liste GAUCHE, détail CENTRE).
+  const [activeHeroId, setActiveHeroId] = useState<string | null>(seam?.openPane?.heroId ?? null);
+  const [pane, setPane] = useState<string | null>(seam?.openPane?.pane ?? null);
   if (!interlude) return null;
   const heroes = party.filter((h) => !h.dead && interlude.perHero[h.id]);
+  const activeHero = heroes.find((h) => h.id === activeHeroId) ?? heroes[0];
   const mecenat = catalog.find((d) => d.resolver === 'mecenat');
   // Possession coop (audit M7) : chaque joueur mène les Activités de SES héros ; l'hôte clôt.
   const ownsHero = (id: string) => net.mode === 'local' || (net.ownership[id] ?? 0) === net.mySeat;
@@ -162,7 +164,7 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
           heroes={heroes}
           interlude={interlude}
           money={money}
-          activeId={phase === 'activities' ? openPane?.heroId ?? null : null}
+          activeId={phase === 'activities' ? activeHero?.id ?? null : null}
           ownsHero={ownsHero}
           ownerName={ownerName}
         />
@@ -173,21 +175,28 @@ export function InterludeScreen({ seam }: { seam?: InterludeSeam } = {}) {
           <>
             {massBattle?.phase === 'prep' && <BattleBanner mb={massBattle} />}
             <div className="interlude-heroes">
-              {heroes.map((h) => (
+              {heroes.length > 1 && (
+                <Tabs
+                  tabs={heroes.map((h) => ({ key: h.id, label: h.name }))}
+                  active={activeHero?.id ?? null}
+                  onChange={(id) => { setActiveHeroId(id); setPane(null); }}
+                  label="Héros"
+                />
+              )}
+              {activeHero && (
                 <HeroCard
-                  key={h.id}
-                  hero={h}
-                  st={interlude.perHero[h.id]}
+                  hero={activeHero}
+                  st={interlude.perHero[activeHero.id]}
                   money={money}
                   catalog={catalog}
                   mecenat={mecenat}
                   massBattle={massBattle ?? null}
-                  canDrive={ownsHero(h.id)}
-                  ownerName={ownsHero(h.id) ? undefined : ownerName(h.id)}
-                  pane={openPane?.heroId === h.id ? openPane.pane : null}
-                  onPane={(p) => setOpenPane(p ? { heroId: h.id, pane: p } : null)}
+                  canDrive={ownsHero(activeHero.id)}
+                  ownerName={ownsHero(activeHero.id) ? undefined : ownerName(activeHero.id)}
+                  pane={pane}
+                  onPane={setPane}
                 />
-              ))}
+              )}
             </div>
             {bank.length > 0 && (
               <section className="interlude-hero panel">
@@ -456,20 +465,25 @@ function HeroCard({ hero, st, money, catalog, mecenat, massBattle, canDrive, own
   const prepState = massBattle?.phase === 'prep'
     ? new Map(battlePrepEntries(massBattle).map((e) => [e.def.id, e]))
     : null;
-  const paneBtn = (key: string, label: ReactNode, title: string) => (
-    <button
-      key={key}
-      className={`btn small${pane === key ? ' btn-primary' : ''}`}
-      disabled={!canDrive || (none && pane !== key)}
-      onClick={() => onPane(pane === key ? null : key)}
-      title={canDrive ? title : `Mené par ${ownerName ?? 'un autre joueur'}`}
-    >
-      {label}
-    </button>
-  );
   // Volet du catalogue GÉNÉRIQUE : les 4 activités socle (Revenus/Artisanat/Apprentissage/
   // Identification) ont leur volet dédié ci-dessous — CatalogPane ne sert que les AUTRES.
   const def = pane ? catalog.find((d) => d.id === pane && !CORE_RESOLVERS.has(d.resolver ?? '')) : undefined;
+  // Description VERBATIM d'une Activité socle (`activities.json`, id = clé de volet) — la donnée
+  // EXISTE (revenus/craft/learn/identify), passée au gabarit `ActivityPane` de chaque volet dédié.
+  const coreDesc = (id: string) => catalog.find((d) => d.id === id)?.desc;
+  const detail =
+    pane === 'revenus' ? <RevenusPane hero={hero} st={st} disabled={none} desc={coreDesc('revenus')} />
+    : pane === 'craft' ? (st.craft
+        ? <CraftProgressPane hero={hero} craft={st.craft} disabled={none} desc={coreDesc('craft')} />
+        : <CraftPane hero={hero} disabled={none} money={money} desc={coreDesc('craft')} />)
+    : pane === 'learn' ? <LearnPane hero={hero} disabled={none} fails={st.learnFails} money={money} desc={coreDesc('learn')} />
+    : pane === 'order' ? <OrderPane hero={hero} disabled={none} money={money} />
+    : pane === 'bank' ? <BankPane hero={hero} disabled={none} bronzeBlocked={status.tier === 'bronze'} money={money} mecenat={mecenat} />
+    : pane === 'identify' ? <IdentifyPane hero={hero} disabled={none} desc={coreDesc('identify')} />
+    : def ? (def.contexts.includes('bataille')
+        ? <BattlePrepPane hero={hero} def={def} disabled={none} entry={prepState?.get(def.id)} />
+        : <CatalogPane hero={hero} def={def} disabled={none} />)
+    : <p className="interlude-detail interlude-master-empty">Choisissez une Activité à gauche pour voir sa description et le jet à faire.</p>;
   return (
     <section className={`interlude-hero panel${pane ? ' active' : ''}`}>
       <h3>
@@ -481,43 +495,74 @@ function HeroCard({ hero, st, money, catalog, mecenat, massBattle, canDrive, own
         </span>
       </h3>
       <p className="interlude-event" title={ev.text}><Icon id="nav/dice" size="sm" /> {st.eventRoll} — {ev.label}</p>
-      <div className="interlude-actions">
-        {paneBtn('revenus', <><Icon id={PANE_ICON.revenus} size="sm" /> Revenus…</>, 'Une semaine de travail — Test Accessible (+20) de la compétence de carrière (LDB 08)')}
-        {paneBtn('craft', st.craft
-          ? <><Icon id={PANE_ICON.craft} size="sm" /> Artisanat — {findTrappingById(st.craft.trappingId)?.label ?? st.craft.trappingId} ({st.craft.drDone}/{st.craft.drTarget})</>
-          : <><Icon id={PANE_ICON.craft} size="sm" /> Artisanat…</>,
-          st.craft
-            ? `Test étendu de Métier — ${st.craft.drDone}/${st.craft.drTarget} DR (${DIFFICULTY_LABELS[st.craft.difficulty]})`
-            : 'Fabriquer un équipement du catalogue (matériaux = ¼ du prix, Test étendu de Métier)')}
-        {paneBtn('learn', <><Icon id={PANE_ICON.learn} size="sm" /> Apprentissage…</>, 'Apprendre un Talent hors carrière auprès d’un tuteur (Test Difficile −20 ; PX et argent perdus sur un échec)')}
-        {paneBtn('order', <><Icon id={PANE_ICON.order} size="sm" /> Commande…</>, 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure')}
-        {paneBtn('bank', <><Icon id={PANE_ICON.bank} size="sm" /> Banque…</>, 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires)')}
-        {paneBtn('identify', <><Icon id={PANE_ICON.identify} size="sm" /> Identifier…</>, 'Étudier un artefact magique une semaine — Test de Savoir (Magie) Intermédiaire (ADE2)')}
-        {/* Activités du catalogue SANS volet dédié : les 4 activités « socle » (Revenus/Artisanat/
-            Apprentissage/Identification, volets riches ci-dessus) et Mécénat (dans la banque) sont
-            exclues pour ne pas les doubler — leur résolveur les identifie en DONNÉE. */}
-        {catalog.filter((d) => !CORE_RESOLVERS.has(d.resolver ?? '')).map((d) => (
-          paneBtn(d.id, <><Icon id={d.icon} size="sm" /> {d.label}…</>, d.desc ? `${mdToText(d.desc).slice(0, 160)}…` : d.label)
-        ))}
-      </div>
-      {pane === 'revenus' && <RevenusPane hero={hero} st={st} disabled={none} />}
-      {pane === 'craft' && (st.craft
-        ? <CraftProgressPane hero={hero} craft={st.craft} disabled={none} />
-        : <CraftPane hero={hero} disabled={none} money={money} />)}
-      {pane === 'learn' && <LearnPane hero={hero} disabled={none} fails={st.learnFails} money={money} />}
-      {pane === 'order' && <OrderPane hero={hero} disabled={none} money={money} />}
-      {pane === 'bank' && <BankPane hero={hero} disabled={none} bronzeBlocked={status.tier === 'bronze'} money={money} mecenat={mecenat} />}
-      {pane === 'identify' && <IdentifyPane hero={hero} disabled={none} />}
-      {def && (def.contexts.includes('bataille')
-        ? <BattlePrepPane hero={hero} def={def} disabled={none} entry={prepState?.get(def.id)} />
-        : <CatalogPane hero={hero} def={def} disabled={none} />)}
+      <MasterDetail
+        className="interlude-master"
+        listLabel={`Activités de ${hero.name}`}
+        list={
+          <ActivityList st={st} catalog={catalog} pane={pane} onPane={onPane} canDrive={canDrive} none={none} ownerName={ownerName} />
+        }
+        detail={detail}
+      />
     </section>
+  );
+}
+
+/** Slot GAUCHE du maître-détail (`MasterDetail`) : liste des Activités du héros — les 6 activités
+ *  « socle » (LDB/ADE2, volets dédiés) + les Activités du catalogue SANS volet dédié (Mécénat
+ *  exclu : variante du volet Banque). Filtre si la liste est longue (`SearchFilterField`). */
+function ActivityList({ st, catalog, pane, onPane, canDrive, none, ownerName }: {
+  st: InterludeHeroState; catalog: ActivityDef[];
+  pane: string | null; onPane: (pane: string | null) => void;
+  canDrive: boolean; none: boolean; ownerName?: string;
+}) {
+  const item = (key: string, label: ReactNode, title: string, textLabel: string) => ({
+    id: key,
+    textLabel,
+    node: (
+      <button
+        key={key}
+        className={`btn small interlude-activity-btn${pane === key ? ' btn-primary' : ''}`}
+        disabled={!canDrive || (none && pane !== key)}
+        onClick={() => onPane(pane === key ? null : key)}
+        title={canDrive ? title : `Mené par ${ownerName ?? 'un autre joueur'}`}
+      >
+        {label}
+      </button>
+    ),
+  });
+  const core = [
+    item('revenus', <><Icon id={PANE_ICON.revenus} size="sm" /> Revenus</>, 'Une semaine de travail — Test Accessible (+20) de la compétence de carrière (LDB 08)', 'Revenus'),
+    item('craft', st.craft
+      ? <><Icon id={PANE_ICON.craft} size="sm" /> Artisanat — {findTrappingById(st.craft.trappingId)?.label ?? st.craft.trappingId} ({st.craft.drDone}/{st.craft.drTarget})</>
+      : <><Icon id={PANE_ICON.craft} size="sm" /> Artisanat</>,
+      st.craft
+        ? `Test étendu de Métier — ${st.craft.drDone}/${st.craft.drTarget} DR (${DIFFICULTY_LABELS[st.craft.difficulty]})`
+        : 'Fabriquer un équipement du catalogue (matériaux = ¼ du prix, Test étendu de Métier)', 'Artisanat'),
+    item('learn', <><Icon id={PANE_ICON.learn} size="sm" /> Apprentissage</>, 'Apprendre un Talent hors carrière auprès d’un tuteur (Test Difficile −20 ; PX et argent perdus sur un échec)', 'Apprentissage'),
+    item('order', <><Icon id={PANE_ICON.order} size="sm" /> Commande</>, 'Commander un objet Exotique : payé maintenant, livré après la prochaine aventure', 'Commande'),
+    item('bank', <><Icon id={PANE_ICON.bank} size="sm" /> Banque</>, 'Déposer de l’argent pour qu’il survive à la clôture (Opérations bancaires)', 'Banque'),
+    item('identify', <><Icon id={PANE_ICON.identify} size="sm" /> Identifier</>, 'Étudier un artefact magique une semaine — Test de Savoir (Magie) Intermédiaire (ADE2)', 'Identifier'),
+  ];
+  // Activités du catalogue SANS volet dédié : les 4 activités « socle » (Revenus/Artisanat/
+  // Apprentissage/Identification, volets riches ci-dessus) et Mécénat (dans la banque) sont
+  // exclues pour ne pas les doubler — leur résolveur les identifie en DONNÉE.
+  const catalogItems = catalog.filter((d) => !CORE_RESOLVERS.has(d.resolver ?? '')).map((d) =>
+    item(d.id, <><Icon id={d.icon} size="sm" /> {d.label}</>, d.desc ? `${mdToText(d.desc).slice(0, 160)}…` : d.label, d.label));
+  const items = [...core, ...catalogItems];
+  const { search, setSearch, filtered } = useFilteredList(items, (o) => o.textLabel);
+  return (
+    <>
+      {items.length > 6 && (
+        <SearchFilterField className="interlude-search" value={search} onChange={setSearch} placeholder="Filtrer les activités…" ariaLabel="Filtrer les activités" />
+      )}
+      {filtered.map((o) => o.node)}
+    </>
   );
 }
 
 /** Revenus (LDB 08 l.135-144) : Test Accessible (+20) de la compétence de carrière — la formule
  *  ET le pré-jet sont lisibles AVANT d'entreprendre. */
-function RevenusPane({ hero, st, disabled }: { hero: Combatant; st: InterludeHeroState; disabled: boolean }) {
+function RevenusPane({ hero, st, disabled, desc }: { hero: Combatant; st: InterludeHeroState; disabled: boolean; desc?: string }) {
   const activity = useGame((s) => s.interludeActivity);
   const ev = interludeEventFor(st.eventRoll);
   const blockedCls = st.fx?.revenueBlockedClasses;
@@ -536,6 +581,7 @@ function RevenusPane({ hero, st, disabled }: { hero: Combatant; st: InterludeHer
     <ActivityPane
       icon={PANE_ICON.revenus}
       title="Revenus — une semaine de travail"
+      desc={desc}
       blocked={blocked}
       prejet={testPending(skillNode(<SkillChip skillId={skillId} />, 'accessible'), testValue(hero, skillId), undefined, 'accessible')}
       note={<>Succès : <b>{incomeFormula}</b> · échec : moitié · Échec Stupéfiant : rien. Crédités à la reprise.</>}
@@ -555,8 +601,8 @@ function RevenusPane({ hero, st, disabled }: { hero: Combatant; st: InterludeHer
 
 /** Lancer d'un ouvrage EN COURS — « Chaque Activité […] vous permet d'effectuer un lancer pour
  *  votre Test étendu » (ch.23 l.92). */
-function CraftProgressPane({ hero, craft, disabled }: {
-  hero: Combatant; craft: NonNullable<InterludeHeroState['craft']>; disabled: boolean;
+function CraftProgressPane({ hero, craft, disabled, desc }: {
+  hero: Combatant; craft: NonNullable<InterludeHeroState['craft']>; disabled: boolean; desc?: string;
 }) {
   const activity = useGame((s) => s.interludeActivity);
   const metier = hero.skills.find((k) => k.skillId === 'metier');
@@ -568,6 +614,7 @@ function CraftProgressPane({ hero, craft, disabled }: {
     <ActivityPane
       icon={PANE_ICON.craft}
       title={`Artisanat — ${label}`}
+      desc={desc}
       prejet={testPending(skillNode(chip, craft.difficulty), testValue(hero, 'metier', undefined, metier?.spec), undefined, craft.difficulty)}
       note={<>Test étendu : <b>{craft.drDone}/{craft.drTarget} DR</b> (1 lancer par Activité — le travail inachevé se conserve).</>}
       actions={
@@ -616,7 +663,7 @@ function TrappingSelect({ options, value, onChange, detail }: {
 }
 
 /** Engager un Artisanat (ch.23 l.66) : catalogue + Atouts/Défauts visés ; matériaux ¼ du prix. */
-function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boolean; money: Money }) {
+function CraftPane({ hero, disabled, money, desc }: { hero: Combatant; disabled: boolean; money: Money; desc?: string }) {
   const craftStart = useGame((s) => s.interludeCraftStart);
   const catalog = useMemo(() => craftCatalog(), []);
   const [id, setId] = useState('');
@@ -646,6 +693,7 @@ function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
     <ActivityPane
       icon={PANE_ICON.craft}
       title="Artisanat — engager un ouvrage"
+      desc={desc}
       blocked={blockedMsg}
       prejet={sel && target
         ? testPending(skillNode(chip, target.difficulty), metier ? testValue(hero, 'metier', undefined, metier.spec) : 0, undefined, target.difficulty)
@@ -684,7 +732,7 @@ function CraftPane({ hero, disabled, money }: { hero: Combatant; disabled: boole
 
 /** Apprentissage particulier (ch.23 l.58-63) : Talent hors carrière — Test Difficile (−20) sur la
  *  Caractéristique du Maxi (+10 par tentative ratée) ; PX et argent perdus MÊME sur un échec. */
-function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled: boolean; fails?: Record<string, number>; money: Money }) {
+function LearnPane({ hero, disabled, fails, money, desc }: { hero: Combatant; disabled: boolean; fails?: Record<string, number>; money: Money; desc?: string }) {
   const activity = useGame((s) => s.interludeActivity);
   const options = useMemo(() => learnableTalents(hero), [hero]);
   const [label, setLabel] = useState('');
@@ -708,6 +756,7 @@ function LearnPane({ hero, disabled, fails, money }: { hero: Combatant; disabled
     <ActivityPane
       icon={PANE_ICON.learn}
       title="Apprentissage particulier"
+      desc={desc}
       blocked={sel && !xpOk ? <>PX insuffisants : {xp}/{sel.xpCost}.</> : undefined}
       prejet={prejet}
       cost={sel ? <>{sel.xpCost} PX (il vous en reste {xp}) + tuteur {fmt(sel.tutorMinBrass)} à {fmt(sel.tutorMaxBrass)}</> : undefined}
@@ -838,7 +887,7 @@ function BankPane({ hero, disabled, bronzeBlocked, money, mecenat }: { hero: Com
 
 /** Identifier un artefact (ADE2 ch.4) : choisir un objet NON identifié du sac — une semaine
  *  d'étude par tentative, Test de Savoir (Magie) Intermédiaire (+0). */
-function IdentifyPane({ hero, disabled }: { hero: Combatant; disabled: boolean }) {
+function IdentifyPane({ hero, disabled, desc }: { hero: Combatant; disabled: boolean; desc?: string }) {
   const activity = useGame((s) => s.interludeActivity);
   const items = (hero.items ?? []).filter((i) => i.identified === false);
   const [uid, setUid] = useState(items[0]?.uid ?? '');
@@ -852,6 +901,7 @@ function IdentifyPane({ hero, disabled }: { hero: Combatant; disabled: boolean }
     <ActivityPane
       icon={PANE_ICON.identify}
       title="Identifier un artefact"
+      desc={desc}
       blocked={blocked}
       prejet={savoir
         ? testPending(skillNode(<SkillChip skillId={savoir.skillId} show={skillInstanceLabel(savoir)} />, 'intermediaire'), testValue(hero, savoir.skillId, undefined, savoir.spec), undefined, 'intermediaire')
