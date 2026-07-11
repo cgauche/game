@@ -132,6 +132,10 @@ export interface VehicleData {
   /** Encombrement de l'objet véhicule (LDB 61) — généralement `null` (on ne porte pas une diligence) ;
    *  un coracle se porte (`enc` chiffré). Lu par `itemFromVehicleById` pour l'`ItemInstance` d'inventaire. */
   enc?: number | null;
+  /** Chargement (EDOC ch.4 l.309-321) : Points d'Enc que la section bagages contient — véhicules
+   *  TERRESTRES uniquement (charrette 25, chariot 30, diligence 80). Capacité de porteur (`CargoCarrier`,
+   *  engine/cargo.ts) ; champ parallèle à `ship.capacity` (Contenance navale), même concept. */
+  chargement?: number;
   /** Description (LDB) — reprise sur l'`ItemInstance` à l'achat/possession. */
   desc?: string;
   /** Facette ACHAT (marché / possession de carrière). `availability` absent pour les navires (MDG ne
@@ -874,6 +878,12 @@ export interface ItemInstance {
   /** ANIMAL possédé : Incident de monte persistant (EDOC 07 l.157-174 — sangle-cassee / perte-d-un-fer /
    *  boiteux / patte-brisee), posé en voyage par `resolveMountedDay` et soigné/réparé à l'arrivée au relais. */
   mountInjury?: import('./mountTravel').MountInjury;
+  /** Cargaison en VRAC portée quand cet objet EST un porteur de charge (bête de bât / véhicule terrestre) —
+   *  canal `CargoLot` du tronc `CargoCarrier` (engine/cargo.ts, #327). Absent = aucune (défaut zéro-maintenance). */
+  cargo?: import('./cargo').CargoLot[];
+  /** Porteur EMBARQUÉ sur un hôte (mule/chariot chargé sur une barge) : id/uid du porteur-hôte — sert la
+   *  co-localisation du transfert (`carriersColocated`). Absent = à terre avec le groupe. */
+  aboard?: string;
 }
 
 /** Niveau de COUVERT gradué d'un poste de pont (Sabord/Plat-bord/Murs blindés) — mêmes libellés que le

@@ -47,6 +47,9 @@ export interface MountProfile {
   e: number;
   /** La bête trotte-t-elle ? (colonne Trot « - » pour chien/poney/trait/bœuf, l.121-130). */
   trot: boolean;
+  /** Charge portée en Points d'Enc (colonne « Enc portée », EDOC ch.4 l.285-295) — capacité de bât
+   *  du porteur (`CargoCarrier`, engine/cargo.ts). */
+  encPortee: number;
 }
 
 export const MOUNT_PROFILES: MountProfile[] = (monturesJson as { entries: MountProfile[] }).entries;
