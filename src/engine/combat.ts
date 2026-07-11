@@ -498,7 +498,7 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
   const out: ModLine[] = [];
   const adv = defender.advantage * 10;
   // Avantage HORS table de Difficulté (comme `attackModifiers`) → `uncapped` : ne compte PAS dans le
-  // plafond ±30/+60 de `combineMods`. (Avant : non marqué → l'affichage défense plafonnait l'Avantage à tort.)
+  // plafond ±30/+60 de `combineMods` — sans ce marqueur, l'affichage défense plafonnerait l'Avantage à tort.
   if (adv) out.push({ label: 'Avantage', value: adv, uncapped: true });
   const pen = combatTestPenalty(defender);
   if (pen) out.push({ label: 'État', value: pen });

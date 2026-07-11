@@ -62,8 +62,8 @@ describe('CharacterCreator (assistant) — rendu statique', () => {
 
   it('les références Codex de l\'assistant sont INTERACTIVES (clic → fiche en modale, brouillon préservé)', () => {
     const html = renderToStaticMarkup(<CharacterCreator />);
-    // Désormais le clic ouvre le Codex en MODALE par-dessus l'assistant (cf. CodexOverlay), sans
-    // changer d'écran → le brouillon reste intact. (Avant : neutralisées en popover-seul `codex-static`.)
+    // Le clic ouvre le Codex en MODALE par-dessus l'assistant (cf. CodexOverlay), sans changer
+    // d'écran → le brouillon reste intact.
     expect(html).toMatch(/class="codex-ref[^"]*"[^>]*role="button"/); // ≥1 ref cliquable
   });
 

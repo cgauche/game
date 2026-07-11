@@ -112,7 +112,7 @@ describe('op grantTalent — talents temporisés (Flambeau de Vertu / Cœurs ard
     expect(fearImmuneVs(c, ogre)).toBe(true); // le talent (temporisé) est détecté
     expect(sansPeurVs(c, ogre)).toBe(true);
     // RAW (LDB 10 l.864) : Sans Peur n'immunise PAS d'office — la source RESTE détectée, le porteur
-    // la teste par un seul Calme Accessible (+20). (Avant : bug d'immunité automatique → null.)
+    // la teste par un seul Calme Accessible (+20).
     expect(fearSourceFor(c, ogre)?.kind).toBe('peur');
     expect(c.talents).toHaveLength(0); // PAS posé dans les talents possédés (fiche intacte)
     endOfRound(c);
