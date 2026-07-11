@@ -17,10 +17,19 @@ describe('Gabarit TERRESTRE — chariot/attelage via le système de plans (réut
     expect(svg).not.toContain('@'); // aucun jeton @bois/@fer/@bache résiduel
   });
 
-  it('mono-vue déclarée (broadside) : face/dos REPLIENT sur le profil (art identique)', () => {
-    // Couverture honnête : une seule silhouette dessinée → les 3 vues rendent le même art (repli pickView).
-    expect(svgOf('front')).toBe(svgOf('profile'));
-    expect(svgOf('back')).toBe(svgOf('profile'));
+  it('mono-vue déclarée (broadside) : face/dos REPLIENT sur le profil pour un id SANS art dédié (art identique)', () => {
+    // `chariot` a désormais un art 3-vues dédié (vague A4, land/defs/chariot.ts) : ce n'est plus lui
+    // qui illustre le repli. Le repli honnête reste porté par `attelage-generique` (mono-vue par
+    // nature, land/defs/attelage-generique.ts) — c'est LUI qui verrouille pickView/foldView.
+    const genericSvgOf = (view: 'front' | 'profile' | 'back') =>
+      landPlan.resolve('attelage-generique', view, landPlan.restPose()).map((b) => b.parts.map((p) => p.svg).join('')).join('');
+    expect(genericSvgOf('front')).toBe(genericSvgOf('profile'));
+    expect(genericSvgOf('back')).toBe(genericSvgOf('profile'));
+  });
+
+  it('chariot (art 3-vues dédié) : face/dos NE REPLIENT PLUS sur le profil', () => {
+    expect(svgOf('front')).not.toBe(svgOf('profile'));
+    expect(svgOf('back')).not.toBe(svgOf('profile'));
   });
 
   it('poses : cahot au roulage, versé à la mort', () => {

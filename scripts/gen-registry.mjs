@@ -207,6 +207,17 @@ export const REGISTRIES = [
     typeFrom: './artkit',
   },
   {
+    // Arts de VÉHICULE TERRESTRE (vague A4, silhouette de repli extraite en def) : 1 véhicule = 1
+    // fichier defs/ — MÊME pattern que les engins/coques (routé par ID de véhicule dans composeLand ;
+    // `attelage-generique` sert de FALLBACK tant qu'un id n'a pas son propre art dédié).
+    dir: 'src/gameIso/rig/land/defs',
+    out: 'src/gameIso/rig/land/_registry.generated.ts',
+    exportName: 'landArt',
+    arrayName: 'LAND_ARTS',
+    type: 'LandArtDef',
+    typeFrom: './artkit',
+  },
+  {
     // Gabarits (carrures réutilisables) : 1 carrure = 1 fichier defs/. Dissout PROPS.
     dir: 'src/gameIso/rig/gabarits/defs',
     out: 'src/gameIso/rig/gabarits/_registry.generated.ts',

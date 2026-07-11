@@ -13,7 +13,8 @@ import { project, type View } from '../src/gameIso/rig/facing';
 import { declaredViews, type ViewArt } from '../src/gameIso/rig/viewArt';
 import { shipArt, shipArtOf } from '../src/gameIso/rig/ship/composeShip';
 import { SHIP_ARTS } from '../src/gameIso/rig/ship/_registry.generated';
-import { landArt } from '../src/gameIso/rig/land/composeLand';
+import { landArtOf } from '../src/gameIso/rig/land/composeLand';
+import { LAND_ARTS } from '../src/gameIso/rig/land/_registry.generated';
 import { enginArtOf } from '../src/gameIso/rig/engin/composeEngin';
 import { ENGIN_ARTS } from '../src/gameIso/rig/engin/_registry.generated';
 import { PROPS, propSvg, propViewSvg } from '../src/gameIso/catalog/decor/index';
@@ -62,9 +63,8 @@ type Entry = { name: string; art: ViewArt<never[]>; raw: (v: View) => string | n
 
 // Couverture de la famille NAVIRE : ids à coque de vehicles.json — ceux SANS def SHIP_ARTS restent
 // sur le repli procédural par gréement (rendus en fin de section, badge « repli procédural »).
-const shipIds = (JSON.parse(readFileSync('src/data/vehicles.json', 'utf8')) as { id: string; hull?: { propulsion?: string } }[])
-  .filter((v) => v.hull && v.hull.propulsion !== 'terrestre')
-  .map((v) => v.id);
+const vehicleRecords = JSON.parse(readFileSync('src/data/vehicles.json', 'utf8')) as { id: string; hull?: { propulsion?: string } }[];
+const shipIds = vehicleRecords.filter((v) => v.hull && v.hull.propulsion !== 'terrestre').map((v) => v.id);
 const drawnShipIds = new Set(SHIP_ARTS.map((a) => a.id));
 const fallbackShipIds = shipIds.filter((id) => !drawnShipIds.has(id));
 
@@ -73,6 +73,20 @@ const shipEntry = (id: string, tag = ''): Entry => ({
   art: shipArtOf(id) as ViewArt<never[]>,
   raw: (v) => (declaredViews(shipArtOf(id)).includes(v) ? bonesToSvg(planById('navire').resolve(id, v, {}, {})) : null),
   render: (view, mirror) => planSvg('navire', id, view, mirror),
+});
+
+// Couverture de la famille TERRESTRE : ids à `hull.propulsion === 'terrestre'` de vehicles.json —
+// ceux SANS def LAND_ARTS retombent sur l'attelage générique (rendus en fin de section, MÊME
+// convention « repli » que la famille navire).
+const landIds = vehicleRecords.filter((v) => v.hull && v.hull.propulsion === 'terrestre').map((v) => v.id);
+const drawnLandIds = new Set(LAND_ARTS.map((a) => a.id));
+const fallbackLandIds = landIds.filter((id) => !drawnLandIds.has(id));
+
+const landEntry = (id: string, tag = ''): Entry => ({
+  name: `terrestre · ${id}${tag}`,
+  art: landArtOf(id) as ViewArt<never[]>,
+  raw: (v) => (declaredViews(landArtOf(id)).includes(v) ? bonesToSvg(planById('terrestre').resolve(id, v, {}, {})) : null),
+  render: (view, mirror) => planSvg('terrestre', id, view, mirror),
 });
 
 const entries: { title: string; items: Entry[] }[] = [
@@ -93,13 +107,11 @@ const entries: { title: string; items: Entry[] }[] = [
     })),
   },
   {
-    title: 'Véhicule terrestre — chariot/attelage (hull.propulsion=terrestre)',
-    items: [{
-      name: 'terrestre · chariot',
-      art: landArt() as ViewArt<never[]>,
-      raw: (v) => (declaredViews(landArt()).includes(v) ? bonesToSvg(planById('terrestre').resolve('chariot', v, {}, {})) : null),
-      render: (view, mirror) => planSvg('terrestre', 'chariot', view, mirror),
-    }],
+    title: `Véhicules terrestres — art par ID (LAND_ARTS) ; ${fallbackLandIds.length} id(s) encore sur l'attelage générique`,
+    items: [
+      ...LAND_ARTS.map((a) => landEntry(a.id)),
+      ...fallbackLandIds.map((id) => landEntry(id, ' (repli)')),
+    ],
   },
   {
     title: 'Engins de siège — art par id',
