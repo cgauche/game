@@ -8,7 +8,8 @@ import type { Combatant } from '../engine/types';
 import { placeById } from '../state/worldMap';
 import { routeDistanceLabel, TRAVEL_MODE_LABEL } from '../engine/travel';
 import { ALLURE_LABEL, partyMounts } from '../engine/mountTravel';
-import { windForceLabel, precipitationDef, temperatureDef, visibilityDef } from '../engine/seaWeather';
+import { windForceLabel, windDirectionLabel, precipitationDef, temperatureDef, visibilityDef } from '../engine/seaWeather';
+import { riverForceLabel, riverDirLabel } from '../engine/riverNavigation';
 import { cargoTotalEnc } from '../engine/seaVoyage';
 import { partyItemsCargoEnc, partyLandCapacity } from '../state/carriers';
 import { moraleBand } from '../engine/crewMorale';
@@ -20,6 +21,7 @@ import { MasterDetail } from './MasterDetail';
 import { NotchGauge, type GaugeTone } from './NotchGauge';
 import { CascadeBody } from './CascadeModal';
 import { RestBody } from './RestModal';
+import { ShoreLeaveBody } from './ShoreLeaveModal';
 import { TravelDayBody } from './TravelRecapModal';
 import { ShipDossier } from './ShipDossier';
 import { GameDate } from './GameDate';
@@ -68,6 +70,9 @@ export interface DayAgendaItem {
   key: string;
   label: string;
   state: 'done' | 'current' | 'pending';
+  /** Nombre de JETS DE DÉ réels de la phase (batch = N rangées, jet = 1, agrégat/affichage = 0) — pour
+   *  « Activités (N jets) ». Absent/0 → non affiché. */
+  jets?: number;
 }
 
 /** Catalogue des PHASES reconnues d'une cascade de jour (`purpose:'travelDay'`), par PRÉFIXE de
@@ -88,6 +93,9 @@ const DAY_PHASE_CATALOG: { key: string; label: string; match: (kind: string) => 
 export function dayAgenda(pendingCascade: PendingCascade | null | undefined, pendingRest: PendingRest | null | undefined): DayAgendaItem[] {
   const items: DayAgendaItem[] = [];
   if (pendingCascade && pendingCascade.purpose === 'travelDay') {
+    // Jets DE DÉ réels d'un pas (batch = N rangées, jet = 1, agrégat/affichage/météo = 0) — même compte
+    // que `CascadeModal.diceOf` (« jet N/M »).
+    const diceOf = (s: PendingCascade['participants'][number]) => (s.participants ? s.participants.length : (s.target != null || s.jet ? 1 : 0));
     for (const phase of DAY_PHASE_CATALOG) {
       const idxs = pendingCascade.participants
         .map((s, i) => (phase.match(s.kind) ? i : -1))
@@ -95,7 +103,8 @@ export function dayAgenda(pendingCascade: PendingCascade | null | undefined, pen
       if (!idxs.length) continue; // phase absente ce jour (pas d'Activité assignée, pas de péripétie…)
       const state: DayAgendaItem['state'] = idxs.every((i) => i < pendingCascade.cursor) ? 'done'
         : idxs.includes(pendingCascade.cursor) ? 'current' : 'pending';
-      items.push({ key: phase.key, label: phase.label, state });
+      const jets = idxs.reduce((n, i) => n + diceOf(pendingCascade.participants[i]), 0);
+      items.push({ key: phase.key, label: phase.label, state, jets });
     }
     items.push({ key: 'nuit', label: 'Nuit', state: 'pending' });
   } else if (pendingRest) {
@@ -175,7 +184,7 @@ export function voyageTiles(
   if (sub === 'mer' && plan.sea) {
     const sea = plan.sea;
     // Vent (direction + force) — la tuile Météo (ci-dessous) porte les 3 AUTRES aspects MDG du jour.
-    tiles.push({ key: 'vent', icon: 'nautical/wind', label: 'Vent', value: `${windForceLabel(sea.weather.vent)} — vent de ${sea.windFrom}` });
+    tiles.push({ key: 'vent', icon: 'nautical/wind', label: 'Vent', value: `${windForceLabel(sea.weather.vent)} — vent de ${windDirectionLabel(sea.windFrom)}` });
     // Météo du jour (MDG ch.13 l.164) : Précipitations/Température/Visibilité — 4e aspect (Vent) déjà sa tuile.
     tiles.push({
       key: 'meteo',
@@ -198,7 +207,7 @@ export function voyageTiles(
   }
   if (sub === 'fleuve' && plan.river) {
     const river = plan.river;
-    tiles.push({ key: 'vent', icon: 'nautical/wind', label: 'Vent du jour', value: `${river.windForce} · ${river.windDir}` });
+    tiles.push({ key: 'vent', icon: 'nautical/wind', label: 'Vent du jour', value: `${riverForceLabel(river.windForce)} · ${riverDirLabel(river.windDir)}` });
     const hull = plan.vehicle;
     if (hull) tiles.push({ key: 'coque', icon: 'scenario/port', label: 'Coque de la barge', value: `${hull.wounds.current} / ${hull.wounds.max}`, gauge: { value: hull.wounds.current, max: hull.wounds.max, tone: hullTone }, onClick: onDossier });
     if (vessel?.provisions != null) tiles.push({ key: 'provisions', icon: 'item/misc', label: 'Provisions', value: `${vessel.provisions} j-homme` });
@@ -266,6 +275,7 @@ export function VoyageScreen({ onClose }: { onClose: () => void }) {
   const gameTime = useGame((s) => s.gameTime);
   const pendingCascade = useGame((s) => s.pendingCascade);
   const pendingRest = useGame((s) => s.pendingRest);
+  const pendingShoreLeave = useGame((s) => s.pendingShoreLeave);
   const [dossierOpen, setDossierOpen] = useState(false);
   const [selDay, setSelDay] = useState<number | null>(null); // index dans le log ; null = jour EN COURS
   if (!plan) return null;
@@ -291,6 +301,14 @@ export function VoyageScreen({ onClose }: { onClose: () => void }) {
   const agenda = dayAgenda(pendingCascade, pendingRest);
   const days = voyageDayCards(plan, sub, stepWord, !!pendingCascade || !!pendingRest, agenda, pendingRest?.travelDay);
   const selectedKey = selDay == null ? 'current' : `d${selDay}`;
+  // Clic d'une SOUS-RANGÉE de phase (jour EN COURS) : phase COURANTE → centre live (relâche/nuit/cascade) ;
+  // phase CLOSE d'une nuit de halte → le jour tout juste clos (`pendingRest.travelDay`, dernier index) ;
+  // sinon (cascade en vol) → le centre live où les phases faites sont des rangées-témoins.
+  const closedDayIdx = pendingRest?.travelDay ? log.length : null;
+  const onPhase = (a: DayAgendaItem) => {
+    if (a.state === 'done' && a.key !== 'nuit' && closedDayIdx != null) setSelDay(closedDayIdx);
+    else setSelDay(null);
+  };
   // Jour tout juste CLOS (halte de nuit ouverte) : lookup ÉTENDU du log — le bilan ne vit plus dans le
   // panneau de nuit (vague « lisibilité du voyage » 2/2), il se consulte comme n'importe quel jour passé.
   const fullDays = pendingRest?.travelDay ? [...log, pendingRest.travelDay] : log;
@@ -300,6 +318,8 @@ export function VoyageScreen({ onClose }: { onClose: () => void }) {
   let center: ReactNode;
   if (selDay != null && fullDays[selDay]) {
     center = <TravelDayBody day={fullDays[selDay]} />;
+  } else if (pendingShoreLeave) {
+    center = <ShoreLeaveBody embedded />; // accostage : la relâche à terre vit dans le journal de voyage (arbitrage user 2026-07-11)
   } else if (pendingRest) {
     center = <RestBody embedded />; // nuit de halte incrustée (MÊME rendu que la modale, #333 correctif) — DÉCISION seule
   } else if (pendingCascade) {
@@ -347,30 +367,48 @@ export function VoyageScreen({ onClose }: { onClose: () => void }) {
             listLabel="Journal de voyage"
             list={
               <div className="voyage-chronicle">
-                {days.map((c) => (
-                  <button
-                    key={c.key}
-                    type="button"
-                    className={`voyage-day-card tx-parchment${selectedKey === c.key ? ' active' : ''}${c.current ? ' current' : ''}`}
-                    onClick={() => setSelDay(c.current ? null : Number(c.key.slice(1)))}
-                  >
-                    <span className="voyage-seal" aria-hidden>{c.seal}</span>
-                    <span className="voyage-day-body">
-                      <span className="voyage-day-title">{c.dayLabel}</span>
-                      <span className="voyage-day-summary">{c.summary}</span>
-                      {/* AGENDA DE PHASES (arbitrage user verbatim) : sous-catégories du jour EN COURS. */}
-                      {!!c.agenda?.length && (
-                        <span className="voyage-day-agenda">
-                          {c.agenda.map((a) => (
-                            <span key={a.key} className={`voyage-agenda-item ${a.state}`}>
-                              {AGENDA_GLYPH[a.state]} {a.label}
-                            </span>
-                          ))}
+                {days.map((c) => {
+                  const active = selectedKey === c.key;
+                  // Carte SANS phases (jour clos, ou point courant sans étape) : bouton simple → sélection.
+                  if (!c.agenda?.length) {
+                    return (
+                      <button
+                        key={c.key}
+                        type="button"
+                        className={`voyage-day-card tx-parchment${active ? ' active' : ''}${c.current ? ' current' : ''}`}
+                        onClick={() => setSelDay(c.current ? null : Number(c.key.slice(1)))}
+                      >
+                        <span className="voyage-seal" aria-hidden>{c.seal}</span>
+                        <span className="voyage-day-body">
+                          <span className="voyage-day-title">{c.dayLabel}</span>
+                          <span className="voyage-day-summary">{c.summary}</span>
                         </span>
-                      )}
-                    </span>
-                  </button>
-                ))}
+                      </button>
+                    );
+                  }
+                  // Carte EN COURS (arbitrage user verbatim : « sous-catégories en dessous, plus que du
+                  // texte concaténé ») : titre-carte + SOUS-RANGÉES de phases, chacune son glyphe d'état,
+                  // CLIQUABLE quand son contenu existe (courante → centre live ; close → jour clos).
+                  return (
+                    <div key={c.key} className={`voyage-day-card tx-parchment current has-phases${active ? ' active' : ''}`}>
+                      <button type="button" className="voyage-day-head" onClick={() => setSelDay(null)}>
+                        <span className="voyage-seal" aria-hidden>{c.seal}</span>
+                        <span className="voyage-day-title">{c.dayLabel} — EN COURS</span>
+                      </button>
+                      <div className="voyage-phase-list">
+                        {c.agenda.map((a) => {
+                          const inner = <>
+                            <span className="voyage-phase-glyph" aria-hidden>{AGENDA_GLYPH[a.state]}</span>
+                            <span className="voyage-phase-label">{a.label}{a.jets ? ` (${a.jets} jet${a.jets > 1 ? 's' : ''})` : ''}</span>
+                          </>;
+                          return a.state === 'pending'
+                            ? <span key={a.key} className="voyage-phase-row pending">{inner}</span>
+                            : <button key={a.key} type="button" className={`voyage-phase-row ${a.state}`} onClick={() => onPhase(a)}>{inner}</button>;
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             }
             detail={<div className="voyage-detail">{center}</div>}

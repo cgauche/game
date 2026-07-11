@@ -132,10 +132,13 @@
 
 /* ── SeaVoyageScreen — écran de traversée (#232) : rose des vents + jauges + PV du jour, dans la
    halte de nuit. Responsive : la tête s'empile sous 560px (charte UI, cible 360px). ────────────── */
-.sea-voyage { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+/* `color: var(--text)` explicite : ce corps de jour est incrusté au CENTRE du hub (fond sombre) ET
+   dans la halte de nuit — plus de texte héritant d'une encre sombre sur fond sombre (contraste, user 2026-07-11). */
+.sea-voyage { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; color: var(--text); }
 .sea-voyage-head { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
 .sea-voyage-gauges { display: flex; flex-direction: column; gap: 0.3rem; flex: 1 1 200px; min-width: 0; }
-.sea-voyage-meta { color: var(--muted); font-size: 0.9em; margin: 0; }
+.sea-voyage-meta { align-items: center; gap: 6px 8px; font-size: 0.9em; margin: 0; }
+.sv-weather { font-weight: 600; margin-right: 2px; }
 .sea-voyage-log { max-height: 40vh; overflow-y: auto; }
 .sea-voyage-notes { color: var(--muted); font-size: 0.85em; }
 .sea-voyage-orders { display: flex; justify-content: flex-end; }

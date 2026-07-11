@@ -76,6 +76,21 @@ const FLEX_WRAP_BASELINE: Record<string, number> = {
   'styles/world-meta.css': 22,
 };
 
+// ── (viii) Couleurs `fill=`/`stroke=` LITTÉRALES dans le JSX de `src/ui` : un fill/stroke codé en dur
+//    (hex/rgb/hsl) hors token `var(--…)` est de la dette — hors thème, illisible quand la surface change
+//    de fond (bug « texte noir sur noir » du hub de voyage, user 2026-07-11). BASELINE = surfaces d'ART /
+//    de CARTE existantes (aperçu de personnage, canevas de l'éditeur, carte du monde parcheminée) gelées
+//    nominativement ; tout NOUVEAU .tsx reste à ZÉRO. Les defs d'art de `gameIso` sont hors périmètre
+//    (scan borné aux `.tsx` de `src/ui`). `fill="none"`/`url(#…)`/`currentColor` ne sont pas des littéraux.
+const FILL_LITERAL_BASELINE: Record<string, number> = {
+  'AppearancePanel.tsx': 1,
+  'EquipmentPanel.tsx': 1,
+  'editor/EditorCanvas.tsx': 9,
+  'editor/Inspector.tsx': 1,
+  'editor/WorldMapEditor.tsx': 6,
+  'WorldMapView.tsx': 13,
+};
+
 describe('#236 — cliquets d’hygiène UI', () => {
   it('(iv) hex hors tokens : aucune hausse par module CSS (base.css exclu)', () => {
     const files = walk(UI, (e) => e.endsWith('.css') && e !== 'base.css');
@@ -109,5 +124,15 @@ describe('#236 — cliquets d’hygiène UI', () => {
       if (n > 0) counts[rel(f)] = n;
     }
     assertRatchet(counts, FLEX_WRAP_BASELINE, 'flex-wrap hors components.css');
+  });
+
+  it('(viii) fill/stroke littéraux hors token var(--…) : aucune hausse par fichier .tsx', () => {
+    const files = walk(UI, (e) => /\.tsx$/.test(e) && !/\.test\./.test(e));
+    const counts: Record<string, number> = {};
+    for (const f of files) {
+      const n = (readFileSync(f, 'utf8').match(/(?:fill|stroke)=("|')(?:#|rgb|hsl)/g) || []).length;
+      if (n > 0) counts[rel(f)] = n;
+    }
+    assertRatchet(counts, FILL_LITERAL_BASELINE, 'fill/stroke littéral hors token');
   });
 });

@@ -8,13 +8,18 @@ import { Icon } from './Icon';
  * tirage de l'événement de port. « Si vous avez refusé la permission de faire relâche à terre à votre
  * équipage, cet événement [Embrigadement] n'a pas lieu » — gate aussi la Fête de Manann (l.260, le
  * bonus d'Humeur suppose la relâche autorisée). CHOIX du joueur — `resolveShoreLeave` tranche.
+ *
+ * `embedded` (#333, arbitrage user 2026-07-11) : rendu SANS `Modal`, incrusté AU CENTRE de l'écran-hub
+ * de voyage comme étape d'accostage (patron `CascadeBody`/`RestBody embedded`) — la décision vit dans le
+ * journal de voyage, plus dans une modale flottante. Hors hub (port ouvert, onglet Escale) : inchangé.
  */
-export function ShoreLeaveModal() {
+export function ShoreLeaveBody({ embedded = false }: { embedded?: boolean } = {}) {
   const p = useGame((s) => s.pendingShoreLeave);
   const resolve = useGame((s) => s.resolveShoreLeave);
   if (!p) return null;
-  return (
-    <Modal title={<><Icon id="travel/anchor" size="sm" /> Accostage à {p.to.label}</>} variant="test">
+  const title = <><Icon id="travel/anchor" size="sm" /> Accostage à {p.to.label}</>;
+  const body = (
+    <>
       <p className="rm-log">
         Autorisez-vous l'équipage à faire relâche à terre pendant l'escale ? Un équipage livré à
         lui-même peut se faire embrigader de force par un navire en manque de bras — mais lui refuser
@@ -26,6 +31,12 @@ export function ShoreLeaveModal() {
           { key: 'refuser', label: <><Icon id="travel/anchor" size="sm" /> Refuser la relâche</>, onSelect: () => resolve(false), title: 'Garder l\'équipage à bord — l\'Embrigadement n\'aura pas lieu' },
         ]}
       />
-    </Modal>
+    </>
   );
+  if (embedded) return <div className="rs-embedded"><div className="mini-title">{title}</div>{body}</div>;
+  return <Modal title={title} variant="test">{body}</Modal>;
+}
+
+export function ShoreLeaveModal() {
+  return <ShoreLeaveBody />;
 }

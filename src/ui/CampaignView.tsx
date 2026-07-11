@@ -119,7 +119,7 @@ export function CampaignView() {
   // Réductible pour consulter la scène, mais FORCÉ ouvert dès qu'une étape (cascade OU nuit) attend —
   // sinon l'étape incrustée serait invisible (l'arbitre a déjà supprimé la modale flottante).
   const voyageHub = voyageHubActive({ travelPlan, travelRecap, mode, worldMapOpen, battle });
-  const voyageStepUp = voyageStepPending({ pendingCascade, pendingRest });
+  const voyageStepUp = voyageStepPending({ pendingCascade, pendingRest, pendingShoreLeave });
   const showVoyage = voyageHub && (!voyageMin || voyageStepUp);
   const [sessionOpen, setSessionOpen] = useState(false); // écran de fin de séance (Ambitions/Détermination)
   const inspected = inspectEnabled && inspectId ? battle?.combatants.find((c) => c.id === inspectId) ?? null : null;
@@ -333,7 +333,9 @@ export function CampaignView() {
         {pendingSeaActivities && mode === 'exploration' && <SeaActivitiesModal />}
         {/* Au port ouvert, ces décisions sont surfacées par l'onglet Escale du hub (#228) — pas de double surface. */}
         {pendingManannPriest && mode === 'exploration' && !port && <ManannPriestModal />}
-        {pendingShoreLeave && mode === 'exploration' && !port && <ShoreLeaveModal />}
+        {/* Relâche à terre : incrustée au CENTRE du hub de voyage quand il est actif (VoyageScreen) ;
+            modale flottante seulement HORS hub (arbitrage user 2026-07-11). */}
+        {pendingShoreLeave && mode === 'exploration' && !port && !voyageHub && <ShoreLeaveModal />}
         {/* Récapitulatif de voyage (audit M4) : à l'arrivée, ou APRÈS l'embuscade qui a interrompu
             le trajet (jamais par-dessus le combat/un dialogue). */}
         {travelRecap && mode === 'exploration' && !dialogue && !worldMapOpen && <TravelRecapModal />}

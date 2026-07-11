@@ -151,4 +151,7 @@ describe('voyageStepPending — une ÉTAPE du hub attend (cascade OU nuit, #333 
   it('vrai avec une nuit de halte en attente (repos EMBARQUÉ au centre du hub)', () => {
     expect(voyageStepPending({ pendingRest: {} as never })).toBe(true);
   });
+  it('vrai avec une relâche à terre en attente (accostage intégré au journal de voyage, #333 / user 2026-07-11)', () => {
+    expect(voyageStepPending({ pendingShoreLeave: {} as never })).toBe(true);
+  });
 });

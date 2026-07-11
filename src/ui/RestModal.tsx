@@ -1,11 +1,12 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useGame } from '../state/store';
 import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
+import { StateChips } from './StateChips';
 import { Coins } from './Coins';
 import { MultiRollList } from './MultiRollList';
 import { OptionChooser } from './OptionChooser';
-import { lodgingOptions, foodOptions, restCost, type RestLodging, type RestFood } from '../state/restFlow';
+import { lodgingOptions, foodOptions, restCost, type PendingRest, type RestLodging, type RestFood } from '../state/restFlow';
 import { weatherExposure, exposureTestCount, exposureShelterFromTent } from '../engine/exposure';
 import { hasCondition } from '../engine/conditions';
 import { toBrass } from '../engine/money';
@@ -62,9 +63,14 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
   const restReady = useGame((s) => s.restReady);
   const restLedgerReroll = useGame((s) => s.restLedgerReroll);
   const state = useGame();
+  // Héros PERSONNALISÉS (détachés du choix maître de troupe) — le reste SUIT la troupe. Arbitrage user
+  // 2026-07-11 : « ≠ personnaliser » déplie les contrôles du héros seul, « ↺ » le rend au choix de troupe.
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   if (!p) return null;
 
-  const title = p.places.auberge ? <><Icon id="rest/bed" size="sm" /> Nuit à l’auberge</> : p.places.maison ? <><Icon id="time/night" size="sm" /> Nuit chez soi</> : p.places.bord ? <><Icon id="travel/sail-ship" size="sm" /> Nuit à bord</> : <><Icon id="rest/camp" size="sm" /> Campement</>;
+  // Titre FRANC (arbitrage user 2026-07-11) : la nature de la halte + le lieu (`scene.nom`) quand il existe.
+  const lieu = scene?.nom ? <> — {scene.nom}</> : null;
+  const title = p.places.auberge ? <><Icon id="rest/bed" size="sm" /> Nuit à l’auberge{lieu}</> : p.places.maison ? <><Icon id="time/night" size="sm" /> Nuit chez soi{lieu}</> : p.places.bord ? <><Icon id="travel/sail-ship" size="sm" /> Nuit à bord{lieu}</> : <><Icon id="rest/camp" size="sm" /> À la belle étoile{lieu}</>;
 
   // ── Phase BILAN : le temps écoulé + tous les jets de la nuit sur UN écran ──
   if (p.phase === 'bilan') {
@@ -109,6 +115,22 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
   const canPay = toBrass(cost) === 0 || toBrass(money) >= toBrass(cost);
   const reglagesTitle = <>{title}{p.days > 1 ? ` — ${p.days} nuits` : ''}{p.quality === 'pietre' ? ' (piètre)' : ''}</>;
 
+  // Héros affichés (vivants, dotés d'un réglage) ; ÉDITABLES = ceux que le siège local contrôle.
+  const heroes = party.filter((h) => !h.dead && p.perHero[h.id]);
+  const editable = heroes.filter((h) => !online || ownsLocally(state, h.id));
+  // FOLLOWERS = éditables NON personnalisés : le choix maître « Pour toute la troupe » les pilote.
+  const followers = editable.filter((h) => !expanded.has(h.id));
+  const cfgOf = (h: Combatant) => p.perHero[h.id];
+  // Valeur COMMUNE des followers (sinon aucune sélection maître) — Couchage / Nourriture.
+  const commonLodging = followers.length && followers.every((h) => cfgOf(h).lodging === cfgOf(followers[0]).lodging) ? cfgOf(followers[0]).lodging : undefined;
+  const commonFood = followers.length && followers.every((h) => cfgOf(h).food === cfgOf(followers[0]).food) ? cfgOf(followers[0]).food : undefined;
+  // Menu de troupe : Couchage = l'offre du lieu (identique pour tous) ; Nourriture = les choix
+  // COLLECTIFS (repas/maison/rien) — la Ration est PERSONNELLE (dépend du sac du héros), hors maître.
+  const masterFood: RestFood[] = [...(p.places.auberge ? ['repas' as const] : []), ...(p.places.maison ? ['maison' as const] : []), 'rien'];
+  const applyTroupe = (patch: Partial<{ lodging: RestLodging; food: RestFood }>) => { for (const h of followers) restSet(h.id, patch); };
+  // Coût INDIVIDUEL d'un héros (réutilise le calcul canonique `restCost` sur un pending mono-héros).
+  const heroCost = (h: Combatant) => restCost({ ...p, perHero: { [h.id]: cfgOf(h) } } as PendingRest, [h]);
+
   const reglagesBody = (
     <>
       {/* Panneau de nuit = la DÉCISION seule (vague « lisibilité du voyage » 2/2) : le BILAN du jour
@@ -117,31 +139,68 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
       {severity !== 'clement' && (
         <p className="rest-weather">{severity === 'extreme' ? <><Icon id="rest/storm" size="sm" /> Temps de chien</> : <><Icon id="rest/rain" size="sm" /> Mauvais temps</>}{sheltered ? ' — la tente abritera le camp' : ''}</p>
       )}
+      {/* CHOIX MAÎTRE « Pour toute la troupe » (arbitrage user 2026-07-11) : Couchage + Pitance appliqués
+          d'un coup à tous les héros non personnalisés. */}
+      {editable.length > 1 && (
+        <div className="rest-master">
+          <div className="mini-title">Pour toute la troupe</div>
+          <div className="rest-master-choices row-flex">
+            <OptionChooser
+              layout="seg"
+              groupLabel="Couchage"
+              options={lodgingOptions(p.places).map((l) => ({ key: l, label: <><Icon id={LODGING_META[l].icon} size="sm" /> {LODGING_META[l].label}</>, selected: commonLodging === l, onSelect: () => applyTroupe({ lodging: l }) }))}
+            />
+            <OptionChooser
+              layout="seg"
+              groupLabel="Pitance"
+              options={masterFood.map((f) => ({ key: f, label: <><Icon id={FOOD_META[f].icon} size="sm" /> {FOOD_META[f].label}</>, selected: commonFood === f, onSelect: () => applyTroupe({ food: f }) }))}
+            />
+          </div>
+        </div>
+      )}
       <div className="rest-rows">
-        {party.filter((h) => !h.dead && p.perHero[h.id]).map((h) => {
-          const cfg = p.perHero[h.id];
+        {heroes.map((h) => {
+          const cfg = cfgOf(h);
           const mine = !online || ownsLocally(state, h.id);
+          const isOpen = expanded.has(h.id);
           const warns = heroWarnings(h, cfg.lodging, cfg.food, exposureTests);
+          const share = heroCost(h);
           return (
-            <div key={h.id} className="rest-row row-flex">
-              <CharFrame c={h} variant="full" size="sm" />
-              <div className="rest-choices row-flex">
-                <OptionChooser
-                  layout="seg"
-                  groupLabel="Couchage"
-                  options={lodgingOptions(p.places).map((l) => ({ key: l, label: <><Icon id={LODGING_META[l].icon} size="sm" /> {LODGING_META[l].label}</>, selected: cfg.lodging === l, disabled: !mine, onSelect: () => restSet(h.id, { lodging: l }) }))}
-                />
-                <OptionChooser
-                  layout="seg"
-                  groupLabel="Nourriture"
-                  options={foodOptions(p.places, h).map((f) => ({ key: f, label: <><Icon id={FOOD_META[f].icon} size="sm" /> {FOOD_META[f].label}</>, selected: cfg.food === f, disabled: !mine, onSelect: () => restSet(h.id, { food: f }) }))}
-                />
-                {warns.length > 0 && (
-                  <span className="rest-warn">
-                    {warns.map((w, i) => <span key={i}>{i > 0 && ' · '}{w}</span>)}
-                  </span>
+            <div key={h.id} className="rest-hero">
+              <div className="rest-hero-line">
+                <CharFrame c={h} variant="identity" size="sm" />
+                <div className="rest-hero-id">
+                  <span className="rest-hero-name">{h.name}</span>
+                  <StateChips c={h} reserve />
+                </div>
+                {/* Choix COURANT en toutes lettres (arbitrage user : plus de segments cryptiques par défaut). */}
+                <div className="rest-hero-pick">
+                  <span className="rest-hero-choice"><Icon id={LODGING_META[cfg.lodging].icon} size="sm" /> {LODGING_META[cfg.lodging].label} · <Icon id={FOOD_META[cfg.food].icon} size="sm" /> {FOOD_META[cfg.food].label}</span>
+                  {warns.length > 0 && (
+                    <span className="rest-warn">{warns.map((w, i) => <span key={i}>{i > 0 && ' · '}{w}</span>)}</span>
+                  )}
+                </div>
+                <span className="rest-hero-cost">{toBrass(share) > 0 ? <Coins money={share} /> : '—'}</span>
+                {mine && (
+                  isOpen
+                    ? <button type="button" className="btn small btn-ghost rest-hero-toggle" onClick={() => { restSet(h.id, { lodging: commonLodging ?? cfg.lodging, food: commonFood ?? cfg.food }); setExpanded((s) => { const n = new Set(s); n.delete(h.id); return n; }); }} title="Revenir au choix de la troupe">↺ Troupe</button>
+                    : <button type="button" className="btn small btn-ghost rest-hero-toggle" onClick={() => setExpanded((s) => new Set(s).add(h.id))} title="Régler ce héros à part">≠ Personnaliser</button>
                 )}
               </div>
+              {isOpen && mine && (
+                <div className="rest-hero-controls row-flex">
+                  <OptionChooser
+                    layout="seg"
+                    groupLabel="Couchage"
+                    options={lodgingOptions(p.places).map((l) => ({ key: l, label: <><Icon id={LODGING_META[l].icon} size="sm" /> {LODGING_META[l].label}</>, selected: cfg.lodging === l, onSelect: () => restSet(h.id, { lodging: l }) }))}
+                  />
+                  <OptionChooser
+                    layout="seg"
+                    groupLabel="Nourriture"
+                    options={foodOptions(p.places, h).map((f) => ({ key: f, label: <><Icon id={FOOD_META[f].icon} size="sm" /> {FOOD_META[f].label}</>, selected: cfg.food === f, onSelect: () => restSet(h.id, { food: f }) }))}
+                  />
+                </div>
+              )}
             </div>
           );
         })}

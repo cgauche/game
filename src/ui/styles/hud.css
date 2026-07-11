@@ -250,6 +250,9 @@
   line-height: 1.15;
   text-shadow: 0 0 3px var(--shadow-ink);
 }
+/* Cellule d'États à EMPREINTE STABLE (arbitrage user 2026-07-11) : réservée même vide → une rangée de
+   liste ne se décale plus selon qu'un héros porte un État ou non. En ligne (nom + États côte à côte). */
+.ptile-states[data-reserve] { flex-direction: row; align-items: center; gap: 2px; min-height: 18px; }
 .ptile-more {
   color: var(--muted);
   font-weight: 700;
@@ -637,12 +640,28 @@
 .rest-time { text-align: center; font-size: 14px; margin: 2px 0 8px; font-variant-numeric: tabular-nums; }
 .rest-time-len { color: var(--muted); }
 .rest-rows { display: flex; flex-direction: column; gap: 6px; }
-/* Une LIGNE par héros (vague « lisibilité du voyage » 2/2) : portrait + Couchage + Nourriture EN LIGNE
-   (plus deux rangées seg empilées sous le portrait) — le motif « rangée qui s'enroule » vit dans
-   `.row-flex` (components.css, §charte-ui) composée au call-site, pas un `flex-wrap` recodé ici (#236). */
-.rest-row { display: flex; gap: 10px; align-items: center; }
-.rest-choices { flex: 1; min-width: 0; }
+/* Choix MAÎTRE « Pour toute la troupe » (arbitrage user 2026-07-11) : Couchage + Pitance appliqués à tous. */
+.rest-master { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; margin: 0 0 10px; background: var(--panel2); }
+.rest-master > .mini-title { margin-bottom: 6px; }
+.rest-master-choices { gap: 12px 18px; }
+/* Une LIGNE DE SYNTHÈSE par héros (arbitrage user 2026-07-11) — GRILLE à colonnes fixes :
+   portrait | identité+États | choix courant | coût | personnaliser. Un État ne décale JAMAIS les
+   colonnes (cellule d'États réservée dans `StateChips`, §charte-ui). */
+.rest-hero { border-radius: 8px; }
+.rest-hero-line { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.4fr) auto auto; align-items: center; gap: 10px; }
+.rest-hero-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rest-hero-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rest-hero-pick { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rest-hero-choice { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; }
+.rest-hero-cost { font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+.rest-hero-toggle { white-space: nowrap; }
+.rest-hero-controls { gap: 10px 16px; margin: 6px 0 2px 54px; }
 .rest-warn { font-size: 11px; color: var(--danger-soft); }
+@media (max-width: 560px) {
+  .rest-hero-line { grid-template-columns: auto minmax(0, 1fr) auto; }
+  .rest-hero-pick { grid-column: 2 / -1; }
+  .rest-hero-controls { margin-left: 0; }
+}
 .rest-foot { margin: 10px 0 0; text-align: center; font-size: 13px; }
 .rest-cost.over { color: var(--danger-soft); }
 .rest-travel-lines { margin: 0 0 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }

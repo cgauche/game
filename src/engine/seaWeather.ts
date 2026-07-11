@@ -77,6 +77,10 @@ export const precipitationDef = (id: SeaPrecipitationId): PrecipitationDef => DA
 export const temperatureDef = (id: SeaTemperatureId): TemperatureDef => DATA.temperatures.find((t) => t.id === id)!;
 export const visibilityDef = (id: SeaVisibilityId): VisibilityDef => DATA.visibilites.find((v) => v.id === id)!;
 export const windForceLabel = (id: SeaWindForceId): string => DATA.vents.find((v) => v.id === id)?.label ?? id;
+/** Libellé d'une direction de vent/cap (rose des vents, l.250) — AFFICHAGE : la logique reste keyée
+ *  par l'id `WindDirection`. Patron `windForceLabel`. */
+const WIND_DIRECTION_LABEL: Record<WindDirection, string> = { nord: 'Nord', sud: 'Sud', est: 'Est', ouest: 'Ouest' };
+export const windDirectionLabel = (id: WindDirection): string => WIND_DIRECTION_LABEL[id] ?? id;
 export const AFFALER_RULES = DATA.affaler;
 export const ENCALMINE_RULES = DATA.encalmine;
 

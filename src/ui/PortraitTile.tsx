@@ -44,11 +44,14 @@ export interface PortraitTileProps {
   /** Fond d'équipe derrière le portrait (vert allié / rouge ennemi). */
   team?: 'ally' | 'enemy';
   maxStates?: number;
+  /** Cellule d'États à EMPREINTE STABLE (arbitrage user 2026-07-11) : rendue vide sans État pour que
+   *  les rangées-personnages d'une LISTE gardent leurs colonnes alignées. Défaut `false` (HUD/dock). */
+  reserveStates?: boolean;
   onClick?: () => void;
   title?: string;
 }
 
-export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, selected, hovered, team, maxStates = 4, onClick, title }: PortraitTileProps) {
+export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, selected, hovered, team, maxStates = 4, reserveStates = false, onClick, title }: PortraitTileProps) {
   const px = CHAR_SIZE_PX[size];
   const ratio = c.wounds.max > 0 ? Math.max(0, Math.min(1, c.wounds.current / c.wounds.max)) : 0;
   // État de FIN (#237) : SOURCE UNIQUE (endState) — distingue mort / inconscient / rendu / hors-combat
@@ -85,7 +88,7 @@ export function PortraitTile({ c, ring, variant = 'full', size = 'md', active, s
           </span>
         )}
       </button>
-      {variant === 'full' && <StateChips c={c} max={maxStates} />}
+      {variant === 'full' && <StateChips c={c} max={maxStates} reserve={reserveStates} />}
     </div>
   );
 }

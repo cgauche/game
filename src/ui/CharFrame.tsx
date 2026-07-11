@@ -15,6 +15,7 @@ export function CharFrame({ c, ...rest }: {
   size?: CharSize;
   selected?: boolean;
   maxStates?: number;
+  reserveStates?: boolean;
   onClick?: () => void;
   title?: string;
 }) {

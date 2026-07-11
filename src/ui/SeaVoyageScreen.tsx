@@ -4,7 +4,7 @@ import { NotchGauge } from './NotchGauge';
 import { MultiRollList } from './MultiRollList';
 import { Icon } from './Icon';
 import type { Dir8 } from '../state/dir8';
-import type { SeaWindForceId } from '../engine/seaWeather';
+import { windDirectionLabel, type SeaWindForceId } from '../engine/seaWeather';
 import type { TravelRecapDay } from '../state/travelFlow';
 
 /** Cap de mer (`WindDirection` : nord/sud/est/ouest) → `Dir8` (vocabulaire rose des vents du projet). */
@@ -38,11 +38,15 @@ export function SeaVoyageBody({ day }: { day: TravelRecapDay }) {
           )}
         </div>
       </div>
-      <p className="sea-voyage-meta">
-        {chrome.weatherLabel} — vent de {chrome.windFrom}, cap {chrome.heading}
-        {' · '}<b>{chrome.milesLeft} milles restants</b>{chrome.daysLeft > 0 ? ` (~${chrome.daysLeft} jour(s))` : ''}
-        {chrome.manann !== 0 && <> · Humeur de Manann {chrome.manann >= 0 ? `+${chrome.manann}` : chrome.manann}</>}
-      </p>
+      {/* Méta du jour en CARTOUCHES label+valeur (primitive `.stat-chip`, §charte-ui) — plus de phrase
+          concaténée ni d'ids bruts (vent/cap en libellés, arbitrage user 2026-07-11). */}
+      <div className="sea-voyage-meta row-flex">
+        <span className="sv-weather">{chrome.weatherLabel}</span>
+        <span className="stat-chip"><span className="sc-label">Vent</span><span className="sc-value">{windDirectionLabel(chrome.windFrom)}</span></span>
+        <span className="stat-chip"><span className="sc-label">Cap</span><span className="sc-value">{windDirectionLabel(chrome.heading)}</span></span>
+        <span className="stat-chip"><span className="sc-label">Distance</span><span className="sc-value">{chrome.milesLeft} milles{chrome.daysLeft > 0 ? ` · ~${chrome.daysLeft} j` : ''}</span></span>
+        {chrome.manann !== 0 && <span className="stat-chip"><span className="sc-label">Manann</span><span className="sc-value">{chrome.manann >= 0 ? `+${chrome.manann}` : chrome.manann}</span></span>}
+      </div>
       {/* Le PV du jour DÉFILE : une ligne par jet de routine auto-résolu (aucun jet silencieux). */}
       {(day.entries?.length ?? 0) > 0
         ? <div className="sea-voyage-log"><MultiRollList entries={day.entries!} /></div>

@@ -26,6 +26,14 @@
   `.bar` (règle stricte 4). **Avant d'écrire du CSS : chercher la primitive qui existe déjà.**
   Afficher une valeur avec son LABEL, jamais un format cryptique (« Destin 4·4 » → 4 cartouches
   nommés Destin/Chance/Résilience/Détermination).
+- **Le contenu VARIABLE (États, longueurs de noms) ne décale JAMAIS les colonnes d'une liste.** Une
+  liste de rangées-personnages est une GRILLE à colonnes fixes (portrait | identité+États | contenu |
+  valeur) ; la zone des chips d'États est une **cellule à empreinte STABLE, réservée dans la primitive**
+  (`StateChips reserve` / `PortraitTile reserveStates`, `src/ui/StateChips.tsx`) — rendue vide sans État,
+  les chips s'empilent DEDANS. Un héros porteur d'un État ne pousse plus la rangée voisine (arbitrage
+  user 2026-07-11). Idem : les fills/strokes SVG viennent des tokens `var(--…)`, jamais d'un hex/rgb en
+  dur dans le JSX (cliquet `src/ui/ui-ratchets.test.ts` (viii) — sinon « texte noir sur noir » quand la
+  surface change de fond).
 
 ## Densité et contrôles stylisés
 

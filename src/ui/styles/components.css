@@ -434,12 +434,19 @@
 .voyage-day-body { display: flex; flex-direction: column; min-width: 0; }
 .voyage-day-title { font-weight: 600; }
 .voyage-day-summary { font-size: 0.82em; opacity: 0.8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* AGENDA DE PHASES (arbitrage user verbatim, vague « lisibilité 2/2 ») : sous-catégories du jour EN
-   COURS (fait ✓ / en cours ● / à venir ○), DÉRIVÉ de l'état réel — jamais codé en dur par mode. */
-.voyage-day-agenda { display: flex; flex-wrap: wrap; gap: 2px 8px; margin-top: 2px; }
-.voyage-agenda-item { font-size: 0.78em; opacity: 0.75; }
-.voyage-agenda-item.current { opacity: 1; font-weight: 600; color: var(--accent, inherit); }
-.voyage-agenda-item.done { opacity: 0.6; }
+/* SOUS-CATÉGORIES EMBOÎTÉES du jour EN COURS (arbitrage user verbatim : « des sous-catégories en
+   dessous, plus que du texte concaténé ») : une SOUS-RANGÉE indentée par phase (fait ✓ / en cours ● /
+   à venir ○), DÉRIVÉE de l'état réel — jamais codée en dur par mode. */
+.voyage-day-card.has-phases { flex-direction: column; align-items: stretch; gap: 4px; cursor: default; }
+.voyage-day-head { display: flex; align-items: center; gap: 8px; text-align: left; cursor: pointer; background: none; border: 0; color: inherit; padding: 0; }
+.voyage-phase-list { display: flex; flex-direction: column; gap: 2px; padding-left: 36px; }
+.voyage-phase-row { display: flex; align-items: baseline; gap: 6px; text-align: left; font-size: 0.82em; padding: 3px 6px; border-radius: 6px; background: none; border: 0; color: inherit; }
+.voyage-phase-row.pending { opacity: 0.55; }
+.voyage-phase-row.done { opacity: 0.75; }
+button.voyage-phase-row { cursor: pointer; }
+button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
+.voyage-phase-row.current { font-weight: 600; }
+.voyage-phase-glyph { flex: 0 0 auto; }
 .voyage-detail { min-width: 0; }
 .voyage-hint { opacity: 0.8; font-style: italic; }
 @media (max-width: 700px) {

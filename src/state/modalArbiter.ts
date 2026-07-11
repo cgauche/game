@@ -195,10 +195,12 @@ export function voyageHubActive(s: ArbiterState): boolean {
     && s.mode === 'exploration' && !s.worldMapOpen && !s.battle;
 }
 
-/** Une ÉTAPE du hub de voyage attend (cascade du jour OU nuit de halte) — SOURCE UNIQUE pour forcer le
- *  hub ouvert (`CampaignView`) et choisir ce qu'incruster en son centre (`VoyageScreen`). */
+/** Une ÉTAPE du hub de voyage attend (cascade du jour, nuit de halte OU relâche à terre d'accostage) —
+ *  SOURCE UNIQUE pour forcer le hub ouvert (`CampaignView`) et choisir ce qu'incruster en son centre
+ *  (`VoyageScreen`). La relâche (MDG 15) est une décision d'ACCOSTAGE intégrée au journal de voyage
+ *  (arbitrage user 2026-07-11), plus une modale flottante quand le hub est actif. */
 export function voyageStepPending(s: ArbiterState): boolean {
-  return !!s.pendingCascade || !!s.pendingRest;
+  return !!s.pendingCascade || !!s.pendingRest || !!s.pendingShoreLeave;
 }
 
 /**
