@@ -276,7 +276,7 @@ describe('registre cascadeAppliers — les 10 Tests d’équipage de VOYAGE (#27
   }
 
   /** Étape À PARTICIPANTS déjà agrégée (`commitStep`/`aggregateBatchStep`, #275 Décision 4 cran 1) —
-   *  même vocabulaire `result.sl`/`.success` que l'ancien `resolveVoyageCrewTest(total, success)`. */
+   *  `result.sl` = total agrégé, `result.success` = total ≥ 1 (MDG 14 l.13). */
   function step(kind: string, sl: number, success = sl >= 1): CascadeStep {
     return { id: kind, kind, label: kind, result: { roll: 0, target: 0, sl, success }, interactive: true };
   }

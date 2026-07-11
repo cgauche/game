@@ -127,7 +127,7 @@ export interface TravelPlan {
    *  Route MARITIME : la coque du NAVIRE DE CAMPAGNE (Blessures persistées sur `vessel.wounds`, #30). */
   vehicle?: Combatant;
   /** État NAVAL du trajet (route `sea` — MDG ch.13/15) : météo/vent, événements, crises, étape du jour.
-   *  Présent = la résolution du jour est déléguée à `seaVoyageFlow.runSeaDays`. */
+   *  Présent = la résolution du jour est déléguée à `seaVoyageFlow.runSeaDay` (cascade-jour). */
   sea?: import('./seaVoyageFlow').SeaVoyageState;
   /** État FLUVIAL du trajet (route `river`, mode barge — T2C ch.5) : vent, dérive/chavirage, jours à flot.
    *  Présent = la résolution du jour est déléguée à `riverVoyageFlow.runRiverDays`. */

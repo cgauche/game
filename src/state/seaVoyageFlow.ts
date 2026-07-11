@@ -555,7 +555,7 @@ function pushDayEntries(get: Get, set: Set, resolved: CascadeStep[]): void {
   const entries = resolved.flatMap((s) => dayEntriesFromStep(get, s));
   if (entries.length) patchSea(get, set, { entries: [...(get().travelPlan?.sea?.entries ?? []), ...entries] });
   // « Aucun jet silencieux » (voyageCadence.ts) : un RÉSUMÉ DR par Test d'équipage AUTO-RÉSOLU, au
-  // journal du jour — même patron que l'ancien `autoResolveVoyageCrewTest`.
+  // journal du jour.
   for (const s of resolved) {
     if (!s.participants || !s.result) continue;
     const total = s.result.sl;
@@ -782,8 +782,8 @@ function resolveSeaDayEvent(get: Get, set: Set, rng: RNG): boolean {
  * Boucle maritime — appelée par `runTravelDays`/`resumeTravel` (plan `sea`) et la reprise de nuit.
  * UN JOUR = périls d'auteur (inline) → événement de bord (inline, peut surfacer) → la CASCADE du jour
  * (`buildSeaDayCascade`, purpose `travelDay`) → `continueSeaDayAfterCascade` à sa clôture (dénouement
- * du jour + halte/arrivée). Ne boucle plus « étape par étape » : la cascade EST le point de reprise
- * (`pendingCascade`/`suspendedCascades`, state/cascade.ts) — plus de FSM `sea.step` persisté.
+ * du jour + halte/arrivée). La cascade EST le point de reprise (`pendingCascade`/`suspendedCascades`,
+ * state/cascade.ts).
  */
 export function runSeaDay(get: Get, set: Set): void {
   const plan = get().travelPlan;

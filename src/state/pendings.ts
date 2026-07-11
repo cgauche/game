@@ -505,9 +505,9 @@ export interface PendingShipManeuver extends MultiPending<ShipManeuverParticipan
  *  manœuvre/bordée : chaque rôle tenu lance SON Test (multi-jets), DR sommés (essentiel ×2) + Moral +
  *  Manque de bras + sabotage. L'ISSUE dépend du type (`crewTestConfirm`) : **Rude épreuve** (l.106-114)
  *  → un total NÉGATIF réduit le Moral d'autant (l.110), PERSISTÉ sur `CampaignVessel.morale`. Les Tests
- *  d'équipage de VOYAGE (Progression, Poursuite, Perception, Orientation…) sont désormais des ÉTAPES
- *  `CascadeStep` À PARTICIPANTS de la cascade du jour (#275 Ronde 2 cran 3, `seaVoyageFlow.ts`) — CE
- *  pending ne sert plus QU'AU combat (ancien champ `voyage`/`resolved` MORT avec le FSM `sea.step`). */
+ *  d'équipage de VOYAGE (Progression, Poursuite, Perception, Orientation…) sont des ÉTAPES
+ *  `CascadeStep` À PARTICIPANTS de la cascade du jour (#275 Ronde 2, `seaVoyageFlow.ts`) — CE
+ *  pending sert UNIQUEMENT au combat (Rude épreuve, arme d'équipe). */
 export interface PendingCrewTest extends MultiPending<ShipManeuverParticipant> {
   shipId: string;
   /** Type de Test d'équipage (`crew-test-types.json`) — décide des rôles, du rôle essentiel et de l'issue. */
