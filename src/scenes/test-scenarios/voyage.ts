@@ -45,7 +45,7 @@ function groupe(): Combatant[] {
 
   // Soldate — Approvisionnement (Survie FAIBLE → Rencontres dangereuses) ET « mauvais état » : blessée,
   // SANS rations (faim RAW), Vérole Urticante contagieuse (LDB 20), cauchemars (Test de Calme/nuit).
-  const greta = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Greta (test)', motivation: 'Test', rng: makeRNG(1502), id: 'greta' });
+  const greta = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Greta Hartmann', motivation: 'Ramener sa compagnie vivante — quel qu’en soit le prix.', rng: makeRNG(1502), id: 'greta' });
   greta.travelRole = 'approvisionnement';
   skill(greta, 'survie-en-exterieur', 0);
   greta.wounds.current = Math.max(1, greta.wounds.max - 6);

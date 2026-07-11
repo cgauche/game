@@ -3,8 +3,14 @@ import type { CampaignVessel } from '../state/store';
 import type { Combatant } from '../engine/types';
 import type { TravelPlan } from '../state/travelFlow';
 import { rollSeaWeather } from '../engine/seaWeather';
-import { voyageMode, voyageTiles, voyageDayCards } from './VoyageScreen';
+import { voyageMode, voyageTiles, voyageDayCards, dayAgenda } from './VoyageScreen';
 import { voyageStepPending } from '../state/modalArbiter';
+import type { PendingCascade, CascadeStep } from '../state/pendings';
+import type { PendingRest } from '../state/store';
+
+const cascadeStep = (kind: string): CascadeStep => ({ id: kind, kind, result: null } as CascadeStep);
+const cascade = (participants: CascadeStep[], cursor: number, purpose: PendingCascade['purpose'] = 'travelDay'): PendingCascade =>
+  ({ title: 't', cursor, log: [], purpose, participants } as unknown as PendingCascade);
 
 const hero = (id: string): Combatant => ({
   id, name: `Héros ${id}`, kind: 'hero',
@@ -85,6 +91,53 @@ describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {
     expect(cards[2].current).toBe(true);
     expect(cards[2].summary).toBe('EN COURS…');
     expect(cards[2].dayLabel).toBe('Jour 3');
+  });
+
+  // Vague « lisibilité du voyage » 2/2 : le bilan du jour CLOS d'une halte de nuit EN COURS sort du
+  // panneau de nuit — il devient une carte SÉLECTIONNABLE (comme un jour passé) ; `current` bascule sur
+  // la Nuit elle-même (plus de doublon jour/nuit sous un même index).
+  it('chronique : une halte de nuit EN COURS ajoute une carte SÉLECTIONNABLE pour le jour clos, « Nuit » devient la carte current', () => {
+    const plan: TravelPlan = { ...seaPlan(), log: [
+      { kmFrom: 0, kmTo: 32, hours: 24, lines: ['Départ, vent portant'], entries: [] },
+    ] };
+    const pendingDay = { kmFrom: 32, kmTo: 60, hours: 24, lines: ['Grain — voiles ✓'], entries: [] };
+    const cards = voyageDayCards(plan, 'mer', 'Jour', true, [], pendingDay);
+    expect(cards).toHaveLength(3); // Jour 1 (log) + Jour 2 (clos, en attente de la nuit) + Nuit (current)
+    expect(cards[1].dayLabel).toBe('Jour 2');
+    expect(cards[1].summary).toBe('Grain — voiles ✓');
+    expect(cards[1].current).toBeUndefined();
+    expect(cards[2].dayLabel).toBe('Nuit');
+    expect(cards[2].current).toBe(true);
+  });
+});
+
+describe('dayAgenda — sous-phases du jour EN COURS (arbitrage user verbatim)', () => {
+  it('sans cascade ni halte : agenda vide', () => {
+    expect(dayAgenda(null, null)).toEqual([]);
+  });
+
+  it('cascade travelDay : phases DÉRIVÉES des kinds présents, état fait/en cours/à venir par CURSEUR', () => {
+    const steps = [cascadeStep('stagePosteBatch'), cascadeStep('landPeril'), cascadeStep('landForcedPace')];
+    const agenda = dayAgenda(cascade(steps, 1), null); // curseur sur landPeril (index 1)
+    expect(agenda.map((a) => a.key)).toEqual(['activites', 'rencontre', 'route', 'nuit']);
+    expect(agenda.find((a) => a.key === 'activites')!.state).toBe('done');
+    expect(agenda.find((a) => a.key === 'rencontre')!.state).toBe('current');
+    expect(agenda.find((a) => a.key === 'route')!.state).toBe('pending');
+    expect(agenda.find((a) => a.key === 'nuit')!.state).toBe('pending');
+  });
+
+  it('phase absente ce jour (aucun kind ne matche) : omise, pas affichée « à venir » à tort', () => {
+    const agenda = dayAgenda(cascade([cascadeStep('landPeril')], 0), null);
+    expect(agenda.some((a) => a.key === 'activites')).toBe(false);
+    expect(agenda.some((a) => a.key === 'route')).toBe(false);
+  });
+
+  it('halte de nuit en cours : Route faite, Nuit en cours (plus de cascade active)', () => {
+    const agenda = dayAgenda(null, {} as PendingRest);
+    expect(agenda).toEqual([
+      { key: 'route', label: 'Route', state: 'done' },
+      { key: 'nuit', label: 'Nuit', state: 'current' },
+    ]);
   });
 });
 

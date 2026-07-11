@@ -13,21 +13,27 @@ const base: TravelRecap = {
   days: [
     { kmFrom: 0, kmTo: 24, hours: 6, lines: ['Péripétie : Un colporteur partage la route.'] },
   ],
+  daysTotal: 1,
 };
 
 describe('TravelRecapModal', () => {
-  it('arrivée : itinéraire, journées numérotées, péripéties, « Continuer le voyage »', () => {
+  // ARRIVÉE amincie (diagnostic fil 4, vague « lisibilité 2/2 ») : un ACCUSÉ (route, durée, date),
+  // plus de dump jour par jour — il fait doublon avec la halte du soir / la chronique du hub.
+  it('arrivée : itinéraire, durée, « Continuer le voyage » — sans dump jour par jour', () => {
     const html = renderToStaticMarkup(<TravelRecapModal seam={base} />);
     expect(html).toContain('Arrivée à Federholz');
-    expect(html).toContain('24 km en 6 h de route');
-    expect(html).toContain('colporteur');
+    expect(html).toContain('Voyage de 1 jour');
+    expect(html).not.toContain('colporteur'); // le déroulé du jour n'est plus re-dérouné à l'arrivée
     expect(html).toContain('Continuer le voyage');
   });
 
-  it('interruption : km restants + reprise par la carte', () => {
-    const html = renderToStaticMarkup(<TravelRecapModal seam={{ ...base, status: 'interrupted', kmDone: 10, days: [{ kmFrom: 0, kmTo: 10, hours: 2.5, lines: ['Péripétie : Brigands !'] }] }} />);
+  // INTERRUPTION : seule trace de la raison de l'arrêt — GARDE le déroulé jour par jour (migré ici
+  // depuis le cas arrivée, désormais amincie).
+  it('interruption : km restants + reprise par la carte + déroulé du jour (péripéties)', () => {
+    const html = renderToStaticMarkup(<TravelRecapModal seam={{ ...base, status: 'interrupted', kmDone: 10, days: [{ kmFrom: 0, kmTo: 10, hours: 2.5, lines: ['Péripétie : Un colporteur partage la route.', 'Péripétie : Brigands !'] }] }} />);
     expect(html).toContain('Voyage interrompu');
     expect(html).toContain('14 km restants');
+    expect(html).toContain('colporteur');
     expect(html).toContain('reprendre depuis la carte');
     expect(html).toContain('Ouvrir la carte');
   });

@@ -3,7 +3,6 @@ import { useGame } from '../../state/store';
 import { canReroll } from '../../engine/fortune';
 import { freeRerollOf } from '../../engine/activeFlags';
 import { RollShell } from '../RollShell';
-import { DrBar } from '../DrBar';
 import { testBreakdown, testPending } from '../breakdown';
 import { Icon } from '../Icon';
 import { resultLine, freeCons } from '../../state/rollSeam';
@@ -15,7 +14,8 @@ import { resultLine, freeCons } from '../../state/rollSeam';
  * (les Rounds y vivent) ; « Round suivant » (`extendedTestNext`) CUMULE le DR et ouvre le Round
  * suivant, ou ferme la cascade à la réussite (total ≥ cible). Total < 0 → recommence à 0.
  *
- * QUI lance → portrait dans la ligne de jet (`RollRow.row.combatant`) ; la progression = `DrBar` (cumul/cible).
+ * QUI lance → portrait dans la ligne de jet (`RollRow.row.combatant`) ; la progression = barre de DR de
+ * RANGÉE (`RollRow.extendedDr`, site unique — arbitrage user 2026-07-11).
  * Renvoie les props de `RollShell`, ou `null` si aucun Test étendu en attente.
  */
 export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | null {
@@ -45,12 +45,10 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
     flowKey: 'extendedTest',
     title: <><Icon id="ui/key" size="sm" /> {p.label}</>,
     subtitle: <>Round {p.rounds.length} · Test étendu (le DR de chaque Round se cumule)</>,
-    /* Progression = barre de DR cumulé vers la cible (comme le Rechargement). */
-    extra: <DrBar cum={cum} target={p.targetDR} />,
     rolled,
     rows: [
       {
-        /* QUI lance → portrait dans la ligne de jet. */
+        /* QUI lance → portrait dans la ligne de jet. Progression = barre de DR de RANGÉE. */
         row: res
           ? { combatant: actor, d: testBreakdown(p.skillLabel, p.target, { roll: res.roll, target: p.target, sl: res.sl, success: res.success }) }
           : { combatant: actor, pending: testPending(p.skillLabel, p.target) },
@@ -66,6 +64,7 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
         resilience: actor.resilience ?? 0,
         onForce: () => force(cur.id),
         forceShow: rolled,
+        extendedDr: { cum, target: p.targetDR },
       },
     ],
     outcome: rolled ? (

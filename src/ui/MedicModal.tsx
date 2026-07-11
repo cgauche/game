@@ -187,6 +187,10 @@ export function MedicModal() {
                   ))}
                 </div>
               )}
+              {/* EXCEPTION nommée au site unique `RollRow.extendedDr` (arbitrage user 2026-07-11, verrou
+                  `travel-carto.test.ts`) : cet état d'OPÉRATION ARMÉE est visible AVANT/ENTRE les passes,
+                  hors de toute rangée de jet (`SurgeryRollFlow` n'a pas de rangée tant qu'aucune passe n'est
+                  ouverte) — ce n'est pas la barre d'UN jet mais le cumul PERSISTANT de l'opération. */}
               <DrBar cum={sg.cumDR} target={sg.targetDR} />
               {sg.last && <p className="rm-note">Dernière passe : {sg.last.sl >= 0 ? '+' : ''}{sg.last.sl} DR</p>}
               {/* coût RAW d'une passe de Chirurgie : LDB 10 l.154 (la rééducation Guérison n'inflige rien). */}

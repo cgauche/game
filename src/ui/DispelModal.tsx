@@ -6,7 +6,6 @@ import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { Icon } from './Icon';
 import { ev } from '../state/combatLog';
-import { DrBar } from './DrBar';
 import { resultLine, freeCons } from '../state/rollSeam';
 
 /**
@@ -53,6 +52,8 @@ export function DispelModal() {
     onDarkPact: darkPact,
     onForce: force,
     forceShow: !r?.success,
+    /* Test ÉTENDU (Dissipation) : barre de DR de RANGÉE — site unique `RollRow` (arbitrage user 2026-07-11). */
+    extendedDr: { cum, target: pd.ni },
   };
 
   const actions: RollAction[] = [
@@ -69,8 +70,6 @@ export function DispelModal() {
           <strong>{caster.name}</strong> dissipe <strong>{pd.label}</strong> ({prev}/{pd.ni} DR)
         </>
       }
-      /* Test ÉTENDU : barre de DR cumulé vers le NI du sort. */
-      extra={<DrBar cum={cum} target={pd.ni} />}
       rows={[actorRow]}
       rolled={rolled}
       outcome={r && (

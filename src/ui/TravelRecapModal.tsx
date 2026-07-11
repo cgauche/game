@@ -59,20 +59,25 @@ export function TravelRecapModal({ seam }: { seam?: TravelRecap } = {}) {
         {recap.fromLabel} → <b>{recap.toLabel}</b> · {routeDistanceLabel(recap.km, sea)}, {TRAVEL_MODE_LABEL[recap.mode].toLowerCase()}
         {recap.status !== 'arrived' && <> · <b>{kmLeft > 0 ? `${routeDistanceLabel(kmLeft, sea)} restants` : `aux portes de ${recap.toLabel}`}</b></>}
       </p>
-      <ol className="travel-recap-days">
-        {recap.days.map((d, i) => (
-          <li key={i}>
-            <span className="travel-recap-day">
-              Jour {i + 1} — {routeDistanceLabel(d.kmTo - d.kmFrom, sea)} en {Math.round(d.hours)} h de route
-            </span>
-            <TravelDayBody day={d} />
-          </li>
-        ))}
-      </ol>
-      {recap.status === 'arrived' && (
+      {/* ARRIVÉE amincie (diagnostic fil 4, vague « lisibilité 2/2 ») : un ACCUSÉ (route + durée +
+          date), pas le dump jour par jour — il fait doublon avec la halte du soir / la chronique du
+          hub. `interrupted`/`stalled` GARDENT le déroulé : seule trace de la raison de l'arrêt. */}
+      {recap.status === 'arrived' ? (
         <p className="travel-recap-foot">
-          Le groupe arrive le <GameDate time={gameTime} />.
+          Voyage de {recap.daysTotal ?? recap.days.length} jour{(recap.daysTotal ?? recap.days.length) > 1 ? 's' : ''}.
+          {' '}Le groupe arrive le <GameDate time={gameTime} />.
         </p>
+      ) : (
+        <ol className="travel-recap-days">
+          {recap.days.map((d, i) => (
+            <li key={i}>
+              <span className="travel-recap-day">
+                Jour {i + 1} — {routeDistanceLabel(d.kmTo - d.kmFrom, sea)} en {Math.round(d.hours)} h de route
+              </span>
+              <TravelDayBody day={d} />
+            </li>
+          ))}
+        </ol>
       )}
       {ambush ? (
         <p className="travel-recap-foot">Impossible de poursuivre : il faut faire face. (Le voyage pourra reprendre ensuite depuis la carte <Icon id="nav/campaign" size="sm" />.)</p>

@@ -8,7 +8,6 @@ import { testBreakdown, testPending } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeFocus } from '../state/flowOutcomes';
-import { DrBar } from './DrBar';
 import { Icon } from './Icon';
 
 /**
@@ -52,6 +51,8 @@ export function FocusModal() {
     onDarkPact: darkPact,
     onForce: force,
     forceShow: r?.dr === 0,
+    /* Test ÉTENDU (Focalisation) : barre de DR de RANGÉE — site unique `RollRow` (arbitrage user 2026-07-11). */
+    extendedDr: { cum: Math.min(ni, prev + (r?.dr ?? 0)), target: ni },
   };
 
   const actions: RollAction[] = [
@@ -68,8 +69,6 @@ export function FocusModal() {
           <strong>{caster.name}</strong> focalise <strong>{spell?.label ?? pf.spellId}</strong> ({prev}/{ni} DR)
         </>
       }
-      /* Test ÉTENDU (#23) : barre de DR cumulé vers le NI du sort. */
-      extra={<DrBar cum={Math.min(ni, prev + (r?.dr ?? 0))} target={ni} />}
       rows={[actorRow]}
       rolled={rolled}
       outcome={r && (

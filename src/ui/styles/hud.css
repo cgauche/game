@@ -636,14 +636,15 @@
 .rest-weather { text-align: center; font-size: 13px; color: var(--danger-soft); margin: 0 0 8px; }
 .rest-time { text-align: center; font-size: 14px; margin: 2px 0 8px; font-variant-numeric: tabular-nums; }
 .rest-time-len { color: var(--muted); }
-.rest-rows { display: flex; flex-direction: column; gap: 8px; }
-.rest-row { display: flex; gap: 10px; align-items: flex-start; }
-.rest-choices { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.rest-rows { display: flex; flex-direction: column; gap: 6px; }
+/* Une LIGNE par héros (vague « lisibilité du voyage » 2/2) : portrait + Couchage + Nourriture EN LIGNE
+   (plus deux rangées seg empilées sous le portrait) — le motif « rangée qui s'enroule » vit dans
+   `.row-flex` (components.css, §charte-ui) composée au call-site, pas un `flex-wrap` recodé ici (#236). */
+.rest-row { display: flex; gap: 10px; align-items: center; }
+.rest-choices { flex: 1; min-width: 0; }
 .rest-warn { font-size: 11px; color: var(--danger-soft); }
 .rest-foot { margin: 10px 0 0; text-align: center; font-size: 13px; }
 .rest-cost.over { color: var(--danger-soft); }
-/* Halte de voyage : rapport du jour (lu le soir même) en tête de la modale. */
-.rest-travel-day { border-bottom: 1px solid var(--border); margin: 0 0 10px; padding: 0 0 8px; }
 .rest-travel-lines { margin: 0 0 6px; padding-left: 18px; font-size: 13px; color: var(--muted); }
 .rest-travel-lines li { margin: 2px 0; }
 

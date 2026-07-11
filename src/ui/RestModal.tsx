@@ -4,7 +4,6 @@ import { Modal } from './Modal';
 import { CharFrame } from './CharFrame';
 import { Coins } from './Coins';
 import { MultiRollList } from './MultiRollList';
-import { TravelDayBody } from './TravelRecapModal';
 import { OptionChooser } from './OptionChooser';
 import { lodgingOptions, foodOptions, restCost, type RestLodging, type RestFood } from '../state/restFlow';
 import { weatherExposure, exposureTestCount, exposureShelterFromTent } from '../engine/exposure';
@@ -112,16 +111,9 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
 
   const reglagesBody = (
     <>
-      {/* HALTE de voyage : le RAPPORT DU JOUR se lit le soir même (km, péripéties, jets en
-          lignes multijet) — avant de régler la nuit. Même corps que le recap (TravelDayBody). */}
-      {p.travelDay && (
-        <div className="rest-travel-day">
-          <p className="rest-time">
-            <Icon id="scenario/travel" size="sm" /> Journée de route — {Math.round(p.travelDay.kmTo - p.travelDay.kmFrom)} km en {Math.round(p.travelDay.hours)} h
-          </p>
-          <TravelDayBody day={p.travelDay} />
-        </div>
-      )}
+      {/* Panneau de nuit = la DÉCISION seule (vague « lisibilité du voyage » 2/2) : le BILAN du jour
+          (km, péripéties, jets) est sorti d'ici — il vit dans la CHRONIQUE du hub, sélectionnable
+          comme un jour passé (`VoyageScreen`/`voyageDayCards`), pas re-déroulé ici. */}
       {severity !== 'clement' && (
         <p className="rest-weather">{severity === 'extreme' ? <><Icon id="rest/storm" size="sm" /> Temps de chien</> : <><Icon id="rest/rain" size="sm" /> Mauvais temps</>}{sheltered ? ' — la tente abritera le camp' : ''}</p>
       )}
@@ -131,9 +123,9 @@ export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
           const mine = !online || ownsLocally(state, h.id);
           const warns = heroWarnings(h, cfg.lodging, cfg.food, exposureTests);
           return (
-            <div key={h.id} className="rest-row">
+            <div key={h.id} className="rest-row row-flex">
               <CharFrame c={h} variant="full" size="sm" />
-              <div className="rest-choices">
+              <div className="rest-choices row-flex">
                 <OptionChooser
                   layout="seg"
                   groupLabel="Couchage"

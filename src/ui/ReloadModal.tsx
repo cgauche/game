@@ -7,7 +7,6 @@ import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { describeReload } from '../state/flowOutcomes';
-import { DrBar } from './DrBar';
 
 /** Vue pure de la modale de rechargement (testable sans store). */
 export function ReloadModalView({
@@ -57,6 +56,8 @@ export function ReloadModalView({
     onBonusSL,
     darkPactable: rolled && pr.roll! > pr.target,
     onDarkPact,
+    /* Test ÉTENDU (Rechargement) : barre de DR de RANGÉE — site unique `RollRow` (arbitrage user 2026-07-11). */
+    extendedDr: { cum: rolled ? after : pr.progressBefore, target: pr.reload },
   };
 
   const actions: RollAction[] = [
@@ -70,9 +71,7 @@ export function ReloadModalView({
       variant="test"
       title="Recharger"
       subtitle={<>{weaponName}</>}
-      /* QUI recharge → portrait dans la ligne de jet ; Projectiles/cible vivent dans le cadre, le cumul dans le DrBar. */
-      /* Test ÉTENDU (#23) : barre de DR cumulé vers l'Indice de Recharge. */
-      extra={<DrBar cum={rolled ? after : pr.progressBefore} target={pr.reload} />}
+      /* QUI recharge → portrait dans la ligne de jet ; Projectiles/cible vivent dans le cadre, le cumul dans la rangée. */
       rows={[actorRow]}
       rolled={rolled}
       outcome={rolled && (

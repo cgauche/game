@@ -36,6 +36,7 @@ import { SessionEndModal } from './SessionEndModal';
 import { CoopMenuSection, GmSoloToggle } from './CoopPanels';
 import { AudioControls } from './AudioControls';
 import { WorldMapView } from './WorldMapView';
+import { GameDate } from './GameDate';
 import { PortView } from './PortView';
 import { ShipDossier } from './ShipDossier';
 import { LandMarketView } from './LandMarketView';
@@ -227,6 +228,11 @@ export function CampaignView() {
         {/* Barre d'actions de lieu : carte / port / marché / repos — rangée qui s'auto-empile
             (aucune se recouvre, quel que soit le sous-ensemble affiché). */}
         <div className="worldmap-actions">
+        {/* Horloge in-game (vague « lisibilité du voyage » 2/2) : chip discret dans le HUD d'exploration —
+            jusqu'ici la date/heure n'était visible qu'en ouvrant le menu ☰ (`GameMenu`/`.gm-date`). */}
+        {mode === 'exploration' && (
+          <span className="hud-clock" title="Date et heure de la campagne"><GameDate time={gameTime} /></span>
+        )}
         {/* Dossier du navire (#227) : écran PERSISTANT du navire de campagne, visible dès que
             `vessel` existe — EN et HORS combat (source unique ; en combat il montre le même dossier). */}
         {vessel && (

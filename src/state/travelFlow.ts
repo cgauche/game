@@ -99,6 +99,10 @@ export interface TravelRecap {
   days: TravelRecapDay[];
   /** Embuscade en attente : déclenchée par `dismissTravelRecap` (le récit passe AVANT le combat). */
   then?: TravelThen;
+  /** Durée totale du voyage (arrivée seulement, vague « lisibilité 2/2 ») : jours CLOS (`plan.log`) +
+   *  le jour courant (jamais logué — l'arrivée ne halte pas) = `log.length + 1`, MÊME formule que
+   *  `dayNum` de l'écran-hub. Capturé AVANT que `travelPlan` ne soit remis à `null`. */
+  daysTotal?: number;
 }
 
 /** Voyage en cours / interrompu (persiste pour « Reprendre le voyage »). */
@@ -154,6 +158,17 @@ export interface TravelPlan {
    *  (`openRest` porte le `travelDay` finalisé). Alimente le journal de voyage de l'écran-hub
    *  (`VoyageScreen`) — une carte par jour passé. Vidé avec le plan à l'arrivée. */
   log?: TravelRecapDay[];
+}
+
+/** MÉTÉO du jour EN COURS (vague « lisibilité du voyage » 2/2) — exposition PROPRE au hub, sans
+ *  nouveau champ persisté : le jour EN COURS porte déjà sa météo sur `plan.recap.days[dernier]`
+ *  (posée par `buildTravelDayCascade`, AVANT finalisation) ; une fois la halte de nuit ouverte,
+ *  `plan.recap` est effacé mais le MÊME jour finalisé vit sur `pendingRest.travelDay` (`openRest`
+ *  le porte tel quel). `undefined` = pas de météo d'Étape pour ce jour (règle `travel-etapes` éteinte,
+ *  navigation JOUÉE mer/fleuve — chacune a sa propre tuile). */
+export function currentTravelDayWeather(plan: TravelPlan, pendingRest: { travelDay?: TravelRecapDay } | null | undefined): TravelRecapDay['weather'] {
+  const active = plan.recap?.days[plan.recap.days.length - 1];
+  return active?.weather ?? pendingRest?.travelDay?.weather;
 }
 
 /** Entrées d'une journée de route terrestre, figées au build de la cascade `travelDay` : l'horloge/les
@@ -336,11 +351,11 @@ function runTravelDays(get: Get, set: Set): void {
     mode: plan0.mode, status: 'arrived', km: plan0.km, kmDone: plan0.kmDone,
     days: [], // SEGMENT courant seulement — les journées passées ont été lues à leur halte du soir
   } : null;
-  const finishRecap = (status: TravelRecap['status'], then?: TravelThen) => {
+  const finishRecap = (status: TravelRecap['status'], then?: TravelThen, daysTotal?: number) => {
     if (!recap) return;
     recap.status = status;
     recap.kmDone = get().travelPlan?.kmDone ?? recap.km;
-    set({ travelRecap: { ...recap, days: [...recap.days], then } });
+    set({ travelRecap: { ...recap, days: [...recap.days], then, daysTotal } });
   };
   let guard = 0;
   while (true) {
@@ -366,9 +381,10 @@ function runTravelDays(get: Get, set: Set): void {
     // Déjà à destination (reprise d'un voyage interrompu sur le dernier kilomètre) : on arrive
     // sans rejouer une journée (ni fatigue ni péripéties — elles ont déjà été tirées ce jour-là).
     if (plan.km - plan.kmDone < 1e-9) {
+      const daysTotal = (plan.log?.length ?? 0) + 1; // AVANT le null (#333 vague 2 — durée affichée à l'arrivée)
       set({ travelPlan: null });
       log(get, set, [`— Arrivée à ${to.label} —`, ...travelArrivalCare(get, set)]);
-      finishRecap('arrived');
+      finishRecap('arrived', undefined, daysTotal);
       get().transitionTo(to.scene, to.entry);
       return;
     }
@@ -578,11 +594,11 @@ export function continueTravelDayAfterCascade(get: Get, set: Set): boolean {
   // Efface les contextes transitoires du jour (jamais persistés au-delà de la journée).
   set({ travelPlan: { ...get().travelPlan!, land: undefined, stage: undefined, recap: undefined } });
 
-  const finishRecap = (status: TravelRecap['status'], then?: TravelThen) => {
+  const finishRecap = (status: TravelRecap['status'], then?: TravelThen, daysTotal?: number) => {
     if (!recap) return;
     recap.status = status;
     recap.kmDone = get().travelPlan?.kmDone ?? recap.km;
-    set({ travelRecap: { ...recap, days: [...recap.days], then } });
+    set({ travelRecap: { ...recap, days: [...recap.days], then, daysTotal } });
   };
   // Marche forcée du jour (l.224) : DIFFÉRÉE à la nuit si halte ; sinon roulée EAGER (arrivée/interruption).
   const rollMarchEager = () => {
@@ -606,11 +622,14 @@ export function continueTravelDayAfterCascade(get: Get, set: Set): boolean {
 
   if (arrived) {
     rollMarchEager();
+    // Durée totale du voyage (#333 vague 2) : jours CLOS + le jour courant (jamais logué, l'arrivée ne
+    // halte pas) — CAPTURÉ avant que `travelPlan` (et son `log`) ne soit remis à `null`.
+    const daysTotal = (get().travelPlan?.log?.length ?? 0) + 1;
     set({ travelPlan: null });
     const care = travelArrivalCare(get, set);
     if (recapDay) recapDay.lines.push(...care);
     log(get, set, [`— Arrivée à ${ctx.toLabel} —`, ...care]);
-    finishRecap('arrived');
+    finishRecap('arrived', undefined, daysTotal);
     get().transitionTo(ctx.toScene, ctx.toEntry);
     return true;
   }

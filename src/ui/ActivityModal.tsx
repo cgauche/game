@@ -6,7 +6,6 @@ import { evaluateTest } from '../engine/tests';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending, soutienMod } from './breakdown';
 import { describeActivity } from '../state/flowOutcomes';
-import { DrBar } from './DrBar';
 
 /**
  * Jet d'Activité (LDB 23 interlude / ADE II ch.8 BATAILLE de masse) : même coquille `RollShell` que
@@ -68,6 +67,8 @@ export function ActivityModal() {
     onBonusSL: bonusSL,
     darkPactable: rolled && failed,
     onDarkPact: darkPact,
+    /* Test ÉTENDU (Artisanat) : barre de DR de RANGÉE — site unique `RollRow` (arbitrage user 2026-07-11). */
+    extendedDr: pa.drTarget != null ? { cum: rolled ? after : pa.drBefore ?? 0, target: pa.drTarget } : undefined,
   };
 
   const rows: RollRowData[] = [actorRow];
@@ -120,8 +121,6 @@ export function ActivityModal() {
       title={pa.label}
       /* QUI fait l'Activité → portrait dans la ligne de jet ; la compétence vit dans le cadre. */
       subtitle={null}
-      /* Barre de DR cumulé pour tout Test ÉTENDU (Artisanat : `drTarget` peuplé par l'ouvrage en cours). */
-      extra={pa.drTarget != null ? <DrBar cum={rolled ? after : pa.drBefore ?? 0} target={pa.drTarget} /> : undefined}
       rows={rows}
       rolled={rolled}
       winnerIndex={winnerIndex}
