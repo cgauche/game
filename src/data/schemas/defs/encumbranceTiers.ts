@@ -5,6 +5,7 @@
  * immobilisé (le flag `immobile` court-circuite avant lecture — cf. commentaire du consommateur).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'encumbranceTiers.json';
 
@@ -16,6 +17,7 @@ export const schema = z.array(
     agilityPenalty: z.number(),
     travelFatigue: z.number(),
     immobile: z.boolean(),
+    source: sourceRefSchema.optional(),
   }),
 );
 

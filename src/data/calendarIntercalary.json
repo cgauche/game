@@ -1,26 +1,56 @@
 [
   {
     "name": "Hexenstag",
-    "afterMonth": -1
+    "afterMonth": -1,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 150,
+      "note": "Calendrier Impérial — Jours intercalaires, EDO Annexe 3 l.59-140"
+    }
   },
   {
     "name": "Mitterfrühl",
-    "afterMonth": 1
+    "afterMonth": 1,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 150,
+      "note": "Calendrier Impérial — Jours intercalaires, EDO Annexe 3 l.59-140"
+    }
   },
   {
     "name": "Sonnstill",
-    "afterMonth": 4
+    "afterMonth": 4,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 150,
+      "note": "Calendrier Impérial — Jours intercalaires, EDO Annexe 3 l.59-140"
+    }
   },
   {
     "name": "Geheimnistag",
-    "afterMonth": 5
+    "afterMonth": 5,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 150,
+      "note": "Calendrier Impérial — Jours intercalaires, EDO Annexe 3 l.59-140"
+    }
   },
   {
     "name": "Mittherbst",
-    "afterMonth": 7
+    "afterMonth": 7,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 150,
+      "note": "Calendrier Impérial — Jours intercalaires, EDO Annexe 3 l.59-140"
+    }
   },
   {
     "name": "Mondstille",
-    "afterMonth": 8
+    "afterMonth": 8,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 150,
+      "note": "Calendrier Impérial — Jours intercalaires, EDO Annexe 3 l.59-140"
+    }
   }
 ]

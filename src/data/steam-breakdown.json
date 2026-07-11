@@ -6,7 +6,12 @@
     "label": "Le moteur broute",
     "desc": "Le moteur broute : le moteur saute un tour et perd de la vitesse. Pendant les 1d10 prochains Rounds, le M du vaisseau est réduit de 3.",
     "mMod": -3,
-    "durationRounds": "1d10"
+    "durationRounds": "1d10",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 99,
+      "note": "Panne de Vapeur, MDG 12 l.324-349"
+    }
   },
   {
     "min": 41,
@@ -14,7 +19,12 @@
     "id": "fuite-de-vapeur",
     "label": "Fuite de vapeur",
     "desc": "Fuite de vapeur : un jet de vapeur jaillit de la chaudière. La personne qui s'occupe du moteur doit réussir un Test d'Initiative sous peine d'être ébouillantée et de subir 1d10–5 Dégâts (1 minimum), qui ignorent l'Armure.",
-    "failDamage": "1d10-5"
+    "failDamage": "1d10-5",
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 99,
+      "note": "Panne de Vapeur, MDG 12 l.324-349"
+    }
   },
   {
     "min": 61,
@@ -29,7 +39,12 @@
         "spec": "Ingénieur",
         "difficulty": "intermediaire"
       }
-    ]
+    ],
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 99,
+      "note": "Panne de Vapeur, MDG 12 l.324-349"
+    }
   },
   {
     "min": 71,
@@ -49,7 +64,12 @@
         "spec": "Ingénieur",
         "difficulty": "intermediaire"
       }
-    ]
+    ],
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 99,
+      "note": "Panne de Vapeur, MDG 12 l.324-349"
+    }
   },
   {
     "min": 91,
@@ -75,7 +95,12 @@
         "spec": "Ingénieur",
         "difficulty": "intermediaire"
       }
-    ]
+    ],
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 99,
+      "note": "Panne de Vapeur, MDG 12 l.324-349"
+    }
   },
   {
     "min": 96,
@@ -85,6 +110,11 @@
     "desc": "Explosion : la chaudière explose, détruisant le moteur et infligeant un Coup Critique à la Coque (voir page 119). Quiconque se trouve dans le même compartiment que le moteur prend un coup lui faisant subir 12 Dégâts avec l'Atout d'arme Perforante.",
     "engineDestroyed": true,
     "hullCritical": true,
-    "compartmentDamage": 12
+    "compartmentDamage": 12,
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 99,
+      "note": "Panne de Vapeur, MDG 12 l.324-349"
+    }
   }
 ]

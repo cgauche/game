@@ -20,7 +20,8 @@
         "bronze": 0
       },
       "maison": "Correspondance maison → mercenaire « Officier » (MDG 14 l.300) : le capitaine tient un rôle d'officier (l.143 « peuvent être considérés comme des officiers »). #216"
-    }
+    },
+    "maison": "Correspondance maison → mercenaire « Officier » (MDG 14 l.300) : le capitaine tient un rôle d'officier (l.143 « peuvent être considérés comme des officiers »). #216"
   },
   {
     "id": "timonier",
@@ -43,7 +44,8 @@
         "bronze": 0
       },
       "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : le Timonier est un marin expérimenté à la barre. #216"
-    }
+    },
+    "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : le Timonier est un marin expérimenté à la barre. #216"
   },
   {
     "id": "vigie",
@@ -66,7 +68,8 @@
         "bronze": 0
       },
       "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : la Vigie est un marin de quart posté en observation. #216"
-    }
+    },
+    "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : la Vigie est un marin de quart posté en observation. #216"
   },
   {
     "id": "mousse",
@@ -95,6 +98,10 @@
         "book": "mer-des-griffes",
         "page": 126
       }
+    },
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 126
     }
   },
   {
@@ -118,7 +125,8 @@
         "bronze": 0
       },
       "maison": "Correspondance maison → mercenaire « Officier » (MDG 14 l.300) : la navigation d'un grand vaisseau est une charge d'officier. #216"
-    }
+    },
+    "maison": "Correspondance maison → mercenaire « Officier » (MDG 14 l.300) : la navigation d'un grand vaisseau est une charge d'officier. #216"
   },
   {
     "id": "artilleur",
@@ -142,7 +150,8 @@
         "bronze": 0
       },
       "maison": "Correspondance maison → mercenaire « Mercenaire expérimenté » (MDG 14 l.301) : l'Artilleur est un combattant spécialiste des pièces. #216"
-    }
+    },
+    "maison": "Correspondance maison → mercenaire « Mercenaire expérimenté » (MDG 14 l.301) : l'Artilleur est un combattant spécialiste des pièces. #216"
   },
   {
     "id": "cuisinier",
@@ -166,7 +175,8 @@
         "bronze": 0
       },
       "maison": "Correspondance maison → mercenaire « Nautonier » (MDG 14 l.299) : non-combattant de bord sans part de prise. #216"
-    }
+    },
+    "maison": "Correspondance maison → mercenaire « Nautonier » (MDG 14 l.299) : non-combattant de bord sans part de prise. #216"
   },
   {
     "id": "chirurgien",
@@ -192,6 +202,10 @@
         "book": "mer-des-griffes",
         "page": 126
       }
+    },
+    "source": {
+      "book": "mer-des-griffes",
+      "page": 126
     }
   },
   {
@@ -216,6 +230,7 @@
         "bronze": 0
       },
       "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : le Chansonnier est un marin qui mène le chant. #216"
-    }
+    },
+    "maison": "Correspondance maison → mercenaire « Marin » (MDG 14 l.298) : le Chansonnier est un marin qui mène le chant. #216"
   }
 ]

@@ -6,7 +6,7 @@ import { calendarMonths } from '../data';
 describe('clock — calendrier impérial', () => {
   it('a 12 mois, 6 intercalaires, 8 jours de semaine ; année auto-cohérente', () => {
     expect(IMPERIAL_MONTHS).toHaveLength(12);
-    expect(IMPERIAL_MONTHS[0]).toEqual({ name: 'Nachhexen', days: 32 });
+    expect(IMPERIAL_MONTHS[0]).toMatchObject({ name: 'Nachhexen', days: 32 });
     expect(INTERCALARY).toHaveLength(6);
     expect(WEEKDAYS).toHaveLength(8);
     expect(DAYS_PER_YEAR).toBe(IMPERIAL_MONTHS.reduce((s, m) => s + m.days, 0) + INTERCALARY.length); // 394 + 6 = 400

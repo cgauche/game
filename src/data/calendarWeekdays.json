@@ -1,26 +1,66 @@
 [
   {
-    "name": "Wellentag"
+    "name": "Wellentag",
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Jours, EDO Annexe 3 l.19-30"
+    }
   },
   {
-    "name": "Aubentag"
+    "name": "Aubentag",
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Jours, EDO Annexe 3 l.19-30"
+    }
   },
   {
-    "name": "Marktag"
+    "name": "Marktag",
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Jours, EDO Annexe 3 l.19-30"
+    }
   },
   {
-    "name": "Backertag"
+    "name": "Backertag",
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Jours, EDO Annexe 3 l.19-30"
+    }
   },
   {
-    "name": "Bezahltag"
+    "name": "Bezahltag",
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Jours, EDO Annexe 3 l.19-30"
+    }
   },
   {
-    "name": "Konistag"
+    "name": "Konistag",
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Jours, EDO Annexe 3 l.19-30"
+    }
   },
   {
-    "name": "Angestag"
+    "name": "Angestag",
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Jours, EDO Annexe 3 l.19-30"
+    }
   },
   {
-    "name": "Festag"
+    "name": "Festag",
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Jours, EDO Annexe 3 l.19-30"
+    }
   }
 ]

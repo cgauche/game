@@ -10,48 +10,28 @@ import { auditDataset, EXEMPT_DATASETS } from '../../scripts/guards/lib/citation
  * `citationCoverage.mjs` — jamais les ids imbriqués) et l'empêche de RÉGRESSER.
  *
  * MODE CLIQUET (patron `combat-hardcode-guard.test.ts`) : `BASELINES` gèle, PAR DATASET NON
- * EXEMPTÉ, le nombre d'entrées SANS citation mesuré au recensement (#309, 2026-07-11). Le test
- * échoue si un dataset DÉPASSE sa baseline (= nouvelle entrée sans source = régression, tolérance
- * ZÉRO immédiate pour tout dataset déjà à 0 manquant) OU si une baseline est devenue trop haute
- * (dataset curé sans que la baseline soit abaissée). Un dataset absent de `BASELINES` a une
- * baseline 0 implicite (tolérance zéro dès aujourd'hui — `skills`/`gods`/`classes`/`species`/
- * `creatures`/`trappings`/`talents`/`careers`/`mutations`/`spells`/`qualities`/`activities`/
- * `naval-*` y compris, tous 100% au recensement, ne portent PAS d'entrée `BASELINES`).
+ * EXEMPTÉ, le nombre d'entrées SANS citation. Le test échoue si un dataset DÉPASSE sa baseline
+ * (= nouvelle entrée sans source = régression) OU si une baseline est devenue trop haute (dataset
+ * curé sans que la baseline soit abaissée). Un dataset absent de `BASELINES` a une baseline 0
+ * implicite (tolérance zéro — TOUS les datasets non exemptés, phase 3 (#309, 2026-07-11) ayant vidé
+ * les 16 derniers manques).
  *
  * EXEMPTION nominative (`EXEMPT_DATASETS`, `citationCoverage.mjs`) : vocabulaires app-internes
  * SANS mécanique RAW à sourcer (props/groupes/matériaux de rendu, palettes, prégénérés, réf
  * `_source` unique d'`aa-criticals.json`…) — jamais scannés par ce garde.
  *
- * La CURATION (retrouver les folios manquants) est la PHASE 2 du ticket (#309) : ce garde geler
- * l'état mesuré et bloque toute HAUSSE — `careerLevels`/`criticals`/`traumas`/`mutationTables`/
- * `weaponGroups`/`maladies` sont sortis de `BASELINES` (curés à 100%, phase 2, 2026-07-11).
+ * PHASE 3 (#309, 2026-07-11) : `BASELINES` VIDÉE — les 16 derniers datasets (miscast/interludeEvents/
+ * advancementCosts/calendrier ×3/crew-roles/peripeties/oups/steam-breakdown/drunkenness/
+ * driving-mishap/encumbranceTiers/weather/grapple) sont curés à 100% (`calendarPhases.json` exempté :
+ * découpage app-interne de lumière/vision, introuvable comme table RAW nommée — cf.
+ * `EXEMPT_DATASETS`). Zéro entrée extraite sans source sur `src/data/*.json`.
  */
 
 const DATA_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-/** Baseline gelée = nombre d'entrées SANS citation, par dataset, au recensement #309
- *  (2026-07-11). Chaque abaissement = une vraie curation (folio retrouvé ou tag `maison`) ;
- *  chaque hausse = une régression. Datasets déjà à 0 manquant (skills/gods/classes/species/
- *  creatures/trappings/talents/careers/mutations/spells/qualities/activities/naval-*…) restent
- *  HORS de cette table (baseline 0 implicite, tolérance zéro dès aujourd'hui). */
-const BASELINES: Record<string, number> = {
-  'advancementCosts.json': 15,
-  'calendarIntercalary.json': 6,
-  'calendarMonths.json': 12,
-  'calendarPhases.json': 7,
-  'calendarWeekdays.json': 8,
-  'crew-roles.json': 9,
-  'driving-mishap.json': 4,
-  'drunkenness.json': 5,
-  'encumbranceTiers.json': 4,
-  'grapple.json': 1,
-  'interludeEvents.json': 31,
-  'miscast.json': 71,
-  'oups.json': 7,
-  'peripeties.json': 10,
-  'steam-breakdown.json': 6,
-  'weather.json': 4,
-};
+/** Baseline gelée = nombre d'entrées SANS citation, par dataset, VIDE depuis la phase 3 (#309,
+ *  2026-07-11) — tout dataset non exempté est désormais à 0 manquant (baseline 0 implicite). */
+const BASELINES: Record<string, number> = {};
 
 function missingByFile(): Record<string, number> {
   const files = readdirSync(DATA_DIR).filter((f) => f.endsWith('.json'));

@@ -3,9 +3,12 @@
  * `src/data/data-wellformed.test.ts:19-22` et `src/engine/miscast.ts::expandOp`. Modélise
  * `JsonRow`/`JsonNestedTest`/`JsonOp`/`JsonFormula`/`JsonDice` TELS QU'ILS SONT LUS par
  * `miscast.ts` (miroir du `GameOp` runtime, mais `Formula` → `JsonFormula`, + `sinPlus1Value`/
- * `durationRounds` propres au dialecte). Table exposée en 3 tirages d100 : `minor`/`major`/`wrath`.
+ * `durationRounds` propres au dialecte). Table exposée en 3 tirages d100 : `minor`/`major` (Tableaux
+ * des Incantations Imparfaites Mineures/Majeures, LDB 46 folio 234) et `wrath` (Tableau de la Colère
+ * des dieux, LDB 40 folio 218) — #309 phase 3.
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'miscast.json';
 
@@ -93,6 +96,7 @@ const jsonRowSchema = z.strictObject({
   ops: z.array(jsonOpSchema).optional(),
   test: jsonNestedTestSchema.optional(),
   reroll: z.enum(['majeure', 'mineure-x2']).optional(),
+  source: sourceRefSchema.optional(),
 });
 
 export const schema = z.strictObject({

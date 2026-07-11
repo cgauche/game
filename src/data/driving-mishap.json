@@ -32,5 +32,10 @@
       "effect": "crash",
       "desc": "Essieu cassé : le véhicule devient incontrôlable et se retrouve Accidenté."
     }
-  ]
+  ],
+  "source": {
+    "book": "livre-de-base",
+    "page": 120,
+    "note": "Tableau des Accidents de Conduite d'attelage, LDB 09 l.140-149"
+  }
 }

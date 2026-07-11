@@ -59,5 +59,10 @@
       "effect": "blackout",
       "desc": "« Comment je suis arrivé là ? » : Vous vous réveillez le lendemain, avec une gueule de bois de tous les diables et peu de souvenirs de ce qui s'est passé. Réussissez un Test de Résistance à l'alcool ou gagnez un État Empoisonné."
     }
-  ]
+  ],
+  "source": {
+    "book": "livre-de-base",
+    "page": 129,
+    "note": "Tableau d'Ivresse, LDB 09 l.475-481"
+  }
 }

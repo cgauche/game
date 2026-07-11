@@ -26,6 +26,11 @@ export const schema = z.array(
       source: sourceRefSchema.optional(),
       maison: z.string().optional(),
     }).optional(),
+    // Citation TOP-LEVEL de l'entrée (contrat du garde `citation-coverage-guard.test.ts`, #309 phase
+    // 3) — reflet de `wage.source`/`wage.maison` (seule source réelle de l'entrée), jamais une
+    // 2e recherche indépendante.
+    source: sourceRefSchema.optional(),
+    maison: z.string().optional(),
   }),
 );
 

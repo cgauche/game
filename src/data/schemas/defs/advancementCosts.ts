@@ -5,6 +5,7 @@
  * JSON n'a pas d'Infinity — cf. commentaire du consommateur).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'advancementCosts.json';
 
@@ -13,6 +14,7 @@ export const schema = z.array(
     max: z.number().nullable(),
     char: z.number(),
     skill: z.number(),
+    source: sourceRefSchema.optional(),
   }),
 );
 

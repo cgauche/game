@@ -6,6 +6,7 @@
  * `engine/travelStages.ts:46` (`type Weather`).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'weather.json';
 
@@ -21,6 +22,7 @@ export const schema = z.array(
         weather: weatherIdSchema,
       }),
     ),
+    source: sourceRefSchema.optional(),
   }),
 );
 

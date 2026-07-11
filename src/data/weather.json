@@ -23,7 +23,12 @@
         "max": 100,
         "weather": "neige"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 33,
+      "note": "Tableau Météo par saison, EDOC ch.5 l.52-59"
+    }
   },
   {
     "id": "ete",
@@ -45,7 +50,12 @@
         "max": 100,
         "weather": "pluie-diluvienne"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 33,
+      "note": "Tableau Météo par saison, EDOC ch.5 l.52-59"
+    }
   },
   {
     "id": "automne",
@@ -71,7 +81,12 @@
         "max": 100,
         "weather": "neige"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 33,
+      "note": "Tableau Météo par saison, EDOC ch.5 l.52-59"
+    }
   },
   {
     "id": "hiver",
@@ -97,6 +112,11 @@
         "max": 100,
         "weather": "blizzard"
       }
-    ]
+    ],
+    "source": {
+      "book": "ennemi-dans-l-ombre-compagnon",
+      "page": 33,
+      "note": "Tableau Météo par saison, EDOC ch.5 l.52-59"
+    }
   }
 ]

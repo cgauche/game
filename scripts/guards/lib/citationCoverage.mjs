@@ -128,4 +128,5 @@ export const EXEMPT_DATASETS = {
   'qualityTypes.json': "vocabulaire de catégorisation des Qualités/Défauts (id+label, Atout/Défaut) — aucune valeur mécanique propre.",
   'qualitySubtypes.json': "vocabulaire de catégorisation des Qualités/Défauts (id+label, Arme/Armure/Objet) — aucune valeur mécanique propre.",
   'pregens.json': "personnages PRÉ-GÉNÉRÉS d'authoring (fiches jouables), contenu app-inventé — pas une règle RAW à sourcer.",
+  'calendarPhases.json': "les 7 phases de la journée (Aube→Nuit) sont un DÉCOUPAGE app-interne (minute de départ + icône, moteur de lumière/vision) — introuvable comme table RAW nommée dans le Calendrier Impérial (EDO Annexe 3, folio 149-150 : seuls mois/jours/jours intercalaires y sont RAW, #309 phase 3) ; aucune valeur mécanique à sourcer par entrée.",
 };

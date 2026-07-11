@@ -1,50 +1,110 @@
 [
   {
     "name": "Nachhexen",
-    "days": 32
+    "days": 32,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Jahrdrung",
-    "days": 33
+    "days": 33,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Pflugzeit",
-    "days": 33
+    "days": 33,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Sigmarzeit",
-    "days": 33
+    "days": 33,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Sommerzeit",
-    "days": 33
+    "days": 33,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Vorgeheim",
-    "days": 33
+    "days": 33,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Nachgeheim",
-    "days": 32
+    "days": 32,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Erntezeit",
-    "days": 33
+    "days": 33,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Brauzeit",
-    "days": 33
+    "days": 33,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Kaldezeit",
-    "days": 33
+    "days": 33,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Ulriczeit",
-    "days": 33
+    "days": 33,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   },
   {
     "name": "Vorhexen",
-    "days": 33
+    "days": 33,
+    "source": {
+      "book": "ennemi-dans-l-ombre",
+      "page": 149,
+      "note": "Calendrier Impérial — Mois, EDO Annexe 3 l.32-47"
+    }
   }
 ]

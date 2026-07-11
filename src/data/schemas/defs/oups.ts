@@ -3,6 +3,7 @@
  * RÉEL (7 entrées) et de `OupsEntry`/`OupsKind` (`src/data/oups.ts:10-14`).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'oups.json';
 
@@ -20,6 +21,7 @@ export const schema = z.array(
       'hitAlly',
     ]),
     label: z.string(),
+    source: sourceRefSchema.optional(),
   }),
 );
 

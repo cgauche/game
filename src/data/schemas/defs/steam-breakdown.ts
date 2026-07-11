@@ -3,7 +3,7 @@
  * (`src/engine/shipBuild.ts:223-237`), tirée par `rollSteamBreakdown` (d100).
  */
 import { z } from 'zod';
-import { difficultySchema } from '../common';
+import { difficultySchema, sourceRefSchema } from '../common';
 
 export const file = 'steam-breakdown.json';
 
@@ -32,6 +32,7 @@ export const schema = z.array(
         }),
       )
       .optional(),
+    source: sourceRefSchema.optional(),
   }),
 );
 

@@ -4,6 +4,7 @@
  * (`src/engine/drivingMishap.ts`).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'driving-mishap.json';
 
@@ -18,6 +19,7 @@ export const schema = z.strictObject({
       desc: z.string(),
     }),
   ),
+  source: sourceRefSchema.optional(),
 });
 
 export type DrivingMishapData = z.infer<typeof schema>;

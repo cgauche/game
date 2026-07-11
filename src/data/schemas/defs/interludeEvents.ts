@@ -4,6 +4,7 @@
  * (`src/data/interludeEvents.ts:14-38`).
  */
 import { z } from 'zod';
+import { sourceRefSchema } from '../common';
 
 export const file = 'interludeEvents.json';
 
@@ -27,6 +28,7 @@ export const schema = z.array(
     /** Résumé fidèle du texte (verbatim abrégé). */
     text: z.string(),
     fx: fxSchema.optional(),
+    source: sourceRefSchema.optional(),
   }),
 );
 

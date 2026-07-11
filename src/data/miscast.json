@@ -3,17 +3,32 @@
     {
       "min": 1,
       "max": 5,
-      "name": "Signe de Sorcière"
+      "name": "Signe de Sorcière",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 6,
       "max": 10,
-      "name": "Lait caillé"
+      "name": "Lait caillé",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 11,
       "max": 15,
-      "name": "Mildiou"
+      "name": "Mildiou",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 16,
@@ -25,12 +40,22 @@
           "name": "assourdi",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 21,
       "max": 25,
-      "name": "Lueur occulte"
+      "name": "Lueur occulte",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 26,
@@ -45,6 +70,11 @@
             "amount": 1
           }
         ]
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
       }
     },
     {
@@ -62,7 +92,12 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 36,
@@ -74,12 +109,22 @@
           "name": "a-terre",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 41,
       "max": 45,
-      "name": "Délié"
+      "name": "Délié",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 46,
@@ -102,12 +147,22 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 51,
       "max": 55,
-      "name": "Malédiction de la sobriété"
+      "name": "Malédiction de la sobriété",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 56,
@@ -119,7 +174,12 @@
           "name": "extenue",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 61,
@@ -131,7 +191,12 @@
           "name": "surpris",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 66,
@@ -154,6 +219,11 @@
             "value": 1
           }
         ]
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
       }
     },
     {
@@ -172,7 +242,12 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 76,
@@ -188,6 +263,11 @@
             "value": 1
           }
         ]
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
       }
     },
     {
@@ -199,24 +279,44 @@
           "op": "corruption",
           "amount": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 86,
       "max": 90,
-      "name": "Double problème"
+      "name": "Double problème",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 91,
       "max": 95,
       "name": "Multiplication d'infortune",
-      "reroll": "mineure-x2"
+      "reroll": "mineure-x2",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 96,
       "max": 100,
       "name": "Chaos en cascade",
-      "reroll": "majeure"
+      "reroll": "majeure",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     }
   ],
   "major": [
@@ -233,6 +333,11 @@
             "amount": 1
           }
         ]
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
       }
     },
     {
@@ -245,7 +350,12 @@
           "name": "aveugle",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 11,
@@ -272,12 +382,22 @@
             "value": 1
           }
         ]
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
       }
     },
     {
       "min": 16,
       "max": 20,
-      "name": "Marche de la mort"
+      "name": "Marche de la mort",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 21,
@@ -289,7 +409,12 @@
           "name": "extenue",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 26,
@@ -301,7 +426,12 @@
           "name": "en-flammes",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 31,
@@ -319,12 +449,22 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 36,
       "max": 40,
-      "name": "Essaim"
+      "name": "Essaim",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 41,
@@ -345,12 +485,22 @@
           "name": "a-terre",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 46,
       "max": 50,
-      "name": "Membre gelé"
+      "name": "Membre gelé",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 51,
@@ -368,17 +518,32 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 56,
       "max": 60,
-      "name": "Lévitation"
+      "name": "Lévitation",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 61,
       "max": 65,
-      "name": "Lévitation (suite)"
+      "name": "Lévitation (suite)",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 66,
@@ -395,17 +560,32 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 71,
       "max": 75,
-      "name": "Cœur de traître"
+      "name": "Cœur de traître",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 76,
       "max": 80,
-      "name": "Cœur de traître (suite)"
+      "name": "Cœur de traître (suite)",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 81,
@@ -426,12 +606,22 @@
           "name": "extenue",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 86,
       "max": 90,
-      "name": "Puanteur infernale"
+      "name": "Puanteur infernale",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 91,
@@ -449,12 +639,22 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     },
     {
       "min": 96,
       "max": 100,
-      "name": "Contre-réaction aethyrique"
+      "name": "Contre-réaction aethyrique",
+      "source": {
+        "book": "livre-de-base",
+        "page": 234,
+        "note": "Tableau des Incantations Imparfaites Mineures/Majeures, LDB 46"
+      }
     }
   ],
   "wrath": [
@@ -472,6 +672,11 @@
             "value": 1
           }
         ]
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
       }
     },
     {
@@ -485,7 +690,12 @@
           "maxZeroDR": true,
           "days": 7
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 11,
@@ -504,7 +714,12 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 16,
@@ -516,7 +731,12 @@
           "name": "a-terre",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 21,
@@ -534,12 +754,22 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 26,
       "max": 30,
-      "name": "Vous ne comprenez pas ma volonté"
+      "name": "Vous ne comprenez pas ma volonté",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 31,
@@ -558,7 +788,12 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 36,
@@ -582,12 +817,22 @@
             "value": 1
           }
         ]
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
       }
     },
     {
       "min": 41,
       "max": 45,
-      "name": "Votre cause est indigne"
+      "name": "Votre cause est indigne",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 46,
@@ -606,7 +851,12 @@
             }
           }
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 51,
@@ -634,12 +884,22 @@
             "value": 1
           }
         ]
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
       }
     },
     {
       "min": 56,
       "max": 60,
-      "name": "Je ne vous aiderai pas"
+      "name": "Je ne vous aiderai pas",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 61,
@@ -651,7 +911,12 @@
           "name": "hemorragique",
           "sinPlus1Value": true
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 66,
@@ -668,7 +933,12 @@
           "name": "aveugle",
           "sinPlus1Value": true
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 71,
@@ -696,12 +966,22 @@
             "value": 1
           }
         ]
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
       }
     },
     {
       "min": 76,
       "max": 80,
-      "name": "Vous avez péché contre moi"
+      "name": "Vous avez péché contre moi",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 81,
@@ -739,12 +1019,22 @@
             }
           ]
         }
+      },
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
       }
     },
     {
       "min": 88,
       "max": 88,
-      "name": "Interférences démoniaques"
+      "name": "Interférences démoniaques",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 89,
@@ -756,12 +1046,22 @@
           "name": "brise",
           "sinPlus1Value": true
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 96,
       "max": 100,
-      "name": "Faites pénitence"
+      "name": "Faites pénitence",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 101,
@@ -775,27 +1075,52 @@
           "op": "condition",
           "name": "inconscient"
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 106,
       "max": 110,
-      "name": "Ne prononcez pas mon nom en vain"
+      "name": "Ne prononcez pas mon nom en vain",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 111,
       "max": 115,
-      "name": "Ne vous attachez pas aux futilités"
+      "name": "Ne vous attachez pas aux futilités",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 116,
       "max": 120,
-      "name": "Vous abusez de ma miséricorde"
+      "name": "Vous abusez de ma miséricorde",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 121,
       "max": 125,
-      "name": "Contemplez votre cruauté"
+      "name": "Contemplez votre cruauté",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 126,
@@ -810,32 +1135,62 @@
           "name": "en-flammes",
           "value": 1
         }
-      ]
+      ],
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 131,
       "max": 135,
-      "name": "Souffrez comme je souffre"
+      "name": "Souffrez comme je souffre",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 136,
       "max": 140,
-      "name": "Excommunication"
+      "name": "Excommunication",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 141,
       "max": 145,
-      "name": "Prouvez votre valeur"
+      "name": "Prouvez votre valeur",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 146,
       "max": 150,
-      "name": "Je te chasse"
+      "name": "Je te chasse",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     },
     {
       "min": 151,
       "max": 999,
-      "name": "Appelé à rendre des comptes"
+      "name": "Appelé à rendre des comptes",
+      "source": {
+        "book": "livre-de-base",
+        "page": 218,
+        "note": "Tableau de la Colère des dieux, LDB 40 l.52-89"
+      }
     }
   ]
 }

@@ -3,31 +3,56 @@
     "min": 1,
     "max": 3,
     "label": "Allié inculpé",
-    "text": "Un de vos alliés est impliqué dans un horrible crime — le disculper demanderait des Activités (Savoir (Loi) Accessible +20, ou trois Activités du groupe) ; sinon il sera pendu. Arbitrage table."
+    "text": "Un de vos alliés est impliqué dans un horrible crime — le disculper demanderait des Activités (Savoir (Loi) Accessible +20, ou trois Activités du groupe) ; sinon il sera pendu. Arbitrage table.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 4,
     "max": 6,
     "label": "Enchères ésotériques",
-    "text": "Les biens d’un voisin décédé sont aux enchères, dont un vieux livre d’origine inconnue (10 CO) — il donnerait +20 aux Recherches de Savoir des Lettrés. Arbitrage table."
+    "text": "Les biens d’un voisin décédé sont aux enchères, dont un vieux livre d’origine inconnue (10 CO) — il donnerait +20 aux Recherches de Savoir des Lettrés. Arbitrage table.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 7,
     "max": 10,
     "label": "Trahison !",
-    "text": "Un ami, un parent ou un allié se retourne contre vous ; les répercussions influenceront votre prochaine aventure."
+    "text": "Un ami, un parent ou un allié se retourne contre vous ; les répercussions influenceront votre prochaine aventure.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 11,
     "max": 14,
     "label": "Imprévu",
-    "text": "La porte de l’écurie est restée ouverte : votre monture s’est enfuie (Test de Dressage (Cheval) Accessible +20 pour la rattraper — arbitrage table). Sans monture : une ampoule douloureuse au pied."
+    "text": "La porte de l’écurie est restée ouverte : votre monture s’est enfuie (Test de Dressage (Cheval) Accessible +20 pour la rattraper — arbitrage table). Sans monture : une ampoule douloureuse au pied.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 15,
     "max": 18,
     "label": "Eh ! Tu as renversé ma pinte !",
-    "text": "Un petit différend a tourné au conflit : quelqu’un ne laissera pas passer une occasion de se venger."
+    "text": "Un petit différend a tourné au conflit : quelqu’un ne laissera pas passer une occasion de se venger.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 19,
@@ -38,6 +63,11 @@
       "revenueBlockedClasses": [
         "roublards"
       ]
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
@@ -47,6 +77,11 @@
     "text": "Le collecteur d’impôts sillonne la communauté : tous les Personnages perdent 30 % de leur argent avant de pouvoir le dépenser.",
     "fx": {
       "moneyPct": -30
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
@@ -57,6 +92,11 @@
     "fx": {
       "revenuePct": -20,
       "bankPct": -20
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
@@ -69,6 +109,11 @@
       "revenueClasses": [
         "riverains"
       ]
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
@@ -78,6 +123,11 @@
     "text": "Un présage cryptique vous a été donné : votre maximum de Points de Chance augmente de 1 pour la prochaine aventure.",
     "fx": {
       "fortuneMaxDelta": 1
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
@@ -87,19 +137,34 @@
     "text": "Une fête est annoncée — mariage, récolte généreuse ou exécution publique ! Vous êtes entraîné dans l’événement et perdez une Activité.",
     "fx": {
       "loseActivity": true
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
     "min": 41,
     "max": 44,
     "label": "Météo défavorable",
-    "text": "Conditions détestables : pour la prochaine aventure, les Tests sociaux subissent −10 et le prix des aliments augmente de 20 %. Arbitrage table."
+    "text": "Conditions détestables : pour la prochaine aventure, les Tests sociaux subissent −10 et le prix des aliments augmente de 20 %. Arbitrage table.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 45,
     "max": 48,
     "label": "Météo radieuse",
-    "text": "Les magnifiques conditions vous inspirent : vous pouvez ajouter une nouvelle Ambition."
+    "text": "Les magnifiques conditions vous inspirent : vous pouvez ajouter une nouvelle Ambition.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 49,
@@ -110,13 +175,23 @@
       "revenueBlockedClasses": [
         "ruraux"
       ]
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
     "min": 53,
     "max": 56,
     "label": "Maladie pernicieuse",
-    "text": "Le Flux Sanglant sévit en ville : Test d’Endurance Facile (+40) ou contracter la maladie. Arbitrage table (maladie hors registre V1)."
+    "text": "Le Flux Sanglant sévit en ville : Test d’Endurance Facile (+40) ou contracter la maladie. Arbitrage table (maladie hors registre V1).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 57,
@@ -127,13 +202,23 @@
       "revenueBlockedClasses": [
         "*"
       ]
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
     "min": 61,
     "max": 63,
     "label": "L’étreinte de Morr",
-    "text": "Un parent, ami ou allié meurt — causes naturelles, accident… ou le début de quelque chose de plus sinistre."
+    "text": "Un parent, ami ou allié meurt — causes naturelles, accident… ou le début de quelque chose de plus sinistre.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 64,
@@ -145,6 +230,11 @@
       "revenueClasses": [
         "roublards"
       ]
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
@@ -154,6 +244,11 @@
     "text": "Une Faveur Majeure ou Importante vous est réclamée : ses tenants feront partie de votre prochaine aventure, et vous perdez une Activité en préparation.",
     "fx": {
       "loseActivity": true
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
@@ -167,25 +262,45 @@
         "citadins",
         "ruraux"
       ]
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
     "min": 70,
     "max": 71,
     "label": "Paix et sérénité",
-    "text": "Un sommeil paisible après un bon fromage : vous serez en pleine forme au début de votre prochaine aventure."
+    "text": "Un sommeil paisible après un bon fromage : vous serez en pleine forme au début de votre prochaine aventure.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 72,
     "max": 73,
     "label": "Colporteur",
-    "text": "Un colporteur friand de ragots arrive : pour 3 sc, +10 à toutes vos Activités Dernières nouvelles. Arbitrage table (Activité V2)."
+    "text": "Un colporteur friand de ragots arrive : pour 3 sc, +10 à toutes vos Activités Dernières nouvelles. Arbitrage table (Activité V2).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 74,
     "max": 76,
     "label": "Animal domestique malade",
-    "text": "Un de vos animaux tombe malade : Test de Soin aux animaux Intermédiaire (+0) ou la créature meurt. Sans animal : un nuage menaçant vous tourmente. Arbitrage table."
+    "text": "Un de vos animaux tombe malade : Test de Soin aux animaux Intermédiaire (+0) ou la créature meurt. Sans animal : un nuage menaçant vous tourmente. Arbitrage table.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 77,
@@ -194,6 +309,11 @@
     "text": "Avant toute Opération bancaire, votre planque est dévalisée : tout l’argent planqué a disparu (et votre équipement le plus précieux si le butin valait moins d’1 CO).",
     "fx": {
       "stashRaided": true
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
@@ -206,6 +326,11 @@
         "courtisans"
       ],
       "bankCrashCheck": true
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
@@ -215,13 +340,23 @@
     "text": "Votre sacoche est entaillée ! Vous perdez la moitié de l’argent avec lequel vous avez terminé votre dernière aventure.",
     "fx": {
       "moneyPct": -50
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
     "min": 86,
     "max": 88,
     "label": "Soupçonné d’hérésie",
-    "text": "Un Répurgateur vous soupçonne : Test de Charme Très Difficile (−30) pour le convaincre, sinon vous gagnez une némésis. Arbitrage table."
+    "text": "Un Répurgateur vous soupçonne : Test de Charme Très Difficile (−30) pour le convaincre, sinon vous gagnez une némésis. Arbitrage table.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 89,
@@ -233,24 +368,44 @@
       "revenueBlockedClasses": [
         "roublards"
       ]
+    },
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
     }
   },
   {
     "min": 92,
     "max": 94,
     "label": "Rien à signaler",
-    "text": "Peu de choses se passent : vous commencez la prochaine aventure avec un appétit pour le risque inspiré par l’ennui."
+    "text": "Peu de choses se passent : vous commencez la prochaine aventure avec un appétit pour le risque inspiré par l’ennui.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 95,
     "max": 97,
     "label": "Considération inattendue",
-    "text": "Quelqu’un que vous avez aidé vous rend la pareille — d’un objet de grande qualité à une bourse d’argent. Tout ce qui brille n’est pas or… Arbitrage table."
+    "text": "Quelqu’un que vous avez aidé vous rend la pareille — d’un objet de grande qualité à une bourse d’argent. Tout ce qui brille n’est pas or… Arbitrage table.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   },
   {
     "min": 98,
     "max": 100,
     "label": "Mercenaires particuliers",
-    "text": "Des mercenaires peu communs cherchent du travail : Entraînement et Apprentissage coûtent −20 %, et l’Entraînement au combat gagne +20. Arbitrage table."
+    "text": "Des mercenaires peu communs cherchent du travail : Entraînement et Apprentissage coûtent −20 %, et l’Entraînement au combat gagne +20. Arbitrage table.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 193,
+      "note": "Tableau des Événements, LDB 22 (table pp.193-194)"
+    }
   }
 ]

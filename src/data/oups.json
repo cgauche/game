@@ -3,42 +3,77 @@
     "min": 1,
     "max": 20,
     "kind": "selfWound",
-    "label": "Vous vous blessez en attaquant — perdez 1 Blessure (ignore BE+PA)."
+    "label": "Vous vous blessez en attaquant — perdez 1 Blessure (ignore BE+PA).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 160,
+      "note": "Tableau des Oups !, LDB 14 l.21-34"
+    }
   },
   {
     "min": 21,
     "max": 40,
     "kind": "weaponDamageActLast",
-    "label": "Arme abîmée (1 Dégât) ; vous agirez en dernier au prochain Round."
+    "label": "Arme abîmée (1 Dégât) ; vous agirez en dernier au prochain Round.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 160,
+      "note": "Tableau des Oups !, LDB 14 l.21-34"
+    }
   },
   {
     "min": 41,
     "max": 60,
     "kind": "actionPenalty",
-    "label": "−10 à votre Action au prochain Round."
+    "label": "−10 à votre Action au prochain Round.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 160,
+      "note": "Tableau des Oups !, LDB 14 l.21-34"
+    }
   },
   {
     "min": 61,
     "max": 70,
     "kind": "loseMovement",
-    "label": "Vous trébuchez — vous perdez votre prochain Mouvement."
+    "label": "Vous trébuchez — vous perdez votre prochain Mouvement.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 160,
+      "note": "Tableau des Oups !, LDB 14 l.21-34"
+    }
   },
   {
     "min": 71,
     "max": 80,
     "kind": "loseAction",
-    "label": "Vous lâchez ou ratez — vous perdez votre prochaine Action."
+    "label": "Vous lâchez ou ratez — vous perdez votre prochaine Action.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 160,
+      "note": "Tableau des Oups !, LDB 14 l.21-34"
+    }
   },
   {
     "min": 81,
     "max": 90,
     "kind": "trauma",
-    "label": "Vous vous tordez la cheville — Déchirure musculaire (Mineure), compte comme Blessure critique."
+    "label": "Vous vous tordez la cheville — Déchirure musculaire (Mineure), compte comme Blessure critique.",
+    "source": {
+      "book": "livre-de-base",
+      "page": 160,
+      "note": "Tableau des Oups !, LDB 14 l.21-34"
+    }
   },
   {
     "min": 91,
     "max": 100,
     "kind": "hitAlly",
-    "label": "Vous touchez un allié au hasard (ou vous-même → Sonné)."
+    "label": "Vous touchez un allié au hasard (ou vous-même → Sonné).",
+    "source": {
+      "book": "livre-de-base",
+      "page": 160,
+      "note": "Tableau des Oups !, LDB 14 l.21-34"
+    }
   }
 ]

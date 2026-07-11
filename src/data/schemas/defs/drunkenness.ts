@@ -6,7 +6,7 @@
  * ami/belligérant) est `ops` (`GameOp[]`, langue unique — `applyOps`), absent = rien d'exécutable.
  */
 import { z } from 'zod';
-import { gameOpSchema } from '../common';
+import { gameOpSchema, sourceRefSchema } from '../common';
 
 export const file = 'drunkenness.json';
 
@@ -22,6 +22,7 @@ export const schema = z.strictObject({
       ops: z.array(gameOpSchema).optional(),
     }),
   ),
+  source: sourceRefSchema.optional(),
 });
 
 export type DrunkennessData = z.infer<typeof schema>;

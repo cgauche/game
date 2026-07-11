@@ -2,76 +2,151 @@
   {
     "max": 5,
     "char": 25,
-    "skill": 10
+    "skill": 10,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 10,
     "char": 30,
-    "skill": 15
+    "skill": 15,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 15,
     "char": 40,
-    "skill": 20
+    "skill": 20,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 20,
     "char": 50,
-    "skill": 30
+    "skill": 30,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 25,
     "char": 70,
-    "skill": 40
+    "skill": 40,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 30,
     "char": 90,
-    "skill": 60
+    "skill": 60,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 35,
     "char": 120,
-    "skill": 80
+    "skill": 80,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 40,
     "char": 150,
-    "skill": 110
+    "skill": 110,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 45,
     "char": 190,
-    "skill": 140
+    "skill": 140,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 50,
     "char": 230,
-    "skill": 180
+    "skill": 180,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 55,
     "char": 280,
-    "skill": 220
+    "skill": 220,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 60,
     "char": 330,
-    "skill": 270
+    "skill": 270,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 65,
     "char": 390,
-    "skill": 320
+    "skill": 320,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": 70,
     "char": 450,
-    "skill": 380
+    "skill": 380,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   },
   {
     "max": null,
     "char": 520,
-    "skill": 440
+    "skill": 440,
+    "source": {
+      "book": "livre-de-base",
+      "page": 47,
+      "note": "Tableau de Coût des Augmentations de Caractéristique et Compétence, LDB 07 l.45-73"
+    }
   }
 ]

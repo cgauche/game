@@ -40,5 +40,10 @@
         }
       }
     ]
+  },
+  "source": {
+    "book": "livre-de-base",
+    "page": 163,
+    "note": "Empoignade, LDB 14 l.155-169"
   }
 }

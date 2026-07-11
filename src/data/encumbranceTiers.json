@@ -5,7 +5,12 @@
     "moveFloor": 0,
     "agilityPenalty": 0,
     "travelFatigue": 0,
-    "immobile": false
+    "immobile": false,
+    "source": {
+      "book": "livre-de-base",
+      "page": 293,
+      "note": "Table Surchargé, LDB 61 l.35-40"
+    }
   },
   {
     "tier": 1,
@@ -13,7 +18,12 @@
     "moveFloor": 3,
     "agilityPenalty": -10,
     "travelFatigue": 1,
-    "immobile": false
+    "immobile": false,
+    "source": {
+      "book": "livre-de-base",
+      "page": 293,
+      "note": "Table Surchargé, LDB 61 l.35-40"
+    }
   },
   {
     "tier": 2,
@@ -21,7 +31,12 @@
     "moveFloor": 2,
     "agilityPenalty": -20,
     "travelFatigue": 2,
-    "immobile": false
+    "immobile": false,
+    "source": {
+      "book": "livre-de-base",
+      "page": 293,
+      "note": "Table Surchargé, LDB 61 l.35-40"
+    }
   },
   {
     "tier": 3,
@@ -29,6 +44,11 @@
     "moveFloor": 0,
     "agilityPenalty": -20,
     "travelFatigue": 2,
-    "immobile": true
+    "immobile": true,
+    "source": {
+      "book": "livre-de-base",
+      "page": 293,
+      "note": "Table Surchargé, LDB 61 l.35-40"
+    }
   }
 ]
