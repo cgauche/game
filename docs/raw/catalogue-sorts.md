@@ -2139,6 +2139,9 @@ Malheureusement, comme l'anneau est maintenant, et depuis de nombreuses années,
 ---
 
 <!-- MDG-INTEGRATION --> magie
+<!-- Bloc MANUEL préservé (#324) : MDG ch.2 est un gazetteer dont « Magie des mers » n'est qu'une
+     sous-section — le générateur ne sait pas (encore) extraire une plage de sous-section. Seule
+     exception restante au tout-généré ; se supprime avec #324. -->
 
 ## [MDG 02] Magie des mers
 

@@ -373,8 +373,8 @@
 | 09 | La classe Côtier | ✅ | 32 (carrieres.md ×32) |
 | 10 | Le culte de Manann | ✅ | 2 (religion.md ×2) |
 | 11 | Le culte de Stromfels | ✅ | 1 (religion.md ×1) |
-| 12 | Navires et construction navale | ✅ | 148 (equipement.md ×60) |
+| 12 | Navires et construction navale | ✅ | 129 (equipement.md ×60) |
 | 13 | Navigation maritime | ✅ | 139 (combat.md ×83) |
 | 14 | Navigation à bord de grands vaisseaux | ✅ | 46 (maladies.md ×19) |
 | 15 | Longs voyages | ✅ | 44 (deplacement.md ×22) |
-| 16 | Bestiaire | ✅ | 66 (catalogue-creatures.md ×56) |
+| 16 | Bestiaire | ✅ | 10 (bestiaire.md ×10) |
