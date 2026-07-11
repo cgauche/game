@@ -2,7 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { hotbar } from '../state/hotbarBridge';
 import { useGame, activeCombatant, entityPickables, movementRemaining } from '../state/store';
 import { hasMeaningfulOption } from '../state/turnEconomy';
-import { findSpellById } from '../data/index';
+import { findSpellById, careerLabelFor } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
 import { actorHasSkill } from '../engine/skills';
 import { dispellableSpellsOn } from '../engine/dispel';
@@ -577,7 +577,7 @@ export function ActionBar() {
             c={active} ring={ring} isHero={isHero}
             actAvail={actAvail} actMax={actMax} moveLeft={moveLeft} moveMax={moveMax}
             spendAction={previewDelta.action} spendMove={previewDelta.move} gainAdv={previewDelta.adv}
-            title={active.career ? `${active.name} — ${active.career}` : active.name}
+            title={active.career ? `${active.name} — ${careerLabelFor(active)}` : active.name}
           />
           <div className="ab-actor-side">
             {/* Le NOM n'est plus affiché (dispo au survol du portrait / du pion). */}

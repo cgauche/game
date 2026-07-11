@@ -93,6 +93,10 @@ export const schema = z.array(
     minRangeBand: z.enum(['bout-portant', 'courte', 'moyenne', 'longue', 'extreme']).optional(),
     siegeRig: z.string().optional(),
     siegeFootprint: z.number().optional(),
+    /** Munition REPRÉSENTATIVE d'une arme de siège (`id` de trapping `type:'ammunition'`) — discrimine
+     *  pierrier/canon/baliste/mortier là où `subType`='armes-de-siege' seul ne le fait pas (hint joueur,
+     *  `ammoFamilyLabel`). */
+    defaultAmmo: z.string().optional(),
     shape: z.string().optional(),
     formChoices: z.array(z.string()).optional(),
     requiresMastery: z.boolean().optional(),

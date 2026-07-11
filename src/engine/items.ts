@@ -196,6 +196,7 @@ export function itemFromTrappingById(id: string): ItemInstance | null {
     ...(t.consumableDuration ? { consumableDuration: t.consumableDuration } : {}), // durée d'horloge (LDB 71/72 « Durée : … »), résolue au boire
     subType: t.subType ?? undefined,
     ...(t.weaponGroup ? { weaponGroup: t.weaponGroup } : {}), // Groupe de Projectiles d'une arme de siège (AA p.122)
+    ...(t.defaultAmmo ? { defaultAmmo: t.defaultAmmo } : {}), // munition REPRÉSENTATIVE (hint joueur, ammoFamilyLabel)
     ...(t.soloSimple ? { soloSimple: true } : {}), // baliste « relativement simple » : tir solo perd les Atouts (l.3818)
     ...(t.indirect ? { indirect: true } : {}), // mortier/catapulte « arc élevé » (AA p.122-123) : tir INDIRECT → viser une case
     ...(t.onHitEffects?.length ? { onHitEffects: t.onHitEffects } : {}), // effets « à la touche » en DONNÉE (Canon à flammes nain → En flammes, ADE II ch.08 l.243)
@@ -438,7 +439,7 @@ export function recomputeLoadout(c: Combatant): void {
     // Enchantements PORTÉS PAR L'OBJET (op augmentWeapon / arme invoquée) repliés ici → l'arme active
     // est déjà Magique/+Dégâts/onHit, donc visible partout ET appliquée à la résolution (pas de merge ailleurs).
     return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
-      range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
+      range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
       skin: it.skin, form: it.form, shape: it.shape, hands, hand, uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it) }, it.enchants ?? []);
   };
 
@@ -534,7 +535,7 @@ export function mannedPosteWeapon(c: Combatant, poste: ShipPoste): Weapon | unde
   if (hands === 2 && cannotWieldTwoHanded(c)) return undefined;
   const reload = qualityIndice(it, QUALITY_IDS.Recharge) ?? 0;
   return applyEnchants({ name: it.name, type: it.kind as 'melee' | 'ranged', damage: it.damage ?? { plusBF: true, flat: 0, bare: true }, reach: it.reach,
-    range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
+    range: it.range, qualities: it.qualities, subType: it.subType, weaponGroup: it.weaponGroup, defaultAmmo: it.defaultAmmo, soloSimple: it.soloSimple, indirect: it.indirect, onHitEffects: it.onHitEffects, minRangeBand: it.minRangeBand, reload, damageTaken: it.damageTaken,
     skin: it.skin, form: it.form, shape: it.shape, hands, hand: 'main', uid: it.uid, mountSide: it.mountSide, resolveChar: warMachineResolveChar(it) }, it.enchants ?? []);
 }
 
@@ -796,9 +797,15 @@ export function ammoFamily(subType?: string): string {
 }
 
 /** Libellé JOUEUR de la munition attendue par une arme à distance (hint d'achat/chargement quand le
- *  carquois du tireur ET le coffre du poste sont vides) : la munition REPRÉSENTATIVE de la famille
- *  (`ammoFamily`). Affichage FR pur (aide de saisie), jamais un id de logique. */
-export function ammoFamilyLabel(subType?: string): string {
+ *  carquois du tireur ET le coffre du poste sont vides) : la munition REPRÉSENTATIVE de l'ARME
+ *  (`defaultAmmo`, résolu au catalogue) si connue, sinon celle de la famille générique (`ammoFamily`) —
+ *  `armes-de-siege` seul ne discrimine pas pierrier/canon/baliste/mortier (MDG ch.12 p.106), d'où le
+ *  besoin du `defaultAmmo` par arme. Affichage FR pur (aide de saisie), jamais un id de logique. */
+export function ammoFamilyLabel(subType?: string, defaultAmmo?: string): string {
+  if (defaultAmmo) {
+    const label = findTrappingById(defaultAmmo)?.label;
+    if (label) return label;
+  }
   switch (ammoFamily(subType)) {
     case 'artillerie': return 'Boulet et poudre';
     case 'poudre-ingenierie': return 'Balles et poudre';

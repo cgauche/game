@@ -309,6 +309,10 @@ export interface Weapon {
    *  Résolu par `acceptableSpecs` (`weaponGroup ?? subType`) → Spé de tir du chef ET décompte d'équipage
    *  (servants à la bonne Projectiles, l.3900). Absent = `subType` EST le Groupe (armes normales). */
   weaponGroup?: string;
+  /** `id` de munition REPRÉSENTATIVE d'une arme de siège (cf. `TrappingData.defaultAmmo`) — discrimine la
+   *  bonne famille de munition (pierrier/canon/baliste/mortier) là où `subType` seul ne le fait pas. Lu par
+   *  `ammoFamilyLabel` pour le hint joueur. */
+  defaultAmmo?: string;
   /** Pièce d'artillerie « relativement simple » (la baliste, AA p.122 l.3818) : tirée par UN SEUL servant
    *  valide → l'arme perd TOUS ses Atouts (conserve ses Défauts). Lu par `crewedFireWeapon`. Absent = non. */
   soloSimple?: boolean;
@@ -805,6 +809,8 @@ export interface ItemInstance {
   subType?: string;
   /** Groupe de Projectiles d'une arme de siège (cf. `Weapon.weaponGroup`) — propagé à l'arme dérivée. */
   weaponGroup?: string;
+  /** Munition REPRÉSENTATIVE d'une arme de siège (cf. `Weapon.defaultAmmo`) — propagé à l'arme dérivée. */
+  defaultAmmo?: string;
   /** Pièce « relativement simple » (baliste, cf. `Weapon.soloSimple`) — propagé à l'arme dérivée. */
   soloSimple?: boolean;
   /** Pièce à TIR INDIRECT (mortier/catapulte, cf. `Weapon.indirect`) — propagé à l'arme dérivée. */

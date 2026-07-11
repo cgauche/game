@@ -437,6 +437,12 @@ export interface TrappingData {
    *  l'affût rendu en emplacement. Pur ROUTAGE D'APPARENCE (≠ règle), comme `shape` route l'art d'arme.
    *  Absent ⇒ l'arme n'est pas posable comme emplacement (pas d'art d'affût). */
   siegeRig?: string;
+  /** `id` de munition REPRÉSENTATIVE (`TrappingData.id`, `type:'ammunition'`) d'une arme de siège — les
+   *  familles `armes-de-siege`/`munition-de-siege` (`ammoFamily`) regroupent des munitions non-interchangeables
+   *  (carreau de baliste ≠ boulet de canon ≠ bombe de mortier ≠ balles de pierrier, MDG ch.12 p.106) ; le
+   *  `subType` seul ne discrimine pas la bonne famille pour le hint joueur. Propagé jusqu'à `Weapon`,
+   *  résolu en libellé FR par `ammoFamilyLabel`. Absent = hint générique de la famille (`ammoFamilyLabel`). */
+  defaultAmmo?: string;
   /** EMPREINTE de grille (côté N×N) de l'affût POSÉ en combat — recopiée sur `Combatant.footprint`
    *  (`footprintN`), MÊME champ que `VehicleData.ship.footprint`. ADE II ch.08 l.239/258 (profil + description
    *  physique du tronc suspendu sur portique à roues) ne chiffre aucune Taille en cases : la valeur posée

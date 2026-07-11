@@ -319,7 +319,7 @@ export function firedAttackBlock(get: Get, active: Combatant, target: Combatant,
   // Munition requise UNIQUEMENT si l'arme en consomme (famille de munition) ; un tir sans munition suivie
   // (ex. arme sans Groupe) reste possible. `ammoFamily` falsy ⇒ pas de suivi de munition (cf. compatibleAmmo).
   if (ammoFamily(w.subType) && !selectedAmmo(active, w)) {
-    const need = ammoFamilyLabel(w.subType);
+    const need = ammoFamilyLabel(w.subType, w.defaultAmmo);
     return { reason: 'noammo', detail: `Pas de munitions (${need}) pour ${w.name}.`, need };
   }
   // PORTÉE MINIMALE d'une machine de siège (ADE II ch.08 l.251/253) : REFUS (pas un malus) si la cible est
