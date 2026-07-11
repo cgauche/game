@@ -4,7 +4,7 @@ import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { itemFromTrappingById, recomputeLoadout } from '../engine/items';
 import { hoverTargeting } from './targeting';
-import { structureDownKey, type Scene } from './scene';
+import type { Scene } from './scene';
 import { testScene } from '../scenes/test-fixture';
 import type { Weapon } from '../engine/types';
 

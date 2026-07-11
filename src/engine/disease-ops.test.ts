@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { applyOps } from './ops';
 import { cureDiseases, blessDiseaseDuration } from './rest';
-import { cureCriticalWounds, traumaById, dechirureFractureFicheId } from './trauma';
+import { traumaById, dechirureFractureFicheId } from './trauma';
 import type { HitLocation } from './types';
 const tk = (k: 'dechirure' | 'fracture', sv: 'mineur' | 'majeur', loc: HitLocation, opts?: { be?: number; d10?: number }) => traumaById(dechirureFractureFicheId(k, sv, loc), opts, loc);
 import { contractDisease } from './disease';

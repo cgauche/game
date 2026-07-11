@@ -12,7 +12,7 @@
  */
 import { describe, it, expect } from 'vitest';
 import { chooseEnemyAction, type EnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
-import { emptyScene, type Scene } from './scene';
+import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
 import type { SpellData } from '../data';
 import type { Dir8 } from './dir8';

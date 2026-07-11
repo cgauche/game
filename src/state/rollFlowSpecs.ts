@@ -173,7 +173,7 @@ function crewRoleFlowSpec<P extends import('./rollFlowFactory').PendingBase & { 
     rolled: (r) => !!r.result,
     actor: (s, r) => actorIn(s, r.id),
     caps: { forced: true },
-    resolve: (s, r, actor, _get, forced) => {
+    resolve: (_s, r, actor, _get, forced) => {
       if (!actor) return null;
       const rr = forced ? forceCrewRole(actor, r.roleId, r.cumul, r.sense) : rollCrewRole(actor, r.roleId, battleRng(), r.cumul, r.sense);
       return rr ? { result: rr } : null;
@@ -658,7 +658,7 @@ export const FLOWS = {
     multi: { slots: (p) => p.rounds, idOf: (r) => r.id, replace: (p, rounds) => ({ ...p, rounds }) },
     rolled: (r) => !!r.result,
     actor: (s, _r, p) => (p ? actorIn(s, p.actorId) : undefined),
-    resolve: (s, _r, _actor, _get, forced, p) => {
+    resolve: (_s, _r, _actor, _get, forced, p) => {
       if (!p) return null;
       if (forced) {
         // Résilience « Je ne faillirai pas ! » : Round garanti réussi (dé MEILLEUR → DR max), LDB 17 l.73.
@@ -773,7 +773,7 @@ export const FLOWS = {
     multi: { slots: (p) => p.participants, idOf: (r) => r.id, replace: (p, parts) => ({ ...p, participants: parts }) },
     rolled: (r) => !!r.result,
     actor: (s, r) => actorIn(s, r.id),
-    resolve: (s, r, actor, _get, forced, p) => {
+    resolve: (_s, _r, actor, _get, forced, p) => {
       if (!actor || !p) return null;
       const value = testValue(actor, 'corps-a-corps'); // Bagarre (CC + avances)
       const bf = bonus(effectiveChar(actor, 'force'));
@@ -790,7 +790,7 @@ export const FLOWS = {
     caps: { forced: true },
     bonus: {
       // Chance « +1 DR » : +1 au DR → +1 dégât (avant réduction par le BE).
-      derive: (s, r, actor, p) => {
+      derive: (_s, r, actor, p) => {
         if (!r.result || !p) return null;
         const bf = bonus(effectiveChar(actor, 'force'));
         const sl = r.result.sl + 1;
@@ -922,7 +922,7 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.attackerId),
     caps: { forced: true },
-    resolve: (_s, p, actor) => {
+    resolve: (_s, _p, actor) => {
       if (!actor) return null;
       return { result: rollManeuverAttacker(actor, 'capacite-de-combat', battleRng()) };
     },
@@ -1101,7 +1101,7 @@ export const FLOWS = {
     rolled: (p) => !!p.result,
     actor: (s, p) => actorIn(s, p.casterId),
     caps: { forced: true },
-    resolve: (s, p, actor, _get, forced) => {
+    resolve: (_s, p, actor, _get, forced) => {
       if (!actor) return null;
       if (forced) {
         const base = p.result;
@@ -1345,7 +1345,7 @@ export const FLOWS = {
     actor: (s, p) => actorIn(s, p.actorId),
     touch: touchActors,
     caps: { forced: true },
-    resolve: (s, p, actor, _get, forced) => {
+    resolve: (_s, p, actor, _get, forced) => {
       // +DR de Talent (LDB 10) sur un Test RÉUSSI — règle UNIVERSELLE `talentTestSLBonus` (matcher
       // STRUCTURÉ `test.matches`, par id). Le contexte `when` n'est pas
       // évalué ici (défaut conservateur ; cf. plan). PLUS les +DR d'effet actif/trait : par Compétence

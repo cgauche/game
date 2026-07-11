@@ -24,7 +24,7 @@ import type { Difficulty } from './types';
 import type { Season } from './travelStages';
 // Tronc commun cargaison (partagé avec le commerce terrestre T2C, `landCargo.ts`) — modèle de lot,
 // tirage saisonnier, prix de base. Re-exporté pour les importeurs historiques de ce module.
-import { type CargoDef, rollSeasonalCargo, cargoBasePrice } from './cargo';
+import { type CargoDef, rollSeasonalCargo } from './cargo';
 export { type CargoDef, type CargoLot, cargoTotalEnc, removeCargo, cargoBasePrice, bargainDeltaPct } from './cargo';
 
 // ── Types de la donnée ───────────────────────────────────────────────────────────────────────────

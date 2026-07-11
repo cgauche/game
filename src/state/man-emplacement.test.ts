@@ -7,7 +7,7 @@ import { crewedPenalty } from '../engine/crewedWeapon';
 import { seedBattleRng } from './battleRng';
 import { useGame } from './store';
 import { emptyScene } from './scene';
-import type { Combatant, ShipPoste, Weapon } from '../engine/types';
+import type { Combatant, ShipPoste } from '../engine/types';
 import type { FireArc } from './fireArc';
 import type { Scene } from './scene';
 import type { GameState } from './store';

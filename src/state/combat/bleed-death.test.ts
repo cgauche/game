@@ -7,7 +7,7 @@ import { createHero } from '../../engine/character';
 import { makeRNG } from '../../engine/dice';
 import { seedBattleRng } from '../battleRng';
 import { ev } from '../combatLog';
-import { addCondition, stacks, hasCondition, COND } from '../../engine/conditions';
+import { addCondition, stacks, COND } from '../../engine/conditions';
 import { testScene } from '../../scenes/test-fixture';
 import type { Combatant } from '../../engine/types';
 

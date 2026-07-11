@@ -7,7 +7,7 @@ import { seedBattleRng } from './battleRng';
 import { useGame } from './store';
 import type { Combatant, ShipPoste, Weapon } from '../engine/types';
 import type { Scene } from './scene';
-import type { GameState, BattleState } from './store';
+import type { BattleState } from './store';
 
 /**
  * PILONNAGE INDIRECT (« Viser une CASE ») — AA p.122-123 / ADE II : une pièce à TIR INDIRECT (mortier,

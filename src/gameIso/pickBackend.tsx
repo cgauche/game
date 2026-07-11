@@ -13,7 +13,6 @@ import { isStructure } from '../engine/structures';
 import { findCreatureById, findTrappingById, findVehicleById } from '../data';
 import { eyesArtFromKeys } from './rig/parts/eyes';
 import { entitySprite } from './sprites';
-import { hashSeed } from '../engine/dice';
 import { resolveRig, RigSprite } from './rig/composeRig';
 import { defaultAppearance, type Appearance } from './rig/appearance';
 import { equipFromCombatant, type EquipCtx } from './rig/parts/equipment';
@@ -149,7 +148,6 @@ export function pickBackend(subject: TokenSubject, view: ViewMode = 'iso'): Pick
   // sceneEntity (exploration + éditeur)
   const ent = subject.ent;
   const id = `e-${ent.id}`;
-  const seed = ent.appearance?.seed ?? hashSeed(ent.id);
   const refName = refOf(ent);
   // Résolution UNIQUE par la donnée (espèce explicite de l'entité + trait Nuée du record), par id.
   const r = resolveRender(ent.appearance?.species, findCreatureById(refName)?.traits, refName);

@@ -10,7 +10,7 @@ import { talentEncumbranceBonus } from './combatFeatures/dispatch';
 import { applyEnchants } from './weaponDamage';
 import { cannotWieldTwoHanded, handAmputated } from './trauma';
 import { mutationArmourBonus, nonDeviatableMutationAP } from './corruption';
-import { findTrappingById, findVehicleById, qualityInstance, type TrappingRef, trappingRefLabel } from '../data';
+import { findTrappingById, findVehicleById, qualityInstance, type TrappingRef } from '../data';
 import { QUALITY_IDS } from './qualities/ids';
 import { slugId } from '../data/slug';
 import { craftEncDelta } from './qualities/craftEconomy';

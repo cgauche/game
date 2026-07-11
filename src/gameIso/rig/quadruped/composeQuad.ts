@@ -5,7 +5,6 @@
 import type { ResolvedBone } from '../composeRig';
 import type { BodyPlan } from '../bodyPlan';
 import type { View } from '../facing';
-import { bonesToSvg } from '../renderBones';
 import { worldTransformsG, type Matrix } from '../kinematics';
 import { buildTokenMap, applyTokenMap, type Palette } from '../palette';
 import {

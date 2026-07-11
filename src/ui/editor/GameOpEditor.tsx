@@ -26,8 +26,6 @@ import type { IconIdInput } from '../icons';
 const SIZES = Object.keys(SIZE_LABEL) as SizeCategory[];
 
 const CHARS = Object.keys(CHAR_LABELS) as CharKey[];
-/** Liste de Groupes saisie en CSV (« Criminel, Mort-vivant ») ↔ tableau (undefined si vide). */
-const csv = (s: string): string[] => s.split(',').map((x) => x.trim()).filter(Boolean);
 
 // ---------------------------------------------------------------------------
 // Vocabulaire COMPLET — libellé + menu groupé par intention

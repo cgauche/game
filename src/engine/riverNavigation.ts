@@ -32,7 +32,6 @@ import { findTableEntry } from './tables';
 import { d10, d100, rollExpr, type RNG, defaultRNG } from './dice';
 import { rollTest, difficultyFromModifier } from './tests';
 import { bonus } from './characteristics';
-import { testValue } from './skills';
 import { DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from './types';
 
 // ── Types de la table des vents (l.21-41) ────────────────────────────────────────────────────────

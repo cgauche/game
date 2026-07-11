@@ -31,7 +31,6 @@
  *     par défaut 0/absent.
  */
 import type { Get, Set } from './flowTypes';
-import type { GameState } from './store';
 import type { Combatant, CharKey, Difficulty } from '../engine/types';
 import { DIFFICULTY_MODIFIERS, DIFFICULTY_LABELS, CHAR_LABELS } from '../engine/types';
 import type { PairedSense, GameOp } from '../engine/ops';

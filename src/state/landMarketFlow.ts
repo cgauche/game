@@ -14,7 +14,7 @@
  * `cargo.ts`. Le Marchandage (Test opposé ±10 %/±20 %) réutilise le MÊME patron que `portFlow`.
  */
 import { battleRng } from './battleRng';
-import { placeOfScene, placeById } from './worldMap';
+import { placeOfScene } from './worldMap';
 import { dayIndex } from './upkeep';
 import { partyAssisted, partyBest, testValue } from '../engine/skills';
 import { opposedTest, SL_ASTOUNDING, rollTest } from '../engine/tests';

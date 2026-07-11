@@ -111,7 +111,7 @@ describe('Cumuler l’Avantage par une Compétence LIVE (LDB 09 l.305-308)', () 
   });
 
   it('Compétence sans application « Avantage » (Corps à corps) → aucune action ouverte', () => {
-    const { H } = combat();
+    combat();
     useGame.getState().battleGainAdvantage('corps-a-corps');
     expect(useGame.getState().pendingTest).toBeNull();
   });

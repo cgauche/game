@@ -95,7 +95,7 @@ describe('Péché et Colère Divine (LDB 40)', () => {
   });
 
   it('Effet d\'éditeur giveSin : cible le héros désigné, sinon le premier sachant Prier', () => {
-    const { priest, ally, party } = priestParty(0);
+    const { priest, ally } = priestParty(0);
     useGame.setState({ party: [ally, priest].map((h) => ({ ...h })) as Combatant[] }); // l'allié d'abord
     applyEffects(useGame.getState, useGame.setState, [{ type: 'giveSin', amount: 2 }]);
     expect(useGame.getState().party.find((h) => h.id === priest.id)!.sinPoints).toBe(2); // pas l'allié

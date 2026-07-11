@@ -8,8 +8,6 @@ const K = 'fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="
 const KF = 'fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"';
 /** Silhouette pleine. */
 const F = 'fill="currentColor" stroke="none"';
-/** Silhouette pleine à trous (evenodd) — yeux/orbites découpés dans le motif. */
-const FE = 'fill="currentColor" fill-rule="evenodd" stroke="none"';
 
 export const icons: IconFamily = [
   {

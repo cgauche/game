@@ -5,9 +5,9 @@
  */
 import type { GameState, BattleState, RevealEntry } from './store';
 import type { Get, Set as SetFn } from './flowTypes';
-import type { LootGear, PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack } from './pendings';
+import type { PendingCast, PendingDeviation, DeviationCtx, PendingBladeTrap, FreeAttackFreeze, BladeTrapFreeze, ScheduledRespawn, PendingReload, PendingAttack } from './pendings';
 import { describeReload } from './flowOutcomes';
-import { Combatant, ItemInstance, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, type ShipPoste } from '../engine/types';
+import { Combatant, HitLocation, Weapon, Difficulty, DIFFICULTY_MODIFIERS, type ShipPoste } from '../engine/types';
 import { rule } from '../engine/policy';
 import { battleRng } from './battleRng';
 import { ev, evLines, type CombatEventKind } from './combatLog';
@@ -22,7 +22,6 @@ import {
   bestRangedDefense,
   rangedDefenseModes,
   rollRangedAttacker,
-  defenseValue,
   combatValue,
   hasWeaponGroupSkill,
   attackModifiers,
@@ -58,14 +57,14 @@ import { gainAdvantage } from '../engine/advantage';
 import { groupAdvantage } from '../engine/advantagePool';
 import { campGain, campSpend, spendableAdvantage, reversalStealOne, roundEndAdvantageTransfer } from './combat/advantagePool';
 import { sizeGap } from '../engine/size';
-import { footprintTiles, combatDistance, sizeFootprint, footprintN, footprintChebyshev, occupiesTile } from './footprint';
-import { isUnbreakable, resolveQualities, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
+import { combatDistance, sizeFootprint, footprintN, footprintChebyshev } from './footprint';
+import { isUnbreakable, hasQuality, dangerousNine, magazineSize, hasBladeTrap, strikesLast, isFirearmQuality, reloadDRTarget } from '../engine/qualities/dispatch';
 import { applyTriggeredEffects, maneuverEffectsOf, freeAttackSourcesOf, triggerEffectOps } from './triggeredEffects';
-import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, hasBraveheart, outnumberCountBonus, reloadDRBonus, talentFearIndice, fleeMovementBonus, hasFocusHarmony, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged } from '../engine/combatFeatures/dispatch';
+import { hasStealAdvantage, stealsOneAdvantage, shieldAdvantageLevel, shieldReactionCost, canCounterOnDefenseWin, talentCritExtraWounds, talentMagicResistance, reloadDRBonus, arcaneDomainIdOf, retreatAdvantageCost, canDisengageWithLessAdvantage, hasBattement, hasDistraire, canPreemptRanged } from '../engine/combatFeatures/dispatch';
 import { QUALITY_IDS } from '../engine/qualities/ids';
 import {
   isStupid,
-  traitSeesInDark, bellicosePsychImmune, magicResistanceOf, flyMeters, runMultiplier,
+  magicResistanceOf, flyMeters, runMultiplier,
   isSkittishMount, immuneToSpellDomain,
 } from '../engine/traits/dispatch';
 import {
@@ -100,17 +99,17 @@ import {
 } from '../engine/magic';
 import { type OvercastSource, overcastSourceOf, overcastDurationParts } from '../engine/overcast';
 import type { SpellRange } from '../engine/spellRange';
-import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx, type Formula } from '../engine/ops';
-import { applySummon, purgeExpiredSummons } from './summonFlow';
+import { applyOps, resolveFormula, skillDRBonus, type GameOp, type OpsCtx } from '../engine/ops';
+import { applySummon } from './summonFlow';
 import type { ConjureForm } from '../engine/conjuredWeapons';
-import { gainCorruption, corruptionTarget } from './corruptionFlow';
+import { gainCorruption } from './corruptionFlow';
 import { corruptionGain } from '../engine/corruption';
-import { eligibleTalent, canCastFromGrimoire } from '../engine/grimoire';
+import { canCastFromGrimoire } from '../engine/grimoire';
 import { rollMiscast, componentDowngrade, type MiscastSeverity } from '../engine/miscast';
 import { opposedTest, rollTest, evaluateTest, resolveOpposed, isDoubleRoll, extendedTestStep, easeDifficulty } from '../engine/tests';
-import { effectiveChar, bonus, refreshWounds, volatileCharLines } from '../engine/characteristics';
-import { partyBest, isSocialTest, socialPsychMod, socialPsychLabel, testValue, skillBaseValue } from '../engine/skills';
-import { findManeuverById, findDomainById, findTalentById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, findTrappingById, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
+import { effectiveChar, bonus, volatileCharLines } from '../engine/characteristics';
+import { testValue, skillBaseValue } from '../engine/skills';
+import { findManeuverById, findDomainById, diseaseLabel, psychologyLabel, refLabel, findPsychologyById, findVehicleById, GRAPPLE, type SpellData, type ManeuverDef } from '../data';
 import { applyHullCritical, exposedCrew } from '../engine/shipCritical';
 import { endShanty, resolveShipUnits } from './shipCrew';
 import { beginShipwreck } from './shipwreck';
@@ -123,28 +122,21 @@ import { norm } from '../lib/normalize';
 import { recomputeLoadout, weaponWithAmmo, selectedAmmo, consumeAmmo, ammoFamily, ammoFamilyLabel, damageArmour, deviatableArmourAt, buildWeapon, isUnarmed } from '../engine/items';
 import { hasCapability } from '../engine/capabilities';
 import { effectiveMovement } from '../engine/encumbrance';
-import { isOutOfAction, endOfRound, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, tickDeath, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
-import { creatureAttacks, selfManeuversOf, selfManeuverApplicable, type CreatureAttack, type AttackKind } from '../engine/creatureAttacks';
+import { isOutOfAction, addCondition, removeCondition, hasCondition, cannotDefend, canTakeAction, applyZeroWounds, loseWounds, usesSuddenDeath, inDeathCondition, stacks, recoveredStacks, combatTestPenalty, incomingMeleeAdvantage, COND } from '../engine/conditions';
+import { creatureAttacks, selfManeuversOf, selfManeuverApplicable, type CreatureAttack } from '../engine/creatureAttacks';
 import { hasActiveFlag } from '../engine/activeFlags';
-import { suffocationTick } from '../engine/suffocation';
-import { domainOnHitEffects, domainMissileMods, domainCasterOps, hasArcaneTalent, isSorceryDomain } from '../engine/domainAttributes';
-import { losBlockingTiles, decayZones, zonesRoundTick, crossZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
+import { domainOnHitEffects, domainCasterOps, isSorceryDomain } from '../engine/domainAttributes';
+import { decayZones, discTiles, wallTiles, metersToTiles, resolveZoneMeters, type BattleZone } from './zones';
 import { carryOverState } from '../engine/persistence';
-import { rollContraction, contractDisease, contractionDue, applyContraction, hasActiveCapability, contagiousDiseases, DISEASE_DEFS } from '../engine/disease';
-import { hasHealSkill, type HealMode } from '../engine/healing';
-import { openMedic } from './medicFlow';
-import { openRest, placesOfKind } from './restFlow';
-import { rollCritical, critWoundLocation, permanentAmputations, critImmediateSummary, resolvePostEncounterAmputations, type CriticalResolved } from '../engine/critical';
+import { contractionDue, applyContraction, hasActiveCapability, DISEASE_DEFS } from '../engine/disease';
+import { rollCritical, critWoundLocation, critImmediateSummary, resolvePostEncounterAmputations, type CriticalResolved } from '../engine/critical';
 import { aaCriticalIsTrivial } from '../engine/aaCritical';
 import { isFumble, rollOups, type OupsResolved } from '../engine/oups';
 import { traumaById, dechirureFractureFicheId, escalateSensoryLoss, consolidateAmputations, maxFingersLostForWeapon, reinjuryBleed } from '../engine/trauma';
 import { effectiveWeaponDamage, effectiveWeaponRange, isThrownWeapon, damageWeapon, destroyWeapon, isImprovised, solideSaveThreshold, effectiveWeapon, type WeaponContext } from '../engine/weaponDamage';
 import { scatter } from '../engine/scatter';
 import { TIME_COST } from '../engine/timeCost';
-import { DAY_PHASES, minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
-import { restRecovery } from '../engine/rest';
-import { feedFromMeal } from '../engine/provisions';
-import { runDailyUpkeep } from './upkeep';
+import { MINUTES_PER_DAY } from '../engine/clock';
 import { findSpell, findSpellById } from '../data/index';
 
 /** Résout un sort par ID STABLE. SOURCE UNIQUE de la résolution de sort dans le flux de combat.
@@ -152,7 +144,7 @@ import { findSpell, findSpellById } from '../data/index';
  *  (un fallback id→libellé = rétro-compatibilité, proscrite). Les libellés restent au seul niveau AUTHORING. */
 const resolveSpell = (id: string) => findSpellById(id);
 import { toBrass, fromBrass } from '../engine/money';
-import { Scene, Effect, isWalkable, sceneMetresPerTile, isMerScene, setStructureDown, setTileCollapsed, parapetTilesAbove, heightAt, structureIsDown, type VictoryCondition } from './scene';
+import { Scene, sceneMetresPerTile, isMerScene, setStructureDown, setTileCollapsed, parapetTilesAbove, heightAt, structureIsDown, type VictoryCondition } from './scene';
 import { STEP_MAX_M } from './relief';
 import { placeCombatant } from './spawn';
 import { rollInitiative, combatOrder } from './combatSetup'; // relance d'Initiative par Round (LDB 13 l.43)
@@ -168,7 +160,7 @@ import { warMachineFireWeapon, warMachineCrewRequired, warMachineCrewPenalty } f
 import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzied, clearPsychOf, targetedTrigger, suppressSupersededPsych, psychResolution, gainPhobieIfThreshold, CIBLE_TYPES, CIBLE_LABEL, PsychType } from '../engine/psychology';
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
-import { reachable, moveReachFor, flyReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt } from './path';
+import { moveReachFor, flyReachable, pushAway, pullToward, pathTo, chebyshev, tileKey, Pt } from './path';
 import { chooseEnemyAction, consumeAiRanking, type EnemyAction, type EnemyTurnInput, type CastableSpell, type AiCandTrace } from './ai';
 import { resolveRun } from '../engine/movement';
 import type { RNG } from '../engine/dice';
@@ -178,7 +170,7 @@ import { massBattleTrackHit } from './massBattleFlow';
 // Géométrie de combat extraite (placement/déplacement/zones/flanc-dos/vision) — importée pour
 // l'usage interne ET ré-exportée (baril) pour les importeurs de combatFlow.
 import {
-  occupied, cannotStopOn, moveEnv, findFreeTile, displaceSmaller, removeEntity, removeEntities, inRect,
+  occupied, cannotStopOn, moveEnv, displaceSmaller, removeEntities, inRect,
   applyZoneCrossings, isFlankOrRear, seesInDark, smokeOf,
 } from './combatGeometry';
 export * from './combatGeometry';
@@ -221,8 +213,8 @@ export { aiMaybeFrenzy, resolvePsychAI, fireTurnStartTriggers, fireTurnEndTrigge
 import { runHitModifiers, martyrGuardOf, wardedAgainst } from './combat/hitModifiers'; // usage interne (applyAttackResult + applyCast)
 export { runHitModifiers, registerHitModifier, martyrGuardOf, wardedAgainst, organicProjectile } from './combat/hitModifiers'; // baril : enregistre les modifiers (effet de bord) + ré-export pour applyCast / les tests (l11-sorts-zones, etc.)
 import {
-  emitCreatureAttackAnim, trampleTarget, bestDefenseMode,
-  rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver, hasFreeWeaponAttack, availableFreeAttackOps,
+  trampleTarget, bestDefenseMode,
+  rollManeuverAttacker, maneuverAttackerDifficulty, resolveManeuver, availableFreeAttackOps,
   resolveBattement, battementEligible, resolveDistraire, distraireEligible, distraireAttackValue, distraireDefenseValue,
   setManeuverPostHitHook,
 } from './combatManeuvers';

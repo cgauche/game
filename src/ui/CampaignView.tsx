@@ -105,7 +105,6 @@ export function CampaignView() {
   const setInspectId = useGame((s) => s.setInspectId);
   const setHoverCombatant = useGame((s) => s.setHoverCombatant);
   const hovered = useGame((s) => s.hovered);
-  const pendingCast = useGame((s) => s.pendingCast);
   const [saveOpen, setSaveOpen] = useState(false); // modale Sauvegarder/Charger (Jalon 5)
   const [rulesOpen, setRulesOpen] = useState(false); // panneau « Règles maison » (dont Cadence de combat)
   const [optionsOpen, setOptionsOpen] = useState(false); // écran Options (remap clavier)

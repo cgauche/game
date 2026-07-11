@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useGame } from '../../state/store';
 import { scenario } from './42-belier-porte';
-import { resolveAttack, firedWeapon, firedAttackBlock, attackPlan, previewAttack } from '../../state/combatFlow';
+import { resolveAttack, firedWeapon, firedAttackBlock, attackPlan } from '../../state/combatFlow';
 import { placeCombatant } from '../../state/spawn';
 import { seedBattleRng } from '../../state/battleRng';
 import { combatValue } from '../../engine/combat';
@@ -261,7 +261,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
   // l'option dédiée « Servir <pièce> » ne se recouvrent JAMAIS pour une pièce de mêlée servie. ──
 
   it("option générique « Attaque » (auto, SANS weaponUid) : jamais le Bélier, même coque adjacente et chef loin — réservé à « Servir »", () => {
-    const { soldat, ram, porte } = startBelier();
+    const { soldat, porte } = startBelier();
     const pushBy = (dy: number) => {
       setActive(soldat.id);
       useGame.getState().battlePushEngine();
@@ -287,7 +287,7 @@ describe('Bélier — porte (belier-porte) : engin de siège CREWÉ, jamais une 
   });
 
   it("survol (hover/aim) : « Servir le Bélier » sélectionné → libellé de compétence « Force » ; « Attaque » générique → l'arme personnelle du chef (jamais « Force »)", () => {
-    const { soldat, ram, porte } = startBelier();
+    const { soldat, porte } = startBelier();
     const pushBy = (dy: number) => {
       setActive(soldat.id);
       useGame.getState().battlePushEngine();

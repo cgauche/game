@@ -10,7 +10,7 @@
 import { CreatureData, traits } from '../../data';
 import { CHAR_KEYS } from '../../engine/types';
 import { traitLabels, parseTraitInstance, formatTrait, optionalLabel } from '../../engine/traits/dispatch';
-import { isOptionalNote, type TraitInstance, type OptionalEntry } from '../../engine/statEntry';
+import { isOptionalNote, type OptionalEntry } from '../../engine/statEntry';
 import { RefField } from '../compendium/RefField';
 
 /** Traits Standard de créature (LDB 76 l.28-31) — « ajoutés à la liste Facultative de TOUTES les

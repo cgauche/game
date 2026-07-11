@@ -11,10 +11,6 @@ import { scalesPatch, plumeFan } from '../parts/textures';
 const maneOf = (p: QuadProps): QuadMane => p.mane;
 
 // ============================ helpers ============================
-const cap = (len: number, th: number, fill: string, stroke: string): string => {
-  const r = th / 2;
-  return `<path d="M${-r} 0 Q${-r} ${-r * 0.6} 0 ${-r * 0.6} Q${r} ${-r * 0.6} ${r} 0 L${r * 0.82} ${len} Q0 ${len + r * 0.7} ${-r * 0.82} ${len} Z" fill="${fill}" stroke="${stroke}" stroke-width="0.6"/>`;
-};
 // Segment CONIQUE (membre qui s'effile : cuisse→genou, canon→boulet) — la capsule droite à
 // épaisseur constante lisait « pied de table ». Le contour ne démarre qu'à 30 % de la hauteur :
 // le HAUT du membre (recouvert par/fondu dans le corps) n'imprime AUCUNE couture sur la robe.

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { rollShipCritical, resolveShipCriticalHit } from './shipCritical';
 import { applyOps } from './ops';
-import { addCondition, stacks } from './conditions';
+import { stacks } from './conditions';
 import { vehicleCombatant } from './vehicle';
 import { findVehicleById } from '../data';
 import { makeRNG } from './dice';

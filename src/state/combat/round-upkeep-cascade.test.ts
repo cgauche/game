@@ -8,7 +8,6 @@ import { addCondition, stacks, hasCondition, endOfRound, COND } from '../../engi
 import { fireConditionEffects } from '../triggeredEffects';
 import { setRule, resetRule } from '../../engine/policy';
 import { testScene } from '../../scenes/test-fixture';
-import type { Combatant } from '../../engine/types';
 
 /**
  * Jets d'upkeep de fin de Round concernant un HÉROS → étapes de CASCADE influençable (Mâchoires

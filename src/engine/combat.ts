@@ -9,8 +9,7 @@
 import { RNG, defaultRNG } from './dice';
 import { t } from '../i18n';
 import { rollTest, resolveOpposed, evaluateTest, TestResult } from './tests';
-import { bonus, effectiveChar, effectiveArmourAt, baseWithTraits } from './characteristics';
-import { bypassedAP } from './armourBypass';
+import { bonus, effectiveChar, baseWithTraits } from './characteristics';
 import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
@@ -30,7 +29,7 @@ import { qualitySum, qualityCritTriggered, parryDRAdjust, qualityDamageStep, cra
 import { QUALITY_IDS } from './qualities/ids';
 import { spellEffectOps } from './flowCore';
 import { findPsychologyById } from '../data';
-import { offHandPenalty, talentDamageBonus, isSlayer, talentDamageReduction, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust, talentInitiativeBonus } from './combatFeatures/dispatch';
+import { offHandPenalty, talentDamageBonus, isSlayer, talentRangedAPIgnore, ignoresCalledShotPenalty, ignoresSizeRangedMods, sniperRangeAdjust } from './combatFeatures/dispatch';
 import { isEngagedWith, reachRank } from './engagement';
 import { hullHitAdjust } from './shipMelee';
 import { rule } from './policy';

@@ -2,7 +2,7 @@
  * Calculs dérivés des Caractéristiques — Livre de base, chapitre Personnage.
  */
 import { CharKey, Characteristics, Combatant } from './types';
-import { traumaCharPenalties, traumaCharPenaltiesLabeled, passiveCharSum } from './trauma';
+import { traumaCharPenaltiesLabeled, passiveCharSum } from './trauma';
 import { traitCharMods } from './traits/dispatch';
 import { SizeCategory, woundsForSize, effectiveSize } from './size';
 import { findTalentById } from '../data';

@@ -9,7 +9,7 @@
  * déterministes ; on donne des Caractéristiques RÉELLES pour que les espérances de dégâts soient chiffrables.
  */
 import { describe, it, expect } from 'vitest';
-import { chooseEnemyAction, pickDoctrine, type EnemyAction, type EnemyTurnInput, type CastableSpell } from './ai';
+import { chooseEnemyAction, pickDoctrine, type EnemyTurnInput, type CastableSpell } from './ai';
 import { emptyScene } from './scene';
 import type { Combatant, Weapon } from '../engine/types';
 import type { SpellData } from '../data';
@@ -44,9 +44,6 @@ const scene = emptyScene(24, 24);
 function input(enemy: Combatant, heroes: Combatant[], extra: Partial<EnemyTurnInput> = {}): EnemyTurnInput {
   return { enemy, heroes, scene, blocked: new Set(heroes.map((h) => `${h.pos!.x},${h.pos!.y}`)), movement: enemy.movement, spells: [], ...extra };
 }
-
-const tidOf = (a: EnemyAction): string | undefined =>
-  (a as { targetId?: string }).targetId ?? (a as { thenTargetId?: string }).thenTargetId;
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════
 // (a) CLASSIFICATION par signaux + OVERRIDE prioritaire

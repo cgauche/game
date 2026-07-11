@@ -25,8 +25,3 @@ export function appendageArt(id: string): PartArt {
  *  `features: [{ bone, svg: OV_CORNES_X }]` (art brut 1-vue) par une réf de type résolue par vue. */
 export const appendageFeature = (appendage: AppendageId, bone: BoneId = 'tete', layer = -2): RaceFeature =>
   ({ bone, appendage, svg: '', layer });
-
-/** Catalogue pour l'éditeur (id + libellé), trié par id. */
-export const APPENDAGE_OPTIONS = APPENDAGE_DEFS
-  .map((a) => ({ id: a.id, label: a.label }))
-  .sort((x, y) => x.id.localeCompare(y.id));

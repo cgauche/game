@@ -1,6 +1,6 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { hotbar } from '../state/hotbarBridge';
-import { useGame, activeCombatant, entityPickables, movementRemaining, canMove } from '../state/store';
+import { useGame, activeCombatant, entityPickables, movementRemaining } from '../state/store';
 import { hasMeaningfulOption } from '../state/turnEconomy';
 import { findSpellById } from '../data/index';
 import { isArcaneSpell } from '../engine/magic';
@@ -247,12 +247,10 @@ export function ActionBar() {
   const isHero = playerControlled && !isVehicle(active);
   const loadouts = active.loadouts ?? []; // sets d'armes basculables en combat (≥2 → commutateur)
   // Mouvement DÉCOMPOSABLE (mais non entrelacé avec l'Action) : cases encore disponibles ce Tour (0 = épuisé).
-  // `canMoveNow` applique aussi la règle M-A-M (pas de Mouvement après une Action déjà précédée de Mouvement).
   // Les manœuvres « plein Mouvement » (Charge/Course/Monter/Descendre/Se relever) exigent `movementUsed === 0`.
   const moveLeft = isHero ? movementRemaining(battle, active) : 0;
   const moveStarted = battle.movementUsed > 0; // au moins un segment de Mouvement déjà parcouru
   const moveMax = isHero ? moveLeft + battle.movementUsed : 0; // budget total de cases ce Tour (barre à crans)
-  const canMoveNow = isHero && canMove(battle, active); // respecte aussi la règle M-A-M
   const hasSpells = isHero && (active.spells?.length ?? 0) > 0;
   const stunned = !canTakeAction(active); // Sonné : aucune Action ce tour, seul le déplacement (à demi-Mouvement)
   const engaged = isHero && isEngaged(active); // Engagé : pas de déplacement libre ni de Charge (LDB 15-Dépl)

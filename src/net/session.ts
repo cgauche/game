@@ -12,7 +12,6 @@ import type { Transport } from './transport';
 import { PROTOCOL_VERSION, parseMessage, serializeMessage, type NetMessage } from './protocol';
 
 export interface Seat {
-  seat: number;
   name: string;
   transport: Transport;
 }
@@ -48,7 +47,7 @@ export class HostSession {
           transport.close();
           return;
         }
-        this.seats[seat] = { seat, name: m.name, transport };
+        this.seats[seat] = { name: m.name, transport };
         joined = true;
         transport.send(serializeMessage({ kind: 'hello', protocol: PROTOCOL_VERSION, build: this.opts.build, name: 'hôte' }));
         for (const extra of this.opts.extraJoinMessages?.() ?? []) transport.send(serializeMessage(extra));

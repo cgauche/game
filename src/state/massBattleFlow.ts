@@ -30,7 +30,7 @@ import { bonus, effectiveChar } from '../engine/characteristics';
 import { refLabel } from '../data';
 import { CHAR_LABELS, DIFFICULTY_MODIFIERS } from '../engine/types';
 import {
-  ACTIVITIES, activityById, activitiesFor, matchBattleOutcomes, battleOutcomeAmount,
+  activityById, activitiesFor, matchBattleOutcomes, battleOutcomeAmount,
   type ActivityDef, type BattleResolution, type BattleOutcome as BattleOutcomeDelta,
 } from '../engine/activities';
 import type { PendingActivity } from './interludeFlow';

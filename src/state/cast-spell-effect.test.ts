@@ -7,11 +7,10 @@
  */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useGame } from './store';
-import { applyEffects, castSpell } from './combatFlow';
+import { applyEffects } from './combatFlow';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
-import type { Combatant } from '../engine/types';
 
 describe('Effet castSpell (#98)', () => {
   beforeEach(() => {

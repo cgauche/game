@@ -5,7 +5,7 @@
  * d'undo (fini le modèle copie locale + Annuler/Appliquer).
  */
 import { useRef } from 'react';
-import { Scene, Trigger, EncounterDef, Dialogue, Effect } from '../../state/scene';
+import { Scene, Trigger, EncounterDef, Dialogue } from '../../state/scene';
 import type { WorldMap } from '../../state/worldMap';
 import type { ThreatTier } from '../../engine/advantagePool';
 import { EMPTY_FLOW } from '../../state/flow';

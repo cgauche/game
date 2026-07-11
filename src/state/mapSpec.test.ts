@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildScene } from './mapSpec';
-import { layerTiles, isWalkable, heightAt, wallBetween, setStructureDown } from './scene';
+import { layerTiles, isWalkable, wallBetween, setStructureDown } from './scene';
 import { pathTo } from './path';
 import { edgeWallState } from '../ui/editor/editorState';
 

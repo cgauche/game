@@ -21,7 +21,7 @@
  */
 import {
   species, careers, careerLevels, skills, talents, trappings, creatures, traits, mutations,
-  spells, gods, domains, classes, maneuvers, qualities, weaponGroups, characteristics, etats, maladies,
+  spells, gods, domains, classes, maneuvers, qualities, characteristics, etats, maladies,
   locations, stars, mutationTables, advancementBaseId, careersForSpecies, findCareerById,
 } from '../../data';
 import type { AdvancementRef } from '../../data';

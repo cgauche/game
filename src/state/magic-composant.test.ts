@@ -116,7 +116,7 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
 
   it('un ENNEMI GÉNÉRIQUE (sans `followsCharacterRules`) n’a jamais de composant', () => {
     setRule('magic-composant', true);
-    const hero = mageInBattle();
+    mageInBattle();
     const enemy = useGame.getState().battle!.combatants.find((c) => c.kind === 'enemy')!;
     // #152 : la rencontre `enc-mutants` spawne le Mutant du bestiaire, désormais flagué
     // `followsCharacterRules` (PNJ humain) — ce cas isole le défaut « créature générique ».
@@ -132,7 +132,7 @@ describe('Composants d’incantation (LDB 46 l.158-163)', () => {
   // composant comme un héros ; une créature générique (le test ci-dessus) n'en a jamais.
   it('un ENNEMI PERSONNAGE (`followsCharacterRules`) consume un composant comme un héros', () => {
     setRule('magic-composant', true);
-    const hero = mageInBattle();
+    mageInBattle();
     const enemy = useGame.getState().battle!.combatants.find((c) => c.kind === 'enemy')!;
     enemy.followsCharacterRules = true;
     enemy.componentSpells = [SPELL];

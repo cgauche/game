@@ -4,7 +4,6 @@
  * (caractéristiques/compétences/talents/carrière, prothèses), consommables de fiche, butin.
  * Refacto pure — comportement préservé.
  */
-import type { GameState } from './store';
 import { Combatant, CharKey, CHAR_LABELS } from '../engine/types';
 import { recomputeLoadout, loadoutCreate, loadoutDelete, loadoutSetActive, loadoutSetSlot, equipConflicts, canStow } from '../engine/items';
 import {
@@ -38,7 +37,6 @@ import { spellCost } from '../engine/grimoire';
 import { levelsForCareer, findSkillById, findCareerById, findSpellById, findTrappingById, refLabel } from '../data/index';
 import { seatSlotsRemaining } from './netOwnership';
 import { rosterUpdate } from './roster';
-import { bus, EVT } from './bus';
 
 import type { Get, Set } from './flowTypes';
 

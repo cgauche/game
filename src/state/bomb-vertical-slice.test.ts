@@ -32,7 +32,7 @@ describe('Tranche verticale — la bombe compose en données (Lot 0 + Lot 3)', (
   };
 
   it('la mèche brûle puis explose : à 22h02 le groupe subit le souffle', () => {
-    const h = lonePartyAt(30);
+    lonePartyAt(30);
     applyEffects(useGame.getState, useGame.setState, [bomb]);
     expect(useGame.getState().scheduledEffects).toHaveLength(1);
 
@@ -45,7 +45,7 @@ describe('Tranche verticale — la bombe compose en données (Lot 0 + Lot 3)', (
   });
 
   it('désamorcée avant l’échéance : retrait du détonateur (cancelFlag) → pas d’explosion', () => {
-    const h = lonePartyAt(30);
+    lonePartyAt(30);
     applyEffects(useGame.getState, useGame.setState, [bomb]);
     useGame.setState({ flags: { bombeDesamorcee: true } }); // un Effet setFlag d'un autre trigger, ici simulé
     useGame.getState().advanceTime(120);

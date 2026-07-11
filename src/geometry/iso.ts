@@ -10,7 +10,7 @@
  */
 export const TW = 64; // largeur d'un losange (pleine)
 export const TH = 32; // hauteur d'un losange (pleine)
-export const SPRITE_HEADROOM = 160; // place au-dessus des tuiles pour les sprites hauts
+const SPRITE_HEADROOM = 160; // place au-dessus des tuiles pour les sprites hauts (usage interne seul)
 export const CELL = 56; // côté d'une case carrée (vue du dessus)
 // Vue « de face » (edge-on, crans IMPAIRS de la rotation) : l'iso TOURNÉ DE 45° → cases axis-alignées
 // (rangées horizontales), même foreshortening 2:1 et même 3D que l'iso (l'extrusion des murs reste).

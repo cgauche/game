@@ -15,7 +15,7 @@
  */
 import type { Combatant, ItemInstance } from '../engine/types';
 import { isConsumable, consumableUntilTime, bakeConsumableFlow } from '../engine/consumables';
-import { type Flow, conditionCtx, evalCondition, resolveTestDifficulty, EMPTY_FLOW, type ConditionCtx } from './flow';
+import { type Flow, conditionCtx, evalCondition, resolveTestDifficulty, type ConditionCtx } from './flow';
 import { buildActorView, flowTestGated } from './combat/flowEval';
 import { runCombatFlow } from './combat/triggeredTest';
 import { openSkillTest, runFlow, applyLeafOps, drainPendingLog } from './combatEffects';

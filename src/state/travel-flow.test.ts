@@ -14,7 +14,6 @@ import { buildEncounter } from './encounterAuthoring';
 import { WorldMap } from './worldMap';
 import { CAMPAIGN_START } from '../engine/clock';
 import { setRule, resetRule } from '../engine/policy';
-import { rationCount } from '../engine/provisions';
 import type { Combatant, ItemInstance } from '../engine/types';
 
 const get = () => useGame.getState();
@@ -214,11 +213,6 @@ describe('enchaînement JOUR → halte de nuit → reprise → arrivée', () => 
     expect(st.pendingRest).toBeFalsy(); // interrompu → pas de halte de nuit
   });
 });
-
-/** Nettoyage des règles optionnelles après chaque test (helper local pour éviter la répétition). */
-function afterEachRule(): void {
-  afterEach(() => { resetRule('travel-etapes'); resetRule('travel-attraper-froid'); });
-}
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────
 // #270 — Attelage FORCÉ (allure « galop », EDOC 07 l.229) : le Test de Conduite d'attelage au km était

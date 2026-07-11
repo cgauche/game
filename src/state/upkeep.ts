@@ -21,7 +21,6 @@
  *
  * N'importe QUE du moteur + battleRng (pas de cycle avec les flux).
  */
-import type { GameState } from './store';
 import { battleRng } from './battleRng';
 import { tickCampaignVesselWeek } from './shipCrew';
 import { MINUTES_PER_DAY } from '../engine/clock';

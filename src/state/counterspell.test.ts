@@ -119,7 +119,7 @@ describe('Contre-sort (Dissipation, LDB 46 l.201-202)', () => {
 
   it('une Prière ne se dissipe pas (LDB 46 : « Si un SORT vous cible »)', () => {
     useGame.getState().seedRng(3);
-    const { H, E } = setup();
+    const { H } = setup();
     const hero = useGame.getState().battle!.combatants.find((c) => c.id === H.id)! as Combatant;
     hero.skills = [...hero.skills, { skillId: 'priere', characteristic: 'sociabilite', advances: 5 }];
     hero.spells = ['benediction-de-guerison'];

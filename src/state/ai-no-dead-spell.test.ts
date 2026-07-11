@@ -9,7 +9,7 @@
  * contextuelle (un buff non-combat peut légitimement valoir ~0 en combat) — couverts par ai-spell-value.
  */
 import { describe, it, expect } from 'vitest';
-import { spells, type SpellData } from '../data';
+import { spells } from '../data';
 import { spellActionValue, spellIsOffensive, type SpellPlacement } from './aiSpellValue';
 import { spellOps } from './flow';
 import type { Combatant } from '../engine/types';

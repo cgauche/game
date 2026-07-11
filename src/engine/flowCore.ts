@@ -250,6 +250,9 @@ export function evalCondition(cond: Condition, ctx: ConditionCtx): boolean {
     case 'hasItem': {
       const need = Math.max(1, cond.count ?? 1);
       // Objet catalogué → match par `trappingId` stable ; objet CUSTOM (sans trappingId) → repli sur le nom.
+      // Carve-out doctrine (#318) : ce repli n'est PAS une comparaison par-label déguisée — un objet
+      // CUSTOM n'a structurellement AUCUN id de catalogue à comparer (il n'existe dans aucune source
+      // data), donc son nom EST son seul identifiant stable côté ItemInstance. Rien à migrer.
       const have = (ctx.party ?? []).reduce((n, h) => n + (h.items ?? []).filter((it) => (it.trappingId ?? it.name) === cond.trappingId).length, 0);
       return have >= need;
     }

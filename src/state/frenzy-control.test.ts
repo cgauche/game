@@ -9,7 +9,6 @@ import { seedBattleRng, battleRng } from './battleRng';
 import { isFrenzied } from '../engine/psychology';
 import { hasCondition, COND } from '../engine/conditions';
 import { testScene } from '../scenes/test-fixture';
-import type { Combatant } from '../engine/types';
 
 /**
  * Talent « Contrôle de la Frénésie » — LDB 10 l.251-255 : « Vous pouvez y mettre fin avec un Test de

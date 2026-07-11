@@ -4,7 +4,6 @@ import { effectiveChar } from './characteristics';
 import { effectiveMovement } from './encumbrance';
 import { defenseValue } from './combat';
 import type { Combatant, ItemInstance, Trauma, HitLocation } from './types';
-import type { GameOp } from './ops';
 
 /** Trauma de déchirure/fracture posé à `location` (raccourci data-driven : id de fiche → instance). */
 function tk(kind: 'dechirure' | 'fracture', severity: 'mineur' | 'majeur', location: HitLocation, opts?: { be?: number; d10?: number }): Trauma {

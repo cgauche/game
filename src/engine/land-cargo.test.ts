@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  hasCommerce, availabilityPct, rollFindMerchant, rollCargoQuantity, rollRandomLandCargo,
+  availabilityPct, rollFindMerchant, rollCargoQuantity, rollRandomLandCargo,
   rollWineQuality, landCargoBasePrice, wineEvalDifficulty, wineEvalReveal, rollMerchantSkill, sellDemandTarget,
   sellOfferPct, landDumpingPct, rollTradeRumour, rumourMatches, findLandCargoById, minCargoEnc, partialSurchargePct,
   tradeRumourApplies, tradeRumourMult, type LandMarketProfile, type TradeRumour,

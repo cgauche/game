@@ -94,7 +94,7 @@ export type { PendingRest, NightEntry, RestPlaces } from './restFlow';
 import { councilPay as councilPayFlow, councilClose as councilCloseFlow } from './shipCrew';
 import type { PendingCouncil } from './shipCrew';
 export type { PendingCouncil } from './shipCrew';
-import { Scene, Dialogue, Effect, isWalkable, sceneMetresPerTile, heightAt, type VictoryCondition } from './scene';
+import { Scene, Dialogue, isWalkable, sceneMetresPerTile, heightAt, type VictoryCondition } from './scene';
 import { placeCombatant } from './spawn';
 import { chebyshev, Pt } from './path';
 import { exploreStepDest, povStepDest, spawnFacing } from './exploreNav';

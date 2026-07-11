@@ -11,7 +11,6 @@ import type { View } from './facing';
 import type { Palette } from './palette';
 import type { Appearance } from './appearance';
 import type { EquipCtx } from './parts/equipment';
-import { bonesToSvg } from './renderBones';
 import { PLAN_LIST } from './plans/_registry.generated';
 import { defById, speciesScale } from './creatures';
 import { findCreatureById, findTrappingById, findVehicleById, vehicles } from '../../data';

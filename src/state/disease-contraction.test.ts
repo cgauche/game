@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
-import { openCombatEndCascade, finishCombatEnd, applyEffects } from './combatFlow';
+import { openCombatEndCascade, applyEffects } from './combatFlow';
 import { contractDisease } from '../engine/disease';
 import { seedBattleRng, battleRng } from './battleRng';
 import { setRule, resetRule } from '../engine/policy';

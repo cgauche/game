@@ -37,7 +37,7 @@ import { d10, type RNG, defaultRNG } from './dice';
 import { rollTest } from './tests';
 import { progressionMovement } from './shipNavigation';
 import type { Combatant, Difficulty } from './types';
-import { bonus, effectiveChar } from './characteristics';
+import { effectiveChar } from './characteristics';
 import { testValue } from './skills';
 
 type Per = 'heure' | 'minute' | 'round';

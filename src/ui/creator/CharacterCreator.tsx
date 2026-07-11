@@ -32,7 +32,6 @@ import {
   advancementLabel,
   trappings as allTrappings,
   levelsForCareer,
-  characteristics as charData,
   CHAR_ABR,
   stars as starsTable,
   celestialHouses,
@@ -154,10 +153,6 @@ const skillTip = (name: string) => {
   return `${CHAR_LABELS[data.characteristic]} · Compétence ${data.type === 'base' ? 'de Base' : 'Avancée'}\n${blurb(data.desc, 280)}`;
 };
 const talentTip = (name: string) => blurb(findTalent(splitLabel(name).name)?.desc, 300);
-/** Description des Caractéristiques (characteristics.json — LDB 05), keyée par `id` STABLE. */
-const CHAR_DESC: Record<string, string> = Object.fromEntries(
-  charData.filter((c) => c.type === 'roll').map((c) => [c.id, blurb(c.desc, 240)]),
-);
 /** Clé de la Caractéristique liée à une compétence (« Ag »), pour annoter les listes. */
 const skillCharKey = (name: string): CharKey | null => findSkill(splitLabel(name).name)?.characteristic ?? null;
 

@@ -11,7 +11,6 @@ import type { View } from '../facing';
 import type { Palette } from '../palette';
 import { resolveQuadFromProps } from '../quadruped/composeQuad';
 import { QUAD_REST, quadWalkPose, quadBitePose, quadLeapPose, QUAD_DEATH } from '../quadruped/quadPose';
-import { bonesToSvg } from '../renderBones';
 import { WINGED_SPECIES, wingedSpeciesNames } from '../creatures';
 
 // La DATA des espèces ailées (Griffon/Pégase/Hippogriffe/Dragon + alias) vit dans

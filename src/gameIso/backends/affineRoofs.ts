@@ -118,7 +118,6 @@ function roofDetailSvg(el: RoofEl, pans: Pan[], det: DetailRecipe, dims: Dims, l
   const variant = seed % N_VARIANTS;
   const key = coursesKey(c);
   const W = patternWM(c);
-  const wobbly = !c.blockWM && !!c.edgeWobble;
   let svg = '';
 
   pans.forEach((pan, pi) => {

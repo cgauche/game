@@ -41,14 +41,14 @@ const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/d
 // `stripComments` — peut différer du numéro de ligne brut du fichier si un bloc `/* … */` multi-lignes
 // précède le site).
 const RATCHET_EXCEPTIONS: Record<string, string> = {
-  'gameIso/rig/bodyPlan.ts:85': 'garde DEV : détecte une ref de véhicule qui résout par LABEL au lieu de son id — comparer par id annulerait le diagnostic (jumelle de pickBackend.tsx:161-162).',
+  'gameIso/rig/bodyPlan.ts:84': 'garde DEV : détecte une ref de véhicule qui résout par LABEL au lieu de son id — comparer par id annulerait le diagnostic (jumelle de pickBackend.tsx:161-162).',
   'ui/CharacterSheet.tsx:805': "SlotChoiceRow : options éphémères {label, display, owned} SANS id — `label` EST la valeur de câblage documentée (cf. docstring du composant), pas une FK vers une entité de donnée.",
   'ui/compendium/CompendiumScreen.tsx:70': 'CodexItem (registry.ts) agrège ~20 catégories hétérogènes SANS id unifié — le Codex, navigateur de référence en LECTURE SEULE, sélectionne par label par construction.',
   'ui/compendium/CompendiumScreen.tsx:72': 'idem CompendiumScreen.tsx:70 (CodexItem sans id unifié).',
   'ui/compendium/CompendiumScreen.tsx:107': 'idem CompendiumScreen.tsx:70 (CodexItem sans id unifié).',
   'ui/compendium/relations.ts:311': "auto-liage de PROSE (tokenizeLinks) : matching TEXTUEL d'un terme de règle vers son entité, pas une FK — aucun id en jeu (le texte affiché EST la recherche).",
-  'ui/creator/CharacterCreator.tsx:126': "WEAPON_ID_BY_LABEL : id disponible des deux côtés (trappings) — debt RÉELLE, migration différée (le state de draft `specChoices`/`weaponChoice` est un Record<string,string> partagé par TOUS les choix « au choix », pas juste l'arme — refactor multi-site hors périmètre garde).",
-  'ui/creator/CharacterCreator.tsx:1082': 'idem CharacterCreator.tsx:126 (même WEAPON_ID_BY_LABEL).',
+  'ui/creator/CharacterCreator.tsx:125': "WEAPON_ID_BY_LABEL : id disponible des deux côtés (trappings) — debt RÉELLE, migration différée (le state de draft `specChoices`/`weaponChoice` est un Record<string,string> partagé par TOUS les choix « au choix », pas juste l'arme — refactor multi-site hors périmètre garde).",
+  'ui/creator/CharacterCreator.tsx:1077': 'idem CharacterCreator.tsx:125 (même WEAPON_ID_BY_LABEL).',
   'ui/InterludeScreen.tsx:638': "LearnPane : recherche par texte tapé (motif `RefField` freeText) sur `LearnOption` qui PORTE un id (`sel.id`) — migration possible vers id-first mais composant de saisie à refactorer, hors périmètre garde.",
   'ui/TabbedEntry.tsx:34': "fallback DÉLIBÉRÉ et documenté (JSDoc du composant) : résolution PAR ID en premier, repli par nom SEULEMENT pour garder un onglet actif au changement de fiche (UX, pas une FK).",
 };

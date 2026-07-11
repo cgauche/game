@@ -4,7 +4,7 @@
  * les 472 entrées (histogramme complet, pas d'échantillonnage).
  */
 import { z } from 'zod';
-import { sourceRefSchema, refSchema, countSpecSchema, trappingRefSchema, entityAppearanceSchema } from '../common';
+import { sourceRefSchema, refSchema, trappingRefSchema, entityAppearanceSchema } from '../common';
 
 export const file = 'creatures.json';
 

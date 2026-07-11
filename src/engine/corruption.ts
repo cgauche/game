@@ -16,7 +16,7 @@
  *  - Limites (l.95) : mutations physiques > BE ou mentales > BFM → DAMNÉ (le
  *    personnage bascule dans le Chaos — hors-jeu définitif).
  */
-import { Combatant, CharKey, HitLocation } from './types';
+import { Combatant, HitLocation } from './types';
 import { RNG, defaultRNG } from './dice';
 import { bonus, effectiveChar } from './characteristics';
 import { talentCorruptionThreshold } from './combatFeatures/dispatch';

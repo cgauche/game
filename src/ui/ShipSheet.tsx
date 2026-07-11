@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useGame } from '../state/store';
-import { crewRoles, findCrewRoleById, findCrewTestTypeById, findVehicleById, findNavalTrait } from '../data';
+import { findCrewRoleById, findCrewTestTypeById, findVehicleById, findNavalTrait } from '../data';
 import { moraleBand, crewRoleValue } from '../engine/crewMorale';
 import { exposedCrew } from '../engine/shipCritical';
 import { shipMoraleScore, shipDefaultRoles, BENCHED } from '../state/shipCrew';

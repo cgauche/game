@@ -2,7 +2,7 @@ import { pregen, PREGEN } from '../../data/pregens';
 import type { Combatant } from '../../engine/types';
 import { buildScene } from '../../state/mapSpec';
 import { flowFromEffects } from '../../state/flow';
-import type { CustomStatblock, Dialogue } from '../../state/scene';
+import type { Dialogue } from '../../state/scene';
 import type { TestScenario } from './_shared';
 
 /**

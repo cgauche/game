@@ -9,7 +9,7 @@ import { CodexRef } from './compendium/CodexRef';
 import { ItemIcon } from './ItemIcon';
 import { MediaSelect, type MediaOption } from './MediaSelect';
 import { charBonus } from '../engine/characteristics';
-import { refLabel, qualityRefLabel } from '../data';
+import { qualityRefLabel } from '../data';
 import { weaponStatParts } from './weaponStats';
 import { Icon } from './Icon';
 

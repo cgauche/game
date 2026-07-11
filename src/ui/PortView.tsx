@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGame } from '../state/store';
 import { findVehicleById, NAVAL_TRAITS, findNavalPortById, crewRoles, type NavalPortData } from '../data';
-import { findCargoById, cargoOverload, cargoTotalEnc, type PortProfile } from '../engine/seaVoyage';
+import { findCargoById, type PortProfile } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { foulingEffects } from '../engine/seaNavigation';

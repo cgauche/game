@@ -14,7 +14,7 @@ import type { HulkProps } from '../amorphous/composeHulk';
 import type { JabberProps } from '../jabberslythe/composeJabber';
 import type { CrabProps } from '../crustace/composeCrab';
 import type { FishProps } from '../fish/composeFish';
-import type { CreatureDef, CreatureBodyPlan } from './types';
+import type { CreatureDef } from './types';
 import { CREATURES } from './_registry.generated';
 import { raceById } from '../races';
 import { baseSpeciesOf } from '../skeletons';
