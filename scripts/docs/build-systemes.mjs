@@ -5,7 +5,8 @@
 // Re-run : node scripts/docs/build-systemes.mjs (npm run docs:systemes). Garde de fraîcheur
 // (patron raw:catalogs/gen-registry) : régénérer puis `git diff --exit-code -- docs/systemes.md`.
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { resolve } from 'node:path'
+import { closureOf } from '../guards/lib/importGraph.mjs'
 
 const PRIMITIVES = JSON.parse(readFileSync('src/data/primitives.manifest.json', 'utf8'))
 const SYSTEMES = JSON.parse(readFileSync('src/data/systemes.manifest.json', 'utf8'))
@@ -20,39 +21,6 @@ for (const s of SYSTEMES) {
   for (const m of s.modules) {
     if (!existsSync(m)) errors.push(`système « ${s.nom} » (${s.id}) : module absent ${m}`)
   }
-}
-
-// --- résolution d'un import relatif vers un fichier source réel (.ts/.tsx/.mts, index.*) ---
-const EXTS = ['.ts', '.tsx', '.mts', '.js']
-function resolveImport(fromFile, spec) {
-  if (!spec.startsWith('.')) return null // paquet npm / alias non résolu ici
-  const base = resolve(dirname(fromFile), spec)
-  for (const ext of EXTS) if (existsSync(base + ext)) return (base + ext).split('\\').join('/')
-  if (existsSync(base) && existsSync(join(base, 'index.ts'))) return join(base, 'index.ts').split('\\').join('/')
-  for (const ext of EXTS) if (existsSync(join(base, 'index' + ext))) return join(base, 'index' + ext).split('\\').join('/')
-  return null
-}
-
-const IMPORT_RE = /\bfrom\s+['"]([^'"]+)['"]/g
-
-// --- closure transitive des imports depuis un jeu de modules racines, bornée à src/ ---
-function closureOf(roots) {
-  const seen = new Set()
-  const stack = [...roots.map((r) => resolve(r).split('\\').join('/'))]
-  while (stack.length) {
-    const abs = stack.pop()
-    const rel = abs.slice(resolve('.').split('\\').join('/').length + 1)
-    if (seen.has(rel)) continue
-    if (!existsSync(abs)) continue
-    seen.add(rel)
-    let text
-    try { text = readFileSync(abs, 'utf8') } catch { continue }
-    for (const m of text.matchAll(IMPORT_RE)) {
-      const resolved = resolveImport(abs, m[1])
-      if (resolved && resolved.includes('/src/')) stack.push(resolved)
-    }
-  }
-  return seen
 }
 
 const closures = new Map(SYSTEMES.map((s) => [s.id, closureOf(s.modules)]))
