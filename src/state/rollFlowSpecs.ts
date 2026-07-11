@@ -532,7 +532,7 @@ export const FLOWS = {
       const discreet = !!p.discreet && castInfoIsPrayer(spell) && !!rule('prayer-conviction');
       const difficulty = discreetPrayerDifficulty('intermediaire', discreet);
       const res = p.missile
-        ? resolveMagicMissile(actor, target, spell, battleRng(), p.focused, ward)
+        ? resolveMagicMissile(actor, target, spell, battleRng(), p.focused, ward, seaMagicContext(s))
         : resolveCasting(actor, spell, battleRng(), difficulty, p.focused, ward, seaMagicContext(s));
       return { result: res };
     },

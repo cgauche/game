@@ -73,6 +73,39 @@ describe('#337 — Magie des mers, filage state (seaMagicContext)', () => {
     });
   });
 
+  describe('Cieux (Azyr, MDG 02 l.184) — resolveMagicMissile via castRoll (#337, dernier reliquat) : le DR bouge selon le vent', () => {
+    const spellId = 'arc-de-t-essla'; // Domaine Cieux, Projectile magique (LDB 46 l.101 : le Projectile EST le Test d'Incantation)
+
+    function missileSl(w: Combatant, travelPlan: unknown): number {
+      freshCastState(w, travelPlan);
+      useGame.getState().seedRng(21);
+      useGame.setState({ pendingCast: { casterId: w.id, targetId: w.id, spellId, missile: true, focused: true, result: null } });
+      useGame.getState().castRoll();
+      return useGame.getState().pendingCast!.result!.sl;
+    }
+
+    it('hors mer (travelPlan=null) : comportement STRICTEMENT inchangé (pas de modificateur)', () => {
+      const w = wizard('cieux');
+      const baseline = missileSl(w, null);
+      const again = missileSl(w, null);
+      expect(again).toBe(baseline);
+    });
+
+    it('en mer, Violente tempête : +1 DR sur le Test d\'Incantation du Projectile', () => {
+      const w = wizard('cieux');
+      const baseline = missileSl(w, null);
+      const storm = missileSl(w, { mode: 'mer', sea: { weather: { vent: 'violente-tempete' } } });
+      expect(storm).toBe(baseline + 1);
+    });
+
+    it('en mer, Calme plat : -1 DR sur le Test d\'Incantation du Projectile', () => {
+      const w = wizard('cieux');
+      const baseline = missileSl(w, null);
+      const calm = missileSl(w, { mode: 'mer', sea: { weather: { vent: 'calme-plat' } } });
+      expect(calm).toBe(baseline - 1);
+    });
+  });
+
   describe('Vie (Ghyran, MDG 02 l.186) — focusConfirm : Harmonisation aethyrique en mer', () => {
     const spellId = 'don-de-vie'; // Domaine Vie
 

@@ -590,8 +590,11 @@ export function resolveMagicMissile(
   rng: RNG = defaultRNG,
   focusedNI0 = false,
   extraMod = 0,
+  /** Magie des mers (MDG 02 l.178-186) : le Projectile magique EST un Test d'Incantation
+   *  (LDB 47 l.28 : « Effectuez un Test d'Incantation ») — même contexte que `resolveCasting`. */
+  sea: { atSea?: boolean; wind?: import('./domainAttributes').SeaWind | null } = {},
 ): MissileResult {
-  const cr = resolveCasting(caster, spell, rng, 'intermediaire', focusedNI0, extraMod);
+  const cr = resolveCasting(caster, spell, rng, 'intermediaire', focusedNI0, extraMod, sea);
   return evaluateMissile(caster, target, spell, cr);
 }
 

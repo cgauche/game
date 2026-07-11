@@ -2688,7 +2688,7 @@ export function createCombatSlice(get: Get, set: Set) {
       const discreet = !!pc.discreet && castInfoIsPrayer(spell) && !!rule('prayer-conviction');
       const difficulty = discreetPrayerDifficulty('intermediaire', discreet);
       const res = pc.missile && !unplacedZone
-        ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward)
+        ? resolveMagicMissile(caster, target, spell, battleRng(), pc.focused, ward, seaMagicContext(get()))
         : resolveCasting(caster, spell, battleRng(), difficulty, pc.focused, ward, seaMagicContext(get()));
       if (sigmar) get().log(t('cs.sigmarWard', { name: caster.name }));
       if (aqshy) get().log(t('cs.aqshyBonus', { name: caster.name, n: aqshy }));
