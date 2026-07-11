@@ -30,7 +30,7 @@ import type { RuleValue } from '../engine/policy';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 import { remapCharKeysDeep } from './charKeyMigration';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 export interface SaveMeta {
   version: number;
@@ -132,6 +132,27 @@ export const MIGRATIONS: MigrationMap = {
   // v2 → v3 : renommage CharKey → slugs pleins (#311, `CC`/`CT`/`F`/`E`/`I`/`Ag`/`Dex`/`Int`/`FM`/`Soc`
   // → `capacite-de-combat`/… ) — remappe RÉCURSIVEMENT tout l'état (party/vessel/travelPlan/scene…).
   2: (doc) => ({ ...doc, version: 3, data: remapCharKeysDeep(doc.data) as Record<string, unknown> }),
+  // v3 → v4 (#275 Ronde 2 cran 3) : voyage MARITIME basculé sur le pipeline cascade — l'ancien FSM
+  // `SeaVoyageState.step` et le Test d'équipage de VOYAGE (`PendingCrewTest.voyage`/`.resolved`) MEURENT.
+  // `pendingCrewTest` ne sert plus QU'AU COMBAT — or une save est HORS COMBAT (saves.ts l.10, `battle`
+  // refusé non-null) : tout `pendingCrewTest` présent dans une save v3 est donc NÉCESSAIREMENT un Test de
+  // VOYAGE (le seul chemin hors-combat de l'ancien mécanisme) → toujours DROPPÉ (`null`), jamais réinjecté
+  // dans le combat qui n'en a plus l'usage. `travelPlan.sea` EN VOL (une journée déjà entamée, `step` ≠
+  // absent) : arbitrage SIMPLE accepté (#275 Ronde 2, cran 3 — migrer le point de reprise EXACT est non
+  // trivial, la primitive de reprise est désormais `pendingCascade`, pas une donnée reconstructible hors
+  // contexte) — la journée EN VOL est remise à son ÉTAT DE DÉPART (milles/voiles/phare/PV du jour à zéro,
+  // `step` supprimé) : rien n'est dupliqué ni corrompu, la traversée reprend proprement au prochain
+  // `runSeaDay` (Test de Progression du jour, RAW ch.13/15 inchangé) — au pire une journée « recommencée ».
+  3: (doc) => {
+    const data = { ...(doc.data as Record<string, unknown>) };
+    if (data.pendingCrewTest != null) data.pendingCrewTest = null;
+    const plan = data.travelPlan as { sea?: Record<string, unknown> } | null | undefined;
+    if (plan?.sea) {
+      const { step: _step, sailsDown: _sailsDown, lighthouseDR: _lighthouseDR, entries: _entries, paceToday: _paceToday, eventMMod: _eventMMod, minorDrift: _minorDrift, ...seaRest } = plan.sea;
+      data.travelPlan = { ...plan, sea: { ...seaRest, milesToday: 0, sailsDown: false, lighthouseDR: 0, entries: [] } };
+    }
+    return { ...doc, version: 4, data };
+  },
 };
 
 /** Met une save parsée au niveau `SAVE_VERSION` AVANT validation (point d'upgrade UNIQUE, via la

@@ -31,18 +31,23 @@ function sleepThroughHalt(): void {
   }
 }
 
-/** Déroule la traversée jusqu'à l'ACCOSTAGE (travelPlan retombé à null + scène du port d'arrivée) : roule les
- *  Tests d'équipage, saute les Activités, dort aux haltes. Renvoie les `kind` de Tests d'équipage rencontrés. */
+/** Déroule la traversée jusqu'à l'ACCOSTAGE (travelPlan retombé à null + scène du port d'arrivée) —
+ *  la journée est UNE cascade `purpose:'travelDay'` (#275 Ronde 2 cran 3) : roule chaque étape (mono ou
+ *  À PARTICIPANTS), saute les Activités, dort aux haltes. Renvoie les `kind` d'étape rencontrés (Tests
+ *  d'équipage de voyage : progression/orientation/entretien…). */
 function sailToPort(maxSteps = 400): string[] {
   const kinds: string[] = [];
   for (let i = 0; i < maxSteps; i++) {
     if (!get().travelPlan && get().scene?.id === 'test-mer-arrivee') break; // arrivé
-    const ct = get().pendingCrewTest;
-    if (ct) {
-      kinds.push(ct.voyage!.kind);
-      for (const part of ct.participants) if (!part.result) get().crewTestRoll(part.id);
-      get().crewTestConfirm();
-      if (get().pendingCrewTest?.resolved) get().crewTestContinue();
+    const casc = get().pendingCascade;
+    if (casc) {
+      const cur = casc.participants[casc.cursor];
+      if (cur) {
+        kinds.push(cur.kind);
+        if (cur.participants) { for (const part of cur.participants) if (!part.result) get().cascadeCrewRoll(part.id); }
+        else if (!cur.result) get().cascadeRoll(cur.id);
+      }
+      get().cascadeNext();
       continue;
     }
     if (get().pendingSeaActivities) { get().seaActivitiesConfirm({}); continue; }

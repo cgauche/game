@@ -143,9 +143,12 @@ export function startCascade(
   });
 }
 
-/** Applique la conséquence d'une étape + ses insertions ; renvoie le tableau d'étapes mis à jour et
- *  les lignes de journal. Partagé par les deux pilotes (interactif et immédiat). */
-function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMerge = false): { steps: CascadeStep[]; journal: string[] } {
+/** Applique la conséquence d'une étape + ses insertions ; renvoie le tableau d'étapes mis à jour, les
+ *  lignes de journal, et `suspended` (l'applier a fait basculer le slot ACTIF vers un AUTRE contexte —
+ *  `startCombat`, cf. `suspendActiveCascade` — PENDANT sa propre exécution). Partagé par les trois
+ *  pilotes (interactif, « tout résoudre », immédiat). */
+function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMerge = false): { steps: CascadeStep[]; journal: string[]; suspended: boolean } {
+  const before = get().pendingCascade;
   // Étape « batch » (participants — seam de jet #275 Décision 4 cran 1) : AGRÈGE les contributeurs
   // (déjà tous résolus, `stepReady`) en UN `CascadeRoll` scalaire — l'applier lit `step.result` comme
   // n'importe quelle étape mono, kind-agnostique du nombre de rangées.
@@ -166,12 +169,57 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   // le reste de l'attaque, qui APPEND des étapes au pending (via pushReveal). On repart alors des
   // participants COURANTS (post-applier) pour préserver ces appends — le pending est EN PHASE ici
   // (advanceCascade). Les pilotes BATCH ne l'activent PAS (leur tableau local porte des jets/choix pas
-  // encore posés dans le pending).
+  // encore posés dans le pending). SUSPENDUE (slot occupé par un autre contexte) → `get().pendingCascade`
+  // vaut `null`, `live` retombe naturellement sur `undefined` (pas de merge, pas de crash).
   const live = liveMerge ? get().pendingCascade?.participants : undefined;
   const base = live && live.length >= steps.length && live[i]?.id === step.id ? live : steps;
   let next = base.map((x, k) => (k === i ? { ...x, ...(step.result ? { result: step.result } : {}), committed: true, outcome: shown } : x));
   if (out?.insert?.length) next = [...next.slice(0, i + 1), ...out.insert, ...next.slice(i + 1)];
-  return { steps: next, journal };
+  // L'applier a SUSPENDU le slot actif (`startCombat` en plein vol, cf. `suspendActiveCascade` — qui
+  // vide TOUJOURS le slot à `null`) : le retour l'expose, JAMAIS écrit ici. Distinct d'un liveMerge
+  // (une conséquence FOLDÉE re-déclenchée APPEND au pending, `pendingCascade` reste NON-null — pas une
+  // suspension) : seul `null` signe la suspension, jamais une simple différence de référence.
+  const suspended = before !== null && get().pendingCascade === null;
+  return { steps: next, journal, suspended };
+}
+
+/** Cascade EN COURS de résolution suspendue EN PLEIN VOL (`commitStep` a détecté `suspended`) : replace
+ *  dans `suspendedCascades` l'entrée poussée par `suspendActiveCascade` (référence `stale`, poussée
+ *  DEPUIS le slot actif AVANT que l'applier n'y touche) par ses étapes À JOUR (`patch` — celles que
+ *  `commitStep` vient de committer/insérer). Ne ressuscite JAMAIS le slot actif (propriété d'un AUTRE
+ *  contexte désormais, ex. combat) : SEULE la pile est mise à jour. No-op si `stale` n'y est plus (déjà
+ *  résumée entre-temps, cas extrême hors coop synchrone). */
+function reconcileSuspended(get: Get, set: Set, stale: PendingCascade, patch: Partial<PendingCascade>): void {
+  const stack = get().suspendedCascades;
+  const idx = stack.lastIndexOf(stale);
+  if (idx < 0) return;
+  set({ suspendedCascades: stack.map((x, k) => (k === idx ? { ...x, ...patch } : x)) });
+}
+
+/** SUSPEND la cascade ACTIVE (si une l'est) : la pousse en tête de `suspendedCascades` (pile LIFO) et
+ *  vide le slot `pendingCascade`. Primitive GÉNÉRIQUE (kind-agnostique, aucune mention de domaine) —
+ *  déclenchée par la couture universelle `startCombat`/`transitionTo` (state/combatSlice.ts,
+ *  state/store.ts) : un combat qui s'ouvre PENDANT une cascade active (ex. un abordage déclenché par
+ *  l'applier d'une étape de voyage) ne doit ni écraser ni perdre les étapes restantes — le slot
+ *  `pendingCascade` redevient disponible pour les cascades DU COMBAT (jets d'attaque…), gates d'action
+ *  inchangés (`targetingModes.ts`/`combatSlice.ts` continuent de lire `pendingCascade` = la cascade
+ *  ACTIVE). No-op si aucune cascade n'est active. */
+export function suspendActiveCascade(get: Get, set: Set): void {
+  const p = get().pendingCascade;
+  if (!p) return;
+  set({ pendingCascade: null, suspendedCascades: [...get().suspendedCascades, p] });
+}
+
+/** RÉSUME la tête de pile (`suspendedCascades`, LIFO) dans le slot `pendingCascade` — SEULEMENT si le
+ *  slot est LIBRE (jamais un écrasement). Déclenchée par la couture universelle de teardown de combat
+ *  (`dismissVictory`/`dismissDefeat`, state/store.ts). Renvoie `true` si une cascade a été résumée. */
+export function resumeSuspendedCascade(get: Get, set: Set): boolean {
+  if (get().pendingCascade) return false;
+  const stack = get().suspendedCascades;
+  if (!stack.length) return false;
+  const top = stack[stack.length - 1];
+  set({ pendingCascade: top, suspendedCascades: stack.slice(0, -1) });
+  return true;
 }
 
 /**
@@ -186,10 +234,14 @@ export function advanceCascade(get: Get, set: Set): PendingCascade | null {
   const cur = p.participants[p.cursor];
   if (cur && !stepReady(cur)) return null; // jet non lancé / choix non tranché → la modale force d'abord
   let steps = p.participants;
+  let suspended = false;
   // La conséquence d'une étape vit sur l'ÉTAPE (`outcome`, affichée dans la pile) — pas dupliquée
   // dans `log` (réservé aux notes hors-jet : entretien). Évite le doublon « X contracte… » écran/journal.
-  if (cur) steps = commitStep(get, set, steps, p.cursor, true).steps; // liveMerge : préserve les appends d'une conséquence foldée
+  if (cur) { const r = commitStep(get, set, steps, p.cursor, true); steps = r.steps; suspended = r.suspended; } // liveMerge : préserve les appends d'une conséquence foldée
   const next = p.cursor + 1;
+  // SUSPENDUE en plein vol (`startCombat` déclenché par l'applier de l'étape courante) : le slot ne
+  // nous appartient plus — met à jour l'entrée de pile (étapes/curseur À JOUR), ne ressuscite RIEN.
+  if (suspended) { reconcileSuspended(get, set, p, { participants: steps, cursor: Math.min(next, steps.length) }); return null; }
   if (next >= steps.length) {
     set({ pendingCascade: null });
     return { ...p, participants: steps, log: p.log };
@@ -223,6 +275,9 @@ export function resolveRemainingCascade(get: Get, set: Set): void {
     const r = commitStep(get, set, steps, i);
     steps = r.steps;
     log = [...log, ...r.journal];
+    // SUSPENDUE en plein vol (l'applier a déclenché `startCombat`) : le slot ne nous appartient plus —
+    // met à jour l'entrée de pile, s'arrête là (jamais de ressuscite/écrase du slot actif).
+    if (r.suspended) { reconcileSuspended(get, set, p, { participants: steps, cursor: Math.min(i + 1, steps.length), log }); return; }
   }
   set({ pendingCascade: { ...p, participants: steps, cursor: steps.length, log } });
 }
@@ -240,8 +295,15 @@ export function finalizeCascade(get: Get, set: Set): PendingCascade | null {
  * Pilote IMMÉDIAT (sans modale) : lance chaque étape (RNG) et applique sa conséquence dans l'ordre,
  * insertions comprises. Pour les repos de plusieurs jours, la reprise automatique et la triche de
  * recette. Renvoie les étapes résolues (pour un éventuel bilan en lecture seule).
+ *
+ * `ctx` (optionnel) : titre/`purpose` du fragment — SEULEMENT nécessaire pour un appelant qui résout
+ * un tableau DE PLUSIEURS étapes dont l'une peut ouvrir un combat en plein vol (`startCombat`, ex. la
+ * cascade auto-pilotée d'un jour de voyage routine) : si le combat s'ouvre AVANT la fin du tableau, les
+ * étapes RESTANTES (non encore committées) sont poussées en pile (`suspendedCascades`) — jamais perdues
+ * ni résolues À L'AVEUGLE pendant que le combat tourne. Sans `ctx` (mono-étape, l'immense majorité des
+ * appels), rien à préserver : la boucle s'arrête simplement (comportement historique).
  */
-export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[]): CascadeStep[] {
+export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[], ctx?: { title: string; purpose: PendingCascade['purpose']; log?: string[] }): CascadeStep[] {
   let cur = steps;
   for (let i = 0; i < cur.length; i++) {
     const st = cur[i];
@@ -255,7 +317,15 @@ export function runCascadeImmediate(get: Get, set: Set, steps: CascadeStep[]): C
       const key = st.defaultChoice ?? st.options![0]?.key;
       if (key != null) cur = cur.map((x, k) => (k === i ? { ...x, chosen: key } : x));
     } // affichage : rien à résoudre avant la conséquence
-    cur = commitStep(get, set, cur, i).steps;
+    const r = commitStep(get, set, cur, i);
+    cur = r.steps;
+    // Un combat s'est ouvert PENDANT cette résolution immédiate (l'applier a appelé `startCombat` —
+    // no-op de suspension ici puisque CE tableau n'était PAS dans le slot actif) : le reste du tableau
+    // ne doit PAS continuer à se résoudre en silence pendant que le combat tourne — on le préserve.
+    if (get().battle && i + 1 < cur.length) {
+      if (ctx) set({ suspendedCascades: [...get().suspendedCascades, { title: ctx.title, purpose: ctx.purpose, participants: cur.slice(i + 1), cursor: 0, log: ctx.log ?? [] }] });
+      return cur;
+    }
   }
   return cur;
 }

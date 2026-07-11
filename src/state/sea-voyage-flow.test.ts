@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import {
-  buildSeaPlan, resolveVoyageCrewTest, portRepairVessel, portInstallUpgrade, runSeaDays,
+  buildSeaPlan, portRepairVessel, portInstallUpgrade, runSeaDay, continueSeaDayAfterCascade,
   resolvePortArrival, resolveManannPriest, resolveShoreLeave, damageVesselHull, healVesselHull,
 } from './seaVoyageFlow';
 import { seedBattleRng } from './battleRng';
@@ -14,15 +14,17 @@ import { buildEncounter } from './encounterAuthoring';
 import { emptyScene, type Scene } from './scene';
 import type { WorldMap } from './worldMap';
 import type { RNG } from '../engine/dice';
-import type { PendingCrewTest, CascadeStep } from './pendings';
+import type { CascadeStep } from './pendings';
 import { resumeTravel } from './travelFlow';
 import { applyEffects } from './combatEffects';
 import { cascadeAppliers } from './cascade';
+import { checkBattleOver } from './combatFlow';
 
 /**
- * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15) :
- * Tests d'équipage de voyage en MODALES (`pendingCrewTest.voyage`), Blessures de coque persistées
- * sur `CampaignVessel` (#30), services portuaires. L'équipage hors combat = les PJ (MDG 14 l.39).
+ * VOYAGE MARITIME (7b) — la traversée jour par jour sur le navire de campagne (MDG ch.13/15), pilotée
+ * par le pipeline CASCADE (#275 Ronde 2 cran 3) : un jour = `pendingCascade` `purpose:'travelDay'`,
+ * Blessures de coque persistées sur `CampaignVessel` (#30), services portuaires. L'équipage hors
+ * combat = les PJ (MDG 14 l.39). `pendingCrewTest` ne sert plus qu'au combat (`crewTestModal` seul).
  */
 const get = useGame.getState.bind(useGame);
 const set = useGame.setState.bind(useGame);
@@ -47,11 +49,24 @@ function freshState() {
     travelRecap: null,
     pendingCrewTest: null,
     pendingRest: null,
+    pendingCascade: null,
+    suspendedCascades: [],
     gameTime: 8 * 60, // 08:00 jour 0
     lastUpkeepDay: 0,
     vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } },
     journal: [],
   } as never);
+}
+
+/** Fait avancer LA cascade active d'UNE étape (lance ses jets — mono ou batch — puis valide). No-op si
+ *  aucune cascade active. */
+function stepCascade(): void {
+  const p = get().pendingCascade;
+  if (!p) return;
+  const cur = p.participants[p.cursor];
+  if (cur?.participants) { for (const part of cur.participants) if (!part.result) get().cascadeCrewRoll(part.id); }
+  else if (cur && !cur.result) get().cascadeRoll(cur.id);
+  get().cascadeNext();
 }
 
 describe('buildSeaPlan — appareillage sur le navire de campagne', () => {
@@ -94,7 +109,7 @@ describe('#296 — state.vessel SOURCE UNIQUE de la coque de trajet (non-diverge
     set({ vessel: { ...get().vessel!, wounds: { current: intactMax - 15, max: intactMax } } });
     expect(get().travelPlan!.vehicle!.wounds.current).not.toBe(intactMax - 15); // toujours périmée avant la reprise
     resumeTravel(get, set);
-    // Le rechargement a eu lieu AVANT que `runSeaDays` ne reprenne — aucun Dégât ultérieur ne peut avoir
+    // Le rechargement a eu lieu AVANT que `runSeaDay` ne reprenne — aucun Dégât ultérieur ne peut avoir
     // déjà écrasé vessel avec l'ancienne valeur (c'était le bug caché du #296).
     expect(get().vessel!.wounds!.current).toBe(intactMax - 15);
   });
@@ -108,22 +123,19 @@ describe('#296 — state.vessel SOURCE UNIQUE de la coque de trajet (non-diverge
   });
 });
 
-describe('journée en mer — Tests d’équipage de VOYAGE en modales (#65)', () => {
+describe('journée en mer — la journée est UNE cascade `purpose:travelDay` (#275 Ronde 2 cran 3)', () => {
   beforeEach(freshState);
 
-  it('startTravel(mer) déroule la journée : Progression et Orientation passent par pendingCrewTest ; la nuit = halte de repos', () => {
+  it('startTravel(mer) déroule la journée : Progression et Orientation sont des étapes de la cascade ; la nuit = halte de repos', () => {
     const kinds: string[] = [];
     get().startTravel('r1', 'mer');
-    // La boucle se suspend sur chaque modale : on roule tous les contributeurs puis on confirme,
-    // jusqu'à la halte de nuit (openRest) — garde-fou 30 modales (événements/crises possibles).
+    // La cascade se déroule étape par étape — garde-fou 30 pas (événements/crises possibles).
     for (let i = 0; i < 30 && !get().pendingRest; i++) {
-      const p = get().pendingCrewTest;
+      const p = get().pendingCascade;
       if (!p) break;
-      expect(p.voyage).toBeTruthy(); // Test d'équipage de VOYAGE, hors combat
-      kinds.push(p.voyage!.kind);
-      for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
-      get().crewTestConfirm();
-      if (get().pendingCrewTest?.resolved) get().crewTestContinue(); // dénouement SUR PLACE → « Continuer » relance la boucle
+      const cur = p.participants[p.cursor];
+      if (cur) kinds.push(cur.kind);
+      stepCascade();
     }
     expect(kinds).toContain('progression'); // Test quotidien de Progression (MDG 14 l.61, ch.15 l.78)
     expect(kinds).toContain('orientation'); // « un Test par jour de voyage » (MDG ch.13 l.311)
@@ -135,52 +147,17 @@ describe('journée en mer — Tests d’équipage de VOYAGE en modales (#65)', (
   });
 });
 
-describe('Résultat SUR PLACE d’un Test d’équipage de VOYAGE (le jet s’affiche là où il a eu lieu)', () => {
-  beforeEach(freshState);
-
-  it('« Appliquer » ne fait PAS avancer le voyage : la MÊME modale passe en phase RÉSOLU (dénouement) ; « Continuer » SEUL relance la boucle', () => {
-    get().startTravel('r1', 'mer');
-    const p = get().pendingCrewTest;
-    expect(p?.voyage).toBeTruthy();
-    for (const part of p!.participants) if (!part.result) get().crewTestRoll(part.id);
-    const dayBefore = get().travelPlan!.sea!.daysAtSea;
-
-    get().crewTestConfirm();
-    // La modale reste ouverte, en phase RÉSOLU, avec son dénouement — le voyage n'a PAS avancé.
-    const resolved = get().pendingCrewTest;
-    expect(resolved?.resolved?.lines.length).toBeGreaterThan(0); // la conséquence (milles, cap, Moral…) est SUR PLACE
-    expect(get().pendingRest).toBeNull();
-    expect(get().travelPlan!.sea!.daysAtSea).toBe(dayBefore); // aucune journée franchie tant qu'on n'a pas continué
-
-    // « Continuer » relance la boucle : un nouveau Test s'ouvre (ou la nuit tombe), jamais un re-« Appliquer ».
-    get().crewTestContinue();
-    expect(get().pendingCrewTest?.resolved).toBeFalsy();
-    expect(get().pendingCrewTest || get().pendingRest || get().pendingSeaActivities).toBeTruthy();
-  });
-
-  it('« Appliquer » deux fois (double-clic) est idempotent : la phase RÉSOLU ignore un second Appliquer', () => {
-    get().startTravel('r1', 'mer');
-    const p = get().pendingCrewTest!;
-    for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
-    get().crewTestConfirm();
-    const linesAfterFirst = [...get().pendingCrewTest!.resolved!.lines];
-    get().crewTestConfirm(); // no-op en phase RÉSOLU (garde `p.resolved`)
-    expect(get().pendingCrewTest!.resolved!.lines).toEqual(linesAfterFirst);
-  });
-});
-
 describe('Carte marine (MDG 15) — Orientation & Planque (#147)', () => {
   beforeEach(freshState);
 
   function driveDayCaptureOrientation(): number | undefined {
     let extra: number | undefined;
     for (let i = 0; i < 30 && !get().pendingRest; i++) {
-      const p = get().pendingCrewTest;
+      const p = get().pendingCascade;
       if (!p) break;
-      if (p.voyage?.kind === 'orientation') extra = p.extraDR;
-      for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
-      get().crewTestConfirm();
-      if (get().pendingCrewTest?.resolved) get().crewTestContinue(); // dénouement SUR PLACE → « Continuer » relance la boucle
+      const cur = p.participants[p.cursor];
+      if (cur?.kind === 'orientation') extra = Number(cur.meta?.extraDR ?? 0) || undefined;
+      stepCascade();
     }
     return extra;
   }
@@ -252,6 +229,8 @@ describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG ch.13 l.
       travelRecap: null,
       pendingCrewTest: null,
       pendingRest: null,
+      pendingCascade: null,
+      suspendedCascades: [],
       gameTime: 8 * 60,
       lastUpkeepDay: 0,
       vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } },
@@ -262,30 +241,31 @@ describe('Phare du port d’arrivée — Test de Perception VISUEL (MDG ch.13 l.
   it('la Vigie SOURDE n’est PAS pénalisée au Test de Perception du phare (sense "vue" posé par kind "phare")', () => {
     freshLighthouseState();
     useGame.getState().startTravel('r1', 'mer');
-    let phare: PendingCrewTest | undefined;
-    let progression: PendingCrewTest | undefined;
+    let phare: CascadeStep | undefined;
+    let progression: CascadeStep | undefined;
     for (let i = 0; i < 30 && !phare; i++) {
-      const p = useGame.getState().pendingCrewTest;
+      const p = useGame.getState().pendingCascade;
       if (!p) break;
-      if (p.voyage?.kind === 'phare') { phare = p; break; }
-      if (p.voyage?.kind === 'progression') progression = p;
-      for (const part of p.participants) if (!part.result) useGame.getState().crewTestRoll(part.id);
-      useGame.getState().crewTestConfirm();
-      if (useGame.getState().pendingCrewTest?.resolved) useGame.getState().crewTestContinue();
+      const cur = p.participants[p.cursor];
+      if (cur?.kind === 'phare') { phare = cur; break; }
+      if (cur?.kind === 'progression') progression = cur;
+      if (cur?.participants) { for (const part of cur.participants) if (!part.result) useGame.getState().cascadeCrewRoll(part.id); }
+      else if (cur && !cur.result) useGame.getState().cascadeRoll(cur.id);
+      useGame.getState().cascadeNext();
     }
-    expect(phare).toBeTruthy(); // la modale du phare a bien été atteinte (port à phare, km 1 → dans la portée dès le jour 1)
+    expect(phare).toBeTruthy(); // l'étape du phare a bien été atteinte (port à phare, km 1 → dans la portée dès le jour 1)
     // Le sens est posé pour TOUT le Test (kind 'phare' = Perception visuelle), pas juste pour la Vigie —
     // n'importe quel contributeur (Timonier compris) « voit » la lumière.
-    for (const part of phare!.participants) expect(part.sense).toBe('vue');
-    const vigiePart = phare!.participants.find((x) => x.roleId === 'vigie');
+    for (const part of phare!.participants!) expect(part.sense).toBe('vue');
+    const vigiePart = phare!.participants!.find((x) => x.roleId === 'vigie');
     expect(vigiePart).toBeTruthy();
-    // Autre Test d'équipage (Progression, sans sens narratif dédié) : PAS de sens posé — comportement historique.
+    // Autre étape (Progression, sans sens narratif dédié) : PAS de sens posé — comportement historique.
     expect(progression).toBeTruthy();
-    for (const part of progression!.participants) expect(part.sense).toBeUndefined();
+    for (const part of progression!.participants!) expect(part.sense).toBeUndefined();
   });
 });
 
-describe('resolveVoyageCrewTest — issues par type', () => {
+describe('registre cascadeAppliers — les 10 Tests d’équipage de VOYAGE (#275 Ronde 2 cran 3 — PILOTE RÉEL)', () => {
   beforeEach(freshState);
 
   function planWithSea() {
@@ -294,28 +274,103 @@ describe('resolveVoyageCrewTest — issues par type', () => {
     return plan;
   }
 
-  it('entretien : réussite (total − 2 ≥ 1) → réparation temporaire 1d10 Blessures, PERSISTÉE (#30 ; MDG 14 l.122 + ch.13 l.647)', () => {
+  /** Étape À PARTICIPANTS déjà agrégée (`commitStep`/`aggregateBatchStep`, #275 Décision 4 cran 1) —
+   *  même vocabulaire `result.sl`/`.success` que l'ancien `resolveVoyageCrewTest(total, success)`. */
+  function step(kind: string, sl: number, success = sl >= 1): CascadeStep {
+    return { id: kind, kind, label: kind, result: { roll: 0, target: 0, sl, success }, interactive: true };
+  }
+
+  const apply = (kind: string, sl: number, success = sl >= 1) =>
+    cascadeAppliers[kind].apply(get, set, step(kind, sl, success), undefined, { steps: [], index: 0 });
+
+  it('entretien : réussite (total −2 ≥ 1) → réparation temporaire 1d10 Blessures, PERSISTÉE (#30 ; MDG 14 l.122 + ch.13 l.647)', () => {
     const plan = planWithSea();
     plan.vehicle!.wounds.current = 30; // coque endommagée (max 50 : cogue)
-    set({ travelPlan: { ...plan, sea: { ...plan.sea!, step: 'nuit' } } });
-    const pending = { shipId: plan.vehicle!.id, testTypeId: 'entretien', participants: [], moraleScore: 75, voyage: { kind: 'entretien', shipName: 'Cogue' } };
-    resolveVoyageCrewTest(get, set, pending as never, 5); // total +5 → +3 DR après −2 → réussite
+    apply('entretien', 5); // +5 → +3 après −2 → réussite
     const cur = get().vessel!.wounds!.current;
     expect(cur).toBeGreaterThan(30);
     expect(cur).toBeLessThanOrEqual(40); // +1d10 max
-    resolveVoyageCrewTest(get, set, pending as never, 2); // 2 − 2 = 0 → échec (« 1 DR ou plus », MDG 14 l.13)
+    apply('entretien', 2); // 2 − 2 = 0 → échec (« 1 DR ou plus », MDG 14 l.13)
     expect(get().vessel!.wounds!.current).toBe(cur);
   });
 
-  it('orientation : dérive majeure (DR ≤ −5) → Changement de cap (retard % sur la distance restante)', () => {
+  it('orientation : dérive majeure (DR ≤ −5) → Changement de cap (retard % sur la distance restante), km jamais réduit', () => {
     const plan = planWithSea();
-    set({ travelPlan: { ...plan, kmDone: 100, sea: { ...plan.sea!, step: 'extermination', lines: [] } } });
+    set({ travelPlan: { ...plan, kmDone: 100 } });
     const before = get().travelPlan!.km;
-    const pending = { shipId: plan.vehicle!.id, testTypeId: 'orientation', participants: [], moraleScore: 75, voyage: { kind: 'orientation', shipName: 'Cogue' } };
-    resolveVoyageCrewTest(get, set, pending as never, -6);
-    // Le tableau Changement de cap (d10+2) peut donner « sans conséquence » (1-3 impossible ici : min 3),
-    // retard (+10/25 %), 90° ou demi-tour — dans TOUS les cas le voyage continue et km ≥ avant (jamais réduit).
+    apply('orientation', -6, false);
     expect(get().travelPlan!.km).toBeGreaterThanOrEqual(before);
+  });
+
+  it('affaler : échec → Critique au Gréement PERSISTÉ (`vessel.criticals`)', () => {
+    planWithSea();
+    apply('affaler', -3, false);
+    expect(get().vessel!.criticals?.length ?? 0).toBeGreaterThan(0);
+  });
+
+  it('affaler : réussite → aucun Critique, message au journal', () => {
+    planWithSea();
+    apply('affaler', 3, true);
+    expect(get().journal.some((l) => l.includes('affalées à temps'))).toBe(true);
+    expect(get().vessel!.criticals?.length ?? 0).toBe(0);
+  });
+
+  it('phare : réussite → bonus d’Orientation posé (Savoir Océans/manuel, ch.13 l.335)', () => {
+    planWithSea();
+    apply('phare', 1, true);
+    expect(get().travelPlan!.sea!.lighthouseDR).toBeGreaterThanOrEqual(0);
+  });
+
+  it('phare : échec → aucun bonus posé', () => {
+    planWithSea();
+    apply('phare', -1, false);
+    expect(get().travelPlan!.sea!.lighthouseDR).toBe(0);
+  });
+
+  it('extermination : progression cumulée jusqu’à extermination complète (MDG 14 l.98-104)', () => {
+    const plan = planWithSea();
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, infestation: { label: 'Rats', difficulty: 'intermediaire', need: 5, progress: 0, spoilPerNight: '1d10' } } } });
+    apply('extermination', 5, true);
+    expect(get().travelPlan!.sea!.infestation).toBeUndefined();
+  });
+
+  it('voyage-rapide : calcule ET applique le palier (Rude épreuve, l.28)', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, fast: { days: 3, weeks: 0 } } } });
+    apply('voyage-rapide', 2, true);
+    // `finalizeFastVoyage` a tourné : `pendingFinalize` retombe à false (ou le plan a été purgé à l'accostage).
+    expect(get().travelPlan?.sea?.fast?.pendingFinalize).toBeFalsy();
+  });
+
+  it('poursuite : gain de Distance mute la crise EN PLACE (ni échappé, ni rattrapé)', () => {
+    const plan = planWithSea();
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, crisis: { kind: 'poursuite', label: 'Écumeur', distance: 0, escapeAt: 100, foeM: 3, foeSkill: 10, desc: '' } } } });
+    apply('poursuite', 10, true);
+    expect(get().travelPlan!.sea!.crisis).toBeTruthy();
+  });
+
+  it('tourbillon : chaque manche endommage la coque (IC − Endurance/10) et cumule l’évasion', () => {
+    const plan = planWithSea();
+    plan.vehicle!.wounds.current = plan.vehicle!.wounds.max;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, crisis: { kind: 'tourbillon', whirlpoolId: 'maelstrom', need: 999, progress: 0, label: 'Maelström' } } } });
+    const before = plan.vehicle!.wounds.current;
+    apply('tourbillon', 3, true);
+    expect(get().travelPlan!.vehicle!.wounds.current).toBeLessThanOrEqual(before); // Dégâts de collision (peuvent être nuls si BE couvre)
+    expect(get().travelPlan!.sea!.crisis).toBeTruthy(); // `need` 999 : le total agrégé ne peut pas l'atteindre en une manche
+  });
+
+  it('embuscade : succès → préparés (pas de Surprise) — le journal le dit', () => {
+    planWithSea();
+    apply('embuscade', 1, true);
+    expect(get().journal.some((l) => l.includes('prépare'))).toBe(true);
+  });
+
+  it('progression : applique les milles du jour PUIS insère le reste de la journée (Décision 2, cran 3)', () => {
+    planWithSea();
+    const out = apply('progression', 2, true);
+    expect(get().travelPlan!.sea!.milesToday).toBeGreaterThan(0);
+    // Orientation (toujours jouée) fait partie de l'insert post-progression.
+    expect(out?.insert?.some((s) => s.kind === 'orientation')).toBe(true);
   });
 });
 
@@ -326,13 +381,13 @@ describe('progression — message « Encalminé »/« Voiles affalées » pilot�
   // indépendamment de `sailsDown` (posé par un jour de vent violent PRÉCÉDENT, ne dépend pas de la météo courante).
   function planAtProgression(sailsDown: boolean) {
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
-    const sea = { ...plan.sea!, step: 'progression' as const, weather: { ...plan.sea!.weather, vent: 'calme-plat' as const }, sailsDown };
+    const sea = { ...plan.sea!, weather: { ...plan.sea!.weather, vent: 'calme-plat' as const }, sailsDown };
     set({ travelPlan: { ...plan, sea } });
   }
 
   it('mer calme (eff.m === null), voiles NON affalées → message « Encalminé »', () => {
     planAtProgression(false);
-    runSeaDays(get, set);
+    runSeaDay(get, set);
     const journal = get().journal;
     expect(journal.some((l) => l.includes('Encalminé'))).toBe(true);
     expect(journal.some((l) => l.includes('affalées'))).toBe(false);
@@ -340,7 +395,7 @@ describe('progression — message « Encalminé »/« Voiles affalées » pilot�
 
   it('voiles affalées (sailsDown), MÊME mer calme → message « Voiles affalées » (la structure prime sur le libellé du vent)', () => {
     planAtProgression(true);
-    runSeaDays(get, set);
+    runSeaDay(get, set);
     const journal = get().journal;
     expect(journal.some((l) => l.includes('affalées'))).toBe(true);
     expect(journal.some((l) => l.includes('Encalminé'))).toBe(false);
@@ -370,71 +425,85 @@ describe('Embuscade maritime AUTHORÉE à ancrage déterministe — #212', () =>
     seedBattleRng(1); // RNG semé : le jour joué directement à l'étape 'embuscade' ne tire AUCUN événement de bord
     useGame.setState({
       party: makePregens().slice(0, 3), battle: null, travelPlan: null, travelRecap: null,
-      pendingCrewTest: null, pendingRest: null, gameTime: 8 * 60, lastUpkeepDay: 0,
+      pendingCrewTest: null, pendingRest: null, pendingCascade: null, suspendedCascades: [], gameTime: 8 * 60, lastUpkeepDay: 0,
       vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } }, journal: [],
     } as never);
     useGame.getState().loadProject([portScene('port-a', 'Port A'), portScene('port-b', 'Port B'), abordageScene()], 'port-a', worldMap);
     useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } } } as never); // startScene remet le vessel de campagne — repose-le
   }
 
-  it('franchissement de l’ancrage (kmDone ≥ at × km) → Test d’équipage de Perception PUIS abordage, une seule fois', () => {
+  it('franchissement de l’ancrage (kmDone ≥ at × km) → Test de Perception PUIS abordage, une seule fois — la cascade-jour SURVIT au combat (#284/#275)', () => {
     freshAmbush();
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', abordageMap.routes[0])!;
-    // Ancrage = 0.5 × 550 = 275 milles ; 270 (fait) + 20 (jour) = 290 → franchi.
-    set({ travelPlan: { ...plan, kmDone: 270, sea: { ...plan.sea!, step: 'embuscade', milesToday: 20 } } });
-    runSeaDays(get, set);
-    const p = get().pendingCrewTest;
-    expect(p?.voyage?.kind).toBe('embuscade'); // Test de Perception influençable (patron terrestre « Attaqués ! »)
-    for (const part of p!.participants) if (!part.result) get().crewTestRoll(part.id);
-    get().crewTestConfirm();
+    // Ancrage = 0.5 × 550 = 275 milles. On force `sea.crisis`-like via une progression déjà proche de l'ancrage :
+    // kmDone 270, une progression du jour d'~20 milles franchit l'ancrage (290 ≥ 275).
+    set({ travelPlan: { ...plan, kmDone: 270 } } as never);
+    runSeaDay(get, set);
+    // Déroule la cascade jusqu'à l'étape 'embuscade'.
+    let guard = 0;
+    while (get().pendingCascade && get().pendingCascade!.participants[get().pendingCascade!.cursor]?.kind !== 'embuscade' && guard++ < 30) stepCascade();
+    const casc = get().pendingCascade;
+    expect(casc).toBeTruthy();
+    const embuscadeStep = casc!.participants[casc!.cursor];
+    expect(embuscadeStep?.kind).toBe('embuscade'); // Test de Perception influençable (patron terrestre « Attaqués ! »)
+    stepCascade(); // valide l'étape 'embuscade' → ouvre l'abordage (startCombat)
     expect(get().travelPlan!.sea!.ambushFired).toBe(true);
     expect(get().travelPlan!.interrupted).toBe(true);
     expect(get().battle).toBeTruthy(); // abordage ouvert par la couture partagée
     expect(get().scene!.id).toBe('ls-abordage');
+    // La cascade-jour a été SUSPENDUE (pas perdue) : ses étapes restantes (Orientation/Extermination/
+    // Entretien) vivent dans la pile, prêtes à reprendre au teardown de combat (#275 Ronde 2 cran 3).
+    expect(get().pendingCascade).toBeNull(); // le slot est libre pour les cascades DU combat
+    expect(get().suspendedCascades.length).toBe(1);
+    expect(get().suspendedCascades[0].purpose).toBe('travelDay');
   });
 
-  it('poursuite RNG perdue → abordage ouvert par la MÊME couture ; le franchissement ultérieur ne le rejoue pas (anti-double-feu #212)', () => {
+  it('reprise après COMBAT ne double PAS l\'écran de victoire (décision ii, #275 Ronde 2 cran 3) : victoire d\'abord, cascade-jour ENSUITE', () => {
     freshAmbush();
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', abordageMap.routes[0])!;
-    // Poursuite à Distance très négative → rattrapé quel que soit le jet (startChaseBoarding).
-    set({ travelPlan: { ...plan, kmDone: 100, sea: { ...plan.sea!, step: 'crise', crisis: { kind: 'poursuite', label: 'Écumeur', distance: -100, escapeAt: 100, foeM: 3, foeSkill: 30, desc: '' } } } });
-    const pending = { shipId: plan.vehicle!.id, testTypeId: 'progression-poursuite', participants: [], moraleScore: 75, voyage: { kind: 'poursuite', shipName: 'Cogue' } };
-    resolveVoyageCrewTest(get, set, pending as never, 0);
-    expect(get().travelPlan!.sea!.ambushFired).toBe(true);
+    set({ travelPlan: { ...plan, kmDone: 270 } } as never);
+    runSeaDay(get, set);
+    let guard = 0;
+    while (get().pendingCascade && get().pendingCascade!.participants[get().pendingCascade!.cursor]?.kind !== 'embuscade' && guard++ < 30) stepCascade();
+    stepCascade(); // valide 'embuscade' → ouvre l'abordage (startCombat), suspend la cascade-jour
     expect(get().battle).toBeTruthy();
-    expect(get().scene!.id).toBe('ls-abordage');
-    // On rejoue jusqu’au franchissement de l’ancrage : l’embuscade NE se rouvre PAS (flag sur travelPlan.sea).
-    set({ battle: null, travelPlan: { ...get().travelPlan!, interrupted: false, kmDone: 270, sea: { ...get().travelPlan!.sea!, step: 'embuscade', milesToday: 20 } } });
-    runSeaDays(get, set);
-    expect(get().pendingCrewTest?.voyage?.kind).not.toBe('embuscade');
-    expect(get().battle).toBeNull();
-  });
+    expect(get().suspendedCascades.length).toBe(1);
 
-  it('route sans `at` → ancrage par défaut à mi-route (0.5 × km)', () => {
-    const midMap: WorldMap = { ...abordageMap, routes: [{ ...abordageMap.routes[0], ambush: { scene: 'ls-abordage', encounter: 'enc-abordage' } }] };
-    freshAmbush(midMap);
-    const plan = buildSeaPlan(get, 'r1', 'A', 'B', midMap.routes[0])!;
-    // Juste AVANT la mi-route (275) : 260 + 10 = 270 → pas encore.
-    set({ travelPlan: { ...plan, kmDone: 260, sea: { ...plan.sea!, step: 'embuscade', milesToday: 10 } } });
-    runSeaDays(get, set);
-    expect(get().travelPlan?.sea?.ambushFired).toBeFalsy();
-    expect(get().pendingCrewTest?.voyage?.kind).not.toBe('embuscade');
-    // AU franchissement de la mi-route (274 + 2 = 276 ≥ 275) → embuscade.
-    freshAmbush(midMap);
-    const plan2 = buildSeaPlan(get, 'r1', 'A', 'B', midMap.routes[0])!;
-    set({ travelPlan: { ...plan2, kmDone: 274, sea: { ...plan2.sea!, step: 'embuscade', milesToday: 2 } } });
-    runSeaDays(get, set);
-    expect(get().pendingCrewTest?.voyage?.kind).toBe('embuscade');
+    // Victoire du combat (raccourci de test — la résolution d'attaque RÉELLE est couverte ailleurs) :
+    // l'ennemi tombe, `checkBattleOver` pose `over:'victory'` + `pendingVictory`.
+    const battle = get().battle!;
+    for (const c of battle.combatants) if (c.kind === 'enemy') c.wounds.current = 0;
+    set({ battle: { ...battle } });
+    checkBattleOver(get, set);
+    expect(get().pendingVictory).toBeTruthy();
+    expect(get().battle?.over).toBe('victory');
+    // AVANT « Continuer » : la cascade-jour reste SUSPENDUE — l'écran de victoire passe devant.
+    expect(get().pendingCascade).toBeNull();
+    expect(get().suspendedCascades.length).toBe(1);
+
+    get().dismissVictory();
+    // APRÈS « Continuer » : la victoire s'efface ET la cascade-jour REPREND (teardown de combat,
+    // couture universelle `resumeSuspendedCascade`).
+    expect(get().pendingVictory).toBeNull();
+    expect(get().battle).toBeNull();
+    expect(get().suspendedCascades.length).toBe(0);
+    expect(get().pendingCascade).toBeTruthy();
+    expect(get().pendingCascade!.purpose).toBe('travelDay');
   });
 
   it('route SANS embuscade authorée → le franchissement ne déclenche rien', () => {
     const noAmbush: WorldMap = { ...abordageMap, routes: [{ ...abordageMap.routes[0], ambush: undefined }] };
     freshAmbush(noAmbush);
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', noAmbush.routes[0])!;
-    set({ travelPlan: { ...plan, kmDone: 270, sea: { ...plan.sea!, step: 'embuscade', milesToday: 20 } } });
-    runSeaDays(get, set);
+    set({ travelPlan: { ...plan, kmDone: 270 } } as never);
+    runSeaDay(get, set);
+    let guard = 0;
+    while (get().pendingCascade && guard++ < 30) {
+      const casc = get().pendingCascade!;
+      if (casc.participants[casc.cursor]?.kind === 'embuscade') break;
+      stepCascade();
+    }
     expect(get().travelPlan?.sea?.ambushFired).toBeFalsy();
-    expect(get().pendingCrewTest?.voyage?.kind).not.toBe('embuscade');
     expect(get().battle).toBeNull();
   });
 });
@@ -451,11 +520,8 @@ describe('Périls d’AUTEUR lus au fil des jours en mer — C.22 (route.perils)
     get().startTravel('r1', 'mer');
     // On déroule la 1ʳᵉ journée jusqu’à la halte : le péril d’auteur DOIT avoir été lu (journal).
     for (let i = 0; i < 30 && !get().pendingRest; i++) {
-      const p = get().pendingCrewTest;
-      if (!p) break;
-      for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
-      get().crewTestConfirm();
-      if (get().pendingCrewTest?.resolved) get().crewTestContinue();
+      if (!get().pendingCascade) break;
+      stepCascade();
     }
     expect(get().journal.some((l) => l.includes('Péripétie : Récif affleurant'))).toBe(true);
   });
@@ -470,8 +536,8 @@ describe('Périls d’AUTEUR lus au fil des jours en mer — C.22 (route.perils)
     };
     set({ scene: krakenScene as never, worldMap: combatPeril } as never);
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', combatPeril.routes[0])!;
-    set({ travelPlan: { ...plan, sea: { ...plan.sea!, step: 'perils' } } } as never);
-    runSeaDays(get, set);
+    set({ travelPlan: plan } as never);
+    runSeaDay(get, set);
     expect(get().travelPlan!.interrupted).toBe(true); // la traversée s’arrête sur le combat d’auteur
     expect(get().battle).toBeTruthy();
     expect(get().journal.some((l) => l.includes('Péripétie : Kraken'))).toBe(true);
@@ -482,12 +548,11 @@ describe('Traversée RAPIDE — un seul Test de Rude épreuve (MDG 15 l.21-37, C
   beforeEach(freshState);
 
   function driveFast(): void {
-    const p = get().pendingCrewTest;
-    expect(p?.voyage?.kind).toBe('voyage-rapide'); // l’UNIQUE Test canonique (modale existante)
-    for (const part of p!.participants) if (!part.result) get().crewTestRoll(part.id);
-    get().crewTestConfirm();
-    expect(get().pendingCrewTest?.resolved).toBeTruthy(); // le palier est CALCULÉ ici, raconté seulement à l'application (finalize)
-    get().crewTestContinue(); // « Continuer » finalise (jours écoulés + accostage)
+    const p = get().pendingCascade;
+    expect(p?.purpose).toBe('test');
+    const cur = p!.participants[p!.cursor];
+    expect(cur?.kind).toBe('voyage-rapide');
+    stepCascade(); // valide → `computeFastPalier` + `finalizeFastVoyage` (calcule ET applique dans le même geste)
   }
 
   it('appareille en UN Test, franchit les jours et accoste (pendingShoreLeave) sans dérouler la boucle jour par jour', () => {
@@ -590,19 +655,18 @@ describe('Traversée rapide × embuscade ANCRÉE (#212) : interruption puis repr
     seedBattleRng(1);
     useGame.setState({
       party: makePregens().slice(0, 3), battle: null, travelPlan: null, travelRecap: null,
-      pendingCrewTest: null, pendingRest: null, gameTime: 8 * 60, lastUpkeepDay: 0,
+      pendingCrewTest: null, pendingRest: null, pendingCascade: null, suspendedCascades: [], gameTime: 8 * 60, lastUpkeepDay: 0,
       vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } }, journal: [],
     } as never);
     useGame.getState().loadProject([portScene('port-a', 'Port A'), portScene('port-b', 'Port B'), abordageScene()], 'port-a', abordageMap);
     useGame.setState({ vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } } } as never);
   });
 
-  it('l’abordage ancré INTERROMPT le voyage rapide ; après le combat, la traversée se finit en rapide', () => {
+  it('l’abordage ancré INTERROMPT le voyage rapide (cascade `purpose:test` suspendue) ; après le combat, la traversée se finit en rapide', () => {
     get().startTravel('r1', 'mer', { fast: true });
-    const p = get().pendingCrewTest!;
-    for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
-    get().crewTestConfirm();
-    get().crewTestContinue(); // finalize → embuscade ancrée
+    const p = get().pendingCascade!;
+    expect(p.participants[p.cursor]?.kind).toBe('voyage-rapide');
+    stepCascade(); // valide → computeFastPalier + finalizeFastVoyage → embuscade ancrée → startCombat
     expect(get().battle).toBeTruthy(); // abordage ouvert par la couture partagée (#212)
     expect(get().scene!.id).toBe('ls-abordage');
     expect(get().travelPlan!.sea!.ambushFired).toBe(true);
@@ -713,7 +777,7 @@ describe('Port désert & Embrigadement — #150 (resolvePortArrival appelé APR�
     return { int: (min, max) => Math.min(max, Math.max(min, vals[i++ % vals.length])) };
   };
 
-  it('Port désert (min 5 max 5, sea-events.json) applique bien son delta d’Humeur — ship résolu depuis `vessel`, PAS `travelPlan` (déjà `null` ici, cf. `finishSeaDay`)', () => {
+  it('Port désert (min 5 max 5, sea-events.json) applique bien son delta d’Humeur — ship résolu depuis `vessel`, PAS `travelPlan` (déjà `null` ici, cf. accostage)', () => {
     expect(get().travelPlan).toBeNull(); // reproduit exactement le contexte du bug : plan déjà purgé
     // Humeur de Manann neutre (mod 0) : 2d10 = 2+3 = 5 → « Port désert ». Puis 2d10 = 1+1 (heures, sans
     // effet ici). Puis 1d10 = 6 → delta d'Humeur −6 (MDG 15 l.249 : « le Moral diminue d'1d10 »).
@@ -775,10 +839,11 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
     expect(get().vessel!.manann?.score ?? 0).toBe(10); // 5+5
   });
 
-  it('accostage RÉEL (runSeaDays) : pendingShoreLeave s\'ouvre AVANT tout tirage d\'événement de port', () => {
+  it('accostage RÉEL (continueSeaDayAfterCascade) : pendingShoreLeave s\'ouvre AVANT tout tirage d\'événement de port', () => {
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
-    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, step: 'nuit', milesToday: 5 } } });
-    runSeaDays(get, set);
+    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, milesToday: 5 } } });
+    // Clôture directe du jour (équivalent RAW-fidèle de la fin de cascade, sans dépendre du tirage du jour).
+    continueSeaDayAfterCascade(get, set);
     expect(get().pendingShoreLeave).toBeTruthy();
     expect(get().pendingShoreLeave!.to.id).toBe('B');
     expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(false); // pas encore tiré
@@ -789,8 +854,8 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
 
   it('seam de jet (#275 Ronde 1) — Désertion : SANS siège MJ résout INLINE (même journée, événement de port tiré direct)', () => {
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
-    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, step: 'nuit', milesToday: 5 } } });
-    runSeaDays(get, set);
+    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, milesToday: 5 } } });
+    continueSeaDayAfterCascade(get, set);
     resolveShoreLeave(get, set, true);
     expect(get().pendingCascade).toBeNull(); // 'I' (inline) — aucun siège MJ
     expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(true);
@@ -800,8 +865,8 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
     const { setGmSeat } = await import('./netFlow');
     setGmSeat(get, set, 1);
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
-    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, step: 'nuit', milesToday: 5 } } });
-    runSeaDays(get, set);
+    set({ travelPlan: { ...plan, kmDone: plan.km - 5, sea: { ...plan.sea!, milesToday: 5 } } });
+    continueSeaDayAfterCascade(get, set);
     resolveShoreLeave(get, set, true);
     expect(get().pendingCascade).toBeTruthy(); // 'V' — surfacé au siège MJ, pas résolu d'office
     expect(get().journal.some((l) => l.includes('Événement de port'))).toBe(false); // suspendu AVANT la suite
@@ -810,112 +875,5 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
     const owner = modalOwnerOf(get());
     expect(seatOwns(get(), 1, owner ?? undefined)).toBe(true);
     expect(seatOwns(get(), 0, owner ?? undefined)).toBe(false);
-  });
-});
-
-describe('CRAN 2 (#275 Ronde 2, Décision 4) — registre cascadeAppliers des 10 Tests d’équipage de VOYAGE, testé EN ISOLATION (PAS ENCORE branché sur runSeaDays)', () => {
-  beforeEach(freshState);
-
-  function planWithSea() {
-    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
-    set({ travelPlan: plan });
-    return plan;
-  }
-
-  /** Étape À PARTICIPANTS déjà agrégée (`commitStep`/`aggregateBatchStep`, #275 Décision 4 cran 1) —
-   *  même vocabulaire `result.sl`/`.success` que `resolveVoyageCrewTest(total, success)`. */
-  function step(kind: string, sl: number, success = sl >= 1): CascadeStep {
-    return { id: kind, kind, label: kind, result: { roll: 0, target: 0, sl, success }, interactive: true };
-  }
-
-  const apply = (kind: string, sl: number, success = sl >= 1) =>
-    cascadeAppliers[kind].apply(get, set, step(kind, sl, success), undefined, { steps: [], index: 0 });
-
-  it('entretien : réussite (total −2 ≥ 1) → réparation temporaire, PERSISTÉE — MÊME issue que resolveVoyageCrewTest', () => {
-    const plan = planWithSea();
-    plan.vehicle!.wounds.current = 30;
-    apply('entretien', 5); // +5 → +3 après −2 → réussite
-    const cur = get().vessel!.wounds!.current;
-    expect(cur).toBeGreaterThan(30);
-    expect(cur).toBeLessThanOrEqual(40);
-    apply('entretien', 2); // 2−2=0 → échec (« 1 DR ou plus », MDG 14 l.13)
-    expect(get().vessel!.wounds!.current).toBe(cur);
-  });
-
-  it('orientation : dérive majeure (DR ≤ −5) → Changement de cap, km jamais réduit', () => {
-    const plan = planWithSea();
-    set({ travelPlan: { ...plan, kmDone: 100 } });
-    const before = get().travelPlan!.km;
-    apply('orientation', -6, false);
-    expect(get().travelPlan!.km).toBeGreaterThanOrEqual(before);
-  });
-
-  it('affaler : échec → Critique au Gréement PERSISTÉ (`vessel.criticals`)', () => {
-    planWithSea();
-    apply('affaler', -3, false);
-    expect(get().vessel!.criticals?.length ?? 0).toBeGreaterThan(0);
-  });
-
-  it('affaler : réussite → aucun Critique, message au journal', () => {
-    planWithSea();
-    apply('affaler', 3, true);
-    expect(get().journal.some((l) => l.includes('affalées à temps'))).toBe(true);
-    expect(get().vessel!.criticals?.length ?? 0).toBe(0);
-  });
-
-  it('phare : réussite → bonus d’Orientation posé (Savoir Océans/manuel, ch.13 l.335)', () => {
-    planWithSea();
-    apply('phare', 1, true);
-    expect(get().travelPlan!.sea!.lighthouseDR).toBeGreaterThanOrEqual(0);
-  });
-
-  it('phare : échec → aucun bonus posé', () => {
-    planWithSea();
-    apply('phare', -1, false);
-    expect(get().travelPlan!.sea!.lighthouseDR).toBe(0);
-  });
-
-  it('extermination : progression cumulée jusqu’à extermination complète (MDG 14 l.98-104)', () => {
-    const plan = planWithSea();
-    set({ travelPlan: { ...plan, sea: { ...plan.sea!, infestation: { label: 'Rats', difficulty: 'intermediaire', need: 5, progress: 0, spoilPerNight: '1d10' } } } });
-    apply('extermination', 5, true);
-    expect(get().travelPlan!.sea!.infestation).toBeUndefined();
-  });
-
-  it('voyage-rapide : calcule et PERSISTE le palier — jamais raconté avant `finalizeFastVoyage`', () => {
-    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
-    set({ travelPlan: { ...plan, sea: { ...plan.sea!, fast: { days: 3, weeks: 0 } } } });
-    apply('voyage-rapide', 2, true);
-    expect(get().travelPlan!.sea!.fast!.palierId).toBeTruthy();
-    expect(get().journal.some((l) => l.startsWith('Voyage rapide —'))).toBe(false);
-  });
-
-  it('poursuite : gain de Distance mute la crise EN PLACE (ni échappé, ni rattrapé)', () => {
-    const plan = planWithSea();
-    set({ travelPlan: { ...plan, sea: { ...plan.sea!, crisis: { kind: 'poursuite', label: 'Écumeur', distance: 0, escapeAt: 100, foeM: 3, foeSkill: 10, desc: '' } } } });
-    apply('poursuite', 10, true);
-    expect(get().travelPlan!.sea!.crisis).toBeTruthy();
-  });
-
-  it('tourbillon : chaque manche endommage la coque (IC − Endurance/10) et cumule l’évasion', () => {
-    const plan = planWithSea();
-    plan.vehicle!.wounds.current = plan.vehicle!.wounds.max;
-    set({ travelPlan: { ...plan, sea: { ...plan.sea!, crisis: { kind: 'tourbillon', whirlpoolId: 'maelstrom', need: 999, progress: 0, label: 'Maelström' } } } });
-    const before = plan.vehicle!.wounds.current;
-    apply('tourbillon', 3, true);
-    expect(get().travelPlan!.vehicle!.wounds.current).toBeLessThanOrEqual(before); // Dégâts de collision (peuvent être nuls si BE couvre)
-    expect(get().travelPlan!.sea!.crisis).toBeTruthy(); // `need` 999 : le total agrégé ne peut pas l'atteindre en une manche
-  });
-
-  it('embuscade : succès → préparés (pas de Surprise) — le journal le dit', () => {
-    planWithSea();
-    apply('embuscade', 1, true);
-    expect(get().journal.some((l) => l.includes('prépare'))).toBe(true);
-  });
-
-  it('progression : applique les milles du jour — MÊME formule que resolveVoyageCrewTest', () => {
-    planWithSea();
-    apply('progression', 2, true);
-    expect(get().travelPlan!.sea!.milesToday).toBeGreaterThan(0);
   });
 });

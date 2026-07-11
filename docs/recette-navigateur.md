@@ -108,9 +108,10 @@ Playwright, cf. piège ci-dessous), ou lecture de position via `screenPos('id')`
 
 ### Voyage en mer — accélérer une traversée commandée (recette)
 
-La progression jour par jour d'une traversée EN MER (`runSeaDays`, `state/seaVoyageFlow.ts` — météo,
-périls, halte de nuit) est une boucle qui se SUSPEND à chaque Test d'équipage (modale) et à chaque
-halte de nuit (`pendingRest`) ; elle reprend à la CONFIRMATION de ces modales, jamais via `time()`/
+La progression jour par jour d'une traversée EN MER (`runSeaDay`, `state/seaVoyageFlow.ts` — météo,
+périls, halte de nuit) enchaîne les jours ; chaque jour est UNE cascade (`pendingCascade`, `purpose:
+'travelDay'`) qui se SUSPEND à chaque étape influençable et à chaque halte de nuit (`pendingRest`) ;
+elle reprend à la CONFIRMATION de ces étapes/modales, jamais via `time()`/
 `rest()` (ci-dessus). **Aucun helper `__wfrp` n'existe pour la sauter** (pas de `fastForward`
 équivalent côté voyage — seul le combat en a un) : `pendingRest` n'est pas piloté par la convention
 `roll()`/`confirm()` (pas de `restConfirm` câblé dessus, contrairement aux flux `pending<Flux>`

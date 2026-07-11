@@ -106,7 +106,7 @@ import * as portFlow from './portFlow';
 import * as landMarketFlow from './landMarketFlow';
 import * as seaActivities from './seaActivities';
 import * as seaVoyageFlow from './seaVoyageFlow';
-import { startCascade } from './cascade';
+import { startCascade, suspendActiveCascade, resumeSuspendedCascade } from './cascade';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
 
@@ -371,6 +371,12 @@ export interface GameState extends RollFlowActionsMap {
   /** CASCADE séquentielle influençable (jets de NUIT / VOYAGE) : une étape à la fois (`FLOWS.cascade`),
    *  conséquence par `kind` + avancée du curseur dans `cascadeNext` (state/cascade.ts). */
   pendingCascade: PendingCascade | null;
+  /** Pile de cascades SUSPENDUES (`suspendActiveCascade`/`resumeSuspendedCascade`, state/cascade.ts) :
+   *  quand un combat s'ouvre PENDANT une cascade active (ex. un abordage déclenché par l'applier d'une
+   *  étape de voyage), la cascade active est poussée ICI (LIFO) plutôt qu'écrasée/perdue — le slot
+   *  `pendingCascade` redevient disponible pour les cascades DU COMBAT. Résumée (tête de pile) au
+   *  teardown de combat (`dismissVictory`/`dismissDefeat`) si le slot est libre. */
+  suspendedCascades: PendingCascade[];
   /** POURSUITE TERRESTRE en cours (LDB 15) : Distance/adversaires persistés entre les manches (chaque
    *  manche est une cascade `purpose:'pursuite'`, cf. state/pursuitFlow). `null` hors poursuite. */
   pursuit: import('./pursuitFlow').PursuitState | null;
@@ -1002,8 +1008,6 @@ export interface GameState extends RollFlowActionsMap {
   battleCrewTest: (shipId: string, testTypeId: string) => void;
   crewTestConfirm: () => void;
   crewTestCancel: () => void;
-  /** VOYAGE : « Continuer » de la phase RÉSOLU (dénouement affiché sur place) → relance `runSeaDays`. */
-  crewTestContinue: () => void;
   // crewTest{Roll,Reroll,BonusSL,ForceSuccess,DarkPact} : générés (RollFlowActionsMap, MULTI).
   /** Chanson de marin (Talent, MDG 09 l.32-40) : ouvre la modale du chanteur (choix de chanson + Test de Chant). */
   battleSingShanty: (shipId: string) => void;
@@ -1630,6 +1634,10 @@ export const useGame = create<GameState>((set, get) => ({
     // ni point d'entrée nommé) ; sinon vers le CONTENU de la NOUVELLE carte (le cap hérité de
     // l'ancienne scène n'a aucun sens ici — en POV il peut regarder le vide hors-carte).
     const authored = !pos && !(entry && target.entryPoints?.[entry]) ? heroStart?.facing : undefined;
+    // Couture UNIVERSELLE de suspension (state/cascade.ts) : une cascade active PARQUÉE au lieu d'être
+    // perdue par `resetFields('scene')` ci-dessous (ex. un abordage ouvre `startCombat` PUIS transitionne
+    // vers sa scène — l'ORDRE des deux appels varie selon l'appelant, cette couture protège les deux).
+    suspendActiveCascade(get, set);
     set((s) => ({
       scene: JSON.parse(JSON.stringify(target)),
       mode: 'exploration',
@@ -1865,6 +1873,9 @@ export const useGame = create<GameState>((set, get) => ({
     if (leftoverGear.length) applyEffects(get, set, leftoverGear);
     if (cont?.length) applyEffects(get, set, cont); // #9 : téléport/dialogue de onVictory APRÈS « Continuer »
     if (inMassBattleCombat) massBattleFlow.massBattleResumeCombat(get, set, kills);
+    // Teardown de combat (couture UNIVERSELLE, state/cascade.ts) : résume la cascade SUSPENDUE (ex. le
+    // reste d'une journée de voyage interrompue par un abordage) — APRÈS l'écran de victoire, jamais devant.
+    resumeSuspendedCascade(get, set);
   },
   /** Ferme l'écran de DÉFAITE. Dans une Scène de COMBAT de bataille de masse (ADE II 08), la défaite
    *  tactique ne met PAS fin à la partie : les héros sont repoussés (soignés, le combat de scène est une
@@ -1881,10 +1892,12 @@ export const useGame = create<GameState>((set, get) => ({
       });
       set({ party: get().party.map(heal), battle: null, mode: 'exploration' });
       massBattleFlow.massBattleResumeCombat(get, set, 0, 'lost');
+      resumeSuspendedCascade(get, set); // teardown de combat (couture universelle) — cf. dismissVictory
       return;
     }
     const cur = get().scene;
     if (cur) set({ mode: 'exploration', battle: null });
+    resumeSuspendedCascade(get, set); // teardown de combat (couture universelle) — cf. dismissVictory
   },
   /** Ferme la fenêtre de loot — même contrat que la victoire : le non-attribué va au 1er héros. */
   dismissLoot: () => {

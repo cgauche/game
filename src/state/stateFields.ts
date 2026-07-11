@@ -59,6 +59,9 @@ const STATE_FIELDS = {
   pendingExtendedTest: { init: null, resetOn: [] },
   pendingForceDoor: { init: null, resetOn: [] },
   pendingCascade: { init: null, resetOn: ['scene', 'combatStart'] },
+  // Pile de cascades SUSPENDUES (state/cascade.ts) : DOIT survivre à `scene`/`combatStart` (c'est
+  // PRÉCISÉMENT à ces cadres que la suspension pousse une entrée — un reset ICI la perdrait aussitôt).
+  suspendedCascades: { init: [], resetOn: [] },
   pursuit: { init: null, resetOn: ['scene', 'combatStart'] },
   sessionEndOpen: { init: false, resetOn: ['scene'] },
   pendingCastOpposition: { init: null, resetOn: [] },

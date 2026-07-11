@@ -205,6 +205,7 @@ fait DANS la primitive, pas dans une nième copie.
 | Effet **DÉCLENCHÉ** (`effects: TriggeredEffect[]`) d'une entité, pour un Trigger — *réflexe avant tout chemin par-kind* | **`fireTriggers(get, actor, trigger, ctx)`** DISPATCHER UNIQUE : réunit Traits + Talents + Atouts + **États** (par composition : Maladies/Mutations octroient Trait/État). Ajouter une source = l'ajouter ICI, JAMAIS un dispatch parallèle | `src/state/triggeredEffects.ts` |
 | Attaque GRATUITE déclenchée (`grantFreeAttack` : Frappe réactive/Assaut féroce, et tout Trait/État) | `resolveFreeAttacks` (itère `freeAttackSourcesOf`, filtre `flowHasFreeAttack`) — kind-agnostique | `src/state/combatFlow.ts` |
 | Dégâts/soin de **coque** (voyage fluvial/maritime) | `damageHull`/`healHull` routent `applyOps` ; `damageVesselHull`/`healVesselHull` (`seaVoyageFlow.ts`) enchaînent la persistance — SOURCE UNIQUE `state.vessel.wounds` | `src/state/shipDamage.ts` |
+| **Suspendre/reprendre une CASCADE** quand un combat/une transition s'ouvre en plein vol (le slot `pendingCascade` = la cascade ACTIVE, unique) | `suspendActiveCascade` / `resumeSuspendedCascade` (pile persistée de cascades suspendues ; coutures universelles : ouverture de combat/transition de scène → suspend, teardown victoire/défaite → resume) — JAMAIS un checkpoint parallèle ni une purge | `src/state/cascade.ts` |
 
 > **Frontière orchestrateur · machinerie · data-driven** (cf. `docs/combat-events-coherence.md` §3bis) : un
 > Trigger doit fonctionner pour TOUT kind d'entité (maladie/talent/trait/sort/état/mutation) **sans code

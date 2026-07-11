@@ -30,6 +30,7 @@ export function checkPartyWiped(get: Get, set: Set): boolean {
     // Purge des flux SUSPENDUS (comme la fin de bataille remet le terrain à plat).
     pendingRest: null,
     pendingCascade: null,
+    suspendedCascades: [],
     pursuit: null,
     travelPlan: null,
     travelRecap: null,

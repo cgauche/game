@@ -63,7 +63,7 @@ import { applyShipPostes, autoFormCrews, servingCrewPresent, shipOfCrew, servabl
 import { posteHullOf, pushEligible, pushCrewOk, pushMovement, pushReachable } from './siegePush';
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipCrewAssignments, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
-import { resolveVoyageCrewTest, resolveSteamSave, runSeaDays } from './seaVoyageFlow';
+import { resolveSteamSave, continueSeaDayAfterCascade } from './seaVoyageFlow';
 import { resolveCrewTestByRoles, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById } from '../data';
@@ -97,7 +97,7 @@ import { sizeFootprint, combatDistance } from './footprint';
 import { combatOrder } from './combatSetup';
 import { isMerScene, sceneMetresPerTile } from './scene';
 import { bus, EVT } from './bus';
-import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice } from './cascade';
+import { startCascade, advanceCascade, resolveRemainingCascade, finalizeCascade, setCascadeChoice, suspendActiveCascade } from './cascade';
 import { continuePursuitRound, pursuitAbandon } from './pursuitFlow';
 import { checkPartyWiped } from './partyWipe';
 import { describeFrenzy, describeReload, describeStateRecovery } from './flowOutcomes';
@@ -315,7 +315,14 @@ export function createCombatSlice(get: Get, set: Set) {
     // de reprendre la route — no-op en combat (`combatEndBoundary` gère la défaite via `battle`).
     if (done && checkPartyWiped(get, set)) return;
     if (done?.purpose === 'travel' && done.travelHalt) travelFlow.continueTravelAfterNight(get, set);
-    else if (done?.purpose === 'travelDay') { if (get().travelPlan?.river) continueRiverDayAfterCascade(get, set); else travelFlow.continueTravelDayAfterCascade(get, set); }
+    else if (done?.purpose === 'travelDay') {
+      if (get().travelPlan?.river) continueRiverDayAfterCascade(get, set);
+      // Mer : une « Fuite de vapeur » (pendingSteamSave) peut avoir suspendu la clôture DEPUIS l'applier
+      // 'progression' (cascade fermée sans insert du reste du jour) — `resolveSteamSave` reprend la
+      // journée lui-même à sa résolution ; ne pas clôturer prématurément ici.
+      else if (get().travelPlan?.sea) { if (!get().pendingSteamSave) continueSeaDayAfterCascade(get, set); }
+      else travelFlow.continueTravelDayAfterCascade(get, set);
+    }
     else if (done?.purpose === 'pursuite') continuePursuitRound(get, set, done); // manche de poursuite terrestre close → résoudre puis rouvrir/dénouer (state/pursuitFlow)
     else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
     else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
@@ -1241,25 +1248,8 @@ export function createCombatSlice(get: Get, set: Set) {
     },
     crewTestConfirm: () => {
       const { battle, pendingCrewTest: p } = get();
-      if (!p || p.resolved) return; // déjà résolu (phase SUR PLACE) → « Continuer » relance, pas « Appliquer »
+      if (!p) return;
       if (p.participants.some((x) => !x.result)) return; // tous les contributeurs doivent avoir lancé
-      // Test d'équipage de VOYAGE maritime (7b — hors combat) : l'issue est déléguée au flux de
-      // traversée (`resolveVoyageCrewTest` : Progression, Orientation, Affaler, Poursuite…).
-      if (p.voyage) {
-        const total = maneuverCrewTotal(p.participants, p.essentialRoleId, p.moraleScore, p.undercrew, p.extraDR);
-        get().log(`${findCrewTestTypeById(p.testTypeId)?.label ?? p.testTypeId} — ${p.voyage.shipName} : DR ${total >= 0 ? `+${total}` : total} → ${total >= 1 ? 'succès' : 'échec'} (MDG 14 l.13).`);
-        // Le dénouement s'affiche LÀ où le jet a eu lieu : on capture les lignes de conséquence (narration
-        // du jour, `sea.lines`) produites par `resolveVoyageCrewTest` pour les rendre SUR PLACE (le verdict
-        // DR est déjà porté par le bandeau `summary` de la modale).
-        const seaBefore = get().travelPlan?.sea?.lines.length ?? 0;
-        resolveVoyageCrewTest(get, set, p, total);
-        // Un abordage (battle) ou une « Fuite de vapeur » (pendingSteamSave) ouvert par la résolution PREND
-        // le devant : la modale d'équipage s'efface (sa reprise vit dans la clôture du sous-flux).
-        if (get().battle || get().pendingSteamSave) { set({ pendingCrewTest: null }); return; }
-        const lines = get().travelPlan?.sea?.lines.slice(seaBefore) ?? [];
-        set({ pendingCrewTest: { ...p, resolved: { lines } } });
-        return;
-      }
       if (!battle) return;
       const ship = inBattleId(battle, p.shipId);
       if (!ship) { set({ pendingCrewTest: null }); return; }
@@ -1278,14 +1268,6 @@ export function createCombatSlice(get: Get, set: Set) {
       bus.emit(EVT.SCENE_DIRTY);
     },
     crewTestCancel: () => set({ pendingCrewTest: null }),
-    crewTestContinue: () => {
-      // « Continuer » de la phase RÉSOLU d'un Test d'équipage de VOYAGE : ferme la modale et relance
-      // SEULE la boucle maritime (le dénouement a déjà été lu sur place).
-      const p = get().pendingCrewTest;
-      if (!p?.voyage || !p.resolved) return;
-      set({ pendingCrewTest: null });
-      runSeaDays(get, set);
-    },
 
     // ── CHANSON DE MARIN (Talent, MDG 09 l.32-40) : le chanteur (équipage doté du Talent) choisit une
     //    chanson CONNUE (spec du Talent) puis lance son Test de Divertissement (Chant) ; réussi → l'effet
@@ -2362,6 +2344,10 @@ export function createCombatSlice(get: Get, set: Set) {
       if (!scene) return;
       const enc = scene.encounters.find((e) => e.id === encounterId);
       if (!enc) return;
+      // Couture UNIVERSELLE de suspension (state/cascade.ts) : un combat qui s'ouvre PENDANT une
+      // cascade active (ex. un abordage déclenché par l'applier d'une étape de voyage) la PARQUE au
+      // lieu de la perdre au `resetFields('combatStart')` ci-dessous — jamais un cas spécial « mer ».
+      suspendActiveCascade(get, set);
       // Placer les héros près de leur position de groupe, les ennemis selon l'encounter.
       // Carry-in : on n'instancie pas les morts/éjectés ; on ré-importe les États PERSISTANTS du
       // groupe (Hémorragique, Empoisonné…) et on réinitialise tout l'état de combat transitoire.

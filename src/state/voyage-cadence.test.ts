@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
-import { buildSeaPlan, runSeaDays } from './seaVoyageFlow';
+import { buildSeaPlan, runSeaDay } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import { seedBattleRng } from './battleRng';
 import { seaAutoResolves, riverAutoResolves, SEA_ROUTINE_KINDS } from './voyageCadence';
@@ -56,10 +56,10 @@ describe('couche voyageCadence — prédicats de routine', () => {
 describe('traversée COMMANDÉE (mer) — routine auto-résolue, PV du jour, aucun jet silencieux', () => {
   beforeEach(freshSea);
 
-  it('une journée commandée n’ouvre AUCUNE modale de Test de routine ; les jets tombent au PV du jour', () => {
+  it('une journée commandée n’ouvre AUCUNE cascade de Test de routine ; les jets tombent au PV du jour', () => {
     get().startTravel('r1', 'mer', { cadence: 'commande' });
     // La boucle a déroulé toute la journée sans s’arrêter sur un Test de routine → halte de nuit atteinte.
-    expect(get().pendingCrewTest).toBeNull();
+    expect(get().pendingCascade).toBeNull();
     expect(get().pendingRest).toBeTruthy();
     expect(get().travelPlan!.sea!.daysAtSea).toBe(1);
     const day = get().pendingRest!.travelDay!;
@@ -89,29 +89,31 @@ describe('traversée COMMANDÉE (mer) — routine auto-résolue, PV du jour, auc
 describe('traversée JOUR-PAR-JOUR (mer) — cadence manuelle inchangée', () => {
   beforeEach(freshSea);
 
-  it('chaque Test de Navigation ouvre sa modale (pendingCrewTest), rien n’est auto-résolu', () => {
+  it('chaque Test de Navigation ouvre sa cascade (pendingCascade), rien n’est auto-résolu', () => {
     get().startTravel('r1', 'mer', { cadence: 'jour-par-jour' });
-    const p = get().pendingCrewTest;
-    expect(p?.voyage).toBeTruthy();
+    const p = get().pendingCascade;
+    expect(p?.purpose).toBe('travelDay');
     expect(get().travelPlan!.sea!.entries ?? []).toHaveLength(0); // pas de PV auto en cadence manuelle
   });
 
   it('l’API sans cadence explicite reste JOUR-PAR-JOUR (rétro-compat)', () => {
     get().startTravel('r1', 'mer');
-    expect(get().pendingCrewTest?.voyage).toBeTruthy();
+    expect(get().pendingCascade?.purpose).toBe('travelDay');
   });
 });
 
 describe('interruptions (mer) — la route commandée NE muselle PAS les crises', () => {
   beforeEach(freshSea);
 
-  it('une Poursuite en cours ouvre sa modale même en route COMMANDÉE (jamais auto-résolue)', () => {
+  it('une Poursuite en cours force la cascade INTERACTIVE même en route COMMANDÉE (jamais auto-résolue)', () => {
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0], { cadence: 'commande' })!;
     plan.sea!.crisis = { kind: 'poursuite', label: 'Nef corsaire', distance: 5, escapeAt: 100, foeM: 5, foeSkill: 50, desc: 'x' };
-    plan.sea!.step = 'crise';
     set({ travelPlan: plan } as never);
-    runSeaDays(get, set);
-    expect(get().pendingCrewTest?.voyage?.kind).toBe('poursuite'); // décision requise → modale, PAS le PV
+    runSeaDay(get, set);
+    // Une crise en cours bascule la journée ENTIÈRE en cascade interactive (`seaDayAllRoutine`,
+    // #275 Ronde 2 cran 3) — décision requise → PAS le PV silencieux.
+    expect(get().pendingCascade).toBeTruthy();
+    expect(get().pendingCascade!.purpose).toBe('travelDay');
   });
 });
 

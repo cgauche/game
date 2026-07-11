@@ -221,4 +221,24 @@ describe('Golden saves — fixtures réelles (__fixtures__/saves/) + cliquet de 
     expect(s.scene).not.toBeNull();
     expect(s.scene?.id).toBe('test-fixture');
   });
+
+  // #275 Ronde 2 cran 3 — MIGRATIONS[3] (v3→v4) : voyage maritime EN VOL sous l'ancien mécanisme
+  // (`sea.step` FSM + `pendingCrewTest.voyage`) — arbitrage SIMPLE accepté (décision e) : la migration
+  // DROPPE l'état en vol (jamais ne le corrompt/duplique) plutôt que de reconstruire le point de reprise
+  // exact — la journée reprend PROPREMENT au prochain `runSeaDay` (Test de Progression du jour).
+  it('fixture v3 EN VOL (Test d’équipage de voyage ouvert, jour mi-parcours) : pendingCrewTest droppé, jour remis à son état de départ', () => {
+    const migrated = loadFixture('v3-voyage-maritime-en-vol.json');
+    const s = useGame.getState();
+    expect(migrated.version).toBe(SAVE_VERSION);
+    expect(s.pendingCrewTest).toBeNull(); // ancien Test de voyage — jamais réinjecté en combat
+    const sea = s.travelPlan!.sea! as unknown as Record<string, unknown>;
+    expect(sea.step).toBeUndefined(); // FSM mort — aucune trace du point de reprise périmé
+    expect(sea.milesToday).toBe(0);
+    expect(sea.sailsDown).toBe(false);
+    expect(sea.lighthouseDR).toBe(0);
+    expect(sea.entries).toEqual([]);
+    // La traversée reste JOUABLE : un nouveau jour peut démarrer proprement depuis cet état.
+    expect(s.travelPlan!.vehicle).toBeTruthy();
+    expect(s.vessel).not.toBeNull();
+  });
 });

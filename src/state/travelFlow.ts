@@ -50,7 +50,7 @@ import { stageAssignmentFromRoles, type StagePosting } from '../engine/activitie
 import { buildStageSteps, type StageContext } from './travelPostes';
 import { startCascade, registerCascadeApplier } from './cascade';
 import type { CascadeStep } from './pendings';
-import { buildSeaPlan, runSeaDays, startFastVoyage, syncHullWoundsFromVessel } from './seaVoyageFlow';
+import { buildSeaPlan, runSeaDay, startFastVoyage, syncHullWoundsFromVessel } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
 import { humanControlled } from './netOwnership';
 import { DIFFICULTY_MODIFIERS, type Combatant } from '../engine/types';
@@ -223,7 +223,7 @@ export function startTravel(
     }
     set({ travelPlan: seaPlan, worldMapOpen: false, travelRecap: null });
     log(get, set, [`— ${seaPlan.vehicle!.name} appareille vers ${to.label} (${route.km} milles) —`]);
-    runSeaDays(get, set);
+    runSeaDay(get, set);
     return;
   }
   if (route.sea) return; // une route maritime ne s'emprunte qu'en mode 'mer'
@@ -305,7 +305,10 @@ export function resumeTravel(get: Get, set: Set): void {
   }
   set({ travelPlan: { ...plan, interrupted: false, ...(vehicle ? { vehicle } : {}) }, worldMapOpen: false, travelRecap: null });
   log(get, set, ['— Le voyage reprend —']);
-  if (plan.sea) { runSeaDays(get, set); return; } // traversée maritime : résolution navale
+  // Mer (#275 Ronde 2 cran 3, Décision c) : `runSeaDay` ne ré-entre PLUS de FSM — si une cascade de
+  // voyage vit ENCORE (suspendue derrière le combat qui vient de finir), son garde de tête est un no-op
+  // (l'arbitre la remontre) ; sinon elle enchaîne le jour suivant (`buildSeaDayCascade`).
+  if (plan.sea) { runSeaDay(get, set); return; }
   if (plan.river) { runRiverDays(get, set); return; } // descente fluviale : résolution fluviale
   runTravelDays(get, set);
 }
@@ -457,7 +460,7 @@ function runTravelDays(get: Get, set: Set): void {
 export function continueTravelAfterNight(get: Get, set: Set): void {
   const plan = get().travelPlan;
   if (!plan || plan.interrupted || get().battle) return;
-  if (plan.sea) { runSeaDays(get, set); return; } // traversée maritime : la journée suivante est navale
+  if (plan.sea) { runSeaDay(get, set); return; } // traversée maritime : la journée suivante est navale
   if (plan.river) { runRiverDays(get, set); return; } // descente fluviale : la journée suivante est fluviale
   runTravelDays(get, set);
 }

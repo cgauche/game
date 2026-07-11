@@ -1,0 +1,1604 @@
+{
+  "version": 3,
+  "savedAt": "2026-07-10T20:32:48.197Z",
+  "sceneLabel": "Port de Salzenmund",
+  "gameTime": 480,
+  "data": {
+    "screen": "menu",
+    "compendiumFocus": null,
+    "compendiumReturn": "menu",
+    "codexOverlay": null,
+    "pendingCampaign": null,
+    "gameTime": 480,
+    "lastUpkeepDay": 0,
+    "vessel": {
+      "vehicleId": "cogue",
+      "morale": {
+        "score": 68,
+        "lastMoraleWeek": 0,
+        "factors": []
+      },
+      "wounds": {
+        "current": 42,
+        "max": 50
+      }
+    },
+    "caravanCargo": [],
+    "tradeRumours": [],
+    "landMarket": null,
+    "worldMap": {
+      "id": "campagne-carte",
+      "nom": "Carte du monde",
+      "places": [
+        {
+          "id": "A",
+          "label": "Salzenmund",
+          "pos": {
+            "x": 0,
+            "y": 0
+          },
+          "scene": "port-a"
+        },
+        {
+          "id": "B",
+          "label": "Erengrad",
+          "pos": {
+            "x": 10,
+            "y": 0
+          },
+          "scene": "port-b",
+          "port": {
+            "taille": 3,
+            "richesse": 3,
+            "production": [
+              "bois"
+            ]
+          }
+        }
+      ],
+      "routes": [
+        {
+          "id": "r1",
+          "a": "A",
+          "b": "B",
+          "km": 550,
+          "modes": [
+            "mer"
+          ],
+          "sea": true,
+          "seaHeading": "est"
+        }
+      ]
+    },
+    "worldMapOpen": false,
+    "travelPlan": {
+      "routeId": "r1",
+      "fromPlaceId": "A",
+      "toPlaceId": "B",
+      "mode": "mer",
+      "hoursPerDay": 24,
+      "km": 550,
+      "kmDone": 0,
+      "interrupted": false,
+      "orders": {
+        "cadence": "jour-par-jour"
+      },
+      "vehicle": {
+        "id": "vehicle-cogue",
+        "name": "Cogue",
+        "kind": "npc",
+        "creatureId": "cogue",
+        "characteristics": {
+          "capacite-de-combat": 0,
+          "capacite-de-tir": 0,
+          "force": 0,
+          "endurance": 45,
+          "initiative": 0,
+          "agilite": 0,
+          "dexterite": 0,
+          "intelligence": 0,
+          "force-mentale": 0,
+          "sociabilite": 0
+        },
+        "wounds": {
+          "current": 42,
+          "max": 50,
+          "base": 50
+        },
+        "advantage": 0,
+        "conditions": [],
+        "weapons": [],
+        "armour": {
+          "tete": 0,
+          "brasG": 0,
+          "brasD": 0,
+          "corps": 0,
+          "jambeG": 0,
+          "jambeD": 0
+        },
+        "skills": [],
+        "talents": [],
+        "bodyShape": "vehicule",
+        "psychImmune": true,
+        "movement": 0,
+        "footprint": 3,
+        "cargoEnc": 0
+      },
+      "sea": {
+        "heading": "est",
+        "weather": {
+          "precipitations": "legeres",
+          "temperature": "mediane",
+          "visibilite": "brume",
+          "vent": "brise-fraiche"
+        },
+        "windFrom": "est",
+        "daysToEvent": 3,
+        "daysAtSea": 0,
+        "step": "progression",
+        "lines": [],
+        "milesToday": 37,
+        "sailsDown": true,
+        "lighthouseDR": 1,
+        "minorDrift": true,
+        "entries": [
+          {
+            "id": "x",
+            "label": "x"
+          }
+        ]
+      }
+    },
+    "travelRecap": null,
+    "party": [
+      {
+        "id": "pregen-101",
+        "name": "Sigmund Reikhardt",
+        "kind": "hero",
+        "species": "humains-reiklander",
+        "career": "soldat",
+        "groups": [
+          "humain",
+          "soldat"
+        ],
+        "size": "moyenne",
+        "characteristics": {
+          "capacite-de-combat": 32,
+          "capacite-de-tir": 33,
+          "force": 31,
+          "endurance": 38,
+          "initiative": 24,
+          "agilite": 32,
+          "dexterite": 33,
+          "intelligence": 27,
+          "force-mentale": 27,
+          "sociabilite": 23
+        },
+        "wounds": {
+          "current": 11,
+          "max": 11,
+          "base": 11
+        },
+        "advantage": 0,
+        "conditions": [],
+        "weapons": [
+          {
+            "name": "Arme simple",
+            "type": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 4
+            },
+            "reach": "Moyenne",
+            "range": null,
+            "qualities": [],
+            "subType": "base",
+            "reload": 0,
+            "shape": "epee",
+            "hands": 1,
+            "hand": "main",
+            "uid": "it-3"
+          },
+          {
+            "name": "Mains nues",
+            "type": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 0
+            },
+            "qualities": [
+              {
+                "id": "inoffensive"
+              }
+            ],
+            "hands": 1,
+            "reach": "Personnelle",
+            "subType": "bagarre",
+            "uid": "w-it-10",
+            "builtinId": "mains-nues",
+            "hand": "main"
+          }
+        ],
+        "armour": {
+          "tete": 0,
+          "brasG": 0,
+          "brasD": 0,
+          "corps": 2,
+          "jambeG": 0,
+          "jambeD": 0
+        },
+        "items": [
+          {
+            "uid": "it-2",
+            "trappingId": "vetements",
+            "name": "Vêtements",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": false,
+            "desc": null,
+            "subType": "vetements-et-accessoires"
+          },
+          {
+            "uid": "it-3",
+            "trappingId": "arme-simple",
+            "name": "Arme simple",
+            "kind": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 4
+            },
+            "reach": "Moyenne",
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": true,
+            "shape": "epee",
+            "desc": "Le terme « Arme simple » est utilisé pour décrire un certain nombre d'armes de base qui, bien que différentes, sont considérées comme étant effectivement les mêmes pour le jeu, y compris les épées, les haches, les marteaux, les masses, les lances courtes etc. ",
+            "subType": "base",
+            "hands": 1
+          },
+          {
+            "uid": "it-4",
+            "trappingId": "dague",
+            "name": "Dague",
+            "kind": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 2
+            },
+            "reach": "Très courte",
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "shape": "dague",
+            "desc": null,
+            "subType": "base",
+            "hands": 1
+          },
+          {
+            "uid": "it-5",
+            "trappingId": "bourse",
+            "name": "Bourse",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "desc": null,
+            "subType": "sacs-et-contenants",
+            "container": {
+              "capacity": 1
+            }
+          },
+          {
+            "uid": "it-6",
+            "trappingId": "dague",
+            "name": "Dague",
+            "kind": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 2
+            },
+            "reach": "Très courte",
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "shape": "dague",
+            "desc": null,
+            "subType": "base",
+            "hands": 1
+          },
+          {
+            "uid": "it-7",
+            "trappingId": "plastron-de-cuir",
+            "name": "Plastron de cuir",
+            "kind": "armor",
+            "reach": null,
+            "range": null,
+            "qualities": [
+              {
+                "id": "points-faibles"
+              }
+            ],
+            "pa": 2,
+            "locs": [
+              "corps"
+            ],
+            "enc": 2,
+            "equipped": true,
+            "desc": null,
+            "subType": "cuir-bouilli"
+          },
+          {
+            "uid": "it-8",
+            "trappingId": "uniforme",
+            "name": "Uniforme",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": false,
+            "desc": null,
+            "subType": "vetements-et-accessoires"
+          }
+        ],
+        "skills": [
+          {
+            "skillId": "athletisme",
+            "characteristic": "agilite",
+            "advances": 5
+          },
+          {
+            "skillId": "calme",
+            "characteristic": "force-mentale",
+            "advances": 10
+          },
+          {
+            "skillId": "corps-a-corps",
+            "spec": "base",
+            "characteristic": "capacite-de-combat",
+            "advances": 8
+          },
+          {
+            "skillId": "escalade",
+            "characteristic": "force",
+            "advances": 5
+          },
+          {
+            "skillId": "esquive",
+            "characteristic": "agilite",
+            "advances": 5
+          },
+          {
+            "skillId": "langue",
+            "spec": "bataille",
+            "characteristic": "intelligence",
+            "advances": 5
+          },
+          {
+            "skillId": "musicien",
+            "spec": "tambour",
+            "characteristic": "dexterite",
+            "advances": 5
+          },
+          {
+            "skillId": "resistance",
+            "characteristic": "endurance",
+            "advances": 5
+          },
+          {
+            "skillId": "charme",
+            "characteristic": "sociabilite",
+            "advances": 5
+          },
+          {
+            "skillId": "commandement",
+            "characteristic": "sociabilite",
+            "advances": 5
+          },
+          {
+            "skillId": "evaluation",
+            "characteristic": "intelligence",
+            "advances": 3
+          },
+          {
+            "skillId": "langue",
+            "spec": "bretonnien",
+            "characteristic": "intelligence",
+            "advances": 3
+          }
+        ],
+        "talents": [
+          {
+            "talentId": "perspicace",
+            "times": 1
+          },
+          {
+            "talentId": "destinee",
+            "times": 1
+          },
+          {
+            "talentId": "sens-aiguise",
+            "spec": "ouie",
+            "times": 1
+          },
+          {
+            "talentId": "costaud",
+            "times": 1
+          },
+          {
+            "talentId": "affinite-avec-les-animaux",
+            "times": 1
+          },
+          {
+            "talentId": "guerrier-ne",
+            "times": 1
+          }
+        ],
+        "movement": 4,
+        "fate": 4,
+        "fortune": 4,
+        "resilience": 2,
+        "resolve": 2,
+        "motivation": "Devoir",
+        "details": {
+          "ambitionShort": "Survivre à la prochaine campagne",
+          "ambitionLong": "Commander sa propre compagnie"
+        },
+        "xp": 0,
+        "charAdvances": {
+          "capacite-de-combat": 2,
+          "endurance": 2,
+          "force-mentale": 1
+        },
+        "careerLevel": 1,
+        "careerSlotChoices": {
+          "soldat": {
+            "1:skill:6:Musicien": "musicien|tambour"
+          }
+        },
+        "loadouts": [
+          {
+            "id": "lo-1",
+            "main": "it-3"
+          },
+          {
+            "id": "lo-2"
+          }
+        ],
+        "activeLoadoutId": "lo-1",
+        "encumbrance": 4,
+        "appearance": {
+          "species": "humains-reiklander",
+          "sex": "M",
+          "build": 0.5
+        }
+      },
+      {
+        "id": "pregen-202",
+        "name": "Grunni Pierre-de-Fer",
+        "kind": "hero",
+        "species": "nains",
+        "career": "tueur",
+        "groups": [
+          "nain"
+        ],
+        "size": "moyenne",
+        "characteristics": {
+          "capacite-de-combat": 44,
+          "capacite-de-tir": 28,
+          "force": 29,
+          "endurance": 39,
+          "initiative": 25,
+          "agilite": 19,
+          "dexterite": 44,
+          "intelligence": 29,
+          "force-mentale": 53,
+          "sociabilite": 16
+        },
+        "wounds": {
+          "current": 13,
+          "max": 13,
+          "base": 13
+        },
+        "advantage": 0,
+        "conditions": [],
+        "weapons": [
+          {
+            "name": "Arme simple",
+            "type": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 4
+            },
+            "reach": "Moyenne",
+            "range": null,
+            "qualities": [],
+            "subType": "base",
+            "reload": 0,
+            "shape": "epee",
+            "hands": 1,
+            "hand": "main",
+            "uid": "it-12"
+          },
+          {
+            "name": "Mains nues",
+            "type": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 0
+            },
+            "qualities": [
+              {
+                "id": "inoffensive"
+              }
+            ],
+            "hands": 1,
+            "reach": "Personnelle",
+            "subType": "bagarre",
+            "uid": "w-it-10",
+            "builtinId": "mains-nues",
+            "hand": "main"
+          }
+        ],
+        "armour": {
+          "tete": 0,
+          "brasG": 0,
+          "brasD": 0,
+          "corps": 0,
+          "jambeG": 0,
+          "jambeD": 0
+        },
+        "items": [
+          {
+            "uid": "it-11",
+            "trappingId": "vetements",
+            "name": "Vêtements",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": false,
+            "desc": null,
+            "subType": "vetements-et-accessoires"
+          },
+          {
+            "uid": "it-12",
+            "trappingId": "arme-simple",
+            "name": "Arme simple",
+            "kind": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 4
+            },
+            "reach": "Moyenne",
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": true,
+            "shape": "epee",
+            "desc": "Le terme « Arme simple » est utilisé pour décrire un certain nombre d'armes de base qui, bien que différentes, sont considérées comme étant effectivement les mêmes pour le jeu, y compris les épées, les haches, les marteaux, les masses, les lances courtes etc. ",
+            "subType": "base",
+            "hands": 1
+          },
+          {
+            "uid": "it-13",
+            "trappingId": "dague",
+            "name": "Dague",
+            "kind": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 2
+            },
+            "reach": "Très courte",
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "shape": "dague",
+            "desc": null,
+            "subType": "base",
+            "hands": 1
+          },
+          {
+            "uid": "it-14",
+            "trappingId": "bourse",
+            "name": "Bourse",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "desc": null,
+            "subType": "sacs-et-contenants",
+            "container": {
+              "capacity": 1
+            }
+          }
+        ],
+        "skills": [
+          {
+            "skillId": "calme",
+            "characteristic": "force-mentale",
+            "advances": 10
+          },
+          {
+            "skillId": "corps-a-corps",
+            "spec": "base",
+            "characteristic": "capacite-de-combat",
+            "advances": 10
+          },
+          {
+            "skillId": "esquive",
+            "characteristic": "agilite",
+            "advances": 5
+          },
+          {
+            "skillId": "guerison",
+            "characteristic": "intelligence",
+            "advances": 5
+          },
+          {
+            "skillId": "pari",
+            "characteristic": "intelligence",
+            "advances": 5
+          },
+          {
+            "skillId": "resistance",
+            "characteristic": "endurance",
+            "advances": 5
+          },
+          {
+            "skillId": "resistance-a-l-alcool",
+            "characteristic": "endurance",
+            "advances": 5
+          },
+          {
+            "skillId": "savoir",
+            "spec": "trolls",
+            "characteristic": "intelligence",
+            "advances": 5
+          },
+          {
+            "skillId": "divertissement",
+            "spec": "narration",
+            "characteristic": "sociabilite",
+            "advances": 5
+          },
+          {
+            "skillId": "evaluation",
+            "characteristic": "intelligence",
+            "advances": 3
+          },
+          {
+            "skillId": "intimidation",
+            "characteristic": "force",
+            "advances": 3
+          },
+          {
+            "skillId": "langue",
+            "spec": "khazalid",
+            "characteristic": "intelligence",
+            "advances": 3
+          }
+        ],
+        "talents": [
+          {
+            "talentId": "costaud",
+            "times": 1
+          },
+          {
+            "talentId": "determine",
+            "times": 1
+          },
+          {
+            "talentId": "lire-ecrire",
+            "times": 1
+          },
+          {
+            "talentId": "resistance-a-la-magie",
+            "times": 1
+          },
+          {
+            "talentId": "vision-nocturne",
+            "times": 1
+          },
+          {
+            "talentId": "frenesie",
+            "times": 1
+          }
+        ],
+        "movement": 3,
+        "fate": 1,
+        "fortune": 1,
+        "resilience": 3,
+        "resolve": 3,
+        "motivation": "Honte (Malédiction du Tueur)",
+        "details": {
+          "ambitionShort": "Trouver une mort digne au combat",
+          "ambitionLong": "Effacer sa honte par un acte légendaire"
+        },
+        "xp": 0,
+        "charAdvances": {
+          "capacite-de-combat": 2,
+          "force": 2,
+          "force-mentale": 1
+        },
+        "careerLevel": 1,
+        "loadouts": [
+          {
+            "id": "lo-3",
+            "main": "it-12"
+          },
+          {
+            "id": "lo-4"
+          }
+        ],
+        "activeLoadoutId": "lo-3",
+        "encumbrance": 2,
+        "appearance": {
+          "species": "nains",
+          "sex": "M",
+          "build": 0.5
+        }
+      },
+      {
+        "id": "pregen-707",
+        "name": "Wilhelmina Faust",
+        "kind": "hero",
+        "species": "humains-reiklander",
+        "career": "sorcier",
+        "groups": [
+          "humain"
+        ],
+        "size": "moyenne",
+        "characteristics": {
+          "capacite-de-combat": 34,
+          "capacite-de-tir": 32,
+          "force": 24,
+          "endurance": 35,
+          "initiative": 31,
+          "agilite": 29,
+          "dexterite": 37,
+          "intelligence": 34,
+          "force-mentale": 30,
+          "sociabilite": 35
+        },
+        "wounds": {
+          "current": 11,
+          "max": 11,
+          "base": 11
+        },
+        "advantage": 0,
+        "conditions": [],
+        "weapons": [
+          {
+            "name": "Bâton de combat",
+            "type": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 4
+            },
+            "reach": "Longue",
+            "range": null,
+            "qualities": [
+              {
+                "id": "assommante"
+              },
+              {
+                "id": "defensive"
+              }
+            ],
+            "subType": "armes-d-hast",
+            "reload": 0,
+            "shape": "baton",
+            "hands": 2,
+            "hand": "main",
+            "uid": "it-22"
+          },
+          {
+            "name": "Mains nues",
+            "type": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 0
+            },
+            "qualities": [
+              {
+                "id": "inoffensive"
+              }
+            ],
+            "hands": 1,
+            "reach": "Personnelle",
+            "subType": "bagarre",
+            "uid": "w-it-10",
+            "builtinId": "mains-nues",
+            "hand": "main"
+          }
+        ],
+        "armour": {
+          "tete": 0,
+          "brasG": 0,
+          "brasD": 0,
+          "corps": 0,
+          "jambeG": 0,
+          "jambeD": 0
+        },
+        "items": [
+          {
+            "uid": "it-15",
+            "trappingId": "vetements",
+            "name": "Vêtements",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": false,
+            "desc": null,
+            "subType": "vetements-et-accessoires"
+          },
+          {
+            "uid": "it-16",
+            "trappingId": "dague",
+            "name": "Dague",
+            "kind": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 2
+            },
+            "reach": "Très courte",
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "shape": "dague",
+            "desc": null,
+            "subType": "base",
+            "hands": 1
+          },
+          {
+            "uid": "it-17",
+            "trappingId": "bourse",
+            "name": "Bourse",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "desc": null,
+            "subType": "sacs-et-contenants",
+            "container": {
+              "capacity": 1
+            }
+          },
+          {
+            "uid": "it-18",
+            "trappingId": "besace",
+            "name": "Besace",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": false,
+            "desc": "Considéré comme « porté » si vous le mettez en bandoulière.",
+            "subType": "sacs-et-contenants",
+            "container": {
+              "capacity": 2
+            }
+          },
+          {
+            "uid": "it-19",
+            "trappingId": "necessaire-d-ecriture",
+            "name": "Nécessaire d'écriture",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "desc": "Renferme une plume d'oie, un encrier et du papier buvard.",
+            "subType": "outils-et-necessaires"
+          },
+          {
+            "uid": "it-20",
+            "trappingId": "feuille-de-parchemin",
+            "name": "Feuille de parchemin",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "desc": null,
+            "subType": "livres-et-documents"
+          },
+          {
+            "uid": "it-21",
+            "trappingId": "grimoire",
+            "name": "Grimoire",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": false,
+            "desc": "Les grimoires de Sorts sont en général rédigés par des Sorciers, et leurs couvertures sont souvent fermées par des serrures. Parfois, les grimoires sont même protégés par des alarmes ou des protections magiques. Transporter un grimoire de Sorts peut être taxé d'hérésie à moins que le propriétaire Sorcier ne soit diplômé de l'un des Collèges de Magie.",
+            "subType": "livres-et-documents"
+          },
+          {
+            "uid": "it-22",
+            "trappingId": "baton-de-combat",
+            "name": "Bâton de combat",
+            "kind": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 4
+            },
+            "reach": "Longue",
+            "range": null,
+            "qualities": [
+              {
+                "id": "assommante"
+              },
+              {
+                "id": "defensive"
+              }
+            ],
+            "enc": 2,
+            "equipped": true,
+            "shape": "baton",
+            "desc": null,
+            "subType": "armes-d-hast",
+            "hands": 2
+          }
+        ],
+        "skills": [
+          {
+            "skillId": "corps-a-corps",
+            "spec": "armes-d-hast",
+            "characteristic": "capacite-de-combat",
+            "advances": 5
+          },
+          {
+            "skillId": "corps-a-corps",
+            "spec": "base",
+            "characteristic": "capacite-de-combat",
+            "advances": 8
+          },
+          {
+            "skillId": "esquive",
+            "characteristic": "agilite",
+            "advances": 5
+          },
+          {
+            "skillId": "focalisation",
+            "spec": "feu",
+            "characteristic": "force-mentale",
+            "advances": 5
+          },
+          {
+            "skillId": "intuition",
+            "characteristic": "initiative",
+            "advances": 5
+          },
+          {
+            "skillId": "langue",
+            "spec": "magick",
+            "characteristic": "intelligence",
+            "advances": 5
+          },
+          {
+            "skillId": "perception",
+            "characteristic": "initiative",
+            "advances": 5
+          },
+          {
+            "skillId": "savoir",
+            "spec": "magie",
+            "characteristic": "intelligence",
+            "advances": 5
+          },
+          {
+            "skillId": "calme",
+            "characteristic": "force-mentale",
+            "advances": 5
+          },
+          {
+            "skillId": "charme",
+            "characteristic": "sociabilite",
+            "advances": 5
+          },
+          {
+            "skillId": "commandement",
+            "characteristic": "sociabilite",
+            "advances": 5
+          },
+          {
+            "skillId": "evaluation",
+            "characteristic": "intelligence",
+            "advances": 3
+          },
+          {
+            "skillId": "langue",
+            "spec": "bretonnien",
+            "characteristic": "intelligence",
+            "advances": 3
+          }
+        ],
+        "talents": [
+          {
+            "talentId": "perspicace",
+            "times": 1
+          },
+          {
+            "talentId": "destinee",
+            "times": 1
+          },
+          {
+            "talentId": "lire-ecrire",
+            "times": 1
+          },
+          {
+            "talentId": "ambidextre",
+            "times": 1
+          },
+          {
+            "talentId": "doue-en-calcul",
+            "times": 1
+          },
+          {
+            "talentId": "magie-mineure",
+            "times": 1
+          }
+        ],
+        "movement": 4,
+        "fate": 4,
+        "fortune": 4,
+        "resilience": 2,
+        "resolve": 2,
+        "motivation": "Connaissance",
+        "details": {
+          "ambitionShort": "Maîtriser un nouveau sortilège",
+          "ambitionLong": "Percer les secrets des Vents de Magie"
+        },
+        "xp": 0,
+        "charAdvances": {
+          "capacite-de-combat": 2,
+          "intelligence": 2,
+          "force-mentale": 1
+        },
+        "careerLevel": 1,
+        "careerSlotChoices": {
+          "sorcier": {
+            "1:skill:3:Focalisation": "focalisation|feu"
+          }
+        },
+        "loadouts": [
+          {
+            "id": "lo-5",
+            "main": "it-22"
+          },
+          {
+            "id": "lo-6"
+          }
+        ],
+        "activeLoadoutId": "lo-5",
+        "encumbrance": 5,
+        "spells": [
+          "flechette",
+          "choc"
+        ],
+        "appearance": {
+          "species": "humains-reiklander",
+          "sex": "F",
+          "build": 0.42
+        }
+      },
+      {
+        "id": "pregen-808",
+        "name": "Frère Anselm",
+        "kind": "hero",
+        "species": "humains-reiklander",
+        "career": "pretre",
+        "groups": [
+          "humain",
+          "sigmarite"
+        ],
+        "size": "moyenne",
+        "characteristics": {
+          "capacite-de-combat": 37,
+          "capacite-de-tir": 33,
+          "force": 24,
+          "endurance": 29,
+          "initiative": 33,
+          "agilite": 36,
+          "dexterite": 33,
+          "intelligence": 31,
+          "force-mentale": 35,
+          "sociabilite": 28
+        },
+        "wounds": {
+          "current": 9,
+          "max": 9,
+          "base": 9
+        },
+        "advantage": 0,
+        "conditions": [],
+        "weapons": [
+          {
+            "name": "Dague",
+            "type": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 2
+            },
+            "reach": "Très courte",
+            "range": null,
+            "qualities": [],
+            "subType": "base",
+            "reload": 0,
+            "shape": "dague",
+            "hands": 1,
+            "hand": "main",
+            "uid": "it-24"
+          },
+          {
+            "name": "Mains nues",
+            "type": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 0
+            },
+            "qualities": [
+              {
+                "id": "inoffensive"
+              }
+            ],
+            "hands": 1,
+            "reach": "Personnelle",
+            "subType": "bagarre",
+            "uid": "w-it-10",
+            "builtinId": "mains-nues",
+            "hand": "main"
+          }
+        ],
+        "armour": {
+          "tete": 0,
+          "brasG": 0,
+          "brasD": 0,
+          "corps": 0,
+          "jambeG": 0,
+          "jambeD": 0
+        },
+        "items": [
+          {
+            "uid": "it-23",
+            "trappingId": "vetements",
+            "name": "Vêtements",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": false,
+            "desc": null,
+            "subType": "vetements-et-accessoires"
+          },
+          {
+            "uid": "it-24",
+            "trappingId": "dague",
+            "name": "Dague",
+            "kind": "melee",
+            "damage": {
+              "plusBF": true,
+              "flat": 2
+            },
+            "reach": "Très courte",
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": true,
+            "shape": "dague",
+            "desc": null,
+            "subType": "base",
+            "hands": 1
+          },
+          {
+            "uid": "it-25",
+            "trappingId": "bourse",
+            "name": "Bourse",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "desc": null,
+            "subType": "sacs-et-contenants",
+            "container": {
+              "capacity": 1
+            }
+          },
+          {
+            "uid": "it-26",
+            "trappingId": "besace",
+            "name": "Besace",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": false,
+            "desc": "Considéré comme « porté » si vous le mettez en bandoulière.",
+            "subType": "sacs-et-contenants",
+            "container": {
+              "capacity": 2
+            }
+          },
+          {
+            "uid": "it-27",
+            "trappingId": "necessaire-d-ecriture",
+            "name": "Nécessaire d'écriture",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "desc": "Renferme une plume d'oie, un encrier et du papier buvard.",
+            "subType": "outils-et-necessaires"
+          },
+          {
+            "uid": "it-28",
+            "trappingId": "feuille-de-parchemin",
+            "name": "Feuille de parchemin",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "desc": null,
+            "subType": "livres-et-documents"
+          },
+          {
+            "uid": "it-29",
+            "trappingId": "symbole-religieux",
+            "name": "Symbole religieux",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 0,
+            "equipped": false,
+            "desc": null,
+            "subType": "vetements-et-accessoires"
+          },
+          {
+            "uid": "it-30",
+            "trappingId": "robes",
+            "name": "Robes",
+            "kind": "misc",
+            "reach": null,
+            "range": null,
+            "qualities": [],
+            "enc": 1,
+            "equipped": false,
+            "desc": null,
+            "subType": "vetements-et-accessoires"
+          }
+        ],
+        "skills": [
+          {
+            "skillId": "athletisme",
+            "characteristic": "agilite",
+            "advances": 5
+          },
+          {
+            "skillId": "calme",
+            "characteristic": "force-mentale",
+            "advances": 10
+          },
+          {
+            "skillId": "intuition",
+            "characteristic": "initiative",
+            "advances": 5
+          },
+          {
+            "skillId": "perception",
+            "characteristic": "initiative",
+            "advances": 5
+          },
+          {
+            "skillId": "priere",
+            "characteristic": "sociabilite",
+            "advances": 5
+          },
+          {
+            "skillId": "recherche",
+            "characteristic": "intelligence",
+            "advances": 5
+          },
+          {
+            "skillId": "resistance",
+            "characteristic": "endurance",
+            "advances": 5
+          },
+          {
+            "skillId": "savoir",
+            "spec": "theologie",
+            "characteristic": "intelligence",
+            "advances": 5
+          },
+          {
+            "skillId": "charme",
+            "characteristic": "sociabilite",
+            "advances": 5
+          },
+          {
+            "skillId": "commandement",
+            "characteristic": "sociabilite",
+            "advances": 5
+          },
+          {
+            "skillId": "corps-a-corps",
+            "spec": "base",
+            "characteristic": "capacite-de-combat",
+            "advances": 3
+          },
+          {
+            "skillId": "evaluation",
+            "characteristic": "intelligence",
+            "advances": 3
+          },
+          {
+            "skillId": "langue",
+            "spec": "bretonnien",
+            "characteristic": "intelligence",
+            "advances": 3
+          }
+        ],
+        "talents": [
+          {
+            "talentId": "perspicace",
+            "times": 1
+          },
+          {
+            "talentId": "destinee",
+            "times": 1
+          },
+          {
+            "talentId": "ame-pure",
+            "times": 1
+          },
+          {
+            "talentId": "sens-de-l-orientation",
+            "times": 1
+          },
+          {
+            "talentId": "bonnes-jambes",
+            "times": 1
+          },
+          {
+            "talentId": "beni",
+            "spec": "sigmar",
+            "times": 1
+          }
+        ],
+        "movement": 4,
+        "fate": 4,
+        "fortune": 4,
+        "resilience": 2,
+        "resolve": 2,
+        "motivation": "Foi",
+        "details": {
+          "ambitionShort": "Protéger les fidèles sur la route",
+          "ambitionLong": "Bâtir un temple à la gloire de Sigmar"
+        },
+        "xp": 0,
+        "charAdvances": {
+          "endurance": 2,
+          "agilite": 2,
+          "force-mentale": 1
+        },
+        "careerLevel": 1,
+        "spells": [
+          "benediction-de-guerison",
+          "benediction-de-bataille"
+        ],
+        "careerSlotChoices": {
+          "pretre": {
+            "1:talent:1:Béni": "beni|sigmar"
+          }
+        },
+        "loadouts": [
+          {
+            "id": "lo-7",
+            "main": "it-24"
+          },
+          {
+            "id": "lo-8"
+          }
+        ],
+        "activeLoadoutId": "lo-7",
+        "encumbrance": 3,
+        "appearance": {
+          "species": "humains-reiklander",
+          "sex": "M",
+          "build": 0.5
+        }
+      }
+    ],
+    "scene": {
+      "id": "port-a",
+      "nom": "Port de Salzenmund",
+      "dimensions": {
+        "w": 2,
+        "h": 2
+      },
+      "layers": [
+        {
+          "z": 0,
+          "tiles": [
+            "sol",
+            "sol",
+            "sol",
+            "sol"
+          ]
+        }
+      ],
+      "entities": [],
+      "dialogues": [],
+      "triggers": []
+    },
+    "mode": "exploration",
+    "partyWiped": false,
+    "camRot": 0,
+    "camEdge": false,
+    "facing": {},
+    "zoom": 1,
+    "viewMode": "iso",
+    "povActive": false,
+    "debugLabels": false,
+    "camPan": {
+      "x": 0,
+      "y": 0
+    },
+    "inspectEnabled": false,
+    "inspectId": null,
+    "hoverCombatantId": null,
+    "combatCursor": null,
+    "hovered": null,
+    "keyOverrides": {},
+    "partyPos": {
+      "x": 0,
+      "y": 0
+    },
+    "lightLevel": null,
+    "flags": {},
+    "objectives": [],
+    "explored": {},
+    "journal": [
+      "Appareillage de Salzenmund vers Erengrad."
+    ],
+    "dialogue": null,
+    "merchant": null,
+    "merchantStocks": {},
+    "tavernGames": null,
+    "battle": null,
+    "campaignSceneId": null,
+    "money": {
+      "gold": 0,
+      "silver": 0,
+      "brass": 0
+    },
+    "pendingTest": null,
+    "pendingCorruption": null,
+    "pendingBargain": null,
+    "pendingAppraise": null,
+    "pendingAttack": null,
+    "pendingHandGate": null,
+    "pendingSiegeAim": null,
+    "actorAim": null,
+    "actorMove": null,
+    "actorAoe": null,
+    "hoverDelta": null,
+    "pendingReload": null,
+    "pendingStateRecovery": null,
+    "pendingSteamSave": null,
+    "pendingDefense": null,
+    "pendingRenounce": null,
+    "pendingMountTarget": null,
+    "pendingDisengage": null,
+    "pendingAuContact": null,
+    "pendingGrapple": null,
+    "pendingInteract": null,
+    "pendingCast": null,
+    "pendingCounterspell": null,
+    "pendingExtendedTest": null,
+    "pendingForceDoor": null,
+    "pendingCascade": null,
+    "pursuit": null,
+    "sessionEndOpen": false,
+    "pendingCastOpposition": null,
+    "pendingHeal": null,
+    "pendingSurgery": null,
+    "medic": null,
+    "pendingRest": null,
+    "pendingCouncil": null,
+    "pendingCleave": null,
+    "pendingDualStrike": null,
+    "pendingReveals": [],
+    "pendingLogQueue": [],
+    "scheduledEffects": [],
+    "pendingTrample": null,
+    "pendingBattement": null,
+    "pendingDistraire": null,
+    "pendingManeuver": null,
+    "pendingRun": null,
+    "pendingShipManeuver": null,
+    "pendingShipBattery": null,
+    "pendingCrewTest": {
+      "shipId": "vehicle-cogue",
+      "testTypeId": "progression",
+      "moraleScore": 68,
+      "participants": [],
+      "voyage": {
+        "kind": "progression",
+        "shipName": "Cogue"
+      }
+    },
+    "pendingShanty": null,
+    "pendingApproach": null,
+    "pendingWard": null,
+    "pendingFocus": null,
+    "pendingDispel": null,
+    "pendingFrenzy": null,
+    "pendingRoundStart": null,
+    "preemptAiming": null,
+    "pendingFateSave": null,
+    "pendingVictory": null,
+    "pendingLoot": null,
+    "document": null,
+    "previousScene": null,
+    "port": null,
+    "pendingSeaActivities": null,
+    "pendingManannPriest": null,
+    "pendingShoreLeave": null,
+    "editingHeroId": null,
+    "interlude": null,
+    "bank": [],
+    "pendingOrders": [],
+    "pendingActivity": null,
+    "massBattle": null,
+    "net": {
+      "mode": "local",
+      "mySeat": 0,
+      "roomCode": null,
+      "seatNames": {},
+      "presence": {},
+      "connection": "ok",
+      "hostAway": false,
+      "ownership": {},
+      "slots": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "rules": {}
+}

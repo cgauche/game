@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { makePregens } from '../data/pregens';
 import { beginShipwreck } from './shipwreck';
-import { runSeaDays, buildSeaPlan } from './seaVoyageFlow';
+import { runSeaDay, buildSeaPlan } from './seaVoyageFlow';
 import { checkBattleOver } from './combatFlow';
 import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById } from '../data';
@@ -172,13 +172,13 @@ describe('beginShipwreck — repli IA/rafale (aucun pilote humain à bord) : inl
 describe('détection au voyage — coque à 0 → naufrage', () => {
   beforeEach(freshState);
 
-  it('runSeaDays intercepte une coque coulée avant de dérouler la journée', () => {
+  it('runSeaDay intercepte une coque coulée avant de dérouler la journée', () => {
     setRule('sea-shipwreck-swim', 'intermediaire');
     set({ party: get().party.map((h) => swim(h, 200)) } as never);
     const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
     plan.vehicle!.wounds.current = 0; // avarie (Tourbillon/Collision/usure) → coque coulée
     set({ travelPlan: plan });
-    runSeaDays(get, set);
+    runSeaDay(get, set);
     drainSwimCascade();
     expect(get().vessel).toBeNull();               // séquence de naufrage jouée
     expect(get().document?.title).toBe('Naufrage');

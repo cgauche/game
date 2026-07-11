@@ -48,13 +48,12 @@ function freshState() {
   } as never);
 }
 
-/** Déroule la journée maritime jusqu'à une SUSPENSION (halte, Activités en mer), en roulant tous les
- *  Tests d'équipage rencontrés — garde-fou 40 modales (crises/événements possibles). Drive aussi les
- *  étapes `pendingCascade` mono du seam de jet (#275 Ronde 1 — Forcer le rythme/Prière, `klass:'hero-test'`
- *  surfacées en modale influençable pour un groupe piloté-humain, cadence manuelle) : leur applier
- *  reprend `runSeaDays` en DIFFÉRÉ (`setTimeout`, cf. `seaVoyageFlow.ts` — évite qu'`advanceCascade`
- *  n'écrase une cascade fraîchement rouverte pendant son propre `commitStep`) → `await tick()` entre
- *  deux pas pour laisser ce `setTimeout` s'exécuter, comme un vrai clic UI l'espacerait. */
+/** Déroule la journée maritime jusqu'à une SUSPENSION (halte, Activités en mer) — la journée est
+ *  désormais UNE cascade `purpose:'travelDay'` (#275 Ronde 2 cran 3) : chaque étape est soit MONO
+ *  (Forcer le rythme/Prière, `klass:'hero-test'`) soit À PARTICIPANTS (batch, Tests d'équipage MDG
+ *  ch.14 — `cascadeCrewRoll` par contributeur). Garde-fou 40 pas (crises/événements possibles).
+ *  `await tick()` laisse s'exécuter le `setTimeout` de reprise d'un applier surfacé isolément
+ *  (Ouragan/Prière — `seaVoyageFlow.ts`), comme un vrai clic UI l'espacerait. */
 const tick = () => new Promise<void>((r) => setTimeout(r, 0));
 
 async function runOneSeaDay() {
@@ -63,16 +62,13 @@ async function runOneSeaDay() {
     const casc = get().pendingCascade;
     if (casc) {
       const cur = casc.participants[casc.cursor];
-      if (cur && !cur.result) get().cascadeRoll(cur.id);
+      if (cur?.participants) { for (const part of cur.participants) if (!part.result) get().cascadeCrewRoll(part.id); }
+      else if (cur && !cur.result) get().cascadeRoll(cur.id);
       get().cascadeNext();
       await tick();
       continue;
     }
-    const p = get().pendingCrewTest;
-    if (!p) break;
-    for (const part of p.participants) if (!part.result) get().crewTestRoll(part.id);
-    get().crewTestConfirm();
-    if (get().pendingCrewTest?.resolved) get().crewTestContinue(); // dénouement SUR PLACE → « Continuer »
+    break;
   }
 }
 

@@ -1010,8 +1010,8 @@ export interface Combatant {
    *  ce Test… le MJ pourra imposer de -1 à -5 DR sur le Test d'équipage ») — AUTHORÉ par le scénario sur le
    *  Combattant-coque (le contenu est de la donnée, pas du code) ; lu CLAMPÉ à [-5, 0] par `shipSaboteurDR`
    *  et appliqué au total du Test d'équipage EN COMBAT (`combatSlice.openCrewTestPending`) comme du Test
-   *  d'équipage de VOYAGE (Progression, Orientation… `seaVoyageFlow.openVoyageCrewTest`, #214) — en voyage,
-   *  la valeur vient de `CampaignVessel.saboteurDR`, recopiée sur la coque de trajet (`voyageShip`). */
+   *  d'équipage de VOYAGE (Progression, Orientation… `seaVoyageFlow.buildVoyageCrewStep`, #214) — en
+   *  voyage, la valeur vient de `CampaignVessel.saboteurDR`, recopiée sur la coque de trajet (`voyageShip`). */
   saboteurDR?: number;
   /** Coque/navire : Encombrement de la CARGAISON en cale (MDG 12 l.68-75) — recopié de `CampaignVessel.cargo`
    *  sur la coque de trajet/combat, source de la SURCHARGE (−M/−DR Manœuvre par palier, `cargoOverload`).

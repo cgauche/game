@@ -461,9 +461,10 @@ export interface ShipManeuverParticipant extends RollParticipant {
   /** Marin déjà engagé dans un AUTRE Test d'équipage ce Round → cumul à +2 crans de Difficulté (Manque de bras, l.53). */
   cumul?: boolean;
   /** Sens NARRATIVEMENT sollicité par CE Test précis (ex. Vigie du phare, MDG ch.13 l.337 — visuel), posé
-   *  à l'OUVERTURE du pending par l'appelant qui connaît le contexte (`openVoyageCrewTest`, kind `'phare'`).
-   *  Restreint les `skillMod` sense-scopés (Surdité, LDB 18) via `crewRoleValue`/`testValue`. Absent pour
-   *  les Tests d'équipage sans sens narratif dédié (manœuvre, bordée…) = comportement historique. */
+   *  À LA CONSTRUCTION de l'étape par l'appelant qui connaît le contexte (`buildVoyageCrewStep`, kind
+   *  `'phare'`, `seaVoyageFlow.ts`). Restreint les `skillMod` sense-scopés (Surdité, LDB 18) via
+   *  `crewRoleValue`/`testValue`. Absent pour les Tests d'équipage sans sens narratif dédié
+   *  (manœuvre, bordée…) = comportement historique. */
   sense?: PairedSense;
   result: CrewRoleRoll | null;
 }
@@ -500,11 +501,13 @@ export interface PendingShipManeuver extends MultiPending<ShipManeuverParticipan
   /** Sabotage (MDG ch.14 l.45-47) : −1..−5 DR plats au total du Test d'équipage (`shipSaboteurDR`). */
   extraDR?: number;
 }
-/** TEST D'ÉQUIPAGE GÉNÉRIQUE en combat (MDG ch.14, « Types de Test d'équipage ») — 3ᵉ jumeau de la
+/** TEST D'ÉQUIPAGE GÉNÉRIQUE en COMBAT (MDG ch.14, « Types de Test d'équipage ») — 3ᵉ jumeau de la
  *  manœuvre/bordée : chaque rôle tenu lance SON Test (multi-jets), DR sommés (essentiel ×2) + Moral +
  *  Manque de bras + sabotage. L'ISSUE dépend du type (`crewTestConfirm`) : **Rude épreuve** (l.106-114)
- *  → un total NÉGATIF réduit le Moral d'autant (l.110), PERSISTÉ sur `CampaignVessel.morale`. Les types
- *  de NAVIGATION/VOYAGE (Progression, Poursuite, Perception, Orientation…) réutiliseront CE pending (7b). */
+ *  → un total NÉGATIF réduit le Moral d'autant (l.110), PERSISTÉ sur `CampaignVessel.morale`. Les Tests
+ *  d'équipage de VOYAGE (Progression, Poursuite, Perception, Orientation…) sont désormais des ÉTAPES
+ *  `CascadeStep` À PARTICIPANTS de la cascade du jour (#275 Ronde 2 cran 3, `seaVoyageFlow.ts`) — CE
+ *  pending ne sert plus QU'AU combat (ancien champ `voyage`/`resolved` MORT avec le FSM `sea.step`). */
 export interface PendingCrewTest extends MultiPending<ShipManeuverParticipant> {
   shipId: string;
   /** Type de Test d'équipage (`crew-test-types.json`) — décide des rôles, du rôle essentiel et de l'issue. */
@@ -513,14 +516,6 @@ export interface PendingCrewTest extends MultiPending<ShipManeuverParticipant> {
   moraleScore: number;
   undercrew?: { dr: number; capSuccesMinime: boolean };
   extraDR?: number;
-  /** Test d'équipage de VOYAGE maritime (7b — hors combat) : `kind` = l'issue à résoudre
-   *  (`seaVoyageFlow.resolveVoyageCrewTest`), `shipName` = affichage (la coque vit dans
-   *  `travelPlan.vehicle`, pas dans une bataille). Absent = Test de COMBAT (chemin historique). */
-  voyage?: { kind: string; shipName: string };
-  /** VOYAGE, phase RÉSOLU-EN-ATTENTE : « Appliquer » a résolu le Test (conséquences déjà appliquées,
-   *  `resolveVoyageCrewTest`) ; le dénouement s'affiche SUR PLACE et « Continuer » (`crewTestContinue`)
-   *  SEUL relance la boucle maritime (`runSeaDays`). Le résultat d'un jet s'affiche là où le jet a eu lieu. */
-  resolved?: { lines: string[] };
 }
 /** CHANSON DE MARIN en attente (Talent, MDG 09 l.32-40) : le chanteur choisit sa chanson CONNUE (pré-jet,
  *  OptionChooser — specs du Talent) puis lance son Test de **Divertissement (Chant)** ; sur un succès,

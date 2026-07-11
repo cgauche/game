@@ -12,11 +12,13 @@ import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
 
 /**
- * Modale du TEST D'ÉQUIPAGE GÉNÉRIQUE (MDG ch.14, « Types de Test d'équipage ») — JUMEAU de
+ * Modale du TEST D'ÉQUIPAGE GÉNÉRIQUE en COMBAT (MDG ch.14, « Types de Test d'équipage ») — JUMEAU de
  * `ShipBatteryModal`/`ShipManeuverModal` (flux MULTI, `RollShell` + `RollRow`), paramétrée par le
  * TYPE (`pendingCrewTest.testTypeId`). Chaque rôle tenu = une rangée ; le bandeau somme les DR (essentiel ×2)
  * + Moral + Manque de bras + sabotage. **Rude épreuve** (l.106-114) : un total NÉGATIF réduit le Moral d'autant
- * (l.110) — la perte est prévisualisée dans le bandeau avant « Appliquer ».
+ * (l.110) — la perte est prévisualisée dans le bandeau avant « Appliquer ». Les Tests d'équipage de VOYAGE
+ * (hors combat) sont désormais des étapes de la cascade du jour (#275 Ronde 2 cran 3, `CascadeModal`) —
+ * CETTE modale ne sert plus qu'au combat.
  */
 export function CrewTestModal() {
   const p = useGame((s) => s.pendingCrewTest);
@@ -30,21 +32,20 @@ export function CrewTestModal() {
   const force = useGame((s) => s.crewTestForceSuccess);
   const confirm = useGame((s) => s.crewTestConfirm);
   const cancel = useGame((s) => s.crewTestCancel);
-  const cont = useGame((s) => s.crewTestContinue);
   if (!p) return null;
   const owns = (id: string) => net.mode === 'local' || ownsLocally(useGame.getState(), id);
   return (
     <CrewTestModalView
       p={p} battle={battle} party={party} owns={owns}
       roll={roll} reroll={reroll} bonus={bonus} darkPact={darkPact} force={force}
-      confirm={confirm} cancel={cancel} cont={cont}
+      confirm={confirm} cancel={cancel}
     />
   );
 }
 
 /** Corps PUR (props) — testable en rendu statique sans mocker le store (l'environnement de test est
  *  `node`, sans DOM : les sélecteurs de store ne s'hydratent pas sous `renderToStaticMarkup`). */
-export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus, darkPact, force, confirm, cancel, cont }: {
+export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus, darkPact, force, confirm, cancel }: {
   p: PendingCrewTest;
   battle: BattleState | null;
   party: Combatant[];
@@ -56,13 +57,9 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
   force: (id: string) => void;
   confirm: () => void;
   cancel: () => void;
-  cont: () => void;
 }) {
-  const resolved = p.resolved; // VOYAGE : phase RÉSOLU — dénouement SUR PLACE + « Continuer »
-  // En VOYAGE (7b, hors combat), l'équipage = le groupe et la coque vit dans le plan de traversée —
-  // le nom voyage sur le pending (`voyage.shipName`) ; en combat, le pool est la bataille.
   const pool = battle?.combatants ?? party;
-  const ship = battle?.combatants.find((c) => c.id === p.shipId) ?? (p.voyage ? { name: p.voyage.shipName } : undefined);
+  const ship = battle?.combatants.find((c) => c.id === p.shipId);
   const testType = findCrewTestTypeById(p.testTypeId);
   if (!ship || !testType) return null;
 
@@ -89,7 +86,7 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
       actor,
       row,
       rolled: !!res,
-      interactive: !resolved && part.interactive && owns(part.id),
+      interactive: part.interactive && owns(part.id),
       onRoll: () => roll(part.id),
       rerollable: !!res && canReroll(res.roll > res.target, !!part.rerolled),
       onReroll: () => reroll(part.id),
@@ -102,13 +99,11 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
     }];
   });
 
-  const actions: RollAction[] = resolved
-    ? [{ key: 'continue', label: 'Continuer', onClick: cont, when: 'always' }]
-    : [
-        ...(!p.voyage ? [{ key: 'cancel', label: 'Annuler', onClick: cancel, when: 'always' as const }] : []),
-        ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
-        { key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'always', disabled: !allRolled },
-      ];
+  const actions: RollAction[] = [
+    { key: 'cancel', label: 'Annuler', onClick: cancel, when: 'always' },
+    ...(unrolled.length >= 2 ? [{ key: 'rollAll', label: <><Icon id="nav/dice" size="sm" /> Tout lancer</>, onClick: () => unrolled.forEach((x) => roll(x.id)), when: 'pre' as const }] : []),
+    { key: 'confirm', label: 'Appliquer', onClick: confirm, when: 'always', disabled: !allRolled },
+  ];
 
   return (
     <RollShell
@@ -124,11 +119,8 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
       summary={allRolled
         ? <>DR total <b>{sign(total)}</b> — {total >= 1 ? 'succès' : 'échec'} (l.13).{moraleLoss ? <> Rude épreuve : <b>{moraleLoss}</b> Moral (l.110).</> : null}</>
         : undefined}
-      postRollExtra={resolved
-        ? <div className="cs-denouement">{resolved.lines.map((l, i) => <p key={i} className="rm-note">{l}</p>)}</div>
-        : undefined}
       actions={actions}
-      onCancel={p.voyage ? undefined : cancel}
+      onCancel={cancel}
     />
   );
 }

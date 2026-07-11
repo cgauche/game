@@ -71,7 +71,7 @@ export const COMBAT_INTENTS: ReadonlySet<string> = new Set([
   'battleShipBattery', 'shipBatteryRoll', 'shipBatteryReroll', 'shipBatteryBonusSL', 'shipBatteryForceSuccess',
   'shipBatteryDarkPact', 'shipBatteryConfirm', 'shipBatteryCancel',
   'battleCrewTest', 'crewTestRoll', 'crewTestReroll', 'crewTestBonusSL', 'crewTestForceSuccess', 'crewTestDarkPact',
-  'crewTestConfirm', 'crewTestCancel', 'crewTestContinue',
+  'crewTestConfirm', 'crewTestCancel',
   // Étape-PARTICIPANTS d'une CASCADE (batch multi — Test d'équipage, seam de jet #275 Décision 4 cran 1) :
   // MÊME jet par rôle que `crewTest`, localisé au step COURANT de `pendingCascade` — chaque participant
   // roule SA rangée (routage par possession d'id, comme `crewTest*` ci-dessus).
