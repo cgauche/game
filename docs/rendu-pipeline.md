@@ -109,8 +109,11 @@ byte-identique.
 - **un terrain** : `src/state/terrain/defs/<id>.ts` (`TerrainDef` : `gradient`/`swatch`/`stops`) puis
   `npm run gen`. Décor de terrain : `overlayProp` (billboard de prop, ex. `bois → 'arbre'`, rendu par les
   2 backends via `buildProps`) ou `solidHeightM` (bloc plein, ex. `mur`, dérivé du relief par `buildFloors`).
-- **un prop / décor** : `src/gameIso/catalog/decor/defs/<id>.ts` (`PropViz.render`, SVG boîte 120×150,
-  couleurs via `P.<ton>`) puis `npm run gen`.
+- **un prop / décor** : `src/gameIso/catalog/decor/defs/<id>.ts` (SVG boîte 120×150, couleurs via
+  `P.<ton>`) puis `npm run gen`. **Symétrique** → un seul dessin `PropViz.render`. **Directionnel**
+  (siège, canapé…) → déclare ses trois vues `PropViz.views` (`front`/`profile`/`back`, MÊME patron que
+  `EnginArtDef`) ; la sélection vue + miroir se fait dans la MACHINERIE (`propSvg`, `catalog/decor/index.ts`)
+  via `project(dir, camRot)`, jamais dans la def (garde `defs-directional-guard.test.ts`).
 - **un TYPE d'élément** (au-delà de floor/wall/roof/prop/token) : ajouter le variant à `SceneEl`
   (`builders/types.ts`, discriminé par `kind`) + un builder + le rendu dans CHAQUE backend (affine ET
   POV) + sa profondeur de tri propre (chaque backend calcule la sienne, cf. `floorDepth`/`wallDepth`/…).
