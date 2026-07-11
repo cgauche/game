@@ -23,6 +23,9 @@ tsconfig.tsbuildinfo
 # C'étaient ~1000 fichiers non-suivis qui ralentissaient chaque commande git.
 public/qc/
 
+# Rapports JSON régénérables des lentilles d'audit (#321 — obtainability-graph.mts, set-scan.mjs…)
+scripts/data/.out/
+
 # compagnon visuel brainstorm
 .superpowers/
 
