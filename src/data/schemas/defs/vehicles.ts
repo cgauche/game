@@ -43,6 +43,10 @@ export const schema = z.array(
     source: sourceRefSchema.optional(),
     /** Encombrement de l'objet véhicule (LDB 61) — `null` = ne se porte pas (généralement, diligence…). */
     enc: z.union([z.number(), z.null()]).optional(),
+    /** Chargement (EDOC 07 l.231-243) — Points d'Enc que la section bagages contient, véhicules terrestres
+     *  uniquement. Champ parallèle à `ship.capacity` (même concept, facette `ship` inadaptée : ses autres
+     *  champs — crew/manoeuvre/lengthM naval — n'ont pas d'équivalent EDOC pour un attelage terrestre). */
+    chargement: z.number().optional(),
     desc: z.string().optional(),
     /** Facette ACHAT — `availability` absent pour les navires (MDG ne donne pas de Disponibilité). */
     purchase: z.strictObject({

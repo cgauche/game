@@ -2,7 +2,7 @@
  * Schéma de `montures.json` — Mouvement/Endurance des montures/bêtes de trait en VOYAGE (EDOC ch.04
  * l.25). PAS de `MonturesData` dans `src/data/index.ts` (aucun consommateur typé grep — colonne
  * vertébrale reconstruite depuis le seul contenu réel, objet UNIQUE : `id`/`label`/`source`/`entries`,
- * 8 entrées toutes {id,label,trappingIds,m,e,trot} — inventaire exhaustif par script).
+ * 8 entrées toutes {id,label,trappingIds,m,e,trot,encPortee} — inventaire exhaustif par script).
  */
 import { z } from 'zod';
 import { sourceRefSchema } from '../common';
@@ -26,6 +26,8 @@ export const schema = z.strictObject({
       e: z.number(),
       /** Peut trotter (allure plus rapide sur route, EDOC ch.04) — `false` pour les bêtes de trait/somme. */
       trot: z.boolean(),
+      /** Capacité de charge (« Enc portée », EDOC 07 l.97-110). */
+      encPortee: z.number(),
     }),
   ),
 });

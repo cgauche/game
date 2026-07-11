@@ -14,7 +14,8 @@
       ],
       "m": 4,
       "e": 20,
-      "trot": false
+      "trot": false,
+      "encPortee": 8
     },
     {
       "id": "poney-ane-ou-mule",
@@ -25,7 +26,8 @@
       ],
       "m": 4,
       "e": 45,
-      "trot": false
+      "trot": false,
+      "encPortee": 14
     },
     {
       "id": "cheval-de-trait",
@@ -35,7 +37,8 @@
       ],
       "m": 5,
       "e": 45,
-      "trot": false
+      "trot": false,
+      "encPortee": 20
     },
     {
       "id": "cheval-de-trait-lourd",
@@ -43,7 +46,8 @@
       "trappingIds": [],
       "m": 4,
       "e": 50,
-      "trot": false
+      "trot": false,
+      "encPortee": 30
     },
     {
       "id": "boeuf",
@@ -51,7 +55,8 @@
       "trappingIds": [],
       "m": 3,
       "e": 55,
-      "trot": false
+      "trot": false,
+      "encPortee": 30
     },
     {
       "id": "cheval-de-monte",
@@ -61,7 +66,8 @@
       ],
       "m": 7,
       "e": 45,
-      "trot": true
+      "trot": true,
+      "encPortee": 16
     },
     {
       "id": "cheval-de-guerre",
@@ -71,7 +77,8 @@
       ],
       "m": 7,
       "e": 35,
-      "trot": true
+      "trot": true,
+      "encPortee": 18
     },
     {
       "id": "cheval-de-guerre-lourd",
@@ -81,7 +88,8 @@
       ],
       "m": 4,
       "e": 50,
-      "trot": true
+      "trot": true,
+      "encPortee": 20
     }
   ]
 }
