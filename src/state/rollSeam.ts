@@ -12,8 +12,8 @@
  *       d'ennemi EN BATAILLE via `seatOwns` (`netOwnership.ts:19`), un côté `worldSide` sans acteur via
  *       le marqueur `CascadeStep.worldOwner` + le sentinel `WORLD_STEP_OWNER` (`pendings.ts`), Ronde 1) ;
  *   I = inline-PV (`runCascadeImmediate`, aucune influence, conséquence appliquée d'office).
- * AUCUN call-site n'est migré en Ronde 0 (substrat seul, DoD #275 Ronde 0) : ce module n'est câblé nulle
- * part hors de ses propres tests et de `testOutcome.ts`.
+ * Consommé par TOUS les flux hors-combat migrés (#269-#275 : voyages, entretien, activités, marchand,
+ * port) — la garde d'exclusivité `roll-seam-exclusivity-guard.test.ts` (#274) verrouille l'usage.
  *
  * ÉCARTS documentés vs le doc de conception (justifiés, à réconcilier aux rondes suivantes) :
  *  1. **`worldSide` → propriétaire MJ.** FERMÉ Ronde 1 : `buildMonoStep` marque `worldOwner:true` sur
