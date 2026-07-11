@@ -59,7 +59,7 @@ const DOMAINS = [
     inc: [['LDB', [57, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75]],
           ['AA', [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]]] },
   { file: 'catalogue-carrieres.md', titre: 'Carrières — détails par niveau', rules: 'carrieres.md',
-    inc: [['LDB', [6, 7, 8]], ['ADE I', [7, 8]], ['ADE II', [1]], ['Middenheim', [8, 9, 10]]] },
+    inc: [['LDB', [6, 7, 8]], ['ADE I', [7, 8]], ['ADE II', [1]], ['Middenheim', [8, 9, 10]], ['MDG', [9, 11]]] },
   { file: 'catalogue-divers.md', titre: 'Règles diverses des suppléments', rules: '00-index.md',
     inc: [['ADE II', [3, 9]], ['T2', [11]], ['T2C', [7, 9, 14]], ['Altdorf', [10, 12]], ['EDOC', [12]]] },
 ]

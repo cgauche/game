@@ -3,7 +3,7 @@
 > **Catalogue mécanique RAW**, consolidé verbatim depuis la source **Marker** (propre, tables intactes)
 > des livres autorisés. Système & règles : voir [`carrieres.md`](carrieres.md).
 >
-> **Chapitres source :** `LDB 6` · `LDB 7` · `LDB 8` · `ADE I 7` · `ADE I 8` · `ADE II 1` · `Middenheim 8` · `Middenheim 9` · `Middenheim 10`.
+> **Chapitres source :** `LDB 6` · `LDB 7` · `LDB 8` · `ADE I 7` · `ADE I 8` · `ADE II 1` · `Middenheim 8` · `Middenheim 9` · `Middenheim 10` · `MDG 9` · `MDG 11`.
 
 ---
 
@@ -5593,30 +5593,10 @@ Le Morrspark ................................. 91 Le Temple de Myrmidia.........
 
 Prix de vente : 20,00 €
 
----
 
-<!-- MDG-INTEGRATION --> carrieres
+## [MDG 9] La classe Côtier
 
-Les entrées catalogue proposées sont fidèles à la source (reproduction de données de Carrières + tableaux + traits, sans réf `MDG NN l.X` à vérifier). Spot-checks confirmés : page-ranges (PDF 67-84 pour 09, PDF 52-62 pour 07), niveaux Bronze/Argent/Or de chaque Carrière, compétences/talents/possessions par niveau, variante hauts elfes Projectiles (Arbalète), absence de schéma de progression pour l'Officier (correctement omise), tableau d100 norse, texte du Trait Marque de Khorne. Aucune correction nécessaire — entrées laissées telles quelles.
-
-## [MDG 09] La classe Côtier
-
-*Pages PDF 67-84 (pages imprimées 63-80)*
-
-> **Complément hors-extraction** — l'extraction Marker du chapitre a PERDU les schémas de progression
-> (symboles dessinés) et la ligne d'espèces de 5 carrières ; relus sur le rendu image du PDF (p. 68-82).
-> Légende : N1 = les 3 Caractéristiques initiales · N2/N3/N4 = Caractéristique débloquée au Niveau.
->
-> | Carrière | Espèces | N1 | N2 | N3 | N4 |
-> |---|---|---|---|---|---|
-> | Artilleur de navire | Halfling, haut elfe, humain, nain | CT, Ag, Int | I | E | FM |
-> | Chansonnier | Haut elfe, humain | Dex, Int, Soc | Ag | FM | I |
-> | Marin | Halfling, haut elfe, humain, nain | Ag, Dex, Soc | CC | I | Int |
-> | Naufrageur | Elfe sylvain, humain, nain | CC, F, I | FM | CT | Soc |
-> | Nautonier | Halfling, haut elfe, humain, nain | CC, E, I | FM | Int | Soc |
-> | Officier | Haut elfe, humain, nain | CC, Int, Soc | CT | E | FM |
-> | Prêtre marin de Manann | Humain | E, Ag, FM | Soc | I | Int |
-> | Ratisseur de plages | Halfling, humain | CC, I, Int | Ag | FM | E |
+*Folio 64+*
 
 # LA CLASSE CÔTIER
 
@@ -5671,7 +5651,7 @@ Un Personnage doté de ce Talent a l'habitude de gérer des équipes maniant des
 
 Vos hommes vous respectent et vous font confiance. Pour tout Test de Commandement approprié effectué à bord de votre bateau ou impliquant votre équipage, vous gagnez un bonus de DR égal à votre nombre de niveaux en Commandant émérite. Ce bonus s'applique aux Tests d'équipage comme aux Tests de Commandement individuels.
 
-
+<span id="page-67-0" data-folio="64"></span>
 # **ARTILLEUR DE NAVIRE**
 
 Halfling, haut elfe, humain, nain
@@ -5734,7 +5714,7 @@ Voyageur aguerri
 
 **Possessions :** cabine, uniforme de bonne qualité
 
-
+<span id="page-68-0" data-folio="65"></span>
 Ce poste est très qualifié et très respecté, et au fur et à mesure que l'Artilleur monte dans la hiérarchie il se retrouve audessus de l'équipage principal et traité davantage comme un officier. Comme la taille et la puissance de feu des navires de la Marine impériale semblent en augmentation constante, les Artilleurs sont de plus en plus recherchés. Et avec la piraterie omniprésente sur la Mer des Griffes, les vaisseaux marchands ont de plus en plus tendance à s'équiper de canons pour repousser les flibustiers.
 
 Pendant la navigation, l'Artilleur de navire en début de carrière est souvent traité comme un membre ordinaire de l'équipage et va probablement briquer le pont ou grimper au gréement comme n'importe quel autre mousse. Mais quand une bataille éclate, il déploie tout son potentiel dans son travail de niche essentiel.
@@ -5765,6 +5745,10 @@ Les Maîtres artilleurs supervisent toutes les armes à bord de leur vaisseau, e
 
 L'Artilleur de navire qui sert à bord depuis des années et a grimpé les échelons depuis le poste de Mousse artilleur n'apprécie sans doute pas ce traitement arbitraire, mais serait bien avisé de ne pas le montrer.
 
+<span id="page-69-0" data-folio="66"></span>
+# **CHANSONNIER**
+
+Haut elfe, humain
 
 *Vous coordonnez les actions de l'équipage de votre navire, vous guidez ses activités et vous lui remontez le moral avec des chansonnettes entraînantes.*
 
@@ -5816,7 +5800,7 @@ de l'orientation
 
 – Marian Zelman, marin
 
-
+<span id="page-70-0" data-folio="67"></span>
 Le Chansonnier est un membre de l'équipage d'un bateau, généralement d'un navire de haute-mer, qui chante des chansons pour améliorer l'humeur de l'équipage, marquer l'écoulement du temps, coordonner les activités et motiver les marins dans l'effort. Presque tous les vaisseaux comptent une personne qui accomplit cette tâche, mais tous n'ont pas de véritable Chansonnier.
 
 Le Chansonnier est spécial, car ses chansons ont un pouvoir qui augmente les capacités de l'équipage audelà de ce qui est possible par des moyens ordinaires. Même si l'équipage n'a pas conscience de ses pouvoirs, il peut sentir que son Chansonnier lui touche vraiment l'âme et l'aiguillonne comme personne. La plupart des Chansonniers s'accompagnent d'un instrument de musique pour mieux garder le rythme et se faire entendre par-dessus le brouhaha d'un bateau en train de voguer. Cependant, ils peuvent travailler sans instrument.
@@ -5865,6 +5849,10 @@ Cette chanson paillarde a de très nombreux couplets et les marins sont encourag
 
 Cette chanson sur les nombreux actes héroïques du capitaine de fiction Vriez van Vijnen donne un sentiment d'optimisme et de confiance dans le capitaine du navire. Tout Test de Sociabilité tenté par le capitaine ou par une autre figure d'autorité à bord et ciblant l'équipage reçoit un bonus de +20.
 
+<span id="page-71-0" data-folio="68"></span>
+# **MARIN**
+
+Halfling, haut elfe, humain, nain
 
 *Vous travaillez à bord d'un bateau, à nettoyer les ponts et à ajuster la voilure.*
 
@@ -5926,7 +5914,7 @@ de l'orientation
 
 vue, sextant
 
-
+<span id="page-72-0" data-folio="69"></span>
 # **Marins estaliens**
 
 Les Marins des royaumes du sud sont souvent cités comme faisant partie des meilleurs du Vieux Monde. Les Estaliens en particulier sont connus comme particulièrement zélés dans leur haine et leur traque des pirates.
@@ -5949,6 +5937,10 @@ Les vaisseaux majestueux de la flotte sont souvent soutenus par plusieurs petits
 
 L'Empire n'a pas de prestigieuse tradition de marine. L'empereur Hasso nomma le premier des Seigneurs des mers en 632 CI, mais la marine qu'ils supervisaient n'était pas une grande flotte capable de mener des projets d'exploration et de conquête. C'était une force défensive employée pour protéger les gens des côtes du nord de l'Empire contre les pillards norses. Plus tard, le développement de la marine de l'Empire a été entravé par les longues périodes de guerre civile et de désunion entre les provinces. Plus tard encore, la croissance d'une flotte efficace a été freinée par l'indépendance de Marienburg qui a confiné les plus grandes forces navales de l'Empire à ses fleuves.
 
+<span id="page-73-0" data-folio="70"></span>
+# **NAUFRAGEUR**
+
+Elfe sylvain, humain, nain
 
 *Vous attirez les navires et les faites couler par le fond avant de récupérer leur précieuse cargaison.*
 
@@ -6018,7 +6010,7 @@ Commandant émérite, Guerrier né
 
 **Possessions :** flottille de bateaux de transport avec un équipage de Naufrageurs, menottes, tonnelet de bière
 
-
+<span id="page-74-0" data-folio="71"></span>
 # **Faux pilotes**
 
 Certains Naufrageurs se font passer pour des Nautoniers ou pour des pilotes, en promettant un trajet sûr qui évite les périls à leurs victimes avant de les mener tout droit sur des rochers ou des bancs de sable. Ces criminels doivent se montrer suffisamment convaincants et charmants pour mettre les capitaines en confiance et avoir des compétences suffisamment équivalentes à celles d'un vrai timonier pour ne pas s'échouer eux-mêmes tout en condamnant les bateaux qui les suivent.
@@ -6060,6 +6052,10 @@ Le code combine des notions d'honneur et d'intégrité avec un certain respect d
 - 0 Les membres de l'équipage jurent de servir sur le navire jusqu'à ce que chacun d'entre eux ait gagné 100 CO.
 - 0 Les membres de l'équipage ont tous interdiction de fraterniser avec ceux pratiquant la sorcellerie ou vénérant les dieux du Chaos.
 
+<span id="page-75-0" data-folio="72"></span>
+# **NAUTONIER**
+
+Halfling, haut elfe, humain, nain
 
 *Vous guidez les navires sur les eaux les plus traîtresses des nombreuses mers du monde.*
 
@@ -6115,7 +6111,7 @@ Vivacité
 
 **Possessions :** canotier, petit bateau de transport
 
-
+<span id="page-76-0" data-folio="73"></span>
 La Mer des Griffes est un endroit traître. Les côtes du Nordland et de l'Ostland sont connues pour leurs rivages rocailleux et celle de Norsca est un labyrinthe de criques et d'îles. Un capitaine digne de ce nom sait qu'il n'arrivera pas au bout de son voyage sans l'aide d'un pilote local capable de lui montrer comment accoster sur le littoral sans toucher de récif.
 
 Plus à l'ouest, les pilotes travaillant autour du littoral de L'Anguille sont particulièrement renommés, car les nombreux rochers de la Gueule du dragon forment le péril le plus dangereux de cette mer, une vaste bande d'océan percée par des centaines et des centaines de flèches de roche dépassant de l'eau.
@@ -6148,6 +6144,10 @@ Plus à l'est, le long de la côte allant vers le nord de la forêt de Laurelorn
 
 Les pilotes qui parviennent à voguer dans ces zones sans dommage sont les meilleurs dans leur domaine, même sans quitter les côtes autour des terres considérées comme sûres et civilisées au sud de la Mer des Griffes. Et ceux qui connaissent les côtes lugubres du Pays des Trolls ou les fjords glacés de Norsca sont encore plus rares.
 
+<span id="page-77-0" data-folio="74"></span>
+# **OFFICIER**
+
+Haut elfe, humain, nain
 
 *Vous commandez un navire et vous devez convaincre les membres de votre équipage de vous confier leurs vies.*
 
@@ -6160,6 +6160,12 @@ Les Officiers de navire, surtout les capitaines, sont l'autorité suprême à bo
 *« C'était vraiment un capitaine qui en imposait, avec l'uniforme le plus luxueux que j'ai jamais vu, du fil d'or partout. Ses bottes étaient les plus reluisantes et son chapeau le plus noir avec la plus grosse plume que vous ayez jamais vue. Mais bon, il gérait son bateau comme un orphelinat shallyen. »*
 
 – Marian Zelman, marin
+
+#### **SCHÉMA DE PROGRESSION D'OFFICIER**
+
+| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
+|----|----|---|---|---|----|-----|-----|----|-----|
+| h  |    |   |   |   |    |     | h   |    | h   |
 
 # **Évolution de Carrière**
 
@@ -6211,7 +6217,7 @@ Volonté de fer
 
 **Possessions :** flotte de navires
 
-
+<span id="page-78-0" data-folio="75"></span>
 Les officiers de la marine impériale viennent souvent de familles de marins. Ce sont généralement des maisons nobles mineures ou des lignées qui aspirent à la noblesse et qui ont pour tradition de servir en mer. L'officier potentiel est fréquemment préparé dès son plus jeune âge avec le projet de l'envoyer chercher fortune en mer. Le népotisme fait rage au sein de la Première Flotte impériale, mais dans beaucoup d'autres marines, un officier doit grimper les échelons par lui-même et n'est au départ qu'un humble enseigne. La vie à bord d'un bateau exige la compétence et le respect, et l'équipage doit savoir que son officier a acquis de l'expérience et appris son métier.
 
 À bord d'un vaisseau, la discipline est essentielle et le capitaine cruel et arbitraire est un stéréotype courant parmi les marins de la Mer des Griffes. Cependant, la plupart des matelots savent que leur sécurité est intrinsèquement liée à celle de leur capitaine, ne serait-ce que parce que si le pire se produit, le capitaine doit être prêt à couler avec son bateau.
@@ -6240,7 +6246,7 @@ Les Seigneurs des mers impériaux ont la réputation d'être des aristocrates ha
 
 Malgré cela, les Bretonniens sont vus comme d'excellents marins. Le fait que les officiers ont tendance à déléguer la gestion de leurs vaisseaux aux capitaines qui ont fait leurs armes comme flibustiers est un secret éventé depuis longtemps au sein de la marine bretonnienne, mais l'évoquer à haute voix vous vaudrait quelques coups de fouet.
 
-
+<span id="page-79-0" data-folio="76"></span>
 ### **PRÊTRE MARIN DE MANANN** Humain
 
 *Vous apportez la volonté de Manann à ses suivants et vous intercédez pour obtenir sa faveur et éviter sa colère.*
@@ -6303,7 +6309,7 @@ Nageur endurant, Pilote
 
 prêtres capitaines subalternes
 
-
+<span id="page-80-0" data-folio="77"></span>
 Ceux qui prêchent pour Manann sont attirés vers ce sacerdoce par une profonde affinité avec ce dieu et un grand respect pour la mer. Les gens dont la vie dépend des caprices des vagues et des tempêtes se tournent vers leurs prêtres pour qu'ils implorent la clémence du lunatique Seigneur des océans et qu'ils les protègent contre ses humeurs.
 
 La plupart des Prêtres marins viennent de communautés côtières ou fluviales où le culte fait partie de la vie quotidienne. Quelques-uns sont nés à l'intérieur des terres et se sentent attirés vers la mer par une étrange pulsion, comme si leur destinée avait toujours été de vénérer Manann. Les prêtres sédentaires prêchent auprès des marins dans les ports ainsi qu'aux congrégations locales comptant beaucoup de leurs suivants. D'autres prennent la mer avec des flottes marchandes, des explorateurs et des vaisseaux militaires en tant que membre éminemment utile de l'équipage.
@@ -6330,7 +6336,7 @@ Un Prêtre de Manann a toujours le devoir de mettre la main à la pâte quand to
 
 Pendant les périodes difficiles, un Prêtre de Manann peut commander l'équipage ou le punir au nom du capitaine afin d'éviter une mutinerie ou soumettre des marins turbulents. Pour un capitaine impopulaire, il peut être plus efficace et moins risqué de faire craindre la fureur de Manann à un équipage perturbé.
 
-
+<span id="page-81-0" data-folio="78"></span>
 # **RATISSEUR DE PLAGES**
 
 Halfling, humain
@@ -6382,7 +6388,7 @@ Pêcheur, Sens de l'orientation **Possessions :** filet de pêche, sac à cordon
 
 **–** Janie la Folle, ratisseuse de plages
 
-
+<span id="page-82-0" data-folio="79"></span>
 Les Ratisseurs de plages considèrent leur « parcelle » comme leur territoire et la gardent jalousement. Ils sont prêts à se battre pour empêcher quelqu'un d'autre de la fouiller. Des bandes de Ratisseurs de plages s'unissent pour défendre leurs langues de sable ou empiéter sur celles des autres.
 
 Les Ratisseurs de plages n'espèrent pas seulement récupérer des épaves et des débris ; ils guettent aussi des plantes et des créatures naturellement présentes sur le littoral. Ils récoltent toutes sortes de fruits de mer, d'anémones et même de limaces de mer, car ils connaissent les meilleurs endroits pour les trouver, et ils sont passés maîtres dans l'art de reconnaître les plus savoureux, ou au moins les plus mangeables. Les meilleurs coquillages peuvent être vendus aux marchands locaux, et une fois qu'ils arrivent dans une grande ville à l'intérieur des terres, par exemple Nuln ou Altdorf, ils peuvent se vendre à un très bon prix.
@@ -6409,14 +6415,95 @@ Le gouvernement impérial accueille le bureau du « Séquestre officiel des épa
 
 Tous les capitaines de navire ont la responsabilité d'informer ce bureau si leur bateau coule, et quiconque trouve une épave ou des débris marins, quels qu'ils soient, se doit de signaler sa trouvaille. Mais le Séquestre n'est pas aussi occupé qu'il devrait l'être.
 
+<span id="page-83-0" data-folio="80"></span>
 
-## [MDG 11] Prêtre de Stromfels (carrière)
 
-*Pages PDF 93-94 (pages imprimées 89-90) — chapitre « Le culte de Stromfels »*
+## [MDG 11] Le culte de Stromfels
 
-> **Complément hors-extraction** — schéma de progression relu sur le rendu image du PDF (p. 94) :
-> N1 = CC, F, I · N2 = Soc · N3 = Ag · N4 = CT.
+*Folio 89+*
 
+# LE CULTE DE STROMFELS • **L'adoration proscrite et sanglante du dieu des prédateurs**
+
+**Siège du pouvoir :** Les suivants de Stromfels ne reconnaissent pas réellement de hiérarchie, mais Casa Squallo, un temple de Myrmidia reconverti à Sartosa, est le lieu de culte le plus vaste.
+
+**Chef du culte :** Occhio dei Cacciatori, grand prêtre du temple de Sartosa, bien que son autorité soit limitée.
+
+**Principaux ordres :** Aucun.
+
+**Festivités majeures :** Mitterfruhl (l'équinoxe de printemps), fêtée en tant que début de la saison de la chasse ; Mitterherbst (l'équinoxe d'automne), un jour sacré moins important, mais fêté en tant que début de la saison des tempêtes.
+
+**Livres sacrés populaires :** Aucun.
+
+**Symboles sacrés courants :** Un éclair, un énorme requin, un trident dégoulinant de sang.
+
+Stromfels est le Dieu Requin, le prédateur infligeant la mort depuis les profondeurs, et il est le Naufrageur, la fureur de la mer. C'est une divinité obscure et illégale et ses petits cercles d'adorateurs se dissimulent aux yeux de la société civilisée pour ne pas être exécutés. Malgré cela, il est reconnu par les théologiens, qui spéculent sur ses origines. Certains suggèrent qu'il était autrefois une divinité norse sauvage, peut-être un aspect du dieu du sang, Khorne. Si tant est qu'il ait jamais été révéré par les norses, ils l'ont presque totalement abandonné à présent, mais les érudits font tout de même remarquer que c'est à Marienburg et à Sartosa que son culte est le plus important, deux endroits où les norses se sont installés au cours de l'histoire.
+
+Pour ses suivants, Stromfels n'est ni le fils ni le frère d'une autre divinité, et n'est pas non plus un mortel qui s'est élevé jusqu'au statut de dieu. Ils affirment que Stromfels est le vrai visage de Manann. Aux yeux de la plupart des gens, cette croyance relève de l'hérésie. Même les elfes, qui traitent généralement les religions humaines avec un désintérêt dédaigneux, trouvent cette idée abominable. Avant la signature du Traité de Commerce et d'Amitié de 2150 CI entre Ulthuan et Marienburg, la vénération de Stromfels était considérée comme criminelle et obscure, mais les elfes ont fait de sa persécution pure et simple l'une de leurs conditions. C'est pourquoi Stromfels est l'une des rares divinités dont le culte même est un crime capital. Stromfels est généralement représenté soit sous la forme de Manann avec une expression de rage bestiale sur le visage, soit comme un énorme requin à la mâchoire ouverte pour mordre.
+
+•
+
+Les marins sont prompts à décrier Stromfels, mais sous le sceau du secret, beaucoup d'entre eux admettent que si une tempête se prépare et que Manann refuse de répondre à leurs prières, ils ont d'autres noms à invoquer.
+
+# **ADORATEURS**
+
+Les cultistes de Stromfels se rassemblent là où la violence de la mer rencontre la violence des gens. Ses fidèles sont des pirates, des pillards ou des naufrageurs. Ils respectent l'océan par peur et croient au principe de prendre tout ce qu'ils veulent, car eux aussi devraient être craints. Les personnes de ce type honorent le meurtre rapide et le raid audacieux. Leur culte est certes illégal, mais ils ne font pas cause commune avec les forces du Chaos ou ceux qui se livrent par plaisir à un sadisme inutile. Les conséquences de leurs actes sont certes cruelles, mais cette cruauté est un effet secondaire et non un but.
+
+Le long de la côte des Pirates et parmi les îles de la Mer Tiléenne, Stromfels est vénéré plus ouvertement et les autorités approuvent même officiellement son culte dans les villes et villages où il a remplacé celui de Manann. Dans cette partie du monde, les Tiléens l'appellent Stromfalo et les pirates d'Estalie El Bicho del Mar.
+
+À Marienburg, des rumeurs affirment que le noyau du culte de Stromfels se trouve au sein des classes criminelles de Broekwater, même si aucune enquête n'a jamais permis d'identifier de coupable. Les observateurs cyniques laissent entendre que cela vient du fait que certains membres des Dix soutiennent la piraterie, surtout si elle est dirigée contre les elfes des mers.
+
+Loin des côtes, Stromfels est quasiment inconnu, en dehors d'un culte isolé dans l'est du Stirland, dont les propres légendes suggèrent qu'il pourrait descendre d'une bande de pirates ayant fui à l'intérieur des terres.
+
+<span id="page-92-0" data-folio="89"></span>
+# **Sites sacrés**
+
+Les sites sacrés du culte sont des lieux secrets et naturels comme des cavernes et des grottes côtières. Les formations rocheuses ressemblant à l'aileron dorsal d'un requin sont aussi considérées comme importantes. Dans les ports les moins respectables, comme Brionne et Moussillon, les halls des guildes de marins peuvent abriter des autels semi-clandestins.
+
+Le seul temple de Stromfels ouvertement déclaré se trouve à Sartosa. C'était autrefois un temple de Myrmidia et il en garde le style de construction, mais il est décoré de trophées et de trésors pris au fil de plusieurs siècles de raids de pirates.
+
+# **RELATIONS**
+
+Les suivants de Stromfels n'éprouvent pas d'hostilité particulière envers la plupart des cultes. Ils les respectent quand ils sont forts et s'attaquent à eux quand ils sont faibles. Ce n'est que dans quelques rares cas que l'existence même d'un autre culte est considérée comme un affront personnel.
+
+# **Stromfels et Manann**
+
+Les cultistes de Stromfels haïssent ceux de Manann, car ils les voient comme des hypocrites niant la véritable nature de leur dieu. Le culte de Manann leur rend bien cet antagonisme et la vénération de Stromfels est proscrite à Marienburg et persécutée sur les côtes de l'Empire, c'est pourquoi les cultistes doivent dissimuler leur allégeance. Ils savent que les prêtres de Manann les traqueraient pour les tuer, donc ils ne peuvent jamais laisser vivre un manannite.
+
+# **Stromfels et le Chaos**
+
+Les suivants de Stromfels sont peut-être considérés comme antisociaux et même meurtriers, mais au moins, ils se considèrent comme faisant partie de l'ordre naturel et n'éprouvent aucune bonne volonté envers les suivants du Chaos. Même Khorne, qui partage beaucoup de caractéristiques superficielles avec Stromfels, est jugé trop aveugle et trop vorace dans sa soif de sang. Un prédateur doit toujours garder des proies à chasser, pas toutes les tuer.
+
+Les cultistes de Stromfels peuvent se montrer très tolérants envers les mutations si elles n'affaiblissent pas le mutant en question. Beaucoup de gens pourraient estimer que cette attitude représente une tolérance envers le Chaos, surtout au vu du fait que certains mutants vivent parmi les équipages de pirates, mais les cultistes de Stromfels ne voient pas les choses ainsi.
+
+# **COMMANDEMENTS**
+
+Stromfels est un dieu froid et indifférent, difficile à offenser. Par ailleurs, il ne dispose d'aucune théologie ou presque ; ses prêtres ont tendance à mener par l'exemple et à s'impliquer dans les opérations des naufrageurs et les raids plutôt qu'à contempler ses mystères.
+
+Cela dit, ses fidèles observent quelques traditions :
+
+#### 0 **Ne jamais faire de prisonniers**
+
+Le culte interdit la clémence envers les vaincus. S'ils méritaient de vivre, ils auraient été assez forts pour résister à leur capture. S'occuper d'otages, même ceux qui rapporteraient une belle rançon à leurs ravisseurs, suscite le courroux du dieu. Laisser les prisonniers à la merci des éléments en les abandonnant sur une ile déserte ou en les jetant dans la mer est censé faire plaisir à Stromfels.
+
+Dans le cas d'un prêtre de Manann capturé, Stromfels est plus exigeant et s'attend à ce que le malheureux ait la langue tranchée avant d'être jeté sous les vagues.
+
+#### 0 **Rechercher et exercer le pouvoir comme fin en soi**
+
+L'autorité est accordée à ceux qui possèdent la force et la férocité nécessaires pour s'en emparer. Il est normal qu'un suivant de Stromfels respecte un chef fort, mais aussi qu'il dépose un chef dont la puissance a diminué. Ne pas respecter la force est offensant pour la divinité.
+
+#### 0 **Le pouvoir doit être institué par la force physique**
+
+Les suivants de Stromfels croient qu'en fin de compte, la puissance du corps décide de tout. Un fidèle du Dieu Requin qui néglige sa propre force peut se retrouver abandonné par son dieu. Cela a un impact direct sur le développement du Personnage : un Prêtre de Stromfels doit augmenter sa Caractéristique de Force jusqu'au minimum requis pour atteindre le Niveau suivant de la Carrière avant de développer ses autres Caractéristiques, sous peine de recevoir des Points de Péché tant que ce n'est pas le cas.
+
+#### 0 **Envoyer un sacrifice au changement de marée**
+
+À chaque équinoxe, un fidèle de Stromfels doit offrir un sacrifice. Cette offrande doit être un humain ou un elfe, jeté dans la mer ou noyé rituellement.
+
+# **Pénitences**
+
+La pénitence la plus courante pour un adorateur de Stromfels consiste à nager dans une étendue d'eau habitée par des requins et d'autres dangers. Les cultistes dont la loyauté est mise en doute sont envoyés dans des raids de pillage ou de piraterie, tandis qu'un prêtre pourrait devoir mener un assaut majeur. Ceux qui ont gravement offensé le dieu sont forcés de combattre un requin gris à barbelures avec une dague pour seule arme.
+
+<span id="page-93-0" data-folio="90"></span>
 # **PRÊTRE DE STROMFELS** Humain
 
 *Vous prêchez que les forts sont en droit d'exploiter les faibles et vous invoquez le nom de Stromfels pour qu'il vous aide dans vos prédations.*
@@ -6428,6 +6515,12 @@ Cette Carrière ne doit pas nécessairement être une Carrière de Côtier ; les
 *« Vous sentez ce vent du sud-ouest qui se lève ? Des cadeaux de Stromfels seront éparpillés sur le rivage demain matin, et il prendra quelques âmes de plus entre ses mâchoires cette nuit. »*
 
 – Thijs Vroom, marin de Marienburg
+
+#### **SCHÉMA DE PROGRESSION DU PRÊTRE DE STROMFELS**
+
+| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
+|----|----|---|---|---|----|-----|-----|----|-----|
+| h  |    | h |   | h |    |     |     |    |     |
 
 # **Évolution de Carrière**
 
@@ -6471,5 +6564,86 @@ contact, Guerrier né, Pilote
 
 10 munitions
 
+<span id="page-94-0" data-folio="91"></span>
+# **MIRACLES DE STROMFELS**
 
-<!-- /MDG-INTEGRATION -->
+Peut-être plus que tout autre dieu, Stromfels aide ceux qui s'aident eux-mêmes. Il est avare de Bénédictions et de Miracles. En plus des autres effets découlant des Points de Péché, Stromfels retire à un suivant la capacité d'utiliser le Talent *Invocation* s'il possède au moins deux Points de Péché et celle d'utiliser le Talent *Béni* s'il possède au moins cinq Points de Péché.
+
+# **Bénédictions**
+
+Les Bénédictions employées par les Prêtres de Stromfels sont Bataille, Courage, Sauvagerie, Souffle, Ténacité et Vigueur. (Et le fait que ces Bénédictions soient également celles dont profitent les suivants de Manann n'est certainement qu'une simple coïncidence.)
+
+# **Miracles**
+
+### **Faire fi de l'Humeur de Manann**
+
+**Portée :** Spécial **Cible :** Spécial
+
+**Durée :** (Bonus de Force) jours
+
+Vous proclamez que Stromfels est le véritable Seigneur des mers et que les superstitions de ceux qui respectent Manann ne sont que des illusions. Une fois que le Miracle fait effet, lancez le dé dans le tableau qui suit et appliquez le résultat au score d'Humeur de Manann pour le navire à bord duquel vous vous trouvez actuellement (voir page 130). Ajoutez 1 au résultat du jet par Point de Péché que vous possédez.
+
+#### FAIRE FI DE L'HUMEUR DE MANANN ?
+
+| Résultat du<br>d10 | Effet                                                                                                                                                                  |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1 à 4              | Stromfels triomphe ! Tant que le Miracle fait effet,<br>considérez que l'Humeur de Manann est de 0.                                                                    |
+| 5 à 8              | Stromfels s'élève ! Lancez 5d10. Le résultat peut être<br>ajouté à l'Humeur de Manann si elle est actuellement<br>négative, ou en être soustrait si elle est positive. |
+| 9                  | Pas d'effet. L'Humeur de Manann est calculée<br>normalement.                                                                                                           |
+| 10 ou plus         | Manann est provoqué ! Lancez 5d10. Soustrayez le<br>résultat de l'Humeur de Manann.                                                                                    |
+
+# **Flairer le sang**
+
+**Portée :** Vous **Cible :** Vous **Durée :** 1 heure
+
+Quand vous tentez de pister quelqu'un qui a été blessé, vous flairez la moindre goutte de sang, même si on a essayé de la nettoyer. Vous pouvez suivre la piste du blessé sur la terre comme sur l'eau en réussissant un Test de **Pistage Facile (+40)**.
+
+### **Lame de fond**
+
+**Portée :** (Force) mètres × 10
+
+**Cible :** Spécial **Durée :** Instantané
+
+Vous ordonnez à la mer de former une vague énorme qui s'écrase sur une cible spécifique, par exemple une personne dans l'eau ou sur la rive, un bateau ou un phare. La vague est considérée comme ayant un IC de 15 (voir *Indice de Collision* page 111).
+
+### **Mal de mer**
+
+**Portée :** (Force) mètres × 10
+
+**Cible :** 1
+
+**Durée :** (Bonus de Force) heures
+
+Vous infligez à quelqu'un, même au plus vieux des loups de mer, un mal de mer qui dure au moins une heure. Reportez-vous à la page 125 pour connaître les règles concernant le mal de mer.
+
+### **Malédiction de la maîtresse cruelle**
+
+**Portée :** Contact
+
+**Cible :** 1
+
+**Durée :** (Bonus de Force) jours
+
+Vous infligez des cauchemars à votre cible qui l'empêchent de dormir correctement la nuit, ce qui la rend léthargique et faible. Les mauvais rêves sont extrêmement vivaces, perturbants et liés à l'océan d'une manière ou d'une autre ; ils impliquent généralement une femme drapée dans des frondes de ruinesang qui sort de la mer pour tourmenter la victime. Tant qu'elle est sous l'influence du Miracle, la cible doit réussir un Test de **Calme Complexe (–10)** chaque fois qu'elle se repose pour récupérer d'États *Exténué*. En cas d'échec, l'État *Exténué* persiste.
+
+### **Sacrifice à Stromfels**
+
+**Portée :** (Force) mètres × 10
+
+**Cible :** 1 navire avec au moins un Indice de Voie d'eau
+
+**Durée :** Instantané
+
+Vous vous concentrez sur un navire endommagé et vous exercez votre volonté pour vous assurer que personne n'en réchappe. Les trous et les déchirures dans la coque du navire ciblé s'élargissent sous l'effet du Miracle. Doublez l'Indice de Voie d'eau du navire ciblé (voir page 117).
+
+### **Vents de tempête**
+
+**Portée :** (Force) mètres × 10
+
+**Cible :** 1 navire
+
+**Durée :** (Force) minutes
+
+Vous invoquez les vents pour qu'ils soufflent avec davantage de force dans les voiles d'un navire. Augmentez l'intensité du vent d'un cran pendant toute la durée du Miracle (voir page 107). La direction du vent n'est pas affectée.
+
+<span id="page-95-0" data-folio="92"></span>

@@ -94,6 +94,12 @@ Cette Carrière ne doit pas nécessairement être une Carrière de Côtier ; les
 
 – Thijs Vroom, marin de Marienburg
 
+#### **SCHÉMA DE PROGRESSION DU PRÊTRE DE STROMFELS**
+
+| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
+|----|----|---|---|---|----|-----|-----|----|-----|
+| h  |    | h |   | h |    |     |     |    |     |
+
 # **Évolution de Carrière**
 
 <sup>h</sup> **Initié – Argent 2**

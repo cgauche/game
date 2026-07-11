@@ -148,6 +148,10 @@ Les Maîtres artilleurs supervisent toutes les armes à bord de leur vaisseau, e
 L'Artilleur de navire qui sert à bord depuis des années et a grimpé les échelons depuis le poste de Mousse artilleur n'apprécie sans doute pas ce traitement arbitraire, mais serait bien avisé de ne pas le montrer.
 
 <span id="page-69-0" data-folio="66"></span>
+# **CHANSONNIER**
+
+Haut elfe, humain
+
 *Vous coordonnez les actions de l'équipage de votre navire, vous guidez ses activités et vous lui remontez le moral avec des chansonnettes entraînantes.*
 
 N'importe quel marin digne de ce nom fait mieux son travail au son d'un Chansonnier. Certains affirment que les Chansonniers ne sont que des chanteurs et des musiciens ordinaires. Mais les équipages de la plupart des navires croient que les meilleurs Chansonniers peuvent avoir un effet surnaturel sur ceux qu'ils guident.
@@ -248,6 +252,10 @@ Cette chanson paillarde a de très nombreux couplets et les marins sont encourag
 Cette chanson sur les nombreux actes héroïques du capitaine de fiction Vriez van Vijnen donne un sentiment d'optimisme et de confiance dans le capitaine du navire. Tout Test de Sociabilité tenté par le capitaine ou par une autre figure d'autorité à bord et ciblant l'équipage reçoit un bonus de +20.
 
 <span id="page-71-0" data-folio="68"></span>
+# **MARIN**
+
+Halfling, haut elfe, humain, nain
+
 *Vous travaillez à bord d'un bateau, à nettoyer les ponts et à ajuster la voilure.*
 
 Les humains du Vieux Monde ont dû apprendre la navigation par eux-mêmes, car les nains n'ont jamais été une grande civilisation maritime et les elfes n'avaient aucune envie d'encourager les hommes à explorer le vaste monde. Avant l'âge de Sigmar, la civilisation humaine s'aventurait rarement sur les vagues. Même les puissants Khemris construisaient peu de vaisseaux capables de voyager sur les océans.
@@ -332,6 +340,10 @@ Les vaisseaux majestueux de la flotte sont souvent soutenus par plusieurs petits
 L'Empire n'a pas de prestigieuse tradition de marine. L'empereur Hasso nomma le premier des Seigneurs des mers en 632 CI, mais la marine qu'ils supervisaient n'était pas une grande flotte capable de mener des projets d'exploration et de conquête. C'était une force défensive employée pour protéger les gens des côtes du nord de l'Empire contre les pillards norses. Plus tard, le développement de la marine de l'Empire a été entravé par les longues périodes de guerre civile et de désunion entre les provinces. Plus tard encore, la croissance d'une flotte efficace a été freinée par l'indépendance de Marienburg qui a confiné les plus grandes forces navales de l'Empire à ses fleuves.
 
 <span id="page-73-0" data-folio="70"></span>
+# **NAUFRAGEUR**
+
+Elfe sylvain, humain, nain
+
 *Vous attirez les navires et les faites couler par le fond avant de récupérer leur précieuse cargaison.*
 
 Des bandes de Naufrageurs sévissent autour des côtes de toutes les nations du Vieux Monde. Ils vivent en récupérant le chargement des vaisseaux échoués. Certains Naufrageurs habitent près de bandes de littoral traîtresses et attendent patiemment que des bateaux se prennent dans les récifs, voire même restent dans la légalité en informant les autorités de leurs actions, mais en réclamant une part des biens sortis de l'eau. Mais ces gens ne sont pas des Naufrageurs classiques. Généralement, le Naufrageur est opportuniste et criminel, et ce nom est associé à ceux qui s'assurent activement d'avoir toujours des navires à faire couler et à piller.
@@ -443,6 +455,10 @@ Le code combine des notions d'honneur et d'intégrité avec un certain respect d
 - 0 Les membres de l'équipage ont tous interdiction de fraterniser avec ceux pratiquant la sorcellerie ou vénérant les dieux du Chaos.
 
 <span id="page-75-0" data-folio="72"></span>
+# **NAUTONIER**
+
+Halfling, haut elfe, humain, nain
+
 *Vous guidez les navires sur les eaux les plus traîtresses des nombreuses mers du monde.*
 
 Les Nautoniers sont connus pour travailler sur les fleuves de l'Empire, mais évidemment, les pilotes et les timoniers sont encore plus précieux pour un capitaine de vaisseau de haute-mer. Les Nautoniers marins doivent non seulement connaître les zones de rochers, de récifs ou de bancs de sable, mais aussi savoir déterminer où ils se trouvent à partir de la position du soleil et des étoiles, car les navires naviguent souvent loin de tous les autres repères géographiques connus.
@@ -531,6 +547,10 @@ Plus à l'est, le long de la côte allant vers le nord de la forêt de Laurelorn
 Les pilotes qui parviennent à voguer dans ces zones sans dommage sont les meilleurs dans leur domaine, même sans quitter les côtes autour des terres considérées comme sûres et civilisées au sud de la Mer des Griffes. Et ceux qui connaissent les côtes lugubres du Pays des Trolls ou les fjords glacés de Norsca sont encore plus rares.
 
 <span id="page-77-0" data-folio="74"></span>
+# **OFFICIER**
+
+Haut elfe, humain, nain
+
 *Vous commandez un navire et vous devez convaincre les membres de votre équipage de vous confier leurs vies.*
 
 Les Officiers de navire, surtout les capitaines, sont l'autorité suprême à bord de leur vaisseau. Manann leur confère le pouvoir de vie et de mort sur les marins à leur service, mais c'est une épée à double tranchant. L'officier doit aussi persuader l'équipage de faire confiance à son jugement et à ses compétences, sans quoi il risque la mutinerie.
@@ -542,6 +562,12 @@ Les Officiers de navire, surtout les capitaines, sont l'autorité suprême à bo
 *« C'était vraiment un capitaine qui en imposait, avec l'uniforme le plus luxueux que j'ai jamais vu, du fil d'or partout. Ses bottes étaient les plus reluisantes et son chapeau le plus noir avec la plus grosse plume que vous ayez jamais vue. Mais bon, il gérait son bateau comme un orphelinat shallyen. »*
 
 – Marian Zelman, marin
+
+#### **SCHÉMA DE PROGRESSION D'OFFICIER**
+
+| CC | CT | F | E | I | Ag | Dex | Int | FM | Soc |
+|----|----|---|---|---|----|-----|-----|----|-----|
+| h  |    |   |   |   |    |     | h   |    | h   |
 
 # **Évolution de Carrière**
 
