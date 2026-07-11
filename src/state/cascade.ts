@@ -62,6 +62,31 @@ export function registerCascadeApplier(kind: string, apply: CascadeApplier): voi
   cascadeAppliers[kind] = { apply };
 }
 
+/**
+ * Conséquence d'une ISSUE de TEST ÉTENDU (`PendingExtendedTest.outcome`, #273 Étape 1) — calque exact
+ * de `CascadeApplier` ci-dessus (mute get/set, renvoie des `Consequence[]`), appliquée à la CLÔTURE du
+ * Test étendu (`extendedTestNext`, store.ts) qu'il ait atteint sa cible OU buté sur `maxAttempts`.
+ * `reached` = `total ≥ targetDR` ; `false` = borne d'essais épuisée sans réussir (Commerce d'opportunité,
+ * MDG 15 : « 10 DR en ≤ 3 tentatives » — l'échec de la borne EST une issue, jamais une boucle infinie).
+ * Registre séparé de `cascadeAppliers` (un Test étendu n'est PAS une étape de cascade — `pendingExtendedTest`
+ * coexiste comme porteur de données à côté d'une cascade-hôte à 1 étape `jet:'extended'`).
+ */
+export type ExtendedTestOutcomeApplier = (
+  get: Get,
+  set: Set,
+  p: import('./pendings').PendingExtendedTest,
+  total: number,
+  reached: boolean,
+) => { consequences?: Consequence[] } | void;
+
+/** Registre par `kind` (`PendingExtendedTest.outcome.kind`) — source unique extensible, kind-agnostique. */
+export const extendedTestOutcomeAppliers: Record<string, ExtendedTestOutcomeApplier> = {};
+
+/** Enregistre (ou remplace) l'issue de domaine d'un `kind` de Test étendu. */
+export function registerExtendedTestOutcome(kind: string, apply: ExtendedTestOutcomeApplier): void {
+  extendedTestOutcomeAppliers[kind] = apply;
+}
+
 /** Type d'INTERACTION d'une étape, inféré de ses champs (zéro migration des étapes-jet existantes) :
  *  un Test (`target`), un batch multi (`participants` — seam de jet #275 Décision 4 cran 1, UNE rangée
  *  par contributeur), un choix du joueur (`options`), ou un pur affichage (aucun des trois). */

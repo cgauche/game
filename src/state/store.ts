@@ -81,7 +81,7 @@ import type {
   PendingAppraise, PendingAttack, PendingHandGate, PendingSiegeAim, PendingCleave, PendingDualStrike, PendingTrample, PendingBattement, PendingDistraire, PendingManeuver, PendingRun, PendingShipManeuver, PendingShipBattery, PendingCrewTest, PendingShanty, PendingApproach, PendingWard, PendingFocus, PendingDispel,
   PendingFrenzy, RevealEntry, PendingRenounce, PendingDefense,
   PendingDisengage, PendingAuContact, PendingGrapple, PendingCast, PendingCounterspell, PendingExtendedTest, PendingForceDoor, PendingHeal, PendingSurgery, PendingCorruption,
-  PendingCastOpposition, PendingCascade, ScheduledEffect, DialogueTransition,
+  PendingCastOpposition, PendingCascade, ScheduledEffect, DialogueTransition, CascadeStepMeta,
 } from './pendings';
 import { openEncounterPsych } from './encounterPsychFlow';
 import { subtract as moneySub, canAfford, toMoney } from '../engine/money';
@@ -106,7 +106,7 @@ import * as portFlow from './portFlow';
 import * as landMarketFlow from './landMarketFlow';
 import * as seaActivities from './seaActivities';
 import * as seaVoyageFlow from './seaVoyageFlow';
-import { startCascade, suspendActiveCascade, resumeSuspendedCascade } from './cascade';
+import { startCascade, suspendActiveCascade, resumeSuspendedCascade, extendedTestOutcomeAppliers } from './cascade';
 import { resultLine, freeCons } from './rollSeam';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
@@ -848,7 +848,7 @@ export interface GameState extends RollFlowActionsMap {
   /** « Laisser passer » : aucun Contre-sort retenu → le Sort se résout tel quel (castConfirm). */
   counterspellCancel: () => void;
   /** Test Étendu SÉQUENTIEL (LDB 12) : ouvre le flux (ex. crocheter DR 5) ; un Round à la fois. */
-  startExtendedTest: (opts: { actorId: string; label: string; skillLabel: string; target: number; targetDR: number; flag?: string; support?: { count: number; bonus: number }; dispel?: { spellId: string; casterId: string; label: string } }) => void;
+  startExtendedTest: (opts: { actorId: string; label: string; skillLabel: string; target: number; targetDR: number; maxAttempts?: number; flag?: string; support?: { count: number; bonus: number }; dispel?: { spellId: string; casterId: string; label: string }; outcome?: { kind: string; meta?: CascadeStepMeta } }) => void;
   // extendedTest{Roll,Reroll,BonusSL,DarkPact,ForceSuccess,SetForcedRoll} : générés (RollFlowActionsMap, MULTI).
   /** Cumule le DR du Round courant (LDB 12 l.200) ; total < 0 → recommence ; total ≥ cible → réussite. */
   extendedTestNext: () => void;
@@ -1967,17 +1967,27 @@ export const useGame = create<GameState>((set, get) => ({
     // Cumul LDB 12 mutualisé (`extendedTestStep`) : un Round réussi ajoute son DR, un raté le retire
     // (planché à 0) ; règle opt. l.208 « DR 0 = ±1 min » via `test-extended-min-sl`.
     const { total, done } = extendedTestStep(p.total, cur.result, p.targetDR, !!rule('test-extended-min-sl'));
-    if (done) {
+    // BORNE d'essais (Commerce d'opportunité, MDG 15 l.274-286 : « ≤ 3 tentatives ») — cible non
+    // atteinte à la DERNIÈRE tentative permise = une ISSUE (résolue par `outcome`), pas une boucle infinie.
+    const exhausted = !done && p.maxAttempts != null && p.rounds.length >= p.maxAttempts;
+    if (done || exhausted) {
       set({ pendingExtendedTest: null, pendingCascade: null }); // ferme la cascade-hôte aussi
-      get().log(`${p.label} : réussi (DR cumulé ${total} / ${p.targetDR}).`);
-      if (p.dispel) {
+      get().log(`${p.label} : ${done ? 'réussi' : 'échoué'} (DR cumulé ${total} / ${p.targetDR}).`);
+      if (done && p.dispel) {
         // DISSIPATION réussie (LDB 46 l.205) : retire tous les effets du Sort de tous ses porteurs.
         const b = get().battle;
         const n = b ? dissipateSpell(b.combatants, p.dispel.spellId, p.dispel.casterId) : 0;
         if (b) set({ battle: { ...b, combatants: [...b.combatants] } });
         get().log(`${p.dispel.label} est dissipé${n > 1 ? ` (${n} cibles libérées)` : ''}.`);
       }
-      if (p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // gate la suite (porte/serrure d'éditeur)
+      if (done && p.flag) set({ flags: { ...get().flags, [p.flag]: true } }); // gate la suite (porte/serrure d'éditeur)
+      // Issue de DOMAINE en donnée (kind-agnostique) : appliée qu'elle ait réussi ou buté sur `maxAttempts`.
+      if (p.outcome) {
+        const applier = extendedTestOutcomeAppliers[p.outcome.kind];
+        const out = applier?.(get, set, p, total, done);
+        const line = out?.consequences ? resultLine(out.consequences) : '';
+        if (line) get().log(line);
+      }
       return;
     }
     // Round suivant : la cascade-hôte (1 étape) reste, seul `pendingExtendedTest` gagne un Round (re-rendu).

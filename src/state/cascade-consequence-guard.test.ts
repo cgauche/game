@@ -121,7 +121,7 @@ const CONTENT_BASELINE: Record<string, number> = {
   'src/state/corruptionFlow.ts': 0,
   'src/state/combat/triggeredTest.ts': 2, // Test opposé INLINE (attaquant ET défenseur, aucun piloté humain) — SEULE surface des deux jets.
   'src/state/store.ts': 0,
-  'src/state/seaActivities.ts': 4, // Activités de mer, résolution synchrone post-picks (aucune cascade, aucune rangée).
+  'src/state/seaActivities.ts': 0, // #273 Étape 2 : Activités de mer migrées à la cascade (rangée dédiée par étape).
 };
 
 function jetEchoCount(src: string): number {

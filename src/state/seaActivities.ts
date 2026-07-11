@@ -24,20 +24,32 @@
  *    → non proposées en mer (le verbatim est affiché dans la modale, `SEA_ACTIVITIES_INTRO`).
  *  - Entretien du navire (l.302-306) : DÉJÀ câblé au Test d'équipage d'ENTRETIEN nocturne du voyage
  *    (MDG 14 l.116-124) — pas de doublon en Activité.
+ *
+ * SEAM DE JET (#273 Étape 2) : les 3 formes de résolveur (Cartographie mono, chemin générique
+ * `resolveTravelActivity`, Commerce d'opportunité étendu) sont des étapes de cascade construites en
+ * UNE passe (`buildSeaActivitiesCascade`) — plus de bulk synchrone. Cartographie/générique routent par
+ * `resolveSurface` (klass `hero-test`, policy M/I existante) ; le Commerce d'opportunité SÉQUENCE un
+ * Test étendu (`startExtendedTest`, `maxAttempts`+`outcome` #273 Étape 1) par héros à la fois (un seul
+ * `pendingExtendedTest` actif) — `pendingSeaActivities.opportunityQueue` porte la file, vidée par
+ * `continueSeaActivitiesAfterCascade` jusqu'à la halte de nuit.
  */
 import { battleRng } from './battleRng';
 import { openRest, placesOfKind } from './restFlow';
-import { activityById, activitiesFor, resolveTravelActivity, type ActivityDef } from '../engine/activities';
-import { rollTest, extendedTestStep } from '../engine/tests';
+import { activityById, activitiesFor, travelActivitySpec, applyTravelActivityResult, type ActivityDef } from '../engine/activities';
 import { testValue } from '../engine/skills';
 import { applyOps } from '../engine/ops';
 import { itemFromTrappingById, recomputeLoadout, autoStowNewItem } from '../engine/items';
 import { toBrass, fromBrass, formatMoney, PA_PER_CO } from '../engine/money';
 import { cargoTotalEnc, OPPORTUNITE, opportunityTradePct } from '../engine/seaVoyage';
 import { findVehicleById } from '../data';
-import { DIFFICULTY_LABELS } from '../engine/types';
+import type { Combatant } from '../engine/types';
 import type { TravelRecapDay } from './travelFlow';
 import type { Get, Set } from './flowTypes';
+import type { CascadeStep } from './pendings';
+import { composeRollLabel, effectiveTarget, resolveSurface, freeCons, type RollRequest } from './rollSeam';
+import { registerCascadeApplier, registerExtendedTestOutcome, runCascadeImmediate, startCascade } from './cascade';
+import { noteSeaLine, patchSea } from './seaVoyageFlow';
+import { actorIn } from './combatOrParty';
 
 /** VERBATIM MDG 15 l.266-272 (règle 5 : recollable dans Source/) — affiché en tête de la modale. */
 export const SEA_ACTIVITIES_INTRO = `Pour chaque semaine (8 jours) de voyage en mer, chaque Personnage a l'occasion d'effectuer une Activité. Comme elles ont lieu sur les flots, ces Activités ne sont pas soumises aux règles *Argent à gaspiller*, *Avec le pouvoir*… et *Amélioration elfique* (voir page de **WFJDR**, page 195).
@@ -60,11 +72,10 @@ export interface PendingSeaActivities {
   picks: Record<string, SeaActivityPick | null>;
   /** Recap du jour à livrer à la halte (les lignes d'Activités s'y ajoutent). */
   day: TravelRecapDay;
+  /** Héros dont le Commerce d'opportunité reste à résoudre (Test étendu SÉQUENCÉ — un seul
+   *  `pendingExtendedTest` actif à la fois), vidée par `continueSeaActivitiesAfterCascade`. */
+  opportunityQueue?: string[];
 }
-
-const log = (get: Get, set: Set, lines: string[]) => {
-  if (lines.length) set({ journal: [...get().journal.slice(-40), ...lines] });
-};
 
 /** Enc LIBRE du navire de campagne (Contenance − cargaison) — plafond du Commerce d'opportunité
  *  (l.276 : « jusqu'à l'équivalent de la valeur totale d'Encombrement disponible et non surchargé
@@ -87,78 +98,136 @@ export function seaActivityBlocked(get: Get, def: ActivityDef): string | null {
   return null;
 }
 
-/** Résout les Activités de la semaine (une par héros, l.268) puis rend la main à la halte de nuit —
- *  résolution SYNCHRONE post-picks (aucune cascade, aucune rangée nulle part pour les jets ci-dessous) :
- *  le journal est la SEULE surface, il PORTE les jets (#295 Lot 5, gardé nominativement). */
-export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, SeaActivityPick | null>): void {
-  const pending = get().pendingSeaActivities;
-  if (!pending) return;
-  const rng = battleRng();
-  const lines: string[] = [];
+/** Une Activité de héros ÉLIGIBLE (`!dead`, pick valide, contexte 'mer', non bloquée). PUR. */
+function eligibleSeaActivityPicks(get: Get, picks: Record<string, SeaActivityPick | null>): { hero: Combatant; pick: SeaActivityPick; def: ActivityDef }[] {
+  const out: { hero: Combatant; pick: SeaActivityPick; def: ActivityDef }[] = [];
   for (const hero of get().party) {
     if (hero.dead || hero.outOfRencontre) continue;
     const pick = picks[hero.id];
     const def = pick ? activityById(pick.activityId) : undefined;
     if (!pick || !def || !def.contexts.includes('mer') || seaActivityBlocked(get, def)) continue;
-
-    if (def.resolver === 'opportunityTrade') {
-      // Commerce d'opportunité (l.274-286) : mise plafonnée (Enc libre en CO, bourse), Test étendu
-      // de Marchandage Complexe (−10), 10 DR, ≤ 3 tentatives — % récupéré par la table verbatim.
-      const capGold = Math.min(vesselFreeEnc(get), Math.floor(toBrass(get().money) / PA_PER_CO));
-      const invest = Math.max(0, Math.min(Math.floor(pick.investGold ?? 0), capGold));
-      if (invest <= 0) { lines.push(`${hero.name} — Commerce d'opportunité : aucune mise engagée.`); continue; }
-      set({ money: fromBrass(toBrass(get().money) - invest * PA_PER_CO) });
-      const value = testValue(hero, OPPORTUNITE.test.skillId);
-      let total = 0;
-      const rolls: string[] = [];
-      for (let i = 0; i < OPPORTUNITE.test.maxAttempts; i++) {
-        const t = rollTest(value, OPPORTUNITE.test.difficulty, rng);
-        rolls.push(`${t.roll}/${t.target}`);
-        const step = extendedTestStep(total, t, OPPORTUNITE.test.totalDR);
-        total = step.total;
-        if (step.done) break;
-      }
-      const pct = opportunityTradePct(total);
-      const back = Math.floor((invest * PA_PER_CO * pct) / 100);
-      set({ money: fromBrass(toBrass(get().money) + back) });
-      lines.push(`${hero.name} — Commerce d'opportunité (Marchandage ${DIFFICULTY_LABELS[OPPORTUNITE.test.difficulty]}, ${OPPORTUNITE.test.totalDR} DR visés) : ${rolls.join(' · ')} → ${total} DR — mise ${invest} CO, retour ${formatMoney(fromBrass(back))} (${pct} %).`);
-      continue;
-    }
-    if (def.resolver === 'seaChart') {
-      // Cartographie (l.288-290) : réussite → Carte marine (valeur = DR en CO, +2 DR d'Orientation).
-      const value = testValue(hero, 'metier', undefined, 'Cartographe');
-      const t = rollTest(value, def.difficulty ?? 'complexe', rng);
-      if (t.success) {
-        const it = itemFromTrappingById('carte-marine');
-        if (it) {
-          it.price = { gold: Math.max(0, t.sl), silver: 0, brass: 0 };
-          hero.items = [...(hero.items ?? []), it];
-          autoStowNewItem(hero, it); // #204 : rangement par défaut
-          recomputeLoadout(hero);
-        }
-        lines.push(`${hero.name} — Cartographie : ${t.roll}/${t.target} → une Carte marine d'une valeur de ${Math.max(0, t.sl)} CO (+2 DR d'Orientation, MDG 15).`);
-        // Planque gratuite lors de la Cartographie (l.292) : dépôt optionnel, retrait libre, en sûreté
-        // tant que le héros garde la carte-marine (sinon découverte sur un jet ≤ 50, bankWithdrawInner).
-        const stashCO = Math.max(0, Math.min(Math.floor(pick.stashGold ?? 0), Math.floor(toBrass(get().money) / PA_PER_CO)));
-        if (stashCO > 0) {
-          const stashBrass = stashCO * PA_PER_CO;
-          set({ money: fromBrass(toBrass(get().money) - stashBrass), bank: [...get().bank, { heroId: hero.id, kind: 'stash', brass: stashBrass, rate: 50, chartSecured: true }] });
-          lines.push(`${hero.name} — Planque (MDG 15 l.292) : ${formatMoney(fromBrass(stashBrass))} cachés sur la carte — retrait libre, découverte sur ≤ 50.`);
-        }
-      } else {
-        lines.push(`${hero.name} — Cartographie : ${t.roll}/${t.target} → les relevés sont inutilisables.`);
-      }
-      continue;
-    }
-    // Chemin GÉNÉRIQUE data-driven (défs futures sans résolveur bespoke) : même machinerie que les
-    // Activités de voyage (Test « au choix », `onSuccess` en GameOp).
-    const r = resolveTravelActivity(hero, def, rng);
-    if (r.roll != null) lines.push(`${hero.name} — ${def.label} : ${r.roll}/${r.target} → ${r.success ? 'réussite.' : 'échec.'}`);
-    if (r.success && r.ops.length) lines.push(...applyOps(hero, r.ops, { label: def.label, rng, now: get().gameTime }));
+    out.push({ hero, pick, def });
   }
-  set({ party: [...get().party], pendingSeaActivities: null });
-  log(get, set, lines);
-  const day: TravelRecapDay = { ...pending.day, lines: [...pending.day.lines, ...lines] };
+  return out;
+}
+
+/** Étape MONO « Cartographie » (l.288-290, `sea-activity-chart`) : Métier (Cartographe), Complexe (−10). */
+function buildSeaChartStep(hero: Combatant, def: ActivityDef, pick: SeaActivityPick): CascadeStep {
+  const test: RollRequest['test'] = { skill: 'metier', spec: 'Cartographe', label: 'Cartographie' };
+  const difficulty = def.difficulty ?? 'complexe';
+  return {
+    id: `sea-activity-chart-${hero.id}`, kind: 'sea-activity-chart', actorId: hero.id,
+    label: composeRollLabel(hero, 'Cartographie', test, difficulty), rollLabel: 'Métier (Cartographe)',
+    base: testValue(hero, 'metier', undefined, 'Cartographe'), target: effectiveTarget(hero, test, difficulty),
+    result: null, interactive: true, meta: { stashGold: pick.stashGold ?? 0 },
+  };
+}
+
+/** Étape MONO chemin GÉNÉRIQUE data-driven (`sea-activity-generic`) : `travelActivitySpec` choisit la
+ *  MEILLEURE compétence de l'acteur (identique `resolveTravelActivity`), la porte lance le Test.
+ *  `null` = Activité SANS Test (Récupérer…) — appliquée d'office par l'appelant, aucune étape à jouer. */
+function buildSeaGenericStep(get: Get, set: Set, hero: Combatant, def: ActivityDef): CascadeStep | null {
+  const spec = travelActivitySpec(hero, def);
+  if (spec.target == null) {
+    const out = applyTravelActivityResult(spec, def, null);
+    if (out.ops.length) {
+      const opLines = applyOps(hero, out.ops, { label: def.label, rng: battleRng(), now: get().gameTime });
+      set({ party: [...get().party] });
+      noteSeaLine(get, set, opLines);
+    }
+    return null;
+  }
+  const difficulty = def.difficulty ?? 'intermediaire';
+  const test: RollRequest['test'] = { skill: spec.used?.skillId, spec: spec.used?.spec, label: def.label };
+  return {
+    id: `sea-activity-generic-${hero.id}`, kind: 'sea-activity-generic', actorId: hero.id,
+    label: composeRollLabel(hero, def.label, test, difficulty), rollLabel: def.label,
+    base: spec.value, target: spec.target, result: null, interactive: true, meta: { activityId: def.id },
+  };
+}
+
+/** Résout les Activités MONO (Cartographie + générique) de la semaine en une CASCADE (#273 Étape 2) —
+ *  routées par la porte (klass `hero-test`, `resolveSurface` : jour-par-jour → M influençable, route
+ *  COMMANDÉE → I inline). Le Commerce d'opportunité est mis de côté (`oppHeroIds`, Test étendu SÉQUENCÉ
+ *  ailleurs — `openRoll` ne porte pas de multi-Round). */
+function buildSeaActivitiesCascade(get: Get, set: Set, picks: Record<string, SeaActivityPick | null>): { steps: CascadeStep[]; oppHeroIds: string[] } {
+  const steps: CascadeStep[] = [];
+  const oppHeroIds: string[] = [];
+  for (const { hero, pick, def } of eligibleSeaActivityPicks(get, picks)) {
+    if (def.resolver === 'opportunityTrade') { oppHeroIds.push(hero.id); continue; }
+    const step = def.resolver === 'seaChart' ? buildSeaChartStep(hero, def, pick) : buildSeaGenericStep(get, set, hero, def);
+    if (step) steps.push(step);
+  }
+  return { steps, oppHeroIds };
+}
+
+/** Résout les Activités de la semaine (une par héros, l.268) puis rend la main à la halte de nuit —
+ *  seam de jet (#273 Étape 2) : les jets deviennent des étapes de cascade influençables (klass
+ *  `hero-test`) ; le Commerce d'opportunité (Test étendu) est SÉQUENCÉ ensuite,
+ *  `continueSeaActivitiesAfterCascade` enchaîne. */
+export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, SeaActivityPick | null>): void {
+  const pending = get().pendingSeaActivities;
+  if (!pending) return;
+  const { steps, oppHeroIds } = buildSeaActivitiesCascade(get, set, picks);
+  set({ pendingSeaActivities: { ...pending, picks, opportunityQueue: oppHeroIds } });
+  if (!steps.length) { continueSeaActivitiesAfterCascade(get, set); return; }
+  const iSteps: CascadeStep[] = [];
+  const surfacedSteps: CascadeStep[] = [];
+  for (const step of steps) {
+    const req: RollRequest = { side: { actorId: step.actorId! }, test: { label: step.label ?? step.kind }, difficulty: 'intermediaire', klass: 'hero-test' };
+    (resolveSurface(get, req, step.kind) === 'I' ? iSteps : surfacedSteps).push(step);
+  }
+  if (iSteps.length) runCascadeImmediate(get, set, iSteps);
+  if (surfacedSteps.length) {
+    startCascade(get, set, { title: 'Activités de la semaine', icon: 'travel/anchor', purpose: 'seaActivities', steps: surfacedSteps });
+    return;
+  }
+  continueSeaActivitiesAfterCascade(get, set);
+}
+
+/** Ouvre le Commerce d'opportunité (Test étendu, #273 Étape 1) du PROCHAIN héros de la file — mise
+ *  plafonnée (Enc libre en CO, bourse) débitée d'office (comme l'ancien bulk synchrone) ; l'ISSUE
+ *  (% récupéré) est résolue par l'applier `sea-activity-opportunity` (`meta` sérialisable, coop). */
+function openNextOpportunityTrade(get: Get, set: Set): void {
+  const pending = get().pendingSeaActivities;
+  const heroId = pending?.opportunityQueue?.[0];
+  if (!pending || !heroId) { continueSeaActivitiesAfterCascade(get, set); return; }
+  const rest = pending.opportunityQueue!.slice(1);
+  set({ pendingSeaActivities: { ...pending, opportunityQueue: rest } });
+  const hero = get().party.find((h) => h.id === heroId);
+  const pick = pending.picks[heroId];
+  if (!hero || !pick) { continueSeaActivitiesAfterCascade(get, set); return; }
+  const capGold = Math.min(vesselFreeEnc(get), Math.floor(toBrass(get().money) / PA_PER_CO));
+  const invest = Math.max(0, Math.min(Math.floor(pick.investGold ?? 0), capGold));
+  if (invest <= 0) {
+    noteSeaLine(get, set, [`${hero.name} — Commerce d'opportunité : aucune mise engagée.`]);
+    continueSeaActivitiesAfterCascade(get, set);
+    return;
+  }
+  set({ money: fromBrass(toBrass(get().money) - invest * PA_PER_CO) });
+  const test: RollRequest['test'] = { skill: OPPORTUNITE.test.skillId, label: 'Commerce d\'opportunité' };
+  get().startExtendedTest({
+    actorId: hero.id, label: 'Commerce d\'opportunité', skillLabel: 'Marchandage',
+    target: effectiveTarget(hero, test, OPPORTUNITE.test.difficulty), targetDR: OPPORTUNITE.test.totalDR,
+    maxAttempts: OPPORTUNITE.test.maxAttempts,
+    outcome: { kind: 'sea-activity-opportunity', meta: { heroId: hero.id, investBrass: invest * PA_PER_CO } },
+  });
+}
+
+/** Clôture de la CASCADE mono (#273 Étape 2, `purpose:'seaActivities'`) : enchaîne le Commerce
+ *  d'opportunité (SÉQUENCÉ) puis la halte de nuit. Appelée aussi directement quand aucune étape mono
+ *  n'a été construite, et par l'issue du Test étendu d'opportunité (héros suivant de la file). */
+export function continueSeaActivitiesAfterCascade(get: Get, set: Set): void {
+  const pending = get().pendingSeaActivities;
+  if (!pending) return;
+  if (pending.opportunityQueue?.length) { openNextOpportunityTrade(get, set); return; }
+  // Toutes les Activités sont résolues (leurs lignes vivent dans `sea.lines`, canal durable partagé —
+  // `noteSeaLine`/`commitStep`) : les rapatrier dans le recap du jour puis purger l'accumulateur.
+  const plan = get().travelPlan;
+  const activityLines = plan?.sea?.lines ?? [];
+  const day: TravelRecapDay = { ...pending.day, lines: [...pending.day.lines, ...activityLines] };
+  if (plan?.sea) patchSea(get, set, { lines: [] });
+  set({ pendingSeaActivities: null });
   // Halte de nuit (machinerie EXISTANTE) — le recap du jour, Activités comprises, s'y lit. En mer, on
   // dort à bord (hamacs, MDG 03 l.71) : couchage unique et abrité.
   openRest(get, set, { places: get().vessel ? { bord: true } : placesOfKind('camp'), travelHalt: true, travelDay: day });
@@ -168,3 +237,64 @@ export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, S
 export function seaActivitiesCatalog(): ActivityDef[] {
   return activitiesFor('mer');
 }
+
+// ── Seam de jet (#273 Étape 2) — appliers des étapes migrées vers la cascade ──────────────────────
+
+/** Cartographie (l.288-290, `sea-activity-chart`) : réussite → Carte marine (valeur = DR en CO, +2 DR
+ *  d'Orientation) + Planque optionnelle (l.292). */
+registerCascadeApplier('sea-activity-chart', (get, set, step, hero) => {
+  if (!step.result || !hero) return;
+  const stashGold = typeof step.meta?.stashGold === 'number' ? step.meta.stashGold : 0;
+  const j: string[] = [];
+  if (step.result.success) {
+    const it = itemFromTrappingById('carte-marine');
+    if (it) {
+      it.price = { gold: Math.max(0, step.result.sl), silver: 0, brass: 0 };
+      hero.items = [...(hero.items ?? []), it];
+      autoStowNewItem(hero, it); // #204 : rangement par défaut
+      recomputeLoadout(hero);
+    }
+    j.push(`${hero.name} — Cartographie : une Carte marine d'une valeur de ${Math.max(0, step.result.sl)} CO (+2 DR d'Orientation, MDG 15).`);
+    const stashCO = Math.max(0, Math.min(stashGold, Math.floor(toBrass(get().money) / PA_PER_CO)));
+    if (stashCO > 0) {
+      const stashBrass = stashCO * PA_PER_CO;
+      set({ money: fromBrass(toBrass(get().money) - stashBrass), bank: [...get().bank, { heroId: hero.id, kind: 'stash', brass: stashBrass, rate: 50, chartSecured: true }] });
+      j.push(`${hero.name} — Planque (MDG 15 l.292) : ${formatMoney(fromBrass(stashBrass))} cachés sur la carte — retrait libre, découverte sur ≤ 50.`);
+    }
+  } else {
+    j.push(`${hero.name} — Cartographie : les relevés sont inutilisables.`);
+  }
+  set({ party: [...get().party] });
+  return { consequences: freeCons(j) };
+});
+
+/** Chemin GÉNÉRIQUE data-driven (`sea-activity-generic`) : recompose `travelActivitySpec` (déterministe,
+ *  pas de RNG) depuis `meta.activityId` pour appliquer `onSuccess` (GameOp, langue UNIQUE des effets)
+ *  au jet DÉJÀ résolu (`applyTravelActivityResult`, jumeau PUR de `resolveTravelActivity`). */
+registerCascadeApplier('sea-activity-generic', (get, set, step, hero) => {
+  if (!step.result || !hero) return;
+  const def = typeof step.meta?.activityId === 'string' ? activityById(step.meta.activityId) : undefined;
+  if (!def) return;
+  const spec = travelActivitySpec(hero, def);
+  const out = applyTravelActivityResult(spec, def, step.result);
+  if (!out.ops.length) return { consequences: freeCons([]) };
+  const opLines = applyOps(hero, out.ops, { label: def.label, rng: battleRng(), now: get().gameTime });
+  set({ party: [...get().party] });
+  return { consequences: freeCons(opLines) };
+});
+
+/** Issue de DOMAINE du Commerce d'opportunité (#273 Étape 1, Test étendu 3 tentatives max) : % récupéré
+ *  par la table verbatim (`opportunityTradePct`), qu'il ait atteint 10 DR ou buté sur `maxAttempts`. */
+registerExtendedTestOutcome('sea-activity-opportunity', (get, set, p, total) => {
+  const meta = p.outcome?.meta;
+  const heroId = typeof meta?.heroId === 'string' ? meta.heroId : undefined;
+  const investBrass = typeof meta?.investBrass === 'number' ? meta.investBrass : 0;
+  const hero = heroId ? actorIn(get(), heroId) : undefined;
+  const pct = opportunityTradePct(total);
+  const back = Math.floor((investBrass * pct) / 100);
+  set({ money: fromBrass(toBrass(get().money) + back) });
+  const line = `${hero?.name ?? 'Le héros'} — Commerce d'opportunité : mise ${formatMoney(fromBrass(investBrass))}, retour ${formatMoney(fromBrass(back))} (${pct} %).`;
+  noteSeaLine(get, set, [line]);
+  continueSeaActivitiesAfterCascade(get, set);
+  return { consequences: freeCons([line]) };
+});

@@ -72,6 +72,32 @@ async function runOneSeaDay() {
   }
 }
 
+/** Déroule la cascade des Activités en mer (#273 Étape 2, `purpose:'seaActivities'`) + un éventuel
+ *  Commerce d'opportunité SÉQUENCÉ (Test étendu, #273 Étape 1) — jusqu'à la halte de nuit
+ *  (`pendingRest`). Garde-fou 40 pas. */
+async function runSeaActivities() {
+  for (let i = 0; i < 40; i++) {
+    if (get().pendingRest) break;
+    const casc = get().pendingCascade;
+    const ext = get().pendingExtendedTest;
+    if (casc) {
+      const cur = casc.participants[casc.cursor];
+      if (cur && !cur.result) get().cascadeRoll(cur.id);
+      get().cascadeNext();
+      await tick();
+      continue;
+    }
+    if (ext) {
+      const cur = ext.rounds[ext.rounds.length - 1];
+      if (!cur.result) get().extendedTestRoll(cur.id);
+      get().extendedTestNext();
+      await tick();
+      continue;
+    }
+    break;
+  }
+}
+
 describe('#27 Forcer le rythme (MDG 13 l.95-107)', () => {
   beforeEach(freshState);
 
@@ -123,14 +149,17 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     expect(get().pendingSeaActivities).toBeTruthy();
   });
 
-  it('seaActivitiesConfirm — Cartographie réussie → une Carte marine (+2 DR d’Orientation) sur le héros', () => {
+  it('seaActivitiesConfirm — Cartographie réussie → une Carte marine (+2 DR d’Orientation) sur le héros', async () => {
     seedBattleRng(3);
     const heroes = get().party;
     // Un cartographe hors pair : Métier (Cartographe) à 90.
     (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 60 } as never];
     (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, dexterite: 40 };
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
+    // Seam de jet (#273 Étape 2) : Cartographie est désormais une étape de CASCADE influençable —
+    // `seaActivitiesConfirm` ouvre `pendingCascade` (klass `hero-test`), à dérouler (`runSeaActivities`).
     get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie' } });
+    await runSeaActivities();
     const owner = get().party[0];
     const chart = (owner.items ?? []).find((it) => it.trappingId === 'carte-marine');
     // Métier 90 Complexe (−10) = 80 → très probablement réussi ; la carte est créée en cas de succès.
@@ -145,7 +174,7 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     expect(seaActivityBlocked(get, def)).toMatch(/équipage/i);
   });
 
-  it('Cartographie réussie + stashGold → Planque gratuite (MDG 15 l.292, découverte ≤ 50)', () => {
+  it('Cartographie réussie + stashGold → Planque gratuite (MDG 15 l.292, découverte ≤ 50)', async () => {
     seedBattleRng(3);
     const heroes = get().party;
     // Même cartographe hors pair que le test précédent, jet déterministe (roll 73 ≤ cible 99).
@@ -154,6 +183,7 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
     const before = toBrass(get().money);
     get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie', stashGold: 50 } });
+    await runSeaActivities();
     const dep = get().bank.find((b) => b.heroId === heroes[0].id && b.kind === 'stash');
     expect(dep).toBeTruthy();
     expect(dep!.brass).toBe(50 * PA_PER_CO);
@@ -162,14 +192,37 @@ describe('#29 Activités en mer (MDG 15 l.266-306)', () => {
     expect(get().journal.join('\n')).toMatch(/Planque.*MDG 15 l\.292/);
   });
 
-  it('Cartographie sans mise de Planque (stashGold absent) → aucun dépôt créé', () => {
+  it('Cartographie sans mise de Planque (stashGold absent) → aucun dépôt créé', async () => {
     seedBattleRng(3);
     const heroes = get().party;
     (heroes[0] as Combatant).skills = [{ skillId: 'metier', spec: 'Cartographe', advances: 80 } as never];
     (heroes[0] as Combatant).characteristics = { ...heroes[0].characteristics, dexterite: 60 };
     set({ party: [...heroes], pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } } });
     get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'cartographie' } });
+    await runSeaActivities();
     expect(get().bank.find((b) => b.heroId === heroes[0].id && b.kind === 'stash')).toBeUndefined();
+  });
+
+  it('Commerce d’opportunité — Test étendu SÉQUENCÉ (#273 Étape 1, ≤ 3 tentatives, MDG 15 l.274-286)', async () => {
+    seedBattleRng(3);
+    const heroes = get().party;
+    (heroes[0] as Combatant).skills = [{ skillId: 'marchandage', advances: 40 } as never];
+    set({
+      party: [...heroes], money: { gold: 100, silver: 0, brass: 0 },
+      pendingSeaActivities: { picks: {}, day: { kmFrom: 0, kmTo: 40, hours: 24, lines: [] } },
+    });
+    const before = toBrass(get().money);
+    get().seaActivitiesConfirm({ [heroes[0].id]: { activityId: 'commerce-opportunite', investGold: 10 } });
+    // La mise est débitée D'OFFICE (avant tout jet) — comme l'ancien bulk synchrone.
+    expect(toBrass(get().money)).toBe(before - 10 * PA_PER_CO);
+    expect(get().pendingExtendedTest).toBeTruthy(); // Test étendu ouvert (primitive #273 Étape 1)
+    expect(get().pendingExtendedTest!.maxAttempts).toBe(3);
+    await runSeaActivities();
+    // La halte suit la clôture du Test étendu (file `opportunityQueue` vidée).
+    expect(get().pendingExtendedTest).toBeNull();
+    expect(get().pendingRest).toBeTruthy();
+    expect(get().pendingSeaActivities).toBeNull();
+    expect(get().journal.join('\n')).toMatch(/Commerce d'opportunité.*mise.*retour/);
   });
 });
 

@@ -64,6 +64,7 @@ import { posteHullOf, pushEligible, pushCrewOk, pushReachable } from './siegePus
 import { applyShipManeuver, maneuverCrewTotal, deriveManeuverFromCrew } from './shipManeuver';
 import { crewTestContributors, shipCrewAssignments, shipMoraleScore, shipUndercrew, shipSaboteurDR, applyShipMoraleDelta, applyShantyToCrew, quartIndex, withCrewActed } from './shipCrew';
 import { resolveSteamSave, continueSeaDayAfterCascade, continueSeaDayAfterScorbut, continueSeaDayAfterExhaustion } from './seaVoyageFlow';
+import { continueSeaActivitiesAfterCascade } from './seaActivities';
 import { resolveCrewTestByRoles, rudeEpreuveMoraleDelta } from '../engine/crewMorale';
 import { knownShanties } from '../engine/combatFeatures/dispatch';
 import { findSeaShantyById } from '../data';
@@ -327,6 +328,7 @@ export function createCombatSlice(get: Get, set: Set) {
     // Entretien-survie maritime surfacé au MJ (#272 résiduel, seam #275) : la clôture enchaîne la phase suivante de la journée.
     else if (done?.purpose === 'seaScorbut') continueSeaDayAfterScorbut(get, set, done.participants);
     else if (done?.purpose === 'seaExhaustion') continueSeaDayAfterExhaustion(get, set, done.participants);
+    else if (done?.purpose === 'seaActivities') continueSeaActivitiesAfterCascade(get, set); // Activités en mer (#273 Étape 2) → Commerce d'opportunité séquencé puis halte
     else if (done?.combatEndBoundary) finishCombatEnd(get, set); // Tests de fin de combat clos → écran de victoire/défaite
     else if (done?.roundBoundary) enterRoundStartPause(get, set); // Peur de fin de Round close → pause de début de Round (PAS resolveRoundBoundary : décomptes déjà appliqués)
     else if (done?.maneuverResume) resumeManeuverDefense(get, set, done.maneuverResume); // défense de manœuvre de zone close → reprendre le tour de la créature (attaques gratuites restantes / avance)
@@ -1771,8 +1773,10 @@ export function createCombatSlice(get: Get, set: Set) {
       a.aiming = false; // recharger est une autre action → la visée est perdue
       // Rechargement rapide / Artilleur (LDB 10) : +niveau DR au Test de rechargement (sur un jet réussi).
       const reloadTalent = pr.success ? reloadDRBonus(a, a.weapons.find((x) => x.type === 'ranged')) : 0;
-      const progress = Math.max(0, pr.progressBefore + pr.sl + reloadTalent); // Test étendu : cumul des DR, plancher 0 (recommence)
-      if (progress >= pr.reload) {
+      // Cumul LDB 12 mutualisé (`extendedTestStep`, #273 Étape 1) : même arithmétique que le Test étendu
+      // générique (plancher 0) — la cadence reste un-jet-par-Action (progressBefore persiste sur l'acteur).
+      const { total: progress, done } = extendedTestStep(pr.progressBefore, { success: pr.success, sl: pr.sl + reloadTalent }, pr.reload);
+      if (done) {
         a.loaded = true;
         a.reloadProgress = 0;
         a.chambered = magazineSize(a.weapons.find((x) => x.type === 'ranged')); // À Répétition : chargeur rempli (LDB 62 l.264-265)

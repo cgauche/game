@@ -42,7 +42,7 @@ import { vehicleCombatant } from '../engine/vehicle';
 import { findVehicleById, findCrewRoleById, findCrewTestTypeById, findNavalTrait } from '../data';
 import { installCost, rollSteamBreakdown, steamBreakdownTriggered, type SteamBreakdownEntry } from '../engine/shipBuild';
 import { d10, d100, roll as rollDice, type RNG } from '../engine/dice';
-import { rollTest, isDoubleRoll } from '../engine/tests';
+import { rollTest, isDoubleRoll, extendedTestStep } from '../engine/tests';
 import { testValue, partyAssisted, partyBest } from '../engine/skills';
 import { buildWeapon } from '../engine/items';
 import { QUALITY_IDS } from '../engine/qualities/ids';
@@ -192,13 +192,13 @@ function tell(get: Get, set: Set, lines: string[]): void {
  *  Lot 1) est désormais écrit par `commitStep` depuis les `consequences` retournées (`freeCons`), pas
  *  par un second canal direct. `tell()` reste le canal des sites HORS applier (narration d'événement de
  *  jour, entretien-survie). */
-function noteSeaLine(get: Get, set: Set, lines: string[]): void {
+export function noteSeaLine(get: Get, set: Set, lines: string[]): void {
   if (!lines.length) return;
   const plan = get().travelPlan;
   if (plan?.sea) set({ travelPlan: { ...plan, sea: { ...plan.sea, lines: [...plan.sea.lines, ...lines] } } });
 }
 
-function patchSea(get: Get, set: Set, patch: Partial<SeaVoyageState>): void {
+export function patchSea(get: Get, set: Set, patch: Partial<SeaVoyageState>): void {
   const plan = get().travelPlan!;
   set({ travelPlan: { ...plan, sea: { ...plan.sea!, ...patch } } });
 }
@@ -1294,18 +1294,18 @@ registerCascadeApplier('tourbillon', (get, set, step) => {
   return { consequences: freeCons(j) };
 });
 
-/** Extermination des nuisibles (MDG 14 l.98-104) : Test étendu, 1d10 h par Test. */
+/** Extermination des nuisibles (MDG 14 l.98-104) : Test étendu, 1d10 h par Test — cumul mutualisé
+ *  (`extendedTestStep`, #273 Étape 1 : consolidation arithmétique, cadence INCHANGÉE — un jet par jour). */
 registerCascadeApplier('extermination', (get, set, step) => {
   if (!step.result) return;
   const sea = get().travelPlan?.sea;
   if (!sea?.infestation) return;
   const inf = sea.infestation;
-  const total = step.result.sl;
   const rng = battleRng();
-  const progress = inf.progress + Math.max(0, total);
+  const { total: progress, done } = extendedTestStep(inf.progress, step.result, inf.need, !!rule('test-extended-min-sl'));
   set({ gameTime: get().gameTime + rollDice(1, 10, rng) * 60 }); // « Chaque Test nécessite … 1d10 heures » (MDG 14 l.100)
   let j: string[];
-  if (progress >= inf.need) {
+  if (done) {
     patchSea(get, set, { infestation: undefined });
     j = [`${inf.label} : la vermine est exterminée (${progress}/${inf.need} DR).`];
   } else {

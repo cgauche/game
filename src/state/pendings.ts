@@ -940,6 +940,10 @@ export interface PendingExtendedTest extends PendingBase {
   targetDR: number; // DR CUMULÉ à atteindre (LDB 12 : « une valeur cible »)
   total: number; // DR cumulé courant (dépend des Rounds précédents → c'est ce qui rend le flux SÉQUENTIEL)
   rounds: ExtendedTestRound[];
+  /** BORNE d'essais (Commerce d'opportunité, MDG 15 l.274-286 : « 10 DR en ≤ 3 tentatives ») — la
+   *  borne ATTEINTE sans réussir est une ISSUE (résolue par `outcome`), jamais une boucle infinie.
+   *  Absent = pas de plafond (crochetage/porte : on retente jusqu'à réussite ou renoncement). */
+  maxAttempts?: number;
   /** Flag de scène posé à la RÉUSSITE (DR cumulé ≥ cible) — gate la suite (porte/serrure d'éditeur). */
   flag?: string;
   /** SOUTIEN (LDB 12 l.214-225) : le meneur (`actorId`) lance, +10 par soutien plafonné au Bonus de
@@ -948,6 +952,11 @@ export interface PendingExtendedTest extends PendingBase {
   /** Issue DISSIPATION (LDB 46 l.204-207) : à la réussite (DR cumulé ≥ NI), retire les effets du Sort
    *  (`dissipateSpell` sur les combattants) au lieu de poser un flag de scène. */
   dispel?: { spellId: string; casterId: string; label: string };
+  /** Issue de DOMAINE en donnée (kind-agnostique — Commerce d'opportunité, artisanat futur…) : résolue
+   *  par `extendedTestOutcomeAppliers[outcome.kind]` (calque `cascadeAppliers`) à la clôture du Test,
+   *  qu'il ait ATTEINT sa cible ou buté sur `maxAttempts`. `meta` = paramètres sérialisables (jamais de
+   *  closure — coop). Absent ⇒ comportement historique (`flag`/`dispel`, réussite seule). */
+  outcome?: { kind: string; meta?: CascadeStepMeta };
 }
 
 /** Paramètres SÉRIALISABLES de la conséquence d'une étape (jamais de closure — coop : le pending est
@@ -1172,8 +1181,11 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  l'entretien-survie maritime (Scorbut MDG 14 l.230, Épuisement MDG 13 l.109-111) surfacé au siège MJ
    *  quand `resolveSurface('subi')` rend V (au lieu de l'auto-résolution silencieuse, `seaVoyageFlow.ts`
    *  `continueSeaDayAfterCascade`/`continueSeaDayAfterScorbut`) ; à la clôture, le store enchaîne la
-   *  phase suivante de la journée (`continueSeaDayAfterScorbut`/`continueSeaDayAfterExhaustion`). */
-  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite' | 'seaScorbut' | 'seaExhaustion';
+   *  phase suivante de la journée (`continueSeaDayAfterScorbut`/`continueSeaDayAfterExhaustion`) ;
+   *  'seaActivities' (#273 Étape 2 : Activités en mer hebdomadaires, MDG 15 l.266-306, `klass:'hero-test'`)
+   *  — à la clôture, le store enchaîne `continueSeaActivitiesAfterCascade` (Commerce d'opportunité
+   *  séquencé puis halte de nuit, `seaActivities.ts`). */
+  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite' | 'seaScorbut' | 'seaExhaustion' | 'seaActivities';
   /** HALTE de voyage : la finalisation REPREND la route (continueTravelAfterNight). */
   travelHalt?: boolean;
   /** Cascade de PEUR de FIN de Round (combat) : à sa fermeture, le store ré-appelle `resolveRoundBoundary`
