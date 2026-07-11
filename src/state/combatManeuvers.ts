@@ -30,6 +30,7 @@ import { isFrenzied } from '../engine/psychology';
 import { creatureAttacks, ATTACK_LABEL, type AttackKind } from '../engine/creatureAttacks';
 import { findTalentById, findPsychologyById, findManeuverById, type ManeuverDef, type ManeuverMeasure } from '../data';
 import { registerCascadeApplier, startCascade } from './cascade';
+import { freeCons } from './rollSeam';
 import { pilotedByHuman } from './netOwnership';
 import { inBattleId } from './combatOrParty';
 import type { CascadeStep } from './pendings';
@@ -525,7 +526,7 @@ registerCascadeApplier('maneuverDefense', (get, set, step, hero) => {
   if (step.result.success) {
     floatTag(hero, def.defense === 'init' ? t('fx.resists') : t('fx.dodge'));
     syncManeuver();
-    return { journal: [t('manv.resists', { name: hero.name })] };
+    return { consequences: freeCons([t('manv.resists', { name: hero.name })]) };
   }
   // L'attaquant l'emporte : on re-oppose le jet influencé du défenseur (reproduit `resolveOpposed` de la
   // cascade) pour la MARGE NETTE (RAW Regard : +1 DR/Avantage variable), puis on applique les effets.
@@ -533,8 +534,8 @@ registerCascadeApplier('maneuverDefense', (get, set, step, hero) => {
   const margin = resolveOpposed(opp.aT, drow).netSL + (def.advantageMode === 'variable' ? md.spent : 0);
   const journal = applyManeuverEffects(get, set, attacker, def, hero, md.indice, margin, battleRng());
   syncManeuver();
-  return { journal };
-}, (success, name) => (success ? `${name} résiste.` : `${name} est touché !`));
+  return { consequences: freeCons(journal) };
+});
 
 /** Le défenseur choisit sa meilleure réaction : Parade (Corps à corps) ou Esquive (Agilité + avances,
  *  pénalité d'Encombrement incluse) — la plus haute valeur. Vit ICI (feuille) et est ré-exporté par

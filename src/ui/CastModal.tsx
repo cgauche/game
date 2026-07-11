@@ -22,6 +22,7 @@ import { JournalLine } from './NarratedLine';
 import { ev } from '../state/combatLog';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
+import { resultLine, freeCons } from '../state/rollSeam';
 
 /**
  * Modale d'incantation — paramétrage de la coquille PARTAGÉE `RollShell` (comme Attaque/Défense) :
@@ -97,18 +98,21 @@ export function CastModal() {
   const placeable = zoneUnplaced && !!res && !res.dispelled &&
     (res.cast || (!!res.isCritical && (pc.critChoice ?? 'puissance') === 'puissance'));
   const forcedDie = FLOWS.cast.picker?.(pc, caster); // dé choisi (source unique : caps.picker)
-  // Issue COURTE (1 ligne) — le panneau dit déjà qui lance quoi sur qui.
+  // Issue COURTE (1 ligne) — le panneau dit déjà qui lance quoi sur qui. `res.log` (Projectile magique
+  // touché) reste TEL QUEL — ligne de journal du MOTEUR, hors composeur (docs/plans/…jets.md § HORS).
   const outcome = !res
     ? ''
     : res.cast
       ? pc.missile && res.hit
-        ? res.log // Projectile magique touché : LA ligne de journal du moteur (calcul des Dégâts inclus), pas une ligne condensée dupliquée
-        : `Sort lancé !${res.isCritical ? ' (Critique)' : ''}`
-      : res.isFumble
-        ? 'Maladresse — Incantation Imparfaite / Colère des dieux'
-        : res.roll <= res.target
-          ? `Réussite trop faible : DR ${res.sl} < NI ${ni}`
-          : 'Incantation échouée';
+        ? res.log
+        : resultLine(freeCons([`Sort lancé !${res.isCritical ? ' (Critique)' : ''}`]))
+      : resultLine(freeCons([
+          res.isFumble
+            ? 'Maladresse — Incantation Imparfaite / Colère des dieux'
+            : res.roll <= res.target
+              ? `Réussite trop faible : DR ${res.sl} < NI ${ni}`
+              : 'Incantation échouée',
+        ]));
 
   // Rangée MONO d'incantation = le jet du lanceur, porteur de son cycle d'influence (Lancer → Chance/
   // +1 DR/Pacte/Résilience → Appliquer). Pré-jet : ligne en attente (base+mods=cible, dé/DR vides) via

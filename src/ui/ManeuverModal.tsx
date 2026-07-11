@@ -8,8 +8,6 @@ import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { Icon } from './Icon';
 import { OptionChooser, type RollOption } from './OptionChooser';
 import { testBreakdown, testPending } from './breakdown';
-import { JournalLine } from './NarratedLine';
-import { ev } from '../state/combatLog';
 
 /**
  * Modale de MANŒUVRE de créature (Souffle/Vomi/Langue/Regard/Étreinte — LDB 85 - Traits de
@@ -89,7 +87,6 @@ export function ManeuverModal() {
       setup={variable ? <OptionChooser layout="seg" groupLabel="Avantage" options={avOptions} /> : undefined}
       rows={[actorRow]}
       rolled={rolled}
-      outcome={r && <JournalLine className="rm-journal" event={ev('attack', `${attacker.name} : jet ${r.success ? 'réussi' : 'raté'} (DR ${r.sl}).`, attacker.id)} combatants={battle.combatants} />}
       actions={actions}
       onCancel={cancel}
     />

@@ -45,6 +45,7 @@ import { placeCombatant } from './spawn';
 import { type Flow, type FlowTest, type EffectOp, flowFromEffects, flowEffects, testFlow, evalCondition, conditionCtx, leafOpsCtx, EMPTY_FLOW, spellOps } from './flow';
 import { inRect, combatantsWithinRadius } from './combatGeometry';
 import { startCascade, registerCascadeApplier } from './cascade';
+import { freeCons } from './rollSeam';
 import { startGroundPursuit } from './pursuitFlow';
 import { sourceExposureMod, autoExposureMods, drawWaterDisease, isWounded } from '../engine/waterExposure';
 import { loseWounds, addCondition, hasCondition } from '../engine/conditions';
@@ -1416,17 +1417,17 @@ export const EFFECT_HANDLERS: EffectHandlerMap = {
  *  n'est pas blessé » honoré par `drawWaterDisease`. Déjà porteur → rien de neuf (dédoublonnée). */
 registerCascadeApplier('waterExposure', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  if (step.result.success) return { journal: [t('eff.waterSafe', { name: hero.name })] };
+  if (step.result.success) return { consequences: freeCons([t('eff.waterSafe', { name: hero.name })]) };
   const draw = drawWaterDisease(Math.max(0, -step.result.sl), isWounded(hero), battleRng());
   const lines = applyContraction(hero, draw.disease, false, battleRng());
   const rollTxt = draw.modified !== draw.roll ? `${draw.roll} (+${draw.modified - draw.roll} → ${draw.modified})` : String(draw.roll);
   return {
-    journal: [
+    consequences: freeCons([
       t('eff.waterDraw', { roll: rollTxt, disease: diseaseLabel(draw.disease) }),
       ...(lines.length ? lines : [t('eff.waterAlready', { name: hero.name })]),
-    ],
+    ]),
   };
-}, (success, name) => (success ? t('eff.waterSafe', { name }) : t('eff.waterFail', { name })));
+});
 
 /**
  * Applique une liste d'Effets via le REGISTRE `EFFECT_HANDLERS` (1 effet = 1 handler). Un handler qui

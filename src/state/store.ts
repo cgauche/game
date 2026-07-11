@@ -107,6 +107,7 @@ import * as landMarketFlow from './landMarketFlow';
 import * as seaActivities from './seaActivities';
 import * as seaVoyageFlow from './seaVoyageFlow';
 import { startCascade, suspendActiveCascade, resumeSuspendedCascade } from './cascade';
+import { resultLine, freeCons } from './rollSeam';
 import { describeTest } from './flowOutcomes';
 import { createCombatSlice } from './combatSlice';
 
@@ -2061,10 +2062,12 @@ export const useGame = create<GameState>((set, get) => ({
     const hero = actorIn(get(), pc.heroId);
     if (!hero) return;
     if (pc.kind === 'seuil') {
+      // Le jet (roll/target) est DÉJÀ affiché par la rangée de la modale de Corruption — pas de
+      // re-print au journal (#295 Lot 4).
       if (pc.success) {
-        get().log(`${hero.name} contient sa Corruption — pour cette fois (Résistance ${pc.roll}/${pc.target}).`);
+        get().log(resultLine(freeCons([`${hero.name} contient sa Corruption — pour cette fois.`])));
       } else if ((hero.resilience ?? 0) > 0) {
-        get().log(`${hero.name} échoue à contenir sa Corruption — la mutation menace…`);
+        get().log(resultLine(freeCons([`${hero.name} échoue à contenir sa Corruption — la mutation menace…`])));
         set({ pendingRenounce: { heroId: hero.id, testRoll: pc.roll, testTarget: pc.target ?? 0, align: pc.align } });
       } else {
         for (const l of applyMutation(get, set, hero, { roll: pc.roll, target: pc.target ?? 0 }, pc.align)) get().log(l);

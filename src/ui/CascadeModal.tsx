@@ -21,7 +21,7 @@ import { CriticalBody } from './RevealModal';
 import { JournalLine } from './NarratedLine';
 import { Icon } from './Icon';
 import { ev, type CombatEventKind } from '../state/combatLog';
-import { cascadeAppliers, stepInteraction, stepReady } from '../state/cascade';
+import { stepInteraction, stepReady } from '../state/cascade';
 import { FLOWS } from '../state/rollFlowSpecs';
 import type { CascadeStep, CascadeRoll } from '../state/pendings';
 import type { Combatant } from '../engine/types';
@@ -94,19 +94,13 @@ export function CascadeModal() {
   // Conséquence (issue style journal) d'une étape — rendue sous le jet, elle PERSISTE quand on
   // enchaîne (« on ne perd pas les conséquences »). Une étape VALIDÉE porte sa conséquence RÉELLE
   // chiffrée dans `outcome` (lignes de l'applier : « récupère 8 PB », « contracte : Vérole… ») → on
-  // l'affiche telle quelle. Tant qu'elle n'est pas validée (étape courante post-jet), repli sur
-  // l'issue GÉNÉRIQUE du registre (la valeur dépend du jet FINAL, figé à la validation).
+  // l'affiche telle quelle. `cons` vide (#295 Décision 1b) ⇒ rien à noter : la rangée ✓/✗ ±DR
+  // (breakdown, ci-dessous) porte SEULE le verdict — aucun repli « X réussit »/« X échoue ».
   const noteFor = (s: CascadeStep): ReactNode => {
-    const a = actorOf(s);
-    // Jet : lignes de l'applier (`outcome`) ou repli générique du registre. Affichage/choix : contenu
-    // pré-posé dans `outcome` (la conséquence à montrer telle quelle). Sinon : rien à noter.
-    const lines = s.outcome?.length
-      ? s.outcome
-      : (s.result ? [cascadeAppliers[s.kind]?.describe?.(s.result.success, a?.name ?? '') ?? (s.result.success ? `${a?.name ?? ''} réussit.` : `${a?.name ?? ''} échoue.`)] : undefined);
-    if (!lines) return undefined;
+    if (!s.outcome?.length) return undefined;
     // Ton : succès→soin (vert), échec→état (rouge), affichage sans jet→neutre (info).
     const k: CombatEventKind = s.result ? (s.result.success ? 'heal' : 'condition') : 'info';
-    return <>{lines.map((l, i) => <JournalLine key={i} event={ev(k, l, s.actorId)} combatants={pool} />)}</>;
+    return <>{s.outcome.map((l, i) => <JournalLine key={i} event={ev(k, l, s.actorId)} combatants={pool} />)}</>;
   };
   const rowOf = (s: CascadeStep): PanelRow | null => {
     const a = actorOf(s);
@@ -289,10 +283,9 @@ export function CascadeModal() {
   const rolled = cur.target == null ? true : !!res;
   const failed = !!res && !res.success;
   const curPending: PanelRow = { combatant: actor, pending: pendingOf(cur) };
-  // Issue de l'étape COURANTE = case journal proéminente (les figées gardent leur note compacte).
-  const actorName = actor?.name ?? '';
-  const ocText = res ? (cascadeAppliers[cur.kind]?.describe?.(res.success, actorName) ?? (res.success ? `${actorName} réussit.` : `${actorName} échoue.`)) : null;
-  const ocEv: CombatEventKind = res?.success ? 'heal' : 'condition';
+  // `outcome` (résumé de conséquence) n'existe que sur une étape COMMITTÉE ; l'étape COURANTE
+  // s'appuie sur la rangée ✓/✗ ±DR (breakdown) comme SEUL verdict (#295 Décision 1b) : aucun
+  // prologue « X réussit »/« X échoue » ici.
   // Peur de COMBAT = Test ÉTENDU (LDB 21 l.27) : barre de DR cumulé vers l'Indice (#23). Après le jet,
   // on montre le cumul MIS À JOUR (prevDR + DR du jet) ; avant, l'état d'entrée (prevDR).
   const peur = cur.combatPsych && !CIBLE_TYPES.has(cur.combatPsych.kind) && cur.combatPsych.kind !== 'terreur' ? cur.combatPsych : null;
@@ -365,8 +358,6 @@ export function CascadeModal() {
       rolled={rolled}
       /* Rangées : validées FIGÉES (témoins) + courante interactive (pré-jet en attente, post-jet résolue). */
       rows={[...witnessRows(doneRows), curRow]}
-      /* Issue de l'étape COURANTE = case journal proéminente, sous les rangées (>1 rangée → postRollExtra). */
-      postRollExtra={res && ocText ? <JournalLine className="rm-journal" event={ev(ocEv, ocText, actor?.id)} combatants={pool} /> : undefined}
       actions={jetActions}
       disableEscClose
     />

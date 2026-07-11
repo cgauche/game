@@ -10,6 +10,7 @@ import type { Combatant } from '../engine/types';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { Icon } from './Icon';
 import { testBreakdown, testPending } from './breakdown';
+import { resultLine, freeCons } from '../state/rollSeam';
 
 /**
  * Modale du TEST D'ÉQUIPAGE GÉNÉRIQUE en COMBAT (MDG ch.14, « Types de Test d'équipage ») — JUMEAU de
@@ -95,7 +96,7 @@ export function CrewTestModalView({ p, battle, party, owns, roll, reroll, bonus,
       onDarkPact: () => darkPact(part.id),
       onForce: () => force(part.id),
       forceShow: !!res,
-      extra: res && <div className="cs-outcome ok-text">{part.essential ? `${sign(res.sl)} DR ×2` : `${sign(res.sl)} DR`}</div>,
+      extra: res && <div className="cs-outcome ok-text">{resultLine(freeCons([part.essential ? `${sign(res.sl)} DR ×2` : `${sign(res.sl)} DR`]))}</div>,
     }];
   });
 

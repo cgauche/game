@@ -6,6 +6,7 @@ import { RollShell } from '../RollShell';
 import { DrBar } from '../DrBar';
 import { testBreakdown, testPending } from '../breakdown';
 import { Icon } from '../Icon';
+import { resultLine, freeCons } from '../../state/rollSeam';
 
 /**
  * PARAMÉTRAGE de la coquille partagée `RollShell` pour le JET d'un Test ÉTENDU (LDB 12 l.197-211).
@@ -69,7 +70,7 @@ export function useExtendedTestJetProps(): ComponentProps<typeof RollShell> | nu
     ],
     outcome: rolled ? (
       <p className={`rm-journal ${res!.sl >= 0 ? 'ok-text' : 'muted'}`}>
-        {res!.sl >= 0 ? `+${res!.sl}` : res!.sl} DR → total {cum} / {p.targetDR}{willReset ? ' (retombé à 0 !)' : ''}
+        {resultLine(freeCons([`${res!.sl >= 0 ? `+${res!.sl}` : res!.sl} DR → total ${cum} / ${p.targetDR}${willReset ? ' (retombé à 0 !)' : ''}`]))}
       </p>
     ) : undefined,
     /* « Round suivant » cumule + ouvre le Round suivant ; à la réussite, ferme la cascade.

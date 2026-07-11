@@ -115,7 +115,6 @@ registerCascadeApplier(
     }
     return { consequences: freeCons(applyVesselCrewLoss(get, set, extraLoss)) }; // l'autre navire prend la mer (1d10 de plus)
   },
-  (success, name) => (success ? `${name} retrouve la piste des marins embrigadés.` : `${name} ne trouve aucune piste — le navire lève l'ancre.`),
 );
 
 // Choix rançon/Discrétion (MDG 15 l.245) : la rançon LIBÈRE d'office (débit) ; la Discrétion ouvre un Test.
@@ -157,5 +156,4 @@ registerCascadeApplier(
     if (step.result.success) return { consequences: freeCons(['Vos compagnons sont libérés dans l\'ombre.', ...applyVesselCrewLoss(get, set, -recover)]) };
     return { consequences: freeCons(applyVesselCrewLoss(get, set, num(step.meta?.extraLoss))) }; // repéré : le navire lève l'ancre (1d10 de plus)
   },
-  (success, name) => (success ? `${name} libère l'équipage en catimini.` : `${name} est repéré — la libération échoue.`),
 );

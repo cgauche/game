@@ -39,6 +39,7 @@ import { checkPartyWiped } from './partyWipe';
 import { evLines } from './combatLog';
 import { pilotedByHuman } from './netOwnership';
 import { followsCharacterRules } from '../engine/relations';
+import { resultLine, freeCons } from './rollSeam';
 
 /**
  * Ajoute `n` Points de Corruption à `hero`, applique seuil → mutation → limites.
@@ -72,7 +73,9 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   }
   const t = rollTest(testValue(hero, 'resistance'), 'intermediaire', rng);
   if (t.success) {
-    lines.push(`${hero.name} contient sa Corruption — pour cette fois (Résistance : ${t.roll}/${t.target}).`);
+    // Le dé de Résistance est DÉJÀ affiché par la rangée `TableRollLine` de la révélation (dice: t.roll,
+    // ci-dessous) — pas de re-print (#295 Lot 4).
+    lines.push(resultLine(freeCons([`${hero.name} contient sa Corruption — pour cette fois.`])));
     if (pilotedByHuman(get(), hero))
       pushReveal(set, { kind: 'mutation', title: 'Corruption contenue', dice: t.roll, lines: [...lines], subjectId: hero.id, severity: 'minor' });
     return lines;
@@ -109,9 +112,12 @@ export function applyMutation(get: Get, set: Set, hero: Combatant, test?: { roll
   // Effets dérivés immédiats : PA naturels (loadout) + Blessures max si F/E/FM permanents.
   if (hero.items?.length) recomputeLoadout(hero);
   refreshWounds(hero);
-  lines.push(
-    `${hero.name} MUTE${test ? ` (Résistance ${test.roll}/${test.target} ratée)` : ''} : ${m.label} — Corruption ${kind} (${kindRoll} → ${kind === 'physique' ? 'corps' : 'esprit'}, table ${m.roll}).`,
-  );
+  // Le dé de table (`m.roll`) est DÉJÀ affiché par la rangée `TableRollLine` (dice: m.roll, révélation
+  // ci-dessous) — pas de re-print (#295 Lot 4). `test.roll/target` reste (roll DISTINCT, Résistance du
+  // seuil, jamais montré par CETTE rangée).
+  lines.push(resultLine(freeCons([
+    `${hero.name} MUTE${test ? ` (Résistance ${test.roll}/${test.target} ratée)` : ''} : ${m.label} — Corruption ${kind} (${kindRoll} → ${kind === 'physique' ? 'corps' : 'esprit'}).`,
+  ])));
   if (m.note) lines.push(`${m.label} : ${m.note}`);
 
   // Limites de Corruption (l.95) : plus de mutations physiques que BE ou mentales que

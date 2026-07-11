@@ -5205,7 +5205,6 @@ registerCascadeApplier(
     if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
     return { consequences: freeCons([line, ...(phobieLine ? [phobieLine] : []), ...superseded.map((tp) => tr('turn.psychSuperseded', { name: hero.name, psych: psychologyLabel(tp) }))]) };
   },
-  (success, name) => (success ? tr('out.terreurHold', { name }) : tr('cf.psychYields', { name })),
 );
 
 // === TRACE DE DÉCISION IA (DEV uniquement) ==================================================

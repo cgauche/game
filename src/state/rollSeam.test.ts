@@ -3,7 +3,7 @@ import { useGame } from './store';
 import { type CascadeApplier } from './cascade';
 import { spyApplier } from './cascadeTestKit';
 import { setGmSeat } from './netFlow';
-import { openRoll, rollTitle, resultLine, type RollRequest, type Consequence } from './rollSeam';
+import { openRoll, rollTitle, resultLine, freeCons, type RollRequest, type Consequence } from './rollSeam';
 import { modalOwnerOf } from './modalArbiter';
 import { seatOwns } from './netOwnership';
 import type { Combatant } from '../engine/types';
@@ -24,7 +24,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     setGmSeat(useGame.getState, useGame.setState, null);
     for (const kind of ['seam-hero', 'seam-enemy', 'seam-subi', 'seam-batch']) {
       spyApplier(kind, applied, (step) => ({ kind: step.kind, success: !!step.result?.success, sl: step.result?.sl ?? 0 }),
-        (step) => ({ journal: [`${step.label} → ${step.result?.success ? 'réussi' : 'raté'}`] }));
+        (step) => ({ consequences: freeCons([`${step.label} → ${step.result?.success ? 'réussi' : 'raté'}`]) }));
     }
   });
 

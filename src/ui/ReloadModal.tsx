@@ -68,7 +68,8 @@ export function ReloadModalView({
     <RollShell
       flowKey="reload"
       variant="test"
-      title={`Recharger — ${weaponName}`}
+      title="Recharger"
+      subtitle={<>{weaponName}</>}
       /* QUI recharge → portrait dans la ligne de jet ; Projectiles/cible vivent dans le cadre, le cumul dans le DrBar. */
       /* Test ÉTENDU (#23) : barre de DR cumulé vers l'Indice de Recharge. */
       extra={<DrBar cum={rolled ? after : pr.progressBefore} target={pr.reload} />}

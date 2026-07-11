@@ -34,13 +34,8 @@ import { aggregateCrewRolls, rollCrewRole } from './shipManeuver';
  * −10 CT/Ag/Dex, 2ᵉ → reste, 3ᵉ → Blessures) lit le nombre d'échecs précédents de CE héros — c'est
  * cette dépendance qui rend la séquence séquentielle.
  *
- * `journal` : @deprecated canal STRING LIBRE toléré en fallback transitoire (#295 Lot 0, Décision 1c —
- * « union dépréciée `journal` tolérée par `commitStep` »). Lot 1 (#295) a migré river/travel/travelPostes/
- * sea/shipwreck/pursuit/combatFlow/roundHooks/turnHooks/triggeredTest/rest/embrigadement vers
- * `consequences` — restent SEULS clients légitimes (hors périmètre Lot 1, à migrer ensuite) :
- * `combatEffects.ts` (`waterExposure`), `combatManeuvers.ts`, `encounterPsychFlow.ts`. AUCUN nouvel
- * applier ne doit l'utiliser — `commitStep` ne le lit QUE si `consequences` est absent (repli, jamais
- * les deux mélangés).
+ * `consequences` (`Consequence[]`, rendu par `resultLine`) est la SEULE voie de dénouement — aucun
+ * canal de chaîne libre n'existe dans ce type, le compilateur interdit toute réapparition.
  */
 export type CascadeApplier = (
   get: Get,
@@ -48,25 +43,23 @@ export type CascadeApplier = (
   step: CascadeStep,
   hero: Combatant | undefined,
   ctx: { steps: CascadeStep[]; index: number },
-) => { journal?: string[]; consequences?: Consequence[]; insert?: CascadeStep[] } | void;
+) => { consequences?: Consequence[]; insert?: CascadeStep[] } | void;
 
-/** Une entrée de registre : la conséquence appliquée (`apply`) + son libellé d'issue FALLBACK
- *  (préview avant validation, ex. « X récupère des Blessures ») — @deprecated `describe` (ex-
- *  `CascadeDescriber`, #295 Lot 0 Décision 1c : type nommé SUPPRIMÉ, forme structurelle tolérée en
- *  transition tant que `CascadeModal` lit `.describe` pour son repli « réussit »/« échoue », migré au
- *  Lot 2). Ajouter un kind ne touche JAMAIS l'UI. */
+/** Une entrée de registre : la conséquence appliquée (`apply`) seule — l'issue de modale n'a plus de
+ *  repli FALLBACK (`describe` SUPPRIMÉ, #295 Lot 2 : `resultLine`/`Consequence[]` sont la source
+ *  UNIQUE de l'affichage, `cons` vide ⇒ `''`, la rangée ✓/✗ ±DR porte seule le verdict). Ajouter un
+ *  kind ne touche JAMAIS l'UI. */
 export interface CascadeKind {
   apply: CascadeApplier;
-  describe?: (success: boolean, name: string) => string;
 }
 
-/** Registre par `kind` — source unique extensible (+1 entrée par nature d'étape : `apply` + `describe`).
+/** Registre par `kind` — source unique extensible (+1 entrée par nature d'étape : `apply`).
  *  Peuplé par les modules de domaine (restFlow, travelFlow) à leur chargement et par les tests. */
 export const cascadeAppliers: Record<string, CascadeKind> = {};
 
-/** Enregistre (ou remplace) la conséquence d'un `kind` d'étape de cascade (+ son issue de modale). */
-export function registerCascadeApplier(kind: string, apply: CascadeApplier, describe?: CascadeKind['describe']): void {
-  cascadeAppliers[kind] = { apply, describe };
+/** Enregistre (ou remplace) la conséquence d'un `kind` d'étape de cascade. */
+export function registerCascadeApplier(kind: string, apply: CascadeApplier): void {
+  cascadeAppliers[kind] = { apply };
 }
 
 /** Type d'INTERACTION d'une étape, inféré de ses champs (zéro migration des étapes-jet existantes) :
@@ -159,10 +152,8 @@ function commitStep(get: Get, set: Set, steps: CascadeStep[], i: number, liveMer
   if (step.participants && !step.result) step = { ...step, result: aggregateBatchStep(step) };
   const hero = step.actorId ? actorIn(get(), step.actorId) : undefined;
   const out = cascadeAppliers[step.kind]?.apply(get, set, step, hero, { steps, index: i });
-  // `consequences` (#295 Lot 0) prime : rendu par `resultLine` en UNE ligne. Repli `journal` (canal
-  // string libre @deprecated, cf. `CascadeApplier`) tant qu'un applier n'a pas migré (#295 Lot 1) —
-  // jamais les deux mélangés (un applier migré ne renvoie plus `journal`).
-  const journal = out?.consequences ? [resultLine(out.consequences)].filter((l) => l.length > 0) : (out?.journal ?? []);
+  // `consequences` (#295 Lot 0) : rendu par `resultLine` en UNE ligne — seule voie de dénouement.
+  const journal = out?.consequences ? [resultLine(out.consequences)].filter((l) => l.length > 0) : [];
   for (const l of journal) get().log(l);
   // L'étape VALIDÉE garde sa conséquence (`outcome`) pour rester LISIBLE dans la pile à l'écran. Une
   // étape d'AFFICHAGE porte son contenu d'avance (`outcome` pré-rempli) avec un applier muet → on le

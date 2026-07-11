@@ -95,4 +95,31 @@ describe('#236 — gardes du système de composants unifié', () => {
     const offenders = FILES.filter((f) => /kind:\s*'(?:primary|ghost|resource)'/.test(f.src)).map((f) => f.rel);
     expect(offenders, 'Style de proéminence au call-site — retirer `kind` (RollShell déduit par rôle) :\n' + offenders.join('\n')).toEqual([]);
   });
+
+  // ── (vii) Titre de modale de jet composé au call-site (#295 Lot 3, verrou a) : un `title=` de
+  //    `<RollShell>` en TEMPLATE LITERAL (backticks) avec au moins une interpolation ET un tiret
+  //    cadratin est le motif qui a produit `${actor} — ${action} (${skill})` au call-site — SOURCE
+  //    UNIQUE = `rollTitle`/`composeRollLabel` (rollSeam.ts). Formes LÉGALES : littéral nu
+  //    (`'Recharger'`), `pending.label`/`step.label`, `rollTitle(...)`, ou une expression JSX
+  //    (`<>…</>` — pas un template literal JS). ──
+  it('(vii) titre de RollShell : pas de template literal `${…} — …` composé au call-site', () => {
+    const offenders: string[] = [];
+    for (const f of FILES) {
+      const re = /<RollShell[\s\S]{0,600}?\btitle=\{(`[^`]*`)\}/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(f.src))) {
+        const lit = m[1];
+        if (lit.includes('${') && lit.includes('—')) offenders.push(`${f.rel} : ${lit}`);
+      }
+    }
+    expect(offenders, 'Titre composé au call-site — littéral nu, pending.label/step.label, ou rollTitle(...) :\n' + offenders.join('\n')).toEqual([]);
+  });
+
+  it('(vii) fail-closed : le détecteur flague un titre synthétique `${actor} — ${action} (${skill})`', () => {
+    const regressed = "<RollShell\n  flowKey=\"x\"\n  title={`${actor.name} — Frapper (${skill.label})`}\n  rows={[]}\n/>";
+    const re = /<RollShell[\s\S]{0,600}?\btitle=\{(`[^`]*`)\}/g;
+    const m = re.exec(regressed);
+    expect(m).toBeTruthy();
+    expect(m![1].includes('${') && m![1].includes('—')).toBe(true);
+  });
 });

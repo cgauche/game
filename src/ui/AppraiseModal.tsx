@@ -64,9 +64,9 @@ export function AppraiseModalView({
     <RollShell
       flowKey="appraise"
       variant="test"
-      title={detect ? `Détecter l'aura — ${pa.itemName}` : `Évaluer — ${pa.itemName}`}
+      title={detect ? "Détecter l'aura" : 'Évaluer'}
       /* QUI évalue → portrait dans la ligne de jet (plus de nom en clair) ; la cible/DR vit dans le cadre. */
-      subtitle={null}
+      subtitle={<>{pa.itemName}</>}
       rows={[actorRow]}
       rolled={rolled}
       outcome={rolled && (

@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { startCascade, registerCascadeApplier, stepInteraction, stepReady, buildConsequenceSteps } from './cascade';
+import { freeCons } from './rollSeam';
 import { spyApplier } from './cascadeTestKit';
 import type { CascadeStep, ShipManeuverParticipant } from './pendings';
 
@@ -18,7 +19,7 @@ describe('Cascade séquentielle influençable', () => {
     useGame.setState({ battle: null, pendingCascade: null, journal: [] });
     // Conséquence synthétique : enregistre l'étape validée + une ligne de journal.
     spyApplier('tally', applied, (step) => ({ kind: step.kind, success: !!step.result?.success }),
-      (step) => ({ journal: [`${step.label} → ${step.result?.success ? 'réussi' : 'raté'}`] }));
+      (step) => ({ consequences: freeCons([`${step.label} → ${step.result?.success ? 'réussi' : 'raté'}`]) }));
   });
 
   function hero() {
@@ -121,7 +122,7 @@ describe('Cascade séquentielle influençable', () => {
     const h = hero();
     spyApplier('pick', applied, (step) => ({ kind: step.kind, success: step.chosen === 'devier' }),
       (step) => (step.chosen === 'devier' ? { insert: [{ id: 'suite', kind: 'note', actorId: h.id, interactive: true }] } : {}));
-    spyApplier('note', applied, (step) => ({ kind: step.kind, success: true }), (step) => ({ journal: [`${step.id}`] }));
+    spyApplier('note', applied, (step) => ({ kind: step.kind, success: true }), (step) => ({ consequences: freeCons([`${step.id}`]) }));
     const choix: CascadeStep = { id: 'c', kind: 'pick', actorId: h.id, options: [{ key: 'devier', label: 'Dévier' }, { key: 'subir', label: 'Subir' }], interactive: true };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [choix] });
     useGame.getState().cascadeNext(); // pas de choix → no-op
@@ -137,7 +138,7 @@ describe('Cascade séquentielle influençable', () => {
 
   it('étape « affichage » : validée sans jet ni choix', () => {
     const h = hero();
-    spyApplier('note', applied, () => ({ kind: 'note', success: true }), (step) => ({ journal: [`${step.id}`] }));
+    spyApplier('note', applied, () => ({ kind: 'note', success: true }), (step) => ({ consequences: freeCons([`${step.id}`]) }));
     const aff: CascadeStep = { id: 'd', kind: 'note', actorId: h.id, interactive: true };
     startCascade(useGame.getState, useGame.setState, { title: 'T', purpose: 'test', steps: [aff] });
     useGame.getState().cascadeNext(); // affichage → acquitté directement, cascade finalisée
@@ -188,7 +189,7 @@ describe('Cascade séquentielle influençable', () => {
     const h2 = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'Vigie', rng: makeRNG(3) });
     useGame.setState({ party: [h1, h2] });
     spyApplier('crew-batch', applied, (step) => ({ kind: step.kind, success: !!step.result?.success }),
-      (step) => ({ journal: [`${step.label} → DR ${step.result?.sl}`] }));
+      (step) => ({ consequences: freeCons([`${step.label} → DR ${step.result?.sl}`]) }));
     const participants: ShipManeuverParticipant[] = [
       { id: h1.id, label: 'Timonier — Timonier', roleId: 'timonier', essential: true, interactive: true, result: null },
       { id: h2.id, label: 'Vigie — Vigie', roleId: 'vigie', essential: false, interactive: true, result: null },

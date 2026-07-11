@@ -3,6 +3,7 @@ import { CharFrame } from './CharFrame';
 import { RollRow } from './RollRow';
 import { Icon } from './Icon';
 import type { NightEntry } from '../state/restFlow';
+import { resultLine, freeCons } from '../state/rollSeam';
 
 /** Une ligne du PV est-elle un jet de HÉROS RATÉ, à conséquence recalculable et encore relançable
  *  (LDB 12 l.40 : une relance max) ? Seules ces lignes portent l'influence après coup. */
@@ -42,13 +43,13 @@ export function MultiRollList({ entries, influence }: {
               {e.d
                 ? <RollRow
                     actor={actor}
-                    row={{ d: e.d, note: e.text }}
+                    row={{ d: e.d, note: e.text ? resultLine(freeCons([e.text])) : e.text }}
                     rolled
                     interactive={canReroll}
                     rerollable={canReroll}
                     onReroll={() => influence!.reroll(e.id!)}
                   />
-                : (e.text ? <span className="mrl-text">{e.text}</span> : null)}
+                : (e.text ? <span className="mrl-text">{resultLine(freeCons([e.text]))}</span> : null)}
             </div>
           </div>
         );

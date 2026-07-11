@@ -23,6 +23,7 @@ import { t } from '../i18n';
 import { addCondition } from '../engine/conditions';
 import { registerCascadeApplier, startCascade } from './cascade';
 import { describeEncounterPsych } from './flowOutcomes';
+import { freeCons } from './rollSeam';
 
 /** Forme d'un Test de Psychologie de rencontre résolu — conservée pour `describeEncounterPsych`
  *  (l'applier en construit une à partir de l'étape de cascade). */
@@ -135,7 +136,7 @@ registerCascadeApplier(
       else if (CIBLE_TYPES.has(ep.kind)) hero.psychState.push({ type: ep.kind, cible: ep.cible, sourceId: ep.sourceId, active: false });
       else hero.psychState.push({ type: 'peur', sourceId: ep.sourceId, indice: ep.indice, calmeDR: ep.indice });
       set({ party: [...get().party] });
-      return { journal: [`${hero.name} est temporairement insensible à la Psychologie (Détermination).`] };
+      return { consequences: freeCons([`${hero.name} est temporairement insensible à la Psychologie (Détermination).`]) };
     }
     const brise = r.success ? 0 : failConditionAmount(res.failAmount, ep.indice, r.sl);
     if (res.mode === 'terreur') {
@@ -153,7 +154,6 @@ registerCascadeApplier(
       heroId: hero.id, kind: ep.kind, sourceId: ep.sourceId, sourceName: ep.sourceName, indice: ep.indice, cible: ep.cible,
       result: { roll: r.roll, success: r.success, brise, target: r.target, sl: r.sl },
     };
-    return { journal: [describeEncounterPsych(pe, hero.name), ...superseded.map((tp) => t('turn.psychSuperseded', { name: hero.name, psych: psychologyLabel(tp) }))] };
+    return { consequences: freeCons([describeEncounterPsych(pe, hero.name), ...superseded.map((tp) => t('turn.psychSuperseded', { name: hero.name, psych: psychologyLabel(tp) }))]) };
   },
-  (success, name) => (success ? `${name} garde son sang-froid.` : `${name} cède à la Psychologie.`),
 );

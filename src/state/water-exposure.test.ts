@@ -113,7 +113,7 @@ describe('Effet de scène `waterExposure` — cascade + contraction DIRECTE', ()
       h, { steps: [], index: 0 },
     );
     expect((h.diseases ?? []).length).toBe(1); // contractée sans Test supplémentaire
-    expect(out?.journal?.length).toBeGreaterThan(0);
+    expect(out?.consequences?.length).toBeGreaterThan(0);
   });
 
   it('réussite de l\'étape → rien de contracté', () => {

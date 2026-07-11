@@ -9,6 +9,7 @@ import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { OptionChooser, type RollOption } from './OptionChooser';
 import { Icon } from './Icon';
+import { resultLine, freeCons } from '../state/rollSeam';
 
 /** Virages proposés (MDG ch.13 — angle abstrait, choix d'UX) : crans d'octant signés (±1 = 45°, ±2 = 90°). */
 const TURN_OPTIONS: { key: string; label: string; steps: number }[] = [
@@ -78,7 +79,7 @@ export function ShipManeuverModal() {
       onDarkPact: () => darkPact(part.id),
       onForce: () => force(part.id),
       forceShow: !!res,
-      extra: res && <div className="cs-outcome ok-text">{part.essential ? `${res.sl >= 0 ? '+' : ''}${res.sl} DR ×2` : `${res.sl >= 0 ? '+' : ''}${res.sl} DR`}</div>,
+      extra: res && <div className="cs-outcome ok-text">{resultLine(freeCons([part.essential ? `${res.sl >= 0 ? '+' : ''}${res.sl} DR ×2` : `${res.sl >= 0 ? '+' : ''}${res.sl} DR`]))}</div>,
     }];
   });
 

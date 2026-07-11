@@ -166,7 +166,7 @@ registerCascadeApplier('stagePoste', (get, set, step, hero) => {
   else if (r.success && r.stageOutcome === 'gatherInfo') j.push(`${hero.name} glane des informations en route.`);
   set({ party: [...get().party] });
   return { consequences: freeCons(j) };
-}, (ok, n) => (ok ? `${n} tient son poste.` : `${n} échoue à son poste.`));
+});
 
 /** AGRÉGATION de fin d'Étape (fourrage cumulé, camp, cartes, Rencontre) + INSERTION des jets d'Exposition
  *  (option « Attraper froid », l.73), sautés si un « Plein air » a réussi (`suppressExposure`, l.141). */
@@ -278,4 +278,4 @@ registerCascadeApplier('stageExposure', (_get, _set, step, hero) => {
     if (step.meta?.coldSeason) j.push(`${hero.name} grelotte et tousse — un rhume couve (saison froide).`);
   }
   return { consequences: freeCons(j) };
-}, (ok, n) => (ok ? `${n} tient le coup.` : `${n} souffre du froid.`));
+});

@@ -4,16 +4,16 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
- * Cliquet du composeur d'affichage (#295 Lot 1, verrou 2) — le canal DÉPRÉCIÉ `journal:` d'un
- * `CascadeApplier` (cascade.ts `CascadeApplier`) est une chaîne LIBRE : elle peut re-décrire le jet
- * (`${step.result.roll}/${step.result.target}`, « réussi »/« raté ») que la rangée `RollLine` affiche
- * déjà (✓/✗ ±DR) — la duplication que #295 supprime (Décision 1b). `consequences: freeCons(...)`
- * (le canal migré) reste hors périmètre : ses lignes narrent une conséquence DÉJÀ appliquée, jamais le
- * jet lui-même — cf. `docs/plans/2026-07-10-conception-composeur-affichage-jets.md` § Verrous.
+ * Cliquet du composeur d'affichage (#295, verrou 2) — le canal `journal:` d'un `CascadeApplier` a
+ * disparu DU TYPE (`cascade.ts CascadeApplier`, mort du canal) : le compilateur interdit déjà toute
+ * chaîne LIBRE re-décrivant le jet (`${step.result.roll}/${step.result.target}`, « réussi »/« raté »)
+ * que la rangée `RollLine` affiche déjà (✓/✗ ±DR). Ce cliquet reste en CEINTURE (grep, pas seulement
+ * type) — `consequences: freeCons(...)` (le canal migré) reste hors périmètre : ses lignes narrent
+ * une conséquence DÉJÀ appliquée, jamais le jet lui-même — cf.
+ * `docs/plans/2026-07-10-conception-composeur-affichage-jets.md` § Verrous.
  *
- * BASELINE gelée par fichier (patron `ui-ratchets.test.ts`) : toute HAUSSE échoue (régression), toute
- * baseline devenue trop haute (fichier migré) doit être ABAISSÉE. Les fichiers du Lot 1 (#295) sont à
- * baseline ZÉRO — la moindre réapparition du canal `journal:` y échoue immédiatement.
+ * BASELINE gelée par fichier (patron `ui-ratchets.test.ts`), TOUTE à ZÉRO (#295 migration soldée) :
+ * toute HAUSSE échoue (régression).
  */
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url)); // racine du repo
@@ -37,18 +37,12 @@ function dupCounts(src: string): { journalArrays: number; jetDup: number; verdic
   return { journalArrays: snippets.length, jetDup, verdict };
 }
 
-/** Baseline par fichier (relatif à la racine du repo, slashes avant) — ZÉRO pour tout fichier migré au
- *  Lot 1 (#295) : `travelFlow`/`travelPostes`/`seaVoyageFlow`/`shipwreck`/`pursuitFlow`/`combatFlow`/
- *  `combat/roundHooks`/`combat/turnHooks`/`combat/triggeredTest`/`restFlow`/`embrigadementFlow`/
- *  `riverVoyageFlow` (Lot 1 fluvial, patron). Dette GELÉE ailleurs (appliers non encore migrés, hors
- *  périmètre Lot 1) : `combatEffects`/`combatManeuvers`/`encounterPsychFlow` — `jetDup`/`verdict` à 0
- *  partout dès aujourd'hui (aucune duplication RÉELLE mesurée), seul `journalArrays` reste non nul le
- *  temps de leur propre migration. */
-const BASELINE: Record<string, { journalArrays: number; jetDup: number; verdict: number }> = {
-  'src/state/combatEffects.ts': { journalArrays: 2, jetDup: 0, verdict: 0 },
-  'src/state/combatManeuvers.ts': { journalArrays: 1, jetDup: 0, verdict: 0 },
-  'src/state/encounterPsychFlow.ts': { journalArrays: 2, jetDup: 0, verdict: 0 },
-};
+/** Baseline par fichier (relatif à la racine du repo, slashes avant) — ZÉRO partout : `travelFlow`/
+ *  `travelPostes`/`seaVoyageFlow`/`shipwreck`/`pursuitFlow`/`combatFlow`/`combat/roundHooks`/
+ *  `combat/turnHooks`/`combat/triggeredTest`/`restFlow`/`embrigadementFlow`/`riverVoyageFlow` (Lot 1) +
+ *  `combatEffects`/`combatManeuvers`/`encounterPsychFlow` (mort du canal, #295) — plus aucun fichier
+ *  du scope ne porte le canal `journal:` déprécié. */
+const BASELINE: Record<string, { journalArrays: number; jetDup: number; verdict: number }> = {};
 
 const SCOPE = [
   'src/state/travelFlow.ts', 'src/state/travelPostes.ts', 'src/state/seaVoyageFlow.ts', 'src/state/shipwreck.ts',
@@ -57,8 +51,8 @@ const SCOPE = [
   'src/state/combatEffects.ts', 'src/state/combatManeuvers.ts', 'src/state/encounterPsychFlow.ts',
 ];
 
-describe('cliquet composeur — canal journal: déprécié des CascadeApplier (#295 Lot 1, verrou 2)', () => {
-  it('aucun fichier migré (Lot 1) ne réutilise le canal journal: ; la dette gelée ailleurs ne DUPLIQUE pas le jet', () => {
+describe('cliquet composeur — canal journal: déprécié des CascadeApplier (#295, verrou 2, mort du canal)', () => {
+  it('aucun fichier du scope ne réutilise le canal journal: (canal absent DU TYPE)', () => {
     const over: string[] = [];
     const stale: string[] = [];
     for (const rel of SCOPE) {

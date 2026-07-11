@@ -4,6 +4,7 @@ import { freeRerollOf } from '../engine/activeFlags';
 import { RollShell, type RollAction, type RollRowData } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
+import { resultLine, freeCons } from '../state/rollSeam';
 
 /**
  * Test de Dextérité (+20) PAR ACTION de « Main ensanglantée » (Aux Armes bras 46-50, l.2569) : interposé
@@ -69,7 +70,7 @@ export function HandGateModal() {
       rolled={rolled}
       outcome={rolled && (
         <div className="rm-journal">
-          {pg.success ? 'Réussite — il garde son arme bien en main.' : 'Échec — l’arme lui glisse des doigts.'}
+          {resultLine(freeCons([pg.success ? 'Il garde son arme bien en main.' : 'L’arme lui glisse des doigts.']))}
         </div>
       )}
       actions={actions}

@@ -5,6 +5,7 @@ import { canReroll } from '../engine/fortune';
 import { RollShell, type RollRowData, type RollAction } from './RollShell';
 import { testBreakdown, testPending } from './breakdown';
 import { Icon } from './Icon';
+import { resultLine, freeCons } from '../state/rollSeam';
 
 /**
  * Modale « Enfoncer une porte à PLUSIEURS » (EDO Appendice 2) — flux MULTI PARALLÈLE, pendant exact
@@ -55,7 +56,7 @@ export function ForceDoorModal() {
       onDarkPact: () => darkPact(part.id),
       onForce: () => force(part.id),
       forceShow: !!res,
-      extra: res && <div className={`cs-outcome ${res.damage > 0 ? 'ok-text' : 'muted'}`}>{res.damage > 0 ? `−${res.damage} Blessure${res.damage > 1 ? 's' : ''}` : 'Rebondit (0 dégât)'}</div>,
+      extra: res && <div className={`cs-outcome ${res.damage > 0 ? 'ok-text' : 'muted'}`}>{resultLine(freeCons([res.damage > 0 ? `−${res.damage} Blessure${res.damage > 1 ? 's' : ''}` : 'Rebondit (0 dégât)']))}</div>,
     }];
   });
 

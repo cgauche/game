@@ -7,6 +7,7 @@ import { JournalLine } from './NarratedLine';
 import { Icon } from './Icon';
 import { ev } from '../state/combatLog';
 import { DrBar } from './DrBar';
+import { resultLine, freeCons } from '../state/rollSeam';
 
 /**
  * Modale de Dissipation permanente (LDB 46 l.204-207 : Test étendu de Langue (Magick) → NI). « Lancer »
@@ -75,7 +76,7 @@ export function DispelModal() {
       outcome={r && (
         <JournalLine
           className="rm-journal"
-          event={ev('cast', `${caster.name} — Dissipation de ${pd.label} : DR ${r.sl >= 0 ? '+' : ''}${r.sl} (cumul ${cum}/${pd.ni})${cum >= pd.ni ? ' → dissipé !' : ''}.`, caster.id)}
+          event={ev('cast', resultLine(freeCons([`${caster.name} — Dissipation de ${pd.label} : DR ${r.sl >= 0 ? '+' : ''}${r.sl} (cumul ${cum}/${pd.ni})${cum >= pd.ni ? ' → dissipé !' : ''}.`])), caster.id)}
           combatants={battle?.combatants ?? party}
         />
       )}

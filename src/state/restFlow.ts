@@ -290,14 +290,14 @@ registerCascadeApplier('recovery', (_get, _set, step, hero) => {
   else j.push(`${hero.name} ne récupère aucune Blessure cette nuit.`);
   if (wokeUp) j.push(`${hero.name} reprend connaissance.`);
   return { consequences: freeCons(j) };
-}, (ok, n) => (ok ? `${n} récupère des Blessures.` : `${n} ne récupère pas de Blessures cette nuit.`));
+});
 
 registerCascadeApplier('nightmare', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   if (step.result.success) return { consequences: freeCons([`${hero.name} dort d'un sommeil sans rêve.`]) };
   addCondition(hero, 'extenue'); // LDB 21 l.92 : Calme +40 raté → Exténué
   return { consequences: freeCons([`${hero.name} est en proie à de terribles cauchemars (Calme +40 raté) → Exténué.`]) };
-}, (ok, n) => (ok ? `${n} dort d'un sommeil sans rêve.` : `${n} est en proie aux cauchemars → Exténué.`));
+});
 
 registerCascadeApplier('shelter', (get, _set, step, hero) => {
   if (!step.result) return;
@@ -310,7 +310,7 @@ registerCascadeApplier('shelter', (get, _set, step, hero) => {
     consequences: freeCons([sheltered ? `${hero?.name ?? 'Le groupe'} dresse un abri — le camp tient la nuit.` : 'Aucun abri ne protège du temps.']),
     insert,
   };
-}, (ok) => (ok ? `L'abri tient la nuit.` : `Aucun abri ne protège du temps.`));
+});
 
 /** Un échec GENUINE d'Exposition à l'index `idx` a-t-il été ANNULÉ par le délestage d'une Possession
  *  lourde (LDB 18 l.332, chaleur) ? L'étape 'exposure-heat-drop' est TOUJOURS insérée juste après
@@ -357,7 +357,7 @@ registerCascadeApplier('exposure', (_get, _set, step, hero, ctx) => {
     };
   }
   return { consequences: freeCons(applyExposureFailure(hero, priorFails + 1, battleRng(), kind).log) };
-}, (ok, n) => (ok ? `${n} endure l’exposition sans dommage.` : `${n} souffre de l’exposition.`));
+});
 
 registerCascadeApplier('exposure-heat-drop', (_get, _set, step, hero) => {
   if (!hero || step.chosen == null) return;
@@ -366,31 +366,31 @@ registerCascadeApplier('exposure-heat-drop', (_get, _set, step, hero) => {
     return { consequences: freeCons([`${hero.name} se débarrasse de ${name ?? 'sa possession la plus lourde'} — le Test échoué est annulé (LDB 18 l.332).`]) };
   }
   return { consequences: freeCons(applyExposureFailure(hero, Number(step.meta?.failNumber ?? 1), battleRng(), 'chaleur').log) };
-}, (ok, n) => (ok ? `${n} se déleste — le Test échoué est annulé.` : `${n} souffre de l'Exposition (chaleur).`));
+});
 
 registerCascadeApplier('forcedMarch', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   return { consequences: freeCons([applyForcedMarch(hero, step.result.success).line]) }; // l.224 : échec → +Exténué
-}, (ok, n) => (ok ? `${n} tient l'allure.` : `${n} s'épuise → Exténué.`));
+});
 
 registerCascadeApplier('faim', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   const r = applyFaimTest(hero, step.result.success, bonus(effectiveChar(hero, 'endurance')), battleRng());
   if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.422)
   return { consequences: freeCons(r.log) };
-}, (ok, n) => (ok ? `${n} supporte la faim.` : `${n} souffre de la faim.`));
+});
 
 registerCascadeApplier('soif', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   const r = applySoifTest(hero, step.result.success, bonus(effectiveChar(hero, 'endurance')), battleRng());
   if (r.damage > 0) loseWounds(hero, r.damage); // 1d10 ignore les PA (l.420)
   return { consequences: freeCons(r.log) };
-}, (ok, n) => (ok ? `${n} supporte la soif.` : `${n} souffre de la soif.`));
+});
 
 registerCascadeApplier('traumaFracture', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   return { consequences: freeCons(applyFractureEnd(hero, step.result.success, String(step.meta?.severity ?? 'mineur'), String(step.meta?.location ?? ''), String(step.meta?.traumaLabel ?? 'Fracture'))) };
-}, (ok) => (ok ? `La fracture ressoude proprement.` : `La fracture laisse une séquelle permanente.`));
+});
 
 registerCascadeApplier('diseaseTick', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
@@ -399,12 +399,12 @@ registerCascadeApplier('diseaseTick', (_get, _set, step, hero) => {
   if (step.result.success) return { consequences: [] };
   const onFail = (step.meta?.onFail ?? []) as import('../engine/ops').GameOp[];
   return { consequences: freeCons(applyOps(hero, onFail, { rng: battleRng() })) };
-}, (ok, n) => (ok ? `${n} évite l'aggravation.` : `${n} : le symptôme s'aggrave.`));
+});
 
 registerCascadeApplier('diseaseGangrene', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   return { consequences: freeCons(applyDiseaseGangrene(hero, String(step.meta?.diseaseName ?? ''), step.result.success, Number(step.meta?.be ?? 0))) };
-}, (ok, n) => (ok ? `${n} contient la gangrène.` : `${n} : la gangrène progresse.`));
+});
 
 registerCascadeApplier('diseasePersist', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
@@ -415,12 +415,12 @@ registerCascadeApplier('diseasePersist', (_get, _set, step, hero) => {
   if (delta < 0) removeCondition(hero, 'extenue', -delta);
   else if (delta > 0) addCondition(hero, 'extenue', delta);
   return { consequences: freeCons(journal) };
-}, (ok, n) => (ok ? `${n} guérit de sa maladie.` : `${n} : la maladie persiste.`));
+});
 
 registerCascadeApplier('contagion', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   return { consequences: freeCons(applyContraction(hero, String(step.meta?.diseaseName ?? ''), step.result.success, battleRng())) };
-}, (ok, n) => (ok ? `${n} résiste à la contagion.` : `${n} contracte la maladie.`));
+});
 
 /** Valeur de Calme d'un héros (LDB 21 : FM effective + avances de Calme) — cible du jet de cauchemars. */
 function calmeVal(c: Combatant): number {

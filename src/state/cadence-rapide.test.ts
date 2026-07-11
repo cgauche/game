@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { createHero } from '../engine/character';
 import { makeRNG } from '../engine/dice';
 import { startCascade } from './cascade';
+import { freeCons } from './rollSeam';
 import { spyApplier } from './cascadeTestKit';
 import { tickCombatAuto } from './combatAuto';
 import { setRule, resetRule } from '../engine/policy';
@@ -18,7 +19,7 @@ describe('Cadence Rapide — auto-résolution des cascades par le driver', () =>
   beforeEach(() => {
     applied.length = 0;
     useGame.setState({ battle: null, pendingCascade: null, journal: [], net: { ...useGame.getState().net, mode: 'local' } });
-    spyApplier('tally', applied, (step) => step.id, (step) => ({ journal: [step.id] }));
+    spyApplier('tally', applied, (step) => step.id, (step) => ({ consequences: freeCons([step.id]) }));
   });
   afterEach(() => resetRule('combat-cadence'));
 
