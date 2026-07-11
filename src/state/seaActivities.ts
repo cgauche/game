@@ -87,7 +87,9 @@ export function seaActivityBlocked(get: Get, def: ActivityDef): string | null {
   return null;
 }
 
-/** Résout les Activités de la semaine (une par héros, l.268) puis rend la main à la halte de nuit. */
+/** Résout les Activités de la semaine (une par héros, l.268) puis rend la main à la halte de nuit —
+ *  résolution SYNCHRONE post-picks (aucune cascade, aucune rangée nulle part pour les jets ci-dessous) :
+ *  le journal est la SEULE surface, il PORTE les jets (#295 Lot 5, gardé nominativement). */
 export function seaActivitiesConfirm(get: Get, set: Set, picks: Record<string, SeaActivityPick | null>): void {
   const pending = get().pendingSeaActivities;
   if (!pending) return;

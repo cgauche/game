@@ -129,6 +129,8 @@ export function continuePursuitRound(get: Get, set: Set, done: PendingCascade): 
   const slowest = Math.min(...heroM.map((h) => h.m), ...p.foes.map((f) => f.movement));
   const partyTotals = partyRolls.map((r) => r.sl + pursuitMoveBonus(heroM.find((h) => h.id === r.actorId)?.m ?? slowest, slowest));
   const foeTotals = p.foes.map((f) => {
+    // Adversaires (pas des PJ) : aucune rangée nulle part pour leur jet — le journal est la SEULE
+    // surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
     const t = rollTest(f.skill, 'intermediaire', rng);
     get().log(`${f.label} — Mouvement : ${t.roll}/${t.target} → ${t.sl >= 0 ? '+' : ''}${t.sl} DR.`);
     return t.sl + pursuitMoveBonus(f.movement, slowest);

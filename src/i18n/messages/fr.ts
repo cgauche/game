@@ -366,8 +366,8 @@ export const fr = {
   'out.healHarm': 'Le soin blesse {name} ({n} PB).',
   'out.healNone': 'Le soin de {name} reste sans effet.',
 
-  // Conséquences post-jet (`resultLine`, #295 Lot 0, docs/plans/2026-07-10-conception-composeur-affichage-jets.md
-  // Décision 1b) — SANS roll/target/sl/won (montant déjà résolu, la rangée de jet porte seule le verdict).
+  // Conséquences post-jet (`resultLine`, #295) — SANS roll/target/sl/won (montant déjà résolu, la
+  // rangée de jet porte seule le verdict ; garde i18n.test.ts).
   'out.consWounds': '{n} Blessure(s) perdue(s).',
   'out.consHeal': '{n} Blessure(s) récupérée(s).',
   // Passthrough narratif générique (#295 Lot 1) : `text` est COMPOSÉ par l'applier (jamais un gabarit avec

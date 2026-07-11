@@ -366,6 +366,9 @@ export function resolveFlowTest(ctx: ExecCtx, node: Extract<Flow, { kind: 'test'
     const bonusSL = opp.bonusSL ?? 0;
     const o = resolveOpposed(aT, { ...t, sl: t.sl + bonusSL });
     const defenderResists = o.winner !== 'attacker';
+    // Chemin INLINE (défenseur non piloté par un humain — l.358) : ni l'attaquant ni le défenseur
+    // n'ont de rangée `CascadeModal`/RollLine — le journal de combat est la SEULE surface des DEUX
+    // jets de ce Test opposé, il les PORTE (#295 Lot 5, gardé nominativement).
     queueLines(ctx.get, ctx.set, [
       `${attacker.name} (${opp.attackerLabel ?? CHAR_LABELS[opp.attacker]}) ${aT.roll}/${aT.target} (DR ${aT.sl}) vs ${c.name} (${skillLabel}) ${t.roll}/${t.target} (DR ${t.sl}${bonusSL ? `+${bonusSL}` : ''}) — ${defenderResists ? 'résiste' : 'l’emporte'}.`,
     ], c.id);

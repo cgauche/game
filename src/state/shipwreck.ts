@@ -107,6 +107,8 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
   if (!swimmers.some((h) => humanControlled(get(), h))) {
     const lines: string[] = [];
     for (const h of swimmers) {
+      // Aucune rangée nulle part sur ce chemin (repli sans pilote humain, aucune cascade démarrée) —
+      // le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
       const value = testValue(h, 'natation', 'force');
       const t = rollTest(value, diff, rng);
       lines.push(`${h.name} — Natation (${DIFFICULTY_LABELS[diff]}) : ${t.roll}/${t.target} → ${t.success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`);
@@ -171,7 +173,8 @@ registerCascadeApplier('shipwreckSwim', (get, set, step, hero, ctx) => {
   if (!step.result || !hero) return;
   const diff = rule('sea-shipwreck-swim') as Difficulty;
   const success = step.result.success;
-  const line = `${hero.name} — Natation (${DIFFICULTY_LABELS[diff]}) : ${step.result.roll}/${step.result.target} → ${success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`;
+  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+  const line = `${hero.name} — Natation (${DIFFICULTY_LABELS[diff]}) : ${success ? 'rejoint la surface et nage vers la côte.' : 'emporté par les flots (noyé, LDB 18 l.344).'}`;
   if (success) { hero.outOfRencontre = false; hero.exitReason = undefined; } else hero.dead = true;
   set({ party: [...get().party] });
   if (ctx.index !== ctx.steps.length - 1) return { consequences: freeCons([line]) };

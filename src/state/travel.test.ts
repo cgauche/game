@@ -401,7 +401,12 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
     useGame.getState().startTravel('r1', 'pied');
     drainCascade(); // cascade travelDay (poste Approvisionnement) → drainer
     const st = useGame.getState();
-    expect(st.journal.some((l) => l.includes('Approvisionnement'))).toBe(true);
+    // Le Test lui-même est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — succès sans effet
+    // propre (rien à re-print, #295 Lot 5) : on vérifie la CONSÉQUENCE réelle (ration OU Exténué),
+    // quelle que soit l'issue du jet.
+    const gotRation = (st.party[0].items ?? []).length > 0;
+    const exhausted = st.party[0].conditions.some((c) => c.name === 'extenue');
+    expect(gotRation || exhausted).toBe(true);
   });
 
   it('ON + travel-attraper-froid : un Test d’Exposition de fin d’Étape est tenté (héros sans manteau)', () => {
@@ -435,9 +440,12 @@ describe('Voyage par Étapes (EDOC ch.5, règle optionnelle)', () => {
       useGame.setState({ gameTime: CAMPAIGN_START });
       useGame.getState().startTravel('r1', 'pied');
       drainCascade(); // cascade travelDay (Plein air, l'Exposition sautée si réussi) → drainer
-      const j = useGame.getState().journal;
-      // Plein air joué et réussi, et aucune Exposition cette Étape.
-      if (j.some((l) => l.includes('Plein air') && l.includes('réussi')) && !j.some((l) => l.includes("Exposition de fin d'Étape"))) suppressed = true;
+      const st = useGame.getState();
+      const j = st.journal;
+      // Plein air joué et réussi (aucun Exténué — l'échec en porte un, #295 Lot 5 : le Test lui-même
+      // est DÉJÀ affiché par la rangée de l'étape), et aucune Exposition cette Étape.
+      const exhausted = st.party[0].conditions.some((c) => c.name === 'extenue');
+      if (!exhausted && !j.some((l) => l.includes("Exposition de fin d'Étape"))) suppressed = true;
     }
     expect(suppressed).toBe(true);
   });

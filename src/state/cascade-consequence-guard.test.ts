@@ -8,9 +8,8 @@ import { fileURLToPath } from 'node:url';
  * disparu DU TYPE (`cascade.ts CascadeApplier`, mort du canal) : le compilateur interdit déjà toute
  * chaîne LIBRE re-décrivant le jet (`${step.result.roll}/${step.result.target}`, « réussi »/« raté »)
  * que la rangée `RollLine` affiche déjà (✓/✗ ±DR). Ce cliquet reste en CEINTURE (grep, pas seulement
- * type) — `consequences: freeCons(...)` (le canal migré) reste hors périmètre : ses lignes narrent
- * une conséquence DÉJÀ appliquée, jamais le jet lui-même — cf.
- * `docs/plans/2026-07-10-conception-composeur-affichage-jets.md` § Verrous.
+ * type) ; le CONTENU des conséquences (`freeCons(...)`) est verrouillé par le describe « CONTENU »
+ * ci-dessous — doctrine #295 : une ligne de conséquence narre l'effet DÉJÀ appliqué, jamais le jet.
  *
  * BASELINE gelée par fichier (patron `ui-ratchets.test.ts`), TOUTE à ZÉRO (#295 migration soldée) :
  * toute HAUSSE échoue (régression).
@@ -87,5 +86,69 @@ describe('cliquet composeur — canal journal: déprécié des CascadeApplier (#
 
   it('aucun applier des surfaces migrées ne recense de nouveau fichier hors BASELINE (garde exhaustive du scope)', () => {
     for (const rel of Object.keys(BASELINE)) expect(SCOPE).toContain(rel);
+  });
+});
+
+/**
+ * Cliquet du composeur d'affichage (#295, Lot 5 — CONTENU) : le canal `journal:` a disparu (verrou
+ * ci-dessus), mais la migration Lot 1 n'avait touché que le TYPE — pas le TEXTE. Ce second cliquet
+ * scanne, PAR FICHIER du scope, le motif `${…roll}/${…target}` sur TOUT le fichier (pas seulement les
+ * littéraux `journal:`, morts) : un re-print du jet dans un texte de conséquence (`freeCons(...)`,
+ * `tell(...)`, `log(...)`…) juste au-dessus d'une rangée qui l'affiche déjà (CascadeModal, SteamSaveModal,
+ * RenounceModal…) est le symptôme exact du mandat user (« le pire c'est les résultats qui remettent le
+ * résultat du jet visible juste au-dessus »).
+ *
+ * BASELINE ZÉRO pour tout fichier entièrement purgé. BASELINE > 0 = liste NOMINATIVE de sites GARDÉS
+ * (justifiés site par site, en commentaire au-dessus de chaque site) parce que le JOURNAL (ou le journal
+ * de combat) y est la SEULE surface du jet (aucune rangée nulle part : replis IA/synchrones, sous-jets
+ * internes sans étape de cascade propre, adversaires sans PJ, Test opposé inline défenseur non piloté par
+ * un humain) — doctrine #295.
+ */
+const CONTENT_SCOPE = [
+  'src/state/seaVoyageFlow.ts', 'src/state/travelFlow.ts', 'src/state/travelPostes.ts', 'src/state/riverVoyageFlow.ts',
+  'src/state/shipwreck.ts', 'src/state/pursuitFlow.ts', 'src/state/corruptionFlow.ts', 'src/state/combat/triggeredTest.ts',
+  'src/state/store.ts', 'src/state/seaActivities.ts',
+];
+
+/** Sites GARDÉS nominativement (journal = SEULE surface du jet) — toute hausse au-delà = régression. */
+const CONTENT_BASELINE: Record<string, number> = {
+  'src/state/seaVoyageFlow.ts': 2, // Exposition de nuit (multi-Tests/héros) + redémarrage vapeur (`runRestart`) : équipage/ambiance hors modale.
+  'src/state/travelFlow.ts': 4, // bêtes de l'attelage (×2, sans rangée dédiée) + reprise de contrôle IA (×2, repli sans acteur joueur).
+  'src/state/travelPostes.ts': 0,
+  'src/state/riverVoyageFlow.ts': 5, // redressement multi-Round + éclats/calfatage/renflouage IA (repli sans pilote humain, ×4).
+  'src/state/shipwreck.ts': 1, // Natation, repli SANS pilote humain à bord (aucune cascade démarrée).
+  'src/state/pursuitFlow.ts': 1, // Mouvement des adversaires (pas des PJ, aucune rangée).
+  'src/state/corruptionFlow.ts': 0,
+  'src/state/combat/triggeredTest.ts': 2, // Test opposé INLINE (attaquant ET défenseur, aucun piloté humain) — SEULE surface des deux jets.
+  'src/state/store.ts': 0,
+  'src/state/seaActivities.ts': 4, // Activités de mer, résolution synchrone post-picks (aucune cascade, aucune rangée).
+};
+
+function jetEchoCount(src: string): number {
+  return (src.match(/\$\{[^}]*\.roll\}\/\$\{[^}]*\.target\}/g) ?? []).length;
+}
+
+describe('cliquet composeur — CONTENU des conséquences : re-print roll/target hors rangée (#295 Lot 5)', () => {
+  it('aucun fichier du scope CONTENU ne dépasse sa baseline nominative gardée', () => {
+    const over: string[] = [];
+    const stale: string[] = [];
+    for (const rel of CONTENT_SCOPE) {
+      const src = readFileSync(join(ROOT, rel), 'utf8');
+      const n = jetEchoCount(src);
+      const b = CONTENT_BASELINE[rel] ?? 0;
+      if (n > b) over.push(`${rel} : ${n} occurrence(s) (baseline gardée ${b})`);
+      if (n < b) stale.push(`${rel} : baseline gardée ${b}, réel ${n}`);
+    }
+    expect(over, `Régression — re-print roll/target hors rangée (#295 Lot 5) :\n${over.join('\n')}`).toEqual([]);
+    expect(stale, `Baseline(s) gardée(s) PÉRIMÉE(s) — abaisser (site purgé depuis) :\n${stale.join('\n')}`).toEqual([]);
+  });
+
+  it('fail-closed : le compteur détecte un re-print roll/target SYNTHÉTIQUE hors littéral journal:', () => {
+    const regressed = "  return { consequences: freeCons([`${hero.name} : ${step.result.roll}/${step.result.target} → réussi.`]) };";
+    expect(jetEchoCount(regressed)).toBe(1);
+  });
+
+  it('exhaustivité du scope CONTENU (tout fichier touché par le Lot 5 est couvert)', () => {
+    for (const rel of Object.keys(CONTENT_BASELINE)) expect(CONTENT_SCOPE).toContain(rel);
   });
 });

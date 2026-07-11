@@ -685,9 +685,10 @@ registerCascadeApplier('landPeril', (get, set, step) => {
  *  +1 Exténué chacun (`applyEreintant`). */
 registerCascadeApplier('landPerilSurvie', (get, set, step, hero) => {
   if (!step.result) return;
-  const j = [`${hero?.name ?? 'Le groupe'} — Survie en extérieur (+20) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`];
-  if (!step.result.success) j.push(...applyEreintant(get, set));
-  return { consequences: freeCons(j) };
+  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5) ;
+  // succès sans effet (rien à ajouter) → aucune conséquence, l'échec parle par son effet (`applyEreintant`).
+  if (step.result.success) return { consequences: freeCons([`${hero?.name ?? 'Le groupe'} — Survie en extérieur (+20) : un itinéraire de substitution est trouvé.`]) };
+  return { consequences: freeCons(applyEreintant(get, set)) };
 });
 
 /** « Attaqués ! » (l.237) : Perception (+20) INFLUENÇABLE ; réussie → le groupe les voit venir (sans
@@ -696,7 +697,11 @@ registerCascadeApplier('landPerilPerception', (get, set, step, hero) => {
   if (!step.result) return;
   const configured = !!step.meta?.configured;
   const destLabel = String(step.meta?.destLabel ?? '');
-  const j = [`${hero?.name ?? 'Le groupe'} — Perception (+20) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'le groupe les voit venir !' : configured ? 'ÉCHEC — embuscade !' : 'ÉCHEC.'}`];
+  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5) ;
+  // échec sans embuscade configurée (rien à ajouter) → aucune conséquence.
+  const j = step.result.success
+    ? [`${hero?.name ?? 'Le groupe'} — Perception (+20) : le groupe les voit venir !`]
+    : configured ? [`${hero?.name ?? 'Le groupe'} — Perception (+20) : embuscade !`] : [];
   if (configured) j.push(...markLandInterrupt(get, set, {
     kind: 'ambush', scene: String(step.meta?.ambushScene ?? ''), entry: String(step.meta?.ambushEntry ?? '') || undefined,
     encounter: String(step.meta?.ambushEnc ?? ''), noSurprise: step.result.success,
@@ -793,9 +798,11 @@ function forcedPaceDay(get: Get, set: Set, kmLeft: number): ForcedPaceDayResult 
       d: testDetail('Conduite d’attelage', base, roll),
       text: stupefiant ? 'Échec Stupéfiant — Problème de véhicule !' : 'les bêtes repassent au pas', tone: 'bad',
     });
-    out.lines.push(`${driver?.actor.name ?? 'Le conducteur'} — Conduite d'attelage (allure forcée) : ${roll.roll}/${roll.target} → ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`);
+    // Le jet est DÉJÀ affiché par la rangée `day.entries` (MultiRollList) du même recap — pas de
+    // re-print du roll/target (#295 Lot 5) ; le verdict reste pour le journal général (surface SANS rangée).
+    out.lines.push(`${driver?.actor.name ?? 'Le conducteur'} — Conduite d'attelage (allure forcée) : ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`);
     // « chacun doit réussir un Test de Résistance Intermédiaire (+0) ou acquérir un État Exténué » (l.229)
-    // — les bêtes de l'attelage (transport), leur fatigue est journalisée.
+    // — les bêtes de l'attelage (transport, sans rangée dédiée) : le journal PORTE seul leur jet.
     for (let i = 0; i < t.draft!.count; i++) {
       const rt = rollTest(draft.e, 'intermediaire', battleRng());
       if (!rt.success) out.lines.push(`Une bête de l'attelage est Exténuée (Résistance ${rt.roll}/${rt.target}).`);
@@ -834,6 +841,8 @@ function applyVehicleProblemToTravel(get: Get, set: Set, out: Pick<ForcedPaceDay
     // maîtrise = Test de Conduite d'attelage Intermédiaire (+0) du conducteur.
     const driver = partyAssisted(get().party, 'conduite-d-attelage');
     const rt = rollTest(driver?.value ?? 0, 'intermediaire', battleRng());
+    // Repli IA/synchrone (`forcedPaceDay`) : aucune rangée nulle part pour ce jet — le journal est
+    // la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
     out.lines.push(`Problème de véhicule — ${entry.label}.`, `${driver?.actor.name ?? 'Le conducteur'} tente de reprendre le contrôle : ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
     if (rt.success) return { vehicleOut: false, vehicleLame: false };
     entry = rollVehicleProblem(96); // 96-00 = Accident (table verbatim)
@@ -908,7 +917,8 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   const walkKmh = t.movement;
   if (step.result.success) {
     km += 1; hours += 1 / gallopKmh;
-    const j = [`${name} — Conduite d'attelage (allure forcée) : ${step.result.roll}/${step.result.target} → l'attelage tient l'allure de course.`];
+    // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+    const j = [`${name} — Conduite d'attelage (allure forcée) : l'attelage tient l'allure de course.`];
     if (hours < plan.hoursPerDay - 1e-9 && km < kmLeft - 1e-9 && step.actorId && hero) {
       return { consequences: freeCons(j), insert: [buildForcedPaceStep({ actor: hero, value: driverBase }, kmLeft, galloped + 1, km, hours)] };
     }
@@ -916,7 +926,9 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
     return { consequences: freeCons(j) };
   }
   const stupefiant = step.result.sl <= -6; // Échec Stupéfiant (EDOC 07 l.253)
-  const j = [`${name} — Conduite d'attelage (allure forcée) : ${step.result.roll}/${step.result.target} → ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`];
+  // Le jet du conducteur est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print
+  // (#295 Lot 5) ; les bêtes de l'attelage n'ont AUCUNE rangée dédiée — le journal les porte seul.
+  const j = [`${name} — Conduite d'attelage (allure forcée) : ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`];
   for (let i = 0; i < t.draft!.count; i++) {
     const rt = rollTest(draft.e, 'intermediaire', battleRng());
     if (!rt.success) j.push(`Une bête de l'attelage est Exténuée (Résistance ${rt.roll}/${rt.target}).`);
@@ -942,6 +954,8 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
         meta: { finalKm, finalHours },
       }] };
     }
+    // Repli SANS acteur joueur (pas d'étape insérée ci-dessus) : aucune rangée nulle part pour ce jet
+    // — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
     const rt = rollTest(driverBase, 'intermediaire', battleRng());
     j.push(`${name} tente de reprendre le contrôle : ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
     if (rt.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { consequences: freeCons(j) }; }
@@ -962,7 +976,8 @@ registerCascadeApplier('landForcedPaceControl', (get, set, step, hero) => {
   const m = step.meta!;
   const finalKm = Number(m.finalKm), finalHours = Number(m.finalHours);
   const name = hero?.name ?? 'Le conducteur';
-  const j = [`${name} tente de reprendre le contrôle : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`];
+  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+  const j = [`${name} tente de reprendre le contrôle : ${step.result.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`];
   if (step.result.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { consequences: freeCons(j) }; }
   const entry = rollVehicleProblem(96); // 96-00 = Accident (table verbatim)
   const outcome = applyVehicleProblemEffects(get, set, entry, j);

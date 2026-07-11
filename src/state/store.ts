@@ -2077,7 +2077,8 @@ export const useGame = create<GameState>((set, get) => ({
     }
     const gain = corruptionGain(pc.level ?? 'mineure', !!pc.success, pc.sl ?? 0);
     if (gain <= 0) {
-      get().log(`${hero.name} repousse l'Influence corruptrice (${pc.skill} ${pc.roll}/${pc.target}).`);
+      // Le jet est DÉJÀ affiché par la rangée de la modale de Corruption — pas de re-print (#295 Lot 5).
+      get().log(resultLine(freeCons([`${hero.name} repousse l'Influence corruptrice.`])));
       return;
     }
     const lines = gainCorruption(get, set, hero, gain, pc.align);

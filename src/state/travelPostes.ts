@@ -154,10 +154,12 @@ registerCascadeApplier('stagePoste', (get, set, step, hero) => {
   const plan = get().travelPlan;
   if (plan?.stage) set({ travelPlan: { ...plan, stage: { ...plan.stage, results: [...plan.stage.results, r] } } });
 
+  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5) ;
+  // succès sans effet (rien à ajouter) → aucune conséquence. Activité SANS Test (`r.roll == null`) :
+  // aucune rangée de jet nulle part → le journal annonce seule l'exécution.
   const j: string[] = [];
-  j.push(r.roll != null
-    ? `${hero.name} — ${def.label} : ${r.roll}/${r.target} → ${r.success ? `réussi (DR ${r.sl})` : r.extenue ? 'échec (Exténué)' : 'échec'}`
-    : `${hero.name} — ${def.label} (effectué).`);
+  if (r.roll == null) j.push(`${hero.name} — ${def.label} (effectué).`);
+  else if (r.extenue) j.push(`${hero.name} — ${def.label} : Exténué.`);
   if (r.ops.length) j.push(...applyOps(hero, r.ops));
   if (r.extenue) addCondition(hero, 'extenue', 1);
   // Issues INDIVIDUELLES (Récupérer / Pratiquer / Recueillir infos) : récit (systèmes dédiés câblés ailleurs).
@@ -270,12 +272,13 @@ registerCascadeApplier('stageExposure', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   const weatherLabel = String(step.meta?.weatherLabel ?? '');
   if (step.meta?.warded) return { consequences: freeCons([`${hero.name} ignore le froid et les intempéries (protection magique).`]) };
-  const j = [`${hero.name} — Exposition de fin d'Étape (${weatherLabel}) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'tient le coup.' : 'transi par le froid.'}`];
-  if (!step.result.success) {
-    const prior = (hero.activeEffects ?? []).filter((e) => e.effectId === 'exposition-froid').length;
-    const rank = prior >= 10 ? 3 : prior >= 3 ? 2 : 1;
-    j.push(...applyExposureFailure(hero, rank, battleRng()).log);
-    if (step.meta?.coldSeason) j.push(`${hero.name} grelotte et tousse — un rhume couve (saison froide).`);
-  }
+  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5) ;
+  // succès sans effet (rien à ajouter) → aucune conséquence.
+  if (step.result.success) return { consequences: freeCons([]) };
+  const j = [`${hero.name} — Exposition de fin d'Étape (${weatherLabel}) : transi par le froid.`];
+  const prior = (hero.activeEffects ?? []).filter((e) => e.effectId === 'exposition-froid').length;
+  const rank = prior >= 10 ? 3 : prior >= 3 ? 2 : 1;
+  j.push(...applyExposureFailure(hero, rank, battleRng()).log);
+  if (step.meta?.coldSeason) j.push(`${hero.name} grelotte et tousse — un rhume couve (saison froide).`);
   return { consequences: freeCons(j) };
 });

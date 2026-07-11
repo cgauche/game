@@ -434,6 +434,8 @@ registerCascadeApplier('riverCapsize', (get, set, step) => {
   const be = capsizeSinkTurns(get().travelPlan!.vehicle!.characteristics?.endurance ?? 0);
   const pilotValue = Number(step.base ?? 0) + Number(step.meta?.savoir ?? 0);
   const r = resolveCapsizeRighting(pilotValue, be, rng);
+  // Redressement multi-Round SYNCHRONE (sous-jets internes, hors cascade) : aucune rangée nulle part —
+  // le journal est la SEULE surface, il PORTE les jets (#295 Lot 5, gardé nominativement).
   j.push(`Redressement (${be} Round(s), Navigation Accessible +20, −5 cumulatif) : ${r.rounds.map((x) => `${x.roll}/${x.target}${x.success ? '✓' : ''}`).join(' · ')}`);
   if (r.sank) { sinkBoat(get, set, (l) => j.push(...l), `Le bateau n'est pas redressé et coule en ${be} tours (T2C ch.5 l.40).`); return { consequences: freeCons(j) }; }
   j.push(`Le bateau est redressé en ${r.rounds.length} Round(s) — il dérive le temps de reprendre le contrôle.`);
@@ -594,6 +596,8 @@ function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoy
         result: null, interactive: true, meta: { dmg: crit.splinterDamage, conditionId: crit.conditionId ?? '', location },
       });
     } else if (victim) {
+      // Repli SANS pilote humain (pas d'étape insérée ci-dessus) : aucune rangée nulle part pour ce
+      // jet — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
       const dodge = crit.initiativeTest ? rollTest(testValue(victim, undefined, 'initiative'), 'intermediaire', rng) : null;
       if (dodge?.success) {
         tell([`Critique au ${location} — ${victim.name} esquive les éclats (Initiative ${dodge.roll}/${dodge.target}).`]);
@@ -635,6 +639,8 @@ function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => v
   }
   const rng = battleRng();
   if (repair) {
+    // Repli SANS pilote humain (pas d'étape insérée ci-dessus) : aucune rangée nulle part pour ce
+    // jet — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
     const t = rollTest(repair.value, TEMPORARY_REPAIR.difficulty, rng);
     tell([`Coque percée (le bateau coule en ~${minutes} min, l.103) — calfatage d'urgence (Métier ${DIFFICULTY_LABELS[TEMPORARY_REPAIR.difficulty]}) : ${t.roll}/${t.target} → ${t.success ? 'la voie d\'eau est colmatée.' : 'le calfatage ne tient pas.'}`]);
     if (t.success) {
@@ -716,6 +722,8 @@ export function applyEchouage(get: Get, set: Set, tell: (l: string[]) => void): 
   const coque = get().travelPlan!.vehicle!;
   damageVesselHull(get, set, coque, echouageDamage());
   const { difficulty, encTxt } = echouageDifficulty(get);
+  // Chemin IA/synchrone (`riverEchouageForce` gate l'acteur JOUEUR ci-dessus) : aucune rangée nulle
+  // part pour ce jet — le journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
   const force = partyAssisted(get().party, undefined, 'force');
   const t = force ? rollTest(force.value, difficulty, battleRng()) : null;
   tell([`Le bateau s'échoue (coque −${echouageDamage()} Dégâts, l.99)${t ? ` — renflouage (Force ${DIFFICULTY_LABELS[difficulty]}${encTxt}) : ${t.roll}/${t.target} → ${t.success ? 'remis à flot.' : 'il faudra s\'y reprendre.'}` : '.'}`]);

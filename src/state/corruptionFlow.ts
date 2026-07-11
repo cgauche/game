@@ -84,7 +84,8 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
   // « Je te renie ! » (LDB 17 l.71) : un pilote humain avec de la Résilience peut refuser la mutation —
   // choix par modale ; la mutation (applyMutation) n'est appliquée qu'à la résolution.
   if (pilotedByHuman(get(), hero) && (hero.resilience ?? 0) > 0) {
-    lines.push(`${hero.name} échoue à contenir sa Corruption (Résistance ${t.roll}/${t.target}) — la mutation menace…`);
+    // Le jet (roll/target) est repris par la rangée de `RenounceModal` juste ensuite — pas de re-print (#295 Lot 5).
+    lines.push(`${hero.name} échoue à contenir sa Corruption — la mutation menace…`);
     set({ pendingRenounce: { heroId: hero.id, testRoll: t.roll, testTarget: t.target, align } });
     return lines;
   }
@@ -113,10 +114,10 @@ export function applyMutation(get: Get, set: Set, hero: Combatant, test?: { roll
   if (hero.items?.length) recomputeLoadout(hero);
   refreshWounds(hero);
   // Le dé de table (`m.roll`) est DÉJÀ affiché par la rangée `TableRollLine` (dice: m.roll, révélation
-  // ci-dessous) — pas de re-print (#295 Lot 4). `test.roll/target` reste (roll DISTINCT, Résistance du
-  // seuil, jamais montré par CETTE rangée).
+  // ci-dessous) — pas de re-print (#295 Lot 4). Le jet de Résistance du seuil (`test`) est lui aussi
+  // déjà affiché par SA propre rangée (Corruption/Renounce) en amont — jamais réimprimé ici (#295 Lot 5).
   lines.push(resultLine(freeCons([
-    `${hero.name} MUTE${test ? ` (Résistance ${test.roll}/${test.target} ratée)` : ''} : ${m.label} — Corruption ${kind} (${kindRoll} → ${kind === 'physique' ? 'corps' : 'esprit'}).`,
+    `${hero.name} MUTE : ${m.label} — Corruption ${kind} (${kindRoll} → ${kind === 'physique' ? 'corps' : 'esprit'}).`,
   ])));
   if (m.note) lines.push(`${m.label} : ${m.note}`);
 

@@ -834,7 +834,8 @@ registerCascadeApplier('sea-force-pace', (get, set, step) => {
   const won = step.result.success;
   const forcePace = Number(step.meta?.forcePace ?? 0);
   patchSea(get, set, { paceToday: won ? 'won' : 'lost' });
-  const j = [`${step.label} : ${step.result.roll}/${step.result.target} → ${won ? `+${forcePace} M aujourd'hui.` : 'le navire garde son allure.'}`];
+  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+  const j = [`${step.label} : ${won ? `+${forcePace} M aujourd'hui.` : 'le navire garde son allure.'}`];
   noteSeaLine(get, set, j);
   return { consequences: freeCons(j) };
 });
@@ -848,7 +849,8 @@ registerCascadeApplier('sea-priere', (get, set, step) => {
   const manannD = Number(step.meta?.manannD ?? 0);
   const moraleD = Number(step.meta?.moraleD ?? 0);
   const success = step.result.success;
-  const j = [`${step.label} : ${step.result.roll}/${step.result.target} → ${success ? 'Manann est apaisé/honoré.' : 'la prière se perd dans les embruns.'}`];
+  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+  const j = [`${step.label} : ${success ? 'Manann est apaisé/honoré.' : 'la prière se perd dans les embruns.'}`];
   const apply = manannD >= 0 ? success : !success;
   if (apply) {
     if (manannD) tellManann(get, set, manannD);
@@ -870,23 +872,25 @@ registerCascadeApplier('sea-scorbut', (get, set, step, hero) => {
   if (!step.result || !hero) return;
   const soup = !!step.meta?.soup;
   const success = step.result.success;
-  const line = `${hero.name} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : ${step.result.roll}/${step.result.target} → ${success ? 'tient bon.' : 'CONTRACTÉ.'}`;
-  if (!success) {
-    const d = contractDisease('scorbut', battleRng());
-    if (d) hero.diseases = [...(hero.diseases ?? []), d];
-  }
+  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+  // Succès sans effet (l'exposition « pour cette fois » n'a rien à ajouter) → aucune conséquence.
+  if (success) { set({ party: [...get().party] }); return { consequences: freeCons([]) }; }
+  const d = contractDisease('scorbut', battleRng());
+  if (d) hero.diseases = [...(hero.diseases ?? []), d];
   set({ party: [...get().party] });
-  return { consequences: freeCons([line]) };
+  return { consequences: freeCons([`${hero.name} — scorbut (un mois en mer${soup ? ', soupe de chou' : ''}) : contracté.`]) };
 });
 
 /** Épuisement (MDG 13 l.109-111, `klass:'subi'`) : même patron que Scorbut ci-dessus. */
 registerCascadeApplier('sea-epuisement', (get, set, step, hero) => {
   if (!step.result || !hero) return;
   const success = step.result.success;
-  const line = `${hero.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[exhaustionDifficulty(true)]}) : ${step.result.roll}/${step.result.target} → ${success ? 'tient bon.' : '+1 Exténué.'}`;
-  if (!success) addCondition(hero, 'extenue');
+  // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+  // Succès sans effet (rien à ajouter) → aucune conséquence.
+  if (success) { set({ party: [...get().party] }); return { consequences: freeCons([]) }; }
+  addCondition(hero, 'extenue');
   set({ party: [...get().party] });
-  return { consequences: freeCons([line]) };
+  return { consequences: freeCons([`${hero.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[exhaustionDifficulty(true)]}) : +1 Exténué.`]) };
 });
 
 /** Applique les MILLES du jour depuis le total du Test de Progression (±10 %/DR, ch.15 l.78). Renvoie
@@ -1026,6 +1030,8 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
     for (const h of get().party) {
       if (h.dead) continue;
       const r = exposureNight(h, expCount, testValue(h, 'resistance', 'endurance'), rng, { kind: tdef.exposure, difficulty: tdef.difficulty });
+      // Résolution SYNCHRONE (N Tests/nuit par héros, hors cascade) : aucune rangée nulle part — le
+      // journal est la SEULE surface, il PORTE le jet (#295 Lot 5, gardé nominativement).
       tell(get, set, [`${h.name} — Exposition (${tdef.label}, ${expCount} Test${expCount > 1 ? 's' : ''} de Résistance ${DIFFICULTY_LABELS[tdef.difficulty ?? 'intermediaire']}) : ${r.rolls.map((x) => `${x.roll}/${x.target}`).join(' · ')}${r.failures ? '' : ' — tient le coup.'}`, ...r.log]);
       expireExposureEffects(h, get().gameTime + MINUTES_PER_DAY); // dissipation après 24 h (purge #T3)
     }
@@ -1370,6 +1376,7 @@ function runRestart(get: Get, set: Set, eng: Combatant, restart: NonNullable<Ste
       let t = rollTest(value, step.difficulty, rng);
       for (let i = 0; !t.success && i < 20; i++) t = rollTest(value, step.difficulty, rng);
       lastDR = Math.max(0, t.sl);
+      // Aucune rangée nulle part (équipage abstrait, hors modale) — le journal PORTE le jet (#295 Lot 5, gardé nominativement).
       tell(get, set, [`${eng.name} — ${label} ${DIFFICULTY_LABELS[step.difficulty]} : ${t.roll}/${t.target} → moteur relancé (DR ${lastDR}).`]);
     }
   }
@@ -1448,12 +1455,13 @@ function openSteamSave(get: Get, set: Set, failDamage: string, rng: RNG): void {
  *  s'était fermée SANS insérer la suite du jour, cf. son applier — `pendingSteamSave` suspendait). */
 export function resolveSteamSave(get: Get, set: Set, p: PendingSteamSave): void {
   const eng = get().party.find((h) => h.id === p.actorId);
+  // Le jet est DÉJÀ affiché par la rangée de `SteamSaveModal` (`p.roll`/`p.target`) — pas de re-print (#295 Lot 5).
   if (eng && !p.success) {
     const lines = applyOps(eng, p.scaldOps, { rng: battleRng(), now: get().gameTime });
     set({ party: [...get().party] });
-    tell(get, set, [`${eng.name} — Initiative ${p.roll}/${p.target} : ébouillanté par le jet de vapeur !`, ...lines]);
+    tell(get, set, [`${eng.name} — ébouillanté par le jet de vapeur !`, ...lines]);
   } else if (eng) {
-    tell(get, set, [`${eng.name} — Initiative ${p.roll}/${p.target} : esquive le jet de vapeur.`]);
+    tell(get, set, [`${eng.name} — esquive le jet de vapeur.`]);
   }
   if (get().travelPlan?.sea) continueSeaDayFromPostProgression(get, set);
 }

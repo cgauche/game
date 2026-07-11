@@ -11,9 +11,8 @@ type Params = Record<string, string | number>;
 
 /** Sous-ensemble `out.*` du catalogue — clés de CONSÉQUENCE (`resultLine`, `rollSeam.ts`, #295 Lot 0).
  *  `OutVars` reste un `Record` non typé PAR clé (comme `Params` ci-dessus, `t()` n'a pas de typage
- *  par clé) ; le paramètre générique est gardé pour matcher la signature du plan de conception
- *  (docs/plans/2026-07-10-conception-composeur-affichage-jets.md Décision 1b), extensible sans
- *  casser l'appelant si `t()` se type un jour par clé. */
+ *  par clé) ; le paramètre générique est gardé pour la signature de `Consequence` (#295), extensible
+ *  sans casser l'appelant si `t()` se type un jour par clé. */
 export type OutKey = Extract<MsgKey, `out.${string}`>;
 export type OutVars<_K extends OutKey = OutKey> = Params;
 

@@ -119,7 +119,9 @@ describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine éga
     expect(st.scene?.id).toBe('lieu-b-scene');
     expect((st.party[0].items ?? []).length).toBe(1); // ration trouvée
     const j = st.journal.join('\n');
-    expect(j).toContain('Approvisionnement : 1/70 → réussi (DR 7)');
+    // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — succès sans effet PROPRE (le
+    // gain de ration vient de l'agrégation de fin d'Étape) → aucune ligne de verdict (#295 Lot 5).
+    expect(j).not.toContain('réussi (DR');
     expect(j).toContain('reçoit une ration trouvée en chemin');
   });
 
@@ -133,7 +135,8 @@ describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine éga
     const st = get();
     expect((st.party[0].items ?? []).length).toBe(0);
     expect(st.party[0].conditions.some((c) => c.name === 'extenue')).toBe(true);
-    expect(st.journal.join('\n')).toContain('Approvisionnement : 78/70 → échec (Exténué)');
+    // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+    expect(st.journal.join('\n')).toContain('Approvisionnement : Exténué.');
   });
 
   it('Exposition seed 2 : transi → escalade de froid (3 effets exposition-froid, rang 1)', () => {
@@ -146,7 +149,8 @@ describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine éga
     const st = get();
     const eff = (st.party[0].activeEffects ?? []).map((e) => e.effectId);
     expect(eff.filter((e) => e === 'exposition-froid').length).toBe(3); // rang 1 : −10 CT/Ag/Dex
-    expect(st.journal.join('\n')).toContain("Exposition de fin d'Étape (Pluie) : 33/20 → transi par le froid.");
+    // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+    expect(st.journal.join('\n')).toContain("Exposition de fin d'Étape (Pluie) : transi par le froid.");
   });
 
   it('Péripétie seed 2 : « Voyage éreintant », Survie 29/70 réussie → pas de retard', () => {
@@ -160,7 +164,8 @@ describe('PARITÉ — issues IDENTIQUES à l’ancien chemin inline (graine éga
     expect(st.party[0].conditions.some((c) => c.name === 'extenue')).toBe(false); // Survie réussie → pas d'Exténué
     const j = st.journal.join('\n');
     expect(j).toContain('Voyage éreintant');
-    expect(j).toContain('Survie en extérieur (+20) : 29/70 → un itinéraire de substitution est trouvé.');
+    // Le jet est DÉJÀ affiché par la rangée de l'étape (CascadeModal) — pas de re-print (#295 Lot 5).
+    expect(j).toContain('Survie en extérieur (+20) : un itinéraire de substitution est trouvé.');
   });
 
   it('Rencontre seed 2 : échec d’Approvisionnement → Rencontre dangereuse (texte verbatim)', () => {
