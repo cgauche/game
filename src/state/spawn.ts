@@ -5,7 +5,7 @@
 import { Combatant, Characteristics, CHAR_KEYS, BodyShape, SkillInstance, TalentInstance, type AuthoredShipPoste, type NavalTraitRef } from '../engine/types';
 import { skillCharacteristicById } from '../engine/character';
 import { isOptionalNote, type TraitInstance, type TraitList, type OptionalEntry, type OptionalSwap } from '../engine/statEntry';
-import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, findTrappingById, findTrappingByLabel, CreatureData, type SkillRef, type TalentRef } from '../data';
+import { findCreatureById, findSkillById, findTalentById, findSpellById, findVehicleById, findTrappingById, CreatureData, type SkillRef, type TalentRef } from '../data';
 import { vehicleCombatant } from '../engine/vehicle';
 import { inanimateCombatant } from '../engine/inanimate';
 import { hullArmourBonus } from '../engine/navalTraits';
@@ -20,7 +20,7 @@ import { traitCharMods, traitBonusWoundsBE, isMindless, mutationsAtSpawn, isSwar
 import { rollMutation, mutationById } from '../data/mutations';
 import { makeRNG } from '../engine/dice';
 import { groupsFor } from '../engine/groups';
-import { weaponsFromTraits, armourFromTraits, renderWeaponsFromTraits, weaponFromLabel } from '../engine/creatureEquip';
+import { weaponsFromTraits, armourFromTraits, renderWeaponsFromTraits, weaponFromId } from '../engine/creatureEquip';
 import { hashSeed } from '../engine/dice';
 import { bodyShapeForSpecies } from '../engine/bodyForm';
 
@@ -395,18 +395,18 @@ export function spawnEnemy(
   // Tenue éditée (libellé) → portée par le rig (via Combatant.career, qui sert de tenue) en
   // combat comme en exploration.
   if (a?.tenue) c.career = a.tenue;
-  // `opts.weapon` est une arme d'AUTHORING/RENDU (libellé, sans Recharge dérivée) — elle n'alimente le
-  // COMBAT que si les Traits n'ont PAS déjà produit une arme explicite du MÊME type (melee/ranged) ;
-  // sinon DUPLICATION (l'arme de rendu, sans reload, passe en tête de `c.weapons` et masque celle du
-  // Trait qui porte la Recharge, LDB 62 l.333 — #126/#145). Un `weapon:` d'un type ABSENT des Traits
-  // (ex. Garde du Village posté « archer » : trait Arme mêlée générique + `weapon:'Arc'`) reste additif,
-  // légitime (ne duplique rien). `renderWeaponsFromTraits` = armes EXPLICITES sans repli générique.
+  // `opts.weapon` est une arme d'AUTHORING/RENDU (`trappingId` du catalogue — `SceneEntity.weapon`,
+  // doctrine ids-only, MÊME résolution que le rendu d'exploration `enemyRigProfile`/`weaponFromId`,
+  // #258) — elle n'alimente le COMBAT que si les Traits n'ont PAS déjà produit une arme explicite du
+  // MÊME type (melee/ranged) ; sinon DUPLICATION (l'arme de rendu, sans reload, passe en tête de
+  // `c.weapons` et masque celle du Trait qui porte la Recharge, LDB 62 l.333 — #126/#145). Un `weapon:`
+  // d'un type ABSENT des Traits (ex. Garde du Village posté « archer » : trait Arme mêlée générique +
+  // `weapon:'arc'`) reste additif, légitime (ne duplique rien). `renderWeaponsFromTraits` = armes
+  // EXPLICITES sans repli générique.
   if (opts?.weapon) {
-    const labelWeapon = weaponFromLabel(opts.weapon);
-    if (!findTrappingByLabel(opts.weapon))
-      console.warn(`[spawn] arme « ${opts.weapon} » introuvable au catalogue (entité « ${id} ») — arme générique de rendu (#223)`);
-    if (!renderWeaponsFromTraits(c.traits ?? []).some((w) => w.type === labelWeapon.type)) {
-      c.weapons = [labelWeapon, ...c.weapons];
+    const idWeapon = weaponFromId(opts.weapon); // avertit déjà (#223) si le trappingId ne résout pas
+    if (!renderWeaponsFromTraits(c.traits ?? []).some((w) => w.type === idWeapon.type)) {
+      c.weapons = [idWeapon, ...c.weapons];
     }
   }
   // Arme à distance CHARGÉE au spawn (miroir du héros dans startCombat) — LDB 62 l.333 : le `loaded` ne gate

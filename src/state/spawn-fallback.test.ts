@@ -36,16 +36,22 @@ describe('#223 — repli bruyant de réf. irrésoluble (réf. FOURNIE-mais-fauss
   });
 });
 
-describe('#223 — arme d’authoring hors catalogue', () => {
-  it('libellé inconnu → console.warn (l’arme de rendu reste, générique)', () => {
+describe('#223/#258 — arme d’authoring (trappingId) hors catalogue', () => {
+  it('trappingId inconnu → console.warn (l’arme de rendu reste, générique)', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    spawnEnemy(undefined, { name: 'PNJ', char: { B: 10 } }, 'w1', POS, { weapon: 'Hache' });
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('« Hache »'));
+    spawnEnemy(undefined, { name: 'PNJ', char: { B: 10 } }, 'w1', POS, { weapon: 'hache-inconnue' });
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('« hache-inconnue »'));
   });
 
-  it('libellé de catalogue → aucun warn', () => {
+  it('trappingId de catalogue → aucun warn', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    spawnEnemy(undefined, { name: 'PNJ', char: { B: 10 } }, 'w2', POS, { weapon: 'Dague' });
+    spawnEnemy(undefined, { name: 'PNJ', char: { B: 10 } }, 'w2', POS, { weapon: 'dague' });
+    expect(warn).not.toHaveBeenCalled();
+  });
+
+  it('#258 régression Olg (loup-et-saumure) — « hache-d-armes » résout SANS warn au spawn de combat (même voie que le rendu enemyRigProfile)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    spawnEnemy(undefined, { name: 'Olg Blóðsalt', char: { B: 12 } }, 'olg', POS, { weapon: 'hache-d-armes' });
     expect(warn).not.toHaveBeenCalled();
   });
 });

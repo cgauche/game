@@ -109,6 +109,8 @@ export const MODAL_DEFS = [
   { key: 'rest', when: (s) => !!s.pendingRest, owner: () => '*', auto: { mode: 'hostOnly' }, covers: ['pendingRest'] },
   // Conseil de bord (paie hebdomadaire + Moral, #229) : décision de bourse PARTAGÉE → l'hôte seul (comme
   // les autres actions à l'argent du groupe) ; hors-combat, jamais auto (la cadence auto ne l'ouvre pas).
+  // Limitation coop posée sans routage d'intent (aucune décision partagée invité) — traçabilité #254,
+  // doc `docs/architecture.md` §Coop ; lever = router `pendingCouncil` en intent coop (travail futur).
   { key: 'council', when: (s) => !!s.pendingCouncil, owner: () => undefined, auto: { mode: 'hostOnly' }, covers: ['pendingCouncil'] },
   { key: 'heal', when: (s) => !!s.pendingHeal && !s.medic, owner: (s) => s.pendingHeal?.healerId, auto: { mode: 'self', drive: ['healRoll', 'healConfirm'] }, covers: ['pendingHeal'] },
   // (Le Contre-sort (Dissipation) n'a PLUS d'entrée propre : c'est une RÉACTION au Sort ENNEMI figé

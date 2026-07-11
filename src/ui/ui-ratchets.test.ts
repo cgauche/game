@@ -91,6 +91,13 @@ const FILL_LITERAL_BASELINE: Record<string, number> = {
   'WorldMapView.tsx': 13,
 };
 
+// ── (ix) Redéfinition de `.panel` hors `components.css` : la primitive canonique (#306) n'a
+//    qu'UNE définition — un module qui la redéclare la rend inerte en silence (override à
+//    spécificité égale, ordre d'@import qui décide). Sélecteurs descendants (`.panel h3`) exclus,
+//    ainsi que les rétrécissements RESPONSIVE (dans un `@media`, indentés — règle stricte 4) : ceux-ci
+//    complètent le canon pour une largeur donnée, ils ne le remplacent pas partout.
+const PANEL_REDEFINE_BASELINE: Record<string, number> = {};
+
 describe('#236 — cliquets d’hygiène UI', () => {
   it('(iv) hex hors tokens : aucune hausse par module CSS (base.css exclu)', () => {
     const files = walk(UI, (e) => e.endsWith('.css') && e !== 'base.css');
@@ -134,5 +141,16 @@ describe('#236 — cliquets d’hygiène UI', () => {
       if (n > 0) counts[rel(f)] = n;
     }
     assertRatchet(counts, FILL_LITERAL_BASELINE, 'fill/stroke littéral hors token');
+  });
+
+  it('(ix) .panel non redéfini hors components.css (#306)', () => {
+    const files = walk(UI, (e) => e.endsWith('.css') && e !== 'components.css');
+    const counts: Record<string, number> = {};
+    for (const f of files) {
+      const css = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      const n = (css.match(/^\.panel(?:\.\w+)*\s*\{/gm) || []).length;
+      if (n > 0) counts[rel(f)] = n;
+    }
+    assertRatchet(counts, PANEL_REDEFINE_BASELINE, '.panel redéfini hors components.css');
   });
 });

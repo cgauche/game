@@ -52,14 +52,14 @@ describe('weaponFromTrait — armement des monstres dans les Traits (FR)', () =>
 });
 
 describe('spawnEnemy — arme d’AUTHORING (weapon:) vs arme de TRAIT : pas de doublon (#145 / #126)', () => {
-  it('statbloc À distance (arbalète) + weapon:"Arbalète" → UNE seule arme à distance, avec Recharge', () => {
-    // Régression #145 : l'arme de RENDU (weaponFromLabel, sans reload) était PRÉPENDÉE devant celle du
+  it('statbloc À distance (arbalète) + weapon:"arbalete" (trappingId) → UNE seule arme à distance, avec Recharge', () => {
+    // Régression #145 : l'arme de RENDU (weaponFromId, sans reload) était PRÉPENDÉE devant celle du
     // Trait (avec Recharge), et l'IA prenait la 1re → Recharge ennemie (#126) inerte. `weapon:` ne doit
-    // plus s'ajouter quand un Trait produit déjà une arme du même type.
+    // plus s'ajouter quand un Trait produit déjà une arme du même type. `weapon:` = trappingId (#258).
     const sb = { name: 'Tireur', char: { M: 4, 'capacite-de-combat': 36, 'capacite-de-tir': 43, force: 39, endurance: 32, B: 12 }, traits: [
       { id: 'a-distance', value: 9, arg: 'arbalete', range: 60 }, { id: 'arme', value: 7, arg: 'arme-simple' },
     ] } as any;
-    const c = spawnEnemy(undefined, sb, 'e-tireur', { x: 0, y: 0 }, { weapon: 'Arbalète' });
+    const c = spawnEnemy(undefined, sb, 'e-tireur', { x: 0, y: 0 }, { weapon: 'arbalete' });
     const ranged = c.weapons.filter((w) => w.type === 'ranged');
     expect(ranged).toHaveLength(1); // plus de doublon rendu/jeu
     expect(ranged[0].reload).toBeGreaterThan(0); // arme de JEU : Recharge dérivée de l'arbalète (LDB 62 l.333) → l'IA suit son cycle (#126)
