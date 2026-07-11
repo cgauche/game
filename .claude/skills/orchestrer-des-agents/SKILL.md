@@ -38,8 +38,25 @@ main : l'intégration triviale et les gates. Violer la lettre de cette règle ES
    du diff ; règle/valeur → Atlas `docs/raw/` puis `Source/` ; UI → skill `recette-navigateur`.
    Livraison d'agent sur un sous-système → audit adversarial : fidélité RAW intégrale + éditabilité
    first-class (un raccourci « borne le reste » est un défaut, pas un choix).
+   **Les CLAIMS ARCHITECTURAUX d'un rendu se contre-grep comme des faits** (« X est le seul
+   seam », « la primitive n'existe pas », « il n'y a pas de couture pour ça ») — des portes
+   vertes ne valident pas la FORME, et des tests verts sur un câblage PARTIEL ne révèlent
+   jamais la surface oubliée (vécu : #341, la défense sans le −10 météo alors que le collecteur
+   passif existait). Exiger dans tout brief la SORTIE BRUTE des portes au rendu (un exit code
+   allégué = résultat fabriqué, vécu 2026-07-11). **Tout écart « consigné » dans un rendu
+   devient un TICKET dans le même tour** — consigné-sans-ticket = backlog invisible = poison.
 7. **Commit** — mes seuls fichiers par pathspec, jamais `--amend` en arbre partagé, git via
    l'outil PowerShell (RTK rend le Bash git lent/compressé).
+8. **Fermeture (rituel OBLIGATOIRE — fermer a ses portes comme committer)** — toute vague qui
+   ferme des tickets se termine par une **passe de réfutation NON demandée** (juges adversariaux,
+   patron fini-vérifié : « tente de réfuter cette fermeture sur pièces ») AVANT toute annonce ;
+   l'annonce porte les VERDICTS (TIENT/FRAGILE/RÉFUTÉ), jamais un score brut. Périmètre de la
+   passe = les DÉCISIONS de la vague : fermetures, splits (leur prémisse est-elle vérifiée ?),
+   claims d'agents, écarts consignés-non-ticketés. Fermer sur « déjà implémenté » ou
+   « documentation faite » exige la relecture du DoD MOT À MOT (vécu #254 : documenter ≠ le DoD
+   comportemental). Ces règles se durcissent SOUS pression de temps (« maximum de tickets »),
+   elles ne s'y suspendent pas — vécu 2026-07-11 : 5 fermetures rouvertes, juges lancés
+   seulement à la demande de l'utilisateur.
 
 ## Calibrage — routage et cérémonie
 
@@ -70,6 +87,9 @@ boucle et poser les questions GROUPÉES, pas les parquer dans une spec.
 | « Arbre churné, la suite complète n'est pas attribuable » | Régression `92c70234` attrapée par la SEULE suite complète. |
 | « L'effort par défaut fera l'affaire » | Héritage session = xhigh sous ultracode, hors de prix sur un fan-out. |
 | « Ticket fermé = fini » | Combat de masse #69 livré à ~50 % avec tests verts. Auditer RAW + éditabilité. |
+| « Le rendu dit que le seam/la primitive n'existe pas » | #341 : « attackEnv est le seul seam partagé » = FAUX (passiveMods existait) — la défense a été oubliée, trouvée par l'user. Contre-grep de 2 min. |
+| « Documenter = résoudre » | #254 fermé sur traçabilité alors que le DoD exigeait un COMPORTEMENT. Relire le DoD mot à mot. |
+| « L'audit adversarial, c'est quand on me le demande » | 2026-07-11 : juges lancés à la demande de l'user → 2 FRAGILES + 3 RÉFUTÉS sur 10. La passe est une ÉTAPE, pas un outil. |
 
 ## Red flags — STOP
 
@@ -79,3 +99,6 @@ boucle et poser les questions GROUPÉES, pas les parquer dans une spec.
 - Deux workflows lourds lancés en parallèle.
 - Lire ou tester les fichiers d'un agent background avant sa notification.
 - Dire « vérifié » sans avoir moi-même relancé typecheck complet + suite complète.
+- Annoncer des fermetures sans passe de réfutation NON demandée (étape 8).
+- Accepter un « X est le seul mécanisme / ça n'existe pas » d'agent sans contre-grep.
+- Un écart consigné dans un rendu qui ne devient pas un ticket dans le même tour.

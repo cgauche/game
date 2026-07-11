@@ -104,9 +104,9 @@ export interface RenderResolution {
 export function resolveRender(species: string | undefined, traits: import('../../engine/statEntry').TraitList | undefined, idOrName: string): RenderResolution {
   // Véhicule À COQUE → gabarit routé par la PROPULSION (`hull.propulsion`), DATA-DRIVEN. Prioritaire (un
   // nom de véhicule ne tombe pas sur la résolution créature). Navire (mer/fleuve) : l'ID de véhicule pilote
-  // la silhouette (art de coque `SHIP_ARTS`, repli procédural par `hull.rig` dans composeShip), l'échelle
-  // vient de la longueur (`ship.lengthM`). Terrestre (attelage) : gabarit `terrestre` — un chariot ne peut
-  // PLUS retomber par accident sur la coque de navire.
+  // la silhouette (art de coque `SHIP_ARTS`, id sans art dédié → repli VISIBLE `orientedArtOr`/#223),
+  // l'échelle vient de la longueur (`ship.lengthM`). Terrestre (attelage) : gabarit `terrestre` — un
+  // chariot ne peut PLUS retomber par accident sur la coque de navire.
   const veh = findVehicleById(idOrName);
   if (veh?.hull) {
     const prop = veh.hull.propulsion;
