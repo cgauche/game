@@ -245,8 +245,8 @@ function buildMonoStep(get: Get, req: RollRequest, kind: string, meta?: CascadeS
  *  chaque contributeur vit dans la modale (flux `cascadeBatch`) ou, en surface I, dans
  *  `cascade.rollBatchParticipants` (`runCascadeImmediate`). L'AGRÉGAT (`step.aggregate` + `step.meta`
  *  NEUTRE : `aggregateFlatDR`/`aggregateCapMinime`/`aggregateOpposeSl`) est calculé GÉNÉRIQUEMENT par
- *  `cascade.aggregateBatchStep` à la VALIDATION — ce constructeur ne lance plus rien lui-même (avant :
- *  agrégat pré-résolu d'office, la modale ne montrait que le TOTAL — Ronde 0, écart 2 documenté ci-dessus). */
+ *  `cascade.aggregateBatchStep` à la VALIDATION — ce constructeur ne lance AUCUN dé lui-même : chaque
+ *  contributeur reste influençable individuellement avant l'agrégat (écart 2 de la Ronde 0). */
 function buildBatchStep(get: Get, req: RollRequest, kind: string, meta?: CascadeStepMeta): CascadeStep {
   const participants = 'participants' in req.side ? req.side.participants : [];
   void get;

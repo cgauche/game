@@ -150,6 +150,10 @@ export const TOMBSTONE_FAMILIES = [
   // EXPLICITEMENT à l'ancien comportement via une locution dédiée, ou cite la valeur/le message
   // d'avant entre guillemets.
   { rx: /(comme avant\s*:|avant\s*:\s*«)/i, label: 'avant : (comparaison au code)' },
+  // #336 : la forme PARENTHÉSÉE « (avant : … » est un état-d'avant encapsulé dans un commentaire de
+  // code — la parenthèse est le discriminant qui manquait à l'affinage ci-dessus (zéro faux positif
+  // au sweep du 2026-07-11).
+  { rx: /\(avant\s*:/i, label: 'avant : (parenthésé — état d’avant)' },
 ];
 
 /** @param {string} text @returns {string[]} labels des familles matchées */
