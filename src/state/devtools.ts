@@ -1,5 +1,6 @@
 import { useGame, SCREENS } from './store';
-import { portRepairVessel, portCareenVessel, portInstallUpgrade } from './seaVoyageFlow';
+import { portRepairVessel, portCareenVessel, portInstallUpgrade, damageVesselHull, setVesselHull } from './seaVoyageFlow';
+import { placeOfScene, type MapRoute } from './worldMap';
 import { actorIn, inBattleId } from './combatOrParty';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
 import { setAiTrace } from './ai';
@@ -64,6 +65,18 @@ import type { Combatant } from '../engine/types';
  *   __wfrp.fastForward(n?) → avance les tours IA (BORNÉ à `n` scrutations) jusqu'au prochain tour d'un
  *                           combattant piloté HUMAIN ou la fin du combat — MÊME machinerie (advanceTurn/
  *                           maybeRunEnemyTurn), juste sans les délais de lisibilité (chorégraphie)
+ *   __wfrp.advanceSeaDay() → symétrique VOYAGE de `fastForward` : pilote la journée en mer EN COURS
+ *                           (cascade du jour, halte de nuit, Activités hebdo…) jusqu'au jour SUIVANT,
+ *                           l'arrivée ou un combat — MÊME machinerie que le joueur (cascadeResolveAll/
+ *                           Finish, restSleep, seaActivitiesConfirm…), juste sans les clics
+ *   __wfrp.skipToArrival() → comme `advanceSeaDay` mais ROULE jusqu'à l'ACCOSTAGE (ou interruption)
+ *   __wfrp.dealShipDamage(n) → inflige n Dégâts de coque HORS COMBAT (VRAI pipeline `damageVesselHull`/
+ *                           `setVesselHull` — SOURCE UNIQUE `state.vessel.wounds`, cf. `docs/recette-
+ *                           navigateur.md` § piège des deux copies de coque) ; symétrique de `dealDamage`
+ *   __wfrp.clickRoute(id) → calcule le point ON-PATH (milieu du tracé, `getPointAtLength`/`getScreenCTM`)
+ *                           d'une route de la carte du monde CLIQUABLE depuis ici → `{x,y}` ÉCRAN à
+ *                           cliquer avec un VRAI clic souris (`page.mouse.click`) — remplace le calcul
+ *                           manuel via `browser_run_code_unsafe` documenté au piège de route SVG
  */
 /** Flux « jet différé » pilotable parmi des `pending*` ouverts — convention pending<Flux> ↔
  *  <flux>Roll/Confirm/Cancel. Les files à verbe propre (révélations, pause de Round, victoire)
@@ -92,6 +105,74 @@ function devDriveModal(verb: 'Roll' | 'Confirm' | 'Cancel'): string {
   if (typeof fn !== 'function') return `✗ action ${flux}${verb} introuvable (modales ouvertes : ${open.join(', ')})`;
   (fn as () => void)();
   return `✓ ${flux}${verb}()`;
+}
+
+/** Boucle interne partagée par `__wfrp.advanceSeaDay`/`skipToArrival` : pilote la MÊME machinerie que
+ *  le joueur (cascade du jour `pendingCascade` `purpose:'travelDay'`, halte de nuit `pendingRest`,
+ *  Activités hebdo `pendingSeaActivities`, tout autre `pending<Flux>` par convention) — jamais un
+ *  raccourci du flux testé, juste sans les clics. `real(tick,0)` (jamais un `setTimeout` patché) :
+ *  certains appliers du jour (Rythme forcé/Prière) reprennent `runSeaDay` eux-mêmes via un VRAI
+ *  `setTimeout(0)` différé (`seaVoyageFlow.ts`) — une boucle purement synchrone les manquerait.
+ *  `stopAtNextDay` (`advanceSeaDay`) : UNE journée = EXACTEMENT une cascade `purpose:'travelDay'`
+ *  (`buildSeaDayCascade`/`runSeaDay` — jamais scindée) ; on la résout PUIS on laisse la halte de nuit
+ *  se dérouler (défauts de logement/tambouille pré-remplis, `restSleep`) jusqu'à ce qu'une SECONDE
+ *  cascade `travelDay` FRAÎCHE (`cursor===0`, encore intacte) apparaisse — on s'arrête AVANT de la
+ *  toucher (jamais `sea.daysAtSea`, qui avance AVANT la halte : #297 piège vécu — un guard sur ce seul
+ *  compteur coupe la halte de nuit en plein vol). `skipToArrival` (`stopAtNextDay=false`) ignore ce
+ *  garde et roule jusqu'à l'arrivée/interruption. `maxIters` = scrutations, jamais une taille attendue. */
+function driveSeaVoyage(stopAtNextDay: boolean, maxIters: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // `globalThis` (pas `window`) — même raison que `fastForward` : identique navigateur/vitest 'node'.
+    type TimeoutSetter = (cb: (...a: unknown[]) => void, ms?: number, ...a: unknown[]) => unknown;
+    const real = (globalThis as unknown as { setTimeout: TimeoutSetter }).setTimeout;
+    let n = 0;
+    let seenTravelDays = 0; // cascades `purpose:'travelDay'` intégralement résolues (BILAN + `cascadeFinish`)
+    let sawVoyage = false;
+    const tick = () => {
+      try {
+        const s = useGame.getState();
+        if (s.battle) { resolve('✗ combat en cours (issu du voyage) — voir __wfrp.battle()'); return; }
+        const plan = s.travelPlan;
+        if (!plan?.sea) { resolve(sawVoyage ? '✓ voyage terminé (accosté ou interrompu par un événement d\'auteur)' : '✗ aucun voyage maritime en cours'); return; }
+        sawVoyage = true;
+        if (n++ >= maxIters) { resolve(`✗ borne atteinte (${maxIters} scrutations, ${seenTravelDays} jour(s) résolu(s)) — voir __wfrp.state()/__wfrp.log()`); return; }
+        const p = s.pendingCascade;
+        if (p) {
+          if (stopAtNextDay && p.purpose === 'travelDay' && p.cursor === 0 && seenTravelDays >= 1) {
+            resolve(`✓ jour suivant atteint (${seenTravelDays} jour(s) résolu(s), ${Math.max(0, Math.round(plan.km - plan.kmDone))} milles restants) — cascade prête (__wfrp.modal()/roll())`);
+            return;
+          }
+          if (p.cursor < p.participants.length) {
+            s.cascadeResolveAll(); // « Tout lancer » — peut buter sur un CHOIX du joueur (cursor < length)
+            const after = useGame.getState().pendingCascade;
+            if (after && after.cursor < after.participants.length) {
+              const cur = after.participants[after.cursor];
+              if (cur?.options?.length) useGame.getState().cascadeChoose(cur.id, cur.defaultChoice ?? cur.options[0].key);
+            }
+            real(tick, 0); return;
+          }
+          if (p.purpose === 'travelDay') seenTravelDays++;
+          useGame.getState().cascadeFinish();
+          real(tick, 0); return;
+        }
+        if (s.pendingRest) {
+          if (s.pendingRest.phase === 'setup') s.restSleep(); else s.restContinue();
+          real(tick, 0); return;
+        }
+        if (s.pendingSeaActivities) { s.seaActivitiesConfirm({}); real(tick, 0); return; }
+        const sr = s as unknown as Record<string, unknown>;
+        const open = Object.keys(sr).filter((k) => /^pending/.test(k) && (Array.isArray(sr[k]) ? (sr[k] as unknown[]).length > 0 : sr[k] != null));
+        if (open.length) { devDriveModal('Roll'); devDriveModal('Confirm'); real(tick, 0); return; }
+        if (plan.interrupted) { s.resumeTravel(); real(tick, 0); return; }
+        // Rien à piloter LÀ (reprise différée d'un applier en vol, `setTimeout(0)` déjà posé côté
+        // seaVoyageFlow) : re-scrute au tick suivant sans action, laisse la chaîne réelle rattraper.
+        real(tick, 4);
+      } catch (e) {
+        reject(e);
+      }
+    };
+    tick();
+  });
 }
 
 export function buildApi() {
@@ -907,6 +988,72 @@ export function buildApi() {
           fail(e);
         }
       }),
+
+    /** RECETTE #297 : symétrique VOYAGE de `fastForward` — pilote la journée en mer EN COURS (cascade
+     *  du jour, halte de nuit, Activités hebdo) jusqu'au JOUR SUIVANT, l'arrivée ou un combat. `n`
+     *  (scrutations) borne l'anti-boucle infinie, jamais une durée de voyage attendue. */
+    advanceSeaDay: (n = 400) => driveSeaVoyage(true, n),
+
+    /** RECETTE #297 : comme `advanceSeaDay` mais ROULE jusqu'à l'ACCOSTAGE (ou une interruption —
+     *  combat, échouage, péripétie d'auteur). `n` (scrutations) borne l'anti-boucle infinie. */
+    skipToArrival: (n = 4000) => driveSeaVoyage(false, n),
+
+    /** RECETTE #297 : inflige `n` Dégâts de coque HORS COMBAT (VRAI pipeline — `damageVesselHull` si un
+     *  voyage est en cours sur le navire de campagne, sinon `setVesselHull` directement au port) —
+     *  SOURCE UNIQUE `state.vessel.wounds` (#296 ; le piège des DEUX copies de coque — `vessel.wounds`
+     *  ET la coque de trajet `travelPlan.vehicle` — est documenté dans `docs/recette-navigateur.md`).
+     *  Symétrique de `__wfrp.dealDamage` (combat). */
+    dealShipDamage: (n = 5) => {
+      const s = g();
+      if (s.battle) return '✗ combat en cours — voir __wfrp.dealDamage (coque en combat, armure de coque comprise)';
+      const vessel = s.vessel;
+      if (!vessel) return '✗ aucun navire de campagne (state.vessel)';
+      const plan = s.travelPlan;
+      // EN VOYAGE : `vessel.wounds` peut être encore ABSENT (jamais persisté depuis l'appareillage,
+      // `travelPlan.vehicle` porte alors seul les Blessures réelles, pleines par défaut) — `damageVesselHull`
+      // PERSISTE dans les deux cas (#296), donc pas de garde sur `vessel.wounds` sur ce chemin.
+      if (plan?.vehicle && plan.vehicle.creatureId === vessel.vehicleId) {
+        const lines = damageVesselHull(() => useGame.getState(), useGame.setState, plan.vehicle, n);
+        const after = useGame.getState().vessel?.wounds;
+        return after ? `✓ coque (voyage) : ${after.current}/${after.max} PB${lines.length ? ' — ' + lines.join(' ') : ''}` : '✗ persistance échouée — voir __wfrp.state()';
+      }
+      if (!vessel.wounds) return '✗ coque non initialisée (state.vessel.wounds) — hors voyage, embarquer/appareiller ou réparer au port d\'abord';
+      const cur = Math.max(0, vessel.wounds.current - n);
+      setVesselHull(() => useGame.getState(), useGame.setState, cur, vessel.wounds.max);
+      const after = useGame.getState().vessel?.wounds;
+      return after ? `✓ coque (au port) : ${after.current}/${after.max} PB` : '✗ persistance échouée — voir __wfrp.state()';
+    },
+
+    /** RECETTE #297 : point ON-PATH (milieu du tracé, `getPointAtLength`/`getScreenCTM`) d'une route de
+     *  la carte du monde CLIQUABLE depuis ici (`WorldMapView.tsx` : `pointer-events: stroke` — jamais la
+     *  bbox, jamais le label) → `{x,y}` ÉCRAN à cliquer avec un VRAI clic souris (`page.mouse.click`,
+     *  JAMAIS `dispatchEvent`/`browser_click`) ; remplace le calcul manuel via `browser_run_code_unsafe`
+     *  (piège documenté `docs/recette-navigateur.md` § « Cliquer une ROUTE de la carte du monde »). */
+    clickRoute: (routeId: string) => {
+      const s = g();
+      const map = s.worldMap;
+      if (!map || !s.scene) return '✗ aucune carte du monde ouverte (voir __wfrp.screen(\'worldmap\'))';
+      const route = map.routes.find((r) => r.id === routeId);
+      if (!route) return `✗ route « ${routeId} » introuvable — ids : ${map.routes.map((r) => r.id).join(', ')}`;
+      const here = placeOfScene(map, s.scene.id);
+      const fromHere = (r: MapRoute) => !!here && (r.a === here.id || r.b === here.id) && (r.from == null || r.from === here.id);
+      if (!fromHere(route)) return `✗ route « ${routeId} » non cliquable depuis ici (${here?.label ?? '?'})`;
+      // Seules les routes cliquables (`fromHere`) rendent le tracé de hit-test invisible
+      // (`stroke-opacity="0"`, `WorldMapView.tsx`) — DANS le MÊME ordre que `map.routes` filtré.
+      const clickable = map.routes.filter(fromHere);
+      const idx = clickable.findIndex((r) => r.id === routeId);
+      const paths = Array.from(document.querySelectorAll<SVGPathElement>('svg.wm-map path[stroke-opacity="0"]'));
+      const path = paths[idx];
+      if (!path) return `✗ tracé SVG introuvable pour « ${routeId} » (carte du monde fermée à l'écran ?)`;
+      const pt = path.getPointAtLength(path.getTotalLength() / 2);
+      const ctm = path.getScreenCTM();
+      if (!ctm) return '✗ getScreenCTM indisponible (carte hors DOM)';
+      return {
+        x: Math.round(pt.x * ctm.a + pt.y * ctm.c + ctm.e),
+        y: Math.round(pt.x * ctm.b + pt.y * ctm.d + ctm.f),
+        note: 'point ON-PATH (milieu du tracé) — cliquer ces coordonnées ÉCRAN avec un VRAI clic souris (page.mouse.click)',
+      };
+    },
   };
 }
 

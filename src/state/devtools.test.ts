@@ -6,8 +6,11 @@ import { makeRNG } from '../engine/dice';
 import { testScene } from '../scenes/test-fixture';
 import { isOutOfAction } from '../engine/conditions';
 import { itemFromTrappingById } from '../engine/items';
+import { makePregens } from '../data/pregens';
+import { seedBattleRng } from './battleRng';
 import type { BattleState } from './store';
 import type { Combatant, ShipPoste } from '../engine/types';
+import type { WorldMap } from './worldMap';
 
 describe('__wfrp.killEnemies — commande de recette (élimine les ennemis, victoire normale)', () => {
   beforeEach(() => {
@@ -241,5 +244,104 @@ describe('__wfrp.fastForward — avance-rapide des tours IA (garde anti-boucle, 
 
     expect(msg).toContain('✗');
     expect(msg).toContain('borne atteinte');
+  });
+});
+
+describe('__wfrp.advanceSeaDay / skipToArrival / dealShipDamage / clickRoute — outillage recette navale (#297)', () => {
+  const seaMap: WorldMap = {
+    id: 'm', nom: 'Mer des Griffes',
+    places: [
+      { id: 'A', label: 'Salzenmund', pos: { x: 0, y: 0 }, scene: 'port-a' },
+      { id: 'B', label: 'Erengrad', pos: { x: 10, y: 0 }, scene: 'port-b', port: { taille: 3, richesse: 3, production: ['bois'] } },
+    ],
+    routes: [{ id: 'r1', a: 'A', b: 'B', km: 100, modes: ['mer'], sea: true, seaHeading: 'est' }],
+  };
+  const freshState = () => {
+    seedBattleRng(1); // déterminisme (suite isolate:false)
+    useGame.setState({
+      party: makePregens().slice(0, 3),
+      scene: { id: 'port-a', nom: 'Port', dimensions: { w: 2, h: 2 }, layers: [{ z: 0, tiles: ['sol', 'sol', 'sol', 'sol'] }], entities: [], dialogues: [], triggers: [] } as never,
+      battle: null,
+      worldMap: seaMap,
+      travelPlan: null,
+      travelRecap: null,
+      pendingCrewTest: null,
+      pendingRest: null,
+      pendingCascade: null,
+      pendingSeaActivities: null,
+      suspendedCascades: [],
+      gameTime: 8 * 60,
+      lastUpkeepDay: 0,
+      vessel: { vehicleId: 'cogue', morale: { score: 75, lastMoraleWeek: 0, factors: [] } },
+      journal: [],
+    } as never);
+  };
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllTimers();
+    freshState();
+  });
+  afterEach(() => {
+    vi.clearAllTimers();
+    vi.useRealTimers();
+  });
+
+  it('advanceSeaDay() fait avancer d’UN jour (cascade + halte de nuit résolues), s’arrête sur la cascade FRAÎCHE du jour suivant', async () => {
+    useGame.getState().startTravel('r1', 'mer');
+    const p = buildApi().advanceSeaDay();
+    await vi.runAllTimersAsync();
+    const msg = await p;
+
+    expect(msg).toContain('✓');
+    expect(msg).not.toContain('✗');
+    expect(useGame.getState().pendingRest).toBeNull(); // halte de nuit RÉSOLUE (pas juste ouverte)
+    expect(useGame.getState().travelPlan?.sea?.daysAtSea).toBeGreaterThanOrEqual(1);
+    // Le jour 2 est déjà amorcé (`runSeaDay` enchaîne) mais INTACT — pas une étape déjà consommée.
+    const pc = useGame.getState().pendingCascade;
+    expect(pc?.purpose).toBe('travelDay');
+    expect(pc?.cursor).toBe(0);
+  });
+
+  it('advanceSeaDay() hors voyage : refus explicite', async () => {
+    const msg = await buildApi().advanceSeaDay();
+    expect(msg).toContain('✗');
+  });
+
+  it('skipToArrival() roule jusqu’à l’accostage (travelPlan vidé, route courte de 100 milles)', async () => {
+    useGame.getState().startTravel('r1', 'mer');
+    const p = buildApi().skipToArrival();
+    await vi.runAllTimersAsync();
+    const msg = await p;
+
+    expect(msg).toContain('✓');
+    expect(useGame.getState().travelPlan).toBeNull();
+  });
+
+  it('dealShipDamage() inflige des Dégâts HORS COMBAT via la SOURCE UNIQUE vessel.wounds (#296)', () => {
+    useGame.getState().startTravel('r1', 'mer');
+    // `vessel.wounds` n'est PAS encore persisté à l'appareillage (piège #296) — la coque de trajet
+    // (`travelPlan.vehicle`) est la valeur RÉELLE tant qu'aucun Dégât/jour ne l'a écrite en retour.
+    const before = useGame.getState().travelPlan!.vehicle!.wounds.current;
+
+    const msg = buildApi().dealShipDamage(7);
+
+    expect(msg).toContain('✓');
+    expect(useGame.getState().vessel!.wounds!.current).toBe(before - 7);
+    expect(useGame.getState().travelPlan!.vehicle!.wounds.current).toBe(before - 7); // deux copies en phase
+  });
+
+  it('dealShipDamage() au port (pas de voyage en cours) écrit directement vessel.wounds', () => {
+    useGame.setState({ vessel: { ...useGame.getState().vessel!, wounds: { current: 20, max: 30 } } });
+
+    const msg = buildApi().dealShipDamage(5);
+
+    expect(msg).toContain('✓');
+    expect(useGame.getState().vessel!.wounds!.current).toBe(15);
+  });
+
+  // `clickRoute` accède au DOM (`document.querySelectorAll`) au-delà de la validation route/carte —
+  // comme `screenPos`/`hover`, non couvert en environnement 'node' (vitest) : recette navigateur seule.
+  it('clickRoute() : route invalide → refus explicite (validation AVANT tout accès DOM)', () => {
+    expect(buildApi().clickRoute('r-inconnue')).toContain('✗');
   });
 });
