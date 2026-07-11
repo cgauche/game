@@ -6,7 +6,7 @@ import type { Combatant, Weapon } from './types';
 
 const rngOf = (roll: number): RNG => ({ int: () => roll });
 
-const mk = (over: Partial<Combatant> = {}): Combatant =>
+const mk = (_over: Partial<Combatant> = {}): Combatant =>
   ({
     id: 'c',
     name: 'C',

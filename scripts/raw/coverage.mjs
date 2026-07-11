@@ -50,7 +50,7 @@ function classify(ab, nn) {
   return { total, owner, ownerN, mark, cat }
 }
 
-let out = ['# Atlas RAW — Registre de couverture', '',
+const out = ['# Atlas RAW — Registre de couverture', '',
   '> Contrat « l\'Atlas remplace la source » : chaque chapitre des 14 livres doit être **couvert** (cité',
   '> par une fiche `docs/raw/`) ou explicitement **hors-règle** (narratif). Un chapitre `⬜` = trou.',
   '> Recourir à la source pour un point = un défaut de l\'Atlas à corriger ici. Régénéré par',

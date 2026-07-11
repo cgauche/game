@@ -306,7 +306,7 @@ registerCombatHook({
  * retrait « caché » du Brisé et l'Exténué SANS-Test sont appliqués ICI (RNG-free, déterministes via
  * `sink`) ; seuls les Tests réellement dus deviennent des étapes influençables.
  */
-export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, sink: (line: string, c: Combatant) => void): CascadeStep[] {
+export function collectHeroRoundEndUpkeep(get: Get, c: Combatant, _sink: (line: string, c: Combatant) => void): CascadeStep[] {
   // Étapes de cascade SEULEMENT pour un pilote HUMAIN en cadence manuelle ; en rapide/auto, le combattant
   // est auto-résolu COMME un monstre → ses Tests se résolvent silencieusement dans les hooks ci-dessus.
   if (!humanControlled(get(), c) || isOutOfAction(c)) return [];

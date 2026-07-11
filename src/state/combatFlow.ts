@@ -16,6 +16,7 @@ import { TEMPO } from './tempo';
 import { beatHold, approachMs, afterApproach } from './combatDirector';
 import { facingToward, DIR8_ORDER, type Dir8 } from './dir8';
 import { d10 } from '../engine/dice';
+import { setVesselHull } from './seaVoyageFlow';
 import {
   resolveMelee,
   resolveRanged,
@@ -4404,7 +4405,7 @@ export function finalizeBattle(get: Get, set: SetFn): void {
   // (`travelPlan.vehicle`) restée en mémoire depuis AVANT ce combat.
   const vessel = get().vessel;
   const hull = vessel ? battle.combatants.find((c) => c.creatureId === vessel.vehicleId) : undefined;
-  if (vessel && hull) set({ vessel: { ...vessel, wounds: { current: hull.wounds.current, max: hull.wounds.max } } });
+  if (vessel && hull) setVesselHull(get, set, hull.wounds.current, hull.wounds.max);
   // Réconciliation de la scène : tout combattant ISSU d'une entité de scène (identité unifiée,
   // Combatant.id === SceneEntity.id) et hors d'action quitte la scène. Victoire → les ennemis sont tous
   // hors d'action = retirés ; défaite → ennemis vivants = conservés ; les héros du groupe ne sont jamais

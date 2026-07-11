@@ -1,6 +1,6 @@
 /** Expéditions de la carte du monde (#T2) — on y VOYAGE depuis le Bourg (rations, péripéties,
  *  embuscades), on en revient par la carte. Pas de retour-hub automatique : la route est le retour. */
-import { scene, P, NPC, hero, resetIds, fouille, fightTrigger, testNode, flowOf } from '../campagne/lib.mjs';
+import { scene, P, hero, resetIds, fouille, fightTrigger, testNode, flowOf } from '../campagne/lib.mjs';
 
 // ── La Vieille Futaie (40×28) : harde en lisière + camp de Bella la Noire (PNJ nommée) ──────
 

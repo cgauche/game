@@ -77,7 +77,7 @@ export const FISH_DEATH: Record<string, number> = { corps: 10, caudale: -22 };
 
 export function resolveFishFromProps(
   p: FishProps,
-  view: View = 'profile',
+  _view: View = 'profile',
   pose: Record<string, number> = {},
   colors?: Palette,
 ): ResolvedBone[] {

@@ -65,7 +65,7 @@ describe('ZdE en combat — flux « jet PUIS pose » (LDB 47 l.29/44)', () => {
   it('tout clic (case ou token) OUVRE la modale sans centre ; la pose touche tous ceux du rayon FINAL', () => {
     const { w, e1, e2, e3 } = setupBattle();
     useGame.getState().battleClickTile({ x: 9, y: 9 }); // n'importe quelle case : la modale s'ouvre
-    let pc = useGame.getState().pendingCast!;
+    const pc = useGame.getState().pendingCast!;
     expect(pc.zone).toMatchObject({ center: null, radius: 1 });
     expect(pc.targetId).toBe(w.id); // ancre lanceur — aucun effet ne lui est appliqué
     useGame.setState({ pendingCast: { ...pc, result: okCast(4) as never } });

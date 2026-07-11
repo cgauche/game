@@ -118,7 +118,7 @@ export function attackHandGate(c: Combatant, weaponUid?: string): 'main' | 'off'
  * aussi les armes à Poudre noire et les Explosifs (LDB 62 l.234) ; la donnée fusionne parfois les
  * deux Groupes sous « Poudre noire et ingénierie » (62 l.150/174-175).
  */
-function acceptableSpecs(weapon: Weapon, kind: 'melee' | 'ranged'): string[] {
+function acceptableSpecs(weapon: Weapon, _kind: 'melee' | 'ranged'): string[] {
   // `weaponGroup` PRIME sur `subType` : une arme de siège porte sa catégorie de catalogue (« armes-de-siege »)
   // en `subType` mais son vrai Groupe de Projectiles (Arbalète/Catapulte/Ingénierie/Poudre noire, AA p.122
   // l.3848-3863) en `weaponGroup` → c'est lui qui pilote la Spé de tir ET le décompte d'équipage. Pour toute

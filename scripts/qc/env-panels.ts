@@ -112,7 +112,7 @@ export function partyStart(scene: Scene): { x: number; y: number; z?: number } {
  *  adjacente (45°, produit scalaire vers le centre maximal) — jamais tournés vers le bord. */
 const RING: Dir8[] = ['E', 'SE', 'S', 'SO', 'O', 'NO', 'N', 'NE'];
 export function capsToward(scene: Scene, eye: { x: number; y: number }): [Dir8, Dir8] {
-  let dx = (scene.dimensions.w - 1) / 2 - eye.x;
+  const dx = (scene.dimensions.w - 1) / 2 - eye.x;
   let dy = (scene.dimensions.h - 1) / 2 - eye.y;
   if (!dx && !dy) dy = -1;
   const i = ((Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) % 8) + 8) % 8;

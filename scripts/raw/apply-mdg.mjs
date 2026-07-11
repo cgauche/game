@@ -36,7 +36,7 @@ for (const r of data) {
   }
   if (r.catalogue && r.catalogueEntries && r.catalogueEntries.trim()) {
     const tag = `${SENT} ${r.domain}`
-    let c = readFileSync(r.catalogue, 'utf8')
+    const c = readFileSync(r.catalogue, 'utf8')
     if (c.includes(tag)) { console.log('skip cat (déjà) :', r.catalogue) }
     else {
       writeFileSync(r.catalogue, c.replace(/\s*$/, '') + `\n\n---\n\n${tag}\n\n${r.catalogueEntries.trim()}\n`)

@@ -228,7 +228,6 @@ type HorsModalCoveredKey = (typeof HORS_MODAL)[number]['pendingKey'];
  * n'accepte que `never` en 2ᵉ position ; toute clé manquante s'y affiche en litige (patron AutoPolicy).
  */
 type _MissingPendingOwner = Exclude<PendingKey, ModalCoveredKey | HorsModalCoveredKey>;
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 type _pendingOwnerCoverage = [manquant: _MissingPendingOwner] extends [never] ? true : ['pending* sans owner coop déclaré (MODAL_DEFS.covers ni HORS_MODAL)', _MissingPendingOwner];
 const _pendingOwnerCoverageCheck: _pendingOwnerCoverage = true;
 void _pendingOwnerCoverageCheck;

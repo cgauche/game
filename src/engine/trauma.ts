@@ -367,7 +367,7 @@ export function receiveMedicalAid(c: Combatant): string[] {
  * règle de la main tranchée (4+ doigts → `main-bras-ampute`, LDB 18 l.341). Mute `c`, renvoie le journal.
  * Appelé par le hook de franchissement de Round (`roundHooks`, machinerie universelle — ne nomme aucune entité).
  */
-export function tickFingerLossEscalation(c: Combatant, rng: RNG = defaultRNG): string[] {
+export function tickFingerLossEscalation(c: Combatant, _rng: RNG = defaultRNG): string[] {
   const gated = (c.traumas ?? []).filter((t) => t.fingerLossPerRound && t.awaitingMedicalAid);
   if (!gated.length) return [];
   const log: string[] = [];

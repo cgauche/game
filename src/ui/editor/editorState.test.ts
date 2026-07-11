@@ -219,7 +219,9 @@ describe('editorState — pose', () => {
     expect(r.scene.walls).toBeUndefined(); // le toit n'est QUE la couverture : aucune cloison posée
   });
   it('addRoof + périmètre de murs d’arête : toit et cloisons coexistent (murs d’arête inchangés)', () => {
-    let { scene, id } = addRoof(emptyScene(8, 8), 'taverne', { x: 2, y: 2, w: 2, h: 2 });
+    const added = addRoof(emptyScene(8, 8), 'taverne', { x: 2, y: 2, w: 2, h: 2 });
+    const { id } = added;
+    let scene = added.scene;
     expect(scene.roofs).toEqual([{ id, foot: { x: 2, y: 2, w: 2, h: 2 }, style: 'taverne' }]);
     // périmètre 2×2 = 8 arêtes distinctes, tracées une à une à l’outil d’arête (comportement inchangé)
     const perim = [

@@ -8,7 +8,7 @@
  *   npx tsx scripts/_tokenize-weapons.mts          # DRY-RUN (rapport, n'écrit rien)
  *   npx tsx scripts/_tokenize-weapons.mts --write   # applique aux defs/
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { WEAPON_DEFS } from '../src/gameIso/rig/parts/weapons/_registry.generated';
 import type { PartArt } from '../src/gameIso/rig/parts/types';
 

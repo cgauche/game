@@ -100,7 +100,7 @@ export function RevealModalView({ entry, subject, actor, onDismiss }: {
     const t = window.setTimeout(onDismiss, ms);
     return () => window.clearTimeout(t);
     // réarmé par ENTRÉE de la file (pas par re-render) — deps volontairement réduites
-  }, [entry]); // eslint-disable-line
+  }, [entry]);
   return (
     <Modal title={<><Icon id={ICON[entry.kind]} /> {entry.title}</>} subject={isCrit ? undefined : subject} variant="test">
       {isCrit ? (

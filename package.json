@@ -21,7 +21,7 @@
     "raw:coverage": "node scripts/raw/coverage.mjs",
     "raw:reconcile": "node scripts/raw/reconcile.mjs",
     "raw:catalogs": "node scripts/raw/build-catalogs.mjs",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "relay:dev": "npm --prefix server run dev",
     "relay:deploy": "npm --prefix server run deploy",
     "galleries": "node scripts/gen-galleries.mjs",
