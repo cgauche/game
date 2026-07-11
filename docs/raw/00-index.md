@@ -67,3 +67,10 @@ plusieurs chapitres **et** plusieurs livres.
 - **[`reanchor.md`](reanchor.md)** (`node scripts/raw/reanchor.mjs` ; `--apply` verbatim + `--remap` synthèse) — ré-ancre les réfs `l.X` contre la Source Marker : citations « … » par **match exact**, réfs de synthèse par **diff `git HEAD`↔arbre** (one-shot à relancer après chaque ré-extraction, avant de committer la Source). **État : ✅ 322 verbatim · 🔧 0 dérive · 🧭 2176 synthèses re-ancrées · ❌ 41 + ⛔ 113 à reprendre à la main.** Voir l'**[épreuve du 2026-06-22](epreuve-2026-06-22.md)**.
 
 > **Source = Marker propre pour les 14 livres** (tables intactes, texte exact ; pipeline `scripts/raw/marker-*` + `reextract-all.sh`). L'Atlas remplace la source : 0 trou de règle.
+
+> ⚠️ **Limite connue (#323, vérifiée 2026-07-11)** : Marker perd les GLYPHES des schémas de progression
+> (marteau/crâne/bouclier — seule la croix survit en `h`). Les gardes `coverage`/`reconcile` ne peuvent
+> PAS le détecter (absence silencieuse, pas un caractère corrompu) — seule une comparaison au rendu-image
+> du PDF le peut. La donnée app-owned (`careers.json`/`careerLevels.json`) est vérifiée SAINE (10 carrières
+> échantillonnées, 40 valeurs conformes PDF) : le défaut ne touche que la prose `Source/*.md` — réparation
+> des glyphes au fil des besoins Atlas, par comparaison PDF.
