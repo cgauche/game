@@ -142,9 +142,14 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       //       Intermédiaires fixent la dissipation (10−DR h) et la gueule de bois (Exténué 5−DR h, horloge).
       if (h.drunk) {
         const alc = testValue(h, 'resistance-a-l-alcool', 'endurance');
-        const sr = soberUp(h, get().gameTime, rollTest(alc, 'intermediaire', battleRng()).sl, rollTest(alc, 'intermediaire', battleRng()).sl);
-        lines.push(...sr.log);
-        if (sr.hangover) addClockCondition(h, sr.hangover.name, sr.hangover.value, sr.hangover.until);
+        // DIFFÉRÉ comme ses voisins (faim/soif) quand un canal influençable existe : le Test de
+        // Résistance à l'alcool devient une étape de cascade au lieu d'être roulé ici (sinon pré-résolu).
+        if (defer) defer({ kind: 'dessoulage', label: 'Dessoûlage', base: alc, difficulty: 'intermediaire' });
+        else {
+          const sr = soberUp(h, get().gameTime, rollTest(alc, 'intermediaire', battleRng()).sl, rollTest(alc, 'intermediaire', battleRng()).sl);
+          lines.push(...sr.log);
+          if (sr.hangover) addClockCondition(h, sr.hangover.name, sr.hangover.value, sr.hangover.until);
+        }
       }
       // 2. Maladies (LDB 20 — jours calendaires, #T3). Règle optionnelle : désactivable (disease-mode off).
       if (rule('disease-mode') !== 'off') lines.push(...dailyDiseaseUpkeep(h, battleRng(), opts.caredFor, defer));

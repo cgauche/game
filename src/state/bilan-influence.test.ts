@@ -3,6 +3,7 @@ import { useGame } from './store';
 import { seedBattleRng } from './battleRng';
 import { contractDisease, contagiousDiseases } from '../engine/disease';
 import { emptyScene } from './scene';
+import { MINUTES_PER_DAY } from '../engine/clock';
 import type { Combatant } from '../engine/types';
 import type { CascadeStep, CascadeRoll } from './pendings';
 
@@ -107,6 +108,76 @@ describe('#253 — CONTAGION de promiscuité : étape de cascade influençable',
     useGame.getState().cascadeNext();
     const bEnd = useGame.getState().party.find((h) => h.id === 'B')!;
     expect(bEnd.diseases!.filter((d) => d.name === 'verole-urticante').length).toBe(1);
+  });
+});
+
+describe("#253 — AVANCE D'HORLOGE (advanceTime) : bilan en cascade influençable, plus de témoin pré-résolu", () => {
+  it('advanceTime 24h, héros affamé sans ration → étape de Faim DIFFÉRÉE (purpose upkeep), Chance proposable, résolue 1×', () => {
+    const a = hero({ id: 'A', name: 'Affamée', hunger: { days: 1, tests: 0, failures: 0 }, fortune: 2 });
+    useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null, pendingReveals: [] });
+    useGame.getState().advanceTime(MINUTES_PER_DAY);
+
+    // 1. Le franchissement de jour OUVRE une cascade d'entretien (jamais un reveal-témoin pré-résolu).
+    const p = useGame.getState().pendingCascade;
+    expect(p).toBeTruthy();
+    expect(p!.purpose).toBe('upkeep');
+    expect(useGame.getState().pendingReveals.length).toBe(0); // pas de témoin quand un jet est différé
+    const faim = stepOfKind('faim');
+    expect(faim).toBeTruthy();
+    expect(faim!.actorId).toBe('A');
+    expect(faim!.interactive).toBe(true);
+    const aNow = useGame.getState().party.find((h) => h.id === 'A')!;
+    expect(aNow.hunger!.days).toBe(2); // jour ENREGISTRÉ (l.201) mais Test NON roulé (différé)
+    expect(aNow.hunger!.tests).toBe(0);
+    expect(aNow.hunger!.failures).toBe(0);
+
+    // 2. Chance proposable sur l'échec.
+    forceFail(faim!.id);
+    const fortuneBefore = useGame.getState().party.find((h) => h.id === 'A')!.fortune;
+    useGame.getState().cascadeReroll(faim!.id);
+    expect(useGame.getState().party.find((h) => h.id === 'A')!.fortune).toBe((fortuneBefore ?? 0) - 1);
+
+    // 3. Conséquence appliquée 1× à la validation — un seul Test compté, pas de double-résolution.
+    forceFail(faim!.id);
+    useGame.getState().cascadeNext();
+    const aEnd = useGame.getState().party.find((h) => h.id === 'A')!;
+    expect(useGame.getState().pendingCascade).toBeNull(); // cascade close (purpose upkeep : aucune suite)
+    expect(aEnd.hunger!.tests).toBe(1);
+    expect(aEnd.hunger!.failures).toBe(1);
+  });
+
+  it('advanceTime 24h, héros IVRE → étape de Dessoûlage DIFFÉRÉE, Chance proposable, dessoûlé 1×', () => {
+    const a = hero({ id: 'A', name: 'Éméché', drunk: { failedTests: 2, drunk: true }, fortune: 2 });
+    useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null, pendingReveals: [] });
+    useGame.getState().advanceTime(MINUTES_PER_DAY);
+
+    const p = useGame.getState().pendingCascade;
+    expect(p!.purpose).toBe('upkeep');
+    const step = stepOfKind('dessoulage');
+    expect(step).toBeTruthy();
+    expect(step!.actorId).toBe('A');
+    expect(step!.interactive).toBe(true);
+    expect(useGame.getState().party.find((h) => h.id === 'A')!.drunk).toBeTruthy(); // DIFFÉRÉ : encore ivre tant que non validé
+
+    forceFail(step!.id);
+    const fortuneBefore = useGame.getState().party.find((h) => h.id === 'A')!.fortune;
+    useGame.getState().cascadeReroll(step!.id);
+    expect(useGame.getState().party.find((h) => h.id === 'A')!.fortune).toBe((fortuneBefore ?? 0) - 1);
+
+    // Dessoûlage appliqué 1× à la validation (soberUp lève l'état, quelle que soit l'issue du DR).
+    useGame.getState().cascadeNext();
+    expect(useGame.getState().party.find((h) => h.id === 'A')!.drunk).toBeUndefined();
+  });
+
+  it('advanceTime 24h SANS jet (ration consommée) → reveal-témoin inchangé, pas de cascade', () => {
+    const a = hero({ id: 'A', name: 'Repue', items: [ration('r1')] });
+    useGame.setState({ party: [a], gameTime: 0, lastUpkeepDay: 0, lastNightDay: 0, pendingCascade: null, pendingReveals: [] });
+    useGame.getState().advanceTime(MINUTES_PER_DAY);
+
+    expect(useGame.getState().pendingCascade).toBeNull(); // aucun jet différé → pas de cascade
+    const reveals = useGame.getState().pendingReveals;
+    expect(reveals.length).toBe(1); // le témoin groupé reste pour les lignes SANS jet (rations…)
+    expect(reveals[0].title).toBe('Entretien quotidien');
   });
 });
 

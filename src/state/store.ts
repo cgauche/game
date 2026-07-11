@@ -101,6 +101,7 @@ import { exploreStepDest, povStepDest, spawnFacing } from './exploreNav';
 import { bus, EVT } from './bus';
 import { campaign, campaignWorldMap } from '../scenes/campaign';
 import { dayIndex, runDailyUpkeep } from './upkeep';
+import type { DeferredUpkeepTest } from './upkeep';
 import * as travelFlow from './travelFlow';
 import * as portFlow from './portFlow';
 import * as landMarketFlow from './landMarketFlow';
@@ -2200,11 +2201,21 @@ export const useGame = create<GameState>((set, get) => ({
     }
     // Entretien quotidien (#T2/#T3 — rations/faim, maladies, convalescence) + purge des effets à
     // durée d'horloge (contrecoups LDB 46/40) : traite les éventuels franchissements de jour.
-    // VISIBLE (le journal seul ne suffit pas) : hors repos/voyage (qui affichent leurs propres
-    // bilans), le franchissement de jour pousse une révélation témoin groupée.
-    const upkeepLines = runDailyUpkeep(get, set);
-    if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' });
-    checkPartyWiped(get, set); // faim/agonie/maladie a-t-elle anéanti tout le groupe hors combat ? → défaite
+    // VISIBLE (le journal seul ne suffit pas). HORS COMBAT, tout Test de Résistance d'entretien est
+    // DIFFÉRÉ dans la MÊME cascade influençable que le repos (LDB 17 : Chance sur tout Test raté ; « aucun
+    // jet silencieux ») via `deferredUpkeepSteps` ; les lignes SANS jet (rations, dissipations…) restent
+    // le témoin groupé. En combat, le slot de cascade appartient à l'arène → jets roulés (témoin pré-résolu).
+    if (get().battle) {
+      const upkeepLines = runDailyUpkeep(get, set);
+      if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' });
+    } else {
+      const deferred: DeferredUpkeepTest[] = [];
+      const upkeepLines = runDailyUpkeep(get, set, { onDeferTest: (t) => deferred.push(t) });
+      const steps = restFlow.deferredUpkeepSteps(get().party, deferred);
+      if (steps.length) startCascade(get, set, { title: 'Entretien quotidien', icon: 'time/night', purpose: 'upkeep', steps, log: upkeepLines });
+      else if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' });
+    }
+    checkPartyWiped(get, set); // faim/agonie/maladie a-t-elle anéanti tout le groupe hors combat ? → défaite (recheck à la clôture de cascade)
   },
   // « Dormir » : sommeil de `days` journée(s) (défaut 1) — récup. (Exténué/Blessures) + cauchemars (LDB 16/18/21).
   restParty: (days = 1) => { restFlow.sleepParty(get, set, days); },

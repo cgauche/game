@@ -1236,8 +1236,10 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  séquencé puis halte de nuit, `seaActivities.ts`) ; 'riverExposure' (T2C ch.14 : Exposition hydrique de
    *  la descente fluviale surfacée APRÈS le jour, avant la halte — la clôture enchaîne
    *  `continueRiverDayAfterExposure`, `riverVoyageFlow.ts`, pour DIFFÉRER la halte de nuit le temps du
-   *  Test de Résistance, cf. #344). */
-  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite' | 'seaScorbut' | 'seaExhaustion' | 'seaActivities' | 'riverExposure';
+   *  Test de Résistance, cf. #344). 'upkeep' (entretien quotidien d'une AVANCE D'HORLOGE hors repos/voyage
+   *  — Faim/Soif/maladie/convalescence/dessoûlage différés ; clôture sans suite propre, `dispatchCascadeDone`
+   *  n'a qu'à vérifier l'anéantissement). */
+  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite' | 'seaScorbut' | 'seaExhaustion' | 'seaActivities' | 'riverExposure' | 'upkeep';
   /** HALTE de voyage : la finalisation REPREND la route (continueTravelAfterNight). */
   travelHalt?: boolean;
   /** Cascade de PEUR de FIN de Round (combat) : à sa fermeture, le store ré-appelle `resolveRoundBoundary`

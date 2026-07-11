@@ -25,9 +25,10 @@ import type { RNG } from '../engine/dice';
 import type { RollBreakdown } from '../engine/combat';
 import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
-import { partyAssisted } from '../engine/skills';
+import { partyAssisted, testValue } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
-import { isOutOfAction, addCondition, removeCondition, loseWounds } from '../engine/conditions';
+import { soberUp } from '../engine/drunkenness';
+import { isOutOfAction, addCondition, removeCondition, loseWounds, addClockCondition } from '../engine/conditions';
 import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recoveryTarget, type RestRoll } from '../engine/rest';
 import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
 import { applyOps } from '../engine/ops';
@@ -428,6 +429,16 @@ registerCascadeApplier('soif', (_get, _set, step, hero) => {
   return { consequences: freeCons(r.log) };
 });
 
+registerCascadeApplier('dessoulage', (get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  // Dessoûlage (LDB 09 l.485) : le DR du Test INFLUENÇABLE fixe la dissipation (10−DR h) ; le second
+  // Test (gueule de bois, 5−DR h) est roulé ici — un seul jet est proposé au joueur (le principal).
+  const alc = testValue(hero, 'resistance-a-l-alcool', 'endurance');
+  const sr = soberUp(hero, get().gameTime, step.result.sl, rollTest(alc, 'intermediaire', battleRng()).sl);
+  if (sr.hangover) addClockCondition(hero, sr.hangover.name, sr.hangover.value, sr.hangover.until);
+  return { consequences: freeCons(sr.log) };
+});
+
 registerCascadeApplier('traumaFracture', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   return { consequences: freeCons(applyFractureEnd(hero, step.result.success, String(step.meta?.severity ?? 'mineur'), String(step.meta?.location ?? ''), String(step.meta?.traumaLabel ?? 'Fracture'))) };
@@ -474,6 +485,23 @@ const UPKEEP_STEP_ICON: Record<string, string> = {
   traumaFracture: 'medical/crutch', contagion: 'medical/infection',
 };
 
+/** Convertit les Tests d'entretien DIFFÉRÉS (`runDailyUpkeep` onDeferTest — Faim/Soif/maladie/
+ *  convalescence/dessoûlage) en étapes de cascade influençables, avec leur enjeu verbatim (NIGHT_STAKES)
+ *  quand il est documenté. SOURCE UNIQUE partagée par la nuit (`buildNightCascade`) et l'avance
+ *  d'horloge (`advanceTime`). `startIndex` = décalage d'id quand d'autres étapes précèdent (marche forcée). */
+export function deferredUpkeepSteps(party: Combatant[], deferred: DeferredUpkeepTest[], startIndex = 0): CascadeStep[] {
+  const steps: CascadeStep[] = [];
+  for (const t of deferred) {
+    const h = party.find((x) => x.id === t.heroId);
+    if (!h || h.dead) continue;
+    const st: CascadeStep = { id: `${t.kind}-${t.heroId}-${startIndex + steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label,
+      icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice', rollLabel: 'Résistance', base: t.base, target: t.target, result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined };
+    const stake = nightStake(t.kind); if (stake) st.stake = stake;
+    steps.push(st);
+  }
+  return steps;
+}
+
 /**
  * Construit la cascade d'UNE nuit (single-night INTERACTIVE) : avance l'horloge à l'aube, applique
  * l'entretien quotidien + la contagion + la récupération SANS jet (PB plein/affamé) en EAGER (journal),
@@ -510,13 +538,8 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
     steps.push({ id: `march-${id}`, kind: 'forcedMarch', actorId: id, label: 'Marche forcée', icon: 'travel/foot',
       rollLabel: 'Résistance', base: forcedMarchTarget(h), target: forcedMarchTarget(h), result: null, interactive: true });
   }
-  // Tests d'entretien DIFFÉRÉS (faim, maladie, convalescence) → étapes influençables, dans l'ordre collecté.
-  for (const t of deferred) {
-    const h = party.find((x) => x.id === t.heroId);
-    if (!h || h.dead) continue;
-    steps.push({ id: `${t.kind}-${t.heroId}-${steps.length}`, kind: t.kind, actorId: t.heroId, label: t.label, icon: UPKEEP_STEP_ICON[t.kind] ?? 'nav/dice',
-      rollLabel: 'Résistance', base: t.base, target: t.target, result: null, interactive: true, meta: t.meta as CascadeStepMeta | undefined });
-  }
+  // Tests d'entretien DIFFÉRÉS (faim, soif, maladie, convalescence, dessoûlage) → étapes influençables.
+  steps.push(...deferredUpkeepSteps(party, deferred, steps.length));
   // CONTAGION (promiscuité — Toux et éternuements, LDB 20 l.206 + tambouille piètre) → un jet de Résistance influençable par héros exposé.
   for (const c of [...collectContagion(party), ...(opts.extraContagion ?? [])]) {
     const h = party.find((x) => x.id === c.heroId);
