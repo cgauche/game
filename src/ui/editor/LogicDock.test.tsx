@@ -85,7 +85,7 @@ describe('effectSummary — résumés humains des rangées repliées', () => {
     expect(effectSummary({ type: 'giveXp', amount: 50 })).toContain('50 PX');
     expect(effectSummary({ type: 'startCombat', encounter: 'enc-rats' })).toContain('enc-rats');
     expect(effectSummary({ type: 'setFlag', flag: 'porte_ouverte', value: true })).toContain('porte_ouverte');
-    expect(effectSummary({ type: 'giveMoney', gold: 2, silver: 5, brass: 0 })).toBe('Argent : 2 CO 5 pa');
+    expect(effectSummary({ type: 'giveMoney', gold: 2, silver: 5, brass: 0 })).toBe('Argent : 2 CO 5/–');
     expect(
       effectSummary({ type: 'transition', scene: 'sc-b', entry: 'porte' }, { scenes: [{ id: 'sc-b', nom: 'Taverne', entries: ['porte'] }] }),
     ).toContain('Taverne');

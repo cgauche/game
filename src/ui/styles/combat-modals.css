@@ -29,7 +29,7 @@
 .rm-threat {
   text-align: center;
   font-size: 12px;
-  color: #e0b0a0;
+  color: var(--danger-soft);
   background: rgba(120, 40, 30, 0.22);
   border: 1px solid rgba(200, 90, 70, 0.4);
   border-radius: 6px;
@@ -37,7 +37,7 @@
   margin: 0 0 10px;
 }
 .rm-threat b {
-  color: #ff9b80;
+  color: var(--danger-bright);
 }
 /* Frisson du dé (R3) : beat de roulement cosmétique avant la révélation du jet. */
 .rm-rolling {
@@ -103,7 +103,7 @@
   width: 100%;
   padding: 4px 8px;
   background: rgba(0, 0, 0, 0.25);
-  border: 1px solid var(--line, #555);
+  border: 1px solid var(--border);
   border-radius: 6px;
   color: inherit;
   font: inherit;
@@ -191,7 +191,7 @@
 }
 .insp-badge.foe {
   background: rgba(192, 57, 43, 0.18);
-  border-color: #c0392b;
+  border-color: var(--danger);
   color: var(--danger-soft);
 }
 .insp-row {
@@ -295,7 +295,7 @@
 }
 .targeting-interlude .ti-badge {
   font-size: 12.5px;
-  color: #cfc8ba;
+  color: var(--text);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 10px;
@@ -377,7 +377,7 @@
   content: '✕';
   position: absolute; inset: 0;
   display: none; align-items: center; justify-content: center;
-  background: rgba(160, 30, 30, 0.62); color: #fff; font-weight: 700; border-radius: 50%;
+  background: rgba(160, 30, 30, 0.62); color: var(--on-accent); font-weight: 700; border-radius: 50%;
   pointer-events: none;
 }
 .crew-remove:hover::after { display: flex; }
@@ -713,10 +713,10 @@
   border-left-color: var(--copper);
 }
 .inv-row.kind-armor {
-  border-left-color: #6f8fb8;
+  border-left-color: var(--info);
 }
 .inv-row.equipped {
-  background: #2a2438;
+  background: var(--magic-panel);
 }
 .ir-main {
   flex: 1;
@@ -802,7 +802,7 @@
 .document-modal {
   width: 560px;
   max-width: 92vw;
-  background: #efe6cf;
+  background: var(--parchment);
   color: var(--panel2);
   border: 1px solid var(--gold2);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
@@ -810,7 +810,7 @@
 .document-modal h3 {
   font-family: 'Georgia', 'Times New Roman', serif;
   text-align: center;
-  color: #5a2018;
+  color: var(--blood);
   border-bottom: 2px solid var(--gold2);
   padding-bottom: 10px;
   margin-top: 0;
@@ -826,7 +826,7 @@
   margin: 8px 0;
 }
 .document-modal .btn {
-  background: #d8c9a0;
+  background: var(--parchment2);
   color: var(--panel2);
   border-color: var(--gold2);
   display: block;

@@ -23,6 +23,7 @@ import { CHAOS_ALIGN_LABELS, ChaosAlign } from '../../engine/corruption';
 import { POWER_ESTIMATE, clampMight } from '../../engine/massBattle';
 import { battleSceneById, type MassBattleSpec } from '../../state/massBattleFlow';
 import { activitiesFor } from '../../engine/activities';
+import { formatMoney } from '../../engine/money';
 
 /** Noms des maladies câblées (LDB 20) proposés dans l'éditeur. */
 const DISEASE_NAMES = Object.keys(DISEASE_DEFS);
@@ -127,10 +128,7 @@ export function effectSummary(effect: Effect, ctx?: Pick<Ctx, 'scenes'>): string
     case 'clearObjective': return e.id ? `Retirer l'objectif [${e.id}]` : `Retirer tous les objectifs`;
     case 'document': return `Document : ${e.title || '(sans titre)'}`;
     case 'giveTrapping': return `Objet : ${giveTrappingLabel(e) || '?'}${e.qualities?.length ? ` (+${e.qualities.length} qualité(s))` : ''}`;
-    case 'giveMoney': {
-      const parts = [e.gold ? `${e.gold} CO` : '', e.silver ? `${e.silver} pa` : '', e.brass ? `${e.brass} sc` : ''].filter(Boolean);
-      return `Argent : ${parts.join(' ') || '0'}`;
-    }
+    case 'giveMoney': return `Argent : ${formatMoney({ gold: e.gold ?? 0, silver: e.silver ?? 0, brass: e.brass ?? 0 })}`;
     case 'giveXp': return `${e.amount ?? 0} PX (groupe)`;
     case 'restoreFortune': return `Regagner la Chance`;
     case 'sessionEnd': return `Fin de séance (Ambitions / Motivation)`;

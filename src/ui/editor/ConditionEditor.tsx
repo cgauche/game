@@ -10,6 +10,7 @@ import { HIT_LOCATION_LABELS, type HitLocation } from '../../engine/types';
 import { ATTACK_LABEL } from '../../engine/creatureAttacks';
 import type { Camp, Relation } from '../../engine/relations';
 import { findTrappingById } from '../../data';
+import { formatMoney } from '../../engine/money';
 import { RefField } from '../compendium/RefField';
 
 /** Libellé d'affichage d'un `trappingId` (objet catalogué) — repli sur l'id brut (objet CUSTOM par nom). */
@@ -77,9 +78,6 @@ const winSummary = (w: TemporalCondition) => {
   const b = w.beforeHour != null ? `${pad(w.beforeHour)}:${pad(w.beforeMinute ?? 0)}` : null;
   return a && b ? `${a}–${b}` : a ? `dès ${a}` : b ? `avant ${b}` : 'créneau';
 };
-const moneyStr = (m: { gold?: number; silver?: number; brass?: number }) =>
-  [m.gold ? `${m.gold} CO` : '', m.silver ? `${m.silver} pa` : '', m.brass ? `${m.brass} sc` : ''].filter(Boolean).join(' ') || '0';
-
 /** Résumé HUMAIN compact d'une Condition (rangées repliées, listes). */
 export function condSummary(c: Condition | undefined): string {
   if (!c) return '';
@@ -88,7 +86,7 @@ export function condSummary(c: Condition | undefined): string {
     case 'flag': return c.expr || '(flag ?)';
     case 'time': return winSummary(c.window);
     case 'hasItem': return `a « ${trappingLabelOrId(c.trappingId) || '?'} »${c.count && c.count > 1 ? ` ×${c.count}` : ''}`;
-    case 'money': return `bourse ≥ ${moneyStr(c.atLeast)}`;
+    case 'money': return `bourse ≥ ${formatMoney({ gold: c.atLeast.gold ?? 0, silver: c.atLeast.silver ?? 0, brass: c.atLeast.brass ?? 0 })}`;
     case 'partyDead': return c.who === 'all' ? 'tout le groupe mort' : 'un héros mort';
     case 'compare': {
       const val = typeof c.value === 'number' ? `${c.value}` : `${WHO_LABEL[c.value.who]} ${subjectLabel(c.value)}`;

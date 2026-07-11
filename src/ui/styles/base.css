@@ -63,6 +63,30 @@
   --dbg-ink: #0a0a12; /* debug carte : cerne/fond */
   --dbg-fg: #f2f2f2; /* debug carte : texte */
   --dbg-border: #444444; /* debug carte : bord de légende */
+  /* Tri hex hors tokens (#310) — familles réutilisées par plusieurs écrans hors combat/tooltip/iso. */
+  --shadow-ink: #000; /* encre d'ombrage texte (text-shadow), fond de voile opaque */
+  --danger-bright: #ff9b80; /* alerte VIVE (badge Tir rapide armé, warning tour gâché…) */
+  --info: #6f8fb8; /* bleu neutre — info/armure/protection */
+  --magic: #b388ff; /* accent mystère/magie (objet non identifié) */
+  --magic-panel: #241830; /* fond sombre « objet équipé/enchanté » */
+  --magic-panel-dk: #0e0b14;
+  --cyan-pale: #9fd8ff; /* badge de pré-emption gratuite (éclair) */
+  --gauge-action: #e0b83a; /* ActiveFrame : jauge Action */
+  --gauge-move: #46c2d6; /* ActiveFrame : jauge Mouvement */
+  --gauge-adv: #ff9b3d; /* ActiveFrame : jauge Avantage (LDB 14 l.198) */
+  --chip-malus-bg: #2a1518; /* pastille d'État : malus */
+  --chip-malus-border: #7a2a2a;
+  --chip-buff-bg: #16261a; /* pastille d'État : buff */
+  --chip-buff-border: #3a6b3a;
+  --chip-state-border: #e8973f; /* pastille d'État : état neutre */
+  --end-mort-bg: #6b1e1e; /* badge de fin d'aventure : mort */
+  --end-mort-fg: #f2dede;
+  --end-koan-bg: #2f4a7a; /* badge de fin d'aventure : Ka'oan */
+  --end-koan-fg: #dbe6ff;
+  --end-rendu-bg: #e9e4d6; /* badge de fin d'aventure : rendu */
+  --end-rendu-fg: #4a4030;
+  --end-hors-bg: #4a5240; /* badge de fin d'aventure : hors service */
+  --end-hors-fg: #d8e0cc;
   --font-display: 'Grenze Gotisch', 'Trebuchet MS', serif;
 }
 

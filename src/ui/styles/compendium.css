@@ -170,7 +170,7 @@
   font-size: 13px;
 }
 .codex-body :is(td, th) {
-  border: 1px solid var(--line, #4a3f33);
+  border: 1px solid var(--border);
   padding: 3px 7px;
   text-align: left;
   vertical-align: top;

@@ -216,11 +216,11 @@
 }
 .career-pill.out {
   background: rgba(220, 170, 90, 0.18);
-  color: #e0b96a;
+  color: var(--gold2);
 }
 .acquire-tag {
   font-size: 10px;
-  color: #8aa9d6;
+  color: var(--info);
   font-style: italic;
 }
 .adv-career {
@@ -266,10 +266,10 @@
   font-size: 13px;
 }
 .rm-roll.ok {
-  border-left: 3px solid #5db87a;
+  border-left: 3px solid var(--combat-ally);
 }
 .rm-roll.fail {
-  border-left: 3px solid #c0563f;
+  border-left: 3px solid var(--danger);
 }
 .rm-roll-label {
   font-weight: 600;
@@ -472,11 +472,11 @@
 }
 .rm-mod.pos {
   color: var(--ok-bright);
-  border-color: #2f6a44;
+  border-color: var(--ok);
 }
 .rm-mod.neg {
   color: var(--danger-soft);
-  border-color: #7a3a2f;
+  border-color: var(--accent2);
 }
 /* Ligne d'issue d'un jet, rendue dans le style du journal (icône + noms colorés) au sein d'une modale. */
 .rm-journal {

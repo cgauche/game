@@ -183,10 +183,10 @@ button.insp-row,
   border: 2px solid transparent;
   border-radius: 6px;
   padding: 10px 4px;
-  color: #fff;
+  color: var(--on-accent);
   font-size: 11px;
   cursor: pointer;
-  text-shadow: 0 1px 2px #000;
+  text-shadow: 0 1px 2px var(--shadow-ink);
   text-transform: capitalize;
 }
 .terrain-swatch.active {
@@ -316,7 +316,7 @@ button.insp-row.active {
 .ent-preview {
   display: grid;
   place-items: center;
-  background: radial-gradient(circle at 50% 35%, #241830, #0e0b14);
+  background: radial-gradient(circle at 50% 35%, var(--magic-panel), var(--magic-panel-dk));
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 6px;
@@ -688,7 +688,7 @@ input.dr {
   color: var(--ok);
 }
 .branch-label.fail {
-  color: #ff7a6c;
+  color: var(--danger-bright);
 }
 /* ── Éditeur de Flow : accent de bord par type de bloc (do neutre / si or / test vert) ── */
 .flow-node {

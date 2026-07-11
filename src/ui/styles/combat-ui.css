@@ -309,7 +309,7 @@ textarea:focus {
   background: var(--danger);
   border-radius: 4px;
   padding: 0 4px;
-  color: #fff;
+  color: var(--on-accent);
 }
 .stage {
   flex: 1;
@@ -329,7 +329,7 @@ textarea:focus {
   z-index: 9999;
   display: grid;
   place-items: center;
-  background: var(--bg, #14161c);
+  background: var(--bg);
 }
 /* Beat d'OUVERTURE de combat (symétrique de .victory-overlay) — décoratif, ne bloque rien. */
 .combat-splash { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; pointer-events: none; }
@@ -442,7 +442,7 @@ textarea:focus {
 .vl-name { font-weight: 600; }
 .vl-assign { display: flex; gap: 6px; flex-wrap: wrap; }
 /* Révélation du butin (partagé victoire/fenêtre de loot) : état d'identification + actions courtes. */
-.vl-unid { margin-left: 8px; font-size: 0.78em; color: #b388ff; white-space: nowrap; }
+.vl-unid { margin-left: 8px; font-size: 0.78em; color: var(--magic); white-space: nowrap; }
 .vl-quals { margin-left: 8px; font-size: 0.8em; color: var(--muted); }
 .vl-acts { display: flex; gap: 6px; }
 .vl-act { font-size: 12px; padding: 4px 10px; white-space: nowrap; }
@@ -645,7 +645,7 @@ textarea:focus {
   font-size: 11px;
   background: rgba(192, 57, 43, 0.2);
   border: 1px solid var(--danger);
-  color: #ff9a8f;
+  color: var(--danger-bright);
   border-radius: 5px;
   padding: 1px 5px;
 }
@@ -677,9 +677,9 @@ textarea:focus {
   border: 1px solid rgba(255, 255, 255, 0.14);
 }
 .af-bar i.on { background: var(--gc); border-color: var(--gc); box-shadow: 0 0 4px var(--gc); }
-.af-action { --gc: #e0b83a; } /* Action — or */
-.af-move   { --gc: #46c2d6; } /* Mouvement — cyan */
-.af-adv    { --gc: #ff9b3d; } /* Avantage — orange (plafond 10, option RAW LDB 14 l.198) */
+.af-action { --gc: var(--gauge-action); } /* Action — or */
+.af-move   { --gc: var(--gauge-move); } /* Mouvement — cyan */
+.af-adv    { --gc: var(--gauge-adv); } /* Avantage — orange (plafond 10, option RAW LDB 14 l.198) */
 /* Aperçu de clic (tap 1) : crans qui VONT être dépensés (clignotent) / gagnés (se remplissent en
    clignotant) — montre le coût/gain de l'opération avant le commit du 2ᵉ clic. */
 @property --af-pulse { syntax: '<number>'; inherits: true; initial-value: 1; }
@@ -734,19 +734,19 @@ textarea:focus {
 .fx-chip em {
   font-size: 9px;
   font-style: normal;
-  color: #cfe8c9;
+  color: var(--ok-bright);
 }
 .fx-chip.malus {
-  background: #2a1518;
-  border-color: #7a2a2a;
+  background: var(--chip-malus-bg);
+  border-color: var(--chip-malus-border);
 }
 .fx-chip.buff {
-  background: #16261a;
-  border-color: #3a6b3a;
+  background: var(--chip-buff-bg);
+  border-color: var(--chip-buff-border);
 }
 .fx-chip.state {
   background: rgba(224, 151, 63, 0.18);
-  border-color: #e8973f;
+  border-color: var(--chip-state-border);
 }
 .fx-chip.more {
   color: var(--muted);
@@ -777,7 +777,7 @@ textarea:focus {
   border-radius: 9px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   background: rgba(255, 255, 255, 0.05);
-  color: var(--text, #ececf2);
+  color: var(--text);
   cursor: pointer;
   text-align: center;
   transition: background 0.12s, border-color 0.12s, transform 0.06s;
@@ -795,7 +795,7 @@ textarea:focus {
 }
 .ab-slot.on {
   background: rgba(79, 143, 224, 0.25);
-  border-color: #4f8fe0;
+  border-color: var(--combat-walk);
 }
 .ab-slot.ab-alert {
   border-color: rgba(224, 177, 63, 0.6);
@@ -810,12 +810,12 @@ textarea:focus {
   50% { box-shadow: 0 0 0 3px rgba(224, 177, 63, 0.5); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ab-slot.ab-alert.pulse { animation: none; border-color: var(--gold, #e0b13f); }
+  .ab-slot.ab-alert.pulse { animation: none; border-color: var(--gold); }
 }
 .ab-slot.ab-end {
   border-style: dashed;
-  border-color: #4a7a3a;
-  color: #aee0a0;
+  border-color: var(--ok);
+  color: var(--ok-bright);
 }
 /* R6 : plus rien à faire ce tour → « Fin du tour » pulse pour attirer l'œil (nudge, pas de force). */
 .ab-slot.ab-end.pulse {
@@ -829,8 +829,8 @@ textarea:focus {
 /* R6 : confirmation « tour gâché » (Action non dépensée) → bouton d'avertissement. */
 .ab-slot.ab-end.warn {
   border-style: solid;
-  border-color: #c8782a;
-  color: #ffc98a;
+  border-color: var(--danger-soft);
+  color: var(--gold2);
   animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -855,7 +855,7 @@ textarea:focus {
   position: absolute;
   top: 2px;
   right: 3px;
-  color: var(--ok-bright, #7fcf6a);
+  color: var(--ok-bright);
   pointer-events: none;
 }
 /* Badge du raccourci clavier (1-9) en coin de capacité. */
@@ -876,9 +876,9 @@ textarea:focus {
 /* Badge d'aperçu tap-1 sur la scène (modèle de clic implicite) */
 .pv-badge {
   font: 700 13px system-ui, sans-serif;
-  fill: #ffd75e;
+  fill: var(--combat-gold);
   paint-order: stroke;
-  stroke: #15100a;
+  stroke: var(--bg);
   stroke-width: 3px;
 }
 .ab-hint {

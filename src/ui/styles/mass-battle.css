@@ -12,7 +12,7 @@
 
 .mb-meter {
   height: 14px; border-radius: 7px; overflow: hidden;
-  background: #0000004d; border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.302); border: 1px solid var(--border);
 }
 .mb-meter-fill { height: 100%; transition: width 0.35s ease; border-radius: 7px 0 0 7px; }
 .mb-ally .mb-meter-fill { background: var(--combat-ally); }
@@ -35,7 +35,7 @@
 .mb-clash { font-style: italic; }
 
 .mb-scenes { display: flex; flex-direction: column; gap: 8px; }
-.mb-scene { border: 1px solid var(--border); border-radius: 6px; padding: 8px; background: #0000001f; }
+.mb-scene { border: 1px solid var(--border); border-radius: 6px; padding: 8px; background: rgba(0, 0, 0, 0.122); }
 .mb-scene-head { gap: 8px; flex-wrap: wrap; align-items: center; }
 .mb-scene-kind {
   font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;
@@ -44,7 +44,7 @@
 .mb-scene-eff { color: var(--gold); font-size: 0.85rem; }
 .mb-scene-desc { margin-top: 8px; color: var(--text); font-size: 0.9rem; }
 
-.mb-hazard { border: 1px solid var(--border); border-radius: 6px; padding: 8px; background: #0000001f; }
+.mb-hazard { border: 1px solid var(--border); border-radius: 6px; padding: 8px; background: rgba(0, 0, 0, 0.122); }
 
 .mb-select {
   background: var(--panel); color: var(--text); border: 1px solid var(--border);

@@ -32,21 +32,21 @@
   gap: 0.4rem;
 }
 .house-rules .hr-ref {
-  color: var(--ink-faint, #7d7259);
+  color: var(--muted);
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
 }
 .house-rules .hr-reset {
   background: none;
   border: none;
-  color: var(--ink-faint, #7d7259);
+  color: var(--muted);
   cursor: pointer;
   font-size: 0.9rem;
   line-height: 1;
   padding: 0 0.2rem;
 }
 .house-rules .hr-reset:hover {
-  color: var(--copper, #c87f4a);
+  color: var(--copper);
 }
 .house-rules .hr-control select,
 .house-rules .hr-control input[type='number'] {

@@ -172,7 +172,7 @@
 .mc-qual.atout { background: rgba(46, 204, 113, 0.08); border-left-color: var(--ok); }
 .mc-qual.flaw { background: rgba(192, 57, 43, 0.11); border-left-color: var(--danger); }
 .mc-qual .q-name { font-weight: 600; white-space: nowrap; flex: none; }
-.mc-qual.atout .q-name { color: #7fd6a0; }
+.mc-qual.atout .q-name { color: var(--ok-bright); }
 .mc-qual.flaw .q-name { color: var(--danger-soft); }
 .mc-qual .q-desc { color: var(--muted); }
 .mc-desc { font-size: 12.5px; color: var(--text); font-style: italic; margin: 6px 0; opacity: 0.82; }

@@ -5,7 +5,7 @@ import { findCargoById, type PortProfile } from '../engine/seaVoyage';
 import { installCost } from '../engine/shipBuild';
 import { shipHasNavalTrait } from '../engine/navalTraits';
 import { foulingEffects } from '../engine/seaNavigation';
-import { canAfford, toMoney, priceToMoney, type Money } from '../engine/money';
+import { canAfford, toMoney, priceToMoney, formatMoney, type Money } from '../engine/money';
 import { moraleBand } from '../engine/crewMorale';
 import type { CampaignVessel } from '../state/store';
 import type { PendingShoreLeave, PendingManannPriest } from '../state/seaVoyageFlow';
@@ -197,7 +197,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                 title={missing <= 0 && !(vessel.criticals?.length) ? 'La coque est intacte.' : `1 CO par Blessure restaurée (MDG 13 l.643)${lissage ? ' · +50 % coque lissée' : ''}`}
                 onClick={repair}
               >
-                <Icon id="travel/repair" size="sm" /> Réparer{missing > 0 ? ` — ${missing} Blessure(s), ${repairCost} CO` : ''}
+                <Icon id="travel/repair" size="sm" /> Réparer{missing > 0 ? <> — {missing} Blessure(s), <Coins money={toMoney({ gold: repairCost })} /></> : null}
               </button>
               <NotchGauge
                 label="Moral"
@@ -216,7 +216,7 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                 title={foulLevel <= 0 && !vessel.crabs ? 'La coque est propre.' : `Cale sèche — ${careenPct} % du coût de base (MDG 13 l.152)`}
                 onClick={careen}
               >
-                <Icon id="travel/careen" size="sm" /> Caréner{careenCost > 0 ? ` — ${careenCost} CO` : ''}
+                <Icon id="travel/careen" size="sm" /> Caréner{careenCost > 0 ? <> — <Coins money={toMoney({ gold: careenCost })} /></> : null}
               </button>
             </section>
             <section className="panel port-section">
@@ -231,10 +231,10 @@ export function PortView({ initialTab = 'coque' }: { initialTab?: 'coque' | 'car
                         type="button"
                         className="btn small"
                         disabled={isGuest || !canAfford(money, toMoney({ gold: cost.gold ?? 0 }))}
-                        title={`${cost.gold} CO${cost.enc ? ` · ${cost.enc} Enc` : ''} (MDG 12)`}
+                        title={`${formatMoney(toMoney({ gold: cost.gold ?? 0 }))}${cost.enc ? ` · ${cost.enc} Enc` : ''} (MDG 12)`}
                         onClick={() => install(def.id, 1)}
                       >
-                        Installer — {cost.gold} CO
+                        Installer — <Coins money={toMoney({ gold: cost.gold ?? 0 })} />
                       </button>
                     </div>
                     <Prose md={def.desc} />

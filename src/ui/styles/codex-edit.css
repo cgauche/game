@@ -8,26 +8,26 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--line, #3a322c);
+  border-bottom: 1px solid var(--border);
 }
 .codex-edit-form { display: flex; flex-direction: column; gap: 0.7rem; }
 .codex-edit-form .ed-field { display: flex; flex-direction: column; gap: 0.2rem; }
-.codex-edit-form .ed-field > span { font-size: 0.8rem; color: var(--muted, #9a8f80); }
+.codex-edit-form .ed-field > span { font-size: 0.8rem; color: var(--muted); }
 .codex-edit-form input, .codex-edit-form textarea { width: 100%; box-sizing: border-box; }
 .codex-edit-form textarea { resize: vertical; font-family: inherit; }
 
 .de-spacer { flex: 1; }
-.de-ok { color: var(--ok, #6fbf73); font-size: 0.85rem; }
-.de-warn { color: var(--danger-soft, #d8a657); font-size: 0.85rem; }
-.de-msg { color: var(--muted, #9a8f80); font-size: 0.85rem; }
-.de-hint { font-style: italic; color: var(--muted, #9a8f80); font-size: 0.75rem; }
-.de-invalid { outline: 1px solid var(--danger, #c0413b); }
+.de-ok { color: var(--ok); font-size: 0.85rem; }
+.de-warn { color: var(--danger-soft); font-size: 0.85rem; }
+.de-msg { color: var(--muted); font-size: 0.85rem; }
+.de-hint { font-style: italic; color: var(--muted); font-size: 0.75rem; }
+.de-invalid { outline: 1px solid var(--danger); }
 /* erreurs BLOQUANTES de validateEntry (identité / refs) — Enregistrer reste grisé tant que non vide */
 .codex-edit-errors {
   margin: 0;
   padding: 0.35rem 0.6rem 0.35rem 1.6rem;
-  border-left: 3px solid var(--danger, #c0413b);
-  color: var(--danger, #c0413b);
+  border-left: 3px solid var(--danger);
+  color: var(--danger);
   font-size: 0.85rem;
 }
 
@@ -37,7 +37,7 @@
 
 .de-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 0.4rem; }
 .de-cell { display: flex; flex-direction: column; gap: 1px; }
-.de-cell span { font-size: 0.72rem; color: var(--muted, #9a8f80); }
+.de-cell span { font-size: 0.72rem; color: var(--muted); }
 
 .de-reflrow { display: flex; gap: 0.4rem; align-items: center; }
 .de-reflrow input { flex: 1; }

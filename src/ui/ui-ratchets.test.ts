@@ -38,34 +38,24 @@ function assertRatchet(counts: Record<string, number>, baseline: Record<string, 
 }
 
 // ── (iv) Couleurs hex hors tokens `:root` : la palette vit dans `base.css` (§charte-ui). Tout hex
-//    dans un AUTRE module CSS est de la dette gelée — le cliquet interdit sa hausse, impose la décrue. ──
-const HEX_BASELINE: Record<string, number> = {
-  'styles/codex-edit.css': 10,
-  'styles/combat-modals.css': 11,
-  'styles/combat-ui.css': 23,
-  'styles/compendium.css': 1,
-  'styles/editor.css': 5,
-  'styles/house-rules.css': 3,
-  'styles/hud.css': 20,
-  'styles/mass-battle.css': 3,
-  'styles/merchant.css': 1,
-  'styles/sheet.css': 6,
-  'styles/tavern.css': 1,
-  'styles/world-meta.css': 4,
-};
+//    dans un AUTRE module CSS est de la dette gelée — le cliquet interdit sa hausse, impose la décrue.
+//    Purge #310 : les 12 modules audités sont à ZÉRO — baseline vide, tolérance zéro. ──
+const HEX_BASELINE: Record<string, number> = {};
 
 // ── (v) Prix affichés ⇒ `<Coins>`/`formatMoney` : une valeur monétaire interpolée suivie d'une unité
 //    nue (` CO`/` PA`/` CA`) dans le JSX est de la dette (illisible, non i18n). `Coins.tsx` définit
-//    l'unité (exclu). Baseline gelée au recensement — on migre vers `<Coins>`, on n'en ajoute pas. ──
-const PRICE_BASELINE: Record<string, number> = {
-  'CharacterSheet.tsx': 1,
-  'creator/CharacterCreator.tsx': 1,
-  'editor/ConditionEditor.tsx': 1,
-  'editor/EffectList.tsx': 1,
-  'editor/GameOpEditor.tsx': 1,
-  'EquipmentPanel.tsx': 1,
-  'PortView.tsx': 4,
-};
+//    l'unité (exclu). Migré au #310 (ConditionEditor/EffectList/PortView → formatMoney/<Coins>) : la
+//    dette réelle est retombée à zéro — heuristique fail-closed, sans baseline. Les 4 faux positifs
+//    restants (CharacterSheet/CharacterCreator/GameOpEditor/EquipmentPanel) ne sont PAS de la monnaie
+//    (« PA » = Points d'Armure, LDB) : exemption nominative gelée en dur ci-dessous plutôt qu'en
+//    baseline (aucun de ces sites n'est censé approcher zéro un jour).
+const PRICE_PA_ARMOR_EXEMPT = new Set([
+  'CharacterSheet.tsx',
+  'creator/CharacterCreator.tsx',
+  'editor/GameOpEditor.tsx',
+  'EquipmentPanel.tsx',
+]);
+const PRICE_BASELINE: Record<string, number> = {};
 
 // ── (vii) `flex-wrap: wrap` hors `components.css` : le motif « rangée qui s'enroule » vit dans
 //    `.bar`/primitives partagées de `components.css` (§charte-ui). Un `flex-wrap` codé en dur dans un
@@ -99,8 +89,10 @@ describe('#236 — cliquets d’hygiène UI', () => {
     assertRatchet(counts, HEX_BASELINE, 'hex hors tokens');
   });
 
-  it('(v) prix ⇒ <Coins> : aucune hausse d’unité monétaire nue accolée à une interpolation', () => {
-    const files = walk(UI, (e) => /\.tsx$/.test(e) && !/\.test\./.test(e)).filter((f) => !f.endsWith('Coins.tsx'));
+  it('(v) prix ⇒ <Coins> : aucune composition manuelle de monnaie (fail-closed, exemptions PA nominatives)', () => {
+    const files = walk(UI, (e) => /\.tsx$/.test(e) && !/\.test\./.test(e))
+      .filter((f) => !f.endsWith('Coins.tsx'))
+      .filter((f) => !PRICE_PA_ARMOR_EXEMPT.has(rel(f)));
     const counts: Record<string, number> = {};
     for (const f of files) {
       const n = (readFileSync(f, 'utf8').match(/\}[^<>{}]{0,4} (?:CO|PA|CA)\b/g) || []).length;
