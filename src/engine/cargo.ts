@@ -75,6 +75,43 @@ export function removeCargo(lots: CargoLot[], cargoId: string, enc: number): { l
   return { lots: remaining, removed: taken.reduce((s, l) => s + l.enc, 0) };
 }
 
+// ── RISQUE sur la marchandise (lot D #327) — avaries, voie d'eau, pillage ─────────────────────────
+
+/** RETIRE un MONTANT d'Enc au fil des lots SANS égard au type de bien (voie d'eau « gâte 1d10 Enc »
+ *  T2C ch.5 l.101 / MDG ; pillage partiel ; vol gradué) — arrondi à l'entier, lots vidés éliminés.
+ *  PUR (nouvelle liste). */
+export function spoilCargoByEnc(lots: CargoLot[], enc: number): { lots: CargoLot[]; removed: number } {
+  let left = Math.max(0, Math.round(enc));
+  const remaining: CargoLot[] = [];
+  let removed = 0;
+  for (const l of lots) {
+    if (left <= 0) { remaining.push(l); continue; }
+    const take = Math.min(Math.max(0, l.enc), left);
+    left -= take; removed += take;
+    if (l.enc - take > 0) remaining.push({ ...l, enc: l.enc - take });
+  }
+  return { lots: remaining, removed };
+}
+
+/** RETIRE un POURCENTAGE de l'Enc TOTAL (pillage/vol gradué) — arrondi à l'entier le plus proche, réparti
+ *  au fil des lots (`spoilCargoByEnc`). `pct` borné 0..100. PUR (nouvelle liste). */
+export function spoilCargoByPct(lots: CargoLot[], pct: number): { lots: CargoLot[]; removed: number } {
+  const p = Math.max(0, Math.min(100, pct));
+  return spoilCargoByEnc(lots, Math.round(cargoTotalEnc(lots) * p / 100));
+}
+
+/** Issue d'une péripétie dangereuse terrestre pour la cargaison du convoi (arbitrage #327, 2026-07-11 :
+ *  « gradué par l'issue »). Combat gagné = le convoi est sauf ; fuite = perte partielle ; défaite = pillage
+ *  lourd. Les taux sont des paramètres MAISON (`landRobberyFleePct`/`landRobberyLossPct`). */
+export type CargoRaidOutcome = 'victory' | 'fled' | 'defeat';
+
+/** Pourcentage d'Enc perdu selon l'issue du combat de vol terrestre (victoire = 0 ; fuite = `fleePct` ;
+ *  défaite = `lossPct`). Taux bornés 0..100. PUR. */
+export function cargoRaidLossPct(outcome: CargoRaidOutcome, fleePct: number, lossPct: number): number {
+  if (outcome === 'victory') return 0;
+  return Math.max(0, Math.min(100, outcome === 'fled' ? fleePct : lossPct));
+}
+
 // ── LE PORTEUR DE CHARGE (« CargoCarrier ») — tronc générique #327 ─────────────────────────────────
 // Décision 1 (conception 2026-07-11) : UN concept pour héros, bête de bât, véhicule terrestre, barge et
 // navire — ils diffèrent par leur SOURCE de capacité et leur modèle de contenu, pas par leur nature. Ce

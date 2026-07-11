@@ -69,7 +69,7 @@ import { addCondition } from '../engine/conditions';
 import { findWhirlpool } from '../engine/seaPerils';
 import {
   rollBoardEvent, rollPortEvent, rollDaysToNextEvent, addManann, MANANN_BASE,
-  removeCargo, cargoTotalEnc, cargoOverload, resolveFastVoyage, FAST_VOYAGE_PALIERS,
+  removeCargo, spoilCargoByEnc, spoilCargoByPct, cargoTotalEnc, cargoOverload, resolveFastVoyage, FAST_VOYAGE_PALIERS,
   type SeaEventDef, type ManannMood, type PortProfile,
 } from '../engine/seaVoyage';
 import { navalMoveMod, navalTestTypeDR, shipHasNavalTrait } from '../engine/navalTraits';
@@ -304,6 +304,20 @@ export function healVesselHull(get: Get, set: Set, hull: Combatant, amount: numb
   if (plan) set({ travelPlan: { ...plan } });
   persistHullWounds(get, set);
   return j;
+}
+
+/** VOIE D'EAU (lot D #327) : une coque percée/heurtée « gâte 1d10 Enc » de cargaison (T2C ch.5 l.101 /
+ *  MDG, cf. `engine/cargo.ts`). Route sur la SOURCE UNIQUE `vessel.cargo` via le tronc `spoilCargoByEnc`.
+ *  Renvoie le journal (vide si rien à gâter). Câblé sur les avaries de coque EXISTANTES (collision maritime,
+ *  coque percée fluviale) — jamais un mécanisme neuf. */
+export function spoilVesselCargoOnLeak(get: Get, set: Set): string[] {
+  const vessel = get().vessel;
+  if (!vessel?.cargo?.length) return [];
+  const enc = rollDice(1, 10, battleRng());
+  const r = spoilCargoByEnc(vessel.cargo, enc);
+  if (!r.removed) return [];
+  set({ vessel: { ...vessel, cargo: r.lots } });
+  return [`La voie d'eau gâte ${r.removed} Enc de cargaison (T2C ch.5 l.101 / MDG).`];
 }
 
 /** Traits navals EFFECTIFS de la coque (type + Améliorations d'instance). */
@@ -1525,6 +1539,85 @@ function startChaseBoarding(get: Get, set: Set): void {
   }
 }
 
+/** Fuite = COURSE-POURSUITE (ch.13 l.354) : le seuil d'évasion suit la visibilité du jour (l.364-370).
+ *  PARTAGÉE par la Némésis et par la fuite choisie face à la Cogue pirate. */
+function startSeaPursuit(get: Get, set: Set, info: { label: string; desc: string }, foeM: number): void {
+  const sea = get().travelPlan!.sea!;
+  const escapeAt = sea.weather.visibilite === 'degage' ? 100 : sea.weather.visibilite === 'brume' ? 50 : 10;
+  patchSea(get, set, {
+    crisis: { kind: 'poursuite', label: info.label, distance: Math.floor(escapeAt / 2), escapeAt, foeM, foeSkill: 50, desc: info.desc },
+  });
+  tell(get, set, [`Le navire prend la fuite — Poursuite (Distance de départ ${Math.floor(escapeAt / 2)}, évasion à ${escapeAt} — MDG ch.13 l.362-370).`]);
+}
+
+/** Interpellation de la Cogue pirate (A5.3 #327) : cascade AUTONOME (patron Ouragan `resolveSeaDayEvent`)
+ *  d'une SEULE étape de CHOIX — fuir / combattre / se soumettre. L'applier `sea-pirate-hail` reprend
+ *  `runSeaDay` à la fermeture. Le pillage (`piratePillagePct`) et le tribut à Stromfels sont RAW-mués
+ *  (MDG ch.15 p.131 décrit l'extorsion sans la chiffrer) → paramètre maison + choix joueur. */
+function openPirateHail(get: Get, set: Set, event: SeaEventDef): void {
+  const pillage = Number(rule('piratePillagePct'));
+  startCascade(get, set, {
+    title: 'Cogue pirate', icon: 'nautical/wind', purpose: 'test',
+    steps: [{
+      id: 'sea-pirate-hail', kind: 'sea-pirate-hail', icon: 'nautical/wind', label: event.label,
+      interactive: true, defaultChoice: 'fuir', meta: { crisisLabel: event.label, crisisDesc: event.desc },
+      options: [
+        { key: 'fuir', label: 'Prendre la fuite', detail: 'Course-poursuite : distancer la cogue (MDG ch.13 l.362-370).' },
+        { key: 'combattre', label: 'Combattre', detail: 'Refuser l’abordage et se défendre — abordage immédiat.' },
+        { key: 'soumettre', label: 'Se soumettre', detail: `Laisser fouiller la cale (${pillage} % de la cargaison pillée) puis livrer un tribut à Stromfels.` },
+      ],
+    }],
+  });
+}
+
+/** CHOIX face à la Cogue pirate (A5.3 #327). fuir → Poursuite ; combattre → abordage immédiat ;
+ *  se soumettre → pillage `piratePillagePct` de la cale + CHOIX du tribut (étape insérée). */
+registerCascadeApplier('sea-pirate-hail', (get, set, step) => {
+  const j: string[] = [];
+  if (step.chosen === 'combattre') {
+    startChaseBoarding(get, set); // abordage immédiat (rencontre AUTHORÉE de la route)
+  } else if (step.chosen === 'soumettre') {
+    const pct = Number(rule('piratePillagePct'));
+    const vessel = get().vessel;
+    if (vessel?.cargo?.length) {
+      const r = spoilCargoByPct(vessel.cargo, pct);
+      if (r.removed) set({ vessel: { ...get().vessel!, cargo: r.lots } });
+      j.push(`Les forbans fouillent la cale et emportent ${r.removed} Enc de cargaison (${pct} %, MDG ch.15 p.131).`);
+    } else j.push('Les forbans fouillent une cale vide — rien à prendre.');
+    if (get().pendingCascade) setTimeout(() => runSeaDay(get, set), 0);
+    return { consequences: freeCons(j), insert: [{
+      id: 'sea-pirate-tribute', kind: 'sea-pirate-tribute', icon: 'nautical/wind',
+      label: 'Un prisonnier à sacrifier à Stromfels', interactive: true, defaultChoice: 'livrer',
+      options: [
+        { key: 'livrer', label: 'Livrer un membre d’équipage', detail: 'Un marin est emmené — perte réelle d’équipage, l’équipage est ébranlé.' },
+        { key: 'refuser', label: 'Refuser', detail: 'Les forbans passent à l’abordage.' },
+      ],
+    }] };
+  } else {
+    startSeaPursuit(get, set, { label: String(step.meta?.crisisLabel ?? 'Cogue pirate'), desc: String(step.meta?.crisisDesc ?? '') }, 5);
+  }
+  if (get().pendingCascade) setTimeout(() => runSeaDay(get, set), 0);
+  return { consequences: freeCons(j) };
+});
+
+/** TRIBUT à Stromfels (A5.3 #327) : livrer un marin = perte réelle d'équipage (`applyVesselCrewLoss`) +
+ *  déplaisir de Manann (facteur de Moral RAW −2d10, MDG ch.14 : sacrifier une âme à Stromfels, ennemi de
+ *  Manann) ; refuser = abordage immédiat. AUCUNE perte silencieuse (tout dénoué au journal/à l'écran). */
+registerCascadeApplier('sea-pirate-tribute', (get, set, step) => {
+  const j: string[] = [];
+  if (step.chosen === 'refuser') {
+    j.push('Le tribut est refusé — les forbans passent à l’abordage.');
+    startChaseBoarding(get, set);
+  } else {
+    for (const l of applyVesselCrewLoss(get, set, 1)) j.push(l);
+    j.push('Un marin est livré aux pirates, sacrifié à Stromfels.');
+    const ship = get().travelPlan?.vehicle;
+    if (ship) for (const l of applyShipMoraleDelta(get, set, ship, -rollDice(2, 10, battleRng()))) j.push(l); // déplaisir de Manann (MDG ch.14)
+  }
+  if (get().pendingCascade) setTimeout(() => runSeaDay(get, set), 0);
+  return { consequences: freeCons(j) };
+});
+
 /** Critique de navire au VOYAGE : Blessures non chiffrées par la table (les effets sont l'entrée) →
  *  l'entrée est PERSISTÉE sur le navire (`vessel.criticals`) et racontée ; ses effets mécaniques fins
  *  s'appliquent quand la coque redevient un combattant (combat naval). */
@@ -1657,6 +1750,7 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       const dmg = Math.max(0, 47 + (eff.m ?? 1) - Math.floor((ship.characteristics?.endurance ?? 0) / 10));
       damageVesselHull(get, set, ship, dmg);
       tell(get, set, [`Collision : la coque encaisse ${dmg} Blessures (Rocher IC 47, MDG ch.13 l.446/497).`]);
+      tell(get, set, spoilVesselCargoOnLeak(get, set)); // avarie de coque → voie d'eau (lot D #327)
       if (d100(rng) <= 20) { // 20 % d'Échouage (l.497)
         const plan2 = get().travelPlan!;
         set({ travelPlan: { ...plan2, km: plan2.km + 0 }, gameTime: get().gameTime + 24 * 60 });
@@ -1671,18 +1765,15 @@ function resolveBoardEvent(get: Get, set: Set, event: SeaEventDef, rng: RNG): vo
       tell(get, set, [`${w.label} : Évasion = Test étendu de Manœuvre pour ${w.evasion.totalDR} DR (MDG ch.13 l.528).`]);
       break;
     }
-    case 'navire-hostile':
-    case 'nemesis': {
-      // Fuite = COURSE-POURSUITE (ch.13 l.354) : le seuil d'évasion suit la visibilité du jour (l.364-370).
-      const sea = get().travelPlan!.sea!;
-      const escapeAt = sea.weather.visibilite === 'degage' ? 100 : sea.weather.visibilite === 'brume' ? 50 : 10;
-      const foeM = event.kind === 'nemesis' ? 6 : 5;
-      patchSea(get, set, {
-        crisis: { kind: 'poursuite', label: event.label, distance: Math.floor(escapeAt / 2), escapeAt, foeM, foeSkill: 50, desc: event.desc },
-      });
-      tell(get, set, [`Le navire prend la fuite — Poursuite (Distance de départ ${Math.floor(escapeAt / 2)}, évasion à ${escapeAt} — MDG ch.13 l.362-370).`]);
+    case 'nemesis':
+      // Némésis : fuite forcée = COURSE-POURSUITE (ch.13 l.354), pas d'extorsion à négocier.
+      startSeaPursuit(get, set, event, 6);
       break;
-    }
+    case 'navire-hostile':
+      // Cogue pirate (MDG ch.15 p.131) : les forbans exigent de fouiller la cale — CHOIX joueur
+      // fuir / combattre / se soumettre (A5.3 #327), en cascade interactive avant la journée.
+      openPirateHail(get, set, event);
+      break;
     case 'debris-cargaison':
     case 'epave-cargaison': {
       if (!vessel) break;

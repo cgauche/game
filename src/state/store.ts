@@ -106,6 +106,7 @@ import * as portFlow from './portFlow';
 import * as landMarketFlow from './landMarketFlow';
 import * as seaActivities from './seaActivities';
 import * as seaVoyageFlow from './seaVoyageFlow';
+import { applyLandCargoRaid } from './carriers';
 import { startCascade, suspendActiveCascade, resumeSuspendedCascade, extendedTestOutcomeAppliers } from './cascade';
 import { resultLine, freeCons } from './rollSeam';
 import { describeTest } from './flowOutcomes';
@@ -479,6 +480,12 @@ export interface GameState extends RollFlowActionsMap {
   /** Ferme l'écran de défaite ; dans une Scène de combat de bataille de masse, la bataille CONTINUE
    *  (défaite tactique = `combatLost`, groupe repoussé mais relevé). */
   dismissDefeat: () => void;
+  /** VOL TERRESTRE en cours (#327 A5.1) : le combat courant est né d'une péripétie dangereuse terrestre —
+   *  la cargaison du convoi est en jeu, dénouée au teardown de combat (`resolveCargoRaid`). */
+  cargoRaid: boolean;
+  /** Dénoue le vol terrestre GRADUÉ (#327 A5.1) : applique la perte d'Enc du convoi selon l'issue
+   *  (`applyLandCargoRaid`, params maison) et éteint `cargoRaid`. No-op hors vol en cours. */
+  resolveCargoRaid: (outcome: import('../engine/cargo').CargoRaidOutcome) => void;
   /** Butin HORS combat (fouille/Test/dialogue/trigger) — fenêtre « qui l'emporte ? » (même brique). */
   pendingLoot: PendingLoot | null;
   /** Attribue une ligne de la fenêtre de loot au héros choisi. */
@@ -1863,7 +1870,20 @@ export const useGame = create<GameState>((set, get) => ({
     seedBattleRng(seed);
   },
 
+  resolveCargoRaid: (outcome) => {
+    if (!get().cargoRaid) return;
+    const { patch, pct, losses } = applyLandCargoRaid(get(), outcome);
+    const total = losses.reduce((n, l) => n + l.removed, 0);
+    set({ ...patch, cargoRaid: false });
+    if (total > 0) {
+      // Consequence structurée (#295) — issue en donnée + total, jamais un jet silencieux.
+      get().log(`Vol terrestre — ${outcome === 'fled' ? 'le convoi fuit' : 'le convoi est enfoncé'} : ${total} Enc de cargaison pillée (${pct} %${losses.length > 1 ? `, ${losses.length} porteurs` : ''}).`);
+    } else if (outcome !== 'victory' && pct > 0) {
+      get().log('Vol terrestre : les assaillants ne trouvent aucune cargaison à piller sur le convoi.');
+    }
+  },
   dismissVictory: () => {
+    get().resolveCargoRaid('victory'); // combat gagné = le convoi est sauf (0 %), le flag s'éteint (#327 A5.1)
     const pv = get().pendingVictory;
     const leftoverGear = (pv?.gear ?? []).map((g) => g.effect); // équipement non attribué → 1er héros par défaut
     const cont = pv?.onContinue;
@@ -1884,6 +1904,7 @@ export const useGame = create<GameState>((set, get) => ({
    *  abstraction), l'issue `combatLost` alimente le camp allié (Duel l.223 : −20 ; Percée l.175 : Charge),
    *  et la bataille CONTINUE. Hors bataille de masse : reprise standard (retour à la scène / redémarrage). */
   dismissDefeat: () => {
+    get().resolveCargoRaid('defeat'); // combat perdu = le convoi est pillé (landRobberyLossPct, #327 A5.1)
     // Anéantissement HORS COMBAT (`checkPartyWiped`) : pas de bataille à reprendre — retour au menu.
     if (get().partyWiped) { set({ partyWiped: false, battle: null, screen: 'menu' }); return; }
     const inMassBattleCombat = !!get().massBattle?.combatScene;
@@ -2231,6 +2252,10 @@ export const useGame = create<GameState>((set, get) => ({
     } else {
       get().transitionTo(then.scene, then.entry);
       get().startCombat(then.encounter, undefined, { noSurprise: then.noSurprise });
+      // Vol terrestre (#327 A5.1) : cette embuscade terrestre met la cargaison du convoi en jeu — la
+      // perte GRADUÉE se dénoue au teardown de combat. Posé APRÈS startCombat (le reset `combatStart`
+      // n'efface donc pas le marqueur).
+      if (get().battle) set({ cargoRaid: true });
     }
   },
 }));

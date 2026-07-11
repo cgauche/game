@@ -27,7 +27,7 @@ import { minutesUntilNext, DUSK_MINUTE } from '../engine/clock';
 import { applyEffects } from './combatEffects';
 import { openRest, placesOfKind } from './restFlow';
 import { placeById, type MapRoute, type WorldMap } from './worldMap';
-import { damageVesselHull, healVesselHull, syncHullWoundsFromVessel } from './seaVoyageFlow';
+import { damageVesselHull, healVesselHull, syncHullWoundsFromVessel, spoilVesselCargoOnLeak } from './seaVoyageFlow';
 import { applyOps } from '../engine/ops';
 import { baseHoursPerDay } from './travelFlow';
 import type { TravelPlan, TravelRecapDay } from './travelFlow';
@@ -627,6 +627,7 @@ function bestShipwright(get: Get): { actor: Combatant; value: number } | null {
  *  réparation temporaire (Métier Construction de bateaux/Charpentier, Complexe — l.113-117), INFLUENÇABLE
  *  (#270, `riverHoleRepair`) si le réparateur est piloté par un humain — sinon inline. */
 function holeBoat(get: Get, set: Set, plan: TravelPlan, tell: (l: string[]) => void, idPrefix: string): CascadeStep[] {
+  tell(spoilVesselCargoOnLeak(get, set)); // la coque prend l'eau → voie d'eau gâte 1d10 Enc (lot D #327)
   const minutes = holeSinkMinutes(plan.vehicle!.characteristics?.endurance ?? 0); // « coule en E minutes » (l.103)
   const repair = bestShipwright(get);
   if (repair && humanControlled(get(), repair.actor)) {

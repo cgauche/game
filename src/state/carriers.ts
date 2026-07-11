@@ -15,7 +15,8 @@ import { maxEncumbrance, totalEncumbrance } from '../engine/items';
 import { mountProfileForTrapping } from '../engine/mountTravel';
 import { findVehicleById } from '../data';
 import { placeOfScene } from './worldMap';
-import { type CargoCarrier, type CargoLot, cargoTotalEnc, carrierFreeEnc } from '../engine/cargo';
+import { type CargoCarrier, type CargoLot, cargoTotalEnc, carrierFreeEnc, spoilCargoByPct, cargoRaidLossPct, type CargoRaidOutcome } from '../engine/cargo';
+import { rule } from '../engine/policy';
 import type { GameState } from './store';
 
 /** Tranche d'état lue pour dresser les porteurs — évite de dépendre du store entier (testable à plat). */
@@ -144,6 +145,31 @@ export function partyLandCapacity(party: Combatant[]): number {
 /** Retrouve un porteur du groupe par son id STABLE. */
 export function carrierById(s: CarrierStateSlice, id: string): CargoCarrier | undefined {
   return partyCarriers(s).find((c) => c.id === id);
+}
+
+/** Porteurs de VRAC TERRESTRES du convoi (bêtes/véhicules — hors navire) : cible du vol terrestre. */
+export function landBulkCarriers(s: CarrierStateSlice): CargoCarrier[] {
+  const { vehicles, beasts } = landCarriers(s, currentPlaceId(s));
+  return [...vehicles, ...beasts];
+}
+
+/** VOL TERRESTRE GRADUÉ (#327 A5.1, arbitrage 2026-07-11) : quand une péripétie dangereuse terrestre se
+ *  solde par un combat, la cargaison des porteurs du convoi subit un % d'Enc SELON L'ISSUE — combat gagné
+ *  = rien ; fuite = `landRobberyFleePct` ; défaite = `landRobberyLossPct` (params maison). Retire des lots
+ *  RÉELS (tronc `spoilCargoByPct`) et renvoie le patch d'état (`persistCarriersCargo`) + l'Enc perdu par
+ *  porteur — le call-site (store) journalise en Consequence structurée. */
+export function applyLandCargoRaid(
+  s: CarrierStateSlice, outcome: CargoRaidOutcome,
+): { patch: Partial<GameState>; pct: number; losses: { label: string; removed: number }[] } {
+  const pct = cargoRaidLossPct(outcome, Number(rule('landRobberyFleePct')), Number(rule('landRobberyLossPct')));
+  const losses: { label: string; removed: number }[] = [];
+  const updates: { carrierId: string; cargo: CargoLot[] }[] = [];
+  if (pct > 0) for (const c of landBulkCarriers(s)) {
+    if (!c.cargo.length) continue;
+    const r = spoilCargoByPct(c.cargo, pct);
+    if (r.removed) { updates.push({ carrierId: c.id, cargo: r.lots }); losses.push({ label: c.label, removed: r.removed }); }
+  }
+  return { patch: updates.length ? persistCarriersCargo(s, updates) : {}, pct, losses };
 }
 
 /** RE-PERSISTE la cargaison de N porteurs sur leur source unique (verrou 1) : cale du navire

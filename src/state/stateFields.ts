@@ -93,6 +93,9 @@ const STATE_FIELDS = {
   preemptAiming: { init: null, resetOn: ['scene', 'combatStart'] },
   pendingFateSave: { init: null, resetOn: [] },
   pendingVictory: { init: null, resetOn: ['combatStart'] },
+  // Vol terrestre en cours (#327 A5.1) : marqueur SURVIVANT à l'ouverture de combat (posé APRÈS
+  // startCombat), éteint explicitement au teardown (`resolveCargoRaid`). Transitoire — jamais persisté.
+  cargoRaid: { init: false, resetOn: ['scene'] },
   pendingLoot: { init: null, resetOn: [] },
   document: { init: null, resetOn: ['scene'] },
   previousScene: { init: null, resetOn: [] },
