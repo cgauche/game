@@ -86,7 +86,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
-import { openRoll, composeRollLabel, effectiveTarget, type RollRequest } from './rollSeam';
+import { openRoll, composeRollLabel, effectiveTarget, resolveSurface, type RollRequest } from './rollSeam';
 import { registerCascadeApplier, startCascade, runCascadeImmediate } from './cascade';
 
 /** Crise NAVALE en cours (un Test d'équipage par manche jusqu'à l'issue). */
@@ -888,17 +888,19 @@ function applySeaProgress(get: Get, set: Set, progressionDR: number): void {
 
 /**
  * Clôture de la CASCADE du jour (#275 Ronde 2 cran 3, appelée par le store — `dispatchCascadeDone`
- * `purpose:'travelDay'`) : eau & scorbut (ch.14), Salissures hebdo (ch.13 l.148), horloge +24 h,
- * entretien quotidien, arrivée (événement de port) ou halte de nuit. Tire la MÉTÉO du LENDEMAIN en
- * clôture (décision 1 #275 Ronde 2 cran 3, aligné sur `tickRiverWindDay`/`finishRiverDay`) — le 1ᵉʳ
- * jour est tiré à l'ouverture (`buildSeaPlan`) ; `runSeaDay` ne fait plus qu'ANNONCER la météo déjà là.
+ * `purpose:'travelDay'`) — PHASE 1/3 de l'entretien-survie (#272 résiduel, seam #275 Décision 3) : eau &
+ * rats, puis Scorbut (ch.14). Le lot de Tests `subi` du Scorbut passe par `resolveSurface` : un siège MJ
+ * présent (`gmSeat`) → cascade SURFACÉE (`purpose:'seaScorbut'`, visible/lançable, jamais silencieuse —
+ * la clôture enchaîne `continueSeaDayAfterScorbut` via `dispatchCascadeDone`, `combatSlice.ts`) ; sinon
+ * résolu INLINE comme avant (#275 Ronde 1) et la phase 2 s'enchaîne directement. Toute ligne générée ICI
+ * passe par `tell()` (journal + `sea.lines`, durable) plutôt qu'un tableau local — une cascade surfacée
+ * PAUSE l'exécution (reprise asynchrone par un clic MJ), un accumulateur JS ne survivrait pas la pause.
  */
 export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   const plan = get().travelPlan;
   if (!plan?.sea) return;
   const rng = battleRng();
   const sea = plan.sea;
-  const lines: string[] = [];
 
   // Nuit : l'infestation gâte la cargaison (ch.15, événements Infestation).
   if (sea.infestation) {
@@ -908,8 +910,8 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
       const first = vessel.cargo[0];
       const r = removeCargo(vessel.cargo, first.cargoId, spoil);
       set({ vessel: { ...vessel, cargo: r.lots } });
-      if (r.removed) lines.push(`Les rats gâtent ${r.removed} Enc de cargaison pendant la nuit.`);
-    } else lines.push('Les rats rôdent dans la cale (rien à gâter — pour l\'instant).');
+      if (r.removed) tell(get, set, [`Les rats gâtent ${r.removed} Enc de cargaison pendant la nuit.`]);
+    } else tell(get, set, ['Les rats rôdent dans la cale (rien à gâter — pour l\'instant).']);
   }
 
   // Eau douce (ch.13 l.209-213 + ch.14 l.242) : consommation par bande de Température × POPULATION EMBARQUÉE
@@ -922,18 +924,15 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
     const need = souls * dailyWaterLitres(sea.weather.temperature);
     const left = Math.max(0, vessel0.waterLitres - need);
     set({ vessel: { ...vessel0, waterLitres: left } });
-    lines.push(left > 0 ? `Eau douce : −${need} L (${souls} à bord, reste ${left} L).` : 'Les tonneaux d\'eau douce sont À SEC — trouvez de l\'eau (MDG ch.14).');
+    tell(get, set, [left > 0 ? `Eau douce : −${need} L (${souls} à bord, reste ${left} L).` : 'Les tonneaux d\'eau douce sont À SEC — trouvez de l\'eau (MDG ch.14).']);
   }
   // Vivres de l'équipage PNJ (MDG 14 l.238/250) : l'effectif nominal mange sur les rations de mer de la cale.
-  lines.push(...consumeCrewProvisions(get, set, 1));
+  tell(get, set, consumeCrewProvisions(get, set, 1));
 
   // Scorbut (MDG 14 l.230) : « pour chaque mois passé sans nourriture correcte » — Test de Résistance
   // Intermédiaire (+0), Facile (+40) avec la soupe de chou fermenté. Les rations de bord ne sont pas
-  // de la nourriture fraîche → le mois EN MER compte. Seam de jet (#275 Ronde 1, Décision « boucles
-  // subi par-héros ») : UNE cascade à N étapes (patron `shipwreck.ts` 22c74b5d) au lieu de N
-  // `startCascade` — mais toujours résolue INLINE ici (`runCascadeImmediate`) : le V (siège MJ
-  // voit/lance) exigerait de scinder `continueSeaDayAfterCascade` en continuation — AVEU documenté,
-  // non fermé par #275 Ronde 2 cran 3 (bascule du pipeline, hors périmètre de cette passe).
+  // de la nourriture fraîche → le mois EN MER compte. UNE cascade à N étapes `subi` (patron `shipwreck.ts`
+  // 22c74b5d) — policy de la PORTE (`resolveSurface`), jamais un `if gmSeat` local (#272 résiduel).
   const daysAtSea = sea.daysAtSea + 1;
   if (daysAtSea % 30 === 0) {
     const patients = get().party.filter((h) => !h.dead && !(h.diseases ?? []).some((d) => d.name === 'scorbut'));
@@ -949,10 +948,34 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
           result: null, interactive: true, meta: { soup },
         };
       });
-      const resolved = runCascadeImmediate(get, set, steps);
-      lines.push(...resolved.flatMap((s) => s.outcome ?? []));
+      const subiReq: RollRequest = { side: { worldSide: 'ship', shipId: get().vessel!.vehicleId }, test: { label: 'Scorbut' }, difficulty: 'intermediaire', klass: 'subi' };
+      if (resolveSurface(get, subiReq, 'sea-scorbut') === 'I') {
+        const resolved = runCascadeImmediate(get, set, steps);
+        tell(get, set, resolved.flatMap((s) => s.outcome ?? []));
+      } else {
+        startCascade(get, set, { title: 'Entretien — Scorbut', icon: 'medical/infection', purpose: 'seaScorbut', steps });
+        return; // clôture reprise par `dispatchCascadeDone` (`combatSlice.ts`) → `continueSeaDayAfterScorbut`
+      }
     }
   }
+  continueSeaDayAfterScorbut(get, set);
+}
+
+/**
+ * PHASE 2/3 (#272 résiduel) : Salissures hebdo (ch.13 l.148), horloge +24 h, Exposition (ch.13 l.203-225),
+ * puis Épuisement (ch.13 l.109-111) — même patron MJ-surfaçable que Scorbut (Phase 1). `doneSteps` : la
+ * cascade Scorbut VIENT de se clôturer côté MJ (`dispatchCascadeDone`) → ses lignes de résultat (déjà
+ * journalisées par `commitStep`) sont reversées dans `sea.lines` pour que le recap de la halte les porte
+ * (parité avec le chemin inline, qui les `tell()` lui-même avant d'enchaîner). Absent en chaînage direct
+ * (Scorbut résolu I) : déjà `tell()`'ées par `continueSeaDayAfterCascade`.
+ */
+export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: CascadeStep[]): void {
+  const plan = get().travelPlan;
+  if (!plan?.sea) return;
+  if (doneSteps) tell(get, set, doneSteps.flatMap((s) => s.outcome ?? []));
+  const rng = battleRng();
+  const sea = plan.sea;
+  const daysAtSea = sea.daysAtSea + 1;
 
   // Salissures hebdomadaires (ch.13 l.148) : « chaque semaine qu'un navire passe en mer sans
   // l'entretien approprié » — Test de Résistance du vaisseau, raté → +1 niveau.
@@ -962,7 +985,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
     const hullE = findVehicleById(vessel1.vehicleId)?.hull?.char.endurance ?? 40;
     const r = rollWeeklyFouling(hullE, vessel1.fouling?.level ?? 0, rng);
     set({ vessel: { ...get().vessel!, fouling: { level: r.level, lastWeek: week } } });
-    if (r.gained) lines.push(`Salissures : la coque s'encrasse (niveau ${r.level} — ${foulingEffects(r.level).desc})`);
+    if (r.gained) tell(get, set, [`Salissures : la coque s'encrasse (niveau ${r.level} — ${foulingEffects(r.level).desc})`]);
   }
 
   // Horloge : à l'ARRIVÉE au port, la journée entière passe (+24 h) — l'entretien du jour est rattrapé
@@ -975,7 +998,6 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   const dayMinutes = arrived ? 24 * 60 : minutesUntilNext(get().gameTime, DUSK_MINUTE);
   set({ gameTime: get().gameTime + dayMinutes });
   bus.emit(EVT.TIME_ADVANCED, { minutes: dayMinutes });
-  const evening: string[] = [];
 
   // TEMPÉRATURE (MDG 13 l.203-225) : Tests d'Exposition du jour à la cadence de la bande. Le jour de
   // voyage ne se simule pas heure par heure — la période EXPOSÉE = une Période de travail sur le pont
@@ -989,8 +1011,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
     for (const h of get().party) {
       if (h.dead) continue;
       const r = exposureNight(h, expCount, testValue(h, 'resistance', 'endurance'), rng, { kind: tdef.exposure, difficulty: tdef.difficulty });
-      evening.push(`${h.name} — Exposition (${tdef.label}, ${expCount} Test${expCount > 1 ? 's' : ''} de Résistance ${DIFFICULTY_LABELS[tdef.difficulty ?? 'intermediaire']}) : ${r.rolls.map((x) => `${x.roll}/${x.target}`).join(' · ')}${r.failures ? '' : ' — tient le coup.'}`);
-      evening.push(...r.log);
+      tell(get, set, [`${h.name} — Exposition (${tdef.label}, ${expCount} Test${expCount > 1 ? 's' : ''} de Résistance ${DIFFICULTY_LABELS[tdef.difficulty ?? 'intermediaire']}) : ${r.rolls.map((x) => `${x.roll}/${x.target}`).join(' · ')}${r.failures ? '' : ' — tient le coup.'}`, ...r.log]);
       expireExposureEffects(h, get().gameTime + MINUTES_PER_DAY); // dissipation après 24 h (purge #T3)
     }
     set({ party: [...get().party] });
@@ -999,9 +1020,8 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
   // ÉPUISEMENT (MDG 13 l.109-111) : le rythme a été FORCÉ aujourd'hui (réussi OU non) → chaque PJ
   // (l'équipage = les PJ, MDG 14 l.39) teste Résistance Complexe (−10) sous peine d'Exténué. Le Test
   // de base des Périodes de travail (Accessible +20) est absorbé par l'abstraction d'équipage PNJ —
-  // il n'est joué que quand le joueur CHOISIT de forcer (décision documentée). Seam de jet (#275 Ronde
-  // 1) : même patron « UNE cascade à N étapes, toujours résolue inline » que Scorbut ci-dessus — même
-  // aveu documenté (V/siège MJ non câblé, Ronde 2).
+  // il n'est joué que quand le joueur CHOISIT de forcer (décision documentée). Même patron
+  // MJ-surfaçable que Scorbut (Phase 1) — policy de la PORTE, jamais un `if gmSeat` local.
   if (sea.paceToday) {
     const diff = exhaustionDifficulty(true);
     const patients = get().party.filter((h) => !h.dead);
@@ -1013,10 +1033,33 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
         base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, test, diff),
         result: null, interactive: true,
       }));
-      const resolved = runCascadeImmediate(get, set, steps);
-      evening.push(...resolved.flatMap((s) => s.outcome ?? []));
+      const subiReq: RollRequest = { side: { worldSide: 'ship', shipId: get().vessel!.vehicleId }, test: { label: 'Épuisement' }, difficulty: 'intermediaire', klass: 'subi' };
+      if (resolveSurface(get, subiReq, 'sea-epuisement') === 'I') {
+        const resolved = runCascadeImmediate(get, set, steps);
+        tell(get, set, resolved.flatMap((s) => s.outcome ?? []));
+      } else {
+        startCascade(get, set, { title: 'Entretien — Épuisement', icon: 'medical/infection', purpose: 'seaExhaustion', steps });
+        return; // clôture reprise par `dispatchCascadeDone` (`combatSlice.ts`) → `continueSeaDayAfterExhaustion`
+      }
     }
   }
+  continueSeaDayAfterExhaustion(get, set);
+}
+
+/**
+ * PHASE 3/3 (#272 résiduel) : recap du jour, arrivée (port) ou halte de nuit — même fin qu'avant la
+ * scission. Lit `sea.lines` FRAIS (les phases 1/2 ont `tell()` toute leur journalisation, inline OU
+ * surfacée MJ) au lieu d'un tableau local reconstitué — la SEULE source, plus de double comptage par
+ * chemin. `doneSteps` : mêmes rôle/parité que `continueSeaDayAfterScorbut` ci-dessus, pour l'Épuisement.
+ */
+export function continueSeaDayAfterExhaustion(get: Get, set: Set, doneSteps?: CascadeStep[]): void {
+  const plan = get().travelPlan;
+  if (!plan?.sea) return;
+  if (doneSteps) tell(get, set, doneSteps.flatMap((s) => s.outcome ?? []));
+  const rng = battleRng();
+  const sea = plan.sea;
+  const daysAtSea = sea.daysAtSea + 1;
+  const todayLines = sea.lines;
 
   const miles = sea.milesToday;
   const kmDone = Math.min(plan.km, plan.kmDone + miles);
@@ -1050,11 +1093,10 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
     milesToday: 0, sailsDown: false, lighthouseDR: 0, eventMMod: sea.eventMMod, paceToday: undefined,
   });
   set({ travelPlan: { ...get().travelPlan!, kmDone } });
-  tell(get, set, [...lines, ...evening]);
 
   const worldMap = get().worldMap as WorldMap;
   const to = placeById(worldMap, plan.toPlaceId);
-  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: [...sea.lines, ...lines, ...evening], entries: dayEntries, sea: chrome };
+  const recapDay: TravelRecapDay = { kmFrom: plan.kmDone, kmTo: kmDone, hours: 24, lines: todayLines, entries: dayEntries, sea: chrome };
 
   if (plan.km - kmDone < 1e-9 && to) {
     // ARRIVÉE : la distance de la traversée est NOTÉE sur le navire (vente à un port producteur :

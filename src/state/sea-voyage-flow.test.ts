@@ -877,3 +877,56 @@ describe('Relâche à terre — #185 (choix joueur AVANT événement de port, MD
     expect(seatOwns(get(), 0, owner ?? undefined)).toBe(false);
   });
 });
+
+describe('Entretien-survie maritime — #272 résiduel (Scorbut/Épuisement, policy de la PORTE `resolveSurface`, seam #275)', () => {
+  beforeEach(freshState);
+
+  it('Scorbut : SANS siège MJ résout INLINE (policy `subi`, I) — la journée continue jusqu’à la halte de nuit', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 29, milesToday: 50 } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeNull(); // 'I' — aucun siège MJ
+    expect(get().pendingRest).toBeTruthy(); // la journée a repris jusqu'à la halte
+    expect(get().journal.some((l) => l.toLowerCase().includes('scorbut'))).toBe(true);
+  });
+
+  it('Scorbut : AVEC siège MJ, l’étape SURFACE (V) — plus d’auto-résolution silencieuse ; la journée reprend après résolution', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 29, milesToday: 50 } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeTruthy();
+    expect(get().pendingCascade!.purpose).toBe('seaScorbut');
+    expect(get().pendingCascade!.participants.every((s) => s.kind === 'sea-scorbut')).toBe(true);
+    let guard = 0;
+    while (get().pendingCascade?.purpose === 'seaScorbut' && guard++ < 10) stepCascade();
+    expect(get().pendingRest).toBeTruthy(); // jamais résolue en silence — la journée reprend malgré tout
+    expect(get().journal.some((l) => l.toLowerCase().includes('scorbut'))).toBe(true); // parité recap/journal avec le chemin inline
+  });
+
+  it('Épuisement : SANS siège MJ résout INLINE (policy `subi`, I) — la journée continue jusqu’à la halte de nuit', () => {
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 1, paceToday: 'won', milesToday: 50 } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeNull();
+    expect(get().pendingRest).toBeTruthy();
+    expect(get().journal.some((l) => l.includes('Épuisement'))).toBe(true);
+  });
+
+  it('Épuisement : AVEC siège MJ, l’étape SURFACE (V) — la journée reprend après résolution', async () => {
+    const { setGmSeat } = await import('./netFlow');
+    setGmSeat(get, set, 1);
+    const plan = buildSeaPlan(get, 'r1', 'A', 'B', seaMap.routes[0])!;
+    // daysAtSea+1 = 2, non multiple de 30 → Scorbut ne se déclenche pas ce jour, seul Épuisement teste.
+    set({ travelPlan: { ...plan, sea: { ...plan.sea!, daysAtSea: 1, paceToday: 'won', milesToday: 50 } } });
+    continueSeaDayAfterCascade(get, set);
+    expect(get().pendingCascade).toBeTruthy();
+    expect(get().pendingCascade!.purpose).toBe('seaExhaustion');
+    expect(get().pendingCascade!.participants.every((s) => s.kind === 'sea-epuisement')).toBe(true);
+    let guard = 0;
+    while (get().pendingCascade?.purpose === 'seaExhaustion' && guard++ < 10) stepCascade();
+    expect(get().pendingRest).toBeTruthy();
+    expect(get().journal.some((l) => l.includes('Épuisement'))).toBe(true);
+  });
+});

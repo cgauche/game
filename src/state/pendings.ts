@@ -1167,8 +1167,13 @@ export interface PendingCascade extends MultiPending<CascadeStep> {
    *  voyage — fluvial/… : à la clôture, le store recalcule la progression du jour puis enchaîne halte/
    *  arrivée via le handler du domaine), 'test' (autonome), 'combat' (conséquences d'un jet de combat —
    *  fermeture simple, pas de reprise), 'pursuite' (manche de poursuite terrestre — à la clôture le store
-   *  résout la manche puis rouvre une manche ou dénoue, cf. state/pursuitFlow). */
-  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite';
+   *  résout la manche puis rouvre une manche ou dénoue, cf. state/pursuitFlow) ; 'seaScorbut'/
+   *  'seaExhaustion' (seam de jet #275/#272 résiduel — MJ V) : lot de Tests `subi` PAR HÉROS de
+   *  l'entretien-survie maritime (Scorbut MDG 14 l.230, Épuisement MDG 13 l.109-111) surfacé au siège MJ
+   *  quand `resolveSurface('subi')` rend V (au lieu de l'auto-résolution silencieuse, `seaVoyageFlow.ts`
+   *  `continueSeaDayAfterCascade`/`continueSeaDayAfterScorbut`) ; à la clôture, le store enchaîne la
+   *  phase suivante de la journée (`continueSeaDayAfterScorbut`/`continueSeaDayAfterExhaustion`). */
+  purpose: 'night' | 'travel' | 'travelDay' | 'test' | 'combat' | 'pursuite' | 'seaScorbut' | 'seaExhaustion';
   /** HALTE de voyage : la finalisation REPREND la route (continueTravelAfterNight). */
   travelHalt?: boolean;
   /** Cascade de PEUR de FIN de Round (combat) : à sa fermeture, le store ré-appelle `resolveRoundBoundary`
