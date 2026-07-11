@@ -39,8 +39,20 @@ export const schema = z.array(
     environmentBonus: z.strictObject({ environments: z.array(z.string()), mod: z.number() }).optional(),
     /** Domaine de la SORCELLERIE (LDB 49) : marqueur DONNÉE. */
     sorcery: z.boolean().optional(),
-    /** Modificateur des Vents de Magie EN MER (MDG 02 l.178-186) — VERBATIM. */
-    seaModifier: z.string().optional(),
+    /** Modificateur des Vents de Magie EN MER (MDG 02 l.178-186). */
+    seaModifier: z.strictObject({
+      /** Feu (Aqshy, l.182) : DR de Focalisation en mer. */
+      focalisationDR: z.number().optional(),
+      /** Vie (Ghyran, l.186) : le DR de Focalisation en mer est DOUBLÉ. */
+      focalisationDrDoubled: z.boolean().optional(),
+      /** Vie (Ghyran, l.186) : Focalisation Critique en mer → Imparfaite MAJEURE (au lieu de Mineure). */
+      focusCritMiscastMajeure: z.boolean().optional(),
+      /** Cieux (Azyr, l.184) : DR d'Incantation en mer pendant une Violente tempête / en Calme plat. */
+      incantationStormDR: z.number().optional(),
+      incantationCalmDR: z.number().optional(),
+      /** Bête (Ghur, l.180) : Critique/Maladresse déclenchés aussi sur un résultat finissant par 0. */
+      critFumbleOnTens: z.boolean().optional(),
+    }).optional(),
   }),
 );
 

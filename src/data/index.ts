@@ -1011,12 +1011,24 @@ export interface DomainData {
    *  active le mode Sorcellerie (composant obligatoire sinon Imparfaite Mineure systématique, +1 Corruption
    *  par jet d'Imparfaite, État Hémorragique possible) — gated par la règle optionnelle `magic-sorcellerie`. */
   sorcery?: boolean;
-  /** Modificateur des Vents de Magie EN MER (MDG 02 l.178-186) — VERBATIM. Règle d'application (l.178) :
+  /** Modificateur des Vents de Magie EN MER (MDG 02 l.178-186). Règle d'application (l.178) :
    *  « Les modificateurs suivants s'appliquent aux tentatives de Focalisation et d'Incantation en mer. »
-   *  Seuls 4 Domaines en portent un (Bête/Feu/Cieux/Vie). Donnée descriptive : le contexte « en mer »
-   *  et l'échelle de vent (Violente tempête/Calme plat, MDG p.107) ne sont pas modélisés — lu par
-   *  `magic.ts` quand le lot systèmes naval ouvrira ce contexte. */
-  seaModifier?: string;
+   *  Seuls 4 Domaines en portent un (Bête/Feu/Cieux/Vie). Lu par `domainSea*` (`engine/domainAttributes`),
+   *  consommé par `resolveFocus`/`resolveCasting`/`evaluateCasting` (`engine/magic`) via un contexte
+   *  `{ atSea, wind }` fourni par l'appelant (état — géométrie/météo hors du moteur pur). */
+  seaModifier?: {
+    /** Feu (Aqshy, l.182) : DR de Focalisation en mer. */
+    focalisationDR?: number;
+    /** Vie (Ghyran, l.186) : le DR de Focalisation en mer est DOUBLÉ. */
+    focalisationDrDoubled?: boolean;
+    /** Vie (Ghyran, l.186) : Focalisation Critique en mer → Imparfaite MAJEURE (au lieu de Mineure). */
+    focusCritMiscastMajeure?: boolean;
+    /** Cieux (Azyr, l.184) : DR d'Incantation en mer pendant une Violente tempête / en Calme plat. */
+    incantationStormDR?: number;
+    incantationCalmDR?: number;
+    /** Bête (Ghur, l.180) : Critique/Maladresse déclenchés aussi sur un résultat finissant par 0. */
+    critFumbleOnTens?: boolean;
+  };
 }
 export interface SpellData {
   /** id STABLE (slug du libellé) — cible des `Ref` de sort (sorts de créature, bénédictions/miracles). */

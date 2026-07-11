@@ -57,7 +57,9 @@
       "radiusStat": "force-mentale",
       "bonus": 10
     },
-    "seaModifier": "**Domaine du Feu :***Aqshy* est difficile à invoquer en mer. Les Tests de Focalisation pour ce Domaine subissent -1 DR. Cependant, si un bateau est en feu, *Aqshy* se précipite vers lui. Focaliser *Aqshy* sur un vaisseau actuellement rongé par les flammes donne +1 DR (en plus des bénéfices normaux des États *En flammes* appliqués au Domaine du Feu). Cela pourrait expliquer pourquoi les sorciers flamboyants ont une horrible réputation parmi les marins."
+    "seaModifier": {
+      "focalisationDR": -1
+    }
   },
   {
     "id": "lumiere",
@@ -366,7 +368,10 @@
         }
       }
     ],
-    "seaModifier": "**Domaine de la Vie :** *Ghyran* sature les mers, accordant une puissance facile à un sorcier de Jade. Cependant, il fluctue beaucoup et un sorcier peut en perdre le contrôle en un instant. Les DR des Tests de Focalisation sont doublés sur les mers, mais une Focalisation Critique donne une Incantation Imparfaite Majeure au lieu de Mineure. Si vous possédez le Talent *Harmonisation aethyrique*, faites un lancer sur le tableau des Incantations Imparfaites Mineures à la place."
+    "seaModifier": {
+      "focalisationDrDoubled": true,
+      "focusCritMiscastMajeure": true
+    }
   },
   {
     "id": "cieux",
@@ -422,7 +427,10 @@
       "bypass": "metal"
     },
     "breathType": "Électrique",
-    "seaModifier": "**Domaine des Cieux :** pendant une tempête, *Azyr* s'abat violemment depuis le ciel et semble presque vouloir être dirigé par la volonté d'un sorcier. Mais quand les mers sont calmes, *Azyr* refuse obstinément d'être appelé et lutte contre toute tentative pour le modeler en Sort. Les Sorts du Domaine des Cieux lancés pendant une Violente tempête bénéficient de +1 DR sur les Tests d'Incantation. Les Sorts lancés en période de Calme plat subissent -1 DR sur les Tests d'Incantation."
+    "seaModifier": {
+      "incantationStormDR": 1,
+      "incantationCalmDR": -1
+    }
   },
   {
     "id": "metal",
@@ -478,7 +486,9 @@
         }
       }
     ],
-    "seaModifier": "**Domaine de la Bête :** *Ghur* coule sous les vagues, où il repose parmi les grandes bêtes de l'abysse. Les sorciers d'Ambre peuvent puiser dans ce pouvoir, mais il n'aime pas être dérangé et pourrait les attaquer en réaction. Pour les Sorts de ce Domaine, les Incantations et Focalisations critiques ainsi que les Maladresses se produisent à la fois sur les doubles et les résultats se terminant par un 0."
+    "seaModifier": {
+      "critFumbleOnTens": true
+    }
   },
   {
     "id": "gueule",

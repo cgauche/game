@@ -4,7 +4,8 @@
 import { describe, it, expect } from 'vitest';
 import type { Combatant, ItemInstance } from './types';
 import type { RNG } from './dice';
-import { hasArcaneTalent, metalAPAt, domainMissileMods, domainOnHitEffects, domainCasterOps, isLiving } from './domainAttributes';
+import { hasArcaneTalent, metalAPAt, domainMissileMods, domainOnHitEffects, domainCasterOps, isLiving, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaFocusCritMiscastMajeure, domainSeaIncantationDR, domainSeaWidensCritFumble } from './domainAttributes';
+import { resolveFocus, resolveCasting } from './magic';
 import { groupsFor } from './groups';
 import { evaluateMissile } from './magic';
 import { hasCondition, stacks, addCondition } from './conditions';
@@ -162,6 +163,78 @@ describe('Cieux — arc d’Azyr (LDB 48 l.87) : géométrie on:{near} + bypass 
     expect(nearTalent.wounds.current).toBe(12);  // Talent (Cieux) → exempté
     expect(victim.wounds.current).toBe(12);      // l’arc vise « les AUTRES cibles », pas la victime
     expect(farFoe.wounds.current).toBe(12);      // hors des 2 m
+  });
+});
+
+describe('Magie des mers (MDG 02 l.178-186) — 4 Domaines, seaModifier (DomainData)', () => {
+  const feuSpell = { label: 'Test Feu', type: 'Magie des Arcanes', subType: 'Feu', domainId: 'feu', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const vieSpell = { label: 'Test Vie', type: 'Magie des Arcanes', subType: 'Vie', domainId: 'vie', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const cieuxSpell = { label: 'Test Cieux', type: 'Magie des Arcanes', subType: 'Cieux', domainId: 'cieux', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const beteSpell = { label: 'Test Bête', type: 'Magie des Arcanes', subType: 'Bête', domainId: 'bete', cn: 0, range: null, target: 1, duration: null, desc: '' };
+  const otherSpell = { label: 'Autre', type: 'Magie des Arcanes', subType: 'Métal', domainId: 'metal', cn: 0, range: null, target: 1, duration: null, desc: '' };
+
+  const caster = (domainSpec: string): Combatant => mk({
+    id: 'w', kind: 'hero',
+    skills: [
+      { skillId: 'focalisation', spec: domainSpec, advances: 10 },
+      { skillId: 'langue', spec: 'magick', advances: 10 },
+    ] as Combatant['skills'],
+  });
+
+  it('domainSea* : atSea=false → aucun modificateur, quel que soit le Domaine', () => {
+    expect(domainSeaFocalisationDR(feuSpell, false)).toBe(0);
+    expect(domainSeaFocalisationDoubled(vieSpell, false)).toBe(false);
+    expect(domainSeaFocusCritMiscastMajeure(vieSpell, false)).toBe(false);
+    expect(domainSeaIncantationDR(cieuxSpell, false, 'violente-tempete')).toBe(0);
+    expect(domainSeaWidensCritFumble(beteSpell, false)).toBe(false);
+  });
+
+  it('domainSea* : Domaine sans seaModifier → 0/false même en mer', () => {
+    expect(domainSeaFocalisationDR(otherSpell, true)).toBe(0);
+    expect(domainSeaWidensCritFumble(otherSpell, true)).toBe(false);
+  });
+
+  it('Feu (Aqshy, l.182) : « Les Tests de Focalisation pour ce Domaine subissent -1 DR »', () => {
+    expect(domainSeaFocalisationDR(feuSpell, true)).toBe(-1);
+    const w = caster('feu');
+    const off = resolveFocus(w, feuSpell, seq([21]), 'intermediaire', false); // 21 : succès non-double, DR 2
+    const sea = resolveFocus(w, feuSpell, seq([21]), 'intermediaire', true);
+    expect(sea.dr).toBe(Math.max(0, off.dr - 1));
+  });
+
+  it("Vie (Ghyran, l.186) : « Les DR des Tests de Focalisation sont doublés sur les mers »", () => {
+    expect(domainSeaFocalisationDoubled(vieSpell, true)).toBe(true);
+    const w = caster('vie');
+    const off = resolveFocus(w, vieSpell, seq([21]), 'intermediaire', false);
+    const sea = resolveFocus(w, vieSpell, seq([21]), 'intermediaire', true);
+    expect(sea.dr).toBe(off.dr * 2);
+  });
+
+  it("Vie (Ghyran, l.186) : « une Focalisation Critique donne une Incantation Imparfaite Majeure au lieu de Mineure »", () => {
+    expect(domainSeaFocusCritMiscastMajeure(vieSpell, true)).toBe(true);
+    expect(domainSeaFocusCritMiscastMajeure(feuSpell, true)).toBe(false); // seul Vie porte ce marqueur
+  });
+
+  it("Cieux (Azyr, l.184) : « +1 DR » en Violente tempête, « -1 DR » en Calme plat sur l'Incantation", () => {
+    expect(domainSeaIncantationDR(cieuxSpell, true, 'violente-tempete')).toBe(1);
+    expect(domainSeaIncantationDR(cieuxSpell, true, 'calme-plat')).toBe(-1);
+    expect(domainSeaIncantationDR(cieuxSpell, true, 'legere-brise')).toBe(0); // vent neutre : silence RAW
+    const w = caster('cieux');
+    const off = resolveCasting(w, cieuxSpell, seq([21]), 'intermediaire', false, 0, {});
+    const storm = resolveCasting(w, cieuxSpell, seq([21]), 'intermediaire', false, 0, { atSea: true, wind: 'violente-tempete' });
+    expect(storm.sl).toBe(off.sl + 1);
+    const calm = resolveCasting(w, cieuxSpell, seq([21]), 'intermediaire', false, 0, { atSea: true, wind: 'calme-plat' });
+    expect(calm.sl).toBe(off.sl - 1);
+  });
+
+  it("Bête (Ghur, l.180) : Critique/Maladresse d'Incantation déclenchés aussi sur un résultat finissant par 0, en mer", () => {
+    expect(domainSeaWidensCritFumble(beteSpell, true)).toBe(true);
+    const w = caster('bete');
+    // 40 (succès, pas un double) : Critique seulement si widen (Bête + mer).
+    const off = resolveCasting(w, beteSpell, seq([40]), 'intermediaire', false, 0, {});
+    expect(off.isCritical).toBe(false);
+    const sea = resolveCasting(w, beteSpell, seq([40]), 'intermediaire', false, 0, { atSea: true });
+    expect(sea.isCritical).toBe(true);
   });
 });
 

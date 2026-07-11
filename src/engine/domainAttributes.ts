@@ -107,3 +107,43 @@ export function domainCasterOps(caster: Combatant, spell: SpellDomainRef, rng: R
   if (!ops?.length) return [];
   return applyOps(caster, ops, { rng, label: 'Attribut de domaine' });
 }
+
+/**
+ * Magie des mers (MDG 02 l.178-186 : « Les modificateurs suivants s'appliquent aux tentatives de
+ * Focalisation et d'Incantation en mer. ») — 4 Domaines portent un `seaModifier` (`DomainData`).
+ * PARAMÈTRE en données ; `atSea` = contexte navigation fourni par l'appelant (état, hors du moteur pur).
+ */
+export type SeaWind = 'violente-tempete' | 'calme-plat' | string;
+
+/** Feu (Aqshy, l.182) : « Les Tests de Focalisation pour ce Domaine subissent -1 DR. » */
+export function domainSeaFocalisationDR(spell: SpellDomainRef, atSea: boolean): number {
+  if (!atSea) return 0;
+  return findDomainById(spell.domainId)?.seaModifier?.focalisationDR ?? 0;
+}
+
+/** Vie (Ghyran, l.186) : « Les DR des Tests de Focalisation sont doublés sur les mers. » */
+export function domainSeaFocalisationDoubled(spell: SpellDomainRef, atSea: boolean): boolean {
+  return atSea && !!findDomainById(spell.domainId)?.seaModifier?.focalisationDrDoubled;
+}
+
+/** Vie (Ghyran, l.186) : « une Focalisation Critique donne une Incantation Imparfaite Majeure au lieu
+ *  de Mineure » (l'exception « Harmonisation aethyrique » reste gérée par l'appelant, LDB 46). */
+export function domainSeaFocusCritMiscastMajeure(spell: SpellDomainRef, atSea: boolean): boolean {
+  return atSea && !!findDomainById(spell.domainId)?.seaModifier?.focusCritMiscastMajeure;
+}
+
+/** Cieux (Azyr, l.184) : « +1 DR sur les Tests d'Incantation » en Violente tempête, « -1 DR » en Calme plat. */
+export function domainSeaIncantationDR(spell: SpellDomainRef, atSea: boolean, wind: SeaWind | null | undefined): number {
+  if (!atSea) return 0;
+  const sm = findDomainById(spell.domainId)?.seaModifier;
+  if (!sm) return 0;
+  if (wind === 'violente-tempete') return sm.incantationStormDR ?? 0;
+  if (wind === 'calme-plat') return sm.incantationCalmDR ?? 0;
+  return 0;
+}
+
+/** Bête (Ghur, l.180) : « les Incantations et Focalisations critiques ainsi que les Maladresses se
+ *  produisent à la fois sur les doubles et les résultats se terminant par un 0. » */
+export function domainSeaWidensCritFumble(spell: SpellDomainRef, atSea: boolean): boolean {
+  return atSea && !!findDomainById(spell.domainId)?.seaModifier?.critFumbleOnTens;
+}

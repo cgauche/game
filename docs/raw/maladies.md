@@ -310,7 +310,10 @@ Vous toussez et éternuez régulièrement, **propageant votre maladie**. Tout Pe
 
 ### Toxine (`LDB 20 l.211-214`)
 
-⚠️ **RAW tronqué** — le texte source est coupé en fin de page (l.175) : « Effectuez un Test de **Résistance Très Facile (+60)** tous les jours » — la conséquence d'un échec n'est pas imprimée. Le code roule le Test prescrit et le journalise ; la conséquence est laissée au MJ (rien inventé).
+Le RAW est COMPLET (le verbatim intégral vit dans `symptoms.json`, entrée `toxine` : échec du Test quotidien
+= mort ; difficulté indexée sur la sévérité — Très Facile +60, Modéré → Facile +40, Grave → Accessible +20).
+⚠ Écart d'IMPLÉMENTATION : `onTick.onFail` vide (la mort n'est pas appliquée) et difficulté non indexée —
+suivi #338.
 
 ---
 

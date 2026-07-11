@@ -29,7 +29,7 @@ import type { SpellRange, SpellTarget } from './spellRange';
 import type { SpellDuration } from './spellDuration';
 import { type OvercastSource, effectiveRangeMetres } from './overcast';
 import { arcaneDomainIdOf, featuresOf } from './combatFeatures/dispatch';
-import { domainMissileMods } from './domainAttributes';
+import { domainMissileMods, domainSeaFocalisationDR, domainSeaFocalisationDoubled, domainSeaIncantationDR, domainSeaWidensCritFumble } from './domainAttributes';
 import { armourMaterialOf } from './armourBypass';
 import { MINUTES_PER_DAY, minutesUntilNext, DAWN_MINUTE } from './clock';
 import { Combatant, HitLocation, Difficulty, CharKey } from './types';
@@ -426,6 +426,8 @@ export function resolveCasting(
   /** Modificateur ponctuel au Test, calculé par l'ÉTAT qui connaît la géométrie (ex.
    *  « N'écoutez point la Sorcière », LDB 42 : −20 si le Sort cible la zone du prêtre). */
   extraMod = 0,
+  /** Magie des mers (MDG 02 l.178-186) : contexte navigation + vent, fourni par l'appelant. */
+  sea: { atSea?: boolean; wind?: import('./domainAttributes').SeaWind | null } = {},
 ): CastResult {
   const info = castInfo(spell);
   if (!knowsCastingSkill(caster, info.skill, info.spec)) {
@@ -449,7 +451,9 @@ export function resolveCasting(
   // (Diction instinctive ×N → +N DR au Test d'Incantation). Appliqué au JET (pas à
   // l'évaluation : rederiveCastSL — Chance « +1 DR » — repart du DR déjà boosté).
   const tal = t.success ? castTestTalentDR(caster, info.skill, info.spec) : 0;
-  return evaluateCasting(caster, spell, pen || tal ? { ...t, sl: t.sl - pen + tal } : t, focusedNI0);
+  // Cieux/Azyr en mer (MDG 02 l.184) : ±1 DR d'Incantation selon le vent (Violente tempête/Calme plat).
+  const seaDR = t.success ? domainSeaIncantationDR(spell, !!sea.atSea, sea.wind) : 0;
+  return evaluateCasting(caster, spell, pen || tal || seaDR ? { ...t, sl: t.sl - pen + tal + seaDR } : t, focusedNI0, !!sea.atSea);
 }
 
 /**
@@ -485,6 +489,9 @@ export function evaluateCasting(
   spell: SpellLike,
   t: TestResult,
   focusedNI0 = false,
+  /** Bête/Ghur en mer (MDG 02 l.180) : Critique/Maladresse déclenchés aussi sur un résultat
+   *  finissant par 0 (en plus des doubles). */
+  atSea = false,
 ): CastResult {
   const info = castInfo(spell);
   // « Pensez à vos actes » (Colère des dieux, LDB 40) : tout Test de PRIÈRE réussi
@@ -494,8 +501,9 @@ export function evaluateCasting(
   }
   const ni = focusedNI0 ? 0 : spell.cn ?? 0;
   const cast = t.success && (!info.requireNI || t.sl >= ni);
-  const isCritical = t.isDouble && t.success;
-  const isFumble = t.isDouble && !t.success;
+  const widenSea = domainSeaWidensCritFumble(spell, atSea) && t.roll % 10 === 0;
+  const isCritical = (t.isDouble || widenSea) && t.success;
+  const isFumble = (t.isDouble || widenSea) && !t.success;
   let log: string;
   if (!t.success) {
     log = `${caster.name} échoue à incanter ${spell.label}.`;
@@ -693,12 +701,15 @@ export interface FocusResult {
 }
 
 /** Un Round de Test étendu de Focalisation (FM + spécialisation PAR VENT — le
- *  Domaine du sort exige la Focalisation correspondante, LDB 46 l.180-199). */
+ *  Domaine du sort exige la Focalisation correspondante, LDB 46 l.180-199).
+ *  `atSea` = Magie des mers (MDG 02 l.178-186, `DomainData.seaModifier`) : contexte navigation
+ *  fourni par l'appelant (état — hors du moteur pur). */
 export function resolveFocus(
   caster: Combatant,
   spell: SpellLike,
   rng: RNG = defaultRNG,
   difficulty: Difficulty = 'intermediaire',
+  atSea = false,
 ): FocusResult {
   const sk = focusSkillFor(caster, spell);
   if (!sk) {
@@ -714,8 +725,10 @@ export function resolveFocus(
   const t = rollTest(value, difficulty, rng);
   // « Repousser les Vents » : −1 DR par PA de la localisation la mieux protégée (l.199).
   // LDB 10 l.20 : +1 DR par acquisition d'un Talent lié au Test réussi (Harmonisation aethyrique ×N).
-  const dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'focalisation') - armourCastDRPenalty(caster)) : 0;
-  const isCritical = t.isDouble && t.success;
+  let dr = t.success ? Math.max(0, t.sl + castTestTalentDR(caster, 'focalisation') - armourCastDRPenalty(caster) + domainSeaFocalisationDR(spell, atSea)) : 0;
+  if (dr > 0 && domainSeaFocalisationDoubled(spell, atSea)) dr *= 2; // Vie/Ghyran en mer (MDG 02 l.186)
+  // Bête/Ghur en mer (MDG 02 l.180) : Critique déclenché aussi sur un résultat finissant par 0.
+  const isCritical = t.success && (t.isDouble || (domainSeaWidensCritFumble(spell, atSea) && t.roll % 10 === 0));
   // Maladresse ÉLARGIE en Focalisation (l.190-191) : tout double OU tout résultat
   // terminant par un 0 au-delà de la Compétence (00, 99, 90, 88…) → Imparfaite MAJEURE.
   const isFumble = !t.success && (t.isDouble || t.roll % 10 === 0);
