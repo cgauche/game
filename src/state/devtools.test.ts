@@ -319,8 +319,8 @@ describe('__wfrp.advanceSeaDay / skipToArrival / dealShipDamage / clickRoute —
 
   it('dealShipDamage() inflige des Dégâts HORS COMBAT via la SOURCE UNIQUE vessel.wounds (#296)', () => {
     useGame.getState().startTravel('r1', 'mer');
-    // `vessel.wounds` n'est PAS encore persisté à l'appareillage (piège #296) — la coque de trajet
-    // (`travelPlan.vehicle`) est la valeur RÉELLE tant qu'aucun Dégât/jour ne l'a écrite en retour.
+    // À l'appareillage, `vessel.wounds` reste `undefined` jusqu'à la première écriture (piège #296) —
+    // la coque de trajet (`travelPlan.vehicle`) porte la valeur RÉELLE tant qu'aucun Dégât/jour n'écrit.
     const before = useGame.getState().travelPlan!.vehicle!.wounds.current;
 
     const msg = buildApi().dealShipDamage(7);
