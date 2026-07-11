@@ -23,9 +23,9 @@ export type QuadPose = Partial<Record<QuadBoneId, number>>;
 
 /** Caractère d'une espèce quadrupède (proportions + parts + couleurs par défaut). */
 export type QuadBuild = 'equine' | 'canine' | 'suid' | 'rodent' | 'ursine' | 'feline' | 'draconic' | 'batracien';
-export type QuadHead = 'cheval' | 'loup' | 'sanglier' | 'rat' | 'ours' | 'aigle' | 'dragon' | 'crapaud' | 'hydre';
+export type QuadHead = 'cheval' | 'loup' | 'sanglier' | 'rat' | 'ours' | 'aigle' | 'dragon' | 'basilic' | 'crapaud' | 'hydre' | 'chimere' | 'felin';
 export type QuadFoot = 'sabot' | 'patte' | 'serre'; // serre = serres d'aigle (rapace)
-export type QuadTail = 'crin' | 'touffe' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'leonine' | 'sans';
+export type QuadTail = 'crin' | 'touffe' | 'fouet' | 'nue' | 'courte' | 'reptile' | 'leonine' | 'dard' | 'sans';
 /** Crinière le long de l'encolure : crin couché (équin), hirsute (fourrure dressée — loup/
  *  sanglier), sans. */
 export type QuadMane = 'crin' | 'hirsute' | 'sans';
@@ -44,13 +44,26 @@ export interface QuadProps {
   frontFoot?: QuadFoot; // pied AVANT distinct (griffon : serres devant / pattes derrière)
   wings?: 'plumes' | 'membrane'; // gabarit AILÉ : ailes emplumées (rapace/pégase) ou membraneuses (dragon)
   wingSpan?: number; // envergure (× sur l'art des ailes, défaut 1 — dragon ample, demigriffon court)
+  wingPose?: 'dressees'; // ailes REPLIÉES portées DRESSÉES à demi-ouvertes (manticore) — défaut : couchées le long du dos
   mane: QuadMane; // crinière d'encolure
-  ridge?: 'epines' | 'crete' | 'plaques' | 'sans'; // dorsale (défaut : 'epines' si draconic, sinon 'sans')
+  ridge?: 'epines' | 'epines-continues' | 'crete' | 'plaques' | 'sans'; // dorsale (défaut : 'epines' si draconic, sinon 'sans') — 'epines-continues' = rangée SERRÉE garrot→croupe (basilic)
   markings?: 'taches' | 'rayures' | 'balzanes' | 'sans'; // robe : taches/rayures de flanc, balzanes aux membres
   headgear?: 'bois' | 'cornes'; // coiffe de crâne : bois ramifiés (cerf) ou cornes courbées — défaut aucun
+  /** Avant-train CONTRASTÉ de rapace (hippogriffe : moitié aigle / moitié cheval). Peint le
+   *  manteau emplumé de poitrail/épaule et le haut des ANTÉRIEURS avec la famille d'AILE
+   *  (@aile* — la moitié rapace est d'un seul plumage, cf. base custom `aile` ci-dessous), et
+   *  les tarses/serres AVANT avec la famille custom `cuirAv`. Absent = robe unie (griffon). */
+  foreCoat?: 'plumes';
   headScale?: number; // × sur l'art de tête (défaut 1)
   tailLen?: number; // × sur l'art de queue (défaut 1)
-  stored: StoredPalette; // robe/pelage par défaut (corps/cheveux/cuir…)
+  /** Décor PAR-OS propre à la créature (harnais doré du pégase — précédent : épave du crabe,
+   *  `CrabProps.deco`) : SVG dans le repère local de l'os, APPOSÉ après l'art du gabarit,
+   *  uniquement là où l'os porte déjà un art dans la vue courante. Jetons de palette admis. */
+  deco?: Partial<Record<QuadBoneId, string>>;
+  /** Robe/pelage par défaut (corps/cheveux/cuir…). Base custom `aile` = teinte PROPRE des ailes
+   *  (@aile/@aileO/@aileH — pégase : ailes brun/doré sur robe blanche) ; absente, les ailes
+   *  suivent la famille `corps` (cf. resolveQuadFromProps). */
+  stored: StoredPalette;
 }
 
 // La DATA des espèces (props + alias) vit dans `creatures/defs/<Nom>.ts` (un fichier

@@ -161,7 +161,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Basilic": {
     "def": "Basilic",
     "plan": "quadruped",
-    "scale": 1.1,
+    "scale": 1.25,
     "species": "basilic",
   },
   "Batelier": {
@@ -269,7 +269,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Bête des marais": {
     "def": "Bête des marais",
     "plan": "amorphous",
-    "scale": 1.1,
+    "scale": 1.15,
     "species": "bete-des-marais",
   },
   "Caledair - la Faux de Feu": {
@@ -455,43 +455,43 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Chien": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.72,
+    "scale": 0.78,
     "species": "chien",
   },
   "Chien de Chasse": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.72,
+    "scale": 0.78,
     "species": "chien",
   },
   "Chien de Compagnie (Chiens)": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.72,
+    "scale": 0.78,
     "species": "chien",
   },
   "Chien de Compagnie (II.A — Animaux Domestiques)": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.72,
+    "scale": 0.78,
     "species": "chien",
   },
   "Chien de Garde": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.72,
+    "scale": 0.78,
     "species": "chien",
   },
   "Chien de Ratier": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.72,
+    "scale": 0.78,
     "species": "chien",
   },
   "Chimère": {
     "def": "Chimère",
     "plan": "winged",
-    "scale": 1.2,
+    "scale": 1.25,
     "species": "chimere",
   },
   "Choses du Bois Mort": {
@@ -538,8 +538,8 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   },
   "Cornu": {
     "def": "Cornu",
-    "plan": "quadruped",
-    "scale": 1.05,
+    "plan": "theropode",
+    "scale": 1.12,
     "species": "cornu",
   },
   "Coureur Nocturne": {
@@ -923,7 +923,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Grand Cerf": {
     "def": "Grand Cerf",
     "plan": "quadruped",
-    "scale": 1,
+    "scale": 1.1,
     "species": "grand-cerf",
   },
   "Grand Immonde Exalté de Nurgle": {
@@ -941,7 +941,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Grand Incendiaire de Tzeentch": {
     "def": "Bête des marais",
     "plan": "amorphous",
-    "scale": 1.1,
+    "scale": 1.15,
     "species": "bete-des-marais",
   },
   "Grand Inquisiteur": {
@@ -1259,7 +1259,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Incendiaire de Tzeentch": {
     "def": "Bête des marais",
     "plan": "amorphous",
-    "scale": 1.1,
+    "scale": 1.15,
     "species": "bete-des-marais",
   },
   "Inquisiteur": {
@@ -1517,7 +1517,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "La Bête de l'Oblast": {
     "def": "Chimère",
     "plan": "winged",
-    "scale": 1.2,
+    "scale": 1.25,
     "species": "chimere",
   },
   "Le Déchiqueteur de Cadavres": {
@@ -1661,7 +1661,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Manticore": {
     "def": "Manticore",
     "plan": "winged",
-    "scale": 1.1,
+    "scale": 1.15,
     "species": "manticore",
   },
   "Maraudeur du Chaos": {
@@ -2003,7 +2003,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "Preyton": {
     "def": "Preyton",
     "plan": "winged",
-    "scale": 1,
+    "scale": 1.1,
     "species": "preyton",
   },
   "Prophète Gris": {
@@ -2854,13 +2854,13 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "basilic": {
     "def": "Basilic",
     "plan": "quadruped",
-    "scale": 1.1,
+    "scale": 1.25,
     "species": "basilic",
   },
   "bete-des-marais": {
     "def": "Bête des marais",
     "plan": "amorphous",
-    "scale": 1.1,
+    "scale": 1.15,
     "species": "bete-des-marais",
   },
   "bete-imperiale": {
@@ -2908,13 +2908,13 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "chien": {
     "def": "Chien",
     "plan": "quadruped",
-    "scale": 0.72,
+    "scale": 0.78,
     "species": "chien",
   },
   "chimere": {
     "def": "Chimère",
     "plan": "winged",
-    "scale": 1.2,
+    "scale": 1.25,
     "species": "chimere",
   },
   "choses-du-bois-mort": {
@@ -2931,8 +2931,8 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   },
   "cornu": {
     "def": "Cornu",
-    "plan": "quadruped",
-    "scale": 1.05,
+    "plan": "theropode",
+    "scale": 1.12,
     "species": "cornu",
   },
   "coureur-d-egout": {
@@ -3046,7 +3046,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "grand-cerf": {
     "def": "Grand Cerf",
     "plan": "quadruped",
-    "scale": 1,
+    "scale": 1.1,
     "species": "grand-cerf",
   },
   "griffon": {
@@ -3196,7 +3196,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "manticore": {
     "def": "Manticore",
     "plan": "winged",
-    "scale": 1.1,
+    "scale": 1.15,
     "species": "manticore",
   },
   "minotaure": {
@@ -3262,7 +3262,7 @@ exports[`golden — résolution espèce/id→apparence (anti-régression de-POC 
   "preyton": {
     "def": "Preyton",
     "plan": "winged",
-    "scale": 1,
+    "scale": 1.1,
     "species": "preyton",
   },
   "prophete-gris": {

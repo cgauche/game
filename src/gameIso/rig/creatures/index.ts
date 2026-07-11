@@ -14,6 +14,7 @@ import type { HulkProps } from '../amorphous/composeHulk';
 import type { JabberProps } from '../jabberslythe/composeJabber';
 import type { CrabProps } from '../crustace/composeCrab';
 import type { FishProps } from '../fish/composeFish';
+import type { TheropodProps } from '../theropode/composeTheropod';
 import type { CreatureDef } from './types';
 import { CREATURES } from './_registry.generated';
 import { raceById } from '../races';
@@ -50,7 +51,7 @@ export function speciesScale(id: string): number {
   const d = DEF_BY_ID[id];
   if (!d) return 1;
   if (d.plan === 'biped') return d.perso?.scale ?? raceById(d.race ?? baseSpeciesOf(id)).scale ?? 1;
-  return (d.quad ?? d.serpent ?? d.spider ?? d.bird ?? d.octopus ?? d.spectre ?? d.squig ?? d.hulk ?? d.jabber ?? d.crab ?? d.fish)?.sl ?? 1;
+  return (d.quad ?? d.serpent ?? d.spider ?? d.bird ?? d.octopus ?? d.spectre ?? d.squig ?? d.hulk ?? d.jabber ?? d.crab ?? d.fish ?? d.thero)?.sl ?? 1;
 }
 
 /** Tables de props de rendu par id d'espèce — dérivées des fichiers defs. */
@@ -73,3 +74,4 @@ export const HULK_SPECIES: Record<string, HulkProps> = Object.fromEntries(CREATU
 export const JABBER_SPECIES: Record<string, JabberProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'jabberslythe').map((c) => [defId(c), c.jabber!]));
 export const CRAB_SPECIES: Record<string, CrabProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'crustace').map((c) => [defId(c), c.crab!]));
 export const FISH_SPECIES: Record<string, FishProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'fish').map((c) => [defId(c), c.fish!]));
+export const THEROPOD_SPECIES: Record<string, TheropodProps> = Object.fromEntries(CREATURES.filter((c) => c.plan === 'theropode').map((c) => [defId(c), c.thero!]));

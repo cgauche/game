@@ -20,10 +20,11 @@ import type { HulkProps } from '../amorphous/composeHulk';
 import type { JabberProps } from '../jabberslythe/composeJabber';
 import type { CrabProps } from '../crustace/composeCrab';
 import type { FishProps } from '../fish/composeFish';
+import type { TheropodProps } from '../theropode/composeTheropod';
 
 export type CreatureBodyPlan =
   | 'biped' | 'quadruped' | 'winged'
-  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' | 'crustace' | 'fish' // nouveaux squelettes
+  | 'serpentine' | 'arachnid' | 'avian' | 'cephalopod' | 'spectral' | 'squig' | 'amorphous' | 'jabberslythe' | 'crustace' | 'fish' | 'theropode' // nouveaux squelettes
   | 'engin'; // corps STATIQUE (engin de siège) — pas une créature, mais routé par le même registre (pas de props)
 
 /** Surcharges d'apparence propres à CETTE créature (par-dessus les défauts de sa Race).
@@ -79,4 +80,5 @@ export interface CreatureDef {
   jabber?: JabberProps; // plan = jabberslythe
   crab?: CrabProps; // plan = crustace
   fish?: FishProps; // plan = fish
+  thero?: TheropodProps; // plan = theropode
 }

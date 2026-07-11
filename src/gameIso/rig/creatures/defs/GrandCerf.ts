@@ -1,14 +1,18 @@
 import type { CreatureDef } from '../types';
 
-// Grand Cerf (ZI) — grand cervidé à grande ramure (« 6 à 14 ramifications, perce l'armure »).
-// Quadrupède 'equine' élancé (encolure redressée, pattes hautes, sabots), bois ramifiés (headgear
-// 'bois'), robe brun-roux. Réf art : art-ref/zi/page014_full.png.
+// Grand Cerf (ZI) — être transcendant des forêts, « manifestation suprême de l'âme d'une forêt ».
+// Réf art : art-ref/zi/page014_full.png — cerf MASSIF au pelage NOIR hirsute (longue toison de
+// gorge et d'encolure), ramure démesurée à nombreux andouillers balayés vers le ciel, posture de
+// bramement (encolure dressée). Quadrupède 'equine' porté en MASSE (girth/bodyLen hauts), crinière
+// 'hirsute' = toison dressée dos/gorge/nuque/croupe, headgear 'bois' agrandi via headScale (le
+// profil balaie les perches en arrière-haut, comme l'illustration tête levée). Robe charbon
+// (@corps quasi noir), toison et ramure gris-taupe sombre (@cheveux, ton de la gravure).
 export const creature: CreatureDef = {
   name: 'Grand Cerf',
   plan: 'quadruped',
   quad: {
-    sl: 1.0, build: 'equine', girth: 0.88, bodyLen: 1.04, neckLen: 0.82, neckAngle: -36, legLen: 1.16,
-    head: 'cheval', tail: 'crin', mane: 'crin', ears: 'pointues', foot: 'sabot', headgear: 'bois', headScale: 0.92, tailLen: 0.6,
-    stored: { corps: '#8a5e38', corpsO: '#523620', corpsH: '#b78a56', cheveux: '#3a2818', cheveuxO: '#22160c', cuir: '#2c2620' },
+    sl: 1.1, build: 'equine', girth: 1.14, bodyLen: 1.08, neckLen: 0.95, neckAngle: -58, legLen: 1.14,
+    head: 'cheval', tail: 'touffe', mane: 'hirsute', ears: 'pointues', foot: 'sabot', headgear: 'bois', headScale: 1.18, tailLen: 0.5,
+    stored: { corps: '#37322c', corpsO: '#15120e', corpsH: '#5d564a', cheveux: '#4e463a', cheveuxO: '#191410', cuir: '#221d17' },
   },
 };

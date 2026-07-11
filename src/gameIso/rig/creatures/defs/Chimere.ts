@@ -1,14 +1,17 @@
 import type { CreatureDef } from '../types';
 
-// Chimère (ZI) — monstruosité ailée du Chaos (corps massif, ailes membraneuses, crinière). Gabarit
-// AILÉ draconique : tête 'dragon', queue 'reptile', pieds 'serre', crinière 'hirsute', dorsale
-// épineuse, ailes 'membrane'. Robe gris-rouge tachetée.
+// Chimère (ZI p.66) — trois têtes DISTINCTES (léonine à crinière + grand rapace + dragon),
+// cluster `head: 'chimere'` sur le mécanisme de l'hydre. Corps « d'énorme chat difforme »
+// massif (build ursine, girth fort), larges pattes à griffes incurvées ('patte'), GRANDES
+// ailes membraneuses (wingSpan↑), longue queue épineuse, dorsale d'épines. Robe gris-argent
+// de l'artwork (fourrure grise hirsute, crinière pâle, ombres ardoise).
 export const creature: CreatureDef = {
   name: 'Chimère',
   plan: 'winged',
   quad: {
-    sl: 1.2, build: 'draconic', girth: 1.05, bodyLen: 1.05, neckLen: 0.8, neckAngle: -30, legLen: 0.9,
-    head: 'dragon', tail: 'reptile', ears: 'pointues', foot: 'serre', wings: 'membrane', wingSpan: 1.25, mane: 'hirsute', ridge: 'epines', headScale: 1.08, tailLen: 1.2,
-    stored: { corps: '#6a4a48', corpsO: '#382626', corpsH: '#9a7060', cheveux: '#4a2c2a', cheveuxO: '#281616', cuir: '#7a6a48' },
+    sl: 1.25, build: 'ursine', girth: 1.3, bodyLen: 1.12, neckLen: 1.0, neckAngle: -30, legLen: 0.85,
+    head: 'chimere', tail: 'reptile', ears: 'pointues', foot: 'patte', wings: 'membrane', wingSpan: 1.6,
+    mane: 'hirsute', ridge: 'epines', tailLen: 1.3,
+    stored: { corps: '#8b8779', corpsO: '#45463f', corpsH: '#c8c2ae', cheveux: '#d6cfbd', cheveuxO: '#77705e', cuir: '#4e483c' },
   },
 };

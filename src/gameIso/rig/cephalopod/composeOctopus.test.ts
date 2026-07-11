@@ -4,13 +4,15 @@ import {
 } from './composeOctopus';
 
 describe('gabarit céphalopode', () => {
-  it('résout tentacules (derrière) puis manteau, avec 8 bras + yeux à pupille horizontale', () => {
+  it('résout tentacules (derrière) puis manteau puis bras (avant), avec 8 bras + yeux à pupille horizontale', () => {
     const bones = resolveOctopusFromProps(OCTOPUS_DEFAULT, 'front', {});
-    expect(bones.map((b) => b.id)).toEqual(['tentacules', 'corps']); // z : tentacules derrière
+    expect(bones.map((b) => b.id)).toEqual(['tentacules', 'corps', 'bras']); // z : tentacules derrière, bras devant
     const tent = bones.find((b) => b.id === 'tentacules')!.parts[0].svg;
-    expect((tent.match(/<path/g) ?? []).length).toBeGreaterThanOrEqual(24); // 8 bras × 3 traits
+    const bras = bones.find((b) => b.id === 'bras')!.parts[0].svg;
+    const totalPaths = (tent.match(/<path/g) ?? []).length + (bras.match(/<path/g) ?? []).length;
+    expect(totalPaths).toBeGreaterThanOrEqual(24); // 8 bras × 3 traits, répartis derrière/devant
     const corps = bones.find((b) => b.id === 'corps')!.parts[0].svg;
-    expect(corps).toContain('#e8d44a'); // iris jaune
+    expect(corps).toContain(OCTOPUS_DEFAULT.stored.cuir); // iris (@cuir)
     expect(corps).toContain('<rect'); // pupille horizontale (rect)
   });
 
@@ -22,7 +24,7 @@ describe('gabarit céphalopode', () => {
 
   it('de dos : pas d’yeux', () => {
     const back = resolveOctopusFromProps(OCTOPUS_DEFAULT, 'back', {}).find((b) => b.id === 'corps')!.parts[0].svg;
-    expect(back).not.toContain('#e8d44a');
+    expect(back).not.toContain(OCTOPUS_DEFAULT.stored.cuir);
   });
 
   it('les poses diffèrent (ondulation ≠ repos, projection tend les bras, mort affaisse)', () => {

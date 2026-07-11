@@ -22,6 +22,17 @@ export interface CrabProps {
   sl: number; // échelle token
   girth: number; // largeur/bombé de la carapace
   stored: StoredPalette; // carapace (corps/corpsO/corpsH) ; cuir = articulations/pinces internes
+  /** Piquants dressés sur carapace + pinces (nombre sur le pourtour ; absent = carapace lisse). */
+  spikes?: number;
+  /** Longueur des pédoncules oculaires (1 = défaut court ; 2+ = pédoncules proéminents arqués). */
+  eyestalk?: number;
+  /** Échelle des chélae (1 = défaut) — scalaire (les deux) ou PAR pince : chéla dominante
+   *  asymétrique (Léviathan, ZI folio 85 : une pince nettement plus grande que l'autre). */
+  clawScale?: number | { G?: number; D?: number };
+  /** Dents triangulaires marquées entre les doigts (pinces perforatrices). */
+  clawTeeth?: boolean;
+  /** Art ADDITIONNEL par os (repère local de l'os, tokens @palette admis) — épave du Granchio… */
+  deco?: Partial<Record<CrabBoneId, string>>;
 }
 
 function buildSkeleton(): Record<CrabBoneId, CBone> {
@@ -51,15 +62,26 @@ const LEGS = [
 
 /** Grosse pince (chéla) dessinée au repère de son os (épaule au coin avant du corps) : bras épais +
  *  main (propodus) en « C » béant vers l'avant (doigt fixe bas + doigt mobile haut, interstice net). */
-function claw(sx: number): string {
+function claw(sx: number, p: CrabProps): string {
   const hx = sx * 8, hy = 14;
   const arm = `<path d="M0 -4 Q${sx * 4} 2 ${sx * 6} 8" fill="none" stroke="@corps" stroke-width="7" stroke-linecap="round"/>` +
     `<path d="M0 -4 Q${sx * 4} 2 ${sx * 6} 8" fill="none" stroke="@corpsO" stroke-width="1.2" opacity="0.4" stroke-linecap="round"/>`;
   // pince ouverte = un seul tracé avec une ENCOCHE (le gap entre les deux doigts), pointant vers +y
   const hand = `<path d="M${hx} ${hy - 9} Q${hx + sx * 10} ${hy - 8} ${hx + sx * 11} ${hy + 1} Q${hx + sx * 11} ${hy + 10} ${hx + sx * 4} ${hy + 13} L${hx + sx * 6} ${hy + 5} L${hx + sx * 1} ${hy + 4} L${hx + sx * 4} ${hy} Q${hx - sx * 2} ${hy - 6} ${hx} ${hy - 9} Z" fill="@corps" stroke="@corpsO" stroke-width="0.9" stroke-linejoin="round"/>`;
   const hi = `<ellipse cx="${hx + sx * 5}" cy="${hy - 2}" rx="3.2" ry="5" fill="@corpsH" opacity="0.3"/>`;
-  const serr = `<path d="M${hx + sx * 5} ${hy + 4.5} l${sx * 1.5} 0.6 m${-sx * 1.5} 1.4 l${sx * 1.5} 0.6" stroke="@corpsO" stroke-width="0.6" fill="none" opacity="0.7"/>`; // dents internes
-  return `<g>${arm}${hand}${hi}${serr}</g>`;
+  // dents internes : fines par défaut ; PERFORATRICES (zigzag triangulaire net entre les doigts) si clawTeeth
+  const serr = p.clawTeeth
+    ? `<path d="M${hx + sx * 2} ${hy + 2.5} l${sx * 2} 1.5 l${-sx * 1.4} 0.9 l${sx * 2.2} 1.4 l${-sx * 1.4} 0.9 l${sx * 2} 1.5" stroke="@corpsO" stroke-width="1.1" fill="none" stroke-linejoin="round"/>` +
+      `<path d="M${hx + sx * 6.5} ${hy + 5.6} l${sx * 1.8} 1 l${-sx * 1.2} 0.9 l${sx * 1.6} 1.1" stroke="@corpsO" stroke-width="0.9" fill="none" opacity="0.8"/>`
+    : `<path d="M${hx + sx * 5} ${hy + 4.5} l${sx * 1.5} 0.6 m${-sx * 1.5} 1.4 l${sx * 1.5} 0.6" stroke="@corpsO" stroke-width="0.6" fill="none" opacity="0.7"/>`;
+  // piquants sur le bord externe du bras + de la main (carapace hérissée jusqu'aux pinces)
+  const pics = p.spikes
+    ? `<path d="M${hx + sx * 8.5} ${hy - 7} l${sx * 3} -1.6 l${-sx * 1.4} 2.8 Z M${hx + sx * 10.5} ${hy} l${sx * 3.2} 0.6 l${-sx * 1.8} 2.2 Z M${hx + sx * 8.5} ${hy + 7} l${sx * 2.8} 1.4 l${-sx * 2} 1.6 Z M${sx * 2.5} -0.5 l${sx * 2.8} -2.4 l${sx * 0.4} 3.2 Z M${sx * 5} 5 l${sx * 3} -1.2 l${-sx * 0.6} 3 Z" fill="@corps" stroke="@corpsO" stroke-width="0.6" stroke-linejoin="round"/>`
+    : '';
+  const inner = `${arm}${hand}${hi}${serr}${pics}`;
+  const c = p.clawScale;
+  const cs = (typeof c === 'number' ? c : sx < 0 ? c?.G : c?.D) ?? 1;
+  return cs === 1 ? `<g>${inner}</g>` : `<g transform="scale(${cs})">${inner}</g>`;
 }
 
 function carapace(p: CrabProps, view: View): string {
@@ -76,17 +98,45 @@ function carapace(p: CrabProps, view: View): string {
     `<circle cx="${-rx * 0.55}" cy="-2" r="2" fill="@corpsO" opacity="0.32"/><circle cx="${rx * 0.55}" cy="-2" r="2" fill="@corpsO" opacity="0.32"/><circle cx="0" cy="${-ry * 0.5}" r="1.6" fill="@corpsO" opacity="0.3"/>`;
   // bord denté avant (épines de carapace)
   const teeth = view === 'back' ? '' : `<path d="M${-rx * 0.55} ${ry} l-2 3 M${-rx * 0.2} ${ry * 1.05} l-1 3 M${rx * 0.2} ${ry * 1.05} l1 3 M${rx * 0.55} ${ry} l2 3" stroke="@corpsO" stroke-width="1.1" stroke-linecap="round"/>`;
+  // carapace HÉRISSÉE : piquants triangulaires sur le pourtour (hors zone de face) + sur le dôme
+  let spikes = '';
+  if (p.spikes) {
+    for (let i = 0; i < p.spikes; i++) {
+      const t = ((i + 0.5) / p.spikes) * Math.PI * 2;
+      if (Math.sin(t) > 0.85) continue; // le bord avant reste aux yeux/mandibules
+      const cx = Math.cos(t) * rx * 0.8, cy = Math.sin(t) * ry * 0.8;
+      const nx = Math.cos(t) * 5.2, ny = Math.sin(t) * 4;
+      const px = -Math.sin(t) * 1.9, py = Math.cos(t) * 1.3;
+      spikes += `<path d="M${(cx - px).toFixed(1)} ${(cy - py).toFixed(1)} L${(cx + nx).toFixed(1)} ${(cy + ny).toFixed(1)} L${(cx + px).toFixed(1)} ${(cy + py).toFixed(1)} Z" fill="@corps" stroke="@corpsO" stroke-width="0.55" stroke-linejoin="round"/>`;
+    }
+    spikes += `<path d="M${-rx * 0.38} -4 l2.4 -4.2 l2 4.4 Z M${rx * 0.26} ${-ry * 0.5} l2.2 -3.6 l1.8 3.8 Z M-1 ${ry * 0.2} l2.2 -3.8 l1.9 4 Z" fill="@corps" stroke="@corpsO" stroke-width="0.55" stroke-linejoin="round"/>`;
+  }
+  // art additionnel accroché à la carapace (épave…), au repère du corps — toutes vues (il la coiffe)
+  const deco = p.deco?.corps ? `<g>${p.deco.corps}</g>` : '';
   // yeux pédonculés + mandibules (front = +y) ; de dos : rien
   let face = '';
   if (view !== 'back') {
     const ex = prof ? 3 : 5;
-    face = `<line x1="${-ex}" y1="${ry * 0.8}" x2="${-ex - 1}" y2="${ry + 5}" stroke="@corps" stroke-width="2.2" stroke-linecap="round"/>` +
-      `<line x1="${ex}" y1="${ry * 0.8}" x2="${ex + 1}" y2="${ry + 5}" stroke="@corps" stroke-width="2.2" stroke-linecap="round"/>` +
-      `<circle cx="${-ex - 1}" cy="${ry + 6}" r="2.4" fill="#1a0e08"/><circle cx="${ex + 1}" cy="${ry + 6}" r="2.4" fill="#1a0e08"/>` +
-      `<circle cx="${-ex - 1.6}" cy="${ry + 5.4}" r="0.8" fill="#d8c8a0"/><circle cx="${ex + 0.4}" cy="${ry + 5.4}" r="0.8" fill="#d8c8a0"/>` +
-      `<path d="M-3 ${ry + 2} q3 3 6 0" fill="none" stroke="@corpsO" stroke-width="1" opacity="0.7"/>`; // mandibules
+    const el = p.eyestalk ?? 1;
+    if (el === 1) {
+      face = `<line x1="${-ex}" y1="${ry * 0.8}" x2="${-ex - 1}" y2="${ry + 5}" stroke="@corps" stroke-width="2.2" stroke-linecap="round"/>` +
+        `<line x1="${ex}" y1="${ry * 0.8}" x2="${ex + 1}" y2="${ry + 5}" stroke="@corps" stroke-width="2.2" stroke-linecap="round"/>` +
+        `<circle cx="${-ex - 1}" cy="${ry + 6}" r="2.4" fill="#1a0e08"/><circle cx="${ex + 1}" cy="${ry + 6}" r="2.4" fill="#1a0e08"/>` +
+        `<circle cx="${-ex - 1.6}" cy="${ry + 5.4}" r="0.8" fill="#d8c8a0"/><circle cx="${ex + 0.4}" cy="${ry + 5.4}" r="0.8" fill="#d8c8a0"/>` +
+        `<path d="M-3 ${ry + 2} q3 3 6 0" fill="none" stroke="@corpsO" stroke-width="1" opacity="0.7"/>`; // mandibules
+    } else {
+      // pédoncules PROÉMINENTS : longues tiges arquées émergeant de sous le fouillis, gros globes au bout
+      const y0 = ry * 0.35, y1 = ry + 4 + el * 5, ym = (y0 + y1) * 0.45, lean = 2 + el, r = 2 + el * 0.7;
+      const stalk = (s: number) =>
+        `<path d="M${s * ex} ${y0.toFixed(1)} Q${s * (ex + lean) - s * 1.5} ${ym.toFixed(1)} ${s * (ex + lean)} ${y1.toFixed(1)}" fill="none" stroke="@corps" stroke-width="2.4" stroke-linecap="round"/>` +
+        `<path d="M${s * ex} ${y0.toFixed(1)} Q${s * (ex + lean) - s * 1.5} ${ym.toFixed(1)} ${s * (ex + lean)} ${y1.toFixed(1)}" fill="none" stroke="@corpsO" stroke-width="0.7" opacity="0.5" stroke-linecap="round"/>` +
+        `<circle cx="${s * (ex + lean)}" cy="${(y1 + 1.2).toFixed(1)}" r="${r.toFixed(1)}" fill="#1a0e08" stroke="@corpsO" stroke-width="0.5"/>` +
+        `<circle cx="${(s * (ex + lean) - s * 0.9).toFixed(1)}" cy="${(y1 + 0.4).toFixed(1)}" r="1.1" fill="#d8c8a0"/>`;
+      face = stalk(-1) + stalk(1) +
+        `<path d="M-3 ${ry + 2} q3 3 6 0" fill="none" stroke="@corpsO" stroke-width="1" opacity="0.7"/>`; // mandibules
+    }
   }
-  return `<g>${legs}${shell}${hi}${ridges}${teeth}${face}</g>`;
+  return `<g>${legs}${shell}${hi}${ridges}${teeth}${spikes}${deco}${face}</g>`;
 }
 
 // --- poses (DELTA additif sur les angles d'os) ----------------------------
@@ -117,7 +167,7 @@ export function resolveCrabFromProps(
   const sk = buildSkeleton();
   const world = worldTransformsG(sk, pose) as Record<CrabBoneId, Matrix>;
   const tmap = buildTokenMap(p.stored, colors ?? {});
-  const art: Record<CrabBoneId, string> = { corps: carapace(p, view), pinceG: claw(-1), pinceD: claw(1) };
+  const art: Record<CrabBoneId, string> = { corps: carapace(p, view), pinceG: claw(-1, p), pinceD: claw(1, p) };
   return sortByZ((Object.keys(sk) as CrabBoneId[])
     .map((id) => ({
       id, matrix: world[id], scale: [1, 1] as [number, number], z: sk[id].z,

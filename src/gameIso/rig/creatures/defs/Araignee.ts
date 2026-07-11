@@ -1,11 +1,13 @@
 import type { CreatureDef } from '../types';
 
-// Araignée géante (gabarit arachnide) — abdomen + 8 pattes, yeux rougeoyants. 1 fichier, rempli.
+// Araignée géante (gabarit arachnide) — abdomen moucheté + 8 pattes velues segmentées, cluster
+// d'yeux vernissés. Robe calée sur l'artwork officiel (art-ref/ldb/page316_img7309.png) : brun
+// terreux, ombres presque noires, rehauts tan pâle (face/bandes de pattes) — pas d'orange.
 export const creature: CreatureDef = {
   name: 'Araignée',
   plan: 'arachnid',
   spider: {
     sl: 1.0, girth: 1.14, // gros abdomen bulbeux (LDB 78 : « effroyablement grandes »)
-    stored: { corps: '#352b22', corpsO: '#120d09', corpsH: '#c8893f', cheveux: '#181210', cheveuxO: '#0e0a08', cuir: '#7a1010' },
+    stored: { corps: '#6a5138', corpsO: '#241a10', corpsH: '#c9ab77', cheveux: '#181210', cheveuxO: '#0e0a08', cuir: '#7a1010' },
   },
 };

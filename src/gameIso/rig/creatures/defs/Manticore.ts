@@ -1,15 +1,17 @@
 import type { CreatureDef } from '../types';
 
-// Manticore (LDB 79 l.108) : tête et corps de grand chat, ailes de chauve-souris
-// (membrane), queue-fouet hérissée de barbelés ; crinière de lion (l.112). Gabarit AILÉ —
-// distinct du griffon : ailes de CUIR vs plumes, tête de fauve à crinière vs aigle.
+// Manticore (LDB 79 l.108, artwork LDB p.324) : gueule FÉLINE cerclée d'une crinière rousse
+// flamboyante (@cheveux) à grands crocs (tête 'felin'), avant-train ÉCAILLEUX bleu-gris à
+// dorsale d'épines (build 'draconic'), grandes ailes de chauve-souris DRESSÉES à demi-ouvertes
+// (membrane + wingPose 'dressees'), longue queue SEGMENTÉE arquée au-dessus du dos finie en
+// DARD de scorpion (queue 'dard'). Gabarit AILÉ — distinct du griffon (cuir vs plumes).
 export const creature: CreatureDef = {
   name: 'Manticore',
   plan: 'winged',
   quad: {
-    sl: 1.1, build: 'feline', girth: 1.06, bodyLen: 1.02, neckLen: 0.62, neckAngle: -24, legLen: 0.98,
-    head: 'ours', headScale: 1.15, tail: 'fouet', tailLen: 1.45, ears: 'courtes', foot: 'patte',
-    wings: 'membrane', wingSpan: 1.4, mane: 'hirsute', ridge: 'epines',
-    stored: { corps: '#a4502e', corpsO: '#6b2f1a', corpsH: '#c97a4a', cheveux: '#2a1812', cheveuxO: '#170d08', cuir: '#5a4630' },
+    sl: 1.15, build: 'draconic', girth: 1.0, bodyLen: 1.06, neckLen: 0.6, neckAngle: -22, legLen: 0.95,
+    head: 'felin', headScale: 1.25, tail: 'dard', tailLen: 1.15, ears: 'rondes', foot: 'patte',
+    wings: 'membrane', wingSpan: 1.45, wingPose: 'dressees', mane: 'hirsute', ridge: 'epines',
+    stored: { corps: '#5c6478', corpsO: '#303648', corpsH: '#8f96aa', cheveux: '#c25a1e', cheveuxO: '#7b330f', cuir: '#3f3a4c' },
   },
 };

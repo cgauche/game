@@ -1,7 +1,35 @@
 import type { CreatureDef } from '../types';
 
+// Pégase — fidélité à l'artwork officiel (art-ref/ldb/page325_img7829.png) : cheval à robe
+// BLANC ARGENTÉ pommelée (markings 'taches', ombres gris-bleu), GRANDES ailes emplumées
+// BRUN/DORÉ nettement distinctes de la robe (famille de jetons @aile*, wingSpan ample),
+// crinière et queue fauves fournies (@cheveux), encolure arquée portée haute (neckAngle),
+// et COLLIER D'HARNAIS DORÉ clouté au poitrail (deco encolure, jetons @accent*).
 export const creature: CreatureDef = {
-  name: "Pégase",
+  name: 'Pégase',
   plan: 'winged',
-  quad: {"sl":0.95,"build":"equine","girth":0.94,"bodyLen":1.05,"neckLen":1.08,"neckAngle":-48,"legLen":1.18,"head":"cheval","tail":"crin","ears":"courtes","foot":"sabot","wings":"plumes","wingSpan":1.3,"mane":"crin","stored":{"corps":"#f4f3ee","corpsO":"#9aa0ad","corpsH":"#ffffff","cheveux":"#e2e5ec","cheveuxO":"#878e9e","cuir":"#565b66"}},
+  quad: {
+    sl: 0.95, build: 'equine', girth: 0.98, bodyLen: 1.05, neckLen: 1.08, neckAngle: -54,
+    legLen: 1.18, head: 'cheval', tail: 'crin', tailLen: 1.15, ears: 'courtes', foot: 'sabot',
+    wings: 'plumes', wingSpan: 1.7, mane: 'crin', markings: 'taches',
+    deco: {
+      // collier doré clouté à la base de l'encolure (repère local : base du cou = y 0..8)
+      encolure: `<g data-deco="collier">` +
+        `<path d="M-12.5 4.5 Q0 10.5 14 6 L13 0.5 Q0 5.5 -11.5 -0.5 Z" fill="@accent" stroke="@accentO" stroke-width="0.7"/>` +
+        `<path d="M-11.8 1 Q0 7 13.2 2" fill="none" stroke="@accentH" stroke-width="0.6" opacity="0.7"/>` +
+        `<circle cx="-8" cy="3.2" r="0.9" fill="#f2e3b2" stroke="@accentO" stroke-width="0.35"/>` +
+        `<circle cx="-3" cy="5" r="0.9" fill="#f2e3b2" stroke="@accentO" stroke-width="0.35"/>` +
+        `<circle cx="2" cy="5.8" r="0.9" fill="#f2e3b2" stroke="@accentO" stroke-width="0.35"/>` +
+        `<circle cx="7" cy="4.9" r="0.9" fill="#f2e3b2" stroke="@accentO" stroke-width="0.35"/>` +
+        `<circle cx="11.5" cy="3.2" r="0.9" fill="#f2e3b2" stroke="@accentO" stroke-width="0.35"/>` +
+        `</g>`,
+    },
+    stored: {
+      corps: '#e8eae4', corpsO: '#828b95', corpsH: '#ffffff', // robe blanc argenté pommelée, ombres gris-bleu
+      cheveux: '#8d6e46', cheveuxO: '#4e3a22', // crinière/queue fauves
+      aile: '#8a6a3e', aileO: '#48331c', aileH: '#c9a25e', // plumes brun/doré des ailes
+      accent: '#c8963a', // or du collier
+      cuir: '#4a4238', // sabots
+    },
+  },
 };

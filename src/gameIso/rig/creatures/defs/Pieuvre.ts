@@ -1,13 +1,15 @@
 import type { CreatureDef } from '../types';
 
-// Pieuvre des tourbières (gabarit céphalopode) — manteau + 8 tentacules, pupilles horizontales. 1 fichier.
+// Pieuvre des tourbières (gabarit céphalopode) — masse charnue basse + 8 tentacules en volutes
+// dressées, petits yeux noyés dans les replis (artwork LDB p.325). 1 fichier.
 export const creature: CreatureDef = {
   name: 'Pieuvre',
   plan: 'cephalopod',
   // LDB 79 l.130-135 : « marbrées de vert et de brun » (camouflage de marécage),
-  // « immenses yeux limpides », tentacules robustes, Taille (Grande).
+  // tentacules robustes, Taille (Grande). Robe brun/ocre terreux de l'artwork,
+  // marbrures vertes portées par @cheveux, iris terne @cuir.
   octopus: {
     sl: 1.05, girth: 1.1,
-    stored: { corps: '#5d6b3c', corpsO: '#46351f', corpsH: '#94a35e', cheveux: '#3a3220', cheveuxO: '#241e12', cuir: '#d8c64a' },
+    stored: { corps: '#8a6238', corpsO: '#452e16', corpsH: '#c2a068', cheveux: '#6b6d3a', cheveuxO: '#3a3c1f', cuir: '#b98f47' },
   },
 };

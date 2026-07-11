@@ -20,6 +20,7 @@ import type { BodyShape } from '../../engine/types';
 function planToBodyShape(plan: string): BodyShape {
   switch (plan) {
     case 'quadruped': return 'quadrupede';
+    case 'theropode': return 'quadrupede'; // bipède de RENDU mais bête à queue/4 localisations de patte — bodyForm déclare le cornu quadrupède
     case 'avian':
     case 'winged': return 'oiseau'; // ailes = bras (p.312), tableau humanoïde réétiqueté
     case 'serpentine': return 'serpent';

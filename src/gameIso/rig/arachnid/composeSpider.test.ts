@@ -9,7 +9,7 @@ describe('gabarit arachnide', () => {
     expect(bones.map((b) => b.id)).toEqual(['abdomen', 'corps']); // z : abdomen derrière
     const corps = bones.find((b) => b.id === 'corps')!.parts[0].svg;
     expect((corps.match(/<path/g) ?? []).length).toBeGreaterThanOrEqual(16); // 8 pattes × (trait + ombre)
-    expect(corps).toContain('#9a1818'); // yeux rougeoyants
+    expect(corps).toContain('#171d12'); // globes oculaires vernissés (artwork LDB p.316)
   });
 
   it('recolor : colors.corps change le markup', () => {
@@ -20,7 +20,7 @@ describe('gabarit arachnide', () => {
 
   it('de dos : pas d’yeux (on voit la nuque)', () => {
     const back = resolveSpiderFromProps(SPIDER_DEFAULT, 'back', {}).find((b) => b.id === 'corps')!.parts[0].svg;
-    expect(back).not.toContain('#9a1818');
+    expect(back).not.toContain('#171d12');
   });
 
   it('les poses diffèrent (idle pulse, ruée penche le corps, mort sur le dos)', () => {
