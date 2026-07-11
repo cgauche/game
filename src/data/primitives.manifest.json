@@ -1,0 +1,218 @@
+[
+  {
+    "id": "screenShell",
+    "nom": "ScreenShell",
+    "fichier": "src/ui/ScreenShell.tsx",
+    "concept": "coquille d'écran plein-champ (voile + en-tête + corps, a11y dialogue)",
+    "perimetre": "carte du monde, port/escale, marché, dossier de navire, négoce",
+    "verrou": "aucune modale/écran bespoke (existant)"
+  },
+  {
+    "id": "rollShell",
+    "nom": "RollShell",
+    "fichier": "src/ui/RollShell.tsx",
+    "concept": "coquille de jet mono/multi (Lancer→Chance→Pacte→Résilience→Appliquer)",
+    "perimetre": "toute modale de jet, mono (N=1) et multi (N contributeurs)",
+    "verrou": "roll-modal-invariant.test.ts"
+  },
+  {
+    "id": "rollRow",
+    "nom": "RollRow",
+    "fichier": "src/ui/RollRow.tsx",
+    "concept": "ligne de jet d'un participant (RollShell multi)",
+    "perimetre": "toute modale de jet multi-contributeurs",
+    "verrou": "—"
+  },
+  {
+    "id": "makeRollFlow",
+    "nom": "makeRollFlow/FLOWS",
+    "fichier": "src/state/rollFlowSpecs.ts",
+    "concept": "fabrique de flux de jet + registre spec par kind",
+    "perimetre": "tout Test interactif joueur",
+    "verrou": "rollflow-no-drift.test.ts, rollFlowWiring.test.ts"
+  },
+  {
+    "id": "rollSeam",
+    "nom": "openRoll/resolveSurface",
+    "fichier": "src/state/rollSeam.ts",
+    "concept": "policy klass×contrôleur×cadence → Modale/Voix/Interne",
+    "perimetre": "porte de résolution de tout Test influençable",
+    "verrou": "roll-seam-exclusivity-guard.test.ts"
+  },
+  {
+    "id": "optionChooser",
+    "nom": "OptionChooser/ChoiceButtons",
+    "fichier": "src/ui/OptionChooser.tsx",
+    "concept": "choix d'options de jet (seg/grid/actions)",
+    "perimetre": "tout choix d'options + paire/triplet de boutons de décision",
+    "verrou": "—"
+  },
+  {
+    "id": "breakdown",
+    "nom": "optionValue/optionPending/testPending",
+    "fichier": "src/ui/breakdown.ts",
+    "concept": "valeur effective d'une option (base+mods plafonné) + ligne pré-jet",
+    "perimetre": "tout affichage de composition de test avant lancer",
+    "verrou": "—"
+  },
+  {
+    "id": "influenceRow",
+    "nom": "InfluenceRow",
+    "fichier": "src/ui/InfluenceRow.tsx",
+    "concept": "rangée d'influence Chance/Pacte/Résilience/Détermination",
+    "perimetre": "toute modale de jet influençable",
+    "verrou": "—"
+  },
+  {
+    "id": "vsHeader",
+    "nom": "VsHeader",
+    "fichier": "src/ui/VsHeader.tsx",
+    "concept": "en-tête A→B d'une modale de combat/opposition",
+    "perimetre": "toute confrontation à 2 camps",
+    "verrou": "—"
+  },
+  {
+    "id": "portraitTile",
+    "nom": "PortraitTile/CharFrame",
+    "fichier": "src/ui/PortraitTile.tsx",
+    "concept": "affichage d'un personnage (HUD/modale/picker)",
+    "perimetre": "toute vignette de personnage",
+    "verrou": "—"
+  },
+  {
+    "id": "searchFilterField",
+    "nom": "SearchFilterField",
+    "fichier": "src/ui/SearchFilterField.tsx",
+    "concept": "champ de filtre/recherche de liste (état+pur)",
+    "perimetre": "catalogue, palette, sélecteur",
+    "verrou": "—"
+  },
+  {
+    "id": "findTableEntry",
+    "nom": "findTableEntry",
+    "fichier": "src/engine/tables.ts",
+    "concept": "lookup d'une table d100 par fourchette [min,max]",
+    "perimetre": "toute table à fourchettes RAW",
+    "verrou": "table-lookup-guard.test.ts"
+  },
+  {
+    "id": "baseTestMods",
+    "nom": "baseTestMods",
+    "fichier": "src/engine/combat.ts",
+    "concept": "modificateurs de combat bruts (Avantage×10 + État)",
+    "perimetre": "tout Test de combat",
+    "verrou": "—"
+  },
+  {
+    "id": "actorIn",
+    "nom": "actorIn/inBattleId",
+    "fichier": "src/state/combatOrParty.ts",
+    "concept": "combattant par id — combat-ou-groupe vs en-combat-seulement",
+    "perimetre": "toute résolution d'acteur",
+    "verrou": "in-battle-find-guard.test.ts"
+  },
+  {
+    "id": "applyOps",
+    "nom": "applyOps/GameOp",
+    "fichier": "src/engine/ops.ts",
+    "concept": "tout effet mécanique (soin/état/dégâts/corruption/octroi)",
+    "perimetre": "toute conséquence appliquée à une cible",
+    "verrou": "applyOps unique (aucun effet ad hoc)"
+  },
+  {
+    "id": "gameOpEditor",
+    "nom": "GameOpEditor",
+    "fichier": "src/ui/editor/GameOpEditor.tsx",
+    "concept": "édition d'une liste de GameOp[]",
+    "perimetre": "sorts, effets déclenchés, passifs, consommables, activités",
+    "verrou": "no-json-fields.test.ts"
+  },
+  {
+    "id": "passiveMods",
+    "nom": "passiveMods",
+    "fichier": "src/engine/trauma.ts",
+    "concept": "collecteur UNIQUE de modificateur PASSIF continu",
+    "perimetre": "trait/mutation/qualité/trauma/maladie/faim/sort",
+    "verrou": "collecteur unique (docs/systeme-passifs.md)"
+  },
+  {
+    "id": "fireTriggers",
+    "nom": "fireTriggers",
+    "fichier": "src/state/triggeredEffects.ts",
+    "concept": "dispatcher UNIQUE d'effet déclenché (donnée)",
+    "perimetre": "Trait/Talent/Atout/État pour un Trigger",
+    "verrou": "triggered-effects.test.ts (dispatcher unique)"
+  },
+  {
+    "id": "resolveFreeAttacks",
+    "nom": "resolveFreeAttacks",
+    "fichier": "src/state/combatFlow.ts",
+    "concept": "attaque gratuite déclenchée, kind-agnostique",
+    "perimetre": "toute source de Frappe réactive/Assaut féroce/Trait/État",
+    "verrou": "creatureFreeAttacks.test.ts"
+  },
+  {
+    "id": "shipDamage",
+    "nom": "damageHull/healHull/damageVesselHull/healVesselHull",
+    "fichier": "src/state/shipDamage.ts",
+    "concept": "dégâts/soin de coque, source unique de state.vessel.wounds",
+    "perimetre": "voyage fluvial/maritime + combat naval",
+    "verrou": "vessel-wounds-write-guard.test.ts"
+  },
+  {
+    "id": "cascade",
+    "nom": "cascade/registerCascadeApplier",
+    "fichier": "src/state/cascade.ts",
+    "concept": "étapes-jets subis influençables + appliers enregistrés par kind",
+    "perimetre": "toute conséquence différée en série",
+    "verrou": "cascade-consequence-guard.test.ts"
+  },
+  {
+    "id": "policy",
+    "nom": "rule/policy",
+    "fichier": "src/engine/policy.ts",
+    "concept": "règle optionnelle RAW + house-rule taguée",
+    "perimetre": "tout arbitrage editable",
+    "verrou": "—"
+  },
+  {
+    "id": "netOwnership",
+    "nom": "netOwnership",
+    "fichier": "src/state/netOwnership.ts",
+    "concept": "axe contrôleur owns/piloted/aiDriven",
+    "perimetre": "gating de siège/coop",
+    "verrou": "netOwnership.test.ts"
+  },
+  {
+    "id": "refField",
+    "nom": "RefField",
+    "fichier": "src/ui/compendium/RefField.tsx",
+    "concept": "picker de référence multilangue-safe (par id)",
+    "perimetre": "toute ref id statique du Compendium",
+    "verrou": "CodexRef.test.ts"
+  },
+  {
+    "id": "prose",
+    "nom": "Prose",
+    "fichier": "src/ui/Prose.tsx",
+    "concept": "rendu de prose Markdown verbatim (HTML brut neutralisé)",
+    "perimetre": "tout champ de prose RAW",
+    "verrou": "no-html-in-prose.test.ts"
+  },
+  {
+    "id": "resolveRender",
+    "nom": "resolveRender/pickBackend",
+    "fichier": "src/gameIso/rig/bodyPlan.ts",
+    "concept": "résolution rendu + dispatch backend",
+    "perimetre": "tout rendu iso/POV/portrait",
+    "verrou": "gameiso-purity.test.ts"
+  },
+  {
+    "id": "genRegistry",
+    "nom": "gen-registry (_registry.generated)",
+    "fichier": "scripts/gen-registry.mjs",
+    "concept": "registre-par-defs auto-chargé (dépose un fichier → intégré)",
+    "perimetre": "tout dataset extensible (créatures, tenues, armes, sons, icônes…)",
+    "verrou": "npm run gen && git diff --exit-code"
+  }
+]

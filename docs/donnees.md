@@ -125,6 +125,7 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 | Fichier | Contient |
 |---|---|
 | `books.json` | **Registre des livres sources** — le champ `abr` est l'abréviation CANONIQUE (voir §B) |
+| `primitives.manifest.json` · `systemes.manifest.json` | Manifestes TOOLING (#298, vocabulaire app-interne, pas RAW) — sources de `docs/systemes.md` (`npm run docs:systemes`, `scripts/docs/build-systemes.mjs`) |
 
 ## §B — Conventions de champs (à respecter à l'ajout)
 

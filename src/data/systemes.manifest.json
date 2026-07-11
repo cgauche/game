@@ -1,0 +1,232 @@
+[
+  {
+    "id": "combat",
+    "nom": "Combat (arène tactique)",
+    "modules": [
+      "src/state/combatFlow.ts",
+      "src/state/combatHooks.ts",
+      "src/state/combatSlice.ts",
+      "src/state/combatSetup.ts",
+      "src/engine/combat.ts"
+    ],
+    "etat": "complet",
+    "ticket": null,
+    "notes": "Barils combatFlow + hooks universels combatHooks.ts (docs/combat-events-coherence.md)."
+  },
+  {
+    "id": "magie",
+    "nom": "Magie (incantation, sorts, mésaventures)",
+    "modules": [
+      "src/engine/magic.ts",
+      "src/engine/miscast.ts",
+      "src/engine/overcast.ts",
+      "src/engine/grimoire.ts",
+      "src/engine/dispel.ts",
+      "src/ui/CastModal.tsx"
+    ],
+    "etat": "complet",
+    "ticket": null,
+    "notes": "—"
+  },
+  {
+    "id": "corruption",
+    "nom": "Corruption & mutation",
+    "modules": [
+      "src/engine/corruption.ts",
+      "src/state/corruptionFlow.ts",
+      "src/ui/CorruptionModal.tsx"
+    ],
+    "etat": "complet",
+    "ticket": null,
+    "notes": "docs/systeme-passifs.md."
+  },
+  {
+    "id": "psychologie",
+    "nom": "Psychologie (P1-P4)",
+    "modules": [
+      "src/engine/psychology.ts",
+      "src/state/encounterPsychFlow.ts"
+    ],
+    "etat": "complet",
+    "ticket": null,
+    "notes": "—"
+  },
+  {
+    "id": "voyage-terre",
+    "nom": "Voyage terrestre",
+    "modules": [
+      "src/state/travelFlow.ts",
+      "src/engine/travel.ts",
+      "src/engine/travelStages.ts",
+      "src/engine/travelTables.ts",
+      "src/engine/travelEncounter.ts",
+      "src/ui/TravelRecapModal.tsx",
+      "src/ui/TravelRolesPanel.tsx"
+    ],
+    "etat": "partiel",
+    "ticket": "#298 (openRoll TER : fourche forcedPaceDay dupliquée, travelFlow.ts:368-381)",
+    "notes": "cf. docs/plans/2026-07-11-matrice-primitives-systemes.md §openRoll."
+  },
+  {
+    "id": "voyage-fluvial",
+    "nom": "Voyage fluvial",
+    "modules": [
+      "src/state/riverVoyageFlow.ts",
+      "src/engine/riverNavigation.ts"
+    ],
+    "etat": "partiel",
+    "ticket": "#267/#268 (asymétrie naufrage fluvial sans checkPartyWiped, riverVoyageFlow.ts:649-651)",
+    "notes": "—"
+  },
+  {
+    "id": "voyage-maritime",
+    "nom": "Voyage maritime",
+    "modules": [
+      "src/state/seaVoyageFlow.ts",
+      "src/engine/seaVoyage.ts",
+      "src/engine/seaNavigation.ts",
+      "src/engine/seaWeather.ts",
+      "src/engine/seaPerils.ts",
+      "src/ui/SeaVoyageScreen.tsx",
+      "src/ui/SeaActivitiesModal.tsx"
+    ],
+    "etat": "partiel",
+    "ticket": "#298 (openRoll MER : scorbut/épuisement forcés inline, seaVoyageFlow.ts:900-905,968-973)",
+    "notes": "Chantier naval GELÉ (pause structurelle #276) — reprend après le programme #269-#275."
+  },
+  {
+    "id": "combat-naval",
+    "nom": "Combat naval tactique",
+    "modules": [
+      "src/engine/shipBuild.ts",
+      "src/engine/shipCritical.ts",
+      "src/engine/shipMelee.ts",
+      "src/state/shipManeuver.ts",
+      "src/state/shipBattery.ts",
+      "src/state/shipCollision.ts",
+      "src/state/shipDamage.ts",
+      "src/state/shipDeck.ts",
+      "src/state/shipPostes.ts",
+      "src/ui/ShipBatteryModal.tsx",
+      "src/ui/ShipManeuverModal.tsx",
+      "src/ui/ShipDossier.tsx",
+      "src/ui/ShipSheet.tsx"
+    ],
+    "etat": "partiel",
+    "ticket": "#250, #267, #268 (Phase 8, gelé)",
+    "notes": "MDG ch.12-14."
+  },
+  {
+    "id": "bataille-masse",
+    "nom": "Bataille de masse / siège",
+    "modules": [
+      "src/engine/massBattle.ts",
+      "src/state/massBattleFlow.ts",
+      "src/engine/activities.ts",
+      "src/ui/MassBattleView.tsx"
+    ],
+    "etat": "complet",
+    "ticket": null,
+    "notes": "Activités partagées avec interlude (budget max 3 RAW commun)."
+  },
+  {
+    "id": "interlude",
+    "nom": "Interlude / entre-deux",
+    "modules": [
+      "src/state/interludeFlow.ts",
+      "src/engine/activities.ts",
+      "src/ui/InterludeScreen.tsx"
+    ],
+    "etat": "partiel",
+    "ticket": null,
+    "notes": "Refonte UX différée (session dédiée) — backend fini, RAW « assister coûte-t-il un créneau ? » à trancher."
+  },
+  {
+    "id": "commerce",
+    "nom": "Marchand / négoce / cargaison",
+    "modules": [
+      "src/state/merchantFlow.ts",
+      "src/state/portFlow.ts",
+      "src/state/landMarketFlow.ts",
+      "src/engine/bargain.ts",
+      "src/engine/cargo.ts",
+      "src/engine/landCargo.ts",
+      "src/ui/MerchantPanel.tsx",
+      "src/ui/LandMarketView.tsx",
+      "src/ui/PortView.tsx"
+    ],
+    "etat": "partiel",
+    "ticket": "#298 (bargainPct forké portFlow.ts:126≡landMarketFlow.ts:157 ; Marchandage résolu hors modale portFlow.ts:12-14)",
+    "notes": "—"
+  },
+  {
+    "id": "equipage",
+    "nom": "Équipage / paie / postes",
+    "modules": [
+      "src/state/shipCrew.ts",
+      "src/engine/crewMorale.ts",
+      "src/engine/warMachineCrew.ts",
+      "src/state/stations.ts",
+      "src/ui/CrewTestModal.tsx",
+      "src/ui/ShipRolesPanel.tsx"
+    ],
+    "etat": "complet",
+    "ticket": null,
+    "notes": "Station+AssignRow (stations.ts) — patron top-down slot+affectation."
+  },
+  {
+    "id": "repos-survie",
+    "nom": "Repos / survie",
+    "modules": [
+      "src/state/restFlow.ts",
+      "src/engine/rest.ts",
+      "src/engine/provisions.ts",
+      "src/engine/suffocation.ts",
+      "src/engine/exposure.ts",
+      "src/engine/waterExposure.ts",
+      "src/ui/RestModal.tsx"
+    ],
+    "etat": "complet",
+    "ticket": null,
+    "notes": "MultiRollList/NightEntry — bilan nuit."
+  },
+  {
+    "id": "coop",
+    "nom": "Coop en ligne (relay)",
+    "modules": [
+      "src/state/netFlow.ts",
+      "src/state/netOwnership.ts",
+      "src/net/relay.ts",
+      "src/net/session.ts",
+      "src/net/intents.ts",
+      "src/ui/CoopLobby.tsx",
+      "src/ui/CoopPanels.tsx"
+    ],
+    "etat": "complet",
+    "ticket": null,
+    "notes": "Worker Cloudflare (server/), axe contrôleur pilotedByHuman/aiDriven/humanControlled."
+  },
+  {
+    "id": "editeur",
+    "nom": "Éditeur de scène / campagne",
+    "modules": [
+      "src/state/sceneEdit.ts",
+      "src/state/validateScene.ts",
+      "src/state/mapSpec.ts",
+      "src/ui/editor/Editor.tsx"
+    ],
+    "etat": "complet",
+    "ticket": null,
+    "notes": "Schéma de Scène unique — pas de scène codée en dur (règle stricte 2)."
+  },
+  {
+    "id": "codex",
+    "nom": "Codex / Compendium",
+    "modules": [
+      "src/ui/compendium/CompendiumScreen.tsx"
+    ],
+    "etat": "complet",
+    "ticket": null,
+    "notes": "Éditable sans JSON — onglets par domaine."
+  }
+]

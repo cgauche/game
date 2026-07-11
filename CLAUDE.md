@@ -21,6 +21,7 @@ On contrôle un groupe de 4 aventuriers à travers la campagne **L'Ennemi Intér
 | Déclencheur | Lire |
 |---|---|
 | Chercher où vit un module / comprendre un système / AVANT de créer un fichier sous `src/` | `docs/architecture.md` + table « Primitives partagées » ci-dessous |
+| Quels systèmes existent / qui compose quoi (matrice primitives × systèmes GÉNÉRÉE) | `docs/systemes.md` (`npm run docs:systemes`, sources `src/data/systemes.manifest.json` + `src/data/primitives.manifest.json`) |
 | Question RAW (« que dit la règle ? ») | Atlas `docs/raw/00-index.md`, puis `Source/` pour **citer** |
 | Détail d'un livre source (chapitres LDB, périmètres autorisés, historique d'extraction) | `docs/sources-vf.md` |
 | Valider une feature UI dans le navigateur (`__wfrp`, scénarios de test) | `docs/recette-navigateur.md` + `docs/test-scenarios.md` |

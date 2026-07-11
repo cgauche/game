@@ -283,6 +283,10 @@ export const REGISTRIES = [
   },
 ];
 
+// Ajout ciblé (#298) : les 2 nouveaux defs manifeste (primitives-manifest, systemes-manifest) vivent
+// dans le même dossier `src/data/schemas/defs/` que le registre SCHEMA_DEFS ci-dessus — un fichier
+// déposé y est déjà repris par le générateur générique (aucune entrée REGISTRIES supplémentaire).
+
 function genOne(r) {
   const importDir = r.importDir ?? './defs';
   let entries;
