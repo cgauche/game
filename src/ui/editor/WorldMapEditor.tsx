@@ -4,7 +4,7 @@ import { WorldMap, MapPlace, MapRoute, emptyWorldMap, placeById } from '../../st
 import { TravelMode, TRAVEL_DEFAULTS, TRAVEL_VEHICLES, TRAVEL_MODE_LABEL, travelModeIcon } from '../../engine/travel';
 import { LAND_CARGOES, LAND_RICHESSE_ROWS, type LandMarketProfile } from '../../engine/landCargo';
 import { CARGOES, type PortProfile } from '../../engine/seaVoyage';
-import { navalPorts, findNavalPortById } from '../../data';
+import { navalPorts, findNavalPortById, lieuxServices } from '../../data';
 import { resolvePortRef } from '../../state/worldMap';
 import { EffectList } from './EffectList';
 import { Icon, IconG } from '../Icon';
@@ -420,6 +420,27 @@ export function WorldMapEditor({ map, setMap, scenes, onClose }: {
                   </>
                 );
               })()}
+
+              {/* ── Services du lieu (auberge/temple/forgeron/guilde…, catalogue lieux-services.json #343) ── */}
+              <div className="mini-title">Services du lieu (hub, #343)</div>
+              {lieuxServices.map((sv) => {
+                const has = (selPlace.services ?? []).some((s) => s.kind === sv.id);
+                return (
+                  <label key={sv.id} className="ed-check">
+                    <input
+                      type="checkbox"
+                      checked={has}
+                      onChange={() => {
+                        const cur = selPlace.services ?? [];
+                        const next = has ? cur.filter((s) => s.kind !== sv.id) : [...cur, { kind: sv.id }];
+                        updPlace(selPlace.id, { services: next.length ? next : undefined });
+                      }}
+                    />
+                    {sv.icon && <Icon id={sv.icon} size="sm" />} {sv.label}
+                  </label>
+                );
+              })}
+              <p className="ed-hint">L'auberge dérive aussi de l'offre de repos de la scène liée (onglet Scène) : inutile de la cocher ici si la scène l'offre déjà.</p>
             </>
           )}
 

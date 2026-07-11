@@ -54,7 +54,15 @@ src/engine/                 Règles WFRP4, PUR + testé :
   provisions.ts               rations & Faim (LDB 18 l.417-422) : consommation/jour, Tests, malus, Brouet
 src/state/
   scene.ts                  SCHÉMA DE SCÈNE (tiles, entities, dialogues, triggers, encounters, Effect[])
-  worldMap.ts               SCHÉMA DE CARTE DU MONDE (#T2) : lieux/routes au niveau projet + format projet v2
+  worldMap.ts               SCHÉMA DE CARTE DU MONDE (#T2) : lieux/routes au niveau projet + format projet v2.
+                            DONNÉES DE LIEU (#343) : le nœud `MapPlace` est LA source des services d'un lieu —
+                            `port` (schéma riche + catalogue `naval-ports.json`), `market` (LandMarketProfile) et
+                            `services[]` EXTENSIBLES (catalogue `lieux-services.json` : auberge/temple/forgeron/
+                            guilde…). API UNIQUE `placeServices(place, scene?)` : compose ces trois sources +
+                            l'auberge (offre PROPRE au service OU dérivée de l'offre de repos de la scène liée) en
+                            une liste `ResolvedPlaceService[]` — payloads RÉFÉRENCÉS, jamais recopiés (zéro
+                            duplication de vérité). Consommée par le hub de lieu (#343) et l'auberge ; les
+                            consommateurs actuels (portFlow/landMarketFlow/restPlacesHere) restent inchangés.
   store.ts                  store Zustand : GameState + vue (caméra/zoom) + campagne (scènes, dialogues,
                             effets, temps/repos) + actions de combat — délègue aux modules (get,set) :
   combatFlow.ts               flux de combat tour par tour (IA, attaques, effets, fin de combat).
@@ -141,6 +149,12 @@ src/ui/                     React : menus, CampaignView (HUD), CharacterSheet, m
                               réécrite par modale. (Désengagement : pré-jet = MENU d'options via
                               <OptionChooser>, pas un « preview + Lancer » ; le coup dans le dos de
                               « Fuir » est montré INLINE dans la modale, plus de popin RevealModal.)
+  MapCanvas.tsx               primitive de CARTE SVG panoramable/zoomable (#343) : caméra (pan/zoom molette-
+                              vers-le-curseur/pinch tactile), fond, TRACÉS et MARQUEURS cliquables data-driven
+                              (`paths[]`/`markers[]`/`overlay`/`chrome`), cibles de clic FIABLES (fond
+                              pointer-events:none, hit-target large par tracé). AUCUNE logique de voyage dedans
+                              (elle reste dans WorldMapView, premier consommateur ; le plan de ville #343-B sera
+                              le second). Caméra pure = `worldMapViewport.ts` (clamp/fit/viewOn).
   editor/                     Éditeur v2 : Editor.tsx (shell), editorState.ts (sélection unifiée +
                               mutations PURES), EditorCanvas (pointeur/overlays/resize), Palette (rail
                               d'outils + contenu contextuel), Inspector (DOCKÉ, folds ; scène si rien

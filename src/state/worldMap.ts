@@ -10,10 +10,12 @@
  * par jour + Effects), cible d'embuscade du « Attaqués ! », heures de voyage/jour et plafond de
  * marche forcée au niveau carte.
  */
-import type { Effect } from './scene';
+import type { Effect, Scene } from './scene';
 import type { TravelMode } from '../engine/travel';
 import type { PortProfile } from '../engine/seaVoyage';
-import { findNavalPortById } from '../data';
+import type { LandMarketProfile } from '../engine/landCargo';
+import type { RestPlaces } from './restFlow';
+import { findNavalPortById, findLieuServiceById } from '../data';
 
 /** Lieu posé sur la carte. Être dans `scene` = être à ce lieu ; y arriver → transition vers elle. */
 export interface MapPlace {
@@ -39,6 +41,22 @@ export interface MapPlace {
    *  offre des opportunités de commerce de cargaison (achat/vente/rumeurs). Taille + Richesse + colonne
    *  Produits, éditables par l'auteur (aucun index codé en dur). */
   market?: import('../engine/landCargo').LandMarketProfile;
+  /** SERVICES EXTENSIBLES du lieu au-delà du port et du marché (#343) — auberge/temple/forgeron/guilde…,
+   *  `kind` = id du catalogue `lieux-services.json`. Port et marché NE sont PAS dupliqués ici : ils
+   *  gardent leur propre champ riche (`port`/`market`) et `placeServices` les compose avec ceux-ci en
+   *  une liste unique. Une auberge peut porter son offre de couchage PROPRE (`rest`) ou, à défaut,
+   *  dériver de l'offre de repos de la scène liée. */
+  services?: PlaceService[];
+}
+
+/** Un service EXTENSIBLE attaché à un lieu (catalogue `lieux-services.json`) — hors port/marché, qui
+ *  portent leur propre schéma riche. `kind` = id du catalogue ; `label` = surcharge d'affichage
+ *  facultative d'auteur ; `rest` = offre de couchage/repas PROPRE à ce lieu-hébergement (auberge
+ *  autonome), à défaut de quoi l'auberge dérive de l'offre de repos de la scène (`placeServices`). */
+export interface PlaceService {
+  kind: string;
+  label?: string;
+  rest?: RestPlaces;
 }
 
 /** Péripétie d'AUTEUR sur une route : tirée chaque jour de voyage à `chancePct` %. */
@@ -166,6 +184,73 @@ export function placeById(map: WorldMap, id: string): MapPlace | undefined {
   return map.places.find((p) => p.id === id);
 }
 
+/** Catégorie d'un service résolu — routage du hub de lieu (#343). `port`/`marche`/`auberge` ont un
+ *  panneau dédié ; `autre` = service de catalogue générique (temple/forgeron/guilde…). */
+export type PlaceServiceCategory = 'port' | 'marche' | 'auberge' | 'autre';
+
+/** Un service RÉSOLU d'un lieu (sortie de `placeServices`) — vocabulaire UNIQUE consommé par le hub de
+ *  lieu (#343) et l'auberge. Les payloads métier sont RÉFÉRENCÉS, jamais copiés : `port`/`market`
+ *  pointent la donnée existante du nœud, `rest` pointe l'offre propre au service ou celle de la scène. */
+export interface ResolvedPlaceService {
+  /** id de routage : `'port'` | `'marche'` | `kind` du catalogue (dont `'auberge'`). */
+  id: string;
+  category: PlaceServiceCategory;
+  label: string;
+  icon?: string;
+  desc?: string;
+  port?: NonNullable<MapPlace['port']>;
+  market?: LandMarketProfile;
+  /** Offre de couchage/repas effective d'une auberge (propre au service, sinon dérivée de la scène). */
+  rest?: RestPlaces;
+}
+
+/** Offre de couchage en AUBERGE portée par une scène (`rest.auberge`, ou une `restZone` qui l'offre) —
+ *  la scène reste la SOURCE de vérité, référencée jamais copiée sur le nœud. */
+function sceneAubergeOffer(scene?: Scene): RestPlaces | undefined {
+  if (!scene) return undefined;
+  if (scene.rest?.auberge) return { auberge: true, maison: scene.rest.maison, camp: scene.rest.camp };
+  const zone = (scene.restZones ?? []).find((z) => z.places.auberge);
+  return zone ? { auberge: true, maison: zone.places.maison, camp: zone.places.camp } : undefined;
+}
+
+/**
+ * API UNIQUE des SERVICES d'un lieu (#343) : compose en UNE liste le port (`place.port`), le marché
+ * (`place.market`) et les services extensibles du catalogue (`place.services`, `lieux-services.json`),
+ * plus l'auberge — déclarée en service propre OU dérivée de l'offre de repos de la scène liée. Zéro
+ * duplication de vérité : chaque payload RÉFÉRENCE sa donnée d'origine (port/marché/offre de repos),
+ * il n'en est jamais recopié une seconde source. Consommée par le hub de lieu et l'auberge (phase 2) ;
+ * les consommateurs actuels (PortView/LandMarketView/restPlacesHere) restent inchangés en phase 1.
+ */
+export function placeServices(place: MapPlace, scene?: Scene): ResolvedPlaceService[] {
+  const out: ResolvedPlaceService[] = [];
+  if (place.port) out.push({ id: 'port', category: 'port', label: 'Port', icon: 'travel/anchor', port: place.port });
+  if (place.market) out.push({ id: 'marche', category: 'marche', label: 'Marché', icon: 'merchant/cart', market: place.market });
+  const declared = new Set<string>();
+  for (const s of place.services ?? []) {
+    const def = findLieuServiceById(s.kind);
+    const auberge = s.kind === 'auberge';
+    out.push({
+      id: s.kind,
+      category: auberge ? 'auberge' : 'autre',
+      label: s.label ?? def?.label ?? s.kind,
+      icon: def?.icon,
+      desc: def?.desc,
+      rest: auberge ? (s.rest ?? sceneAubergeOffer(scene)) : undefined,
+    });
+    declared.add(s.kind);
+  }
+  // Auberge DÉRIVÉE de la scène si le lieu ne la déclare pas en service propre mais que la scène offre
+  // le couchage en auberge — source unique = la scène.
+  if (!declared.has('auberge')) {
+    const rest = sceneAubergeOffer(scene);
+    if (rest) {
+      const def = findLieuServiceById('auberge');
+      out.push({ id: 'auberge', category: 'auberge', label: def?.label ?? 'Auberge', icon: def?.icon, desc: def?.desc, rest });
+    }
+  }
+  return out;
+}
+
 /** Routes EMPRUNTABLES depuis un lieu : reliées à `placeId`, et — si à sens unique (`from`) — initiables
  *  depuis lui. Une route `from` reliant les deux mêmes ports que sa jumelle n'est offerte QUE dans son sens. */
 export function routesFrom(map: WorldMap, placeId: string): MapRoute[] {
@@ -246,7 +331,6 @@ export function declutterPositions(
 // ── Format de PROJET (export/import éditeur) ────────────────────────────────────────────────
 // Format courant : `{ schema: 2, scenes, worldMap? }`. Chaîné par la primitive générique
 // `migrateDoc` (même mécanique que les saves, `saves.ts`) — `schema` joue le rôle de `version`.
-import type { Scene } from './scene';
 import { migrateDoc, type MigrationMap } from './migrateDoc';
 
 export interface ProjectDoc {

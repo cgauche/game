@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent, MouseEvent as ReactMouseEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { useGame } from '../state/store';
 import { placeOfScene, placeById, routesFrom, otherEnd, declutterPositions, MapRoute, MapPlace } from '../state/worldMap';
 import { baseHoursPerDay, maxHoursPerDay } from '../state/travelFlow';
@@ -24,7 +23,8 @@ import { ShipRolesPanel } from './ShipRolesPanel';
 import { Icon, IconG } from './Icon';
 import { ScreenShell } from './ScreenShell';
 import { formatImperial } from '../engine/clock';
-import { VB_W, VB_H, Z_MIN, Z_MAX, type Viewport, clampViewport, fitViewport } from './worldMapViewport';
+import { VB_W, VB_H, fitViewport, type Viewport } from './worldMapViewport';
+import { MapCanvas, type MapMarker, type MapPath } from './MapCanvas';
 
 /** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
 function hashStr(s: string): number {
@@ -152,97 +152,8 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
     }
     return pts;
   };
-  const [view, setView] = useState<Viewport>(() => fitViewport(fitPoints(), { ...hereRender, z: 2 }));
-
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  // Pointeurs actifs (souris/tactile) → glisser (1 doigt) & pinch (2 doigts).
-  const ptrs = useRef(new Map<number, { x: number; y: number }>());
-  const pinchRef = useRef<{ dist: number; cx: number; cy: number } | null>(null);
-  const draggedRef = useRef(false);
-
-  /** Convertit un point ÉCRAN (clientX/Y) en coordonnées logiques du viewBox (avant transform). */
-  const screenToVb = (clientX: number, clientY: number) => {
-    const el = svgRef.current;
-    if (!el) return { x: 0, y: 0 };
-    const r = el.getBoundingClientRect();
-    // La carte utilise preserveAspectRatio meet → letterboxing possible : on calcule l'échelle réelle.
-    const s = Math.min(r.width / VB_W, r.height / VB_H);
-    const offX = (r.width - VB_W * s) / 2, offY = (r.height - VB_H * s) / 2;
-    return { x: (clientX - r.left - offX) / s, y: (clientY - r.top - offY) / s };
-  };
-
-  // Molette : listener natif NON PASSIF (React pose `onWheel` en passif → `preventDefault` invalide),
-  // pour bloquer le défilement de la page pendant le zoom-vers-le-curseur.
-  useEffect(() => {
-    const el = svgRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-      const p = screenToVb(e.clientX, e.clientY);
-      setView((v) => {
-        const z = Math.min(Z_MAX, Math.max(Z_MIN, v.z * (e.deltaY < 0 ? 1.15 : 1 / 1.15)));
-        // Zoom VERS le curseur : le point logique sous le curseur reste immobile à l'écran.
-        const wx = (p.x - v.panX) / v.z, wy = (p.y - v.panY) / v.z;
-        return clampViewport({ z, panX: p.x - wx * z, panY: p.y - wy * z });
-      });
-    };
-    el.addEventListener('wheel', onWheel, { passive: false });
-    return () => el.removeEventListener('wheel', onWheel);
-  }, []);
-
-  const onPointerDown = (e: ReactPointerEvent<SVGSVGElement>) => {
-    // Capture pour suivre le doigt hors de l'élément ; sans pointeur actif réel (ex. event synthétique) → no-op.
-    try { (e.target as Element).setPointerCapture?.(e.pointerId); } catch { /* pas de pointeur actif */ }
-    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    draggedRef.current = false;
-    if (ptrs.current.size === 2) {
-      const [a, b] = [...ptrs.current.values()];
-      pinchRef.current = { dist: Math.hypot(b.x - a.x, b.y - a.y), cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 };
-    }
-  };
-  const onPointerMove = (e: ReactPointerEvent<SVGSVGElement>) => {
-    const prev = ptrs.current.get(e.pointerId);
-    if (!prev) return;
-    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    const el = svgRef.current;
-    const r = el?.getBoundingClientRect();
-    const s = r ? Math.min(r.width / VB_W, r.height / VB_H) : 1;
-    if (ptrs.current.size === 2 && pinchRef.current) {
-      // Pinch : le rapport des écarts entre doigts pilote le zoom, centré sur le milieu des doigts.
-      const [a, b] = [...ptrs.current.values()];
-      const dist = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-      const p = screenToVb((a.x + b.x) / 2, (b.y + a.y) / 2);
-      setView((v) => {
-        const z = Math.min(Z_MAX, Math.max(Z_MIN, v.z * (dist / (pinchRef.current!.dist || dist))));
-        const wx = (p.x - v.panX) / v.z, wy = (p.y - v.panY) / v.z;
-        return clampViewport({ z, panX: p.x - wx * z, panY: p.y - wy * z });
-      });
-      pinchRef.current.dist = dist;
-      draggedRef.current = true;
-    } else if (ptrs.current.size === 1) {
-      // Glisser : déplacer la vue de la même distance logique que le doigt/souris.
-      const dx = (e.clientX - prev.x) / (s || 1), dy = (e.clientY - prev.y) / (s || 1);
-      if (Math.abs(e.clientX - prev.x) + Math.abs(e.clientY - prev.y) > 2) draggedRef.current = true;
-      setView((v) => clampViewport({ ...v, panX: v.panX + dx, panY: v.panY + dy }));
-    }
-  };
-  const onPointerUp = (e: ReactPointerEvent<SVGSVGElement>) => {
-    ptrs.current.delete(e.pointerId);
-    if (ptrs.current.size < 2) pinchRef.current = null;
-  };
-  // Après un glisser réel, absorber le clic « fantôme » qui suit (sinon on sélectionnerait un lieu).
-  const swallowClickAfterDrag = (e: ReactMouseEvent) => {
-    if (draggedRef.current) { e.stopPropagation(); draggedRef.current = false; }
-  };
-
-  const zoomBy = (factor: number) =>
-    setView((v) => {
-      const z = Math.min(Z_MAX, Math.max(Z_MIN, v.z * factor));
-      // Zoom bouton : centré sur le milieu du cadre.
-      const wx = (VB_W / 2 - v.panX) / v.z, wy = (VB_H / 2 - v.panY) / v.z;
-      return clampViewport({ z, panX: VB_W / 2 - wx * z, panY: VB_H / 2 - wy * z });
-    });
-  const recenterHere = () => setView(fitViewport(fitPoints(), { ...hereRender, z: 2 }));
+  /** Cadrage initial + cible du bouton « recentrer » de `MapCanvas` (recalculé à chaque clic). */
+  const computeFit = (): Viewport => fitViewport(fitPoints(), { ...hereRender, z: 2 });
 
   if (!map) return null;
   const selRoute: MapRoute | null = routes.find((r) => r.id === selId) ?? null;
@@ -317,192 +228,178 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const resumeDest = travelPlan?.interrupted ? placeById(map, travelPlan.toPlaceId) : undefined;
   const resumeRoute = travelPlan ? map.routes.find((r) => r.id === travelPlan.routeId) : undefined;
 
+  // ── Habillage + contenu data-driven de la carte (`MapCanvas`) ────────────────────────────────
+  // Chrome FIXE plein-cadre (parchemin, cadre orné, `<defs>`) — jamais zoomé/cliquable.
+  const chrome = (
+    <>
+      <defs>
+        <radialGradient id="wm-parch" cx="50%" cy="40%" r="78%">
+          <stop offset="0%" stopColor="#efe1bb" />
+          <stop offset="70%" stopColor="#dcc78f" />
+          <stop offset="100%" stopColor="#c2a466" />
+        </radialGradient>
+        {/* Vignettage : bords ombrés (vieillissement) */}
+        <radialGradient id="wm-vignette" cx="50%" cy="48%" r="62%">
+          <stop offset="55%" stopColor="#000000" stopOpacity="0" />
+          <stop offset="100%" stopColor="#3a2a12" stopOpacity="0.42" />
+        </radialGradient>
+        {/* Grain papier */}
+        <filter id="wm-grain" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="11" stitchTiles="stitch" result="n" />
+          <feColorMatrix in="n" type="saturate" values="0" />
+        </filter>
+        {/* Ombre douce des médaillons */}
+        <filter id="wm-drop" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="0.5" stdDeviation="0.5" floodColor="#000" floodOpacity="0.35" />
+        </filter>
+        <radialGradient id="wm-medal" cx="50%" cy="38%" r="70%">
+          <stop offset="0%" stopColor="#f4e8c6" />
+          <stop offset="100%" stopColor="#d2b87e" />
+        </radialGradient>
+        {/* Coins arrondis pour la carte de fond (mêmes rayon/cadre que le parchemin). */}
+        <clipPath id="wm-frame-clip"><rect x="0" y="0" width="100" height="64" rx="2.5" /></clipPath>
+      </defs>
+      {/* Parchemin + grain + vignette */}
+      <rect x="0" y="0" width="100" height="64" rx="2.5" fill="url(#wm-parch)" />
+      <rect x="0" y="0" width="100" height="64" rx="2.5" filter="url(#wm-grain)" opacity="0.06" />
+      {/* Taches d'âge (déterministes) */}
+      <ellipse cx="22" cy="14" rx="6" ry="3.4" fill="#7a5f38" opacity="0.06" />
+      <ellipse cx="80" cy="50" rx="7" ry="4" fill="#7a5f38" opacity="0.05" />
+      <ellipse cx="60" cy="9" rx="4" ry="2.6" fill="#7a5f38" opacity="0.05" />
+      <rect x="0" y="0" width="100" height="64" rx="2.5" fill="url(#wm-vignette)" />
+      {/* Cadre orné : filet brun épais + filet or fin + fleurons aux angles */}
+      <rect x="1.4" y="1.4" width="97.2" height="61.2" rx="2" fill="none" stroke="#5a4327" strokeWidth="1.3" />
+      <rect x="3.1" y="3.1" width="93.8" height="57.8" rx="1.4" fill="none" stroke="#a9842f" strokeWidth="0.4" />
+      {[[5, 6.6], [95, 6.6], [5, 60], [95, 60]].map(([fx, fy], i) => (
+        <text key={i} x={fx} y={fy} textAnchor="middle" fontSize="4" fill="#8a6c2f" opacity="0.8">⚜</text>
+      ))}
+    </>
+  );
+
+  // Routes (chemins courbes) — CLIQUABLES depuis le lieu courant (large zone invisible via MapCanvas).
+  const mapPaths: MapPath[] = map.routes.flatMap((r) => {
+    const a = placeById(map, r.a);
+    const b = placeById(map, r.b);
+    if (!a || !b) return [];
+    const pa = posOf(a), pb = posOf(b);
+    const c = routeCurve(pa.x, pa.y, pb.x, pb.y, r.id);
+    const sel = r.id === selId;
+    const fromHere = !!here && (r.a === here.id || r.b === here.id) && (r.from == null || r.from === here.id);
+    const water = r.modes.includes('barge') && !r.modes.includes('pied');
+    return [{
+      id: r.id,
+      d: c.d,
+      onClick: fromHere ? () => selectRoute(r) : undefined,
+      children: (view: Viewport) => (
+        <>
+          <path
+            d={c.d}
+            fill="none"
+            stroke={sel ? 'var(--accent)' : fromHere ? '#6d4f24' : '#9b8255'}
+            strokeWidth={sel ? 1.4 : 0.9}
+            strokeLinecap="round"
+            strokeDasharray={water ? '0.6 2.4' : '2.4 1.7'}
+            opacity={sel || fromHere ? 1 : 0.7}
+            pointerEvents="none"
+            vectorEffect="non-scaling-stroke"
+          />
+          {/* Étiquette de distance — taille écran CONSTANTE (scale 1/z), et seulement pour les routes
+              partant d'ICI (celles qu'on peut prendre) : les autres restent des traits propres. */}
+          {fromHere && (
+            <g transform={`translate(${c.lx} ${c.ly}) scale(${1 / view.z})`}>
+              <rect x="-5" y="-2" width="10" height="3" rx="1.5" fill="#efe2bd" opacity="0.88" />
+              <text y="0.15" textAnchor="middle" fontSize="2.1" fill="#5d4520">
+                {routeDistanceLabel(r.km, r.sea)}
+              </text>
+              {/* Badge de mode : barque (voie d'eau) / compas (route carrossable). */}
+              {r.modes.some((mm) => mm !== 'pied') && (
+                <g style={{ color: '#5d4520' }}>
+                  <IconG id={water ? 'scenario/naval' : 'scenario/travel'} x={5.4} y={-1.35} size={2.5} />
+                </g>
+              )}
+            </g>
+          )}
+        </>
+      ),
+    }];
+  });
+
+  // Lieux (médaillons). Affordance : destination RELIÉE = anneau accent pointillé + curseur ; lieu hors
+  // d'atteinte = estompé, le clic EXPLIQUE (panneau bas). Taille écran constante (MapCanvas `scale(1/z)`).
+  const mapMarkers: MapMarker[] = map.places.map((p) => {
+    const isHere = here?.id === p.id;
+    const isDest = dest?.id === p.id;
+    const route = here ? routes.find((r) => otherEnd(r, here.id) === p.id) : undefined;
+    const clickable = !!route;
+    const pr = posOf(p);
+    return {
+      id: p.id,
+      x: pr.x,
+      y: pr.y,
+      selected: isHere || isDest,
+      onClick: clickable ? () => selectRoute(route!) : !isHere ? () => { setSelId(null); setFarId(p.id); } : undefined,
+      onHover: (h: boolean) => setHoveredId((cur) => (h ? p.id : cur === p.id ? null : cur)),
+      cursor: clickable ? 'pointer' : !isHere ? 'help' : undefined,
+      opacity: clickable || isHere ? 1 : 0.55,
+      children: (
+        <>
+          {/* cible de clic/survol généreuse (taille écran constante) */}
+          <circle r="3.4" fill="#000" fillOpacity="0" />
+          {isHere && <text y="-2.6" textAnchor="middle" fontSize="1.5" fontWeight={700} fill="var(--ok)">✦ Vous êtes ici</text>}
+          {(isHere || isDest) && (
+            <circle r="2.1" fill="none" stroke={isHere ? 'var(--ok)' : 'var(--accent)'} strokeWidth="0.4" opacity="0.95" />
+          )}
+          {clickable && !isDest && (
+            <circle r="2.1" fill="none" stroke="var(--accent)" strokeWidth="0.3" strokeDasharray="0.7 0.55" opacity="0.9" />
+          )}
+          <circle r="1.5" fill="url(#wm-medal)" stroke="#7a5f38" strokeWidth="0.22" filter="url(#wm-drop)" />
+          {/* `p.icon` = id d'icône (registre src/ui/icons) ; sans icône, drapeau de lieu. */}
+          <g style={{ color: '#4a3517' }}>
+            <IconG id={p.icon ?? 'nav/entry-point'} x={-1.05} y={-1.05} size={2.1} />
+          </g>
+        </>
+      ),
+    };
+  });
+
+  // Cartouches de nom — peints APRÈS les médaillons (donc AU-DESSUS de tous). Sur une carte dense,
+  // seuls les lieux PERTINENTS sont nommés en permanence (position courante + destinations reliées) ;
+  // les autres révèlent leur nom au SURVOL. `pointer-events:none` : ne vole pas le survol du médaillon.
+  const mapOverlay = (view: Viewport) => (
+    <>
+      {map.places.map((p) => {
+        const isHere = here?.id === p.id;
+        const clickable = here ? routes.some((r) => otherEnd(r, here.id) === p.id) : false;
+        const hovered = hoveredId === p.id;
+        if (!isHere && !clickable && !hovered) return null;
+        const w = Math.max(8, p.label.length * 1.15 + 3);
+        const pr = posOf(p);
+        return (
+          <g key={`lbl-${p.id}`} transform={`translate(${pr.x} ${pr.y}) scale(${1 / view.z})`} style={{ pointerEvents: 'none' }}>
+            <g transform="translate(0 3.6)">
+              <rect x={-w / 2} y="-1.9" width={w} height="3" rx="1.5" fill="#33240f" opacity={0.9} stroke={hovered && !isHere && !clickable ? 'var(--gold2)' : 'none'} strokeWidth="0.2" />
+              <text y="0.25" textAnchor="middle" fontSize="2.1" fontWeight={isHere ? 700 : 500} fill="#f1e2bb">{p.label}</text>
+            </g>
+          </g>
+        );
+      })}
+      <CompassRose x={13} y={52} />
+    </>
+  );
+
   return (
     <ScreenShell title={<><Icon id="nav/campaign" size="sm" /> {map.nom}</>} onClose={close}>
       <div className="worldmap-canvas">
-        <svg
-          ref={svgRef}
-          viewBox="0 0 100 64"
-          preserveAspectRatio="xMidYMid meet"
+        <MapCanvas
           className="wm-map"
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          onClickCapture={swallowClickAfterDrag}
-          style={{ touchAction: 'none', cursor: ptrs.current.size ? 'grabbing' : 'grab' }}
-        >
-          <defs>
-            <radialGradient id="wm-parch" cx="50%" cy="40%" r="78%">
-              <stop offset="0%" stopColor="#efe1bb" />
-              <stop offset="70%" stopColor="#dcc78f" />
-              <stop offset="100%" stopColor="#c2a466" />
-            </radialGradient>
-            {/* Vignettage : bords ombrés (vieillissement) */}
-            <radialGradient id="wm-vignette" cx="50%" cy="48%" r="62%">
-              <stop offset="55%" stopColor="#000000" stopOpacity="0" />
-              <stop offset="100%" stopColor="#3a2a12" stopOpacity="0.42" />
-            </radialGradient>
-            {/* Grain papier */}
-            <filter id="wm-grain" x="0" y="0" width="100%" height="100%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="11" stitchTiles="stitch" result="n" />
-              <feColorMatrix in="n" type="saturate" values="0" />
-            </filter>
-            {/* Ombre douce des médaillons */}
-            <filter id="wm-drop" x="-40%" y="-40%" width="180%" height="180%">
-              <feDropShadow dx="0" dy="0.5" stdDeviation="0.5" floodColor="#000" floodOpacity="0.35" />
-            </filter>
-            <radialGradient id="wm-medal" cx="50%" cy="38%" r="70%">
-              <stop offset="0%" stopColor="#f4e8c6" />
-              <stop offset="100%" stopColor="#d2b87e" />
-            </radialGradient>
-            {/* Coins arrondis pour la carte de fond (mêmes rayon/cadre que le parchemin). */}
-            <clipPath id="wm-frame-clip"><rect x="0" y="0" width="100" height="64" rx="2.5" /></clipPath>
-          </defs>
-
-          {/* Parchemin + grain + vignette */}
-          <rect x="0" y="0" width="100" height="64" rx="2.5" fill="url(#wm-parch)" />
-          <rect x="0" y="0" width="100" height="64" rx="2.5" filter="url(#wm-grain)" opacity="0.06" />
-          {/* Taches d'âge (déterministes) */}
-          <ellipse cx="22" cy="14" rx="6" ry="3.4" fill="#7a5f38" opacity="0.06" />
-          <ellipse cx="80" cy="50" rx="7" ry="4" fill="#7a5f38" opacity="0.05" />
-          <ellipse cx="60" cy="9" rx="4" ry="2.6" fill="#7a5f38" opacity="0.05" />
-          <rect x="0" y="0" width="100" height="64" rx="2.5" fill="url(#wm-vignette)" />
-
-          {/* Cadre orné : filet brun épais + filet or fin + fleurons aux angles */}
-          <rect x="1.4" y="1.4" width="97.2" height="61.2" rx="2" fill="none" stroke="#5a4327" strokeWidth="1.3" />
-          <rect x="3.1" y="3.1" width="93.8" height="57.8" rx="1.4" fill="none" stroke="#a9842f" strokeWidth="0.4" />
-          {[[5, 6.6], [95, 6.6], [5, 60], [95, 60]].map(([fx, fy], i) => (
-            <text key={i} x={fx} y={fy} textAnchor="middle" fontSize="4" fill="#8a6c2f" opacity="0.8">⚜</text>
-          ))}
-
-          {/* Contenu cartographique ZOOMABLE/PANORAMABLE (routes + lieux + rose) — le parchemin de
-              fond, lui, reste plein cadre. Les positions sont DÉCLUTTÉRÉES (posOf), pas `pos` brut. */}
-          <g transform={`translate(${view.panX} ${view.panY}) scale(${view.z})`}>
-          {/* Vraie carte en fond (si `map.background`) : DANS le <g> zoomable → elle suit les lieux
-              (posés à leurs coords EXACTES). « Cover » (slice) : remplit le cadre sans déformer. */}
-          {map.background && (
-            <image href={map.background} x="0" y="0" width="100" height="64" preserveAspectRatio="xMidYMid slice" clipPath="url(#wm-frame-clip)" style={{ pointerEvents: 'none' }} />
-          )}
-          {/* Routes (chemins courbes) — CLIQUABLES depuis le lieu courant (large zone invisible) */}
-          {map.routes.map((r) => {
-            const a = placeById(map, r.a);
-            const b = placeById(map, r.b);
-            if (!a || !b) return null;
-            const pa = posOf(a), pb = posOf(b);
-            const c = routeCurve(pa.x, pa.y, pb.x, pb.y, r.id);
-            const sel = r.id === selId;
-            const fromHere = !!here && (r.a === here.id || r.b === here.id) && (r.from == null || r.from === here.id);
-            const water = r.modes.includes('barge') && !r.modes.includes('pied');
-            return (
-              <g
-                key={r.id}
-                onClick={fromHere ? () => selectRoute(r) : undefined}
-                style={fromHere ? { cursor: 'pointer' } : undefined}
-              >
-                {/* zone de clic généreuse (trait invisible épais — tolérance large, le tracé visible
-                    reste fin : #226, ~35 tentatives de recette perdues sur un hit-target trop maigre) */}
-                {fromHere && <path d={c.d} fill="none" stroke="#000" strokeOpacity="0" strokeWidth={18} pointerEvents="stroke" />}
-                <path
-                  d={c.d}
-                  fill="none"
-                  stroke={sel ? 'var(--accent)' : fromHere ? '#6d4f24' : '#9b8255'}
-                  strokeWidth={sel ? 1.4 : 0.9}
-                  strokeLinecap="round"
-                  strokeDasharray={water ? '0.6 2.4' : '2.4 1.7'}
-                  opacity={sel || fromHere ? 1 : 0.7}
-                  pointerEvents="none"
-                  vectorEffect="non-scaling-stroke"
-                />
-                {/* Étiquette de distance — taille écran CONSTANTE (scale 1/z), et seulement pour les
-                    routes partant d'ICI (celles qu'on peut prendre) : les autres restent des traits
-                    propres, pas une nuée de « 30 km » sur chaque segment. */}
-                {fromHere && (
-                  <g transform={`translate(${c.lx} ${c.ly}) scale(${1 / view.z})`}>
-                    <rect x="-5" y="-2" width="10" height="3" rx="1.5" fill="#efe2bd" opacity="0.88" />
-                    <text y="0.15" textAnchor="middle" fontSize="2.1" fill="#5d4520">
-                      {routeDistanceLabel(r.km, r.sea)}
-                    </text>
-                    {/* Badge de mode (véhicule possible) : barque (voie d'eau) / compas (route carrossable). */}
-                    {r.modes.some((m) => m !== 'pied') && (
-                      <g style={{ color: '#5d4520' }}>
-                        <IconG id={water ? 'scenario/naval' : 'scenario/travel'} x={5.4} y={-1.35} size={2.5} />
-                      </g>
-                    )}
-                  </g>
-                )}
-              </g>
-            );
-          })}
-
-          {/* Lieux (médaillons + cartouche de nom). Affordance : destination RELIÉE = anneau accent
-              pointillé + curseur ; lieu hors d'atteinte = estompé, le clic EXPLIQUE (panneau bas). */}
-          {map.places.map((p) => {
-            const isHere = here?.id === p.id;
-            const isDest = dest?.id === p.id;
-            const route = here ? routes.find((r) => otherEnd(r, here.id) === p.id) : undefined;
-            const clickable = !!route;
-            const pr = posOf(p);
-            return (
-              <g
-                key={p.id}
-                // `scale(1/z)` : marqueur à TAILLE ÉCRAN CONSTANTE (la POSITION suit le zoom, la TAILLE non
-                // — comme un pin de carte pro : ne gonfle pas au zoom, ne s'empile pas en gros pâtés).
-                transform={`translate(${pr.x} ${pr.y}) scale(${1 / view.z})`}
-                onClick={clickable ? () => selectRoute(route!) : !isHere ? () => { setSelId(null); setFarId(p.id); } : undefined}
-                onPointerEnter={() => setHoveredId(p.id)}
-                onPointerLeave={() => setHoveredId((h) => (h === p.id ? null : h))}
-                style={clickable || !isHere ? { cursor: clickable ? 'pointer' : 'help' } : undefined}
-                opacity={clickable || isHere ? 1 : 0.55}
-              >
-                {/* cible de clic/survol généreuse (taille écran constante) */}
-                <circle r="3.4" fill="#000" fillOpacity="0" />
-                {isHere && <text y="-2.6" textAnchor="middle" fontSize="1.5" fontWeight={700} fill="var(--ok)">✦ Vous êtes ici</text>}
-                {(isHere || isDest) && (
-                  <circle r="2.1" fill="none" stroke={isHere ? 'var(--ok)' : 'var(--accent)'} strokeWidth="0.4" opacity="0.95" />
-                )}
-                {clickable && !isDest && (
-                  <circle r="2.1" fill="none" stroke="var(--accent)" strokeWidth="0.3" strokeDasharray="0.7 0.55" opacity="0.9" />
-                )}
-                <circle r="1.5" fill="url(#wm-medal)" stroke="#7a5f38" strokeWidth="0.22" filter="url(#wm-drop)" />
-                {/* `p.icon` = id d'icône (registre src/ui/icons) ; sans icône, drapeau de lieu. */}
-                <g style={{ color: '#4a3517' }}>
-                  <IconG id={p.icon ?? 'nav/entry-point'} x={-1.05} y={-1.05} size={2.1} />
-                </g>
-              </g>
-            );
-          })}
-
-          {/* Cartouches de nom — peints APRÈS les médaillons (donc AU-DESSUS de tous). Sur une carte
-              dense, seuls les lieux PERTINENTS sont nommés en permanence (position courante + destinations
-              reliées) ; les autres révèlent leur nom au SURVOL — évite l'illisibilité des 27 étiquettes
-              larges empilées. `pointer-events:none` : le cartouche ne vole pas le survol du médaillon. */}
-          {map.places.map((p) => {
-            const isHere = here?.id === p.id;
-            const clickable = here ? routes.some((r) => otherEnd(r, here.id) === p.id) : false;
-            const hovered = hoveredId === p.id;
-            if (!isHere && !clickable && !hovered) return null;
-            const w = Math.max(8, p.label.length * 1.15 + 3);
-            const pr = posOf(p);
-            return (
-              <g key={`lbl-${p.id}`} transform={`translate(${pr.x} ${pr.y}) scale(${1 / view.z})`} style={{ pointerEvents: 'none' }}>
-                <g transform="translate(0 3.6)">
-                  <rect x={-w / 2} y="-1.9" width={w} height="3" rx="1.5" fill="#33240f" opacity={0.9} stroke={hovered && !isHere && !clickable ? 'var(--gold2)' : 'none'} strokeWidth="0.2" />
-                  <text y="0.25" textAnchor="middle" fontSize="2.1" fontWeight={isHere ? 700 : 500} fill="#f1e2bb">{p.label}</text>
-                </g>
-              </g>
-            );
-          })}
-
-          <CompassRose x={13} y={52} />
-          </g>
-        </svg>
-        {/* Commandes de zoom (souris ET tactile) — le pincement/molette marchent aussi directement. */}
-        <div className="wm-zoom" role="group" aria-label="Zoom de la carte">
-          <button type="button" className="wm-zoom-btn" onClick={() => zoomBy(1.3)} title="Zoomer" aria-label="Zoomer">＋</button>
-          <button type="button" className="wm-zoom-btn" onClick={() => zoomBy(1 / 1.3)} title="Dézoomer" aria-label="Dézoomer">－</button>
-          <button type="button" className="wm-zoom-btn" onClick={recenterHere} title="Recentrer sur votre position" aria-label="Recentrer">✦</button>
-        </div>
+          ariaLabel={map.nom}
+          computeFit={computeFit}
+          background={map.background}
+          chrome={chrome}
+          paths={mapPaths}
+          markers={mapMarkers}
+          overlay={mapOverlay}
+        />
       </div>
 
       {/* Voyage interrompu : reprise */}

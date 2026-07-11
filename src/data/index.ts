@@ -30,6 +30,7 @@ import roofMaterialsJson from './roofMaterials.json';
 import ambianceJson from './ambiance.json';
 import navalTraitsJson from './naval-traits.json';
 import navalPortsJson from './naval-ports.json';
+import lieuxServicesJson from './lieux-services.json';
 import seaShantiesJson from './sea-shanties.json';
 import crewRolesJson from './crew-roles.json';
 import crewTestTypesJson from './crew-test-types.json';
@@ -1401,6 +1402,22 @@ export const navalPorts = navalPortsJson as NavalPortData[];
 const navalPortById = new Map(navalPorts.map((p) => [p.id, p]));
 export function findNavalPortById(id: string): NavalPortData | undefined {
   return navalPortById.get(id);
+}
+
+/** Vocabulaire des SERVICES de lieu (#343, `lieux-services.json`) — catalogue EXTENSIBLE consommé par
+ *  référence (`MapPlace.services[].kind`) et résolu par `placeServices` (`src/state/worldMap.ts`).
+ *  `port`/`marché` gardent leur propre schéma riche ; ce catalogue couvre le RESTE (auberge/temple/
+ *  forgeron/guilde…) — id STABLE → libellé/icône d'affichage du hub de lieu. */
+export interface LieuServiceData {
+  id: string;
+  label: string;
+  icon?: string;
+  desc?: string;
+}
+export const lieuxServices = lieuxServicesJson as LieuServiceData[];
+const lieuServiceById = new Map(lieuxServices.map((s) => [s.id, s]));
+export function findLieuServiceById(id: string): LieuServiceData | undefined {
+  return lieuServiceById.get(id);
 }
 /** Chanson de marins (MDG 09 l.218-248, payload du Talent Chanson de marin) — catalogue app-owned.
  *  `crewOps` = effet exprimé dans la langue UNIQUE `GameOp[]`, appliqué à CHAQUE membre d'équipage pendant

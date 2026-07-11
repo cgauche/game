@@ -95,6 +95,7 @@ distincts dans plusieurs fichiers — voir §D (pièges d'homonymes).
 |---|---|
 | `naval-traits.json` | ⚠ **Tableau mixte** (`kind`: trait/amelioration) des Traits & Améliorations de navire — le **Bélier de proue** (`ram`) ICI |
 | `naval-ports.json` | Index des ports de la Mer des Griffes (MDG ch.15 l.439-506) — catalogue par id, consommé PAR RÉFÉRENCE (`MapPlace.port.ref`) depuis la carte du monde |
+| `lieux-services.json` | Vocabulaire des SERVICES de lieu EXTENSIBLES (#343 — auberge/temple/forgeron/guilde…) au-delà du port/marché, consommé PAR RÉFÉRENCE (`MapPlace.services[].kind`) et résolu par `placeServices` — id/label/icône de routage du hub de lieu, app-owned |
 | `naval-progression.json` | Progression navale (modes/vitesse) |
 | `ship-construction.json` · `ship-criticals.json` | Construction de navire · critiques de navire |
 | `crew-roles.json` · `crew-morale.json` · `crew-test-types.json` | Rôles d'équipage · moral · types de Test d'équipage |

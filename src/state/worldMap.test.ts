@@ -4,7 +4,7 @@
  * amont : l'éditeur affiche « JSON invalide », pas un crash), jamais être parsé en silence.
  */
 import { describe, it, expect } from 'vitest';
-import { parseProject, declutterPositions, resolvePortRef, type ProjectDoc, type RenderPoint } from './worldMap';
+import { parseProject, declutterPositions, resolvePortRef, placeServices, type ProjectDoc, type RenderPoint, type MapPlace } from './worldMap';
 import type { Scene } from './scene';
 
 const scene = (id: string) => ({ id } as Scene);
@@ -182,5 +182,61 @@ describe('declutterPositions — anti-chevauchement pur & déterministe', () => 
     const pts: RenderPoint[] = [{ id: 'a', x: 50, y: 32 }, { id: 'b', x: 50.1, y: 32 }];
     declutterPositions(pts, 8, 50);
     expect(pts).toEqual([{ id: 'a', x: 50, y: 32 }, { id: 'b', x: 50.1, y: 32 }]);
+  });
+});
+
+/**
+ * placeServices — API UNIQUE des services d'un lieu (#343). Compose port + marché + services de
+ * catalogue + auberge (propre OU dérivée de la scène) en une liste, sans dupliquer la vérité (port/
+ * marché/offre de repos sont RÉFÉRENCÉS, jamais recopiés).
+ */
+describe('placeServices — vocabulaire unique des services de lieu (#343)', () => {
+  const place = (patch: Partial<MapPlace>): MapPlace =>
+    ({ id: 'l1', label: 'Lieu', pos: { x: 0, y: 0 }, scene: 's1', ...patch });
+
+  it('lieu COMPLET (port + marché + auberge propre) → 3 services, payloads RÉFÉRENCÉS (pas copiés)', () => {
+    const port = { taille: 4, richesse: 5, production: ['commerce'] };
+    const market = { taille: 3, richesse: 4, produits: ['vin'] };
+    const rest = { auberge: true, camp: true };
+    const p = place({ port, market, services: [{ kind: 'auberge', rest }] });
+    const svc = placeServices(p);
+    expect(svc.map((s) => s.category)).toEqual(['port', 'marche', 'auberge']);
+    expect(svc[0].port).toBe(p.port); // référence, pas une copie
+    expect(svc[1].market).toBe(p.market);
+    expect(svc[2].rest).toBe(rest);
+    expect(svc[2].label).toBe('Auberge'); // libellé du catalogue lieux-services.json
+  });
+
+  it('services de catalogue (temple/forgeron) → catégorie « autre », libellé/icône du catalogue', () => {
+    const svc = placeServices(place({ services: [{ kind: 'temple' }, { kind: 'forgeron' }] }));
+    expect(svc.map((s) => s.id)).toEqual(['temple', 'forgeron']);
+    expect(svc.every((s) => s.category === 'autre')).toBe(true);
+    expect(svc[0].label).toBe('Temple');
+    expect(svc[0].icon).toBe('faith/church');
+  });
+
+  it('hameau NU (aucun service, aucune scène offrant l\'auberge) → liste VIDE', () => {
+    expect(placeServices(place({}))).toEqual([]);
+  });
+
+  it('auberge DÉRIVÉE de l\'offre de repos de la scène si non déclarée en service propre', () => {
+    const scene = { id: 's1', rest: { auberge: true, camp: true } } as Scene;
+    const svc = placeServices(place({}), scene);
+    expect(svc.map((s) => s.category)).toEqual(['auberge']);
+    expect(svc[0].rest).toEqual({ auberge: true, maison: undefined, camp: true });
+  });
+
+  it('l\'auberge PROPRE au lieu l\'emporte : pas de doublon avec l\'offre de la scène', () => {
+    const scene = { id: 's1', rest: { auberge: true } } as Scene;
+    const own = { auberge: true, maison: true };
+    const svc = placeServices(place({ services: [{ kind: 'auberge', rest: own }] }), scene);
+    expect(svc.filter((s) => s.category === 'auberge')).toHaveLength(1);
+    expect(svc[0].rest).toBe(own);
+  });
+
+  it('offre d\'auberge via une restZone de la scène (pas seulement scene.rest)', () => {
+    const scene = { id: 's1', restZones: [{ rect: { x: 0, y: 0, w: 1, h: 1 }, places: { auberge: true } }] } as Scene;
+    const svc = placeServices(place({}), scene);
+    expect(svc.map((s) => s.category)).toEqual(['auberge']);
   });
 });

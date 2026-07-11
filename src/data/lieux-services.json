@@ -1,0 +1,22 @@
+[
+  {
+    "id": "auberge",
+    "label": "Auberge",
+    "icon": "rest/bed"
+  },
+  {
+    "id": "temple",
+    "label": "Temple",
+    "icon": "faith/church"
+  },
+  {
+    "id": "forgeron",
+    "label": "Forgeron",
+    "icon": "item/weapon"
+  },
+  {
+    "id": "guilde",
+    "label": "Guilde",
+    "icon": "merchant/deal"
+  }
+]

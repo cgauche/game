@@ -131,4 +131,5 @@ export const EXEMPT_DATASETS = {
   'calendarPhases.json': "les 7 phases de la journée (Aube→Nuit) sont un DÉCOUPAGE app-interne (minute de départ + icône, moteur de lumière/vision) — introuvable comme table RAW nommée dans le Calendrier Impérial (EDO Annexe 3, folio 149-150 : seuls mois/jours/jours intercalaires y sont RAW, #309 phase 3) ; aucune valeur mécanique à sourcer par entrée.",
   'primitives.manifest.json': "manifeste TOOLING (#298) des primitives partagées du code (nom/fichier/concept/verrou) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
   'systemes.manifest.json': "manifeste TOOLING (#298) éditorial des systèmes implémentés (nom/modules/état/ticket) — vocabulaire app-interne, aucune mécanique RAW à sourcer.",
+  'lieux-services.json': "vocabulaire des SERVICES de lieu (#343 — auberge/temple/forgeron/guilde) : id/label/icône de routage d'écran (hub de lieu), aucune valeur mécanique propre à sourcer (port/marché portent leur propre schéma sourcé).",
 };
