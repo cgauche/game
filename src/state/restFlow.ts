@@ -213,7 +213,8 @@ export function sleepParty(
   }
 
   const title = n > 1 ? `— Le groupe se repose ${n} jours —` : '— Le groupe dort jusqu’à l’aube —';
-  set({ party: [...get().party], journal: [...get().journal.slice(-40), title, ...journal] });
+  set({ party: [...get().party] });
+  get().log([title, ...journal]);
   bus.emit(EVT.SCENE_DIRTY);
   return entries;
 }
@@ -527,7 +528,8 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
 
   // Journal : le titre de nuit + tout ce qui s'est ajouté APRÈS l'entretien (tente, récupération sans
   // jet…) — l'entretien lui-même est déjà dans le journal (`runDailyUpkeep`, écriture unique, #216).
-  set({ party: [...get().party], journal: [...get().journal.slice(-40), '— Le groupe dort jusqu’à l’aube —', ...log.slice(upkeepCount)] });
+  set({ party: [...get().party] });
+  get().log(['— Le groupe dort jusqu’à l’aube —', ...log.slice(upkeepCount)]);
   bus.emit(EVT.SCENE_DIRTY);
   return { steps, log, slept: { from, to: get().gameTime } };
 }

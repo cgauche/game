@@ -83,7 +83,7 @@ export function purgeClockEffects(get: Get, set: Set): string[] {
       h.conditions = h.conditions.filter((x) => !(x.untilTime != null && x.untilTime <= now));
     }
   }
-  if (expiredLog.length) set({ party: [...get().party], journal: [...get().journal.slice(-40), ...expiredLog] });
+  if (expiredLog.length) { set({ party: [...get().party] }); get().log(expiredLog); }
   return expiredLog;
 }
 
@@ -156,7 +156,8 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
   // fois par semaine calendaire (garde interne à `tickCampaignVesselWeek` ; un saut de plusieurs jours ne
   // recalcule qu'au franchissement de semaine). #216.
   lines.push(...tickCampaignVesselWeek(get, set, today, battleRng()));
-  set({ lastUpkeepDay: today, party: [...party], journal: [...get().journal.slice(-40), ...lines] });
+  set({ lastUpkeepDay: today, party: [...party] });
+  get().log(lines);
   if (lines.length) bus.emit(EVT.SCENE_DIRTY);
   return [...purged, ...lines]; // les dissipations du jour font partie du bilan affiché
 }

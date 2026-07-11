@@ -58,7 +58,7 @@ export interface LandMarketState {
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
-  if (lines.length) set({ journal: [...get().journal.slice(-40), ...lines] });
+  if (lines.length) get().log(lines);
 };
 
 /** Lieu de commerce terrestre courant (place de la carte dont la scène EST la scène courante + `market`). */

@@ -1,0 +1,63 @@
+import { describe, it, expect } from 'vitest';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { scanJournalWrite } from '../../scripts/guards/lib/journalWrite.mjs';
+
+/**
+ * Garde-fou « composeur du journal » (#319). `….journal.slice(-40)` réinvente l'action canonique
+ * `log` (`src/state/store.ts`, action `log: (msg: string | string[]) => void`, source UNIQUE qui
+ * pousse et plafonne à 40 lignes). Migration soldée (#319) : 18 sites → `get().log(...)`, BASELINE
+ * ZÉRO partout — toute réapparition du motif hors `store.ts` (son foyer) est une régression.
+ *
+ * `store.ts` HORS SCAN : c'est le foyer de la primitive, son implémentation EST le motif.
+ */
+
+const ROOT = fileURLToPath(new URL('../..', import.meta.url)); // src/state/ → ../../ = racine du projet
+const SCAN_DIRS = ['src/state'];
+const EXCLUDED = (rel: string) => /\.test\.[tj]sx?$/.test(rel) || rel === 'src/state/store.ts';
+
+function scanFiles(): string[] {
+  const files: string[] = [];
+  const walk = (dir: string) => {
+    for (const e of readdirSync(dir)) {
+      const p = join(dir, e);
+      if (statSync(p).isDirectory()) walk(p);
+      else if (/\.tsx?$/.test(e)) files.push(p);
+    }
+  };
+  for (const d of SCAN_DIRS) walk(join(ROOT, d));
+  return files;
+}
+
+function countsByFile(): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const f of scanFiles()) {
+    const rel = relative(ROOT, f).split('\\').join('/');
+    if (EXCLUDED(rel)) continue;
+    const n = scanJournalWrite(rel, readFileSync(f, 'utf8')).length;
+    if (n > 0) counts[rel] = n;
+  }
+  return counts;
+}
+
+describe('garde-fou « log » — composition du journal (cliquet, #319)', () => {
+  it('aucun fichier de src/state (hors store.ts) ne réinvente `.journal.slice(-40)`', () => {
+    const counts = countsByFile();
+    const offenders = Object.entries(counts).map(([rel, n]) => `${rel} : ${n} site(s)`);
+    expect(
+      offenders,
+      `Nouvelle réinvention du composeur de journal — router par get().log(...) (src/state/store.ts) :\n${offenders.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('fail-closed : le scanner détecte une écriture SYNTHÉTIQUE du motif', () => {
+    const regressed = "set({ journal: [...get().journal.slice(-40), 'ligne'] });";
+    expect(scanJournalWrite('src/state/x.ts', regressed).length).toBe(1);
+  });
+
+  it('la primitive canonique elle-même (store.ts, hors scan) porte bien le motif — sinon le foyer a bougé', () => {
+    const src = readFileSync(join(ROOT, 'src/state/store.ts'), 'utf8');
+    expect(scanJournalWrite('src/state/store.ts', src).length).toBeGreaterThan(0);
+  });
+});

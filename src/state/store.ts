@@ -1118,7 +1118,9 @@ export interface GameState extends RollFlowActionsMap {
   grappleConfirm: () => void; // Appliquer : succès → phase d'options ; échec → +1 Avantage au foe ; égalité → statu quo
   grappleChoose: (mode: 'damage' | 'entangle' | 'free') => void; // le vainqueur choisit Dégâts / Empêtrer / Se libérer
   grappleCancel: () => void;
-  log: (msg: string) => void;
+  /** Action canonique UNIQUE composant `journal` (pousse `msg`, ou toutes les `msg[]` dans l'ordre,
+   *  et plafonne à 40 lignes) — ticket #319 : tout site de `journal: [...journal.slice(-40), …]` route ICI. */
+  log: (msg: string | string[]) => void;
   /** Temps de jeu : minutes depuis l'époque (Hexenstag 2512 00:00, cf. clock.ts). « Tout est horodaté ». */
   gameTime: number;
   /** Avance l'horloge in-game de `minutes` (no-op si ≤ 0) et émet TIME_ADVANCED (#T3 cascade). */
@@ -1657,8 +1659,8 @@ export const useGame = create<GameState>((set, get) => ({
       // N1 : entrée de zone (transition) en MODALE — reveal sceneEntry skippable (Journal = archive).
       pendingReveals: target.startMessage ? [{ kind: 'sceneEntry' as const, title: target.nom, lines: [target.startMessage] }] : [],
       campaignSceneId: target.id,
-      journal: target.startMessage ? [...s.journal.slice(-40), target.startMessage] : s.journal,
     }));
+    if (target.startMessage) get().log(target.startMessage);
     get().advanceTime(TIME_COST.sceneTransition); // seam « tout est horodaté » : 0 en intérieur (paramétrable, #T2 extérieur/voyage)
     bus.emit(EVT.SCENE_DIRTY);
     get().autoSave(); // checkpoint d'ENTRÉE de scène (hors combat) — avant qu'une rencontre ne démarre le combat
@@ -2141,7 +2143,7 @@ export const useGame = create<GameState>((set, get) => ({
   },
   closeDocument: () => set({ document: null }),
 
-  log: (msg) => set((s) => ({ journal: [...s.journal.slice(-40), msg] })),
+  log: (msg) => set((s) => ({ journal: [...s.journal.slice(-40), ...(Array.isArray(msg) ? msg : [msg])] })),
 
   advanceTime: (minutes) => {
     if (minutes <= 0) return;
@@ -2156,7 +2158,7 @@ export const useGame = create<GameState>((set, get) => ({
       if (rounds > 0) {
         const party = get().party;
         const log = outOfCombatUpkeep(party, rounds, battleRng());
-        if (log.length) set({ party: [...party], journal: [...get().journal.slice(-40), ...log] });
+        if (log.length) { set({ party: [...party] }); get().log(log); }
       }
     }
     // Entretien quotidien (#T2/#T3 — rations/faim, maladies, convalescence) + purge des effets à

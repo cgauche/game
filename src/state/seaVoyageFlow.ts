@@ -177,7 +177,7 @@ export function seaWeatherTestMod(sea: SeaVoyageState | undefined, skillId?: str
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
-  if (lines.length) set({ journal: [...get().journal.slice(-40), ...lines] });
+  if (lines.length) get().log(lines);
 };
 
 /** Écrit au journal ET au recap du jour (mêmes lignes — patron travelFlow). */

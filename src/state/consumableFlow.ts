@@ -110,7 +110,8 @@ export function usePartyItem(get: Get, set: SetFn, heroId: string, uid: string):
   if (!hero || !it) return;
   if (!isConsumable(it)) return;
   hero.items = (hero.items ?? []).filter((i) => i.uid !== uid); // consommé AVANT l'effet (dose unique)
-  set({ party: [...party], journal: [...get().journal.slice(-40), `${hero.name} utilise : ${it.name}.`] });
+  set({ party: [...party] });
+  get().log(`${hero.name} utilise : ${it.name}.`);
   runConsumable(get, set, hero, it);
   bus.emit(EVT.SCENE_DIRTY);
 }

@@ -95,7 +95,7 @@ export function beginShipwreck(get: Get, set: Set, opts: { aboardIds?: string[] 
   // Navire + cargaison sombrent avec la coque (#244, règle 7) : purgé IMMÉDIATEMENT, indépendant de
   // l'issue des jets de Natation (le navire est perdu dès qu'il coule, pas seulement s'il y a des noyés).
   set({ party, vessel: null, travelPlan: null, travelRecap: null, worldMapOpen: false });
-  set({ journal: [...get().journal.slice(-40), '— NAUFRAGE —', ...opening] });
+  get().log(['— NAUFRAGE —', ...opening]);
 
   if (!swimmerIds.length) { emitShipwreckLines(get, finishShipwreck(get, set, shore, [], journalMark)); return; }
 

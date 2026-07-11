@@ -172,7 +172,7 @@ export interface LandDayContext {
 }
 
 const log = (get: Get, set: Set, lines: string[]) => {
-  if (lines.length) set({ journal: [...get().journal.slice(-40), ...lines] });
+  if (lines.length) get().log(lines);
 };
 
 /** Heures de voyage/jour SANS Test (RAW l.224, défaut 6) — paramétrable au niveau carte. */

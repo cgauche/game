@@ -428,9 +428,9 @@ export function councilPay(get: Get, set: SetFn, decision: string): void {
   set({
     money: out.money,
     vessel: out.vessel,
-    journal: [...get().journal.slice(-40), ...out.lines],
     pendingCouncil: { ...p, phase: 'bilan', decision, results: factorLedger(out.factorRolls), delta: out.delta, before: out.before, after: out.after },
   });
+  get().log(out.lines);
 }
 
 /** Clôt le Conseil de bord (phase bilan) — le recalcul a déjà été appliqué à la validation de la paie. #229 */

@@ -3066,7 +3066,8 @@ export function finishPlayerAction(get: Get, set: SetFn, lines: string[], kind: 
     bus.emit(EVT.SCENE_DIRTY);
     checkBattleOver(get, set);
   } else {
-    set({ party: [...get().party], journal: [...get().journal.slice(-40), ...lines] });
+    set({ party: [...get().party] });
+    get().log(lines);
     bus.emit(EVT.SCENE_DIRTY);
   }
 }
@@ -4329,7 +4330,7 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
       });
     }
   }
-  if (inlineLines.length) set({ journal: [...get().journal.slice(-40), ...inlineLines] });
+  if (inlineLines.length) get().log(inlineLines);
   if (steps.length) startCascade(get, set, { title: 'Conséquences du combat', icon: 'condition/bleeding', purpose: 'combat', steps, combatEndBoundary: true });
 }
 
@@ -4396,7 +4397,8 @@ export function finalizeBattle(get: Get, set: SetFn): void {
     const c = battle.combatants.find((x) => x.id === h.id && x.kind === 'hero');
     return c ? { ...h, ...carryOverState(c) } : h;
   });
-  set({ party: newParty, ...(endLines.length ? { journal: [...get().journal.slice(-40), ...endLines] } : {}) });
+  set({ party: newParty });
+  if (endLines.length) get().log(endLines);
   // #30/#296 — Blessures de COQUE persistantes : si une coque du combat EST le navire de campagne
   // (creatureId = vehicleId), son état de fin de combat est écrit sur `CampaignVessel.wounds` (SOURCE
   // UNIQUE) — le voyage maritime/fluvial en repart, et `resumeTravel` recharge la copie de travail

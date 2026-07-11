@@ -152,7 +152,7 @@ export function resolveRenounce(get: Get, set: Set, renounce: boolean): void {
   }
   const b = get().battle;
   if (b) set({ battle: { ...b, log: [...b.log, ...evLines(lines, 'info', hero.id)] } });
-  else set({ journal: [...get().journal.slice(-40), ...lines] });
+  else get().log(lines);
 }
 
 /** Cible d'un effet de Corruption : héros désigné, sinon le premier vivant. #152 (suite #143) : le pool
