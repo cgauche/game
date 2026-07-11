@@ -341,7 +341,8 @@
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 75
-    }
+    },
+    "codexOnly": true
   },
   {
     "id": "beni",
@@ -1163,7 +1164,8 @@
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 75
-    }
+    },
+    "codexOnly": true
   },
   {
     "id": "doigts-de-fee",
@@ -1191,6 +1193,7 @@
     "max": 1,
     "test": null,
     "desc": "Vous êtes tellement habile à maintenir votre identité secrète que vous êtes capable de mener deux vies complètement séparées. Lorsque vous prenez ce Talent, vous pouvez entamer une deuxième Carrière parallèlement à votre Carrière du Chaos. Vous comptez maintenant comme appartenant aux deux Carrières, et vous pouvez acheter des Compétences avancées et des Talents dans l'une ou l'autre, ainsi que prendre et abandonner de nouvelles Carrières dans l'une ou l'autre. Comme toujours, tout changement de Carrière doit être approuvé par votre MJ afin de s'adapter au mieux aux plans de campagne et de refléter correctement votre Double vie.",
+    "codexOnly": true,
     "specs": [],
     "rand": null,
     "source": {
@@ -1337,7 +1340,8 @@
     "source": {
       "book": "ennemi-dans-l-ombre-compagnon",
       "page": 79
-    }
+    },
+    "codexOnly": true
   },
   {
     "id": "ergoteur",
@@ -2284,6 +2288,7 @@
     "specsSource": "cultChaos",
     "desc": "Par accident ou à dessein, vous avez cédé une partie de votre âme à l'un des Dieux Sombres, et pouvez à présent pratiquer les infâmes magies du Chaos. Votre chef de la Ruine vous confère immédiatement l'accès à un seul Sort du Domaine choisi (le plus souvent les Domaines de Nurgle, Slaanesh ou Tzeentch) et vous gagnez un Point de Corruption lorsque le Sort s'insinue dans votre esprit, pour ne plus jamais en sortir.\n\nLorsque vous prenez ce Talent, qui coûte à chaque fois 100 PX, vous apprenez un autre Sort du Domaine choisi et gagnez un Point de Corruption. Pour plus d'informations sur les Sorts disponibles, voir le Chapitre 8 : Magie. Dans des conditions normales, vous ne pouvez connaître qu'un seul Savoir de Magie chaotique.\n\nLes Personnages avec un Talent Magie du Chaos peuvent choisir n'importe quelle combinaison de Sorts d'Arcane, de Sorts du Chaos, et de Sorts de leur propre Domaine du Chaos. Un Personnage ayant Magie du Chaos (Tzeentch) peut sélectionner des Sorts dans la liste des Sorts d'Arcanes, la liste des Sorts d'Arcanes du Chaos et la liste des Sorts du Domaine de Tzeentch. Un Personnage avec le Talent Magie du Chaos (Indivisible) peut sélectionner des Sorts dans la liste des Arcanes et dans celle des Arcanes du Chaos.",
     "rand": null,
+    "codexOnly": true,
     "source": {
       "book": "livre-de-base",
       "page": 140
@@ -4811,7 +4816,8 @@
     "source": {
       "book": "archives-de-l-empire-1",
       "page": 78
-    }
+    },
+    "codexOnly": true
   },
   {
     "id": "chanson-de-marin",

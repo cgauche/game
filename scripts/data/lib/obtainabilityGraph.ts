@@ -7,6 +7,11 @@
  * (src/data/index.ts, SOURCE UNIQUE de résolution de spéc) plutôt que ré-implémenter la mécanique
  * des Talents de lanceur. Module PUR — consommé par le CLI (`obtainability-graph.mts`) ET par la
  * garde (`src/data/obtainability-guard.test.ts`).
+ *
+ * #326 (triage RAW) : un Talent `TalentData.codexOnly` (contenu de référence PNJ/campagne scriptée,
+ * jamais un chemin de progression PJ standard) est EXEMPTÉ de `talentNever` ; les Sorts de la famille
+ * `chaos`, exclusivement dépendants du Talent `magie-du-chaos` (lui-même `codexOnly`), sont exemptés
+ * de `spellNever` pour la même raison — verdicts RAW cités sur les entrées, pas un silence.
  */
 import { readFileSync, globSync } from 'node:fs';
 import { join } from 'node:path';
@@ -74,7 +79,9 @@ export function computeObtainability(root: string): ObtainabilityResult {
     });
   }
 
-  const talentNever = talents.filter((t) => !talentSources.has(t.id));
+  // #326 : un Talent `codexOnly` (contenu de référence PNJ/campagne, cf. `TalentData.codexOnly`) est
+  // EXPLIQUÉ par sa donnée — jamais compté comme une dette d'obtenabilité oubliée.
+  const talentNever = talents.filter((t) => !talentSources.has(t.id) && !t.codexOnly);
 
   const CASTER_TALENT_IDS = ['magie-mineure', 'magie-des-arcanes', 'invocation', 'beni', 'magie-du-chaos'] as const;
 
@@ -142,7 +149,16 @@ export function computeObtainability(root: string): ObtainabilityResult {
     }
     spellVerdicts.push({ id: sp.id, label: sp.label, reachable: via.length > 0, via });
   }
-  const spellNever = spellVerdicts.filter((v) => !v.reachable);
+  // #326 : les Sorts de la famille `chaos` ne dépendent que du Talent `magie-du-chaos` — s'il est
+  // `codexOnly` (référence PNJ, cf. TalentData.codexOnly), leur inaccessibilité PJ est déjà EXPLIQUÉE
+  // par cette donnée, pas une dette distincte à re-signaler par Sort.
+  const chaosCasterCodexOnly = findTalentById('magie-du-chaos')?.codexOnly === true;
+  const familyById = new Map(spells.map((sp) => [sp.id, sp.family]));
+  const spellNever = spellVerdicts.filter((v) => {
+    if (v.reachable) return false;
+    if (chaosCasterCodexOnly && familyById.get(v.id) === 'chaos') return false;
+    return true;
+  });
 
   return { talentSources, talentNever, casterInfo, spellVerdicts, spellNever };
 }

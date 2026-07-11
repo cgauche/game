@@ -107,6 +107,8 @@ export const schema = z.array(
     effects: z.array(triggeredEffectSchema).optional(),
     passive: z.array(gameOpSchema).optional(),
     combat: combatFeatureSchema.optional(),
+    // Contenu de RÉFÉRENCE (PNJ/campagne, RAW cité par entrée) : hors graphe d'obtenabilité (#326).
+    codexOnly: z.literal(true).optional(),
   }),
 );
 

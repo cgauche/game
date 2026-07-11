@@ -1186,7 +1186,7 @@ Vous êtes tellement habile à maintenir votre identité secrète que vous êtes
 **id app :** `empreint-de-la-magie`  
 **Maxi :** 1  
 
-> Note : talents.json classe ce talent `source.book: "LDB"` — **INCORRECT**. Source réelle : EDOC ch.9 (Nouveaux Talents, section « Influence Maléfique de Tzeentch »). Le talent est accordé comme effet d'Incantation imparfaite dans une zone influencée par Tzeentch, mais peut aussi être acquis normalement.
+> Source réelle : EDOC ch.9 (Nouveaux Talents, section « Influence Maléfique de Tzeentch », l.248-258). Accordé comme effet d'Incantation imparfaite dans une zone influencée par Tzeentch — contenu de campagne, tagué `codexOnly` dans talents.json (#326).
 
 Tous les Sorts lancés à votre Bonus de Force Mentale en mètres autour de vous gagnent +1 DR au lancé. Ce Bonus ne peut être appliqué qu'une fois par lancement, quel que soit le nombre de Personnages à proximité possédant ce Talent.
 
@@ -1323,13 +1323,13 @@ Trait Psychologique Vice associé : Vous éprouvez le besoin constant de vous ad
 
 #### Sang Neuf
 **Source :** ADE I ch.6 Guide de la Laurelorn l.167-170  
-**id app :** non présent dans talents.json (talent de PJ Éonir Harioth uniquement)  
+**id app :** `sang-neuf` (tagué `codexOnly` : l'espèce Éonir n'est pas jouable dans l'app, #326)  
 **Maxi :** 1  
 **Tests :** Tous les Tests de Sociabilité avec un autre Éonir  
 
 Votre famille est vue comme une nouvelle venue dans la Laurelorn, et est traitée avec condescendance par les Éonirs des autres lignages. Votre Statut est toujours considéré comme plus bas que celui des autres Éonirs, à moins qu'ils aient, eux aussi, le Talent Sang neuf. Un membre du jeune lignage de deuxième génération peut perdre ce Talent s'il réussit une série d'épreuves pour rejoindre la lignée des Enfants de la forêt.
 
-> Note : talent négatif/particulier (lignage Harioth des Éonirs). Pas intégré dans talents.json.
+> Note : talent négatif/particulier (lignage Harioth des Éonirs) — présent dans talents.json en contenu de référence (`codexOnly`).
 
 ---
 
