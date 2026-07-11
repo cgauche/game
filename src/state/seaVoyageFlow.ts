@@ -986,7 +986,7 @@ export function continueSeaDayAfterCascade(get: Get, set: Set): void {
           result: null, interactive: true, meta: { soup },
         };
       });
-      const subiReq: RollRequest = { side: { worldSide: 'ship', shipId: get().vessel!.vehicleId }, test: { label: 'Scorbut' }, difficulty: 'intermediaire', klass: 'subi' };
+      const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, test: { label: 'Scorbut' }, difficulty: 'intermediaire', klass: 'subi' };
       if (resolveSurface(get, subiReq, 'sea-scorbut') === 'I') {
         const resolved = runCascadeImmediate(get, set, steps);
         tell(get, set, resolved.flatMap((s) => s.outcome ?? []));
@@ -1073,7 +1073,7 @@ export function continueSeaDayAfterScorbut(get: Get, set: Set, doneSteps?: Casca
         base: testValue(h, 'resistance', 'endurance'), target: effectiveTarget(h, test, diff),
         result: null, interactive: true,
       }));
-      const subiReq: RollRequest = { side: { worldSide: 'ship', shipId: get().vessel!.vehicleId }, test: { label: 'Épuisement' }, difficulty: 'intermediaire', klass: 'subi' };
+      const subiReq: RollRequest = { side: { worldSide: 'world', ownerId: get().vessel!.vehicleId }, test: { label: 'Épuisement' }, difficulty: 'intermediaire', klass: 'subi' };
       if (resolveSurface(get, subiReq, 'sea-epuisement') === 'I') {
         const resolved = runCascadeImmediate(get, set, steps);
         tell(get, set, resolved.flatMap((s) => s.outcome ?? []));
@@ -1940,7 +1940,7 @@ export function resolveShoreLeave(get: Get, set: Set, allow: boolean): void {
   const threshold = allow && vessel ? moraleBand(vessel.morale.score).desertionRoll : 0;
   if (threshold) {
     openRoll(get, set, {
-      side: { worldSide: 'ship', shipId: vessel!.vehicleId },
+      side: { worldSide: 'world', ownerId: vessel!.vehicleId },
       test: { label: 'Désertion' },
       difficulty: 'intermediaire', klass: 'subi',
     }, 'sea-desertion', { baseValue: threshold, toPlaceId: p.to.id });

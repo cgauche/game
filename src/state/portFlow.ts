@@ -277,7 +277,7 @@ function openPortSellBuyerStep(get: Get, set: Set, cargoIndex: number, sellEnc: 
   const milles = vessel.lastVoyageMilles ?? 0;
   const chance = sellChance(st.port, lot.cargoId, milles);
   openRoll(get, set, {
-    side: { worldSide: 'ship', shipId: vessel.vehicleId },
+    side: { worldSide: 'world', ownerId: vessel.vehicleId },
     test: { label: 'Recherche d’acheteur' },
     difficulty: 'intermediaire',
     klass: 'subi',

@@ -5042,6 +5042,11 @@ function psychStepFor(get: Get, _set: SetFn, c: Combatant, collect: (get: Get, c
   // Sans Peur force Accessible (+20) ; sinon la difficulté déclarée (défaut Intermédiaire +0).
   const difficulty: Difficulty = sansPeur ? 'accessible' : (td?.difficulty ?? 'intermediaire');
   const target = base + DIFFICULTY_MODIFIERS[difficulty];
+  // Peur de combat = Test ÉTENDU (LDB 21 l.27) : le cumul `prevDR`→`indice` voyage en `meta`
+  // NEUTRE (`extendedDrTarget`/`extendedDrDone`) — SOURCE UNIQUE de la présentation « barre de DR
+  // cumulé » avec la cartographie de voyage (`travelPostes.ts`) : `CascadeModal` ne recalcule plus
+  // rien depuis `combatPsych` (ex-duplication d'arithmétique, #329 marque 9).
+  const extended = psychResolution(t.kind).mode === 'extended' ? { extendedDrTarget: t.indice, extendedDrDone: t.prevDR } : undefined;
   return {
     id: `psych-${c.id}`,
     kind: 'combatPsych',
@@ -5052,6 +5057,7 @@ function psychStepFor(get: Get, _set: SetFn, c: Combatant, collect: (get: Get, c
     target, // Test (Calme par défaut) à la difficulté déclarée, ou Accessible (+20) avec Sans Peur
     label: `${cl ? `${cl.label}${t.cible ? ` (${t.cible})` : ''}` : `${t.kind === 'terreur' ? 'Terreur' : 'Peur'} ${t.indice}`}${sansPeur ? ' · Sans Peur (+20)' : ''}`,
     combatPsych: { kind: t.kind, sourceId: t.sourceId, sourceName: t.sourceName, indice: t.indice, cible: t.cible, prevDR: t.prevDR, sansPeur },
+    ...(extended ? { meta: extended } : {}),
   };
 }
 

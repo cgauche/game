@@ -16,7 +16,6 @@ import { CastModal } from './CastModal';
 import { type PanelRowData as PanelRow } from './RollPanel';
 import { OptionChooser } from './OptionChooser';
 import { DrBar } from './DrBar';
-import { CIBLE_TYPES } from '../engine/psychology';
 import { CriticalBody } from './RevealModal';
 import { JournalLine } from './NarratedLine';
 import { Icon } from './Icon';
@@ -290,9 +289,6 @@ export function CascadeModal() {
   // `outcome` (résumé de conséquence) n'existe que sur une étape COMMITTÉE ; l'étape COURANTE
   // s'appuie sur la rangée ✓/✗ ±DR (breakdown) comme SEUL verdict (#295 Décision 1b) : aucun
   // prologue « X réussit »/« X échoue » ici.
-  // Peur de COMBAT = Test ÉTENDU (LDB 21 l.27) : barre de DR cumulé vers l'Indice (#23). Après le jet,
-  // on montre le cumul MIS À JOUR (prevDR + DR du jet) ; avant, l'état d'entrée (prevDR).
-  const peur = cur.combatPsych && !CIBLE_TYPES.has(cur.combatPsych.kind) && cur.combatPsych.kind !== 'terreur' ? cur.combatPsych : null;
   // Résilience « Je ne faillirai pas ! » (LDB 17 l.73) : sur une Peur de combat (Test ÉTENDU), le DR
   // gagné dépend du dé → on expose le sélecteur de dé (source unique `FLOWS.cascade.picker`). Les étapes
   // BINAIRES (Terreur/cible/Test de scène) renvoient `null` → réussite au DR max, sans choix.
@@ -353,12 +349,13 @@ export function CascadeModal() {
     <RollShell
       title={<><Icon id={p.icon || 'nav/dice'} size="sm" /> {p.title}</>}
       subtitle={<><strong><Icon id={cur.icon || 'nav/dice'} size="sm" /> {cur.label}</strong>{p.participants.length > 1 ? ` · jet ${p.cursor + 1}/${p.participants.length}` : ''}</>}
-      /* Test ÉTENDU = barre de DR cumulé (prevDR + DR du jet après coup) : Peur de COMBAT (vers l'Indice)
-         OU cartographie de voyage (Établir des cartes, vers `drTarget` = 2 × Étapes — porté par le poste). */
-      extra={<>{stakeNote}{peur ? <DrBar cum={peur.prevDR + (res?.success ? Math.max(0, res.sl) : 0)} target={peur.indice} />
-        : cur.meta?.extendedDrTarget != null
-          ? <DrBar cum={Number(cur.meta.extendedDrDone ?? 0) + (res?.success ? Math.max(0, res.sl) : 0)} target={Number(cur.meta.extendedDrTarget)} />
-          : null}</>}
+      /* Test ÉTENDU = barre de DR cumulé (prevDR + DR du jet après coup), SOURCE UNIQUE en `meta`
+         NEUTRE (`extendedDrTarget`/`extendedDrDone`) : Peur de COMBAT (vers l'Indice, `combatFlow.ts`
+         `psychStepFor`) OU cartographie de voyage (Établir des cartes, `travelPostes.ts`, vers
+         `drTarget` = 2 × Étapes — porté par le poste). */
+      extra={<>{stakeNote}{cur.meta?.extendedDrTarget != null
+        ? <DrBar cum={Number(cur.meta.extendedDrDone ?? 0) + (res?.success ? Math.max(0, res.sl) : 0)} target={Number(cur.meta.extendedDrTarget)} />
+        : null}</>}
       rolled={rolled}
       /* Rangées : validées FIGÉES (témoins) + courante interactive (pré-jet en attente, post-jet résolue). */
       rows={[...witnessRows(doneRows), curRow]}

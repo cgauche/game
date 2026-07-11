@@ -84,7 +84,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
   it('subi, côté SOUS siège MJ → V (read-only : le MJ voit/lance, n’influence pas)', () => {
     useGame.setState({ party: [] });
     setGmSeat(useGame.getState, useGame.setState, 0);
-    const req: RollRequest = { side: { worldSide: 'ship', shipId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
+    const req: RollRequest = { side: { worldSide: 'world', ownerId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-subi');
     expect(useGame.getState().pendingCascade).toBeTruthy();
     expect(applied).toHaveLength(0);
@@ -93,7 +93,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
   it('worldSide sans acteur, en COOP avec gmSeat ≠ hôte → l’étape est OWNÉE par le MJ (delta 1)', () => {
     useGame.setState({ party: [] });
     setGmSeat(useGame.getState, useGame.setState, 1); // gmSeat ≠ hôte (0)
-    const req: RollRequest = { side: { worldSide: 'ship', shipId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
+    const req: RollRequest = { side: { worldSide: 'world', ownerId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
     openRoll(useGame.getState, useGame.setState, req, 'seam-subi');
     const owner = modalOwnerOf(useGame.getState());
     expect(seatOwns(useGame.getState(), 1, owner ?? undefined)).toBe(true); // le MJ possède l'étape
@@ -104,7 +104,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     const crew: Combatant = { id: 'timonier1', name: 'Timonier', kind: 'hero', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, skills: [{ skillId: 'navigation-fluviale', characteristic: 'intelligence', advances: 30 }], conditions: [], talents: [] } as unknown as Combatant;
     useGame.setState({ party: [crew], travelPlan: { routeId: 'r', fromPlaceId: 'a', toPlaceId: 'b', mode: 'sea', hoursPerDay: 8, km: 0, kmDone: 0, interrupted: false, orders: { cadence: 'commande' } } as never });
     const req: RollRequest = {
-      side: { participants: [{ id: 'timonier1', essential: true, base: 30, target: 30, result: null }], shipId: 'nef' },
+      side: { participants: [{ id: 'timonier1', essential: true, base: 30, target: 30, result: null }], ownerId: 'nef' },
       test: { label: 'Progression' }, difficulty: 'intermediaire', klass: 'batch',
     };
     // `cascadeAppliers['progression']` est désormais le VRAI applier de mer (#275 Décision 4 cran 2, `seaVoyageFlow.ts`)
@@ -122,7 +122,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
     const crew: Combatant = { id: 'timonier1', name: 'Timonier', kind: 'hero', characteristics: { 'capacite-de-combat': 30, 'capacite-de-tir': 30, force: 30, endurance: 30, initiative: 30, agilite: 30, dexterite: 30, intelligence: 30, 'force-mentale': 30, sociabilite: 30 }, skills: [{ skillId: 'navigation-fluviale', characteristic: 'intelligence', advances: 30 }], conditions: [], talents: [] } as unknown as Combatant;
     useGame.setState({ party: [crew] });
     const req: RollRequest = {
-      side: { participants: [{ id: 'timonier1', essential: true, base: 30, target: 30, result: null }], shipId: 'nef' },
+      side: { participants: [{ id: 'timonier1', essential: true, base: 30, target: 30, result: null }], ownerId: 'nef' },
       test: { label: 'Progression' }, difficulty: 'intermediaire', klass: 'batch',
     };
     openRoll(useGame.getState, useGame.setState, req, 'seam-batch');
@@ -142,7 +142,7 @@ describe('rollSeam — openRoll (#275 Ronde 0)', () => {
 
   it('rollTitle : côté worldSide (aucun acteur) — pas de préfixe d\'acteur', () => {
     useGame.setState({ party: [] });
-    const req: RollRequest = { side: { worldSide: 'ship', shipId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
+    const req: RollRequest = { side: { worldSide: 'world', ownerId: 'nef' }, test: { label: 'Désertion' }, difficulty: 'intermediaire', klass: 'subi' };
     expect(rollTitle(useGame.getState, req)).toBe('Désertion');
   });
 

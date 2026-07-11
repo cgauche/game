@@ -62,8 +62,8 @@ export interface RollRequest {
   side:
     | { actorId: string }
     | { partyBest: { skill?: string; char?: CharKey; assisted?: boolean } }
-    | { worldSide: 'enemy' | 'ship'; shipId?: string }
-    | { participants: BatchParticipant[]; shipId: string };
+    | { worldSide: 'enemy' | 'world'; ownerId?: string }
+    | { participants: BatchParticipant[]; ownerId?: string };
   /** Le TEST déclaré (réf structurée — passe telle quelle à `testValue`). `label` = le NOM DE L'ACTION
    *  SEUL (« Forcer le rythme », « Prière », « Désertion »…) — jamais un template pré-assemblé avec le
    *  nom de l'acteur/la compétence/la difficulté : la porte COMPOSE l'affichage complet (`composeRollLabel`)
