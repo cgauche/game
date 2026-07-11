@@ -461,3 +461,31 @@ button.voyage-phase-row:hover { background: color-mix(in srgb, currentColor 12%,
   .voyage-chronicle { flex-direction: row; flex-wrap: wrap; }
   .voyage-day-card { flex: 1 1 140px; }
 }
+
+/* Hub de ville (#343) — services à gauche, détail au centre (composé sur MasterDetail). */
+.city-hub-body { display: flex; flex-direction: column; min-width: 0; padding: 12px; overflow: auto; }
+.city-hub-master { flex: 1 1 auto; }
+.city-hub-weather { opacity: 0.85; }
+.city-hub-services { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.city-hub-service { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel); text-align: left; cursor: pointer; }
+.city-hub-service:hover { border-color: var(--accent); }
+.city-hub-service.active { border-color: var(--accent); background: var(--panel-strong, var(--panel)); }
+.city-hub-service-label { font-weight: 600; }
+.city-hub-detail { min-width: 0; }
+.city-hub-detail-head { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
+.city-hub-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.city-hub-desc { font-size: 0.95em; }
+.city-hub-prices { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.city-hub-prices li { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.city-hub-synth { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.city-hub-synth li { display: flex; gap: 10px; }
+.city-hub-synth-k { flex: 0 0 84px; opacity: 0.8; font-size: 0.85em; }
+.city-hub-synth-v { font-weight: 600; }
+.city-hub-actions { flex-wrap: wrap; }
+.city-hub-rumours h4 { margin: 0 0 6px; }
+.city-hub-hint { margin: 0; padding-left: 18px; font-size: 0.9em; opacity: 0.9; }
+.city-hub-empty { opacity: 0.75; font-style: italic; }
+@media (max-width: 700px) {
+  .city-hub-services { flex-direction: row; flex-wrap: wrap; }
+  .city-hub-service { flex: 1 1 140px; }
+}

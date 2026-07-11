@@ -1,10 +1,10 @@
 /**
- * Prix de la nuit de repos (`restFlow.restCost`, LDB ch.66 p.304) VS le catalogue `trappings.json`
+ * Prix de la nuit de repos (`restFlow.restCost`, LDB ch.66 p.302) VS le catalogue `trappings.json`
  * (`chambre-commune-nuit`/`chambre-privee-nuit`/`repas-auberge`, tarifs de SERVICE — cf.
- * `src/state/merchants/service-trappings.test.ts`). `restCost` porte ses propres constantes
- * (`PRICE_BRASS`, restFlow.ts:618) plutôt que de résoudre ces id — divergence de SOURCE signalée
- * (hors périmètre : restFlow.ts n'est pas touché), ce test verrouille l'ÉGALITÉ numérique actuelle
- * pour qu'une dérive future (prix RAW changé d'un côté, oublié de l'autre) casse la CI.
+ * `src/state/merchants/service-trappings.test.ts`). Convergence #343 : `restCost` RÉSOUT désormais ces
+ * ids au catalogue (`PRICE_BRASS` dérivé de `findTrappingById`, restFlow.ts) — SOURCE UNIQUE partagée
+ * avec le hub de ville (`restServicePrice`). Ce test verrouille l'égalité pour qu'une dérive du tarif
+ * RAW dans le catalogue reste répercutée partout (et casse la CI si un chemin la contournait).
  */
 import { describe, it, expect } from 'vitest';
 import { restCost, type PendingRest } from './restFlow';

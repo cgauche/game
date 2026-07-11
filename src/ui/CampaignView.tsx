@@ -45,8 +45,9 @@ import { ManannPriestModal } from './ManannPriestModal';
 import { ShoreLeaveModal } from './ShoreLeaveModal';
 import { TravelRecapModal } from './TravelRecapModal';
 import { VoyageScreen } from './VoyageScreen';
+import { CityHubScreen } from './CityHubScreen';
 import { voyageHubActive, voyageStepPending } from '../state/modalArbiter';
-import { placeOfScene } from '../state/worldMap';
+import { placeOfScene, atLocationPlace, placeServices } from '../state/worldMap';
 import { restPlacesHere } from '../state/restFlow';
 import { hoverClickCommits } from './pointerCaps';
 import { controlsActive, controlsCombatant } from '../state/netOwnership';
@@ -77,9 +78,7 @@ export function CampaignView() {
   const worldMapOpen = useGame((s) => s.worldMapOpen);
   const openWorldMap = useGame((s) => s.openWorldMap);
   const port = useGame((s) => s.port);
-  const openPort = useGame((s) => s.openPort);
   const landMarket = useGame((s) => s.landMarket);
-  const openLandMarket = useGame((s) => s.openLandMarket);
   const pendingSeaActivities = useGame((s) => s.pendingSeaActivities);
   const pendingManannPriest = useGame((s) => s.pendingManannPriest);
   const pendingShoreLeave = useGame((s) => s.pendingShoreLeave);
@@ -113,6 +112,11 @@ export function CampaignView() {
   const [optionsOpen, setOptionsOpen] = useState(false); // écran Options (remap clavier)
   const [dossierOpen, setDossierOpen] = useState(false); // dossier du navire persistant (#227, EN et HORS combat)
   const [voyageMin, setVoyageMin] = useState(false); // écran-hub de voyage RÉDUIT (#333) — forcé ouvert dès qu'une étape attend
+  const [cityHubOpen, setCityHubOpen] = useState(false); // hub de ville (#343) — s'ouvre depuis le bouton du lieu
+  // Hub de ville (#343) : le groupe est À un lieu de la carte → UN écran-lieu remplace les boutons
+  // flottants Port/Marché/Dormir. `hubPlace` = le lieu courant (null hors lieu : route, camp sauvage).
+  const hubPlace = atLocationPlace({ mode, travelPlan, worldMap, sceneId: scene?.id });
+  const hubServices = hubPlace ? placeServices(hubPlace, scene ?? undefined) : [];
   const pendingCascade = useGame((s) => s.pendingCascade);
   const pendingRest = useGame((s) => s.pendingRest);
   // Écran-hub de voyage (#333) : actif tout au long d'un voyage EN COURS (source unique `voyageHubActive`).
@@ -264,33 +268,22 @@ export function CampaignView() {
             <Icon id="nav/campaign" size="lg" />
           </button>
         )}
-        {/* Port — le groupe est à un lieu PORTUAIRE de la carte avec un navire de campagne :
-            services au chantier + commerce maritime (MDG 15). */}
-        {mode === 'exploration' && !travelPlan && vessel && worldMap && placeOfScene(worldMap, scene?.id)?.port && (
+        {/* Hub de ville (#343) : à un lieu de la carte, UN bouton « <Lieu> » ouvre l'écran-lieu qui
+            porte Port/Marché/Dormir. Affiché dès que le lieu offre au moins un service, ou un couchage
+            sur place. */}
+        {hubPlace && (hubServices.length > 0 || restHere) && (
           <button
             type="button"
-            className="worldmap-btn port-btn"
-            onClick={openPort}
-            title="Port — chantier naval et commerce maritime"
+            className="worldmap-btn"
+            onClick={() => setCityHubOpen(true)}
+            title={`${hubPlace.label} — services du lieu`}
           >
-            <Icon id="scenario/port" size="lg" />
+            <Icon id={hubPlace.icon ?? 'nav/campaign'} size="lg" />
           </button>
         )}
-        {/* Marché terrestre — le groupe est à un Lieu de commerce de cargaison de la carte (T2C ch.11) :
-            acheter/vendre/brader la cargaison du convoi. */}
-        {mode === 'exploration' && !travelPlan && worldMap && placeOfScene(worldMap, scene?.id)?.market && (
-          <button
-            type="button"
-            className="worldmap-btn market-btn"
-            onClick={openLandMarket}
-            title="Marché — commerce de cargaison terrestre"
-          >
-            <Icon id="scenario/market" size="lg" />
-          </button>
-        )}
-        {/* Dormir ici — l'offre (auberge/chez soi/dehors) vient de la ZONE où se tient le
-            groupe, sinon de la scène (donnée d'auteur, restPlacesHere). */}
-        {mode === 'exploration' && !travelPlan && restHere && (
+        {/* Dormir ici HORS lieu (route, camp sauvage) — l'offre (auberge/chez soi/dehors) vient de la
+            ZONE où se tient le groupe, sinon de la scène. À un lieu, le repos vit DANS le hub. */}
+        {mode === 'exploration' && !travelPlan && restHere && !hubPlace && (
           <button
             type="button"
             className="worldmap-btn camp-btn"
@@ -329,6 +322,11 @@ export function CampaignView() {
         {/* Écran-hub de voyage (#333) : plein-champ pendant tout voyage EN COURS ; héberge la cascade
             du jour EN SON CENTRE (l'arbitre supprime la modale flottante). */}
         {showVoyage && <VoyageScreen onClose={() => setVoyageMin(true)} />}
+        {/* Hub de ville (#343) : écran-lieu plein-champ. Cédé aux écrans plein-champ qu'il ouvre
+            (carte du monde, port, marché) — « Entrer » ferme le hub avant de les ouvrir. */}
+        {cityHubOpen && hubPlace && mode === 'exploration' && !worldMapOpen && !port && !landMarket && (
+          <CityHubScreen place={hubPlace} scene={scene ?? undefined} rest={restHere} onClose={() => setCityHubOpen(false)} />
+        )}
         {landMarket && mode === 'exploration' && <LandMarketView />}
         {pendingSeaActivities && mode === 'exploration' && <SeaActivitiesModal />}
         {/* Au port ouvert, ces décisions sont surfacées par l'onglet Escale du hub (#228) — pas de double surface. */}

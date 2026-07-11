@@ -43,7 +43,8 @@ import { registerCascadeApplier, startCascade } from './cascade';
 import { freeCons } from './rollSeam';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
-import { toBrass, fromBrass, canAfford, subtract as moneySub, formatMoney, type Money } from '../engine/money';
+import { toBrass, fromBrass, canAfford, subtract as moneySub, formatMoney, priceToMoney, type Money } from '../engine/money';
+import { findTrappingById } from '../data';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
 import { runDailyUpkeep, dayIndex } from './upkeep';
 import { continueTravelAfterNight } from './travelFlow';
@@ -614,8 +615,25 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   return { steps, log, slept: { from, to: get().gameTime } };
 }
 
-/** Prix RAW (LDB ch.66 p.304), en sous de cuivre — piètre = ½. */
-const PRICE_BRASS = { commune: 10, privee: 10 * 12, repas: 12 } as const; // 1 pa = 12 sc
+/** Prix RAW de l'hébergement et du repas d'auberge (LDB ch.66 p.302) — SOURCE UNIQUE le catalogue
+ *  `trappings.json` (ids de service), plus AUCUNE constante dupliquée : le hub de ville (#343) et
+ *  `restCost` lisent le MÊME tarif. Piètre = ½ (appliqué par `restCost`). */
+function serviceBrass(id: string): number {
+  const t = findTrappingById(id);
+  if (!t) throw new Error(`restCost : tarif de service introuvable au catalogue "${id}" (trappings.json).`);
+  return toBrass(priceToMoney(t.price));
+}
+const PRICE_BRASS = {
+  commune: serviceBrass('chambre-commune-nuit'),
+  privee: serviceBrass('chambre-privee-nuit'),
+  repas: serviceBrass('repas-auberge'),
+} as const;
+
+/** Tarif d'un service d'auberge en monnaie (LDB ch.66 p.302, source unique catalogue) — affiché par le
+ *  panneau d'auberge du hub de ville (#343), aligné au débit de `restCost`. */
+export function restServicePrice(kind: keyof typeof PRICE_BRASS): Money {
+  return fromBrass(PRICE_BRASS[kind]);
+}
 
 /** Couchages proposés par l'offre du lieu — PAR HÉROS ensuite (choix personnels). */
 export function lodgingOptions(places: RestPlaces): RestLodging[] {

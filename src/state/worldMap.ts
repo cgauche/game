@@ -184,6 +184,19 @@ export function placeById(map: WorldMap, id: string): MapPlace | undefined {
   return map.places.find((p) => p.id === id);
 }
 
+/** Le groupe est-il À UN LIEU de la carte (hub de ville ouvrable, #343) : en exploration, hors voyage
+ *  en cours, sur une scène qui EST un lieu. Retourne ce lieu (sinon `undefined` — route, camp sauvage,
+ *  combat…). SOURCE UNIQUE de la porte du hub, partagée par `CampaignView` et son test. */
+export function atLocationPlace(args: {
+  mode: string;
+  travelPlan: unknown;
+  worldMap: WorldMap | null | undefined;
+  sceneId: string | undefined;
+}): MapPlace | undefined {
+  if (args.mode !== 'exploration' || args.travelPlan || !args.worldMap) return undefined;
+  return placeOfScene(args.worldMap, args.sceneId);
+}
+
 /** Catégorie d'un service résolu — routage du hub de lieu (#343). `port`/`marche`/`auberge` ont un
  *  panneau dédié ; `autre` = service de catalogue générique (temple/forgeron/guilde…). */
 export type PlaceServiceCategory = 'port' | 'marche' | 'auberge' | 'autre';
