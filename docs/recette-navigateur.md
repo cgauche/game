@@ -141,6 +141,17 @@ l'une des deux copies dans une recette.
 
 ## Pièges vécus (corrections d'expérience)
 
+- **Retour-menu SILENCIEUX en pleine partie = arbre PAS gelé, pas un bug** (vécu 2026-07-11,
+  3 reloads pendant une recette, zéro erreur console/collecteur) : Vite sert le WORKING TREE — un
+  agent/une session qui écrit sous `src/` (ou dont la suite régénère un registre `gen-registry`)
+  déclenche un HMR/full-reload qui ramène au menu et PERD la progression. Règle : une recette exige
+  l'arbre GELÉ — AUCUN agent concurrent (même « scripts/docs seulement » : leurs suites régénèrent
+  du `src/`). Si ça arrive : `git status` avant de blâmer le code.
+- **Refs Playwright PÉRIMÉES après un `await`** : après tout `await __wfrp.xxx()` (ou tout clic qui
+  déclenche de l'async), RE-SNAPSHOTER avant de cliquer — jamais réutiliser une ref d'un snapshot
+  antérieur (échec « ref not found » sinon).
+- **Activer le siège MJ en SOLO** : menu ☰ en jeu → case « Contrôler aussi les ennemis / le monde
+  (MJ) » (`GmSoloToggle`, `src/ui/CoopPanels.tsx`) — observable via `__wfrp` : `net.gmSeat` non nul.
 - **Module Vite PÉRIMÉ après un fix** (vécu 2026-07-09, faux « PAS CORRIGÉ » sur un P0) : le
   watcher Vite sous Windows peut RATER une écriture de fichier (agent/git) — le serveur sert alors
   l'ancienne transformation même après un reload complet. Symptôme : la stack console cite des
