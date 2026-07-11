@@ -27,7 +27,7 @@ import { battleRng } from './battleRng';
 import { rollTest } from '../engine/tests';
 import { partyAssisted, testValue } from '../engine/skills';
 import { hasHealSkill } from '../engine/healing';
-import { soberUp } from '../engine/drunkenness';
+import { soberUpDissipate, soberUpHangover } from '../engine/drunkenness';
 import { isOutOfAction, addCondition, removeCondition, loseWounds, addClockCondition } from '../engine/conditions';
 import { restRecovery, restResistVal, applyRecoveryDay, needsRecoveryRoll, recoveryTarget, type RestRoll } from '../engine/rest';
 import { rollContraction, DISEASE_DEFS, contagiousDiseases, contractionDue, applyContraction, applyDiseaseGangrene, applyDiseasePersist, activeMalaiseCount } from '../engine/disease';
@@ -429,14 +429,26 @@ registerCascadeApplier('soif', (_get, _set, step, hero) => {
   return { consequences: freeCons(r.log) };
 });
 
-registerCascadeApplier('dessoulage', (get, _set, step, hero) => {
+registerCascadeApplier('dessoulage', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  // Dessoûlage (LDB 09 l.485) : le DR du Test INFLUENÇABLE fixe la dissipation (10−DR h) ; le second
-  // Test (gueule de bois, 5−DR h) est roulé ici — un seul jet est proposé au joueur (le principal).
+  // Dessoûlage (LDB 09 l.485) : le 1ᵉʳ Test INFLUENÇABLE fixe la dissipation (10−DR h). Le 2ᵉ Test (gueule
+  // de bois, 5−DR h) devient sa PROPRE étape influençable INSÉRÉE ici (patron `insert`) — plus AUCUN jet
+  // silencieux dans l'applier (#253) : le joueur peut influencer les DEUX jets (Chance/Résilience).
+  const d = soberUpDissipate(hero, step.result.sl);
   const alc = testValue(hero, 'resistance-a-l-alcool', 'endurance');
-  const sr = soberUp(hero, get().gameTime, step.result.sl, rollTest(alc, 'intermediaire', battleRng()).sl);
-  if (sr.hangover) addClockCondition(hero, sr.hangover.name, sr.hangover.value, sr.hangover.until);
-  return { consequences: freeCons(sr.log) };
+  const insert: CascadeStep[] = [{
+    id: `dessoulageHangover-${hero.id}`, kind: 'dessoulageHangover', actorId: hero.id, icon: 'time/night',
+    rollLabel: 'Résistance', base: alc, target: alc, label: 'Gueule de bois', result: null, interactive: true,
+  }];
+  return { consequences: freeCons(d.log), insert };
+});
+
+registerCascadeApplier('dessoulageHangover', (get, _set, step, hero) => {
+  if (!hero || !step.result) return;
+  // 2ᵉ Test du dessoûlage (l.485), désormais influençable : le DR fixe la durée de la gueule de bois.
+  const h = soberUpHangover(hero, get().gameTime, step.result.sl);
+  addClockCondition(hero, h.hangover.name, h.hangover.value, h.hangover.until);
+  return { consequences: freeCons(h.log) };
 });
 
 registerCascadeApplier('traumaFracture', (_get, _set, step, hero) => {

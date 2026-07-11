@@ -26,9 +26,13 @@ import { runSetScan } from '../../scripts/guards/lib/setScan.mjs';
  * (`travelPlan: null` de garde quand la route/destination a disparu à la reprise post-Exposition).
  * +1 set() légitime (abordage GÉNÉRIQUE dérivé d'un navire hostile : `openGenericBoarding` INTERROMPT la
  * traversée + efface `sea.boarding` avant de transitionner vers la Scène d'abordage construite à la volée).
+ * +2 set() légitimes (#341/#253 : `stampEnvWeatherAtCombatStart` estampille la météo du jour sur les
+ * combattants à l'ouverture — SOURCE du canal « Tests physiques » ; `openCombatEndCascade` VIDE la file
+ * `deferredUpkeepQueue` après consommation des Tests d'entretien différés) ; +1 reset ad hoc (ce
+ * `deferredUpkeepQueue: []` = vidage de la file per-combat, jamais rejouée).
  */
 const ROOT = fileURLToPath(new URL('../..', import.meta.url));
-const BASELINE = { totalCalls: 703, totalAdHocResets: 283 };
+const BASELINE = { totalCalls: 705, totalAdHocResets: 284 };
 
 describe('garde-fou set() bruts des flows (agrégat)', () => {
   it("le nombre total de set() littéraux détectés dans src/state/*.ts ne dépasse pas la baseline", () => {

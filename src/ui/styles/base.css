@@ -267,9 +267,6 @@ h3 {
   .panel-grid {
     grid-template-columns: 1fr;
   }
-  .panel {
-    padding: 12px;
-  }
   .panel h3 {
     flex-wrap: wrap;
     gap: 6px;

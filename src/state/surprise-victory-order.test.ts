@@ -25,10 +25,10 @@ const surpriseCascade = (heroId: string): PendingCascade => ({
 
 /** Ennemi GÉNÉRIQUE (ne suit PAS les règles de Personnage, aucune Corruption) : sa mort n'ouvre AUCUNE
  *  cascade de fin de combat — on isole ainsi la SEULE cascade de Surprise. Déjà hors d'action. */
-const deadEnemy = (): Combatant =>
+const deadEnemy = (over: Partial<Combatant> = {}): Combatant =>
   ({ id: 'e', kind: 'enemy', name: 'Bandit', characteristics: { endurance: 30 } as never,
     wounds: { current: 0, max: 10 }, dead: true, conditions: [], skills: [], items: [], weapons: [],
-    movement: 4, advantage: 0 } as unknown as Combatant);
+    movement: 4, advantage: 0, ...over } as unknown as Combatant);
 
 describe('F3 — Surprise (cascade de setup) vs Victoire : ordonnancement de checkBattleOver', () => {
   beforeEach(() => { vi.useFakeTimers(); vi.clearAllTimers(); useGame.setState({ scene: null, battle: null, pendingVictory: null, pendingCascade: null }); });
@@ -58,5 +58,36 @@ describe('F3 — Surprise (cascade de setup) vs Victoire : ordonnancement de che
 
     // L'arbitre n'offre QUE la cascade Surprise (aucun écran de Victoire empilé par-dessus).
     expect(pickActiveModalKey(get())).toBe('cascade');
+  });
+
+  it('FIX #345 — Surprise PENDANTE + héros avec Test de fin de combat (Corruption) → la Surprise n\'est PAS ÉCRASÉE ; la cascade de FIN s\'ouvre APRÈS, la victoire après elle', () => {
+    const hero = createHero({ speciesId: 'humains-reiklander', careerId: 'soldat', name: 'H', rng: makeRNG(2) });
+    const heroClone = { ...hero, kind: 'hero' as const };
+    // Ennemi CORROMPU (Trait `corruption`) → `worstCorruptionExposure` != null → le héros (manuel, piloté-humain)
+    // DOIT un Test d'Exposition de fin de combat : `openCombatEndCascade` produirait une étape et ÉCRASERAIT la
+    // Surprise via `startCascade` — sans la garde du FIX. Déjà mort (condition de victoire remplie).
+    const corruptEnemy = deadEnemy({ traits: [{ id: 'corruption', arg: 'mineure' }] as never });
+    useGame.setState({
+      party: [hero],
+      battle: { combatants: [heroClone, corruptEnemy], order: [hero.id, 'e'], turn: 0, round: 1, log: [], over: null } as never,
+      pendingVictory: null,
+      pendingCascade: surpriseCascade(hero.id),
+    });
+
+    // 1) Mort du dernier ennemi AVEC Surprise pendante → Victoire différée, Surprise INTACTE (pas d'écrasement).
+    expect(checkBattleOver(get, set)).toBe(true);
+    expect(get().pendingCascade!.participants[0].kind).toBe('surpriseTest'); // TOUJOURS la Surprise, PAS une étape de fin
+    expect(get().battle!.over).toBeNull();
+    expect(get().pendingVictory).toBeNull();
+
+    // 2) La Surprise se résout → slot libre. Le re-check (patron `resumeSuspendedAI`) OUVRE alors la cascade de FIN.
+    useGame.setState({ pendingCascade: null });
+    expect(checkBattleOver(get, set)).toBe(true);
+    const fin = get().pendingCascade;
+    expect(fin).toBeTruthy();
+    expect(fin!.combatEndBoundary).toBe(true);
+    expect(fin!.participants.some((s) => s.kind === 'combatEndCorruption')).toBe(true);
+    expect(get().battle!.over).toBeNull(); // victoire ENCORE différée (derrière la cascade de fin)
+    expect(get().pendingVictory).toBeNull();
   });
 });

@@ -91,11 +91,13 @@ const FILL_LITERAL_BASELINE: Record<string, number> = {
   'WorldMapView.tsx': 13,
 };
 
-// ── (ix) Redéfinition de `.panel` hors `components.css` : la primitive canonique (#306) n'a
-//    qu'UNE définition — un module qui la redéclare la rend inerte en silence (override à
-//    spécificité égale, ordre d'@import qui décide). Sélecteurs descendants (`.panel h3`) exclus,
-//    ainsi que les rétrécissements RESPONSIVE (dans un `@media`, indentés — règle stricte 4) : ceux-ci
-//    complètent le canon pour une largeur donnée, ils ne le remplacent pas partout.
+// ── (ix) Redéfinition de `.panel` hors `components.css` : la primitive canonique (#306) n'a qu'UNE
+//    définition — un module qui la redéclare la rend inerte EN SILENCE (override à spécificité égale, seul
+//    l'ORDRE d'@import décide). C'était le piège de la règle MORTE `base.css` `@media 700px .panel{padding}`
+//    (base.css @import AVANT components.css → jamais appliquée). Le cliquet vérifie donc l'ORDRE : AUCUNE
+//    redéfinition de `.panel` (y compris RESPONSIVE, indentée dans un `@media`) hors `components.css` — la
+//    densité mobile du canon vit DANS components.css, APRÈS la base, pour gagner la cascade. Sélecteurs
+//    descendants (`.panel h3`, `.panel label`) exclus (ils ne remplacent pas la surface).
 const PANEL_REDEFINE_BASELINE: Record<string, number> = {};
 
 describe('#236 — cliquets d’hygiène UI', () => {
@@ -148,7 +150,9 @@ describe('#236 — cliquets d’hygiène UI', () => {
     const counts: Record<string, number> = {};
     for (const f of files) {
       const css = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
-      const n = (css.match(/^\.panel(?:\.\w+)*\s*\{/gm) || []).length;
+      // `^\s*` capture AUSSI les redéfinitions indentées d'un `@media` (le piège de la règle morte #306) ;
+      // `(?:\.\w+)*\s*\{` n'accepte que `.panel`/`.panel.mod` (les descendants `.panel h3` ont un espace → exclus).
+      const n = (css.match(/^\s*\.panel(?:\.\w+)*\s*\{/gm) || []).length;
       if (n > 0) counts[rel(f)] = n;
     }
     assertRatchet(counts, PANEL_REDEFINE_BASELINE, '.panel redéfini hors components.css');

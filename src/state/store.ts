@@ -380,6 +380,12 @@ export interface GameState extends RollFlowActionsMap {
    *  `pendingCascade` redevient disponible pour les cascades DU COMBAT. Résumée (tête de pile) au
    *  teardown de combat (`dismissVictory`/`dismissDefeat`) si le slot est libre. */
   suspendedCascades: PendingCascade[];
+  /** Tests d'entretien du FRANCHISSEMENT DE JOUR mis EN FILE pendant un combat (#253) : en combat le slot
+   *  de cascade appartient à l'arène → les Tests de Résistance quotidiens (Faim/Soif/maladie/convalescence/
+   *  dessoûlage) ne peuvent pas s'ouvrir tout de suite. Ils sont DIFFÉRÉS ici puis CONSOMMÉS par
+   *  `openCombatEndCascade` (fin de combat) — jamais roulés en silence. La garde `lastUpkeepDay` reste la
+   *  référence anti-double-résolution (l'entretien lui-même n'est appliqué qu'une fois). */
+  deferredUpkeepQueue: import('./pendings').CascadeStep[];
   /** POURSUITE TERRESTRE en cours (LDB 15) : Distance/adversaires persistés entre les manches (chaque
    *  manche est une cascade `purpose:'pursuite'`, cf. state/pursuitFlow). `null` hors poursuite. */
   pursuit: import('./pursuitFlow').PursuitState | null;
@@ -2206,8 +2212,15 @@ export const useGame = create<GameState>((set, get) => ({
     // jet silencieux ») via `deferredUpkeepSteps` ; les lignes SANS jet (rations, dissipations…) restent
     // le témoin groupé. En combat, le slot de cascade appartient à l'arène → jets roulés (témoin pré-résolu).
     if (get().battle) {
-      const upkeepLines = runDailyUpkeep(get, set);
+      // EN COMBAT (#253) : le slot de cascade appartient à l'arène → les Tests de Résistance d'entretien ne
+      // s'ouvrent pas ici. On les DIFFÈRE dans `pendingUpkeepSteps` (consommé par `openCombatEndCascade` à la
+      // fin du combat) au lieu de les rouler en SILENCE ; les lignes SANS jet (rations, dissipations) restent
+      // le témoin. `lastUpkeepDay` (posé par `runDailyUpkeep`) garde l'anti-double-résolution.
+      const deferred: DeferredUpkeepTest[] = [];
+      const upkeepLines = runDailyUpkeep(get, set, { onDeferTest: (t) => deferred.push(t) });
       if (upkeepLines.length) pushReveal(set, { kind: 'round', title: 'Entretien quotidien', lines: upkeepLines, severity: 'minor' });
+      const steps = restFlow.deferredUpkeepSteps(get().party, deferred);
+      if (steps.length) set({ deferredUpkeepQueue: [...get().deferredUpkeepQueue, ...steps] });
     } else {
       const deferred: DeferredUpkeepTest[] = [];
       const upkeepLines = runDailyUpkeep(get, set, { onDeferTest: (t) => deferred.push(t) });

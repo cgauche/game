@@ -33,6 +33,14 @@
 .panel.flush {
   padding: 0;
 }
+/* Densité RESPONSIVE (≤700px, charte règle 4 : utilisable à 360px) — padding resserré comme `.bar`/
+   `.panel-grid`. DOIT vivre ICI (components.css APRÈS base.css) : à spécificité égale, seul l'ORDRE de
+   cascade fait gagner (#306 — la même règle sous base.css était MORTE, écrasée par `.panel{padding:16px}`). */
+@media (max-width: 700px) {
+  .panel {
+    padding: 12px;
+  }
+}
 
 /* ── EMPILEMENTS ── */
 .stack {

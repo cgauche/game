@@ -32,9 +32,10 @@ import { freeCons, resultLine, type Consequence } from './rollSeam';
 import { t } from '../i18n';
 import { rule } from '../engine/policy';
 import {
-  stageCount, forageYield, stageExposureDifficulty, weatherPhysicalTestMod, weatherResistanceTest,
+  stageCount, forageYield, stageExposureDifficulty, weatherResistanceTest,
   isColdSeason, WEATHER_LABEL, type Weather, type Season,
 } from '../engine/travelStages';
+import { weatherTestMods } from '../engine/weatherTestMod'; // CANAL UNIQUE « Tests physiques » (#341) — jamais weatherPhysicalTestMod en direct
 import { hasCoat, partyHasTent, applyExposureFailure, isWeatherWarded } from '../engine/exposure';
 import { rationCount } from '../engine/provisions';
 import { itemFromGive, autoStowNewItem } from '../engine/items';
@@ -164,7 +165,7 @@ export function buildStageSteps(get: Get, set: Set, weather: Weather, season: Se
       // héros (`effectiveSkillCharKey`) — le −10 s'ajoute au mod météo (recalcul de la cible, borné 1..99).
       const wMod = weatherModOf(def, weather);
       const char = spec.used ? effectiveSkillCharKey(hero, spec.used.skillId, { spec: spec.used.spec }) : undefined;
-      const pMod = char ? weatherPhysicalTestMod(weather, char) : 0;
+      const pMod = weatherTestMods(weather, char ?? null).reduce((s, l) => s + l.value, 0); // CANAL UNIQUE (#341)
       const target = Math.max(1, Math.min(99, spec.value + DIFFICULTY_MODIFIERS[def.difficulty ?? 'intermediaire'] + wMod + pMod));
       const mods = stageActivityMods(def.difficulty ?? 'intermediaire', weather, wMod, pMod);
       batchParts.push({

@@ -161,7 +161,7 @@ import { fearSourceFor, sansPeurVs, failConditionAmount, isPsychImmune, isFrenzi
 import { groupMatch } from '../engine/groups';
 import { sceneCombatModifiers } from './sceneRules';
 import {
-  WEATHER_LABEL, weatherRangedMod, weatherRangedUseless, weatherPowderUseless, weatherPhysicalTestMod,
+  WEATHER_LABEL, weatherRangedMod, weatherRangedUseless, weatherPowderUseless,
   weatherLightningNervous,
   type Weather,
 } from '../engine/travelStages';
@@ -225,7 +225,7 @@ import {
   setManeuverPostHitHook,
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, conditionCtx, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
-import { startCascade, registerCascadeApplier } from './cascade';
+import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
 import { freeCons } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
@@ -460,6 +460,18 @@ export function activeDayWeather(get: Get): Weather | undefined {
   return w?.id;
 }
 
+/** Estampille la météo du JOUR (`activeDayWeather`) sur CHAQUE combattant à l'ouverture du combat (#341) —
+ *  SOURCE de `Combatant.envWeather`, seule entrée du canal « Tests physiques » (`weatherTestMods`, lu par
+ *  attack/defenseModifiers/baseTestMods). Un combat hors voyage (pas de météo de jour) laisse le champ vide
+ *  (aucune pénalité). No-op si pas de combat. */
+export function stampEnvWeatherAtCombatStart(get: Get, set: SetFn): void {
+  const battle = get().battle;
+  if (!battle) return;
+  const w = activeDayWeather(get);
+  if (!w) return;
+  set({ battle: { ...battle, combatants: battle.combatants.map((c) => (c.envWeather === w ? c : { ...c, envWeather: w })) } });
+}
+
 /**
  * Éclairs de la pluie diluvienne (EDOC ch.5 l.82, #341) : à l'OUVERTURE d'un combat pendant un jour de
  * voyage sous pluie diluvienne (`lightningNervous` en donnée `weather.json`), chaque créature au Trait
@@ -557,12 +569,9 @@ export function attackEnv(
   }
   // Mêlée : la météo (tempête/neige) pénalise l'attaque ; la neige pénalise aussi l'esquive (dodgeMod).
   if (sc.attackMod) env.push({ label: sc.label, value: sc.attackMod });
-  // Météo du JOUR (EDOC ch.5) : le Corps à corps est un Test de CC (physique) → la pénalité « Tests
-  // physiques » de la pluie diluvienne s'y applique (l.82), MÊME contexte que les Activités du jour.
-  if (dayW) {
-    const pm = weatherPhysicalTestMod(dayW, 'capacite-de-combat');
-    if (pm) env.push({ label: `Météo : ${WEATHER_LABEL[dayW]}`, value: pm });
-  }
+  // La pénalité météo « Tests physiques » (EDOC ch.5 l.82) n'est PLUS ajoutée ici : le CANAL UNIQUE
+  // `weatherTestMods` (attackModifiers, lu depuis `attacker.envWeather`) la porte pour l'attaque ET la défense
+  // ET les activités — jamais recâblée par surface (#341). Seuls les mods météo WEAPON-contextuels restent (tir).
   // Flanc/dos (LDB 14 l.91) : +20 pour attaquer un adversaire ENGAGÉ dans le dos ou sur les côtés —
   // orientation du défenseur AVANT cette attaque (il se retourne vers l'attaquant ENSUITE, applyAttackResult).
   const tFacing = get().facing?.[target.id]; // `facing` peut être absent (état épars / contexte sans orientation)
@@ -4384,6 +4393,19 @@ export function openCombatEndCascade(get: Get, set: SetFn): void {
       });
     }
   }
+  // Tests d'entretien du FRANCHISSEMENT DE JOUR mis en file pendant le combat (#253) : consommés ICI, à la
+  // MÊME cadence-awareness que les jets de fin de combat — héros piloté-humain manuel → étape influençable
+  // dans la cascade de fin ; sinon (auto/rapide, ou hors d'action) → résolu inline (jamais silencieux, le
+  // journal le porte). La file est VIDÉE (jamais rejouée) ; `lastUpkeepDay` garde l'anti-double-résolution.
+  const queued = get().deferredUpkeepQueue;
+  if (queued.length) {
+    set({ deferredUpkeepQueue: [] });
+    for (const st of queued) {
+      const c = st.actorId ? actorIn(get(), st.actorId) : undefined;
+      if (c && humanControlled(get(), c) && !isOutOfAction(c)) steps.push(st);
+      else runCascadeImmediate(get, set, [st]); // conséquence appliquée + journalisée par l'applier
+    }
+  }
   if (inlineLines.length) get().log(inlineLines);
   if (steps.length) startCascade(get, set, { title: 'Conséquences du combat', icon: 'condition/bleeding', purpose: 'combat', steps, combatEndBoundary: true });
 }
@@ -4570,7 +4592,11 @@ export function checkBattleOver(get: Get, set: SetFn): boolean {
     // Tests de fin de combat des héros survivants (maladie/Corruption) AVANT l'écran de victoire (décision
     // utilisateur) : cadence-aware (héros manuel → cascade influençable). Si une cascade s'ouvre, on DIFFÈRE
     // la victoire — sa fermeture (`combatEndBoundary`) enchaîne sur `finishCombatEnd`/`finishVictory`.
-    openCombatEndCascade(get, set);
+    // Une cascade de SETUP encore pendante (Surprise, purpose 'combat') ne doit PAS être ÉCRASÉE par la
+    // cascade de fin (`startCascade` écrit inconditionnellement) : on DIFFÈRE sans ouvrir — sa résolution
+    // relance la boucle (`resumeSuspendedAI`), `checkBattleOver` re-détecte la victoire, slot LIBRE, et
+    // OUVRE alors la cascade de fin (#345).
+    if (!get().pendingCascade) openCombatEndCascade(get, set);
     // On DIFFÈRE la victoire tant qu'une cascade est ouverte — la cascade de fin de combat
     // (`combatEndBoundary`, dont la fermeture enchaîne `finishCombatEnd`→`finishVictory`) MAIS aussi
     // toute cascade de SETUP non résolue (Surprise, purpose 'combat') : l'écran de victoire (HORS_MODAL)

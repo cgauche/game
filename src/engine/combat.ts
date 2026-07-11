@@ -13,7 +13,8 @@ import { bonus, effectiveChar, baseWithTraits } from './characteristics';
 import { woundsFromHit } from './woundsCalc';
 import { isInanimate } from './structures';
 import { agilityTestPenalty } from './encumbrance';
-import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS } from './types';
+import { Combatant, HitLocation, Weapon, BodyShape, RangeBandId, HIT_LOCATION_LABELS, BODY_SHAPE_LOC_LABELS, CHAR_LABELS, type CharKey } from './types';
+import { weatherTestMods } from './weatherTestMod';
 import { findTableEntry } from './tables';
 import { maxBy } from './pick';
 import locJson from '../data/localisation.json';
@@ -453,8 +454,13 @@ export function attackModifiers(
     const p = offHandPenalty(attacker);
     if (p) out.push({ label: 'Main secondaire', value: p });
   }
-  // Modificateurs dérivés de la SCÈNE (couvert / obscurité / météo / mouvement / tir-mêlée), calculés
-  // côté state (combatFlow) et injectés ici — la table de Difficultés de Combat n'est pas exhaustive.
+  // Météo « Tests physiques » (EDOC ch.5 l.82, #341) : CANAL UNIQUE — le Test d'attaque est physique
+  // (Corps à corps = CC, Projectiles = CT). Lu depuis `attacker.envWeather` (posé à l'ouverture du combat),
+  // jamais recâblé côté state (la garde d'import interdit tout autre lecteur de `weatherPhysicalTestMod`).
+  out.push(...weatherTestMods(attacker.envWeather, opts.kind === 'ranged' ? 'capacite-de-tir' : 'capacite-de-combat'));
+  // Modificateurs WEAPON-CONTEXTUELS dérivés de la SCÈNE (couvert / obscurité / météo au TIR (rangedMod/
+  // poudre) / mouvement / tir-mêlée), calculés côté state (combatFlow) et injectés ici — la table de
+  // Difficultés de Combat n'est pas exhaustive. La pénalité « Tests physiques » n'y est PLUS (canal ci-dessus).
   if (opts.env) out.push(...opts.env);
   return out;
 }
@@ -514,14 +520,27 @@ export function defenseModifiers(defender: Combatant, mode: DefenseMode, dodgeMo
   // Substitution sociale (Intimidation/Dressage) : ni arme ni esquive → pas de main secondaire, de
   // neige, ni de malus « maniement deux armes » ; seuls Avantage/État/Sur la défensive s'appliquent.
   if (mode !== 'social' && defender.dualStrikeDefensePenalty) out.push({ label: 'Maniement deux armes', value: -10 }); // LDB 10 l.638
+  // Météo « Tests physiques » (EDOC ch.5 l.82, #341) : le CANAL UNIQUE `weatherTestMods` lit `defender.envWeather`
+  // (posé à l'ouverture du combat), scopé par la carac RÉELLE du mode (Parade = CC, Esquive = Agilité) — jamais
+  // recâblé par surface (la garde d'import interdit tout autre lecteur de `weatherPhysicalTestMod`).
+  out.push(...weatherTestMods(defender.envWeather, defenseTestChar(mode)));
   return out;
 }
 
+/** Caractéristique RÉELLE d'un mode de défense (Parade = Test de CC, Esquive = Agilité) — pour le canal météo
+ *  « Tests physiques » (EDOC ch.5 l.82). La substitution sociale n'est PAS un Test physique → `null` (aucune). */
+function defenseTestChar(mode: DefenseMode): CharKey | null {
+  return mode === 'parade' ? 'capacite-de-combat' : mode === 'esquive' ? 'agilite' : null;
+}
+
 /** Modificateurs de BASE d'un Test de combat « brut » (hors Atouts d'arme et bonus de cible) :
- *  Avantage ×10 + pénalité d'États. SOURCE UNIQUE réutilisée par les jets de Désengagement et le
- *  coup dans le dos. Réutiliser ; ne pas réécrire `c.advantage * 10 + combatTestPenalty(c)`. */
-export function baseTestMods(c: Combatant): number {
-  return c.advantage * 10 + combatTestPenalty(c);
+ *  Avantage ×10 + pénalité d'États + météo « Tests physiques » (canal `weatherTestMods`, #341). `ck` = la
+ *  Caractéristique RÉELLE du Test brut (Empoignade → Force, Désengagement/coup dans le dos → CC) : la météo
+ *  n'arrive que si elle est physique (LISTE maison `physicalTestChars`). SOURCE UNIQUE réutilisée par les
+ *  jets de Désengagement et le coup dans le dos. Réutiliser ; ne pas réécrire `c.advantage * 10 + …`. */
+export function baseTestMods(c: Combatant, ck?: CharKey): number {
+  const weather = weatherTestMods(c.envWeather, ck ?? null).reduce((s, l) => s + l.value, 0);
+  return c.advantage * 10 + combatTestPenalty(c) + weather;
 }
 
 export interface AttackOptions {
@@ -622,20 +641,20 @@ export function rollMeleeDefender(
  *  (LDB 15-Dépl l.89 « Esquive/Corps à corps »). Inclut l'Avantage×10 et les pénalités
  *  d'États, mais PAS les Atouts d'arme ni les bonus de cible (ce n'est pas une attaque portée). */
 export function rollDisengageAttack(foe: Combatant, rng: RNG = defaultRNG): TestResult {
-  return rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe));
+  return rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe, 'capacite-de-combat'));
 }
 
 /** Jet de FORCE « brut » pour le Test opposé d'Empoignade (LDB 14 l.161 : « un Test opposé de Force »).
  *  Valeur = caractéristique de Force + Avantage×10 + pénalités d'États (`baseTestMods`), sans Atout
  *  d'arme (c'est une lutte au corps à corps, pas une frappe portée). Partagé flux joueur + IA. */
 export function rollGrappleForce(c: Combatant, rng: RNG = defaultRNG): TestResult {
-  return rollTest(effectiveChar(c, 'force'), 'intermediaire', rng, baseTestMods(c));
+  return rollTest(effectiveChar(c, 'force'), 'intermediaire', rng, baseTestMods(c, 'force'));
 }
 
 /** Attaque gratuite « dans le dos » lors d'une Fuite (LDB 15-Dépl l.101,107) : Test de Corps
  *  à corps NON opposé, +20 au toucher (dos tourné), DR = Dégâts comme d'habitude. */
 export function resolveBackstabAttack(foe: Combatant, target: Combatant, rng: RNG = defaultRNG): AttackResult {
-  const atk = rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe) + 20);
+  const atk = rollTest(combatValue(foe, 'melee', foe.weapons[0]), 'intermediaire', rng, baseTestMods(foe, 'capacite-de-combat') + 20);
   return resolveMeleePassive(foe, target, foe.weapons[0], atk);
 }
 

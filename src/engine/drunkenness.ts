@@ -124,18 +124,34 @@ export function drunkStaggers(c: Combatant): boolean {
  * durée d'horloge (`addClockCondition`, cf. en-tête — évite le cycle d'import). `now` = minute `gameTime`.
  * `drDissipation`/`drHangover` = DR des deux Tests (roulés/différés par l'appelant). Mute `c`.
  */
-export function soberUp(c: Combatant, now: number, drDissipation: number, drHangover: number): { log: string[]; hangover?: { name: string; value: number; until: number } } {
+/** 1ᵉʳ Test du dessoûlage (l.485) : le DR fixe la dissipation (10 − DR h). Lève l'état d'Ivresse et retire
+ *  les ActiveEffect d'ivresse (marqués `effectId:'ivresse'` — identité, jamais le libellé). `{ log: [] }`
+ *  si le combattant n'était pas ivre (no-op). Mute `c`. */
+export function soberUpDissipate(c: Combatant, drDissipation: number): { log: string[] } {
   if (!c.drunk) return { log: [] };
-  const log: string[] = [];
-  // Les effets de l'Ivresse (pénalités + Bravoure/ami) se dissipent après 10 − DR heures — modélisé au
-  // dessoûlage : on lève l'état et on retire les ActiveEffect d'ivresse (marqués `effectId:'ivresse'`
-  // à l'application des `drunkOps`, cf. `case 'intoxicate'` d'`applyOps` — identité, jamais le libellé).
   const dissipH = Math.max(0, 10 - drDissipation);
   c.activeEffects = (c.activeEffects ?? []).filter((e) => e.effectId !== 'ivresse');
   c.drunk = undefined;
-  log.push(`${c.name} dessoûle (effets dissipés après ${dissipH} h).`);
-  // Gueule de bois = État Exténué non retirable pendant 5 − DR heures (durée d'horloge, purgée à l'entretien).
+  return { log: [`${c.name} dessoûle (effets dissipés après ${dissipH} h).`] };
+}
+
+/** 2ᵉ Test du dessoûlage (l.485) : le DR fixe la gueule de bois (Exténué non retirable pendant 5 − DR h,
+ *  durée d'horloge purgée à l'entretien). RENVOIE le spec `hangover` à poser par l'appelant
+ *  (`addClockCondition` — évite le cycle d'import). `now` = minute `gameTime`. Ne mute pas `c`. */
+export function soberUpHangover(c: Combatant, now: number, drHangover: number): { log: string[]; hangover: { name: string; value: number; until: number } } {
   const hangoverH = Math.max(1, 5 - drHangover);
-  log.push(`${c.name} a la gueule de bois : 1 Exténué pendant ${hangoverH} h.`);
-  return { log, hangover: { name: 'extenue', value: 1, until: now + hangoverH * 60 } };
+  return { log: [`${c.name} a la gueule de bois : 1 Exténué pendant ${hangoverH} h.`], hangover: { name: 'extenue', value: 1, until: now + hangoverH * 60 } };
+}
+
+/**
+ * Dessoûlage COMPLET (l.485) — les DEUX Tests roulés/fournis d'un coup (chemin INLINE non influençable :
+ * entretien en combat, témoin pré-résolu). Le chemin INFLUENÇABLE (cascade de nuit/voyage) n'appelle PAS
+ * ceci : il enchaîne `soberUpDissipate` (1ʳᵉ étape) puis `soberUpHangover` (2ᵉ étape INSÉRÉE) — chacune
+ * son jet de Chance/Résilience (#253). `now` = minute `gameTime`. Mute `c`.
+ */
+export function soberUp(c: Combatant, now: number, drDissipation: number, drHangover: number): { log: string[]; hangover?: { name: string; value: number; until: number } } {
+  const d = soberUpDissipate(c, drDissipation);
+  if (!d.log.length) return { log: [] };
+  const h = soberUpHangover(c, now, drHangover);
+  return { log: [...d.log, ...h.log], hangover: h.hangover };
 }

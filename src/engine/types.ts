@@ -1375,6 +1375,10 @@ export interface Combatant {
   /** Action Viser engagée : +20 (Accessible) au PROCHAIN tir tant que la dernière action reste « viser »
    *  (LDB table des Difficultés, `14 - _GoBack.md` l.90 ; « pas de Test exigé pour viser »). */
   aiming?: boolean;
+  /** Météo du JOUR sous laquelle ce combattant agit (EDOC ch.5 l.82, #341) : posée à l'ouverture d'un combat
+   *  survenant un jour de voyage (`activeDayWeather`). SEULE source du canal « Tests physiques » (`weatherTestMods`,
+   *  lu par attack/defenseModifiers) — jamais recâblée par surface. Transitoire (non persistée hors combat). */
+  envWeather?: import('./travelStages').Weather;
   /** Adversaires avec qui ce combattant est Engagé en mêlée (LDB 13-Combat l.174-175).
    *  Relationnel et symétrique ; purgé par paire en fin de Round si aucune attaque échangée. */
   engagedWith?: string[];
