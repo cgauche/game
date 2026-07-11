@@ -176,7 +176,7 @@ export function seaWeatherTestMod(sea: SeaVoyageState | undefined, skillId?: str
   return mod ? { mod, label: precipitationDef(sea.weather.precipitations).label } : undefined;
 }
 
-const log = (get: Get, set: Set, lines: string[]) => {
+const log = (get: Get, _set: Set, lines: string[]) => {
   if (lines.length) get().log(lines);
 };
 

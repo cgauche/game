@@ -695,7 +695,7 @@ export function appraiseGear(get: Get, set: Set, scope: 'loot' | 'victory', inde
 }
 
 /** Patch la cible de l'Évaluation/Détection — objet porté (party) ou ligne de butin en fenêtre. */
-function patchAppraiseTarget(get: Get, set: Set, pa: { itemUid?: string; gear?: { scope: 'loot' | 'victory'; index: number } },
+function patchAppraiseTarget(_get: Get, set: Set, pa: { itemUid?: string; gear?: { scope: 'loot' | 'victory'; index: number } },
   patch: { identified?: boolean; magicKnown?: boolean; detectTried?: boolean; appraiseTriedDay?: number }): void {
   if (pa.gear) {
     const key = pa.gear.scope === 'loot' ? 'pendingLoot' : 'pendingVictory';

@@ -151,7 +151,7 @@ export function setCascadeChoice(get: Get, set: Set, stepId: string, key: string
 
 /** Ouvre une cascade interactive (≥ 1 étape influençable). Le curseur démarre sur la 1ʳᵉ étape. */
 export function startCascade(
-  get: Get,
+  _get: Get,
   set: Set,
   opts: { title: string; icon?: string; purpose: PendingCascade['purpose']; steps: CascadeStep[]; log?: string[]; travelHalt?: boolean; roundBoundary?: boolean; combatEndBoundary?: boolean },
 ): void {

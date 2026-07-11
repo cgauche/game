@@ -33,12 +33,13 @@ export class TestOutcome {
   readonly roll: number;
   readonly target: number;
   /** Marque NOMINALE (privée) : un objet littéral ne peut jamais la fournir → pas de forgeage. */
-  private readonly [OUTCOME_BRAND]!: true;
+  private readonly [OUTCOME_BRAND] = true;
   private constructor(tr: TestResult, readonly detail?: RollBreakdown) {
     this.won = tr.success;
     this.sl = tr.sl;
     this.roll = tr.roll;
     this.target = tr.target;
+    void this[OUTCOME_BRAND];
   }
   /** SCELLEMENT — appelé UNIQUEMENT par le noyau du seam (whitelist #274, Ronde 4). */
   static seal(tr: TestResult, detail?: RollBreakdown): TestOutcome {

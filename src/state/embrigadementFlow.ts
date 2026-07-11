@@ -74,7 +74,7 @@ function ragotStep(
 // −1d10 marins sur un échec) ou RENONCER (encaisser la perte 2d10 sans risque supplémentaire).
 registerCascadeApplier(
   'embrigadementDecision',
-  (get, set, step) => {
+  (get, _set, step) => {
     if (step.chosen !== 'tenter') return { consequences: freeCons(['Vous renoncez à récupérer vos compagnons embrigadés.']) };
     const lead = partyAssisted(get().party.filter((h) => !h.dead), 'ragot');
     if (!lead) return { consequences: freeCons(['Personne à bord ne peut mener l\'enquête : vos compagnons restent captifs.']) };

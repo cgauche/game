@@ -434,7 +434,7 @@ describe('Tenez votre position (l.161) — Point de rupture + bonus cumulatif', 
 });
 
 describe('Affectation explicite d\'un PJ à une action (poste ≠ auto « meilleur »)', () => {
-  function otherThanSuggested(actionId: string, opener: () => void): { suggested: string; other: string } {
+  function otherThanSuggested(_actionId: string, opener: () => void): { suggested: string; other: string } {
     opener();
     const suggested = pending()!.heroId;
     useGame.setState({ pendingActivity: null });

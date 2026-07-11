@@ -39,7 +39,7 @@ export interface LayerCtx {
  *  les combattants (tactique) ; en exploration le SEUL groupe — surtout PAS les PNJ d'ambiance (sinon
  *  un PNJ occupant/derrière un bâtiment ferait disparaître son toit → les bâtiments PEUPLÉS perdaient
  *  leur toit). */
-export function makeOccludesActor(scene: Scene | null, dims: Dims, ctx: LayerCtx): (x: number, y: number) => boolean {
+export function makeOccludesActor(_scene: Scene | null, dims: Dims, ctx: LayerCtx): (x: number, y: number) => boolean {
   const actorTiles: { x: number; y: number }[] = [];
   if (ctx.mode === 'battle' && ctx.battle) {
     for (const c of ctx.battle.combatants) if (c.pos && !isOutOfAction(c)) actorTiles.push(c.pos);

@@ -53,7 +53,7 @@ describe('hooks du stage — smoke (premier rendu, état initial)', () => {
 
 const cbt = (id: string, kind: 'hero' | 'enemy', pos: { x: number; y: number }): Combatant =>
   ({ id, name: id, kind, pos, size: 'moyenne', conditions: [], wounds: { current: 10, max: 10 } } as unknown as Combatant);
-const walkStill = (id: string, x: number, y: number) => ({ x, y, walking: false, sortPt: { x, y } });
+const walkStill = (_id: string, x: number, y: number) => ({ x, y, walking: false, sortPt: { x, y } });
 
 describe('stageFocus / computeViewBounds / cameraTargeting — helpers purs de caméra', () => {
   const base = {

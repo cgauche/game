@@ -105,7 +105,7 @@ export interface RiverDayContext {
   journalMark: number;
 }
 
-const log = (get: Get, set: Set, lines: string[]) => {
+const log = (get: Get, _set: Set, lines: string[]) => {
   if (lines.length) get().log(lines);
 };
 
@@ -580,7 +580,7 @@ registerCascadeApplier('riverPerilDetect', (get, set, step) => {
  *  (#270, Initiative) si la victime exposée est pilotée par un humain, sinon inline — États, dérive, ou
  *  coque percée (réparation elle-même GATÉE, `holeBoat`). Renvoie les étapes-jet à INSÉRER, propagées par
  *  l'appelant (build-time `applyBoatCriticalNoPilot` ou applier `riverRigging`/`riverPerilDetect`). */
-function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoyageState, coque: Combatant, location: string, tell: (l: string[]) => void, rng: RNG, idPrefix: string): CascadeStep[] {
+function applyBoatCritical(get: Get, set: Set, plan: TravelPlan, river: RiverVoyageState, _coque: Combatant, location: string, tell: (l: string[]) => void, rng: RNG, idPrefix: string): CascadeStep[] {
   const crit = riverCritical(location);
   if (!crit) return [];
   const insert: CascadeStep[] = [];
@@ -763,7 +763,7 @@ function applyEchouageSteps(get: Get, set: Set, idPrefix: string, j: string[]): 
 }
 
 /** Renflouage INFLUENÇABLE (#270, Force) — MÊME issue que `applyEchouage`, jet différé. */
-registerCascadeApplier('riverEchouageForce', (get, set, step, hero) => {
+registerCascadeApplier('riverEchouageForce', (_get, _set, step, hero) => {
   if (!step.result) return;
   const name = hero?.name ?? 'Le groupe';
   return { consequences: freeCons([step.result.success ? `${name} remet le bateau à flot.` : `${name} n'y parvient pas — il faudra s'y reprendre.`]) };

@@ -887,7 +887,7 @@ export function startDisengage(get: Get, set: SetFn, mover: Combatant): void {
  *  règle `combat-weapon-reach`) : Test opposé de Corps à corps `mover` vs `foe`. Le jet du foe est tiré et
  *  FIGÉ d'avance (pattern Désengagement/Défense — montré dans la ligne adverse de la modale) ; le mover
  *  jouera SON jet influençable, et le VAINQUEUR choisira « combat normal » ou « au contact ». */
-export function startAuContact(get: Get, set: SetFn, mover: Combatant, foe: Combatant): void {
+export function startAuContact(_get: Get, set: SetFn, mover: Combatant, foe: Combatant): void {
   const atk = rollDisengageAttack(foe, battleRng()); // Corps à corps du foe, figé (jamais relancé)
   set({ pendingAuContact: { moverId: mover.id, foeId: foe.id, phase: 'roll', atk, def: null, result: null } });
 }
@@ -896,7 +896,7 @@ export function startAuContact(get: Get, set: SetFn, mover: Combatant, foe: Comb
  *  vs `foe` ; le jet du foe est tiré et FIGÉ d'avance (pattern Désengagement/Au Contact). `canBreak` =
  *  l'acteur a un Avantage STRICTEMENT supérieur → il peut BRISER l'Empoignade gratuitement, ou tenter le
  *  Test opposé pour son Action (Dégâts / Empêtré). Le VAINQUEUR du Test choisit. */
-export function startGrapple(get: Get, set: SetFn, actor: Combatant, foe: Combatant): void {
+export function startGrapple(_get: Get, set: SetFn, actor: Combatant, foe: Combatant): void {
   const atk = rollGrappleForce(foe, battleRng()); // Force du foe, figée (jamais relancée)
   const canBreak = actor.advantage > foe.advantage;
   set({ pendingGrapple: { actorId: actor.id, foeId: foe.id, phase: 'roll', canBreak, atk, def: null, result: null } });
@@ -1156,7 +1156,7 @@ export function attackPlan(get: Get, active: Combatant, target: Combatant, opts?
  *  (LDB ch.17 l.31-35) ; sinon finalise la mort. `restoreWounds` = PB d'avant le coup létal.
  *  `foe` = « l'individu ou l'élément qui l'a presque tué » (coup direct) → Cible d'une éventuelle
  *  Animosité si le Destin est dépensé (ADE II Annexe I, règle facultative) ; absent pour la mort lente. */
-export function finalizeHeroDeath(get: Get, set: SetFn, hero: Combatant, source: 'hit' | 'slow', restoreWounds?: number, foe?: Pick<Combatant, 'name' | 'groups'>): void {
+export function finalizeHeroDeath(_get: Get, set: SetFn, hero: Combatant, source: 'hit' | 'slow', restoreWounds?: number, foe?: Pick<Combatant, 'name' | 'groups'>): void {
   // Le vrai gate est la RESSOURCE (`fate > 0`, présente sur tout kind), pas le `kind` : un combattant à
   // Destin (héros, ou ennemi conduit doté de Destin) est sauvé ; sinon la mort est finalisée.
   if ((hero.fate ?? 0) > 0) {
@@ -2680,7 +2680,7 @@ export function applyTongue(get: Get, set: SetFn, attacker: Combatant, a: Creatu
  *  `applyManeuverEffects` (hook `maneuverPostHit`) : sur une TOUCHE (un pion *Empêtré* posé ce tour) d'une
  *  proie plus PETITE, elle est tirée vers la créature (pathing impur : `pullToward` + traversées de zone).
  *  Joué à l'IDENTIQUE pour la voie silencieuse (non-héros/Surpris) ET la voie cascade (héros influençable). */
-function maneuverPostHitImpl(get: Get, set: SetFn, attacker: Combatant, def: ManeuverDef, tgt: Combatant, hadEmpetre: number): string[] {
+function maneuverPostHitImpl(get: Get, _set: SetFn, attacker: Combatant, def: ManeuverDef, tgt: Combatant, hadEmpetre: number): string[] {
   if (def.kind !== 'langue' || !tgt.pos || !attacker.pos) return [];
   if (!(stacks(tgt, COND.empetre) > hadEmpetre && sizeGap(attacker.size, tgt.size) > 0)) return [];
   const b = get().battle;
@@ -4129,7 +4129,7 @@ export function resolveTriggerImpureOps(get: Get, set: SetFn, actor: Combatant, 
  *  sert de lanceur à `applySummon` au déclenchement. Le `cancelFlag` (précautions) reste désamorçable par un
  *  Effet de scène. Sans position (hors grille) : pas de point de reconstitution → no-op. */
 function scheduleRespawnFromOp(
-  get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'scheduleRespawn' }>,
+  _get: Get, set: SetFn, actor: Combatant, op: Extract<GameOp, { op: 'scheduleRespawn' }>,
 ): string[] {
   if (!actor.pos) return [];
   const days = Math.max(1, resolveFormula(op.delayDays, actor, battleRng()));
@@ -5023,7 +5023,7 @@ export function collectHeroRoundEndPsych(get: Get, c: Combatant): HeroPsychDue |
 /** Une étape de Psychologie de combat (`combatPsych`) pour le héros `c` si un Test est dû selon
  *  `collect` (début ou fin de Round). La sortie de Frénésie est désormais un effet `onTurnStart` en
  *  DONNÉES (diffusé par `fireTurnStartTriggers`) — plus de force-exit ici. Renvoie `null` sinon. */
-function psychStepFor(get: Get, set: SetFn, c: Combatant, collect: (get: Get, c: Combatant) => HeroPsychDue | null): import('./pendings').CascadeStep | null {
+function psychStepFor(get: Get, _set: SetFn, c: Combatant, collect: (get: Get, c: Combatant) => HeroPsychDue | null): import('./pendings').CascadeStep | null {
   const t = collect(get, c);
   if (!t) return null;
   const isCible = CIBLE_TYPES.has(t.kind);

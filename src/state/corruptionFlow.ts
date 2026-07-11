@@ -95,7 +95,7 @@ export function gainCorruption(get: Get, set: Set, hero: Combatant, n: number, a
 
 /** Applique la MUTATION (l.82-91) : −BFM Points, d100 corps/esprit par espèce, tirage sur le
  *  Tableau de Corruption physique/mentale, effets dérivés, puis LIMITES (l.95) → damné. */
-export function applyMutation(get: Get, set: Set, hero: Combatant, test?: { roll: number; target: number }, align?: ChaosAlign): string[] {
+export function applyMutation(get: Get, set: Set, hero: Combatant, _test?: { roll: number; target: number }, align?: ChaosAlign): string[] {
   const rng = battleRng();
   const lines: string[] = [];
   const lost = bonus(effectiveChar(hero, 'force-mentale'));

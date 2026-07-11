@@ -63,7 +63,7 @@ export interface RiggedOpts {
   features?: string[]; // traits ADDITIFS (clés du catalogue d'éléments)
 }
 const eyeArt = (k?: string): string | undefined => (k ? EYE_OPTIONS[k]?.art : undefined);
-export function riggedAppearance(name: string, seed: number, opts: RiggedOpts = {}): Appearance {
+export function riggedAppearance(_name: string, seed: number, opts: RiggedOpts = {}): Appearance {
   const sex: 'M' | 'F' = opts.sex ?? (seed % 7 < 2 ? 'F' : 'M');
   const build = opts.build ?? buildFromSeed(seed);
   const eyes = opts.eyes && (eyeArt(opts.eyes.G) || eyeArt(opts.eyes.D))

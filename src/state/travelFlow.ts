@@ -171,7 +171,7 @@ export interface LandDayContext {
   forcedPaceResult?: { km: number; hours: number; vehicleOut: boolean; vehicleLame: boolean };
 }
 
-const log = (get: Get, set: Set, lines: string[]) => {
+const log = (get: Get, _set: Set, lines: string[]) => {
   if (lines.length) get().log(lines);
 };
 

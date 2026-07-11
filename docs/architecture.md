@@ -201,6 +201,19 @@ art-ref/                    Illustrations extraites des PDFs + mapping.json (GIT
   `mutationTables.json` (plages d100 → réf mutation) → plusieurs tables (une par dieu du Chaos, Compagnon T1)
   sans collision. L'APPARENCE d'une mutation (cornes/peau…) reste couche **rig** (≠ GameOp).
 
+## Rigueur compilateur (tsconfig.json / server/tsconfig.json)
+
+- `strict: true` (racine + serveur) + `noUnusedLocals`/`noUnusedParameters: true` (les deux
+  configs) — le code mort ne compile plus en silence (#300 cran 1).
+- `noUncheckedIndexedAccess` et `exactOptionalPropertyTypes` restent **désactivés** — verdict
+  mesuré #300 cran 2 (2026-07-11) : essai en ligne de commande (`tsc --noUncheckedIndexedAccess`
+  / `--exactOptionalPropertyTypes`, hors config commitée) sur la racine → **3732** et **960**
+  erreurs respectivement, réparties dans QUASIMENT tous les dossiers au prorata de leur taille
+  (`src/state` 2094, `src/gameIso` 697, `src/engine` 441, `src/ui` 270, `src/scenes` 142 pour le
+  premier flag) — aucun dossier propre à cliqueter isolément. Activation = chantier dédié
+  multi-session (refonte des accès indexés / des types optionnels site par site), pas une purge
+  mécanique comme le cran 1. Différé, pas écarté.
+
 ## Direction visuelle & apparence
 
 - **Isométrique 2.5D « à la Baldur's Gate »** (vue 3/4), PAS de vue top-down ni de carrés de

@@ -154,7 +154,7 @@ function tileToFootprint(c: Combatant, x: number, y: number): number {
 
 /** `rider` (à pied, libre) peut-il enfourcher `mount` ? Monture vivante, SANS cavalier, à une case de
  *  l'empreinte de la monture (ou dessus), et `rider` n'est pas déjà monté. */
-export function canMount(battle: BattleState, rider: Combatant, mount: Combatant): boolean {
+export function canMount(_battle: BattleState, rider: Combatant, mount: Combatant): boolean {
   if (rider.id === mount.id || rider.mountId || mount.riderId) return false;
   if (isOutOfAction(rider) || isOutOfAction(mount) || !rider.pos || !mount.pos) return false;
   return tileToFootprint(mount, rider.pos.x, rider.pos.y) <= 1;

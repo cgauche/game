@@ -187,7 +187,7 @@ function applyOpClone(c: Combatant, op: GameOp): Combatant {
 
 /** Bénéfice MARGINAL d'un buff de combat sur `subject` (générique, AUCUNE liste de carac) : `horizon ×
  *  Δ(meilleure EV d'attaque AVEC l'op − SANS)`. Un buff qui n'améliore pas le combat → ≈0 → non lancé. */
-function marginalBuff(caster: Combatant, subject: Combatant, op: GameOp, ctx: OpEvalCtx): number {
+function marginalBuff(_caster: Combatant, subject: Combatant, op: GameOp, ctx: OpEvalCtx): number {
   const before = bestAttackEV(subject, ctx.refEnemy);
   const after = bestAttackEV(applyOpClone(subject, op), ctx.refEnemy);
   return ctx.horizon * Math.max(0, after - before);

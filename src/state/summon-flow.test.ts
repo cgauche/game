@@ -27,7 +27,7 @@ const battle = (combatants: Combatant[], round = 1): any => {
   return { combatants, order, baseOrder: order, turn: 0, round, log: [], zones: [], over: false };
 };
 
-function harness(c: Combatant, b: any) {
+function harness(_c: Combatant, b: any) {
   let state: any = { battle: b, scene: scene() };
   return { get: () => state, set: (p: any) => { state = { ...state, ...p }; }, state: () => state };
 }

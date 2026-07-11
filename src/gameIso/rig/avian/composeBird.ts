@@ -73,7 +73,7 @@ function bodyBack(p: BirdProps): string {
     `<path d="M0 -12 L0 6" stroke="@corpsO" stroke-width="0.6" opacity="0.4"/>` +
     `</g>`;
 }
-function head(p: BirdProps, view: View): string {
+function head(_p: BirdProps, view: View): string {
   const irid = `<path d="M-4 6 Q0 9 4 6 Q3 9 0 10 Q-3 9 -4 6 Z" fill="@corpsH" opacity="0.5"/>`; // cou irisé
   if (view === 'front')
     return `<g><circle cx="0" cy="0" r="6" fill="@corps" stroke="@corpsO" stroke-width="0.6"/>` +

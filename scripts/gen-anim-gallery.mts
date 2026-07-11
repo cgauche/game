@@ -30,11 +30,11 @@ function svgTile(inner: string, label: string, css = '', bg = '#1d2230') {
     <figcaption style="color:#bcd;font:10px sans-serif">${label}</figcaption></figure>`;
 }
 /** Tuile STATIQUE (pose figée). */
-function still(w: Weapon, equip: EquipCtx, pose: Record<string, number>, label: string, bg?: string) {
+function still(_w: Weapon, equip: EquipCtx, pose: Record<string, number>, label: string, bg?: string) {
   return svgTile(bonesToSvg(resolveRig(app, equip, pose, 'Soldat')), label, '', bg);
 }
 /** Tuile ANIMÉE (clip joué en boucle). */
-function anim(w: Weapon, equip: EquipCtx, hold: Record<string, number>, clip: Clip, label: string, bg?: string) {
+function anim(_w: Weapon, equip: EquipCtx, hold: Record<string, number>, clip: Clip, label: string, bg?: string) {
   const dur = Math.max(clipDuration(clip), 1);
   const samples = sampleTimes(dur, N).map((t) => resolveRig(app, equip, addPose(hold, sampleClip(clip, t).pose), 'Soldat'));
   const uid = `w${uidN++}`;

@@ -338,7 +338,7 @@ function describeThreats(threats: string[]): string | null {
 
 /** Fabrique une `PendingActivity` de bataille (préparation ou Scène) et l'ouvre. Le flux `activity`
  *  (RollShell) résout ensuite le jet (combiné/opposé compris) ; `confirmBattleActivity` applique l'issue. */
-function openBattlePending(get: Get, set: Set, o: {
+function openBattlePending(_get: Get, set: Set, o: {
   actor: Combatant; battle: 'prep' | 'round'; def: ActivityDef;
   skillValue: number; skillId?: string; spec?: string; char?: CharKey; difficulty: Difficulty;
   label?: string; mod?: number; modLabel?: string;

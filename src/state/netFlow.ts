@@ -337,7 +337,7 @@ export function netAssignSlot(get: Get, set: Set, slot: number, seat: number): v
 }
 
 /** Quitte la session (les deux rôles) — retour au mode local, actions restaurées. */
-export function netLeave(get: Get, set: Set): void {
+export function netLeave(_get: Get, set: Set): void {
   unsubscribe?.();
   unsubscribe = null;
   if (broadcastTimer != null) {
