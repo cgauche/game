@@ -18,6 +18,7 @@ import type { CascadeStep } from './pendings';
 import { resumeTravel } from './travelFlow';
 import { applyEffects } from './combatEffects';
 import { cascadeAppliers } from './cascade';
+import { resultLine } from './rollSeam';
 import { checkBattleOver } from './combatFlow';
 
 /**
@@ -308,10 +309,10 @@ describe('registre cascadeAppliers — les 10 Tests d’équipage de VOYAGE (#27
     expect(get().vessel!.criticals?.length ?? 0).toBeGreaterThan(0);
   });
 
-  it('affaler : réussite → aucun Critique, message au journal', () => {
+  it('affaler : réussite → aucun Critique, conséquence composée (#295 Lot 1)', () => {
     planWithSea();
-    apply('affaler', 3, true);
-    expect(get().journal.some((l) => l.includes('affalées à temps'))).toBe(true);
+    const out = apply('affaler', 3, true);
+    expect(resultLine(out?.consequences ?? [])).toContain('affalées à temps');
     expect(get().vessel!.criticals?.length ?? 0).toBe(0);
   });
 
@@ -359,10 +360,10 @@ describe('registre cascadeAppliers — les 10 Tests d’équipage de VOYAGE (#27
     expect(get().travelPlan!.sea!.crisis).toBeTruthy(); // `need` 999 : le total agrégé ne peut pas l'atteindre en une manche
   });
 
-  it('embuscade : succès → préparés (pas de Surprise) — le journal le dit', () => {
+  it('embuscade : succès → préparés (pas de Surprise) — conséquence composée (#295 Lot 1)', () => {
     planWithSea();
-    apply('embuscade', 1, true);
-    expect(get().journal.some((l) => l.includes('prépare'))).toBe(true);
+    const out = apply('embuscade', 1, true);
+    expect(resultLine(out?.consequences ?? [])).toContain('prépare');
   });
 
   it('progression : applique les milles du jour PUIS insère le reste de la journée (Décision 2, cran 3)', () => {

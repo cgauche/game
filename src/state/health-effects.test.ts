@@ -7,6 +7,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { useGame } from './store';
 import { applyEffects } from './combatFlow';
 import { cascadeAppliers } from './cascade';
+import { resultLine } from './rollSeam';
 import { makePregens } from '../data/pregens';
 import { findVehicleById } from '../data';
 import { setRule, resetRule } from '../engine/policy';
@@ -80,7 +81,7 @@ describe('Effet exposureNight (LDB 18 l.326-334) — cascade INFLUENÇABLE (plus
       useGame.getState, useGame.setState, failed, h, { steps: [failed], index: 0 },
     );
     expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(true);
-    expect((out?.journal ?? []).some((l) => /chaleur|suffoque|accablé/i.test(l))).toBe(true);
+    expect(/chaleur|suffoque|accablé/i.test(resultLine(out?.consequences ?? []))).toBe(true);
     expect(out?.insert).toBeUndefined();
   });
 });
@@ -112,7 +113,7 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
     const out = cascadeAppliers['exposure-heat-drop'].apply(useGame.getState, useGame.setState, choice, h, { steps: [choice], index: 0 });
     expect(h.items).toHaveLength(0); // délestée
     expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(false); // Test ANNULÉ, pas subi
-    expect((out?.journal ?? []).some((l) => /annulé/i.test(l))).toBe(true);
+    expect(/annulé/i.test(resultLine(out?.consequences ?? []))).toBe(true);
   });
 
   it('« garder » : conserve l’objet, la conséquence de l’échec s’applique normalement', () => {
@@ -124,7 +125,7 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
     const out = cascadeAppliers['exposure-heat-drop'].apply(useGame.getState, useGame.setState, choice, h, { steps: [choice], index: 0 });
     expect(h.items).toHaveLength(1); // conservé
     expect((h.conditions ?? []).some((c) => c.name === 'extenue')).toBe(true); // 1ᵉʳ échec chaleur (l.330)
-    expect((out?.journal ?? []).some((l) => /chaleur|suffoque|accablé/i.test(l))).toBe(true);
+    expect(/chaleur|suffoque|accablé/i.test(resultLine(out?.consequences ?? []))).toBe(true);
   });
 
   it('escalade : un échec ANNULÉ (jeté) ne compte PAS dans le rang du prochain échec GENUINE', () => {
@@ -141,8 +142,9 @@ describe('Exposition CHALEUR — annulation par délestage d’une Possession lo
     const out = cascadeAppliers['exposure'].apply(useGame.getState, useGame.setState, second, h, { steps, index: 2 });
     // Sans le 1er échec annulé, ce 2ᵉ Test GENUINE est le 1ᵉʳ échec RÉEL (l.330 : −10 Int/FM + Exténué),
     // PAS le 2ᵉ (qui infligerait −10 aux autres caractéristiques en plus).
-    expect((out?.journal ?? []).join(' ')).toMatch(/suffoque/);
-    expect((out?.journal ?? []).join(' ')).not.toMatch(/accablé/);
+    const line = resultLine(out?.consequences ?? []);
+    expect(line).toMatch(/suffoque/);
+    expect(line).not.toMatch(/accablé/);
   });
 });
 

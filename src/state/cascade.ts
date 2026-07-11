@@ -35,9 +35,12 @@ import { aggregateCrewRolls, rollCrewRole } from './shipManeuver';
  * cette dépendance qui rend la séquence séquentielle.
  *
  * `journal` : @deprecated canal STRING LIBRE toléré en fallback transitoire (#295 Lot 0, Décision 1c —
- * « union dépréciée `journal` tolérée par `commitStep` ») tant que les ~51 appliers existants n'ont pas
- * migré vers `consequences` (#295 Lot 1). AUCUN nouvel applier ne doit l'utiliser — `commitStep` ne le
- * lit QUE si `consequences` est absent (repli, jamais les deux mélangés).
+ * « union dépréciée `journal` tolérée par `commitStep` »). Lot 1 (#295) a migré river/travel/travelPostes/
+ * sea/shipwreck/pursuit/combatFlow/roundHooks/turnHooks/triggeredTest/rest/embrigadement vers
+ * `consequences` — restent SEULS clients légitimes (hors périmètre Lot 1, à migrer ensuite) :
+ * `combatEffects.ts` (`waterExposure`), `combatManeuvers.ts`, `encounterPsychFlow.ts`. AUCUN nouvel
+ * applier ne doit l'utiliser — `commitStep` ne le lit QUE si `consequences` est absent (repli, jamais
+ * les deux mélangés).
  */
 export type CascadeApplier = (
   get: Get,

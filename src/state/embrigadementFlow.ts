@@ -19,6 +19,7 @@
 import type { Get, Set } from './flowTypes';
 import type { CascadeStep } from './pendings';
 import { startCascade, registerCascadeApplier } from './cascade';
+import { freeCons } from './rollSeam';
 import { applyVesselCrewLoss } from './shipCrew';
 import { partyAssisted } from '../engine/skills';
 import { subtract, toMoney } from '../engine/money';
@@ -74,9 +75,9 @@ function ragotStep(
 registerCascadeApplier(
   'embrigadementDecision',
   (get, set, step) => {
-    if (step.chosen !== 'tenter') return { journal: ['Vous renoncez à récupérer vos compagnons embrigadés.'] };
+    if (step.chosen !== 'tenter') return { consequences: freeCons(['Vous renoncez à récupérer vos compagnons embrigadés.']) };
     const lead = partyAssisted(get().party.filter((h) => !h.dead), 'ragot');
-    if (!lead) return { journal: ['Personne à bord ne peut mener l\'enquête : vos compagnons restent captifs.'] };
+    if (!lead) return { consequences: freeCons(['Personne à bord ne peut mener l\'enquête : vos compagnons restent captifs.']) };
     return {
       insert: [ragotStep(
         lead, num(step.meta?.recover), num(step.meta?.ransomCO), num(step.meta?.extraLoss),
@@ -108,11 +109,11 @@ registerCascadeApplier(
     const extraLoss = num(step.meta?.extraLoss);
     if (step.result.success) {
       return {
-        journal: ['Vous retrouvez la trace de vos compagnons embrigadés — reste à les libérer.'],
+        consequences: freeCons(['Vous retrouvez la trace de vos compagnons embrigadés — reste à les libérer.']),
         insert: [choiceStep(recover, num(step.meta?.ransomCO), extraLoss, diff(step.meta?.stealthDiff, 'complexe'))],
       };
     }
-    return { journal: applyVesselCrewLoss(get, set, extraLoss) }; // l'autre navire prend la mer (1d10 de plus)
+    return { consequences: freeCons(applyVesselCrewLoss(get, set, extraLoss)) }; // l'autre navire prend la mer (1d10 de plus)
   },
   (success, name) => (success ? `${name} retrouve la piste des marins embrigadés.` : `${name} ne trouve aucune piste — le navire lève l'ancre.`),
 );
@@ -126,14 +127,14 @@ registerCascadeApplier(
     if (step.chosen === 'payer') {
       const ransomCO = num(step.meta?.ransomCO);
       const rest = subtract(get().money, toMoney({ gold: ransomCO }));
-      if (!rest) return { journal: [`La rançon de ${ransomCO} CO dépasse votre bourse : vos compagnons restent captifs.`] };
+      if (!rest) return { consequences: freeCons([`La rançon de ${ransomCO} CO dépasse votre bourse : vos compagnons restent captifs.`]) };
       set({ money: rest });
-      return { journal: [`Rançon payée (${ransomCO} CO).`, ...applyVesselCrewLoss(get, set, -recover)] };
+      return { consequences: freeCons([`Rançon payée (${ransomCO} CO).`, ...applyVesselCrewLoss(get, set, -recover)]) };
     }
     // Discrétion : Test Complexe (−10) du plus discret — insertion d'une étape-jet.
     const stealthDiff = diff(step.meta?.stealthDiff, 'complexe');
     const lead = partyAssisted(get().party.filter((h) => !h.dead), 'discretion');
-    if (!lead) return { journal: ['Personne à bord n\'est assez discret pour tenter la libération.'] };
+    if (!lead) return { consequences: freeCons(['Personne à bord n\'est assez discret pour tenter la libération.']) };
     return {
       insert: [{
         id: 'embrig-discretion', kind: 'embrigadementDiscretion', actorId: lead.actor.id,
@@ -153,8 +154,8 @@ registerCascadeApplier(
   (get, set, step) => {
     if (!step.result) return;
     const recover = num(step.meta?.recover);
-    if (step.result.success) return { journal: ['Vos compagnons sont libérés dans l\'ombre.', ...applyVesselCrewLoss(get, set, -recover)] };
-    return { journal: applyVesselCrewLoss(get, set, num(step.meta?.extraLoss)) }; // repéré : le navire lève l'ancre (1d10 de plus)
+    if (step.result.success) return { consequences: freeCons(['Vos compagnons sont libérés dans l\'ombre.', ...applyVesselCrewLoss(get, set, -recover)]) };
+    return { consequences: freeCons(applyVesselCrewLoss(get, set, num(step.meta?.extraLoss))) }; // repéré : le navire lève l'ancre (1d10 de plus)
   },
   (success, name) => (success ? `${name} libère l'équipage en catimini.` : `${name} est repéré — la libération échoue.`),
 );

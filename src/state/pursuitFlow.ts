@@ -20,6 +20,7 @@ import { effectiveMovement } from '../engine/encumbrance';
 import { findSkillById } from '../data/index';
 import { battleRng } from './battleRng';
 import { startCascade, registerCascadeApplier } from './cascade';
+import { freeCons } from './rollSeam';
 import { pursuitOutcome, pursuitMoveBonus, PURSUIT_ESCAPE_DISTANCE } from '../engine/pursuit';
 import type { CascadeStep, PendingCascade } from './pendings';
 
@@ -61,7 +62,7 @@ const PURSUIT_MOVE_KIND = 'pursuitMove';
  *  compare tous les DR à la clôture, `continuePursuitRound`) ; ne pousse qu'une ligne de journal lisible. */
 registerCascadeApplier(PURSUIT_MOVE_KIND, (_get, _set, step, hero) => {
   const dr = step.result?.sl ?? 0;
-  return { journal: [`${hero?.name ?? step.actorId} — ${step.rollLabel ?? 'Mouvement'} : ${dr >= 0 ? '+' : ''}${dr} DR.`] };
+  return { consequences: freeCons([`${hero?.name ?? step.actorId} — ${step.rollLabel ?? 'Mouvement'} : ${dr >= 0 ? '+' : ''}${dr} DR.`]) };
 });
 
 /** Héros du groupe ENCORE en course (vivants et dans la rencontre). */

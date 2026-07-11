@@ -86,7 +86,7 @@ import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficult
 import type { PendingSteamSave, CascadeStep } from './pendings';
 import type { Get, Set } from './flowTypes';
 import type { CampaignVessel } from './store';
-import { openRoll, composeRollLabel, effectiveTarget, resolveSurface, type RollRequest } from './rollSeam';
+import { openRoll, composeRollLabel, effectiveTarget, resolveSurface, freeCons, type RollRequest, type Consequence } from './rollSeam';
 import { registerCascadeApplier, startCascade, runCascadeImmediate } from './cascade';
 
 /** Crise NAVALE en cours (un Test d'équipage par manche jusqu'à l'issue). */
@@ -184,6 +184,16 @@ const log = (get: Get, set: Set, lines: string[]) => {
 function tell(get: Get, set: Set, lines: string[]): void {
   if (!lines.length) return;
   log(get, set, lines);
+  const plan = get().travelPlan;
+  if (plan?.sea) set({ travelPlan: { ...plan, sea: { ...plan.sea, lines: [...plan.sea.lines, ...lines] } } });
+}
+
+/** Écrit SEULEMENT au recap du jour (`sea.lines`) — le JOURNAL des appliers de cascade migrés (#295
+ *  Lot 1) est désormais écrit par `commitStep` depuis les `consequences` retournées (`freeCons`), pas
+ *  par un second canal direct. `tell()` reste le canal des sites HORS applier (narration d'événement de
+ *  jour, entretien-survie). */
+function noteSeaLine(get: Get, set: Set, lines: string[]): void {
+  if (!lines.length) return;
   const plan = get().travelPlan;
   if (plan?.sea) set({ travelPlan: { ...plan, sea: { ...plan.sea, lines: [...plan.sea.lines, ...lines] } } });
 }
@@ -496,7 +506,7 @@ function buildSeaDayCascade(get: Get, set: Set): { steps: CascadeStep[]; log: st
   const progStep = buildVoyageCrewStep(get, 'progression', 'progression');
   if (progStep) steps.push(progStep);
   else {
-    applySeaProgress(get, set, 0); // aucun équipage apte → progression sans DR
+    tell(get, set, applySeaProgress(get, set, 0)); // aucun équipage apte → progression sans DR
     steps.push(...buildPostProgressionSteps(get, set));
   }
   return { steps, log: [] };
@@ -824,7 +834,9 @@ registerCascadeApplier('sea-force-pace', (get, set, step) => {
   const won = step.result.success;
   const forcePace = Number(step.meta?.forcePace ?? 0);
   patchSea(get, set, { paceToday: won ? 'won' : 'lost' });
-  tell(get, set, [`${step.label} : ${step.result.roll}/${step.result.target} → ${won ? `+${forcePace} M aujourd'hui.` : 'le navire garde son allure.'}`]);
+  const j = [`${step.label} : ${step.result.roll}/${step.result.target} → ${won ? `+${forcePace} M aujourd'hui.` : 'le navire garde son allure.'}`];
+  noteSeaLine(get, set, j);
+  return { consequences: freeCons(j) };
 });
 
 /** Prière d'un Présage (ch.15 l.236, `klass:'hero-test'`) : bon présage → il faut RÉUSSIR pour
@@ -836,7 +848,7 @@ registerCascadeApplier('sea-priere', (get, set, step) => {
   const manannD = Number(step.meta?.manannD ?? 0);
   const moraleD = Number(step.meta?.moraleD ?? 0);
   const success = step.result.success;
-  tell(get, set, [`${step.label} : ${step.result.roll}/${step.result.target} → ${success ? 'Manann est apaisé/honoré.' : 'la prière se perd dans les embruns.'}`]);
+  const j = [`${step.label} : ${step.result.roll}/${step.result.target} → ${success ? 'Manann est apaisé/honoré.' : 'la prière se perd dans les embruns.'}`];
   const apply = manannD >= 0 ? success : !success;
   if (apply) {
     if (manannD) tellManann(get, set, manannD);
@@ -847,6 +859,8 @@ registerCascadeApplier('sea-priere', (get, set, step) => {
     }
   }
   if (get().pendingCascade) setTimeout(() => runSeaDay(get, set), 0);
+  noteSeaLine(get, set, j);
+  return { consequences: freeCons(j) };
 });
 
 /** Scorbut (MDG 14 l.230, `klass:'subi'`) : conséquence + texte IDENTIQUES à l'ancien inline — seule la
@@ -862,7 +876,7 @@ registerCascadeApplier('sea-scorbut', (get, set, step, hero) => {
     if (d) hero.diseases = [...(hero.diseases ?? []), d];
   }
   set({ party: [...get().party] });
-  return { journal: [line] };
+  return { consequences: freeCons([line]) };
 });
 
 /** Épuisement (MDG 13 l.109-111, `klass:'subi'`) : même patron que Scorbut ci-dessus. */
@@ -872,18 +886,19 @@ registerCascadeApplier('sea-epuisement', (get, set, step, hero) => {
   const line = `${hero.name} — Épuisement (rythme forcé, Résistance ${DIFFICULTY_LABELS[exhaustionDifficulty(true)]}) : ${step.result.roll}/${step.result.target} → ${success ? 'tient bon.' : '+1 Exténué.'}`;
   if (!success) addCondition(hero, 'extenue');
   set({ party: [...get().party] });
-  return { journal: [line] };
+  return { consequences: freeCons([line]) };
 });
 
-/** Applique les MILLES du jour depuis le total du Test de Progression (±10 %/DR, ch.15 l.78). */
-function applySeaProgress(get: Get, set: Set, progressionDR: number): void {
+/** Applique les MILLES du jour depuis le total du Test de Progression (±10 %/DR, ch.15 l.78). Renvoie
+ *  la ligne d'annonce (le call-site décide du canal — `tell()` build-time ou `consequences` d'applier). */
+function applySeaProgress(get: Get, set: Set, progressionDR: number): string[] {
   const plan = get().travelPlan!;
   const eff = effectiveSeaM(get);
-  if (eff.m == null || plan.sea!.sailsDown) { patchSea(get, set, { milesToday: 0 }); return; }
+  if (eff.m == null || plan.sea!.sailsDown) { patchSea(get, set, { milesToday: 0 }); return []; }
   // Nuit : équipage nominal requis, sinon ÷2 (MDG 15 l.76) — équipage abstrait (MDG 14 l.39, cf. l.27).
   const miles = Math.round(seaMilesPerDay(eff.m, true, progressionDR));
   patchSea(get, set, { milesToday: miles, eventMMod: undefined }); // « Vents favorables » : +1 M consommé sur UNE journée de route
-  tell(get, set, [`Progression du jour : ${miles} milles (DR d'équipage ${progressionDR >= 0 ? '+' : ''}${progressionDR}).`]);
+  return [`Progression du jour : ${miles} milles (DR d'équipage ${progressionDR >= 0 ? '+' : ''}${progressionDR}).`];
 }
 
 /**
@@ -1129,7 +1144,7 @@ export function continueSeaDayAfterExhaustion(get: Get, set: Set, doneSteps?: Ca
 registerCascadeApplier('progression', (get, set, step) => {
   if (!step.result) return;
   const total = step.result.sl;
-  applySeaProgress(get, set, total);
+  const j = applySeaProgress(get, set, total);
   const plan = get().travelPlan;
   const hull = plan?.vehicle;
   const rng = battleRng();
@@ -1138,31 +1153,34 @@ registerCascadeApplier('progression', (get, set, step) => {
       && steamBreakdownTriggered({ success: x.result.roll <= x.result.target, sl: x.result.sl, isDouble: isDoubleRoll(x.result.roll) }));
     if (triggered) {
       const b = rollSteamBreakdown(rng);
-      tell(get, set, [`PANNE DE VAPEUR — ${b.label} (MDG ch.12 l.313).`, b.desc]);
+      j.push(`PANNE DE VAPEUR — ${b.label} (MDG ch.12 l.313).`, b.desc);
       applySteamBreakdown(get, set, b, rng); // « Fuite de vapeur » → `pendingSteamSave` (sauvegarde d'Initiative) suspend AVANT le reste du jour
     }
   }
-  if (get().pendingSteamSave) return; // le reste de la journée reprendra APRÈS la sauvegarde (`resolveSteamSave` → `runSeaDay`)
+  noteSeaLine(get, set, j);
+  if (get().pendingSteamSave) return { consequences: freeCons(j) }; // le reste de la journée reprendra APRÈS la sauvegarde (`resolveSteamSave` → `runSeaDay`)
   const insert = buildPostProgressionSteps(get, set);
-  return insert.length ? { insert } : undefined;
+  return { consequences: freeCons(j), insert: insert.length ? insert : undefined };
 });
 
 /** Conséquence PARTAGÉE d'Affaler (ch.13 l.288-294) : échec → Critique au Gréement (MDG 14 l.92-96).
  *  Appelée par l'applier de la CASCADE DU JOUR (`'affaler'`, routine) ET par l'événement Ouragan
  *  (`'sea-ouragan-affaler'`, jamais routine, extraDR −2) — MÊME conséquence RAW, deux déclencheurs. */
-function affalerConsequence(get: Get, set: Set, step: CascadeStep): void {
-  if (!step.result) return;
-  if (step.result.success) { tell(get, set, ['Les voiles sont affalées à temps (MDG ch.13 l.292).']); return; }
+function affalerConsequence(get: Get, set: Set, step: CascadeStep): Consequence[] {
+  if (!step.result) return [];
+  if (step.result.success) { const j = ['Les voiles sont affalées à temps (MDG ch.13 l.292).']; noteSeaLine(get, set, j); return freeCons(j); }
   const rng = battleRng();
   const crit = rollShipCritical(AFFALER_RULES.failCritLocation as ShipCritKey, rng);
   applyVesselCritical(get, set, crit.log, crit.note);
+  return [];
 }
-registerCascadeApplier('affaler', (get, set, step) => affalerConsequence(get, set, step));
+registerCascadeApplier('affaler', (get, set, step) => ({ consequences: affalerConsequence(get, set, step) }));
 // Ouragan : cascade AUTONOME ouverte AVANT la construction du jour (`resolveSeaDayEvent`) — reprend
 // `runSeaDay` elle-même à sa clôture (patron `sea-force-pace`/`sea-priere`, `combatAuto.ts:99`).
 registerCascadeApplier('sea-ouragan-affaler', (get, set, step) => {
-  affalerConsequence(get, set, step);
+  const consequences = affalerConsequence(get, set, step);
   if (get().pendingCascade) setTimeout(() => runSeaDay(get, set), 0);
+  return { consequences };
 });
 
 /** Orientation quotidienne (« un Test par jour de voyage », ch.13 l.311) → Repères / Changement de cap. */
@@ -1174,11 +1192,11 @@ registerCascadeApplier('orientation', (get, set, step) => {
   const total = step.result.sl;
   const dr = total + (sea.lighthouseDR ?? 0);
   const out = orientationOutcome(dr, !!sea.minorDrift);
-  tell(get, set, [`Orientation (DR ${dr >= 0 ? '+' : ''}${dr}${sea.lighthouseDR ? `, phare +${sea.lighthouseDR}` : ''}) : ${out.desc}`]);
+  const j = [`Orientation (DR ${dr >= 0 ? '+' : ''}${dr}${sea.lighthouseDR ? `, phare +${sea.lighthouseDR}` : ''}) : ${out.desc}`];
   if (out.outcome === 'drift-minor') patchSea(get, set, { minorDrift: true });
   if (out.rollCourseChange) {
     const cc = rollCourseChange(rng, out.courseChangeBonus);
-    tell(get, set, [`Changement de cap (d10 ${cc.roll}, dérive ${cc.side}) : ${cc.desc}`]);
+    j.push(`Changement de cap (d10 ${cc.roll}, dérive ${cc.side}) : ${cc.desc}`);
     const plan2 = get().travelPlan!;
     const remaining = plan2.km - plan2.kmDone;
     if (cc.effect === 'retard') set({ travelPlan: { ...plan2, km: plan2.km + remaining * (cc.delayPct / 100) } });
@@ -1188,6 +1206,8 @@ registerCascadeApplier('orientation', (get, set, step) => {
       patchSea(get, set, { heading: turn[sea.heading] });
     }
   }
+  noteSeaLine(get, set, j);
+  return { consequences: freeCons(j) };
 });
 
 /** Phare du port d'arrivée (ch.13 l.337) : réussite → bonus d'Orientation (Savoir Océans/manuel). */
@@ -1197,7 +1217,9 @@ registerCascadeApplier('phare', (get, set, step) => {
   const best = partyAssisted(get().party, 'orientation');
   const dr = success && best ? Math.max(1, lighthouseOrientationDR(best.actor, false), savoirOceansBonus(best.actor)) : 0;
   patchSea(get, set, { lighthouseDR: dr });
-  tell(get, set, [success ? `La lumière du phare est en vue — l'atterrage se précise (+${dr} DR d'Orientation, MDG ch.13 l.335).` : 'Aucune lumière à l\'horizon — brume ou distance.']);
+  const j = [success ? `La lumière du phare est en vue — l'atterrage se précise (+${dr} DR d'Orientation, MDG ch.13 l.335).` : 'Aucune lumière à l\'horizon — brume ou distance.'];
+  noteSeaLine(get, set, j);
+  return { consequences: freeCons(j) };
 });
 
 /** Embuscade authorée à ancrage déterministe (#212) : réussite = préparés (pas de Surprise). */
@@ -1206,10 +1228,12 @@ registerCascadeApplier('embuscade', (get, set, step) => {
   const plan = get().travelPlan;
   const route = (get().worldMap as WorldMap | undefined)?.routes.find((r) => r.id === plan?.routeId);
   const success = step.result.success;
-  tell(get, set, [success
+  const j = [success
     ? 'La vigie a vu venir l\'abordage : le navire s\'y prépare (pas de Surprise).'
-    : 'Trop tard — le navire hostile fond sur vous avant que l\'équipage ne réagisse (Surprise) !']);
+    : 'Trop tard — le navire hostile fond sur vous avant que l\'équipage ne réagisse (Surprise) !'];
+  noteSeaLine(get, set, j);
   openAuthoredSeaAmbush(get, set, route, success);
+  return { consequences: freeCons(j) };
 });
 
 /** Manche de Poursuite (ch.13 l.354-370) — issue partagée avec la poursuite terrestre (`engine/pursuit`). */
@@ -1226,18 +1250,20 @@ registerCascadeApplier('poursuite', (get, set, step) => {
   const foe = rollTest(c.foeSkill, 'intermediaire', rng);
   const gain = pursuitDistanceGain(myM, total + pursuitLowMPenalty(myM)) - pursuitDistanceGain(c.foeM, foe.sl + pursuitLowMPenalty(c.foeM));
   const distance = c.distance + gain;
-  tell(get, set, [`Poursuite — ${c.label} : ${gain >= 0 ? 'le navire creuse l\'écart' : 'le poursuivant gagne du terrain'} (${gain >= 0 ? '+' : ''}${gain} → Distance ${distance}/${c.escapeAt}).`]);
+  const j = [`Poursuite — ${c.label} : ${gain >= 0 ? 'le navire creuse l\'écart' : 'le poursuivant gagne du terrain'} (${gain >= 0 ? '+' : ''}${gain} → Distance ${distance}/${c.escapeAt}).`];
   const outcome = pursuitOutcome(distance, c.escapeAt);
   if (outcome === 'escaped') {
     patchSea(get, set, { crisis: undefined });
-    tell(get, set, ['Le poursuivant abandonne : le navire s\'est échappé (MDG ch.13 l.362).']);
+    j.push('Le poursuivant abandonne : le navire s\'est échappé (MDG ch.13 l.362).');
   } else if (outcome === 'caught') {
     patchSea(get, set, { crisis: undefined });
-    tell(get, set, ['Rattrapés ! « une collision, suivie d\'un abordage déterminé, est malheureusement inévitable » (MDG ch.13 l.420).']);
+    j.push('Rattrapés ! « une collision, suivie d\'un abordage déterminé, est malheureusement inévitable » (MDG ch.13 l.420).');
     startChaseBoarding(get, set);
   } else {
     patchSea(get, set, { crisis: { ...c, distance } });
   }
+  noteSeaLine(get, set, j);
+  return { consequences: freeCons(j) };
 });
 
 /** Manche d'Évasion du Tourbillon (ch.13 l.514-528) : chaque manche coûte des Dégâts de collision. */
@@ -1253,11 +1279,13 @@ registerCascadeApplier('tourbillon', (get, set, step) => {
   const hull = plan!.vehicle!;
   const dmg = Math.max(0, w.ic - Math.floor((hull.characteristics?.endurance ?? 0) / 10));
   damageVesselHull(get, set, hull, dmg);
-  tell(get, set, [`${w.label} : l'eau tournoyante broie la coque (${dmg} Blessures) — évasion ${progress}/${c.need} DR.`]);
+  const j = [`${w.label} : l'eau tournoyante broie la coque (${dmg} Blessures) — évasion ${progress}/${c.need} DR.`];
   if (progress >= c.need) {
     patchSea(get, set, { crisis: undefined });
-    tell(get, set, ['Le navire s\'arrache du Tourbillon (Test étendu d\'Évasion accompli, MDG ch.13 l.528).']);
+    j.push('Le navire s\'arrache du Tourbillon (Test étendu d\'Évasion accompli, MDG ch.13 l.528).');
   } else patchSea(get, set, { crisis: { ...c, progress } });
+  noteSeaLine(get, set, j);
+  return { consequences: freeCons(j) };
 });
 
 /** Extermination des nuisibles (MDG 14 l.98-104) : Test étendu, 1d10 h par Test. */
@@ -1270,13 +1298,16 @@ registerCascadeApplier('extermination', (get, set, step) => {
   const rng = battleRng();
   const progress = inf.progress + Math.max(0, total);
   set({ gameTime: get().gameTime + rollDice(1, 10, rng) * 60 }); // « Chaque Test nécessite … 1d10 heures » (MDG 14 l.100)
+  let j: string[];
   if (progress >= inf.need) {
     patchSea(get, set, { infestation: undefined });
-    tell(get, set, [`${inf.label} : la vermine est exterminée (${progress}/${inf.need} DR).`]);
+    j = [`${inf.label} : la vermine est exterminée (${progress}/${inf.need} DR).`];
   } else {
     patchSea(get, set, { infestation: { ...inf, progress } });
-    tell(get, set, [`${inf.label} : la purge avance (${progress}/${inf.need} DR).`]);
+    j = [`${inf.label} : la purge avance (${progress}/${inf.need} DR).`];
   }
+  noteSeaLine(get, set, j);
+  return { consequences: freeCons(j) };
 });
 
 /** Voyage rapide (MDG 15 l.28) : le DR alimente le palier — calculé/persisté PUIS appliqué (embuscade
@@ -1293,12 +1324,15 @@ registerCascadeApplier('entretien', (get, set, step) => {
   const total = step.result.sl;
   const rng = battleRng();
   const adj = total + REPARATION.entretienCrewTestDR;
+  let j: string[];
   if (adj >= 1) {
     const hull = get().travelPlan!.vehicle!;
     const healed = Math.min(hull.wounds.max - hull.wounds.current, rollDice(1, 10, rng));
     healVesselHull(get, set, hull, healed);
-    tell(get, set, [`Réparations de fortune : +${healed} Blessures de coque (Entretien ${adj >= 0 ? '+' : ''}${adj} DR après −2, MDG 14 l.122).`]);
-  } else tell(get, set, [`Les réparations n'aboutissent pas cette nuit (Entretien ${adj} DR après −2).`]);
+    j = [`Réparations de fortune : +${healed} Blessures de coque (Entretien ${adj >= 0 ? '+' : ''}${adj} DR après −2, MDG 14 l.122).`];
+  } else j = [`Les réparations n'aboutissent pas cette nuit (Entretien ${adj} DR après −2).`];
+  noteSeaLine(get, set, j);
+  return { consequences: freeCons(j) };
 });
 
 // ── PANNE DE VAPEUR (MDG ch.12 l.313-352) — résolution first-class au voyage ─────────────────────
@@ -1907,5 +1941,5 @@ registerCascadeApplier('sea-desertion', (get, set, step) => {
   };
   if (get().pendingCascade) setTimeout(finish, 0);
   else finish();
-  return { journal };
+  return { consequences: freeCons(journal) };
 });

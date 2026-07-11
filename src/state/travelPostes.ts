@@ -28,6 +28,7 @@ import { applyOps } from '../engine/ops';
 import { addCondition, removeCondition, stacks } from '../engine/conditions';
 import { extendedTestStep } from '../engine/tests';
 import { registerCascadeApplier } from './cascade';
+import { freeCons } from './rollSeam';
 import { rule } from '../engine/policy';
 import {
   stageCount, pleinAirModifier, forageWeatherModifier, forageYield, stageExposureDifficulty,
@@ -164,7 +165,7 @@ registerCascadeApplier('stagePoste', (get, set, step, hero) => {
   else if (r.success && r.stageOutcome === 'rerollToken') j.push(`${hero.name} s'exerce en chemin — il pourra inverser un futur Test de cette Compétence.`);
   else if (r.success && r.stageOutcome === 'gatherInfo') j.push(`${hero.name} glane des informations en route.`);
   set({ party: [...get().party] });
-  return { journal: j };
+  return { consequences: freeCons(j) };
 }, (ok, n) => (ok ? `${n} tient son poste.` : `${n} échoue à son poste.`));
 
 /** AGRÉGATION de fin d'Étape (fourrage cumulé, camp, cartes, Rencontre) + INSERTION des jets d'Exposition
@@ -237,7 +238,7 @@ registerCascadeApplier('stageAggregate', (get, set, step) => {
   // EXPOSITION de fin d'Étape (l.73) : INSÈRE un jet influençable par héros exposé (sauf « Plein air » l.141).
   const suppress = agg.gates.includes('suppressExposure');
   const insert = suppress ? [] : buildExposureSteps(get(), stage);
-  return { journal: j, insert };
+  return { consequences: freeCons(j), insert };
 });
 
 /** Jets d'EXPOSITION de fin d'Étape (l.73) à insérer : un par héros vivant devant un Test de Résistance
@@ -268,7 +269,7 @@ function buildExposureSteps(state: { party: Combatant[] }, stage: StageContext):
 registerCascadeApplier('stageExposure', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
   const weatherLabel = String(step.meta?.weatherLabel ?? '');
-  if (step.meta?.warded) return { journal: [`${hero.name} ignore le froid et les intempéries (protection magique).`] };
+  if (step.meta?.warded) return { consequences: freeCons([`${hero.name} ignore le froid et les intempéries (protection magique).`]) };
   const j = [`${hero.name} — Exposition de fin d'Étape (${weatherLabel}) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'tient le coup.' : 'transi par le froid.'}`];
   if (!step.result.success) {
     const prior = (hero.activeEffects ?? []).filter((e) => e.effectId === 'exposition-froid').length;
@@ -276,5 +277,5 @@ registerCascadeApplier('stageExposure', (_get, _set, step, hero) => {
     j.push(...applyExposureFailure(hero, rank, battleRng()).log);
     if (step.meta?.coldSeason) j.push(`${hero.name} grelotte et tousse — un rhume couve (saison froide).`);
   }
-  return { journal: j };
+  return { consequences: freeCons(j) };
 }, (ok, n) => (ok ? `${n} tient le coup.` : `${n} souffre du froid.`));

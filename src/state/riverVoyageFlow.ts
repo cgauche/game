@@ -51,7 +51,7 @@ import {
 } from '../engine/riverNavigation';
 import { DIFFICULTY_LABELS, DIFFICULTY_MODIFIERS, type Combatant, type Difficulty } from '../engine/types';
 import { startCascade, registerCascadeApplier, runCascadeImmediate } from './cascade';
-import type { Consequence } from './rollSeam';
+import { freeCons, type Consequence } from './rollSeam';
 import { humanControlled } from './netOwnership';
 import { riverAutoResolves, type VoyageCadence, type VoyageOrders } from './voyageCadence';
 import type { CascadeStep, CascadeStepMeta } from './pendings';
@@ -108,10 +108,6 @@ export interface RiverDayContext {
 const log = (get: Get, set: Set, lines: string[]) => {
   if (lines.length) set({ journal: [...get().journal.slice(-40), ...lines] });
 };
-
-/** Enveloppe des lignes de conséquence DÉJÀ composées (sans roll/target/sl du jet visible) en
- *  `Consequence[]` (#295 Lot 1, `out.free` passthrough — `rollSeam.ts`). */
-const freeCons = (texts: string[]): Consequence[] => texts.filter((t) => t.length > 0).map((text) => ({ say: 'out.free', vars: { text } }));
 
 /** La COQUE de trajet fluviale : le navire de campagne si c'en est un, sinon le véhicule-bateau de la route
  *  (`vehicles.json`, facette `ship`+`hull`). Repart des Blessures persistées (#30) si c'est le navire de

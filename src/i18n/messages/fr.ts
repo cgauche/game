@@ -378,6 +378,7 @@ export const fr = {
   'out.corruptThreatens': '{name} échoue — une mutation menace de se développer…',
   'out.corruptRepel': "{name} repousse l'Influence corruptrice.",
   'out.corruptGain': '{name} subit {gain} Point{s} de Corruption.',
+  'out.corruptExposureResist': '{name} — exposition à la Corruption ({label}) : résiste.',
   'out.craftDone': 'L’ouvrage est achevé !',
   'out.craftProgress': 'L’ouvrage avance ({after}/{target} DR).',
   'out.identifyFull': 'L’artefact est identifié — ses Particularités sont révélées.',

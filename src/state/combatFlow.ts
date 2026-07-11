@@ -228,6 +228,7 @@ import {
 } from './combatManeuvers';
 import { spellFlowFor, spellOps, testFlow, flowHasFreeAttack, flattenFlow, conditionCtx, EMPTY_FLOW, type Flow, type EffectTrigger } from './flow';
 import { startCascade, registerCascadeApplier } from './cascade';
+import { freeCons } from './rollSeam';
 
 /** L'État du défenseur accorde-t-il un Avantage à l'assaillant en mêlée ? Lu en DONNÉES
  *  (`incomingMeleeAdvantage` → `passive` `incomingAdvantage`, kind `etat`). Sonné : « +1 Avantage avant
@@ -4349,7 +4350,7 @@ registerCascadeApplier('combatEndDisease', (get, set, step, hero) => {
   const lines = applyContraction(hero, disease, step.result.success, battleRng(), step.meta?.instant === true ? { instant: true } : undefined);
   set({ party: [...get().party] });
   if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-  return { journal: lines.length ? lines : [tr('cf.resistsInfection', { name: hero.name })] };
+  return { consequences: freeCons(lines.length ? lines : [tr('cf.resistsInfection', { name: hero.name })]) };
 });
 
 /** Applier d'une étape `combatEndCorruption` (LDB 19) : Test de Résistance RÉSOLU → `corruptionGain` selon
@@ -4360,11 +4361,12 @@ registerCascadeApplier('combatEndCorruption', (get, set, step, hero) => {
   const label = typeof step.meta?.exposureLabel === 'string' ? step.meta.exposureLabel : '';
   if (!level) return;
   const gain = corruptionGain(level, step.result.success, Math.max(0, step.result.sl));
-  const lines = [tr('cf.corruptionExposure', { name: hero.name, label, roll: step.result.roll, target: step.result.target, gain: gain ? '' : tr('cf.fragResists') })];
-  if (gain > 0) lines.push(...gainCorruption(get, set, hero, gain));
+  // Le verdict (roll/target) est déjà porté par la rangée de jet (RollLine ✓/✗ ±DR) — la conséquence ne
+  // re-décrit QUE ce qui a été appliqué (#295 Lot 1, Décision 1b) : le gain RÉEL, ou une résistance nue.
+  const lines = gain > 0 ? gainCorruption(get, set, hero, gain) : [tr('out.corruptExposureResist', { name: hero.name, label })];
   set({ party: [...get().party] });
   if (get().battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-  return { journal: lines };
+  return { consequences: freeCons(lines) };
 });
 
 /** Ouvre une cascade INFLUENÇABLE à UNE étape de Contraction de maladie pour `patient` (Test de Résistance
@@ -5146,7 +5148,7 @@ registerCascadeApplier(
     if (step.immune) {
       set({ party: [...get().party] });
       if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-      return { journal: [tr('cf.psychImmune', { name: hero.name })] };
+      return { consequences: freeCons([tr('cf.psychImmune', { name: hero.name })]) };
     }
     let line: string;
     let phobieLine: string | null = null;
@@ -5201,7 +5203,7 @@ registerCascadeApplier(
     const superseded = suppressSupersededPsych(hero);
     set({ party: [...get().party] });
     if (battle) set({ battle: { ...get().battle!, combatants: [...get().battle!.combatants] } });
-    return { journal: [line, ...(phobieLine ? [phobieLine] : []), ...superseded.map((tp) => tr('turn.psychSuperseded', { name: hero.name, psych: psychologyLabel(tp) }))] };
+    return { consequences: freeCons([line, ...(phobieLine ? [phobieLine] : []), ...superseded.map((tp) => tr('turn.psychSuperseded', { name: hero.name, psych: psychologyLabel(tp) }))]) };
   },
   (success, name) => (success ? tr('out.terreurHold', { name }) : tr('cf.psychYields', { name })),
 );

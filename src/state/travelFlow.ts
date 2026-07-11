@@ -49,6 +49,7 @@ import { seasonOfMonth, rollStageWeather, WEATHER_LABEL, type Season } from '../
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { buildStageSteps, type StageContext } from './travelPostes';
 import { startCascade, registerCascadeApplier } from './cascade';
+import { freeCons } from './rollSeam';
 import type { CascadeStep } from './pendings';
 import { buildSeaPlan, runSeaDay, startFastVoyage, syncHullWoundsFromVessel } from './seaVoyageFlow';
 import { buildRiverPlan, runRiverDays } from './riverVoyageFlow';
@@ -634,10 +635,10 @@ registerCascadeApplier('landPeril', (get, set, step) => {
     j.push(`Péripétie : ${peril.label}`);
     if ((peril.effects ?? []).some((e) => e.type === 'startCombat' || e.type === 'transition')) {
       j.push(...markLandInterrupt(get, set, { kind: 'effects', effects: peril.effects }, destLabel));
-      return { journal: j };
+      return { consequences: freeCons(j) };
     }
     applyEffectsLoot(get, set, peril.effects, peril.label); // trouvaille d'auteur → fenêtre d'attribution
-    if (interrupted()) { j.push(...markLandInterrupt(get, set, { kind: 'effects', effects: peril.effects }, destLabel)); return { journal: j }; }
+    if (interrupted()) { j.push(...markLandInterrupt(get, set, { kind: 'effects', effects: peril.effects }, destLabel)); return { consequences: freeCons(j) }; }
   }
 
   // 2. Table d10 RAW (l.237). L'entrée à Test (éreintant/attaque) INSÈRE un jet influençable ; les kinds
@@ -658,7 +659,7 @@ registerCascadeApplier('landPeril', (get, set, step) => {
     } else if (entry.kind === 'ereintant') {
       // Survie en extérieur Accessible (+20) INFLUENÇABLE → étape-jet insérée (échec = retard + Exténué).
       const best = partyAssisted(party, 'survie-en-exterieur'); // Soutien (LDB 12)
-      if (best) return { journal: j, insert: [{
+      if (best) return { consequences: freeCons(j), insert: [{
         id: 'peril-survie', kind: 'landPerilSurvie', actorId: best.actor.id, icon: 'travel/compass', label: 'Survie en extérieur',
         rollLabel: 'Survie en extérieur', base: best.value, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
       }] };
@@ -668,16 +669,16 @@ registerCascadeApplier('landPeril', (get, set, step) => {
       // différée (le `noSurprise` suit le jet). Sans tester (aucun héros vivant) : interruption directe.
       const configured = !!(route.ambush?.scene && route.ambush.encounter);
       const best = partyAssisted(party, 'perception'); // Soutien (LDB 12)
-      if (best) return { journal: j, insert: [{
+      if (best) return { consequences: freeCons(j), insert: [{
         id: 'peril-perception', kind: 'landPerilPerception', actorId: best.actor.id, icon: 'ui/eye', label: 'Perception',
         rollLabel: 'Perception', base: best.value, target: Math.max(1, Math.min(99, best.value + DIFFICULTY_MODIFIERS.accessible)), result: null, interactive: true,
         meta: { destLabel, configured, ambushScene: route.ambush?.scene ?? '', ambushEntry: route.ambush?.entry ?? '', ambushEnc: route.ambush?.encounter ?? '' } }] };
-      if (configured) { j.push(...markLandInterrupt(get, set, { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: false }, destLabel)); return { journal: j }; }
+      if (configured) { j.push(...markLandInterrupt(get, set, { kind: 'ambush', scene: route.ambush!.scene, entry: route.ambush!.entry, encounter: route.ambush!.encounter, noSurprise: false }, destLabel)); return { consequences: freeCons(j) }; }
       j.push('(Aucune rencontre d’embuscade n’est configurée sur cette route — l’alerte reste sans suite.)');
     }
     // narratif (default) : le texte au journal suffit.
   }
-  return { journal: j };
+  return { consequences: freeCons(j) };
 });
 
 /** « Voyage éreintant » (l.237) : Survie en extérieur (+20) INFLUENÇABLE ; échec → +1 jour de retard et
@@ -686,7 +687,7 @@ registerCascadeApplier('landPerilSurvie', (get, set, step, hero) => {
   if (!step.result) return;
   const j = [`${hero?.name ?? 'Le groupe'} — Survie en extérieur (+20) : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'un itinéraire de substitution est trouvé.' : 'ÉCHEC.'}`];
   if (!step.result.success) j.push(...applyEreintant(get, set));
-  return { journal: j };
+  return { consequences: freeCons(j) };
 });
 
 /** « Attaqués ! » (l.237) : Perception (+20) INFLUENÇABLE ; réussie → le groupe les voit venir (sans
@@ -700,7 +701,7 @@ registerCascadeApplier('landPerilPerception', (get, set, step, hero) => {
     kind: 'ambush', scene: String(step.meta?.ambushScene ?? ''), entry: String(step.meta?.ambushEntry ?? '') || undefined,
     encounter: String(step.meta?.ambushEnc ?? ''), noSurprise: step.result.success,
   }, destLabel));
-  return { journal: j };
+  return { consequences: freeCons(j) };
 });
 
 /**
@@ -909,10 +910,10 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
     km += 1; hours += 1 / gallopKmh;
     const j = [`${name} — Conduite d'attelage (allure forcée) : ${step.result.roll}/${step.result.target} → l'attelage tient l'allure de course.`];
     if (hours < plan.hoursPerDay - 1e-9 && km < kmLeft - 1e-9 && step.actorId && hero) {
-      return { journal: j, insert: [buildForcedPaceStep({ actor: hero, value: driverBase }, kmLeft, galloped + 1, km, hours)] };
+      return { consequences: freeCons(j), insert: [buildForcedPaceStep({ actor: hero, value: driverBase }, kmLeft, galloped + 1, km, hours)] };
     }
     finalizeForcedPace(get, set, { km: Math.min(km, kmLeft), hours, vehicleOut: false, vehicleLame: false });
-    return { journal: j };
+    return { consequences: freeCons(j) };
   }
   const stupefiant = step.result.sl <= -6; // Échec Stupéfiant (EDOC 07 l.253)
   const j = [`${name} — Conduite d'attelage (allure forcée) : ${step.result.roll}/${step.result.target} → ÉCHEC${stupefiant ? ' STUPÉFIANT' : ''}, l'attelage repasse au pas.`];
@@ -927,14 +928,14 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   const finalKm = Math.min(kmLeft, km + restHours * walkKmh), finalHours = hours + restHours;
   if (!stupefiant) {
     finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false });
-    return { journal: j };
+    return { consequences: freeCons(j) };
   }
   const roll = d100(battleRng());
   let entry = rollVehicleProblem(roll);
   if (entry.id === 'incontrolable') {
     j.push(`Problème de véhicule — ${entry.label}.`);
     if (step.actorId && hero) {
-      return { journal: j, insert: [{
+      return { consequences: freeCons(j), insert: [{
         id: `${step.id}-control`, kind: 'landForcedPaceControl', actorId: step.actorId, icon: 'travel/cart',
         label: `${name} — reprendre le contrôle`, rollLabel: 'Conduite d’attelage',
         base: driverBase, target: Math.max(1, Math.min(99, driverBase)), result: null, interactive: true,
@@ -943,7 +944,7 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
     }
     const rt = rollTest(driverBase, 'intermediaire', battleRng());
     j.push(`${name} tente de reprendre le contrôle : ${rt.roll}/${rt.target} → ${rt.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`);
-    if (rt.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { journal: j }; }
+    if (rt.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { consequences: freeCons(j) }; }
     entry = rollVehicleProblem(96);
   } else if (entry.id === 'casse') {
     j.push(`Problème de véhicule — ${entry.label}, à pleine allure : ACCIDENT !`);
@@ -951,7 +952,7 @@ registerCascadeApplier('landForcedPace', (get, set, step, hero) => {
   }
   const outcome = applyVehicleProblemEffects(get, set, entry, j);
   finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, ...outcome });
-  return { journal: j };
+  return { consequences: freeCons(j) };
 });
 
 /** Reprise de contrôle INFLUENÇABLE d'un attelage « Incontrôlable » (#270, EDOC 07 l.284) : succès →
@@ -962,11 +963,11 @@ registerCascadeApplier('landForcedPaceControl', (get, set, step, hero) => {
   const finalKm = Number(m.finalKm), finalHours = Number(m.finalHours);
   const name = hero?.name ?? 'Le conducteur';
   const j = [`${name} tente de reprendre le contrôle : ${step.result.roll}/${step.result.target} → ${step.result.success ? 'l’attelage est maîtrisé.' : 'ACCIDENT !'}`];
-  if (step.result.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { journal: j }; }
+  if (step.result.success) { finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, vehicleOut: false, vehicleLame: false }); return { consequences: freeCons(j) }; }
   const entry = rollVehicleProblem(96); // 96-00 = Accident (table verbatim)
   const outcome = applyVehicleProblemEffects(get, set, entry, j);
   finalizeForcedPace(get, set, { km: finalKm, hours: finalHours, ...outcome });
-  return { journal: j };
+  return { consequences: freeCons(j) };
 });
 
 /**

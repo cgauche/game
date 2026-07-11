@@ -15,6 +15,7 @@
  */
 import { registerCombatHook } from '../combatHooks';
 import { registerCascadeApplier } from '../cascade';
+import { freeCons } from '../rollSeam';
 import { pushCombatStep } from '../combatEffects';
 import { battleRng } from '../battleRng';
 import { ev, evLines } from '../combatLog';
@@ -111,9 +112,9 @@ export function resolveActGates(get: Get, set: SetFn, c: Combatant): ActGateOutc
 // Étape `actGate` (héros manuel) : succès → rien à restreindre ; échec → étape de CHOIX insérée.
 registerCascadeApplier('actGate', (_get, _set, step, hero) => {
   if (!hero || !step.result) return;
-  if (step.result.success) return { journal: [t('turn.actGateOk', { name: hero.name })] };
+  if (step.result.success) return { consequences: freeCons([t('turn.actGateOk', { name: hero.name })]) };
   return {
-    journal: [t('turn.actGateFail', { name: hero.name })],
+    consequences: freeCons([t('turn.actGateFail', { name: hero.name })]),
     insert: [{
       id: `actGateChoice-${hero.id}`, kind: 'actGateChoice', actorId: hero.id, icon: 'item/consumable',
       label: t('turn.actGateChoice'),
@@ -132,10 +133,10 @@ registerCascadeApplier('actGateChoice', (get, set, step, hero) => {
   if (!battle || battle.order[battle.turn] !== hero.id) return; // plus son tour → sans objet
   if (step.chosen === 'move') {
     set({ battle: { ...battle, acted: true } });
-    return { journal: [t('op.loseAction', { name: hero.name })] };
+    return { consequences: freeCons([t('op.loseAction', { name: hero.name })]) };
   }
   set({ battle: { ...battle, movementUsed: mountMovement(battle, hero) } });
-  return { journal: [t('op.loseMovement', { name: hero.name })] };
+  return { consequences: freeCons([t('op.loseMovement', { name: hero.name })]) };
 });
 
 // ============================================================================================

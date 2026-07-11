@@ -8,6 +8,7 @@
  */
 import { registerCombatHook } from '../combatHooks';
 import { registerCascadeApplier } from '../cascade';
+import { freeCons } from '../rollSeam';
 import { battleRng } from '../battleRng';
 import { rollTest } from '../../engine/tests';
 import { testValue } from '../../engine/skills';
@@ -355,11 +356,11 @@ registerCascadeApplier('fatigue', (get, set, step, hero) => {
   if (!hero || !step.result) return;
   const line = fatigueApply(hero, step.result.success, step.result.sl);
   syncCombatant(get, set);
-  return { journal: line ? [line] : [`${hero.name} tient bon malgré l’effort.`] };
+  return { consequences: freeCons([line ?? `${hero.name} tient bon malgré l’effort.`]) };
 });
 registerCascadeApplier('aaBleedUnconscious', (get, set, step, hero) => {
   if (!hero || !step.result) return;
   const line = aaBleedUnconsciousApply(hero, step.result.success);
   syncCombatant(get, set);
-  return { journal: line ? [line] : [t('cond.aaBleedHold', { name: hero.name })] };
+  return { consequences: freeCons([line ?? t('cond.aaBleedHold', { name: hero.name })]) };
 });

@@ -36,6 +36,7 @@ import type { FreeAttackFreeze, BladeTrapFreeze, CascadeStep } from '../pendings
 import { battleRng } from '../battleRng';
 import { runPureFlowLines, runFlow, pushCombatStep, openSkillTest, applyLeafOps } from '../combatEffects';
 import { registerCascadeApplier } from '../cascade';
+import { freeCons } from '../rollSeam';
 import { recoveryGeometry, effectSourcesOf } from '../triggeredEffects';
 import { emitCombatEvent } from '../combatEvents';
 import { humanControlled } from '../netOwnership';
@@ -408,7 +409,7 @@ registerCascadeApplier('triggeredTest', (get, set, step, hero) => {
   // Continuation `after` (le reste du `seq` qui suivait le `test`) — peut ré-appender une étape
   // `triggeredTest` à la MÊME cascade (commitStep `liveMerge` repart des participants courants).
   playAfter(get, set, hero, step.meta?.after, step.label ?? 'Effet');
-  return { journal };
+  return { consequences: freeCons(journal) };
 });
 
 /** Le coût d'Avantage d'un nœud `choice` est-il payable par le décideur ? (Coût absent ⇒ gratuit ⇒ oui.) */

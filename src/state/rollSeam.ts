@@ -146,6 +146,11 @@ export function resultLine(cons: Consequence[]): string {
     .join(' ');
 }
 
+/** Enveloppe des lignes de conséquence DÉJÀ composées (sans roll/target/sl du jet visible) en
+ *  `Consequence[]` (#295 Lot 1, `out.free` passthrough) — SOURCE UNIQUE, réutilisée par tous les
+ *  appliers de cascade migrés (river/travel/sea/shipwreck/pursuit/combat/rest/embrigadement). */
+export const freeCons = (texts: string[]): Consequence[] => texts.filter((s) => s.length > 0).map((text) => ({ say: 'out.free', vars: { text } }));
+
 /** Résout le côté d'un jet MONO (`hero-test`/`enemy`/`subi` non-`batch`) en acteur + éventuelle valeur
  *  DÉJÀ CALCULÉE (mandat coordinateur — le call-site ne calcule plus rien) :
  *   - `actorId` : l'acteur désigné, valeur = `testValue` (calculée par `effectiveTarget`, pas ici) ;
