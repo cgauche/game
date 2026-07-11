@@ -39,6 +39,7 @@ import { dropExpiredGrantedResources } from '../engine/grantedResources';
 import { dropExpiredGrantedWeapons } from '../engine/conjuredWeapons';
 import { restoreSuppressedPsych } from '../engine/psychology';
 import { tickTraumaRecovery } from '../engine/trauma';
+import { applyOps } from '../engine/ops';
 import { bus, EVT } from './bus';
 
 import type { Get, Set } from './flowTypes';
@@ -149,6 +150,19 @@ export function runDailyUpkeep(get: Get, set: Set, opts: { caredFor?: boolean; f
       if (rule('disease-mode') !== 'off') lines.push(...dailyDiseaseUpkeep(h, battleRng(), opts.caredFor, defer));
       // 3. Convalescence des Blessures critiques (LDB 18 — jours calendaires, #T3).
       lines.push(...tickTraumaRecovery(h, 1, battleRng(), restResistVal(h), defer));
+    }
+  }
+  // Nuit forcée (maison `travel-sleep-forced`, #340) : chaque jour calendaire franchi SANS nuit jouée
+  // (aucun repos depuis `lastNightDay`) inflige 1 État Exténué « privation de sommeil » par héros vivant.
+  // Jamais silencieux (Consequence via applyOps `condition`) ; retiré au prochain vrai sommeil (LDB 16).
+  if (rule('travel-sleep-forced') === true) {
+    const missed = Math.max(0, today - Math.max(last, get().lastNightDay));
+    if (missed > 0) {
+      for (const h of party) {
+        if (h.dead) continue;
+        lines.push(`${h.name} — privation de sommeil (${missed} nuit${missed > 1 ? 's' : ''} sans dormir) :`);
+        lines.push(...applyOps(h, [{ op: 'condition', name: 'extenue', value: missed }], { rng: battleRng() }));
+      }
     }
   }
   if (rations > 0) lines.unshift(`Le groupe entame ses provisions (${rations} ration${rations > 1 ? 's' : ''}).`);

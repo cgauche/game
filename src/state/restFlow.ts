@@ -44,7 +44,7 @@ import type { CascadeStep, CascadeStepMeta } from './pendings';
 import { isRation, feedFromMeal, applyFaimTest, applySoifTest } from '../engine/provisions';
 import { toBrass, fromBrass, canAfford, subtract as moneySub, formatMoney, type Money } from '../engine/money';
 import { minutesUntilNext, DAWN_MINUTE, MINUTES_PER_DAY } from '../engine/clock';
-import { runDailyUpkeep } from './upkeep';
+import { runDailyUpkeep, dayIndex } from './upkeep';
 import { continueTravelAfterNight } from './travelFlow';
 import { bus, EVT } from './bus';
 import type { GameState } from './store';
@@ -172,6 +172,7 @@ export function sleepParty(
   const firstNight = toDawn === 0 ? MINUTES_PER_DAY : toDawn;
   set({ gameTime: from + firstNight + (n - 1) * MINUTES_PER_DAY });
   bus.emit(EVT.TIME_ADVANCED, { minutes: get().gameTime - from });
+  set({ lastNightDay: dayIndex(get().gameTime) }); // nuit JOUÉE (#340) — désamorce la privation de sommeil
 
   // Soins prolongés (LDB 09) : présence d'un soignant valide (Guérison) → −1 jour/jour par maladie.
   const caredFor = get().party.some((h) => hasHealSkill(h) && !h.dead && !isOutOfAction(h));
@@ -488,6 +489,7 @@ export function buildNightCascade(get: Get, set: Set, p: PendingRest, opts: { fe
   const toDawn = minutesUntilNext(from, DAWN_MINUTE);
   set({ gameTime: from + (toDawn === 0 ? MINUTES_PER_DAY : toDawn) });
   bus.emit(EVT.TIME_ADVANCED, { minutes: get().gameTime - from });
+  set({ lastNightDay: dayIndex(get().gameTime) }); // nuit JOUÉE (#340) — désamorce la privation de sommeil
   // Entretien quotidien (#T3) — la partie SANS jet est eager (rations consommées, jours décomptés) ;
   // TOUT Test de Résistance (Faim l.422, maladie l.110/135/162, convalescence l.300) est DIFFÉRÉ en
   // étape influençable (sinon il serait pré-résolu dans le journal AVANT que le joueur n'agisse).

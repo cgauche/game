@@ -44,7 +44,8 @@ import { addCondition, removeCondition, stacks } from '../engine/conditions';
 import { subtract as moneySub, canAfford, formatMoney } from '../engine/money';
 import { d10, d100 } from '../engine/dice';
 import { rule } from '../engine/policy';
-import { toDate } from '../engine/clock';
+import { toDate, isTravelDaylight, DAWN_MINUTE, minutesUntilNext } from '../engine/clock';
+import { dayIndex } from './upkeep';
 import { seasonOfMonth, rollStageWeather, WEATHER_LABEL, type Season } from '../engine/travelStages';
 import { stageAssignmentFromRoles, type StagePosting } from '../engine/activities';
 import { buildStageSteps, type StageContext } from './travelPostes';
@@ -211,6 +212,56 @@ export function maxHoursPerDay(map: WorldMap | null): number {
   return map?.params?.forcedMaxHours ?? TRAVEL_DEFAULTS.forcedMaxHours;
 }
 
+/** Plafond dur d'une journée EN SELLE (heures) — endurance maximale d'une bête au pas (EDOC 07 l.142,
+ *  12 h) : au-delà, le groupe DOIT haltE (les allures plus rapides s'épuisent plus tôt, gérées par
+ *  `resolveMountedDay`). Sert au budget/jour de la monture (#340). */
+const MOUNT_MAX_HOURS = 12;
+
+/** Heures de voyage DÉJÀ parcourues le jour calendaire COURANT (accumulateur unique, `store.travelDayHours`)
+ *  — le budget RAW de 6 h se compte PAR JOUR, jamais par trajet (#340). Un franchissement de jour remet à
+ *  zéro (la clé `day` ne correspond plus). */
+function hoursTravelledToday(get: Get): { foot: number; mount: number; marched: boolean } {
+  const today = dayIndex(get().gameTime);
+  const acc = get().travelDayHours;
+  return acc && acc.day === today ? { foot: acc.foot, mount: acc.mount, marched: acc.marched }
+    : { foot: 0, mount: 0, marched: false };
+}
+
+/** Ajoute `hours` (mode À PIED ou EN SELLE) au budget du jour calendaire `dayKey` — clé stable pour que la
+ *  progression compte sur le jour de l'EFFORT même si le bloc enjambe minuit (#340). */
+function addTravelHoursToday(get: Get, set: Set, dayKey: number, mode: 'pied' | 'monture', hours: number): void {
+  const acc = get().travelDayHours;
+  const prior = acc && acc.day === dayKey ? acc : { day: dayKey, foot: 0, mount: 0, marched: false };
+  set({ travelDayHours: {
+    day: dayKey,
+    foot: prior.foot + (mode === 'pied' ? hours : 0),
+    mount: prior.mount + (mode === 'monture' ? hours : 0),
+    marched: prior.marched,
+  } });
+}
+
+/** Marque la marche forcée du jour `dayKey` comme TESTÉE (un seul Test de Résistance/jour, l.224). */
+function markMarchedToday(get: Get, set: Set, dayKey: number): void {
+  const acc = get().travelDayHours;
+  const prior = acc && acc.day === dayKey ? acc : { day: dayKey, foot: 0, mount: 0, marched: false };
+  set({ travelDayHours: { ...prior, day: dayKey, marched: true } });
+}
+
+/** Un départ terrestre/fluvial est-il BLOQUÉ par la porte d'heure maison (#340) ? Vrai si la règle est
+ *  active ET l'heure courante n'est pas dans le créneau aube→crépuscule. La mer est exemptée en amont. */
+function departureGated(get: Get): boolean {
+  return rule('travel-departure-gate') === true && !isTravelDaylight(get().gameTime);
+}
+
+/** « Attendre l'aube » (porte de départ, #340) : joue une nuit de sommeil (repos) — le groupe repart au
+ *  matin par la modale de voyage. Efface la porte (le trajet mémorisé sert d'aide-mémoire à l'UI). */
+export function departWaitDawn(get: Get, set: Set): void {
+  const pd = get().pendingDeparture;
+  set({ pendingDeparture: null });
+  if (!pd) return;
+  openRest(get, set, { places: placesOfKind('camp') });
+}
+
 /** Démarre un voyage depuis le lieu courant le long d'une route de la carte. */
 export function startTravel(
   get: Get, set: Set,
@@ -230,6 +281,15 @@ export function startTravel(
   if (!route.modes.includes(mode === 'monture' ? 'pied' : mode)) return;
   const to = placeById(worldMap, otherEnd(route, from.id));
   if (!to) return;
+
+  // Porte d'heure de départ (maison `travel-departure-gate`, #340) : terre (pied/monture) et fleuve
+  // JOUÉ ne s'ébranlent que de l'aube au crépuscule. La MER est exemptée (voguer de nuit = équipage +
+  // installations, MDG 15 l.76). De nuit → on mémorise le trajet et on propose « Attendre l'aube ».
+  const riverPlayed = !!route.river && mode !== 'pied' && mode !== 'monture' && !!findVehicleById(mode)?.ship;
+  if (mode !== 'mer' && (mode === 'pied' || mode === 'monture' || riverPlayed) && departureGated(get)) {
+    set({ pendingDeparture: { routeId, mode, opts, dawnAt: get().gameTime + minutesUntilNext(get().gameTime, DAWN_MINUTE) } });
+    return;
+  }
 
   // Route MARITIME (MDG ch.13-15) : se voyage sur le NAVIRE DE CAMPAGNE — mode 'mer', distance en
   // MILLES, résolution du jour déléguée à `seaVoyageFlow` (météo/vent, Tests d'équipage, événements).
@@ -410,9 +470,20 @@ function runTravelDays(get: Get, set: Set): void {
       return; // la clôture de la cascade (continueTravelDayAfterCascade) finalise le jour
     }
     const forced = forcedEligible ? forcedPaceDay(get, set, kmLeft) : null;
-    const hoursToday = forced ? forced.hours : Math.min(plan.hoursPerDay, kmLeft / kmh);
+    // BUDGET D'HEURES PAR JOUR CALENDAIRE (#340) : le RAW compte 6 h/JOUR sans Test (l.224), pas
+    // par trajet — les heures déjà parcourues aujourd'hui (`hoursTravelledToday`) grèvent le budget
+    // du jour. À pied, le plafond DUR maison (`forcedMaxHours`, défaut 10 h) borne la journée ; en
+    // selle, l'endurance au pas (12 h, EDOC 07 l.142). Le jour de l'EFFORT (`today0`) est figé AVANT
+    // l'avance d'horloge (un bloc peut enjamber minuit — la fatigue reste comptée sur le jour vécu).
+    const today0 = dayIndex(get().gameTime);
+    const prior = hoursTravelledToday(get);
+    const hoursToday = forced ? forced.hours
+      : plan.mode === 'pied' ? Math.min(plan.hoursPerDay, kmLeft / kmh, Math.max(0, maxHoursPerDay(worldMap) - prior.foot))
+      : plan.mode === 'monture' ? Math.min(plan.hoursPerDay, kmLeft / kmh, Math.max(0, MOUNT_MAX_HOURS - prior.mount))
+      : Math.min(plan.hoursPerDay, kmLeft / kmh);
     set({ gameTime: get().gameTime + Math.round(hoursToday * 60) });
     bus.emit(EVT.TIME_ADVANCED, { minutes: Math.round(hoursToday * 60) });
+    if (plan.mode === 'pied' || plan.mode === 'monture') addTravelHoursToday(get, set, today0, plan.mode, hoursToday);
     // L'ENTRETIEN du jour (rations/faim, maladies, convalescence) n'est PAS roulé ici : il se résout
     // dans la cascade de la halte de nuit (`buildNightCascade`), APRÈS le repas — sinon la Faim
     // s'installerait avant que le groupe ne mange. À l'ARRIVÉE (pas de nuit), le prochain
@@ -442,14 +513,20 @@ function runTravelDays(get: Get, set: Set): void {
     // d'office ici (pas de halte où le présenter).
     const dayLines: string[] = [];
     const marchHeroes: string[] = [];
-    if (plan.mode === 'pied' && hoursToday >= base - 1e-9) {
+    if (plan.mode === 'pied') {
+      // Décision sur le CUMUL du jour (prior + ce bloc), pas sur ce seul trajet (#340) : la fatigue
+      // d'Encombrement s'applique quand le jour franchit le seuil des heures de base (une fois/jour) ;
+      // la marche forcée (l.224) recense les héros dès que le cumul dépasse la base, une seule fois par
+      // jour calendaire (`marched`) — un seul Test de Résistance par jour, quel que soit le nombre de trajets.
+      const totalFoot = prior.foot + hoursToday;
+      const crossedFatigue = prior.foot < base - 1e-9 && totalFoot >= base - 1e-9;
+      const overBudget = totalFoot > base + 1e-9 && !prior.marched;
       for (const h of party) {
         if (h.dead || h.outOfRencontre) continue;
-        const fatigue = applyTravelFatigue(h);
-        dayLines.push(...fatigue);
-        recapDay.lines.push(...fatigue);
-        if (plan.hoursPerDay > base) marchHeroes.push(h.id);
+        if (crossedFatigue) { const fatigue = applyTravelFatigue(h); dayLines.push(...fatigue); recapDay.lines.push(...fatigue); }
+        if (overBudget) marchHeroes.push(h.id);
       }
+      if (overBudget && marchHeroes.length) markMarchedToday(get, set, today0);
       if (dayLines.length) set({ party: [...party] });
     }
     log(get, set, dayLines);
@@ -457,7 +534,8 @@ function runTravelDays(get: Get, set: Set): void {
     // Journée EN SELLE (EDOC 07 l.142-146) : endurance de l'allure des bêtes, Incidents de monte
     // (EDOC 07 l.148-174), chute du cavalier, bête perdue — puis dégradation à pied si le groupe
     // n'est plus monté au complet (les cavaliers ne marchent pas : ni fatigue ni marche forcée).
-    if (plan.mode === 'monture') resolveMountedTravelDay(get, set, hoursToday, plan.allure ?? 'pas', recapDay);
+    // `prior.mount` = heures DÉJÀ chevauchées aujourd'hui : l'endurance se compte sur le jour, pas le trajet (#340).
+    if (plan.mode === 'monture') resolveMountedTravelDay(get, set, hoursToday, plan.allure ?? 'pas', recapDay, prior.mount);
 
     // Sous-système OPTIONNEL « Voyage par Étapes » (EDOC ch.5, parent `travel-etapes`) + PÉRIPÉTIES du
     // jour (d'auteur puis table d10 RAW). TOUS les JETS du jour (Activités d'Étape, Exposition de fin
@@ -748,8 +826,8 @@ registerCascadeApplier('landPerilPerception', (get, set, step, hero) => {
  * `applyFall`), état persistant sur l'instance (`mountInjury`), bête morte/condamnée retirée de
  * l'inventaire — et on dégrade la route à pied si le groupe n'est plus monté au complet.
  */
-function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure: Allure, day: TravelRecapDay): void {
-  const outcomes = resolveMountedDay(partyMounts(get().party), hoursToday, allure, battleRng());
+function resolveMountedTravelDay(get: Get, set: Set, hoursToday: number, allure: Allure, day: TravelRecapDay, priorHours = 0): void {
+  const outcomes = resolveMountedDay(partyMounts(get().party), hoursToday, allure, battleRng(), priorHours);
   const lines: string[] = [];
   for (const o of outcomes) {
     lines.push(...o.lines);

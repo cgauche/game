@@ -168,6 +168,17 @@ describe('resolveMountedDay — sur-endurance (EDOC 07 l.146)', () => {
     expect(o.incidents.length).toBe(failures);
   });
 
+  it('endurance comptée sur le JOUR calendaire (#340) : deux trajets 3 h+3 h au trot (BE 4) → sur-endurance au 2ᵉ', () => {
+    // Palefroi (BE 4) : endurance trot = 4 h. 3 h seules restent dans l'endurance ; un 2ᵉ trajet de 3 h le
+    // MÊME jour (priorHours = 3) porte le cumul à 6 h → 2 h de sur-endurance testées, comme un seul jour de 6 h.
+    const seg1 = resolveMountedDay([mountOf('cheval-de-selle')], 3, 'trot', makeRNG(2), 0)[0];
+    expect(seg1.overHours).toBe(0);
+    expect(seg1.tests.length).toBe(0);
+    const seg2 = resolveMountedDay([mountOf('cheval-de-selle')], 3, 'trot', makeRNG(2), 3)[0];
+    expect(seg2.overHours).toBeCloseTo(2);
+    expect(seg2.tests.length).toBeGreaterThanOrEqual(1);
+  });
+
   it('Exténué > BE : la bête s’effondre (Sonné + À Terre) puis Test de Résistance sans modificateur', () => {
     // Chien (E 20, BE 2) au galop (endurance 1 h) poussé 6 h : effondrement garanti (Exténué 3 > 2 au
     // plus tard à la 2e heure supplémentaire), sauf Boiteux/Patte brisée qui stoppe la journée avant.

@@ -790,8 +790,10 @@ function finishRiverDay(get: Get, set: Set, to: { scene: string; entry?: string;
   const kmDone = Math.min(plan.km, plan.kmDone + kmDay);
   const arrived = plan.km - kmDone < 1e-9;
   // Horloge : à l'ARRIVÉE, la journée entière passe (+24 h) — l'entretien du jour est rattrapé par le
-  // prochain `runDailyUpkeep`. Sinon (HALTE de nuit) la navigation s'arrête au crépuscule et la nuit de
-  // sommeil enjambe minuit : UN SEUL franchissement de jour par cycle jour+nuit (comme le voyage terrestre).
+  // prochain `runDailyUpkeep`. Sinon (HALTE de nuit) la navigation s'arrête au crépuscule : le canon T2C
+  // ne chiffre PAS la navigation fluviale de nuit (valeur maison, cadence gouvernée par la même porte
+  // aube→crépuscule que le départ, `travel-departure-gate`, #340) et la nuit de sommeil enjambe minuit :
+  // UN SEUL franchissement de jour par cycle jour+nuit (comme le voyage terrestre).
   // L'ENTRETIEN n'est jamais roulé ici (sinon la Faim s'installe avant le repas) : il se résout dans la
   // cascade de nuit (`buildNightCascade`), APRÈS `feedFromMeal`.
   set({ gameTime: get().gameTime + (arrived ? 24 * 60 : minutesUntilNext(get().gameTime, DUSK_MINUTE)) });

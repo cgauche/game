@@ -231,6 +231,7 @@ export const HORS_MODAL = [
   { key: 'cleave', pendingKey: 'pendingCleave', owner: (s) => s.pendingCleave?.attackerId }, // Balayage : ciblage carte (TargetPrompt), pas de modale
   { key: 'dualStrike', pendingKey: 'pendingDualStrike', owner: (s) => s.pendingDualStrike?.attackerId }, // 2ᵉ frappe (deux armes) : ciblage carte, idem
   { key: 'logQueue', pendingKey: 'pendingLogQueue', owner: () => undefined }, // File de journal DIFFÉRÉE : système, drainée automatiquement (pas d'acteur)
+  { key: 'departure', pendingKey: 'pendingDeparture', owner: () => undefined }, // Porte de départ de nuit (carte du monde) : l'hôte décide (#340)
 ] as const satisfies readonly HorsModalDef[];
 
 /** Toutes les clés `pending*` couvertes par `MODAL_DEFS` (owner MODALE, direct + coexistants). */

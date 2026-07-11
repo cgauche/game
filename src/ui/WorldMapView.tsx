@@ -23,6 +23,7 @@ import { TravelRolesPanel } from './TravelRolesPanel';
 import { ShipRolesPanel } from './ShipRolesPanel';
 import { Icon, IconG } from './Icon';
 import { ScreenShell } from './ScreenShell';
+import { formatImperial } from '../engine/clock';
 import { VB_W, VB_H, Z_MIN, Z_MAX, type Viewport, clampViewport, fitViewport } from './worldMapViewport';
 
 /** Hash déterministe d'un id → sens de courbure stable d'une route (pas de Math.random). */
@@ -91,6 +92,10 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
   const close = useGame((s) => s.closeWorldMap);
   const startTravel = useGame((s) => s.startTravel);
   const resumeTravel = useGame((s) => s.resumeTravel);
+  // Porte d'heure de départ (maison, #340) : départ terrestre/fluvial de nuit → attendre l'aube / annuler.
+  const pendingDeparture = useGame((s) => s.pendingDeparture);
+  const departWaitDawn = useGame((s) => s.departWaitDawn);
+  const departCancel = useGame((s) => s.departCancel);
   // Coop : l'invité consulte la carte mais l'HÔTE décide des départs (le voyage déplace tout le
   // groupe et résout des journées entières — audit Lot 4, arbitrage V1 « exploration = miroir »).
   const isGuest = useGame((s) => s.net.mode) === 'guest';
@@ -689,6 +694,19 @@ export function WorldMapView({ initialRouteId, hereSceneId }: { initialRouteId?:
                   : 'Aucune route ne part de ce lieu.'
                 : 'Ce lieu ne figure pas sur la carte — rejoignez un lieu connu pour voyager.'}
           </p>
+        </div>
+      )}
+
+      {pendingDeparture && !isGuest && (
+        <div className="worldmap-panel" role="alertdialog" aria-label="Départ de nuit">
+          <p>
+            La nuit est tombée — un voyage {pendingDeparture.mode === 'monture' ? 'en selle' : pendingDeparture.mode === 'pied' ? 'à pied' : 'sur le fleuve'} ne
+            s'ébranle qu'au grand jour. Prochain départ possible à l'aube ({formatImperial(pendingDeparture.dawnAt)}).
+          </p>
+          <div className="bar">
+            <button className="btn btn-primary" onClick={departWaitDawn}>Attendre l'aube</button>
+            <button className="btn" onClick={departCancel}>Annuler</button>
+          </div>
         </div>
       )}
     </ScreenShell>

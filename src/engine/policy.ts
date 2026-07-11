@@ -562,6 +562,44 @@ export const OPTIONAL_RULES: OptionalRule[] = [
     hint: 'Règles de voyage du Compagnon T1 (ch.4) : voyage en selle sur les bêtes possédées (vitesse = Mouvement × 1,5/2,5/3 km/h au pas/trot/galop), endurance des allures (12 h au pas, Bonus d’Endurance en heures au trot, moitié au galop) avec Incidents de monte au-delà, et allure forcée d’un attelage (Test de Conduite d’attelage par km ; Échec Stupéfiant → Problème de véhicule). Indépendant du « Voyage par Étapes ».',
   },
   {
+    // #340 — le canon ne fixe pas d'heure de départ (LDB « Voyage » borne un budget de 6 h/JOUR
+    // sans dire quand la journée commence) : règle maison éditable (défaut ON) qui empêche un départ
+    // terrestre/fluvial en pleine nuit. Le voyage MARITIME en est EXEMPT (équipage + installations
+    // permettent de voguer de nuit, MDG 15 l.76 — cf. `sea-night-sailing`).
+    id: 'travel-departure-gate',
+    label: 'Porte d’heure de départ (terre & fleuve)',
+    ref: 'LDB 51 l.224 (budget/jour) — heure de départ non chiffrée, valeur maison (#340)',
+    group: 'Voyage',
+    kind: 'flag',
+    default: true,
+    hint: 'Un voyage à pied, en selle ou sur le fleuve ne peut s’ébranler que de l’aube au crépuscule. Tenter de partir de nuit propose d’attendre l’aube (nuit jouée) ou d’annuler. La mer est exemptée (voguer de nuit = équipage + installations, MDG 15 l.76). Désactiver autorise un départ à toute heure.',
+  },
+  {
+    // #340 — le canon ne modélise pas la privation de sommeil sur le budget de voyage : règle maison
+    // éditable OPT-IN. Franchir un jour calendaire sans nuit jouée (aucun repos depuis le dernier) coûte
+    // 1 État Exténué par jour blanc, retiré au prochain vrai sommeil comme tout Exténué (LDB 16).
+    id: 'travel-sleep-forced',
+    label: 'Privation de sommeil (nuit forcée)',
+    ref: 'LDB 18 (Exténué) — privation de sommeil non chiffrée, valeur maison (#340)',
+    group: 'Voyage',
+    kind: 'flag',
+    default: false,
+    hint: 'Chaque jour calendaire franchi SANS nuit de sommeil jouée inflige 1 État Exténué (« privation de sommeil ») à chaque héros vivant. Il se dissipe au prochain vrai repos. Désactivé par défaut (opt-in).',
+  },
+  {
+    // #340 — voguer de nuit exige « un équipage suffisant et des installations adéquates », sinon la
+    // distance du jour est divisée par deux (MDG 15 l.76). L'équipage du navire de campagne étant
+    // ABSTRAIT (MDG 14 l.39), on ne peut le vérifier : réglage maison éditable (défaut ON = navire
+    // équipé pour la nuit, comportement conservé) ; désactiver applique le ÷2 (`seaMilesPerDay(m, false)`).
+    id: 'sea-night-sailing',
+    label: 'Voguer de nuit (équipage & installations)',
+    ref: 'MDG 15 l.76',
+    group: 'Voyage',
+    kind: 'flag',
+    default: true,
+    hint: 'Le navire de campagne peut naviguer de nuit (équipage suffisant, installations adéquates) : distance de jour pleine. Désactiver = pas de navigation nocturne → distance quotidienne divisée par deux (MDG 15 l.76).',
+  },
+  {
     id: 'travel-attraper-froid',
     label: 'Attraper froid',
     ref: 'EDOC ch.5 l.73',

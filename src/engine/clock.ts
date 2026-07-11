@@ -166,3 +166,10 @@ export const DAWN_MINUTE = DAY_PHASES[0].start; // 'aube' = 05:00
  *  jour de navigation (fluvial/maritime) s'arrête ici, puis la nuit de sommeil enjambe minuit jusqu'à
  *  l'aube — un seul franchissement de jour par cycle voyage+nuit (aligné sur le voyage terrestre). */
 export const DUSK_MINUTE = (DAY_PHASES.find((p) => p.key === 'crepuscule') ?? DAY_PHASES[DAY_PHASES.length - 2]).start; // 'crépuscule' = 18:00
+
+/** Créneau de DÉPART d'un voyage terrestre/fluvial : de l'aube au crépuscule (`[DAWN, DUSK)`). Sert à
+ *  la porte de départ maison (canon muet — arbitrage #340) : partir de nuit propose « Attendre l'aube ». */
+export function isTravelDaylight(minutes: number): boolean {
+  const m = minuteOfDay(minutes);
+  return m >= DAWN_MINUTE && m < DUSK_MINUTE;
+}

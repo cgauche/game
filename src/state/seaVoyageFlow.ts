@@ -932,8 +932,11 @@ function applySeaProgress(get: Get, set: Set, progressionDR: number): string[] {
   const plan = get().travelPlan!;
   const eff = effectiveSeaM(get);
   if (eff.m == null || plan.sea!.sailsDown) { patchSea(get, set, { milesToday: 0 }); return []; }
-  // Nuit : équipage nominal requis, sinon ÷2 (MDG 15 l.76) — équipage abstrait (MDG 14 l.39, cf. l.27).
-  const miles = Math.round(seaMilesPerDay(eff.m, true, progressionDR));
+  // Voguer de nuit exige équipage + installations, sinon ÷2 (MDG 15 l.76) — l'équipage du navire de
+  // campagne étant abstrait (MDG 14 l.39), la capacité nocturne est portée par la règle maison éditable
+  // `sea-night-sailing` (défaut ON = navire équipé, distance pleine ; OFF = ÷2). #340.
+  const nightSailing = rule('sea-night-sailing') === true;
+  const miles = Math.round(seaMilesPerDay(eff.m, nightSailing, progressionDR));
   patchSea(get, set, { milesToday: miles, eventMMod: undefined }); // « Vents favorables » : +1 M consommé sur UNE journée de route
   return [`Progression du jour : ${miles} milles (DR d'équipage ${progressionDR >= 0 ? '+' : ''}${progressionDR}).`];
 }

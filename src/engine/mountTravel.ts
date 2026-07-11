@@ -223,13 +223,17 @@ export interface MountDayOutcome {
  * effondrement (Sonné + À Terre) puis Test de Résistance SANS modificateur ; échec = morte.
  * PUR : rend l'issue structurée, l'appelant applique (injuries, chute du cavalier, retrait de la bête).
  */
-export function resolveMountedDay(mounts: PartyMount[], hours: number, allure: Allure, rng: RNG): MountDayOutcome[] {
+export function resolveMountedDay(mounts: PartyMount[], hours: number, allure: Allure, rng: RNG, priorHours = 0): MountDayOutcome[] {
   const out: MountDayOutcome[] = [];
   for (const mount of mounts) {
     const p = mount.profile;
     const be = mountBE(p);
     const endurance = allureEnduranceHours(p, effectiveAllure(mount, allure));
-    const overHours = Math.max(0, hours - endurance);
+    // Endurance comptée sur le JOUR calendaire (#340) : `priorHours` = heures DÉJÀ chevauchées aujourd'hui
+    // (trajets enchaînés). Seules les heures NEUVES au-delà de l'endurance sont testées — les heures déjà
+    // parcourues avant ce trajet ne re-fatiguent pas la bête (elles l'ont fait à leur propre trajet).
+    const priorOver = Math.max(0, priorHours - endurance);
+    const overHours = Math.max(0, priorHours + hours - endurance) - priorOver;
     const o: MountDayOutcome = { mount, overHours, extenue: 0, tests: [], incidents: [], collapsed: false, dead: false, lines: [] };
     for (let h = 0; h < Math.ceil(overHours - 1e-9); h++) {
       o.extenue += 1; // « il gagne un État Exténué » (l.146)

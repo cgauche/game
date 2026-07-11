@@ -1166,6 +1166,21 @@ export interface GameState extends RollFlowActionsMap {
   setPosteAmmo: (shipId: string, posteUid: string, ammoUid: string | null) => void;
   /** Dernier jour (index d'horloge) traité par l'entretien quotidien (rations/faim) — anti-double-comptage. */
   lastUpkeepDay: number;
+  /** Budget d'heures de voyage CONSOMMÉ le jour calendaire courant (#340) — SOURCE UNIQUE keyée sur
+   *  `dayIndex(gameTime)`, remise à zéro au franchissement de jour. `foot`/`mount` = heures à pied / en
+   *  selle déjà parcourues aujourd'hui (le budget RAW de 6 h se compte PAR JOUR, pas par trajet) ;
+   *  `marched` = la marche forcée du jour a déjà été testée (un seul Test de Résistance/jour, l.224). */
+  travelDayHours: { day: number; foot: number; mount: number; marched: boolean };
+  /** Dernier jour calendaire (index d'horloge) où une NUIT a été jouée (`sleepParty`/`buildNightCascade`)
+   *  — garde de la « nuit forcée » maison (#340) : un jour franchi au-delà sans sommeil coûte 1 Exténué. */
+  lastNightDay: number;
+  /** Départ de voyage BLOQUÉ par la porte d'heure (maison `travel-departure-gate`, #340) : terre/fleuve
+   *  de nuit → « Attendre l'aube » (nuit jouée) ou annuler. `null` = pas de départ en attente. */
+  pendingDeparture: { routeId: string; mode: import('../engine/travel').TravelMode; opts: { classKey?: string; hoursPerDay?: number; allure?: import('../engine/mountTravel').Allure; seaPace?: number; fast?: boolean; cadence?: import('./voyageCadence').VoyageCadence }; dawnAt: number } | null;
+  /** « Attendre l'aube » : joue une nuit (repos) puis efface la porte — le groupe repart au matin. */
+  departWaitDawn: () => void;
+  /** « Annuler » le départ nocturne bloqué par la porte. */
+  departCancel: () => void;
   /** Navire de campagne PERSISTANT (MDG ch.13-14) — porte son `vehicleId` et son MORAL (recalculé chaque
    *  semaine par l'entretien quotidien via `tickShipMorale`). `null` hors campagne navale. */
   vessel: CampaignVessel | null;
@@ -1301,6 +1316,8 @@ export const useGame = create<GameState>((set, get) => ({
   codexOverlay: null,
   gameTime: CAMPAIGN_START,
   lastUpkeepDay: dayIndex(CAMPAIGN_START),
+  travelDayHours: { day: dayIndex(CAMPAIGN_START), foot: 0, mount: 0, marched: false },
+  lastNightDay: dayIndex(CAMPAIGN_START),
   vessel: null,
   tradeRumours: [],
   landMarket: null,
@@ -2197,6 +2214,8 @@ export const useGame = create<GameState>((set, get) => ({
   closeWorldMap: () => set({ worldMapOpen: false }),
   startTravel: (routeId, mode, opts) => travelFlow.startTravel(get, set, routeId, mode, opts),
   resumeTravel: () => travelFlow.resumeTravel(get, set),
+  departWaitDawn: () => travelFlow.departWaitDawn(get, set),
+  departCancel: () => set({ pendingDeparture: null }),
   setVoyageCadence: (cadence) => { const p = get().travelPlan; if (p) set({ travelPlan: { ...p, orders: { ...(p.orders ?? { cadence: 'jour-par-jour' }), cadence } } }); },
   openPort: () => portFlow.openPort(get, set),
   closePort: () => portFlow.closePort(get, set),
