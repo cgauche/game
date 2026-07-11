@@ -227,6 +227,17 @@ appliers du jour.
   l'axe proue-poupe est TOUJOURS hors arc tribord/babord, quelle que soit la distance. Diagnostic à
   l'écran : `aim('cible')` → `{invalid, reason:'arc'}` = géométrie, pas munition/portée ; re-vérifier
   après un `turnShip`/`maneuver` du navire.
+
+- **Apostrophe TYPOGRAPHIQUE dans les libellés** (`’`, U+2019) ≠ apostrophe droite (`'`, U+0027) : un
+  sélecteur Playwright écrit avec `'` (« Dormir jusqu'à l'aube ») NE MATCHE PAS le texte réellement
+  rendu (l'UI utilise systématiquement `’`) — copier le libellé DEPUIS un snapshot/`__wfrp` plutôt que
+  le retaper.
+- **`button:has-text("Lancer")` matche aussi « Tout lancer »** (sous-chaîne) : un clic visant LE bouton
+  « Lancer » peut résoudre le mauvais élément si « Tout lancer » est aussi à l'écran — utiliser
+  `:text-is("Lancer")` (correspondance EXACTE) pour lever l'ambiguïté.
+- **`__wfrp.routes()`** (symétrique d'`entities()`) : liste les routes CLIQUABLES de la carte du monde
+  depuis le lieu courant (`{id, from, to, distanceLabel}`) — cible une route par son `id` pour
+  `clickRoute(id)` quand plusieurs chips de distance affichés sont ambigus (même trajet, deux modes).
 - **Combat naval — `aim('<coque>')` n'est (quasi) jamais une attaque directe** : une coque composite
   (`postes` non vide) est routée par `attackAffordance` vers « Servir »/« Renfort » (poste libre
   ADJACENT et acteur non déjà en poste) ou `none` — jamais vers un réticule d'attaque

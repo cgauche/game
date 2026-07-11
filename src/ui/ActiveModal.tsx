@@ -66,9 +66,9 @@ export function ActiveModal(): JSX.Element | null {
   const s = useGame();
   const key = pickActiveModalKey(s);
   if (!key) return null;
-  // Cascade de voyage : l'écran-hub (`VoyageScreen`, #333) l'héberge EN SON CENTRE (`CascadeBody
-  // embedded`) — pas de modale flottante par-dessus le hub (anti-tunnel). Hors hub, comportement inchangé.
-  if (key === 'cascade' && voyageHubActive(s)) return null;
+  // Cascade/nuit de voyage : l'écran-hub (`VoyageScreen`, #333) les héberge EN SON CENTRE (`CascadeBody`/
+  // `RestBody embedded`) — pas de modale flottante par-dessus le hub (anti-tunnel). Hors hub, inchangé.
+  if ((key === 'cascade' || key === 'rest') && voyageHubActive(s)) return null;
   // Cadence Rapide/Auto : si le driver va auto-résoudre cette modale, NE PAS la rendre (fini le flash
   // de quelques ms). Le BILAN voyage/nuit et les vrais choix (surincantation/Destin en Rapide) restent rendus.
   if (willAutoResolve(s)) return null;

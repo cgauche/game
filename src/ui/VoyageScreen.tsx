@@ -4,7 +4,7 @@ import type { CampaignVessel } from '../state/store';
 import type { TravelPlan, TravelRecapDay } from '../state/travelFlow';
 import type { Combatant } from '../engine/types';
 import { placeById } from '../state/worldMap';
-import { routeDistanceLabel } from '../engine/travel';
+import { routeDistanceLabel, TRAVEL_MODE_LABEL } from '../engine/travel';
 import { ALLURE_LABEL, partyMounts } from '../engine/mountTravel';
 import { seaWeatherLabel } from '../engine/seaWeather';
 import { cargoTotalEnc } from '../engine/seaVoyage';
@@ -16,6 +16,7 @@ import { ScreenShell } from './ScreenShell';
 import { MasterDetail } from './MasterDetail';
 import { NotchGauge, type GaugeTone } from './NotchGauge';
 import { CascadeBody } from './CascadeModal';
+import { RestBody } from './RestModal';
 import { TravelDayBody } from './TravelRecapModal';
 import { ShipDossier } from './ShipDossier';
 import { Icon } from './Icon';
@@ -68,10 +69,21 @@ const cargoGaugeTone: (enc: number, cap: number) => GaugeTone = (enc, cap) => {
 
 const SEASON_LABEL: Record<Season, string> = { printemps: 'Printemps', ete: 'Été', automne: 'Automne', hiver: 'Hiver' };
 
-/** Sous-mode de l'habillage, dérivé du plan (SOURCE UNIQUE). */
+/** Sous-mode de l'habillage, dérivé du plan (SOURCE UNIQUE). Un voyage JOUÉ (résolution jour par jour,
+ *  `plan.sea`/`plan.river`) prime ; à défaut (transport PAYANT — un passeur, pas de descente/traversée
+ *  jouée), le milieu réel du VÉHICULE (`plan.mode`, `vehicles.json`) tranche — jamais un repli « terre »
+ *  deviné pour une embarcation affrétée (#333 correctif). `travel.medium` (facette VOYAGE, LDB l.207-219)
+ *  est la donnée du TRAJET PAYÉ elle-même — prioritaire, un véhicule pouvant être bi-milieu (la Barge
+ *  navigue le fleuve, LDB p.306, tout en figurant à la table navale MDG ch.12 avec
+ *  `hull.propulsion:'maritime'` — les deux facettes sont INDÉPENDANTES). Repli sur `hull.propulsion` si
+ *  `travel.medium` est absent. Aucun id de véhicule nommé ici. */
 export function voyageMode(plan: TravelPlan): 'mer' | 'fleuve' | 'terre' {
   if (plan.sea) return 'mer';
   if (plan.river) return 'fleuve';
+  const vehicle = findVehicleById(plan.mode);
+  const medium = vehicle?.travel?.medium ?? vehicle?.hull?.propulsion;
+  if (medium === 'maritime') return 'mer';
+  if (medium === 'fluvial') return 'fleuve';
   return 'terre';
 }
 
@@ -119,8 +131,19 @@ export function voyageTiles(
     if (vessel?.provisions != null) tiles.push({ key: 'provisions', icon: 'item/misc', label: 'Provisions', value: `${vessel.provisions} j-homme` });
     return tiles;
   }
-  // TERRE (l'attelage/les bêtes/l'exposition).
-  tiles.push({ key: 'allure', icon: 'travel/foot', label: 'Allure', value: plan.allure ? ALLURE_LABEL[plan.allure] : plan.mode === 'monture' ? 'En selle' : 'À pied' });
+  // TERRE, ou transport PAYANT non JOUÉ (mer/fleuve dérivés du véhicule mais sans état de descente/
+  // traversée — un passeur) : la tuile NOMME le mode réel du plan (Barge/Diligence/…), jamais un
+  // repli « À pied » deviné (#333 correctif).
+  const allureBased = plan.mode === 'monture' || !!plan.allure;
+  tiles.push({
+    key: 'allure',
+    icon: 'travel/foot',
+    label: allureBased ? 'Allure' : 'Transport',
+    value: plan.allure ? ALLURE_LABEL[plan.allure]
+      : plan.mode === 'monture' ? 'En selle'
+        : plan.mode === 'pied' ? 'À pied'
+          : TRAVEL_MODE_LABEL[plan.mode] ?? plan.mode,
+  });
   const mounts = partyMounts(party);
   if (mounts.length) {
     const hurt = mounts.filter((m) => m.item.mountInjury).length;
@@ -150,6 +173,7 @@ export function VoyageScreen({ onClose }: { onClose: () => void }) {
   const party = useGame((s) => s.party);
   const gameTime = useGame((s) => s.gameTime);
   const pendingCascade = useGame((s) => s.pendingCascade);
+  const pendingRest = useGame((s) => s.pendingRest);
   const [dossierOpen, setDossierOpen] = useState(false);
   const [selDay, setSelDay] = useState<number | null>(null); // index dans le log ; null = jour EN COURS
   if (!plan) return null;
@@ -171,14 +195,18 @@ export function VoyageScreen({ onClose }: { onClose: () => void }) {
   const dossier = vessel ? () => setDossierOpen(true) : undefined;
   const tiles = voyageTiles(sub, plan, vessel, party, gameTime, dossier);
 
-  const days = voyageDayCards(plan, sub, stepWord, !!pendingCascade);
+  const days = voyageDayCards(plan, sub, stepWord, !!pendingCascade || !!pendingRest);
   const selectedKey = selDay == null ? 'current' : `d${selDay}`;
 
+  // Priorité de rendu du centre : une ÉTAPE qui attend (repos > cascade — la nuit ferme le jour
+  // avant que la cascade suivante ne s'ouvre) prime sur la consultation d'un jour passé.
   let center: ReactNode;
-  if (selDay != null && log[selDay]) {
-    center = <TravelDayBody day={log[selDay]} />;
+  if (pendingRest) {
+    center = <RestBody embedded />; // nuit de halte incrustée (MÊME rendu que la modale, #333 correctif)
   } else if (pendingCascade) {
     center = <CascadeBody embedded />; // étape du jour incrustée (MÊME rendu que la modale)
+  } else if (selDay != null && log[selDay]) {
+    center = <TravelDayBody day={log[selDay]} />;
   } else {
     center = <p className="voyage-hint">La traversée suit son cours — la prochaine étape s’ouvrira ici.</p>;
   }

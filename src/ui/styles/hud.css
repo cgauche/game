@@ -628,7 +628,8 @@
   background: rgba(0, 0, 0, 0.18);
 }
 .rs-embedded.roll-modal,
-.rs-embedded.test-modal { min-width: 0; }
+.rs-embedded.test-modal,
+.rs-embedded.rest-modal { min-width: 0; }
 
 /* ── Modale de REPOS (nuit) ── */
 .rest-modal { min-width: min(520px, 94vw); }

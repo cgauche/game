@@ -42,13 +42,15 @@ function heroWarnings(h: Combatant, lodging: RestLodging, food: RestFood, exposu
 }
 
 /**
- * MODALE DE REPOS — une nuit (auberge / chez soi / campement) en deux phases :
+ * CORPS de la modale de repos — `embedded` (#333) bascule le rendu en zone embarquée (sans `Modal`,
+ * patron `CascadeBody`/`RollShell embedded`) pour l'incrustation dans l'écran-hub de voyage. Défaut
+ * `false` = modale flottante (inchangé) ; une nuit ÉTAPE, RÉGLAGES + BILAN en deux phases :
  *  - RÉGLAGES : par héros, couchage + pitance (choix PERSONNELS et orthogonaux — manger à
  *    l'auberge et dormir dehors est permis) ; coût RAW total calculé ; avertissements en ligne ;
  *  - BILAN : le temps passé est AFFICHÉ (avant → après), et tous les jets de la nuit tiennent
  *    sur UN écran (brique multi-jets) — abri, Exposition, récupération, cauchemars, contagion.
  */
-export function RestModal() {
+export function RestBody({ embedded = false }: { embedded?: boolean } = {}) {
   const p = useGame((s) => s.pendingRest);
   const party = useGame((s) => s.party);
   const money = useGame((s) => s.money);
@@ -67,8 +69,8 @@ export function RestModal() {
 
   // ── Phase BILAN : le temps écoulé + tous les jets de la nuit sur UN écran ──
   if (p.phase === 'bilan') {
-    return (
-      <Modal title={title} variant="plain" className="rest-modal" onClose={restContinue}>
+    const bilanBody = (
+      <>
         {p.slept && (
           <p className="rest-time">
             <GameDate time={p.slept.from} /> → <GameDate time={p.slept.to} />
@@ -84,6 +86,14 @@ export function RestModal() {
         <div className="modal-actions">
           <button className="btn btn-primary" onClick={() => restContinue()}>{p.travelHalt ? 'Reprendre la route' : 'Continuer'}</button>
         </div>
+      </>
+    );
+    if (embedded) {
+      return <div className="rs-embedded rest-modal"><div className="mini-title">{title}</div>{bilanBody}</div>;
+    }
+    return (
+      <Modal title={title} variant="plain" className="rest-modal" onClose={restContinue}>
+        {bilanBody}
       </Modal>
     );
   }
@@ -98,9 +108,10 @@ export function RestModal() {
   const seats = Object.entries(net.seatNames).map(([s, n]) => ({ seat: Number(s), name: n }));
   const allReady = !online || seats.every(({ seat }) => ready[seat]);
   const canPay = toBrass(cost) === 0 || toBrass(money) >= toBrass(cost);
+  const reglagesTitle = <>{title}{p.days > 1 ? ` — ${p.days} nuits` : ''}{p.quality === 'pietre' ? ' (piètre)' : ''}</>;
 
-  return (
-    <Modal title={<>{title}{p.days > 1 ? ` — ${p.days} nuits` : ''}{p.quality === 'pietre' ? ' (piètre)' : ''}</>} variant="plain" className="rest-modal" onClose={p.travelHalt ? undefined : () => restCancel()}>
+  const reglagesBody = (
+    <>
       {/* HALTE de voyage : le RAPPORT DU JOUR se lit le soir même (km, péripéties, jets en
           lignes multijet) — avant de régler la nuit. Même corps que le recap (TravelDayBody). */}
       {p.travelDay && (
@@ -174,6 +185,19 @@ export function RestModal() {
           </button>
         )}
       </div>
+    </>
+  );
+  if (embedded) {
+    return <div className="rs-embedded rest-modal"><div className="mini-title">{reglagesTitle}</div>{reglagesBody}</div>;
+  }
+  return (
+    <Modal title={reglagesTitle} variant="plain" className="rest-modal" onClose={p.travelHalt ? undefined : () => restCancel()}>
+      {reglagesBody}
     </Modal>
   );
+}
+
+/** MODALE DE REPOS flottante — repos au camp en exploration (hors hub de voyage). */
+export function RestModal() {
+  return <RestBody />;
 }

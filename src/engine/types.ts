@@ -137,10 +137,13 @@ export interface VehicleData {
   /** Facette ACHAT (marché / possession de carrière). `availability` absent pour les navires (MDG ne
    *  donne pas de Disponibilité). */
   purchase?: { price: { gold: number; silver: number; bronze: number }; availability?: string };
-  /** Facette VOYAGE (passage payant). `movement` = Déplacement du véhicule (km/h). `draft` = ATTELAGE
-   *  (bêtes qui tirent, réf `montures.json`) — requis pour l'allure forcée EDOC 07 l.229 (« pas de
-   *  course ») ; `count` = nombre de bêtes (Tests de Résistance sur échec du conducteur). */
-  travel?: { movement: number; draft?: { montureId: string; count: number }; classes: VehicleTravelClass[] };
+  /** Facette VOYAGE (passage payant, LDB l.207-219). `movement` = Déplacement du véhicule (km/h).
+   *  `medium` = milieu du TRAJET PAYÉ — INDÉPENDANT de `hull.propulsion` (un véhicule peut être
+   *  bi-milieu : la Barge navigue le fleuve, LDB p.306, tout en figurant à la table navale MDG ch.12
+   *  avec `propulsion:'maritime'` — jamais l'un dérivé de l'autre) ; absent = terrestre implicite.
+   *  `draft` = ATTELAGE (bêtes qui tirent, réf `montures.json`) — requis pour l'allure forcée EDOC 07
+   *  l.229 (« pas de course ») ; `count` = nombre de bêtes (Tests de Résistance sur échec du conducteur). */
+  travel?: { movement: number; medium?: Propulsion; draft?: { montureId: string; count: number }; classes: VehicleTravelClass[] };
   /** Facette COQUE (entité à PV). `char.endurance` = Endurance, `char.B` = Blessures. `bodyShape` = 'vehicule'.
    *  `rig` = gréement (avirons/voile/mixte) → colonne de Localisation des Dégâts (MDG ch.13).
    *  `locationTable`/`criticalTable` = réfs de tables data-driven (branchées aux dalles fluvial/maritime). */

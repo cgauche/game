@@ -195,6 +195,12 @@ export function voyageHubActive(s: ArbiterState): boolean {
     && s.mode === 'exploration' && !s.worldMapOpen && !s.battle;
 }
 
+/** Une ÉTAPE du hub de voyage attend (cascade du jour OU nuit de halte) — SOURCE UNIQUE pour forcer le
+ *  hub ouvert (`CampaignView`) et choisir ce qu'incruster en son centre (`VoyageScreen`). */
+export function voyageStepPending(s: ArbiterState): boolean {
+  return !!s.pendingCascade || !!s.pendingRest;
+}
+
 /**
  * Registre des pendings HORS-modale (#284) : pas d'entrée `MODAL_DEFS`, rendus par un ÉCRAN dédié
  * (`ScreenShell`/panneau de jeu) plutôt qu'une modale de combat — marché/butin/victoire/campagne/

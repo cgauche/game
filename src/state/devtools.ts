@@ -1,7 +1,8 @@
 import { useGame, SCREENS } from './store';
 import { portRepairVessel, portCareenVessel, portInstallUpgrade, damageVesselHull, setVesselHull } from './seaVoyageFlow';
 import { beginShipwreck } from './shipwreck';
-import { placeOfScene, type MapRoute } from './worldMap';
+import { placeOfScene, placeById, type MapRoute } from './worldMap';
+import { routeDistanceLabel } from '../engine/travel';
 import { actorIn, inBattleId } from './combatOrParty';
 import { checkBattleOver, resolveFreeAttacks, approachFearTrigger, aiTurnLog, clearAiTurnLog, maybeRunEnemyTurn, applyEffects } from './combatFlow';
 import { setAiTrace } from './ai';
@@ -31,6 +32,8 @@ import type { Combatant } from '../engine/types';
  * Playwright SANS chasser les coordonnées pixel des tokens. Depuis une recette :
  *   __wfrp.state()        → instantané lisible (écran, dialogue, combat, position du groupe)
  *   __wfrp.entities()     → liste des entités de la scène + leur mode d'accès
+ *   __wfrp.routes()       → liste les routes CLIQUABLES de la carte du monde courante (id/from/to/
+ *                           distanceLabel) — cibler `clickRoute(id)` sans deviner parmi des chips ambigus
  *   __wfrp.screenPos('id') → bounding box ÉCRAN du token (combat ET exploration, `data-cid`) — LECTURE
  *                           seule (`getBoundingClientRect`), `null` si absent du DOM
  *   __wfrp.talk('id')     → téléporte le groupe à côté de l'entité et l'interpelle (dialogue/marchand)
@@ -219,6 +222,23 @@ export function buildApi() {
         pos: e.pos,
         access: e.dialogueId ? 'talk' : e.merchant ? 'merchant' : e.interact ? 'interact' : '—',
       })),
+
+    /** CARTOGRAPHIE (symétrique d'`entities()`) : les routes CLIQUABLES (`clickRoute`, MÊME filtre
+     *  `fromHere`) depuis le lieu courant de la carte du monde — cible une route pour
+     *  `__wfrp.clickRoute(id)` quand plusieurs chips de distance sont ambigus. */
+    routes: () => {
+      const s = g();
+      const map = s.worldMap;
+      if (!map || !s.scene) return '✗ aucune carte du monde ouverte (voir __wfrp.screen(\'worldmap\'))';
+      const here = placeOfScene(map, s.scene.id);
+      const fromHere = (r: MapRoute) => !!here && (r.a === here.id || r.b === here.id) && (r.from == null || r.from === here.id);
+      return map.routes.filter(fromHere).map((r) => ({
+        id: r.id,
+        from: placeById(map, r.a)?.label ?? r.a,
+        to: placeById(map, r.b)?.label ?? r.b,
+        distanceLabel: routeDistanceLabel(r.km, r.sea),
+      }));
+    },
 
     /** OBSERVATION seule : bounding box ÉCRAN du token `id` (combat ET exploration — même canal
      *  `data-cid`, #226) via `getBoundingClientRect`. `null` si le token n'est pas dans le DOM

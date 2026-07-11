@@ -4,6 +4,7 @@ import type { Combatant } from '../engine/types';
 import type { TravelPlan } from '../state/travelFlow';
 import { rollSeaWeather } from '../engine/seaWeather';
 import { voyageMode, voyageTiles, voyageDayCards } from './VoyageScreen';
+import { voyageStepPending } from '../state/modalArbiter';
 
 const hero = (id: string): Combatant => ({
   id, name: `Héros ${id}`, kind: 'hero',
@@ -26,12 +27,28 @@ const base = (): TravelPlan => ({ routeId: 'r', fromPlaceId: 'a', toPlaceId: 'b'
 const seaPlan = (): TravelPlan => ({ ...base(), sea: { heading: 'ouest', weather: rollSeaWeather('ete'), windFrom: 'nord', daysToEvent: 3, daysAtSea: 4, lines: [], milesToday: 0 } });
 const riverPlan = (): TravelPlan => ({ ...base(), mode: 'barge-du-sel', river: { windForce: 'modere', windDir: 'contraire', daysAfloat: 2 } as TravelPlan['river'], vehicle: { ...hero('barge'), wounds: { current: 18, max: 24 } } });
 const landPlan = (): TravelPlan => ({ ...base(), mode: 'monture', allure: 'trot' });
+// Transport PAYANT en barge (#333 correctif) : ni `.sea` ni `.river` (pas de descente JOUÉE, un
+// passeur) — le sous-mode se dérive de la donnée `vehicles.json` id `barge` (`travel.medium:'fluvial'`,
+// facette VOYAGE LDB p.306 — INDÉPENDANTE de `hull.propulsion:'maritime'`, table navale MDG ch.12).
+const bargePassagePlan = (): TravelPlan => ({ ...base(), mode: 'barge' });
 
 describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {
   it('voyageMode : mer / fleuve / terre dérivés du plan', () => {
     expect(voyageMode(seaPlan())).toBe('mer');
     expect(voyageMode(riverPlan())).toBe('fleuve');
     expect(voyageMode(landPlan())).toBe('terre');
+  });
+
+  it('voyageMode : transport PAYANT en barge (pas de descente JOUÉE) reste FLEUVE — dérivé de `travel.medium` (donnée), jamais un id nommé (#333 correctif)', () => {
+    expect(voyageMode(bargePassagePlan())).toBe('fleuve');
+  });
+
+  it('tuiles du transport payant en barge : NOMME le mode réel (jamais « À pied »), pas de tuile Bêtes sans monture', () => {
+    const tiles = voyageTiles('fleuve', bargePassagePlan(), null, [hero('h1')], 0);
+    const transport = tiles.find((t) => t.key === 'allure')!;
+    expect(transport.value).toBe('Barge');
+    expect(transport.value).not.toBe('À pied');
+    expect(tiles.some((t) => t.key === 'betes')).toBe(false);
   });
 
   it('tuiles MER : vent, coque, moral, provisions, cale', () => {
@@ -68,5 +85,17 @@ describe('VoyageScreen — hub de voyage paramétré par mode (#333)', () => {
     expect(cards[2].current).toBe(true);
     expect(cards[2].summary).toBe('EN COURS…');
     expect(cards[2].dayLabel).toBe('Jour 3');
+  });
+});
+
+describe('voyageStepPending — une ÉTAPE du hub attend (cascade OU nuit, #333 correctif)', () => {
+  it('faux sans cascade ni repos en attente', () => {
+    expect(voyageStepPending({})).toBe(false);
+  });
+  it('vrai avec une cascade en attente', () => {
+    expect(voyageStepPending({ pendingCascade: {} as never })).toBe(true);
+  });
+  it('vrai avec une nuit de halte en attente (repos EMBARQUÉ au centre du hub)', () => {
+    expect(voyageStepPending({ pendingRest: {} as never })).toBe(true);
   });
 });
