@@ -19,6 +19,8 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci
+      - name: Audit sécurité (échoue sur high/critical)
+        run: npm audit --audit-level=high
       # src/data/*.json sont la SOURCE app-owned (commitée) — plus de régénération build:data.
       - name: Dérive des registres générés
         run: npm run gen && git diff --exit-code -- '*_registry.generated.ts'
@@ -32,6 +34,8 @@ jobs:
       - run: npm run raw:coverage
       - run: npm run raw:reconcile
       - run: npm --prefix server ci
+      - name: Audit sécurité server (échoue sur high/critical)
+        run: npm --prefix server audit --audit-level=high
       - run: npm --prefix server run typecheck
       - name: Ouvrir une issue si le canari est rouge
         if: failure()
